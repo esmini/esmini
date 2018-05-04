@@ -1,5 +1,7 @@
 .vs/
-build/
+build/*
+build_ubuntu/*
+build_ubuntu_clang/*
 bin/
 *.swp
 *~
