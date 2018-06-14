@@ -5,3 +5,4 @@ build_ubuntu_clang/*
 bin/
 *.swp
 *~
+*.pdb
