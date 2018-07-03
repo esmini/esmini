@@ -338,17 +338,29 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 	case(osgGA::GUIEventAdapter::KEY_Tab):
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			viewer_->currentCarInFocus_ += (ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1;
-			viewer_->currentCarInFocus_ = viewer_->currentCarInFocus_ % (viewer_->cars_.size() + 1);
+			int step = (ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1;
+			int nextIndex = (viewer_->currentCarInFocus_ + step) % (viewer_->cars_.size() + 1);
+
+			bool zoom;  // when going to or from environment model, recalc distance
+			if (viewer_->currentCarInFocus_ == 0 || nextIndex == 0)
+			{
+				zoom = true;
+			}
+			else
+			{
+				zoom = false;
+			}
+
+			viewer_->currentCarInFocus_ = nextIndex;
 			if (viewer_->currentCarInFocus_ == 0)
 			{
 				// Use an additional index for total environment
-				viewer_->rubberbandManipulator_->setTrackNode(viewer_->envTx_, true);
+				viewer_->rubberbandManipulator_->setTrackNode(viewer_->envTx_, zoom);
 				viewer_->nodeTrackerManipulator_->setTrackNode(viewer_->envTx_);
 			}
 			else
 			{
-				viewer_->rubberbandManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_ - 1]->txNode_, true);
+				viewer_->rubberbandManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_ - 1]->txNode_, zoom);
 				viewer_->nodeTrackerManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_ - 1]->node_);
 			}
 		}
