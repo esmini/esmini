@@ -144,6 +144,14 @@ CarModel* Viewer::AddCar(int modelId)
 {
 	cars_.push_back(new CarModel(carModels_[modelId]));
 	rootnode_->addChild(cars_.back()->txNode_);
+	// Focus on first added car
+	if (cars_.size() == 1)
+	{
+		currentCarInFocus_ = 1;
+		rubberbandManipulator_->setTrackNode(cars_.back()->txNode_);
+		rubberbandManipulator_->calculateCameraDistance();
+		nodeTrackerManipulator_->setTrackNode(cars_.back()->node_);
+	}
 	return cars_.back();
 }
 
