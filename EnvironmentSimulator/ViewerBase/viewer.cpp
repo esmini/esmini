@@ -147,8 +147,8 @@ CarModel* Viewer::AddCar(int modelId)
 	// Focus on first added car
 	if (cars_.size() == 1)
 	{
-		currentCarInFocus_ = 1;
-		rubberbandManipulator_->setTrackNode(cars_.back()->txNode_);
+		currentCarInFocus_ = 0;
+		rubberbandManipulator_->setTrackNode(cars_.back()->txNode_, true);
 		rubberbandManipulator_->calculateCameraDistance();
 		nodeTrackerManipulator_->setTrackNode(cars_.back()->node_);
 	}
@@ -339,30 +339,10 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			int step = (ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1;
-			int nextIndex = (viewer_->currentCarInFocus_ + step) % (viewer_->cars_.size() + 1);
+			viewer_->currentCarInFocus_ = (viewer_->currentCarInFocus_ + step) % viewer_->cars_.size();
 
-			bool zoom;  // when going to or from environment model, recalc distance
-			if (viewer_->currentCarInFocus_ == 0 || nextIndex == 0)
-			{
-				zoom = true;
-			}
-			else
-			{
-				zoom = false;
-			}
-
-			viewer_->currentCarInFocus_ = nextIndex;
-			if (viewer_->currentCarInFocus_ == 0)
-			{
-				// Use an additional index for total environment
-				viewer_->rubberbandManipulator_->setTrackNode(viewer_->envTx_, zoom);
-				viewer_->nodeTrackerManipulator_->setTrackNode(viewer_->envTx_);
-			}
-			else
-			{
-				viewer_->rubberbandManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_ - 1]->txNode_, zoom);
-				viewer_->nodeTrackerManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_ - 1]->node_);
-			}
+			viewer_->rubberbandManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_]->txNode_, false);
+			viewer_->nodeTrackerManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_]->node_);
 		}
 		break;
 	}

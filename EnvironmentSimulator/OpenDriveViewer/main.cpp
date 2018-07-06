@@ -14,7 +14,7 @@ using namespace std::chrono;
 
 #define DEFAULT_SPEED   70  // km/h
 #define DEFAULT_DENSITY 1   // Cars per 100 m
-#define ROAD_MIN_SIZE 50
+#define ROAD_MIN_LENGTH 30
 #define SIGN(X) ((X<0)?-1:1)
 
 static const double stepSize = 0.01;
@@ -34,6 +34,7 @@ typedef struct
 	roadmanager::Position *pos;
 	double speed;  // Velocity along road reference line, m/s
 	viewer::CarModel *model;
+	int id;
 } Car;
 
 std::vector<Car*> cars;
@@ -46,7 +47,6 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		return 0;
 	}
 
-	printf("density: %.2f\n", density);
 	for (int r = 0; r < odrManager->GetNumOfRoads(); r++)
 	{
 		roadmanager::Road *road = odrManager->GetRoadByIdx(r);
@@ -54,7 +54,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 		double average_distance = 100.0 / density;
 
-		if (road->GetLength() > ROAD_MIN_SIZE)
+		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
 			for (int l = 0; l < lane_section->GetNumberOfLanes(); l++)
 			{
@@ -82,6 +82,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 						car_->pos = new roadmanager::Position(odrManager->GetRoadByIdx(r)->GetId(), lane_id, s_aligned, 0);
 						car_->model = viewer->AddCar(carModelID);
 						car_->speed = lane_speed;
+						car_->id = cars.size();
 						cars.push_back(car_);
 
 						// Add space to next vehicle
@@ -110,7 +111,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 		{
 			s = 0;
 		}
-		car->pos->Set(car->road_id_init, car->lane_id_init, s, 0);
+		car->pos->Set(car->road_id_init, car->lane_id_init, s, 0, 0);
 	}
 
 	if (car->model->txNode_ != 0)
@@ -142,6 +143,8 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 
 int main(int argc, char** argv)
 {
+	mt_rand.seed(time(0));
+
 	// use an ArgumentParser object to manage the program arguments.
     osg::ArgumentParser arguments(&argc,argv);	
 
@@ -187,6 +190,7 @@ int main(int argc, char** argv)
 			arguments);
 
 		SetupCars(odrManager, viewer);
+		printf("%d cars added\n", (int)cars.size());
 
 		__int64 now, lastTimeStamp = 0;
 

@@ -1905,7 +1905,6 @@ int Position::MoveAlongS(double ds)
 
 void Position::Set(int track_id, int lane_id, double s, double offset, int lane_section_idx)
 {
-	lane_id_ = lane_id;
 	offset_ = offset;
 
 	SetLongitudinalTrackPos(track_id, s);
@@ -1916,6 +1915,14 @@ void Position::Set(int track_id, int lane_id, double s, double offset, int lane_
 		printf("Position::Set Error: track %d not available\n", track_id);
 		return;
 	}
+
+	if (lane_id != lane_id_)
+	{
+		// New lane ID might indicate a discreet jump to a new, distant position, reset lane section
+		lane_section_idx_ = 0;
+	}
+	lane_id_ = lane_id;
+
 	LaneSection *lane_section = 0;
 
 	if (lane_section_idx > -1)
@@ -1929,7 +1936,7 @@ void Position::Set(int track_id, int lane_id, double s, double offset, int lane_
 		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_);
 		lane_section_idx_ = lane_info.lane_section_idx_;
 		lane_id_ = lane_info.lane_id_;
-		lane_section = road->GetLaneSectionByIdx(lane_info.lane_section_idx_);
+		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 	}
 
 	if (lane_section != 0)
