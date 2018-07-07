@@ -192,7 +192,7 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 	lane_info.lane_section_idx_ = start_lane_section_idx;
 	lane_info.lane_id_ = start_lane_id;
 
-	if (lane_info.lane_section_idx_ + 1 > (int)lane_section_.size())
+	if (lane_info.lane_section_idx_ >= (int)lane_section_.size())
 	{
 		printf("Road::GetLaneSectionByS: Error idx %d > n_lane_sections %d\n", lane_info.lane_section_idx_, (int)lane_section_.size());
 	}
@@ -200,23 +200,29 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 	{
 		LaneSection *lane_section = lane_section_[lane_info.lane_section_idx_];
 
-		// check if still on same lane section
+		// check if we passed current section
 		if (s > lane_section->GetS() + lane_section->GetLength())
 		{
+			//printf("look forward for lane section at %d / %.2f lid %d (sec end s: %.2f)\n", 
+			//	lane_info.lane_section_idx_, s, lane_info.lane_id_, lane_section->GetS() + lane_section->GetLength());
 			while (s > lane_section->GetS() + lane_section->GetLength() && lane_info.lane_section_idx_ + 1 < GetNumberOfLaneSections())
 			{
 				// Find out connecting lane, then move to next lane section
 				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, LinkType::SUCCESSOR);
 				lane_section = GetLaneSectionByIdx(++lane_info.lane_section_idx_);
+				//printf("moved forward to lane section id %d @s %.2f laneid: %d\n", lane_info.lane_section_idx_, s, lane_info.lane_id_);
 			}
 		}
 		else if (s < lane_section->GetS())
 		{
+			//printf("look backward for lane section at %d / %.2f lid %d (sec end s: %.2f)\n",
+			//	lane_info.lane_section_idx_, s, lane_info.lane_id_, lane_section->GetS() + lane_section->GetLength());
 			while (s < lane_section->GetS() && lane_info.lane_section_idx_ > 0)
 			{
 				// Move to previous lane section
 				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, LinkType::PREDECESSOR);
 				lane_section = GetLaneSectionByIdx(--lane_info.lane_section_idx_);
+				//printf("moved backward to lane section id %d @s %.2f laneid: %d\n", lane_info.lane_section_idx_, s, lane_info.lane_id_);
 			}
 		}
 	}
@@ -442,6 +448,11 @@ int LaneSection::GetConnectingLaneId(int incoming_lane_id, LinkType link_type)
 					break;
 				}
 			}
+		}
+		if (id == 0)
+		{
+			// if no driving lane found - stay on same index
+			id = incoming_lane_id;
 		}
 	}
 	
@@ -1916,10 +1927,10 @@ void Position::Set(int track_id, int lane_id, double s, double offset, int lane_
 		return;
 	}
 
-	if (lane_id != lane_id_)
+	if (lane_id != lane_id_ && lane_section_idx == -1)
 	{
-		// New lane ID might indicate a discreet jump to a new, distant position, reset lane section
-		lane_section_idx_ = 0;
+		// New lane ID might indicate a discreet jump to a new, distant position, reset lane section, if not specified)
+		lane_section_idx = 0;
 	}
 	lane_id_ = lane_id;
 

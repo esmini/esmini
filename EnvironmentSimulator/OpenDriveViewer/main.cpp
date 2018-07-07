@@ -111,6 +111,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 		{
 			s = 0;
 		}
+		//printf("Reset pos lid: %d\n", car->lane_id_init);
 		car->pos->Set(car->road_id_init, car->lane_id_init, s, 0, 0);
 	}
 
