@@ -9,6 +9,7 @@
 #include "viewer.hpp"
 #include "RoadManager.hpp"
 #include "RubberbandManipulator.h"
+#include "vehicle.hpp"
 
 using namespace std::chrono;
 
@@ -16,6 +17,7 @@ using namespace std::chrono;
 #define DEFAULT_DENSITY 1   // Cars per 100 m
 #define ROAD_MIN_LENGTH 30
 #define SIGN(X) ((X<0)?-1:1)
+#define EGO_MODEL_FILENAME "../../resources/models/p1800.osgb"
 
 static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
@@ -24,6 +26,9 @@ static const bool freerun = true;
 static std::mt19937 mt_rand;
 static double density = DEFAULT_DENSITY;
 static double speed = DEFAULT_SPEED;
+static Vehicle *ego;
+static double egoWheelAngle = 0;
+static double egoAcc = 0;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
@@ -35,15 +40,28 @@ typedef struct
 	double speed;  // Velocity along road reference line, m/s
 	viewer::CarModel *model;
 	int id;
+	Vehicle *ego;
 } Car;
 
 std::vector<Car*> cars;
 
 int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 {
+	// Add one Ego car
+	Car *car_ = new Car;
+	car_->road_id_init = odrManager->GetRoadByIdx(0)->GetId();
+	car_->lane_id_init = -1;
+	car_->pos = new roadmanager::Position(car_->road_id_init, car_->lane_id_init, 10, 0);
+
+	car_->model = viewer->AddCar(0);
+	car_->speed = 0;
+	car_->id = cars.size();
+	car_->ego = new Vehicle(car_->pos->GetX(), car_->pos->GetY(), car_->pos->GetH(), car_->model->size_x);
+	cars.push_back(car_);
+
 	if (density < 1E-10)
 	{
-		// Basically no cars 
+		// Basically no scenario vehicles
 		return 0;
 	}
 
@@ -57,6 +75,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
 			for (int l = 0; l < lane_section->GetNumberOfLanes(); l++)
+
 			{
 				int lane_id = lane_section->GetLaneIdByIdx(l);
 				roadmanager::Lane *lane = lane_section->GetLaneById(lane_id);
@@ -83,6 +102,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 						car_->model = viewer->AddCar(carModelID);
 						car_->speed = lane_speed;
 						car_->id = cars.size();
+						car_->ego = 0;
 						cars.push_back(car_);
 
 						// Add space to next vehicle
@@ -92,6 +112,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 			}
 		}
 	}
+
 	return 0;
 }
 
@@ -111,7 +132,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 		{
 			s = 0;
 		}
-		//printf("Reset pos lid: %d\n", car->lane_id_init);
+		printf("Reset pos lid: %d\n", car->lane_id_init);
 		car->pos->Set(car->road_id_init, car->lane_id_init, s, 0, 0);
 	}
 
@@ -213,7 +234,38 @@ int main(int argc, char** argv)
 
 			for (auto &car : cars)
 			{
-				updateCar(odrManager, car, deltaSimTime);
+				if(car->ego)
+				{
+					// Update vehicle dynamics/driver model
+					car->ego->Update(deltaSimTime, viewer->driverAcceleration_, viewer->driverSteering_);
+					
+					// update 3D model transform
+					car->model->txNode_->setPosition(osg::Vec3(car->ego->posX_, car->ego->posY_, car->ego->posZ_));
+					car->model->quat_.makeRotate(
+						0, osg::Vec3(1, 0, 0), // Roll
+						0, osg::Vec3(0, 1, 0), // Pitch
+						car->ego->heading_, osg::Vec3(0, 0, 1)); // Heading
+					car->model->txNode_->setAttitude(car->model->quat_);
+
+					// Update wheel angles
+					osg::Quat quat;
+					quat.makeRotate(
+						0, osg::Vec3(1, 0, 0), // Roll
+						car->ego->wheelRotation_, osg::Vec3(0, 1, 0), // Pitch
+						car->ego->wheelAngle_, osg::Vec3(0, 0, 1)); // Heading
+					car->model->wheel_[0]->setAttitude(quat);
+					car->model->wheel_[1]->setAttitude(quat);
+					quat.makeRotate(
+						0, osg::Vec3(1, 0, 0), // Roll
+						car->ego->wheelRotation_, osg::Vec3(0, 1, 0), // Pitch
+						0, osg::Vec3(0, 0, 1)); // Heading
+					car->model->wheel_[2]->setAttitude(quat);
+					car->model->wheel_[3]->setAttitude(quat);
+				}
+				else
+				{
+					updateCar(odrManager, car, deltaSimTime);
+				}
 			}
 
 			viewer->osgViewer_->frame();

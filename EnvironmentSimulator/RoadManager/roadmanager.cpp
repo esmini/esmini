@@ -1297,6 +1297,11 @@ LaneRoadLaneConnection OpenDrive::GetJunctionConnection(Road *road, Lane *lane, 
 							lane_road_lane_connection.SetLane(lane->GetId());
 							lane_road_lane_connection.SetConnectingRoad(connection->GetConnectingRoad()->GetId());
 							lane_road_lane_connection.SetConnectingLane(lane_link->to_);
+							if (!connection->GetConnectingRoad()->GetLaneSectionByIdx(0)->GetLaneById(lane_link->to_)->IsDriving())
+							{
+								printf("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to %d, %d\n",
+									road->GetId(), lane->GetId(), connection->GetConnectingRoad()->GetId(), lane_link->to_);
+							}
 
 							return lane_road_lane_connection;
 						}
@@ -1783,22 +1788,22 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 		return -1;
 	}
 
-		LinkType link_type;
-		if (s_ + ds > road->GetLength())
-		{
-			s_new = s_ + ds - road->GetLength();
-			link_type = LinkType::SUCCESSOR;
-		}
-		else if (s_ + ds < 0)
-		{
-			s_new = -(s_ + ds);
-			link_type = LinkType::PREDECESSOR;
-		}
-		else
-		{
-			printf("Position::MoveToConnectingRoad s_ + ds %.2f within range [0:%.2f]\n", s_ + ds, road->GetLength());
-			return -1;
-		}
+	LinkType link_type;
+	if (s_ + ds > road->GetLength())
+	{
+		s_new = s_ + ds - road->GetLength();
+		link_type = LinkType::SUCCESSOR;
+	}
+	else if (s_ + ds < 0)
+	{
+		s_new = -(s_ + ds);
+		link_type = LinkType::PREDECESSOR;
+	}
+	else
+	{
+		printf("Position::MoveToConnectingRoad s_ + ds %.2f within range [0:%.2f]\n", s_ + ds, road->GetLength());
+		return -1;
+	}
 
 	if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)
 	{

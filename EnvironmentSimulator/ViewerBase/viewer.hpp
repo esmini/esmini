@@ -15,11 +15,20 @@ namespace viewer
 	class CarModel
 	{
 	public:
-		CarModel(osg::LOD *model);
-		~CarModel();
 		osg::ref_ptr<osg::LOD> node_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
+		std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> wheel_;
+		osg::ref_ptr<osg::LOD> model;
 		osg::Quat quat_;
+		double size_x;
+		double size_y;
+		double center_x;
+		double center_y;
+
+		CarModel(osg::ref_ptr<osg::LOD> lod);
+		~CarModel();
+
+		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName);
 	};
 
 	class Viewer
@@ -38,15 +47,19 @@ namespace viewer
 		osg::MatrixTransform* rootnode_;
 		roadmanager::OpenDrive *odrManager_;
 		std::vector<osg::ref_ptr<osg::LOD>> carModels_;
+		int driverSteering_;
+		int driverAcceleration_;
 
 		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments);
 		~Viewer();
 		CarModel* AddCar(int modelId);
 		int AddEnvironment(const char* filename);
+		static osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
 
 	private:
 		std::vector<std::string> carModelsFiles_ =
 		{
+			"../../resources/models/p1800.osgb",
 			"../../resources/models/car1.osgb",
 			"../../resources/models/car2.osgb",
 			"../../resources/models/car3.osgb",
@@ -59,9 +72,8 @@ namespace viewer
 			"../../resources/models/truck1.osgb",
 			"../../resources/models/truck2.osgb",
 			"../../resources/models/truck3.osgb",
-			"../../resources/models/p1800.osgb"
 		};
-		
+
 		bool ReadCarModels();
 		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
 

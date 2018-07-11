@@ -17,12 +17,94 @@
 #define LOD_DIST 3000
 #define LOD_SCALE_DEFAULT 1.2
 
+
 using namespace viewer;
 
-
-CarModel::CarModel(osg::LOD *model)
+// Derive a class from NodeVisitor to find a node with a  specific name.
+class FindNamedNode : public osg::NodeVisitor
 {
-	node_ = model;
+public:
+	FindNamedNode(const std::string& name)
+		: osg::NodeVisitor( // Traverse all children.
+			osg::NodeVisitor::TRAVERSE_ALL_CHILDREN),
+		_name(name) {}
+
+	// This method gets called for every node in the scene graph. Check each node 
+	// to see if its name matches out target. If so, save the node's address.
+	virtual void apply(osg::Node& node)
+	{
+		if (node.getName() == _name)
+			_node = &node;
+
+		// Keep traversing the rest of the scene graph.
+		traverse(node);
+	}
+
+	osg::Node* getNode() { return _node.get(); }
+
+protected:
+	std::string _name;
+	osg::ref_ptr<osg::Node> _node;
+};
+
+
+osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName)
+{
+	osg::ref_ptr<osg::PositionAttitudeTransform> tx_node = 0;
+
+	// Find wheel node
+	FindNamedNode fnn(wheelName);
+	carNode->accept(fnn);	
+	
+	// Assume wheel is a tranformation node
+	osg::MatrixTransform *node = dynamic_cast<osg::MatrixTransform*>(fnn.getNode());
+
+	if (node != NULL)
+	{
+		tx_node = new osg::PositionAttitudeTransform;
+		// We found the wheel. Put it under a useful transform node
+		tx_node->addChild(node);
+
+		// reset pivot point
+		osg::Vec3d pos = node->getMatrix().getTrans();
+		tx_node->setPivotPoint(pos);
+		tx_node->setPosition(pos);
+
+		osg::ref_ptr<osg::Group> parent = node->getParent(0);  // assume the wheel node only belongs to one vehicle
+		parent->removeChild(node);
+		parent->addChild(tx_node);
+
+		wheel_.push_back(tx_node);
+		printf("CarModel::AddWheel Added wheel node %s\n", wheelName);
+	}
+	return tx_node;
+}
+
+CarModel::CarModel(osg::ref_ptr<osg::LOD> lod)
+{
+	node_ = lod;
+	
+	// Locate wheel nodes if available
+	osg::ref_ptr<osg::Node> car_node = lod->getChild(0);
+	AddWheel(car_node, "wheel_fl");
+	AddWheel(car_node, "wheel_fr");
+	AddWheel(car_node, "wheel_rr");
+	AddWheel(car_node, "wheel_rl");
+
+	// Extract boundingbox of car to calculate size and center
+	osg::ComputeBoundsVisitor cbv;
+	car_node->accept(cbv);
+	osg::BoundingBox boundingBox = cbv.getBoundingBox();
+	const osg::MatrixList& m = car_node->getWorldMatrices();
+	osg::Vec3 minV = boundingBox._min * m.front();
+	osg::Vec3 maxV = boundingBox._max * m.front();
+
+	size_x = maxV.x() - minV.x();
+	size_y = maxV.y() - minV.y();
+	center_x = (maxV.x() + minV.x()) / 2;
+	center_y = (maxV.y() + minV.y()) / 2;
+
+	// Add car model to a tranform node
 	txNode_ = new osg::PositionAttitudeTransform();
 	txNode_->addChild(node_);
 }
@@ -31,7 +113,6 @@ CarModel::~CarModel()
 {
 
 }
-
 
 Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments)
 {
@@ -48,6 +129,8 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	lodScale_ = LOD_SCALE_DEFAULT;
 	currentCarInFocus_ = 0;
 	camMode_ = 0;
+	driverAcceleration_ = 0;
+	driverSteering_ = 0;
 	osgViewer_ = new osgViewer::Viewer(arguments);
 		
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
@@ -155,54 +238,65 @@ CarModel* Viewer::AddCar(int modelId)
 	return cars_.back();
 }
 
+osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
+{
+	static osg::ref_ptr<osg::Node> shadow_node = 0;
+	osg::ref_ptr<osg::PositionAttitudeTransform> shadow_tx = 0;
+	osg::ref_ptr<osg::Node> node;
+	osg::ref_ptr<osg::LOD> lod = 0;
+
+	if (shadow_node == 0)
+	{
+		shadow_node = osgDB::readNodeFile(SHADOW_MODEL_FILENAME);
+		if (!shadow_node)
+		{
+			printf("Failed to shadow model %s\n", SHADOW_MODEL_FILENAME);
+		}
+	}
+
+	node = osgDB::readNodeFile(filename);
+	if (!node)
+	{
+		printf("Failed to load car model %s\n", filename);
+		return 0;
+	}
+
+	osg::ComputeBoundsVisitor cbv;
+	node->accept(cbv);
+	osg::BoundingBox boundingBox = cbv.getBoundingBox();
+	const osg::MatrixList& m = node->getWorldMatrices();
+	osg::Vec3 minV = boundingBox._min * m.front();
+	osg::Vec3 maxV = boundingBox._max * m.front();
+
+	double xc, yc, dx, dy;
+	dx = maxV.x() - minV.x();
+	dy = maxV.y() - minV.y();
+	xc = (maxV.x() + minV.x()) / 2;
+	yc = (maxV.y() + minV.y()) / 2;
+
+	shadow_tx = new osg::PositionAttitudeTransform;
+	shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.0));
+	shadow_tx->setScale(osg::Vec3d(SHADOW_SCALE*(dx / 2), SHADOW_SCALE*(dy / 2), 1.0));
+	shadow_tx->addChild(shadow_node);
+
+	osg::ref_ptr<osg::Group> group = new osg::Group;
+	group->addChild(node);
+	group->addChild(shadow_tx);
+
+	lod = new osg::LOD();
+	lod->addChild(group);
+	lod->setRange(0, 0, LOD_DIST);
+
+	return lod;
+}
+
 bool Viewer::ReadCarModels()
 {
-	osg::ref_ptr<osg::Node> node;
-	osg::ref_ptr<osg::Node> shadow;
-	osg::ref_ptr<osg::PositionAttitudeTransform> txShadow;
-
-	// Load shadow face
-	shadow = osgDB::readNodeFile(SHADOW_MODEL_FILENAME);
-	if (!shadow)
-	{
-		printf("Failed to shadow model %s\n", SHADOW_MODEL_FILENAME);
-		return false;
-	}
+	osg::ref_ptr<osg::LOD> lod;
 
 	for (int i = 0; i < carModelsFiles_.size(); i++)
 	{
-		node = osgDB::readNodeFile(carModelsFiles_[i]);
-		if (!node)
-		{
-			printf("Failed to load car model %s\n", carModelsFiles_[i].c_str());
-			return false;
-		}
-
-		const osg::MatrixList& m = node->getWorldMatrices();
-		osg::ComputeBoundsVisitor cbv;
-		node->accept(cbv);
-		osg::BoundingBox bb = cbv.getBoundingBox();
-		osg::Vec3 minV = bb._min * m.front();
-		osg::Vec3 maxV = bb._max * m.front();
-
-		double xc, yc, dx, dy;
-		dx = maxV.x() - minV.x();
-		dy = maxV.y() - minV.y();
-		xc = (maxV.x() + minV.x())/2;
-		yc = (maxV.y() + minV.y()) / 2;
-
-		txShadow = new osg::PositionAttitudeTransform;
-		txShadow->setPosition(osg::Vec3d(xc, yc, 0.0));
-		txShadow->setScale(osg::Vec3d(SHADOW_SCALE*(dx / 2), SHADOW_SCALE*(dy / 2), 1.0));
-		txShadow->addChild(shadow);
-
-		osg::Group *group = new osg::Group;
-		group->addChild(node);
-		group->addChild(txShadow);
-
-		osg::LOD *lod = new osg::LOD();
-		lod->addChild(group);
-		lod->setRange(0, 0, LOD_DIST);
+		lod = LoadCarModel(carModelsFiles_[i].c_str());
 
 		carModels_.push_back(lod);
 	}
@@ -335,17 +429,70 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 		}
 	}
 	break;
+	case(osgGA::GUIEventAdapter::KEY_Right):
+	{
+		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->driverSteering_ = -1;
+		}
+		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
+		{
+			viewer_->driverSteering_ = 0;
+		}
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_Left):
+	{
+		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->driverSteering_ = 1;
+		}
+		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
+		{
+			viewer_->driverSteering_ = 0;
+		}
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_Up):
+	{
+		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->driverAcceleration_ = 1;
+		}
+		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
+		{
+			viewer_->driverAcceleration_ = 0;
+		}
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_Down):
+	{
+		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->driverAcceleration_ = -1;
+		}
+		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
+		{
+			viewer_->driverAcceleration_ = 0;
+		}
+	}
+	break;
 	case(osgGA::GUIEventAdapter::KEY_Tab):
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			int step = (ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1;
-			viewer_->currentCarInFocus_ = (viewer_->currentCarInFocus_ + step) % viewer_->cars_.size();
+			viewer_->currentCarInFocus_ = (viewer_->currentCarInFocus_ + step) % (int)viewer_->cars_.size();
+			if (viewer_->currentCarInFocus_ < 0)
+			{
+				viewer_->currentCarInFocus_ += viewer_->cars_.size();
+			}
 
 			viewer_->rubberbandManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_]->txNode_, false);
 			viewer_->nodeTrackerManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_]->node_);
 		}
 		break;
 	}
+	
 	return false;
 }
 
