@@ -24,6 +24,7 @@ Vehicle::Vehicle(double x, double y, double h, double length)
 	posY_ = y;
 	posZ_ = 0;
 	heading_ = h;
+	pitch_ = 0;
 
 	velX_ = 0;
 	velY_ = 0;

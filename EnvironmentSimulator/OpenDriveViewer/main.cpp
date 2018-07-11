@@ -238,7 +238,12 @@ int main(int argc, char** argv)
 				{
 					// Update vehicle dynamics/driver model
 					car->ego->Update(deltaSimTime, viewer->driverAcceleration_, viewer->driverSteering_);
+					car->pos->Set(car->ego->posX_, car->ego->posY_, car->ego->heading_);
 					
+					// Update Z and Pitch from OpenDRIVE position
+					car->ego->posZ_ = car->pos->GetZ();
+					car->ego->pitch_ = car->pos->GetP();
+
 					// update 3D model transform
 					car->model->txNode_->setPosition(osg::Vec3(car->ego->posX_, car->ego->posY_, car->ego->posZ_));
 					car->model->quat_.makeRotate(

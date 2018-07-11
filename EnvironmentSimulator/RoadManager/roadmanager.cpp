@@ -47,9 +47,21 @@ void Geometry::Print()
 	printf("Geometry virtual Print\n");
 }
 
+void Geometry::EvaluateDS(double ds, double *x, double *y, double *h)
+{
+	printf("Geometry virtual Evaluate\n");
+}
+
 void Line::Print()
 {
 	printf("Line x: %.2f, y: %.2f, h: %.2f length: %.2f\n", GetX(), GetY(), GetHdg(), GetLength());
+}
+
+void Line::EvaluateDS(double ds, double *x, double *y, double *h)
+{
+	*h = GetHdg();
+	*x = GetX() + ds * cos(*h);
+	*y = GetY() + ds * sin(*h);
 }
 
 void Arc::Print()
@@ -57,16 +69,99 @@ void Arc::Print()
 	printf("Arc x: %.2f, y: %.2f, h: %.2f curvature: %.2f length: %.2f\n", GetX(), GetY(), GetHdg(), GetCurvature(), GetLength());
 }
 
+void Arc::EvaluateDS(double ds, double *x, double *y, double *h)
+{
+	double x_local = 0;
+	double y_local = 0;
+
+	// arc_length = angle * radius -> angle = arc_length / radius = arc_length * curvature
+	double angle = ds * GetCurvature();
+
+	// Now calculate x, y in a local unit circle coordinate system
+	if (GetCurvature() < 0)
+	{
+		// starting from 90 degrees going clockwise
+		x_local = cos(angle + M_PI / 2.0);
+		y_local = sin(angle + M_PI / 2.0) - 1;  // -1 transform to y = 0
+	}
+	else
+	{
+		// starting from -90 degrees going counter clockwise
+		x_local = cos(angle + 3.0 * M_PI / 2.0);
+		y_local = sin(angle + 3.0 * M_PI / 2.0) + 1;  // +1 transform to y = 0
+	}
+
+	// Rotate according to heading and scale according to radius
+	*x = GetX() + GetRadius() * (x_local * cos(GetHdg()) - y_local * sin(GetHdg()));
+	*y = GetY() + GetRadius() * (x_local * sin(GetHdg()) + y_local * cos(GetHdg()));
+	*h = GetHdg() + angle;
+}
+
 void Spiral::Print()
 {
-	printf("Spiral x: %.2f, y: %.2f, h: %.2f start curvature: %.4f end curvature: %.4f length: %.2f\n", 
+	printf("Spiral x: %.2f, y: %.2f, h: %.2f start curvature: %.4f end curvature: %.4f length: %.2f\n",
 		GetX(), GetY(), GetHdg(), GetCurvStart(), GetCurvEnd(), GetLength());
+}
+
+void Spiral::EvaluateDS(double ds, double *x, double *y, double *h)
+{
+	double xTmp, yTmp, t, curv_a, curv_b, h_start;
+
+	curv_a = GetCurvStart();
+	curv_b = GetCurvEnd();
+	h_start = GetHdg();
+
+	if (abs(curv_b) > abs(curv_a))
+	{
+		odrSpiral(ds + GetS0(), GetCDot(), &xTmp, &yTmp, &t);
+		*h = t;
+	}
+	else  // backwards, starting from sharper curve - ending with lower curvature
+	{
+		double x0, y0, t0, x1, y1, t1;
+
+		odrSpiral(GetS0() + GetLength(), GetCDot(), &x0, &y0, &t0);
+		odrSpiral(GetS0() + GetLength() - ds, GetCDot(), &x1, &y1, &t1);
+
+		xTmp = x0 - x1;
+		yTmp = y0 - y1;
+
+		// rotate point according to heading, and translate to start position
+		h_start -= t0;
+		*h = t1 - t0;
+	}
+
+	*h += GetHdg() + GetH0();
+
+	double x1, x2, y1, y2;
+
+	// transform spline segment to origo and start angle = 0
+	x1 = xTmp - GetX0();
+	y1 = yTmp - GetY0();
+	x2 = x1 * cos(-GetH0()) - y1 * sin(-GetH0());
+	y2 = x1 * sin(-GetH0()) + y1 * cos(-GetH0());
+
+	// Then transform according to segment start position and heading
+	*x = GetX() + x2 * cos(h_start) - y2 * sin(h_start);
+	*y = GetY() + x2 * sin(h_start) + y2 * cos(h_start);
 }
 
 void Poly3::Print()
 {
 	printf("Poly3 x: %.2f, y: %.2f, h: %.2f length: %.2f a: %.2f b: %.2f c: %.2f d: %.2f\n",
 		GetX(), GetY(), GetHdg(), GetLength(), poly3_.GetA(), poly3_.GetB(), poly3_.GetC(), poly3_.GetD());
+}
+
+void Poly3::EvaluateDS(double ds, double *x, double *y, double *h)
+{
+	double p = (ds / GetLength()) * GetUMax();
+
+	double u_local = p;
+	double v_local = poly3_.Evaluate(p);
+
+	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
+	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());
+	*h = GetHdg() + poly3_.EvaluatePrim(p);
 }
 
 void ParamPoly3::Print()
@@ -76,6 +171,23 @@ void ParamPoly3::Print()
 		poly3U_.GetA(), poly3U_.GetB(), poly3U_.GetC(), poly3U_.GetD(),
 		poly3V_.GetA(), poly3V_.GetB(), poly3V_.GetC(), poly3V_.GetD()
 	);
+}
+
+void ParamPoly3::EvaluateDS(double ds, double *x, double *y, double *h)
+{
+	double p = ds;
+
+	if (GetPRange() == ParamPoly3::P_RANGE_NORMALIZED)
+	{
+		p /= GetLength();
+	}
+
+	double u_local = poly3U_.Evaluate(p);
+	double v_local = poly3V_.Evaluate(p);
+
+	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
+	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());
+	*h = GetHdg() + poly3V_.EvaluatePrim(p) / poly3U_.EvaluatePrim(p);
 }
 
 void Elevation::Print()
@@ -1438,10 +1550,37 @@ void Position::Track2Lane()
 	}
 }
 
-void Position::XYH2Track(double x, double y, double h)
+static double PointDistance(double x0, double y0, double x1, double y1)
+{
+	// https://en.wikipedia.org/wiki/Distance
+
+	return sqrt((x1 - x0)*(x1 - x0) + (y1 - y0) * (y1 - y0));
+}
+
+static double PointInBetween(double x3, double y3, double x1, double y1, double x2, double y2, double &s)
+{
+	// Guess it is enough to check one dimension...
+	if (x1 > x2)
+	{
+		s = (x3 - x2) / (x1 - x2);
+		return(x3 > x2 && x3 < x1);
+	}
+	else
+	{
+		s = (x3 - x1) / (x2 - x1);
+		return(x3 < x2 && x3 > x1);
+	}
+}
+
+void Position::Set(double x3, double y3, double h)
 {
 	double min_dist = -1.0;
-	Position *pos = new Position();
+	double s_tmp;
+	x_ = x3;
+	y_ = y3;
+	h_ = h;
+	r_ = 0;
+	// z and pitch found out after conversion to road position
 
 	// Search for the closest road segment (geometry)
 	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
@@ -1451,193 +1590,43 @@ void Position::XYH2Track(double x, double y, double h)
 		for (int j = 0; j < road->GetNumberOfGeometries(); j++)
 		{
 			Geometry *geom = road->GetGeometry(j);
-			//double dist;
-			double x0, y0, x1, y1, h1, xt, yt, a, b;
-			x0 = geom->GetX();
-			y0 = geom->GetY();
-			pos->Set(road->GetId(), road->GetLength(), 0);
-			x1 = pos->GetX() - x0;
-			y1 = pos->GetX() - y0;
-			h1 = pos->GetH();
-			xt = x - x0;
-			yt = y - y0;
-			if (abs(x1) < 1E-10)
+
+			// Find vector between point perpendicular to line segment
+			// https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
+
+			double x1 = geom->GetX();
+			double y1 = geom->GetY();
+			double x2 = geom->GetX();
+			double y2 = geom->GetY();
+			double x4, y4, k, dist;
+			k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) / ((y2 - y1)*(y2 - y1) + (x2 - x1)*(x2 - x1));
+			x4 = x3 - k * (y2 - y1);
+			y4 = y3 + k * (x2 - x1);
+
+			// Check whether the projected point is inside or outside line segment
+			if (!PointInBetween(x4, y4, x1, y1, x2, y2, s_tmp))
 			{
-				b = 0;
+				continue;
 			}
-			else if(abs(y1) < 1E-10)
+
+			dist = PointDistance(x3, y3, x4, y4);
+
+			if((i==0 && j==0) || dist < min_dist)  // First value is always the closest so far
 			{
-				a = 0;
+				min_dist = dist;
+				track_id_ = i;
+				s_ = s_tmp;
+				printf("Closest point %.2f, %.2f dist: %.2f\n", x4, y4, dist);
 			}
-			else
-			{
-				a = -y1 / x1;
-				b = 1;
-			}
-			// Measure distance between specified point to a straight 
-			// line between geometry end points
-			
-			//if(i==0 && j==0)  // First value is always the closest so far
-			//{
-			//	min_dist = dist;
-			//}
 		}
 	}
-
-	delete(pos);
+	EvaluateZAndPitch();
 }
 	
-void Position::Track2XYZ()
+bool Position::EvaluateZAndPitch()
 {
 	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
-	if (road == 0)
-	{
-		printf("Position::Track2XYZ Error: No road %d\n", track_idx_);
-		return;
-	}
-
-	Geometry *geometry = road->GetGeometry(geometry_idx_);
-	if (geometry == 0)
-	{
-		printf("Position::Track2XYZ Error: No geometry %d\n", geometry_idx_);
-		return;
-	}
-
-	// Calculate inertial coordinates
-	switch (geometry->GetType())
-	{
-		case Geometry::GEOMETRY_TYPE_LINE:
-		{
-			double ds = s_ - geometry->GetS();
-			h_ = geometry->GetHdg();
-			x_ = geometry->GetX() + ds * cos(h_);
-			y_ = geometry->GetY() + ds * sin(h_);
-			break;
-		}
-		case Geometry::GEOMETRY_TYPE_ARC:
-		{
-			Arc *arc = (Arc*)geometry;
-			double ds = s_ - geometry->GetS();
-			double x_local = 0;
-			double y_local = 0;
-
-			// arc_length = angle * radius -> angle = arc_length / radius = arc_length * curvature
-			double angle = ds * arc->GetCurvature();
-
-			// Now calculate x, y in a local unit circle coordinate system
-			if (arc->GetCurvature() < 0)
-			{
-				// starting from 90 degrees going clockwise
-				x_local = cos(angle + M_PI / 2.0);
-				y_local = sin(angle + M_PI / 2.0) - 1;  // -1 transform to y = 0
-			}
-			else
-			{
-				// starting from -90 degrees going counter clockwise
-				x_local = cos(angle + 3.0 * M_PI / 2.0);
-				y_local = sin(angle + 3.0 * M_PI / 2.0) + 1;  // +1 transform to y = 0
-			}
-
-			// Rotate according to heading and scale according to radius
-			x_ = arc->GetX() + arc->GetRadius() * (x_local * cos(arc->GetHdg()) - y_local * sin(arc->GetHdg()));
-			y_ = arc->GetY() + arc->GetRadius() * (x_local * sin(arc->GetHdg()) + y_local * cos(arc->GetHdg()));
-			h_ = arc->GetHdg() + angle;
-			break;
-		}
-		case Geometry::GEOMETRY_TYPE_SPIRAL:
-		{
-			Spiral *spiral = (Spiral*)geometry;
-			double x, y, t, curv_a, curv_b, h_start;
-
-			curv_a = spiral->GetCurvStart();
-			curv_b = spiral->GetCurvEnd();
-			h_start = spiral->GetHdg();
-
-			if (abs(curv_b) > abs(curv_a))
-			{
-				odrSpiral(s_ - spiral->GetS() + spiral->GetS0(), spiral->GetCDot(), &x, &y, &t);
-				h_ = t;
-			}
-			else  // backwards, starting from sharper curve - ending with lower curvature
-			{
-				double x0, y0, t0, x1, y1, t1;
-
-				odrSpiral(spiral->GetS0() + spiral->GetLength(), spiral->GetCDot(), &x0, &y0, &t0);
-				odrSpiral(spiral->GetS0() + spiral->GetS() + spiral->GetLength() - s_, spiral->GetCDot(), &x1, &y1, &t1);
-
-				x = x0 - x1;
-				y = y0 - y1;
-
-				// rotate point according to heading, and translate to start position
-				h_start -= t0;
-				h_ = t1 - t0;
-			}
-
-			h_ += spiral->GetHdg() + spiral->GetH0();
-
-			double x1, x2, y1, y2;
-
-			// transform spline segment to origo and start angle = 0
-			x1 = x - spiral->GetX0();
-			y1 = y - spiral->GetY0();
-			x2 = x1 * cos(-spiral->GetH0()) - y1 * sin(-spiral->GetH0());
-			y2 = x1 * sin(-spiral->GetH0()) + y1 * cos(-spiral->GetH0());
-
-			// Then transform according to segment start position and heading
-			x_ = spiral->GetX() + x2 * cos(h_start) - y2 * sin(h_start);
-			y_ = spiral->GetY() + x2 * sin(h_start) + y2 * cos(h_start);
-
-			break;
-		}
-		case Geometry::GEOMETRY_TYPE_POLY3:
-		{
-			Poly3 *p3 = (Poly3*)geometry;
-			double ds = s_ - p3->GetS();
-			double p = (ds / p3->GetLength()) * p3->GetUMax();
-
-			double u_local = p;
-			double v_local = p3->poly3_.Evaluate(p);
-
-			x_ = p3->GetX() + u_local * cos(p3->GetHdg()) - v_local * sin(p3->GetHdg());
-			y_ = p3->GetY() + u_local * sin(p3->GetHdg()) + v_local * cos(p3->GetHdg());
-			h_ = p3->GetHdg() + p3->poly3_.EvaluatePrim(p);
-
-			break;
-		}
-		case Geometry::GEOMETRY_TYPE_PARAM_POLY3:
-		{
-			ParamPoly3 *pp3 = (ParamPoly3*)geometry;
-			double p = s_ - pp3->GetS();
-
-			if (pp3->GetPRange() == ParamPoly3::P_RANGE_NORMALIZED)
-			{
-				p /= pp3->GetLength();
-			}
-
-			double u_local = pp3->poly3U_.Evaluate(p);
-			double v_local = pp3->poly3V_.Evaluate(p);
-
-			x_ = pp3->GetX() + u_local * cos(pp3->GetHdg()) - v_local * sin(pp3->GetHdg());
-			y_ = pp3->GetY() + u_local * sin(pp3->GetHdg()) + v_local * cos(pp3->GetHdg());
-			h_ = pp3->GetHdg() + pp3->poly3V_.EvaluatePrim(p) / pp3->poly3U_.EvaluatePrim(p);
-
-			break;
-		}
-		default:
-		{
-			printf("Unsupport geometry type: %d\n", geometry->GetType());
-		}
-	}
-
-	// Consider lateral t position, perpendicular to track heading
-	double x_local = (t_ + road->GetLaneOffset(s_)) * cos(h_ + M_PI_2);
-	double y_local = (t_ + road->GetLaneOffset(s_)) * sin(h_ + M_PI_2);
-	h_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_;
-	x_ += x_local;
-	y_ += y_local;
-
-	// z = Elevation 
-	if (road->GetNumberOfElevations() > 0)
+	if (road && road->GetNumberOfElevations() > 0)
 	{
 		Elevation *elevation = road->GetElevation(elevation_idx_);
 		if (elevation == NULL)
@@ -1668,7 +1657,73 @@ void Position::Track2XYZ()
 			z_ = elevation->poly3_.Evaluate(p);
 			p_ = -elevation->poly3_.EvaluatePrim(p);
 		}
+		return true;
 	}
+	else
+	{
+		return false;
+	}
+}
+
+void Position::Track2XYZ()
+{
+	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	if (road == 0)
+	{
+		printf("Position::Track2XYZ Error: No road %d\n", track_idx_);
+		return;
+	}
+
+	Geometry *geometry = road->GetGeometry(geometry_idx_);
+	if (geometry == 0)
+	{
+		printf("Position::Track2XYZ Error: No geometry %d\n", geometry_idx_);
+		return;
+	}
+
+	// Calculate inertial coordinates
+	switch (geometry->GetType())
+	{
+		case Geometry::GEOMETRY_TYPE_LINE:
+		{
+			((Line*)geometry)->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
+			break;
+		}
+		case Geometry::GEOMETRY_TYPE_ARC:
+		{
+			((Arc*)geometry)->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
+			break;
+		}
+		case Geometry::GEOMETRY_TYPE_SPIRAL:
+		{
+			((Spiral*)geometry)->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
+			break;
+		}
+		case Geometry::GEOMETRY_TYPE_POLY3:
+		{
+			((Poly3*)geometry)->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
+			break;
+		}
+		case Geometry::GEOMETRY_TYPE_PARAM_POLY3:
+		{
+			((ParamPoly3*)geometry)->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
+			break;
+		}
+		default:
+		{
+			printf("Unsupport geometry type: %d\n", geometry->GetType());
+		}
+	}
+
+	// Consider lateral t position, perpendicular to track heading
+	double x_local = (t_ + road->GetLaneOffset(s_)) * cos(h_ + M_PI_2);
+	double y_local = (t_ + road->GetLaneOffset(s_)) * sin(h_ + M_PI_2);
+	h_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_;
+	x_ += x_local;
+	y_ += y_local;
+
+	// z = Elevation 
+	EvaluateZAndPitch();
 }
 
 void Position::Lane2Track()
@@ -1982,6 +2037,8 @@ void Position::Set(double x, double y, double z, double h, double p, double r)
 	h_ = h;
 	p_ = p;
 	r_ = r;
+
+	XYZ2Track();
 }
 
 void Position::PrintTrackPos()

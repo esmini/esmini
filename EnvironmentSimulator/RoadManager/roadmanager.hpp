@@ -61,6 +61,7 @@ namespace roadmanager
 		double GetHdg() { return hdg_; }
 		double GetS() { return s_; }
 		virtual void Print();
+		virtual void EvaluateDS(double ds, double *x, double *y, double *h);
 
 	private:
 		double s_;
@@ -78,6 +79,7 @@ namespace roadmanager
 		Line(double s, double x, double y, double hdg, double length) : Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_LINE) {}
 
 		void Print();
+		void EvaluateDS(double ds, double *x, double *y, double *h);
 	};
 
 
@@ -90,6 +92,7 @@ namespace roadmanager
 		double GetCurvature() { return curvature_; }
 		double GetRadius() { return fabs(1.0 / curvature_); }
 		void Print();
+		void EvaluateDS(double ds, double *x, double *y, double *h);
 
 	private:
 		double curvature_;
@@ -116,6 +119,8 @@ namespace roadmanager
 		void SetS0(double s0) { s0_ = s0; }
 		void SetCDot(double c_dot) { c_dot_ = c_dot; }
 		void Print();
+		void EvaluateDS(double ds, double *x, double *y, double *h);
+
 
 	private:
 		double curv_start_;
@@ -141,6 +146,7 @@ namespace roadmanager
 		void SetUMax(double umax) { umax_ = umax; }
 		double GetUMax() { return umax_; }
 		void Print();
+		void EvaluateDS(double ds, double *x, double *y, double *h);
 
 		Polynomial poly3_;
 
@@ -170,6 +176,7 @@ namespace roadmanager
 
 		double GetPRange() { return p_range_; }
 		void Print();
+		void EvaluateDS(double ds, double *x, double *y, double *h);
 
 		Polynomial poly3U_;
 		Polynomial poly3V_;
@@ -548,6 +555,7 @@ namespace roadmanager
 		void Set(int track_id, double s, double t);
 		void Set(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void Set(double x, double y, double z, double h, double p, double r);
+		void Set(double x, double y, double h);
 		int MoveToConnectingRoad(RoadLink *road_link, double ds);
 		int MoveAlongS(double ds);
 
@@ -575,8 +583,9 @@ namespace roadmanager
 		void Track2XYZ();
 		void Lane2Track();
 		void XYZ2Track();
-		void XYH2Track(double x, double y, double h);
 		void SetLongitudinalTrackPos(int track_id, double s);
+		bool Position::EvaluateZAndPitch();
+
 
 		// track reference
 		int     track_id_;

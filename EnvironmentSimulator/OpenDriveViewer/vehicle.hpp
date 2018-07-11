@@ -9,6 +9,7 @@ public:
 	double posY_;
 	double posZ_;
 	double heading_;
+	double pitch_;
 
 	double velX_;
 	double velY_;
