@@ -116,19 +116,15 @@ CarModel::~CarModel()
 
 Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments)
 {
-	line_node_ = new osg::Group;
-	if (!CreateRoadLines(odrManager, line_node_))
-	{
-		printf("Viewer::Viewer Failed to create road lines!\n");
-	}
+	odrManager_ = odrManager;
+
 	if (!ReadCarModels())
 	{
 		printf("Viewer::Viewer Failed to read car models!\n");
 	}
-	
 	lodScale_ = LOD_SCALE_DEFAULT;
 	currentCarInFocus_ = 0;
-	camMode_ = 0;
+	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
 	driverAcceleration_ = 0;
 	driverSteering_ = 0;
 	osgViewer_ = new osgViewer::Viewer(arguments);
@@ -139,17 +135,21 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	// Set up 3D vehicle models
 	ReadCarModels();
 
-	// add road network lines
-	odrManager_ = odrManager;
-	line_node_ = new osg::Group;
-	CreateRoadLines(odrManager_, line_node_);
-
 	// set the scene to render
 	rootnode_ = new osg::MatrixTransform;
 	envTx_ = new osg::PositionAttitudeTransform;
 	AddEnvironment(modelFilename);	// add environment
 	rootnode_->addChild(envTx_);
-	rootnode_->addChild(line_node_);
+
+	if (!CreateRoadLines(odrManager, rootnode_))
+	{
+		printf("Viewer::Viewer Failed to create road lines!\n");
+	}
+	if (!CreateVLine(rootnode_))
+	{
+		printf("Viewer::Viewer Failed to create vehicle line!\n");
+	}
+
 	osgViewer_->setSceneData(rootnode_);
 
 	// Setup the camera models
@@ -169,7 +169,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	orbitManipulator = new osgGA::OrbitManipulator;
 	orbitManipulator->setVerticalAxisFixed(true);
 
-	rubberbandManipulator_ = new osgGA::RubberbandManipulator;
+	rubberbandManipulator_ = new osgGA::RubberbandManipulator(camMode_);
 	rubberbandManipulator_->setTrackNode(envTx_);
 	rubberbandManipulator_->calculateCameraDistance();
 
@@ -364,6 +364,42 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 		}
 	}
 	return true;
+}
+
+
+bool Viewer::CreateVLine(osg::Group* parent)
+{
+	vertexData = new osg::Vec3Array;
+	vertexData->push_back(osg::Vec3d(0, 0, 0));
+	vertexData->push_back(osg::Vec3d(0, 0, 0));
+
+	linesGeom = new osg::Geometry();
+	linesGeom->setVertexArray(vertexData);
+	linesGeom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
+
+	osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
+	lineWidth->setWidth(2.0f);
+	linesGeom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+
+	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+	color->push_back(osg::Vec4(0xCC / (float)0xFF, 0xCC / (float)0xFF, 0x33 / (float)0xFF, 1.0));
+	linesGeom->setColorArray(color.get());
+	linesGeom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+
+	parent->addChild(linesGeom);
+
+	return true;
+}
+
+void Viewer::UpdateVLine(double x, double y, double z)
+{
+	osg::ref_ptr<osg::PositionAttitudeTransform> tx = cars_[0]->txNode_;
+
+	vertexData->clear();
+	vertexData->push_back(tx->getPosition());
+	vertexData->push_back(osg::Vec3d(x, y, z));
+	linesGeom->dirtyGLObjects();
+	vertexData->dirty();
 }
 
 int Viewer::AddEnvironment(const char* filename)

@@ -20,10 +20,12 @@ const float orbitCameraDistance = 12.0f;
 const float orbitCameraAngle = 25.0f;
 
 
-RubberbandManipulator::RubberbandManipulator()
+RubberbandManipulator::RubberbandManipulator(unsigned int mode)
 {
-	setMode(RB_MODE_RUBBER_BAND);
+	setMode(mode);
 	_cameraRotation = 0;
+	_cameraAngle = orbitCameraAngle;
+	_cameraDistance = orbitCameraDistance;
 }
 
 RubberbandManipulator::~RubberbandManipulator()

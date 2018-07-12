@@ -197,6 +197,7 @@ int main(int argc, char** argv)
 	printf("speed: %.2f\n", speed);
 	speed /= 3.6;
 
+	roadmanager::Position *pos = new roadmanager::Position();
 	try
 	{
 		if (!roadmanager::Position::LoadOpenDrive(odrFilename.c_str()))
@@ -240,7 +241,7 @@ int main(int argc, char** argv)
 					car->ego->Update(deltaSimTime, viewer->driverAcceleration_, viewer->driverSteering_);
 					car->pos->Set(car->ego->posX_, car->ego->posY_, car->ego->heading_);
 					
-					// Update Z and Pitch from OpenDRIVE position
+					// Fetch Z and Pitch from OpenDRIVE position
 					car->ego->posZ_ = car->pos->GetZ();
 					car->ego->pitch_ = car->pos->GetP();
 
@@ -266,6 +267,8 @@ int main(int argc, char** argv)
 						0, osg::Vec3(0, 0, 1)); // Heading
 					car->model->wheel_[2]->setAttitude(quat);
 					car->model->wheel_[3]->setAttitude(quat);
+					pos->Set(car->pos->GetTrackId(), car->pos->GetLaneId(), 0);
+					viewer->UpdateVLine(pos->GetX(), pos->GetY(), pos->GetZ());
 				}
 				else
 				{
@@ -291,6 +294,8 @@ int main(int argc, char** argv)
 	{
 		delete(car);
 	}
+
+	delete pos;
 
 	return 0;
 }

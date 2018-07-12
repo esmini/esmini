@@ -28,13 +28,13 @@ class RubberbandManipulator : public osgGA::CameraManipulator
 
 		enum 
 		{
-			RB_MODE_RUBBER_BAND,
+			RB_MODE_RUBBER_BAND, 
 			RB_MODE_ORBIT,
 			RB_MODE_FIXED,
 			RB_NUM_MODES
 		};
 
-        RubberbandManipulator(); 
+		RubberbandManipulator(unsigned int mode = RB_MODE_RUBBER_BAND);
 
         virtual const char* className() const { return "RubberbandManipulator"; }
 

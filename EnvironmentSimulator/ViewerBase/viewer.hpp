@@ -37,6 +37,10 @@ namespace viewer
 		int currentCarInFocus_;
 		int camMode_;
 		osg::ref_ptr<osg::Group> line_node_;
+		
+		osg::ref_ptr<osg::Vec3Array> vertexData;
+		osg::ref_ptr<osg::Geometry> linesGeom;
+
 		osg::ref_ptr<osg::PositionAttitudeTransform> envTx_;
 		osg::ref_ptr<osg::Node> environment_;
 		osg::ref_ptr<osgGA::RubberbandManipulator> rubberbandManipulator_;
@@ -55,6 +59,7 @@ namespace viewer
 		CarModel* AddCar(int modelId);
 		int AddEnvironment(const char* filename);
 		static osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
+		void UpdateVLine(double x, double y, double z);
 
 	private:
 		std::vector<std::string> carModelsFiles_ =
@@ -76,7 +81,7 @@ namespace viewer
 
 		bool ReadCarModels();
 		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
-
+		bool CreateVLine(osg::Group* parent);
 	};
 
 	class KeyboardEventHandler : public osgGA::GUIEventHandler

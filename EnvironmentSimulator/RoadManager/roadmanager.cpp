@@ -1557,17 +1557,17 @@ static double PointDistance(double x0, double y0, double x1, double y1)
 	return sqrt((x1 - x0)*(x1 - x0) + (y1 - y0) * (y1 - y0));
 }
 
-static double PointInBetween(double x3, double y3, double x1, double y1, double x2, double y2, double &s)
+static double PointInBetween(double x3, double y3, double x1, double y1, double x2, double y2, double &sNorm)
 {
 	// Guess it is enough to check one dimension...
 	if (x1 > x2)
 	{
-		s = (x3 - x2) / (x1 - x2);
+		sNorm = (x3 - x2) / (x1 - x2);
 		return(x3 > x2 && x3 < x1);
 	}
 	else
 	{
-		s = (x3 - x1) / (x2 - x1);
+		sNorm = (x3 - x1) / (x2 - x1);
 		return(x3 < x2 && x3 > x1);
 	}
 }
@@ -1575,7 +1575,7 @@ static double PointInBetween(double x3, double y3, double x1, double y1, double 
 void Position::Set(double x3, double y3, double h)
 {
 	double min_dist = -1.0;
-	double s_tmp;
+	double sNorm;
 	x_ = x3;
 	y_ = y3;
 	h_ = h;
@@ -1596,15 +1596,18 @@ void Position::Set(double x3, double y3, double h)
 
 			double x1 = geom->GetX();
 			double y1 = geom->GetY();
-			double x2 = geom->GetX();
-			double y2 = geom->GetY();
+
+			double x2, y2, hTmp;
+			geom->EvaluateDS(geom->GetLength(), &x2, &y2, &hTmp);
+//			printf("p1 %.2f, %.2f p2 %.2f, %.2f\n", x1, y1, x2, y2);
+
 			double x4, y4, k, dist;
 			k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) / ((y2 - y1)*(y2 - y1) + (x2 - x1)*(x2 - x1));
 			x4 = x3 - k * (y2 - y1);
 			y4 = y3 + k * (x2 - x1);
 
 			// Check whether the projected point is inside or outside line segment
-			if (!PointInBetween(x4, y4, x1, y1, x2, y2, s_tmp))
+			if (!PointInBetween(x4, y4, x1, y1, x2, y2, sNorm))
 			{
 				continue;
 			}
@@ -1615,12 +1618,13 @@ void Position::Set(double x3, double y3, double h)
 			{
 				min_dist = dist;
 				track_id_ = i;
-				s_ = s_tmp;
-				printf("Closest point %.2f, %.2f dist: %.2f\n", x4, y4, dist);
+				s_ = sNorm * geom->GetLength();
+//				printf("Closest point %.2f, %.2f dist: %.2f\n", x4, y4, dist);
 			}
 		}
 	}
 	EvaluateZAndPitch();
+	//printf("z: %.2f\n", GetZ());
 }
 	
 bool Position::EvaluateZAndPitch()
@@ -1655,6 +1659,7 @@ bool Position::EvaluateZAndPitch()
 		{
 			double p = s_ - elevation->GetS();
 			z_ = elevation->poly3_.Evaluate(p);
+//			printf("s: %.2f z: %.2f\n", s_, z_);
 			p_ = -elevation->poly3_.EvaluatePrim(p);
 		}
 		return true;
