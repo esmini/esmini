@@ -374,12 +374,14 @@ bool Viewer::CreateVLine(osg::Group* parent)
 	vertexData->push_back(osg::Vec3d(0, 0, 0));
 
 	linesGeom = new osg::Geometry();
-	linesGeom->setVertexArray(vertexData);
+	linesGeom->setCullingActive(false);
+	linesGeom->setVertexArray(vertexData.get());
 	linesGeom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
 
 	osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 	lineWidth->setWidth(2.0f);
 	linesGeom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+	linesGeom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
 	color->push_back(osg::Vec4(0xCC / (float)0xFF, 0xCC / (float)0xFF, 0x33 / (float)0xFF, 1.0));
@@ -393,11 +395,12 @@ bool Viewer::CreateVLine(osg::Group* parent)
 
 void Viewer::UpdateVLine(double x, double y, double z)
 {
+	double z_offset = 0.1;
 	osg::ref_ptr<osg::PositionAttitudeTransform> tx = cars_[0]->txNode_;
 
 	vertexData->clear();
-	vertexData->push_back(tx->getPosition());
-	vertexData->push_back(osg::Vec3d(x, y, z));
+	vertexData->push_back(osg::Vec3d(tx->getPosition().x(), tx->getPosition().y(), tx->getPosition().z() + z_offset));
+	vertexData->push_back(osg::Vec3d(x, y, z + z_offset));
 	linesGeom->dirtyGLObjects();
 	vertexData->dirty();
 }

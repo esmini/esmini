@@ -267,7 +267,9 @@ int main(int argc, char** argv)
 						0, osg::Vec3(0, 0, 1)); // Heading
 					car->model->wheel_[2]->setAttitude(quat);
 					car->model->wheel_[3]->setAttitude(quat);
-					pos->Set(car->pos->GetTrackId(), car->pos->GetLaneId(), 0);
+
+					pos->Set(car->pos->GetTrackId(), car->pos->GetS(), 0);
+
 					viewer->UpdateVLine(pos->GetX(), pos->GetY(), pos->GetZ());
 				}
 				else

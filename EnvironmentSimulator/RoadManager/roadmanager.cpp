@@ -1560,14 +1560,13 @@ static double PointDistance(double x0, double y0, double x1, double y1)
 static double PointInBetween(double x3, double y3, double x1, double y1, double x2, double y2, double &sNorm)
 {
 	// Guess it is enough to check one dimension...
+	sNorm = (x3 - x1) / (x2 - x1);
 	if (x1 > x2)
 	{
-		sNorm = (x3 - x2) / (x1 - x2);
 		return(x3 > x2 && x3 < x1);
 	}
 	else
 	{
-		sNorm = (x3 - x1) / (x2 - x1);
 		return(x3 < x2 && x3 > x1);
 	}
 }
@@ -1599,7 +1598,7 @@ void Position::Set(double x3, double y3, double h)
 
 			double x2, y2, hTmp;
 			geom->EvaluateDS(geom->GetLength(), &x2, &y2, &hTmp);
-//			printf("p1 %.2f, %.2f p2 %.2f, %.2f\n", x1, y1, x2, y2);
+//			printf("road: %d geom %d p1 %.2f, %.2f p2 %.2f, %.2f\n", road->GetId(), j, x1, y1, x2, y2);
 
 			double x4, y4, k, dist;
 			k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) / ((y2 - y1)*(y2 - y1) + (x2 - x1)*(x2 - x1));
@@ -1609,22 +1608,24 @@ void Position::Set(double x3, double y3, double h)
 			// Check whether the projected point is inside or outside line segment
 			if (!PointInBetween(x4, y4, x1, y1, x2, y2, sNorm))
 			{
+				//printf("geom %d point (%.2f, %.2f) not between (%.2f, %.2f) and (%.2f, %.2f)\n", j, x4, y4, x1, y1, x2, y2);
 				continue;
 			}
 
 			dist = PointDistance(x3, y3, x4, y4);
+			//printf("geom %d point (%.2f, %.2f) between (%.2f, %.2f) and (%.2f, %.2f) dist: %.2f/%.2f\n", j, x4, y4, x1, y1, x2, y2, dist, min_dist);
 
-			if((i==0 && j==0) || dist < min_dist)  // First value is always the closest so far
+			if(min_dist < 0 || dist < min_dist)  // First value (min_dist = -1) is always the closest so far
 			{
 				min_dist = dist;
-				track_id_ = i;
-				s_ = sNorm * geom->GetLength();
-//				printf("Closest point %.2f, %.2f dist: %.2f\n", x4, y4, dist);
+				int track_id = road->GetId();
+				double s = geom->GetS() + sNorm * geom->GetLength();
+				SetLongitudinalTrackPos(track_id, s);
+				//printf("Closest point %.2f, %.2f dist: %.2f track_id %d s %.2f\n", x4, y4, dist, track_id_, s_);
 			}
 		}
 	}
 	EvaluateZAndPitch();
-	//printf("z: %.2f\n", GetZ());
 }
 	
 bool Position::EvaluateZAndPitch()
@@ -1643,7 +1644,6 @@ bool Position::EvaluateZAndPitch()
 			{
 				// Move to next elevation section
 				elevation = road->GetElevation(++elevation_idx_);
-
 			}
 		}
 		else if (elevation && s_ < elevation->GetS())
@@ -1659,7 +1659,7 @@ bool Position::EvaluateZAndPitch()
 		{
 			double p = s_ - elevation->GetS();
 			z_ = elevation->poly3_.Evaluate(p);
-//			printf("s: %.2f z: %.2f\n", s_, z_);
+			//printf("s: %.2f elevation_idx %d z: %.2f\n", s_, elevation_idx_, z_);
 			p_ = -elevation->poly3_.EvaluatePrim(p);
 		}
 		return true;
