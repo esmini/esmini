@@ -75,7 +75,6 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 		parent->addChild(tx_node);
 
 		wheel_.push_back(tx_node);
-		printf("CarModel::AddWheel Added wheel node %s\n", wheelName);
 	}
 	return tx_node;
 }
@@ -310,6 +309,7 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 	double z_offset = 0.10;
 	roadmanager::Position* pos = new roadmanager::Position();
 	osg::Vec3 point(0, 0, 0);
+	odrLines_ = new osg::Group;
 
 	for (int r = 0; r < od->GetNumOfRoads(); r++)
 	{
@@ -326,23 +326,23 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 			for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
 			{
 				roadmanager::Lane *lane = lane_section->GetLaneByIdx(j);
+				osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+				osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
+				osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+				osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
+
 				if (!lane->IsDriving() && lane->GetId() != 0)
 				{
 					continue;
 				}
 
-				osg::ref_ptr<osg::Geometry> beam(new osg::Geometry);
-				osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
 				for (int k = 0; k < steps + 1; k++)
 				{
-					pos->Set(road->GetId(), lane->GetId(), fmin(s_end, s_start + k * step_length), 0, i);
+					pos->SetLanePos(road->GetId(), lane->GetId(), fmin(s_end, s_start + k * step_length), 0, i);
 
 					point.set(pos->GetX(), pos->GetY(), pos->GetZ() + z_offset);
 					points->push_back(point);
 				}
-				osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-
-				osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 				if (lane->GetId() == 0)
 				{
 					lineWidth->setWidth(5.0f);
@@ -353,16 +353,17 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 					lineWidth->setWidth(2.0f);
 					color->push_back(osg::Vec4(0x33 / (float)0xFF, 0x33 / (float)0xFF, 0xBB / (float)0xFF, 1.0));
 				}
-				beam->setVertexArray(points.get());
-				beam->setColorArray(color.get());
-				beam->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-				beam->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, points->size()));
-				beam->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
-				beam->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-				parent->addChild(beam);
+				geom->setVertexArray(points.get());
+				geom->setColorArray(color.get());
+				geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+				geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, points->size()));
+				geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+				geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+				odrLines_->addChild(geom);
 			}
 		}
 	}
+	parent->addChild(odrLines_);
 	return true;
 }
 
@@ -373,22 +374,22 @@ bool Viewer::CreateVLine(osg::Group* parent)
 	vertexData->push_back(osg::Vec3d(0, 0, 0));
 	vertexData->push_back(osg::Vec3d(0, 0, 0));
 
-	linesGeom = new osg::Geometry();
-	linesGeom->setCullingActive(false);
-	linesGeom->setVertexArray(vertexData.get());
-	linesGeom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
+	vehicleLine_ = new osg::Geometry();
+	vehicleLine_->setCullingActive(false);
+	vehicleLine_->setVertexArray(vertexData.get());
+	vehicleLine_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
 
 	osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
-	lineWidth->setWidth(2.0f);
-	linesGeom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
-	linesGeom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	lineWidth->setWidth(4.0f);
+	vehicleLine_->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+	vehicleLine_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
 	color->push_back(osg::Vec4(0xCC / (float)0xFF, 0xCC / (float)0xFF, 0x33 / (float)0xFF, 1.0));
-	linesGeom->setColorArray(color.get());
-	linesGeom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-
-	parent->addChild(linesGeom);
+	vehicleLine_->setColorArray(color.get());
+	vehicleLine_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+	vehicleLine_->setDataVariance(osg::Object::DYNAMIC);
+	parent->addChild(vehicleLine_);
 
 	return true;
 }
@@ -401,7 +402,7 @@ void Viewer::UpdateVLine(double x, double y, double z)
 	vertexData->clear();
 	vertexData->push_back(osg::Vec3d(tx->getPosition().x(), tx->getPosition().y(), tx->getPosition().z() + z_offset));
 	vertexData->push_back(osg::Vec3d(x, y, z + z_offset));
-	linesGeom->dirtyGLObjects();
+	vehicleLine_->dirtyGLObjects();
 	vertexData->dirty();
 }
 
@@ -453,7 +454,8 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			visible = !visible;
-			viewer_->line_node_->setNodeMask(visible ? 0xffffffff : 0x0);
+			viewer_->odrLines_->setNodeMask(visible ? 0xffffffff : 0x0);
+			viewer_->vehicleLine_->setNodeMask(visible ? 0xffffffff : 0x0);
 		}
 	}
 	break;

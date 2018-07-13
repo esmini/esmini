@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 				file << "lane, " << road->GetId() << ", " << i << ", " << lane->GetId() << std::endl;
 				for (int k = 0; k < steps + 1; k++)
 				{
-					pos->Set(road->GetId(), lane->GetId(), fmin(s_end, s_start + k * step_length), 0, i);
+					pos->SetLanePos(road->GetId(), lane->GetId(), fmin(s_end, s_start + k * step_length), 0, i);
 					file << pos->GetX() << ", " << pos->GetY() << ", " << pos->GetZ() << ", " << pos->GetH() << std::endl;
 				}
 #ifndef REF_ONLY

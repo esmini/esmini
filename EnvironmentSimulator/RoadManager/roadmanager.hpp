@@ -552,10 +552,10 @@ namespace roadmanager
 		
 		static bool LoadOpenDrive(const char *filename);
 		static OpenDrive* GetOpenDrive();
-		void Set(int track_id, double s, double t);
-		void Set(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
-		void Set(double x, double y, double z, double h, double p, double r);
-		void Set(double x, double y, double h);
+		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
+		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
+		void SetInertiaPos(double x, double y, double z, double h, double p, double r);
+		void SetXYH(double x, double y, double h);
 		int MoveToConnectingRoad(RoadLink *road_link, double ds);
 		int MoveAlongS(double ds);
 
@@ -585,7 +585,7 @@ namespace roadmanager
 		void XYZ2Track();
 		void SetLongitudinalTrackPos(int track_id, double s);
 		bool Position::EvaluateZAndPitch();
-
+		bool GetDistToTrackGeom(double x3, double y3, double h, Geometry *geom, double &dist, double &sNorm);
 
 		// track reference
 		int     track_id_;

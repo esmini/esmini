@@ -27,7 +27,7 @@ namespace viewer
 
 		CarModel(osg::ref_ptr<osg::LOD> lod);
 		~CarModel();
-
+		
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName);
 	};
 
@@ -39,8 +39,8 @@ namespace viewer
 		osg::ref_ptr<osg::Group> line_node_;
 		
 		osg::ref_ptr<osg::Vec3Array> vertexData;
-		osg::ref_ptr<osg::Geometry> linesGeom;
-
+		osg::ref_ptr<osg::Geometry> vehicleLine_;
+		osg::ref_ptr<osg::Group> odrLines_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> envTx_;
 		osg::ref_ptr<osg::Node> environment_;
 		osg::ref_ptr<osgGA::RubberbandManipulator> rubberbandManipulator_;

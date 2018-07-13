@@ -1464,17 +1464,17 @@ Position::Position()
 
 Position::Position(int track_id, double s, double t) : Position()
 {
-	Set(track_id, s, t);
+	SetTrackPos(track_id, s, t);
 }
 
 Position::Position(int track_id, int lane_id, double s, double offset) : Position()
 {
-	Set(track_id, lane_id, s, offset);
+	SetLanePos(track_id, lane_id, s, offset);
 }
 
 Position::Position(double x, double y, double z, double h, double p, double r) : Position()
 {
-	Set(x, y, z, h, p, r);
+	SetInertiaPos(x, y, z, h, p, r);
 }
 
 Position::~Position()
@@ -1525,28 +1525,26 @@ void Position::Track2Lane()
 	// First, what lane is closest - search from current lane
 	lane_id_ = lane_info.lane_id_;
 	lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
-	double offset = lane_section->GetCenterOffset(s_, lane_id_);
-	int decrease = lane_id_ < 0 ? +1 : -1;
-	int max_lanes = lane_id_ < 0 ? lane_section->GetNUmberOfLanesRight() : lane_section->GetNUmberOfLanesLeft();
-	double offset_inner = 0;
-	double offset_outer = offset;
+	int nLanes = t_ < 0 ? lane_section->GetNUmberOfLanesRight() : lane_section->GetNUmberOfLanesLeft();
 
-	if (abs(lane_id_) > 1)
+	// If wrong side, then reset to reference lane
+	// Find what lane
+	double min_dist = abs(t_);
+	int candidateLaneId = SIGN(t_);
+	for (int i = SIGN(t_); abs(i) < nLanes; i+=SIGN(t_))
 	{
-		// First check innner (left) lane
-		offset_inner = lane_section->GetCenterOffset(s_, lane_id_ + decrease);
-		if (fabs(t_ - offset_inner) > fabs(t_ - offset))
+		//printf("i %d lsec %d, lid %d t %.2f dist %.2f min_dist: %.2f geom_idx %d\n", 
+		//	i, lane_info.lane_section_idx_, lane_id_, t_, abs(t_ - SIGN(t_) * lane_section->GetOuterOffset(s_, i)), min_dist, geometry_idx_);
+		if (abs(t_ - SIGN(t_)*lane_section->GetOuterOffset(s_, i)) < min_dist)
 		{
-			printf("change lane inwards: %d -> %d", lane_id_, lane_id_ + decrease);
+			min_dist = abs(t_ - SIGN(t_)*lane_section->GetOuterOffset(s_, i));
+			candidateLaneId = i;
 		}
-		else if (abs(lane_id_) +1 < max_lanes)
-		{   // Then check router (right) lane
-			offset_outer = lane_section->GetCenterOffset(s_, lane_id_ - decrease);
-			if (fabs(t_ - offset_outer) > fabs(t_ - offset))
-			{
-				printf("change lane outwards: %d -> %d", lane_id_, lane_id_ - decrease);
-			}
-		}
+	}
+	if (candidateLaneId != lane_id_)
+	{
+		printf("change lane: %d -> %d\n", lane_id_, candidateLaneId);
+		lane_id_ = candidateLaneId;
 	}
 }
 
@@ -1571,61 +1569,132 @@ static double PointInBetween(double x3, double y3, double x1, double y1, double 
 	}
 }
 
-void Position::Set(double x3, double y3, double h)
+
+static int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2)
 {
-	double min_dist = -1.0;
-	double sNorm;
+	return SIGN((vx2 - vx1)*(py - vy1) - (vy2 - vy1)*(px - vx1));
+}
+
+bool Position::GetDistToTrackGeom(double x3, double y3, double h, Geometry *geom, double &dist, double &sNorm)
+{
+	// Find vector between point perpendicular to line segment
+	// https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
+
 	x_ = x3;
 	y_ = y3;
 	h_ = h;
 	r_ = 0;
-	// z and pitch found out after conversion to road position
+	double x1 = geom->GetX();
+	double y1 = geom->GetY();
 
-	// Search for the closest road segment (geometry)
-	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
+	double x2, y2, hTmp;
+	geom->EvaluateDS(geom->GetLength(), &x2, &y2, &hTmp);
+	//printf("road: %d geom %d p1 %.2f, %.2f p2 %.2f, %.2f\n", road->GetId(), j, x1, y1, x2, y2);
+
+	double x4, y4, k;
+	k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) / ((y2 - y1)*(y2 - y1) + (x2 - x1)*(x2 - x1));
+	x4 = x3 - k * (y2 - y1);
+	y4 = y3 + k * (x2 - x1);
+
+	// Check whether the projected point is inside or outside line segment
+	if (!PointInBetween(x4, y4, x1, y1, x2, y2, sNorm))
 	{
-		Road *road = GetOpenDrive()->GetRoadByIdx(i);
+		//printf("geom %d point (%.2f, %.2f) not between (%.2f, %.2f) and (%.2f, %.2f)\n", j, x4, y4, x1, y1, x2, y2);
+		return false;
+	}
 
-		for (int j = 0; j < road->GetNumberOfGeometries(); j++)
+	dist = PointDistance(x3, y3, x4, y4);
+	if (dist > 1000)
+	{
+		printf("point (%.2f, %.2f) between (%.2f, %.2f) and (%.2f, %.2f) dist: %.2f/%.2f\n",  x4, y4, x1, y1, x2, y2, dist, dist);
+	}
+	return true;
+}
+
+void Position::SetXYH(double x3, double y3, double h)
+{
+	double dist;
+	double sNorm;
+	int track_id;
+	double sMin;
+	double dsMin;
+	Road *road;
+	Geometry *geom, *min_geom;
+	int done = false;
+	int min_geom_idx;
+	double min_dist = -1.0;
+
+	// First check current geomeetry
+	road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	geom = road->GetGeometry(geometry_idx_);
+	done = GetDistToTrackGeom(x3, y3, h, geom, dist, sNorm);
+	if (done)
+	{
+		min_dist = dist;
+		track_id = road->GetId();
+		dsMin = sNorm * geom->GetLength();
+		sMin = geom->GetS() + dsMin;
+		min_geom = geom;
+		min_geom_idx = geometry_idx_;
+		done = 2;
+	}
+
+	// Then check successor and predecessor geometries
+	//LaneLink *link
+	//	>GetRoadByIdx(track_idx_)->GetLink(LinkType::SUCCESSOR);
+
+	// Else, finally check all roads and seegments...
+	if (!done)
+	{
+		printf("not done\n");
+		// Search for the closest road segment (geometry)
+		for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
 		{
-			Geometry *geom = road->GetGeometry(j);
+			road = GetOpenDrive()->GetRoadByIdx(i);
 
-			// Find vector between point perpendicular to line segment
-			// https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
-
-			double x1 = geom->GetX();
-			double y1 = geom->GetY();
-
-			double x2, y2, hTmp;
-			geom->EvaluateDS(geom->GetLength(), &x2, &y2, &hTmp);
-//			printf("road: %d geom %d p1 %.2f, %.2f p2 %.2f, %.2f\n", road->GetId(), j, x1, y1, x2, y2);
-
-			double x4, y4, k, dist;
-			k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) / ((y2 - y1)*(y2 - y1) + (x2 - x1)*(x2 - x1));
-			x4 = x3 - k * (y2 - y1);
-			y4 = y3 + k * (x2 - x1);
-
-			// Check whether the projected point is inside or outside line segment
-			if (!PointInBetween(x4, y4, x1, y1, x2, y2, sNorm))
+			for (int j = 0; j < road->GetNumberOfGeometries(); j++)
 			{
-				//printf("geom %d point (%.2f, %.2f) not between (%.2f, %.2f) and (%.2f, %.2f)\n", j, x4, y4, x1, y1, x2, y2);
-				continue;
-			}
-
-			dist = PointDistance(x3, y3, x4, y4);
-			//printf("geom %d point (%.2f, %.2f) between (%.2f, %.2f) and (%.2f, %.2f) dist: %.2f/%.2f\n", j, x4, y4, x1, y1, x2, y2, dist, min_dist);
-
-			if(min_dist < 0 || dist < min_dist)  // First value (min_dist = -1) is always the closest so far
-			{
-				min_dist = dist;
-				int track_id = road->GetId();
-				double s = geom->GetS() + sNorm * geom->GetLength();
-				SetLongitudinalTrackPos(track_id, s);
-				//printf("Closest point %.2f, %.2f dist: %.2f track_id %d s %.2f\n", x4, y4, dist, track_id_, s_);
+				Geometry *geom = road->GetGeometry(j);
+				if (GetDistToTrackGeom(x3, y3, h, geom, dist, sNorm))
+				{
+					if (min_dist < 0 || dist < min_dist)  // First value (min_dist = -1) is always the closest so far
+					{
+						min_dist = dist;
+						track_id = road->GetId();
+						dsMin = sNorm * geom->GetLength();
+						sMin = geom->GetS() + dsMin;
+						min_geom = geom;
+						min_geom_idx = geometry_idx_;
+						done = true;
+						//printf("done rid %d geom %d dist %.2f dsMin %.2f\n", i,  j, dist, dsMin);
+					}
+				}
 			}
 		}
 	}
-	EvaluateZAndPitch();
+	if (done)
+	{
+		// Found closest geometry. Now calculate exact distance to geometry. First find point perpendicular on geometry.
+		double x, y, h;
+		if (done)
+		{
+			min_geom->EvaluateDS(dsMin, &x, &y, &h);
+		}
+		min_dist = PointDistance(x3, y3, x, y);
+
+		// Check whether the point is left or right side of road
+		// x3, y3 is the point checked against a vector aligned with heading
+		int min_side = PointSideOfVec(x3, y3, x, y, x + (cos(h) - sin(h)), y + (sin(h) + cos(h)));
+
+//		x2 = x1 * cos(-GetH0()) - y1 * sin(-GetH0());
+//		y2 = x1 * sin(-GetH0()) + y1 * cos(-GetH0());
+
+		// Find out what lane 
+//		LaneInfo laneInfo = road->GetLaneInfoByS(s, lane_section_idx_, lane_id_);
+		SetTrackPos(track_id, sMin, min_dist * min_side, false);		
+		//printf("Closest point: dist %.2f side %d track_id %d lane_id %d s %.2f h %.2f\n", min_dist, min_side, track_id_, lane_id_, s_, h);
+		EvaluateZAndPitch();
+	}
 }
 	
 bool Position::EvaluateZAndPitch()
@@ -1686,40 +1755,8 @@ void Position::Track2XYZ()
 		return;
 	}
 
-	// Calculate inertial coordinates
-	switch (geometry->GetType())
-	{
-		case Geometry::GEOMETRY_TYPE_LINE:
-		{
-			((Line*)geometry)->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
-			break;
-		}
-		case Geometry::GEOMETRY_TYPE_ARC:
-		{
-			((Arc*)geometry)->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
-			break;
-		}
-		case Geometry::GEOMETRY_TYPE_SPIRAL:
-		{
-			((Spiral*)geometry)->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
-			break;
-		}
-		case Geometry::GEOMETRY_TYPE_POLY3:
-		{
-			((Poly3*)geometry)->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
-			break;
-		}
-		case Geometry::GEOMETRY_TYPE_PARAM_POLY3:
-		{
-			((ParamPoly3*)geometry)->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
-			break;
-		}
-		default:
-		{
-			printf("Unsupport geometry type: %d\n", geometry->GetType());
-		}
-	}
-
+	geometry->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
+	
 	// Consider lateral t position, perpendicular to track heading
 	double x_local = (t_ + road->GetLaneOffset(s_)) * cos(h_ + M_PI_2);
 	double y_local = (t_ + road->GetLaneOffset(s_)) * sin(h_ + M_PI_2);
@@ -1801,13 +1838,16 @@ void Position::SetLongitudinalTrackPos(int track_id, double s)
 	}
 }
 
-void Position::Set(int track_id, double s, double t)
+void Position::SetTrackPos(int track_id, double s, double t, bool calculateXYZ)
 {
 	SetLongitudinalTrackPos(track_id, s);
 
 	t_ = t;
 	Track2Lane();
-	Track2XYZ();
+	if (calculateXYZ)
+	{
+		Track2XYZ();
+	}
 }
 
 int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
@@ -1922,22 +1962,22 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 	// Find out if connecting to start or end of new road
 	if (road_link->GetContactPointType() == CONTACT_POINT_START)
 	{
-		Set(road_link->GetElementId(), new_lane_id, s_new, 0);
+		SetLanePos(road_link->GetElementId(), new_lane_id, s_new, 0);
 		
 	}
 	else if (road_link->GetContactPointType() == CONTACT_POINT_END)
 	{
-		Set(road_link->GetElementId(), new_lane_id, next_road->GetLength() - s_new, 0);
+		SetLanePos(road_link->GetElementId(), new_lane_id, next_road->GetLength() - s_new, 0);
 	}
 	else if (road_link->GetContactPointType() == CONTACT_POINT_NONE && road_link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
 	{
 		if (contact_point == CONTACT_POINT_START)
 		{
-			Set(next_road->GetId(), new_lane_id, s_new, 0);
+			SetLanePos(next_road->GetId(), new_lane_id, s_new, 0);
 		}
 		else if (contact_point == CONTACT_POINT_END)
 		{
-			Set(next_road->GetId(), new_lane_id, next_road->GetLength() - s_new, 0);
+			SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength() - s_new, 0);
 		}
 		else
 		{
@@ -1967,7 +2007,7 @@ int Position::MoveAlongS(double ds)
 	}
 	else  // New position is within current track
 	{
-		Set(track_id_, lane_id_, s_ + ds, 0);
+		SetLanePos(track_id_, lane_id_, s_ + ds, 0);
 		return 0;
 	}
 
@@ -1979,7 +2019,7 @@ int Position::MoveAlongS(double ds)
 	return(MoveToConnectingRoad(link, ds));
 }
 
-void Position::Set(int track_id, int lane_id, double s, double offset, int lane_section_idx)
+void Position::SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx)
 {
 	offset_ = offset;
 
@@ -2034,7 +2074,7 @@ void Position::Set(int track_id, int lane_id, double s, double offset, int lane_
 	Track2XYZ();
 }
 
-void Position::Set(double x, double y, double z, double h, double p, double r)
+void Position::SetInertiaPos(double x, double y, double z, double h, double p, double r)
 {
 	x_ = x;
 	y_ = y;

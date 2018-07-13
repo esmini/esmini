@@ -133,7 +133,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 			s = 0;
 		}
 		printf("Reset pos lid: %d\n", car->lane_id_init);
-		car->pos->Set(car->road_id_init, car->lane_id_init, s, 0, 0);
+		car->pos->SetLanePos(car->road_id_init, car->lane_id_init, s, 0, 0);
 	}
 
 	if (car->model->txNode_ != 0)
@@ -239,7 +239,7 @@ int main(int argc, char** argv)
 				{
 					// Update vehicle dynamics/driver model
 					car->ego->Update(deltaSimTime, viewer->driverAcceleration_, viewer->driverSteering_);
-					car->pos->Set(car->ego->posX_, car->ego->posY_, car->ego->heading_);
+					car->pos->SetXYH(car->ego->posX_, car->ego->posY_, car->ego->heading_);
 					
 					// Fetch Z and Pitch from OpenDRIVE position
 					car->ego->posZ_ = car->pos->GetZ();
@@ -268,8 +268,7 @@ int main(int argc, char** argv)
 					car->model->wheel_[2]->setAttitude(quat);
 					car->model->wheel_[3]->setAttitude(quat);
 
-					pos->Set(car->pos->GetTrackId(), car->pos->GetS(), 0);
-
+					pos->SetLanePos(car->pos->GetTrackId(), car->pos->GetLaneId(), car->pos->GetS(), 0);
 					viewer->UpdateVLine(pos->GetX(), pos->GetY(), pos->GetZ());
 				}
 				else
