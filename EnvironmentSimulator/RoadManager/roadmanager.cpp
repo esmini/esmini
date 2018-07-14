@@ -1511,8 +1511,7 @@ void Position::Track2Lane()
 
 	// Find LaneSection according to s, starting from current
 	LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_);
-	lane_section_idx_ = lane_info.lane_section_idx_;
-	LaneSection *lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+	LaneSection *lane_section = road->GetLaneSectionByIdx(lane_info.lane_section_idx_);
 
 	if (lane_section == 0)
 	{
@@ -1522,17 +1521,12 @@ void Position::Track2Lane()
 
 	// Find out what lane to belong to
 	// Todo: Apply hysteresis
-	lane_id_ = lane_info.lane_id_;
-	lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
 	int nLanes = t_ < 0 ? lane_section->GetNUmberOfLanesRight() : lane_section->GetNUmberOfLanesLeft();
 	double min_dist = abs(t_);
-	int candidateLaneId = SIGN(t_);
+	int candidateLaneId = SIGN(t_);  // Start search from first lane
 
-	// Find target lane
 	for (int i = SIGN(t_); abs(i) < nLanes; i+=SIGN(t_))
 	{
-		//printf("i %d lsec %d, lid %d t %.2f dist %.2f min_dist: %.2f geom_idx %d\n", 
-		//	i, lane_info.lane_section_idx_, lane_id_, t_, abs(t_ - SIGN(t_) * lane_section->GetOuterOffset(s_, i)), min_dist, geometry_idx_);
 		if (lane_section->GetLaneById(i)->IsDriving() && abs(t_ - SIGN(t_)*lane_section->GetOuterOffset(s_, i)) < min_dist)
 		{
 			min_dist = abs(t_ - SIGN(t_)*lane_section->GetOuterOffset(s_, i));
@@ -1542,7 +1536,9 @@ void Position::Track2Lane()
 	if (candidateLaneId != lane_id_)
 	{
 		printf("change lane: %d -> %d\n", lane_id_, candidateLaneId);
+		// Update cache indices
 		lane_id_ = candidateLaneId;
+		lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
 	}
 }
 
@@ -1620,6 +1616,7 @@ void Position::SetXYH(double x3, double y3, double h)
 	Road *road;
 	Road *roadMin;
 	int found = false;
+
 
 	// First check current geomeetry
 	road = GetOpenDrive()->GetRoadByIdx(track_idx_);

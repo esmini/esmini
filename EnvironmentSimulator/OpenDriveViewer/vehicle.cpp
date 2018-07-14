@@ -10,13 +10,16 @@
 
 #include "vehicle.hpp"
 
-#define STEERING_STEP 3.0
-#define STEERING_MAX_ANGLE (50 * M_PI / 180)
-#define STEERING_DECLINE 0.2
+#define STEERING_RATE 3.0
+#define STEERING_MAX_ANGLE (30 * M_PI / 180)
 #define ACCELERATION_STEP 15
-#define SPEED_MAX (150 / 3.6)
+#define SPEED_MAX (200 / 3.6)
 #define SPEED_DECLINE 1E-2
 #define WHEEL_RADIUS 0.35
+#define SIGN(X) (X<0?-1:1)
+#define MAX(a, b) (a>b ? a : b)
+#define MIN(a, b) (a<b ? a : b)
+#define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))
 
 Vehicle::Vehicle(double x, double y, double h, double length)
 {
@@ -55,22 +58,22 @@ void Vehicle::Update(double dt, int acceleration, int steering)
 	// Calculate wheel rot: https://en.wikipedia.org/wiki/Arc_(geometry)
 	wheelRotation_ += speed_ * dt / WHEEL_RADIUS;
 
-	double wheelAngleDelta = STEERING_STEP * steering * dt;
+	// Calculate steering
+	double steerDamping = 1 - fabs(speed_) / SPEED_MAX;
+	double steerRate = STEERING_RATE * steerDamping;
 
-	// Max steering angle depending on speed
-	double scaleFactor = (SPEED_MAX - fabs(speed_)) / SPEED_MAX;
-	wheelAngle_ = (1.0 - STEERING_DECLINE * scaleFactor) * wheelAngle_ + wheelAngleDelta * scaleFactor;
+	wheelAngle_ += steerRate * steering * dt;
+	double selfAlign = -SIGN(wheelAngle_) * 0.5 * steerRate * dt;
 
-	if (wheelAngle_ > STEERING_MAX_ANGLE)
+	if (wheelAngle_ < 0)
 	{
-		wheelAngle_ = STEERING_MAX_ANGLE;
+		wheelAngle_ = MIN(wheelAngle_ + selfAlign, 0);
 	}
-	else if (wheelAngle_ < -STEERING_MAX_ANGLE)
+	else
 	{
-		wheelAngle_ = -STEERING_MAX_ANGLE;
+		wheelAngle_ = MAX(wheelAngle_ + selfAlign, 0);
 	}
-
-	//printf("speed %.2f steer %.2f\n", speed_ * 3.6, wheelAngle_ * 180 / M_PI);
+	wheelAngle_ = CLAMP(wheelAngle_, -STEERING_MAX_ANGLE * steerDamping, STEERING_MAX_ANGLE * steerDamping);
 
 	// Calculate vehicle kinematics according to simple bicycle model, see
 	// http://www.me.berkeley.edu/~frborrel/pdfpub/IV_KinematicMPC_jason.pdf
