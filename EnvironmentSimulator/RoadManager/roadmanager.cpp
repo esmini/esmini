@@ -1522,20 +1522,18 @@ void Position::Track2Lane()
 
 	// Find out what lane to belong to
 	// Todo: Apply hysteresis
-	// First, what lane is closest - search from current lane
 	lane_id_ = lane_info.lane_id_;
 	lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
 	int nLanes = t_ < 0 ? lane_section->GetNUmberOfLanesRight() : lane_section->GetNUmberOfLanesLeft();
-
-	// If wrong side, then reset to reference lane
-	// Find what lane
 	double min_dist = abs(t_);
 	int candidateLaneId = SIGN(t_);
+
+	// Find target lane
 	for (int i = SIGN(t_); abs(i) < nLanes; i+=SIGN(t_))
 	{
 		//printf("i %d lsec %d, lid %d t %.2f dist %.2f min_dist: %.2f geom_idx %d\n", 
 		//	i, lane_info.lane_section_idx_, lane_id_, t_, abs(t_ - SIGN(t_) * lane_section->GetOuterOffset(s_, i)), min_dist, geometry_idx_);
-		if (abs(t_ - SIGN(t_)*lane_section->GetOuterOffset(s_, i)) < min_dist)
+		if (lane_section->GetLaneById(i)->IsDriving() && abs(t_ - SIGN(t_)*lane_section->GetOuterOffset(s_, i)) < min_dist)
 		{
 			min_dist = abs(t_ - SIGN(t_)*lane_section->GetOuterOffset(s_, i));
 			candidateLaneId = i;
@@ -1614,29 +1612,25 @@ bool Position::GetDistToTrackGeom(double x3, double y3, double h, Geometry *geom
 void Position::SetXYH(double x3, double y3, double h)
 {
 	double dist;
+	double distMin;
 	double sNorm;
-	int track_id;
-	double sMin;
-	double dsMin;
+	double sNormMin;
+	Geometry *geom;
+	Geometry *geomMin;
 	Road *road;
-	Geometry *geom, *min_geom;
-	int done = false;
-	int min_geom_idx;
-	double min_dist = -1.0;
+	Road *roadMin;
+	int found = false;
 
 	// First check current geomeetry
 	road = GetOpenDrive()->GetRoadByIdx(track_idx_);
 	geom = road->GetGeometry(geometry_idx_);
-	done = GetDistToTrackGeom(x3, y3, h, geom, dist, sNorm);
-	if (done)
+	if(GetDistToTrackGeom(x3, y3, h, geom, dist, sNorm))
 	{
-		min_dist = dist;
-		track_id = road->GetId();
-		dsMin = sNorm * geom->GetLength();
-		sMin = geom->GetS() + dsMin;
-		min_geom = geom;
-		min_geom_idx = geometry_idx_;
-		done = 2;
+		distMin = dist;
+		sNormMin = sNorm;
+		geomMin = geom;
+		roadMin = road;
+		found = true;
 	}
 
 	// Then check successor and predecessor geometries
@@ -1644,54 +1638,47 @@ void Position::SetXYH(double x3, double y3, double h)
 	//	>GetRoadByIdx(track_idx_)->GetLink(LinkType::SUCCESSOR);
 
 	// Else, finally check all roads and seegments...
-	if (!done)
+	if (!found)
 	{
-		printf("not done\n");
 		// Search for the closest road segment (geometry)
 		for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
 		{
 			road = GetOpenDrive()->GetRoadByIdx(i);
-
 			for (int j = 0; j < road->GetNumberOfGeometries(); j++)
 			{
-				Geometry *geom = road->GetGeometry(j);
+				geom = road->GetGeometry(j);
 				if (GetDistToTrackGeom(x3, y3, h, geom, dist, sNorm))
 				{
-					if (min_dist < 0 || dist < min_dist)  // First value (min_dist = -1) is always the closest so far
+					if (!found || dist < distMin)  // First value (min_dist = -1) is always the closest so far
 					{
-						min_dist = dist;
-						track_id = road->GetId();
-						dsMin = sNorm * geom->GetLength();
-						sMin = geom->GetS() + dsMin;
-						min_geom = geom;
-						min_geom_idx = geometry_idx_;
-						done = true;
+						distMin = dist;
+						sNormMin = sNorm;
+						geomMin = geom;
+						roadMin = road;
+						found = true;
 						//printf("done rid %d geom %d dist %.2f dsMin %.2f\n", i,  j, dist, dsMin);
 					}
 				}
 			}
 		}
 	}
-	if (done)
+	if (found)
 	{
+		double dsMin = sNormMin * geomMin->GetLength();
+		double sMin = geomMin->GetS() + dsMin;
+
 		// Found closest geometry. Now calculate exact distance to geometry. First find point perpendicular on geometry.
 		double x, y, h;
-		if (done)
-		{
-			min_geom->EvaluateDS(dsMin, &x, &y, &h);
-		}
-		min_dist = PointDistance(x3, y3, x, y);
+		geomMin->EvaluateDS(dsMin, &x, &y, &h);
+		distMin = PointDistance(x3, y3, x, y);
 
 		// Check whether the point is left or right side of road
 		// x3, y3 is the point checked against a vector aligned with heading
-		int min_side = PointSideOfVec(x3, y3, x, y, x + (cos(h) - sin(h)), y + (sin(h) + cos(h)));
-
-//		x2 = x1 * cos(-GetH0()) - y1 * sin(-GetH0());
-//		y2 = x1 * sin(-GetH0()) + y1 * cos(-GetH0());
+		int side = PointSideOfVec(x3, y3, x, y, x + (cos(h) - sin(h)), y + (sin(h) + cos(h)));
 
 		// Find out what lane 
-//		LaneInfo laneInfo = road->GetLaneInfoByS(s, lane_section_idx_, lane_id_);
-		SetTrackPos(track_id, sMin, min_dist * min_side, false);		
+		SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);		
+
 		//printf("Closest point: dist %.2f side %d track_id %d lane_id %d s %.2f h %.2f\n", min_dist, min_side, track_id_, lane_id_, s_, h);
 		EvaluateZAndPitch();
 	}
