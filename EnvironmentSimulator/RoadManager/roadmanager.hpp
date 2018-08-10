@@ -410,7 +410,7 @@ namespace roadmanager
 		void SetI(int id) { id_ = id; }
 		int GetId() { return id_; }
 		void SetName(std::string name) { name_ = name; }
-		Geometry *GetGeometry(int idx) { return geometry_[idx]; }
+		Geometry *GetGeometry(int idx);
 		int GetNumberOfGeometries() { return (int)geometry_.size(); }
 		LaneSection *GetLaneSectionByIdx(int idx);
 		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id);

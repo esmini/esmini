@@ -342,6 +342,17 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 	return lane_info;
 }
 
+Geometry* Road::GetGeometry(int idx)
+{
+	if (idx < 0 || idx + 1 > geometry_.size())
+	{
+		printf("Road::GetGeometry index %d out of range [0:%d]\n", idx, (int)geometry_.size());
+		return 0;
+	}
+	return geometry_[idx]; 
+}
+
+
 void LaneSection::Print()
 {
 	printf("LaneSection: %.2f, %d lanes:\n", s_, (int)lane_.size());
@@ -1617,21 +1628,81 @@ void Position::SetXYH(double x3, double y3, double h)
 	Road *roadMin;
 	int found = false;
 
-
-	// First check current geomeetry
 	road = GetOpenDrive()->GetRoadByIdx(track_idx_);
 	geom = road->GetGeometry(geometry_idx_);
-	if(GetDistToTrackGeom(x3, y3, h, geom, dist, sNorm))
+	// First check current geomeetry
+	if (GetDistToTrackGeom(x3, y3, h, geom, distMin, sNormMin))
 	{
-		distMin = dist;
-		sNormMin = sNorm;
 		geomMin = geom;
 		roadMin = road;
 		found = true;
 	}
 
-	// Then check successor and predecessor geometries
-	//LaneLink *link
+	if (!found)
+	{
+		// Then check next segment / connection
+
+		// first check next and previous geometry
+		if (geometry_idx_ + 1 < road->GetNumberOfGeometries())
+		{
+			geom = road->GetGeometry(geometry_idx_ + 1);
+			if (GetDistToTrackGeom(x3, y3, h, geom, distMin, sNormMin))
+			{
+				geomMin = geom;
+				roadMin = road;
+				found = true;
+				printf("Position::SetXYH Found next geometry\n");
+			}
+		}
+		else if (geometry_idx_ > 0)
+		{
+			geom = road->GetGeometry(geometry_idx_ - 1);
+			if (GetDistToTrackGeom(x3, y3, h, geom, distMin, sNormMin))
+			{
+				geomMin = geom;
+				roadMin = road;
+				found = true;
+				printf("Position::SetXYH Found previous geometry\n");
+			}
+		}
+	}
+	if(!found)
+	{
+		// Then check next and previous road links
+		roadMin = road;
+		roadmanager::LinkType linkList[2] = { roadmanager::LinkType::SUCCESSOR , roadmanager::LinkType::PREDECESSOR };
+		for (int i = 0; i < 2; i++)
+		{
+			RoadLink *link = roadMin->GetLink(linkList[i]);
+			if (link != 0)
+			{
+				int geomIdxTmp;
+				road = GetOpenDrive()->GetRoadById(link->GetElementId());
+				if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)
+				{
+					geomIdxTmp = 0;
+				}
+				else if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)
+				{
+					geomIdxTmp = road->GetNumberOfGeometries();
+				}
+				else
+				{
+					printf("Position::SetXYH Unsupported contact point type %d\n", link->GetContactPointType());
+					return;
+				}
+				geom = GetOpenDrive()->GetRoadById(link->GetElementId())->GetGeometry(geomIdxTmp);
+				if (GetDistToTrackGeom(x3, y3, h, geom, distMin, sNormMin))
+				{
+					geomMin = geom;
+					roadMin = road;
+					found = true;
+					printf("Position::SetXYH Found road link of type %d\n", linkList[i]);
+				}
+			}
+		}
+	}
+
 	//	>GetRoadByIdx(track_idx_)->GetLink(LinkType::SUCCESSOR);
 
 	// Else, finally check all roads and seegments...
@@ -1648,10 +1719,10 @@ void Position::SetXYH(double x3, double y3, double h)
 				{
 					if (!found || dist < distMin)  // First value (min_dist = -1) is always the closest so far
 					{
-						distMin = dist;
-						sNormMin = sNorm;
 						geomMin = geom;
 						roadMin = road;
+						sNormMin = sNorm;
+						distMin = dist;
 						found = true;
 						//printf("done rid %d geom %d dist %.2f dsMin %.2f\n", i,  j, dist, dsMin);
 					}
@@ -1659,13 +1730,14 @@ void Position::SetXYH(double x3, double y3, double h)
 			}
 		}
 	}
+
 	if (found)
 	{
 		double dsMin = sNormMin * geomMin->GetLength();
 		double sMin = geomMin->GetS() + dsMin;
+		double x, y, h;
 
 		// Found closest geometry. Now calculate exact distance to geometry. First find point perpendicular on geometry.
-		double x, y, h;
 		geomMin->EvaluateDS(dsMin, &x, &y, &h);
 		distMin = PointDistance(x3, y3, x, y);
 
