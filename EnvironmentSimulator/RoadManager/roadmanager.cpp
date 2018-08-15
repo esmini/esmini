@@ -17,6 +17,9 @@ using namespace roadmanager;
 
 #define CURV_ZERO 0.00001
 #define SIGN(x) (x < 0 ? -1 : 1)
+#define MAX(x, y) (y > x ? y : x)
+#define MIN(x, y) (y < x ? y : x)
+#define CLAMP(x, a, b) (MIN(MAX(x, a), b))
 
 
 double Polynomial::Evaluate(double s)
@@ -1560,41 +1563,59 @@ static double PointDistance(double x0, double y0, double x1, double y1)
 	return sqrt((x1 - x0)*(x1 - x0) + (y1 - y0) * (y1 - y0));
 }
 
-static double PointInBetween(double x3, double y3, double x1, double y1, double x2, double y2, double &sNorm)
+static bool PointInBetween(double x3, double y3, double x1, double y1, double x2, double y2, double &sNorm)
 {
-	// Guess it is enough to check one dimension...
-	sNorm = (x3 - x1) / (x2 - x1);
-	if (x1 > x2)
+	bool inside;
+
+	if (fabs(x2 - x1) < fabs(y2 - y1))  // Line is steep (more vertical than horizontal
 	{
-		return(x3 > x2 && x3 < x1);
+		sNorm = (y3 - y1) / (y2 - y1);
+		if (y2 > y1)  // ascending
+		{
+			inside = !(y3 < y1 || y3 > y2);
+		}
+		else
+		{
+			inside = !(y3 > y1 || y3 < y2);
+		}
 	}
 	else
 	{
-		return(x3 < x2 && x3 > x1);
+		sNorm = (x3 - x1) / (x2 - x1);
+		if (y2 > y1)  // ascending
+		{
+			inside = !(x3 < x1 || x3 > x2);
+		}
+		else
+		{
+			inside = !(x3 > x1 || x3 < x2);
+		}
 	}
+	return inside;
 }
 
 
 static int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2)
 {
+	// Use dot product
 	return SIGN((vx2 - vx1)*(py - vy1) - (vy2 - vy1)*(px - vx1));
 }
 
-bool Position::GetDistToTrackGeom(double x3, double y3, double h, Geometry *geom, double &dist, double &sNorm)
+double Position::GetDistToTrackGeom(double x3, double y3, double h, Geometry *geom, bool &inside, double &sNorm)
 {
-	// Find vector between point perpendicular to line segment
+	// Find vector from point perpendicular to line segment
 	// https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
 
 	x_ = x3;
 	y_ = y3;
 	h_ = h;
 	r_ = 0;
+	double dist = 0;
 	double x1 = geom->GetX();
 	double y1 = geom->GetY();
 
 	double x2, y2, hTmp;
 	geom->EvaluateDS(geom->GetLength(), &x2, &y2, &hTmp);
-	//printf("road: %d geom %d p1 %.2f, %.2f p2 %.2f, %.2f\n", road->GetId(), j, x1, y1, x2, y2);
 
 	double x4, y4, k;
 	k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) / ((y2 - y1)*(y2 - y1) + (x2 - x1)*(x2 - x1));
@@ -1602,41 +1623,56 @@ bool Position::GetDistToTrackGeom(double x3, double y3, double h, Geometry *geom
 	y4 = y3 + k * (x2 - x1);
 
 	// Check whether the projected point is inside or outside line segment
-	if (!PointInBetween(x4, y4, x1, y1, x2, y2, sNorm))
+	inside = PointInBetween(x4, y4, x1, y1, x2, y2, sNorm);
+	if (inside)
 	{
-		//printf("geom %d point (%.2f, %.2f) not between (%.2f, %.2f) and (%.2f, %.2f)\n", j, x4, y4, x1, y1, x2, y2);
-		return false;
+		dist = PointDistance(x3, y3, x4, y4);
+	}
+	else
+	{
+		// Distance is mesared between point to closest endpoint of line
+		double d1, d2;
+		d1 = PointDistance(x3, y3, x1, y1);
+		d2 = PointDistance(x3, y3, x2, y2);
+		dist = MIN(d1, d2);
 	}
 
-	dist = PointDistance(x3, y3, x4, y4);
 	if (dist > 1000)
 	{
 		printf("point (%.2f, %.2f) between (%.2f, %.2f) and (%.2f, %.2f) dist: %.2f/%.2f\n",  x4, y4, x1, y1, x2, y2, dist, dist);
 	}
-	return true;
+	return dist;
 }
 
-void Position::SetXYH(double x3, double y3, double h)
+void Position::SetXYH(double x3, double y3, double h3)
 {
 	double dist;
-	double distMin;
+	double distMin = 1000;
 	double sNorm;
 	double sNormMin;
 	Geometry *geom;
 	Geometry *geomMin;
 	Road *road;
 	Road *roadMin;
-	int found = false;
+	bool inside = false;
 
-	road = GetOpenDrive()->GetRoadByIdx(track_idx_);
-	geom = road->GetGeometry(geometry_idx_);
-	// First check current geomeetry
-	if (GetDistToTrackGeom(x3, y3, h, geom, distMin, sNormMin))
+	if ((road = GetOpenDrive()->GetRoadByIdx(track_idx_)) == 0)
 	{
-		geomMin = geom;
-		roadMin = road;
-		found = true;
+		printf("Position::SetXYH: Invalid road index %d\n", track_idx_);
+		return;
 	}
+
+	if ((geom = road->GetGeometry(geometry_idx_)) == 0)
+	{
+		printf("Position::SetXYH: Invalid geometry index %d\n", geometry_idx_);
+		return;
+	}
+
+#if 0
+	// First check current geometry
+	distMin = GetDistToTrackGeom(x3, y3, h3, geom, inside, sNormMin) + 1;
+	geomMin = geom;
+	roadMin = road;
 
 	if (!found)
 	{
@@ -1704,53 +1740,48 @@ void Position::SetXYH(double x3, double y3, double h)
 	}
 
 	//	>GetRoadByIdx(track_idx_)->GetLink(LinkType::SUCCESSOR);
-
+#endif
 	// Else, finally check all roads and seegments...
-	if (!found)
+	// Search for the closest road segment (geometry)
+
+	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
 	{
-		// Search for the closest road segment (geometry)
-		for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
+		road = GetOpenDrive()->GetRoadByIdx(i);
+		for (int j = 0; j < road->GetNumberOfGeometries(); j++)
 		{
-			road = GetOpenDrive()->GetRoadByIdx(i);
-			for (int j = 0; j < road->GetNumberOfGeometries(); j++)
+			geom = road->GetGeometry(j);
+			dist = GetDistToTrackGeom(x3, y3, h3, geom, inside, sNorm);
+
+			if (dist < distMin)  // First value (min_dist = -1) is always the closest so far
 			{
-				geom = road->GetGeometry(j);
-				if (GetDistToTrackGeom(x3, y3, h, geom, dist, sNorm))
-				{
-					if (!found || dist < distMin)  // First value (min_dist = -1) is always the closest so far
-					{
-						geomMin = geom;
-						roadMin = road;
-						sNormMin = sNorm;
-						distMin = dist;
-						found = true;
-						//printf("done rid %d geom %d dist %.2f dsMin %.2f\n", i,  j, dist, dsMin);
-					}
-				}
+				geomMin = geom;
+				roadMin = road;
+				sNormMin = CLAMP(sNorm, 0.0, 1.0);
+				distMin = dist;
+				//printf("done rid %d geom %d dist %.2f sNormMin %.2f inside: %d (%.2f %.2f %.2f)\n", 
+				//	i,  j, dist, sNormMin, inside, x3, y3, h3);
 			}
 		}
 	}
+//	printf("done rid %d dist %.2f sNormMin %.2f inside: %d\n", roadMin->GetId(), dist, sNormMin, inside);
 
-	if (found)
-	{
-		double dsMin = sNormMin * geomMin->GetLength();
-		double sMin = geomMin->GetS() + dsMin;
-		double x, y, h;
+	double dsMin = sNormMin * geomMin->GetLength();
+	double sMin = geomMin->GetS() + dsMin;
+	double x, y, h;
 
-		// Found closest geometry. Now calculate exact distance to geometry. First find point perpendicular on geometry.
-		geomMin->EvaluateDS(dsMin, &x, &y, &h);
-		distMin = PointDistance(x3, y3, x, y);
+	// Found closest geometry. Now calculate exact distance to geometry. First find point perpendicular on geometry.
+	geomMin->EvaluateDS(dsMin, &x, &y, &h);
+	distMin = PointDistance(x3, y3, x, y);
 
-		// Check whether the point is left or right side of road
-		// x3, y3 is the point checked against a vector aligned with heading
-		int side = PointSideOfVec(x3, y3, x, y, x + (cos(h) - sin(h)), y + (sin(h) + cos(h)));
+	// Check whether the point is left or right side of road
+	// x3, y3 is the point checked against a vector aligned with heading
+	int side = PointSideOfVec(x3, y3, x, y, x + cos(h), y + sin(h));
 
-		// Find out what lane 
-		SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);		
+	// Find out what lane 
+	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);		
 
-		//printf("Closest point: dist %.2f side %d track_id %d lane_id %d s %.2f h %.2f\n", min_dist, min_side, track_id_, lane_id_, s_, h);
-		EvaluateZAndPitch();
-	}
+	//printf("Closest point: dist %.2f side %d track_id %d lane_id %d s %.2f h %.2f\n", min_dist, min_side, track_id_, lane_id_, s_, h);
+	EvaluateZAndPitch();
 }
 	
 bool Position::EvaluateZAndPitch()

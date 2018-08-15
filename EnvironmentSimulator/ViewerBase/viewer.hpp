@@ -40,6 +40,8 @@ namespace viewer
 		
 		osg::ref_ptr<osg::Vec3Array> vertexData;
 		osg::ref_ptr<osg::Geometry> vehicleLine_;
+		osg::ref_ptr<osg::Vec3Array> pointData;
+		osg::ref_ptr<osg::Geometry> vehiclePoint_;
 		osg::ref_ptr<osg::Group> odrLines_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> envTx_;
 		osg::ref_ptr<osg::Node> environment_;
@@ -60,6 +62,7 @@ namespace viewer
 		int AddEnvironment(const char* filename);
 		static osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
 		void UpdateVLine(double x, double y, double z);
+		void UpdateVPoints(double xt, double yt, double xl, double yl, double z);
 
 	private:
 		std::vector<std::string> carModelsFiles_ =
@@ -81,7 +84,7 @@ namespace viewer
 
 		bool ReadCarModels();
 		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
-		bool CreateVLine(osg::Group* parent);
+		bool CreateVLineAndPoint(osg::Group* parent);
 	};
 
 	class KeyboardEventHandler : public osgGA::GUIEventHandler

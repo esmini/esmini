@@ -197,7 +197,8 @@ int main(int argc, char** argv)
 	printf("speed: %.2f\n", speed);
 	speed /= 3.6;
 
-	roadmanager::Position *pos = new roadmanager::Position();
+	roadmanager::Position *lane_pos = new roadmanager::Position();
+	roadmanager::Position *track_pos = new roadmanager::Position();
 	try
 	{
 		if (!roadmanager::Position::LoadOpenDrive(odrFilename.c_str()))
@@ -268,8 +269,10 @@ int main(int argc, char** argv)
 					car->model->wheel_[2]->setAttitude(quat);
 					car->model->wheel_[3]->setAttitude(quat);
 
-					pos->SetLanePos(car->pos->GetTrackId(), car->pos->GetLaneId(), car->pos->GetS(), 0);
-					viewer->UpdateVLine(pos->GetX(), pos->GetY(), pos->GetZ());
+					track_pos->SetTrackPos(car->pos->GetTrackId(), car->pos->GetS(), 0);
+					lane_pos->SetLanePos(car->pos->GetTrackId(), car->pos->GetLaneId(), car->pos->GetS(), 0);
+					viewer->UpdateVPoints(track_pos->GetX(), track_pos->GetY(), lane_pos->GetX(), lane_pos->GetY(), lane_pos->GetZ());
+					viewer->UpdateVLine(lane_pos->GetX(), lane_pos->GetY(), lane_pos->GetZ());
 				}
 				else
 				{
@@ -296,7 +299,8 @@ int main(int argc, char** argv)
 		delete(car);
 	}
 
-	delete pos;
+	delete track_pos;
+	delete lane_pos;
 
 	return 0;
 }

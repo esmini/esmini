@@ -4,6 +4,7 @@
 #include <osgDB/ReadFile>
 #include <osg/ComputeBoundsVisitor>
 #include <osg/LineWidth>
+#include <osg/Point>
 #include <osgGA/TrackballManipulator>
 #include <osgGA/KeySwitchMatrixManipulator>
 #include <osgGA/FlightManipulator>
@@ -144,7 +145,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	{
 		printf("Viewer::Viewer Failed to create road lines!\n");
 	}
-	if (!CreateVLine(rootnode_))
+	if (!CreateVLineAndPoint(rootnode_))
 	{
 		printf("Viewer::Viewer Failed to create vehicle line!\n");
 	}
@@ -311,9 +312,52 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 	osg::Vec3 point(0, 0, 0);
 	odrLines_ = new osg::Group;
 
+
 	for (int r = 0; r < od->GetNumOfRoads(); r++)
 	{
 		roadmanager::Road *road = od->GetRoadByIdx(r);
+
+		// Road key points
+		osg::ref_ptr<osg::Geometry> kp_geom = new osg::Geometry;
+		osg::ref_ptr<osg::Vec3Array> kp_points = new osg::Vec3Array;
+		osg::ref_ptr<osg::Vec4Array> kp_color = new osg::Vec4Array;
+		osg::ref_ptr<osg::Point> kp_point = new osg::Point();
+
+		roadmanager::Geometry *geom;
+		for (int i = 0; i < road->GetNumberOfGeometries()+1; i++)
+		{
+			if (i < road->GetNumberOfGeometries())
+			{
+				geom = road->GetGeometry(i);
+				pos->SetTrackPos(road->GetId(), geom->GetS(), 0);
+			}
+			else
+			{
+				pos->SetTrackPos(road->GetId(), geom->GetS()+geom->GetLength(), 0);
+			}
+
+			point.set(pos->GetX(), pos->GetY(), pos->GetZ() + z_offset);
+			kp_points->push_back(point);
+
+			if (i == 0)
+			{
+				kp_color->push_back(osg::Vec4(0xEE / (float)0xFF, 0xAA / (float)0xFF, 0x44 / (float)0xFF, 1.0));
+			}
+			else
+			{
+				kp_color->push_back(osg::Vec4(0xBB / (float)0xFF, 0x44 / (float)0xFF, 0x44 / (float)0xFF, 1.0));
+			}
+		}
+
+		kp_point->setSize(12.0f);
+		kp_geom->setVertexArray(kp_points.get());
+		kp_geom->setColorArray(kp_color.get());
+		kp_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+		kp_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, kp_points->size()));
+		kp_geom->getOrCreateStateSet()->setAttributeAndModes(kp_point, osg::StateAttribute::ON);
+		kp_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+		odrLines_->addChild(kp_geom);
 
 		for (int i = 0; i < road->GetNumberOfLaneSections(); i++)
 		{
@@ -339,10 +383,10 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 				for (int k = 0; k < steps + 1; k++)
 				{
 					pos->SetLanePos(road->GetId(), lane->GetId(), fmin(s_end, s_start + k * step_length), 0, i);
-
 					point.set(pos->GetX(), pos->GetY(), pos->GetZ() + z_offset);
 					points->push_back(point);
 				}
+
 				if (lane->GetId() == 0)
 				{
 					lineWidth->setWidth(5.0f);
@@ -353,23 +397,49 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 					lineWidth->setWidth(2.0f);
 					color->push_back(osg::Vec4(0x33 / (float)0xFF, 0x33 / (float)0xFF, 0xBB / (float)0xFF, 1.0));
 				}
+
 				geom->setVertexArray(points.get());
 				geom->setColorArray(color.get());
 				geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
 				geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, points->size()));
 				geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
 				geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
 				odrLines_->addChild(geom);
 			}
 		}
 	}
+
 	parent->addChild(odrLines_);
 	return true;
 }
 
 
-bool Viewer::CreateVLine(osg::Group* parent)
+bool Viewer::CreateVLineAndPoint(osg::Group* parent)
 {
+	// Road key points
+	pointData = new osg::Vec3Array;
+	pointData->push_back(osg::Vec3d(0, 0, 0));
+	pointData->push_back(osg::Vec3d(0, 0, 0));
+
+	vehiclePoint_ = new osg::Geometry;
+	vehiclePoint_->setCullingActive(false);
+	vehiclePoint_->setVertexArray(pointData.get());
+	vehiclePoint_->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, 2));
+
+	osg::ref_ptr<osg::Point> point_point = new osg::Point;
+	point_point->setSize(20.0f);
+	vehiclePoint_->getOrCreateStateSet()->setAttributeAndModes(point_point, osg::StateAttribute::ON);
+	vehiclePoint_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+	osg::ref_ptr<osg::Vec4Array> point_color = new osg::Vec4Array;
+	point_color->push_back(osg::Vec4(0x44 / (float)0xFF, 0x44 / (float)0xFF, 0x44 / (float)0xFF, 1.0));
+	point_color->push_back(osg::Vec4(0xCC / (float)0xFF, 0xCC / (float)0xFF, 0x33 / (float)0xFF, 1.0));
+	vehiclePoint_->setDataVariance(osg::Object::DYNAMIC);
+	vehiclePoint_->setColorArray(point_color.get());
+	vehiclePoint_->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+	parent->addChild(vehiclePoint_);
+
 	vertexData = new osg::Vec3Array;
 	vertexData->push_back(osg::Vec3d(0, 0, 0));
 	vertexData->push_back(osg::Vec3d(0, 0, 0));
@@ -392,6 +462,17 @@ bool Viewer::CreateVLine(osg::Group* parent)
 	parent->addChild(vehicleLine_);
 
 	return true;
+}
+
+void Viewer::UpdateVPoints(double xt, double yt, double xl, double yl, double z)
+{
+	double z_offset = 0.1;
+
+	pointData->clear();
+	pointData->push_back(osg::Vec3d(xt, yt, z + z_offset));
+	pointData->push_back(osg::Vec3d(xl, yl, z + z_offset));
+	vehiclePoint_->dirtyGLObjects();
+	pointData->dirty();
 }
 
 void Viewer::UpdateVLine(double x, double y, double z)
