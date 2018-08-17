@@ -1536,27 +1536,25 @@ void Position::Track2Lane()
 	// Find out what lane to belong to
 	// Todo: Apply hysteresis
 	int nLanes = t_ < 0 ? lane_section->GetNUmberOfLanesRight() : lane_section->GetNUmberOfLanesLeft();
-	int candidateLaneId;
-	if(nLanes == 0)
-	{
-		candidateLaneId = 0;
-	}
-	else
-	{
-		double min_dist = abs(t_);
-		candidateLaneId = SIGN(t_);  // Start search from first lane
+	double min_offset = t_;  // Initial offset relates to reference line
+	int candidateLaneId = 0;
 
-		for (int i = SIGN(t_); abs(i) < nLanes; i += SIGN(t_))
+	if (nLanes > 0)
+	{
+		for (int i = 0; i < nLanes; i++)
 		{
-			if (lane_section->GetLaneById(i)->IsDriving() && abs(t_ - SIGN(t_)*lane_section->GetOuterOffset(s_, i)) < min_dist)
+			int laneId = (i + 1) * SIGN(t_);
+			double laneCenterOffset = SIGN(t_) * lane_section->GetCenterOffset(s_, laneId);
+			//printf("i %d laneId %d laneCenterOffset %.2f t_ %.2f lanesecid %d nlanes %d\n", i, laneId, laneCenterOffset, t_, lane_info.lane_section_idx_, nLanes);
+			if (lane_section->GetLaneById(laneId)->IsDriving() && fabs(t_ - laneCenterOffset) < fabs(min_offset))
 			{
-				min_dist = abs(t_ - SIGN(t_)*lane_section->GetCenterOffset(s_, i));
-				candidateLaneId = i;
+				min_offset = t_ - laneCenterOffset;
+				candidateLaneId = laneId;
 			}
 		}
 	}
 
-	offset_ = t_ - SIGN(t_)*lane_section->GetCenterOffset(s_, candidateLaneId);
+	offset_ = min_offset;
 
 	if (candidateLaneId != lane_id_)
 	{
@@ -1628,7 +1626,7 @@ double Position::GetDistToTrackGeom(double x3, double y3, double h, Road *road, 
 	geom->EvaluateDS(0, &x1, &y1, &h1);
 	geom->EvaluateDS(geom->GetLength(), &x2, &y2, &h2);
 
-	// Consider lane offset
+	// Apply lane offset
 	x1 += road->GetLaneOffset(0) * cos(h1 + M_PI_2);
 	y1 += road->GetLaneOffset(geom->GetLength()) * sin(h1 + M_PI_2);
 	x2 += road->GetLaneOffset(0) * cos(h2 + M_PI_2);
@@ -1655,10 +1653,6 @@ double Position::GetDistToTrackGeom(double x3, double y3, double h, Road *road, 
 		dist = MIN(d1, d2);
 	}
 
-	if (dist > 1000)
-	{
-		//printf("point (%.2f, %.2f) between (%.2f, %.2f) and (%.2f, %.2f) dist: %.2f/%.2f\n",  x4, y4, x1, y1, x2, y2, dist, dist);
-	}
 	return dist;
 }
 
@@ -1781,7 +1775,6 @@ void Position::SetXYH(double x3, double y3, double h3)
 			}
 		}
 	}
-	//printf("dist %.2f sNormMin %.2f inside: %d\n", dist, sNormMin, inside);
 
 	double dsMin = sNormMin * geomMin->GetLength();
 	double sMin = geomMin->GetS() + dsMin;
@@ -1789,6 +1782,9 @@ void Position::SetXYH(double x3, double y3, double h3)
 
 	// Found closest geometry. Now calculate exact distance to geometry. First find point perpendicular on geometry.
 	geomMin->EvaluateDS(dsMin, &x, &y, &h);
+	// Apply lane offset
+	x += roadMin->GetLaneOffset(dsMin) * cos(h + M_PI_2);
+	y += roadMin->GetLaneOffset(dsMin) * sin(h + M_PI_2);
 	distMin = PointDistance(x3, y3, x, y);
 
 	// Check whether the point is left or right side of road
@@ -1798,7 +1794,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 	// Find out what lane 
 	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);		
 
-	//printf("Closest point: dist %.2f side %d track_id %d lane_id %d s %.2f h %.2f\n", min_dist, min_side, track_id_, lane_id_, s_, h);
+	//printf("Closest point: dist %.2f side %d track_id %d lane_id %d s %.2f h %.2f\n", distMin, side, roadMin->GetId(), GetLaneId(), s_, h);
 	EvaluateZAndPitch();
 }
 	
