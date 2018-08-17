@@ -498,14 +498,22 @@ int Viewer::AddEnvironment(const char* filename)
 	}
 
 	// load and apply new model
-	environment_ = osgDB::readNodeFile(filename);
-	if (environment_ == 0)
+	if (strcmp(filename, ""))
 	{
-		std::cout << "Failed to read environment model " << filename << "!\n";
-		return -1;
+		environment_ = osgDB::readNodeFile(filename);
+		if (environment_ == 0)
+		{
+			std::cout << "Failed to read environment model " << filename << "!\n";
+			return -1;
+		}
+
+		envTx_->addChild(environment_);
+	} 
+	else
+	{
+		printf("AddEnvironment: No environment 3D model specified - go ahead without\n");
 	}
 
-	envTx_->addChild(environment_);
 	envTx_->setPosition(osg::Vec3(0, 0, 0));
 	envTx_->setScale(osg::Vec3(1, 1, 1));
 	envTx_->setAttitude(osg::Quat(0, 0, 0, 1));

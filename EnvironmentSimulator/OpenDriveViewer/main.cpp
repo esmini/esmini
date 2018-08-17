@@ -271,6 +271,7 @@ int main(int argc, char** argv)
 
 					track_pos->SetTrackPos(car->pos->GetTrackId(), car->pos->GetS(), 0);
 					lane_pos->SetLanePos(car->pos->GetTrackId(), car->pos->GetLaneId(), car->pos->GetS(), 0);
+					//printf("Ego pos: track %d lane %d s %.2f t %.2f offset %.2f\n", car->pos->GetTrackId(), car->pos->GetLaneId(), car->pos->GetS(), car->pos->GetT(), car->pos->GetOffset());
 					viewer->UpdateVPoints(track_pos->GetX(), track_pos->GetY(), lane_pos->GetX(), lane_pos->GetY(), lane_pos->GetZ());
 					viewer->UpdateVLine(lane_pos->GetX(), lane_pos->GetY(), lane_pos->GetZ());
 				}
