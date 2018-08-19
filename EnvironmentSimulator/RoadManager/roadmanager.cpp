@@ -20,7 +20,7 @@ using namespace roadmanager;
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
 #define CLAMP(x, a, b) (MIN(MAX(x, a), b))
-
+#define MAX_TRACK_DIST 10
 
 double Polynomial::Evaluate(double s)
 {
@@ -1666,6 +1666,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 	Road *road;
 	Road *roadMin;
 	bool inside = false;
+	bool insideMin = false;
 
 	if ((road = GetOpenDrive()->GetRoadByIdx(track_idx_)) == 0)
 	{
@@ -1679,43 +1680,51 @@ void Position::SetXYH(double x3, double y3, double h3)
 		return;
 	}
 
-#if 0
 	// First check current geometry
-	distMin = GetDistToTrackGeom(x3, y3, h3, geom, inside, sNormMin) + 1;
+	dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
 	geomMin = geom;
 	roadMin = road;
+	sNormMin = CLAMP(sNorm, 0.0, 1.0);
+	distMin = dist;
+	insideMin = inside;
 
-	if (!found)
+	if (!insideMin)
 	{
-		// Then check next segment / connection
+		// If point is outside line segment, maybe it has moved to successor or predecessor geometry...
 
-		// first check next and previous geometry
 		if (geometry_idx_ + 1 < road->GetNumberOfGeometries())
 		{
 			geom = road->GetGeometry(geometry_idx_ + 1);
-			if (GetDistToTrackGeom(x3, y3, h, geom, distMin, sNormMin))
+			dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
+			if (dist < distMin)
 			{
 				geomMin = geom;
 				roadMin = road;
-				found = true;
+				sNormMin = CLAMP(sNorm, 0.0, 1.0);
+				distMin = dist;
+				insideMin = inside;
 				printf("Position::SetXYH Found next geometry\n");
 			}
 		}
-		else if (geometry_idx_ > 0)
+		if (insideMin == false && geometry_idx_ > 0)
 		{
 			geom = road->GetGeometry(geometry_idx_ - 1);
-			if (GetDistToTrackGeom(x3, y3, h, geom, distMin, sNormMin))
+			dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
+			if (dist < distMin)
 			{
 				geomMin = geom;
 				roadMin = road;
-				found = true;
+				sNormMin = CLAMP(sNorm, 0.0, 1.0);
+				distMin = dist;
+				insideMin = inside;
 				printf("Position::SetXYH Found previous geometry\n");
 			}
 		}
 	}
-	if(!found)
+
+	// Then check next and previous road links
+	if(insideMin == false)
 	{
-		// Then check next and previous road links
 		roadMin = road;
 		roadmanager::LinkType linkList[2] = { roadmanager::LinkType::SUCCESSOR , roadmanager::LinkType::PREDECESSOR };
 		for (int i = 0; i < 2; i++)
@@ -1729,9 +1738,9 @@ void Position::SetXYH(double x3, double y3, double h3)
 				{
 					geomIdxTmp = 0;
 				}
-				else if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)
+				else if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_END)
 				{
-					geomIdxTmp = road->GetNumberOfGeometries();
+					geomIdxTmp = road->GetNumberOfGeometries()-1;
 				}
 				else
 				{
@@ -1739,42 +1748,55 @@ void Position::SetXYH(double x3, double y3, double h3)
 					return;
 				}
 				geom = GetOpenDrive()->GetRoadById(link->GetElementId())->GetGeometry(geomIdxTmp);
-				if (GetDistToTrackGeom(x3, y3, h, geom, distMin, sNormMin))
+				dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
+				if (dist < distMin)
 				{
 					geomMin = geom;
 					roadMin = road;
-					found = true;
+					sNormMin = CLAMP(sNorm, 0.0, 1.0);
+					distMin = dist;
+					insideMin = inside;
 					printf("Position::SetXYH Found road link of type %d\n", linkList[i]);
 				}
 			}
 		}
 	}
 
-	//	>GetRoadByIdx(track_idx_)->GetLink(LinkType::SUCCESSOR);
-#endif
 	// Else, finally check all roads and seegments...
 	// Search for the closest road segment (geometry)
-
-	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
+	if (distMin > MAX_TRACK_DIST)
 	{
-		road = GetOpenDrive()->GetRoadByIdx(i);
-		for (int j = 0; j < road->GetNumberOfGeometries(); j++)
+		bool found = false;
+		for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
 		{
-			geom = road->GetGeometry(j);
-			dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
-			//printf("rid %d geom %d dist %.2f sNormMin %.2f inside: %d (%.2f %.2f %.2f)\n",
-			//	i, j, dist, sNorm, inside, x3, y3, h3);
-
-			if (dist < distMin)  // First value (min_dist = -1) is always the closest so far
+			road = GetOpenDrive()->GetRoadByIdx(i);
+			for (int j = 0; j < road->GetNumberOfGeometries(); j++)
 			{
-				geomMin = geom;
-				roadMin = road;
-				sNormMin = CLAMP(sNorm, 0.0, 1.0);
-				distMin = dist;
+				geom = road->GetGeometry(j);
+				if (geom == geomMin)
+				{
+					continue;
+				}
+				dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
+				//printf("rid %d geom %d dist %.2f sNormMin %.2f inside: %d (%.2f %.2f %.2f)\n",
+				//	i, j, dist, sNorm, inside, x3, y3, h3);
+
+				if (dist < distMin)  // First value (min_dist = -1) is always the closest so far
+				{
+					geomMin = geom;
+					roadMin = road;
+					sNormMin = CLAMP(sNorm, 0.0, 1.0);
+					distMin = dist;
+					insideMin = inside;
+					found = true;
+				}
 			}
 		}
+		if (found)
+		{
+			printf("Position::SetXYH Found closer remote point rid %d geom_idx %d\n", road->GetId(), geometry_idx_);
+		}
 	}
-
 	double dsMin = sNormMin * geomMin->GetLength();
 	double sMin = geomMin->GetS() + dsMin;
 	double x, y, h;
