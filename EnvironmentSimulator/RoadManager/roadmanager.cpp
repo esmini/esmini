@@ -1533,34 +1533,33 @@ void Position::Track2Lane()
 		return;
 	}
 
-	// Find out what lane to belong to
-	// Todo: Apply hysteresis
-	int nLanes = t_ < 0 ? lane_section->GetNUmberOfLanesRight() : lane_section->GetNUmberOfLanesLeft();
+	// Find the closest driving lane within the lane section
+	int n_lanes = lane_section->GetNumberOfLanes();
 	double min_offset = t_;  // Initial offset relates to reference line
-	int candidateLaneId = 0;
+	int candidate_lane_id = 0;
 
-	if (nLanes > 0)
+	if (n_lanes > 0)
 	{
-		for (int i = 0; i < nLanes; i++)
+		for (int i = 0; i < n_lanes; i++)  // Search through all lanes
 		{
-			int laneId = (i + 1) * SIGN(t_);
-			double laneCenterOffset = SIGN(t_) * lane_section->GetCenterOffset(s_, laneId);
-			//printf("i %d laneId %d laneCenterOffset %.2f t_ %.2f lanesecid %d nlanes %d\n", i, laneId, laneCenterOffset, t_, lane_info.lane_section_idx_, nLanes);
-			if (lane_section->GetLaneById(laneId)->IsDriving() && fabs(t_ - laneCenterOffset) < fabs(min_offset))
+			int lane_id = lane_section->GetLaneIdByIdx(i);
+			double laneCenterOffset = SIGN(lane_id) * lane_section->GetCenterOffset(s_, lane_id);
+						
+			if (lane_section->GetLaneById(lane_id)->IsDriving() && (candidate_lane_id == 0 || fabs(t_ - laneCenterOffset) < fabs(min_offset)))
 			{
 				min_offset = t_ - laneCenterOffset;
-				candidateLaneId = laneId;
+				candidate_lane_id = lane_id;
 			}
 		}
 	}
 
 	offset_ = min_offset;
 
-	if (candidateLaneId != lane_id_)
+	if (candidate_lane_id != lane_id_)
 	{
-		printf("change lane: %d -> %d\n", lane_id_, candidateLaneId);
+		printf("change lane: %d -> %d\n", lane_id_, candidate_lane_id);
 		// Update cache indices
-		lane_id_ = candidateLaneId;
+		lane_id_ = candidate_lane_id;
 		lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
 	}
 }
