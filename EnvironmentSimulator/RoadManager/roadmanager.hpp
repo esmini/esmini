@@ -1,6 +1,7 @@
 #ifndef OPENDRIVE_HH_
 #define OPENDRIVE_HH_
 
+#include <cmath>
 #include <string>
 #include <vector>
 #include <list>
@@ -90,7 +91,7 @@ namespace roadmanager
 			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_ARC), curvature_(curvature) {}
 
 		double GetCurvature() { return curvature_; }
-		double GetRadius() { return fabs(1.0 / curvature_); }
+		double GetRadius() { return std::fabs(1.0 / curvature_); }
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 
