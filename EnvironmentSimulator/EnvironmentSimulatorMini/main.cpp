@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 	__int64 now, lastTimeStamp = 0;
 	double simTime = 0;
 
-	while (simTime<100.0)
+	while (!viewer->osgViewer_->done())
 	{
 		// Get milliseconds since Jan 1 1970
 		now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -116,9 +116,10 @@ int main(int argc, char *argv[])
 
 		scenarioEngine.setSimulationTime(simTime);
 		scenarioEngine.setTimeStep(deltaSimTime);
-		scenarioEngine.executeActions();
 		scenarioEngine.stepObjects(deltaSimTime);
 		scenarioEngine.checkConditions();
+		scenarioEngine.executeActions();
+
 
 		//scenarioEngine.printSimulationTime();
 		//scenarioEngine.printCarVector();
@@ -130,16 +131,16 @@ int main(int argc, char *argv[])
 			// Fulkod
 			int roadId = 1;// std::stoi(scenarioEngine.carVector[i].getPosition().Lane.roadId);
 			int laneId = scenarioEngine.carVector[i].getPosition().Lane.laneId;
-			int s = scenarioEngine.carVector[i].getPosition().Lane.s;
-			int offset = scenarioEngine.carVector[i].getPosition().Lane.offset;
+			double s = scenarioEngine.carVector[i].getPosition().Lane.s;
+			double offset = scenarioEngine.carVector[i].getPosition().Lane.offset;
 
 			viewer::CarModel *car = viewer->cars_[i];
 			roadmanager::Position p(roadId, laneId, s, offset);
 			car->txNode_->setPosition(osg::Vec3(p.GetX(), p.GetY(), p.GetZ()));
-			
+
 			float roll = 0;
-			float pitch = 0;
-			float heading = 0;
+			float pitch = p.GetP();
+			float heading = p.GetH();
 
 			car->quat_.makeRotate(
 				roll, osg::Vec3(1, 0, 0),
@@ -153,7 +154,6 @@ int main(int argc, char *argv[])
 
 	}
 
-	
 
 	// Wait for an "Enter"
 	std::cout << "\n" << "Press ENTER to quit" << std::endl;
