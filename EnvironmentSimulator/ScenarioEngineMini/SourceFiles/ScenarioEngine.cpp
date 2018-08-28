@@ -175,7 +175,7 @@ void ScenarioEngine::stepObjects(double dt)
 	for (size_t i = 0; i < carVector.size(); i++)
 	{
 		carVector[i].step(dt);
-		std::cout << "Car with actorId: " << carVector[i].getObjectId() << " stepped " << dt << " seconds"<< "\n" << std::endl;
+		//std::cout << "Car with actorId: " << carVector[i].getObjectId() << " stepped " << dt << " seconds"<< "\n" << std::endl;
 
 	}
 }
