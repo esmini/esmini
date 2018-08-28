@@ -1730,7 +1730,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 		for (int i = 0; i < 2; i++)
 		{
 			RoadLink *link = roadMin->GetLink(linkList[i]);
-			if (link != 0)
+			if (link != 0 && link->GetElementType() == roadmanager::RoadLink::ELEMENT_TYPE_ROAD) // no support for junction connection yet, only roads
 			{
 				int geomIdxTmp;
 				road = GetOpenDrive()->GetRoadById(link->GetElementId());
@@ -1742,7 +1742,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 				{
 					geomIdxTmp = road->GetNumberOfGeometries()-1;
 				}
-				else
+				else 
 				{
 					printf("Position::SetXYH Unsupported contact point type %d\n", link->GetContactPointType());
 					return;
