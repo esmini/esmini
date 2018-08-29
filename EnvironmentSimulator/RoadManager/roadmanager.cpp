@@ -300,6 +300,30 @@ LaneSection* Road::GetLaneSectionByIdx(int idx)
 	}
 }
 
+LaneSection* Road::GetLaneSectionByS(double s)
+{
+	double length = 0;
+
+	for (int i = 0; i < lane_section_.size(); i++)
+	{
+		length = length + lane_section_[i]->GetLength();
+
+		if (s < length)
+		{
+			return lane_section_[i];
+		}
+	}
+
+	/*for (auto &lane_section : lane_section_)
+	{
+		if (lane_section->GetLaneIdByIdx == id)
+		{
+			return lane_section;
+		}
+	}*/
+	return 0;
+}
+
 LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id)
 {
 	LaneInfo lane_info;
@@ -583,6 +607,13 @@ int LaneSection::GetConnectingLaneId(int incoming_lane_id, LinkType link_type)
 	}
 	
 	return id;
+}
+
+double LaneSection::GetWidthBetweenLanes(int lane_id1, int lane_id2, double s)
+{
+	double lanewidth = (std::fabs(GetCenterOffset(s, lane_id1)) + std::fabs(GetCenterOffset(s, lane_id2)));
+
+	return lanewidth;
 }
 
 RoadLink::RoadLink(LinkType type, pugi::xml_node node)
@@ -1901,7 +1932,7 @@ void Position::Lane2Track()
 
 		if (lane_section != 0)
 		{
-			t_ = lane_section->GetCenterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+			t_ = offset_ + lane_section->GetCenterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
 			h_offset_ = lane_section->GetCenterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
 		}
 	}
@@ -2129,7 +2160,7 @@ int Position::MoveAlongS(double ds)
 	}
 	else  // New position is within current track
 	{
-		SetLanePos(track_id_, lane_id_, s_ + ds, 0);
+		SetLanePos(track_id_, lane_id_, s_ + ds, offset_);
 		return 0;
 	}
 
