@@ -32,8 +32,6 @@ public:
 	void checkConditions();
 	void executeActions();
 	
-	void checkTimeHeadway(OSCCondition &condition);
-
 	//private:
 	Entities entities;
 	Init init;
