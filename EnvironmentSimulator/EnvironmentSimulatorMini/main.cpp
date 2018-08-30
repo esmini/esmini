@@ -59,6 +59,14 @@ int main(int argc, char *argv[])
 	std::vector<Story> story;
 	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenegraphFilename.c_str(), arguments);
 
+	// Init road manager
+	if (!roadmanager::Position::LoadOpenDrive(odrFilename.c_str()))
+	{
+		printf("Failed to load ODR %s\n", odrFilename.c_str());
+		return -1;
+	}
+	roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
+
 	// Load and parse data
 	scenarioReader.loadXmlFile(oscFilename.c_str());
 	scenarioReader.parseParameterDeclaration();
@@ -77,13 +85,6 @@ int main(int argc, char *argv[])
 	scenarioEngine.printCarVector();
 	scenarioEngine.initConditions();
 
-	// Init road manager
-	if (!roadmanager::Position::LoadOpenDrive(odrFilename.c_str()))
-	{
-		printf("Failed to load ODR %s\n", odrFilename.c_str());
-		return -1;
-	}
-	roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
 
 	//  Create cars for visualization
 	for (int i = 0; i < scenarioEngine.carVector.size(); i++)
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
 	__int64 now, lastTimeStamp = 0;
 	double simTime = 0;
 
-	while (simTime<100.0)
+	while (!viewer->osgViewer_->done())
 	{
 		// Get milliseconds since Jan 1 1970
 		now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -116,9 +117,10 @@ int main(int argc, char *argv[])
 
 		scenarioEngine.setSimulationTime(simTime);
 		scenarioEngine.setTimeStep(deltaSimTime);
-		scenarioEngine.executeActions();
 		scenarioEngine.stepObjects(deltaSimTime);
 		scenarioEngine.checkConditions();
+		scenarioEngine.executeActions();
+
 
 		//scenarioEngine.printSimulationTime();
 		//scenarioEngine.printCarVector();
@@ -127,19 +129,17 @@ int main(int argc, char *argv[])
 		for (int i = 0; i<scenarioEngine.carVector.size(); i++)
 		{
 
-			// Fulkod
-			int roadId = 1;// std::stoi(scenarioEngine.carVector[i].getPosition().Lane.roadId);
-			int laneId = scenarioEngine.carVector[i].getPosition().Lane.laneId;
-			int s = scenarioEngine.carVector[i].getPosition().Lane.s;
-			int offset = scenarioEngine.carVector[i].getPosition().Lane.offset;
-
 			viewer::CarModel *car = viewer->cars_[i];
-			roadmanager::Position p(roadId, laneId, s, offset);
-			car->txNode_->setPosition(osg::Vec3(p.GetX(), p.GetY(), p.GetZ()));
-			
+
+			double x = scenarioEngine.carVector[i].getPosition().GetX();
+			double y = scenarioEngine.carVector[i].getPosition().GetY();
+			double z = scenarioEngine.carVector[i].getPosition().GetZ();
+
+			car->txNode_->setPosition(osg::Vec3(x, y, z));
+
 			float roll = 0;
-			float pitch = 0;
-			float heading = 0;
+			float pitch = scenarioEngine.carVector[i].getPosition().GetP();
+			float heading = scenarioEngine.carVector[i].getPosition().GetH();
 
 			car->quat_.makeRotate(
 				roll, osg::Vec3(1, 0, 0),
@@ -147,17 +147,22 @@ int main(int argc, char *argv[])
 				heading, osg::Vec3(0, 0, 1));
 			car->txNode_->setAttitude(car->quat_);
 
+
+			// Find LaneSection according to s, starting from current
+			/*roadmanager::Road *road = p.GetOpenDrive()->GetRoadById(roadId);
+			roadmanager::LaneSection *lanesection = road->GetLaneSectionByS(s);
+			double widthBetweenLanes = lanesection->GetWidthBetweenLanes(1,2,s);*/
+			
 		}
 
 		viewer->osgViewer_->frame();
 
 	}
 
-	
 
-	// Wait for an "Enter"
-	std::cout << "\n" << "Press ENTER to quit" << std::endl;
-	std::cin.get();
+	//// Wait for an "Enter"
+	//std::cout << "\n" << "Press ENTER to quit" << std::endl;
+	//std::cin.get();
 
 	return 1;
 }

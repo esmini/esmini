@@ -350,6 +350,7 @@ namespace roadmanager
 		int GetNUmberOfLanesLeft();
 		void SetLength(double length) { length_ = length; }
 		int GetConnectingLaneId(int incoming_lane_id, LinkType link_type);
+		double GetWidthBetweenLanes(int lane_id1, int lane_id2, double s);
 		void Print();
 
 	private:
@@ -414,6 +415,7 @@ namespace roadmanager
 		Geometry *GetGeometry(int idx);
 		int GetNumberOfGeometries() { return (int)geometry_.size(); }
 		LaneSection *GetLaneSectionByIdx(int idx);
+		LaneSection *GetLaneSectionByS(double s);
 		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id);
 		int GetNumberOfLaneSections() { return (int)lane_section_.size(); }
 		std::string GetName() { return name_; }

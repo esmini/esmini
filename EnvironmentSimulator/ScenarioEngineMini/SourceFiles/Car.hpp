@@ -1,5 +1,6 @@
 #pragma once
 #include "OSCPrivateAction.hpp"
+#include "../../RoadManager/roadmanager.hpp"
 
 #include <iostream>
 #include <string>
@@ -13,15 +14,13 @@ public:
 
 	void setObjectId(int objectId);
 	void setName(std::string objectName);
-	void setPosition(OSCPosition position, std::string posType);
+	void setPosition(int roadId, int laneId, double s, double offset);
 	void setSpeed(double speed);
 	void setOffset(double offset);
 
 	void step(double dt);
+	roadmanager::Position getPosition();
 	double getSpeed();
-	OSCPosition getPosition();
-	std::string getPositionType();
-	double getOffset();
 	double getObjectId();
 	std::string getObjectName();
 	void printState();
@@ -29,9 +28,9 @@ public:
 	//private:
 	int objectId;
 	std::string objectName;
-	OSCPosition position;
-	std::string	posType;
 	double speed;
+	roadmanager::Position position;
+
 };
 
 

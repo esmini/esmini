@@ -13,27 +13,21 @@ void Car::setName(std::string objectName)
 	this->objectName = objectName;
 }
 
-void Car::setPosition(OSCPosition position, std::string posType)
+void Car::setPosition(int roadId, int laneId, double s, double offset)
 {
 	std::cout << "Car: setPosition started" << std::endl;
-	this->position = position;
-	this->posType = posType;
+
+	position.SetLanePos(roadId, laneId, s, offset);
+
 	std::cout << "Car: setPosition finished" << std::endl;
 }
 
 
 void Car::step(double dt)
 {
-	// Can be done with cases instead
-	if (posType == "World")
-	{
-		position.World.x = position.World.x + cos(position.World.h) * (speed/3.6) * dt;
-		position.World.y = position.World.y + sin(position.World.h) * (speed/3.6) * dt;
-	}
-	else if (posType == "Lane")
-	{
-		position.Lane.s = position.Lane.s + (speed/3.6) * dt;
-	}
+	
+	position.MoveAlongS(speed * dt);
+
 }
 
 void Car::setSpeed(double speed)
@@ -46,7 +40,13 @@ void Car::setSpeed(double speed)
 
 void Car::setOffset(double offset)
 {
-	position.Lane.offset = offset;
+
+	int roadId = position.GetTrackId();
+	int laneId = position.GetLaneId();
+	double s = position.GetS();
+
+	position.SetLanePos(roadId, laneId, s, offset);
+
 }
 
 double Car::getSpeed()
@@ -54,20 +54,11 @@ double Car::getSpeed()
 	return speed;
 }
 
-OSCPosition Car::getPosition()
+roadmanager::Position Car::getPosition()
 {
 	return position;
 }
 
-std::string Car::getPositionType()
-{
-	return posType;
-}
-
-double Car::getOffset()
-{
-	return position.Lane.offset;
-}
 
 double Car::getObjectId()
 {
@@ -85,33 +76,32 @@ void Car::printState()
 	std::cout << "actorId: " << objectId << std::endl;
 	std::cout << std::endl;
 
+	std::string posType = "Lane";
 
 	// Can be done with cases instead
 	if (posType == "World")
 	{
 		std::cout << "Position - World" << "\n" << std::endl;
 
-		std::cout << "\t" << "x = " << position.World.x << std::endl;
-		std::cout << "\t" << "y = " << position.World.y << std::endl;
-		std::cout << "\t" << "z = " << position.World.z << std::endl;
-		std::cout << "\t" << "h = " << position.World.h << std::endl;
-		std::cout << "\t" << "p = " << position.World.p << std::endl;
-		std::cout << "\t" << "r = " << position.World.r << std::endl;
+		std::cout << "\t" << "x = " << position.GetX() << std::endl;
+		std::cout << "\t" << "y = " << position.GetY() << std::endl;
+		std::cout << "\t" << "z = " << position.GetZ() << std::endl;
+		std::cout << "\t" << "h = " << position.GetH() << std::endl;
+		std::cout << "\t" << "p = " << position.GetP() << std::endl;
+		std::cout << "\t" << "r = " << position.GetR() << std::endl;
 
 	}
 	else if (posType == "Lane")
 	{
 		std::cout << "Position - Lane" << std::endl;
 
-		std::cout << "\t" << "roadId = " << position.Lane.roadId << std::endl;
-		std::cout << "\t" << "laneId = " << position.Lane.laneId << std::endl;
-		std::cout << "\t" << "offset = " << position.Lane.offset << std::endl;
-		std::cout << "\t" << "s = " << position.Lane.s << std::endl;
+		std::cout << "\t" << "roadId = " << position.GetTrackId() << std::endl;
+		std::cout << "\t" << "laneId = " << position.GetLaneId() << std::endl;
+		std::cout << "\t" << "offset = " << position.GetOffset() << std::endl;
+		std::cout << "\t" << "s = " << position.GetS() << std::endl;
 	}
 
 	std::cout << "\t" << "speed = " << speed << std::endl;
-
-
 
 	std::cout << "---------------------------------------" << std::endl;
 	std::cout << std::endl;

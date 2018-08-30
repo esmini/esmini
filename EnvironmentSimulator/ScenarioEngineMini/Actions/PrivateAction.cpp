@@ -66,21 +66,36 @@ void PrivateAction::ExecuteAction(double simulationTime, double timeStep) {
 void PrivateAction::executeSinusoidal(double simulationTime)
 {
 	double time = privateAction.Lateral.LaneChange.Dynamics.time;
+	std::string targetObject = privateAction.Lateral.LaneChange.Target.Relative.object;
+	//double = privateAction.Lateral.LaneChange.Target.Relative.value;
+	
+
 	double n = 1;
 	double f = 3.1415 * n / time;
 
 	for (size_t i = 0; i < actionEntitiesIds.size(); i++)
-	{		
-		double initialOffset = 0; // = carVectorPtr[actionEntitiesIds[i]].getOffset(); This will accumulate. Will need original offset.
-		double A = 1; // TODO: Should be distance between lanes + possible initial offset
-		double newOffset = initialOffset + (A * cos((startTime - simulationTime) * f) - 1);
+	{
+		roadmanager::Position position = (*carVectorPtr)[actionEntitiesIds[i]].getPosition();
+		roadmanager::Road *road = position.GetOpenDrive()->GetRoadById(position.GetTrackId());
+		roadmanager::LaneSection *lanesection = road->GetLaneSectionByS(position.GetS());
 
-		if ((*carVectorPtr)[actionEntitiesIds[i]].getPositionType() == "Lane")
-		{
-			(*carVectorPtr)[actionEntitiesIds[i]].setOffset(newOffset);
-		}
+		/*double width = lanesection->GetWidthBetweenLanes(
+			(*carVectorPtr)[actionEntitiesIds[i]].getPosition().GetLaneId(),
+			,
+			position.GetS());*/
+		double width = lanesection->GetWidthBetweenLanes(
+			-1,
+			1,
+			position.GetS());
+
+
+		double initialOffset = 0; // = carVectorPtr[actionEntitiesIds[i]].getOffset(); This will accumulate. Will need original offset.
+		double newOffset = (initialOffset + width) * ( (cos((startTime - simulationTime)* f)- 1) / 2 );
+
+		(*carVectorPtr)[actionEntitiesIds[i]].setOffset(newOffset);
+
 	}
-	
+		
 	// Could switch lane after time/2 and swap sign of the offset
 
 	// Should use the target position instead of time to decide when action is completed

@@ -64,7 +64,15 @@ void ScenarioEngine::initCarVector()
 				// Position
 				else if (!init.Actions.Private[i].Action[j].Position.Lane.roadId.empty())
 				{
-					carVector[i].setPosition(init.Actions.Private[i].Action[j].Position, "Lane");
+					//carVector[i].setPosition(init.Actions.Private[i].Action[j].Position, "Lane");
+					OSCPosition position = init.Actions.Private[i].Action[j].Position;
+
+					int roadId = std::stoi(position.Lane.roadId);
+					int laneId = position.Lane.laneId;
+					double s = position.Lane.s;
+					double offset = position.Lane.offset;
+
+					carVector[i].setPosition(roadId, laneId, s, offset);
 				}
 			}
 		}
@@ -72,75 +80,6 @@ void ScenarioEngine::initCarVector()
 
 	std::cout << "ScenarioEngine: initCarVector finished" << std::endl;
 }
-
-
-
-void ScenarioEngine::checkTimeHeadway(OSCCondition &condition)
-{
-	//// Number of triggering entities
-	//unsigned triggeringEntitiesNum = condition.ByEntity.TriggeringEntities.Entity.size();
-
-	//// objectIds of objects that can cause a trigg
-	//std::vector<int> triggeringEntityIds(triggeringEntitiesNum);
-	//std::vector<OSCPosition> triggeringEntityPos(triggeringEntitiesNum);
-
-	//for (size_t i = 0; i < triggeringEntitiesNum; i++)
-	//{
-	//	triggeringEntityIds[i] = getObjectId(condition.ByEntity.TriggeringEntities.Entity[i].name);
-	//	triggeringEntityPos[i] = carVector[triggeringEntityIds[i]].getPosition();
-	//}
-
-	////  objectId of objects that are measuaring from
-	//int entityId = getObjectId(condition.ByEntity.EntityCondition.TimeHeadway.entity);
-	//OSCPosition entityPos = carVector[entityId].getPosition();
-	//double entitySpeed = carVector[entityId].getSpeed();
-
-	//// Check which object are allowed to cause a trigg
-	//std::vector<double> headwayTime(triggeringEntitiesNum);
-	//std::vector<bool> triggs(triggeringEntitiesNum, false);
-
-
-	//if (condition.ByEntity.EntityCondition.TimeHeadway.alongRoute == "true")
-	//{
-	//	
-	//	// Take into account the dimensions of the vehicle
-	//	if (condition.ByEntity.EntityCondition.TimeHeadway.freespace == "true")
-	//	{
-	//		// Go for road coordinates
-	//		if (condition.ByEntity.EntityCondition.TimeHeadway.alongRoute == "true")
-	//		{
-	//			for (size_t i = 0; i < triggeringEntitiesNum; i++)
-	//			{
-	//				headwayTime[i] = (entityPos.Lane.s - triggeringEntityPos[i].Lane.s) / (entitySpeed/3.6);
-	//				std::cout << "ScenarioEngine: headwayTime is " << headwayTime[i] << std::endl;
-
-	//				if (condition.ByEntity.EntityCondition.TimeHeadway.rule == "greater_than")
-	//				{
-
-	//					if (headwayTime[i] > std::stod(condition.ByEntity.EntityCondition.TimeHeadway.value))
-	//					{
-	//						triggs[i] = true;
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-
-
-	//if (condition.ByEntity.TriggeringEntities.rule == "any")
-	//{
-	//	for (size_t i = 0; i < triggeringEntitiesNum; i++)
-	//	{
-	//		if (triggs[i])
-	//		{
-	//			std::cout << "ScenarioEngine: " << condition.name << "has triggered" << std::endl;
-	//			break;
-	//		}
-	//	}
-	//}
-}
-
 
 
 int ScenarioEngine::getObjectId(std::string objectName)

@@ -46,19 +46,15 @@ bool TimeHeadway::checkTimeHeadway()
 
 	for (size_t i = 0; i < N; i++)
 	{
-		//triggeringEntityPos[i] = carVector[triggeringEntityIds[i]].getPosition();
 		triggeringEntityPos[i] = (*carVectorPtr)[triggeringEntityIds[i]].getPosition();
 	}
 
 	//  objectId of objects that are measuaring from
-	//entityPos = carVector[entityId].getPosition();
-	//entitySpeed = carVector[entityId].getSpeed();
-
 	entityPos = (*carVectorPtr)[entityId].getPosition();
 	entitySpeed = (*carVectorPtr)[entityId].getSpeed();
 
 
-	// Check which object are allowed to cause a trigg
+	// Check which object that are allowed to cause a trigg
 	headwayTimeOld = headwayTimeNew;
 
 
@@ -73,7 +69,7 @@ bool TimeHeadway::checkTimeHeadway()
 			{
 				for (size_t i = 0; i < N; i++)
 				{
-					headwayTimeNew[i] = (entityPos.Lane.s - triggeringEntityPos[i].Lane.s) / (entitySpeed / 3.6);
+					headwayTimeNew[i] = (entityPos.GetS() - triggeringEntityPos[i].GetS()) / (entitySpeed / 3.6);
 					std::cout << "ScenarioEngine: headwayTime is " << headwayTimeNew[i] << std::endl;
 
 					if (condition.ByEntity.EntityCondition.TimeHeadway.rule == "greater_than")

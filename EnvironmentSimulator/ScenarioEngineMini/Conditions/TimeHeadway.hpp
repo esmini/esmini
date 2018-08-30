@@ -29,11 +29,11 @@ public:
 
 	// Triggering entities
 	std::vector<int> triggeringEntityIds;
-	std::vector<OSCPosition> triggeringEntityPos;
+	std::vector<roadmanager::Position> triggeringEntityPos;
 
 	// Entity
 	int entityId;
-	OSCPosition entityPos;
+	roadmanager::Position entityPos;
 	double entitySpeed;
 
 	// Headwaytime
