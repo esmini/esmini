@@ -612,6 +612,22 @@ namespace roadmanager
 		int		elevation_idx_;	// index of the current elevation entry 
 	};
 
+
+	// A route is a sequence of positions, at least one per road along the route
+	class Route
+	{
+	public:
+		explicit Route() {}
+
+		int AddWaypoint(Position *position) { waypoint_.push_back(position); }
+		int SetPosition(Position *position);
+		int SetOffset(double ds, int dLane, double  dLaneOffset);
+		double GetLength();
+
+		std::vector<Position*> waypoint_;
+		Position current_position_;
+	};
+
 } // namespace
 
 #endif // OPENDRIVE_HH_

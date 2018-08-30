@@ -2236,3 +2236,47 @@ void Position::PrintXY()
 {
 	printf("%.2f, %.2f\n", x_, y_);
 }
+
+int Route::SetPosition(Position *position)
+{
+	// Is it a valid position, i.e. is it along the route
+	for (auto &w : waypoint_)
+	{
+		if (w->GetTrackId() == position->GetTrackId()) // Same road
+		{
+			// Update current position
+			current_position_ = *position;
+			return 0;
+		}
+	}
+
+	return -1;
+}
+
+int Route::SetOffset(double ds, int dLane, double  dLaneOffset)
+{
+	double s_start = waypoint_[0]->GetS();
+	double route_length = 0;
+
+	// Find out what road and local s value
+	for (auto &w : waypoint_)
+	{
+		int road_length = w->GetOpenDrive()->GetRoadById(w->GetTrackId())->GetLength();
+		if (ds < route_length + road_length - s_start)
+		{
+			// Found road segment
+			current_position_.SetLanePos(w->GetTrackId(), w->GetLaneId() + dLane, w->GetS(), route_length + road_length - s_start + ds);
+			return 0;
+		}
+		route_length += road_length - s_start;
+		s_start = 0;  // For all following road segments, calculate length from beginning
+	}
+	
+	return -1;
+}
+
+double Route::GetLength()
+{
+
+	return 0.0;
+}
