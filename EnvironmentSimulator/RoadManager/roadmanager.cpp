@@ -2353,6 +2353,12 @@ int Route::SetPosition(Position *position)
 	return -1;
 }
 
+int Route::GetPosition(Position *position)
+{
+	*position = current_position_;
+	return 0;
+}
+
 int Route::AddWaypoint(Position *position)
 {
 	// Validate waypoint: Is it on the previous road or a connecting one?
@@ -2365,6 +2371,12 @@ int Route::AddWaypoint(Position *position)
 			// direction is given by lane id sign
 			LinkType linkType = prev_pos->GetLaneId() < 0 ? LinkType::SUCCESSOR : LinkType::PREDECESSOR;
 			RoadLink *link = prev_pos->GetRoadById(prev_pos->GetTrackId())->GetLink(linkType);
+			if (link == 0)
+			{
+				printf("oute::AddWaypoint Error: Road %d link of type %s missing!\n", 
+					prev_pos->GetTrackId(), linkType == LinkType::SUCCESSOR ? "SUCCESSOR" : "PREDECESSOR");
+				return -1;
+			}
 
 			// check whether the roads are directly conencted via link (no junction)
 			if (link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)
@@ -2382,10 +2394,21 @@ int Route::AddWaypoint(Position *position)
 				// find valid connecting road
 				for (int i = 0; i < junction->GetNumberOfRoadConnections(prev_pos->GetTrackId(), prev_pos->GetLaneId()); i++)
 				{
-					LaneRoadLaneConnection connection = junction->GetRoadConnectionByIdx(position->GetTrackId(), position->GetLaneId(), i);
-					if (connection.GetConnectingRoadId() == position->GetTrackId() && connection.GetConnectinglaneId() == position->GetLaneId())
+					LaneRoadLaneConnection connection = junction->GetRoadConnectionByIdx(prev_pos->GetTrackId(), prev_pos->GetLaneId(), i);
+					// Check exit of the connecting road 
+					Road *connecting_road = position->GetRoadById(connection.GetConnectingRoadId());
+					int connecting_lane_id = connecting_road->GetLaneSectionByIdx(connecting_road->GetNumberOfLaneSections() - 1)->
+						GetConnectingLaneId(prev_pos->GetLaneId(), LinkType::SUCCESSOR);
+
+					if (connecting_road->GetLink(LinkType::SUCCESSOR)->GetElementId() == position->GetTrackId() && 
+						connecting_lane_id == position->GetLaneId())
 					{
 						connected = true;
+						// Adding waypoint for junction connecting road
+						Position *connected_pos = new Position(connecting_road->GetId(), connecting_lane_id, 0, 0);
+						waypoint_.push_back( connected_pos);
+						printf("Route::AddWaypoint Added connecting waypoint %d: %d, %d, %.2f\n", 
+							(int)waypoint_.size() - 1, connecting_road->GetId(), connecting_lane_id, 0.0);
 					}
 				}
 			}
@@ -2400,6 +2423,7 @@ int Route::AddWaypoint(Position *position)
 	}
 
 	waypoint_.push_back(position);
+	printf("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f\n", (int)waypoint_.size()-1, position->GetTrackId(), position->GetLaneId(), position->GetS());
 
 	return 0; 
 }
@@ -2416,7 +2440,7 @@ int Route::SetOffset(double ds, int dLane, double  dLaneOffset)
 		if (ds < route_length + road_length - s_start)
 		{
 			// Found road segment
-			current_position_.SetLanePos(w->GetTrackId(), w->GetLaneId() + dLane, w->GetS(), route_length + road_length - s_start + ds);
+			current_position_.SetLanePos(w->GetTrackId(), w->GetLaneId() + dLane, ds + s_start - route_length, dLaneOffset);
 			return 0;
 		}
 		route_length += road_length - s_start;

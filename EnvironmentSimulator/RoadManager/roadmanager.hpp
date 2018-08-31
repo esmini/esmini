@@ -631,6 +631,7 @@ namespace roadmanager
 
 		int AddWaypoint(Position *position);
 		int SetPosition(Position *position);
+		int GetPosition(Position *position);
 		int SetOffset(double ds, int dLane, double  dLaneOffset);
 		double GetLength();
 

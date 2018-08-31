@@ -417,7 +417,7 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 
 bool Viewer::CreateVLineAndPoint(osg::Group* parent)
 {
-	// Road key points
+	// vehicle points
 	pointData = new osg::Vec3Array;
 	pointData->push_back(osg::Vec3d(0, 0, 0));
 	pointData->push_back(osg::Vec3d(0, 0, 0));
@@ -545,6 +545,7 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 			visible = !visible;
 			viewer_->odrLines_->setNodeMask(visible ? 0xffffffff : 0x0);
 			viewer_->vehicleLine_->setNodeMask(visible ? 0xffffffff : 0x0);
+			viewer_->vehiclePoint_->setNodeMask(visible ? 0xffffffff : 0x0);
 		}
 	}
 	break;

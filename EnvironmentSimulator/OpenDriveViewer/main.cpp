@@ -13,6 +13,8 @@
 
 using namespace std::chrono;
 
+#define USE_ROUTE 1
+
 #define DEFAULT_SPEED   70  // km/h
 #define DEFAULT_DENSITY 1   // Cars per 100 m
 #define ROAD_MIN_LENGTH 30
@@ -201,6 +203,7 @@ int main(int argc, char** argv)
 
 	roadmanager::Position *lane_pos = new roadmanager::Position();
 	roadmanager::Position *track_pos = new roadmanager::Position();
+
 	try
 	{
 		if (!roadmanager::Position::LoadOpenDrive(odrFilename.c_str()))
@@ -209,6 +212,23 @@ int main(int argc, char** argv)
 			return -1;
 		}
 		roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
+
+#if USE_ROUTE
+		// Test route concept 
+		// Specify hardcoded route on Fabriksgatan
+		roadmanager::Position waypoint[2];
+		roadmanager::Position ego_route_pos;
+		//waypoint[0].SetLanePos(2, -1, 200, 0);
+		//waypoint[1].SetLanePos(1, -1, 10, 0);
+		waypoint[0].SetLanePos(2, -1, 200, 0);
+		waypoint[1].SetLanePos(3, -1, 10, 0);
+		roadmanager::Route route;
+		double route_s = 0;
+
+		route.AddWaypoint(&waypoint[0]);
+		route.AddWaypoint(&waypoint[1]);
+#endif
+
 
 		viewer::Viewer *viewer = new viewer::Viewer(
 			odrManager, 
@@ -241,8 +261,15 @@ int main(int argc, char** argv)
 				if(car->ego)
 				{
 					// Update vehicle dynamics/driver model
+#if !USE_ROUTE
 					car->ego->Update(deltaSimTime, viewer->driverAcceleration_, viewer->driverSteering_);
 					car->pos->SetXYH(car->ego->posX_, car->ego->posY_, car->ego->heading_);
+#else
+					route_s += deltaSimTime * 50 / 3.6; // 50 km/h
+					route.SetOffset(route_s, 0, 0);
+					route.GetPosition(car->pos);
+					car->ego->SetPos(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ(), car->pos->GetH());
+#endif
 					
 					// Fetch Z and Pitch from OpenDRIVE position
 					car->ego->posZ_ = car->pos->GetZ();
