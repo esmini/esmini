@@ -105,6 +105,8 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 						car_->ego = 0;
 						cars.push_back(car_);
 
+//						printf("Car %d rid %d lid %d\n", cars.size() - 1, car_->road_id_init, car_->lane_id_init);
+
 						// Add space to next vehicle
 						s += average_distance + (0.2 * average_distance * mt_rand()) / (std::mt19937::max)();
 					}
@@ -132,7 +134,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 		{
 			s = 0;
 		}
-		printf("Reset pos lid: %d\n", car->lane_id_init);
+//		printf("Reset pos rid: %d lid: %d\n", car->road_id_init, car->lane_id_init);
 		car->pos->SetLanePos(car->road_id_init, car->lane_id_init, s, 0, 0);
 	}
 

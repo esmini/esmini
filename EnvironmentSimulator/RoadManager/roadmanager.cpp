@@ -1366,6 +1366,77 @@ void Connection::Print()
 	}
 }
 
+
+int Junction::GetNumberOfRoadConnections(int roadId, int laneId)
+{
+	int counter = 0;
+
+	for (int i = 0; i < GetNumberOfConnections(); i++)
+	{
+		Connection * connection = GetConnectionByIdx(i);
+		if (roadId == connection->GetIncomingRoad()->GetId())
+		{
+			for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++)
+			{
+				JunctionLaneLink *lane_link = connection->GetLaneLink(j);
+				if (laneId == lane_link->from_)
+				{
+					counter++;
+				}
+			}
+		}
+	}
+	return counter;
+}
+
+LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, int idx)
+{
+	int counter = 0;
+	LaneRoadLaneConnection lane_road_lane_connection;
+
+	for (int i = 0; i < GetNumberOfConnections(); i++)
+	{
+		Connection * connection = GetConnectionByIdx(i);
+		if (roadId == connection->GetIncomingRoad()->GetId())
+		{
+			for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++)
+			{
+				JunctionLaneLink *lane_link = connection->GetLaneLink(j);
+				if (laneId == lane_link->from_)
+				{
+					if (counter == idx)
+					{
+						lane_road_lane_connection.SetLane(laneId);
+						lane_road_lane_connection.contact_point_ = connection->GetContactPoint();
+						lane_road_lane_connection.SetConnectingRoad(connection->GetConnectingRoad()->GetId());
+						lane_road_lane_connection.SetConnectingLane(lane_link->to_);
+						// find out driving direction
+						int laneSectionId;
+						if (lane_link->to_ < 0)
+						{
+							laneSectionId = 0;
+						}
+						else
+						{
+							laneSectionId = connection->GetConnectingRoad()->GetNumberOfLaneSections() - 1;
+						}
+						if (!connection->GetConnectingRoad()->GetLaneSectionByIdx(laneSectionId)->GetLaneById(lane_link->to_)->IsDriving())
+						{
+							printf("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to %d, %d\n",
+								roadId, laneId, connection->GetConnectingRoad()->GetId(), lane_link->to_);
+						}
+
+						return lane_road_lane_connection;
+					}
+					counter++;
+				}
+			}
+		}
+	}
+
+	return lane_road_lane_connection;
+}
+
 void Junction::Print()
 {
 	printf("Junction %d %s: \n", id_, name_.c_str());
@@ -1407,7 +1478,8 @@ int OpenDrive::GetTrackIdByIdx(int idx)
 	return 0;
 }
 
-int OpenDrive::GetNumberOfJunctionConnections(Road *road, Lane *lane)
+#if 0
+int OpenDrive::GetNumberOfJunctionConnections(Road *road, int laneId)
 {
 	int counter = 0;
 
@@ -1421,7 +1493,7 @@ int OpenDrive::GetNumberOfJunctionConnections(Road *road, Lane *lane)
 				for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++)
 				{
 					JunctionLaneLink *lane_link = connection->GetLaneLink(j);
-					if (lane->GetId() == lane_link->from_)
+					if (laneId == lane_link->from_)
 					{
 						counter++;
 					}
@@ -1432,7 +1504,7 @@ int OpenDrive::GetNumberOfJunctionConnections(Road *road, Lane *lane)
 	return counter;
 }
 
-LaneRoadLaneConnection OpenDrive::GetJunctionConnection(Road *road, Lane *lane, int idx)
+LaneRoadLaneConnection OpenDrive::GetJunctionConnection(Road *road, int laneId, int idx)
 {
 	int counter = 0;
 	LaneRoadLaneConnection lane_road_lane_connection;
@@ -1447,17 +1519,17 @@ LaneRoadLaneConnection OpenDrive::GetJunctionConnection(Road *road, Lane *lane, 
 				for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++)
 				{
 					JunctionLaneLink *lane_link = connection->GetLaneLink(j);
-					if (lane->GetId() == lane_link->from_)
+					if (laneId == lane_link->from_)
 					{
 						if (counter == idx)
 						{
-							lane_road_lane_connection.SetLane(lane->GetId());
+							lane_road_lane_connection.SetLane(laneId);
 							lane_road_lane_connection.SetConnectingRoad(connection->GetConnectingRoad()->GetId());
 							lane_road_lane_connection.SetConnectingLane(lane_link->to_);
 							if (!connection->GetConnectingRoad()->GetLaneSectionByIdx(0)->GetLaneById(lane_link->to_)->IsDriving())
 							{
 								printf("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to %d, %d\n",
-									road->GetId(), lane->GetId(), connection->GetConnectingRoad()->GetId(), lane_link->to_);
+									road->GetId(), laneId, connection->GetConnectingRoad()->GetId(), lane_link->to_);
 							}
 
 							return lane_road_lane_connection;
@@ -1470,6 +1542,7 @@ LaneRoadLaneConnection OpenDrive::GetJunctionConnection(Road *road, Lane *lane, 
 	}
 	return lane_road_lane_connection;
 }
+#endif
 
 void OpenDrive::Print()
 {
@@ -2058,6 +2131,8 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 		return -1;
 	}
 
+	int contact_point = 0;
+
 	if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)
 	{
 		LaneLink *lane_link = lane->GetLink(link_type);
@@ -2069,21 +2144,25 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 				printf("Position::MoveToConnectingRoad Road+ new lane id %d\n", new_lane_id);
 			}
 		}
-	
+		contact_point = road_link->GetContactPointType();
 		next_road = GetOpenDrive()->GetRoadById(road_link->GetElementId());
 	}
 	else if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
 	{
 		Junction *junction = GetOpenDrive()->GetJunctionById(road_link->GetElementId());
+		if (junction == 0)
+		{
+			printf("Position::MoveToConnectingRoad Error: junction %d not existing\n", road_link->GetElementType());
+			return -1;
+		}
 	
 		// find valid connecting road
-		int n_connections = GetOpenDrive()->GetNumberOfJunctionConnections(road, lane);
+		int n_connections = junction->GetNumberOfRoadConnections(road->GetId(), lane->GetId());
 		
 		// todo randomly choose a connection
 		int connection_idx = (int)(((double)n_connections * mt_rand()) / (mt19937::max)());
-		connection = junction->GetConnectionByIdx(connection_idx);
-		next_road = connection->GetConnectingRoad();
-		LaneRoadLaneConnection lane_road_lane_connection = GetOpenDrive()->GetJunctionConnection(road, lane, connection_idx);
+		LaneRoadLaneConnection lane_road_lane_connection = junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), connection_idx);
+		contact_point = lane_road_lane_connection.contact_point_;
 
 		new_lane_id = lane_road_lane_connection.GetConnectinglaneId();
 		next_road = GetOpenDrive()->GetRoadById(lane_road_lane_connection.GetConnectingRoadId());
@@ -2100,16 +2179,6 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 	{
 		printf("Position::MoveToConnectingRoad: No next road\n");
 		return -1;
-	}
-
-	int contact_point = 0;
-	if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)
-	{
-		contact_point = road_link->GetContactPointType();
-	}
-	else if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
-	{
-		contact_point = connection->GetContactPoint();
 	}
 	
 	// Find out if connecting to start or end of new road
@@ -2284,6 +2353,57 @@ int Route::SetPosition(Position *position)
 	return -1;
 }
 
+int Route::AddWaypoint(Position *position)
+{
+	// Validate waypoint: Is it on the previous road or a connecting one?
+	if (waypoint_.size() > 0)
+	{
+		bool connected = false;
+		Position *prev_pos = waypoint_.back();
+		if (prev_pos->GetTrackId() != position->GetTrackId())
+		{
+			// direction is given by lane id sign
+			LinkType linkType = prev_pos->GetLaneId() < 0 ? LinkType::SUCCESSOR : LinkType::PREDECESSOR;
+			RoadLink *link = prev_pos->GetRoadById(prev_pos->GetTrackId())->GetLink(linkType);
+
+			// check whether the roads are directly conencted via link (no junction)
+			if (link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)
+			{
+				if (link->GetElementId() == position->GetTrackId())
+				{
+					connected = true;
+				}
+			}
+			// check whether the roads are conencted via a junction and specified lane
+			else if (link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
+			{
+				Junction *junction = prev_pos->GetOpenDrive()->GetJunctionById(link->GetElementId());
+
+				// find valid connecting road
+				for (int i = 0; i < junction->GetNumberOfRoadConnections(prev_pos->GetTrackId(), prev_pos->GetLaneId()); i++)
+				{
+					LaneRoadLaneConnection connection = junction->GetRoadConnectionByIdx(position->GetTrackId(), position->GetLaneId(), i);
+					if (connection.GetConnectingRoadId() == position->GetTrackId() && connection.GetConnectinglaneId() == position->GetLaneId())
+					{
+						connected = true;
+					}
+				}
+			}
+		}
+		if (!connected)
+		{
+			printf("Route::AddWaypoint Error: waypoint (%d, %d) is not connected to the previous one (%d, %d)\n",
+				position->GetTrackId(), position->GetLaneId(), prev_pos->GetTrackId(), prev_pos->GetLaneId());
+
+			return -1;
+		}
+	}
+
+	waypoint_.push_back(position);
+
+	return 0; 
+}
+
 int Route::SetOffset(double ds, int dLane, double  dLaneOffset)
 {
 	double s_start = waypoint_[0]->GetS();
@@ -2292,7 +2412,7 @@ int Route::SetOffset(double ds, int dLane, double  dLaneOffset)
 	// Find out what road and local s value
 	for (auto &w : waypoint_)
 	{
-		int road_length = w->GetOpenDrive()->GetRoadById(w->GetTrackId())->GetLength();
+		double road_length = w->GetOpenDrive()->GetRoadById(w->GetTrackId())->GetLength();
 		if (ds < route_length + road_length - s_start)
 		{
 			// Found road segment
