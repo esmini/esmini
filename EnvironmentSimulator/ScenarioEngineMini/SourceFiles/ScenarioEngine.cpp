@@ -30,9 +30,9 @@ void ScenarioEngine::printSimulationTime()
 }
 
 
-void ScenarioEngine::initCarVector()
+void ScenarioEngine::initCars()
 {
-	std::cout << "ScenarioEngine: initCarVector started" << std::endl;
+	std::cout << "ScenarioEngine: initCars started" << std::endl;
 
 	if (init.Actions.Private[0].exists)
 	{
@@ -41,10 +41,11 @@ void ScenarioEngine::initCarVector()
 		{			
 			Car car;
 			int objectId = i;
-			car.setObjectId(objectId);
-			car.setName(init.Actions.Private[i].object); // The names should be taken from entities instead.
+			std::string objectName = init.Actions.Private[i].object;
 
-			carVector.push_back(car);
+			car.setObjectId(objectId);
+			car.setName(objectName);
+			cars.addCar(car);
 
 			for (size_t j = 0; j < init.Actions.Private[i].Action.size(); j++)
 			{
@@ -56,7 +57,8 @@ void ScenarioEngine::initCarVector()
 					{
 						if (init.Actions.Private[i].Action[j].Longitudinal.Speed.Target.Absolute.value != NAN)
 						{
-							carVector[i].setSpeed(init.Actions.Private[i].Action[j].Longitudinal.Speed.Target.Absolute.value);
+							double speed = init.Actions.Private[i].Action[j].Longitudinal.Speed.Target.Absolute.value;
+							cars.setSpeed(objectName, speed);
 						}
 					}
 				}
@@ -64,7 +66,6 @@ void ScenarioEngine::initCarVector()
 				// Position
 				else if (!init.Actions.Private[i].Action[j].Position.Lane.roadId.empty())
 				{
-					//carVector[i].setPosition(init.Actions.Private[i].Action[j].Position, "Lane");
 					OSCPosition position = init.Actions.Private[i].Action[j].Position;
 
 					int roadId = std::stoi(position.Lane.roadId);
@@ -72,51 +73,29 @@ void ScenarioEngine::initCarVector()
 					double s = position.Lane.s;
 					double offset = position.Lane.offset;
 
-					carVector[i].setPosition(roadId, laneId, s, offset);
+					roadmanager::Position pos(roadId, laneId, s, offset);
+					cars.setPosition(objectName, pos);
 				}
 			}
 		}
 	}
 
-	std::cout << "ScenarioEngine: initCarVector finished" << std::endl;
+	std::cout << "ScenarioEngine: initCars finished" << std::endl;
 }
 
-
-int ScenarioEngine::getObjectId(std::string objectName)
+void ScenarioEngine::printCars()
 {
-	int objectId = -1;
-
-	for (size_t i = 0; i < carVector.size(); i++)
-	{
-		if (carVector[i].getObjectName() == objectName)
-		{
-			objectId = carVector[i].getObjectId();
-		}
-	}
-
-	return objectId;
-}
-
-
-void ScenarioEngine::printCarVector()
-{
-	for (size_t i = 0; i < carVector.size(); i++)
+	/*for (size_t i = 0; i < cars.size(); i++)
 	{
 		std::cout << "---------------------------------------" << std::endl;
-		std::cout << "Print of carVector " << "\n" << std::endl;
-		carVector[i].printState();
-
-	}
+		std::cout << "Print of cars " << "\n" << std::endl;
+		cars.printState(); TODO
+	}*/
 }
 
 void ScenarioEngine::stepObjects(double dt)
 {
-	for (size_t i = 0; i < carVector.size(); i++)
-	{
-		carVector[i].step(dt);
-		//std::cout << "Car with actorId: " << carVector[i].getObjectId() << " stepped " << dt << " seconds"<< "\n" << std::endl;
-
-	}
+	cars.step(dt);
 }
 
 void ScenarioEngine::initConditions()
@@ -150,7 +129,7 @@ void ScenarioEngine::initConditions()
 
 								if (!condition.ByEntity.EntityCondition.TimeHeadway.entity.empty())
 								{
-									TimeHeadway timeHeadway(condition, carVector, storyId, actionEntities);
+									TimeHeadway timeHeadway(condition, cars, storyId, actionEntities);
 									timeHeadwayVector.push_back(timeHeadway);
 								}
 							}
@@ -160,7 +139,7 @@ void ScenarioEngine::initConditions()
 						{
 							
 								OSCPrivateAction privateAction = story[i].Act[j].Sequence[k].Maneuver[l].Event[m].Action[n].Private;
-								PrivateAction action(privateAction, carVector, storyId, actionEntities);
+								PrivateAction action(privateAction, cars, storyId, actionEntities);
 								actionVector.push_back(action);
 						}
 					}

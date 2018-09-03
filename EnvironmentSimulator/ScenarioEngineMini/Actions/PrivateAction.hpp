@@ -2,6 +2,7 @@
 
 #include "OSCPrivateAction.hpp"
 #include "Car.hpp"
+#include "Cars.hpp"
 
 #include <iostream>
 #include <string>
@@ -11,17 +12,15 @@
 class PrivateAction
 {
 public:
-	PrivateAction(OSCPrivateAction &privateAction, std::vector<Car> &carVector, std::vector<int> storyId, std::vector<std::string> &actionEntities);
-	//~PrivateAction();
+	PrivateAction(OSCPrivateAction &privateAction, Cars &cars, std::vector<int> storyId, std::vector<std::string> &actionEntities);
 	void setStartTime(double simulationTime);
 	void ExecuteAction(double simulationTime, double timeStep);
 	void executeSinusoidal(double simulationTime);
 	void executeSpeed(double simulationTime, double timeStep);
-	int getObjectId(std::string objectName);
 	bool getFirstRun();
 
 	OSCPrivateAction privateAction;
-	std::vector<Car> * carVectorPtr;
+	Cars * carsPtr;
 	std::vector<int> storyId;
 	std::vector<std::string> actionEntities;
 

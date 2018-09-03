@@ -2,6 +2,7 @@
 #include "OSCCondition.hpp"
 #include "OSCPosition.hpp"
 #include "Car.hpp"
+#include "Cars.hpp"
 
 #include <iostream>
 #include <string>
@@ -12,15 +13,14 @@
 class TimeHeadway
 {
 public:
-	TimeHeadway(OSCCondition &condition, std::vector<Car> &carVector, std::vector<int> storyId,std::vector<std::string> &actionEntities);
+	TimeHeadway(OSCCondition &condition, Cars &cars, std::vector<int> storyId,std::vector<std::string> &actionEntities);
 
 	bool checkTimeHeadway();
-	int getObjectId(std::string objectName);
 
 	//~TimeHeadway();
 
 	OSCCondition condition;
-	std::vector<Car> * carVectorPtr;
+	Cars * carsPtr;
 	std::vector<int> storyId;
 	std::vector<std::string> actionEntities;
 
@@ -28,11 +28,11 @@ public:
 	unsigned N;
 
 	// Triggering entities
-	std::vector<int> triggeringEntityIds;
+	std::vector<std::string> triggeringEntities;
 	std::vector<roadmanager::Position> triggeringEntityPos;
 
 	// Entity
-	int entityId;
+	std::string entity;
 	roadmanager::Position entityPos;
 	double entitySpeed;
 

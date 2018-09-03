@@ -482,16 +482,8 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 									action.Longitudinal.Speed.Target.Relative.exists = true;
 
 									pugi::xml_attribute relativeObjectAttribute = targetChild.attribute("object");
-									//if (isDollar(relativeObjectAttribute.value()))
-									//{
-									//	//action.Longitudinal.Speed.Target.Relative.object = stor;
-
-									//}
-									//else
-									//{
-										action.Longitudinal.Speed.Target.Relative.object = relativeObjectAttribute.value();
-									//}
 									//std::cout << relativeObjectAttribute.name() << " = " << relativeObjectAttribute.value() << std::endl;
+									action.Longitudinal.Speed.Target.Relative.object = relativeObjectAttribute.value();
 
 									pugi::xml_attribute relativeValueAttribute = targetChild.attribute("value");
 									//std::cout << relativeValueAttribute.name() << " = " << relativeValueAttribute.value() << std::endl;
@@ -566,17 +558,17 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 
 								std::string targetChildName(targetChild.name());
 
-								if (lateralChildName == "Relative")
+								if (targetChildName == "Relative")
 								{
-									pugi::xml_attribute relativeObjectAttribute = lateralChild.attribute("object");
+									pugi::xml_attribute relativeObjectAttribute = targetChild.attribute("object");
 									action.Lateral.LaneChange.Target.Relative.object = getParameter(relativeObjectAttribute.value());
 
-									pugi::xml_attribute relativeValueAttribute = lateralChild.attribute("value");
+									pugi::xml_attribute relativeValueAttribute = targetChild.attribute("value");
 									action.Lateral.LaneChange.Target.Relative.value = std::stod(relativeValueAttribute.value());
 								}
-								else if (lateralChildName == "Absolute")
+								else if (targetChildName == "Absolute")
 								{
-									pugi::xml_attribute absoluteValueAttribute = lateralChild.attribute("value");
+									pugi::xml_attribute absoluteValueAttribute = targetChild.attribute("value");
 									action.Lateral.LaneChange.Target.Absolute.value = std::stod(absoluteValueAttribute.value());
 								}
 							}
@@ -628,9 +620,6 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 void ScenarioReader::parseInit(Init &init)
 {
 	std::cout << "ScenarioReader: parseInit started" << std::endl;
-
-	//init.Actions.Private.resize(1);
-	//init.Actions.Private[0].object = "Anton";
 
 	pugi::xml_node actionsNode = doc.child("OpenSCENARIO").child("Storyboard").child("Init").child("Actions");
 

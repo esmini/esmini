@@ -2,10 +2,10 @@
 
 
 
-PrivateAction::PrivateAction(OSCPrivateAction &privateAction, std::vector<Car> &carVector, std::vector<int> storyId, std::vector<std::string> &actionEntities)
+PrivateAction::PrivateAction(OSCPrivateAction &privateAction, Cars &cars, std::vector<int> storyId, std::vector<std::string> &actionEntities)
 {
 	this->privateAction = privateAction;
-	carVectorPtr = &carVector;
+	carsPtr = &cars;
 	this->actionEntities = actionEntities;
 	this->storyId = storyId;
 
@@ -13,11 +13,6 @@ PrivateAction::PrivateAction(OSCPrivateAction &privateAction, std::vector<Car> &
 	ActionCompleted = false;
 	startAction = false;
 	 
-	for (size_t i = 0; i < actionEntities.size(); i++)
-	{
-		actionEntitiesIds.push_back(getObjectId(actionEntities[i]));
-	}
-
 	// Identify actionType
 	if (privateAction.Lateral.LaneChange.Dynamics.shape == "sinusoidal")
 	{
@@ -26,7 +21,6 @@ PrivateAction::PrivateAction(OSCPrivateAction &privateAction, std::vector<Car> &
 			actionType = "sinusoidal-time";
 		}
 	}
-
 
 	if (!isnan(privateAction.Longitudinal.Speed.Dynamics.rate)) // Should be (!...Dynamics.shape.empty()) Wrong in osc
 	{
@@ -66,33 +60,45 @@ void PrivateAction::ExecuteAction(double simulationTime, double timeStep) {
 void PrivateAction::executeSinusoidal(double simulationTime)
 {
 	double time = privateAction.Lateral.LaneChange.Dynamics.time;
+	double f = 3.1415 / time;
+
 	std::string targetObject = privateAction.Lateral.LaneChange.Target.Relative.object;
-	//double = privateAction.Lateral.LaneChange.Target.Relative.value;
-	
+	double targetValue= privateAction.Lateral.LaneChange.Target.Relative.value;
+	double currentLane = (*carsPtr).getPosition(targetObject).GetLaneId();
 
-	double n = 1;
-	double f = 3.1415 * n / time;
+	double targetLane = currentLane + targetValue;
 
-	for (size_t i = 0; i < actionEntitiesIds.size(); i++)
+	// targetLane may become 0:
+	if (targetLane == 0 && currentLane > 0)
 	{
-		roadmanager::Position position = (*carVectorPtr)[actionEntitiesIds[i]].getPosition();
+		targetLane = -1;
+	}
+	else if (targetLane == 0 && currentLane < 0)
+	{
+		targetLane = 1;
+	}
+
+	for (size_t i = 0; i < actionEntities.size(); i++)
+	{
+		roadmanager::Position position = (*carsPtr).getPosition(actionEntities[i]);
 		roadmanager::Road *road = position.GetOpenDrive()->GetRoadById(position.GetTrackId());
 		roadmanager::LaneSection *lanesection = road->GetLaneSectionByS(position.GetS());
 
-		/*double width = lanesection->GetWidthBetweenLanes(
-			(*carVectorPtr)[actionEntitiesIds[i]].getPosition().GetLaneId(),
-			,
-			position.GetS());*/
 		double width = lanesection->GetWidthBetweenLanes(
-			-1,
-			1,
+			(*carsPtr).getPosition(actionEntities[i]).GetLaneId(),
+			targetLane,
 			position.GetS());
 
-
-		double initialOffset = 0; // = carVectorPtr[actionEntitiesIds[i]].getOffset(); This will accumulate. Will need original offset.
+		double initialOffset = 0;
 		double newOffset = (initialOffset + width) * ( (cos((startTime - simulationTime)* f)- 1) / 2 );
 
-		(*carVectorPtr)[actionEntitiesIds[i]].setOffset(newOffset);
+		int roadId = position.GetTrackId();
+		int laneId = position.GetLaneId();
+		double s = position.GetS();
+
+		roadmanager::Position newPosition(roadId, laneId, s, newOffset);
+
+		(*carsPtr).setPosition(actionEntities[i], newPosition);
 
 	}
 		
@@ -112,17 +118,15 @@ void PrivateAction::executeSpeed(double simulationTime, double timeStep)
 {
 	if (privateAction.Longitudinal.Speed.Dynamics.rate != NAN)
 	{
-		for (size_t i = 0; i < actionEntitiesIds.size(); i++)
+		for (size_t i = 0; i < actionEntities.size(); i++)
 		{
 
-			double newSpeed = (*carVectorPtr)[actionEntitiesIds[i]].getSpeed() + privateAction.Longitudinal.Speed.Dynamics.rate*timeStep;
-
-			(*carVectorPtr)[actionEntitiesIds[i]].setSpeed(newSpeed);
-
+			double newSpeed = (*carsPtr).getSpeed(actionEntities[i]) + privateAction.Longitudinal.Speed.Dynamics.rate*timeStep;
+			(*carsPtr).setSpeed(actionEntities[i], newSpeed);
 
 			if (privateAction.Longitudinal.Speed.Target.Absolute.value != NAN)
 			{
-				if (privateAction.Longitudinal.Speed.Target.Absolute.value >= (*carVectorPtr)[actionEntitiesIds[i]].getSpeed())
+				if (privateAction.Longitudinal.Speed.Target.Absolute.value >= newSpeed)
 				{
 					ActionCompleted = true;
 					startAction = false;
@@ -130,26 +134,6 @@ void PrivateAction::executeSpeed(double simulationTime, double timeStep)
 			}
 		}
 	}
-	
-
 }
 
 
-int PrivateAction::getObjectId(std::string objectName)
-{
-	int objectId = -1;
-
-	for (size_t i = 0; i < (*carVectorPtr).size(); i++)
-	{
-		if ((*carVectorPtr)[i].getObjectName() == objectName)
-		{
-			objectId = (*carVectorPtr)[i].getObjectId();
-		}
-	}
-
-	return objectId;
-}
-
-//PrivateAction::~PrivateAction()
-//{
-//}

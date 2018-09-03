@@ -6,6 +6,7 @@
 #include "Car.hpp"
 #include "TimeHeadway.hpp"
 #include "PrivateAction.hpp"
+#include "Cars.hpp"
 
 
 #include <iostream>
@@ -19,9 +20,8 @@ public:
 
 	ScenarioEngine(Entities &entities, Init &init, std::vector<Story> &story, double startTime);
 
-	void initCarVector();
-	void printCarVector();
-	int getObjectId(std::string objectName);
+	void initCars();
+	void printCars();
 
 	void setSimulationTime(double simulationTime);
 	void setTimeStep(double timeStep);
@@ -43,6 +43,7 @@ public:
 	std::vector<Car> carVector;
 	std::vector<TimeHeadway> timeHeadwayVector;
 	std::vector<PrivateAction> actionVector;
+	Cars cars;
 
 };
 

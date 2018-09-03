@@ -13,11 +13,12 @@ void Car::setName(std::string objectName)
 	this->objectName = objectName;
 }
 
-void Car::setPosition(int roadId, int laneId, double s, double offset)
+void Car::setPosition(roadmanager::Position position)
 {
 	std::cout << "Car: setPosition started" << std::endl;
 
-	position.SetLanePos(roadId, laneId, s, offset);
+	this->position = position;
+	//position.SetLanePos(roadId, laneId, s, offset);
 
 	std::cout << "Car: setPosition finished" << std::endl;
 }

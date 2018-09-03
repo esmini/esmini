@@ -81,13 +81,12 @@ int main(int argc, char *argv[])
 
 	// ScenarioEngine
 	ScenarioEngine scenarioEngine(entities, init, story, simulationTime);
-	scenarioEngine.initCarVector();
-	scenarioEngine.printCarVector();
+	scenarioEngine.initCars();
 	scenarioEngine.initConditions();
 
 
 	//  Create cars for visualization
-	for (int i = 0; i < scenarioEngine.carVector.size(); i++)
+	for (int i = 0; i < scenarioEngine.cars.getNum(); i++)
 	{
 		int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (std::mt19937::max)();
 		viewer->AddCar(carModelID);
@@ -126,20 +125,20 @@ int main(int argc, char *argv[])
 		//scenarioEngine.printCarVector();
 
 		// Visualize cars
-		for (int i = 0; i<scenarioEngine.carVector.size(); i++)
+		for (int i = 0; i<scenarioEngine.cars.getNum(); i++)
 		{
 
 			viewer::CarModel *car = viewer->cars_[i];
 
-			double x = scenarioEngine.carVector[i].getPosition().GetX();
-			double y = scenarioEngine.carVector[i].getPosition().GetY();
-			double z = scenarioEngine.carVector[i].getPosition().GetZ();
+			double x = scenarioEngine.cars.getPosition(i).GetX();
+			double y = scenarioEngine.cars.getPosition(i).GetY();
+			double z = scenarioEngine.cars.getPosition(i).GetZ();
 
 			car->txNode_->setPosition(osg::Vec3(x, y, z));
 
 			float roll = 0;
-			float pitch = scenarioEngine.carVector[i].getPosition().GetP();
-			float heading = scenarioEngine.carVector[i].getPosition().GetH();
+			float pitch = scenarioEngine.cars.getPosition(i).GetP();
+			float heading = scenarioEngine.cars.getPosition(i).GetH();
 
 			car->quat_.makeRotate(
 				roll, osg::Vec3(1, 0, 0),
