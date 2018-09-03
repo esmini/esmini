@@ -385,7 +385,7 @@ namespace roadmanager
 		int GetElementId() { return element_id_; }
 		LinkType GetType() { return type_; }
 		int GetElementType() { return element_type_; }
-		int GetContactPointType() { return contact_point_type_; }
+		ContactPointType GetContactPointType() { return contact_point_type_; }
 
 		void Print();
 
@@ -464,6 +464,8 @@ namespace roadmanager
 		int GetLaneId() { return lane_id_; }
 		int GetConnectingRoadId() { return connecting_road_id_; }
 		int GetConnectinglaneId() { return connecting_lane_id_; }
+
+		ContactPointType contact_point_;
 	private:
 		int lane_id_;
 		int connecting_road_id_;
@@ -508,6 +510,8 @@ namespace roadmanager
 		int GetId() { return id_; }
 		std::string GetName() { return name_; }
 		int GetNumberOfConnections() { return (int)connection_.size(); }
+		int GetNumberOfRoadConnections(int roadId, int laneId);
+		LaneRoadLaneConnection GetRoadConnectionByIdx(int roadId, int laneId, int idx);
 		void AddConnection(Connection *connection) { connection_.push_back(connection); }
 		Connection *GetConnectionByIdx(int idx) { return connection_[idx]; }
 		void Print();
@@ -533,8 +537,11 @@ namespace roadmanager
 		Junction* GetJunctionById(int id);
 		Junction* GetJunctionByIdx(int idx);
 		int GetNumOfJunctions() { return (int)junction_.size(); }
-		int GetNumberOfJunctionConnections(Road *road, Lane *lane);
-		LaneRoadLaneConnection GetJunctionConnection(Road *road, Lane *lane, int idx);
+		int ResolveConnections();
+#if 0
+		int GetNumberOfJunctionConnections(Road *road, int laneId);
+		LaneRoadLaneConnection GetJunctionConnection(Road *road, int laneId, int idx);	
+#endif
 
 		void Print();
 	
@@ -564,6 +571,7 @@ namespace roadmanager
 
 		int GetTrackId() { return track_id_; }
 		int GetLaneId() { return lane_id_; }
+		Road *GetRoadById(int id) { return GetOpenDrive()->GetRoadById(id);	}
 		double GetS() { return s_; }
 		double GetT() { return t_; }
 		double GetOffset() { return offset_; }
@@ -612,6 +620,23 @@ namespace roadmanager
 		int		lane_section_idx_;	// lane section
 		int		geometry_idx_;	// index of the segment within the track given by track_idx
 		int		elevation_idx_;	// index of the current elevation entry 
+	};
+
+
+	// A route is a sequence of positions, at least one per road along the route
+	class Route
+	{
+	public:
+		explicit Route() {}
+
+		int AddWaypoint(Position *position);
+		int SetPosition(Position *position);
+		int GetPosition(Position *position);
+		int SetOffset(double ds, int dLane, double  dLaneOffset);
+		double GetLength();
+
+		std::vector<Position*> waypoint_;
+		Position current_position_;
 	};
 
 } // namespace
