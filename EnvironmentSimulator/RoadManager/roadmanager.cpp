@@ -2401,6 +2401,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 		}
 	}
 	LaneSection *lane_section = 0;
+
 	if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
 	{
 		if (link->GetElementId() == road2->GetId())
@@ -2427,7 +2428,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 					return false;
 				}
 				Lane *lane = lane_section->GetLaneById(lane1_id);
-				if (!lane_section->GetConnectingLaneId(lane1_id, LinkType::SUCCESSOR) == lane2_id)
+				if (!lane_section->GetConnectingLaneId(lane1_id, link_type) == lane2_id)
 				{
 					return false;
 				}
@@ -2436,7 +2437,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 			return true;
 		}
 	}
-	// check whether the roads are connected via a junction and specified lane
+	// check whether the roads are connected via a junction connecting road and specified lane
 	else if (link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
 	{
 		Junction *junction = GetJunctionById(link->GetElementId());
@@ -2450,12 +2451,12 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 				// Found a connecting road - now check if it connects to second road
 				Road *connecting_road = connection->GetConnectingRoad();
 				RoadLink *exit_link = connecting_road->GetLink(SUCCESSOR);
+
 				if (exit_link->GetElementId() == road2_id)
 				{
-
 					// Finally check that lanes are connected through the junction
-					// Look at lane section and find out if lane is connected
-					// Assume connecting road has only one lane section linking 
+					// Look at lane section and locate lane connecting both roads
+					// Assume connecting road has only one lane section 
 					lane_section = connecting_road->GetLaneSectionByIdx(0);
 					if (lane_section == 0)
 					{
