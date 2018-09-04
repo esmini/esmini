@@ -1,35 +1,57 @@
-#include "TimeHeadway.hpp"
+#include "Condition.hpp"
 
 
-TimeHeadway::TimeHeadway(OSCCondition &condition, Cars &cars, std::vector<int> storyId, std::vector<std::string> &actionEntities)
+Condition::Condition(OSCCondition &condition, Cars &cars, std::vector<int> storyId, std::vector<std::string> &actionEntities)
 {
 	this->condition = condition;
-	carsPtr = &cars;
+	this->carsPtr = &cars;
 	this->storyId = storyId;
 	this->actionEntities = actionEntities;
-
-	N = condition.ByEntity.TriggeringEntities.Entity.size();
-
-	// Triggering entities
-	triggeringEntityPos.resize(N);
-	triggeringEntities.resize(N);
-
-	// Headwaytime
-	headwayTimeOld.resize(N);
-	headwayTimeNew.resize(N);
-	triggs.resize(N, false);
-
-	// Get triggering entities
-	for (size_t i = 0; i < N; i++) 
-	{
-		triggeringEntities[i] = condition.ByEntity.TriggeringEntities.Entity[i].name;
-	}
-
-	entity = condition.ByEntity.EntityCondition.TimeHeadway.entity;
+	identifyConditionType(condition);
 }
 
+void Condition::identifyConditionType(OSCCondition &condition)
+{
+	if (!condition.ByEntity.EntityCondition.TimeHeadway.entity.empty())
+	{
+		this->conditionType = "TimeHeadway";
 
-bool TimeHeadway::checkTimeHeadway()
+		// Triggering entities		(TriggeringEntities -> Entity -> name="Ego")
+		this->N = condition.ByEntity.TriggeringEntities.Entity.size();
+		this->triggeringEntityPos.resize(N);
+		this->triggeringEntities.resize(N);
+
+		// Get triggering entities
+		for (size_t i = 0; i < N; i++)
+		{
+			this->triggeringEntities[i] = condition.ByEntity.TriggeringEntities.Entity[i].name;
+		}
+
+		// Get entity				(EntityCondition -> TimeHeadway -> entity="$owner" (LaneChanger))
+		this->entity = condition.ByEntity.EntityCondition.TimeHeadway.entity;
+
+		// Headwaytime
+		headwayTimeOld.resize(N);
+		headwayTimeNew.resize(N);
+		triggs.resize(N, false);
+	}
+}
+
+bool Condition::checkCondition()
+{
+	if (conditionType == "TimeHeadway")
+	{
+		return checkTimeHeadway();
+	}
+	else if (conditionType == "SomeThingElse")
+	{
+		return false;
+	}
+
+	return false;
+}
+
+bool Condition::checkTimeHeadway()
 {
 
 	for (size_t i = 0; i < N; i++)
@@ -37,11 +59,9 @@ bool TimeHeadway::checkTimeHeadway()
 		triggeringEntityPos[i] = (*carsPtr).getPosition(triggeringEntities[i]);
 	}
 
-	//  objectId of objects that are measuaring from
 	entityPos = (*carsPtr).getPosition(entity);
 	entitySpeed = (*carsPtr).getSpeed(entity);
 
-	// Check which object that are allowed to cause a trigg
 	headwayTimeOld = headwayTimeNew;
 
 	if (condition.ByEntity.EntityCondition.TimeHeadway.alongRoute == "true")
@@ -77,7 +97,6 @@ bool TimeHeadway::checkTimeHeadway()
 		}
 	}
 
-
 	if (condition.ByEntity.TriggeringEntities.rule == "any")
 	{
 		for (size_t i = 0; i < N; i++)
@@ -91,5 +110,10 @@ bool TimeHeadway::checkTimeHeadway()
 		}
 	}
 	return false;
+}
+
+std::vector<int> Condition::getStoryId()
+{
+	return storyId;
 }
 
