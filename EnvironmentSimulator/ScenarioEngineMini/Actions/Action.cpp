@@ -1,49 +1,67 @@
-#include "PrivateAction.hpp"
+#include "Action.hpp"
 
 
-
-PrivateAction::PrivateAction(OSCPrivateAction &privateAction, Cars &cars, std::vector<int> storyId, std::vector<std::string> &actionEntities)
+Action::Action(OSCPrivateAction &privateAction, Cars &cars, std::vector<int> storyId, std::vector<std::string> &actionEntities)
 {
 	this->privateAction = privateAction;
 	carsPtr = &cars;
 	this->actionEntities = actionEntities;
 	this->storyId = storyId;
 
-	firstRun = true;
-	ActionCompleted = false;
+	actionCompleted = false;
 	startAction = false;
-	 
-	// Identify actionType
+	
+	identifyActionType(privateAction);
+
+}
+
+void Action::identifyActionType(OSCPrivateAction privateAction)
+{
 	if (privateAction.Lateral.LaneChange.Dynamics.shape == "sinusoidal")
 	{
 		if (!isnan(privateAction.Lateral.LaneChange.Dynamics.time))
 		{
-			actionType = "sinusoidal-time";
+			this->actionType = "sinusoidal-time";
+			this->time = privateAction.Lateral.LaneChange.Dynamics.time;
+			this->targetObject = privateAction.Lateral.LaneChange.Target.Relative.object;
+			this->targetValue = privateAction.Lateral.LaneChange.Target.Relative.value;
+			this->f = 3.1415 / time;
 		}
 	}
 
 	if (!isnan(privateAction.Longitudinal.Speed.Dynamics.rate)) // Should be (!...Dynamics.shape.empty()) Wrong in osc
 	{
-		actionType = "speed";
+		this->actionType = "speed";
+		this->speedRate = privateAction.Longitudinal.Speed.Dynamics.rate;
 	}
 }
 
-
-void PrivateAction::setStartTime(double simulationTime)
+void Action::setStartTime(double simulationTime)
 {
 	startTime = simulationTime;
 }
 
-
-bool PrivateAction::getFirstRun()
+void Action::setStartAction()
 {
-	return firstRun;
+	startAction = true;
 }
 
+bool Action::getStartAction()
+{
+	return startAction;
+}
 
-void PrivateAction::ExecuteAction(double simulationTime, double timeStep) {
+bool Action::getActionCompleted()
+{
+	return actionCompleted;
+}
 
-	firstRun = false;
+std::vector<int> Action::getStoryId()
+{
+	return storyId;
+}
+
+void Action::ExecuteAction(double simulationTime, double timeStep) {
 
 	if (actionType == "sinusoidal-time")
 	{
@@ -56,16 +74,10 @@ void PrivateAction::ExecuteAction(double simulationTime, double timeStep) {
 	}
 }
 
-
-void PrivateAction::executeSinusoidal(double simulationTime)
+void Action::executeSinusoidal(double simulationTime)
 {
-	double time = privateAction.Lateral.LaneChange.Dynamics.time;
-	double f = 3.1415 / time;
 
-	std::string targetObject = privateAction.Lateral.LaneChange.Target.Relative.object;
-	double targetValue= privateAction.Lateral.LaneChange.Target.Relative.value;
 	double currentLane = (*carsPtr).getPosition(targetObject).GetLaneId();
-
 	double targetLane = currentLane + targetValue;
 
 	// targetLane may become 0:
@@ -92,6 +104,7 @@ void PrivateAction::executeSinusoidal(double simulationTime)
 		double initialOffset = 0;
 		double newOffset = (initialOffset + width) * ( (cos((startTime - simulationTime)* f)- 1) / 2 );
 
+		// Create new position
 		int roadId = position.GetTrackId();
 		int laneId = position.GetLaneId();
 		double s = position.GetS();
@@ -107,28 +120,26 @@ void PrivateAction::executeSinusoidal(double simulationTime)
 	// Should use the target position instead of time to decide when action is completed
 	if (simulationTime >= startTime + time)
 	{
-		ActionCompleted = true;
+		actionCompleted = true;
 		startAction = false;
 	}
-	
 }
 
-
-void PrivateAction::executeSpeed(double simulationTime, double timeStep)
+void Action::executeSpeed(double simulationTime, double timeStep)
 {
 	if (privateAction.Longitudinal.Speed.Dynamics.rate != NAN)
 	{
 		for (size_t i = 0; i < actionEntities.size(); i++)
 		{
 
-			double newSpeed = (*carsPtr).getSpeed(actionEntities[i]) + privateAction.Longitudinal.Speed.Dynamics.rate*timeStep;
+			double newSpeed = (*carsPtr).getSpeed(actionEntities[i]) + speedRate*timeStep;
 			(*carsPtr).setSpeed(actionEntities[i], newSpeed);
 
 			if (privateAction.Longitudinal.Speed.Target.Absolute.value != NAN)
 			{
 				if (privateAction.Longitudinal.Speed.Target.Absolute.value >= newSpeed)
 				{
-					ActionCompleted = true;
+					actionCompleted = true;
 					startAction = false;
 				}
 			}
