@@ -13,7 +13,7 @@
 
 using namespace std::chrono;
 
-#define USE_ROUTE 1
+#define USE_ROUTE 0
 
 #define DEFAULT_SPEED   70  // km/h
 #define DEFAULT_DENSITY 1   // Cars per 100 m
@@ -145,17 +145,6 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 		double heading = car->pos->GetH();
 		double pitch = car->pos->GetP();
 
-		// Is the car going opposite direction?
-		if (car->pos->GetLaneId() > 0)
-		{
-			// Add 180 degrees
-			heading += M_PI;
-			if (heading > 2 * M_PI)
-			{
-				heading -= 2 * M_PI;
-			}
-			pitch = -pitch;
-		}
 		car->model->txNode_->setPosition(osg::Vec3(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ()));
 
 		car->model->quat_.makeRotate(
