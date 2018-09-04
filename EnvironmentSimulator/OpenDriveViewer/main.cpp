@@ -218,10 +218,13 @@ int main(int argc, char** argv)
 		// Specify hardcoded route on Fabriksgatan
 		roadmanager::Position waypoint[2];
 		roadmanager::Position ego_route_pos;
-		//waypoint[0].SetLanePos(2, -1, 200, 0);
-		//waypoint[1].SetLanePos(1, -1, 10, 0);
+#if 1
 		waypoint[0].SetLanePos(2, -1, 200, 0);
-		waypoint[1].SetLanePos(3, -1, 10, 0);
+		waypoint[1].SetLanePos(1, -1, 10, 0);
+#else
+		waypoint[0].SetLanePos(0, 1, 50, 0);
+		waypoint[1].SetLanePos(1, -1, 10, 0);
+#endif
 		roadmanager::Route route;
 		double route_s = 0;
 
@@ -265,7 +268,7 @@ int main(int argc, char** argv)
 					car->ego->Update(deltaSimTime, viewer->driverAcceleration_, viewer->driverSteering_);
 					car->pos->SetXYH(car->ego->posX_, car->ego->posY_, car->ego->heading_);
 #else
-					route_s += deltaSimTime * 50 / 3.6; // 50 km/h
+					route_s += deltaSimTime * 20 / 3.6; // 50 km/h
 					route.SetOffset(route_s, 0, 0);
 					route.GetPosition(car->pos);
 					car->ego->SetPos(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ(), car->pos->GetH());
@@ -300,7 +303,9 @@ int main(int argc, char** argv)
 
 					track_pos->SetTrackPos(car->pos->GetTrackId(), car->pos->GetS(), 0);
 					lane_pos->SetLanePos(car->pos->GetTrackId(), car->pos->GetLaneId(), car->pos->GetS(), 0);
+					
 					//printf("Ego pos: track %d lane %d s %.2f t %.2f offset %.2f\n", car->pos->GetTrackId(), car->pos->GetLaneId(), car->pos->GetS(), car->pos->GetT(), car->pos->GetOffset());
+					
 					viewer->UpdateVPoints(track_pos->GetX(), track_pos->GetY(), lane_pos->GetX(), lane_pos->GetY(), lane_pos->GetZ());
 					viewer->UpdateVLine(lane_pos->GetX(), lane_pos->GetY(), lane_pos->GetZ());
 				}

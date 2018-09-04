@@ -537,7 +537,7 @@ namespace roadmanager
 		Junction* GetJunctionById(int id);
 		Junction* GetJunctionByIdx(int idx);
 		int GetNumOfJunctions() { return (int)junction_.size(); }
-		int ResolveConnections();
+		bool IsConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id = 0, int lane2_id = 0);
 #if 0
 		int GetNumberOfJunctionConnections(Road *road, int laneId);
 		LaneRoadLaneConnection GetJunctionConnection(Road *road, int laneId, int idx);	
