@@ -31,6 +31,8 @@ int Cars::getId(std::string objectName)
 			return cars[i].getObjectId();
 		}
 	}
+
+	return -1;
 }
 
 std::string Cars::getName(int objectId)
@@ -42,6 +44,7 @@ std::string Cars::getName(int objectId)
 			return cars[i].getObjectName();
 		}
 	}
+	return "";
 }
 
 int Cars::getIdx(std::string objectName)
@@ -53,6 +56,7 @@ int Cars::getIdx(std::string objectName)
 			return i;
 		}
 	}
+	return -1;
 }
 
 int Cars::getIdx(int objectId)
@@ -64,6 +68,7 @@ int Cars::getIdx(int objectId)
 			return i;
 		}
 	}
+	return -1;
 }
 
 roadmanager::Position Cars::getPosition(std::string objectName)
@@ -138,3 +143,18 @@ int Cars::getNum()
 {
 	return cars.size();
 }
+
+void Cars::printCar()
+{
+	for (size_t i = 0; i < cars.size(); i++)
+	{
+		cars[i].printState();
+	}
+}
+
+void Cars::printCar(int objectId)
+{
+	int idx = Cars::getIdx(objectId);
+	cars[idx].printState();
+}
+

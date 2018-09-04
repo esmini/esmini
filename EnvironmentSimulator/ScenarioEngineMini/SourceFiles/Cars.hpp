@@ -45,6 +45,8 @@ public:
 
 	// Cars itself
 	int getNum();
+	void printCar();
+	void printCar(int objectId);
 
 
 private:
