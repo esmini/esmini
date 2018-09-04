@@ -120,10 +120,6 @@ int main(int argc, char *argv[])
 		scenarioEngine.checkConditions();
 		scenarioEngine.executeActions();
 
-
-		//scenarioEngine.printSimulationTime();
-		//scenarioEngine.printCarVector();
-
 		// Visualize cars
 		for (int i = 0; i<scenarioEngine.cars.getNum(); i++)
 		{
@@ -145,23 +141,11 @@ int main(int argc, char *argv[])
 				pitch, osg::Vec3(0, 1, 0),
 				heading, osg::Vec3(0, 0, 1));
 			car->txNode_->setAttitude(car->quat_);
-
-
-			// Find LaneSection according to s, starting from current
-			/*roadmanager::Road *road = p.GetOpenDrive()->GetRoadById(roadId);
-			roadmanager::LaneSection *lanesection = road->GetLaneSectionByS(s);
-			double widthBetweenLanes = lanesection->GetWidthBetweenLanes(1,2,s);*/
-			
 		}
 
 		viewer->osgViewer_->frame();
 
 	}
-
-
-	//// Wait for an "Enter"
-	//std::cout << "\n" << "Press ENTER to quit" << std::endl;
-	//std::cin.get();
 
 	return 1;
 }

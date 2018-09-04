@@ -85,12 +85,7 @@ void ScenarioEngine::initCars()
 
 void ScenarioEngine::printCars()
 {
-	/*for (size_t i = 0; i < cars.size(); i++)
-	{
-		std::cout << "---------------------------------------" << std::endl;
-		std::cout << "Print of cars " << "\n" << std::endl;
-		cars.printState(); TODO
-	}*/
+	cars.printCar();
 }
 
 void ScenarioEngine::stepObjects(double dt)
@@ -125,22 +120,17 @@ void ScenarioEngine::initConditions()
 						{
 							for (int o = 0; o < story[i].Act[j].Sequence[k].Maneuver[l].Event[m].StartConditions.ConditionGroup[n].Condition.size(); o++)
 							{
-								OSCCondition condition = story[i].Act[j].Sequence[k].Maneuver[l].Event[m].StartConditions.ConditionGroup[n].Condition[o];
-
-								if (!condition.ByEntity.EntityCondition.TimeHeadway.entity.empty())
-								{
-									TimeHeadway timeHeadway(condition, cars, storyId, actionEntities);
-									timeHeadwayVector.push_back(timeHeadway);
-								}
+								OSCCondition oscCondition = story[i].Act[j].Sequence[k].Maneuver[l].Event[m].StartConditions.ConditionGroup[n].Condition[o];
+								Condition condition(oscCondition, cars, storyId, actionEntities);
+								conditions.addCondition(condition);
 							}
 						}
 						
 						for (int n = 0; n < story[i].Act[j].Sequence[k].Maneuver[l].Event[m].Action.size(); n++)
 						{
-							
-								OSCPrivateAction privateAction = story[i].Act[j].Sequence[k].Maneuver[l].Event[m].Action[n].Private;
-								PrivateAction action(privateAction, cars, storyId, actionEntities);
-								actionVector.push_back(action);
+								OSCPrivateAction oscPrivateAction = story[i].Act[j].Sequence[k].Maneuver[l].Event[m].Action[n].Private;
+								Action action(oscPrivateAction, cars, storyId, actionEntities);
+								actions.addAction(action);
 						}
 					}
 				}
@@ -149,64 +139,22 @@ void ScenarioEngine::initConditions()
 	}
 }
 
-
 void ScenarioEngine::checkConditions()
 {
-	bool trigged;
+	bool triggeredCondition = conditions.checkConditions();
 
-	for (size_t i = 0; i < timeHeadwayVector.size(); i++)
+	if (triggeredCondition)
 	{
-		trigged = timeHeadwayVector[i].checkTimeHeadway();
-		
-		if (trigged)
-		{
-
-			for (size_t j = 0; j < actionVector.size(); j++)
-			{
-				if (timeHeadwayVector[i].storyId == actionVector[j].storyId)
-				{
-					actionVector[j].startAction = true;
-				}
-			}
-			
-			std::cout << "ScenarioEngine: " << timeHeadwayVector[i].condition.name << " is removed from timeHeadwayVector" << "\n" << std::endl;
-			timeHeadwayVector.erase(timeHeadwayVector.begin() + i);
-			
-		}
+		std::vector<int> lastTriggeredStoryId = conditions.getLastTriggeredStoryId();
+		actions.setStartAction(lastTriggeredStoryId, simulationTime);
 	}
-}
 
+}
 
 void ScenarioEngine::executeActions()
 {
-	for (size_t i = 0; i < actionVector.size(); i++)
-	{
-		if (actionVector[i].startAction)
-		{
-			if (actionVector[i].getFirstRun())
-			{
-				actionVector[i].setStartTime(simulationTime);
-			}
-
-			actionVector[i].ExecuteAction(simulationTime, timeStep);
-		}
-
-		if (actionVector[i].ActionCompleted)
-		{
-			std::cout << "ScenarioEngine: " << " privateAction is removed from actionVector" << "\n" << std::endl;
-			actionVector.erase(actionVector.begin() + i);
-		}
-	}
-
+	actions.executeActions(simulationTime);
 }
-
-
-
-
-
-	
-
-
 
 
 
