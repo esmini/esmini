@@ -561,7 +561,14 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 								if (targetChildName == "Relative")
 								{
 									pugi::xml_attribute relativeObjectAttribute = targetChild.attribute("object");
-									action.Lateral.LaneChange.Target.Relative.object = getParameter(relativeObjectAttribute.value());
+									if (relativeObjectAttribute.value()[0] == '$')
+									{
+										action.Lateral.LaneChange.Target.Relative.object = getParameter(relativeObjectAttribute.value());
+									}
+									else
+									{
+										action.Lateral.LaneChange.Target.Relative.object = relativeObjectAttribute.value();
+									}
 
 									pugi::xml_attribute relativeValueAttribute = targetChild.attribute("value");
 									action.Lateral.LaneChange.Target.Relative.value = std::stod(relativeValueAttribute.value());
@@ -735,11 +742,25 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 
 							pugi::xml_attribute timeHeadwayEntityAttribute = entityConditionChild.attribute("entity");
 							//std::cout << timeHeadwayEntityAttribute.name() << " = " << timeHeadwayEntityAttribute.value() << std::endl;
-							condition.ByEntity.EntityCondition.TimeHeadway.entity = getParameter(timeHeadwayEntityAttribute.value());
+							if (timeHeadwayEntityAttribute.value()[0] == '$')
+							{
+								condition.ByEntity.EntityCondition.TimeHeadway.entity = getParameter(timeHeadwayEntityAttribute.value());
+							}
+							else
+							{
+								condition.ByEntity.EntityCondition.TimeHeadway.entity = timeHeadwayEntityAttribute.value();
+							}
 
 							pugi::xml_attribute timeHeadwayValueAttribute = entityConditionChild.attribute("value");
 							//std::cout << timeHeadwayValueAttribute.name() << " = " << timeHeadwayValueAttribute.value() << std::endl;
-							condition.ByEntity.EntityCondition.TimeHeadway.value = getParameter(timeHeadwayValueAttribute.value());
+							if (timeHeadwayValueAttribute.value()[0] == '$')
+							{
+								condition.ByEntity.EntityCondition.TimeHeadway.value = getParameter(timeHeadwayValueAttribute.value());
+							}
+							else
+							{
+								condition.ByEntity.EntityCondition.TimeHeadway.value = timeHeadwayValueAttribute.value();
+							}
 
 							pugi::xml_attribute timeHeadwayFreespaceAttribute = entityConditionChild.attribute("freespace");
 							//std::cout << timeHeadwayFreespaceAttribute.name() << " = " << timeHeadwayFreespaceAttribute.value() << std::endl;
@@ -1007,7 +1028,14 @@ void ScenarioReader::parseStory(std::vector<Story> &storyVector)
 
 										pugi::xml_attribute entityNameAttribute = actorsChild.attribute("name");
 										//std::cout << entityNameAttribute.name() << " = " << entityNameAttribute.value() << std::endl;
-										storyVector.back().Act.back().Sequence.back().Actors.Entity.back().name = getParameter(entityNameAttribute.value());
+										if (entityNameAttribute.value()[0] == '$')
+										{
+											storyVector.back().Act.back().Sequence.back().Actors.Entity.back().name = getParameter(entityNameAttribute.value());
+										}
+										else
+										{
+											storyVector.back().Act.back().Sequence.back().Actors.Entity.back().name = entityNameAttribute.value();
+										}
 
 									}
 									else if (actorsChildName == "ByCondition")
