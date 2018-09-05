@@ -111,8 +111,17 @@ void Action::executeSinusoidal(double simulationTime)
 
 		roadmanager::Position newPosition(roadId, laneId, s, newOffset);
 
-		(*carsPtr).setPosition(actionEntities[i], newPosition);
+		double x = newPosition.GetX();
+		double y = newPosition.GetY();
+		double z = newPosition.GetZ();
 
+		double h = newPosition.GetH() + 0.1*sin((startTime - simulationTime)*f);
+		double p = newPosition.GetP();
+		double r = newPosition.GetR();
+
+		newPosition.SetInertiaPos(x, y, z, h, p, r);
+
+		(*carsPtr).setPosition(actionEntities[i], newPosition);
 	}
 		
 	// Could switch lane after time/2 and swap sign of the offset
