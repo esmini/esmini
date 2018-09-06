@@ -13,7 +13,7 @@
 
 using namespace std::chrono;
 
-#define USE_ROUTE 0
+#define USE_ROUTE 1
 
 #define DEFAULT_SPEED   70  // km/h
 #define DEFAULT_DENSITY 1   // Cars per 100 m
@@ -31,6 +31,7 @@ static double speed = DEFAULT_SPEED;
 static Vehicle *ego;
 static double egoWheelAngle = 0;
 static double egoAcc = 0;
+static bool use_ego = false;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
@@ -49,17 +50,20 @@ std::vector<Car*> cars;
 
 int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 {
-	// Add one Ego car
-	Car *car_ = new Car;
-	car_->road_id_init = odrManager->GetRoadByIdx(0)->GetId();
-	car_->lane_id_init = -1;
-	car_->pos = new roadmanager::Position(car_->road_id_init, car_->lane_id_init, 10, 0);
+	if (use_ego)
+	{
+		// Add one Ego car
+		Car *car_ = new Car;
+		car_->road_id_init = odrManager->GetRoadByIdx(0)->GetId();
+		car_->lane_id_init = -1;
+		car_->pos = new roadmanager::Position(car_->road_id_init, car_->lane_id_init, 10, 0);
 
-	car_->model = viewer->AddCar(0);
-	car_->speed = 0;
-	car_->id = cars.size();
-	car_->ego = new Vehicle(car_->pos->GetX(), car_->pos->GetY(), car_->pos->GetH(), car_->model->size_x);
-	cars.push_back(car_);
+		car_->model = viewer->AddCar(0);
+		car_->speed = 0;
+		car_->id = cars.size();
+		car_->ego = new Vehicle(car_->pos->GetX(), car_->pos->GetY(), car_->pos->GetH(), car_->model->size_x);
+		cars.push_back(car_);
+	}
 
 	if (density < 1E-10)
 	{
@@ -170,6 +174,7 @@ int main(int argc, char** argv)
 	arguments.getApplicationUsage()->addCommandLineOption("--model <filename>", "3D model filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--density <number>", "density (cars / 100 m)", std::to_string(DEFAULT_DENSITY));
 	arguments.getApplicationUsage()->addCommandLineOption("--speed <number>", "speed (km/h)", std::to_string(DEFAULT_SPEED));
+	arguments.getApplicationUsage()->addCommandLineOption("--ego", "add Ego vehicle");
 
 	if (arguments.argc() < 2)
 	{
@@ -189,6 +194,16 @@ int main(int argc, char** argv)
 	arguments.read("--speed", speed);
 	printf("speed: %.2f\n", speed);
 	speed /= 3.6;
+
+	if (arguments.read("--ego"))
+	{
+		use_ego = true;
+		printf("Ego vehicle added\n");
+	}
+	else
+	{
+		printf("No Ego vehicle added\n");
+	}
 
 	roadmanager::Position *lane_pos = new roadmanager::Position();
 	roadmanager::Position *track_pos = new roadmanager::Position();
@@ -260,6 +275,8 @@ int main(int argc, char** argv)
 					route.SetOffset(route_s, 0, 0);
 					route.GetPosition(car->pos);
 					car->ego->SetPos(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ(), car->pos->GetH());
+					car->ego->SetWheelAngle(car->ego->heading_ - car->pos->GetH());
+					car->ego->SetWheelRotation(route_s / 0.35);
 #endif
 					
 					// Fetch Z and Pitch from OpenDRIVE position

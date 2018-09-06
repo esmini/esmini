@@ -41,6 +41,16 @@ Vehicle::Vehicle(double x, double y, double h, double length)
 }
 #define MAX_WHEEL_ANGLE (60 * M_PI / 180)
 
+void Vehicle::SetWheelAngle(double angle)
+{
+	wheelAngle_ = angle;
+}
+
+void Vehicle::SetWheelRotation(double rotation)
+{
+	wheelRotation_ = rotation;
+}
+
 void Vehicle::Update(double dt, int acceleration, int steering)
 {
 	double criticalB = 0;
