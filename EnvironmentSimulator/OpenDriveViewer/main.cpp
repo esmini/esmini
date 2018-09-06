@@ -206,9 +206,8 @@ int main(int argc, char** argv)
 		// Test route concept 
 		// Specify hardcoded route on Fabriksgatan
 		roadmanager::Position waypoint[2];
-		roadmanager::Position ego_route_pos;
 #if 0
-		waypoint[0].SetLanePos(2, -1, 200, 0);
+		waypoint[0].SetLanePos(2, -1, 250, 0);
 		waypoint[1].SetLanePos(1, -1, 10, 0);
 #else
 		waypoint[0].SetLanePos(0, 1, 50, 0);

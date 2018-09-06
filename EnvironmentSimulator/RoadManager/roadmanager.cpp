@@ -304,6 +304,11 @@ LaneSection* Road::GetLaneSectionByS(double s)
 {
 	double length = 0;
 
+	if (lane_section_.size() == 0)
+	{
+		return 0;
+	}
+
 	for (int i = 0; i < lane_section_.size(); i++)
 	{
 		length = length + lane_section_[i]->GetLength();
@@ -314,14 +319,8 @@ LaneSection* Road::GetLaneSectionByS(double s)
 		}
 	}
 
-	/*for (auto &lane_section : lane_section_)
-	{
-		if (lane_section->GetLaneIdByIdx == id)
-		{
-			return lane_section;
-		}
-	}*/
-	return 0;
+	// s outside segment - return last lane section
+	return (lane_section_.back());
 }
 
 LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id)
@@ -1478,71 +1477,138 @@ int OpenDrive::GetTrackIdByIdx(int idx)
 	return 0;
 }
 
-#if 0
-int OpenDrive::GetNumberOfJunctionConnections(Road *road, int laneId)
+bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id, int lane2_id)
 {
-	int counter = 0;
+	Road *road1 = GetRoadById(road1_id);
+	Road *road2 = GetRoadById(road2_id);
 
-	for (auto &j : junction_)
+	LinkType link_type;
+	RoadLink *link;
+
+	// Look from road 1, both ends, for road 2
+	if (lane1_id < 0)
 	{
-		for (int i = 0; i < j->GetNumberOfConnections(); i++)
+		link_type = LinkType::SUCCESSOR;
+		link = road1->GetLink(link_type);
+	}
+	else if (lane1_id > 0)
+	{
+		link_type = LinkType::PREDECESSOR;
+		link = road1->GetLink(link_type);
+	}
+	else
+	{
+		// Try both ends
+		link_type = LinkType::SUCCESSOR;
+		link = road1->GetLink(link_type);
+		if (link == 0)
 		{
-			Connection * connection = j->GetConnectionByIdx(i);
-			if (road->GetId() == connection->GetIncomingRoad()->GetId())
+			link_type = LinkType::PREDECESSOR;
+			link = road1->GetLink(link_type);
+			if (link == 0)
 			{
-				for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++)
-				{
-					JunctionLaneLink *lane_link = connection->GetLaneLink(j);
-					if (laneId == lane_link->from_)
-					{
-						counter++;
-					}
-				}
+				printf("OpenDrive::IsConnected Link not found!\n");
+				return false;
 			}
 		}
 	}
-	return counter;
-}
+	LaneSection *lane_section = 0;
 
-LaneRoadLaneConnection OpenDrive::GetJunctionConnection(Road *road, int laneId, int idx)
-{
-	int counter = 0;
-	LaneRoadLaneConnection lane_road_lane_connection;
-
-	for (auto &j : junction_)
+	if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
 	{
-		for (int i = 0; i < j->GetNumberOfConnections(); i++)
+		if (link->GetElementId() == road2->GetId())
 		{
-			Connection * connection = j->GetConnectionByIdx(i);
-			if (road->GetId() == connection->GetIncomingRoad()->GetId())
+			if (lane1_id != 0 && lane2_id != 0)
 			{
-				for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++)
+				// Check lane connected
+				if (link_type == LinkType::SUCCESSOR)
 				{
-					JunctionLaneLink *lane_link = connection->GetLaneLink(j);
-					if (laneId == lane_link->from_)
+					lane_section = road1->GetLaneSectionByIdx(road1->GetNumberOfLaneSections() - 1);
+				}
+				else if (link_type == LinkType::PREDECESSOR)
+				{
+					lane_section = road1->GetLaneSectionByIdx(0);
+				}
+				else
+				{
+					printf("OpenDrive::IsConnected Error LinkType %d not suppoered\n", link_type);
+					return false;
+				}
+				if (lane_section == 0)
+				{
+					printf("OpenDrive::IsConnected Error lane section == 0\n");
+					return false;
+				}
+				Lane *lane = lane_section->GetLaneById(lane1_id);
+				if (!lane_section->GetConnectingLaneId(lane1_id, link_type) == lane2_id)
+				{
+					return false;
+				}
+				// Now, check other end lane connectivitiy
+			}
+			return true;
+		}
+	}
+	// check whether the roads are connected via a junction connecting road and specified lane
+	else if (link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
+	{
+		Junction *junction = GetJunctionById(link->GetElementId());
+
+		for (int i = 0; i < junction->GetNumberOfConnections(); i++)
+		{
+			Connection *connection = junction->GetConnectionByIdx(i);
+
+			if (connection->GetIncomingRoad()->GetId() == road1_id)
+			{
+				// Found a connecting road - now check if it connects to second road
+				Road *connecting_road = connection->GetConnectingRoad();
+				RoadLink *exit_link = connecting_road->GetLink(SUCCESSOR);
+
+				if (exit_link->GetElementId() == road2_id)
+				{
+					// Finally check that lanes are connected through the junction
+					// Look at lane section and locate lane connecting both roads
+					// Assume connecting road has only one lane section 
+					lane_section = connecting_road->GetLaneSectionByIdx(0);
+					if (lane_section == 0)
 					{
-						if (counter == idx)
+						printf("OpenDrive::IsConnected Error lane section == 0\n");
+						return false;
+					}
+					for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
+					{
+						Lane *lane = lane_section->GetLaneByIdx(j);
+						LaneLink *lane_link_predecessor = lane->GetLink(LinkType::PREDECESSOR);
+						LaneLink *lane_link_successor = lane->GetLink(LinkType::SUCCESSOR);
+						if (lane_link_predecessor == 0 || lane_link_successor == 0)
 						{
-							lane_road_lane_connection.SetLane(laneId);
-							lane_road_lane_connection.SetConnectingRoad(connection->GetConnectingRoad()->GetId());
-							lane_road_lane_connection.SetConnectingLane(lane_link->to_);
-							if (!connection->GetConnectingRoad()->GetLaneSectionByIdx(0)->GetLaneById(lane_link->to_)->IsDriving())
-							{
-								printf("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to %d, %d\n",
-									road->GetId(), laneId, connection->GetConnectingRoad()->GetId(), lane_link->to_);
-							}
-
-							return lane_road_lane_connection;
+							continue;
 						}
-						counter++;
+						if (lane_link_predecessor->GetId() == lane1_id && lane_link_successor->GetId() == lane2_id)
+						{
+							// Found link
+							if (connecting_road_id != 0)
+							{
+								*connecting_road_id = connection->GetConnectingRoad()->GetId();
+							}
+							if (connecting_lane_id != 0)
+							{
+								*connecting_lane_id = connection->GetConnectingLaneId(lane1_id);
+							}
+							return true;
+						}
 					}
 				}
 			}
 		}
 	}
-	return lane_road_lane_connection;
+	else
+	{
+		printf("OpenDrive::IsConnected Error: LinkElementType %d unsupported\n", link->GetElementType());
+	}
+
+	return false;
 }
-#endif
 
 void OpenDrive::Print()
 {
@@ -1724,7 +1790,9 @@ double Position::GetDistToTrackGeom(double x3, double y3, double h, Road *road, 
 	r_ = 0;
 	double x1, y1, h1;
 	double x2, y2, h2;
+	int side;
 
+//	double line_dist = 0;
 	double dist = 0;
 	geom->EvaluateDS(0, &x1, &y1, &h1);
 	geom->EvaluateDS(geom->GetLength(), &x2, &y2, &h2);
@@ -1755,8 +1823,55 @@ double Position::GetDistToTrackGeom(double x3, double y3, double h, Road *road, 
 		d2 = PointDistance(x3, y3, x2, y2);
 		dist = MIN(d1, d2);
 	}
+	side = PointSideOfVec(x3, y3, x1, y1, x2, y2);
 
+#if 1
+	// Now, calculate actual distance to road geometry - not to a straight line
+
+	double dsMin = sNorm * geom->GetLength();
+	double sMin = geom->GetS() + dsMin;
+	double x, y;
+
+	if (inside)  // else stick with line approximation
+	{
+		geom->EvaluateDS(dsMin, &x, &y, &h);
+		// Apply lane offset
+		x += road->GetLaneOffset(dsMin) * cos(h + M_PI_2);
+		y += road->GetLaneOffset(dsMin) * sin(h + M_PI_2);
+		dist = PointDistance(x3, y3, x, y);
+
+		// Check whether the point is left or right side of road
+		// x3, y3 is the point checked against a vector aligned with heading
+		side = PointSideOfVec(x3, y3, x, y, x + cos(h), y + sin(h));
+	}
+	// dist is now actually the lateral distance from reference lane, e.g. track coordinate t-value
+	// Finally find closest lane
+
+	// Finally calculate exakt distance
+	double min_lane_dist = dist;
+
+	LaneSection *lane_section = road->GetLaneSectionByS(sMin);
+	if (lane_section != 0)
+	{
+		for (int i = 0; i < lane_section->GetNumberOfLanes(); i++)
+		{
+			if (lane_section->GetLaneByIdx(i)->IsDriving())
+			{
+				double signed_offset = dist * SIGN(side);
+				double signed_lane_center_offset = SIGN(lane_section->GetLaneIdByIdx(i)) * lane_section->GetCenterOffset(sMin, lane_section->GetLaneIdByIdx(i));
+				double lane_dist = signed_offset - signed_lane_center_offset;
+
+				if (fabs(lane_dist) < fabs(min_lane_dist))
+				{
+					min_lane_dist = lane_dist;
+				}
+			}
+		}
+	}
+	return fabs(min_lane_dist);
+#else
 	return dist;
+#endif
 }
 
 void Position::SetXYH(double x3, double y3, double h3)
@@ -1782,6 +1897,35 @@ void Position::SetXYH(double x3, double y3, double h3)
 	{
 		printf("Position::SetXYH: Invalid geometry index %d\n", geometry_idx_);
 		return;
+	}
+
+	// Ugly solution: search all road and lanes. Inefficient - but simple. Todo: Optimize
+
+#if 1
+	bool found = false;
+	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
+	{
+		road = GetOpenDrive()->GetRoadByIdx(i);
+		for (int j = 0; j < road->GetNumberOfGeometries(); j++)
+		{
+			geom = road->GetGeometry(j);
+			dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
+	
+			if (dist < distMin)  // First value (min_dist = -1) is always the closest so far
+			{
+				geomMin = geom;
+				roadMin = road;
+				sNormMin = CLAMP(sNorm, 0.0, 1.0);
+				distMin = dist;
+				insideMin = inside;
+				found = true;
+			}
+		}
+	}
+#else
+	if (found)
+	{
+		printf("Position::SetXYH Found closer remote point rid %d geom_idx %d\n", road->GetId(), geometry_idx_);
 	}
 
 	// First check current geometry
@@ -1901,6 +2045,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 			printf("Position::SetXYH Found closer remote point rid %d geom_idx %d\n", road->GetId(), geometry_idx_);
 		}
 	}
+#endif
 	double dsMin = sNormMin * geomMin->GetLength();
 	double sMin = geomMin->GetS() + dsMin;
 	double x, y, h;
@@ -2363,139 +2508,6 @@ int Route::GetPosition(Position *position)
 {
 	*position = current_position_;
 	return 0;
-}
-
-bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id, int lane2_id)
-{
-	Road *road1 = GetRoadById(road1_id);
-	Road *road2 = GetRoadById(road2_id);
-
-	LinkType link_type;
-	RoadLink *link;
-
-	// Look from road 1, both ends, for road 2
-	if (lane1_id < 0)
-	{
-		link_type = LinkType::SUCCESSOR;
-		link = road1->GetLink(link_type);
-	}
-	else if (lane1_id > 0)
-	{
-		link_type = LinkType::PREDECESSOR;
-		link = road1->GetLink(link_type);
-	}
-	else
-	{
-		// Try both ends
-		link_type = LinkType::SUCCESSOR;
-		link = road1->GetLink(link_type);
-		if (link == 0)
-		{
-			link_type = LinkType::PREDECESSOR;
-			link = road1->GetLink(link_type);
-			if (link == 0)
-			{
-				printf("OpenDrive::IsConnected Link not found!\n");
-				return false;
-			}
-		}
-	}
-	LaneSection *lane_section = 0;
-
-	if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
-	{
-		if (link->GetElementId() == road2->GetId())
-		{
-			if (lane1_id != 0 && lane2_id != 0)
-			{
-				// Check lane connected
-				if (link_type == LinkType::SUCCESSOR)
-				{
-					lane_section = road1->GetLaneSectionByIdx(road1->GetNumberOfLaneSections() - 1);
-				}
-				else if(link_type == LinkType::PREDECESSOR)
-				{
-					lane_section = road1->GetLaneSectionByIdx(0);
-				}
-				else
-				{
-					printf("OpenDrive::IsConnected Error LinkType %d not suppoered\n", link_type);
-					return false;
-				}
-				if (lane_section == 0)
-				{
-					printf("OpenDrive::IsConnected Error lane section == 0\n");
-					return false;
-				}
-				Lane *lane = lane_section->GetLaneById(lane1_id);
-				if (!lane_section->GetConnectingLaneId(lane1_id, link_type) == lane2_id)
-				{
-					return false;
-				}
-				// Now, check other end lane connectivitiy
-			}
-			return true;
-		}
-	}
-	// check whether the roads are connected via a junction connecting road and specified lane
-	else if (link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
-	{
-		Junction *junction = GetJunctionById(link->GetElementId());
-
-		for (int i = 0; i < junction->GetNumberOfConnections(); i++)
-		{
-			Connection *connection = junction->GetConnectionByIdx(i);
-
-			if (connection->GetIncomingRoad()->GetId() == road1_id)
-			{
-				// Found a connecting road - now check if it connects to second road
-				Road *connecting_road = connection->GetConnectingRoad();
-				RoadLink *exit_link = connecting_road->GetLink(SUCCESSOR);
-
-				if (exit_link->GetElementId() == road2_id)
-				{
-					// Finally check that lanes are connected through the junction
-					// Look at lane section and locate lane connecting both roads
-					// Assume connecting road has only one lane section 
-					lane_section = connecting_road->GetLaneSectionByIdx(0);
-					if (lane_section == 0)
-					{
-						printf("OpenDrive::IsConnected Error lane section == 0\n");
-						return false;
-					}
-					for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
-					{
-						Lane *lane = lane_section->GetLaneByIdx(j);
-						LaneLink *lane_link_predecessor = lane->GetLink(LinkType::PREDECESSOR);
-						LaneLink *lane_link_successor = lane->GetLink(LinkType::SUCCESSOR);
-						if (lane_link_predecessor == 0 || lane_link_successor == 0)
-						{
-							continue;
-						}
-						if (lane_link_predecessor->GetId() == lane1_id && lane_link_successor->GetId() == lane2_id)
-						{
-							// Found link
-							if (connecting_road_id != 0)
-							{
-								*connecting_road_id = connection->GetConnectingRoad()->GetId();
-							}
-							if (connecting_lane_id != 0)
-							{
-								*connecting_lane_id = connection->GetConnectingLaneId(lane1_id);
-							}
-							return true;
-						}
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		printf("OpenDrive::IsConnected Error: LinkElementType %d unsupported\n", link->GetElementType());
-	}
-
-	return false;
 }
 
 int Route::AddWaypoint(Position *position)
