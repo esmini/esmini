@@ -4,7 +4,9 @@ class Vehicle
 public:
 	Vehicle(double x, double y, double h, double length);
 	void Update(double dt, int acceleration, int steering);
-	void SetPos(double x, double y, double z, double h) 
+	void SetWheelAngle(double angle);
+	void SetWheelRotation(double rotation);
+	void SetPos(double x, double y, double z, double h)
 	{
 		posX_ = x;
 		posY_ = y;

@@ -31,6 +31,7 @@ static double speed = DEFAULT_SPEED;
 static Vehicle *ego;
 static double egoWheelAngle = 0;
 static double egoAcc = 0;
+static bool use_ego = false;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
@@ -49,17 +50,20 @@ std::vector<Car*> cars;
 
 int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 {
-	// Add one Ego car
-	Car *car_ = new Car;
-	car_->road_id_init = odrManager->GetRoadByIdx(0)->GetId();
-	car_->lane_id_init = -1;
-	car_->pos = new roadmanager::Position(car_->road_id_init, car_->lane_id_init, 10, 0);
+	if (use_ego)
+	{
+		// Add one Ego car
+		Car *car_ = new Car;
+		car_->road_id_init = odrManager->GetRoadByIdx(0)->GetId();
+		car_->lane_id_init = -1;
+		car_->pos = new roadmanager::Position(car_->road_id_init, car_->lane_id_init, 10, 0);
 
-	car_->model = viewer->AddCar(0);
-	car_->speed = 0;
-	car_->id = cars.size();
-	car_->ego = new Vehicle(car_->pos->GetX(), car_->pos->GetY(), car_->pos->GetH(), car_->model->size_x);
-	cars.push_back(car_);
+		car_->model = viewer->AddCar(0);
+		car_->speed = 0;
+		car_->id = cars.size();
+		car_->ego = new Vehicle(car_->pos->GetX(), car_->pos->GetY(), car_->pos->GetH(), car_->model->size_x);
+		cars.push_back(car_);
+	}
 
 	if (density < 1E-10)
 	{
@@ -145,17 +149,6 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 		double heading = car->pos->GetH();
 		double pitch = car->pos->GetP();
 
-		// Is the car going opposite direction?
-		if (car->pos->GetLaneId() > 0)
-		{
-			// Add 180 degrees
-			heading += M_PI;
-			if (heading > 2 * M_PI)
-			{
-				heading -= 2 * M_PI;
-			}
-			pitch = -pitch;
-		}
 		car->model->txNode_->setPosition(osg::Vec3(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ()));
 
 		car->model->quat_.makeRotate(
@@ -181,6 +174,7 @@ int main(int argc, char** argv)
 	arguments.getApplicationUsage()->addCommandLineOption("--model <filename>", "3D model filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--density <number>", "density (cars / 100 m)", std::to_string(DEFAULT_DENSITY));
 	arguments.getApplicationUsage()->addCommandLineOption("--speed <number>", "speed (km/h)", std::to_string(DEFAULT_SPEED));
+	arguments.getApplicationUsage()->addCommandLineOption("--ego", "add Ego vehicle");
 
 	if (arguments.argc() < 2)
 	{
@@ -201,6 +195,16 @@ int main(int argc, char** argv)
 	printf("speed: %.2f\n", speed);
 	speed /= 3.6;
 
+	if (arguments.read("--ego"))
+	{
+		use_ego = true;
+		printf("Ego vehicle added\n");
+	}
+	else
+	{
+		printf("No Ego vehicle added\n");
+	}
+
 	roadmanager::Position *lane_pos = new roadmanager::Position();
 	roadmanager::Position *track_pos = new roadmanager::Position();
 
@@ -217,11 +221,13 @@ int main(int argc, char** argv)
 		// Test route concept 
 		// Specify hardcoded route on Fabriksgatan
 		roadmanager::Position waypoint[2];
-		roadmanager::Position ego_route_pos;
-		//waypoint[0].SetLanePos(2, -1, 200, 0);
-		//waypoint[1].SetLanePos(1, -1, 10, 0);
-		waypoint[0].SetLanePos(2, -1, 200, 0);
-		waypoint[1].SetLanePos(3, -1, 10, 0);
+#if 0
+		waypoint[0].SetLanePos(2, -1, 250, 0);
+		waypoint[1].SetLanePos(1, -1, 10, 0);
+#else
+		waypoint[0].SetLanePos(0, 1, 50, 0);
+		waypoint[1].SetLanePos(1, -1, 10, 0);
+#endif
 		roadmanager::Route route;
 		double route_s = 0;
 
@@ -265,10 +271,12 @@ int main(int argc, char** argv)
 					car->ego->Update(deltaSimTime, viewer->driverAcceleration_, viewer->driverSteering_);
 					car->pos->SetXYH(car->ego->posX_, car->ego->posY_, car->ego->heading_);
 #else
-					route_s += deltaSimTime * 50 / 3.6; // 50 km/h
+					route_s += deltaSimTime * 20 / 3.6; // 50 km/h
 					route.SetOffset(route_s, 0, 0);
 					route.GetPosition(car->pos);
 					car->ego->SetPos(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ(), car->pos->GetH());
+					car->ego->SetWheelAngle(car->ego->heading_ - car->pos->GetH());
+					car->ego->SetWheelRotation(route_s / 0.35);
 #endif
 					
 					// Fetch Z and Pitch from OpenDRIVE position
@@ -300,7 +308,9 @@ int main(int argc, char** argv)
 
 					track_pos->SetTrackPos(car->pos->GetTrackId(), car->pos->GetS(), 0);
 					lane_pos->SetLanePos(car->pos->GetTrackId(), car->pos->GetLaneId(), car->pos->GetS(), 0);
+					
 					//printf("Ego pos: track %d lane %d s %.2f t %.2f offset %.2f\n", car->pos->GetTrackId(), car->pos->GetLaneId(), car->pos->GetS(), car->pos->GetT(), car->pos->GetOffset());
+					
 					viewer->UpdateVPoints(track_pos->GetX(), track_pos->GetY(), lane_pos->GetX(), lane_pos->GetY(), lane_pos->GetZ());
 					viewer->UpdateVLine(lane_pos->GetX(), lane_pos->GetY(), lane_pos->GetZ());
 				}
