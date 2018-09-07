@@ -46,7 +46,7 @@ private:
 	double targetValue;
 	double time;
 	double f;
-	std::vector<int> initialOffsets;
+	std::vector<double> initialOffsets;
 
 
 	// Speed

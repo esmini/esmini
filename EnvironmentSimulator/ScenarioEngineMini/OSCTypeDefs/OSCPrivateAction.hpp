@@ -77,6 +77,34 @@ struct OSCPrivateAction
 			} Target;
 
 		} LaneChange;
+
+		struct
+		{
+			struct
+			{
+				double maxLateralAcc = NAN;
+				double duration = NAN;
+				std::string shape = ""; // Wrong type
+			} Dynamics;
+
+			struct
+			{
+				struct
+				{
+					std::string object = "";
+					double value = NAN;
+
+				} Relative;
+
+				struct
+				{
+					double value = NAN;
+				} Absolute;
+
+			} Target;
+
+		} LaneOffset;
+
 	} Lateral;
 
 	struct {} Visibility;

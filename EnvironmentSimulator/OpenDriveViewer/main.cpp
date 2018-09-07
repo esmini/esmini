@@ -13,7 +13,7 @@
 
 using namespace std::chrono;
 
-#define USE_ROUTE 1
+#define USE_ROUTE 0
 
 #define DEFAULT_SPEED   70  // km/h
 #define DEFAULT_DENSITY 1   // Cars per 100 m

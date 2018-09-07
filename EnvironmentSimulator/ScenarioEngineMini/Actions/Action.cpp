@@ -13,8 +13,7 @@ Action::Action(OSCPrivateAction &privateAction, Cars &cars, std::vector<int> sto
 	firstRun = true;
 	initialOffsets.resize(actionEntities.size());
 
-	identifyActionType(privateAction);
-
+	identifyActionType(privateAction);	
 }
 
 void Action::identifyActionType(OSCPrivateAction privateAction)
@@ -27,6 +26,17 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 			this->time = privateAction.Lateral.LaneChange.Dynamics.time;
 			this->targetObject = privateAction.Lateral.LaneChange.Target.Relative.object;
 			this->targetValue = privateAction.Lateral.LaneChange.Target.Relative.value;
+			this->f = 3.1415 / time;
+		}
+	}
+	else if (privateAction.Lateral.LaneOffset.Dynamics.shape == "sinusoidal")
+	{
+		if (!isnan(privateAction.Lateral.LaneOffset.Dynamics.duration))
+		{
+			this->actionType = "sinusoidal-time";
+			this->time = privateAction.Lateral.LaneOffset.Dynamics.duration;
+			this->targetObject = privateAction.Lateral.LaneOffset.Target.Relative.object;
+			this->targetValue = privateAction.Lateral.LaneOffset.Target.Relative.value;
 			this->f = 3.1415 / time;
 		}
 	}

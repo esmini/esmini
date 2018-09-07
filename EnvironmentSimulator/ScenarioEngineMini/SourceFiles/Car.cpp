@@ -15,12 +15,12 @@ void Car::setName(std::string objectName)
 
 void Car::setPosition(roadmanager::Position position)
 {
-	std::cout << "Car: setPosition started" << std::endl;
+	//std::cout << "Car: setPosition started" << std::endl;
 
 	this->position = position;
 	//position.SetLanePos(roadId, laneId, s, offset);
 
-	std::cout << "Car: setPosition finished" << std::endl;
+	//std::cout << "Car: setPosition finished" << std::endl;
 }
 
 
@@ -33,9 +33,9 @@ void Car::step(double dt)
 
 void Car::setSpeed(double speed)
 {
-	std::cout << "Car: setSpeed started" << std::endl;
+	//std::cout << "Car: setSpeed started" << std::endl;
 	this->speed = speed;
-	std::cout << "Car: setSpeed finished" << std::endl;
+	//std::cout << "Car: setSpeed finished" << std::endl;
 
 }
 

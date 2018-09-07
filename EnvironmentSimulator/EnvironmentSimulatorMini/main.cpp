@@ -24,6 +24,8 @@ static std::mt19937 mt_rand;
 
 int main(int argc, char *argv[])
 {	
+	mt_rand.seed(time(0));
+
 	// Simulation constants
 	double endTime = 100;
 	double simulationTime = 0;

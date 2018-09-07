@@ -582,13 +582,64 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 						}
 					}
 				}
-				else if (lateralChildName == "LaneOffset")
+				else if(lateralChildName == "LaneOffset")
 				{
-					std::cout << lateralChildName << " is not implemented " << std::endl;
+					for (pugi::xml_node laneOffsetChild = lateralChild.first_child(); laneOffsetChild; laneOffsetChild = laneOffsetChild.next_sibling())
+					{
+
+						std::string laneOffsetChildName(laneOffsetChild.name());
+
+						if (laneOffsetChildName == "Dynamics")
+						{
+							pugi::xml_attribute dynamicsMaxLateralAccAttribute = laneOffsetChild.attribute("maxLateralAcc");
+							if (dynamicsMaxLateralAccAttribute != NULL)
+							{
+								action.Lateral.LaneOffset.Dynamics.maxLateralAcc = std::stod(dynamicsMaxLateralAccAttribute.value());
+							}
+
+							pugi::xml_attribute dynamicsDurationAttribute = laneOffsetChild.attribute("duration");
+							if (dynamicsDurationAttribute != NULL)
+							{
+								action.Lateral.LaneOffset.Dynamics.duration = std::stod(dynamicsDurationAttribute.value());
+							}
+
+							pugi::xml_attribute dynamicsShapeAttribute = laneOffsetChild.attribute("shape");
+							action.Lateral.LaneOffset.Dynamics.shape = dynamicsShapeAttribute.value();
+						}
+						else if (laneOffsetChildName == "Target")
+						{
+							for (pugi::xml_node targetChild = laneOffsetChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
+							{
+
+								std::string targetChildName(targetChild.name());
+
+								if (targetChildName == "Relative")
+								{
+									pugi::xml_attribute relativeObjectAttribute = targetChild.attribute("object");
+									if (relativeObjectAttribute.value()[0] == '$')
+									{
+										action.Lateral.LaneOffset.Target.Relative.object = getParameter(relativeObjectAttribute.value());
+									}
+									else
+									{
+										action.Lateral.LaneOffset.Target.Relative.object = relativeObjectAttribute.value();
+									}
+
+									pugi::xml_attribute relativeValueAttribute = targetChild.attribute("value");
+									action.Lateral.LaneOffset.Target.Relative.value = std::stod(relativeValueAttribute.value());
+								}
+								else if (targetChildName == "Absolute")
+								{
+									pugi::xml_attribute absoluteValueAttribute = targetChild.attribute("value");
+									action.Lateral.LaneOffset.Target.Absolute.value = std::stod(absoluteValueAttribute.value());
+								}
+							}
+						}
+					}
 				}
-				else if (lateralChildName == "Distance")
+				else
 				{
-					std::cout << lateralChildName << " is not implemented " << std::endl;
+					std::cout << "Unsupported element type: " << lateralChildName << std::endl;
 				}
 			}
 		}

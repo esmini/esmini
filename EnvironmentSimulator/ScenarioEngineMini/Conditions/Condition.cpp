@@ -76,7 +76,7 @@ bool Condition::checkTimeHeadway()
 				for (size_t i = 0; i < N; i++)
 				{
 					headwayTimeNew[i] = (entityPos.GetS() - triggeringEntityPos[i].GetS()) / (entitySpeed / 3.6);
-					std::cout << "ScenarioEngine: headwayTime is " << headwayTimeNew[i] << std::endl;
+					//std::cout << "ScenarioEngine: headwayTime is " << headwayTimeNew[i] << std::endl;
 
 					if (condition.ByEntity.EntityCondition.TimeHeadway.rule == "greater_than")
 					{
