@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 
 			car->txNode_->setPosition(osg::Vec3(x, y, z));
 
-			float roll = 0;
+			float roll = scenarioEngine.cars.getPosition(i).GetR();
 			float pitch = scenarioEngine.cars.getPosition(i).GetP();
 			float heading = scenarioEngine.cars.getPosition(i).GetH();
 
