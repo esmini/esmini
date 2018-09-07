@@ -610,7 +610,7 @@ int LaneSection::GetConnectingLaneId(int incoming_lane_id, LinkType link_type)
 
 double LaneSection::GetWidthBetweenLanes(int lane_id1, int lane_id2, double s)
 {
-	double lanewidth = (std::fabs(GetCenterOffset(s, lane_id1)) + std::fabs(GetCenterOffset(s, lane_id2)));
+	double lanewidth = (std::fabs(GetCenterOffset(s, lane_id1)) - std::fabs(GetCenterOffset(s, lane_id2)));
 
 	return lanewidth;
 }
