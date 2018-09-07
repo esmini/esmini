@@ -14,7 +14,7 @@ public:
 
 	void setObjectId(int objectId);
 	void setName(std::string objectName);
-	void setPosition(int roadId, int laneId, double s, double offset);
+	void setPosition(roadmanager::Position position);
 	void setSpeed(double speed);
 	void setOffset(double offset);
 

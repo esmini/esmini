@@ -3,9 +3,11 @@
 #include "Entities.hpp"
 #include "Init.hpp"
 #include "Story.hpp"
-#include "Car.hpp"
-#include "TimeHeadway.hpp"
-#include "PrivateAction.hpp"
+#include "Conditions.hpp"
+#include "Condition.hpp"
+#include "Actions.hpp"
+#include "Action.hpp"
+#include "Cars.hpp"
 
 
 #include <iostream>
@@ -19,9 +21,8 @@ public:
 
 	ScenarioEngine(Entities &entities, Init &init, std::vector<Story> &story, double startTime);
 
-	void initCarVector();
-	void printCarVector();
-	int getObjectId(std::string objectName);
+	void initCars();
+	void printCars();
 
 	void setSimulationTime(double simulationTime);
 	void setTimeStep(double timeStep);
@@ -40,9 +41,9 @@ public:
 	double simulationTime;
 	double timeStep;
 
-	std::vector<Car> carVector;
-	std::vector<TimeHeadway> timeHeadwayVector;
-	std::vector<PrivateAction> actionVector;
+	Conditions conditions;
+	Actions actions;
+	Cars cars;
 
 };
 
