@@ -39,12 +39,15 @@ private:
 	bool startAction;
 	bool actionCompleted;
 	double startTime;
+	bool firstRun;
 
 	// Sinusoidal
 	std::string targetObject;
 	double targetValue;
 	double time;
 	double f;
+	std::vector<int> initialOffsets;
+
 
 	// Speed
 	double speedRate;

@@ -10,7 +10,9 @@ Action::Action(OSCPrivateAction &privateAction, Cars &cars, std::vector<int> sto
 
 	actionCompleted = false;
 	startAction = false;
-	
+	firstRun = true;
+	initialOffsets.resize(actionEntities.size());
+
 	identifyActionType(privateAction);
 
 }
@@ -76,19 +78,18 @@ void Action::ExecuteAction(double simulationTime, double timeStep) {
 
 void Action::executeSinusoidal(double simulationTime)
 {
+	if (firstRun)
+	{
+		firstRun = false;
+
+		for (size_t i = 0; i < actionEntities.size(); i++)
+		{
+			initialOffsets[i] = (*carsPtr).getPosition(actionEntities[i]).GetOffset();
+		}
+	}
 
 	double currentLane = (*carsPtr).getPosition(targetObject).GetLaneId();
 	double targetLane = currentLane + targetValue;
-
-	// targetLane may become 0:
-	if (targetLane == 0 && currentLane > 0)
-	{
-		targetLane = -1;
-	}
-	else if (targetLane == 0 && currentLane < 0)
-	{
-		targetLane = 1;
-	}
 
 	for (size_t i = 0; i < actionEntities.size(); i++)
 	{
@@ -97,12 +98,11 @@ void Action::executeSinusoidal(double simulationTime)
 		roadmanager::LaneSection *lanesection = road->GetLaneSectionByS(position.GetS());
 
 		double width = lanesection->GetWidthBetweenLanes(
-			(*carsPtr).getPosition(actionEntities[i]).GetLaneId(),
 			targetLane,
+			(*carsPtr).getPosition(actionEntities[i]).GetLaneId(),
 			position.GetS());
 
-		double initialOffset = 0;
-		double newOffset = (initialOffset + width) * ( (cos((startTime - simulationTime)* f)- 1) / 2 );
+		double newOffset = initialOffsets[i] + (initialOffsets[i] + width) * ((cos((startTime - simulationTime)* f) - 1) / 2);
 
 		// Create new position
 		int roadId = position.GetTrackId();
