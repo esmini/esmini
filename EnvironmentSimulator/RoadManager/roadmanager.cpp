@@ -1638,6 +1638,7 @@ Position::Position()
 	h_ = 0.0;
 	p_ = 0.0;
 	r_ = 0.0;
+	h_offset_ = 0.0;
 
 	track_idx_ = 0;
 	geometry_idx_ = 0;
