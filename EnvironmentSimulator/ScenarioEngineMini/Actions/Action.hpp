@@ -47,6 +47,10 @@ private:
 	double time;
 	double f;
 	std::vector<double> initialOffsets;
+	bool laneChange;
+
+	std::vector<double> aT;
+	double tT;
 
 
 	// Speed

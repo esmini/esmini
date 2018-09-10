@@ -11,7 +11,6 @@ Action::Action(OSCPrivateAction &privateAction, Cars &cars, std::vector<int> sto
 	actionCompleted = false;
 	startAction = false;
 	firstRun = true;
-	initialOffsets.resize(actionEntities.size());
 
 	identifyActionType(privateAction);	
 }
@@ -27,6 +26,7 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 			this->targetObject = privateAction.Lateral.LaneChange.Target.Relative.object;
 			this->targetValue = privateAction.Lateral.LaneChange.Target.Relative.value;
 			this->f = 3.1415 / time;
+			this->laneChange = true;
 		}
 	}
 	else if (privateAction.Lateral.LaneOffset.Dynamics.shape == "sinusoidal")
@@ -38,6 +38,7 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 			this->targetObject = privateAction.Lateral.LaneOffset.Target.Relative.object;
 			this->targetValue = privateAction.Lateral.LaneOffset.Target.Relative.value;
 			this->f = 3.1415 / time;
+			this->laneChange = false;
 		}
 	}
 
@@ -92,34 +93,49 @@ void Action::executeSinusoidal(double simulationTime)
 	{
 		firstRun = false;
 
+		// Target entities
+		roadmanager::Position tObjectPosition = (*carsPtr).getPosition(targetObject);
+		roadmanager::Road *tObjectRoad = tObjectPosition.GetOpenDrive()->GetRoadById(tObjectPosition.GetTrackId());
+		roadmanager::LaneSection *tObjectLanesection = tObjectRoad->GetLaneSectionByS(tObjectPosition.GetS());
+		tT = tObjectLanesection->GetCenterOffset(tObjectPosition.GetS(), tObjectPosition.GetLaneId() + targetValue);
+
+		// Action entities
+		aT.resize(actionEntities.size());
+
 		for (size_t i = 0; i < actionEntities.size(); i++)
 		{
-			initialOffsets[i] = (*carsPtr).getPosition(actionEntities[i]).GetOffset();
+			roadmanager::Position aPosition = (*carsPtr).getPosition(actionEntities[i]);
+			roadmanager::Road *aRoad = aPosition.GetOpenDrive()->GetRoadById(aPosition.GetTrackId());
+			roadmanager::LaneSection *aLanesection = aRoad->GetLaneSectionByS(aPosition.GetS());
+			aT[i] = aLanesection->GetCenterOffset(aPosition.GetS(), aPosition.GetLaneId()) - aPosition.GetOffset();
 		}
 	}
 
-	double currentLane = (*carsPtr).getPosition(targetObject).GetLaneId();
-	double targetLane = currentLane + targetValue;
-
 	for (size_t i = 0; i < actionEntities.size(); i++)
 	{
-		roadmanager::Position position = (*carsPtr).getPosition(actionEntities[i]);
-		roadmanager::Road *road = position.GetOpenDrive()->GetRoadById(position.GetTrackId());
-		roadmanager::LaneSection *lanesection = road->GetLaneSectionByS(position.GetS());
 
-		double width = lanesection->GetWidthBetweenLanes(
-			targetLane,
-			(*carsPtr).getPosition(actionEntities[i]).GetLaneId(),
-			position.GetS());
-
-		double newOffset = initialOffsets[i] + (initialOffsets[i] + width) * ((cos((startTime - simulationTime)* f) - 1) / 2);
+		double newT = (tT - aT[i]) * ((cos((startTime - simulationTime)* f) - 1) / 2) - aT[i];
 
 		// Create new position
-		int roadId = position.GetTrackId();
-		int laneId = position.GetLaneId();
-		double s = position.GetS();
+		int roadId = (*carsPtr).getPosition(actionEntities[i]).GetTrackId();
+		int laneId = (*carsPtr).getPosition(actionEntities[i]).GetLaneId();
+		double s = (*carsPtr).getPosition(actionEntities[i]).GetS();
 
-		roadmanager::Position newPosition(roadId, laneId, s, newOffset);
+		roadmanager::Position newPosition;
+
+		if (laneChange)
+		{
+			newPosition.SetTrackPos(roadId, s, newT);
+		}
+		else
+		{
+			roadmanager::Position aPosition = (*carsPtr).getPosition(actionEntities[i]);
+			roadmanager::Road *aRoad = aPosition.GetOpenDrive()->GetRoadById(roadId);
+			roadmanager::LaneSection *aLanesection = aRoad->GetLaneSectionByS(s);
+			double tmp = aLanesection->GetCenterOffset(s, laneId);
+
+			newPosition.SetLanePos(roadId, laneId, s, tmp+newT);
+		}
 
 		double x = newPosition.GetX();
 		double y = newPosition.GetY();
@@ -132,10 +148,11 @@ void Action::executeSinusoidal(double simulationTime)
 		newPosition.SetInertiaPos(x, y, z, h, p, r);
 
 		(*carsPtr).setPosition(actionEntities[i], newPosition);
-	}
-		
-	// Could switch lane after time/2 and swap sign of the offset
 
+		std::cout << laneId << std::endl;
+
+	}
+	
 	// Should use the target position instead of time to decide when action is completed
 	if (simulationTime >= startTime + time)
 	{
