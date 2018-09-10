@@ -950,7 +950,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename)
     pugi::xml_parse_result result = doc.load_file(filename);
 	if (!result)
 	{
-		printf("OpenDrive::LoadOpenDriveFile %s Error: %s\n", filename, result.description());
+		printf("OpenDrive::LoadOpenDriveFile %s Error: %s. If file is missing, check SharePoint/SharedDocuments/models\n", filename, result.description());
 //		throw std::invalid_argument("Failed read OpenDRIVE XML");
 		return false;
 	}
@@ -2446,6 +2446,7 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	if (lane_id > 0)
 	{
 		h_ += M_PI;
+		p_ *= -1;
 	}
 }
 

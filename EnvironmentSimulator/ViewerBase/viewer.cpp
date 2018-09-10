@@ -503,7 +503,7 @@ int Viewer::AddEnvironment(const char* filename)
 		environment_ = osgDB::readNodeFile(filename);
 		if (environment_ == 0)
 		{
-			std::cout << "Failed to read environment model " << filename << "!\n";
+			std::cout << "Failed to read environment model " << filename << "! If file is missing, check SharePoint/SharedDocuments/models" << std::endl;
 			return -1;
 		}
 
