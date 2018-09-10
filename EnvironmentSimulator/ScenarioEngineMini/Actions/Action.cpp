@@ -148,9 +148,6 @@ void Action::executeSinusoidal(double simulationTime)
 		newPosition.SetInertiaPos(x, y, z, h, p, r);
 
 		(*carsPtr).setPosition(actionEntities[i], newPosition);
-
-		std::cout << laneId << std::endl;
-
 	}
 	
 	// Should use the target position instead of time to decide when action is completed

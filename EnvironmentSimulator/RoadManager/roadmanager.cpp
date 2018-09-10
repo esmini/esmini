@@ -1728,7 +1728,7 @@ void Position::Track2Lane()
 
 	if (candidate_lane_id != lane_id_)
 	{
-		printf("change lane: %d -> %d\n", lane_id_, candidate_lane_id);
+		//printf("change lane: %d -> %d\n", lane_id_, candidate_lane_id);
 		// Update cache indices
 		lane_id_ = candidate_lane_id;
 		lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
