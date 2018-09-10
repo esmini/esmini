@@ -1638,6 +1638,7 @@ Position::Position()
 	h_ = 0.0;
 	p_ = 0.0;
 	r_ = 0.0;
+	h_offset_ = 0.0;
 
 	track_idx_ = 0;
 	geometry_idx_ = 0;
@@ -2445,6 +2446,7 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	if (lane_id > 0)
 	{
 		h_ += M_PI;
+		p_ *= -1;
 	}
 }
 
