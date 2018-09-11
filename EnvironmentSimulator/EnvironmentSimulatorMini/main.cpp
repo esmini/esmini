@@ -5,6 +5,7 @@
 #include <chrono>
 
 #include "ScenarioReader.hpp"
+#include "RoadNetwork.hpp"
 #include "Entities.hpp"
 #include "Init.hpp"
 #include "Story.hpp"
@@ -48,33 +49,34 @@ int main(int argc, char *argv[])
 	std::string oscFilename;
 	arguments.read("--osc", oscFilename);
 
-	std::string scenegraphFilename;
-	arguments.read("--model", scenegraphFilename);
-
-	std::string odrFilename;
-	arguments.read("--odr", odrFilename);
-
 	// Initialization
 	ScenarioReader scenarioReader;
+	RoadNetwork roadNetwork;
 	Entities entities;
 	Init init;
 	std::vector<Story> story;
-	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenegraphFilename.c_str(), arguments);
-
-	// Init road manager
-	if (!roadmanager::Position::LoadOpenDrive(odrFilename.c_str()))
-	{
-		printf("Failed to load ODR %s\n", odrFilename.c_str());
-		return -1;
-	}
-	roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
 
 	// Load and parse data
 	scenarioReader.loadXmlFile(oscFilename.c_str());
 	scenarioReader.parseParameterDeclaration();
+	scenarioReader.parseRoadNetwork(roadNetwork);
 	scenarioReader.parseEntities(entities);
 	scenarioReader.parseInit(init);
 	scenarioReader.parseStory(story);
+
+	char* scenegraphFilename = &roadNetwork.SceneGraph.filepath[0];
+	char* odrFilename = &roadNetwork.Logics.filepath[0];
+
+	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenegraphFilename, arguments);
+
+	// Init road manager
+	if (!roadmanager::Position::LoadOpenDrive(odrFilename))
+	{
+		printf("Failed to load ODR %s\n", odrFilename);
+		return -1;
+	}
+	roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
+
 
 	// Print loaded data
 	entities.printEntities();
