@@ -9,6 +9,37 @@ ScenarioReader::ScenarioReader()
 	std::cout << "ScenarioReader: ScenarioReader finished" << std::endl;
 }
 
+void ScenarioReader::addParameter(std::string name, std::string value)
+{
+	std::cout << "ScenarioReader: addParameter started" << std::endl;
+
+	std::cout << "ScenarioReader: " << name << " addeed to parameterDeclaration" << std::endl;
+
+	parameterDeclaration.Parameter.resize(parameterDeclaration.Parameter.size() + 1);
+
+	parameterDeclaration.Parameter.back().name = name;
+	parameterDeclaration.Parameter.back().type = "string";
+	parameterDeclaration.Parameter.back().value = value;
+
+	std::cout << "ScenarioReader: addParameter finished" << std::endl;
+}
+
+std::string ScenarioReader::getParameter(std::string name)
+{
+	std::cout << "ScenarioReader: getParameter started" << std::endl;
+
+	// If string already present in parameterDeclaration
+	for (size_t i = 0; i < parameterDeclaration.Parameter.size(); i++)
+	{
+		if (parameterDeclaration.Parameter[i].name == name)
+		{
+			std::cout << "ScenarioReader: " << name << " replaced with " << parameterDeclaration.Parameter[i].value << std::endl;
+			return parameterDeclaration.Parameter[i].value;
+		}
+	}
+
+	std::cout << "ScenarioReader: getParameter finished" << std::endl;
+}
 
 void ScenarioReader::loadXmlFile(const char * path)
 {
@@ -44,36 +75,38 @@ void ScenarioReader::parseParameterDeclaration()
 	std::cout << "ScenarioReader: parseParameterDeclaration finished" << std::endl;
 }
 
-void ScenarioReader::addParameter(std::string name, std::string value)
+void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 {
-	std::cout << "ScenarioReader: addParameter started" << std::endl;
+	std::cout << "ScenarioReader: parseRoadNetwork started" << std::endl;
 
-	std::cout << "ScenarioReader: " << name << " addeed to parameterDeclaration" << std::endl;
+	pugi::xml_node roadNetworkNode = doc.child("OpenSCENARIO").child("RoadNetwork");
 
-	parameterDeclaration.Parameter.resize(parameterDeclaration.Parameter.size() + 1);
-
-	parameterDeclaration.Parameter.back().name = name;
-	parameterDeclaration.Parameter.back().type = "string";
-	parameterDeclaration.Parameter.back().value = value;
-
-	std::cout << "ScenarioReader: addParameter finished" << std::endl;
-}
-
-std::string ScenarioReader::getParameter(std::string name)
-{
-	std::cout << "ScenarioReader: getParameter started" << std::endl;
-
-	// If string already present in parameterDeclaration
-	for (size_t i = 0; i < parameterDeclaration.Parameter.size(); i++)
+	for (pugi::xml_node roadNetworkChild = roadNetworkNode.first_child(); roadNetworkChild; roadNetworkChild = roadNetworkChild.next_sibling())
 	{
-		if (parameterDeclaration.Parameter[i].name == name)
+		std::string roadNetworkChildName(roadNetworkChild.name());
+
+		if (roadNetworkChildName == "Logics")
 		{
-			std::cout << "ScenarioReader: " << name << " replaced with " << parameterDeclaration.Parameter[i].value << std::endl;
-			return parameterDeclaration.Parameter[i].value;
+			parseOSCFile(roadNetwork.Logics, roadNetworkChild);
+		}
+		else if (roadNetworkChildName == "SceneGraph")
+		{
+			parseOSCFile(roadNetwork.SceneGraph, roadNetworkChild);
 		}
 	}
 
-	std::cout << "ScenarioReader: getParameter finished" << std::endl;
+	std::cout << "ScenarioReader: parseRoadNetwork finished" << std::endl;
+}
+
+void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
+{
+	std::cout << "ScenarioReader: parseOSCFile started" << std::endl;
+
+	pugi::xml_attribute filepathAttribute = fileNode.attribute("filepath");
+	//std::cout << filepathAttribute.name() << " = " << filepathAttribute.value() << std::endl;
+	file.filepath = filepathAttribute.value();
+
+	std::cout << "ScenarioReader: parseOSCFile finished" << std::endl;
 }
 
 void ScenarioReader::parseOSCBoundingBox(OSCBoundingBox &boundingBox, pugi::xml_node boundingBoxNode)

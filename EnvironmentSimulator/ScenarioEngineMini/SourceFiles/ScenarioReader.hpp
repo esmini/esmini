@@ -1,5 +1,5 @@
 #pragma once
-//#include "Object.hpp"
+#include "RoadNetwork.hpp"
 #include "Entities.hpp"
 #include "Init.hpp"
 #include "Story.hpp"
@@ -14,6 +14,10 @@ class ScenarioReader
 public:
 	ScenarioReader();
 	void loadXmlFile(const char* path);
+
+	// RoadNetwork
+	void parseRoadNetwork(RoadNetwork &roadNetwork);
+	void parseOSCFile(OSCFile &file, pugi::xml_node fileNode);
 
 	// ParameterDeclaration
 	void parseParameterDeclaration();
