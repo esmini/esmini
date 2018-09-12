@@ -1,5 +1,6 @@
 #pragma once
 #include "RoadNetwork.hpp"
+#include "Catalogs.hpp"
 #include "Entities.hpp"
 #include "Init.hpp"
 #include "Story.hpp"
@@ -22,8 +23,13 @@ public:
 	// ParameterDeclaration
 	void parseParameterDeclaration();
 
+	// Catalogs
+	void parseCatalogs(Catalogs &catalogs);
+	void parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode);
+
 	// Enitites
 	void parseEntities(Entities &entities);
+	void parseOSCCatalogReference(OSCCatalogReference &catalogReference, pugi::xml_node catalogReferenceNode);
 	void parseOSCVehicle(OSCVehicle &vehicle, pugi::xml_node vehicleNode);
 	void parseOSCBoundingBox(OSCBoundingBox &boundingBox, pugi::xml_node boundingBoxNode);
 	void parseOSCAxle(OSCAxle &axle, pugi::xml_node axleNode);

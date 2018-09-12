@@ -108,7 +108,22 @@ struct OSCPrivateAction
 	} Lateral;
 
 	struct {} Visibility;
-	struct {} Meeting;
+	struct 
+	{
+	
+		std::string mode;
+		OSCPosition Position;
+
+		struct
+		{
+			std::string mode;
+			std::string object;
+			double offsetTime;
+			std::string continuous;			//Wrong type
+			OSCPosition Position;
+		} Relative;
+	
+	} Meeting;
 	struct {} Autonomous;
 	struct {} Controller;
 	OSCPosition Position;

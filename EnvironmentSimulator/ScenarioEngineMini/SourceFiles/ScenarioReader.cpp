@@ -98,6 +98,76 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 	std::cout << "ScenarioReader: parseRoadNetwork finished" << std::endl;
 }
 
+void ScenarioReader::parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode)
+{
+	std::cout << "ScenarioReader: parseOSCRoute started" << std::endl;
+
+	pugi::xml_attribute routeNameAttribute = routeNode.attribute("name");
+	//std::cout << routeNameAttribute.name() << " = " << routeNameAttribute.value() << std::endl;
+	route.name = routeNameAttribute.value();
+
+	pugi::xml_attribute routeClosedAttribute = routeNode.attribute("closed");
+	//std::cout << routeClosedAttribute.name() << " = " << routeClosedAttribute.value() << std::endl;
+	route.closed = routeNameAttribute.value();
+
+	for (pugi::xml_node routeChild = routeNode.first_child(); routeChild; routeChild = routeChild.next_sibling())
+	{
+		std::string routeChildName(routeChild.name());
+
+		if (routeChildName == "ParameterDeclaration")
+		{
+			std::cout << routeChildName << " is not implemented " << std::endl;
+
+		}
+		else if (routeChildName == "Waypoint")
+		{
+			route.Waypoint.resize(route.Waypoint.size() + 1);
+
+			pugi::xml_attribute strategyAttribute = routeChild.attribute("strategy");
+			//std::cout << strategyAttribute.name() << " = " << strategyAttribute.value() << std::endl;
+			route.Waypoint.back().strategy = strategyAttribute.value();
+
+			route.Waypoint.back().Position = new OSCPosition;
+
+			parseOSCPosition(*(route.Waypoint.back().Position), routeChild.first_child());
+
+		}
+	}
+
+	std::cout << "ScenarioReader: parseOSCRoute finished" << std::endl;
+}
+
+void ScenarioReader::parseCatalogs(Catalogs &catalogs) 
+{
+	std::cout << "ScenarioReader: parseCatalogs started" << std::endl;
+
+	pugi::xml_node catalogsNode = doc.child("OpenSCENARIO").child("Catalogs");
+
+	for (pugi::xml_node catalogsChild = catalogsNode.first_child(); catalogsChild; catalogsChild = catalogsChild.next_sibling())
+	{
+		std::string catalogsChildName(catalogsChild.name());
+
+		if (catalogsChildName == "RouteCatalog")
+		{
+			parseOSCRoute(catalogs.RouteCatalog.Route, catalogsChild.first_child());
+		}
+		else if (catalogsChildName == "VehicleCatalog")
+		{
+			pugi::xml_attribute vehicleCatalogDirectoryAttribute = catalogsChild.child("Directory").attribute("path");
+			//std::cout << vehicleCatalogDirectoryAttribute.name() << " = " << vehicleCatalogDirectoryAttribute.value() << std::endl;
+			catalogs.VehicleCatalog.Directory.path = vehicleCatalogDirectoryAttribute.value();
+		}
+		else if (catalogsChildName == "DriverCatalog")
+		{
+			pugi::xml_attribute driverCatalogDirectoryAttribute = catalogsChild.child("Directory").attribute("path");
+			//std::cout << driverCatalogDirectoryAttribute.name() << " = " << driverCatalogDirectoryAttribute.value() << std::endl;
+			catalogs.DriverCatalog.Directory.path = driverCatalogDirectoryAttribute.value();
+		}
+	}
+
+	std::cout << "ScenarioReader: parseRoadNetwork finished" << std::endl;
+}
+
 void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 {
 	std::cout << "ScenarioReader: parseOSCFile started" << std::endl;
@@ -309,6 +379,25 @@ void ScenarioReader::parseOSCVehicle(OSCVehicle &vehicle, pugi::xml_node vehicle
 	std::cout << "ScenarioReader: parseOSCVehicle finshed" << std::endl;
 }
 
+void ScenarioReader::parseOSCCatalogReference(OSCCatalogReference &catalogReference, pugi::xml_node catalogReferenceNode)
+{
+
+	pugi::xml_attribute catalogNameAttribute = catalogReferenceNode.attribute("catalogName");
+	//std::cout << catalogNameAttribute.name() << " = " << catalogNameAttribute.value() << std::endl;
+	catalogReference.catalogName = catalogNameAttribute.value();
+
+	pugi::xml_attribute entryNameAttribute = catalogReferenceNode.attribute("entryName");
+	//std::cout << entryNameAttribute.name() << " = " << entryNameAttribute.value() << std::endl;
+	catalogReference.entryName = entryNameAttribute.value();
+
+	pugi::xml_node catalogReferenceChild = catalogReferenceNode.first_child();
+	std::string catalogReferenceChildName(catalogReferenceChild.name());
+
+	if (catalogReferenceChildName == "ParameterAssignment")
+	{
+		std::cout << catalogReferenceChildName << " is not implemented " << std::endl;
+	}
+}
 
 void ScenarioReader::parseEntities(Entities &entities)
 {
@@ -330,8 +419,7 @@ void ScenarioReader::parseEntities(Entities &entities)
 
 			if (objectChildName == "CatalogReference")
 			{
-				std::cout << objectChildName << " is not implemented " << std::endl;
-
+				parseOSCCatalogReference(entities.Object.back().CatalogReference, objectChild);
 			}
 			else if (objectChildName == "Vehicle")
 			{
@@ -348,7 +436,6 @@ void ScenarioReader::parseEntities(Entities &entities)
 				std::cout << objectChildName << " is not implemented " << std::endl;
 
 			}
-
 			else if (objectChildName == "Controller")
 			{
 				pugi::xml_node controllerChild = objectChild.first_child();
@@ -368,6 +455,18 @@ void ScenarioReader::parseEntities(Entities &entities)
 					std::cout << objectChildName << " is not implemented " << std::endl;
 
 				}
+			}
+			else if (objectChildName == "Properties")
+			{
+				pugi::xml_node propertiesChild = objectChild.first_child();
+
+				pugi::xml_attribute propertyNameAttribute = propertiesChild.attribute("name");
+				//std::cout << propertyNameAttribute.name() << " = " << propertyNameAttribute.value() << std::endl;
+				entities.Object.back().Properties.Property.name = propertyNameAttribute.value();
+
+				pugi::xml_attribute propertyValueAttribute = propertiesChild.attribute("value");
+				//std::cout << propertyValueAttribute.name() << " = " << propertyValueAttribute.value() << std::endl;
+				entities.Object.back().Properties.Property.value = propertyValueAttribute.value();
 			}
 		}
 		objectCnt++;
@@ -439,7 +538,65 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 		}
 		else if (positionChildName == "Route")
 		{
-			std::cout << positionChildName << " is not implemented " << std::endl;
+
+			for (pugi::xml_node routeChild = positionChild.first_child(); routeChild; routeChild = routeChild.next_sibling())
+			{
+				std::string routeChildName(routeChild.name());
+
+				if (routeChildName == "RouteRef")
+				{
+					for (pugi::xml_node routeRefChild = routeChild.first_child(); routeRefChild; routeRefChild = routeRefChild.next_sibling())
+					{
+						std::string routeRefChildName(routeRefChild.name());
+
+						if (routeRefChildName == "Route")
+						{
+							parseOSCRoute(position.Route.RouteRef.Route, routeRefChild);
+						}
+						else if (routeRefChildName == "CatalogReference")
+						{
+							parseOSCCatalogReference(position.Route.RouteRef.CatalogReference, routeRefChild);
+						}
+					}
+				}
+				if (routeChildName == "Orientation")
+				{
+					std::cout << routeChildName << " is not implemented " << std::endl;
+				}
+				else if (routeChildName == "Position")
+				{
+					for (pugi::xml_node positionChild = routeChild.first_child(); positionChild; positionChild = positionChild.next_sibling())
+					{
+						std::string positionChildName(positionChild.name());
+
+						if (positionChildName == "Current")
+						{
+							std::cout << positionChildName << " is not implemented " << std::endl;
+						}
+						else if (positionChildName == "RoadCoord")
+						{
+							std::cout << positionChildName << " is not implemented " << std::endl;
+						}
+						else if (positionChildName == "LaneCoord")
+						{
+							pugi::xml_attribute pathSAttribute = positionChild.attribute("pathS");
+							//std::cout << pathSAttribute.name() << " = " << pathSAttribute.value() << std::endl;
+							position.Route.Position.LaneCoord.pathS = std::stod(pathSAttribute.value());
+
+							pugi::xml_attribute laneIdAttribute = positionChild.attribute("laneId");
+							//std::cout << laneIdAttribute.name() << " = " << laneIdAttribute.value() << std::endl;
+							position.Route.Position.LaneCoord.laneId = std::stoi(laneIdAttribute.value());
+
+							pugi::xml_attribute laneOffsetAttribute = positionChild.attribute("laneOffset");
+							if (laneOffsetAttribute != NULL)
+							{
+								//std::cout << laneOffsetAttribute.name() << " = " << laneOffsetAttribute.value() << std::endl;
+								position.Route.Position.LaneCoord.laneOffset = std::stod(laneOffsetAttribute.value());
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	std::cout << "ScenarioReader: parseOSCPosition finshed" << std::endl;
@@ -536,7 +693,16 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 
 									pugi::xml_attribute absoluteValueAttribute = targetChild.attribute("value");
 									//std::cout << absoluteValueAttribute.name() << " = " << absoluteValueAttribute.value() << std::endl;
-									action.Longitudinal.Speed.Target.Absolute.value = std::stod(absoluteValueAttribute.value());
+
+									if (absoluteValueAttribute.value()[0] == '$')
+									{
+										action.Longitudinal.Speed.Target.Absolute.value = std::stod(getParameter(absoluteValueAttribute.value()));
+									}
+									else
+									{
+										action.Longitudinal.Speed.Target.Absolute.value = std::stod(absoluteValueAttribute.value());
+									}
+
 
 								}
 							}
@@ -682,7 +848,38 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 		}
 		else if (actionChildName == "Meeting")
 		{
-			std::cout << actionChildName << " is not implemented " << std::endl;
+
+			pugi::xml_attribute meetingModeAttribute = actionChild.attribute("mode");
+			action.Meeting.mode = meetingModeAttribute.value();
+
+			for (pugi::xml_node meetingChild = actionChild.first_child(); meetingChild; meetingChild = meetingChild.next_sibling())
+			{
+				std::string meetingChildName(meetingChild.name());
+
+				if (meetingChildName == "Position")
+				{
+					parseOSCPosition(action.Meeting.Position, meetingChild);
+				}
+				else if (meetingChildName == "Relative")
+				{
+
+					pugi::xml_attribute relativeModeAttribute = meetingChild.attribute("mode");
+					action.Meeting.Relative.mode = relativeModeAttribute.value();
+
+					pugi::xml_attribute meetingObjectAttribute = meetingChild.attribute("object");
+					action.Meeting.Relative.object = meetingObjectAttribute.value();
+
+					pugi::xml_attribute meetingOffsetTimeAttribute = meetingChild.attribute("offsetTime");
+					action.Meeting.Relative.offsetTime = std::stod(meetingOffsetTimeAttribute.value());
+
+					pugi::xml_attribute meetingContinuousAttribute = meetingChild.attribute("continuous");
+					action.Meeting.Relative.continuous = meetingContinuousAttribute.value();
+
+					parseOSCPosition(action.Meeting.Relative.Position, meetingChild);
+
+				}
+			}
+
 		}
 		else if (actionChildName == "Autonomous")
 		{
@@ -911,7 +1108,11 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 				}
 				else if (byStateChildName == "AfterTermination")
 				{
-					std::cout << byStateChildName << " is not implemented " << std::endl;
+					pugi::xml_attribute afterTerminationTypeAttribute = byStateChild.attribute("type");
+					condition.ByState.AfterTermination.type = afterTerminationTypeAttribute.value();
+
+					pugi::xml_attribute afterTerminationNameAttribute = byStateChild.attribute("name");
+					condition.ByState.AfterTermination.name = afterTerminationNameAttribute.value();
 				}
 				else if (byStateChildName == "Command")
 				{
@@ -943,12 +1144,10 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 				else if (byValueChildName == "SimulationTime")
 				{
 					pugi::xml_attribute simulationTimeValueAttribute = byValueChild.attribute("value");
-					//std::cout << simulationTimeValueAttribute.name() << " = " << simulationTimeValueAttribute.value() << std::endl;
-					condition.ByEntity.EntityCondition.TimeHeadway.rule = std::stod(simulationTimeValueAttribute.value());
+					condition.ByValue.SimulationTime.value = std::stod(simulationTimeValueAttribute.value());
 
 					pugi::xml_attribute simulationTimeRuleAttribute = byValueChild.attribute("rule");
-					//std::cout << simulationTimeRuleAttribute.name() << " = " << simulationTimeRuleAttribute.value() << std::endl;
-					condition.ByEntity.EntityCondition.TimeHeadway.rule = simulationTimeRuleAttribute.value();
+					condition.ByValue.SimulationTime.rule = simulationTimeRuleAttribute.value();
 
 				}
 			}

@@ -33,6 +33,15 @@ public:
 
 			struct
 			{
+				struct
+				{
+					std::string name;
+					std::string value;
+				} Property;
+			} Properties;
+
+			struct
+			{
 				OSCCatalogReference CatalogReference;
 				OSCDriver Driver;
 				OSCPedestrianController PedestrianController;

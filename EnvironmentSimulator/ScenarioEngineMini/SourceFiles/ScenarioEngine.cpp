@@ -1,7 +1,7 @@
 #include "ScenarioEngine.hpp"
 
 
-ScenarioEngine::ScenarioEngine(Entities &entities, Init &init, std::vector<Story> &story, double startTime)
+ScenarioEngine::ScenarioEngine(Catalogs &catalogs, Entities &entities, Init &init, std::vector<Story> &story, double startTime)
 {
 	std::cout << "ScenarioEngine: New ScenarioEngine created" << std::endl;
 
@@ -29,6 +29,9 @@ void ScenarioEngine::printSimulationTime()
 	std::cout << "ScenarioEngine: simulationTime = " << simulationTime << std::endl;
 }
 
+void ScenarioEngine::initRoute()
+{
+}
 
 void ScenarioEngine::initCars()
 {

@@ -1,6 +1,6 @@
 #pragma once
-
 #include "Entities.hpp"
+#include "Catalogs.hpp"
 #include "Init.hpp"
 #include "Story.hpp"
 #include "Conditions.hpp"
@@ -19,7 +19,7 @@ class ScenarioEngine
 {
 public:
 
-	ScenarioEngine(Entities &entities, Init &init, std::vector<Story> &story, double startTime);
+	ScenarioEngine(Catalogs &catalogs, Entities &entities, Init &init, std::vector<Story> &story, double startTime);
 
 	void initCars();
 	void printCars();
@@ -29,18 +29,24 @@ public:
 	void printSimulationTime();
 	void stepObjects(double dt);
 
+	void initRoute();
 	void initConditions();
 	void checkConditions();
 	void executeActions();
 	
 	//private:
+	// OpenSCENARIO parameters
+	Catalogs catalogs;
 	Entities entities;
 	Init init;
 	std::vector<Story> story;
+
+	// Simulation parameters
 	double startTime;
 	double simulationTime;
 	double timeStep;
 
+	// 
 	Conditions conditions;
 	Actions actions;
 	Cars cars;
