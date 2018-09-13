@@ -20,6 +20,8 @@ public:
 	bool getStartAction();
 	bool getActionCompleted();
 	std::vector<int> getStoryId();
+	std::string getActionType();
+	std::string getActionName();
 
 private:
 
@@ -27,12 +29,17 @@ private:
 	void identifyActionType(OSCPrivateAction privateAction);
 	void executeSinusoidal(double simulationTime);
 	void executeSpeed(double simulationTime, double timeStep);
+	void executeSpeedStep();
+	void executePositionLane();
+	void executePositionRoute();
+	void Action::executeMeeting();
 
 	// Constructor variables
 	OSCPrivateAction privateAction;
 	Cars * carsPtr;
 	std::vector<int> storyId;
 	std::vector<std::string> actionEntities;
+	std::string actionName;
 
 	// General class variables
 	std::string actionType;
@@ -52,9 +59,18 @@ private:
 	std::vector<double> aT;
 	double tT;
 
-
 	// Speed
 	double speedRate;
+	double speedTarget;
+
+	// Meeting
+	roadmanager::Position ownTargetPos;
+	roadmanager::Position relativeTargetPos;
+	std::string mode;
+	std::string object;
+	double offsetTime;
+	std::string continuous;
+
 
 };
 

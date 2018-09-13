@@ -12,7 +12,22 @@ Action::Action(OSCPrivateAction &privateAction, Cars &cars, std::vector<int> sto
 	startAction = false;
 	firstRun = true;
 
+	if (false)
+	{
+		actionName = "Whats this";
+	}
+
 	identifyActionType(privateAction);	
+}
+
+std::string Action::getActionType()
+{
+	return actionType;
+}
+
+std::string Action::getActionName()
+{
+	return actionName;
 }
 
 void Action::identifyActionType(OSCPrivateAction privateAction)
@@ -42,12 +57,67 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 		}
 	}
 
-	if (!isnan(privateAction.Longitudinal.Speed.Dynamics.rate)) // Should be (!...Dynamics.shape.empty()) Wrong in osc
+	else if (!isnan(privateAction.Longitudinal.Speed.Dynamics.rate)) // Should be (!...Dynamics.shape.empty()) Wrong in osc
 	{
 		this->actionType = "speed";
 		this->speedRate = privateAction.Longitudinal.Speed.Dynamics.rate;
 	}
+
+	// Speed action -Step
+	else if (privateAction.Longitudinal.Speed.Dynamics.shape == "step")
+	{
+
+		if (privateAction.Longitudinal.Speed.Target.Absolute.value != NAN)
+		{
+			this->actionType = "speed-step";
+			this->speedTarget = privateAction.Longitudinal.Speed.Target.Absolute.value;
+		}
+	}
+
+	// Position lane
+	else if (!privateAction.Position.Lane.roadId.empty())
+	{
+		this->actionType = "position-lane";
+	}
+
+	// Position route
+	else if (!privateAction.Position.Route.RouteRef.CatalogReference.catalogName.empty())
+	{
+		this->actionType = "position-route";
+	}
+
+	// Meeting
+	else if (!privateAction.Meeting.mode.empty())
+	{
+		this->actionType = "meeting";
+
+		this->mode = privateAction.Meeting.mode;
+		this->object = privateAction.Meeting.Relative.object;
+		this->offsetTime = privateAction.Meeting.Relative.offsetTime;
+		this->continuous = privateAction.Meeting.Relative.continuous;
+
+		if (!privateAction.Meeting.Position.Lane.roadId.empty())
+		{
+			int roadId = std::stoi(privateAction.Meeting.Position.Lane.roadId);
+			int lane_id = std::stoi(privateAction.Meeting.Position.Lane.roadId);
+			double s = std::stod(privateAction.Meeting.Position.Lane.roadId);
+			double offset = std::stod(privateAction.Meeting.Position.Lane.roadId);
+
+			ownTargetPos.SetLanePos(roadId, lane_id, s, offset);
+		}
+
+		if (!privateAction.Meeting.Relative.Position.Lane.roadId.empty())
+		{
+			int roadId = std::stoi(privateAction.Meeting.Relative.Position.Lane.roadId);
+			int lane_id = std::stoi(privateAction.Meeting.Relative.Position.Lane.roadId);
+			double s = std::stod(privateAction.Meeting.Relative.Position.Lane.roadId);
+			double offset = std::stod(privateAction.Meeting.Relative.Position.Lane.roadId);
+
+			relativeTargetPos.SetLanePos(roadId, lane_id, s, offset);
+		}		
+	}
 }
+
 
 void Action::setStartTime(double simulationTime)
 {
@@ -81,9 +151,29 @@ void Action::ExecuteAction(double simulationTime, double timeStep) {
 		executeSinusoidal(simulationTime);
 	}
 
-	if (actionType == "speed")
+	else if (actionType == "speed")
 	{
 		executeSpeed(simulationTime, timeStep);
+	}
+
+	else if (actionType == "speed-step")
+	{
+		executeSpeedStep();
+	}
+
+	else if (actionType == "position-lane")
+	{
+		executePositionLane();
+	}
+
+	else if (actionType == "position-route")
+	{
+		executePositionRoute();
+	}
+
+	else if (actionType == "meeting")
+	{
+		executeMeeting();
 	}
 }
 
@@ -180,4 +270,68 @@ void Action::executeSpeed(double simulationTime, double timeStep)
 	}
 }
 
+void Action::executeSpeedStep()
+{
+	for (size_t i = 0; i < actionEntities.size(); i++)
+	{
+		(*carsPtr).setSpeed(actionEntities[i], speedTarget);
+		
+	}
+	actionCompleted = true;
+	startAction = false;
+}
 
+void Action::executePositionLane()
+{
+	OSCPosition position = privateAction.Position;
+
+	int roadId = std::stoi(position.Lane.roadId);
+	int laneId = position.Lane.laneId;
+	double s = position.Lane.s;
+	double offset = (std::isnan(position.Lane.offset)) ? 0 : std::isnan(position.Lane.offset);
+
+	roadmanager::Position pos(roadId, laneId, s, offset);
+
+	for (size_t i = 0; i < actionEntities.size(); i++)
+	{
+		(*carsPtr).setPosition(actionEntities[i], pos);
+	}
+
+	actionCompleted = true;
+	startAction = false;
+
+}
+
+void Action::executePositionRoute()
+{
+
+std::string routeEntryName = privateAction.Position.Route.RouteRef.CatalogReference.entryName;
+
+	// This doesnt make sense but the route is defined inline which is not allowed...
+	// Guess we will need to have multiple routes what we look through
+	//if (routeEntryName == route.getName())
+	//{
+	//	// Position according to the init
+	//	double pathS = init.Actions.Private[i].Action[j].Position.Route.Position.LaneCoord.pathS;
+	//	double laneId = init.Actions.Private[i].Action[j].Position.Route.Position.LaneCoord.laneId;
+	//	double laneOffset = init.Actions.Private[i].Action[j].Position.Route.Position.LaneCoord.laneOffset;
+
+		//roadmanager::Position routePosition = route.GetPosition(pathS);	// Would like such a function that returns a roadmanager::Position according to how the route i specified.
+		//
+		//// Position according to the route
+		//double routeRoadId = routePosition.GetTrackId();
+		//double routeS = routePosition.GetS();
+		//double routeOffset = routePosition.GetOffset();
+
+		//// Cars position
+		//roadmanager::Position pos(routeRoadId, laneId, routeS, laneOffset + routeOffset);
+		//cars.setPosition(objectName, pos);
+	//}
+	actionCompleted = true;
+	startAction = false;
+}
+
+void Action::executeMeeting()
+{
+	// TODO
+}

@@ -35,7 +35,7 @@ void Actions::executeActions(double simulationTime)
 
 		if (actions[i].getActionCompleted())
 		{
-			std::cout << "Actions: " << " action " << i << " is removed from actions" << "\n" << std::endl;
+			std::cout << "Actions: " << " action " << actions[i].getActionType() << " is removed from actions" << "\n" << std::endl;
 			actions.erase(actions.begin() + i);
 		}
 	}

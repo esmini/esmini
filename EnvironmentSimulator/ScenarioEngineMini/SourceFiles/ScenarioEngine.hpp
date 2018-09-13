@@ -22,7 +22,7 @@ public:
 	ScenarioEngine(Catalogs &catalogs, Entities &entities, Init &init, std::vector<Story> &story, double startTime);
 
 	void initCars();
-	void initStoryboard();
+	void initInit();
 	void printCars();
 
 	void setSimulationTime(double simulationTime);

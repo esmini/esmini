@@ -53,82 +53,29 @@ void ScenarioEngine::initRoute()
 	}
 }
 
-void ScenarioEngine::initStoryboard()
+void ScenarioEngine::initInit()
 {
 	std::cout << "ScenarioEngine: initStoryboard started" << std::endl;
 
-	if (!init.Actions.Private.empty())
+
+	for (int i = 0; i < init.Actions.Private.size(); i++)
 	{
+		std::vector<std::string> actionEntities;
+		actionEntities.push_back(init.Actions.Private[i].object);
 
-		for (size_t i = 0; i < init.Actions.Private.size(); i++)
+		for (int j = 0; j < init.Actions.Private[i].Action.size(); j++)
 		{
-			std::string objectName = init.Actions.Private[i].object;
 
-			for (size_t j = 0; j < init.Actions.Private[i].Action.size(); j++)
-			{
-
-				// Speed
-				if (!init.Actions.Private[i].Action[j].Longitudinal.Speed.Dynamics.shape.empty())
-				{
-					if (init.Actions.Private[i].Action[j].Longitudinal.Speed.Dynamics.shape == "step")
-					{
-						if (init.Actions.Private[i].Action[j].Longitudinal.Speed.Target.Absolute.value != NAN)
-						{
-							double speed = init.Actions.Private[i].Action[j].Longitudinal.Speed.Target.Absolute.value;
-							cars.setSpeed(objectName, speed);
-						}
-					}
-				}
-
-				// Lane position
-				else if (!init.Actions.Private[i].Action[j].Position.Lane.roadId.empty())
-				{
-					OSCPosition position = init.Actions.Private[i].Action[j].Position;
-
-					int roadId = std::stoi(position.Lane.roadId);
-					int laneId = position.Lane.laneId;
-					double s = position.Lane.s;
-					double offset = (std::isnan(position.Lane.offset)) ? 0 : std::isnan(position.Lane.offset);
-
-					roadmanager::Position pos(roadId, laneId, s, offset);
-					cars.setPosition(objectName, pos);
-				}
-
-				// Route position
-				else if (!init.Actions.Private[i].Action[j].Position.Route.RouteRef.CatalogReference.catalogName.empty())
-				{
-					std::string routeEntryName = init.Actions.Private[i].Action[j].Position.Route.RouteRef.CatalogReference.entryName;
-
-					// This doesnt make sense but the route is defined inline which is not allowed...
-					// Guess we will need to have multiple routes what we look through
-					if (routeEntryName == route.getName())
-					{
-						// Position according to the init
-						double pathS = init.Actions.Private[i].Action[j].Position.Route.Position.LaneCoord.pathS;
-						double laneId = init.Actions.Private[i].Action[j].Position.Route.Position.LaneCoord.laneId;
-						double laneOffset = init.Actions.Private[i].Action[j].Position.Route.Position.LaneCoord.laneOffset;
-
-						//roadmanager::Position routePosition = route.GetPosition(pathS);	// Would like such a function that returns a roadmanager::Position according to how the route i specified.
-						//
-						//// Position according to the route
-						//double routeRoadId = routePosition.GetTrackId();
-						//double routeS = routePosition.GetS();
-						//double routeOffset = routePosition.GetOffset();
-
-						//// Cars position
-						//roadmanager::Position pos(routeRoadId, laneId, routeS, laneOffset + routeOffset);
-						//cars.setPosition(objectName, pos);
-					}
-				}
-
-				// Meeting
-				else if (!init.Actions.Private[i].Action[j].Meeting.mode.empty())
-				{
-
-				}
-			}
+			OSCPrivateAction privateAction = init.Actions.Private[i].Action[j];
+			std::vector<int> storyId{i,j};
+			
+			Action action(privateAction, cars, storyId, actionEntities);
+			actions.addAction(action);
+			actions.setStartAction(storyId, 0);
 		}
 	}
+
+	actions.executeActions(0);
 
 	std::cout << "ScenarioEngine: initStoryboard finished" << std::endl;
 }
