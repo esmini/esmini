@@ -859,6 +859,18 @@ void Road::AddLaneOffset(LaneOffset *lane_offset)
 	lane_offset_.push_back((LaneOffset*)lane_offset);
 }
 
+double Road::GetCenterOffset(double s, int lane_id)
+{
+	// First find out what lane section 
+	LaneSection *lane_section = GetLaneSectionByS(s);
+	if (lane_section)
+	{
+		return lane_section->GetCenterOffset(s, lane_id);
+	}
+
+	return 0.0;
+}
+
 RoadLink* Road::GetLink(LinkType type)
 {
 	for (auto &l : link_)

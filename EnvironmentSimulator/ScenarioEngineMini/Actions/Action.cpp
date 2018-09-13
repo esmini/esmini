@@ -96,8 +96,7 @@ void Action::executeSinusoidal(double simulationTime)
 		// Target entities
 		roadmanager::Position tObjectPosition = (*carsPtr).getPosition(targetObject);
 		roadmanager::Road *tObjectRoad = tObjectPosition.GetOpenDrive()->GetRoadById(tObjectPosition.GetTrackId());
-		roadmanager::LaneSection *tObjectLanesection = tObjectRoad->GetLaneSectionByS(tObjectPosition.GetS());
-		tT = tObjectLanesection->GetCenterOffset(tObjectPosition.GetS(), tObjectPosition.GetLaneId() + targetValue);
+		tT = tObjectRoad->GetCenterOffset(tObjectPosition.GetS(), tObjectPosition.GetLaneId() + targetValue);
 
 		// Action entities
 		aT.resize(actionEntities.size());
@@ -106,8 +105,7 @@ void Action::executeSinusoidal(double simulationTime)
 		{
 			roadmanager::Position aPosition = (*carsPtr).getPosition(actionEntities[i]);
 			roadmanager::Road *aRoad = aPosition.GetOpenDrive()->GetRoadById(aPosition.GetTrackId());
-			roadmanager::LaneSection *aLanesection = aRoad->GetLaneSectionByS(aPosition.GetS());
-			aT[i] = aLanesection->GetCenterOffset(aPosition.GetS(), aPosition.GetLaneId()) - aPosition.GetOffset();
+			aT[i] = aRoad->GetCenterOffset(aPosition.GetS(), aPosition.GetLaneId()) - aPosition.GetOffset();
 		}
 	}
 

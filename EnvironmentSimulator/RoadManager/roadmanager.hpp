@@ -341,6 +341,14 @@ namespace roadmanager
 		int GetLaneIdByIdx(int idx);
 		int GetLaneIdxById(int id);
 		double GetOuterOffset(double s, int lane_id);
+		
+		/**
+		Get lateral position of lane center, from road reference lane (lane id=0)
+		Example: If lane id 1 is 5 m wide and lane id 2 is 4 m wide, then 
+				lane 1 center offset is 5/2 = 2.5 and lane 2 center offset is 5 + 4/2 = 7
+		@param s distance along the road segment
+		@param lane_id lane specifier, starting from center -1, -2, ... is on the right side, 1, 2... on the left 
+		*/
 		double GetCenterOffset(double s, int lane_id);
 		double GetOuterOffsetHeading(double s, int lane_id);
 		double GetCenterOffsetHeading(double s, int lane_id);
@@ -414,8 +422,33 @@ namespace roadmanager
 		void SetName(std::string name) { name_ = name; }
 		Geometry *GetGeometry(int idx);
 		int GetNumberOfGeometries() { return (int)geometry_.size(); }
+
+		/** 
+		Retrieve the lanesection specified by vector element index (idx)
+		useful for iterating over all available lane sections, e.g:
+		for (int i = 0; i < road->GetNumberOfLaneSections(); i++)
+		{
+			int n_lanes = road->GetLaneSectionByIdx(i)->GetNumberOfLanes();
+		...
+		@param idx index into the vector of lane sections
+		*/
 		LaneSection *GetLaneSectionByIdx(int idx);
+		
+		/**
+		Retrieve the lanesection at specified s-value
+		@param s distance along the road segment
+		*/
 		LaneSection *GetLaneSectionByS(double s);
+
+		/**
+		Get lateral position of lane center, from road reference lane (lane id=0)
+		Example: If lane id 1 is 5 m wide and lane id 2 is 4 m wide, then
+		lane 1 center offset is 5/2 = 2.5 and lane 2 center offset is 5 + 4/2 = 7
+		@param s distance along the road segment
+		@param lane_id lane specifier, starting from center -1, -2, ... is on the right side, 1, 2... on the left
+		*/
+		double GetCenterOffset(double s, int lane_id);
+
 		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id);
 		int GetNumberOfLaneSections() { return (int)lane_section_.size(); }
 		std::string GetName() { return name_; }
@@ -529,7 +562,22 @@ namespace roadmanager
 		OpenDrive(const char *filename);
 		~OpenDrive();
 		bool LoadOpenDriveFile(const char *filename);
+
+		/**
+		Retrieve a road segment specified by road ID 
+		@param id road ID as specified in the OpenDRIVE file
+		*/
 		Road* GetRoadById(int id);
+
+		/**
+		Retrieve a road segment specified by road vector element index
+		useful for iterating over all available road segments, e.g:
+		for (int i = 0; i < GetNumOfRoads(); i++)
+		{
+			int n_lanes = GetRoadyIdx(i)->GetNumberOfLanes();
+		...
+		@param idx index into the vector of roads
+		*/
 		Road* GetRoadByIdx(int idx);
 		int GetTrackIdxById(int id);
 		int GetTrackIdByIdx(int idx);
@@ -567,19 +615,76 @@ namespace roadmanager
 		void SetInertiaPos(double x, double y, double z, double h, double p, double r);
 		void SetXYH(double x, double y, double h);
 		int MoveToConnectingRoad(RoadLink *road_link, double ds);
+		
+		/**
+		Move position along the road network, forward or backward, from the current position
+		It will automatically follow connecting lanes between connected roads 
+		If multiple options (only possible in junctions) it will choose randomly 
+		@param ds distance to move from current position
+		*/
 		int MoveAlongS(double ds);
 
+		/**
+		Retrieve the track/road ID from the position object
+		@return track/road ID
+		*/
 		int GetTrackId() { return track_id_; }
+
+		/**
+		Retrieve the lane ID from the position object
+		@return lane ID
+		*/
 		int GetLaneId() { return lane_id_; }
+
+		/**
+		Retrieve a road segment specified by road ID
+		@param id road ID as specified in the OpenDRIVE file
+		*/
 		Road *GetRoadById(int id) { return GetOpenDrive()->GetRoadById(id);	}
+
+		/**
+		Retrieve the s value (distance along the road segment)
+		*/
 		double GetS() { return s_; }
+
+		/**
+		Retrieve the t value (lateral distance from reference lanem (id=0))
+		*/
 		double GetT() { return t_; }
+
+		/**
+		Retrieve the offset from current lane
+		*/
 		double GetOffset() { return offset_; }
+
+		/**
+		Retrieve the world coordinate X-value
+		*/
 		double GetX() { return x_; }
+
+		/**
+		Retrieve the world coordinate Y-value
+		*/
 		double GetY() { return y_; }
+
+		/**
+		Retrieve the world coordinate Z-value
+		*/
 		double GetZ() { return z_; }
+
+		/**
+		Retrieve the world coordinate heading angle (radians)
+		*/
 		double GetH() { return h_; }
+
+		/**
+		Retrieve the world coordinate pitch angle (radians)
+		*/
 		double GetP() { return p_; }
+
+		/**
+		Retrieve the world coordinate roll angle (radians)
+		*/
 		double GetR() { return r_; }
 
 		void PrintTrackPos();
