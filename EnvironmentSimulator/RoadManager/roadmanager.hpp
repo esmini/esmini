@@ -595,7 +595,7 @@ namespace roadmanager
 		void Lane2Track();
 		void XYZ2Track();
 		void SetLongitudinalTrackPos(int track_id, double s);
-		bool Position::EvaluateZAndPitch();
+		bool EvaluateZAndPitch();
 		double GetDistToTrackGeom(double x3, double y3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm);
 
 		// track reference
