@@ -1,6 +1,6 @@
 	
 #include <iostream>
-#include <string>
+#include <cstring>
 #include <random>
 
 #define _USE_MATH_DEFINES
