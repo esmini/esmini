@@ -1,6 +1,6 @@
 #pragma once
-#include "Entities.hpp"
 #include "Catalogs.hpp"
+#include "Entities.hpp"
 #include "Init.hpp"
 #include "Story.hpp"
 #include "Conditions.hpp"
@@ -22,6 +22,7 @@ public:
 	ScenarioEngine(Catalogs &catalogs, Entities &entities, Init &init, std::vector<Story> &story, double startTime);
 
 	void initCars();
+	void initStoryboard();
 	void printCars();
 
 	void setSimulationTime(double simulationTime);
@@ -50,6 +51,9 @@ public:
 	Conditions conditions;
 	Actions actions;
 	Cars cars;
+
+	// Route
+	roadmanager::Route route;
 
 };
 

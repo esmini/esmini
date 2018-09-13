@@ -2593,3 +2593,13 @@ double Route::GetLength()
 
 	return 0.0;
 }
+
+void Route::setName(std::string name)
+{
+	this->name = name;
+}
+
+std::string Route::getName()
+{
+	return name;
+}

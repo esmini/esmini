@@ -633,10 +633,13 @@ namespace roadmanager
 		int SetPosition(Position *position);
 		int GetPosition(Position *position);
 		int SetOffset(double ds, int dLane, double  dLaneOffset);
+		void setName(std::string name);
+		std::string getName();
 		double GetLength();
 
 		std::vector<Position*> waypoint_;
 		Position current_position_;
+		std::string name;
 	};
 
 } // namespace

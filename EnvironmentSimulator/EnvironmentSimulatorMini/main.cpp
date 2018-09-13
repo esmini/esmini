@@ -88,7 +88,9 @@ int main(int argc, char *argv[])
 
 	// ScenarioEngine
 	ScenarioEngine scenarioEngine(catalogs, entities, init, story, simulationTime);
+	scenarioEngine.initRoute();
 	scenarioEngine.initCars();
+	scenarioEngine.initStoryboard();
 	scenarioEngine.initConditions();
 
 
