@@ -1,82 +1,100 @@
 #include "ScenarioEngine.hpp"
 
 
-ScenarioEngine::ScenarioEngine(Entities &entities, Init &init, std::vector<Story> &story, double startTime)
+ScenarioEngine::ScenarioEngine(Catalogs &catalogs, Entities &entities, Init &init, std::vector<Story> &story, double startTime)
 {
 	std::cout << "ScenarioEngine: New ScenarioEngine created" << std::endl;
 
+	this->catalogs = catalogs;
 	this->entities = entities;
 	this->init = init;
 	this->story = story;
 	this->startTime = startTime;
 }
 
-
 void ScenarioEngine::setTimeStep(double timeStep)
 {
 	this->timeStep = timeStep;
 }
-
 
 void ScenarioEngine::setSimulationTime(double simulationTime)
 {
 	this->simulationTime = simulationTime;
 }
 
-
 void ScenarioEngine::printSimulationTime()
 {
 	std::cout << "ScenarioEngine: simulationTime = " << simulationTime << std::endl;
 }
 
+void ScenarioEngine::initRoute()
+{
+	if (!catalogs.RouteCatalog.Route.Waypoint.empty())
+	{
+
+		for (size_t i = 0; i < catalogs.RouteCatalog.Route.Waypoint.size(); i++)
+		{
+			roadmanager::Position position;
+
+			// Lane position
+			if (!catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.roadId.empty())
+			{
+				int roadId = std::stoi(catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.roadId);
+				int lane_id = catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.laneId;
+				double s = catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.s;
+				double offset = catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.offset;
+
+				position.SetLanePos(roadId, lane_id, s, offset);
+			}
+
+			route.setName(catalogs.RouteCatalog.Route.name);
+			route.AddWaypoint(&position);
+		}
+	}
+}
+
+void ScenarioEngine::initInit()
+{
+	std::cout << "ScenarioEngine: initStoryboard started" << std::endl;
+
+
+	for (int i = 0; i < init.Actions.Private.size(); i++)
+	{
+		std::vector<std::string> actionEntities;
+		actionEntities.push_back(init.Actions.Private[i].object);
+
+		for (int j = 0; j < init.Actions.Private[i].Action.size(); j++)
+		{
+
+			OSCPrivateAction privateAction = init.Actions.Private[i].Action[j];
+			std::vector<int> storyId{i,j};
+			
+			Action action(privateAction, cars, storyId, actionEntities);
+			actions.addAction(action);
+			actions.setStartAction(storyId, 0);
+		}
+	}
+
+	actions.executeActions(0);
+
+	std::cout << "ScenarioEngine: initStoryboard finished" << std::endl;
+}
 
 void ScenarioEngine::initCars()
 {
 	std::cout << "ScenarioEngine: initCars started" << std::endl;
 
-	if (init.Actions.Private[0].exists)
+	if (!entities.Object.empty())
 	{
-
-		for (size_t i = 0; i < init.Actions.Private.size(); i++)
-		{			
+		for (size_t i = 0; i < entities.Object.size(); i++)
+		{
 			Car car;
 			int objectId = i;
-			std::string objectName = init.Actions.Private[i].object;
+			std::string objectName = entities.Object[i].name;
 
 			car.setObjectId(objectId);
 			car.setName(objectName);
 			cars.addCar(car);
-
-			for (size_t j = 0; j < init.Actions.Private[i].Action.size(); j++)
-			{
-
-				// Speed
-				if (!init.Actions.Private[i].Action[j].Longitudinal.Speed.Dynamics.shape.empty())
-				{
-					if (init.Actions.Private[i].Action[j].Longitudinal.Speed.Dynamics.shape == "step")
-					{
-						if (init.Actions.Private[i].Action[j].Longitudinal.Speed.Target.Absolute.value != NAN)
-						{
-							double speed = init.Actions.Private[i].Action[j].Longitudinal.Speed.Target.Absolute.value;
-							cars.setSpeed(objectName, speed);
-						}
-					}
-				}
-
-				// Position
-				else if (!init.Actions.Private[i].Action[j].Position.Lane.roadId.empty())
-				{
-					OSCPosition position = init.Actions.Private[i].Action[j].Position;
-
-					int roadId = std::stoi(position.Lane.roadId);
-					int laneId = position.Lane.laneId;
-					double s = position.Lane.s;
-					double offset = position.Lane.offset;
-
-					roadmanager::Position pos(roadId, laneId, s, offset);
-					cars.setPosition(objectName, pos);
-				}
-			}
 		}
 	}
 

@@ -1,9 +1,14 @@
 #pragma once
 #include "OSCOrientation.hpp"
+#include "OSCCatalogReference.hpp"
+#include "OSCRoute.hpp"
 
 #include <iostream>
 #include <string>
 #include <math.h>
+
+// Forward declaration to overcome the circular dependency
+struct OSCRoute;
 
 struct OSCPosition
 {
@@ -37,7 +42,44 @@ struct OSCPosition
 	} Lane;
 
 	struct {} RelativeLane;
-	struct {} Route;
+
+	struct 
+	{
+		struct
+		{
+			OSCRoute Route;
+			OSCCatalogReference CatalogReference;
+
+		}RouteRef;
+
+		struct
+		{
+			OSCOrientation Orientation;
+		}Orientation;
+
+		struct
+		{
+			struct
+			{
+				std::string object;
+			}Current;
+
+			struct
+			{
+				double pathS;
+				double t;
+			}RoadCoord;
+
+			struct
+			{
+				double pathS;
+				int laneId;
+				double laneOffset;
+			}LaneCoord;
+
+		}Position;
+	
+	}Route;
 
 	void printOSCPosition()
 	{

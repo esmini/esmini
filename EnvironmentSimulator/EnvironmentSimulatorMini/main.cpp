@@ -5,6 +5,7 @@
 #include <chrono>
 
 #include "ScenarioReader.hpp"
+#include "Catalogs.hpp"
 #include "RoadNetwork.hpp"
 #include "Entities.hpp"
 #include "Init.hpp"
@@ -51,6 +52,7 @@ int main(int argc, char *argv[])
 
 	// Initialization
 	ScenarioReader scenarioReader;
+	Catalogs catalogs;
 	RoadNetwork roadNetwork;
 	Entities entities;
 	Init init;
@@ -60,6 +62,7 @@ int main(int argc, char *argv[])
 	scenarioReader.loadXmlFile(oscFilename.c_str());
 	scenarioReader.parseParameterDeclaration();
 	scenarioReader.parseRoadNetwork(roadNetwork);
+	scenarioReader.parseCatalogs(catalogs);
 	scenarioReader.parseEntities(entities);
 	scenarioReader.parseInit(init);
 	scenarioReader.parseStory(story);
@@ -84,8 +87,10 @@ int main(int argc, char *argv[])
 	story[0].printStory();
 
 	// ScenarioEngine
-	ScenarioEngine scenarioEngine(entities, init, story, simulationTime);
+	ScenarioEngine scenarioEngine(catalogs, entities, init, story, simulationTime);
+	scenarioEngine.initRoute();
 	scenarioEngine.initCars();
+	scenarioEngine.initInit();
 	scenarioEngine.initConditions();
 
 

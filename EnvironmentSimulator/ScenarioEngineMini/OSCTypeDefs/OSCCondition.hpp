@@ -37,6 +37,16 @@ struct OSCCondition
 
 	struct
 	{
+		struct {}AtStart;
+		struct 
+		{
+			std::string type; // Wrong type
+			std::string name;
+			std::string rule; // Wrong type
+		}AfterTermination;
+		struct {}Command;
+		struct {}Signal;
+		struct {}Controller;
 	}ByState;	
 
 	struct
