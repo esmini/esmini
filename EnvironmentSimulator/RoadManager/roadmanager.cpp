@@ -22,6 +22,7 @@ using namespace roadmanager;
 #define CLAMP(x, a, b) (MIN(MAX(x, a), b))
 #define MAX_TRACK_DIST 10
 
+
 double Polynomial::Evaluate(double s)
 {
 	double p = s / (s_max_);
@@ -2376,6 +2377,8 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 int Position::MoveAlongS(double ds)
 {
 	RoadLink *link;
+
+	ds *= -SIGN(GetLaneId()); // adjust sign of ds according to lane direction - right lane is < 0 in road dir
 
 	if (s_ + ds > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
 	{
