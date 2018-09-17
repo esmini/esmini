@@ -875,7 +875,7 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 					pugi::xml_attribute meetingContinuousAttribute = meetingChild.attribute("continuous");
 					action.Meeting.Relative.continuous = meetingContinuousAttribute.value();
 
-					parseOSCPosition(action.Meeting.Relative.Position, meetingChild);
+					parseOSCPosition(action.Meeting.Relative.Position, meetingChild.child("Position"));
 
 				}
 			}

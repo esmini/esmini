@@ -125,6 +125,7 @@ int main(int argc, char *argv[])
 
 		scenarioEngine.setSimulationTime(simTime);
 		scenarioEngine.setTimeStep(deltaSimTime);
+
 		scenarioEngine.stepObjects(deltaSimTime);
 		scenarioEngine.checkConditions();
 		scenarioEngine.executeActions();

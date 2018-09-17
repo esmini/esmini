@@ -28,11 +28,14 @@ private:
 	// Private methods
 	void identifyActionType(OSCPrivateAction privateAction);
 	void executeSinusoidal(double simulationTime);
-	void executeSpeed(double simulationTime, double timeStep);
+	void executeSpeedRate(double simulationTime, double timeStep);
 	void executeSpeedStep();
 	void executePositionLane();
 	void executePositionRoute();
 	void Action::executeMeeting();
+
+	// Help methods
+	int sign(int value);
 
 	// Constructor variables
 	OSCPrivateAction privateAction;

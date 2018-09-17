@@ -59,7 +59,7 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 
 	else if (!isnan(privateAction.Longitudinal.Speed.Dynamics.rate)) // Should be (!...Dynamics.shape.empty()) Wrong in osc
 	{
-		this->actionType = "speed";
+		this->actionType = "speed-rate";
 		this->speedRate = privateAction.Longitudinal.Speed.Dynamics.rate;
 	}
 
@@ -99,9 +99,9 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 		if (!privateAction.Meeting.Position.Lane.roadId.empty())
 		{
 			int roadId = std::stoi(privateAction.Meeting.Position.Lane.roadId);
-			int lane_id = std::stoi(privateAction.Meeting.Position.Lane.roadId);
-			double s = std::stod(privateAction.Meeting.Position.Lane.roadId);
-			double offset = std::stod(privateAction.Meeting.Position.Lane.roadId);
+			int lane_id = privateAction.Meeting.Position.Lane.laneId;
+			double s = privateAction.Meeting.Position.Lane.s;
+			double offset = privateAction.Meeting.Position.Lane.offset;
 
 			ownTargetPos.SetLanePos(roadId, lane_id, s, offset);
 		}
@@ -109,15 +109,26 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 		if (!privateAction.Meeting.Relative.Position.Lane.roadId.empty())
 		{
 			int roadId = std::stoi(privateAction.Meeting.Relative.Position.Lane.roadId);
-			int lane_id = std::stoi(privateAction.Meeting.Relative.Position.Lane.roadId);
-			double s = std::stod(privateAction.Meeting.Relative.Position.Lane.roadId);
-			double offset = std::stod(privateAction.Meeting.Relative.Position.Lane.roadId);
+			int lane_id = privateAction.Meeting.Relative.Position.Lane.laneId;
+			double s = privateAction.Meeting.Relative.Position.Lane.s;
+			double offset = privateAction.Meeting.Relative.Position.Lane.offset;
 
 			relativeTargetPos.SetLanePos(roadId, lane_id, s, offset);
 		}		
 	}
 }
 
+int Action::sign(int value)
+{
+	if (value < 0)
+	{
+		return -1;
+	}
+	else
+	{
+		return 1;
+	}
+}
 
 void Action::setStartTime(double simulationTime)
 {
@@ -151,9 +162,9 @@ void Action::ExecuteAction(double simulationTime, double timeStep) {
 		executeSinusoidal(simulationTime);
 	}
 
-	else if (actionType == "speed")
+	else if (actionType == "speed-rate")
 	{
-		executeSpeed(simulationTime, timeStep);
+		executeSpeedRate(simulationTime, timeStep);
 	}
 
 	else if (actionType == "speed-step")
@@ -246,7 +257,7 @@ void Action::executeSinusoidal(double simulationTime)
 	}
 }
 
-void Action::executeSpeed(double simulationTime, double timeStep)
+void Action::executeSpeedRate(double simulationTime, double timeStep)
 {
 	if (privateAction.Longitudinal.Speed.Dynamics.rate != NAN)
 	{
@@ -286,7 +297,7 @@ void Action::executePositionLane()
 	int roadId = std::stoi(position.Lane.roadId);
 	int laneId = position.Lane.laneId;
 	double s = position.Lane.s;
-	double offset = (std::isnan(position.Lane.offset)) ? 0 : std::isnan(position.Lane.offset);
+	double offset = (std::isnan(position.Lane.offset)) ? 0 : position.Lane.offset;
 
 	roadmanager::Position pos(roadId, laneId, s, offset);
 
@@ -329,7 +340,43 @@ std::string routeEntryName = privateAction.Position.Route.RouteRef.CatalogRefere
 	startAction = false;
 }
 
+
 void Action::executeMeeting()
 {
-	// TODO
+	// std::string mode;     -> is not implemented yet
+
+	// Make sure that all other actions have been initialized
+	if (firstRun)
+	{
+		firstRun = false;
+	}
+	else
+	{
+
+		bool run = true;
+
+		double signRelative = (sign(carsPtr->getPosition(object).GetLaneId()));
+		double timeToRelativeTargetPosition = (signRelative * (-1)) * (relativeTargetPos.GetS() - carsPtr->getPosition(object).GetS()) / carsPtr->getSpeed(object);
+
+		double signOwn = (sign(carsPtr->getPosition(actionEntities[0]).GetLaneId()));
+		double distToOwnTargetPosition = (signOwn * (-1)) * (ownTargetPos.GetS() - carsPtr->getPosition(actionEntities[0]).GetS());
+
+		if (run)
+		{
+			if (continuous == "false")
+			{
+				run = false;
+			}
+
+			double speed = distToOwnTargetPosition / (timeToRelativeTargetPosition + offsetTime);
+			carsPtr->setSpeed(actionEntities[0], speed);
+		}
+
+		if (timeToRelativeTargetPosition < 0 || distToOwnTargetPosition < 0)
+		{
+			actionCompleted = true;
+			startAction = false;
+		}
+
+	}
 }
