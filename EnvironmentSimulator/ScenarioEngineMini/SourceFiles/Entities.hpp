@@ -12,7 +12,6 @@
 
 class Entities
 {
-	//friend class ScenarioReader;
 
 public:
 
@@ -21,6 +20,14 @@ public:
 	void printEntities();
 
 //private:
+	struct propertiesStruct
+	{
+		struct
+		{
+			std::string name;
+			std::string value;
+		} Property;
+	} Properties;
 
 	struct ObjectStruct
 	{
@@ -31,14 +38,16 @@ public:
 			OSCPedestrian Pedestrian;
 			OSCMiscObject MiscObject;
 
-			struct
+			/*struct
 			{
 				struct
 				{
 					std::string name;
 					std::string value;
 				} Property;
-			} Properties;
+			} Properties;*/
+
+			std::vector<propertiesStruct> Properties;
 
 			struct
 			{

@@ -9,7 +9,6 @@
 
 class Init
 {
-	//friend class ScenarioReader;
 
 public:
 	Init();
