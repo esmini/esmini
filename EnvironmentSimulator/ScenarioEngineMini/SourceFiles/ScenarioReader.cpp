@@ -458,15 +458,21 @@ void ScenarioReader::parseEntities(Entities &entities)
 			}
 			else if (objectChildName == "Properties")
 			{
-				pugi::xml_node propertiesChild = objectChild.first_child();
+				for (pugi::xml_node propertiesChild = objectChild.first_child(); propertiesChild; propertiesChild = propertiesChild.next_sibling())
+				{
+					std::string propertiesChildName(propertiesChild.name());
 
-				pugi::xml_attribute propertyNameAttribute = propertiesChild.attribute("name");
-				//std::cout << propertyNameAttribute.name() << " = " << propertyNameAttribute.value() << std::endl;
-				entities.Object.back().Properties.Property.name = propertyNameAttribute.value();
+					entities.Object.back().Properties.resize(entities.Object.back().Properties.size() + 1);
 
-				pugi::xml_attribute propertyValueAttribute = propertiesChild.attribute("value");
-				//std::cout << propertyValueAttribute.name() << " = " << propertyValueAttribute.value() << std::endl;
-				entities.Object.back().Properties.Property.value = propertyValueAttribute.value();
+					pugi::xml_attribute propertyNameAttribute = propertiesChild.attribute("name");
+					//std::cout << propertyNameAttribute.name() << " = " << propertyNameAttribute.value() << std::endl;
+					entities.Object.back().Properties.back().Property.name = propertyNameAttribute.value();
+
+					pugi::xml_attribute propertyValueAttribute = propertiesChild.attribute("value");
+					//std::cout << propertyValueAttribute.name() << " = " << propertyValueAttribute.value() << std::endl;
+					entities.Object.back().Properties.back().Property.value = propertyValueAttribute.value();
+
+				}
 			}
 		}
 		objectCnt++;

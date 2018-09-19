@@ -8,6 +8,7 @@
 #include "Actions.hpp"
 #include "Action.hpp"
 #include "Cars.hpp"
+#include "ScenarioGateway.hpp"
 
 
 #include <iostream>
@@ -30,6 +31,9 @@ public:
 	void printSimulationTime();
 	void stepObjects(double dt);
 
+
+	ScenarioGateway & getScenarioGateway();
+
 	void initRoute();
 	void initConditions();
 	void checkConditions();
@@ -51,6 +55,7 @@ public:
 	Conditions conditions;
 	Actions actions;
 	Cars cars;
+	ScenarioGateway scenarioGateway;
 
 	// Route
 	roadmanager::Route route;

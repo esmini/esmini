@@ -27,6 +27,11 @@ void ScenarioEngine::printSimulationTime()
 	std::cout << "ScenarioEngine: simulationTime = " << simulationTime << std::endl;
 }
 
+ScenarioGateway & ScenarioEngine::getScenarioGateway()
+{
+	return scenarioGateway;
+}
+
 void ScenarioEngine::initRoute()
 {
 	if (!catalogs.RouteCatalog.Route.Waypoint.empty())
@@ -91,12 +96,37 @@ void ScenarioEngine::initCars()
 			Car car;
 			int objectId = i;
 			std::string objectName = entities.Object[i].name;
+			Entities::ObjectStruct objectStruct = entities.Object[i];
 
 			car.setObjectId(objectId);
 			car.setName(objectName);
+			car.setObjectStruct(objectStruct);
+
+			for (size_t i = 0; i < objectStruct.Properties.size(); i++)
+			{
+				if (objectStruct.Properties[i].Property.name == "control")
+				{
+					if (objectStruct.Properties[i].Property.value == "external")
+					{
+						car.setExtControlled(true);
+					}
+				}
+				else if (objectStruct.Properties[i].Property.name == "externalId")
+				{
+					car.setObjectId(std::stoi(objectStruct.Properties[i].Property.value));
+				}
+
+				// Add the car on the last run
+				if (i == objectStruct.Properties.size()-1)
+				{
+					scenarioGateway.addExternalCar(car);
+				}
+			}
 			cars.addCar(car);
 		}
 	}
+
+	cars.addScenarioGateway(scenarioGateway);
 
 	std::cout << "ScenarioEngine: initCars finished" << std::endl;
 }
@@ -110,6 +140,7 @@ void ScenarioEngine::stepObjects(double dt)
 {
 	cars.step(dt);
 }
+
 
 void ScenarioEngine::initConditions()
 {

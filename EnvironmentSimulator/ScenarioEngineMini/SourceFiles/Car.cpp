@@ -1,6 +1,8 @@
 #include "Car.hpp"
 
-Car::Car(){}
+Car::Car(){
+	extControlled = false;
+}
 
 void Car::setObjectId(int objectId)
 {
@@ -20,6 +22,15 @@ void Car::setPosition(roadmanager::Position position)
 	//std::cout << "Car: setPosition finished" << std::endl;
 }
 
+void Car::setExtControlled(bool boolean)
+{
+	extControlled = boolean;
+}
+
+bool Car::getExtControlled()
+{
+	return extControlled;
+}
 
 void Car::step(double dt)
 {
@@ -34,6 +45,11 @@ void Car::setSpeed(double speed)
 	this->speed = speed;
 	//std::cout << "Car: setSpeed finished" << std::endl;
 
+}
+
+void Car::setObjectStruct(Entities::ObjectStruct objectStruct)
+{
+	this->objectStruct = objectStruct;
 }
 
 void Car::setOffset(double offset)

@@ -11,6 +11,7 @@
 #include "Init.hpp"
 #include "Story.hpp"
 #include "ScenarioEngine.hpp"
+#include "ScenarioGateway.hpp"
 
 #include "viewer.hpp"
 #include "RoadManager.hpp"
@@ -93,6 +94,8 @@ int main(int argc, char *argv[])
 	scenarioEngine.initInit();
 	scenarioEngine.initConditions();
 
+	// ScenarioGateway
+	ScenarioGateway & scenarioGateway = scenarioEngine.getScenarioGateway();
 
 	//  Create cars for visualization
 	for (int i = 0; i < scenarioEngine.cars.getNum(); i++)
@@ -121,14 +124,24 @@ int main(int argc, char *argv[])
 			deltaSimTime = minStepSize;
 		}
 
+		// Time operations
 		simTime = simTime + deltaSimTime;
-
 		scenarioEngine.setSimulationTime(simTime);
 		scenarioEngine.setTimeStep(deltaSimTime);
 
+		// Gateway
+		int track_id = 2;
+		int lane_id = 1;
+		double s = 200 - 2*simTime;
+		double offset = 0;
+		roadmanager::Position p(track_id, lane_id, s, offset);
+		scenarioGateway.setExternalCarPosition("Ego", p);
+
+		// ScenarioEngine
 		scenarioEngine.stepObjects(deltaSimTime);
 		scenarioEngine.checkConditions();
 		scenarioEngine.executeActions();
+
 
 		// Visualize cars
 		for (int i = 0; i<scenarioEngine.cars.getNum(); i++)

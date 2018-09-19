@@ -6,6 +6,8 @@
 #include <vector>
 #include <math.h>
 
+class ScenarioGateway;
+
 class Cars
 {
 public:
@@ -13,12 +15,20 @@ public:
 
 	// Add car
 	void addCar(Car car);
+	void addScenarioGateway(ScenarioGateway &scenarioGateway);
 
 	// Get car
 	Car getCar(std::string objectName);
 	Car getCar(int objectId);
 
+	// Id
 	int getId(std::string objectName);
+	void setObjectId(int objectId, int newObjectId);
+	void setObjectId(std::string objectName, int newObjectId);
+
+	void setExtControlled(int objectId, bool boolean);
+	void setExtControlled(std::string objectName, bool boolean);
+
 	std::string getName(int objectId);
 
 	int getIdx(std::string objectName);
@@ -51,5 +61,6 @@ public:
 
 private:
 	std::vector<Car> cars;
+	ScenarioGateway *scenarioGateway;
 };
 

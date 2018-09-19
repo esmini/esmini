@@ -3,11 +3,17 @@
 
 Cars::Cars()
 {
+	//scenarioGateway = new ScenarioGateway();
 }
 
 void Cars::addCar(Car car)
 {
 	cars.push_back(car);
+}
+
+void Cars::addScenarioGateway(ScenarioGateway &scenarioGateway)
+{
+	this->scenarioGateway = &scenarioGateway;
 }
 
 Car Cars::getCar(std::string objectName)
@@ -33,6 +39,30 @@ int Cars::getId(std::string objectName)
 	}
 
 	return -1;
+}
+
+void Cars::setObjectId(int objectId, int newObjectId)
+{
+	int idx = Cars::getIdx(objectId);
+	return cars[idx].setObjectId(newObjectId);
+}
+
+void Cars::setObjectId(std::string objectName, int newObjectId)
+{
+	int idx = Cars::getIdx(objectName);
+	return cars[idx].setObjectId(newObjectId);
+}
+
+void Cars::setExtControlled(int objectId, bool boolean)
+{
+	int idx = Cars::getIdx(objectId);
+	cars[idx].setExtControlled(boolean);
+}
+
+void Cars::setExtControlled(std::string objectName, bool boolean)
+{
+	int idx = Cars::getIdx(objectName);
+	cars[idx].setExtControlled(boolean);
 }
 
 std::string Cars::getName(int objectId)
@@ -121,9 +151,19 @@ void Cars::setPosition(int objectId, roadmanager::Position position)
 
 void Cars::step(double dt)
 {
+
 	for (size_t i = 0; i < cars.size(); i++)
 	{
-		cars[i].step(dt);
+		if (cars[i].getExtControlled())
+		{
+			int objectId = cars[i].getObjectId();
+			
+			//roadmanager::Position position = scenarioGateway->getExternalCarPosition(objectId);
+			//cars[i].setPosition(position);
+		}
+		else {
+			cars[i].step(dt);
+		}
 	}
 }
 
