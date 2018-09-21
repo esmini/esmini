@@ -732,12 +732,15 @@ namespace roadmanager
 	class Route
 	{
 	public:
-		explicit Route() {}
+		explicit Route() : s_(0) {}
 
 		int AddWaypoint(Position *position);
 		int SetPosition(Position *position);
 		int GetPosition(Position *position);
-		int SetOffset(double ds, int dLane, double  dLaneOffset);
+		double GetS() { return s_; }
+		int MoveDS(double ds, int dLane = 0, double  dLaneOffset = 0);
+		int Set(double ds, int lane, double  laneOffset);
+		int SetOffset(double ds, int dLane = 0, double  dLaneOffset = 0);
 		void setName(std::string name);
 		std::string getName();
 		double GetLength();
@@ -745,6 +748,7 @@ namespace roadmanager
 		std::vector<Position*> waypoint_;
 		Position current_position_;
 		std::string name;
+		double s_;
 	};
 
 } // namespace

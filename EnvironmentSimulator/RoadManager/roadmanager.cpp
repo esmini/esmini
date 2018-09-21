@@ -2378,7 +2378,6 @@ int Position::MoveAlongS(double ds)
 {
 	RoadLink *link;
 
-	ds *= -SIGN(GetLaneId()); // adjust sign of ds according to lane direction - right lane is < 0 in road dir
 
 	if (s_ + ds > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
 	{
@@ -2572,19 +2571,41 @@ int Route::AddWaypoint(Position *position)
 	return 0; 
 }
 
+int Route::MoveDS(double ds, int dLane, double  dLaneOffset)
+{
+	if (waypoint_.size() == 0)
+	{
+		return -1;
+	}
+	SetOffset(s_ + ds, dLane, dLaneOffset);
+
+	return 0;
+}
+
+int Route::Set(double ds, int lane, double  laneOffset)
+{
+	SetOffset(ds);
+	
+	// Override lane data
+	current_position_.SetLanePos(current_position_.GetTrackId(), lane, current_position_.GetS(), laneOffset);
+
+	return 0;
+}
+
 int Route::SetOffset(double ds, int dLane, double  dLaneOffset)
 {
 	double s_start = waypoint_[0]->GetS();
 	double route_length = 0;
+	s_ = ds;
 
 	// Find out what road and local s value
 	for (auto &w : waypoint_)
 	{
 		double road_length = w->GetOpenDrive()->GetRoadById(w->GetTrackId())->GetLength();
-		if (ds < route_length + road_length - s_start)
+		if (s_ < route_length + road_length - s_start)
 		{
 			// Found road segment
-			double local_s = ds + s_start - route_length;
+			double local_s = s_ + s_start - route_length;
 
 			// Determine driving direction by lane id
 			if (w->GetLaneId() > 0)

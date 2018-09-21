@@ -126,7 +126,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime)
 {
-	double ds = car->speed * deltaSimTime; // right lane is < 0 in road dir;
+	double ds = -SIGN(car->pos->GetLaneId()) * car->speed * deltaSimTime; // right lane is < 0 in road dir;
 
 	if (car->pos->MoveAlongS(ds) != 0)
 	{
@@ -221,7 +221,7 @@ int main(int argc, char** argv)
 		// Test route concept 
 		// Specify hardcoded route on Fabriksgatan
 		roadmanager::Position waypoint[2];
-#if 0
+#if 1
 		waypoint[0].SetLanePos(2, -1, 250, 0);
 		waypoint[1].SetLanePos(1, -1, 10, 0);
 #else
@@ -229,7 +229,6 @@ int main(int argc, char** argv)
 		waypoint[1].SetLanePos(1, -1, 10, 0);
 #endif
 		roadmanager::Route route;
-		double route_s = 0;
 
 		route.AddWaypoint(&waypoint[0]);
 		route.AddWaypoint(&waypoint[1]);
@@ -271,12 +270,11 @@ int main(int argc, char** argv)
 					car->ego->Update(deltaSimTime, viewer->driverAcceleration_, viewer->driverSteering_);
 					car->pos->SetXYH(car->ego->posX_, car->ego->posY_, car->ego->heading_);
 #else
-					route_s += deltaSimTime * 20 / 3.6; // 50 km/h
-					route.SetOffset(route_s, 0, 0);
+					route.MoveDS(deltaSimTime * 20  / 3.6);
 					route.GetPosition(car->pos);
 					car->ego->SetPos(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ(), car->pos->GetH());
 					car->ego->SetWheelAngle(car->ego->heading_ - car->pos->GetH());
-					car->ego->SetWheelRotation(route_s / 0.35);
+					car->ego->SetWheelRotation(route.GetS() / 0.35);
 #endif
 					
 					// Fetch Z and Pitch from OpenDRIVE position
