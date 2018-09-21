@@ -1,5 +1,5 @@
 #pragma once
-#include <OSCParameterAssignment.hpp>
+#include "OSCParameterAssignment.hpp"
 
 #include <iostream>
 #include <string>

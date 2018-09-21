@@ -1,5 +1,5 @@
 #pragma once
-#include <OSCParameterDeclaration.hpp>
+#include "OSCParameterDeclaration.hpp"
 
 #include <iostream>
 #include <string>
