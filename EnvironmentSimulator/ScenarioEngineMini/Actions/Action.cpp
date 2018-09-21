@@ -314,7 +314,7 @@ void Action::executePositionLane()
 void Action::executePositionRoute()
 {
 
-std::string routeEntryName = privateAction.Position.Route.RouteRef.CatalogReference.entryName;
+	std::string routeEntryName = privateAction.Position.Route.RouteRef.CatalogReference.entryName;
 
 	// This doesnt make sense but the route is defined inline which is not allowed...
 	// Guess we will need to have multiple routes what we look through
@@ -325,16 +325,19 @@ std::string routeEntryName = privateAction.Position.Route.RouteRef.CatalogRefere
 	//	double laneId = init.Actions.Private[i].Action[j].Position.Route.Position.LaneCoord.laneId;
 	//	double laneOffset = init.Actions.Private[i].Action[j].Position.Route.Position.LaneCoord.laneOffset;
 
-		//roadmanager::Position routePosition = route.GetPosition(pathS);	// Would like such a function that returns a roadmanager::Position according to how the route i specified.
-		//
-		//// Position according to the route
-		//double routeRoadId = routePosition.GetTrackId();
-		//double routeS = routePosition.GetS();
-		//double routeOffset = routePosition.GetOffset();
+	//	//route.SetOffset(pathS, laneId, laneOffset);
+	//	pos = route.SetOffset(pathS);
+	//	position(pos.getRoaidId, laneId)
+	//	roadmanager::Position routePosition = route.GetPosition(pathS);	// Would like such a function that returns a roadmanager::Position according to how the route i specified.
 
-		//// Cars position
-		//roadmanager::Position pos(routeRoadId, laneId, routeS, laneOffset + routeOffset);
-		//cars.setPosition(objectName, pos);
+	//	// Position according to the route
+	//	double routeRoadId = routePosition.GetTrackId();
+	//	double routeS = routePosition.GetS();
+	//	double routeOffset = routePosition.GetOffset();
+
+	//	// Cars position
+	//	roadmanager::Position pos(routeRoadId, laneId, routeS, laneOffset + routeOffset);
+	//	cars.setPosition(objectName, pos);
 	//}
 	actionCompleted = true;
 	startAction = false;

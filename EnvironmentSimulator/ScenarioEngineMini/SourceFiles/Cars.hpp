@@ -1,12 +1,11 @@
 #pragma once
 #include <Car.hpp>
+#include <ScenarioGateway.hpp>
 
 #include <iostream>
 #include <string>
 #include <vector>
 #include <math.h>
-
-class ScenarioGateway;
 
 class Cars
 {

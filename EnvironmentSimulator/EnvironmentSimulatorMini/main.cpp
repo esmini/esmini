@@ -129,13 +129,13 @@ int main(int argc, char *argv[])
 		scenarioEngine.setSimulationTime(simTime);
 		scenarioEngine.setTimeStep(deltaSimTime);
 
-		// Gateway
-		int track_id = 2;
-		int lane_id = 1;
-		double s = 200 - 2*simTime;
-		double offset = 0;
-		roadmanager::Position p(track_id, lane_id, s, offset);
-		scenarioGateway.setExternalCarPosition("Ego", p);
+		////// Gateway
+		//int track_id = 2;
+		//int lane_id = 1;
+		//double s = 200 - 2*simTime*simTime;
+		//double offset = 0;
+		//roadmanager::Position p(track_id, lane_id, s, offset);
+		//scenarioGateway.setExternalCarPosition("Ego", p);
 
 		// ScenarioEngine
 		scenarioEngine.stepObjects(deltaSimTime);

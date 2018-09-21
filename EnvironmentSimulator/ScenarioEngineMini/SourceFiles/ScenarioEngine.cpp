@@ -39,7 +39,7 @@ void ScenarioEngine::initRoute()
 
 		for (size_t i = 0; i < catalogs.RouteCatalog.Route.Waypoint.size(); i++)
 		{
-			roadmanager::Position position;
+			roadmanager::Position * position = new roadmanager::Position();
 
 			// Lane position
 			if (!catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.roadId.empty())
@@ -49,11 +49,11 @@ void ScenarioEngine::initRoute()
 				double s = catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.s;
 				double offset = catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.offset;
 
-				position.SetLanePos(roadId, lane_id, s, offset);
+				position->SetLanePos(roadId, lane_id, s, offset);
 			}
 
 			route.setName(catalogs.RouteCatalog.Route.name);
-			route.AddWaypoint(&position);
+			route.AddWaypoint(position);
 		}
 	}
 }
@@ -115,12 +115,11 @@ void ScenarioEngine::initCars()
 				{
 					car.setObjectId(std::stoi(objectStruct.Properties[i].Property.value));
 				}
+			}
 
-				// Add the car on the last run
-				if (i == objectStruct.Properties.size()-1)
-				{
-					scenarioGateway.addExternalCar(car);
-				}
+			if (car.getExtControlled())
+			{
+				scenarioGateway.addExternalCar(car.getObjectId(), car.getObjectName());
 			}
 			cars.addCar(car);
 		}
