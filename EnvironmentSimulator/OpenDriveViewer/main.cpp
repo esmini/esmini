@@ -11,6 +11,11 @@
 #include "RubberbandManipulator.h"
 #include "vehicle.hpp"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+
 using namespace std::chrono;
 
 #define USE_ROUTE 0
@@ -28,7 +33,7 @@ static const bool freerun = true;
 static std::mt19937 mt_rand;
 static double density = DEFAULT_DENSITY;
 static double speed = DEFAULT_SPEED;
-static Vehicle *ego;
+static vehicle::Vehicle *ego;
 static double egoWheelAngle = 0;
 static double egoAcc = 0;
 static bool use_ego = false;
@@ -43,10 +48,46 @@ typedef struct
 	double speed;  // Velocity along road reference line, m/s
 	viewer::CarModel *model;
 	int id;
-	Vehicle *ego;
+	vehicle::Vehicle *ego;
 } Car;
 
 std::vector<Car*> cars;
+
+bool KeyUpPressed()
+{
+#ifdef _WIN32
+	return (GetKeyState(VK_UP) & 0x8000);
+#else
+	printf("KeyUpPressed only implemented for Windows, so far\n");
+#endif
+}
+
+bool KeyDownPressed()
+{
+#ifdef _WIN32
+	return (GetKeyState(VK_DOWN) & 0x8000);
+#else
+	printf("KeyDownPressed only implemented for Windows, so far\n");
+#endif
+}
+
+bool KeyLeftPressed()
+{
+#ifdef _WIN32
+	return (GetKeyState(VK_LEFT) & 0x8000);
+#else
+	printf("KeyLeftPressed only implemented for Windows, so far\n");
+#endif
+}
+
+bool KeyRightPressed()
+{
+#ifdef _WIN32
+	return (GetKeyState(VK_RIGHT) & 0x8000);
+#else
+	printf("KeyRightPressed only implemented for Windows, so far\n");
+#endif
+}
 
 int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 {
@@ -61,7 +102,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		car_->model = viewer->AddCar(0);
 		car_->speed = 0;
 		car_->id = cars.size();
-		car_->ego = new Vehicle(car_->pos->GetX(), car_->pos->GetY(), car_->pos->GetH(), car_->model->size_x);
+		car_->ego = new vehicle::Vehicle(car_->pos->GetX(), car_->pos->GetY(), car_->pos->GetH(), car_->model->size_x);
 		cars.push_back(car_);
 	}
 
@@ -267,7 +308,28 @@ int main(int argc, char** argv)
 				{
 					// Update vehicle dynamics/driver model
 #if !USE_ROUTE
-					car->ego->Update(deltaSimTime, viewer->driverAcceleration_, viewer->driverSteering_);
+					vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
+
+					if (KeyUpPressed()) 
+					{						
+						accelerate = vehicle::THROTTLE_ACCELERATE;
+					}
+					else if (KeyDownPressed())
+					{
+						accelerate = vehicle::THROTTLE_BRAKE;
+					}
+
+					vehicle::STEERING steer = vehicle::STEERING_NONE;
+					if (KeyLeftPressed())
+					{
+						steer = vehicle::STEERING_LEFT;
+					}
+					else if (KeyRightPressed())
+					{
+						steer = vehicle::STEERING_RIGHT;
+					}
+
+					car->ego->Update(deltaSimTime, accelerate, steer);
 					car->pos->SetXYH(car->ego->posX_, car->ego->posY_, car->ego->heading_);
 #else
 					route.MoveDS(deltaSimTime * 20  / 3.6);

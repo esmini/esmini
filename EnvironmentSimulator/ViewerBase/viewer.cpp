@@ -125,8 +125,6 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	lodScale_ = LOD_SCALE_DEFAULT;
 	currentCarInFocus_ = 0;
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
-	driverAcceleration_ = 0;
-	driverSteering_ = 0;
 	osgViewer_ = new osgViewer::Viewer(arguments);
 		
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
@@ -557,54 +555,6 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 		{
 			visible = !visible;
 			viewer_->envTx_->setNodeMask(visible ? 0xffffffff : 0x0);
-		}
-	}
-	break;
-	case(osgGA::GUIEventAdapter::KEY_Right):
-	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
-		{
-			viewer_->driverSteering_ = -1;
-		}
-		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
-		{
-			viewer_->driverSteering_ = 0;
-		}
-	}
-	break;
-	case(osgGA::GUIEventAdapter::KEY_Left):
-	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
-		{
-			viewer_->driverSteering_ = 1;
-		}
-		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
-		{
-			viewer_->driverSteering_ = 0;
-		}
-	}
-	break;
-	case(osgGA::GUIEventAdapter::KEY_Up):
-	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
-		{
-			viewer_->driverAcceleration_ = 1;
-		}
-		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
-		{
-			viewer_->driverAcceleration_ = 0;
-		}
-	}
-	break;
-	case(osgGA::GUIEventAdapter::KEY_Down):
-	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
-		{
-			viewer_->driverAcceleration_ = -1;
-		}
-		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
-		{
-			viewer_->driverAcceleration_ = 0;
 		}
 	}
 	break;

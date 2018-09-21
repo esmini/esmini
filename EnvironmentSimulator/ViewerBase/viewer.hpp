@@ -53,8 +53,6 @@ namespace viewer
 		osg::MatrixTransform* rootnode_;
 		roadmanager::OpenDrive *odrManager_;
 		std::vector<osg::ref_ptr<osg::LOD>> carModels_;
-		int driverSteering_;
-		int driverAcceleration_;
 
 		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments);
 		~Viewer();

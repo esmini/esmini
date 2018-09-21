@@ -10,9 +10,11 @@
 
 #include "vehicle.hpp"
 
+using namespace vehicle;
+
 #define STEERING_RATE 3.0
 #define STEERING_MAX_ANGLE (30 * M_PI / 180)
-#define ACCELERATION_STEP 15
+#define ACCELERATION_SCALE 15
 #define SPEED_MAX (200 / 3.6)
 #define SPEED_DECLINE 1E-2
 #define WHEEL_RADIUS 0.35
@@ -51,11 +53,11 @@ void Vehicle::SetWheelRotation(double rotation)
 	wheelRotation_ = rotation;
 }
 
-void Vehicle::Update(double dt, int acceleration, int steering)
+void Vehicle::Update(double dt, THROTTLE throttle, STEERING steering)
 {
 	double criticalB = 0;
 
-	speed_ = (1.0 - SPEED_DECLINE) * speed_ + ACCELERATION_STEP * acceleration * dt;
+	speed_ = (1.0 - SPEED_DECLINE) * speed_ + ACCELERATION_SCALE * throttle * dt;
 	if (speed_ > SPEED_MAX)
 	{
 		speed_ = SPEED_MAX;
@@ -98,6 +100,4 @@ void Vehicle::Update(double dt, int acceleration, int steering)
 	posX_ += dt * velX_;
 	posY_ += dt * velY_;
 }
-
-
 

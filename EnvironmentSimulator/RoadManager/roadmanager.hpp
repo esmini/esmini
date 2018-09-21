@@ -734,13 +734,60 @@ namespace roadmanager
 	public:
 		explicit Route() : s_(0) {}
 
+		/**
+		Adds a waypoint to the route. One waypoint per road. At most one junction between waypoints.
+		@param position A regular position created with road, lane or world coordinates
+		@return Non zero return value indicates error of some kind
+		*/
 		int AddWaypoint(Position *position);
+
+		/**
+		Set the current position along the route. 
+		@param position A regular position created with road, lane or world coordinates
+		@return Non zero return value indicates error of some kind
+		*/
 		int SetPosition(Position *position);
+
+		/**
+		Retrieve a copy of the current position along the route.
+		@param position A pointer to a valid position object
+		@return Non zero return value indicates error of some kind
+		*/
 		int GetPosition(Position *position);
+
+		/**
+		Retrieve the S-value of the current route position. Note: This is the S along the 
+		complete route, not the actual individual roads.
+		*/
 		double GetS() { return s_; }
+
+		/**
+		Move current position forward, or backwards, ds meters along the route
+		@param ds Distance to move, negative will move backwards
+		@param dLane Lane id offset, change to another lane one or several steps to the right (-) or left (+)
+		@param dLaneOffset Additional Lane offset, added to the lane offset as given by the waypoint
+		@return Non zero return value indicates error of some kind
+		*/
 		int MoveDS(double ds, int dLane = 0, double  dLaneOffset = 0);
-		int Set(double ds, int lane, double  laneOffset);
-		int SetOffset(double ds, int dLane = 0, double  dLaneOffset = 0);
+
+		/**
+		Move current position to specified S-value along the route
+		@param route_s Distance to move, negative will move backwards
+		@param laneId Explicit (not delta/offset) lane ID 
+		@param laneOffset Explicit (not delta/offset) lane offset value
+		@return Non zero return value indicates error of some kind
+		*/
+		int Set(double route_s, int laneId, double  laneOffset);
+
+		/**
+		Move current position to specified S-value along the route
+		@param route_s Distance to move, negative will move backwards
+		@param dLane Lane id offset, change to another lane one or several steps to the right (-) or left (+)
+		@param dLaneOffset Additional Lane offset, added to the lane offset as given by the waypoint
+		@return Non zero return value indicates error of some kind
+		*/
+		int SetOffset(double route_s, int dLane = 0, double  dLaneOffset = 0);
+
 		void setName(std::string name);
 		std::string getName();
 		double GetLength();

@@ -1,34 +1,50 @@
-
-class Vehicle
-{
-public:
-	Vehicle(double x, double y, double h, double length);
-	void Update(double dt, int acceleration, int steering);
-	void SetWheelAngle(double angle);
-	void SetWheelRotation(double rotation);
-	void SetPos(double x, double y, double z, double h)
+namespace vehicle
+{ 
+	enum THROTTLE
 	{
-		posX_ = x;
-		posY_ = y;
-		posZ_ = z;
-		heading_ = h;
-	}
+		THROTTLE_BRAKE = -1,
+		THROTTLE_NONE = 0,
+		THROTTLE_ACCELERATE = 1
+	};
 
-	double posX_;
-	double posY_;
-	double posZ_;
-	double heading_;
-	double pitch_;
+	enum STEERING
+	{
+		STEERING_RIGHT = -1,
+		STEERING_NONE = 0,
+		STEERING_LEFT = 1
+	};
 
-	double velX_;
-	double velY_;
-	double velAngle_;
-	double velAngleRelVehicleLongAxis_;
-	double speed_;
-	double wheelAngle_;
-	double wheelRotation_;
-	double headingDot_;
+	class Vehicle
+	{
+	public:
+		Vehicle(double x, double y, double h, double length);
+		void Update(double dt, THROTTLE throttle, STEERING steering);
+		void SetWheelAngle(double angle);
+		void SetWheelRotation(double rotation);
+		void SetPos(double x, double y, double z, double h)
+		{
+			posX_ = x;
+			posY_ = y;
+			posZ_ = z;
+			heading_ = h;
+		}
 
-	double length_;
-};
+		double posX_;
+		double posY_;
+		double posZ_;
+		double heading_;
+		double pitch_;
 
+		double velX_;
+		double velY_;
+		double velAngle_;
+		double velAngleRelVehicleLongAxis_;
+		double speed_;
+		double wheelAngle_;
+		double wheelRotation_;
+		double headingDot_;
+
+		double length_;
+	};
+
+}
