@@ -114,6 +114,40 @@ CarModel::~CarModel()
 
 }
 
+void CarModel::SetPosition(double x, double y, double z)
+{
+	txNode_->setPosition(osg::Vec3(x, y, z));
+}
+
+void CarModel::SetRotation(double h, double p, double r)
+{
+	quat_.makeRotate(
+		r, osg::Vec3(1, 0, 0), // Roll
+		p, osg::Vec3(0, 1, 0), // Pitch
+		h, osg::Vec3(0, 0, 1)); // Heading
+	txNode_->setAttitude(quat_);
+}
+
+void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
+{
+	// Update wheel angles and rotation for front wheels
+	osg::Quat quat;
+	quat.makeRotate(
+		0, osg::Vec3(1, 0, 0), // Roll
+		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
+		wheel_angle, osg::Vec3(0, 0, 1)); // Heading
+	wheel_[0]->setAttitude(quat);
+	wheel_[1]->setAttitude(quat);
+	
+	// Update rotation for rear wheels
+	quat.makeRotate(
+		0, osg::Vec3(1, 0, 0), // Roll
+		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
+		0, osg::Vec3(0, 0, 1)); // Heading
+	wheel_[2]->setAttitude(quat);
+	wheel_[3]->setAttitude(quat);
+}
+
 Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments)
 {
 	odrManager_ = odrManager;

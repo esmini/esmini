@@ -2582,21 +2582,21 @@ int Route::MoveDS(double ds, int dLane, double  dLaneOffset)
 	return 0;
 }
 
-int Route::Set(double ds, int lane, double  laneOffset)
+int Route::Set(double route_s, int laneId, double  laneOffset)
 {
-	SetOffset(ds);
+	SetOffset(route_s);
 	
 	// Override lane data
-	current_position_.SetLanePos(current_position_.GetTrackId(), lane, current_position_.GetS(), laneOffset);
+	current_position_.SetLanePos(current_position_.GetTrackId(), laneId, current_position_.GetS(), laneOffset);
 
 	return 0;
 }
 
-int Route::SetOffset(double ds, int dLane, double  dLaneOffset)
+int Route::SetOffset(double route_s, int dLane, double  dLaneOffset)
 {
 	double s_start = waypoint_[0]->GetS();
 	double route_length = 0;
-	s_ = ds;
+	s_ = route_s;
 
 	// Find out what road and local s value
 	for (auto &w : waypoint_)
