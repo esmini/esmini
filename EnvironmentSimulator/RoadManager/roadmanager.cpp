@@ -2378,20 +2378,19 @@ int Position::MoveAlongS(double ds)
 {
 	RoadLink *link;
 
-	double sign = (lane_id_ > 0) ? -1 : 1;
-	double newS = s_ + sign * ds;
+	ds *= -SIGN(GetLaneId()); // adjust sign of ds according to lane direction - right lane is < 0 in road dir
 
-	if (newS > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
+	if (s_+ds > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
 	{
 		link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(LinkType::SUCCESSOR);
 	}
-	else if (newS < 0)
+	else if (s_+ds < 0)
 	{
 		link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(LinkType::PREDECESSOR);
 	}
 	else  // New position is within current track
 	{
-		SetLanePos(track_id_, lane_id_, newS, offset_);
+		SetLanePos(track_id_, lane_id_, s_+ds, offset_);
 		return 0;
 	}
 
@@ -2584,21 +2583,21 @@ int Route::MoveDS(double ds, int dLane, double  dLaneOffset)
 	return 0;
 }
 
-int Route::Set(double ds, int lane, double  laneOffset)
+int Route::Set(double route_s, int laneId, double  laneOffset)
 {
-	SetOffset(ds);
+	SetOffset(route_s);
 	
 	// Override lane data
-	current_position_.SetLanePos(current_position_.GetTrackId(), lane, current_position_.GetS(), laneOffset);
+	current_position_.SetLanePos(current_position_.GetTrackId(), laneId, current_position_.GetS(), laneOffset);
 
 	return 0;
 }
 
-int Route::SetOffset(double ds, int dLane, double  dLaneOffset)
+int Route::SetOffset(double route_s, int dLane, double  dLaneOffset)
 {
 	double s_start = waypoint_[0]->GetS();
 	double route_length = 0;
-	s_ = ds;
+	s_ = route_s;
 
 	// Find out what road and local s value
 	for (auto &w : waypoint_)

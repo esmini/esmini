@@ -27,7 +27,10 @@ namespace viewer
 
 		CarModel(osg::ref_ptr<osg::LOD> lod);
 		~CarModel();
-		
+		void SetPosition(double x, double y, double z);
+		void SetRotation(double h, double p, double r);
+		void UpdateWheels(double wheel_angle, double wheel_rotation);
+
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName);
 	};
 
@@ -53,8 +56,6 @@ namespace viewer
 		osg::MatrixTransform* rootnode_;
 		roadmanager::OpenDrive *odrManager_;
 		std::vector<osg::ref_ptr<osg::LOD>> carModels_;
-		int driverSteering_;
-		int driverAcceleration_;
 
 		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments);
 		~Viewer();

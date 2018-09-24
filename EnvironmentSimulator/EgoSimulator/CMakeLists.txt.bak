@@ -1,0 +1,30 @@
+
+include_directories (
+  ${ROADMANAGER_INCLUDE_DIR}
+  ${VIEWER_BASE_INCLUDE_DIR}
+  ${OSG_INCLUDE_DIR}
+)
+
+link_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../../externals/OpenSceneGraph/lib )
+
+set ( SOURCES
+	main.cpp
+)
+
+add_executable ( EgoSimulator ${SOURCES} )
+
+target_link_libraries ( 
+	EgoSimulator
+	RoadManager
+	ViewerBase
+	optimized osg.lib debug osgd.lib
+	optimized osgDB.lib debug osgDBd.lib
+	optimized osgGA.lib debug osgGAd.lib
+	optimized osgViewer.lib debug osgViewerd.lib
+	optimized osgText.lib debug osgTextd.lib
+	optimized osgUtil.lib debug osgUtild.lib
+	optimized OpenThreads.lib debug OpenThreadsd.lib
+)
+
+install ( TARGETS EgoSimulator CONFIGURATIONS release DESTINATION "${INSTALL_DIRECTORY}/Release")
+install ( TARGETS EgoSimulator CONFIGURATIONS debug DESTINATION "${INSTALL_DIRECTORY}/Debug")

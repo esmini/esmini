@@ -114,6 +114,40 @@ CarModel::~CarModel()
 
 }
 
+void CarModel::SetPosition(double x, double y, double z)
+{
+	txNode_->setPosition(osg::Vec3(x, y, z));
+}
+
+void CarModel::SetRotation(double h, double p, double r)
+{
+	quat_.makeRotate(
+		r, osg::Vec3(1, 0, 0), // Roll
+		p, osg::Vec3(0, 1, 0), // Pitch
+		h, osg::Vec3(0, 0, 1)); // Heading
+	txNode_->setAttitude(quat_);
+}
+
+void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
+{
+	// Update wheel angles and rotation for front wheels
+	osg::Quat quat;
+	quat.makeRotate(
+		0, osg::Vec3(1, 0, 0), // Roll
+		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
+		wheel_angle, osg::Vec3(0, 0, 1)); // Heading
+	wheel_[0]->setAttitude(quat);
+	wheel_[1]->setAttitude(quat);
+	
+	// Update rotation for rear wheels
+	quat.makeRotate(
+		0, osg::Vec3(1, 0, 0), // Roll
+		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
+		0, osg::Vec3(0, 0, 1)); // Heading
+	wheel_[2]->setAttitude(quat);
+	wheel_[3]->setAttitude(quat);
+}
+
 Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments)
 {
 	odrManager_ = odrManager;
@@ -125,8 +159,6 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	lodScale_ = LOD_SCALE_DEFAULT;
 	currentCarInFocus_ = 0;
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
-	driverAcceleration_ = 0;
-	driverSteering_ = 0;
 	osgViewer_ = new osgViewer::Viewer(arguments);
 		
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
@@ -557,54 +589,6 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 		{
 			visible = !visible;
 			viewer_->envTx_->setNodeMask(visible ? 0xffffffff : 0x0);
-		}
-	}
-	break;
-	case(osgGA::GUIEventAdapter::KEY_Right):
-	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
-		{
-			viewer_->driverSteering_ = -1;
-		}
-		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
-		{
-			viewer_->driverSteering_ = 0;
-		}
-	}
-	break;
-	case(osgGA::GUIEventAdapter::KEY_Left):
-	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
-		{
-			viewer_->driverSteering_ = 1;
-		}
-		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
-		{
-			viewer_->driverSteering_ = 0;
-		}
-	}
-	break;
-	case(osgGA::GUIEventAdapter::KEY_Up):
-	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
-		{
-			viewer_->driverAcceleration_ = 1;
-		}
-		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
-		{
-			viewer_->driverAcceleration_ = 0;
-		}
-	}
-	break;
-	case(osgGA::GUIEventAdapter::KEY_Down):
-	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
-		{
-			viewer_->driverAcceleration_ = -1;
-		}
-		else if (ea.getEventType() == osgGA::GUIEventAdapter::KEYUP)
-		{
-			viewer_->driverAcceleration_ = 0;
 		}
 	}
 	break;
