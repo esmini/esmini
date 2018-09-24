@@ -2378,6 +2378,7 @@ int Position::MoveAlongS(double ds)
 {
 	RoadLink *link;
 
+	ds *= -SIGN(GetLaneId()); // adjust sign of ds according to lane direction - right lane is < 0 in road dir
 
 	if (s_ + ds > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
 	{

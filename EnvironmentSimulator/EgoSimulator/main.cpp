@@ -199,9 +199,9 @@ int main(int argc, char** argv)
 #else
 			route.MoveDS(deltaSimTime * 20  / 3.6);
 			route.GetPosition(car->pos);
-			car->ego->SetPos(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ(), car->pos->GetH());
-			car->ego->SetWheelAngle(car->ego->heading_ - car->pos->GetH());
-			car->ego->SetWheelRotation(route.GetS() / 0.35);
+			car->vehicle->SetPos(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ(), car->pos->GetH());
+			car->vehicle->SetWheelAngle(car->vehicle->heading_ - car->pos->GetH());
+			car->vehicle->SetWheelRotation(route.GetS() / 0.35);
 #endif
 					
 			// Fetch Z and Pitch from OpenDRIVE position
