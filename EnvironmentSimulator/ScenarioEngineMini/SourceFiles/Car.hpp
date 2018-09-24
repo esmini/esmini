@@ -20,14 +20,21 @@ public:
 	void setObjectStruct(Entities::ObjectStruct objectStruct);
 	void setOffset(double offset);
 	void setExtControlled(bool Boolean);
+	void setRoute(roadmanager::Route &route);
+	roadmanager::Route * getRoute();
 	bool getExtControlled();
 
 	void step(double dt);
 	roadmanager::Position getPosition();
+	roadmanager::Position * Car::getPositionPtr();
 	double getSpeed();
 	double getObjectId();
 	std::string getObjectName();
 	void printState();
+
+	// Follow route
+	bool getFollowRoute();
+	void setFollowRoute(bool followRoute);
 
 	//private:
 	int objectId;
@@ -36,6 +43,9 @@ public:
 	double speed;
 	roadmanager::Position position;
 	bool extControlled;
+	bool followRoute;
+	roadmanager::Route *route;
+
 };
 
 

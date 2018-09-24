@@ -20,6 +20,9 @@ public:
 	Car getCar(std::string objectName);
 	Car getCar(int objectId);
 
+	Car * getCarPtr(std::string objectName);
+	Car * getCarPtr(int objectId);
+
 	// Id
 	int getId(std::string objectName);
 	void setObjectId(int objectId, int newObjectId);
@@ -46,6 +49,13 @@ public:
 
 	void setSpeed(std::string objectName, double speed);
 	void setSpeed(int objectId, double speed);
+
+	// Follow route
+	bool getFollowRoute(std::string objectName);
+	bool getFollowRoute(int objectId);
+
+	void setFollowRoute(std::string objectName, bool followRoute);
+	void setFollowRoute(int objectId, bool followRoute);
 
 	// Step
 	void step(double dt);	

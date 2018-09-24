@@ -127,7 +127,13 @@ struct OSCPrivateAction
 	struct {} Autonomous;
 	struct {} Controller;
 	OSCPosition Position;
-	struct {} Routing;
+
+	struct {
+		struct {
+			OSCRoute Route;
+			OSCCatalogReference CatalogReference;
+		} FollowRoute;
+	} Routing;
 
 	void printOSCPrivateAction()
 	{

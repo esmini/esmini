@@ -86,6 +86,12 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 		this->actionType = "position-route";
 	}
 
+	// Follow route
+	else if (!privateAction.Routing.FollowRoute.CatalogReference.catalogName.empty())
+	{
+		this->actionType = "follow-route-catalog";
+	}
+
 	// Meeting
 	else if (!privateAction.Meeting.mode.empty())
 	{
@@ -113,7 +119,8 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 			double s = privateAction.Meeting.Relative.Position.Lane.s;
 			double offset = privateAction.Meeting.Relative.Position.Lane.offset;
 
-			relativeTargetPos.SetLanePos(roadId, lane_id, s, offset);
+			relativeTargetPos = roadmanager::Position(roadId, lane_id, s, offset);
+			int a = 0;
 		}		
 	}
 }
@@ -180,6 +187,11 @@ void Action::ExecuteAction(double simulationTime, double timeStep) {
 	else if (actionType == "position-route")
 	{
 		executePositionRoute();
+	}
+
+	else if (actionType == "follow-route-catalog")
+	{
+		executeFollowRoute();
 	}
 
 	else if (actionType == "meeting")
@@ -313,36 +325,32 @@ void Action::executePositionLane()
 
 void Action::executePositionRoute()
 {
-
 	std::string routeEntryName = privateAction.Position.Route.RouteRef.CatalogReference.entryName;
 
-	// This doesnt make sense but the route is defined inline which is not allowed...
-	// Guess we will need to have multiple routes what we look through
-	//if (routeEntryName == route.getName())
-	//{
-	//	// Position according to the init
-	//	double pathS = init.Actions.Private[i].Action[j].Position.Route.Position.LaneCoord.pathS;
-	//	double laneId = init.Actions.Private[i].Action[j].Position.Route.Position.LaneCoord.laneId;
-	//	double laneOffset = init.Actions.Private[i].Action[j].Position.Route.Position.LaneCoord.laneOffset;
+	for (size_t i = 0; i < actionEntities.size(); i++)
+	{
+		double pathS = privateAction.Position.Route.Position.LaneCoord.pathS;
+		int laneId = privateAction.Position.Route.Position.LaneCoord.laneId;
 
-	//	//route.SetOffset(pathS, laneId, laneOffset);
-	//	pos = route.SetOffset(pathS);
-	//	position(pos.getRoaidId, laneId)
-	//	roadmanager::Position routePosition = route.GetPosition(pathS);	// Would like such a function that returns a roadmanager::Position according to how the route i specified.
+		roadmanager::Route * routePtr = carsPtr->getCar(actionEntities[i]).getRoute();
 
-	//	// Position according to the route
-	//	double routeRoadId = routePosition.GetTrackId();
-	//	double routeS = routePosition.GetS();
-	//	double routeOffset = routePosition.GetOffset();
-
-	//	// Cars position
-	//	roadmanager::Position pos(routeRoadId, laneId, routeS, laneOffset + routeOffset);
-	//	cars.setPosition(objectName, pos);
-	//}
+		routePtr->Set(pathS, laneId, 0);
+		routePtr->GetPosition(carsPtr->getCarPtr(actionEntities[i])->getPositionPtr());
+	}
 	actionCompleted = true;
 	startAction = false;
 }
 
+void Action::executeFollowRoute()
+{
+	for (size_t i = 0; i < actionEntities.size(); i++)
+	{
+		carsPtr->setFollowRoute(actionEntities[i], true);
+	}
+
+	actionCompleted = true;
+	startAction = false;
+}
 
 void Action::executeMeeting()
 {
@@ -360,6 +368,11 @@ void Action::executeMeeting()
 
 		double signRelative = (sign(carsPtr->getPosition(object).GetLaneId()));
 		double timeToRelativeTargetPosition = (signRelative * (-1)) * (relativeTargetPos.GetS() - carsPtr->getPosition(object).GetS()) / carsPtr->getSpeed(object);
+		
+		if (timeToRelativeTargetPosition==-INFINITY)
+		{
+			timeToRelativeTargetPosition = INFINITY;
+		}
 
 		double signOwn = (sign(carsPtr->getPosition(actionEntities[0]).GetLaneId()));
 		double distToOwnTargetPosition = (signOwn * (-1)) * (ownTargetPos.GetS() - carsPtr->getPosition(actionEntities[0]).GetS());

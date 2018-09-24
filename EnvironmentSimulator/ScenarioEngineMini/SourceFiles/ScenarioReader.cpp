@@ -903,7 +903,27 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 		}
 		else if (actionChildName == "Routing")
 		{
-			std::cout << actionChildName << " is not implemented " << std::endl;
+			for (pugi::xml_node routingChild = actionChild.first_child(); routingChild; routingChild = routingChild.next_sibling())
+			{
+				std::string routingChildName(routingChild.name());
+
+				if (routingChildName == "FollowRoute")
+				{
+					for (pugi::xml_node followRouteChild = routingChild.first_child(); followRouteChild; followRouteChild = followRouteChild.next_sibling())
+					{
+						std::string followRouteChildName(followRouteChild.name());
+
+						if (followRouteChildName == "Route")
+						{
+							std::cout << followRouteChildName << " is not implemented " << std::endl;
+						}
+						else if (followRouteChildName == "CatalogReference")
+						{
+							parseOSCCatalogReference(action.Routing.FollowRoute.CatalogReference, followRouteChild);
+						}
+					}
+				}
+			}
 		}
 	}
 

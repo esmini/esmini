@@ -22,10 +22,22 @@ Car Cars::getCar(std::string objectName)
 	return cars[idx];
 }
 
+Car * Cars::getCarPtr(std::string objectName)
+{
+	int idx = Cars::getIdx(objectName);
+	return &cars[idx];
+}
+
 Car Cars::getCar(int objectId)
 {
 	int idx = Cars::getIdx(objectId);
 	return cars[idx];
+}
+
+Car * Cars::getCarPtr(int objectId)
+{
+	int idx = Cars::getIdx(objectId);
+	return &cars[idx];
 }
 
 int Cars::getId(std::string objectName)
@@ -148,6 +160,33 @@ void Cars::setPosition(int objectId, roadmanager::Position position)
 	int idx = Cars::getIdx(objectId);
 	cars[idx].setPosition(position);
 }
+
+
+// Follow route
+bool Cars::getFollowRoute(std::string objectName)
+{
+	int idx = Cars::getIdx(objectName);
+	return cars[idx].getFollowRoute();
+}
+
+bool Cars::getFollowRoute(int objectId)
+{
+	int idx = Cars::getIdx(objectId);
+	return cars[idx].getFollowRoute();
+}
+
+void Cars::setFollowRoute(std::string objectName, bool followRoute)
+{
+	int idx = Cars::getIdx(objectName);
+	return cars[idx].setFollowRoute(followRoute);
+}
+
+void Cars::setFollowRoute(int objectId, bool followRoute)
+{
+	int idx = Cars::getIdx(objectId);
+	return cars[idx].setFollowRoute(followRoute);
+}
+
 
 void Cars::step(double dt)
 {

@@ -101,6 +101,7 @@ void ScenarioEngine::initCars()
 			car.setObjectId(objectId);
 			car.setName(objectName);
 			car.setObjectStruct(objectStruct);
+			car.setRoute(route);
 
 			for (size_t i = 0; i < objectStruct.Properties.size(); i++)
 			{

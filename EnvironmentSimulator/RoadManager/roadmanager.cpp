@@ -2378,18 +2378,20 @@ int Position::MoveAlongS(double ds)
 {
 	RoadLink *link;
 
+	double sign = (lane_id_ > 0) ? -1 : 1;
+	double newS = s_ + sign * ds;
 
-	if (s_ + ds > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
+	if (newS > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
 	{
 		link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(LinkType::SUCCESSOR);
 	}
-	else if (s_ + ds < 0)
+	else if (newS < 0)
 	{
 		link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(LinkType::PREDECESSOR);
 	}
 	else  // New position is within current track
 	{
-		SetLanePos(track_id_, lane_id_, s_ + ds, offset_);
+		SetLanePos(track_id_, lane_id_, newS, offset_);
 		return 0;
 	}
 
