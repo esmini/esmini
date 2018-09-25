@@ -39,6 +39,7 @@ std::string ScenarioReader::getParameter(std::string name)
 	}
 
 	std::cout << "ScenarioReader: getParameter finished" << std::endl;
+	return 0;
 }
 
 void ScenarioReader::loadXmlFile(const char * path)
@@ -68,7 +69,7 @@ void ScenarioReader::parseParameterDeclaration()
 		//std::cout << parameterTypeAttribute.name() << " = " << parameterTypeAttribute.value() << std::endl;
 		parameterDeclaration.Parameter.back().type = parameterTypeAttribute.value();
 
-		pugi::xml_attribute parameterValueAttribute = parameterDeclarationChild.attribute("value");
+		pugi::xml_attribute parameterValueAttribute = parameterDeclarationChild.attribute("default");
 		//std::cout << parameterValueAttribute.name() << " = " << parameterValueAttribute.value() << std::endl;
 		parameterDeclaration.Parameter.back().value = parameterValueAttribute.value();
 	}
@@ -133,7 +134,6 @@ void ScenarioReader::parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode)
 
 		}
 	}
-
 	std::cout << "ScenarioReader: parseOSCRoute finished" << std::endl;
 }
 
@@ -149,7 +149,12 @@ void ScenarioReader::parseCatalogs(Catalogs &catalogs)
 
 		if (catalogsChildName == "RouteCatalog")
 		{
-			parseOSCRoute(catalogs.RouteCatalog.Route, catalogsChild.first_child());
+			for (pugi::xml_node route = catalogsChild.first_child(); route; route = route.next_sibling())
+			{
+				OSCRoute route_item;
+				parseOSCRoute(route_item, route);
+				catalogs.RouteCatalog.Route.push_back(route_item);
+			}
 		}
 		else if (catalogsChildName == "VehicleCatalog")
 		{
@@ -376,7 +381,7 @@ void ScenarioReader::parseOSCVehicle(OSCVehicle &vehicle, pugi::xml_node vehicle
 
 	}
 
-	std::cout << "ScenarioReader: parseOSCVehicle finshed" << std::endl;
+	std::cout << "ScenarioReader: parseOSCVehicle finished" << std::endl;
 }
 
 void ScenarioReader::parseOSCCatalogReference(OSCCatalogReference &catalogReference, pugi::xml_node catalogReferenceNode)
@@ -1278,8 +1283,6 @@ void ScenarioReader::parseStory(std::vector<Story> &storyVector)
 	std::cout << "ScenarioReader: parseStory started" << std::endl;
 
 	pugi::xml_node storyNode = doc.child("OpenSCENARIO").child("Storyboard").child("Story");
-
-	double count = (std::distance(storyNode.begin(), storyNode.end()));
 
 	for (storyNode; storyNode; storyNode = storyNode.next_sibling())
 	{

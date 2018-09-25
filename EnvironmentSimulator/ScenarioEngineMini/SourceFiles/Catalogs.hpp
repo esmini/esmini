@@ -14,7 +14,10 @@ public:
 
 	struct { OSCDirectory Directory; }VehicleCatalog;
 	struct { OSCDirectory Directory; }DriverCatalog;
-	struct { OSCRoute Route; }RouteCatalog;
+	struct 
+	{ 
+		std::vector<OSCRoute> Route; 
+	} RouteCatalog;
 
 
 };

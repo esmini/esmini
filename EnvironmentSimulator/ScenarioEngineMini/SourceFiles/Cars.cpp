@@ -95,7 +95,7 @@ int Cars::getIdx(std::string objectName)
 	{
 		if (cars[i].getObjectName() == objectName)
 		{
-			return i;
+			return (int)i;
 		}
 	}
 	return -1;
@@ -107,7 +107,7 @@ int Cars::getIdx(int objectId)
 	{
 		if (cars[i].getObjectId() == objectId)
 		{
-			return i;
+			return (int)i;
 		}
 	}
 	return -1;
@@ -220,7 +220,7 @@ void Cars::step(int objectId, double dt)
 
 int Cars::getNum()
 {
-	return cars.size();
+	return (int)cars.size();
 }
 
 void Cars::printCar()

@@ -31,12 +31,12 @@ void Car::setExtControlled(bool boolean)
 
 void Car::setRoute(roadmanager::Route &route)
 {
-	this->route = &route;
+	this->route = route;
 }
 
- roadmanager::Route * Car::getRoute()
+roadmanager::Route * Car::getRoute()
 {
-	return route;
+	return &route;
 }
 
 bool Car::getExtControlled()
@@ -48,8 +48,8 @@ void Car::step(double dt)
 {
 	if (followRoute)
 	{
-		route->MoveDS(speed * dt);
-		route->GetPosition(&position);
+		route.MoveDS(speed * dt);
+		route.GetPosition(&position);
 	}
 	else
 	{
@@ -106,7 +106,7 @@ roadmanager::Position * Car::getPositionPtr()
 	return &position;
 }
 
-double Car::getObjectId()
+int Car::getObjectId()
 {
 	return objectId;
 }

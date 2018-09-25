@@ -32,28 +32,31 @@ ScenarioGateway & ScenarioEngine::getScenarioGateway()
 	return scenarioGateway;
 }
 
-void ScenarioEngine::initRoute()
+void ScenarioEngine::initRoutes()
 {
-	if (!catalogs.RouteCatalog.Route.Waypoint.empty())
+	for (auto &route_item : catalogs.RouteCatalog.Route)
 	{
-
-		for (size_t i = 0; i < catalogs.RouteCatalog.Route.Waypoint.size(); i++)
+		if (!route_item.Waypoint.empty())
 		{
-			roadmanager::Position * position = new roadmanager::Position();
-
-			// Lane position
-			if (!catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.roadId.empty())
+			roadmanager::Route rm_route;
+			rm_route.setName(route_item.name);
+			for (size_t i = 0; i < route_item.Waypoint.size(); i++)
 			{
-				int roadId = std::stoi(catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.roadId);
-				int lane_id = catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.laneId;
-				double s = catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.s;
-				double offset = catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.offset;
+				roadmanager::Position * position = new roadmanager::Position();
 
-				position->SetLanePos(roadId, lane_id, s, offset);
+				// Lane position
+				if (!route_item.Waypoint[i].Position->Lane.roadId.empty())
+				{
+					int roadId = std::stoi(route_item.Waypoint[i].Position->Lane.roadId);
+					int lane_id = route_item.Waypoint[i].Position->Lane.laneId;
+					double s = route_item.Waypoint[i].Position->Lane.s;
+					double offset = route_item.Waypoint[i].Position->Lane.offset;
+
+					position->SetLanePos(roadId, lane_id, s, offset);
+				}
+				rm_route.AddWaypoint(position);
 			}
-
-			route.setName(catalogs.RouteCatalog.Route.name);
-			route.AddWaypoint(position);
+			cars.route.push_back(rm_route);
 		}
 	}
 }
@@ -94,14 +97,13 @@ void ScenarioEngine::initCars()
 		for (size_t i = 0; i < entities.Object.size(); i++)
 		{
 			Car car;
-			int objectId = i;
+			int objectId = (int)i;
 			std::string objectName = entities.Object[i].name;
 			Entities::ObjectStruct objectStruct = entities.Object[i];
 
 			car.setObjectId(objectId);
 			car.setName(objectName);
 			car.setObjectStruct(objectStruct);
-			car.setRoute(route);
 
 			for (size_t i = 0; i < objectStruct.Properties.size(); i++)
 			{

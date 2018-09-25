@@ -34,7 +34,7 @@ public:
 
 	ScenarioGateway & getScenarioGateway();
 
-	void initRoute();
+	void initRoutes();
 	void initConditions();
 	void checkConditions();
 	void executeActions();
@@ -57,8 +57,6 @@ public:
 	Cars cars;
 	ScenarioGateway scenarioGateway;
 
-	// Route
-	roadmanager::Route route;
 
 };
 

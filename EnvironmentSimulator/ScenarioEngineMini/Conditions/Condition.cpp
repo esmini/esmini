@@ -17,7 +17,7 @@ void Condition::identifyConditionType(OSCCondition &condition)
 		this->conditionType = "TimeHeadway";
 
 		// Triggering entities		(TriggeringEntities -> Entity -> name="Ego")
-		this->N = condition.ByEntity.TriggeringEntities.Entity.size();
+		this->N = (int)condition.ByEntity.TriggeringEntities.Entity.size();
 		this->triggeringEntityPos.resize(N);
 		this->triggeringEntities.resize(N);
 

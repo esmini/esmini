@@ -67,6 +67,8 @@ public:
 	void printCar();
 	void printCar(int objectId);
 
+	// Routes
+	std::vector<roadmanager::Route> route;
 
 private:
 	std::vector<Car> cars;

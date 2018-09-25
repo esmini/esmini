@@ -75,6 +75,7 @@ private:
 	double offsetTime;
 	std::string continuous;
 
-
+	// Follow Route
+	roadmanager::Route* route;
 };
 

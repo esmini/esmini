@@ -66,7 +66,7 @@ int ScenarioGateway::getIdx(std::string objectName)
 	{
 		if (externalCars[i].getName() == objectName)
 		{
-			return i;
+			return (int)i;
 		}
 	}
 

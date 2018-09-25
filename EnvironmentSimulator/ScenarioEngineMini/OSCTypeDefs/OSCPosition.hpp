@@ -7,6 +7,8 @@
 #include <string>
 #include <math.h>
 
+#define INT_UNDEF 0xFFFFFFFF
+
 // Forward declaration to overcome the circular dependency
 struct OSCRoute;
 
@@ -33,7 +35,7 @@ struct OSCPosition
 	struct {
 		bool exists = false;
 		std::string roadId = "";
-		int laneId = NAN;
+		int laneId = INT_UNDEF;
 		double offset = NAN;
 		double s = NAN;
 
