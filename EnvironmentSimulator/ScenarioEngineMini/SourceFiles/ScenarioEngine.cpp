@@ -122,7 +122,7 @@ void ScenarioEngine::initCars()
 
 			if (car.getExtControlled())
 			{
-				scenarioGateway.addExternalCar(car.getObjectId(), car.getObjectName());
+//				scenarioGateway.addExternalCar(car.getObjectId(), car.getObjectName());
 			}
 			cars.addCar(car);
 		}
