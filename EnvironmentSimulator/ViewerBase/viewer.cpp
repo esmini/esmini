@@ -158,6 +158,10 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	}
 	lodScale_ = LOD_SCALE_DEFAULT;
 	currentCarInFocus_ = 0;
+	keyUp_ = false;
+	keyDown_ = false;
+	keyLeft_ = false;
+	keyRight_ = false;
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
 	osgViewer_ = new osgViewer::Viewer(arguments);
 		
@@ -592,6 +596,25 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 		}
 	}
 	break;
+	case(osgGA::GUIEventAdapter::KEY_Right):
+	{
+		viewer_->setKeyRight(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_Left):
+	{
+		viewer_->setKeyLeft(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_Up):
+	{
+		viewer_->setKeyUp(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_Down):
+	{
+		viewer_->setKeyDown(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
+	}
 	case(osgGA::GUIEventAdapter::KEY_Tab):
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{

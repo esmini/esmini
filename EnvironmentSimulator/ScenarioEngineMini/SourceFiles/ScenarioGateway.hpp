@@ -18,8 +18,8 @@ struct ObjectStateStruct
 class ObjectState
 {
 public:
-	ObjectState(int id, double timestamp, double x, double y, double h, double speed);
-	ObjectState(int id, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed);
+	ObjectState(int id, std::string name, double timestamp, double x, double y, double h, double speed);
+	ObjectState(int id, std::string name, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed);
 
 	int getId() { return state_.obj_state.base.id; }
 	std::string getName() { return std::string(state_.obj_state.base.name); }

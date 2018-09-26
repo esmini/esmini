@@ -1,16 +1,18 @@
 #include "ScenarioGateway.hpp"
 
 
-ObjectState::ObjectState(int id, double timestamp, double x, double y, double h, double speed)
+ObjectState::ObjectState(int id, std::string name, double timestamp, double x, double y, double h, double speed)
 {
 	setId(id);
+	setName(name);
 	setTimeStamp(timestamp);
-	setPos(x, y, h, speed);	
+	setPos(x, y, h, speed);
 }
 
-ObjectState::ObjectState(int id, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed)
+ObjectState::ObjectState(int id, std::string name, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed)
 {
 	setId(id);
+	setName(name);
 	setTimeStamp(timestamp);
 	setRoadPos(roadId, laneId, s, laneOffset, speed);
 }
@@ -96,6 +98,7 @@ void ScenarioGateway::reportObject(ObjectState objectState)
 			found = true;
 			
 			// Update state
+			printf("Updating %s state: (%d, %.2f)\n", o.getName().c_str(), o.getId(), o.getTimeStamp());
 			o = objectState;			
 			break;
 		}
@@ -104,6 +107,7 @@ void ScenarioGateway::reportObject(ObjectState objectState)
 	if (!found)
 	{
 		// Add object
+		printf("Adding %s state: (%d, %.2f)\n", objectState.getName().c_str(), objectState.getId(), objectState.getTimeStamp());
 		objectState_.push_back(objectState);
 	}
 }
