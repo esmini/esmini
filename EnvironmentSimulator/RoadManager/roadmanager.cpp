@@ -2509,6 +2509,23 @@ void Position::PrintXY()
 	printf("%.2f, %.2f\n", x_, y_);
 }
 
+bool Position::IsAheadOf(Position target_position)
+{
+	// Calculate diff vector from current to target
+	double diff_x, diff_y;
+	double diff_x0, diff_y0;
+
+	diff_x = target_position.GetX() - GetX();
+	diff_y = target_position.GetY() - GetY();
+
+	// Compensate for current heading (rotate so that current heading = 0)
+	diff_x0 = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
+	diff_y0 = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
+
+	// Now just check whether diff vector X-component is less than 0 (behind current)
+	return(diff_x0 < 0);
+}
+
 int Route::SetPosition(Position *position)
 {
 	// Is it a valid position, i.e. is it along the route

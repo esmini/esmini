@@ -146,28 +146,14 @@ int main(int argc, char *argv[])
 		// Visualize cars
 		for (int i = 0; i<scenarioEngine.cars.getNum(); i++)
 		{
-
 			viewer::CarModel *car = viewer->cars_[i];
+			roadmanager::Position pos = scenarioEngine.cars.getPosition(i);
 
-			double x = scenarioEngine.cars.getPosition(i).GetX();
-			double y = scenarioEngine.cars.getPosition(i).GetY();
-			double z = scenarioEngine.cars.getPosition(i).GetZ();
-
-			car->txNode_->setPosition(osg::Vec3(x, y, z));
-
-			float roll = scenarioEngine.cars.getPosition(i).GetR();
-			float pitch = scenarioEngine.cars.getPosition(i).GetP();
-			float heading = scenarioEngine.cars.getPosition(i).GetH();
-
-			car->quat_.makeRotate(
-				roll, osg::Vec3(1, 0, 0),
-				pitch, osg::Vec3(0, 1, 0),
-				heading, osg::Vec3(0, 0, 1));
-			car->txNode_->setAttitude(car->quat_);
+			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
+			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
 		}
-
+		
 		viewer->osgViewer_->frame();
-
 	}
 
 	return 1;

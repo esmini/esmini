@@ -22,6 +22,7 @@ public:
 
 	Car * getCarPtr(std::string objectName);
 	Car * getCarPtr(int objectId);
+	Car * getCarPtrByIdx(int idx) { return &cars[idx]; }
 
 	// Id
 	int getId(std::string objectName);

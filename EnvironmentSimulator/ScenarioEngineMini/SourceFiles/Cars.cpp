@@ -197,8 +197,8 @@ void Cars::step(double dt)
 		{
 			int objectId = cars[i].getObjectId();
 			
-			roadmanager::Position position = scenarioGateway->getExternalCarPosition(objectId);
-			cars[i].setPosition(position);
+//			roadmanager::Position position = scenarioGateway->getExternalCarPosition(objectId);
+//			cars[i].setPosition(position);
 		}
 		else {
 			cars[i].step(dt);

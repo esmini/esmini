@@ -617,6 +617,12 @@ namespace roadmanager
 		int MoveToConnectingRoad(RoadLink *road_link, double ds);
 		
 		/**
+		Is the current position ahead of the one specified in argument
+		@param target_position The position to compare the current to.
+		*/
+		bool IsAheadOf(Position target_position);
+		
+		/**
 		Move position along the road network, forward or backward, from the current position
 		It will automatically follow connecting lanes between connected roads 
 		If multiple options (only possible in junctions) it will choose randomly 
