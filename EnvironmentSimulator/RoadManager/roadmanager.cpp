@@ -2509,7 +2509,7 @@ void Position::PrintXY()
 	printf("%.2f, %.2f\n", x_, y_);
 }
 
-bool Position::IsAheadOf(Position target_position)
+double Position::getRelativeDistance(Position target_position)
 {
 	// Calculate diff vector from current to target
 	double diff_x, diff_y;
@@ -2521,6 +2521,26 @@ bool Position::IsAheadOf(Position target_position)
 	// Compensate for current heading (rotate so that current heading = 0)
 	diff_x0 = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
 	diff_y0 = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
+
+	// Now just check whether diff vector X-component is less than 0 (behind current)
+	int sign = diff_x0 < 0 ? 1 : -1;
+
+	// Return length of dist vector
+	return sign * sqrt((diff_x0 * diff_x0) + (diff_y0 * diff_y0));
+}
+
+bool Position::IsAheadOf(Position target_position)
+{
+	// Calculate diff vector from current to target
+	double diff_x, diff_y;
+	double diff_x0;
+
+	diff_x = target_position.GetX() - GetX();
+	diff_y = target_position.GetY() - GetY();
+
+	// Compensate for current heading (rotate so that current heading = 0) 
+	// Only x component needed
+	diff_x0 = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
 
 	// Now just check whether diff vector X-component is less than 0 (behind current)
 	return(diff_x0 < 0);

@@ -152,6 +152,13 @@ int main(int argc, char *argv[])
 			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
 			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
 		}
+		// aheadof test
+		printf("%s (%.2f, %.2f) is ahead of %s (%.2f, %.2f) : %.2f\n", 
+			scenarioEngine.cars.getCarPtrByIdx(0)->getObjectName().c_str(),
+			scenarioEngine.cars.getPosition(0).GetX(), scenarioEngine.cars.getPosition(0).GetY(),
+			scenarioEngine.cars.getCarPtrByIdx(1)->getObjectName().c_str(),
+			scenarioEngine.cars.getPosition(1).GetX(), scenarioEngine.cars.getPosition(1).GetY(),
+			scenarioEngine.cars.getPosition(0).getRelativeDistance(scenarioEngine.cars.getPosition(1)));
 		
 		viewer->osgViewer_->frame();
 	}
