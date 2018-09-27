@@ -1,15 +1,48 @@
 #include "ScenarioEngine.hpp"
 
 
-ScenarioEngine::ScenarioEngine(Catalogs &catalogs, Entities &entities, Init &init, std::vector<Story> &story, double startTime)
+ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
 {
 	std::cout << "ScenarioEngine: New ScenarioEngine created" << std::endl;
 
-	this->catalogs = catalogs;
-	this->entities = entities;
-	this->init = init;
-	this->story = story;
+	// Initialization
+
+	// Load and parse data
+	scenarioReader.loadXmlFile(oscFilename.c_str());
+	scenarioReader.parseParameterDeclaration();
+	scenarioReader.parseRoadNetwork(roadNetwork);
+	scenarioReader.parseCatalogs(catalogs);
+	scenarioReader.parseEntities(entities);
+	scenarioReader.parseInit(init);
+	scenarioReader.parseStory(story);
+
+	// Init road manager
+	if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
+	{
+		printf("Failed to load ODR %s\n", getOdrFilename().c_str());
+	}
+	odrManager = roadmanager::Position::GetOpenDrive();
+
 	this->startTime = startTime;
+
+
+	// Print loaded data
+	entities.printEntities();
+	init.printInit();
+	story[0].printStory();
+
+	// ScenarioEngine
+	initRoutes();
+	initCars();
+	initInit();
+	initConditions();
+}
+
+void ScenarioEngine::step(double deltaSimTime)
+{
+	stepObjects(deltaSimTime);
+	checkConditions();
+	executeActions();
 }
 
 void ScenarioEngine::setTimeStep(double timeStep)
@@ -32,28 +65,31 @@ ScenarioGateway & ScenarioEngine::getScenarioGateway()
 	return scenarioGateway;
 }
 
-void ScenarioEngine::initRoute()
+void ScenarioEngine::initRoutes()
 {
-	if (!catalogs.RouteCatalog.Route.Waypoint.empty())
+	for (auto &route_item : catalogs.RouteCatalog.Route)
 	{
-
-		for (size_t i = 0; i < catalogs.RouteCatalog.Route.Waypoint.size(); i++)
+		if (!route_item.Waypoint.empty())
 		{
-			roadmanager::Position * position = new roadmanager::Position();
-
-			// Lane position
-			if (!catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.roadId.empty())
+			roadmanager::Route rm_route;
+			rm_route.setName(route_item.name);
+			for (size_t i = 0; i < route_item.Waypoint.size(); i++)
 			{
-				int roadId = std::stoi(catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.roadId);
-				int lane_id = catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.laneId;
-				double s = catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.s;
-				double offset = catalogs.RouteCatalog.Route.Waypoint[i].Position->Lane.offset;
+				roadmanager::Position * position = new roadmanager::Position();
 
-				position->SetLanePos(roadId, lane_id, s, offset);
+				// Lane position
+				if (!route_item.Waypoint[i].Position->Lane.roadId.empty())
+				{
+					int roadId = std::stoi(route_item.Waypoint[i].Position->Lane.roadId);
+					int lane_id = route_item.Waypoint[i].Position->Lane.laneId;
+					double s = route_item.Waypoint[i].Position->Lane.s;
+					double offset = route_item.Waypoint[i].Position->Lane.offset;
+
+					position->SetLanePos(roadId, lane_id, s, offset);
+				}
+				rm_route.AddWaypoint(position);
 			}
-
-			route.setName(catalogs.RouteCatalog.Route.name);
-			route.AddWaypoint(position);
+			cars.route.push_back(rm_route);
 		}
 	}
 }
@@ -94,14 +130,13 @@ void ScenarioEngine::initCars()
 		for (size_t i = 0; i < entities.Object.size(); i++)
 		{
 			Car car;
-			int objectId = i;
+			int objectId = (int)i;
 			std::string objectName = entities.Object[i].name;
 			Entities::ObjectStruct objectStruct = entities.Object[i];
 
 			car.setObjectId(objectId);
 			car.setName(objectName);
 			car.setObjectStruct(objectStruct);
-			car.setRoute(route);
 
 			for (size_t i = 0; i < objectStruct.Properties.size(); i++)
 			{
@@ -120,7 +155,7 @@ void ScenarioEngine::initCars()
 
 			if (car.getExtControlled())
 			{
-				scenarioGateway.addExternalCar(car.getObjectId(), car.getObjectName());
+//				scenarioGateway.addExternalCar(car.getObjectId(), car.getObjectName());
 			}
 			cars.addCar(car);
 		}

@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cstring>
 #include <random>
+#include <chrono>
+#include <time.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -14,6 +16,7 @@ static std::mt19937 mt_rand;
 
 using namespace std;
 using namespace roadmanager;
+using namespace std::chrono;
 
 #define CURV_ZERO 0.00001
 #define SIGN(x) (x < 0 ? -1 : 1)
@@ -935,7 +938,7 @@ Junction* OpenDrive::GetJunctionById(int id)
 }
 
 Junction *OpenDrive::GetJunctionByIdx(int idx)
-{
+{	
 	if (idx >= 0 && idx < (int)junction_.size())
 	{
 		return junction_[idx];
@@ -958,7 +961,9 @@ OpenDrive::OpenDrive(const char *filename)
 
 bool OpenDrive::LoadOpenDriveFile(const char *filename)
 {
-    pugi::xml_document doc;
+	mt_rand.seed((unsigned int)time(0));
+
+	pugi::xml_document doc;
 
     pugi::xml_parse_result result = doc.load_file(filename);
 	if (!result)
@@ -2315,11 +2320,10 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 			return -1;
 		}
 	
-		// find valid connecting road
+		// find valid connecting road, if multiple choices choose by random
 		int n_connections = junction->GetNumberOfRoadConnections(road->GetId(), lane->GetId());
+		int connection_idx = (int)(n_connections * (double)mt_rand() / mt19937::max());
 		
-		// todo randomly choose a connection
-		int connection_idx = (int)(((double)n_connections * mt_rand()) / (mt19937::max)());
 		LaneRoadLaneConnection lane_road_lane_connection = junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), connection_idx);
 		contact_point = lane_road_lane_connection.contact_point_;
 
@@ -2503,6 +2507,43 @@ void Position::Print()
 void Position::PrintXY()
 {
 	printf("%.2f, %.2f\n", x_, y_);
+}
+
+double Position::getRelativeDistance(Position target_position)
+{
+	// Calculate diff vector from current to target
+	double diff_x, diff_y;
+	double diff_x0, diff_y0;
+
+	diff_x = target_position.GetX() - GetX();
+	diff_y = target_position.GetY() - GetY();
+
+	// Compensate for current heading (rotate so that current heading = 0)
+	diff_x0 = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
+	diff_y0 = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
+
+	// Now just check whether diff vector X-component is less than 0 (behind current)
+	int sign = diff_x0 < 0 ? 1 : -1;
+
+	// Return length of dist vector
+	return sign * sqrt((diff_x0 * diff_x0) + (diff_y0 * diff_y0));
+}
+
+bool Position::IsAheadOf(Position target_position)
+{
+	// Calculate diff vector from current to target
+	double diff_x, diff_y;
+	double diff_x0;
+
+	diff_x = target_position.GetX() - GetX();
+	diff_y = target_position.GetY() - GetY();
+
+	// Compensate for current heading (rotate so that current heading = 0) 
+	// Only x component needed
+	diff_x0 = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
+
+	// Now just check whether diff vector X-component is less than 0 (behind current)
+	return(diff_x0 < 0);
 }
 
 int Route::SetPosition(Position *position)

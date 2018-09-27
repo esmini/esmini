@@ -617,6 +617,21 @@ namespace roadmanager
 		int MoveToConnectingRoad(RoadLink *road_link, double ds);
 		
 		/**
+		Straight (not route) distance between the current position and the one specified in argument
+		@param target_position The position to measure distance from current position. 
+		@return distance (meter). Negative if the specified position is behind the current one.
+		*/
+		double getRelativeDistance(Position target_position);
+
+		/**
+		Is the current position ahead of the one specified in argument
+		This method is more efficient than getRelativeDistance
+		@param target_position The position to compare the current to.
+		@return true of false
+		*/
+		bool IsAheadOf(Position target_position);
+
+		/**
 		Move position along the road network, forward or backward, from the current position
 		It will automatically follow connecting lanes between connected roads 
 		If multiple options (only possible in junctions) it will choose randomly 

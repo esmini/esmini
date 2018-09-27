@@ -7,12 +7,9 @@
 
 #include "vehicle.hpp"
 #include "viewer.hpp"
+#include "ScenarioGateway.hpp"
 #include "RoadManager.hpp"
 #include "RubberbandManipulator.h"
-
-#ifdef _WIN32
-	#include <windows.h>
-#endif
 
 using namespace std::chrono;
 
@@ -41,41 +38,6 @@ typedef struct
 
 Car *car;
 
-bool KeyUpPressed()
-{
-#ifdef _WIN32
-	return (GetKeyState(VK_UP) & 0x8000);
-#else
-	printf("KeyUpPressed only implemented for Windows, so far\n");
-#endif
-}
-
-bool KeyDownPressed()
-{
-#ifdef _WIN32
-	return (GetKeyState(VK_DOWN) & 0x8000);
-#else
-	printf("KeyDownPressed only implemented for Windows, so far\n");
-#endif
-}
-
-bool KeyLeftPressed()
-{
-#ifdef _WIN32
-	return (GetKeyState(VK_LEFT) & 0x8000);
-#else
-	printf("KeyLeftPressed only implemented for Windows, so far\n");
-#endif
-}
-
-bool KeyRightPressed()
-{
-#ifdef _WIN32
-	return (GetKeyState(VK_RIGHT) & 0x8000);
-#else
-	printf("KeyRightPressed only implemented for Windows, so far\n");
-#endif
-}
 
 int SetupEgo(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 {
@@ -93,6 +55,9 @@ int SetupEgo(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 int main(int argc, char** argv)
 {
+	ScenarioGateway scenarioGateway;
+	double timestamp = 0;
+
 	// use an ArgumentParser object to manage the program arguments.
     osg::ArgumentParser arguments(&argc,argv);	
 
@@ -126,24 +91,6 @@ int main(int argc, char** argv)
 		}
 		roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
 
-#if USE_ROUTE
-		// Test route concept 
-		// Specify hardcoded route on Fabriksgatan
-		roadmanager::Position waypoint[2];
-#if 1
-		waypoint[0].SetLanePos(2, -1, 250, 0);
-		waypoint[1].SetLanePos(1, -1, 10, 0);
-#else
-		waypoint[0].SetLanePos(0, 1, 50, 0);
-		waypoint[1].SetLanePos(1, -1, 10, 0);
-#endif
-		roadmanager::Route route;
-
-		route.AddWaypoint(&waypoint[0]);
-		route.AddWaypoint(&waypoint[1]);
-#endif
-
-
 		viewer::Viewer *viewer = new viewer::Viewer(
 			odrManager, 
 			modelFilename.c_str(),
@@ -168,25 +115,25 @@ int main(int argc, char** argv)
 				std::this_thread::sleep_for(milliseconds((int)(1000 * (minStepSize - deltaSimTime))));
 				deltaSimTime = minStepSize;
 			}
+			timestamp += deltaSimTime;
 
 			// Update vehicle dynamics/driver model
-#if !USE_ROUTE
 			vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
-			if (KeyUpPressed()) 
+			if (viewer->getKeyUp()) 
 			{						
 				accelerate = vehicle::THROTTLE_ACCELERATE;
 			}
-			else if (KeyDownPressed())
+			else if (viewer->getKeyDown())
 			{
 				accelerate = vehicle::THROTTLE_BRAKE;
 			}
 
 			vehicle::STEERING steer = vehicle::STEERING_NONE;
-			if (KeyLeftPressed())
+			if (viewer->getKeyLeft())
 			{
 				steer = vehicle::STEERING_LEFT;
 			}
-			else if (KeyRightPressed())
+			else if (viewer->getKeyRight())
 			{
 				steer = vehicle::STEERING_RIGHT;
 			}
@@ -196,13 +143,10 @@ int main(int argc, char** argv)
 			
 			// Set OpenDRIVE position
 			car->pos->SetXYH(car->vehicle->posX_, car->vehicle->posY_, car->vehicle->heading_);
-#else
-			route.MoveDS(deltaSimTime * 20  / 3.6);
-			route.GetPosition(car->pos);
-			car->vehicle->SetPos(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ(), car->pos->GetH());
-			car->vehicle->SetWheelAngle(car->vehicle->heading_ - car->pos->GetH());
-			car->vehicle->SetWheelRotation(route.GetS() / 0.35);
-#endif
+
+			// Report updaed state to scenario gateway
+			scenarioGateway.reportObject(ObjectState(0, std::string("Ego"), timestamp, car->vehicle->posX_, car->vehicle->posY_, car->vehicle->heading_, car->speed));
+
 					
 			// Fetch Z and Pitch from OpenDRIVE position
 			car->vehicle->posZ_ = car->pos->GetZ();

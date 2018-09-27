@@ -4,14 +4,7 @@
 #include <thread>
 #include <chrono>
 
-#include "ScenarioReader.hpp"
-#include "Catalogs.hpp"
-#include "RoadNetwork.hpp"
-#include "Entities.hpp"
-#include "Init.hpp"
-#include "Story.hpp"
 #include "ScenarioEngine.hpp"
-#include "ScenarioGateway.hpp"
 
 #include "viewer.hpp"
 #include "RoadManager.hpp"
@@ -51,48 +44,11 @@ int main(int argc, char *argv[])
 	std::string oscFilename;
 	arguments.read("--osc", oscFilename);
 
-	// Initialization
-	ScenarioReader scenarioReader;
-	Catalogs catalogs;
-	RoadNetwork roadNetwork;
-	Entities entities;
-	Init init;
-	std::vector<Story> story;
+	// Create scenario engine
+	ScenarioEngine scenarioEngine(oscFilename, simulationTime);
 
-	// Load and parse data
-	scenarioReader.loadXmlFile(oscFilename.c_str());
-	scenarioReader.parseParameterDeclaration();
-	scenarioReader.parseRoadNetwork(roadNetwork);
-	scenarioReader.parseCatalogs(catalogs);
-	scenarioReader.parseEntities(entities);
-	scenarioReader.parseInit(init);
-	scenarioReader.parseStory(story);
-
-	char* scenegraphFilename = &roadNetwork.SceneGraph.filepath[0];
-	char* odrFilename = &roadNetwork.Logics.filepath[0];
-
-	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenegraphFilename, arguments);
-
-	// Init road manager
-	if (!roadmanager::Position::LoadOpenDrive(odrFilename))
-	{
-		printf("Failed to load ODR %s\n", odrFilename);
-		return -1;
-	}
-	roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
-
-
-	// Print loaded data
-	entities.printEntities();
-	init.printInit();
-	story[0].printStory();
-
-	// ScenarioEngine
-	ScenarioEngine scenarioEngine(catalogs, entities, init, story, simulationTime);
-	scenarioEngine.initRoute();
-	scenarioEngine.initCars();
-	scenarioEngine.initInit();
-	scenarioEngine.initConditions();
+	// Create viewer
+	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine.getSceneGraphFilename().c_str(), arguments);
 
 	// ScenarioGateway
 	ScenarioGateway & scenarioGateway = scenarioEngine.getScenarioGateway();
@@ -138,36 +94,20 @@ int main(int argc, char *argv[])
 		//scenarioGateway.setExternalCarPosition("Ego", p);
 
 		// ScenarioEngine
-		scenarioEngine.stepObjects(deltaSimTime);
-		scenarioEngine.checkConditions();
-		scenarioEngine.executeActions();
+		scenarioEngine.step(deltaSimTime);
 
 
 		// Visualize cars
 		for (int i = 0; i<scenarioEngine.cars.getNum(); i++)
 		{
-
 			viewer::CarModel *car = viewer->cars_[i];
+			roadmanager::Position pos = scenarioEngine.cars.getPosition(i);
 
-			double x = scenarioEngine.cars.getPosition(i).GetX();
-			double y = scenarioEngine.cars.getPosition(i).GetY();
-			double z = scenarioEngine.cars.getPosition(i).GetZ();
-
-			car->txNode_->setPosition(osg::Vec3(x, y, z));
-
-			float roll = scenarioEngine.cars.getPosition(i).GetR();
-			float pitch = scenarioEngine.cars.getPosition(i).GetP();
-			float heading = scenarioEngine.cars.getPosition(i).GetH();
-
-			car->quat_.makeRotate(
-				roll, osg::Vec3(1, 0, 0),
-				pitch, osg::Vec3(0, 1, 0),
-				heading, osg::Vec3(0, 0, 1));
-			car->txNode_->setAttitude(car->quat_);
+			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
+			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
 		}
-
+		
 		viewer->osgViewer_->frame();
-
 	}
 
 	return 1;

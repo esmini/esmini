@@ -95,7 +95,7 @@ int Cars::getIdx(std::string objectName)
 	{
 		if (cars[i].getObjectName() == objectName)
 		{
-			return i;
+			return (int)i;
 		}
 	}
 	return -1;
@@ -107,7 +107,7 @@ int Cars::getIdx(int objectId)
 	{
 		if (cars[i].getObjectId() == objectId)
 		{
-			return i;
+			return (int)i;
 		}
 	}
 	return -1;
@@ -197,8 +197,8 @@ void Cars::step(double dt)
 		{
 			int objectId = cars[i].getObjectId();
 			
-			roadmanager::Position position = scenarioGateway->getExternalCarPosition(objectId);
-			cars[i].setPosition(position);
+//			roadmanager::Position position = scenarioGateway->getExternalCarPosition(objectId);
+//			cars[i].setPosition(position);
 		}
 		else {
 			cars[i].step(dt);
@@ -220,7 +220,7 @@ void Cars::step(int objectId, double dt)
 
 int Cars::getNum()
 {
-	return cars.size();
+	return (int)cars.size();
 }
 
 void Cars::printCar()

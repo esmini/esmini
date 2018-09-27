@@ -28,7 +28,7 @@ public:
 	roadmanager::Position getPosition();
 	roadmanager::Position * Car::getPositionPtr();
 	double getSpeed();
-	double getObjectId();
+	int getObjectId();
 	std::string getObjectName();
 	void printState();
 
@@ -44,7 +44,7 @@ public:
 	roadmanager::Position position;
 	bool extControlled;
 	bool followRoute;
-	roadmanager::Route *route;
+	roadmanager::Route route;
 
 };
 

@@ -22,6 +22,7 @@ public:
 
 	Car * getCarPtr(std::string objectName);
 	Car * getCarPtr(int objectId);
+	Car * getCarPtrByIdx(int idx) { return &cars[idx]; }
 
 	// Id
 	int getId(std::string objectName);
@@ -67,6 +68,8 @@ public:
 	void printCar();
 	void printCar(int objectId);
 
+	// Routes
+	std::vector<roadmanager::Route> route;
 
 private:
 	std::vector<Car> cars;

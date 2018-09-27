@@ -26,7 +26,7 @@ void Actions::executeActions(double simulationTime)
 {
 	double timeStep = simulationTime - oldSimulationTime;
 
-	int numberOfActions = actions.size();
+	int numberOfActions = (int)actions.size();
 	int i = 0;
 
 	while (i<numberOfActions)
@@ -41,7 +41,7 @@ void Actions::executeActions(double simulationTime)
 			std::cout << "Actions: " << " action " << actions[i].getActionType() << " is removed from actions" << "\n" << std::endl;
 			actions.erase(actions.begin() + i);
 
-			numberOfActions = actions.size();
+			numberOfActions = (int)actions.size();
 			i = i - 1;
 		}
 		i = i + 1;

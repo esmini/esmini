@@ -90,6 +90,20 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 	else if (!privateAction.Routing.FollowRoute.CatalogReference.catalogName.empty())
 	{
 		this->actionType = "follow-route-catalog";
+		for (auto &entity : actionEntities)
+		{
+			Car *car = this->carsPtr->getCarPtr(entity);
+			for (auto &r : carsPtr->route)
+			{
+				// Find specified route
+				if (r.getName() == privateAction.Routing.FollowRoute.CatalogReference.entryName)
+				{
+					std::cout << "Adding route " << r.getName() << " to car " << car->getObjectName() << std::endl;
+					car->setRoute(r);
+					break;
+				}
+			}
+		}
 	}
 
 	// Meeting
@@ -209,7 +223,7 @@ void Action::executeSinusoidal(double simulationTime)
 		// Target entities
 		roadmanager::Position tObjectPosition = (*carsPtr).getPosition(targetObject);
 		roadmanager::Road *tObjectRoad = tObjectPosition.GetOpenDrive()->GetRoadById(tObjectPosition.GetTrackId());
-		tT = tObjectRoad->GetCenterOffset(tObjectPosition.GetS(), tObjectPosition.GetLaneId() + targetValue);
+		tT = tObjectRoad->GetCenterOffset(tObjectPosition.GetS(), tObjectPosition.GetLaneId()) + targetValue;
 
 		// Action entities
 		aT.resize(actionEntities.size());
@@ -332,7 +346,16 @@ void Action::executePositionRoute()
 		double pathS = privateAction.Position.Route.Position.LaneCoord.pathS;
 		int laneId = privateAction.Position.Route.Position.LaneCoord.laneId;
 
-		roadmanager::Route * routePtr = carsPtr->getCar(actionEntities[i]).getRoute();
+		// Find route
+		roadmanager::Route * routePtr = 0;
+		for (auto &r : carsPtr->route)
+		{
+			if (r.getName() == routeEntryName)
+			{
+				routePtr = &r;
+				break;
+			}
+		}
 
 		routePtr->Set(pathS, laneId, 0);
 		routePtr->GetPosition(carsPtr->getCarPtr(actionEntities[i])->getPositionPtr());

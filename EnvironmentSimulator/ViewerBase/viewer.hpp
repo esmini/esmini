@@ -64,6 +64,14 @@ namespace viewer
 		static osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
 		void UpdateVLine(double x, double y, double z);
 		void UpdateVPoints(double xt, double yt, double xl, double yl, double z);
+		void setKeyUp(bool pressed) { keyUp_ = pressed; }
+		void setKeyDown(bool pressed) { keyDown_ = pressed; }
+		void setKeyLeft(bool pressed) { keyLeft_ = pressed; }
+		void setKeyRight(bool pressed) { keyRight_ = pressed; }
+		bool getKeyUp() { return keyUp_; }
+		bool getKeyDown() { return keyDown_; }
+		bool getKeyLeft() { return keyLeft_; }
+		bool getKeyRight() { return keyRight_; }
 
 	private:
 		std::vector<std::string> carModelsFiles_ =
@@ -86,6 +94,10 @@ namespace viewer
 		bool ReadCarModels();
 		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
 		bool CreateVLineAndPoint(osg::Group* parent);
+		bool keyUp_;
+		bool keyDown_;
+		bool keyLeft_;
+		bool keyRight_;
 	};
 
 	class KeyboardEventHandler : public osgGA::GUIEventHandler
