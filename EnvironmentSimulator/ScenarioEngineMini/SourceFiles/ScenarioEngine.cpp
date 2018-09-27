@@ -1,15 +1,48 @@
 #include "ScenarioEngine.hpp"
 
 
-ScenarioEngine::ScenarioEngine(Catalogs &catalogs, Entities &entities, Init &init, std::vector<Story> &story, double startTime)
+ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
 {
 	std::cout << "ScenarioEngine: New ScenarioEngine created" << std::endl;
 
-	this->catalogs = catalogs;
-	this->entities = entities;
-	this->init = init;
-	this->story = story;
+	// Initialization
+
+	// Load and parse data
+	scenarioReader.loadXmlFile(oscFilename.c_str());
+	scenarioReader.parseParameterDeclaration();
+	scenarioReader.parseRoadNetwork(roadNetwork);
+	scenarioReader.parseCatalogs(catalogs);
+	scenarioReader.parseEntities(entities);
+	scenarioReader.parseInit(init);
+	scenarioReader.parseStory(story);
+
+	// Init road manager
+	if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
+	{
+		printf("Failed to load ODR %s\n", getOdrFilename().c_str());
+	}
+	odrManager = roadmanager::Position::GetOpenDrive();
+
 	this->startTime = startTime;
+
+
+	// Print loaded data
+	entities.printEntities();
+	init.printInit();
+	story[0].printStory();
+
+	// ScenarioEngine
+	initRoutes();
+	initCars();
+	initInit();
+	initConditions();
+}
+
+void ScenarioEngine::step(double deltaSimTime)
+{
+	stepObjects(deltaSimTime);
+	checkConditions();
+	executeActions();
 }
 
 void ScenarioEngine::setTimeStep(double timeStep)

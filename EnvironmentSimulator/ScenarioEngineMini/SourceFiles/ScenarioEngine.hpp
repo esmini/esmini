@@ -9,6 +9,8 @@
 #include "Action.hpp"
 #include "Cars.hpp"
 #include "ScenarioGateway.hpp"
+#include "ScenarioReader.hpp"
+#include "RoadNetwork.hpp"
 
 
 #include <iostream>
@@ -20,8 +22,9 @@ class ScenarioEngine
 {
 public:
 
-	ScenarioEngine(Catalogs &catalogs, Entities &entities, Init &init, std::vector<Story> &story, double startTime);
-
+	ScenarioEngine(std::string oscFilename, double startTime);
+		
+	void step(double deltaSimTime);
 	void initCars();
 	void initInit();
 	void printCars();
@@ -31,6 +34,9 @@ public:
 	void printSimulationTime();
 	void stepObjects(double dt);
 
+	std::string getSceneGraphFilename() { return roadNetwork.SceneGraph.filepath; }
+	std::string getOdrFilename() { return roadNetwork.Logics.filepath; }
+	roadmanager::OpenDrive *getOpenDrive() { return odrManager; }
 
 	ScenarioGateway & getScenarioGateway();
 
@@ -45,6 +51,10 @@ public:
 	Entities entities;
 	Init init;
 	std::vector<Story> story;
+	ScenarioReader scenarioReader;
+	RoadNetwork roadNetwork;
+	roadmanager::OpenDrive *odrManager;
+
 
 	// Simulation parameters
 	double startTime;
