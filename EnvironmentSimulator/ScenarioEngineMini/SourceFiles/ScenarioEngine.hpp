@@ -36,9 +36,9 @@ public:
 
 	std::string getSceneGraphFilename() { return roadNetwork.SceneGraph.filepath; }
 	std::string getOdrFilename() { return roadNetwork.Logics.filepath; }
-	roadmanager::OpenDrive *getOpenDrive() { return odrManager; }
+	roadmanager::OpenDrive *getRoadManager() { return odrManager; }
 
-	ScenarioGateway & getScenarioGateway();
+	ScenarioGateway *getScenarioGateway();
 
 	void initRoutes();
 	void initConditions();

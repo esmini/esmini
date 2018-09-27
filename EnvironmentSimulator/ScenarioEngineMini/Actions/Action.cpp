@@ -1,5 +1,8 @@
 #include "Action.hpp"
 
+#define SMALL_NUMBER (1E-6)
+#define DISTANCE_TOLERANCE (1)  // 1 meter
+#define IS_ZERO(x) (x < SMALL_NUMBER && x > -SMALL_NUMBER)
 
 Action::Action(OSCPrivateAction &privateAction, Cars &cars, std::vector<int> storyId, std::vector<std::string> &actionEntities)
 {
@@ -386,19 +389,35 @@ void Action::executeMeeting()
 	}
 	else
 	{
-
 		bool run = true;
 
-		double signRelative = (sign(carsPtr->getPosition(object).GetLaneId()));
-		double timeToRelativeTargetPosition = (signRelative * (-1)) * (relativeTargetPos.GetS() - carsPtr->getPosition(object).GetS()) / carsPtr->getSpeed(object);
-		
-		if (timeToRelativeTargetPosition==-INFINITY)
+		// Calculate straight distance, not along road/route. To be improved.
+		Car *pivotCar = carsPtr->getCarPtr(actionEntities[0]);
+		Car *targetCar = carsPtr->getCarPtr(object);
+
+		roadmanager::Position *pivotCarPos = pivotCar->getPositionPtr();
+		roadmanager::Position *targetCarPos = targetCar->getPositionPtr();
+
+		double pivotDist = pivotCarPos->getRelativeDistance(ownTargetPos);
+		double targetDist = targetCarPos->getRelativeDistance(relativeTargetPos);
+
+		double pivotTimeToDest = INFINITY;
+		double targetTimeToDest = INFINITY;
+		double targetDeltaTime = INFINITY;
+
+		if (targetCar->getSpeed() > SMALL_NUMBER)
 		{
-			timeToRelativeTargetPosition = INFINITY;
+			targetTimeToDest = targetDist / targetCar->getSpeed();
 		}
 
-		double signOwn = (sign(carsPtr->getPosition(actionEntities[0]).GetLaneId()));
-		double distToOwnTargetPosition = (signOwn * (-1)) * (ownTargetPos.GetS() - carsPtr->getPosition(actionEntities[0]).GetS());
+		double pivotSpeed = pivotDist / targetTimeToDest;
+
+#if 0
+		printf("pivot: Dist %.2f TTD %.2f Speed %.2f\n", 
+			pivotDist, pivotTimeToDest, pivotCar->getSpeed());
+		printf("target: Dist %.2f TTD %.2f Speed %.2f\n", 
+			targetDist, targetTimeToDest, targetCar->getSpeed());
+#endif
 
 		if (run)
 		{
@@ -407,15 +426,13 @@ void Action::executeMeeting()
 				run = false;
 			}
 
-			double speed = distToOwnTargetPosition / (timeToRelativeTargetPosition + offsetTime);
-			carsPtr->setSpeed(actionEntities[0], speed);
+			carsPtr->setSpeed(actionEntities[0], pivotSpeed);
 		}
 
-		if (timeToRelativeTargetPosition < 0 || distToOwnTargetPosition < 0)
+		if (pivotDist < DISTANCE_TOLERANCE || targetDist < DISTANCE_TOLERANCE)
 		{
 			actionCompleted = true;
 			startAction = false;
 		}
-
 	}
 }

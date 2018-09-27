@@ -8,11 +8,18 @@
 #include "viRDBIcd.h"
 
 
+enum GW_POS_TYPE
+{
+	GW_POS_TYPE_ROAD,
+	GW_POS_TYPE_XYH
+};
+
 struct ObjectStateStruct
 {
 	RDB_MSG_HDR_t header;
 	RDB_OBJECT_STATE_t obj_state;
 	RDB_ROAD_POS_t road_pos;
+	GW_POS_TYPE posType;
 };
 
 class ObjectState
@@ -37,10 +44,13 @@ public:
 	double getVelY() { return state_.obj_state.ext.speed.y; }
 	double getVelZ() { return state_.obj_state.ext.speed.z; }
 	
-	double getRoadId() { return state_.road_pos.roadId; }
-	double getLaneId() { return state_.road_pos.laneId; }
+	int getRoadId() { return state_.road_pos.roadId; }
+	int getLaneId() { return state_.road_pos.laneId; }
 	double getS() { return state_.road_pos.roadS; }
 	double getLaneOffset() { return state_.road_pos.laneOffset; }
+
+	bool getPosType() { return state_.posType; }
+	void Print();
 
 	ObjectStateStruct getStruct() { return state_; }
 
@@ -49,7 +59,7 @@ private:
 	void setName(std::string objectName);
 	void setTimeStamp(double timestamp) { state_.header.simTime = timestamp; }
 
-	void setPos(double x, double y, double h, double speed);
+	void setXYHPos(double x, double y, double h, double speed);
 	void setRoadPos(int roadId, int laneId, double s, double laneOffset, double speed);
 
 	void calculateRoadPos();
@@ -68,7 +78,9 @@ public:
 
 	void reportObject(ObjectState objectState);
 	int getNumberOfObjects() { return (int)objectState_.size(); }
-	ObjectStateStruct getObjectStateStruct(int idx) { return objectState_[idx].getStruct(); }
+	ObjectState *getObjectStatebyIdx(int idx) { return &objectState_[idx]; }
+	ObjectStateStruct *getObjectStateStruct(int idx) { return &objectState_[idx].getStruct(); }
+	ObjectState *getObjectStateById(int id);
 
 private:
 	std::vector<ObjectState> objectState_;

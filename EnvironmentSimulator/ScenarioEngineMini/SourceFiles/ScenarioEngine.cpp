@@ -8,7 +8,10 @@ ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
 	// Initialization
 
 	// Load and parse data
-	scenarioReader.loadXmlFile(oscFilename.c_str());
+	if (scenarioReader.loadOSCFile(oscFilename.c_str()) != 0)
+	{
+		throw std::invalid_argument("Failed to load OpenSCENARIO file\n");
+	}
 	scenarioReader.parseParameterDeclaration();
 	scenarioReader.parseRoadNetwork(roadNetwork);
 	scenarioReader.parseCatalogs(catalogs);
@@ -60,9 +63,9 @@ void ScenarioEngine::printSimulationTime()
 	std::cout << "ScenarioEngine: simulationTime = " << simulationTime << std::endl;
 }
 
-ScenarioGateway & ScenarioEngine::getScenarioGateway()
+ScenarioGateway *ScenarioEngine::getScenarioGateway()
 {
-	return scenarioGateway;
+	return &scenarioGateway;
 }
 
 void ScenarioEngine::initRoutes()
@@ -153,10 +156,6 @@ void ScenarioEngine::initCars()
 				}
 			}
 
-			if (car.getExtControlled())
-			{
-//				scenarioGateway.addExternalCar(car.getObjectId(), car.getObjectName());
-			}
 			cars.addCar(car);
 		}
 	}
@@ -173,7 +172,7 @@ void ScenarioEngine::printCars()
 
 void ScenarioEngine::stepObjects(double dt)
 {
-	cars.step(dt);
+	cars.step(dt, simulationTime);
 }
 
 

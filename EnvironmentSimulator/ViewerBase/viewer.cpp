@@ -615,6 +615,7 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 	{
 		viewer_->setKeyDown(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
 	}
+	break;
 	case(osgGA::GUIEventAdapter::KEY_Tab):
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{

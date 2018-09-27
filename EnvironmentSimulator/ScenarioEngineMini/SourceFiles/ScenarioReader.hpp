@@ -14,7 +14,7 @@ class ScenarioReader
 {
 public:
 	ScenarioReader();
-	void loadXmlFile(const char* path);
+	int loadOSCFile(const char * path);
 
 	// RoadNetwork
 	void parseRoadNetwork(RoadNetwork &roadNetwork);
