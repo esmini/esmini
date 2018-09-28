@@ -3,21 +3,25 @@
 
 ObjectState::ObjectState(int id, std::string name, double timestamp, double x, double y, double h, double speed)
 {
+	state_.posType = GW_POS_TYPE_XYH;
+
 	setId(id);
 	setName(name);
 	setTimeStamp(timestamp);
-	setPos(x, y, h, speed);
+	setXYHPos(x, y, h, speed);
 }
 
 ObjectState::ObjectState(int id, std::string name, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed)
 {
+	state_.posType = GW_POS_TYPE_ROAD;
+
 	setId(id);
 	setName(name);
 	setTimeStamp(timestamp);
 	setRoadPos(roadId, laneId, s, laneOffset, speed);
 }
 
-void ObjectState::setPos(double x, double y, double h, double speed)
+void ObjectState::setXYHPos(double x, double y, double h, double speed)
 {
 	state_.obj_state.base.pos.x = (float)x;
 	state_.obj_state.base.pos.y = (float)y;
@@ -30,7 +34,7 @@ void ObjectState::setPos(double x, double y, double h, double speed)
 	// Divide into X, Y components according to heading
 	setVelocity(speed);
 
-	calculateRoadPos();
+//	calculateRoadPos();  // As for now: Let user calculate it by means of roadmanager::Position class
 }
 
 void ObjectState::setRoadPos(int roadId, int laneId, double s, double laneOffset, double speed)
@@ -40,9 +44,10 @@ void ObjectState::setRoadPos(int roadId, int laneId, double s, double laneOffset
 	state_.road_pos.laneOffset = (float)laneOffset;
 	state_.road_pos.roadS = (float)laneOffset;
 
+	// Divide into X, Y components according to heading
 	setVelocity(speed);
 
-	calculateXYH();
+//	calculateXYH();  // As for now: Let user calculate it by means of roadmanager::Position class
 }
 
 void ObjectState::setVelocity(double speed)
@@ -81,9 +86,37 @@ void ObjectState::setName(std::string name)
 	strncpy_s(state_.obj_state.base.name, RDB_SIZE_OBJECT_NAME, name.c_str(), name.size());  // Accepted by VS/Windows
 }
 
+void ObjectState::Print()
+{
+	printf("state: \n\tid %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tvel (%.2f, %.2f, %.2f)\n",
+		state_.obj_state.base.id,
+		state_.header.simTime,
+		state_.obj_state.base.pos.x,
+		state_.obj_state.base.pos.y,
+		state_.obj_state.base.pos.h,
+		state_.obj_state.ext.speed.x,
+		state_.obj_state.ext.speed.y, 
+		state_.obj_state.ext.speed.z
+	);
+}
+
 // ScenarioGateway
 ScenarioGateway::ScenarioGateway()
 {
+}
+
+ObjectState *ScenarioGateway::getObjectStateById(int id)
+{
+	for (auto &o : objectState_)
+	{
+		if (o.getId() == id)
+		{
+			return &o;
+		}
+	}
+
+	// Indicate not found by returning NULL
+	return 0;
 }
 
 void ScenarioGateway::reportObject(ObjectState objectState)
@@ -98,8 +131,9 @@ void ScenarioGateway::reportObject(ObjectState objectState)
 			found = true;
 			
 			// Update state
-			printf("Updating %s state: (%d, %.2f)\n", o.getName().c_str(), o.getId(), o.getTimeStamp());
 			o = objectState;			
+			//printf("ScenarioGateway::reportObject Updating %s state: (%d, %.2f)\n", o.getName().c_str(), o.getId(), o.getTimeStamp());
+			//o.Print();
 			break;
 		}
 	}

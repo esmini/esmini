@@ -59,7 +59,7 @@ public:
 	void setFollowRoute(int objectId, bool followRoute);
 
 	// Step
-	void step(double dt);	
+	void step(double dt, double simulationTime);
 	void step(std::string objectName, double dt);
 	void step(int objectId, double dt);
 

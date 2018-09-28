@@ -1900,7 +1900,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 	double sNorm;
 	double sNormMin;
 	Geometry *geom;
-	Geometry *geomMin;
+	Geometry *geomMin = 0;
 	Road *road;
 	Road *roadMin;
 	bool inside = false;
@@ -2523,7 +2523,7 @@ double Position::getRelativeDistance(Position target_position)
 	diff_y0 = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
 
 	// Now just check whether diff vector X-component is less than 0 (behind current)
-	int sign = diff_x0 < 0 ? 1 : -1;
+	int sign = diff_x0 > 0 ? 1 : -1;
 
 	// Return length of dist vector
 	return sign * sqrt((diff_x0 * diff_x0) + (diff_y0 * diff_y0));

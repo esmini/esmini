@@ -42,13 +42,19 @@ std::string ScenarioReader::getParameter(std::string name)
 	return 0;
 }
 
-void ScenarioReader::loadXmlFile(const char * path)
+int ScenarioReader::loadOSCFile(const char * path)
 {
-	std::cout << "ScenarioReader: loadXmlFile started. Loading " << path << std::endl;
-
+	std::cout << "ScenarioReader: loadOSCFile started. Loading " << path << std::endl;
 
 	pugi::xml_parse_result result = doc.load_file(path);
-	std::cout << "ScenarioReader: loadXmlFile finished" << std::endl;
+	if (!result)
+	{
+		return -1;
+	}
+
+	std::cout << "ScenarioReader: loadOSCFile finished" << std::endl;
+
+	return 0;
 }
 
 void ScenarioReader::parseParameterDeclaration()
