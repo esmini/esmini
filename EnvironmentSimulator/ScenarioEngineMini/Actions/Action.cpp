@@ -1,7 +1,7 @@
 #include "Action.hpp"
 
 #define SMALL_NUMBER (1E-6)
-#define DISTANCE_TOLERANCE (1)  // 1 meter
+#define DISTANCE_TOLERANCE (0.5)  // meter
 #define IS_ZERO(x) (x < SMALL_NUMBER && x > -SMALL_NUMBER)
 
 Action::Action(OSCPrivateAction &privateAction, Cars &cars, std::vector<int> storyId, std::vector<std::string> &actionEntities)
@@ -401,7 +401,6 @@ void Action::executeMeeting()
 		double pivotDist = pivotCarPos->getRelativeDistance(ownTargetPos);
 		double targetDist = targetCarPos->getRelativeDistance(relativeTargetPos);
 
-		double pivotTimeToDest = INFINITY;
 		double targetTimeToDest = INFINITY;
 		double targetDeltaTime = INFINITY;
 
@@ -413,13 +412,16 @@ void Action::executeMeeting()
 		double pivotSpeed = pivotDist / targetTimeToDest;
 
 #if 0
-		printf("pivot: Dist %.2f TTD %.2f Speed %.2f\n", 
-			pivotDist, pivotTimeToDest, pivotCar->getSpeed());
-		printf("target: Dist %.2f TTD %.2f Speed %.2f\n", 
-			targetDist, targetTimeToDest, targetCar->getSpeed());
+		printf("pivot:  Dist %8.2f OldSpeed   %6.2f NewSpeed %6.2f\n", pivotDist, pivotCar->getSpeed(), pivotSpeed);
+		printf("target: Dist %8.2f TimeToDest %6.2f NewSpeed %6.2f\n", targetDist, targetTimeToDest, targetCar->getSpeed());
 #endif
 
-		if (run)
+		if (targetDist < DISTANCE_TOLERANCE)
+		{
+			actionCompleted = true;
+			startAction = false;
+		}
+		else if (run)
 		{
 			if (continuous == "false")
 			{
@@ -427,12 +429,6 @@ void Action::executeMeeting()
 			}
 
 			carsPtr->setSpeed(actionEntities[0], pivotSpeed);
-		}
-
-		if (pivotDist < DISTANCE_TOLERANCE || targetDist < DISTANCE_TOLERANCE)
-		{
-			actionCompleted = true;
-			startAction = false;
 		}
 	}
 }

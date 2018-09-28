@@ -10,7 +10,7 @@ ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
 	// Load and parse data
 	if (scenarioReader.loadOSCFile(oscFilename.c_str()) != 0)
 	{
-		throw std::invalid_argument("Failed to load OpenSCENARIO file\n");
+		throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
 	}
 	scenarioReader.parseParameterDeclaration();
 	scenarioReader.parseRoadNetwork(roadNetwork);

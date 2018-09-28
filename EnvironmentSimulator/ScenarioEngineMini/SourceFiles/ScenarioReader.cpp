@@ -49,7 +49,6 @@ int ScenarioReader::loadOSCFile(const char * path)
 	pugi::xml_parse_result result = doc.load_file(path);
 	if (!result)
 	{
-		printf("ScenarioReader::loadOSCFile %s Error: %s. If file is missing, check SharePoint/SharedDocuments/models\n", path, result.description());
 		return -1;
 	}
 

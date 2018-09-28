@@ -128,6 +128,7 @@ ScenarioCar *getScenarioCarById(int id)
 
 int main(int argc, char** argv)
 {
+	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;
 	roadmanager::Position *lane_pos = new roadmanager::Position();
 	roadmanager::Position *track_pos = new roadmanager::Position();
@@ -152,19 +153,27 @@ int main(int argc, char** argv)
 	arguments.read("--osc", oscFilename);
 
 	// Create scenario engine
-	ScenarioEngine scenarioEngine(oscFilename, simTime);
+	try
+	{
+		scenarioEngine = new ScenarioEngine(oscFilename, simTime);
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << e.what() << std::endl;
+		return -1;
+	}
 
-	// ScenarioGateway
-	scenarioGateway = scenarioEngine.getScenarioGateway();
+	// Fetch ScenarioGateway
+	scenarioGateway = scenarioEngine->getScenarioGateway();
 
 
 	try
 	{
-		roadmanager::OpenDrive *odrManager = scenarioEngine.getRoadManager();
+		roadmanager::OpenDrive *odrManager = scenarioEngine->getRoadManager();
 
 		viewer::Viewer *viewer = new viewer::Viewer(
 			odrManager, 
-			scenarioEngine.getSceneGraphFilename().c_str(),
+			scenarioEngine->getSceneGraphFilename().c_str(),
 			arguments);
 
 		SetupEgo(odrManager, viewer);
@@ -192,11 +201,11 @@ int main(int argc, char** argv)
 
 			// Time operations
 			simTime = simTime + deltaSimTime;
-			scenarioEngine.setSimulationTime(simTime);
-			scenarioEngine.setTimeStep(deltaSimTime);
+			scenarioEngine->setSimulationTime(simTime);
+			scenarioEngine->setTimeStep(deltaSimTime);
 
 			// ScenarioEngine
-			scenarioEngine.step(deltaSimTime);
+			scenarioEngine->step(deltaSimTime);
 
 			// Report updated Ego state to scenario gateway
 			scenarioGateway->reportObject(ObjectState(EGO_ID, std::string("Ego"), simTime, 
@@ -265,6 +274,7 @@ int main(int argc, char** argv)
 		return 3;
 	}
 
+	delete(scenarioEngine);
 	delete(egoCar);
 	delete track_pos;
 	delete lane_pos;
