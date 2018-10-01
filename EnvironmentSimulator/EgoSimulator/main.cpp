@@ -209,7 +209,9 @@ int main(int argc, char** argv)
 
 			// Report updated Ego state to scenario gateway
 			scenarioGateway->reportObject(ObjectState(EGO_ID, std::string("Ego"), simTime, 
-				egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->heading_, egoCar->vehicle->speed_));
+				egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_, 
+				egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0, 
+				egoCar->vehicle->speed_));
 
 			// Fetch states of scenario objects
 			for (int i = 0; i < scenarioGateway->getNumberOfObjects(); i++)

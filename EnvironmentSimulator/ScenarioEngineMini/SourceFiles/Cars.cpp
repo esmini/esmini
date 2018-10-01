@@ -213,7 +213,7 @@ void Cars::step(double dt, double simulationTime)
 				{
 					cars[i].getPositionPtr()->SetXYH(o->getPosX(), o->getPosY(), o->getRotH());
 				}
-
+					
 				// Calculate magnitude of speed
 				double speed = sqrt(o->getVelX() * o->getVelX() + o->getVelY() * o->getVelY());
 				
@@ -233,7 +233,7 @@ void Cars::step(double dt, double simulationTime)
 			c->step(dt);
 			
 			scenarioGateway->reportObject(ObjectState(c->getObjectId(), c->getObjectName(), simulationTime, 
-				pos->GetX(), pos->GetY(), pos->GetH(), c->getSpeed()));
+				pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH(), pos->GetP(), pos->GetR(), c->getSpeed()));
 		}
 	}
 }

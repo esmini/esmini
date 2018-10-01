@@ -22,7 +22,13 @@ class ScenarioEngine
 {
 public:
 
+	FILE *logfile;
+	Cars cars;
+
 	ScenarioEngine(std::string oscFilename, double startTime);
+	ScenarioEngine();
+
+	void InitScenario(std::string oscFilename, double startTime); // use with default constructor
 		
 	void step(double deltaSimTime);
 	void initCars();
@@ -33,6 +39,12 @@ public:
 	void setTimeStep(double timeStep);
 	void printSimulationTime();
 	void stepObjects(double dt);
+
+	void log(char *str) 
+	{ 
+//		fprintf(logfile, str); 
+//		fflush(logfile);
+	}
 
 	std::string getSceneGraphFilename() { return roadNetwork.SceneGraph.filepath; }
 	std::string getOdrFilename() { return roadNetwork.Logics.filepath; }
@@ -45,7 +57,7 @@ public:
 	void checkConditions();
 	void executeActions();
 	
-	//private:
+private:
 	// OpenSCENARIO parameters
 	Catalogs catalogs;
 	Entities entities;
@@ -64,9 +76,6 @@ public:
 	// 
 	Conditions conditions;
 	Actions actions;
-	Cars cars;
 	ScenarioGateway scenarioGateway;
-
-
 };
 

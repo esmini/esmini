@@ -1,14 +1,14 @@
 #include "ScenarioGateway.hpp"
 
 
-ObjectState::ObjectState(int id, std::string name, double timestamp, double x, double y, double h, double speed)
+ObjectState::ObjectState(int id, std::string name, double timestamp, double x, double y, double z, double h, double p, double r, double speed)
 {
 	state_.posType = GW_POS_TYPE_XYH;
 
 	setId(id);
 	setName(name);
 	setTimeStamp(timestamp);
-	setXYHPos(x, y, h, speed);
+	setPos(x, y, z, h, p, r, speed);
 }
 
 ObjectState::ObjectState(int id, std::string name, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed)
@@ -21,20 +21,18 @@ ObjectState::ObjectState(int id, std::string name, double timestamp, int roadId,
 	setRoadPos(roadId, laneId, s, laneOffset, speed);
 }
 
-void ObjectState::setXYHPos(double x, double y, double h, double speed)
+void ObjectState::setPos(double x, double y, double z, double h, double p, double r, double speed)
 {
 	state_.obj_state.base.pos.x = (float)x;
 	state_.obj_state.base.pos.y = (float)y;
-	state_.obj_state.base.pos.z = 0.0f;
+	state_.obj_state.base.pos.z = (float)z;
 	
 	state_.obj_state.base.pos.h = (float)h;
-	state_.obj_state.base.pos.p = 0.0f;
-	state_.obj_state.base.pos.r = 0.0f;
+	state_.obj_state.base.pos.p = (float)p;
+	state_.obj_state.base.pos.r = (float)r;
 
 	// Divide into X, Y components according to heading
 	setVelocity(speed);
-
-//	calculateRoadPos();  // As for now: Let user calculate it by means of roadmanager::Position class
 }
 
 void ObjectState::setRoadPos(int roadId, int laneId, double s, double laneOffset, double speed)
@@ -46,8 +44,6 @@ void ObjectState::setRoadPos(int roadId, int laneId, double s, double laneOffset
 
 	// Divide into X, Y components according to heading
 	setVelocity(speed);
-
-//	calculateXYH();  // As for now: Let user calculate it by means of roadmanager::Position class
 }
 
 void ObjectState::setVelocity(double speed)
@@ -56,28 +52,6 @@ void ObjectState::setVelocity(double speed)
 	state_.obj_state.ext.speed.x = (float)(speed * cos(state_.obj_state.base.pos.h));
 	state_.obj_state.ext.speed.y = (float)(speed * sin(state_.obj_state.base.pos.h));
 	state_.obj_state.ext.speed.z = 0.0f;
-}
-
-void ObjectState::calculateXYH()
-{
-	roadmanager::Position pos;
-
-	pos.SetLanePos(state_.road_pos.roadId, state_.road_pos.laneId, state_.road_pos.roadS, state_.road_pos.laneOffset);
-
-	state_.obj_state.base.pos.x = (float)pos.GetX();
-	state_.obj_state.base.pos.y = (float)pos.GetY();
-	state_.obj_state.base.pos.z = (float)pos.GetZ();
-}
-
-void ObjectState::calculateRoadPos()
-{
-	roadmanager::Position pos;
-
-	pos.SetXYH(state_.obj_state.base.pos.x, state_.obj_state.base.pos.y, state_.obj_state.base.pos.h);
-
-	state_.road_pos.roadId = pos.GetTrackId();
-	state_.road_pos.laneId = pos.GetLaneId();
-	state_.road_pos.pathS = (float)pos.GetS();
 }
 
 void ObjectState::setName(std::string name)
@@ -98,6 +72,24 @@ void ObjectState::Print()
 		state_.obj_state.ext.speed.y, 
 		state_.obj_state.ext.speed.z
 	);
+}
+
+double ObjectState::convertVelocityToSpeed(double vel_x, double vel_y, double rot_h)
+{
+	double speed;
+	
+	// Calculate magnitude of speed
+	speed = sqrt(vel_x * vel_x + vel_y * vel_y);
+
+	// Find out direction of speed, going forward or backwards? Compare with heading
+	double rotatedVelX = vel_x * cos(-rot_h) - vel_y * sin(-rot_h);
+	double rotatedVelY = vel_x * sin(-rot_h) + vel_y * cos(-rot_h);
+
+	int sign = rotatedVelX < 0 ? -1 : 1;
+
+	speed *= sign;
+
+	return speed; 
 }
 
 // ScenarioGateway

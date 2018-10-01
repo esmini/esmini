@@ -5,8 +5,11 @@ ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
 {
 	std::cout << "ScenarioEngine: New ScenarioEngine created" << std::endl;
 
-	// Initialization
+	InitScenario(oscFilename, startTime);
+}
 
+void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
+{
 	// Load and parse data
 	if (scenarioReader.loadOSCFile(oscFilename.c_str()) != 0)
 	{
@@ -39,10 +42,21 @@ ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
 	initCars();
 	initInit();
 	initConditions();
+
+//	fopen_s(&logfile, "c:/tmp/scenarioengine.log", "w"); // Open file for writing
+	if (logfile == 0)
+	{
+		printf("ScenarioEngine: Failed to open logfile!\n");
+	}
 }
 
 void ScenarioEngine::step(double deltaSimTime)
 {
+	if (entities.Object.size() == 0)
+	{
+		return;
+	}	
+	log("inside step 1\n");
 	stepObjects(deltaSimTime);
 	checkConditions();
 	executeActions();

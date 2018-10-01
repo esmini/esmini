@@ -226,7 +226,14 @@ void Action::executeSinusoidal(double simulationTime)
 		// Target entities
 		roadmanager::Position tObjectPosition = (*carsPtr).getPosition(targetObject);
 		roadmanager::Road *tObjectRoad = tObjectPosition.GetOpenDrive()->GetRoadById(tObjectPosition.GetTrackId());
-		tT = tObjectRoad->GetCenterOffset(tObjectPosition.GetS(), tObjectPosition.GetLaneId()) + targetValue;
+		if (laneChange)
+		{
+			tT = tObjectRoad->GetCenterOffset(tObjectPosition.GetS(), tObjectPosition.GetLaneId() + (int)targetValue);
+		}
+		else
+		{
+			tT = tObjectRoad->GetCenterOffset(tObjectPosition.GetS(), tObjectPosition.GetLaneId()) + targetValue;
+		}
 
 		// Action entities
 		aT.resize(actionEntities.size());

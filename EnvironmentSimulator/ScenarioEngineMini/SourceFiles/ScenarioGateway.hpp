@@ -1,5 +1,5 @@
 #pragma once
-#include "../../RoadManager/roadmanager.hpp"
+//#include "../../RoadManager/roadmanager.hpp"
 
 #include <iostream>
 #include <string>
@@ -25,7 +25,7 @@ struct ObjectStateStruct
 class ObjectState
 {
 public:
-	ObjectState(int id, std::string name, double timestamp, double x, double y, double h, double speed);
+	ObjectState(int id, std::string name, double timestamp, double x, double y, double z, double h, double p, double r, double speed);
 	ObjectState(int id, std::string name, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed);
 
 	int getId() { return state_.obj_state.base.id; }
@@ -52,6 +52,8 @@ public:
 	bool getPosType() { return state_.posType; }
 	void Print();
 
+	double convertVelocityToSpeed(double vel_x, double vel_y, double rot_h);
+
 	ObjectStateStruct getStruct() { return state_; }
 
 private:
@@ -59,11 +61,9 @@ private:
 	void setName(std::string objectName);
 	void setTimeStamp(double timestamp) { state_.header.simTime = timestamp; }
 
-	void setXYHPos(double x, double y, double h, double speed);
+	void setPos(double x, double y, double z, double h, double p, double r, double speed);
 	void setRoadPos(int roadId, int laneId, double s, double laneOffset, double speed);
 
-	void calculateRoadPos();
-	void calculateXYH();
 	void setVelocity(double speed);
 
 	ObjectStateStruct state_;
