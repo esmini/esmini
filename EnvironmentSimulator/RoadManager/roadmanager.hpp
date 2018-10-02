@@ -643,13 +643,13 @@ namespace roadmanager
 		Retrieve the track/road ID from the position object
 		@return track/road ID
 		*/
-		int GetTrackId() { return track_id_; }
+		int GetTrackId() const { return track_id_; }
 
 		/**
 		Retrieve the lane ID from the position object
 		@return lane ID
 		*/
-		int GetLaneId() { return lane_id_; }
+		int GetLaneId() const { return lane_id_; }
 
 		/**
 		Retrieve a road segment specified by road ID
@@ -660,47 +660,47 @@ namespace roadmanager
 		/**
 		Retrieve the s value (distance along the road segment)
 		*/
-		double GetS() { return s_; }
+		double GetS() const { return s_; }
 
 		/**
 		Retrieve the t value (lateral distance from reference lanem (id=0))
 		*/
-		double GetT() { return t_; }
+		double GetT() const { return t_; }
 
 		/**
 		Retrieve the offset from current lane
 		*/
-		double GetOffset() { return offset_; }
+		double GetOffset() const { return offset_; }
 
 		/**
 		Retrieve the world coordinate X-value
 		*/
-		double GetX() { return x_; }
+		double GetX() const { return x_; }
 
 		/**
 		Retrieve the world coordinate Y-value
 		*/
-		double GetY() { return y_; }
+		double GetY() const { return y_; }
 
 		/**
 		Retrieve the world coordinate Z-value
 		*/
-		double GetZ() { return z_; }
+		double GetZ() const { return z_; }
 
 		/**
 		Retrieve the world coordinate heading angle (radians)
 		*/
-		double GetH() { return h_; }
+		double GetH() const { return h_; }
 
 		/**
 		Retrieve the world coordinate pitch angle (radians)
 		*/
-		double GetP() { return p_; }
+		double GetP() const { return p_; }
 
 		/**
 		Retrieve the world coordinate roll angle (radians)
 		*/
-		double GetR() { return r_; }
+		double GetR() const { return r_; }
 
 		void PrintTrackPos();
 		void PrintLanePos();
