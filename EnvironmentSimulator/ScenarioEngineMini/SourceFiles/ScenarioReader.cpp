@@ -13,7 +13,7 @@ void ScenarioReader::addParameter(std::string name, std::string value)
 {
 	std::cout << "ScenarioReader: addParameter started" << std::endl;
 
-	std::cout << "ScenarioReader: " << name << " addeed to parameterDeclaration" << std::endl;
+	std::cout << "ScenarioReader: " << name << " = " << value << " addeed to parameterDeclaration" << std::endl;
 
 	parameterDeclaration.Parameter.resize(parameterDeclaration.Parameter.size() + 1);
 
@@ -75,7 +75,7 @@ void ScenarioReader::parseParameterDeclaration()
 		//std::cout << parameterTypeAttribute.name() << " = " << parameterTypeAttribute.value() << std::endl;
 		parameterDeclaration.Parameter.back().type = parameterTypeAttribute.value();
 
-		pugi::xml_attribute parameterValueAttribute = parameterDeclarationChild.attribute("default");
+		pugi::xml_attribute parameterValueAttribute = parameterDeclarationChild.attribute("value");
 		//std::cout << parameterValueAttribute.name() << " = " << parameterValueAttribute.value() << std::endl;
 		parameterDeclaration.Parameter.back().value = parameterValueAttribute.value();
 	}

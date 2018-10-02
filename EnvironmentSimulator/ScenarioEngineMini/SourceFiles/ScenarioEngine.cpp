@@ -50,7 +50,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 	}
 }
 
-void ScenarioEngine::step(double deltaSimTime)
+void ScenarioEngine::step(double deltaSimTime)	
 {
 	if (entities.Object.size() == 0)
 	{
