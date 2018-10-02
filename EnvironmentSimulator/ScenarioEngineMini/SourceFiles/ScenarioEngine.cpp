@@ -60,6 +60,20 @@ void ScenarioEngine::step(double deltaSimTime)
 	stepObjects(deltaSimTime);
 	checkConditions();
 	executeActions();
+
+	// Report states to the gateway
+	for (int i=0; i<cars.getNum(); i++)
+	{
+		Car *car = cars.getCarPtr(i);
+
+		if (!car->getExtControlled())
+		{
+			roadmanager::Position *pos = car->getPositionPtr();
+
+			scenarioGateway.reportObject(ObjectState(car->getObjectId(), car->getObjectName(), simulationTime,
+				pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH(), pos->GetP(), pos->GetR(), car->getSpeed()));
+		}
+	}
 }
 
 void ScenarioEngine::setTimeStep(double timeStep)

@@ -228,12 +228,8 @@ void Cars::step(double dt, double simulationTime)
 		}
 		else {
 			Car *c = &cars[i];
-			roadmanager::Position *pos = c->getPositionPtr();
 
 			c->step(dt);
-			
-			scenarioGateway->reportObject(ObjectState(c->getObjectId(), c->getObjectName(), simulationTime, 
-				pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH(), pos->GetP(), pos->GetR(), c->getSpeed()));
 		}
 	}
 }

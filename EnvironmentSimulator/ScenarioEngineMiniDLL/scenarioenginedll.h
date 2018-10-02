@@ -21,10 +21,10 @@ extern "C"
 		float speed;
 	};
 
-	int UNITY_DLL_API SE_Init(const char *oscFilename, float startTime);
+	int UNITY_DLL_API SE_Init(const char *oscFilename);
 	void UNITY_DLL_API SE_Close();
 	void UNITY_DLL_API SE_Step(float dt);
-	int UNITY_DLL_API SE_ReportObjectXYH(int id, char *name, float timestamp, float x, float y, float h, float speed);
+	int UNITY_DLL_API SE_ReportObjectPos(int id, char *name, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
 	int UNITY_DLL_API SE_ReportObjectRoadPos(int id, char *name, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
 	int UNITY_DLL_API SE_GetNumberOfObjects();
 	float UNITY_DLL_API SE_GetObjectX(int index);

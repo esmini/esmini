@@ -8,9 +8,9 @@ static double simTime;
 
 extern "C"
 {
-	int UNITY_DLL_API SE_Init(const char *oscFilename, float startTime)
+	int UNITY_DLL_API SE_Init(const char *oscFilename)
 	{
-		simTime = startTime;
+		simTime = 0; // Start time initialized to zero
 
 		if (scenarioEngine != 0)
 		{
@@ -43,17 +43,12 @@ extern "C"
 	void UNITY_DLL_API SE_Step(float dt)
 	{
 		// Time operations
-		scenarioEngine->log("step 1\n");
 		simTime += dt;
-		scenarioEngine->log("step 2\n");
 		scenarioEngine->setSimulationTime(simTime);
-		scenarioEngine->log("step 3\n");
 		scenarioEngine->setTimeStep(dt);
-		scenarioEngine->log("step 4\n");
 
 		// ScenarioEngine
 		scenarioEngine->step((double)dt);
-		scenarioEngine->log("step 5\n");
 	}
 
 	int UNITY_DLL_API SE_ReportObjectPos(int id, char *name, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
