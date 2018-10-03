@@ -506,7 +506,6 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 						else if (positionChildName == "LaneCoord")
 						{
 							position.Route.Position.LaneCoord.pathS = std::stod(ReadAttribute(positionChild.attribute("pathS")));
-
 							position.Route.Position.LaneCoord.laneId = std::stoi(ReadAttribute(positionChild.attribute("laneId")));
 
 							pugi::xml_attribute laneOffsetAttribute = positionChild.attribute("laneOffset");
@@ -827,9 +826,7 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 	std::cout << "ScenarioReader: parseOSCCondition started" << std::endl;
 
 	condition.name = ReadAttribute(conditionNode.attribute("name"));
-
 	condition.delay = std::stod(ReadAttribute(conditionNode.attribute("delay")));
-
 	condition.edge = ReadAttribute(conditionNode.attribute("edge"));
 
 	for (pugi::xml_node conditionChild = conditionNode.first_child(); conditionChild; conditionChild = conditionChild.next_sibling())
@@ -843,9 +840,7 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 
 				if (byEntityChildName == "TriggeringEntities")
 				{
-					pugi::xml_attribute triggeringEntitiesRuleAttribute = byEntityChild.attribute("rule");
-					//std::cout << triggeringEntitiesRuleAttribute.name() << " = " << triggeringEntitiesRuleAttribute.value() << std::endl;
-					condition.ByEntity.TriggeringEntities.rule = triggeringEntitiesRuleAttribute.value();
+					condition.ByEntity.TriggeringEntities.rule = ReadAttribute(byEntityChild.attribute("rule"));
 
 					for (pugi::xml_node triggeringEntitiesChild = byEntityChild.first_child(); triggeringEntitiesChild; triggeringEntitiesChild = triggeringEntitiesChild.next_sibling())
 					{
@@ -855,9 +850,7 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 						{
 							condition.ByEntity.TriggeringEntities.Entity.resize(condition.ByEntity.TriggeringEntities.Entity.size() + 1);
 
-							pugi::xml_attribute entityNameAttribute = triggeringEntitiesChild.attribute("name");
-							//std::cout << entityNameAttribute.name() << " = " << entityNameAttribute.value() << std::endl;
-							condition.ByEntity.TriggeringEntities.Entity.back().name = entityNameAttribute.value();
+							condition.ByEntity.TriggeringEntities.Entity.back().name = ReadAttribute(triggeringEntitiesChild.attribute("name"));
 						}
 
 					}
@@ -883,40 +876,11 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 						else if (entityConditionChildName == "TimeHeadway")
 						{
 
-							pugi::xml_attribute timeHeadwayEntityAttribute = entityConditionChild.attribute("entity");
-							//std::cout << timeHeadwayEntityAttribute.name() << " = " << timeHeadwayEntityAttribute.value() << std::endl;
-							if (timeHeadwayEntityAttribute.value()[0] == '$')
-							{
-								condition.ByEntity.EntityCondition.TimeHeadway.entity = getParameter(timeHeadwayEntityAttribute.value());
-							}
-							else
-							{
-								condition.ByEntity.EntityCondition.TimeHeadway.entity = timeHeadwayEntityAttribute.value();
-							}
-
-							pugi::xml_attribute timeHeadwayValueAttribute = entityConditionChild.attribute("value");
-							//std::cout << timeHeadwayValueAttribute.name() << " = " << timeHeadwayValueAttribute.value() << std::endl;
-							if (timeHeadwayValueAttribute.value()[0] == '$')
-							{
-								condition.ByEntity.EntityCondition.TimeHeadway.value = getParameter(timeHeadwayValueAttribute.value());
-							}
-							else
-							{
-								condition.ByEntity.EntityCondition.TimeHeadway.value = timeHeadwayValueAttribute.value();
-							}
-
-							pugi::xml_attribute timeHeadwayFreespaceAttribute = entityConditionChild.attribute("freespace");
-							//std::cout << timeHeadwayFreespaceAttribute.name() << " = " << timeHeadwayFreespaceAttribute.value() << std::endl;
-							condition.ByEntity.EntityCondition.TimeHeadway.freespace = timeHeadwayFreespaceAttribute.value();
-
-							pugi::xml_attribute timeHeadwayAlongRouteAttribute = entityConditionChild.attribute("alongRoute");
-							//std::cout << timeHeadwayAlongRouteAttribute.name() << " = " << timeHeadwayAlongRouteAttribute.value() << std::endl;
-							condition.ByEntity.EntityCondition.TimeHeadway.alongRoute = timeHeadwayAlongRouteAttribute.value();
-
-							pugi::xml_attribute timeHeadwayRuleAttribute = entityConditionChild.attribute("rule");
-							//std::cout << timeHeadwayRuleAttribute.name() << " = " << timeHeadwayRuleAttribute.value() << std::endl;
-							condition.ByEntity.EntityCondition.TimeHeadway.rule = timeHeadwayRuleAttribute.value();
-
+							condition.ByEntity.EntityCondition.TimeHeadway.entity = ReadAttribute(entityConditionChild.attribute("entity"));
+							condition.ByEntity.EntityCondition.TimeHeadway.value = ReadAttribute(entityConditionChild.attribute("value"));
+							condition.ByEntity.EntityCondition.TimeHeadway.freespace = ReadAttribute(entityConditionChild.attribute("freespace"));
+							condition.ByEntity.EntityCondition.TimeHeadway.alongRoute = ReadAttribute(entityConditionChild.attribute("alongRoute"));
+							condition.ByEntity.EntityCondition.TimeHeadway.rule = ReadAttribute(entityConditionChild.attribute("rule"));
 						}
 						else if (entityConditionChildName == "TimeToCollision")
 						{
@@ -970,11 +934,8 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 				}
 				else if (byStateChildName == "AfterTermination")
 				{
-					pugi::xml_attribute afterTerminationTypeAttribute = byStateChild.attribute("type");
-					condition.ByState.AfterTermination.type = afterTerminationTypeAttribute.value();
-
-					pugi::xml_attribute afterTerminationNameAttribute = byStateChild.attribute("name");
-					condition.ByState.AfterTermination.name = afterTerminationNameAttribute.value();
+					condition.ByState.AfterTermination.type = ReadAttribute(byStateChild.attribute("type"));
+					condition.ByState.AfterTermination.name = ReadAttribute(byStateChild.attribute("name"));
 				}
 				else if (byStateChildName == "Command")
 				{
@@ -1005,12 +966,8 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 				}
 				else if (byValueChildName == "SimulationTime")
 				{
-					pugi::xml_attribute simulationTimeValueAttribute = byValueChild.attribute("value");
-					condition.ByValue.SimulationTime.value = std::stod(simulationTimeValueAttribute.value());
-
-					pugi::xml_attribute simulationTimeRuleAttribute = byValueChild.attribute("rule");
-					condition.ByValue.SimulationTime.rule = simulationTimeRuleAttribute.value();
-
+					condition.ByValue.SimulationTime.value = std::stod(ReadAttribute(byValueChild.attribute("value")));
+					condition.ByValue.SimulationTime.rule = ReadAttribute(byValueChild.attribute("rule"));
 				}
 			}
 		}
@@ -1038,9 +995,7 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver &maneuver, pugi::xml_node mane
 {
 	std::cout << "ScenarioReader: parseOSCManeuver started" << std::endl;
 
-	pugi::xml_attribute maneuverNodeNameAttribute = maneuverNode.attribute("name");
-	//std::cout << maneuverNodeNameAttribute.name() << " = " << maneuverNodeNameAttribute.value() << std::endl;
-	maneuver.name = maneuverNodeNameAttribute.value();
+	maneuver.name = ReadAttribute(maneuverNode.attribute("name"));
 
 	for (pugi::xml_node maneuverChild = maneuverNode.first_child(); maneuverChild; maneuverChild = maneuverChild.next_sibling())
 	{
@@ -1054,13 +1009,8 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver &maneuver, pugi::xml_node mane
 		{
 			maneuver.Event.resize(maneuver.Event.size() + 1);
 
-			pugi::xml_attribute eventNameAttribute = maneuverChild.attribute("name");
-			//std::cout << eventNameAttribute.name() << " = " << eventNameAttribute.value() << std::endl;
-			maneuver.Event.back().name = eventNameAttribute.value();
-
-			pugi::xml_attribute eventPriorityAttribute = maneuverChild.attribute("priority");
-			//std::cout << eventPriorityAttribute.name() << " = " << eventPriorityAttribute.value() << std::endl;
-			maneuver.Event.back().priority = eventPriorityAttribute.value();
+			maneuver.Event.back().name = ReadAttribute(maneuverChild.attribute("name"));
+			maneuver.Event.back().priority = ReadAttribute(maneuverChild.attribute("priority"));
 
 			for (pugi::xml_node eventChild = maneuverChild.first_child(); eventChild; eventChild = eventChild.next_sibling())
 			{
@@ -1069,10 +1019,7 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver &maneuver, pugi::xml_node mane
 				if (eventChildName == "Action")
 				{
 					maneuver.Event.back().Action.resize(maneuver.Event.back().Action.size() + 1);
-
-					pugi::xml_attribute actionNameAttribute = eventChild.attribute("name");
-					//std::cout << actionNameAttribute.name() << " = " << actionNameAttribute.value() << std::endl;
-					maneuver.Event.back().Action.back().name = actionNameAttribute.value();
+					maneuver.Event.back().Action.back().name = ReadAttribute(eventChild.attribute("name"));
 
 					for (pugi::xml_node actionChild = eventChild.first_child(); actionChild; actionChild = actionChild.next_sibling())
 					{
@@ -1123,22 +1070,16 @@ void ScenarioReader::parseStory(std::vector<Story> &storyVector)
 		{
 			storyVector.resize(storyVector.size() + 1);
 
-			pugi::xml_attribute storyNodeOwnerAttribute = storyNode.attribute("owner");
-			//std::cout << storyNodeOwnerAttribute.name() << " = " << storyNodeOwnerAttribute.value() << std::endl;
-			addParameter("$owner", storyNodeOwnerAttribute.value());
-			storyVector.back().owner = storyNodeOwnerAttribute.value();
+			addParameter("$owner", ReadAttribute(storyNode.attribute("owner")));
+			storyVector.back().owner = ReadAttribute(storyNode.attribute("owner"));
 
-			pugi::xml_attribute storyNodeNameAttribute = storyNode.attribute("name");
-			//std::cout << storyNodeNameAttribute.name() << " = " << storyNodeNameAttribute.value() << std::endl;
-			storyVector.back().name = storyNodeNameAttribute.value();
+			storyVector.back().name = ReadAttribute(storyNode.attribute("name"));
 
 			for (pugi::xml_node storyChild = storyNode.first_child(); storyChild; storyChild = storyChild.next_sibling())
 			{
 				storyVector.back().Act.resize(storyVector.back().Act.size() + 1);
 
-				pugi::xml_attribute actNameAttribute = storyChild.attribute("name");
-				//std::cout << actNameAttribute.name() << " = " << actNameAttribute.value() << std::endl;
-				storyVector.back().Act.back().name = actNameAttribute.value();
+				storyVector.back().Act.back().name = ReadAttribute(storyChild.attribute("name"));
 
 				for (pugi::xml_node actChild = storyChild.first_child(); actChild; actChild = actChild.next_sibling())
 				{
@@ -1149,13 +1090,8 @@ void ScenarioReader::parseStory(std::vector<Story> &storyVector)
 					{
 						storyVector.back().Act.back().Sequence.resize(storyVector.back().Act.back().Sequence.size() + 1);
 
-						pugi::xml_attribute sequenceNumberAttribute = actChild.attribute("numberOfExecutions");
-						//std::cout << sequenceNumberAttribute.name() << " = " << sequenceNumberAttribute.value() << std::endl;
-						storyVector.back().Act.back().Sequence.back().numberOfExecutions = std::stoi(sequenceNumberAttribute.value());
-
-						pugi::xml_attribute sequenceNameAttribute = actChild.attribute("name");
-						//std::cout << sequenceNameAttribute.name() << " = " << sequenceNameAttribute.value() << std::endl;
-						storyVector.back().Act.back().Sequence.back().name = sequenceNameAttribute.value();
+						storyVector.back().Act.back().Sequence.back().numberOfExecutions = std::stoi(ReadAttribute(actChild.attribute("numberOfExecutions")));
+						storyVector.back().Act.back().Sequence.back().name = ReadAttribute(actChild.attribute("name"));
 
 						for (pugi::xml_node sequenceChild = actChild.first_child(); sequenceChild; sequenceChild = sequenceChild.next_sibling())
 						{
