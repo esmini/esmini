@@ -44,17 +44,26 @@ int main(int argc, char *argv[])
 	std::string oscFilename;
 	arguments.read("--osc", oscFilename);
 
+	ScenarioEngine *scenarioEngine;
 	// Create scenario engine
-	ScenarioEngine scenarioEngine(oscFilename, simulationTime);
+	try 
+	{ 
+		scenarioEngine = new ScenarioEngine(oscFilename, simulationTime);
+	}
+	catch (std::logic_error &e)
+	{
+		printf("%s\n", e.what());
+		return -1;
+	}
 
 	// Create viewer
-	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine.getSceneGraphFilename().c_str(), arguments);
+	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), arguments);
 
 	// ScenarioGateway
-	ScenarioGateway *scenarioGateway = scenarioEngine.getScenarioGateway();
+	ScenarioGateway *scenarioGateway = scenarioEngine->getScenarioGateway();
 
 	//  Create cars for visualization
-	for (int i = 0; i < scenarioEngine.cars.getNum(); i++)
+	for (int i = 0; i < scenarioEngine->cars.getNum(); i++)
 	{
 		int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (std::mt19937::max)();
 		viewer->AddCar(carModelID);
@@ -82,17 +91,17 @@ int main(int argc, char *argv[])
 
 		// Time operations
 		simTime = simTime + deltaSimTime;
-		scenarioEngine.setSimulationTime(simTime);
-		scenarioEngine.setTimeStep(deltaSimTime);
+		scenarioEngine->setSimulationTime(simTime);
+		scenarioEngine->setTimeStep(deltaSimTime);
 
 		// ScenarioEngine
-		scenarioEngine.step(deltaSimTime);
+		scenarioEngine->step(deltaSimTime);
 
 		// Visualize cars
-		for (int i = 0; i<scenarioEngine.cars.getNum(); i++)
+		for (int i = 0; i<scenarioEngine->cars.getNum(); i++)
 		{
 			viewer::CarModel *car = viewer->cars_[i];
-			roadmanager::Position pos = scenarioEngine.cars.getPosition(i);
+			roadmanager::Position pos = scenarioEngine->cars.getPosition(i);
 
 			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
 			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
@@ -101,7 +110,10 @@ int main(int argc, char *argv[])
 		viewer->osgViewer_->frame();
 	}
 
-	return 1;
+	delete scenarioEngine;
+	delete viewer;
+
+	return 0;
 }
 
 

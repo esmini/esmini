@@ -25,7 +25,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 	// Init road manager
 	if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
 	{
-		printf("Failed to load ODR %s\n", getOdrFilename().c_str());
+		throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + getOdrFilename().c_str());
 	}
 	odrManager = roadmanager::Position::GetOpenDrive();
 

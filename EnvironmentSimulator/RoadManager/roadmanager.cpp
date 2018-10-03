@@ -968,8 +968,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename)
     pugi::xml_parse_result result = doc.load_file(filename);
 	if (!result)
 	{
-		printf("OpenDrive::LoadOpenDriveFile %s Error: %s. If file is missing, check SharePoint/SharedDocuments/models\n", filename, result.description());
-//		throw std::invalid_argument("Failed read OpenDRIVE XML");
+		throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + filename);
+
 		return false;
 	}
 

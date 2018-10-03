@@ -13,13 +13,13 @@ void ScenarioReader::addParameter(std::string name, std::string value)
 {
 	std::cout << "ScenarioReader: addParameter started" << std::endl;
 
-	std::cout << "ScenarioReader: " << name << " = " << value << " addeed to parameterDeclaration" << std::endl;
-
 	parameterDeclaration.Parameter.resize(parameterDeclaration.Parameter.size() + 1);
 
 	parameterDeclaration.Parameter.back().name = name;
 	parameterDeclaration.Parameter.back().type = "string";
 	parameterDeclaration.Parameter.back().value = value;
+
+	std::cout << "ScenarioReader: " << name << " = " << value << " addeed to parameterDeclaration" << std::endl;
 
 	std::cout << "ScenarioReader: addParameter finished" << std::endl;
 }
@@ -40,6 +40,25 @@ std::string ScenarioReader::getParameter(std::string name)
 
 	std::cout << "ScenarioReader: getParameter finished" << std::endl;
 	return 0;
+}
+
+std::string ScenarioReader::ReadAttribute(pugi::xml_attribute attribute)
+{
+	if (attribute == 0)
+	{
+		printf("ReadAttribute: NULL\n");
+		return "";
+	}
+
+	if (attribute.value()[0] == '$')
+	{
+		// Resolve variable
+		return getParameter(attribute.value());
+	}
+	else
+	{
+		return attribute.value();
+	}
 }
 
 int ScenarioReader::loadOSCFile(const char * path)
@@ -67,17 +86,9 @@ void ScenarioReader::parseParameterDeclaration()
 	{
 		parameterDeclaration.Parameter.resize(parameterDeclaration.Parameter.size() + 1);
 
-		pugi::xml_attribute parameterNameAttribute = parameterDeclarationChild.attribute("name");
-		//std::cout << parameterNameAttribute.name() << " = " << parameterNameAttribute.value() << std::endl;
-		parameterDeclaration.Parameter.back().name = parameterNameAttribute.value();
-
-		pugi::xml_attribute parameterTypeAttribute = parameterDeclarationChild.attribute("type");
-		//std::cout << parameterTypeAttribute.name() << " = " << parameterTypeAttribute.value() << std::endl;
-		parameterDeclaration.Parameter.back().type = parameterTypeAttribute.value();
-
-		pugi::xml_attribute parameterValueAttribute = parameterDeclarationChild.attribute("value");
-		//std::cout << parameterValueAttribute.name() << " = " << parameterValueAttribute.value() << std::endl;
-		parameterDeclaration.Parameter.back().value = parameterValueAttribute.value();
+		parameterDeclaration.Parameter.back().name = parameterDeclarationChild.attribute("name").value();
+		parameterDeclaration.Parameter.back().type = parameterDeclarationChild.attribute("type").value();
+		parameterDeclaration.Parameter.back().value = parameterDeclarationChild.attribute("value").value();
 	}
 	std::cout << "ScenarioReader: parseParameterDeclaration finished" << std::endl;
 }
@@ -109,13 +120,8 @@ void ScenarioReader::parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode)
 {
 	std::cout << "ScenarioReader: parseOSCRoute started" << std::endl;
 
-	pugi::xml_attribute routeNameAttribute = routeNode.attribute("name");
-	//std::cout << routeNameAttribute.name() << " = " << routeNameAttribute.value() << std::endl;
-	route.name = routeNameAttribute.value();
-
-	pugi::xml_attribute routeClosedAttribute = routeNode.attribute("closed");
-	//std::cout << routeClosedAttribute.name() << " = " << routeClosedAttribute.value() << std::endl;
-	route.closed = routeNameAttribute.value();
+	route.name = ReadAttribute(routeNode.attribute("name"));
+	route.closed = ReadAttribute(routeNode.attribute("closed"));
 
 	for (pugi::xml_node routeChild = routeNode.first_child(); routeChild; routeChild = routeChild.next_sibling())
 	{
@@ -130,9 +136,7 @@ void ScenarioReader::parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode)
 		{
 			route.Waypoint.resize(route.Waypoint.size() + 1);
 
-			pugi::xml_attribute strategyAttribute = routeChild.attribute("strategy");
-			//std::cout << strategyAttribute.name() << " = " << strategyAttribute.value() << std::endl;
-			route.Waypoint.back().strategy = strategyAttribute.value();
+			route.Waypoint.back().strategy = ReadAttribute(routeChild.attribute("strategy"));
 
 			route.Waypoint.back().Position = new OSCPosition;
 
@@ -164,15 +168,11 @@ void ScenarioReader::parseCatalogs(Catalogs &catalogs)
 		}
 		else if (catalogsChildName == "VehicleCatalog")
 		{
-			pugi::xml_attribute vehicleCatalogDirectoryAttribute = catalogsChild.child("Directory").attribute("path");
-			//std::cout << vehicleCatalogDirectoryAttribute.name() << " = " << vehicleCatalogDirectoryAttribute.value() << std::endl;
-			catalogs.VehicleCatalog.Directory.path = vehicleCatalogDirectoryAttribute.value();
+			catalogs.VehicleCatalog.Directory.path = ReadAttribute(catalogsChild.child("Directory").attribute("path"));
 		}
 		else if (catalogsChildName == "DriverCatalog")
 		{
-			pugi::xml_attribute driverCatalogDirectoryAttribute = catalogsChild.child("Directory").attribute("path");
-			//std::cout << driverCatalogDirectoryAttribute.name() << " = " << driverCatalogDirectoryAttribute.value() << std::endl;
-			catalogs.DriverCatalog.Directory.path = driverCatalogDirectoryAttribute.value();
+			catalogs.DriverCatalog.Directory.path = ReadAttribute(catalogsChild.child("Directory").attribute("path"));
 		}
 	}
 
@@ -183,9 +183,7 @@ void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 {
 	std::cout << "ScenarioReader: parseOSCFile started" << std::endl;
 
-	pugi::xml_attribute filepathAttribute = fileNode.attribute("filepath");
-	//std::cout << filepathAttribute.name() << " = " << filepathAttribute.value() << std::endl;
-	file.filepath = filepathAttribute.value();
+	file.filepath = ReadAttribute(fileNode.attribute("filepath"));
 
 	std::cout << "ScenarioReader: parseOSCFile finished" << std::endl;
 }
@@ -200,31 +198,15 @@ void ScenarioReader::parseOSCBoundingBox(OSCBoundingBox &boundingBox, pugi::xml_
 
 		if (boundingBoxChildName == "Center")
 		{
-			pugi::xml_attribute boundingBoxXAttribute = boundingBoxChild.attribute("x");
-			//std::cout << boundingBoxXAttribute.name() << " = " << boundingBoxXAttribute.value() << std::endl;
-			boundingBox.center.x = std::stod(boundingBoxXAttribute.value());
-
-			pugi::xml_attribute boundingBoxYAttribute = boundingBoxChild.attribute("y");
-			//std::cout << boundingBoxYAttribute.name() << " = " << boundingBoxYAttribute.value() << std::endl;
-			boundingBox.center.y = std::stod(boundingBoxYAttribute.value());
-
-			pugi::xml_attribute boundingBoxZAttribute = boundingBoxChild.attribute("z");
-			//std::cout << boundingBoxZAttribute.name() << " = " << boundingBoxZAttribute.value() << std::endl;
-			boundingBox.center.z = std::stod(boundingBoxZAttribute.value());
+			boundingBox.center.x = std::stod(ReadAttribute(boundingBoxChild.attribute("x")));
+			boundingBox.center.y = std::stod(ReadAttribute(boundingBoxChild.attribute("y")));
+			boundingBox.center.z = std::stod(ReadAttribute(boundingBoxChild.attribute("z")));
 		}
 		if (boundingBoxChildName == "Dimension")
 		{
-			pugi::xml_attribute boundingBoxWidthAttribute = boundingBoxChild.attribute("width");
-			//std::cout << boundingBoxWidthAttribute.name() << " = " << boundingBoxWidthAttribute.value() << std::endl;
-			boundingBox.dimension.width = std::stod(boundingBoxWidthAttribute.value());
-
-			pugi::xml_attribute boundingBoxLengthAttribute = boundingBoxChild.attribute("length");
-			//std::cout << boundingBoxLengthAttribute.name() << " = " << boundingBoxLengthAttribute.value() << std::endl;
-			boundingBox.dimension.length = std::stod(boundingBoxLengthAttribute.value());
-
-			pugi::xml_attribute boundingBoxHeightAttribute = boundingBoxChild.attribute("height");
-			//std::cout << boundingBoxHeightAttribute.name() << " = " << boundingBoxHeightAttribute.value() << std::endl;
-			boundingBox.dimension.height = std::stod(boundingBoxHeightAttribute.value());
+			boundingBox.dimension.width = std::stod(ReadAttribute(boundingBoxChild.attribute("width")));
+			boundingBox.dimension.length = std::stod(ReadAttribute(boundingBoxChild.attribute("length")));
+			boundingBox.dimension.height = std::stod(ReadAttribute(boundingBoxChild.attribute("height")));
 
 		}
 	}
@@ -241,25 +223,11 @@ void ScenarioReader::parseOSCPersonDescription(OSCPersonDescription &personDescr
 		std::cout << "Properties" << " is not implemented " << std::endl;
 	}
 
-	pugi::xml_attribute descriptionWeightAttribute = descriptionNode.attribute("weight");
-	//std::cout << descriptionWeightAttribute.name() << " = " << descriptionWeightAttribute.value() << std::endl;
-	personDescription.weight = std::stod(descriptionWeightAttribute.value());
-
-	pugi::xml_attribute descriptionHeightAttribute = descriptionNode.attribute("height");
-	//std::cout << descriptionHeightAttribute.name() << " = " << descriptionHeightAttribute.value() << std::endl;
-	personDescription.height = std::stod(descriptionHeightAttribute.value());
-
-	pugi::xml_attribute descriptionEyeDistanceAttribute = descriptionNode.attribute("eyeDistance");
-	//std::cout << descriptionEyeDistanceAttribute.name() << " = " << descriptionEyeDistanceAttribute.value() << std::endl;
-	personDescription.eyeDistance = std::stod(descriptionEyeDistanceAttribute.value());
-
-	pugi::xml_attribute descriptionAgeAttribute = descriptionNode.attribute("age");
-	//std::cout << descriptionAgeAttribute.name() << " = " << descriptionAgeAttribute.value() << std::endl;
-	personDescription.age = std::stod(descriptionAgeAttribute.value());
-
-	pugi::xml_attribute descriptionSexAttribute = descriptionNode.attribute("sex");
-	//std::cout << descriptionSexAttribute.name() << " = " << descriptionSexAttribute.value() << std::endl;
-	personDescription.sex = descriptionSexAttribute.value();
+	personDescription.weight = std::stod(ReadAttribute(descriptionNode.attribute("weight")));
+	personDescription.height = std::stod(ReadAttribute(descriptionNode.attribute("height")));
+	personDescription.eyeDistance = std::stod(ReadAttribute(descriptionNode.attribute("eyeDistance")));
+	personDescription.age = std::stod(ReadAttribute(descriptionNode.attribute("age")));
+	personDescription.sex = ReadAttribute(descriptionNode.attribute("sex"));
 
 	std::cout << "ScenarioReader: parseOSCPersonDescription finshed" << std::endl;
 }
@@ -269,26 +237,11 @@ void ScenarioReader::parseOSCPersonDescription(OSCPersonDescription &personDescr
 void ScenarioReader::parseOSCAxle(OSCAxle &axle, pugi::xml_node axleNode)
 {
 	std::cout << "ScenarioReader: parseOSCAxle started" << std::endl;
-
-	pugi::xml_attribute axleMaxSteeringAttribute = axleNode.attribute("maxSteering");
-	//std::cout << axleMaxSteeringAttribute.name() << " = " << axleMaxSteeringAttribute.value() << std::endl;
-	axle.maxSteering = std::stod(axleMaxSteeringAttribute.value());
-
-	pugi::xml_attribute axleWheelDiameterAttribute = axleNode.attribute("wheelDiameter");
-	//std::cout << axleWheelDiameterAttribute.name() << " = " << axleWheelDiameterAttribute.value() << std::endl;
-	axle.wheelDiameter = std::stod(axleWheelDiameterAttribute.value());
-
-	pugi::xml_attribute axleTrackWidthAttribute = axleNode.attribute("trackWidth");
-	//std::cout << axleTrackWidthAttribute.name() << " = " << axleTrackWidthAttribute.value() << std::endl;
-	axle.trackWidth = std::stod(axleTrackWidthAttribute.value());
-
-	pugi::xml_attribute axlePositionXAttribute = axleNode.attribute("positionX");
-	//std::cout << axlePositionXAttribute.name() << " = " << axlePositionXAttribute.value() << std::endl;
-	axle.positionX = std::stod(axlePositionXAttribute.value());
-
-	pugi::xml_attribute axleMPositionZAttribute = axleNode.attribute("positionZ");
-	//std::cout << axleMPositionZAttribute.name() << " = " << axleMPositionZAttribute.value() << std::endl;
-	axle.positionZ = std::stod(axleMPositionZAttribute.value());
+	axle.maxSteering = std::stod(ReadAttribute(axleNode.attribute("maxSteering")));
+	axle.wheelDiameter = std::stod(ReadAttribute(axleNode.attribute("wheelDiameter")));
+	axle.trackWidth = std::stod(ReadAttribute(axleNode.attribute("trackWidth")));
+	axle.positionX = std::stod(ReadAttribute(axleNode.attribute("positionX")));
+	axle.positionZ = std::stod(ReadAttribute(axleNode.attribute("positionZ")));
 
 	std::cout << "ScenarioReader: parseOSCAxle finshed" << std::endl;
 }
@@ -298,9 +251,7 @@ void ScenarioReader::parseOSCDriver(OSCDriver &driver, pugi::xml_node driverNode
 {
 	std::cout << "ScenarioReader: parseOSCDriver started" << std::endl;
 
-	pugi::xml_attribute driverNameAttribute = driverNode.attribute("name");
-	//std::cout << driverNameAttribute.name() << " = " << driverNameAttribute.value() << std::endl;
-	driver.name = driverNameAttribute.value();
+	driver.name = ReadAttribute(driverNode.attribute("name"));
 
 	for (pugi::xml_node driverChild = driverNode.first_child(); driverChild; driverChild = driverChild.next_sibling())
 	{
@@ -324,14 +275,8 @@ void ScenarioReader::parseOSCVehicle(OSCVehicle &vehicle, pugi::xml_node vehicle
 {
 	std::cout << "ScenarioReader: parseOSCVehicle started" << std::endl;
 
-	pugi::xml_attribute vehicleNameAttribute = vehicleNode.attribute("name");
-	//std::cout << vehicleNameAttribute.name() << " = " << vehicleNameAttribute.value() << std::endl;
-	vehicle.name = vehicleNameAttribute.value();
-
-	pugi::xml_attribute vehicleCategoryAttribute = vehicleNode.attribute("category");
-	//std::cout << vehicleCategoryAttribute.name() << " = " << vehicleCategoryAttribute.value() << std::endl;
-	vehicle.category = vehicleCategoryAttribute.value();
-
+	vehicle.name = ReadAttribute(vehicleNode.attribute("name"));
+	vehicle.category = ReadAttribute(vehicleNode.attribute("category"));
 
 	for (pugi::xml_node vehicleChild = vehicleNode.first_child(); vehicleChild; vehicleChild = vehicleChild.next_sibling())
 	{
@@ -347,17 +292,9 @@ void ScenarioReader::parseOSCVehicle(OSCVehicle &vehicle, pugi::xml_node vehicle
 		}
 		else if (vehicleChildName == "Performance")
 		{
-			pugi::xml_attribute performanceMaxSpeedAttribute = vehicleChild.attribute("maxSpeed");
-			//std::cout << performanceMaxSpeedAttribute.name() << " = " << performanceMaxSpeedAttribute.value() << std::endl;
-			vehicle.Performance.maxSpeed = std::stod(performanceMaxSpeedAttribute.value());
-
-			pugi::xml_attribute performanceMaxDecelerationAttribute = vehicleChild.attribute("maxDeceleration");
-			//std::cout << performanceMaxDecelerationAttribute.name() << " = " << performanceMaxDecelerationAttribute.value() << std::endl;
-			vehicle.Performance.maxDeceleration = std::stod(performanceMaxDecelerationAttribute.value());
-
-			pugi::xml_attribute performanceMassAttribute = vehicleChild.attribute("mass");
-			//std::cout << performanceMassAttribute.name() << " = " << performanceMassAttribute.value() << std::endl;
-			vehicle.Performance.mass = std::stod(performanceMassAttribute.value());
+			vehicle.Performance.maxSpeed = std::stod(ReadAttribute(vehicleChild.attribute("maxSpeed")));
+			vehicle.Performance.maxDeceleration = std::stod(ReadAttribute(vehicleChild.attribute("maxDeceleration")));
+			vehicle.Performance.mass = std::stod(ReadAttribute(vehicleChild.attribute("mass")));
 		}
 		else if (vehicleChildName == "Axles")
 		{
@@ -393,13 +330,8 @@ void ScenarioReader::parseOSCVehicle(OSCVehicle &vehicle, pugi::xml_node vehicle
 void ScenarioReader::parseOSCCatalogReference(OSCCatalogReference &catalogReference, pugi::xml_node catalogReferenceNode)
 {
 
-	pugi::xml_attribute catalogNameAttribute = catalogReferenceNode.attribute("catalogName");
-	//std::cout << catalogNameAttribute.name() << " = " << catalogNameAttribute.value() << std::endl;
-	catalogReference.catalogName = catalogNameAttribute.value();
-
-	pugi::xml_attribute entryNameAttribute = catalogReferenceNode.attribute("entryName");
-	//std::cout << entryNameAttribute.name() << " = " << entryNameAttribute.value() << std::endl;
-	catalogReference.entryName = entryNameAttribute.value();
+	catalogReference.catalogName = ReadAttribute(catalogReferenceNode.attribute("catalogName"));
+	catalogReference.entryName = ReadAttribute(catalogReferenceNode.attribute("entryName"));
 
 	pugi::xml_node catalogReferenceChild = catalogReferenceNode.first_child();
 	std::string catalogReferenceChildName(catalogReferenceChild.name());
@@ -420,9 +352,7 @@ void ScenarioReader::parseEntities(Entities &entities)
 	{
 		entities.Object.resize(entities.Object.size() + 1);
 
-		pugi::xml_attribute objectNameAttribute = entitiesChild.attribute("name");
-		//std::cout << objectNameAttribute.name() << " = " << objectNameAttribute.value() << std::endl;
-		entities.Object.back().name = objectNameAttribute.value();
+		entities.Object.back().name = ReadAttribute(entitiesChild.attribute("name"));
 
 		for (pugi::xml_node objectChild = entitiesChild.first_child(); objectChild; objectChild = objectChild.next_sibling())
 		{
@@ -474,15 +404,8 @@ void ScenarioReader::parseEntities(Entities &entities)
 					std::string propertiesChildName(propertiesChild.name());
 
 					entities.Object.back().Properties.resize(entities.Object.back().Properties.size() + 1);
-
-					pugi::xml_attribute propertyNameAttribute = propertiesChild.attribute("name");
-					//std::cout << propertyNameAttribute.name() << " = " << propertyNameAttribute.value() << std::endl;
-					entities.Object.back().Properties.back().Property.name = propertyNameAttribute.value();
-
-					pugi::xml_attribute propertyValueAttribute = propertiesChild.attribute("value");
-					//std::cout << propertyValueAttribute.name() << " = " << propertyValueAttribute.value() << std::endl;
-					entities.Object.back().Properties.back().Property.value = propertyValueAttribute.value();
-
+					entities.Object.back().Properties.back().Property.name = ReadAttribute(propertiesChild.attribute("name"));
+					entities.Object.back().Properties.back().Property.value = ReadAttribute(propertiesChild.attribute("value"));
 				}
 			}
 		}
@@ -530,24 +453,10 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 				std::cout << "Orientation" << " is not implemented " << std::endl;
 			}
 
-			pugi::xml_attribute laneRoadIdAttribute = positionChild.attribute("roadId");
-			//std::cout << laneRoadIdAttribute.name() << " = " << laneRoadIdAttribute.value() << std::endl;
-			position.Lane.roadId = laneRoadIdAttribute.value();
-
-			pugi::xml_attribute laneLaneIdAttribute = positionChild.attribute("laneId");
-			//std::cout << laneLaneIdAttribute.name() << " = " << laneLaneIdAttribute.value() << std::endl;
-			position.Lane.laneId = std::stoi(laneLaneIdAttribute.value());
-
-			pugi::xml_attribute laneOffsetAttribute = positionChild.attribute("offset");
-			if (laneOffsetAttribute != NULL)
-			{
-				//std::cout << laneOffsetAttribute.name() << " = " << laneOffsetAttribute.value() << std::endl;
-				position.Lane.offset = std::stod(laneOffsetAttribute.value());
-			}
-
-			pugi::xml_attribute laneSAttribute = positionChild.attribute("s");
-			//std::cout << laneSAttribute.name() << " = " << laneSAttribute.value() << std::endl;
-			position.Lane.s = std::stod(laneSAttribute.value());
+			position.Lane.roadId = ReadAttribute(positionChild.attribute("roadId"));
+			position.Lane.laneId = std::stoi(ReadAttribute(positionChild.attribute("laneId")));
+			position.Lane.offset = std::stod(ReadAttribute(positionChild.attribute("offset")));
+			position.Lane.s = std::stod(ReadAttribute(positionChild.attribute("s")));
 		}
 		else if (positionChildName == "RelativeLane")
 		{
@@ -596,19 +505,14 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 						}
 						else if (positionChildName == "LaneCoord")
 						{
-							pugi::xml_attribute pathSAttribute = positionChild.attribute("pathS");
-							//std::cout << pathSAttribute.name() << " = " << pathSAttribute.value() << std::endl;
-							position.Route.Position.LaneCoord.pathS = std::stod(pathSAttribute.value());
+							position.Route.Position.LaneCoord.pathS = std::stod(ReadAttribute(positionChild.attribute("pathS")));
 
-							pugi::xml_attribute laneIdAttribute = positionChild.attribute("laneId");
-							//std::cout << laneIdAttribute.name() << " = " << laneIdAttribute.value() << std::endl;
-							position.Route.Position.LaneCoord.laneId = std::stoi(laneIdAttribute.value());
+							position.Route.Position.LaneCoord.laneId = std::stoi(ReadAttribute(positionChild.attribute("laneId")));
 
 							pugi::xml_attribute laneOffsetAttribute = positionChild.attribute("laneOffset");
 							if (laneOffsetAttribute != NULL)
 							{
-								//std::cout << laneOffsetAttribute.name() << " = " << laneOffsetAttribute.value() << std::endl;
-								position.Route.Position.LaneCoord.laneOffset = std::stod(laneOffsetAttribute.value());
+								position.Route.Position.LaneCoord.laneOffset = std::stod(ReadAttribute(positionChild.attribute("laneOffset")));
 							}
 						}
 					}
@@ -648,32 +552,21 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 						{
 							action.Longitudinal.Speed.Dynamics.exists = true;
 
-							pugi::xml_attribute dynamicsShapeAttribute = speedChild.attribute("shape");
-							if (dynamicsShapeAttribute != NULL)
+							action.Longitudinal.Speed.Dynamics.shape = ReadAttribute(speedChild.attribute("shape"));
+
+							if (ReadAttribute(speedChild.attribute("rate")) != "")
 							{
-								//std::cout << dynamicsShapeAttribute.name() << " = " << dynamicsShapeAttribute.value() << std::endl;
-								action.Longitudinal.Speed.Dynamics.shape = dynamicsShapeAttribute.value();
+								action.Longitudinal.Speed.Dynamics.rate = std::stod(ReadAttribute(speedChild.attribute("rate")));
 							}
 
-							pugi::xml_attribute dynamicsRateAttribute = speedChild.attribute("rate");
-							if (dynamicsRateAttribute != NULL)
+							if (ReadAttribute(speedChild.attribute("time")) != "")
 							{
-								//std::cout << dynamicsRateAttribute.name() << " = " << dynamicsRateAttribute.value() << std::endl;
-								action.Longitudinal.Speed.Dynamics.rate = std::stod(dynamicsRateAttribute.value());
+								action.Longitudinal.Speed.Dynamics.time = std::stod(ReadAttribute(speedChild.attribute("time")));
 							}
 
-							pugi::xml_attribute dynamicsTimeAttribute = speedChild.attribute("time");
-							if (dynamicsTimeAttribute != NULL)
+							if (ReadAttribute(speedChild.attribute("distance")) != "")
 							{
-								//std::cout << dynamicsTimeAttribute.name() << " = " << dynamicsTimeAttribute.value() << std::endl;
-								action.Longitudinal.Speed.Dynamics.time = std::stod(dynamicsTimeAttribute.value());
-							}
-
-							pugi::xml_attribute dynamicsDistanceAttribute = speedChild.attribute("distance");
-							if (dynamicsDistanceAttribute != NULL)
-							{
-								//std::cout << dynamicsDistanceAttribute.name() << " = " << dynamicsDistanceAttribute.value() << std::endl;
-								action.Longitudinal.Speed.Dynamics.distance = std::stod(dynamicsDistanceAttribute.value());
+								action.Longitudinal.Speed.Dynamics.distance = std::stod(ReadAttribute(speedChild.attribute("distance")));
 							}
 						}
 						else if (speedChildName == "Target")
@@ -688,39 +581,16 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 								{
 									action.Longitudinal.Speed.Target.Relative.exists = true;
 
-									pugi::xml_attribute relativeObjectAttribute = targetChild.attribute("object");
-									//std::cout << relativeObjectAttribute.name() << " = " << relativeObjectAttribute.value() << std::endl;
-									action.Longitudinal.Speed.Target.Relative.object = relativeObjectAttribute.value();
-
-									pugi::xml_attribute relativeValueAttribute = targetChild.attribute("value");
-									//std::cout << relativeValueAttribute.name() << " = " << relativeValueAttribute.value() << std::endl;
-									action.Longitudinal.Speed.Target.Relative.value = std::stod(relativeValueAttribute.value());
-
-									pugi::xml_attribute relativeValueTypeAttribute = targetChild.attribute("valueType");
-									//std::cout << relativeValueTypeAttribute.name() << " = " << relativeValueTypeAttribute.value() << std::endl;
-									action.Longitudinal.Speed.Target.Relative.valueType = relativeValueTypeAttribute.value();
-
-									pugi::xml_attribute relativeContinuousAttribute = targetChild.attribute("continuous");
-									//std::cout << relativeContinuousAttribute.name() << " = " << relativeContinuousAttribute.value() << std::endl;
-									action.Longitudinal.Speed.Target.Relative.continuous = std::stod(relativeContinuousAttribute.value());
+									action.Longitudinal.Speed.Target.Relative.object = ReadAttribute(targetChild.attribute("object"));
+									action.Longitudinal.Speed.Target.Relative.value = std::stod(ReadAttribute(targetChild.attribute("value")));
+									action.Longitudinal.Speed.Target.Relative.valueType = ReadAttribute(targetChild.attribute("valueType"));
+									action.Longitudinal.Speed.Target.Relative.continuous = std::stod(ReadAttribute(targetChild.attribute("continuous")));
 								}
 								else if (targetChildName == "Absolute")
 								{
 									action.Longitudinal.Speed.Target.Absolute.exists = true;
 
-									pugi::xml_attribute absoluteValueAttribute = targetChild.attribute("value");
-									//std::cout << absoluteValueAttribute.name() << " = " << absoluteValueAttribute.value() << std::endl;
-
-									if (absoluteValueAttribute.value()[0] == '$')
-									{
-										action.Longitudinal.Speed.Target.Absolute.value = std::stod(getParameter(absoluteValueAttribute.value()));
-									}
-									else
-									{
-										action.Longitudinal.Speed.Target.Absolute.value = std::stod(absoluteValueAttribute.value());
-									}
-
-
+									action.Longitudinal.Speed.Target.Absolute.value = std::stod(ReadAttribute(targetChild.attribute("value")));
 								}
 							}
 						}
@@ -742,10 +612,9 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 
 				if (lateralChildName == "LaneChange")
 				{
-					pugi::xml_attribute laneChangeTargetLaneOffsetAttribute = lateralChild.attribute("targetLaneOffset");
-					if (laneChangeTargetLaneOffsetAttribute != NULL)
+					if (ReadAttribute(lateralChild.attribute("targetLaneOffset")) != "")
 					{
-						action.Lateral.LaneChange.targetLaneOffset = std::stod(laneChangeTargetLaneOffsetAttribute.value());
+						action.Lateral.LaneChange.targetLaneOffset = std::stod(ReadAttribute(lateralChild.attribute("targetLaneOffset")));
 					}
 
 					for (pugi::xml_node laneChangeChild = lateralChild.first_child(); laneChangeChild; laneChangeChild = laneChangeChild.next_sibling())
@@ -755,17 +624,14 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 
 						if (laneChangeChildName == "Dynamics")
 						{
-							pugi::xml_attribute dynamicsTimeAttribute = laneChangeChild.attribute("time");
-							action.Lateral.LaneChange.Dynamics.time = std::stod(dynamicsTimeAttribute.value());
+							action.Lateral.LaneChange.Dynamics.time = std::stod(ReadAttribute(laneChangeChild.attribute("time")));
 
-							pugi::xml_attribute dynamicsDistanceAttribute = laneChangeChild.attribute("distance");
-							if (dynamicsDistanceAttribute != NULL)
+							if (ReadAttribute(laneChangeChild.attribute("distance")) != "")
 							{
-								action.Lateral.LaneChange.Dynamics.distance = std::stod(dynamicsDistanceAttribute.value());
+								action.Lateral.LaneChange.Dynamics.distance = std::stod(ReadAttribute(laneChangeChild.attribute("distance")));
 							}
 
-							pugi::xml_attribute dynamicsShapeAttribute = laneChangeChild.attribute("shape");
-							action.Lateral.LaneChange.Dynamics.shape = dynamicsShapeAttribute.value();
+							action.Lateral.LaneChange.Dynamics.shape = ReadAttribute(laneChangeChild.attribute("shape"));
 						}
 						else if (laneChangeChildName == "Target")
 						{
@@ -776,23 +642,12 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 
 								if (targetChildName == "Relative")
 								{
-									pugi::xml_attribute relativeObjectAttribute = targetChild.attribute("object");
-									if (relativeObjectAttribute.value()[0] == '$')
-									{
-										action.Lateral.LaneChange.Target.Relative.object = getParameter(relativeObjectAttribute.value());
-									}
-									else
-									{
-										action.Lateral.LaneChange.Target.Relative.object = relativeObjectAttribute.value();
-									}
-
-									pugi::xml_attribute relativeValueAttribute = targetChild.attribute("value");
-									action.Lateral.LaneChange.Target.Relative.value = std::stod(relativeValueAttribute.value());
+									action.Lateral.LaneChange.Target.Relative.object = ReadAttribute(targetChild.attribute("object"));
+									action.Lateral.LaneChange.Target.Relative.value = std::stod(ReadAttribute(targetChild.attribute("value")));
 								}
 								else if (targetChildName == "Absolute")
 								{
-									pugi::xml_attribute absoluteValueAttribute = targetChild.attribute("value");
-									action.Lateral.LaneChange.Target.Absolute.value = std::stod(absoluteValueAttribute.value());
+									action.Lateral.LaneChange.Target.Absolute.value = std::stod(ReadAttribute(targetChild.attribute("value")));
 								}
 							}
 						}
@@ -807,20 +662,17 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 
 						if (laneOffsetChildName == "Dynamics")
 						{
-							pugi::xml_attribute dynamicsMaxLateralAccAttribute = laneOffsetChild.attribute("maxLateralAcc");
-							if (dynamicsMaxLateralAccAttribute != NULL)
+							if (ReadAttribute(laneOffsetChild.attribute("maxLateralAcc")) != "")
 							{
-								action.Lateral.LaneOffset.Dynamics.maxLateralAcc = std::stod(dynamicsMaxLateralAccAttribute.value());
+								action.Lateral.LaneOffset.Dynamics.maxLateralAcc = std::stod(ReadAttribute(laneOffsetChild.attribute("maxLateralAcc")));
 							}
 
-							pugi::xml_attribute dynamicsDurationAttribute = laneOffsetChild.attribute("duration");
-							if (dynamicsDurationAttribute != NULL)
+							if (ReadAttribute(laneOffsetChild.attribute("duration")) != "")
 							{
-								action.Lateral.LaneOffset.Dynamics.duration = std::stod(dynamicsDurationAttribute.value());
+								action.Lateral.LaneOffset.Dynamics.duration = std::stod(ReadAttribute(laneOffsetChild.attribute("duration")));
 							}
 
-							pugi::xml_attribute dynamicsShapeAttribute = laneOffsetChild.attribute("shape");
-							action.Lateral.LaneOffset.Dynamics.shape = dynamicsShapeAttribute.value();
+							action.Lateral.LaneOffset.Dynamics.shape = ReadAttribute(laneOffsetChild.attribute("shape"));
 						}
 						else if (laneOffsetChildName == "Target")
 						{
@@ -831,23 +683,12 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 
 								if (targetChildName == "Relative")
 								{
-									pugi::xml_attribute relativeObjectAttribute = targetChild.attribute("object");
-									if (relativeObjectAttribute.value()[0] == '$')
-									{
-										action.Lateral.LaneOffset.Target.Relative.object = getParameter(relativeObjectAttribute.value());
-									}
-									else
-									{
-										action.Lateral.LaneOffset.Target.Relative.object = relativeObjectAttribute.value();
-									}
-
-									pugi::xml_attribute relativeValueAttribute = targetChild.attribute("value");
-									action.Lateral.LaneOffset.Target.Relative.value = std::stod(relativeValueAttribute.value());
+									action.Lateral.LaneOffset.Target.Relative.object = ReadAttribute(targetChild.attribute("object"));
+									action.Lateral.LaneOffset.Target.Relative.value = std::stod(ReadAttribute(targetChild.attribute("value")));
 								}
 								else if (targetChildName == "Absolute")
 								{
-									pugi::xml_attribute absoluteValueAttribute = targetChild.attribute("value");
-									action.Lateral.LaneOffset.Target.Absolute.value = std::stod(absoluteValueAttribute.value());
+									action.Lateral.LaneOffset.Target.Absolute.value = std::stod(ReadAttribute(targetChild.attribute("value")));
 								}
 							}
 						}
@@ -866,8 +707,7 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 		else if (actionChildName == "Meeting")
 		{
 
-			pugi::xml_attribute meetingModeAttribute = actionChild.attribute("mode");
-			action.Meeting.mode = meetingModeAttribute.value();
+			action.Meeting.mode = ReadAttribute(actionChild.attribute("mode"));
 
 			for (pugi::xml_node meetingChild = actionChild.first_child(); meetingChild; meetingChild = meetingChild.next_sibling())
 			{
@@ -880,17 +720,10 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 				else if (meetingChildName == "Relative")
 				{
 
-					pugi::xml_attribute relativeModeAttribute = meetingChild.attribute("mode");
-					action.Meeting.Relative.mode = relativeModeAttribute.value();
-
-					pugi::xml_attribute meetingObjectAttribute = meetingChild.attribute("object");
-					action.Meeting.Relative.object = meetingObjectAttribute.value();
-
-					pugi::xml_attribute meetingOffsetTimeAttribute = meetingChild.attribute("offsetTime");
-					action.Meeting.Relative.offsetTime = std::stod(meetingOffsetTimeAttribute.value());
-
-					pugi::xml_attribute meetingContinuousAttribute = meetingChild.attribute("continuous");
-					action.Meeting.Relative.continuous = meetingContinuousAttribute.value();
+					action.Meeting.Relative.mode = ReadAttribute(meetingChild.attribute("mode"));
+					action.Meeting.Relative.object = ReadAttribute(meetingChild.attribute("object"));
+					action.Meeting.Relative.offsetTime = std::stod(ReadAttribute(meetingChild.attribute("offsetTime")));
+					action.Meeting.Relative.continuous = ReadAttribute(meetingChild.attribute("continuous"));
 
 					parseOSCPosition(action.Meeting.Relative.Position, meetingChild.child("Position"));
 
@@ -968,9 +801,7 @@ void ScenarioReader::parseInit(Init &init)
 			init.Actions.Private.resize(init.Actions.Private.size() + 1);
 			init.Actions.Private.back().exists = true;
 
-			pugi::xml_attribute actionsChildAttribute = actionsChild.attribute("object");
-			//std::cout << actionsChildAttribute.name() << " = " << actionsChildAttribute.value() << std::endl;
-			init.Actions.Private.back().object = actionsChildAttribute.value();
+			init.Actions.Private.back().object = ReadAttribute(actionsChild.attribute("object"));
 
 			for (pugi::xml_node privateChild = actionsChild.first_child(); privateChild; privateChild = privateChild.next_sibling())
 			{
@@ -995,17 +826,11 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 {
 	std::cout << "ScenarioReader: parseOSCCondition started" << std::endl;
 
-	pugi::xml_attribute conditionNameAttribute = conditionNode.attribute("name");
-	//std::cout << conditionNameAttribute.name() << " = " << conditionNameAttribute.value() << std::endl;
-	condition.name = conditionNameAttribute.value();
+	condition.name = ReadAttribute(conditionNode.attribute("name"));
 
-	pugi::xml_attribute conditionDelayAttribute = conditionNode.attribute("delay");
-	//std::cout << conditionDelayAttribute.name() << " = " << conditionDelayAttribute.value() << std::endl;
-	condition.delay = std::stod(conditionDelayAttribute.value());
+	condition.delay = std::stod(ReadAttribute(conditionNode.attribute("delay")));
 
-	pugi::xml_attribute conditionEdgeAttribute = conditionNode.attribute("edge");
-	//std::cout << conditionEdgeAttribute.name() << " = " << conditionEdgeAttribute.value() << std::endl;
-	condition.edge = conditionEdgeAttribute.value();
+	condition.edge = ReadAttribute(conditionNode.attribute("edge"));
 
 	for (pugi::xml_node conditionChild = conditionNode.first_child(); conditionChild; conditionChild = conditionChild.next_sibling())
 	{
@@ -1344,23 +1169,12 @@ void ScenarioReader::parseStory(std::vector<Story> &storyVector)
 									{
 										storyVector.back().Act.back().Sequence.back().Actors.Entity.resize(storyVector.back().Act.back().Sequence.back().Actors.Entity.size() + 1);
 
-										pugi::xml_attribute entityNameAttribute = actorsChild.attribute("name");
-										//std::cout << entityNameAttribute.name() << " = " << entityNameAttribute.value() << std::endl;
-										if (entityNameAttribute.value()[0] == '$')
-										{
-											storyVector.back().Act.back().Sequence.back().Actors.Entity.back().name = getParameter(entityNameAttribute.value());
-										}
-										else
-										{
-											storyVector.back().Act.back().Sequence.back().Actors.Entity.back().name = entityNameAttribute.value();
-										}
+										storyVector.back().Act.back().Sequence.back().Actors.Entity.back().name = ReadAttribute(actorsChild.attribute("name"));
 
 									}
 									else if (actorsChildName == "ByCondition")
 									{
-										pugi::xml_attribute byConditionobjectAttribute = actorsChild.attribute("object");
-										//std::cout << byConditionobjectAttribute.name() << " = " << byConditionobjectAttribute.value() << std::endl;
-										storyVector.back().Act.back().Sequence.back().Actors.ByCondition.actor = byConditionobjectAttribute.value();
+										storyVector.back().Act.back().Sequence.back().Actors.ByCondition.actor = ReadAttribute(actorsChild.attribute("object"));
 
 									}
 								}
