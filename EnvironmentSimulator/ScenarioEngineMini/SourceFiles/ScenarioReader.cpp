@@ -71,7 +71,9 @@ int ScenarioReader::loadOSCFile(const char * path)
 		return -1;
 	}
 
-	std::cout << "ScenarioReader: loadOSCFile finished" << std::endl;
+	oscFilename = path;
+
+	std::cout << "ScenarioReader: loadOSCFile " << oscFilename << " finished" << std::endl;
 
 	return 0;
 }
@@ -179,13 +181,25 @@ void ScenarioReader::parseCatalogs(Catalogs &catalogs)
 	std::cout << "ScenarioReader: parseRoadNetwork finished" << std::endl;
 }
 
+static std::string dirnameOf(const std::string& fname)
+{
+	size_t pos = fname.find_last_of("\\/");
+	return (std::string::npos == pos) ? "" : fname.substr(0, pos);
+}
+
 void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 {
 	std::cout << "ScenarioReader: parseOSCFile started" << std::endl;
 
 	file.filepath = ReadAttribute(fileNode.attribute("filepath"));
 
-	std::cout << "ScenarioReader: parseOSCFile finished" << std::endl;
+	// If relative path (starting with "."), then assume it is relative to the scenario .xosc file
+	if (file.filepath[0] == '.')
+	{
+		file.filepath.insert(0, dirnameOf(oscFilename) + "/");
+	}
+
+	std::cout << "ScenarioReader: parseOSCFile " << file.filepath << " finished" << std::endl;
 }
 
 void ScenarioReader::parseOSCBoundingBox(OSCBoundingBox &boundingBox, pugi::xml_node boundingBoxNode)

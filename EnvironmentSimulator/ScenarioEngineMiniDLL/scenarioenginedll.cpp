@@ -72,32 +72,32 @@ extern "C"
 
 	float UNITY_DLL_API SE_GetObjectX(int index)
 	{
-		return (float)scenarioGateway->getObjectStatebyIdx(index)->getPosX();
+		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosX();
 	}
 
 	float UNITY_DLL_API SE_GetObjectY(int index)
 	{
-		return (float)scenarioGateway->getObjectStatebyIdx(index)->getPosY();
+		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosY();
 	}
 
 	float UNITY_DLL_API SE_GetObjectZ(int index)
 	{
-		return (float)scenarioGateway->getObjectStatebyIdx(index)->getPosZ();
+		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosZ();
 	}
 
 	float UNITY_DLL_API SE_GetObjectH(int index)
 	{
-		return (float)scenarioGateway->getObjectStatebyIdx(index)->getRotH();
+		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotH();
 	}
 
 	float UNITY_DLL_API SE_GetObjectP(int index)
 	{
-		return (float)scenarioGateway->getObjectStatebyIdx(index)->getRotP();
+		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotP();
 	}
 
 	float UNITY_DLL_API SE_GetObjectR(int index)
 	{
-		return (float)scenarioGateway->getObjectStatebyIdx(index)->getRotR();
+		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotR();
 	}
 
 	ScenarioObjectState UNITY_DLL_API SE_GetObjectState(int index)
@@ -106,7 +106,7 @@ extern "C"
 
 		memset(&objStateReturn, 0, sizeof(ObjectStateStruct));
 
-		ObjectState *o = scenarioGateway->getObjectStatebyIdx(index);
+		ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(index);
 		if (o != 0)
 		{
 			objStateReturn.id = o->getId();

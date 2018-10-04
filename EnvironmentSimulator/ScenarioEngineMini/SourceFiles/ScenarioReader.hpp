@@ -55,6 +55,7 @@ private:
 	pugi::xml_document doc;
 	OSCParameterDeclaration parameterDeclaration;
 	int objectCnt;
+	std::string oscFilename;
 
 	// Use always this method when reading attributes, it will resolve any variables
 	std::string ReadAttribute(pugi::xml_attribute attribute);

@@ -25,6 +25,7 @@ struct ObjectStateStruct
 class ObjectState
 {
 public:
+	ObjectState() { setId(-1); }
 	ObjectState(int id, std::string name, double timestamp, double x, double y, double z, double h, double p, double r, double speed);
 	ObjectState(int id, std::string name, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed);
 
@@ -49,12 +50,12 @@ public:
 	double getS() { return state_.road_pos.roadS; }
 	double getLaneOffset() { return state_.road_pos.laneOffset; }
 
+	ObjectStateStruct getStruct() { return state_; }
+
 	bool getPosType() { return state_.posType; }
 	void Print();
 
 	double convertVelocityToSpeed(double vel_x, double vel_y, double rot_h);
-
-	ObjectStateStruct getStruct() { return state_; }
 
 private:
 	void setId(int objectId) { state_.obj_state.base.id = objectId; }
@@ -75,14 +76,15 @@ class ScenarioGateway
 public:
 	
 	ScenarioGateway();
+	~ScenarioGateway();
 
 	void reportObject(ObjectState objectState);
 	int getNumberOfObjects() { return (int)objectState_.size(); }
-	ObjectState *getObjectStatebyIdx(int idx) { return &objectState_[idx]; }
-	ObjectStateStruct *getObjectStateStruct(int idx) { return &objectState_[idx].getStruct(); }
-	ObjectState *getObjectStateById(int id);
+	ObjectState getObjectStateByIdx(int idx) { return *objectState_[idx]; }
+	ObjectState *getObjectStatePtrByIdx(int idx) { return objectState_[idx]; }
+	int getObjectStateById(int idx, ObjectState &objState);
 
 private:
-	std::vector<ObjectState> objectState_;
+	std::vector<ObjectState*> objectState_;
 };
 

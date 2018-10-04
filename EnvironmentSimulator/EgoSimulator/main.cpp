@@ -216,7 +216,7 @@ int main(int argc, char** argv)
 			// Fetch states of scenario objects
 			for (int i = 0; i < scenarioGateway->getNumberOfObjects(); i++)
 			{
-				ObjectState *o = scenarioGateway->getObjectStatebyIdx(i);
+				ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(i);
 
 				if (o->getId() != EGO_ID)
 				{

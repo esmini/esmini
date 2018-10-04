@@ -14,7 +14,7 @@
 #include <osgViewer/ViewerEventHandlers>
 
 #define SHADOW_SCALE 1.20
-#define SHADOW_MODEL_FILENAME "../../resources/models/shadow_face.osgb"
+#define SHADOW_MODEL_FILENAME "shadow_face.osgb"
 #define LOD_DIST 3000
 #define LOD_SCALE_DEFAULT 1.2
 
@@ -48,6 +48,11 @@ protected:
 	osg::ref_ptr<osg::Node> _node;
 };
 
+static std::string dirnameOf(const std::string& fname)
+{
+	size_t pos = fname.find_last_of("\\/");
+	return (std::string::npos == pos) ? "" : fname.substr(0, pos);
+}
 
 osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName)
 {
@@ -151,6 +156,7 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
 Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments)
 {
 	odrManager_ = odrManager;
+	modelFilename_ = modelFilename;
 
 	if (!ReadCarModels())
 	{
@@ -283,10 +289,14 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 
 	if (shadow_node == 0)
 	{
-		shadow_node = osgDB::readNodeFile(SHADOW_MODEL_FILENAME);
+		// Assume the shadow model resides in the same directory as the main environment model
+		std::string filePath = dirnameOf(filename);
+		filePath.append("/" + std::string(SHADOW_MODEL_FILENAME));
+
+		shadow_node = osgDB::readNodeFile(filePath);
 		if (!shadow_node)
 		{
-			printf("Failed to shadow model %s\n", SHADOW_MODEL_FILENAME);
+			printf("Failed to shadow model %s\n", filePath.c_str());
 		}
 	}
 
@@ -332,7 +342,12 @@ bool Viewer::ReadCarModels()
 
 	for (int i = 0; i < carModelsFiles_.size(); i++)
 	{
-		lod = LoadCarModel(carModelsFiles_[i].c_str());
+
+		// Assume the car models resides in the same directory as the main environment model
+		std::string filePath = dirnameOf(modelFilename_);
+		filePath.append("/" + carModelsFiles_[i]);
+
+		lod = LoadCarModel(filePath.c_str());
 
 		carModels_.push_back(lod);
 	}

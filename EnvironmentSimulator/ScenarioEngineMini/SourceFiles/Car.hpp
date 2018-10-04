@@ -26,7 +26,7 @@ public:
 
 	void step(double dt);
 	roadmanager::Position getPosition();
-	roadmanager::Position * Car::getPositionPtr();
+	roadmanager::Position *getPositionPtr();
 	double getSpeed();
 	int getObjectId();
 	std::string getObjectName();

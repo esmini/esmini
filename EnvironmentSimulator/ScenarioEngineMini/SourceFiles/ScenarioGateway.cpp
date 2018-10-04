@@ -97,33 +97,44 @@ ScenarioGateway::ScenarioGateway()
 {
 }
 
-ObjectState *ScenarioGateway::getObjectStateById(int id)
+ScenarioGateway::~ScenarioGateway()
 {
-	for (auto &o : objectState_)
+	for (auto o : objectState_)
 	{
-		if (o.getId() == id)
+		delete o;
+	}
+}
+
+
+int ScenarioGateway::getObjectStateById(int id, ObjectState &objectState)
+{
+	for (auto o : objectState_)
+	{
+		if (o->getId() == id)
 		{
-			return &o;
+			objectState = *o;
+			return 0;
 		}
 	}
 
-	// Indicate not found by returning NULL
-	return 0;
+	// Indicate not found by returning non zero
+	return -1;
+
 }
 
 void ScenarioGateway::reportObject(ObjectState objectState)
 {
 	bool found = false;
-
+	
 	// Check whether the object is already present in the list of active objects
-	for (auto &o : objectState_)
+	for (auto o : objectState_)
 	{
-		if (o.getId() == objectState.getId())
+		if (o->getId() == objectState.getId())
 		{
 			found = true;
 			
 			// Update state
-			o = objectState;			
+			*o = objectState;			
 			//printf("ScenarioGateway::reportObject Updating %s state: (%d, %.2f)\n", o.getName().c_str(), o.getId(), o.getTimeStamp());
 			//o.Print();
 			break;
@@ -134,6 +145,8 @@ void ScenarioGateway::reportObject(ObjectState objectState)
 	{
 		// Add object
 		printf("Adding %s state: (%d, %.2f)\n", objectState.getName().c_str(), objectState.getId(), objectState.getTimeStamp());
-		objectState_.push_back(objectState);
+		ObjectState *os = new ObjectState;
+		*os = objectState;
+		objectState_.push_back(os);
 	}
 }

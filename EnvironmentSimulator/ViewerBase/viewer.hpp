@@ -76,20 +76,21 @@ namespace viewer
 	private:
 		std::vector<std::string> carModelsFiles_ =
 		{
-			"../../resources/models/p1800.osgb",
-			"../../resources/models/car1.osgb",
-			"../../resources/models/car2.osgb",
-			"../../resources/models/car3.osgb",
-			"../../resources/models/car4.osgb",
-			"../../resources/models/car5.osgb",
-			"../../resources/models/car6.osgb",
-			"../../resources/models/bus1.osgb",
-			"../../resources/models/bus2.osgb",
-			"../../resources/models/bus3.osgb",
-			"../../resources/models/truck1.osgb",
-			"../../resources/models/truck2.osgb",
-			"../../resources/models/truck3.osgb",
+			"p1800.osgb",
+			"car1.osgb",
+			"car2.osgb",
+			"car3.osgb",
+			"car4.osgb",
+			"car5.osgb",
+			"car6.osgb",
+			"bus1.osgb",
+			"bus2.osgb",
+			"bus3.osgb",
+			"truck1.osgb",
+			"truck2.osgb",
+			"truck3.osgb",
 		};
+		std::string modelFilename_;
 
 		bool ReadCarModels();
 		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
