@@ -56,8 +56,10 @@ void ObjectState::setVelocity(double speed)
 
 void ObjectState::setName(std::string name)
 {
-//	name.copy(state_.obj_state.base.name, RDB_SIZE_OBJECT_NAME);	// compiler warning...
-	strncpy_s(state_.obj_state.base.name, RDB_SIZE_OBJECT_NAME, name.c_str(), name.size());  // Accepted by VS/Windows
+	// Disable Visual Studio warning for std::string.copy method 
+	// - any suggested alternative (other than 'strncpy_s', which Mac XCode don't like)
+	#pragma warning( disable : 4996 )
+	name.copy(state_.obj_state.base.name, RDB_SIZE_OBJECT_NAME);
 }
 
 void ObjectState::Print()

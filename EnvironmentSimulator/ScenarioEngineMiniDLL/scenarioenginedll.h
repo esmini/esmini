@@ -1,7 +1,11 @@
 ﻿
 #pragma once
 
-#define UNITY_DLL_API __declspec(dllexport)
+#ifdef WIN32
+	#define UNITY_DLL_API __declspec(dllexport)
+#else
+	#define UNITY_DLL_API  // Leave empty on Mac
+#endif
 
 #define SE_NAME_SIZE 32
 

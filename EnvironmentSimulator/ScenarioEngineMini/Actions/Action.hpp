@@ -33,7 +33,7 @@ private:
 	void executePositionLane();
 	void executePositionRoute();
 	void executeFollowRoute();
-	void Action::executeMeeting();
+	void executeMeeting();
 
 	// Help methods
 	int sign(int value);

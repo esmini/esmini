@@ -1,10 +1,11 @@
 #include "scenarioenginedll.h"
 #include "ScenarioEngine.hpp"
+#include "string.h"
 
 
-static ScenarioEngine *scenarioEngine;
-static ScenarioGateway *scenarioGateway;
-static double simTime;
+static ScenarioEngine *scenarioEngine = 0;
+static ScenarioGateway *scenarioGateway = 0;
+static double simTime = 0;
 
 extern "C"
 {
@@ -15,6 +16,8 @@ extern "C"
 		if (scenarioEngine != 0)
 		{
 			delete scenarioEngine;
+			scenarioEngine = 0;
+			scenarioGateway = 0;
 		}
 		
 		// Create scenario engine
@@ -29,6 +32,8 @@ extern "C"
 		catch (const std::exception& e)
 		{
 			std::cout << e.what() << std::endl;
+			scenarioEngine = 0;
+			scenarioGateway = 0;
 			return -1;
 		}
 
@@ -42,13 +47,16 @@ extern "C"
 
 	void UNITY_DLL_API SE_Step(float dt)
 	{
-		// Time operations
-		simTime += dt;
-		scenarioEngine->setSimulationTime(simTime);
-		scenarioEngine->setTimeStep(dt);
+		if (scenarioEngine != 0)
+		{
+			// Time operations
+			simTime += dt;
+			scenarioEngine->setSimulationTime(simTime);
+			scenarioEngine->setTimeStep(dt);
 
-		// ScenarioEngine
-		scenarioEngine->step((double)dt);
+			// ScenarioEngine
+			scenarioEngine->step((double)dt);
+		}
 	}
 
 	int UNITY_DLL_API SE_ReportObjectPos(int id, char *name, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
@@ -60,66 +68,126 @@ extern "C"
 
 	int UNITY_DLL_API SE_ReportObjectRoadPos(int id, char * name, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
 	{
-		scenarioGateway->reportObject(ObjectState(id, name, timestamp, roadId, laneId, laneOffset, s, speed));
+		if (scenarioGateway != 0)
+		{
+			scenarioGateway->reportObject(ObjectState(id, name, timestamp, roadId, laneId, laneOffset, s, speed));
+		}
 		
 		return 0;
 	}
 
 	int UNITY_DLL_API SE_GetNumberOfObjects()
 	{
-		return scenarioGateway->getNumberOfObjects();
+		if (scenarioGateway != 0)
+		{
+			return scenarioGateway->getNumberOfObjects();
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	float UNITY_DLL_API SE_GetObjectX(int index)
 	{
-		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosX();
+		if (scenarioGateway)
+		{
+			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosX();
+		}
+		else
+		{
+			return 0.0f;
+		}
 	}
 
 	float UNITY_DLL_API SE_GetObjectY(int index)
 	{
-		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosY();
+		if (scenarioGateway)
+		{
+			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosY();
+		}
+		else
+		{
+			return 0.0f;
+		}
 	}
 
 	float UNITY_DLL_API SE_GetObjectZ(int index)
 	{
-		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosZ();
+		if (scenarioGateway)
+		{
+			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosZ();
+		}
+		else
+		{
+			return 0.0f;
+		}
 	}
 
 	float UNITY_DLL_API SE_GetObjectH(int index)
 	{
-		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotH();
+		if (scenarioGateway)
+		{
+			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotH();
+		}
+		else
+		{
+			return 0.0f;
+		}
 	}
 
 	float UNITY_DLL_API SE_GetObjectP(int index)
 	{
-		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotP();
+		if (scenarioGateway)
+		{
+			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotP();
+		}
+		else
+		{
+			return 0.0f;
+		}
 	}
 
 	float UNITY_DLL_API SE_GetObjectR(int index)
 	{
-		return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotR();
+		if (scenarioGateway)
+		{
+			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotR();
+		}
+		else
+		{
+			return 0.0f;
+		}
 	}
 
 	ScenarioObjectState UNITY_DLL_API SE_GetObjectState(int index)
 	{
 		struct ScenarioObjectState objStateReturn;
 
-		memset(&objStateReturn, 0, sizeof(ObjectStateStruct));
-
-		ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(index);
-		if (o != 0)
+		if (scenarioGateway)
 		{
-			objStateReturn.id = o->getId();
-			strncpy_s(objStateReturn.name, o->getName().c_str(), SE_NAME_SIZE);
-			objStateReturn.timestamp = (float)o->getTimeStamp();
-			objStateReturn.x = (float)o->getPosX();
-			objStateReturn.y = (float)o->getPosY();
-			objStateReturn.z = (float)o->getPosZ();
-			objStateReturn.h = (float)o->getRotH();
-			objStateReturn.p = (float)o->getRotP();
-			objStateReturn.r = (float)o->getRotR();
-			objStateReturn.speed = (float)o->convertVelocityToSpeed(o->getVelX(), o->getVelY(), o->getRotH());
+
+
+			memset(&objStateReturn, 0, sizeof(ObjectStateStruct));
+
+			ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(index);
+			if (o != 0)
+			{
+				objStateReturn.id = o->getId();
+
+				strncpy_s(objStateReturn.name, o->getName().c_str(), SE_NAME_SIZE);
+				objStateReturn.timestamp = (float)o->getTimeStamp();
+				objStateReturn.x = (float)o->getPosX();
+				objStateReturn.y = (float)o->getPosY();
+				objStateReturn.z = (float)o->getPosZ();
+				objStateReturn.h = (float)o->getRotH();
+				objStateReturn.p = (float)o->getRotP();
+				objStateReturn.r = (float)o->getRotR();
+				objStateReturn.speed = (float)o->convertVelocityToSpeed(o->getVelX(), o->getVelY(), o->getRotH());
+			}
+
 		}
+
 		return objStateReturn;
 	}
 }
