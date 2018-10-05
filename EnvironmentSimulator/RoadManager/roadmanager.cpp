@@ -287,6 +287,10 @@ int Lane::IsDriving()
 	case Lane::LANE_TYPE_ON_RAMP:
 	case Lane::LANE_TYPE_PARKING:
 		return 1;
+		break;
+	default:
+		// Avoid code analysis warning
+	break;
 	}
 
 	return 0;
@@ -1151,7 +1155,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename)
 							}
 
 							Lane::LaneType lane_type = Lane::LANE_TYPE_NONE;
-							if (lane_node.attribute("type") == 0 || lane_node.attribute("type").value() == "")
+							if (lane_node.attribute("type") == 0 || !strcmp(lane_node.attribute("type").value(), ""))
 							{
 								printf("Lane type error");
 							}
@@ -1558,7 +1562,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 					return false;
 				}
 				Lane *lane = lane_section->GetLaneById(lane1_id);
-				if (!lane_section->GetConnectingLaneId(lane1_id, link_type) == lane2_id)
+				if (!(lane_section->GetConnectingLaneId(lane1_id, link_type) == lane2_id))
 				{
 					return false;
 				}
