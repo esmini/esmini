@@ -1,6 +1,5 @@
 #include "scenarioenginedll.h"
 #include "ScenarioEngine.hpp"
-#include "string.h"
 
 
 static ScenarioEngine *scenarioEngine = 0;
@@ -36,6 +35,9 @@ extern "C"
 			scenarioGateway = 0;
 			return -1;
 		}
+
+		// Step scenario engine - zero time - just to reach init state
+		scenarioEngine->step(0.0);
 
 		return 0;
 	}
@@ -175,7 +177,8 @@ extern "C"
 			{
 				objStateReturn.id = o->getId();
 
-				strncpy_s(objStateReturn.name, o->getName().c_str(), SE_NAME_SIZE);
+				// _CRT_SECURE_NO_WARNINGS
+				strncpy(objStateReturn.name, o->getName().c_str(), SE_NAME_SIZE);
 				objStateReturn.timestamp = (float)o->getTimeStamp();
 				objStateReturn.x = (float)o->getPosX();
 				objStateReturn.y = (float)o->getPosY();
