@@ -193,41 +193,9 @@ void Cars::step(double dt, double simulationTime)
 
 	for (size_t i = 0; i < cars.size(); i++)
 	{
-		if (cars[i].getExtControlled())
+		Car *c = &cars[i];
+		if (!c->getExtControlled())
 		{
-			int objectId = cars[i].getObjectId();
-			ObjectState o;
-
-			if (scenarioGateway->getObjectStateById(objectId, o) != 0)
-			{
-				std::cout << "Cars: Gateway did not provide state for external car " << objectId << std::endl;
-			}
-			else
-			{
-				if (o.getPosType() == GW_POS_TYPE_ROAD)
-				{
-					cars[i].getPositionPtr()->SetLanePos(o.getRoadId(), o.getLaneId(), o.getS(), o.getLaneOffset());
-				}
-				else if (o.getPosType() == GW_POS_TYPE_XYH)
-				{
-					cars[i].getPositionPtr()->SetXYH(o.getPosX(), o.getPosY(), o.getRotH());
-				}
-					
-				// Calculate magnitude of speed
-				double speed = sqrt(o.getVelX() * o.getVelX() + o.getVelY() * o.getVelY());
-				
-				// Find out direction of speed, going forward or backwards? Compare with heading
-				double rotatedVelX = o.getVelX() * cos(-o.getRotH()) - o.getVelY() * sin(-o.getRotH());
-				double rotatedVelY = o.getVelX() * sin(-o.getRotH()) + o.getVelY() * cos(-o.getRotH());
-				
-				int sign = rotatedVelX < 0 ? -1 : 1;
-
-				cars[i].setSpeed(sign * speed);
-			}
-		}
-		else {
-			Car *c = &cars[i];
-
 			c->step(dt);
 		}
 	}

@@ -10,6 +10,21 @@ ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
 
 void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 {
+	// Open file for writing
+	if (fopen_s(&logfile, "c:/tmp/scenarioengine.log", "w") != 0)
+	{
+		logfile = 0;
+	}
+
+	if (logfile == 0)
+	{
+		printf("ScenarioEngine: Failed to open logfile!\n");
+	}
+	else
+	{
+		log("Logfile opened\n");
+	}
+
 	// Load and parse data
 	if (scenarioReader.loadOSCFile(oscFilename.c_str()) != 0)
 	{
@@ -42,34 +57,90 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 	initCars();
 	initInit();
 	initConditions();
+}
 
-//	fopen_s(&logfile, "c:/tmp/scenarioengine.log", "w"); // Open file for writing
-	if (logfile == 0)
+ScenarioEngine::~ScenarioEngine()
+{
+	if (logfile != 0)
 	{
-		printf("ScenarioEngine: Failed to open logfile!\n");
+		log("Closing...\n");
+		fclose(logfile);
 	}
 }
 
-void ScenarioEngine::step(double deltaSimTime)	
+void ScenarioEngine::step(double deltaSimTime, bool initial)	
 {
 	if (entities.Object.size() == 0)
 	{
 		return;
 	}	
-	log("inside step 1\n");
+
+	// Fetch external states from gateway, except the initial run where scenario engine sets all positions
+	if (!initial)
+	{
+		for (int i = 0; i < cars.getNum(); i++)
+		{
+			Car *car = cars.getCarPtr(i);
+			if (car->getExtControlled())
+			{
+				int objectId = car->getObjectId();
+				ObjectState o;
+
+				if (scenarioGateway.getObjectStateById(objectId, o) != 0)
+				{
+					std::cout << "Cars: Gateway did not provide state for external car " << objectId << std::endl;
+					log("Cars: Gateway did not provide state for external car\n");
+				}
+				else
+				{
+					if (o.getPosType() == GW_POS_TYPE_ROAD)
+					{
+						car->getPositionPtr()->SetLanePos(o.getRoadId(), o.getLaneId(), o.getS(), o.getLaneOffset());
+					}
+					else if (o.getPosType() == GW_POS_TYPE_XYH)
+					{
+						car->getPositionPtr()->SetXYH(o.getPosX(), o.getPosY(), o.getRotH());
+					}
+					else
+					{
+						log("Unsupported GW_POS_TYPE\n");
+					}
+
+					// Calculate magnitude of speed
+					double speed = sqrt(o.getVelX() * o.getVelX() + o.getVelY() * o.getVelY());
+
+					// Find out direction of speed, going forward or backwards? Compare with heading
+					double rotatedVelX = o.getVelX() * cos(-o.getRotH()) - o.getVelY() * sin(-o.getRotH());
+
+					int sign = rotatedVelX < 0 ? -1 : 1;
+
+					car->setSpeed(sign * speed);
+				}
+			}
+		}
+	}
+
+	// Step and run scenario magic
 	stepObjects(deltaSimTime);
 	checkConditions();
 	executeActions();
 
-	// Report states to the gateway
+	// Report resulting states to the gateway
 	for (int i=0; i<cars.getNum(); i++)
 	{
 		Car *car = cars.getCarPtr(i);
 
-		if (!car->getExtControlled())
-		{
-			roadmanager::Position *pos = car->getPositionPtr();
+		roadmanager::Position *pos = car->getPositionPtr();
 
+		if (initial)
+		{
+			// Report all scenario objects the initial run, to establish initial positions and speed = 0
+			scenarioGateway.reportObject(ObjectState(car->getObjectId(), car->getObjectName(), simulationTime,
+				pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH(), pos->GetP(), pos->GetR(), 0.0));
+		}
+		else if (!car->getExtControlled())
+		{
+			// Then report all except externally controlled objects
 			scenarioGateway.reportObject(ObjectState(car->getObjectId(), car->getObjectName(), simulationTime,
 				pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH(), pos->GetP(), pos->GetR(), car->getSpeed()));
 		}
@@ -256,6 +327,7 @@ void ScenarioEngine::checkConditions()
 
 	if (triggeredCondition)
 	{
+		log("Triggered condition\n");
 		std::vector<int> lastTriggeredStoryId = conditions.getLastTriggeredStoryId();
 		actions.setStartAction(lastTriggeredStoryId, simulationTime);
 	}

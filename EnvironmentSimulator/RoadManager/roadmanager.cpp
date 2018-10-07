@@ -963,9 +963,24 @@ OpenDrive::OpenDrive(const char *filename)
 	}
 }
 
-bool OpenDrive::LoadOpenDriveFile(const char *filename)
+bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 {
 	mt_rand.seed((unsigned int)time(0));
+
+	if (replace)
+	{
+		for (auto &r : road_)
+		{
+			delete r;
+		}
+		road_.clear();
+
+		for (auto &j : junction_)
+		{
+			delete j;
+		}
+		junction_.clear();
+	}
 
 	pugi::xml_document doc;
 

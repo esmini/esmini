@@ -163,6 +163,10 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
+	// Step scenario engine - zero time - just to reach init state
+	// Report all vehicles initially - to communicate initial position for external vehicles as well
+	scenarioEngine->step(0.0, true);
+
 	// Fetch ScenarioGateway
 	scenarioGateway = scenarioEngine->getScenarioGateway();
 

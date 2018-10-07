@@ -3,6 +3,8 @@
 
 ObjectState::ObjectState(int id, std::string name, double timestamp, double x, double y, double z, double h, double p, double r, double speed)
 {
+	memset(&state_, 0, sizeof(ObjectStateStruct));
+
 	state_.posType = GW_POS_TYPE_XYH;
 
 	setId(id);
@@ -13,6 +15,8 @@ ObjectState::ObjectState(int id, std::string name, double timestamp, double x, d
 
 ObjectState::ObjectState(int id, std::string name, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed)
 {
+	memset(&state_, 0, sizeof(ObjectStateStruct));
+
 	state_.posType = GW_POS_TYPE_ROAD;
 
 	setId(id);
@@ -33,6 +37,8 @@ void ObjectState::setPos(double x, double y, double z, double h, double p, doubl
 
 	// Divide into X, Y components according to heading
 	setVelocity(speed);
+
+	state_.posType = GW_POS_TYPE_XYH;
 }
 
 void ObjectState::setRoadPos(int roadId, int laneId, double s, double laneOffset, double speed)
@@ -44,6 +50,8 @@ void ObjectState::setRoadPos(int roadId, int laneId, double s, double laneOffset
 
 	// Divide into X, Y components according to heading
 	setVelocity(speed);
+
+	state_.posType = GW_POS_TYPE_ROAD;
 }
 
 void ObjectState::setVelocity(double speed)
@@ -59,7 +67,7 @@ void ObjectState::setName(std::string name)
 	// Disable Visual Studio warning for std::string.copy method 
 	// - any suggested alternative (other than 'strncpy_s', which Mac XCode don't like)
 	#pragma warning( disable : 4996 )
-	name.copy(state_.obj_state.base.name, RDB_SIZE_OBJECT_NAME);
+	name.copy(state_.obj_state.base.name, name.length());
 }
 
 void ObjectState::Print()
@@ -97,6 +105,7 @@ double ObjectState::convertVelocityToSpeed(double vel_x, double vel_y, double ro
 // ScenarioGateway
 ScenarioGateway::ScenarioGateway()
 {
+	objectState_.clear();
 }
 
 ScenarioGateway::~ScenarioGateway()
@@ -105,6 +114,7 @@ ScenarioGateway::~ScenarioGateway()
 	{
 		delete o;
 	}
+	objectState_.clear();
 }
 
 
@@ -136,9 +146,7 @@ void ScenarioGateway::reportObject(ObjectState objectState)
 			found = true;
 			
 			// Update state
-			*o = objectState;			
-			//printf("ScenarioGateway::reportObject Updating %s state: (%d, %.2f)\n", o.getName().c_str(), o.getId(), o.getTimeStamp());
-			//o.Print();
+			*o = objectState;	
 			break;
 		}
 	}

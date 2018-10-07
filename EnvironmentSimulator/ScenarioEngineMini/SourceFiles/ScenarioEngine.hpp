@@ -26,11 +26,12 @@ public:
 	Cars cars;
 
 	ScenarioEngine(std::string oscFilename, double startTime);
-	ScenarioEngine();
+	ScenarioEngine() { logfile = 0; }
+	~ScenarioEngine();
 
 	void InitScenario(std::string oscFilename, double startTime); // use with default constructor
 		
-	void step(double deltaSimTime);
+	void step(double deltaSimTime, bool initial = false);
 	void initCars();
 	void initInit();
 	void printCars();
@@ -40,10 +41,13 @@ public:
 	void printSimulationTime();
 	void stepObjects(double dt);
 
-	void log(char *str) 
-	{ 
-//		fprintf(logfile, str); 
-//		fflush(logfile);
+	void log(char *str)
+	{
+		if (logfile != 0)
+		{
+			fprintf(logfile, str);
+			fflush(logfile);
+		}
 	}
 
 	std::string getSceneGraphFilename() { return roadNetwork.SceneGraph.filepath; }

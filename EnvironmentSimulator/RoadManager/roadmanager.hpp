@@ -561,7 +561,13 @@ namespace roadmanager
 		OpenDrive() {};
 		OpenDrive(const char *filename);
 		~OpenDrive();
-		bool LoadOpenDriveFile(const char *filename);
+
+		/**
+		Load a road network, specified in the OpenDRIVE file format
+		@param filename OpenDRIVE file
+		@param replace If true any old road data will be erased, else new will be added to the old
+		*/
+		bool LoadOpenDriveFile(const char *filename, bool replace = true);
 
 		/**
 		Retrieve a road segment specified by road ID 

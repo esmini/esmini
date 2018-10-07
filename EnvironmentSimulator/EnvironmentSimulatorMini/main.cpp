@@ -56,6 +56,10 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	// Step scenario engine - zero time - just to reach init state
+	// Report all vehicles initially - to communicate initial position for external vehicles as well
+	scenarioEngine->step(0.0);
+
 	// Create viewer
 	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), arguments);
 

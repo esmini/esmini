@@ -8,15 +8,15 @@ static double simTime = 0;
 
 extern "C"
 {
-	int UNITY_DLL_API SE_Init(const char *oscFilename)
+	UNITY_DLL_API int SE_Init(const char *oscFilename)
 	{
 		simTime = 0; // Start time initialized to zero
+		scenarioGateway = 0;
 
 		if (scenarioEngine != 0)
 		{
 			delete scenarioEngine;
 			scenarioEngine = 0;
-			scenarioGateway = 0;
 		}
 		
 		// Create scenario engine
@@ -37,17 +37,19 @@ extern "C"
 		}
 
 		// Step scenario engine - zero time - just to reach init state
-		scenarioEngine->step(0.0);
+		// Report all vehicles initially - to communicate initial position for external vehicles as well
+		scenarioEngine->step(0.0, true);  
 
 		return 0;
 	}
 
-	void UNITY_DLL_API SE_Close()
+	UNITY_DLL_API void SE_Close()
 	{
 		delete scenarioEngine;
+		scenarioEngine = 0;
 	}
 
-	void UNITY_DLL_API SE_Step(float dt)
+	UNITY_DLL_API void SE_Step(float dt)
 	{
 		if (scenarioEngine != 0)
 		{
@@ -61,24 +63,24 @@ extern "C"
 		}
 	}
 
-	int UNITY_DLL_API SE_ReportObjectPos(int id, char *name, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
+	UNITY_DLL_API int SE_ReportObjectPos(int id, char *name, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
 	{
-		scenarioGateway->reportObject(ObjectState(id, name, timestamp, x, y, z, h, p, r, speed));
+		scenarioGateway->reportObject(ObjectState(id, std::string(name), timestamp, x, y, z, h, p, r, speed));
 		
 		return 0;
 	}
 
-	int UNITY_DLL_API SE_ReportObjectRoadPos(int id, char * name, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
+	UNITY_DLL_API int SE_ReportObjectRoadPos(int id, char * name, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
 	{
 		if (scenarioGateway != 0)
 		{
-			scenarioGateway->reportObject(ObjectState(id, name, timestamp, roadId, laneId, laneOffset, s, speed));
+			scenarioGateway->reportObject(ObjectState(id, std::string(name), timestamp, roadId, laneId, laneOffset, s, speed));
 		}
 		
 		return 0;
 	}
 
-	int UNITY_DLL_API SE_GetNumberOfObjects()
+	UNITY_DLL_API int SE_GetNumberOfObjects()
 	{
 		if (scenarioGateway != 0)
 		{
@@ -90,7 +92,7 @@ extern "C"
 		}
 	}
 
-	float UNITY_DLL_API SE_GetObjectX(int index)
+	UNITY_DLL_API float SE_GetObjectX(int index)
 	{
 		if (scenarioGateway)
 		{
@@ -102,7 +104,7 @@ extern "C"
 		}
 	}
 
-	float UNITY_DLL_API SE_GetObjectY(int index)
+	UNITY_DLL_API float SE_GetObjectY(int index)
 	{
 		if (scenarioGateway)
 		{
@@ -114,7 +116,7 @@ extern "C"
 		}
 	}
 
-	float UNITY_DLL_API SE_GetObjectZ(int index)
+	UNITY_DLL_API float SE_GetObjectZ(int index)
 	{
 		if (scenarioGateway)
 		{
@@ -126,7 +128,7 @@ extern "C"
 		}
 	}
 
-	float UNITY_DLL_API SE_GetObjectH(int index)
+	UNITY_DLL_API float SE_GetObjectH(int index)
 	{
 		if (scenarioGateway)
 		{
@@ -138,7 +140,7 @@ extern "C"
 		}
 	}
 
-	float UNITY_DLL_API SE_GetObjectP(int index)
+	UNITY_DLL_API float SE_GetObjectP(int index)
 	{
 		if (scenarioGateway)
 		{
@@ -150,7 +152,7 @@ extern "C"
 		}
 	}
 
-	float UNITY_DLL_API SE_GetObjectR(int index)
+	UNITY_DLL_API float SE_GetObjectR(int index)
 	{
 		if (scenarioGateway)
 		{
@@ -162,14 +164,12 @@ extern "C"
 		}
 	}
 
-	ScenarioObjectState UNITY_DLL_API SE_GetObjectState(int index)
+	UNITY_DLL_API ScenarioObjectState SE_GetObjectState(int index)
 	{
 		struct ScenarioObjectState objStateReturn;
 
 		if (scenarioGateway)
 		{
-
-
 			memset(&objStateReturn, 0, sizeof(ObjectStateStruct));
 
 			ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(index);
