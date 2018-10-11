@@ -38,7 +38,7 @@ extern "C"
 
 		// Step scenario engine - zero time - just to reach init state
 		// Report all vehicles initially - to communicate initial position for external vehicles as well
-		scenarioEngine->step(0.0, true);  
+		scenarioEngine->step(0.0, true); 
 
 		return 0;
 	}
@@ -164,11 +164,61 @@ extern "C"
 		}
 	}
 
+	UNITY_DLL_API int SE_GetObjectRoadId(int index)
+	{
+		if (scenarioGateway)
+		{
+			return (int)scenarioGateway->getObjectStatePtrByIdx(index)->getRoadId();
+		}
+		else
+		{
+			return -1;
+		}
+	}
+
+	UNITY_DLL_API int SE_GetObjectLaneId(int index)
+	{
+		if (scenarioGateway)
+		{
+			return (int)scenarioGateway->getObjectStatePtrByIdx(index)->getLaneId();
+		}
+		else
+		{
+			return -1;
+		}
+	}
+
+	UNITY_DLL_API float SE_GetObjectLaneOffset(int index)
+	{
+		if (scenarioGateway)
+		{
+			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getLaneOffset();
+		}
+		else
+		{
+			return 0.0f;
+		}
+	}
+
+	UNITY_DLL_API float SE_GetObjectS(int index)
+	{
+		if (scenarioGateway)
+		{
+			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getS();
+		}
+		else
+		{
+			return 0.0f;
+		}
+	}
+
+
+	// Not done/tested
 	UNITY_DLL_API ScenarioObjectState SE_GetObjectState(int index)
 	{
 		struct ScenarioObjectState objStateReturn;
 
-		if (scenarioGateway)
+		if (scenarioGateway && index < scenarioGateway->getNumberOfObjects())
 		{
 			memset(&objStateReturn, 0, sizeof(ObjectStateStruct));
 

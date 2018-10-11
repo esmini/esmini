@@ -11,12 +11,7 @@ ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
 void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 {
 	// Open file for writing
-	if (fopen_s(&logfile, "c:/tmp/scenarioengine.log", "w") != 0)
-	{
-		logfile = 0;
-	}
-
-	if (logfile == 0)
+	if ((logfile = fopen("c:/tmp/scenarioengine.log", "w")) == 0)
 	{
 		printf("ScenarioEngine: Failed to open logfile!\n");
 	}
