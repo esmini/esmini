@@ -25,8 +25,8 @@ struct ScenarioObjectState
 
 #ifdef __cplusplus
 extern "C"
-#endif
 {
+#endif
 
 	UNITY_DLL_API int SE_Init(const char *oscFilename);
 	UNITY_DLL_API void SE_Step(float dt);
@@ -41,7 +41,7 @@ extern "C"
 	UNITY_DLL_API float SE_GetObjectX(int index);
 	UNITY_DLL_API float SE_GetObjectY(int index);
 	UNITY_DLL_API float SE_GetObjectZ(int index);
-	UNITY_DLL_API float SE_GetObjectH(int index);
+	UNITY_DLL_API float SE_GetObjectH(int index);	
 	UNITY_DLL_API float SE_GetObjectP(int index);
 	UNITY_DLL_API float SE_GetObjectR(int index);
 	UNITY_DLL_API int SE_GetObjectRoadId(int index);
