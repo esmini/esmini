@@ -92,6 +92,7 @@ extern "C"
 		}
 	}
 
+#if 0
 	UNITY_DLL_API ScenarioObjectState SE_GetObjectState(int index)
 	{
 		ScenarioObjectState state;
@@ -113,3 +114,25 @@ extern "C"
 		return state;
 	}
 }
+#else
+	UNITY_DLL_API int SE_GetObjectState(int index, ScenarioObjectState &state)
+	{
+
+		if (scenarioGateway)
+		{
+			state.id = scenarioGateway->getObjectStatePtrByIdx(index)->state_.id;
+			strncpy(state.name, scenarioGateway->getObjectStatePtrByIdx(index)->state_.name, NAME_LEN);
+			state.timestamp = scenarioGateway->getObjectStatePtrByIdx(index)->state_.timeStamp;
+			state.x = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetX();
+			state.y = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetY();
+			state.z = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetZ();
+			state.h = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetH();
+			state.p = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetP();
+			state.r = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetR();
+			state.speed = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.speed;
+		}
+
+		return 0;
+	}
+}
+#endif

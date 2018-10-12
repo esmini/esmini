@@ -40,7 +40,8 @@ extern "C"
 	UNITY_DLL_API int SE_ReportObjectRoadPos(int id, char *name, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
 
 	UNITY_DLL_API int SE_GetNumberOfObjects();
-	UNITY_DLL_API ScenarioObjectState SE_GetObjectState(int index);
+//	UNITY_DLL_API ScenarioObjectState SE_GetObjectState(int index);
+	UNITY_DLL_API int SE_GetObjectState(int index, ScenarioObjectState &state);
 
 #ifdef __cplusplus
 }
