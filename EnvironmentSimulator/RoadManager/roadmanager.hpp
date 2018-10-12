@@ -105,7 +105,7 @@ namespace roadmanager
 	public:
 		Spiral(double s, double x, double y, double hdg, double length, double curv_start, double curv_end) :
 			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_SPIRAL),
-			curv_start_(curv_start), curv_end_(curv_end), x0_(0.0), y0_(0.0), h0_(0.0), s0_(0.0), c_dot_(0.0) {}
+			curv_start_(curv_start), curv_end_(curv_end), c_dot_(0.0), x0_(0.0), y0_(0.0), h0_(0.0), s0_(0.0) {}
 
 		double GetCurvStart() { return curv_start_; }
 		double GetCurvEnd() { return curv_end_; }
@@ -387,7 +387,7 @@ namespace roadmanager
 
 		RoadLink() : type_(LinkType::NONE), element_id_(-1), element_type_(ELEMENT_TYPE_UNKNOWN), contact_point_type_(CONTACT_POINT_UNKNOWN) {}
 		RoadLink(LinkType type, ElementType element_type, int element_id, ContactPointType contact_point_type) :
-			element_type_(element_type), element_id_(element_id), contact_point_type_(contact_point_type), type_(type) {}
+			type_(type), element_id_(element_id), element_type_(element_type),  contact_point_type_(contact_point_type) {}
 		RoadLink(LinkType type, pugi::xml_node node);
 
 		int GetElementId() { return element_id_; }
