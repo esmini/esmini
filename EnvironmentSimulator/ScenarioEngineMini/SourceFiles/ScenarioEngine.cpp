@@ -88,28 +88,8 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 				}
 				else
 				{
-					if (o.getPosType() == GW_POS_TYPE_ROAD)
-					{
-						car->getPositionPtr()->SetLanePos(o.getRoadId(), o.getLaneId(), o.getS(), o.getLaneOffset());
-					}
-					else if (o.getPosType() == GW_POS_TYPE_XYH)
-					{
-						car->getPositionPtr()->SetXYH(o.getPosX(), o.getPosY(), o.getRotH());
-					}
-					else
-					{
-						log("Unsupported GW_POS_TYPE\n");
-					}
-
-					// Calculate magnitude of speed
-					double speed = sqrt(o.getVelX() * o.getVelX() + o.getVelY() * o.getVelY());
-
-					// Find out direction of speed, going forward or backwards? Compare with heading
-					double rotatedVelX = o.getVelX() * cos(-o.getRotH()) - o.getVelY() * sin(-o.getRotH());
-
-					int sign = rotatedVelX < 0 ? -1 : 1;
-
-					car->setSpeed(sign * speed);
+					*car->getPositionPtr() = o.state_.pos;
+					car->setSpeed(o.state_.speed);
 				}
 			}
 		}

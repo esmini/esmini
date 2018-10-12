@@ -222,18 +222,18 @@ int main(int argc, char** argv)
 			{
 				ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(i);
 
-				if (o->getId() != EGO_ID)
+				if (o->state_.id != EGO_ID)
 				{
-					ScenarioCar *sc = getScenarioCarById(o->getId());
+					ScenarioCar *sc = getScenarioCarById(o->state_.id);
 
 					// If not available, create it
 					if (sc == 0)
 					{
 						ScenarioCar new_sc;
 
-						std::cout << "Creating car " << o->getId() << " - got state from gateway" << std::endl;
+						std::cout << "Creating car " << o->state_.id << " - got state from gateway" << std::endl;
 
-						new_sc.id = o->getId();
+						new_sc.id = o->state_.id;
 						// Choose random model
 						int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (std::mt19937::max)();
 						new_sc.carModel = viewer->AddCar(carModelID);
@@ -244,14 +244,7 @@ int main(int argc, char** argv)
 						sc = &scenarioCar.back();
 					}
 
-					if (o->getPosType() == GW_POS_TYPE_ROAD)
-					{
-						sc->pos.SetLanePos(o->getRoadId(), o->getLaneId(), o->getS(), o->getLaneOffset());
-					}
-					else if (o->getPosType() == GW_POS_TYPE_XYH)
-					{
-						sc->pos.SetXYH(o->getPosX(), o->getPosY(), o->getRotH());
-					}
+					sc->pos = o->state_.pos;
 				}
 			}
 

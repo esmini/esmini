@@ -92,155 +92,24 @@ extern "C"
 		}
 	}
 
-	UNITY_DLL_API float SE_GetObjectX(int index)
-	{
-		if (scenarioGateway)
-		{
-			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosX();
-		}
-		else
-		{
-			return 0.0f;
-		}
-	}
-
-	UNITY_DLL_API float SE_GetObjectY(int index)
-	{
-		if (scenarioGateway)
-		{
-			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosY();
-		}
-		else
-		{
-			return 0.0f;
-		}
-	}
-
-	UNITY_DLL_API float SE_GetObjectZ(int index)
-	{
-		if (scenarioGateway)
-		{
-			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getPosZ();
-		}
-		else
-		{
-			return 0.0f;
-		}
-	}
-
-	UNITY_DLL_API float SE_GetObjectH(int index)
-	{
-		if (scenarioGateway)
-		{
-			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotH();
-		}
-		else
-		{
-			return 0.0f;
-		}
-	}
-
-	UNITY_DLL_API float SE_GetObjectP(int index)
-	{
-		if (scenarioGateway)
-		{
-			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotP();
-		}
-		else
-		{
-			return 0.0f;
-		}
-	}
-
-	UNITY_DLL_API float SE_GetObjectR(int index)
-	{
-		if (scenarioGateway)
-		{
-			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getRotR();
-		}
-		else
-		{
-			return 0.0f;
-		}
-	}
-
-	UNITY_DLL_API int SE_GetObjectRoadId(int index)
-	{
-		if (scenarioGateway)
-		{
-			return (int)scenarioGateway->getObjectStatePtrByIdx(index)->getRoadId();
-		}
-		else
-		{
-			return -1;
-		}
-	}
-
-	UNITY_DLL_API int SE_GetObjectLaneId(int index)
-	{
-		if (scenarioGateway)
-		{
-			return (int)scenarioGateway->getObjectStatePtrByIdx(index)->getLaneId();
-		}
-		else
-		{
-			return -1;
-		}
-	}
-
-	UNITY_DLL_API float SE_GetObjectLaneOffset(int index)
-	{
-		if (scenarioGateway)
-		{
-			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getLaneOffset();
-		}
-		else
-		{
-			return 0.0f;
-		}
-	}
-
-	UNITY_DLL_API float SE_GetObjectS(int index)
-	{
-		if (scenarioGateway)
-		{
-			return (float)scenarioGateway->getObjectStatePtrByIdx(index)->getS();
-		}
-		else
-		{
-			return 0.0f;
-		}
-	}
-
-
-	// Not done/tested
 	UNITY_DLL_API ScenarioObjectState SE_GetObjectState(int index)
 	{
-		struct ScenarioObjectState objStateReturn;
+		ScenarioObjectState state;
 
-		if (scenarioGateway && index < scenarioGateway->getNumberOfObjects())
+		if (scenarioGateway)
 		{
-			memset(&objStateReturn, 0, sizeof(ObjectStateStruct));
-
-			ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(index);
-			if (o != 0)
-			{
-				objStateReturn.id = o->getId();
-
-				// _CRT_SECURE_NO_WARNINGS
-				strncpy(objStateReturn.name, o->getName().c_str(), SE_NAME_SIZE);
-				objStateReturn.timestamp = (float)o->getTimeStamp();
-				objStateReturn.x = (float)o->getPosX();
-				objStateReturn.y = (float)o->getPosY();
-				objStateReturn.z = (float)o->getPosZ();
-				objStateReturn.h = (float)o->getRotH();
-				objStateReturn.p = (float)o->getRotP();
-				objStateReturn.r = (float)o->getRotR();
-				objStateReturn.speed = (float)o->convertVelocityToSpeed(o->getVelX(), o->getVelY(), o->getRotH());
-			}
-
+			state.id = scenarioGateway->getObjectStatePtrByIdx(index)->state_.id;
+			strncpy(state.name, scenarioGateway->getObjectStatePtrByIdx(index)->state_.name, NAME_LEN);
+			state.timestamp = scenarioGateway->getObjectStatePtrByIdx(index)->state_.timeStamp;
+			state.x = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetX();
+			state.y = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetY();
+			state.z = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetZ();
+			state.h = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetH();
+			state.p = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetP();
+			state.r = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetR();
+			state.speed = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.speed;
 		}
 
-		return objStateReturn;
+		return state;
 	}
 }
