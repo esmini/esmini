@@ -32,7 +32,11 @@ extern "C"
 {
 #endif
 
+#ifdef _SCENARIO_VIEWER
+	UNITY_DLL_API int SE_Init(const char *oscFilename, int useViewer);
+#else
 	UNITY_DLL_API int SE_Init(const char *oscFilename);
+#endif
 	UNITY_DLL_API void SE_Step(float dt);
 	UNITY_DLL_API void SE_Close();
 
@@ -42,6 +46,7 @@ extern "C"
 	UNITY_DLL_API int SE_GetNumberOfObjects();
 //	UNITY_DLL_API ScenarioObjectState SE_GetObjectState(int index);
 	UNITY_DLL_API int SE_GetObjectState(int index, ScenarioObjectState &state);
+	UNITY_DLL_API int SE_GetObjectStates(int &nObjects, ScenarioObjectState* state);
 
 #ifdef __cplusplus
 }
