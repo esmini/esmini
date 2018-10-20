@@ -16,8 +16,8 @@ extern double deltaSimTime;
 
 const float springFC = 14.0f;
 const float springDampingRatio = 0.9f;
-const float orbitCameraDistance = 12.0f;
-const float orbitCameraAngle = 25.0f;
+const float orbitCameraDistance = 16.0f;
+const float orbitCameraAngle = 15.0f;
 
 
 RubberbandManipulator::RubberbandManipulator(unsigned int mode)

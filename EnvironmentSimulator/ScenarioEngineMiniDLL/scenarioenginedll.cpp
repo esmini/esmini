@@ -1,6 +1,8 @@
 #include "scenarioenginedll.h"
 #include "ScenarioEngine.hpp"
 
+#ifdef _SCENARIO_VIEWER
+
 #include "viewer.hpp"
 #include "RubberbandManipulator.h"
 
@@ -15,14 +17,17 @@ typedef struct
 
 static std::vector<ScenarioCar> scenarioCar;
 
-static ScenarioEngine *scenarioEngine = 0;
-static ScenarioGateway *scenarioGateway = 0;
-static roadmanager::OpenDrive *roadManager;
 static viewer::Viewer *scViewer;
 
+#endif
+
+static ScenarioEngine *scenarioEngine = 0;
+static ScenarioGateway *scenarioGateway = 0;
+static roadmanager::OpenDrive *roadManager = 0;
 double simTime = 0;
 double deltaSimTime = 0;  // external - used by Viewer::RubberBandCamera
 
+#ifdef _SCENARIO_VIEWER
 
 ScenarioCar *getScenarioCarById(int id)
 {
@@ -37,6 +42,32 @@ ScenarioCar *getScenarioCarById(int id)
 	return 0;
 }
 
+#endif
+
+static void resetScenario(void )
+{
+	simTime = 0; // Start time initialized to zero
+	deltaSimTime = 0;
+	scenarioGateway = 0;
+
+	if (scenarioEngine != 0)
+	{
+		delete scenarioEngine;
+		scenarioEngine = 0;
+		printf("Closed scenario engine\n");
+	}
+
+#ifdef _SCENARIO_VIEWER
+	if (scViewer != 0)
+	{
+		scenarioCar.clear();
+		delete scViewer;
+		scViewer = 0;
+		printf("Closed viewer\n");
+	}
+#endif
+}
+
 extern "C"
 {
 #ifdef _SCENARIO_VIEWER
@@ -45,15 +76,8 @@ extern "C"
 	UNITY_DLL_API int SE_Init(const char *oscFilename)
 #endif
 	{
-		simTime = 0; // Start time initialized to zero
-		scenarioGateway = 0;
+		resetScenario();
 
-		if (scenarioEngine != 0)
-		{
-			delete scenarioEngine;
-			scenarioEngine = 0;
-		}
-		
 		// Create scenario engine
 		try
 		{
@@ -83,6 +107,7 @@ extern "C"
 			std::cout << e.what() << std::endl;
 			scenarioEngine = 0;
 			scenarioGateway = 0;
+			scViewer = 0;
 			return -1;
 		}
 
@@ -95,8 +120,7 @@ extern "C"
 
 	UNITY_DLL_API void SE_Close()
 	{
-		delete scenarioEngine;
-		scenarioEngine = 0;
+		resetScenario();
 	}
 
 	UNITY_DLL_API void SE_Step(float dt)
@@ -118,7 +142,6 @@ extern "C"
 			for (int i = 0; i < scenarioGateway->getNumberOfObjects(); i++)
 			{
 				ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(i);
-
 				ScenarioCar *sc = getScenarioCarById(o->state_.id);
 
 				// If not available, create it
@@ -150,7 +173,10 @@ extern "C"
 			}
 
 			// Update graphics
-			scViewer->osgViewer_->frame();
+			if (scViewer)
+			{
+				scViewer->osgViewer_->frame();
+			}
 
 #endif
 		}
@@ -208,21 +234,21 @@ extern "C"
 	}
 }
 #else  // fill in state struct provided by reference argument
-	UNITY_DLL_API int SE_GetObjectState(int index, ScenarioObjectState &state)
+	UNITY_DLL_API int SE_GetObjectState(int index, ScenarioObjectState *state)
 	{
 
 		if (scenarioGateway)
 		{
-			state.id = scenarioGateway->getObjectStatePtrByIdx(index)->state_.id;
-			strncpy(state.name, scenarioGateway->getObjectStatePtrByIdx(index)->state_.name, NAME_LEN);
-			state.timestamp = scenarioGateway->getObjectStatePtrByIdx(index)->state_.timeStamp;
-			state.x = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetX();
-			state.y = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetY();
-			state.z = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetZ();
-			state.h = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetH();
-			state.p = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetP();
-			state.r = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetR();
-			state.speed = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.speed;
+			state->id = scenarioGateway->getObjectStatePtrByIdx(index)->state_.id;
+//			strncpy(state->name, scenarioGateway->getObjectStatePtrByIdx(index)->state_.name, NAME_LEN);
+			state->timestamp = scenarioGateway->getObjectStatePtrByIdx(index)->state_.timeStamp;
+			state->x = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetX();
+			state->y = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetY();
+			state->z = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetZ();
+			state->h = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetH();
+			state->p = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetP();
+			state->r = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetR();
+			state->speed = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.speed;
 		}
 
 		return 0;
@@ -230,16 +256,16 @@ extern "C"
 }
 #endif
 
-UNITY_DLL_API int SE_GetObjectStates(int &nObjects, ScenarioObjectState* state)
+UNITY_DLL_API int SE_GetObjectStates(int *nObjects, ScenarioObjectState* state)
 {
 	int i;
 
 	if (scenarioGateway)
 	{
-		for (i = 0; i < nObjects && i < scenarioGateway->getNumberOfObjects(); i++)
+		for (i = 0; i < *nObjects && i < scenarioGateway->getNumberOfObjects(); i++)
 		{
 			state[i].id = scenarioGateway->getObjectStatePtrByIdx(i)->state_.id;
-			strncpy(state[i].name, scenarioGateway->getObjectStatePtrByIdx(i)->state_.name, NAME_LEN);
+//			strncpy(state[i].name, scenarioGateway->getObjectStatePtrByIdx(i)->state_.name, NAME_LEN);
 			state[i].timestamp = scenarioGateway->getObjectStatePtrByIdx(i)->state_.timeStamp;
 			state[i].x = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetX();
 			state[i].y = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetY();
@@ -249,11 +275,11 @@ UNITY_DLL_API int SE_GetObjectStates(int &nObjects, ScenarioObjectState* state)
 			state[i].r = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetR();
 			state[i].speed = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.speed;
 		}
-		nObjects = i;
+		*nObjects = i;
 	}
 	else
 	{
-		nObjects = 0;
+		*nObjects = 0;
 	}
 	return 0;
 }

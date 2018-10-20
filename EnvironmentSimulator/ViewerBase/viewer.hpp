@@ -41,6 +41,7 @@ namespace viewer
 		int camMode_;
 		osg::ref_ptr<osg::Group> line_node_;
 		
+		osg::ref_ptr<osg::Node> shadow_node_;
 		osg::ref_ptr<osg::Vec3Array> vertexData;
 		osg::ref_ptr<osg::Geometry> vehicleLine_;
 		osg::ref_ptr<osg::Vec3Array> pointData;
@@ -61,7 +62,7 @@ namespace viewer
 		~Viewer();
 		CarModel* AddCar(int modelId);
 		int AddEnvironment(const char* filename);
-		static osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
+		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
 		void UpdateVLine(double x, double y, double z);
 		void UpdateVPoints(double xt, double yt, double xl, double yl, double z);
 		void setKeyUp(bool pressed) { keyUp_ = pressed; }

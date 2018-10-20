@@ -116,7 +116,7 @@ CarModel::CarModel(osg::ref_ptr<osg::LOD> lod)
 
 CarModel::~CarModel()
 {
-
+	wheel_.clear();
 }
 
 void CarModel::SetPosition(double x, double y, double z)
@@ -158,10 +158,6 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	odrManager_ = odrManager;
 	modelFilename_ = modelFilename;
 
-	if (!ReadCarModels())
-	{
-		printf("Viewer::Viewer Failed to read car models!\n");
-	}
 	lodScale_ = LOD_SCALE_DEFAULT;
 	currentCarInFocus_ = 0;
 	keyUp_ = false;
@@ -174,22 +170,41 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
 	arguments.read("--lodScale", lodScale_);
 
-	// Set up 3D vehicle models
-	ReadCarModels();
+
+	// Load shadow geometry - assume it resides in the same directory as the main environment model
+	std::string filePath = dirnameOf(modelFilename_);
+	filePath.append("/" + std::string(SHADOW_MODEL_FILENAME));
+
+	shadow_node_ = osgDB::readNodeFile(filePath);
+	if (!shadow_node_)
+	{
+		throw("Failed to shadow model %s\n", filePath.c_str());
+	}
+
+	if (!ReadCarModels())
+	{
+		throw("Viewer::Viewer Failed to read car models!\n");
+	}
 
 	// set the scene to render
 	rootnode_ = new osg::MatrixTransform;
 	envTx_ = new osg::PositionAttitudeTransform;
-	AddEnvironment(modelFilename);	// add environment
+
+	// add environment
+	if (AddEnvironment(modelFilename) == -1)
+	{
+		throw "Failed to load environment model";
+	}
 	rootnode_->addChild(envTx_);
 
 	if (!CreateRoadLines(odrManager, rootnode_))
 	{
-		printf("Viewer::Viewer Failed to create road lines!\n");
+		throw("Viewer::Viewer Failed to create road lines!\n");
 	}
+
 	if (!CreateVLineAndPoint(rootnode_))
 	{
-		printf("Viewer::Viewer Failed to create vehicle line!\n");
+		throw("Viewer::Viewer Failed to create vehicle line!\n");
 	}
 
 	osgViewer_->setSceneData(rootnode_);
@@ -262,6 +277,7 @@ Viewer::~Viewer()
 	{
 		delete(car);
 	}
+	cars_.clear();
 	delete(osgViewer_);
 }
 
@@ -282,23 +298,9 @@ CarModel* Viewer::AddCar(int modelId)
 
 osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 {
-	static osg::ref_ptr<osg::Node> shadow_node = 0;
 	osg::ref_ptr<osg::PositionAttitudeTransform> shadow_tx = 0;
 	osg::ref_ptr<osg::Node> node;
 	osg::ref_ptr<osg::LOD> lod = 0;
-
-	if (shadow_node == 0)
-	{
-		// Assume the shadow model resides in the same directory as the main environment model
-		std::string filePath = dirnameOf(filename);
-		filePath.append("/" + std::string(SHADOW_MODEL_FILENAME));
-
-		shadow_node = osgDB::readNodeFile(filePath);
-		if (!shadow_node)
-		{
-			printf("Failed to shadow model %s\n", filePath.c_str());
-		}
-	}
 
 	node = osgDB::readNodeFile(filename);
 	if (!node)
@@ -323,7 +325,7 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 	shadow_tx = new osg::PositionAttitudeTransform;
 	shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.0));
 	shadow_tx->setScale(osg::Vec3d(SHADOW_SCALE*(dx / 2), SHADOW_SCALE*(dy / 2), 1.0));
-	shadow_tx->addChild(shadow_node);
+	shadow_tx->addChild(shadow_node_);
 
 	osg::ref_ptr<osg::Group> group = new osg::Group;
 	group->addChild(node);
@@ -545,7 +547,6 @@ int Viewer::AddEnvironment(const char* filename)
 	{
 		printf("Removing current env\n");
 		envTx_->removeChild(environment_);
-		//free(envTx);
 	}
 
 	// load and apply new model

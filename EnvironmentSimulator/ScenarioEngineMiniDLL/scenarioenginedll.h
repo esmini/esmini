@@ -9,10 +9,10 @@
 
 #define SE_NAME_SIZE 32
 
-struct ScenarioObjectState
+typedef struct
 {
 	int id;  
-	char name[SE_NAME_SIZE];
+//	char name[SE_NAME_SIZE];
 	float timestamp;
 	float x;
 	float y;
@@ -25,7 +25,7 @@ struct ScenarioObjectState
 	float laneOffset;
 	float s;
 	float speed;
-};
+} ScenarioObjectState;
 
 #ifdef __cplusplus
 extern "C"
@@ -45,8 +45,8 @@ extern "C"
 
 	UNITY_DLL_API int SE_GetNumberOfObjects();
 //	UNITY_DLL_API ScenarioObjectState SE_GetObjectState(int index);
-	UNITY_DLL_API int SE_GetObjectState(int index, ScenarioObjectState &state);
-	UNITY_DLL_API int SE_GetObjectStates(int &nObjects, ScenarioObjectState* state);
+	UNITY_DLL_API int SE_GetObjectState(int index, ScenarioObjectState *state);
+	UNITY_DLL_API int SE_GetObjectStates(int *nObjects, ScenarioObjectState* state);
 
 #ifdef __cplusplus
 }
