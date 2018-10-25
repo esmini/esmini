@@ -12,12 +12,19 @@
 #include <osgGA/TerrainManipulator>
 #include <osgGA/SphericalManipulator>
 #include <osgViewer/ViewerEventHandlers>
+#include <osgDB/Registry>
 
 #define SHADOW_SCALE 1.20
 #define SHADOW_MODEL_FILENAME "shadow_face.osgb"
 #define LOD_DIST 3000
 #define LOD_SCALE_DEFAULT 1.2
 
+
+USE_OSGPLUGIN(osg2)
+USE_SERIALIZER_WRAPPER_LIBRARY(osg)
+USE_SERIALIZER_WRAPPER_LIBRARY(osgSim)
+USE_COMPRESSOR_WRAPPER(ZLibCompressor)
+USE_GRAPHICSWINDOW()
 
 using namespace viewer;
 
