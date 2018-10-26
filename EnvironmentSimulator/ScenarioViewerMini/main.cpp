@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	SE_Init(argv[1], true);
+	SE_Init(argv[1], false);
 
 	for (int i = 0; i < 1000; i++)
 	{

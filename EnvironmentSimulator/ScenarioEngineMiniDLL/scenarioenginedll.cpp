@@ -17,7 +17,7 @@ typedef struct
 
 static std::vector<ScenarioCar> scenarioCar;
 
-static viewer::Viewer *scViewer;
+static viewer::Viewer *scViewer = 0;
 
 #endif
 
@@ -54,7 +54,7 @@ static void resetScenario(void )
 	{
 		delete scenarioEngine;
 		scenarioEngine = 0;
-		printf("Closed scenario engine\n");
+		printf("Closing scenario engine\n");
 	}
 
 #ifdef _SCENARIO_VIEWER
@@ -63,7 +63,7 @@ static void resetScenario(void )
 		scenarioCar.clear();
 		delete scViewer;
 		scViewer = 0;
-		printf("Closed viewer\n");
+		printf("Closing viewer\n");
 	}
 #endif
 }
@@ -138,46 +138,46 @@ extern "C"
 			scenarioEngine->step((double)dt);
 
 #ifdef _SCENARIO_VIEWER
-			// Fetch states of scenario objects
-			for (int i = 0; i < scenarioGateway->getNumberOfObjects(); i++)
-			{
-				ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(i);
-				ScenarioCar *sc = getScenarioCarById(o->state_.id);
-
-				// If not available, create it
-				if (sc == 0)
-				{
-					ScenarioCar new_sc;
-
-					std::cout << "Creating car " << o->state_.id << " - got state from gateway" << std::endl;
-
-					new_sc.id = o->state_.id;
-
-					// Choose model from index - wrap to handle more vehicles than models
-					int carModelID = i % scViewer->carModels_.size();
-					new_sc.carModel = scViewer->AddCar(carModelID);
-
-					// Add it to the list of scenario cars
-					scenarioCar.push_back(new_sc);
-
-					sc = &scenarioCar.back();
-				}
-				sc->pos = o->state_.pos;
-			}
-
-			// Visualize scenario cars
-			for (auto &sc : scenarioCar)
-			{
-				sc.carModel->SetPosition(sc.pos.GetX(), sc.pos.GetY(), sc.pos.GetZ());
-				sc.carModel->SetRotation(sc.pos.GetH(), sc.pos.GetR(), sc.pos.GetP());
-			}
-
 			// Update graphics
 			if (scViewer)
 			{
+
+				// Fetch states of scenario objects
+				for (int i = 0; i < scenarioGateway->getNumberOfObjects(); i++)
+				{
+					ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(i);
+					ScenarioCar *sc = getScenarioCarById(o->state_.id);
+
+					// If not available, create it
+					if (sc == 0)
+					{
+						ScenarioCar new_sc;
+
+						std::cout << "Creating car " << o->state_.id << " - got state from gateway" << std::endl;
+
+						new_sc.id = o->state_.id;
+
+						// Choose model from index - wrap to handle more vehicles than models
+						int carModelID = i % scViewer->carModels_.size();
+						new_sc.carModel = scViewer->AddCar(carModelID);
+
+						// Add it to the list of scenario cars
+						scenarioCar.push_back(new_sc);
+
+						sc = &scenarioCar.back();
+					}
+					sc->pos = o->state_.pos;
+				}
+
+				// Visualize scenario cars
+				for (auto &sc : scenarioCar)
+				{
+					sc.carModel->SetPosition(sc.pos.GetX(), sc.pos.GetY(), sc.pos.GetZ());
+					sc.carModel->SetRotation(sc.pos.GetH(), sc.pos.GetR(), sc.pos.GetP());
+				}
+
 				scViewer->osgViewer_->frame();
 			}
-
 #endif
 		}
 	}
