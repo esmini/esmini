@@ -4,14 +4,15 @@
 #include <iostream>
 #include <string>
 
-struct OSCCatalogReference
+class OSCCatalogReference
 {
+public:
 	std::string catalogName;
 	std::string entryName;
 
 	OSCParameterAssignment ParameterAssignment;
 
-	void printOSCCatalogReference() 
+	void printOSCCatalogReference()
 	{
 		std::cout << " - CatalogReference" << std::endl;
 		std::cout << std::endl;

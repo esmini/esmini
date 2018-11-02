@@ -18,6 +18,7 @@
 #define SHADOW_MODEL_FILENAME "shadow_face.osgb"
 #define LOD_DIST 3000
 #define LOD_SCALE_DEFAULT 1.2
+#define MIN(x, y) ((x)<(y)?(x):(y))
 
 
 USE_OSGPLUGIN(osg2)
@@ -280,9 +281,9 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 
 Viewer::~Viewer()
 {
-	for (auto &car : cars_)
+	for (size_t i=0; i<cars_.size(); i++)
 	{
-		delete(car);
+		delete(cars_[i]);
 	}
 	cars_.clear();
 	delete(osgViewer_);
@@ -349,12 +350,12 @@ bool Viewer::ReadCarModels()
 {
 	osg::ref_ptr<osg::LOD> lod;
 
-	for (int i = 0; i < carModelsFiles_.size(); i++)
+	for (int i = 0; i < sizeof(carModelsFiles_)/sizeof(carModelsFiles_[0]); i++)
 	{
 
 		// Assume the car models resides in the same directory as the main environment model
 		std::string filePath = dirnameOf(modelFilename_);
-		filePath.append("/" + carModelsFiles_[i]);
+		filePath.append("/" + std::string(carModelsFiles_[i]));
 
 		lod = LoadCarModel(filePath.c_str());
 
@@ -442,7 +443,7 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 
 				for (int k = 0; k < steps + 1; k++)
 				{
-					pos->SetLanePos(road->GetId(), lane->GetId(), fmin(s_end, s_start + k * step_length), 0, i);
+					pos->SetLanePos(road->GetId(), lane->GetId(), MIN(s_end, s_start + k * step_length), 0, i);
 					point.set(pos->GetX(), pos->GetY(), pos->GetZ() + z_offset);
 					points->push_back(point);
 				}

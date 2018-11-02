@@ -142,8 +142,7 @@ void ScenarioReader::parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode)
 
 			route.Waypoint.back().Position = new OSCPosition;
 
-			parseOSCPosition(*(route.Waypoint.back().Position), routeChild.first_child());
-
+			parseOSCPosition(*route.Waypoint.back().Position, routeChild.first_child());
 		}
 	}
 	std::cout << "ScenarioReader: parseOSCRoute finished" << std::endl;
@@ -460,17 +459,17 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 		}
 		else if (positionChildName == "Lane")
 		{
-			position.Lane.exists = true;
+			position.lane_ = new OSCPosition::Lane();
 
 			if (positionChild.child("Orientation"))
 			{
 				std::cout << "Orientation" << " is not implemented " << std::endl;
 			}
 
-			position.Lane.roadId = ReadAttribute(positionChild.attribute("roadId"));
-			position.Lane.laneId = std::stoi(ReadAttribute(positionChild.attribute("laneId")));
-			position.Lane.offset = std::stod(ReadAttribute(positionChild.attribute("offset")));
-			position.Lane.s = std::stod(ReadAttribute(positionChild.attribute("s")));
+			position.lane_->roadId = std::stoi(ReadAttribute(positionChild.attribute("roadId")));
+			position.lane_->laneId = std::stoi(ReadAttribute(positionChild.attribute("laneId")));
+			position.lane_->offset = std::stod(ReadAttribute(positionChild.attribute("offset")));
+			position.lane_->s = std::stod(ReadAttribute(positionChild.attribute("s")));
 		}
 		else if (positionChildName == "RelativeLane")
 		{
@@ -478,12 +477,11 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 		}
 		else if (positionChildName == "Route")
 		{
-
+			position.route_ = new OSCPosition::Route();
 			for (pugi::xml_node routeChild = positionChild.first_child(); routeChild; routeChild = routeChild.next_sibling())
 			{
-				std::string routeChildName(routeChild.name());
 
-				if (routeChildName == "RouteRef")
+				if (routeChild.name() == std::string("RouteRef"))
 				{
 					for (pugi::xml_node routeRefChild = routeChild.first_child(); routeRefChild; routeRefChild = routeRefChild.next_sibling())
 					{
@@ -491,19 +489,19 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 
 						if (routeRefChildName == "Route")
 						{
-							parseOSCRoute(position.Route.RouteRef.Route, routeRefChild);
+							parseOSCRoute(position.route_->RouteRef.Route, routeRefChild);
 						}
 						else if (routeRefChildName == "CatalogReference")
 						{
-							parseOSCCatalogReference(position.Route.RouteRef.CatalogReference, routeRefChild);
+							parseOSCCatalogReference(position.route_->RouteRef.CatalogReference, routeRefChild);
 						}
 					}
 				}
-				if (routeChildName == "Orientation")
+				if (routeChild.name() == std::string("Orientation"))
 				{
-					std::cout << routeChildName << " is not implemented " << std::endl;
+					std::cout << routeChild.name() << " is not implemented " << std::endl;
 				}
-				else if (routeChildName == "Position")
+				else if (routeChild.name() == std::string("Position"))
 				{
 					for (pugi::xml_node positionChild = routeChild.first_child(); positionChild; positionChild = positionChild.next_sibling())
 					{
@@ -519,13 +517,13 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 						}
 						else if (positionChildName == "LaneCoord")
 						{
-							position.Route.Position.LaneCoord.pathS = std::stod(ReadAttribute(positionChild.attribute("pathS")));
-							position.Route.Position.LaneCoord.laneId = std::stoi(ReadAttribute(positionChild.attribute("laneId")));
+							position.route_->Position.LaneCoord.pathS = std::stod(ReadAttribute(positionChild.attribute("pathS")));
+							position.route_->Position.LaneCoord.laneId = std::stoi(ReadAttribute(positionChild.attribute("laneId")));
 
 							pugi::xml_attribute laneOffsetAttribute = positionChild.attribute("laneOffset");
 							if (laneOffsetAttribute != NULL)
 							{
-								position.Route.Position.LaneCoord.laneOffset = std::stod(ReadAttribute(positionChild.attribute("laneOffset")));
+								position.route_->Position.LaneCoord.laneOffset = std::stod(ReadAttribute(positionChild.attribute("laneOffset")));
 							}
 						}
 					}
@@ -544,164 +542,150 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 
 	for (pugi::xml_node actionChild = actionNode.first_child(); actionChild; actionChild = actionChild.next_sibling())
 	{
-		std::string actionChildName(actionChild.name());
-
-		if (actionChildName == "Longitudinal")
+		if (actionChild.name() == std::string("Longitudinal"))
 		{
 			for (pugi::xml_node longitudinalChild = actionChild.first_child(); longitudinalChild; longitudinalChild = longitudinalChild.next_sibling())
 			{
-				action.Longitudinal.exists = true;
-				std::string longitudinalChildName(longitudinalChild.name());
-
-				if (longitudinalChildName == "Speed")
+				if (longitudinalChild.name() == std::string("Speed"))
 				{
-					action.Longitudinal.Speed.exists = true;
+					action.speed_ = new OSCPrivateAction::Speed();
 
 					for (pugi::xml_node speedChild = longitudinalChild.first_child(); speedChild; speedChild = speedChild.next_sibling())
 					{
-						std::string speedChildName(speedChild.name());
 
-						if (speedChildName == "Dynamics")
+						if (speedChild.name() == std::string("Dynamics"))
 						{
-							action.Longitudinal.Speed.Dynamics.exists = true;
+							action.speed_->dynamics_ = new OSCPrivateAction::SpeedDynamics();
 
-							action.Longitudinal.Speed.Dynamics.shape = ReadAttribute(speedChild.attribute("shape"));
+							action.speed_->dynamics_->shape = ReadAttribute(speedChild.attribute("shape"));
 
 							if (ReadAttribute(speedChild.attribute("rate")) != "")
 							{
-								action.Longitudinal.Speed.Dynamics.rate = std::stod(ReadAttribute(speedChild.attribute("rate")));
+								action.speed_->dynamics_->rate = std::stod(ReadAttribute(speedChild.attribute("rate")));
 							}
 
 							if (ReadAttribute(speedChild.attribute("time")) != "")
 							{
-								action.Longitudinal.Speed.Dynamics.time = std::stod(ReadAttribute(speedChild.attribute("time")));
+								action.speed_->dynamics_->time = std::stod(ReadAttribute(speedChild.attribute("time")));
 							}
 
 							if (ReadAttribute(speedChild.attribute("distance")) != "")
 							{
-								action.Longitudinal.Speed.Dynamics.distance = std::stod(ReadAttribute(speedChild.attribute("distance")));
+								action.speed_->dynamics_->distance = std::stod(ReadAttribute(speedChild.attribute("distance")));
 							}
 						}
-						else if (speedChildName == "Target")
+						else if (speedChild.name() == std::string("Target"))
 						{
-							action.Longitudinal.Speed.Target.exists = true;
+							action.speed_->target_ = new OSCPrivateAction::SpeedTarget();
 
 							for (pugi::xml_node targetChild = speedChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
 							{
-								std::string targetChildName(targetChild.name());
-
-								if (targetChildName == "Relative")
+								if (targetChild.name() == std::string("Relative"))
 								{
-									action.Longitudinal.Speed.Target.Relative.exists = true;
+									action.speed_->target_->relative_ = new OSCPrivateAction::SpeedTargetRelative();
 
-									action.Longitudinal.Speed.Target.Relative.object = ReadAttribute(targetChild.attribute("object"));
-									action.Longitudinal.Speed.Target.Relative.value = std::stod(ReadAttribute(targetChild.attribute("value")));
-									action.Longitudinal.Speed.Target.Relative.valueType = ReadAttribute(targetChild.attribute("valueType"));
-									action.Longitudinal.Speed.Target.Relative.continuous = std::stod(ReadAttribute(targetChild.attribute("continuous")));
+									action.speed_->target_->relative_->object = ReadAttribute(targetChild.attribute("object"));
+									action.speed_->target_->relative_->value = std::stod(ReadAttribute(targetChild.attribute("value")));
+									action.speed_->target_->relative_->valueType = ReadAttribute(targetChild.attribute("valueType"));
+									action.speed_->target_->relative_->continuous = (
+										ReadAttribute(targetChild.attribute("continuous")) == "true" ||
+										ReadAttribute(targetChild.attribute("continuous")) == "1");
 								}
-								else if (targetChildName == "Absolute")
+								else if (targetChild.name() == std::string("Absolute"))
 								{
-									action.Longitudinal.Speed.Target.Absolute.exists = true;
+									action.speed_->target_->absolute_ = new OSCPrivateAction::SpeedTargetAbsolute();
 
-									action.Longitudinal.Speed.Target.Absolute.value = std::stod(ReadAttribute(targetChild.attribute("value")));
+									action.speed_->target_->absolute_->value = std::stod(ReadAttribute(targetChild.attribute("value")));
 								}
 							}
 						}
 					}
 				}
-				else if (longitudinalChildName == "Distance")
+				else if (longitudinalChild.name() == std::string("Distance"))
 				{
-					std::cout << longitudinalChildName << " is not implemented " << std::endl;
+					std::cout << longitudinalChild.name() << " is not implemented " << std::endl;
 				}
 
 			}
 		}
-		else if (actionChildName == "Lateral")
+		else if (actionChild.name() == std::string("Lateral"))
 		{
 			for (pugi::xml_node lateralChild = actionChild.first_child(); lateralChild; lateralChild = lateralChild.next_sibling())
 			{
-
-				std::string lateralChildName(lateralChild.name());
-
-				if (lateralChildName == "LaneChange")
+				if (lateralChild.name() == std::string("LaneChange"))
 				{
+					action.laneChange_ = new OSCPrivateAction::LaneChange();
+
 					if (ReadAttribute(lateralChild.attribute("targetLaneOffset")) != "")
 					{
-						action.Lateral.LaneChange.targetLaneOffset = std::stod(ReadAttribute(lateralChild.attribute("targetLaneOffset")));
+						action.laneChange_->targetLaneOffset = std::stod(ReadAttribute(lateralChild.attribute("targetLaneOffset")));
 					}
 
 					for (pugi::xml_node laneChangeChild = lateralChild.first_child(); laneChangeChild; laneChangeChild = laneChangeChild.next_sibling())
 					{
-
-						std::string laneChangeChildName(laneChangeChild.name());
-
-						if (laneChangeChildName == "Dynamics")
+						if (laneChangeChild.name() == std::string("Dynamics"))
 						{
-							action.Lateral.LaneChange.Dynamics.time = std::stod(ReadAttribute(laneChangeChild.attribute("time")));
+							action.laneChange_->Dynamics.time = std::stod(ReadAttribute(laneChangeChild.attribute("time")));
 
 							if (ReadAttribute(laneChangeChild.attribute("distance")) != "")
 							{
-								action.Lateral.LaneChange.Dynamics.distance = std::stod(ReadAttribute(laneChangeChild.attribute("distance")));
+								action.laneChange_->Dynamics.distance = std::stod(ReadAttribute(laneChangeChild.attribute("distance")));
 							}
 
-							action.Lateral.LaneChange.Dynamics.shape = ReadAttribute(laneChangeChild.attribute("shape"));
+							action.laneChange_->Dynamics.shape = ReadAttribute(laneChangeChild.attribute("shape"));
 						}
-						else if (laneChangeChildName == "Target")
+						else if (laneChangeChild.name() == std::string("Target"))
 						{
 							for (pugi::xml_node targetChild = laneChangeChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
 							{
-
-								std::string targetChildName(targetChild.name());
-
-								if (targetChildName == "Relative")
+								if (targetChild.name() == std::string("Relative"))
 								{
-									action.Lateral.LaneChange.Target.Relative.object = ReadAttribute(targetChild.attribute("object"));
-									action.Lateral.LaneChange.Target.Relative.value = std::stod(ReadAttribute(targetChild.attribute("value")));
+									action.laneChange_->Target.relative_ = new OSCPrivateAction::LaneRelative();
+									action.laneChange_->Target.relative_->object = ReadAttribute(targetChild.attribute("object"));
+									action.laneChange_->Target.relative_->value = std::stod(ReadAttribute(targetChild.attribute("value")));
 								}
-								else if (targetChildName == "Absolute")
+								else if (targetChild.name() == std::string("Absolute"))
 								{
-									action.Lateral.LaneChange.Target.Absolute.value = std::stod(ReadAttribute(targetChild.attribute("value")));
+									action.laneChange_->Target.absolute_ = new OSCPrivateAction::LaneAbsolute();
+									action.laneChange_->Target.absolute_->value = std::stod(ReadAttribute(targetChild.attribute("value")));
 								}
 							}
 						}
 					}
 				}
-				else if(lateralChildName == "LaneOffset")
+				else if(lateralChild.name() == std::string("LaneOffset"))
 				{
+					action.laneOffset_ = new OSCPrivateAction::LaneOffset();
 					for (pugi::xml_node laneOffsetChild = lateralChild.first_child(); laneOffsetChild; laneOffsetChild = laneOffsetChild.next_sibling())
 					{
-
-						std::string laneOffsetChildName(laneOffsetChild.name());
-
-						if (laneOffsetChildName == "Dynamics")
+						if (laneOffsetChild.name() == std::string("Dynamics"))
 						{
 							if (ReadAttribute(laneOffsetChild.attribute("maxLateralAcc")) != "")
 							{
-								action.Lateral.LaneOffset.Dynamics.maxLateralAcc = std::stod(ReadAttribute(laneOffsetChild.attribute("maxLateralAcc")));
+								action.laneOffset_->Dynamics.maxLateralAcc = std::stod(ReadAttribute(laneOffsetChild.attribute("maxLateralAcc")));
 							}
 
 							if (ReadAttribute(laneOffsetChild.attribute("duration")) != "")
 							{
-								action.Lateral.LaneOffset.Dynamics.duration = std::stod(ReadAttribute(laneOffsetChild.attribute("duration")));
+								action.laneOffset_->Dynamics.duration = std::stod(ReadAttribute(laneOffsetChild.attribute("duration")));
 							}
 
-							action.Lateral.LaneOffset.Dynamics.shape = ReadAttribute(laneOffsetChild.attribute("shape"));
+							action.laneOffset_->Dynamics.shape = ReadAttribute(laneOffsetChild.attribute("shape"));
 						}
-						else if (laneOffsetChildName == "Target")
+						else if (laneOffsetChild.name() == std::string("Target"))
 						{
 							for (pugi::xml_node targetChild = laneOffsetChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
 							{
-
-								std::string targetChildName(targetChild.name());
-
-								if (targetChildName == "Relative")
+								if (targetChild.name() == std::string("Relative"))
 								{
-									action.Lateral.LaneOffset.Target.Relative.object = ReadAttribute(targetChild.attribute("object"));
-									action.Lateral.LaneOffset.Target.Relative.value = std::stod(ReadAttribute(targetChild.attribute("value")));
+									action.laneOffset_->Target.relative_ = new OSCPrivateAction::LaneRelative();
+									action.laneOffset_->Target.relative_->object = ReadAttribute(targetChild.attribute("object"));
+									action.laneOffset_->Target.relative_->value = std::stod(ReadAttribute(targetChild.attribute("value")));
 								}
-								else if (targetChildName == "Absolute")
+								else if (targetChild.name() == std::string("Absolute"))
 								{
-									action.Lateral.LaneOffset.Target.Absolute.value = std::stod(ReadAttribute(targetChild.attribute("value")));
+									action.laneOffset_->Target.absolute_ = new OSCPrivateAction::LaneAbsolute();
+									action.laneOffset_->Target.absolute_->value = std::stod(ReadAttribute(targetChild.attribute("value")));
 								}
 							}
 						}
@@ -709,74 +693,70 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 				}
 				else
 				{
-					std::cout << "Unsupported element type: " << lateralChildName << std::endl;
+					std::cout << "Unsupported element type: " << lateralChild.name() << std::endl;
 				}
 			}
 		}
-		else if (actionChildName == "Visibility")
+		else if (actionChild.name() == std::string("Visibility"))
 		{
-			std::cout << actionChildName << " is not implemented " << std::endl;
+			std::cout << actionChild.name() << " is not implemented " << std::endl;
 		}
-		else if (actionChildName == "Meeting")
+		else if (actionChild.name() == std::string("Meeting"))
 		{
+			action.meeting_ = new OSCPrivateAction::Meeting();
 
-			action.Meeting.mode = ReadAttribute(actionChild.attribute("mode"));
+			action.meeting_->mode = ReadAttribute(actionChild.attribute("mode"));
 
 			for (pugi::xml_node meetingChild = actionChild.first_child(); meetingChild; meetingChild = meetingChild.next_sibling())
 			{
-				std::string meetingChildName(meetingChild.name());
-
-				if (meetingChildName == "Position")
+				if (meetingChild.name() == std::string("Position"))
 				{
-					parseOSCPosition(action.Meeting.Position, meetingChild);
+					parseOSCPosition(action.meeting_->Position, meetingChild);
 				}
-				else if (meetingChildName == "Relative")
+				else if (meetingChild.name() == std::string("Relative"))
 				{
+					action.meeting_->relative_ = new OSCPrivateAction::MeetingRelative();
 
-					action.Meeting.Relative.mode = ReadAttribute(meetingChild.attribute("mode"));
-					action.Meeting.Relative.object = ReadAttribute(meetingChild.attribute("object"));
-					action.Meeting.Relative.offsetTime = std::stod(ReadAttribute(meetingChild.attribute("offsetTime")));
-					action.Meeting.Relative.continuous = ReadAttribute(meetingChild.attribute("continuous"));
+					action.meeting_->relative_->mode = ReadAttribute(meetingChild.attribute("mode"));
+					action.meeting_->relative_->object = ReadAttribute(meetingChild.attribute("object"));
+					action.meeting_->relative_->offsetTime = std::stod(ReadAttribute(meetingChild.attribute("offsetTime")));
+					action.meeting_->relative_->continuous = ReadAttribute(meetingChild.attribute("continuous"));
 
-					parseOSCPosition(action.Meeting.Relative.Position, meetingChild.child("Position"));
-
+					parseOSCPosition(action.meeting_->relative_->Position, meetingChild.child("Position"));
 				}
 			}
 
 		}
-		else if (actionChildName == "Autonomous")
+		else if (actionChild.name() == std::string("Autonomous"))
 		{
-			std::cout << actionChildName << " is not implemented " << std::endl;
+			std::cout << actionChild.name() << " is not implemented " << std::endl;
 		}
-		else if (actionChildName == "Controller")
+		else if (actionChild.name() == std::string("Controller"))
 		{
-			std::cout << actionChildName << " is not implemented " << std::endl;
+			std::cout << actionChild.name() << " is not implemented " << std::endl;
 		}
-		else if (actionChildName == "Position")
+		else if (actionChild.name() == std::string("Position"))
 		{
-			action.Position.exists = true;
-			parseOSCPosition(action.Position, actionChild);
+			action.position_ = new OSCPosition();
+			parseOSCPosition(*action.position_, actionChild);
 
 		}
-		else if (actionChildName == "Routing")
+		else if (actionChild.name() == std::string("Routing"))
 		{
 			for (pugi::xml_node routingChild = actionChild.first_child(); routingChild; routingChild = routingChild.next_sibling())
 			{
-				std::string routingChildName(routingChild.name());
-
-				if (routingChildName == "FollowRoute")
+				if (routingChild.name() == std::string("FollowRoute"))
 				{
 					for (pugi::xml_node followRouteChild = routingChild.first_child(); followRouteChild; followRouteChild = followRouteChild.next_sibling())
 					{
-						std::string followRouteChildName(followRouteChild.name());
-
-						if (followRouteChildName == "Route")
+						if (followRouteChild.name() == std::string("Route"))
 						{
-							std::cout << followRouteChildName << " is not implemented " << std::endl;
+							std::cout << followRouteChild.name() << " is not implemented " << std::endl;
 						}
-						else if (followRouteChildName == "CatalogReference")
+						else if (followRouteChild.name() == std::string("CatalogReference"))
 						{
-							parseOSCCatalogReference(action.Routing.FollowRoute.CatalogReference, followRouteChild);
+							action.routing_ = new OSCPrivateAction::Routing();
+							parseOSCCatalogReference(action.routing_->FollowRoute.CatalogReference, followRouteChild);
 						}
 					}
 				}
@@ -811,19 +791,19 @@ void ScenarioReader::parseInit(Init &init)
 		}
 		else if (actionsChildName == "Private")
 		{
-			init.Actions.Private.resize(init.Actions.Private.size() + 1);
-			init.Actions.Private.back().exists = true;
+			Init::PrivateStruct ps;
 
-			init.Actions.Private.back().object = ReadAttribute(actionsChild.attribute("object"));
+			ps.exists = true;
+			ps.object = ReadAttribute(actionsChild.attribute("object"));
 
 			for (pugi::xml_node privateChild = actionsChild.first_child(); privateChild; privateChild = privateChild.next_sibling())
 			{
-				init.Actions.Private.back().Action.resize(init.Actions.Private.back().Action.size() + 1);
-				init.Actions.Private.back().Action.back().exists = true;
-
-				parseOSCPrivateAction(init.Actions.Private.back().Action.back(), privateChild);
+				OSCPrivateAction *action = new OSCPrivateAction();
+				parseOSCPrivateAction(*action, privateChild);
+				ps.Action.push_back(*action);
 			}
 
+			init.Actions.Private.push_back(ps);
 		}
 
 	}

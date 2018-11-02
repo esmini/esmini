@@ -144,26 +144,24 @@ ScenarioGateway *ScenarioEngine::getScenarioGateway()
 
 void ScenarioEngine::initRoutes()
 {
-	for (auto &route_item : catalogs.RouteCatalog.Route)
+	for (size_t i=0; i<catalogs.RouteCatalog.Route.size(); i++)
 	{
-		if (!route_item.Waypoint.empty())
+		if (!catalogs.RouteCatalog.Route[i].Waypoint.empty())
 		{
 			roadmanager::Route rm_route;
-			rm_route.setName(route_item.name);
-			for (size_t i = 0; i < route_item.Waypoint.size(); i++)
+			rm_route.setName(catalogs.RouteCatalog.Route[i].name);
+			for (size_t j = 0; j < catalogs.RouteCatalog.Route[i].Waypoint.size(); j++)
 			{
 				roadmanager::Position * position = new roadmanager::Position();
 
 				// Lane position
-				if (!route_item.Waypoint[i].Position->Lane.roadId.empty())
-				{
-					int roadId = std::stoi(route_item.Waypoint[i].Position->Lane.roadId);
-					int lane_id = route_item.Waypoint[i].Position->Lane.laneId;
-					double s = route_item.Waypoint[i].Position->Lane.s;
-					double offset = route_item.Waypoint[i].Position->Lane.offset;
+				int roadId = catalogs.RouteCatalog.Route[i].Waypoint[j].Position->lane_->roadId;
+				int lane_id = catalogs.RouteCatalog.Route[i].Waypoint[j].Position->lane_->laneId;
+				double s = catalogs.RouteCatalog.Route[i].Waypoint[j].Position->lane_->s;
+				double offset = catalogs.RouteCatalog.Route[i].Waypoint[j].Position->lane_->offset;
 
-					position->SetLanePos(roadId, lane_id, s, offset);
-				}
+				position->SetLanePos(roadId, lane_id, s, offset);
+
 				rm_route.AddWaypoint(position);
 			}
 			cars.route.push_back(rm_route);
@@ -175,7 +173,6 @@ void ScenarioEngine::initInit()
 {
 	std::cout << "ScenarioEngine: initStoryboard started" << std::endl;
 
-
 	for (int i = 0; i < init.Actions.Private.size(); i++)
 	{
 		std::vector<std::string> actionEntities;
@@ -183,9 +180,10 @@ void ScenarioEngine::initInit()
 
 		for (int j = 0; j < init.Actions.Private[i].Action.size(); j++)
 		{
-
 			OSCPrivateAction privateAction = init.Actions.Private[i].Action[j];
-			std::vector<int> storyId{i,j};
+			std::vector<int> storyId;
+			storyId.push_back(i);
+			storyId.push_back(j);
 			
 			Action action(privateAction, cars, storyId, actionEntities);
 			actions.addAction(action);
@@ -271,7 +269,11 @@ void ScenarioEngine::initConditions()
 					for (int m = 0; m < story[i].Act[j].Sequence[k].Maneuver[l].Event.size(); m++)
 					{
 						std::vector<int> storyId;
-						storyId = {i,j,k,l,m};
+						storyId.push_back(i);
+						storyId.push_back(j);
+						storyId.push_back(k);
+						storyId.push_back(l);
+						storyId.push_back(m);
 
 						for (int n = 0; n < story[i].Act[j].Sequence[k].Maneuver[l].Event[m].StartConditions.ConditionGroup.size(); n++)
 						{

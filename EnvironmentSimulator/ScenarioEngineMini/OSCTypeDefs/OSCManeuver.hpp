@@ -15,13 +15,13 @@ struct ActionStruct
 	OSCUserDefinedAction UserDefined;
 	OSCPrivateAction Private;
 
-	std::string name = "";
+	std::string name;
 };
 
 struct EventStruct
 {
-	std::string name = "";
-	std::string priority = ""; // Wrong type
+	std::string name;
+	std::string priority; // Wrong type
 
 	std::vector<ActionStruct> Action;
 	
@@ -33,11 +33,12 @@ struct EventStruct
 };
 
 
-struct OSCManeuver
+class OSCManeuver
 {
+public:
 	OSCParameterDeclaration ParameterDeclaration;
 	std::vector<EventStruct> Event;
-	std::string name = "";
+	std::string name;
 
 	void printOSCManeuver()
 	{

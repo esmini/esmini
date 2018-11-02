@@ -11,13 +11,15 @@ class Actions
 {
 public:
 
-	Actions();
+	Actions()
+	{
+		oldSimulationTime = 0;
+	};
 	void addAction(Action action);
 	void executeActions(double simulationTime);
 	void setStartAction(std::vector<int> storyId, double simulationTime);
 
 private:
-	double timeStep;
 	double oldSimulationTime;
 
 	std::vector<Action> actions;

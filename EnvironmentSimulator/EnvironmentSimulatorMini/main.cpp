@@ -1,8 +1,6 @@
 #include <iostream>
 #include <string>
 #include <random>
-#include <thread>
-#include <chrono>
 
 #include "ScenarioEngine.hpp"
 
@@ -10,6 +8,36 @@
 #include "RoadManager.hpp"
 #include "RubberbandManipulator.h"
 
+#ifdef _WIN32
+#include <windows.h>
+
+static __int64 SE_getSystemTime()
+{
+	return timeGetTime();
+}
+
+static void SE_sleep(unsigned int msec)
+{
+	Sleep(msec);
+}
+
+#else
+#include <thread>
+#include <chrono>
+using namespace std::chrono;
+
+static __int64 getSystemTime()
+{
+	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+
+static void SE_sleep(unsigned int msec)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000 * msec)));
+}
+
+
+#endif
 double deltaSimTime;
 
 static const double stepSize = 0.01;
@@ -69,7 +97,7 @@ int main(int argc, char *argv[])
 	//  Create cars for visualization
 	for (int i = 0; i < scenarioEngine->cars.getNum(); i++)
 	{
-		int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (std::mt19937::max)();
+		int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (mt_rand.max)();
 		viewer->AddCar(carModelID);
 	}
 
@@ -79,7 +107,7 @@ int main(int argc, char *argv[])
 	while (!viewer->osgViewer_->done())
 	{
 		// Get milliseconds since Jan 1 1970
-		now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+		now = SE_getSystemTime();
 		deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
 		lastTimeStamp = now;
 
@@ -89,7 +117,7 @@ int main(int argc, char *argv[])
 		}
 		else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000 * (minStepSize - deltaSimTime))));
+			SE_sleep(minStepSize - deltaSimTime);
 			deltaSimTime = minStepSize;
 		}
 

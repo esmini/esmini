@@ -1,7 +1,5 @@
 
 #include <random>
-#include <thread>
-#include <chrono>
 #include <iostream>
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -13,11 +11,40 @@
 #include "RoadManager.hpp"
 #include "RubberbandManipulator.h"
 
-using namespace std::chrono;
-
 #define USE_ROUTE 0
 #define EGO_MODEL_FILENAME "../../resources/models/p1800.osgb"
 #define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
+
+#ifdef _WIN32
+
+#include <windows.h>
+
+static __int64 SE_getSystemTime()
+{
+	return timeGetTime();
+}
+
+static void SE_sleep(unsigned int msec)
+{
+	Sleep(msec);
+}
+
+#else
+#include <thread>
+#include <chrono>
+using namespace std::chrono;
+
+static __int64 getSystemTime()
+{
+	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+
+static void SE_sleep(unsigned int msec)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000 * msec)));
+}
+
+#endif
 
 static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
@@ -115,11 +142,11 @@ void UpdateDebugLines(roadmanager::Position *lane_pos, roadmanager::Position *tr
 
 ScenarioCar *getScenarioCarById(int id)
 {
-	for (auto &c : scenarioCar)
+	for (size_t i=0; i<scenarioCar.size(); i++)
 	{
-		if (c.id == id)
+		if (scenarioCar[i].id == id)
 		{
-			return &c;
+			return &scenarioCar[i];
 		}
 	}
 
@@ -187,7 +214,7 @@ int main(int argc, char** argv)
 		while (!viewer->osgViewer_->done())
 		{
 			// Get milliseconds since Jan 1 1970
-			now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+			now = SE_getSystemTime();
 			deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
 			lastTimeStamp = now;
 			if (deltaSimTime > maxStepSize) // limit step size
@@ -196,7 +223,7 @@ int main(int argc, char** argv)
 			}
 			else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
 			{
-				std::this_thread::sleep_for(milliseconds((int)(1000 * (minStepSize - deltaSimTime))));
+				SE_sleep(minStepSize - deltaSimTime);
 				deltaSimTime = minStepSize;
 			}
 
@@ -235,7 +262,7 @@ int main(int argc, char** argv)
 
 						new_sc.id = o->state_.id;
 						// Choose random model
-						int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (std::mt19937::max)();
+						int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (mt_rand.max)();
 						new_sc.carModel = viewer->AddCar(carModelID);
 
 						// Add it to the list of scenario cars
@@ -249,10 +276,11 @@ int main(int argc, char** argv)
 			}
 
 			// Visualize scenario cars
-			for (auto &sc : scenarioCar)
+			for (size_t i=0; i<scenarioCar.size(); i++)
 			{
-				sc.carModel->SetPosition(sc.pos.GetX(), sc.pos.GetY(), sc.pos.GetZ());
-				sc.carModel->SetRotation(sc.pos.GetH(), sc.pos.GetR(), sc.pos.GetP());
+				ScenarioCar *c = &scenarioCar[i];
+				c->carModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
+				c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
 			}
 
 			// Update road debug lines 

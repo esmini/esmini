@@ -1,6 +1,4 @@
 
-#include <thread>
-#include <chrono>
 #include <random>
 #include <iostream>
 #define _USE_MATH_DEFINES
@@ -11,16 +9,44 @@
 #include "RubberbandManipulator.h"
 #include "vehicle.hpp"
 
-#ifdef _WIN32
-	#include <windows.h>
-#endif
 
-using namespace std::chrono;
 
 #define DEFAULT_SPEED   70  // km/h
 #define DEFAULT_DENSITY 1   // Cars per 100 m
 #define ROAD_MIN_LENGTH 30
 #define SIGN(X) ((X<0)?-1:1)
+
+#ifdef _WIN32
+#include <windows.h>
+
+static __int64 SE_getSystemTime()
+{
+	return timeGetTime();
+}
+
+static void SE_sleep(unsigned int msec)
+{
+	Sleep(msec);
+}
+
+#else
+#include <thread>
+#include <chrono>
+using namespace std::chrono;
+
+static __int64 getSystemTime()
+{
+	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+
+static void SE_sleep(unsigned int msec)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000 * msec)));
+}
+
+
+#endif
+
 
 static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
@@ -62,7 +88,6 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
 			for (int l = 0; l < lane_section->GetNumberOfLanes(); l++)
-
 			{
 				int lane_id = lane_section->GetLaneIdByIdx(l);
 				roadmanager::Lane *lane = lane_section->GetLaneById(lane_id);
@@ -80,7 +105,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 						double s_aligned = lane->GetId() > 0 ? road->GetLength() - s : s;
 
 						// randomly choose model
-						carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (std::mt19937::max)();
+						carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (mt_rand.max)();
 
 						Car *car_ = new Car;
 						car_->road_id_init = odrManager->GetRoadByIdx(r)->GetId();
@@ -91,10 +116,8 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 						car_->id = cars.size();
 						cars.push_back(car_);
 
-//						printf("Car %d rid %d lid %d\n", cars.size() - 1, car_->road_id_init, car_->lane_id_init);
-
 						// Add space to next vehicle
-						s += average_distance + (0.2 * average_distance * mt_rand()) / (std::mt19937::max)();
+						s += average_distance + (0.2 * average_distance * mt_rand()) / (mt_rand.max)();
 					}
 				}
 			}
@@ -152,8 +175,8 @@ int main(int argc, char** argv)
 	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " [options]\n");
 	arguments.getApplicationUsage()->addCommandLineOption("--odr <filename>", "OpenDRIVE filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--model <filename>", "3D model filename");
-	arguments.getApplicationUsage()->addCommandLineOption("--density <number>", "density (cars / 100 m)", std::to_string(DEFAULT_DENSITY));
-	arguments.getApplicationUsage()->addCommandLineOption("--speed <number>", "speed (km/h)", std::to_string(DEFAULT_SPEED));
+	arguments.getApplicationUsage()->addCommandLineOption("--density <number>", "density (cars / 100 m)", std::to_string(long long (DEFAULT_DENSITY)));
+	arguments.getApplicationUsage()->addCommandLineOption("--speed <number>", "speed (km/h)", std::to_string(long long (DEFAULT_SPEED)));
 
 	if (arguments.argc() < 2)
 	{
@@ -199,7 +222,7 @@ int main(int argc, char** argv)
 		while (!viewer->osgViewer_->done())
 		{
 			// Get milliseconds since Jan 1 1970
-			now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+			now = SE_getSystemTime();
 			deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
 			lastTimeStamp = now;
 			if (deltaSimTime > maxStepSize) // limit step size
@@ -208,13 +231,13 @@ int main(int argc, char** argv)
 			}
 			else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
 			{
-				std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000 * (minStepSize - deltaSimTime))));
+				SE_sleep(now - lastTimeStamp);
 				deltaSimTime = minStepSize;
 			}
 
-			for (auto &car : cars)
+			for (size_t i=0; i<cars.size(); i++)
 			{
-				updateCar(odrManager, car, deltaSimTime);
+				updateCar(odrManager, cars[i], deltaSimTime);
 			}
 
 			viewer->osgViewer_->frame();
@@ -231,9 +254,9 @@ int main(int argc, char** argv)
 		return 3;
 	}
 
-	for (auto &car : cars)
+	for (size_t i = 0; i < cars.size(); i++)
 	{
-		delete(car);
+		delete(cars[i]);
 	}
 
 	delete track_pos;

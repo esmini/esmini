@@ -4,13 +4,16 @@
 #include <string>
 #include <math.h>
 
-struct OSCOrientation
+class OSCOrientation
 {
-	bool exists = false;
-	std::string type = ""; //Wrong type
-	double h = NAN;
-	double p = NAN;
-	double r = NAN;
+	bool exists;
+	std::string type; //Wrong type
+	double h;
+	double p;
+	double r;
+
+public:
+	OSCOrientation() : exists(false), type(""), h(0), p(0), r(0) {};
 
 	void printOSCOrientation()
 	{

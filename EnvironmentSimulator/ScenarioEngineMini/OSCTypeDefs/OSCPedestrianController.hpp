@@ -2,8 +2,9 @@
 #include <iostream>
 #include <string>
 
-struct OSCPedestrianController
+class OSCPedestrianController
 {
+public:
 	void printOSCPedestrianController() 
 	{
 	};

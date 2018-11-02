@@ -15,8 +15,8 @@ void Catalogs::printCatalogs()
 {
 	VehicleCatalog.Directory.printOSCDirectory();
 	DriverCatalog.Directory.printOSCDirectory();
-	for (auto &route : RouteCatalog.Route)
+	for (size_t i=0; i<RouteCatalog.Route.size(); i++)
 	{
-		route.printOSCRoute();
+		RouteCatalog.Route[i].printOSCRoute();
 	}
 }

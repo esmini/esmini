@@ -3,13 +3,15 @@
 #include <string>
 #include <math.h>
 
-struct OSCAxle
+class OSCAxle
 {
-	double maxSteering = NAN;
-	double wheelDiameter = NAN;
-	double trackWidth = NAN;
-	double positionX = NAN;
-	double positionZ = NAN;
+public:
+
+	double maxSteering;
+	double wheelDiameter;
+	double trackWidth;
+	double positionX;
+	double positionZ;
 
 	void printOSCAxle() 
 	{

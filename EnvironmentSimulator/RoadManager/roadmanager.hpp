@@ -207,7 +207,7 @@ namespace roadmanager
 		double length_;
 	};
 
-	enum LinkType
+	typedef enum LinkType
 	{
 		UNKNOWN,
 		SUCCESSOR,
@@ -378,14 +378,14 @@ namespace roadmanager
 	class RoadLink
 	{
 	public:
-		enum ElementType
+		typedef enum ElementType
 		{
 			ELEMENT_TYPE_UNKNOWN,
 			ELEMENT_TYPE_ROAD,
 			ELEMENT_TYPE_JUNCTION,
 		};
 
-		RoadLink() : type_(LinkType::NONE), element_id_(-1), element_type_(ELEMENT_TYPE_UNKNOWN), contact_point_type_(CONTACT_POINT_UNKNOWN) {}
+		RoadLink() : type_(NONE), element_id_(-1), element_type_(ELEMENT_TYPE_UNKNOWN), contact_point_type_(CONTACT_POINT_UNKNOWN) {}
 		RoadLink(LinkType type, ElementType element_type, int element_id, ContactPointType contact_point_type) :
 			type_(type), element_id_(element_id), element_type_(element_type),  contact_point_type_(contact_point_type) {}
 		RoadLink(LinkType type, pugi::xml_node node);
@@ -518,7 +518,7 @@ namespace roadmanager
 	{
 	public:
 		Connection(Road *incoming_road, Road *connecting_road, ContactPointType contact_point);
-		~Connection() { for (auto &ll : lane_link_) delete ll; }
+		~Connection();
 		int GetNumberOfLaneLinks() { return (int)lane_link_.size(); }
 		JunctionLaneLink *GetLaneLink(int idx) { return lane_link_[idx]; }
 		int GetConnectingLaneId(int incoming_lane_id);
@@ -539,7 +539,7 @@ namespace roadmanager
 	{
 	public:
 		Junction(int id, std::string name) : id_(id), name_(name) {}
-		~Junction() { for (auto &c : connection_) delete c; }
+		~Junction();
 		int GetId() { return id_; }
 		std::string GetName() { return name_; }
 		int GetNumberOfConnections() { return (int)connection_.size(); }
@@ -614,6 +614,7 @@ namespace roadmanager
 		explicit Position(double x, double y, double z, double h, double p, double r);
 		~Position();
 		
+		void Init();
 		static bool LoadOpenDrive(const char *filename);
 		static OpenDrive* GetOpenDrive();
 		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);

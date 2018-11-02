@@ -2,9 +2,10 @@
 #include <iostream>
 #include <string>
 
-struct OSCFile
+class OSCFile
 {
-	std::string filepath = "";
+public:
+	std::string filepath;
 
 	void printOSCFile()
 	{

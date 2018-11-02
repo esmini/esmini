@@ -6,10 +6,10 @@
 #include "OSCParameterDeclaration.hpp"
 
 
-struct OSCDirectory
+class OSCDirectory
 {
-
-	std::string path = "";
+public:
+	std::string path;
 
 	void printOSCDirectory()
 	{

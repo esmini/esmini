@@ -31,11 +31,11 @@ double deltaSimTime = 0;  // external - used by Viewer::RubberBandCamera
 
 ScenarioCar *getScenarioCarById(int id)
 {
-	for (auto &c : scenarioCar)
+	for (size_t i=0; i<scenarioCar.size(); i++)
 	{
-		if (c.id == id)
+		if (scenarioCar[i].id == id)
 		{
-			return &c;
+			return &scenarioCar[i];
 		}
 	}
 
@@ -170,10 +170,11 @@ extern "C"
 				}
 
 				// Visualize scenario cars
-				for (auto &sc : scenarioCar)
+				for (size_t i=0; i<scenarioCar.size(); i++)
 				{
-					sc.carModel->SetPosition(sc.pos.GetX(), sc.pos.GetY(), sc.pos.GetZ());
-					sc.carModel->SetRotation(sc.pos.GetH(), sc.pos.GetR(), sc.pos.GetP());
+					ScenarioCar *c = &scenarioCar[i];
+					c->carModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
+					c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
 				}
 
 				scViewer->osgViewer_->frame();

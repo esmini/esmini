@@ -5,161 +5,161 @@
 #include <string>
 #include <math.h>
 
-struct OSCPrivateAction
+class OSCPrivateAction
 {
-	bool exists = false;
+public:
+	bool exists;
 
-	struct
+	typedef struct
 	{
-		bool exists = false;
-		struct
-		{
-			bool exists = false;
-			struct
-			{
-				bool exists = false;
-				std::string shape = ""; // Wrong type
-				double rate = NAN;
-				double time = NAN;
-				double distance = NAN;
-			} Dynamics;
-			struct
-			{
-				bool exists = false;
-				struct
-				{
-					bool exists = false;
-					std::string object = "";
-					double value = NAN;
-					std::string valueType = ""; // Wrong type
-					bool continuous = false;
+		bool exists;
+		std::string shape; // Wrong type
+		double rate;
+		double time;
+		double distance;
+	} SpeedDynamics;
 
-				} Relative;
-				struct
-				{
-					bool exists = false;
-					double value = NAN;
-				} Absolute;
-			} Target;
-		} Speed;
-
-		struct {
-			bool exists = false;
-		} Distance;
-	} Longitudinal;
-
-	struct
+	typedef struct
 	{
-		struct
-		{
-			double targetLaneOffset = NAN;
+		std::string object;
+		double value;
+		std::string valueType; // Wrong type
+		bool continuous;
+	} SpeedTargetRelative;
 
-			struct
-			{
-				double time = NAN;
-				double distance = NAN;
-				std::string shape = ""; // Wrong type
+	typedef struct
+	{
+		double value;
+	} SpeedTargetAbsolute;
 
-			} Dynamics;
-			struct
-			{
-				struct
-				{
-					std::string object = "";
-					double value = NAN;
+	typedef struct
+	{
+		SpeedTargetRelative *relative_;
+		SpeedTargetAbsolute *absolute_;
+	} SpeedTarget;
 
-				} Relative;
-				struct
-				{
-					double value = NAN;
-				} Absolute;
+	typedef struct
+	{
+		SpeedDynamics *dynamics_;
+		SpeedTarget *target_;	
+	} Speed;
 
-			} Target;
+	typedef struct
+	{
+		std::string object;
+		double value;
+	} LaneRelative;
 
-		} LaneChange;
+	typedef struct
+	{
+		double value;
+	} LaneAbsolute;
+
+	typedef struct
+	{
+		double targetLaneOffset;
 
 		struct
 		{
-			struct
-			{
-				double maxLateralAcc = NAN;
-				double duration = NAN;
-				std::string shape = ""; // Wrong type
-			} Dynamics;
+			double time;
+			double distance;
+			std::string shape; // Wrong type
+		} Dynamics;
 
-			struct
-			{
-				struct
-				{
-					std::string object = "";
-					double value = NAN;
+		struct
+		{
+			LaneRelative *relative_;
+			LaneAbsolute *absolute_;
+		} Target;
 
-				} Relative;
+	} LaneChange;
 
-				struct
-				{
-					double value = NAN;
-				} Absolute;
-
-			} Target;
-
-		} LaneOffset;
-
-	} Lateral;
-
-	struct {} Visibility;
-	struct 
+	typedef struct
 	{
-	
+		struct
+		{
+			double maxLateralAcc;
+			double duration;
+			std::string shape; // Wrong type
+		} Dynamics;
+
+		struct
+		{
+			LaneRelative *relative_;
+			LaneAbsolute *absolute_;
+		} Target;
+
+	} LaneOffset;
+
+	typedef struct
+	{
+		std::string mode;
+		std::string object;
+		double offsetTime;
+		std::string continuous;			//Wrong type
+		OSCPosition Position;
+	} MeetingRelative;
+
+	typedef struct
+	{
 		std::string mode;
 		OSCPosition Position;
-
-		struct
-		{
-			std::string mode;
-			std::string object;
-			double offsetTime;
-			std::string continuous;			//Wrong type
-			OSCPosition Position;
-		} Relative;
-	
+		MeetingRelative *relative_;
 	} Meeting;
-	struct {} Autonomous;
-	struct {} Controller;
-	OSCPosition Position;
 
-	struct {
+	typedef struct {
 		struct {
 			OSCRoute Route;
 			OSCCatalogReference CatalogReference;
 		} FollowRoute;
 	} Routing;
 
+	LaneChange *laneChange_;
+	LaneOffset *laneOffset_;
+	Speed *speed_;
+	Meeting *meeting_;
+	Routing *routing_;
+	OSCPosition *position_;
+
+	struct {} Visibility;
+	struct {} Autonomous;
+	struct {} Controller;
+	
+	OSCPrivateAction() 
+	{
+		laneChange_ = 0;
+		laneOffset_ = 0;
+		speed_ = 0;
+		meeting_ = 0;
+		routing_ = 0;
+		position_ = 0;
+	}
+
 	void printOSCPrivateAction()
 	{
-		std::cout << "\t" << " - Longitudinal - Speed - Dynamics" << std::endl;
-		std::cout << "\t" << "shape = " << Longitudinal.Speed.Dynamics.shape << std::endl;
-		std::cout << "\t" << "rate = " << Longitudinal.Speed.Dynamics.rate << std::endl;
-		std::cout << "\t" << "time = " << Longitudinal.Speed.Dynamics.time << std::endl;
-		std::cout << "\t" << "distance = " << Longitudinal.Speed.Dynamics.distance << std::endl;
-		std::cout << std::endl;
-
-		std::cout << "\t" << " - Longitudinal - Speed - Target - Relative" << std::endl;
-		std::cout << "\t" << "object = " << Longitudinal.Speed.Target.Relative.object << std::endl;
-		std::cout << "\t" << "value = " << Longitudinal.Speed.Target.Relative.value << std::endl;
-		std::cout << "\t" << "valueType = " << Longitudinal.Speed.Target.Relative.valueType << std::endl;
-		std::cout << "\t" << "continuous = " << Longitudinal.Speed.Target.Relative.continuous << std::endl;
-		std::cout << std::endl;
-
-		std::cout << "\t" << " - Longitudinal - Speed - Target - Absolute" << std::endl;
-		std::cout << "\t" << "value = " << Longitudinal.Speed.Target.Absolute.value << std::endl;
-		std::cout << std::endl;
+		if (laneChange_)
+		{
+			std::cout << "\t" << " - Lateral - Lane Change" << std::endl;
+		}
+		if (laneOffset_)
+		{
+			std::cout << "\t" << " - Lateral - Lane Offset" << std::endl;
+		}
+		if (speed_)
+		{
+			std::cout << "\t" << " - Longitudinal - speed" << std::endl;
+		}
+		if (meeting_)
+		{
+			std::cout << "\t" << " - Longitidubgal - meeting" << std::endl;
+		}
 
 		std::cout << "\t" << " - Position" << std::endl;
-		Position.printOSCPosition();
+		if (position_)
+		{
+			position_->printOSCPosition();
+		}
 		std::cout << std::endl;
-
-
 	};
 
 };

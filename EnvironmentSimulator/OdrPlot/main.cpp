@@ -1,12 +1,13 @@
 
+#include <cmath>
 #include <iostream>
 #include <fstream>
-#include <math.h>
 #include "roadmanager.hpp"
 
 using namespace roadmanager;
 
 //#define REF_ONLY
+#define MIN(x, y) ((x)<(y)?(x):(y))
 
 int main(int argc, char *argv[])
 {
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
 				file << "lane, " << road->GetId() << ", " << i << ", " << lane->GetId() << std::endl;
 				for (int k = 0; k < steps + 1; k++)
 				{
-					pos->SetLanePos(road->GetId(), lane->GetId(), fmin(s_end, s_start + k * step_length), 0, i);
+					pos->SetLanePos(road->GetId(), lane->GetId(), MIN(s_end, s_start + k * step_length), 0, i);
 					file << pos->GetX() << ", " << pos->GetY() << ", " << pos->GetZ() << ", " << pos->GetH() << std::endl;
 				}
 #ifndef REF_ONLY

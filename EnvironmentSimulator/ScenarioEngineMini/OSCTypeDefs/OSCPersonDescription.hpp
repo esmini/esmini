@@ -6,15 +6,16 @@
 #include <string>
 #include <math.h>
 
-struct OSCPersonDescription
+class OSCPersonDescription
 {
+public:
 	OSCProperties Properties;
 
-	double weight = NAN;
-	double height = NAN;
-	double eyeDistance = NAN;
-	double age = NAN;
-	std::string sex = ""; //Wrong type
+	double weight;
+	double height;
+	double eyeDistance;
+	double age;
+	std::string sex; //Wrong type
 
 	void printOSCPersonDescription()
 	{

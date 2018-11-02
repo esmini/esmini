@@ -10,30 +10,31 @@ struct EntityStruct
 	std::string name;
 };
 
-struct OSCCondition
+class OSCCondition
 {
+public:
 	struct
 	{
 		struct
 		{
 			std::vector<EntityStruct> Entity;
-			std::string rule = ""; // Wrong type
-		}TriggeringEntities;
+			std::string rule; // Wrong type
+		} TriggeringEntities;
 
 		struct
 		{
 			struct
 			{
-				std::string entity = "";
-				std::string value = ""; // Wrong type
-				std::string freespace = "";  // Wrong type
-				std::string alongRoute = "";  // Wrong type
-				std::string rule = ""; // Wrong type
+				std::string entity;
+				std::string value; // Wrong type
+				std::string freespace;  // Wrong type
+				std::string alongRoute;  // Wrong type
+				std::string rule; // Wrong type
 			}TimeHeadway;
 
 		}EntityCondition;
 
-	}ByEntity;
+	} ByEntity;
 
 	struct
 	{
@@ -47,22 +48,22 @@ struct OSCCondition
 		struct {}Command;
 		struct {}Signal;
 		struct {}Controller;
-	}ByState;	
+	} ByState;	
 
 	struct
 	{
 		struct {}Parameter;
 		struct {}TimeOfDay;
 		struct {
-			double value = NAN;
-			std::string rule = ""; //Wrong type
-		}SimulationTime;
+			double value;
+			std::string rule; //Wrong type
+		} SimulationTime;
 
-	}ByValue;
+	} ByValue;
 
-	std::string name = "";
-	double delay = NAN;
-	std::string edge = ""; //Wrong type;
+	std::string name;
+	double delay;
+	std::string edge; //Wrong type;
 
 	void printOSCCondition()
 	{

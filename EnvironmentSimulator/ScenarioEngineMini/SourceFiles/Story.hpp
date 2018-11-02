@@ -34,7 +34,7 @@ public:
 		std::vector<OSCCatalogReference> CatalogReference;
 		std::vector<OSCManeuver> Maneuver;
 
-		int numberOfExecutions = 0;
+		int numberOfExecutions;
 		std::string name;
 	};
 

@@ -2,8 +2,9 @@
 #include <iostream>
 #include <string>
 
-struct OSCGlobalAction
+class OSCGlobalAction
 {
+public:
 	void printOSCGlobalAction()
 	{
 	};

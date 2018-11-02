@@ -10,6 +10,23 @@
 #include "RubberbandManipulator.h"
 #include "roadmanager.hpp"
 
+static const char* carModelsFiles_[] =
+{
+	"p1800.osgb",
+	"car1.osgb",
+	"car2.osgb",
+	"car3.osgb",
+	"car4.osgb",
+	"car5.osgb",
+	"car6.osgb",
+	"bus1.osgb",
+	"bus2.osgb",
+	"bus3.osgb",
+	"truck1.osgb",
+	"truck2.osgb",
+	"truck3.osgb"
+};
+
 namespace viewer
 {
 	class CarModel
@@ -75,22 +92,7 @@ namespace viewer
 		bool getKeyRight() { return keyRight_; }
 
 	private:
-		std::vector<std::string> carModelsFiles_ =
-		{
-			"p1800.osgb",
-			"car1.osgb",
-			"car2.osgb",
-			"car3.osgb",
-			"car4.osgb",
-			"car5.osgb",
-			"car6.osgb",
-			"bus1.osgb",
-			"bus2.osgb",
-			"bus3.osgb",
-			"truck1.osgb",
-			"truck2.osgb",
-			"truck3.osgb",
-		};
+
 		std::string modelFilename_;
 
 		bool ReadCarModels();

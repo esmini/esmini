@@ -14,12 +14,12 @@ public:
 	Init();
 	void printInit();
 
-	struct PrivateStruct
+	typedef struct 
 	{
-		bool exists = false;
+		bool exists;
 		std::vector<OSCPrivateAction> Action;
 		std::string object;
-	};
+	} PrivateStruct;
 
 
 	struct
@@ -28,5 +28,4 @@ public:
 		std::vector<OSCUserDefinedAction> UserDefinedAction;
 		std::vector<PrivateStruct> Private;
 	} Actions;
-
 };

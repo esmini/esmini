@@ -4,7 +4,6 @@
 #include <osg/Quat>
 #include <osg/Notify>
 #include <osg/Transform>
-#include <osgUtil/IntersectVisitor>
 #include <osg/ComputeBoundsVisitor>
 
 #include <iostream>
@@ -223,9 +222,10 @@ bool RubberbandManipulator::calcMovement(bool reset)
 		{
 			_cameraRotation = 0;
 		}
-		x = -_cameraDistance * (cos(_cameraRotation*0.0174533) * cos(_cameraAngle*0.0174533));
-		y = -_cameraDistance * (sin(_cameraRotation*0.0174533) * cos(_cameraAngle*0.0174533));
-		z = _cameraDistance * sin(_cameraAngle*0.0174533);
+		x = -_cameraDistance * (cosf(_cameraRotation*0.0174533) * cosf(_cameraAngle*0.0174533));
+		y = -_cameraDistance * (sinf(_cameraRotation*0.0174533) * cosf(_cameraAngle*0.0174533));
+		z = _cameraDistance * sinf(_cameraAngle*0.0174533);
+
 		cameraOffset.set(x, y, z); 
 	}
 

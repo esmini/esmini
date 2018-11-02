@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-struct OSCPedestrian
+class OSCPedestrian
 {
 	void printOSCPedestrian() 
 	{

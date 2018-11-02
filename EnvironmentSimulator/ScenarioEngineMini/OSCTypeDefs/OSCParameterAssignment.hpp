@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-struct OSCParameterAssignment
+class OSCParameterAssignment
 {
 	struct
 	{

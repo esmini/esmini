@@ -2,8 +2,9 @@
 #include <iostream>
 #include <string>
 
-struct OSCProperties
+class OSCProperties
 {
+public:
 	void printOSCProperties() 
 	{
 	};

@@ -2,7 +2,6 @@
 #include <iostream>
 #include <cstring>
 #include <random>
-#include <chrono>
 #include <time.h>
 
 #define _USE_MATH_DEFINES
@@ -16,7 +15,6 @@ static std::mt19937 mt_rand;
 
 using namespace std;
 using namespace roadmanager;
-using namespace std::chrono;
 
 #define CURV_ZERO 0.00001
 #define SIGN(x) (x < 0 ? -1 : 1)
@@ -226,8 +224,9 @@ LaneWidth *Lane::GetWidthByS(double s)
 
 LaneLink *Lane::GetLink(LinkType type)
 {
-	for (auto &l : link_)
+	for (int i=0; i<(int)link_.size(); i++)
 	{
+		LaneLink *l = link_[i];
 		if (l->GetType() == type)
 		{
 			return l;
@@ -261,13 +260,15 @@ double LaneOffset::GetLaneOffsetPrim(double s)
 void Lane::Print()
 {
 	printf("Lane: %d, type: %d, level: %d\n", id_, type_, level_);
-	for (auto &l : link_)
+	
+	for (size_t i = 0; i < link_.size(); i++)
 	{
-		l->Print();
+		link_[i]->Print();
 	}
-	for (auto &width : lane_width_)
+
+	for (size_t i=0; i<lane_width_.size(); i++)
 	{
-		width->Print();
+		lane_width_[i]->Print();
 	}
 }
 
@@ -354,7 +355,7 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 			while (s > lane_section->GetS() + lane_section->GetLength() && lane_info.lane_section_idx_ + 1 < GetNumberOfLaneSections())
 			{
 				// Find out connecting lane, then move to next lane section
-				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, LinkType::SUCCESSOR);
+				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, SUCCESSOR);
 				lane_section = GetLaneSectionByIdx(++lane_info.lane_section_idx_);
 				//printf("moved forward to lane section id %d @s %.2f laneid: %d\n", lane_info.lane_section_idx_, s, lane_info.lane_id_);
 			}
@@ -366,7 +367,7 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 			while (s < lane_section->GetS() && lane_info.lane_section_idx_ > 0)
 			{
 				// Move to previous lane section
-				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, LinkType::PREDECESSOR);
+				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, PREDECESSOR);
 				lane_section = GetLaneSectionByIdx(--lane_info.lane_section_idx_);
 				//printf("moved backward to lane section id %d @s %.2f laneid: %d\n", lane_info.lane_section_idx_, s, lane_info.lane_id_);
 			}
@@ -390,9 +391,10 @@ Geometry* Road::GetGeometry(int idx)
 void LaneSection::Print()
 {
 	printf("LaneSection: %.2f, %d lanes:\n", s_, (int)lane_.size());
-	for (auto &lane : lane_)
+	
+	for (size_t i=0; i<lane_.size(); i++)
 	{
-		lane->Print();
+		lane_[i]->Print();
 	}
 }
 
@@ -408,11 +410,11 @@ Lane* LaneSection::GetLaneByIdx(int idx)
 
 Lane* LaneSection::GetLaneById(int id)
 {
-	for (auto &lane : lane_)
+	for (size_t i=0; i<lane_.size(); i++)
 	{
-		if (lane->GetId() == id)
+		if (lane_[i]->GetId() == id)
 		{
-			return lane;
+			return lane_[i];
 		}
 	}
 	return 0;
@@ -447,9 +449,9 @@ int LaneSection::GetNUmberOfLanesRight()
 {
 	int counter = 0;
 
-	for (auto &l : lane_)
+	for (size_t i=0; i<lane_.size(); i++)
 	{
-		if (l->GetId() < 0)
+		if (lane_[i]->GetId() < 0)
 		{
 			counter++;
 		}
@@ -461,9 +463,9 @@ int LaneSection::GetNUmberOfLanesLeft()
 {
 	int counter = 0;
 
-	for (auto &l : lane_)
+	for (size_t i = 0; i < lane_.size(); i++)
 	{
-		if (l->GetId() > 0)
+		if (lane_[i]->GetId() > 0)
 		{
 			counter++;
 		}
@@ -671,17 +673,17 @@ void RoadLink::Print()
 
 Road::~Road()
 {
-	for (auto &geom : geometry_)
+	for (size_t i=0; i<geometry_.size(); i++)
 	{
-		delete(geom);
+		delete(geometry_[i]);
 	}
-	for (auto &e : elevation_profile_)
+	for (size_t i=0; i<elevation_profile_.size(); i++)
 	{
-		delete(e);
+		delete(elevation_profile_[i]);
 	}
-	for (auto &l : link_)
+	for (size_t i=0; i<link_.size(); i++)
 	{
-		delete(l);
+		delete(link_[i]);
 	}
 }
 
@@ -689,24 +691,25 @@ void Road::Print()
 {
 	printf("Road id: %d length: %.2f\n", id_, GetLength());
 	cout << "Geometries:" << endl;
-	for (auto &geom : geometry_)
+
+	for (size_t i = 0; i < geometry_.size(); i++)
 	{
-		cout << "Geometry type: " << geom->GetType() << endl;
+		cout << "Geometry type: " << geometry_[i]->GetType() << endl;
 	}
 
-	for (auto &l : link_)
+	for (size_t i=0; i<link_.size(); i++)
 	{
-		l->Print();
+		link_[i]->Print();
 	}
 
-	for (auto &lane_section : lane_section_)
+	for (size_t i=0; i<lane_section_.size(); i++)
 	{
-		lane_section->Print();
+		lane_section_[i]->Print();
 	}
 
-	for (auto &lane_offset : lane_offset_)
+	for (size_t i=0; i<lane_offset_.size(); i++)
 	{
-		lane_offset->Print();
+		lane_offset_[i]->Print();
 	}
 }
 
@@ -881,11 +884,11 @@ double Road::GetCenterOffset(double s, int lane_id)
 
 RoadLink* Road::GetLink(LinkType type)
 {
-	for (auto &l : link_)
+	for (size_t i=0; i<link_.size(); i++)
 	{
-		if (l->GetType() == type)
+		if (link_[i]->GetType() == type)
 		{
-			return l;
+			return link_[i];
 		}
 	}
 	return 0;  // Link of requested type is missing
@@ -906,11 +909,11 @@ void Road::AddLaneSection(LaneSection *lane_section)
 
 Road* OpenDrive::GetRoadById(int id)
 {
-	for (auto &r : road_)
+	for (size_t i=0; i<road_.size(); i++)
 	{
-		if (r->GetId() == id)
+		if (road_[i]->GetId() == id)
 		{
-			return r;
+			return road_[i];
 		}
 	}
 	return 0;
@@ -931,11 +934,11 @@ Road *OpenDrive::GetRoadByIdx(int idx)
 
 Junction* OpenDrive::GetJunctionById(int id)
 {
-	for (auto &j : junction_)
+	for (size_t i=0; i<junction_.size(); i++)
 	{
-		if (j->GetId() == id)
+		if (junction_[i]->GetId() == id)
 		{
-			return j;
+			return junction_[i];
 		}
 	}
 	return 0;
@@ -969,15 +972,15 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 	if (replace)
 	{
-		for (auto &r : road_)
+		for (size_t i=0; i<road_.size(); i++)
 		{
-			delete r;
+			delete road_[i];
 		}
 		road_.clear();
 
-		for (auto &j : junction_)
+		for (size_t i=0; i<junction_.size(); i++)
 		{
-			delete j;
+			delete junction_[i];
 		}
 		junction_.clear();
 	}
@@ -1011,13 +1014,13 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			pugi::xml_node successor = link.child("successor");
 			if (successor != NULL)
 			{
-				r->AddLink(new RoadLink(LinkType::SUCCESSOR, successor));
+				r->AddLink(new RoadLink(SUCCESSOR, successor));
 			}
 
 			pugi::xml_node predecessor = link.child("predecessor");
 			if (predecessor != NULL)
 			{
-				r->AddLink(new RoadLink(LinkType::PREDECESSOR, predecessor));
+				r->AddLink(new RoadLink(PREDECESSOR, predecessor));
 			}
 		}
 
@@ -1125,147 +1128,147 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		pugi::xml_node lanes = road_node.child("lanes");
 		if (lanes != NULL)
 		{
-			for (pugi::xml_node child : lanes.children())
+			for (pugi::xml_node_iterator child = lanes.children().begin(); child != lanes.children().end(); child++)
 			{
-				if (!strcmp(child.name(), "laneOffset"))
+				if (!strcmp(child->name(), "laneOffset"))
 				{
-					double s = atof(child.attribute("s").value());
-					double a = atof(child.attribute("a").value());
-					double b = atof(child.attribute("b").value());
-					double c = atof(child.attribute("c").value());
-					double d = atof(child.attribute("d").value());
+					double s = atof(child->attribute("s").value());
+					double a = atof(child->attribute("a").value());
+					double b = atof(child->attribute("b").value());
+					double c = atof(child->attribute("c").value());
+					double d = atof(child->attribute("d").value());
 					r->AddLaneOffset(new LaneOffset(s, a, b, c, d));
 				}
-				else if (!strcmp(child.name(), "laneSection"))
+				else if (!strcmp(child->name(), "laneSection"))
 				{
-					double s = atof(child.attribute("s").value());
+					double s = atof(child->attribute("s").value());
 					LaneSection *lane_section = new LaneSection(s);
 					r->AddLaneSection(lane_section);
 
-					for (pugi::xml_node child : child.children())
+					for (pugi::xml_node_iterator child2 = child->children().begin(); child2 != child->children().end(); child2++)
 					{
-						if (!strcmp(child.name(), "left"))
+						if (!strcmp(child2->name(), "left"))
 						{
 							//printf("Lane left\n");
 						}
-						else if (!strcmp(child.name(), "right"))
+						else if (!strcmp(child2->name(), "right"))
 						{
 							//printf("Lane right\n");
 						}
-						else if (!strcmp(child.name(), "center"))
+						else if (!strcmp(child2->name(), "center"))
 						{
 							//printf("Lane center\n");
 						}
 						else
 						{
-							printf("Unsupported lane side: %s\n", child.name());
+							printf("Unsupported lane side: %s\n", child2->name());
 							continue;
 						}
-						for (pugi::xml_node lane_node : child.children())
+						for (pugi::xml_node_iterator lane_node = child2->children().begin(); lane_node != child2->children().end(); lane_node++)
 						{
-							if (strcmp(lane_node.name(), "lane"))
+							if (strcmp(lane_node->name(), "lane"))
 							{
-								printf("Unexpected element: %s, expected \"lane\"\n", lane_node.name());
+								printf("Unexpected element: %s, expected \"lane\"\n", lane_node->name());
 								continue;
 							}
 
 							Lane::LaneType lane_type = Lane::LANE_TYPE_NONE;
-							if (lane_node.attribute("type") == 0 || !strcmp(lane_node.attribute("type").value(), ""))
+							if (lane_node->attribute("type") == 0 || !strcmp(lane_node->attribute("type").value(), ""))
 							{
 								printf("Lane type error");
 							}
-							if (!strcmp(lane_node.attribute("type").value(), "none"))
+							if (!strcmp(lane_node->attribute("type").value(), "none"))
 							{
 								lane_type = Lane::LANE_TYPE_NONE;
 							}
-							else  if (!strcmp(lane_node.attribute("type").value(), "driving"))
+							else  if (!strcmp(lane_node->attribute("type").value(), "driving"))
 							{
 								lane_type = Lane::LANE_TYPE_DRIVING;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "stop"))
+							else if (!strcmp(lane_node->attribute("type").value(), "stop"))
 							{
 								lane_type = Lane::LANE_TYPE_STOP;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "shoulder"))
+							else if (!strcmp(lane_node->attribute("type").value(), "shoulder"))
 							{
 								lane_type = Lane::LANE_TYPE_SHOULDER;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "biking"))
+							else if (!strcmp(lane_node->attribute("type").value(), "biking"))
 							{
 								lane_type = Lane::LANE_TYPE_BIKING;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "sidewalk"))
+							else if (!strcmp(lane_node->attribute("type").value(), "sidewalk"))
 							{
 								lane_type = Lane::LANE_TYPE_SIDEWALK;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "border"))
+							else if (!strcmp(lane_node->attribute("type").value(), "border"))
 							{
 								lane_type = Lane::LANE_TYPE_BORDER;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "restricted"))
+							else if (!strcmp(lane_node->attribute("type").value(), "restricted"))
 							{
 								lane_type = Lane::LANE_TYPE_RESTRICTED;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "parking"))
+							else if (!strcmp(lane_node->attribute("type").value(), "parking"))
 							{
 								lane_type = Lane::LANE_TYPE_PARKING;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "bidirectional"))
+							else if (!strcmp(lane_node->attribute("type").value(), "bidirectional"))
 							{
 								lane_type = Lane::LANE_TYPE_BIDIRECTIONAL;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "median"))
+							else if (!strcmp(lane_node->attribute("type").value(), "medcian"))
 							{
 								lane_type = Lane::LANE_TYPE_MEDIAN;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "special1"))
+							else if (!strcmp(lane_node->attribute("type").value(), "special1"))
 							{
 								lane_type = Lane::LANE_TYPE_SPECIAL1;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "special2"))
+							else if (!strcmp(lane_node->attribute("type").value(), "special2"))
 							{
 								lane_type = Lane::LANE_TYPE_SPECIAL2;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "special3"))
+							else if (!strcmp(lane_node->attribute("type").value(), "special3"))
 							{
 								lane_type = Lane::LANE_TYPE_SPECIAL3;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "roadmarks"))
+							else if (!strcmp(lane_node->attribute("type").value(), "roadmarks"))
 							{
 								lane_type = Lane::LANE_TYPE_ROADMARKS;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "tram"))
+							else if (!strcmp(lane_node->attribute("type").value(), "tram"))
 							{
 								lane_type = Lane::LANE_TYPE_TRAM;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "rail"))
+							else if (!strcmp(lane_node->attribute("type").value(), "rail"))
 							{
 								lane_type = Lane::LANE_TYPE_RAIL;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "entry") ||
-								!strcmp(lane_node.attribute("type").value(), "mwyEntry"))
+							else if (!strcmp(lane_node->attribute("type").value(), "entry") ||
+								!strcmp(lane_node->attribute("type").value(), "mwyEntry"))
 							{
 								lane_type = Lane::LANE_TYPE_ENTRY;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "exit") ||
-								!strcmp(lane_node.attribute("type").value(), "mwyExit"))
+							else if (!strcmp(lane_node->attribute("type").value(), "exit") ||
+								!strcmp(lane_node->attribute("type").value(), "mwyExit"))
 							{
 								lane_type = Lane::LANE_TYPE_EXIT;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "offRamp"))
+							else if (!strcmp(lane_node->attribute("type").value(), "offRamp"))
 							{
 								lane_type = Lane::LANE_TYPE_OFF_RAMP;
 							}
-							else if (!strcmp(lane_node.attribute("type").value(), "onRamp"))
+							else if (!strcmp(lane_node->attribute("type").value(), "onRamp"))
 							{
 								lane_type = Lane::LANE_TYPE_ON_RAMP;
 							}
 							else
 							{
-								printf("unknown lane type: %s (road id=%d)\n", lane_node.attribute("type").value(), r->GetId());
+								printf("unknown lane type: %s (road id=%d)\n", lane_node->attribute("type").value(), r->GetId());
 							}
 
-							int lane_id = atoi(lane_node.attribute("id").value());
+							int lane_id = atoi(lane_node->attribute("id").value());
 							Lane *lane = new Lane(lane_id, lane_type);
 							if (lane == NULL)
 							{
@@ -1275,23 +1278,23 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 							lane_section->AddLane(lane);
 
 							// Link
-							pugi::xml_node link = lane_node.child("link");
+							pugi::xml_node link = lane_node->child("link");
 							if (link != NULL)
 							{
 								pugi::xml_node successor = link.child("successor");
 								if (successor != NULL)
 								{
-									lane->AddLink(new LaneLink(LinkType::SUCCESSOR, atoi(successor.attribute("id").value())));
+									lane->AddLink(new LaneLink(SUCCESSOR, atoi(successor.attribute("id").value())));
 								}
 								pugi::xml_node predecessor = link.child("predecessor");
 								if (predecessor != NULL)
 								{
-									lane->AddLink(new LaneLink(LinkType::PREDECESSOR, atoi(predecessor.attribute("id").value())));
+									lane->AddLink(new LaneLink(PREDECESSOR, atoi(predecessor.attribute("id").value())));
 								}
 							}
 
 							// Width
-							for (pugi::xml_node width = lane_node.child("width"); width; width = width.next_sibling("width"))
+							for (pugi::xml_node width = lane_node->child("width"); width; width = width.next_sibling("width"))
 							{
 								double s_offset = atof(width.attribute("sOffset").value());
 								double a = atof(width.attribute("a").value());
@@ -1305,7 +1308,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}
 				else
 				{
-					printf("Unsupported lane type: %s\n", child.name());
+					printf("Unsupported lane type: %s\n", child->name());
 				}
 			}
 		}
@@ -1376,6 +1379,14 @@ Connection::Connection(Road* incoming_road, Road *connecting_road, ContactPointT
 	contact_point_ = contact_point;
 }
 
+Connection::~Connection()
+{ 
+	for (size_t i=0; i<lane_link_.size(); i++) 
+	{
+		delete lane_link_[i];
+	}
+}
+
 void Connection::AddJunctionLaneLink(int from, int to)
 {
 	lane_link_.push_back(new JunctionLaneLink(from, to));
@@ -1383,11 +1394,11 @@ void Connection::AddJunctionLaneLink(int from, int to)
 
 int Connection::GetConnectingLaneId(int incoming_lane_id)
 {
-	for (auto &ll : lane_link_)
+	for (size_t i = 0; i < lane_link_.size(); i++)
 	{
-		if (ll->from_ == incoming_lane_id)
+		if (lane_link_[i]->from_ == incoming_lane_id)
 		{
-			return ll->to_;
+			return lane_link_[i]->to_;
 		}
 	}
 	return 0;
@@ -1396,12 +1407,19 @@ int Connection::GetConnectingLaneId(int incoming_lane_id)
 void Connection::Print()
 {
 	printf("Connection: incoming %d connecting %d\n", incoming_road_->GetId(), connecting_road_->GetId());
-	for (auto &lane_link : lane_link_)
+	for (size_t i = 0; i < lane_link_.size(); i++)
 	{
-		lane_link->Print();
+		lane_link_[i]->Print();
 	}
 }
 
+Junction::~Junction()
+{ 
+	for (size_t i=0; i<connection_.size(); i++)
+	{
+		delete connection_[i];
+	}
+}
 
 int Junction::GetNumberOfRoadConnections(int roadId, int laneId)
 {
@@ -1477,17 +1495,17 @@ void Junction::Print()
 {
 	printf("Junction %d %s: \n", id_, name_.c_str());
 
-	for (auto &c : connection_)
+	for (size_t i=0; i<connection_.size(); i++)
 	{
-		c->Print();
+		connection_[i]->Print();
 	}
 }
 
 OpenDrive::~OpenDrive()
 {
-	for (auto &r : road_)
+	for (size_t i=0; i<road_.size(); i++)
 	{
-		delete(r);
+		delete(road_[i]);
 	}
 }
 
@@ -1525,22 +1543,22 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 	// Look from road 1, both ends, for road 2
 	if (lane1_id < 0)
 	{
-		link_type = LinkType::SUCCESSOR;
+		link_type = SUCCESSOR;
 		link = road1->GetLink(link_type);
 	}
 	else if (lane1_id > 0)
 	{
-		link_type = LinkType::PREDECESSOR;
+		link_type = PREDECESSOR;
 		link = road1->GetLink(link_type);
 	}
 	else
 	{
 		// Try both ends
-		link_type = LinkType::SUCCESSOR;
+		link_type = SUCCESSOR;
 		link = road1->GetLink(link_type);
 		if (link == 0)
 		{
-			link_type = LinkType::PREDECESSOR;
+			link_type = PREDECESSOR;
 			link = road1->GetLink(link_type);
 			if (link == 0)
 			{
@@ -1551,18 +1569,18 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 	}
 	LaneSection *lane_section = 0;
 
-	if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
+	if (link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)
 	{
 		if (link->GetElementId() == road2->GetId())
 		{
 			if (lane1_id != 0 && lane2_id != 0)
 			{
 				// Check lane connected
-				if (link_type == LinkType::SUCCESSOR)
+				if (link_type == SUCCESSOR)
 				{
 					lane_section = road1->GetLaneSectionByIdx(road1->GetNumberOfLaneSections() - 1);
 				}
-				else if (link_type == LinkType::PREDECESSOR)
+				else if (link_type == PREDECESSOR)
 				{
 					lane_section = road1->GetLaneSectionByIdx(0);
 				}
@@ -1615,8 +1633,8 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 					for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
 					{
 						Lane *lane = lane_section->GetLaneByIdx(j);
-						LaneLink *lane_link_predecessor = lane->GetLink(LinkType::PREDECESSOR);
-						LaneLink *lane_link_successor = lane->GetLink(LinkType::SUCCESSOR);
+						LaneLink *lane_link_predecessor = lane->GetLink(PREDECESSOR);
+						LaneLink *lane_link_successor = lane->GetLink(SUCCESSOR);
 						if (lane_link_predecessor == 0 || lane_link_successor == 0)
 						{
 							continue;
@@ -1650,19 +1668,19 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 void OpenDrive::Print()
 {
 	printf("Roads:\n");
-	for (auto &r : road_)
+	for (size_t i=0; i<road_.size(); i++)
 	{
-		r->Print();
+		road_[i]->Print();
 	}
 
 	printf("junctions\n");
-	for (auto &junction : junction_)
+	for (size_t i=0; i<junction_.size(); i++)
 	{
-		junction->Print();
+		junction_[i]->Print();
 	}
 }
 
-Position::Position()
+void Position::Init()
 {
 	track_id_ = 0;
 	lane_id_ = 0;
@@ -1684,18 +1702,26 @@ Position::Position()
 	elevation_idx_ = 0;
 }
 
-Position::Position(int track_id, double s, double t) : Position()
+Position::Position()
 {
+	Init();
+}
+
+Position::Position(int track_id, double s, double t)
+{
+	Init();
 	SetTrackPos(track_id, s, t);
 }
 
-Position::Position(int track_id, int lane_id, double s, double offset) : Position()
+Position::Position(int track_id, int lane_id, double s, double offset)
 {
+	Init();
 	SetLanePos(track_id, lane_id, s, offset);
 }
 
-Position::Position(double x, double y, double z, double h, double p, double r) : Position()
+Position::Position(double x, double y, double z, double h, double p, double r)
 {
+	Init();
 	SetInertiaPos(x, y, z, h, p, r);
 }
 
@@ -2175,6 +2201,7 @@ void Position::Track2XYZ()
 
 	// z = Elevation 
 	EvaluateZAndPitch();
+//	r_ = 0;
 }
 
 void Position::Lane2Track()
@@ -2301,12 +2328,12 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 	if (s_ + ds > road->GetLength())
 	{
 		s_new = s_ + ds - road->GetLength();
-		link_type = LinkType::SUCCESSOR;
+		link_type = SUCCESSOR;
 	}
 	else if (s_ + ds < 0)
 	{
 		s_new = -(s_ + ds);
-		link_type = LinkType::PREDECESSOR;
+		link_type = PREDECESSOR;
 	}
 	else
 	{
@@ -2341,7 +2368,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 	
 		// find valid connecting road, if multiple choices choose by random
 		int n_connections = junction->GetNumberOfRoadConnections(road->GetId(), lane->GetId());
-		int connection_idx = (int)(n_connections * (double)mt_rand() / mt19937::max());
+		int connection_idx = (int)(n_connections * (double)mt_rand() / mt_rand.max());
 		
 		LaneRoadLaneConnection lane_road_lane_connection = junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), connection_idx);
 		contact_point = lane_road_lane_connection.contact_point_;
@@ -2405,11 +2432,11 @@ int Position::MoveAlongS(double ds)
 
 	if (s_+ds > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
 	{
-		link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(LinkType::SUCCESSOR);
+		link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(SUCCESSOR);
 	}
 	else if (s_+ds < 0)
 	{
-		link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(LinkType::PREDECESSOR);
+		link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(PREDECESSOR);
 	}
 	else  // New position is within current track
 	{
@@ -2568,9 +2595,9 @@ bool Position::IsAheadOf(Position target_position)
 int Route::SetPosition(Position *position)
 {
 	// Is it a valid position, i.e. is it along the route
-	for (auto &w : waypoint_)
+	for (size_t i=0; i<waypoint_.size(); i++)
 	{
-		if (w->GetTrackId() == position->GetTrackId()) // Same road
+		if (waypoint_[i]->GetTrackId() == position->GetTrackId()) // Same road
 		{
 			// Update current position
 			current_position_ = *position;
@@ -2655,27 +2682,32 @@ int Route::Set(double route_s, int laneId, double  laneOffset)
 
 int Route::SetOffset(double route_s, int dLane, double  dLaneOffset)
 {
+	if (waypoint_.size() == 0)
+	{
+		cout << "SetOffset No waypoints!" << std::endl;
+		return -1;
+	}
 	double s_start = waypoint_[0]->GetS();
 	double route_length = 0;
 	s_ = route_s;
 
 	// Find out what road and local s value
-	for (auto &w : waypoint_)
+	for (size_t i=0; i<waypoint_.size(); i++)
 	{
-		double road_length = w->GetOpenDrive()->GetRoadById(w->GetTrackId())->GetLength();
+		double road_length = waypoint_[i]->GetOpenDrive()->GetRoadById(waypoint_[i]->GetTrackId())->GetLength();
 		if (s_ < route_length + road_length - s_start)
 		{
 			// Found road segment
 			double local_s = s_ + s_start - route_length;
 
 			// Determine driving direction by lane id
-			if (w->GetLaneId() > 0)
+			if (waypoint_[i]->GetLaneId() > 0)
 			{
 				// going towards road direction (left side of reference line), adjust s accordingly
 				local_s = road_length - local_s;
 			}
 
-			current_position_.SetLanePos(w->GetTrackId(), w->GetLaneId() + dLane, local_s, dLaneOffset);
+			current_position_.SetLanePos(waypoint_[i]->GetTrackId(), waypoint_[i]->GetLaneId() + dLane, local_s, dLaneOffset);
 			return 0;
 		}
 		route_length += road_length - s_start;

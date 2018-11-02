@@ -49,9 +49,9 @@ ScenarioGateway::ScenarioGateway()
 
 ScenarioGateway::~ScenarioGateway()
 {
-	for (auto o : objectState_)
+	for (size_t i=0; i<objectState_.size(); i++)
 	{
-		delete o;
+		delete objectState_[i];
 	}
 	objectState_.clear();
 }
@@ -59,11 +59,11 @@ ScenarioGateway::~ScenarioGateway()
 
 int ScenarioGateway::getObjectStateById(int id, ObjectState &objectState)
 {
-	for (auto o : objectState_)
+	for (size_t i = 0; i < objectState_.size(); i++)
 	{
-		if (o->state_.id == id)
+		if (objectState_[i]->state_.id == id)
 		{
-			objectState = *o;
+			objectState = *objectState_[i];
 			return 0;
 		}
 	}
@@ -78,14 +78,14 @@ void ScenarioGateway::reportObject(ObjectState objectState)
 	bool found = false;
 	
 	// Check whether the object is already present in the list of active objects
-	for (auto o : objectState_)
+	for (size_t i = 0; i < objectState_.size(); i++)
 	{
-		if (o->state_.id == objectState.state_.id)
+		if (objectState_[i]->state_.id == objectState.state_.id)
 		{
 			found = true;
 			
 			// Update state
-			*o = objectState;	
+			*objectState_[i] = objectState;
 			break;
 		}
 	}

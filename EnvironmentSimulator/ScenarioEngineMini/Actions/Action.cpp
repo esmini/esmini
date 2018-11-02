@@ -1,6 +1,9 @@
 #include "Action.hpp"
 
 #define SMALL_NUMBER (1E-6)
+#ifndef INFINITY
+  #define INFINITY (~0)
+#endif
 #define DISTANCE_TOLERANCE (0.5)  // meter
 #define IS_ZERO(x) (x < SMALL_NUMBER && x > -SMALL_NUMBER)
 
@@ -35,74 +38,85 @@ std::string Action::getActionName()
 
 void Action::identifyActionType(OSCPrivateAction privateAction)
 {
-	if (privateAction.Lateral.LaneChange.Dynamics.shape == "sinusoidal")
+	if (privateAction.laneChange_)
 	{
-		if (!isnan(privateAction.Lateral.LaneChange.Dynamics.time))
+		if (privateAction.laneChange_)
 		{
 			this->actionType = "sinusoidal-time";
-			this->time = privateAction.Lateral.LaneChange.Dynamics.time;
-			this->targetObject = privateAction.Lateral.LaneChange.Target.Relative.object;
-			this->targetValue = privateAction.Lateral.LaneChange.Target.Relative.value;
-			this->f = 3.1415 / time;
-			this->laneChange = true;
 		}
+		this->time = privateAction.laneChange_->Dynamics.time;
+		if (privateAction.laneChange_->Target.relative_)
+		{
+			this->targetObject = privateAction.laneChange_->Target.relative_->object;
+			this->targetValue = privateAction.laneChange_->Target.relative_->value;
+		}
+		else if (privateAction.laneChange_->Target.absolute_)
+		{
+			this->targetValue = privateAction.laneChange_->Target.absolute_->value;
+		}
+		this->f = 3.1415 / time;
+		this->laneChange = true;
 	}
-	else if (privateAction.Lateral.LaneOffset.Dynamics.shape == "sinusoidal")
+	else if (privateAction.laneOffset_)
 	{
-		if (!isnan(privateAction.Lateral.LaneOffset.Dynamics.duration))
+		if (privateAction.laneOffset_->Dynamics.shape == std::string("sinusoidal"))
 		{
 			this->actionType = "sinusoidal-time";
-			this->time = privateAction.Lateral.LaneOffset.Dynamics.duration;
-			this->targetObject = privateAction.Lateral.LaneOffset.Target.Relative.object;
-			this->targetValue = privateAction.Lateral.LaneOffset.Target.Relative.value;
-			this->f = 3.1415 / time;
-			this->laneChange = false;
 		}
+		this->time = privateAction.laneOffset_->Dynamics.duration;
+		if (privateAction.laneOffset_->Target.relative_)
+		{
+			this->targetObject = privateAction.laneOffset_->Target.relative_->object;
+			this->targetValue = privateAction.laneOffset_->Target.relative_->value;
+		}
+		else if (privateAction.laneOffset_->Target.absolute_)
+		{
+			this->targetValue = privateAction.laneOffset_->Target.absolute_->value;
+		}
+		this->f = 3.1415 / time;
+		this->laneChange = false;
 	}
 
-	else if (!isnan(privateAction.Longitudinal.Speed.Dynamics.rate)) // Should be (!...Dynamics.shape.empty()) Wrong in osc
+	else if (privateAction.speed_) // Should be (!...Dynamics.shape.empty()) Wrong in osc
 	{
-		this->actionType = "speed-rate";
-		this->speedRate = privateAction.Longitudinal.Speed.Dynamics.rate;
-	}
-
-	// Speed action -Step
-	else if (privateAction.Longitudinal.Speed.Dynamics.shape == "step")
-	{
-
-		if (privateAction.Longitudinal.Speed.Target.Absolute.value != NAN)
+		if (privateAction.speed_->dynamics_->rate > SMALL_NUMBER)
+		{
+			this->actionType = "speed-rate";
+			this->speedRate = privateAction.speed_->dynamics_->rate;
+		}
+		else if (privateAction.speed_->dynamics_->shape == "step")
 		{
 			this->actionType = "speed-step";
-			this->speedTarget = privateAction.Longitudinal.Speed.Target.Absolute.value;
+			this->speedTarget = privateAction.speed_->target_->absolute_->value;
 		}
 	}
 
 	// Position lane
-	else if (!privateAction.Position.Lane.roadId.empty())
+	else if (privateAction.position_ && privateAction.position_->lane_)
 	{
 		this->actionType = "position-lane";
 	}
 
 	// Position route
-	else if (!privateAction.Position.Route.RouteRef.CatalogReference.catalogName.empty())
+	else if (privateAction.position_ && privateAction.position_->route_)
 	{
 		this->actionType = "position-route";
 	}
 
 	// Follow route
-	else if (!privateAction.Routing.FollowRoute.CatalogReference.catalogName.empty())
+	else if (privateAction.routing_)
 	{
 		this->actionType = "follow-route-catalog";
-		for (auto &entity : actionEntities)
+		for (size_t i=0; i<actionEntities.size(); i++)
 		{
-			Car *car = this->carsPtr->getCarPtr(entity);
-			for (auto &r : carsPtr->route)
+			Car *car = this->carsPtr->getCarPtr(actionEntities[i]);
+			for (size_t j=0; j<carsPtr->route.size(); j++)
 			{
 				// Find specified route
-				if (r.getName() == privateAction.Routing.FollowRoute.CatalogReference.entryName)
+				if (carsPtr->route[j].getName() == privateAction.routing_->FollowRoute.CatalogReference.entryName)
 				{
-					std::cout << "Adding route " << r.getName() << " to car " << car->getObjectName() << std::endl;
-					car->setRoute(r);
+					std::cout << "Adding route " << carsPtr->route[j].getName() << " to car " << car->getObjectName() << std::endl;
+					car->setRoute(carsPtr->route[j]);
 					break;
 				}
 			}
@@ -110,35 +124,29 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 	}
 
 	// Meeting
-	else if (!privateAction.Meeting.mode.empty())
+	else if (privateAction.meeting_)
 	{
 		this->actionType = "meeting";
 
-		this->mode = privateAction.Meeting.mode;
-		this->object = privateAction.Meeting.Relative.object;
-		this->offsetTime = privateAction.Meeting.Relative.offsetTime;
-		this->continuous = privateAction.Meeting.Relative.continuous;
+		this->mode = privateAction.meeting_->mode;
+		this->object = privateAction.meeting_->relative_->object;
+		this->offsetTime = privateAction.meeting_->relative_->offsetTime;
+		this->continuous = privateAction.meeting_->relative_->continuous;
 
-		if (!privateAction.Meeting.Position.Lane.roadId.empty())
-		{
-			int roadId = std::stoi(privateAction.Meeting.Position.Lane.roadId);
-			int lane_id = privateAction.Meeting.Position.Lane.laneId;
-			double s = privateAction.Meeting.Position.Lane.s;
-			double offset = privateAction.Meeting.Position.Lane.offset;
+		int roadId = privateAction.meeting_->Position.lane_->roadId;
+		int lane_id = privateAction.meeting_->Position.lane_->laneId;
+		double s = privateAction.meeting_->Position.lane_->s;
+		double offset = privateAction.meeting_->Position.lane_->offset;
 
-			ownTargetPos.SetLanePos(roadId, lane_id, s, offset);
-		}
+		ownTargetPos.SetLanePos(roadId, lane_id, s, offset);
 
-		if (!privateAction.Meeting.Relative.Position.Lane.roadId.empty())
-		{
-			int roadId = std::stoi(privateAction.Meeting.Relative.Position.Lane.roadId);
-			int lane_id = privateAction.Meeting.Relative.Position.Lane.laneId;
-			double s = privateAction.Meeting.Relative.Position.Lane.s;
-			double offset = privateAction.Meeting.Relative.Position.Lane.offset;
+		roadId = privateAction.meeting_->relative_->Position.lane_->roadId;
+		lane_id = privateAction.meeting_->relative_->Position.lane_->laneId;
+		s = privateAction.meeting_->relative_->Position.lane_->s;
+		offset = privateAction.meeting_->relative_->Position.lane_->offset;
 
-			relativeTargetPos = roadmanager::Position(roadId, lane_id, s, offset);
-			int a = 0;
-		}		
+		relativeTargetPos = roadmanager::Position(roadId, lane_id, s, offset);
+		int a = 0;
 	}
 }
 
@@ -295,22 +303,16 @@ void Action::executeSinusoidal(double simulationTime)
 
 void Action::executeSpeedRate(double simulationTime, double timeStep)
 {
-	if (privateAction.Longitudinal.Speed.Dynamics.rate != NAN)
+	for (size_t i = 0; i < actionEntities.size(); i++)
 	{
-		for (size_t i = 0; i < actionEntities.size(); i++)
+
+		double newSpeed = (*carsPtr).getSpeed(actionEntities[i]) + speedRate*timeStep;
+		(*carsPtr).setSpeed(actionEntities[i], newSpeed);
+
+		if (privateAction.speed_->target_->absolute_->value >= newSpeed)
 		{
-
-			double newSpeed = (*carsPtr).getSpeed(actionEntities[i]) + speedRate*timeStep;
-			(*carsPtr).setSpeed(actionEntities[i], newSpeed);
-
-			if (privateAction.Longitudinal.Speed.Target.Absolute.value != NAN)
-			{
-				if (privateAction.Longitudinal.Speed.Target.Absolute.value >= newSpeed)
-				{
-					actionCompleted = true;
-					startAction = false;
-				}
-			}
+			actionCompleted = true;
+			startAction = false;
 		}
 	}
 }
@@ -328,12 +330,10 @@ void Action::executeSpeedStep()
 
 void Action::executePositionLane()
 {
-	OSCPosition position = privateAction.Position;
-
-	int roadId = std::stoi(position.Lane.roadId);
-	int laneId = position.Lane.laneId;
-	double s = position.Lane.s;
-	double offset = (std::isnan(position.Lane.offset)) ? 0 : position.Lane.offset;
+	int roadId = privateAction.position_->lane_->roadId;
+	int laneId = privateAction.position_->lane_->laneId;
+	double s = privateAction.position_->lane_->s;
+	double offset = privateAction.position_->lane_->offset;
 
 	roadmanager::Position pos(roadId, laneId, s, offset);
 
@@ -349,20 +349,20 @@ void Action::executePositionLane()
 
 void Action::executePositionRoute()
 {
-	std::string routeEntryName = privateAction.Position.Route.RouteRef.CatalogReference.entryName;
+	std::string routeEntryName = privateAction.position_->route_->RouteRef.CatalogReference.entryName;
 
 	for (size_t i = 0; i < actionEntities.size(); i++)
 	{
-		double pathS = privateAction.Position.Route.Position.LaneCoord.pathS;
-		int laneId = privateAction.Position.Route.Position.LaneCoord.laneId;
+		double pathS = privateAction.position_->route_->Position.LaneCoord.pathS;
+		int laneId = privateAction.position_->route_->Position.LaneCoord.laneId;
 
 		// Find route
 		roadmanager::Route * routePtr = 0;
-		for (auto &r : carsPtr->route)
+		for (size_t j=0; j<carsPtr->route.size(); j++)
 		{
-			if (r.getName() == routeEntryName)
+			if (carsPtr->route[j].getName() == routeEntryName)
 			{
-				routePtr = &r;
+				routePtr = &carsPtr->route[j];
 				break;
 			}
 		}

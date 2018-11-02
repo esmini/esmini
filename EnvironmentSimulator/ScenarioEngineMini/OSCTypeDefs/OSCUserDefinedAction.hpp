@@ -2,8 +2,9 @@
 #include <iostream>
 #include <string>
 
-struct OSCUserDefinedAction
+class OSCUserDefinedAction
 {
+public:
 	void printOSCUserDefinedAction()
 	{
 	};

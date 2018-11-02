@@ -5,10 +5,11 @@
 #include <string>
 
 // Forward declaration to overcome the circular dependency
-struct OSCPosition;
+class OSCPosition;
 
-struct OSCRoute
+class OSCRoute
 {
+public:
 	OSCParameterDeclaration ParameterDeclaration;
 
 	struct WaypointStruct

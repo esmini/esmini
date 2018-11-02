@@ -6,12 +6,13 @@
 #include "OSCParameterDeclaration.hpp"
 
 
-struct OSCDriver
+class OSCDriver
 {
+public:
 	OSCParameterDeclaration ParameterDeclaration;
 	OSCPersonDescription Description;
 
-	std::string name = "";
+	std::string name;
 
 	void printOSCDriver()
 	{

@@ -1,10 +1,6 @@
 #include "Actions.hpp"
 
 
-Actions::Actions()
-{
-}
-
 void Actions::addAction(Action action)
 {
 	actions.push_back(action);

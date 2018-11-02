@@ -7,14 +7,15 @@
 #include <vector>
 
 struct ParameterStruct
-	{
-	std::string name = "";
-	std::string type = ""; // Wrong type
-	std::string value = "";
-	};
-
-struct OSCParameterDeclaration
 {
+	std::string name;
+	std::string type; // Wrong type
+	std::string value;
+};
+
+class OSCParameterDeclaration
+{
+public:
 
 	std::vector<ParameterStruct> Parameter;
 

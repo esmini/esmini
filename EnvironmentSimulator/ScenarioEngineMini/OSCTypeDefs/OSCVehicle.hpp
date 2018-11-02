@@ -10,16 +10,17 @@
 #include <math.h>
 
 
-struct OSCVehicle
+class OSCVehicle
 {
+public:
 	OSCParameterDeclaration ParameterDeclaration;
 	OSCBoundingBox BoundingBox;
 
 	struct 
 	{
-		double maxSpeed = NAN;
-		double maxDeceleration = NAN;
-		double mass = NAN;
+		double maxSpeed;
+		double maxDeceleration;
+		double mass;
 	} Performance;
 
 	struct
@@ -30,8 +31,8 @@ struct OSCVehicle
 
 	OSCProperties Properties;
 
-	std::string name = "";
-	std::string category = ""; // Wrong type
+	std::string name;
+	std::string category; // Wrong type
 
 	void printOSCVehicle() 
 	{

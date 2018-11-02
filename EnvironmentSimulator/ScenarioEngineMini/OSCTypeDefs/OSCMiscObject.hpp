@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-struct OSCMiscObject
+class OSCMiscObject
 {
 	void printOSCMiscObject() 
 	{

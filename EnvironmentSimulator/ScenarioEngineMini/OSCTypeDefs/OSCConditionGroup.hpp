@@ -6,9 +6,9 @@
 #include <vector>
 
 
-struct OSCConditionGroup
+class OSCConditionGroup
 {
-
+public:
 	std::vector<OSCCondition> Condition;
 
 	void printOSCConditionGroup()

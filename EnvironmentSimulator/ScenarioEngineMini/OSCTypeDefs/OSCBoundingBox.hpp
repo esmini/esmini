@@ -3,20 +3,21 @@
 #include <string>
 #include <math.h>
 
-struct OSCBoundingBox
+class OSCBoundingBox
 {
+public:
 	struct
 	{
-		double x = NAN;
-		double y = NAN;
-		double z = NAN;
+		double x;
+		double y;
+		double z;
 	} center;
 
 	struct 
 	{
-		double width = NAN;
-		double length = NAN;
-		double height = NAN;
+		double width;
+		double length;
+		double height;
 	} dimension;
 
 	void printOSCBoundingBox()

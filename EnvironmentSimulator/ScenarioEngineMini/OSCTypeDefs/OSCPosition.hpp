@@ -10,20 +10,27 @@
 #define INT_UNDEF 0xFFFFFFFF
 
 // Forward declaration to overcome the circular dependency
-struct OSCRoute;
+class OSCRoute;
 
-struct OSCPosition
+class OSCPosition
 {
-	bool exists = false;
+public:
 
-	struct {
-		bool exists = false;
-		double x = NAN;
-		double y = NAN;
-		double z = NAN;
-		double h = NAN;
-		double p = NAN;
-		double r = NAN;
+	OSCPosition()
+	{
+		world_ = 0;
+		lane_ = 0;
+		route_ = 0;
+	}
+
+	typedef struct {
+		bool exists;
+		double x;
+		double y;
+		double z;
+		double h;
+		double p;
+		double r;
 
 	} World;
 
@@ -32,12 +39,12 @@ struct OSCPosition
 	struct {} Road;
 	struct {} RelativeRoad;
 
-	struct {
-		bool exists = false;
-		std::string roadId = "";
-		int laneId = INT_UNDEF;
-		double offset = NAN;
-		double s = NAN;
+	typedef struct {
+		bool exists;
+		int roadId;
+		int laneId;
+		double offset;
+		double s;
 
 		OSCOrientation Orientation;
 	
@@ -45,55 +52,59 @@ struct OSCPosition
 
 	struct {} RelativeLane;
 
-	struct 
+	typedef struct 
 	{
 		struct
 		{
 			OSCRoute Route;
 			OSCCatalogReference CatalogReference;
 
-		}RouteRef;
+		} RouteRef;
 
 		struct
 		{
 			OSCOrientation Orientation;
-		}Orientation;
+		} Orientation;
 
 		struct
 		{
 			struct
 			{
 				std::string object;
-			}Current;
+			} Current;
 
 			struct
 			{
 				double pathS;
 				double t;
-			}RoadCoord;
+			} RoadCoord;
 
 			struct
 			{
 				double pathS;
 				int laneId;
 				double laneOffset;
-			}LaneCoord;
+			} LaneCoord;
 
-		}Position;
+		} Position;
 	
-	}Route;
+	} Route;
+
+	World *world_;
+	Lane *lane_;
+	Route *route_;
 
 	void printOSCPosition()
 	{
-		std::cout << "\t" << " - Lane" << std::endl;
-		std::cout << "\t" << "roadId = " << Lane.roadId << std::endl;
-		std::cout << "\t" << "laneId = " << Lane.laneId << std::endl;
-		std::cout << "\t" << "offset = " << Lane.offset << std::endl;
-		std::cout << "\t" << "s = " << Lane.s << std::endl;
-		std::cout << std::endl;
+		//std::cout << "\t" << " - Lane" << std::endl;
+		//std::cout << "\t" << "roadId = " << Lane.roadId << std::endl;
+		//std::cout << "\t" << "laneId = " << Lane.laneId << std::endl;
+		//std::cout << "\t" << "offset = " << Lane.offset << std::endl;
+		//std::cout << "\t" << "s = " << Lane.s << std::endl;
+		//std::cout << std::endl;
 
-		std::cout << "\t" << " - Lane - Orientation" << std::endl;
-		Lane.Orientation.printOSCOrientation();
+		//std::cout << "\t" << " - Lane - Orientation" << std::endl;
+		//Lane.Orientation.printOSCOrientation();
 
 	};
 };
