@@ -26,6 +26,7 @@ static ScenarioGateway *scenarioGateway = 0;
 static roadmanager::OpenDrive *roadManager = 0;
 double simTime = 0;
 double deltaSimTime = 0;  // external - used by Viewer::RubberBandCamera
+static char *args[] = { "kalle", "--window", "50", "50", "1000", "500" };
 
 #ifdef _SCENARIO_VIEWER
 
@@ -91,14 +92,21 @@ extern "C"
 			roadManager = scenarioEngine->getRoadManager();
 
 #ifdef _SCENARIO_VIEWER
+
 			if (useViewer)
 			{
+				// For some reason can't use args array directly... copy to a true char**
+				int argc = sizeof(args) / sizeof(char*);
+				char **argv;
+				argv = (char**)malloc(argc * sizeof(char*));
+				for (int i = 0; i < argc; i++)
+				{
+					argv[i] = (char*)malloc((strlen(args[i]) + 1) * sizeof(char));
+					strcpy(argv[i], args[i]);
+				}
+
 				// Initialize the viewer
-				char *argv[] = { "kalle", "--window", "50", "50", "1000", "500" };
-				int argc = 6;
-				scViewer = new viewer::Viewer(
-					roadManager,
-					scenarioEngine->getSceneGraphFilename().c_str(), osg::ArgumentParser(&argc, argv));
+				scViewer = new viewer::Viewer(roadManager, scenarioEngine->getSceneGraphFilename().c_str(), osg::ArgumentParser(&argc, argv));
 			}
 #endif
 		}

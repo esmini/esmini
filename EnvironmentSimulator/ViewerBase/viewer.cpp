@@ -173,11 +173,11 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	keyLeft_ = false;
 	keyRight_ = false;
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
-	osgViewer_ = new osgViewer::Viewer(arguments);
-		
+
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
 	arguments.read("--lodScale", lodScale_);
 
+	osgViewer_ = new osgViewer::Viewer(arguments);
 
 	// Load shadow geometry - assume it resides in the same directory as the main environment model
 	std::string filePath = dirnameOf(modelFilename_);
@@ -222,6 +222,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	nodeTrackerManipulator_->setTrackerMode(osgGA::NodeTrackerManipulator::NODE_CENTER);
 	nodeTrackerManipulator_->setRotationMode(osgGA::NodeTrackerManipulator::ELEVATION_AZIM);
 	nodeTrackerManipulator_->setVerticalAxisFixed(true);
+
 #if 0 // generates unwanted debug output on stdout, plus wrong axis
 	nodeTrackerManipulator->setTrackNode(cars[currentCarInFocus].node);
 #endif
@@ -277,6 +278,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	light->setDiffuse(osg::Vec4(1, 1, 0.85, 1));
 
 	osgViewer_->realize();
+
 }
 
 Viewer::~Viewer()

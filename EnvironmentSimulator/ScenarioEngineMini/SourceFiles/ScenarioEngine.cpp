@@ -250,7 +250,7 @@ void ScenarioEngine::stepObjects(double dt)
 
 void ScenarioEngine::initConditions()
 {
-
+	
 	for (int i = 0; i < story.size(); i++)
 	{
 		for (int j = 0; j < story[i].Act.size(); j++)
