@@ -6,46 +6,14 @@
 
 #include "viewer.hpp"
 #include "RoadManager.hpp"
-#include "RubberbandManipulator.h"
 #include "vehicle.hpp"
-
+#include "CommonMini.hpp"
 
 
 #define DEFAULT_SPEED   70  // km/h
 #define DEFAULT_DENSITY 1   // Cars per 100 m
 #define ROAD_MIN_LENGTH 30
 #define SIGN(X) ((X<0)?-1:1)
-
-#ifdef _WIN32
-#include <windows.h>
-
-static __int64 SE_getSystemTime()
-{
-	return timeGetTime();
-}
-
-static void SE_sleep(unsigned int msec)
-{
-	Sleep(msec);
-}
-
-#else
-#include <thread>
-#include <chrono>
-using namespace std::chrono;
-
-static __int64 getSystemTime()
-{
-	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-}
-
-static void SE_sleep(unsigned int msec)
-{
-	std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000 * msec)));
-}
-
-
-#endif
 
 
 static const double stepSize = 0.01;

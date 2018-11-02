@@ -207,13 +207,13 @@ namespace roadmanager
 		double length_;
 	};
 
-	typedef enum LinkType
+	typedef enum 
 	{
 		UNKNOWN,
 		SUCCESSOR,
 		PREDECESSOR,
 		NONE
-	};
+	} LinkType;
 
 
 	class LaneLink
@@ -378,12 +378,12 @@ namespace roadmanager
 	class RoadLink
 	{
 	public:
-		typedef enum ElementType
+		typedef enum 
 		{
 			ELEMENT_TYPE_UNKNOWN,
 			ELEMENT_TYPE_ROAD,
 			ELEMENT_TYPE_JUNCTION,
-		};
+		} ElementType;
 
 		RoadLink() : type_(NONE), element_id_(-1), element_type_(ELEMENT_TYPE_UNKNOWN), contact_point_type_(CONTACT_POINT_UNKNOWN) {}
 		RoadLink(LinkType type, ElementType element_type, int element_id, ContactPointType contact_point_type) :
