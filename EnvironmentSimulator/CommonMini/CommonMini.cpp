@@ -1,5 +1,9 @@
+#include <stdarg.h> 
 
 #include "CommonMini.hpp"
+
+#define LOG_FILENAME "log.txt"
+
 
 #if WINVER == _WIN32_WINNT_WIN7
 
@@ -32,3 +36,34 @@ void SE_sleep(unsigned int msec)
 }
 
 #endif
+
+Logger::Logger()
+{
+	file_.open(LOG_FILENAME);
+	if (file_.fail())
+	{
+		throw std::iostream::failure(std::string("Cannot open file: ") + LOG_FILENAME);
+	}
+}
+
+Logger::~Logger()
+{
+	file_.close();
+}
+
+void Logger::Log(char const* file, char const* func, int line, char const* format, ...)
+{
+	char s[1024];
+	va_list args;
+	va_start(args, format);
+	vsprintf_s(s, 1024, format, args);
+	file_ << file << " " << func << "()  " << line << ": " << s << "\n";
+	file_.flush();
+	va_end(args);
+}
+
+Logger& Logger::Inst()
+{
+	static Logger instance;
+	return instance;
+}

@@ -74,6 +74,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 						// randomly choose model
 						carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (mt_rand.max)();
+						LOG("Adding car of model %d to road %d", carModelID, r);
 
 						Car *car_ = new Car;
 						car_->road_id_init = odrManager->GetRoadByIdx(r)->GetId();
