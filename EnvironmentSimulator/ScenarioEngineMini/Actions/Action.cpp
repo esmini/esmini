@@ -79,7 +79,7 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 
 	else if (privateAction.speed_) // Should be (!...Dynamics.shape.empty()) Wrong in osc
 	{
-		if (privateAction.speed_->dynamics_->rate > SMALL_NUMBER)
+		if (fabs(privateAction.speed_->dynamics_->rate) > SMALL_NUMBER)
 		{
 			this->actionType = "speed-rate";
 			this->speedRate = privateAction.speed_->dynamics_->rate;
