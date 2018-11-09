@@ -1,6 +1,12 @@
 #include <fstream>
 #include <string>
-#include <sdkddkver.h>
+
+#ifdef WIN32
+	#include <sdkddkver.h>
+#else
+	#include <inttypes.h>
+	typedef int64_t __int64;
+#endif
 
 #ifdef _WIN32
    #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)

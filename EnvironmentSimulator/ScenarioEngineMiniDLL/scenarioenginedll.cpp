@@ -115,7 +115,9 @@ extern "C"
 			std::cout << e.what() << std::endl;
 			scenarioEngine = 0;
 			scenarioGateway = 0;
+#ifdef _SCENARIO_VIEWER
 			scViewer = 0;
+#endif
 			return -1;
 		}
 

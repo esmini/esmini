@@ -4,36 +4,35 @@
 
 #define LOG_FILENAME "log.txt"
 
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 
-#if WINVER == _WIN32_WINNT_WIN7
+	#include <windows.h>
 
-#include <windows.h>
+	__int64 SE_getSystemTime()
+	{
+		return timeGetTime();
+	}
 
-__int64 SE_getSystemTime()
-{
-	return timeGetTime();
-}
-
-void SE_sleep(unsigned int msec)
-{
-	Sleep(msec);
-}
+	void SE_sleep(unsigned int msec)
+	{
+		Sleep(msec);
+	}
 
 #else
 
-#include <thread>
-#include <chrono>
-using namespace std::chrono;
+	#include <thread>
+	#include <chrono>
+	using namespace std::chrono;
 
-__int64 SE_getSystemTime()
-{
-	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-}
+	__int64 SE_getSystemTime()
+	{
+		return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+	}
 
-void SE_sleep(unsigned int msec)
-{
-	std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000 * msec)));
-}
+	void SE_sleep(unsigned int msec)
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000 * msec)));
+	}
 
 #endif
 
@@ -56,7 +55,7 @@ void Logger::Log(char const* file, char const* func, int line, char const* forma
 	char s[1024];
 	va_list args;
 	va_start(args, format);
-	vsprintf_s(s, 1024, format, args);
+	vsnprintf(s, 1024, format, args);
 	file_ << file << " " << func << "()  " << line << ": " << s << "\n";
 	file_.flush();
 	va_end(args);
