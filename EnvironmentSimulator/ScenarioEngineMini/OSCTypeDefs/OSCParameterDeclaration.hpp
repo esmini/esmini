@@ -21,6 +21,6 @@ public:
 
 	void printOSCParameterDeclaration() 
 	{
-		std::cout << std::endl;
+		LOG("\n");
 	};
 };

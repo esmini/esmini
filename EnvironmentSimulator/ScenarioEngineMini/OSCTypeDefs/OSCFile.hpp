@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include "CommonMini.hpp"
 
 class OSCFile
 {
@@ -9,9 +10,9 @@ public:
 
 	void printOSCFile()
 	{
-		std::cout << " - OSCFile" << std::endl;
-		std::cout << "\t" << "filepath = " << filepath << std::endl;
-		std::cout << "\n" << std::endl;
+		LOG(" - OSCFile");
+		LOG("\tfilepath = %s", filepath.c_str());
+		LOG("\n");
 	};
 };
 

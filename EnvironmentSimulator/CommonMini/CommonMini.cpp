@@ -1,4 +1,5 @@
 #include <stdarg.h> 
+#include <iostream>
 
 #include "CommonMini.hpp"
 
@@ -56,7 +57,8 @@ void Logger::Log(char const* file, char const* func, int line, char const* forma
 	va_list args;
 	va_start(args, format);
 	vsnprintf(s, 1024, format, args);
-	file_ << file << " " << func << "()  " << line << ": " << s << "\n";
+	file_ << file << "/" << line << "/" << func << "(): " << s << "\n";
+	std::cout << s << "\n"; 
 	file_.flush();
 	va_end(args);
 }

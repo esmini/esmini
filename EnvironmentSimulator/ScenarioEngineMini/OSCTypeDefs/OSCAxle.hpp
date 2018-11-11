@@ -15,12 +15,12 @@ public:
 
 	void printOSCAxle() 
 	{
-		std::cout << "\t" << "maxSteering = " << maxSteering << std::endl;
-		std::cout << "\t" << "wheelDiameter = " << wheelDiameter << std::endl;
-		std::cout << "\t" << "trackWidth = " << trackWidth << std::endl;
-		std::cout << "\t" << "positionX = " << positionX << std::endl;
-		std::cout << "\t" << "positionZ = " << positionZ << std::endl;
-		std::cout << std::endl;
+		LOG("\t maxSteering: %.2f", maxSteering);
+		LOG("\t wheelDiameter: %.2f",wheelDiameter);
+		LOG("\t trackWidth: %.2f", trackWidth);
+		LOG("\t %.2f", positionX);
+		LOG("\t %.2f", positionZ);
+		LOG("\n");
 
 	}
 };

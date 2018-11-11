@@ -157,7 +157,7 @@ int main(int argc, char** argv)
 	}
 	catch (const std::exception& e)
 	{
-		std::cout << e.what() << std::endl;
+		LOG(e.what());
 		return -1;
 	}
 
@@ -229,7 +229,7 @@ int main(int argc, char** argv)
 					{
 						ScenarioCar new_sc;
 
-						std::cout << "Creating car " << o->state_.id << " - got state from gateway" << std::endl;
+						LOG("Creating car %d - got state from gateway", o->state_.id);
 
 						new_sc.id = o->state_.id;
 						// Choose random model

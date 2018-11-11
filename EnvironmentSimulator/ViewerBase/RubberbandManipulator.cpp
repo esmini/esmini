@@ -245,7 +245,7 @@ bool RubberbandManipulator::calcMovement(bool reset)
 	{
 		if (dt < 0)
 		{
-			notify(INFO) << "warning dt = "<< dt << std::endl;
+			notify(INFO) << "warning dt = "<< dt << "\n";
 			dt = 0.0f;
 		}
 

@@ -16,16 +16,13 @@ public:
 
 	void printOSCDriver()
 	{
-		std::cout << " - Driver" << std::endl;
-		std::cout << "\t" << "name = " << name << std::endl;
-		std::cout << "\n" << std::endl;
+		LOG(" - Driver");
+		LOG("\tname = %s", name.c_str());
 
-		std::cout << " - Driver - ParameterDeclaration " << std::endl;
+		LOG(" - Driver - ParameterDeclaration ");
 		ParameterDeclaration.printOSCParameterDeclaration();
-		std::cout << "\n" << std::endl;
 
-		std::cout << " - Driver - Description " << std::endl;
+		LOG(" - Driver - Description ");
 		Description.printOSCPersonDescription();
-		std::cout << "\n" << std::endl;
 	}
 };

@@ -1,4 +1,5 @@
 #include "Condition.hpp"
+#include "CommonMini.hpp"
 
 
 Condition::Condition(OSCCondition &condition, Cars &cars, std::vector<int> storyId, std::vector<std::string> &actionEntities)
@@ -76,7 +77,6 @@ bool Condition::checkTimeHeadway()
 				for (size_t i = 0; i < N; i++)
 				{
 					headwayTimeNew[i] = (entityPos.GetS() - triggeringEntityPos[i].GetS()) / (entitySpeed / 3.6);
-					//std::cout << "ScenarioEngine: headwayTime is " << headwayTimeNew[i] << std::endl;
 
 					if (condition.ByEntity.EntityCondition.TimeHeadway.rule == "greater_than")
 					{
@@ -103,7 +103,7 @@ bool Condition::checkTimeHeadway()
 		{
 			if (triggs[i])
 			{
-				std::cout << "ScenarioEngine: " << condition.name << " has triggered" << std::endl;
+				LOG("%s has triggered", condition.name.c_str());
 				std::fill(triggs.begin(), triggs.end(), false);
 				return true;
 			}

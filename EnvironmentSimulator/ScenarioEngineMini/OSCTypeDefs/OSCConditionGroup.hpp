@@ -13,11 +13,11 @@ public:
 
 	void printOSCConditionGroup()
 	{
-		std::cout << "\t" << " - ConditionGroup" << std::endl;
+		LOG("\t - ConditionGroup");
 
 		for (size_t i = 0; i < Condition.size(); i++)
 		{
-			std::cout << "\t" << " - ConditionGroup - Condition" << std::endl;
+			LOG("\t - ConditionGroup - Condition");
 			Condition[i].printOSCCondition();
 		}
 	}

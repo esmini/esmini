@@ -10,6 +10,7 @@
 #include "roadmanager.hpp"
 #include "odrSpiral.h"
 #include "pugixml.hpp"
+#include "CommonMini.hpp"
 
 static std::mt19937 mt_rand;
 
@@ -49,17 +50,17 @@ void Polynomial::Set(double a, double b, double c, double d, double s_max)
 
 void Geometry::Print()
 {
-	printf("Geometry virtual Print\n");
+	LOG("Geometry virtual Print\n");
 }
 
 void Geometry::EvaluateDS(double ds, double *x, double *y, double *h)
 {
-	printf("Geometry virtual Evaluate\n");
+	LOG("Geometry virtual Evaluate\n");
 }
 
 void Line::Print()
 {
-	printf("Line x: %.2f, y: %.2f, h: %.2f length: %.2f\n", GetX(), GetY(), GetHdg(), GetLength());
+	LOG("Line x: %.2f, y: %.2f, h: %.2f length: %.2f\n", GetX(), GetY(), GetHdg(), GetLength());
 }
 
 void Line::EvaluateDS(double ds, double *x, double *y, double *h)
@@ -71,7 +72,7 @@ void Line::EvaluateDS(double ds, double *x, double *y, double *h)
 
 void Arc::Print()
 {
-	printf("Arc x: %.2f, y: %.2f, h: %.2f curvature: %.2f length: %.2f\n", GetX(), GetY(), GetHdg(), GetCurvature(), GetLength());
+	LOG("Arc x: %.2f, y: %.2f, h: %.2f curvature: %.2f length: %.2f\n", GetX(), GetY(), GetHdg(), GetCurvature(), GetLength());
 }
 
 void Arc::EvaluateDS(double ds, double *x, double *y, double *h)
@@ -104,7 +105,7 @@ void Arc::EvaluateDS(double ds, double *x, double *y, double *h)
 
 void Spiral::Print()
 {
-	printf("Spiral x: %.2f, y: %.2f, h: %.2f start curvature: %.4f end curvature: %.4f length: %.2f\n",
+	LOG("Spiral x: %.2f, y: %.2f, h: %.2f start curvature: %.4f end curvature: %.4f length: %.2f\n",
 		GetX(), GetY(), GetHdg(), GetCurvStart(), GetCurvEnd(), GetLength());
 }
 
@@ -153,7 +154,7 @@ void Spiral::EvaluateDS(double ds, double *x, double *y, double *h)
 
 void Poly3::Print()
 {
-	printf("Poly3 x: %.2f, y: %.2f, h: %.2f length: %.2f a: %.2f b: %.2f c: %.2f d: %.2f\n",
+	LOG("Poly3 x: %.2f, y: %.2f, h: %.2f length: %.2f a: %.2f b: %.2f c: %.2f d: %.2f\n",
 		GetX(), GetY(), GetHdg(), GetLength(), poly3_.GetA(), poly3_.GetB(), poly3_.GetC(), poly3_.GetD());
 }
 
@@ -171,7 +172,7 @@ void Poly3::EvaluateDS(double ds, double *x, double *y, double *h)
 
 void ParamPoly3::Print()
 {
-	printf("ParamPoly3 x: %.2f, y: %.2f, h: %.2f length: %.2f U: %.8f, %.8f, %.8f, %.8f V: %.8f, %.8f, %.8f, %.8f\n",
+	LOG("ParamPoly3 x: %.2f, y: %.2f, h: %.2f length: %.2f U: %.8f, %.8f, %.8f, %.8f V: %.8f, %.8f, %.8f, %.8f\n",
 		GetX(), GetY(), GetHdg(), GetLength(), 
 		poly3U_.GetA(), poly3U_.GetB(), poly3U_.GetC(), poly3U_.GetD(),
 		poly3V_.GetA(), poly3V_.GetB(), poly3V_.GetC(), poly3V_.GetD()
@@ -197,13 +198,13 @@ void ParamPoly3::EvaluateDS(double ds, double *x, double *y, double *h)
 
 void Elevation::Print()
 {
-	printf("Elevation: s: %.2f A: %.4f B: %.4f C: %.4f D: %.4f\n",
+	LOG("Elevation: s: %.2f A: %.4f B: %.4f C: %.4f D: %.4f\n",
 		GetS(), poly3_.GetA(), poly3_.GetB(), poly3_.GetC(), poly3_.GetD());
 }
 
 void LaneLink::Print()
 {
-	printf("LaneLink type: %d id: %d\n", type_, id_);
+	LOG("LaneLink type: %d id: %d\n", type_, id_);
 }
 
 LaneWidth *Lane::GetWidthByS(double s)
@@ -237,13 +238,13 @@ LaneLink *Lane::GetLink(LinkType type)
 
 void LaneWidth::Print()
 {
-	printf("LaneWidth: sOffset: %.2f, a: %.2f, b: %.2f, c: %.2f, d: %.2f\n",
+	LOG("LaneWidth: sOffset: %.2f, a: %.2f, b: %.2f, c: %.2f, d: %.2f\n",
 		s_offset_, poly3_.GetA(), poly3_.GetB(), poly3_.GetC(), poly3_.GetD());
 }
 
 void LaneOffset::Print()
 {
-	printf("LaneOffset s %.2f a %.4f b %.2f c %.2f d %.2f s_max %.2f length %.2f\n",
+	LOG("LaneOffset s %.2f a %.4f b %.2f c %.2f d %.2f s_max %.2f length %.2f\n",
 		s_, polynomial_.GetA(), polynomial_.GetB(), polynomial_.GetC(), polynomial_.GetD(), polynomial_.GetSMax(), length_);
 }
 
@@ -259,7 +260,7 @@ double LaneOffset::GetLaneOffsetPrim(double s)
 
 void Lane::Print()
 {
-	printf("Lane: %d, type: %d, level: %d\n", id_, type_, level_);
+	LOG("Lane: %d, type: %d, level: %d\n", id_, type_, level_);
 	
 	for (size_t i = 0; i < link_.size(); i++)
 	{
@@ -341,7 +342,7 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 
 	if (lane_info.lane_section_idx_ >= (int)lane_section_.size())
 	{
-		printf("Road::GetLaneSectionByS: Error idx %d > n_lane_sections %d\n", lane_info.lane_section_idx_, (int)lane_section_.size());
+		LOG("Road::GetLaneSectionByS: Error idx %d > n_lane_sections %d\n", lane_info.lane_section_idx_, (int)lane_section_.size());
 	}
 	else
 	{
@@ -350,26 +351,26 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 		// check if we passed current section
 		if (s > lane_section->GetS() + lane_section->GetLength())
 		{
-			//printf("look forward for lane section at %d / %.2f lid %d (sec end s: %.2f)\n", 
+			//LOG("look forward for lane section at %d / %.2f lid %d (sec end s: %.2f)\n", 
 			//	lane_info.lane_section_idx_, s, lane_info.lane_id_, lane_section->GetS() + lane_section->GetLength());
 			while (s > lane_section->GetS() + lane_section->GetLength() && lane_info.lane_section_idx_ + 1 < GetNumberOfLaneSections())
 			{
 				// Find out connecting lane, then move to next lane section
 				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, SUCCESSOR);
 				lane_section = GetLaneSectionByIdx(++lane_info.lane_section_idx_);
-				//printf("moved forward to lane section id %d @s %.2f laneid: %d\n", lane_info.lane_section_idx_, s, lane_info.lane_id_);
+				//LOG("moved forward to lane section id %d @s %.2f laneid: %d\n", lane_info.lane_section_idx_, s, lane_info.lane_id_);
 			}
 		}
 		else if (s < lane_section->GetS())
 		{
-			//printf("look backward for lane section at %d / %.2f lid %d (sec end s: %.2f)\n",
+			//LOG("look backward for lane section at %d / %.2f lid %d (sec end s: %.2f)\n",
 			//	lane_info.lane_section_idx_, s, lane_info.lane_id_, lane_section->GetS() + lane_section->GetLength());
 			while (s < lane_section->GetS() && lane_info.lane_section_idx_ > 0)
 			{
 				// Move to previous lane section
 				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, PREDECESSOR);
 				lane_section = GetLaneSectionByIdx(--lane_info.lane_section_idx_);
-				//printf("moved backward to lane section id %d @s %.2f laneid: %d\n", lane_info.lane_section_idx_, s, lane_info.lane_id_);
+				//LOG("moved backward to lane section id %d @s %.2f laneid: %d\n", lane_info.lane_section_idx_, s, lane_info.lane_id_);
 			}
 		}
 	}
@@ -381,7 +382,7 @@ Geometry* Road::GetGeometry(int idx)
 {
 	if (idx < 0 || idx + 1 > geometry_.size())
 	{
-		printf("Road::GetGeometry index %d out of range [0:%d]\n", idx, (int)geometry_.size());
+		LOG("Road::GetGeometry index %d out of range [0:%d]\n", idx, (int)geometry_.size());
 		return 0;
 	}
 	return geometry_[idx]; 
@@ -390,7 +391,7 @@ Geometry* Road::GetGeometry(int idx)
 
 void LaneSection::Print()
 {
-	printf("LaneSection: %.2f, %d lanes:\n", s_, (int)lane_.size());
+	LOG("LaneSection: %.2f, %d lanes:\n", s_, (int)lane_.size());
 	
 	for (size_t i=0; i<lane_.size(); i++)
 	{
@@ -424,7 +425,7 @@ int LaneSection::GetLaneIdByIdx(int idx)
 {
 	if (idx > (int)lane_.size() - 1)
 	{
-		printf("LaneSection::GetLaneIdByIdx Error: index %d, only %d lanes\n", idx, (int)lane_.size());
+		LOG("LaneSection::GetLaneIdByIdx Error: index %d, only %d lanes\n", idx, (int)lane_.size());
 		return 0;
 	}
 	else
@@ -483,7 +484,7 @@ double LaneSection::GetOuterOffset(double s, int lane_id)
 	Lane *lane = GetLaneById(lane_id);
 	if (lane == 0)
 	{
-		printf("LaneSection::GetOuterOffset Error (lane id %d)\n", lane_id);
+		LOG("LaneSection::GetOuterOffset Error (lane id %d)\n", lane_id);
 		return 0.0;
 	}
 	
@@ -537,7 +538,7 @@ double LaneSection::GetOuterOffsetHeading(double s, int lane_id)
 	Lane *lane = GetLaneById(lane_id);
 	if (lane == 0)
 	{
-		printf("LaneSection::GetOuterOffsetHeading Error (lane id %d)\n", lane_id);
+		LOG("LaneSection::GetOuterOffsetHeading Error (lane id %d)\n", lane_id);
 		return 0.0;
 	}
 
@@ -650,7 +651,7 @@ RoadLink::RoadLink(LinkType type, pugi::xml_node node)
 		}
 		else
 		{
-			printf("Unsupported element type: %s\n", contact_point_type.c_str());
+			LOG("Unsupported element type: %s\n", contact_point_type.c_str());
 			contact_point_type_ = CONTACT_POINT_UNKNOWN;
 		}
 	}
@@ -661,7 +662,7 @@ RoadLink::RoadLink(LinkType type, pugi::xml_node node)
 	}
 	else
 	{
-		printf("Unsupported element type: %s\n", element_type.c_str());
+		LOG("Unsupported element type: %s\n", element_type.c_str());
 		element_type_ = ELEMENT_TYPE_UNKNOWN;
 	}
 }
@@ -689,7 +690,7 @@ Road::~Road()
 
 void Road::Print()
 {
-	printf("Road id: %d length: %.2f\n", id_, GetLength());
+	LOG("Road id: %d length: %.2f\n", id_, GetLength());
 	cout << "Geometries:" << endl;
 
 	for (size_t i = 0; i < geometry_.size(); i++)
@@ -927,7 +928,7 @@ Road *OpenDrive::GetRoadByIdx(int idx)
 	}
 	else
 	{
-		printf("GetRoadByIdx error (idx %d, nroads %d)\n", idx, (int)road_.size());
+		LOG("GetRoadByIdx error (idx %d, nroads %d)\n", idx, (int)road_.size());
 		return 0;
 	}
 }
@@ -952,7 +953,7 @@ Junction *OpenDrive::GetJunctionByIdx(int idx)
 	}
 	else
 	{
-		printf("GetJunctionByIdx error (idx %d, njunctions %d)\n", idx, (int)junction_.size());
+		LOG("GetJunctionByIdx error (idx %d, njunctions %d)\n", idx, (int)junction_.size());
 		return 0;
 	}
 }
@@ -961,7 +962,7 @@ OpenDrive::OpenDrive(const char *filename)
 {
 	if (!LoadOpenDriveFile(filename))
 	{
-		printf("Error loading OpenDrive %s\n", filename);
+		LOG("Error loading OpenDrive %s\n", filename);
 		throw std::invalid_argument("Failed to load OpenDrive file");
 	}
 }
@@ -1087,7 +1088,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 						}
 						else
 						{
-							printf("ParamPoly3: Major error\n");
+							LOG("ParamPoly3: Major error\n");
 						}
 					}
 					else
@@ -1120,7 +1121,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}
 				else
 				{
-					printf("Elevation: Major error\n");
+					LOG("Elevation: Major error\n");
 				}
 			}
 		}
@@ -1149,33 +1150,33 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					{
 						if (!strcmp(child2->name(), "left"))
 						{
-							//printf("Lane left\n");
+							//LOG("Lane left\n");
 						}
 						else if (!strcmp(child2->name(), "right"))
 						{
-							//printf("Lane right\n");
+							//LOG("Lane right\n");
 						}
 						else if (!strcmp(child2->name(), "center"))
 						{
-							//printf("Lane center\n");
+							//LOG("Lane center\n");
 						}
 						else
 						{
-							printf("Unsupported lane side: %s\n", child2->name());
+							LOG("Unsupported lane side: %s\n", child2->name());
 							continue;
 						}
 						for (pugi::xml_node_iterator lane_node = child2->children().begin(); lane_node != child2->children().end(); lane_node++)
 						{
 							if (strcmp(lane_node->name(), "lane"))
 							{
-								printf("Unexpected element: %s, expected \"lane\"\n", lane_node->name());
+								LOG("Unexpected element: %s, expected \"lane\"\n", lane_node->name());
 								continue;
 							}
 
 							Lane::LaneType lane_type = Lane::LANE_TYPE_NONE;
 							if (lane_node->attribute("type") == 0 || !strcmp(lane_node->attribute("type").value(), ""))
 							{
-								printf("Lane type error");
+								LOG("Lane type error");
 							}
 							if (!strcmp(lane_node->attribute("type").value(), "none"))
 							{
@@ -1265,14 +1266,14 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 							}
 							else
 							{
-								printf("unknown lane type: %s (road id=%d)\n", lane_node->attribute("type").value(), r->GetId());
+								LOG("unknown lane type: %s (road id=%d)\n", lane_node->attribute("type").value(), r->GetId());
 							}
 
 							int lane_id = atoi(lane_node->attribute("id").value());
 							Lane *lane = new Lane(lane_id, lane_type);
 							if (lane == NULL)
 							{
-								printf("Error: creating lane\n");
+								LOG("Error: creating lane\n");
 								return false;
 							}
 							lane_section->AddLane(lane);
@@ -1308,7 +1309,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}
 				else
 				{
-					printf("Unsupported lane type: %s\n", child->name());
+					LOG("Unsupported lane type: %s\n", child->name());
 				}
 			}
 		}
@@ -1352,7 +1353,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}
 				else
 				{
-					printf("Unsupported contact point: %s\n", contact_point_str.c_str());
+					LOG("Unsupported contact point: %s\n", contact_point_str.c_str());
 				}
 
 				Connection *connection = new Connection(incoming_road, connecting_road, contact_point);
@@ -1406,7 +1407,7 @@ int Connection::GetConnectingLaneId(int incoming_lane_id)
 
 void Connection::Print()
 {
-	printf("Connection: incoming %d connecting %d\n", incoming_road_->GetId(), connecting_road_->GetId());
+	LOG("Connection: incoming %d connecting %d\n", incoming_road_->GetId(), connecting_road_->GetId());
 	for (size_t i = 0; i < lane_link_.size(); i++)
 	{
 		lane_link_[i]->Print();
@@ -1476,7 +1477,7 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, 
 						}
 						if (!connection->GetConnectingRoad()->GetLaneSectionByIdx(laneSectionId)->GetLaneById(lane_link->to_)->IsDriving())
 						{
-							printf("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to %d, %d\n",
+							LOG("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to %d, %d\n",
 								roadId, laneId, connection->GetConnectingRoad()->GetId(), lane_link->to_);
 						}
 
@@ -1493,7 +1494,7 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, 
 
 void Junction::Print()
 {
-	printf("Junction %d %s: \n", id_, name_.c_str());
+	LOG("Junction %d %s: \n", id_, name_.c_str());
 
 	for (size_t i=0; i<connection_.size(); i++)
 	{
@@ -1518,7 +1519,7 @@ int OpenDrive::GetTrackIdxById(int id)
 			return i;
 		}
 	}
-	printf("OpenDrive::GetTrackIdxById Error: Road id %d not found\n", id);
+	LOG("OpenDrive::GetTrackIdxById Error: Road id %d not found\n", id);
 	return -1;
 }
 
@@ -1528,7 +1529,7 @@ int OpenDrive::GetTrackIdByIdx(int idx)
 	{
 		return (road_[idx]->GetId());
 	}
-	printf("OpenDrive::GetTrackIdByIdx: idx %d out of range [0:%d]\n", idx, (int)road_.size());
+	LOG("OpenDrive::GetTrackIdByIdx: idx %d out of range [0:%d]\n", idx, (int)road_.size());
 	return 0;
 }
 
@@ -1562,7 +1563,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 			link = road1->GetLink(link_type);
 			if (link == 0)
 			{
-				printf("OpenDrive::IsConnected Link not found!\n");
+				LOG("OpenDrive::IsConnected Link not found!\n");
 				return false;
 			}
 		}
@@ -1586,12 +1587,12 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 				}
 				else
 				{
-					printf("OpenDrive::IsConnected Error LinkType %d not suppoered\n", link_type);
+					LOG("OpenDrive::IsConnected Error LinkType %d not suppoered\n", link_type);
 					return false;
 				}
 				if (lane_section == 0)
 				{
-					printf("OpenDrive::IsConnected Error lane section == 0\n");
+					LOG("OpenDrive::IsConnected Error lane section == 0\n");
 					return false;
 				}
 				Lane *lane = lane_section->GetLaneById(lane1_id);
@@ -1627,7 +1628,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 					lane_section = connecting_road->GetLaneSectionByIdx(0);
 					if (lane_section == 0)
 					{
-						printf("OpenDrive::IsConnected Error lane section == 0\n");
+						LOG("OpenDrive::IsConnected Error lane section == 0\n");
 						return false;
 					}
 					for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
@@ -1659,7 +1660,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 	}
 	else
 	{
-		printf("OpenDrive::IsConnected Error: LinkElementType %d unsupported\n", link->GetElementType());
+		LOG("OpenDrive::IsConnected Error: LinkElementType %d unsupported\n", link->GetElementType());
 	}
 
 	return false;
@@ -1667,13 +1668,13 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 
 void OpenDrive::Print()
 {
-	printf("Roads:\n");
+	LOG("Roads:\n");
 	for (size_t i=0; i<road_.size(); i++)
 	{
 		road_[i]->Print();
 	}
 
-	printf("junctions\n");
+	LOG("junctions\n");
 	for (size_t i=0; i<junction_.size(); i++)
 	{
 		junction_[i]->Print();
@@ -1746,14 +1747,14 @@ void Position::Track2Lane()
 	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
 	if (road == 0)
 	{
-		printf("Position::Track2Lane Error: No road %d\n", track_idx_);
+		LOG("Position::Track2Lane Error: No road %d\n", track_idx_);
 		return;
 	}
 
 	Geometry *geometry = road->GetGeometry(geometry_idx_);
 	if (geometry == 0)
 	{
-		printf("Position::Track2Lane Error: No geometry %d\n", geometry_idx_);
+		LOG("Position::Track2Lane Error: No geometry %d\n", geometry_idx_);
 		return;
 	}
 
@@ -1763,7 +1764,7 @@ void Position::Track2Lane()
 
 	if (lane_section == 0)
 	{
-		printf("Position::Track2Lane: No lane section for idx %d - keeping current lane setting\n", lane_section_idx_);
+		LOG("Position::Track2Lane: No lane section for idx %d - keeping current lane setting\n", lane_section_idx_);
 		return;
 	}
 
@@ -1791,7 +1792,7 @@ void Position::Track2Lane()
 
 	if (candidate_lane_id != lane_id_)
 	{
-		//printf("change lane: %d -> %d\n", lane_id_, candidate_lane_id);
+		//LOG("change lane: %d -> %d\n", lane_id_, candidate_lane_id);
 		// Update cache indices
 		lane_id_ = candidate_lane_id;
 		lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
@@ -1953,13 +1954,13 @@ void Position::SetXYH(double x3, double y3, double h3)
 
 	if ((road = GetOpenDrive()->GetRoadByIdx(track_idx_)) == 0)
 	{
-		printf("Position::SetXYH: Invalid road index %d\n", track_idx_);
+		LOG("Position::SetXYH: Invalid road index %d\n", track_idx_);
 		return;
 	}
 
 	if ((geom = road->GetGeometry(geometry_idx_)) == 0)
 	{
-		printf("Position::SetXYH: Invalid geometry index %d\n", geometry_idx_);
+		LOG("Position::SetXYH: Invalid geometry index %d\n", geometry_idx_);
 		return;
 	}
 
@@ -1989,7 +1990,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 #else
 	if (found)
 	{
-		printf("Position::SetXYH Found closer remote point rid %d geom_idx %d\n", road->GetId(), geometry_idx_);
+		LOG("Position::SetXYH Found closer remote point rid %d geom_idx %d\n", road->GetId(), geometry_idx_);
 	}
 
 	// First check current geometry
@@ -2015,7 +2016,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 				sNormMin = CLAMP(sNorm, 0.0, 1.0);
 				distMin = dist;
 				insideMin = inside;
-				printf("Position::SetXYH Found next geometry\n");
+				LOG("Position::SetXYH Found next geometry\n");
 			}
 		}
 		if (insideMin == false && geometry_idx_ > 0)
@@ -2029,7 +2030,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 				sNormMin = CLAMP(sNorm, 0.0, 1.0);
 				distMin = dist;
 				insideMin = inside;
-				printf("Position::SetXYH Found previous geometry\n");
+				LOG("Position::SetXYH Found previous geometry\n");
 			}
 		}
 	}
@@ -2056,7 +2057,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 				}
 				else 
 				{
-					printf("Position::SetXYH Unsupported contact point type %d\n", link->GetContactPointType());
+					LOG("Position::SetXYH Unsupported contact point type %d\n", link->GetContactPointType());
 					return;
 				}
 				geom = GetOpenDrive()->GetRoadById(link->GetElementId())->GetGeometry(geomIdxTmp);
@@ -2068,7 +2069,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 					sNormMin = CLAMP(sNorm, 0.0, 1.0);
 					distMin = dist;
 					insideMin = inside;
-					printf("Position::SetXYH Found road link of type %d\n", linkList[i]);
+					LOG("Position::SetXYH Found road link of type %d\n", linkList[i]);
 				}
 			}
 		}
@@ -2090,7 +2091,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 					continue;
 				}
 				dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
-				//printf("rid %d geom %d dist %.2f sNormMin %.2f inside: %d (%.2f %.2f %.2f)\n",
+				//LOG("rid %d geom %d dist %.2f sNormMin %.2f inside: %d (%.2f %.2f %.2f)\n",
 				//	i, j, dist, sNorm, inside, x3, y3, h3);
 
 				if (dist < distMin)  // First value (min_dist = -1) is always the closest so far
@@ -2106,7 +2107,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 		}
 		if (found)
 		{
-			printf("Position::SetXYH Found closer remote point rid %d geom_idx %d\n", road->GetId(), geometry_idx_);
+			LOG("Position::SetXYH Found closer remote point rid %d geom_idx %d\n", road->GetId(), geometry_idx_);
 		}
 	}
 #endif
@@ -2128,7 +2129,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 	// Find out what lane 
 	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);		
 
-	//printf("Closest point: dist %.2f side %d track_id %d lane_id %d s %.2f h %.2f\n", distMin, side, roadMin->GetId(), GetLaneId(), s_, h);
+	//LOG("Closest point: dist %.2f side %d track_id %d lane_id %d s %.2f h %.2f\n", distMin, side, roadMin->GetId(), GetLaneId(), s_, h);
 	EvaluateZAndPitch();
 }
 	
@@ -2140,7 +2141,7 @@ bool Position::EvaluateZAndPitch()
 		Elevation *elevation = road->GetElevation(elevation_idx_);
 		if (elevation == NULL)
 		{
-			printf("Elevation error NULL, nelev: %d elev_idx: %d\n", road->GetNumberOfElevations(), elevation_idx_);
+			LOG("Elevation error NULL, nelev: %d elev_idx: %d\n", road->GetNumberOfElevations(), elevation_idx_);
 		}
 		if (elevation && s_ > elevation->GetS() + elevation->GetLength())
 		{
@@ -2163,7 +2164,7 @@ bool Position::EvaluateZAndPitch()
 		{
 			double p = s_ - elevation->GetS();
 			z_ = elevation->poly3_.Evaluate(p);
-			//printf("s: %.2f elevation_idx %d z: %.2f\n", s_, elevation_idx_, z_);
+			//LOG("s: %.2f elevation_idx %d z: %.2f\n", s_, elevation_idx_, z_);
 			p_ = -elevation->poly3_.EvaluatePrim(p);
 		}
 		return true;
@@ -2179,14 +2180,14 @@ void Position::Track2XYZ()
 	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
 	if (road == 0)
 	{
-		printf("Position::Track2XYZ Error: No road %d\n", track_idx_);
+		LOG("Position::Track2XYZ Error: No road %d\n", track_idx_);
 		return;
 	}
 
 	Geometry *geometry = road->GetGeometry(geometry_idx_);
 	if (geometry == 0)
 	{
-		printf("Position::Track2XYZ Error: No geometry %d\n", geometry_idx_);
+		LOG("Position::Track2XYZ Error: No geometry %d\n", geometry_idx_);
 		return;
 	}
 
@@ -2231,7 +2232,7 @@ void Position::SetLongitudinalTrackPos(int track_id, double s)
 
 	if ((road = GetOpenDrive()->GetRoadById(track_id)) == 0)
 	{
-		printf("Position::Set Error: track %d not found\n", track_id);
+		LOG("Position::Set Error: track %d not found\n", track_id);
 		return;
 	}
 	if (track_id != track_id_)
@@ -2246,7 +2247,7 @@ void Position::SetLongitudinalTrackPos(int track_id, double s)
 
 	if (s > road->GetLength())
 	{
-		printf("Position::Set Warning: s (%.2f) too large, track %d only %.2f m long\n", s, track_id_, road->GetLength());
+		LOG("Position::Set Warning: s (%.2f) too large, track %d only %.2f m long\n", s, track_id_, road->GetLength());
 		s_ = road->GetLength();
 	}
 	else
@@ -2299,27 +2300,27 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 
 	if (road == 0)
 	{
-		printf("Position::MoveToConnectingRoad invalid road id %d\n", road->GetId());
+		LOG("Position::MoveToConnectingRoad invalid road id %d\n", road->GetId());
 		return -1;
 	}
 
 	if (road_link->GetElementId() == -1)
 	{
-		printf("Position::MoveToConnectingRoad No connecting road or junction at rid %d s_ %.2f (ds %.2f s_ %.2f)\n", road->GetId(), s_ + ds, ds, s_);
+		LOG("Position::MoveToConnectingRoad No connecting road or junction at rid %d s_ %.2f (ds %.2f s_ %.2f)\n", road->GetId(), s_ + ds, ds, s_);
 		return -1;
 	}
 	
 	lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 	if (lane_section == 0)
 	{
-		printf("Position::MoveToConnectingRoad No lane section rid %d ls_idx %d s %.2f\n", road->GetId(), lane_section_idx_, s_ + ds);
+		LOG("Position::MoveToConnectingRoad No lane section rid %d ls_idx %d s %.2f\n", road->GetId(), lane_section_idx_, s_ + ds);
 		return -1;
 	}
 
 	lane = lane_section->GetLaneByIdx(lane_idx_);
 	if (lane == 0)
 	{
-		printf("Position::MoveToConnectingRoad No lane rid %d lidx %d nlanes %d s_ %.2f s %.2f lsecidx %d\n", 
+		LOG("Position::MoveToConnectingRoad No lane rid %d lidx %d nlanes %d s_ %.2f s %.2f lsecidx %d\n", 
 			road->GetId(), lane_idx_, lane_section->GetNumberOfLanes(), s_, s_ + ds, lane_section_idx_);
 		return -1;
 	}
@@ -2337,7 +2338,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 	}
 	else
 	{
-		printf("Position::MoveToConnectingRoad s_ + ds %.2f within range [0:%.2f]\n", s_ + ds, road->GetLength());
+		LOG("Position::MoveToConnectingRoad s_ + ds %.2f within range [0:%.2f]\n", s_ + ds, road->GetLength());
 		return -1;
 	}
 
@@ -2351,7 +2352,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 			new_lane_id = lane->GetLink(link_type)->GetId();
 			if (new_lane_id == 0)
 			{
-				printf("Position::MoveToConnectingRoad Road+ new lane id %d\n", new_lane_id);
+				LOG("Position::MoveToConnectingRoad Road+ new lane id %d\n", new_lane_id);
 			}
 		}
 		contact_point = road_link->GetContactPointType();
@@ -2362,7 +2363,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 		Junction *junction = GetOpenDrive()->GetJunctionById(road_link->GetElementId());
 		if (junction == 0)
 		{
-			printf("Position::MoveToConnectingRoad Error: junction %d not existing\n", road_link->GetElementType());
+			LOG("Position::MoveToConnectingRoad Error: junction %d not existing\n", road_link->GetElementType());
 			return -1;
 		}
 	
@@ -2379,14 +2380,14 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 
 	if (new_lane_id == 0)
 	{
-		printf("Position::MoveToConnectingRoad: No connection from rid %d lid %d -> rid %d eltype %d\n", 
+		LOG("Position::MoveToConnectingRoad: No connection from rid %d lid %d -> rid %d eltype %d\n", 
 			road->GetId(), lane->GetId(), road_link->GetElementId(), road_link->GetElementType());
 		return -1;
 	}
 
 	if (next_road == 0)
 	{
-		printf("Position::MoveToConnectingRoad: No next road\n");
+		LOG("Position::MoveToConnectingRoad: No next road\n");
 		return -1;
 	}
 	
@@ -2412,12 +2413,12 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 		}
 		else
 		{
-			printf("Position::MoveToConnectingRoad unexpected contact point: %d\n", contact_point);
+			LOG("Position::MoveToConnectingRoad unexpected contact point: %d\n", contact_point);
 		}
 	}
 	else
 	{
-		printf("Position::MoveToConnectingRoad Unsupported contact point type %d\n", road_link->GetContactPointType());
+		LOG("Position::MoveToConnectingRoad Unsupported contact point type %d\n", road_link->GetContactPointType());
 		return -1;
 	}
 
@@ -2461,14 +2462,14 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	Road *road = GetOpenDrive()->GetRoadById(track_id);
 	if (road == 0)
 	{
-		printf("Position::Set Error: track %d not available\n", track_id);
+		LOG("Position::Set Error: track %d not available\n", track_id);
 		return;
 	}
 
 	if (lane_id != lane_id_ && lane_section_idx == -1)
 	{
 		// New lane ID might indicate a discreet jump to a new, distant position, reset lane section, if not specified)
-		//printf("Explicit lane change %d -> %d and reseting lane section\n", lane_id_, lane_id);
+		//LOG("Explicit lane change %d -> %d and reseting lane section\n", lane_id_, lane_id);
 		lane_section_idx = 0;
 	}
 
@@ -2478,7 +2479,7 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	{
 		lane_section_idx_ = lane_section_idx;
 		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
-		//printf("New lane section, new lane: %d -> %d\n", lane_id_, lane_id);
+		//LOG("New lane section, new lane: %d -> %d\n", lane_id_, lane_id);
 		lane_id_ = lane_id;
 	}
 	else  // Find LaneSection and info according to s
@@ -2494,13 +2495,13 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 		lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
 		if (lane_idx_ == -1)
 		{
-			printf("lane_idx %d fail for lane id %d\n", lane_idx_, lane_id_);
+			LOG("lane_idx %d fail for lane id %d\n", lane_idx_, lane_id_);
 			lane_idx_ = 0;
 		}
 	}
 	else
 	{
-		printf("Position::Set (lanepos) Error - lanesection NULL lsidx %d rid %d lid %d\n",
+		LOG("Position::Set (lanepos) Error - lanesection NULL lsidx %d rid %d lid %d\n",
 			lane_section_idx_, road->GetId(), lane_id_);
 	}
 
@@ -2529,22 +2530,22 @@ void Position::SetInertiaPos(double x, double y, double z, double h, double p, d
 
 void Position::PrintTrackPos()
 {
-	printf("	Track pos: (%d, %.2f, %.2f)\n", track_id_, s_, t_);
+	LOG("	Track pos: (%d, %.2f, %.2f)\n", track_id_, s_, t_);
 }
 
 void Position::PrintLanePos()
 {
-	printf("	Lane pos: (%d, %d, %.2f, %.2f)\n", track_id_, lane_id_, s_, offset_);
+	LOG("	Lane pos: (%d, %d, %.2f, %.2f)\n", track_id_, lane_id_, s_, offset_);
 }
 
 void Position::PrintInertialPos()
 {
-	printf("	Inertial pos: (%.2f, %.2f, %.2f, %.2f, %.2f, %.2f)\n", x_, y_, z_, h_, p_, r_);
+	LOG("	Inertial pos: (%.2f, %.2f, %.2f, %.2f, %.2f, %.2f)\n", x_, y_, z_, h_, p_, r_);
 }
 
 void Position::Print()
 {
-	printf("Position: \n");
+	LOG("Position: \n");
 	PrintTrackPos();
 	PrintLanePos();
 	PrintInertialPos();
@@ -2552,7 +2553,7 @@ void Position::Print()
 
 void Position::PrintXY()
 {
-	printf("%.2f, %.2f\n", x_, y_);
+	LOG("%.2f, %.2f\n", x_, y_);
 }
 
 double Position::getRelativeDistance(Position target_position)
@@ -2638,7 +2639,7 @@ int Route::AddWaypoint(Position *position)
 					// Adding waypoint for junction connecting road
 					Position *connected_pos = new Position(connecting_road_id, connecting_lane_id, 0, 0);
 					waypoint_.push_back(connected_pos);
-					printf("Route::AddWaypoint Added connecting waypoint %d: %d, %d, %.2f\n",
+					LOG("Route::AddWaypoint Added connecting waypoint %d: %d, %d, %.2f\n",
 						(int)waypoint_.size() - 1, connecting_road_id, connecting_lane_id, 0.0);
 				}
 			}
@@ -2646,7 +2647,7 @@ int Route::AddWaypoint(Position *position)
 
 		if (!connected)
 		{
-			printf("Route::AddWaypoint Error: waypoint (%d, %d) is not connected to the previous one (%d, %d)\n",
+			LOG("Route::AddWaypoint Error: waypoint (%d, %d) is not connected to the previous one (%d, %d)\n",
 				position->GetTrackId(), position->GetLaneId(), prev_pos->GetTrackId(), prev_pos->GetLaneId());
 
 			return -1;
@@ -2654,7 +2655,7 @@ int Route::AddWaypoint(Position *position)
 	}
 
 	waypoint_.push_back(position);
-	printf("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f\n", (int)waypoint_.size()-1, position->GetTrackId(), position->GetLaneId(), position->GetS());
+	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f\n", (int)waypoint_.size()-1, position->GetTrackId(), position->GetLaneId(), position->GetS());
 
 	return 0; 
 }
@@ -2684,7 +2685,7 @@ int Route::SetOffset(double route_s, int dLane, double  dLaneOffset)
 {
 	if (waypoint_.size() == 0)
 	{
-		cout << "SetOffset No waypoints!" << std::endl;
+		LOG("SetOffset No waypoints!");
 		return -1;
 	}
 	double s_start = waypoint_[0]->GetS();

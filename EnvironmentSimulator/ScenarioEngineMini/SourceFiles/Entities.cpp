@@ -1,36 +1,33 @@
 #include "Entities.hpp"
+#include "CommonMini.hpp"
 
 
 Entities::Entities()
 {
-	std::cout << "Entities: New Entities created" << std::endl;
 }
 
 
 void Entities::printEntities()
 {
-	std::cout << "---------------------------------------" << std::endl;
-	std::cout << "Print of Entities " << std::endl;
+	LOG("---------------------------------------");
+	LOG("Print of Entities ");
 
 	for (int i = 0; i < Object.size(); i++)
 	{
-		std::cout << "Entities - Object " << std::endl;
-		std::cout << "\t" << "name = " << Object[i].name << std::endl;
-		std::cout << std::endl;
-
-		std::cout << "Entities - Object - Vehicle" << std::endl;
+		LOG("Entities - Object ");
+		LOG("\tname = %s", Object[i].name.c_str());
+		LOG("Entities - Object - Vehicle");
 		Object[i].Vehicle.printOSCVehicle();
 
-		std::cout << "Entities - Object - Controller" << std::endl;
+		LOG("Entities - Object - Controller");
 		Object[i].Controller.CatalogReference.printOSCCatalogReference();
 
-		std::cout << "Entities - Object - Controller" << std::endl;
+		LOG("Entities - Object - Controller");
 		Object[i].Controller.Driver.printOSCDriver();
 
-		std::cout << "Entities - Object - Controller - PedestrianController" << std::endl;
+		LOG("Entities - Object - Controller - PedestrianController");
 		Object[i].Controller.PedestrianController.printOSCPedestrianController();
-		std::cout << "---------------------------------------" << std::endl;
-		std::cout << std::endl;
+		LOG("---------------------------------------");
 	}
 }
 

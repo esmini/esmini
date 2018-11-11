@@ -1,5 +1,5 @@
 #include "Actions.hpp"
-
+#include "CommonMini.hpp"
 
 void Actions::addAction(Action action)
 {
@@ -34,7 +34,7 @@ void Actions::executeActions(double simulationTime)
 
 		if (actions[i].getActionCompleted())
 		{
-			std::cout << "Actions: " << " action " << actions[i].getActionType() << " is removed from actions" << "\n" << std::endl;
+			LOG("Action %s is removed from actions", actions[i].getActionType().c_str());
 			actions.erase(actions.begin() + i);
 
 			numberOfActions = (int)actions.size();

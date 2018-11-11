@@ -112,7 +112,7 @@ extern "C"
 		}
 		catch (const std::exception& e)
 		{
-			std::cout << e.what() << std::endl;
+			LOG(e.what());
 			scenarioEngine = 0;
 			scenarioGateway = 0;
 #ifdef _SCENARIO_VIEWER
@@ -163,7 +163,7 @@ extern "C"
 					{
 						ScenarioCar new_sc;
 
-						std::cout << "Creating car " << o->state_.id << " - got state from gateway" << std::endl;
+						LOG("Creating car %d - got state from gateway", o->state_.id);
 
 						new_sc.id = o->state_.id;
 
@@ -195,7 +195,10 @@ extern "C"
 
 	UNITY_DLL_API int SE_ReportObjectPos(int id, char *name, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
 	{
-		scenarioGateway->reportObject(ObjectState(id, std::string(name), timestamp, x, y, z, h, p, r, speed));
+		if (scenarioGateway != 0)
+		{
+			scenarioGateway->reportObject(ObjectState(id, std::string(name), timestamp, x, y, z, h, p, r, speed));
+		}
 		
 		return 0;
 	}
@@ -247,8 +250,7 @@ extern "C"
 #else  // fill in state struct provided by reference argument
 	UNITY_DLL_API int SE_GetObjectState(int index, ScenarioObjectState *state)
 	{
-
-		if (scenarioGateway)
+		if (scenarioGateway != 0)
 		{
 			state->id = scenarioGateway->getObjectStatePtrByIdx(index)->state_.id;
 //			strncpy(state->name, scenarioGateway->getObjectStatePtrByIdx(index)->state_.name, NAME_LEN);
@@ -271,7 +273,7 @@ UNITY_DLL_API int SE_GetObjectStates(int *nObjects, ScenarioObjectState* state)
 {
 	int i;
 
-	if (scenarioGateway)
+	if (scenarioGateway != 0)
 	{
 		for (i = 0; i < *nObjects && i < scenarioGateway->getNumberOfObjects(); i++)
 		{

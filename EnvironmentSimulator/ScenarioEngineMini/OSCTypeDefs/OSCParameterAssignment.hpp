@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include "CommonMini.hpp"
 
 class OSCParameterAssignment
 {
@@ -13,7 +14,7 @@ class OSCParameterAssignment
 
 	void printOSCParameterAssignment()
 	{
-		std::cout << " - ParameterAssignment" << std::endl;
-		std::cout << std::endl;
+		LOG(" - ParameterAssignment");
+		LOG("\n");
 	};
 };

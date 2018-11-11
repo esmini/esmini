@@ -1,4 +1,5 @@
 #include "Conditions.hpp"
+#include "CommonMini.hpp"
 
 
 Conditions::Conditions()
@@ -22,7 +23,7 @@ bool Conditions::checkConditions()
 		if (conditionTrigged)
 		{
 			lastTriggeredStoryId = conditions[i].getStoryId();
-			std::cout << "Conditions: " << " condition " << i << " is removed from conditions" << "\n" << std::endl;
+			LOG("Condition %d is removed from conditions", i);
 			conditions.erase(conditions.begin() + i);
 			return conditionTrigged;
 		}

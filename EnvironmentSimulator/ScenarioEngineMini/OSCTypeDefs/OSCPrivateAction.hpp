@@ -1,5 +1,6 @@
 #pragma once
 #include "OSCPosition.hpp"
+#include "CommonMini.hpp"
 
 #include <iostream>
 #include <string>
@@ -139,27 +140,45 @@ public:
 	{
 		if (laneChange_)
 		{
-			std::cout << "\t" << " - Lateral - Lane Change" << std::endl;
+			LOG("\t - Lateral - Lane Change");
 		}
 		if (laneOffset_)
 		{
-			std::cout << "\t" << " - Lateral - Lane Offset" << std::endl;
+			if (laneOffset_->Target.absolute_)
+			{
+				LOG("\t - Lateral - Lane Offset absolute = %.2f", laneOffset_->Target.absolute_->value);
+			}
+			else
+			{
+				LOG("\t - Lateral - Lane Offset relative %s = %.2f", 
+					laneOffset_->Target.relative_->object.c_str(), laneOffset_->Target.relative_->value);
+			}
+			LOG("\t - Lateral - Lane Offset duration = %.2f shape = %s", 
+				laneOffset_->Dynamics.duration, laneOffset_->Dynamics.shape.c_str());
 		}
 		if (speed_)
 		{
-			std::cout << "\t" << " - Longitudinal - speed" << std::endl;
+			if (speed_->target_->absolute_)
+			{
+				LOG("\t - Longitudinal - speed: target absolute = %.2f dynamics.shape = %s dynamice.rate = %.2f",
+					speed_->target_->absolute_->value, speed_->dynamics_->shape.c_str(), speed_->dynamics_->rate);
+			}
+			else
+			{
+				LOG("\t - Longitudinal - speed: target relative %s = %.2f dynamics.shape = %s dynamice.rate = %.2f",
+					speed_->target_->relative_->object.c_str(), speed_->target_->relative_->value, 
+					speed_->dynamics_->shape.c_str(), speed_->dynamics_->rate);
+			}
 		}
 		if (meeting_)
 		{
-			std::cout << "\t" << " - Longitidubgal - meeting" << std::endl;
+			LOG("\t - Longitidubgal - meeting");
 		}
 
-		std::cout << "\t" << " - Position" << std::endl;
 		if (position_)
 		{
 			position_->printOSCPosition();
 		}
-		std::cout << std::endl;
 	};
 
 };

@@ -1,44 +1,36 @@
 #include "ScenarioReader.hpp"
+#include "CommonMini.hpp"
 
 
 ScenarioReader::ScenarioReader()
 {
-	std::cout << "ScenarioReader: ScenarioReader started" << std::endl;
-	doc;
 	objectCnt = 0;
-	std::cout << "ScenarioReader: ScenarioReader finished" << std::endl;
 }
 
 void ScenarioReader::addParameter(std::string name, std::string value)
 {
-	std::cout << "ScenarioReader: addParameter started" << std::endl;
+	LOG("adding %s = %s", name.c_str(), value.c_str());
 
 	parameterDeclaration.Parameter.resize(parameterDeclaration.Parameter.size() + 1);
 
 	parameterDeclaration.Parameter.back().name = name;
 	parameterDeclaration.Parameter.back().type = "string";
 	parameterDeclaration.Parameter.back().value = value;
-
-	std::cout << "ScenarioReader: " << name << " = " << value << " addeed to parameterDeclaration" << std::endl;
-
-	std::cout << "ScenarioReader: addParameter finished" << std::endl;
 }
 
 std::string ScenarioReader::getParameter(std::string name)
 {
-	std::cout << "ScenarioReader: getParameter started" << std::endl;
+	LOG("Resolve parameter %s", name.c_str());
 
 	// If string already present in parameterDeclaration
 	for (size_t i = 0; i < parameterDeclaration.Parameter.size(); i++)
 	{
 		if (parameterDeclaration.Parameter[i].name == name)
 		{
-			std::cout << "ScenarioReader: " << name << " replaced with " << parameterDeclaration.Parameter[i].value << std::endl;
+			LOG("%s replaced with %s", name.c_str(), parameterDeclaration.Parameter[i].value.c_str());
 			return parameterDeclaration.Parameter[i].value;
 		}
 	}
-
-	std::cout << "ScenarioReader: getParameter finished" << std::endl;
 	return 0;
 }
 
@@ -46,7 +38,6 @@ std::string ScenarioReader::ReadAttribute(pugi::xml_attribute attribute)
 {
 	if (attribute == 0)
 	{
-		printf("ReadAttribute: NULL\n");
 		return "";
 	}
 
@@ -63,8 +54,8 @@ std::string ScenarioReader::ReadAttribute(pugi::xml_attribute attribute)
 
 int ScenarioReader::loadOSCFile(const char * path)
 {
-	std::cout << "ScenarioReader: loadOSCFile started. Loading " << path << std::endl;
-
+	LOG("Loading %s", path);
+	
 	pugi::xml_parse_result result = doc.load_file(path);
 	if (!result)
 	{
@@ -73,14 +64,12 @@ int ScenarioReader::loadOSCFile(const char * path)
 
 	oscFilename = path;
 
-	std::cout << "ScenarioReader: loadOSCFile " << oscFilename << " finished" << std::endl;
-
 	return 0;
 }
 
 void ScenarioReader::parseParameterDeclaration()
 {
-	std::cout << "ScenarioReader: parseParameterDeclaration started" << std::endl;
+	LOG("Parsing parameters");
 
 	pugi::xml_node parameterDeclarationNode = doc.child("OpenSCENARIO").child("ParameterDeclaration");
 	
@@ -92,12 +81,11 @@ void ScenarioReader::parseParameterDeclaration()
 		parameterDeclaration.Parameter.back().type = parameterDeclarationChild.attribute("type").value();
 		parameterDeclaration.Parameter.back().value = parameterDeclarationChild.attribute("value").value();
 	}
-	std::cout << "ScenarioReader: parseParameterDeclaration finished" << std::endl;
 }
 
 void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 {
-	std::cout << "ScenarioReader: parseRoadNetwork started" << std::endl;
+	LOG("Parsing RoadNetwork");
 
 	pugi::xml_node roadNetworkNode = doc.child("OpenSCENARIO").child("RoadNetwork");
 
@@ -114,13 +102,11 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 			parseOSCFile(roadNetwork.SceneGraph, roadNetworkChild);
 		}
 	}
-
-	std::cout << "ScenarioReader: parseRoadNetwork finished" << std::endl;
 }
 
 void ScenarioReader::parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode)
 {
-	std::cout << "ScenarioReader: parseOSCRoute started" << std::endl;
+	LOG("Parsing OSCRoute");
 
 	route.name = ReadAttribute(routeNode.attribute("name"));
 	route.closed = ReadAttribute(routeNode.attribute("closed"));
@@ -131,7 +117,7 @@ void ScenarioReader::parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode)
 
 		if (routeChildName == "ParameterDeclaration")
 		{
-			std::cout << routeChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented", routeChildName.c_str());
 
 		}
 		else if (routeChildName == "Waypoint")
@@ -145,12 +131,12 @@ void ScenarioReader::parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode)
 			parseOSCPosition(*route.Waypoint.back().Position, routeChild.first_child());
 		}
 	}
-	std::cout << "ScenarioReader: parseOSCRoute finished" << std::endl;
+	LOG("parseOSCRoute finished");
 }
 
 void ScenarioReader::parseCatalogs(Catalogs &catalogs) 
 {
-	std::cout << "ScenarioReader: parseCatalogs started" << std::endl;
+	LOG("Parsing Catalogs");
 
 	pugi::xml_node catalogsNode = doc.child("OpenSCENARIO").child("Catalogs");
 
@@ -176,8 +162,6 @@ void ScenarioReader::parseCatalogs(Catalogs &catalogs)
 			catalogs.DriverCatalog.Directory.path = ReadAttribute(catalogsChild.child("Directory").attribute("path"));
 		}
 	}
-
-	std::cout << "ScenarioReader: parseRoadNetwork finished" << std::endl;
 }
 
 static std::string dirnameOf(const std::string& fname)
@@ -188,7 +172,7 @@ static std::string dirnameOf(const std::string& fname)
 
 void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 {
-	std::cout << "ScenarioReader: parseOSCFile started" << std::endl;
+	LOG("Parsing OSCFile %s", file.filepath.c_str());
 
 	file.filepath = ReadAttribute(fileNode.attribute("filepath"));
 
@@ -197,13 +181,11 @@ void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 	{
 		file.filepath.insert(0, dirnameOf(oscFilename) + "/");
 	}
-
-	std::cout << "ScenarioReader: parseOSCFile " << file.filepath << " finished" << std::endl;
 }
 
 void ScenarioReader::parseOSCBoundingBox(OSCBoundingBox &boundingBox, pugi::xml_node boundingBoxNode)
 {
-	std::cout << "ScenarioReader: parseOSCBoundingBox started" << std::endl;
+	LOG("Parsing OSCBoundingBox");
 
 	for (pugi::xml_node boundingBoxChild = boundingBoxNode.first_child(); boundingBoxChild; boundingBoxChild = boundingBoxChild.next_sibling())
 	{
@@ -222,18 +204,18 @@ void ScenarioReader::parseOSCBoundingBox(OSCBoundingBox &boundingBox, pugi::xml_
 			boundingBox.dimension.height = std::stod(ReadAttribute(boundingBoxChild.attribute("height")));
 
 		}
+		boundingBox.printOSCBoundingBox();
 	}
-	std::cout << "ScenarioReader: parseOSCBoundingBox finshed" << std::endl;
 }
 
 
 void ScenarioReader::parseOSCPersonDescription(OSCPersonDescription &personDescription, pugi::xml_node descriptionNode)
 {
-	std::cout << "ScenarioReader: parseOSCPersonDescription started" << std::endl;
+	LOG("Parsing OSCPersonDescription");
 
 	if (descriptionNode.child("Properties"))
 	{
-		std::cout << "Properties" << " is not implemented " << std::endl;
+		LOG("Properties is not implemented ");
 	}
 
 	personDescription.weight = std::stod(ReadAttribute(descriptionNode.attribute("weight")));
@@ -242,27 +224,27 @@ void ScenarioReader::parseOSCPersonDescription(OSCPersonDescription &personDescr
 	personDescription.age = std::stod(ReadAttribute(descriptionNode.attribute("age")));
 	personDescription.sex = ReadAttribute(descriptionNode.attribute("sex"));
 
-	std::cout << "ScenarioReader: parseOSCPersonDescription finshed" << std::endl;
+	personDescription.printOSCPersonDescription();
 }
 
 
 
 void ScenarioReader::parseOSCAxle(OSCAxle &axle, pugi::xml_node axleNode)
 {
-	std::cout << "ScenarioReader: parseOSCAxle started" << std::endl;
+	LOG("Parsing OSCAxle");
 	axle.maxSteering = std::stod(ReadAttribute(axleNode.attribute("maxSteering")));
 	axle.wheelDiameter = std::stod(ReadAttribute(axleNode.attribute("wheelDiameter")));
 	axle.trackWidth = std::stod(ReadAttribute(axleNode.attribute("trackWidth")));
 	axle.positionX = std::stod(ReadAttribute(axleNode.attribute("positionX")));
 	axle.positionZ = std::stod(ReadAttribute(axleNode.attribute("positionZ")));
 
-	std::cout << "ScenarioReader: parseOSCAxle finshed" << std::endl;
+	axle.printOSCAxle();
 }
 
 
 void ScenarioReader::parseOSCDriver(OSCDriver &driver, pugi::xml_node driverNode)
 {
-	std::cout << "ScenarioReader: parseOSCDriver started" << std::endl;
+	LOG("Parsing OSCDriver");
 
 	driver.name = ReadAttribute(driverNode.attribute("name"));
 
@@ -272,7 +254,7 @@ void ScenarioReader::parseOSCDriver(OSCDriver &driver, pugi::xml_node driverNode
 
 		if (driverChildName == "ParameterDeclaration")
 		{
-			std::cout << driverChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented", driverChildName.c_str());
 		}
 		if (driverChildName == "Description")
 		{
@@ -280,13 +262,13 @@ void ScenarioReader::parseOSCDriver(OSCDriver &driver, pugi::xml_node driverNode
 		}
 	}
 
-	std::cout << "ScenarioReader: parseOSCDriver finshed" << std::endl;
+	driver.printOSCDriver();
 }
 
 
 void ScenarioReader::parseOSCVehicle(OSCVehicle &vehicle, pugi::xml_node vehicleNode)
 {
-	std::cout << "ScenarioReader: parseOSCVehicle started" << std::endl;
+	LOG("Parsing OSCVehicle");
 
 	vehicle.name = ReadAttribute(vehicleNode.attribute("name"));
 	vehicle.category = ReadAttribute(vehicleNode.attribute("category"));
@@ -297,7 +279,7 @@ void ScenarioReader::parseOSCVehicle(OSCVehicle &vehicle, pugi::xml_node vehicle
 
 		if (vehicleChildName == "ParameterDeclaration")
 		{
-			std::cout << vehicleChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented", vehicleChildName.c_str());
 		}
 		else if (vehicleChildName == "BoundingBox")
 		{
@@ -325,19 +307,19 @@ void ScenarioReader::parseOSCVehicle(OSCVehicle &vehicle, pugi::xml_node vehicle
 				}
 				else if (axlesChildName == "Additional")
 				{
-					std::cout << axlesChildName << " is not implemented " << std::endl;
+					LOG("%s is not implemented", axlesChildName.c_str());
 				}
 
 			}
 		}
 		else if (vehicleChildName == "Properties")
 		{
-			std::cout << vehicleChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented", vehicleChildName.c_str());
 		}
 
 	}
 
-	std::cout << "ScenarioReader: parseOSCVehicle finished" << std::endl;
+	vehicle.printOSCVehicle();
 }
 
 void ScenarioReader::parseOSCCatalogReference(OSCCatalogReference &catalogReference, pugi::xml_node catalogReferenceNode)
@@ -351,13 +333,13 @@ void ScenarioReader::parseOSCCatalogReference(OSCCatalogReference &catalogRefere
 
 	if (catalogReferenceChildName == "ParameterAssignment")
 	{
-		std::cout << catalogReferenceChildName << " is not implemented " << std::endl;
+		LOG("%s is not implemented", catalogReferenceChildName.c_str());
 	}
 }
 
 void ScenarioReader::parseEntities(Entities &entities)
 {
-	std::cout << "ScenarioReader: parseEntities started" << std::endl;
+	LOG("Parsing Entities");
 
 	pugi::xml_node enitiesNode = doc.child("OpenSCENARIO").child("Entities");
 
@@ -382,12 +364,12 @@ void ScenarioReader::parseEntities(Entities &entities)
 			}
 			else if (objectChildName == "Pedestrian")
 			{
-				std::cout << objectChildName << " is not implemented " << std::endl;
+				LOG("%s is not implemented", objectChildName.c_str());
 
 			}
 			else if (objectChildName == "MiscObject")
 			{
-				std::cout << objectChildName << " is not implemented " << std::endl;
+				LOG("%s is not implemented", objectChildName.c_str());
 
 			}
 			else if (objectChildName == "Controller")
@@ -397,7 +379,7 @@ void ScenarioReader::parseEntities(Entities &entities)
 
 				if (controllerChildName == "CatalogReference")
 				{
-					std::cout << objectChildName << " is not implemented " << std::endl;
+					LOG("%s is not implemented", objectChildName.c_str());
 
 				}
 				else if (controllerChildName == "Driver")
@@ -406,7 +388,7 @@ void ScenarioReader::parseEntities(Entities &entities)
 				}
 				else if (controllerChildName == "PedestrianController")
 				{
-					std::cout << objectChildName << " is not implemented " << std::endl;
+					LOG("%s is not implemented", objectChildName.c_str());
 
 				}
 			}
@@ -424,14 +406,12 @@ void ScenarioReader::parseEntities(Entities &entities)
 		}
 		objectCnt++;
 	}
-
-	std::cout << "ScenarioReader: parseEntities finshed" << std::endl;
 }
 
 
 void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node positionNode)
 {
-	std::cout << "ScenarioReader: parseOSCPosition started" << std::endl;
+	LOG("Parsing OSCPosition");
 
 	for (pugi::xml_node positionChild = positionNode.first_child(); positionChild; positionChild = positionChild.next_sibling())
 	{
@@ -439,23 +419,23 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 
 		if (positionChildName == "World")
 		{
-			std::cout << positionChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented ", positionChildName.c_str());
 		}
 		else if (positionChildName == "RelativeWorld")
 		{
-			std::cout << positionChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented ", positionChildName.c_str());
 		}
 		else if (positionChildName == "RelativeObject")
 		{
-			std::cout << positionChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented ", positionChildName.c_str());
 		}
 		else if (positionChildName == "Road")
 		{
-			std::cout << positionChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented ", positionChildName.c_str());
 		}
 		else if (positionChildName == "RelativeRoad")
 		{
-			std::cout << positionChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented ", positionChildName.c_str());
 		}
 		else if (positionChildName == "Lane")
 		{
@@ -463,7 +443,7 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 
 			if (positionChild.child("Orientation"))
 			{
-				std::cout << "Orientation" << " is not implemented " << std::endl;
+				LOG("Orientation is not implemented", positionChildName.c_str());
 			}
 
 			position.lane_->roadId = std::stoi(ReadAttribute(positionChild.attribute("roadId")));
@@ -473,7 +453,7 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 		}
 		else if (positionChildName == "RelativeLane")
 		{
-			std::cout << positionChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented ", positionChildName.c_str());
 		}
 		else if (positionChildName == "Route")
 		{
@@ -499,7 +479,7 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 				}
 				if (routeChild.name() == std::string("Orientation"))
 				{
-					std::cout << routeChild.name() << " is not implemented " << std::endl;
+					LOG("%s is not implemented", routeChild.name());
 				}
 				else if (routeChild.name() == std::string("Position"))
 				{
@@ -509,11 +489,11 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 
 						if (positionChildName == "Current")
 						{
-							std::cout << positionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", positionChildName.c_str());
 						}
 						else if (positionChildName == "RoadCoord")
 						{
-							std::cout << positionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", positionChildName.c_str());
 						}
 						else if (positionChildName == "LaneCoord")
 						{
@@ -531,14 +511,13 @@ void ScenarioReader::parseOSCPosition(OSCPosition &position, pugi::xml_node posi
 			}
 		}
 	}
-	std::cout << "ScenarioReader: parseOSCPosition finshed" << std::endl;
 }
 
 
 // ------------------------------------------------------
 void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_node actionNode)
 {
-	std::cout << "ScenarioReader: parseOSCPrivateAction started" << std::endl;
+	LOG("Parsing OSCPrivateAction %s", actionNode.name());
 
 	for (pugi::xml_node actionChild = actionNode.first_child(); actionChild; actionChild = actionChild.next_sibling())
 	{
@@ -603,7 +582,7 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 				}
 				else if (longitudinalChild.name() == std::string("Distance"))
 				{
-					std::cout << longitudinalChild.name() << " is not implemented " << std::endl;
+					LOG("%s is not implemented", longitudinalChild.name());
 				}
 
 			}
@@ -693,13 +672,13 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 				}
 				else
 				{
-					std::cout << "Unsupported element type: " << lateralChild.name() << std::endl;
+					LOG("Unsupported element type: %s", lateralChild.name());
 				}
 			}
 		}
 		else if (actionChild.name() == std::string("Visibility"))
 		{
-			std::cout << actionChild.name() << " is not implemented " << std::endl;
+			LOG("%s is not implemented", actionChild.name());
 		}
 		else if (actionChild.name() == std::string("Meeting"))
 		{
@@ -729,17 +708,16 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 		}
 		else if (actionChild.name() == std::string("Autonomous"))
 		{
-			std::cout << actionChild.name() << " is not implemented " << std::endl;
+			LOG("%s is not implemented", actionChild.name());
 		}
 		else if (actionChild.name() == std::string("Controller"))
 		{
-			std::cout << actionChild.name() << " is not implemented " << std::endl;
+			LOG("%s is not implemented", actionChild.name());
 		}
 		else if (actionChild.name() == std::string("Position"))
 		{
 			action.position_ = new OSCPosition();
 			parseOSCPosition(*action.position_, actionChild);
-
 		}
 		else if (actionChild.name() == std::string("Routing"))
 		{
@@ -751,7 +729,7 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 					{
 						if (followRouteChild.name() == std::string("Route"))
 						{
-							std::cout << followRouteChild.name() << " is not implemented " << std::endl;
+							LOG("%s is not implemented", followRouteChild.name());
 						}
 						else if (followRouteChild.name() == std::string("CatalogReference"))
 						{
@@ -763,14 +741,12 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 			}
 		}
 	}
-
-	std::cout << "ScenarioReader: parseOSCPrivateAction finshed" << std::endl;
 }
 
 
 void ScenarioReader::parseInit(Init &init)
 {
-	std::cout << "ScenarioReader: parseInit started" << std::endl;
+	LOG("Parsing init");
 
 	pugi::xml_node actionsNode = doc.child("OpenSCENARIO").child("Storyboard").child("Init").child("Actions");
 
@@ -781,12 +757,12 @@ void ScenarioReader::parseInit(Init &init)
 
 		if (actionsChildName == "Global")
 		{
-			std::cout << actionsChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented", actionsChildName.c_str());
 
 		}
 		else if (actionsChildName == "UserDefined")
 		{
-			std::cout << actionsChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented", actionsChildName.c_str());
 
 		}
 		else if (actionsChildName == "Private")
@@ -807,8 +783,6 @@ void ScenarioReader::parseInit(Init &init)
 		}
 
 	}
-	std::cout << "ScenarioReader: parseInit finshed" << std::endl;
-
 }
 
 
@@ -817,7 +791,7 @@ void ScenarioReader::parseInit(Init &init)
 // ------------------------------------------
 void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node conditionNode)
 {
-	std::cout << "ScenarioReader: parseOSCCondition started" << std::endl;
+	LOG("Parsing OSCCondition");
 
 	condition.name = ReadAttribute(conditionNode.attribute("name"));
 	condition.delay = std::stod(ReadAttribute(conditionNode.attribute("delay")));
@@ -857,15 +831,15 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 
 						if (entityConditionChildName == "EndOfRoad")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 						else if (entityConditionChildName == "Collision")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 						else if (entityConditionChildName == "Offroad")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 						else if (entityConditionChildName == "TimeHeadway")
 						{
@@ -878,39 +852,39 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 						}
 						else if (entityConditionChildName == "TimeToCollision")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 						else if (entityConditionChildName == "Acceleration")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 						else if (entityConditionChildName == "StandStill")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 						else if (entityConditionChildName == "Speed")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 						else if (entityConditionChildName == "RelativeSpeed")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 						else if (entityConditionChildName == "TraveledDistance")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 						else if (entityConditionChildName == "ReachPosition")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 						else if (entityConditionChildName == "Distance")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 						else if (entityConditionChildName == "RelativeDistance")
 						{
-							std::cout << entityConditionChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", entityConditionChildName.c_str());
 						}
 					}
 				}
@@ -924,7 +898,7 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 
 				if (byStateChildName == "AtStart")
 				{
-					std::cout << byStateChildName << " is not implemented " << std::endl;
+					LOG("%s is not implemented", byStateChildName.c_str());
 				}
 				else if (byStateChildName == "AfterTermination")
 				{
@@ -933,15 +907,15 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 				}
 				else if (byStateChildName == "Command")
 				{
-					std::cout << byStateChildName << " is not implemented " << std::endl;
+					LOG("%s is not implemented", byStateChildName.c_str());
 				}
 				else if (byStateChildName == "Signal")
 				{
-					std::cout << byStateChildName << " is not implemented " << std::endl;
+					LOG("%s is not implemented", byStateChildName.c_str());
 				}
 				else if (byStateChildName == "Controller")
 				{
-					std::cout << byStateChildName << " is not implemented " << std::endl;
+					LOG("%s is not implemented", byStateChildName.c_str());
 				}
 			}
 		}
@@ -952,11 +926,11 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 				std::string byValueChildName(byValueChild.name());
 				if (byValueChildName == "Parameter")
 				{
-					std::cout << byValueChildName << " is not implemented " << std::endl;
+					LOG("%s is not implemented", byValueChildName.c_str());
 				}
 				else if (byValueChildName == "TimeOfDay")
 				{
-					std::cout << byValueChildName << " is not implemented " << std::endl;
+					LOG("%s is not implemented", byValueChildName.c_str());
 				}
 				else if (byValueChildName == "SimulationTime")
 				{
@@ -966,28 +940,23 @@ void ScenarioReader::parseOSCCondition(OSCCondition &condition, pugi::xml_node c
 			}
 		}
 	}
-
-	std::cout << "ScenarioReader: parseOSCCondition finished" << std::endl;
 }
 
 void ScenarioReader::parseOSCConditionGroup(OSCConditionGroup &conditionGroup, pugi::xml_node conditionGroupNode)
 {
-	std::cout << "ScenarioReader: parseOSCConditionGroup started" << std::endl;
+	LOG("Parsing OSCConditionGroup");
 
 	for (pugi::xml_node conditionGroupChild = conditionGroupNode.first_child(); conditionGroupChild; conditionGroupChild = conditionGroupChild.next_sibling())
 	{
 		conditionGroup.Condition.resize(conditionGroup.Condition.size() + 1);
 		parseOSCCondition(conditionGroup.Condition.back(), conditionGroupChild);
 	}
-
-	std::cout << "ScenarioReader: parseOSCConditionGroup finished" << std::endl;
-
 }
 
 
 void ScenarioReader::parseOSCManeuver(OSCManeuver &maneuver, pugi::xml_node maneuverNode)
 {
-	std::cout << "ScenarioReader: parseOSCManeuver started" << std::endl;
+	LOG("Parsing OSCManeuver");
 
 	maneuver.name = ReadAttribute(maneuverNode.attribute("name"));
 
@@ -997,7 +966,7 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver &maneuver, pugi::xml_node mane
 
 		if (maneuverChildName == "ParameterDeclaration")
 		{
-			std::cout << maneuverChildName << " is not implemented " << std::endl;
+			LOG("%s is not implemented", maneuverChildName.c_str());
 		}
 		else if (maneuverChildName == "Event")
 		{
@@ -1021,11 +990,11 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver &maneuver, pugi::xml_node mane
 
 						if (actionChildName == "Global")
 						{
-							std::cout << maneuverChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", maneuverChildName.c_str());
 						}
 						else if (actionChildName == "UserDefined")
 						{
-							std::cout << maneuverChildName << " is not implemented " << std::endl;
+							LOG("%s is not implemented", maneuverChildName.c_str());
 						}
 						else if (actionChildName == "Private")
 						{
@@ -1044,15 +1013,13 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver &maneuver, pugi::xml_node mane
 			}
 		}
 	}
-
-	std::cout << "ScenarioReader: parseOSCManeuver finished" << std::endl;
 }
 
 
 
 void ScenarioReader::parseStory(std::vector<Story> &storyVector)
 {
-	std::cout << "ScenarioReader: parseStory started" << std::endl;
+	LOG("Parsing Story");
 
 	pugi::xml_node storyNode = doc.child("OpenSCENARIO").child("Storyboard").child("Story");
 
@@ -1111,7 +1078,7 @@ void ScenarioReader::parseStory(std::vector<Story> &storyVector)
 							}
 							else if (sequenceChildName == "CatalogReference")
 							{
-								std::cout << sequenceChildName << " is not implemented " << std::endl;
+								LOG("%s is not implemented", sequenceChildName.c_str());
 							}
 							else if (sequenceChildName == "Maneuver")
 							{
@@ -1136,11 +1103,11 @@ void ScenarioReader::parseStory(std::vector<Story> &storyVector)
 							}
 							else if (conditionsChildName == "End")
 							{
-								std::cout << conditionsChildName << " is not implemented " << std::endl;
+								LOG("%s is not implemented", conditionsChildName.c_str());
 							}
 							else if (conditionsChildName == "Cancel")
 							{
-								std::cout << conditionsChildName << " is not implemented " << std::endl;
+								LOG("%s is not implemented", conditionsChildName.c_str());
 							}
 						}
 					}
@@ -1148,9 +1115,6 @@ void ScenarioReader::parseStory(std::vector<Story> &storyVector)
 			}
 		}
 	}
-
-	std::cout << "ScenarioReader: parseStory finshed" << std::endl;
-
 }
 
 

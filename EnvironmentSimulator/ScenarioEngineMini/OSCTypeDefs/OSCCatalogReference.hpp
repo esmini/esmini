@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <string>
+#include "CommonMini.hpp"
+
 
 class OSCCatalogReference
 {
@@ -14,7 +16,7 @@ public:
 
 	void printOSCCatalogReference()
 	{
-		std::cout << " - CatalogReference" << std::endl;
-		std::cout << std::endl;
+		LOG(" - CatalogReference");
+		LOG("\n");
 	};
 };

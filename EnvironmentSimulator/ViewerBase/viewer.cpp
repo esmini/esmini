@@ -13,6 +13,7 @@
 #include <osgGA/SphericalManipulator>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgDB/Registry>
+#include "CommonMini.hpp"
 
 #define SHADOW_SCALE 1.20
 #define SHADOW_MODEL_FILENAME "shadow_face.osgb"
@@ -565,7 +566,7 @@ int Viewer::AddEnvironment(const char* filename)
 		environment_ = osgDB::readNodeFile(filename);
 		if (environment_ == 0)
 		{
-			std::cout << "Failed to read environment model " << filename << "! If file is missing, check SharePoint/SharedDocuments/models" << std::endl;
+			LOG("Failed to read environment model %s! If file is missing, check SharePoint/SharedDocuments/models");
 			return -1;
 		}
 

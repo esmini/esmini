@@ -1,5 +1,6 @@
 #pragma once
 #include <Catalogs.hpp>
+#include "CommonMini.hpp"
 
 #include <iostream>
 #include <string>
@@ -8,7 +9,6 @@
 
 Catalogs::Catalogs()
 {
-	std::cout << "RoadNetwork: New RoadNetwork created" << std::endl;
 }
 
 void Catalogs::printCatalogs()

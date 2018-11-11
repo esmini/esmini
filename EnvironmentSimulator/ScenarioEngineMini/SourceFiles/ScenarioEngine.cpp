@@ -1,26 +1,17 @@
 #include "ScenarioEngine.hpp"
+#include "CommonMini.hpp"
 
 
 ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
 {
-	std::cout << "ScenarioEngine: New ScenarioEngine created" << std::endl;
-
+	simulationTime = 0;
 	InitScenario(oscFilename, startTime);
 }
 
 void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 {
-	// Open file for writing
-	if ((logfile = fopen("c:/tmp/scenarioengine.log", "w")) == 0)
-	{
-		printf("ScenarioEngine: Failed to open logfile!\n");
-	}
-	else
-	{
-		log("Logfile opened\n");
-	}
-
 	// Load and parse data
+	LOG("Init %s", oscFilename.c_str());
 	if (scenarioReader.loadOSCFile(oscFilename.c_str()) != 0)
 	{
 		throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
@@ -56,11 +47,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 
 ScenarioEngine::~ScenarioEngine()
 {
-	if (logfile != 0)
-	{
-		log("Closing...\n");
-		fclose(logfile);
-	}
+	LOG("Closing");
 }
 
 void ScenarioEngine::step(double deltaSimTime, bool initial)	
@@ -83,8 +70,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 
 				if (scenarioGateway.getObjectStateById(objectId, o) != 0)
 				{
-					std::cout << "Cars: Gateway did not provide state for external car " << objectId << std::endl;
-					log("Cars: Gateway did not provide state for external car\n");
+					LOG("Gateway did not provide state for external car %s", objectId);
 				}
 				else
 				{
@@ -134,7 +120,7 @@ void ScenarioEngine::setSimulationTime(double simulationTime)
 
 void ScenarioEngine::printSimulationTime()
 {
-	std::cout << "ScenarioEngine: simulationTime = " << simulationTime << std::endl;
+	LOG("simulationTime = %.2f", simulationTime);
 }
 
 ScenarioGateway *ScenarioEngine::getScenarioGateway()
@@ -171,7 +157,7 @@ void ScenarioEngine::initRoutes()
 
 void ScenarioEngine::initInit()
 {
-	std::cout << "ScenarioEngine: initStoryboard started" << std::endl;
+	LOG("initStoryboard started");
 
 	for (int i = 0; i < init.Actions.Private.size(); i++)
 	{
@@ -193,12 +179,12 @@ void ScenarioEngine::initInit()
 
 	actions.executeActions(0);
 
-	std::cout << "ScenarioEngine: initStoryboard finished" << std::endl;
+	LOG("initStoryboard finished");
 }
 
 void ScenarioEngine::initCars()
 {
-	std::cout << "ScenarioEngine: initCars started" << std::endl;
+	LOG("initCars started");
 
 	if (!entities.Object.empty())
 	{
@@ -234,7 +220,7 @@ void ScenarioEngine::initCars()
 
 	cars.addScenarioGateway(scenarioGateway);
 
-	std::cout << "ScenarioEngine: initCars finished" << std::endl;
+	LOG("initCars finished");
 }
 
 void ScenarioEngine::printCars()
@@ -304,7 +290,6 @@ void ScenarioEngine::checkConditions()
 
 	if (triggeredCondition)
 	{
-		log("Triggered condition\n");
 		std::vector<int> lastTriggeredStoryId = conditions.getLastTriggeredStoryId();
 		actions.setStartAction(lastTriggeredStoryId, simulationTime);
 	}

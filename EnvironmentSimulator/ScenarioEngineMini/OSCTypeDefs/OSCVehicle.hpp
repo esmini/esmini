@@ -36,29 +36,29 @@ public:
 
 	void printOSCVehicle() 
 	{
-		std::cout << "\t" << "name = " << name << std::endl;
-		std::cout << "\t" << "category = " << category << std::endl;
-		std::cout << std::endl;
+		LOG("\tname = %.2f", name);
+		LOG("\tcategory = %.2f", category);
+		LOG("\n");
 
-		std::cout << " - ParameterDeclaration" << std::endl;
+		LOG(" - ParameterDeclaration");
 		ParameterDeclaration.printOSCParameterDeclaration();
 
-		std::cout << " - BoundingBox" << "\n" << std::endl;
+		LOG(" - BoundingBox");
 		BoundingBox.printOSCBoundingBox();
 
-		std::cout << " - Performance" << std::endl;
-		std::cout << "\t" << "maxSpeed = " << Performance.maxSpeed << std::endl;
-		std::cout << "\t" << "maxDeceleration = " << Performance.maxDeceleration << std::endl;
-		std::cout << "\t" << "mass = " << Performance.mass << std::endl;
-		std::cout << std::endl;
+		LOG(" - Performance");
+		LOG("\tmaxSpeed = %.2f", Performance.maxSpeed);
+		LOG("\tmaxDeceleration = %.2f", Performance.maxDeceleration);
+		LOG("\tmass = %.2f", Performance.mass);
+		LOG("\n");
 
-		std::cout << " - Axles - Front" << std::endl;
+		LOG(" - Axles - Front");
 		Axles.Front.printOSCAxle();
 
-		std::cout << " - Axles - Rear" << std::endl;
+		LOG(" - Axles - Rear");
 		Axles.Rear.printOSCAxle();
 
-		std::cout << " - Properties" << std::endl;
+		LOG(" - Properties");
 		Properties.printOSCProperties();
 	};
 

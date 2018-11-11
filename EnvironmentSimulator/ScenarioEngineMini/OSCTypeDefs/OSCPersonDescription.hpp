@@ -1,6 +1,7 @@
 #pragma once
 #include "OSCProperties.hpp"
 #include "OSCProperties.hpp"
+#include "CommonMini.hpp"
 
 #include <iostream>
 #include <string>
@@ -19,16 +20,14 @@ public:
 
 	void printOSCPersonDescription()
 	{
-		std::cout << "\t" << "weight = " << weight << std::endl;
-		std::cout << "\t" << "height = " << height << std::endl;
-		std::cout << "\t" << "eyeDistance = " << eyeDistance << std::endl;
-		std::cout << "\t" << "age = " << age << std::endl;
-		std::cout << "\t" << "sex = " << sex << std::endl;
-		std::cout << "\n" << std::endl;
+		LOG("\tweight = %.2f", weight);
+		LOG("\theight = %.2f", height);
+		LOG("\teyeDistance = %.2f", eyeDistance);
+		LOG("\tage = %d", age);
+		LOG("\tsex = %s", sex.c_str());
 
-		std::cout << "Controller - Driver - PersonDescription -  Properties" << std::endl;
+		LOG("Controller - Driver - PersonDescription -  Properties");
 		Properties.printOSCProperties();
-		std::cout << "\n" << std::endl;
 
 	}
 };

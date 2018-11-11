@@ -2,6 +2,7 @@
 #include "OSCOrientation.hpp"
 #include "OSCCatalogReference.hpp"
 #include "OSCRoute.hpp"
+#include "CommonMini.hpp"
 
 #include <iostream>
 #include <string>
@@ -96,15 +97,14 @@ public:
 
 	void printOSCPosition()
 	{
-		//std::cout << "\t" << " - Lane" << std::endl;
-		//std::cout << "\t" << "roadId = " << Lane.roadId << std::endl;
-		//std::cout << "\t" << "laneId = " << Lane.laneId << std::endl;
-		//std::cout << "\t" << "offset = " << Lane.offset << std::endl;
-		//std::cout << "\t" << "s = " << Lane.s << std::endl;
-		//std::cout << std::endl;
+		LOG("\t - Lane");
+		LOG("\troadId = %d", lane_->roadId);
+		LOG("\tlaneId = %d", lane_->laneId);
+		LOG("\toffset = %.2f", lane_->offset);
+		LOG("\ts = %.2f", lane_->s);
+		LOG("");
 
-		//std::cout << "\t" << " - Lane - Orientation" << std::endl;
-		//Lane.Orientation.printOSCOrientation();
-
+		LOG("\t - Lane - Orientation");
+		lane_->Orientation.printOSCOrientation();
 	};
 };

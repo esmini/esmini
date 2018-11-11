@@ -25,7 +25,7 @@ public:
 
 	void printOSCRoute()
 	{
-		std::cout << "OSCRoute: printOSCRoute not defined" << std::endl;
+		LOG("OSCRoute: printOSCRoute not defined");
 
 	};
 };

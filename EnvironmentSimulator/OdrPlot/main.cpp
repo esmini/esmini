@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include "roadmanager.hpp"
+#include "CommonMini.hpp"
 
 using namespace roadmanager;
 
@@ -21,7 +22,7 @@ int main(int argc, char *argv[])
 	}
 	catch (std::exception& e) 
 	{ 
-		std::cerr << "exception: " << e.what() << std::endl; 
+		LOG("exception: %s", e.what()); 
 	}
 
 	std::ofstream file;

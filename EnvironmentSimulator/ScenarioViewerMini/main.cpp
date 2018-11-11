@@ -1,6 +1,7 @@
 
 #include "stdio.h"
 #include "scenarioenginedll.h"
+#include "CommonMini.hpp"
 
 #define MAX_N_OBJECTS 10
 
@@ -10,7 +11,7 @@ int main(int argc, char *argv[])
 {
 	if (argc < 2)
 	{
-		printf("Usage: %s <osc filename>\n", argv[0]);
+		LOG("Usage: %s <osc filename>\n", argv[0]);
 		return -1;
 	}
 

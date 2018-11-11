@@ -22,11 +22,10 @@ class ScenarioEngine
 {
 public:
 
-	FILE *logfile;
 	Cars cars;
 
 	ScenarioEngine(std::string oscFilename, double startTime);
-	ScenarioEngine() { logfile = 0; }
+	ScenarioEngine() {};
 	~ScenarioEngine();
 
 	void InitScenario(std::string oscFilename, double startTime); // use with default constructor
@@ -41,14 +40,6 @@ public:
 	void printSimulationTime();
 	void stepObjects(double dt);
 
-	void log(char *str)
-	{
-		if (logfile != 0)
-		{
-			fprintf(logfile, str);
-			fflush(logfile);
-		}
-	}
 
 	std::string getSceneGraphFilename() { return roadNetwork.SceneGraph.filepath; }
 	std::string getOdrFilename() { return roadNetwork.Logics.filepath; }

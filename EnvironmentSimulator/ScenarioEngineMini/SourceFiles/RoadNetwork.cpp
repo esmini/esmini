@@ -1,8 +1,8 @@
 #include "RoadNetwork.hpp"
+#include "CommonMini.hpp"
 
 RoadNetwork::RoadNetwork()
 {
-	std::cout << "RoadNetwork: New RoadNetwork created" << std::endl;
 }
 
 

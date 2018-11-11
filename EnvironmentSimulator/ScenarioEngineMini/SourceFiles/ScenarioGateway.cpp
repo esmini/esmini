@@ -1,4 +1,5 @@
 #include "ScenarioGateway.hpp"
+#include "CommonMini.hpp"
 
 ObjectState::ObjectState()
 {
@@ -30,7 +31,7 @@ ObjectState::ObjectState(int id, std::string name, double timestamp, int roadId,
 
 void ObjectState::Print()
 {
-	printf("state: \n\tid %d\n\tname %s\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f\n",
+	LOG("state: \n\tid %d\n\tname %s\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f",
 		state_.id,
 		state_.name,
 		state_.timeStamp,
@@ -93,7 +94,7 @@ void ScenarioGateway::reportObject(ObjectState objectState)
 	if (!found)
 	{
 		// Add object
-		printf("Adding %s state: (%d, %.2f)\n", objectState.state_.name, objectState.state_.id, objectState.state_.timeStamp);
+		LOG("Adding %s state: (%d, %.2f)", objectState.state_.name, objectState.state_.id, objectState.state_.timeStamp);
 		ObjectState *os = new ObjectState;
 		*os = objectState;
 		objectState_.push_back(os);

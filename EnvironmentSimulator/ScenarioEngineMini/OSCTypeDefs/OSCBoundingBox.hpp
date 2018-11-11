@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <math.h>
+#include "CommonMini.hpp"
 
 class OSCBoundingBox
 {
@@ -22,17 +23,17 @@ public:
 
 	void printOSCBoundingBox()
 	{
-		std::cout << " - center " << std::endl;
-		std::cout << "\t" << "x = " << center.x << std::endl;
-		std::cout << "\t" << "y = " << center.y << std::endl;
-		std::cout << "\t" << "z = " << center.z << std::endl;
-		std::cout << std::endl;
+		LOG(" - center ");
+		LOG("\tx = %.2f", center.x);
+		LOG("\ty = %.2f", center.y);
+		LOG("\tz = %.2f", center.z);
+		LOG("\n");
 
-		std::cout << "- dimension " << std::endl;
-		std::cout << "\t" << "width = " << dimension.width << std::endl;
-		std::cout << "\t" << "length = " << dimension.length << std::endl;
-		std::cout << "\t" << "height = " << dimension.height << std::endl;
-		std::cout << std::endl;
+		LOG("- dimension ");
+		LOG("\twidth = %.2f", dimension.width);
+		LOG("\tlength = %.2f", dimension.length);
+		LOG("\theight = %.2f", dimension.height);
+		LOG("\n");
 
 	}
 };

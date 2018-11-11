@@ -13,8 +13,8 @@ public:
 
 	void printOSCDirectory()
 	{
-		std::cout << " - OSCDirectory" << std::endl;
-		std::cout << "\t" << "name = " << path << std::endl;
-		std::cout << "\n" << std::endl;
+		LOG(" - OSCDirectory");
+		LOG("\tname = %.2f", path);
+		LOG("\n");
 	}
 };

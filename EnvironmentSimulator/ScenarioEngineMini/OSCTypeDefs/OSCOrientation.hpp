@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <math.h>
+#include "CommonMini.hpp"
 
 class OSCOrientation
 {
@@ -17,10 +18,10 @@ public:
 
 	void printOSCOrientation()
 	{
-		std::cout << "\t" << " - Orientation" << std::endl;
-		std::cout << "\t" << "h = " << h << std::endl;
-		std::cout << "\t" << "p = " << p << std::endl;
-		std::cout << "\t" << "r = " << r << std::endl;
-		std::cout << std::endl;
+		LOG("\t - Orientation");
+		LOG("\th = %.2f", h);
+		LOG("\tp = %.2f", p);
+		LOG("\tr = %.2f", r);
+		LOG("\n");
 	};
 };

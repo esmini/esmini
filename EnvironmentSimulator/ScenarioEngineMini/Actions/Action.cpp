@@ -1,4 +1,5 @@
 #include "Action.hpp"
+#include "CommonMini.hpp"
 
 #define SMALL_NUMBER (1E-6)
 #ifndef INFINITY
@@ -115,7 +116,7 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 				// Find specified route
 				if (carsPtr->route[j].getName() == privateAction.routing_->FollowRoute.CatalogReference.entryName)
 				{
-					std::cout << "Adding route " << carsPtr->route[j].getName() << " to car " << car->getObjectName() << std::endl;
+					LOG("Adding route %s to car %s", carsPtr->route[j].getName(), car->getObjectName());
 					car->setRoute(carsPtr->route[j]);
 					break;
 				}
