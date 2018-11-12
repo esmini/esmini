@@ -1939,7 +1939,7 @@ double Position::GetDistToTrackGeom(double x3, double y3, double h, Road *road, 
 #endif
 }
 
-void Position::SetXYH(double x3, double y3, double h3)
+void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPitch)
 {
 	double dist;
 	double distMin = 1000;
@@ -1964,9 +1964,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 		return;
 	}
 
-	// Ugly solution: search all road and lanes. Inefficient - but simple. Todo: Optimize
-
-#if 1
+	// Search all road and lanes. Inefficient - but simple. Todo: Optimize
 	bool found = false;
 	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
 	{
@@ -1987,130 +1985,7 @@ void Position::SetXYH(double x3, double y3, double h3)
 			}
 		}
 	}
-#else
-	if (found)
-	{
-		LOG("Position::SetXYH Found closer remote point rid %d geom_idx %d\n", road->GetId(), geometry_idx_);
-	}
 
-	// First check current geometry
-	dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
-	geomMin = geom;
-	roadMin = road;
-	sNormMin = CLAMP(sNorm, 0.0, 1.0);
-	distMin = dist;
-	insideMin = inside;
-
-	if (!insideMin)
-	{
-		// If point is outside line segment, maybe it has moved to successor or predecessor geometry...
-
-		if (geometry_idx_ + 1 < road->GetNumberOfGeometries())
-		{
-			geom = road->GetGeometry(geometry_idx_ + 1);
-			dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
-			if (dist < distMin)
-			{
-				geomMin = geom;
-				roadMin = road;
-				sNormMin = CLAMP(sNorm, 0.0, 1.0);
-				distMin = dist;
-				insideMin = inside;
-				LOG("Position::SetXYH Found next geometry\n");
-			}
-		}
-		if (insideMin == false && geometry_idx_ > 0)
-		{
-			geom = road->GetGeometry(geometry_idx_ - 1);
-			dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
-			if (dist < distMin)
-			{
-				geomMin = geom;
-				roadMin = road;
-				sNormMin = CLAMP(sNorm, 0.0, 1.0);
-				distMin = dist;
-				insideMin = inside;
-				LOG("Position::SetXYH Found previous geometry\n");
-			}
-		}
-	}
-
-	// Then check next and previous road links
-	if(insideMin == false)
-	{
-		roadMin = road;
-		roadmanager::LinkType linkList[2] = { roadmanager::LinkType::SUCCESSOR , roadmanager::LinkType::PREDECESSOR };
-		for (int i = 0; i < 2; i++)
-		{
-			RoadLink *link = roadMin->GetLink(linkList[i]);
-			if (link != 0 && link->GetElementType() == roadmanager::RoadLink::ELEMENT_TYPE_ROAD) // no support for junction connection yet, only roads
-			{
-				int geomIdxTmp;
-				road = GetOpenDrive()->GetRoadById(link->GetElementId());
-				if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)
-				{
-					geomIdxTmp = 0;
-				}
-				else if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_END)
-				{
-					geomIdxTmp = road->GetNumberOfGeometries()-1;
-				}
-				else 
-				{
-					LOG("Position::SetXYH Unsupported contact point type %d\n", link->GetContactPointType());
-					return;
-				}
-				geom = GetOpenDrive()->GetRoadById(link->GetElementId())->GetGeometry(geomIdxTmp);
-				dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
-				if (dist < distMin)
-				{
-					geomMin = geom;
-					roadMin = road;
-					sNormMin = CLAMP(sNorm, 0.0, 1.0);
-					distMin = dist;
-					insideMin = inside;
-					LOG("Position::SetXYH Found road link of type %d\n", linkList[i]);
-				}
-			}
-		}
-	}
-
-	// Else, finally check all roads and seegments...
-	// Search for the closest road segment (geometry)
-	if (distMin > MAX_TRACK_DIST)
-	{
-		bool found = false;
-		for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
-		{
-			road = GetOpenDrive()->GetRoadByIdx(i);
-			for (int j = 0; j < road->GetNumberOfGeometries(); j++)
-			{
-				geom = road->GetGeometry(j);
-				if (geom == geomMin)
-				{
-					continue;
-				}
-				dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
-				//LOG("rid %d geom %d dist %.2f sNormMin %.2f inside: %d (%.2f %.2f %.2f)\n",
-				//	i, j, dist, sNorm, inside, x3, y3, h3);
-
-				if (dist < distMin)  // First value (min_dist = -1) is always the closest so far
-				{
-					geomMin = geom;
-					roadMin = road;
-					sNormMin = CLAMP(sNorm, 0.0, 1.0);
-					distMin = dist;
-					insideMin = inside;
-					found = true;
-				}
-			}
-		}
-		if (found)
-		{
-			LOG("Position::SetXYH Found closer remote point rid %d geom_idx %d\n", road->GetId(), geometry_idx_);
-		}
-	}
-#endif
 	double dsMin = sNormMin * geomMin->GetLength();
 	double sMin = geomMin->GetS() + dsMin;
 	double x, y, h;
@@ -2130,7 +2005,10 @@ void Position::SetXYH(double x3, double y3, double h3)
 	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);		
 
 	//LOG("Closest point: dist %.2f side %d track_id %d lane_id %d s %.2f h %.2f\n", distMin, side, roadMin->GetId(), GetLaneId(), s_, h);
-	EvaluateZAndPitch();
+	if (evaluateZAndPitch)
+	{
+		EvaluateZAndPitch();
+	}
 }
 	
 bool Position::EvaluateZAndPitch()
@@ -2224,6 +2102,7 @@ void Position::Lane2Track()
 
 void Position::XYZ2Track()
 {
+	XYH2TrackPos(GetX(), GetY(), GetH(), false);
 }
 
 void Position::SetLongitudinalTrackPos(int track_id, double s)
@@ -2516,7 +2395,7 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	}
 }
 
-void Position::SetInertiaPos(double x, double y, double z, double h, double p, double r)
+void Position::SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos)
 {
 	x_ = x;
 	y_ = y;
@@ -2525,7 +2404,10 @@ void Position::SetInertiaPos(double x, double y, double z, double h, double p, d
 	p_ = p;
 	r_ = r;
 
-	XYZ2Track();
+	if (updateTrackPos)
+	{
+		XYZ2Track();
+	}
 }
 
 void Position::PrintTrackPos()

@@ -289,7 +289,7 @@ void Action::executeSinusoidal(double simulationTime)
 		double p = newPosition.GetP();
 		double r = newPosition.GetR();
 
-		newPosition.SetInertiaPos(x, y, z, h, p, r);
+		newPosition.SetInertiaPos(x, y, z, h, p, r, false);
 
 		(*carsPtr).setPosition(actionEntities[i], newPosition);
 	}

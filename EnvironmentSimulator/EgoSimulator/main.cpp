@@ -91,7 +91,7 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 	egoCar->vehicle->Update(deltaSimTime, accelerate, steer);
 
 	// Set OpenDRIVE position
-	egoCar->pos->SetXYH(egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->heading_);
+	egoCar->pos->XYH2TrackPos(egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->heading_);
 
 	// Fetch Z and Pitch from OpenDRIVE position
 	egoCar->vehicle->posZ_ = egoCar->pos->GetZ();

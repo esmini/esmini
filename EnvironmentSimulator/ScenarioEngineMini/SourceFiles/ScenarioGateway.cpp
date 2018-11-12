@@ -7,6 +7,17 @@ ObjectState::ObjectState()
 	state_.id = -1;
 }
 
+ObjectState::ObjectState(int id, std::string name, double timestamp, roadmanager::Position *pos, double speed)
+{
+	memset(&state_, 0, sizeof(ObjectStateStruct));
+
+	state_.id = id;
+	state_.timeStamp = (float)timestamp;
+	strncpy(state_.name, name.c_str(), NAME_LEN);
+	state_.pos = *pos;
+	state_.speed = (float)speed;
+}
+
 ObjectState::ObjectState(int id, std::string name, double timestamp, double x, double y, double z, double h, double p, double r, double speed)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));

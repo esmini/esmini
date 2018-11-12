@@ -619,8 +619,8 @@ namespace roadmanager
 		static OpenDrive* GetOpenDrive();
 		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
 		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
-		void SetInertiaPos(double x, double y, double z, double h, double p, double r);
-		void SetXYH(double x, double y, double h);
+		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
+		void XYH2TrackPos(double x, double y, double h, bool evaluateZAndPitch = true);
 		int MoveToConnectingRoad(RoadLink *road_link, double ds);
 		
 		/**
