@@ -69,6 +69,25 @@ static void resetScenario(void )
 #endif
 }
 
+static void copyStateFromScenarioGateway(ScenarioObjectState *state, ObjectStateStruct *gw_state)
+{
+	state->id = gw_state->id;
+	//			strncpy(state->name, gw_state->name, NAME_LEN);
+	state->timestamp = gw_state->timeStamp;
+	state->x = (float)gw_state->pos.GetX();
+	state->y = (float)gw_state->pos.GetY();
+	state->z = (float)gw_state->pos.GetZ();
+	state->h = (float)gw_state->pos.GetH();
+	state->p = (float)gw_state->pos.GetP();
+	state->r = (float)gw_state->pos.GetR();
+	state->speed = (float)gw_state->speed;
+	state->roadId = (int)gw_state->pos.GetTrackId();
+	state->laneId = (int)gw_state->pos.GetLaneId();
+	state->s = (int)gw_state->pos.GetS();
+	state->laneOffset = (int)gw_state->pos.GetOffset();
+
+}
+
 extern "C"
 {
 #ifdef _SCENARIO_VIEWER
@@ -187,6 +206,15 @@ extern "C"
 					c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
 				}
 
+				// Update debug visualization items (road positions, steering target and such)
+				// Assume first car to be the Ego (Vehicle Under Test)
+#if 1
+				if (scenarioCar.size() > 0)
+				{
+					scViewer->UpdateVehicleLineAndPoints(&scenarioCar[0].pos);
+					scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, 20);
+				}
+#endif
 				scViewer->osgViewer_->frame();
 			}
 #endif
@@ -229,16 +257,7 @@ extern "C"
 	{
 		if (scenarioGateway != 0)
 		{
-			state->id = scenarioGateway->getObjectStatePtrByIdx(index)->state_.id;
-//			strncpy(state->name, scenarioGateway->getObjectStatePtrByIdx(index)->state_.name, NAME_LEN);
-			state->timestamp = scenarioGateway->getObjectStatePtrByIdx(index)->state_.timeStamp;
-			state->x = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetX();
-			state->y = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetY();
-			state->z = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetZ();
-			state->h = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetH();
-			state->p = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetP();
-			state->r = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetR();
-			state->speed = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.speed;
+			copyStateFromScenarioGateway(state, &scenarioGateway->getObjectStatePtrByIdx(index)->state_);
 		}
 
 		return 0;
@@ -252,16 +271,7 @@ extern "C"
 		{
 			for (i = 0; i < *nObjects && i < scenarioGateway->getNumberOfObjects(); i++)
 			{
-				state[i].id = scenarioGateway->getObjectStatePtrByIdx(i)->state_.id;
-	//			strncpy(state[i].name, scenarioGateway->getObjectStatePtrByIdx(i)->state_.name, NAME_LEN);
-				state[i].timestamp = scenarioGateway->getObjectStatePtrByIdx(i)->state_.timeStamp;
-				state[i].x = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetX();
-				state[i].y = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetY();
-				state[i].z = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetZ();
-				state[i].h = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetH();
-				state[i].p = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetP();
-				state[i].r = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetR();
-				state[i].speed = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.speed;
+				copyStateFromScenarioGateway(state, &scenarioGateway->getObjectStatePtrByIdx(i)->state_);
 			}
 			*nObjects = i;
 		}
