@@ -103,15 +103,6 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 	egoCar->graphics_model->UpdateWheels(egoCar->vehicle->wheelAngle_, egoCar->vehicle->wheelRotation_);
 }
 
-void UpdateDebugLines(roadmanager::Position *lane_pos, roadmanager::Position *track_pos, viewer::Viewer *viewer)
-{
-	track_pos->SetTrackPos(egoCar->pos->GetTrackId(), egoCar->pos->GetS(), 0);
-	viewer->UpdateVPoints(track_pos->GetX(), track_pos->GetY(), lane_pos->GetX(), lane_pos->GetY(), lane_pos->GetZ());
-
-	lane_pos->SetLanePos(egoCar->pos->GetTrackId(), egoCar->pos->GetLaneId(), egoCar->pos->GetS(), 0);
-	viewer->UpdateVLine(lane_pos->GetX(), lane_pos->GetY(), lane_pos->GetZ());
-}
-
 ScenarioCar *getScenarioCarById(int id)
 {
 	for (size_t i=0; i<scenarioCar.size(); i++)
@@ -255,16 +246,11 @@ int main(int argc, char** argv)
 				c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
 			}
 
-			// Update road debug lines 
-			UpdateDebugLines(lane_pos, track_pos, viewer);
+			// Update road and vehicle debug lines 
+			viewer->UpdateVehicleLineAndPoints(egoCar->pos);
 
-			// Find and visualize steering target point
-			double steering_target_local[3];
-			double steering_target_global[3];
-			double angle;
-			double dist = MAX(5, egoCar->vehicle->speed_);
-			egoCar->pos->GetSteeringTargetPos(dist, steering_target_local, steering_target_global, &angle);
-			viewer->UpdateDriverModelPoint(steering_target_global[0], steering_target_global[1], steering_target_global[2]);
+			// Visualize steering target point
+			viewer->UpdateDriverModelPoint(egoCar->pos, MAX(5, egoCar->vehicle->speed_));
 
 			// Update graphics
 			viewer->osgViewer_->frame();

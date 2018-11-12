@@ -89,9 +89,8 @@ namespace viewer
 		CarModel* AddCar(int modelId);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
-		void UpdateDriverModelPoint(double x, double y, double z);
-		void UpdateVLine(double x, double y, double z);
-		void UpdateVPoints(double xt, double yt, double xl, double yl, double z);
+		void UpdateDriverModelPoint(roadmanager::Position *pos, double distance);
+		void UpdateVehicleLineAndPoints(roadmanager::Position *pos);
 		void setKeyUp(bool pressed) { keyUp_ = pressed; }
 		void setKeyDown(bool pressed) { keyDown_ = pressed; }
 		void setKeyLeft(bool pressed) { keyLeft_ = pressed; }
@@ -107,7 +106,7 @@ namespace viewer
 
 		bool ReadCarModels();
 		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
-		bool CreateVLineAndPoint(osg::Group* parent);
+		bool CreateVehicleLineAndPoint(osg::Group* parent);
 		bool CreateDriverModelLineAndPoint(osg::Group* parent);
 		bool keyUp_;
 		bool keyDown_;

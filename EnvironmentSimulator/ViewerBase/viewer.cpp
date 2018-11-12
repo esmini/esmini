@@ -21,6 +21,11 @@
 #define LOD_SCALE_DEFAULT 1.2
 #define MIN(x, y) ((x)<(y)?(x):(y))
 
+static int COLOR_RED[3] = { 0xBB, 0x44, 0x44 };
+static int COLOR_BLUE[3] = { 0x33, 0x33, 0xAA };
+static int COLOR_YELLOW[3] = { 0xEE, 0xAA, 0x44 };
+static int COLOR_GRAY[3] = { 0x44, 0x44, 0x44 };
+
 
 USE_OSGPLUGIN(osg2)
 USE_SERIALIZER_WRAPPER_LIBRARY(osg)
@@ -211,7 +216,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 		throw("Viewer::Viewer Failed to create road lines!\n");
 	}
 
-	if (!CreateVLineAndPoint(rootnode_))
+	if (!CreateVehicleLineAndPoint(rootnode_))
 	{
 		throw("Viewer::Viewer Failed to create vehicle line!\n");
 	}
@@ -410,11 +415,11 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 
 			if (i == 0)
 			{
-				kp_color->push_back(osg::Vec4(0xEE / (float)0xFF, 0xAA / (float)0xFF, 0x44 / (float)0xFF, 1.0));
+				kp_color->push_back(osg::Vec4(COLOR_YELLOW[0] / (float)0xFF, COLOR_YELLOW[1] / (float)0xFF, COLOR_YELLOW[2] / (float)0xFF, 1.0));
 			}
 			else
 			{
-				kp_color->push_back(osg::Vec4(0xBB / (float)0xFF, 0x44 / (float)0xFF, 0x44 / (float)0xFF, 1.0));
+				kp_color->push_back(osg::Vec4(COLOR_RED[0] / (float)0xFF, COLOR_RED[1] / (float)0xFF, COLOR_RED[2] / (float)0xFF, 1.0));
 			}
 		}
 
@@ -459,12 +464,12 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 				if (lane->GetId() == 0)
 				{
 					lineWidth->setWidth(5.0f);
-					color->push_back(osg::Vec4(0xBB / (float)0xFF, 0x44 / (float)0xFF, 0x44 / (float)0xFF, 1.0));
+					color->push_back(osg::Vec4(COLOR_RED[0] / (float)0xFF, COLOR_RED[1] / (float)0xFF, COLOR_RED[2] / (float)0xFF, 1.0));
 				}
 				else
 				{
 					lineWidth->setWidth(2.0f);
-					color->push_back(osg::Vec4(0x33 / (float)0xFF, 0x33 / (float)0xFF, 0xBB / (float)0xFF, 1.0));
+					color->push_back(osg::Vec4(COLOR_BLUE[0] / (float)0xFF, COLOR_BLUE[1] / (float)0xFF, COLOR_BLUE[2] / (float)0xFF, 1.0));
 				}
 
 				geom->setVertexArray(points.get());
@@ -484,7 +489,7 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 }
 
 
-bool Viewer::CreateVLineAndPoint(osg::Group* parent)
+bool Viewer::CreateVehicleLineAndPoint(osg::Group* parent)
 {
 	// vehicle points
 	pointData = new osg::Vec3Array;
@@ -502,8 +507,8 @@ bool Viewer::CreateVLineAndPoint(osg::Group* parent)
 	vehiclePoint_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	osg::ref_ptr<osg::Vec4Array> point_color = new osg::Vec4Array;
-	point_color->push_back(osg::Vec4(0x44 / (float)0xFF, 0x44 / (float)0xFF, 0x44 / (float)0xFF, 1.0));
-	point_color->push_back(osg::Vec4(0xCC / (float)0xFF, 0xCC / (float)0xFF, 0x33 / (float)0xFF, 1.0));
+	point_color->push_back(osg::Vec4(COLOR_YELLOW[0] / (float)0xFF, COLOR_YELLOW[1] / (float)0xFF, COLOR_YELLOW[2] / (float)0xFF, 1.0));
+	point_color->push_back(osg::Vec4(COLOR_BLUE[0] / (float)0xFF, COLOR_BLUE[1] / (float)0xFF, COLOR_BLUE[2] / (float)0xFF, 1.0));
 	vehiclePoint_->setDataVariance(osg::Object::DYNAMIC);
 	vehiclePoint_->setColorArray(point_color.get());
 	vehiclePoint_->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
@@ -524,7 +529,7 @@ bool Viewer::CreateVLineAndPoint(osg::Group* parent)
 	vehicleLine_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-	color->push_back(osg::Vec4(0xCC / (float)0xFF, 0xCC / (float)0xFF, 0x33 / (float)0xFF, 1.0));
+	color->push_back(osg::Vec4(COLOR_BLUE[0] / (float)0xFF, COLOR_BLUE[1] / (float)0xFF, COLOR_BLUE[2] / (float)0xFF, 1.0));
 	vehicleLine_->setColorArray(color.get());
 	vehicleLine_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
 	vehicleLine_->setDataVariance(osg::Object::DYNAMIC);
@@ -535,6 +540,8 @@ bool Viewer::CreateVLineAndPoint(osg::Group* parent)
 
 bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
 {
+
+
 	// Point
 	dm_steering_target_point_data_ = new osg::Vec3Array;
 	dm_steering_target_point_data_->push_back(osg::Vec3d(0, 0, 0));
@@ -550,7 +557,7 @@ bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
 	dm_steering_target_point_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	osg::ref_ptr<osg::Vec4Array> point_color = new osg::Vec4Array;
-	point_color->push_back(osg::Vec4(0x44 / (float)0xFF, 0x44 / (float)0xFF, 0x44 / (float)0xFF, 1.0));
+	point_color->push_back(osg::Vec4(COLOR_GRAY[0] / (float)0xFF, COLOR_GRAY[1] / (float)0xFF, COLOR_GRAY[2] / (float)0xFF, 1.0));
 	dm_steering_target_point_->setDataVariance(osg::Object::DYNAMIC);
 	dm_steering_target_point_->setColorArray(point_color.get());
 	dm_steering_target_point_->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
@@ -571,7 +578,7 @@ bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
 	dm_steering_target_line_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-	color->push_back(osg::Vec4(0xCC / (float)0xFF, 0xCC / (float)0xFF, 0x33 / (float)0xFF, 1.0));
+	color->push_back(osg::Vec4(COLOR_GRAY[0] / (float)0xFF, COLOR_GRAY[1] / (float)0xFF, COLOR_GRAY[2] / (float)0xFF, 1.0));
 	dm_steering_target_line_->setColorArray(color.get());
 	dm_steering_target_line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
 	dm_steering_target_line_->setDataVariance(osg::Object::DYNAMIC);
@@ -580,44 +587,56 @@ bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
 	return true;
 }
 
-void Viewer::UpdateVPoints(double xt, double yt, double xl, double yl, double z)
+void Viewer::UpdateVehicleLineAndPoints(roadmanager::Position *pos) 
 {
+	roadmanager::Position lane_pos(*pos);
+	roadmanager::Position track_pos(*pos);
+
 	double z_offset = 0.1;
+
+	// Points
+	track_pos.SetTrackPos(pos->GetTrackId(), pos->GetS(), 0);
+	lane_pos.SetLanePos(pos->GetTrackId(), pos->GetLaneId(), pos->GetS(), 0);
 
 	pointData->clear();
-	pointData->push_back(osg::Vec3d(xt, yt, z + z_offset));
-	pointData->push_back(osg::Vec3d(xl, yl, z + z_offset));
+	pointData->push_back(osg::Vec3d(track_pos.GetX(), track_pos.GetY(), track_pos.GetZ() + z_offset));
+	pointData->push_back(osg::Vec3d(lane_pos.GetX(), lane_pos.GetY(), lane_pos.GetZ() + z_offset));
+
 	vehiclePoint_->dirtyGLObjects();
 	pointData->dirty();
-}
 
-void Viewer::UpdateVLine(double x, double y, double z)
-{
-	double z_offset = 0.1;
+	// Line
 	osg::ref_ptr<osg::PositionAttitudeTransform> tx = cars_[0]->txNode_;
 
 	vertexData->clear();
-	vertexData->push_back(osg::Vec3d(tx->getPosition().x(), tx->getPosition().y(), tx->getPosition().z() + z_offset));
-	vertexData->push_back(osg::Vec3d(x, y, z + z_offset));
+	vertexData->push_back(osg::Vec3d(tx->getPosition().x(), tx->getPosition().y(), tx->getPosition().z() + 0.5));
+	vertexData->push_back(osg::Vec3d(lane_pos.GetX(), lane_pos.GetY(), lane_pos.GetZ() + z_offset));
 	vehicleLine_->dirtyGLObjects();
 	vertexData->dirty();
 }
 
-void Viewer::UpdateDriverModelPoint(double x, double y, double z)
+void Viewer::UpdateDriverModelPoint(roadmanager::Position *pos, double distance)
 {
+	// Find and visualize steering target point
+	double steering_target_local[3];
+	double steering_target_global[3];
+	double angle;
+
+	pos->GetSteeringTargetPos(distance, steering_target_local, steering_target_global, &angle);
+	
 	double z_offset = 0.1;
 
 	// Point
 	dm_steering_target_point_data_->clear();
-	dm_steering_target_point_data_->push_back(osg::Vec3d(x, y, z + z_offset));
+	dm_steering_target_point_data_->push_back(osg::Vec3d(steering_target_global[0], steering_target_global[1], steering_target_global[2] + z_offset));
 	dm_steering_target_point_->dirtyGLObjects();
 	dm_steering_target_point_data_->dirty();
 
 	// Line
 	osg::ref_ptr<osg::PositionAttitudeTransform> tx = cars_[0]->txNode_;
 	dm_steering_target_line_vertexData_->clear();
-	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(tx->getPosition().x(), tx->getPosition().y(), tx->getPosition().z() + z_offset));
-	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(x, y, z + z_offset));
+	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(tx->getPosition().x(), tx->getPosition().y(), tx->getPosition().z() + 0.5));
+	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(steering_target_global[0], steering_target_global[1], steering_target_global[2] + z_offset));
 	dm_steering_target_line_->dirtyGLObjects();
 	dm_steering_target_line_vertexData_->dirty();
 }
@@ -680,6 +699,8 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 			viewer_->odrLines_->setNodeMask(visible ? 0xffffffff : 0x0);
 			viewer_->vehicleLine_->setNodeMask(visible ? 0xffffffff : 0x0);
 			viewer_->vehiclePoint_->setNodeMask(visible ? 0xffffffff : 0x0);
+			viewer_->dm_steering_target_line_->setNodeMask(visible ? 0xffffffff : 0x0);
+			viewer_->dm_steering_target_point_->setNodeMask(visible ? 0xffffffff : 0x0);
 		}
 	}
 	break;
