@@ -16,6 +16,8 @@
 #define EGO_MODEL_FILENAME "../../resources/models/p1800.osgb"
 #define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
 
+#define MAX(x, y) (y > x ? y : x)
+#define MIN(x, y) (y < x ? y : x)
 
 static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
@@ -27,7 +29,6 @@ static double egoAcc = 0;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 static std::mt19937 mt_rand;
-
 
 typedef struct
 {
@@ -256,6 +257,14 @@ int main(int argc, char** argv)
 
 			// Update road debug lines 
 			UpdateDebugLines(lane_pos, track_pos, viewer);
+
+			// Find and visualize steering target point
+			double steering_target_local[3];
+			double steering_target_global[3];
+			double angle;
+			double dist = MAX(5, egoCar->vehicle->speed_);
+			egoCar->pos->GetSteeringTargetPos(dist, steering_target_local, steering_target_global, &angle);
+			viewer->UpdateDriverModelPoint(steering_target_global[0], steering_target_global[1], steering_target_global[2]);
 
 			// Update graphics
 			viewer->osgViewer_->frame();

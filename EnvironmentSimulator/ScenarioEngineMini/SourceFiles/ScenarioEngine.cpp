@@ -70,7 +70,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 
 				if (scenarioGateway.getObjectStateById(objectId, o) != 0)
 				{
-					LOG("Gateway did not provide state for external car %s", objectId);
+					LOG("Gateway did not provide state for external car %d", objectId);
 				}
 				else
 				{

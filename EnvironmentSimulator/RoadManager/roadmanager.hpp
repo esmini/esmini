@@ -639,6 +639,15 @@ namespace roadmanager
 		bool IsAheadOf(Position target_position);
 
 		/**
+		Get the location, in local vehicle coordinate system, of a point along the road ahead
+		@param object_id The ID of the vehicle to measure from
+		@param lookahead_distance The distance, along the road, to the point
+		@param target_pos Array to fill in calculated X, Y and Z coordinate values
+		@return 0 if successful, -1 if not
+		*/
+		int GetSteeringTargetPos(double lookahead_distance, double *target_pos_local, double *target_pos_global, double *angle);
+
+		/**
 		Move position along the road network, forward or backward, from the current position
 		It will automatically follow connecting lanes between connected roads 
 		If multiple options (only possible in junctions) it will choose randomly 

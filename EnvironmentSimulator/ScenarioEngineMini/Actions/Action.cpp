@@ -116,7 +116,7 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 				// Find specified route
 				if (carsPtr->route[j].getName() == privateAction.routing_->FollowRoute.CatalogReference.entryName)
 				{
-					LOG("Adding route %s to car %s", carsPtr->route[j].getName(), car->getObjectName());
+					LOG("Adding route %s to car %s", carsPtr->route[j].getName().c_str(), car->getObjectName().c_str());
 					car->setRoute(carsPtr->route[j]);
 					break;
 				}

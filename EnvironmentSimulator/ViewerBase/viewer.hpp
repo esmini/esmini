@@ -58,11 +58,20 @@ namespace viewer
 		int camMode_;
 		osg::ref_ptr<osg::Group> line_node_;
 		
+		// Driver model steering debug visualization
+		osg::ref_ptr<osg::Geometry> dm_steering_target_line_;
+		osg::ref_ptr<osg::Vec3Array> dm_steering_target_line_vertexData_;
+		osg::ref_ptr<osg::Geometry> dm_steering_target_point_;
+		osg::ref_ptr<osg::Vec3Array> dm_steering_target_point_data_;
+
+		// Vehicle position debug visualization
 		osg::ref_ptr<osg::Node> shadow_node_;
 		osg::ref_ptr<osg::Vec3Array> vertexData;
 		osg::ref_ptr<osg::Geometry> vehicleLine_;
 		osg::ref_ptr<osg::Vec3Array> pointData;
 		osg::ref_ptr<osg::Geometry> vehiclePoint_;
+
+		// Road debug visualization
 		osg::ref_ptr<osg::Group> odrLines_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> envTx_;
 		osg::ref_ptr<osg::Node> environment_;
@@ -80,6 +89,7 @@ namespace viewer
 		CarModel* AddCar(int modelId);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
+		void UpdateDriverModelPoint(double x, double y, double z);
 		void UpdateVLine(double x, double y, double z);
 		void UpdateVPoints(double xt, double yt, double xl, double yl, double z);
 		void setKeyUp(bool pressed) { keyUp_ = pressed; }
@@ -98,6 +108,7 @@ namespace viewer
 		bool ReadCarModels();
 		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
 		bool CreateVLineAndPoint(osg::Group* parent);
+		bool CreateDriverModelLineAndPoint(osg::Group* parent);
 		bool keyUp_;
 		bool keyDown_;
 		bool keyLeft_;

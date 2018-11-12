@@ -216,6 +216,11 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 		throw("Viewer::Viewer Failed to create vehicle line!\n");
 	}
 
+	if (!CreateDriverModelLineAndPoint(rootnode_))
+	{
+		throw("Viewer::Viewer Failed to create driver model line and point!\n");
+	}
+
 	osgViewer_->setSceneData(rootnode_);
 
 	// Setup the camera models
@@ -528,6 +533,53 @@ bool Viewer::CreateVLineAndPoint(osg::Group* parent)
 	return true;
 }
 
+bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
+{
+	// Point
+	dm_steering_target_point_data_ = new osg::Vec3Array;
+	dm_steering_target_point_data_->push_back(osg::Vec3d(0, 0, 0));
+
+	dm_steering_target_point_ = new osg::Geometry;
+	dm_steering_target_point_->setCullingActive(false);
+	dm_steering_target_point_->setVertexArray(dm_steering_target_point_data_.get());
+	dm_steering_target_point_->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, 1));
+
+	osg::ref_ptr<osg::Point> point_point = new osg::Point;
+	point_point->setSize(20.0f);
+	dm_steering_target_point_->getOrCreateStateSet()->setAttributeAndModes(point_point, osg::StateAttribute::ON);
+	dm_steering_target_point_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+	osg::ref_ptr<osg::Vec4Array> point_color = new osg::Vec4Array;
+	point_color->push_back(osg::Vec4(0x44 / (float)0xFF, 0x44 / (float)0xFF, 0x44 / (float)0xFF, 1.0));
+	dm_steering_target_point_->setDataVariance(osg::Object::DYNAMIC);
+	dm_steering_target_point_->setColorArray(point_color.get());
+	dm_steering_target_point_->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+	parent->addChild(dm_steering_target_point_);
+
+
+	dm_steering_target_line_vertexData_ = new osg::Vec3Array;
+	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
+
+	dm_steering_target_line_ = new osg::Geometry();
+	dm_steering_target_line_->setCullingActive(false);
+	dm_steering_target_line_->setVertexArray(dm_steering_target_line_vertexData_.get());
+	dm_steering_target_line_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
+
+	osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
+	lineWidth->setWidth(4.0f);
+	dm_steering_target_line_->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+	dm_steering_target_line_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+	color->push_back(osg::Vec4(0xCC / (float)0xFF, 0xCC / (float)0xFF, 0x33 / (float)0xFF, 1.0));
+	dm_steering_target_line_->setColorArray(color.get());
+	dm_steering_target_line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+	dm_steering_target_line_->setDataVariance(osg::Object::DYNAMIC);
+	parent->addChild(dm_steering_target_line_);
+
+	return true;
+}
+
 void Viewer::UpdateVPoints(double xt, double yt, double xl, double yl, double z)
 {
 	double z_offset = 0.1;
@@ -549,6 +601,25 @@ void Viewer::UpdateVLine(double x, double y, double z)
 	vertexData->push_back(osg::Vec3d(x, y, z + z_offset));
 	vehicleLine_->dirtyGLObjects();
 	vertexData->dirty();
+}
+
+void Viewer::UpdateDriverModelPoint(double x, double y, double z)
+{
+	double z_offset = 0.1;
+
+	// Point
+	dm_steering_target_point_data_->clear();
+	dm_steering_target_point_data_->push_back(osg::Vec3d(x, y, z + z_offset));
+	dm_steering_target_point_->dirtyGLObjects();
+	dm_steering_target_point_data_->dirty();
+
+	// Line
+	osg::ref_ptr<osg::PositionAttitudeTransform> tx = cars_[0]->txNode_;
+	dm_steering_target_line_vertexData_->clear();
+	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(tx->getPosition().x(), tx->getPosition().y(), tx->getPosition().z() + z_offset));
+	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(x, y, z + z_offset));
+	dm_steering_target_line_->dirtyGLObjects();
+	dm_steering_target_line_vertexData_->dirty();
 }
 
 int Viewer::AddEnvironment(const char* filename)

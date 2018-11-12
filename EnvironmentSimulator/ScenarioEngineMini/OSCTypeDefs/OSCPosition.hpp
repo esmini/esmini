@@ -97,14 +97,24 @@ public:
 
 	void printOSCPosition()
 	{
-		LOG("\t - Lane");
-		LOG("\troadId = %d", lane_->roadId);
-		LOG("\tlaneId = %d", lane_->laneId);
-		LOG("\toffset = %.2f", lane_->offset);
-		LOG("\ts = %.2f", lane_->s);
-		LOG("");
+		if (lane_)
+		{
+			LOG("\t - Lane");
+			LOG("\troadId = %d", lane_->roadId);
+			LOG("\tlaneId = %d", lane_->laneId);
+			LOG("\toffset = %.2f", lane_->offset);
+			LOG("\ts = %.2f", lane_->s);
+			LOG("");
 
-		LOG("\t - Lane - Orientation");
-		lane_->Orientation.printOSCOrientation();
+			LOG("\t - Lane - Orientation");
+			lane_->Orientation.printOSCOrientation();
+		}
+		else if (route_)
+		{
+			LOG("\t - Route");
+
+			LOG("\troute catalog: %s", route_->RouteRef.CatalogReference.catalogName.c_str());
+			LOG("\t lane_id: %d s: %.2f", route_->Position.LaneCoord.laneId, route_->Position.LaneCoord.pathS);
+		}
 	};
 };

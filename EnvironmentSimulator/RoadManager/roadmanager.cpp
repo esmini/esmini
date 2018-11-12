@@ -2593,6 +2593,42 @@ bool Position::IsAheadOf(Position target_position)
 	return(diff_x0 < 0);
 }
 
+int Position::GetSteeringTargetPos(double lookahead_distance, double *target_pos_local, double *target_pos_global, double *angle)
+{
+	Position target(*this);  // Make a copy of current position
+	target.offset_ = 0.0;  // Fix to lane center
+
+	target.MoveAlongS(lookahead_distance);
+	
+	target_pos_global[0] = target.GetX();
+	target_pos_global[1] = target.GetY();
+	target_pos_global[2] = target.GetZ();
+
+	// find out local x, y, z
+	double diff_x = target.GetX() - GetX();
+	double diff_y = target.GetY() - GetY();
+	double diff_z = target.GetZ() - GetZ();
+
+	target_pos_local[0] = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
+	target_pos_local[1] = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
+	target_pos_local[2] = diff_z;
+
+#if 0
+	// remove when validated
+	target_pos_global[0] = GetX() + target_pos_local[0] * cos(GetH()) - target_pos_local[1] * sin(GetH());
+	target_pos_global[1] = GetY() + target_pos_local[0] * sin(GetH()) + target_pos_local[1] * cos(GetH());
+	target_pos_global[2] = GetZ() + target_pos_local[2];
+#endif
+	
+	// Calculate angle - by dot product
+	double dot_prod = 
+		(target_pos_local[0] * 1.0 + target_pos_local[1] * 0.0) / 
+		sqrt(target_pos_local[0] * target_pos_local[0] + target_pos_local[1] * target_pos_local[1]);
+	*angle = SIGN(target_pos_local[1]) * acos(dot_prod);
+
+	return 0;
+}
+
 int Route::SetPosition(Position *position)
 {
 	// Is it a valid position, i.e. is it along the route

@@ -72,9 +72,9 @@ static void resetScenario(void )
 extern "C"
 {
 #ifdef _SCENARIO_VIEWER
-	UNITY_DLL_API int SE_Init(const char *oscFilename, int useViewer)
+	SE_DLL_API int SE_Init(const char *oscFilename, int useViewer)
 #else
-	UNITY_DLL_API int SE_Init(const char *oscFilename)
+	SE_DLL_API int SE_Init(const char *oscFilename)
 #endif
 	{
 		resetScenario();
@@ -128,12 +128,12 @@ extern "C"
 		return 0;
 	}
 
-	UNITY_DLL_API void SE_Close()
+	SE_DLL_API void SE_Close()
 	{
 		resetScenario();
 	}
 
-	UNITY_DLL_API void SE_Step(float dt)
+	SE_DLL_API void SE_Step(float dt)
 	{
 		if (scenarioEngine != 0)
 		{
@@ -193,7 +193,7 @@ extern "C"
 		}
 	}
 
-	UNITY_DLL_API int SE_ReportObjectPos(int id, char *name, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
+	SE_DLL_API int SE_ReportObjectPos(int id, char *name, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
 	{
 		if (scenarioGateway != 0)
 		{
@@ -203,7 +203,7 @@ extern "C"
 		return 0;
 	}
 
-	UNITY_DLL_API int SE_ReportObjectRoadPos(int id, char * name, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
+	SE_DLL_API int SE_ReportObjectRoadPos(int id, char * name, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
 	{
 		if (scenarioGateway != 0)
 		{
@@ -213,7 +213,7 @@ extern "C"
 		return 0;
 	}
 
-	UNITY_DLL_API int SE_GetNumberOfObjects()
+	SE_DLL_API int SE_GetNumberOfObjects()
 	{
 		if (scenarioGateway != 0)
 		{
@@ -225,30 +225,7 @@ extern "C"
 		}
 	}
 
-#if 0  // return state struct 
-	UNITY_DLL_API ScenarioObjectState SE_GetObjectState(int index)
-	{
-		ScenarioObjectState state;
-
-		if (scenarioGateway)
-		{
-			state.id = scenarioGateway->getObjectStatePtrByIdx(index)->state_.id;
-			strncpy(state.name, scenarioGateway->getObjectStatePtrByIdx(index)->state_.name, NAME_LEN);
-			state.timestamp = scenarioGateway->getObjectStatePtrByIdx(index)->state_.timeStamp;
-			state.x = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetX();
-			state.y = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetY();
-			state.z = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetZ();
-			state.h = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetH();
-			state.p = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetP();
-			state.r = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.pos.GetR();
-			state.speed = (float)scenarioGateway->getObjectStatePtrByIdx(index)->state_.speed;
-		}
-
-		return state;
-	}
-}
-#else  // fill in state struct provided by reference argument
-	UNITY_DLL_API int SE_GetObjectState(int index, ScenarioObjectState *state)
+	SE_DLL_API int SE_GetObjectState(int index, ScenarioObjectState *state)
 	{
 		if (scenarioGateway != 0)
 		{
@@ -266,33 +243,38 @@ extern "C"
 
 		return 0;
 	}
-}
-#endif
 
-UNITY_DLL_API int SE_GetObjectStates(int *nObjects, ScenarioObjectState* state)
-{
-	int i;
-
-	if (scenarioGateway != 0)
+	SE_DLL_API int SE_GetObjectStates(int *nObjects, ScenarioObjectState* state)
 	{
-		for (i = 0; i < *nObjects && i < scenarioGateway->getNumberOfObjects(); i++)
+		int i;
+
+		if (scenarioGateway != 0)
 		{
-			state[i].id = scenarioGateway->getObjectStatePtrByIdx(i)->state_.id;
-//			strncpy(state[i].name, scenarioGateway->getObjectStatePtrByIdx(i)->state_.name, NAME_LEN);
-			state[i].timestamp = scenarioGateway->getObjectStatePtrByIdx(i)->state_.timeStamp;
-			state[i].x = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetX();
-			state[i].y = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetY();
-			state[i].z = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetZ();
-			state[i].h = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetH();
-			state[i].p = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetP();
-			state[i].r = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetR();
-			state[i].speed = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.speed;
+			for (i = 0; i < *nObjects && i < scenarioGateway->getNumberOfObjects(); i++)
+			{
+				state[i].id = scenarioGateway->getObjectStatePtrByIdx(i)->state_.id;
+	//			strncpy(state[i].name, scenarioGateway->getObjectStatePtrByIdx(i)->state_.name, NAME_LEN);
+				state[i].timestamp = scenarioGateway->getObjectStatePtrByIdx(i)->state_.timeStamp;
+				state[i].x = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetX();
+				state[i].y = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetY();
+				state[i].z = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetZ();
+				state[i].h = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetH();
+				state[i].p = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetP();
+				state[i].r = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.pos.GetR();
+				state[i].speed = (float)scenarioGateway->getObjectStatePtrByIdx(i)->state_.speed;
+			}
+			*nObjects = i;
 		}
-		*nObjects = i;
+		else
+		{
+			*nObjects = 0;
+		}
+		return 0;
 	}
-	else
+
+	SE_DLL_API int GetSteeringTargetPos(int object_id, float lookahead_distance, double *target_pos)
 	{
-		*nObjects = 0;
+		return 0;
 	}
-	return 0;
+
 }
