@@ -2166,7 +2166,7 @@ void Position::SetTrackPos(int track_id, double s, double t, bool calculateXYZ)
 	}
 }
 
-int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
+int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_remains, Junction::JunctionStrategyType strategy)
 {
 	double s_new;
 	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
@@ -2240,16 +2240,81 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 	else if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
 	{
 		Junction *junction = GetOpenDrive()->GetJunctionById(road_link->GetElementId());
+
 		if (junction == 0)
 		{
 			LOG("Position::MoveToConnectingRoad Error: junction %d not existing\n", road_link->GetElementType());
 			return -1;
 		}
 	
-		// find valid connecting road, if multiple choices choose by random
+		int connection_idx;
 		int n_connections = junction->GetNumberOfRoadConnections(road->GetId(), lane->GetId());
-		int connection_idx = (int)(n_connections * (double)mt_rand() / mt_rand.max());
-		
+
+		if (n_connections == 0)
+		{
+			LOG("No connections!");
+			return -1;
+		}
+		else if (n_connections == 1)
+		{
+			LOG("Strange: Only one connection!");
+			connection_idx = 0;
+		}
+		else
+		{
+			// find valid connecting road, if multiple choices choose either most straight one OR by random
+			if (strategy == Junction::JunctionStrategyType::STRAIGHT)
+			{
+				// Find the straighest link
+				int best_road_index = 0;
+				double min_heading_diff = 1E10; // set huge number
+				for (int i = 0; i < n_connections; i++)
+				{
+					double current_heading = GetH();
+					LaneRoadLaneConnection lane_road_lane_connection = 
+						junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), i);
+					next_road = GetOpenDrive()->GetRoadById(lane_road_lane_connection.GetConnectingRoadId()); 
+
+					Position test_pos;
+					if (lane_road_lane_connection.contact_point_ == CONTACT_POINT_START)
+					{
+						// Inspect heading at the connecting road
+						test_pos.SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength(), 0);
+					}
+					else if (lane_road_lane_connection.contact_point_ == CONTACT_POINT_END)
+					{
+						test_pos.SetLanePos(next_road->GetId(), new_lane_id, 0, 0);
+					}
+					else
+					{
+						LOG("Unexpected contact point type: %d", road_link->GetContactPointType());
+					}
+
+					// Transform angle into a comparable format
+					double heading_diff = fmod(test_pos.GetH() - GetH(), M_PI);
+					if (heading_diff > 180)
+					{
+						heading_diff = 360 - heading_diff;
+					}
+					else if (heading_diff < -180)
+					{
+						heading_diff = 360 + heading_diff;
+					}
+
+					if (abs(heading_diff) < abs(min_heading_diff))
+					{
+						min_heading_diff = heading_diff;
+						best_road_index = i;
+					}
+				}
+				connection_idx = best_road_index;
+			}
+			else if (strategy == Junction::JunctionStrategyType::RANDOM)
+			{
+				connection_idx = (int)(n_connections * (double)mt_rand() / mt_rand.max());
+			}
+		}
+
 		LaneRoadLaneConnection lane_road_lane_connection = junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), connection_idx);
 		contact_point = lane_road_lane_connection.contact_point_;
 
@@ -2271,24 +2336,56 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 	}
 	
 	// Find out if connecting to start or end of new road
+	s_remains = 0;
 	if (road_link->GetContactPointType() == CONTACT_POINT_START)
 	{
-		SetLanePos(road_link->GetElementId(), new_lane_id, s_new, 0);
-		
+		if (s_new <= next_road->GetLength())
+		{
+			SetLanePos(road_link->GetElementId(), new_lane_id, s_new, 0);
+		}
+		else
+		{
+			SetLanePos(road_link->GetElementId(), new_lane_id, next_road->GetLength(), 0);			
+			s_remains = s_new - next_road->GetLength();
+		}
 	}
 	else if (road_link->GetContactPointType() == CONTACT_POINT_END)
 	{
-		SetLanePos(road_link->GetElementId(), new_lane_id, next_road->GetLength() - s_new, 0);
+		if (s_new <= next_road->GetLength())
+		{
+			SetLanePos(road_link->GetElementId(), new_lane_id, next_road->GetLength() - s_new, 0);
+		}
+		else
+		{
+			SetLanePos(road_link->GetElementId(), new_lane_id, 0, 0);
+			s_remains = s_new - next_road->GetLength();
+		}
 	}
 	else if (road_link->GetContactPointType() == CONTACT_POINT_NONE && road_link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
 	{
 		if (contact_point == CONTACT_POINT_START)
 		{
-			SetLanePos(next_road->GetId(), new_lane_id, s_new, 0);
+			if (s_new <= next_road->GetLength())
+			{
+				SetLanePos(next_road->GetId(), new_lane_id, s_new, 0);
+			}
+			else
+			{
+				SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength(), 0);
+				s_remains = s_new - next_road->GetLength();
+			}
 		}
 		else if (contact_point == CONTACT_POINT_END)
 		{
-			SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength() - s_new, 0);
+			if (s_new <= next_road->GetLength())
+			{
+				SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength() - s_new, 0);
+			}
+			else
+			{
+				SetLanePos(next_road->GetId(), new_lane_id, 0, 0);
+				s_remains = s_new - next_road->GetLength();
+			}
 		}
 		else
 		{
@@ -2301,35 +2398,59 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds)
 		return -1;
 	}
 
-	return 0;
-}
-
-int Position::MoveAlongS(double ds)
-{
-	RoadLink *link;
-
-	ds *= -SIGN(GetLaneId()); // adjust sign of ds according to lane direction - right lane is < 0 in road dir
-
-	if (s_+ds > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
+	if(s_remains > 1E-10)
 	{
-		link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(SUCCESSOR);
+		return 1;
 	}
-	else if (s_+ds < 0)
+	else
 	{
-		link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(PREDECESSOR);
-	}
-	else  // New position is within current track
-	{
-		SetLanePos(track_id_, lane_id_, s_+ds, offset_);
 		return 0;
 	}
+}
 
-	// Move to connected road
-	if (!link || link->GetElementId() == -1)
+int Position::MoveAlongS(double ds, Junction::JunctionStrategyType strategy)
+{
+	RoadLink *link;
+	int max_links = 4;  // limit lookahead through junctions/links 
+	int i = 0;
+
+	for (int i = 0; i < max_links; i++)
 	{
-		return -1;
+		ds *= -SIGN(GetLaneId()); // adjust sign of ds according to lane direction - right lane is < 0 in road dir
+
+		if (s_ + ds > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
+		{
+			link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(SUCCESSOR);
+		}
+		else if (s_ + ds < 0)
+		{
+			link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(PREDECESSOR);
+		}
+		else  // New position is within current track
+		{
+			SetLanePos(track_id_, lane_id_, s_ + ds, offset_);
+			return 0;
+		}
+
+		// Move to connected road
+		if (!link || link->GetElementId() == -1)
+		{
+			return -1;
+		}
+
+		double s_remains = 0;
+		int returnvalue = MoveToConnectingRoad(link, ds, s_remains, strategy);
+
+		if(returnvalue != 1)
+		{
+			return returnvalue;
+		}
+		else
+		{
+			ds = s_remains;  // not done, we need to go further across a linked road
+		}
 	}
-	return(MoveToConnectingRoad(link, ds));
+	return(-1);
 }
 
 void Position::SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx)
@@ -2480,7 +2601,7 @@ int Position::GetSteeringTargetPos(double lookahead_distance, double *target_pos
 	Position target(*this);  // Make a copy of current position
 	target.offset_ = 0.0;  // Fix to lane center
 
-	target.MoveAlongS(lookahead_distance);
+	target.MoveAlongS(lookahead_distance, Junction::STRAIGHT);
 	
 	target_pos_global[0] = target.GetX();
 	target_pos_global[1] = target.GetY();

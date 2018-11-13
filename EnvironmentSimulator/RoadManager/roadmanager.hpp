@@ -538,6 +538,12 @@ namespace roadmanager
 	class Junction
 	{
 	public:
+		typedef enum
+		{
+			RANDOM,
+			STRAIGHT,
+		} JunctionStrategyType;
+
 		Junction(int id, std::string name) : id_(id), name_(name) {}
 		~Junction();
 		int GetId() { return id_; }
@@ -621,7 +627,7 @@ namespace roadmanager
 		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
 		void XYH2TrackPos(double x, double y, double h, bool evaluateZAndPitch = true);
-		int MoveToConnectingRoad(RoadLink *road_link, double ds);
+		int MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_remains, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 		
 		/**
 		Straight (not route) distance between the current position and the one specified in argument
@@ -653,7 +659,7 @@ namespace roadmanager
 		If multiple options (only possible in junctions) it will choose randomly 
 		@param ds distance to move from current position
 		*/
-		int MoveAlongS(double ds);
+		int MoveAlongS(double ds, Junction::JunctionStrategyType strategy = Junction::JunctionStrategyType::RANDOM);
 
 		/**
 		Retrieve the track/road ID from the position object
