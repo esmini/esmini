@@ -49,7 +49,9 @@ extern "C"
 	SE_DLL_API int SE_GetObjectStates(int *nObjects, ScenarioObjectState* state);
 
 	// Road related functions
-	SE_DLL_API int GetSteeringTargetPos(int object_id, float lookahead_distance, double *target_pos);
+	SE_DLL_API int SE_GetSteeringTargetPosGlobal(int object_id, float lookahead_distance, float *target_pos);
+	SE_DLL_API int SE_GetSteeringTargetPosLocal(int object_id, float lookahead_distance, float *target_pos);
+	SE_DLL_API int SE_GetSteeringTargetAngle(int object_id, float lookahead_distance, float *angle);
 
 #ifdef __cplusplus
 }

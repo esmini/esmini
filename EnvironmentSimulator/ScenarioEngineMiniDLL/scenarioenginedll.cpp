@@ -6,6 +6,7 @@
 #include "viewer.hpp"
 #include "RubberbandManipulator.h"
 
+#define VISUALIZE_DRIVER_MODEL_TARGET
 #define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
 
 typedef struct
@@ -208,11 +209,11 @@ extern "C"
 
 				// Update debug visualization items (road positions, steering target and such)
 				// Assume first car to be the Ego (Vehicle Under Test)
-#if 1
+#ifdef VISUALIZE_DRIVER_MODEL_TARGET
 				if (scenarioCar.size() > 0)
 				{
 					scViewer->UpdateVehicleLineAndPoints(&scenarioCar[0].pos);
-					scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, 20);
+					scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, 25);
 				}
 #endif
 				scViewer->osgViewer_->frame();
@@ -282,8 +283,57 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int GetSteeringTargetPos(int object_id, float lookahead_distance, double *target_pos)
+	static int GetSteeringTarget(int object_id, float lookahead_distance, double *pos_local, double *pos_global, double *angle)
 	{
+		if (object_id >= scenarioGateway->getNumberOfObjects())
+		{
+			LOG("Object %d not available, only %d registered", object_id, scenarioGateway->getNumberOfObjects());
+			return -1;
+		}
+
+		roadmanager::Position *pos = &scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
+
+		pos->GetSteeringTargetPos(lookahead_distance, pos_local, pos_global, angle);
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_GetSteeringTargetPosGlobal(int object_id, float lookahead_distance, float * target_pos)
+	{
+		double pos_local[3], pos_global[3], angle;
+		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle) != 0)
+		{
+			return -1;
+		}
+
+		for (int i = 0; i < 3; i++) target_pos[i] = pos_global[i];
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_GetSteeringTargetPosLocal(int object_id, float lookahead_distance, float * target_pos)
+	{
+		double pos_local[3], pos_global[3], angle;
+		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle) != 0)
+		{
+			return -1;
+		}
+
+		for (int i = 0; i < 3; i++) target_pos[i] = pos_local[i];
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_GetSteeringTargetAngle(int object_id, float lookahead_distance, float * angle_f)
+	{
+		double pos_local[3], pos_global[3], angle;
+		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle) != 0)
+		{
+			return -1;
+		}
+
+		*angle_f = angle;
+
 		return 0;
 	}
 

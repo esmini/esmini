@@ -540,8 +540,6 @@ bool Viewer::CreateVehicleLineAndPoint(osg::Group* parent)
 
 bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
 {
-
-
 	// Point
 	dm_steering_target_point_data_ = new osg::Vec3Array;
 	dm_steering_target_point_data_->push_back(osg::Vec3d(0, 0, 0));
