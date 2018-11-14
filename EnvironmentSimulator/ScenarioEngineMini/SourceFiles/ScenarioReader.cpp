@@ -573,7 +573,6 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 								else if (targetChild.name() == std::string("Absolute"))
 								{
 									action.speed_->target_->absolute_ = new OSCPrivateAction::SpeedTargetAbsolute();
-
 									action.speed_->target_->absolute_->value = std::stod(ReadAttribute(targetChild.attribute("value")));
 								}
 							}
@@ -699,7 +698,9 @@ void ScenarioReader::parseOSCPrivateAction(OSCPrivateAction &action, pugi::xml_n
 					action.meeting_->relative_->mode = ReadAttribute(meetingChild.attribute("mode"));
 					action.meeting_->relative_->object = ReadAttribute(meetingChild.attribute("object"));
 					action.meeting_->relative_->offsetTime = std::stod(ReadAttribute(meetingChild.attribute("offsetTime")));
-					action.meeting_->relative_->continuous = ReadAttribute(meetingChild.attribute("continuous"));
+					action.meeting_->relative_->continuous = (
+						ReadAttribute(meetingChild.attribute("continuous")) == "true" ||
+						ReadAttribute(meetingChild.attribute("continuous")) == "1");
 
 					parseOSCPosition(action.meeting_->relative_->Position, meetingChild.child("Position"));
 				}

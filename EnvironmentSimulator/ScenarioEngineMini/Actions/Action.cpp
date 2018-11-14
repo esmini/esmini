@@ -87,8 +87,20 @@ void Action::identifyActionType(OSCPrivateAction privateAction)
 		}
 		else if (privateAction.speed_->dynamics_->shape == "step")
 		{
-			this->actionType = "speed-step";
-			this->speedTarget = privateAction.speed_->target_->absolute_->value;
+			if (privateAction.speed_->target_->absolute_)
+			{
+				this->actionType = "speed-step-absolute";
+				this->speedTarget = privateAction.speed_->target_->absolute_->value;
+			}
+			else if (privateAction.speed_->target_->relative_)
+			{
+				this->actionType = "speed-step-relative";
+				this->speedTarget = privateAction.speed_->target_->relative_->value;
+				this->object = privateAction.speed_->target_->relative_->object;
+				this->valueType = privateAction.speed_->target_->relative_->valueType;
+				this->continuous = privateAction.speed_->target_->relative_->continuous;
+				this->valueType = privateAction.speed_->target_->relative_->valueType;
+			}
 		}
 	}
 
@@ -200,7 +212,7 @@ void Action::ExecuteAction(double simulationTime, double timeStep) {
 		executeSpeedRate(simulationTime, timeStep);
 	}
 
-	else if (actionType == "speed-step")
+	else if (actionType == "speed-step-absolute" || actionType == "speed-step-relative")
 	{
 		executeSpeedStep();
 	}
@@ -322,11 +334,27 @@ void Action::executeSpeedStep()
 {
 	for (size_t i = 0; i < actionEntities.size(); i++)
 	{
-		(*carsPtr).setSpeed(actionEntities[i], speedTarget);
+		double targetSpeed = speedTarget;
 		
+		if (actionType == "speed-step-relative")
+		{
+			if (valueType == "delta")
+			{
+				targetSpeed += carsPtr->getCarPtr(object)->getSpeed();
+			}
+			else
+			{
+				LOG("valueType %s not supported yet", valueType);
+			}
+		}
+		else if(actionType == "speed-step-absolute")
+		{
+			actionCompleted = true;
+			startAction = false;
+		}
+		
+		(*carsPtr).setSpeed(actionEntities[i], targetSpeed);		
 	}
-	actionCompleted = true;
-	startAction = false;
 }
 
 void Action::executePositionLane()
@@ -431,7 +459,7 @@ void Action::executeMeeting()
 		}
 		else if (run)
 		{
-			if (continuous == "false")
+			if (continuous == false)
 			{
 				run = false;
 			}

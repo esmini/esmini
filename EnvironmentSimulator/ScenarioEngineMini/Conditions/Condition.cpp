@@ -109,6 +109,11 @@ bool Condition::checkTimeHeadway()
 			}
 		}
 	}
+	else
+	{
+		LOG("TriggeringEntities.rule %s not supported yet", condition.ByEntity.TriggeringEntities.rule);
+	}
+
 	return false;
 }
 

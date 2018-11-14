@@ -30,6 +30,7 @@ private:
 	void executeSinusoidal(double simulationTime);
 	void executeSpeedRate(double simulationTime, double timeStep);
 	void executeSpeedStep();
+	void executeSpeed();
 	void executePositionLane();
 	void executePositionRoute();
 	void executeFollowRoute();
@@ -66,14 +67,15 @@ private:
 	// Speed
 	double speedRate;
 	double speedTarget;
+	std::string valueType;
 
-	// Meeting
+	// Meeting(some attibutes shared with Speed)
 	roadmanager::Position ownTargetPos;
 	roadmanager::Position relativeTargetPos;
 	std::string mode;
 	std::string object;
 	double offsetTime;
-	std::string continuous;
+	bool continuous;
 
 	// Follow Route
 	roadmanager::Route* route;

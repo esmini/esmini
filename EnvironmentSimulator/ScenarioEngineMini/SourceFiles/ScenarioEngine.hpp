@@ -69,6 +69,7 @@ private:
 	double timeStep;
 
 	// 
+	
 	Conditions conditions;
 	Actions actions;
 	ScenarioGateway scenarioGateway;

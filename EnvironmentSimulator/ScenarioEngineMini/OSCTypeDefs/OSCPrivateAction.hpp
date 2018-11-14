@@ -97,7 +97,7 @@ public:
 		std::string mode;
 		std::string object;
 		double offsetTime;
-		std::string continuous;			//Wrong type
+		bool continuous;			//Wrong type
 		OSCPosition Position;
 	} MeetingRelative;
 
