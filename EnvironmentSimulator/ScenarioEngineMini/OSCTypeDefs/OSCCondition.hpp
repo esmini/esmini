@@ -4,88 +4,158 @@
 #include <string>
 #include <vector>
 #include <math.h>
+#include "OSCCommon.hpp"
 #include "CommonMini.hpp"
-
-struct EntityStruct
-{
-	std::string name;
-};
 
 class OSCCondition
 {
 public:
-	struct
+	
+	typedef enum
 	{
-		struct
-		{
-			std::vector<EntityStruct> Entity;
-			std::string rule; // Wrong type
-		} TriggeringEntities;
+		BY_ENTITY,
+		BY_STATE,
+		BY_VALUE
+	} ConditionType;
 
-		struct
-		{
-			struct
-			{
-				std::string entity;
-				std::string value; // Wrong type
-				std::string freespace;  // Wrong type
-				std::string alongRoute;  // Wrong type
-				std::string rule; // Wrong type
-			}TimeHeadway;
-
-		}EntityCondition;
-
-	} ByEntity;
-
-	struct
+	typedef enum
 	{
-		struct {}AtStart;
-		struct 
-		{
-			std::string type; // Wrong type
-			std::string name;
-			std::string rule; // Wrong type
-		}AfterTermination;
-		struct {}Command;
-		struct {}Signal;
-		struct {}Controller;
-	} ByState;	
+		RISING,
+		FALLING,
+		ANY,
+		UNDEFINED
+	} ConditionEdge;
 
-	struct
-	{
-		struct {}Parameter;
-		struct {}TimeOfDay;
-		struct {
-			double value;
-			std::string rule; //Wrong type
-		} SimulationTime;
+	ConditionType base_type_;
+	std::string name_;
+	double delay_;
+	ConditionEdge edge_; 
 
-	} ByValue;
-
-	std::string name;
-	double delay;
-	std::string edge; //Wrong type;
-
-	void printOSCCondition()
-	{
-		LOG("\tname = %s", name.c_str());
-		LOG("\tdelay = %.2f", delay);
-		LOG("\tedge = %s", edge.c_str());
-		LOG("\t- TriggeringEntities");
-		LOG("\trule = %s", ByEntity.TriggeringEntities.rule.c_str());
-
-		for (size_t i = 0; i < ByEntity.TriggeringEntities.Entity.size(); i++)
-		{
-			LOG("- ByEntity - TriggeringEntities - Entity");
-			LOG("name = %s", ByEntity.TriggeringEntities.Entity[i].name.c_str());
-		}
-
-		LOG("\t- ByEntity - EntityCondition - TimeHeadway");
-		LOG("\tentity = %s", ByEntity.EntityCondition.TimeHeadway.entity.c_str());
-		LOG("\tvalue = %.2f", ByEntity.EntityCondition.TimeHeadway.value);
-		LOG("\tfreespace = %s", ByEntity.EntityCondition.TimeHeadway.freespace.c_str());
-		LOG("\talongRoute = %s", ByEntity.EntityCondition.TimeHeadway.alongRoute.c_str());
-		LOG("\trule = %s", ByEntity.EntityCondition.TimeHeadway.rule.c_str());
-
-		}
+	OSCCondition(ConditionType base_type) : base_type_(base_type) {}
 };
+
+class TrigByEntity : public OSCCondition
+{
+public:
+	struct Entity
+	{
+		std::string name_;
+	};
+
+	typedef enum
+	{
+		ANY,
+		ALL
+	} TriggeringEntitiesRule;
+
+	struct TriggeringEntities
+	{
+		std::vector<Entity> entity_;
+		TriggeringEntitiesRule rule_;
+	};
+
+	typedef enum
+	{
+		TIME_HEADWAY,
+		// not complete at all
+	} EntityConditionType;
+
+	TriggeringEntitiesRule triggering_entity_rule_;
+	TriggeringEntities triggering_entities_;
+	EntityConditionType type_;
+	
+	TrigByEntity(EntityConditionType type) : OSCCondition(OSCCondition::ConditionType::BY_ENTITY), type_(type) {}
+
+	void Print()
+	{
+		LOG("");
+	}
+};
+
+class TrigByTimeHeadway : public TrigByEntity
+{
+public:
+	std::string entity_name_;
+	double value_;
+	bool freespace_;
+	bool along_route_;
+	Rule rule_;
+
+	TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
+};
+
+class TrigByState : public OSCCondition
+{
+public:
+	typedef enum
+	{
+		AT_START,
+		AFTER_TERMINATION,
+	} Type;
+
+	typedef enum
+	{
+		ACT,
+		SCENE,
+		MANEUVER,
+		EVENT,
+		ACTION,
+		UNDEFINED
+	} StoryElementType;
+
+	Type type_;
+	std::string element_name_;
+
+	TrigByState(Type type) : OSCCondition(BY_STATE), type_(type) {}
+};
+
+class TrigAtStart : public TrigByState
+{
+public:
+	StoryElementType element_type_;
+
+	TrigAtStart() : TrigByState(TrigByState::Type::AT_START) {}
+};
+
+class TrigAfterTermination : public TrigByState
+{
+public:
+	typedef enum
+	{
+		END,
+		CANCEL,
+		ANY,
+		UNDEFINED
+	} AfterTerminationRule;
+
+	AfterTerminationRule rule_;
+	StoryElementType element_type_;
+
+	TrigAfterTermination() : TrigByState(TrigByState::Type::AFTER_TERMINATION) {}
+};
+
+class TrigByValue : public OSCCondition
+{
+public:
+	typedef enum
+	{
+		PARAMETER,
+		TIME_OF_DAY,
+		SIMULATION_TIME,
+		UNDEFINED
+	} Type;
+
+	Type type_;
+	Rule rule_;
+
+	TrigByValue(Type type) : OSCCondition(BY_VALUE), type_(type) {}
+};
+
+class TrigBySimulationTime : public TrigByValue
+{
+public:
+	double value_;
+
+	TrigBySimulationTime() : TrigByValue(TrigByValue::Type::TIME_OF_DAY) {}
+};
+

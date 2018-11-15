@@ -30,7 +30,6 @@ private:
 	void executeSinusoidal(double simulationTime);
 	void executeSpeedRate(double simulationTime, double timeStep);
 	void executeSpeedStep();
-	void executeSpeed();
 	void executePositionLane();
 	void executePositionRoute();
 	void executeFollowRoute();

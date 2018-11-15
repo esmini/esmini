@@ -12,20 +12,15 @@ class Init
 
 public:
 	Init();
-	void printInit();
+	void Print();
 
 	typedef struct 
 	{
-		bool exists;
-		std::vector<OSCPrivateAction> Action;
-		std::string object;
-	} PrivateStruct;
+		std::vector<OSCPrivateAction*> action_;
+		std::string object_;
+	} PrivateInitAction;
 
-
-	struct
-	{
-		std::vector<OSCGlobalAction> GlobalAction;
-		std::vector<OSCUserDefinedAction> UserDefinedAction;
-		std::vector<PrivateStruct> Private;
-	} Actions;
+	std::vector<PrivateInitAction*> private_action_;
+	std::vector<OSCGlobalAction*> global_action_;
+	std::vector<OSCUserDefinedAction*> user_defined_action_;
 };

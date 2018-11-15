@@ -57,7 +57,7 @@ private:
 	Catalogs catalogs;
 	Entities entities;
 	Init init;
-	std::vector<Story> story;
+	std::vector<Story*> story;
 	ScenarioReader scenarioReader;
 	RoadNetwork roadNetwork;
 	roadmanager::OpenDrive *odrManager;
@@ -70,8 +70,8 @@ private:
 
 	// 
 	
-	Conditions conditions;
-	Actions actions;
+	//Conditions conditions;
+	//Actions actions;
 	ScenarioGateway scenarioGateway;
 };
 

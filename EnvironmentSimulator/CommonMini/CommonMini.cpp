@@ -3,7 +3,9 @@
 
 #include "CommonMini.hpp"
 
+#define DEBUG_TRACE
 #define LOG_FILENAME "log.txt"
+
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 
@@ -58,7 +60,13 @@ void Logger::Log(char const* file, char const* func, int line, char const* forma
 	va_start(args, format);
 	vsnprintf(s, 1024, format, args);
 	file_ << file << "/" << line << "/" << func << "(): " << s << "\n";
-	std::cout << s << "\n"; 
+
+#ifdef DEBUG_TRACE
+	std::cout << file << "/" << line << "/" << func << "(): " << s << "\n";
+#else
+	std::cout << s << "\n";
+#endif
+
 	file_.flush();
 	va_end(args);
 }

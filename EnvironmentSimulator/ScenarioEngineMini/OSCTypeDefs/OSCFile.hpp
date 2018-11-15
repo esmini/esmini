@@ -8,11 +8,9 @@ class OSCFile
 public:
 	std::string filepath;
 
-	void printOSCFile()
+	void Print()
 	{
-		LOG(" - OSCFile");
-		LOG("\tfilepath = %s", filepath.c_str());
-		LOG("\n");
+		LOG("file: %s", filepath.c_str());
 	};
 };
 

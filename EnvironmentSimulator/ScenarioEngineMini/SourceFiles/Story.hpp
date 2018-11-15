@@ -11,61 +11,40 @@ class Story
 {
 public:
 	Story();
-	void printStory();
+	void Print();
 
-	struct EntityStruct
+	struct Sequence
 	{
-		std::string name;
+		typedef struct 
+		{
+			std::string entity_;
+			// By condition not supported yet
+		} Actor;
+		std::vector<Actor*> actor_;
+
+		// std::vector<OSCCatalogReference> catalog_reference_;  // not supported yet
+		std::vector<OSCManeuver*> maneuver_;
+
+		int number_of_executions_;
+		std::string name_;
 	};
 
-	struct SequenceStruct
+	struct Act
 	{
-		struct 
-		{
-			std::vector<EntityStruct> Entity;
-
-			struct
-			{
-				std::string actor; // Wrong type
-			}ByCondition;
-
-		}Actors;
-
-		std::vector<OSCCatalogReference> CatalogReference;
-		std::vector<OSCManeuver> Maneuver;
-
-		int numberOfExecutions;
-		std::string name;
-	};
-
-	struct ActStruct
-	{
-		std::vector<SequenceStruct> Sequence;
-		struct
-		{
-			struct
-			{
-				std::vector<OSCConditionGroup> ConditionGroup;
-			}start;
-			struct
-			{
-				std::vector<OSCConditionGroup> ConditionGroup;
-			}End;
-			struct
-			{
-				std::vector<OSCConditionGroup> ConditionGroup;
-			}Cancel;
-		}Conditions;
+		std::vector<Sequence*> sequence_;
+		std::vector<OSCConditionGroup*> start_condition_group_;
+		std::vector<OSCConditionGroup*> end_condition_group_;
+		std::vector<OSCConditionGroup*> cancel_condition_group_;
 		
-		std::string name;
+		std::string name_;
 	};
 
-	std::vector<ActStruct> Act;
-	std::string owner;
-	std::string name;
+	std::vector<Act*> act_;
 
+	std::string owner_;
+	std::string name_;
 
-
+	void Step(double dt);
 };	
 
 

@@ -10,54 +10,27 @@
 #include <string>
 #include <vector>
 
-struct ActionStruct
+class Event
 {
-	OSCGlobalAction Global;
-	OSCUserDefinedAction UserDefined;
-	OSCPrivateAction Private;
+public:
+	std::string name_;
+	std::string priority_; // Wrong type
 
-	std::string name;
-};
-
-struct EventStruct
-{
-	std::string name;
-	std::string priority; // Wrong type
-
-	std::vector<ActionStruct> Action;
+	std::vector<OSCAction*> action_;
 	
-	struct
-	{
-		std::vector<OSCConditionGroup> ConditionGroup;
-	}StartConditions;
-
+	std::vector<OSCConditionGroup*> start_condition_group_;
 };
 
 
 class OSCManeuver
 {
 public:
-	OSCParameterDeclaration ParameterDeclaration;
-	std::vector<EventStruct> Event;
-	std::string name;
+	OSCParameterDeclaration parameter_declaration_;
+	std::vector<Event*> event_;
+	std::string name_;
 
-	void printOSCManeuver()
+	void Print()
 	{
-		LOG("\tname = %s", name.c_str());
-
-		for (size_t i = 0; i < Event.size(); i++)
-		{
-			LOG("\t - Event ");
-			LOG("\tname = %s", Event[i].name.c_str());
-			LOG("\tpriority = %s", Event[i].priority.c_str());
-
-			for (size_t j = 0; j < Event[i].Action.size(); j++)
-			{
-				LOG("\t - Event - Action");
-				LOG("\tname = %s", Event[i].Action[j].name.c_str());
-				LOG("\t - Event - Action - Private");
-				Event[i].Action[j].Private.printOSCPrivateAction();
-			}
-		}
+		LOG("\tname = %s", name_.c_str());
 	};
 };

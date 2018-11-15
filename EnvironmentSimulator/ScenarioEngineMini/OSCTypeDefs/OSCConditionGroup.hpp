@@ -9,16 +9,10 @@
 class OSCConditionGroup
 {
 public:
-	std::vector<OSCCondition> Condition;
+	std::vector<OSCCondition*> condition_;
 
-	void printOSCConditionGroup()
+	void Print()
 	{
 		LOG("\t - ConditionGroup");
-
-		for (size_t i = 0; i < Condition.size(); i++)
-		{
-			LOG("\t - ConditionGroup - Condition");
-			Condition[i].printOSCCondition();
-		}
 	}
 };

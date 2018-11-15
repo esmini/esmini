@@ -5,9 +5,10 @@ RoadNetwork::RoadNetwork()
 {
 }
 
-
-void RoadNetwork::printRoadNetwork()
+void RoadNetwork::Print()
 {
-	Logics.printOSCFile(); 
-	SceneGraph.printOSCFile();
+	LOG("Logics: ");
+	Logics.Print();
+	LOG("SceneGraph: %s");
+	SceneGraph.Print();
 }

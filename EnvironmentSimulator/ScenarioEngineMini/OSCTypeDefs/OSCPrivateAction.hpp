@@ -1,106 +1,53 @@
 #pragma once
 #include "OSCPosition.hpp"
 #include "CommonMini.hpp"
+#include "OSCAction.hpp"
 
 #include <iostream>
 #include <string>
 #include <math.h>
 
-class OSCPrivateAction
+class OSCPrivateAction: public OSCAction
 {
 public:
-	bool exists;
-
-	typedef struct
+	typedef enum 
 	{
-		bool exists;
-		std::string shape; // Wrong type
-		double rate;
-		double time;
-		double distance;
-	} SpeedDynamics;
+		LONG_SPEED,
+		LONG_DISTANCE,
+		LAT_LANE_CHANGE,
+		LAT_LANE_OFFSET,
+		LAT_DISTANCE,
+		VISIBILITY,
+		MEETING_ABSOLUTE,
+		MEETING_RELATIVE,
+		AUTONOMOUS,
+		CONTROLLER,
+		POSITION,
+		ROUTING
+	} Type;
 
-	typedef struct
+	typedef enum
 	{
-		std::string object;
-		double value;
-		std::string valueType; // Wrong type
-		bool continuous;
-	} SpeedTargetRelative;
+		LINEAR,
+		CUBIC,
+		SINUSOIDAL,
+		STEP,
+		UNDEFINED
+	} DynamicsShape;
 
-	typedef struct
+	Type type_;
+
+
+	OSCPrivateAction(OSCPrivateAction::Type type) : OSCAction(OSCAction::BaseType::PRIVATE), type_(type)
 	{
-		double value;
-	} SpeedTargetAbsolute;
+		LOG("");
+	}
 
-	typedef struct
+	virtual void Step(double dt)
 	{
-		SpeedTargetRelative *relative_;
-		SpeedTargetAbsolute *absolute_;
-	} SpeedTarget;
-
-	typedef struct
-	{
-		SpeedDynamics *dynamics_;
-		SpeedTarget *target_;	
-	} Speed;
-
-	typedef struct
-	{
-		std::string object;
-		double value;
-	} LaneRelative;
-
-	typedef struct
-	{
-		double value;
-	} LaneAbsolute;
-
-	typedef struct
-	{
-		double targetLaneOffset;
-
-		struct
-		{
-			double time;
-			double distance;
-			std::string shape; // Wrong type
-		} Dynamics;
-
-		struct
-		{
-			LaneRelative *relative_;
-			LaneAbsolute *absolute_;
-		} Target;
-
-	} LaneChange;
-
-	typedef struct
-	{
-		struct
-		{
-			double maxLateralAcc;
-			double duration;
-			std::string shape; // Wrong type
-		} Dynamics;
-
-		struct
-		{
-			LaneRelative *relative_;
-			LaneAbsolute *absolute_;
-		} Target;
-
-	} LaneOffset;
-
-	typedef struct
-	{
-		std::string mode;
-		std::string object;
-		double offsetTime;
-		bool continuous;			//Wrong type
-		OSCPosition Position;
-	} MeetingRelative;
-
+		LOG("Virtual method. Should be overridden!");
+	}
+#if 0
 	typedef struct
 	{
 		std::string mode;
@@ -115,9 +62,6 @@ public:
 		} FollowRoute;
 	} Routing;
 
-	LaneChange *laneChange_;
-	LaneOffset *laneOffset_;
-	Speed *speed_;
 	Meeting *meeting_;
 	Routing *routing_;
 	OSCPosition *position_;
@@ -128,57 +72,240 @@ public:
 	
 	OSCPrivateAction() 
 	{
-		laneChange_ = 0;
-		laneOffset_ = 0;
-		speed_ = 0;
 		meeting_ = 0;
 		routing_ = 0;
 		position_ = 0;
 	}
+#endif
 
-	void printOSCPrivateAction()
+
+	void print()
 	{
-		if (laneChange_)
-		{
-			LOG("\t - Lateral - Lane Change");
-		}
-		if (laneOffset_)
-		{
-			if (laneOffset_->Target.absolute_)
-			{
-				LOG("\t - Lateral - Lane Offset absolute = %.2f", laneOffset_->Target.absolute_->value);
-			}
-			else
-			{
-				LOG("\t - Lateral - Lane Offset relative %s = %.2f", 
-					laneOffset_->Target.relative_->object.c_str(), laneOffset_->Target.relative_->value);
-			}
-			LOG("\t - Lateral - Lane Offset duration = %.2f shape = %s", 
-				laneOffset_->Dynamics.duration, laneOffset_->Dynamics.shape.c_str());
-		}
-		if (speed_)
-		{
-			if (speed_->target_->absolute_)
-			{
-				LOG("\t - Longitudinal - speed: target absolute = %.2f dynamics.shape = %s dynamice.rate = %.2f",
-					speed_->target_->absolute_->value, speed_->dynamics_->shape.c_str(), speed_->dynamics_->rate);
-			}
-			else
-			{
-				LOG("\t - Longitudinal - speed: target relative %s = %.2f dynamics.shape = %s dynamice.rate = %.2f",
-					speed_->target_->relative_->object.c_str(), speed_->target_->relative_->value, 
-					speed_->dynamics_->shape.c_str(), speed_->dynamics_->rate);
-			}
-		}
-		if (meeting_)
-		{
-			LOG("\t - Longitidubgal - meeting");
-		}
-
-		if (position_)
-		{
-			position_->printOSCPosition();
-		}
+		LOG("Virtual, should be overridden");
 	};
 
+};
+
+class LongSpeedAction: public OSCPrivateAction
+{
+public:
+
+	class Target
+	{
+	public:
+		typedef enum
+		{
+			ABSOLUTE,
+			RELATIVE
+		} Type;
+
+		Type type_;
+		double value_;
+
+		Target(Type type) : type_(type) {}
+	};
+
+	class TargetAbsolute : public Target
+	{
+	public:
+		TargetAbsolute() : Target(Type::RELATIVE) {}
+	};
+
+	class TargetRelative : public Target
+	{
+	public:
+
+		typedef enum
+		{
+			DELTA,
+			FACTOR
+		} ValueType;
+
+		std::string object_;
+		ValueType valueType_;
+		bool continuous_;
+
+		TargetRelative() : Target(Type::RELATIVE) {}
+	};
+
+	struct
+	{
+		bool exists_;
+		DynamicsShape shape_;
+		double rate_;
+		double time_;
+		double distance_;
+	} dynamics_;
+
+	Target *target_;
+
+	LongSpeedAction() : OSCPrivateAction(OSCPrivateAction::Type::LONG_SPEED), target_(0) 
+	{
+	}
+	
+	void Step(double dt)
+	{
+		LOG("Step");
+	}
+
+	void print()
+	{
+		LOG("");
+	};
+};
+
+class LatLaneChangeAction: public OSCPrivateAction
+{
+public:
+	struct
+	{
+		double time_;
+		double distance_;
+		DynamicsShape shape_; 
+	} dynamics_;
+
+	class Target
+	{
+	public:
+		typedef enum
+		{
+			ABSOLUTE,
+			RELATIVE
+		} Type;
+
+		Type type_;
+		double value_;
+
+		Target(Type type) : type_(type) {}
+	};
+
+	class TargetAbsolute : public Target
+	{
+	public:
+		TargetAbsolute() : Target(Target::Type::ABSOLUTE) {}
+	};
+
+	class TargetRelative : public Target
+	{
+	public:
+		std::string object_;
+
+		TargetRelative() : Target(Target::Type::RELATIVE) {}
+	};
+
+	Target *target_;
+	double target_lane_offset_;
+
+	LatLaneChangeAction() : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_CHANGE)
+	{
+		dynamics_.time_ = 0;
+		dynamics_.distance_ = 0;
+		dynamics_.shape_ = DynamicsShape::STEP;
+	}
+	
+	void Step(double dt)
+	{
+		LOG("Step");
+	}
+};
+
+class LatLaneOffsetAction : public OSCPrivateAction
+{
+public:
+	struct
+	{
+		double max_lateral_acc_;
+		double duration_;
+		DynamicsShape shape_; 
+	} dynamics_;
+
+	class Target
+	{
+	public:
+		typedef enum
+		{
+			ABSOLUTE,
+			RELATIVE
+		} Type;
+
+		Type type_;
+		double value_;
+
+		Target(Type type) : type_(type) {}
+	};
+
+	class TargetAbsolute : public Target
+	{
+	public:
+		TargetAbsolute() : Target(Target::Type::ABSOLUTE) {}
+	};
+
+	class TargetRelative : public Target
+	{
+	public:
+		std::string object_;
+
+		TargetRelative() : Target(Target::Type::RELATIVE) {}
+	};
+
+
+	Target *target_;
+
+	LatLaneOffsetAction() : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_OFFSET)
+	{
+		LOG("");
+		dynamics_.max_lateral_acc_ = 0;
+		dynamics_.duration_ = 0;
+		dynamics_.shape_ = DynamicsShape::STEP;
+	}
+
+	void Step(double dt)
+	{
+		LOG("Step");
+	}
+};
+
+class MeetingAbsoluteAction : public OSCPrivateAction
+{
+public:
+	typedef enum
+	{
+		STRAIGHT,
+		ROUTE
+	} MeetingPositionMode;
+
+	MeetingPositionMode mode_;
+	OSCPosition *target_position_;
+	double time_to_destination_;
+
+	MeetingAbsoluteAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_ABSOLUTE) {}
+
+};
+
+class MeetingRelativeAction : public OSCPrivateAction
+{
+public:
+	typedef enum
+	{
+		STRAIGHT,
+		ROUTE
+	} MeetingPositionMode;
+
+	MeetingPositionMode mode_;
+	OSCPosition *target_position_;
+	std::string object_;
+	OSCPosition *object_target_position_;
+	double offsetTime_;
+	bool continuous_;
+
+	MeetingRelativeAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_RELATIVE) {}
+
+};
+
+class PositionAction : public OSCPrivateAction
+{
+public:
+	OSCPosition *position_;
+
+	PositionAction() : OSCPrivateAction(OSCPrivateAction::Type::POSITION) {}
 };
