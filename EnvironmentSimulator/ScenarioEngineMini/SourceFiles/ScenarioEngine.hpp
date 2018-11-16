@@ -3,11 +3,11 @@
 #include "Entities.hpp"
 #include "Init.hpp"
 #include "Story.hpp"
-#include "Conditions.hpp"
-#include "Condition.hpp"
-#include "Actions.hpp"
-#include "Action.hpp"
-#include "Cars.hpp"
+//#include "Conditions.hpp"
+//#include "Condition.hpp"
+//#include "Actions.hpp"
+//#include "Action.hpp"
+//#include "Cars.hpp"
 #include "ScenarioGateway.hpp"
 #include "ScenarioReader.hpp"
 #include "RoadNetwork.hpp"
@@ -22,7 +22,9 @@ class ScenarioEngine
 {
 public:
 
-	Cars cars;
+	Entities entities;
+
+//	Cars cars;
 
 	ScenarioEngine(std::string oscFilename, double startTime);
 	ScenarioEngine() {};
@@ -55,7 +57,6 @@ public:
 private:
 	// OpenSCENARIO parameters
 	Catalogs catalogs;
-	Entities entities;
 	Init init;
 	std::vector<Story*> story;
 	ScenarioReader scenarioReader;

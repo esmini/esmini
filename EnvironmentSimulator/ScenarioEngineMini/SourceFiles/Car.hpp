@@ -17,7 +17,7 @@ public:
 	void setName(std::string objectName);
 	void setPosition(roadmanager::Position position);
 	void setSpeed(double speed);
-	void setObjectStruct(Entities::ObjectStruct objectStruct);
+	void setObjectStruct(Object objectStruct);
 	void setOffset(double offset);
 	void setExtControlled(bool Boolean);
 	void setRoute(roadmanager::Route &route);

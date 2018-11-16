@@ -6,6 +6,10 @@
 #include <math.h>
 #include "OSCCommon.hpp"
 #include "CommonMini.hpp"
+#include "Story.hpp"
+
+// Forward declaration 
+class Act;
 
 class OSCCondition
 {
@@ -32,6 +36,8 @@ public:
 	ConditionEdge edge_; 
 
 	OSCCondition(ConditionType base_type) : base_type_(base_type) {}
+	
+	virtual bool Evaluate(Act *act, double sim_time) = 0;
 };
 
 class TrigByEntity : public OSCCondition
@@ -39,7 +45,7 @@ class TrigByEntity : public OSCCondition
 public:
 	struct Entity
 	{
-		std::string name_;
+		Object *object_;
 	};
 
 	typedef enum
@@ -75,13 +81,15 @@ public:
 class TrigByTimeHeadway : public TrigByEntity
 {
 public:
-	std::string entity_name_;
+	Object *object_;
 	double value_;
 	bool freespace_;
 	bool along_route_;
 	Rule rule_;
 
 	TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
+
+	bool Evaluate(Act *act, double sim_time);
 };
 
 class TrigByState : public OSCCondition
@@ -107,6 +115,8 @@ public:
 	std::string element_name_;
 
 	TrigByState(Type type) : OSCCondition(BY_STATE), type_(type) {}
+
+	bool Evaluate(Act *act, double sim_time);
 };
 
 class TrigAtStart : public TrigByState
@@ -115,6 +125,8 @@ public:
 	StoryElementType element_type_;
 
 	TrigAtStart() : TrigByState(TrigByState::Type::AT_START) {}
+
+	bool Evaluate(Act *act, double sim_time);
 };
 
 class TrigAfterTermination : public TrigByState
@@ -132,6 +144,8 @@ public:
 	StoryElementType element_type_;
 
 	TrigAfterTermination() : TrigByState(TrigByState::Type::AFTER_TERMINATION) {}
+
+	bool Evaluate(Act *act, double sim_time);
 };
 
 class TrigByValue : public OSCCondition
@@ -149,6 +163,8 @@ public:
 	Rule rule_;
 
 	TrigByValue(Type type) : OSCCondition(BY_VALUE), type_(type) {}
+
+	bool Evaluate(Act *act, double sim_time);
 };
 
 class TrigBySimulationTime : public TrigByValue
@@ -157,5 +173,7 @@ public:
 	double value_;
 
 	TrigBySimulationTime() : TrigByValue(TrigByValue::Type::TIME_OF_DAY) {}
+
+	bool Evaluate(Act *act, double sim_time);
 };
 

@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Entities.hpp"
+
+
 class OSCAction
 {
 public:
@@ -11,13 +14,14 @@ public:
 	} BaseType;
 
 	BaseType base_type_;
+	bool active_;
 
-	OSCAction(BaseType type) : base_type_(type)
+	OSCAction(BaseType type) : base_type_(type), active_(false)
 	{
 		LOG("");
 	}
 
-	virtual void Step(double dt)
+	virtual void Step(double dt, Object *object)
 	{
 		LOG("Virutal, should be overridden!");
 	};

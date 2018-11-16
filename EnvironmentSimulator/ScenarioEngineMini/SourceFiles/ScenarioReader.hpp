@@ -35,17 +35,18 @@ public:
 	void parseOSCAxle(OSCAxle &axle, pugi::xml_node axleNode);
 	void parseOSCDriver(OSCDriver &driver, pugi::xml_node driverNode);
 	void parseOSCPersonDescription(OSCPersonDescription &personDescription, pugi::xml_node descriptionNode);
+	Object* ScenarioReader::FindObjectByName(std::string name, Entities *entities);
 
 	// Storyboard - Init
-	void parseInit(Init &init);
-	OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode);
-	void parseOSCPosition(OSCPosition &position, pugi::xml_node positionNode);
+	void parseInit(Init &init, Entities *entities);
+	OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode, Entities *entities);
+	void parseOSCPosition(roadmanager::Position &position, pugi::xml_node positionNode);
 
 	// Storyboard - Story
-	OSCCondition *parseOSCCondition(pugi::xml_node conditionNode);
-	void parseOSCConditionGroup(OSCConditionGroup *conditionGroup, pugi::xml_node conditionGroupNode);
-	void parseStory(std::vector<Story*> &storyVector);
-	void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode);
+	OSCCondition *parseOSCCondition(pugi::xml_node conditionNode, Entities *entities);
+//	void parseOSCConditionGroup(OSCConditionGroup *conditionGroup, pugi::xml_node conditionGroupNode);
+	void parseStory(std::vector<Story*> &storyVector, Entities *entities);
+	void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, Entities *entities);
 
 	// Help functions
 	std::string getParameter(std::string name);

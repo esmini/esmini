@@ -1,10 +1,6 @@
 #include "Action.hpp"
 #include "CommonMini.hpp"
 
-#define SMALL_NUMBER (1E-6)
-#ifndef INFINITY
-  #define INFINITY (~0)
-#endif
 #define DISTANCE_TOLERANCE (0.5)  // meter
 #define IS_ZERO(x) (x < SMALL_NUMBER && x > -SMALL_NUMBER)
 

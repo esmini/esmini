@@ -1,6 +1,7 @@
 #pragma once
 #include "OSCParameterDeclaration.hpp"
 
+#include "roadmanager.hpp"
 #include <iostream>
 #include <string>
 
@@ -14,7 +15,7 @@ public:
 
 	struct WaypointStruct
 	{
-		OSCPosition *Position;	// Note that this is a pointer which is neccessary for the forward declaration.
+		roadmanager::Position *Position;	// Note that this is a pointer which is neccessary for the forward declaration.
 		std::string strategy;
 	};
 

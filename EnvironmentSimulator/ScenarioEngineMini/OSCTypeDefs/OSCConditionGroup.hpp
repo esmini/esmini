@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+// Forward declaration
+class OSCCondition;
 
 class OSCConditionGroup
 {

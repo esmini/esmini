@@ -17,7 +17,7 @@ public:
 	typedef struct 
 	{
 		std::vector<OSCPrivateAction*> action_;
-		std::string object_;
+		Object *object_;
 	} PrivateInitAction;
 
 	std::vector<PrivateInitAction*> private_action_;

@@ -13,12 +13,15 @@
 class Event
 {
 public:
+	bool active;
 	std::string name_;
 	std::string priority_; // Wrong type
 
 	std::vector<OSCAction*> action_;
 	
 	std::vector<OSCConditionGroup*> start_condition_group_;
+
+	Event() : active(false) {}
 };
 
 

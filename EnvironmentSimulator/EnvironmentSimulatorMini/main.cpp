@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
 	// Step scenario engine - zero time - just to reach init state
 	// Report all vehicles initially - to communicate initial position for external vehicles as well
-	scenarioEngine->step(0.0);
+	scenarioEngine->step(0.0, true);
 
 	// Create viewer
 	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), arguments);
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 	ScenarioGateway *scenarioGateway = scenarioEngine->getScenarioGateway();
 
 	//  Create cars for visualization
-	for (int i = 0; i < scenarioEngine->cars.getNum(); i++)
+	for (int i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
 		int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (mt_rand.max)();
 		viewer->AddCar(carModelID);
@@ -100,10 +100,10 @@ int main(int argc, char *argv[])
 		scenarioEngine->step(deltaSimTime);
 
 		// Visualize cars
-		for (int i = 0; i<scenarioEngine->cars.getNum(); i++)
+		for (int i = 0; i<scenarioEngine->entities.object_.size(); i++)
 		{
 			viewer::CarModel *car = viewer->cars_[i];
-			roadmanager::Position pos = scenarioEngine->cars.getPosition(i);
+			roadmanager::Position pos = scenarioEngine->entities.object_[i]->pos_;
 
 			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
 			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());

@@ -5,59 +5,59 @@
 #include "OSCMiscObject.hpp"
 #include "OSCDriver.hpp"
 #include "OSCPedestrianController.hpp"
+#include "roadmanager.hpp"
 
 #include <iostream>
 #include <string>
 #include <vector>
+
+class Object
+{
+public:
+
+	struct Property
+	{
+		std::string name_;
+		std::string value_;
+	};
+
+	std::string name_;
+	bool extern_control_;
+	int id_;
+	roadmanager::Position pos_;
+	double speed_;
+	bool follow_route_;
+
+	OSCCatalogReference CatalogReference;
+	OSCVehicle Vehicle;
+	OSCPedestrian Pedestrian;
+	OSCMiscObject MiscObject;
+
+	std::vector<Property*> properties_;
+
+	struct
+	{
+		OSCCatalogReference CatalogReference;
+		OSCDriver Driver;
+		OSCPedestrianController PedestrianController;
+	} Controller;
+
+	Object() : extern_control_(false), speed_(0), follow_route_(false) {}
+};
 
 class Entities
 {
 
 public:
 
-	Entities();
+	Entities() {}
 
-	void printEntities();
-
-//private:
-	struct propertiesStruct
+	void Print()
 	{
-		struct
-		{
-			std::string name;
-			std::string value;
-		} Property;
-	} Properties;
+		LOG("");
+	}
 
-	struct ObjectStruct
-	{
-		std::string name;
-
-			OSCCatalogReference CatalogReference;
-			OSCVehicle Vehicle;
-			OSCPedestrian Pedestrian;
-			OSCMiscObject MiscObject;
-
-			/*struct
-			{
-				struct
-				{
-					std::string name;
-					std::string value;
-				} Property;
-			} Properties;*/
-
-			std::vector<propertiesStruct> Properties;
-
-			struct
-			{
-				OSCCatalogReference CatalogReference;
-				OSCDriver Driver;
-				OSCPedestrianController PedestrianController;
-			} Controller;
-	};
-
-	std::vector<ObjectStruct> Object;
+	std::vector<Object*> object_;
 
 };
 

@@ -2,6 +2,7 @@
 #include "OSCPosition.hpp"
 #include "CommonMini.hpp"
 #include "OSCAction.hpp"
+#include "Entities.hpp"
 
 #include <iostream>
 #include <string>
@@ -37,16 +38,11 @@ public:
 
 	Type type_;
 
-
 	OSCPrivateAction(OSCPrivateAction::Type type) : OSCAction(OSCAction::BaseType::PRIVATE), type_(type)
 	{
 		LOG("");
 	}
 
-	virtual void Step(double dt)
-	{
-		LOG("Virtual method. Should be overridden!");
-	}
 #if 0
 	typedef struct
 	{
@@ -103,12 +99,18 @@ public:
 		double value_;
 
 		Target(Type type) : type_(type) {}
+		virtual double GetValue() = 0;
 	};
 
 	class TargetAbsolute : public Target
 	{
 	public:
 		TargetAbsolute() : Target(Type::RELATIVE) {}
+
+		double GetValue()
+		{
+			return value_;
+		}
 	};
 
 	class TargetRelative : public Target
@@ -121,11 +123,13 @@ public:
 			FACTOR
 		} ValueType;
 
-		std::string object_;
+		Object *object_;
 		ValueType valueType_;
 		bool continuous_;
 
 		TargetRelative() : Target(Type::RELATIVE) {}
+
+		double GetValue() { return 0; }
 	};
 
 	struct
@@ -143,9 +147,9 @@ public:
 	{
 	}
 	
-	void Step(double dt)
+	void Step(double dt, Object *object)
 	{
-		LOG("Step");
+		object->speed_ = target_->GetValue();
 	}
 
 	void print()
@@ -188,7 +192,7 @@ public:
 	class TargetRelative : public Target
 	{
 	public:
-		std::string object_;
+		Object *object_;
 
 		TargetRelative() : Target(Target::Type::RELATIVE) {}
 	};
@@ -203,9 +207,9 @@ public:
 		dynamics_.shape_ = DynamicsShape::STEP;
 	}
 	
-	void Step(double dt)
+	void Step(double dt, Object *object)
 	{
-		LOG("Step");
+		LOG("Step %s", object->name_.c_str());
 	}
 };
 
@@ -243,7 +247,7 @@ public:
 	class TargetRelative : public Target
 	{
 	public:
-		std::string object_;
+		Object *object_;
 
 		TargetRelative() : Target(Target::Type::RELATIVE) {}
 	};
@@ -259,9 +263,9 @@ public:
 		dynamics_.shape_ = DynamicsShape::STEP;
 	}
 
-	void Step(double dt)
+	void Step(double dt, Object *object)
 	{
-		LOG("Step");
+		LOG("Step %s", object->name_.c_str());
 	}
 };
 
@@ -275,11 +279,15 @@ public:
 	} MeetingPositionMode;
 
 	MeetingPositionMode mode_;
-	OSCPosition *target_position_;
+	roadmanager::Position *target_position_;
 	double time_to_destination_;
 
 	MeetingAbsoluteAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_ABSOLUTE) {}
 
+	void Step(double dt, Object *object)
+	{
+		LOG("Step %s", object->name_.c_str());
+	}
 };
 
 class MeetingRelativeAction : public OSCPrivateAction
@@ -292,20 +300,33 @@ public:
 	} MeetingPositionMode;
 
 	MeetingPositionMode mode_;
-	OSCPosition *target_position_;
-	std::string object_;
-	OSCPosition *object_target_position_;
+	roadmanager::Position *target_position_;
+	Object *object_;
+	roadmanager::Position *object_target_position_;
 	double offsetTime_;
 	bool continuous_;
 
 	MeetingRelativeAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_RELATIVE) {}
 
+	void Step(double dt, Object *object)
+	{
+		LOG("Step %s", object->name_.c_str());
+	}
 };
 
 class PositionAction : public OSCPrivateAction
 {
 public:
-	OSCPosition *position_;
+	roadmanager::Position position_;
 
 	PositionAction() : OSCPrivateAction(OSCPrivateAction::Type::POSITION) {}
+
+	void Step(double dt, Object *object)
+	{
+		object->pos_ = position_;
+		LOG("Step %s pos: ", object->name_.c_str());
+		position_.Print();
+
+		active_ = false;
+	}
 };

@@ -9,7 +9,7 @@ Story::Story()
 
 void Story::Print()
 {
-	LOG("Story: %s", name_);
+	LOG("Story: %s", name_.c_str());
 }
 
 void Story::Step(double dt)
