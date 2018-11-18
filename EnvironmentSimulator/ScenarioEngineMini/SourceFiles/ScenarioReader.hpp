@@ -39,14 +39,14 @@ public:
 
 	// Storyboard - Init
 	void parseInit(Init &init, Entities *entities);
-	OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode, Entities *entities);
+	OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode, Entities *entities, Object *object);
 	void parseOSCPosition(roadmanager::Position &position, pugi::xml_node positionNode);
 
 	// Storyboard - Story
 	OSCCondition *parseOSCCondition(pugi::xml_node conditionNode, Entities *entities);
 //	void parseOSCConditionGroup(OSCConditionGroup *conditionGroup, pugi::xml_node conditionGroupNode);
 	void parseStory(std::vector<Story*> &storyVector, Entities *entities);
-	void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, Entities *entities);
+	void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, Entities *entities, ActSequence *sequence);
 
 	// Help functions
 	std::string getParameter(std::string name);

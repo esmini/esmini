@@ -76,55 +76,59 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		}
 	}
 
+
+	// Kick off initial actions
 	if (initial)
 	{
 		// kick off init actions
 		for (size_t i = 0; i < init.private_action_.size(); i++)
 		{
-			for (size_t j = 0; j < init.private_action_[i]->action_.size(); j++)
-			{
-				init.private_action_[i]->action_[j]->active_ = true;
-			}
+			init.private_action_[i]->Trig();
 		}
 	}
 
 	// Step inital actions
 	for (size_t i = 0; i < init.private_action_.size(); i++)
 	{
-		for (size_t j = 0; j < init.private_action_[i]->action_.size(); j++)
+		if (init.private_action_[i]->state_ == OSCAction::State::ACTIVE)
 		{
-			if (init.private_action_[i]->action_[j]->active_)
-			{
-				//LOG("Stepping action of type %d", init.private_action_[i]->action_[j]->type_)
-				init.private_action_[i]->action_[j]->Step(deltaSimTime, init.private_action_[i]->object_);
-			}
+			//LOG("Stepping action of type %d", init.private_action_[i]->action_[j]->type_)
+			init.private_action_[i]->Step(deltaSimTime);
 		}
 	}
 
+	// Story 
 	for (size_t i=0; i< story.size(); i++)
 	{
 		for (size_t j=0; j < story[i]->act_.size(); j++)
 		{
-			if (!story[i]->act_[j]->active)
+			// Act conditions
+			if (!story[i]->act_[j]->active_)
 			{
 				// Check start conditions
 				for (size_t k = 0; k < story[i]->act_[j]->start_condition_group_.size(); k++)
 				{
 					for (size_t l = 0; l < story[i]->act_[j]->start_condition_group_[k]->condition_.size(); l++)
 					{
-						story[i]->act_[j]->start_condition_group_[k]->condition_[l]->Evaluate(story[i]->act_[j], simulationTime);
+						if (story[i]->act_[j]->start_condition_group_[k]->condition_[l]->Evaluate(story[i]->act_[j], simulationTime))
+						{
+							story[i]->act_[j]->active_ = true;
+						}
 					}
 				}
 			}
 
-			if (story[i]->act_[j]->active)
+			if (story[i]->act_[j]->active_)
 			{
 				// Check end conditions
 				for (size_t k = 0; k < story[i]->act_[j]->end_condition_group_.size(); k++)
 				{
 					for (size_t l = 0; l < story[i]->act_[j]->end_condition_group_[k]->condition_.size(); l++)
 					{
-						story[i]->act_[j]->end_condition_group_[k]->condition_[l]->Evaluate(story[i]->act_[j], simulationTime);
+						if (story[i]->act_[j]->end_condition_group_[k]->condition_[l]->Evaluate(story[i]->act_[j], simulationTime))
+						{
+							story[i]->act_[j]->active_ = false;
+						}
 					}
 				}
 
@@ -133,37 +137,61 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 				{
 					for (size_t l = 0; l < story[i]->act_[j]->cancel_condition_group_[k]->condition_.size(); l++)
 					{
-						story[i]->act_[j]->cancel_condition_group_[k]->condition_[l]->Evaluate(story[i]->act_[j], simulationTime);
+						if (story[i]->act_[j]->cancel_condition_group_[k]->condition_[l]->Evaluate(story[i]->act_[j], simulationTime))
+						{
+							story[i]->act_[j]->active_ = false;
+						}
 					}
 				}
 			}
 
-
-			if (story[i]->act_[j]->active)
+			// Maneuvers
+			if (story[i]->act_[j]->active_)
 			{
 				for (size_t k = 0; k < story[i]->act_[j]->sequence_.size(); k++)
 				{
 					for (size_t l = 0; l < story[i]->act_[j]->sequence_[k]->maneuver_.size(); l++)
 					{
+						// Events
 						for (size_t m = 0; m < story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_.size(); m++)
 						{
 							Event *event = story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[m];
 
-							if (!event->active)
+							if (!event->active_)
 							{
 								// Check event conditions
 								for (size_t n = 0; n < event->start_condition_group_.size(); n++)
 								{
 									for (size_t o = 0; o < event->start_condition_group_[n]->condition_.size(); o++)
 									{
-										event->start_condition_group_[n]->condition_[o]->Evaluate(story[i]->act_[j], simulationTime);
+										if (event->start_condition_group_[n]->condition_[o]->Evaluate(story[i]->act_[j], simulationTime))
+										{
+											event->active_ = true;
+											LOG("event active %s", event->name_.c_str());
+
+											// Start all actions in group
+											for (size_t p = 0; p < event->action_.size(); p++)
+											{
+												event->action_[p]->Trig();
+											}
+										}
 									}
 								}
 							}
 
-							if (event->active)
+							// Update (step) all active actions, for all objects connected to the action
+							if (event->active_)
 							{
-//								LOG("event active %s", event->name_.c_str());
+								for (size_t n = 0; n < event->action_.size(); n++)
+								{
+									if (event->action_[n]->state_ == OSCAction::State::ACTIVE)
+									{
+										for (size_t o = 0; o < story[i]->act_[j]->sequence_[k]->actor_.size(); o++)
+										{
+											event->action_[n]->Step(deltaSimTime);
+										}
+									}
+								}
 							}
 						}
 					}

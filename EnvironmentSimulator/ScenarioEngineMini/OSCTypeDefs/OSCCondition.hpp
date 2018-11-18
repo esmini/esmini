@@ -34,10 +34,12 @@ public:
 	std::string name_;
 	double delay_;
 	ConditionEdge edge_; 
+	bool evaluated_;
 
-	OSCCondition(ConditionType base_type) : base_type_(base_type) {}
+	OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false) {}
 	
 	virtual bool Evaluate(Act *act, double sim_time) = 0;
+	bool CheckEdge(double a, double b, OSCCondition::ConditionEdge edge);
 };
 
 class TrigByEntity : public OSCCondition
@@ -86,6 +88,8 @@ public:
 	bool freespace_;
 	bool along_route_;
 	Rule rule_;
+	double headway_time_last_value_;
+
 
 	TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
 

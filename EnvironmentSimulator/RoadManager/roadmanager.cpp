@@ -1695,6 +1695,7 @@ void Position::Init()
 	p_ = 0.0;
 	r_ = 0.0;
 	h_offset_ = 0.0;
+	h_relative_ = 0.0;
 
 	track_idx_ = 0;
 	geometry_idx_ = 0;
@@ -2074,13 +2075,12 @@ void Position::Track2XYZ()
 	// Consider lateral t position, perpendicular to track heading
 	double x_local = (t_ + road->GetLaneOffset(s_)) * cos(h_ + M_PI_2);
 	double y_local = (t_ + road->GetLaneOffset(s_)) * sin(h_ + M_PI_2);
-	h_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_;
+	h_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_ + h_relative_;
 	x_ += x_local;
 	y_ += y_local;
 
 	// z = Elevation 
 	EvaluateZAndPitch();
-//	r_ = 0;
 }
 
 void Position::Lane2Track()

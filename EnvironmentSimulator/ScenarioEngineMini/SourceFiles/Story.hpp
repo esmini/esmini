@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
-struct Sequence
+struct ActSequence
 {
 	typedef struct
 	{
-		std::string entity_;
+		Object *object_;
 		// By condition not supported yet
 	} Actor;
 
@@ -28,16 +28,16 @@ struct Sequence
 class Act
 {
 public:
-	bool active;
+	bool active_;
 
-	std::vector<Sequence*> sequence_;
+	std::vector<ActSequence*> sequence_;
 	std::vector<OSCConditionGroup*> start_condition_group_;
 	std::vector<OSCConditionGroup*> end_condition_group_;
 	std::vector<OSCConditionGroup*> cancel_condition_group_;
 
 	std::string name_;
 
-	Act() : active(false) {}
+	Act() : active_(false) {}
 };
 
 class Story

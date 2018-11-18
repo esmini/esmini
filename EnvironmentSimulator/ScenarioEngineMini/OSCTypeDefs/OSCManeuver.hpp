@@ -13,7 +13,7 @@
 class Event
 {
 public:
-	bool active;
+	bool active_;
 	std::string name_;
 	std::string priority_; // Wrong type
 
@@ -21,7 +21,7 @@ public:
 	
 	std::vector<OSCConditionGroup*> start_condition_group_;
 
-	Event() : active(false) {}
+	Event() : active_(false) {}
 };
 
 

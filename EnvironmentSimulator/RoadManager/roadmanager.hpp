@@ -626,6 +626,10 @@ namespace roadmanager
 		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
 		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
+		void SetHeadingRelative(double heading) 
+		{ 
+			h_relative_ = heading; 
+		}  // Sets heading indepnedently 
 		void XYH2TrackPos(double x, double y, double h, bool evaluateZAndPitch = true);
 		int MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_remains, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 		
@@ -747,6 +751,7 @@ namespace roadmanager
 		int     lane_id_;		// lane reference
 		double  offset_;		// lateral position relative lane given by lane_id
 		double  h_offset_;		// local heading offset given by lane width and offset
+		double  h_relative_;	// heading relative road heading, e.g. for vehicle heading use
 
 		// inertial reference
 		double	x_;

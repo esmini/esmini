@@ -25,6 +25,7 @@ public:
 	bool extern_control_;
 	int id_;
 	roadmanager::Position pos_;
+	double heading_; 
 	double speed_;
 	bool follow_route_;
 
@@ -42,7 +43,7 @@ public:
 		OSCPedestrianController PedestrianController;
 	} Controller;
 
-	Object() : extern_control_(false), speed_(0), follow_route_(false) {}
+	Object() : id_(0), extern_control_(false), speed_(0), follow_route_(false) {}
 };
 
 class Entities

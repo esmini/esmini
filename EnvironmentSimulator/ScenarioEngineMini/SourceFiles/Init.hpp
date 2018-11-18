@@ -14,13 +14,7 @@ public:
 	Init();
 	void Print();
 
-	typedef struct 
-	{
-		std::vector<OSCPrivateAction*> action_;
-		Object *object_;
-	} PrivateInitAction;
-
-	std::vector<PrivateInitAction*> private_action_;
+	std::vector<OSCPrivateAction*> private_action_;
 	std::vector<OSCGlobalAction*> global_action_;
 	std::vector<OSCUserDefinedAction*> user_defined_action_;
 };

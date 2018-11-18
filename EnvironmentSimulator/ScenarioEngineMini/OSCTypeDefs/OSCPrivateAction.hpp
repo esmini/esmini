@@ -36,7 +36,18 @@ public:
 		UNDEFINED
 	} DynamicsShape;
 
+	class TransitionDynamics
+	{
+	public:
+		DynamicsShape shape_;
+
+		double Evaluate(double factor, double start_value, double end_value);  // 0 = start_value, 1 = end_value
+
+		TransitionDynamics() : shape_(DynamicsShape::STEP) {}
+	};
+
 	Type type_;
+	Object *object_;
 
 	OSCPrivateAction(OSCPrivateAction::Type type) : OSCAction(OSCAction::BaseType::PRIVATE), type_(type)
 	{
@@ -86,6 +97,20 @@ class LongSpeedAction: public OSCPrivateAction
 {
 public:
 
+	typedef enum
+	{
+		RATE,
+		TIME,
+		DISTANCE
+	} Timing;
+
+	struct
+	{
+		Timing timing_type_;
+		double timing_target_value_;
+		TransitionDynamics transition_;
+	} dynamics_;
+
 	class Target
 	{
 	public:
@@ -132,40 +157,44 @@ public:
 		double GetValue() { return 0; }
 	};
 
-	struct
-	{
-		bool exists_;
-		DynamicsShape shape_;
-		double rate_;
-		double time_;
-		double distance_;
-	} dynamics_;
-
 	Target *target_;
+	double start_speed_;
+	double elapsed_;
 
 	LongSpeedAction() : OSCPrivateAction(OSCPrivateAction::Type::LONG_SPEED), target_(0) 
 	{
+		dynamics_.timing_type_ = Timing::TIME;  // Make default
+		dynamics_.timing_target_value_ = 0.0;
+		elapsed_ = 0;
 	}
 	
-	void Step(double dt, Object *object)
+	void Trig()
 	{
-		object->speed_ = target_->GetValue();
+		OSCAction::Trig();
 	}
+
+	void Step(double dt);
 
 	void print()
 	{
 		LOG("");
-	};
+	}
 };
 
 class LatLaneChangeAction: public OSCPrivateAction
 {
 public:
+	typedef enum
+	{
+		TIME,
+		DISTANCE
+	} Timing;
+
 	struct
 	{
-		double time_;
-		double distance_;
-		DynamicsShape shape_; 
+		Timing timing_type_;
+		double timing_target_value_;
+		TransitionDynamics transition_; 
 	} dynamics_;
 
 	class Target
@@ -199,18 +228,23 @@ public:
 
 	Target *target_;
 	double target_lane_offset_;
+	double start_lane_offset_;
+	double elapsed_;
 
 	LatLaneChangeAction() : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_CHANGE)
 	{
-		dynamics_.time_ = 0;
-		dynamics_.distance_ = 0;
-		dynamics_.shape_ = DynamicsShape::STEP;
+		dynamics_.timing_type_ = Timing::TIME;  // Make default
+		dynamics_.timing_target_value_ = 0.0; 
+		elapsed_ = 0;
 	}
 	
-	void Step(double dt, Object *object)
+	void Step(double dt);
+
+	void Trig()
 	{
-		LOG("Step %s", object->name_.c_str());
+		OSCAction::Trig();
 	}
+
 };
 
 class LatLaneOffsetAction : public OSCPrivateAction
@@ -220,7 +254,7 @@ public:
 	{
 		double max_lateral_acc_;
 		double duration_;
-		DynamicsShape shape_; 
+		TransitionDynamics transition_;
 	} dynamics_;
 
 	class Target
@@ -254,19 +288,19 @@ public:
 
 
 	Target *target_;
+	double elapsed_;
+	double start_lane_offset_;
 
 	LatLaneOffsetAction() : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_OFFSET)
 	{
 		LOG("");
 		dynamics_.max_lateral_acc_ = 0;
 		dynamics_.duration_ = 0;
-		dynamics_.shape_ = DynamicsShape::STEP;
+		elapsed_ = 0;
 	}
 
-	void Step(double dt, Object *object)
-	{
-		LOG("Step %s", object->name_.c_str());
-	}
+	void Trig();
+	void Step(double dt);
 };
 
 class MeetingAbsoluteAction : public OSCPrivateAction
@@ -284,9 +318,14 @@ public:
 
 	MeetingAbsoluteAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_ABSOLUTE) {}
 
-	void Step(double dt, Object *object)
+	void Step(double dt)
 	{
-		LOG("Step %s", object->name_.c_str());
+		LOG("Step %s", object_->name_.c_str());
+	}
+
+	void Trig()
+	{
+		OSCAction::Trig();
 	}
 };
 
@@ -308,9 +347,14 @@ public:
 
 	MeetingRelativeAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_RELATIVE) {}
 
-	void Step(double dt, Object *object)
+	void Step(double dt)
 	{
-		LOG("Step %s", object->name_.c_str());
+		LOG("Step %s", object_->name_.c_str());
+	}
+
+	void Trig()
+	{
+		OSCAction::Trig();
 	}
 };
 
@@ -321,12 +365,17 @@ public:
 
 	PositionAction() : OSCPrivateAction(OSCPrivateAction::Type::POSITION) {}
 
-	void Step(double dt, Object *object)
+	void Step(double dt)
 	{
-		object->pos_ = position_;
-		LOG("Step %s pos: ", object->name_.c_str());
+		object_->pos_ = position_;
+		LOG("Step %s pos: ", object_->name_.c_str());
 		position_.Print();
 
-		active_ = false;
+		state_ = State::DONE;
+	}
+
+	void Trig()
+	{
+		OSCAction::Trig();
 	}
 };
