@@ -175,6 +175,7 @@ bool TrigByTimeHeadway::Evaluate(Act *act, double sim_time)
 		}
 	}
 
+//	LOG("Trig? %s hwt: %.2f %s %.2f, %s (dist: %.2f)", name_.c_str(), hwt, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str(), rel_dist);
 	if (trig)
 	{
 		LOG("Trigged %s hwt: %.2f %s %.2f, %s", name_.c_str(), hwt, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());

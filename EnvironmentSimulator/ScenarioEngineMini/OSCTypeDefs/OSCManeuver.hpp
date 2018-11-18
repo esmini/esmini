@@ -1,4 +1,5 @@
 #pragma once
+
 #include "OSCGlobalAction.hpp"
 #include "OSCUserDefinedAction.hpp"
 #include "OSCPrivateAction.hpp"
@@ -10,20 +11,40 @@
 #include <string>
 #include <vector>
 
+
 class Event
 {
 public:
-	bool active_;
+
+	typedef enum
+	{
+		OVERWRITE,
+		FOLLOWING,
+		SKIP
+	} Priority;
+
+	typedef enum
+	{
+		NOT_TRIGGED,
+		ACTIVE,
+		DONE,
+		WAITING,  // Following
+		SKIPPED,
+		CANCELLED
+	} State;
+
+	State state_;
 	std::string name_;
-	std::string priority_; // Wrong type
+	Priority priority_; 
 
 	std::vector<OSCAction*> action_;
 	
 	std::vector<OSCConditionGroup*> start_condition_group_;
 
-	Event() : active_(false) {}
-};
+	Event() : state_(State::NOT_TRIGGED) {}
 
+	void Activate();
+};
 
 class OSCManeuver
 {
@@ -37,3 +58,4 @@ public:
 		LOG("\tname = %s", name_.c_str());
 	};
 };
+

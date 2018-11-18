@@ -6,7 +6,7 @@
 #include <math.h>
 #include "OSCCommon.hpp"
 #include "CommonMini.hpp"
-#include "Story.hpp"
+#include "Entities.hpp"
 
 // Forward declaration 
 class Act;

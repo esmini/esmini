@@ -152,12 +152,43 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 				{
 					for (size_t l = 0; l < story[i]->act_[j]->sequence_[k]->maneuver_.size(); l++)
 					{
-						// Events
+						// Events - may only execute, at most, one at a time
+						int active_event_id = -1;
+						int waiting_event_id = -1;
 						for (size_t m = 0; m < story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_.size(); m++)
 						{
 							Event *event = story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[m];
 
-							if (!event->active_)
+							if (event->state_ == Event::State::ACTIVE)
+							{
+								if (active_event_id != -1)
+								{
+									LOG("Error: only one event, within a maneuver, may be active at a time");
+								}
+								active_event_id = (int)m;
+							}
+							else if (event->state_ == Event::State::WAITING)
+							{
+								waiting_event_id = (int)m;
+							}
+						}
+						if (active_event_id == -1)
+						{
+							if (waiting_event_id != -1)
+							{
+								Event *event = story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[waiting_event_id];
+								// OK to trig waiting event
+								event->Activate();
+								LOG("Activated waiting event %s", event->name_.c_str());
+							}
+						}
+
+
+						for (size_t m = 0; m < story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_.size(); m++)
+						{
+							Event *event = story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[m];
+							
+							if (event->state_ == Event::State::NOT_TRIGGED)
 							{
 								// Check event conditions
 								for (size_t n = 0; n < event->start_condition_group_.size(); n++)
@@ -166,13 +197,43 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 									{
 										if (event->start_condition_group_[n]->condition_[o]->Evaluate(story[i]->act_[j], simulationTime))
 										{
-											event->active_ = true;
-											LOG("event active %s", event->name_.c_str());
-
-											// Start all actions in group
-											for (size_t p = 0; p < event->action_.size(); p++)
+											// Check priority
+											if (event->priority_ == Event::Priority::OVERWRITE)
 											{
-												event->action_[p]->Trig();
+												// Deactivate any currently active event
+												if (active_event_id >= 0)
+												{
+													story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[active_event_id]->state_ = Event::State::CANCELLED;
+													LOG("Event %s cancelled", story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[active_event_id]->name_.c_str());
+												}
+
+												// Activate trigged event
+												event->Activate();
+												LOG("Event %s activated", event->name_.c_str());
+											}
+											else if (event->priority_ == Event::Priority::FOLLOWING)
+											{
+												// Tag event as waiting
+												if (active_event_id >= 0)
+												{
+													event->state_ = Event::State::WAITING;
+													LOG("Event %s is running, trigged event %s is waiting",
+														story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[active_event_id]->name_.c_str(),
+														event->name_.c_str());
+												}
+												else
+												{
+													event->Activate();
+													LOG("No active event, event %s activated immediatelly", event->name_.c_str());
+												}
+											}
+											else if(event->priority_ == Event::Priority::SKIP)
+											{
+												LOG("Event %s is running, skipping trigged %s", story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[m]->name_.c_str(), event->name_.c_str());
+											}
+											else
+											{
+												LOG("Unknown event priority: %d", event->priority_);
 											}
 										}
 									}
@@ -180,8 +241,9 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 							}
 
 							// Update (step) all active actions, for all objects connected to the action
-							if (event->active_)
+							if (event->state_ == Event::State::ACTIVE)
 							{
+								bool active = false;
 								for (size_t n = 0; n < event->action_.size(); n++)
 								{
 									if (event->action_[n]->state_ == OSCAction::State::ACTIVE)
@@ -190,7 +252,14 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 										{
 											event->action_[n]->Step(deltaSimTime);
 										}
+										active = active || (event->action_[n]->state_ == OSCAction::State::ACTIVE);
 									}
+								}
+								if (!active)
+								{
+									// Actions done -> Set event done
+									event->state_ = Event::State::DONE;
+									LOG("Event %s done", event->name_.c_str());
 								}
 							}
 						}

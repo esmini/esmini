@@ -5,6 +5,9 @@
 
 #include "OSCPrivateAction.hpp"
 
+#define SIGN(x) (x < 0 ? -1 : 1)
+
+
 
 double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double start_value, double end_value)
 {
@@ -39,22 +42,51 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 	return end_value;
 }
 
+void LatLaneChangeAction::Trig()
+{
+	OSCAction::Trig();
+	if (target_->ABSOLUTE)
+	{
+		target_lane_id_ = target_->value_;
+	}
+	else if (target_->RELATIVE)
+	{
+		target_lane_id_ = ((TargetRelative*)target_)->object_->pos_.GetLaneId() + target_->value_;
+	}
+	start_t_ = object_->pos_.GetT();
+}
+
 void LatLaneChangeAction::Step(double dt)
 {
-	double lane_offset;
+	double target_t;
+	double t, t_old;
+	double factor;
+
+	target_t =
+		SIGN(target_lane_id_) *
+		object_->pos_.GetOpenDrive()->GetRoadById(object_->pos_.GetTrackId())->GetCenterOffset(object_->pos_.GetS(), target_lane_id_) +
+		target_lane_offset_;
+
 	if (dynamics_.timing_type_ == Timing::TIME)
 	{
 		elapsed_ += dt;
-		lane_offset = dynamics_.transition_.Evaluate(elapsed_ / dynamics_.timing_target_value_, 0, dynamics_.timing_target_value_);
+		factor = elapsed_ / dynamics_.timing_target_value_;
+		t_old = object_->pos_.GetT();
+
+		t = dynamics_.transition_.Evaluate(factor, start_t_, target_t);
+		
+		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
+		object_->pos_.SetHeadingRelative(atan((t - t_old) / (object_->speed_ * dt)));
+
+		if (factor > 1.0)
+		{
+			state_ = OSCAction::State::DONE;
+		}
 	}
 	else
 	{
 		LOG("Timing type %d not supported yet", dynamics_.timing_type_);
 	}
-
-	LOG("Step %s elapsed: %.2f target: %.2f current: %.2f", object_->name_.c_str(),
-		elapsed_, dynamics_.timing_target_value_, lane_offset);
-
 }
 
 void LatLaneOffsetAction::Trig()

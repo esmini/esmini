@@ -207,7 +207,7 @@ public:
 		} Type;
 
 		Type type_;
-		double value_;
+		int value_;
 
 		Target(Type type) : type_(type) {}
 	};
@@ -227,8 +227,9 @@ public:
 	};
 
 	Target *target_;
+	double start_t_;
 	double target_lane_offset_;
-	double start_lane_offset_;
+	int target_lane_id_;
 	double elapsed_;
 
 	LatLaneChangeAction() : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_CHANGE)
@@ -240,10 +241,7 @@ public:
 	
 	void Step(double dt);
 
-	void Trig()
-	{
-		OSCAction::Trig();
-	}
+	void Trig();
 
 };
 

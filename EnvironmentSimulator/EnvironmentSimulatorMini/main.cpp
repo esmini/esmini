@@ -10,8 +10,7 @@
 
 double deltaSimTime;
 
-static const double stepSize = 0.01;
-static const double maxStepSize = 0.01;
+static const double maxStepSize = 1.0;
 static const double minStepSize = 0.001;
 static const bool freerun = true;
 static std::mt19937 mt_rand;

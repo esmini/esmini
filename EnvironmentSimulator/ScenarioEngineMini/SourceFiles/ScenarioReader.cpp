@@ -674,14 +674,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									LatLaneChangeAction::TargetRelative *target_rel = new LatLaneChangeAction::TargetRelative;
 
 									target_rel->object_ = FindObjectByName(ReadAttribute(targetChild.attribute("object")), entities);
-									target_rel->value_ = std::stod(ReadAttribute(targetChild.attribute("value")));
+									target_rel->value_ = std::stoi(ReadAttribute(targetChild.attribute("value")));
 									target = target_rel;
 								}
 								else if (targetChild.name() == std::string("Absolute"))
 								{
 									LatLaneChangeAction::TargetAbsolute *target_abs = new LatLaneChangeAction::TargetAbsolute;
 
-									target_abs->value_ = std::stod(ReadAttribute(targetChild.attribute("value")));
+									target_abs->value_ = std::stoi(ReadAttribute(targetChild.attribute("value")));
 									target = target_abs;
 								}
 							}
@@ -1140,7 +1140,23 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 			Event *event = new Event;
 
 			event->name_ = ReadAttribute(maneuverChild.attribute("name"));
-			event->priority_ = ReadAttribute(maneuverChild.attribute("priority"));
+			std::string prio = ReadAttribute(maneuverChild.attribute("priority"));
+			if (prio == "overwrite")
+			{
+				event->priority_ = Event::Priority::OVERWRITE;
+			}
+			else if (prio == "following")
+			{
+				event->priority_ = Event::Priority::FOLLOWING;
+			}
+			else if (prio == "skip")
+			{
+				event->priority_ = Event::Priority::SKIP;
+			}
+			else
+			{
+				LOG("Invalid priority: %s", prio.c_str());
+			}
 
 			for (pugi::xml_node eventChild = maneuverChild.first_child(); eventChild; eventChild = eventChild.next_sibling())
 			{
