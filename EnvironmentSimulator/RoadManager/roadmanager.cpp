@@ -1686,6 +1686,7 @@ void Position::Init()
 	track_id_ = 0;
 	lane_id_ = 0;
 	s_ = 0.0;
+	s_route_ = 0.0;
 	t_ = 0.0;
 	offset_ = 0.0;
 	x_ = 0.0;
@@ -1702,6 +1703,7 @@ void Position::Init()
 	lane_section_idx_ = 0;
 	lane_idx_ = 0;
 	elevation_idx_ = 0;
+	route_ = 0;
 }
 
 Position::Position()

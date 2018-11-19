@@ -1,10 +1,14 @@
 #pragma once
+
 #include <iostream>
 #include <string>
 
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "CommonMini.hpp"
+
 
 struct ParameterStruct
 {

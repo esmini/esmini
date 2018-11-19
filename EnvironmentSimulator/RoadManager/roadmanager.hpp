@@ -598,10 +598,6 @@ namespace roadmanager
 		Junction* GetJunctionByIdx(int idx);
 		int GetNumOfJunctions() { return (int)junction_.size(); }
 		bool IsConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id = 0, int lane2_id = 0);
-#if 0
-		int GetNumberOfJunctionConnections(Road *road, int laneId);
-		LaneRoadLaneConnection GetJunctionConnection(Road *road, int laneId, int idx);	
-#endif
 
 		void Print();
 	
@@ -645,13 +641,6 @@ namespace roadmanager
 		@return Non zero return value indicates error of some kind
 		*/
 		int SetRoutePosition(Position *position);
-
-		/**
-		Retrieve a copy of the current position along the route.
-		@param position A pointer to a valid position object
-		@return Non zero return value indicates error of some kind
-		*/
-		int GetRoutePosition(Position *position);
 
 		/**
 		Retrieve the S-value of the current route position. Note: This is the S along the

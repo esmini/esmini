@@ -30,11 +30,6 @@ public:
 	// Enitites
 	void parseEntities(Entities &entities);
 	void parseOSCCatalogReference(OSCCatalogReference &catalogReference, pugi::xml_node catalogReferenceNode);
-	void parseOSCVehicle(OSCVehicle &vehicle, pugi::xml_node vehicleNode);
-	void parseOSCBoundingBox(OSCBoundingBox &boundingBox, pugi::xml_node boundingBoxNode);
-	void parseOSCAxle(OSCAxle &axle, pugi::xml_node axleNode);
-	void parseOSCDriver(OSCDriver &driver, pugi::xml_node driverNode);
-	void parseOSCPersonDescription(OSCPersonDescription &personDescription, pugi::xml_node descriptionNode);
 	Object* ScenarioReader::FindObjectByName(std::string name, Entities *entities);
 
 	// Storyboard - Init

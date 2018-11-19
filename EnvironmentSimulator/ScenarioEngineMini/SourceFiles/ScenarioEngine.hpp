@@ -1,22 +1,19 @@
 #pragma once
-#include "Catalogs.hpp"
-#include "Entities.hpp"
-#include "Init.hpp"
-#include "Story.hpp"
-//#include "Conditions.hpp"
-//#include "Condition.hpp"
-//#include "Actions.hpp"
-//#include "Action.hpp"
-//#include "Cars.hpp"
-#include "ScenarioGateway.hpp"
-#include "ScenarioReader.hpp"
-#include "RoadNetwork.hpp"
-
 
 #include <iostream>
 #include <string>
 #include <vector>
 #include <math.h>
+
+#include "Catalogs.hpp"
+#include "Entities.hpp"
+#include "Init.hpp"
+#include "Story.hpp"
+#include "ScenarioGateway.hpp"
+#include "ScenarioReader.hpp"
+#include "RoadNetwork.hpp"
+
+
 
 class ScenarioEngine
 {

@@ -35,7 +35,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 
 	// Print loaded data
 	entities.Print();
-	init.Print();
+//	init.Print();
 	for (size_t i = 0; i < story.size(); i++)
 	{
 		story[i]->Print();

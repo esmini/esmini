@@ -1,8 +1,8 @@
 #pragma once
-//#include "OSCPosition.hpp"
-#include "CommonMini.hpp"
+
 #include "OSCAction.hpp"
 #include "Entities.hpp"
+#include "CommonMini.hpp"
 
 #include <iostream>
 #include <string>
