@@ -8,6 +8,9 @@
 #include <string>
 #include <math.h>
 
+#define DISTANCE_TOLERANCE (0.5)  // meter
+#define IS_ZERO(x) (x < SMALL_NUMBER && x > -SMALL_NUMBER)
+
 class OSCPrivateAction: public OSCAction
 {
 public:
@@ -337,18 +340,17 @@ public:
 	} MeetingPositionMode;
 
 	MeetingPositionMode mode_;
-	roadmanager::Position *target_position_;
-	Object *object_;
-	roadmanager::Position *object_target_position_;
+	roadmanager::Position *own_target_position_;
+
+	Object *relative_object_;
+	roadmanager::Position *relative_target_position_;
+
 	double offsetTime_;
 	bool continuous_;
 
 	MeetingRelativeAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_RELATIVE) {}
 
-	void Step(double dt)
-	{
-//		LOG("Step %s", object_->name_.c_str());
-	}
+	void Step(double dt);
 
 	void Trig()
 	{
@@ -387,9 +389,6 @@ public:
 
 	void Step(double dt)
 	{
-		LOG("Step %s ", object_->name_.c_str());
-
-//		state_ = State::DONE;
 	}
 
 	void Trig()

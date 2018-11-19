@@ -769,53 +769,59 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		}
 		else if (actionChild.name() == std::string("Meeting"))
 		{
-			for (pugi::xml_node meetingChild = actionChild.first_child(); meetingChild; meetingChild = meetingChild.next_sibling())
+			roadmanager::Position *pos = new roadmanager::Position;
+
+			pugi::xml_node pos_child = actionChild.child("Position");
+			if (pos_child)
 			{
-				roadmanager::Position *pos = new roadmanager::Position;
-				if (meetingChild.name() == std::string("Position"))
+				parseOSCPosition(*pos, pos_child, catalogs);
+			}
+
+			pugi::xml_node rel_child = actionChild.child("Relative");
+			if (rel_child)
+			{
+				MeetingRelativeAction *meeting_rel = new MeetingRelativeAction;
+
+				meeting_rel->own_target_position_ = pos;
+
+				std::string mode = ReadAttribute(rel_child.attribute("mode"));
+				if (mode == "straight")
 				{
-					parseOSCPosition(*pos, meetingChild, catalogs);
+					meeting_rel->mode_ = MeetingRelativeAction::MeetingPositionMode::STRAIGHT;
 				}
-				else if (meetingChild.name() == std::string("Relative"))
+				else if (mode == "route")
 				{
-					MeetingRelativeAction *meeting_rel = new MeetingRelativeAction;
-					meeting_rel->target_position_ = pos;
-
-					std::string mode = ReadAttribute(meetingChild.attribute("mode"));
-					if (mode == "straight")
-					{
-						meeting_rel->mode_ = MeetingRelativeAction::MeetingPositionMode::STRAIGHT;
-					}
-					else if (mode == "route")
-					{
-						meeting_rel->mode_ = MeetingRelativeAction::MeetingPositionMode::ROUTE;
-					}
-					else
-					{
-						LOG("mode %s invalid", mode);
-					}
-
-					meeting_rel->object_ = FindObjectByName(ReadAttribute(meetingChild.attribute("object")), entities);
-					meeting_rel->continuous_ = (
-						ReadAttribute(meetingChild.attribute("continuous")) == "true" ||
-						ReadAttribute(meetingChild.attribute("continuous")) == "1");
-					meeting_rel->offsetTime_ = std::stod(ReadAttribute(meetingChild.attribute("offsetTime")));
-
-					roadmanager::Position *pos_object = new roadmanager::Position;
-					pugi::xml_node pos_node = meetingChild.child("Position");
-					if (pos_node != NULL)
-					{
-						parseOSCPosition(*pos_object, pos_node, catalogs);
-					}
-					meeting_rel->object_target_position_ = pos_object;
-
-					action = meeting_rel;
+					meeting_rel->mode_ = MeetingRelativeAction::MeetingPositionMode::ROUTE;
 				}
-				else if (meetingChild.name() == std::string("Absolute"))
+				else
+				{
+					LOG("mode %s invalid", mode);
+				}
+
+				meeting_rel->relative_object_ = FindObjectByName(ReadAttribute(rel_child.attribute("object")), entities);
+				meeting_rel->continuous_ = (
+					ReadAttribute(rel_child.attribute("continuous")) == "true" ||
+					ReadAttribute(rel_child.attribute("continuous")) == "1");
+				meeting_rel->offsetTime_ = std::stod(ReadAttribute(rel_child.attribute("offsetTime")));
+
+				roadmanager::Position *pos_relative_object = new roadmanager::Position;
+				pugi::xml_node pos_node = rel_child.child("Position");
+				if (pos_node != NULL)
+				{
+					parseOSCPosition(*pos_relative_object, pos_node, catalogs);
+				}
+				meeting_rel->relative_target_position_ = pos_relative_object;
+
+				action = meeting_rel;
+			} 
+			else
+			{
+				pugi::xml_node abs_child = actionChild.child("Absolute");
+				if (abs_child)
 				{
 					MeetingAbsoluteAction *meeting_abs = new MeetingAbsoluteAction;
 					meeting_abs->target_position_ = pos;
-					meeting_abs->time_to_destination_ = std::stod(ReadAttribute(meetingChild.attribute("TimeToDestination")));
+					meeting_abs->time_to_destination_ = std::stod(ReadAttribute(abs_child.attribute("TimeToDestination")));
 
 					action = meeting_abs;
 				}

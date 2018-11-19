@@ -8,7 +8,6 @@
 #define SIGN(x) (x < 0 ? -1 : 1)
 
 
-
 double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double start_value, double end_value)
 {
 	if (factor > 1.0)
@@ -167,4 +166,25 @@ void LongSpeedAction::Step(double dt)
 	}
 
 	object_->speed_ = new_speed;
+}
+
+void MeetingRelativeAction::Step(double dt)
+{
+	// Calculate straight distance, not along road/route. To be improved.
+	double pivotDist = object_->pos_.getRelativeDistance(*own_target_position_);
+	double relativeDist = relative_object_->pos_.getRelativeDistance(*relative_target_position_);
+
+	double targetTimeToDest = INFINITY;
+
+	if (relative_object_->speed_ > SMALL_NUMBER)
+	{
+		targetTimeToDest = relativeDist / relative_object_->speed_;
+	}
+
+	object_->speed_ = pivotDist / (targetTimeToDest + offsetTime_);
+
+	if (relativeDist < DISTANCE_TOLERANCE)
+	{
+		state_ = State::DONE;
+	}
 }
