@@ -25,7 +25,7 @@ public:
 
 	// Catalogs
 	void parseCatalogs(Catalogs &catalogs);
-	void parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode);
+	roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode, Catalogs *catalogs);
 
 	// Enitites
 	void parseEntities(Entities &entities);
@@ -38,15 +38,15 @@ public:
 	Object* ScenarioReader::FindObjectByName(std::string name, Entities *entities);
 
 	// Storyboard - Init
-	void parseInit(Init &init, Entities *entities);
-	OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode, Entities *entities, Object *object);
-	void parseOSCPosition(roadmanager::Position &position, pugi::xml_node positionNode);
+	void parseInit(Init &init, Entities *entities, Catalogs *catalogs);
+	OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode, Entities *entities, Object *object, Catalogs *catalogs);
+	void parseOSCPosition(roadmanager::Position &position, pugi::xml_node positionNode, Catalogs *catalogs);
 
 	// Storyboard - Story
 	OSCCondition *parseOSCCondition(pugi::xml_node conditionNode, Entities *entities);
 //	void parseOSCConditionGroup(OSCConditionGroup *conditionGroup, pugi::xml_node conditionGroupNode);
-	void parseStory(std::vector<Story*> &storyVector, Entities *entities);
-	void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, Entities *entities, ActSequence *sequence);
+	void parseStory(std::vector<Story*> &storyVector, Entities *entities, Catalogs *catalogs);
+	void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, Entities *entities, ActSequence *sequence, Catalogs *catalogs);
 
 	// Help functions
 	std::string getParameter(std::string name);

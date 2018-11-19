@@ -28,8 +28,8 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 	scenarioReader.parseParameterDeclaration();
 	scenarioReader.parseCatalogs(catalogs);
 	scenarioReader.parseEntities(entities);
-	scenarioReader.parseInit(init, &entities);
-	scenarioReader.parseStory(story, &entities);
+	scenarioReader.parseInit(init, &entities, &catalogs);
+	scenarioReader.parseStory(story, &entities, &catalogs);
 
 	this->startTime = startTime;
 
@@ -87,7 +87,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		}
 	}
 
-	// Step inital actions
+	// Step inital actions - might be extened in time (more than one step)
 	for (size_t i = 0; i < init.private_action_.size(); i++)
 	{
 		if (init.private_action_[i]->state_ == OSCAction::State::ACTIVE)
@@ -309,56 +309,15 @@ ScenarioGateway *ScenarioEngine::getScenarioGateway()
 	return &scenarioGateway;
 }
 
-void ScenarioEngine::initRoutes()
-{
-	for (size_t i=0; i<catalogs.RouteCatalog.Route.size(); i++)
-	{
-		if (!catalogs.RouteCatalog.Route[i].Waypoint.empty())
-		{
-			roadmanager::Route rm_route;
-			rm_route.setName(catalogs.RouteCatalog.Route[i].name);
-			for (size_t j = 0; j < catalogs.RouteCatalog.Route[i].Waypoint.size(); j++)
-			{
-				roadmanager::Position * position = new roadmanager::Position();
-
-				// Lane position
-				int roadId = catalogs.RouteCatalog.Route[i].Waypoint[j].Position->GetTrackId();
-				int lane_id = catalogs.RouteCatalog.Route[i].Waypoint[j].Position->GetLaneId();
-				double s = catalogs.RouteCatalog.Route[i].Waypoint[j].Position->GetS();
-				double offset = catalogs.RouteCatalog.Route[i].Waypoint[j].Position->GetOffset();
-
-				position->SetLanePos(roadId, lane_id, s, offset);
-
-				rm_route.AddWaypoint(position);
-			}
-//			cars.route.push_back(rm_route);
-		}
-	}
-}
-
-//void ScenarioEngine::initInit()
-//{
-//	LOG("initStoryboard started");
-//
-//	for (int i = 0; i < init.private_action_.size(); i++)
-//	{
-//		std::vector<Object*> actionEntities;
-//		actionEntities.push_back(init.private_action_[i]->object_);
-//	}
-//
-//	LOG("initStoryboard finished");
-//}
-
 void ScenarioEngine::stepObjects(double dt)
 {
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
 		Object *obj = entities.object_[i];
 
-		if (obj->follow_route_)
+		if (obj->pos_.GetRoute())
 		{
-//			obj->route.MoveDS(speed * dt);
-//			obj->route.GetPosition(&position);
+			obj->pos_.MoveRouteDS(obj->speed_ * dt);
 		}
 		else
 		{

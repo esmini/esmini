@@ -9,14 +9,13 @@
 class OSCCatalogReference
 {
 public:
-	std::string catalogName;
-	std::string entryName;
+	std::string catalog_name_;
+	std::string entry_name_;
 
 	OSCParameterAssignment ParameterAssignment;
 
-	void printOSCCatalogReference()
+	void Print()
 	{
-		LOG(" - CatalogReference");
-		LOG("\n");
+		LOG("CatalogReference: %s, %s", catalog_name_.c_str(), entry_name_.c_str());
 	};
 };

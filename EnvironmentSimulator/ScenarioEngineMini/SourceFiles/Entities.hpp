@@ -25,11 +25,11 @@ public:
 	bool extern_control_;
 	int id_;
 	roadmanager::Position pos_;
+	roadmanager::Route *route_;
 	double heading_; 
 	double speed_;
-	bool follow_route_;
 
-	OSCCatalogReference CatalogReference;
+	OSCCatalogReference catalog_reference_;
 	OSCVehicle Vehicle;
 	OSCPedestrian Pedestrian;
 	OSCMiscObject MiscObject;
@@ -43,7 +43,7 @@ public:
 		OSCPedestrianController PedestrianController;
 	} Controller;
 
-	Object() : id_(0), extern_control_(false), speed_(0), follow_route_(false) {}
+	Object() : id_(0), extern_control_(false), speed_(0), route_(0) {}
 };
 
 class Entities

@@ -611,6 +611,9 @@ namespace roadmanager
 		std::vector<Junction*> junction_;
 	};
 
+	// Forward declaration of Route
+	class Route;
+
 	class Position
 	{
 	public:
@@ -632,7 +635,57 @@ namespace roadmanager
 		}  // Sets heading indepnedently 
 		void XYH2TrackPos(double x, double y, double h, bool evaluateZAndPitch = true);
 		int MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_remains, Junction::JunctionStrategyType strategy = Junction::RANDOM);
-		
+
+		void SetRoute(Route *route) { route_ = route; }
+		roadmanager::Route* GetRoute() { return route_; }
+
+		/**
+		Set the current position along the route.
+		@param position A regular position created with road, lane or world coordinates
+		@return Non zero return value indicates error of some kind
+		*/
+		int SetRoutePosition(Position *position);
+
+		/**
+		Retrieve a copy of the current position along the route.
+		@param position A pointer to a valid position object
+		@return Non zero return value indicates error of some kind
+		*/
+		int GetRoutePosition(Position *position);
+
+		/**
+		Retrieve the S-value of the current route position. Note: This is the S along the
+		complete route, not the actual individual roads.
+		*/
+		double GetRouteS() { return s_; }
+
+		/**
+		Move current position forward, or backwards, ds meters along the route
+		@param ds Distance to move, negative will move backwards
+		@param dLane Lane id offset, change to another lane one or several steps to the right (-) or left (+)
+		@param dLaneOffset Additional Lane offset, added to the lane offset as given by the waypoint
+		@return Non zero return value indicates error of some kind
+		*/
+		int MoveRouteDS(double ds, int dLane = 0, double  dLaneOffset = 0);
+
+		/**
+		Move current position to specified S-value along the route
+		@param route_s Distance to move, negative will move backwards
+		@param laneId Explicit (not delta/offset) lane ID
+		@param laneOffset Explicit (not delta/offset) lane offset value
+		@return Non zero return value indicates error of some kind
+		*/
+		int SetRouteLanePosition(double route_s, int laneId, double  laneOffset);
+
+		/**
+		Move current position to specified S-value along the route
+		@param route_s Distance to move, negative will move backwards
+		@param dLane Lane id offset, change to another lane one or several steps to the right (-) or left (+)
+		@param dLaneOffset Additional Lane offset, added to the lane offset as given by the waypoint
+		@return Non zero return value indicates error of some kind
+		*/
+		int SetRouteLaneOffset(double route_s, int dLane = 0, double  dLaneOffset = 0);
+
 		/**
 		Straight (not route) distance between the current position and the one specified in argument
 		@param target_position The position to measure distance from current position. 
@@ -744,6 +797,9 @@ namespace roadmanager
 		bool EvaluateZAndPitch();
 		double GetDistToTrackGeom(double x3, double y3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm);
 
+		// route reference
+		Route  *route_;			// if pointer set, the position corresponds to a point along (s) the route
+
 		// track reference
 		int     track_id_;
 		double  s_;				// longitudinal point/distance along the track
@@ -752,6 +808,7 @@ namespace roadmanager
 		double  offset_;		// lateral position relative lane given by lane_id
 		double  h_offset_;		// local heading offset given by lane width and offset
 		double  h_relative_;	// heading relative road heading, e.g. for vehicle heading use
+		double  s_route_;		// longitudinal point/distance along the route
 
 		// inertial reference
 		double	x_;
@@ -774,7 +831,7 @@ namespace roadmanager
 	class Route
 	{
 	public:
-		explicit Route() : s_(0) {}
+		explicit Route() {}
 
 		/**
 		Adds a waypoint to the route. One waypoint per road. At most one junction between waypoints.
@@ -783,6 +840,7 @@ namespace roadmanager
 		*/
 		int AddWaypoint(Position *position);
 
+#if 0
 		/**
 		Set the current position along the route. 
 		@param position A regular position created with road, lane or world coordinates
@@ -829,15 +887,13 @@ namespace roadmanager
 		@return Non zero return value indicates error of some kind
 		*/
 		int SetOffset(double route_s, int dLane = 0, double  dLaneOffset = 0);
-
+#endif
 		void setName(std::string name);
 		std::string getName();
 		double GetLength();
 
 		std::vector<Position*> waypoint_;
-		Position current_position_;
 		std::string name;
-		double s_;
 	};
 
 } // namespace

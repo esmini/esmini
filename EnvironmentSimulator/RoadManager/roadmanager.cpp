@@ -2632,15 +2632,24 @@ int Position::GetSteeringTargetPos(double lookahead_distance, double *target_pos
 	return 0;
 }
 
-int Route::SetPosition(Position *position)
+
+
+int Position::SetRoutePosition(Position *position)
 {
-	// Is it a valid position, i.e. is it along the route
-	for (size_t i=0; i<waypoint_.size(); i++)
+	if(!route_)
 	{
-		if (waypoint_[i]->GetTrackId() == position->GetTrackId()) // Same road
+		return -1;
+	}
+
+	// Is it a valid position, i.e. is it along the route
+	for (size_t i=0; i<route_->waypoint_.size(); i++)
+	{
+		if (route_->waypoint_[i]->GetTrackId() == position->GetTrackId()) // Same road
 		{
-			// Update current position
-			current_position_ = *position;
+			// Update current position 
+			Route *tmp = route_;  // save route pointer, copy the 
+			*this = *position;
+			route_ = tmp;
 			return 0;
 		}
 	}
@@ -2648,10 +2657,67 @@ int Route::SetPosition(Position *position)
 	return -1;
 }
 
-int Route::GetPosition(Position *position)
+int Position::MoveRouteDS(double ds, int dLane, double  dLaneOffset)
 {
-	*position = current_position_;
+	if (!route_)
+	{
+		return -1;
+	}
+
+	if (route_->waypoint_.size() == 0)
+	{
+		return -1;
+	}
+	SetRouteLaneOffset(s_route_ + ds, dLane, dLaneOffset);
+
 	return 0;
+}
+
+int Position::SetRouteLanePosition(double route_s, int laneId, double  laneOffset)
+{
+	SetRouteLaneOffset(route_s);
+
+	// Override lane data
+	SetLanePos(track_id_, laneId, s_, laneOffset);
+
+	return 0;
+}
+
+int Position::SetRouteLaneOffset(double route_s, int dLane, double  dLaneOffset)
+{
+	if (route_->waypoint_.size() == 0)
+	{
+		LOG("SetOffset No waypoints!");
+		return -1;
+	}
+	double s_start = route_->waypoint_[0]->GetS();
+	double route_length = 0;
+	s_route_ = route_s;
+
+	// Find out what road and local s value
+	for (size_t i = 0; i < route_->waypoint_.size(); i++)
+	{
+		double road_length = route_->waypoint_[i]->GetOpenDrive()->GetRoadById(route_->waypoint_[i]->GetTrackId())->GetLength();
+		if (s_route_ < route_length + road_length - s_start)
+		{
+			// Found road segment
+			double local_s = s_route_ + s_start - route_length;
+
+			// Determine driving direction by lane id
+			if (route_->waypoint_[i]->GetLaneId() > 0)
+			{
+				// going towards road direction (left side of reference line), adjust s accordingly
+				local_s = road_length - local_s;
+			}
+
+			SetLanePos(route_->waypoint_[i]->GetTrackId(), route_->waypoint_[i]->GetLaneId() + dLane, local_s, dLaneOffset);
+			return 0;
+		}
+		route_length += road_length - s_start;
+		s_start = 0;  // For all following road segments, calculate length from beginning
+	}
+
+	return -1;
 }
 
 int Route::AddWaypoint(Position *position)
@@ -2697,64 +2763,6 @@ int Route::AddWaypoint(Position *position)
 	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f\n", (int)waypoint_.size()-1, position->GetTrackId(), position->GetLaneId(), position->GetS());
 
 	return 0; 
-}
-
-int Route::MoveDS(double ds, int dLane, double  dLaneOffset)
-{
-	if (waypoint_.size() == 0)
-	{
-		return -1;
-	}
-	SetOffset(s_ + ds, dLane, dLaneOffset);
-
-	return 0;
-}
-
-int Route::Set(double route_s, int laneId, double  laneOffset)
-{
-	SetOffset(route_s);
-	
-	// Override lane data
-	current_position_.SetLanePos(current_position_.GetTrackId(), laneId, current_position_.GetS(), laneOffset);
-
-	return 0;
-}
-
-int Route::SetOffset(double route_s, int dLane, double  dLaneOffset)
-{
-	if (waypoint_.size() == 0)
-	{
-		LOG("SetOffset No waypoints!");
-		return -1;
-	}
-	double s_start = waypoint_[0]->GetS();
-	double route_length = 0;
-	s_ = route_s;
-
-	// Find out what road and local s value
-	for (size_t i=0; i<waypoint_.size(); i++)
-	{
-		double road_length = waypoint_[i]->GetOpenDrive()->GetRoadById(waypoint_[i]->GetTrackId())->GetLength();
-		if (s_ < route_length + road_length - s_start)
-		{
-			// Found road segment
-			double local_s = s_ + s_start - route_length;
-
-			// Determine driving direction by lane id
-			if (waypoint_[i]->GetLaneId() > 0)
-			{
-				// going towards road direction (left side of reference line), adjust s accordingly
-				local_s = road_length - local_s;
-			}
-
-			current_position_.SetLanePos(waypoint_[i]->GetTrackId(), waypoint_[i]->GetLaneId() + dLane, local_s, dLaneOffset);
-			return 0;
-		}
-		route_length += road_length - s_start;
-		s_start = 0;  // For all following road segments, calculate length from beginning
-	}
-	
-	return -1;
 }
 
 double Route::GetLength()

@@ -1,5 +1,5 @@
 #pragma once
-#include "OSCPosition.hpp"
+//#include "OSCPosition.hpp"
 #include "CommonMini.hpp"
 #include "OSCAction.hpp"
 #include "Entities.hpp"
@@ -24,7 +24,7 @@ public:
 		AUTONOMOUS,
 		CONTROLLER,
 		POSITION,
-		ROUTING
+		FOLLOW_ROUTE
 	} Type;
 
 	typedef enum
@@ -347,7 +347,7 @@ public:
 
 	void Step(double dt)
 	{
-		LOG("Step %s", object_->name_.c_str());
+//		LOG("Step %s", object_->name_.c_str());
 	}
 
 	void Trig()
@@ -374,6 +374,27 @@ public:
 
 	void Trig()
 	{
+		OSCAction::Trig();
+	}
+};
+
+class FollowRouteAction : public OSCPrivateAction
+{
+public:
+	roadmanager::Route *route_;
+
+	FollowRouteAction() : OSCPrivateAction(OSCPrivateAction::Type::FOLLOW_ROUTE) {}
+
+	void Step(double dt)
+	{
+		LOG("Step %s ", object_->name_.c_str());
+
+//		state_ = State::DONE;
+	}
+
+	void Trig()
+	{
+		object_->pos_.SetRoute(route_);
 		OSCAction::Trig();
 	}
 };

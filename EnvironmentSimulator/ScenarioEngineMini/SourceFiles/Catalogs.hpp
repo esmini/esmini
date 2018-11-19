@@ -10,15 +10,11 @@ class Catalogs
 {
 public:
 	Catalogs();
-	void printCatalogs();
+	void Print();
 
 	struct { OSCDirectory Directory; }VehicleCatalog;
 	struct { OSCDirectory Directory; }DriverCatalog;
-	struct 
-	{ 
-		std::vector<OSCRoute> Route; 
-	} RouteCatalog;
-
+	std::vector<roadmanager::Route*> RouteCatalog; 
 
 };
 

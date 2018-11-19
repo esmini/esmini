@@ -104,12 +104,20 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 	}
 }
 
-void ScenarioReader::parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode)
+roadmanager::Route* ScenarioReader::parseOSCRoute(pugi::xml_node routeNode, Catalogs *catalogs)
 {
 	LOG("Parsing OSCRoute");
+	roadmanager::Route *route = new roadmanager::Route;
 
-	route.name = ReadAttribute(routeNode.attribute("name"));
-	route.closed = ReadAttribute(routeNode.attribute("closed"));
+	route->setName(ReadAttribute(routeNode.attribute("name")));
+
+	// Closed attribute not supported by roadmanager yet
+	std::string closed_str = ReadAttribute(routeNode.attribute("closed"));
+	bool closed = false;
+	if (closed_str == "true" || closed_str == "1")
+	{
+		closed = true;
+	}
 
 	for (pugi::xml_node routeChild = routeNode.first_child(); routeChild; routeChild = routeChild.next_sibling())
 	{
@@ -122,16 +130,14 @@ void ScenarioReader::parseOSCRoute(OSCRoute &route, pugi::xml_node routeNode)
 		}
 		else if (routeChildName == "Waypoint")
 		{
-			route.Waypoint.resize(route.Waypoint.size() + 1);
-
-			route.Waypoint.back().strategy = ReadAttribute(routeChild.attribute("strategy"));
-
-			route.Waypoint.back().Position = new roadmanager::Position;
-
-			parseOSCPosition(*route.Waypoint.back().Position, routeChild.first_child());
+			roadmanager::Position *pos = new roadmanager::Position;
+			parseOSCPosition(*pos, routeChild.first_child(), catalogs);
+			route->AddWaypoint(pos);
 		}
 	}
 	LOG("parseOSCRoute finished");
+
+	return route;
 }
 
 void ScenarioReader::parseCatalogs(Catalogs &catalogs) 
@@ -146,11 +152,10 @@ void ScenarioReader::parseCatalogs(Catalogs &catalogs)
 
 		if (catalogsChildName == "RouteCatalog")
 		{
-			for (pugi::xml_node route = catalogsChild.first_child(); route; route = route.next_sibling())
+			for (pugi::xml_node route_n = catalogsChild.first_child(); route_n; route_n = route_n.next_sibling())
 			{
-				OSCRoute route_item;
-				parseOSCRoute(route_item, route);
-				catalogs.RouteCatalog.Route.push_back(route_item);
+				roadmanager::Route *route_item = parseOSCRoute(route_n, &catalogs);
+				catalogs.RouteCatalog.push_back(route_item);
 			}
 		}
 		else if (catalogsChildName == "VehicleCatalog")
@@ -325,8 +330,8 @@ void ScenarioReader::parseOSCVehicle(OSCVehicle &vehicle, pugi::xml_node vehicle
 void ScenarioReader::parseOSCCatalogReference(OSCCatalogReference &catalogReference, pugi::xml_node catalogReferenceNode)
 {
 
-	catalogReference.catalogName = ReadAttribute(catalogReferenceNode.attribute("catalogName"));
-	catalogReference.entryName = ReadAttribute(catalogReferenceNode.attribute("entryName"));
+	catalogReference.catalog_name_ = ReadAttribute(catalogReferenceNode.attribute("catalogName"));
+	catalogReference.entry_name_ = ReadAttribute(catalogReferenceNode.attribute("entryName"));
 
 	pugi::xml_node catalogReferenceChild = catalogReferenceNode.first_child();
 	std::string catalogReferenceChildName(catalogReferenceChild.name());
@@ -357,7 +362,7 @@ void ScenarioReader::parseEntities(Entities &entities)
 
 			if (objectChildName == "CatalogReference")
 			{
-				parseOSCCatalogReference(obj->CatalogReference, objectChild);
+				parseOSCCatalogReference(obj->catalog_reference_, objectChild);
 			}
 			else if (objectChildName == "Vehicle")
 			{
@@ -412,7 +417,7 @@ void ScenarioReader::parseEntities(Entities &entities)
 }
 
 
-void ScenarioReader::parseOSCPosition(roadmanager::Position &position, pugi::xml_node positionNode)
+void ScenarioReader::parseOSCPosition(roadmanager::Position &position, pugi::xml_node positionNode, Catalogs *catalogs)
 {
 	LOG("Parsing OSCPosition");
 
@@ -458,10 +463,13 @@ void ScenarioReader::parseOSCPosition(roadmanager::Position &position, pugi::xml
 		{
 			LOG("%s is not implemented ", positionChildName.c_str());
 		}
-#if 0
 		else if (positionChildName == "Route")
 		{
-			position.route_ = new OSCPosition::Route();
+			pugi::xml_node route_ref = positionChild.child("RouteRef");
+			if (route_ref != NULL)
+			{
+
+			}
 			for (pugi::xml_node routeChild = positionChild.first_child(); routeChild; routeChild = routeChild.next_sibling())
 			{
 
@@ -470,15 +478,30 @@ void ScenarioReader::parseOSCPosition(roadmanager::Position &position, pugi::xml
 					for (pugi::xml_node routeRefChild = routeChild.first_child(); routeRefChild; routeRefChild = routeRefChild.next_sibling())
 					{
 						std::string routeRefChildName(routeRefChild.name());
+						roadmanager::Route *route;
 
 						if (routeRefChildName == "Route")
 						{
-							parseOSCRoute(position.route_->RouteRef.Route, routeRefChild);
+							// Add inline route to route catalog
+							route = parseOSCRoute(routeRefChild, catalogs);
+							catalogs->RouteCatalog.push_back(route);
 						}
 						else if (routeRefChildName == "CatalogReference")
 						{
-							parseOSCCatalogReference(position.route_->RouteRef.CatalogReference, routeRefChild);
+							route = 0;
+							
+							// Find route in catalog
+							for (size_t i = 0; i < catalogs->RouteCatalog.size(); i++)
+							{
+								if (catalogs->RouteCatalog[i]->getName() == ReadAttribute(routeRefChild.attribute("entryName")))
+								{
+									route = catalogs->RouteCatalog[i];
+									break;
+								}
+							}
 						}
+						
+						position.SetRoute(route);
 					}
 				}
 				if (routeChild.name() == std::string("Orientation"))
@@ -501,20 +524,22 @@ void ScenarioReader::parseOSCPosition(roadmanager::Position &position, pugi::xml
 						}
 						else if (positionChildName == "LaneCoord")
 						{
-							position.route_->Position.LaneCoord.pathS = std::stod(ReadAttribute(positionChild.attribute("pathS")));
-							position.route_->Position.LaneCoord.laneId = std::stoi(ReadAttribute(positionChild.attribute("laneId")));
+							double s = std::stod(ReadAttribute(positionChild.attribute("pathS")));
+							int lane_id = std::stoi(ReadAttribute(positionChild.attribute("laneId")));
+							double lane_offset = 0;
 
 							pugi::xml_attribute laneOffsetAttribute = positionChild.attribute("laneOffset");
 							if (laneOffsetAttribute != NULL)
 							{
-								position.route_->Position.LaneCoord.laneOffset = std::stod(ReadAttribute(positionChild.attribute("laneOffset")));
+								lane_offset = std::stod(ReadAttribute(positionChild.attribute("laneOffset")));
 							}
+
+							position.SetRouteLanePosition(s, lane_id, lane_offset);
 						}
 					}
 				}
 			}
 		}
-#endif
 	}
 }
 
@@ -541,7 +566,7 @@ OSCPrivateAction::DynamicsShape ParseDynamicsShape(std::string shape)
 }
 
 // ------------------------------------------------------
-OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNode, Entities *entities, Object *object)
+OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNode, Entities *entities, Object *object, Catalogs *catalogs)
 {
 	LOG("Parsing OSCPrivateAction %s", actionNode.name());
 	OSCPrivateAction *action = 0;
@@ -749,7 +774,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				roadmanager::Position *pos = new roadmanager::Position;
 				if (meetingChild.name() == std::string("Position"))
 				{
-					parseOSCPosition(*pos, meetingChild);
+					parseOSCPosition(*pos, meetingChild, catalogs);
 				}
 				else if (meetingChild.name() == std::string("Relative"))
 				{
@@ -780,7 +805,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					pugi::xml_node pos_node = meetingChild.child("Position");
 					if (pos_node != NULL)
 					{
-						parseOSCPosition(*pos_object, pos_node);
+						parseOSCPosition(*pos_object, pos_node, catalogs);
 					}
 					meeting_rel->object_target_position_ = pos_object;
 
@@ -800,11 +825,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		{
 			PositionAction *action_pos = new PositionAction;
 			roadmanager::Position pos;
-			parseOSCPosition(pos, actionChild);
+			parseOSCPosition(pos, actionChild, catalogs);
 			action_pos->position_ = pos;
 			action = action_pos;
 		}
-#if 0
 		else if (actionChild.name() == std::string("Routing"))
 		{
 			for (pugi::xml_node routingChild = actionChild.first_child(); routingChild; routingChild = routingChild.next_sibling())
@@ -819,14 +843,23 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						}
 						else if (followRouteChild.name() == std::string("CatalogReference"))
 						{
-							action.routing_ = new OSCPrivateAction::Routing();
-							parseOSCCatalogReference(action.routing_->FollowRoute.CatalogReference, followRouteChild);
+							FollowRouteAction *action_follow_route = new FollowRouteAction;
+							// Find route in catalog
+							for (size_t i = 0; i < catalogs->RouteCatalog.size(); i++)
+							{
+								if (catalogs->RouteCatalog[i]->name == ReadAttribute(followRouteChild.attribute("entryName")))
+								{
+									action_follow_route->route_ = catalogs->RouteCatalog[i];
+									
+									action = action_follow_route;
+									break;
+								}
+							}
 						}
 					}
 				}
 			}
 		}
-#endif
 		else
 		{
 			LOG("%s is not supported", actionChild.name());
@@ -852,7 +885,7 @@ Object* ScenarioReader::FindObjectByName(std::string name, Entities *entities)
 }
 
 
-void ScenarioReader::parseInit(Init &init, Entities *entities)
+void ScenarioReader::parseInit(Init &init, Entities *entities, Catalogs *catalogs)
 {
 	LOG("Parsing init");
 
@@ -881,7 +914,7 @@ void ScenarioReader::parseInit(Init &init, Entities *entities)
 
 			for (pugi::xml_node privateChild = actionsChild.first_child(); privateChild; privateChild = privateChild.next_sibling())
 			{
-				init.private_action_.push_back(parseOSCPrivateAction(privateChild, entities, object));
+				init.private_action_.push_back(parseOSCPrivateAction(privateChild, entities, object, catalogs));
 			}
 		}
 	}
@@ -1121,7 +1154,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 }
 
 
-void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, Entities *entities, ActSequence *sequence)
+void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, Entities *entities, ActSequence *sequence, Catalogs *catalogs)
 {
 	LOG("Parsing OSCManeuver");
 
@@ -1181,7 +1214,7 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 						{
 							for (size_t i = 0; i < sequence->actor_.size(); i++)
 							{
-								OSCPrivateAction *action = parseOSCPrivateAction(actionChild, entities, sequence->actor_[i]->object_);
+								OSCPrivateAction *action = parseOSCPrivateAction(actionChild, entities, sequence->actor_[i]->object_, catalogs);
 								event->action_.push_back((OSCAction*)action);
 							}
 						}
@@ -1209,7 +1242,7 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 	}
 }
 
-void ScenarioReader::parseStory(std::vector<Story*> &storyVector, Entities *entities)
+void ScenarioReader::parseStory(std::vector<Story*> &storyVector, Entities *entities, Catalogs *catalogs)
 {
 	LOG("Parsing Story");
 
@@ -1276,7 +1309,7 @@ void ScenarioReader::parseStory(std::vector<Story*> &storyVector, Entities *enti
 						{
 							OSCManeuver *maneuver = new OSCManeuver;
 
-							parseOSCManeuver(maneuver, maneuver_n, entities, sequence);
+							parseOSCManeuver(maneuver, maneuver_n, entities, sequence, catalogs);
 							sequence->maneuver_.push_back(maneuver);
 						}
 
