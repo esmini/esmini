@@ -229,12 +229,21 @@ void ScenarioReader::parseEntities(Entities &entities)
 			{
 				for (pugi::xml_node propertiesChild = objectChild.first_child(); propertiesChild; propertiesChild = propertiesChild.next_sibling())
 				{
-					Object::Property *property = new Object::Property;
+					std::string prop_name = ReadAttribute(propertiesChild.attribute("name"));
+					std::string prop_value = ReadAttribute(propertiesChild.attribute("value"));
 
-					obj->properties_.push_back(property);
-
-					property->name_ = ReadAttribute(propertiesChild.attribute("name"));
-					property->value_ = ReadAttribute(propertiesChild.attribute("value"));
+					// Check if the property is something supported
+					if (prop_name == "control")
+					{
+						if (prop_value == "external")
+						{
+							obj->extern_control_ = true;
+						}
+						else
+						{
+							obj->extern_control_ = false;
+						}
+					}
 				}
 			}
 		}
@@ -394,7 +403,6 @@ OSCPrivateAction::DynamicsShape ParseDynamicsShape(std::string shape)
 // ------------------------------------------------------
 OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNode, Entities *entities, Object *object, Catalogs *catalogs)
 {
-	LOG("Parsing OSCPrivateAction %s", actionNode.name());
 	OSCPrivateAction *action = 0;
 
 	for (pugi::xml_node actionChild = actionNode.first_child(); actionChild; actionChild = actionChild.next_sibling())
@@ -450,11 +458,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									std::string value_type = ReadAttribute(targetChild.attribute("valueType"));
 									if (value_type == "delta")
 									{
-										target_rel->valueType_ = LongSpeedAction::TargetRelative::ValueType::DELTA;
+										target_rel->value_type_ = LongSpeedAction::TargetRelative::ValueType::DELTA;
 									}
 									else if(value_type == "factor")
 									{
-										target_rel->valueType_ = LongSpeedAction::TargetRelative::ValueType::FACTOR;
+										target_rel->value_type_ = LongSpeedAction::TargetRelative::ValueType::FACTOR;
 									}
 									else
 									{
@@ -698,6 +706,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
 		}
 	}
+
 	action->object_ = object;
 
 	return action;
@@ -925,8 +934,8 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 				if (byStateChildName == "AtStart")
 				{
 					TrigAtStart *trigger = new TrigAtStart;
-					trigger->element_name_ = ReadAttribute(byStateChild.attribute("name"));
 					trigger->element_type_ = ParseElementType(ReadAttribute(byStateChild.attribute("type")));
+					trigger->element_name_ = ReadAttribute(byStateChild.attribute("name"));
 					condition = trigger;
 				}
 				else if (byStateChildName == "AfterTermination")
@@ -986,11 +995,10 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 }
 
 
-void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, Entities *entities, ActSequence *sequence, Catalogs *catalogs)
+void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, Entities *entities, ActSequence *act_sequence, Catalogs *catalogs)
 {
-	LOG("Parsing OSCManeuver");
-
 	maneuver->name_ = ReadAttribute(maneuverNode.attribute("name"));
+	LOG("Parsing OSCManeuver %s", maneuver->name_.c_str());
 
 	for (pugi::xml_node maneuverChild = maneuverNode.first_child(); maneuverChild; maneuverChild = maneuverChild.next_sibling())
 	{
@@ -1005,6 +1013,8 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 			Event *event = new Event;
 
 			event->name_ = ReadAttribute(maneuverChild.attribute("name"));
+			LOG("Parsing Event %s", event->name_.c_str());
+
 			std::string prio = ReadAttribute(maneuverChild.attribute("priority"));
 			if (prio == "overwrite")
 			{
@@ -1044,9 +1054,10 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 						}
 						else if (childName == "Private")
 						{
-							for (size_t i = 0; i < sequence->actor_.size(); i++)
+							for (size_t i = 0; i < act_sequence->actor_.size(); i++)
 							{
-								OSCPrivateAction *action = parseOSCPrivateAction(actionChild, entities, sequence->actor_[i]->object_, catalogs);
+								LOG("Parsing private action %s", ReadAttribute(eventChild.attribute("name")).c_str());
+								OSCPrivateAction *action = parseOSCPrivateAction(actionChild, entities, act_sequence->actor_[i]->object_, catalogs);
 								event->action_.push_back((OSCAction*)action);
 							}
 						}

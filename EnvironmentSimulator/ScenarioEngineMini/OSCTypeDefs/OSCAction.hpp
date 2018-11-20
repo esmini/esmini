@@ -31,6 +31,7 @@ public:
 	virtual void Trig()
 	{
 		state_ = State::ACTIVE;
+		LOG("Trigged %d", base_type_);
 	}
 
 	virtual void Step(double dt)

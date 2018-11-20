@@ -110,7 +110,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 				{
 					for (size_t l = 0; l < story[i]->act_[j]->start_condition_group_[k]->condition_.size(); l++)
 					{
-						if (story[i]->act_[j]->start_condition_group_[k]->condition_[l]->Evaluate(story[i]->act_[j], simulationTime))
+						if (story[i]->act_[j]->start_condition_group_[k]->condition_[l]->Evaluate(story[i], simulationTime))
 						{
 							story[i]->act_[j]->active_ = true;
 						}
@@ -125,7 +125,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 				{
 					for (size_t l = 0; l < story[i]->act_[j]->end_condition_group_[k]->condition_.size(); l++)
 					{
-						if (story[i]->act_[j]->end_condition_group_[k]->condition_[l]->Evaluate(story[i]->act_[j], simulationTime))
+						if (story[i]->act_[j]->end_condition_group_[k]->condition_[l]->Evaluate(story[i], simulationTime))
 						{
 							story[i]->act_[j]->active_ = false;
 						}
@@ -137,7 +137,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 				{
 					for (size_t l = 0; l < story[i]->act_[j]->cancel_condition_group_[k]->condition_.size(); l++)
 					{
-						if (story[i]->act_[j]->cancel_condition_group_[k]->condition_[l]->Evaluate(story[i]->act_[j], simulationTime))
+						if (story[i]->act_[j]->cancel_condition_group_[k]->condition_[l]->Evaluate(story[i], simulationTime))
 						{
 							story[i]->act_[j]->active_ = false;
 						}
@@ -195,7 +195,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 								{
 									for (size_t o = 0; o < event->start_condition_group_[n]->condition_.size(); o++)
 									{
-										if (event->start_condition_group_[n]->condition_[o]->Evaluate(story[i]->act_[j], simulationTime))
+										if (event->start_condition_group_[n]->condition_[o]->Evaluate(story[i], simulationTime))
 										{
 											// Check priority
 											if (event->priority_ == Event::Priority::OVERWRITE)
@@ -203,7 +203,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 												// Deactivate any currently active event
 												if (active_event_id >= 0)
 												{
-													story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[active_event_id]->state_ = Event::State::CANCELLED;
+													story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[active_event_id]->Deactivate();
 													LOG("Event %s cancelled", story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[active_event_id]->name_.c_str());
 												}
 
@@ -248,10 +248,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 								{
 									if (event->action_[n]->state_ == OSCAction::State::ACTIVE)
 									{
-										for (size_t o = 0; o < story[i]->act_[j]->sequence_[k]->actor_.size(); o++)
-										{
-											event->action_[n]->Step(deltaSimTime);
-										}
+										event->action_[n]->Step(deltaSimTime);
 										active = active || (event->action_[n]->state_ == OSCAction::State::ACTIVE);
 									}
 								}

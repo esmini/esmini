@@ -695,6 +695,7 @@ namespace roadmanager
 		@param object_id The ID of the vehicle to measure from
 		@param lookahead_distance The distance, along the road, to the point
 		@param target_pos Array to fill in calculated X, Y and Z coordinate values
+		@param angle Pointer to variable where target angle will be written 
 		@return 0 if successful, -1 if not
 		*/
 		int GetSteeringTargetPos(double lookahead_distance, double *target_pos_local, double *target_pos_global, double *angle);

@@ -52,12 +52,12 @@ static std::vector<ScenarioCar> scenarioCar;
 
 
 
-int SetupEgo(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
+int SetupEgo(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer, roadmanager::Position init_pos)
 {
 	egoCar = new EgoCar;
-	egoCar->road_id_init = odrManager->GetRoadByIdx(0)->GetId();
-	egoCar->lane_id_init = 1;
-	egoCar->pos = new roadmanager::Position(egoCar->road_id_init, egoCar->lane_id_init, 60, 0);
+	egoCar->road_id_init = init_pos.GetTrackId();
+	egoCar->lane_id_init = init_pos.GetLaneId();
+	egoCar->pos = new roadmanager::Position(init_pos);
 
 	egoCar->graphics_model = viewer->AddCar(0);
  	egoCar->vehicle = new vehicle::Vehicle(egoCar->pos->GetX(), egoCar->pos->GetY(), egoCar->pos->GetH(), egoCar->graphics_model->size_x);
@@ -170,7 +170,8 @@ int main(int argc, char** argv)
 			scenarioEngine->getSceneGraphFilename().c_str(),
 			arguments);
 
-		SetupEgo(odrManager, viewer);
+		// Setup Ego with initial position from the gateway
+		SetupEgo(odrManager, viewer, scenarioGateway->getObjectStatePtrByIdx(0)->state_.pos);
 
 		__int64 now, lastTimeStamp = 0;
 

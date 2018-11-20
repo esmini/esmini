@@ -30,7 +30,8 @@ public:
 		DONE,
 		WAITING,  // Following
 		SKIPPED,
-		CANCELLED
+		CANCELLED,
+		JUST_TERMINATED,
 	} State;
 
 	State state_;
@@ -44,6 +45,7 @@ public:
 	Event() : state_(State::NOT_TRIGGED) {}
 
 	void Activate();
+	void Deactivate();
 };
 
 class OSCManeuver

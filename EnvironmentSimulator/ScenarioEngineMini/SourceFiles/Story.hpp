@@ -8,7 +8,8 @@
 #include <string>
 #include <vector>
 
-struct ActSequence
+
+struct ActSequence  // Act Sequence
 {
 	typedef struct
 	{

@@ -49,8 +49,31 @@ extern "C"
 	SE_DLL_API int SE_GetObjectStates(int *nObjects, ScenarioObjectState* state);
 
 	// Road related functions
+	/**
+	Get the location, in global coordinate system, of the point at a specified distance along the road ahead
+	@param object_id The ID of the vehicle to measure from
+	@param lookahead_distance The distance, along the road, to the point
+	@param target_pos Array to fill in calculated X, Y and Z coordinate values
+	@return 0 if successful, -1 if not
+	*/
 	SE_DLL_API int SE_GetSteeringTargetPosGlobal(int object_id, float lookahead_distance, float *target_pos);
+
+	/**
+	Get the location, in vehicle local coordinate system, of the point at a specified distance along the road ahead
+	@param object_id The ID of the vehicle to measure from
+	@param lookahead_distance The distance, along the road, to the point
+	@param target_pos Array to fill in calculated X, Y and Z coordinate values
+	@return 0 if successful, -1 if not
+	*/
 	SE_DLL_API int SE_GetSteeringTargetPosLocal(int object_id, float lookahead_distance, float *target_pos);
+
+	/**
+	Get the heading angle, in vehicle local coordinate system, to the point at a specified distance along the road ahead
+	@param object_id The ID of the vehicle to measure from
+	@param lookahead_distance The distance, along the road, to the point
+	@param angle Pointer to variable where target angle will be written
+	@return 0 if successful, -1 if not
+	*/
 	SE_DLL_API int SE_GetSteeringTargetAngle(int object_id, float lookahead_distance, float *angle);
 
 #ifdef __cplusplus

@@ -9,3 +9,8 @@ void Event::Activate()
 	state_ = Event::State::ACTIVE;
 }
 
+void Event::Deactivate()
+{
+	state_ = Event::State::JUST_TERMINATED;
+}
+

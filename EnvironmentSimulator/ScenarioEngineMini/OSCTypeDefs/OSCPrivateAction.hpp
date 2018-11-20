@@ -57,38 +57,6 @@ public:
 		LOG("");
 	}
 
-#if 0
-	typedef struct
-	{
-		std::string mode;
-		OSCPosition Position;
-		MeetingRelative *relative_;
-	} Meeting;
-
-	typedef struct {
-		struct {
-			OSCRoute Route;
-			OSCCatalogReference CatalogReference;
-		} FollowRoute;
-	} Routing;
-
-	Meeting *meeting_;
-	Routing *routing_;
-	OSCPosition *position_;
-
-	struct {} Visibility;
-	struct {} Autonomous;
-	struct {} Controller;
-	
-	OSCPrivateAction() 
-	{
-		meeting_ = 0;
-		routing_ = 0;
-		position_ = 0;
-	}
-#endif
-
-
 	void print()
 	{
 		LOG("Virtual, should be overridden");
@@ -152,12 +120,16 @@ public:
 		} ValueType;
 
 		Object *object_;
-		ValueType valueType_;
+		ValueType value_type_;
 		bool continuous_;
 
-		TargetRelative() : Target(Type::RELATIVE) {}
+		TargetRelative() : Target(Type::RELATIVE), consumed_(false), object_speed_(0) {}
 
-		double GetValue() { return 0; }
+		double GetValue();
+
+	private:
+		double object_speed_;
+		bool consumed_;
 	};
 
 	Target *target_;
@@ -173,6 +145,11 @@ public:
 	
 	void Trig()
 	{
+		if (object_->extern_control_)
+		{
+			// motion control handed over 
+			return;
+		}
 		OSCAction::Trig();
 	}
 
@@ -326,6 +303,12 @@ public:
 
 	void Trig()
 	{
+		if (object_->extern_control_)
+		{
+			// motion control handed over 
+			return;
+		}
+
 		OSCAction::Trig();
 	}
 };
@@ -354,6 +337,12 @@ public:
 
 	void Trig()
 	{
+		if (object_->extern_control_)
+		{
+			// motion control handed over 
+			return;
+		}
+
 		OSCAction::Trig();
 	}
 };
@@ -376,6 +365,7 @@ public:
 
 	void Trig()
 	{
+		// Allow even when externally control
 		OSCAction::Trig();
 	}
 };
@@ -393,6 +383,12 @@ public:
 
 	void Trig()
 	{
+		if (object_->extern_control_)
+		{
+			// motion control handed over 
+			return;
+		}
+
 		object_->pos_.SetRoute(route_);
 		OSCAction::Trig();
 	}

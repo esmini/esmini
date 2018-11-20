@@ -43,7 +43,14 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 
 void LatLaneChangeAction::Trig()
 {
+	if (object_->extern_control_)
+	{
+		// motion control handed over 
+		return;
+	}
+
 	OSCAction::Trig();
+
 	if (target_->ABSOLUTE)
 	{
 		target_lane_id_ = target_->value_;
@@ -90,6 +97,11 @@ void LatLaneChangeAction::Step(double dt)
 
 void LatLaneOffsetAction::Trig()
 {
+	if (object_->extern_control_)
+	{
+		// motion control handed over 
+		return;
+	}
 	OSCAction::Trig();
 	start_lane_offset_ = object_->pos_.GetOffset();
 }
@@ -116,9 +128,42 @@ void LatLaneOffsetAction::Step(double dt)
 	}
 }
 
+double LongSpeedAction::TargetRelative::GetValue()
+{
+	if (!continuous_)
+	{
+		// sample relative object speed once
+		if (!consumed_)
+		{
+			object_speed_ = object_->speed_;
+			consumed_ = true;
+		}
+	}
+	else 
+	{
+		object_speed_ = object_->speed_;
+	}
+
+	if (value_type_ == ValueType::DELTA)
+	{
+		return object_speed_ + value_;
+	}
+	else if (value_type_ == ValueType::FACTOR)
+	{
+		return object_speed_ * value_;
+	}
+	else
+	{
+		LOG("Invalid value type: %d", value_type_);
+	}
+
+	return 0;
+}
+
 void LongSpeedAction::Step(double dt)
 {
 	double factor = 0.0;
+	double target_speed = 0;
 	double new_speed = object_->speed_;
 
 	if (dynamics_.timing_type_ == Timing::RATE)
@@ -126,19 +171,12 @@ void LongSpeedAction::Step(double dt)
 		elapsed_ += dt;
 		new_speed += dynamics_.timing_target_value_ * dt;
 
-		if (dynamics_.timing_target_value_ < 0)
+		if ((dynamics_.timing_target_value_ < 0 && new_speed < target_->GetValue()) ||
+			(dynamics_.timing_target_value_ > 0 && new_speed > target_->GetValue()))
 		{
-			if (new_speed < target_->value_)
+			if (new_speed < target_->GetValue())
 			{
-				new_speed = target_->value_;
-				state_ = State::DONE;
-			}
-		}
-		else
-		{
-			if (new_speed > target_->value_)
-			{
-				new_speed = target_->value_;
+				new_speed = target_->GetValue();
 				state_ = State::DONE;
 			}
 		}
@@ -150,12 +188,15 @@ void LongSpeedAction::Step(double dt)
 
 		if(factor > 1.0)
 		{
-			new_speed = target_->value_;
-			state_ =  State::DONE;
+			new_speed = target_->GetValue();
+			if (target_->type_ == Target::Type::RELATIVE && ((TargetRelative*)target_)->continuous_ != true)
+			{
+				state_ = State::DONE;
+			}
 		}
 		else
 		{
-			new_speed = dynamics_.transition_.Evaluate(factor, start_speed_, target_->value_);
+			new_speed = dynamics_.transition_.Evaluate(factor, start_speed_, target_->GetValue());
 		}
 	}
 	else

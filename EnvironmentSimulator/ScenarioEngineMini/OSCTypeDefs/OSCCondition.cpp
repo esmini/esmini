@@ -105,28 +105,37 @@ bool EvalDone(bool trig, TrigByEntity::TriggeringEntitiesRule rule)
 	return false;
 }
 
-bool TrigByState::Evaluate(Act *act, double sim_time)
+bool TrigByState::Evaluate(Story *story, double sim_time)
 {
 	evaluated_ = true;
 
 	return false;
 }
 
-bool TrigAtStart::Evaluate(Act *act, double sim_time)
+bool TrigAtStart::Evaluate(Story *story, double sim_time)
+{
+	evaluated_ = true;
+
+	if (element_type_ == StoryElementType::SCENE)
+	{
+		return true;
+	}
+	else
+	{
+		LOG("Story element type %d not supported yet", element_type_);
+	}
+
+	return false;
+}
+
+bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 {
 	evaluated_ = true;
 
 	return false;
 }
 
-bool TrigAfterTermination::Evaluate(Act *act, double sim_time)
-{
-	evaluated_ = true;
-
-	return false;
-}
-
-bool TrigByValue::Evaluate(Act *act, double sim_time)
+bool TrigByValue::Evaluate(Story *story, double sim_time)
 {
 
 	evaluated_ = true;
@@ -134,7 +143,7 @@ bool TrigByValue::Evaluate(Act *act, double sim_time)
 	return false;
 }
 
-bool TrigBySimulationTime::Evaluate(Act *act, double sim_time)
+bool TrigBySimulationTime::Evaluate(Story *story, double sim_time)
 {
 	evaluated_ = true;
 
@@ -147,7 +156,7 @@ bool TrigBySimulationTime::Evaluate(Act *act, double sim_time)
 	return false;
 }
 
-bool TrigByTimeHeadway::Evaluate(Act *act, double sim_time)
+bool TrigByTimeHeadway::Evaluate(Story *story, double sim_time)
 {
 	bool trig = false;
 	double rel_dist, hwt;
@@ -156,7 +165,10 @@ bool TrigByTimeHeadway::Evaluate(Act *act, double sim_time)
 	{
 		rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_);
 
-		if (object_->speed_ < SMALL_NUMBER)
+		// Headway time not defined for cases:
+		//  - when target object is behind 
+		//  - when object is still or going reverse 
+		if (rel_dist < 0 || object_->speed_ < SMALL_NUMBER)
 		{
 			hwt = INFINITY;
 		}
@@ -175,7 +187,7 @@ bool TrigByTimeHeadway::Evaluate(Act *act, double sim_time)
 		}
 	}
 
-//	LOG("Trig? %s hwt: %.2f %s %.2f, %s (dist: %.2f)", name_.c_str(), hwt, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str(), rel_dist);
+	//LOG("Trig? %s hwt: %.2f %s %.2f, %s (dist: %.2f)", name_.c_str(), hwt, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str(), rel_dist);
 	if (trig)
 	{
 		LOG("Trigged %s hwt: %.2f %s %.2f, %s", name_.c_str(), hwt, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());

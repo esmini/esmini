@@ -9,6 +9,7 @@
 #include "Entities.hpp"
 
 // Forward declaration 
+class Story;
 class Act;
 
 class OSCCondition
@@ -38,7 +39,7 @@ public:
 
 	OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false) {}
 	
-	virtual bool Evaluate(Act *act, double sim_time) = 0;
+	virtual bool Evaluate(Story *story, double sim_time) = 0;
 	bool CheckEdge(double a, double b, OSCCondition::ConditionEdge edge);
 };
 
@@ -93,7 +94,7 @@ public:
 
 	TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
 
-	bool Evaluate(Act *act, double sim_time);
+	bool Evaluate(Story *story, double sim_time);
 };
 
 class TrigByState : public OSCCondition
@@ -120,7 +121,7 @@ public:
 
 	TrigByState(Type type) : OSCCondition(BY_STATE), type_(type) {}
 
-	bool Evaluate(Act *act, double sim_time);
+	bool Evaluate(Story *story, double sim_time);
 };
 
 class TrigAtStart : public TrigByState
@@ -130,7 +131,7 @@ public:
 
 	TrigAtStart() : TrigByState(TrigByState::Type::AT_START) {}
 
-	bool Evaluate(Act *act, double sim_time);
+	bool Evaluate(Story *story, double sim_time);
 };
 
 class TrigAfterTermination : public TrigByState
@@ -149,7 +150,7 @@ public:
 
 	TrigAfterTermination() : TrigByState(TrigByState::Type::AFTER_TERMINATION) {}
 
-	bool Evaluate(Act *act, double sim_time);
+	bool Evaluate(Story *story, double sim_time);
 };
 
 class TrigByValue : public OSCCondition
@@ -168,7 +169,7 @@ public:
 
 	TrigByValue(Type type) : OSCCondition(BY_VALUE), type_(type) {}
 
-	bool Evaluate(Act *act, double sim_time);
+	bool Evaluate(Story *story, double sim_time);
 };
 
 class TrigBySimulationTime : public TrigByValue
@@ -178,6 +179,6 @@ public:
 
 	TrigBySimulationTime() : TrigByValue(TrigByValue::Type::TIME_OF_DAY) {}
 
-	bool Evaluate(Act *act, double sim_time);
+	bool Evaluate(Story *story, double sim_time);
 };
 
