@@ -22,7 +22,7 @@
 #define INFINITY (~0)
 #endif
 
-#define LOG(Format_, ...)  Logger::Inst().Log(__FILENAME__, __FUNCTION__, __LINE__, Format_, __VA_ARGS__)
+#define LOG(Format_, ...)  Logger::Inst().Log(__FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
 
 
 // Time functions
