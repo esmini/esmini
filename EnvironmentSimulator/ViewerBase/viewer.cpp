@@ -101,6 +101,10 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 
 CarModel::CarModel(osg::ref_ptr<osg::LOD> lod)
 {
+	if (!lod)
+	{
+		return;
+	}
 	node_ = lod;
 	
 	// Locate wheel nodes if available
@@ -192,12 +196,12 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	shadow_node_ = osgDB::readNodeFile(filePath);
 	if (!shadow_node_)
 	{
-		throw("Failed to shadow model %s\n", filePath.c_str());
+		LOG("Failed to shadow model %s\n", filePath.c_str());
 	}
 
 	if (!ReadCarModels())
 	{
-		throw("Viewer::Viewer Failed to read car models!\n");
+		LOG("Viewer::Viewer Failed to read car models!\n");
 	}
 
 	// set the scene to render
@@ -207,23 +211,23 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	// add environment
 	if (AddEnvironment(modelFilename) == -1)
 	{
-		throw "Failed to load environment model";
+		LOG("Failed to load environment model");
 	}
 	rootnode_->addChild(envTx_);
 
 	if (!CreateRoadLines(odrManager, rootnode_))
 	{
-		throw("Viewer::Viewer Failed to create road lines!\n");
+		LOG("Viewer::Viewer Failed to create road lines!\n");
 	}
 
 	if (!CreateVehicleLineAndPoint(rootnode_))
 	{
-		throw("Viewer::Viewer Failed to create vehicle line!\n");
+		LOG("Viewer::Viewer Failed to create vehicle line!\n");
 	}
 
 	if (!CreateDriverModelLineAndPoint(rootnode_))
 	{
-		throw("Viewer::Viewer Failed to create driver model line and point!\n");
+		LOG("Viewer::Viewer Failed to create driver model line and point!\n");
 	}
 
 	osgViewer_->setSceneData(rootnode_);
@@ -618,9 +622,9 @@ void Viewer::UpdateDriverModelPoint(roadmanager::Position *pos, double distance)
 	// Find and visualize steering target point
 	double steering_target_local[3];
 	double steering_target_global[3];
-	double angle;
+	double angle, curvature;
 
-	pos->GetSteeringTargetPos(distance, steering_target_local, steering_target_global, &angle);
+	pos->GetSteeringTargetPos(distance, steering_target_local, steering_target_global, &angle, &curvature);
 	
 	double z_offset = 0.1;
 
@@ -654,7 +658,7 @@ int Viewer::AddEnvironment(const char* filename)
 		environment_ = osgDB::readNodeFile(filename);
 		if (environment_ == 0)
 		{
-			LOG("Failed to read environment model %s! If file is missing, check SharePoint/SharedDocuments/models");
+			LOG("Failed to read environment model %s! If file is missing, check SharePoint/SharedDocuments/models", filename);
 			return -1;
 		}
 

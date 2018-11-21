@@ -28,6 +28,7 @@ namespace roadmanager
 		double GetSMax() { return s_max_; }
 		double Evaluate(double s);
 		double EvaluatePrim(double s);
+		double EvaluatePrimPrim(double s);
 
 	private:
 		double a_;
@@ -61,6 +62,7 @@ namespace roadmanager
 		double GetY() { return y_; }
 		double GetHdg() { return hdg_; }
 		double GetS() { return s_; }
+		virtual double EvaluateCurvatureDS(double ds) = 0;
 		virtual void Print();
 		virtual void EvaluateDS(double ds, double *x, double *y, double *h);
 
@@ -81,6 +83,7 @@ namespace roadmanager
 
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
+		double EvaluateCurvatureDS(double ds) { return 0; }
 	};
 
 
@@ -90,7 +93,7 @@ namespace roadmanager
 		Arc(double s, double x, double y, double hdg, double length, double curvature) :
 			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_ARC), curvature_(curvature) {}
 
-		double GetCurvature() { return curvature_; }
+		double EvaluateCurvatureDS(double ds) { return curvature_; }
 		double GetRadius() { return std::fabs(1.0 / curvature_); }
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
@@ -121,7 +124,7 @@ namespace roadmanager
 		void SetCDot(double c_dot) { c_dot_ = c_dot; }
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
-
+		double EvaluateCurvatureDS(double ds);
 
 	private:
 		double curv_start_;
@@ -148,6 +151,7 @@ namespace roadmanager
 		double GetUMax() { return umax_; }
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
+		double EvaluateCurvatureDS(double ds);
 
 		Polynomial poly3_;
 
@@ -178,6 +182,7 @@ namespace roadmanager
 		double GetPRange() { return p_range_; }
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
+		double EvaluateCurvatureDS(double ds);
 
 		Polynomial poly3U_;
 		Polynomial poly3V_;
@@ -696,9 +701,10 @@ namespace roadmanager
 		@param lookahead_distance The distance, along the road, to the point
 		@param target_pos Array to fill in calculated X, Y and Z coordinate values
 		@param angle Pointer to variable where target angle will be written 
+		@param curvature Pointer to variable where target curvature will be written
 		@return 0 if successful, -1 if not
 		*/
-		int GetSteeringTargetPos(double lookahead_distance, double *target_pos_local, double *target_pos_global, double *angle);
+		int GetSteeringTargetPos(double lookahead_distance, double *target_pos_local, double *target_pos_global, double *angle, double *curvature);
 
 		/**
 		Move position along the road network, forward or backward, from the current position
@@ -771,6 +777,8 @@ namespace roadmanager
 		*/
 		double GetR() const { return r_; }
 
+		double GetCurvature();
+
 		void PrintTrackPos();
 		void PrintLanePos();
 		void PrintInertialPos();
@@ -799,6 +807,7 @@ namespace roadmanager
 		double  h_offset_;		// local heading offset given by lane width and offset
 		double  h_relative_;	// heading relative road heading, e.g. for vehicle heading use
 		double  s_route_;		// longitudinal point/distance along the route
+		double  curvature_;
 
 		// inertial reference
 		double	x_;
@@ -830,54 +839,6 @@ namespace roadmanager
 		*/
 		int AddWaypoint(Position *position);
 
-#if 0
-		/**
-		Set the current position along the route. 
-		@param position A regular position created with road, lane or world coordinates
-		@return Non zero return value indicates error of some kind
-		*/
-		int SetPosition(Position *position);
-
-		/**
-		Retrieve a copy of the current position along the route.
-		@param position A pointer to a valid position object
-		@return Non zero return value indicates error of some kind
-		*/
-		int GetPosition(Position *position);
-
-		/**
-		Retrieve the S-value of the current route position. Note: This is the S along the 
-		complete route, not the actual individual roads.
-		*/
-		double GetS() { return s_; }
-
-		/**
-		Move current position forward, or backwards, ds meters along the route
-		@param ds Distance to move, negative will move backwards
-		@param dLane Lane id offset, change to another lane one or several steps to the right (-) or left (+)
-		@param dLaneOffset Additional Lane offset, added to the lane offset as given by the waypoint
-		@return Non zero return value indicates error of some kind
-		*/
-		int MoveDS(double ds, int dLane = 0, double  dLaneOffset = 0);
-
-		/**
-		Move current position to specified S-value along the route
-		@param route_s Distance to move, negative will move backwards
-		@param laneId Explicit (not delta/offset) lane ID 
-		@param laneOffset Explicit (not delta/offset) lane offset value
-		@return Non zero return value indicates error of some kind
-		*/
-		int Set(double route_s, int laneId, double  laneOffset);
-
-		/**
-		Move current position to specified S-value along the route
-		@param route_s Distance to move, negative will move backwards
-		@param dLane Lane id offset, change to another lane one or several steps to the right (-) or left (+)
-		@param dLaneOffset Additional Lane offset, added to the lane offset as given by the waypoint
-		@return Non zero return value indicates error of some kind
-		*/
-		int SetOffset(double route_s, int dLane = 0, double  dLaneOffset = 0);
-#endif
 		void setName(std::string name);
 		std::string getName();
 		double GetLength();

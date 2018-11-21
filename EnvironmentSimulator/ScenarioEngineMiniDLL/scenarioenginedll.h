@@ -76,6 +76,15 @@ extern "C"
 	*/
 	SE_DLL_API int SE_GetSteeringTargetAngle(int object_id, float lookahead_distance, float *angle);
 
+	/**
+	Get the curvature at the point at a specified distance along the road ahead
+	@param object_id The ID of the vehicle to measure from
+	@param lookahead_distance The distance, along the road, to the point
+	@param curvature Pointer to variable where target curvature will be written
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_GetSteeringTargetAngle(int object_id, float lookahead_distance, float *curvature);
+
 #ifdef __cplusplus
 }
 #endif

@@ -39,6 +39,13 @@ double Polynomial::EvaluatePrim(double s)
 	return (b_ + 2 * p*c_ + 3 * p*p*d_);
 }
 
+double Polynomial::EvaluatePrimPrim(double s)
+{
+	double p = s / (s_max_);
+
+	return (2 * c_ + 6 * p*d_);
+}
+
 void Polynomial::Set(double a, double b, double c, double d, double s_max)
 {
 	a_ = a;
@@ -72,7 +79,7 @@ void Line::EvaluateDS(double ds, double *x, double *y, double *h)
 
 void Arc::Print()
 {
-	LOG("Arc x: %.2f, y: %.2f, h: %.2f curvature: %.2f length: %.2f\n", GetX(), GetY(), GetHdg(), GetCurvature(), GetLength());
+	LOG("Arc x: %.2f, y: %.2f, h: %.2f curvature: %.2f length: %.2f\n", GetX(), GetY(), GetHdg(), curvature_, GetLength());
 }
 
 void Arc::EvaluateDS(double ds, double *x, double *y, double *h)
@@ -81,10 +88,10 @@ void Arc::EvaluateDS(double ds, double *x, double *y, double *h)
 	double y_local = 0;
 
 	// arc_length = angle * radius -> angle = arc_length / radius = arc_length * curvature
-	double angle = ds * GetCurvature();
+	double angle = ds * curvature_;
 
 	// Now calculate x, y in a local unit circle coordinate system
-	if (GetCurvature() < 0)
+	if (curvature_ < 0)
 	{
 		// starting from 90 degrees going clockwise
 		x_local = cos(angle + M_PI / 2.0);
@@ -152,6 +159,11 @@ void Spiral::EvaluateDS(double ds, double *x, double *y, double *h)
 	*y = GetY() + x2 * sin(h_start) + y2 * cos(h_start);
 }
 
+double Spiral::EvaluateCurvatureDS(double ds)
+{
+	return (curv_start_ + (ds / GetLength())* (curv_end_ - curv_start_));
+}
+
 void Poly3::Print()
 {
 	LOG("Poly3 x: %.2f, y: %.2f, h: %.2f length: %.2f a: %.2f b: %.2f c: %.2f d: %.2f\n",
@@ -168,6 +180,11 @@ void Poly3::EvaluateDS(double ds, double *x, double *y, double *h)
 	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
 	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());
 	*h = GetHdg() + poly3_.EvaluatePrim(p);
+}
+
+double Poly3::EvaluateCurvatureDS(double ds)
+{
+	return poly3_.EvaluatePrimPrim(ds);
 }
 
 void ParamPoly3::Print()
@@ -194,6 +211,11 @@ void ParamPoly3::EvaluateDS(double ds, double *x, double *y, double *h)
 	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
 	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());
 	*h = GetHdg() + poly3V_.EvaluatePrim(p) / poly3U_.EvaluatePrim(p);
+}
+
+double ParamPoly3::EvaluateCurvatureDS(double ds)
+{
+	return poly3V_.EvaluatePrimPrim(ds) / poly3U_.EvaluatePrim(ds);;
 }
 
 void Elevation::Print()
@@ -2533,6 +2555,13 @@ void Position::SetInertiaPos(double x, double y, double z, double h, double p, d
 	}
 }
 
+double Position::GetCurvature()
+{
+	Geometry *geom = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetGeometry(geometry_idx_);
+
+	return(geom->EvaluateCurvatureDS(GetS() - geom->GetS()));
+}
+
 void Position::PrintTrackPos()
 {
 	LOG("	Track pos: (%d, %.2f, %.2f)\n", track_id_, s_, t_);
@@ -2598,7 +2627,7 @@ bool Position::IsAheadOf(Position target_position)
 	return(diff_x0 < 0);
 }
 
-int Position::GetSteeringTargetPos(double lookahead_distance, double *target_pos_local, double *target_pos_global, double *angle)
+int Position::GetSteeringTargetPos(double lookahead_distance, double *target_pos_local, double *target_pos_global, double *angle, double *curvature)
 {
 	Position target(*this);  // Make a copy of current position
 	target.offset_ = 0.0;  // Fix to lane center
@@ -2630,6 +2659,8 @@ int Position::GetSteeringTargetPos(double lookahead_distance, double *target_pos
 		(target_pos_local[0] * 1.0 + target_pos_local[1] * 0.0) / 
 		sqrt(target_pos_local[0] * target_pos_local[0] + target_pos_local[1] * target_pos_local[1]);
 	*angle = SIGN(target_pos_local[1]) * acos(dot_prod);
+
+	*curvature = target.GetCurvature();
 
 	return 0;
 }

@@ -208,6 +208,10 @@ int main(int argc, char** argv)
 			{
 				updateCar(odrManager, cars[i], deltaSimTime);
 			}
+			//if (cars.size() > 0)
+			//{
+			//	printf("Curvature: %.6f\n", cars[0]->pos->GetCurvature());
+			//}
 
 			viewer->osgViewer_->frame();
 		}

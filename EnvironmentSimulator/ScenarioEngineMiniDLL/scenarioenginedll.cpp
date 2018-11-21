@@ -283,7 +283,7 @@ extern "C"
 		return 0;
 	}
 
-	static int GetSteeringTarget(int object_id, float lookahead_distance, double *pos_local, double *pos_global, double *angle)
+	static int GetSteeringTarget(int object_id, float lookahead_distance, double *pos_local, double *pos_global, double *angle, double *curvature)
 	{
 		if (object_id >= scenarioGateway->getNumberOfObjects())
 		{
@@ -293,15 +293,16 @@ extern "C"
 
 		roadmanager::Position *pos = &scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
 
-		pos->GetSteeringTargetPos(lookahead_distance, pos_local, pos_global, angle);
+		pos->GetSteeringTargetPos(lookahead_distance, pos_local, pos_global, angle, curvature);
 
 		return 0;
 	}
 
 	SE_DLL_API int SE_GetSteeringTargetPosGlobal(int object_id, float lookahead_distance, float * target_pos)
 	{
-		double pos_local[3], pos_global[3], angle;
-		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle) != 0)
+		double pos_local[3], pos_global[3], angle, curvature;
+
+		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
 		{
 			return -1;
 		}
@@ -313,8 +314,8 @@ extern "C"
 
 	SE_DLL_API int SE_GetSteeringTargetPosLocal(int object_id, float lookahead_distance, float * target_pos)
 	{
-		double pos_local[3], pos_global[3], angle;
-		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle) != 0)
+		double pos_local[3], pos_global[3], angle, curvature;
+		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
 		{
 			return -1;
 		}
@@ -326,8 +327,8 @@ extern "C"
 
 	SE_DLL_API int SE_GetSteeringTargetAngle(int object_id, float lookahead_distance, float * angle_f)
 	{
-		double pos_local[3], pos_global[3], angle;
-		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle) != 0)
+		double pos_local[3], pos_global[3], angle, curvature;
+		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
 		{
 			return -1;
 		}
