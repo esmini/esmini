@@ -255,7 +255,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 								if (!active)
 								{
 									// Actions done -> Set event done
-									event->state_ = Event::State::DONE;
+									event->Deactivate();
 									LOG("Event %s done", event->name_.c_str());
 								}
 							}

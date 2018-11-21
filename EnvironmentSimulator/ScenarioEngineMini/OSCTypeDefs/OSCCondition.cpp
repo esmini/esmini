@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OSCCondition.hpp"
+#include "Story.hpp"
 
 
 std::string Rule2Str(Rule rule)
@@ -109,6 +110,7 @@ bool TrigByState::Evaluate(Story *story, double sim_time)
 {
 	evaluated_ = true;
 
+
 	return false;
 }
 
@@ -119,6 +121,15 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 	if (element_type_ == StoryElementType::SCENE)
 	{
 		return true;
+	}
+	else if (element_type_ == StoryElementType::ACTION)
+	{
+		OSCAction *action = story->FindActionByName(element_name_);
+		if ( action && action->state_ == OSCAction::State::ACTIVE)
+		{
+			LOG("Trigged");
+			return action;
+		}
 	}
 	else
 	{
@@ -131,8 +142,30 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 {
 	evaluated_ = true;
+	bool trig = false;
 
-	return false;
+	if (element_type_ == StoryElementType::SCENE)
+	{
+		trig = true;
+	}
+	else if (element_type_ == StoryElementType::ACTION)
+	{
+		OSCAction *action = story->FindActionByName(element_name_);
+		if (action && action->state_ == OSCAction::State::DONE)
+		{
+			trig = true;
+		}
+	}
+	else
+	{
+		LOG("Story element type %d not supported yet", element_type_);
+	}
+
+	if (trig)
+	{
+		LOG("Trigged");
+	}
+	return trig;
 }
 
 bool TrigByValue::Evaluate(Story *story, double sim_time)

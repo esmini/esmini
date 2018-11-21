@@ -26,8 +26,6 @@ public:
 
 	OSCCatalogReference catalog_reference_;
 
-//	std::vector<Property*> properties_;
-
 	struct
 	{
 		OSCCatalogReference CatalogReference;

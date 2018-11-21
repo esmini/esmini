@@ -31,6 +31,7 @@ std::string ScenarioReader::getParameter(std::string name)
 			return parameterDeclaration.Parameter[i].value;
 		}
 	}
+	LOG("Failed to resolve parameter %s", name.c_str());
 	return 0;
 }
 
@@ -707,6 +708,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		}
 	}
 
+	action->name_ = ReadAttribute(actionNode.parent().attribute("name"));
 	action->object_ = object;
 
 	return action;
@@ -722,6 +724,7 @@ Object* ScenarioReader::FindObjectByName(std::string name, Entities *entities)
 		}
 	}
 
+	LOG("Failed to find object %s", name.c_str());
 	return 0;
 }
 
@@ -842,7 +845,7 @@ static TrigByState::StoryElementType ParseElementType(std::string element_type)
 // ------------------------------------------
 OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, Entities *entities)
 {
-	LOG("Parsing OSCCondition");
+	LOG("Parsing OSCCondition %s", ReadAttribute(conditionNode.attribute("name")).c_str());
 
 	OSCCondition *condition;
 

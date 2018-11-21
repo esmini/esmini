@@ -6,6 +6,7 @@
 #include "OSCPrivateAction.hpp"
 
 #define SIGN(x) (x < 0 ? -1 : 1)
+#define MAX(x, y) (y > x ? y : x)
 
 
 double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double start_value, double end_value)
@@ -67,6 +68,7 @@ void LatLaneChangeAction::Step(double dt)
 	double target_t;
 	double t, t_old;
 	double factor;
+	double angle;
 
 	target_t =
 		SIGN(target_lane_id_) *
@@ -82,11 +84,20 @@ void LatLaneChangeAction::Step(double dt)
 		t = dynamics_.transition_.Evaluate(factor, start_t_, target_t);
 		
 		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
-		object_->pos_.SetHeadingRelative(atan((t - t_old) / (object_->speed_ * dt)));
+		if (object_->speed_ < SMALL_NUMBER)
+		{
+			angle = 0;
+		}
+		else
+		{
+			angle = atan((t - t_old) / (object_->speed_ * dt));
+		}
+
+		object_->pos_.SetHeadingRelative(angle);
 
 		if (factor > 1.0)
 		{
-			state_ = OSCAction::State::DONE;
+			OSCAction::Stop();
 		}
 	}
 	else
@@ -124,7 +135,7 @@ void LatLaneOffsetAction::Step(double dt)
 	if (factor > 1.0)
 	{
 		object_->pos_.SetHeadingRelative(0.0);
-		state_ = State::DONE;
+		OSCAction::Stop();
 	}
 }
 
@@ -160,25 +171,36 @@ double LongSpeedAction::TargetRelative::GetValue()
 	return 0;
 }
 
+void LongSpeedAction::Trig()
+{
+	if (object_->extern_control_)
+	{
+		// motion control handed over 
+		return;
+	}
+	OSCAction::Trig();
+
+	start_speed_ = object_->speed_;
+}
+
 void LongSpeedAction::Step(double dt)
 {
 	double factor = 0.0;
 	double target_speed = 0;
-	double new_speed = object_->speed_;
+	double new_speed = 0;
 
 	if (dynamics_.timing_type_ == Timing::RATE)
 	{
 		elapsed_ += dt;
-		new_speed += dynamics_.timing_target_value_ * dt;
+		double speed_diff = target_->GetValue() - object_->speed_;
+		new_speed = object_->speed_ + SIGN(speed_diff) * fabs(dynamics_.timing_target_value_) * dt;
 
-		if ((dynamics_.timing_target_value_ < 0 && new_speed < target_->GetValue()) ||
-			(dynamics_.timing_target_value_ > 0 && new_speed > target_->GetValue()))
+		// Check if speed changed passed target value
+		if ((object_->speed_ > target_->GetValue() && new_speed < target_->GetValue()) ||
+			(object_->speed_ < target_->GetValue() && new_speed > target_->GetValue()))
 		{
-			if (new_speed < target_->GetValue())
-			{
-				new_speed = target_->GetValue();
-				state_ = State::DONE;
-			}
+			new_speed = target_->GetValue();
+			OSCAction::Stop();
 		}
 	}
 	else if (dynamics_.timing_type_ == Timing::TIME)
@@ -191,7 +213,7 @@ void LongSpeedAction::Step(double dt)
 			new_speed = target_->GetValue();
 			if (target_->type_ == Target::Type::RELATIVE && ((TargetRelative*)target_)->continuous_ != true)
 			{
-				state_ = State::DONE;
+				OSCAction::Stop();
 			}
 		}
 		else
@@ -202,7 +224,8 @@ void LongSpeedAction::Step(double dt)
 	else
 	{
 		LOG("Timing type %d not supported yet", dynamics_.timing_type_);
-		state_ = State::DONE;
+		OSCAction::Stop();
+
 		return;
 	}
 
@@ -213,19 +236,21 @@ void MeetingRelativeAction::Step(double dt)
 {
 	// Calculate straight distance, not along road/route. To be improved.
 	double pivotDist = object_->pos_.getRelativeDistance(*own_target_position_);
-	double relativeDist = relative_object_->pos_.getRelativeDistance(*relative_target_position_);
-
 	double targetTimeToDest = INFINITY;
+	double relativeDist = MAX(0, relative_object_->pos_.getRelativeDistance(*relative_target_position_));
 
 	if (relative_object_->speed_ > SMALL_NUMBER)
 	{
 		targetTimeToDest = relativeDist / relative_object_->speed_;
 	}
 
-	object_->speed_ = pivotDist / (targetTimeToDest + offsetTime_);
-
-	if (relativeDist < DISTANCE_TOLERANCE)
+	// Done when either of the vehicles reaches the destination
+	if (relativeDist < DISTANCE_TOLERANCE || (targetTimeToDest + offsetTime_) < SMALL_NUMBER)
 	{
-		state_ = State::DONE;
+		OSCAction::Stop();
+	}
+	else
+	{
+		object_->speed_ = pivotDist / (targetTimeToDest + offsetTime_);
 	}
 }

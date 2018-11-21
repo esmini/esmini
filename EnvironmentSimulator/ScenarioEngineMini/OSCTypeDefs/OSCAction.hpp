@@ -22,6 +22,7 @@ public:
 
 	BaseType base_type_;
 	State state_;
+	std::string name_;
 
 	OSCAction(BaseType type) : base_type_(type), state_(State::NOT_TRIGGED)
 	{
@@ -31,7 +32,16 @@ public:
 	virtual void Trig()
 	{
 		state_ = State::ACTIVE;
-		LOG("Trigged %d", base_type_);
+		LOG("Trigged action %s of type %d", name_.c_str(), base_type_);
+	}
+
+	void Stop()
+	{
+		if (state_ = State::ACTIVE)
+		{
+			LOG("Action %s stopped", name_.c_str());
+			state_ = DONE;
+		}
 	}
 
 	virtual void Step(double dt)

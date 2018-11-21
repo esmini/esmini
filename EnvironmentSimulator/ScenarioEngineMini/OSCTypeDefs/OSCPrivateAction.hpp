@@ -143,15 +143,7 @@ public:
 		elapsed_ = 0;
 	}
 	
-	void Trig()
-	{
-		if (object_->extern_control_)
-		{
-			// motion control handed over 
-			return;
-		}
-		OSCAction::Trig();
-	}
+	void Trig();
 
 	void Step(double dt);
 

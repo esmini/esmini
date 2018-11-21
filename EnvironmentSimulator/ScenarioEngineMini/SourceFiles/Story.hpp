@@ -45,6 +45,7 @@ class Story
 {
 public:
 	Story();
+	OSCAction* FindActionByName(std::string name);
 	void Print();
 
 	std::vector<Act*> act_;
