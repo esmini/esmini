@@ -80,6 +80,7 @@ namespace roadmanager
 	{
 	public:
 		Line(double s, double x, double y, double hdg, double length) : Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_LINE) {}
+		~Line() {};
 
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
@@ -92,6 +93,7 @@ namespace roadmanager
 	public:
 		Arc(double s, double x, double y, double hdg, double length, double curvature) :
 			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_ARC), curvature_(curvature) {}
+		~Arc() {};
 
 		double EvaluateCurvatureDS(double ds) { return curvature_; }
 		double GetRadius() { return std::fabs(1.0 / curvature_); }
@@ -109,6 +111,7 @@ namespace roadmanager
 		Spiral(double s, double x, double y, double hdg, double length, double curv_start, double curv_end) :
 			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_SPIRAL),
 			curv_start_(curv_start), curv_end_(curv_end), c_dot_(0.0), x0_(0.0), y0_(0.0), h0_(0.0), s0_(0.0) {}
+		~Spiral() {};
 
 		double GetCurvStart() { return curv_start_; }
 		double GetCurvEnd() { return curv_end_; }
@@ -146,6 +149,7 @@ namespace roadmanager
 			poly3_.Set(a, b, c, d);
 			
 		}
+		~Poly3() {};
 		
 		void SetUMax(double umax) { umax_ = umax; }
 		double GetUMax() { return umax_; }
@@ -178,6 +182,7 @@ namespace roadmanager
 			poly3U_.Set(aU, bU, cU, dU);
 			poly3V_.Set(aV, bV, cV, dV);
 		}
+		~ParamPoly3() {};
 
 		double GetPRange() { return p_range_; }
 		void Print();
