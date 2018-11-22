@@ -1979,13 +1979,13 @@ void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPi
 
 	if ((road = GetOpenDrive()->GetRoadByIdx(track_idx_)) == 0)
 	{
-		LOG("Position::SetXYH: Invalid road index %d\n", track_idx_);
+		LOG("Invalid road index %d\n", track_idx_);
 		return;
 	}
 
 	if ((geom = road->GetGeometry(geometry_idx_)) == 0)
 	{
-		LOG("Position::SetXYH: Invalid geometry index %d\n", geometry_idx_);
+		LOG("Invalid geometry index %d\n", geometry_idx_);
 		return;
 	}
 
