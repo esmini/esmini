@@ -83,7 +83,7 @@ extern "C"
 	@param curvature Pointer to variable where target curvature will be written
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_GetSteeringTargetAngle(int object_id, float lookahead_distance, float *curvature);
+	SE_DLL_API int SE_GetSteeringTargetCurvature(int object_id, float lookahead_distance, float *curvature);
 
 #ifdef __cplusplus
 }

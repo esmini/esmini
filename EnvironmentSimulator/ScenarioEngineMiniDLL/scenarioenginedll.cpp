@@ -338,4 +338,16 @@ extern "C"
 		return 0;
 	}
 
+	SE_DLL_API int SE_GetSteeringTargetCurvature(int object_id, float lookahead_distance, float * curvature_f)
+	{
+		double pos_local[3], pos_global[3], angle, curvature;
+		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
+		{
+			return -1;
+		}
+
+		*curvature_f = curvature;
+
+		return 0;
+	}
 }
