@@ -395,7 +395,7 @@ OSCPrivateAction::DynamicsShape ParseDynamicsShape(std::string shape)
 	}
 	else
 	{
-		LOG("Dynamics shape %s not implemented", shape);
+		LOG("Dynamics shape %s not implemented", shape.c_str());
 	}
 
 	return OSCPrivateAction::DynamicsShape::UNDEFINED;
@@ -467,7 +467,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									}
 									else
 									{
-										LOG("Value type %s not valid", value_type);
+										LOG("Value type %s not valid", value_type.c_str());
 									}
 									action_speed->target_ = target_rel;
 								}
@@ -630,7 +630,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				}
 				else
 				{
-					LOG("mode %s invalid", mode);
+					LOG("mode %s invalid", mode.c_str());
 				}
 
 				meeting_rel->relative_object_ = FindObjectByName(ReadAttribute(rel_child.attribute("object")), entities);
@@ -781,7 +781,7 @@ static OSCCondition::ConditionEdge ParseConditionEdge(std::string edge)
 	}
 	else
 	{
-		LOG("Unsupported edge: %s", edge);
+		LOG("Unsupported edge: %s", edge.c_str());
 	}
 
 	return OSCCondition::ConditionEdge::UNDEFINED;
@@ -803,7 +803,7 @@ static Rule ParseRule(std::string rule)
 	}
 	else
 	{
-		LOG("Invalid rule %s", rule);
+		LOG("Invalid rule %s", rule.c_str());
 	}
 
 	return Rule::UNDEFINED;
@@ -837,7 +837,7 @@ static TrigByState::StoryElementType ParseElementType(std::string element_type)
 	}
 	else
 	{
-		LOG("Invalid element type %s", element_type);
+		LOG("Invalid element type %s", element_type.c_str());
 	}
 
 	return TrigByState::StoryElementType::UNDEFINED;
@@ -891,7 +891,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 					}
 					else
 					{
-						LOG("Entity condition %s not supported", condition_type);
+						LOG("Entity condition %s not supported", condition_type.c_str());
 					}
 				}
 			}
@@ -912,7 +912,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 				}
 				else
 				{
-					LOG("Invalid triggering entity type: %s", trig_ent_rule);
+					LOG("Invalid triggering entity type: %s", trig_ent_rule.c_str());
 				}
 
 				for (pugi::xml_node triggeringEntitiesChild = triggering_entities.first_child(); triggeringEntitiesChild; triggeringEntitiesChild = triggeringEntitiesChild.next_sibling())
@@ -961,7 +961,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 					}
 					else
 					{
-						LOG("Invalid AfterTerminationRule %s", term_rule);
+						LOG("Invalid AfterTerminationRule %s", term_rule.c_str());
 					}					
 					condition = trigger;
 				}
@@ -985,7 +985,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 				}
 				else
 				{
-					LOG("TrigByValue %s not implemented", byValueChildName);
+					LOG("TrigByValue %s not implemented", byValueChildName.c_str());
 				}
 			}
 		}

@@ -30,7 +30,7 @@ public:
 	// Enitites
 	void parseEntities(Entities &entities);
 	void parseOSCCatalogReference(OSCCatalogReference &catalogReference, pugi::xml_node catalogReferenceNode);
-	Object* ScenarioReader::FindObjectByName(std::string name, Entities *entities);
+	Object* FindObjectByName(std::string name, Entities *entities);
 
 	// Storyboard - Init
 	void parseInit(Init &init, Entities *entities, Catalogs *catalogs);
