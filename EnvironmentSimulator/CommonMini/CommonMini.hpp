@@ -1,10 +1,11 @@
 #pragma once
 
+
 #include <vector>
 #include <fstream>
 #include <string>
 
-#ifdef WIN32
+#ifdef _WIN32
 	#include <sdkddkver.h>
 #else
 	#include <inttypes.h>
