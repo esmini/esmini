@@ -6,9 +6,16 @@
 #include <string>
 #include <vector>
 
+
 class Object
 {
 public:
+	typedef enum
+	{
+		VEHICLE,
+		PEDESTRIAN,
+		MISC_OBJECT
+	} Type;
 
 	struct Property
 	{
@@ -16,6 +23,7 @@ public:
 		std::string value_;
 	};
 
+	Type type_;
 	std::string name_;
 	bool extern_control_;
 	int id_;
@@ -31,7 +39,42 @@ public:
 		OSCCatalogReference CatalogReference;
 	} Controller;
 
-	Object() : id_(0), extern_control_(false), speed_(0), route_(0) {}
+	Object(Type type) : type_(type), id_(0), extern_control_(false), speed_(0), route_(0) {}
+};
+
+class Vehicle : public Object
+{
+public:
+	typedef enum
+	{
+		CAR,
+		VAN,
+		TRUCK,
+		SEMITRAILER,
+		BUS,
+		MOTORBIKE,
+		BICYCLE,
+		TRAIN,
+		TRAM
+	} Category;
+	
+	Category category_;
+	
+	Vehicle() : Object(Object::Type::VEHICLE), category_(Category::CAR) {}
+
+	void SetCategory(std::string category)
+	{
+		if (category == "car")
+		{
+			category_ = Vehicle::Category::CAR;
+		}
+		else
+		{
+			LOG("Vehicle category %s not supported yet", category);
+		}
+
+		return;
+	}
 };
 
 class Entities

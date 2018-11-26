@@ -30,10 +30,6 @@ public:
 	void InitScenario(std::string oscFilename, double startTime); // use with default constructor
 		
 	void step(double deltaSimTime, bool initial = false);
-	void initCars();
-	void initInit();
-	void printCars();
-
 	void setSimulationTime(double simulationTime);
 	void setTimeStep(double timeStep);
 	void printSimulationTime();
@@ -45,11 +41,6 @@ public:
 	roadmanager::OpenDrive *getRoadManager() { return odrManager; }
 
 	ScenarioGateway *getScenarioGateway();
-
-	void initRoutes();
-	void initConditions();
-	void checkConditions();
-	void executeActions();
 	
 private:
 	// OpenSCENARIO parameters

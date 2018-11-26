@@ -27,7 +27,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 
 	scenarioReader.parseParameterDeclaration();
 	scenarioReader.parseCatalogs(catalogs);
-	scenarioReader.parseEntities(entities);
+	scenarioReader.parseEntities(entities, &catalogs);
 	scenarioReader.parseInit(init, &entities, &catalogs);
 	scenarioReader.parseStory(story, &entities, &catalogs);
 

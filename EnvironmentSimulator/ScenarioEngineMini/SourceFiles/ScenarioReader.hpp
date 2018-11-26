@@ -15,6 +15,8 @@ class ScenarioReader
 public:
 	ScenarioReader();
 	int loadOSCFile(const char * path);
+	
+	void ScenarioReader::LoadCatalog(pugi::xml_node catalogChild, Catalogs *catalogs);
 
 	// RoadNetwork
 	void parseRoadNetwork(RoadNetwork &roadNetwork);
@@ -26,10 +28,10 @@ public:
 	// Catalogs
 	void parseCatalogs(Catalogs &catalogs);
 	roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode, Catalogs *catalogs);
+	Vehicle* parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *catalogs);
 
 	// Enitites
-	void parseEntities(Entities &entities);
-	void parseOSCCatalogReference(OSCCatalogReference &catalogReference, pugi::xml_node catalogReferenceNode);
+	void parseEntities(Entities &entities, Catalogs *catalogs);
 	Object* FindObjectByName(std::string name, Entities *entities);
 
 	// Storyboard - Init

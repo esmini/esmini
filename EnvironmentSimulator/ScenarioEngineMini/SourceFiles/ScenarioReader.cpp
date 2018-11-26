@@ -60,12 +60,73 @@ int ScenarioReader::loadOSCFile(const char * path)
 	pugi::xml_parse_result result = doc.load_file(path);
 	if (!result)
 	{
+		LOG("%s", result.description());
 		return -1;
 	}
 
 	oscFilename = path;
 
 	return 0;
+}
+
+void ScenarioReader::LoadCatalog(pugi::xml_node catalogChild, Catalogs *catalogs)
+{
+	pugi::xml_document catalog_doc;
+
+	std::string filename = ReadAttribute(catalogChild.child("Directory").attribute("path"));
+
+	// Filename should be relative the XOSC file
+	std::string path = DirNameOf(oscFilename) + "/../xosc/" + filename;
+	pugi::xml_parse_result result = catalog_doc.load_file(path.c_str());
+
+	if (!result)
+	{
+		LOG("Couldn't locate catalog file %s (%s) - make sure path is relative xosc file", oscFilename.c_str(), path.c_str());
+		return;
+	}
+	
+	pugi::xml_node catalog_node = catalog_doc.child("OpenSCENARIO").child("Catalog");
+	
+	std::string catalogsChildName(catalogChild.name());
+
+	if (catalogsChildName == "RouteCatalog")
+	{
+		Catalog *catalog = new Catalog();
+		catalog->name_ = ReadAttribute(catalog_node.attribute("name"));
+		if (catalog->name_ == "")
+		{
+			LOG("Warning: Route catalog lacks name");
+		}
+
+		for (pugi::xml_node route_n = catalog_node.first_child(); route_n; route_n = route_n.next_sibling())
+		{
+			roadmanager::Route *route_item = parseOSCRoute(route_n, catalogs);
+			catalog->AddEntry(new Entry(Entry::Type::ROUTE, route_item->getName(), (void*)route_item));
+		}
+		catalogs->AddCatalog(catalog);
+	}
+	else if (catalogsChildName == "VehicleCatalog")
+	{
+		Catalog *catalog = new Catalog();
+		catalog->name_ = ReadAttribute(catalog_node.attribute("name"));
+		if (catalog->name_ == "")
+		{
+			LOG("Warning: Vehicle catalog lacks name");
+		}
+
+		for (pugi::xml_node vehicle_n = catalog_node.first_child(); vehicle_n; vehicle_n = vehicle_n.next_sibling())
+		{
+			Vehicle *vehicle_item = parseOSCVehicle(vehicle_n, catalogs);
+			catalog->AddEntry(new Entry(Entry::Type::VEHICLE, vehicle_item->name_, (void*)vehicle_item));
+		}
+		catalogs->AddCatalog(catalog);
+	}
+	else
+	{
+		LOG("Catalog type %s not supported yet", catalogsChildName.c_str());
+	}
+
+	return;
 }
 
 void ScenarioReader::parseParameterDeclaration()
@@ -105,12 +166,48 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 	}
 }
 
+Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *catalogs)
+{
+	Vehicle *vehicle = new Vehicle();
+
+	vehicle->name_ = ReadAttribute(vehicleNode.attribute("name"));
+	LOG("Parsing Vehicle %s", vehicle->name_.c_str());
+	vehicle->SetCategory(ReadAttribute(vehicleNode.attribute("category")));
+
+	pugi::xml_node properties_node = vehicleNode.child("Properties");
+	if (properties_node != NULL)
+	{
+		for (pugi::xml_node propertiesChild = properties_node.first_child(); propertiesChild; propertiesChild = propertiesChild.next_sibling())
+		{
+			std::string prop_name = ReadAttribute(propertiesChild.attribute("name"));
+			std::string prop_value = ReadAttribute(propertiesChild.attribute("value"));
+
+			// Check if the property is something supported
+			if (prop_name == "control")
+			{
+				if (prop_value == "external")
+				{
+					vehicle->extern_control_ = true;
+				}
+				else
+				{
+					vehicle->extern_control_ = false;
+				}
+			}
+		}
+	}
+
+
+	return vehicle;
+}
+
 roadmanager::Route* ScenarioReader::parseOSCRoute(pugi::xml_node routeNode, Catalogs *catalogs)
 {
-	LOG("Parsing OSCRoute");
 	roadmanager::Route *route = new roadmanager::Route;
 
 	route->setName(ReadAttribute(routeNode.attribute("name")));
+
+	LOG("Parsing OSCRoute %s", route->getName().c_str());
 
 	// Closed attribute not supported by roadmanager yet
 	std::string closed_str = ReadAttribute(routeNode.attribute("closed"));
@@ -149,24 +246,7 @@ void ScenarioReader::parseCatalogs(Catalogs &catalogs)
 
 	for (pugi::xml_node catalogsChild = catalogsNode.first_child(); catalogsChild; catalogsChild = catalogsChild.next_sibling())
 	{
-		std::string catalogsChildName(catalogsChild.name());
-
-		if (catalogsChildName == "RouteCatalog")
-		{
-			for (pugi::xml_node route_n = catalogsChild.first_child(); route_n; route_n = route_n.next_sibling())
-			{
-				roadmanager::Route *route_item = parseOSCRoute(route_n, &catalogs);
-				catalogs.RouteCatalog.push_back(route_item);
-			}
-		}
-		else if (catalogsChildName == "VehicleCatalog")
-		{
-			catalogs.VehicleCatalog.Directory.path = ReadAttribute(catalogsChild.child("Directory").attribute("path"));
-		}
-		else if (catalogsChildName == "DriverCatalog")
-		{
-			catalogs.DriverCatalog.Directory.path = ReadAttribute(catalogsChild.child("Directory").attribute("path"));
-		}
+		LoadCatalog(catalogsChild, &catalogs);
 	}
 }
 
@@ -189,22 +269,7 @@ void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 	}
 }
 
-void ScenarioReader::parseOSCCatalogReference(OSCCatalogReference &catalogReference, pugi::xml_node catalogReferenceNode)
-{
-
-	catalogReference.catalog_name_ = ReadAttribute(catalogReferenceNode.attribute("catalogName"));
-	catalogReference.entry_name_ = ReadAttribute(catalogReferenceNode.attribute("entryName"));
-
-	pugi::xml_node catalogReferenceChild = catalogReferenceNode.first_child();
-	std::string catalogReferenceChildName(catalogReferenceChild.name());
-
-	if (catalogReferenceChildName == "ParameterAssignment")
-	{
-		LOG("%s is not implemented", catalogReferenceChildName.c_str());
-	}
-}
-
-void ScenarioReader::parseEntities(Entities &entities)
+void ScenarioReader::parseEntities(Entities &entities, Catalogs *catalogs)
 {
 	LOG("Parsing Entities");
 
@@ -212,11 +277,7 @@ void ScenarioReader::parseEntities(Entities &entities)
 
 	for (pugi::xml_node entitiesChild = enitiesNode.first_child(); entitiesChild; entitiesChild = entitiesChild.next_sibling())
 	{
-		Object *obj = new Object;
-		obj->id_ = (int)entities.object_.size();
-		entities.object_.push_back(obj);
-
-		obj->name_ = ReadAttribute(entitiesChild.attribute("name"));
+		Object *obj = 0;
 
 		for (pugi::xml_node objectChild = entitiesChild.first_child(); objectChild; objectChild = objectChild.next_sibling())
 		{
@@ -224,31 +285,39 @@ void ScenarioReader::parseEntities(Entities &entities)
 
 			if (objectChildName == "CatalogReference")
 			{
-				parseOSCCatalogReference(obj->catalog_reference_, objectChild);
-			}
-			else if (objectChildName == "Properties")
-			{
-				for (pugi::xml_node propertiesChild = objectChild.first_child(); propertiesChild; propertiesChild = propertiesChild.next_sibling())
+				Entry *entry = catalogs->FindCatalogEntry(ReadAttribute(objectChild.attribute("catalogName")), ReadAttribute(objectChild.attribute("entryName")));
+				if (entry == 0)
 				{
-					std::string prop_name = ReadAttribute(propertiesChild.attribute("name"));
-					std::string prop_value = ReadAttribute(propertiesChild.attribute("value"));
-
-					// Check if the property is something supported
-					if (prop_name == "control")
-					{
-						if (prop_value == "external")
-						{
-							obj->extern_control_ = true;
-						}
-						else
-						{
-							obj->extern_control_ = false;
-						}
-					}
+					LOG("Failed to look up catalog entry %s, %s", 
+						ReadAttribute(objectChild.attribute("catalogName")).c_str(), ReadAttribute(objectChild.attribute("entryName")).c_str());
+				}
+				else if (entry->type_ == Entry::Type::VEHICLE)
+				{
+					obj = (Vehicle*)entry->GetElement();
+				}
+				else
+				{
+					LOG("Entity of type %s not supported yet", entry->Type2Str(entry->type_).c_str());
 				}
 			}
+			else if (objectChildName == "Vehicle")
+			{
+				
+				Vehicle *vehicle = parseOSCVehicle(objectChild, catalogs);
+				obj = vehicle;
+			}
+			else
+			{
+				LOG("%s not supported yet", objectChildName.c_str());
+			}
 		}
-		objectCnt++;
+		if (obj != 0)
+		{
+			obj->name_ = ReadAttribute(entitiesChild.attribute("name"));
+			obj->id_ = (int)entities.object_.size();
+			entities.object_.push_back(obj);
+			objectCnt++;
+		}
 	}
 }
 
@@ -314,26 +383,22 @@ void ScenarioReader::parseOSCPosition(roadmanager::Position &position, pugi::xml
 					for (pugi::xml_node routeRefChild = routeChild.first_child(); routeRefChild; routeRefChild = routeRefChild.next_sibling())
 					{
 						std::string routeRefChildName(routeRefChild.name());
-						roadmanager::Route *route;
+						roadmanager::Route *route = 0;
 
 						if (routeRefChildName == "Route")
 						{
 							// Add inline route to route catalog
-							route = parseOSCRoute(routeRefChild, catalogs);
-							catalogs->RouteCatalog.push_back(route);
+							LOG("Inline route reference not supported yet - put the route into a catalog");
 						}
 						else if (routeRefChildName == "CatalogReference")
 						{
-							route = 0;
-							
 							// Find route in catalog
-							for (size_t i = 0; i < catalogs->RouteCatalog.size(); i++)
+							route = (roadmanager::Route*)catalogs->FindCatalogEntry(ReadAttribute(routeRefChild.attribute("catalogName")), ReadAttribute(routeRefChild.attribute("entryName")))->GetElement();
+
+							if(route == 0)
 							{
-								if (catalogs->RouteCatalog[i]->getName() == ReadAttribute(routeRefChild.attribute("entryName")))
-								{
-									route = catalogs->RouteCatalog[i];
-									break;
-								}
+								LOG("Couldn't find route %s", ReadAttribute(routeRefChild.attribute("entryName")).c_str());
+								return;
 							}
 						}
 						
@@ -685,16 +750,20 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						else if (followRouteChild.name() == std::string("CatalogReference"))
 						{
 							FollowRouteAction *action_follow_route = new FollowRouteAction;
+							
 							// Find route in catalog
-							for (size_t i = 0; i < catalogs->RouteCatalog.size(); i++)
+							roadmanager::Route *route = (roadmanager::Route*)catalogs->FindCatalogEntry(ReadAttribute(followRouteChild.attribute("catalogName")), ReadAttribute(followRouteChild.attribute("entryName")));
+
+							if(route != 0)
 							{
-								if (catalogs->RouteCatalog[i]->name == ReadAttribute(followRouteChild.attribute("entryName")))
-								{
-									action_follow_route->route_ = catalogs->RouteCatalog[i];
+								action_follow_route->route_ = route;
 									
-									action = action_follow_route;
-									break;
-								}
+								action = action_follow_route;
+								break;
+							}
+							else
+							{
+								LOG("Route %s, %s not found", ReadAttribute(followRouteChild.attribute("catalogName")).c_str(), ReadAttribute(followRouteChild.attribute("entryName")).c_str());
 							}
 						}
 					}
@@ -708,8 +777,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		}
 	}
 
-	action->name_ = ReadAttribute(actionNode.parent().attribute("name"));
-	action->object_ = object;
+	if (action != 0)
+	{
+		action->name_ = ReadAttribute(actionNode.parent().attribute("name"));
+		action->object_ = object;
+	}
 
 	return action;
 }

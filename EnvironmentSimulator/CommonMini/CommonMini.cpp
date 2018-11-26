@@ -39,6 +39,12 @@
 
 #endif
 
+std::string DirNameOf(const std::string& fname)
+{
+	size_t pos = fname.find_last_of("\\/");
+	return (std::string::npos == pos) ? "" : fname.substr(0, pos);
+}
+
 Logger::Logger()
 {
 	file_.open(LOG_FILENAME);

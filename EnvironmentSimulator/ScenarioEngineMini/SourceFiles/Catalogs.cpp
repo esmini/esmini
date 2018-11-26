@@ -7,10 +7,3 @@
 #include <vector>
 
 
-Catalogs::Catalogs()
-{
-}
-
-void Catalogs::Print()
-{
-}

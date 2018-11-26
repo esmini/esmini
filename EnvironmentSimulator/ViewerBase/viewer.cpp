@@ -62,11 +62,6 @@ protected:
 	osg::ref_ptr<osg::Node> _node;
 };
 
-static std::string dirnameOf(const std::string& fname)
-{
-	size_t pos = fname.find_last_of("\\/");
-	return (std::string::npos == pos) ? "" : fname.substr(0, pos);
-}
 
 osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName)
 {
@@ -190,7 +185,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	osgViewer_ = new osgViewer::Viewer(arguments);
 
 	// Load shadow geometry - assume it resides in the same directory as the main environment model
-	std::string filePath = dirnameOf(modelFilename_);
+	std::string filePath = DirNameOf(modelFilename_);
 	filePath.append("/" + std::string(SHADOW_MODEL_FILENAME));
 
 	shadow_node_ = osgDB::readNodeFile(filePath);
@@ -371,7 +366,7 @@ bool Viewer::ReadCarModels()
 	{
 
 		// Assume the car models resides in the same directory as the main environment model
-		std::string filePath = dirnameOf(modelFilename_);
+		std::string filePath = DirNameOf(modelFilename_);
 		filePath.append("/" + std::string(carModelsFiles_[i]));
 
 		lod = LoadCarModel(filePath.c_str());
