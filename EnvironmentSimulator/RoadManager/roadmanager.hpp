@@ -773,6 +773,11 @@ namespace roadmanager
 		double GetH() const { return h_; }
 
 		/**
+		Retrieve the relative heading angle (radians)
+		*/
+		double GetHRelative() const { return h_relative_; }
+
+		/**
 		Retrieve the world coordinate pitch angle (radians)
 		*/
 		double GetP() const { return p_; }

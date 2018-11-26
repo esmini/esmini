@@ -7,6 +7,7 @@
 
 #define SIGN(x) (x < 0 ? -1 : 1)
 #define MAX(x, y) (y > x ? y : x)
+#define MIN(x, y) (y < x ? y : x)
 
 
 double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double start_value, double end_value)
@@ -68,7 +69,7 @@ void LatLaneChangeAction::Step(double dt)
 	double target_t;
 	double t, t_old;
 	double factor;
-	double angle;
+	double angle = 0;
 
 	target_t =
 		SIGN(target_lane_id_) *
@@ -84,21 +85,20 @@ void LatLaneChangeAction::Step(double dt)
 		t = dynamics_.transition_.Evaluate(factor, start_t_, target_t);
 		
 		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
-		if (object_->speed_ < SMALL_NUMBER)
-		{
-			angle = 0;
-		}
-		else
+		
+
+		if (object_->speed_ > SMALL_NUMBER)
 		{
 			angle = atan((t - t_old) / (object_->speed_ * dt));
 		}
 
-		object_->pos_.SetHeadingRelative(angle);
-
 		if (factor > 1.0)
 		{
 			OSCAction::Stop();
+			angle = 0;
 		}
+
+		object_->pos_.SetHeadingRelative(angle);
 	}
 	else
 	{
@@ -119,24 +119,29 @@ void LatLaneOffsetAction::Trig()
 
 void LatLaneOffsetAction::Step(double dt)
 {
-	double factor, lane_offset;
-
+	double factor, factor2, lane_offset;
+	double angle = 0;
 	double old_lane_offset = object_->pos_.GetOffset();
 
 	elapsed_ += dt;
 	factor = elapsed_ / dynamics_.duration_;
 
 	lane_offset = dynamics_.transition_.Evaluate(factor, start_lane_offset_, target_->value_);
-	
+
 	object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), lane_offset);
 
-	object_->pos_.SetHeadingRelative(atan((lane_offset - old_lane_offset) / (object_->speed_ * dt)));
+	if (object_->speed_ > SMALL_NUMBER)
+	{
+		angle = atan((lane_offset - old_lane_offset) / (object_->speed_ * dt));
+	}
 
 	if (factor > 1.0)
 	{
-		object_->pos_.SetHeadingRelative(0.0);
 		OSCAction::Stop();
+		angle = 0;
 	}
+
+	object_->pos_.SetHeadingRelative(angle);
 }
 
 double LongSpeedAction::TargetRelative::GetValue()

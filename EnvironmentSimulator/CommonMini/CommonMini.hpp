@@ -18,7 +18,7 @@
    #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
-#define SMALL_NUMBER (1E-6)
+#define SMALL_NUMBER (1E-10)
 #ifndef INFINITY
 #define INFINITY (~0)
 #endif
