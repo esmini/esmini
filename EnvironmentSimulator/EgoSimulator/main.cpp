@@ -147,12 +147,12 @@ int main(int argc, char** argv)
 	arguments.read("--ext_control", ext_control_str);
 
 	ExternalControlMode ext_control;
-	if (ext_control_str == "osc") ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
+	if (ext_control_str == "osc" || ext_control_str == "") ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
 	else if(ext_control_str == "off") ext_control = ExternalControlMode::EXT_CONTROL_OFF;
 	else if (ext_control_str == "on") ext_control = ExternalControlMode::EXT_CONTROL_ON;
 	else
 	{
-		LOG("Unrecognized external control mode: %d", ext_control_str);
+		LOG("Unrecognized external control mode: %s", ext_control_str.c_str());
 		ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
 	}
 
