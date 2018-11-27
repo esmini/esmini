@@ -53,10 +53,12 @@ std::string ScenarioReader::ReadAttribute(pugi::xml_attribute attribute)
 	}
 }
 
-int ScenarioReader::loadOSCFile(const char * path)
+int ScenarioReader::loadOSCFile(const char * path, ExternalControlMode ext_control)
 {
 	LOG("Loading %s", path);
-	
+
+	req_ext_control_ = ext_control;
+
 	pugi::xml_parse_result result = doc.load_file(path);
 	if (!result)
 	{
@@ -185,15 +187,20 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *c
 			// Check if the property is something supported
 			if (prop_name == "control")
 			{
-				if (prop_value == "external")
+				// check that external control has not been overridden
+				if (req_ext_control_ == ExternalControlMode::EXT_CONTROL_BY_OSC)
 				{
-					vehicle->extern_control_ = true;
-				}
-				else
-				{
-					vehicle->extern_control_ = false;
+					if (prop_value == "external")
+					{
+						vehicle->extern_control_ = true;
+					}
+					else
+					{
+						vehicle->extern_control_ = false;
+					}
 				}
 			}
+			LOG("Unsupported property: %s", prop_name);
 		}
 	}
 

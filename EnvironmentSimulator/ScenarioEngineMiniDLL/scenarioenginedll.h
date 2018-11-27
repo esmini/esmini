@@ -31,12 +31,15 @@ typedef struct
 extern "C"
 {
 #endif
+	/**
+	Initialize the scenario engine
+	@param oscFilename Path to the OpenSCEANRIO file
+	@param ext_control Ego control 0=by OSC 1=No 2=Yes
+	@param use_viewer 0=no viewer, 1=use viewer
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control = 0, int use_viewer = 0);
 
-#ifdef _SCENARIO_VIEWER
-	SE_DLL_API int SE_Init(const char *oscFilename, int useViewer);
-#else
-	SE_DLL_API int SE_Init(const char *oscFilename);
-#endif
 	SE_DLL_API void SE_Step(float dt);
 	SE_DLL_API void SE_Close();
 

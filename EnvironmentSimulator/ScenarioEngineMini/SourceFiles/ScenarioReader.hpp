@@ -10,11 +10,20 @@
 #include <string>
 #include <vector>
 
+typedef enum
+{
+	EXT_CONTROL_BY_OSC,
+	EXT_CONTROL_OFF,
+	EXT_CONTROL_ON,
+} ExternalControlMode;
+
+
 class ScenarioReader
 {
 public:
+
 	ScenarioReader();
-	int loadOSCFile(const char * path);
+	int loadOSCFile(const char * path, ExternalControlMode ext_control);
 	
 	void ScenarioReader::LoadCatalog(pugi::xml_node catalogChild, Catalogs *catalogs);
 
@@ -49,11 +58,20 @@ public:
 	std::string getParameter(std::string name);
 	void addParameter(std::string name, std::string value);
 
+	std::string ExtControlMode2Str(ExternalControlMode mode)
+	{
+		if (mode == ExternalControlMode::EXT_CONTROL_BY_OSC) return "by OSC";
+		else if (mode == ExternalControlMode::EXT_CONTROL_BY_OSC) return "Off";
+		else if (mode == ExternalControlMode::EXT_CONTROL_BY_OSC) return "On";
+		else return "Unknown";
+	}
+
 private:
 	pugi::xml_document doc;
 	OSCParameterDeclaration parameterDeclaration;
 	int objectCnt;
 	std::string oscFilename;
+	ExternalControlMode req_ext_control_;  // Requested Ego (id 0) control mode
 
 	// Use always this method when reading attributes, it will resolve any variables
 	std::string ReadAttribute(pugi::xml_attribute attribute);

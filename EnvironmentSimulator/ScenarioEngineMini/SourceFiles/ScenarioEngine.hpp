@@ -23,11 +23,11 @@ public:
 
 //	Cars cars;
 
-	ScenarioEngine(std::string oscFilename, double startTime);
+	ScenarioEngine(std::string oscFilename, double startTime, ExternalControlMode ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC);
 	ScenarioEngine() {};
 	~ScenarioEngine();
 
-	void InitScenario(std::string oscFilename, double startTime); // use with default constructor
+	void InitScenario(std::string oscFilename, double startTime, ExternalControlMode ext_control); // use with default constructor
 		
 	void step(double deltaSimTime, bool initial = false);
 	void setSimulationTime(double simulationTime);
@@ -41,6 +41,7 @@ public:
 	roadmanager::OpenDrive *getRoadManager() { return odrManager; }
 
 	ScenarioGateway *getScenarioGateway();
+	bool GetExtControl();
 	
 private:
 	// OpenSCENARIO parameters
@@ -50,7 +51,7 @@ private:
 	ScenarioReader scenarioReader;
 	RoadNetwork roadNetwork;
 	roadmanager::OpenDrive *odrManager;
-
+	ExternalControlMode req_ext_control_;  // Requested Ego (id 0) control mode
 
 	// Simulation parameters
 	double startTime;

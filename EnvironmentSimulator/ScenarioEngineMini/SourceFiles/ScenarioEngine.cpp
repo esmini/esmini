@@ -2,17 +2,24 @@
 #include "CommonMini.hpp"
 
 
-ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
+ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime, ExternalControlMode ext_control)
 {
 	simulationTime = 0;
-	InitScenario(oscFilename, startTime);
+	req_ext_control_ = ext_control;
+	InitScenario(oscFilename, startTime, ext_control);
 }
 
-void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
+void ScenarioEngine::InitScenario(std::string oscFilename, double startTime, ExternalControlMode ext_control)
 {
+	if (req_ext_control_ > 0 && entities.object_.size() > 0)
+	{
+		LOG("Override external control flag from OSC file, new value: %s", req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? "Off" : "On");
+		entities.object_[0]->extern_control_ = req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? false : true;
+	}
+
 	// Load and parse data
 	LOG("Init %s", oscFilename.c_str());
-	if (scenarioReader.loadOSCFile(oscFilename.c_str()) != 0)
+	if (scenarioReader.loadOSCFile(oscFilename.c_str(), ext_control) != 0)
 	{
 		throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
 	}
@@ -31,11 +38,14 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 	scenarioReader.parseInit(init, &entities, &catalogs);
 	scenarioReader.parseStory(story, &entities, &catalogs);
 
+	LOG("Requested external control: %d - %s, actual:", ext_control, scenarioReader.ExtControlMode2Str(ext_control).c_str());
+
+
 	this->startTime = startTime;
 
 	// Print loaded data
 	entities.Print();
-//	init.Print();
+
 	for (size_t i = 0; i < story.size(); i++)
 	{
 		story[i]->Print();
@@ -304,6 +314,18 @@ void ScenarioEngine::printSimulationTime()
 ScenarioGateway *ScenarioEngine::getScenarioGateway()
 {
 	return &scenarioGateway;
+}
+
+bool ScenarioEngine::GetExtControl()
+{
+	if (entities.object_.size() > 0)
+	{
+		return entities.object_[0]->extern_control_;
+	}
+
+	LOG("No objects initialzied yet - ask later");
+
+	return false;  // Hmm, what is a good default value...?
 }
 
 void ScenarioEngine::stepObjects(double dt)

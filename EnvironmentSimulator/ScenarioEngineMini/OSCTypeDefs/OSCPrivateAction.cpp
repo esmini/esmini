@@ -119,7 +119,7 @@ void LatLaneOffsetAction::Trig()
 
 void LatLaneOffsetAction::Step(double dt)
 {
-	double factor, factor2, lane_offset;
+	double factor, lane_offset;
 	double angle = 0;
 	double old_lane_offset = object_->pos_.GetOffset();
 

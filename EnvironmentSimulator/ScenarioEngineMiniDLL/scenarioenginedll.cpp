@@ -91,19 +91,22 @@ static void copyStateFromScenarioGateway(ScenarioObjectState *state, ObjectState
 
 extern "C"
 {
-#ifdef _SCENARIO_VIEWER
-	SE_DLL_API int SE_Init(const char *oscFilename, int useViewer)
-#else
-	SE_DLL_API int SE_Init(const char *oscFilename)
-#endif
+	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control, int use_viewer)
 	{
 		resetScenario();
 
+#ifndef _SCENARIO_VIEWER
+		if (use_viewer)
+		{
+			LOG("use_viewer flag set, but no viewer available (compiled without -D _SCENARIO_VIEWWER");
+		}
+#endif	
+		
 		// Create scenario engine
 		try
 		{
 			// Create a scenario engine instance
-			scenarioEngine = new ScenarioEngine(std::string(oscFilename), simTime);
+			scenarioEngine = new ScenarioEngine(std::string(oscFilename), simTime, (ExternalControlMode)ext_control);
 
 			// Fetch ScenarioGateway 
 			scenarioGateway = scenarioEngine->getScenarioGateway();
@@ -113,7 +116,7 @@ extern "C"
 
 #ifdef _SCENARIO_VIEWER
 
-			if (useViewer)
+			if (use_viewer)
 			{
 				// For some reason can't use args array directly... copy to a true char**
 				int argc = sizeof(args) / sizeof(char*);

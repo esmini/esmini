@@ -15,7 +15,11 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	SE_Init(argv[1], true);
+	if (SE_Init(argv[1], 0, 1) != 0)
+	{
+		LOG("Failed to load %s", argv[1]);
+		return -1;
+	}
 
 	for (int i = 0; i < 1000; i++)
 	{
@@ -26,7 +30,6 @@ int main(int argc, char *argv[])
 
 		float angle;
 		SE_GetSteeringTargetAngle(0, states[0].speed * 3.0f, &angle);
-		LOG("Steering target angle: %.2f", angle);
 	}
 
 	SE_Close();

@@ -132,6 +132,7 @@ int main(int argc, char** argv)
     arguments.getApplicationUsage()->setDescription(arguments.getApplicationName());
 	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " [options]\n");
 	arguments.getApplicationUsage()->addCommandLineOption("--osc <filename>", "OpenSCENARIO filename");
+	arguments.getApplicationUsage()->addCommandLineOption("--ext_control <mode>>", "Ego control (\"osc\", \"off\", \"on\")");
 
 	if (arguments.argc() < 2)
 	{
@@ -141,11 +142,25 @@ int main(int argc, char** argv)
 
 	std::string oscFilename;
 	arguments.read("--osc", oscFilename);
+	
+	std::string ext_control_str;
+	arguments.read("--ext_control", ext_control_str);
+
+	ExternalControlMode ext_control;
+	if (ext_control_str == "osc") ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
+	else if(ext_control_str == "off") ext_control = ExternalControlMode::EXT_CONTROL_OFF;
+	else if (ext_control_str == "on") ext_control = ExternalControlMode::EXT_CONTROL_ON;
+	else
+	{
+		LOG("Unrecognized external control mode: %d", ext_control_str);
+		ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
+	}
+
 
 	// Create scenario engine
 	try
 	{
-		scenarioEngine = new ScenarioEngine(oscFilename, simTime);
+		scenarioEngine = new ScenarioEngine(oscFilename, simTime, ext_control);
 	}
 	catch (const std::exception& e)
 	{
@@ -170,8 +185,11 @@ int main(int argc, char** argv)
 			scenarioEngine->getSceneGraphFilename().c_str(),
 			arguments);
 
-		// Setup Ego with initial position from the gateway
-		SetupEgo(odrManager, viewer, scenarioGateway->getObjectStatePtrByIdx(0)->state_.pos);
+		if (scenarioEngine->GetExtControl())
+		{
+			// Setup Ego with initial position from the gateway
+			SetupEgo(odrManager, viewer, scenarioGateway->getObjectStatePtrByIdx(0)->state_.pos);
+		}
 
 		__int64 now, lastTimeStamp = 0;
 
@@ -191,8 +209,11 @@ int main(int argc, char** argv)
 				deltaSimTime = minStepSize;
 			}
 
-			// Update vehicle dynamics/driver model
-			UpdateEgo(deltaSimTime, viewer);
+			if (scenarioEngine->GetExtControl())
+			{
+				// Update vehicle dynamics/driver model
+				UpdateEgo(deltaSimTime, viewer);
+			}
 
 			// Time operations
 			simTime = simTime + deltaSimTime;
@@ -202,18 +223,21 @@ int main(int argc, char** argv)
 			// ScenarioEngine
 			scenarioEngine->step(deltaSimTime);
 
-			// Report updated Ego state to scenario gateway
-			scenarioGateway->reportObject(ObjectState(EGO_ID, std::string("Ego"), simTime, 
-				egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_, 
-				egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0, 
-				egoCar->vehicle->speed_));
+			if (scenarioEngine->GetExtControl())
+			{
+				// Report updated Ego state to scenario gateway
+				scenarioGateway->reportObject(ObjectState(EGO_ID, std::string("Ego"), simTime,
+					egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_,
+					egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0,
+					egoCar->vehicle->speed_));
+			}
 
 			// Fetch states of scenario objects
 			for (int i = 0; i < scenarioGateway->getNumberOfObjects(); i++)
 			{
 				ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(i);
 
-				if (o->state_.id != EGO_ID)
+				if (o->state_.id != EGO_ID || !scenarioEngine->GetExtControl())
 				{
 					ScenarioCar *sc = getScenarioCarById(o->state_.id);
 
@@ -247,11 +271,14 @@ int main(int argc, char** argv)
 				c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
 			}
 
-			// Update road and vehicle debug lines 
-			viewer->UpdateVehicleLineAndPoints(egoCar->pos);
+			if (scenarioEngine->GetExtControl())
+			{
+				// Update road and vehicle debug lines 
+				viewer->UpdateVehicleLineAndPoints(egoCar->pos);
 
-			// Visualize steering target point
-			viewer->UpdateDriverModelPoint(egoCar->pos, MAX(5, egoCar->vehicle->speed_));
+				// Visualize steering target point
+				viewer->UpdateDriverModelPoint(egoCar->pos, MAX(5, egoCar->vehicle->speed_));
+			}
 
 			// Update graphics
 			viewer->osgViewer_->frame();
