@@ -31,6 +31,7 @@ __int64 SE_getSystemTime();
 void SE_sleep(unsigned int msec);
 
 std::string DirNameOf(const std::string& fname);
+std::string FileNameOf(const std::string& fname);
 
 
 // Global Logger class

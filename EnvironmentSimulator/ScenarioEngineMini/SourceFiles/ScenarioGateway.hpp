@@ -2,6 +2,7 @@
 #include "roadmanager.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <math.h>
@@ -49,8 +50,10 @@ public:
 	ObjectState getObjectStateByIdx(int idx) { return *objectState_[idx]; }
 	ObjectState *getObjectStatePtrByIdx(int idx) { return objectState_[idx]; }
 	int getObjectStateById(int idx, ObjectState &objState);
+	int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
 
 private:
 	std::vector<ObjectState*> objectState_;
+	std::ofstream data_file_;
 };
 

@@ -27,14 +27,13 @@ public:
 	ScenarioEngine() {};
 	~ScenarioEngine();
 
-	void InitScenario(std::string oscFilename, double startTime, ExternalControlMode ext_control); // use with default constructor
+	void InitScenario(std::string oscFilename, double startTime, ExternalControlMode ext_control);
 		
 	void step(double deltaSimTime, bool initial = false);
 	void setSimulationTime(double simulationTime);
 	void setTimeStep(double timeStep);
 	void printSimulationTime();
 	void stepObjects(double dt);
-
 
 	std::string getSceneGraphFilename() { return roadNetwork.SceneGraph.filepath; }
 	std::string getOdrFilename() { return roadNetwork.Logics.filepath; }

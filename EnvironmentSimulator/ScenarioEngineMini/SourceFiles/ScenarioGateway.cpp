@@ -1,5 +1,6 @@
 #include "ScenarioGateway.hpp"
 #include "CommonMini.hpp"
+#include "Replay.hpp"
 
 ObjectState::ObjectState()
 {
@@ -54,6 +55,7 @@ void ObjectState::Print()
 }
 
 // ScenarioGateway
+
 ScenarioGateway::ScenarioGateway()
 {
 	objectState_.clear();
@@ -66,6 +68,9 @@ ScenarioGateway::~ScenarioGateway()
 		delete objectState_[i];
 	}
 	objectState_.clear();
+
+	data_file_.flush();
+	data_file_.close();
 }
 
 
@@ -110,4 +115,30 @@ void ScenarioGateway::reportObject(ObjectState objectState)
 		*os = objectState;
 		objectState_.push_back(os);
 	}
+
+	// Write status to file - for later replay
+	if (data_file_.is_open())
+	{
+		data_file_.write((char*)&objectState, sizeof(objectState.state_));
+	}
+}
+
+int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename, std::string  model_filename)
+{
+	if (!filename.empty())
+	{
+		data_file_.open(filename, std::ofstream::binary);
+		if (data_file_.fail())
+		{
+			LOG("Cannot open file: %s", filename.c_str());
+			return -1;
+		}
+		ReplayHeader header;
+		strncpy(header.odr_filename, FileNameOf(odr_filename).c_str(), REPLAY_FILENAME_SIZE);
+		strncpy(header.model_filename, FileNameOf(model_filename).c_str(), REPLAY_FILENAME_SIZE);
+
+		data_file_.write((char*)&header, sizeof(header));
+	}
+
+	return 0;
 }

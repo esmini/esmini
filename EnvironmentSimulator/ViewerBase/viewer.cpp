@@ -191,7 +191,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	shadow_node_ = osgDB::readNodeFile(filePath);
 	if (!shadow_node_)
 	{
-		LOG("Failed to shadow model %s\n", filePath.c_str());
+		LOG("Failed to load shadow model %s\n", filePath.c_str());
 	}
 
 	if (!ReadCarModels())

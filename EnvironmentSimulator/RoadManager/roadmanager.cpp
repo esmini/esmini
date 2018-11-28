@@ -1013,7 +1013,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
     pugi::xml_parse_result result = doc.load_file(filename);
 	if (!result)
 	{
-		throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + filename);
+		throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(filename));
 
 		return false;
 	}

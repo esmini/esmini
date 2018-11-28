@@ -120,6 +120,7 @@ int main(int argc, char** argv)
 {
 	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;
+	roadmanager::OpenDrive *odrManager;
 	roadmanager::Position *lane_pos = new roadmanager::Position();
 	roadmanager::Position *track_pos = new roadmanager::Position();
 
@@ -132,7 +133,8 @@ int main(int argc, char** argv)
     arguments.getApplicationUsage()->setDescription(arguments.getApplicationName());
 	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " [options]\n");
 	arguments.getApplicationUsage()->addCommandLineOption("--osc <filename>", "OpenSCENARIO filename");
-	arguments.getApplicationUsage()->addCommandLineOption("--ext_control <mode>>", "Ego control (\"osc\", \"off\", \"on\")");
+	arguments.getApplicationUsage()->addCommandLineOption("--ext_control <mode>", "Ego control (\"osc\", \"off\", \"on\")");
+	arguments.getApplicationUsage()->addCommandLineOption("--record <file.dat>", "Record position data into a file for later replay");
 
 	if (arguments.argc() < 2)
 	{
@@ -142,7 +144,10 @@ int main(int argc, char** argv)
 
 	std::string oscFilename;
 	arguments.read("--osc", oscFilename);
-	
+
+	std::string record_filename;
+	arguments.read("--record", record_filename);
+
 	std::string ext_control_str;
 	arguments.read("--ext_control", ext_control_str);
 
@@ -161,6 +166,7 @@ int main(int argc, char** argv)
 	try
 	{
 		scenarioEngine = new ScenarioEngine(oscFilename, simTime, ext_control);
+		odrManager = scenarioEngine->getRoadManager();
 	}
 	catch (const std::exception& e)
 	{
@@ -168,17 +174,22 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
+	// Fetch ScenarioGateway
+	scenarioGateway = scenarioEngine->getScenarioGateway();
+
+	// Create a data file for later replay?
+	if (!record_filename.empty())
+	{
+		LOG("Recording data to file %s", record_filename);
+		scenarioGateway->RecordToFile(record_filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
+	}
+
 	// Step scenario engine - zero time - just to reach init state
 	// Report all vehicles initially - to communicate initial position for external vehicles as well
 	scenarioEngine->step(0.0, true);
 
-	// Fetch ScenarioGateway
-	scenarioGateway = scenarioEngine->getScenarioGateway();
-
-
 	try
 	{
-		roadmanager::OpenDrive *odrManager = scenarioEngine->getRoadManager();
 
 		viewer::Viewer *viewer = new viewer::Viewer(
 			odrManager, 
