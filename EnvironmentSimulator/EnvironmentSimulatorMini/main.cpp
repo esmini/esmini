@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
 	arguments.getApplicationUsage()->setDescription(arguments.getApplicationName());
 	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " [options]\n");
 	arguments.getApplicationUsage()->addCommandLineOption("--osc <filename>", "OpenSCENARIO filename");
+	arguments.getApplicationUsage()->addCommandLineOption("--ext_control <mode>", "Ego control (\"osc\", \"off\", \"on\")");
 
 	if (arguments.argc() < 2)
 	{
@@ -41,11 +42,24 @@ int main(int argc, char *argv[])
 	std::string oscFilename;
 	arguments.read("--osc", oscFilename);
 
+	std::string ext_control_str;
+	arguments.read("--ext_control", ext_control_str);
+
+	ExternalControlMode ext_control;
+	if (ext_control_str == "osc" || ext_control_str == "") ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
+	else if (ext_control_str == "off") ext_control = ExternalControlMode::EXT_CONTROL_OFF;
+	else if (ext_control_str == "on") ext_control = ExternalControlMode::EXT_CONTROL_ON;
+	else
+	{
+		LOG("Unrecognized external control mode: %s", ext_control_str.c_str());
+		ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
+	}
+
 	ScenarioEngine *scenarioEngine;
 	// Create scenario engine
 	try 
 	{ 
-		scenarioEngine = new ScenarioEngine(oscFilename, simulationTime);
+		scenarioEngine = new ScenarioEngine(oscFilename, simulationTime, ext_control);
 	}
 	catch (std::logic_error &e)
 	{
