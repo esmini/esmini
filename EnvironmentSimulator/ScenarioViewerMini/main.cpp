@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	if (SE_Init(argv[1], 0, 1) != 0)
+	if (SE_Init(argv[1], 0, 1, 1) != 0)
 	{
 		LOG("Failed to load %s", argv[1]);
 		return -1;

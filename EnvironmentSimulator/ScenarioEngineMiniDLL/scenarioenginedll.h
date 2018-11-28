@@ -38,7 +38,7 @@ extern "C"
 	@param use_viewer 0=no viewer, 1=use viewer
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control = 0, int use_viewer = 0);
+	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control = 0, int use_viewer = 0, int record = 0);
 
 	SE_DLL_API void SE_Step(float dt);
 	SE_DLL_API void SE_Close();

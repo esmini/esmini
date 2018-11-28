@@ -8,6 +8,7 @@
 
 #define VISUALIZE_DRIVER_MODEL_TARGET
 #define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
+#define DEFAULT_RECORDING_FILENAME "scenario.dat"
 
 typedef struct
 {
@@ -91,7 +92,7 @@ static void copyStateFromScenarioGateway(ScenarioObjectState *state, ObjectState
 
 extern "C"
 {
-	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control, int use_viewer)
+	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control, int use_viewer, int record)
 	{
 		resetScenario();
 
@@ -110,6 +111,13 @@ extern "C"
 
 			// Fetch ScenarioGateway 
 			scenarioGateway = scenarioEngine->getScenarioGateway();
+
+			// Create a data file for later replay?
+			if (record)
+			{
+				LOG("Recording data to file %s", DEFAULT_RECORDING_FILENAME);
+				scenarioGateway->RecordToFile(DEFAULT_RECORDING_FILENAME, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
+			}
 
 			// Fetch ScenarioGateway 
 			roadManager = scenarioEngine->getRoadManager();
