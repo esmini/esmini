@@ -8,7 +8,6 @@
 
 #define VISUALIZE_DRIVER_MODEL_TARGET
 #define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
-#define DEFAULT_RECORDING_FILENAME "scenario.dat"
 
 typedef struct
 {
@@ -22,6 +21,9 @@ static std::vector<ScenarioCar> scenarioCar;
 static viewer::Viewer *scViewer = 0;
 
 #endif
+
+#define DEFAULT_RECORDING_FILENAME "scenario.dat"
+
 
 static ScenarioEngine *scenarioEngine = 0;
 static ScenarioGateway *scenarioGateway = 0;

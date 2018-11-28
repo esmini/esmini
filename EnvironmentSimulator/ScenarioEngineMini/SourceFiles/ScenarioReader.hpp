@@ -25,7 +25,7 @@ public:
 	ScenarioReader();
 	int loadOSCFile(const char * path, ExternalControlMode ext_control);
 	
-	void ScenarioReader::LoadCatalog(pugi::xml_node catalogChild, Catalogs *catalogs);
+	void LoadCatalog(pugi::xml_node catalogChild, Catalogs *catalogs);
 
 	// RoadNetwork
 	void parseRoadNetwork(RoadNetwork &roadNetwork);
@@ -61,8 +61,8 @@ public:
 	std::string ExtControlMode2Str(ExternalControlMode mode)
 	{
 		if (mode == ExternalControlMode::EXT_CONTROL_BY_OSC) return "by OSC";
-		else if (mode == ExternalControlMode::EXT_CONTROL_BY_OSC) return "Off";
-		else if (mode == ExternalControlMode::EXT_CONTROL_BY_OSC) return "On";
+		else if (mode == ExternalControlMode::EXT_CONTROL_OFF) return "Off";
+		else if (mode == ExternalControlMode::EXT_CONTROL_ON) return "On";
 		else return "Unknown";
 	}
 

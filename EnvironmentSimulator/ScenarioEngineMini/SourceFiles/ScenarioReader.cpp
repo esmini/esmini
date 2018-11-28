@@ -200,7 +200,7 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *c
 					}
 				}
 			}
-			LOG("Unsupported property: %s", prop_name);
+			LOG("Unsupported property: %s", prop_name.c_str());
 		}
 	}
 

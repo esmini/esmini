@@ -70,7 +70,7 @@ public:
 		}
 		else
 		{
-			LOG("Vehicle category %s not supported yet", category);
+			LOG("Vehicle category %s not supported yet", category.c_str());
 		}
 
 		return;

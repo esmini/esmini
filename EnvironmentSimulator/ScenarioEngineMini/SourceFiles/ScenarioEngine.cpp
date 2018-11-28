@@ -11,12 +11,6 @@ ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime, Extern
 
 void ScenarioEngine::InitScenario(std::string oscFilename, double startTime, ExternalControlMode ext_control)
 {
-	if (req_ext_control_ > 0 && entities.object_.size() > 0)
-	{
-		LOG("Override external control flag from OSC file, new value: %s", req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? "Off" : "On");
-		entities.object_[0]->extern_control_ = req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? false : true;
-	}
-
 	// Load and parse data
 	LOG("Init %s", oscFilename.c_str());
 	if (scenarioReader.loadOSCFile(oscFilename.c_str(), ext_control) != 0)
@@ -38,7 +32,13 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double startTime, Ext
 	scenarioReader.parseInit(init, &entities, &catalogs);
 	scenarioReader.parseStory(story, &entities, &catalogs);
 
-	LOG("Requested external control: %d - %s, actual:", ext_control, scenarioReader.ExtControlMode2Str(ext_control).c_str());
+	if (req_ext_control_ > 0 && entities.object_.size() > 0)
+	{
+		LOG("Override external control flag from OSC file, new value: %s", req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? "Off" : "On");
+		entities.object_[0]->extern_control_ = req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? false : true;
+	}
+
+	LOG("Requested external control: %d - %s, actual: %s", ext_control, scenarioReader.ExtControlMode2Str(ext_control).c_str(), GetExtControl()?"on":"off");
 
 
 	this->startTime = startTime;
