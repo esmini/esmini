@@ -323,7 +323,7 @@ bool ScenarioEngine::GetExtControl()
 		return entities.object_[0]->extern_control_;
 	}
 
-	LOG("No objects initialzied yet - ask later");
+	LOG("No objects initialized yet - ask later");
 
 	return false;  // Hmm, what is a good default value...?
 }

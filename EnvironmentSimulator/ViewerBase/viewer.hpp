@@ -99,6 +99,8 @@ namespace viewer
 		bool getKeyDown() { return keyDown_; }
 		bool getKeyLeft() { return keyLeft_; }
 		bool getKeyRight() { return keyRight_; }
+		void SetQuitRequest(bool value) { quit_request_ = value; }
+		bool GetQuitRequest() { return quit_request_;  }
 
 	private:
 
@@ -112,6 +114,7 @@ namespace viewer
 		bool keyDown_;
 		bool keyLeft_;
 		bool keyRight_;
+		bool quit_request_;
 	};
 
 	class KeyboardEventHandler : public osgGA::GUIEventHandler

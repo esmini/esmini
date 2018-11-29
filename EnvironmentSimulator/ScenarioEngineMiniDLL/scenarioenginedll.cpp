@@ -3,22 +3,28 @@
 
 #ifdef _SCENARIO_VIEWER
 
-#include "viewer.hpp"
-#include "RubberbandManipulator.h"
+	#include "viewer.hpp"
+	#include "RubberbandManipulator.h"
+	#include <process.h>
 
-#define VISUALIZE_DRIVER_MODEL_TARGET
-#define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
+	#define VISUALIZE_DRIVER_MODEL_TARGET
+	#define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
 
-typedef struct
-{
-	int id;
-	viewer::CarModel *carModel;
-	roadmanager::Position pos;
-} ScenarioCar;
+	typedef struct
+	{
+		int id;
+		viewer::CarModel *carModel;
+		roadmanager::Position pos;
+	} ScenarioCar;
 
-static std::vector<ScenarioCar> scenarioCar;
+	static std::vector<ScenarioCar> scenarioCar;
 
-static viewer::Viewer *scViewer = 0;
+	static viewer::Viewer *scViewer = 0;
+
+	#include <Windows.h>
+
+	static bool closing = false;
+	static HANDLE thread_handle = 0;
 
 #endif
 
@@ -36,7 +42,7 @@ static char *args[] = { "kalle", "--window", "50", "50", "1000", "500" };
 
 ScenarioCar *getScenarioCarById(int id)
 {
-	for (size_t i=0; i<scenarioCar.size(); i++)
+	for (size_t i = 0; i < scenarioCar.size(); i++)
 	{
 		if (scenarioCar[i].id == id)
 		{
@@ -47,10 +53,96 @@ ScenarioCar *getScenarioCarById(int id)
 	return 0;
 }
 
+
+//DWORD WINAPI viewer_thread(LPVOID lpParameter)
+void viewer_thread(void *data)
+{
+	// For some reason can't use args array directly... copy to a true char**
+	int argc = sizeof(args) / sizeof(char*);
+	char **argv;
+	argv = (char**)malloc(argc * sizeof(char*));
+	for (int i = 0; i < argc; i++)
+	{
+		argv[i] = (char*)malloc((strlen(args[i]) + 1) * sizeof(char));
+		strcpy(argv[i], args[i]);
+	}
+
+	// Initialize the viewer
+	scViewer = new viewer::Viewer(roadManager, scenarioEngine->getSceneGraphFilename().c_str(), osg::ArgumentParser(&argc, argv));
+
+	// Update graphics - until close request or viewer terminated 
+	while (!closing)
+	{
+		// Fetch states of scenario objects
+		for (int i = 0; i < scenarioGateway->getNumberOfObjects(); i++)
+		{
+			ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(i);
+			ScenarioCar *sc = getScenarioCarById(o->state_.id);
+
+			// If not available, create it
+			if (sc == 0)
+			{
+				ScenarioCar new_sc;
+
+				LOG("Creating car %d - got state from gateway", o->state_.id);
+
+				new_sc.id = o->state_.id;
+
+				// Choose model from index - wrap to handle more vehicles than models
+				int carModelID = i % scViewer->carModels_.size();
+				new_sc.carModel = scViewer->AddCar(carModelID);
+
+				// Add it to the list of scenario cars
+				scenarioCar.push_back(new_sc);
+
+				sc = &scenarioCar.back();
+			}
+			sc->pos = o->state_.pos;
+		}
+
+		// Visualize scenario cars
+		for (size_t i = 0; i < scenarioCar.size(); i++)
+		{
+			ScenarioCar *c = &scenarioCar[i];
+			c->carModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
+			c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
+		}
+
+#ifdef VISUALIZE_DRIVER_MODEL_TARGET
+		// Update debug visualization items (road positions, steering target and such)
+		// Assume first car to be the Ego (Vehicle Under Test)
+		if (scenarioCar.size() > 0)
+		{
+			scViewer->UpdateVehicleLineAndPoints(&scenarioCar[0].pos);
+			scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, 25);
+		}
+#endif
+		scViewer->osgViewer_->frame();
+	}
+}
+
 #endif
 
 static void resetScenario(void )
 {
+#ifdef _SCENARIO_VIEWER
+	if (thread_handle != 0)
+	{
+		printf("Closing viewer\n");
+
+		closing = true;  // Signal to viewer thread
+		WaitForSingleObject(thread_handle, 1000);
+
+		thread_handle = 0;
+		closing = false;
+
+		delete scViewer;
+		scViewer = 0;
+	}
+
+	scenarioCar.clear();
+#endif
+
 	simTime = 0; // Start time initialized to zero
 	deltaSimTime = 0;
 	scenarioGateway = 0;
@@ -61,16 +153,6 @@ static void resetScenario(void )
 		scenarioEngine = 0;
 		printf("Closing scenario engine\n");
 	}
-
-#ifdef _SCENARIO_VIEWER
-	if (scViewer != 0)
-	{
-		scenarioCar.clear();
-		delete scViewer;
-		scViewer = 0;
-		printf("Closing viewer\n");
-	}
-#endif
 }
 
 static void copyStateFromScenarioGateway(ScenarioObjectState *state, ObjectStateStruct *gw_state)
@@ -96,6 +178,7 @@ extern "C"
 {
 	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control, int use_viewer, int record)
 	{
+		closing = false;
 		resetScenario();
 
 #ifndef _SCENARIO_VIEWER
@@ -125,21 +208,10 @@ extern "C"
 			roadManager = scenarioEngine->getRoadManager();
 
 #ifdef _SCENARIO_VIEWER
-
 			if (use_viewer)
 			{
-				// For some reason can't use args array directly... copy to a true char**
-				int argc = sizeof(args) / sizeof(char*);
-				char **argv;
-				argv = (char**)malloc(argc * sizeof(char*));
-				for (int i = 0; i < argc; i++)
-				{
-					argv[i] = (char*)malloc((strlen(args[i]) + 1) * sizeof(char));
-					strcpy(argv[i], args[i]);
-				}
-
-				// Initialize the viewer
-				scViewer = new viewer::Viewer(roadManager, scenarioEngine->getSceneGraphFilename().c_str(), osg::ArgumentParser(&argc, argv));
+				// Run viewer in a separate thread
+				thread_handle = (HANDLE)_beginthread(viewer_thread, 0, 0);
 			}
 #endif
 		}
@@ -166,8 +238,17 @@ extern "C"
 		resetScenario();
 	}
 
-	SE_DLL_API void SE_Step(float dt)
+	SE_DLL_API int SE_Step(float dt)
 	{
+#if _SCENARIO_VIEWER
+
+		// Check for Viewer quit request 
+		if (scViewer && scViewer->GetQuitRequest())
+		{
+			SE_Close();
+			return -1;
+		}
+#endif
 		if (scenarioEngine != 0)
 		{
 			// Time operations
@@ -179,60 +260,9 @@ extern "C"
 
 			// ScenarioEngine
 			scenarioEngine->step((double)dt);
-
-#ifdef _SCENARIO_VIEWER
-			// Update graphics
-			if (scViewer)
-			{
-
-				// Fetch states of scenario objects
-				for (int i = 0; i < scenarioGateway->getNumberOfObjects(); i++)
-				{
-					ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(i);
-					ScenarioCar *sc = getScenarioCarById(o->state_.id);
-
-					// If not available, create it
-					if (sc == 0)
-					{
-						ScenarioCar new_sc;
-
-						LOG("Creating car %d - got state from gateway", o->state_.id);
-
-						new_sc.id = o->state_.id;
-
-						// Choose model from index - wrap to handle more vehicles than models
-						int carModelID = i % scViewer->carModels_.size();
-						new_sc.carModel = scViewer->AddCar(carModelID);
-
-						// Add it to the list of scenario cars
-						scenarioCar.push_back(new_sc);
-
-						sc = &scenarioCar.back();
-					}
-					sc->pos = o->state_.pos;
-				}
-
-				// Visualize scenario cars
-				for (size_t i=0; i<scenarioCar.size(); i++)
-				{
-					ScenarioCar *c = &scenarioCar[i];
-					c->carModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
-					c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
-				}
-
-				// Update debug visualization items (road positions, steering target and such)
-				// Assume first car to be the Ego (Vehicle Under Test)
-#ifdef VISUALIZE_DRIVER_MODEL_TARGET
-				if (scenarioCar.size() > 0)
-				{
-					scViewer->UpdateVehicleLineAndPoints(&scenarioCar[0].pos);
-					scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, 25);
-				}
-#endif
-				scViewer->osgViewer_->frame();
-			}
-#endif
 		}
+
+		return 0;
 	}
 
 	SE_DLL_API int SE_ReportObjectPos(int id, char *name, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
@@ -298,6 +328,11 @@ extern "C"
 
 	static int GetSteeringTarget(int object_id, float lookahead_distance, double *pos_local, double *pos_global, double *angle, double *curvature)
 	{
+		if (scenarioGateway == 0)
+		{
+			return -1;
+		}
+
 		if (object_id >= scenarioGateway->getNumberOfObjects())
 		{
 			LOG("Object %d not available, only %d registered", object_id, scenarioGateway->getNumberOfObjects());
@@ -315,6 +350,11 @@ extern "C"
 	{
 		double pos_local[3], pos_global[3], angle, curvature;
 
+		if (scenarioGateway == 0)
+		{
+			return -1;
+		}
+
 		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
 		{
 			return -1;
@@ -328,6 +368,12 @@ extern "C"
 	SE_DLL_API int SE_GetSteeringTargetPosLocal(int object_id, float lookahead_distance, float * target_pos)
 	{
 		double pos_local[3], pos_global[3], angle, curvature;
+
+		if (scenarioGateway == 0)
+		{
+			return -1;
+		}
+
 		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
 		{
 			return -1;
@@ -341,6 +387,12 @@ extern "C"
 	SE_DLL_API int SE_GetSteeringTargetAngle(int object_id, float lookahead_distance, float * angle_f)
 	{
 		double pos_local[3], pos_global[3], angle, curvature;
+
+		if (scenarioGateway == 0)
+		{
+			return -1;
+		}
+
 		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
 		{
 			return -1;
@@ -354,6 +406,12 @@ extern "C"
 	SE_DLL_API int SE_GetSteeringTargetCurvature(int object_id, float lookahead_distance, float * curvature_f)
 	{
 		double pos_local[3], pos_global[3], angle, curvature;
+
+		if (scenarioGateway == 0)
+		{
+			return -1;
+		}
+
 		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
 		{
 			return -1;

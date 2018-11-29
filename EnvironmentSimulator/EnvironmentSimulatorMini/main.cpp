@@ -7,13 +7,55 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 
+#include <Windows.h>
+#include <process.h>
 
 double deltaSimTime;
 
 static const double maxStepSize = 0.1;
-static const double minStepSize = 0.001;
+static const double minStepSize = 0.01;
 static const bool freerun = true;
 static std::mt19937 mt_rand;
+static bool viewer_running = false;
+
+
+static ScenarioEngine *scenarioEngine;
+
+void viewer_thread(void *data)
+{
+	// Create viewer
+	osg::ArgumentParser *parser = (osg::ArgumentParser *)data;
+	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), *parser);
+
+	//  Create cars for visualization
+	for (int i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	{
+		int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (mt_rand.max)();
+		viewer->AddCar(carModelID);
+	}
+
+	while (!viewer->osgViewer_->done())
+	{
+
+		// Visualize cars
+		for (int i = 0; i < scenarioEngine->entities.object_.size(); i++)
+		{
+			viewer::CarModel *car = viewer->cars_[i];
+			roadmanager::Position pos = scenarioEngine->entities.object_[i]->pos_;
+
+			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
+			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
+		}
+
+		viewer->osgViewer_->frame();
+		
+		viewer_running = true;
+	}
+
+	delete viewer;
+
+	viewer_running = false;
+}
 
 int main(int argc, char *argv[])
 {	
@@ -55,7 +97,6 @@ int main(int argc, char *argv[])
 		ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
 	}
 
-	ScenarioEngine *scenarioEngine;
 	// Create scenario engine
 	try 
 	{ 
@@ -70,39 +111,41 @@ int main(int argc, char *argv[])
 	// Step scenario engine - zero time - just to reach init state
 	// Report all vehicles initially - to communicate initial position for external vehicles as well
 	scenarioEngine->step(0.0, true);
-
-	// Create viewer
-	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), arguments);
+	
 
 	// ScenarioGateway
 	ScenarioGateway *scenarioGateway = scenarioEngine->getScenarioGateway();
 
-	//  Create cars for visualization
-	for (int i = 0; i < scenarioEngine->entities.object_.size(); i++)
-	{
-		int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (mt_rand.max)();
-		viewer->AddCar(carModelID);
-	}
+	// Launch viewer in a separate thread
+	HANDLE thread_handle = (HANDLE)_beginthread(viewer_thread, 0, &arguments);
+
+	// Wait for the viewer to launch
+	while (!viewer_running) SE_sleep(100);
+
 
 	__int64 now, lastTimeStamp = 0;
 	double simTime = 0;
 
-	while (!viewer->osgViewer_->done())
+	while (viewer_running)
 	{
 		// Get milliseconds since Jan 1 1970
 		now = SE_getSystemTime();
 		deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
 		lastTimeStamp = now;
+		double adjust = 0;
 
 		if (deltaSimTime > maxStepSize) // limit step size
 		{
-			deltaSimTime = maxStepSize;
+			adjust = -(deltaSimTime - maxStepSize);
 		}
 		else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
 		{
-			SE_sleep(minStepSize - deltaSimTime);
-			deltaSimTime = minStepSize;
+			adjust = minStepSize - deltaSimTime;
+			SE_sleep(adjust * 1000);
+			lastTimeStamp += adjust * 1000;
 		}
+
+		deltaSimTime += adjust;
 
 		// Time operations
 		simTime = simTime + deltaSimTime;
@@ -112,21 +155,10 @@ int main(int argc, char *argv[])
 		// ScenarioEngine
 		scenarioEngine->step(deltaSimTime);
 
-		// Visualize cars
-		for (int i = 0; i<scenarioEngine->entities.object_.size(); i++)
-		{
-			viewer::CarModel *car = viewer->cars_[i];
-			roadmanager::Position pos = scenarioEngine->entities.object_[i]->pos_;
-
-			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
-			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
-		}
-		
-		viewer->osgViewer_->frame();
 	}
 
+
 	delete scenarioEngine;
-	delete viewer;
 
 	return 0;
 }

@@ -34,7 +34,7 @@
 
 	void SE_sleep(unsigned int msec)
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds((int)(1000 * msec)));
+		std::this_thread::sleep_for(std::chrono::milliseconds((int)(msec)));
 	}
 
 #endif

@@ -177,6 +177,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	keyDown_ = false;
 	keyLeft_ = false;
 	keyRight_ = false;
+	quit_request_ = false;
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
 
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
@@ -278,6 +279,8 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	// add the stats handler
 	osgViewer_->addEventHandler(new osgViewer::StatsHandler);
 
+	osgViewer_->setReleaseContextAtEndOfFrameHint(false);
+
 	// Light
 	osgViewer_->setLightingMode(osg::View::SKY_LIGHT);
 	osg::Light *light = osgViewer_->getLight();
@@ -298,7 +301,6 @@ Viewer::~Viewer()
 		delete(cars_[i]);
 	}
 	cars_.clear();
-	delete(osgViewer_);
 }
 
 CarModel* Viewer::AddCar(int modelId)
@@ -733,6 +735,7 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 	}
 	break;
 	case(osgGA::GUIEventAdapter::KEY_Tab):
+	{
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			int step = (ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1;
@@ -745,9 +748,15 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 			viewer_->rubberbandManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_]->txNode_, false);
 			viewer_->nodeTrackerManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_]->node_);
 		}
-		break;
 	}
-	
+	break;
+	case(osgGA::GUIEventAdapter::KEY_Escape):
+	{
+		viewer_->osgViewer_->setDone(true);
+		viewer_->SetQuitRequest(true);
+	}
+	break;
+	}
+
 	return false;
 }
-

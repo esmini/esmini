@@ -122,4 +122,21 @@ public:
 		}
 		return entry;
 	}
+
+	void *FindCatalogElement(std::string catalog_name, std::string entry_name)
+	{
+		Entry *entry = FindCatalogEntry(catalog_name, entry_name);
+		void *element = 0;
+
+		if (entry != 0)
+		{
+			element = entry->GetElement();
+		}
+		else
+		{
+			LOG("Couldn't get element in entry %s in catalog %s", entry_name.c_str(), catalog_name.c_str());
+		}
+
+		return element;
+	}
 };

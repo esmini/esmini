@@ -400,7 +400,7 @@ void ScenarioReader::parseOSCPosition(roadmanager::Position &position, pugi::xml
 						else if (routeRefChildName == "CatalogReference")
 						{
 							// Find route in catalog
-							route = (roadmanager::Route*)catalogs->FindCatalogEntry(ReadAttribute(routeRefChild.attribute("catalogName")), ReadAttribute(routeRefChild.attribute("entryName")))->GetElement();
+							route = (roadmanager::Route*)catalogs->FindCatalogElement(ReadAttribute(routeRefChild.attribute("catalogName")), ReadAttribute(routeRefChild.attribute("entryName")));
 
 							if(route == 0)
 							{

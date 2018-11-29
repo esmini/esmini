@@ -41,7 +41,7 @@ extern "C"
 	*/
 	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control = 0, int use_viewer = 0, int record = 0);
 
-	SE_DLL_API void SE_Step(float dt);
+	SE_DLL_API int SE_Step(float dt);
 	SE_DLL_API void SE_Close();
 
 	SE_DLL_API int SE_ReportObjectPos(int id, char *name, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
