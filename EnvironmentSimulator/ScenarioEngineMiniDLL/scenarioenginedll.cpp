@@ -1,6 +1,7 @@
 #include "scenarioenginedll.h"
 #include "ScenarioEngine.hpp"
 
+
 #ifdef _SCENARIO_VIEWER
 
 	#include "viewer.hpp"
@@ -25,6 +26,7 @@
 
 	static bool closing = false;
 	static HANDLE thread_handle = 0;
+	static HANDLE ghMutex;
 
 #endif
 
@@ -101,6 +103,8 @@ void viewer_thread(void *data)
 		}
 
 		// Visualize scenario cars
+
+		WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
 		for (size_t i = 0; i < scenarioCar.size(); i++)
 		{
 			ScenarioCar *c = &scenarioCar[i];
@@ -117,6 +121,8 @@ void viewer_thread(void *data)
 			scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, 25);
 		}
 #endif
+		ReleaseMutex(ghMutex);
+
 		scViewer->osgViewer_->frame();
 	}
 }
@@ -259,7 +265,11 @@ extern "C"
 			scenarioEngine->setTimeStep(dt);
 
 			// ScenarioEngine
+			WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
+
 			scenarioEngine->step((double)dt);
+
+			ReleaseMutex(ghMutex);
 		}
 
 		return 0;

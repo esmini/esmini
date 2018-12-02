@@ -128,7 +128,16 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 		if ( action && action->state_ == OSCAction::State::ACTIVE)
 		{
 			LOG("Trigged");
-			return action;
+			return true;
+		}
+	}
+	else if (element_type_ == StoryElementType::ACT)
+	{
+		Act *act = story->FindActByName(element_name_);
+		if (act && act->active_)
+		{
+			LOG("Trigged");
+			return true;
 		}
 	}
 	else
@@ -224,6 +233,28 @@ bool TrigByTimeHeadway::Evaluate(Story *story, double sim_time)
 	if (trig)
 	{
 		LOG("Trigged %s hwt: %.2f %s %.2f, %s", name_.c_str(), hwt, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+	}
+
+	evaluated_ = true;
+
+	return trig;
+}
+
+bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
+{
+	bool trig = false;
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+	{
+		if (fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(position_)) < tolerance_)
+		{
+			trig = true;
+		}
+
+		if (EvalDone(trig, triggering_entity_rule_))
+		{
+			break;
+		}
 	}
 
 	evaluated_ = true;

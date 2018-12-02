@@ -29,6 +29,8 @@ public:
 		LOG("");
 	}
 
+	std::string basetype2str(BaseType type);
+
 	virtual void Trig()
 	{
 		state_ = State::ACTIVE;
@@ -39,7 +41,16 @@ public:
 	{
 		if (state_ = State::ACTIVE)
 		{
-			LOG("Action %s stopped", name_.c_str());
+			LOG("Action %s, base type: %s, stopped", name_.c_str(), basetype2str(base_type_).c_str());
+			state_ = DONE;
+		}
+	}
+
+	void Done()
+	{
+		if (state_ = State::ACTIVE)
+		{
+			LOG("Action %s, base type: %s, done", name_.c_str(), basetype2str(base_type_).c_str());
 			state_ = DONE;
 		}
 	}

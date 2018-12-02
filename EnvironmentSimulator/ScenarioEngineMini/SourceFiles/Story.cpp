@@ -7,6 +7,19 @@ Story::Story()
 	LOG("Story: New Story created");
 }
 
+Act* Story::FindActByName(std::string name)
+{
+	for (size_t i = 0; i < act_.size(); i++)
+	{
+		if (name == act_[i]->name_)
+		{
+			return act_[i];
+		}
+	}
+
+	return nullptr;
+}
+
 OSCAction * Story::FindActionByName(std::string name)
 {
 	for (size_t i = 0; i < act_.size(); i++)

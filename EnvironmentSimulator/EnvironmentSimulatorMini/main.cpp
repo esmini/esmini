@@ -21,6 +21,8 @@ static bool viewer_running = false;
 
 static ScenarioEngine *scenarioEngine;
 
+static HANDLE ghMutex;
+
 void viewer_thread(void *data)
 {
 	// Create viewer
@@ -37,6 +39,8 @@ void viewer_thread(void *data)
 	while (!viewer->osgViewer_->done())
 	{
 
+		WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
+
 		// Visualize cars
 		for (int i = 0; i < scenarioEngine->entities.object_.size(); i++)
 		{
@@ -46,6 +50,8 @@ void viewer_thread(void *data)
 			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
 			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
 		}
+
+		ReleaseMutex(ghMutex);
 
 		viewer->osgViewer_->frame();
 		
@@ -60,6 +66,17 @@ void viewer_thread(void *data)
 int main(int argc, char *argv[])
 {	
 	mt_rand.seed(time(0));
+
+	ghMutex = CreateMutex(
+		NULL,              // default security attributes
+		FALSE,             // initially not owned
+		NULL);             // unnamed mutex
+
+	if (ghMutex == NULL)
+	{
+		printf("CreateMutex error: %d\n", GetLastError());
+		return 1;
+	}
 
 	// Simulation constants
 	double endTime = 100;
@@ -153,8 +170,11 @@ int main(int argc, char *argv[])
 		scenarioEngine->setTimeStep(deltaSimTime);
 
 		// ScenarioEngine
+		WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
+		
 		scenarioEngine->step(deltaSimTime);
 
+		ReleaseMutex(ghMutex);
 	}
 
 

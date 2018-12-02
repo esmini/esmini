@@ -53,11 +53,11 @@ void LatLaneChangeAction::Trig()
 
 	OSCAction::Trig();
 
-	if (target_->ABSOLUTE)
+	if (target_->type_ == Target::Type::ABSOLUTE)
 	{
 		target_lane_id_ = target_->value_;
 	}
-	else if (target_->RELATIVE)
+	else if (target_->type_ == Target::Type::RELATIVE)
 	{
 		target_lane_id_ = ((TargetRelative*)target_)->object_->pos_.GetLaneId() + target_->value_;
 	}
@@ -94,7 +94,7 @@ void LatLaneChangeAction::Step(double dt)
 
 		if (factor > 1.0)
 		{
-			OSCAction::Stop();
+			OSCAction::Done();
 			angle = 0;
 		}
 
@@ -137,7 +137,7 @@ void LatLaneOffsetAction::Step(double dt)
 
 	if (factor > 1.0)
 	{
-		OSCAction::Stop();
+		OSCAction::Done();
 		angle = 0;
 	}
 
@@ -193,8 +193,14 @@ void LongSpeedAction::Step(double dt)
 	double factor = 0.0;
 	double target_speed = 0;
 	double new_speed = 0;
+	bool target_speed_reached = false;
 
-	if (dynamics_.timing_type_ == Timing::RATE)
+	if (dynamics_.transition_.shape_ == DynamicsShape::STEP)
+	{
+		new_speed = target_->GetValue();
+		target_speed_reached = true;
+	}
+	else if (dynamics_.timing_type_ == Timing::RATE)
 	{
 		elapsed_ += dt;
 		double speed_diff = target_->GetValue() - object_->speed_;
@@ -205,7 +211,7 @@ void LongSpeedAction::Step(double dt)
 			(object_->speed_ < target_->GetValue() && new_speed > target_->GetValue()))
 		{
 			new_speed = target_->GetValue();
-			OSCAction::Stop();
+			target_speed_reached = true;
 		}
 	}
 	else if (dynamics_.timing_type_ == Timing::TIME)
@@ -216,10 +222,7 @@ void LongSpeedAction::Step(double dt)
 		if(factor > 1.0)
 		{
 			new_speed = target_->GetValue();
-			if (target_->type_ == Target::Type::RELATIVE && ((TargetRelative*)target_)->continuous_ != true)
-			{
-				OSCAction::Stop();
-			}
+			target_speed_reached = true;
 		}
 		else
 		{
@@ -229,12 +232,70 @@ void LongSpeedAction::Step(double dt)
 	else
 	{
 		LOG("Timing type %d not supported yet", dynamics_.timing_type_);
-		OSCAction::Stop();
+		new_speed = target_->GetValue();
+		OSCAction::Done();
 
 		return;
 	}
 
+	if (target_speed_reached && !(target_->type_ == Target::Type::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
+	{
+		OSCAction::Done();
+	}
+
 	object_->speed_ = new_speed;
+}
+
+void LongDistanceAction::Step(double dt)
+{
+	// Find out current distance
+	double distance = object_->pos_.getRelativeDistance(target_object_->pos_);
+	double speed_diff = object_->speed_ - target_object_->speed_;
+	double acc;
+	double damping = 1;
+	double spring_constant = 1;
+	double dc;
+	double requested_dist;
+
+	if (dist_type_ == DistType::DISTANCE)
+	{
+		requested_dist = distance_;
+	}
+	if (dist_type_ == DistType::TIME_GAP)
+	{
+		// Convert requested time gap (seconds) to distance (m)
+		requested_dist = object_->speed_ * distance_;
+	}
+
+	double distance_diff = distance - requested_dist;
+
+	// Apply damped spring model with critical/optimal damping factor
+	dc = 2 * damping * sqrt(spring_constant);
+	acc = distance_diff * spring_constant - speed_diff * dc;
+
+	if (acc > dynamics_.max_acceleration_)
+	{
+		acc = dynamics_.max_acceleration_;
+	}
+	else if (acc < -dynamics_.max_deceleration_)
+	{
+		acc = -dynamics_.max_deceleration_;
+	}
+
+	object_->speed_ += acc * dt;
+
+//	LOG("Dist %.2f diff %.2f acc %.2f speed %.2f", distance, distance_diff, acc, object_->speed_);
+}
+
+void LongDistanceAction::Trig()
+{
+	if (target_object_ == 0)
+	{
+		LOG("Can't trig without set target object ");
+		return;
+	}
+
+	OSCAction::Trig();
 }
 
 void MeetingRelativeAction::Step(double dt)
@@ -252,7 +313,7 @@ void MeetingRelativeAction::Step(double dt)
 	// Done when either of the vehicles reaches the destination
 	if (relativeDist < DISTANCE_TOLERANCE || (targetTimeToDest + offsetTime_) < SMALL_NUMBER)
 	{
-		OSCAction::Stop();
+		OSCAction::Done();
 	}
 	else
 	{

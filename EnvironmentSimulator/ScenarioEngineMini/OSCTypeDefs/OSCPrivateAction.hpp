@@ -101,7 +101,7 @@ public:
 	class TargetAbsolute : public Target
 	{
 	public:
-		TargetAbsolute() : Target(Type::RELATIVE) {}
+		TargetAbsolute() : Target(Type::ABSOLUTE) {}
 
 		double GetValue()
 		{
@@ -123,7 +123,7 @@ public:
 		ValueType value_type_;
 		bool continuous_;
 
-		TargetRelative() : Target(Type::RELATIVE), consumed_(false), object_speed_(0) {}
+		TargetRelative() : Target(Type::RELATIVE), consumed_(false), object_speed_(0), continuous_(false) {}
 
 		double GetValue();
 
@@ -151,6 +151,46 @@ public:
 	{
 		LOG("");
 	}
+};
+
+class LongDistanceAction : public OSCPrivateAction
+{
+public:
+
+	struct
+	{
+		bool none_;
+		double max_acceleration_;
+		double max_deceleration_;
+		double max_speed_;
+	} dynamics_;
+
+	typedef enum
+	{
+		DISTANCE,
+		TIME_GAP,
+	} DistType;
+
+	Object *target_object_;
+	double distance_;
+	DistType dist_type_;
+	double freespace_;
+
+	LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::Type::LONG_DISTANCE), target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0)
+	{
+	}
+
+	void Trig();
+
+	void Step(double dt);
+
+	void print()
+	{
+		LOG("");
+	}
+
+private:
+	double acceleration_;
 };
 
 class LatLaneChangeAction: public OSCPrivateAction
@@ -352,7 +392,7 @@ public:
 		LOG("Step %s pos: ", object_->name_.c_str());
 		position_.Print();
 
-		state_ = State::DONE;
+		OSCAction::Done();
 	}
 
 	void Trig()

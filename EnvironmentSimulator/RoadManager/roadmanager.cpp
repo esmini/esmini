@@ -1561,7 +1561,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 	Road *road2 = GetRoadById(road2_id);
 
 	LinkType link_type;
-	RoadLink *link;
+	RoadLink *link = 0;
 
 	// Look from road 1, both ends, for road 2
 	if (lane1_id < 0)
@@ -1590,6 +1590,11 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 			}
 		}
 	}
+	if (link == 0)
+	{
+		return false;
+	}
+
 	LaneSection *lane_section = 0;
 
 	if (link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)

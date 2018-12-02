@@ -66,6 +66,7 @@ public:
 	typedef enum
 	{
 		TIME_HEADWAY,
+		REACH_POSITION,
 		// not complete at all
 	} EntityConditionType;
 
@@ -93,6 +94,17 @@ public:
 
 
 	TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
+
+	bool Evaluate(Story *story, double sim_time);
+};
+
+class TrigByReachPosition : public TrigByEntity
+{
+public:
+	roadmanager::Position position_;
+	double tolerance_;
+
+	TrigByReachPosition() : TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
 
 	bool Evaluate(Story *story, double sim_time);
 };

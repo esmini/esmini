@@ -49,7 +49,7 @@ public:
 	void parseOSCPosition(roadmanager::Position &position, pugi::xml_node positionNode, Catalogs *catalogs);
 
 	// Storyboard - Story
-	OSCCondition *parseOSCCondition(pugi::xml_node conditionNode, Entities *entities);
+	OSCCondition *parseOSCCondition(pugi::xml_node conditionNode, Entities *entities, Catalogs *catalogs);
 //	void parseOSCConditionGroup(OSCConditionGroup *conditionGroup, pugi::xml_node conditionGroupNode);
 	void parseStory(std::vector<Story*> &storyVector, Entities *entities, Catalogs *catalogs);
 	void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, Entities *entities, ActSequence *act_sequence, Catalogs *catalogs);
