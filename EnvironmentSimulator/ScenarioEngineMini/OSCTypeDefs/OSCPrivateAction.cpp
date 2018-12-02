@@ -252,8 +252,7 @@ void LongDistanceAction::Step(double dt)
 	double distance = object_->pos_.getRelativeDistance(target_object_->pos_);
 	double speed_diff = object_->speed_ - target_object_->speed_;
 	double acc;
-	double damping = 1;
-	double spring_constant = 1;
+	double spring_constant = 4;
 	double dc;
 	double requested_dist;
 
@@ -270,7 +269,7 @@ void LongDistanceAction::Step(double dt)
 	double distance_diff = distance - requested_dist;
 
 	// Apply damped spring model with critical/optimal damping factor
-	dc = 2 * damping * sqrt(spring_constant);
+	dc = 2 * sqrt(spring_constant);
 	acc = distance_diff * spring_constant - speed_diff * dc;
 
 	if (acc > dynamics_.max_acceleration_)
