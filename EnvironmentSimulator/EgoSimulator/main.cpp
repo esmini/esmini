@@ -239,7 +239,7 @@ int main(int argc, char** argv)
 			if (scenarioEngine->GetExtControl())
 			{
 				// Report updated Ego state to scenario gateway
-				scenarioGateway->reportObject(ObjectState(EGO_ID, std::string("Ego"), simTime,
+				scenarioGateway->reportObject(ObjectState(EGO_ID, std::string("Ego"), 0, simTime,
 					egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_,
 					egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0,
 					egoCar->vehicle->speed_));
@@ -262,9 +262,7 @@ int main(int argc, char** argv)
 						LOG("Creating car %d - got state from gateway", o->state_.id);
 
 						new_sc.id = o->state_.id;
-						// Choose random model
-						int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (mt_rand.max)();
-						new_sc.carModel = viewer->AddCar(carModelID);
+						new_sc.carModel = viewer->AddCar(o->state_.model_id);
 
 						// Add it to the list of scenario cars
 						scenarioCar.push_back(new_sc);

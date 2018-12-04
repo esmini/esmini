@@ -25,6 +25,7 @@ public:
 
 	Type type_;
 	std::string name_;
+	int model_id_;
 	bool extern_control_;
 	int id_;
 	roadmanager::Position pos_;

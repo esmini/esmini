@@ -16,7 +16,6 @@ static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
-static std::mt19937 mt_rand;
 
 typedef struct
 {
@@ -138,10 +137,7 @@ int main(int argc, char** argv)
 					LOG("Creating car %d - got state from gateway", state->id);
 
 					new_sc.id = state->id;
-
-					// Choose random model
-					int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (mt_rand.max)();
-					new_sc.carModel = viewer->AddCar(carModelID);
+					new_sc.carModel = viewer->AddCar(state->model_id);
 
 					// Add it to the list of scenario cars
 					scenarioCar.push_back(new_sc);

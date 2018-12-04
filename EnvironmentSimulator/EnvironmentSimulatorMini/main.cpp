@@ -15,7 +15,6 @@ double deltaSimTime;
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static const bool freerun = true;
-static std::mt19937 mt_rand;
 static bool viewer_running = false;
 
 
@@ -32,8 +31,7 @@ void viewer_thread(void *data)
 	//  Create cars for visualization
 	for (int i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		int carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (mt_rand.max)();
-		viewer->AddCar(carModelID);
+		viewer->AddCar(scenarioEngine->entities.object_[i]->model_id_);
 	}
 
 	while (!viewer->osgViewer_->done())
@@ -65,7 +63,6 @@ void viewer_thread(void *data)
 
 int main(int argc, char *argv[])
 {	
-	mt_rand.seed(time(0));
 
 	ghMutex = CreateMutex(
 		NULL,              // default security attributes
@@ -114,6 +111,9 @@ int main(int argc, char *argv[])
 		ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
 	}
 
+	std::string record_filename;
+	arguments.read("--record", record_filename);
+
 	// Create scenario engine
 	try 
 	{ 
@@ -125,13 +125,19 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	// Step scenario engine - zero time - just to reach init state
-	// Report all vehicles initially - to communicate initial position for external vehicles as well
-	scenarioEngine->step(0.0, true);
-	
-
 	// ScenarioGateway
 	ScenarioGateway *scenarioGateway = scenarioEngine->getScenarioGateway();
+
+	// Create a data file for later replay?
+	if (!record_filename.empty())
+	{
+		LOG("Recording data to file %s", record_filename);
+		scenarioGateway->RecordToFile(record_filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
+	}
+
+	// Step scenario engine - zero time - just to reach init state	
+	// Report all vehicles initially - to communicate initial position for external vehicles as well
+	scenarioEngine->step(0.0, true);
 
 	// Launch viewer in a separate thread
 	HANDLE thread_handle = (HANDLE)_beginthread(viewer_thread, 0, &arguments);

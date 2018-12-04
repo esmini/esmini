@@ -16,15 +16,16 @@ struct ObjectStateStruct
 	char name[NAME_LEN];
 	roadmanager::Position pos;
 	float speed;
+	int model_id;
 };
 
 class ObjectState
 {
 public:
 	ObjectState();
-	ObjectState(int id, std::string name, double timestamp, roadmanager::Position *pos, double speed);
-	ObjectState(int id, std::string name, double timestamp, double x, double y, double z, double h, double p, double r, double speed);
-	ObjectState(int id, std::string name, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed);
+	ObjectState(int id, std::string name, int model_id, double timestamp, roadmanager::Position *pos, double speed);
+	ObjectState(int id, std::string name, int model_id, double timestamp, double x, double y, double z, double h, double p, double r, double speed);
+	ObjectState(int id, std::string name, int model_id, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed);
 
 	ObjectStateStruct getStruct() { return state_; }
 
