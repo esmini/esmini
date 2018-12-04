@@ -341,7 +341,7 @@ LaneSection* Road::GetLaneSectionByS(double s)
 		return 0;
 	}
 
-	for (int i = 0; i < lane_section_.size(); i++)
+	for (size_t i = 0; i < lane_section_.size(); i++)
 	{
 		length = length + lane_section_[i]->GetLength();
 
@@ -402,7 +402,7 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 
 Geometry* Road::GetGeometry(int idx)
 {
-	if (idx < 0 || idx + 1 > geometry_.size())
+	if (idx < 0 || idx + 1 > (int)geometry_.size())
 	{
 		LOG("Road::GetGeometry index %d out of range [0:%d]\n", idx, (int)geometry_.size());
 		return 0;

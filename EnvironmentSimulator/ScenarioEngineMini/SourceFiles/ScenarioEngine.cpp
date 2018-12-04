@@ -68,7 +68,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	// Fetch external states from gateway, except the initial run where scenario engine sets all positions
 	if (!initial)
 	{
-		for (int i = 0; i < entities.object_.size(); i++)
+		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
 			if (entities.object_[i]->extern_control_)
 			{
@@ -278,7 +278,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	}
 
 	// Report resulting states to the gateway
-	for (int i = 0; i < entities.object_.size(); i++)
+	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
 		Object *obj = entities.object_[i];
 		

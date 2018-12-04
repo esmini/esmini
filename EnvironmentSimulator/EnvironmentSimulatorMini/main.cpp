@@ -32,7 +32,7 @@ void viewer_thread(void *data)
 	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), *parser);
 
 	//  Create cars for visualization
-	for (int i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
 		viewer->AddCar(scenarioEngine->entities.object_[i]->model_id_);
 	}
@@ -43,7 +43,7 @@ void viewer_thread(void *data)
 		WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
 
 		// Visualize cars
-		for (int i = 0; i < scenarioEngine->entities.object_.size(); i++)
+		for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 		{
 			viewer::CarModel *car = viewer->cars_[i];
 			roadmanager::Position pos = scenarioEngine->entities.object_[i]->pos_;
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 	// Create a data file for later replay?
 	if (!record_filename.empty())
 	{
-		LOG("Recording data to file %s", record_filename);
+		LOG("Recording data to file %s", record_filename.c_str());
 		scenarioGateway->RecordToFile(record_filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
 	}
 
