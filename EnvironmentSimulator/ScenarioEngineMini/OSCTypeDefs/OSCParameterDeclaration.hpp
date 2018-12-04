@@ -9,22 +9,26 @@
 
 #include "CommonMini.hpp"
 
-
-struct ParameterStruct
+namespace scenarioengine
 {
-	std::string name;
-	std::string type; // Wrong type
-	std::string value;
-};
 
-class OSCParameterDeclaration
-{
-public:
-
-	std::vector<ParameterStruct> Parameter;
-
-	void printOSCParameterDeclaration() 
+	struct ParameterStruct
 	{
-		LOG("\n");
+		std::string name;
+		std::string type; // Wrong type
+		std::string value;
 	};
-};
+
+	class OSCParameterDeclaration
+	{
+	public:
+
+		std::vector<ParameterStruct> Parameter;
+
+		void printOSCParameterDeclaration()
+		{
+			LOG("\n");
+		};
+	};
+
+}

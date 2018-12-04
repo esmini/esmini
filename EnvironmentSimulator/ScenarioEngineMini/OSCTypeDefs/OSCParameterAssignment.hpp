@@ -3,18 +3,23 @@
 #include <string>
 #include "CommonMini.hpp"
 
-class OSCParameterAssignment
+namespace scenarioengine
 {
-	struct
-	{
-		std::string name;
-		std::string value;
-	}Parameter;
-	
 
-	void printOSCParameterAssignment()
+	class OSCParameterAssignment
 	{
-		LOG(" - ParameterAssignment");
-		LOG("\n");
+		struct
+		{
+			std::string name;
+			std::string value;
+		}Parameter;
+
+
+		void printOSCParameterAssignment()
+		{
+			LOG(" - ParameterAssignment");
+			LOG("\n");
+		};
 	};
-};
+
+}

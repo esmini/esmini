@@ -9,6 +9,7 @@
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
 
+using namespace scenarioengine;
 
 double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double start_value, double end_value)
 {

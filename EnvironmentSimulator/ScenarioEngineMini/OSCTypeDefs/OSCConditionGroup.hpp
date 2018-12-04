@@ -5,16 +5,21 @@
 #include <string>
 #include <vector>
 
-// Forward declaration
-class OSCCondition;
-
-class OSCConditionGroup
+namespace scenarioengine
 {
-public:
-	std::vector<OSCCondition*> condition_;
 
-	void Print()
+	// Forward declaration
+	class OSCCondition;
+
+	class OSCConditionGroup
 	{
-		LOG("\t - ConditionGroup");
-	}
-};
+	public:
+		std::vector<OSCCondition*> condition_;
+
+		void Print()
+		{
+			LOG("\t - ConditionGroup");
+		}
+	};
+
+}

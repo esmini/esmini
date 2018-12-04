@@ -2,10 +2,15 @@
 #include <iostream>
 #include <string>
 
-class OSCGlobalAction
+namespace scenarioengine
 {
-public:
-	void printOSCGlobalAction()
+
+	class OSCGlobalAction
 	{
+	public:
+		void printOSCGlobalAction()
+		{
+		};
 	};
-};
+
+}

@@ -8,189 +8,193 @@
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 
-// Forward declaration 
-class Story;
-class Act;
-
-class OSCCondition
+namespace scenarioengine
 {
-public:
-	
-	typedef enum
+
+	// Forward declaration 
+	class Story;
+	class Act;
+
+	class OSCCondition
 	{
-		BY_ENTITY,
-		BY_STATE,
-		BY_VALUE
-	} ConditionType;
+	public:
 
-	typedef enum
+		typedef enum
+		{
+			BY_ENTITY,
+			BY_STATE,
+			BY_VALUE
+		} ConditionType;
+
+		typedef enum
+		{
+			RISING,
+			FALLING,
+			ANY,
+			UNDEFINED
+		} ConditionEdge;
+
+		ConditionType base_type_;
+		std::string name_;
+		double delay_;
+		ConditionEdge edge_;
+		bool evaluated_;
+
+		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false) {}
+
+		virtual bool Evaluate(Story *story, double sim_time) = 0;
+		bool CheckEdge(double a, double b, OSCCondition::ConditionEdge edge);
+	};
+
+	class TrigByEntity : public OSCCondition
 	{
-		RISING,
-		FALLING,
-		ANY,
-		UNDEFINED
-	} ConditionEdge;
+	public:
+		struct Entity
+		{
+			Object *object_;
+		};
 
-	ConditionType base_type_;
-	std::string name_;
-	double delay_;
-	ConditionEdge edge_; 
-	bool evaluated_;
+		typedef enum
+		{
+			ANY,
+			ALL
+		} TriggeringEntitiesRule;
 
-	OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false) {}
-	
-	virtual bool Evaluate(Story *story, double sim_time) = 0;
-	bool CheckEdge(double a, double b, OSCCondition::ConditionEdge edge);
-};
+		struct TriggeringEntities
+		{
+			std::vector<Entity> entity_;
+			TriggeringEntitiesRule rule_;
+		};
 
-class TrigByEntity : public OSCCondition
-{
-public:
-	struct Entity
+		typedef enum
+		{
+			TIME_HEADWAY,
+			REACH_POSITION,
+			// not complete at all
+		} EntityConditionType;
+
+		TriggeringEntitiesRule triggering_entity_rule_;
+		TriggeringEntities triggering_entities_;
+		EntityConditionType type_;
+
+		TrigByEntity(EntityConditionType type) : OSCCondition(OSCCondition::ConditionType::BY_ENTITY), type_(type) {}
+
+		void Print()
+		{
+			LOG("");
+		}
+	};
+
+	class TrigByTimeHeadway : public TrigByEntity
 	{
+	public:
 		Object *object_;
+		double value_;
+		bool freespace_;
+		bool along_route_;
+		Rule rule_;
+		double headway_time_last_value_;
+
+
+		TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
+
+		bool Evaluate(Story *story, double sim_time);
 	};
 
-	typedef enum
+	class TrigByReachPosition : public TrigByEntity
 	{
-		ANY,
-		ALL
-	} TriggeringEntitiesRule;
+	public:
+		roadmanager::Position position_;
+		double tolerance_;
 
-	struct TriggeringEntities
-	{
-		std::vector<Entity> entity_;
-		TriggeringEntitiesRule rule_;
+		TrigByReachPosition() : TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
+
+		bool Evaluate(Story *story, double sim_time);
 	};
 
-	typedef enum
+	class TrigByState : public OSCCondition
 	{
-		TIME_HEADWAY,
-		REACH_POSITION,
-		// not complete at all
-	} EntityConditionType;
+	public:
+		typedef enum
+		{
+			AT_START,
+			AFTER_TERMINATION,
+		} Type;
 
-	TriggeringEntitiesRule triggering_entity_rule_;
-	TriggeringEntities triggering_entities_;
-	EntityConditionType type_;
-	
-	TrigByEntity(EntityConditionType type) : OSCCondition(OSCCondition::ConditionType::BY_ENTITY), type_(type) {}
+		typedef enum
+		{
+			ACT,
+			SCENE,
+			MANEUVER,
+			EVENT,
+			ACTION,
+			UNDEFINED
+		} StoryElementType;
 
-	void Print()
+		Type type_;
+		std::string element_name_;
+
+		TrigByState(Type type) : OSCCondition(BY_STATE), type_(type) {}
+
+		bool Evaluate(Story *story, double sim_time);
+	};
+
+	class TrigAtStart : public TrigByState
 	{
-		LOG("");
-	}
-};
+	public:
+		StoryElementType element_type_;
 
-class TrigByTimeHeadway : public TrigByEntity
-{
-public:
-	Object *object_;
-	double value_;
-	bool freespace_;
-	bool along_route_;
-	Rule rule_;
-	double headway_time_last_value_;
+		TrigAtStart() : TrigByState(TrigByState::Type::AT_START) {}
 
+		bool Evaluate(Story *story, double sim_time);
+	};
 
-	TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
-
-	bool Evaluate(Story *story, double sim_time);
-};
-
-class TrigByReachPosition : public TrigByEntity
-{
-public:
-	roadmanager::Position position_;
-	double tolerance_;
-
-	TrigByReachPosition() : TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
-
-	bool Evaluate(Story *story, double sim_time);
-};
-
-class TrigByState : public OSCCondition
-{
-public:
-	typedef enum
+	class TrigAfterTermination : public TrigByState
 	{
-		AT_START,
-		AFTER_TERMINATION,
-	} Type;
+	public:
+		typedef enum
+		{
+			END,
+			CANCEL,
+			ANY,
+			UNDEFINED
+		} AfterTerminationRule;
 
-	typedef enum
+		AfterTerminationRule rule_;
+		StoryElementType element_type_;
+
+		TrigAfterTermination() : TrigByState(TrigByState::Type::AFTER_TERMINATION) {}
+
+		bool Evaluate(Story *story, double sim_time);
+	};
+
+	class TrigByValue : public OSCCondition
 	{
-		ACT,
-		SCENE,
-		MANEUVER,
-		EVENT,
-		ACTION,
-		UNDEFINED
-	} StoryElementType;
+	public:
+		typedef enum
+		{
+			PARAMETER,
+			TIME_OF_DAY,
+			SIMULATION_TIME,
+			UNDEFINED
+		} Type;
 
-	Type type_;
-	std::string element_name_;
+		Type type_;
+		Rule rule_;
 
-	TrigByState(Type type) : OSCCondition(BY_STATE), type_(type) {}
+		TrigByValue(Type type) : OSCCondition(BY_VALUE), type_(type) {}
 
-	bool Evaluate(Story *story, double sim_time);
-};
+		bool Evaluate(Story *story, double sim_time);
+	};
 
-class TrigAtStart : public TrigByState
-{
-public:
-	StoryElementType element_type_;
-
-	TrigAtStart() : TrigByState(TrigByState::Type::AT_START) {}
-
-	bool Evaluate(Story *story, double sim_time);
-};
-
-class TrigAfterTermination : public TrigByState
-{
-public:
-	typedef enum
+	class TrigBySimulationTime : public TrigByValue
 	{
-		END,
-		CANCEL,
-		ANY,
-		UNDEFINED
-	} AfterTerminationRule;
+	public:
+		double value_;
 
-	AfterTerminationRule rule_;
-	StoryElementType element_type_;
+		TrigBySimulationTime() : TrigByValue(TrigByValue::Type::TIME_OF_DAY) {}
 
-	TrigAfterTermination() : TrigByState(TrigByState::Type::AFTER_TERMINATION) {}
+		bool Evaluate(Story *story, double sim_time);
+	};
 
-	bool Evaluate(Story *story, double sim_time);
-};
-
-class TrigByValue : public OSCCondition
-{
-public:
-	typedef enum
-	{
-		PARAMETER,
-		TIME_OF_DAY,
-		SIMULATION_TIME,
-		UNDEFINED
-	} Type;
-
-	Type type_;
-	Rule rule_;
-
-	TrigByValue(Type type) : OSCCondition(BY_VALUE), type_(type) {}
-
-	bool Evaluate(Story *story, double sim_time);
-};
-
-class TrigBySimulationTime : public TrigByValue
-{
-public:
-	double value_;
-
-	TrigBySimulationTime() : TrigByValue(TrigByValue::Type::TIME_OF_DAY) {}
-
-	bool Evaluate(Story *story, double sim_time);
-};
-
+}

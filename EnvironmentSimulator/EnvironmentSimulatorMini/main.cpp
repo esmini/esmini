@@ -10,6 +10,9 @@
 #include <Windows.h>
 #include <process.h>
 
+using namespace scenarioengine;
+
+
 double deltaSimTime;
 
 static const double maxStepSize = 0.1;

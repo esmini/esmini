@@ -4,15 +4,18 @@
 #include <string>
 #include <vector>
 
-
-class RoadNetwork
+namespace scenarioengine
 {
-public:
-	RoadNetwork();
 
-	OSCFile Logics;
-	OSCFile SceneGraph;
+	class RoadNetwork
+	{
+	public:
+		RoadNetwork();
 
-	void Print();
-};
+		OSCFile Logics;
+		OSCFile SceneGraph;
 
+		void Print();
+	};
+
+}

@@ -1,5 +1,7 @@
 #include "OSCAction.hpp"
 
+using namespace scenarioengine;
+
 std::string OSCAction::basetype2str(BaseType type)
 {
 	if (type == BaseType::GLOBAL)

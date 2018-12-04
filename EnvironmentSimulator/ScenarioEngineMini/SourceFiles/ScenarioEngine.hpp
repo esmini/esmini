@@ -13,54 +13,56 @@
 #include "ScenarioReader.hpp"
 #include "RoadNetwork.hpp"
 
-
-
-class ScenarioEngine
+namespace scenarioengine
 {
-public:
 
-	Entities entities;
+	class ScenarioEngine
+	{
+	public:
 
-//	Cars cars;
+		Entities entities;
 
-	ScenarioEngine(std::string oscFilename, double startTime, ExternalControlMode ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC);
-	ScenarioEngine() {};
-	~ScenarioEngine();
+		//	Cars cars;
 
-	void InitScenario(std::string oscFilename, double startTime, ExternalControlMode ext_control);
-		
-	void step(double deltaSimTime, bool initial = false);
-	void setSimulationTime(double simulationTime);
-	void setTimeStep(double timeStep);
-	void printSimulationTime();
-	void stepObjects(double dt);
+		ScenarioEngine(std::string oscFilename, double startTime, ExternalControlMode ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC);
+		ScenarioEngine() {};
+		~ScenarioEngine();
 
-	std::string getSceneGraphFilename() { return roadNetwork.SceneGraph.filepath; }
-	std::string getOdrFilename() { return roadNetwork.Logics.filepath; }
-	roadmanager::OpenDrive *getRoadManager() { return odrManager; }
+		void InitScenario(std::string oscFilename, double startTime, ExternalControlMode ext_control);
 
-	ScenarioGateway *getScenarioGateway();
-	bool GetExtControl();
-	
-private:
-	// OpenSCENARIO parameters
-	Catalogs catalogs;
-	Init init;
-	std::vector<Story*> story;
-	ScenarioReader scenarioReader;
-	RoadNetwork roadNetwork;
-	roadmanager::OpenDrive *odrManager;
-	ExternalControlMode req_ext_control_;  // Requested Ego (id 0) control mode
+		void step(double deltaSimTime, bool initial = false);
+		void setSimulationTime(double simulationTime);
+		void setTimeStep(double timeStep);
+		void printSimulationTime();
+		void stepObjects(double dt);
 
-	// Simulation parameters
-	double startTime;
-	double simulationTime;
-	double timeStep;
+		std::string getSceneGraphFilename() { return roadNetwork.SceneGraph.filepath; }
+		std::string getOdrFilename() { return roadNetwork.Logics.filepath; }
+		roadmanager::OpenDrive *getRoadManager() { return odrManager; }
 
-	// 
-	
-	//Conditions conditions;
-	//Actions actions;
-	ScenarioGateway scenarioGateway;
-};
+		ScenarioGateway *getScenarioGateway();
+		bool GetExtControl();
 
+	private:
+		// OpenSCENARIO parameters
+		Catalogs catalogs;
+		Init init;
+		std::vector<Story*> story;
+		ScenarioReader scenarioReader;
+		RoadNetwork roadNetwork;
+		roadmanager::OpenDrive *odrManager;
+		ExternalControlMode req_ext_control_;  // Requested Ego (id 0) control mode
+
+		// Simulation parameters
+		double startTime;
+		double simulationTime;
+		double timeStep;
+
+		// 
+
+		//Conditions conditions;
+		//Actions actions;
+		ScenarioGateway scenarioGateway;
+	};
+
+}

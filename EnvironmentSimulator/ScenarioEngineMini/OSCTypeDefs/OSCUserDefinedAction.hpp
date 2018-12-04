@@ -2,10 +2,15 @@
 #include <iostream>
 #include <string>
 
-class OSCUserDefinedAction
+namespace scenarioengine
 {
-public:
-	void printOSCUserDefinedAction()
+
+	class OSCUserDefinedAction
 	{
+	public:
+		void printOSCUserDefinedAction()
+		{
+		};
 	};
-};
+
+}

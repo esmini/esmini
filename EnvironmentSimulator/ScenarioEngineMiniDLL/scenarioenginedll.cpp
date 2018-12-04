@@ -1,6 +1,8 @@
 #include "scenarioenginedll.h"
 #include "ScenarioEngine.hpp"
 
+using namespace scenarioengine;
+
 
 #ifdef _SCENARIO_VIEWER
 

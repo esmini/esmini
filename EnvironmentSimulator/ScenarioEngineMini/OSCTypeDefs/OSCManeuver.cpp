@@ -1,5 +1,7 @@
 #include "OSCManeuver.hpp"
 
+using namespace scenarioengine;
+
 void Event::Activate()
 {
 	for (size_t i = 0; i < action_.size(); i++)

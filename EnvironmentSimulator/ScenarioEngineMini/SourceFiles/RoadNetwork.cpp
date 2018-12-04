@@ -1,6 +1,8 @@
 #include "RoadNetwork.hpp"
 #include "CommonMini.hpp"
 
+using namespace scenarioengine;
+
 RoadNetwork::RoadNetwork()
 {
 }

@@ -2,6 +2,9 @@
 #include "CommonMini.hpp"
 #include "Replay.hpp"
 
+using namespace scenarioengine;
+
+
 ObjectState::ObjectState()
 {
 	memset(&state_, 0, sizeof(ObjectState));

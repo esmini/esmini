@@ -3,6 +3,7 @@
 #include "OSCCondition.hpp"
 #include "Story.hpp"
 
+using namespace scenarioengine;
 
 std::string Rule2Str(Rule rule)
 {

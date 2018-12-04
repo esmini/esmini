@@ -3,15 +3,19 @@
 #include <string>
 #include "CommonMini.hpp"
 
-class OSCFile
+
+namespace scenarioengine
 {
-public:
-	std::string filepath;
 
-	void Print()
+	class OSCFile
 	{
-		LOG("file: %s", filepath.c_str());
+	public:
+		std::string filepath;
+
+		void Print()
+		{
+			LOG("file: %s", filepath.c_str());
+		};
 	};
-};
-
-
+	
+}

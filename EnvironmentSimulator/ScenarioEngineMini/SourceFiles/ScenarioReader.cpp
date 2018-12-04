@@ -1,6 +1,8 @@
 #include "ScenarioReader.hpp"
 #include "CommonMini.hpp"
 
+using namespace scenarioengine;
+
 
 ScenarioReader::ScenarioReader()
 {

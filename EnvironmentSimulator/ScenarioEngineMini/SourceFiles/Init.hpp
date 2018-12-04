@@ -6,12 +6,17 @@
 
 #include <vector>
 
-class Init
+namespace scenarioengine
 {
 
-public:
+	class Init
+	{
 
-	std::vector<OSCPrivateAction*> private_action_;
-	std::vector<OSCGlobalAction*> global_action_;
-	std::vector<OSCUserDefinedAction*> user_defined_action_;
-};
+	public:
+
+		std::vector<OSCPrivateAction*> private_action_;
+		std::vector<OSCGlobalAction*> global_action_;
+		std::vector<OSCUserDefinedAction*> user_defined_action_;
+	};
+
+}

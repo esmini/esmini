@@ -11,6 +11,8 @@
 #include "CommonMini.hpp"
 #include "Replay.hpp"
 
+using namespace scenarioengine;
+
 static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;

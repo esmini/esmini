@@ -4,9 +4,13 @@
 
 #include "OSCParameterDeclaration.hpp"
 
-
-class OSCDirectory
+namespace scenarioengine
 {
-public:
-	std::string path;
-};
+
+	class OSCDirectory
+	{
+	public:
+		std::string path;
+	};
+
+}

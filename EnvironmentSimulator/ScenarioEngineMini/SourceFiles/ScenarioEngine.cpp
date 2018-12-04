@@ -1,6 +1,7 @@
 #include "ScenarioEngine.hpp"
 #include "CommonMini.hpp"
 
+using namespace scenarioengine;
 
 ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime, ExternalControlMode ext_control)
 {

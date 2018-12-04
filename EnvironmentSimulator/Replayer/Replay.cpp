@@ -3,6 +3,9 @@
 #include "ScenarioGateway.hpp"
 #include "CommonMini.hpp"
 
+using namespace scenarioengine;
+
+
 Replay::Replay(std::string filename) : time_(0.0), index_(0)
 {
 	file_.open(filename, std::ofstream::binary);

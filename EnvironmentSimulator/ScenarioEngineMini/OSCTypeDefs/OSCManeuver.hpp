@@ -11,53 +11,56 @@
 #include <string>
 #include <vector>
 
-
-class Event
+namespace scenarioengine
 {
-public:
 
-	typedef enum
+	class Event
 	{
-		OVERWRITE,
-		FOLLOWING,
-		SKIP
-	} Priority;
+	public:
 
-	typedef enum
-	{
-		NOT_TRIGGED,
-		ACTIVE,
-		DONE,
-		WAITING,  // Following
-		SKIPPED,
-		CANCELLED,
-		JUST_TERMINATED,
-	} State;
+		typedef enum
+		{
+			OVERWRITE,
+			FOLLOWING,
+			SKIP
+		} Priority;
 
-	State state_;
-	std::string name_;
-	Priority priority_; 
+		typedef enum
+		{
+			NOT_TRIGGED,
+			ACTIVE,
+			DONE,
+			WAITING,  // Following
+			SKIPPED,
+			CANCELLED,
+			JUST_TERMINATED,
+		} State;
 
-	std::vector<OSCAction*> action_;
-	
-	std::vector<OSCConditionGroup*> start_condition_group_;
+		State state_;
+		std::string name_;
+		Priority priority_;
 
-	Event() : state_(State::NOT_TRIGGED) {}
+		std::vector<OSCAction*> action_;
 
-	void Activate();
-	void Deactivate();
-};
+		std::vector<OSCConditionGroup*> start_condition_group_;
 
-class OSCManeuver
-{
-public:
-	OSCParameterDeclaration parameter_declaration_;
-	std::vector<Event*> event_;
-	std::string name_;
+		Event() : state_(State::NOT_TRIGGED) {}
 
-	void Print()
-	{
-		LOG("\tname = %s", name_.c_str());
+		void Activate();
+		void Deactivate();
 	};
-};
 
+	class OSCManeuver
+	{
+	public:
+		OSCParameterDeclaration parameter_declaration_;
+		std::vector<Event*> event_;
+		std::string name_;
+
+		void Print()
+		{
+			LOG("\tname = %s", name_.c_str());
+		};
+	};
+
+}

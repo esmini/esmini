@@ -7,54 +7,58 @@
 #include <vector>
 #include <math.h>
 
+namespace scenarioengine
+{
+
 #define NAME_LEN 32
 
-struct ObjectStateStruct
-{
-	int id;
-	float timeStamp;
-	char name[NAME_LEN];
-	roadmanager::Position pos;
-	float speed;
-	int model_id;
-};
+	struct ObjectStateStruct
+	{
+		int id;
+		float timeStamp;
+		char name[NAME_LEN];
+		roadmanager::Position pos;
+		float speed;
+		int model_id;
+	};
 
-class ObjectState
-{
-public:
-	ObjectState();
-	ObjectState(int id, std::string name, int model_id, double timestamp, roadmanager::Position *pos, double speed);
-	ObjectState(int id, std::string name, int model_id, double timestamp, double x, double y, double z, double h, double p, double r, double speed);
-	ObjectState(int id, std::string name, int model_id, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed);
+	class ObjectState
+	{
+	public:
+		ObjectState();
+		ObjectState(int id, std::string name, int model_id, double timestamp, roadmanager::Position *pos, double speed);
+		ObjectState(int id, std::string name, int model_id, double timestamp, double x, double y, double z, double h, double p, double r, double speed);
+		ObjectState(int id, std::string name, int model_id, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed);
 
-	ObjectStateStruct getStruct() { return state_; }
+		ObjectStateStruct getStruct() { return state_; }
 
-	void Print();
+		void Print();
 
-	ObjectStateStruct state_;
+		ObjectStateStruct state_;
 
-private:
+	private:
 
-	friend class ScemarioGateway;
-};
+		friend class ScemarioGateway;
+	};
 
 
-class ScenarioGateway
-{
-public:
-	
-	ScenarioGateway();
-	~ScenarioGateway();
+	class ScenarioGateway
+	{
+	public:
 
-	void reportObject(ObjectState objectState);
-	int getNumberOfObjects() { return (int)objectState_.size(); }
-	ObjectState getObjectStateByIdx(int idx) { return *objectState_[idx]; }
-	ObjectState *getObjectStatePtrByIdx(int idx) { return objectState_[idx]; }
-	int getObjectStateById(int idx, ObjectState &objState);
-	int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
+		ScenarioGateway();
+		~ScenarioGateway();
 
-private:
-	std::vector<ObjectState*> objectState_;
-	std::ofstream data_file_;
-};
+		void reportObject(ObjectState objectState);
+		int getNumberOfObjects() { return (int)objectState_.size(); }
+		ObjectState getObjectStateByIdx(int idx) { return *objectState_[idx]; }
+		ObjectState *getObjectStatePtrByIdx(int idx) { return objectState_[idx]; }
+		int getObjectStateById(int idx, ObjectState &objState);
+		int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
 
+	private:
+		std::vector<ObjectState*> objectState_;
+		std::ofstream data_file_;
+	};
+
+}

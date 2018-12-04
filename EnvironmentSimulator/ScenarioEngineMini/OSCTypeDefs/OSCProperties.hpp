@@ -3,11 +3,16 @@
 #include <string>
 #include "CommonMini.hpp"
 
-class OSCProperties
+namespace scenarioengine
 {
-public:
-	void printOSCProperties() 
+
+	class OSCProperties
 	{
-		LOG("");
+	public:
+		void printOSCProperties()
+		{
+			LOG("");
+		};
 	};
-};
+
+}

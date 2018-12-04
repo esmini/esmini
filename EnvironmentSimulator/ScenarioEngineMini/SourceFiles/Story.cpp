@@ -1,6 +1,8 @@
 #include "Story.hpp"
 #include "CommonMini.hpp"
 
+using namespace scenarioengine;
+
 
 Story::Story()
 {

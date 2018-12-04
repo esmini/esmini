@@ -4,7 +4,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-
 #include "vehicle.hpp"
 #include "viewer.hpp"
 #include "ScenarioEngine.hpp"
@@ -12,6 +11,8 @@
 #include "RoadManager.hpp"
 #include "RubberbandManipulator.h"
 #include "CommonMini.hpp"
+
+using namespace scenarioengine;
 
 #define USE_ROUTE 0
 #define EGO_MODEL_FILENAME "../../resources/models/p1800.osgb"
