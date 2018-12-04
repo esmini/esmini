@@ -15,11 +15,11 @@ namespace scenarioengine
 	struct ObjectStateStruct
 	{
 		int id;
+		int model_id;
 		float timeStamp;
 		char name[NAME_LEN];
 		roadmanager::Position pos;
 		float speed;
-		int model_id;
 	};
 
 	class ObjectState

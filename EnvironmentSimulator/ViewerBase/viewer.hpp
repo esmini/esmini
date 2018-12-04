@@ -19,12 +19,12 @@ static const char* carModelsFiles_[] =
 	"car4.osgb",
 	"car5.osgb",
 	"car6.osgb",
+	"truck1.osgb",
+	"truck2.osgb",
+	"truck3.osgb",
 	"bus1.osgb",
 	"bus2.osgb",
 	"bus3.osgb",
-	"truck1.osgb",
-	"truck2.osgb",
-	"truck3.osgb"
 };
 
 namespace viewer

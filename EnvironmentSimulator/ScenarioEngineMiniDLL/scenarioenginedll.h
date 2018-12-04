@@ -12,7 +12,8 @@
 typedef struct
 {
 	int id;  
-//	char name[SE_NAME_SIZE];
+	int model_id;
+	//	char name[SE_NAME_SIZE];
 	float timestamp;
 	float x;
 	float y;
@@ -26,6 +27,7 @@ typedef struct
 	float s;
 	float speed;
 } ScenarioObjectState;
+
 
 #ifdef __cplusplus
 extern "C"

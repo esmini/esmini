@@ -166,6 +166,7 @@ static void resetScenario(void )
 static void copyStateFromScenarioGateway(ScenarioObjectState *state, ObjectStateStruct *gw_state)
 {
 	state->id = gw_state->id;
+	state->model_id = gw_state->model_id;
 	//			strncpy(state->name, gw_state->name, NAME_LEN);
 	state->timestamp = gw_state->timeStamp;
 	state->x = (float)gw_state->pos.GetX();
