@@ -61,6 +61,11 @@ void viewer_thread(void *data)
 	viewer_running = false;
 }
 
+void log_callback(const char *str)
+{
+	printf("%s\n", str);
+}
+
 int main(int argc, char *argv[])
 {	
 
@@ -113,6 +118,9 @@ int main(int argc, char *argv[])
 
 	std::string record_filename;
 	arguments.read("--record", record_filename);
+
+	// Use logger callback
+	Logger::Inst().SetCallback(log_callback);
 
 	// Create scenario engine
 	try 

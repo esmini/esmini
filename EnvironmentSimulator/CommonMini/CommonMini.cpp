@@ -58,26 +58,35 @@ Logger::Logger()
 	{
 		throw std::iostream::failure(std::string("Cannot open file: ") + LOG_FILENAME);
 	}
+	callback_ = 0;
 }
 
 Logger::~Logger()
 {
 	file_.close();
+	callback_ = 0;
 }
 
 void Logger::Log(char const* file, char const* func, int line, char const* format, ...)
 {
-	char s[1024];
+	static char complete_entry[2048];
+	static char message[1024];
+
 	va_list args;
 	va_start(args, format);
-	vsnprintf(s, 1024, format, args);
-	file_ << file << "/" << line << "/" << func << "(): " << s << "\n";
+	vsnprintf(message, 1024, format, args);
 
 #ifdef DEBUG_TRACE
-	std::cout << file << "/" << line << "/" << func << "(): " << s << "\n";
+	snprintf(complete_entry, 2048, "%s / %d / %s(): %s", file, line, func, message);
 #else
-	std::cout << s << "\n";
+	strncpy(complete_entry, message, 1024);
 #endif
+	
+	file_ << complete_entry << std::endl;
+	if (callback_)
+	{
+		callback_(complete_entry);
+	}
 
 	file_.flush();
 	va_end(args);

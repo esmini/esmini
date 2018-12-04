@@ -38,12 +38,16 @@ std::string FileNameOf(const std::string& fname);
 class Logger
 {
 public:
+	typedef void(*FuncPtr)(const char*);
+
 	static Logger& Inst();
 	void Log(char const* func, char const* file, int line, char const* format, ...);
+	void SetCallback(FuncPtr callback) { callback_ = callback; }
 
 private:
 	Logger();
 	~Logger();
+	FuncPtr callback_;
 
 	std::ofstream file_;
 };

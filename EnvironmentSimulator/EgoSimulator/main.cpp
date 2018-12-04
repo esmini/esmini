@@ -117,9 +117,16 @@ ScenarioCar *getScenarioCarById(int id)
 	return 0;
 }
 
+void log_callback(const char *str)
+{
+	printf("%s\n", str);
+}
 
 int main(int argc, char** argv)
 {
+	// Use logger callback
+	Logger::Inst().SetCallback(log_callback);
+
 	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;
 	roadmanager::OpenDrive *odrManager;
