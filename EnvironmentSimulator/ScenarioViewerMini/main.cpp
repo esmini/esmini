@@ -9,15 +9,23 @@
 
 static ScenarioObjectState states[MAX_N_OBJECTS];
 
+void log_callback(const char *str)
+{
+	printf("%s\n", str);
+}
+
 int main(int argc, char *argv[])
 {
+	// Use logger callback
+	Logger::Inst().SetCallback(log_callback);
+
 	if (argc < 2)
 	{
 		LOG("Usage: %s <osc filename>\n", argv[0]);
 		return -1;
 	}
 
-	if (SE_Init(argv[1], 0, 1, 1) != 0)
+	if (SE_Init(argv[1], 0, 1, 0) != 0)
 	{
 		LOG("Failed to load %s", argv[1]);
 		return -1;
@@ -25,6 +33,7 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < 1000; i++)
 	{
+
 		if (SE_Step(TIME_STEP) != 0)
 		{
 			return 0;
