@@ -78,6 +78,12 @@ void ScenarioReader::LoadCatalog(pugi::xml_node catalogChild, Catalogs *catalogs
 {
 	pugi::xml_document catalog_doc;
 
+	if (catalogChild.child("Directory") == NULL)
+	{
+		LOG("Catalog %s sub element Directory not found - skipping", catalogChild.name());
+		return;
+	}
+
 	std::string filename = ReadAttribute(catalogChild.child("Directory").attribute("path"));
 
 	// Filename should be relative the XOSC file
