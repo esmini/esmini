@@ -5,7 +5,7 @@
 #include <Windows.h>
 
 #define MAX_N_OBJECTS 10
-#define TIME_STEP 1.0f
+#define TIME_STEP 0.017f
 
 static ScenarioObjectState states[MAX_N_OBJECTS];
 
@@ -33,11 +33,6 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < 1000; i++)
 	{
-		if(i == 500)
-		{
-			Sleep(5000);
-		}
-
 		if (SE_Step(TIME_STEP) != 0)
 		{
 			return 0;
