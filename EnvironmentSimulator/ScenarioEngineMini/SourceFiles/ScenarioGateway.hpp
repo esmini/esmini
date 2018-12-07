@@ -16,6 +16,7 @@ namespace scenarioengine
 	{
 		int id;
 		int model_id;
+		int ext_control; // 1=on 0=off
 		float timeStamp;
 		char name[NAME_LEN];
 		roadmanager::Position pos;
@@ -26,9 +27,9 @@ namespace scenarioengine
 	{
 	public:
 		ObjectState();
-		ObjectState(int id, std::string name, int model_id, double timestamp, roadmanager::Position *pos, double speed);
-		ObjectState(int id, std::string name, int model_id, double timestamp, double x, double y, double z, double h, double p, double r, double speed);
-		ObjectState(int id, std::string name, int model_id, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed);
+		ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, roadmanager::Position *pos, double speed);
+		ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, double x, double y, double z, double h, double p, double r, double speed);
+		ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed);
 
 		ObjectStateStruct getStruct() { return state_; }
 

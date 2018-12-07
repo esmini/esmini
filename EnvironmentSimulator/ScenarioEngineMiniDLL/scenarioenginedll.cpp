@@ -167,6 +167,7 @@ static void copyStateFromScenarioGateway(ScenarioObjectState *state, ObjectState
 {
 	state->id = gw_state->id;
 	state->model_id = gw_state->model_id;
+	state->ext_control = gw_state->model_id;
 	//			strncpy(state->name, gw_state->name, NAME_LEN);
 	state->timestamp = gw_state->timeStamp;
 	state->x = (float)gw_state->pos.GetX();
@@ -278,21 +279,21 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_ReportObjectPos(int id, char *name, int model_id, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
+	SE_DLL_API int SE_ReportObjectPos(int id, char *name, int model_id, int ext_control, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
 	{
 		if (scenarioGateway != 0)
 		{
-			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, timestamp, x, y, z, h, p, r, speed));
+			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, ext_control, timestamp, x, y, z, h, p, r, speed));
 		}
 		
 		return 0;
 	}
 
-	SE_DLL_API int SE_ReportObjectRoadPos(int id, char * name, int model_id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
+	SE_DLL_API int SE_ReportObjectRoadPos(int id, char * name, int model_id, int ext_control, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
 	{
 		if (scenarioGateway != 0)
 		{
-			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, timestamp, roadId, laneId, laneOffset, s, speed));
+			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, ext_control, timestamp, roadId, laneId, laneOffset, s, speed));
 		}
 		
 		return 0;

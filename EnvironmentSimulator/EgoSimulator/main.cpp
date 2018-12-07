@@ -247,7 +247,7 @@ int main(int argc, char** argv)
 			if (scenarioEngine->GetExtControl())
 			{
 				// Report updated Ego state to scenario gateway
-				scenarioGateway->reportObject(ObjectState(EGO_ID, std::string("Ego"), 0, simTime,
+				scenarioGateway->reportObject(ObjectState(EGO_ID, std::string("Ego"), 0, 1, simTime,
 					egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_,
 					egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0,
 					egoCar->vehicle->speed_));

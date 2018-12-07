@@ -11,7 +11,7 @@ ObjectState::ObjectState()
 	state_.id = -1;
 }
 
-ObjectState::ObjectState(int id, std::string name, int model_id, double timestamp, roadmanager::Position *pos, double speed)
+ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, roadmanager::Position *pos, double speed)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -23,24 +23,26 @@ ObjectState::ObjectState(int id, std::string name, int model_id, double timestam
 	state_.speed = (float)speed;
 }
 
-ObjectState::ObjectState(int id, std::string name, int model_id, double timestamp, double x, double y, double z, double h, double p, double r, double speed)
+ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, double x, double y, double z, double h, double p, double r, double speed)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
 	state_.id = id;
 	state_.model_id = model_id;
+	state_.ext_control = ext_control;
 	state_.timeStamp = (float)timestamp;
 	strncpy(state_.name, name.c_str(), NAME_LEN);
 	state_.pos.SetInertiaPos(x, y, z, h, p, r);
 	state_.speed = (float)speed;
 }
 
-ObjectState::ObjectState(int id, std::string name, int model_id, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed)
+ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
 	state_.id = id;
 	state_.model_id = model_id;
+	state_.ext_control = ext_control;
 	state_.timeStamp = (float)timestamp;
 	strncpy(state_.name, name.c_str(), NAME_LEN);
 	state_.pos.SetLanePos(roadId, laneId, s, laneOffset);
@@ -49,10 +51,11 @@ ObjectState::ObjectState(int id, std::string name, int model_id, double timestam
 
 void ObjectState::Print()
 {
-	LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f",
+	LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\text_control: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f",
 		state_.id,
 		state_.name,
 		state_.model_id,
+		state_.ext_control,
 		state_.timeStamp,
 		state_.pos.GetX(),
 		state_.pos.GetY(),
