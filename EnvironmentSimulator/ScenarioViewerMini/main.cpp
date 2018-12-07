@@ -40,10 +40,6 @@ int main(int argc, char *argv[])
 
 		int nObjects = MAX_N_OBJECTS;
 		SE_GetObjectStates(&nObjects, states);
-		for (int i = 0; i < nObjects; i++)
-		{
-			printf("%d: %d\n", i, states[i].ext_control);
-		}
 
 		float angle;
 		SE_GetSteeringTargetAngle(0, states[0].speed * 3.0f, &angle);

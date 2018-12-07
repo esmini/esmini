@@ -209,7 +209,7 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *c
 					}
 				}
 			}
-			else if (prop_name == "model")
+			else if (prop_name == "model_id")
 			{
 				vehicle->model_id_ = stoi(prop_value);
 			}

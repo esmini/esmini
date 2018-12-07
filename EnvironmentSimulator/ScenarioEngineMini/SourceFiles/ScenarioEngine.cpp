@@ -346,6 +346,3 @@ void ScenarioEngine::stepObjects(double dt)
 	}
 }
 
-
-
-

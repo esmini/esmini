@@ -17,6 +17,7 @@ ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control
 
 	state_.id = id;
 	state_.model_id = model_id;
+	state_.ext_control = ext_control;
 	state_.timeStamp = (float)timestamp;
 	strncpy(state_.name, name.c_str(), NAME_LEN);
 	state_.pos = *pos;

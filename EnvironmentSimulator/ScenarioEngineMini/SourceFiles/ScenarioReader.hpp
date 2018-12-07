@@ -20,7 +20,6 @@ namespace scenarioengine
 		EXT_CONTROL_ON,
 	} ExternalControlMode;
 
-
 	class ScenarioReader
 	{
 	public:

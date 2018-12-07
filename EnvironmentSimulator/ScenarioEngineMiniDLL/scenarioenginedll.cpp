@@ -167,8 +167,8 @@ static void copyStateFromScenarioGateway(ScenarioObjectState *state, ObjectState
 {
 	state->id = gw_state->id;
 	state->model_id = gw_state->model_id;
-	state->ext_control = gw_state->model_id;
-	//			strncpy(state->name, gw_state->name, NAME_LEN);
+	state->ext_control = gw_state->ext_control;
+	strncpy(state->name, gw_state->name, NAME_LEN);
 	state->timestamp = gw_state->timeStamp;
 	state->x = (float)gw_state->pos.GetX();
 	state->y = (float)gw_state->pos.GetY();
@@ -329,7 +329,7 @@ extern "C"
 		{
 			for (i = 0; i < *nObjects && i < scenarioGateway->getNumberOfObjects(); i++)
 			{
-				copyStateFromScenarioGateway(state, &scenarioGateway->getObjectStatePtrByIdx(i)->state_);
+				copyStateFromScenarioGateway(&state[i], &scenarioGateway->getObjectStatePtrByIdx(i)->state_);
 			}
 			*nObjects = i;
 		}

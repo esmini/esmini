@@ -14,7 +14,7 @@ typedef struct
 	int id;  
 	int model_id;
 	int ext_control;
-	//	char name[SE_NAME_SIZE];
+	char name[SE_NAME_SIZE];
 	float timestamp;
 	float x;
 	float y;
