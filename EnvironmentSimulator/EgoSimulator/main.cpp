@@ -1,36 +1,32 @@
 
-#include <random>
 #include <iostream>
-#define _USE_MATH_DEFINES
-#include <math.h>
 
 #include "vehicle.hpp"
 #include "viewer.hpp"
 #include "ScenarioEngine.hpp"
-#include "ScenarioGateway.hpp"
 #include "RoadManager.hpp"
-#include "RubberbandManipulator.h"
 #include "CommonMini.hpp"
+
+#include <Windows.h>
+#include <process.h>
+
+static HANDLE ghMutex;
 
 using namespace scenarioengine;
 
-#define USE_ROUTE 0
-#define EGO_MODEL_FILENAME "../../resources/models/p1800.osgb"
 #define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
-
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
 
-static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
-static const bool freerun = true;
 static vehicle::Vehicle *ego;
-static double egoWheelAngle = 0;
-static double egoAcc = 0;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
-static std::mt19937 mt_rand;
+
+static bool viewer_running = false;
+static ScenarioEngine *scenarioEngine;
+static viewer::Viewer *scenarioViewer;
 
 typedef struct
 {
@@ -54,15 +50,12 @@ static std::vector<ScenarioCar> scenarioCar;
 
 
 
-int SetupEgo(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer, roadmanager::Position init_pos)
+int SetupEgo(roadmanager::OpenDrive *odrManager, roadmanager::Position init_pos)
 {
 	egoCar = new EgoCar;
 	egoCar->road_id_init = init_pos.GetTrackId();
 	egoCar->lane_id_init = init_pos.GetLaneId();
 	egoCar->pos = new roadmanager::Position(init_pos);
-
-	egoCar->graphics_model = viewer->AddCar(0);
- 	egoCar->vehicle = new vehicle::Vehicle(egoCar->pos->GetX(), egoCar->pos->GetY(), egoCar->pos->GetH(), egoCar->graphics_model->size_x);
 
 	return 0;
 }
@@ -98,24 +91,69 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 	// Fetch Z and Pitch from OpenDRIVE position
 	egoCar->vehicle->posZ_ = egoCar->pos->GetZ();
 	egoCar->vehicle->pitch_ = egoCar->pos->GetP();
-
-	// update 3D model transform
-	egoCar->graphics_model->SetPosition(egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_);
-	egoCar->graphics_model->SetRotation(egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0.0);
-	egoCar->graphics_model->UpdateWheels(egoCar->vehicle->wheelAngle_, egoCar->vehicle->wheelRotation_);
 }
 
-ScenarioCar *getScenarioCarById(int id)
+void viewer_thread(void *data)
 {
-	for (size_t i=0; i<scenarioCar.size(); i++)
+	int firstScenarioVehicle = scenarioEngine->GetExtControl() == true ? 1 : 0;
+
+	// Create viewer
+	osg::ArgumentParser *parser = (osg::ArgumentParser *)data;
+	scenarioViewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), *parser);
+
+	// Create Ego vehicle, 
+	if (scenarioEngine->GetExtControl())
 	{
-		if (scenarioCar[i].id == id)
-		{
-			return &scenarioCar[i];
-		}
+		egoCar->graphics_model = scenarioViewer->AddCar(0);
+		egoCar->vehicle = new vehicle::Vehicle(egoCar->pos->GetX(), egoCar->pos->GetY(), egoCar->pos->GetH(), egoCar->graphics_model->size_x);
 	}
 
-	return 0;
+	//  Create cars for visualization
+	for (size_t i = firstScenarioVehicle; i < scenarioEngine->entities.object_.size(); i++)
+	{
+		scenarioViewer->AddCar(scenarioEngine->entities.object_[i]->model_id_);
+	}
+
+	while (!scenarioViewer->osgViewer_->done())
+	{
+
+		WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
+
+		// Visualize scenario cars
+		for (size_t i = firstScenarioVehicle; i < scenarioEngine->entities.object_.size(); i++)
+		{
+			viewer::CarModel *car = scenarioViewer->cars_[i];
+			roadmanager::Position pos = scenarioEngine->entities.object_[i]->pos_;
+
+			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
+			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
+		}
+
+		// Visualize Ego car separatelly, if external control set
+		if (scenarioEngine->GetExtControl())
+		{
+			// update 3D model transform
+			egoCar->graphics_model->SetPosition(egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_);
+			egoCar->graphics_model->SetRotation(egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0.0);
+			egoCar->graphics_model->UpdateWheels(egoCar->vehicle->wheelAngle_, egoCar->vehicle->wheelRotation_);
+
+			// Update road and vehicle debug lines 
+			scenarioViewer->UpdateVehicleLineAndPoints(egoCar->pos);
+
+			// Visualize steering target point
+			scenarioViewer->UpdateDriverModelPoint(egoCar->pos, MAX(5, egoCar->vehicle->speed_));
+		}
+
+		ReleaseMutex(ghMutex);
+
+		scenarioViewer->osgViewer_->frame();
+
+		viewer_running = true;
+	}
+
+	delete scenarioViewer;
+
+	viewer_running = false;
 }
 
 void log_callback(const char *str)
@@ -128,7 +166,6 @@ int main(int argc, char** argv)
 	// Use logger callback
 	Logger::Inst().SetCallback(log_callback);
 
-	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;
 	roadmanager::OpenDrive *odrManager;
 	roadmanager::Position *lane_pos = new roadmanager::Position();
@@ -198,109 +235,61 @@ int main(int argc, char** argv)
 	// Report all vehicles initially - to communicate initial position for external vehicles as well
 	scenarioEngine->step(0.0, true);
 
+	if (scenarioEngine->GetExtControl())
+	{
+		// Setup Ego with initial position from the gateway
+		SetupEgo(odrManager, scenarioGateway->getObjectStatePtrByIdx(0)->state_.pos);
+	}
+
+	// Launch viewer in a separate thread
+	HANDLE thread_handle = (HANDLE)_beginthread(viewer_thread, 0, &arguments);
+
+	// Wait for the viewer to launch
+	while (!viewer_running) SE_sleep(100);
+
 	try
 	{
-
-		viewer::Viewer *viewer = new viewer::Viewer(
-			odrManager, 
-			scenarioEngine->getSceneGraphFilename().c_str(),
-			arguments);
-
-		if (scenarioEngine->GetExtControl())
-		{
-			// Setup Ego with initial position from the gateway
-			SetupEgo(odrManager, viewer, scenarioGateway->getObjectStatePtrByIdx(0)->state_.pos);
-		}
-
 		__int64 now, lastTimeStamp = 0;
 
-		while (!viewer->osgViewer_->done())
+		while (viewer_running)
 		{
 			// Get milliseconds since Jan 1 1970
 			now = SE_getSystemTime();
 			deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
 			lastTimeStamp = now;
+			double adjust = 0;
+
 			if (deltaSimTime > maxStepSize) // limit step size
 			{
-				deltaSimTime = maxStepSize;
+				adjust = -(deltaSimTime - maxStepSize);
 			}
 			else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
 			{
-				SE_sleep(minStepSize - deltaSimTime);
-				deltaSimTime = minStepSize;
+				adjust = minStepSize - deltaSimTime;
+				SE_sleep(adjust * 1000);
+				lastTimeStamp += adjust * 1000;
 			}
+
+			deltaSimTime += adjust;
+
+			// ScenarioEngine
+			WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
 
 			if (scenarioEngine->GetExtControl())
 			{
 				// Update vehicle dynamics/driver model
-				UpdateEgo(deltaSimTime, viewer);
-			}
+				UpdateEgo(deltaSimTime, scenarioViewer);
 
-			// Time operations
-			simTime = simTime + deltaSimTime;
-			scenarioEngine->setSimulationTime(simTime);
-			scenarioEngine->setTimeStep(deltaSimTime);
-
-			// ScenarioEngine
-			scenarioEngine->step(deltaSimTime);
-
-			if (scenarioEngine->GetExtControl())
-			{
 				// Report updated Ego state to scenario gateway
 				scenarioGateway->reportObject(ObjectState(EGO_ID, std::string("Ego"), 0, 1, simTime,
 					egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_,
 					egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0,
 					egoCar->vehicle->speed_));
 			}
+	
+			scenarioEngine->step(deltaSimTime);
 
-			// Fetch states of scenario objects
-			for (int i = 0; i < scenarioGateway->getNumberOfObjects(); i++)
-			{
-				ObjectState *o = scenarioGateway->getObjectStatePtrByIdx(i);
-
-				if (o->state_.id != EGO_ID || !scenarioEngine->GetExtControl())
-				{
-					ScenarioCar *sc = getScenarioCarById(o->state_.id);
-
-					// If not available, create it
-					if (sc == 0)
-					{
-						ScenarioCar new_sc;
-
-						LOG("Creating car %d - got state from gateway", o->state_.id);
-
-						new_sc.id = o->state_.id;
-						new_sc.carModel = viewer->AddCar(o->state_.model_id);
-
-						// Add it to the list of scenario cars
-						scenarioCar.push_back(new_sc);
-
-						sc = &scenarioCar.back();
-					}
-
-					sc->pos = o->state_.pos;
-				}
-			}
-
-			// Visualize scenario cars
-			for (size_t i=0; i<scenarioCar.size(); i++)
-			{
-				ScenarioCar *c = &scenarioCar[i];
-				c->carModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
-				c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
-			}
-
-			if (scenarioEngine->GetExtControl())
-			{
-				// Update road and vehicle debug lines 
-				viewer->UpdateVehicleLineAndPoints(egoCar->pos);
-
-				// Visualize steering target point
-				viewer->UpdateDriverModelPoint(egoCar->pos, MAX(5, egoCar->vehicle->speed_));
-			}
-
-			// Update graphics
-			viewer->osgViewer_->frame();
+			ReleaseMutex(ghMutex);
 		}
 	}
 	catch (std::logic_error &e)

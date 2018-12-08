@@ -335,13 +335,16 @@ void ScenarioEngine::stepObjects(double dt)
 	{
 		Object *obj = entities.object_[i];
 
-		if (obj->pos_.GetRoute())
+		if (obj->extern_control_ == false)
 		{
-			obj->pos_.MoveRouteDS(obj->speed_ * dt);
-		}
-		else
-		{
-			obj->pos_.MoveAlongS(obj->speed_ * dt);
+			if (obj->pos_.GetRoute())
+			{
+				obj->pos_.MoveRouteDS(obj->speed_ * dt);
+			}
+			else
+			{
+				obj->pos_.MoveAlongS(obj->speed_ * dt);
+			}
 		}
 	}
 }
