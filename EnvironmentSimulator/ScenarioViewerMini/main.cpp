@@ -31,7 +31,32 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < 300; i++)
+	{
+		if (SE_Step(TIME_STEP) != 0)
+		{
+			return 0;
+		}
+
+		int nObjects = MAX_N_OBJECTS;
+		SE_GetObjectStates(&nObjects, states);
+
+		float angle;
+		SE_GetSteeringTargetAngle(0, states[0].speed * 3.0f, &angle);
+
+		Sleep(DWORD(TIME_STEP * 1000));
+	}
+
+	SE_Close();
+
+
+	if (SE_Init(argv[1], 0, 1, 0) != 0)
+	{
+		LOG("Failed to load %s", argv[1]);
+		return -1;
+	}
+
+	for (int i = 0; i < 300; i++)
 	{
 		if (SE_Step(TIME_STEP) != 0)
 		{

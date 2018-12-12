@@ -1,7 +1,9 @@
 #include <stdarg.h> 
+#include <stdio.h>
 #include <iostream>
 
 #include "CommonMini.hpp"
+
 
 #define DEBUG_TRACE
 #define LOG_FILENAME "log.txt"
@@ -10,6 +12,9 @@
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 
 	#include <windows.h>
+	#include <process.h>
+
+	#define snprintf _snprintf_s
 
 	__int64 SE_getSystemTime()
 	{
@@ -21,10 +26,13 @@
 		Sleep(msec);
 	}
 
+
+
+
 #else
 
-	#include <thread>
 	#include <chrono>
+
 	using namespace std::chrono;
 
 	__int64 SE_getSystemTime()
@@ -36,6 +44,7 @@
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds((int)(msec)));
 	}
+
 
 #endif
 
@@ -77,7 +86,7 @@ void Logger::Log(char const* file, char const* func, int line, char const* forma
 	vsnprintf(message, 1024, format, args);
 
 #ifdef DEBUG_TRACE
-	snprintf(complete_entry, 2048, "%s / %d / %s(): %s", file, line, func, message);
+	_snprintf(complete_entry, 2048, "%s / %d / %s(): %s", file, line, func, message);
 #else
 	strncpy(complete_entry, message, 1024);
 #endif
@@ -96,4 +105,72 @@ Logger& Logger::Inst()
 {
 	static Logger instance;
 	return instance;
+}
+
+SE_Thread::~SE_Thread()
+{
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+
+#else
+	if (thread_.joinable())
+	{
+		thread_.join();
+	}
+#endif
+}
+
+void SE_Thread::Start(void(*func_ptr)(void*), void *arg)
+{
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+	thread_ = (void*)_beginthread(func_ptr, 0, arg);
+#else
+	thread_ = std::thread(func_ptr, arg);
+#endif
+}
+
+
+void SE_Thread::Wait()
+{
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+	WaitForSingleObject((HANDLE)thread_, 1000);  // Should never need to wait for more than 1 sec
+#else
+	thread_.join();
+#endif
+}
+
+SE_Mutex::SE_Mutex()
+{
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+	mutex_ = (void*)CreateMutex(
+		NULL,              // default security attributes
+		0,             // initially not owned
+		NULL);             // unnamed mutex
+
+	if (mutex_ == NULL)
+	{
+		LOG("CreateMutex error: %d\n", GetLastError());
+		mutex_ = 0;
+	}
+#else
+
+#endif
+}
+
+
+void SE_Mutex::Lock()
+{
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+	WaitForSingleObject(mutex_, 1000);  // Should never need to wait for more than 1 sec
+#else
+	mutex_.lock();
+#endif
+}
+
+void SE_Mutex::Unlock()
+{
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+	ReleaseMutex(mutex_);
+#else
+	mutex_.unlock();
+#endif
 }

@@ -42,7 +42,7 @@ namespace scenarioengine
 			OSCCatalogReference CatalogReference;
 		} Controller;
 
-		Object(Type type) : type_(type), id_(0), extern_control_(false), speed_(0), route_(0) {}
+		Object(Type type) : type_(type), id_(0), extern_control_(false), speed_(0), route_(0), model_id_(0) {}
 	};
 
 	class Vehicle : public Object

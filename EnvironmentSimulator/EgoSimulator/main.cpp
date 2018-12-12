@@ -1,16 +1,16 @@
 
 #include <iostream>
 
+
 #include "vehicle.hpp"
 #include "viewer.hpp"
 #include "ScenarioEngine.hpp"
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 
-#include <Windows.h>
-#include <process.h>
 
-static HANDLE ghMutex;
+static SE_Thread thread;
+static SE_Mutex mutex;
 
 using namespace scenarioengine;
 
@@ -93,12 +93,12 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 	egoCar->vehicle->pitch_ = egoCar->pos->GetP();
 }
 
-void viewer_thread(void *data)
+static void viewer_thread(void *args)
 {
+	osg::ArgumentParser *parser = (osg::ArgumentParser*)args;
 	int firstScenarioVehicle = scenarioEngine->GetExtControl() == true ? 1 : 0;
 
 	// Create viewer
-	osg::ArgumentParser *parser = (osg::ArgumentParser *)data;
 	scenarioViewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), *parser);
 
 	// Create Ego vehicle, 
@@ -116,8 +116,7 @@ void viewer_thread(void *data)
 
 	while (!scenarioViewer->osgViewer_->done())
 	{
-
-		WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
+		mutex.Lock();
 
 		// Visualize scenario cars
 		for (size_t i = firstScenarioVehicle; i < scenarioEngine->entities.object_.size(); i++)
@@ -144,7 +143,7 @@ void viewer_thread(void *data)
 			scenarioViewer->UpdateDriverModelPoint(egoCar->pos, MAX(5, egoCar->vehicle->speed_));
 		}
 
-		ReleaseMutex(ghMutex);
+		mutex.Unlock();
 
 		scenarioViewer->osgViewer_->frame();
 
@@ -242,7 +241,7 @@ int main(int argc, char** argv)
 	}
 
 	// Launch viewer in a separate thread
-	HANDLE thread_handle = (HANDLE)_beginthread(viewer_thread, 0, &arguments);
+	thread.Start(viewer_thread, &arguments);
 
 	// Wait for the viewer to launch
 	while (!viewer_running) SE_sleep(100);
@@ -273,7 +272,7 @@ int main(int argc, char** argv)
 			deltaSimTime += adjust;
 
 			// ScenarioEngine
-			WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
+			mutex.Lock();
 
 			if (scenarioEngine->GetExtControl())
 			{
@@ -289,7 +288,7 @@ int main(int argc, char** argv)
 	
 			scenarioEngine->step(deltaSimTime);
 
-			ReleaseMutex(ghMutex);
+			mutex.Unlock();
 		}
 	}
 	catch (std::logic_error &e)

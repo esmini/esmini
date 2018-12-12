@@ -1,7 +1,10 @@
+
+
 #include "scenarioenginedll.h"
 #include "ScenarioEngine.hpp"
 
 using namespace scenarioengine;
+
 
 
 #ifdef _SCENARIO_VIEWER
@@ -27,8 +30,8 @@ using namespace scenarioengine;
 	#include <Windows.h>
 
 	static bool closing = false;
-	static HANDLE thread_handle = 0;
-	static HANDLE ghMutex;
+	static SE_Thread thread;
+	static SE_Mutex mutex;
 
 #endif
 
@@ -58,8 +61,7 @@ ScenarioCar *getScenarioCarById(int id)
 }
 
 
-//DWORD WINAPI viewer_thread(LPVOID lpParameter)
-void viewer_thread(void *data)
+void viewer_thread(void*)
 {
 	// For some reason can't use args array directly... copy to a true char**
 	int argc = sizeof(args) / sizeof(char*);
@@ -106,7 +108,8 @@ void viewer_thread(void *data)
 
 		// Visualize scenario cars
 
-		WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
+		mutex.Lock();
+
 		for (size_t i = 0; i < scenarioCar.size(); i++)
 		{
 			ScenarioCar *c = &scenarioCar[i];
@@ -123,7 +126,7 @@ void viewer_thread(void *data)
 			scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, 25);
 		}
 #endif
-		ReleaseMutex(ghMutex);
+		mutex.Unlock();
 
 		scViewer->osgViewer_->frame();
 	}
@@ -134,14 +137,15 @@ void viewer_thread(void *data)
 static void resetScenario(void )
 {
 #ifdef _SCENARIO_VIEWER
-	if (thread_handle != 0)
+	if (scViewer != 0)
 	{
 		printf("Closing viewer\n");
 
 		closing = true;  // Signal to viewer thread
-		WaitForSingleObject(thread_handle, 1000);
+		printf("wait\n");
+		thread.Wait();
+		printf("wait done\n");
 
-		thread_handle = 0;
 		closing = false;
 
 		delete scViewer;
@@ -221,7 +225,7 @@ extern "C"
 			if (use_viewer)
 			{
 				// Run viewer in a separate thread
-				thread_handle = (HANDLE)_beginthread(viewer_thread, 0, 0);
+				thread.Start(viewer_thread, 0);
 			}
 #endif
 		}
@@ -269,11 +273,11 @@ extern "C"
 			scenarioEngine->setTimeStep(dt);
 
 			// ScenarioEngine
-			WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
+			mutex.Lock();
 
 			scenarioEngine->step((double)dt);
 
-			ReleaseMutex(ghMutex);
+			mutex.Unlock();
 		}
 
 		return 0;

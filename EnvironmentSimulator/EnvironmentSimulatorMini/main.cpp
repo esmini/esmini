@@ -7,8 +7,6 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 
-#include <Windows.h>
-#include <process.h>
 
 using namespace scenarioengine;
 
@@ -23,12 +21,14 @@ static bool viewer_running = false;
 
 static ScenarioEngine *scenarioEngine;
 
-static HANDLE ghMutex;
+static SE_Thread thread;
+static SE_Mutex mutex;
 
-void viewer_thread(void *data)
+void viewer_thread(void *args)
 {
+	osg::ArgumentParser *parser = (osg::ArgumentParser*)args;
+
 	// Create viewer
-	osg::ArgumentParser *parser = (osg::ArgumentParser *)data;
 	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), *parser);
 
 	//  Create cars for visualization
@@ -40,7 +40,7 @@ void viewer_thread(void *data)
 	while (!viewer->osgViewer_->done())
 	{
 
-		WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
+		mutex.Lock();
 
 		// Visualize cars
 		for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
@@ -52,7 +52,7 @@ void viewer_thread(void *data)
 			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
 		}
 
-		ReleaseMutex(ghMutex);
+		mutex.Unlock();
 
 		viewer->osgViewer_->frame();
 		
@@ -71,17 +71,6 @@ void log_callback(const char *str)
 
 int main(int argc, char *argv[])
 {	
-
-	ghMutex = CreateMutex(
-		NULL,              // default security attributes
-		FALSE,             // initially not owned
-		NULL);             // unnamed mutex
-
-	if (ghMutex == NULL)
-	{
-		printf("CreateMutex error: %d\n", GetLastError());
-		return 1;
-	}
 
 	// Simulation constants
 	double endTime = 100;
@@ -151,11 +140,10 @@ int main(int argc, char *argv[])
 	scenarioEngine->step(0.0, true);
 
 	// Launch viewer in a separate thread
-	HANDLE thread_handle = (HANDLE)_beginthread(viewer_thread, 0, &arguments);
-
+	thread.Start(viewer_thread, &arguments);
+	
 	// Wait for the viewer to launch
 	while (!viewer_running) SE_sleep(100);
-
 
 	__int64 now, lastTimeStamp = 0;
 	double simTime = 0;
@@ -187,11 +175,11 @@ int main(int argc, char *argv[])
 		scenarioEngine->setTimeStep(deltaSimTime);
 
 		// ScenarioEngine
-		WaitForSingleObject(ghMutex, INFINITE);  // no time-out interval
+		mutex.Lock();
 		
 		scenarioEngine->step(deltaSimTime);
 
-		ReleaseMutex(ghMutex);
+		mutex.Unlock();
 	}
 
 
