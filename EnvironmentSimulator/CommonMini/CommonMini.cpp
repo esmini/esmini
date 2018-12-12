@@ -14,7 +14,7 @@
 	#include <windows.h>
 	#include <process.h>
 
-	#define snprintf _snprintf_s
+	#define snprintf _snprintf
 
 	__int64 SE_getSystemTime()
 	{
@@ -86,7 +86,7 @@ void Logger::Log(char const* file, char const* func, int line, char const* forma
 	vsnprintf(message, 1024, format, args);
 
 #ifdef DEBUG_TRACE
-	_snprintf(complete_entry, 2048, "%s / %d / %s(): %s", file, line, func, message);
+	snprintf(complete_entry, 2048, "%s / %d / %s(): %s", file, line, func, message);
 #else
 	strncpy(complete_entry, message, 1024);
 #endif
