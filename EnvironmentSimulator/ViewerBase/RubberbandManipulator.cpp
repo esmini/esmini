@@ -1,5 +1,4 @@
 
-#include <windows.h>
 #include "RubberbandManipulator.h"
 #include <osg/Quat>
 #include <osg/Notify>

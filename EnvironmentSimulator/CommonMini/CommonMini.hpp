@@ -8,6 +8,7 @@
 #ifdef _WIN32
 	#include <sdkddkver.h>
 #else
+	#include <cstring>
 	#include <inttypes.h>
 	typedef int64_t __int64;
 #endif

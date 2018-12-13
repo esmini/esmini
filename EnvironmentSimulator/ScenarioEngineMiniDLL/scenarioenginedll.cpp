@@ -11,7 +11,6 @@ using namespace scenarioengine;
 
 	#include "viewer.hpp"
 	#include "RubberbandManipulator.h"
-	#include <process.h>
 
 	#define VISUALIZE_DRIVER_MODEL_TARGET
 	#define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
@@ -27,7 +26,6 @@ using namespace scenarioengine;
 
 	static viewer::Viewer *scViewer = 0;
 
-	#include <Windows.h>
 
 	static bool closing = false;
 	static SE_Thread thread;
