@@ -144,8 +144,8 @@ int main(int argc, char** argv)
 	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " [options]\n");
 	arguments.getApplicationUsage()->addCommandLineOption("--odr <filename>", "OpenDRIVE filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--model <filename>", "3D model filename");
-	arguments.getApplicationUsage()->addCommandLineOption("--density <number>", "density (cars / 100 m)", std::to_string(long long (DEFAULT_DENSITY)));
-	arguments.getApplicationUsage()->addCommandLineOption("--speed <number>", "speed (km/h)", std::to_string(long long (DEFAULT_SPEED)));
+	arguments.getApplicationUsage()->addCommandLineOption("--density <number>", "density (cars / 100 m)", std::to_string((long long) (DEFAULT_DENSITY)));
+	arguments.getApplicationUsage()->addCommandLineOption("--speed <number>", "speed (km/h)", std::to_string((long long) (DEFAULT_SPEED)));
 
 	if (arguments.argc() < 2)
 	{

@@ -18,6 +18,7 @@ const float springDampingRatio = 0.9f;
 const float orbitCameraDistance = 16.0f;
 const float orbitCameraAngle = 15.0f;
 
+#define MAX(a, b) ((a)>(b) ? (a) : (b))
 
 RubberbandManipulator::RubberbandManipulator(unsigned int mode)
 {
@@ -65,7 +66,7 @@ void RubberbandManipulator::calculateCameraDistance()
 	osg::BoundingBox bb = cbv.getBoundingBox();
 	osg::Vec3 minV = bb._min * m.front();
 	osg::Vec3 maxV = bb._max * m.front();
-	_cameraDistance = max((maxV.x() - minV.x() + maxV.y() - minV.y())/2, orbitCameraDistance);
+	_cameraDistance = MAX((maxV.x() - minV.x() + maxV.y() - minV.y())/2, orbitCameraDistance);
 }
 
 void RubberbandManipulator::init(const GUIEventAdapter& ,GUIActionAdapter& us)

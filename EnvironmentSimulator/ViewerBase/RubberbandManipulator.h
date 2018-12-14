@@ -40,7 +40,7 @@ class RubberbandManipulator : public osgGA::CameraManipulator
 
         typedef std::vector< osg::observer_ptr<osg::Node> >   ObserverNodePath;
 
-		void RubberbandManipulator::setTrackNode(osg::PositionAttitudeTransform *node, bool calcDistance = false);
+		void setTrackNode(osg::PositionAttitudeTransform *node, bool calcDistance = false);
 
         /** set the position of the matrix manipulator using a 4x4 Matrix.*/
         virtual void setByMatrix(const osg::Matrixd& matrix);
