@@ -87,12 +87,12 @@ void ScenarioReader::LoadCatalog(pugi::xml_node catalogChild, Catalogs *catalogs
 	std::string filename = ReadAttribute(catalogChild.child("Directory").attribute("path"));
 
 	// Filename should be relative the XOSC file
-	std::string path = DirNameOf(oscFilename) + "/../xosc/" + filename;
+	std::string path = DirNameOf(oscFilename) + "/" + filename;
 	pugi::xml_parse_result result = catalog_doc.load_file(path.c_str());
 
 	if (!result)
 	{
-		LOG("Couldn't locate catalog file %s (%s) - make sure path is relative xosc file", oscFilename.c_str(), path.c_str());
+		LOG("Couldn't locate catalog file %s (%s + %s) - make sure path is relative xosc file", path.c_str(), DirNameOf(oscFilename).c_str(), filename.c_str());
 		return;
 	}
 	
