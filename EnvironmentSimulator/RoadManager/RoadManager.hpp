@@ -644,6 +644,7 @@ namespace roadmanager
 		int MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_remains, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 
 		void SetRoute(Route *route) { route_ = route; }
+		const roadmanager::Route* GetRoute() const { return route_; }
 		roadmanager::Route* GetRoute() { return route_; }
 
 		/**
