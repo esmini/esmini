@@ -206,7 +206,8 @@ bool TrigByTimeHeadway::Evaluate(Story *story, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_);
+		double x, y;
+		rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
 
 		// Headway time not defined for cases:
 		//  - when target object is behind 
@@ -244,10 +245,11 @@ bool TrigByTimeHeadway::Evaluate(Story *story, double sim_time)
 bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
 {
 	bool trig = false;
+	double x, y;
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		if (fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(position_)) < tolerance_)
+		if (fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(position_, x, y)) < tolerance_)
 		{
 			trig = true;
 		}
@@ -256,6 +258,53 @@ bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
 		{
 			break;
 		}
+	}
+
+	evaluated_ = true;
+
+	return trig;
+}
+
+bool TrigByRelativeDistance::Evaluate(Story *story, double sim_time)
+{
+	bool trig = false;
+	double rel_dist, rel_intertial_dist, x, y;
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+	{
+		rel_intertial_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
+
+		if (type_ == RelativeDistanceType::LONGITUDINAL)
+		{
+			rel_dist = fabs(y);
+		}
+		else if (type_ == RelativeDistanceType::LATERAL)
+		{
+			rel_dist = fabs(x);
+		}
+		else if (type_ == RelativeDistanceType::INTERIAL)
+		{
+			rel_dist = fabs(rel_intertial_dist);
+		}
+		else
+		{
+			LOG("Unsupported RelativeDistance type: %d", type_);
+		}
+
+		trig = EvaluateRule(rel_dist, value_, rule_) && CheckEdge(rel_dist, relative_dist_last_value_, edge_);
+
+		relative_dist_last_value_ = rel_dist;
+
+		if (EvalDone(trig, triggering_entity_rule_))
+		{
+			break;
+		}
+	}
+
+	//LOG("RelDist Trig? %s rel_dist: %.2f %s %.2f, %s", name_.c_str(), rel_dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+	if (trig)
+	{
+		LOG("Trigged %s rel_dist: %.2f %s %.2f, %s", name_.c_str(), rel_dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
 	}
 
 	evaluated_ = true;

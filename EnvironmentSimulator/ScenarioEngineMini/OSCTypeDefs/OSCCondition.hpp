@@ -69,6 +69,7 @@ namespace scenarioengine
 		typedef enum
 		{
 			TIME_HEADWAY,
+			RELATIVE_DISTANCE,
 			REACH_POSITION,
 			// not complete at all
 		} EntityConditionType;
@@ -108,6 +109,29 @@ namespace scenarioengine
 		double tolerance_;
 
 		TrigByReachPosition() : TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
+
+		bool Evaluate(Story *story, double sim_time);
+	};
+
+	class TrigByRelativeDistance : public TrigByEntity
+	{
+	public:
+		typedef enum
+		{
+			LONGITUDINAL,
+			LATERAL,
+			INTERIAL
+		} RelativeDistanceType;
+
+		Object *object_;
+		double value_;
+		bool freespace_;
+		RelativeDistanceType type_;
+		Rule rule_;
+		double relative_dist_last_value_;
+
+
+		TrigByRelativeDistance() : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE) {}
 
 		bool Evaluate(Story *story, double sim_time);
 	};

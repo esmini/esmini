@@ -250,7 +250,8 @@ void LongSpeedAction::Step(double dt)
 void LongDistanceAction::Step(double dt)
 {
 	// Find out current distance
-	double distance = object_->pos_.getRelativeDistance(target_object_->pos_);
+	double x, y;
+	double distance = object_->pos_.getRelativeDistance(target_object_->pos_, x, y);
 	double speed_diff = object_->speed_ - target_object_->speed_;
 	double acc;
 	double spring_constant = 4;
@@ -301,9 +302,10 @@ void LongDistanceAction::Trig()
 void MeetingRelativeAction::Step(double dt)
 {
 	// Calculate straight distance, not along road/route. To be improved.
-	double pivotDist = object_->pos_.getRelativeDistance(*own_target_position_);
+	double x, y;
+	double pivotDist = object_->pos_.getRelativeDistance(*own_target_position_, x, y);
 	double targetTimeToDest = INFINITY;
-	double relativeDist = MAX(0, relative_object_->pos_.getRelativeDistance(*relative_target_position_));
+	double relativeDist = MAX(0, relative_object_->pos_.getRelativeDistance(*relative_target_position_, x, y));
 
 	if (relative_object_->speed_ > SMALL_NUMBER)
 	{

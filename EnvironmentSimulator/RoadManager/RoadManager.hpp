@@ -688,9 +688,11 @@ namespace roadmanager
 		/**
 		Straight (not route) distance between the current position and the one specified in argument
 		@param target_position The position to measure distance from current position. 
+		@param x (meter). X component of the relative distance.
+		@param y (meter). Y component of the relative distance.
 		@return distance (meter). Negative if the specified position is behind the current one.
 		*/
-		double getRelativeDistance(Position target_position);
+		double getRelativeDistance(Position target_position, double &x, double &y);
 
 		/**
 		Is the current position ahead of the one specified in argument

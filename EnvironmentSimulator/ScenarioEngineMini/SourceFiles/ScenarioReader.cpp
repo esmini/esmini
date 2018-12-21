@@ -1059,6 +1059,43 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 
 						condition = trigger;
 					}
+					else if (condition_type == "RelativeDistance")
+					{
+						TrigByRelativeDistance *trigger = new TrigByRelativeDistance;
+						trigger->object_ = FindObjectByName(ReadAttribute(condition_node.attribute("entity")), entities);
+
+						std::string type = ReadAttribute(condition_node.attribute("type"));
+						if ((type == "longitudinal") || (type == "Longitudinal"))
+						{
+							trigger->type_ = TrigByRelativeDistance::RelativeDistanceType::LONGITUDINAL;
+						}
+						else if ((type == "lateral") || (type == "Lateral"))
+						{
+							trigger->type_ = TrigByRelativeDistance::RelativeDistanceType::LATERAL;
+						}
+						else if ((type == "interial") || (type == "Intertial"))
+						{
+							trigger->type_ = TrigByRelativeDistance::RelativeDistanceType::INTERIAL;
+						}
+						else
+						{
+							LOG("Unknown RelativeDistance condition type: %s", type.c_str());
+						}
+
+						std::string freespace_str = ReadAttribute(condition_node.attribute("freespace"));
+						if ((freespace_str == "true") || (freespace_str == "1"))
+						{
+							trigger->freespace_ = true;
+						}
+						else
+						{
+							trigger->freespace_ = false;
+						}
+						trigger->value_ = std::stod(ReadAttribute(condition_node.attribute("value")));
+						trigger->rule_ = ParseRule(ReadAttribute(condition_node.attribute("rule")));
+
+						condition = trigger;
+					}
 					else
 					{
 						LOG("Entity condition %s not supported", condition_type.c_str());
