@@ -648,6 +648,14 @@ double LaneSection::GetWidthBetweenLanes(int lane_id1, int lane_id2, double s)
 	return lanewidth;
 }
 
+// Offset from lane1 to lane2 in direction of reference line
+double LaneSection::GetOffsetBetweenLanes(int lane_id1, int lane_id2, double s)
+{
+	double laneCenter1 = GetCenterOffset(s, lane_id1) * SIGN(lane_id1);
+	double laneCenter2 = GetCenterOffset(s, lane_id2) * SIGN(lane_id2);
+	return (laneCenter2 - laneCenter1);
+}
+
 RoadLink::RoadLink(LinkType type, pugi::xml_node node)
 {
 	string element_type = node.attribute("elementType").value();
@@ -1010,7 +1018,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 	pugi::xml_document doc;
 
-    pugi::xml_parse_result result = doc.load_file(filename);
+	pugi::xml_parse_result result = doc.load_file(filename);
 	if (!result)
 	{
 		throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(filename));
@@ -2364,17 +2372,27 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_rem
 		return -1;
 	}
 	
+	double new_offset = offset_;
+	// EG: Suggestion, positiv offset_ should always move towards the reference line
+	// it simplifies lane change action since we dont have to consider if we change track during the action
+	// but then we need to consider this when we convert between offset_ and t_ etc.
+	// now I do this to keep same world position after we go to different track, I think... :)
+	if (SIGN(lane_id_) != SIGN(new_lane_id))
+	{
+		new_offset *= -1;
+	}
+	
 	// Find out if connecting to start or end of new road
 	s_remains = 0;
 	if (road_link->GetContactPointType() == CONTACT_POINT_START)
 	{
 		if (s_new <= next_road->GetLength())
 		{
-			SetLanePos(road_link->GetElementId(), new_lane_id, s_new, 0);
+			SetLanePos(road_link->GetElementId(), new_lane_id, s_new, new_offset);
 		}
 		else
 		{
-			SetLanePos(road_link->GetElementId(), new_lane_id, next_road->GetLength(), 0);			
+			SetLanePos(road_link->GetElementId(), new_lane_id, next_road->GetLength(), new_offset);
 			s_remains = s_new - next_road->GetLength();
 		}
 	}
@@ -2382,11 +2400,11 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_rem
 	{
 		if (s_new <= next_road->GetLength())
 		{
-			SetLanePos(road_link->GetElementId(), new_lane_id, next_road->GetLength() - s_new, 0);
+			SetLanePos(road_link->GetElementId(), new_lane_id, next_road->GetLength() - s_new, new_offset);
 		}
 		else
 		{
-			SetLanePos(road_link->GetElementId(), new_lane_id, 0, 0);
+			SetLanePos(road_link->GetElementId(), new_lane_id, 0, new_offset);
 			s_remains = s_new - next_road->GetLength();
 		}
 	}
@@ -2396,11 +2414,11 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_rem
 		{
 			if (s_new <= next_road->GetLength())
 			{
-				SetLanePos(next_road->GetId(), new_lane_id, s_new, 0);
+				SetLanePos(next_road->GetId(), new_lane_id, s_new, new_offset);
 			}
 			else
 			{
-				SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength(), 0);
+				SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength(), new_offset);
 				s_remains = s_new - next_road->GetLength();
 			}
 		}
@@ -2408,11 +2426,11 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_rem
 		{
 			if (s_new <= next_road->GetLength())
 			{
-				SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength() - s_new, 0);
+				SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength() - s_new, new_offset);
 			}
 			else
 			{
-				SetLanePos(next_road->GetId(), new_lane_id, 0, 0);
+				SetLanePos(next_road->GetId(), new_lane_id, 0, new_offset);
 				s_remains = s_new - next_road->GetLength();
 			}
 		}
@@ -2437,11 +2455,15 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_rem
 	}
 }
 
-int Position::MoveAlongS(double ds, Junction::JunctionStrategyType strategy)
+int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrategyType strategy)
 {
 	RoadLink *link;
 	int max_links = 4;  // limit lookahead through junctions/links 
 	int i = 0;
+	
+	// EG: If offset_ is not along reference line, but instead along lane direction then we dont need
+	// the SIGN() adjustment. But for now this adjustment means that a positive dLaneOffset always moves left?
+	offset_ += dLaneOffset * -SIGN(GetLaneId());
 
 	for (int i = 0; i < max_links; i++)
 	{
@@ -2637,7 +2659,7 @@ int Position::GetSteeringTargetPos(double lookahead_distance, double *target_pos
 	Position target(*this);  // Make a copy of current position
 	target.offset_ = 0.0;  // Fix to lane center
 
-	target.MoveAlongS(lookahead_distance, Junction::STRAIGHT);
+	target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT);
 	
 	target_pos_global[0] = target.GetX();
 	target_pos_global[1] = target.GetY();

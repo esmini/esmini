@@ -369,6 +369,7 @@ namespace roadmanager
 		void SetLength(double length) { length_ = length; }
 		int GetConnectingLaneId(int incoming_lane_id, LinkType link_type);
 		double GetWidthBetweenLanes(int lane_id1, int lane_id2, double s);
+		double GetOffsetBetweenLanes(int lane_id1, int lane_id2, double s);
 		void Print();
 
 	private:
@@ -643,6 +644,7 @@ namespace roadmanager
 		int MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_remains, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 
 		void SetRoute(Route *route) { route_ = route; }
+		const roadmanager::Route* GetRoute() const { return route_; }
 		roadmanager::Route* GetRoute() { return route_; }
 
 		/**
@@ -665,7 +667,7 @@ namespace roadmanager
 		@param dLaneOffset Additional Lane offset, added to the lane offset as given by the waypoint
 		@return Non zero return value indicates error of some kind
 		*/
-		int MoveRouteDS(double ds, int dLane = 0, double  dLaneOffset = 0);
+		int MoveRouteDS(double ds, int dLane = 0, double dLaneOffset = 0);
 
 		/**
 		Move current position to specified S-value along the route
@@ -717,7 +719,7 @@ namespace roadmanager
 		If multiple options (only possible in junctions) it will choose randomly 
 		@param ds distance to move from current position
 		*/
-		int MoveAlongS(double ds, Junction::JunctionStrategyType strategy = Junction::JunctionStrategyType::RANDOM);
+		int MoveAlongS(double ds, double dLaneOffset = 0, Junction::JunctionStrategyType strategy = Junction::JunctionStrategyType::RANDOM);
 
 		/**
 		Retrieve the track/road ID from the position object
