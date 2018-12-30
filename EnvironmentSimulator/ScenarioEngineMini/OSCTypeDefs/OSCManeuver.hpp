@@ -32,8 +32,7 @@ namespace scenarioengine
 			DONE,
 			WAITING,  // Following
 			SKIPPED,
-			CANCELLED,
-			JUST_TERMINATED,
+			DEACTIVATED,
 		} State;
 
 		State state_;
@@ -48,6 +47,7 @@ namespace scenarioengine
 
 		void Activate();
 		void Deactivate();
+		bool Triggable();
 	};
 
 	class OSCManeuver

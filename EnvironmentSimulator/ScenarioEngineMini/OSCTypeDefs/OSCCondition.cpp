@@ -55,14 +55,14 @@ bool OSCCondition::CheckEdge(double a, double b, OSCCondition::ConditionEdge edg
 	}
 	else if (evaluated_ && edge == OSCCondition::ConditionEdge::FALLING)
 	{
-		if (a < b)
+		if (a + SMALL_NUMBER < b)
 		{
 			return true;
 		}
 	}
 	else if (evaluated_ && edge == OSCCondition::ConditionEdge::RISING)
 	{
-		if (a > b)
+		if (a > b + SMALL_NUMBER)
 		{
 			return true;
 		}
@@ -276,11 +276,11 @@ bool TrigByRelativeDistance::Evaluate(Story *story, double sim_time)
 
 		if (type_ == RelativeDistanceType::LONGITUDINAL)
 		{
-			rel_dist = fabs(y);
+			rel_dist = fabs(x);
 		}
 		else if (type_ == RelativeDistanceType::LATERAL)
 		{
-			rel_dist = fabs(x);
+			rel_dist = fabs(y);
 		}
 		else if (type_ == RelativeDistanceType::INTERIAL)
 		{
@@ -304,7 +304,7 @@ bool TrigByRelativeDistance::Evaluate(Story *story, double sim_time)
 	//LOG("RelDist Trig? %s rel_dist: %.2f %s %.2f, %s", name_.c_str(), rel_dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
 	if (trig)
 	{
-		LOG("Trigged %s rel_dist: %.2f %s %.2f, %s", name_.c_str(), rel_dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+		LOG("Trigged %s rel_dist: %.2f %s %.2f, %s %f, %f", name_.c_str(), rel_dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str(), rel_dist, relative_dist_last_value_);
 	}
 
 	evaluated_ = true;

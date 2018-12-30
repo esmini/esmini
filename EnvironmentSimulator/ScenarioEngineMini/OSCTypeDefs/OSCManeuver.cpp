@@ -13,6 +13,19 @@ void Event::Activate()
 
 void Event::Deactivate()
 {
-	state_ = Event::State::JUST_TERMINATED;
+	state_ = Event::State::DEACTIVATED;
 }
+
+bool scenarioengine::Event::Triggable()
+{
+	if (state_ == Event::State::NOT_TRIGGED ||
+		state_ == Event::State::DEACTIVATED ||
+		state_ == Event::State::DONE)
+	{
+		return true;
+	}
+	return false;
+}
+
+
 

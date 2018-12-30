@@ -1196,6 +1196,10 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 				}
 			}
 		}
+		else
+		{
+			LOG("Condition %s not supported\n", conditionChildName.c_str());
+		}
 	}
 	condition->name_ = ReadAttribute(conditionNode.attribute("name"));
 	if (conditionNode.attribute("delay") != NULL)
@@ -1295,7 +1299,10 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 						event->start_condition_group_.push_back(condition_group);
 					}
 				}
-
+				else
+				{
+					LOG("%s not supported", childName.c_str());
+				}
 			}
 			maneuver->event_.push_back(event);
 		}
@@ -1382,7 +1389,7 @@ void ScenarioReader::parseStory(std::vector<Story*> &storyVector, Entities *enti
 							std::string conditionsChildName(conditionsChild.name());
 							if (conditionsChildName == "Start")
 							{
-								for (pugi::xml_node startChild = conditionsChild.first_child(); startChild; startChild = conditionsChild.next_sibling())
+								for (pugi::xml_node startChild = conditionsChild.first_child(); startChild; startChild = startChild.next_sibling())
 								{
 									OSCConditionGroup *condition_group = new OSCConditionGroup;
 
@@ -1397,7 +1404,18 @@ void ScenarioReader::parseStory(std::vector<Story*> &storyVector, Entities *enti
 							}
 							else if (conditionsChildName == "End")
 							{
-								LOG("%s is not implemented", conditionsChildName.c_str());
+								for (pugi::xml_node endChild = conditionsChild.first_child(); endChild; endChild = conditionsChild.next_sibling())
+								{
+									OSCConditionGroup *condition_group = new OSCConditionGroup;
+
+									for (pugi::xml_node conditionGroupChild = endChild.first_child(); conditionGroupChild; conditionGroupChild = conditionGroupChild.next_sibling())
+									{
+										OSCCondition *condition = parseOSCCondition(conditionGroupChild, entities, catalogs);
+										condition_group->condition_.push_back(condition);
+									}
+
+									act->end_condition_group_.push_back(condition_group);
+								}
 							}
 							else if (conditionsChildName == "Cancel")
 							{

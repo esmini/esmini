@@ -270,20 +270,37 @@ void LongDistanceAction::Step(double dt)
 
 	double distance_diff = distance - requested_dist;
 
-	// Apply damped spring model with critical/optimal damping factor
-	dc = 2 * sqrt(spring_constant);
-	acc = distance_diff * spring_constant - speed_diff * dc;
-
-	if (acc > dynamics_.max_acceleration_)
+	if (dynamics_.none_ == true)
 	{
-		acc = dynamics_.max_acceleration_;
+		// Set position according to distance and copy speed of target vehicle
+		object_->pos_.MoveAlongS(distance_diff);
+		object_->speed_ = target_object_->speed_;
 	}
-	else if (acc < -dynamics_.max_deceleration_)
+	else
 	{
-		acc = -dynamics_.max_deceleration_;
-	}
+		// Apply damped spring model with critical/optimal damping factor		
+		dc = 2 * sqrt(spring_constant);
+		acc = distance_diff * spring_constant - speed_diff * dc;
+		if (acc > dynamics_.max_acceleration_)
+		{
+			acc = dynamics_.max_acceleration_;
+		}
+		else if (acc < -dynamics_.max_deceleration_)
+		{
+			acc = -dynamics_.max_deceleration_;
+		}
 
-	object_->speed_ += acc * dt;
+		object_->speed_ += acc * dt;
+
+		if (object_->speed_ > dynamics_.max_speed_)
+		{
+			object_->speed_ = dynamics_.max_speed_;
+		}
+		else if (object_->speed_ < -dynamics_.max_speed_)
+		{
+			object_->speed_ = -dynamics_.max_speed_;
+		}
+	}
 
 //	LOG("Dist %.2f diff %.2f acc %.2f speed %.2f", distance, distance_diff, acc, object_->speed_);
 }

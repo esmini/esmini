@@ -123,6 +123,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 					{
 						if (story[i]->act_[j]->start_condition_group_[k]->condition_[l]->Evaluate(story[i], simulationTime))
 						{
+							LOG("Activating Act %s", story[i]->act_[j]->name_.c_str());
 							story[i]->act_[j]->active_ = true;
 						}
 					}
@@ -139,6 +140,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 						if (story[i]->act_[j]->end_condition_group_[k]->condition_[l]->Evaluate(story[i], simulationTime))
 						{
 							story[i]->act_[j]->active_ = false;
+							LOG("Deativating Act %s", story[i]->act_[j]->name_.c_str());
 						}
 					}
 				}
@@ -151,6 +153,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 						if (story[i]->act_[j]->cancel_condition_group_[k]->condition_[l]->Evaluate(story[i], simulationTime))
 						{
 							story[i]->act_[j]->active_ = false;
+							LOG("Cancel Act %s", story[i]->act_[j]->name_.c_str());
 						}
 					}
 				}
@@ -199,7 +202,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 						{
 							Event *event = story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[m];
 							
-							if (event->state_ == Event::State::NOT_TRIGGED)
+							if (event->Triggable())
 							{
 								// Check event conditions
 								for (size_t n = 0; n < event->start_condition_group_.size(); n++)
@@ -255,6 +258,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 							if (event->state_ == Event::State::ACTIVE)
 							{
 								bool active = false;
+
 								for (size_t n = 0; n < event->action_.size(); n++)
 								{
 									if (event->action_[n]->state_ == OSCAction::State::ACTIVE)
