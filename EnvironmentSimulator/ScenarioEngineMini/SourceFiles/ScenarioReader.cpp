@@ -1073,7 +1073,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 						{
 							trigger->type_ = TrigByRelativeDistance::RelativeDistanceType::LATERAL;
 						}
-						else if ((type == "interial") || (type == "Intertial"))
+						else if ((type == "inertial") || (type == "Inertial"))
 						{
 							trigger->type_ = TrigByRelativeDistance::RelativeDistanceType::INTERIAL;
 						}

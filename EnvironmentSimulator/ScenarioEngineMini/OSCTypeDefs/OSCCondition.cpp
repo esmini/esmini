@@ -489,7 +489,7 @@ bool TrigByRelativeDistance::Evaluate(Story *story, double sim_time)
 		}
 	}
 
-//	LOG("RelDist Trig? %s rel_dist: %.2f %s %.2f, %s", name_.c_str(), rel_dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+	//LOG("RelDist Trig? %s rel_dist: %.2f %s %.2f, %s", name_.c_str(), rel_dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
 	if (trig)
 	{
 		LOG("Trigged %s rel_dist: %.2f %s %.2f, %s (%d, %d)", name_.c_str(), rel_dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str(), result, last_result_);
