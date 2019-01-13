@@ -267,9 +267,6 @@ extern "C"
 			deltaSimTime = dt;
 			simTime += dt;
 
-			scenarioEngine->setSimulationTime(simTime);
-			scenarioEngine->setTimeStep(dt);
-
 			// ScenarioEngine
 			mutex.Lock();
 

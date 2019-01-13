@@ -1210,7 +1210,12 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 	{
 		LOG("Attribute \"delay\" missing");
 	}
-	condition->edge_ = ParseConditionEdge(ReadAttribute(conditionNode.attribute("edge")));
+
+	std::string edge_str = ReadAttribute(conditionNode.attribute("edge"));
+	if (edge_str != "")
+	{
+		condition->edge_ = ParseConditionEdge(edge_str);
+	}
 
 	return condition;
 }

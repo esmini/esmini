@@ -40,10 +40,12 @@ namespace scenarioengine
 		ConditionEdge edge_;
 		bool evaluated_;
 
-		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false) {}
+		bool last_result_;  // result from last evaluation
+
+		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false), last_result_(false), edge_(ConditionEdge::ANY) {}
 
 		virtual bool Evaluate(Story *story, double sim_time) = 0;
-		bool CheckEdge(double a, double b, OSCCondition::ConditionEdge edge);
+		bool CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge);
 	};
 
 	class TrigByEntity : public OSCCondition
@@ -94,8 +96,6 @@ namespace scenarioengine
 		bool freespace_;
 		bool along_route_;
 		Rule rule_;
-		double headway_time_last_value_;
-
 
 		TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
 
@@ -128,8 +128,6 @@ namespace scenarioengine
 		bool freespace_;
 		RelativeDistanceType type_;
 		Rule rule_;
-		double relative_dist_last_value_;
-
 
 		TrigByRelativeDistance() : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE) {}
 

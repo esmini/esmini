@@ -31,7 +31,15 @@ namespace scenarioengine
 	class Act
 	{
 	public:
-		bool active_;
+		typedef enum
+		{
+			INACTIVE,
+			ACTIVATED,      // Just activated - this state last for one step
+			ACTIVE,
+			DEACTIVATED,    // Just done/deactivated - this state last for one step
+		} State;
+
+		State state_;
 
 		std::vector<ActSequence*> sequence_;
 		std::vector<OSCConditionGroup*> start_condition_group_;
@@ -40,7 +48,28 @@ namespace scenarioengine
 
 		std::string name_;
 
-		Act() : active_(false) {}
+		Act() : state_(State::INACTIVE) {}
+
+		bool IsActive()
+		{
+			return state_ == State::ACTIVATED || state_ == State::ACTIVE;
+		}
+
+		void Trig()
+		{
+			state_ = State::ACTIVATED;
+			LOG("Act %s trigged", name_.c_str());
+		}
+
+		void Stop()
+		{
+			if (IsActive())
+			{
+				LOG("Act %s stopped", name_.c_str());
+				state_ = State::DEACTIVATED;
+			}
+		}
+
 	};
 
 	class Story
@@ -48,6 +77,7 @@ namespace scenarioengine
 	public:
 		Story();
 		Act* FindActByName(std::string name);
+		Event* FindEventByName(std::string name);
 		OSCAction* FindActionByName(std::string name);
 		void Print();
 

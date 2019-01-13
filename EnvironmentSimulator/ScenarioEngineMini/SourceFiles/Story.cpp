@@ -22,6 +22,29 @@ Act* Story::FindActByName(std::string name)
 	return nullptr;
 }
 
+Event* Story::FindEventByName(std::string name)
+{
+	for (size_t i = 0; i < act_.size(); i++)
+	{
+		for (size_t j = 0; j < act_[i]->sequence_.size(); j++)
+		{
+			for (size_t k = 0; k < act_[i]->sequence_[j]->maneuver_.size(); k++)
+			{
+				for (size_t l = 0; l < act_[i]->sequence_[j]->maneuver_[k]->event_.size(); l++)
+				{
+					Event *event = act_[i]->sequence_[j]->maneuver_[k]->event_[l];
+					if (name == event->name_)
+					{
+						return event;
+					}
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
+
 OSCAction * Story::FindActionByName(std::string name)
 {
 	for (size_t i = 0; i < act_.size(); i++)

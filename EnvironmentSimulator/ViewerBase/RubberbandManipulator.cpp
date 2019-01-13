@@ -10,10 +10,7 @@
 using namespace osg;
 using namespace osgGA;
 
-extern double deltaSimTime;
-
-const float springFC = 14.0f;
-const float springDampingRatio = 0.9f;
+const float springFC = 16.0f;
 const float orbitCameraDistance = 16.0f;
 const float orbitCameraAngle = 15.0f;
 
@@ -70,7 +67,7 @@ void RubberbandManipulator::calculateCameraDistance()
 
 void RubberbandManipulator::init(const GUIEventAdapter& ,GUIActionAdapter& us)
 {
-	calcMovement(true);
+	calcMovement(0, true);
 }
 
 void RubberbandManipulator::getUsage(osg::ApplicationUsage& usage) const
@@ -150,9 +147,21 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea,GUIActionAdapter& u
             return false;
 
 		case(GUIEventAdapter::FRAME):
-            addEvent(ea);
-			if (calcMovement(false)) us.requestRedraw();
-            return false;
+		{
+			static double old_frametime = 0;
+			double current_frame_time = ea.getTime();
+			double dt = current_frame_time - old_frametime;
+			old_frametime = current_frame_time;
+
+			if (dt > 1)
+			{
+				dt = 0.1;
+			}
+
+			addEvent(ea);
+			if (calcMovement(dt, false)) us.requestRedraw();
+			return false;
+		}
 
 		default:
             return false;
@@ -195,14 +204,13 @@ osg::Matrixd RubberbandManipulator::getInverseMatrix() const
 	return _matrix;
 }
 
-bool RubberbandManipulator::calcMovement(bool reset)
+bool RubberbandManipulator::calcMovement(double dt, bool reset)
 {
 	osg::Vec3 up(0.0, 0.0, 1.0);
 	osg::Vec3d nodeCenter;
 	osg::Quat nodeRotation;
 	osg::Matrix cameraTargetRotation;
 	float springDC;
-	double dt;
 	osg::Vec3 cameraOffset(0, 0, 0);
 	osg::Vec3 cameraTargetPosition(0, 0, 0);
 	osg::Vec3 cameraToTarget(0, 0, 0);
@@ -234,7 +242,6 @@ bool RubberbandManipulator::calcMovement(bool reset)
 
 	cameraTargetPosition = cameraTargetRotation.preMult(cameraOffset);
 
-	dt = deltaSimTime;
 	if(reset)
 	{
 		_eye = nodeCenter + cameraTargetPosition;
@@ -252,7 +259,7 @@ bool RubberbandManipulator::calcMovement(bool reset)
 		// Find the vector between target position and actual camera position
 		cameraToTarget = (nodeCenter + cameraTargetPosition) - _eye;
 		// Update camera state
-		springDC = 2 * springDampingRatio * sqrt(springFC);
+		springDC = 2 * sqrt(springFC);
 		cameraAcc = cameraToTarget*springFC - cameraVel*springDC;
 		cameraVel+=cameraAcc * dt;
 		

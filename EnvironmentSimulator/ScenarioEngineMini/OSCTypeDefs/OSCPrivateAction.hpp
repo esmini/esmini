@@ -395,7 +395,7 @@ namespace scenarioengine
 			LOG("Step %s pos: ", object_->name_.c_str());
 			position_.Print();
 
-			OSCAction::Done();
+			OSCAction::Stop();
 		}
 
 		void Trig()

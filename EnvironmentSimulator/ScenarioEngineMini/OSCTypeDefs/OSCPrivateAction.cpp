@@ -95,7 +95,7 @@ void LatLaneChangeAction::Step(double dt)
 
 		if (factor > 1.0)
 		{
-			OSCAction::Done();
+			OSCAction::Stop();
 			angle = 0;
 		}
 
@@ -138,7 +138,7 @@ void LatLaneOffsetAction::Step(double dt)
 
 	if (factor > 1.0)
 	{
-		OSCAction::Done();
+		OSCAction::Stop();
 		angle = 0;
 	}
 
@@ -234,14 +234,14 @@ void LongSpeedAction::Step(double dt)
 	{
 		LOG("Timing type %d not supported yet", dynamics_.timing_type_);
 		new_speed = target_->GetValue();
-		OSCAction::Done();
+		OSCAction::Stop();
 
 		return;
 	}
 
 	if (target_speed_reached && !(target_->type_ == Target::Type::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
 	{
-		OSCAction::Done();
+		OSCAction::Stop();
 	}
 
 	object_->speed_ = new_speed;
@@ -332,7 +332,7 @@ void MeetingRelativeAction::Step(double dt)
 	// Done when either of the vehicles reaches the destination
 	if (relativeDist < DISTANCE_TOLERANCE || (targetTimeToDest + offsetTime_) < SMALL_NUMBER)
 	{
-		OSCAction::Done();
+		OSCAction::Stop();
 	}
 	else
 	{

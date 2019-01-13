@@ -15,8 +15,8 @@ using namespace vehicle;
 #define STEERING_RATE 3.0
 #define STEERING_MAX_ANGLE (30 * M_PI / 180)
 #define ACCELERATION_SCALE 15
-#define SPEED_MAX (200 / 3.6)
-#define SPEED_DECLINE 1E-2
+#define SPEED_MAX (55 / 3.6)
+#define SPEED_DECLINE 0.002
 #define WHEEL_RADIUS 0.35
 #define SIGN(X) (X<0?-1:1)
 #define MAX(a, b) (a>b ? a : b)
@@ -58,6 +58,7 @@ void Vehicle::Update(double dt, THROTTLE throttle, STEERING steering)
 	double criticalB = 0;
 
 	speed_ = (1.0 - SPEED_DECLINE) * speed_ + ACCELERATION_SCALE * throttle * dt;
+
 	if (speed_ > SPEED_MAX)
 	{
 		speed_ = SPEED_MAX;
@@ -71,7 +72,7 @@ void Vehicle::Update(double dt, THROTTLE throttle, STEERING steering)
 	wheelRotation_ += speed_ * dt / WHEEL_RADIUS;
 
 	// Calculate steering
-	double steerDamping = 1 - fabs(speed_) / SPEED_MAX;
+	double steerDamping = 1 - fabs(speed_) / (1.5*SPEED_MAX);
 	double steerRate = STEERING_RATE * steerDamping;
 
 	wheelAngle_ += steerRate * steering * dt;

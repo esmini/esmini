@@ -11,8 +11,6 @@
 using namespace scenarioengine;
 
 
-double deltaSimTime;
-
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static const bool freerun = true;
@@ -71,6 +69,7 @@ void log_callback(const char *str)
 
 int main(int argc, char *argv[])
 {	
+	double deltaSimTime;
 
 	// Simulation constants
 	double endTime = 100;
@@ -171,12 +170,10 @@ int main(int argc, char *argv[])
 
 		// Time operations
 		simTime = simTime + deltaSimTime;
-		scenarioEngine->setSimulationTime(simTime);
-		scenarioEngine->setTimeStep(deltaSimTime);
 
 		// ScenarioEngine
 		mutex.Lock();
-		
+	
 		scenarioEngine->step(deltaSimTime);
 
 		mutex.Unlock();

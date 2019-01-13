@@ -84,7 +84,7 @@ class RubberbandManipulator : public osgGA::CameraManipulator
         
         /** For the give mouse movement calculate the movement of the camera.
             Return true is camera has moved and a redraw is required.*/
-        bool calcMovement(bool reset);
+        bool calcMovement(double dt, bool reset);
 
         osg::ref_ptr<osg::Node> _node;
 		osg::PositionAttitudeTransform *_trackNode;

@@ -22,8 +22,6 @@ static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static vehicle::Vehicle *ego;
 
-double deltaSimTime;  // external - used by Viewer::RubberBandCamera
-
 static bool viewer_running = false;
 static ScenarioEngine *scenarioEngine;
 static viewer::Viewer *scenarioViewer;
@@ -83,7 +81,7 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 	}
 
 	// Update vehicle motion
-	egoCar->vehicle->Update(deltaSimTime, accelerate, steer);
+	egoCar->vehicle->Update(deltaTimeStep, accelerate, steer);
 
 	// Set OpenDRIVE position
 	egoCar->pos->XYH2TrackPos(egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->heading_);
@@ -162,6 +160,8 @@ void log_callback(const char *str)
 
 int main(int argc, char** argv)
 {
+	double deltaSimTime;
+
 	// Use logger callback
 	Logger::Inst().SetCallback(log_callback);
 
@@ -285,7 +285,7 @@ int main(int argc, char** argv)
 					egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0,
 					egoCar->vehicle->speed_));
 			}
-	
+
 			scenarioEngine->step(deltaSimTime);
 
 			mutex.Unlock();
