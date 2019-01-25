@@ -42,9 +42,9 @@ namespace scenarioengine
 			return "";
 		}
 
-		void *element_;
 		Type type_;
 		std::string name_;
+		void *element_;
 
 		Entry(Type type, std::string name, void *element) : type_(type), name_(name), element_(element) {}
 		void* GetElement() { return element_; }

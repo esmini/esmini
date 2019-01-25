@@ -78,6 +78,7 @@ void Story::Print()
 
 void Story::Step(double dt)
 {
+	(void)dt;
 //	for(int i=0; i<Act)
 }
 

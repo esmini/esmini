@@ -37,10 +37,9 @@ namespace scenarioengine
 		ConditionType base_type_;
 		std::string name_;
 		double delay_;
-		ConditionEdge edge_;
 		bool evaluated_;
-
 		bool last_result_;  // result from last evaluation
+		ConditionEdge edge_;
 
 		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false), last_result_(false), edge_(ConditionEdge::ANY) {}
 

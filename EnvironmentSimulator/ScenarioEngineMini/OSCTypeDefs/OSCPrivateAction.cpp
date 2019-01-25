@@ -1,5 +1,3 @@
-#pragma once
-
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -192,7 +190,6 @@ void LongSpeedAction::Trig()
 void LongSpeedAction::Step(double dt)
 {
 	double factor = 0.0;
-	double target_speed = 0;
 	double new_speed = 0;
 	bool target_speed_reached = false;
 
@@ -318,6 +315,8 @@ void LongDistanceAction::Trig()
 
 void MeetingRelativeAction::Step(double dt)
 {
+	(void)dt;
+
 	// Calculate straight distance, not along road/route. To be improved.
 	double x, y;
 	double pivotDist = object_->pos_.getRelativeDistance(*own_target_position_, x, y);

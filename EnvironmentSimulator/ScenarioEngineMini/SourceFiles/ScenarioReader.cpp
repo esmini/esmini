@@ -179,6 +179,8 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 
 Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *catalogs)
 {
+	(void)catalogs;
+
 	Vehicle *vehicle = new Vehicle();
 
 	vehicle->name_ = ReadAttribute(vehicleNode.attribute("name"));
@@ -235,6 +237,7 @@ roadmanager::Route* ScenarioReader::parseOSCRoute(pugi::xml_node routeNode, Cata
 	// Closed attribute not supported by roadmanager yet
 	std::string closed_str = ReadAttribute(routeNode.attribute("closed"));
 	bool closed = false;
+	(void)closed;
 	if (closed_str == "true" || closed_str == "1")
 	{
 		closed = true;

@@ -56,6 +56,7 @@ namespace scenarioengine
 
 		virtual void Step(double dt)
 		{
+			(void)dt;
 			LOG("Virutal, should be overridden!");
 			
 			if (state_ == State::ACTIVATED)
