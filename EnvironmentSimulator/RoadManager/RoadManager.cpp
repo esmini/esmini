@@ -3,6 +3,7 @@
 #include <cstring>
 #include <random>
 #include <time.h>
+#include <limits>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -1980,7 +1981,7 @@ double Position::GetDistToTrackGeom(double x3, double y3, double h, Road *road, 
 void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPitch)
 {
 	double dist;
-	double distMin = 1000;
+	double distMin = std::numeric_limits<double>::infinity();
 	double sNorm;
 	double sNormMin;
 	Geometry *geom;
@@ -2022,6 +2023,12 @@ void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPi
 				found = true;
 			}
 		}
+	}
+
+	if (!found)
+	{
+		LOG("Error finding minimum distance\n");
+		return;
 	}
 
 	double dsMin = sNormMin * geomMin->GetLength();
