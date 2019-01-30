@@ -1,4 +1,3 @@
-#pragma once
 #include <Catalogs.hpp>
 #include "CommonMini.hpp"
 

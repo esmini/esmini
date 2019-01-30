@@ -55,6 +55,7 @@ namespace roadmanager
 		Geometry() : s_(0.0), x_(0.0), y_(0), hdg_(0), length_(0), type_(GEOMETRY_TYPE_UNKNOWN) {}
 		Geometry(double s, double x, double y, double hdg, double length, GeometryType type) :
 			s_(s), x_(x), y_(y), hdg_(hdg), length_(length), type_(type) {}
+		virtual ~Geometry() {}
 
 		GeometryType GetType() { return type_; }
 		double GetLength() { return length_; }
@@ -84,7 +85,7 @@ namespace roadmanager
 
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
-		double EvaluateCurvatureDS(double ds) { return 0; }
+		double EvaluateCurvatureDS(double ds) { (void)ds; return 0; }
 	};
 
 
@@ -93,9 +94,9 @@ namespace roadmanager
 	public:
 		Arc(double s, double x, double y, double hdg, double length, double curvature) :
 			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_ARC), curvature_(curvature) {}
-		~Arc() {};
+		~Arc() {}
 
-		double EvaluateCurvatureDS(double ds) { return curvature_; }
+		double EvaluateCurvatureDS(double ds) { (void)ds; return curvature_; }
 		double GetRadius() { return std::fabs(1.0 / curvature_); }
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);

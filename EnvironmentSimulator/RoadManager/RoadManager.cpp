@@ -63,6 +63,7 @@ void Geometry::Print()
 
 void Geometry::EvaluateDS(double ds, double *x, double *y, double *h)
 {
+	(void)ds; (void)x; (void)y; (void)h;
 	LOG("Geometry virtual Evaluate\n");
 }
 
@@ -1368,6 +1369,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			if (connection_node != NULL)
 			{
 				int id = atoi(connection_node.attribute("id").value());
+				(void)id;
 				int incoming_road_id = atoi(connection_node.attribute("incomingRoad").value());
 				int connecting_road_id = atoi(connection_node.attribute("connectingRoad").value());
 				Road *incoming_road = GetRoadById(incoming_road_id);
@@ -1632,6 +1634,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 					return false;
 				}
 				Lane *lane = lane_section->GetLaneById(lane1_id);
+				(void)lane;
 				if (!(lane_section->GetConnectingLaneId(lane1_id, link_type) == lane2_id))
 				{
 					return false;
@@ -1991,6 +1994,8 @@ void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPi
 	bool inside = false;
 	bool insideMin = false;
 
+	(void)insideMin;
+
 	if ((road = GetOpenDrive()->GetRoadByIdx(track_idx_)) == 0)
 	{
 		LOG("Invalid road index %d\n", track_idx_);
@@ -2005,6 +2010,8 @@ void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPi
 
 	// Search all road and lanes. Inefficient - but simple. Todo: Optimize
 	bool found = false;
+	(void)found;
+
 	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
 	{
 		road = GetOpenDrive()->GetRoadByIdx(i);
@@ -2218,8 +2225,6 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_rem
 	LaneSection *lane_section;
 	Lane *lane;
 	int new_lane_id = 0;
-	LaneLink *lane_link = 0;
-	Connection *connection = 0;
 
 	if (road == 0)
 	{
@@ -2314,7 +2319,6 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_rem
 				double min_heading_diff = 1E10; // set huge number
 				for (int i = 0; i < n_connections; i++)
 				{
-					double current_heading = GetH();
 					LaneRoadLaneConnection lane_road_lane_connection = 
 						junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), i);
 					next_road = GetOpenDrive()->GetRoadById(lane_road_lane_connection.GetConnectingRoadId()); 
@@ -2466,7 +2470,6 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 {
 	RoadLink *link;
 	int max_links = 4;  // limit lookahead through junctions/links 
-	int i = 0;
 	
 	// EG: If offset_ is not along reference line, but instead along lane direction then we dont need
 	// the SIGN() adjustment. But for now this adjustment means that a positive dLaneOffset always moves left?
