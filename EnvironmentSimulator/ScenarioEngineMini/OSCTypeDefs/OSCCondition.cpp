@@ -368,7 +368,6 @@ bool TrigBySimulationTime::Evaluate(Story *story, double sim_time)
 	bool trig = false;
 
 	result = EvaluateRule(sim_time, value_, rule_);
-	LOG("Simtime %.2f", sim_time);
 
 	trig = CheckEdge(result, last_result_, edge_);
 

@@ -4,6 +4,12 @@
 using namespace scenarioengine;
 
 
+static std::string dirnameOf(const std::string& fname)
+{
+	size_t pos = fname.find_last_of("\\/");
+	return (std::string::npos == pos) ? "" : fname.substr(0, pos);
+}
+
 ScenarioReader::ScenarioReader()
 {
 	objectCnt = 0;
@@ -175,6 +181,21 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 			parseOSCFile(roadNetwork.SceneGraph, roadNetworkChild);
 		}
 	}
+
+	if (roadNetwork.Logics.filepath == "")
+	{
+		LOG("Error: No road network ODR file loaded!");
+	}
+	else if (roadNetwork.SceneGraph.filepath == "")
+	{
+		LOG("Warning: No road network 3D model file loaded! Setting default path.");
+
+		// Since the scene graph file path is used to locate other 3D files, like vehicles, create a default path 
+		roadNetwork.SceneGraph.filepath =  dirnameOf(oscFilename) + "/../models/";
+	}
+
+	LOG("Roadnetwork ODR: %s", roadNetwork.Logics.filepath.c_str());
+	LOG("Scenegraph: %s", roadNetwork.SceneGraph.filepath.c_str());
 }
 
 Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *catalogs)
@@ -271,12 +292,6 @@ void ScenarioReader::parseCatalogs(Catalogs &catalogs)
 	{
 		LoadCatalog(catalogsChild, &catalogs);
 	}
-}
-
-static std::string dirnameOf(const std::string& fname)
-{
-	size_t pos = fname.find_last_of("\\/");
-	return (std::string::npos == pos) ? "" : fname.substr(0, pos);
 }
 
 void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
