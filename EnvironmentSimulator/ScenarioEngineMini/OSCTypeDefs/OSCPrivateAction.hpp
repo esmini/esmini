@@ -126,13 +126,13 @@ namespace scenarioengine
 			ValueType value_type_;
 			bool continuous_;
 
-			TargetRelative() : Target(Type::RELATIVE), consumed_(false), object_speed_(0), continuous_(false) {}
+			TargetRelative() : Target(Type::RELATIVE), continuous_(false), consumed_(false), object_speed_(0) {}
 
 			double GetValue();
 
 		private:
-			double object_speed_;
 			bool consumed_;
+			double object_speed_;
 		};
 
 		Target *target_;
@@ -333,6 +333,7 @@ namespace scenarioengine
 
 		void Step(double dt)
 		{
+			(void)dt;
 			LOG("Step %s", object_->name_.c_str());
 		}
 
@@ -391,6 +392,7 @@ namespace scenarioengine
 
 		void Step(double dt)
 		{
+			(void)dt;
 			object_->pos_ = position_;
 			LOG("Step %s pos: ", object_->name_.c_str());
 			position_.Print();
@@ -414,6 +416,7 @@ namespace scenarioengine
 
 		void Step(double dt)
 		{
+			(void)dt;
 		}
 
 		void Trig()

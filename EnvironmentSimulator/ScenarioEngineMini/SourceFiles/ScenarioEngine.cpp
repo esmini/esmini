@@ -211,12 +211,12 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 							if (event->IsActive())
 							{
 								// If just activated, make transition to active
-								if (event->state_ == Act::State::ACTIVATED)
+								if (event->state_ == (Event::State)Act::State::ACTIVATED)
 								{
 									event->state_ = Event::State::ACTIVE;
 								}
 							}
-							else if(event->state_ == Act::State::DEACTIVATED)
+							else if(event->state_ == (Event::State)Act::State::DEACTIVATED)
 							{
 								// If just deactivated, make transition to inactive
 								event->state_ = Event::State::INACTIVE;

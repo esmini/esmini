@@ -27,13 +27,13 @@ namespace scenarioengine
 
 		Type type_;
 		std::string name_;
-		int model_id_;
-		bool extern_control_;
 		int id_;
+		bool extern_control_;
+		double speed_;
 		roadmanager::Position pos_;
 		roadmanager::Route *route_;
 		double heading_;
-		double speed_;
+		int model_id_;
 
 		OSCCatalogReference catalog_reference_;
 

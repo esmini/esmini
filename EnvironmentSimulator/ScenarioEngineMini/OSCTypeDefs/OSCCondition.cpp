@@ -1,5 +1,3 @@
-#pragma once
-
 #include "OSCCondition.hpp"
 #include "Story.hpp"
 
@@ -109,6 +107,8 @@ bool EvalDone(bool result, TrigByEntity::TriggeringEntitiesRule rule)
 
 bool TrigByState::Evaluate(Story *story, double sim_time)
 {
+	(void)story;
+	(void)sim_time;
 	bool result = false;
 
 	last_result_ = result;
@@ -119,6 +119,7 @@ bool TrigByState::Evaluate(Story *story, double sim_time)
 
 bool TrigAtStart::Evaluate(Story *story, double sim_time)
 {
+	(void)sim_time;
 	bool trig = false;
 
 	if (element_type_ == StoryElementType::SCENE)
@@ -162,21 +163,21 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 			Act::State state = act->state_;
 			if (edge_ == ConditionEdge::RISING)
 			{
-				if (state == OSCAction::State::ACTIVATED)
+				if (state == (Act::State)OSCAction::State::ACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::FALLING)
 			{
-				if (state == OSCAction::State::DEACTIVATED)
+				if (state == (Act::State)OSCAction::State::DEACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::ANY)
 			{
-				if (state == OSCAction::State::ACTIVATED || state == OSCAction::State::DEACTIVATED)
+				if (state == (Act::State)OSCAction::State::ACTIVATED || state == (Act::State)OSCAction::State::DEACTIVATED)
 				{
 					trig = true;
 				}
@@ -196,21 +197,21 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 			Event::State state = event->state_;
 			if (edge_ == ConditionEdge::RISING)
 			{
-				if(state == OSCAction::State::ACTIVATED)
+				if(state == (Event::State)OSCAction::State::ACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::FALLING)
 			{
-				if (state == OSCAction::State::DEACTIVATED)
+				if (state == (Event::State)OSCAction::State::DEACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::ANY)
 			{
-				if (state == OSCAction::State::ACTIVATED || state == OSCAction::State::DEACTIVATED)
+				if (state == (Event::State)OSCAction::State::ACTIVATED || state == (Event::State)OSCAction::State::DEACTIVATED)
 				{
 
 					trig = true;
@@ -234,6 +235,7 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 
 bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 {
+	(void)sim_time;
 	bool trig = false;
 
 	if (element_type_ == StoryElementType::SCENE)
@@ -283,21 +285,21 @@ bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 			Act::State state = act->state_;
 			if (edge_ == ConditionEdge::RISING)
 			{
-				if (state == OSCAction::State::DEACTIVATED)
+				if (state == (Act::State)OSCAction::State::DEACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::FALLING)
 			{
-				if (state == OSCAction::State::ACTIVATED)
+				if (state == (Act::State)OSCAction::State::ACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::ANY)
 			{
-				if (state == OSCAction::State::ACTIVATED || state == OSCAction::State::DEACTIVATED)
+				if (state == (Act::State)OSCAction::State::ACTIVATED || state == (Act::State)OSCAction::State::DEACTIVATED)
 				{
 					trig = true;
 				}
@@ -317,21 +319,21 @@ bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 			Event::State state = event->state_;
 			if (edge_ == ConditionEdge::RISING)
 			{
-				if (state == OSCAction::State::DEACTIVATED)
+				if (state == (Event::State)OSCAction::State::DEACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::FALLING)
 			{
-				if (state == OSCAction::State::ACTIVATED)
+				if (state == (Event::State)OSCAction::State::ACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::ANY)
 			{
-				if (state == OSCAction::State::ACTIVATED || state == OSCAction::State::DEACTIVATED)
+				if (state == (Event::State)OSCAction::State::ACTIVATED || state == (Event::State)OSCAction::State::DEACTIVATED)
 				{
 					trig = true;
 				}
@@ -354,6 +356,9 @@ bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 
 bool TrigByValue::Evaluate(Story *story, double sim_time)
 {
+	(void)story;
+	(void)sim_time;
+
 	bool result = false;
 
 	last_result_ = result;
@@ -364,6 +369,8 @@ bool TrigByValue::Evaluate(Story *story, double sim_time)
 
 bool TrigBySimulationTime::Evaluate(Story *story, double sim_time)
 {
+	(void)story;
+
 	bool result = false;
 	bool trig = false;
 
@@ -384,6 +391,9 @@ bool TrigBySimulationTime::Evaluate(Story *story, double sim_time)
 
 bool TrigByTimeHeadway::Evaluate(Story *story, double sim_time)
 {
+	(void)story;
+	(void)sim_time;
+
 	bool result = false;
 	bool trig = false;
 	double rel_dist, hwt;
@@ -428,6 +438,9 @@ bool TrigByTimeHeadway::Evaluate(Story *story, double sim_time)
 
 bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
 {
+	(void)story;
+	(void)sim_time;
+
 	bool result = false;
 	bool trig = false;
 	double x, y;
@@ -455,6 +468,9 @@ bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
 
 bool TrigByRelativeDistance::Evaluate(Story *story, double sim_time)
 {
+	(void)story;
+	(void)sim_time;
+
 	bool result = false;
 	bool trig = false;
 	double rel_dist, rel_intertial_dist, x, y;
