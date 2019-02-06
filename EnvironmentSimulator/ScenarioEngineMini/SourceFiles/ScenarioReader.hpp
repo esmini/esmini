@@ -26,6 +26,7 @@ namespace scenarioengine
 
 		ScenarioReader();
 		int loadOSCFile(const char * path, ExternalControlMode ext_control);
+		void loadOSCMem(const pugi::xml_document &xml_doc, const char *path, ExternalControlMode ext_control);
 
 		void LoadCatalog(pugi::xml_node catalogChild, Catalogs *catalogs);
 

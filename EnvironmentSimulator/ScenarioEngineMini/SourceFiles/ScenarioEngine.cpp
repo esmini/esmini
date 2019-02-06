@@ -10,6 +10,13 @@ ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime, Extern
 	InitScenario(oscFilename, startTime, ext_control);
 }
 
+ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, std::string oscFilename, double startTime, ExternalControlMode ext_control)
+{
+	simulationTime = 0;
+	req_ext_control_ = ext_control;
+	InitScenario(xml_doc, oscFilename, startTime, ext_control);
+}
+
 void ScenarioEngine::InitScenario(std::string oscFilename, double startTime, ExternalControlMode ext_control)
 {
 	// Load and parse data
@@ -19,38 +26,13 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double startTime, Ext
 		throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
 	}
 
-	// Init road manager
-	scenarioReader.parseRoadNetwork(roadNetwork);
-	if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
-	{
-		throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + getOdrFilename().c_str());
-	}
-	odrManager = roadmanager::Position::GetOpenDrive();
+	parseScenario(startTime, ext_control);
+}
 
-	scenarioReader.parseParameterDeclaration();
-	scenarioReader.parseCatalogs(catalogs);
-	scenarioReader.parseEntities(entities, &catalogs);
-	scenarioReader.parseInit(init, &entities, &catalogs);
-	scenarioReader.parseStory(story, &entities, &catalogs);
-
-	if (req_ext_control_ > 0 && entities.object_.size() > 0)
-	{
-		LOG("Override external control flag from OSC file, new value: %s", req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? "Off" : "On");
-		entities.object_[0]->extern_control_ = req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? false : true;
-	}
-
-	LOG("Requested external control: %d - %s, actual: %s", ext_control, scenarioReader.ExtControlMode2Str(ext_control).c_str(), GetExtControl()?"on":"off");
-
-
-	this->startTime = startTime;
-
-	// Print loaded data
-	entities.Print();
-
-	for (size_t i = 0; i < story.size(); i++)
-	{
-		story[i]->Print();
-	}
+void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, std::string oscFilename, double startTime, ExternalControlMode ext_control)
+{
+	scenarioReader.loadOSCMem(xml_doc, oscFilename.c_str(), ext_control);
+	parseScenario(startTime, ext_control);
 }
 
 ScenarioEngine::~ScenarioEngine()
@@ -356,6 +338,42 @@ bool ScenarioEngine::GetExtControl()
 	LOG("No objects initialized yet - ask later");
 
 	return false;  // Hmm, what is a good default value...?
+}
+
+void ScenarioEngine::parseScenario(double startTime, ExternalControlMode ext_control)
+{
+	// Init road manager
+	scenarioReader.parseRoadNetwork(roadNetwork);
+	if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
+	{
+		throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + getOdrFilename().c_str());
+	}
+	odrManager = roadmanager::Position::GetOpenDrive();
+
+	scenarioReader.parseParameterDeclaration();
+	scenarioReader.parseCatalogs(catalogs);
+	scenarioReader.parseEntities(entities, &catalogs);
+	scenarioReader.parseInit(init, &entities, &catalogs);
+	scenarioReader.parseStory(story, &entities, &catalogs);
+
+	if (req_ext_control_ > 0 && entities.object_.size() > 0)
+	{
+		LOG("Override external control flag from OSC file, new value: %s", req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? "Off" : "On");
+		entities.object_[0]->extern_control_ = req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? false : true;
+	}
+
+	LOG("Requested external control: %d - %s, actual: %s", ext_control, scenarioReader.ExtControlMode2Str(ext_control).c_str(), GetExtControl()?"on":"off");
+
+
+	this->startTime = startTime;
+
+	// Print loaded data
+	entities.Print();
+
+	for (size_t i = 0; i < story.size(); i++)
+	{
+		story[i]->Print();
+	}
 }
 
 void ScenarioEngine::stepObjects(double dt)

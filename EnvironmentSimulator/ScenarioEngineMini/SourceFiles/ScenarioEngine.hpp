@@ -25,10 +25,12 @@ namespace scenarioengine
 		//	Cars cars;
 
 		ScenarioEngine(std::string oscFilename, double startTime, ExternalControlMode ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC);
+		ScenarioEngine(const pugi::xml_document &xml_doc, std::string oscFilename, double startTime, ExternalControlMode ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC);
 		ScenarioEngine() {};
 		~ScenarioEngine();
 
 		void InitScenario(std::string oscFilename, double startTime, ExternalControlMode ext_control);
+		void InitScenario(const pugi::xml_document &xml_doc, std::string oscFilename, double startTime, ExternalControlMode ext_control);
 
 		void step(double deltaSimTime, bool initial = false);
 		void setSimulationTime(double simulationTime);
@@ -63,6 +65,8 @@ namespace scenarioengine
 		//Conditions conditions;
 		//Actions actions;
 		ScenarioGateway scenarioGateway;
+
+		void parseScenario(double startTime, ExternalControlMode ext_control);
 	};
 
 }

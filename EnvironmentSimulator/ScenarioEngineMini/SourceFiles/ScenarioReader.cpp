@@ -80,6 +80,15 @@ int ScenarioReader::loadOSCFile(const char * path, ExternalControlMode ext_contr
 	return 0;
 }
 
+void ScenarioReader::loadOSCMem(const pugi::xml_document &xml_doc, const char *path, ExternalControlMode ext_control)
+{
+	LOG("Loading %s", path);
+
+	req_ext_control_ = ext_control;
+	doc.reset(xml_doc);
+	oscFilename = path;
+}
+
 void ScenarioReader::LoadCatalog(pugi::xml_node catalogChild, Catalogs *catalogs)
 {
 	pugi::xml_document catalog_doc;
