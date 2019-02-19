@@ -1,8 +1,19 @@
 #include "ScenarioReader.hpp"
 #include "CommonMini.hpp"
 
-using namespace scenarioengine;
+#include <cstdio>
 
+namespace {
+int strtoi(std::string s) {
+	return atoi(s.c_str());
+}
+
+double strtod(std::string s) {
+	return atof(s.c_str());
+}
+}
+
+using namespace scenarioengine;
 
 static std::string dirnameOf(const std::string& fname)
 {
@@ -243,7 +254,7 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *c
 			}
 			else if (prop_name == "model_id")
 			{
-				vehicle->model_id_ = stoi(prop_value);
+				vehicle->model_id_ = strtoi(prop_value);
 			}
 			else
 			{
@@ -402,20 +413,20 @@ void ScenarioReader::parseOSCPosition(roadmanager::Position &position, pugi::xml
 		}
 		else if (positionChildName == "Lane")
 		{
-			int road_id = std::stoi(ReadAttribute(positionChild.attribute("roadId")));
-			int lane_id = std::stoi(ReadAttribute(positionChild.attribute("laneId")));
-			double s = std::stod(ReadAttribute(positionChild.attribute("s")));
+			int road_id = strtoi(ReadAttribute(positionChild.attribute("roadId")));
+			int lane_id = strtoi(ReadAttribute(positionChild.attribute("laneId")));
+			double s = strtod(ReadAttribute(positionChild.attribute("s")));
 			double offset = 0;  // Default value of optional parameter
 			if (positionChild.attribute("offset"))
 			{
-				offset = std::stod(ReadAttribute(positionChild.attribute("offset")));
+				offset = strtod(ReadAttribute(positionChild.attribute("offset")));
 			}
 
 			position.SetLanePos(road_id, lane_id, s, offset);
-				//std::stoi(ReadAttribute(positionChild.attribute("roadId"))),
-				//std::stoi(ReadAttribute(positionChild.attribute("laneId"))),
-				//std::stod(ReadAttribute(positionChild.attribute("s"))),
-				//std::stod(ReadAttribute(positionChild.attribute("offset"))));
+				//strtoi(ReadAttribute(positionChild.attribute("roadId"))),
+				//strtoi(ReadAttribute(positionChild.attribute("laneId"))),
+				//strtod(ReadAttribute(positionChild.attribute("s"))),
+				//strtod(ReadAttribute(positionChild.attribute("offset"))));
 			position.Print();
 		}
 		else if (positionChildName == "RelativeLane")
@@ -479,14 +490,14 @@ void ScenarioReader::parseOSCPosition(roadmanager::Position &position, pugi::xml
 						}
 						else if (positionChildName == "LaneCoord")
 						{
-							double s = std::stod(ReadAttribute(positionChild.attribute("pathS")));
-							int lane_id = std::stoi(ReadAttribute(positionChild.attribute("laneId")));
+							double s = strtod(ReadAttribute(positionChild.attribute("pathS")));
+							int lane_id = strtoi(ReadAttribute(positionChild.attribute("laneId")));
 							double lane_offset = 0;
 
 							pugi::xml_attribute laneOffsetAttribute = positionChild.attribute("laneOffset");
 							if (laneOffsetAttribute != NULL)
 							{
-								lane_offset = std::stod(ReadAttribute(positionChild.attribute("laneOffset")));
+								lane_offset = strtod(ReadAttribute(positionChild.attribute("laneOffset")));
 							}
 
 							position.SetRouteLanePosition(s, lane_id, lane_offset);
@@ -544,19 +555,19 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							if (ReadAttribute(speedChild.attribute("rate")) != "")
 							{
 								action_speed->dynamics_.timing_type_ = LongSpeedAction::Timing::RATE;
-								action_speed->dynamics_.timing_target_value_ = std::stod(ReadAttribute(speedChild.attribute("rate")));
+								action_speed->dynamics_.timing_target_value_ = strtod(ReadAttribute(speedChild.attribute("rate")));
 							}
 
 							if (ReadAttribute(speedChild.attribute("time")) != "")
 							{
 								action_speed->dynamics_.timing_type_ = LongSpeedAction::Timing::TIME;
-								action_speed->dynamics_.timing_target_value_ = std::stod(ReadAttribute(speedChild.attribute("time")));
+								action_speed->dynamics_.timing_target_value_ = strtod(ReadAttribute(speedChild.attribute("time")));
 							}
 
 							if (ReadAttribute(speedChild.attribute("distance")) != "")
 							{
 								action_speed->dynamics_.timing_type_ = LongSpeedAction::Timing::DISTANCE;
-								action_speed->dynamics_.timing_target_value_ = std::stod(ReadAttribute(speedChild.attribute("distance")));
+								action_speed->dynamics_.timing_target_value_ = strtod(ReadAttribute(speedChild.attribute("distance")));
 							}
 						}
 						else if (speedChild.name() == std::string("Target"))
@@ -567,7 +578,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								{
 									LongSpeedAction::TargetRelative *target_rel = new LongSpeedAction::TargetRelative;
 
-									target_rel->value_ = stod(ReadAttribute(targetChild.attribute("value")));
+									target_rel->value_ = strtod(ReadAttribute(targetChild.attribute("value")));
 
 									target_rel->continuous_ = (
 										ReadAttribute(targetChild.attribute("continuous")) == "true" ||
@@ -594,7 +605,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								{
 									LongSpeedAction::TargetAbsolute *target_abs = new LongSpeedAction::TargetAbsolute;
 
-									target_abs->value_ = stod(ReadAttribute(targetChild.attribute("value")));
+									target_abs->value_ = strtod(ReadAttribute(targetChild.attribute("value")));
 									action_speed->target_ = target_abs;
 								}
 							}
@@ -618,9 +629,9 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							pugi::xml_node limits_node = dynamics_node.child("Limited");
 							if (limits_node != NULL)
 							{
-								action_dist->dynamics_.max_acceleration_ = stod(ReadAttribute(limits_node.attribute("maxAcceleration")));
-								action_dist->dynamics_.max_deceleration_ = stod(ReadAttribute(limits_node.attribute("maxDeceleration")));
-								action_dist->dynamics_.max_speed_ = stod(ReadAttribute(limits_node.attribute("maxSpeed")));
+								action_dist->dynamics_.max_acceleration_ = strtod(ReadAttribute(limits_node.attribute("maxAcceleration")));
+								action_dist->dynamics_.max_deceleration_ = strtod(ReadAttribute(limits_node.attribute("maxDeceleration")));
+								action_dist->dynamics_.max_speed_ = strtod(ReadAttribute(limits_node.attribute("maxSpeed")));
 							}
 							else
 							{
@@ -637,12 +648,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					if (longitudinalChild.attribute("distance"))
 					{
 						action_dist->dist_type_ = LongDistanceAction::DistType::DISTANCE;
-						action_dist->distance_ = stod(ReadAttribute(longitudinalChild.attribute("distance")));
+						action_dist->distance_ = strtod(ReadAttribute(longitudinalChild.attribute("distance")));
 					}
 					else if (longitudinalChild.attribute("timeGap"))
 					{
 						action_dist->dist_type_ = LongDistanceAction::DistType::TIME_GAP;
-						action_dist->distance_ = stod(ReadAttribute(longitudinalChild.attribute("timeGap")));
+						action_dist->distance_ = strtod(ReadAttribute(longitudinalChild.attribute("timeGap")));
 					}
 					else
 					{
@@ -666,7 +677,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
 					if (ReadAttribute(lateralChild.attribute("targetLaneOffset")) != "")
 					{
-						action_lane->target_lane_offset_ = std::stod(ReadAttribute(lateralChild.attribute("targetLaneOffset")));
+						action_lane->target_lane_offset_ = strtod(ReadAttribute(lateralChild.attribute("targetLaneOffset")));
 					}
 					else
 					{
@@ -680,12 +691,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							if (ReadAttribute(laneChangeChild.attribute("time")) != "")
 							{
 								action_lane->dynamics_.timing_type_ = LatLaneChangeAction::Timing::TIME;
-								action_lane->dynamics_.timing_target_value_ = std::stod(ReadAttribute(laneChangeChild.attribute("time")));
+								action_lane->dynamics_.timing_target_value_ = strtod(ReadAttribute(laneChangeChild.attribute("time")));
 							}
 							else if (ReadAttribute(laneChangeChild.attribute("distance")) != "")
 							{
 								action_lane->dynamics_.timing_type_ = LatLaneChangeAction::Timing::DISTANCE;
-								action_lane->dynamics_.timing_target_value_ = std::stod(ReadAttribute(laneChangeChild.attribute("distance")));
+								action_lane->dynamics_.timing_target_value_ = strtod(ReadAttribute(laneChangeChild.attribute("distance")));
 							}
 
 							action_lane->dynamics_.transition_.shape_ = ParseDynamicsShape(ReadAttribute(laneChangeChild.attribute("shape")));
@@ -701,14 +712,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									LatLaneChangeAction::TargetRelative *target_rel = new LatLaneChangeAction::TargetRelative;
 
 									target_rel->object_ = FindObjectByName(ReadAttribute(targetChild.attribute("object")), entities);
-									target_rel->value_ = std::stoi(ReadAttribute(targetChild.attribute("value")));
+									target_rel->value_ = strtoi(ReadAttribute(targetChild.attribute("value")));
 									target = target_rel;
 								}
 								else if (targetChild.name() == std::string("Absolute"))
 								{
 									LatLaneChangeAction::TargetAbsolute *target_abs = new LatLaneChangeAction::TargetAbsolute;
 
-									target_abs->value_ = std::stoi(ReadAttribute(targetChild.attribute("value")));
+									target_abs->value_ = strtoi(ReadAttribute(targetChild.attribute("value")));
 									target = target_abs;
 								}
 							}
@@ -726,12 +737,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						{
 							if (ReadAttribute(laneOffsetChild.attribute("maxLateralAcc")) != "")
 							{
-								action_lane->dynamics_.max_lateral_acc_= std::stod(ReadAttribute(laneOffsetChild.attribute("maxLateralAcc")));
+								action_lane->dynamics_.max_lateral_acc_= strtod(ReadAttribute(laneOffsetChild.attribute("maxLateralAcc")));
 							}
 
 							if (ReadAttribute(laneOffsetChild.attribute("duration")) != "")
 							{
-								action_lane->dynamics_.duration_ = std::stod(ReadAttribute(laneOffsetChild.attribute("duration")));
+								action_lane->dynamics_.duration_ = strtod(ReadAttribute(laneOffsetChild.attribute("duration")));
 							}
 
 							action_lane->dynamics_.transition_.shape_ = ParseDynamicsShape(ReadAttribute(laneOffsetChild.attribute("shape")));
@@ -747,14 +758,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									LatLaneOffsetAction::TargetRelative *target_rel = new LatLaneOffsetAction::TargetRelative;
 
 									target_rel->object_ = FindObjectByName(ReadAttribute(targetChild.attribute("object")), entities);
-									target_rel->value_ = std::stod(ReadAttribute(targetChild.attribute("value")));
+									target_rel->value_ = strtod(ReadAttribute(targetChild.attribute("value")));
 									target = target_rel;
 								}
 								else if (targetChild.name() == std::string("Absolute"))
 								{
 									LatLaneOffsetAction::TargetAbsolute *target_abs = new LatLaneOffsetAction::TargetAbsolute;
 
-									target_abs->value_ = std::stod(ReadAttribute(targetChild.attribute("value")));
+									target_abs->value_ = strtod(ReadAttribute(targetChild.attribute("value")));
 									target = target_abs;
 								}
 							}
@@ -804,7 +815,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				meeting_rel->continuous_ = (
 					ReadAttribute(rel_child.attribute("continuous")) == "true" ||
 					ReadAttribute(rel_child.attribute("continuous")) == "1");
-				meeting_rel->offsetTime_ = std::stod(ReadAttribute(rel_child.attribute("offsetTime")));
+				meeting_rel->offsetTime_ = strtod(ReadAttribute(rel_child.attribute("offsetTime")));
 
 				roadmanager::Position *pos_relative_object = new roadmanager::Position;
 				pugi::xml_node pos_node = rel_child.child("Position");
@@ -823,7 +834,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				{
 					MeetingAbsoluteAction *meeting_abs = new MeetingAbsoluteAction;
 					meeting_abs->target_position_ = pos;
-					meeting_abs->time_to_destination_ = std::stod(ReadAttribute(abs_child.attribute("TimeToDestination")));
+					meeting_abs->time_to_destination_ = strtod(ReadAttribute(abs_child.attribute("TimeToDestination")));
 
 					action = meeting_abs;
 				}
@@ -1062,7 +1073,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 						{
 							trigger->freespace_ = false;
 						}
-						trigger->value_ = std::stod(ReadAttribute(condition_node.attribute("value")));
+						trigger->value_ = strtod(ReadAttribute(condition_node.attribute("value")));
 						trigger->rule_ = ParseRule(ReadAttribute(condition_node.attribute("rule")));
 
 						condition = trigger;
@@ -1077,7 +1088,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 						}
 						else
 						{
-							trigger->tolerance_ = stod(ReadAttribute(condition_node.attribute("tolerance")));
+							trigger->tolerance_ = strtod(ReadAttribute(condition_node.attribute("tolerance")));
 						}
 
 						// Read position
@@ -1118,7 +1129,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 						{
 							trigger->freespace_ = false;
 						}
-						trigger->value_ = std::stod(ReadAttribute(condition_node.attribute("value")));
+						trigger->value_ = strtod(ReadAttribute(condition_node.attribute("value")));
 						trigger->rule_ = ParseRule(ReadAttribute(condition_node.attribute("rule")));
 
 						condition = trigger;
@@ -1213,7 +1224,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 				if (byValueChildName == "SimulationTime")
 				{
 					TrigBySimulationTime *trigger = new TrigBySimulationTime;
-					trigger->value_ = std::stod(ReadAttribute(byValueChild.attribute("value")));
+					trigger->value_ = strtod(ReadAttribute(byValueChild.attribute("value")));
 					trigger->rule_ = ParseRule(ReadAttribute(byValueChild.attribute("rule")));
 					condition = trigger;
 				}
@@ -1231,7 +1242,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 	condition->name_ = ReadAttribute(conditionNode.attribute("name"));
 	if (conditionNode.attribute("delay") != NULL)
 	{
-		condition->delay_ = std::stod(ReadAttribute(conditionNode.attribute("delay")));
+		condition->delay_ = strtod(ReadAttribute(conditionNode.attribute("delay")));
 	}
 	else
 	{
@@ -1375,7 +1386,7 @@ void ScenarioReader::parseStory(std::vector<Story*> &storyVector, Entities *enti
 					{
 						ActSequence *sequence = new ActSequence;
 
-						sequence->number_of_executions_ = std::stoi(ReadAttribute(actChild.attribute("numberOfExecutions")));
+						sequence->number_of_executions_ = strtoi(ReadAttribute(actChild.attribute("numberOfExecutions")));
 						sequence->name_ = ReadAttribute(actChild.attribute("name"));
 
 						pugi::xml_node actors_node = actChild.child("Actors");
