@@ -1,7 +1,7 @@
 #include "ScenarioReader.hpp"
 #include "CommonMini.hpp"
 
-#include <cstdio>
+#include <cstdlib>
 
 namespace {
 int strtoi(std::string s) {
