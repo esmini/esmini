@@ -22,6 +22,7 @@ using namespace vehicle;
 #define MAX(a, b) (a>b ? a : b)
 #define MIN(a, b) (a<b ? a : b)
 #define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))
+//#define REAR_AXLE_TO_LENGTH
 
 Vehicle::Vehicle(double x, double y, double h, double length)
 {

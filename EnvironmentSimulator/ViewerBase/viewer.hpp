@@ -12,19 +12,20 @@
 
 static const char* carModelsFiles_[] =
 {
-	"p1800.osgb",
-	"car1.osgb",
-	"car2.osgb",
-	"car3.osgb",
-	"car4.osgb",
-	"car5.osgb",
-	"car6.osgb",
-	"truck1.osgb",
-	"truck2.osgb",
-	"truck3.osgb",
-	"bus1.osgb",
-	"bus2.osgb",
-	"bus3.osgb",
+//	"s90.fbx",
+	"car_white.osgb",
+	"car_blue.osgb",
+	"car_red.osgb",
+	"car_yellow.osgb",
+//	"truck_blue.osgb",
+//	"truck_red.osgb",
+	"truck_yellow.osgb",
+//	"van_blue.osgb",
+	"van_red.osgb",
+//	"van_yellow.osgb",
+	"bus_blue.osgb",
+//	"bus_red.osgb",
+//	"bus_yellow.osgb",
 };
 
 namespace viewer
@@ -41,6 +42,7 @@ namespace viewer
 		double size_y;
 		double center_x;
 		double center_y;
+		std::string filename_;
 
 		CarModel(osg::ref_ptr<osg::LOD> lod);
 		~CarModel();

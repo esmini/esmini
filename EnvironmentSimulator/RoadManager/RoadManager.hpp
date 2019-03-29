@@ -588,6 +588,11 @@ namespace roadmanager
 		bool LoadOpenDriveFile(const char *filename, bool replace = true);
 
 		/**
+		Get the filename of currently loaded OpenDRIVE file
+		*/
+		std::string GetOpenDriveFilename() { return odr_filename_; }
+
+		/**
 		Retrieve a road segment specified by road ID 
 		@param id road ID as specified in the OpenDRIVE file
 		*/
@@ -617,6 +622,7 @@ namespace roadmanager
 		pugi::xml_node root_node_;
 		std::vector<Road*> road_;
 		std::vector<Junction*> junction_;
+		std::string odr_filename_;
 	};
 
 	// Forward declaration of Route

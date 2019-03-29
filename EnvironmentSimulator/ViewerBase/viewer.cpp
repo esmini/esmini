@@ -26,7 +26,7 @@ static int COLOR_BLUE[3] = { 0x33, 0x33, 0xAA };
 static int COLOR_YELLOW[3] = { 0xEE, 0xAA, 0x44 };
 static int COLOR_GRAY[3] = { 0x44, 0x44, 0x44 };
 
-
+//USE_OSGPLUGIN(fbx)
 USE_OSGPLUGIN(osg2)
 USE_SERIALIZER_WRAPPER_LIBRARY(osg)
 USE_SERIALIZER_WRAPPER_LIBRARY(osgSim)
@@ -46,20 +46,26 @@ public:
 
 	// This method gets called for every node in the scene graph. Check each node 
 	// to see if its name matches out target. If so, save the node's address.
-	virtual void apply(osg::Node& node)
+	virtual void apply(osg::Group& node)
 	{
-		if (node.getName() == _name)
+		if (node.getName() == _name )
+		{
+			LOG("Found %s", _name);
 			_node = &node;
+		}
+		else
+		{
 
-		// Keep traversing the rest of the scene graph.
-		traverse(node);
+			// Keep traversing the rest of the scene graph.
+			traverse(node);
+		}
 	}
 
 	osg::Node* getNode() { return _node.get(); }
 
 protected:
 	std::string _name;
-	osg::ref_ptr<osg::Node> _node;
+	osg::ref_ptr<osg::Group> _node;
 };
 
 
@@ -90,6 +96,10 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 		parent->addChild(tx_node);
 
 		wheel_.push_back(tx_node);
+	}
+	else
+	{
+		LOG("Found no wheel node %s in vehicle model %s, ignoring", wheelName, carNode->getName().c_str());
 	}
 	return tx_node;
 }
@@ -125,6 +135,7 @@ CarModel::CarModel(osg::ref_ptr<osg::LOD> lod)
 	// Add car model to a tranform node
 	txNode_ = new osg::PositionAttitudeTransform();
 	txNode_->addChild(node_);
+	txNode_->setName(car_node->getName());
 }
 
 CarModel::~CarModel()
@@ -150,10 +161,23 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
 {
 	// Update wheel angles and rotation for front wheels
 	osg::Quat quat;
+#if 0
 	quat.makeRotate(
 		0, osg::Vec3(1, 0, 0), // Roll
 		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
 		wheel_angle, osg::Vec3(0, 0, 1)); // Heading
+#else
+	quat.makeRotate(
+		0, osg::Vec3(1, 0, 0), // Pitch
+		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
+		wheel_angle, osg::Vec3(0, 0, 1)); // Heading
+#endif
+	if (wheel_.size() < 4)
+	{
+		// Wheels not available
+		return;
+	}
+
 	wheel_[0]->setAttitude(quat);
 	wheel_[1]->setAttitude(quat);
 	
@@ -286,9 +310,9 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	osg::Light *light = osgViewer_->getLight();
 	light->setPosition(osg::Vec4(50000, -50000, 70000, 1));
 	light->setDirection(osg::Vec3(-1, 1, -1));
-	float ambient = 0.6;
+	float ambient = 0.4;
 	light->setAmbient(osg::Vec4(ambient, ambient, 0.9*ambient, 1));
-	light->setDiffuse(osg::Vec4(1, 1, 0.85, 1));
+	light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
 
 	osgViewer_->realize();
 
@@ -352,10 +376,12 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 	osg::ref_ptr<osg::Group> group = new osg::Group;
 	group->addChild(node);
 	group->addChild(shadow_tx);
+	group->setName(FileNameOf(filename));
 
 	lod = new osg::LOD();
 	lod->addChild(group);
 	lod->setRange(0, 0, LOD_DIST);
+	lod->setName(group->getName());
 
 	return lod;
 }
@@ -368,8 +394,8 @@ bool Viewer::ReadCarModels()
 	{
 
 		// Assume the car models resides in the same directory as the main environment model
-		std::string filePath = DirNameOf(modelFilename_);
-		filePath.append("/" + std::string(carModelsFiles_[i]));
+		std::string filePath = DirNameOf(odrManager_->GetOpenDriveFilename());
+		filePath.append("/../models/" + std::string(carModelsFiles_[i]));
 
 		lod = LoadCarModel(filePath.c_str());
 

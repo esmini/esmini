@@ -1028,6 +1028,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		return false;
 	}
 
+	odr_filename_ = filename;
+
 	pugi::xml_node node = doc.child("OpenDRIVE");
 	if (node == NULL)
 	{
