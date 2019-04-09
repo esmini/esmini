@@ -393,7 +393,14 @@ void ScenarioReader::parseOSCPosition(roadmanager::Position &position, pugi::xml
 
 		if (positionChildName == "World")
 		{
-			LOG("%s is not implemented ", positionChildName.c_str());
+			double x = strtod(ReadAttribute(positionChild.attribute("x")));
+			double y = strtod(ReadAttribute(positionChild.attribute("y")));
+			double z = strtod(ReadAttribute(positionChild.attribute("z")));
+			double h = strtod(ReadAttribute(positionChild.attribute("h")));
+			double p = strtod(ReadAttribute(positionChild.attribute("p")));
+			double r = strtod(ReadAttribute(positionChild.attribute("r")));
+			position.SetInertiaPos(x, y, z, h, p, r, true);
+			position.Print();
 		}
 		else if (positionChildName == "RelativeWorld")
 		{
@@ -1129,6 +1136,40 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode, En
 						{
 							trigger->freespace_ = false;
 						}
+						trigger->value_ = strtod(ReadAttribute(condition_node.attribute("value")));
+						trigger->rule_ = ParseRule(ReadAttribute(condition_node.attribute("rule")));
+
+						condition = trigger;
+					}
+					else if (condition_type == "Distance")
+					{
+						TrigByDistance *trigger = new TrigByDistance;
+
+						// Read position
+						pugi::xml_node pos_node = condition_node.child("Position");
+						parseOSCPosition(trigger->position_, pos_node, catalogs);
+
+						std::string freespace_str = ReadAttribute(condition_node.attribute("freespace"));
+						if ((freespace_str == "true") || (freespace_str == "1"))
+						{
+							trigger->freespace_ = true;
+						}
+						else
+						{
+							trigger->freespace_ = false;
+						}
+
+						std::string along_route_str = ReadAttribute(condition_node.attribute("alongRoute"));
+						if ((along_route_str == "true") || (along_route_str == "1"))
+						{
+							LOG("Condition Distance along route not supported yet - falling back to alongeRoute = false");
+							trigger->along_route_ = false;
+						}
+						else
+						{
+							trigger->along_route_ = false;
+						}
+
 						trigger->value_ = strtod(ReadAttribute(condition_node.attribute("value")));
 						trigger->rule_ = ParseRule(ReadAttribute(condition_node.attribute("rule")));
 

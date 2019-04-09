@@ -798,7 +798,21 @@ namespace roadmanager
 		*/
 		double GetR() const { return r_; }
 
+		/**
+		Retrieve the road curvature at current position
+		*/
 		double GetCurvature();
+
+		/**
+		Retrieve the road heading/direction at current position, and in the direction given by current lane
+		*/
+		double GetDrivingDirection();
+
+		/**
+		Retrieve the absolute value of difference between two angles
+		*/
+		double GetAbsAngleDifference(double angle1, double angle2);
+
 
 		void PrintTrackPos();
 		void PrintLanePos();

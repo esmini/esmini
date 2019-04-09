@@ -50,7 +50,7 @@ public:
 	{
 		if (node.getName() == _name )
 		{
-			LOG("Found %s", _name);
+			LOG("Found %s", _name.c_str());
 			_node = &node;
 		}
 		else

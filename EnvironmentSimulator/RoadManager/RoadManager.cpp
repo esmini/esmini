@@ -2481,6 +2481,17 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 	{
 		ds *= -SIGN(GetLaneId()); // adjust sign of ds according to lane direction - right lane is < 0 in road dir
 
+		// Then adjust sign of ds according to vehicle heading relative road direction
+		double h, diff;
+
+		h = GetDrivingDirection();
+		diff = GetAbsAngleDifference(h, h_);
+
+		if (diff > M_PI_4)
+		{
+			ds = -ds;
+		}
+
 		if (s_ + ds > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
 		{
 			link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(SUCCESSOR);
@@ -2492,6 +2503,12 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 		else  // New position is within current track
 		{
 			SetLanePos(track_id_, lane_id_, s_ + ds, offset_);
+
+			// make sure heading is aligned with driving direction
+			if (diff > M_PI_4)   // if driving direction 
+			{
+				h_ = fmod(h_ + M_PI, 2 * M_PI);
+			}
 			return 0;
 		}
 
@@ -2599,6 +2616,34 @@ double Position::GetCurvature()
 	Geometry *geom = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetGeometry(geometry_idx_);
 
 	return(geom->EvaluateCurvatureDS(GetS() - geom->GetS()));
+}
+
+double Position::GetDrivingDirection()
+{
+	double x, y, h;
+	Geometry *geom = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetGeometry(geometry_idx_);
+
+	geom->EvaluateDS(GetS() - geom->GetS(), &x, &y, &h);
+
+	// adjust sign according to side of road
+	h *= -SIGN(GetLaneId());
+	
+	return(h);
+}
+
+double Position::GetAbsAngleDifference(double angle1, double angle2)
+{
+	double diff;
+	angle1 = fmod(angle1, M_PI);
+	angle2 = fmod(angle2, M_PI);
+
+	diff = fabs(angle2 - angle1);
+	if (diff > M_PI)
+	{
+		diff = 2*M_PI - diff;
+	}
+
+	return diff;
 }
 
 void Position::PrintTrackPos()

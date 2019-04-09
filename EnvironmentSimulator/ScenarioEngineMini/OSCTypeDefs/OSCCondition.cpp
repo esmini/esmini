@@ -466,6 +466,36 @@ bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
 	return trig;
 }
 
+bool TrigByDistance::Evaluate(Story *story, double sim_time)
+{
+	(void)story;
+	(void)sim_time;
+
+	bool result = false;
+	bool trig = false;
+	double x, y;
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+	{
+		if (fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(position_, x, y)) < value_)
+		{
+			result = true;
+		}
+
+		if (EvalDone(trig, triggering_entity_rule_))
+		{
+			break;
+		}
+	}
+
+	trig = CheckEdge(result, last_result_, edge_);
+
+	last_result_ = result;
+	evaluated_ = true;
+
+	return trig;
+}
+
 bool TrigByRelativeDistance::Evaluate(Story *story, double sim_time)
 {
 	(void)story;

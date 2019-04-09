@@ -16,13 +16,15 @@ Key commands
 
 	When custom camera model (1) is activated:
 		c: Switch between the following sub models:
-			- RubberBand (damped spring model - imagin camera attached to vhicle via elastic rubberband) 
+			- RubberBand (imagine the camera attached to vehicle via elastic band 
 			- Orbit (camera facing vehicle, rotating around it)
 			- Fixed (fix rotation, always straight behind vehicle) 
 
 	o: Toggle show/hide OpenDRIVE road feature lines
 	m: Toggle show/hide environmnet 3D model
 	s: Graphics performance statistics
+	f: Toggle full screen mode
+	ESC: quit
 
 
 Mouse control
