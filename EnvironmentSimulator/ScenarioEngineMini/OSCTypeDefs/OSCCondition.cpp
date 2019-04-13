@@ -373,6 +373,10 @@ bool TrigBySimulationTime::Evaluate(Story *story, double sim_time)
 
 	bool result = false;
 	bool trig = false;
+	
+	// Special case for simulation time: Since many scenarios use simtime == 0 as start condition, 
+	// consider simtime == 0 as a change (rising from false) by setting evaluated_ = true from start
+	evaluated_ = true;
 
 	result = EvaluateRule(sim_time, value_, rule_);
 
@@ -384,7 +388,6 @@ bool TrigBySimulationTime::Evaluate(Story *story, double sim_time)
 	}
 
 	last_result_ = result;
-	evaluated_ = true;
 
 	return trig;
 }
@@ -447,7 +450,7 @@ bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		if (fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(position_, x, y)) < tolerance_)
+		if (fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y)) < tolerance_)
 		{
 			result = true;
 		}
@@ -474,10 +477,13 @@ bool TrigByDistance::Evaluate(Story *story, double sim_time)
 	bool result = false;
 	bool trig = false;
 	double x, y;
+	double dist;
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		if (fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(position_, x, y)) < value_)
+		dist = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y));
+
+		if (dist < value_)
 		{
 			result = true;
 		}
@@ -488,6 +494,8 @@ bool TrigByDistance::Evaluate(Story *story, double sim_time)
 		}
 	}
 
+	result = EvaluateRule(dist, value_, rule_);
+//	LOG("Distance trig %s? dist: %.2f %s %.2f", name_.c_str(), dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
 	trig = CheckEdge(result, last_result_, edge_);
 
 	last_result_ = result;

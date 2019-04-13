@@ -351,7 +351,7 @@ void ScenarioEngine::parseScenario(double startTime, ExternalControlMode ext_con
 	odrManager = roadmanager::Position::GetOpenDrive();
 
 	scenarioReader.parseParameterDeclaration();
-	scenarioReader.parseCatalogs(catalogs);
+	scenarioReader.parseCatalogs(catalogs, &entities);
 	scenarioReader.parseEntities(entities, &catalogs);
 	scenarioReader.parseInit(init, &entities, &catalogs);
 	scenarioReader.parseStory(story, &entities, &catalogs);

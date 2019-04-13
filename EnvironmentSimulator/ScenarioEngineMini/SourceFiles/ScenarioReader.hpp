@@ -4,6 +4,7 @@
 #include "Entities.hpp"
 #include "Init.hpp"
 #include "Story.hpp"
+#include "OSCPosition.hpp"
 #include "pugixml.hpp"
 
 #include <iostream>
@@ -28,7 +29,7 @@ namespace scenarioengine
 		int loadOSCFile(const char * path, ExternalControlMode ext_control);
 		void loadOSCMem(const pugi::xml_document &xml_doc, const char *path, ExternalControlMode ext_control);
 
-		void LoadCatalog(pugi::xml_node catalogChild, Catalogs *catalogs);
+		void LoadCatalog(pugi::xml_node catalogChild, Entities *entities, Catalogs *catalogs);
 
 		// RoadNetwork
 		void parseRoadNetwork(RoadNetwork &roadNetwork);
@@ -38,8 +39,8 @@ namespace scenarioengine
 		void parseParameterDeclaration();
 
 		// Catalogs
-		void parseCatalogs(Catalogs &catalogs);
-		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode, Catalogs *catalogs);
+		void parseCatalogs(Catalogs &catalogs, Entities *entities);
+		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode, Entities *entities, Catalogs *catalogs);
 		Vehicle* parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *catalogs);
 
 		// Enitites
@@ -49,7 +50,8 @@ namespace scenarioengine
 		// Storyboard - Init
 		void parseInit(Init &init, Entities *entities, Catalogs *catalogs);
 		OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode, Entities *entities, Object *object, Catalogs *catalogs);
-		void parseOSCPosition(roadmanager::Position &position, pugi::xml_node positionNode, Catalogs *catalogs);
+		void parseOSCOrientation(OSCOrientation &orientation, pugi::xml_node orientationNode);
+		OSCPosition *parseOSCPosition(pugi::xml_node positionNode, Entities *entities, Catalogs *catalogs);
 
 		// Storyboard - Story
 		OSCCondition *parseOSCCondition(pugi::xml_node conditionNode, Entities *entities, Catalogs *catalogs);
@@ -77,7 +79,7 @@ namespace scenarioengine
 		ExternalControlMode req_ext_control_;  // Requested Ego (id 0) control mode
 
 		// Use always this method when reading attributes, it will resolve any variables
-		std::string ReadAttribute(pugi::xml_attribute attribute);
+		std::string ReadAttribute(pugi::xml_attribute attribute, bool required = false);
 	};
 
 }

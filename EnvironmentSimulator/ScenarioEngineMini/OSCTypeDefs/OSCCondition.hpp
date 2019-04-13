@@ -7,6 +7,7 @@
 #include "OSCCommon.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
+#include "OSCPosition.hpp"
 
 namespace scenarioengine
 {
@@ -105,7 +106,7 @@ namespace scenarioengine
 	class TrigByReachPosition : public TrigByEntity
 	{
 	public:
-		roadmanager::Position position_;
+		OSCPosition *position_;
 		double tolerance_;
 
 		TrigByReachPosition() : TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
@@ -116,7 +117,7 @@ namespace scenarioengine
 	class TrigByDistance : public TrigByEntity
 	{
 	public:
-		roadmanager::Position position_;
+		OSCPosition *position_;
 		double value_;
 		bool freespace_;
 		bool along_route_;

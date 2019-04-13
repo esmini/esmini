@@ -1,10 +1,10 @@
 #pragma once
-#include "OSCCatalogReference.hpp"
-#include "RoadManager.hpp"
 
 #include <iostream>
 #include <string>
 #include <vector>
+#include "OSCCatalogReference.hpp"
+#include "RoadManager.hpp"
 
 namespace scenarioengine
 {

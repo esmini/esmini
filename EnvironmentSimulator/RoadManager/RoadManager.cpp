@@ -2487,7 +2487,7 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 		h = GetDrivingDirection();
 		diff = GetAbsAngleDifference(h, h_);
 
-		if (diff > M_PI_4)
+		if (diff > M_PI_2)
 		{
 			ds = -ds;
 		}
@@ -2505,7 +2505,7 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 			SetLanePos(track_id_, lane_id_, s_ + ds, offset_);
 
 			// make sure heading is aligned with driving direction
-			if (diff > M_PI_4)   // if driving direction 
+			if (diff > M_PI_2)   
 			{
 				h_ = fmod(h_ + M_PI, 2 * M_PI);
 			}
@@ -2625,22 +2625,28 @@ double Position::GetDrivingDirection()
 
 	geom->EvaluateDS(GetS() - geom->GetS(), &x, &y, &h);
 
-	// adjust sign according to side of road
-	h *= -SIGN(GetLaneId());
-	
+	// adjust 180 degree according to side of road
+	if (GetLaneId() > 0)  // Left side of road reference line
+	{
+		h += M_PI;
+		h = fmod(h, 2 * M_PI);
+	}
+
 	return(h);
 }
 
 double Position::GetAbsAngleDifference(double angle1, double angle2)
 {
-	double diff;
-	angle1 = fmod(angle1, M_PI);
-	angle2 = fmod(angle2, M_PI);
+	double diff = fmod(angle2 - angle1, 2 * M_PI);
 
-	diff = fabs(angle2 - angle1);
+	if (diff < 0)
+	{
+		diff += 2 * M_PI;
+	}
+
 	if (diff > M_PI)
 	{
-		diff = 2*M_PI - diff;
+		diff = 2 * M_PI - diff;
 	}
 
 	return diff;
@@ -2648,22 +2654,22 @@ double Position::GetAbsAngleDifference(double angle1, double angle2)
 
 void Position::PrintTrackPos()
 {
-	LOG("	Track pos: (%d, %.2f, %.2f)\n", track_id_, s_, t_);
+	LOG("	Track pos: (%d, %.2f, %.2f)", track_id_, s_, t_);
 }
 
 void Position::PrintLanePos()
 {
-	LOG("	Lane pos: (%d, %d, %.2f, %.2f)\n", track_id_, lane_id_, s_, offset_);
+	LOG("	Lane pos: (%d, %d, %.2f, %.2f)", track_id_, lane_id_, s_, offset_);
 }
 
 void Position::PrintInertialPos()
 {
-	LOG("	Inertial pos: (%.2f, %.2f, %.2f, %.2f, %.2f, %.2f)\n", x_, y_, z_, h_, p_, r_);
+	LOG("	Inertial pos: (%.2f, %.2f, %.2f, %.2f, %.2f, %.2f)", x_, y_, z_, h_, p_, r_);
 }
 
 void Position::Print()
 {
-	LOG("Position: \n");
+	LOG("Position:");
 	PrintTrackPos();
 	PrintLanePos();
 	PrintInertialPos();

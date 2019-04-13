@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OSCAction.hpp"
+#include "OSCPosition.hpp"
 #include "Entities.hpp"
 #include "CommonMini.hpp"
 
@@ -386,16 +387,16 @@ namespace scenarioengine
 	class PositionAction : public OSCPrivateAction
 	{
 	public:
-		roadmanager::Position position_;
+		OSCPosition *position_;
 
 		PositionAction() : OSCPrivateAction(OSCPrivateAction::Type::POSITION) {}
 
 		void Step(double dt)
 		{
 			(void)dt;
-			object_->pos_ = position_;
+			object_->pos_ = *position_->GetRMPos();
 			LOG("Step %s pos: ", object_->name_.c_str());
-			position_.Print();
+			position_->Print();
 
 			OSCAction::Stop();
 		}
