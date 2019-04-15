@@ -136,6 +136,7 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 		if ( action )
 		{
 			OSCAction::State state = action->state_;
+			//LOG("Action %s state %d", action->name_.c_str(), state);
 			if(edge_ == ConditionEdge::RISING && state == OSCAction::State::ACTIVATED)
 			{
 				trig = true;
@@ -148,10 +149,6 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 			{
 				trig = true;
 			}
-			else
-			{
-				LOG("Unknown edge type: %d", edge_);
-			}
 		}
 	}
 	else if (element_type_ == StoryElementType::ACT)
@@ -163,21 +160,21 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 			Act::State state = act->state_;
 			if (edge_ == ConditionEdge::RISING)
 			{
-				if (state == (Act::State)OSCAction::State::ACTIVATED)
+				if (state == Act::State::ACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::FALLING)
 			{
-				if (state == (Act::State)OSCAction::State::DEACTIVATED)
+				if (state == Act::State::DEACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::ANY)
 			{
-				if (state == (Act::State)OSCAction::State::ACTIVATED || state == (Act::State)OSCAction::State::DEACTIVATED)
+				if (state == Act::State::ACTIVATED || state == Act::State::DEACTIVATED)
 				{
 					trig = true;
 				}
@@ -197,21 +194,21 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 			Event::State state = event->state_;
 			if (edge_ == ConditionEdge::RISING)
 			{
-				if(state == (Event::State)OSCAction::State::ACTIVATED)
+				if(state == Event::State::ACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::FALLING)
 			{
-				if (state == (Event::State)OSCAction::State::DEACTIVATED)
+				if (state == Event::State::DEACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::ANY)
 			{
-				if (state == (Event::State)OSCAction::State::ACTIVATED || state == (Event::State)OSCAction::State::DEACTIVATED)
+				if (state == Event::State::ACTIVATED || state == Event::State::DEACTIVATED)
 				{
 
 					trig = true;

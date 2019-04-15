@@ -394,9 +394,20 @@ void ScenarioReader::parseOSCOrientation(OSCOrientation &orientation, pugi::xml_
 	orientation.h_ = strtod(ReadAttribute(orientationNode.attribute("h")));
 	orientation.p_ = strtod(ReadAttribute(orientationNode.attribute("p")));
 	orientation.r_ = strtod(ReadAttribute(orientationNode.attribute("r")));
-	if (orientationNode.attribute("type"))
+
+	std::string type_str = ReadAttribute(orientationNode.attribute("type"));
+
+	if (type_str == "relative")
 	{
-		LOG("Orientation type not supported, yet");
+		orientation.type_ = OSCOrientation::OrientationType::RELATIVE;
+	}
+	else if (type_str == "absolute")
+	{
+		orientation.type_ = OSCOrientation::OrientationType::ABSOLUTE;
+	}
+	else
+	{
+		LOG("Invalid orientation type: %d", type_str);
 	}
 }
 
@@ -449,6 +460,30 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, Entit
 
 			pos_return = (OSCPosition*)pos;
 		}
+		else if (positionChildName == "RelativeLane")
+		{
+			int dLane;
+			double ds, offset;
+
+			dLane = strtoi(ReadAttribute(positionChild.attribute("dLane")));
+			ds = strtod(ReadAttribute(positionChild.attribute("ds")));
+			offset = strtod(ReadAttribute(positionChild.attribute("offset")));
+			Object *object = FindObjectByName(ReadAttribute(positionChild.attribute("object")), entities);
+
+			// Check for optional Orientation element
+			pugi::xml_node orientation_node = positionChild.child("Orientation");
+			OSCOrientation orientation;
+			if (orientation_node)
+			{
+				parseOSCOrientation(orientation, orientation_node);
+			}
+
+			OSCPositionRelativeLane *pos = new OSCPositionRelativeLane(object, dLane, ds, offset, orientation);
+
+			pos_return = (OSCPosition*)pos;
+
+			LOG("%s is not implemented ", positionChildName.c_str());
+		}
 		else if (positionChildName == "Road")
 		{
 			LOG("%s is not implemented ", positionChildName.c_str());
@@ -481,10 +516,6 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, Entit
 			OSCPositionLane *pos = new OSCPositionLane(road_id, lane_id, s, offset, orientation);
 
 			pos_return = (OSCPosition*)pos;
-		}
-		else if (positionChildName == "RelativeLane")
-		{
-			LOG("%s is not implemented ", positionChildName.c_str());
 		}
 		else if (positionChildName == "Route")
 		{

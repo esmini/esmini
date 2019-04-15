@@ -23,6 +23,7 @@ namespace scenarioengine
 		} OrientationType;
 
 		OSCOrientation() : type_(OrientationType::UNDEFINED), h_(0), p_(0), r_(0) {}
+		OSCOrientation(OrientationType type, double h, double p, double r) : type_(type), h_(h), p_(p), r_(r) {}
 
 		OrientationType type_;
 		double h_; 
@@ -91,16 +92,12 @@ namespace scenarioengine
 	{
 	public:
 		Object *object_;
+		double dx_;
+		double dy_;
+		double dz_;
+		OSCOrientation o_;
 
 		OSCPositionRelativeObject(Object *object, double dx, double dy, double dz, OSCOrientation orientation);
-
-		void Print();
-		void Evaluate();
-		roadmanager::Position *GetRMPos() 
-		{ 
-			Evaluate();
-			return &position_;
-		}
 
 		double GetX() { Evaluate(); return position_.GetX(); }
 		double GetY() { Evaluate(); return position_.GetY(); }
@@ -109,10 +106,33 @@ namespace scenarioengine
 		double GetP() { Evaluate(); return position_.GetP(); }
 		double GetR() { Evaluate(); return position_.GetR(); }
 
-		double dx_;
-		double dy_;
-		double dz_;
+		void Print();
+		void Evaluate();
+		roadmanager::Position *GetRMPos() 
+		{ 
+			Evaluate();
+			return &position_;
+		}
+	};
+
+	class OSCPositionRelativeLane : OSCPosition
+	{
+	public:
+		Object *object_;
+		int dLane_;
+		double ds_;
+		double offset_;
 		OSCOrientation o_;
+
+		OSCPositionRelativeLane(Object *object, int dLane, double ds, double offset, OSCOrientation orientation);
+
+		void Print();
+		void Evaluate();
+		roadmanager::Position *GetRMPos()
+		{
+			Evaluate();
+			return &position_;
+		}
 	};
 
 	class OSCPositionRoute : OSCPosition

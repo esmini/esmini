@@ -279,6 +279,17 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 
 								for (size_t n = 0; n < event->action_.size(); n++)
 								{
+									//LOG("action %s state 1: %d", event->action_[n]->name_.c_str(), event->action_[n]->state_);
+									//LOG("action %s state 2: %d", event->action_[n]->name_.c_str(), event->action_[n]->state_);
+									if (event->action_[n]->state_ == OSCAction::State::TRIGGED)
+									{
+										event->action_[n]->state_ = OSCAction::State::ACTIVATED;
+									}
+									else if (event->action_[n]->state_ == OSCAction::State::ACTIVATED)
+									{
+										event->action_[n]->state_ = OSCAction::State::ACTIVE;
+									}
+
 									if (event->action_[n]->IsActive())
 									{
 										event->action_[n]->Step(deltaSimTime);

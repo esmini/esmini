@@ -643,6 +643,7 @@ namespace roadmanager
 		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
 		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
+		void SetHeading(double heading) { h_ = heading;  }
 		void SetHeadingRelative(double heading) 
 		{ 
 			h_relative_ = heading; 

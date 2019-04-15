@@ -18,6 +18,7 @@ namespace scenarioengine
 		typedef enum
 		{
 			INACTIVE,
+			TRIGGED,
 			ACTIVATED,      // Just activated - this state last for one step
 			ACTIVE,
 			DEACTIVATED,    // Just done/deactivated - this state last for one step
@@ -36,12 +37,12 @@ namespace scenarioengine
 
 		bool IsActive()
 		{
-			return state_ == State::ACTIVATED || state_ == State::ACTIVE;
+			return state_ == State::TRIGGED || state_ == State::ACTIVATED || state_ == State::ACTIVE;
 		}
 
 		virtual void Trig()
 		{
-			state_ = State::ACTIVATED;
+			state_ = State::TRIGGED;
 			LOG("Action %s (%s) trigged", name_.c_str(), basetype2str(base_type_).c_str());
 		}
 
