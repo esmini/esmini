@@ -969,6 +969,44 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				}
 			}
 		}
+		else if (actionChild.name() == std::string("Autonomous"))
+		{
+			AutonomousAction *autonomous = new AutonomousAction;
+
+			std::string activate_str = ReadAttribute(actionChild.attribute("activate"));
+			if (activate_str == "true" || activate_str == "1")
+			{
+				autonomous->activate_ = true;
+			}
+			else if (activate_str == "false" || activate_str == "0")
+			{
+				autonomous->activate_ = false;
+			}
+			else
+			{
+				LOG("Invalid activation value: %s", activate_str.c_str());
+			}
+
+			std::string domain_str = ReadAttribute(actionChild.attribute("domain"));
+			if (domain_str == "longitudinal")
+			{
+				autonomous->domain_ = AutonomousAction::DomainType::LONGITUDINAL;
+			}
+			else if (domain_str == "lateral")
+			{
+				autonomous->domain_ = AutonomousAction::DomainType::LATERAL;
+			}
+			else if (domain_str == "both")
+			{
+				autonomous->domain_ = AutonomousAction::DomainType::BOTH;
+			}
+			else
+			{
+				LOG("Invalid domain: %s", domain_str.c_str());
+			}
+
+			action = autonomous;
+		}
 		else
 		{
 			LOG("%s is not supported", actionChild.name());

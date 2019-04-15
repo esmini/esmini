@@ -111,8 +111,26 @@ bool TrigByState::Evaluate(Story *story, double sim_time)
 	(void)sim_time;
 	bool result = false;
 
+	if (timer_.Started())
+	{
+		if (timer_.DurationS() > delay_)
+		{
+			LOG("Timer expired at %.2f seconds", timer_.DurationS());
+			timer_.Reset();
+			return true;
+		}
+		return false;
+	}
+
 	last_result_ = result;
 	evaluated_ = true;
+
+	if (result && delay_ > 0)
+	{
+		timer_.Start();
+		LOG("Timer started");
+		return false;
+	}
 
 	return result;
 }
@@ -121,6 +139,17 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 {
 	(void)sim_time;
 	bool trig = false;
+
+	if (timer_.Started())
+	{
+		if (timer_.DurationS() > delay_)
+		{
+			LOG("Timer expired at %.2f seconds", timer_.DurationS());
+			timer_.Reset();
+			return true;
+		}
+		return false;
+	}
 
 	if (element_type_ == StoryElementType::SCENE)
 	{
@@ -227,6 +256,13 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 
 	evaluated_ = true;
 
+	if (trig && delay_ > 0)
+	{
+		timer_.Start();
+		LOG("Timer started");
+		return false;
+	}
+
 	return trig;
 }
 
@@ -234,6 +270,17 @@ bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 {
 	(void)sim_time;
 	bool trig = false;
+
+	if (timer_.Started())
+	{
+		if (timer_.DurationS() > delay_)
+		{
+			LOG("Timer expired at %.2f seconds", timer_.DurationS());
+			timer_.Reset();
+			return true;
+		}
+		return false;
+	}
 
 	if (element_type_ == StoryElementType::SCENE)
 	{
@@ -348,6 +395,13 @@ bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 
 	evaluated_ = true;
 
+	if (trig && delay_ > 0)
+	{
+		timer_.Start();
+		LOG("Timer started");
+		return false;
+	}
+
 	return trig;
 }
 
@@ -356,10 +410,28 @@ bool TrigByValue::Evaluate(Story *story, double sim_time)
 	(void)story;
 	(void)sim_time;
 
+	if (timer_.Started())
+	{
+		if (timer_.DurationS() > delay_)
+		{
+			LOG("Timer expired at %.2f seconds", timer_.DurationS());
+			timer_.Reset();
+			return true;
+		}
+		return false;
+	}
+
 	bool result = false;
 
 	last_result_ = result;
 	evaluated_ = true;
+
+	if (result && delay_ > 0)
+	{
+		timer_.Start();
+		LOG("Timer started");
+		return false;
+	}
 
 	return result;
 }
@@ -371,6 +443,17 @@ bool TrigBySimulationTime::Evaluate(Story *story, double sim_time)
 	bool result = false;
 	bool trig = false;
 	
+	if (timer_.Started())
+	{
+		if (timer_.DurationS() > delay_)
+		{
+			LOG("Timer expired at %.2f seconds", timer_.DurationS());
+			timer_.Reset();
+			return true;
+		}
+		return false;
+	}
+
 	// Special case for simulation time: Since many scenarios use simtime == 0 as start condition, 
 	// consider simtime == 0 as a change (rising from false) by setting evaluated_ = true from start
 	evaluated_ = true;
@@ -386,6 +469,13 @@ bool TrigBySimulationTime::Evaluate(Story *story, double sim_time)
 
 	last_result_ = result;
 
+	if (trig && delay_ > 0)
+	{
+		timer_.Start();
+		LOG("Timer started");
+		return false;
+	}
+
 	return trig;
 }
 
@@ -397,6 +487,17 @@ bool TrigByTimeHeadway::Evaluate(Story *story, double sim_time)
 	bool result = false;
 	bool trig = false;
 	double rel_dist, hwt;
+
+	if (timer_.Started())
+	{
+		if (timer_.DurationS() > delay_)
+		{
+			LOG("Timer expired at %.2f seconds", timer_.DurationS());
+			timer_.Reset();
+			return true;
+		}
+		return false;
+	}
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
@@ -433,6 +534,13 @@ bool TrigByTimeHeadway::Evaluate(Story *story, double sim_time)
 	last_result_ = result;
 	evaluated_ = true;
 
+	if (trig && delay_ > 0)
+	{
+		timer_.Start();
+		LOG("Timer started");
+		return false;
+	}
+
 	return trig;
 }
 
@@ -444,6 +552,17 @@ bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
 	bool result = false;
 	bool trig = false;
 	double x, y;
+
+	if (timer_.Started())
+	{
+		if (timer_.DurationS() > delay_)
+		{
+			LOG("Timer expired at %.2f seconds", timer_.DurationS());
+			timer_.Reset();
+			return true;
+		}
+		return false;
+	}
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
@@ -463,6 +582,13 @@ bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
 	last_result_ = result;
 	evaluated_ = true;
 
+	if (trig && delay_ > 0)
+	{
+		timer_.Start();
+		LOG("Timer started");
+		return false;
+	}
+
 	return trig;
 }
 
@@ -475,6 +601,17 @@ bool TrigByDistance::Evaluate(Story *story, double sim_time)
 	bool trig = false;
 	double x, y;
 	double dist;
+
+	if (timer_.Started())
+	{
+		if (timer_.DurationS() > delay_)
+		{
+			LOG("Timer expired at %.2f seconds", timer_.DurationS());
+			timer_.Reset();
+			return true;
+		}
+		return false;
+	}
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
@@ -492,12 +629,18 @@ bool TrigByDistance::Evaluate(Story *story, double sim_time)
 	}
 
 	result = EvaluateRule(dist, value_, rule_);
-//	LOG("Distance trig %s? dist: %.2f %s %.2f", name_.c_str(), dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+//	LOG("Distance trig %s? dist: %.2f %s %.2f x %.2f y %.2f", name_.c_str(), dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str(), x, y);
 	trig = CheckEdge(result, last_result_, edge_);
 
 	last_result_ = result;
 	evaluated_ = true;
 
+	if (trig && delay_ > 0)
+	{
+		timer_.Start();
+		LOG("Timer started");
+		return false;
+	}
 	return trig;
 }
 
@@ -509,6 +652,17 @@ bool TrigByRelativeDistance::Evaluate(Story *story, double sim_time)
 	bool result = false;
 	bool trig = false;
 	double rel_dist, rel_intertial_dist, x, y;
+
+	if (timer_.Started())
+	{
+		if (timer_.DurationS() > delay_)
+		{
+			LOG("Timer expired at %.2f seconds", timer_.DurationS());
+			timer_.Reset();
+			return true;
+		}
+		return false;
+	}
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
@@ -547,6 +701,13 @@ bool TrigByRelativeDistance::Evaluate(Story *story, double sim_time)
 
 	last_result_ = result;
 	evaluated_ = true;
+
+	if (trig && delay_ > 0)
+	{
+		timer_.Start();
+		LOG("Timer started");
+		return false;
+	}
 
 	return trig;
 }

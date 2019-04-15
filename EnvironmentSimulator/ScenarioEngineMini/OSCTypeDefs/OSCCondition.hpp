@@ -16,6 +16,24 @@ namespace scenarioengine
 	class Story;
 	class Act;
 
+	class Timer
+	{
+	public:
+		__int64 start_time_;
+
+		Timer() : start_time_(0) {}
+		void Start() 
+		{ 
+			start_time_ = SE_getSystemTime(); 
+		}
+		
+		void Reset() { start_time_ = 0; }
+
+		bool Started() { return start_time_ > 0 ? true : false; }
+		double DurationS() { return 1E-3 * (SE_getSystemTime() - start_time_);  }
+		
+	};
+	
 	class OSCCondition
 	{
 	public:
@@ -41,6 +59,7 @@ namespace scenarioengine
 		bool evaluated_;
 		bool last_result_;  // result from last evaluation
 		ConditionEdge edge_;
+		Timer timer_;
 
 		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false), last_result_(false), edge_(ConditionEdge::ANY) {}
 

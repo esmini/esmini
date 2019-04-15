@@ -433,4 +433,43 @@ namespace scenarioengine
 		}
 	};
 
+	class AutonomousAction : public OSCPrivateAction
+	{
+	public:
+		typedef enum
+		{
+			LONGITUDINAL,
+			LATERAL,
+			BOTH
+		} DomainType;
+
+		DomainType domain_;
+		bool activate_;
+
+		AutonomousAction() : OSCPrivateAction(OSCPrivateAction::Type::AUTONOMOUS) {}
+
+		void Step(double dt) { }  // put driver model here
+
+		void Trig()
+		{
+			if (object_->extern_control_)
+			{
+				// motion control handed over 
+				return;
+			}
+
+			if (activate_ == true)
+			{
+				// activate driver model
+				LOG("Non existing driver model activated");
+			}
+			else
+			{
+				// activate driver model
+				LOG("Non existing driver model deactivated");
+			}
+
+			OSCAction::Trig();
+		}
+	};
 }
