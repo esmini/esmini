@@ -97,7 +97,7 @@ static void viewer_thread(void *args)
 	int firstScenarioVehicle = scenarioEngine->GetExtControl() == true ? 1 : 0;
 
 	// Create viewer
-	scenarioViewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), *parser);
+	scenarioViewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), *parser, scenarioEngine->GetExtControl());
 
 	// Create Ego vehicle, 
 	if (scenarioEngine->GetExtControl())

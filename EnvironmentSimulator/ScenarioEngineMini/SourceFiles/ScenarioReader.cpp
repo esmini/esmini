@@ -115,6 +115,12 @@ void ScenarioReader::LoadCatalog(pugi::xml_node catalogChild, Entities *entities
 
 	std::string filename = ReadAttribute(catalogChild.child("Directory").attribute("path"));
 
+	if (filename == "")
+	{
+		LOG("Catalog %s missing filename - ignoring", catalogChild.name());
+		return;
+	}
+
 	// Filename should be relative the XOSC file
 	std::string path = DirNameOf(oscFilename) + "/" + filename;
 	pugi::xml_parse_result result = catalog_doc.load_file(path.c_str());
@@ -158,6 +164,27 @@ void ScenarioReader::LoadCatalog(pugi::xml_node catalogChild, Entities *entities
 		{
 			Vehicle *vehicle_item = parseOSCVehicle(vehicle_n, catalogs);
 			catalog->AddEntry(new Entry(Entry::Type::VEHICLE, vehicle_item->name_, (void*)vehicle_item));
+		}
+		catalogs->AddCatalog(catalog);
+	}
+	else if (catalogsChildName == "ManeuverCatalog")
+	{
+		Catalog *catalog = new Catalog();
+		catalog->name_ = ReadAttribute(catalog_node.attribute("name"));
+		if (catalog->name_ == "")
+		{
+			LOG("Warning: Maneuever catalog lacks name");
+		}
+
+		for (pugi::xml_node maneuver_n = catalog_node.first_child(); maneuver_n; maneuver_n = maneuver_n.next_sibling())
+		{
+			std::string manever_name = ReadAttribute(maneuver_n.attribute("name"));
+
+			// To copy a XML node it needs to be put into a XML doc
+			pugi::xml_document *xml_doc = new pugi::xml_document;
+			xml_doc->append_copy(maneuver_n);
+			
+			catalog->AddEntry(new Entry(Entry::Type::MANEUVER, manever_name, (void*)xml_doc));
 		}
 		catalogs->AddCatalog(catalog);
 	}
@@ -312,7 +339,7 @@ roadmanager::Route* ScenarioReader::parseOSCRoute(pugi::xml_node routeNode, Enti
 	return route;
 }
 
-void ScenarioReader::parseCatalogs(Catalogs &catalogs, Entities *entities) 
+void ScenarioReader::parseCatalogs(Catalogs &catalogs, Entities *entities)
 {
 	LOG("Parsing Catalogs");
 
@@ -1577,7 +1604,28 @@ void ScenarioReader::parseStory(std::vector<Story*> &storyVector, Entities *enti
 
 						for (pugi::xml_node catalog_n = actChild.child("CatalogReference"); catalog_n; catalog_n = catalog_n.next_sibling("CatalogReference"))
 						{
-							LOG("Catalog reference not implemented yet (%s)", catalog_n.name());
+							// Maneuver catalog reference. The catalog entry is simply the maneuver XML node
+							Entry *entry = catalogs->FindCatalogEntry(ReadAttribute(catalog_n.attribute("catalogName")), ReadAttribute(catalog_n.attribute("entryName")));
+							if (entry == 0)
+							{
+								LOG("Failed to look up catalog entry %s, %s",
+									ReadAttribute(catalog_n.attribute("catalogName")).c_str(), ReadAttribute(catalog_n.attribute("entryName")).c_str());
+							}
+							else if (entry->type_ == Entry::Type::MANEUVER)
+							{
+								// Make a new instance from catalog entry 
+								pugi::xml_document *xml_doc = (pugi::xml_document*)entry->GetElement();
+								pugi::xml_node node = xml_doc->first_child();  // xml node stored as first and only child in document
+
+								OSCManeuver *maneuver = new OSCManeuver;
+
+								parseOSCManeuver(maneuver, node, entities, sequence, catalogs);
+								sequence->maneuver_.push_back(maneuver);
+							}
+							else
+							{
+								LOG("Entity of type %s not supported yet", entry->Type2Str(entry->type_).c_str());
+							}
 						}
 
 						for (pugi::xml_node maneuver_n = actChild.child("Maneuver"); maneuver_n; maneuver_n = maneuver_n.next_sibling("Maneuver"))

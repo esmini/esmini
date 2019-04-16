@@ -190,7 +190,7 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
 	wheel_[3]->setAttitude(quat);
 }
 
-Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments)
+Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines)
 {
 	odrManager_ = odrManager;
 	modelFilename_ = modelFilename;
@@ -240,12 +240,12 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 		LOG("Viewer::Viewer Failed to create road lines!\n");
 	}
 
-	if (!CreateVehicleLineAndPoint(rootnode_))
+	if (create_ego_debug_lines && !CreateVehicleLineAndPoint(rootnode_))
 	{
 		LOG("Viewer::Viewer Failed to create vehicle line!\n");
 	}
 
-	if (!CreateDriverModelLineAndPoint(rootnode_))
+	if (create_ego_debug_lines && !CreateDriverModelLineAndPoint(rootnode_))
 	{
 		LOG("Viewer::Viewer Failed to create driver model line and point!\n");
 	}
