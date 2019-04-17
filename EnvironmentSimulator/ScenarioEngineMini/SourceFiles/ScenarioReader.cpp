@@ -248,6 +248,37 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 	LOG("Scenegraph: %s", roadNetwork.SceneGraph.filepath.c_str());
 }
 
+void ScenarioReader::ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node)
+{
+	pugi::xml_node properties_node = xml_node.child("Properties");
+	if (properties_node != NULL)
+	{
+		for (pugi::xml_node propertiesChild = properties_node.first_child(); propertiesChild; propertiesChild = propertiesChild.next_sibling())
+		{
+			if (!strcmp(propertiesChild.name(), "File"))
+			{
+				properties.file_.filepath_ = ReadAttribute(propertiesChild.attribute("filepath"));
+				if (properties.file_.filepath_ != "")
+				{
+					LOG("Properties/File = %s registered", properties.file_.filepath_.c_str());
+				}
+			}
+			else if (!strcmp(propertiesChild.name(), "Property"))
+			{
+				OSCProperties::Property property;
+				property.name_ = ReadAttribute(propertiesChild.attribute("name"));
+				property.value_ = ReadAttribute(propertiesChild.attribute("value"));
+				properties.property_.push_back(property);
+				LOG("Property %s = %s registered", property.name_.c_str(), property.value_.c_str());
+			}
+			else
+			{
+				LOG("Unexpected property element: %s", propertiesChild.name());
+			}
+		}
+	}
+}
+
 Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *catalogs)
 {
 	(void)catalogs;
@@ -258,43 +289,39 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *c
 	LOG("Parsing Vehicle %s", vehicle->name_.c_str());
 	vehicle->SetCategory(ReadAttribute(vehicleNode.attribute("category")));
 
-	pugi::xml_node properties_node = vehicleNode.child("Properties");
-	if (properties_node != NULL)
-	{
-		for (pugi::xml_node propertiesChild = properties_node.first_child(); propertiesChild; propertiesChild = propertiesChild.next_sibling())
-		{
-			if (!strcmp(propertiesChild.name(), "File"))
-			{
-				LOG("Property File not supported");
-				continue;
-			}
-			std::string prop_name = ReadAttribute(propertiesChild.attribute("name"));
-			std::string prop_value = ReadAttribute(propertiesChild.attribute("value"));
+	OSCProperties properties;
+	ParseOSCProperties(properties, vehicleNode);
 
-			// Check if the property is something supported
-			if (prop_name == "control")
+	for(size_t i=0; i<properties.property_.size(); i++)
+	{
+		// Check if the property is something supported
+		if (properties.property_[i].name_ == "control")
+		{
+			// check that external control has not been overridden
+			if (req_ext_control_ == ExternalControlMode::EXT_CONTROL_BY_OSC)
 			{
-				// check that external control has not been overridden
-				if (req_ext_control_ == ExternalControlMode::EXT_CONTROL_BY_OSC)
+				if (properties.property_[i].value_ == "external")
 				{
-					if (prop_value == "external")
-					{
-						vehicle->extern_control_ = true;
-					}
-					else
-					{
-						vehicle->extern_control_ = false;
-					}
+					vehicle->extern_control_ = true;
+				}
+				else
+				{
+					vehicle->extern_control_ = false;
 				}
 			}
-			else if (prop_name == "model_id")
-			{
-				vehicle->model_id_ = strtoi(prop_value);
-			}
-			else
-			{
-				LOG("Unsupported property: %s", prop_name.c_str());
-			}
+		}
+		else if (properties.property_[i].name_ == "model_id")
+		{
+			vehicle->model_id_ = strtoi(properties.property_[i].value_);
+		}
+		else
+		{
+			LOG("Unsupported property: %s", properties.property_[i].name_.c_str());
+		}
+
+		if (properties.file_.filepath_ != "")
+		{
+			vehicle->model_filepath_ = properties.file_.filepath_;
 		}
 	}
 

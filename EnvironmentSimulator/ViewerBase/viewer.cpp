@@ -327,9 +327,26 @@ Viewer::~Viewer()
 	cars_.clear();
 }
 
-CarModel* Viewer::AddCar(int modelId)
+CarModel* Viewer::AddCar(std::string modelFilepath)
 {
-	cars_.push_back(new CarModel(carModels_[modelId]));
+	if (modelFilepath == "")
+	{
+		LOG("No filename specified for car model!");
+		return 0;
+	}
+
+	// Load 3D model
+	std::string filePath = DirNameOf(odrManager_->GetOpenDriveFilename());
+	filePath.append("/../models/" + modelFilepath);
+
+	osg::ref_ptr<osg::LOD> lod = LoadCarModel(filePath.c_str());
+	if (lod == 0)
+	{
+		LOG("Failed to load car model: %s", modelFilepath.c_str());
+		return 0;
+	}
+
+	cars_.push_back(new CarModel(lod));
 	rootnode_->addChild(cars_.back()->txNode_);
 	// Focus on first added car
 	if (cars_.size() == 1)

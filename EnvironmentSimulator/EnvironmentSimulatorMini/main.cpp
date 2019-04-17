@@ -32,7 +32,7 @@ void viewer_thread(void *args)
 	//  Create cars for visualization
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		viewer->AddCar(scenarioEngine->entities.object_[i]->model_id_);
+		viewer->AddCar(scenarioEngine->entities.object_[i]->model_filepath_);
 	}
 
 	while (!viewer->osgViewer_->done())

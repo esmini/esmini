@@ -11,17 +11,18 @@ using namespace osg;
 using namespace osgGA;
 
 const float springFC = 16.0f;
-const float orbitCameraDistance = 16.0f;
-const float orbitCameraAngle = 15.0f;
+const float orbitCameraDistance = 20.0f;
+const float orbitCameraAngle = 13.0f;
+const float orbitCameraRotation = -17.0f;
 
 #define MAX(a, b) ((a)>(b) ? (a) : (b))
 
 RubberbandManipulator::RubberbandManipulator(unsigned int mode)
 {
 	setMode(mode);
-	_cameraRotation = 0;
 	_cameraAngle = orbitCameraAngle;
 	_cameraDistance = orbitCameraDistance;
+	_cameraRotation = orbitCameraRotation;
 }
 
 RubberbandManipulator::~RubberbandManipulator()

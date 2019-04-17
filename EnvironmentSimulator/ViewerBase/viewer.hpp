@@ -88,7 +88,7 @@ namespace viewer
 
 		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines = false);
 		~Viewer();
-		CarModel* AddCar(int modelId);
+		CarModel* AddCar(std::string modelFilepath);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
 		void UpdateDriverModelPoint(roadmanager::Position *pos, double distance);

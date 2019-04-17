@@ -22,7 +22,13 @@ static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static vehicle::Vehicle *ego;
 
-static bool viewer_running = false;
+typedef enum {
+	VIEWER_NOT_STARTED,
+	VIEWER_RUNNING,
+	VIEWER_QUIT
+} ViewerState;
+
+static ViewerState viewer_state = ViewerState::VIEWER_NOT_STARTED; 
 static ScenarioEngine *scenarioEngine;
 static viewer::Viewer *scenarioViewer;
 
@@ -102,14 +108,19 @@ static void viewer_thread(void *args)
 	// Create Ego vehicle, 
 	if (scenarioEngine->GetExtControl())
 	{
-		egoCar->graphics_model = scenarioViewer->AddCar(0);
+		egoCar->graphics_model = scenarioViewer->AddCar(carModelsFiles_[0]);
 		egoCar->vehicle = new vehicle::Vehicle(egoCar->pos->GetX(), egoCar->pos->GetY(), egoCar->pos->GetH(), egoCar->graphics_model->size_x);
 	}
 
 	//  Create cars for visualization
 	for (size_t i = firstScenarioVehicle; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		scenarioViewer->AddCar(scenarioEngine->entities.object_[i]->model_id_);
+		if (scenarioViewer->AddCar(scenarioEngine->entities.object_[i]->model_filepath_) == 0)
+		{
+			delete scenarioViewer;
+			viewer_state = ViewerState::VIEWER_QUIT;
+			return;
+		}
 	}
 
 	while (!scenarioViewer->osgViewer_->done())
@@ -145,12 +156,12 @@ static void viewer_thread(void *args)
 
 		scenarioViewer->osgViewer_->frame();
 
-		viewer_running = true;
+		viewer_state = ViewerState::VIEWER_RUNNING;
 	}
 
 	delete scenarioViewer;
 
-	viewer_running = false;
+	viewer_state = ViewerState::VIEWER_QUIT;
 }
 
 void log_callback(const char *str)
@@ -244,13 +255,13 @@ int main(int argc, char** argv)
 	thread.Start(viewer_thread, &arguments);
 
 	// Wait for the viewer to launch
-	while (!viewer_running) SE_sleep(100);
+	while (viewer_state == ViewerState::VIEWER_NOT_STARTED) SE_sleep(100);
 
 	try
 	{
 		__int64 now, lastTimeStamp = 0;
 
-		while (viewer_running)
+		while (viewer_state == ViewerState::VIEWER_RUNNING)
 		{
 			// Get milliseconds since Jan 1 1970
 			now = SE_getSystemTime();

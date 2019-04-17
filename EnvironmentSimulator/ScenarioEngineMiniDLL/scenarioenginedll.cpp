@@ -94,7 +94,7 @@ void viewer_thread(void*)
 
 				// Choose model from index - wrap to handle more vehicles than models
 				int carModelID = o->state_.model_id;
-				new_sc.carModel = scViewer->AddCar(carModelID);
+				new_sc.carModel = scViewer->AddCar(carModelsFiles_[carModelID]);
 
 				// Add it to the list of scenario cars
 				scenarioCar.push_back(new_sc);

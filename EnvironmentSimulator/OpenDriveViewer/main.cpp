@@ -80,7 +80,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 						car_->road_id_init = odrManager->GetRoadByIdx(r)->GetId();
 						car_->lane_id_init = lane_id;						
 						car_->pos = new roadmanager::Position(odrManager->GetRoadByIdx(r)->GetId(), lane_id, s_aligned, 0);
-						car_->model = viewer->AddCar(carModelID);
+						car_->model = viewer->AddCar(carModelsFiles_[carModelID]);
 						car_->speed = lane_speed;
 						car_->id = cars.size();
 						cars.push_back(car_);

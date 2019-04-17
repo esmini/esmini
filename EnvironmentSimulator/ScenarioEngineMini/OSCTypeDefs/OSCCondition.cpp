@@ -629,7 +629,7 @@ bool TrigByDistance::Evaluate(Story *story, double sim_time)
 	}
 
 	result = EvaluateRule(dist, value_, rule_);
-//	LOG("Distance trig %s? dist: %.2f %s %.2f x %.2f y %.2f", name_.c_str(), dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str(), x, y);
+	//LOG("Distance trig %s? dist: %.2f %s %.2f x %.2f y %.2f", name_.c_str(), dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str(), x, y);
 	trig = CheckEdge(result, last_result_, edge_);
 
 	last_result_ = result;

@@ -5,6 +5,7 @@
 #include "Init.hpp"
 #include "Story.hpp"
 #include "OSCPosition.hpp"
+#include "OSCProperties.hpp"
 #include "pugixml.hpp"
 
 #include <iostream>
@@ -41,6 +42,7 @@ namespace scenarioengine
 		// Catalogs
 		void parseCatalogs(Catalogs &catalogs, Entities *entities);
 		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode, Entities *entities, Catalogs *catalogs);
+		void ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node);
 		Vehicle* parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *catalogs);
 
 		// Enitites
