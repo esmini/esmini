@@ -6,3 +6,6 @@ build_ubuntu_clang/*
 *.swp
 *~
 *.pdb
+log.txt
+externals/OpenSceneGraph
+resources/models
