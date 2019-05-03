@@ -1,0 +1,1 @@
+..\..\bin\win64\Release\ScenarioViewer.exe ../../resources/xosc/cut-in.xosc

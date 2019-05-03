@@ -1,0 +1,2 @@
+set PATH=%PATH%;..\..\externals\OpenSceneGraph\bin;..\..\externals\OpenSceneGraph\bin\osgPlugins-3.6.0
+..\..\bin\win64\Release\OpenDriveViewer.exe --odr ..\..\resources\xodr\soderleden.xodr --model ..\..\resources\models\soderleden.osgb --debug 0.5 --window 50 50 1000 600 %*
