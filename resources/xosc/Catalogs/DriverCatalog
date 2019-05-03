@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<OpenSCENARIO>
+
+    <FileHeader revMajor="0" revMinor="9" date="2018-11-8T17:00:00" author="Erik Gunnarsson"/>
+
+    <Catalog name="DriverCatalog">
+
+        <Driver name="DefaultDriver">
+            <Description weight="80" height="1.8" eyeDistance="0.06" age="30" sex="male" />
+        </Driver>
+
+    </Catalog>
+</OpenSCENARIO>
