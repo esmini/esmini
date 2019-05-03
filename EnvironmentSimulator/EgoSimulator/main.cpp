@@ -1,6 +1,22 @@
+/* 
+ * esmini - Environment Simulator Minimalistic 
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * 
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
+/*
+ * This application is an example of how to integrate a simple Ego vehicle into the environment simulator
+ * The vehicle is implemented in a separate module (vehicle.cpp)
+ * Communication is by means of function calls
+ */
 
 #include <iostream>
-
 
 #include "vehicle.hpp"
 #include "viewer.hpp"

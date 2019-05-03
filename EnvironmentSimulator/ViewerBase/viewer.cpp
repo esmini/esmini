@@ -1,3 +1,14 @@
+/* 
+ * esmini - Environment Simulator Minimalistic 
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * 
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
 
 #include "viewer.hpp"
 
@@ -640,6 +651,10 @@ void Viewer::UpdateVehicleLineAndPoints(roadmanager::Position *pos)
 	track_pos.SetTrackPos(pos->GetTrackId(), pos->GetS(), 0);
 	lane_pos.SetLanePos(pos->GetTrackId(), pos->GetLaneId(), pos->GetS(), 0);
 
+	if (!pointData)
+	{
+		return;
+	}
 	pointData->clear();
 	pointData->push_back(osg::Vec3d(track_pos.GetX(), track_pos.GetY(), track_pos.GetZ() + z_offset));
 	pointData->push_back(osg::Vec3d(lane_pos.GetX(), lane_pos.GetY(), lane_pos.GetZ() + z_offset));
@@ -650,6 +665,10 @@ void Viewer::UpdateVehicleLineAndPoints(roadmanager::Position *pos)
 	// Line
 	osg::ref_ptr<osg::PositionAttitudeTransform> tx = cars_[0]->txNode_;
 
+	if (!vertexData)
+	{
+		return;
+	}
 	vertexData->clear();
 	vertexData->push_back(osg::Vec3d(tx->getPosition().x(), tx->getPosition().y(), tx->getPosition().z() + 0.5));
 	vertexData->push_back(osg::Vec3d(lane_pos.GetX(), lane_pos.GetY(), lane_pos.GetZ() + z_offset));
@@ -669,6 +688,10 @@ void Viewer::UpdateDriverModelPoint(roadmanager::Position *pos, double distance)
 	double z_offset = 0.1;
 
 	// Point
+	if (!dm_steering_target_point_data_)
+	{
+		return;
+	}
 	dm_steering_target_point_data_->clear();
 	dm_steering_target_point_data_->push_back(osg::Vec3d(steering_target_global[0], steering_target_global[1], steering_target_global[2] + z_offset));
 	dm_steering_target_point_->dirtyGLObjects();

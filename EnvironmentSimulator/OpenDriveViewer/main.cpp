@@ -1,3 +1,25 @@
+/* 
+ * esmini - Environment Simulator Minimalistic 
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * 
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
+ /*
+  * The purpose of this application is to support development of the RoadManager by visualizing the road network and moving objects on top.
+  * Bascially it loads an OpenDRIVE file, and optionally a corresponding 3D model, and then populate vehicles at specified density. The 
+  * vehicles will simply follow it's lane until a potential junction where the choice of route is randomized.
+  *
+  * The application can be used both to debug the RoadManager and to check OpenDRIVE files, e.g. w.r.t. gemoetry, lanes and connectivity.
+  *
+  * New road/track segments is indicated by a yellow large dot. Geometry segments within a road are indicated by red dots.
+  * Red line is the reference lane, blue lines shows drivable lanes. Non-drivable lanes are currently not indicated. 
+  */
 
 #include <random>
 #include <iostream>

@@ -1,8 +1,23 @@
+/* 
+ * esmini - Environment Simulator Minimalistic 
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * 
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
+ /*
+  * This application is a minimalistic example of how to make use of the scenarioengine DLL to simply play and view OpenSCENARIO files
+  * In addition to Init and Step, it shows how to retrieve the state of scenario objects.
+  */
 
 #include "stdio.h"
-#include "scenarioenginedll.h"
+#include "scenarioenginedll.hpp"
 #include "CommonMini.hpp"
-
 
 
 #define MAX_N_OBJECTS 10
@@ -26,7 +41,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	if (SE_Init(argv[1], 0, 1, 0) != 0)
+	if (SE_Init(argv[1], 1, 1, 0) != 0)
 	{
 		LOG("Failed to load %s", argv[1]);
 		return -1;

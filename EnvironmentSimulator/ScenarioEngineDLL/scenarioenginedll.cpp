@@ -1,6 +1,16 @@
+/* 
+ * esmini - Environment Simulator Minimalistic 
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * 
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
 
-
-#include "scenarioenginedll.h"
+#include "scenarioenginedll.hpp"
 #include "ScenarioEngine.hpp"
 
 using namespace scenarioengine;
@@ -9,27 +19,27 @@ using namespace scenarioengine;
 
 #ifdef _SCENARIO_VIEWER
 
-	#include "viewer.hpp"
-	#include "RubberbandManipulator.h"
+#include "viewer.hpp"
+#include "RubberbandManipulator.hpp"
 
-	#define VISUALIZE_DRIVER_MODEL_TARGET
-	#define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
+#define VISUALIZE_DRIVER_MODEL_TARGET 0
+#define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
 
-	typedef struct
-	{
-		int id;
-		viewer::CarModel *carModel;
-		roadmanager::Position pos;
-	} ScenarioCar;
+typedef struct
+{
+	int id;
+	viewer::CarModel *carModel;
+	roadmanager::Position pos;
+} ScenarioCar;
 
-	static std::vector<ScenarioCar> scenarioCar;
+static std::vector<ScenarioCar> scenarioCar;
 
-	static viewer::Viewer *scViewer = 0;
+static viewer::Viewer *scViewer = 0;
 
 
-	static bool closing = false;
-	static SE_Thread thread;
-	static SE_Mutex mutex;
+static bool closing = false;
+static SE_Thread thread;
+static SE_Mutex mutex;
 
 #endif
 
@@ -72,7 +82,7 @@ void viewer_thread(void*)
 	}
 
 	// Initialize the viewer
-	scViewer = new viewer::Viewer(roadManager, scenarioEngine->getSceneGraphFilename().c_str(), osg::ArgumentParser(&argc, argv));
+	scViewer = new viewer::Viewer(roadManager, scenarioEngine->getSceneGraphFilename().c_str(), osg::ArgumentParser(&argc, argv), VISUALIZE_DRIVER_MODEL_TARGET);
 
 	// Update graphics - until close request or viewer terminated 
 	while (!closing)
@@ -115,7 +125,7 @@ void viewer_thread(void*)
 			c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
 		}
 
-#ifdef VISUALIZE_DRIVER_MODEL_TARGET
+#if VISUALIZE_DRIVER_MODEL_TARGET
 		// Update debug visualization items (road positions, steering target and such)
 		// Assume first car to be the Ego (Vehicle Under Test)
 		if (scenarioCar.size() > 0)
@@ -132,7 +142,7 @@ void viewer_thread(void*)
 
 #endif
 
-static void resetScenario(void )
+static void resetScenario(void)
 {
 #ifdef _SCENARIO_VIEWER
 	if (scViewer != 0)
@@ -199,7 +209,7 @@ extern "C"
 			LOG("use_viewer flag set, but no viewer available (compiled without -D _SCENARIO_VIEWWER");
 		}
 #endif	
-		
+
 		// Create scenario engine
 		try
 		{
@@ -240,7 +250,7 @@ extern "C"
 
 		// Step scenario engine - zero time - just to reach init state
 		// Report all vehicles initially - to communicate initial position for external vehicles as well
-		scenarioEngine->step(0.0, true); 
+		scenarioEngine->step(0.0, true);
 
 		return 0;
 	}
@@ -284,7 +294,7 @@ extern "C"
 		{
 			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, ext_control, timestamp, x, y, z, h, p, r, speed));
 		}
-		
+
 		return 0;
 	}
 
@@ -294,7 +304,7 @@ extern "C"
 		{
 			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, ext_control, timestamp, roadId, laneId, laneOffset, s, speed));
 		}
-		
+
 		return 0;
 	}
 

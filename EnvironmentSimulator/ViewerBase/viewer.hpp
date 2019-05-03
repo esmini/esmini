@@ -1,3 +1,15 @@
+/* 
+ * esmini - Environment Simulator Minimalistic 
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * 
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
 #ifndef VIEWER_HPP_
 #define VIEWER_HPP_
 
@@ -7,7 +19,7 @@
 #include <osg/MatrixTransform>
 #include <string>
 
-#include "RubberbandManipulator.h"
+#include "RubberbandManipulator.hpp"
 #include "RoadManager.hpp"
 
 static const char* carModelsFiles_[] =

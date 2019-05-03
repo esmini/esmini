@@ -1,3 +1,28 @@
+/* 
+ * esmini - Environment Simulator Minimalistic 
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * 
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
+ /*
+  * This application is an example of how to use the ScenarioEngine and Viewer modules to play and view scenarios.
+  *
+  * Instead of linking with the ScenarioEngineDLL it links all needed library functions statically into the 
+  * all-inclusive executable.
+  *
+  * The Viewer is driven in a separate thread to enable camera movement even if simulation is paused.
+  *
+  * A simpler solution is to move the Viewer handling to the main loop, i.e:
+  *   Creation of Viewer and Vehicles visual models should be done after scenario engine initialization
+  *   Vehicle position update and Viewer->frame() call part of the main loop.
+  */
+
 #include <iostream>
 #include <string>
 #include <random>

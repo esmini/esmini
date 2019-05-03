@@ -1,3 +1,18 @@
+/* 
+ * esmini - Environment Simulator Minimalistic 
+ * https://github.com/esmini/esmini
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * 
+ * Copyright (c) partners of Simulation Scenarios
+ * https://sites.google.com/view/simulationscenarios
+ */
+
+ /*
+  * This application uses the Replay class to read and replay binary recordings of previously executed scenarios
+  */
 
 #include <random>
 #include <iostream>
@@ -7,7 +22,7 @@
 #include "viewer.hpp"
 #include "ScenarioGateway.hpp"
 #include "RoadManager.hpp"
-#include "RubberbandManipulator.h"
+#include "RubberbandManipulator.hpp"
 #include "CommonMini.hpp"
 #include "Replay.hpp"
 
