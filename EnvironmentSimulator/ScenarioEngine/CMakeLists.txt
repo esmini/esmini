@@ -1,0 +1,28 @@
+
+include_directories (
+  ${PUGIXML_INCLUDE_DIR}
+  ${SCENARIOENGINE_INCLUDE_DIRS}
+  ${ROADMANAGER_INCLUDE_DIR}
+  ${COMMON_MINI_INCLUDE_DIR}  
+  ${REPLAY_INCLUDE_DIR}  
+  ${RDB_INCLUDE_DIR}
+)
+
+file(GLOB SRC_OSCTYPEDEFS "${CMAKE_CURRENT_LIST_DIR}/OSCTypeDefs/*.[hc]pp")
+file(GLOB SRC_SOURCEFILES "${CMAKE_CURRENT_LIST_DIR}/SourceFiles/*.[hc]pp")
+
+set ( SRC_ADDITIONAL ../../externals/pugixml/pugixml.cpp)
+
+SOURCE_GROUP(OSCTypeDefs FILES ${SRC_OSCTYPEDEFS})
+SOURCE_GROUP("Source Files" FILES ${SRC_SOURCEFILES})
+SOURCE_GROUP("External Libraries" FILES ${SRC_ADDITIONAL})
+
+add_library ( ScenarioEngine STATIC 
+${SRC_OSCTYPEDEFS} 
+${SRC_SOURCEFILES} 
+${SRC_ADDITIONAL} )
+
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
+
+	
