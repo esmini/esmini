@@ -191,8 +191,8 @@ static void copyStateFromScenarioGateway(ScenarioObjectState *state, ObjectState
 	state->speed = (float)gw_state->speed;
 	state->roadId = (int)gw_state->pos.GetTrackId();
 	state->laneId = (int)gw_state->pos.GetLaneId();
-	state->s = (int)gw_state->pos.GetS();
-	state->laneOffset = (int)gw_state->pos.GetOffset();
+	state->s = (float)gw_state->pos.GetS();
+	state->laneOffset = (float)gw_state->pos.GetOffset();
 
 }
 
@@ -200,7 +200,9 @@ extern "C"
 {
 	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control, int use_viewer, int record)
 	{
+#ifdef _SCENARIO_VIEWER		
 		closing = false;
+#endif
 		resetScenario();
 
 #ifndef _SCENARIO_VIEWER
@@ -278,11 +280,15 @@ extern "C"
 			simTime += dt;
 
 			// ScenarioEngine
+#if _SCENARIO_VIEWER
 			mutex.Lock();
+#endif
 
 			scenarioEngine->step((double)dt);
 
+#if _SCENARIO_VIEWER
 			mutex.Unlock();
+#endif
 		}
 
 		return 0;
@@ -383,7 +389,7 @@ extern "C"
 			return -1;
 		}
 
-		for (int i = 0; i < 3; i++) target_pos[i] = pos_global[i];
+		for (int i = 0; i < 3; i++) target_pos[i] = (float)pos_global[i];
 
 		return 0;
 	}
@@ -402,7 +408,7 @@ extern "C"
 			return -1;
 		}
 
-		for (int i = 0; i < 3; i++) target_pos[i] = pos_local[i];
+		for (int i = 0; i < 3; i++) target_pos[i] = (float)pos_local[i];
 
 		return 0;
 	}
@@ -421,7 +427,7 @@ extern "C"
 			return -1;
 		}
 
-		*angle_f = angle;
+		*angle_f = (float)angle;
 
 		return 0;
 	}
@@ -440,7 +446,7 @@ extern "C"
 			return -1;
 		}
 
-		*curvature_f = curvature;
+		*curvature_f = (float)curvature;
 
 		return 0;
 	}
