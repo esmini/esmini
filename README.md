@@ -45,7 +45,7 @@ Even though the code has been tested on Android there are unfortunately no autom
 
 ## Related work
 
-A second OpenSCENARIO based scenario engine was implemented within the Simulation Scenarios project, reusing the esmini RoadManager. In this case the purpose was to extend an existing simulation software platform with OpenSCENARIO based traffic scenarios. The implementation aims for production use. Repository: https://github.com/esmaxi/esmaxi
+A second OpenSCENARIO based scenario engine was implemented within the Simulation Scenarios project, reusing the esmini RoadManager. In this case the purpose was to extend an existing simulation software platform with OpenSCENARIO based traffic scenarios. The implementation aims for production use. Link to be provided when the repo has been launched.
 
 ## Data formats
 [OpenDRIVE](https://www.asam.net/standards/detail/opendrive/)

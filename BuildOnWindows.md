@@ -30,7 +30,7 @@ Environment models (roads, landscape, buildings...) have been created using [VIR
 
 This will build all projects and copy the binaries into a dedicated folder found by the demo batch scripts.
 
-## Run demo applications on Windows
+## Run demo applications
 - Navigate to the esmini/run folder
 - There is a subfolder for each application including a few example batch-files
 - Simply doubleclick on any to run
