@@ -14,23 +14,6 @@ Ubuntu 18.04
 sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl
 ```
 
-## Install git-lfs
-<https://github.com/git-lfs/git-lfs/wiki/Installation>
-
-On Ubuntu 16.04
-
-```
-curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
-sudo apt install git-lfs
-git lfs install
-```
-
-Activate git credential caching, otherwise it will ask for the password for every single resource file when downloading them:
-
-```
-git config --global credential.helper cache
-```
-
 ## Building OpenSceneGraph
 
 ```
@@ -50,9 +33,8 @@ sudo ldconfig
 
 ```
 cd ~/
-git clone <username>@bitbucket.org/hiqgbg/environment-simulator.git
-cd environment-simulator
-git-lfs pull
+git clone https://github.com/esmini/esmini
+cd esmini
 ```
 
 Copy OpenSceneGraph files to expected path
