@@ -1,6 +1,4 @@
 
-include(FetchContent)
-
 set ( VIEWER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ViewerBase" )
 set ( WORLDMANAGER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/WorldManager" )
 set ( REPLAY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Replayer" )
@@ -138,33 +136,39 @@ set_target_properties (ScenarioEngineDLL PROPERTIES FOLDER ${ModulesFolder} )
 # Download library and content binary packets
 #
 
-# OpenSceneGraph package adapted for this project
-FetchContent_Declare(
-  osg_package
-  URL ${OSG_PACKAGE_URL} 
-  SOURCE_DIR ${osg_dir}
-)
+if(${CMAKE_VERSION} VERSION_LESS "3.11.4") 
+    message(WARNING "Important! CMake couldn't download external dependencies and 3D models. Please upgrade to CMake version 3.11.4 or above. Or  download file packages manually - see README.md")
+else()
+	include(FetchContent)
 
-set(models_dir ${CMAKE_CURRENT_SOURCE_DIR}/../resources/models)
-FetchContent_Declare(
-  models_package
-  URL https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc # models	
-  SOURCE_DIR ${models_dir}
-)
+	# OpenSceneGraph package adapted for this project
+	FetchContent_Declare(
+	  osg_package
+	  URL ${OSG_PACKAGE_URL} 
+	  SOURCE_DIR ${osg_dir}
+	)
 
-if(FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${models_dir} OR (USE_OSG AND NOT EXISTS ${osg_dir}))
-  
-  message(STATUS "Downloading binary packages - might take a few minutes..." )
-  file(REMOVE_RECURSE ${FETCHCONTENT_BASE_DIR}) 
-  
-  message(STATUS "  models")
-  FetchContent_MakeAvailable(models_package)
-  
-  if (USE_OSG)
-	message(STATUS "  OpenSceneGraph")
-    FetchContent_MakeAvailable(osg_package)
-  endif()
+	set(models_dir ${CMAKE_CURRENT_SOURCE_DIR}/../resources/models)
+	FetchContent_Declare(
+	  models_package
+	  URL https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc # models	
+	  SOURCE_DIR ${models_dir}
+	)
 
+	if(FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${models_dir} OR (USE_OSG AND NOT EXISTS ${osg_dir}))
+	  
+	  message(STATUS "Downloading binary packages - might take a few minutes..." )
+	  file(REMOVE_RECURSE ${FETCHCONTENT_BASE_DIR}) 
+	  
+	  message(STATUS "  models")
+	  FetchContent_MakeAvailable(models_package)
+	  
+	  if (USE_OSG)
+		message(STATUS "  OpenSceneGraph")
+		FetchContent_MakeAvailable(osg_package)
+	  endif()
+
+	endif()
 endif()
 
 if (USE_OSG)

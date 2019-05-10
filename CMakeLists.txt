@@ -1,5 +1,5 @@
 # Set to the current lowest tested version of CMake
-cmake_minimum_required (VERSION 3.11.4)
+cmake_minimum_required (VERSION 3.7.0 FATAL_ERROR)
 
 project (EnvironmentSimulator)
 
