@@ -2,7 +2,7 @@
 
 # Environment Simulator Minimalistic (esmini)
 
-\- a basic OpenSCENARIO player
+*esmini* is a basic OpenSCENARIO player
 
 ![Screenshot](resources/screenshot.jpg?raw=true "Screenshot")
 
