@@ -6,6 +6,8 @@
 
 ![Screenshot](resources/screenshot.jpg?raw=true "Screenshot")
 
+dummy text
+
 It contains the following main modules:
 
 - RoadManager. A library providing an interface to road networks described in the OpenDRIVE format.
