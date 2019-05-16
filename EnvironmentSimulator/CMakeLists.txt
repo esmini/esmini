@@ -136,8 +136,8 @@ set_target_properties (ScenarioEngineDLL PROPERTIES FOLDER ${ModulesFolder} )
 # Download library and content binary packets
 #
 
-if(${CMAKE_VERSION} VERSION_LESS "3.11.4") 
-    message(WARNING "Important! CMake couldn't download external dependencies and 3D models. Please upgrade to CMake version 3.11.4 or above. Or  download file packages manually - see README.md")
+if(${CMAKE_VERSION} VERSION_LESS "3.14.0") 
+    message(WARNING "Important! CMake couldn't download external dependencies and 3D models. Please upgrade to CMake version 3.14.0 or above. Or  download file packages manually - see README.md")
 else()
 	include(FetchContent)
 
