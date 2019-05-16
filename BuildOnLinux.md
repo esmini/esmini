@@ -5,13 +5,13 @@
 On Ubuntu 16.04 (all these packages are probably not required)
 
 ```
-sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng12-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libjasper-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl
+sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng12-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libjasper-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
 ```
 
 Ubuntu 18.04
 
 ```
-sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl
+sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
 ```
 
 ## Building OpenSceneGraph
@@ -76,4 +76,3 @@ or
 cd EnvironmentSimulator/EgoSimulator
 ./EgoSimulator --osc ../../../resources/xosc/highway_merge.xosc --ext_control on --window 50 50 800 400
 ```
-

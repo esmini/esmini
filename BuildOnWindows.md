@@ -8,7 +8,9 @@ The following platforms are supported:
 
 [CMake](https://cmake.org/) tool is used to create VisualStudio solutions. A few example "create..." batch scripts are supplied as examples how to generate desired build setup.
 
-Note: For automatic downloading of external dependencies (OSG biaries) and 3D models, CMake version 3.11.4 or above is required (FetchContent_MakeAvailable was introduced).
+Note:
+- For automatic downloading of external dependencies (OSG biaries) and 3D models, CMake version 3.11.4 or above is required (FetchContent_MakeAvailable was introduced).
+- If you get an error like "the c compiler identification is unknown", then please make sure to install "Windows Universal CRT SDK" from the Visual Studio Installer tool.
 
 ## External dependencies
 CMake scripts will download a package of external binary dependencies (OSG) and 3D model resource files. If not using CMake, here are links to those external data packages:
