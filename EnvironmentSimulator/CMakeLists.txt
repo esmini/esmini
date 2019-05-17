@@ -13,46 +13,32 @@ set ( SCENARIOENGINE_INCLUDE_DIRS
  )
 set ( COMMON_MINI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CommonMini")
 
+# OpenSceneGraph package adapted for this project
 set ( OSG_VERSION "osg160" )
+set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
 
 if (WINSDK7_1)
   set ( TIME_LIB winmm.lib )
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1aN88B1_7MnT0OwHt_LOc8FtD7rFEP0Jq )
-  set(osg_dir ${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/winsdk71)
-  set ( OSG_INCLUDE_DIR 
-    "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/winsdk71/build/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/winsdk71/include"
-  )
-  set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd\"4482\"")
-  set ( OSG_LIBRARIES_PATH 
-	"${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/winsdk71/lib" 
-	"${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/winsdk71/lib/osgPlugins-3.7.0"
-  )
+  set ( OSG_DIR "${OSG_BASE_DIR}/winsdk71" )
 elseif ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
   set ( TIME_LIB "" )  
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=14Xqe_bWGuZQAr69mit4melmnMfmNFOO6 )
-  set(osg_dir ${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/win32)
-  set ( OSG_INCLUDE_DIR   
-    "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/win32/build/include"  
-	"${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/win32/include"  
-  )  
-  set ( OSG_LIBRARIES_PATH   
-	"${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/win32/lib"   
-	"${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/win32/lib/osgPlugins-3.7.0"  
-  )  
+  set ( OSG_DIR "${OSG_BASE_DIR}/win32" )
 else()  # v10
   set ( TIME_LIB "" )
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1a0HxilPJq2bZrat2le2x-Cscs5JeVAXP )
-  set(osg_dir ${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/v10)
-  set ( OSG_INCLUDE_DIR 
-    "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/v10/build/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/v10/include"
-  )
-  set ( OSG_LIBRARIES_PATH 
-	"${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/v10/lib" 
-	"${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/v10/lib/osgPlugins-3.7.0"
-  )
+  set ( OSG_DIR "${OSG_BASE_DIR}/v10" )
 endif (WINSDK7_1)
+
+set ( OSG_INCLUDE_DIR 
+	"${OSG_DIR}/build/include"
+	"${OSG_DIR}/include"
+)
+set ( OSG_LIBRARIES_PATH 
+	"${OSG_DIR}/lib" 
+	"${OSG_DIR}/lib/osgPlugins-3.7.0"
+)
 
 if(UNIX)
    SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC")
@@ -135,40 +121,27 @@ set_target_properties (ScenarioEngineDLL PROPERTIES FOLDER ${ModulesFolder} )
 #
 # Download library and content binary packets
 #
+function (download_and_extract url target_folder target_filename)
+	message (STATUS "downloading ${target_filename} ...")
+	file (DOWNLOAD ${url} ${target_folder}/${target_filename})
+	
+	message (STATUS "extracting ${target_filename} ... ")
+	execute_process (COMMAND ${CMAKE_COMMAND} -E tar xfz ${target_filename} WORKING_DIRECTORY ${target_folder})
+	file (REMOVE ${target_folder}/${target_filename})
+endfunction (download_and_extract)
 
-if(${CMAKE_VERSION} VERSION_LESS "3.14.0") 
-    message(WARNING "Important! CMake couldn't download external dependencies and 3D models. Please upgrade to CMake version 3.14.0 or above. Or  download file packages manually - see README.md")
-else()
-	include(FetchContent)
+# download OpenSceneGraph 
+set ( OSG_PACKAGE_FILENAME "osg.7z" )
+if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSG_DIR} )
+	download_and_extract( ${OSG_PACKAGE_URL} ${OSG_BASE_DIR} ${OSG_PACKAGE_FILENAME} )
+endif()
 
-	# OpenSceneGraph package adapted for this project
-	FetchContent_Declare(
-	  osg_package
-	  URL ${OSG_PACKAGE_URL} 
-	  SOURCE_DIR ${osg_dir}
-	)
+set ( MODELS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources/models" )
+set ( MODELS_PACKAGE_FILENAME models.7z)
+set ( MODELS_PACKAGE_URL https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc )
 
-	set(models_dir ${CMAKE_CURRENT_SOURCE_DIR}/../resources/models)
-	FetchContent_Declare(
-	  models_package
-	  URL https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc # models	
-	  SOURCE_DIR ${models_dir}
-	)
-
-	if(FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${models_dir} OR (USE_OSG AND NOT EXISTS ${osg_dir}))
-	  
-	  message(STATUS "Downloading binary packages - might take a few minutes..." )
-	  file(REMOVE_RECURSE ${FETCHCONTENT_BASE_DIR}) 
-	  
-	  message(STATUS "  models")
-	  FetchContent_MakeAvailable(models_package)
-	  
-	  if (USE_OSG)
-		message(STATUS "  OpenSceneGraph")
-		FetchContent_MakeAvailable(osg_package)
-	  endif()
-
-	endif()
+if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${MODELS_DIR} )
+	download_and_extract(${MODELS_PACKAGE_URL} ${MODELS_DIR} ${MODELS_PACKAGE_FILENAME})
 endif()
 
 if (USE_OSG)
