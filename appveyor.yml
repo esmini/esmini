@@ -1,0 +1,76 @@
+version: 1.0.{build}
+image:
+- Visual Studio 2017
+- Visual Studio 2015
+- Ubuntu1804
+configuration: Release
+cache:
+- externals/OpenSceneGraph
+- resources/models
+
+for:
+  -
+    matrix:
+      only:
+        - image: Ubuntu1804
+
+    build_script:
+      - echo Ubuntu build script
+      - sh: >-
+          sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
+
+          mkdir build
+        
+          cd build
+        
+          cmake ../ -DUSE_OSG=false
+        
+          make -j4
+      
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2017
+
+    build_script:
+
+      - cmd: 
+          mkdir buildVS15_32
+          
+          cd buildVS15_32
+          
+          cmake -G "Visual Studio 15" -D USE_OSG=True ..
+          
+          msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
+          
+          cd..
+  
+      - cmd: 
+          mkdir buildVS15_64
+          
+          cd buildVS15_64
+          
+          cmake.exe -G "Visual Studio 15 Win64" -D USE_OSG=True ..
+          
+          msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
+          
+          cd..
+  
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2015
+
+    build_script:
+
+      - cmd: 
+          mkdir buildVS14_winsdk71_64
+          
+          cd buildVS14_winsdk71_64
+          
+          cmake -G "Visual Studio 14 2015 Win64" -T "Windows7.1SDK" -D WINSDK7_1=True -D USE_OSG=True ..
+  
+          msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
+          
+          cd..
+    
