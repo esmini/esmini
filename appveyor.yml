@@ -46,6 +46,12 @@ for:
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
 
           cd..
+
+          generate_binary_dist.bat
+
+          7z a esmini-demo.zip esmini-demo/*
+
+          appveyor PushArtifact esmini-demo.zip
   -
     matrix:
       only:

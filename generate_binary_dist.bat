@@ -56,4 +56,4 @@ copy EnvironmentSimulator\ViewerBase\readme.txt %target_dir%\run\EgoSimulator /y
 
 copy 3rd_party_terms_and_licenses\* %target_dir%\3rd_party_terms_and_licenses /y
 
-copy bin\win64\Release\EgoSimulator.exe %target_dir%\bin\win64\Release /y
+copy buildVS15_64\EnvironmentSimulator\EgoSimulator\Release\EgoSimulator.exe %target_dir%\bin\win64\Release /y
