@@ -1,0 +1,2 @@
+set PATH=%PATH%;..\..\externals\OpenSceneGraph\bin;..\..\externals\OpenSceneGraph\bin\osgPlugins-3.6.0
+..\..\bin\win64\Release\EgoSimulator.exe --window 50 50 800 400  --osc ../../resources/xosc/distance_test.xosc --ext_control on

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenSCENARIO>
+
+	<FileHeader revMajor="0" revMinor="9" date="2017-11-27T10:00:00"
+		description="Simulation Scenarios - Hiwghway Merge" author="SimS" />
+
+	<ParameterDeclaration>
+		<Parameter name="$Gap_dist" type="double" value="15" />
+		<Parameter name="$Max_acc" type="double" value="15" />
+		<Parameter name="$Max_ret" type="double" value="15" />
+	</ParameterDeclaration>
+
+	<Catalogs>
+		<RouteCatalog> 
+		</RouteCatalog>
+		<VehicleCatalog>
+			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
+		</VehicleCatalog>
+		<DriverCatalog>
+			<Directory path="../xosc/Catalogs/DriverCatalog"/>
+		</DriverCatalog>
+	</Catalogs>
+
+	<RoadNetwork>
+		<Logics filepath="../xodr/straight_500m.xodr" />
+		<SceneGraph filepath="../models/straight_500m.osgb" />
+	</RoadNetwork>
+
+	<Entities>
+		<Object name="Ego">
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
+			<Controller>
+				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver" />
+			</Controller>
+		</Object>
+
+		<Object name="Dummy">
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_red" />
+			<Controller>
+				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver" />
+			</Controller>
+		</Object>
+
+	</Entities>
+
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private object="Ego">
+					<Action>
+						<Position>
+							<Lane roadId="1" s="50.0" laneId="-1" offset="0.0" />
+						</Position>
+					</Action>
+					<Action>
+						<Longitudinal>
+							<Speed>
+								<Dynamics shape="step" />
+								<Target>
+									<Absolute value="15" />
+								</Target>
+							</Speed>
+						</Longitudinal>
+					</Action>
+				</Private>
+
+				<Private object="Dummy">
+					<Action>
+						<Position>
+							<Lane roadId="1" s="10.0" laneId="-1" offset="0.0" />
+						</Position>
+					</Action>
+					<Action>
+						<Longitudinal>
+							<Speed>
+								<Dynamics shape="step" />
+								<Target>
+									<Absolute value="15.0" />  
+								</Target>
+							</Speed>
+						</Longitudinal>
+					</Action>
+					<Action>
+						<Longitudinal>
+							<Distance object="Ego" freespace="true" distance="$Gap_dist">
+								<Dynamics>
+									<Limited maxSpeed="40" maxAcceleration="$Max_acc" maxDeceleration="$Max_ret" />
+								</Dynamics>
+							</Distance>
+						</Longitudinal>
+					</Action>
+				</Private>
+
+			</Actions>
+		</Init>
+
+		<Story name="Story_DistTest" owner="Dummy">
+			<Act name="Act_DistTest">
+			</Act>
+		</Story>
+	</Storyboard>
+</OpenSCENARIO>

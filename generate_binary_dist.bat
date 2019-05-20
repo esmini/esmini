@@ -1,4 +1,4 @@
-set target_dir=esmini
+set target_dir=esmini-demo
 
 IF NOT EXIST %target_dir% ( mkdir %target_dir% )
 IF NOT EXIST %target_dir%\resources ( mkdir %target_dir%\resources )
@@ -18,6 +18,7 @@ copy resources\xosc\highway_merge.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\highway_merge_advanced.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\ltap-od_two_targets.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\ltap-od.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\distance_test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\Catalogs\*.* %target_dir%\resources\xosc\Catalogs /y
 
 copy resources\xodr\soderleden.xodr %target_dir%\resources\xodr /y
@@ -49,6 +50,7 @@ copy run\EgoSimulator\run_cut-in_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_simple.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_cr_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_cr_external.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_dist_test.bat %target_dir%\run\EgoSimulator /y
 
 copy EnvironmentSimulator\ViewerBase\readme.txt %target_dir%\run\EgoSimulator /y
 
