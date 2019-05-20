@@ -218,7 +218,10 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
 	arguments.read("--lodScale", lodScale_);
 
-	osgViewer_ = new osgViewer::Viewer(arguments);
+	osg::DisplaySettings::instance()->setNumMultiSamples(4);  // Set some AntiAliasing
+	
+	osgViewer_ = new osgViewer::Viewer(arguments); 
+
 
 	// Load shadow geometry - assume it resides in the same directory as the main environment model
 	std::string filePath = DirNameOf(modelFilename_);
@@ -364,7 +367,6 @@ CarModel* Viewer::AddCar(std::string modelFilepath)
 	{
 		currentCarInFocus_ = 0;
 		rubberbandManipulator_->setTrackNode(cars_.back()->txNode_, true);
-		rubberbandManipulator_->calculateCameraDistance();
 		nodeTrackerManipulator_->setTrackNode(cars_.back()->node_);
 	}
 	return cars_.back();

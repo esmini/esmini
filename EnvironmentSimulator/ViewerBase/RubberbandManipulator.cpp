@@ -22,8 +22,8 @@ using namespace osg;
 using namespace osgGA;
 
 const float springFC = 16.0f;
-const float orbitCameraDistance = 20.0f;
-const float orbitCameraAngle = 13.0f;
+const float orbitCameraDistance = 25.0f;
+const float orbitCameraAngle = 15.0f;
 const float orbitCameraRotation = -17.0f;
 
 #define MAX(a, b) ((a)>(b) ? (a) : (b))
@@ -270,18 +270,19 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 
 		// Find the vector between target position and actual camera position
 		cameraToTarget = (nodeCenter + cameraTargetPosition) - _eye;
+
 		// Update camera state
 		springDC = 2 * sqrt(springFC);
-		cameraAcc = cameraToTarget*springFC - cameraVel*springDC;
-		cameraVel+=cameraAcc * dt;
-		
-		if(_mode == RB_MODE_FIXED || _mode == RB_MODE_ORBIT)
+		cameraAcc = cameraToTarget * springFC - cameraVel * springDC;
+		cameraVel += cameraAcc * dt;
+
+		if (_mode == RB_MODE_FIXED || _mode == RB_MODE_ORBIT)
 		{
 			_eye = nodeCenter + cameraTargetPosition;
 		}
 		else
 		{
-			_eye+=cameraVel * dt;
+			_eye += cameraVel * dt;
 		}
 	}
 
