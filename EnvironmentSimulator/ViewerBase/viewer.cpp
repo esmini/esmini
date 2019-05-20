@@ -761,11 +761,26 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			visible = !visible;
-			viewer_->odrLines_->setNodeMask(visible ? 0xffffffff : 0x0);
-			viewer_->vehicleLine_->setNodeMask(visible ? 0xffffffff : 0x0);
-			viewer_->vehiclePoint_->setNodeMask(visible ? 0xffffffff : 0x0);
-			viewer_->dm_steering_target_line_->setNodeMask(visible ? 0xffffffff : 0x0);
-			viewer_->dm_steering_target_point_->setNodeMask(visible ? 0xffffffff : 0x0);
+			if (viewer_->odrLines_)
+			{
+				viewer_->odrLines_->setNodeMask(visible ? 0xffffffff : 0x0);
+			}
+			if(viewer_->vehicleLine_)
+			{
+				viewer_->vehicleLine_->setNodeMask(visible ? 0xffffffff : 0x0);
+			}
+			if (viewer_->vehiclePoint_)
+			{
+				viewer_->vehiclePoint_->setNodeMask(visible ? 0xffffffff : 0x0);
+			}
+			if (viewer_->dm_steering_target_line_)
+			{
+				viewer_->dm_steering_target_line_->setNodeMask(visible ? 0xffffffff : 0x0);
+			}
+			if (viewer_->dm_steering_target_point_)
+			{
+				viewer_->dm_steering_target_point_->setNodeMask(visible ? 0xffffffff : 0x0);
+			}
 		}
 	}
 	break;

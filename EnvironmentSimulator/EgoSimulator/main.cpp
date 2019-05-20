@@ -119,7 +119,7 @@ static void viewer_thread(void *args)
 	int firstScenarioVehicle = scenarioEngine->GetExtControl() == true ? 1 : 0;
 
 	// Create viewer
-	scenarioViewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), *parser, scenarioEngine->GetExtControl());
+	scenarioViewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), *parser, true);
 
 	// Create Ego vehicle, 
 	if (scenarioEngine->GetExtControl())
@@ -167,6 +167,15 @@ static void viewer_thread(void *args)
 			// Visualize steering target point
 			scenarioViewer->UpdateDriverModelPoint(egoCar->pos, MAX(5, egoCar->vehicle->speed_));
 		}
+		else if(scenarioEngine->entities.object_.size() > 0)
+		{
+			// Update road and vehicle debug lines 
+			scenarioViewer->UpdateVehicleLineAndPoints(&scenarioEngine->entities.object_[0]->pos_);
+
+			// Visualize steering target point
+			scenarioViewer->UpdateDriverModelPoint(&scenarioEngine->entities.object_[0]->pos_, MAX(5, scenarioEngine->entities.object_[0]->speed_));
+		}
+		
 
 		mutex.Unlock();
 
