@@ -136,12 +136,13 @@ if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSG_DIR} )
 	download_and_extract( ${OSG_PACKAGE_URL} ${OSG_BASE_DIR} ${OSG_PACKAGE_FILENAME} )
 endif()
 
-set ( MODELS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources/models" )
+set ( MODELS_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources" )
+set ( MODELS_DIR "${MODELS_BASE_DIR}/models" )
 set ( MODELS_PACKAGE_FILENAME models.7z)
 set ( MODELS_PACKAGE_URL https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc )
 
 if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${MODELS_DIR} )
-	download_and_extract(${MODELS_PACKAGE_URL} ${MODELS_DIR} ${MODELS_PACKAGE_FILENAME})
+	download_and_extract(${MODELS_PACKAGE_URL} ${MODELS_BASE_DIR} ${MODELS_PACKAGE_FILENAME})
 endif()
 
 if (USE_OSG)
