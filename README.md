@@ -25,7 +25,7 @@ and a few applications that can be used as is or provide ideas for customized so
 
 Repository: <https://github.com/esmini/esmini>
 
-A pre-built package for Windows is available [here](https://drive.google.com/uc?export=download&id=1tS4i2Cik0Ac7Dolp9by4WZsiVY6kpnEz). Unzip, navigate to "esmini\run\EgoSimulator" and run any of the bat-files
+A pre-built demo package for Windows is available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\EgoSimulator" and run any of the bat-files.
 
 The code is a result from the Swedish collaborative research project [Simulation Scenarios](https://sites.google.com/view/simulationscenarios).
 

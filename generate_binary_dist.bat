@@ -52,10 +52,9 @@ copy run\EgoSimulator\run_cut-in_cr_internal.bat %target_dir%\run\EgoSimulator /
 copy run\EgoSimulator\run_cut-in_cr_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_dist_test.bat %target_dir%\run\EgoSimulator /y
 
-copy EnvironmentSimulator\ViewerBase\readme.txt %target_dir%\run\EgoSimulator /y
+copy run\readme.txt %target_dir% /y
 
 copy 3rd_party_terms_and_licenses\* %target_dir%\3rd_party_terms_and_licenses /y
 copy LICENSE %target_dir% /y
-copy README.md %target_dir% /y
 
 copy buildVS15_64\EnvironmentSimulator\EgoSimulator\Release\EgoSimulator.exe %target_dir%\bin\win64\Release /y

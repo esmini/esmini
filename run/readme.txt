@@ -1,5 +1,12 @@
-Key commands
 
+Environment Simulator Minimalistic (esmini) is a basic OpenSCENARIO player.
+Home: https://github.com/esmini/esmini
+
+Run esmini demo:
+	1. Navigate to run/EgoSimulator
+	2. Run any of the provided batch-script examples (double click on or run from command line)
+
+Key commands:
 	TAB: Move camera to next vehicle
 	Shift-TAB: Move camera to previoius vehicle
 
@@ -27,8 +34,7 @@ Key commands
 	ESC: quit
 
 
-Mouse control
-
+Mouse control:
 	Left: Rotate
 	Right: Zoom
 	Middle: Pan
