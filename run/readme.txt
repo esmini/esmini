@@ -40,3 +40,4 @@ Mouse control:
 	Middle: Pan
 
 	This is typical. Exact behaviour depends on active camera model.
+	
