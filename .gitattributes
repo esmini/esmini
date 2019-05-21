@@ -1,5 +1,5 @@
-# Set the default behavior, in case people don't have core.autocrlf set.
-* text=auto
+# Enforce text files to use CRLF line endings - needed for AppVeyor releases
+*.txt text eol=crlf
 
 # Misc
 *.zip filter=lfs diff=lfs merge=lfs -text

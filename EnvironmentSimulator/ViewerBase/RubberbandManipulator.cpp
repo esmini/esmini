@@ -23,8 +23,8 @@ using namespace osgGA;
 
 const float springFC = 16.0f;
 const float orbitCameraDistance = 25.0f;
-const float orbitCameraAngle = 15.0f;
-const float orbitCameraRotation = 12.0f;
+const float orbitCameraAngle = 13.0f;
+const float orbitCameraRotation = -14.0f;
 
 #define MAX(a, b) ((a)>(b) ? (a) : (b))
 
