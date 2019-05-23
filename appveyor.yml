@@ -10,7 +10,7 @@ platform:
 cache:
 - externals/OpenSceneGraph
 - resources/models
-after build:
+after_build:
   cmd:
     7z a esmini-bin.zip bin/*
 
