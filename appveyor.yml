@@ -10,6 +10,11 @@ platform:
 cache:
 - externals/OpenSceneGraph
 - resources/models
+after build:
+  cmd:
+    7z a esmini-bin.zip bin/*
+
+    appveyor PushArtifact esmini-bin.zip
 
 for:
   -
