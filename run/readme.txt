@@ -8,11 +8,11 @@ Run esmini demo:
 
 Key commands:
 
-	When Ego vehicle is controlled externally (by the user - not the scenario), arrow keys is used to drive:
+	Arrow keys is used to drive externally controlled Ego vehicle:
 	  Up:   Accelerate
 	  Down: Brake
-	  Left: Steering left
-	  Down: Steering left
+	  Left: Steer left
+	  Down: Steer left
 
 	TAB: Move camera to next vehicle
 	Shift-TAB: Move camera to previoius vehicle
