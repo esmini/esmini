@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 			double s_start = lane_section->GetS();
 			double s_end = s_start + lane_section->GetLength();
 			int steps = (int)((s_end - s_start) / step_length_target);
-			double step_length = (s_end - s_start) / steps;
+			double step_length = steps > 0 ? (s_end - s_start) / steps : s_end - s_start;
 
 #ifdef REF_ONLY
 			Lane *lane = lane_section->GetLaneById(0);
