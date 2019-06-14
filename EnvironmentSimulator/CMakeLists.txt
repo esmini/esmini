@@ -3,6 +3,7 @@ set ( VIEWER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ViewerBase" )
 set ( WORLDMANAGER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/WorldManager" )
 set ( REPLAY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Replayer" )
 set ( ROADMANAGER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/RoadManager" )
+set ( ROADMANAGER_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/RoadManagerDLL" )
 set ( SCENARIOENGINE_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ScenarioEngineDLL" )
 set ( SCENARIOENGINE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ScenarioEngine/SourceFiles")
 set ( SCENARIOENGINE_INCLUDE_DIRS
@@ -104,6 +105,7 @@ set ( ADAPT_ENVIRONMENT_MODULE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../En
 add_subdirectory(RoadManager)
 add_subdirectory(CommonMini)
 add_subdirectory(ScenarioEngine)
+add_subdirectory(RoadManagerDLL)
 add_subdirectory(ScenarioEngineDLL)
 
 if (USE_ENVSIM_ADAPT)
@@ -116,6 +118,7 @@ set ( ApplicationsFolder Applications )
 set_target_properties (RoadManager PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (CommonMini PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (ScenarioEngine PROPERTIES FOLDER ${ModulesFolder} )
+set_target_properties (RoadManagerDLL PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (ScenarioEngineDLL PROPERTIES FOLDER ${ModulesFolder} )
 
 #
