@@ -16,6 +16,7 @@ target_link_libraries (
 	RoadManagerDLL
 	PRIVATE RoadManager
 	PRIVATE CommonMini
+	PRIVATE ${TIME_LIB}	
 )
 
 install ( TARGETS RoadManagerDLL CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}/Release")
