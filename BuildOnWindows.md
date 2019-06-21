@@ -13,7 +13,7 @@ Note:
 - If you get an error like "the c compiler identification is unknown", then please make sure to install "Windows Universal CRT SDK" from the Visual Studio Installer tool.
 
 ## External dependencies
-CMake scripts will download a package of external binary dependencies (OSG) and 3D model resource files. If not using CMake, here are links to those external data packages:
+CMake scripts will download a package of external binary dependencies OpenSceneGraph (OSG) and 3D model resource files. If not using CMake, here are links to those external data packages:
 
 - [OSG for WinSDK v10 x64](https://drive.google.com/uc?export=download&id=1a0HxilPJq2bZrat2le2x-Cscs5JeVAXP)
 - [OSG for WinSDK v10 win32](https://drive.google.com/uc?export=download&id=14Xqe_bWGuZQAr69mit4melmnMfmNFOO6)
@@ -24,6 +24,8 @@ Unpack into esmini/externals/OpenSceneGraph. Please note that these libraries ar
 Unpack into esmini/resources. These assets works on all platforms.
 
 Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.com/vtd-vires-virtual-test-drive/#creation).
+
+Description of how to build OSG from scratch is found [here](BuildOSG.md).
 
 ## Build project
 
