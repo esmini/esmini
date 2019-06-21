@@ -33,7 +33,7 @@ msbuild INSTALL.vcxproj
 ```
 
 ## Make available for esmini
-- Copy (or move) the install folder (should be available in the build folder after previous step) to _esmini/externals/OpenSceneGraph_ and rename it to v10.
+- Copy (or move) the install folder (should be available in the build folder after previous step) into _esmini/externals/OpenSceneGraph_ and rename it to v10.
 > Note: v10 stands for Windows SDK version 10. Default is 64 bit. Replace _v10_ with _win32_ if OSG was compiled for 32 bit. Replace with _winsdk71_ if compiled for Windows SDK 7.1 (only 64 bit is supported by current esmini build configurator).
 
 - Copy zlibstatic.lib and zlibstaticd.lib from OSG 3rdparty lib folder into the _externals/OpenSceneGraph/v10/lib_ folder
