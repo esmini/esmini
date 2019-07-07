@@ -655,6 +655,7 @@ namespace roadmanager
 		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
 		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
+		void SetXYHPos(double x, double y, double h);
 		void SetHeading(double heading) { h_ = heading;  }
 		void SetHeadingRelative(double heading) 
 		{ 
@@ -838,7 +839,7 @@ namespace roadmanager
 		void Track2Lane();
 		void Track2XYZ();
 		void Lane2Track();
-		void XYZ2Track();
+		void XYZ2Track(bool evaluateZAndPitch = false);
 		void SetLongitudinalTrackPos(int track_id, double s);
 		bool EvaluateZAndPitch();
 		double GetDistToTrackGeom(double x3, double y3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm);

@@ -19,8 +19,13 @@ using namespace roadmanager;
 static roadmanager::OpenDrive *odrManager = 0;
 static std::vector<Position> position;
 
-static int GetSteeringTarget(int index, float lookahead_distance, double *pos_local, double *pos_global, double *angle, double *curvature)
+static int GetSteeringTarget(int index, float lookahead_distance, SteeringTargetData *data)
 {
+	double pos_globald[3];
+	double pos_locald[3];
+	double angled;
+	double curvatured;
+
 	if (odrManager == 0)
 	{
 		return -1;
@@ -32,9 +37,24 @@ static int GetSteeringTarget(int index, float lookahead_distance, double *pos_lo
 		return -1;
 	}
 
-	position[index].GetSteeringTargetPos(lookahead_distance, pos_local, pos_global, angle, curvature);
+	if (position[index].GetSteeringTargetPos(lookahead_distance, pos_locald, pos_globald, &angled, &curvatured) != 0)
+	{
+		return -1;
+	}
+	else
+	{
+		// Copy data
+		data->local_pos[0] = (float)pos_locald[0];
+		data->local_pos[1] = (float)pos_locald[1];
+		data->local_pos[2] = (float)pos_locald[2];
+		data->global_pos[0] = (float)pos_globald[0];
+		data->global_pos[1] = (float)pos_globald[1];
+		data->global_pos[2] = (float)pos_globald[2];
+		data->angle = (float)angled;
+		data->curvature = (float)curvatured;
 
-	return 0;
+		return 0;
+	}
 }
 
 extern "C"
@@ -180,6 +200,21 @@ extern "C"
 		return 0;
 	}
 
+	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h)
+	{
+		if (odrManager == 0 || handle >= position.size())
+		{
+			return -1;
+		}
+		else
+		{
+			roadmanager::Position *pos = &position[handle];
+			pos->XYH2TrackPos(x, y, h, true);
+		}
+
+		return 0;
+	}
+
 	RM_DLL_API int RM_SetS(int handle, float s)
 	{
 		if (odrManager == 0 || handle >= position.size())
@@ -231,78 +266,17 @@ extern "C"
 		return 0;
 	}
 
-	RM_DLL_API int RM_GetSteeringTargetPosGlobal(int handle, float lookahead_distance, float * target_pos)
+	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, SteeringTargetData * data)
 	{
-		double pos_local[3], pos_global[3], angle, curvature;
-
 		if (odrManager == 0 || handle >= position.size())
 		{
 			return -1;
 		}
 
-		if (GetSteeringTarget(handle, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
+		if (GetSteeringTarget(handle, lookahead_distance, data) != 0)
 		{
 			return -1;
 		}
-
-		for (int i = 0; i < 3; i++) target_pos[i] = (float)pos_global[i];
-
-		return 0;
-	}
-
-	RM_DLL_API int RM_GetSteeringTargetPosLocal(int handle, float lookahead_distance, float * target_pos)
-	{
-		double pos_local[3], pos_global[3], angle, curvature;
-
-		if (odrManager == 0 || handle >= position.size())
-		{
-			return -1;
-		}
-
-		if (GetSteeringTarget(handle, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
-		{
-			return -1;
-		}
-
-		for (int i = 0; i < 3; i++) target_pos[i] = (float)pos_local[i];
-
-		return 0;
-	}
-
-	RM_DLL_API int RM_GetSteeringTargetAngle(int handle, float lookahead_distance, float * angle_f)
-	{
-		double pos_local[3], pos_global[3], angle, curvature;
-
-		if (odrManager == 0 || handle >= position.size())
-		{
-			return -1;
-		}
-
-		if (GetSteeringTarget(handle, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
-		{
-			return -1;
-		}
-
-		*angle_f = (float)angle;
-
-		return 0;
-	}
-
-	RM_DLL_API int RM_GetSteeringTargetCurvature(int handle, float lookahead_distance, float * curvature_f)
-	{
-		double pos_local[3], pos_global[3], angle, curvature;
-
-		if (odrManager == 0 || handle >= position.size())
-		{
-			return -1;
-		}
-
-		if (GetSteeringTarget(handle, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
-		{
-			return -1;
-		}
-
-		*curvature_f = (float)curvature;
 
 		return 0;
 	}

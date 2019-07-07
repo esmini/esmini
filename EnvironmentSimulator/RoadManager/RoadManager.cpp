@@ -2032,6 +2032,8 @@ void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPi
 {
 	double dist;
 	double distMin = std::numeric_limits<double>::infinity();
+	double distMinInside = std::numeric_limits<double>::infinity();
+	double distMinOutside = std::numeric_limits<double>::infinity();
 	double sNorm;
 	double sNormMin;
 	Geometry *geom;
@@ -2067,13 +2069,21 @@ void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPi
 			geom = road->GetGeometry(j);
 			dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
 	
-			if (dist < distMin)  // First value (min_dist = -1) is always the closest so far
+			if (inside && dist < distMinInside || !insideMin && (!inside && dist < distMinOutside))  // Inside points always wins over outside ones
 			{
 				geomMin = geom;
 				roadMin = road;
 				sNormMin = CLAMP(sNorm, 0.0, 1.0);
-				distMin = dist;
 				insideMin = inside;
+				if (inside)
+				{
+					distMinInside = dist;
+				}
+				else
+				{
+					distMinOutside = dist;
+				}
+				distMin = dist;
 				found = true;
 			}
 		}
@@ -2091,19 +2101,19 @@ void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPi
 
 	// Found closest geometry. Now calculate exact distance to geometry. First find point perpendicular on geometry.
 	geomMin->EvaluateDS(dsMin, &x, &y, &h);
+	
 	// Apply lane offset
 	x += roadMin->GetLaneOffset(dsMin) * cos(h + M_PI_2);
 	y += roadMin->GetLaneOffset(dsMin) * sin(h + M_PI_2);
 	distMin = PointDistance(x3, y3, x, y);
 
 	// Check whether the point is left or right side of road
-	// x3, y3 is the point checked against a vector aligned with heading
+	// x3, y3 is the point checked against closest point on geometry
 	int side = PointSideOfVec(x3, y3, x, y, x + cos(h), y + sin(h));
 
 	// Find out what lane 
 	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);		
 
-	//LOG("Closest point: dist %.2f side %d track_id %d lane_id %d s %.2f h %.2f\n", distMin, side, roadMin->GetId(), GetLaneId(), s_, h);
 	if (evaluateZAndPitch)
 	{
 		EvaluateZAndPitch();
@@ -2198,9 +2208,9 @@ void Position::Lane2Track()
 	}
 }
 
-void Position::XYZ2Track()
+void Position::XYZ2Track(bool evaluateZAndPitch)
 {
-	XYH2TrackPos(GetX(), GetY(), GetH(), false);
+	XYH2TrackPos(GetX(), GetY(), GetH(), evaluateZAndPitch);
 }
 
 void Position::SetLongitudinalTrackPos(int track_id, double s)
@@ -2353,7 +2363,6 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_rem
 		}
 		else if (n_connections == 1)
 		{
-			LOG("Strange: Only one connection!");
 			connection_idx = 0;
 		}
 		else
@@ -2599,7 +2608,6 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	}
 
 	LaneSection *lane_section = 0;
-
 	if (lane_section_idx > -1)  // If lane section was specified or reset
 	{
 		lane_section_idx_ = lane_section_idx;
@@ -2655,6 +2663,7 @@ void Position::SetInertiaPos(double x, double y, double z, double h, double p, d
 		XYZ2Track();
 	}
 }
+
 
 double Position::GetCurvature()
 {
@@ -2766,7 +2775,11 @@ int Position::GetSteeringTargetPos(double lookahead_distance, double *target_pos
 	Position target(*this);  // Make a copy of current position
 	target.offset_ = 0.0;  // Fix to lane center
 
-	target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT);
+	if (target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT) != 0)
+	{
+		LOG("Failed moveAlongS");
+		return -1;
+	}
 	
 	target_pos_global[0] = target.GetX();
 	target_pos_global[1] = target.GetY();
