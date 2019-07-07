@@ -32,6 +32,14 @@ typedef struct
 	float s;
 } PositionData;
 
+typedef struct
+{
+	float global_pos[3];    // steering target position, in global coordinate system
+	float local_pos[3];     // steering target position, relative vehicle (pivot position object) coordinate system
+	float angle;				// heading angle to steering target from and relatove to vehicle (pivot position)
+	float curvature;			// road curvature at steering target point
+} SteeringTargetData;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -117,6 +125,16 @@ extern "C"
 	RM_DLL_API int RM_SetWorldPosition(int handle, float x, float y, float z, float h, float p, float r);
 
 	/**
+	Set position from world X, Y and heading coordinates; Z, pitch and road coordinates being calculated
+	@param handle Handle to the position object
+	@param x cartesian coordinate x value
+	@param y cartesian coordinate y value
+	@param h rotation heading value
+	@return 0 if successful, -1 if not
+	*/
+	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h);
+
+	/**
 	Move position forward along the road. Choose way randomly though any junctions.
 	@param handle Handle to the position object
 	@param ds distance (meter) to move
@@ -137,10 +155,10 @@ extern "C"
 	Get the location, in global coordinate system, of the point at a specified distance from starting position along the road ahead
 	@param handle Handle to the position object from which to measure
 	@param lookahead_distance The distance, along the road, to the point
-	@param target_pos Array to fill in calculated X, Y and Z coordinate values
+	@param data Struct including all result values, see SteeringTargetData typedef
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_GetSteeringTargetPosGlobal(int handle, float lookahead_distance, float *target_pos);
+	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, SteeringTargetData *data);
 
 	/**
 	Get the location, in starting position local coordinate system, of the point at a specified distance along the road ahead
