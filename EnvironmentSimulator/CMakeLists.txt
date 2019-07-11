@@ -38,7 +38,7 @@ set ( OSG_INCLUDE_DIR
 )
 set ( OSG_LIBRARIES_PATH 
 	"${OSG_DIR}/lib" 
-	"${OSG_DIR}/lib/osgPlugins-3.7.0"
+	"${OSG_DIR}/lib/osgPlugins-3.6.3"
 )
 
 if(UNIX)
@@ -52,6 +52,8 @@ if(UNIX)
 
   add_library( db_osg UNKNOWN IMPORTED)
   set_property(TARGET db_osg PROPERTY IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph/v10/lib/osgPlugins-3.6.3/osgdb_osg.so")
+
+  link_directories(${OSG_LIBRARIES_PATH})
 
   set ( OSG_LIBRARIES
 	GL
@@ -72,7 +74,7 @@ if(UNIX)
 	db_serializers_osgsim
 	db_serializers_osg
 	db_osg
-	db_fbx
+	#db_fbx
   )
 else() #not UNIX
 
