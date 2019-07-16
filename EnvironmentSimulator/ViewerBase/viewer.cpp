@@ -272,10 +272,6 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	nodeTrackerManipulator_->setRotationMode(osgGA::NodeTrackerManipulator::ELEVATION_AZIM);
 	nodeTrackerManipulator_->setVerticalAxisFixed(true);
 
-#if 0 // generates unwanted debug output on stdout, plus wrong axis
-	nodeTrackerManipulator->setTrackNode(cars[currentCarInFocus].node);
-#endif
-
 	osg::ref_ptr<osgGA::TrackballManipulator> trackBallManipulator;
 	trackBallManipulator = new osgGA::TrackballManipulator;
 	trackBallManipulator->setVerticalAxisFixed(true);
@@ -718,7 +714,7 @@ int Viewer::AddEnvironment(const char* filename)
 	}
 
 	// load and apply new model
-	if (strcmp(filename, ""))
+	if (strcmp(FileNameOf(filename).c_str(), ""))
 	{
 		environment_ = osgDB::readNodeFile(filename);
 		if (environment_ == 0)
@@ -745,7 +741,7 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 {
 	switch (ea.getKey())
 	{
-	case('c'):
+	case(osgGA::GUIEventAdapter::KEY_C):
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->camMode_ += 1;
@@ -756,7 +752,7 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 			viewer_->rubberbandManipulator_->setMode(viewer_->camMode_);
 		}
 		break;
-	case('o'):
+	case(osgGA::GUIEventAdapter::KEY_O):
 	{
 		static bool visible = true;
 
@@ -786,7 +782,7 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 		}
 	}
 	break;
-	case('m'):
+	case(osgGA::GUIEventAdapter::KEY_M):
 	{
 		static bool visible = true;
 
@@ -797,21 +793,25 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 		}
 	}
 	break;
+	case(osgGA::GUIEventAdapter::KEY_D):
 	case(osgGA::GUIEventAdapter::KEY_Right):
 	{
 		viewer_->setKeyRight(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
 	}
 	break;
+	case(osgGA::GUIEventAdapter::KEY_A):
 	case(osgGA::GUIEventAdapter::KEY_Left):
 	{
 		viewer_->setKeyLeft(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
 	}
 	break;
+	case(osgGA::GUIEventAdapter::KEY_W):
 	case(osgGA::GUIEventAdapter::KEY_Up):
 	{
 		viewer_->setKeyUp(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
 	}
 	break;
+	case(osgGA::GUIEventAdapter::KEY_S):
 	case(osgGA::GUIEventAdapter::KEY_Down):
 	{
 		viewer_->setKeyDown(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);

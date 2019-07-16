@@ -660,6 +660,12 @@ int LaneSection::GetConnectingLaneId(int incoming_lane_id, LinkType link_type)
 {
 	int id = incoming_lane_id;
 
+	if (GetLaneById(id) == 0)
+	{
+		LOG("Lane id %d not available in lane section!", id);
+		return 0;
+	}
+
 	if (GetLaneById(id)->GetLink(link_type))
 	{
 		id = GetLaneById(id)->GetLink(link_type)->GetId();
@@ -983,6 +989,52 @@ void Road::AddLaneSection(LaneSection *lane_section)
 	lane_section->SetLength(length_ - lane_section->GetS());
 
 	lane_section_.push_back((LaneSection*)lane_section);
+}
+
+bool Road::GetZAndPitchByS(double s, double *z, double *pitch, int *index)
+{
+	if (GetNumberOfElevations() > 0)
+	{
+		if (*index >= GetNumberOfElevations())
+		{
+			*index = 0;
+		}
+		Elevation *elevation = GetElevation(*index);
+		if (elevation == NULL)
+		{
+			LOG("Elevation error NULL, nelev: %d elev_idx: %d\n", GetNumberOfElevations(), *index);
+			return false;
+		}
+
+		if (elevation && s > elevation->GetS() + elevation->GetLength())
+		{
+			while (s > elevation->GetS() + elevation->GetLength() && *index < GetNumberOfElevations() - 1)
+			{
+				// Move to next elevation section
+				elevation = GetElevation(++*index);
+			}
+		}
+		else if (elevation && s < elevation->GetS())
+		{
+			while (s < elevation->GetS() && *index > 0)
+			{
+				// Move to previous elevation section
+				elevation = GetElevation(--*index);
+			}
+		}
+
+		if (elevation)
+		{
+			double p = s - elevation->GetS();
+			*z = elevation->poly3_.Evaluate(p);
+			//LOG("s: %.2f elevation_idx %d z: %.2f\n", s_, elevation_idx_, z_);
+			*pitch = -elevation->poly3_.EvaluatePrim(p);
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 Road* OpenDrive::GetRoadById(int id)
@@ -1878,14 +1930,10 @@ void Position::Track2Lane()
 	}
 
 	offset_ = min_offset;
-
-	if (candidate_lane_id != lane_id_)
-	{
-		//LOG("change lane: %d -> %d\n", lane_id_, candidate_lane_id);
-		// Update cache indices
-		lane_id_ = candidate_lane_id;
-		lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
-	}
+	// Update cache indices
+	lane_id_ = candidate_lane_id;
+	lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
+	lane_section_idx_ = lane_info.lane_section_idx_;
 }
 
 static double PointDistance(double x0, double y0, double x1, double y1)
@@ -1933,7 +1981,7 @@ static int PointSideOfVec(double px, double py, double vx1, double vy1, double v
 	return SIGN((vx2 - vx1)*(py - vy1) - (vy2 - vy1)*(px - vx1));
 }
 
-double Position::GetDistToTrackGeom(double x3, double y3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm)
+double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm)
 {
 	// Find vector from point perpendicular to line segment
 	// https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
@@ -1946,7 +1994,6 @@ double Position::GetDistToTrackGeom(double x3, double y3, double h, Road *road, 
 	double x2, y2, h2;
 	int side;
 
-//	double line_dist = 0;
 	double dist = 0;
 	geom->EvaluateDS(0, &x1, &y1, &h1);
 	geom->EvaluateDS(geom->GetLength(), &x2, &y2, &h2);
@@ -1956,7 +2003,6 @@ double Position::GetDistToTrackGeom(double x3, double y3, double h, Road *road, 
 	y1 += road->GetLaneOffset(geom->GetLength()) * sin(h1 + M_PI_2);
 	x2 += road->GetLaneOffset(0) * cos(h2 + M_PI_2);
 	y2 += road->GetLaneOffset(geom->GetLength()) * sin(h2 + M_PI_2);
-
 
 	double x4, y4, k;
 	k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) / ((y2 - y1)*(y2 - y1) + (x2 - x1)*(x2 - x1));
@@ -1971,69 +2017,78 @@ double Position::GetDistToTrackGeom(double x3, double y3, double h, Road *road, 
 	}
 	else
 	{
-		// Distance is mesared between point to closest endpoint of line
+		// Distance is measured between point to closest endpoint of line
 		double d1, d2;
 		d1 = PointDistance(x3, y3, x1, y1);
 		d2 = PointDistance(x3, y3, x2, y2);
 		dist = MIN(d1, d2);
+		//LOG("dist: %.2f x3 %.2f y3 %.2f x1 %.2f y1 %.2f x2 %.2f y2 %.2f", dist, x3, y3, x1, y1, x2, y2);
 	}
 	side = PointSideOfVec(x3, y3, x1, y1, x2, y2);
 
-#if 1
 	// Now, calculate actual distance to road geometry - not to a straight line
+	// But do this only for relevant geometries, i.e. where perpendicular distance is reasonable short
 
-	double dsMin = sNorm * geom->GetLength();
-	double sMin = geom->GetS() + dsMin;
-	double x, y;
-
-	if (inside)  // else stick with line approximation
-	{
-		geom->EvaluateDS(dsMin, &x, &y, &h);
-		// Apply lane offset
-		x += road->GetLaneOffset(dsMin) * cos(h + M_PI_2);
-		y += road->GetLaneOffset(dsMin) * sin(h + M_PI_2);
-		dist = PointDistance(x3, y3, x, y);
-
-		// Check whether the point is left or right side of road
-		// x3, y3 is the point checked against a vector aligned with heading
-		side = PointSideOfVec(x3, y3, x, y, x + cos(h), y + sin(h));
-	}
-	// dist is now actually the lateral distance from reference lane, e.g. track coordinate t-value
-	// Finally find closest lane
-
-	// Finally calculate exakt distance
 	double min_lane_dist = dist;
+	double z = 0;
 
-	LaneSection *lane_section = road->GetLaneSectionByS(sMin);
-	if (lane_section != 0)
+	if (dist < 100)
 	{
-		for (int i = 0; i < lane_section->GetNumberOfLanes(); i++)
-		{
-			if (lane_section->GetLaneByIdx(i)->IsDriving())
-			{
-				double signed_offset = dist * SIGN(side);
-				double signed_lane_center_offset = SIGN(lane_section->GetLaneIdByIdx(i)) * lane_section->GetCenterOffset(sMin, lane_section->GetLaneIdByIdx(i));
-				double lane_dist = signed_offset - signed_lane_center_offset;
 
-				if (fabs(lane_dist) < fabs(min_lane_dist))
+		double dsMin = CLAMP(sNorm, 0.0, 1.0) * geom->GetLength();
+		double sMin = geom->GetS() + dsMin;
+		double x, y;
+		double pitch = 0;
+
+		// Find out Z level
+		road->GetZAndPitchByS(sMin, &z, &pitch, &elevation_idx_);
+		
+		if (inside)  // else stick with line approximation
+		{
+			geom->EvaluateDS(dsMin, &x, &y, &h);
+			// Apply lane offset
+			x += road->GetLaneOffset(sMin) * cos(h + M_PI_2);
+			y += road->GetLaneOffset(sMin) * sin(h + M_PI_2);
+			dist = PointDistance(x3, y3, x, y);
+
+			// Check whether the point is left or right side of road
+			// x3, y3 is the point checked against a vector aligned with heading
+			side = PointSideOfVec(x3, y3, x, y, x + cos(h), y + sin(h));
+
+			// dist is now actually the lateral distance from reference lane, e.g. track coordinate t-value
+			// Finally find closest lane
+
+			// Finally calculate exakt distance, but only for inside points
+			LaneSection *lane_section = road->GetLaneSectionByS(sMin);
+			if (lane_section != 0)
+			{
+				for (int i = 0; i < lane_section->GetNumberOfLanes(); i++)
 				{
-					min_lane_dist = lane_dist;
+					if (lane_section->GetLaneByIdx(i)->IsDriving())
+					{
+						double lane_dist;
+						{
+							double signed_offset = dist * SIGN(side);
+							double signed_lane_center_offset = SIGN(lane_section->GetLaneIdByIdx(i)) * lane_section->GetCenterOffset(sMin, lane_section->GetLaneIdByIdx(i));
+							lane_dist = signed_offset - signed_lane_center_offset;
+							if (fabs(lane_dist) < fabs(min_lane_dist))
+							{
+								min_lane_dist = lane_dist;
+							}
+						}
+					}
 				}
 			}
 		}
 	}
-	return fabs(min_lane_dist);
-#else
-	return dist;
-#endif
+
+	return fabs(min_lane_dist) + fabs(GetZ() - z);
 }
 
-void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPitch)
+void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool evaluateZAndPitch)
 {
 	double dist;
 	double distMin = std::numeric_limits<double>::infinity();
-	double distMinInside = std::numeric_limits<double>::infinity();
-	double distMinOutside = std::numeric_limits<double>::infinity();
 	double sNorm;
 	double sNormMin;
 	Geometry *geom;
@@ -2067,22 +2122,14 @@ void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPi
 		for (int j = 0; j < road->GetNumberOfGeometries(); j++)
 		{
 			geom = road->GetGeometry(j);
-			dist = GetDistToTrackGeom(x3, y3, h3, road, geom, inside, sNorm);
+			dist = GetDistToTrackGeom(x3, y3, z3, h3, road, geom, inside, sNorm);
 	
-			if (inside && dist < distMinInside || !insideMin && (!inside && dist < distMinOutside))  // Inside points always wins over outside ones
+			if (dist < distMin)  
 			{
 				geomMin = geom;
 				roadMin = road;
 				sNormMin = CLAMP(sNorm, 0.0, 1.0);
 				insideMin = inside;
-				if (inside)
-				{
-					distMinInside = dist;
-				}
-				else
-				{
-					distMinOutside = dist;
-				}
 				distMin = dist;
 				found = true;
 			}
@@ -2114,52 +2161,22 @@ void Position::XYH2TrackPos(double x3, double y3, double h3, bool evaluateZAndPi
 	// Find out what lane 
 	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);		
 
+	// Calculate heading relative to the road
+	double heading_vehicle = fmod(GetH(), (2 * M_PI));
+	double heading_road = fmod(h, (2 * M_PI));
+
+	h_relative_ = M_PI - std::fabs(std::fabs(heading_vehicle - heading_road) - M_PI);
+
 	if (evaluateZAndPitch)
 	{
 		EvaluateZAndPitch();
 	}
 }
 	
+
 bool Position::EvaluateZAndPitch()
 {
-	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
-	if (road && road->GetNumberOfElevations() > 0)
-	{
-		Elevation *elevation = road->GetElevation(elevation_idx_);
-		if (elevation == NULL)
-		{
-			LOG("Elevation error NULL, nelev: %d elev_idx: %d\n", road->GetNumberOfElevations(), elevation_idx_);
-		}
-		if (elevation && s_ > elevation->GetS() + elevation->GetLength())
-		{
-			while (s_ > elevation->GetS() + elevation->GetLength() && elevation_idx_ < road->GetNumberOfElevations() - 1)
-			{
-				// Move to next elevation section
-				elevation = road->GetElevation(++elevation_idx_);
-			}
-		}
-		else if (elevation && s_ < elevation->GetS())
-		{
-			while (s_ < elevation->GetS() && elevation_idx_ > 0)
-			{
-				// Move to previous elevation section
-				elevation = road->GetElevation(--elevation_idx_);
-			}
-		}
-
-		if (elevation)
-		{
-			double p = s_ - elevation->GetS();
-			z_ = elevation->poly3_.Evaluate(p);
-			//LOG("s: %.2f elevation_idx %d z: %.2f\n", s_, elevation_idx_, z_);
-			p_ = -elevation->poly3_.EvaluatePrim(p);
-		}
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return GetRoadById(track_id_)->GetZAndPitchByS(s_, &z_, &p_, &elevation_idx_);
 }
 
 void Position::Track2XYZ()
@@ -2210,7 +2227,7 @@ void Position::Lane2Track()
 
 void Position::XYZ2Track(bool evaluateZAndPitch)
 {
-	XYH2TrackPos(GetX(), GetY(), GetH(), evaluateZAndPitch);
+	XYZH2TrackPos(GetX(), GetY(), GetZ(), GetH(), evaluateZAndPitch);
 }
 
 void Position::SetLongitudinalTrackPos(int track_id, double s)
@@ -2230,11 +2247,16 @@ void Position::SetLongitudinalTrackPos(int track_id, double s)
 		geometry_idx_ = 0;
 		elevation_idx_ = 0;
 		lane_section_idx_ = 0;
+		lane_id_ = 0;
+		lane_idx_ = 0;
 	}
 
 	if (s > road->GetLength())
 	{
-		LOG("Position::Set Warning: s (%.2f) too large, track %d only %.2f m long\n", s, track_id_, road->GetLength());
+		if (s > road->GetLength() + SMALL_NUMBER)
+		{
+			LOG("Position::Set Warning: s (%.2f) too large, track %d only %.2f m long\n", s, track_id_, road->GetLength());
+		}
 		s_ = road->GetLength();
 	}
 	else
@@ -2274,9 +2296,8 @@ void Position::SetTrackPos(int track_id, double s, double t, bool calculateXYZ)
 	}
 }
 
-int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_remains, Junction::JunctionStrategyType strategy)
+int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType contact_point_type, Junction::JunctionStrategyType strategy)
 {
-	double s_new;
 	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
 	Road *next_road = 0;
 	LaneSection *lane_section;
@@ -2291,54 +2312,43 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_rem
 
 	if (road_link->GetElementId() == -1)
 	{
-		LOG("Position::MoveToConnectingRoad No connecting road or junction at rid %d s_ %.2f (ds %.2f s_ %.2f)\n", road->GetId(), s_ + ds, ds, s_);
+		LOG("Position::MoveToConnectingRoad No connecting road or junction at rid %d contact_point_type %d", road->GetId(), contact_point_type);
 		return -1;
 	}
 	
+	// Get lane info from current road
 	lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 	if (lane_section == 0)
 	{
-		LOG("Position::MoveToConnectingRoad No lane section rid %d ls_idx %d s %.2f\n", road->GetId(), lane_section_idx_, s_ + ds);
+		LOG("Position::MoveToConnectingRoad No lane section rid %d ls_idx %d contact_point_type %d", road->GetId(), lane_section_idx_, contact_point_type);
 		return -1;
 	}
 
 	lane = lane_section->GetLaneByIdx(lane_idx_);
 	if (lane == 0)
 	{
-		LOG("Position::MoveToConnectingRoad No lane rid %d lidx %d nlanes %d s_ %.2f s %.2f lsecidx %d\n", 
-			road->GetId(), lane_idx_, lane_section->GetNumberOfLanes(), s_, s_ + ds, lane_section_idx_);
+		LOG("Position::MoveToConnectingRoad No lane rid %d lidx %d nlanes %d contact_point_type %d lsecidx %d\n", 
+			road->GetId(), lane_idx_, lane_section->GetNumberOfLanes(), contact_point_type, lane_section_idx_);
 		return -1;
 	}
-
-	LinkType link_type;
-	if (s_ + ds > road->GetLength())
-	{
-		s_new = s_ + ds - road->GetLength();
-		link_type = SUCCESSOR;
-	}
-	else if (s_ + ds < 0)
-	{
-		s_new = -(s_ + ds);
-		link_type = PREDECESSOR;
-	}
-	else
-	{
-		LOG("Position::MoveToConnectingRoad s_ + ds %.2f within range [0:%.2f]\n", s_ + ds, road->GetLength());
-		return -1;
-	}
+	//LOG("  rid %d lid %d lsx %d lix %d s %.2f", road->GetId(), lane->GetId(), lane_section_idx_, lane_idx_, s_);
 
 	int contact_point = 0;
 
 	if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)
 	{
-		LaneLink *lane_link = lane->GetLink(link_type);
+		LaneLink *lane_link = lane->GetLink(road_link->GetType());
 		if (lane_link != 0)
 		{
-			new_lane_id = lane->GetLink(link_type)->GetId();
+			new_lane_id = lane->GetLink(road_link->GetType())->GetId();
 			if (new_lane_id == 0)
 			{
 				LOG("Position::MoveToConnectingRoad Road+ new lane id %d\n", new_lane_id);
 			}
+		}
+		else
+		{
+			LOG("No lane link");
 		}
 		contact_point = road_link->GetContactPointType();
 		next_road = GetOpenDrive()->GetRoadById(road_link->GetElementId());
@@ -2450,56 +2460,25 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_rem
 	}
 	
 	// Find out if connecting to start or end of new road
-	s_remains = 0;
 	if (road_link->GetContactPointType() == CONTACT_POINT_START)
 	{
-		if (s_new <= next_road->GetLength())
-		{
-			SetLanePos(road_link->GetElementId(), new_lane_id, s_new, new_offset);
-		}
-		else
-		{
-			SetLanePos(road_link->GetElementId(), new_lane_id, next_road->GetLength(), new_offset);
-			s_remains = s_new - next_road->GetLength();
-		}
+		// Specify first (0) lane section
+		SetLanePos(road_link->GetElementId(), new_lane_id, 0, new_offset, 0);
 	}
 	else if (road_link->GetContactPointType() == CONTACT_POINT_END)
 	{
-		if (s_new <= next_road->GetLength())
-		{
-			SetLanePos(road_link->GetElementId(), new_lane_id, next_road->GetLength() - s_new, new_offset);
-		}
-		else
-		{
-			SetLanePos(road_link->GetElementId(), new_lane_id, 0, new_offset);
-			s_remains = s_new - next_road->GetLength();
-		}
+		// Find out and specify last lane section
+		SetLanePos(road_link->GetElementId(), new_lane_id, next_road->GetLength(), new_offset, GetRoadById(road_link->GetElementId())->GetNumberOfLaneSections()-1);
 	}
 	else if (road_link->GetContactPointType() == CONTACT_POINT_NONE && road_link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
 	{
 		if (contact_point == CONTACT_POINT_START)
 		{
-			if (s_new <= next_road->GetLength())
-			{
-				SetLanePos(next_road->GetId(), new_lane_id, s_new, new_offset);
-			}
-			else
-			{
-				SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength(), new_offset);
-				s_remains = s_new - next_road->GetLength();
-			}
+			SetLanePos(next_road->GetId(), new_lane_id, 0, new_offset);
 		}
 		else if (contact_point == CONTACT_POINT_END)
 		{
-			if (s_new <= next_road->GetLength())
-			{
-				SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength() - s_new, new_offset);
-			}
-			else
-			{
-				SetLanePos(next_road->GetId(), new_lane_id, 0, new_offset);
-				s_remains = s_new - next_road->GetLength();
-			}
+			SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength(), new_offset);
 		}
 		else
 		{
@@ -2512,19 +2491,13 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_rem
 		return -1;
 	}
 
-	if(s_remains > 1E-10)
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
+	return 0;
 }
 
 int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrategyType strategy)
 {
 	RoadLink *link;
+	double ds_signed = ds;
 	int max_links = 4;  // limit lookahead through junctions/links 
 	
 	// EG: If offset_ is not along reference line, but instead along lane direction then we dont need
@@ -2533,36 +2506,22 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 
 	for (int i = 0; i < max_links; i++)
 	{
-		ds *= -SIGN(GetLaneId()); // adjust sign of ds according to lane direction - right lane is < 0 in road dir
+		ds_signed = -SIGN(GetLaneId()) * ds; // adjust sign of ds according to lane direction - right lane is < 0 in road dir
 
-		// Then adjust sign of ds according to vehicle heading relative road direction
-		double h, diff;
 
-		h = GetDrivingDirection();
-		diff = GetAbsAngleDifference(h, h_);
-
-		if (diff > M_PI_2)
-		{
-			ds = -ds;
-		}
-
-		if (s_ + ds > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
+		if (s_ + ds_signed > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
 		{
 			link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(SUCCESSOR);
+			ds = s_ + ds_signed - GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
 		}
-		else if (s_ + ds < 0)
+		else if (s_ + ds_signed < 0)
 		{
 			link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(PREDECESSOR);
+			ds = -ds_signed - s_;
 		}
 		else  // New position is within current track
 		{
-			SetLanePos(track_id_, lane_id_, s_ + ds, offset_);
-
-			// make sure heading is aligned with driving direction
-			if (diff > M_PI_2)   
-			{
-				h_ = fmod(h_ + M_PI, 2 * M_PI);
-			}
+			SetLanePos(track_id_, lane_id_, s_ + ds_signed, offset_);
 			return 0;
 		}
 
@@ -2572,16 +2531,12 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 			return -1;
 		}
 
-		double s_remains = 0;
-		int returnvalue = MoveToConnectingRoad(link, ds, s_remains, strategy);
+		int returnvalue = MoveToConnectingRoad(link, link->GetContactPointType(), strategy);
 
-		if(returnvalue != 1)
+		if(returnvalue != 0)
 		{
+			LOG("Failed move to connecting road");
 			return returnvalue;
-		}
-		else
-		{
-			ds = s_remains;  // not done, we need to go further across a linked road
 		}
 	}
 	return(-1);
@@ -2602,8 +2557,7 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 
 	if (lane_id != lane_id_ && lane_section_idx == -1)
 	{
-		// New lane ID might indicate a discreet jump to a new, distant position, reset lane section, if not specified)
-		//LOG("Explicit lane change %d -> %d and reseting lane section\n", lane_id_, lane_id);
+		// New lane ID might indicate a discreet jump to a new, distant position, reset lane section, if not specified in func parameter)
 		lane_section_idx = 0;
 	}
 
@@ -2942,7 +2896,7 @@ int Route::AddWaypoint(Position *position)
 	waypoint_.push_back(position);
 	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f\n", (int)waypoint_.size()-1, position->GetTrackId(), position->GetLaneId(), position->GetS());
 
-	return 0; 
+	return 0;
 }
 
 double Route::GetLength()

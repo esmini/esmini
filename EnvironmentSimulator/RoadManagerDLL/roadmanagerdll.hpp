@@ -26,6 +26,7 @@ typedef struct
 	float h;
 	float p;
 	float r;
+	float hRelative;
 	int   roadId;
 	int   laneId;
 	float laneOffset;
