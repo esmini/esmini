@@ -200,7 +200,7 @@ extern "C"
 		return 0;
 	}
 
-	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h)
+	RM_DLL_API int RM_SetWorldXYZHPosition(int handle, float x, float y, float z, float h)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
@@ -209,7 +209,8 @@ extern "C"
 		else
 		{
 			roadmanager::Position *pos = &position[handle];
-			pos->XYH2TrackPos(x, y, h, true);
+			pos->XYZH2TrackPos(x, y, h, true);
+			LOG("s %.2f roadId %d laneId %d", pos->GetS(), pos->GetTrackId(), pos->GetLaneId());
 		}
 
 		return 0;
@@ -257,6 +258,7 @@ extern "C"
 			data->h = (float)position[handle].GetH();
 			data->p = (float)position[handle].GetP();
 			data->r = (float)position[handle].GetR();
+			data->hRelative = (float)position[handle].GetHRelative();
 			data->roadId = position[handle].GetTrackId();
 			data->laneId = position[handle].GetLaneId();
 			data->laneOffset = (float)position[handle].GetOffset();

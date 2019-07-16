@@ -474,6 +474,7 @@ namespace roadmanager
 		double GetCenterOffset(double s, int lane_id);
 
 		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id);
+		bool GetZAndPitchByS(double s, double *z, double *pitch, int *index);
 		int GetNumberOfLaneSections() { return (int)lane_section_.size(); }
 		std::string GetName() { return name_; }
 		void SetLength(double length) { length_ = length; }
@@ -655,14 +656,13 @@ namespace roadmanager
 		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
 		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
-		void SetXYHPos(double x, double y, double h);
 		void SetHeading(double heading) { h_ = heading;  }
 		void SetHeadingRelative(double heading) 
 		{ 
 			h_relative_ = heading; 
 		}  // Sets heading indepnedently 
-		void XYH2TrackPos(double x, double y, double h, bool evaluateZAndPitch = true);
-		int MoveToConnectingRoad(RoadLink *road_link, double ds, double &s_remains, Junction::JunctionStrategyType strategy = Junction::RANDOM);
+		void XYZH2TrackPos(double x, double y, double z, double h, bool evaluateZAndPitch = true);
+		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 
 		void SetRoute(Route *route) { route_ = route; }
 		const roadmanager::Route* GetRoute() const { return route_; }
@@ -842,7 +842,7 @@ namespace roadmanager
 		void XYZ2Track(bool evaluateZAndPitch = false);
 		void SetLongitudinalTrackPos(int track_id, double s);
 		bool EvaluateZAndPitch();
-		double GetDistToTrackGeom(double x3, double y3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm);
+		double GetDistToTrackGeom(double x3, double y3, double z3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm);
 
 		// route reference
 		Route  *route_;			// if pointer set, the position corresponds to a point along (s) the route

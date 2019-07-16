@@ -23,7 +23,8 @@
 #include "ScenarioEngine.hpp"
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
-
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 static SE_Thread thread;
 static SE_Mutex mutex;
@@ -106,11 +107,18 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 	egoCar->vehicle->Update(deltaTimeStep, accelerate, steer);
 
 	// Set OpenDRIVE position
-	egoCar->pos->XYH2TrackPos(egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->heading_);
+	egoCar->pos->XYZH2TrackPos(egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_, egoCar->vehicle->heading_);
 
 	// Fetch Z and Pitch from OpenDRIVE position
 	egoCar->vehicle->posZ_ = egoCar->pos->GetZ();
 	egoCar->vehicle->pitch_ = egoCar->pos->GetP();
+	
+	// Find out pitch of road in driving direction
+	float heading_rel = -egoCar->pos->GetHRelative();
+	if (heading_rel < -M_PI / 2 || heading_rel > M_PI / 2)
+	{
+		egoCar->vehicle->pitch_ *= -1;
+	}
 }
 
 static void viewer_thread(void *args)
