@@ -38,7 +38,11 @@ set ( OSG_INCLUDE_DIR
 )
 set ( OSG_LIBRARIES_PATH 
 	"${OSG_DIR}/lib" 
+#if(WIN32)
+	"${OSG_DIR}/lib/osgPlugins-3.7.0"
+#else
 	"${OSG_DIR}/lib/osgPlugins-3.6.3"
+#endif
 )
 
 if(UNIX)
