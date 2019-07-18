@@ -627,7 +627,8 @@ namespace roadmanager
 		Junction* GetJunctionById(int id);
 		Junction* GetJunctionByIdx(int idx);
 		int GetNumOfJunctions() { return (int)junction_.size(); }
-		bool IsConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id = 0, int lane2_id = 0);
+		bool IsDirectlyConnected(int road1_id, int road2_id, double &angle);
+		bool IsIndirectlyConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id = 0, int lane2_id = 0);
 
 		void Print();
 	
@@ -821,12 +822,6 @@ namespace roadmanager
 		Retrieve the road heading/direction at current position, and in the direction given by current lane
 		*/
 		double GetDrivingDirection();
-
-		/**
-		Retrieve the absolute value of difference between two angles
-		*/
-		double GetAbsAngleDifference(double angle1, double angle2);
-
 
 		void PrintTrackPos();
 		void PrintLanePos();

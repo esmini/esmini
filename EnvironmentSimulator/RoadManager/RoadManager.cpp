@@ -50,8 +50,6 @@
 #include <time.h>
 #include <limits>
 
-#define _USE_MATH_DEFINES
-#include <math.h>
 
 #include "RoadManager.hpp"
 #include "odrSpiral.h"
@@ -69,6 +67,7 @@ using namespace roadmanager;
 #define MIN(x, y) (y < x ? y : x)
 #define CLAMP(x, a, b) (MIN(MAX(x, a), b))
 #define MAX_TRACK_DIST 10
+
 
 
 double Polynomial::Evaluate(double s)
@@ -456,7 +455,6 @@ Geometry* Road::GetGeometry(int idx)
 	}
 	return geometry_[idx]; 
 }
-
 
 void LaneSection::Print()
 {
@@ -1665,7 +1663,71 @@ int OpenDrive::GetTrackIdByIdx(int idx)
 	return 0;
 }
 
-bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id, int lane2_id)
+bool OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double &angle)
+{
+	Road *road1 = GetRoadById(road1_id);
+	Road *road2 = GetRoadById(road2_id);
+	RoadLink *link;
+
+	// Look from road 1, both ends, for road 2 
+		
+	for (int i = 0; i < 2; i++)
+	{
+		if (link = road1->GetLink(i == 0 ? LinkType::SUCCESSOR : LinkType::PREDECESSOR))
+		{
+			if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
+			{
+				if (link->GetElementId() == road2->GetId())
+				{
+					return true;
+				}
+			}
+			else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
+			{
+				Junction *junction = GetJunctionById(link->GetElementId());
+
+				for (int i = 0; i < junction->GetNumberOfConnections(); i++)
+				{
+					Connection *connection = junction->GetConnectionByIdx(i);
+					Position test_pos1;
+					Position test_pos2;
+
+					if (connection->GetIncomingRoad()->GetId() == road1_id && connection->GetConnectingRoad()->GetId() == road2_id)
+					{
+
+						double heading1, heading2;
+
+						test_pos1.SetLanePos(road2_id, 0, 0, 0);
+						test_pos2.SetLanePos(road2_id, 0, road2->GetLength(), 0);
+
+						if (connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END)
+						{
+							heading1 = test_pos2.GetH() + M_PI;
+							heading2 = test_pos1.GetH() + M_PI;
+						}
+						else if(connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START)
+						{
+							heading1 = test_pos1.GetH();
+							heading2 = test_pos2.GetH();
+						}
+						else
+						{
+							LOG("Unexpected contact point %d", connection->GetContactPoint());
+						}
+
+						angle = GetAbsAngleDifference(heading1, heading2);
+
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool OpenDrive::IsIndirectlyConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id, int lane2_id)
 {
 	Road *road1 = GetRoadById(road1_id);
 	Road *road2 = GetRoadById(road2_id);
@@ -1695,7 +1757,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 			link = road1->GetLink(link_type);
 			if (link == 0)
 			{
-				LOG("OpenDrive::IsConnected Link not found!\n");
+				LOG("Link not found!\n");
 				return false;
 			}
 		}
@@ -1724,12 +1786,12 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 				}
 				else
 				{
-					LOG("OpenDrive::IsConnected Error LinkType %d not suppoered\n", link_type);
+					LOG("Error LinkType %d not suppoered\n", link_type);
 					return false;
 				}
 				if (lane_section == 0)
 				{
-					LOG("OpenDrive::IsConnected Error lane section == 0\n");
+					LOG("Error lane section == 0\n");
 					return false;
 				}
 				Lane *lane = lane_section->GetLaneById(lane1_id);
@@ -1766,7 +1828,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 					lane_section = connecting_road->GetLaneSectionByIdx(0);
 					if (lane_section == 0)
 					{
-						LOG("OpenDrive::IsConnected Error lane section == 0\n");
+						LOG("Error lane section == 0\n");
 						return false;
 					}
 					for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
@@ -1798,7 +1860,7 @@ bool OpenDrive::IsConnected(int road1_id, int road2_id, int* &connecting_road_id
 	}
 	else
 	{
-		LOG("OpenDrive::IsConnected Error: LinkElementType %d unsupported\n", link->GetElementType());
+		LOG("Error: LinkElementType %d unsupported\n", link->GetElementType());
 	}
 
 	return false;
@@ -2032,7 +2094,7 @@ double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, R
 	double min_lane_dist = dist;
 	double z = 0;
 
-	if (dist < 100)
+	if (dist < 100)  // then make a more exact measurement and comparison
 	{
 
 		double dsMin = CLAMP(sNorm, 0.0, 1.0) * geom->GetLength();
@@ -2091,22 +2153,22 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ev
 	double distMin = std::numeric_limits<double>::infinity();
 	double sNorm;
 	double sNormMin;
-	Geometry *geom;
+	Geometry *geom, *current_geom;
 	Geometry *geomMin = 0;
-	Road *road;
+	Road *road, *current_road;
 	Road *roadMin;
 	bool inside = false;
 	bool insideMin = false;
 
 	(void)insideMin;
 
-	if ((road = GetOpenDrive()->GetRoadByIdx(track_idx_)) == 0)
+	if ((current_road = GetOpenDrive()->GetRoadByIdx(track_idx_)) == 0)
 	{
 		LOG("Invalid road index %d\n", track_idx_);
 		return;
 	}
 
-	if ((geom = road->GetGeometry(geometry_idx_)) == 0)
+	if ((current_geom = current_road->GetGeometry(geometry_idx_)) == 0)
 	{
 		LOG("Invalid geometry index %d\n", geometry_idx_);
 		return;
@@ -2114,17 +2176,31 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ev
 
 	// Search all road and lanes. Inefficient - but simple. Todo: Optimize
 	bool found = false;
+	double add_weight;  // Add some resistance to switch from current road, applying a stronger bound to current road
+
 	(void)found;
 
 	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
 	{
 		road = GetOpenDrive()->GetRoadByIdx(i);
+		double angle = 0;
+
+		// Add resistance to leave current road including directly connected ones 
+		if (road == current_road || GetOpenDrive()->IsDirectlyConnected(current_road->GetId(), road->GetId(), angle))
+		{
+			add_weight = 2*angle;  // The higher angular difference, the higher threshold for switching even if road is connected
+		}
+		else
+		{
+			add_weight = 5;  // For non connected roads, add 5 meter distance "penalty" as threshold
+		}
+
 		for (int j = 0; j < road->GetNumberOfGeometries(); j++)
 		{
 			geom = road->GetGeometry(j);
-			dist = GetDistToTrackGeom(x3, y3, z3, h3, road, geom, inside, sNorm);
-	
-			if (dist < distMin)  
+			dist = GetDistToTrackGeom(x3, y3, z3, h3, road, geom, inside, sNorm) + add_weight;
+
+			if (dist < distMin) 
 			{
 				geomMin = geom;
 				roadMin = road;
@@ -2158,8 +2234,8 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ev
 	// x3, y3 is the point checked against closest point on geometry
 	int side = PointSideOfVec(x3, y3, x, y, x + cos(h), y + sin(h));
 
-	// Find out what lane 
-	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);		
+	// Find out what lane and set position
+	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);
 
 	// Calculate heading relative to the road
 	double heading_vehicle = fmod(GetH(), (2 * M_PI));
@@ -2171,6 +2247,7 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ev
 	{
 		EvaluateZAndPitch();
 	}
+
 }
 	
 
@@ -2405,17 +2482,10 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType contact
 					}
 
 					// Transform angle into a comparable format
-					double heading_diff = fmod(test_pos.GetH() - GetH(), M_PI);
-					if (heading_diff > 180)
-					{
-						heading_diff = 360 - heading_diff;
-					}
-					else if (heading_diff < -180)
-					{
-						heading_diff = 360 + heading_diff;
-					}
 
-					if (abs(heading_diff) < abs(min_heading_diff))
+					double heading_diff = GetAbsAngleDifference(test_pos.GetH(), GetH());
+
+					if (heading_diff < min_heading_diff)
 					{
 						min_heading_diff = heading_diff;
 						best_road_index = i;
@@ -2643,23 +2713,6 @@ double Position::GetDrivingDirection()
 	return(h);
 }
 
-double Position::GetAbsAngleDifference(double angle1, double angle2)
-{
-	double diff = fmod(angle2 - angle1, 2 * M_PI);
-
-	if (diff < 0)
-	{
-		diff += 2 * M_PI;
-	}
-
-	if (diff > M_PI)
-	{
-		diff = 2 * M_PI - diff;
-	}
-
-	return diff;
-}
-
 void Position::PrintTrackPos()
 {
 	LOG("	Track pos: (%d, %.2f, %.2f)", track_id_, s_, t_);
@@ -2869,7 +2922,7 @@ int Route::AddWaypoint(Position *position)
 
 		if (prev_pos->GetTrackId() != position->GetTrackId())
 		{
-			if (position->GetOpenDrive()->IsConnected(prev_pos->GetTrackId(), position->GetTrackId(), 
+			if (position->GetOpenDrive()->IsIndirectlyConnected(prev_pos->GetTrackId(), position->GetTrackId(), 
 				connecting_road_id_ptr, connecting_lane_id_ptr, prev_pos->GetLaneId(), position->GetLaneId()))
 			{
 				connected = true;

@@ -16,10 +16,27 @@
 
 #include "CommonMini.hpp"
 
-
 #define DEBUG_TRACE
 #define LOG_FILENAME "log.txt"
 
+
+
+double GetAbsAngleDifference(double angle1, double angle2)
+{
+	double diff = fmod(angle2 - angle1, 2 * M_PI);
+
+	if (diff < 0)
+	{
+		diff += 2 * M_PI;
+	}
+
+	if (diff > M_PI)
+	{
+		diff = 2 * M_PI - diff;
+	}
+
+	return diff;
+}
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 

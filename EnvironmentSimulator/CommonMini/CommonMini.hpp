@@ -16,6 +16,8 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 #ifdef _WIN32
 	#include <sdkddkver.h>
@@ -41,6 +43,13 @@
 // Time functions
 __int64 SE_getSystemTime();
 void SE_sleep(unsigned int msec);
+
+
+// Useful operations
+/**
+Retrieve the absolute value of difference between two angles
+*/
+double GetAbsAngleDifference(double angle1, double angle2);
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 
