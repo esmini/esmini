@@ -44,7 +44,6 @@ namespace scenarioengine
 		double speed_;
 		roadmanager::Position pos_;
 		roadmanager::Route *route_;
-		double heading_;
 		std::string model_filepath_;
 		int model_id_;
 

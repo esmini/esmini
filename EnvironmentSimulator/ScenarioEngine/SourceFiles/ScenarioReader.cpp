@@ -646,6 +646,10 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, Entit
 							}
 
 							pos->SetRouteRefLaneCoord(s, lane_id, lane_offset);
+							if (lane_id > 0)
+							{
+								pos->SetRouteRelativeHeading(M_PI);
+							}
 						}
 					}
 				}

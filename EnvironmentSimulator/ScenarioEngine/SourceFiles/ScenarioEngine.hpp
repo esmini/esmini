@@ -45,8 +45,6 @@ namespace scenarioengine
 		void InitScenario(const pugi::xml_document &xml_doc, std::string oscFilename, double startTime, ExternalControlMode ext_control);
 
 		void step(double deltaSimTime, bool initial = false);
-		void setSimulationTime(double simulationTime);
-		void setTimeStep(double timeStep);
 		void printSimulationTime();
 		void stepObjects(double dt);
 

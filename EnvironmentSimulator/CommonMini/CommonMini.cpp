@@ -38,6 +38,30 @@ double GetAbsAngleDifference(double angle1, double angle2)
 	return diff;
 }
 
+double GetAngleDifference(double angle1, double angle2)
+{
+	double diff = fmod(angle2 - angle1, 2 * M_PI);
+
+	if (diff < 0)
+	{
+		diff += 2 * M_PI;
+	}
+
+	return diff;
+}
+
+double GetAngleSum(double angle1, double angle2)
+{
+	double sum = fmod(angle2 + angle1, 2 * M_PI);
+
+	if (sum < 0)
+	{
+		sum += 2 * M_PI;
+	}
+
+	return sum;
+}
+
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 
 	#include <windows.h>
@@ -87,6 +111,16 @@ std::string FileNameOf(const std::string& fname)
 {
 	size_t pos = fname.find_last_of("\\/");
 	return (std::string::npos == pos) ? "" : fname.substr(pos+1);
+}
+
+double GetCrossProduct2D(double x1, double y1, double x2, double y2)
+{
+	return x1 * y2 - x2 * y1;
+}
+
+double GetDotProduct2D(double x1, double y1, double x2, double y2)
+{
+	return x1 * x2 + y1 * y2;
 }
 
 Logger::Logger()

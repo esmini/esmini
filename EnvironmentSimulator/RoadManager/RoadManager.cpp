@@ -190,7 +190,7 @@ void Spiral::EvaluateDS(double ds, double *x, double *y, double *h)
 		*h = t1 - t0;
 	}
 
-	*h += GetHdg() + GetH0();
+	*h += GetHdg() - GetH0();
 
 	double x1, x2, y1, y2;
 
@@ -1679,6 +1679,7 @@ bool OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double &angle)
 			{
 				if (link->GetElementId() == road2->GetId())
 				{
+					angle = 0;
 					return true;
 				}
 			}
@@ -1692,20 +1693,20 @@ bool OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double &angle)
 					Position test_pos1;
 					Position test_pos2;
 
+					double heading1, heading2;
+
+					// check case where road1 is incoming road
 					if (connection->GetIncomingRoad()->GetId() == road1_id && connection->GetConnectingRoad()->GetId() == road2_id)
 					{
-
-						double heading1, heading2;
-
 						test_pos1.SetLanePos(road2_id, 0, 0, 0);
 						test_pos2.SetLanePos(road2_id, 0, road2->GetLength(), 0);
 
-						if (connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END)
+						if (connection->GetContactPoint() == CONTACT_POINT_END)
 						{
 							heading1 = test_pos2.GetH() + M_PI;
 							heading2 = test_pos1.GetH() + M_PI;
 						}
-						else if(connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START)
+						else if(connection->GetContactPoint() == CONTACT_POINT_START)
 						{
 							heading1 = test_pos1.GetH();
 							heading2 = test_pos2.GetH();
@@ -1713,6 +1714,62 @@ bool OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double &angle)
 						else
 						{
 							LOG("Unexpected contact point %d", connection->GetContactPoint());
+							return false;
+						}
+
+						angle = GetAbsAngleDifference(heading1, heading2);
+
+						return true;
+					}
+					// then check other case where road1 is outgoing from connecting road (connecting road is a road within junction)
+					else if (connection->GetConnectingRoad()->GetId() == road2_id && connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR)->GetElementId() == road1_id)
+					{
+						if (connection->GetContactPoint() == CONTACT_POINT_START) // connecting road ends up connecting to road_1
+						{
+							test_pos1.SetLanePos(road2_id, 0, road2->GetLength(), 0);
+							test_pos2.SetLanePos(road2_id, 0, 0, 0);
+
+							if (connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR)->GetContactPointType() == CONTACT_POINT_START)  // connecting to start of road_1
+							{
+								heading1 = test_pos2.GetH();
+								heading2 = test_pos1.GetH();
+							}
+							else if (connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR)->GetContactPointType() == CONTACT_POINT_END)  // connecting to end of road_1
+							{
+								heading1 = test_pos2.GetH() + M_PI;
+								heading2 = test_pos1.GetH() + M_PI;
+							}
+							else
+							{
+								LOG("Unexpected contact point %d", connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetContactPointType());
+								return false;
+							}
+						}
+						else if (connection->GetContactPoint() == CONTACT_POINT_END) // connecting road start point connecting to road_1 
+						{
+							test_pos1.SetLanePos(road2_id, 0, 0, 0);
+							test_pos2.SetLanePos(road2_id, 0, road2->GetLength(), 0);
+
+							if (connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetContactPointType() == CONTACT_POINT_START)  // connecting to start of road_1
+							{
+								heading1 = test_pos2.GetH() + M_PI;
+								heading2 = test_pos1.GetH() + M_PI;
+							}
+							else if (connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetContactPointType() == CONTACT_POINT_END)  // connecting to end of road_1
+							{
+								heading1 = test_pos2.GetH();
+								heading2 = test_pos1.GetH();
+							}
+							else
+							{
+								LOG("Unexpected contact point %d", connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetContactPointType());
+								return false;
+							}
+						}
+						else
+						{
+							LOG("Unexpected contact point %d", connection->GetContactPoint());
+							return false;
 						}
 
 						angle = GetAbsAngleDifference(heading1, heading2);
@@ -1896,7 +1953,9 @@ void Position::Init()
 	p_ = 0.0;
 	r_ = 0.0;
 	h_offset_ = 0.0;
+	h_road_ = 0.0;
 	h_relative_ = 0.0;
+	curvature_ = 0.0;
 
 	track_idx_ = 0;
 	geometry_idx_ = 0;
@@ -2045,18 +2104,18 @@ static int PointSideOfVec(double px, double py, double vx1, double vy1, double v
 
 double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm)
 {
-	// Find vector from point perpendicular to line segment
-	// https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
+	// Step 1: Approximate geometry with a line, and check distance roughly
 
-	x_ = x3;
-	y_ = y3;
-	h_ = h;
-	r_ = 0;
 	double x1, y1, h1;
 	double x2, y2, h2;
 	int side;
-
 	double dist = 0;
+	double dsMin = 0;
+	double z = 0;
+	double min_lane_dist;
+
+
+	// Evaluate line endpoints to get a straight line in between
 	geom->EvaluateDS(0, &x1, &y1, &h1);
 	geom->EvaluateDS(geom->GetLength(), &x2, &y2, &h2);
 
@@ -2066,82 +2125,153 @@ double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, R
 	x2 += road->GetLaneOffset(0) * cos(h2 + M_PI_2);
 	y2 += road->GetLaneOffset(geom->GetLength()) * sin(h2 + M_PI_2);
 
+	// Find vector from point perpendicular to line segment
+	// https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
+
 	double x4, y4, k;
+
+	// Project the given point on the straight line between geometry end points
 	k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) / ((y2 - y1)*(y2 - y1) + (x2 - x1)*(x2 - x1));
 	x4 = x3 - k * (y2 - y1);
 	y4 = y3 + k * (x2 - x1);
 
 	// Check whether the projected point is inside or outside line segment
 	inside = PointInBetween(x4, y4, x1, y1, x2, y2, sNorm);
+
 	if (inside)
 	{
+		// Distance between given point and that point projected on the straight line
 		dist = PointDistance(x3, y3, x4, y4);
 	}
 	else
 	{
 		// Distance is measured between point to closest endpoint of line
 		double d1, d2;
+
 		d1 = PointDistance(x3, y3, x1, y1);
 		d2 = PointDistance(x3, y3, x2, y2);
-		dist = MIN(d1, d2);
-		//LOG("dist: %.2f x3 %.2f y3 %.2f x1 %.2f y1 %.2f x2 %.2f y2 %.2f", dist, x3, y3, x1, y1, x2, y2);
+		if (d1 < d2)
+		{
+			dist = d1;
+			dsMin = 0;
+			sNorm = 0;
+		}
+		else
+		{
+			dist = d2;
+			dsMin = geom->GetLength();
+			sNorm = 1;
+		}
 	}
+
+	// FInd out what side of the straight line the gigen point is located
 	side = PointSideOfVec(x3, y3, x1, y1, x2, y2);
 
-	// Now, calculate actual distance to road geometry - not to a straight line
-	// But do this only for relevant geometries, i.e. where perpendicular distance is reasonable short
+	// Now, calculate accurate distance from given point to road geometry - not to a straight line
+	// But do this only for relevant geometries within reasonable short distance 
+	// else just use approximate dist value as calculated above
 
-	double min_lane_dist = dist;
-	double z = 0;
-
-	if (dist < 100)  // then make a more exact measurement and comparison
+	if (dist < 50)  
 	{
+		// Step 2: Find s value within given geometry segment, approximate by checking projected point location on straight line
+		// If heading at start and end points of the geometry are practically equal let's approximate with a straight line
+		if (GetAbsAngleDifference(h1, h2) < 0.01)
+		{
+			// If small heading difference, treat segment as a straight line 
+			// Just use the normalized s value from calculation above, but clip at 0 and 1 to keep it inside geometry boundries
+			dsMin = CLAMP(sNorm, 0.0, 1.0) * geom->GetLength();
+		}
+		else
+		{
+			// else find s value as the ratio between distances from geometry end points to the projected point onto 
+			// extended straight lines from those geometry endpoints
 
-		double dsMin = CLAMP(sNorm, 0.0, 1.0) * geom->GetLength();
+			double x1ext, y1ext, x2ext, y2ext, x1prj, y1prj, x2prj, y2prj;
+
+			// First find projected point on line extended from geometry start point
+			x1ext = x1 + cos(h1);
+			y1ext = y1 + sin(h1);
+			k = ((y1ext - y1) * (x3 - x1) - (x1ext - x1) * (y3 - y1)) / ((y1ext - y1)*(y1ext - y1) + (x1ext - x1)*(x1ext - x1));
+			x1prj = x3 - k * (y1ext - y1);
+			y1prj = y3 + k * (x1ext - x1);
+
+			// Then the same for geometry end point0
+			x2ext = x2 + cos(h2);
+			y2ext = y2 + sin(h2);
+			k = ((y2ext - y2) * (x3 - x2) - (x2ext - x2) * (y3 - y2)) / ((y2ext - y2)*(y2ext - y2) + (x2ext - x2)*(x2ext - x2));
+			x2prj = x3 - k * (y2ext - y2);
+			y2prj = y3 + k * (x2ext - x2);
+
+			// Check whether point is inside fan shape that that extends perpendicular from endpoints
+			double d1 = GetDotProduct2D(x1ext - x1, y1ext - y1, x3 - x1, y3 - y1);
+			double d2 = GetDotProduct2D(x2ext - x2, y2ext - y2, x3 - x2, y3 - y2);
+			double dist1;
+			double dist2;
+
+			if (d1 > 0 && d2 < 0)
+			{
+				inside = true;
+				dist1 = PointDistance(x1prj, y1prj, x1, y1);
+				dist2 = PointDistance(x2prj, y2prj, x2, y2);
+				sNorm = dist1 / (dist1 + dist2);
+				dsMin = geom->GetLength() * sNorm;
+			}
+			else
+			{
+				inside = false;
+			}
+		}
+		
 		double sMin = geom->GetS() + dsMin;
 		double x, y;
 		double pitch = 0;
 
+
 		// Find out Z level
 		road->GetZAndPitchByS(sMin, &z, &pitch, &elevation_idx_);
-		
-		if (inside)  // else stick with line approximation
+
+		// Step 3: Find exact position along road geometry at calculated s-value
+		// and calculated distance from this point on road to given point 
+
+		geom->EvaluateDS(dsMin, &x, &y, &h);
+		// Apply lane offset
+		x += road->GetLaneOffset(sMin) * cos(h + M_PI_2);
+		y += road->GetLaneOffset(sMin) * sin(h + M_PI_2);
+		dist = PointDistance(x3, y3, x, y);
+
+		// Check whether the point is left or right side of road
+		// x3, y3 is the point checked against a vector aligned with heading
+		side = PointSideOfVec(x3, y3, x, y, x + cos(h), y + sin(h));
+
+		// dist is now actually the lateral distance from reference lane, e.g. track coordinate t-value
+		// Finally find closest lane
+
+		// Finally calculate exakt distance, but only for inside points
+		LaneSection *lane_section = road->GetLaneSectionByS(sMin);
+		min_lane_dist = std::numeric_limits<double>::infinity();
+		if (lane_section != 0)
 		{
-			geom->EvaluateDS(dsMin, &x, &y, &h);
-			// Apply lane offset
-			x += road->GetLaneOffset(sMin) * cos(h + M_PI_2);
-			y += road->GetLaneOffset(sMin) * sin(h + M_PI_2);
-			dist = PointDistance(x3, y3, x, y);
-
-			// Check whether the point is left or right side of road
-			// x3, y3 is the point checked against a vector aligned with heading
-			side = PointSideOfVec(x3, y3, x, y, x + cos(h), y + sin(h));
-
-			// dist is now actually the lateral distance from reference lane, e.g. track coordinate t-value
-			// Finally find closest lane
-
-			// Finally calculate exakt distance, but only for inside points
-			LaneSection *lane_section = road->GetLaneSectionByS(sMin);
-			if (lane_section != 0)
+			for (int i = 0; i < lane_section->GetNumberOfLanes(); i++)
 			{
-				for (int i = 0; i < lane_section->GetNumberOfLanes(); i++)
+				if (lane_section->GetLaneByIdx(i)->IsDriving())
 				{
-					if (lane_section->GetLaneByIdx(i)->IsDriving())
+					double lane_dist;
 					{
-						double lane_dist;
+						double signed_offset = dist * SIGN(side);
+						double signed_lane_center_offset = SIGN(lane_section->GetLaneIdByIdx(i)) * lane_section->GetCenterOffset(sMin, lane_section->GetLaneIdByIdx(i));
+						lane_dist = signed_offset - signed_lane_center_offset;
+						if (fabs(lane_dist) < fabs(min_lane_dist))
 						{
-							double signed_offset = dist * SIGN(side);
-							double signed_lane_center_offset = SIGN(lane_section->GetLaneIdByIdx(i)) * lane_section->GetCenterOffset(sMin, lane_section->GetLaneIdByIdx(i));
-							lane_dist = signed_offset - signed_lane_center_offset;
-							if (fabs(lane_dist) < fabs(min_lane_dist))
-							{
-								min_lane_dist = lane_dist;
-							}
+							min_lane_dist = lane_dist;
 						}
 					}
 				}
 			}
 		}
+	} 
+	else
+	{
+		min_lane_dist = dist;
 	}
 
 	return fabs(min_lane_dist) + fabs(GetZ() - z);
@@ -2156,11 +2286,13 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ev
 	Geometry *geom, *current_geom;
 	Geometry *geomMin = 0;
 	Road *road, *current_road;
-	Road *roadMin;
+	Road *roadMin = 0;
 	bool inside = false;
-	bool insideMin = false;
+	bool directlyConnected = false;
+	bool directlyConnectedMin = false;
+	double weight = 0; // Add some resistance to switch from current road, applying a stronger bound to current road
+	double angle = 0;
 
-	(void)insideMin;
 
 	if ((current_road = GetOpenDrive()->GetRoadByIdx(track_idx_)) == 0)
 	{
@@ -2174,45 +2306,53 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ev
 		return;
 	}
 
-	// Search all road and lanes. Inefficient - but simple. Todo: Optimize
-	bool found = false;
-	double add_weight;  // Add some resistance to switch from current road, applying a stronger bound to current road
-
-	(void)found;
+	x_ = x3;
+	y_ = y3;
+	r_ = 0;
 
 	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
 	{
 		road = GetOpenDrive()->GetRoadByIdx(i);
-		double angle = 0;
+		weight = 0;
+		angle = 0;
 
-		// Add resistance to leave current road including directly connected ones 
+		// Add resistance to leave current road or directly connected ones 
+		// actual weights are totally unscientific... up to tuning
 		if (road == current_road || GetOpenDrive()->IsDirectlyConnected(current_road->GetId(), road->GetId(), angle))
 		{
-			add_weight = 2*angle;  // The higher angular difference, the higher threshold for switching even if road is connected
+			weight = angle;
+			directlyConnected = true;
 		}
 		else
 		{
-			add_weight = 5;  // For non connected roads, add 5 meter distance "penalty" as threshold
-		}
+			if (directlyConnectedMin) // if already found a directly connected position - add offset distance
+			{
+				weight = 3; 
+			}
 
+			weight += 5;  // For non connected roads add additional "penalty" threshold  
+			directlyConnected = false;
+		}
+		
 		for (int j = 0; j < road->GetNumberOfGeometries(); j++)
 		{
 			geom = road->GetGeometry(j);
-			dist = GetDistToTrackGeom(x3, y3, z3, h3, road, geom, inside, sNorm) + add_weight;
+			dist = GetDistToTrackGeom(x3, y3, z3, h3, road, geom, inside, sNorm);
+			
+			dist += weight + (inside ? 0 : 2);  // penalty for roads outside projection area
 
-			if (dist < distMin) 
+			if (dist < distMin)
 			{
 				geomMin = geom;
+				directlyConnectedMin = directlyConnected;
 				roadMin = road;
 				sNormMin = CLAMP(sNorm, 0.0, 1.0);
-				insideMin = inside;
 				distMin = dist;
-				found = true;
 			}
 		}
 	}
 
-	if (!found)
+	if (roadMin == 0)
 	{
 		LOG("Error finding minimum distance\n");
 		return;
@@ -2220,28 +2360,25 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ev
 
 	double dsMin = sNormMin * geomMin->GetLength();
 	double sMin = geomMin->GetS() + dsMin;
-	double x, y, h;
+	double x, y;
 
 	// Found closest geometry. Now calculate exact distance to geometry. First find point perpendicular on geometry.
-	geomMin->EvaluateDS(dsMin, &x, &y, &h);
+	geomMin->EvaluateDS(dsMin, &x, &y, &h_road_);
 	
 	// Apply lane offset
-	x += roadMin->GetLaneOffset(dsMin) * cos(h + M_PI_2);
-	y += roadMin->GetLaneOffset(dsMin) * sin(h + M_PI_2);
+	x += roadMin->GetLaneOffset(dsMin) * cos(h_road_ + M_PI_2);
+	y += roadMin->GetLaneOffset(dsMin) * sin(h_road_ + M_PI_2);
 	distMin = PointDistance(x3, y3, x, y);
 
 	// Check whether the point is left or right side of road
 	// x3, y3 is the point checked against closest point on geometry
-	int side = PointSideOfVec(x3, y3, x, y, x + cos(h), y + sin(h));
+	int side = PointSideOfVec(x3, y3, x, y, x + cos(h_road_), y + sin(h_road_));
+
+	// Set specified heading
+	SetHeading(h3);
 
 	// Find out what lane and set position
 	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);
-
-	// Calculate heading relative to the road
-	double heading_vehicle = fmod(GetH(), (2 * M_PI));
-	double heading_road = fmod(h, (2 * M_PI));
-
-	h_relative_ = M_PI - std::fabs(std::fabs(heading_vehicle - heading_road) - M_PI);
 
 	if (evaluateZAndPitch)
 	{
@@ -2272,12 +2409,13 @@ void Position::Track2XYZ()
 		return;
 	}
 
-	geometry->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_);
+	geometry->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_road_);
 	
 	// Consider lateral t position, perpendicular to track heading
-	double x_local = (t_ + road->GetLaneOffset(s_)) * cos(h_ + M_PI_2);
-	double y_local = (t_ + road->GetLaneOffset(s_)) * sin(h_ + M_PI_2);
-	h_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_ + h_relative_;
+	double x_local = (t_ + road->GetLaneOffset(s_)) * cos(h_road_ + M_PI_2);
+	double y_local = (t_ + road->GetLaneOffset(s_)) * sin(h_road_ + M_PI_2);
+	h_road_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_;
+	h_ = h_road_ + h_relative_;  // Update heading, taking relative heading into account
 	x_ += x_local;
 	y_ += y_local;
 
@@ -2483,7 +2621,11 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType contact
 
 					// Transform angle into a comparable format
 
-					double heading_diff = GetAbsAngleDifference(test_pos.GetH(), GetH());
+					double heading_diff = GetAbsAngleDifference(test_pos.GetHRoad(), GetHRoad());
+					if (heading_diff > M_PI / 2)
+					{
+						heading_diff = fabs(heading_diff - M_PI);  // don't care of driving direction here
+					}
 
 					if (heading_diff < min_heading_diff)
 					{
@@ -2568,7 +2710,7 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 {
 	RoadLink *link;
 	double ds_signed = ds;
-	int max_links = 4;  // limit lookahead through junctions/links 
+	int max_links = 8;  // limit lookahead through junctions/links 
 	
 	// EG: If offset_ is not along reference line, but instead along lane direction then we dont need
 	// the SIGN() adjustment. But for now this adjustment means that a positive dLaneOffset always moves left?
@@ -2591,8 +2733,7 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 		}
 		else  // New position is within current track
 		{
-			SetLanePos(track_id_, lane_id_, s_ + ds_signed, offset_);
-			return 0;
+			break;
 		}
 
 		// Move to connected road
@@ -2609,12 +2750,15 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 			return returnvalue;
 		}
 	}
-	return(-1);
+
+	SetLanePos(track_id_, lane_id_, s_ + ds_signed, offset_);
+	return 0;
 }
 
 void Position::SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx)
 {
 	offset_ = offset;
+	int old_lane_id = lane_id_;
 
 	SetLongitudinalTrackPos(track_id, s);
 
@@ -2662,15 +2806,20 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 			lane_section_idx_, road->GetId(), lane_id_);
 	}
 
-	Lane2Track();
-	Track2XYZ();
-
 	// Adjust heading to lane direction
 	if (lane_id > 0)
 	{
-		h_ += M_PI;
 		p_ *= -1;
 	}
+
+	if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))
+	{
+		h_relative_ = GetAngleSum(h_relative_, M_PI);
+	}
+
+	Lane2Track();
+	Track2XYZ();
+
 }
 
 void Position::SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos)
@@ -2678,7 +2827,7 @@ void Position::SetInertiaPos(double x, double y, double z, double h, double p, d
 	x_ = x;
 	y_ = y;
 	z_ = z;
-	h_ = h;
+	SetHeading(h);
 	p_ = p;
 	r_ = r;
 
@@ -2688,12 +2837,28 @@ void Position::SetInertiaPos(double x, double y, double z, double h, double p, d
 	}
 }
 
+void Position::SetHeading(double heading)
+{
+	h_ = heading;
+	h_relative_ = GetAngleDifference(h_, h_road_);
+}
+
+void Position::SetHeadingRelative(double heading)
+{
+	h_relative_ = heading;
+	h_ = GetAngleSum(h_road_, h_relative_);
+}
 
 double Position::GetCurvature()
 {
 	Geometry *geom = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetGeometry(geometry_idx_);
 
 	return(geom->EvaluateCurvatureDS(GetS() - geom->GetS()));
+}
+
+double Position::GetHRoadInDrivingDirection()
+{
+	return h_road_ + (lane_id_ > 0 ? M_PI : 0);
 }
 
 double Position::GetDrivingDirection()
@@ -2706,8 +2871,7 @@ double Position::GetDrivingDirection()
 	// adjust 180 degree according to side of road
 	if (GetLaneId() > 0)  // Left side of road reference line
 	{
-		h += M_PI;
-		h = fmod(h, 2 * M_PI);
+		h = GetAngleSum(h, M_PI);
 	}
 
 	return(h);
@@ -2784,7 +2948,6 @@ int Position::GetSteeringTargetPos(double lookahead_distance, double *target_pos
 
 	if (target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT) != 0)
 	{
-		LOG("Failed moveAlongS");
 		return -1;
 	}
 	

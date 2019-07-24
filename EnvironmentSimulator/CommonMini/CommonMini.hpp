@@ -47,9 +47,29 @@ void SE_sleep(unsigned int msec);
 
 // Useful operations
 /**
-Retrieve the absolute value of difference between two angles
+  Retrieve the absolute value of difference between two angles
 */
 double GetAbsAngleDifference(double angle1, double angle2);
+
+/**
+  Retrieve the sum of two angles
+*/
+double GetAngleSum(double angle1, double angle2);
+
+/**
+  Retrieve difference between two angles
+*/
+double GetAngleDifference(double angle1, double angle2);
+
+/**
+  Retrieve the cross product of two vectors where z=0
+*/
+double GetCrossProduct2D(double x1, double y1, double x2, double y2);
+
+/**
+  Retrieve the dot product of two vectors where z=0
+*/
+double GetDotProduct2D(double x1, double y1, double x2, double y2);
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 

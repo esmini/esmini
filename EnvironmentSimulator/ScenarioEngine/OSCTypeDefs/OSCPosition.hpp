@@ -155,6 +155,7 @@ namespace scenarioengine
 
 		void SetRoute(roadmanager::Route *route) { position_.SetRoute(route); }
 		void SetRouteRefLaneCoord(double pathS, int laneId, double laneOffset) { position_.SetRouteLanePosition(pathS, laneId, laneOffset); }
+		void SetRouteRelativeHeading(double h_relative) { position_.SetHeadingRelative(h_relative);  }
 		
 		void Print() { position_.Print(); }
 		void Evaluate() {}  // No need to evaluate, position already in cartesian coordinates

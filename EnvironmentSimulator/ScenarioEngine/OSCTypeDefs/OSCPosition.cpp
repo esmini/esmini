@@ -21,6 +21,10 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
 
 OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset, OSCOrientation orientation) : OSCPosition(PositionType::LANE)
 {
+	if (laneId > 0)
+	{
+		position_.SetHeadingRelative(M_PI);
+	}
 	position_.SetLanePos(roadId, laneId, s, offset);
 }
 
