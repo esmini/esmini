@@ -130,10 +130,11 @@ extern "C"
 	@param handle Handle to the position object
 	@param x cartesian coordinate x value
 	@param y cartesian coordinate y value
+	@param z cartesian coordinate z value
 	@param h rotation heading value
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h);
+	RM_DLL_API int RM_SetWorldXYZHPosition(int handle, float x, float y, float z, float h);
 
 	/**
 	Move position forward along the road. Choose way randomly though any junctions.
@@ -160,33 +161,6 @@ extern "C"
 	@return 0 if successful, -1 if not
 	*/
 	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, SteeringTargetData *data);
-
-	/**
-	Get the location, in starting position local coordinate system, of the point at a specified distance along the road ahead
-	@param handle Handle to the position object from which to measure
-	@param lookahead_distance The distance, along the road, to the point
-	@param target_pos Array to fill in calculated X, Y and Z coordinate values
-	@return 0 if successful, -1 if not
-	*/
-	RM_DLL_API int RM_GetSteeringTargetPosLocal(int handle, float lookahead_distance, float *target_pos);
-
-	/**
-	Get the heading angle, in starting position local coordinate system, to the point at a specified distance along the road ahead
-	@param handle Handle to the position object from which to measure
-	@param lookahead_distance The distance, along the road, to the point
-	@param angle Pointer to variable where target angle will be written
-	@return 0 if successful, -1 if not
-	*/
-	RM_DLL_API int RM_GetSteeringTargetAngle(int handle, float lookahead_distance, float *angle);
-
-	/**
-	Get the curvature at the point at a specified distance along the road ahead
-	@param handle Handle to the position object from which to measure
-	@param lookahead_distance The distance, along the road, to the point
-	@param curvature Pointer to variable where target curvature will be written
-	@return 0 if successful, -1 if not
-	*/
-	RM_DLL_API int RM_GetSteeringTargetCurvature(int handle, float lookahead_distance, float *curvature);
 
 #ifdef __cplusplus
 }
