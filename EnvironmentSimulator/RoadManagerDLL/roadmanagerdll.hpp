@@ -100,9 +100,10 @@ extern "C"
 	@param laneId Lane specifier
 	@param laneOffset Offset from lane center
 	@param s Distance along the specified road
+	@param align If true the heading will be reset to the lane driving direction (typically only at initialization)
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, int laneOffset, float s);
+	RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, int laneOffset, float s, bool align);
 
 	/**
 	Set s (distance) part of a lane position, world coordinates being calculated

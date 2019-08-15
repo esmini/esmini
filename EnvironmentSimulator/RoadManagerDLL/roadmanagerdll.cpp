@@ -170,7 +170,7 @@ extern "C"
 		return 0;
 	}
 		
-	RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, int laneOffset, float s)
+	RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, int laneOffset, float s, bool align)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
@@ -180,6 +180,18 @@ extern "C"
 		{
 			roadmanager::Position *pos = &position[handle];
 			pos->SetLanePos(roadId, laneId, s, laneOffset);
+
+			if (align)
+			{
+				if (laneId < 0)
+				{
+					pos->SetHeadingRelative(0);
+				}
+				else
+				{
+					pos->SetHeadingRelative(M_PI);
+				}
+			}
 		}
 
 		return 0;
