@@ -125,17 +125,23 @@ double GetDotProduct2D(double x1, double y1, double x2, double y2)
 
 Logger::Logger()
 {
+#ifndef SUPPRESS_LOG
 	file_.open(LOG_FILENAME);
 	if (file_.fail())
 	{
 		throw std::iostream::failure(std::string("Cannot open file: ") + LOG_FILENAME);
 	}
+#endif
 	callback_ = 0;
 }
 
 Logger::~Logger()
 {
-	file_.close();
+	if (file_.is_open())
+	{
+		file_.close();
+	}
+
 	callback_ = 0;
 }
 
@@ -153,14 +159,18 @@ void Logger::Log(char const* file, char const* func, int line, char const* forma
 #else
 	strncpy(complete_entry, message, 1024);
 #endif
-	
-	file_ << complete_entry << std::endl;
+
+	if (file_.is_open())
+	{
+		file_ << complete_entry << std::endl;
+		file_.flush();
+	}
+
 	if (callback_)
 	{
 		callback_(complete_entry);
 	}
 
-	file_.flush();
 	va_end(args);
 }
 

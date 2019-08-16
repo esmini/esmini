@@ -131,8 +131,11 @@ public:
 	void SetCallback(FuncPtr callback) { callback_ = callback; }
 
 private:
+	bool use_logfile_;
 	Logger();
+	Logger(bool use_logfile);
 	~Logger();
+	void Init();
 	FuncPtr callback_;
 
 	std::ofstream file_;
