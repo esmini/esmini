@@ -170,7 +170,7 @@ extern "C"
 		return 0;
 	}
 		
-	RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, int laneOffset, float s, bool align)
+	RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, float laneOffset, float s, bool align)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{

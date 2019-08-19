@@ -83,7 +83,7 @@ void Vehicle::Update(double dt, THROTTLE throttle, STEERING steering)
 
 	// Calculate steering
 	wheelAngle_ = wheelAngle_ + STEERING_RATE * steering * dt;
-	double selfAlign = -SIGN(wheelAngle_) * 0.5 * STEERING_RATE * dt;
+	double selfAlign = -SIGN(wheelAngle_) * 0.25 * STEERING_RATE * dt;
 
 	if (wheelAngle_ < 0)
 	{
