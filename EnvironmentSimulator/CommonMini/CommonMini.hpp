@@ -71,6 +71,19 @@ double GetCrossProduct2D(double x1, double y1, double x2, double y2);
 */
 double GetDotProduct2D(double x1, double y1, double x2, double y2);
 
+/**
+  Retrieve the intersection between two line segments/vectors a and b
+  if found, x3 and x4 is the intersection point
+  returns 0 if intersection exists, else -1
+  Note: does not (yet) calculate whether point is within one of the line segments or not
+*/
+int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double ay2, double bx1, double by1, double bx2, double by2, double &x3, double &y3);
+
+/**
+  Retrieve the length of line segment
+*/
+double GetLengthOfVector(double x1, double y1, double x2, double y2);
+
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 
 #else

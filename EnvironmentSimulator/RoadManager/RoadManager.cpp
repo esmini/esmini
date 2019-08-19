@@ -419,26 +419,20 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 		// check if we passed current section
 		if (s > lane_section->GetS() + lane_section->GetLength())
 		{
-			//LOG("look forward for lane section at %d / %.2f lid %d (sec end s: %.2f)\n", 
-			//	lane_info.lane_section_idx_, s, lane_info.lane_id_, lane_section->GetS() + lane_section->GetLength());
 			while (s > lane_section->GetS() + lane_section->GetLength() && lane_info.lane_section_idx_ + 1 < GetNumberOfLaneSections())
 			{
 				// Find out connecting lane, then move to next lane section
 				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, SUCCESSOR);
 				lane_section = GetLaneSectionByIdx(++lane_info.lane_section_idx_);
-				//LOG("moved forward to lane section id %d @s %.2f laneid: %d\n", lane_info.lane_section_idx_, s, lane_info.lane_id_);
 			}
 		}
 		else if (s < lane_section->GetS())
 		{
-			//LOG("look backward for lane section at %d / %.2f lid %d (sec end s: %.2f)\n",
-			//	lane_info.lane_section_idx_, s, lane_info.lane_id_, lane_section->GetS() + lane_section->GetLength());
 			while (s < lane_section->GetS() && lane_info.lane_section_idx_ > 0)
 			{
 				// Move to previous lane section
 				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, PREDECESSOR);
 				lane_section = GetLaneSectionByIdx(--lane_info.lane_section_idx_);
-				//LOG("moved backward to lane section id %d @s %.2f laneid: %d\n", lane_info.lane_section_idx_, s, lane_info.lane_id_);
 			}
 		}
 	}
@@ -1025,7 +1019,6 @@ bool Road::GetZAndPitchByS(double s, double *z, double *pitch, int *index)
 		{
 			double p = s - elevation->GetS();
 			*z = elevation->poly3_.Evaluate(p);
-			//LOG("s: %.2f elevation_idx %d z: %.2f\n", s_, elevation_idx_, z_);
 			*pitch = -elevation->poly3_.EvaluatePrim(p);
 
 			return true;
@@ -2114,7 +2107,6 @@ double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, R
 	double z = 0;
 	double min_lane_dist;
 
-
 	// Evaluate line endpoints to get a straight line in between
 	geom->EvaluateDS(0, &x1, &y1, &h1);
 	geom->EvaluateDS(geom->GetLength(), &x2, &y2, &h2);
@@ -2164,16 +2156,16 @@ double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, R
 		}
 	}
 
-	// FInd out what side of the straight line the gigen point is located
+	// Find out what side of the straight line the gigen point is located
 	side = PointSideOfVec(x3, y3, x1, y1, x2, y2);
 
 	// Now, calculate accurate distance from given point to road geometry - not to a straight line
-	// But do this only for relevant geometries within reasonable short distance 
-	// else just use approximate dist value as calculated above
+	// But do this only for relevant geometries within reasonable short distance - 
+	// else just use approximate distance value as calculated above
 
-	if (dist < 50)  
+	if (dist < 50 + 0.5 * geom->GetLength())  // Extend search area for long geometries since they might bend from the straight line
 	{
-		// Step 2: Find s value within given geometry segment, approximate by checking projected point location on straight line
+		// Step 2: Find s value within given geometry segment
 		// If heading at start and end points of the geometry are practically equal let's approximate with a straight line
 		if (GetAbsAngleDifference(h1, h2) < 0.01)
 		{
@@ -2183,45 +2175,74 @@ double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, R
 		}
 		else
 		{
-			// else find s value as the ratio between distances from geometry end points to the projected point onto 
-			// extended straight lines from those geometry endpoints
+			// Strategy: 
+			// 1. Find intersection of the two geometry endpoint tangents 
+			// 2. Define a line segment from intersection to the point of query
+			// 3. Find out angles between this line segment l1 and extended tangents t1 and t2
+			// 4. s value corresponds to the angle between l1 and t1 divided by angle between t2 and t1
 
-			double x1ext, y1ext, x2ext, y2ext, x1prj, y1prj, x2prj, y2prj;
+			double t1x1, t1y1, t1x2, t1y2, t2x1, t2y1, t2x2, t2y2, px, py, l1x, l1y;
 
-			// First find projected point on line extended from geometry start point
-			x1ext = x1 + cos(h1);
-			y1ext = y1 + sin(h1);
-			k = ((y1ext - y1) * (x3 - x1) - (x1ext - x1) * (y3 - y1)) / ((y1ext - y1)*(y1ext - y1) + (x1ext - x1)*(x1ext - x1));
-			x1prj = x3 - k * (y1ext - y1);
-			y1prj = y3 + k * (x1ext - x1);
+			// Define tangent vectors from geometry start- and end point respectivelly 
+			t1x1 = x1;
+			t1y1 = y1;
+			t1x2 = t1x1 + cos(h1 + M_PI_2);
+			t1y2 = t1y1 + sin(h1 + M_PI_2);
 
-			// Then the same for geometry end point0
-			x2ext = x2 + cos(h2);
-			y2ext = y2 + sin(h2);
-			k = ((y2ext - y2) * (x3 - x2) - (x2ext - x2) * (y3 - y2)) / ((y2ext - y2)*(y2ext - y2) + (x2ext - x2)*(x2ext - x2));
-			x2prj = x3 - k * (y2ext - y2);
-			y2prj = y3 + k * (x2ext - x2);
+			t2x1 = x2;
+			t2y1 = y2;
+			t2x2 = t2x1 + cos(h2 + M_PI_2);
+			t2y2 = t2y1 + sin(h2 + M_PI_2);
 
-			// Check whether point is inside fan shape that that extends perpendicular from endpoints
-			double d1 = GetDotProduct2D(x1ext - x1, y1ext - y1, x3 - x1, y3 - y1);
-			double d2 = GetDotProduct2D(x2ext - x2, y2ext - y2, x3 - x2, y3 - y2);
-			double dist1;
-			double dist2;
-
-			if (d1 > 0 && d2 < 0)
+			if (GetIntersectionOfTwoLineSegments(t1x1, t1y1, t1x2, t1y2, t2x1, t2y1, t2x2, t2y2, px, py) == 0)
 			{
-				inside = true;
-				dist1 = PointDistance(x1prj, y1prj, x1, y1);
-				dist2 = PointDistance(x2prj, y2prj, x2, y2);
-				sNorm = dist1 / (dist1 + dist2);
-				dsMin = geom->GetLength() * sNorm;
+				l1x = px - x3;
+				l1y = py - y3;
+
+				// First normalize l1
+				double l1_len = sqrt(l1x * l1x + l1y * l1y);
+				double l1_norm_x = l1x / l1_len;
+				double l1_norm_y = l1y / l1_len;
+
+				// Redefine tangents in direction towards intersection point
+				double t1x = px - x1;
+				double t1y = py - y1;
+				double t2x = px - x2;
+				double t2y = py - y2;
+				double t1_len = sqrt(t1x * t1x + t1y * t1y);
+				double t1_norm_x = t1x / t1_len;
+				double t1_norm_y = t1y / t1_len;
+				double t2_len = sqrt(t2x * t2x + t2y * t2y);
+				double t2_norm_x = t2x / t2_len;
+				double t2_norm_y = t2y / t2_len;
+
+
+
+				// Then run acos on dot products to find angles
+				double angle1 = acos(GetDotProduct2D(l1_norm_x, l1_norm_y, t1_norm_x, t1_norm_y));
+				double angle2 = acos(GetDotProduct2D(t2_norm_x, t2_norm_y, t1_norm_x, t1_norm_y));
+
+				// Check whether point is inside fan shape that that extends perpendicular from endpoints along tangents
+				double d1 = GetDotProduct2D(cos(h1), sin(h1), x3 - x1, y3 - y1);
+				double d2 = GetDotProduct2D(cos(h2), sin(h2), x3 - x2, y3 - y2);
+
+				if (d1 > 0 && d2 < 0)  // if angle is not within {-90:90} 
+				{
+					inside = true;
+					sNorm = angle1 / angle2;
+					dsMin = geom->GetLength() * sNorm;
+				}
+				else
+				{
+					inside = false;
+				}
 			}
 			else
 			{
-				inside = false;
+				// Lines are close to parallell, meaning geometry is or close to a straight line - keep calculations from the approx method above
 			}
 		}
-		
+	
 		double sMin = geom->GetS() + dsMin;
 		double x, y;
 		double pitch = 0;
@@ -2546,8 +2567,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType contact
 			road->GetId(), lane_idx_, lane_section->GetNumberOfLanes(), contact_point_type, lane_section_idx_);
 		return -1;
 	}
-	//LOG("  rid %d lid %d lsx %d lix %d s %.2f", road->GetId(), lane->GetId(), lane_section_idx_, lane_idx_, s_);
-
+	
 	int contact_point = 0;
 
 	if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)
@@ -2780,7 +2800,7 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	{
 		lane_section_idx_ = lane_section_idx;
 		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
-		//LOG("New lane section, new lane: %d -> %d\n", lane_id_, lane_id);
+
 		lane_id_ = lane_id;
 	}
 	else  // Find LaneSection and info according to s
@@ -2845,7 +2865,11 @@ void Position::SetHeading(double heading)
 
 void Position::SetHeadingRelative(double heading)
 {
-	h_relative_ = heading;
+	h_relative_ = fmod(heading, 2 * M_PI);
+	if (h_relative_ < 0)
+	{
+		h_relative_ += 2 * M_PI;
+	}
 	h_ = GetAngleSum(h_road_, h_relative_);
 }
 

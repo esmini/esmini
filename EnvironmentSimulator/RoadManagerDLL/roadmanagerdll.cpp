@@ -222,7 +222,6 @@ extern "C"
 		{
 			roadmanager::Position *pos = &position[handle];
 			pos->XYZH2TrackPos(x, y, z, h, true);
-			LOG("s %.2f roadId %d laneId %d", pos->GetS(), pos->GetTrackId(), pos->GetLaneId());
 		}
 
 		return 0;
@@ -252,6 +251,7 @@ extern "C"
 		else
 		{
 			roadmanager::Position *pos = &position[handle];
+			
 			return(pos->MoveAlongS(dist));
 		}
 	}

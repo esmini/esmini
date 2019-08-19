@@ -114,8 +114,7 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 	egoCar->vehicle->pitch_ = egoCar->pos->GetP();
 	
 	// Find out pitch of road in driving direction
-	float heading_rel = -egoCar->pos->GetHRelative();
-	if (heading_rel < -M_PI / 2 || heading_rel > M_PI / 2)
+	if (egoCar->pos->GetHRelative() > M_PI / 2 && egoCar->pos->GetHRelative() < 3 * M_PI / 2)
 	{
 		egoCar->vehicle->pitch_ *= -1;
 	}

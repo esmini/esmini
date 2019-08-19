@@ -62,6 +62,32 @@ double GetAngleSum(double angle1, double angle2)
 	return sum;
 }
 
+int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double ay2, double bx1, double by1, double bx2, double by2, double &x3, double &y3)
+{
+	// Inspiration: https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
+
+	double t_demonitator = (ax1 - ax2) * (by1 - by2) - (ay1 - ay2) * (bx1 - bx2);
+	
+	if(fabs(t_demonitator) < SMALL_NUMBER)
+	{
+		return -1;
+	}
+
+	double t = ((ax1 - bx1) * (by1 - by2) - (ay1 - by1) * (bx1 - bx2)) / t_demonitator;
+
+	x3 = ax1 + t * (ax2 - ax1);
+	y3 = ay1 + t * (ay2 - ay1);
+
+	return 0;
+}
+
+double GetLengthOfVector(double x1, double y1, double x2, double y2)
+{
+	return (sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1)));
+}
+
+
+
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 
 	#include <windows.h>

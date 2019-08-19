@@ -21,11 +21,11 @@
 
 using namespace vehicle;
 
-#define STEERING_RATE 3.0
-#define STEERING_MAX_ANGLE (30 * M_PI / 180)
-#define ACCELERATION_SCALE 15
-#define SPEED_MAX (55 / 3.6)
-#define SPEED_DECLINE 0.002
+#define STEERING_RATE 5.0
+#define STEERING_MAX_ANGLE (45 * M_PI / 180)
+#define ACCELERATION_SCALE 20
+#define SPEED_MAX (100 / 3.6)
+#define SPEED_DECLINE 0.001
 #define WHEEL_RADIUS 0.35
 #define SIGN(X) (X<0?-1:1)
 #define MAX(a, b) (a>b ? a : b)
@@ -82,11 +82,8 @@ void Vehicle::Update(double dt, THROTTLE throttle, STEERING steering)
 	wheelRotation_ += speed_ * dt / WHEEL_RADIUS;
 
 	// Calculate steering
-	double steerDamping = 1 - fabs(speed_) / (1.5*SPEED_MAX);
-	double steerRate = STEERING_RATE * steerDamping;
-
-	wheelAngle_ += steerRate * steering * dt;
-	double selfAlign = -SIGN(wheelAngle_) * 0.5 * steerRate * dt;
+	wheelAngle_ = wheelAngle_ + STEERING_RATE * steering * dt;
+	double selfAlign = -SIGN(wheelAngle_) * 0.5 * STEERING_RATE * dt;
 
 	if (wheelAngle_ < 0)
 	{
@@ -96,7 +93,9 @@ void Vehicle::Update(double dt, THROTTLE throttle, STEERING steering)
 	{
 		wheelAngle_ = MAX(wheelAngle_ + selfAlign, 0);
 	}
-	wheelAngle_ = CLAMP(wheelAngle_, -STEERING_MAX_ANGLE * steerDamping, STEERING_MAX_ANGLE * steerDamping);
+	// Scale down steering angle in proportion to the speed
+	double dynamicMaxAngle = STEERING_MAX_ANGLE / (1 + 0.5 * fabs(speed_));
+	wheelAngle_ = CLAMP(wheelAngle_, -dynamicMaxAngle, dynamicMaxAngle);
 
 	// Calculate vehicle kinematics according to simple bicycle model, see
 	// http://www.me.berkeley.edu/~frborrel/pdfpub/IV_KinematicMPC_jason.pdf
