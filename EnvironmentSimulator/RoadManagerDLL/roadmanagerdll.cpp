@@ -14,6 +14,8 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 
+#define SIGN(x) (x < 0 ? -1 : 1)
+
 using namespace roadmanager;
 
 static roadmanager::OpenDrive *odrManager = 0;
@@ -242,7 +244,7 @@ extern "C"
 		return 0;
 	}
 
-	RM_DLL_API int RM_PositionMoveForward(int handle, float dist)
+	RM_DLL_API int RM_PositionMoveForward(int handle, float dist, int strategy)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
@@ -252,7 +254,7 @@ extern "C"
 		{
 			roadmanager::Position *pos = &position[handle];
 			
-			return(pos->MoveAlongS(dist));
+			return(pos->MoveAlongS(dist, 0.0, (Junction::JunctionStrategyType)strategy));
 		}
 	}
 
@@ -276,6 +278,33 @@ extern "C"
 			data->laneOffset = (float)position[handle].GetOffset();
 			data->s = (float)position[handle].GetS();
 		}
+
+		return 0;
+	}
+
+	RM_DLL_API int RM_GetLaneInfo(int handle, LaneData *info)
+	{
+		// First find out curvature at this lateral position from reference lane
+		double ref_curvature = position[handle].GetCurvature();
+		double lat_offset = position[handle].GetT();
+		double radius;
+		Position *pos = &position[handle];
+		
+		if (fabs(ref_curvature) > SMALL_NUMBER)
+		{
+			radius = 1.0 / ref_curvature;
+			radius -= lat_offset; // curvature positive in left curves, lat_offset positive left of reference lane
+			info->curvature = (float)(1.0 / radius);
+		}
+		else
+		{
+			// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
+			info->curvature = (float)ref_curvature;
+		}
+
+		// Then find out the width of the lane at current s-value
+		Road *road = pos->GetRoadById(pos->GetTrackId());
+		info->width = (float)road->GetLaneWidthByS(pos->GetS(), pos->GetLaneId());
 
 		return 0;
 	}

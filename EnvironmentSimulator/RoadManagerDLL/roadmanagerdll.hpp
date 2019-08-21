@@ -35,11 +35,18 @@ typedef struct
 
 typedef struct
 {
+	float width;
+	float curvature;
+} LaneData;
+
+typedef struct
+{
 	float global_pos[3];    // steering target position, in global coordinate system
 	float local_pos[3];     // steering target position, relative vehicle (pivot position object) coordinate system
 	float angle;				// heading angle to steering target from and relatove to vehicle (pivot position)
 	float curvature;			// road curvature at steering target point
 } SteeringTargetData;
+
 
 #ifdef __cplusplus
 extern "C"
@@ -140,10 +147,11 @@ extern "C"
 	/**
 	Move position forward along the road. Choose way randomly though any junctions.
 	@param handle Handle to the position object
-	@param ds distance (meter) to move
+	@param dist Distance (meter) to move
+	@param strategy How to move in a junction where multiple route options appear, see Junction::JunctionStrategyType
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_PositionMoveForward(int handle, float dist);
+	RM_DLL_API int RM_PositionMoveForward(int handle, float dist, int strategy);
 
 	/**
 	Get the fields of the position of specified index
@@ -152,6 +160,14 @@ extern "C"
 	@return 0 if successful, -1 if not
 	*/
 	RM_DLL_API int RM_GetPositionData(int handle, PositionData *data);
+
+	/**
+	Retrieve lane information from the position object (at current road, s-value and lane)
+	@param handle Handle to the position object
+	@param data Struct including all result values, see LaneData typedef
+	@return 0 if successful, -1 if not
+	*/
+	RM_DLL_API int RM_GetLaneInfo(int handle, LaneData *info);
 
 	// Driver model functions
 	/**
