@@ -440,6 +440,27 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 	return lane_info;
 }
 
+double Road::GetLaneWidthByS(double s, int lane_id)
+{
+	LaneSection *lsec;
+
+	if (GetNumberOfLaneSections() < 1)
+	{
+		return 0.0;
+	}
+
+	for (size_t i = 0; i < GetNumberOfLaneSections(); i++)
+	{
+		lsec = GetLaneSectionByIdx((int)i);
+		if (s < lsec->GetS() + lsec->GetLength())
+		{
+			break;
+		}
+	}
+
+	return lsec->GetWidth(s, lane_id);
+}
+
 Geometry* Road::GetGeometry(int idx)
 {
 	if (idx < 0 || idx + 1 > (int)geometry_.size())
@@ -535,20 +556,20 @@ int LaneSection::GetNUmberOfLanesLeft()
 	return counter;
 }
 
-double LaneSection::GetOuterOffset(double s, int lane_id)
+double LaneSection::GetWidth(double s, int lane_id)
 {
 	if (lane_id == 0)
 	{
 		return 0.0;  // reference lane has no width
 	}
-	
+
 	Lane *lane = GetLaneById(lane_id);
 	if (lane == 0)
 	{
-		LOG("LaneSection::GetOuterOffset Error (lane id %d)\n", lane_id);
+		LOG("Error (lane id %d)\n", lane_id);
 		return 0.0;
 	}
-	
+
 	LaneWidth *lane_width = lane->GetWidthByS(s - s_);
 	if (lane_width == 0) // No lane width registered
 	{
@@ -559,7 +580,12 @@ double LaneSection::GetOuterOffset(double s, int lane_id)
 	double ds = s - (s_ + lane_width->GetSOffset());
 
 	// Calculate width at local s
-	double width = lane_width->poly3_.Evaluate(ds);
+	return lane_width->poly3_.Evaluate(ds);
+}
+
+double LaneSection::GetOuterOffset(double s, int lane_id)
+{
+	double width = GetWidth(s, lane_id);
 
 	if (abs(lane_id) == 1)
 	{
@@ -582,11 +608,11 @@ double LaneSection::GetCenterOffset(double s, int lane_id)
 		// Reference lane (0) has no width
 		return 0.0;
 	}
-	double inner_offset = GetOuterOffset(s, lane_id + step);
-	double outer_offset = GetOuterOffset(s, lane_id);
+	double inner_offset = GetOuterOffset(s, lane_id);
+	double width = GetWidth(s, lane_id);
 
 	// Center is simply mean value of inner and outer lane boundries
-	return (inner_offset + outer_offset) / 2;
+	return inner_offset - width / 2;
 }
 
 double LaneSection::GetOuterOffsetHeading(double s, int lane_id)

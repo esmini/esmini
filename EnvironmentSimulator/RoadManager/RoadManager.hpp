@@ -364,7 +364,8 @@ namespace roadmanager
 		int GetLaneIdByIdx(int idx);
 		int GetLaneIdxById(int id);
 		double GetOuterOffset(double s, int lane_id);
-		
+		double GetWidth(double s, int lane_id);
+
 		/**
 		Get lateral position of lane center, from road reference lane (lane id=0)
 		Example: If lane id 1 is 5 m wide and lane id 2 is 4 m wide, then 
@@ -474,6 +475,7 @@ namespace roadmanager
 		double GetCenterOffset(double s, int lane_id);
 
 		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id);
+		double GetLaneWidthByS(double s, int lane_id);
 		bool GetZAndPitchByS(double s, double *z, double *pitch, int *index);
 		int GetNumberOfLaneSections() { return (int)lane_section_.size(); }
 		std::string GetName() { return name_; }
