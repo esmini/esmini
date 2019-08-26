@@ -434,10 +434,30 @@ namespace roadmanager
 		int lane_section_idx_;
 		int lane_id_;
 	};
+	
+
+	enum RoadType
+	{
+		ROADTYPE_UNKNOWN,
+		ROADTYPE_RURAL,
+		ROADTYPE_MOTORWAY,
+		ROADTYPE_TOWN,
+		ROADTYPE_LOWSPEED,
+		ROADTYPE_PEDESTRIAN,
+		ROADTYPE_BICYCLE
+	};
+
+	typedef struct
+	{
+		double s_;
+		RoadType road_type_;
+		double speed_;  // m/s
+	} RoadTypeEntry;
 
 	class Road
 	{
 	public:
+
 		Road(int id, std::string name) : id_(id), name_(name), length_(0) {}
 		~Road();
 
@@ -476,6 +496,7 @@ namespace roadmanager
 
 		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id);
 		double GetLaneWidthByS(double s, int lane_id);
+		double GetSpeedByS(double s);
 		bool GetZAndPitchByS(double s, double *z, double *pitch, int *index);
 		int GetNumberOfLaneSections() { return (int)lane_section_.size(); }
 		std::string GetName() { return name_; }
@@ -484,6 +505,7 @@ namespace roadmanager
 		void SetJunction(int junction) { junction_ = junction; }
 		int GetJunction() { return junction_; }
 		void AddLink(RoadLink *link) { link_.push_back(link); }
+		void AddRoadType(RoadTypeEntry *type) { type_.push_back(type); }
 		RoadLink *GetLink(LinkType type);
 		void AddLine(Line *line);
 		void AddArc(Arc *arc);
@@ -504,6 +526,7 @@ namespace roadmanager
 		std::string name_;
 		double length_;
 		int junction_;
+		std::vector<RoadTypeEntry*> type_;
 		std::vector<RoadLink*> link_;
 		std::vector<Geometry*> geometry_;
 		std::vector<Elevation*> elevation_profile_;
@@ -826,6 +849,11 @@ namespace roadmanager
 		Retrieve the road curvature at current position
 		*/
 		double GetCurvature();
+
+		/**
+		Retrieve the speed limit at current position
+		*/
+		double GetSpeedLimit();
 
 		/**
 		Retrieve the road heading/direction at current position, and in the direction given by current lane

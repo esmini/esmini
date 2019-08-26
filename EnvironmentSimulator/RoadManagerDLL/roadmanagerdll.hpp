@@ -169,6 +169,13 @@ extern "C"
 	*/
 	RM_DLL_API int RM_GetLaneInfo(int handle, LaneData *info);
 
+	/**
+	Retrieve current speed limit (at current road, s-value and lane) based on ODR type elements or nr of lanes
+	@param handle Handle to the position object
+	@return 0 if successful, -1 if not
+	*/
+	RM_DLL_API float RM_GetSpeedLimit(int handle);
+
 	// Driver model functions
 	/**
 	Get the location, in global coordinate system, of the point at a specified distance from starting position along the road ahead

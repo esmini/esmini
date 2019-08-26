@@ -284,6 +284,11 @@ extern "C"
 
 	RM_DLL_API int RM_GetLaneInfo(int handle, LaneData *info)
 	{
+		if (odrManager == 0 || handle >= position.size())
+		{
+			return -1;
+		}
+
 		// First find out curvature at this lateral position from reference lane
 		double ref_curvature = position[handle].GetCurvature();
 		double lat_offset = position[handle].GetT();
@@ -307,6 +312,16 @@ extern "C"
 		info->width = (float)road->GetLaneWidthByS(pos->GetS(), pos->GetLaneId());
 
 		return 0;
+	}
+
+	RM_DLL_API float RM_GetSpeedLimit(int handle)
+	{
+		if (odrManager == 0 || handle >= position.size())
+		{
+			return -1;
+		}
+
+		return (float)position[handle].GetSpeedLimit();
 	}
 
 	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, SteeringTargetData * data)

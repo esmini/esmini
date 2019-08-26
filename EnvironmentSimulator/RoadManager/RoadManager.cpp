@@ -461,6 +461,20 @@ double Road::GetLaneWidthByS(double s, int lane_id)
 	return lsec->GetWidth(s, lane_id);
 }
 
+double Road::GetSpeedByS(double s)
+{
+	if (type_.size() > 0)
+	{
+		size_t i;
+		for (i = 0; i < type_.size() - 1 && s > type_[i + 1]->s_; i++);
+
+		return type_[i]->speed_;
+	}
+
+	// No type entries, fall back to a speed based on nr of lanes
+	return GetNumberOfLanes(s) / 2 > 1 ? 120 / 3.6 : 70 / 3.6;
+}
+
 Geometry* Road::GetGeometry(int idx)
 {
 	if (idx < 0 || idx + 1 > (int)geometry_.size())
@@ -1156,6 +1170,74 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		Road *r = new Road(atoi(road_node.attribute("id").value()), road_node.attribute("name").value());
 		r->SetLength(atof(road_node.attribute("length").value()));
 		r->SetJunction(atoi(road_node.attribute("junction").value()));
+
+		for (pugi::xml_node type_node = road_node.child("type"); type_node; type_node = type_node.next_sibling())
+		{
+			RoadTypeEntry *r_type = new RoadTypeEntry();
+			
+			std::string type = type_node.attribute("type").value();
+			if (type == "unknown")
+			{
+				r_type->road_type_ = roadmanager::RoadType::ROADTYPE_UNKNOWN;
+			}
+			else if (type == "rural")
+			{
+				r_type->road_type_ = roadmanager::RoadType::ROADTYPE_RURAL;
+			}
+			else if (type == "motorway")
+			{
+				r_type->road_type_ = roadmanager::RoadType::ROADTYPE_MOTORWAY;
+			}
+			else if (type == "town")
+			{
+				r_type->road_type_ = roadmanager::RoadType::ROADTYPE_TOWN;
+			}
+			else if (type == "lowSpeed")
+			{
+				r_type->road_type_ = roadmanager::RoadType::ROADTYPE_LOWSPEED;
+			}
+			else if (type == "pedestrian")
+			{
+				r_type->road_type_ = roadmanager::RoadType::ROADTYPE_PEDESTRIAN;
+			}
+			else if (type == "bicycle")
+			{
+				r_type->road_type_ = roadmanager::RoadType::ROADTYPE_BICYCLE;
+			}
+			else
+			{
+				LOG("Unsupported type: %s - assuming rural", type);
+				r_type->road_type_ = roadmanager::RoadType::ROADTYPE_RURAL;
+			}
+
+			r_type->s_ = atof(type_node.attribute("s").value());
+
+			// Check for optional speed record
+			pugi::xml_node speed = type_node.child("speed");
+			if (speed != NULL)
+			{
+				r_type->speed_ = atof(speed.attribute("max").value());
+				std::string unit = speed.attribute("unit").value();
+				if (unit == "km/h")
+				{
+					r_type->speed_ /= 3.6;  // Convert to m/s
+				}
+				else if (unit == "mph")
+				{
+					r_type->speed_ *= 0.44704; // Convert to m/s
+				}
+				else if (unit == "m/s")
+				{
+					// SE unit - do nothing
+				}
+				else 
+				{
+					LOG("Unsupported speed unit: %s - assuming SE unit m/s", unit);
+				}
+			}
+
+			r->AddRoadType(r_type);
+		}
 
 		pugi::xml_node link = road_node.child("link");
 		if (link != NULL)
@@ -2909,6 +2991,11 @@ double Position::GetCurvature()
 double Position::GetHRoadInDrivingDirection()
 {
 	return h_road_ + (lane_id_ > 0 ? M_PI : 0);
+}
+
+double Position::GetSpeedLimit()
+{
+	return GetOpenDrive()->GetRoadByIdx(track_idx_)->GetSpeedByS(s_);
 }
 
 double Position::GetDrivingDirection()

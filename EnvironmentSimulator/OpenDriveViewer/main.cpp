@@ -60,6 +60,10 @@ typedef struct
 
 std::vector<Car*> cars;
 
+void log_callback(const char *str)
+{
+	printf("%s\n", str);
+}
 int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 {
 	if (density < 1E-10)
@@ -152,10 +156,15 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 
 		car->model->txNode_->setAttitude(car->model->quat_);
 	}
+
+	car->speed = car->pos->GetSpeedLimit();
 }
 
 int main(int argc, char** argv)
 {
+	// Use logger callback
+	Logger::Inst().SetCallback(log_callback);
+
 	mt_rand.seed(time(0));
 
 	// use an ArgumentParser object to manage the program arguments.
@@ -230,10 +239,6 @@ int main(int argc, char** argv)
 			{
 				updateCar(odrManager, cars[i], deltaSimTime);
 			}
-			//if (cars.size() > 0)
-			//{
-			//	printf("Curvature: %.6f\n", cars[0]->pos->GetCurvature());
-			//}
 
 			viewer->osgViewer_->frame();
 		}
