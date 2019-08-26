@@ -18,9 +18,12 @@ CMake scripts will download a package of external binary dependencies OpenSceneG
 - [OSG for WinSDK v10 x64](https://drive.google.com/uc?export=download&id=1a0HxilPJq2bZrat2le2x-Cscs5JeVAXP)
 - [OSG for WinSDK v10 win32](https://drive.google.com/uc?export=download&id=14Xqe_bWGuZQAr69mit4melmnMfmNFOO6)
 - [OSG for WinSDK 7.1 x64](https://drive.google.com/uc?export=download&id=1aN88B1_7MnT0OwHt_LOc8FtD7rFEP0Jq)  
-Unpack into esmini/externals/OpenSceneGraph. Please note that these libraries are for Windows only. For other platforms OSG needs to be downloaded and built separately (set CMake flag DYNAMIC_OPENSCENEGRAPH = true).
 
-Description of how to build OSG from scratch is found [here](BuildOSG.md).
+Unpack into esmini/externals/OpenSceneGraph. Please note that these libraries are for Windows only. For other platforms OSG needs to be downloaded and built separately (set CMake flag DYNAMIC_OPENSCENEGRAPH = true). Description of how to build OSG from scratch is found [here](BuildOSG.md).
+
+- [3D models used by the example scenarios](https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc).
+
+Unpack into esmini/resources.
 
 ## Build project
 
