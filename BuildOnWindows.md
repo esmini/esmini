@@ -20,11 +20,6 @@ CMake scripts will download a package of external binary dependencies OpenSceneG
 - [OSG for WinSDK 7.1 x64](https://drive.google.com/uc?export=download&id=1aN88B1_7MnT0OwHt_LOc8FtD7rFEP0Jq)  
 Unpack into esmini/externals/OpenSceneGraph. Please note that these libraries are for Windows only. For other platforms OSG needs to be downloaded and built separately (set CMake flag DYNAMIC_OPENSCENEGRAPH = true).
 
-- [3D models used by the example scenarios](https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc)  
-Unpack into esmini/resources. These assets works on all platforms.
-
-Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.com/vtd-vires-virtual-test-drive/#creation).
-
 Description of how to build OSG from scratch is found [here](BuildOSG.md).
 
 ## Build project

@@ -46,6 +46,10 @@ For Mac, only the shared library variant without OSG has been tested (as a Unity
 
 Even though the code has been tested on Android there are unfortunately no automated scripts or even instructions available for that target platform.
 
+- [3D models used by the example scenarios](https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc)  
+Unpack into esmini/resources. These assets works on all platforms.
+Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.com/vtd-vires-virtual-test-drive/#creation).
+
 ## Related work
 
 A second OpenSCENARIO based scenario engine was implemented within the Simulation Scenarios project, reusing the esmini RoadManager. In this case the purpose was to extend an existing simulation software platform with OpenSCENARIO based traffic scenarios. The implementation aims for production use. Link to be provided when the repo has been launched.
