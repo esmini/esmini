@@ -311,6 +311,8 @@ extern "C"
 		Road *road = pos->GetRoadById(pos->GetTrackId());
 		info->width = (float)road->GetLaneWidthByS(pos->GetS(), pos->GetLaneId());
 
+		info->speed_limit = (float)road->GetSpeedByS(pos->GetS());
+
 		return 0;
 	}
 

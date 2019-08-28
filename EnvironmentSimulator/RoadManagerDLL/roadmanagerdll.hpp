@@ -37,6 +37,7 @@ typedef struct
 {
 	float width;
 	float curvature;
+	float speed_limit;
 } LaneData;
 
 typedef struct
