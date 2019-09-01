@@ -40,6 +40,8 @@ namespace vehicle
 			posZ_ = z;
 			heading_ = h;
 		}
+		void SetMaxSpeed(double speed) { max_speed_ = speed; }
+		double GetMaxSpeed() { return max_speed_; }
 
 		double posX_;
 		double posY_;
@@ -57,6 +59,9 @@ namespace vehicle
 		double headingDot_;
 
 		double length_;
+
+	private:
+		double max_speed_;
 	};
 
 }

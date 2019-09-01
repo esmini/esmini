@@ -378,6 +378,8 @@ namespace roadmanager
 		double GetCenterOffsetHeading(double s, int lane_id);
 		double GetLength() { return length_; }
 		int GetNumberOfLanes() { return (int)lane_.size(); }
+		int GetNumberOfDrivingLanes();
+		int GetNumberOfDrivingLanesSide(int side);
 		int GetNUmberOfLanesRight();
 		int GetNUmberOfLanesLeft();
 		void SetLength(double length) { length_ = length; }
@@ -520,6 +522,8 @@ namespace roadmanager
 		double GetLaneOffset(double s);
 		double GetLaneOffsetPrim(double s);
 		int GetNumberOfLanes(double s);
+		int GetNumberOfDrivingLanes(double s);
+		int GetNumberOfDrivingLanesSide(double s, int side);  // side = -1 right, 1 left
 
 	protected:
 		int id_;

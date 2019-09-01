@@ -542,6 +542,34 @@ int LaneSection::GetLaneIdxById(int id)
 	return -1;
 }
 
+int LaneSection::GetNumberOfDrivingLanes()
+{
+	int counter = 0;
+
+	for (size_t i = 0; i < lane_.size(); i++)
+	{
+		if (lane_[i]->IsDriving())
+		{
+			counter++;
+		}
+	}
+	return counter;
+}
+
+int LaneSection::GetNumberOfDrivingLanesSide(int side)
+{
+	int counter = 0;
+
+	for (size_t i = 0; i < lane_.size(); i++)
+	{
+		if (SIGN(lane_[i]->GetId()) == SIGN(side) && lane_[i]->IsDriving())
+		{
+			counter++;
+		}
+	}
+	return counter;
+}
+
 int LaneSection::GetNUmberOfLanesRight()
 {
 	int counter = 0;
@@ -971,6 +999,36 @@ int Road::GetNumberOfLanes(double s)
 	}
 
 	return (lane_section_[i]->GetNumberOfLanes());
+}
+
+int Road::GetNumberOfDrivingLanes(double s)
+{
+	int i;
+
+	for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
+	{
+		if (s < lane_section_[i]->GetS())
+		{
+			break;
+		}
+	}
+
+	return (lane_section_[i]->GetNumberOfDrivingLanes());
+}
+
+int Road::GetNumberOfDrivingLanesSide(double s, int side)
+{
+	int i;
+
+	for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
+	{
+		if (s < lane_section_[i]->GetS())
+		{
+			break;
+		}
+	}
+
+	return (lane_section_[i]->GetNumberOfDrivingLanesSide(side));
 }
 
 void Road::AddLaneOffset(LaneOffset *lane_offset)
@@ -2940,6 +2998,7 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 		p_ *= -1;
 	}
 
+	// If moved over to opposite driving direction, then turn relative heading 180 degrees
 	if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))
 	{
 		h_relative_ = GetAngleSum(h_relative_, M_PI);

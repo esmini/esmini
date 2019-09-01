@@ -24,7 +24,6 @@ using namespace vehicle;
 #define STEERING_RATE 5.0
 #define STEERING_MAX_ANGLE (45 * M_PI / 180)
 #define ACCELERATION_SCALE 20
-#define SPEED_MAX (100 / 3.6)
 #define SPEED_DECLINE 0.001
 #define WHEEL_RADIUS 0.35
 #define SIGN(X) (X<0?-1:1)
@@ -49,6 +48,7 @@ Vehicle::Vehicle(double x, double y, double h, double length)
 	wheelAngle_ = 0.0;
 	wheelRotation_ = 0.0;
 	headingDot_ = 0.0;
+	max_speed_ = 50;
 	length_ = length;
 }
 #define MAX_WHEEL_ANGLE (60 * M_PI / 180)
@@ -69,13 +69,13 @@ void Vehicle::Update(double dt, THROTTLE throttle, STEERING steering)
 
 	speed_ = (1.0 - SPEED_DECLINE) * speed_ + ACCELERATION_SCALE * throttle * dt;
 
-	if (speed_ > SPEED_MAX)
+	if (speed_ > max_speed_)
 	{
-		speed_ = SPEED_MAX;
+		speed_ = max_speed_;
 	}
-	else if (speed_ < -SPEED_MAX)
+	else if (speed_ < -max_speed_)
 	{
-		speed_ = -SPEED_MAX;
+		speed_ = -max_speed_;
 	}
 
 	// Calculate wheel rot: https://en.wikipedia.org/wiki/Arc_(geometry)

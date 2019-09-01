@@ -32,6 +32,7 @@ static SE_Mutex mutex;
 using namespace scenarioengine;
 
 #define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
+#define SIGN(x) (x < 0 ? -1 : 1)
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
 
@@ -83,6 +84,20 @@ int SetupEgo(roadmanager::OpenDrive *odrManager, roadmanager::Position init_pos)
 
 void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 {
+	double speed_limit = egoCar->pos->GetSpeedLimit();
+	if (speed_limit < SMALL_NUMBER)
+	{
+		// no speed limit defined, set something with regards to number of lanes
+		if(egoCar->pos->GetRoadById(egoCar->pos->GetTrackId())->GetNumberOfDrivingLanesSide(egoCar->pos->GetS(), SIGN(egoCar->pos->GetLaneId())) > 1)
+		{
+			speed_limit = 110 / 3.6;
+		}
+		else
+		{
+			speed_limit = 60 / 3.6;
+		}
+	}
+	egoCar->vehicle->SetMaxSpeed(speed_limit);
 	vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
 	if (viewer->getKeyUp())
 	{
