@@ -547,8 +547,6 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, Entit
 			OSCPositionRelativeLane *pos = new OSCPositionRelativeLane(object, dLane, ds, offset, orientation);
 
 			pos_return = (OSCPosition*)pos;
-
-			LOG("%s is not implemented ", positionChildName.c_str());
 		}
 		else if (positionChildName == "Road")
 		{
@@ -764,6 +762,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
 									target_abs->value_ = strtod(ReadAttribute(targetChild.attribute("value")));
 									action_speed->target_ = target_abs;
+								}
+								else
+								{
+									LOG("Unsupported Target type: %s", targetChild.name());
 								}
 							}
 						}

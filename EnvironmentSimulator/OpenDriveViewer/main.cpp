@@ -53,7 +53,7 @@ typedef struct
 	int road_id_init;
 	int lane_id_init;
 	roadmanager::Position *pos;
-	double speed;  // Velocity along road reference line, m/s
+	double speed_offset;  // speed vary bewtween lanes, m/s
 	viewer::CarModel *model;
 	int id;
 } Car;
@@ -92,9 +92,6 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 					{
 						int carModelID;
 
-						// Higher speeds in lanes closer to reference lane
-						double lane_speed = speed * (0.9 + 0.7*(1.0 / abs(lane_id)));
-
 						// left lanes reverse direction
 						double s_aligned = lane->GetId() > 0 ? road->GetLength() - s : s;
 
@@ -103,11 +100,13 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 						LOG("Adding car of model %d to road %d", carModelID, r);
 
 						Car *car_ = new Car;
+						// Higher speeds in lanes closer to reference lane
+						car_->speed_offset = -2 * abs(lane_id);
 						car_->road_id_init = odrManager->GetRoadByIdx(r)->GetId();
 						car_->lane_id_init = lane_id;						
 						car_->pos = new roadmanager::Position(odrManager->GetRoadByIdx(r)->GetId(), lane_id, s_aligned, 0);
+						car_->pos->SetHeadingRelative(lane_id < 0 ? 0 : M_PI);
 						car_->model = viewer->AddCar(carModelsFiles_[carModelID]);
-						car_->speed = lane_speed;
 						car_->id = cars.size();
 						cars.push_back(car_);
 
@@ -124,7 +123,8 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime)
 {
-	double ds = car->speed * deltaSimTime; // right lane is < 0 in road dir;
+	double speed = car->pos->GetSpeedLimit() + car->speed_offset;
+	double ds = speed * deltaSimTime; // right lane is < 0 in road dir;
 
 	if (car->pos->MoveAlongS(ds) != 0)
 	{
@@ -156,8 +156,6 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 
 		car->model->txNode_->setAttitude(car->model->quat_);
 	}
-
-	car->speed = car->pos->GetSpeedLimit();
 }
 
 int main(int argc, char** argv)

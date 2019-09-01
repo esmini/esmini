@@ -472,7 +472,7 @@ double Road::GetSpeedByS(double s)
 	}
 
 	// No type entries, fall back to a speed based on nr of lanes
-	return GetNumberOfLanes(s) / 2 > 1 ? 120 / 3.6 : 70 / 3.6;
+	return 0;
 }
 
 Geometry* Road::GetGeometry(int idx)
@@ -1229,7 +1229,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		r->SetLength(atof(road_node.attribute("length").value()));
 		r->SetJunction(atoi(road_node.attribute("junction").value()));
 
-		for (pugi::xml_node type_node = road_node.child("type"); type_node; type_node = type_node.next_sibling())
+		for (pugi::xml_node type_node = road_node.child("type"); type_node; type_node = type_node.next_sibling("type"))
 		{
 			RoadTypeEntry *r_type = new RoadTypeEntry();
 			
@@ -1262,9 +1262,14 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			{
 				r_type->road_type_ = roadmanager::RoadType::ROADTYPE_BICYCLE;
 			}
+			else if (type == "")
+			{
+				LOG("Missing road type - setting default (rural)");
+				r_type->road_type_ = roadmanager::RoadType::ROADTYPE_RURAL;
+			}
 			else
 			{
-				LOG("Unsupported type: %s - assuming rural", type);
+				LOG("Unsupported road type: %s - assuming rural", type);
 				r_type->road_type_ = roadmanager::RoadType::ROADTYPE_RURAL;
 			}
 
@@ -2571,13 +2576,23 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ev
 	{
 		EvaluateZAndPitch();
 	}
-
 }
 	
 
 bool Position::EvaluateZAndPitch()
 {
-	return GetRoadById(track_id_)->GetZAndPitchByS(s_, &z_, &p_, &elevation_idx_);
+	bool ret_val = GetRoadById(track_id_)->GetZAndPitchByS(s_, &z_, &p_, &elevation_idx_);
+
+	if (ret_val)
+	{
+		// Find out pitch of road in driving direction
+		if (GetHRelative() > M_PI / 2 && GetHRelative() < 3 * M_PI / 2)
+		{
+			p_ *= -1;
+		}
+	}
+
+	return ret_val;
 }
 
 void Position::Track2XYZ()
@@ -2992,12 +3007,6 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 			lane_section_idx_, road->GetId(), lane_id_);
 	}
 
-	// Adjust heading to lane direction
-	if (lane_id > 0)
-	{
-		p_ *= -1;
-	}
-
 	// If moved over to opposite driving direction, then turn relative heading 180 degrees
 	if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))
 	{
@@ -3006,7 +3015,6 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 
 	Lane2Track();
 	Track2XYZ();
-
 }
 
 void Position::SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos)
@@ -3054,7 +3062,15 @@ double Position::GetHRoadInDrivingDirection()
 
 double Position::GetSpeedLimit()
 {
-	return GetOpenDrive()->GetRoadByIdx(track_idx_)->GetSpeedByS(s_);
+	double speed_limit = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetSpeedByS(s_);
+
+	if (speed_limit < SMALL_NUMBER)
+	{
+		// No speed limit defined, set a value depending on number of lanes
+		speed_limit = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetNumberOfDrivingLanesSide(GetS(), SIGN(GetLaneId())) > 1 ? 120 / 3.6 : 60 / 3.6;
+	}
+
+	return speed_limit;
 }
 
 double Position::GetDrivingDirection()

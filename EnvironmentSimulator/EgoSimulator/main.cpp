@@ -128,11 +128,6 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 	egoCar->vehicle->posZ_ = egoCar->pos->GetZ();
 	egoCar->vehicle->pitch_ = egoCar->pos->GetP();
 	
-	// Find out pitch of road in driving direction
-	if (egoCar->pos->GetHRelative() > M_PI / 2 && egoCar->pos->GetHRelative() < 3 * M_PI / 2)
-	{
-		egoCar->vehicle->pitch_ *= -1;
-	}
 }
 
 static void viewer_thread(void *args)
@@ -175,6 +170,27 @@ static void viewer_thread(void *args)
 			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
 		}
 
+		// Set steering target point at a distance ahead proportional to the speed
+		roadmanager::Position *pos;
+		double steer_tgt_distance;
+		if (scenarioEngine->GetExtControl())
+		{
+			pos = egoCar->pos;
+			steer_tgt_distance = MAX(5, egoCar->vehicle->speed_);
+
+		}
+		else
+		{
+			pos = &scenarioEngine->entities.object_[0]->pos_;
+			steer_tgt_distance = MAX(5, scenarioEngine->entities.object_[0]->speed_);
+		}
+
+		// find out what direction is forward, according to vehicle relative road heading 
+		if (GetAbsAngleDifference(pos->GetH(), pos->GetHRoadInDrivingDirection()) > M_PI_2)
+		{
+			steer_tgt_distance *= -1;
+		}
+
 		// Visualize Ego car separatelly, if external control set
 		if (scenarioEngine->GetExtControl())
 		{
@@ -182,22 +198,14 @@ static void viewer_thread(void *args)
 			egoCar->graphics_model->SetPosition(egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_);
 			egoCar->graphics_model->SetRotation(egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0.0);
 			egoCar->graphics_model->UpdateWheels(egoCar->vehicle->wheelAngle_, egoCar->vehicle->wheelRotation_);
-
-			// Update road and vehicle debug lines 
-			scenarioViewer->UpdateVehicleLineAndPoints(egoCar->pos);
-
-			// Visualize steering target point
-			scenarioViewer->UpdateDriverModelPoint(egoCar->pos, MAX(5, egoCar->vehicle->speed_));
 		}
-		else if(scenarioEngine->entities.object_.size() > 0)
-		{
-			// Update road and vehicle debug lines 
-			scenarioViewer->UpdateVehicleLineAndPoints(&scenarioEngine->entities.object_[0]->pos_);
 
-			// Visualize steering target point
-			scenarioViewer->UpdateDriverModelPoint(&scenarioEngine->entities.object_[0]->pos_, MAX(5, scenarioEngine->entities.object_[0]->speed_));
-		}
-		
+		// Update road and vehicle debug lines 
+		scenarioViewer->UpdateVehicleLineAndPoints(pos);
+
+		// Visualize steering target point
+		scenarioViewer->UpdateDriverModelPoint(pos, steer_tgt_distance);
+
 
 		mutex.Unlock();
 
