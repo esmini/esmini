@@ -51,6 +51,7 @@ copy run\EgoSimulator\run_cut-in_simple.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_cr_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_cr_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_dist_test.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_left-hand-traffic_internal.bat %target_dir%\run\EgoSimulator /y
 
 copy run\readme.txt %target_dir% /y
 

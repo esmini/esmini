@@ -138,21 +138,18 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 		{
 			s = 0;
 		}
-//		printf("Reset pos rid: %d lid: %d\n", car->road_id_init, car->lane_id_init);
+
 		car->pos->SetLanePos(car->road_id_init, car->lane_id_init, s, 0, 0);
 	}
 
 	if (car->model->txNode_ != 0)
 	{
-		double heading = car->pos->GetH();
-		double pitch = car->pos->GetP();
-
 		car->model->txNode_->setPosition(osg::Vec3(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ()));
 
 		car->model->quat_.makeRotate(
 			car->pos->GetR(), osg::Vec3(1, 0, 0),
-			pitch, osg::Vec3(0, 1, 0),
-			heading, osg::Vec3(0, 0, 1));
+			car->pos->GetP(), osg::Vec3(0, 1, 0),
+			car->pos->GetH(), osg::Vec3(0, 0, 1));
 
 		car->model->txNode_->setAttitude(car->model->quat_);
 	}
