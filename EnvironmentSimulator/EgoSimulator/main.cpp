@@ -167,7 +167,7 @@ static void viewer_thread(void *args)
 			roadmanager::Position pos = scenarioEngine->entities.object_[i]->pos_;
 
 			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
-			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
+			car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
 		}
 
 		// Set steering target point at a distance ahead proportional to the speed

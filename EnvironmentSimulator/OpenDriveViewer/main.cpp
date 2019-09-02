@@ -144,7 +144,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 
 	if (car->model->txNode_ != 0)
 	{
-		double heading = car->pos->GetHRoadInDrivingDirection();
+		double heading = car->pos->GetH();
 		double pitch = car->pos->GetP();
 
 		car->model->txNode_->setPosition(osg::Vec3(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ()));
