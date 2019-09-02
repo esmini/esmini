@@ -19,7 +19,9 @@ copy resources\xosc\highway_merge_advanced.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\ltap-od_two_targets.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\ltap-od.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\distance_test.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\left-hand-traffic_internal.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\Catalogs\*.* %target_dir%\resources\xosc\Catalogs /y
+IF NOT EXIST %target_dir%\bin\win64\Release ( mkdir %target_dir%\bin\win64\Release )
 
 copy resources\xodr\soderleden.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\e6mini.xodr %target_dir%\resources\xodr /y
