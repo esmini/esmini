@@ -132,7 +132,7 @@ OSCTypeDefs
                         sinusoidal          Yes
                         step                Yes
                     choice                  
-                        rate                No
+                        rate                Yes
                         time                Yes
                         distance            Yes
                 Target                      
