@@ -60,6 +60,22 @@ typedef struct
 
 std::vector<Car*> cars;
 
+// Car models used for populating the road network
+// path should be relative the OpenDRIVE file
+static const char* carModelsFiles_[] =
+{
+	"../models/car_white.osgb",
+	"../models/car_blue.osgb",
+	"../models/car_red.osgb",
+	"../models/car_yellow.osgb",
+	"../models/truck_yellow.osgb",
+	"../models/van_red.osgb",
+	"../models/bus_blue.osgb",
+};
+
+std::vector<osg::ref_ptr<osg::LOD>> carModels_;
+
+
 void log_callback(const char *str)
 {
 	printf("%s\n", str);
@@ -96,7 +112,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 						double s_aligned = lane->GetId() > 0 ? road->GetLength() - s : s;
 
 						// randomly choose model
-						carModelID = (double(viewer->carModels_.size()) * mt_rand()) / (mt_rand.max)();
+						carModelID = (double(sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) * mt_rand()) / (mt_rand.max)();
 						LOG("Adding car of model %d to road %d", carModelID, r);
 
 						Car *car_ = new Car;

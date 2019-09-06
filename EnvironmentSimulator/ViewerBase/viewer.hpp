@@ -22,23 +22,6 @@
 #include "RubberbandManipulator.hpp"
 #include "RoadManager.hpp"
 
-static const char* carModelsFiles_[] =
-{
-//	"s90.fbx",
-	"car_white.osgb",
-	"car_blue.osgb",
-	"car_red.osgb",
-	"car_yellow.osgb",
-//	"truck_blue.osgb",
-//	"truck_red.osgb",
-	"truck_yellow.osgb",
-//	"van_blue.osgb",
-	"van_red.osgb",
-//	"van_yellow.osgb",
-	"bus_blue.osgb",
-//	"bus_red.osgb",
-//	"bus_yellow.osgb",
-};
 
 namespace viewer
 {
@@ -96,7 +79,6 @@ namespace viewer
 		osgViewer::Viewer *osgViewer_;
 		osg::MatrixTransform* rootnode_;
 		roadmanager::OpenDrive *odrManager_;
-		std::vector<osg::ref_ptr<osg::LOD>> carModels_;
 
 		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines = false);
 		~Viewer();
@@ -120,7 +102,6 @@ namespace viewer
 
 		std::string modelFilename_;
 
-		bool ReadCarModels();
 		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
 		bool CreateVehicleLineAndPoint(osg::Group* parent);
 		bool CreateDriverModelLineAndPoint(osg::Group* parent);

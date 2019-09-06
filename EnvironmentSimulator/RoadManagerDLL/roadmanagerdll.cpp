@@ -345,7 +345,7 @@ extern "C"
 	{
 		if (odrManager == 0 || handleA >= position.size() || handleB >= position.size())
 		{
-			return -1;
+			return false;
 		}
 
 		double ds = 0, dt = 0;

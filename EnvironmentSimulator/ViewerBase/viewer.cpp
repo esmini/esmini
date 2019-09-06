@@ -233,11 +233,6 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 		LOG("Failed to load shadow model %s\n", filePath.c_str());
 	}
 
-	if (!ReadCarModels())
-	{
-		LOG("Viewer::Viewer Failed to read car models!\n");
-	}
-
 	// set the scene to render
 	rootnode_ = new osg::MatrixTransform;
 	envTx_ = new osg::PositionAttitudeTransform;
@@ -410,25 +405,6 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 	lod->setName(group->getName());
 
 	return lod;
-}
-
-bool Viewer::ReadCarModels()
-{
-	osg::ref_ptr<osg::LOD> lod;
-
-	for (int i = 0; i < sizeof(carModelsFiles_)/sizeof(carModelsFiles_[0]); i++)
-	{
-
-		// Assume the car models resides in the same directory as the main environment model
-		std::string filePath = DirNameOf(odrManager_->GetOpenDriveFilename());
-		filePath.append("/../models/" + std::string(carModelsFiles_[i]));
-
-		lod = LoadCarModel(filePath.c_str());
-
-		carModels_.push_back(lod);
-	}
-	
-	return true;
 }
 
 bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)

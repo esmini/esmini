@@ -17,7 +17,7 @@
                 <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
             </Axles>
 			<Properties>
-				<File filepath="car_white.osgb"/>
+				<File filepath="../models/car_white.osgb"/>
 				<Property name="model_id" value="0" />
 			</Properties>
         </Vehicle>
@@ -33,7 +33,7 @@
                 <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
             </Axles>
 			<Properties>
-				<File filepath="car_white.osgb"/>
+				<File filepath="../models/car_white.osgb"/>
 				<Property name="control" value="external" />
 				<Property name="model_id" value="0" />
 			</Properties>
@@ -50,7 +50,7 @@
 				<Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
 			</Axles>
 			<Properties>
-				<File filepath="car_blue.osgb"/>
+				<File filepath="../models/car_blue.osgb"/>
 				<Property name="model_id" value="1" />
 			</Properties>
 		</Vehicle>
@@ -67,7 +67,7 @@
                 <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
             </Axles>
 			<Properties>
-				<File filepath="car_red.osgb"/>
+				<File filepath="../models/car_red.osgb"/>
 				<Property name="model_id" value="2" />
 			</Properties>
         </Vehicle>
@@ -83,7 +83,7 @@
                 <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
             </Axles>
 			<Properties>
-				<File filepath="car_yellow.osgb"/>
+				<File filepath="../models/car_yellow.osgb"/>
 				<Property name="model_id" value="3" />
 			</Properties>
         </Vehicle>
@@ -99,7 +99,7 @@
                 <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
             </Axles>
 			<Properties>
-				<File filepath="truck_yellow.osgb"/>
+				<File filepath="../models/truck_yellow.osgb"/>
 				<Property name="model_id" value="4" />
 			</Properties>
         </Vehicle>
@@ -115,7 +115,7 @@
                 <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
             </Axles>
 			<Properties>
-				<File filepath="van_red.osgb"/>
+				<File filepath="../models/van_red.osgb"/>
 				<Property name="model_id" value="5" />
 			</Properties>
         </Vehicle>
@@ -131,7 +131,7 @@
                 <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
             </Axles>
 			<Properties>
-				<File filepath="bus_blue.osgb"/>
+				<File filepath="../models/bus_blue.osgb"/>
 				<Property name="model_id" value="6" />
 			</Properties>
         </Vehicle>

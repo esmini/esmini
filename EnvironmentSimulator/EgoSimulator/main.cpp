@@ -141,7 +141,7 @@ static void viewer_thread(void *args)
 	// Create Ego vehicle, 
 	if (scenarioEngine->GetExtControl())
 	{
-		egoCar->graphics_model = scenarioViewer->AddCar(carModelsFiles_[0]);
+		egoCar->graphics_model = scenarioViewer->AddCar(scenarioEngine->entities.object_[0]->model_filepath_);
 		egoCar->vehicle = new vehicle::Vehicle(egoCar->pos->GetX(), egoCar->pos->GetY(), egoCar->pos->GetH(), egoCar->graphics_model->size_x);
 	}
 
@@ -168,6 +168,7 @@ static void viewer_thread(void *args)
 
 			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
 			car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
+			//LOG("scenariovehicle %d rid %d lid %d s %.2f", i, pos.GetTrackId(), pos.GetLaneId(), pos.GetS());
 		}
 
 		// Set steering target point at a distance ahead proportional to the speed
@@ -177,7 +178,6 @@ static void viewer_thread(void *args)
 		{
 			pos = egoCar->pos;
 			steer_tgt_distance = MAX(5, egoCar->vehicle->speed_);
-
 		}
 		else
 		{

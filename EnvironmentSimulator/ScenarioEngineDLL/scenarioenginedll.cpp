@@ -45,6 +45,18 @@ static SE_Mutex mutex;
 
 #define DEFAULT_RECORDING_FILENAME "scenario.dat"
 
+// Car models used for populating the road network according to scenario object model ID
+// path should be relative the OpenDRIVE file
+static const char* carModelsFiles_[] =
+{
+	"../models/car_white.osgb",
+	"../models/car_blue.osgb",
+	"../models/car_red.osgb",
+	"../models/car_yellow.osgb",
+	"../models/truck_yellow.osgb",
+	"../models/van_red.osgb",
+	"../models/bus_blue.osgb",
+};
 
 static ScenarioEngine *scenarioEngine = 0;
 static ScenarioGateway *scenarioGateway = 0;
