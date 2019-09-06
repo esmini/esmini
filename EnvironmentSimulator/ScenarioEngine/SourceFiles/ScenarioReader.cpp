@@ -655,7 +655,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, Entit
 			pos_return = (OSCPosition*)pos;
 		}
 	}
-	
+
 	return pos_return;
 }
 
@@ -1023,7 +1023,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							FollowRouteAction *action_follow_route = new FollowRouteAction;
 							
 							// Find route in catalog
-							roadmanager::Route *route = (roadmanager::Route*)catalogs->FindCatalogEntry(ReadAttribute(followRouteChild.attribute("catalogName")), ReadAttribute(followRouteChild.attribute("entryName")));
+							roadmanager::Route *route = (roadmanager::Route*)catalogs->FindCatalogElement(ReadAttribute(followRouteChild.attribute("catalogName")), ReadAttribute(followRouteChild.attribute("entryName")));								
 
 							if(route != 0)
 							{
