@@ -44,10 +44,16 @@ typedef struct
 {
 	float global_pos[3];    // steering target position, in global coordinate system
 	float local_pos[3];     // steering target position, relative vehicle (pivot position object) coordinate system
-	float angle;				// heading angle to steering target from and relatove to vehicle (pivot position)
-	float curvature;			// road curvature at steering target point
+	float angle;			// heading angle to steering target from and relatove to vehicle (pivot position)
+	float curvature;		// road curvature at steering target point
 } SteeringTargetData;
 
+typedef struct
+{
+	float ds;				// delta s (longitudinal distance)
+	float dt;				// delta t (lateral distance)
+	int dLaneId;			// delta laneId (increasing left and decreasing to the right)
+} PositionDiff;
 
 #ifdef __cplusplus
 extern "C"
@@ -186,6 +192,16 @@ extern "C"
 	@return 0 if successful, -1 if not
 	*/
 	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, SteeringTargetData *data);
+
+	/**
+	Find out the difference between two position objects, i.e. delta distance (long and lat) and delta laneId
+	@param handleA Handle to the position object from which to measure
+	@param handleB Handle to the position object to which the distance is measured
+	@param pos_diff Struct including all result values, see PositionDiff typedef
+	@return true if a valid path between the road positions was found and calculations could be performed
+	*/
+	RM_DLL_API bool RM_SubtractAFromB(int handleA, int handleB, PositionDiff *pos_diff);
+
 
 #ifdef __cplusplus
 }

@@ -365,6 +365,7 @@ namespace roadmanager
 		int GetLaneIdxById(int id);
 		double GetOuterOffset(double s, int lane_id);
 		double GetWidth(double s, int lane_id);
+		int GetClosestLaneIdx(double s, double t, double &offset);
 
 		/**
 		Get lateral position of lane center, from road reference lane (lane id=0)
@@ -482,10 +483,16 @@ namespace roadmanager
 		LaneSection *GetLaneSectionByIdx(int idx);
 		
 		/**
+		Retrieve the lanesection index at specified s-value
+		@param s distance along the road segment
+		*/
+		int GetLaneSectionIdxByS(double s, int start_at = 0);
+
+		/**
 		Retrieve the lanesection at specified s-value
 		@param s distance along the road segment
 		*/
-		LaneSection *GetLaneSectionByS(double s);
+		LaneSection* GetLaneSectionByS(double s, int start_at = 0) { return GetLaneSectionByIdx(GetLaneSectionIdxByS(s, start_at)); }
 
 		/**
 		Get lateral position of lane center, from road reference lane (lane id=0)
@@ -606,7 +613,9 @@ namespace roadmanager
 		int GetNumberOfRoadConnections(int roadId, int laneId);
 		LaneRoadLaneConnection GetRoadConnectionByIdx(int roadId, int laneId, int idx);
 		void AddConnection(Connection *connection) { connection_.push_back(connection); }
+		int GetNoConnectionsFromRoadId(int incomingRoadId);
 		Connection *GetConnectionByIdx(int idx) { return connection_[idx]; }
+		int GetConnectingRoadIdFromIncomingRoadId(int incomingRoadId, int index);
 		void Print();
 	
 	private:
@@ -683,6 +692,7 @@ namespace roadmanager
 		void Init();
 		static bool LoadOpenDrive(const char *filename);
 		static OpenDrive* GetOpenDrive();
+		int GotoClosestDrivingLaneAtCurrentPosition();
 		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
 		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
@@ -690,6 +700,7 @@ namespace roadmanager
 		void SetHeadingRelative(double heading);
 		void XYZH2TrackPos(double x, double y, double z, double h, bool evaluateZAndPitch = true);
 		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
+		double FindDistToPos(Position *pos, RoadLink *link, int &call_count, int level_count, bool &found);
 
 		void SetRoute(Route *route) { route_ = route; }
 		const roadmanager::Route* GetRoute() const { return route_; }
@@ -743,6 +754,13 @@ namespace roadmanager
 		@return distance (meter). Negative if the specified position is behind the current one.
 		*/
 		double getRelativeDistance(Position target_position, double &x, double &y);
+
+		/**
+		Find out the difference between two position objects, in effect subtracting the values 
+		@param positionB The position which will be subtracted from the current position object
+		@return true if position found and parameter values are valid, else false
+		*/
+		bool Subtract(Position pos_b, double &ds, double &dt, int &dLaneId);
 
 		/**
 		Is the current position ahead of the one specified in argument

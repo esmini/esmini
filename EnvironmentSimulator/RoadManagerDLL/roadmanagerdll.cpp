@@ -341,4 +341,23 @@ extern "C"
 		return 0;
 	}
 
+	RM_DLL_API bool RM_SubtractAFromB(int handleA, int handleB, PositionDiff *pos_diff)
+	{
+		if (odrManager == 0 || handleA >= position.size() || handleB >= position.size())
+		{
+			return -1;
+		}
+
+		double ds = 0, dt = 0;
+		int dl = 0;
+		bool result = position[handleA].Subtract(position[handleB], ds, dt, dl);
+		if (result == true)
+		{
+			pos_diff->ds = (float)ds;
+			pos_diff->dt = (float)dt;
+			pos_diff->dLaneId = dl;
+		}
+
+		return result;
+	}
 }
