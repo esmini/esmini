@@ -341,9 +341,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath)
 	}
 
 	// Load 3D model
-	std::string filePath = DirNameOf(odrManager_->GetOpenDriveFilename());
-	filePath.append("/../models/" + modelFilepath);
-
+	std::string filePath = DirNameOf(modelFilename_).append("/" + modelFilepath);
 	osg::ref_ptr<osg::LOD> lod = LoadCarModel(filePath.c_str());
 	if (lod == 0)
 	{
