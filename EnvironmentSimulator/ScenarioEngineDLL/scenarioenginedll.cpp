@@ -94,7 +94,7 @@ void viewer_thread(void*)
 	}
 
 	// Initialize the viewer
-	scViewer = new viewer::Viewer(roadManager, scenarioEngine->getSceneGraphFilename().c_str(), osg::ArgumentParser(&argc, argv), VISUALIZE_DRIVER_MODEL_TARGET);
+	scViewer = new viewer::Viewer(roadManager, scenarioEngine->getSceneGraphFilename().c_str(), scenarioEngine->getScenarioFilename().c_str(), osg::ArgumentParser(&argc, argv), VISUALIZE_DRIVER_MODEL_TARGET);
 
 	// Update graphics - until close request or viewer terminated 
 	while (!closing)
@@ -133,8 +133,11 @@ void viewer_thread(void*)
 		for (size_t i = 0; i < scenarioCar.size(); i++)
 		{
 			ScenarioCar *c = &scenarioCar[i];
-			c->carModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
-			c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
+			if (c->carModel)
+			{
+				c->carModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
+				c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
+			}
 		}
 
 #if VISUALIZE_DRIVER_MODEL_TARGET

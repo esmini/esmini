@@ -27,7 +27,7 @@
 #include "CommonMini.hpp"
 
 #define SHADOW_SCALE 1.20
-#define SHADOW_MODEL_FILENAME "shadow_face.osgb"
+#define SHADOW_MODEL_FILEPATH "shadow_face.osgb"  // models folder assumed to exist one level above the OpenSCENARIO file 
 #define LOD_DIST 3000
 #define LOD_SCALE_DEFAULT 1.2
 #define MIN(x, y) ((x)<(y)?(x):(y))
@@ -201,10 +201,21 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
 	wheel_[3]->setAttitude(quat);
 }
 
-Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines)
+Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines)
 {
 	odrManager_ = odrManager;
-	modelFilename_ = modelFilename;
+
+	if(scenarioFilename != NULL)
+	{ 
+		scenarioDir_ = DirNameOf(scenarioFilename);
+		LOG("Scenario file directory, %s, is used as pivot for model relative file paths", getScenarioDir().c_str());
+	}
+	else
+	{
+		// if scenario missing consider folder hosting the OpenDRIVE file to be the scenario directory
+		scenarioDir_ = DirNameOf(odrManager->GetOpenDriveFilename());
+		LOG("Scenario file missing, using OpenDRIVE directory, %s, as pivot for model relative file paths", getScenarioDir().c_str());
+	}
 
 	lodScale_ = LOD_SCALE_DEFAULT;
 	currentCarInFocus_ = 0;
@@ -223,14 +234,12 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	osgViewer_ = new osgViewer::Viewer(arguments); 
 
 
-	// Load shadow geometry - assume it resides in the same directory as the main environment model
-	std::string filePath = DirNameOf(modelFilename_);
-	filePath.append("/" + std::string(SHADOW_MODEL_FILENAME));
-
-	shadow_node_ = osgDB::readNodeFile(filePath);
+	// Load shadow geometry - assume it resides in the same resource folder as the environment model
+	std::string shadowFilename = DirNameOf(modelFilename).append("/" + std::string(SHADOW_MODEL_FILEPATH));
+	shadow_node_ = osgDB::readNodeFile(shadowFilename);
 	if (!shadow_node_)
 	{
-		LOG("Failed to load shadow model %s\n", filePath.c_str());
+		LOG("Failed to load shadow model %s\n", shadowFilename.c_str());
 	}
 
 	// set the scene to render
@@ -240,7 +249,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, os
 	// add environment
 	if (AddEnvironment(modelFilename) == -1)
 	{
-		LOG("Failed to load environment model");
+		LOG("Failed to load environment model: %s", modelFilename);
 	}
 	rootnode_->addChild(envTx_);
 
@@ -341,11 +350,13 @@ CarModel* Viewer::AddCar(std::string modelFilepath)
 	}
 
 	// Load 3D model
-	std::string filePath = DirNameOf(modelFilename_).append("/" + modelFilepath);
-	osg::ref_ptr<osg::LOD> lod = LoadCarModel(filePath.c_str());
+	std::string absFilepath = getScenarioDir().append("/" + modelFilepath);
+
+	osg::ref_ptr<osg::LOD> lod = LoadCarModel(absFilepath.c_str());
+
 	if (lod == 0)
 	{
-		LOG("Failed to load car model: %s", modelFilepath.c_str());
+		LOG("Failed to load car model: %s", absFilepath.c_str());
 		return 0;
 	}
 

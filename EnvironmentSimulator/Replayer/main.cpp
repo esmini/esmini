@@ -127,6 +127,7 @@ int main(int argc, char** argv)
 		viewer::Viewer *viewer = new viewer::Viewer(
 			odrManager, 
 			model_path.append("/models/").append(player->header_.model_filename).c_str(),
+			NULL,
 			arguments);
 
 		__int64 now, lastTimeStamp = 0;
@@ -167,7 +168,10 @@ int main(int argc, char** argv)
 					LOG("Creating car %d - got state from gateway", state->id);
 
 					new_sc.id = state->id;
-					new_sc.carModel = viewer->AddCar(carModelsFiles_[state->model_id]);
+					if ((new_sc.carModel = viewer->AddCar(carModelsFiles_[state->model_id])) == 0)
+					{
+						return -1;
+					}
 
 					// Add it to the list of scenario cars
 					scenarioCar.push_back(new_sc);

@@ -80,6 +80,7 @@ void log_callback(const char *str)
 {
 	printf("%s\n", str);
 }
+
 int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 {
 	if (density < 1E-10)
@@ -122,7 +123,10 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 						car_->lane_id_init = lane_id;						
 						car_->pos = new roadmanager::Position(odrManager->GetRoadByIdx(r)->GetId(), lane_id, s_aligned, 0);
 						car_->pos->SetHeadingRelative(lane_id < 0 ? 0 : M_PI);
-						car_->model = viewer->AddCar(carModelsFiles_[carModelID]);
+						if ((car_->model = viewer->AddCar(carModelsFiles_[carModelID])) == 0)
+						{
+							return -1;
+						}
 						car_->id = cars.size();
 						cars.push_back(car_);
 
@@ -221,11 +225,15 @@ int main(int argc, char** argv)
 		roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
 
 		viewer::Viewer *viewer = new viewer::Viewer(
-			odrManager, 
+			odrManager,
 			modelFilename.c_str(),
+			NULL, 
 			arguments);
 
-		SetupCars(odrManager, viewer);
+		if (SetupCars(odrManager, viewer) == -1)
+		{
+			return 4;
+		}
 		printf("%d cars added\n", (int)cars.size());
 
 		__int64 now, lastTimeStamp = 0;

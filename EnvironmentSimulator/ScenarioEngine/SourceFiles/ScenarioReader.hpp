@@ -77,6 +77,8 @@ namespace scenarioengine
 		std::string getParameter(std::string name);
 		void addParameter(std::string name, std::string value);
 
+		std::string getScenarioFilename() { return oscFilename; }
+
 		std::string ExtControlMode2Str(ExternalControlMode mode)
 		{
 			if (mode == ExternalControlMode::EXT_CONTROL_BY_OSC) return "by OSC";

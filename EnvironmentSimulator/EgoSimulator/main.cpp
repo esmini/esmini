@@ -136,12 +136,22 @@ static void viewer_thread(void *args)
 	int firstScenarioVehicle = scenarioEngine->GetExtControl() == true ? 1 : 0;
 
 	// Create viewer
-	scenarioViewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), *parser, true);
+	scenarioViewer = new viewer::Viewer(
+		roadmanager::Position::GetOpenDrive(), 
+		scenarioEngine->getSceneGraphFilename().c_str(), 
+		scenarioEngine->getScenarioFilename().c_str(), 
+		*parser, 
+		true);
 
 	// Create Ego vehicle, 
 	if (scenarioEngine->GetExtControl())
 	{
-		egoCar->graphics_model = scenarioViewer->AddCar(scenarioEngine->entities.object_[0]->model_filepath_);
+		if ((egoCar->graphics_model = scenarioViewer->AddCar(scenarioEngine->entities.object_[0]->model_filepath_)) == 0)
+		{
+			delete scenarioViewer;
+			viewer_state = ViewerState::VIEWER_QUIT;
+			return;
+		}
 		egoCar->vehicle = new vehicle::Vehicle(egoCar->pos->GetX(), egoCar->pos->GetY(), egoCar->pos->GetH(), egoCar->graphics_model->size_x);
 	}
 

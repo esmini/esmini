@@ -80,7 +80,7 @@ namespace viewer
 		osg::MatrixTransform* rootnode_;
 		roadmanager::OpenDrive *odrManager_;
 
-		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines = false);
+		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines = false);
 		~Viewer();
 		CarModel* AddCar(std::string modelFilepath);
 		int AddEnvironment(const char* filename);
@@ -97,10 +97,11 @@ namespace viewer
 		bool getKeyRight() { return keyRight_; }
 		void SetQuitRequest(bool value) { quit_request_ = value; }
 		bool GetQuitRequest() { return quit_request_;  }
+		std::string getScenarioDir() { return scenarioDir_; }
 
 	private:
 
-		std::string modelFilename_;
+		std::string scenarioDir_;
 
 		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
 		bool CreateVehicleLineAndPoint(osg::Group* parent);

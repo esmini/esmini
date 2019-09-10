@@ -35,11 +35,12 @@
 
 using namespace scenarioengine;
 
+enum ViewerState { VIEWER_NOT_STARTED, VIEWER_RUNNING, VIEWER_DONE, VIEWER_FAILED };
 
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static const bool freerun = true;
-static bool viewer_running = false;
+static int viewer_state = VIEWER_NOT_STARTED;
 
 
 static ScenarioEngine *scenarioEngine;
@@ -52,12 +53,21 @@ void viewer_thread(void *args)
 	osg::ArgumentParser *parser = (osg::ArgumentParser*)args;
 
 	// Create viewer
-	viewer::Viewer *viewer = new viewer::Viewer(roadmanager::Position::GetOpenDrive(), scenarioEngine->getSceneGraphFilename().c_str(), *parser);
+	viewer::Viewer *viewer = new viewer::Viewer(
+		roadmanager::Position::GetOpenDrive(), 
+		scenarioEngine->getSceneGraphFilename().c_str(), 
+		scenarioEngine->getScenarioFilename().c_str(), 
+		*parser);
 
 	//  Create cars for visualization
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		viewer->AddCar(scenarioEngine->entities.object_[i]->model_filepath_);
+		if ((viewer->AddCar(scenarioEngine->entities.object_[i]->model_filepath_)) == 0)
+		{
+			delete viewer;
+			viewer_state = VIEWER_FAILED;
+			return;
+		}
 	}
 
 	while (!viewer->osgViewer_->done())
@@ -79,12 +89,12 @@ void viewer_thread(void *args)
 
 		viewer->osgViewer_->frame();
 		
-		viewer_running = true;
+		viewer_state = VIEWER_RUNNING;
 	}
 
 	delete viewer;
 
-	viewer_running = false;
+	viewer_state = VIEWER_DONE;
 }
 
 void log_callback(const char *str)
@@ -167,12 +177,16 @@ int main(int argc, char *argv[])
 	thread.Start(viewer_thread, &arguments);
 	
 	// Wait for the viewer to launch
-	while (!viewer_running) SE_sleep(100);
+	while (viewer_state == VIEWER_NOT_STARTED) SE_sleep(100);
+	if (viewer_state == VIEWER_FAILED)
+	{
+		return -1;
+	}
 
 	__int64 now, lastTimeStamp = 0;
 	double simTime = 0;
 
-	while (viewer_running)
+	while (viewer_state == VIEWER_RUNNING)
 	{
 		// Get milliseconds since Jan 1 1970
 		now = SE_getSystemTime();

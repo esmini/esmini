@@ -48,6 +48,7 @@ namespace scenarioengine
 		void printSimulationTime();
 		void stepObjects(double dt);
 
+		std::string getScenarioFilename() { return scenarioReader.getScenarioFilename(); }
 		std::string getSceneGraphFilename() { return roadNetwork.SceneGraph.filepath; }
 		std::string getOdrFilename() { return roadNetwork.Logics.filepath; }
 		roadmanager::OpenDrive *getRoadManager() { return odrManager; }
