@@ -46,6 +46,12 @@ void SE_sleep(unsigned int msec);
 
 
 // Useful operations
+
+/**
+  Concatenate a directory path and a file path
+*/
+std::string CombineDirectoryPathAndFilepath(std::string dir_path,  std::string file_path);
+
 /**
   Retrieve the absolute value of difference between two angles
 */

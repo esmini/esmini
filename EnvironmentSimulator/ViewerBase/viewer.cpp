@@ -350,13 +350,13 @@ CarModel* Viewer::AddCar(std::string modelFilepath)
 	}
 
 	// Load 3D model
-	std::string absFilepath = getScenarioDir().append("/" + modelFilepath);
+	std::string path = CombineDirectoryPathAndFilepath(getScenarioDir(), modelFilepath);
 
-	osg::ref_ptr<osg::LOD> lod = LoadCarModel(absFilepath.c_str());
+	osg::ref_ptr<osg::LOD> lod = LoadCarModel(path.c_str());
 
 	if (lod == 0)
 	{
-		LOG("Failed to load car model: %s", absFilepath.c_str());
+		LOG("Failed to load car model: %s", path.c_str());
 		return 0;
 	}
 

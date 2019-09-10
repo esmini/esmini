@@ -21,6 +21,27 @@
 
 
 
+std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path)
+{
+	std::string path = file_path;
+
+	if (file_path[0] != '/')
+	{
+		// Relative path. Make sure it starts with ".." or "./"
+		if (path[0] != '.')
+		{
+			path.insert(0, "./");
+		}
+		if (dir_path != "")
+		{
+			// Combine with directory path
+			path.insert(0, dir_path + '/');
+		}
+	}
+
+	return path;
+}
+
 double GetAbsAngleDifference(double angle1, double angle2)
 {
 	double diff = fmod(angle2 - angle1, 2 * M_PI);

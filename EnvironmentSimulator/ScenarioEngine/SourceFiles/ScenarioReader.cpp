@@ -27,12 +27,6 @@ double strtod(std::string s) {
 
 using namespace scenarioengine;
 
-static std::string dirnameOf(const std::string& fname)
-{
-	size_t pos = fname.find_last_of("\\/");
-	return (std::string::npos == pos) ? "" : fname.substr(0, pos);
-}
-
 ScenarioReader::ScenarioReader()
 {
 	objectCnt = 0;
@@ -134,7 +128,8 @@ void ScenarioReader::LoadCatalog(pugi::xml_node catalogChild, Entities *entities
 	}
 
 	// Filename should be relative the XOSC file
-	std::string path = DirNameOf(oscFilename) + "/" + filename;
+	std::string path = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename), filename);
+
 	pugi::xml_parse_result result = catalog_doc.load_file(path.c_str());
 
 	if (!result)
@@ -253,7 +248,7 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 		LOG("Warning: No road network 3D model file loaded! Setting default path.");
 
 		// Since the scene graph file path is used to locate other 3D files, like vehicles, create a default path 
-		roadNetwork.SceneGraph.filepath =  dirnameOf(oscFilename) + "/../models/";
+		roadNetwork.SceneGraph.filepath =  DirNameOf(oscFilename);
 	}
 
 	LOG("Roadnetwork ODR: %s", roadNetwork.Logics.filepath.c_str());
@@ -394,13 +389,9 @@ void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 {
 	LOG("Parsing OSCFile %s", file.filepath.c_str());
 
-	file.filepath = ReadAttribute(fileNode.attribute("filepath"));
+	file.filepath = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename), ReadAttribute(fileNode.attribute("filepath")));
 
-	// If relative path (starting with "."), then assume it is relative to the scenario .xosc file
-	if (file.filepath[0] == '.')
-	{
-		file.filepath.insert(0, dirnameOf(oscFilename) + "/");
-	}
+	LOG("OSC filepath: %s", file.filepath.c_str());
 }
 
 void ScenarioReader::parseEntities(Entities &entities, Catalogs *catalogs)

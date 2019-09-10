@@ -182,40 +182,39 @@ static void viewer_thread(void *args)
 		}
 
 		// Set steering target point at a distance ahead proportional to the speed
-		roadmanager::Position *pos;
+		roadmanager::Position *pos = 0;
 		double steer_tgt_distance;
 		if (scenarioEngine->GetExtControl())
 		{
 			pos = egoCar->pos;
 			steer_tgt_distance = MAX(5, egoCar->vehicle->speed_);
-		}
-		else
-		{
-			pos = &scenarioEngine->entities.object_[0]->pos_;
-			steer_tgt_distance = MAX(5, scenarioEngine->entities.object_[0]->speed_);
-		}
 
-		// find out what direction is forward, according to vehicle relative road heading 
-		if (GetAbsAngleDifference(pos->GetH(), pos->GetHRoadInDrivingDirection()) > M_PI_2)
-		{
-			steer_tgt_distance *= -1;
-		}
-
-		// Visualize Ego car separatelly, if external control set
-		if (scenarioEngine->GetExtControl())
-		{
+			// Visualize Ego car separatelly, if external control set
 			// update 3D model transform
 			egoCar->graphics_model->SetPosition(egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_);
 			egoCar->graphics_model->SetRotation(egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0.0);
 			egoCar->graphics_model->UpdateWheels(egoCar->vehicle->wheelAngle_, egoCar->vehicle->wheelRotation_);
 		}
+		else if(scenarioEngine->entities.object_.size() > 0)
+		{
+			pos = &scenarioEngine->entities.object_[0]->pos_;
+			steer_tgt_distance = MAX(5, scenarioEngine->entities.object_[0]->speed_);
+		}
 
-		// Update road and vehicle debug lines 
-		scenarioViewer->UpdateVehicleLineAndPoints(pos);
+		if (pos)
+		{
+			// find out what direction is forward, according to vehicle relative road heading 
+			if (GetAbsAngleDifference(pos->GetH(), pos->GetHRoadInDrivingDirection()) > M_PI_2)
+			{
+				steer_tgt_distance *= -1;
+			}
 
-		// Visualize steering target point
-		scenarioViewer->UpdateDriverModelPoint(pos, steer_tgt_distance);
+			// Update road and vehicle debug lines 
+			scenarioViewer->UpdateVehicleLineAndPoints(pos);
 
+			// Visualize steering target point
+			scenarioViewer->UpdateDriverModelPoint(pos, steer_tgt_distance);
+		}
 
 		mutex.Unlock();
 
