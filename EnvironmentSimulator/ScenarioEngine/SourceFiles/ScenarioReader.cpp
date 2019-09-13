@@ -391,7 +391,6 @@ void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 
 	file.filepath = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename), ReadAttribute(fileNode.attribute("filepath")));
 
-	LOG("OSC filepath: %s", file.filepath.c_str());
 }
 
 void ScenarioReader::parseEntities(Entities &entities, Catalogs *catalogs)
@@ -990,6 +989,84 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				}
 			}
 		}
+		else if (actionChild.name() == std::string("EXT_Synchronize"))
+		{
+			SynchronizeAction *action_synch = new SynchronizeAction;
+
+			std::string master_object_str = ReadAttribute(actionChild.attribute("masterObject"));
+			action_synch->master_object_ = FindObjectByName(master_object_str, entities);
+
+			pugi::xml_node target_position_master_node = actionChild.child("TargetPositionMaster");
+			if (!target_position_master_node)
+			{
+				LOG("Missing required element \"TargetPositionMaster\"");
+				return 0;
+			}
+			action_synch->target_position_master_ = parseOSCPosition(target_position_master_node, entities, catalogs)->GetRMPos();
+
+			pugi::xml_node target_position_node = actionChild.child("TargetPosition");
+			if (!target_position_node)
+			{
+				LOG("Missing required element \"TargetPosition\"");
+				return 0;
+			}
+			action_synch->target_position_ = parseOSCPosition(target_position_node, entities, catalogs)->GetRMPos();
+
+			pugi::xml_node target_speed_node = actionChild.child("TargetSpeed");
+			if (target_speed_node)
+			{
+				LOG("Parsing optional element \"TargetSpeed\"");
+
+				pugi::xml_node target_speed_element = target_speed_node.child("Absolute");
+				if (target_speed_element != NULL)
+				{
+					LongSpeedAction::TargetAbsolute *targetSpeedAbs = new LongSpeedAction::TargetAbsolute;
+					targetSpeedAbs->value_ = strtod(ReadAttribute(target_speed_element.attribute("value")));
+					action_synch->target_speed_ = targetSpeedAbs;
+				}
+				else
+				{
+					pugi::xml_node target_speed_element = target_speed_node.child("RelativeMaster");
+
+					if (target_speed_element != NULL)
+					{
+						LongSpeedAction::TargetRelative *targetSpeedRel = new LongSpeedAction::TargetRelative;
+
+						targetSpeedRel->value_ = strtod(ReadAttribute(target_speed_element.attribute("value")));
+
+						targetSpeedRel->continuous_ = true;  // Continuous adaption needed
+
+						targetSpeedRel->object_ = action_synch->master_object_;  // Master object is the pivot vehicle 
+
+						std::string value_type = ReadAttribute(target_speed_element.attribute("valueType"));
+						if (value_type == "delta")
+						{
+							targetSpeedRel->value_type_ = LongSpeedAction::TargetRelative::ValueType::DELTA;
+						}
+						else if (value_type == "factor")
+						{
+							targetSpeedRel->value_type_ = LongSpeedAction::TargetRelative::ValueType::FACTOR;
+						}
+						else if (value_type == "")
+						{
+							LOG("Value type missing - falling back to delta");
+							targetSpeedRel->value_type_ = LongSpeedAction::TargetRelative::DELTA;
+						}
+						else
+						{
+							LOG("Value type %s not valid", value_type.c_str());
+						}
+						action_synch->target_speed_ = targetSpeedRel;
+					}
+					else
+					{
+						LOG("Missing speed TargetSpeed sub element \"Absolute\" or \"RelativeMaster\"");
+						return 0;
+					}
+				}
+			}
+			action = action_synch;
+		}
 		else if (actionChild.name() == std::string("Position"))
 		{
 			PositionAction *action_pos = new PositionAction;
@@ -1139,6 +1216,11 @@ void ScenarioReader::parseInit(Init &init, Entities *entities, Catalogs *catalog
 				for (pugi::xml_node privateChild = actionsChild.first_child(); privateChild; privateChild = privateChild.next_sibling())
 				{
 					OSCPrivateAction *action = parseOSCPrivateAction(privateChild, entities, object, catalogs);
+					if (action == 0)
+					{
+						LOG("Failed to parse private action");
+						return;
+					}
 					action->name_ = "Init " + object->name_ + " " + privateChild.first_child().name();
 					init.private_action_.push_back(action);
 				}

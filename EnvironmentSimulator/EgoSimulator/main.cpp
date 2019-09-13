@@ -178,7 +178,6 @@ static void viewer_thread(void *args)
 
 			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
 			car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
-			//LOG("scenariovehicle %d rid %d lid %d s %.2f", i, pos.GetTrackId(), pos.GetLaneId(), pos.GetS());
 		}
 
 		// Set steering target point at a distance ahead proportional to the speed

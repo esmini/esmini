@@ -3363,7 +3363,7 @@ double Position::FindDistToPos(Position *pos, RoadLink *link, int &call_count, i
 	return 0;
 }
 
-bool Position::Subtract(Position pos_b, double &ds, double &dt, int &dLaneId)
+bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
 {
 	Road *road = GetOpenDrive()->GetRoadById(GetTrackId());
 	bool loop = false;

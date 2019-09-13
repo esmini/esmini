@@ -350,3 +350,47 @@ void MeetingRelativeAction::Step(double dt)
 		object_->speed_ = pivotDist / (targetTimeToDest + offsetTime_);
 	}
 }
+
+void SynchronizeAction::Step(double dt)
+{
+	(void)dt;
+
+	// Calculate distance along road/route
+	double masterDist, dist, dT;
+	int dl;
+	
+	if (!master_object_->pos_.Delta(*target_position_master_, masterDist, dT, dl))
+	{
+		LOG("No road network path between master vehicle and master target pos");
+		return;
+	}
+
+	if (!object_->pos_.Delta(*target_position_, dist, dT, dl))
+	{
+		LOG("No road network path between master vehicle and master target pos");
+		return;
+	}
+
+	double masterTimeToDest = INFINITY;
+
+	if (master_object_->speed_ > SMALL_NUMBER)
+	{
+		masterTimeToDest = masterDist / master_object_->speed_;
+	}
+
+	// Done when either of the vehicles reaches the destination
+	if (dist < DISTANCE_TOLERANCE || (masterTimeToDest) < SMALL_NUMBER)
+	{
+		OSCAction::Stop();
+	}
+	else
+	{
+		// Calculate acceleration based on time to arrival and target speed
+		// Idea: Calculate mean speed, then find out current speed to reach target speed (avg_speed = (current_speed + target_speed) / 2)
+
+		double average_speed = dist / (masterTimeToDest);
+		double current_speed = 2 * average_speed - target_speed_->GetValue();
+		
+		object_->speed_ = MAX(current_speed, 0);
+	}
+}

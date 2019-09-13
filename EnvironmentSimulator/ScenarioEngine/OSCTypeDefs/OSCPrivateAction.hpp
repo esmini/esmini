@@ -43,7 +43,8 @@ namespace scenarioengine
 			AUTONOMOUS,
 			CONTROLLER,
 			POSITION,
-			FOLLOW_ROUTE
+			FOLLOW_ROUTE,
+			SYNCHRONIZE
 		} Type;
 
 		typedef enum
@@ -381,6 +382,30 @@ namespace scenarioengine
 		bool continuous_;
 
 		MeetingRelativeAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_RELATIVE) {}
+
+		void Step(double dt);
+
+		void Trig()
+		{
+			if (object_->extern_control_)
+			{
+				// motion control handed over 
+				return;
+			}
+
+			OSCAction::Trig();
+		}
+	};
+
+	class SynchronizeAction : public OSCPrivateAction
+	{
+	public:
+		roadmanager::Position *target_position_master_;
+		roadmanager::Position *target_position_;
+		Object *master_object_;
+		LongSpeedAction::Target *target_speed_;
+
+		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::Type::SYNCHRONIZE) {}
 
 		void Step(double dt);
 

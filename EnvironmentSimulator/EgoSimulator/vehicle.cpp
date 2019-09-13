@@ -22,7 +22,7 @@
 using namespace vehicle;
 
 #define STEERING_RATE 5.0
-#define STEERING_MAX_ANGLE (45 * M_PI / 180)
+#define STEERING_MAX_ANGLE (50 * M_PI / 180)
 #define ACCELERATION_SCALE 20
 #define SPEED_DECLINE 0.001
 #define WHEEL_RADIUS 0.35
@@ -100,9 +100,9 @@ void Vehicle::Update(double dt, THROTTLE throttle, STEERING steering)
 	// Calculate vehicle kinematics according to simple bicycle model, see
 	// http://www.me.berkeley.edu/~frborrel/pdfpub/IV_KinematicMPC_jason.pdf
 
-	velAngleRelVehicleLongAxis_ = atan(0.5 * tan(wheelAngle_));
+	velAngleRelVehicleLongAxis_ = atan(0.15 * tan(wheelAngle_));  // Origo is between rear wheel axles on ground level, estimated 15% along X axis
 	velAngle_ = velAngleRelVehicleLongAxis_ + heading_;
-	headingDot_ = speed_ * sin(velAngleRelVehicleLongAxis_) / (length_ / 2);
+	headingDot_ = speed_ * sin(velAngleRelVehicleLongAxis_) / (length_ * 0.15);  
 
 	velX_ = speed_ * cos(velAngle_);
 	velY_ = speed_ * sin(velAngle_);

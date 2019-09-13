@@ -760,7 +760,7 @@ namespace roadmanager
 		@param positionB The position which will be subtracted from the current position object
 		@return true if position found and parameter values are valid, else false
 		*/
-		bool Subtract(Position pos_b, double &ds, double &dt, int &dLaneId);
+		bool Delta(Position pos_b, double &ds, double &dt, int &dLaneId);
 
 		/**
 		Is the current position ahead of the one specified in argument

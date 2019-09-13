@@ -350,7 +350,7 @@ extern "C"
 
 		double ds = 0, dt = 0;
 		int dl = 0;
-		bool result = position[handleA].Subtract(position[handleB], ds, dt, dl);
+		bool result = position[handleA].Delta(position[handleB], ds, dt, dl);
 		if (result == true)
 		{
 			pos_diff->ds = (float)ds;

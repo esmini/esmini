@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenSCENARIO>
+    
+	<FileHeader revMajor="1" revMinor="0 beta" date="2019-09-12T10:00:00" description="Synchronize" author="Emil Knabe"/>
+
+    <ParameterDeclaration>
+		<Parameter name="$EgoVehicle" type="string" value="car_white" />
+        <Parameter name="$NPC1Vehicle" type="string" value="car_red" />
+        <Parameter name="$NPC2Vehicle" type="string" value="truck_yellow" />
+        <Parameter name="$NPC3Vehicle" type="string" value="bus_blue" />
+        <Parameter name="$MS1Vehicle" type="string" value="car_yellow" />
+        <Parameter name="$MS2Vehicle" type="string" value="van_red" />
+		<Parameter name="$EgoSpeed" type="double" value="20" />
+		<Parameter name="$NPC1Speed" type="double" value="30" />
+		<Parameter name="$NPC2Speed" type="double" value="19" />
+		<Parameter name="$NPC3Speed" type="double" value="17" />
+        <Parameter name="$EgoStartS" type="double" value="100" />
+        <Parameter name="$NPC1StartS" type="double" value="150" />
+        <Parameter name="$NPC2StartS" type="double" value="20" />
+        <Parameter name="$NPC3StartS" type="double" value="30" />
+        <Parameter name="$MS1EgoS" type="double" value="300" />
+        <Parameter name="$MS1NPC1S" type="double" value="305" />
+        <Parameter name="$MS1NPC2S" type="double" value="285" />
+        <Parameter name="$MS1NPC3S" type="double" value="295" />
+        <Parameter name="$MS2EgoS" type="double" value="500" />
+        <Parameter name="$AccRate" type="double" value="3" />
+	</ParameterDeclaration>
+  
+	<Catalogs>  
+		<RouteCatalog> 
+		</RouteCatalog>
+		<VehicleCatalog>
+			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
+		</VehicleCatalog>
+		<DriverCatalog>
+			<Directory path="../xosc/Catalogs/DriverCatalog"/>
+		</DriverCatalog>
+	</Catalogs>
+
+	<RoadNetwork>
+		<Logics filepath="../xodr/e6mini.xodr"/>
+		<SceneGraph filepath="../models/e6mini.osgb"/>
+	</RoadNetwork>
+
+	<Entities>
+		<Object name="Ego">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+			<Controller>
+				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver" />
+			</Controller>              
+		</Object>                                
+		<Object name="NPC1">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$NPC1Vehicle"/>
+			<Controller>
+				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver" />
+			</Controller>             
+		</Object>                                
+		<Object name="NPC2">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$NPC2Vehicle"/>
+			<Controller>
+				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver" />
+			</Controller>             
+		</Object>                                
+		<Object name="NPC3">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$NPC3Vehicle"/>
+			<Controller>
+				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver" />
+			</Controller>             
+		</Object>                                
+		<Object name="MS1">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$MS1Vehicle"/>
+			<Controller>
+				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver" />
+			</Controller>             
+		</Object>                                
+		<Object name="MS2">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$MS2Vehicle"/>
+			<Controller>
+				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver" />
+			</Controller>             
+		</Object>                                
+	</Entities>
+
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private object="Ego">
+					<Action>
+						<Position>
+							<Lane roadId="0" laneId="-3" offset="0" s="$EgoStartS" />
+						</Position>
+					</Action>
+					<Action>
+						<Longitudinal>
+							<Speed>
+								<Dynamics shape="step"/>
+								<Target>
+									<Absolute value="$EgoSpeed" />
+								</Target>
+							</Speed>
+						</Longitudinal>
+					</Action>
+				</Private>
+				<Private object="NPC1">
+					<Action>
+						<Position>
+							<Lane roadId="0" laneId="-2" offset="0" s="$NPC1StartS" />
+						</Position>
+					</Action>
+				</Private>
+				<Private object="NPC2">
+					<Action>
+						<Position>
+							<Lane roadId="0" laneId="-3" offset="0" s="$NPC2StartS" />
+						</Position>
+					</Action>
+				</Private>
+				<Private object="NPC3">
+					<Action>
+						<Position>
+							<Lane roadId="0" laneId="-4" offset="0" s="$NPC3StartS" />
+						</Position>
+					</Action>
+				</Private>
+				<Private object="MS1">
+					<Action>
+						<Position>
+							<Lane roadId="0" laneId="-5" offset="0" s="$MS1EgoS" />
+						</Position>
+					</Action>
+				</Private>
+				<Private object="MS2">
+					<Action>
+						<Position>
+							<Lane roadId="0" laneId="-5" offset="0" s="$MS2EgoS" />
+						</Position>
+					</Action>
+				</Private>
+			</Actions>
+		</Init>
+		
+		<Story name="Synchronize_Story" owner="Ego">
+			<Act name="Synchronize_Act">
+				<Sequence name="Synchronize_NPC1_Sequence" numberOfExecutions="1">
+                
+					<Actors>
+						<Entity name="NPC1"/>
+					</Actors>
+                    
+					<Maneuver name="Synchronize_NPC1_Maneuver">
+						<Event name="Synchronize_NPC1_Event" priority="overwrite" >
+							<Action name="Synchronize_NPC1_Action">
+								<Private>
+                                    <EXT_Synchronize masterObject="Ego" >
+                                        <TargetPositionMaster>
+                                            <Lane roadId="0" laneId="-3" offset="0" s="$MS1EgoS" />
+                                        </TargetPositionMaster>    
+                                        <TargetPosition>
+                                            <Lane roadId="0" laneId="-2" offset="0" s="$MS1NPC1S" />
+                                        </TargetPosition>    
+                                        <TargetSpeed>
+                                            <RelativeMaster valueType="delta" value="0" />
+                                        </TargetSpeed>
+                                    </EXT_Synchronize>
+								</Private>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="Synchronize_NPC1_Action_Condition" delay="0" edge="rising" >
+										<ByState>
+											<AtStart type="act" name="Synchronize_Act" />
+										</ByState>
+									</Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
+                        
+						<Event name="Keep_Relative_Speed_Event_NPC1" priority="overwrite" >
+							<Action name="Keep_Relative_Speed_Action_NPC1">
+								<Private>
+									<Longitudinal>
+										<Speed>
+											<Dynamics shape="step"/>
+											<Target>
+												<Relative object="Ego" value="0" valueType="delta" continuous="true" />
+											</Target>
+										</Speed>
+									</Longitudinal>
+								</Private>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="Keep_Relative_Speed_Condition_NPC1" delay="0" edge="rising" >
+										<ByState>
+											<AfterTermination type="action" name="Synchronize_NPC1_Action" rule="any"/>
+										</ByState>							
+                                    </Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
+                        
+						<Event name="Free_Speed_Event_NPC1" priority="overwrite" >
+							<Action name="Free_Speed_Action_NPC1">
+								<Private>
+									<Longitudinal>
+										<Speed>
+											<Dynamics shape="sinusoidal" rate="$AccRate" />
+											<Target>
+												<Absolute value="$NPC1Speed" />
+											</Target>
+										</Speed>
+									</Longitudinal>
+								</Private>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="Free_Speed_Condition_NPC1" delay="0" edge="rising" >
+										<ByEntity>
+											<TriggeringEntities rule="any">
+												<Entity name="Ego" />
+											</TriggeringEntities>
+											<EntityCondition>
+												<ReachPosition tolerance="1.0" >
+													<Position>
+														<Lane roadId="0" laneId="-3" s="$MS2EgoS" />
+                                                    </Position>
+												</ReachPosition>
+											</EntityCondition>
+										</ByEntity>		
+									</Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
+                        
+                    </Maneuver>
+				</Sequence>
+
+				<Sequence name="Synchronize_NPC2_Sequence" numberOfExecutions="1">
+                
+					<Actors>
+						<Entity name="NPC2"/>
+					</Actors>
+                    
+					<Maneuver name="Synchronize_NPC2_Maneuver">
+						<Event name="Synchronize_NPC2_Event" priority="overwrite" >
+							<Action name="Synchronize_NPC2_Action">
+								<Private>
+                                    <EXT_Synchronize masterObject="Ego" >
+                                        <TargetPositionMaster>
+                                            <Lane roadId="0" laneId="-3" offset="0" s="$MS1EgoS" />
+                                        </TargetPositionMaster>    
+                                        <TargetPosition>
+                                            <Lane roadId="0" laneId="-2" offset="0" s="$MS1NPC2S" />
+                                        </TargetPosition>    
+                                        <TargetSpeed>
+                                            <RelativeMaster valueType="delta" value="0" />
+                                        </TargetSpeed>
+                                    </EXT_Synchronize>
+								</Private>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="Synchronize_NPC2_Action_Condition" delay="0" edge="rising" >
+										<ByState>
+											<AtStart type="act" name="Synchronize_Act" />
+										</ByState>
+									</Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
+                        
+						<Event name="Keep_Relative_Speed_Event_NPC2" priority="overwrite" >
+							<Action name="Keep_Relative_Speed_Action_NPC2">
+								<Private>
+									<Longitudinal>
+										<Speed>
+											<Dynamics shape="step"/>
+											<Target>
+												<Relative object="Ego" value="0" valueType="delta" continuous="true" />
+											</Target>
+										</Speed>
+									</Longitudinal>
+								</Private>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="Keep_Relative_Speed_Condition_NPC2" delay="0" edge="rising" >
+										<ByState>
+											<AfterTermination type="action" name="Synchronize_NPC2_Action" rule="any"/>
+										</ByState>
+									</Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
+                        
+						<Event name="Relative_Speed_Event_NPC2" priority="overwrite" >
+							<Action name="Free_Speed_Action_NPC2">
+								<Private>
+									<Longitudinal>
+										<Speed>
+											<Dynamics shape="step"/>
+											<Target>
+												<Relative object="Ego" value="-1" valueType="delta" continuous="true" />
+											</Target>
+										</Speed>
+									</Longitudinal>
+								</Private>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="Free_Speed_Condition_NPC2" delay="0" edge="rising" >
+										<ByEntity>
+											<TriggeringEntities rule="any">
+												<Entity name="Ego" />
+											</TriggeringEntities>
+											<EntityCondition>
+												<ReachPosition tolerance="1.0" >
+													<Position>
+														<Lane roadId="0" laneId="-3" s="$MS2EgoS" />			
+                                                    </Position>
+												</ReachPosition>
+											</EntityCondition>
+										</ByEntity>		
+									</Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>                        
+                        
+                    </Maneuver>
+				</Sequence>                
+                
+				<Sequence name="Synchronize_NPC3_Sequence" numberOfExecutions="1">
+                
+					<Actors>
+						<Entity name="NPC3"/>
+					</Actors>
+                    
+					<Maneuver name="Synchronize_NPC3_Maneuver">
+                    
+						<Event name="Synchronize_NPC3_Event" priority="overwrite" >
+							<Action name="Synchronize_NPC3_Action">
+								<Private>
+                                    <EXT_Synchronize masterObject="Ego" >
+                                        <TargetPositionMaster>
+                                            <Lane roadId="0" laneId="-3" offset="0" s="$MS1EgoS" />
+                                        </TargetPositionMaster>    
+                                        <TargetPosition>
+                                            <Lane roadId="0" laneId="-2" offset="0" s="$MS1NPC3S" />
+                                        </TargetPosition>    
+                                        <TargetSpeed>
+                                            <RelativeMaster valueType="delta" value="0" />
+                                        </TargetSpeed>
+                                    </EXT_Synchronize>
+								</Private>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="Synchronize_NPC3_Action_Condition" delay="0" edge="rising" >
+										<ByState>
+											<AtStart type="act" name="Synchronize_Act" />
+										</ByState>
+									</Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
+                        
+						<Event name="Keep_Relative_Speed_Event_NPC3" priority="overwrite" >
+							<Action name="Keep_Relative_Speed_Action_NPC3">
+								<Private>
+									<Longitudinal>
+										<Speed>
+											<Dynamics shape="step"/>
+											<Target>
+												<Relative object="Ego" value="0" valueType="delta" continuous="true" />
+											</Target>
+										</Speed>
+									</Longitudinal>
+								</Private>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="Keep_Relative_Speed_Condition_NPC3" delay="0" edge="rising" >
+										<ByState>
+											<AfterTermination type="action" name="Synchronize_NPC3_Action" rule="any"/>
+										</ByState>
+									</Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
+                        
+						<Event name="Free_Speed_Event_NPC3" priority="overwrite" >
+							<Action name="Free_Speed_Action_NPC3">
+								<Private>
+									<Longitudinal>
+										<Speed>
+											<Dynamics shape="sinusoidal" rate="$AccRate" />
+											<Target>
+												<Absolute value="$NPC3Speed" />
+											</Target>
+										</Speed>
+									</Longitudinal>
+								</Private>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="Free_Speed_Condition_NPC3" delay="0" edge="rising" >
+										<ByEntity>
+											<TriggeringEntities rule="any">
+												<Entity name="Ego" />
+											</TriggeringEntities>
+											<EntityCondition>
+												<ReachPosition tolerance="1.0" >
+													<Position>
+														<Lane roadId="0" laneId="-3" s="$MS2EgoS" />									
+                                                    </Position>
+												</ReachPosition>
+											</EntityCondition>
+										</ByEntity>		
+									</Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>                        
+                        
+                    </Maneuver>
+				</Sequence>           				
+                
+                <Conditions>
+					<Start>
+						<ConditionGroup>
+							<Condition name="Synchronize_Condition" delay="0" >
+								<ByValue>
+									<SimulationTime value="0" rule="greater_than"/>
+								</ByValue>
+							</Condition>
+						</ConditionGroup>
+					</Start>
+				</Conditions>
+                
+			</Act>
+		</Story>
+		<End>
+		</End>
+	</Storyboard>
+
+</OpenSCENARIO>

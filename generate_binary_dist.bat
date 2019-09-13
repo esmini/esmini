@@ -4,6 +4,7 @@ IF NOT EXIST %target_dir% ( mkdir %target_dir% )
 IF NOT EXIST %target_dir%\resources ( mkdir %target_dir%\resources )
 IF NOT EXIST %target_dir%\resources\xosc ( mkdir %target_dir%\resources\xosc )
 IF NOT EXIST %target_dir%\resources\xosc\Catalogs ( mkdir %target_dir%\resources\xosc\Catalogs )
+IF NOT EXIST %target_dir%\resources\xosc\extensions ( mkdir %target_dir%\resources\xosc\extensions )
 IF NOT EXIST %target_dir%\resources\xodr ( mkdir %target_dir%\resources\xodr )
 IF NOT EXIST %target_dir%\resources\models ( mkdir %target_dir%\resources\models )
 IF NOT EXIST %target_dir%\run ( mkdir %target_dir%\run )
@@ -20,7 +21,10 @@ copy resources\xosc\ltap-od_two_targets.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\ltap-od.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\distance_test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\left-hand-traffic_internal.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\ltap-od-synch.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\synchronize.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\Catalogs\*.* %target_dir%\resources\xosc\Catalogs /y
+copy resources\xosc\extensions\*.* %target_dir%\resources\xosc\extensions /y
 IF NOT EXIST %target_dir%\bin\win64\Release ( mkdir %target_dir%\bin\win64\Release )
 
 copy resources\xodr\soderleden.xodr %target_dir%\resources\xodr /y
@@ -54,6 +58,9 @@ copy run\EgoSimulator\run_cut-in_cr_internal.bat %target_dir%\run\EgoSimulator /
 copy run\EgoSimulator\run_cut-in_cr_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_dist_test.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_left-hand-traffic_internal.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_synchronize_internal.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_synchronize_external.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_ltap-od-synch.bat %target_dir%\run\EgoSimulator /y
 
 copy run\readme.txt %target_dir% /y
 
