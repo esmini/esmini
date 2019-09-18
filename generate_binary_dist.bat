@@ -60,7 +60,7 @@ copy run\EgoSimulator\run_dist_test.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_left-hand-traffic_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_synchronize_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_synchronize_external.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_ltap-od-synch-internal.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_ltap-od-synch_internal.bat %target_dir%\run\EgoSimulator /y
 
 copy run\readme.txt %target_dir% /y
 
