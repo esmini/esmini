@@ -47,10 +47,10 @@ copy resources\models\fabriksgatan.osgb %target_dir%\resources\models /y
 copy resources\models\jolengatan.osgb %target_dir%\resources\models /y
 copy resources\models\straight_500m.osgb %target_dir%\resources\models /y
 
-copy run\EgoSimulator\run_ltap-od_two_targets-external.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_ltap-od_two_targets-internal.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_highway_merge_advanced-external.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_highway_merge_advanced-internal.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_ltap-od_two-targets_external.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_ltap-od_two-targets_internal.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_highway-merge_advanced_external.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_highway-merge_advanced_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_simple.bat %target_dir%\run\EgoSimulator /y
@@ -60,7 +60,7 @@ copy run\EgoSimulator\run_dist_test.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_left-hand-traffic_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_synchronize_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_synchronize_external.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_ltap-od-synch.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_ltap-od-synch-internal.bat %target_dir%\run\EgoSimulator /y
 
 copy run\readme.txt %target_dir% /y
 

@@ -7,9 +7,8 @@
 		<Parameter name="$HostVehicle" type="string" value="car_white_external"/>
 		<Parameter name="$TargetVehicle" type="string" value="car_red"/>
 		<Parameter name="$HostSpeed" type="double" value="10"/>
-		<Parameter name="$TargetSpeed" type="double" value="7"/>
-		<Parameter name="$Target1SyncPointS" type="double" value="305"/>
-		<Parameter name="$EgoSyncPoint1S" type="double" value="7"/>
+		<Parameter name="$Target1SyncPointS" type="double" value="304"/>
+		<Parameter name="$EgoSyncPoint1S" type="double" value="5"/>
 	</ParameterDeclaration>
   
 	<Catalogs>  
@@ -36,6 +35,7 @@
 		<Object name="Target1">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
 			<Controller>
+				<!-- Target car controlled by a default (standard?) driver model -->
 				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
 			</Controller>
 		</Object>
@@ -119,7 +119,7 @@
                                             <Lane roadId="2" laneId="-1" offset="0" s="$Target1SyncPointS" />
                                         </TargetPosition>    
                                         <TargetSpeed>
-                                            <Absolute value="$TargetSpeed" />
+                                            <RelativeMaster value="0" valueType="delta" />
                                         </TargetSpeed>
 									</EXT_Synchronize>
 								</Private>
@@ -129,6 +129,29 @@
 									<Condition name="SyncConditionT1" delay="0.0" edge="rising">
 										<ByState>
 											<AtStart type="act" name="LTAPActT1" />
+										</ByState>
+									</Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
+						<Event name="ContinueAfterSyncT1" priority="overwrite">
+							<Action name="ContinueAfterSyncT1">
+								<Private>
+									<Longitudinal>
+										<Speed>
+											<Dynamics shape="step" />  
+											<Target>
+                                                <Relative object="Ego" value="0" valueType="delta" continuous="true" />
+											</Target>
+										</Speed>
+									</Longitudinal>
+								</Private>
+							</Action>							
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="StartOfScenarioT1" delay="0.0" edge="rising">
+										<ByState>
+											<AfterTermination type="action" name="SyncActionT1" rule="any"/>
 										</ByState>
 									</Condition>
 								</ConditionGroup>
