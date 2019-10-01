@@ -229,9 +229,17 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
 	arguments.read("--lodScale", lodScale_);
 
+#ifdef _WIN32
+	// When running on Linux in VirtualBox on Windows host - the application crashes when trying to apply AntiAlias as below
+	// If someone know how to query AA capabilites, please replace this #ifdef with dynamic check so that AA can work on Linux as well
 	osg::DisplaySettings::instance()->setNumMultiSamples(4);  // Set some AntiAliasing
-	
+#endif
+
 	osgViewer_ = new osgViewer::Viewer(arguments); 
+	if (osgViewer_ == 0)
+	{
+
+	}
 
 
 	// Load shadow geometry - assume it resides in the same resource folder as the environment model
