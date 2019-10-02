@@ -7,7 +7,7 @@
 		<Parameter name="$HostVehicle" type="string" value="car_white_external"/>
 		<Parameter name="$NPCVehicle" type="string" value="car_red"/>
 		<Parameter name="$HostSpeed" type="double" value="10"/>
-		<Parameter name="$NPCSpeed" type="double" value="7"/>
+		<Parameter name="$NPCSpeed" type="double" value="17"/>
 		<Parameter name="$NPCStartPointS" type="double" value="0"/>
 		<Parameter name="$NPCSyncPointS" type="double" value="305"/>
 		<Parameter name="$EgoSyncPoint1S" type="double" value="7"/>
@@ -120,8 +120,8 @@
                                             <Lane roadId="2" laneId="-1" offset="0" s="$NPCSyncPointS" />
                                         </TargetPosition>    
                                         <TargetSpeed>
-                                            <Absolute value="$NPCSpeed" />
-                                            <!-- <RelativeMaster value="0" valueType="delta" /> -->
+                                            <!-- <Absolute value="$NPCSpeed" /> -->
+                                            <RelativeMaster value="0" valueType="delta" />
                                         </TargetSpeed>
 									</EXT_Synchronize>
 								</Private>
@@ -144,8 +144,8 @@
 										<Speed>
 											<Dynamics shape="step" />  
 											<Target>
-                                                <Absolute value="$NPCSpeed" />
-                                                <!-- <Relative object="Ego" value="0" valueType="delta" continuous="true" /> -->
+                                                <!-- <Absolute value="$NPCSpeed" /> -->
+                                                <Relative object="Ego" value="0" valueType="delta" continuous="true" />
 											</Target>
 										</Speed>
 									</Longitudinal>

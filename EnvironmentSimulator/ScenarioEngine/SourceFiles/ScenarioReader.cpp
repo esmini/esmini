@@ -241,14 +241,15 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 
 	if (roadNetwork.Logics.filepath == "")
 	{
-		LOG("Error: No road network ODR file loaded!");
+		LOG("Warning: No road network ODR file loaded!");
 	}
-	else if (roadNetwork.SceneGraph.filepath == "")
+	
+	if (roadNetwork.SceneGraph.filepath == "")
 	{
 		LOG("Warning: No road network 3D model file loaded! Setting default path.");
 
 		// Since the scene graph file path is used to locate other 3D files, like vehicles, create a default path 
-		roadNetwork.SceneGraph.filepath =  DirNameOf(oscFilename);
+		roadNetwork.SceneGraph.filepath = DirNameOf(oscFilename);
 	}
 
 	LOG("Roadnetwork ODR: %s", roadNetwork.Logics.filepath.c_str());

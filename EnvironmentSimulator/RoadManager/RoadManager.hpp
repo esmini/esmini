@@ -659,6 +659,7 @@ namespace roadmanager
 		@param idx index into the vector of roads
 		*/
 		Road* GetRoadByIdx(int idx);
+		Geometry* GetGeometryByIdx(int road_idx, int geom_idx);
 		int GetTrackIdxById(int id);
 		int GetTrackIdByIdx(int idx);
 		int GetNumOfRoads() { return (int)road_.size(); }

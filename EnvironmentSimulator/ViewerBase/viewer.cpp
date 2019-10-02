@@ -236,10 +236,6 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 #endif
 
 	osgViewer_ = new osgViewer::Viewer(arguments); 
-	if (osgViewer_ == 0)
-	{
-
-	}
 
 
 	// Load shadow geometry - assume it resides in the same resource folder as the environment model
@@ -261,17 +257,17 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	}
 	rootnode_->addChild(envTx_);
 
-	if (!CreateRoadLines(odrManager, rootnode_))
+	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager, rootnode_))
 	{
 		LOG("Viewer::Viewer Failed to create road lines!\n");
 	}
 
-	if (create_ego_debug_lines && !CreateVehicleLineAndPoint(rootnode_))
+	if (create_ego_debug_lines && odrManager->GetNumOfRoads() > 0 && !CreateVehicleLineAndPoint(rootnode_))
 	{
 		LOG("Viewer::Viewer Failed to create vehicle line!\n");
 	}
 
-	if (create_ego_debug_lines && !CreateDriverModelLineAndPoint(rootnode_))
+	if (create_ego_debug_lines && odrManager->GetNumOfRoads() > 0 && !CreateDriverModelLineAndPoint(rootnode_))
 	{
 		LOG("Viewer::Viewer Failed to create driver model line and point!\n");
 	}
@@ -674,6 +670,11 @@ void Viewer::UpdateDriverModelPoint(roadmanager::Position *pos, double distance)
 	double steering_target_global[3];
 	double angle, curvature;
 
+	if (pos->GetOpenDrive()->GetNumOfRoads() == 0)
+	{
+		return;
+	}
+
 	pos->GetSteeringTargetPos(distance, steering_target_local, steering_target_global, &angle, &curvature);
 	
 	double z_offset = 0.1;
@@ -826,12 +827,7 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 		}
 	}
 	break;
-	case(osgGA::GUIEventAdapter::KEY_Escape):
-	{
-		viewer_->osgViewer_->setDone(true);
-		viewer_->SetQuitRequest(true);
-	}
-	break;
+
 	}
 
 	return false;

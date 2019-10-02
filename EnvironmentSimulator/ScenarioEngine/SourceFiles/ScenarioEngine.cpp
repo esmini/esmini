@@ -367,10 +367,7 @@ void ScenarioEngine::parseScenario(double startTime, ExternalControlMode ext_con
 {
 	// Init road manager
 	scenarioReader.parseRoadNetwork(roadNetwork);
-	if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
-	{
-		throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + getOdrFilename().c_str());
-	}
+	roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str());
 	odrManager = roadmanager::Position::GetOpenDrive();
 
 	scenarioReader.parseParameterDeclaration();

@@ -200,7 +200,7 @@ static void viewer_thread(void *args)
 			steer_tgt_distance = MAX(5, scenarioEngine->entities.object_[0]->speed_);
 		}
 
-		if (pos)
+		if (pos && pos->GetOpenDrive()->GetNumOfRoads() > 0)
 		{
 			// find out what direction is forward, according to vehicle relative road heading 
 			if (GetAbsAngleDifference(pos->GetH(), pos->GetHRoadInDrivingDirection()) > M_PI_2)

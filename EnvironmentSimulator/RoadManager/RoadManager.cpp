@@ -1168,6 +1168,18 @@ Road *OpenDrive::GetRoadByIdx(int idx)
 	}
 }
 
+Geometry *OpenDrive::GetGeometryByIdx(int road_idx, int geom_idx)
+{
+	if (road_idx >= 0 && road_idx < (int)road_.size())
+	{
+		return road_[road_idx]->GetGeometry(geom_idx);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 Junction* OpenDrive::GetJunctionById(int id)
 {
 	for (size_t i=0; i<junction_.size(); i++)
@@ -1221,8 +1233,14 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		junction_.clear();
 	}
 
-	pugi::xml_document doc;
+	odr_filename_ = filename;
 
+	if (odr_filename_ == "")
+	{
+		return false;
+	}
+
+	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file(filename);
 	if (!result)
 	{
@@ -1230,8 +1248,6 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 		return false;
 	}
-
-	odr_filename_ = filename;
 
 	pugi::xml_node node = doc.child("OpenDRIVE");
 	if (node == NULL)
@@ -2582,6 +2598,10 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ev
 	double weight = 0; // Add some resistance to switch from current road, applying a stronger bound to current road
 	double angle = 0;
 
+	if (GetOpenDrive()->GetNumOfRoads() == 0)
+	{
+		return;
+	}
 
 	if ((current_road = GetOpenDrive()->GetRoadByIdx(track_idx_)) == 0)
 	{
@@ -3009,7 +3029,12 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 	RoadLink *link;
 	double ds_signed = ds;
 	int max_links = 8;  // limit lookahead through junctions/links 
-	
+
+	if (GetOpenDrive()->GetNumOfRoads() == 0)
+	{
+		return 0;
+	}
+
 	// EG: If offset_ is not along reference line, but instead along lane direction then we dont need
 	// the SIGN() adjustment. But for now this adjustment means that a positive dLaneOffset always moves left?
 	offset_ += dLaneOffset * -SIGN(GetLaneId());
@@ -3147,9 +3172,16 @@ void Position::SetHeadingRelative(double heading)
 
 double Position::GetCurvature()
 {
-	Geometry *geom = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetGeometry(geometry_idx_);
-
-	return(geom->EvaluateCurvatureDS(GetS() - geom->GetS()));
+	Geometry *geom = GetOpenDrive()->GetGeometryByIdx(track_idx_, geometry_idx_);
+	
+	if (geom)
+	{
+		return geom->EvaluateCurvatureDS(GetS() - geom->GetS());
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 double Position::GetHRoadInDrivingDirection()
@@ -3159,12 +3191,18 @@ double Position::GetHRoadInDrivingDirection()
 
 double Position::GetSpeedLimit()
 {
-	double speed_limit = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetSpeedByS(s_);
-
-	if (speed_limit < SMALL_NUMBER)
+	double speed_limit = 70 / 3.6;  // some default speed
+	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	
+	if (road)
 	{
-		// No speed limit defined, set a value depending on number of lanes
-		speed_limit = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetNumberOfDrivingLanesSide(GetS(), SIGN(GetLaneId())) > 1 ? 120 / 3.6 : 60 / 3.6;
+		speed_limit = road->GetSpeedByS(s_);
+
+		if (speed_limit < SMALL_NUMBER)
+		{
+			// No speed limit defined, set a value depending on number of lanes
+			speed_limit = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetNumberOfDrivingLanesSide(GetS(), SIGN(GetLaneId())) > 1 ? 120 / 3.6 : 60 / 3.6;
+		}
 	}
 
 	return speed_limit;
@@ -3173,17 +3211,22 @@ double Position::GetSpeedLimit()
 double Position::GetDrivingDirection()
 {
 	double x, y, h;
-	Geometry *geom = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetGeometry(geometry_idx_);
+	Geometry *geom = GetOpenDrive()->GetGeometryByIdx(track_idx_, geometry_idx_);
+
+	if (!geom)
+	{
+		return h_;
+	}
 
 	geom->EvaluateDS(GetS() - geom->GetS(), &x, &y, &h);
 
-// adjust 180 degree according to side of road
-if (GetLaneId() > 0)  // Left side of road reference line
-{
-	h = GetAngleSum(h, M_PI);
-}
+	// adjust 180 degree according to side of road
+	if (GetLaneId() > 0)  // Left side of road reference line
+	{
+		h = GetAngleSum(h, M_PI);
+	}
 
-return(h);
+	return(h);
 }
 
 void Position::PrintTrackPos()
