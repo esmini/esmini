@@ -31,6 +31,7 @@
 #include "viewer.hpp"
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
+#include "Server.hpp"
 
 
 using namespace scenarioengine;
@@ -183,6 +184,9 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	// Launch UDP server to receive external Ego state
+	StartServer(scenarioEngine);
+
 	__int64 now, lastTimeStamp = 0;
 	double simTime = 0;
 
@@ -218,6 +222,7 @@ int main(int argc, char *argv[])
 		mutex.Unlock();
 	}
 
+	StopServer();
 
 	delete scenarioEngine;
 

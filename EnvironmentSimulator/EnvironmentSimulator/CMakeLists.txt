@@ -30,6 +30,7 @@ target_link_libraries (
 	CommonMini
 	${OSG_LIBRARIES}
 	${TIME_LIB}
+    ${SOCK_LIB}
 )
 
 install ( TARGETS EnvironmentSimulator CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}/Release")

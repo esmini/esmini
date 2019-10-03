@@ -57,9 +57,6 @@ int main(int argc, char *argv[])
 		int nObjects = MAX_N_OBJECTS;
 		SE_GetObjectStates(&nObjects, states);
 
-		float angle;
-		SE_GetSteeringTargetAngle(0, states[0].speed * 3.0f, &angle);
-
 		SE_sleep((unsigned int)(TIME_STEP * 1000));
 	}
 
