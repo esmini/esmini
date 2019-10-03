@@ -184,8 +184,11 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	// Launch UDP server to receive external Ego state
-	StartServer(scenarioEngine);
+	if(scenarioEngine->GetExtControl())
+	{ 
+		// Launch UDP server to receive external Ego state
+		StartServer(scenarioEngine);
+	}
 
 	__int64 now, lastTimeStamp = 0;
 	double simTime = 0;
@@ -222,7 +225,10 @@ int main(int argc, char *argv[])
 		mutex.Unlock();
 	}
 
-	StopServer();
+	if (scenarioEngine->GetExtControl())
+	{
+		StopServer();
+	}
 
 	delete scenarioEngine;
 

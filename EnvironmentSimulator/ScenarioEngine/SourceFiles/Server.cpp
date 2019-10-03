@@ -139,7 +139,14 @@ namespace scenarioengine
 	void StopServer()
 	{
 		// Flag time to stop
-		state = SERV_STOP;
+		if (state == SERV_RUNNING)
+		{
+			state = SERV_STOP;
+		}
+		else
+		{
+			state = SERV_STOPPED;
+		}
 		
 		// Wait/block until UDP server closed gracefully
 		while (state != SERV_STOPPED) SE_sleep(100);
