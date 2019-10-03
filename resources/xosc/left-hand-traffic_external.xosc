@@ -28,10 +28,6 @@
 	<Entities>
 		<Object name="Ego">
 
-            <Properties>
-				<Property name="control" value="external" />
-			</Properties>
-			
             <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
 			<Controller>
 				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>

@@ -1163,7 +1163,6 @@ Road *OpenDrive::GetRoadByIdx(int idx)
 	}
 	else
 	{
-		LOG("GetRoadByIdx error (idx %d, nroads %d)\n", idx, (int)road_.size());
 		return 0;
 	}
 }

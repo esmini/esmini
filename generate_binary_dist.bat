@@ -23,6 +23,7 @@ copy resources\xosc\distance_test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\left-hand-traffic_internal.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\ltap-od-synch.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\synchronize.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\parking_lot.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\Catalogs\*.* %target_dir%\resources\xosc\Catalogs /y
 copy resources\xosc\extensions\*.* %target_dir%\resources\xosc\extensions /y
 IF NOT EXIST %target_dir%\bin\win64\Release ( mkdir %target_dir%\bin\win64\Release )
@@ -46,6 +47,7 @@ copy resources\models\e6mini.osgb %target_dir%\resources\models /y
 copy resources\models\fabriksgatan.osgb %target_dir%\resources\models /y
 copy resources\models\jolengatan.osgb %target_dir%\resources\models /y
 copy resources\models\straight_500m.osgb %target_dir%\resources\models /y
+copy resources\models\parking_lot.osgb %target_dir%\resources\models /y
 
 copy run\EgoSimulator\run_ltap-od_two-targets_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_ltap-od_two-targets_internal.bat %target_dir%\run\EgoSimulator /y
@@ -61,6 +63,7 @@ copy run\EgoSimulator\run_left-hand-traffic_internal.bat %target_dir%\run\EgoSim
 copy run\EgoSimulator\run_synchronize_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_synchronize_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_ltap-od-synch_internal.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_parking_lot.bat %target_dir%\run\EgoSimulator /y
 
 copy run\readme.txt %target_dir% /y
 

@@ -827,7 +827,12 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 		}
 	}
 	break;
-
+	case(osgGA::GUIEventAdapter::KEY_Escape):
+	{
+		viewer_->osgViewer_->setDone(true);
+		viewer_->SetQuitRequest(true);
+	}
+	break;
 	}
 
 	return false;
