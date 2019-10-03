@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenSCENARIO>
+    
+	<FileHeader revMajor="0" revMinor="9" date="2017-06-09T10:00:00" description="Cut-in" author="SimS"/>
+
+    <ParameterDeclaration>
+		<Parameter name="$HostVehicle" type="string" value="car_white" />    
+		<Parameter name="$EgoStartS" type="double" value="143   "/>        
+	</ParameterDeclaration>
+  
+	<Catalogs>  
+		<RouteCatalog> 
+		</RouteCatalog>
+		<VehicleCatalog>
+			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
+		</VehicleCatalog>
+		<DriverCatalog>
+			<Directory path="../xosc/Catalogs/DriverCatalog"/>
+		</DriverCatalog>
+	</Catalogs>
+
+	<RoadNetwork>
+		<!-- <Logics filepath="../xodr/e6mini.xodr"/> -->
+		<SceneGraph filepath="../models/parking_lot.osgb"/>
+	</RoadNetwork>
+
+	<Entities>
+		<Object name="Ego">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+			<Controller>
+				<Driver name="Erik">
+					<Description weight="80" height="1.8" eyeDistance="0.06" age="30" sex="male" />
+				</Driver>              
+			</Controller>                 
+		</Object>                                
+	</Entities>
+
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private object="Ego">
+					<Action>
+						<Longitudinal>
+							<Speed>
+								<Dynamics shape="step"/>
+								<Target>
+									<Absolute value="10" />
+								</Target>
+							</Speed>
+						</Longitudinal>
+					</Action>
+					<Action>
+						<Position>
+							<World x="1.8" y="-358" z="0" h="1.57" p="0" r="0" /> 
+						</Position>
+					</Action>
+				</Private>
+			</Actions>
+		</Init>
+		
+		<Story >
+		</Story>
+		<End>
+		</End>
+	</Storyboard>
+
+</OpenSCENARIO>
