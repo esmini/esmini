@@ -84,6 +84,7 @@ void viewer_thread(void *args)
 
 			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
 			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
+			car->UpdateWheels(scenarioEngine->entities.object_[i]->wheel_angle, 0);
 		}
 
 		mutex.Unlock();

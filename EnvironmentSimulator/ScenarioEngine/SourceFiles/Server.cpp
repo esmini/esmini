@@ -10,8 +10,6 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-#pragma once
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -112,13 +110,13 @@ namespace scenarioengine
 			int ret = recvfrom(sock, (char*)&buf, sizeof(EgoStateBuffer_t), 0, (struct sockaddr *)&sender_addr, &sender_addr_size);
 			if (ret >= 0)
 			{
-				printf("received pos: (%.2f, %.2f, %.2f) rot: (%.2f, %.2f, %.2f) speed: %.2f\n",
-					buf.x, buf.y, buf.z, buf.h, buf.p, buf.r, buf.speed);
+				printf("Server: Received Ego pos (%.2f, %.2f, %.2f) rot: (%.2f, %.2f, %.2f) speed: %.2f (%.2f km/h) wheel_angle: %.2f (%.2f deg)\n",
+					buf.x, buf.y, buf.z, buf.h, buf.p, buf.r, buf.speed, 3.6 * buf.speed, buf.wheel_angle, 180 * buf.wheel_angle / M_PI);
 
 				// Update Ego state
 				mutex.Lock();
 
-				scenarioGateway->reportObject(ObjectState(0, "Ego", 0, 1, 0, buf.x, buf.y, buf.z, buf.h, buf.p, buf.r, buf.speed));
+				scenarioGateway->reportObject(ObjectState(0, "Ego", 0, 1, 0, buf.x, buf.y, buf.z, buf.h, buf.p, buf.r, buf.speed, buf.wheel_angle));
 
 				mutex.Unlock();
 			}

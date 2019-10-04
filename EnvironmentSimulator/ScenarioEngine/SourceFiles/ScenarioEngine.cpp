@@ -78,6 +78,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 				{
 					entities.object_[i]->pos_ = o.state_.pos;
 					entities.object_[i]->speed_ = o.state_.speed;
+					entities.object_[i]->wheel_angle = o.state_.wheel_angle;
 				}
 			}
 		}
@@ -329,12 +330,12 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		if (initial)
 		{
 			// Report all scenario objects the initial run, to establish initial positions and speed = 0
-			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->extern_control_, simulationTime, &obj->pos_, 0.0));
+			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->extern_control_, simulationTime, &obj->pos_, 0.0, 0.0));
 		}
 		else if (!obj->extern_control_)
 		{
 			// Then report all except externally controlled objects
-			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->extern_control_, simulationTime, &obj->pos_, obj->speed_));
+			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->extern_control_, simulationTime, &obj->pos_, obj->speed_, obj->wheel_angle));
 		}
 	}
 

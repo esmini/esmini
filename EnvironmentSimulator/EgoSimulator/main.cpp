@@ -357,7 +357,7 @@ int main(int argc, char** argv)
 				scenarioGateway->reportObject(ObjectState(EGO_ID, std::string("Ego"), 0, 1, simTime,
 					egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_,
 					egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0,
-					egoCar->vehicle->speed_));
+					egoCar->vehicle->speed_, 0.0));
 			}
 
 			scenarioEngine->step(deltaSimTime);

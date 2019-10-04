@@ -23,7 +23,7 @@ ObjectState::ObjectState()
 	state_.id = -1;
 }
 
-ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, roadmanager::Position *pos, double speed)
+ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, roadmanager::Position *pos, double speed, double wheel_angle)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -34,9 +34,10 @@ ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control
 	strncpy(state_.name, name.c_str(), NAME_LEN);
 	state_.pos = *pos;
 	state_.speed = (float)speed;
+	state_.wheel_angle = (float)wheel_angle;
 }
 
-ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, double x, double y, double z, double h, double p, double r, double speed)
+ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, double x, double y, double z, double h, double p, double r, double speed, double wheel_angle)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -47,9 +48,10 @@ ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control
 	strncpy(state_.name, name.c_str(), NAME_LEN);
 	state_.pos.SetInertiaPos(x, y, z, h, p, r);
 	state_.speed = (float)speed;
+	state_.wheel_angle = (float)wheel_angle;
 }
 
-ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed)
+ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed, double wheel_angle)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -60,11 +62,12 @@ ObjectState::ObjectState(int id, std::string name, int model_id, int ext_control
 	strncpy(state_.name, name.c_str(), NAME_LEN);
 	state_.pos.SetLanePos(roadId, laneId, s, laneOffset);
 	state_.speed = (float)speed;
+	state_.wheel_angle = (float)wheel_angle;
 }
 
 void ObjectState::Print()
 {
-	LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\text_control: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f",
+	LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\text_control: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f\twheel_angle %.2f",
 		state_.id,
 		state_.name,
 		state_.model_id,
@@ -73,7 +76,8 @@ void ObjectState::Print()
 		state_.pos.GetX(),
 		state_.pos.GetY(),
 		state_.pos.GetZ(),
-		state_.speed
+		state_.speed,
+		state_.wheel_angle
 	);
 }
 

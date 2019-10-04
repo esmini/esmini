@@ -313,7 +313,7 @@ extern "C"
 	{
 		if (scenarioGateway != 0)
 		{
-			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, ext_control, timestamp, x, y, z, h, p, r, speed));
+			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, ext_control, timestamp, x, y, z, h, p, r, speed, 0));
 		}
 
 		return 0;
@@ -323,7 +323,7 @@ extern "C"
 	{
 		if (scenarioGateway != 0)
 		{
-			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, ext_control, timestamp, roadId, laneId, laneOffset, s, speed));
+			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, ext_control, timestamp, roadId, laneId, laneOffset, s, speed, 0));
 		}
 
 		return 0;

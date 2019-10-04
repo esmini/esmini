@@ -42,12 +42,13 @@ namespace scenarioengine
 		int id_;
 		bool extern_control_;
 		double speed_;
+		double wheel_angle;
 		roadmanager::Position pos_;
 		roadmanager::Route *route_;
 		std::string model_filepath_;
 		int model_id_;
 
-		Object(Type type) : type_(type), id_(0), extern_control_(false), speed_(0), route_(0), model_filepath_("") {}
+		Object(Type type) : type_(type), id_(0), extern_control_(false), speed_(0), route_(0), model_filepath_(""), wheel_angle(0) {}
 	};
 
 	class Vehicle : public Object

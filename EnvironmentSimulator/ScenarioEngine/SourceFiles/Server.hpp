@@ -32,6 +32,7 @@ typedef struct
 	float p;		// rad
 	float r;		// rad
 	float speed;	// m/s
+	float wheel_angle; // rad
 } EgoStateBuffer_t;
 
 
