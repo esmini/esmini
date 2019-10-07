@@ -31,7 +31,7 @@ elseif ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
 else()  # v10
 if(NOT UNIX)
   set ( SOCK_LIB Ws2_32.lib )
-endif (UNIX)
+endif (NOT UNIX)
   set ( TIME_LIB "" )
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1a0HxilPJq2bZrat2le2x-Cscs5JeVAXP )
   set ( OSG_DIR "${OSG_BASE_DIR}/v10" )
