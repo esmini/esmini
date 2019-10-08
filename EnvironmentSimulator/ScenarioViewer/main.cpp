@@ -23,7 +23,7 @@
 #define MAX_N_OBJECTS 10
 #define TIME_STEP 0.017f
 
-static ScenarioObjectState states[MAX_N_OBJECTS];
+static SE_ScenarioObjectState states[MAX_N_OBJECTS];
 
 void log_callback(const char *str)
 {

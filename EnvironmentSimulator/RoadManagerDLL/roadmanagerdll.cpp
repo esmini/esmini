@@ -21,12 +21,9 @@ using namespace roadmanager;
 static roadmanager::OpenDrive *odrManager = 0;
 static std::vector<Position> position;
 
-static int GetSteeringTarget(int index, float lookahead_distance, SteeringTargetData *data)
+static int GetSteeringTarget(int index, float lookahead_distance, RM_SteeringTargetInfo *r_data, bool along_reference_lane)
 {
-	double pos_globald[3];
-	double pos_locald[3];
-	double angled;
-	double curvatured;
+	roadmanager::SteeringTargetInfo s_data;
 
 	if (odrManager == 0)
 	{
@@ -39,30 +36,71 @@ static int GetSteeringTarget(int index, float lookahead_distance, SteeringTarget
 		return -1;
 	}
 
-	if (position[index].GetSteeringTargetPos(lookahead_distance, pos_locald, pos_globald, &angled, &curvatured) != 0)
+	if (position[index].GetSteeringTargetInfo(lookahead_distance, &s_data, along_reference_lane) != 0)
 	{
 		return -1;
 	}
 	else
 	{
 		// Copy data
-		data->local_pos[0] = (float)pos_locald[0];
-		data->local_pos[1] = (float)pos_locald[1];
-		data->local_pos[2] = (float)pos_locald[2];
-		data->global_pos[0] = (float)pos_globald[0];
-		data->global_pos[1] = (float)pos_globald[1];
-		data->global_pos[2] = (float)pos_globald[2];
-		data->angle = (float)angled;
-		data->curvature = (float)curvatured;
+		r_data->local_pos[0] = (float)s_data.local_pos[0];
+		r_data->local_pos[1] = (float)s_data.local_pos[1];
+		r_data->local_pos[2] = (float)s_data.local_pos[2];
+		r_data->global_pos[0] = (float)s_data.global_pos[0];
+		r_data->global_pos[1] = (float)s_data.global_pos[1];
+		r_data->global_pos[2] = (float)s_data.global_pos[2];
+		r_data->angle = (float)s_data.angle;
+		r_data->curvature = (float)s_data.curvature;
+		r_data->road_heading = (float)s_data.road_heading;
+		r_data->road_pitch = (float)s_data.road_pitch;
+		r_data->road_roll = (float)s_data.road_roll;
+		r_data->speed_limit = (float)s_data.speed_limit;
 
 		return 0;
 	}
+}
+
+static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo *r_data)
+{
+	roadmanager::RoadLaneInfo s_data;
+
+	if (odrManager == 0)
+	{
+		return -1;
+	}
+
+	if (index >= position.size())
+	{
+		LOG("Object %d not available, only %d registered", index, position.size());
+		return -1;
+	}
+
+	roadmanager::Position pos = position[index];
+
+	pos.GetRoadLaneInfo(lookahead_distance, &s_data);
+
+	r_data->pos[0] = (float)pos.GetX();
+	r_data->pos[1] = (float)pos.GetY();
+	r_data->pos[2] = (float)pos.GetZ();
+	r_data->heading = (float)s_data.heading;
+	r_data->pitch = (float)s_data.pitch;
+	r_data->roll = (float)s_data.roll;
+	r_data->width = (float)s_data.width;
+	r_data->curvature = (float)s_data.curvature;
+	r_data->speed_limit = (float)s_data.speed_limit;
+
+	return 0;
 }
 
 extern "C"
 {
 	RM_DLL_API int RM_Init(const char *odrFilename)
 	{
+		if (odrManager)
+		{
+			RM_Close();
+		}
+
 		if (!roadmanager::Position::LoadOpenDrive(odrFilename))
 		{
 			printf("Failed to load ODR %s\n", odrFilename);
@@ -76,6 +114,7 @@ extern "C"
 	RM_DLL_API int RM_Close()
 	{
 		position.clear();
+
 		return 0;
 	}
 	
@@ -258,7 +297,7 @@ extern "C"
 		}
 	}
 
-	RM_DLL_API int RM_GetPositionData(int handle, PositionData *data)
+	RM_DLL_API int RM_GetPositionData(int handle, RM_PositionData *data)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
@@ -282,12 +321,14 @@ extern "C"
 		return 0;
 	}
 
-	RM_DLL_API int RM_GetLaneInfo(int handle, LaneData *info)
+	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
 			return -1;
 		}
+
+		GetRoadLaneInfo(handle, lookahead_distance, data);
 
 		// First find out curvature at this lateral position from reference lane
 		double ref_curvature = position[handle].GetCurvature();
@@ -295,23 +336,23 @@ extern "C"
 		double radius;
 		Position *pos = &position[handle];
 		
-		if (fabs(ref_curvature) > SMALL_NUMBER)
+ 		if (fabs(ref_curvature) > SMALL_NUMBER)
 		{
 			radius = 1.0 / ref_curvature;
 			radius -= lat_offset; // curvature positive in left curves, lat_offset positive left of reference lane
-			info->curvature = (float)(1.0 / radius);
+			data->curvature = (float)(1.0 / radius);
 		}
 		else
 		{
 			// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
-			info->curvature = (float)ref_curvature;
+			data->curvature = (float)ref_curvature;
 		}
 
 		// Then find out the width of the lane at current s-value
 		Road *road = pos->GetRoadById(pos->GetTrackId());
-		info->width = (float)road->GetLaneWidthByS(pos->GetS(), pos->GetLaneId());
+		data->width = (float)road->GetLaneWidthByS(pos->GetS(), pos->GetLaneId());
 
-		info->speed_limit = (float)road->GetSpeedByS(pos->GetS());
+		data->speed_limit = (float)road->GetSpeedByS(pos->GetS());
 
 		return 0;
 	}
@@ -326,14 +367,14 @@ extern "C"
 		return (float)position[handle].GetSpeedLimit();
 	}
 
-	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, SteeringTargetData * data)
+	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, RM_SteeringTargetInfo * data, int along_reference_lane)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
 			return -1;
 		}
 
-		if (GetSteeringTarget(handle, lookahead_distance, data) != 0)
+		if (GetSteeringTarget(handle, lookahead_distance, data, along_reference_lane) != 0)
 		{
 			return -1;
 		}
@@ -341,7 +382,7 @@ extern "C"
 		return 0;
 	}
 
-	RM_DLL_API bool RM_SubtractAFromB(int handleA, int handleB, PositionDiff *pos_diff)
+	RM_DLL_API bool RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff)
 	{
 		if (odrManager == 0 || handleA >= position.size() || handleB >= position.size())
 		{

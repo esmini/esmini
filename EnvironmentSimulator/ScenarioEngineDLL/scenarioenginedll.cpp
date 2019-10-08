@@ -190,12 +190,12 @@ static void resetScenario(void)
 	}
 }
 
-static void copyStateFromScenarioGateway(ScenarioObjectState *state, ObjectStateStruct *gw_state)
+static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectStateStruct *gw_state)
 {
 	state->id = gw_state->id;
 	state->model_id = gw_state->model_id;
 	state->ext_control = gw_state->ext_control;
-	strncpy(state->name, gw_state->name, NAME_LEN);
+//	strncpy(state->name, gw_state->name, NAME_LEN);
 	state->timestamp = gw_state->timeStamp;
 	state->x = (float)gw_state->pos.GetX();
 	state->y = (float)gw_state->pos.GetY();
@@ -209,6 +209,47 @@ static void copyStateFromScenarioGateway(ScenarioObjectState *state, ObjectState
 	state->s = (float)gw_state->pos.GetS();
 	state->laneOffset = (float)gw_state->pos.GetOffset();
 
+}
+
+static int GetSteeringTarget(int object_id, float lookahead_distance, SE_SteeringTargetInfo *r_data, int along_reference_lane)
+{
+	roadmanager::SteeringTargetInfo s_data;
+
+	if (scenarioGateway == 0)
+	{
+		return -1;
+	}
+
+	if (object_id >= scenarioGateway->getNumberOfObjects())
+	{
+		LOG("Object %d not available, only %d registered", object_id, scenarioGateway->getNumberOfObjects());
+		return -1;
+	}
+
+	roadmanager::Position *pos = &scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
+	
+	if (pos->GetSteeringTargetInfo(lookahead_distance, &s_data, along_reference_lane) != 0)
+	{
+		return -1;
+	}
+	else
+	{
+		// Copy data
+		r_data->local_pos_x = (float)s_data.local_pos[0];
+		r_data->local_pos_y = (float)s_data.local_pos[1];
+		r_data->local_pos_z = (float)s_data.local_pos[2];
+		r_data->global_pos_x = (float)s_data.global_pos[0];
+		r_data->global_pos_y = (float)s_data.global_pos[1];
+		r_data->global_pos_z = (float)s_data.global_pos[2];
+		r_data->angle = (float)s_data.angle;
+		r_data->curvature = (float)s_data.curvature;
+		r_data->road_heading = (float)s_data.road_heading;
+		r_data->road_pitch = (float)s_data.road_pitch;
+		r_data->road_roll = (float)s_data.road_roll;
+		r_data->speed_limit = (float)s_data.speed_limit;
+
+		return 0;
+	}
 }
 
 extern "C"
@@ -341,7 +382,7 @@ extern "C"
 		}
 	}
 
-	SE_DLL_API int SE_GetObjectState(int index, ScenarioObjectState *state)
+	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState *state)
 	{
 		if (scenarioGateway != 0)
 		{
@@ -351,7 +392,7 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_GetObjectStates(int *nObjects, ScenarioObjectState* state)
+	SE_DLL_API int SE_GetObjectStates(int *nObjects, SE_ScenarioObjectState* state)
 	{
 		int i;
 
@@ -370,99 +411,19 @@ extern "C"
 		return 0;
 	}
 
-	static int GetSteeringTarget(int object_id, float lookahead_distance, double *pos_local, double *pos_global, double *angle, double *curvature)
+	SE_DLL_API int SE_GetSteeringTargetInfo(int object_id, float lookahead_distance, SE_SteeringTargetInfo *data, int along_road_center)
 	{
-		if (scenarioGateway == 0)
+		if (scenarioGateway == 0 || object_id >= scenarioGateway->getNumberOfObjects())
 		{
 			return -1;
 		}
 
-		if (object_id >= scenarioGateway->getNumberOfObjects())
+		if (GetSteeringTarget(object_id, lookahead_distance, data, along_road_center) != 0)
 		{
-			LOG("Object %d not available, only %d registered", object_id, scenarioGateway->getNumberOfObjects());
 			return -1;
 		}
-
-		roadmanager::Position *pos = &scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
-
-		pos->GetSteeringTargetPos(lookahead_distance, pos_local, pos_global, angle, curvature);
 
 		return 0;
 	}
 
-	SE_DLL_API int SE_GetSteeringTargetPosGlobal(int object_id, float lookahead_distance, float * target_pos)
-	{
-		double pos_local[3], pos_global[3], angle, curvature;
-
-		if (scenarioGateway == 0)
-		{
-			return -1;
-		}
-
-		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
-		{
-			return -1;
-		}
-
-		for (int i = 0; i < 3; i++) target_pos[i] = (float)pos_global[i];
-
-		return 0;
-	}
-
-	SE_DLL_API int SE_GetSteeringTargetPosLocal(int object_id, float lookahead_distance, float * target_pos)
-	{
-		double pos_local[3], pos_global[3], angle, curvature;
-
-		if (scenarioGateway == 0)
-		{
-			return -1;
-		}
-
-		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
-		{
-			return -1;
-		}
-
-		for (int i = 0; i < 3; i++) target_pos[i] = (float)pos_local[i];
-
-		return 0;
-	}
-
-	SE_DLL_API int SE_GetSteeringTargetAngle(int object_id, float lookahead_distance, float * angle_f)
-	{
-		double pos_local[3], pos_global[3], angle, curvature;
-
-		if (scenarioGateway == 0)
-		{
-			return -1;
-		}
-
-		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
-		{
-			return -1;
-		}
-
-		*angle_f = (float)angle;
-
-		return 0;
-	}
-
-	SE_DLL_API int SE_GetSteeringTargetCurvature(int object_id, float lookahead_distance, float * curvature_f)
-	{
-		double pos_local[3], pos_global[3], angle, curvature;
-
-		if (scenarioGateway == 0)
-		{
-			return -1;
-		}
-
-		if (GetSteeringTarget(object_id, lookahead_distance, pos_local, pos_global, &angle, &curvature) != 0)
-		{
-			return -1;
-		}
-
-		*curvature_f = (float)curvature;
-
-		return 0;
-	}
 }

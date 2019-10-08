@@ -1868,9 +1868,13 @@ void Junction::Print()
 
 OpenDrive::~OpenDrive()
 {
-	for (size_t i=0; i<road_.size(); i++)
+	for (size_t i = 0; i < road_.size(); i++)
 	{
 		delete(road_[i]);
+	}
+	for (size_t i = 0; i < junction_.size(); i++)
+	{
+		delete(junction_[i]);
 	}
 }
 
@@ -3494,7 +3498,7 @@ bool Position::IsAheadOf(Position target_position)
 	return(diff_x0 < 0);
 }
 
-int Position::GetSteeringTargetPos(double lookahead_distance, double *target_pos_local, double *target_pos_global, double *angle, double *curvature)
+int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data)
 {
 	Position target(*this);  // Make a copy of current position
 	target.offset_ = 0.0;  // Fix to lane center
@@ -3504,33 +3508,90 @@ int Position::GetSteeringTargetPos(double lookahead_distance, double *target_pos
 		return -1;
 	}
 	
-	target_pos_global[0] = target.GetX();
-	target_pos_global[1] = target.GetY();
-	target_pos_global[2] = target.GetZ();
+	if (fabs(target.GetCurvature()) > SMALL_NUMBER)
+	{
+		double radius = 1.0 / target.GetCurvature();
+		radius -= target.GetT(); // curvature positive in left curves, lat_offset positive left of reference lane
+		data->curvature = (float)(1.0 / radius);
+	}
+	else
+	{
+		// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
+		data->curvature = (float)target.GetCurvature();
+	}
+
+	data->heading = target.GetHRoad();
+	data->pitch = target.GetP();
+	data->roll = target.GetR();
+
+	// Then find out the width of the lane at current s-value
+	Road *road = target.GetRoadById(target.GetTrackId());
+	data->width = road->GetLaneWidthByS(target.GetS(), target.GetLaneId());
+	data->speed_limit = road->GetSpeedByS(target.GetS());
+
+	return 0;
+}
+
+int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, bool along_reference_lane)
+{
+	Position target(*this);  // Make a copy of current position
+	target.offset_ = 0.0;  // Fix to lane center
+
+	if (along_reference_lane)
+	{
+		// Look along reference lane requested, move pivot position to t=0
+		target.SetTrackPos(target.GetTrackId(), target.GetS(), 0, true);
+	}
+
+	if (target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT) != 0)
+	{
+		return -1;
+	}
+
+	data->global_pos[0] = target.GetX();
+	data->global_pos[1] = target.GetY();
+	data->global_pos[2] = target.GetZ();
 
 	// find out local x, y, z
 	double diff_x = target.GetX() - GetX();
 	double diff_y = target.GetY() - GetY();
 	double diff_z = target.GetZ() - GetZ();
 
-	target_pos_local[0] = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
-	target_pos_local[1] = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
-	target_pos_local[2] = diff_z;
+	data->local_pos[0] = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
+	data->local_pos[1] = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
+	data->local_pos[2] = diff_z;
 
 #if 0
-	// remove when validated
-	target_pos_global[0] = GetX() + target_pos_local[0] * cos(GetH()) - target_pos_local[1] * sin(GetH());
-	target_pos_global[1] = GetY() + target_pos_local[0] * sin(GetH()) + target_pos_local[1] * cos(GetH());
-	target_pos_global[2] = GetZ() + target_pos_local[2];
+	// for validation
+	data->global_pos[0] = GetX() + data->local_pos[0] * cos(GetH()) - data->local_pos[1] * sin(GetH());
+	data->global_pos[1] = GetY() + data->local_pos[0] * sin(GetH()) + data->local_pos[1] * cos(GetH());
+	data->global_pos[2] = GetZ() + data->local_pos[2];
 #endif
-	
-	// Calculate angle - by dot product
-	double dot_prod = 
-		(target_pos_local[0] * 1.0 + target_pos_local[1] * 0.0) / 
-		sqrt(target_pos_local[0] * target_pos_local[0] + target_pos_local[1] * target_pos_local[1]);
-	*angle = SIGN(target_pos_local[1]) * acos(dot_prod);
 
-	*curvature = target.GetCurvature();
+	// Calculate angle - by dot product
+	double dot_prod =
+		(data->local_pos[0] * 1.0 + data->local_pos[1] * 0.0) /
+		sqrt(data->local_pos[0] * data->local_pos[0] + data->local_pos[1] * data->local_pos[1]);
+	data->angle = SIGN(data->local_pos[1]) * acos(dot_prod);
+
+	if (fabs(target.GetCurvature()) > SMALL_NUMBER)
+	{
+		double radius = 1.0 / target.GetCurvature();
+		radius -= target.GetT(); // curvature positive in left curves, lat_offset positive left of reference lane
+		data->curvature = (float)(1.0 / radius);
+	}
+	else
+	{
+		// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
+		data->curvature = (float)target.GetCurvature();
+	}
+
+	data->road_heading = target.GetHRoad();
+	data->road_pitch = target.GetP();
+	data->road_roll = target.GetR();
+
+	Road *road = target.GetRoadById(target.GetTrackId());
+	data->speed_limit = road->GetSpeedByS(target.GetS());
 
 	return 0;
 }
