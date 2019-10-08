@@ -31,29 +31,37 @@ typedef struct
 	int   laneId;
 	float laneOffset;
 	float s;
-} PositionData;
-
-typedef struct
-{
-	float width;
-	float curvature;
-	float speed_limit;
-} LaneData;
+} RM_PositionData;
 
 typedef struct
 {
 	float global_pos[3];    // steering target position, in global coordinate system
 	float local_pos[3];     // steering target position, relative vehicle (pivot position object) coordinate system
 	float angle;			// heading angle to steering target from and relatove to vehicle (pivot position)
+	float road_heading;		// road heading at steering target point
+	float road_pitch;		// road pitch (inclination) at steering target point
+	float road_roll;		// road roll (camber) at steering target point
 	float curvature;		// road curvature at steering target point
-} SteeringTargetData;
+	float speed_limit;
+} RM_SteeringTargetInfo;
+
+typedef struct
+{
+	float pos[3];			// position, in global coordinate system
+	float heading;			// road heading 
+	float pitch;			// road pitch 
+	float roll;				// road roll
+	float width;
+	float curvature;
+	float speed_limit;
+} RM_RoadLaneInfo;
 
 typedef struct
 {
 	float ds;				// delta s (longitudinal distance)
 	float dt;				// delta t (lateral distance)
 	int dLaneId;			// delta laneId (increasing left and decreasing to the right)
-} PositionDiff;
+} RM_PositionDiff;
 
 #ifdef __cplusplus
 extern "C"
@@ -166,15 +174,16 @@ extern "C"
 	@param data Struct to fill in the values
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_GetPositionData(int handle, PositionData *data);
+	RM_DLL_API int RM_GetPositionData(int handle, RM_PositionData *data);
 
 	/**
 	Retrieve lane information from the position object (at current road, s-value and lane)
 	@param handle Handle to the position object
+	@param lookahead_distance The distance, along the road, to the point
 	@param data Struct including all result values, see LaneData typedef
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_GetLaneInfo(int handle, LaneData *info);
+	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data);
 
 	/**
 	Retrieve current speed limit (at current road, s-value and lane) based on ODR type elements or nr of lanes
@@ -189,9 +198,10 @@ extern "C"
 	@param handle Handle to the position object from which to measure
 	@param lookahead_distance The distance, along the road, to the point
 	@param data Struct including all result values, see SteeringTargetData typedef
+	@param along_road_center Measure along the reference lane, i.e. at center of the road. Should be false for normal use cases
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, SteeringTargetData *data);
+	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, RM_SteeringTargetInfo *data, int along_reference_lane);
 
 	/**
 	Find out the difference between two position objects, i.e. delta distance (long and lat) and delta laneId
@@ -200,7 +210,7 @@ extern "C"
 	@param pos_diff Struct including all result values, see PositionDiff typedef
 	@return true if a valid path between the road positions was found and calculations could be performed
 	*/
-	RM_DLL_API bool RM_SubtractAFromB(int handleA, int handleB, PositionDiff *pos_diff);
+	RM_DLL_API bool RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff);
 
 
 #ifdef __cplusplus

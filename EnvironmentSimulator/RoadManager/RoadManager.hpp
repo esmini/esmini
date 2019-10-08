@@ -437,7 +437,6 @@ namespace roadmanager
 		int lane_section_idx_;
 		int lane_id_;
 	};
-	
 
 	enum RoadType
 	{
@@ -678,6 +677,30 @@ namespace roadmanager
 		std::string odr_filename_;
 	};
 
+
+	typedef struct
+	{
+		double global_pos[3];   // steering target position, in global coordinate system
+		double local_pos[3];    // steering target position, relative vehicle (pivot position object) coordinate system
+		double angle;			// heading angle to steering target from and relatove to vehicle (pivot position)
+		double road_heading;	// road heading at steering target point
+		double road_pitch;		// road pitch (inclination) at steering target point
+		double road_roll;		// road roll (camber) at steering target point
+		double curvature;		// road curvature at steering target point
+		double speed_limit;		// speed limit given by OpenDRIVE type entry
+	} SteeringTargetInfo;
+
+	typedef struct
+	{
+		double pos[3];		// position, in global coordinate system
+		double heading;		// road heading at steering target point
+		double pitch;		// road pitch (inclination) at steering target point
+		double roll;		// road roll (camber) at steering target point
+		double width;		// lane width
+		double curvature;	// road curvature at steering target point
+		double speed_limit; // speed limit given by OpenDRIVE type entry
+	} RoadLaneInfo;
+
 	// Forward declaration of Route
 	class Route;
 
@@ -772,15 +795,21 @@ namespace roadmanager
 		bool IsAheadOf(Position target_position);
 
 		/**
-		Get the location, in local vehicle coordinate system, of a point along the road ahead
-		@param object_id The ID of the vehicle to measure from
+		Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
 		@param lookahead_distance The distance, along the road, to the point
-		@param target_pos Array to fill in calculated X, Y and Z coordinate values
-		@param angle Pointer to variable where target angle will be written 
+		@param data Struct to fill in calculated values, see typdef for details
 		@param curvature Pointer to variable where target curvature will be written
 		@return 0 if successful, -1 if not
 		*/
-		int GetSteeringTargetPos(double lookahead_distance, double *target_pos_local, double *target_pos_global, double *angle, double *curvature);
+		int GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, bool along_reference_lane);
+
+		/**
+		Get information of current lane at a specified distance from object along the road ahead
+		@param lookahead_distance The distance, along the road, to the point
+		@param data Struct to fill in calculated values, see typdef for details
+		@return 0 if successful, -1 if not
+		*/
+		int GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data);
 
 		/**
 		Move position along the road network, forward or backward, from the current position

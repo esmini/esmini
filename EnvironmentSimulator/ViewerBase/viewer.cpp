@@ -666,16 +666,14 @@ void Viewer::UpdateVehicleLineAndPoints(roadmanager::Position *pos)
 void Viewer::UpdateDriverModelPoint(roadmanager::Position *pos, double distance)
 {
 	// Find and visualize steering target point
-	double steering_target_local[3];
-	double steering_target_global[3];
-	double angle, curvature;
+	roadmanager::SteeringTargetInfo data;
 
 	if (pos->GetOpenDrive()->GetNumOfRoads() == 0)
 	{
 		return;
 	}
 
-	pos->GetSteeringTargetPos(distance, steering_target_local, steering_target_global, &angle, &curvature);
+	pos->GetSteeringTargetInfo(distance, &data, false);
 	
 	double z_offset = 0.1;
 
@@ -685,7 +683,7 @@ void Viewer::UpdateDriverModelPoint(roadmanager::Position *pos, double distance)
 		return;
 	}
 	dm_steering_target_point_data_->clear();
-	dm_steering_target_point_data_->push_back(osg::Vec3d(steering_target_global[0], steering_target_global[1], steering_target_global[2] + z_offset));
+	dm_steering_target_point_data_->push_back(osg::Vec3d(data.global_pos[0], data.global_pos[1], data.global_pos[2] + z_offset));
 	dm_steering_target_point_->dirtyGLObjects();
 	dm_steering_target_point_data_->dirty();
 
@@ -693,7 +691,7 @@ void Viewer::UpdateDriverModelPoint(roadmanager::Position *pos, double distance)
 	osg::ref_ptr<osg::PositionAttitudeTransform> tx = cars_[0]->txNode_;
 	dm_steering_target_line_vertexData_->clear();
 	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(tx->getPosition().x(), tx->getPosition().y(), tx->getPosition().z() + 0.5));
-	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(steering_target_global[0], steering_target_global[1], steering_target_global[2] + z_offset));
+	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(data.global_pos[0], data.global_pos[1], data.global_pos[2] + z_offset));
 	dm_steering_target_line_->dirtyGLObjects();
 	dm_steering_target_line_vertexData_->dirty();
 }

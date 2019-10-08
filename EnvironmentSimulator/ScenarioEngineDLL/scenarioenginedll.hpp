@@ -25,7 +25,7 @@ typedef struct
 	int id;					  // Automatically generated unique object id 
 	int model_id;             // Id to control what 3D model to represent the vehicle 
 	int ext_control;	      // vehicle controlled by 0 = scenario engine or 1 = external simulator
-	char name[SE_NAME_SIZE];  // 32 bytes object name
+//	char name[SE_NAME_SIZE];  // 32 bytes object name
 	float timestamp;
 	float x;
 	float y;
@@ -38,7 +38,23 @@ typedef struct
 	float laneOffset;
 	float s;
 	float speed;
-} ScenarioObjectState;
+} SE_ScenarioObjectState; 
+
+typedef struct
+{
+	float global_pos_x;     // steering target position, in global coordinate system
+	float global_pos_y;     // steering target position, in global coordinate system
+	float global_pos_z;     // steering target position, in global coordinate system
+	float local_pos_x;      // steering target position, relative vehicle (pivot position object) coordinate system
+	float local_pos_y;      // steering target position, relative vehicle (pivot position object) coordinate system
+	float local_pos_z;      // steering target position, relative vehicle (pivot position object) coordinate system
+	float angle;			// heading angle to steering target from and relatove to vehicle (pivot position)
+	float road_heading;		// road heading at steering target point
+	float road_pitch;		// road pitch (inclination) at steering target point
+	float road_roll;		// road roll (camber) at steering target point
+	float curvature;		// road curvature at steering target point
+	float speed_limit;		// speed limit given by OpenDRIVE type entry
+} SE_SteeringTargetInfo;
 
 
 #ifdef __cplusplus
@@ -62,46 +78,18 @@ extern "C"
 	SE_DLL_API int SE_ReportObjectRoadPos(int id, char *name, int model_id, int ext_control, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
 
 	SE_DLL_API int SE_GetNumberOfObjects();
-//	SE_DLL_API ScenarioObjectState SE_GetObjectState(int index);
-	SE_DLL_API int SE_GetObjectState(int index, ScenarioObjectState *state);
-	SE_DLL_API int SE_GetObjectStates(int *nObjects, ScenarioObjectState* state);
-
-	// Road related functions
-	/**
-	Get the location, in global coordinate system, of the point at a specified distance along the road ahead
-	@param object_id The ID of the vehicle to measure from
-	@param lookahead_distance The distance, along the road, to the point
-	@param target_pos Array to fill in calculated X, Y and Z coordinate values
-	@return 0 if successful, -1 if not
-	*/
-	SE_DLL_API int SE_GetSteeringTargetPosGlobal(int object_id, float lookahead_distance, float *target_pos);
+	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState *state);
+	SE_DLL_API int SE_GetObjectStates(int *nObjects, SE_ScenarioObjectState* state);
 
 	/**
-	Get the location, in vehicle local coordinate system, of the point at a specified distance along the road ahead
-	@param object_id The ID of the vehicle to measure from
+	Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
+	@param handle Handle to the position object from which to measure
 	@param lookahead_distance The distance, along the road, to the point
-	@param target_pos Array to fill in calculated X, Y and Z coordinate values
+	@param data Struct including all result values, see typedef for details
+	@param along_road_center Measure along the reference lane, i.e. at center of the road. Should be false for normal use cases
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_GetSteeringTargetPosLocal(int object_id, float lookahead_distance, float *target_pos);
-
-	/**
-	Get the heading angle, in vehicle local coordinate system, to the point at a specified distance along the road ahead
-	@param object_id The ID of the vehicle to measure from
-	@param lookahead_distance The distance, along the road, to the point
-	@param angle Pointer to variable where target angle will be written
-	@return 0 if successful, -1 if not
-	*/
-	SE_DLL_API int SE_GetSteeringTargetAngle(int object_id, float lookahead_distance, float *angle);
-
-	/**
-	Get the curvature at the point at a specified distance along the road ahead
-	@param object_id The ID of the vehicle to measure from
-	@param lookahead_distance The distance, along the road, to the point
-	@param curvature Pointer to variable where target curvature will be written
-	@return 0 if successful, -1 if not
-	*/
-	SE_DLL_API int SE_GetSteeringTargetCurvature(int object_id, float lookahead_distance, float *curvature);
+	SE_DLL_API int SE_GetSteeringTargetInfo(int object_id, float lookahead_distance, SE_SteeringTargetInfo *data, int along_road_center);
 
 #ifdef __cplusplus
 }
