@@ -521,7 +521,7 @@ bool TrigByTimeHeadway::Evaluate(Story *story, double sim_time)
 		//  - when object is still or going reverse 
 		if (rel_dist < 0 || object_->speed_ < SMALL_NUMBER)
 		{
-			hwt = INFINITY;
+			hwt = LARGE_NUMBER;
 		}
 		else
 		{

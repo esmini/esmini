@@ -332,7 +332,7 @@ void MeetingRelativeAction::Step(double dt)
 	// Calculate straight distance, not along road/route. To be improved.
 	double x, y;
 	double pivotDist = object_->pos_.getRelativeDistance(*own_target_position_, x, y);
-	double targetTimeToDest = INFINITY;
+	double targetTimeToDest = LARGE_NUMBER;
 	double relativeDist = MAX(0, relative_object_->pos_.getRelativeDistance(*relative_target_position_, x, y));
 
 	if (relative_object_->speed_ > SMALL_NUMBER)
@@ -371,7 +371,7 @@ void SynchronizeAction::Step(double dt)
 		return;
 	}
 
-	double masterTimeToDest = INFINITY;
+	double masterTimeToDest = LARGE_NUMBER;
 
 	if (master_object_->speed_ > SMALL_NUMBER)
 	{

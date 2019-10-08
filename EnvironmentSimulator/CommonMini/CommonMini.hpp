@@ -34,9 +34,7 @@
 #endif
 
 #define SMALL_NUMBER (1E-10)
-#ifndef INFINITY
-#define INFINITY (~0)
-#endif
+#define LARGE_NUMBER (1E+10)
 
 #define LOG(Format_, ...)  Logger::Inst().Log(__FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
 
