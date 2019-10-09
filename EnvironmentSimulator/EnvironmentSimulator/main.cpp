@@ -83,7 +83,7 @@ void viewer_thread(void *args)
 			roadmanager::Position pos = scenarioEngine->entities.object_[i]->pos_;
 
 			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
-			car->SetRotation(pos.GetH(), pos.GetR(), pos.GetP());
+			car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
 			car->UpdateWheels(scenarioEngine->entities.object_[i]->wheel_angle, 0);
 		}
 
