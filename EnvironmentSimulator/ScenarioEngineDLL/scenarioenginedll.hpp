@@ -66,10 +66,10 @@ extern "C"
 	@param oscFilename Path to the OpenSCEANRIO file
 	@param ext_control Ego control 0=by OSC 1=No 2=Yes
 	@param use_viewer 0=no viewer, 1=use viewer
-	@param record Create recording for later playback
+	@param record Create recording for later playback 0=no recording 1=recording
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control = 0, int use_viewer = 0, int record = 0);
+	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control, int use_viewer, int record);
 
 	SE_DLL_API int SE_Step(float dt);
 	SE_DLL_API void SE_Close();
