@@ -51,8 +51,6 @@ Environment models (roads, landscape, buildings...) have been created using [VIR
 
 ## Related work
 
-A second OpenSCENARIO based scenario engine was implemented within the Simulation Scenarios project, reusing the esmini RoadManager. In this case the purpose was to extend an existing simulation software platform with OpenSCENARIO based traffic scenarios. The implementation aims for production use. Link to be provided when the repo has been launched.
-
 [esmini-visualizer](https://github.com/matthewcoyle-cpc/esmini-visualiser) is a tool to automatically generate video visualizations of scenarios.
 
 ## Data formats
