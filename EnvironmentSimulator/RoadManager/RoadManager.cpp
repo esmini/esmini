@@ -3503,7 +3503,7 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data)
 	Position target(*this);  // Make a copy of current position
 	target.offset_ = 0.0;  // Fix to lane center
 
-	if (target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT) != 0)
+	if (lookahead_distance > SMALL_NUMBER && target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT) != 0)
 	{
 		return -1;
 	}
@@ -3539,11 +3539,12 @@ int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInf
 
 	if (along_reference_lane)
 	{
-		// Look along reference lane requested, move pivot position to t=0
-		target.SetTrackPos(target.GetTrackId(), target.GetS(), 0, true);
+		// Look along reference lane requested, move pivot position to t=0 plus a small number in order to 
+		// fall into the right direction
+		target.SetTrackPos(target.GetTrackId(), target.GetS(), SMALL_NUMBER * SIGN(GetLaneId()), true);
 	}
 
-	if (target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT) != 0)
+	if (lookahead_distance > SMALL_NUMBER && target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT) != 0)
 	{
 		return -1;
 	}
