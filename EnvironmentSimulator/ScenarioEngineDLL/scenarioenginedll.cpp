@@ -205,6 +205,7 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 	state->r = (float)gw_state->pos.GetR();
 	state->speed = (float)gw_state->speed;
 	state->roadId = (int)gw_state->pos.GetTrackId();
+	state->t = (float)gw_state->pos.GetT();
 	state->laneId = (int)gw_state->pos.GetLaneId();
 	state->s = (float)gw_state->pos.GetS();
 	state->laneOffset = (float)gw_state->pos.GetOffset();
