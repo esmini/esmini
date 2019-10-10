@@ -25,7 +25,6 @@ typedef struct
 	int id;					  // Automatically generated unique object id 
 	int model_id;             // Id to control what 3D model to represent the vehicle 
 	int ext_control;	      // vehicle controlled by 0 = scenario engine or 1 = external simulator
-//	char name[SE_NAME_SIZE];  // 32 bytes object name
 	float timestamp;
 	float x;
 	float y;
