@@ -462,9 +462,15 @@ void ScenarioReader::parseOSCOrientation(OSCOrientation &orientation, pugi::xml_
 	{
 		orientation.type_ = OSCOrientation::OrientationType::ABSOLUTE;
 	}
+	else if (type_str == "")
+	{
+		LOG("No orientation type specified - using absolute");
+		orientation.type_ = OSCOrientation::OrientationType::ABSOLUTE;
+	}
 	else
 	{
-		LOG("Invalid orientation type: %d", type_str);
+		LOG("Invalid orientation type: %d - using absolute", type_str);
+		orientation.type_ = OSCOrientation::OrientationType::ABSOLUTE;
 	}
 }
 
@@ -565,7 +571,6 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, Entit
 			if (orientation_node)
 			{
 				parseOSCOrientation(orientation, orientation_node);
-				LOG("OSCPositionLane orientation not supported yet, reading but ignoring...");
 			}
 
 			OSCPositionLane *pos = new OSCPositionLane(road_id, lane_id, s, offset, orientation);

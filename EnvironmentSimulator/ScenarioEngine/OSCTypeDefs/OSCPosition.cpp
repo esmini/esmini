@@ -21,6 +21,8 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
 
 OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset, OSCOrientation orientation) : OSCPosition(PositionType::LANE)
 {
+	position_.SetLanePos(roadId, laneId, s, offset);
+
 	// If heading not set explicitly, then align relative heading to driving direction, assuming right-hand traffic
 	if (orientation.type_ == OSCOrientation::OrientationType::UNDEFINED)
 	{
@@ -33,7 +35,19 @@ OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset
 			position_.SetHeadingRelative(M_PI);
 		}
 	}
-	position_.SetLanePos(roadId, laneId, s, offset);
+	else if (orientation.type_ == OSCOrientation::OrientationType::ABSOLUTE)
+	{
+		position_.SetHeading(orientation.h_);
+	}
+	else if (orientation.type_ == OSCOrientation::OrientationType::RELATIVE)
+	{
+		LOG("Relative orientation not supported yet");
+	}
+	else
+	{
+		LOG("Unexpected orientation type: %d", orientation.type_);
+	}
+
 }
 
 OSCPositionRelativeObject::OSCPositionRelativeObject(Object *object, double dx, double dy, double dz, OSCOrientation orientation) : 

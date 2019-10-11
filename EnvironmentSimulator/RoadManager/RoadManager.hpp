@@ -723,7 +723,7 @@ namespace roadmanager
 		void SetHeading(double heading);
 		void SetHeadingRelative(double heading);
 		void XYZH2TrackPos(double x, double y, double z, double h, bool evaluateZAndPitch = true);
-		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
+		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 		double FindDistToPos(Position *pos, RoadLink *link, int &call_count, int level_count, bool &found);
 
 		void SetRoute(Route *route) { route_ = route; }
