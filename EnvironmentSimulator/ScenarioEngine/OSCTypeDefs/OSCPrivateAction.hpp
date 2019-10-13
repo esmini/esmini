@@ -261,9 +261,9 @@ namespace scenarioengine
 		int target_lane_id_;
 		double elapsed_;
 
-		LatLaneChangeAction() : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_CHANGE)
+		LatLaneChangeAction(LatLaneChangeAction::Timing timing_type = Timing::TIME) : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_CHANGE)
 		{
-			dynamics_.timing_type_ = Timing::TIME;  // Make default
+			dynamics_.timing_type_ = timing_type;
 			dynamics_.timing_target_value_ = 0.0;
 			elapsed_ = 0;
 		}

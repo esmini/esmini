@@ -33,9 +33,11 @@
 #define MIN(x, y) ((x)<(y)?(x):(y))
 
 static int COLOR_RED[3] = { 0xBB, 0x44, 0x44 };
-static int COLOR_BLUE[3] = { 0x33, 0x33, 0xAA };
+static int COLOR_GREEN[3] = { 0x40, 0xB0, 0x50 };
+static int COLOR_BLUE[3] = { 0x40, 0x60, 0xB0 };
 static int COLOR_YELLOW[3] = { 0xEE, 0xAA, 0x44 };
 static int COLOR_GRAY[3] = { 0x44, 0x44, 0x44 };
+static int COLOR_WHITE[3] = { 0xCC, 0xCC, 0xCA };
 
 //USE_OSGPLUGIN(fbx)
 USE_OSGPLUGIN(osg2)
@@ -597,7 +599,7 @@ bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
 	dm_steering_target_point_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	osg::ref_ptr<osg::Vec4Array> point_color = new osg::Vec4Array;
-	point_color->push_back(osg::Vec4(COLOR_GRAY[0] / (float)0xFF, COLOR_GRAY[1] / (float)0xFF, COLOR_GRAY[2] / (float)0xFF, 1.0));
+	point_color->push_back(osg::Vec4(COLOR_GREEN[0] / (float)0xFF, COLOR_GREEN[1] / (float)0xFF, COLOR_GREEN[2] / (float)0xFF, 1.0));
 	dm_steering_target_point_->setDataVariance(osg::Object::DYNAMIC);
 	dm_steering_target_point_->setColorArray(point_color.get());
 	dm_steering_target_point_->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
@@ -618,7 +620,7 @@ bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
 	dm_steering_target_line_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-	color->push_back(osg::Vec4(COLOR_GRAY[0] / (float)0xFF, COLOR_GRAY[1] / (float)0xFF, COLOR_GRAY[2] / (float)0xFF, 1.0));
+	color->push_back(osg::Vec4(COLOR_GREEN[0] / (float)0xFF, COLOR_GREEN[1] / (float)0xFF, COLOR_GREEN[2] / (float)0xFF, 1.0));
 	dm_steering_target_line_->setColorArray(color.get());
 	dm_steering_target_line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
 	dm_steering_target_line_->setDataVariance(osg::Object::DYNAMIC);

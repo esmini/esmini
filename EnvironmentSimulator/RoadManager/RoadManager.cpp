@@ -2926,7 +2926,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 
 		if (n_connections == 0)
 		{
-			LOG("No connections!");
+			//LOG("No connections from road id %d lane id %d in junction %d", road->GetId(), lane->GetId(), junction->GetId());
 			return -1;
 		}
 		else if (n_connections == 1)
@@ -3086,20 +3086,12 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 		{
 			ds_signed = s_ + ds_signed - GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
 			link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(SUCCESSOR);
-			if (link == 0)
-			{
-				LOG("Missing link to successor of road id %d", GetTrackId());
-			}
 			s_stop = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
 		}
 		else if (s_ + ds_signed < 0)
 		{
 			ds_signed = s_ + ds_signed;
 			link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(PREDECESSOR);
-			if (link == 0)
-			{
-				LOG("Missing link to predecessor of road id %d", GetTrackId());
-			}
 			s_stop = 0;
 		}
 		else  // New position is within current track
@@ -3116,7 +3108,6 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 
 		if (MoveToConnectingRoad(link, contact_point_type, strategy) != 0)
 		{
-			LOG("Failed move to connecting road");
 			SetLanePos(track_id_, lane_id_, s_stop, offset_);
 			return 0;
 		}

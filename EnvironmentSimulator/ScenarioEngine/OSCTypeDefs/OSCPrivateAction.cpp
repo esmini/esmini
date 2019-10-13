@@ -87,9 +87,21 @@ void LatLaneChangeAction::Step(double dt)
 		object_->pos_.GetOpenDrive()->GetRoadById(object_->pos_.GetTrackId())->GetCenterOffset(object_->pos_.GetS(), target_lane_id_) +
 		target_lane_offset_;
 
-	if (dynamics_.timing_type_ == Timing::TIME)
+	if (dynamics_.timing_type_ == Timing::TIME || dynamics_.timing_type_ == Timing::DISTANCE)
 	{
-		elapsed_ += dt;
+		if (dynamics_.timing_type_ == Timing::TIME)
+		{
+			elapsed_ += dt;
+		}
+		else if (dynamics_.timing_type_ == Timing::DISTANCE)
+		{
+			elapsed_ += object_->speed_ * dt;
+		}
+		else
+		{
+			LOG("Unexpected timing type: %d", dynamics_.timing_type_);
+		}
+
 		factor = elapsed_ / dynamics_.timing_target_value_;
 		t_old = object_->pos_.GetT();
 
