@@ -17,6 +17,7 @@
 #include <osgViewer/Viewer>
 #include <osgGA/NodeTrackerManipulator>
 #include <osg/MatrixTransform>
+#include <osgText/Text>
 #include <string>
 
 #include "RubberbandManipulator.hpp"
@@ -79,6 +80,10 @@ namespace viewer
 		osgViewer::Viewer *osgViewer_;
 		osg::MatrixTransform* rootnode_;
 		roadmanager::OpenDrive *odrManager_;
+		bool showInfoText;
+
+		osg::ref_ptr<osg::Camera> infoTextCamera;
+		osg::ref_ptr<osgText::Text> infoText;
 
 		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines = false);
 		~Viewer();
@@ -98,6 +103,9 @@ namespace viewer
 		void SetQuitRequest(bool value) { quit_request_ = value; }
 		bool GetQuitRequest() { return quit_request_;  }
 		std::string getScenarioDir() { return scenarioDir_; }
+		void SetInfoTextProjection(int width, int height);
+		void SetInfoText(const char* text);
+		void ShowInfoText(bool show);
 
 	private:
 
@@ -113,10 +121,10 @@ namespace viewer
 		bool quit_request_;
 	};
 
-	class KeyboardEventHandler : public osgGA::GUIEventHandler
+	class EventHandler : public osgGA::GUIEventHandler
 	{
 	public:
-		KeyboardEventHandler(Viewer *viewer) : viewer_(viewer) {}
+		EventHandler(Viewer *viewer) : viewer_(viewer) {}
 		bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&);
 
 	private:

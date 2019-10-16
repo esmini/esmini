@@ -226,6 +226,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	keyLeft_ = false;
 	keyRight_ = false;
 	quit_request_ = false;
+	showInfoText = true;  // show info text HUD per default
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
 
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
@@ -310,12 +311,11 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 		osgViewer_->setCameraManipulator(keyswitchManipulator.get());
 	}
 
-	osgViewer_->addEventHandler(new KeyboardEventHandler(this));
+	osgViewer_->addEventHandler(new EventHandler(this));
 
 	osgViewer_->getCamera()->setLODScale(lodScale_);
 	osgViewer_->getCamera()->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
 	osgViewer_->getCamera()->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 0.0f));
-	//	viewer.getCamera()->setClearColor(osg::Vec4(1.0f, 1.0f, 1.0f, 0.0f));
 
 	// add the window size toggle handler
 	osgViewer_->addEventHandler(new osgViewer::WindowSizeHandler);
@@ -334,8 +334,33 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	light->setAmbient(osg::Vec4(ambient, ambient, 0.9*ambient, 1));
 	light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
 
-	osgViewer_->realize();
+	// Overlay text
+	osg::ref_ptr<osg::Geode> textGeode = new osg::Geode;
+	osg::Vec4 layoutColor(0.9f, 0.9f, 0.9f, 1.0f);
+	float layoutCharacterSize = 15.0f;
 
+	infoText = new osgText::Text;
+	infoText->setColor(layoutColor);
+	infoText->setCharacterSize(layoutCharacterSize);
+	infoText->setAxisAlignment(osgText::Text::SCREEN);
+	infoText->setPosition(osg::Vec3(10, 10, 0));
+	infoText->setDataVariance(osg::Object::DYNAMIC);
+
+	textGeode->addDrawable(infoText);
+
+	infoTextCamera = new osg::Camera;
+	infoTextCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+	infoTextCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
+	infoTextCamera->setRenderOrder(osg::Camera::POST_RENDER);
+	infoTextCamera->setAllowEventFocus(false);
+	infoTextCamera->addChild(textGeode.get());
+	infoTextCamera->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+	osg::GraphicsContext* context = dynamic_cast<osgViewer::GraphicsWindow*>(osgViewer_->getCamera()->getGraphicsContext());
+	SetInfoTextProjection(context->getTraits()->width, context->getTraits()->height);
+
+	rootnode_->addChild(infoTextCamera);
+
+	osgViewer_->realize();
 }
 
 Viewer::~Viewer()
@@ -731,8 +756,38 @@ int Viewer::AddEnvironment(const char* filename)
 	return 0;
 }
 
-bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)
+void Viewer::ShowInfoText(bool show)
 {
+	showInfoText = show;
+}
+
+void Viewer::SetInfoText(const char* text)
+{
+	if (showInfoText)
+	{
+		infoText->setText(text);
+	}
+	else
+	{
+		infoText->setText("");
+	}
+}
+
+void Viewer::SetInfoTextProjection(int width, int height)
+{
+	infoTextCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, width, 0, height));
+}
+
+bool EventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)
+{
+	switch (ea.getEventType())
+	{
+	case(osgGA::GUIEventAdapter::RESIZE):
+		LOG("Resize %d %d", ea.getWindowWidth(), ea.getWindowHeight());
+		viewer_->SetInfoTextProjection(ea.getWindowWidth(), ea.getWindowHeight());
+		break;
+	}
+
 	switch (ea.getKey())
 	{
 	case(osgGA::GUIEventAdapter::KEY_C):
@@ -824,6 +879,15 @@ bool KeyboardEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIAc
 
 			viewer_->rubberbandManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_]->txNode_, false);
 			viewer_->nodeTrackerManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_]->node_);
+		}
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_T):
+	{
+		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->showInfoText = !viewer_->showInfoText;
+			viewer_->infoTextCamera->setNodeMask(viewer_->showInfoText ? 0xffffffff : 0x0);
 		}
 	}
 	break;

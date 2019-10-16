@@ -42,6 +42,7 @@ static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static const bool freerun = true;
 static int viewer_state = VIEWER_NOT_STARTED;
+static double simTime = 0;
 
 
 static ScenarioEngine *scenarioEngine;
@@ -59,6 +60,13 @@ void viewer_thread(void *args)
 		scenarioEngine->getSceneGraphFilename().c_str(), 
 		scenarioEngine->getScenarioFilename().c_str(), 
 		*parser);
+
+	std::string info_text_str;
+	parser->read("--info_text", info_text_str);
+	if (info_text_str == "off")
+	{
+		viewer->ShowInfoText(false);
+	}
 
 	//  Create cars for visualization
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
@@ -89,7 +97,12 @@ void viewer_thread(void *args)
 
 		mutex.Unlock();
 
+		char str_buf[128];
+		snprintf(str_buf, sizeof(str_buf), "time: %.2f speed: %.2f", simTime, scenarioEngine->entities.object_[0]->speed_);
+		viewer->SetInfoText(str_buf);
+
 		viewer->osgViewer_->frame();
+
 		
 		viewer_state = VIEWER_RUNNING;
 	}
@@ -121,6 +134,7 @@ int main(int argc, char *argv[])
 	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " [options]\n");
 	arguments.getApplicationUsage()->addCommandLineOption("--osc <filename>", "OpenSCENARIO filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--ext_control <mode>", "Ego control (\"osc\", \"off\", \"on\")");
+	arguments.getApplicationUsage()->addCommandLineOption("--info_text <mode>", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
 
 	if (arguments.argc() < 2)
 	{
@@ -192,7 +206,6 @@ int main(int argc, char *argv[])
 	}
 
 	__int64 now, lastTimeStamp = 0;
-	double simTime = 0;
 
 	while (viewer_state == VIEWER_RUNNING)
 	{

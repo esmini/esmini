@@ -26,6 +26,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+
 static SE_Thread thread;
 static SE_Mutex mutex;
 
@@ -39,6 +40,7 @@ using namespace scenarioengine;
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static vehicle::Vehicle *ego;
+static double simTime = 0;
 
 typedef enum {
 	VIEWER_NOT_STARTED,
@@ -143,6 +145,13 @@ static void viewer_thread(void *args)
 		*parser, 
 		true);
 
+	std::string info_text_str;
+	parser->read("--info_text", info_text_str);
+	if (info_text_str == "off")
+	{
+		scenarioViewer->ShowInfoText(false);
+	}
+
 	// Create Ego vehicle, 
 	if (scenarioEngine->GetExtControl())
 	{
@@ -217,6 +226,10 @@ static void viewer_thread(void *args)
 
 		mutex.Unlock();
 
+		char str_buf[128];
+		snprintf(str_buf, sizeof(str_buf), "time: %.2f speed: %.2f", simTime, scenarioEngine->entities.object_[0]->speed_);
+		scenarioViewer->SetInfoText(str_buf);
+
 		scenarioViewer->osgViewer_->frame();
 
 		viewer_state = ViewerState::VIEWER_RUNNING;
@@ -244,8 +257,6 @@ int main(int argc, char** argv)
 	roadmanager::Position *lane_pos = new roadmanager::Position();
 	roadmanager::Position *track_pos = new roadmanager::Position();
 
-	double simTime = 0;
-
 	// use an ArgumentParser object to manage the program arguments.
     osg::ArgumentParser arguments(&argc,argv);	
 
@@ -255,6 +266,7 @@ int main(int argc, char** argv)
 	arguments.getApplicationUsage()->addCommandLineOption("--osc <filename>", "OpenSCENARIO filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--ext_control <mode>", "Ego control (\"osc\", \"off\", \"on\")");
 	arguments.getApplicationUsage()->addCommandLineOption("--record <file.dat>", "Record position data into a file for later replay");
+	arguments.getApplicationUsage()->addCommandLineOption("--info_text <mode>", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
 
 	if (arguments.argc() < 2)
 	{
@@ -361,6 +373,16 @@ int main(int argc, char** argv)
 			}
 
 			scenarioEngine->step(deltaSimTime);
+
+			simTime += deltaSimTime;
+
+			//LOG("%d %d %.2f h: %.5f rh %.5f rh %.5f",
+			    //      scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
+			    //      scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
+			    //      scenarioEngine->entities.object_[0]->pos_.GetS(),
+			    //      scenarioEngine->entities.object_[0]->pos_.GetH(),
+			    //      scenarioEngine->entities.object_[0]->pos_.GetHRoad(),
+			    //      scenarioEngine->entities.object_[0]->pos_.GetHRelative());
 
 			mutex.Unlock();
 		}
