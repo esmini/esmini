@@ -35,6 +35,8 @@ using namespace scenarioengine;
 #define DEFAULT_INPORT 48199 
 #define ES_SERV_TIMEOUT 500
 
+// #define SWAP_BYTE_ORDER_ESMINI  // Set when Ego state is sent from non Intel platforms, such as dSPACE
+
 enum { SERV_NOT_STARTED, SERV_RUNNING, SERV_STOP, SERV_STOPPED };
 
 static int state = SERV_NOT_STARTED;
@@ -44,7 +46,6 @@ static ScenarioGateway *scenarioGateway = 0;
 
 namespace scenarioengine
 {
-
 	void CloseGracefully(int socket)
 	{
 #ifdef _WIN32
@@ -108,6 +109,10 @@ namespace scenarioengine
 		while (state == SERV_RUNNING)
 		{
 			int ret = recvfrom(sock, (char*)&buf, sizeof(EgoStateBuffer_t), 0, (struct sockaddr *)&sender_addr, &sender_addr_size);
+
+#ifdef SWAP_BYTE_ORDER_ESMINI
+			SwapByteOrder((unsigned char*)&buf, 4, sizeof(buf));
+#endif
 			if (ret >= 0)
 			{
 				printf("Server: Received Ego pos (%.2f, %.2f, %.2f) rot: (%.2f, %.2f, %.2f) speed: %.2f (%.2f km/h) wheel_angle: %.2f (%.2f deg)\n",

@@ -33,7 +33,6 @@
 #include "CommonMini.hpp"
 #include "Server.hpp"
 
-
 using namespace scenarioengine;
 
 enum ViewerState { VIEWER_NOT_STARTED, VIEWER_RUNNING, VIEWER_DONE, VIEWER_FAILED };
@@ -98,7 +97,7 @@ void viewer_thread(void *args)
 		mutex.Unlock();
 
 		char str_buf[128];
-		snprintf(str_buf, sizeof(str_buf), "time: %.2f speed: %.2f", simTime, scenarioEngine->entities.object_[0]->speed_);
+		snprintf(str_buf, sizeof(str_buf), "simtime (s): %.2f speed (km/h): %.2f", simTime, 3.6 * scenarioEngine->entities.object_[0]->speed_);
 		viewer->SetInfoText(str_buf);
 
 		viewer->osgViewer_->frame();

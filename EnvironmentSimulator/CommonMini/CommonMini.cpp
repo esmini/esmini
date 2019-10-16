@@ -107,7 +107,28 @@ double GetLengthOfVector(double x1, double y1, double x2, double y2)
 	return (sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1)));
 }
 
+void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size)
+{
+	unsigned char *ptr = buf;
+	unsigned char tmp;
 
+	if (data_type_size < 2)
+	{
+		// No need to swap for one byte data types
+		return;
+	}
+
+	for (int i = 0; i < buf_size / data_type_size; i++)
+	{
+		for (int j = 0; j < data_type_size / 2; j++)
+		{
+			tmp = ptr[j];
+			ptr[j] = ptr[data_type_size - j - 1];
+			ptr[data_type_size - j - 1] = tmp;
+		}
+		ptr += data_type_size;
+	}
+}
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 

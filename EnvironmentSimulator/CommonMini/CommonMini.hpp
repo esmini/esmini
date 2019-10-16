@@ -93,6 +93,11 @@ int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double 
 */
 double GetLengthOfVector(double x1, double y1, double x2, double y2);
 
+/**
+  Change byte order - can be useful for IP communication with non Intel platforms
+*/
+void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size);
+
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 
 #else
