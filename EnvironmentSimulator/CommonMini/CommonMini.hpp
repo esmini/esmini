@@ -27,6 +27,11 @@
 	typedef int64_t __int64;
 #endif
 
+
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+	#define snprintf _snprintf
+#endif
+
 #ifdef _WIN32
    #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 #else

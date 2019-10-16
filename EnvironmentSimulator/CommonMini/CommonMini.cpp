@@ -114,8 +114,6 @@ double GetLengthOfVector(double x1, double y1, double x2, double y2)
 	#include <windows.h>
 	#include <process.h>
 
-	#define snprintf _snprintf
-
 	__int64 SE_getSystemTime()
 	{
 		return timeGetTime();
@@ -125,9 +123,6 @@ double GetLengthOfVector(double x1, double y1, double x2, double y2)
 	{
 		Sleep(msec);
 	}
-
-
-
 
 #else
 
@@ -144,7 +139,6 @@ double GetLengthOfVector(double x1, double y1, double x2, double y2)
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds((int)(msec)));
 	}
-
 
 #endif
 
