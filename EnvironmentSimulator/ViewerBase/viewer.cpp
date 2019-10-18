@@ -334,6 +334,8 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	light->setAmbient(osg::Vec4(ambient, ambient, 0.9*ambient, 1));
 	light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
 
+	osgViewer_->realize();
+
 	// Overlay text
 	osg::ref_ptr<osg::Geode> textGeode = new osg::Geode;
 	osg::Vec4 layoutColor(0.9f, 0.9f, 0.9f, 1.0f);
@@ -359,8 +361,6 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	SetInfoTextProjection(context->getTraits()->width, context->getTraits()->height);
 
 	rootnode_->addChild(infoTextCamera);
-
-	osgViewer_->realize();
 }
 
 Viewer::~Viewer()

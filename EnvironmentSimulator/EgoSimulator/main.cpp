@@ -226,8 +226,9 @@ static void viewer_thread(void *args)
 
 		mutex.Unlock();
 
-		char str_buf[128];
-		snprintf(str_buf, sizeof(str_buf), "simtime (s): %.2f speed (km/h): %.2f", simTime, 3.6 * scenarioEngine->entities.object_[0]->speed_);
+		// Update info text 
+		static char str_buf[128];
+		snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", simTime, 3.6 * scenarioEngine->entities.object_[scenarioViewer->currentCarInFocus_]->speed_);
 		scenarioViewer->SetInfoText(str_buf);
 
 		scenarioViewer->osgViewer_->frame();

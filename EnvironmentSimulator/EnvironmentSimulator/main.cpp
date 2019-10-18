@@ -94,14 +94,14 @@ void viewer_thread(void *args)
 			car->UpdateWheels(scenarioEngine->entities.object_[i]->wheel_angle, 0);
 		}
 
-		mutex.Unlock();
-
-		char str_buf[128];
-		snprintf(str_buf, sizeof(str_buf), "simtime (s): %.2f speed (km/h): %.2f", simTime, 3.6 * scenarioEngine->entities.object_[0]->speed_);
+		// Update info text 
+		static char str_buf[128];
+		snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", simTime, 3.6 * scenarioEngine->entities.object_[viewer->currentCarInFocus_]->speed_);
 		viewer->SetInfoText(str_buf);
 
-		viewer->osgViewer_->frame();
+		mutex.Unlock();
 
+		viewer->osgViewer_->frame();
 		
 		viewer_state = VIEWER_RUNNING;
 	}
