@@ -74,8 +74,8 @@ extern "C"
 	SE_DLL_API int SE_Step(float dt);
 	SE_DLL_API void SE_Close();
 
-	SE_DLL_API int SE_ReportObjectPos(int id, char *name, int model_id, int ext_control, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
-	SE_DLL_API int SE_ReportObjectRoadPos(int id, char *name, int model_id, int ext_control, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
+	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
+	SE_DLL_API int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
 
 	SE_DLL_API int SE_GetNumberOfObjects();
 	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState *state);

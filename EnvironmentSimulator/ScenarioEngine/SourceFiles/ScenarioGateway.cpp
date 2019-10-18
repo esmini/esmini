@@ -117,7 +117,7 @@ int ScenarioGateway::getObjectStateById(int id, ObjectState &objectState)
 
 }
 
-void ScenarioGateway::reportObject(ObjectState objectState)
+void ScenarioGateway::reportObject(ObjectState objectState, bool update)
 {
 	bool found = false;
 	
@@ -128,8 +128,19 @@ void ScenarioGateway::reportObject(ObjectState objectState)
 		{
 			found = true;
 			
-			// Update state
-			*objectState_[i] = objectState;
+			if (update)
+			{
+				// Just update relevant fields
+				objectState_[i]->state_.pos = objectState.state_.pos;
+				objectState_[i]->state_.speed = objectState.state_.speed;
+				objectState_[i]->state_.timeStamp= objectState.state_.timeStamp;
+				objectState_[i]->state_.wheel_angle = objectState.state_.wheel_angle;
+			}
+			else
+			{
+				// Copy all fields
+				objectState_[i]->state_ = objectState.state_;
+			}
 			break;
 		}
 	}

@@ -351,21 +351,21 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_ReportObjectPos(int id, char *name, int model_id, int ext_control, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
+	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
 	{
 		if (scenarioGateway != 0)
 		{
-			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, ext_control, timestamp, x, y, z, h, p, r, speed, 0));
+			scenarioGateway->reportObject(ObjectState(id, "", -1, -1, timestamp, x, y, z, h, p, r, speed, 0), true);
 		}
 
 		return 0;
 	}
 
-	SE_DLL_API int SE_ReportObjectRoadPos(int id, char * name, int model_id, int ext_control, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
+	SE_DLL_API int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
 	{
 		if (scenarioGateway != 0)
 		{
-			scenarioGateway->reportObject(ObjectState(id, std::string(name), model_id, ext_control, timestamp, roadId, laneId, laneOffset, s, speed, 0));
+			scenarioGateway->reportObject(ObjectState(id, "", -1, -1, timestamp, roadId, laneId, laneOffset, s, speed, 0), true);
 		}
 
 		return 0;

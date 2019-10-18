@@ -63,7 +63,7 @@ namespace scenarioengine
 		ScenarioGateway();
 		~ScenarioGateway();
 
-		void reportObject(ObjectState objectState);
+		void reportObject(ObjectState objectState, bool update = false);
 		int getNumberOfObjects() { return (int)objectState_.size(); }
 		ObjectState getObjectStateByIdx(int idx) { return *objectState_[idx]; }
 		ObjectState *getObjectStatePtrByIdx(int idx) { return objectState_[idx]; }
