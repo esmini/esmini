@@ -48,6 +48,24 @@ typedef enum {
 	VIEWER_QUIT
 } ViewerState;
 
+typedef enum
+{
+	CONTROL_BY_OSC,
+	CONTROL_INTERNAL,
+	CONTROL_EXTERNAL,
+	CONTROL_HYBRID
+} RequestControlMode;
+
+std::string RequestControlMode2Str(RequestControlMode mode)
+{
+	if (mode == RequestControlMode::CONTROL_BY_OSC) return "by OSC";
+	else if (mode == RequestControlMode::CONTROL_INTERNAL) return "Internal";
+	else if (mode == RequestControlMode::CONTROL_EXTERNAL) return "External";
+	else if (mode == RequestControlMode::CONTROL_HYBRID) return "Hybrid";
+	else return "Unknown";
+}
+
+
 static ViewerState viewer_state = ViewerState::VIEWER_NOT_STARTED; 
 static ScenarioEngine *scenarioEngine;
 static viewer::Viewer *scenarioViewer;
@@ -71,8 +89,6 @@ typedef struct
 } ScenarioCar;
 
 static std::vector<ScenarioCar> scenarioCar;
-
-
 
 int SetupEgo(roadmanager::OpenDrive *odrManager, roadmanager::Position init_pos)
 {
@@ -135,7 +151,9 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 static void viewer_thread(void *args)
 {
 	osg::ArgumentParser *parser = (osg::ArgumentParser*)args;
-	int firstScenarioVehicle = scenarioEngine->GetExtControl() == true ? 1 : 0;
+	int firstScenarioVehicle = 
+		(scenarioEngine->GetControl() == Object::Control::EXTERNAL || 
+		 scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL) ? 1 : 0;
 
 	// Create viewer
 	scenarioViewer = new viewer::Viewer(
@@ -153,7 +171,8 @@ static void viewer_thread(void *args)
 	}
 
 	// Create Ego vehicle, 
-	if (scenarioEngine->GetExtControl())
+	if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
+		scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 	{
 		if ((egoCar->graphics_model = scenarioViewer->AddCar(scenarioEngine->entities.object_[0]->model_filepath_)) == 0)
 		{
@@ -192,7 +211,8 @@ static void viewer_thread(void *args)
 		// Set steering target point at a distance ahead proportional to the speed
 		roadmanager::Position *pos = 0;
 		double steer_tgt_distance;
-		if (scenarioEngine->GetExtControl())
+		if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
+			scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 		{
 			pos = egoCar->pos;
 			steer_tgt_distance = MAX(5, egoCar->vehicle->speed_);
@@ -265,7 +285,7 @@ int main(int argc, char** argv)
     arguments.getApplicationUsage()->setDescription(arguments.getApplicationName());
 	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " [options]\n");
 	arguments.getApplicationUsage()->addCommandLineOption("--osc <filename>", "OpenSCENARIO filename");
-	arguments.getApplicationUsage()->addCommandLineOption("--ext_control <mode>", "Ego control (\"osc\", \"off\", \"on\")");
+	arguments.getApplicationUsage()->addCommandLineOption("--control <mode>", "Ego control (\"osc\", \"internal\", \"external\", \"hybrid\"");
 	arguments.getApplicationUsage()->addCommandLineOption("--record <file.dat>", "Record position data into a file for later replay");
 	arguments.getApplicationUsage()->addCommandLineOption("--info_text <mode>", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
 
@@ -281,24 +301,24 @@ int main(int argc, char** argv)
 	std::string record_filename;
 	arguments.read("--record", record_filename);
 
-	std::string ext_control_str;
-	arguments.read("--ext_control", ext_control_str);
+	std::string control_str;
+	arguments.read("--control", control_str);
 
-	ExternalControlMode ext_control;
-	if (ext_control_str == "osc" || ext_control_str == "") ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
-	else if(ext_control_str == "off") ext_control = ExternalControlMode::EXT_CONTROL_OFF;
-	else if (ext_control_str == "on") ext_control = ExternalControlMode::EXT_CONTROL_ON;
+	RequestControlMode control;
+	if (control_str == "osc" || control_str == "") control = RequestControlMode::CONTROL_BY_OSC;
+	else if(control_str == "internal") control = RequestControlMode::CONTROL_INTERNAL;
+	else if (control_str == "external") control = RequestControlMode::CONTROL_EXTERNAL;
+	else if (control_str == "hybrid") control = RequestControlMode::CONTROL_HYBRID;
 	else
 	{
-		LOG("Unrecognized external control mode: %s", ext_control_str.c_str());
-		ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
+		LOG("Unrecognized external control mode: %s", control_str.c_str());
+		control = RequestControlMode::CONTROL_BY_OSC;
 	}
-
 
 	// Create scenario engine
 	try
 	{
-		scenarioEngine = new ScenarioEngine(oscFilename, simTime, ext_control);
+		scenarioEngine = new ScenarioEngine(oscFilename, simTime);
 		odrManager = scenarioEngine->getRoadManager();
 	}
 	catch (const std::exception& e)
@@ -321,7 +341,8 @@ int main(int argc, char** argv)
 	// Report all vehicles initially - to communicate initial position for external vehicles as well
 	scenarioEngine->step(0.0, true);
 
-	if (scenarioEngine->GetExtControl())
+	if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
+		scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 	{
 		// Setup Ego with initial position from the gateway
 		SetupEgo(odrManager, scenarioGateway->getObjectStatePtrByIdx(0)->state_.pos);
@@ -361,7 +382,8 @@ int main(int argc, char** argv)
 			// ScenarioEngine
 			mutex.Lock();
 
-			if (scenarioEngine->GetExtControl())
+			if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
+				scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 			{
 				// Update vehicle dynamics/driver model
 				UpdateEgo(deltaSimTime, scenarioViewer);

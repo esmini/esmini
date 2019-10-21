@@ -74,9 +74,15 @@ namespace scenarioengine
 			LOG("");
 		}
 
-		void print()
+		virtual void print()
 		{
 			LOG("Virtual, should be overridden");
+		};
+
+		virtual OSCPrivateAction* Copy()
+		{
+			LOG("Virtual, should be overridden");
+			return 0;
 		};
 
 	};
@@ -160,6 +166,20 @@ namespace scenarioengine
 			elapsed_ = 0;
 		}
 
+		LongSpeedAction(const LongSpeedAction &action) : OSCPrivateAction(OSCPrivateAction::Type::LONG_SPEED)
+		{
+			target_ = action.target_;
+			dynamics_ = action.dynamics_;
+			elapsed_ = action.elapsed_;
+			start_speed_ = action.start_speed_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			LongSpeedAction *new_action = new LongSpeedAction(*this);
+			return new_action;
+		}
+		
 		void Trig();
 
 		void Step(double dt);
@@ -195,6 +215,22 @@ namespace scenarioengine
 
 		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::Type::LONG_DISTANCE), target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0)
 		{
+		}
+
+		LongDistanceAction(const LongDistanceAction &action) : OSCPrivateAction(OSCPrivateAction::Type::LONG_DISTANCE)
+		{
+			target_object_ = action.target_object_;
+			dynamics_ = action.dynamics_;
+			distance_ = action.distance_;
+			dist_type_ = action.dist_type_;
+			freespace_ = action.freespace_;
+			acceleration_ = action.acceleration_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			LongDistanceAction *new_action = new LongDistanceAction(*this);
+			return new_action;
 		}
 
 		void Trig();
@@ -268,6 +304,22 @@ namespace scenarioengine
 			elapsed_ = 0;
 		}
 
+		LatLaneChangeAction(const LatLaneChangeAction &action) : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_CHANGE)
+		{
+			dynamics_ = action.dynamics_;
+			target_ = action.target_;
+			start_t_ = action.start_t_;
+			target_lane_offset_ = action.target_lane_offset_;
+			target_lane_id_ = action.target_lane_id_;
+			elapsed_ = action.elapsed_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			LatLaneChangeAction *new_action = new LatLaneChangeAction(*this);
+			return new_action;
+		}
+
 		void Step(double dt);
 
 		void Trig();
@@ -326,6 +378,20 @@ namespace scenarioengine
 			elapsed_ = 0;
 		}
 
+		LatLaneOffsetAction(const LatLaneOffsetAction &action) : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_OFFSET)
+		{
+			target_ = action.target_;
+			elapsed_ = action.elapsed_;
+			start_lane_offset_ = action.start_lane_offset_;
+			dynamics_ = action.dynamics_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			LatLaneOffsetAction *new_action = new LatLaneOffsetAction(*this);
+			return new_action;
+		}
+
 		void Trig();
 		void Step(double dt);
 	};
@@ -345,6 +411,19 @@ namespace scenarioengine
 
 		MeetingAbsoluteAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_ABSOLUTE) {}
 
+		MeetingAbsoluteAction(const MeetingAbsoluteAction &action) : OSCPrivateAction(OSCPrivateAction::Type::MEETING_ABSOLUTE)
+		{
+			mode_ = action.mode_;
+			target_position_ = action.target_position_;
+			time_to_destination_ = action.time_to_destination_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			MeetingAbsoluteAction *new_action = new MeetingAbsoluteAction(*this);
+			return new_action;
+		}
+
 		void Step(double dt)
 		{
 			(void)dt;
@@ -353,7 +432,8 @@ namespace scenarioengine
 
 		void Trig()
 		{
-			if (object_->extern_control_)
+			if (object_->control_ == Object::Control::EXTERNAL || 
+				object_->control_ == Object::Control::HYBRID_EXTERNAL)
 			{
 				// motion control handed over 
 				return;
@@ -383,11 +463,28 @@ namespace scenarioengine
 
 		MeetingRelativeAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_RELATIVE) {}
 
+		MeetingRelativeAction(const MeetingRelativeAction &action) : OSCPrivateAction(OSCPrivateAction::Type::MEETING_RELATIVE)
+		{
+			mode_ = action.mode_;
+			own_target_position_ = action.own_target_position_;
+			relative_object_ = action.relative_object_;
+			relative_target_position_ = action.relative_target_position_;
+			offsetTime_ = action.offsetTime_;
+			continuous_ = action.continuous_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			MeetingRelativeAction *new_action = new MeetingRelativeAction(*this);
+			return new_action;
+		}
+
 		void Step(double dt);
 
 		void Trig()
 		{
-			if (object_->extern_control_)
+			if (object_->control_ == Object::Control::EXTERNAL ||
+				object_->control_ == Object::Control::HYBRID_EXTERNAL)
 			{
 				// motion control handed over 
 				return;
@@ -407,11 +504,26 @@ namespace scenarioengine
 
 		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::Type::SYNCHRONIZE) {}
 
+		SynchronizeAction(const SynchronizeAction &action) : OSCPrivateAction(OSCPrivateAction::Type::SYNCHRONIZE)
+		{
+			target_position_master_ = action.target_position_master_;
+			target_position_ = action.target_position_;
+			master_object_ = action.master_object_;
+			target_speed_ = action.target_speed_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			SynchronizeAction *new_action = new SynchronizeAction(*this);
+			return new_action;
+		}
+
 		void Step(double dt);
 
 		void Trig()
 		{
-			if (object_->extern_control_)
+			if (object_->control_ == Object::Control::EXTERNAL ||
+				object_->control_ == Object::Control::HYBRID_EXTERNAL)
 			{
 				// motion control handed over 
 				return;
@@ -427,6 +539,17 @@ namespace scenarioengine
 		OSCPosition *position_;
 
 		PositionAction() : OSCPrivateAction(OSCPrivateAction::Type::POSITION) {}
+		
+		PositionAction(const PositionAction &action) : OSCPrivateAction(OSCPrivateAction::Type::POSITION) 
+		{
+			position_ = action.position_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			PositionAction *new_action = new PositionAction(*this);
+			return new_action;
+		}
 
 		void Step(double dt)
 		{
@@ -440,7 +563,7 @@ namespace scenarioengine
 
 		void Trig()
 		{
-			// Allow even when externally control
+			// Allow even for external control
 			OSCAction::Trig();
 		}
 	};
@@ -452,6 +575,17 @@ namespace scenarioengine
 
 		FollowRouteAction() : OSCPrivateAction(OSCPrivateAction::Type::FOLLOW_ROUTE) {}
 
+		FollowRouteAction(const FollowRouteAction &action) : OSCPrivateAction(OSCPrivateAction::Type::FOLLOW_ROUTE)
+		{
+			route_ = action.route_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			FollowRouteAction *new_action = new FollowRouteAction(*this);
+			return new_action;
+		}
+
 		void Step(double dt)
 		{
 			(void)dt;
@@ -459,7 +593,8 @@ namespace scenarioengine
 
 		void Trig()
 		{
-			if (object_->extern_control_)
+			if (object_->control_ == Object::Control::EXTERNAL ||
+				object_->control_ == Object::Control::HYBRID_EXTERNAL)
 			{
 				// motion control handed over 
 				return;
@@ -485,11 +620,24 @@ namespace scenarioengine
 
 		AutonomousAction() : OSCPrivateAction(OSCPrivateAction::Type::AUTONOMOUS) {}
 
+		AutonomousAction(const AutonomousAction &action) : OSCPrivateAction(OSCPrivateAction::Type::AUTONOMOUS) 
+		{
+			domain_ = action.domain_;
+			activate_ = action.activate_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			AutonomousAction *new_action = new AutonomousAction(*this);
+			return new_action;
+		}
+
 		void Step(double dt) { }  // put driver model here
 
 		void Trig()
 		{
-			if (object_->extern_control_)
+			if (object_->control_ == Object::Control::EXTERNAL ||
+				object_->control_ == Object::Control::HYBRID_EXTERNAL)
 			{
 				// motion control handed over 
 				return;

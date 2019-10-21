@@ -82,9 +82,9 @@ void Vehicle::Update(double dt, THROTTLE throttle, STEERING steering)
 	wheelRotation_ += speed_ * dt / WHEEL_RADIUS;
 
 	// Calculate steering
-	double steering_scale = 1.0 / (1 + 0.02 * speed_ * speed_);
+	double steering_scale = 1.0 / (1 + 0.015 * speed_ * speed_);
 	
-	wheelAngle_ = wheelAngle_ + (steering_scale * STEERING_RATE * (steering + -0.5 * SIGN(wheelAngle_)))  * dt;
+	wheelAngle_ = 0.95 * (wheelAngle_ + steering_scale * STEERING_RATE * steering * dt);
 	wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
 
 	// Calculate vehicle kinematics according to simple bicycle model, see

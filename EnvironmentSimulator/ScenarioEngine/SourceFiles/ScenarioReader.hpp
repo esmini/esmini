@@ -27,20 +27,13 @@
 namespace scenarioengine
 {
 
-	typedef enum
-	{
-		EXT_CONTROL_BY_OSC,
-		EXT_CONTROL_OFF,
-		EXT_CONTROL_ON,
-	} ExternalControlMode;
-
 	class ScenarioReader
 	{
 	public:
 
 		ScenarioReader();
-		int loadOSCFile(const char * path, ExternalControlMode ext_control);
-		void loadOSCMem(const pugi::xml_document &xml_doc, const char *path, ExternalControlMode ext_control);
+		int loadOSCFile(const char * path);
+		void loadOSCMem(const pugi::xml_document &xml_doch);
 
 		void LoadCatalog(pugi::xml_node catalogChild, Entities *entities, Catalogs *catalogs);
 
@@ -79,20 +72,11 @@ namespace scenarioengine
 
 		std::string getScenarioFilename() { return oscFilename; }
 
-		std::string ExtControlMode2Str(ExternalControlMode mode)
-		{
-			if (mode == ExternalControlMode::EXT_CONTROL_BY_OSC) return "by OSC";
-			else if (mode == ExternalControlMode::EXT_CONTROL_OFF) return "Off";
-			else if (mode == ExternalControlMode::EXT_CONTROL_ON) return "On";
-			else return "Unknown";
-		}
-
 	private:
 		pugi::xml_document doc;
 		OSCParameterDeclaration parameterDeclaration;
 		int objectCnt;
 		std::string oscFilename;
-		ExternalControlMode req_ext_control_;  // Requested Ego (id 0) control mode
 
 		// Use always this method when reading attributes, it will resolve any variables
 		std::string ReadAttribute(pugi::xml_attribute attribute, bool required = false);

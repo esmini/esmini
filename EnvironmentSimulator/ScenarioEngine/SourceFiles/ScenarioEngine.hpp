@@ -36,13 +36,13 @@ namespace scenarioengine
 
 		//	Cars cars;
 
-		ScenarioEngine(std::string oscFilename, double startTime, ExternalControlMode ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC);
-		ScenarioEngine(const pugi::xml_document &xml_doc, std::string oscFilename, double startTime, ExternalControlMode ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC);
+		ScenarioEngine(std::string oscFilename, double startTime);
+		ScenarioEngine(const pugi::xml_document &xml_doc, double startTime);
 		ScenarioEngine() {};
 		~ScenarioEngine();
 
-		void InitScenario(std::string oscFilename, double startTime, ExternalControlMode ext_control);
-		void InitScenario(const pugi::xml_document &xml_doc, std::string oscFilename, double startTime, ExternalControlMode ext_control);
+		void InitScenario(std::string oscFilename, double startTime);
+		void InitScenario(const pugi::xml_document &xml_doc, double startTime);
 
 		void step(double deltaSimTime, bool initial = false);
 		void printSimulationTime();
@@ -54,7 +54,7 @@ namespace scenarioengine
 		roadmanager::OpenDrive *getRoadManager() { return odrManager; }
 
 		ScenarioGateway *getScenarioGateway();
-		bool GetExtControl();
+		Object::Control GetControl();
 
 	private:
 		// OpenSCENARIO parameters
@@ -64,20 +64,17 @@ namespace scenarioengine
 		ScenarioReader scenarioReader;
 		RoadNetwork roadNetwork;
 		roadmanager::OpenDrive *odrManager;
-		ExternalControlMode req_ext_control_;  // Requested Ego (id 0) control mode
 
 		// Simulation parameters
 		double startTime;
 		double simulationTime;
 		double timeStep;
 
-		// 
-
 		//Conditions conditions;
 		//Actions actions;
 		ScenarioGateway scenarioGateway;
 
-		void parseScenario(double startTime, ExternalControlMode ext_control);
+		void parseScenario(double startTime);
 	};
 
 }

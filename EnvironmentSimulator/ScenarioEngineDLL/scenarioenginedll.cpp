@@ -273,7 +273,7 @@ extern "C"
 		try
 		{
 			// Create a scenario engine instance
-			scenarioEngine = new ScenarioEngine(std::string(oscFilename), simTime, (ExternalControlMode)ext_control);
+			scenarioEngine = new ScenarioEngine(std::string(oscFilename), simTime);
 
 			// Fetch ScenarioGateway 
 			scenarioGateway = scenarioEngine->getScenarioGateway();

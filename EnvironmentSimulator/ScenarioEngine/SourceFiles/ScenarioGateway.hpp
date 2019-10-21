@@ -40,9 +40,9 @@ namespace scenarioengine
 	{
 	public:
 		ObjectState();
-		ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, roadmanager::Position *pos, double speed, double wheel_angle);
-		ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, double x, double y, double z, double h, double p, double r, double speed, double wheel_angle);
-		ObjectState(int id, std::string name, int model_id, int ext_control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed, double wheel_angle);
+		ObjectState(int id, std::string name, int model_id, int control, double timestamp, roadmanager::Position *pos, double speed, double wheel_angle);
+		ObjectState(int id, std::string name, int model_id, int control, double timestamp, double x, double y, double z, double h, double p, double r, double speed, double wheel_angle);
+		ObjectState(int id, std::string name, int model_id, int control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed, double wheel_angle);
 
 		ObjectStateStruct getStruct() { return state_; }
 

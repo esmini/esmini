@@ -56,12 +56,12 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 
 void LatLaneChangeAction::Trig()
 {
-	if (object_->extern_control_)
+	if (object_->control_ == Object::Control::EXTERNAL ||
+		object_->control_ == Object::Control::HYBRID_EXTERNAL)
 	{
 		// motion control handed over 
 		return;
 	}
-
 	OSCAction::Trig();
 
 	if (target_->type_ == Target::Type::ABSOLUTE)
@@ -131,11 +131,13 @@ void LatLaneChangeAction::Step(double dt)
 
 void LatLaneOffsetAction::Trig()
 {
-	if (object_->extern_control_)
+	if (object_->control_ == Object::Control::EXTERNAL ||
+		object_->control_ == Object::Control::HYBRID_EXTERNAL)
 	{
 		// motion control handed over 
 		return;
 	}
+
 	OSCAction::Trig();
 	start_lane_offset_ = object_->pos_.GetOffset();
 }
@@ -201,11 +203,13 @@ double LongSpeedAction::TargetRelative::GetValue()
 
 void LongSpeedAction::Trig()
 {
-	if (object_->extern_control_)
+	if (object_->control_ == Object::Control::EXTERNAL ||
+		object_->control_ == Object::Control::HYBRID_EXTERNAL)
 	{
 		// motion control handed over 
 		return;
 	}
+
 	OSCAction::Trig();
 
 	start_speed_ = object_->speed_;

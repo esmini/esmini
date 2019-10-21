@@ -37,6 +37,23 @@ using namespace scenarioengine;
 
 enum ViewerState { VIEWER_NOT_STARTED, VIEWER_RUNNING, VIEWER_DONE, VIEWER_FAILED };
 
+typedef enum
+{
+	CONTROL_BY_OSC,
+	CONTROL_INTERNAL,
+	CONTROL_EXTERNAL,
+	CONTROL_HYBRID
+} RequestControlMode;
+
+std::string RequestControlMode2Str(RequestControlMode mode)
+{
+	if (mode == RequestControlMode::CONTROL_BY_OSC) return "by OSC";
+	else if (mode == RequestControlMode::CONTROL_INTERNAL) return "Internal";
+	else if (mode == RequestControlMode::CONTROL_EXTERNAL) return "External";
+	else if (mode == RequestControlMode::CONTROL_HYBRID) return "Hybrid";
+	else return "Unknown";
+}
+
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static const bool freerun = true;
@@ -144,17 +161,18 @@ int main(int argc, char *argv[])
 	std::string oscFilename;
 	arguments.read("--osc", oscFilename);
 
-	std::string ext_control_str;
-	arguments.read("--ext_control", ext_control_str);
+	std::string control_str;
+	arguments.read("--control", control_str);
 
-	ExternalControlMode ext_control;
-	if (ext_control_str == "osc" || ext_control_str == "") ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
-	else if (ext_control_str == "off") ext_control = ExternalControlMode::EXT_CONTROL_OFF;
-	else if (ext_control_str == "on") ext_control = ExternalControlMode::EXT_CONTROL_ON;
+	RequestControlMode control;
+	if (control_str == "osc" || control_str == "") control = RequestControlMode::CONTROL_BY_OSC;
+	else if (control_str == "internal") control = RequestControlMode::CONTROL_INTERNAL;
+	else if (control_str == "external") control = RequestControlMode::CONTROL_EXTERNAL;
+	else if (control_str == "hybrid") control = RequestControlMode::CONTROL_HYBRID;
 	else
 	{
-		LOG("Unrecognized external control mode: %s", ext_control_str.c_str());
-		ext_control = ExternalControlMode::EXT_CONTROL_BY_OSC;
+		LOG("Unrecognized external control mode: %s", control_str.c_str());
+		control = RequestControlMode::CONTROL_BY_OSC;
 	}
 
 	std::string record_filename;
@@ -166,7 +184,7 @@ int main(int argc, char *argv[])
 	// Create scenario engine
 	try 
 	{ 
-		scenarioEngine = new ScenarioEngine(oscFilename, simulationTime, ext_control);
+		scenarioEngine = new ScenarioEngine(oscFilename, simulationTime);
 	}
 	catch (std::logic_error &e)
 	{
@@ -198,7 +216,8 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	if(scenarioEngine->GetExtControl())
+	if(scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
+		scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 	{ 
 		// Launch UDP server to receive external Ego state
 		StartServer(scenarioEngine);
@@ -238,7 +257,8 @@ int main(int argc, char *argv[])
 		mutex.Unlock();
 	}
 
-	if (scenarioEngine->GetExtControl())
+	if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
+		scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 	{
 		StopServer();
 	}

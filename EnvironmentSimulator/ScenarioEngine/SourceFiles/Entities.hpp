@@ -31,6 +31,15 @@ namespace scenarioengine
 			MISC_OBJECT
 		} Type;
 
+		typedef enum
+		{
+			UNDEFINED,
+			INTERNAL,
+			EXTERNAL,
+			HYBRID_GHOST,
+			HYBRID_EXTERNAL,
+		} Control;
+
 		struct Property
 		{
 			std::string name_;
@@ -40,15 +49,18 @@ namespace scenarioengine
 		Type type_;
 		std::string name_;
 		int id_;
-		bool extern_control_;
+		Control control_;
 		double speed_;
 		double wheel_angle;
 		roadmanager::Position pos_;
 		roadmanager::Route *route_;
 		std::string model_filepath_;
 		int model_id_;
+		Object *ghost_;     // If hybrid control mode, this will point to the ghost entity
+		//Object *external_;  // If hybrid control mode, this will point to the external entity
 
-		Object(Type type) : type_(type), id_(0), extern_control_(false), speed_(0), route_(0), model_filepath_(""), wheel_angle(0) {}
+		Object(Type type) : type_(type), id_(0), control_(Object::Control::INTERNAL), speed_(0), route_(0), model_filepath_(""), wheel_angle(0), ghost_(0) {}
+		void SetControl(Control control) { control_ = control; }
 	};
 
 	class Vehicle : public Object

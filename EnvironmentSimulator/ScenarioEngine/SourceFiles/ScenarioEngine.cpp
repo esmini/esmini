@@ -15,36 +15,34 @@
 
 using namespace scenarioengine;
 
-ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime, ExternalControlMode ext_control)
+ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
 {
 	simulationTime = 0;
-	req_ext_control_ = ext_control;
-	InitScenario(oscFilename, startTime, ext_control);
+	InitScenario(oscFilename, startTime);
 }
 
-ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, std::string oscFilename, double startTime, ExternalControlMode ext_control)
+ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, double startTime)
 {
 	simulationTime = 0;
-	req_ext_control_ = ext_control;
-	InitScenario(xml_doc, oscFilename, startTime, ext_control);
+	InitScenario(xml_doc, startTime);
 }
 
-void ScenarioEngine::InitScenario(std::string oscFilename, double startTime, ExternalControlMode ext_control)
+void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 {
 	// Load and parse data
 	LOG("Init %s", oscFilename.c_str());
-	if (scenarioReader.loadOSCFile(oscFilename.c_str(), ext_control) != 0)
+	if (scenarioReader.loadOSCFile(oscFilename.c_str()) != 0)
 	{
 		throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
 	}
 
-	parseScenario(startTime, ext_control);
+	parseScenario(startTime);
 }
 
-void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, std::string oscFilename, double startTime, ExternalControlMode ext_control)
+void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, double startTime)
 {
-	scenarioReader.loadOSCMem(xml_doc, oscFilename.c_str(), ext_control);
-	parseScenario(startTime, ext_control);
+	scenarioReader.loadOSCMem(xml_doc);
+	parseScenario(startTime);
 }
 
 ScenarioEngine::~ScenarioEngine()
@@ -66,7 +64,8 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	{
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
-			if (entities.object_[i]->extern_control_)
+			if (entities.object_[i]->control_ == Object::Control::EXTERNAL ||
+				entities.object_[i]->control_ == Object::Control::HYBRID_EXTERNAL)
 			{
 				ObjectState o;
 
@@ -102,6 +101,18 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		{
 			//LOG("Stepping action of type %d", init.private_action_[i]->action_[j]->type_)
 			init.private_action_[i]->Step(deltaSimTime);
+		}
+	}
+
+	// Transfer initial state of ghost objects to its external buddy
+	if (initial)
+	{
+		for (size_t i = 0; i < entities.object_.size(); i++)
+		{
+			if (entities.object_[i]->ghost_)
+			{
+				entities.object_[i]->pos_ = entities.object_[i]->ghost_->pos_;
+			}
 		}
 	}
 
@@ -330,12 +341,13 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		if (initial)
 		{
 			// Report all scenario objects the initial run, to establish initial positions and speed = 0
-			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->extern_control_, simulationTime, &obj->pos_, 0.0, 0.0));
+			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime, &obj->pos_, 0.0, 0.0));
 		}
-		else if (!obj->extern_control_)
+		else if (obj->control_ == Object::Control::INTERNAL ||
+			obj->control_ == Object::Control::HYBRID_GHOST)
 		{
 			// Then report all except externally controlled objects
-			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->extern_control_, simulationTime, &obj->pos_, obj->speed_, obj->wheel_angle));
+			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime, &obj->pos_, obj->speed_, obj->wheel_angle));
 		}
 	}
 
@@ -352,19 +364,19 @@ ScenarioGateway *ScenarioEngine::getScenarioGateway()
 	return &scenarioGateway;
 }
 
-bool ScenarioEngine::GetExtControl()
+Object::Control ScenarioEngine::GetControl()
 {
 	if (entities.object_.size() > 0)
 	{
-		return entities.object_[0]->extern_control_;
+		return entities.object_[0]->control_;
 	}
 
 	LOG("No objects initialized yet - ask later");
 
-	return false;  // Hmm, what is a good default value...?
+	return Object::Control::UNDEFINED;  // Hmm, what is a good default value...?
 }
 
-void ScenarioEngine::parseScenario(double startTime, ExternalControlMode ext_control)
+void ScenarioEngine::parseScenario(double startTime)
 {
 	// Init road manager
 	scenarioReader.parseRoadNetwork(roadNetwork);
@@ -377,14 +389,56 @@ void ScenarioEngine::parseScenario(double startTime, ExternalControlMode ext_con
 	scenarioReader.parseInit(init, &entities, &catalogs);
 	scenarioReader.parseStory(story, &entities, &catalogs);
 
-	if (req_ext_control_ > 0 && entities.object_.size() > 0)
+	// Add hybrid ghost vehicle to any action of the external buddy
+	for (size_t i = 0; i < story.size(); i++)
 	{
-		LOG("Override external control flag from OSC file, new value: %s", req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? "Off" : "On");
-		entities.object_[0]->extern_control_ = req_ext_control_ == ExternalControlMode::EXT_CONTROL_OFF ? false : true;
+		for (size_t j = 0; j < story[i]->act_.size(); j++)
+		{
+			for (size_t k = 0; k < story[i]->act_[j]->sequence_.size(); k++)
+			{
+				for (size_t l = 0; l < story[i]->act_[j]->sequence_[k]->actor_.size(); l++)
+				{
+					if (story[i]->act_[j]->sequence_[k]->actor_[i]->object_->ghost_)
+					{
+						ActSequence::Actor *actor = new ActSequence::Actor;
+						actor->object_ = story[i]->act_[j]->sequence_[k]->actor_[i]->object_->ghost_;
+						story[i]->act_[j]->sequence_[k]->actor_.push_back(actor);
+					}
+				}
+			}
+		}
 	}
 
-	LOG("Requested external control: %d - %s, actual: %s", ext_control, scenarioReader.ExtControlMode2Str(ext_control).c_str(), GetExtControl()?"on":"off");
+	size_t num_private_actions = init.private_action_.size();
+	for (size_t i = 0; i < num_private_actions; i++)
+	{
+		if (init.private_action_[i]->object_->ghost_)
+		{
+			OSCPrivateAction *paction = init.private_action_[i]->Copy();
+			paction->object_ = init.private_action_[i]->object_->ghost_;
+			init.private_action_.push_back(paction);
+		}
+	}
 
+	for (size_t i = 0; i < story.size(); i++)
+	{
+		for (size_t j = 0; j < story[i]->act_.size(); j++)
+		{
+			// Update deactivated elements' state to inactive - This could probably be done in some other way...
+			for (size_t k = 0; k < story[i]->act_[j]->sequence_.size(); k++)
+			{
+				for (size_t l = 0; l < story[i]->act_[j]->sequence_[k]->actor_.size(); l++)
+				{
+					if (story[i]->act_[j]->sequence_[k]->actor_[i]->object_->ghost_)
+					{
+						ActSequence::Actor *actor = new ActSequence::Actor;
+						actor->object_ = story[i]->act_[j]->sequence_[k]->actor_[i]->object_->ghost_;
+						story[i]->act_[j]->sequence_[k]->actor_.push_back(actor);
+					}
+				}
+			}
+		}
+	}
 
 	this->startTime = startTime;
 
@@ -403,7 +457,8 @@ void ScenarioEngine::stepObjects(double dt)
 	{
 		Object *obj = entities.object_[i];
 
-		if (obj->extern_control_ == false)
+		if (obj->control_ == Object::Control::INTERNAL ||
+			obj->control_ == Object::Control::HYBRID_GHOST)
 		{
 			double steplen = obj->speed_ * dt;
 

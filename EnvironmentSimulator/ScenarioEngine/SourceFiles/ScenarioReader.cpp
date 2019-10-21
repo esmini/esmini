@@ -82,11 +82,9 @@ std::string ScenarioReader::ReadAttribute(pugi::xml_attribute attribute, bool re
 	}
 }
 
-int ScenarioReader::loadOSCFile(const char * path, ExternalControlMode ext_control)
+int ScenarioReader::loadOSCFile(const char * path)
 {
 	LOG("Loading %s", path);
-
-	req_ext_control_ = ext_control;
 
 	pugi::xml_parse_result result = doc.load_file(path);
 	if (!result)
@@ -100,13 +98,12 @@ int ScenarioReader::loadOSCFile(const char * path, ExternalControlMode ext_contr
 	return 0;
 }
 
-void ScenarioReader::loadOSCMem(const pugi::xml_document &xml_doc, const char *path, ExternalControlMode ext_control)
+void ScenarioReader::loadOSCMem(const pugi::xml_document &xml_doc)
 {
-	LOG("Loading %s", path);
+	LOG("Loading XML document from memory");
 
-	req_ext_control_ = ext_control;
 	doc.reset(xml_doc);
-	oscFilename = path;
+	oscFilename = "inline";
 }
 
 void ScenarioReader::LoadCatalog(pugi::xml_node catalogChild, Entities *entities, Catalogs *catalogs)
@@ -305,17 +302,23 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *c
 		// Check if the property is something supported
 		if (properties.property_[i].name_ == "control")
 		{
-			// check that external control has not been overridden
-			if (req_ext_control_ == ExternalControlMode::EXT_CONTROL_BY_OSC)
+			if (properties.property_[i].value_ == "internal")
 			{
-				if (properties.property_[i].value_ == "external")
-				{
-					vehicle->extern_control_ = true;
-				}
-				else
-				{
-					vehicle->extern_control_ = false;
-				}
+				vehicle->control_ = Object::Control::INTERNAL;
+			}
+			else if (properties.property_[i].value_ == "external")
+			{
+				vehicle->control_ = Object::Control::EXTERNAL;
+			}
+			else if (properties.property_[i].value_ == "hybrid")
+			{
+				// This will be the ghost vehicle, controlled by scenario engine,
+				// which the externally controlled vehicle will follow
+				vehicle->control_ = Object::Control::HYBRID_GHOST;  
+			}
+			else
+			{
+				vehicle->control_ = Object::Control::UNDEFINED;
 			}
 		}
 		else if (properties.property_[i].name_ == "model_id")
@@ -443,6 +446,43 @@ void ScenarioReader::parseEntities(Entities &entities, Catalogs *catalogs)
 			entities.object_.push_back(obj);
 			objectCnt++;
 		}
+	}
+
+	// Identify any hybrid objects. Make it ghost and create an externally controlled buddy
+	size_t num_objects = entities.object_.size();
+	for (size_t i = 0; i < num_objects; i++)
+	{
+		if (entities.object_[i]->control_ == Object::Control::HYBRID_GHOST)
+		{
+			// Create a vehicle for external control
+			Vehicle *external_vehicle = new Vehicle();
+
+			// Copy all properties from the ghost
+			*external_vehicle = *(Vehicle*)entities.object_[i];
+
+			// Add "_ghost" to original vehicle name
+			entities.object_[i]->name_.append("_ghost");
+			
+			// Adjust some properties for the externally controlled buddy
+			external_vehicle->control_ = Object::Control::HYBRID_EXTERNAL;
+			// Connect external vehicle to the ghost
+			external_vehicle->ghost_ = entities.object_[i];
+
+			entities.object_[i]->id_ = (int)entities.object_.size();
+			entities.object_.push_back(entities.object_[i]);
+			entities.object_[i] = external_vehicle;
+			entities.object_[i]->id_ = (int)i;
+
+			// Switch position of the vehicles so that the externally controlled one takes ghost's places
+			
+//			entities.object_[i]->external_ = external_vehicle->ghost_;
+		}
+	}
+
+	for (size_t i = 0; i < entities.object_.size(); i++)
+	{
+		LOG("i %d id %d mode %d ghost id %d", i, entities.object_[i]->id_, entities.object_[i]->control_,
+			entities.object_[i]->ghost_ ? entities.object_[i]->ghost_->id_ : -1);
 	}
 }
 
