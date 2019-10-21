@@ -273,7 +273,7 @@ extern "C"
 		try
 		{
 			// Create a scenario engine instance
-			scenarioEngine = new ScenarioEngine(std::string(oscFilename), simTime);
+			scenarioEngine = new ScenarioEngine(std::string(oscFilename));
 
 			// Fetch ScenarioGateway 
 			scenarioGateway = scenarioEngine->getScenarioGateway();

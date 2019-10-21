@@ -186,7 +186,9 @@ static void viewer_thread(void *args)
 	//  Create cars for visualization
 	for (size_t i = firstScenarioVehicle; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		if (scenarioViewer->AddCar(scenarioEngine->entities.object_[i]->model_filepath_) == 0)
+		bool transparent = scenarioEngine->entities.object_[i]->control_ == Object::Control::HYBRID_GHOST ? true : false;
+
+		if (scenarioViewer->AddCar(scenarioEngine->entities.object_[i]->model_filepath_, transparent) == 0)
 		{
 			delete scenarioViewer;
 			viewer_state = ViewerState::VIEWER_QUIT;
@@ -248,7 +250,8 @@ static void viewer_thread(void *args)
 
 		// Update info text 
 		static char str_buf[128];
-		snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", simTime, 3.6 * scenarioEngine->entities.object_[scenarioViewer->currentCarInFocus_]->speed_);
+		snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", scenarioEngine->getSimulationTime(), 
+			3.6 * scenarioEngine->entities.object_[scenarioViewer->currentCarInFocus_]->speed_);
 		scenarioViewer->SetInfoText(str_buf);
 
 		scenarioViewer->osgViewer_->frame();
@@ -318,7 +321,7 @@ int main(int argc, char** argv)
 	// Create scenario engine
 	try
 	{
-		scenarioEngine = new ScenarioEngine(oscFilename, simTime);
+		scenarioEngine = new ScenarioEngine(oscFilename);
 		odrManager = scenarioEngine->getRoadManager();
 	}
 	catch (const std::exception& e)

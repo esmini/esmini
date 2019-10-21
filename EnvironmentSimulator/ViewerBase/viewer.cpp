@@ -16,6 +16,8 @@
 #include <osg/ComputeBoundsVisitor>
 #include <osg/LineWidth>
 #include <osg/Point>
+#include <osg/BlendFunc>
+#include <osg/BlendColor>
 #include <osgGA/TrackballManipulator>
 #include <osgGA/KeySwitchMatrixManipulator>
 #include <osgGA/FlightManipulator>
@@ -117,7 +119,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 	return tx_node;
 }
 
-CarModel::CarModel(osg::ref_ptr<osg::LOD> lod)
+CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, double transparency)
 {
 	if (!lod)
 	{
@@ -372,7 +374,7 @@ Viewer::~Viewer()
 	cars_.clear();
 }
 
-CarModel* Viewer::AddCar(std::string modelFilepath)
+CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent)
 {
 	if (modelFilepath == "")
 	{
@@ -389,6 +391,21 @@ CarModel* Viewer::AddCar(std::string modelFilepath)
 	{
 		LOG("Failed to load car model: %s", path.c_str());
 		return 0;
+	}
+
+	if (transparent)
+	{
+		osg::StateSet* state = lod->getOrCreateStateSet(); //Creating material
+
+		osg::BlendColor* bc = new osg::BlendColor(osg::Vec4(1, 1, 1, transparent ? 0.4 : 1));
+		state->setAttributeAndModes(bc);
+
+		osg::BlendFunc* bf = new                        //Blending
+			osg::BlendFunc(osg::BlendFunc::CONSTANT_ALPHA, osg::BlendFunc::ONE_MINUS_CONSTANT_ALPHA);
+	
+		state->setAttributeAndModes(bf);
+		state->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+		state->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 	}
 
 	cars_.push_back(new CarModel(lod));

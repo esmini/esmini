@@ -40,7 +40,7 @@ namespace viewer
 		double center_y;
 		std::string filename_;
 
-		CarModel(osg::ref_ptr<osg::LOD> lod);
+		CarModel(osg::ref_ptr<osg::LOD> lod, double transparency = 0);
 		~CarModel();
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double h, double p, double r);
@@ -87,7 +87,7 @@ namespace viewer
 
 		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines = false);
 		~Viewer();
-		CarModel* AddCar(std::string modelFilepath);
+		CarModel* AddCar(std::string modelFilepath, bool transparent = false);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
 		void UpdateDriverModelPoint(roadmanager::Position *pos, double distance);

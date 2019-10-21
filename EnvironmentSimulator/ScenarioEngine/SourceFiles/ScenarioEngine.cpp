@@ -15,19 +15,17 @@
 
 using namespace scenarioengine;
 
-ScenarioEngine::ScenarioEngine(std::string oscFilename, double startTime)
+ScenarioEngine::ScenarioEngine(std::string oscFilename)
 {
-	simulationTime = 0;
-	InitScenario(oscFilename, startTime);
+	InitScenario(oscFilename);
 }
 
-ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, double startTime)
+ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc)
 {
-	simulationTime = 0;
-	InitScenario(xml_doc, startTime);
+	InitScenario(xml_doc);
 }
 
-void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
+void ScenarioEngine::InitScenario(std::string oscFilename)
 {
 	// Load and parse data
 	LOG("Init %s", oscFilename.c_str());
@@ -36,13 +34,13 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double startTime)
 		throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
 	}
 
-	parseScenario(startTime);
+	parseScenario();
 }
 
-void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, double startTime)
+void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc)
 {
 	scenarioReader.loadOSCMem(xml_doc);
-	parseScenario(startTime);
+	parseScenario();
 }
 
 ScenarioEngine::~ScenarioEngine()
@@ -104,22 +102,10 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		}
 	}
 
-	// Transfer initial state of ghost objects to its external buddy
-	if (initial)
-	{
-		for (size_t i = 0; i < entities.object_.size(); i++)
-		{
-			if (entities.object_[i]->ghost_)
-			{
-				entities.object_[i]->pos_ = entities.object_[i]->ghost_->pos_;
-			}
-		}
-	}
-
 	// Story 
-	for (size_t i=0; i< story.size(); i++)
+	for (size_t i = 0; i < story.size(); i++)
 	{
-		for (size_t j=0; j < story[i]->act_.size(); j++)
+		for (size_t j = 0; j < story[i]->act_.size(); j++)
 		{
 			// Update deactivated elements' state to inactive - This could probably be done in some other way...
 			for (size_t k = 0; k < story[i]->act_[j]->sequence_.size(); k++)
@@ -222,13 +208,13 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 									event->state_ = Event::State::ACTIVE;
 								}
 							}
-							else if(event->state_ == (Event::State)Act::State::DEACTIVATED)
+							else if (event->state_ == (Event::State)Act::State::DEACTIVATED)
 							{
 								// If just deactivated, make transition to inactive
 								event->state_ = Event::State::INACTIVE;
 							}
 						}
-						if(maneuver->GetActiveEventIdx() == -1 && maneuver->GetWaitingEventIdx() >= 0)
+						if (maneuver->GetActiveEventIdx() == -1 && maneuver->GetWaitingEventIdx() >= 0)
 						{
 							// When no active event, it's OK to trig waiting event
 							maneuver->event_[maneuver->GetWaitingEventIdx()]->Trig();
@@ -238,7 +224,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 						for (size_t m = 0; m < maneuver->event_.size(); m++)
 						{
 							Event *event = maneuver->event_[m];
-							
+
 							if (event->Triggable())
 							{
 								// Check event conditions
@@ -275,11 +261,11 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 													event->Trig();
 												}
 											}
-											else if(event->priority_ == Event::Priority::SKIP)
+											else if (event->priority_ == Event::Priority::SKIP)
 											{
 												if (maneuver->GetActiveEventIdx() >= 0)
 												{
-													LOG("Event %s is running, skipping trigged %s", 
+													LOG("Event %s is running, skipping trigged %s",
 														maneuver->event_[maneuver->GetActiveEventIdx()]->name_.c_str(), event->name_.c_str());
 												}
 												else
@@ -376,8 +362,10 @@ Object::Control ScenarioEngine::GetControl()
 	return Object::Control::UNDEFINED;  // Hmm, what is a good default value...?
 }
 
-void ScenarioEngine::parseScenario(double startTime)
+void ScenarioEngine::parseScenario()
 {
+	bool hybrid_objects = false;
+
 	// Init road manager
 	scenarioReader.parseRoadNetwork(roadNetwork);
 	roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str());
@@ -440,7 +428,23 @@ void ScenarioEngine::parseScenario(double startTime)
 		}
 	}
 
-	this->startTime = startTime;
+	for (size_t i = 0; i < entities.object_.size(); i++)
+	{
+		if (entities.object_[i]->control_ == Object::Control::HYBRID_GHOST)
+		{
+			hybrid_objects = true;
+			break;
+		}
+	}
+
+	if (hybrid_objects)
+	{
+		this->simulationTime = -2.0;
+	}
+	else
+	{
+		this->simulationTime = 0;
+	}
 
 	// Print loaded data
 	entities.Print();
@@ -457,7 +461,7 @@ void ScenarioEngine::stepObjects(double dt)
 	{
 		Object *obj = entities.object_[i];
 
-		if (obj->control_ == Object::Control::INTERNAL ||
+		if ((simulationTime > 0 && obj->control_ == Object::Control::INTERNAL) ||
 			obj->control_ == Object::Control::HYBRID_GHOST)
 		{
 			double steplen = obj->speed_ * dt;

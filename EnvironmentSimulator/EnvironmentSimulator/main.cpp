@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 	// Create scenario engine
 	try 
 	{ 
-		scenarioEngine = new ScenarioEngine(oscFilename, simulationTime);
+		scenarioEngine = new ScenarioEngine(oscFilename);
 	}
 	catch (std::logic_error &e)
 	{

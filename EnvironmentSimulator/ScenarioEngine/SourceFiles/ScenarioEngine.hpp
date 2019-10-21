@@ -36,13 +36,13 @@ namespace scenarioengine
 
 		//	Cars cars;
 
-		ScenarioEngine(std::string oscFilename, double startTime);
-		ScenarioEngine(const pugi::xml_document &xml_doc, double startTime);
+		ScenarioEngine(std::string oscFilename);
+		ScenarioEngine(const pugi::xml_document &xml_doc);
 		ScenarioEngine() {};
 		~ScenarioEngine();
 
-		void InitScenario(std::string oscFilename, double startTime);
-		void InitScenario(const pugi::xml_document &xml_doc, double startTime);
+		void InitScenario(std::string oscFilename);
+		void InitScenario(const pugi::xml_document &xml_doc);
 
 		void step(double deltaSimTime, bool initial = false);
 		void printSimulationTime();
@@ -55,6 +55,7 @@ namespace scenarioengine
 
 		ScenarioGateway *getScenarioGateway();
 		Object::Control GetControl();
+		double getSimulationTime() { return simulationTime; }
 
 	private:
 		// OpenSCENARIO parameters
@@ -66,7 +67,6 @@ namespace scenarioengine
 		roadmanager::OpenDrive *odrManager;
 
 		// Simulation parameters
-		double startTime;
 		double simulationTime;
 		double timeStep;
 
@@ -74,7 +74,7 @@ namespace scenarioengine
 		//Actions actions;
 		ScenarioGateway scenarioGateway;
 
-		void parseScenario(double startTime);
+		void parseScenario();
 	};
 
 }
