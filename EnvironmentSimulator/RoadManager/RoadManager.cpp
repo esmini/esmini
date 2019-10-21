@@ -3570,6 +3570,61 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data)
 	return 0;
 }
 
+static void CalcSteeringTarget(Position *pivot, Position *target, SteeringTargetInfo *data)
+{
+	data->global_pos[0] = target->GetX();
+	data->global_pos[1] = target->GetY();
+	data->global_pos[2] = target->GetZ();
+
+	// find out local x, y, z
+	double diff_x = target->GetX() - pivot->GetX();
+	double diff_y = target->GetY() - pivot->GetY();
+	double diff_z = target->GetZ() - pivot->GetZ();
+
+	data->local_pos[0] = diff_x * cos(-pivot->GetH()) - diff_y * sin(-pivot->GetH());
+	data->local_pos[1] = diff_x * sin(-pivot->GetH()) + diff_y * cos(-pivot->GetH());
+	data->local_pos[2] = diff_z;
+
+#if 0
+	// for validation
+	data->global_pos[0] = GetX() + data->local_pos[0] * cos(GetH()) - data->local_pos[1] * sin(GetH());
+	data->global_pos[1] = GetY() + data->local_pos[0] * sin(GetH()) + data->local_pos[1] * cos(GetH());
+	data->global_pos[2] = GetZ() + data->local_pos[2];
+#endif
+
+	// Calculate angle - by dot product
+	if (fabs(data->local_pos[0]) < SMALL_NUMBER && fabs(data->local_pos[1]) < SMALL_NUMBER && fabs(data->local_pos[2]) < SMALL_NUMBER)
+	{
+		data->angle = pivot->GetH();
+	}
+	else
+	{
+		double dot_prod =
+			(data->local_pos[0] * 1.0 + data->local_pos[1] * 0.0) /
+			sqrt(data->local_pos[0] * data->local_pos[0] + data->local_pos[1] * data->local_pos[1]);
+		data->angle = SIGN(data->local_pos[1]) * acos(dot_prod);
+	}
+
+	if (fabs(target->GetCurvature()) > SMALL_NUMBER)
+	{
+		double radius = 1.0 / target->GetCurvature();
+		radius -= target->GetT(); // curvature positive in left curves, lat_offset positive left of reference lane
+		data->curvature = (float)(1.0 / radius);
+	}
+	else
+	{
+		// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
+		data->curvature = (float)target->GetCurvature();
+	}
+
+	data->road_heading = target->GetHRoad();
+	data->road_pitch = target->GetP();
+	data->road_roll = target->GetR();
+
+	Road *road = target->GetRoadById(target->GetTrackId());
+	data->speed_limit = road->GetSpeedByS(target->GetS());
+}
+
 int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, bool along_reference_lane)
 {
 	Position target(*this);  // Make a copy of current position
@@ -3587,55 +3642,17 @@ int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInf
 		return -1;
 	}
 
-	data->global_pos[0] = target.GetX();
-	data->global_pos[1] = target.GetY();
-	data->global_pos[2] = target.GetZ();
-
-	// find out local x, y, z
-	double diff_x = target.GetX() - GetX();
-	double diff_y = target.GetY() - GetY();
-	double diff_z = target.GetZ() - GetZ();
-
-	data->local_pos[0] = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
-	data->local_pos[1] = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
-	data->local_pos[2] = diff_z;
-
-#if 0
-	// for validation
-	data->global_pos[0] = GetX() + data->local_pos[0] * cos(GetH()) - data->local_pos[1] * sin(GetH());
-	data->global_pos[1] = GetY() + data->local_pos[0] * sin(GetH()) + data->local_pos[1] * cos(GetH());
-	data->global_pos[2] = GetZ() + data->local_pos[2];
-#endif
-
-	// Calculate angle - by dot product
-	double dot_prod =
-		(data->local_pos[0] * 1.0 + data->local_pos[1] * 0.0) /
-		sqrt(data->local_pos[0] * data->local_pos[0] + data->local_pos[1] * data->local_pos[1]);
-	data->angle = SIGN(data->local_pos[1]) * acos(dot_prod);
-
-	if (fabs(target.GetCurvature()) > SMALL_NUMBER)
-	{
-		double radius = 1.0 / target.GetCurvature();
-		radius -= target.GetT(); // curvature positive in left curves, lat_offset positive left of reference lane
-		data->curvature = (float)(1.0 / radius);
-	}
-	else
-	{
-		// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
-		data->curvature = (float)target.GetCurvature();
-	}
-
-	data->road_heading = target.GetHRoad();
-	data->road_pitch = target.GetP();
-	data->road_roll = target.GetR();
-
-	Road *road = target.GetRoadById(target.GetTrackId());
-	data->speed_limit = road->GetSpeedByS(target.GetS());
+	CalcSteeringTarget(this, &target, data);
 
 	return 0;
 }
 
+int Position::GetSteeringTargetInfo(Position *target_pos, SteeringTargetInfo *data)
+{
+	CalcSteeringTarget(this, target_pos, data);
 
+	return 0;
+}
 
 int Position::SetRoutePosition(Position *position)
 {

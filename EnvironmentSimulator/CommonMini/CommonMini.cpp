@@ -102,9 +102,14 @@ int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double 
 	return 0;
 }
 
-double GetLengthOfVector(double x1, double y1, double x2, double y2)
+double GetLengthOfLine2D(double x1, double y1, double x2, double y2)
 {
-	return (sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1)));
+	return sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
+}
+
+double GetLengthOfVector3D(double x, double y, double z)
+{
+	return sqrt(x*x + y*y + z*z);
 }
 
 void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size)

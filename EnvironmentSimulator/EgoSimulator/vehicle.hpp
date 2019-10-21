@@ -30,7 +30,9 @@ namespace vehicle
 	{
 	public:
 		Vehicle(double x, double y, double h, double length);
-		void Update(double dt, THROTTLE throttle, STEERING steering);
+		void Vehicle::Update(double dt);
+		void DrivingControlTarget(double dt, double heading_to_target, double headway_time_to_target);
+		void DrivingControlBinary(double dt, THROTTLE throttle, STEERING steering);
 		void SetWheelAngle(double angle);
 		void SetWheelRotation(double rotation);
 		void SetPos(double x, double y, double z, double h)

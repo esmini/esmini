@@ -90,7 +90,7 @@ namespace viewer
 		CarModel* AddCar(std::string modelFilepath, bool transparent = false);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
-		void UpdateDriverModelPoint(roadmanager::Position *pos, double distance);
+		void UpdateDriverModelPoint(roadmanager::Position *pos, double target_pos[3]);
 		void UpdateVehicleLineAndPoints(roadmanager::Position *pos);
 		void setKeyUp(bool pressed) { keyUp_ = pressed; }
 		void setKeyDown(bool pressed) { keyDown_ = pressed; }

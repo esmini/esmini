@@ -89,9 +89,14 @@ double GetDotProduct2D(double x1, double y1, double x2, double y2);
 int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double ay2, double bx1, double by1, double bx2, double by2, double &x3, double &y3);
 
 /**
-  Retrieve the length of line segment
+  Retrieve the length of a 2D line segment
 */
-double GetLengthOfVector(double x1, double y1, double x2, double y2);
+double GetLengthOfLine2D(double x1, double y1, double x2, double y2);
+
+/**
+  Retrieve the length of a 3D vector
+*/
+double GetLengthOfVector3D(double x, double y, double z);
 
 /**
   Change byte order - can be useful for IP communication with non Intel platforms

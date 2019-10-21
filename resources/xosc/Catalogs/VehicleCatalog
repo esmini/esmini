@@ -18,6 +18,7 @@
             </Axles>
 			<Properties>
 				<File filepath="../models/car_white.osgb"/>
+				<Property name="control" value="internal" />                
 				<Property name="model_id" value="0" />
 			</Properties>
         </Vehicle>
@@ -38,6 +39,23 @@
 				<Property name="model_id" value="0" />
 			</Properties>
         </Vehicle>
+        
+        <Vehicle name="car_white_hybrid" category="car">
+            <BoundingBox>
+                <Center x="1.4" y="0.0" z="0.9" />
+                <Dimension width="2.0" length="5.0" height="1.8" />
+            </BoundingBox>
+            <Performance maxSpeed="69" maxDeceleration="30" mass="2000" />
+            <Axles>
+                <Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
+                <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
+            </Axles>
+			<Properties>
+				<File filepath="../models/car_white.osgb"/>
+				<Property name="control" value="hybrid" />
+				<Property name="model_id" value="0" />
+			</Properties>
+        </Vehicle>        
 		
 		<Vehicle name="car_blue" category="car">
 			<BoundingBox>
@@ -51,11 +69,28 @@
 			</Axles>
 			<Properties>
 				<File filepath="../models/car_blue.osgb"/>
+				<Property name="control" value="internal" />                
 				<Property name="model_id" value="1" />
 			</Properties>
 		</Vehicle>
 
-		<!-- Cartoon vehicles -->
+		<Vehicle name="car_blue_external" category="car">
+			<BoundingBox>
+				<Center x="1.4" y="0.0" z="0.9" />
+				<Dimension width="2.0" length="5.0" height="1.8" />
+			</BoundingBox>
+			<Performance maxSpeed="69" maxDeceleration="30" mass="2000" />
+			<Axles>
+				<Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
+				<Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
+			</Axles>
+			<Properties>
+				<File filepath="../models/car_blue.osgb"/>
+				<Property name="control" value="external" />                
+				<Property name="model_id" value="1" />
+			</Properties>
+		</Vehicle>
+
         <Vehicle name="car_red" category="car">
             <BoundingBox>
                 <Center x="1.3" y="0.0" z="0.8" />

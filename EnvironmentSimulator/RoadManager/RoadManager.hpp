@@ -798,10 +798,18 @@ namespace roadmanager
 		Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
 		@param lookahead_distance The distance, along the road, to the point
 		@param data Struct to fill in calculated values, see typdef for details
-		@param curvature Pointer to variable where target curvature will be written
+		@param along_reference_lane Measure along the reference lane, i.e. at center of the road. Should be false for normal use cases
 		@return 0 if successful, -1 if not
 		*/
 		int GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, bool along_reference_lane);
+
+		/**
+		Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
+		@param target_pos The target position
+		@param data Struct to fill in calculated values, see typdef for details
+		@return 0 if successful, -1 if not
+		*/
+		int GetSteeringTargetInfo(Position *target_pos, SteeringTargetInfo *data);
 
 		/**
 		Get information of current lane at a specified distance from object along the road ahead

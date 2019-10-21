@@ -23,8 +23,8 @@ using namespace vehicle;
 
 #define STEERING_RATE 5.0
 #define STEERING_MAX_ANGLE (50 * M_PI / 180)
-#define ACCELERATION_SCALE 20
-#define SPEED_DECLINE 0.001
+#define ACCELERATION_SCALE 30
+#define SPEED_DECLINE 0.0015
 #define WHEEL_RADIUS 0.35
 #define SIGN(X) (X<0?-1:1)
 #define MAX(a, b) (a>b ? a : b)
@@ -48,7 +48,7 @@ Vehicle::Vehicle(double x, double y, double h, double length)
 	wheelAngle_ = 0.0;
 	wheelRotation_ = 0.0;
 	headingDot_ = 0.0;
-	max_speed_ = 50;
+	max_speed_ = 70;
 	length_ = length;
 }
 #define MAX_WHEEL_ANGLE (60 * M_PI / 180)
@@ -63,29 +63,42 @@ void Vehicle::SetWheelRotation(double rotation)
 	wheelRotation_ = rotation;
 }
 
-void Vehicle::Update(double dt, THROTTLE throttle, STEERING steering)
+void Vehicle::DrivingControlTarget(double dt, double heading_to_target, double headway_time_to_target)
 {
-	double criticalB = 0;
+	double acceleration = CLAMP(ACCELERATION_SCALE * (headway_time_to_target - 2.0), -10, 10);
 
-	speed_ = (1.0 - SPEED_DECLINE) * speed_ + ACCELERATION_SCALE * throttle * dt;
+	speed_ += acceleration * dt;
+	speed_ *= (1 - SPEED_DECLINE);
 
-	if (speed_ > max_speed_)
-	{
-		speed_ = max_speed_;
-	}
-	else if (speed_ < -max_speed_)
-	{
-		speed_ = -max_speed_;
-	}
+	double steering_scale = 1.0 / (1 + 0.015 * speed_ * speed_);
+	wheelAngle_ = heading_to_target;
+	wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
 
-	// Calculate wheel rot: https://en.wikipedia.org/wiki/Arc_(geometry)
-	wheelRotation_ += speed_ * dt / WHEEL_RADIUS;
+	Update(dt);
+}
+
+void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steering)
+{
+	speed_ += ACCELERATION_SCALE * throttle * dt;
+	speed_ *= (1 - SPEED_DECLINE);
+
+	speed_ = CLAMP(speed_, -1.2*max_speed_, 1.2*max_speed_);
 
 	// Calculate steering
 	double steering_scale = 1.0 / (1 + 0.015 * speed_ * speed_);
-	
+
 	wheelAngle_ = 0.95 * (wheelAngle_ + steering_scale * STEERING_RATE * steering * dt);
 	wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
+
+	Update(dt);
+}
+
+void Vehicle::Update(double dt)
+{
+	double criticalB = 0;
+
+	// Calculate wheel rot: https://en.wikipedia.org/wiki/Arc_(geometry)
+	wheelRotation_ += speed_ * dt / WHEEL_RADIUS;
 
 	// Calculate vehicle kinematics according to simple bicycle model, see
 	// http://www.me.berkeley.edu/~frborrel/pdfpub/IV_KinematicMPC_jason.pdf
