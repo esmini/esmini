@@ -3622,7 +3622,10 @@ static void CalcSteeringTarget(Position *pivot, Position *target, SteeringTarget
 	data->road_roll = target->GetR();
 
 	Road *road = target->GetRoadById(target->GetTrackId());
-	data->speed_limit = road->GetSpeedByS(target->GetS());
+	if (road)
+	{
+		data->speed_limit = road->GetSpeedByS(target->GetS());
+	}
 }
 
 int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, bool along_reference_lane)

@@ -30,6 +30,7 @@ using namespace vehicle;
 #define MAX(a, b) (a>b ? a : b)
 #define MIN(a, b) (a<b ? a : b)
 #define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))
+#define TARGET_HWT 1.0
 //#define REAR_AXLE_TO_LENGTH
 
 Vehicle::Vehicle(double x, double y, double h, double length)
@@ -65,7 +66,7 @@ void Vehicle::SetWheelRotation(double rotation)
 
 void Vehicle::DrivingControlTarget(double dt, double heading_to_target, double headway_time_to_target)
 {
-	double acceleration = CLAMP(ACCELERATION_SCALE * (headway_time_to_target - 2.0), -10, 10);
+	double acceleration = CLAMP(ACCELERATION_SCALE * (headway_time_to_target - TARGET_HWT), -10, 10);
 
 	speed_ += acceleration * dt;
 	speed_ *= (1 - SPEED_DECLINE);

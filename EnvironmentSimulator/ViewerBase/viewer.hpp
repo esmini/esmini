@@ -57,10 +57,11 @@ namespace viewer
 		osg::ref_ptr<osg::Group> line_node_;
 		
 		// Driver model steering debug visualization
-		osg::ref_ptr<osg::Geometry> dm_steering_target_line_;
-		osg::ref_ptr<osg::Vec3Array> dm_steering_target_line_vertexData_;
-		osg::ref_ptr<osg::Geometry> dm_steering_target_point_;
-		osg::ref_ptr<osg::Vec3Array> dm_steering_target_point_data_;
+		osg::ref_ptr<osg::PositionAttitudeTransform> dm_road_info_ball_;
+		osg::ref_ptr<osg::Geometry> dm_road_info_line_;
+		osg::ref_ptr<osg::Vec3Array> dm_road_info_line_vertexData_;
+		osg::ref_ptr<osg::Geometry> dm_ghost_info_line_;
+		osg::ref_ptr<osg::Vec3Array> dm_ghost_info_line_vertexData_;
 
 		// Vehicle position debug visualization
 		osg::ref_ptr<osg::Node> shadow_node_;
@@ -90,6 +91,7 @@ namespace viewer
 		CarModel* AddCar(std::string modelFilepath, bool transparent = false);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
+		void UpdateDriverGhostPoint(roadmanager::Position *pos, double ghost_pos[3]);
 		void UpdateDriverModelPoint(roadmanager::Position *pos, double target_pos[3]);
 		void UpdateVehicleLineAndPoints(roadmanager::Position *pos);
 		void setKeyUp(bool pressed) { keyUp_ = pressed; }

@@ -25,16 +25,8 @@
 
 static SE_ScenarioObjectState states[MAX_N_OBJECTS];
 
-void log_callback(const char *str)
-{
-	printf("%s\n", str);
-}
-
 int main(int argc, char *argv[])
 {
-	// Use logger callback
-	Logger::Inst().SetCallback(log_callback);
-
 	if (argc < 2)
 	{
 		LOG("Usage: %s <osc filename>\n", argv[0]);
@@ -54,14 +46,10 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 
-		int nObjects = MAX_N_OBJECTS;
-		SE_GetObjectStates(&nObjects, states);
-
 		SE_sleep((unsigned int)(TIME_STEP * 1000));
 	}
 
 	SE_Close();
-
 
 	return 0;
 }

@@ -22,7 +22,7 @@ using namespace scenarioengine;
 #include "viewer.hpp"
 #include "RubberbandManipulator.hpp"
 
-#define VISUALIZE_DRIVER_MODEL_TARGET 0
+#define VISUALIZE_DRIVER_MODEL_TARGET 1
 #define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
 
 typedef struct
@@ -40,6 +40,9 @@ static viewer::Viewer *scViewer = 0;
 static bool closing = false;
 static SE_Thread thread;
 static SE_Mutex mutex;
+
+static double ghost_pos[3];
+static double steering_target_pos[3];
 
 #endif
 
@@ -116,7 +119,8 @@ void viewer_thread(void*)
 
 				// Choose model from index - wrap to handle more vehicles than models
 				int carModelID = o->state_.model_id;
-				new_sc.carModel = scViewer->AddCar(carModelsFiles_[carModelID]);
+				bool transparent = scenarioEngine->entities.object_[i]->control_ == Object::Control::HYBRID_GHOST ? true : false;
+				new_sc.carModel = scViewer->AddCar(carModelsFiles_[carModelID], transparent);
 
 				// Add it to the list of scenario cars
 				scenarioCar.push_back(new_sc);
@@ -146,7 +150,8 @@ void viewer_thread(void*)
 		if (scenarioCar.size() > 0)
 		{
 			scViewer->UpdateVehicleLineAndPoints(&scenarioCar[0].pos);
-			scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, 25);
+			scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, steering_target_pos);
+			scViewer->UpdateDriverGhostPoint(&scenarioCar[0].pos, ghost_pos);
 		}
 #endif
 		mutex.Unlock();
@@ -194,7 +199,7 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 {
 	state->id = gw_state->id;
 	state->model_id = gw_state->model_id;
-	state->ext_control = gw_state->ext_control;
+	state->control = gw_state->control;
 //	strncpy(state->name, gw_state->name, NAME_LEN);
 	state->timestamp = gw_state->timeStamp;
 	state->x = (float)gw_state->pos.GetX();
@@ -212,7 +217,7 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 
 }
 
-static int GetSteeringTarget(int object_id, float lookahead_distance, SE_SteeringTargetInfo *r_data, int along_reference_lane)
+static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int along_reference_lane)
 {
 	roadmanager::SteeringTargetInfo s_data;
 
@@ -253,10 +258,63 @@ static int GetSteeringTarget(int object_id, float lookahead_distance, SE_Steerin
 	}
 }
 
+static int GetRoadInfoAtGhost(int object_id, SE_RoadInfo *r_data)
+{
+	roadmanager::SteeringTargetInfo s_data;
+
+	if (scenarioGateway == 0)
+	{
+		return -1;
+	}
+
+	if (object_id >= scenarioGateway->getNumberOfObjects())
+	{
+		LOG("Object %d not available, only %d registered", object_id, scenarioGateway->getNumberOfObjects());
+		return -1;
+	}
+
+	if (scenarioEngine->entities.object_[object_id]->ghost_ == 0)
+	{
+		LOG("Ghost object not available for object id %d", object_id);
+		return -1;
+	}
+
+	if (scenarioEngine->entities.object_[object_id]->pos_.GetSteeringTargetInfo(&scenarioEngine->entities.object_[object_id]->ghost_->pos_, &s_data) != 0)
+	{
+		return -1;
+	}
+	else
+	{
+		// Copy data
+		r_data->local_pos_x = (float)s_data.local_pos[0];
+		r_data->local_pos_y = (float)s_data.local_pos[1];
+		r_data->local_pos_z = (float)s_data.local_pos[2];
+		r_data->global_pos_x = (float)s_data.global_pos[0];
+		r_data->global_pos_y = (float)s_data.global_pos[1];
+		r_data->global_pos_z = (float)s_data.global_pos[2];
+		r_data->angle = (float)s_data.angle;
+		r_data->curvature = (float)s_data.curvature;
+		r_data->road_heading = (float)s_data.road_heading;
+		r_data->road_pitch = (float)s_data.road_pitch;
+		r_data->road_roll = (float)s_data.road_roll;
+		r_data->speed_limit = (float)s_data.speed_limit;
+
+		return 0;
+	}
+}
+
 extern "C"
 {
-	SE_DLL_API int SE_Init(const char *oscFilename, int ext_control, int use_viewer, int record)
+	SE_DLL_API void log_callback(const char *str)
 	{
+		printf("%s\n", str);
+	}
+
+	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int record)
+	{
+
+		Logger::Inst().SetCallback(log_callback);
+
 #ifdef _SCENARIO_VIEWER		
 		closing = false;
 #endif
@@ -273,7 +331,7 @@ extern "C"
 		try
 		{
 			// Create a scenario engine instance
-			scenarioEngine = new ScenarioEngine(std::string(oscFilename));
+			scenarioEngine = new ScenarioEngine(std::string(oscFilename), (ScenarioEngine::RequestControlMode)control);
 
 			// Fetch ScenarioGateway 
 			scenarioGateway = scenarioEngine->getScenarioGateway();
@@ -355,7 +413,13 @@ extern "C"
 	{
 		if (scenarioGateway != 0)
 		{
-			scenarioGateway->reportObject(ObjectState(id, "", -1, -1, timestamp, x, y, z, h, p, r, speed, 0), true);
+			if (id < scenarioEngine->entities.object_.size())
+			{
+				// reuse some values
+				Object *obj = scenarioEngine->entities.object_[id];
+				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
+				scenarioGateway->reportObject(ObjectState(id, obj->name_, obj->model_id_, control, timestamp, x, y, z, h, p, r, speed, 0), true);
+			}
 		}
 
 		return 0;
@@ -365,7 +429,13 @@ extern "C"
 	{
 		if (scenarioGateway != 0)
 		{
-			scenarioGateway->reportObject(ObjectState(id, "", -1, -1, timestamp, roadId, laneId, laneOffset, s, speed, 0), true);
+			if (id < scenarioEngine->entities.object_.size())
+			{
+				// reuse some values
+				Object *obj = scenarioEngine->entities.object_[id];
+				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
+				scenarioGateway->reportObject(ObjectState(id, obj->name_, obj->model_id_, control, timestamp, roadId, laneId, laneOffset, s, speed, 0), true);
+			}
 		}
 
 		return 0;
@@ -412,17 +482,40 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_GetSteeringTargetInfo(int object_id, float lookahead_distance, SE_SteeringTargetInfo *data, int along_road_center)
+	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int along_road_center)
 	{
 		if (scenarioGateway == 0 || object_id >= scenarioGateway->getNumberOfObjects())
 		{
 			return -1;
 		}
 
-		if (GetSteeringTarget(object_id, lookahead_distance, data, along_road_center) != 0)
+		if (GetRoadInfoAtDistance(object_id, lookahead_distance, data, along_road_center) != 0)
 		{
 			return -1;
 		}
+
+		steering_target_pos[0] = data->global_pos_x;
+		steering_target_pos[1] = data->global_pos_y;
+		steering_target_pos[2] = data->global_pos_z;
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_GetRoadInfoAtGhost(int object_id, SE_RoadInfo *data)
+	{
+		if (scenarioGateway == 0 || object_id >= scenarioGateway->getNumberOfObjects())
+		{
+			return -1;
+		}
+
+		if (GetRoadInfoAtGhost(object_id, data) != 0)
+		{
+			return -1;
+		}
+
+		ghost_pos[0] = data->global_pos_x;
+		ghost_pos[1] = data->global_pos_y;
+		ghost_pos[2] = data->global_pos_z;
 
 		return 0;
 	}

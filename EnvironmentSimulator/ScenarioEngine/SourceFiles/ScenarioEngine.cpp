@@ -81,7 +81,6 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		}
 	}
 
-
 	// Kick off initial actions
 	if (initial)
 	{

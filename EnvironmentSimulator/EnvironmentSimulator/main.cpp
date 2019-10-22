@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 	arguments.getApplicationUsage()->setDescription(arguments.getApplicationName());
 	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " [options]\n");
 	arguments.getApplicationUsage()->addCommandLineOption("--osc <filename>", "OpenSCENARIO filename");
-	arguments.getApplicationUsage()->addCommandLineOption("--ext_control <mode>", "Ego control (\"osc\", \"off\", \"on\")");
+	arguments.getApplicationUsage()->addCommandLineOption("--control <mode>", "Ego control (\"osc\", \"internal\", \"external\", \"hybrid\"");
 	arguments.getApplicationUsage()->addCommandLineOption("--info_text <mode>", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
 
 	if (arguments.argc() < 2)
@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 	// Create scenario engine
 	try 
 	{ 
-		scenarioEngine = new ScenarioEngine(oscFilename);
+		scenarioEngine = new ScenarioEngine(oscFilename, (ScenarioEngine::RequestControlMode)control);
 	}
 	catch (std::logic_error &e)
 	{

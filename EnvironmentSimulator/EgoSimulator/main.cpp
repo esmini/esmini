@@ -41,10 +41,12 @@ static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static vehicle::Vehicle *ego;
 static double simTime = 0;
-static double steering_heading;
+static double speed_target_pos[3];
 static double steering_target_pos[3];
-static double steering_target_hwt;
-static double steer_tgt_distance;
+static double speed_target_distance;
+static double speed_target_hwt;
+static double steering_target_distance;
+static double steering_target_heading;
 
 static roadmanager::Position *ego_pos;
 
@@ -142,7 +144,7 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 	}
 	else if (scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 	{
-		egoCar->vehicle->DrivingControlTarget(deltaTimeStep, steering_heading, steering_target_hwt);
+		egoCar->vehicle->DrivingControlTarget(deltaTimeStep, steering_target_heading, speed_target_hwt);
 	}
 	
 	// Set OpenDRIVE position
@@ -221,7 +223,12 @@ static void viewer_thread(void *args)
 		{
 			// Update road and vehicle debug lines 
 			scenarioViewer->UpdateVehicleLineAndPoints(ego_pos);
-			scenarioViewer->UpdateDriverModelPoint(ego_pos, steering_target_pos);
+			scenarioViewer->UpdateDriverModelPoint(ego_pos, speed_target_pos);
+
+			if (scenarioEngine->entities.object_[0]->ghost_)
+			{
+				scenarioViewer->UpdateDriverGhostPoint(ego_pos, steering_target_pos);
+			}
 		}
 
 		if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
@@ -381,43 +388,57 @@ int main(int argc, char** argv)
 				scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 			{
 				ego_pos = egoCar->pos;
-				steer_tgt_distance = MAX(5, egoCar->vehicle->speed_);
+				speed_target_distance = MAX(7, egoCar->vehicle->speed_ * 2.0);
+				steering_target_distance = 0.5 * speed_target_distance;
 			}
 			else if (scenarioEngine->entities.object_.size() > 0)
 			{
 				ego_pos = &scenarioEngine->entities.object_[0]->pos_;
-				steer_tgt_distance = MAX(5, scenarioEngine->entities.object_[0]->speed_);
+				speed_target_distance = MAX(7, scenarioEngine->entities.object_[0]->speed_ * 2.0);
+				steering_target_distance = 0.5 * speed_target_distance;
 			}
 
 			// find out what direction is forward, according to vehicle relative road heading 
 			if (GetAbsAngleDifference(ego_pos->GetH(), ego_pos->GetHRoadInDrivingDirection()) > M_PI_2)
 			{
-				steer_tgt_distance *= -1;
+				steering_target_distance *= -1;
+				speed_target_distance *= -1;
 			}
 
 			// Find and visualize steering target point	
 			roadmanager::SteeringTargetInfo data;
-			if (scenarioEngine->GetControl() == Object::Control::EXTERNAL)
+			if (scenarioEngine->GetControl() == Object::Control::EXTERNAL || scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 			{
-				ego_pos->GetSteeringTargetInfo(steer_tgt_distance, &data, false);
-				steering_target_hwt = 0;
-				steering_heading = data.angle;
-			}
-			else if (scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
-			{
-				ego_pos->GetSteeringTargetInfo(&scenarioEngine->entities.object_[0]->ghost_->pos_, &data);
-				if (fabs(egoCar->vehicle->speed_) > SMALL_NUMBER)
+				// Steering
+				if (scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 				{
-					steering_target_hwt = GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]) / egoCar->vehicle->speed_;
+					ego_pos->GetSteeringTargetInfo(&scenarioEngine->entities.object_[0]->ghost_->pos_, &data);
+					memcpy_s(steering_target_pos, sizeof(steering_target_pos), data.global_pos, sizeof(data.global_pos));
+					speed_target_hwt = GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]) / egoCar->vehicle->speed_;
 				}
 				else
 				{
-					steering_target_hwt = LARGE_NUMBER;
+					ego_pos->GetSteeringTargetInfo(steering_target_distance, &data, false);
+					memcpy_s(steering_target_pos, sizeof(steering_target_pos), data.global_pos, sizeof(data.global_pos));
 				}
-				steering_heading = data.angle;
-			}
-			memcpy_s(steering_target_pos, sizeof(steering_target_pos), data.global_pos, sizeof(data.global_pos));
+				steering_target_heading = data.angle;
+				memcpy_s(steering_target_pos, sizeof(steering_target_pos), data.global_pos, sizeof(data.global_pos));
 
+				// Speed
+				ego_pos->GetSteeringTargetInfo(speed_target_distance, &data, false);
+				memcpy_s(speed_target_pos, sizeof(speed_target_pos), data.global_pos, sizeof(data.global_pos));
+				if (scenarioEngine->GetControl() == Object::Control::EXTERNAL)
+				{
+					speed_target_hwt = GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]) / egoCar->vehicle->speed_;
+				}
+
+				if (fabs(egoCar->vehicle->speed_) < SMALL_NUMBER)
+				{
+					speed_target_hwt = LARGE_NUMBER;
+				}
+			}
+
+			
 			if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
 				scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 			{

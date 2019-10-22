@@ -18,6 +18,8 @@
 #include <osg/Point>
 #include <osg/BlendFunc>
 #include <osg/BlendColor>
+#include <osg/Geode> 
+#include <osg/ShapeDrawable>
 #include <osgGA/TrackballManipulator>
 #include <osgGA/KeySwitchMatrixManipulator>
 #include <osgGA/FlightManipulator>
@@ -33,6 +35,7 @@
 #define LOD_DIST 3000
 #define LOD_SCALE_DEFAULT 1.2
 #define MIN(x, y) ((x)<(y)?(x):(y))
+#define BALL_SIZE 0.5
 
 static int COLOR_RED[3] = { 0xBB, 0x44, 0x44 };
 static int COLOR_GREEN[3] = { 0x40, 0xB0, 0x50 };
@@ -627,46 +630,55 @@ bool Viewer::CreateVehicleLineAndPoint(osg::Group* parent)
 bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
 {
 	// Point
-	dm_steering_target_point_data_ = new osg::Vec3Array;
-	dm_steering_target_point_data_->push_back(osg::Vec3d(0, 0, 0));
 
-	dm_steering_target_point_ = new osg::Geometry;
-	dm_steering_target_point_->setCullingActive(false);
-	dm_steering_target_point_->setVertexArray(dm_steering_target_point_data_.get());
-	dm_steering_target_point_->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, 1));
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere()));
+	dm_road_info_ball_ = new osg::PositionAttitudeTransform;
+	dm_road_info_ball_->setScale(osg::Vec3(BALL_SIZE, BALL_SIZE, BALL_SIZE));
+	dm_road_info_ball_->addChild(geode);
+	parent->addChild(dm_road_info_ball_);
 
-	osg::ref_ptr<osg::Point> point_point = new osg::Point;
-	point_point->setSize(20.0f);
-	dm_steering_target_point_->getOrCreateStateSet()->setAttributeAndModes(point_point, osg::StateAttribute::ON);
-	dm_steering_target_point_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	// Road info lines
 
-	osg::ref_ptr<osg::Vec4Array> point_color = new osg::Vec4Array;
-	point_color->push_back(osg::Vec4(COLOR_GREEN[0] / (float)0xFF, COLOR_GREEN[1] / (float)0xFF, COLOR_GREEN[2] / (float)0xFF, 1.0));
-	dm_steering_target_point_->setDataVariance(osg::Object::DYNAMIC);
-	dm_steering_target_point_->setColorArray(point_color.get());
-	dm_steering_target_point_->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-	parent->addChild(dm_steering_target_point_);
+	dm_road_info_line_vertexData_ = new osg::Vec3Array;
+	dm_road_info_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
 
-
-	dm_steering_target_line_vertexData_ = new osg::Vec3Array;
-	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
-
-	dm_steering_target_line_ = new osg::Geometry();
-	dm_steering_target_line_->setCullingActive(false);
-	dm_steering_target_line_->setVertexArray(dm_steering_target_line_vertexData_.get());
-	dm_steering_target_line_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
+	dm_road_info_line_ = new osg::Geometry();
+	dm_road_info_line_->setCullingActive(false);
+	dm_road_info_line_->setVertexArray(dm_road_info_line_vertexData_.get());
+	dm_road_info_line_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
 
 	osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 	lineWidth->setWidth(4.0f);
-	dm_steering_target_line_->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
-	dm_steering_target_line_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	dm_road_info_line_->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+	dm_road_info_line_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
 	color->push_back(osg::Vec4(COLOR_GREEN[0] / (float)0xFF, COLOR_GREEN[1] / (float)0xFF, COLOR_GREEN[2] / (float)0xFF, 1.0));
-	dm_steering_target_line_->setColorArray(color.get());
-	dm_steering_target_line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-	dm_steering_target_line_->setDataVariance(osg::Object::DYNAMIC);
-	parent->addChild(dm_steering_target_line_);
+	dm_road_info_line_->setColorArray(color.get());
+	dm_road_info_line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+	dm_road_info_line_->setDataVariance(osg::Object::DYNAMIC);
+	parent->addChild(dm_road_info_line_);
+
+	// Ghost info lines
+
+	dm_ghost_info_line_vertexData_ = new osg::Vec3Array;
+	dm_ghost_info_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
+
+	dm_ghost_info_line_ = new osg::Geometry();
+	dm_ghost_info_line_->setCullingActive(false);
+	dm_ghost_info_line_->setVertexArray(dm_ghost_info_line_vertexData_.get());
+	dm_ghost_info_line_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
+
+	dm_ghost_info_line_->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+	dm_ghost_info_line_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+	osg::ref_ptr<osg::Vec4Array> color2 = new osg::Vec4Array;
+	color2->push_back(osg::Vec4(COLOR_WHITE[0] / (float)0xFF, COLOR_WHITE[1] / (float)0xFF, COLOR_WHITE[2] / (float)0xFF, 1.0));
+	dm_ghost_info_line_->setColorArray(color2.get());
+	dm_ghost_info_line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+	dm_ghost_info_line_->setDataVariance(osg::Object::DYNAMIC);
+	parent->addChild(dm_ghost_info_line_);
 
 	return true;
 }
@@ -707,34 +719,31 @@ void Viewer::UpdateVehicleLineAndPoints(roadmanager::Position *pos)
 	vertexData->dirty();
 }
 
+void Viewer::UpdateDriverGhostPoint(roadmanager::Position *pos, double ghost_pos[3])
+{
+	// Ghost info line
+	dm_ghost_info_line_vertexData_->clear();
+	dm_ghost_info_line_vertexData_->push_back(osg::Vec3d(pos->GetX(), pos->GetY(), pos->GetZ() + 0.5));
+	dm_ghost_info_line_vertexData_->push_back(osg::Vec3d(ghost_pos[0], ghost_pos[1], ghost_pos[2] + 0.5));
+	dm_ghost_info_line_->dirtyGLObjects();
+	dm_ghost_info_line_vertexData_->dirty();
+}
+
+
 void Viewer::UpdateDriverModelPoint(roadmanager::Position *pos, double target_pos[3])
 {
-
-
-	if (pos->GetOpenDrive()->GetNumOfRoads() == 0)
+	// Point/ball
+	if(dm_road_info_ball_)
 	{
-		return;
+		dm_road_info_ball_->setPosition(osg::Vec3(target_pos[0], target_pos[1], target_pos[2] + BALL_SIZE / 2));
 	}
 
-	double z_offset = 0.1;
-
-	// Point
-	if (!dm_steering_target_point_data_)
-	{
-		return;
-	}
-	dm_steering_target_point_data_->clear();
-	dm_steering_target_point_data_->push_back(osg::Vec3d(target_pos[0], target_pos[1], target_pos[2] + z_offset));
-	dm_steering_target_point_->dirtyGLObjects();
-	dm_steering_target_point_data_->dirty();
-
-	// Line
-	osg::ref_ptr<osg::PositionAttitudeTransform> tx = cars_[0]->txNode_;
-	dm_steering_target_line_vertexData_->clear();
-	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(tx->getPosition().x(), tx->getPosition().y(), tx->getPosition().z() + 0.5));
-	dm_steering_target_line_vertexData_->push_back(osg::Vec3d(target_pos[0], target_pos[1], target_pos[2] + z_offset));
-	dm_steering_target_line_->dirtyGLObjects();
-	dm_steering_target_line_vertexData_->dirty();
+	// Road info line
+	dm_road_info_line_vertexData_->clear();
+	dm_road_info_line_vertexData_->push_back(osg::Vec3d(pos->GetX(), pos->GetY(), pos->GetZ() + 0.5));
+	dm_road_info_line_vertexData_->push_back(osg::Vec3d(target_pos[0], target_pos[1], target_pos[2] + BALL_SIZE / 2));
+	dm_road_info_line_->dirtyGLObjects();
+	dm_road_info_line_vertexData_->dirty();
 }
 
 int Viewer::AddEnvironment(const char* filename)
@@ -834,13 +843,9 @@ bool EventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
 			{
 				viewer_->vehiclePoint_->setNodeMask(visible ? 0xffffffff : 0x0);
 			}
-			if (viewer_->dm_steering_target_line_)
+			if (viewer_->dm_road_info_line_)
 			{
-				viewer_->dm_steering_target_line_->setNodeMask(visible ? 0xffffffff : 0x0);
-			}
-			if (viewer_->dm_steering_target_point_)
-			{
-				viewer_->dm_steering_target_point_->setNodeMask(visible ? 0xffffffff : 0x0);
+				viewer_->dm_road_info_line_->setNodeMask(visible ? 0xffffffff : 0x0);
 			}
 		}
 	}

@@ -28,7 +28,7 @@ namespace scenarioengine
 	{
 		int id;
 		int model_id;
-		int ext_control; // 1=on 0=off
+		int control; // 0= undefined, 1=internal, 2=external, 4=hybrid_ghost, 3=hybrid_external
 		float timeStamp;
 		char name[NAME_LEN];
 		roadmanager::Position pos;
