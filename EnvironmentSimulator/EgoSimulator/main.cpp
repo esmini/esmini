@@ -54,20 +54,12 @@ typedef enum {
 	VIEWER_QUIT
 } ViewerState;
 
-typedef enum
+std::string RequestControlMode2Str(ScenarioEngine::RequestControlMode mode)
 {
-	CONTROL_BY_OSC,
-	CONTROL_INTERNAL,
-	CONTROL_EXTERNAL,
-	CONTROL_HYBRID
-} RequestControlMode;
-
-std::string RequestControlMode2Str(RequestControlMode mode)
-{
-	if (mode == RequestControlMode::CONTROL_BY_OSC) return "by OSC";
-	else if (mode == RequestControlMode::CONTROL_INTERNAL) return "Internal";
-	else if (mode == RequestControlMode::CONTROL_EXTERNAL) return "External";
-	else if (mode == RequestControlMode::CONTROL_HYBRID) return "Hybrid";
+	if (mode == ScenarioEngine::RequestControlMode::CONTROL_BY_OSC) return "by OSC";
+	else if (mode == ScenarioEngine::RequestControlMode::CONTROL_INTERNAL) return "Internal";
+	else if (mode == ScenarioEngine::RequestControlMode::CONTROL_EXTERNAL) return "External";
+	else if (mode == ScenarioEngine::RequestControlMode::CONTROL_HYBRID) return "Hybrid";
 	else return "Unknown";
 }
 
@@ -175,7 +167,7 @@ static void viewer_thread(void *args)
 		scenarioEngine->getSceneGraphFilename().c_str(), 
 		scenarioEngine->getScenarioFilename().c_str(), 
 		*parser, 
-		true);
+		scenarioEngine->GetControl() == Object::Control::INTERNAL ? false : true);
 
 	std::string info_text_str;
 	parser->read("--info_text", info_text_str);
@@ -303,21 +295,21 @@ int main(int argc, char** argv)
 	std::string control_str;
 	arguments.read("--control", control_str);
 
-	RequestControlMode control;
-	if (control_str == "osc" || control_str == "") control = RequestControlMode::CONTROL_BY_OSC;
-	else if(control_str == "internal") control = RequestControlMode::CONTROL_INTERNAL;
-	else if (control_str == "external") control = RequestControlMode::CONTROL_EXTERNAL;
-	else if (control_str == "hybrid") control = RequestControlMode::CONTROL_HYBRID;
+	ScenarioEngine::RequestControlMode control;
+	if (control_str == "osc" || control_str == "") control = ScenarioEngine::RequestControlMode::CONTROL_BY_OSC;
+	else if(control_str == "internal") control = ScenarioEngine::RequestControlMode::CONTROL_INTERNAL;
+	else if (control_str == "external") control = ScenarioEngine::RequestControlMode::CONTROL_EXTERNAL;
+	else if (control_str == "hybrid") control = ScenarioEngine::RequestControlMode::CONTROL_HYBRID;
 	else
 	{
 		LOG("Unrecognized external control mode: %s", control_str.c_str());
-		control = RequestControlMode::CONTROL_BY_OSC;
+		control = ScenarioEngine::RequestControlMode::CONTROL_BY_OSC;
 	}
 
 	// Create scenario engine
 	try
 	{
-		scenarioEngine = new ScenarioEngine(oscFilename);
+		scenarioEngine = new ScenarioEngine(oscFilename, control);
 		odrManager = scenarioEngine->getRoadManager();
 	}
 	catch (const std::exception& e)

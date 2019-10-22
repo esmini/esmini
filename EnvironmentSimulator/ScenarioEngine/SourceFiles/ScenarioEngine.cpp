@@ -15,17 +15,17 @@
 
 using namespace scenarioengine;
 
-ScenarioEngine::ScenarioEngine(std::string oscFilename)
+ScenarioEngine::ScenarioEngine(std::string oscFilename, RequestControlMode control_mode_first_vehicle)
 {
-	InitScenario(oscFilename);
+	InitScenario(oscFilename, control_mode_first_vehicle);
 }
 
-ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc)
+ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, RequestControlMode control_mode_first_vehicle)
 {
-	InitScenario(xml_doc);
+	InitScenario(xml_doc, control_mode_first_vehicle);
 }
 
-void ScenarioEngine::InitScenario(std::string oscFilename)
+void ScenarioEngine::InitScenario(std::string oscFilename, RequestControlMode control_mode_first_vehicle)
 {
 	// Load and parse data
 	LOG("Init %s", oscFilename.c_str());
@@ -34,13 +34,13 @@ void ScenarioEngine::InitScenario(std::string oscFilename)
 		throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
 	}
 
-	parseScenario();
+	parseScenario(control_mode_first_vehicle);
 }
 
-void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc)
+void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, RequestControlMode control_mode_first_vehicle)
 {
 	scenarioReader.loadOSCMem(xml_doc);
-	parseScenario();
+	parseScenario(control_mode_first_vehicle);
 }
 
 ScenarioEngine::~ScenarioEngine()
@@ -362,7 +362,72 @@ Object::Control ScenarioEngine::GetControl()
 	return Object::Control::UNDEFINED;  // Hmm, what is a good default value...?
 }
 
-void ScenarioEngine::parseScenario()
+void ScenarioEngine::SetControl(RequestControlMode control)
+{
+	if (entities.object_.size() > 0)
+	{
+		if (control == CONTROL_INTERNAL)
+		{
+			entities.object_[0]->control_ = Object::Control::INTERNAL;
+		}
+		else if (control == CONTROL_EXTERNAL)
+		{
+			entities.object_[0]->control_ = Object::Control::EXTERNAL;
+		}
+		else if (control == CONTROL_HYBRID)
+		{
+			entities.object_[0]->control_ = Object::Control::HYBRID_GHOST;
+		}
+		else 
+		{
+			LOG("Unexpected requested control mode: %d - falling back to default (INTERNAL)");
+			entities.object_[0]->control_ = Object::Control::INTERNAL;
+		}
+	}
+}
+
+void ScenarioEngine::ResolveHybridVehicles()
+{
+	// Identify any hybrid objects. Make it ghost and create an externally controlled buddy
+	size_t num_objects = entities.object_.size();
+	for (size_t i = 0; i < num_objects; i++)
+	{
+		if (entities.object_[i]->control_ == Object::Control::HYBRID_GHOST)
+		{
+			// Create a vehicle for external control
+			Vehicle *external_vehicle = new Vehicle();
+
+			// Copy all properties from the ghost
+			*external_vehicle = *(Vehicle*)entities.object_[i];
+
+			// Add "_ghost" to original vehicle name
+			entities.object_[i]->name_.append("_ghost");
+
+			// Adjust some properties for the externally controlled buddy
+			external_vehicle->control_ = Object::Control::HYBRID_EXTERNAL;
+			// Connect external vehicle to the ghost
+			external_vehicle->ghost_ = entities.object_[i];
+
+			entities.object_[i]->id_ = (int)entities.object_.size();
+			entities.object_.push_back(entities.object_[i]);
+			entities.object_[i] = external_vehicle;
+			entities.object_[i]->id_ = (int)i;
+
+			// Switch position of the vehicles so that the externally controlled one takes ghost's places
+
+//			entities.object_[i]->external_ = external_vehicle->ghost_;
+		}
+	}
+
+	for (size_t i = 0; i < entities.object_.size(); i++)
+	{
+		LOG("i %d id %d mode %d ghost id %d", i, entities.object_[i]->id_, entities.object_[i]->control_,
+			entities.object_[i]->ghost_ ? entities.object_[i]->ghost_->id_ : -1);
+	}
+
+}
+
+void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle)
 {
 	bool hybrid_objects = false;
 
@@ -374,6 +439,12 @@ void ScenarioEngine::parseScenario()
 	scenarioReader.parseParameterDeclaration();
 	scenarioReader.parseCatalogs(catalogs, &entities);
 	scenarioReader.parseEntities(entities, &catalogs);
+	// Possibly override control mode of first vehicle
+	if (control_mode_first_vehicle != CONTROL_BY_OSC)
+	{
+		SetControl(control_mode_first_vehicle);
+	}
+	ResolveHybridVehicles();
 	scenarioReader.parseInit(init, &entities, &catalogs);
 	scenarioReader.parseStory(story, &entities, &catalogs);
 

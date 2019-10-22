@@ -71,7 +71,7 @@ namespace scenarioengine
 		void addParameter(std::string name, std::string value);
 
 		std::string getScenarioFilename() { return oscFilename; }
-
+	
 	private:
 		pugi::xml_document doc;
 		OSCParameterDeclaration parameterDeclaration;

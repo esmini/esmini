@@ -447,43 +447,6 @@ void ScenarioReader::parseEntities(Entities &entities, Catalogs *catalogs)
 			objectCnt++;
 		}
 	}
-
-	// Identify any hybrid objects. Make it ghost and create an externally controlled buddy
-	size_t num_objects = entities.object_.size();
-	for (size_t i = 0; i < num_objects; i++)
-	{
-		if (entities.object_[i]->control_ == Object::Control::HYBRID_GHOST)
-		{
-			// Create a vehicle for external control
-			Vehicle *external_vehicle = new Vehicle();
-
-			// Copy all properties from the ghost
-			*external_vehicle = *(Vehicle*)entities.object_[i];
-
-			// Add "_ghost" to original vehicle name
-			entities.object_[i]->name_.append("_ghost");
-			
-			// Adjust some properties for the externally controlled buddy
-			external_vehicle->control_ = Object::Control::HYBRID_EXTERNAL;
-			// Connect external vehicle to the ghost
-			external_vehicle->ghost_ = entities.object_[i];
-
-			entities.object_[i]->id_ = (int)entities.object_.size();
-			entities.object_.push_back(entities.object_[i]);
-			entities.object_[i] = external_vehicle;
-			entities.object_[i]->id_ = (int)i;
-
-			// Switch position of the vehicles so that the externally controlled one takes ghost's places
-			
-//			entities.object_[i]->external_ = external_vehicle->ghost_;
-		}
-	}
-
-	for (size_t i = 0; i < entities.object_.size(); i++)
-	{
-		LOG("i %d id %d mode %d ghost id %d", i, entities.object_[i]->id_, entities.object_[i]->control_,
-			entities.object_[i]->ghost_ ? entities.object_[i]->ghost_->id_ : -1);
-	}
 }
 
 void ScenarioReader::parseOSCOrientation(OSCOrientation &orientation, pugi::xml_node orientationNode)

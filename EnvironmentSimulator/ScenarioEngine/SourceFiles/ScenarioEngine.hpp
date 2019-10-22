@@ -32,17 +32,25 @@ namespace scenarioengine
 	{
 	public:
 
+		typedef enum
+		{
+			CONTROL_BY_OSC,
+			CONTROL_INTERNAL,
+			CONTROL_EXTERNAL,
+			CONTROL_HYBRID
+		} RequestControlMode;
+
 		Entities entities;
 
 		//	Cars cars;
 
-		ScenarioEngine(std::string oscFilename);
-		ScenarioEngine(const pugi::xml_document &xml_doc);
+		ScenarioEngine(std::string oscFilename, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
+		ScenarioEngine(const pugi::xml_document &xml_doc, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
 		ScenarioEngine() {};
 		~ScenarioEngine();
 
-		void InitScenario(std::string oscFilename);
-		void InitScenario(const pugi::xml_document &xml_doc);
+		void InitScenario(std::string oscFilename, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
+		void InitScenario(const pugi::xml_document &xml_doc, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
 
 		void step(double deltaSimTime, bool initial = false);
 		void printSimulationTime();
@@ -55,6 +63,7 @@ namespace scenarioengine
 
 		ScenarioGateway *getScenarioGateway();
 		Object::Control GetControl();
+		void SetControl(RequestControlMode control);
 		double getSimulationTime() { return simulationTime; }
 
 	private:
@@ -74,7 +83,8 @@ namespace scenarioengine
 		//Actions actions;
 		ScenarioGateway scenarioGateway;
 
-		void parseScenario();
+		void parseScenario(RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
+		void ResolveHybridVehicles();
 	};
 
 }
