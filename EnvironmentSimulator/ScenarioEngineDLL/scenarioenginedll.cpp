@@ -41,10 +41,10 @@ static bool closing = false;
 static SE_Thread thread;
 static SE_Mutex mutex;
 
-SE_DLL_API double se_ghost_pos[3];
-SE_DLL_API int flag_received_ghost_pos = 0;
-SE_DLL_API double se_steering_target_pos[3];
-SE_DLL_API int flag_received_steering_target_pos = 0;
+static double se_ghost_pos[3];
+static int flag_received_ghost_pos = 0;
+static double se_steering_target_pos[3];
+static int flag_received_steering_target_pos = 0;
 
 #endif
 
@@ -71,6 +71,23 @@ double deltaSimTime = 0;  // external - used by Viewer::RubberBandCamera
 static char *args[] = { "kalle", "--window", "50", "50", "1000", "500" };
 
 #ifdef _SCENARIO_VIEWER
+
+static void Set_se_steering_target_pos(float x, float y, float z)
+{
+	se_steering_target_pos[0] = x;
+	se_steering_target_pos[1] = y;
+	se_steering_target_pos[0] = z;
+	flag_received_steering_target_pos = 1;
+}
+
+static void Set_se_ghost_pos(float x, float y, float z)
+{
+	se_ghost_pos[0] = x;
+	se_ghost_pos[1] = y;
+	se_ghost_pos[0] = z;
+	flag_received_ghost_pos = 1;
+}
+
 
 ScenarioCar *getScenarioCarById(int id)
 {
@@ -156,7 +173,7 @@ void viewer_thread(void*)
 			{
 				scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, se_steering_target_pos);
 			}
-			if (flag_received_ghost_pos)
+			if (flag_received_steering_target_pos)
 			{
 				scViewer->UpdateDriverGhostPoint(&scenarioCar[0].pos, se_ghost_pos);
 			}
@@ -535,11 +552,7 @@ extern "C"
 			*hwt_ghost = GetLengthOfVector3D(data->local_pos_x, data->local_pos_y, data->local_pos_z) / ego_speed;
 		}
 
-		se_ghost_pos[0] = data->global_pos_x;
-		se_ghost_pos[1] = data->global_pos_y;
-		se_ghost_pos[2] = data->global_pos_z;
-
-		flag_received_ghost_pos = 1;
+		Set_se_ghost_pos(data->global_pos_x, data->global_pos_y, data->global_pos_z);
 
 		return 0;
 	}
