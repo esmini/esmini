@@ -41,8 +41,10 @@ static bool closing = false;
 static SE_Thread thread;
 static SE_Mutex mutex;
 
-static double ghost_pos[3];
-static double steering_target_pos[3];
+SE_DLL_API double se_ghost_pos[3];
+SE_DLL_API int flag_received_ghost_pos = 0;
+SE_DLL_API double se_steering_target_pos[3];
+SE_DLL_API int flag_received_steering_target_pos = 0;
 
 #endif
 
@@ -150,8 +152,14 @@ void viewer_thread(void*)
 		if (scenarioCar.size() > 0)
 		{
 			scViewer->UpdateVehicleLineAndPoints(&scenarioCar[0].pos);
-			scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, steering_target_pos);
-			scViewer->UpdateDriverGhostPoint(&scenarioCar[0].pos, ghost_pos);
+			if (flag_received_steering_target_pos)
+			{
+				scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, se_steering_target_pos);
+			}
+			if (flag_received_ghost_pos)
+			{
+				scViewer->UpdateDriverGhostPoint(&scenarioCar[0].pos, se_ghost_pos);
+			}
 		}
 #endif
 		mutex.Unlock();
@@ -494,14 +502,16 @@ extern "C"
 			return -1;
 		}
 
-		steering_target_pos[0] = data->global_pos_x;
-		steering_target_pos[1] = data->global_pos_y;
-		steering_target_pos[2] = data->global_pos_z;
+		se_steering_target_pos[0] = data->global_pos_x;
+		se_steering_target_pos[1] = data->global_pos_y;
+		se_steering_target_pos[2] = data->global_pos_z;
+
+		flag_received_steering_target_pos = 1;
 
 		return 0;
 	}
 
-	SE_DLL_API int SE_GetRoadInfoAtGhost(int object_id, SE_RoadInfo *data)
+	SE_DLL_API int SE_GetRoadInfoAtGhost(int object_id, SE_RoadInfo *data, float *speed_ghost, float *hwt_ghost)
 	{
 		if (scenarioGateway == 0 || object_id >= scenarioGateway->getNumberOfObjects())
 		{
@@ -513,9 +523,23 @@ extern "C"
 			return -1;
 		}
 
-		ghost_pos[0] = data->global_pos_x;
-		ghost_pos[1] = data->global_pos_y;
-		ghost_pos[2] = data->global_pos_z;
+		if (scenarioEngine->entities.object_[object_id]->ghost_)
+		{
+			*speed_ghost = scenarioEngine->entities.object_[object_id]->ghost_->speed_;
+			
+			float ego_speed = scenarioEngine->entities.object_[object_id]->speed_;
+			if (fabs(scenarioEngine->entities.object_[object_id]->speed_) < SMALL_NUMBER)
+			{
+				ego_speed = SMALL_NUMBER * SIGN(scenarioEngine->entities.object_[object_id]->speed_);
+			}
+			*hwt_ghost = GetLengthOfVector3D(data->local_pos_x, data->local_pos_y, data->local_pos_z) / ego_speed;
+		}
+
+		se_ghost_pos[0] = data->global_pos_x;
+		se_ghost_pos[1] = data->global_pos_y;
+		se_ghost_pos[2] = data->global_pos_z;
+
+		flag_received_ghost_pos = 1;
 
 		return 0;
 	}

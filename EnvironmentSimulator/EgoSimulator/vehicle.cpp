@@ -66,7 +66,7 @@ void Vehicle::SetWheelRotation(double rotation)
 
 void Vehicle::DrivingControlTarget(double dt, double heading_to_target, double headway_time_to_target)
 {
-	double acceleration = CLAMP(ACCELERATION_SCALE * (headway_time_to_target - TARGET_HWT), -10, 10);
+	double acceleration = CLAMP(ACCELERATION_SCALE * (headway_time_to_target - TARGET_HWT), -20, 20);
 
 	speed_ += acceleration * dt;
 	speed_ *= (1 - SPEED_DECLINE);

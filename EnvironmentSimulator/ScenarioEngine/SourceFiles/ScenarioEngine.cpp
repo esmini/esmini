@@ -447,25 +447,8 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	scenarioReader.parseInit(init, &entities, &catalogs);
 	scenarioReader.parseStory(story, &entities, &catalogs);
 
-	// Add hybrid ghost vehicle to any action of the external buddy
-	for (size_t i = 0; i < story.size(); i++)
-	{
-		for (size_t j = 0; j < story[i]->act_.size(); j++)
-		{
-			for (size_t k = 0; k < story[i]->act_[j]->sequence_.size(); k++)
-			{
-				for (size_t l = 0; l < story[i]->act_[j]->sequence_[k]->actor_.size(); l++)
-				{
-					if (story[i]->act_[j]->sequence_[k]->actor_[i]->object_->ghost_)
-					{
-						ActSequence::Actor *actor = new ActSequence::Actor;
-						actor->object_ = story[i]->act_[j]->sequence_[k]->actor_[i]->object_->ghost_;
-						story[i]->act_[j]->sequence_[k]->actor_.push_back(actor);
-					}
-				}
-			}
-		}
-	}
+	// Copy init actions from external buddy
+	// (Cloning of story actions are handled in the story parser)
 
 	size_t num_private_actions = init.private_action_.size();
 	for (size_t i = 0; i < num_private_actions; i++)
@@ -478,26 +461,7 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 		}
 	}
 
-	for (size_t i = 0; i < story.size(); i++)
-	{
-		for (size_t j = 0; j < story[i]->act_.size(); j++)
-		{
-			// Update deactivated elements' state to inactive - This could probably be done in some other way...
-			for (size_t k = 0; k < story[i]->act_[j]->sequence_.size(); k++)
-			{
-				for (size_t l = 0; l < story[i]->act_[j]->sequence_[k]->actor_.size(); l++)
-				{
-					if (story[i]->act_[j]->sequence_[k]->actor_[i]->object_->ghost_)
-					{
-						ActSequence::Actor *actor = new ActSequence::Actor;
-						actor->object_ = story[i]->act_[j]->sequence_[k]->actor_[i]->object_->ghost_;
-						story[i]->act_[j]->sequence_[k]->actor_.push_back(actor);
-					}
-				}
-			}
-		}
-	}
-
+	
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
 		if (entities.object_[i]->control_ == Object::Control::HYBRID_GHOST)

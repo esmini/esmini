@@ -40,6 +40,7 @@
 
 #define SMALL_NUMBER (1E-10)
 #define LARGE_NUMBER (1E+10)
+#define SIGN(X) ((X<0)?-1:1)
 
 #define LOG(Format_, ...)  Logger::Inst().Log(__FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
 

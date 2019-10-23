@@ -642,6 +642,7 @@ bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
 
 	dm_road_info_line_vertexData_ = new osg::Vec3Array;
 	dm_road_info_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
+	dm_road_info_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
 
 	dm_road_info_line_ = new osg::Geometry();
 	dm_road_info_line_->setCullingActive(false);
@@ -663,6 +664,7 @@ bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
 	// Ghost info lines
 
 	dm_ghost_info_line_vertexData_ = new osg::Vec3Array;
+	dm_ghost_info_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
 	dm_ghost_info_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
 
 	dm_ghost_info_line_ = new osg::Geometry();
@@ -721,6 +723,10 @@ void Viewer::UpdateVehicleLineAndPoints(roadmanager::Position *pos)
 
 void Viewer::UpdateDriverGhostPoint(roadmanager::Position *pos, double ghost_pos[3])
 {
+	if (!dm_ghost_info_line_vertexData_)
+	{
+		return;
+	}
 	// Ghost info line
 	dm_ghost_info_line_vertexData_->clear();
 	dm_ghost_info_line_vertexData_->push_back(osg::Vec3d(pos->GetX(), pos->GetY(), pos->GetZ() + 0.5));
@@ -736,6 +742,11 @@ void Viewer::UpdateDriverModelPoint(roadmanager::Position *pos, double target_po
 	if(dm_road_info_ball_)
 	{
 		dm_road_info_ball_->setPosition(osg::Vec3(target_pos[0], target_pos[1], target_pos[2] + BALL_SIZE / 2));
+	}
+
+	if (!dm_ghost_info_line_vertexData_)
+	{
+		return;
 	}
 
 	// Road info line
@@ -846,6 +857,14 @@ bool EventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
 			if (viewer_->dm_road_info_line_)
 			{
 				viewer_->dm_road_info_line_->setNodeMask(visible ? 0xffffffff : 0x0);
+			}
+			if (viewer_->dm_ghost_info_line_)
+			{
+				viewer_->dm_ghost_info_line_->setNodeMask(visible ? 0xffffffff : 0x0);
+			}
+			if (viewer_->dm_road_info_ball_)
+			{
+				viewer_->dm_road_info_ball_->setNodeMask(visible ? 0xffffffff : 0x0);
 			}
 		}
 	}

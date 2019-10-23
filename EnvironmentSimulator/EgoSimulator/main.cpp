@@ -33,7 +33,6 @@ static SE_Mutex mutex;
 using namespace scenarioengine;
 
 #define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
-#define SIGN(x) (x < 0 ? -1 : 1)
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
 
@@ -48,7 +47,7 @@ static double speed_target_hwt;
 static double steering_target_distance;
 static double steering_target_heading;
 
-static roadmanager::Position *ego_pos;
+static roadmanager::Position *ego_pos = 0;
 
 typedef enum {
 	VIEWER_NOT_STARTED,
@@ -225,7 +224,7 @@ static void viewer_thread(void *args)
 			scenarioViewer->UpdateVehicleLineAndPoints(ego_pos);
 			scenarioViewer->UpdateDriverModelPoint(ego_pos, speed_target_pos);
 
-			if (scenarioEngine->entities.object_[0]->ghost_)
+			if (scenarioEngine->entities.object_[0]->ghost_ != 0)
 			{
 				scenarioViewer->UpdateDriverGhostPoint(ego_pos, steering_target_pos);
 			}

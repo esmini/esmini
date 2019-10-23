@@ -97,7 +97,7 @@ extern "C"
 	@param data Struct including all result values, see typedef for details
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_GetRoadInfoAtGhost(int object_id, SE_RoadInfo *data);
+	SE_DLL_API int SE_GetRoadInfoAtGhost(int object_id, SE_RoadInfo *data, float *speed_ghost, float *hwt_ghost);
 
 #ifdef __cplusplus
 }

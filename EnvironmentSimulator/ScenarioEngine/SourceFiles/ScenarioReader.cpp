@@ -1726,6 +1726,13 @@ void ScenarioReader::parseStory(std::vector<Story*> &storyVector, Entities *enti
 									LOG("Actor by condition - not implemented");
 								}
 								sequence->actor_.push_back(actor);
+								if (actor->object_->ghost_)
+								{
+									// Add ghost as well
+									ActSequence::Actor *actor = new ActSequence::Actor;
+									actor->object_ = FindObjectByName(ReadAttribute(actorsChild.attribute("name")).append("_ghost"), entities);
+									sequence->actor_.push_back(actor);
+								}
 							}
 						}
 
