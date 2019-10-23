@@ -40,6 +40,7 @@ Vehicle::Vehicle(double x, double y, double h, double length)
 	posZ_ = 0;
 	heading_ = h;
 	pitch_ = 0;
+	target_hwt_ = TARGET_HWT;
 
 	velX_ = 0;
 	velY_ = 0;

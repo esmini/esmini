@@ -29,7 +29,6 @@
 
 static SE_Thread thread;
 static SE_Mutex mutex;
-
 using namespace scenarioengine;
 
 #define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
@@ -408,35 +407,43 @@ int main(int argc, char** argv)
 			roadmanager::SteeringTargetInfo data;
 			if (scenarioEngine->GetControl() == Object::Control::EXTERNAL || scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 			{
+				// Speed - common speed target for these control modes
+				ego_pos->GetSteeringTargetInfo(speed_target_distance, &data, false);
+				memcpy_s(speed_target_pos, sizeof(speed_target_pos), data.global_pos, sizeof(data.global_pos));
+				double ego_speed = egoCar->vehicle->speed_;
+
 				// Steering
 				if (scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 				{
 					ego_pos->GetSteeringTargetInfo(&scenarioEngine->entities.object_[0]->ghost_->pos_, &data);
 					memcpy_s(steering_target_pos, sizeof(steering_target_pos), data.global_pos, sizeof(data.global_pos));
-					speed_target_hwt = GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]) / egoCar->vehicle->speed_;
+					steering_target_heading = data.angle;
+
+					// HWT for driver model
+					double dist = SIGN(data.local_pos[0]) * GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]);
+					
+					if (fabs(ego_speed) < SMALL_NUMBER)
+					{
+						ego_speed = SMALL_NUMBER * SIGN(ego_speed);						
+					}
+
+					speed_target_hwt = dist / ego_speed;
+					if (speed_target_hwt < SMALL_NUMBER)
+					{
+						speed_target_hwt = egoCar->vehicle->target_hwt_;
+					}
+
+					// LOG("hwt: %f dist: %f ego_speed: %f y: %f", speed_target_hwt, dist, ego_speed, data.local_pos[0]);
 				}
 				else
 				{
+					speed_target_hwt = GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]) / ego_speed;
+
 					ego_pos->GetSteeringTargetInfo(steering_target_distance, &data, false);
 					memcpy_s(steering_target_pos, sizeof(steering_target_pos), data.global_pos, sizeof(data.global_pos));
-				}
-				steering_target_heading = data.angle;
-				memcpy_s(steering_target_pos, sizeof(steering_target_pos), data.global_pos, sizeof(data.global_pos));
-
-				// Speed
-				ego_pos->GetSteeringTargetInfo(speed_target_distance, &data, false);
-				memcpy_s(speed_target_pos, sizeof(speed_target_pos), data.global_pos, sizeof(data.global_pos));
-				if (scenarioEngine->GetControl() == Object::Control::EXTERNAL)
-				{
-					speed_target_hwt = GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]) / egoCar->vehicle->speed_;
-				}
-
-				if (fabs(egoCar->vehicle->speed_) < SMALL_NUMBER)
-				{
-					speed_target_hwt = LARGE_NUMBER;
+					steering_target_heading = data.angle;
 				}
 			}
-
 			
 			if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
 				scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)

@@ -60,6 +60,8 @@ namespace vehicle
 		double wheelRotation_;
 		double headingDot_;
 
+		double target_hwt_;
+
 		double length_;
 
 	private:

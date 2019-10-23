@@ -4,7 +4,7 @@
 	<FileHeader revMajor="0" revMinor="9" date="2019-10-23T10:00:00" description="basic ego hybrid test" author="Knabe"/>
 
     <ParameterDeclaration>
-		<Parameter name="$EgoVehicle" type="string" value="car_white" />
+		<Parameter name="$EgoVehicle" type="string" value="car_white_hybrid" />
 		<Parameter name="$EgoStartS" type="double" value="50"/>
 	</ParameterDeclaration>
   
@@ -28,9 +28,6 @@
 		<Object name="Ego">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
 		</Object>                                
-		<Object name="Ego2">
-			<CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
-		</Object>                                
 	</Entities>
 
 	<Storyboard>
@@ -53,23 +50,6 @@
 						</Longitudinal>
 					</Action>
 				</Private>
-				<!-- <Private object="Ego2"> -->
-					<!-- <Action> -->
-						<!-- <Position> -->
-							<!-- <Lane roadId="0" laneId="-3" offset="0" s="70" /> -->
-						<!-- </Position> -->
-					<!-- </Action> -->
-					<!-- <Action> -->
-						<!-- <Longitudinal> -->
-							<!-- <Speed> -->
-								<!-- <Dynamics shape="step"/> -->
-								<!-- <Target> -->
-									<!-- <Absolute value="30" /> -->
-								<!-- </Target> -->
-							<!-- </Speed> -->
-						<!-- </Longitudinal> -->
-					<!-- </Action> -->
-				<!-- </Private> -->
 			</Actions>
 		</Init>
 		

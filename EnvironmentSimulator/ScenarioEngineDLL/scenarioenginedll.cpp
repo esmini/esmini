@@ -84,7 +84,7 @@ static void Set_se_ghost_pos(float x, float y, float z)
 {
 	se_ghost_pos[0] = x;
 	se_ghost_pos[1] = y;
-	se_ghost_pos[0] = z;
+	se_ghost_pos[2] = z;
 	flag_received_ghost_pos = 1;
 }
 
