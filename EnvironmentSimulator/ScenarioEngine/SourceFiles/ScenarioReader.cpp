@@ -1190,7 +1190,7 @@ Object* ScenarioReader::FindObjectByName(std::string name, Entities *entities)
 	}
 
 	LOG("Failed to find object %s", name.c_str());
-	return 0;
+	throw std::exception(std::string("Failed to find object " + name).c_str());
 }
 
 

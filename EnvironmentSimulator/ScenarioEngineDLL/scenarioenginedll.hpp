@@ -23,7 +23,7 @@
 typedef struct
 {
 	int id;					  // Automatically generated unique object id 
-	int model_id;             // Id to control what 3D model to represent the vehicle 
+	int model_id;             // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
 	int control;		      // 0= undefined, 1=internal, 2=external, 4=hybrid_ghost, 3=hybrid_external
 	float timestamp;
 	float x;
@@ -67,9 +67,10 @@ extern "C"
 	@param control Ego control 0=by OSC 1=Internal 2=External 3=Hybrid
 	@param use_viewer 0=no viewer, 1=use viewer
 	@param record Create recording for later playback 0=no recording 1=recording
+	@param headstart_time For hybrid control mode launch ghost vehicle with this headstart time 
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int record);
+	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int record, float headstart_time);
 
 	SE_DLL_API int SE_Step(float dt);
 	SE_DLL_API void SE_Close();
@@ -79,6 +80,7 @@ extern "C"
 
 	SE_DLL_API int SE_GetNumberOfObjects();
 	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState *state);
+	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state);
 	SE_DLL_API int SE_GetObjectStates(int *nObjects, SE_ScenarioObjectState* state);
 
 	/**
@@ -99,6 +101,7 @@ extern "C"
 	*/
 	SE_DLL_API int SE_GetRoadInfoAtGhost(int object_id, SE_RoadInfo *data, float *speed_ghost, float *hwt_ghost);
 
+	
 #ifdef __cplusplus
 }
 #endif

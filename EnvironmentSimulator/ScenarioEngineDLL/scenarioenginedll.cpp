@@ -46,6 +46,14 @@ static int flag_received_ghost_pos = 0;
 static double se_steering_target_pos[3];
 static int flag_received_steering_target_pos = 0;
 
+typedef enum {
+	VIEWER_NOT_RUNNING,
+	VIEWER_STARTING,
+	VIEWER_RUNNING,
+} ViewerState;
+
+static ViewerState viewer_state = ViewerState::VIEWER_NOT_RUNNING;
+
 #endif
 
 #define DEFAULT_RECORDING_FILENAME "scenario.dat"
@@ -54,6 +62,7 @@ static int flag_received_steering_target_pos = 0;
 // path should be relative the OpenDRIVE file
 static const char* carModelsFiles_[] =
 {
+	"../models/s90.osgb",
 	"../models/car_white.osgb",
 	"../models/car_blue.osgb",
 	"../models/car_red.osgb",
@@ -61,6 +70,9 @@ static const char* carModelsFiles_[] =
 	"../models/truck_yellow.osgb",
 	"../models/van_red.osgb",
 	"../models/bus_blue.osgb",
+	"../models/car_white.osgb",
+	"../models/car_white.osgb",
+	"../models/car_white.osgb",
 };
 
 static ScenarioEngine *scenarioEngine = 0;
@@ -182,7 +194,17 @@ void viewer_thread(void*)
 		mutex.Unlock();
 
 		scViewer->osgViewer_->frame();
+		if (viewer_state == ViewerState::VIEWER_NOT_RUNNING)
+		{
+			// For some reason also the second frame takes long time
+			viewer_state = ViewerState::VIEWER_STARTING;
+		}
+		else
+		{
+			viewer_state = ViewerState::VIEWER_RUNNING;
+		}
 	}
+	viewer_state = ViewerState::VIEWER_NOT_RUNNING;
 }
 
 #endif
@@ -195,10 +217,7 @@ static void resetScenario(void)
 		printf("Closing viewer\n");
 
 		closing = true;  // Signal to viewer thread
-		printf("wait\n");
 		thread.Wait();
-		printf("wait done\n");
-
 		closing = false;
 
 		delete scViewer;
@@ -259,7 +278,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 
 	roadmanager::Position *pos = &scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
 	
-	if (pos->GetSteeringTargetInfo(lookahead_distance, &s_data, along_reference_lane) != 0)
+	if (pos->GetSteeringTargetInfo(lookahead_distance, &s_data, (bool)along_reference_lane) != 0)
 	{
 		return -1;
 	}
@@ -335,7 +354,7 @@ extern "C"
 		printf("%s\n", str);
 	}
 
-	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int record)
+	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int record, float headstart_time)
 	{
 
 		Logger::Inst().SetCallback(log_callback);
@@ -356,7 +375,7 @@ extern "C"
 		try
 		{
 			// Create a scenario engine instance
-			scenarioEngine = new ScenarioEngine(std::string(oscFilename), (ScenarioEngine::RequestControlMode)control);
+			scenarioEngine = new ScenarioEngine(std::string(oscFilename), headstart_time, (ScenarioEngine::RequestControlMode)control);
 
 			// Fetch ScenarioGateway 
 			scenarioGateway = scenarioEngine->getScenarioGateway();
@@ -371,11 +390,25 @@ extern "C"
 			// Fetch ScenarioGateway 
 			roadManager = scenarioEngine->getRoadManager();
 
+			// Step scenario engine - zero time - just to reach init state
+			// Report all vehicles initially - to communicate initial position for external vehicles as well
+			scenarioEngine->step(0.0, true);
+
+			LOG("Soon Step time %.2f", scenarioEngine->getSimulationTime());
+			while (scenarioEngine->getSimulationTime() < 0)
+			{
+				LOG("Step time %.2f", scenarioEngine->getSimulationTime());
+				scenarioEngine->step(0.05);
+			}
+
 #ifdef _SCENARIO_VIEWER
 			if (use_viewer)
 			{
 				// Run viewer in a separate thread
 				thread.Start(viewer_thread, 0);
+
+				// Wait for the viewer to launch
+				while (viewer_state != ViewerState::VIEWER_RUNNING) SE_sleep(100);
 			}
 #endif
 		}
@@ -389,10 +422,6 @@ extern "C"
 #endif
 			return -1;
 		}
-
-		// Step scenario engine - zero time - just to reach init state
-		// Report all vehicles initially - to communicate initial position for external vehicles as well
-		scenarioEngine->step(0.0, true);
 
 		return 0;
 	}
@@ -483,6 +512,27 @@ extern "C"
 		if (scenarioGateway != 0)
 		{
 			copyStateFromScenarioGateway(state, &scenarioGateway->getObjectStatePtrByIdx(index)->state_);
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state)
+	{
+		if (scenarioGateway != 0)
+		{
+			if (index < scenarioEngine->entities.object_.size())
+			{
+				for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)  // ghost index always higher than external buddy
+				{
+					if (scenarioEngine->entities.object_[index]->ghost_)
+					{
+						scenarioengine::ObjectState obj_state;
+						scenarioGateway->getObjectStateById(scenarioEngine->entities.object_[index]->ghost_->id_, obj_state);
+						copyStateFromScenarioGateway(state, &obj_state.state_);
+					}
+				}
+			}
 		}
 
 		return 0;

@@ -35,7 +35,7 @@
 #define LOD_DIST 3000
 #define LOD_SCALE_DEFAULT 1.2
 #define MIN(x, y) ((x)<(y)?(x):(y))
-#define BALL_SIZE 0.5
+#define BALL_SIZE 0.4
 
 static int COLOR_RED[3] = { 0xBB, 0x44, 0x44 };
 static int COLOR_GREEN[3] = { 0x40, 0xB0, 0x50 };

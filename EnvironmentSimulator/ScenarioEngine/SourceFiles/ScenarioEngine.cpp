@@ -15,20 +15,21 @@
 
 using namespace scenarioengine;
 
-ScenarioEngine::ScenarioEngine(std::string oscFilename, RequestControlMode control_mode_first_vehicle)
+ScenarioEngine::ScenarioEngine(std::string oscFilename, double headstart_time, RequestControlMode control_mode_first_vehicle)
 {
-	InitScenario(oscFilename, control_mode_first_vehicle);
+	InitScenario(oscFilename, headstart_time, control_mode_first_vehicle);
 }
 
-ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, RequestControlMode control_mode_first_vehicle)
+ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, double headstart_time, RequestControlMode control_mode_first_vehicle)
 {
-	InitScenario(xml_doc, control_mode_first_vehicle);
+	InitScenario(xml_doc, headstart_time, control_mode_first_vehicle);
 }
 
-void ScenarioEngine::InitScenario(std::string oscFilename, RequestControlMode control_mode_first_vehicle)
+void ScenarioEngine::InitScenario(std::string oscFilename, double headstart_time, RequestControlMode control_mode_first_vehicle)
 {
 	// Load and parse data
 	LOG("Init %s", oscFilename.c_str());
+	headstart_time_ = headstart_time;
 	if (scenarioReader.loadOSCFile(oscFilename.c_str()) != 0)
 	{
 		throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
@@ -37,7 +38,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, RequestControlMode co
 	parseScenario(control_mode_first_vehicle);
 }
 
-void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, RequestControlMode control_mode_first_vehicle)
+void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, double headstart_time, RequestControlMode control_mode_first_vehicle)
 {
 	scenarioReader.loadOSCMem(xml_doc);
 	parseScenario(control_mode_first_vehicle);
@@ -325,14 +326,28 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		
 		if (initial)
 		{
+#if 0
 			// Report all scenario objects the initial run, to establish initial positions and speed = 0
-			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime, &obj->pos_, 0.0, 0.0));
+			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime, 
+				&obj->pos_, 0.0, 0.0, obj->ghost_ ? obj->ghost_->id_ : -1));
+#else
+			// Report all scenario objects the initial run, to establish initial positions and speed = 0
+			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime,
+				&obj->pos_, 0.0, 0.0));
+#endif
 		}
 		else if (obj->control_ == Object::Control::INTERNAL ||
 			obj->control_ == Object::Control::HYBRID_GHOST)
 		{
+#if 0
 			// Then report all except externally controlled objects
-			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime, &obj->pos_, obj->speed_, obj->wheel_angle));
+			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime, 
+				&obj->pos_, obj->speed_, obj->wheel_angle, -1));
+#else
+			// Then report all except externally controlled objects
+			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime,
+				&obj->pos_, obj->speed_, obj->wheel_angle));
+#endif
 		}
 	}
 
@@ -473,7 +488,7 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 
 	if (hybrid_objects)
 	{
-		this->simulationTime = -2.0;
+		this->simulationTime = -headstart_time_;
 	}
 	else
 	{

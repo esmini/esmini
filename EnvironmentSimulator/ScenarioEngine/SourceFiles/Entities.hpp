@@ -57,7 +57,6 @@ namespace scenarioengine
 		std::string model_filepath_;
 		int model_id_;
 		Object *ghost_;     // If hybrid control mode, this will point to the ghost entity
-		//Object *external_;  // If hybrid control mode, this will point to the external entity
 
 		Object(Type type) : type_(type), id_(0), control_(Object::Control::INTERNAL), speed_(0), route_(0), model_filepath_(""), wheel_angle(0), ghost_(0) {}
 		void SetControl(Control control) { control_ = control; }

@@ -25,8 +25,11 @@
 #include "ScenarioReader.hpp"
 #include "RoadNetwork.hpp"
 
+
+
 namespace scenarioengine
 {
+	#define DEFAULT_HEADSTART_TIME 1.0
 
 	class ScenarioEngine
 	{
@@ -44,13 +47,13 @@ namespace scenarioengine
 
 		//	Cars cars;
 
-		ScenarioEngine(std::string oscFilename, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
-		ScenarioEngine(const pugi::xml_document &xml_doc, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
+		ScenarioEngine(std::string oscFilename, double headstart_time = DEFAULT_HEADSTART_TIME, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
+		ScenarioEngine(const pugi::xml_document &xml_doc, double headstart_time = DEFAULT_HEADSTART_TIME, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
 		ScenarioEngine() {};
 		~ScenarioEngine();
 
-		void InitScenario(std::string oscFilename, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
-		void InitScenario(const pugi::xml_document &xml_doc, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
+		void InitScenario(std::string oscFilename, double headstart_time, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
+		void InitScenario(const pugi::xml_document &xml_doc, double headstart_time, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
 
 		void step(double deltaSimTime, bool initial = false);
 		void printSimulationTime();
@@ -78,6 +81,7 @@ namespace scenarioengine
 		// Simulation parameters
 		double simulationTime;
 		double timeStep;
+		double headstart_time_;
 
 		//Conditions conditions;
 		//Actions actions;
