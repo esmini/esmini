@@ -15,7 +15,6 @@
 
 #include "OSCPrivateAction.hpp"
 
-#define SIGN(x) (x < 0 ? -1 : 1)
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
 

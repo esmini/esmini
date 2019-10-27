@@ -62,7 +62,6 @@ using namespace std;
 using namespace roadmanager;
 
 #define CURV_ZERO 0.00001
-#define SIGN(x) (x < 0 ? -1 : 1)
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
 #define CLAMP(x, a, b) (MIN(MAX(x, a), b))

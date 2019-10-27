@@ -14,8 +14,6 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 
-#define SIGN(x) (x < 0 ? -1 : 1)
-
 using namespace roadmanager;
 
 static roadmanager::OpenDrive *odrManager = 0;

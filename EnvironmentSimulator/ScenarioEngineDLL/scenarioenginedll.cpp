@@ -171,7 +171,7 @@ void viewer_thread(void*)
 			if (c->carModel)
 			{
 				c->carModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
-				c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
+				c->carModel->SetRotation(c->pos.GetH(), c->pos.GetP(), c->pos.GetR());
 			}
 		}
 
@@ -191,6 +191,12 @@ void viewer_thread(void*)
 			}
 		}
 #endif
+		// Update info text 
+		static char str_buf[128];
+		snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", scenarioEngine->getSimulationTime(),
+			3.6 * scenarioEngine->entities.object_[scViewer->currentCarInFocus_]->speed_);
+		scViewer->SetInfoText(str_buf);
+
 		mutex.Unlock();
 
 		scViewer->osgViewer_->frame();
@@ -394,7 +400,6 @@ extern "C"
 			// Report all vehicles initially - to communicate initial position for external vehicles as well
 			scenarioEngine->step(0.0, true);
 
-			LOG("Soon Step time %.2f", scenarioEngine->getSimulationTime());
 			while (scenarioEngine->getSimulationTime() < 0)
 			{
 				LOG("Step time %.2f", scenarioEngine->getSimulationTime());

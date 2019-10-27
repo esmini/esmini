@@ -314,7 +314,7 @@ int main(int argc, char** argv)
 	// Create scenario engine
 	try
 	{
-		scenarioEngine = new ScenarioEngine(oscFilename, control);
+		scenarioEngine = new ScenarioEngine(oscFilename, 1.0, control);
 		odrManager = scenarioEngine->getRoadManager();
 	}
 	catch (const std::exception& e)

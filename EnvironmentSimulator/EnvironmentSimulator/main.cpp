@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 	// Create scenario engine
 	try 
 	{ 
-		scenarioEngine = new ScenarioEngine(oscFilename, (ScenarioEngine::RequestControlMode)control);
+		scenarioEngine = new ScenarioEngine(oscFilename, 1.0, (ScenarioEngine::RequestControlMode)control);
 	}
 	catch (std::logic_error &e)
 	{
