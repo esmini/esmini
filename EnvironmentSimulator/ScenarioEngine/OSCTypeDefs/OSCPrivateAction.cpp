@@ -370,7 +370,7 @@ void SynchronizeAction::Step(double dt)
 	// Calculate distance along road/route
 	double masterDist, dist, dT;
 	int dl;
-	
+
 	if (!master_object_->pos_.Delta(*target_position_master_, masterDist, dT, dl))
 	{
 		LOG("No road network path between master vehicle and master target pos");
@@ -397,12 +397,15 @@ void SynchronizeAction::Step(double dt)
 	}
 	else
 	{
-		// Calculate acceleration based on time to arrival and target speed
-		// Idea: Calculate mean speed, then find out current speed to reach target speed (avg_speed = (current_speed + target_speed) / 2)
+		// Calculate acceleration needed to reach the destination in due time
+		// Idea: Given current speed and final speed, calculate a target speed to reach at half the 
+		// remaing time until master object reach its destination (t_m)
+		// v_tgt = 3v_avg - v_cur - v_fin
+		// acc = (v_tgt - v_fin) / (t_m / 2)
 
-		double average_speed = dist / (masterTimeToDest);
-		double current_speed = 2 * average_speed - target_speed_->GetValue();
-		
-		object_->speed_ = MAX(current_speed, 0);
+		double average_speed = dist / masterTimeToDest;
+		double target_speed = 3 * average_speed - object_->speed_ - target_speed_->GetValue();
+		double acc = 2 * (target_speed - object_->speed_) / masterTimeToDest;
+		object_->speed_ += acc * dt;
 	}
 }
