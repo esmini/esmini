@@ -397,15 +397,28 @@ void SynchronizeAction::Step(double dt)
 	}
 	else
 	{
-		// Calculate acceleration needed to reach the destination in due time
-		// Idea: Given current speed and final speed, calculate a target speed to reach at half the 
-		// remaing time until master object reach its destination (t_m)
-		// v_tgt = 3v_avg - v_cur - v_fin
-		// acc = (v_tgt - v_fin) / (t_m / 2)
-
 		double average_speed = dist / masterTimeToDest;
-		double target_speed = 3 * average_speed - object_->speed_ - target_speed_->GetValue();
-		double acc = 2 * (target_speed - object_->speed_) / masterTimeToDest;
+		double acc = 0;
+		
+		if (final_speed_)
+		{
+			// Calculate acceleration needed to reach the destination in due time
+			// Idea: Given current speed and final speed, calculate a target speed to reach at half the 
+			// remaing time until master object reach its destination (t_m)
+			// v_tgt = 3v_avg - v_cur - v_fin
+			// acc = (v_tgt - v_fin) / (t_m / 2)
+
+			double target_speed = 3 * average_speed - object_->speed_ - final_speed_->GetValue();
+			acc = 2 * (target_speed - object_->speed_) / masterTimeToDest;
+		}
+		else
+		{
+			// No final speed specified. Calculate it based on current speed and available time
+
+			double target_speed_ = 2 * average_speed - object_->speed_;
+			acc = (target_speed_ - object_->speed_) / masterTimeToDest;
+		}
+
 		object_->speed_ += acc * dt;
 	}
 }

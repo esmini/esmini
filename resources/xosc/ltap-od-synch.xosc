@@ -4,7 +4,7 @@
 	<FileHeader revMajor="0" revMinor="9" date="2017-06-09T10:00:00" description="LTAP-OD" author="Fredrik Persson, Emil Knabe"/>
 
 	<ParameterDeclaration>
-		<Parameter name="$HostVehicle" type="string" value="car_white_external"/>
+		<Parameter name="$HostVehicle" type="string" value="car_white"/>
 		<Parameter name="$NPCVehicle" type="string" value="car_red"/>
 		<Parameter name="$HostSpeed" type="double" value="10"/>
 		<Parameter name="$NPCSpeed" type="double" value="17"/>
@@ -120,7 +120,7 @@
                                             <Lane roadId="2" laneId="-1" offset="0" s="$NPCSyncPointS" />
                                         </TargetPosition>    
                                         <TargetSpeed>
-                                            <!-- <Absolute value="$NPCSpeed" /> -->
+                                            <!-- <Absolute value="$NPCSpeed" />  -->
                                             <RelativeMaster value="0" valueType="delta" />
                                         </TargetSpeed>
 									</EXT_Synchronize>
@@ -136,32 +136,6 @@
 								</ConditionGroup>
 							</StartConditions>
 						</Event>
-
-						<Event name="ContinueAfterSyncNPC" priority="overwrite">
-							<Action name="ContinueAfterSyncNPC">
-								<Private>
-									<Longitudinal>
-										<Speed>
-											<Dynamics shape="step" />  
-											<Target>
-                                                <!-- <Absolute value="$NPCSpeed" /> -->
-                                                <Relative object="Ego" value="0" valueType="delta" continuous="true" />
-											</Target>
-										</Speed>
-									</Longitudinal>
-								</Private>
-							</Action>							
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="StartOfScenarioNPC" delay="0.0" edge="rising">
-										<ByState>
-											<AfterTermination type="action" name="SyncActionNPC" rule="any"/>
-										</ByState>
-									</Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>
-
 					</Maneuver>
 				</Sequence>
 				<Conditions>

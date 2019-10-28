@@ -403,9 +403,15 @@ namespace scenarioengine
 		roadmanager::Position *target_position_master_;
 		roadmanager::Position *target_position_;
 		Object *master_object_;
-		LongSpeedAction::Target *target_speed_;
+		LongSpeedAction::Target *final_speed_;
 
-		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::Type::SYNCHRONIZE) {}
+		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::Type::SYNCHRONIZE) 
+		{
+			master_object_ = 0;
+			final_speed_ = 0;
+			target_position_master_ = 0;
+			target_position_ = 0;
+		}
 
 		void Step(double dt);
 
