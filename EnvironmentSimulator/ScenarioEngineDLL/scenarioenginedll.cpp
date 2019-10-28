@@ -41,10 +41,6 @@ static bool closing = false;
 static SE_Thread thread;
 static SE_Mutex mutex;
 
-static double se_ghost_pos[3];
-static int flag_received_ghost_pos = 0;
-static double se_steering_target_pos[3];
-static int flag_received_steering_target_pos = 0;
 
 typedef enum {
 	VIEWER_NOT_RUNNING,
@@ -82,7 +78,11 @@ double simTime = 0;
 double deltaSimTime = 0;  // external - used by Viewer::RubberBandCamera
 static char *args[] = { "kalle", "--window", "50", "50", "1000", "500" };
 
-#ifdef _SCENARIO_VIEWER
+
+static double se_ghost_pos[3];
+static int flag_received_ghost_pos = 0;
+static double se_steering_target_pos[3];
+static int flag_received_steering_target_pos = 0;
 
 static void Set_se_steering_target_pos(float x, float y, float z)
 {
@@ -100,6 +100,7 @@ static void Set_se_ghost_pos(float x, float y, float z)
 	flag_received_ghost_pos = 1;
 }
 
+#ifdef _SCENARIO_VIEWER
 
 ScenarioCar *getScenarioCarById(int id)
 {
