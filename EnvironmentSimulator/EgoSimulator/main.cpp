@@ -314,7 +314,7 @@ int main(int argc, char** argv)
 	// Create scenario engine
 	try
 	{
-		scenarioEngine = new ScenarioEngine(oscFilename, 1.0, control);
+		scenarioEngine = new ScenarioEngine(oscFilename, 2.0, control);
 		odrManager = scenarioEngine->getRoadManager();
 	}
 	catch (const std::exception& e)
@@ -409,14 +409,14 @@ int main(int argc, char** argv)
 			{
 				// Speed - common speed target for these control modes
 				ego_pos->GetSteeringTargetInfo(speed_target_distance, &data, false);
-				memcpy_s(speed_target_pos, sizeof(speed_target_pos), data.global_pos, sizeof(data.global_pos));
+				memcpy(speed_target_pos, data.global_pos, sizeof(speed_target_pos));
 				double ego_speed = egoCar->vehicle->speed_;
 
 				// Steering
 				if (scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
 				{
 					ego_pos->GetSteeringTargetInfo(&scenarioEngine->entities.object_[0]->ghost_->pos_, &data);
-					memcpy_s(steering_target_pos, sizeof(steering_target_pos), data.global_pos, sizeof(data.global_pos));
+					memcpy(steering_target_pos, data.global_pos, sizeof(steering_target_pos));
 					steering_target_heading = data.angle;
 
 					// HWT for driver model
@@ -440,7 +440,7 @@ int main(int argc, char** argv)
 					speed_target_hwt = GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]) / ego_speed;
 
 					ego_pos->GetSteeringTargetInfo(steering_target_distance, &data, false);
-					memcpy_s(steering_target_pos, sizeof(steering_target_pos), data.global_pos, sizeof(data.global_pos));
+					memcpy(steering_target_pos, data.global_pos, sizeof(steering_target_pos));
 					steering_target_heading = data.angle;
 				}
 			}
