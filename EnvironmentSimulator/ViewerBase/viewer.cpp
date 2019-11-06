@@ -783,7 +783,6 @@ bool EventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
 	switch (ea.getEventType())
 	{
 	case(osgGA::GUIEventAdapter::RESIZE):
-		LOG("Resize %d %d", ea.getWindowWidth(), ea.getWindowHeight());
 		viewer_->SetInfoTextProjection(ea.getWindowWidth(), ea.getWindowHeight());
 		break;
 	}

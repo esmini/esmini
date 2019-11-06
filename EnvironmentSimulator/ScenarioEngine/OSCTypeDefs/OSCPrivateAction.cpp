@@ -18,6 +18,7 @@
 #define SIGN(x) (x < 0 ? -1 : 1)
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
+#define MAX_DECELERATION -8.0
 
 using namespace scenarioengine;
 
@@ -363,6 +364,78 @@ void MeetingRelativeAction::Step(double dt)
 	}
 }
 
+double SynchronizeAction::CalcSpeedForLinearProfile(double v_final, double time, double dist)
+{
+	if (time < 0.001 || dist < 0.001)
+	{
+		// Avoid division by zero, fall back to zero acceleration
+		return 0;
+	}
+
+	// Compute current speed needed to reach given final speed in given time
+	double v0 = 2 * dist / time - v_final;
+
+	return v0;
+}
+
+const char* SynchronizeAction::Mode2Str(SynchMode mode)
+{
+	if (mode == SynchMode::MODE_NONE)
+	{
+		return "MODE_NONE";
+	}
+	else if (mode == SynchMode::MODE_NON_LINEAR)
+	{
+		return "MODE_NON_LINEAR";
+	}
+	else if (mode == SynchMode::MODE_LINEAR)
+	{
+		return "MODE_LINEAR";
+	}
+	else if (mode == SynchMode::MODE_STOPPED)
+	{
+		return "MODE_STOPPED";
+	}
+	else if (mode == SynchMode::MODE_STOP_IMMEDIATELY)
+	{
+		return "MODE_STOP_IMMEDIATELY";
+	}
+	else if (mode == SynchMode::MODE_WAITING)
+	{
+		return "MODE_WAITING";
+	}
+	else
+	{
+		return "Unknown mode";
+	}
+}
+
+const char* SynchronizeAction::SubMode2Str(SynchSubmode submode)
+{
+	if (submode == SynchSubmode::SUBMODE_CONCAVE)
+	{
+		return "SUBMODE_CONCAVE";
+	}
+	else if (submode == SynchSubmode::SUBMODE_CONVEX)
+	{
+		return "SUBMODE_CONVEX";
+	}
+	else if (submode == SynchSubmode::SUBMODE_NONE)
+	{
+		return "SUBMODE_NONE";
+	}
+	else
+	{
+		return "Unknown sub-mode";
+	}
+}
+
+void SynchronizeAction::PrintStatus(const char* custom_msg)
+{
+	LOG("%s, mode=%s (%d) sub-mode=%s (%d)", custom_msg,
+		Mode2Str(mode_), mode_, SubMode2Str(submode_), submode_);
+}
+
 void SynchronizeAction::Step(double dt)
 {
 	(void)dt;
@@ -399,24 +472,222 @@ void SynchronizeAction::Step(double dt)
 	{
 		double average_speed = dist / masterTimeToDest;
 		double acc = 0;
-		
+
+		//LOG("dist: %.2f time: %.2f final speed: %.2f", dist, masterTimeToDest, final_speed_->GetValue());
+
 		if (final_speed_)
 		{
+			// For more information, see OpenSCENARIO 1.0 User Guide (~mid 2020)
+			//
 			// Calculate acceleration needed to reach the destination in due time
-			// Idea: Given current speed and final speed, calculate a target speed to reach at half the 
-			// remaing time until master object reach its destination (t_m)
-			// v_tgt = 3v_avg - v_cur - v_fin
-			// acc = (v_tgt - v_fin) / (t_m / 2)
+			// Four cases
+			//   1  Linear. Reach final speed with constant acceleration
+			//	 2a Non-linear convex (rush). First accelerate, then decelerate.
+			//	 2b Non-linear concave (linger). First decelerate, then accelerate.
+			//   3  Non-linear with stop. Decelerate to a stop. Wait. Then accelerate.
+			//
+			//   Case 2-3 involves two (case 2a, 2b) or three (case 3) phases with constant acceleration/deceleration
+			//   Last phase in case 2-3 is actually case 1 - a linear change to final speed
+			// 
+			// Symbols
+			//   given:
+			//     s = distance to destination
+			//     t = master object time to destination
+			//     v0 = current speed
+			//     v1 = final speed
+			//     va = Average speed needed to reach destination 
+			//   variables:
+			//     s1 = distance first phase 
+			//     s2 = distance second phase
+			//     x = end time for first phase
+			//     y = end time for second (last) phase
+			//     vx = speed at x
+			// 
+			// Equations
+			//   case 1
+			//     v1 = 2 * s / t - v2
+			//     a = (v2 - v1) / t
+			//
+			//   case 2 (a & b)
+			//      system: 
+			//        s1 = v1 * x + (vx - v1) * x / 2
+			//        s2 = v2 * y + (vx - v2) * y / 2
+			//        t = x + y
+			//        s = s1 + s2
+			// 		  (vx - v1) / x = (vx - v2) / y
+			//
+			//      solve for x and vx   
+			//      a = (vx - v1) / x
+			// 
+			//   case 3 
+			//      system: 
+			//        s1 = x * v1 / 2
+			//        s2 = y * v2 / 2
+			//        s = s1 + s2
+			//        v1 / v2 = x / y
+			//      
+			//      solve for x
+			//      a = -v1 / x
 
-			double target_speed = 3 * average_speed - object_->speed_ - final_speed_->GetValue();
-			acc = 2 * (target_speed - object_->speed_) / masterTimeToDest;
+			if (mode_ == SynchMode::MODE_WAITING && !(masterTimeToDest < LARGE_NUMBER))
+			{
+				return;
+			}
+			if (mode_ == SynchMode::MODE_STOP_IMMEDIATELY)
+			{
+				acc = MAX_DECELERATION;
+				object_->speed_ += acc * dt;
+				if (object_->speed_ < 0)
+				{
+					object_->speed_ = 0;
+					mode_ = SynchMode::MODE_WAITING;  // wait for master to move
+					PrintStatus("Waiting");
+				}
+
+				return;
+			}
+			else if (mode_ == SynchMode::MODE_STOPPED)
+			{
+				if (masterTimeToDest < 2 * dist / final_speed_->GetValue())
+				{
+					// Time to move again after the stop
+					mode_ = SynchMode::MODE_LINEAR;
+					PrintStatus("Restart");
+				}
+				else
+				{
+					// Stay still
+					object_->speed_ = 0;
+					return;
+				}
+			}
+			
+			if (mode_ == SynchMode::MODE_LINEAR)
+			{
+				object_->speed_ = MAX(0, CalcSpeedForLinearProfile(MAX(0, final_speed_->GetValue()), masterTimeToDest, dist));
+				return;
+			}
+			else if (masterTimeToDest < LARGE_NUMBER) 
+			{
+				// Check if case 1, i.e. on a straight speed profile line
+				double v0_onLine = 2 * dist / masterTimeToDest - final_speed_->GetValue();
+
+				if (fabs(object_->speed_ - v0_onLine) < 0.1)
+				{
+					// Switch to linear mode (constant acc) to reach final destination and speed
+					mode_ = SynchMode::MODE_LINEAR;
+					PrintStatus("Passed apex");
+
+					// Keep current speed for this time step
+					return;
+				}
+			}
+			
+			if (mode_ == SynchMode::MODE_NONE)
+			{
+				// Since not linear mode, go into non-linear mode
+				mode_ = SynchMode::MODE_NON_LINEAR;
+
+				// Find out submode, convex or concave
+				if ((final_speed_->GetValue() + object_->speed_) / 2 < dist / masterTimeToDest)
+				{
+					submode_ = SynchSubmode::SUBMODE_CONVEX;
+				}
+				else
+				{
+					submode_ = SynchSubmode::SUBMODE_CONCAVE;
+				}
+				PrintStatus("Non-linear");
+			}
+
+			// Now, calculate x and vx according to default method oulined in the documentation
+			double s = dist;
+			double t = masterTimeToDest;
+			double v0 = object_->speed_;
+			double v1 = final_speed_->GetValue();
+
+			double signed_term = sqrt(2.0) * sqrt(2.0 * s*s - 2 * (v1 + v0)*t*s + (v1*v1 + v0 * v0)*t*t);
+
+			// Calculate both solutions from the quadratic equation
+			double vx = 0;
+			if (fabs(v1 - v0) < SMALL_NUMBER)
+			{
+				// When v0 == v1, x is simply t/2
+				// s = (T / 2) * v_cur + (T / 2) * vx -> vx = (s - (T / 2) * v_cur) / (T / 2)
+				vx = (s - (t / 2) * v0) / (t / 2);
+				acc = (vx - v0) / (t / 2);
+			}
+			else
+			{
+				double x1 = -(signed_term + 2 * s - 2 * v1*t) / (2 * (v1 - v0));
+				double x2 = -(-signed_term + 2 * s - 2 * v1*t) / (2 * (v1 - v0));
+				double vx1 = (2 * s - signed_term) / (2 * t);
+				double vx2 = (2 * s + signed_term) / (2 * t);
+				double a1 = (vx1 - v0) / x1;
+				double a2 = (vx2 - v0) / x2;
+
+				// Choose solution, only one is found within the given time span [0:masterTimeToDest]
+				if (x1 > 0 && x1 < t)
+				{
+					vx = vx1;
+					acc = a1;
+				}
+				else if (x2 > 0 && x2 < t)
+				{
+					vx = vx2;
+					acc = a2;
+				}
+				else
+				{
+					// No solution 
+					acc = 0;
+				}
+			}
+
+			if (mode_ == SynchMode::MODE_NON_LINEAR &&
+				((submode_ == SynchSubmode::SUBMODE_CONCAVE && acc > 0) ||
+				(submode_ == SynchSubmode::SUBMODE_CONVEX && acc < 0)))
+			{
+				// Reached the apex of the speed profile, switch mode and phase
+				mode_ = SynchMode::MODE_LINEAR;
+				PrintStatus("Reached apex");
+
+				// Keep speed for this time step
+				acc = 0;
+			}
+
+			// Check for case 3, where target speed(vx) < 0
+			if (mode_ == SynchMode::MODE_NON_LINEAR && vx < 0)
+			{
+				// In phase one, decelerate to 0, then stop
+				// Calculate time needed to cover distance proportional to current speed / final speed
+				double t1 = 2 * v0*s / (v0*v0 + v1 * v1);
+				acc = -v0 / t1;
+
+				if (t1 * v0 / 2 > s / 2)
+				{
+					// If more than half distance to destination needed, then stop immediatelly
+					acc = MAX_DECELERATION;
+					mode_ = SynchMode::MODE_STOP_IMMEDIATELY;
+					PrintStatus("Stop immediately");
+				}
+
+				if (v0 + acc * dt < 0)
+				{
+					// Reached to a stop
+					object_->speed_ = 0;
+					mode_ = SynchMode::MODE_STOPPED;
+					PrintStatus("Stopped");
+
+					return;
+				}
+			}
 		}
 		else
 		{
 			// No final speed specified. Calculate it based on current speed and available time
-
-			double target_speed_ = 2 * average_speed - object_->speed_;
-			acc = (target_speed_ - object_->speed_) / masterTimeToDest;
+			double final_speed_ = 2 * average_speed - object_->speed_;
+			acc = (final_speed_ - object_->speed_) / masterTimeToDest;
 		}
 
 		object_->speed_ += acc * dt;
