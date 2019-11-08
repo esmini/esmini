@@ -1031,7 +1031,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				{
 					LongSpeedAction::TargetAbsolute *targetSpeedAbs = new LongSpeedAction::TargetAbsolute;
 					targetSpeedAbs->value_ = strtod(ReadAttribute(target_speed_element.attribute("value")));
-					action_synch->target_speed_ = targetSpeedAbs;
+					action_synch->final_speed_ = targetSpeedAbs;
 				}
 				else
 				{
@@ -1065,7 +1065,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						{
 							LOG("Value type %s not valid", value_type.c_str());
 						}
-						action_synch->target_speed_ = targetSpeedRel;
+						action_synch->final_speed_ = targetSpeedRel;
 					}
 					else
 					{

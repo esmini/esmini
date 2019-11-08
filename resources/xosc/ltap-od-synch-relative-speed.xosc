@@ -4,11 +4,14 @@
 	<FileHeader revMajor="0" revMinor="9" date="2017-06-09T10:00:00" description="LTAP-OD" author="Fredrik Persson, Emil Knabe"/>
 
 	<ParameterDeclaration>
-		<Parameter name="$HostVehicle" type="string" value="car_white_external"/>
-		<Parameter name="$TargetVehicle" type="string" value="car_red"/>
+		<Parameter name="$HostVehicle" type="string" value="car_white"/>
+		<Parameter name="$NPCVehicle" type="string" value="car_red"/>
 		<Parameter name="$HostSpeed" type="double" value="10"/>
-		<Parameter name="$Target1SyncPointS" type="double" value="304"/>
-		<Parameter name="$EgoSyncPoint1S" type="double" value="5"/>
+		<Parameter name="$NPCInitialSpeed" type="double" value="10"/>
+		<Parameter name="$NPCFinalSpeed" type="double" value="7"/>
+		<Parameter name="$NPCStartPointS" type="double" value="0"/>
+		<Parameter name="$NPCSyncPointS" type="double" value="305"/>
+		<Parameter name="$EgoSyncPoint1S" type="double" value="7"/>
 	</ParameterDeclaration>
   
 	<Catalogs>  
@@ -32,10 +35,9 @@
 		<Object name="Ego">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
 		</Object>
-		<Object name="Target1">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+		<Object name="NPC">
+			<CatalogReference catalogName="VehicleCatalog" entryName="$NPCVehicle"/>
 			<Controller>
-				<!-- Target car controlled by a default (standard?) driver model -->
 				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
 			</Controller>
 		</Object>
@@ -45,28 +47,6 @@
 	<Storyboard>
 		<Init>
 			<Actions>
-				<Private object="Target1">
-					<Action>
-						<Routing>
-							<FollowRoute>
-								<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
-							</FollowRoute>
-						</Routing>
-					</Action>
-					<Action>
-						<Position>
-							<Route>  
-								<RouteRef> 
-									<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
-								</RouteRef>
-								<Position>
-									<LaneCoord pathS="0" laneId="-1"/>  
-								</Position>
-							</Route>
-						</Position>
-					</Action>
-				</Private>
-
 				<Private object="Ego">
 					<Action>
 						<Routing>
@@ -89,7 +69,7 @@
 					</Action>
 					<Action>
 						<Longitudinal>
-							<Speed>  <!-- Initial speed, which then will be overriden by the meeting synchronization -->
+							<Speed>  
 								<Dynamics shape="step"/>
 								<Target>
 									<Absolute value="$HostSpeed" />
@@ -98,60 +78,69 @@
 						</Longitudinal>
 					</Action>					
 				</Private>
+				<Private object="NPC">
+					<Action>
+						<Routing>
+							<FollowRoute>
+								<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
+							</FollowRoute>
+						</Routing>
+					</Action>
+					<Action>
+						<Position>
+							<Route>  
+								<RouteRef> 
+									<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
+								</RouteRef>
+								<Position>
+									<LaneCoord pathS="$NPCStartPointS" laneId="-1"/>  
+								</Position>
+							</Route>
+						</Position>
+					</Action>
+					<Action>
+						<Longitudinal>
+							<Speed>  
+								<Dynamics shape="step"/>
+								<Target>
+									<Absolute value="$NPCInitialSpeed" />
+								</Target>
+							</Speed>
+						</Longitudinal>
+					</Action>			                    
+				</Private>                
 			</Actions>
 		</Init>
 		
-		<Story name="LTAPStory" owner="Target">
-			<Act name="LTAPActT1">
+		<Story name="LTAPStory" owner="NPC">
+			<Act name="LTAPActNPC">
 				<Sequence name="LTAPSequence" numberOfExecutions="1">
 					<Actors>
-						<Entity name="Target1"/>
+						<Entity name="NPC"/>
 					</Actors>
-					<Maneuver name="ManeuverT1">
+					<Maneuver name="ManeuverNPC">
 						<Event name="SyncEvent" priority="overwrite">
-							<Action name="SyncActionT1">
+							<Action name="SyncActionNPC">
 								<Private>
 									<EXT_Synchronize masterObject="Ego" >
                                         <TargetPositionMaster>
                                             <Lane roadId="0" laneId="1" offset="0" s="$EgoSyncPoint1S" />
                                         </TargetPositionMaster>    
                                         <TargetPosition>
-                                            <Lane roadId="2" laneId="-1" offset="0" s="$Target1SyncPointS" />
+                                            <Lane roadId="2" laneId="-1" offset="0" s="$NPCSyncPointS" />
                                         </TargetPosition>    
                                         <TargetSpeed>
-                                            <RelativeMaster value="0" valueType="delta" />
+                                            <!-- <Absolute value="$NPCFinalSpeed" /> -->
+                                            <RelativeMaster value="-3" valueType="delta" />
                                         </TargetSpeed>
 									</EXT_Synchronize>
 								</Private>
 							</Action>
 							<StartConditions>
 								<ConditionGroup>
-									<Condition name="SyncConditionT1" delay="0.0" edge="rising">
+									<Condition name="SyncConditionNPC" delay="0.0" edge="rising">
 										<ByState>
-											<AtStart type="act" name="LTAPActT1" />
-										</ByState>
-									</Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>
-						<Event name="ContinueAfterSyncT1" priority="overwrite">
-							<Action name="ContinueAfterSyncT1">
-								<Private>
-									<Longitudinal>
-										<Speed>
-											<Dynamics shape="step" />  
-											<Target>
-                                                <Relative object="Ego" value="0" valueType="delta" continuous="true" />
-											</Target>
-										</Speed>
-									</Longitudinal>
-								</Private>
-							</Action>							
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="StartOfScenarioT1" delay="0.0" edge="rising">
-										<ByState>
-											<AfterTermination type="action" name="SyncActionT1" rule="any"/>
+											<AtStart type="act" name="LTAPActNPC" />
 										</ByState>
 									</Condition>
 								</ConditionGroup>
@@ -162,7 +151,7 @@
 				<Conditions>
 					<Start>
 						<ConditionGroup>
-							<Condition name="LtapActStartConditionT1" delay="0" edge="rising">
+							<Condition name="LtapActStartConditionNPC" delay="0" edge="rising">
 								<ByValue>
 									<SimulationTime value="0" rule="greater_than"/>
 								</ByValue>

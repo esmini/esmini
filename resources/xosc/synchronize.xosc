@@ -117,6 +117,16 @@
 							<Lane roadId="0" laneId="-2" offset="0" s="$NPC1StartS" />
 						</Position>
 					</Action>
+					<Action>
+						<Longitudinal>
+							<Speed>
+								<Dynamics shape="step"/>
+								<Target>
+									<Absolute value="15" />
+								</Target>
+							</Speed>
+						</Longitudinal>
+					</Action>
 				</Private>
 				<Private object="NPC2">
 					<Action>
@@ -131,12 +141,32 @@
 							<Lane roadId="0" laneId="-4" offset="0" s="$NPC3StartS" />
 						</Position>
 					</Action>
+					<Action>
+						<Longitudinal>
+							<Speed>
+								<Dynamics shape="step"/>
+								<Target>
+									<Absolute value="25" />
+								</Target>
+							</Speed>
+						</Longitudinal>
+					</Action>
 				</Private>
 				<Private object="NPC4">
 					<Action>
 						<Position>
 							<Lane roadId="0" laneId="-3" offset="0" s="$NPC4StartS" />
 						</Position>
+					</Action>
+					<Action>
+						<Longitudinal>
+							<Speed>
+								<Dynamics shape="step"/>
+								<Target>
+									<Absolute value="$EgoSpeed" />
+								</Target>
+							</Speed>
+						</Longitudinal>
 					</Action>
 				</Private>                
 				<Private object="MS1">

@@ -500,16 +500,26 @@ namespace scenarioengine
 		roadmanager::Position *target_position_master_;
 		roadmanager::Position *target_position_;
 		Object *master_object_;
-		LongSpeedAction::Target *target_speed_;
+		LongSpeedAction::Target *final_speed_;
 
-		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::Type::SYNCHRONIZE) {}
+		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::Type::SYNCHRONIZE) 
+		{
+			master_object_ = 0;
+			final_speed_ = 0;
+			target_position_master_ = 0;
+			target_position_ = 0;
+			mode_ = SynchMode::MODE_NONE;
+			submode_ = SynchSubmode::SUBMODE_NONE;
+		}
 
 		SynchronizeAction(const SynchronizeAction &action) : OSCPrivateAction(OSCPrivateAction::Type::SYNCHRONIZE)
 		{
+			master_object_ = action.master_object_;
+			final_speed_ = action.final_speed_;
 			target_position_master_ = action.target_position_master_;
 			target_position_ = action.target_position_;
-			master_object_ = action.master_object_;
-			target_speed_ = action.target_speed_;
+			mode_ = action.mode_;
+			submode_ = action.submode_;
 		}
 
 		OSCPrivateAction* Copy()
@@ -531,6 +541,30 @@ namespace scenarioengine
 
 			OSCAction::Trig();
 		}
+
+	private:
+		typedef enum {
+			MODE_NONE,
+			MODE_LINEAR,
+			MODE_NON_LINEAR,
+			MODE_STOPPED,
+			MODE_STOP_IMMEDIATELY,
+			MODE_WAITING,
+		} SynchMode;
+
+		typedef enum {
+			SUBMODE_NONE,
+			SUBMODE_CONVEX,
+			SUBMODE_CONCAVE
+		} SynchSubmode;
+
+		SynchMode mode_;
+		SynchSubmode submode_;
+
+		double CalcSpeedForLinearProfile(double v_final, double time, double dist);
+		void PrintStatus(const char* custom_msg);
+		const char* Mode2Str(SynchMode mode);
+		const char* SubMode2Str(SynchSubmode submode);
 	};
 
 	class PositionAction : public OSCPrivateAction

@@ -22,16 +22,15 @@
 using namespace vehicle;
 
 #define STEERING_RATE 5.0
-#define STEERING_MAX_ANGLE (50 * M_PI / 180)
-#define ACCELERATION_SCALE 30
-#define SPEED_DECLINE 0.0015
+#define STEERING_MAX_ANGLE (60 * M_PI / 180)
+#define ACCELERATION_SCALE 20
+#define SPEED_DECLINE 0.001
 #define WHEEL_RADIUS 0.35
 #define SIGN(X) (X<0?-1:1)
 #define MAX(a, b) (a>b ? a : b)
 #define MIN(a, b) (a<b ? a : b)
 #define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))
 #define TARGET_HWT 1.0
-//#define REAR_AXLE_TO_LENGTH
 
 Vehicle::Vehicle(double x, double y, double h, double length)
 {
@@ -87,9 +86,15 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 	speed_ = CLAMP(speed_, -1.2*max_speed_, 1.2*max_speed_);
 
 	// Calculate steering
-	double steering_scale = 1.0 / (1 + 0.015 * speed_ * speed_);
 
-	wheelAngle_ = 0.95 * (wheelAngle_ + steering_scale * STEERING_RATE * steering * dt);
+	// Make steering wheel speed dependent
+	double steering_scale = 1.0 / (1 + 0.02 * speed_ * speed_);
+	wheelAngle_ = wheelAngle_ + steering_scale * STEERING_RATE * steering  * dt;
+	
+	// Self-aligning
+	wheelAngle_ *= 0.92;
+
+	// Limit wheel angle
 	wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
 
 	Update(dt);
