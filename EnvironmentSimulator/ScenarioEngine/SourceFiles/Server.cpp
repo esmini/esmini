@@ -106,13 +106,25 @@ namespace scenarioengine
 		}
 		state = SERV_RUNNING;
 		
+		double x_old = 0.0;
+		double y_old = 0.0;
+		double wheel_rot = 0.0;
+
+
 		while (state == SERV_RUNNING)
 		{
 			int ret = recvfrom(sock, (char*)&buf, sizeof(EgoStateBuffer_t), 0, (struct sockaddr *)&sender_addr, &sender_addr_size);
-
+			
 #ifdef SWAP_BYTE_ORDER_ESMINI
 			SwapByteOrder((unsigned char*)&buf, 4, sizeof(buf));
 #endif
+
+			// Find out wheel rotation from x, y displacement
+			double ds = GetLengthOfLine2D(buf.x, buf.y, x_old, y_old);
+			wheel_rot += SIGN(buf.speed) * fmod(ds / 0.35, 2 * M_PI); // wheel radius = 0.35 m
+			x_old = buf.x;
+			y_old = buf.y;
+
 			if (ret >= 0)
 			{
 				printf("Server: Received Ego pos (%.2f, %.2f, %.2f) rot: (%.2f, %.2f, %.2f) speed: %.2f (%.2f km/h) wheel_angle: %.2f (%.2f deg)\n",
@@ -121,7 +133,7 @@ namespace scenarioengine
 				// Update Ego state
 				mutex.Lock();
 
-				scenarioGateway->reportObject(ObjectState(0, "Ego", 0, 1, 0, buf.x, buf.y, buf.z, buf.h, buf.p, buf.r, buf.speed, buf.wheel_angle));
+				scenarioGateway->reportObject(ObjectState(0, "Ego", 0, 1, 0, buf.x, buf.y, buf.z, buf.h, buf.p, buf.r, buf.speed, buf.wheel_angle, wheel_rot));
 
 				mutex.Unlock();
 			}

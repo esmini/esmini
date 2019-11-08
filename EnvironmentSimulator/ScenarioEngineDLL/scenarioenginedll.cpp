@@ -29,7 +29,7 @@ typedef struct
 {
 	int id;
 	viewer::CarModel *carModel;
-	roadmanager::Position pos;
+	ObjectStateStruct state;
 } ScenarioCar;
 
 static std::vector<ScenarioCar> scenarioCar;
@@ -132,8 +132,13 @@ void viewer_thread(void*)
 	scViewer = new viewer::Viewer(roadManager, scenarioEngine->getSceneGraphFilename().c_str(), scenarioEngine->getScenarioFilename().c_str(), osg::ArgumentParser(&argc, argv), VISUALIZE_DRIVER_MODEL_TARGET);
 
 	// Update graphics - until close request or viewer terminated 
+	__int64 now, lastTimeStamp = 0;
 	while (!closing)
 	{
+		now = SE_getSystemTime();
+		deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
+		lastTimeStamp = now;
+
 		// Fetch states of scenario objects
 		for (int i = 0; i < scenarioGateway->getNumberOfObjects(); i++)
 		{
@@ -159,7 +164,7 @@ void viewer_thread(void*)
 
 				sc = &scenarioCar.back();
 			}
-			sc->pos = o->state_.pos;
+			sc->state = o->state_;
 		}
 
 		// Visualize scenario cars
@@ -171,8 +176,9 @@ void viewer_thread(void*)
 			ScenarioCar *c = &scenarioCar[i];
 			if (c->carModel)
 			{
-				c->carModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
-				c->carModel->SetRotation(c->pos.GetH(), c->pos.GetP(), c->pos.GetR());
+				c->carModel->SetPosition(c->state.pos.GetX(), c->state.pos.GetY(), c->state.pos.GetZ());
+				c->carModel->SetRotation(c->state.pos.GetH(), c->state.pos.GetP(), c->state.pos.GetR());
+				c->carModel->UpdateWheelsDelta(c->state.wheel_angle, fmod(c->state.speed * deltaSimTime / 0.35, 2*M_PI));
 			}
 		}
 
@@ -181,14 +187,14 @@ void viewer_thread(void*)
 		// Assume first car to be the Ego (Vehicle Under Test)
 		if (scenarioCar.size() > 0)
 		{
-			scViewer->UpdateVehicleLineAndPoints(&scenarioCar[0].pos);
+			scViewer->UpdateVehicleLineAndPoints(&scenarioCar[0].state.pos);
 			if (flag_received_steering_target_pos)
 			{
-				scViewer->UpdateDriverModelPoint(&scenarioCar[0].pos, se_steering_target_pos);
+				scViewer->UpdateDriverModelPoint(&scenarioCar[0].state.pos, se_steering_target_pos);
 			}
 			if (flag_received_steering_target_pos)
 			{
-				scViewer->UpdateDriverGhostPoint(&scenarioCar[0].pos, se_ghost_pos);
+				scViewer->UpdateDriverGhostPoint(&scenarioCar[0].state.pos, se_ghost_pos);
 			}
 		}
 #endif
@@ -451,7 +457,6 @@ extern "C"
 		if (scenarioEngine != 0)
 		{
 			// Time operations
-			deltaSimTime = dt;
 			simTime += dt;
 
 			// ScenarioEngine
@@ -478,7 +483,7 @@ extern "C"
 				// reuse some values
 				Object *obj = scenarioEngine->entities.object_[id];
 				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
-				scenarioGateway->reportObject(ObjectState(id, obj->name_, obj->model_id_, control, timestamp, x, y, z, h, p, r, speed, 0), true);
+				scenarioGateway->reportObject(ObjectState(id, obj->name_, obj->model_id_, control, timestamp, x, y, z, h, p, r, speed, 0, 0), true);
 			}
 		}
 
@@ -494,7 +499,7 @@ extern "C"
 				// reuse some values
 				Object *obj = scenarioEngine->entities.object_[id];
 				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
-				scenarioGateway->reportObject(ObjectState(id, obj->name_, obj->model_id_, control, timestamp, roadId, laneId, laneOffset, s, speed, 0), true);
+				scenarioGateway->reportObject(ObjectState(id, obj->name_, obj->model_id_, control, timestamp, roadId, laneId, laneOffset, s, speed, 0, 0), true);
 			}
 		}
 

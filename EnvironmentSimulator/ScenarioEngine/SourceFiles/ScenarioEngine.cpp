@@ -76,7 +76,8 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 				{
 					entities.object_[i]->pos_ = o.state_.pos;
 					entities.object_[i]->speed_ = o.state_.speed;
-					entities.object_[i]->wheel_angle = o.state_.wheel_angle;
+					entities.object_[i]->wheel_angle_ = o.state_.wheel_angle;
+					entities.object_[i]->wheel_rot_ = o.state_.wheel_rot;
 				}
 			}
 		}
@@ -326,28 +327,16 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		
 		if (initial)
 		{
-#if 0
-			// Report all scenario objects the initial run, to establish initial positions and speed = 0
-			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime, 
-				&obj->pos_, 0.0, 0.0, obj->ghost_ ? obj->ghost_->id_ : -1));
-#else
 			// Report all scenario objects the initial run, to establish initial positions and speed = 0
 			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime,
-				&obj->pos_, 0.0, 0.0));
-#endif
+				&obj->pos_, 0, 0.0, 0.0));
 		}
 		else if (obj->control_ == Object::Control::INTERNAL ||
 			obj->control_ == Object::Control::HYBRID_GHOST)
 		{
-#if 0
-			// Then report all except externally controlled objects
-			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime, 
-				&obj->pos_, obj->speed_, obj->wheel_angle, -1));
-#else
 			// Then report all except externally controlled objects
 			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime,
-				&obj->pos_, obj->speed_, obj->wheel_angle));
-#endif
+				&obj->pos_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_));
 		}
 	}
 

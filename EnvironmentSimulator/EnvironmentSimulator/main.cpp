@@ -108,7 +108,7 @@ void viewer_thread(void *args)
 
 			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
 			car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
-			car->UpdateWheels(scenarioEngine->entities.object_[i]->wheel_angle, 0);
+			car->UpdateWheels(scenarioEngine->entities.object_[i]->wheel_angle_, scenarioEngine->entities.object_[i]->wheel_rot_);
 		}
 
 		// Update info text 

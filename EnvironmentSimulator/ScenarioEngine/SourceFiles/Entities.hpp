@@ -51,14 +51,15 @@ namespace scenarioengine
 		int id_;
 		Control control_;
 		double speed_;
-		double wheel_angle;
+		double wheel_angle_;
+		double wheel_rot_;
 		roadmanager::Position pos_;
 		roadmanager::Route *route_;
 		std::string model_filepath_;
 		int model_id_;
 		Object *ghost_;     // If hybrid control mode, this will point to the ghost entity
 
-		Object(Type type) : type_(type), id_(0), control_(Object::Control::INTERNAL), speed_(0), route_(0), model_filepath_(""), wheel_angle(0), ghost_(0) {}
+		Object(Type type) : type_(type), id_(0), control_(Object::Control::INTERNAL), speed_(0), route_(0), model_filepath_(""), wheel_angle_(0), wheel_rot_(0), ghost_(0) {}
 		void SetControl(Control control) { control_ = control; }
 	};
 

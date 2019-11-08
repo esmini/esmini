@@ -34,22 +34,16 @@ namespace scenarioengine
 		roadmanager::Position pos;
 		float speed;
 		float wheel_angle;
-//		int ghost_id;  // id of ghost, if exists
+		float wheel_rot;
 	};
 
 	class ObjectState
 	{
 	public:
 		ObjectState();
-#if 0
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, roadmanager::Position *pos, double speed, double wheel_angle, int ghost_id);
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, double x, double y, double z, double h, double p, double r, double speed, double wheel_angle, int ghost_id);
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed, double wheel_angle, int ghost_id);
-#else
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, roadmanager::Position *pos, double speed, double wheel_angle);
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, double x, double y, double z, double h, double p, double r, double speed, double wheel_angle);
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed, double wheel_angle);
-#endif
+		ObjectState(int id, std::string name, int model_id, int control, double timestamp, roadmanager::Position *pos, double speed, double wheel_angle, double wheel_rot);
+		ObjectState(int id, std::string name, int model_id, int control, double timestamp, double x, double y, double z, double h, double p, double r, double speed, double wheel_angle, double wheel_rot);
+		ObjectState(int id, std::string name, int model_id, int control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed, double wheel_angle, double wheel_rot);
 
 		ObjectStateStruct getStruct() { return state_; }
 

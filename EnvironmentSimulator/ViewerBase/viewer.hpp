@@ -38,6 +38,8 @@ namespace viewer
 		double size_y;
 		double center_x;
 		double center_y;
+		double wheel_angle_;
+		double wheel_rot_;
 		std::string filename_;
 
 		CarModel(osg::ref_ptr<osg::LOD> lod, double transparency = 0);
@@ -45,6 +47,7 @@ namespace viewer
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double h, double p, double r);
 		void UpdateWheels(double wheel_angle, double wheel_rotation);
+		void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
 
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName);
 	};

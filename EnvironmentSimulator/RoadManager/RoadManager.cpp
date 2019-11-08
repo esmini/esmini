@@ -2193,7 +2193,9 @@ void Position::Init()
 	h_road_ = 0.0;
 	h_relative_ = 0.0;
 	curvature_ = 0.0;
+	p_road_ = 0.0;
 
+	z_road_ = 0.0;
 	track_idx_ = 0;
 	geometry_idx_ = 0;
 	lane_section_idx_ = 0;
@@ -2584,7 +2586,7 @@ double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, R
 	return fabs(min_lane_dist) + fabs(GetZ() - z);
 }
 
-void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool evaluateZAndPitch)
+void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool alignZAndPitch)
 {
 	double dist;
 	double distMin = std::numeric_limits<double>::infinity();
@@ -2691,19 +2693,19 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ev
 	// Find out what lane and set position
 	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);
 
-	if (evaluateZAndPitch)
-	{
-		EvaluateZAndPitch();
-	}
+	EvaluateRoadZAndPitch(alignZAndPitch);
 }
 	
 
-bool Position::EvaluateZAndPitch()
+bool Position::EvaluateRoadZAndPitch(bool alignZAndPitch)
 {
-	bool ret_val = GetRoadById(track_id_)->GetZAndPitchByS(s_, &z_, &p_, &elevation_idx_);
+	bool ret_value = GetRoadById(track_id_)->GetZAndPitchByS(s_, &z_road_, &p_road_, &elevation_idx_);
 
-	if (ret_val)
+	if (alignZAndPitch)
 	{
+		z_ = z_road_;
+		p_ = p_road_;
+
 		// Find out pitch of road in driving direction
 		if (GetHRelative() > M_PI / 2 && GetHRelative() < 3 * M_PI / 2)
 		{
@@ -2711,7 +2713,7 @@ bool Position::EvaluateZAndPitch()
 		}
 	}
 
-	return ret_val;
+	return ret_value;
 }
 
 void Position::Track2XYZ()
@@ -2741,7 +2743,7 @@ void Position::Track2XYZ()
 	y_ += y_local;
 
 	// z = Elevation 
-	EvaluateZAndPitch();
+	EvaluateRoadZAndPitch(true);
 }
 
 void Position::Lane2Track()
@@ -2761,9 +2763,9 @@ void Position::Lane2Track()
 	}
 }
 
-void Position::XYZ2Track(bool evaluateZAndPitch)
+void Position::XYZ2Track(bool alignZAndPitch)
 {
-	XYZH2TrackPos(GetX(), GetY(), GetZ(), GetH(), evaluateZAndPitch);
+	XYZH2TrackPos(GetX(), GetY(), GetZ(), GetH(), alignZAndPitch);
 }
 
 void Position::SetLongitudinalTrackPos(int track_id, double s)
@@ -3573,12 +3575,12 @@ static void CalcSteeringTarget(Position *pivot, Position *target, SteeringTarget
 {
 	data->global_pos[0] = target->GetX();
 	data->global_pos[1] = target->GetY();
-	data->global_pos[2] = target->GetZ();
+	data->global_pos[2] = target->GetZRoad();
 
 	// find out local x, y, z
 	double diff_x = target->GetX() - pivot->GetX();
 	double diff_y = target->GetY() - pivot->GetY();
-	double diff_z = target->GetZ() - pivot->GetZ();
+	double diff_z = target->GetZRoad() - pivot->GetZRoad();
 
 	data->local_pos[0] = diff_x * cos(-pivot->GetH()) - diff_y * sin(-pivot->GetH());
 	data->local_pos[1] = diff_x * sin(-pivot->GetH()) + diff_y * cos(-pivot->GetH());
@@ -3617,7 +3619,7 @@ static void CalcSteeringTarget(Position *pivot, Position *target, SteeringTarget
 	}
 
 	data->road_heading = target->GetHRoad();
-	data->road_pitch = target->GetP();
+	data->road_pitch = target->GetPRoad();
 	data->road_roll = target->GetR();
 
 	Road *road = target->GetRoadById(target->GetTrackId());

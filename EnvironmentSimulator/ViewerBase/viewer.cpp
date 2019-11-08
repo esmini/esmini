@@ -33,7 +33,7 @@
 #define SHADOW_SCALE 1.20
 #define SHADOW_MODEL_FILEPATH "shadow_face.osgb"  // models folder assumed to exist one level above the OpenSCENARIO file 
 #define LOD_DIST 3000
-#define LOD_SCALE_DEFAULT 1.2
+#define LOD_SCALE_DEFAULT 1.0
 #define MIN(x, y) ((x)<(y)?(x):(y))
 #define BALL_SIZE 0.4
 
@@ -130,6 +130,9 @@ CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, double transparency)
 	}
 	node_ = lod;
 	
+	wheel_angle_ = 0;
+	wheel_rot_ = 0;
+
 	// Locate wheel nodes if available
 	osg::ref_ptr<osg::Node> car_node = lod->getChild(0);
 	AddWheel(car_node, "wheel_fl");
@@ -178,6 +181,9 @@ void CarModel::SetRotation(double h, double p, double r)
 void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
 {
 	// Update wheel angles and rotation for front wheels
+	wheel_angle_ = wheel_angle;
+	wheel_rot_ = wheel_rotation;
+	
 	osg::Quat quat;
 #if 0
 	quat.makeRotate(
@@ -206,6 +212,11 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
 		0, osg::Vec3(0, 0, 1)); // Heading
 	wheel_[2]->setAttitude(quat);
 	wheel_[3]->setAttitude(quat);
+}
+
+void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta)
+{
+	UpdateWheels(wheel_angle, wheel_rot_ + wheel_rotation_delta);
 }
 
 Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines)
@@ -817,7 +828,6 @@ bool EventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
 	switch (ea.getEventType())
 	{
 	case(osgGA::GUIEventAdapter::RESIZE):
-		LOG("Resize %d %d", ea.getWindowWidth(), ea.getWindowHeight());
 		viewer_->SetInfoTextProjection(ea.getWindowWidth(), ea.getWindowHeight());
 		break;
 	}

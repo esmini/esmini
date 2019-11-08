@@ -722,7 +722,7 @@ namespace roadmanager
 		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
 		void SetHeading(double heading);
 		void SetHeadingRelative(double heading);
-		void XYZH2TrackPos(double x, double y, double z, double h, bool evaluateZAndPitch = true);
+		void XYZH2TrackPos(double x, double y, double z, double h, bool copyZAndPitch = true);
 		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 		double FindDistToPos(Position *pos, RoadLink *link, int &call_count, int level_count, bool &found);
 
@@ -876,6 +876,11 @@ namespace roadmanager
 		double GetZ() const { return z_; }
 
 		/**
+		Retrieve the road Z-value 
+		*/
+		double GetZRoad() const { return z_road_; }
+
+		/**
 		Retrieve the world coordinate heading angle (radians)
 		*/
 		double GetH() const { return h_; }
@@ -899,6 +904,11 @@ namespace roadmanager
 		Retrieve the world coordinate pitch angle (radians)
 		*/
 		double GetP() const { return p_; }
+
+		/**
+		Retrieve the road pitch value
+		*/
+		double GetPRoad() const { return p_road_; }
 
 		/**
 		Retrieve the world coordinate roll angle (radians)
@@ -931,9 +941,9 @@ namespace roadmanager
 		void Track2Lane();
 		void Track2XYZ();
 		void Lane2Track();
-		void XYZ2Track(bool evaluateZAndPitch = false);
+		void XYZ2Track(bool alignZAndPitch = false);
 		void SetLongitudinalTrackPos(int track_id, double s);
-		bool EvaluateZAndPitch();
+		bool EvaluateRoadZAndPitch(bool alignZAndPitch);
 		double GetDistToTrackGeom(double x3, double y3, double z3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm);
 
 		// route reference
@@ -958,6 +968,8 @@ namespace roadmanager
 		double	h_;
 		double	p_;
 		double	r_;
+		double	z_road_;
+		double	p_road_;
 
 		// keep track for fast incremental updates of the position
 		int		track_idx_;		// road index 

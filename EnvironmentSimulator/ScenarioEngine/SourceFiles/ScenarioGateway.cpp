@@ -23,8 +23,8 @@ ObjectState::ObjectState()
 	state_.id = -1;
 }
 
-#if 0
-ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, roadmanager::Position *pos, double speed, double wheel_angle, int ghost_id)
+
+ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, roadmanager::Position *pos, double speed, double wheel_angle, double wheel_rot)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -36,10 +36,10 @@ ObjectState::ObjectState(int id, std::string name, int model_id, int control, do
 	state_.pos = *pos;
 	state_.speed = (float)speed;
 	state_.wheel_angle = (float)wheel_angle;
-	state_.ghost_id = ghost_id;
+	state_.wheel_rot = (float)wheel_rot;
 }
 
-ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, double x, double y, double z, double h, double p, double r, double speed, double wheel_angle, int ghost_id)
+ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, double x, double y, double z, double h, double p, double r, double speed, double wheel_angle, double wheel_rot)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -51,10 +51,10 @@ ObjectState::ObjectState(int id, std::string name, int model_id, int control, do
 	state_.pos.SetInertiaPos(x, y, z, h, p, r);
 	state_.speed = (float)speed;
 	state_.wheel_angle = (float)wheel_angle;
-	state_.ghost_id = ghost_id;
+	state_.wheel_rot = (float)wheel_rot;
 }
 
-ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed, double wheel_angle, int ghost_id)
+ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed, double wheel_angle, double wheel_rot)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -66,51 +66,9 @@ ObjectState::ObjectState(int id, std::string name, int model_id, int control, do
 	state_.pos.SetLanePos(roadId, laneId, s, laneOffset);
 	state_.speed = (float)speed;
 	state_.wheel_angle = (float)wheel_angle;
-	state_.ghost_id = ghost_id;
-}
-#else
-ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, roadmanager::Position *pos, double speed, double wheel_angle)
-{
-	memset(&state_, 0, sizeof(ObjectStateStruct));
-
-	state_.id = id;
-	state_.model_id = model_id;
-	state_.control = control;
-	state_.timeStamp = (float)timestamp;
-	strncpy(state_.name, name.c_str(), NAME_LEN);
-	state_.pos = *pos;
-	state_.speed = (float)speed;
-	state_.wheel_angle = (float)wheel_angle;
+	state_.wheel_rot = (float)wheel_rot;
 }
 
-ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, double x, double y, double z, double h, double p, double r, double speed, double wheel_angle)
-{
-	memset(&state_, 0, sizeof(ObjectStateStruct));
-
-	state_.id = id;
-	state_.model_id = model_id;
-	state_.control = control;
-	state_.timeStamp = (float)timestamp;
-	strncpy(state_.name, name.c_str(), NAME_LEN);
-	state_.pos.SetInertiaPos(x, y, z, h, p, r);
-	state_.speed = (float)speed;
-	state_.wheel_angle = (float)wheel_angle;
-}
-
-ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed, double wheel_angle)
-{
-	memset(&state_, 0, sizeof(ObjectStateStruct));
-
-	state_.id = id;
-	state_.model_id = model_id;
-	state_.control = control;
-	state_.timeStamp = (float)timestamp;
-	strncpy(state_.name, name.c_str(), NAME_LEN);
-	state_.pos.SetLanePos(roadId, laneId, s, laneOffset);
-	state_.speed = (float)speed;
-	state_.wheel_angle = (float)wheel_angle;
-}
-#endif
 void ObjectState::Print()
 {
 	LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\tcontrol: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f\twheel_angle %.2f",
