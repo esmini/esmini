@@ -15,8 +15,6 @@
 
 using namespace scenarioengine;
 
-
-
 #ifdef _SCENARIO_VIEWER
 
 #include "viewer.hpp"
@@ -83,6 +81,9 @@ double deltaSimTime = 0;  // external - used by Viewer::RubberBandCamera
 static char *args[] = { "kalle", "--window", "50", "50", "1000", "500" };
 
 
+#ifdef _SCENARIO_VIEWER
+
+
 static void Set_se_steering_target_pos(int id, float x, float y, float z)
 {
 	scenarioCar[id].se_steering_target_pos[0] = x;
@@ -100,8 +101,6 @@ static void Set_se_ghost_pos(int id, float x, float y, float z)
 
 	scenarioCar[id].flag_received_ghost_pos = true;
 }
-
-#ifdef _SCENARIO_VIEWER
 
 ScenarioCar *getScenarioCarById(int id)
 {
@@ -220,6 +219,11 @@ void viewer_thread(void*)
 	}
 	viewer_state = ViewerState::VIEWER_NOT_RUNNING;
 }
+
+#else
+
+static void Set_se_steering_target_pos(int id, float x, float y, float z) {}
+static void Set_se_ghost_pos(int id, float x, float y, float z) {}
 
 #endif
 
@@ -600,14 +604,14 @@ extern "C"
 
 		if (scenarioEngine->entities.object_[object_id]->ghost_)
 		{
-			*speed_ghost = scenarioEngine->entities.object_[object_id]->ghost_->speed_;
+			*speed_ghost = (float)scenarioEngine->entities.object_[object_id]->ghost_->speed_;
 			
-			float ego_speed = scenarioEngine->entities.object_[object_id]->speed_;
+			float ego_speed = (float)scenarioEngine->entities.object_[object_id]->speed_;
 			if (fabs(scenarioEngine->entities.object_[object_id]->speed_) < SMALL_NUMBER)
 			{
-				ego_speed = SMALL_NUMBER * SIGN(scenarioEngine->entities.object_[object_id]->speed_);
+				ego_speed = (float)(SMALL_NUMBER * SIGN(scenarioEngine->entities.object_[object_id]->speed_));
 			}
-			*hwt_ghost = GetLengthOfVector3D(data->local_pos_x, data->local_pos_y, data->local_pos_z) / ego_speed;
+			*hwt_ghost = (float)GetLengthOfVector3D(data->local_pos_x, data->local_pos_y, data->local_pos_z) / ego_speed;
 		}
 
 		Set_se_ghost_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
