@@ -30,17 +30,21 @@ typedef struct
 	int id;
 	viewer::CarModel *carModel;
 	ObjectStateStruct state;
+
+	double se_ghost_pos[3];
+	bool flag_received_ghost_pos;
+	double se_steering_target_pos[3];
+	bool flag_received_steering_target_pos;
 } ScenarioCar;
 
 static std::vector<ScenarioCar> scenarioCar;
-
 static viewer::Viewer *scViewer = 0;
-
 
 static bool closing = false;
 static SE_Thread thread;
 static SE_Mutex mutex;
-
+static int COLOR_GREEN[3] = { 0x40, 0xB0, 0x50 };
+static int COLOR_GRAY[3] = { 0xBB, 0xBB, 0xBB };
 
 typedef enum {
 	VIEWER_NOT_RUNNING,
@@ -79,25 +83,22 @@ double deltaSimTime = 0;  // external - used by Viewer::RubberBandCamera
 static char *args[] = { "kalle", "--window", "50", "50", "1000", "500" };
 
 
-static double se_ghost_pos[3];
-static int flag_received_ghost_pos = 0;
-static double se_steering_target_pos[3];
-static int flag_received_steering_target_pos = 0;
-
-static void Set_se_steering_target_pos(float x, float y, float z)
+static void Set_se_steering_target_pos(int id, float x, float y, float z)
 {
-	se_steering_target_pos[0] = x;
-	se_steering_target_pos[1] = y;
-	se_steering_target_pos[0] = z;
-	flag_received_steering_target_pos = 1;
+	scenarioCar[id].se_steering_target_pos[0] = x;
+	scenarioCar[id].se_steering_target_pos[1] = y;
+	scenarioCar[id].se_steering_target_pos[2] = z;
+
+	scenarioCar[id].flag_received_steering_target_pos = true;
 }
 
-static void Set_se_ghost_pos(float x, float y, float z)
+static void Set_se_ghost_pos(int id, float x, float y, float z)
 {
-	se_ghost_pos[0] = x;
-	se_ghost_pos[1] = y;
-	se_ghost_pos[2] = z;
-	flag_received_ghost_pos = 1;
+	scenarioCar[id].se_ghost_pos[0] = x;
+	scenarioCar[id].se_ghost_pos[1] = y;
+	scenarioCar[id].se_ghost_pos[2] = z;
+
+	scenarioCar[id].flag_received_ghost_pos = true;
 }
 
 #ifdef _SCENARIO_VIEWER
@@ -149,6 +150,8 @@ void viewer_thread(void*)
 			if (sc == 0)
 			{
 				ScenarioCar new_sc;
+				new_sc.flag_received_ghost_pos = false;
+				new_sc.flag_received_steering_target_pos = false;
 
 				LOG("Creating car %d - got state from gateway", o->state_.id);
 
@@ -158,6 +161,16 @@ void viewer_thread(void*)
 				int carModelID = o->state_.model_id;
 				bool transparent = scenarioEngine->entities.object_[i]->control_ == Object::Control::HYBRID_GHOST ? true : false;
 				new_sc.carModel = scViewer->AddCar(carModelsFiles_[carModelID], transparent);
+
+				if (scenarioEngine->entities.object_[i]->GetControl() == Object::Control::HYBRID_EXTERNAL)
+				{
+					new_sc.carModel->speed_sensor_ = scViewer->CreateSensor(COLOR_GRAY, true, true, 0.4, 1.0);
+					new_sc.carModel->steering_sensor_ = scViewer->CreateSensor(COLOR_GREEN, false, true, 0.2, 3.0);
+				}
+				else if (scenarioEngine->entities.object_[i]->GetControl() == Object::Control::EXTERNAL)
+				{
+					scViewer->CreateRoadSensors(new_sc.carModel);
+				}
 
 				// Add it to the list of scenario cars
 				scenarioCar.push_back(new_sc);
@@ -179,25 +192,13 @@ void viewer_thread(void*)
 				c->carModel->SetPosition(c->state.pos.GetX(), c->state.pos.GetY(), c->state.pos.GetZ());
 				c->carModel->SetRotation(c->state.pos.GetH(), c->state.pos.GetP(), c->state.pos.GetR());
 				c->carModel->UpdateWheelsDelta(c->state.wheel_angle, fmod(c->state.speed * deltaSimTime / 0.35, 2*M_PI));
+				
+				scViewer->UpdateSensor(c->carModel->speed_sensor_, &c->state.pos, c->se_steering_target_pos);
+				scViewer->UpdateSensor(c->carModel->steering_sensor_, &c->state.pos, c->se_ghost_pos);
+				scViewer->UpdateRoadSensors(c->carModel->road_sensor_, c->carModel->lane_sensor_, &c->state.pos);
 			}
 		}
 
-#if VISUALIZE_DRIVER_MODEL_TARGET
-		// Update debug visualization items (road positions, steering target and such)
-		// Assume first car to be the Ego (Vehicle Under Test)
-		if (scenarioCar.size() > 0)
-		{
-			scViewer->UpdateVehicleLineAndPoints(&scenarioCar[0].state.pos);
-			if (flag_received_steering_target_pos)
-			{
-				scViewer->UpdateDriverModelPoint(&scenarioCar[0].state.pos, se_steering_target_pos);
-			}
-			if (flag_received_steering_target_pos)
-			{
-				scViewer->UpdateDriverGhostPoint(&scenarioCar[0].state.pos, se_ghost_pos);
-			}
-		}
-#endif
 		// Update info text 
 		static char str_buf[128];
 		snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", scenarioEngine->getSimulationTime(),
@@ -580,11 +581,7 @@ extern "C"
 			return -1;
 		}
 
-		se_steering_target_pos[0] = data->global_pos_x;
-		se_steering_target_pos[1] = data->global_pos_y;
-		se_steering_target_pos[2] = data->global_pos_z;
-
-		flag_received_steering_target_pos = 1;
+		Set_se_steering_target_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
 
 		return 0;
 	}
@@ -613,7 +610,7 @@ extern "C"
 			*hwt_ghost = GetLengthOfVector3D(data->local_pos_x, data->local_pos_y, data->local_pos_z) / ego_speed;
 		}
 
-		Set_se_ghost_pos(data->global_pos_x, data->global_pos_y, data->global_pos_z);
+		Set_se_ghost_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
 
 		return 0;
 	}

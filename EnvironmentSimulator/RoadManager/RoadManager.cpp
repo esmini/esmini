@@ -2718,6 +2718,11 @@ bool Position::EvaluateRoadZAndPitch(bool alignZAndPitch)
 
 void Position::Track2XYZ()
 {
+	if (GetOpenDrive()->GetNumOfRoads() == 0)
+	{
+		return;
+	}
+
 	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
 	if (road == 0)
 	{
@@ -2772,6 +2777,11 @@ void Position::SetLongitudinalTrackPos(int track_id, double s)
 {
 	Road *road;
 
+	if (GetOpenDrive()->GetNumOfRoads() == 0)
+	{
+		return;
+	}
+	
 	if ((road = GetOpenDrive()->GetRoadById(track_id)) == 0)
 	{
 		LOG("Position::Set Error: track %d not found\n", track_id);
@@ -3631,6 +3641,10 @@ static void CalcSteeringTarget(Position *pivot, Position *target, SteeringTarget
 
 int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, bool along_reference_lane)
 {
+	if (GetOpenDrive()->GetNumOfRoads() == 0)
+	{
+		return -1;
+	}
 	Position target(*this);  // Make a copy of current position
 	target.offset_ = 0.0;  // Fix to lane center
 

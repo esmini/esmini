@@ -26,6 +26,15 @@
 
 namespace viewer
 {
+	class PointSensor
+	{
+	public:
+		osg::ref_ptr<osg::PositionAttitudeTransform> ball_;
+		double ball_radius_;
+		osg::ref_ptr<osg::Geometry> line_;
+		osg::ref_ptr<osg::Vec3Array> line_vertex_data_;
+	};
+
 	class CarModel
 	{
 	public:
@@ -41,6 +50,10 @@ namespace viewer
 		double wheel_angle_;
 		double wheel_rot_;
 		std::string filename_;
+		PointSensor *steering_sensor_;
+		PointSensor *speed_sensor_;
+		PointSensor *road_sensor_;
+		PointSensor *lane_sensor_;
 
 		CarModel(osg::ref_ptr<osg::LOD> lod, double transparency = 0);
 		~CarModel();
@@ -58,20 +71,9 @@ namespace viewer
 		int currentCarInFocus_;
 		int camMode_;
 		osg::ref_ptr<osg::Group> line_node_;
-		
-		// Driver model steering debug visualization
-		osg::ref_ptr<osg::PositionAttitudeTransform> dm_road_info_ball_;
-		osg::ref_ptr<osg::Geometry> dm_road_info_line_;
-		osg::ref_ptr<osg::Vec3Array> dm_road_info_line_vertexData_;
-		osg::ref_ptr<osg::Geometry> dm_ghost_info_line_;
-		osg::ref_ptr<osg::Vec3Array> dm_ghost_info_line_vertexData_;
 
 		// Vehicle position debug visualization
 		osg::ref_ptr<osg::Node> shadow_node_;
-		osg::ref_ptr<osg::Vec3Array> vertexData;
-		osg::ref_ptr<osg::Geometry> vehicleLine_;
-		osg::ref_ptr<osg::Vec3Array> pointData;
-		osg::ref_ptr<osg::Geometry> vehiclePoint_;
 
 		// Road debug visualization
 		osg::ref_ptr<osg::Group> odrLines_;
@@ -94,9 +96,8 @@ namespace viewer
 		CarModel* AddCar(std::string modelFilepath, bool transparent = false);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
-		void UpdateDriverGhostPoint(roadmanager::Position *pos, double ghost_pos[3]);
-		void UpdateDriverModelPoint(roadmanager::Position *pos, double target_pos[3]);
-		void UpdateVehicleLineAndPoints(roadmanager::Position *pos);
+		void UpdateSensor(PointSensor *sensor, roadmanager::Position *pivot_pos, double target_pos[3]);
+		void UpdateRoadSensors(PointSensor *road_sensor, PointSensor *lane_sensor, roadmanager::Position *pos);
 		void setKeyUp(bool pressed) { keyUp_ = pressed; }
 		void setKeyDown(bool pressed) { keyDown_ = pressed; }
 		void setKeyLeft(bool pressed) { keyLeft_ = pressed; }
@@ -111,14 +112,14 @@ namespace viewer
 		void SetInfoTextProjection(int width, int height);
 		void SetInfoText(const char* text);
 		void ShowInfoText(bool show);
+		PointSensor* CreateSensor(int color[], bool create_ball, bool create_line, double ball_radius, double line_width);
+		bool CreateRoadSensors(CarModel *vehicle_model);
 
 	private:
 
 		std::string scenarioDir_;
 
 		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
-		bool CreateVehicleLineAndPoint(osg::Group* parent);
-		bool CreateDriverModelLineAndPoint(osg::Group* parent);
 		bool keyUp_;
 		bool keyDown_;
 		bool keyLeft_;
@@ -126,10 +127,10 @@ namespace viewer
 		bool quit_request_;
 	};
 
-	class EventHandler : public osgGA::GUIEventHandler
+	class ViewerEventHandler : public osgGA::GUIEventHandler
 	{
 	public:
-		EventHandler(Viewer *viewer) : viewer_(viewer) {}
+		ViewerEventHandler(Viewer *viewer) : viewer_(viewer) {}
 		bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&);
 
 	private:

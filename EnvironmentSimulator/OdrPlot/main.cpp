@@ -27,7 +27,6 @@
 using namespace roadmanager;
 
 //#define REF_ONLY
-#define MIN(x, y) ((x)<(y)?(x):(y))
 
 int main(int argc, char *argv[])
 {

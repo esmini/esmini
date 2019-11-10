@@ -14,6 +14,14 @@
  * This application is an example of how to integrate a simple Ego vehicle into the environment simulator
  * The vehicle is implemented in a separate module (vehicle.cpp)
  * Communication is by means of function calls
+ * 
+ * Ego means that the vehicle is controlled externally, e.g. interactively by a human-in-the-loop
+ * or by an AD controller or by an external test framework providing stimuli for a vehicle simulator
+ *
+ * This application support three types of vehicle controls:
+ * 1. Internal: Scenario engine executes according to OpenSCENARIO description (default)
+ * 2. External: The vehicle is controlled by the user. 
+ * 3. Hyybrid: Automatic driver model following a ghost vehicle performing the scenario as i 1.
  */
 
 #include <iostream>
@@ -31,22 +39,16 @@ static SE_Thread thread;
 static SE_Mutex mutex;
 using namespace scenarioengine;
 
-#define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
-#define MAX(x, y) (y > x ? y : x)
-#define MIN(x, y) (y < x ? y : x)
+static int COLOR_GREEN[3] = { 0x40, 0xA0, 0x50 };
+static int COLOR_GRAY[3] = { 0xBB, 0xBB, 0xBB };
 
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static vehicle::Vehicle *ego;
 static double simTime = 0;
-static double speed_target_pos[3];
-static double steering_target_pos[3];
-static double speed_target_distance;
-static double speed_target_hwt;
-static double steering_target_distance;
-static double steering_target_heading;
+static int ego_id = -1;
 
-static roadmanager::Position *ego_pos = 0;
+roadmanager::OpenDrive *odrManager = 0;
 
 typedef enum {
 	VIEWER_NOT_STARTED,
@@ -70,41 +72,89 @@ static viewer::Viewer *scenarioViewer;
 
 typedef struct
 {
-	int road_id_init;
-	int lane_id_init;
-	roadmanager::Position *pos;
-	viewer::CarModel *graphics_model;
-	vehicle::Vehicle *vehicle;
-} EgoCar;
+	scenarioengine::Object *obj;
+	viewer::CarModel *gfx_model;
+	vehicle::Vehicle *dyn_model;
 
-static EgoCar *egoCar;
+	double speed_target_pos[3];
+	double speed_target_distance;
+	double speed_target_hwt;
 
-typedef struct
+	double steering_target_pos[3];
+	double steering_target_distance;
+	double steering_target_heading;
+} ScenarioVehicle;
+
+static std::vector<ScenarioVehicle> scenarioVehicle;
+
+int SetupVehicles()
 {
-	int id;
-	viewer::CarModel *carModel;
-	roadmanager::Position pos;
-} ScenarioCar;
+	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	{
+		ScenarioVehicle vh;
 
-static std::vector<ScenarioCar> scenarioCar;
+		vh.obj = scenarioEngine->entities.object_[i];
+		//  Create vehicles for visualization
+		bool transparent = vh.obj->control_ == Object::Control::HYBRID_GHOST ? true : false;
+		if (scenarioViewer->AddCar(vh.obj->model_filepath_, transparent) == 0)
+		{
+			delete scenarioViewer;
+			viewer_state = ViewerState::VIEWER_QUIT;
+			return -1;
+		}
 
-int SetupEgo(roadmanager::OpenDrive *odrManager, roadmanager::Position init_pos)
-{
-	egoCar = new EgoCar;
-	egoCar->road_id_init = init_pos.GetTrackId();
-	egoCar->lane_id_init = init_pos.GetLaneId();
-	egoCar->pos = new roadmanager::Position(init_pos);
+		vh.gfx_model = scenarioViewer->cars_[i];
+
+		if (vh.obj->GetControl() == Object::Control::EXTERNAL)
+		{
+			if (ego_id != -1)
+			{
+				LOG("Only one Ego vehicle (external control) supported. Already registered id %d", ego_id);
+				return -1;
+			}
+			else
+			{
+				LOG("Registering Ego id %d", i);
+				ego_id = i;
+			}
+		}
+
+		if (vh.obj->GetControl() == Object::Control::EXTERNAL ||
+			vh.obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+		{
+			roadmanager::Position *pos = &vh.obj->pos_;
+			vh.dyn_model = new vehicle::Vehicle(pos->GetX(), pos->GetY(), pos->GetH(), vh.gfx_model->size_x);
+		}
+		else
+		{
+			vh.dyn_model = 0;
+		}
+
+		if (vh.obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+		{
+			vh.gfx_model->speed_sensor_ = scenarioViewer->CreateSensor(COLOR_GRAY, true, true, 0.4, 1);
+			vh.gfx_model->steering_sensor_ = scenarioViewer->CreateSensor(COLOR_GREEN, false, true, 0.4, 3);
+		}
+		else if (vh.obj->GetControl() == Object::Control::EXTERNAL)
+		{
+			scenarioViewer->CreateRoadSensors(vh.gfx_model);
+		}
+
+		scenarioVehicle.push_back(vh);
+	}
 
 	return 0;
 }
 
-void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
+void UpdateExternalVehicle(int id, double deltaTimeStep, viewer::Viewer *viewer)
 {
-	double speed_limit = egoCar->pos->GetSpeedLimit();
+	ScenarioVehicle *vh = &scenarioVehicle[id];
+
+	double speed_limit = vh->obj->pos_.GetSpeedLimit();
 	if (speed_limit < SMALL_NUMBER)
 	{
 		// no speed limit defined, set something with regards to number of lanes
-		if(egoCar->pos->GetRoadById(egoCar->pos->GetTrackId())->GetNumberOfDrivingLanesSide(egoCar->pos->GetS(), SIGN(egoCar->pos->GetLaneId())) > 1)
+		if(vh->obj->pos_.GetRoadById(vh->obj->pos_.GetTrackId())->GetNumberOfDrivingLanesSide(vh->obj->pos_.GetS(), SIGN(vh->obj->pos_.GetLaneId())) > 1)
 		{
 			speed_limit = 110 / 3.6;
 		}
@@ -113,9 +163,9 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 			speed_limit = 60 / 3.6;
 		}
 	}
-	egoCar->vehicle->SetMaxSpeed(speed_limit);
+	vh->dyn_model->SetMaxSpeed(speed_limit);
 	
-	if (scenarioEngine->GetControl() == Object::Control::EXTERNAL)
+	if (vh->obj->GetControl() == Object::Control::EXTERNAL)
 	{
 		vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
 		if (viewer->getKeyUp())
@@ -138,28 +188,25 @@ void UpdateEgo(double deltaTimeStep, viewer::Viewer *viewer)
 		}
 
 		// Update vehicle motion
-		egoCar->vehicle->DrivingControlBinary(deltaTimeStep, accelerate, steer);
+		vh->dyn_model->DrivingControlBinary(deltaTimeStep, accelerate, steer);
 	}
-	else if (scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
+	else if (vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 	{
-		egoCar->vehicle->DrivingControlTarget(deltaTimeStep, steering_target_heading, speed_target_hwt);
+		vh->dyn_model->DrivingControlTarget(deltaTimeStep, vh->steering_target_heading, vh->speed_target_hwt);
 	}
 	
 	// Set OpenDRIVE position
-	egoCar->pos->XYZH2TrackPos(egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_, egoCar->vehicle->heading_);
+	vh->obj->pos_.XYZH2TrackPos(vh->dyn_model->posX_, vh->dyn_model->posY_, vh->dyn_model->posZ_,
+		vh->dyn_model->heading_);
 
 	// Fetch Z and Pitch from OpenDRIVE position
-	egoCar->vehicle->posZ_ = egoCar->pos->GetZ();
-	egoCar->vehicle->pitch_ = egoCar->pos->GetP();
-
+	vh->dyn_model->posZ_ = vh->obj->pos_.GetZ();
+	vh->dyn_model->pitch_ = vh->obj->pos_.GetP();
 }
 
 static void viewer_thread(void *args)
 {
 	osg::ArgumentParser *parser = (osg::ArgumentParser*)args;
-	int firstScenarioVehicle = 
-		(scenarioEngine->GetControl() == Object::Control::EXTERNAL || 
-		 scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL) ? 1 : 0;
 
 	// Create viewer
 	scenarioViewer = new viewer::Viewer(
@@ -167,7 +214,9 @@ static void viewer_thread(void *args)
 		scenarioEngine->getSceneGraphFilename().c_str(), 
 		scenarioEngine->getScenarioFilename().c_str(), 
 		*parser, 
-		scenarioEngine->GetControl() == Object::Control::INTERNAL ? false : true);
+		scenarioEngine->entities.object_[0]->GetControl() == Object::Control::INTERNAL ? false : true);
+
+	SetupVehicles();
 
 	std::string info_text_str;
 	parser->read("--info_text", info_text_str);
@@ -176,67 +225,34 @@ static void viewer_thread(void *args)
 		scenarioViewer->ShowInfoText(false);
 	}
 
-	// Create Ego vehicle, 
-	if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
-		scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
-	{
-		if ((egoCar->graphics_model = scenarioViewer->AddCar(scenarioEngine->entities.object_[0]->model_filepath_)) == 0)
-		{
-			delete scenarioViewer;
-			viewer_state = ViewerState::VIEWER_QUIT;
-			return;
-		}
-		egoCar->vehicle = new vehicle::Vehicle(egoCar->pos->GetX(), egoCar->pos->GetY(), egoCar->pos->GetH(), egoCar->graphics_model->size_x);
-	}
-
-	//  Create cars for visualization
-	for (size_t i = firstScenarioVehicle; i < scenarioEngine->entities.object_.size(); i++)
-	{
-		bool transparent = scenarioEngine->entities.object_[i]->control_ == Object::Control::HYBRID_GHOST ? true : false;
-
-		if (scenarioViewer->AddCar(scenarioEngine->entities.object_[i]->model_filepath_, transparent) == 0)
-		{
-			delete scenarioViewer;
-			viewer_state = ViewerState::VIEWER_QUIT;
-			return;
-		}
-	}
-
 	while (!scenarioViewer->osgViewer_->done())
 	{
 		mutex.Lock();
 
 		// Visualize scenario cars
-		for (size_t i = firstScenarioVehicle; i < scenarioEngine->entities.object_.size(); i++)
+		for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 		{
-			viewer::CarModel *car = scenarioViewer->cars_[i];
-			roadmanager::Position pos = scenarioEngine->entities.object_[i]->pos_;
+			ScenarioVehicle *vh = &scenarioVehicle[i];
 
-			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
-			car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
-		}
+			vh->gfx_model->SetPosition(vh->obj->pos_.GetX(), vh->obj->pos_.GetY(), vh->obj->pos_.GetZ());
+			vh->gfx_model->SetRotation(vh->obj->pos_.GetH(), vh->obj->pos_.GetP(), vh->obj->pos_.GetR());
 
-
-		if (ego_pos && ego_pos->GetOpenDrive()->GetNumOfRoads() > 0)
-		{
-			// Update road and vehicle debug lines 
-			scenarioViewer->UpdateVehicleLineAndPoints(ego_pos);
-			scenarioViewer->UpdateDriverModelPoint(ego_pos, speed_target_pos);
-
-			if (scenarioEngine->entities.object_[0]->ghost_ != 0)
+			if (vh->obj->GetControl() == Object::Control::EXTERNAL ||
+				vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 			{
-				scenarioViewer->UpdateDriverGhostPoint(ego_pos, steering_target_pos);
-			}
-		}
 
-		if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
-			scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
-		{
-			// Visualize Ego car separatelly, if external control set
-			// update 3D model transform
-			egoCar->graphics_model->SetPosition(egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_);
-			egoCar->graphics_model->SetRotation(egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0.0);
-			egoCar->graphics_model->UpdateWheels(egoCar->vehicle->wheelAngle_, egoCar->vehicle->wheelRotation_);
+				vh->gfx_model->UpdateWheels(vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_);
+
+				if (vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+				{
+					scenarioViewer->UpdateSensor(vh->gfx_model->speed_sensor_, &vh->obj->pos_, vh->speed_target_pos);
+					scenarioViewer->UpdateSensor(vh->gfx_model->steering_sensor_, &vh->obj->pos_, vh->steering_target_pos);
+				}
+				else if (odrManager->GetNumOfRoads() > 0 && vh->obj->GetControl() == Object::Control::EXTERNAL)
+				{
+					scenarioViewer->UpdateRoadSensors(vh->gfx_model->road_sensor_, vh->gfx_model->lane_sensor_, &vh->obj->pos_);
+				}
+			}
 		}
 
 		mutex.Unlock();
@@ -244,7 +260,7 @@ static void viewer_thread(void *args)
 		// Update info text 
 		static char str_buf[128];
 		snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", scenarioEngine->getSimulationTime(), 
-			3.6 * scenarioEngine->entities.object_[scenarioViewer->currentCarInFocus_]->speed_);
+			3.6 * scenarioVehicle[scenarioViewer->currentCarInFocus_].obj->speed_);
 		scenarioViewer->SetInfoText(str_buf);
 
 		scenarioViewer->osgViewer_->frame();
@@ -270,7 +286,6 @@ int main(int argc, char** argv)
 	Logger::Inst().SetCallback(log_callback);
 
 	ScenarioGateway *scenarioGateway;
-	roadmanager::OpenDrive *odrManager;
 	roadmanager::Position *lane_pos = new roadmanager::Position();
 	roadmanager::Position *track_pos = new roadmanager::Position();
 
@@ -337,13 +352,6 @@ int main(int argc, char** argv)
 	// Report all vehicles initially - to communicate initial position for external vehicles as well
 	scenarioEngine->step(0.0, true);
 
-	if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
-		scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
-	{
-		// Setup Ego with initial position from the gateway
-		SetupEgo(odrManager, scenarioGateway->getObjectStatePtrByIdx(0)->state_.pos);
-	}
-
 	// Launch viewer in a separate thread
 	thread.Start(viewer_thread, &arguments);
 
@@ -378,84 +386,72 @@ int main(int argc, char** argv)
 			// ScenarioEngine
 			mutex.Lock();
 
-
-			// Set steering target point at a distance ahead proportional to the speed
-			roadmanager::Position *pos = 0;
-
-			if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
-				scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
+			for (size_t i = 0; i < scenarioVehicle.size(); i++)
 			{
-				ego_pos = egoCar->pos;
-				speed_target_distance = MAX(7, egoCar->vehicle->speed_ * 2.0);
-				steering_target_distance = 0.5 * speed_target_distance;
-			}
-			else if (scenarioEngine->entities.object_.size() > 0)
-			{
-				ego_pos = &scenarioEngine->entities.object_[0]->pos_;
-				speed_target_distance = MAX(7, scenarioEngine->entities.object_[0]->speed_ * 2.0);
-				steering_target_distance = 0.5 * speed_target_distance;
-			}
-
-			// find out what direction is forward, according to vehicle relative road heading 
-			if (GetAbsAngleDifference(ego_pos->GetH(), ego_pos->GetHRoadInDrivingDirection()) > M_PI_2)
-			{
-				steering_target_distance *= -1;
-				speed_target_distance *= -1;
-			}
-
-			// Find and visualize steering target point	
-			roadmanager::SteeringTargetInfo data;
-			if (scenarioEngine->GetControl() == Object::Control::EXTERNAL || scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
-			{
-				// Speed - common speed target for these control modes
-				ego_pos->GetSteeringTargetInfo(speed_target_distance, &data, false);
-				memcpy(speed_target_pos, data.global_pos, sizeof(speed_target_pos));
-				double ego_speed = egoCar->vehicle->speed_;
-
-				// Steering
-				if (scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
+				ScenarioVehicle *vh = &scenarioVehicle[i];
+				if (vh->obj->GetControl() == Object::Control::EXTERNAL ||
+					vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 				{
-					ego_pos->GetSteeringTargetInfo(&scenarioEngine->entities.object_[0]->ghost_->pos_, &data);
-					memcpy(steering_target_pos, data.global_pos, sizeof(steering_target_pos));
-					steering_target_heading = data.angle;
+					// Set steering target point at a distance ahead proportional to the speed
+					vh->speed_target_distance = MAX(7, vh->dyn_model->speed_ * 2.0);
+					vh->steering_target_distance = 0.5 * vh->speed_target_distance;
 
-					// HWT for driver model
-					double dist = SIGN(data.local_pos[0]) * GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]);
-					
-					if (fabs(ego_speed) < SMALL_NUMBER)
+					// find out what direction is forward, according to vehicle relative road heading 
+					if (GetAbsAngleDifference(vh->obj->pos_.GetH(), vh->obj->pos_.GetHRoadInDrivingDirection()) > M_PI_2)
 					{
-						ego_speed = SMALL_NUMBER * SIGN(ego_speed);						
+						vh->steering_target_distance *= -1;
+						vh->speed_target_distance *= -1;
 					}
 
-					speed_target_hwt = dist / ego_speed;
-					if (speed_target_hwt < SMALL_NUMBER)
+					// Find and visualize steering target point	
+					roadmanager::SteeringTargetInfo data;
+
+					// Speed - common speed target for these control modes
+					vh->obj->pos_.GetSteeringTargetInfo(vh->speed_target_distance, &data, true);
+					memcpy(vh->speed_target_pos, data.global_pos, sizeof(vh->speed_target_pos));
+
+					// Steering
+					if (vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 					{
-						speed_target_hwt = egoCar->vehicle->target_hwt_;
+						vh->obj->pos_.GetSteeringTargetInfo(&vh->obj->ghost_->pos_, &data);
+						memcpy(vh->steering_target_pos, data.global_pos, sizeof(vh->steering_target_pos));
+						vh->steering_target_heading = data.angle;
+
+						// HWT for driver model
+						double dist = SIGN(data.local_pos[0]) * GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]);
+
+						if (fabs(vh->dyn_model->speed_) < SMALL_NUMBER)
+						{
+							vh->dyn_model->speed_ = SMALL_NUMBER * SIGN(vh->obj->speed_);
+						}
+
+						vh->speed_target_hwt = dist / vh->dyn_model->speed_;
+						if (vh->speed_target_hwt < SMALL_NUMBER)
+						{
+							vh->speed_target_hwt = vh->dyn_model->target_hwt_;
+						}
+
+						// LOG("hwt: %f dist: %f ego_speed: %f y: %f", speed_target_hwt, dist, ego_speed, data.local_pos[0]);
+					}
+					else if(vh->obj->GetControl() == Object::Control::EXTERNAL)
+					{
+						vh->speed_target_hwt = GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]) / vh->dyn_model->speed_;
+
+						vh->obj->pos_.GetSteeringTargetInfo(vh->steering_target_distance, &data, false);
+						memcpy(vh->steering_target_pos, data.global_pos, sizeof(vh->steering_target_pos));
+						vh->steering_target_heading = data.angle;
 					}
 
-					// LOG("hwt: %f dist: %f ego_speed: %f y: %f", speed_target_hwt, dist, ego_speed, data.local_pos[0]);
-				}
-				else
-				{
-					speed_target_hwt = GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]) / ego_speed;
+					// Update vehicle dynamics/driver model
+					UpdateExternalVehicle(i, deltaSimTime, scenarioViewer);
 
-					ego_pos->GetSteeringTargetInfo(steering_target_distance, &data, false);
-					memcpy(steering_target_pos, data.global_pos, sizeof(steering_target_pos));
-					steering_target_heading = data.angle;
+					// Report updated Ego state to scenario gateway
+					std::string name = vh->obj->GetControl() == Object::Control::EXTERNAL ? "External_" : "Hybrid_external_" + i;
+					scenarioGateway->reportObject(ObjectState(i, name, 0, 1, simTime,
+						vh->dyn_model->posX_, vh->dyn_model->posY_, vh->dyn_model->posZ_,
+						vh->dyn_model->heading_, vh->dyn_model->pitch_, 0,
+						vh->dyn_model->speed_, vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_));
 				}
-			}
-			
-			if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
-				scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
-			{
-				// Update vehicle dynamics/driver model
-				UpdateEgo(deltaSimTime, scenarioViewer);
-
-				// Report updated Ego state to scenario gateway
-				scenarioGateway->reportObject(ObjectState(EGO_ID, std::string("Ego"), 0, 1, simTime,
-					egoCar->vehicle->posX_, egoCar->vehicle->posY_, egoCar->vehicle->posZ_,
-					egoCar->vehicle->heading_, egoCar->vehicle->pitch_, 0,
-					egoCar->vehicle->speed_, egoCar->vehicle->wheelAngle_, egoCar->vehicle->wheelRotation_));
 			}
 
 			scenarioEngine->step(deltaSimTime);
@@ -485,7 +481,14 @@ int main(int argc, char** argv)
 	}
 
 	delete(scenarioEngine);
-	delete(egoCar);
+	for (size_t i = 0; i < scenarioVehicle.size(); i++)
+	{
+		if (scenarioVehicle[i].dyn_model)
+		{
+			delete (scenarioVehicle[i].dyn_model);
+		}
+	}
+	scenarioVehicle.clear();
 	delete track_pos;
 	delete lane_pos;
 

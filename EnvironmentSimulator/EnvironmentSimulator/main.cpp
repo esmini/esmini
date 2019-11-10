@@ -216,8 +216,8 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	if(scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
-		scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
+	if(scenarioEngine->entities.object_[0]->GetControl() == Object::Control::EXTERNAL ||
+		scenarioEngine->entities.object_[0]->GetControl() == Object::Control::HYBRID_EXTERNAL)
 	{ 
 		// Launch UDP server to receive external Ego state
 		StartServer(scenarioEngine);
@@ -257,8 +257,8 @@ int main(int argc, char *argv[])
 		mutex.Unlock();
 	}
 
-	if (scenarioEngine->GetControl() == Object::Control::EXTERNAL ||
-		scenarioEngine->GetControl() == Object::Control::HYBRID_EXTERNAL)
+	if (scenarioEngine->entities.object_[0]->GetControl() == Object::Control::EXTERNAL ||
+		scenarioEngine->entities.object_[0]->GetControl() == Object::Control::HYBRID_EXTERNAL)
 	{
 		StopServer();
 	}

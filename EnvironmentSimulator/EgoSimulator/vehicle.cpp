@@ -23,7 +23,7 @@ using namespace vehicle;
 
 #define STEERING_RATE 5.0
 #define STEERING_MAX_ANGLE (60 * M_PI / 180)
-#define ACCELERATION_SCALE 20
+#define ACCELERATION_SCALE 40
 #define SPEED_DECLINE 0.001
 #define WHEEL_RADIUS 0.35
 #define SIGN(X) (X<0?-1:1)

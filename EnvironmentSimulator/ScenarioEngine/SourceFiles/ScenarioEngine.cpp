@@ -353,40 +353,26 @@ ScenarioGateway *ScenarioEngine::getScenarioGateway()
 	return &scenarioGateway;
 }
 
-Object::Control ScenarioEngine::GetControl()
-{
-	if (entities.object_.size() > 0)
-	{
-		return entities.object_[0]->control_;
-	}
-
-	LOG("No objects initialized yet - ask later");
-
-	return Object::Control::UNDEFINED;  // Hmm, what is a good default value...?
-}
-
-void ScenarioEngine::SetControl(RequestControlMode control)
+Object::Control ScenarioEngine::RequestControl2ObjectControl(RequestControlMode control)
 {
 	if (entities.object_.size() > 0)
 	{
 		if (control == CONTROL_INTERNAL)
 		{
-			entities.object_[0]->control_ = Object::Control::INTERNAL;
+			return Object::Control::INTERNAL;
 		}
 		else if (control == CONTROL_EXTERNAL)
 		{
-			entities.object_[0]->control_ = Object::Control::EXTERNAL;
+			return Object::Control::EXTERNAL;
 		}
 		else if (control == CONTROL_HYBRID)
 		{
-			entities.object_[0]->control_ = Object::Control::HYBRID_GHOST;
-		}
-		else 
-		{
-			LOG("Unexpected requested control mode: %d - falling back to default (INTERNAL)");
-			entities.object_[0]->control_ = Object::Control::INTERNAL;
+			return Object::Control::HYBRID_GHOST;
 		}
 	}
+
+	LOG("Unexpected requested control mode: %d - falling back to default (INTERNAL)");
+	return Object::Control::INTERNAL;
 }
 
 void ScenarioEngine::ResolveHybridVehicles()
@@ -415,10 +401,6 @@ void ScenarioEngine::ResolveHybridVehicles()
 			entities.object_.push_back(entities.object_[i]);
 			entities.object_[i] = external_vehicle;
 			entities.object_[i]->id_ = (int)i;
-
-			// Switch position of the vehicles so that the externally controlled one takes ghost's places
-
-//			entities.object_[i]->external_ = external_vehicle->ghost_;
 		}
 	}
 
@@ -442,10 +424,11 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	scenarioReader.parseParameterDeclaration();
 	scenarioReader.parseCatalogs(catalogs, &entities);
 	scenarioReader.parseEntities(entities, &catalogs);
+
 	// Possibly override control mode of first vehicle
 	if (control_mode_first_vehicle != CONTROL_BY_OSC)
 	{
-		SetControl(control_mode_first_vehicle);
+		entities.object_[0]->SetControl(RequestControl2ObjectControl(control_mode_first_vehicle));
 	}
 	ResolveHybridVehicles();
 	scenarioReader.parseInit(init, &entities, &catalogs);

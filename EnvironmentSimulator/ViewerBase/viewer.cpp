@@ -18,6 +18,7 @@
 #include <osg/Point>
 #include <osg/BlendFunc>
 #include <osg/BlendColor>
+#include <osg/Material>
 #include <osg/Geode> 
 #include <osg/ShapeDrawable>
 #include <osgGA/TrackballManipulator>
@@ -34,14 +35,10 @@
 #define SHADOW_MODEL_FILEPATH "shadow_face.osgb"  // models folder assumed to exist one level above the OpenSCENARIO file 
 #define LOD_DIST 3000
 #define LOD_SCALE_DEFAULT 1.0
-#define MIN(x, y) ((x)<(y)?(x):(y))
-#define BALL_SIZE 0.4
 
 static int COLOR_RED[3] = { 0xBB, 0x44, 0x44 };
-static int COLOR_GREEN[3] = { 0x40, 0xB0, 0x50 };
 static int COLOR_BLUE[3] = { 0x40, 0x60, 0xB0 };
-static int COLOR_YELLOW[3] = { 0xEE, 0xAA, 0x44 };
-static int COLOR_GRAY[3] = { 0x44, 0x44, 0x44 };
+static int COLOR_YELLOW[3] = { 0xCC, 0x99, 0x44 };
 static int COLOR_WHITE[3] = { 0xCC, 0xCC, 0xCA };
 
 //USE_OSGPLUGIN(fbx)
@@ -129,6 +126,10 @@ CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, double transparency)
 		return;
 	}
 	node_ = lod;
+	speed_sensor_ = 0;
+	steering_sensor_ = 0;
+	road_sensor_ = 0;
+	lane_sensor_ = 0;
 	
 	wheel_angle_ = 0;
 	wheel_rot_ = 0;
@@ -185,17 +186,11 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
 	wheel_rot_ = wheel_rotation;
 	
 	osg::Quat quat;
-#if 0
 	quat.makeRotate(
 		0, osg::Vec3(1, 0, 0), // Roll
 		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
 		wheel_angle, osg::Vec3(0, 0, 1)); // Heading
-#else
-	quat.makeRotate(
-		0, osg::Vec3(1, 0, 0), // Pitch
-		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
-		wheel_angle, osg::Vec3(0, 0, 1)); // Heading
-#endif
+
 	if (wheel_.size() < 4)
 	{
 		// Wheels not available
@@ -281,16 +276,6 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 		LOG("Viewer::Viewer Failed to create road lines!\n");
 	}
 
-	if (create_ego_debug_lines && odrManager->GetNumOfRoads() > 0 && !CreateVehicleLineAndPoint(rootnode_))
-	{
-		LOG("Viewer::Viewer Failed to create vehicle line!\n");
-	}
-
-	if (create_ego_debug_lines && odrManager->GetNumOfRoads() > 0 && !CreateDriverModelLineAndPoint(rootnode_))
-	{
-		LOG("Viewer::Viewer Failed to create driver model line and point!\n");
-	}
-
 	osgViewer_->setSceneData(rootnode_);
 
 	// Setup the camera models
@@ -327,7 +312,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 		osgViewer_->setCameraManipulator(keyswitchManipulator.get());
 	}
 
-	osgViewer_->addEventHandler(new EventHandler(this));
+	osgViewer_->addEventHandler(new ViewerEventHandler(this));
 
 	osgViewer_->getCamera()->setLODScale(lodScale_);
 	osgViewer_->getCamera()->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
@@ -589,183 +574,109 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 }
 
 
-bool Viewer::CreateVehicleLineAndPoint(osg::Group* parent)
+bool Viewer::CreateRoadSensors(CarModel *vehicle_model)
 {
-	// vehicle points
-	pointData = new osg::Vec3Array;
-	pointData->push_back(osg::Vec3d(0, 0, 0));
-	pointData->push_back(osg::Vec3d(0, 0, 0));
-
-	vehiclePoint_ = new osg::Geometry;
-	vehiclePoint_->setCullingActive(false);
-	vehiclePoint_->setVertexArray(pointData.get());
-	vehiclePoint_->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, 2));
-
-	osg::ref_ptr<osg::Point> point_point = new osg::Point;
-	point_point->setSize(20.0f);
-	vehiclePoint_->getOrCreateStateSet()->setAttributeAndModes(point_point, osg::StateAttribute::ON);
-	vehiclePoint_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-	osg::ref_ptr<osg::Vec4Array> point_color = new osg::Vec4Array;
-	point_color->push_back(osg::Vec4(COLOR_YELLOW[0] / (float)0xFF, COLOR_YELLOW[1] / (float)0xFF, COLOR_YELLOW[2] / (float)0xFF, 1.0));
-	point_color->push_back(osg::Vec4(COLOR_BLUE[0] / (float)0xFF, COLOR_BLUE[1] / (float)0xFF, COLOR_BLUE[2] / (float)0xFF, 1.0));
-	vehiclePoint_->setDataVariance(osg::Object::DYNAMIC);
-	vehiclePoint_->setColorArray(point_color.get());
-	vehiclePoint_->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-	parent->addChild(vehiclePoint_);
-
-	vertexData = new osg::Vec3Array;
-	vertexData->push_back(osg::Vec3d(0, 0, 0));
-	vertexData->push_back(osg::Vec3d(0, 0, 0));
-
-	vehicleLine_ = new osg::Geometry();
-	vehicleLine_->setCullingActive(false);
-	vehicleLine_->setVertexArray(vertexData.get());
-	vehicleLine_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
-
-	osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
-	lineWidth->setWidth(4.0f);
-	vehicleLine_->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
-	vehicleLine_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-	color->push_back(osg::Vec4(COLOR_BLUE[0] / (float)0xFF, COLOR_BLUE[1] / (float)0xFF, COLOR_BLUE[2] / (float)0xFF, 1.0));
-	vehicleLine_->setColorArray(color.get());
-	vehicleLine_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-	vehicleLine_->setDataVariance(osg::Object::DYNAMIC);
-	parent->addChild(vehicleLine_);
+	vehicle_model->road_sensor_ = CreateSensor(COLOR_YELLOW, true, false, 0.25, 2.5);
+	vehicle_model->lane_sensor_ = CreateSensor(COLOR_YELLOW, true, true, 0.25, 2.5);
 
 	return true;
 }
 
-bool Viewer::CreateDriverModelLineAndPoint(osg::Group* parent)
+PointSensor* Viewer::CreateSensor(int color[], bool create_ball, bool create_line, double ball_radius, double line_width)
 {
+	PointSensor *sensor = new PointSensor();
+
 	// Point
+	if (create_ball)
+	{
+		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+		geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere()));
+		sensor->ball_ = new osg::PositionAttitudeTransform;
+		sensor->ball_->setScale(osg::Vec3(ball_radius, ball_radius, ball_radius));
+		sensor->ball_->addChild(geode);
+		rootnode_->addChild(sensor->ball_);
 
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere()));
-	dm_road_info_ball_ = new osg::PositionAttitudeTransform;
-	dm_road_info_ball_->setScale(osg::Vec3(BALL_SIZE, BALL_SIZE, BALL_SIZE));
-	dm_road_info_ball_->addChild(geode);
-	parent->addChild(dm_road_info_ball_);
+		osg::Material *material = new osg::Material();
+		material->setDiffuse(osg::Material::FRONT, osg::Vec4(color[0] / (float)0xFF, color[1] / (float)0xFF, color[2] / (float)0xFF, 1.0));
+		material->setAmbient(osg::Material::FRONT, osg::Vec4(color[0] / (float)0xFF, color[1] / (float)0xFF, color[2] / (float)0xFF, 1.0));
+		sensor->ball_->getOrCreateStateSet()->setAttribute(material);
+		sensor->ball_radius_ = ball_radius;
+	}
 
-	// Road info lines
+	// line
+	if (create_line)
+	{
+		sensor->line_vertex_data_ = new osg::Vec3Array;
+		sensor->line_vertex_data_->push_back(osg::Vec3d(0, 0, 0));
+		sensor->line_vertex_data_->push_back(osg::Vec3d(0, 0, 0));
 
-	dm_road_info_line_vertexData_ = new osg::Vec3Array;
-	dm_road_info_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
-	dm_road_info_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
+		sensor->line_ = new osg::Geometry();
+		sensor->line_->setCullingActive(false);
+		sensor->line_->setVertexArray(sensor->line_vertex_data_.get());
+		sensor->line_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
 
-	dm_road_info_line_ = new osg::Geometry();
-	dm_road_info_line_->setCullingActive(false);
-	dm_road_info_line_->setVertexArray(dm_road_info_line_vertexData_.get());
-	dm_road_info_line_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
+		osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
+		lineWidth->setWidth(line_width);
+		sensor->line_->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+		sensor->line_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
-	osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
-	lineWidth->setWidth(4.0f);
-	dm_road_info_line_->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
-	dm_road_info_line_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+		osg::ref_ptr<osg::Vec4Array> color_ = new osg::Vec4Array;
+		color_->push_back(osg::Vec4(color[0] / (float)0xFF, color[1] / (float)0xFF, color[2] / (float)0xFF, 1.0));
+		sensor->line_->setColorArray(color_.get());
+		sensor->line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+		sensor->line_->setDataVariance(osg::Object::DYNAMIC);
+		rootnode_->addChild(sensor->line_);
+	}
 
-	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-	color->push_back(osg::Vec4(COLOR_GREEN[0] / (float)0xFF, COLOR_GREEN[1] / (float)0xFF, COLOR_GREEN[2] / (float)0xFF, 1.0));
-	dm_road_info_line_->setColorArray(color.get());
-	dm_road_info_line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-	dm_road_info_line_->setDataVariance(osg::Object::DYNAMIC);
-	parent->addChild(dm_road_info_line_);
-
-	// Ghost info lines
-
-	dm_ghost_info_line_vertexData_ = new osg::Vec3Array;
-	dm_ghost_info_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
-	dm_ghost_info_line_vertexData_->push_back(osg::Vec3d(0, 0, 0));
-
-	dm_ghost_info_line_ = new osg::Geometry();
-	dm_ghost_info_line_->setCullingActive(false);
-	dm_ghost_info_line_->setVertexArray(dm_ghost_info_line_vertexData_.get());
-	dm_ghost_info_line_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
-
-	dm_ghost_info_line_->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
-	dm_ghost_info_line_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-	osg::ref_ptr<osg::Vec4Array> color2 = new osg::Vec4Array;
-	color2->push_back(osg::Vec4(COLOR_WHITE[0] / (float)0xFF, COLOR_WHITE[1] / (float)0xFF, COLOR_WHITE[2] / (float)0xFF, 1.0));
-	dm_ghost_info_line_->setColorArray(color2.get());
-	dm_ghost_info_line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-	dm_ghost_info_line_->setDataVariance(osg::Object::DYNAMIC);
-	parent->addChild(dm_ghost_info_line_);
-
-	return true;
+	return sensor;
 }
 
-void Viewer::UpdateVehicleLineAndPoints(roadmanager::Position *pos) 
+void Viewer::UpdateRoadSensors(PointSensor *road_sensor, PointSensor *lane_sensor, roadmanager::Position *pos) 
 {
+	if (road_sensor == 0 || lane_sensor == 0)
+	{
+		return;
+	}
+
 	roadmanager::Position lane_pos(*pos);
 	roadmanager::Position track_pos(*pos);
-
-	double z_offset = 0.1;
 
 	// Points
 	track_pos.SetTrackPos(pos->GetTrackId(), pos->GetS(), 0);
 	lane_pos.SetLanePos(pos->GetTrackId(), pos->GetLaneId(), pos->GetS(), 0);
 
-	if (!pointData)
+	double road_target_pos[3] = { track_pos.GetX(), track_pos.GetY(),  track_pos.GetZ() };
+	UpdateSensor(road_sensor, pos, road_target_pos);
+
+	double lane_target_pos[3] = { lane_pos.GetX(), lane_pos.GetY(),  lane_pos.GetZ() };
+	UpdateSensor(lane_sensor, pos, lane_target_pos);
+}
+
+void Viewer::UpdateSensor(PointSensor *sensor, roadmanager::Position *pivot_pos, double target_pos[3])
+{
+	double z_offset = 0.2;
+
+	if (sensor == 0)
 	{
 		return;
 	}
-	pointData->clear();
-	pointData->push_back(osg::Vec3d(track_pos.GetX(), track_pos.GetY(), track_pos.GetZ() + z_offset));
-	pointData->push_back(osg::Vec3d(lane_pos.GetX(), lane_pos.GetY(), lane_pos.GetZ() + z_offset));
-
-	vehiclePoint_->dirtyGLObjects();
-	pointData->dirty();
 
 	// Line
-	osg::ref_ptr<osg::PositionAttitudeTransform> tx = cars_[0]->txNode_;
-
-	if (!vertexData)
+	if (sensor->line_)
 	{
-		return;
+		sensor->line_vertex_data_->clear();
+		sensor->line_vertex_data_->push_back(osg::Vec3d(pivot_pos->GetX(), pivot_pos->GetY(), pivot_pos->GetZ() + MAX(sensor->ball_radius_ / 3.0, z_offset)));
+		sensor->line_vertex_data_->push_back(osg::Vec3d(target_pos[0], target_pos[1], target_pos[2] + MAX(sensor->ball_radius_ / 3.0, z_offset)));
+		sensor->line_->dirtyGLObjects();
+		sensor->line_->dirtyBound();
+		sensor->line_vertex_data_->dirty();
 	}
-	vertexData->clear();
-	vertexData->push_back(osg::Vec3d(tx->getPosition().x(), tx->getPosition().y(), tx->getPosition().z() + 0.5));
-	vertexData->push_back(osg::Vec3d(lane_pos.GetX(), lane_pos.GetY(), lane_pos.GetZ() + z_offset));
-	vehicleLine_->dirtyGLObjects();
-	vertexData->dirty();
-}
 
-void Viewer::UpdateDriverGhostPoint(roadmanager::Position *pos, double ghost_pos[3])
-{
-	if (!dm_ghost_info_line_vertexData_)
-	{
-		return;
-	}
-	// Ghost info line
-	dm_ghost_info_line_vertexData_->clear();
-	dm_ghost_info_line_vertexData_->push_back(osg::Vec3d(pos->GetX(), pos->GetY(), pos->GetZ() + 0.5));
-	dm_ghost_info_line_vertexData_->push_back(osg::Vec3d(ghost_pos[0], ghost_pos[1], ghost_pos[2] + 0.5));
-	dm_ghost_info_line_->dirtyGLObjects();
-	dm_ghost_info_line_vertexData_->dirty();
-}
-
-
-void Viewer::UpdateDriverModelPoint(roadmanager::Position *pos, double target_pos[3])
-{
 	// Point/ball
-	if(dm_road_info_ball_)
+	if (sensor->ball_)
 	{
-		dm_road_info_ball_->setPosition(osg::Vec3(target_pos[0], target_pos[1], target_pos[2] + BALL_SIZE / 2));
+		sensor->ball_->setPosition(osg::Vec3(target_pos[0], target_pos[1], target_pos[2] + sensor->ball_radius_ / 3.0));
 	}
-
-	if (!dm_ghost_info_line_vertexData_)
-	{
-		return;
-	}
-
-	// Road info line
-	dm_road_info_line_vertexData_->clear();
-	dm_road_info_line_vertexData_->push_back(osg::Vec3d(pos->GetX(), pos->GetY(), pos->GetZ() + 0.5));
-	dm_road_info_line_vertexData_->push_back(osg::Vec3d(target_pos[0], target_pos[1], target_pos[2] + BALL_SIZE / 2));
-	dm_road_info_line_->dirtyGLObjects();
-	dm_road_info_line_vertexData_->dirty();
 }
 
 int Viewer::AddEnvironment(const char* filename)
@@ -823,7 +734,7 @@ void Viewer::SetInfoTextProjection(int width, int height)
 	infoTextCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, width, 0, height));
 }
 
-bool EventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)
+bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)
 {
 	switch (ea.getEventType())
 	{
@@ -852,29 +763,34 @@ bool EventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			visible = !visible;
+
 			if (viewer_->odrLines_)
 			{
 				viewer_->odrLines_->setNodeMask(visible ? 0xffffffff : 0x0);
 			}
-			if(viewer_->vehicleLine_)
+
+			for (size_t i = 0; i < viewer_->cars_.size(); i++)
 			{
-				viewer_->vehicleLine_->setNodeMask(visible ? 0xffffffff : 0x0);
-			}
-			if (viewer_->vehiclePoint_)
-			{
-				viewer_->vehiclePoint_->setNodeMask(visible ? 0xffffffff : 0x0);
-			}
-			if (viewer_->dm_road_info_line_)
-			{
-				viewer_->dm_road_info_line_->setNodeMask(visible ? 0xffffffff : 0x0);
-			}
-			if (viewer_->dm_ghost_info_line_)
-			{
-				viewer_->dm_ghost_info_line_->setNodeMask(visible ? 0xffffffff : 0x0);
-			}
-			if (viewer_->dm_road_info_ball_)
-			{
-				viewer_->dm_road_info_ball_->setNodeMask(visible ? 0xffffffff : 0x0);
+				PointSensor *sensor[4] = {
+					viewer_->cars_[i]->speed_sensor_, 
+					viewer_->cars_[i]->steering_sensor_, 
+					viewer_->cars_[i]->road_sensor_, 
+					viewer_->cars_[i]->lane_sensor_, 
+				};
+				for (int i = 0; i < 4; i++)
+				{
+					if (sensor[i])
+					{
+						if (sensor[i]->line_)
+						{
+							sensor[i]->line_->setNodeMask(visible ? 0xffffffff : 0x0);
+						}
+						if (sensor[i]->ball_)
+						{
+							sensor[i]->ball_->setNodeMask(visible ? 0xffffffff : 0x0);
+						}
+					}
+				}
 			}
 		}
 	}

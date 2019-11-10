@@ -65,8 +65,7 @@ namespace scenarioengine
 		roadmanager::OpenDrive *getRoadManager() { return odrManager; }
 
 		ScenarioGateway *getScenarioGateway();
-		Object::Control GetControl();
-		void SetControl(RequestControlMode control);
+		Object::Control RequestControl2ObjectControl(RequestControlMode control);
 		double getSimulationTime() { return simulationTime; }
 
 	private:
