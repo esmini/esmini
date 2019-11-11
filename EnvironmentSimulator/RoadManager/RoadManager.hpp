@@ -943,7 +943,7 @@ namespace roadmanager
 		void Lane2Track();
 		void XYZ2Track(bool alignZAndPitch = false);
 		void SetLongitudinalTrackPos(int track_id, double s);
-		bool EvaluateRoadZAndPitch(bool alignZAndPitch);
+		bool EvaluateRoadZPitchRoll(bool alignZPitchRoll);
 		double GetDistToTrackGeom(double x3, double y3, double z3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm);
 
 		// route reference

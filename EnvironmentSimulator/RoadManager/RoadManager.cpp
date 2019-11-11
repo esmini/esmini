@@ -2586,7 +2586,7 @@ double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, R
 	return fabs(min_lane_dist) + fabs(GetZ() - z);
 }
 
-void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool alignZAndPitch)
+void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool alignZPitchRoll)
 {
 	double dist;
 	double distMin = std::numeric_limits<double>::infinity();
@@ -2621,7 +2621,6 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 
 	x_ = x3;
 	y_ = y3;
-	r_ = 0;
 
 	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
 	{
@@ -2693,23 +2692,25 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 	// Find out what lane and set position
 	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);
 
-	EvaluateRoadZAndPitch(alignZAndPitch);
+	EvaluateRoadZPitchRoll(alignZPitchRoll);
 }
 	
 
-bool Position::EvaluateRoadZAndPitch(bool alignZAndPitch)
+bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 {
 	bool ret_value = GetRoadById(track_id_)->GetZAndPitchByS(s_, &z_road_, &p_road_, &elevation_idx_);
 
-	if (alignZAndPitch)
+	if (alignZPitchRoll)
 	{
 		z_ = z_road_;
 		p_ = p_road_;
+		r_ = 0;  // Road roll not implementade yet
 
 		// Find out pitch of road in driving direction
 		if (GetHRelative() > M_PI / 2 && GetHRelative() < 3 * M_PI / 2)
 		{
 			p_ *= -1;
+			// r_ *= -1;
 		}
 	}
 
@@ -2748,7 +2749,7 @@ void Position::Track2XYZ()
 	y_ += y_local;
 
 	// z = Elevation 
-	EvaluateRoadZAndPitch(true);
+	EvaluateRoadZPitchRoll(true);
 }
 
 void Position::Lane2Track()
