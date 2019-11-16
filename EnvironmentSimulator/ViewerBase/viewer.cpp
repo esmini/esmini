@@ -19,6 +19,7 @@
 #include <osg/BlendFunc>
 #include <osg/BlendColor>
 #include <osg/Geode> 
+#include <osg/Group> 
 #include <osg/ShapeDrawable>
 #include <osgGA/TrackballManipulator>
 #include <osgGA/KeySwitchMatrixManipulator>
@@ -31,7 +32,8 @@
 #include "CommonMini.hpp"
 
 #define SHADOW_SCALE 1.20
-#define SHADOW_MODEL_FILEPATH "shadow_face.osgb"  // models folder assumed to exist one level above the OpenSCENARIO file 
+#define SHADOW_MODEL_FILEPATH "shadow_face.osgb"  
+#define ARROW_MODEL_FILEPATH "arrow.osgb"  
 #define LOD_DIST 3000
 #define LOD_SCALE_DEFAULT 1.0
 
@@ -41,6 +43,7 @@ static int COLOR_YELLOW[3] = { 0xCC, 0x99, 0x44 };
 static int COLOR_WHITE[3] = { 0xCC, 0xCC, 0xCA };
 
 //USE_OSGPLUGIN(fbx)
+//USE_OSGPLUGIN(obj)
 USE_OSGPLUGIN(osg2)
 USE_SERIALIZER_WRAPPER_LIBRARY(osg)
 USE_SERIALIZER_WRAPPER_LIBRARY(osgSim)
@@ -98,32 +101,46 @@ void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor* 
 	}
 }
 
-TrailDot::TrailDot(float time, double x, double y, double z, osg::Group *parent, osg::Vec4 trail_color)
+TrailDot::TrailDot(float time, double x, double y, double z, double heading, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color)
 {
 	double dot_radius = 0.4;
+	osg::ref_ptr<osg::Node> new_node;
 
 	time_born = time;
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-//	geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere()));
-	geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
 	dot_ = new osg::PositionAttitudeTransform;
 	dot_->setPosition(osg::Vec3(x, y, z));
 	dot_->setScale(osg::Vec3(dot_radius, dot_radius, dot_radius));
-	dot_->addChild(geode);
-	parent->addChild(dot_);
+	dot_->setAttitude(osg::Quat(heading, osg::Vec3(0, 0, 1)));
+
+	if (dot_node == 0)
+	{
+		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+		geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
+		new_node = geode;
+
+	}
+	else
+	{
+		// Clone into a unique object for unique material and alpha fading
+		new_node = dynamic_cast<osg::Node*>(dot_node->clone(osg::CopyOp()));
+	}
+
+	dot_->addChild(new_node);
 
 	material_ = new osg::Material;
 	material_->setDiffuse(osg::Material::FRONT_AND_BACK, trail_color);
 	material_->setAmbient(osg::Material::FRONT_AND_BACK, trail_color);
 	fade_callback_ = new AlphaFadingCallback(trail_color);
 	material_->setUpdateCallback(fade_callback_);
-	dot_->getOrCreateStateSet()->setAttribute(material_);
 
-	geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
-	osg::StateSet* state = dot_->getOrCreateStateSet(); //Creating material
-	geode->getOrCreateStateSet()->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-	geode->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
-}	
+	new_node->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+	osg::ref_ptr<osg::StateSet> stateset = new_node->getOrCreateStateSet(); // Get the StateSet of the group
+	stateset->setAttribute(material_.get()); // Set Material 
+	stateset->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+	stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+
+	parent->addChild(dot_);
+}
 
 void TrailDot::Reset(float time, double x, double y, double z)
 {
@@ -132,11 +149,11 @@ void TrailDot::Reset(float time, double x, double y, double z)
 	time_born = time;
 }
 
-void Trail::AddDot(float time, double x, double y, double z)
+void Trail::AddDot(float time, double x, double y, double z, double heading)
 {
 	if (n_dots_ < TRAIL_MAX_DOTS)
 	{
-		dot_[current_] = new TrailDot(time, x, y, z, parent_, color_);
+		dot_[current_] = new TrailDot(time, x, y, z, heading, parent_, dot_node_, color_);
 		n_dots_++;
 	}
 	else
@@ -185,7 +202,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 	return tx_node;
 }
 
-CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::Vec3 trail_color)
+CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color)
 {
 	if (!lod)
 	{
@@ -228,7 +245,7 @@ CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, 
 	parent->addChild(txNode_);
 	
 	// Prepare trail of dots
-	trail_ = new Trail(trail_parent, trail_color);
+	trail_ = new Trail(trail_parent, dot_node, trail_color);
 }
 
 CarModel::~CarModel()
@@ -329,6 +346,14 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	if (!shadow_node_)
 	{
 		LOG("Failed to load shadow model %s\n", shadowFilename.c_str());
+	}
+
+	// Load shadow geometry - assume it resides in the same resource folder as the environment model
+	std::string dotFilename = DirNameOf(modelFilename).append("/" + std::string(ARROW_MODEL_FILEPATH));
+	dot_node_ = osgDB::readNodeFile(dotFilename);
+	if (!dot_node_)
+	{
+		LOG("Failed to load trail dot model %s\n", dotFilename.c_str());
 	}
 
 	// set the scene to render
@@ -482,7 +507,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 		state->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 	}
 
-	cars_.push_back(new CarModel(lod, rootnode_, trails_, trail_color));
+	cars_.push_back(new CarModel(lod, rootnode_, trails_, dot_node_, trail_color));
 	// Focus on first added car
 	if (cars_.size() == 1)
 	{
@@ -685,8 +710,10 @@ PointSensor* Viewer::CreateSensor(int color[], bool create_ball, bool create_lin
 		sensor->line_vertex_data_->push_back(osg::Vec3d(0, 0, 0));
 		sensor->line_vertex_data_->push_back(osg::Vec3d(0, 0, 0));
 
+		osg::ref_ptr<osg::Group> group = new osg::Group;
 		sensor->line_ = new osg::Geometry();
-		sensor->line_->setCullingActive(false);
+		group->addChild(sensor->line_);
+		//sensor->line_->setCullingActive(false);
 		sensor->line_->setVertexArray(sensor->line_vertex_data_.get());
 		sensor->line_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
 
@@ -699,9 +726,12 @@ PointSensor* Viewer::CreateSensor(int color[], bool create_ball, bool create_lin
 		color_->push_back(osg::Vec4(color[0] / (float)0xFF, color[1] / (float)0xFF, color[2] / (float)0xFF, 1.0));
 		sensor->line_->setColorArray(color_.get());
 		sensor->line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-		sensor->line_->setDataVariance(osg::Object::DYNAMIC);
-		sensors_->addChild(sensor->line_);
+		//sensor->line_->setDataVariance(osg::Object::DYNAMIC);
+		sensors_->addChild(group);
 	}
+
+
+
 
 	return sensor;
 }

@@ -11,7 +11,7 @@
  */
 
 #include "CommonMini.hpp"
-#include "trail.hpp"
+#include "Trail.hpp"
 #include "RoadManager.hpp"
 
 #define TRAIL_DT 0.2

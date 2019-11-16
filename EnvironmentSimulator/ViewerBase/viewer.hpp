@@ -59,7 +59,7 @@ namespace viewer
 		osg::ref_ptr<osg::Material> material_;
 		float time_born;
 
-		TrailDot(float time, double x, double y, double z, osg::Group *parent, osg::Vec4 color);
+		TrailDot::TrailDot(float time, double x, double y, double z, double heading, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color);
 		void Reset(float time, double x, double y, double z);
 
 	private:
@@ -73,12 +73,14 @@ namespace viewer
 		int n_dots_;
 		int current_;
 		osg::Group *parent_;
-		void AddDot(float time, double x, double y, double z);
+		osg::Node *dot_node_;
+		void AddDot(float time, double x, double y, double z, double heading);
 
-		Trail(osg::Group *parent, osg::Vec3 color) : 
+		Trail(osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 color) :
 			parent_(parent), 
 			n_dots_(0), 
-			current_(0)
+			current_(0),
+			dot_node_(dot_node)
 		{
 			color_[0] = color[0];
 			color_[1] = color[1];
@@ -96,6 +98,8 @@ namespace viewer
 		double ball_radius_;
 		osg::ref_ptr<osg::Geometry> line_;
 		osg::ref_ptr<osg::Vec3Array> line_vertex_data_;
+
+		PointSensor(): line_(0), line_vertex_data_(0), ball_(0) {}
 	};
 
 	class CarModel
@@ -113,13 +117,13 @@ namespace viewer
 		double wheel_angle_;
 		double wheel_rot_;
 		std::string filename_;
-		PointSensor *steering_sensor_;
 		PointSensor *speed_sensor_;
 		PointSensor *road_sensor_;
 		PointSensor *lane_sensor_;
 		PointSensor *trail_sensor_;
+		PointSensor *steering_sensor_;
 
-		CarModel(osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::Vec3 trail_color);
+		CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color);
 		~CarModel();
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double h, double p, double r);
@@ -141,6 +145,9 @@ namespace viewer
 
 		// Vehicle position debug visualization
 		osg::ref_ptr<osg::Node> shadow_node_;
+
+		// Trail dot model
+		osg::ref_ptr<osg::Node> dot_node_;
 
 		// Road debug visualization
 		osg::ref_ptr<osg::Group> odrLines_;

@@ -166,7 +166,7 @@ int SetupVehicles()
 			if (odrManager->GetNumOfRoads() > 0)
 			{
 				vh.gfx_model->speed_sensor_ = scenarioViewer->CreateSensor(COLOR_GRAY, true, true, 0.4, 1);
-				vh.gfx_model->trail_sensor_ = scenarioViewer->CreateSensor(COLOR_RED, true, true, 0.4, 3);
+				vh.gfx_model->trail_sensor_ = scenarioViewer->CreateSensor(COLOR_RED, true, false, 0.4, 3);
 			}
 		}
 		else if (vh.obj->GetControl() == Object::Control::EXTERNAL)
@@ -317,7 +317,7 @@ static void viewer_thread(void *args)
 			
 			if (add_dot)
 			{
-				vh->gfx_model->trail_->AddDot(simTime, vh->obj->pos_.GetX(), vh->obj->pos_.GetY(), vh->obj->pos_.GetZ());
+				vh->gfx_model->trail_->AddDot(simTime, vh->obj->pos_.GetX(), vh->obj->pos_.GetY(), vh->obj->pos_.GetZ(), vh->obj->pos_.GetH());
 			}
 		}		
 
