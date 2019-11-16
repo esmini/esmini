@@ -188,14 +188,13 @@ public:
 
 	static Logger& Inst();
 	void Log(char const* func, char const* file, int line, char const* format, ...);
-	void SetCallback(FuncPtr callback) { callback_ = callback; }
+	void SetCallback(FuncPtr callback);
 
 private:
 	bool use_logfile_;
 	Logger();
 	Logger(bool use_logfile);
 	~Logger();
-	void Init();
 	FuncPtr callback_;
 
 	std::ofstream file_;

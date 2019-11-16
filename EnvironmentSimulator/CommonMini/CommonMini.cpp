@@ -15,6 +15,7 @@
 #include <iostream>
 
 #include "CommonMini.hpp"
+#include "version.hpp"
 
 #define DEBUG_TRACE
 #define LOG_FILENAME "log.txt"
@@ -270,6 +271,12 @@ Logger::Logger()
 		throw std::iostream::failure(std::string("Cannot open file: ") + LOG_FILENAME);
 	}
 #endif
+	
+	static char message[1024];
+	snprintf(message, 1024, "esmini version: %s", ESMINI_VERSION);
+	file_ << message << std::endl;
+	file_.flush();
+
 	callback_ = 0;
 }
 
@@ -310,6 +317,15 @@ void Logger::Log(char const* file, char const* func, int line, char const* forma
 	}
 
 	va_end(args);
+}
+
+void Logger::SetCallback(FuncPtr callback)
+{
+	callback_ = callback;
+
+	static char message[1024];
+	snprintf(message, 1024, "esmini version: %s", ESMINI_VERSION);
+	callback_(message);
 }
 
 Logger& Logger::Inst()
