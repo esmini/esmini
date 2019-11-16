@@ -115,12 +115,16 @@ int SetupVehicles()
 		if (vh.obj->control_ == Object::Control::HYBRID_GHOST)
 		{
 			transparent = true;
-			trail_color = { 0.5, 0.5, 0.5 };
+			trail_color[0] = 0.5;
+			trail_color[1] = 0.5;
+			trail_color[2] = 0.5;
 		}
 		else
 		{
 			transparent = false;
-			trail_color = { 0.6, 0.5, 0.3 };
+			trail_color[0] = 0.6;
+			trail_color[1] = 0.5;
+			trail_color[2] = 0.3;
 		}
 		if (scenarioViewer->AddCar(vh.obj->model_filepath_, transparent, trail_color) == 0)
 		{

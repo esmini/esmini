@@ -1,1 +1,1 @@
-#define ESMINI_VERSION "0.2"
+#define ESMINI_VERSION "0.21"
