@@ -87,7 +87,7 @@ void viewer_thread(void *args)
 	//  Create cars for visualization
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		if ((viewer->AddCar(scenarioEngine->entities.object_[i]->model_filepath_)) == 0)
+		if (viewer->AddCar(scenarioEngine->entities.object_[i]->model_filepath_, false, osg::Vec3(0.5, 0.5, 0.5)) == 0)
 		{
 			delete viewer;
 			viewer_state = VIEWER_FAILED;

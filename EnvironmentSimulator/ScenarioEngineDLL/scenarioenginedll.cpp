@@ -159,7 +159,7 @@ void viewer_thread(void*)
 				// Choose model from index - wrap to handle more vehicles than models
 				int carModelID = o->state_.model_id;
 				bool transparent = scenarioEngine->entities.object_[i]->control_ == Object::Control::HYBRID_GHOST ? true : false;
-				new_sc.carModel = scViewer->AddCar(carModelsFiles_[carModelID], transparent);
+				new_sc.carModel = scViewer->AddCar(carModelsFiles_[carModelID], transparent, osg::Vec3(0.5, 0.5, 0.5));
 
 				if (scenarioEngine->entities.object_[i]->GetControl() == Object::Control::HYBRID_EXTERNAL)
 				{

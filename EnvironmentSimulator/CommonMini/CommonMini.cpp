@@ -102,6 +102,77 @@ int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double 
 	return 0;
 }
 
+bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, double x2, double y2, double &sNorm)
+{
+	bool inside;
+
+	if (fabs(y2 - y1) < SMALL_NUMBER && fabs(x2 - x1) < SMALL_NUMBER)
+	{
+		// Point - not really a line 
+		// Not sure if true of false should be returned
+		sNorm = 0;
+		inside = true;
+	}
+	else if (fabs(x2 - x1) < fabs(y2 - y1))  // Line is steep (more vertical than horizontal
+	{
+		sNorm = (y3 - y1) / (y2 - y1);
+		if (y2 > y1)  // ascending
+		{
+			inside = !(y3 < y1 || y3 > y2);
+		}
+		else
+		{
+			inside = !(y3 > y1 || y3 < y2);
+		}
+	}
+	else
+	{
+		sNorm = (x3 - x1) / (x2 - x1);
+		if (x2 > x1)  // forward
+		{
+			inside = !(x3 < x1 || x3 > x2);
+		}
+		else
+		{
+			inside = !(x3 > x1 || x3 < x2);
+		}
+	}
+	return inside;
+}
+
+int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2)
+{
+	// Use cross product
+	return SIGN(GetCrossProduct2D((vx2 - vx1), (px - vx1), (vy2 - vy1), (py - vy1)));
+}
+
+double PointDistance2D(double x0, double y0, double x1, double y1)
+{
+	return sqrt((x1 - x0)*(x1 - x0) + (y1 - y0) * (y1 - y0));
+}
+
+void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double &px, double &py)
+{
+	// Project the given point on the straight line between geometry end points
+	// https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
+
+	double dx = vx2 - vx1;
+	double dy = vy2 - vy1;
+
+	if (fabs(dx) < SMALL_NUMBER && fabs(dy) < SMALL_NUMBER)
+	{
+		// Line too small - projection not possible, copy first point position
+		px = vx1;
+		py = vy1;
+	}
+	else
+	{
+		double k = (dy * (x - vx1) - dx * (y - vy1)) / (dy*dy + dx*dx);
+		px = x - k * dy;
+		py = y + k * dx;
+	}
+}
+
 double GetLengthOfLine2D(double x1, double y1, double x2, double y2)
 {
 	return sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));

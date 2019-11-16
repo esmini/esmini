@@ -39,8 +39,7 @@ Vehicle::Vehicle(double x, double y, double h, double length)
 	posZ_ = 0;
 	heading_ = h;
 	pitch_ = 0;
-	target_hwt_ = TARGET_HWT;
-
+	target_speed_ = 0;
 	velX_ = 0;
 	velY_ = 0;
 	velAngle_ = 0;
@@ -64,9 +63,9 @@ void Vehicle::SetWheelRotation(double rotation)
 	wheelRotation_ = rotation;
 }
 
-void Vehicle::DrivingControlTarget(double dt, double heading_to_target, double headway_time_to_target)
+void Vehicle::DrivingControlTarget(double dt, double heading_to_target, double target_speed)
 {
-	double acceleration = CLAMP(ACCELERATION_SCALE * (headway_time_to_target - TARGET_HWT), -20, 20);
+	double acceleration = CLAMP(ACCELERATION_SCALE * (target_speed - speed_), -30, 30);
 
 	speed_ += acceleration * dt;
 	speed_ *= (1 - SPEED_DECLINE);

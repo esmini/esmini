@@ -41,6 +41,7 @@ using namespace scenarioengine;
 
 static int COLOR_GREEN[3] = { 0x40, 0xA0, 0x50 };
 static int COLOR_GRAY[3] = { 0xBB, 0xBB, 0xBB };
+static int COLOR_RED[3] = { 0x90, 0x30, 0x30 };
 
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
@@ -78,11 +79,13 @@ typedef struct
 
 	double speed_target_pos[3];
 	double speed_target_distance;
-	double speed_target_hwt;
+	double speed_target_speed;
 
 	double steering_target_pos[3];
 	double steering_target_distance;
 	double steering_target_heading;
+
+	double trail_pos[3];
 } ScenarioVehicle;
 
 static std::vector<ScenarioVehicle> scenarioVehicle;
@@ -94,9 +97,32 @@ int SetupVehicles()
 		ScenarioVehicle vh;
 
 		vh.obj = scenarioEngine->entities.object_[i];
+		vh.steering_target_pos[0] = vh.obj->pos_.GetX();
+		vh.steering_target_pos[1] = vh.obj->pos_.GetY();
+		vh.steering_target_pos[2] = vh.obj->pos_.GetZ();
+		vh.steering_target_distance = 0;
+		vh.steering_target_heading = 0;
+
+		vh.speed_target_pos[0] = vh.obj->pos_.GetX();
+		vh.speed_target_pos[1] = vh.obj->pos_.GetY();
+		vh.speed_target_pos[2] = vh.obj->pos_.GetZ();
+		vh.speed_target_distance = 0;
+		vh.speed_target_speed = 0;
+
 		//  Create vehicles for visualization
-		bool transparent = vh.obj->control_ == Object::Control::HYBRID_GHOST ? true : false;
-		if (scenarioViewer->AddCar(vh.obj->model_filepath_, transparent) == 0)
+		bool transparent;
+		osg::Vec3 trail_color;
+		if (vh.obj->control_ == Object::Control::HYBRID_GHOST)
+		{
+			transparent = true;
+			trail_color = { 0.5, 0.5, 0.5 };
+		}
+		else
+		{
+			transparent = false;
+			trail_color = { 0.6, 0.5, 0.3 };
+		}
+		if (scenarioViewer->AddCar(vh.obj->model_filepath_, transparent, trail_color) == 0)
 		{
 			delete scenarioViewer;
 			viewer_state = ViewerState::VIEWER_QUIT;
@@ -132,12 +158,19 @@ int SetupVehicles()
 
 		if (vh.obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 		{
-			vh.gfx_model->speed_sensor_ = scenarioViewer->CreateSensor(COLOR_GRAY, true, true, 0.4, 1);
-			vh.gfx_model->steering_sensor_ = scenarioViewer->CreateSensor(COLOR_GREEN, false, true, 0.4, 3);
+			vh.gfx_model->steering_sensor_ = scenarioViewer->CreateSensor(COLOR_GREEN, true, true, 0.4, 3);
+			if (odrManager->GetNumOfRoads() > 0)
+			{
+				vh.gfx_model->speed_sensor_ = scenarioViewer->CreateSensor(COLOR_GRAY, true, true, 0.4, 1);
+				vh.gfx_model->trail_sensor_ = scenarioViewer->CreateSensor(COLOR_RED, true, true, 0.4, 3);
+			}
 		}
 		else if (vh.obj->GetControl() == Object::Control::EXTERNAL)
 		{
-			scenarioViewer->CreateRoadSensors(vh.gfx_model);
+			if (odrManager->GetNumOfRoads() > 0)
+			{
+				scenarioViewer->CreateRoadSensors(vh.gfx_model);
+			}
 		}
 
 		scenarioVehicle.push_back(vh);
@@ -192,7 +225,7 @@ void UpdateExternalVehicle(int id, double deltaTimeStep, viewer::Viewer *viewer)
 	}
 	else if (vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 	{
-		vh->dyn_model->DrivingControlTarget(deltaTimeStep, vh->steering_target_heading, vh->speed_target_hwt);
+		vh->dyn_model->DrivingControlTarget(deltaTimeStep, vh->steering_target_heading, vh->speed_target_speed);
 	}
 	
 	// Set OpenDRIVE position
@@ -225,9 +258,18 @@ static void viewer_thread(void *args)
 		scenarioViewer->ShowInfoText(false);
 	}
 
+	double last_dot_time = 0;
+
 	while (!scenarioViewer->osgViewer_->done())
 	{
 		mutex.Lock();
+
+		bool add_dot = false;
+		if (simTime - last_dot_time > 0.2)
+		{
+			add_dot = true;
+			last_dot_time = simTime;
+		}
 
 		// Visualize scenario cars
 		for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
@@ -247,13 +289,33 @@ static void viewer_thread(void *args)
 				{
 					scenarioViewer->UpdateSensor(vh->gfx_model->speed_sensor_, &vh->obj->pos_, vh->speed_target_pos);
 					scenarioViewer->UpdateSensor(vh->gfx_model->steering_sensor_, &vh->obj->pos_, vh->steering_target_pos);
+
+					double pos[3];
+					if (vh->obj->ghost_->trail_.FindClosestPoint(vh->obj->pos_.GetX(), vh->obj->pos_.GetY(), pos[0], pos[1],
+						vh->obj->trail_follow_s_, vh->obj->trail_follow_index_, vh->obj->trail_follow_index_) == 0)
+					{
+						pos[2] = vh->obj->pos_.GetZ();
+					}
+					else
+					{
+						// Failed find point along trail, copy entity position
+						pos[0] = vh->obj->pos_.GetX();
+						pos[1] = vh->obj->pos_.GetY();
+						pos[2] = vh->obj->pos_.GetZ();
+					}
+					scenarioViewer->UpdateSensor(vh->gfx_model->trail_sensor_, &vh->obj->pos_, pos);
 				}
 				else if (odrManager->GetNumOfRoads() > 0 && vh->obj->GetControl() == Object::Control::EXTERNAL)
 				{
 					scenarioViewer->UpdateRoadSensors(vh->gfx_model->road_sensor_, vh->gfx_model->lane_sensor_, &vh->obj->pos_);
 				}
 			}
-		}
+			
+			if (add_dot)
+			{
+				vh->gfx_model->trail_->AddDot(simTime, vh->obj->pos_.GetX(), vh->obj->pos_.GetY(), vh->obj->pos_.GetZ());
+			}
+		}		
 
 		mutex.Unlock();
 
@@ -389,11 +451,20 @@ int main(int argc, char** argv)
 			for (size_t i = 0; i < scenarioVehicle.size(); i++)
 			{
 				ScenarioVehicle *vh = &scenarioVehicle[i];
-				if (vh->obj->GetControl() == Object::Control::EXTERNAL ||
-					vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+				if (vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 				{
+					ObjectTrailState *trailState = 0;
+
 					// Set steering target point at a distance ahead proportional to the speed
-					vh->speed_target_distance = MAX(7, vh->dyn_model->speed_ * 2.0);
+					trailState = vh->obj->ghost_->trail_.GetStateByIndex(vh->obj->trail_follow_index_);
+					if (trailState != 0)
+					{
+						vh->speed_target_distance = MAX(7, trailState->speed_ * 2.0);
+					}
+					else
+					{
+						vh->speed_target_distance = 7;
+					}
 					vh->steering_target_distance = 0.5 * vh->speed_target_distance;
 
 					// find out what direction is forward, according to vehicle relative road heading 
@@ -403,45 +474,37 @@ int main(int argc, char** argv)
 						vh->speed_target_distance *= -1;
 					}
 
-					// Find and visualize steering target point	
 					roadmanager::SteeringTargetInfo data;
 
 					// Speed - common speed target for these control modes
 					vh->obj->pos_.GetSteeringTargetInfo(vh->speed_target_distance, &data, true);
 					memcpy(vh->speed_target_pos, data.global_pos, sizeof(vh->speed_target_pos));
 
-					// Steering
-					if (vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+					// Steering - Find out a steering target along ghost vehicle trail
+					double x, y, z, s_out, speed;
+					int index_out;
+
+					if (vh->obj->ghost_->trail_.FindPointAhead(vh->obj->trail_follow_index_, vh->obj->trail_follow_s_, vh->steering_target_distance,
+						x, y, z, speed, index_out, s_out) != 0)
 					{
-						vh->obj->pos_.GetSteeringTargetInfo(&vh->obj->ghost_->pos_, &data);
-						memcpy(vh->steering_target_pos, data.global_pos, sizeof(vh->steering_target_pos));
-						vh->steering_target_heading = data.angle;
-
-						// HWT for driver model
-						double dist = SIGN(data.local_pos[0]) * GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]);
-
-						if (fabs(vh->dyn_model->speed_) < SMALL_NUMBER)
-						{
-							vh->dyn_model->speed_ = SMALL_NUMBER * SIGN(vh->obj->speed_);
-						}
-
-						vh->speed_target_hwt = dist / vh->dyn_model->speed_;
-						if (vh->speed_target_hwt < SMALL_NUMBER)
-						{
-							vh->speed_target_hwt = vh->dyn_model->target_hwt_;
-						}
-
-						// LOG("hwt: %f dist: %f ego_speed: %f y: %f", speed_target_hwt, dist, ego_speed, data.local_pos[0]);
+						x = vh->obj->pos_.GetX();
+						y = vh->obj->pos_.GetY();
+						z = vh->obj->pos_.GetX();
+						speed = 0;
 					}
-					else if(vh->obj->GetControl() == Object::Control::EXTERNAL)
-					{
-						vh->speed_target_hwt = GetLengthOfVector3D(data.local_pos[0], data.local_pos[1], data.local_pos[2]) / vh->dyn_model->speed_;
+					roadmanager::Position pos(x, y, 0, 0, 0, 0);
+					vh->obj->pos_.CalcSteeringTarget(&pos, &data);
+					memcpy(vh->steering_target_pos, data.global_pos, sizeof(vh->steering_target_pos));
+					vh->steering_target_heading = data.angle;
+					
+					// Let steering target heading influence speed target - slowing down when turning
+					vh->speed_target_speed = speed * (1 - vh->steering_target_heading / M_PI_2);
+					
+					//LOG("ahead [%d]: speed: %.2f ts %.2f dist: %.2f (%.2f, %.2f)", vh->obj->trail_follow_index_, trailState ? trailState->speed_ : -1, vh->speed_target_speed, vh->steering_target_distance, x, y);
+				}
 
-						vh->obj->pos_.GetSteeringTargetInfo(vh->steering_target_distance, &data, false);
-						memcpy(vh->steering_target_pos, data.global_pos, sizeof(vh->steering_target_pos));
-						vh->steering_target_heading = data.angle;
-					}
-
+				if (vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL || vh->obj->GetControl() == Object::Control::EXTERNAL)
+				{
 					// Update vehicle dynamics/driver model
 					UpdateExternalVehicle(i, deltaSimTime, scenarioViewer);
 
@@ -452,6 +515,11 @@ int main(int argc, char** argv)
 						vh->dyn_model->heading_, vh->dyn_model->pitch_, 0,
 						vh->dyn_model->speed_, vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_));
 				}
+
+
+				// Save position to object trail
+				Object *obj = scenarioEngine->entities.object_[i];
+				obj->trail_.AddState(simTime, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->speed_);
 			}
 
 			scenarioEngine->step(deltaSimTime);

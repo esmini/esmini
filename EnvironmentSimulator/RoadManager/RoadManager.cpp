@@ -2227,6 +2227,12 @@ Position::Position(double x, double y, double z, double h, double p, double r)
 	SetInertiaPos(x, y, z, h, p, r);
 }
 
+Position::Position(double x, double y, double z, double h, double p, double r, bool calculateTrackPosition)
+{
+	Init();
+	SetInertiaPos(x, y, z, h, p, r, calculateTrackPosition);
+}
+
 Position::~Position()
 {
 	
@@ -2339,51 +2345,6 @@ void Position::Track2Lane()
 	lane_section_idx_ = lane_section_idx;
 }
 
-static double PointDistance(double x0, double y0, double x1, double y1)
-{
-	// https://en.wikipedia.org/wiki/Distance
-
-	return sqrt((x1 - x0)*(x1 - x0) + (y1 - y0) * (y1 - y0));
-}
-
-static bool PointInBetween(double x3, double y3, double x1, double y1, double x2, double y2, double &sNorm)
-{
-	bool inside;
-
-	if (fabs(x2 - x1) < fabs(y2 - y1))  // Line is steep (more vertical than horizontal
-	{
-		sNorm = (y3 - y1) / (y2 - y1);
-		if (y2 > y1)  // ascending
-		{
-			inside = !(y3 < y1 || y3 > y2);
-		}
-		else
-		{
-			inside = !(y3 > y1 || y3 < y2);
-		}
-	}
-	else
-	{
-		sNorm = (x3 - x1) / (x2 - x1);
-		if (x2 > x1)  // forward
-		{
-			inside = !(x3 < x1 || x3 > x2);
-		}
-		else
-		{
-			inside = !(x3 > x1 || x3 < x2);
-		}
-	}
-	return inside;
-}
-
-
-static int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2)
-{
-	// Use dot product
-	return SIGN((vx2 - vx1)*(py - vy1) - (vy2 - vy1)*(px - vx1));
-}
-
 double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm)
 {
 	// Step 1: Approximate geometry with a line, and check distance roughly
@@ -2407,30 +2368,24 @@ double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, R
 	y2 += road->GetLaneOffset(geom->GetLength()) * sin(h2 + M_PI_2);
 
 	// Find vector from point perpendicular to line segment
-	// https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
-
-	double x4, y4, k;
-
-	// Project the given point on the straight line between geometry end points
-	k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) / ((y2 - y1)*(y2 - y1) + (x2 - x1)*(x2 - x1));
-	x4 = x3 - k * (y2 - y1);
-	y4 = y3 + k * (x2 - x1);
+	double x4, y4;
+	ProjectPointOnVector2D(x3, y3, x1, y1, x2, y2, x4, y4);
 
 	// Check whether the projected point is inside or outside line segment
-	inside = PointInBetween(x4, y4, x1, y1, x2, y2, sNorm);
+	inside = PointInBetweenVectorEndpoints(x4, y4, x1, y1, x2, y2, sNorm);
 
 	if (inside)
 	{
 		// Distance between given point and that point projected on the straight line
-		dist = PointDistance(x3, y3, x4, y4);
+		dist = PointDistance2D(x3, y3, x4, y4);
 	}
 	else
 	{
 		// Distance is measured between point to closest endpoint of line
 		double d1, d2;
 
-		d1 = PointDistance(x3, y3, x1, y1);
-		d2 = PointDistance(x3, y3, x2, y2);
+		d1 = PointDistance2D(x3, y3, x1, y1);
+		d2 = PointDistance2D(x3, y3, x2, y2);
 		if (d1 < d2)
 		{
 			dist = d1;
@@ -2547,7 +2502,7 @@ double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, R
 		// Apply lane offset
 		x += road->GetLaneOffset(sMin) * cos(h + M_PI_2);
 		y += road->GetLaneOffset(sMin) * sin(h + M_PI_2);
-		dist = PointDistance(x3, y3, x, y);
+		dist = PointDistance2D(x3, y3, x, y);
 
 		// Check whether the point is left or right side of road
 		// x3, y3 is the point checked against a vector aligned with heading
@@ -2680,7 +2635,7 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 	// Apply lane offset
 	x += roadMin->GetLaneOffset(dsMin) * cos(h_road_ + M_PI_2);
 	y += roadMin->GetLaneOffset(dsMin) * sin(h_road_ + M_PI_2);
-	distMin = PointDistance(x3, y3, x, y);
+	distMin = PointDistance2D(x3, y3, x, y);
 
 	// Check whether the point is left or right side of road
 	// x3, y3 is the point checked against closest point on geometry
@@ -2774,19 +2729,19 @@ void Position::XYZ2Track(bool alignZAndPitch)
 	XYZH2TrackPos(GetX(), GetY(), GetZ(), GetH(), alignZAndPitch);
 }
 
-void Position::SetLongitudinalTrackPos(int track_id, double s)
+int Position::SetLongitudinalTrackPos(int track_id, double s)
 {
 	Road *road;
 
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
-		return;
+		return -1;
 	}
 	
 	if ((road = GetOpenDrive()->GetRoadById(track_id)) == 0)
 	{
 		LOG("Position::Set Error: track %d not found\n", track_id);
-		return;
+		return -1;
 	}
 	if (track_id != track_id_)
 	{
@@ -2831,11 +2786,16 @@ void Position::SetLongitudinalTrackPos(int track_id, double s)
 			geometry = road->GetGeometry(--geometry_idx_);
 		}
 	}
+
+	return 0;
 }
 
 void Position::SetTrackPos(int track_id, double s, double t, bool calculateXYZ)
 {
-	SetLongitudinalTrackPos(track_id, s);
+	if (SetLongitudinalTrackPos(track_id, s) != 0)
+	{
+		return;
+	}
 
 	t_ = t;
 	Track2Lane();
@@ -3136,7 +3096,10 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	offset_ = offset;
 	int old_lane_id = lane_id_;
 
-	SetLongitudinalTrackPos(track_id, s);
+	if (SetLongitudinalTrackPos(track_id, s) != 0)
+	{
+		return;
+	}
 
 	Road *road = GetOpenDrive()->GetRoadById(track_id);
 	if (road == 0)
@@ -3582,19 +3545,19 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data)
 	return 0;
 }
 
-static void CalcSteeringTarget(Position *pivot, Position *target, SteeringTargetInfo *data)
+void Position::CalcSteeringTarget(Position *target, SteeringTargetInfo *data)
 {
 	data->global_pos[0] = target->GetX();
 	data->global_pos[1] = target->GetY();
 	data->global_pos[2] = target->GetZRoad();
 
 	// find out local x, y, z
-	double diff_x = target->GetX() - pivot->GetX();
-	double diff_y = target->GetY() - pivot->GetY();
-	double diff_z = target->GetZRoad() - pivot->GetZRoad();
+	double diff_x = target->GetX() - GetX();
+	double diff_y = target->GetY() - GetY();
+	double diff_z = target->GetZRoad() - GetZRoad();
 
-	data->local_pos[0] = diff_x * cos(-pivot->GetH()) - diff_y * sin(-pivot->GetH());
-	data->local_pos[1] = diff_x * sin(-pivot->GetH()) + diff_y * cos(-pivot->GetH());
+	data->local_pos[0] = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
+	data->local_pos[1] = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
 	data->local_pos[2] = diff_z;
 
 #if 0
@@ -3607,7 +3570,7 @@ static void CalcSteeringTarget(Position *pivot, Position *target, SteeringTarget
 	// Calculate angle - by dot product
 	if (fabs(data->local_pos[0]) < SMALL_NUMBER && fabs(data->local_pos[1]) < SMALL_NUMBER && fabs(data->local_pos[2]) < SMALL_NUMBER)
 	{
-		data->angle = pivot->GetH();
+		data->angle = GetH();
 	}
 	else
 	{
@@ -3661,14 +3624,14 @@ int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInf
 		return -1;
 	}
 
-	CalcSteeringTarget(this, &target, data);
+	CalcSteeringTarget(&target, data);
 
 	return 0;
 }
 
 int Position::GetSteeringTargetInfo(Position *target_pos, SteeringTargetInfo *data)
 {
-	CalcSteeringTarget(this, target_pos, data);
+	CalcSteeringTarget(target_pos, data);
 
 	return 0;
 }

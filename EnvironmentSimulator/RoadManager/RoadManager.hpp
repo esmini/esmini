@@ -711,6 +711,7 @@ namespace roadmanager
 		explicit Position(int track_id, double s, double t);
 		explicit Position(int track_id, int lane_id, double s, double offset);
 		explicit Position(double x, double y, double z, double h, double p, double r);
+		explicit Position(double x, double y, double z, double h, double p, double r, bool calculateTrackPosition);
 		~Position();
 		
 		void Init();
@@ -818,6 +819,16 @@ namespace roadmanager
 		@return 0 if successful, -1 if not
 		*/
 		int GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data);
+
+		/**
+		Get information of current lane at a specified distance from object along the road ahead
+		@param lookahead_distance The distance, along the road, to the point
+		@param data Struct to fill in calculated values, see typdef for details
+		@return 0 if successful, -1 if not
+		*/
+//		int GetTrailInfo(double lookahead_distance, RoadLaneInfo *data);
+
+		void CalcSteeringTarget(Position *target, SteeringTargetInfo *data);
 
 		/**
 		Move position along the road network, forward or backward, from the current position
@@ -942,7 +953,7 @@ namespace roadmanager
 		void Track2XYZ();
 		void Lane2Track();
 		void XYZ2Track(bool alignZAndPitch = false);
-		void SetLongitudinalTrackPos(int track_id, double s);
+		int SetLongitudinalTrackPos(int track_id, double s);
 		bool EvaluateRoadZPitchRoll(bool alignZPitchRoll);
 		double GetDistToTrackGeom(double x3, double y3, double z3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm);
 
@@ -1000,6 +1011,7 @@ namespace roadmanager
 		std::vector<Position*> waypoint_;
 		std::string name;
 	};
+
 
 } // namespace
 

@@ -18,7 +18,6 @@
 #include <osg/Point>
 #include <osg/BlendFunc>
 #include <osg/BlendColor>
-#include <osg/Material>
 #include <osg/Geode> 
 #include <osg/ShapeDrawable>
 #include <osgGA/TrackballManipulator>
@@ -83,6 +82,73 @@ protected:
 	osg::ref_ptr<osg::Group> _node;
 };
 
+void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor* nv)
+{
+	osg::Material* material = static_cast<osg::Material*>(sa);
+	if (material)
+	{
+		internal_time_ += 0.034;
+		if (internal_time_ > TRAIL_DOT_LIFE_SPAN)
+		{
+			_motion->update(0.034);  // assume 30 fps. Todo: replace with actual time
+		}
+		color_[3] = 1 - _motion->getValue();
+		material->setDiffuse(osg::Material::FRONT_AND_BACK, color_);
+		material->setAmbient(osg::Material::FRONT_AND_BACK, color_);
+	}
+}
+
+TrailDot::TrailDot(float time, double x, double y, double z, osg::Group *parent, osg::Vec4 trail_color)
+{
+	double dot_radius = 0.4;
+
+	time_born = time;
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+//	geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere()));
+	geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
+	dot_ = new osg::PositionAttitudeTransform;
+	dot_->setPosition(osg::Vec3(x, y, z));
+	dot_->setScale(osg::Vec3(dot_radius, dot_radius, dot_radius));
+	dot_->addChild(geode);
+	parent->addChild(dot_);
+
+	material_ = new osg::Material;
+	material_->setDiffuse(osg::Material::FRONT_AND_BACK, trail_color);
+	material_->setAmbient(osg::Material::FRONT_AND_BACK, trail_color);
+	fade_callback_ = new AlphaFadingCallback(trail_color);
+	material_->setUpdateCallback(fade_callback_);
+	dot_->getOrCreateStateSet()->setAttribute(material_);
+
+	geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+	osg::StateSet* state = dot_->getOrCreateStateSet(); //Creating material
+	geode->getOrCreateStateSet()->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+	geode->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+}	
+
+void TrailDot::Reset(float time, double x, double y, double z)
+{
+	dot_->setPosition(osg::Vec3(x, y, z));
+	fade_callback_->Reset();
+	time_born = time;
+}
+
+void Trail::AddDot(float time, double x, double y, double z)
+{
+	if (n_dots_ < TRAIL_MAX_DOTS)
+	{
+		dot_[current_] = new TrailDot(time, x, y, z, parent_, color_);
+		n_dots_++;
+	}
+	else
+	{
+		dot_[current_]->Reset(time, x, y, z);
+	}
+
+	if (++current_ >= TRAIL_MAX_DOTS)
+	{
+		current_ = 0;
+	}
+}
 
 osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName)
 {
@@ -119,7 +185,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 	return tx_node;
 }
 
-CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, double transparency)
+CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::Vec3 trail_color)
 {
 	if (!lod)
 	{
@@ -130,7 +196,8 @@ CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, double transparency)
 	steering_sensor_ = 0;
 	road_sensor_ = 0;
 	lane_sensor_ = 0;
-	
+	trail_sensor_ = 0;
+
 	wheel_angle_ = 0;
 	wheel_rot_ = 0;
 
@@ -158,6 +225,10 @@ CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, double transparency)
 	txNode_ = new osg::PositionAttitudeTransform();
 	txNode_->addChild(node_);
 	txNode_->setName(car_node->getName());
+	parent->addChild(txNode_);
+	
+	// Prepare trail of dots
+	trail_ = new Trail(trail_parent, trail_color);
 }
 
 CarModel::~CarModel()
@@ -263,6 +334,10 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	// set the scene to render
 	rootnode_ = new osg::MatrixTransform;
 	envTx_ = new osg::PositionAttitudeTransform;
+	sensors_ = new osg::Group;
+	rootnode_->addChild(sensors_);
+	trails_ = new osg::Group;
+	rootnode_->addChild(trails_);
 
 	// add environment
 	if (AddEnvironment(modelFilename) == -1)
@@ -373,7 +448,7 @@ Viewer::~Viewer()
 	cars_.clear();
 }
 
-CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent)
+CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color)
 {
 	if (modelFilepath == "")
 	{
@@ -399,7 +474,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent)
 		osg::BlendColor* bc = new osg::BlendColor(osg::Vec4(1, 1, 1, transparent ? 0.4 : 1));
 		state->setAttributeAndModes(bc);
 
-		osg::BlendFunc* bf = new                        //Blending
+		osg::BlendFunc* bf = new   //Blending
 			osg::BlendFunc(osg::BlendFunc::CONSTANT_ALPHA, osg::BlendFunc::ONE_MINUS_CONSTANT_ALPHA);
 	
 		state->setAttributeAndModes(bf);
@@ -407,8 +482,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent)
 		state->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 	}
 
-	cars_.push_back(new CarModel(lod));
-	rootnode_->addChild(cars_.back()->txNode_);
+	cars_.push_back(new CarModel(lod, rootnode_, trails_, trail_color));
 	// Focus on first added car
 	if (cars_.size() == 1)
 	{
@@ -416,6 +490,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent)
 		rubberbandManipulator_->setTrackNode(cars_.back()->txNode_, true);
 		nodeTrackerManipulator_->setTrackNode(cars_.back()->node_);
 	}
+	
 	return cars_.back();
 }
 
@@ -594,7 +669,7 @@ PointSensor* Viewer::CreateSensor(int color[], bool create_ball, bool create_lin
 		sensor->ball_ = new osg::PositionAttitudeTransform;
 		sensor->ball_->setScale(osg::Vec3(ball_radius, ball_radius, ball_radius));
 		sensor->ball_->addChild(geode);
-		rootnode_->addChild(sensor->ball_);
+		sensors_->addChild(sensor->ball_);
 
 		osg::Material *material = new osg::Material();
 		material->setDiffuse(osg::Material::FRONT, osg::Vec4(color[0] / (float)0xFF, color[1] / (float)0xFF, color[2] / (float)0xFF, 1.0));
@@ -625,7 +700,7 @@ PointSensor* Viewer::CreateSensor(int color[], bool create_ball, bool create_lin
 		sensor->line_->setColorArray(color_.get());
 		sensor->line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
 		sensor->line_->setDataVariance(osg::Object::DYNAMIC);
-		rootnode_->addChild(sensor->line_);
+		sensors_->addChild(sensor->line_);
 	}
 
 	return sensor;
@@ -642,7 +717,7 @@ void Viewer::UpdateRoadSensors(PointSensor *road_sensor, PointSensor *lane_senso
 	roadmanager::Position track_pos(*pos);
 
 	// Points
-	track_pos.SetTrackPos(pos->GetTrackId(), pos->GetS(), 0);
+	track_pos.SetTrackPos(pos->GetTrackId(), pos->GetS(), 0);	
 	lane_pos.SetLanePos(pos->GetTrackId(), pos->GetLaneId(), pos->GetS(), 0);
 
 	double road_target_pos[3] = { track_pos.GetX(), track_pos.GetY(),  track_pos.GetZ() };
@@ -769,29 +844,8 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 				viewer_->odrLines_->setNodeMask(visible ? 0xffffffff : 0x0);
 			}
 
-			for (size_t i = 0; i < viewer_->cars_.size(); i++)
-			{
-				PointSensor *sensor[4] = {
-					viewer_->cars_[i]->speed_sensor_, 
-					viewer_->cars_[i]->steering_sensor_, 
-					viewer_->cars_[i]->road_sensor_, 
-					viewer_->cars_[i]->lane_sensor_, 
-				};
-				for (int i = 0; i < 4; i++)
-				{
-					if (sensor[i])
-					{
-						if (sensor[i]->line_)
-						{
-							sensor[i]->line_->setNodeMask(visible ? 0xffffffff : 0x0);
-						}
-						if (sensor[i]->ball_)
-						{
-							sensor[i]->ball_->setNodeMask(visible ? 0xffffffff : 0x0);
-						}
-					}
-				}
-			}
+			viewer_->sensors_->setNodeMask(visible ? 0xffffffff : 0x0);
+			viewer_->trails_->setNodeMask(visible ? 0xffffffff : 0x0);
 		}
 	}
 	break;

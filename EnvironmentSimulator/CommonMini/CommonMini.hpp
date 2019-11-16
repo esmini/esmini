@@ -92,6 +92,31 @@ double GetDotProduct2D(double x1, double y1, double x2, double y2);
 int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double ay2, double bx1, double by1, double bx2, double by2, double &x3, double &y3);
 
 /**
+  Calculate distance between two 2D points
+*/
+double PointDistance2D(double x0, double y0, double x1, double y1);
+
+/**
+  Project a 2D point on a 2D vector 
+*/
+void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double &px, double &py);
+
+/**
+  Check whether projected point is in between vector endpoints, or outside
+*/
+bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, double x2, double y2, double &sNorm);
+
+/**
+  Find out whether the point is left or right to a vector 
+*/
+int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2);
+
+/**
+  Calculate the distance from a point to a line segment limited by two points. 
+*/
+double GetDistanceFromPointToLineSegment2D(double px, double py, double vx1, double vy1, double vx2, double vy2, bool &inside);
+
+/**
   Retrieve the length of a 2D line segment
 */
 double GetLengthOfLine2D(double x1, double y1, double x2, double y2);

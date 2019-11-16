@@ -17,6 +17,7 @@
 #include <vector>
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
+#include "Trail.hpp"
 
 namespace scenarioengine
 {
@@ -49,6 +50,8 @@ namespace scenarioengine
 		Type type_;
 		std::string name_;
 		int id_;
+		int trail_follow_index_;  // only in case of hybrid_external following a ghost
+		double trail_follow_s_;  // only in case of hybrid_external following a ghost
 		Control control_;
 		double speed_;
 		double wheel_angle_;
@@ -58,8 +61,10 @@ namespace scenarioengine
 		std::string model_filepath_;
 		int model_id_;
 		Object *ghost_;     // If hybrid control mode, this will point to the ghost entity
+		ObjectTrail trail_;
 
-		Object(Type type) : type_(type), id_(0), control_(Object::Control::INTERNAL), speed_(0), route_(0), model_filepath_(""), wheel_angle_(0), wheel_rot_(0), ghost_(0) {}
+		Object(Type type) : type_(type), id_(0), control_(Object::Control::INTERNAL), 
+			speed_(0), route_(0), model_filepath_(""), wheel_angle_(0), wheel_rot_(0), ghost_(0), trail_follow_index_(0) {}
 		void SetControl(Control control) { control_ = control; }
 		Control GetControl() { return control_; }
 	};
