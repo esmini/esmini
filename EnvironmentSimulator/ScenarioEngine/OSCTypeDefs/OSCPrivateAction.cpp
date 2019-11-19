@@ -532,9 +532,18 @@ void SynchronizeAction::Step(double dt)
 			//      solve for x
 			//      a = -v1 / x
 
-			if (mode_ == SynchMode::MODE_WAITING && !(masterTimeToDest < LARGE_NUMBER))
+			if (mode_ == SynchMode::MODE_WAITING)
 			{
-				return;
+				if (masterTimeToDest >= LARGE_NUMBER)
+				{
+					// Continue waiting
+					return;
+				}
+				else
+				{
+					// Reset mode
+					mode_ = SynchMode::MODE_NONE;
+				}
 			}
 			if (mode_ == SynchMode::MODE_STOP_IMMEDIATELY)
 			{
@@ -665,7 +674,14 @@ void SynchronizeAction::Step(double dt)
 				// In phase one, decelerate to 0, then stop
 				// Calculate time needed to cover distance proportional to current speed / final speed
 				double t1 = 2 * v0*s / (v0*v0 + v1 * v1);
-				acc = -v0 / t1;
+				if (fabs(t1) > SMALL_NUMBER)
+				{
+					acc = -v0 / t1;
+				}
+				else
+				{
+					acc = 0;
+				}
 
 				if (t1 * v0 / 2 > s / 2)
 				{
