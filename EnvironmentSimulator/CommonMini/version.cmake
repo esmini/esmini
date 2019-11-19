@@ -34,6 +34,5 @@ set(VERSION "const char* ESMINI_GIT_REV=\"${GIT_REV}${GIT_DIFF}\";
 const char* ESMINI_GIT_TAG=\"${GIT_TAG}\";
 const char* ESMINI_GIT_BRANCH=\"${GIT_BRANCH}\";
 const char* ESMINI_BUILD_VERSION=\"TBD\";
-const char* ESMINI_BUILD_VERSION=\"haha\";")
 
 file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp "${VERSION}")
