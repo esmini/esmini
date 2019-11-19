@@ -11,11 +11,6 @@ cache:
 - externals/OpenSceneGraph
 - resources/models
 
-before_build:
-- ps: |
-    ((Get-Content -path EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path EnvironmentSimulator/CommonMini/version.cpp
-    type EnvironmentSimulator/CommonMini/version.cpp
-
 after_build:
   cmd:
     7z a esmini-bin.zip bin/*
