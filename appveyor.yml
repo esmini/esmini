@@ -22,11 +22,6 @@ after_build:
 
     appveyor PushArtifact esmini-bin.zip
 
-add_version:
-- ps: |
-    ((Get-Content -path EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path EnvironmentSimulator/CommonMini/version.cpp
-    type EnvironmentSimulator/CommonMini/version.cpp
-
 for:
   -
     matrix:
