@@ -35,4 +35,12 @@ const char* ESMINI_GIT_TAG=\"${GIT_TAG}\";
 const char* ESMINI_GIT_BRANCH=\"${GIT_BRANCH}\";
 const char* ESMINI_BUILD_VERSION=\"TBD\";")
 
-file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp "${VERSION}")
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp)
+    file(READ version.cpp VERSION_)
+else()
+    set(VERSION_ "")
+endif()
+
+if (NOT "${VERSION}" STREQUAL "${VERSION_}")
+    file(WRITE version.cpp "${VERSION}")
+endif()
