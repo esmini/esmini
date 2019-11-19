@@ -22,6 +22,8 @@ after_build:
 
     appveyor PushArtifact esmini-bin.zip
 
+
+    
 for:
   -
     matrix:
@@ -54,6 +56,11 @@ for:
 
           cmake.exe -G "Visual Studio 15 Win64" -D USE_OSG=True ..
 
+      - ps: |
+          ((Get-Content -path EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path EnvironmentSimulator/CommonMini/version.cpp
+          type EnvironmentSimulator/CommonMini/version.cpp
+
+      - cmd:
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
 
           cd..
@@ -77,6 +84,11 @@ for:
 
           cmake -G "Visual Studio 15" -D USE_OSG=True ..
 
+      - ps: |
+          ((Get-Content -path EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path EnvironmentSimulator/CommonMini/version.cpp
+          type EnvironmentSimulator/CommonMini/version.cpp
+
+      - cmd:
           msbuild /m /property:Configuration=Release /p:Platform=win32 EnvironmentSimulator.sln
 
           cd..
@@ -94,6 +106,11 @@ for:
 
           cmake -G "Visual Studio 14 2015 Win64" -T "Windows7.1SDK" -D WINSDK7_1=True -D USE_OSG=True ..
 
+      - ps: |
+          ((Get-Content -path EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path EnvironmentSimulator/CommonMini/version.cpp
+          type EnvironmentSimulator/CommonMini/version.cpp
+
+      - cmd:
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
 
           cd..
