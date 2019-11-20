@@ -8,8 +8,8 @@ platform:
 - x64
 - x86
 cache:
-#- externals/OpenSceneGraph
-#- resources/models
+- externals/OpenSceneGraph
+- resources/models
 
 after_build:
   cmd:
