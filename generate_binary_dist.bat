@@ -34,6 +34,7 @@ copy resources\xodr\fabriksgatan.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\jolengatan.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\straight_500m.xodr %target_dir%\resources\xodr /y
 
+copy resources\models\arrow.osgb %target_dir%\resources\models /y
 copy resources\models\bus_blue.osgb %target_dir%\resources\models /y
 copy resources\models\car_blue.osgb %target_dir%\resources\models /y
 copy resources\models\car_red.osgb %target_dir%\resources\models /y
