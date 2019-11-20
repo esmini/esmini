@@ -9,7 +9,7 @@ platform:
 - x86
 cache:
 - externals/OpenSceneGraph
-- resources/models
+# - resources/models
 
 after_build:
   cmd:
