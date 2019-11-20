@@ -2,6 +2,7 @@
 set ( SOURCES
   CommonMini.cpp
   version.cpp
+  buildnr.cpp
 )
 
 set ( INCLUDES

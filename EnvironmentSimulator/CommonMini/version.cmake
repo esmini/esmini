@@ -33,8 +33,7 @@ endif()
 
 set(VERSION "const char* ESMINI_GIT_REV=\"${GIT_REV}${GIT_DIFF}\";
 const char* ESMINI_GIT_TAG=\"${GIT_TAG}\";
-const char* ESMINI_GIT_BRANCH=\"${GIT_BRANCH}\";
-const char* ESMINI_BUILD_VERSION=\"TBD\";")
+const char* ESMINI_GIT_BRANCH=\"${GIT_BRANCH}\";")
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp)
     file(READ version.cpp VERSION_)
@@ -44,4 +43,8 @@ endif()
 
 if (NOT "${VERSION}" STREQUAL "${VERSION_}")
     file(WRITE version.cpp "${VERSION}")
+endif()
+
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/buildnr.cpp)
+    file(WRITE buildnr.cpp "const char* ESMINI_BUILD_VERSION=\"N/A client build\";")
 endif()

@@ -1,4 +1,6 @@
-2019-11-19 Version 1.0.191 
+The purpose of this document is to highlight changes breaking backward compatibility, i.e. updates to scenarios and start scripts might be required.
+
+2019-11-20 Version 1.1
 - External control flag replaced by enumeration
     Available modes: internal, external, hybrid
     EgoSimulator and EnvironmentSimulator argument syntax changed from --ext_control <on|off> to --control <internal|external|hybrid>

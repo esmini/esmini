@@ -48,12 +48,13 @@ for:
           cd buildVS15_64
           
           cmake.exe -G "Visual Studio 15 Win64" -D USE_OSG=True ..
-      
+          
       - ps: |
-          ((Get-Content -path ../EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path ../EnvironmentSimulator/CommonMini/version.cpp
-          type ../EnvironmentSimulator/CommonMini/version.cpp
+          echo "const char* ESMINI_BUILD_VERSION=`"$env:APPVEYOR_BUILD_VERSION`";"  | Out-File ../EnvironmentSimulator/CommonMini/buildnr.cpp
+          type ../EnvironmentSimulator/CommonMini/buildnr.cpp
+          
+      - cmd: 
 
-      - cmd:
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
 
           cd..
