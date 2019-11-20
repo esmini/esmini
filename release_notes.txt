@@ -1,0 +1,5 @@
+2019-11-19 Version 1.0.191 
+- External control flag replaced by enumeration
+    Available modes: internal, external, hybrid
+    EgoSimulator and EnvironmentSimulator argument syntax changed from --ext_control <on|off> to --control <internal|external|hybrid>
+ 
