@@ -40,7 +40,9 @@ static SE_Mutex mutex;
 using namespace scenarioengine;
 
 static int COLOR_GREEN[3] = { 0x40, 0xA0, 0x50 };
+static int COLOR_DARK_GRAY[3] = { 0x80, 0x80, 0x80 };
 static int COLOR_GRAY[3] = { 0xBB, 0xBB, 0xBB };
+static int COLOR_YELLOW[3] = { 0x90, 0x80, 0x50 };
 static int COLOR_RED[3] = { 0x90, 0x30, 0x30 };
 
 static const double maxStepSize = 0.1;
@@ -115,16 +117,23 @@ int SetupVehicles()
 		if (vh.obj->control_ == Object::Control::HYBRID_GHOST)
 		{
 			transparent = true;
-			trail_color[0] = 0.5;
-			trail_color[1] = 0.5;
-			trail_color[2] = 0.5;
+			trail_color[0] = ((double)COLOR_DARK_GRAY[0]) / 0xFF;
+			trail_color[1] = ((double)COLOR_DARK_GRAY[1]) / 0xFF;
+			trail_color[2] = ((double)COLOR_DARK_GRAY[2]) / 0xFF;
+		}
+		else if (vh.obj->control_ == Object::Control::HYBRID_EXTERNAL || vh.obj->control_ == Object::Control::EXTERNAL)
+		{
+			transparent = false;
+			trail_color[0] = ((double)COLOR_YELLOW[0]) / 0xFF;
+			trail_color[1] = ((double)COLOR_YELLOW[1]) / 0xFF;
+			trail_color[2] = ((double)COLOR_YELLOW[2]) / 0xFF;
 		}
 		else
 		{
 			transparent = false;
-			trail_color[0] = 0.6;
-			trail_color[1] = 0.5;
-			trail_color[2] = 0.3;
+			trail_color[0] = ((double)COLOR_RED[0]) / 0xFF;
+			trail_color[1] = ((double)COLOR_RED[1]) / 0xFF;
+			trail_color[2] = ((double)COLOR_RED[2]) / 0xFF;
 		}
 		if (scenarioViewer->AddCar(vh.obj->model_filepath_, transparent, trail_color) == 0)
 		{
