@@ -42,13 +42,17 @@ for:
           platform: x64
     build_script:
       - echo Visual Studio 2017 x64 build script
-      - cmd: |
+      - cmd:
           mkdir buildVS15_64
+          
           cd buildVS15_64
+          
           cmake.exe -G "Visual Studio 15 Win64" -D USE_OSG=True ..
+      
       - ps: |
-          ((Get-Content -path EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path EnvironmentSimulator/CommonMini/version.cpp
-          type EnvironmentSimulator/CommonMini/version.cpp
+          ((Get-Content -path ../EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path ../EnvironmentSimulator/CommonMini/version.cpp
+          type ../EnvironmentSimulator/CommonMini/version.cpp
+
       - cmd:
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
 
@@ -74,8 +78,8 @@ for:
           cmake -G "Visual Studio 15" -D USE_OSG=True ..
 
       - ps: |
-          ((Get-Content -path EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path EnvironmentSimulator/CommonMini/version.cpp
-          type EnvironmentSimulator/CommonMini/version.cpp
+          ((Get-Content -path ../EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path ../EnvironmentSimulator/CommonMini/version.cpp
+          type ../EnvironmentSimulator/CommonMini/version.cpp
 
       - cmd:
           msbuild /m /property:Configuration=Release /p:Platform=win32 EnvironmentSimulator.sln
@@ -96,8 +100,8 @@ for:
           cmake -G "Visual Studio 14 2015 Win64" -T "Windows7.1SDK" -D WINSDK7_1=True -D USE_OSG=True ..
 
       - ps: |
-          ((Get-Content -path EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path EnvironmentSimulator/CommonMini/version.cpp
-          type EnvironmentSimulator/CommonMini/version.cpp
+          ((Get-Content -path ../EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path ../EnvironmentSimulator/CommonMini/version.cpp
+          type ../EnvironmentSimulator/CommonMini/version.cpp
 
       - cmd:
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
