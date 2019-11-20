@@ -17,10 +17,11 @@ else()
         COMMAND bash -c "git diff --quiet --exit-code || echo +"
         OUTPUT_VARIABLE GIT_DIFF)
     execute_process(
-        COMMAND bash -c "git describe --exact-match --tags"
+        COMMAND git describe --exact-match --tags
         OUTPUT_VARIABLE GIT_TAG ERROR_QUIET)
     execute_process(
-        COMMAND bash -c "git rev-parse --abbrev-ref HEAD"
+#        COMMAND git rev-parse --abbrev-ref HEAD
+        COMMAND git name-rev --name-only HEAD
         OUTPUT_VARIABLE GIT_BRANCH)
 
     string(STRIP "${GIT_REV}" GIT_REV)
