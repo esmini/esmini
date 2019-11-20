@@ -12,6 +12,7 @@ IF NOT EXIST %target_dir%\run\EgoSimulator ( mkdir %target_dir%\run\EgoSimulator
 IF NOT EXIST %target_dir%\bin\win64\Release ( mkdir %target_dir%\bin\win64\Release )
 IF NOT EXIST %target_dir%\3rd_party_terms_and_licenses ( mkdir %target_dir%\3rd_party_terms_and_licenses )
 
+copy resources\xosc\basic_hybrid.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_cr.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_simple.xosc %target_dir%\resources\xosc /y
@@ -50,6 +51,7 @@ copy resources\models\jolengatan.osgb %target_dir%\resources\models /y
 copy resources\models\straight_500m.osgb %target_dir%\resources\models /y
 copy resources\models\parking_lot.osgb %target_dir%\resources\models /y
 
+copy run\EgoSimulator\run_basic_hybrid.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_ltap-od_two-targets_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_ltap-od_two-targets_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_highway-merge_advanced_external.bat %target_dir%\run\EgoSimulator /y
