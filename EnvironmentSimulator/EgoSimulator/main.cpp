@@ -528,11 +528,6 @@ int main(int argc, char** argv)
 						vh->dyn_model->heading_, vh->dyn_model->pitch_, 0,
 						vh->dyn_model->speed_, vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_));
 				}
-
-
-				// Save position to object trail
-				Object *obj = scenarioEngine->entities.object_[i];
-				obj->trail_.AddState(simTime, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->speed_);
 			}
 
 			scenarioEngine->step(deltaSimTime);

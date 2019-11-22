@@ -41,8 +41,12 @@ static viewer::Viewer *scViewer = 0;
 static bool closing = false;
 static SE_Thread thread;
 static SE_Mutex mutex;
-static int COLOR_GREEN[3] = { 0x40, 0xB0, 0x50 };
+
+static int COLOR_GREEN[3] = { 0x40, 0xA0, 0x50 };
+static int COLOR_DARK_GRAY[3] = { 0x80, 0x80, 0x80 };
 static int COLOR_GRAY[3] = { 0xBB, 0xBB, 0xBB };
+static int COLOR_YELLOW[3] = { 0x90, 0x80, 0x50 };
+static int COLOR_RED[3] = { 0x90, 0x30, 0x30 };
 
 typedef enum {
 	VIEWER_NOT_RUNNING,
@@ -133,11 +137,20 @@ void viewer_thread(void*)
 
 	// Update graphics - until close request or viewer terminated 
 	__int64 now, lastTimeStamp = 0;
+	double last_dot_time = 0;
+
 	while (!closing)
 	{
 		now = SE_getSystemTime();
 		deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
 		lastTimeStamp = now;
+
+		bool add_dot = false;
+		if (simTime - last_dot_time > 0.2)
+		{
+			add_dot = true;
+			last_dot_time = simTime;
+		}
 
 		// Fetch states of scenario objects
 		for (int i = 0; i < scenarioGateway->getNumberOfObjects(); i++)
@@ -159,7 +172,33 @@ void viewer_thread(void*)
 				// Choose model from index - wrap to handle more vehicles than models
 				int carModelID = o->state_.model_id;
 				bool transparent = scenarioEngine->entities.object_[i]->control_ == Object::Control::HYBRID_GHOST ? true : false;
-				new_sc.carModel = scViewer->AddCar(carModelsFiles_[carModelID], transparent, osg::Vec3(0.5, 0.5, 0.5));
+
+				// Create trail, choose color
+				osg::Vec3 trail_color;
+				if (o->state_.control == Object::Control::HYBRID_GHOST)
+				{
+					transparent = true;
+					trail_color[0] = ((double)COLOR_DARK_GRAY[0]) / 0xFF;
+					trail_color[1] = ((double)COLOR_DARK_GRAY[1]) / 0xFF;
+					trail_color[2] = ((double)COLOR_DARK_GRAY[2]) / 0xFF;
+				}
+				else if (o->state_.control == Object::Control::HYBRID_EXTERNAL || 
+					o->state_.control == Object::Control::EXTERNAL)
+				{
+					transparent = false;
+					trail_color[0] = ((double)COLOR_YELLOW[0]) / 0xFF;
+					trail_color[1] = ((double)COLOR_YELLOW[1]) / 0xFF;
+					trail_color[2] = ((double)COLOR_YELLOW[2]) / 0xFF;
+				}
+				else
+				{
+					transparent = false;
+					trail_color[0] = ((double)COLOR_RED[0]) / 0xFF;
+					trail_color[1] = ((double)COLOR_RED[1]) / 0xFF;
+					trail_color[2] = ((double)COLOR_RED[2]) / 0xFF;
+				}
+
+				new_sc.carModel = scViewer->AddCar(carModelsFiles_[carModelID], transparent, trail_color);
 
 				if (scenarioEngine->entities.object_[i]->GetControl() == Object::Control::HYBRID_EXTERNAL)
 				{
@@ -177,6 +216,11 @@ void viewer_thread(void*)
 				sc = &scenarioCar.back();
 			}
 			sc->state = o->state_;
+			
+			if (add_dot)
+			{
+				sc->carModel->trail_->AddDot(simTime, o->state_.pos.GetX(), o->state_.pos.GetY(), o->state_.pos.GetZ(), o->state_.pos.GetH());
+			}
 		}
 
 		// Visualize scenario cars
@@ -320,6 +364,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 	}
 }
 
+#if 0
 static int GetRoadInfoAtGhost(int object_id, SE_RoadInfo *r_data)
 {
 	roadmanager::SteeringTargetInfo s_data;
@@ -363,6 +408,69 @@ static int GetRoadInfoAtGhost(int object_id, SE_RoadInfo *r_data)
 
 		return 0;
 	}
+}
+#endif
+
+static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *r_data, float *speed_ghost)
+{
+	roadmanager::SteeringTargetInfo s_data;
+
+	if (scenarioGateway == 0)
+	{
+		return -1;
+	}
+
+	if (object_id >= scenarioGateway->getNumberOfObjects())
+	{
+		LOG("Object %d not available, only %d registered", object_id, scenarioGateway->getNumberOfObjects());
+		return -1;
+	}
+
+	Object *obj = scenarioEngine->entities.object_[object_id];
+	if (obj->ghost_ == 0)
+	{
+		LOG("Ghost object not available for object id %d", object_id);
+		return -1;
+	}
+
+	double x, y, z, speed, s_out;
+	int index_out;
+
+	if (obj->ghost_->trail_.FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(), x, y,
+		obj->trail_follow_s_, obj->trail_follow_index_, obj->trail_follow_index_) == 0)
+	{
+		z = obj->pos_.GetZ();
+	}
+	else
+	{
+		// Failed find point along trail, copy entity position
+		x = obj->pos_.GetX();
+		y = obj->pos_.GetY();
+		z = obj->pos_.GetZ();
+	}
+
+	obj->ghost_->trail_.FindPointAhead(obj->trail_follow_index_, obj->trail_follow_s_, lookahead_distance, x, y, z, speed, index_out, s_out);
+
+	roadmanager::Position pos(x, y, 0, 0, 0, 0);
+	obj->pos_.CalcSteeringTarget(&pos, &s_data);
+
+	// Copy data
+	r_data->local_pos_x = (float)s_data.local_pos[0];
+	r_data->local_pos_y = (float)s_data.local_pos[1];
+	r_data->local_pos_z = (float)s_data.local_pos[2];
+	r_data->global_pos_x = (float)s_data.global_pos[0];
+	r_data->global_pos_y = (float)s_data.global_pos[1];
+	r_data->global_pos_z = (float)s_data.global_pos[2];
+	r_data->angle = (float)s_data.angle;
+	r_data->curvature = (float)s_data.curvature;
+	r_data->road_heading = (float)s_data.road_heading;
+	r_data->road_pitch = (float)s_data.road_pitch;
+	r_data->road_roll = (float)s_data.road_roll;
+	r_data->speed_limit = (float)s_data.speed_limit;
+
+	*speed_ghost = (float)obj->ghost_->speed_;
+
+	return 0;
 }
 
 extern "C"
@@ -590,6 +698,7 @@ extern "C"
 		return 0;
 	}
 
+#if 0
 	SE_DLL_API int SE_GetRoadInfoAtGhost(int object_id, SE_RoadInfo *data, float *speed_ghost, float *hwt_ghost)
 	{
 		if (scenarioGateway == 0 || object_id >= scenarioGateway->getNumberOfObjects())
@@ -618,5 +727,23 @@ extern "C"
 
 		return 0;
 	}
+#else
+	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost)
+	{
+		if (scenarioGateway == 0 || object_id >= scenarioGateway->getNumberOfObjects())
+		{
+			return -1;
+		}
 
+		if (GetRoadInfoAlongGhostTrail(object_id, lookahead_distance, data, speed_ghost) != 0)
+		{
+			return -1;
+		}
+
+		Set_se_ghost_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
+		//LOG("id %d dist %.2f x %.2f y %.2f z %.2f", object_id, lookahead_distance, data->global_pos_x, data->global_pos_y, data->global_pos_z);
+		return 0;
+	}
+
+#endif
 }
