@@ -3186,6 +3186,20 @@ void Position::SetHeadingRelative(double heading)
 	h_ = GetAngleSum(h_road_, h_relative_);
 }
 
+void Position::SetHeadingRelativeDrivingDirection(double heading)
+{
+	if (h_relative_ > M_PI/2 && h_relative_ < 3 * M_PI / 2)
+	{
+		// Driving towards road direction
+		h_relative_ = fmod(-heading + M_PI, 2 * M_PI);
+	}
+	else
+	{
+		h_relative_ = fmod(heading, 2 * M_PI);
+	}
+	h_ = GetAngleSum(h_road_, h_relative_);
+}
+
 double Position::GetCurvature()
 {
 	Geometry *geom = GetOpenDrive()->GetGeometryByIdx(track_idx_, geometry_idx_);

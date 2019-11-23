@@ -121,7 +121,7 @@ void LatLaneChangeAction::Step(double dt)
 			angle = 0;
 		}
 
-		object_->pos_.SetHeadingRelative(angle);
+		object_->pos_.SetHeadingRelativeDrivingDirection(angle);
 	}
 	else
 	{
@@ -166,7 +166,7 @@ void LatLaneOffsetAction::Step(double dt)
 		angle = 0;
 	}
 
-	object_->pos_.SetHeadingRelative(angle);
+	object_->pos_.SetHeadingRelativeDrivingDirection(angle);
 }
 
 double LongSpeedAction::TargetRelative::GetValue()

@@ -502,7 +502,7 @@ void ScenarioEngine::stepObjects(double dt)
 				obj->pos_.MoveAlongS(steplen);
 			}
 		}
-		obj->trail_.AddState(simulationTime, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->speed_);
+		obj->trail_.AddState((float)simulationTime, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
 	}
 }
 

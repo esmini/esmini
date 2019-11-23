@@ -869,7 +869,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								{
 									LatLaneChangeAction::TargetRelative *target_rel = new LatLaneChangeAction::TargetRelative;
 
-									target_rel->object_ = FindObjectByName(ReadAttribute(targetChild.attribute("object")), entities);
+									if ((target_rel->object_ = FindObjectByName(ReadAttribute(targetChild.attribute("object")), entities)) == 0)
+									{
+										LOG("Failed to find object %s", ReadAttribute(targetChild.attribute("object")).c_str());
+										return 0;
+									}
 									target_rel->value_ = strtoi(ReadAttribute(targetChild.attribute("value")));
 									target = target_rel;
 								}

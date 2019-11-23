@@ -42,7 +42,7 @@ using namespace scenarioengine;
 static int COLOR_GREEN[3] = { 0x40, 0xA0, 0x50 };
 static int COLOR_DARK_GRAY[3] = { 0x80, 0x80, 0x80 };
 static int COLOR_GRAY[3] = { 0xBB, 0xBB, 0xBB };
-static int COLOR_YELLOW[3] = { 0x90, 0x80, 0x50 };
+static int COLOR_YELLOW[3] = { 0x85, 0x75, 0x40 };
 static int COLOR_RED[3] = { 0x90, 0x30, 0x30 };
 
 static const double maxStepSize = 0.1;
@@ -137,8 +137,6 @@ int SetupVehicles()
 		}
 		if (scenarioViewer->AddCar(vh.obj->model_filepath_, transparent, trail_color) == 0)
 		{
-			delete scenarioViewer;
-			viewer_state = ViewerState::VIEWER_QUIT;
 			return -1;
 		}
 
@@ -262,7 +260,12 @@ static void viewer_thread(void *args)
 		*parser, 
 		scenarioEngine->entities.object_[0]->GetControl() == Object::Control::INTERNAL ? false : true);
 
-	SetupVehicles();
+	if (SetupVehicles() != 0)
+	{
+		delete scenarioViewer;
+		viewer_state = ViewerState::VIEWER_QUIT;
+		return;
+	}
 
 	std::string info_text_str;
 	parser->read("--info_text", info_text_str);
@@ -535,12 +538,12 @@ int main(int argc, char** argv)
 			simTime += deltaSimTime;
 
 			//LOG("%d %d %.2f h: %.5f rh %.5f rh %.5f",
-			    //      scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
-			    //      scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
-			    //      scenarioEngine->entities.object_[0]->pos_.GetS(),
-			    //      scenarioEngine->entities.object_[0]->pos_.GetH(),
-			    //      scenarioEngine->entities.object_[0]->pos_.GetHRoad(),
-			    //      scenarioEngine->entities.object_[0]->pos_.GetHRelative());
+			//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
+			//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
+			//    scenarioEngine->entities.object_[0]->pos_.GetS(),
+			//    scenarioEngine->entities.object_[0]->pos_.GetH(),
+			//    scenarioEngine->entities.object_[0]->pos_.GetHRoad(),
+			//    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
 
 			mutex.Unlock();
 		}
