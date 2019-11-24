@@ -361,6 +361,7 @@ namespace roadmanager
 		double GetS() { return s_; }
 		Lane* GetLaneByIdx(int idx);
 		Lane* GetLaneById(int id);
+		int FindClosestDrivingLane(int id);
 		int GetLaneIdByIdx(int idx);
 		int GetLaneIdxById(int id);
 		double GetOuterOffset(double s, int lane_id);
@@ -529,6 +530,7 @@ namespace roadmanager
 		double GetLaneOffsetPrim(double s);
 		int GetNumberOfLanes(double s);
 		int GetNumberOfDrivingLanes(double s);
+		Lane* GetDrivingLaneByIdx(double s, int idx);
 		int GetNumberOfDrivingLanesSide(double s, int side);  // side = -1 right, 1 left
 
 	protected:

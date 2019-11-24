@@ -38,6 +38,7 @@
 #define SIGN(X) ((X<0)?-1:1)
 
 
+static bool run_only_once = false;
 static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
@@ -45,6 +46,7 @@ static const bool freerun = true;
 static std::mt19937 mt_rand;
 static double density = DEFAULT_DENSITY;
 static double speed = DEFAULT_SPEED;
+static int first_car_in_focus = -1;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
@@ -52,6 +54,7 @@ typedef struct
 {
 	int road_id_init;
 	int lane_id_init;
+	double s_init;
 	roadmanager::Position *pos;
 	double speed_offset;  // speed vary bewtween lanes, m/s
 	viewer::CarModel *model;
@@ -92,50 +95,54 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 	for (int r = 0; r < odrManager->GetNumOfRoads(); r++)
 	{
 		roadmanager::Road *road = odrManager->GetRoadByIdx(r);
-		roadmanager::LaneSection *lane_section = road->GetLaneSectionByIdx(0);
-
 		double average_distance = 100.0 / density;
 
 		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
-			for (int l = 0; l < lane_section->GetNumberOfLanes(); l++)
+			for (double s = average_distance; s < road->GetLength() - average_distance;)
 			{
-				int lane_id = lane_section->GetLaneIdByIdx(l);
-				roadmanager::Lane *lane = lane_section->GetLaneById(lane_id);
-
-				if (lane->IsDriving())
+				// Pick lane by random
+				int lane_idx = ((double)road->GetNumberOfDrivingLanes(s) * mt_rand()) / (mt_rand.max)();
+				roadmanager::Lane *lane = road->GetDrivingLaneByIdx(s, lane_idx);
+				if (lane == 0)
 				{
-					for (double s = 0; s < road->GetLength() - average_distance;)
-					{
-						int carModelID;
-
-						// left lanes reverse direction
-						double s_aligned = lane->GetId() > 0 ? road->GetLength() - s : s;
-
-						// randomly choose model
-						carModelID = (double(sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) * mt_rand()) / (mt_rand.max)();
-						LOG("Adding car of model %d to road %d", carModelID, r);
-
-						Car *car_ = new Car;
-						// Higher speeds in lanes closer to reference lane
-						car_->speed_offset = -2 * abs(lane_id);
-						car_->road_id_init = odrManager->GetRoadByIdx(r)->GetId();
-						car_->lane_id_init = lane_id;						
-						car_->pos = new roadmanager::Position(odrManager->GetRoadByIdx(r)->GetId(), lane_id, s_aligned, 0);
-						car_->pos->SetHeadingRelative(lane_id < 0 ? 0 : M_PI);
-						if ((car_->model = viewer->AddCar(carModelsFiles_[carModelID], false, osg::Vec3(0.5, 0.5, 0.5))) == 0)
-						{
-							return -1;
-						}
-						car_->id = cars.size();
-						cars.push_back(car_);
-
-						// Add space to next vehicle
-						s += average_distance + (0.2 * average_distance * mt_rand()) / (mt_rand.max)();
-					}
+					LOG("Failed locate driving lane %d at s %d", lane_idx, s);
+					continue;
 				}
+
+				// randomly choose model
+				int carModelID = (double(sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) * mt_rand()) / (mt_rand.max)();
+				LOG("Adding car of model %d to road nr %d (road id %d s %.2f lane id %d), ", carModelID, r, road->GetId(), s, lane->GetId());
+
+				Car *car_ = new Car;
+				// Higher speeds in lanes closer to reference lane
+				car_->speed_offset = -2 * abs(lane->GetId());
+				car_->road_id_init = odrManager->GetRoadByIdx(r)->GetId();
+				car_->lane_id_init = lane->GetId();
+				car_->s_init = s;
+				car_->pos = new roadmanager::Position(odrManager->GetRoadByIdx(r)->GetId(), lane->GetId(), s, 0);
+				car_->pos->SetHeadingRelative(lane->GetId() < 0 ? 0 : M_PI);
+
+				if ((car_->model = viewer->AddCar(carModelsFiles_[carModelID], false, osg::Vec3(0.5, 0.5, 0.5))) == 0)
+				{
+					return -1;
+				}
+				car_->id = cars.size();
+				cars.push_back(car_);
+				if (first_car_in_focus == -1 && lane->GetId() < 0)
+				{
+					first_car_in_focus = car_->id;
+				}
+				
+				// Add space to next vehicle
+				s += average_distance + (0.2 * average_distance * mt_rand()) / (mt_rand.max)();
 			}
 		}
+	}
+
+	if (first_car_in_focus == -1)
+	{
+		first_car_in_focus = 0;
 	}
 
 	return 0;
@@ -149,17 +156,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 	if (car->pos->MoveAlongS(ds) != 0)
 	{
 		// invalid move -> reset position
-		double s;
-		if (car->lane_id_init > 0)
-		{
-			s = odrManager->GetRoadById(car->road_id_init)->GetLength();
-		}
-		else
-		{
-			s = 0;
-		}
-
-		car->pos->SetLanePos(car->road_id_init, car->lane_id_init, s, 0, 0);
+		car->pos->SetLanePos(car->road_id_init, car->lane_id_init, car->s_init, 0, 0);
 	}
 
 	if (car->model->txNode_ != 0)
@@ -227,7 +224,7 @@ int main(int argc, char** argv)
 		viewer::Viewer *viewer = new viewer::Viewer(
 			odrManager,
 			modelFilename.c_str(),
-			NULL, 
+			NULL,
 			arguments);
 
 		if (SetupCars(odrManager, viewer) == -1)
@@ -235,8 +232,11 @@ int main(int argc, char** argv)
 			return 4;
 		}
 		printf("%d cars added\n", (int)cars.size());
+		viewer->currentCarInFocus_ = first_car_in_focus;
 
 		__int64 now, lastTimeStamp = 0;
+
+		static bool first_time = true;
 
 		while (!viewer->osgViewer_->done())
 		{
@@ -254,9 +254,13 @@ int main(int argc, char** argv)
 				deltaSimTime = minStepSize;
 			}
 
-			for (size_t i=0; i<cars.size(); i++)
+			if (!(run_only_once && !first_time))
 			{
-				updateCar(odrManager, cars[i], deltaSimTime);
+				for (size_t i = 0; i < cars.size(); i++)
+				{
+					updateCar(odrManager, cars[i], deltaSimTime);
+				}
+				first_time = false;
 			}
 
 			viewer->osgViewer_->frame();

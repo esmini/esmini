@@ -433,22 +433,35 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 		LaneSection *lane_section = lane_section_[lane_info.lane_section_idx_];
 
 		// check if we passed current section
-		if (s > lane_section->GetS() + lane_section->GetLength())
+		if (s > lane_section->GetS() + lane_section->GetLength() || s < lane_section->GetS())
 		{
-			while (s > lane_section->GetS() + lane_section->GetLength() && lane_info.lane_section_idx_ + 1 < GetNumberOfLaneSections())
+			if (s > lane_section->GetS() + lane_section->GetLength())
 			{
-				// Find out connecting lane, then move to next lane section
-				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, SUCCESSOR);
-				lane_section = GetLaneSectionByIdx(++lane_info.lane_section_idx_);
+				while (s > lane_section->GetS() + lane_section->GetLength() && lane_info.lane_section_idx_ + 1 < GetNumberOfLaneSections())
+				{
+					// Find out connecting lane, then move to next lane section
+					lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, SUCCESSOR);
+					lane_section = GetLaneSectionByIdx(++lane_info.lane_section_idx_);
+				}
 			}
-		}
-		else if (s < lane_section->GetS())
-		{
-			while (s < lane_section->GetS() && lane_info.lane_section_idx_ > 0)
+			else if (s < lane_section->GetS())
 			{
-				// Move to previous lane section
-				lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, PREDECESSOR);
-				lane_section = GetLaneSectionByIdx(--lane_info.lane_section_idx_);
+				while (s < lane_section->GetS() && lane_info.lane_section_idx_ > 0)
+				{
+					// Move to previous lane section
+					lane_info.lane_id_ = lane_section->GetConnectingLaneId(lane_info.lane_id_, PREDECESSOR);
+					lane_section = GetLaneSectionByIdx(--lane_info.lane_section_idx_);
+				}
+			}
+
+			// If new lane is not driving, try to move into a close driving lane
+			if (!lane_section->GetLaneById(lane_info.lane_id_)->IsDriving())
+			{
+				lane_info.lane_id_ = lane_section->FindClosestDrivingLane(lane_info.lane_id_);
+				if (lane_info.lane_id_ == 0)
+				{
+					LOG("Failed to find a closest driving lane");
+				}
 			}
 		}
 	}
@@ -531,6 +544,26 @@ Lane* LaneSection::GetLaneById(int id)
 		}
 	}
 	return 0;
+}
+
+int LaneSection::FindClosestDrivingLane(int id)
+{
+	int id_best = id;
+	size_t delta_best = lane_.size() + 1;
+
+	for (size_t i = 0; i < lane_.size(); i++)
+	{
+		if (lane_[i]->IsDriving())
+		{
+			if ((abs(lane_[i]->GetId() - id) < delta_best) || 
+				(abs(lane_[i]->GetId() - id) == delta_best && abs(lane_[i]->GetId()) < abs(id_best)))
+			{
+				delta_best = abs(lane_[i]->GetId() - id);
+				id_best = lane_[i]->GetId();
+			}
+		}
+	}
+	return id_best;
 }
 
 int LaneSection::GetLaneIdByIdx(int idx)
@@ -748,23 +781,8 @@ int LaneSection::GetConnectingLaneId(int incoming_lane_id, LinkType link_type)
 	}
 	else
 	{
-		// Move inward, step by step until a driving lane is found
-		while (id != 0)
-		{
-			id -= SIGN(id) * 1;
-			if (GetLaneById(id))
-			{
-				if (GetLaneById(id)->IsDriving())
-				{
-					break;
-				}
-			}
-		}
-		if (id == 0)
-		{
-			// if no driving lane found - stay on same index
-			id = incoming_lane_id;
-		}
+		// if no driving lane found - stay on same index
+		id = incoming_lane_id;
 	}
 	
 	return id;
@@ -1030,6 +1048,26 @@ int Road::GetNumberOfDrivingLanes(double s)
 	}
 
 	return (lane_section_[i]->GetNumberOfDrivingLanes());
+}
+
+Lane* Road::GetDrivingLaneByIdx(double s, int idx)
+{
+	int count = 0;
+
+	LaneSection *ls = GetLaneSectionByS(s);
+
+	for (int i = 0; i < ls->GetNumberOfLanes(); i++)
+	{
+		if (ls->GetLaneByIdx(i)->IsDriving())
+		{
+			if (count++ == idx)
+			{
+				return ls->GetLaneByIdx(i);
+			}
+		}
+	}
+
+	return 0;
 }
 
 int Road::GetNumberOfDrivingLanesSide(double s, int side)
@@ -1754,7 +1792,7 @@ int Junction::GetNumberOfRoadConnections(int roadId, int laneId)
 	for (int i = 0; i < GetNumberOfConnections(); i++)
 	{
 		Connection * connection = GetConnectionByIdx(i);
-		if (roadId == connection->GetIncomingRoad()->GetId())
+		if (connection && connection->GetIncomingRoad() && roadId == connection->GetIncomingRoad()->GetId())
 		{
 			for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++)
 			{
@@ -1776,8 +1814,9 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, 
 
 	for (int i = 0; i < GetNumberOfConnections(); i++)
 	{
-		Connection * connection = GetConnectionByIdx(i);
-		if (roadId == connection->GetIncomingRoad()->GetId())
+		Connection *connection = GetConnectionByIdx(i);
+
+		if (connection && connection->GetIncomingRoad() && roadId == connection->GetIncomingRoad()->GetId())
 		{
 			for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++)
 			{
@@ -1814,6 +1853,7 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, 
 		}
 	}
 
+//	LOG("RoadConnection not found!");
 	return lane_road_lane_connection;
 }
 
@@ -2878,7 +2918,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 		}
 		else
 		{
-			LOG("No lane link from rid %d lid %d to rid %d", GetTrackId(), GetLaneId(), road_link->GetElementId());
+			//LOG("No lane link from rid %d lid %d to rid %d", GetTrackId(), GetLaneId(), road_link->GetElementId());
 		}
 		contact_point_type = road_link->GetContactPointType();
 		next_road = GetOpenDrive()->GetRoadById(road_link->GetElementId());
@@ -3071,17 +3111,13 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 			break;
 		}
 
-		// Move to connected road
-		if (!link || link->GetElementId() == -1)
+		if (!link || link->GetElementId() == -1 || MoveToConnectingRoad(link, contact_point_type, strategy) != 0)
 		{
+			// Failed to find a connection, stay at end of current road
 			SetLanePos(track_id_, lane_id_, s_stop, offset_);
-			return 0;
-		}
 
-		if (MoveToConnectingRoad(link, contact_point_type, strategy) != 0)
-		{
-			SetLanePos(track_id_, lane_id_, s_stop, offset_);
-			return 0;
+			// Return special code
+			return 1;
 		}
 
 		ds = SIGN(ds) * fabs(ds_signed);

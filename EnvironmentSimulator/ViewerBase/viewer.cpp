@@ -67,7 +67,6 @@ public:
 	{
 		if (node.getName() == _name )
 		{
-			LOG("Found %s", _name.c_str());
 			_node = &node;
 		}
 		else
@@ -195,10 +194,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 
 		wheel_.push_back(tx_node);
 	}
-	else
-	{
-		LOG("Found no wheel node %s in vehicle model %s, ignoring", wheelName, carNode->getName().c_str());
-	}
+
 	return tx_node;
 }
 
@@ -220,10 +216,31 @@ CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, 
 
 	// Locate wheel nodes if available
 	osg::ref_ptr<osg::Node> car_node = lod->getChild(0);
-	AddWheel(car_node, "wheel_fl");
-	AddWheel(car_node, "wheel_fr");
-	AddWheel(car_node, "wheel_rr");
-	AddWheel(car_node, "wheel_rl");
+	osg::ref_ptr<osg::Group> retval[4];
+	retval[0] = AddWheel(car_node, "wheel_fl");
+	retval[1] = AddWheel(car_node, "wheel_fr");
+	retval[2] = AddWheel(car_node, "wheel_rr");
+	retval[3] = AddWheel(car_node, "wheel_rl");
+	if (!(retval[0] && retval[1] && retval[2] && retval[3]))
+	{
+		LOG("Missing all four wheel nodes in vehicle model %s - ignoring", car_node->getName().c_str());
+	}
+	else if (!retval[0])
+	{
+		LOG("Missing wheel node %s in vehicle model %s - ignoring","wheel_fl", car_node->getName().c_str());
+	}
+	else if (!retval[1])
+	{
+		LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fr", car_node->getName().c_str());
+	}
+	else if (!retval[2])
+	{
+		LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rr", car_node->getName().c_str());
+	}
+	else if (!retval[3])
+	{
+		LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rl", car_node->getName().c_str());
+	}
 
 	// Extract boundingbox of car to calculate size and center
 	osg::ComputeBoundsVisitor cbv;
