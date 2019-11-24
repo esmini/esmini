@@ -146,8 +146,7 @@ int SetupVehicles()
 		{
 			if (ego_id != -1)
 			{
-				LOG("Only one Ego vehicle (external control) supported. Already registered id %d", ego_id);
-				return -1;
+				LOG("Only one Ego vehicle (external control) supported. Already registered id %d. Ignoring this (%d)", ego_id, i);
 			}
 			else
 			{
