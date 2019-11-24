@@ -14,12 +14,11 @@ IF NOT EXIST %target_dir%\3rd_party_terms_and_licenses ( mkdir %target_dir%\3rd_
 
 copy resources\xosc\basic_hybrid.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in.xosc %target_dir%\resources\xosc /y
-copy resources\xosc\cut-in_cr.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\lane_change.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_simple.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\highway_merge.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\highway_merge_advanced.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\ltap-od_two_targets.xosc %target_dir%\resources\xosc /y
-copy resources\xosc\ltap-od.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\distance_test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\left-hand-traffic_internal.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\ltap-od-synch.xosc %target_dir%\resources\xosc /y
@@ -52,20 +51,16 @@ copy resources\models\straight_500m.osgb %target_dir%\resources\models /y
 copy resources\models\parking_lot.osgb %target_dir%\resources\models /y
 
 copy run\EgoSimulator\run_basic_hybrid.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_ltap-od_two-targets_external.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_ltap-od_two-targets_internal.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_highway-merge_advanced_external.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_ltap-od-synch_external.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_ltap-od_two_targets_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_highway-merge_advanced_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_external.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_cut-in_simple.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_cut-in_cr_internal.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_cut-in_cr_external.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_dist_test.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_lane_change.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_left-hand-traffic_internal.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_dist_test.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_synchronize_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_synchronize_external.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_ltap-od-synch_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_parking_lot.bat %target_dir%\run\EgoSimulator /y
 
 copy run\readme.txt %target_dir% /y

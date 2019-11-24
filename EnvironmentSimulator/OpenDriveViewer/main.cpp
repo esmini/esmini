@@ -99,7 +99,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
-			for (double s = average_distance; s < road->GetLength() - average_distance;)
+			for (double s = 5; s < road->GetLength() - average_distance;)
 			{
 				// Pick lane by random
 				int lane_idx = ((double)road->GetNumberOfDrivingLanes(s) * mt_rand()) / (mt_rand.max)();

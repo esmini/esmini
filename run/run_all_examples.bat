@@ -1,9 +1,9 @@
 @rem Run all prepared batch scripts in selected subfolders 
 
-cd EnvironmentSimulator
+cd EgoSimulator
 forfiles /m *.bat /c "cmd /c @path"
 
-cd ..\EgoSimulator
+cd ..\EnvironmentSimulator
 forfiles /m *.bat /c "cmd /c @path"
 
 cd ..\ScenarioViewer
