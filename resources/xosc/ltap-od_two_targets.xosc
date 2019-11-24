@@ -20,7 +20,7 @@
 	<ParameterDeclaration>
 		<Parameter name="$HostVehicle" type="string" value="car_white_external"/>
 		<Parameter name="$TargetVehicle" type="string" value="car_red"/>
- 		<Parameter name="$TargetVehicle2" type="string" value="bus_blue"/>
+ 		<Parameter name="$TargetVehicle2" type="string" value="car_yellow"/>
 		<Parameter name="$HostSpeed" type="double" value="20"/>
 		<Parameter name="$TargetSpeed" type="double" value="7"/>
 		<Parameter name="$Target1SyncPointS" type="double" value="300"/>

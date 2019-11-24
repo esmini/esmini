@@ -79,7 +79,7 @@
 				<Private object="OverTaker">
 					<Action>
 						<Position>
-							<Lane roadId="0" laneId="-2" offset="0" s="20" />
+							<Lane roadId="0" laneId="-2" offset="0" s="25" />
 						</Position>
 					</Action>
 				</Private>

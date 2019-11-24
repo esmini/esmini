@@ -91,6 +91,54 @@
 		</Init>
         		
 		<Story name="StoryPlaceholder" >
+			<Act name="Lane change">
+				<Sequence name="Lane change" numberOfExecutions="1">
+					<Actors>
+						<Entity name="OverTaker"/>
+					</Actors>
+					<Maneuver name="Lane change">
+						<Event name="Lane change" priority="overwrite" >
+							<Action name="Lane change">
+								<Private>
+                                    <Lateral>
+                                        <LaneChange>
+                                            <Dynamics time="2" shape="sinusoidal"/>
+                                            <Target>
+                                                <Relative object="OverTaker" value="1"/> 
+                                            </Target>
+                                        </LaneChange>
+                                    </Lateral>
+								</Private>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="Lane change" delay="0" edge="rising" >
+                                        <ByEntity>
+											<TriggeringEntities rule="any">
+												<Entity name="Ego"/>
+											</TriggeringEntities>
+											<EntityCondition>
+												<RelativeDistance entity="OverTaker" type="longitudinal" value="10" freespace="true" alongRoute="true" rule="greater_than"/>
+											</EntityCondition>
+                                        </ByEntity>
+									</Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
+					</Maneuver>
+				</Sequence>
+				<Conditions>
+					<Start>
+						<ConditionGroup>
+							<Condition name="CutInActStart" delay="0" edge="any">
+								<ByValue>
+									<SimulationTime value="0" rule="greater_than"/>
+								</ByValue>
+							</Condition>
+						</ConditionGroup>
+					</Start>
+				</Conditions>
+			</Act>
 		</Story>
 		<End>
 		</End>

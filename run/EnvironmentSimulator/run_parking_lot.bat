@@ -1,1 +1,0 @@
-..\..\bin\win64\Release\EnvironmentSimulator.exe --window 50 50 800 400 --osc ../../resources/xosc/parking_lot.xosc
