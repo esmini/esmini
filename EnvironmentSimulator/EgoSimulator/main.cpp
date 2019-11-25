@@ -496,7 +496,7 @@ int main(int argc, char** argv)
 					memcpy(vh->speed_target_pos, data.global_pos, sizeof(vh->speed_target_pos));
 
 					// Steering - Find out a steering target along ghost vehicle trail
-					double x, y, z, s_out, speed;
+					double x, y, z, s_out, speed = 0;
 					int index_out;
 
 					if (vh->obj->ghost_->trail_.FindPointAhead(vh->obj->trail_follow_index_, vh->obj->trail_follow_s_, vh->steering_target_distance,

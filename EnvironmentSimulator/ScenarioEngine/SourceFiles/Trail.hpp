@@ -12,7 +12,7 @@
 
 #include "RoadManager.hpp"
 
-#define TRAIL_MAX_STATES 4096
+#define TRAIL_MAX_STATES 60000
 
 namespace scenarioengine
 {
