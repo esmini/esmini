@@ -35,11 +35,13 @@ namespace viewer
 	class AlphaFadingCallback : public osg::StateAttributeCallback
 	{
 	public:
-		AlphaFadingCallback(osg::Vec4 color)
+		AlphaFadingCallback(osgViewer::Viewer *viewer, osg::Vec4 color)
 		{
 			_motion = new osgAnimation::InCubicMotion(0.0f, TRAIL_DOT_FADE_DURATION);
 			color_ = color;
-			internal_time_ = 0.0;
+			viewer_ = viewer;
+			born_time_stamp_ = viewer_->elapsedTime();
+			time_stamp_ = born_time_stamp_;
 		}
 		virtual void operator()(osg::StateAttribute*, osg::NodeVisitor*);
 		void Reset() { _motion->reset(); }
@@ -49,7 +51,9 @@ namespace viewer
 
 	private:
 		osg::Vec4 color_;
-		double internal_time_;
+		double time_stamp_;
+		double born_time_stamp_;
+		osgViewer::Viewer *viewer_;
 	};
 
 	class TrailDot
@@ -59,7 +63,8 @@ namespace viewer
 		osg::ref_ptr<osg::Material> material_;
 		float time_born;
 
-		TrailDot::TrailDot(float time, double x, double y, double z, double heading, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color);
+		TrailDot(float time, double x, double y, double z, double heading,
+			osgViewer::Viewer *viewer, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color);
 		void Reset(float time, double x, double y, double z);
 
 	private:
@@ -76,8 +81,9 @@ namespace viewer
 		osg::Node *dot_node_;
 		void AddDot(float time, double x, double y, double z, double heading);
 
-		Trail(osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 color) :
+		Trail(osg::Group *parent, osgViewer::Viewer *viewer, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 color) :
 			parent_(parent), 
+			viewer_(viewer),
 			n_dots_(0), 
 			current_(0),
 			dot_node_(dot_node)
@@ -89,6 +95,7 @@ namespace viewer
 
 	private:
 		osg::Vec4 color_;
+		osgViewer::Viewer *viewer_;
 	};
 
 	class PointSensor
@@ -123,7 +130,7 @@ namespace viewer
 		PointSensor *trail_sensor_;
 		PointSensor *steering_sensor_;
 
-		CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color);
+		CarModel::CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color);
 		~CarModel();
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double h, double p, double r);
@@ -133,6 +140,7 @@ namespace viewer
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName);
 
 		Trail *trail_;
+		osgViewer::Viewer *viewer_;
 
 	};
 

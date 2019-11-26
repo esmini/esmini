@@ -21,6 +21,17 @@ using namespace scenarioengine;
 
 void ObjectTrail::AddState(float timestamp, float x, float y, float z, float speed)
 {
+	if (n_states_ > 0)
+	{
+		ObjectTrailState *state = GetStateLast();
+
+		// Check timestamp of previous state - add only if delta time has passed
+		if (state && timestamp >= state->timeStamp_ + TRAIL_DT)
+		{
+			return;
+		}
+	}
+
 	state_[current_].timeStamp_ = timestamp;
 	state_[current_].x_ = x;
 	state_[current_].y_ = y;

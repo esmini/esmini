@@ -89,10 +89,12 @@ void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor* 
 	osg::Material* material = static_cast<osg::Material*>(sa);
 	if (material)
 	{
-		internal_time_ += 0.034;
-		if (internal_time_ > TRAIL_DOT_LIFE_SPAN)
+		double age = viewer_->elapsedTime() - born_time_stamp_;
+		double dt = viewer_->elapsedTime() - time_stamp_;
+		time_stamp_ = viewer_->elapsedTime();
+		if (age > TRAIL_DOT_LIFE_SPAN)
 		{
-			_motion->update(0.034);  // assume 30 fps. Todo: replace with actual time
+			_motion->update(dt);  // assume 30 fps. Todo: replace with actual time
 		}
 		color_[3] = 1 - _motion->getValue();
 		material->setDiffuse(osg::Material::FRONT_AND_BACK, color_);
@@ -100,7 +102,8 @@ void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor* 
 	}
 }
 
-TrailDot::TrailDot(float time, double x, double y, double z, double heading, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color)
+TrailDot::TrailDot(float time, double x, double y, double z, double heading, 
+	osgViewer::Viewer *viewer, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color)
 {
 	double dot_radius = 0.4;
 	osg::ref_ptr<osg::Node> new_node;
@@ -129,7 +132,7 @@ TrailDot::TrailDot(float time, double x, double y, double z, double heading, osg
 	material_ = new osg::Material;
 	material_->setDiffuse(osg::Material::FRONT_AND_BACK, trail_color);
 	material_->setAmbient(osg::Material::FRONT_AND_BACK, trail_color);
-	fade_callback_ = new AlphaFadingCallback(trail_color);
+	fade_callback_ = new AlphaFadingCallback(viewer, trail_color);
 	material_->setUpdateCallback(fade_callback_);
 
 	new_node->getOrCreateStateSet()->setAttributeAndModes(material_.get());
@@ -152,7 +155,7 @@ void Trail::AddDot(float time, double x, double y, double z, double heading)
 {
 	if (n_dots_ < TRAIL_MAX_DOTS)
 	{
-		dot_[current_] = new TrailDot(time, x, y, z, heading, parent_, dot_node_, color_);
+		dot_[current_] = new TrailDot(time, x, y, z, heading, viewer_, parent_, dot_node_, color_);
 		n_dots_++;
 	}
 	else
@@ -198,7 +201,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 	return tx_node;
 }
 
-CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color)
+CarModel::CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color)
 {
 	if (!lod)
 	{
@@ -210,6 +213,7 @@ CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, 
 	road_sensor_ = 0;
 	lane_sensor_ = 0;
 	trail_sensor_ = 0;
+	viewer_ = viewer;
 
 	wheel_angle_ = 0;
 	wheel_rot_ = 0;
@@ -262,7 +266,7 @@ CarModel::CarModel(osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, 
 	parent->addChild(txNode_);
 	
 	// Prepare trail of dots
-	trail_ = new Trail(trail_parent, dot_node, trail_color);
+	trail_ = new Trail(trail_parent, viewer, dot_node, trail_color);
 }
 
 CarModel::~CarModel()
@@ -524,7 +528,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 		state->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 	}
 
-	cars_.push_back(new CarModel(lod, rootnode_, trails_, dot_node_, trail_color));
+	cars_.push_back(new CarModel(osgViewer_, lod, rootnode_, trails_, dot_node_, trail_color));
 	// Focus on first added car
 	if (cars_.size() == 1)
 	{
