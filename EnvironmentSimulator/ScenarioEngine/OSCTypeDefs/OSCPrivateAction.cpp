@@ -480,8 +480,15 @@ void SynchronizeAction::Step(double dt)
 
 		if (final_speed_)
 		{
-			// For more information, see OpenSCENARIO 1.0 User Guide (~mid 2020)
+			// For more information about calculations, see 
+			// https://docs.google.com/document/d/1dEBUWlJVLUz6Rp9Ol1l90iG0LfNtcsgLyJ0kDdwgPzA/edit?usp=sharing
+			// 
+			// Interactive Python script plotting calculation result based on various input values
+			// https://drive.google.com/file/d/1z902gRYogkLhUAV1pZLc9gcgwnak7TBH/view?usp=sharing
+			// (the method described below is "Spedified final speed - alt 1")
 			//
+			// Here follow a brief description:
+			// 
 			// Calculate acceleration needed to reach the destination in due time
 			// Four cases
 			//   1  Linear. Reach final speed with constant acceleration
