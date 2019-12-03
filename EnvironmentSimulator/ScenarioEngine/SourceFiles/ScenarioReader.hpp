@@ -31,11 +31,11 @@ namespace scenarioengine
 	{
 	public:
 
-		ScenarioReader();
+		ScenarioReader(Entities *entities, Catalogs *catalogs) : entities_(entities), catalogs_(catalogs), objectCnt(0) {}
 		int loadOSCFile(const char * path);
 		void loadOSCMem(const pugi::xml_document &xml_doch);
 
-		void LoadCatalog(pugi::xml_node catalogChild, Entities *entities, Catalogs *catalogs);
+		int RegisterCatalogDirectory(pugi::xml_node catalogDirChild);
 
 		// RoadNetwork
 		void parseRoadNetwork(RoadNetwork &roadNetwork);
@@ -45,26 +45,28 @@ namespace scenarioengine
 		void parseParameterDeclaration();
 
 		// Catalogs
-		void parseCatalogs(Catalogs &catalogs, Entities *entities);
-		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode, Entities *entities, Catalogs *catalogs);
+		void parseCatalogs();
+		Catalog* LoadCatalog(std::string name);
+		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode);
 		void ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node);
-		Vehicle* parseOSCVehicle(pugi::xml_node vehicleNode, Catalogs *catalogs);
+		Vehicle* parseOSCVehicle(pugi::xml_node vehicleNode);
 
 		// Enitites
-		void parseEntities(Entities &entities, Catalogs *catalogs);
-		Object* FindObjectByName(std::string name, Entities *entities);
+		int parseEntities();
+		Entry* ScenarioReader::ResolveCatalogReference(std::string catalog_name, std::string entry_name);
+		Object* FindObjectByName(std::string name);
 
 		// Storyboard - Init
-		void parseInit(Init &init, Entities *entities, Catalogs *catalogs);
-		OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode, Entities *entities, Object *object, Catalogs *catalogs);
+		void parseInit(Init &init);
+		OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode, Object *object);
 		void parseOSCOrientation(OSCOrientation &orientation, pugi::xml_node orientationNode);
-		OSCPosition *parseOSCPosition(pugi::xml_node positionNode, Entities *entities, Catalogs *catalogs);
+		OSCPosition *parseOSCPosition(pugi::xml_node positionNode);
 
 		// Storyboard - Story
-		OSCCondition *parseOSCCondition(pugi::xml_node conditionNode, Entities *entities, Catalogs *catalogs);
+		OSCCondition *parseOSCCondition(pugi::xml_node conditionNode);
 		//	void parseOSCConditionGroup(OSCConditionGroup *conditionGroup, pugi::xml_node conditionGroupNode);
-		void parseStory(std::vector<Story*> &storyVector, Entities *entities, Catalogs *catalogs);
-		void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, Entities *entities, ActSequence *act_sequence, Catalogs *catalogs);
+		int parseStory(std::vector<Story*> &storyVector);
+		void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, ActSequence *act_sequence);
 
 		// Help functions
 		std::string getParameter(std::string name);
@@ -77,6 +79,8 @@ namespace scenarioengine
 		OSCParameterDeclaration parameterDeclaration;
 		int objectCnt;
 		std::string oscFilename;
+		Entities *entities_;
+		Catalogs *catalogs_;
 
 		// Use always this method when reading attributes, it will resolve any variables
 		std::string ReadAttribute(pugi::xml_attribute attribute, bool required = false);

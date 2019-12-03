@@ -9,14 +9,11 @@
 	</ParameterDeclaration>
   
 	<Catalogs>  
-		<RouteCatalog> 
-		</RouteCatalog>
+		<RouteCatalog/> 
 		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
 		</VehicleCatalog>
-		<DriverCatalog>
-			<Directory path="../xosc/Catalogs/DriverCatalog"/>
-		</DriverCatalog>
+		<DriverCatalog/>
 	</Catalogs>
 
 	<RoadNetwork>

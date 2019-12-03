@@ -22,53 +22,46 @@
 
 namespace scenarioengine
 {
+	typedef enum
+	{
+		CATALOG_UNDEFINED,
+		CATALOG_VEHICLE,
+		CATALOG_DRIVER,
+		CATALOG_PEDESTRIAN,
+		CATALOG_PEDESTRIAN_CONTROLLER,
+		CATALOG_MISC_OBJECT,
+		CATALOG_ENVIRONMENT,
+		CATALOG_MANEUVER,
+		CATALOG_TRAJECTORY,
+		CATALOG_ROUTE,
+	} CatalogType;
+
 	class Entry
 	{
+
 	public:
-		typedef enum
-		{
-			VEHICLE,
-			DRIVER,
-			PEDESTRIAN,
-			PEDESTRIAN_CONTROLLER,
-			MISC_OBJECT,
-			ENVIRONMENT,
-			MANEUVER,
-			TRAJECTORY,
-			ROUTE,
-		} Type;
 
-		std::string Type2Str(Type type)
-		{
-			if (type == VEHICLE) return "VEHICLE";
-			else if (type == DRIVER) return "DRIVER";
-			else if (type == PEDESTRIAN) return "PEDESTRIAN";
-			else if (type == PEDESTRIAN_CONTROLLER) return "PEDESTRIAN_CONTROLLER";
-			else if (type == MISC_OBJECT) return "MISC_OBJECT";
-			else if (type == ENVIRONMENT) return "ENVIRONMENT";
-			else if (type == MANEUVER) return "MANEUVER";
-			else if (type == TRAJECTORY) return "TRAJECTORY";
-			else if (type == ROUTE) return "ROUTE";
-			else LOG("Type %d not recognized", type);
-
-			return "";
-		}
-
-		Type type_;
 		std::string name_;
-		void *element_;
+		void *element_;		
+		CatalogType type_;
 
-		Entry(Type type, std::string name, void *element) : type_(type), name_(name), element_(element) {}
+		Entry(CatalogType type, std::string name, void *element) : type_(type), name_(name), element_(element) {}
 		void* GetElement() { return element_; }
+
+		static std::string GetTypeAsStr_(CatalogType type);
+		std::string GetTypeAsStr() { return GetTypeAsStr_(type_); }
 	};
 
 
 	class Catalog
 	{
 	public:
-		std::string name_;
 
+		std::string name_;
+		CatalogType type_;
 		std::vector<Entry*> entry_;
+
+		CatalogType GetType() { return type_; }
 
 		void AddEntry(Entry *entry)
 		{
@@ -86,18 +79,26 @@ namespace scenarioengine
 			}
 			return 0;
 		}
+
+		std::string GetTypeAsStr() { return Entry::GetTypeAsStr_(type_); }
 	};
 
 	class Catalogs
 	{
 	public:
 
+		typedef struct
+		{
+			CatalogType type_;
+			std::string dir_name_;
+		} CatalogDirEntry;
+
+		std::vector<CatalogDirEntry> catalog_dirs_;
 		std::vector<Catalog*> catalog_;
 
-		Catalogs()
-		{
+		Catalogs() {}
 
-		}
+		int RegisterCatalogDirectory(std::string type, std::string directory);
 
 		Catalog* FindCatalogByName(std::string name)
 		{
@@ -112,6 +113,7 @@ namespace scenarioengine
 			return 0;
 		}
 
+
 		void AddCatalog(Catalog *catalog)
 		{
 			catalog_.push_back(catalog);
@@ -125,6 +127,7 @@ namespace scenarioengine
 			if (catalog == 0)
 			{
 				LOG("Couldn't find catalog %s", catalog_name.c_str());
+				return 0;
 			}
 			else
 			{
@@ -153,6 +156,8 @@ namespace scenarioengine
 
 			return element;
 		}
+
+
 	};
 
 }

@@ -16,10 +16,10 @@
   
 	<Catalogs>  
 		<RouteCatalog> 
-			<Directory path="../xosc/Catalogs/RouteCatalogFabriksgatan"/>
+			<Directory path="../xosc/Catalogs/Routes"/>
 		</RouteCatalog>
 		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
 		</VehicleCatalog>
 		<DriverCatalog>
 			<Directory path="../xosc/Catalogs/DriverCatalog"/>
@@ -51,7 +51,7 @@
 					<Action>
 						<Routing>
 							<FollowRoute>
-								<CatalogReference catalogName="RouteCatalog" entryName="HostStraightRoute"/>
+								<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="HostStraightRoute"/>
 							</FollowRoute>
 						</Routing>
 					</Action>
@@ -59,7 +59,7 @@
 						<Position>
 							<Route>  
 								<RouteRef> 
-									<CatalogReference catalogName="RouteCatalog" entryName="HostStraightRoute"/>
+									<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="HostStraightRoute"/>
 								</RouteRef>
 								<Position>
 									<LaneCoord pathS="0" laneId="1"/>  
@@ -82,7 +82,7 @@
 					<Action>
 						<Routing>
 							<FollowRoute>
-								<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
+								<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="TargetLeftTurnRoute"/>
 							</FollowRoute>
 						</Routing>
 					</Action>
@@ -90,7 +90,7 @@
 						<Position>
 							<Route>  
 								<RouteRef> 
-									<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
+									<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="TargetLeftTurnRoute"/>
 								</RouteRef>
 								<Position>
 									<LaneCoord pathS="$NPCStartPointS" laneId="-1"/>  

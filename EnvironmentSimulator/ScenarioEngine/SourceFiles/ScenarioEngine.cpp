@@ -30,7 +30,8 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double headstart_time
 	// Load and parse data
 	LOG("Init %s", oscFilename.c_str());
 	headstart_time_ = headstart_time;
-	if (scenarioReader.loadOSCFile(oscFilename.c_str()) != 0)
+	scenarioReader = new ScenarioReader(&entities, &catalogs);
+	if (scenarioReader->loadOSCFile(oscFilename.c_str()) != 0)
 	{
 		throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
 	}
@@ -40,7 +41,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double headstart_time
 
 void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, double headstart_time, RequestControlMode control_mode_first_vehicle)
 {
-	scenarioReader.loadOSCMem(xml_doc);
+	scenarioReader->loadOSCMem(xml_doc);
 	parseScenario(control_mode_first_vehicle);
 }
 
@@ -417,13 +418,13 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	bool hybrid_objects = false;
 
 	// Init road manager
-	scenarioReader.parseRoadNetwork(roadNetwork);
+	scenarioReader->parseRoadNetwork(roadNetwork);
 	roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str());
 	odrManager = roadmanager::Position::GetOpenDrive();
 
-	scenarioReader.parseParameterDeclaration();
-	scenarioReader.parseCatalogs(catalogs, &entities);
-	scenarioReader.parseEntities(entities, &catalogs);
+	scenarioReader->parseParameterDeclaration();
+	scenarioReader->parseCatalogs();
+	scenarioReader->parseEntities();
 
 	// Possibly override control mode of first vehicle
 	if (control_mode_first_vehicle != CONTROL_BY_OSC)
@@ -431,8 +432,8 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 		entities.object_[0]->SetControl(RequestControl2ObjectControl(control_mode_first_vehicle));
 	}
 	ResolveHybridVehicles();
-	scenarioReader.parseInit(init, &entities, &catalogs);
-	scenarioReader.parseStory(story, &entities, &catalogs);
+	scenarioReader->parseInit(init);
+	scenarioReader->parseStory(story);
 
 	// Copy init actions from external buddy
 	// (Cloning of story actions are handled in the story parser)

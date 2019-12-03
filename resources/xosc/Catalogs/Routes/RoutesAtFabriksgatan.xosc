@@ -4,7 +4,7 @@
 
     <FileHeader revMajor="0" revMinor="9" date="2018-11-8T17:00:00" author="Erik Gunnarsson"/>
 
-    <Catalog name="RouteCatalog">
+    <Catalog name="RoutesAtFabriksgatan">
 			
 		<Route name="TargetLeftTurnRoute" closed="false">
 			<!-- Target car shall drive west towards crossing, then turn left -->
