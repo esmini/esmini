@@ -16,29 +16,47 @@
 #include <cstdlib>
 
 namespace {
-int strtoi(std::string s) {
-	return atoi(s.c_str());
-}
+	int strtoi(std::string s) {
+		return atoi(s.c_str());
+	}
 
-double strtod(std::string s) {
-	return atof(s.c_str());
-}
+	double strtod(std::string s) {
+		return atof(s.c_str());
+	}
 }
 
 using namespace scenarioengine;
+
+void ScenarioReader::addParameterDeclaration(pugi::xml_node xml_node)
+{
+	paramDeclarationSize_ = (int)parameterDeclaration_.Parameter.size();
+	parseParameterDeclaration(xml_node);
+}
+
+void ScenarioReader::parseGlobalParameterDeclaration()
+{
+	parseParameterDeclaration(doc_.child("OpenSCENARIO").child("ParameterDeclaration"));
+}
+
+void ScenarioReader::restoreParameterDeclaration()
+{
+	parameterDeclaration_.Parameter.erase(parameterDeclaration_.Parameter.begin(), parameterDeclaration_.Parameter.begin() + parameterDeclaration_.Parameter.size() - paramDeclarationSize_);
+	paramDeclarationSize_ = 0;
+	catalog_param_assignments.clear();
+}
 
 void ScenarioReader::addParameter(std::string name, std::string value)
 {
 	LOG("adding %s = %s", name.c_str(), value.c_str());
 
-	parameterDeclaration.Parameter.resize(parameterDeclaration.Parameter.size() + 1);
+	parameterDeclaration_.Parameter.resize(parameterDeclaration_.Parameter.size() + 1);
 
-	parameterDeclaration.Parameter.back().name = name;
-	parameterDeclaration.Parameter.back().type = "string";
-	parameterDeclaration.Parameter.back().value = value;
+	parameterDeclaration_.Parameter.front().name = name;
+	parameterDeclaration_.Parameter.front().type = "string";
+	parameterDeclaration_.Parameter.front().value = value;
 }
 
-std::string ScenarioReader::getParameter(std::string name)
+std::string ScenarioReader::getParameter(OSCParameterDeclaration &parameterDeclaration, std::string name)
 {
 	LOG("Resolve parameter %s", name.c_str());
 
@@ -52,6 +70,7 @@ std::string ScenarioReader::getParameter(std::string name)
 		}
 	}
 	LOG("Failed to resolve parameter %s", name.c_str());
+	throw std::exception("Failed to resolve parameter");
 	return 0;
 }
 
@@ -69,7 +88,7 @@ std::string ScenarioReader::ReadAttribute(pugi::xml_attribute attribute, bool re
 	if (attribute.value()[0] == '$')
 	{
 		// Resolve variable
-		return getParameter(attribute.value());
+		return getParameter(parameterDeclaration_, attribute.value());
 	}
 	else
 	{
@@ -81,14 +100,14 @@ int ScenarioReader::loadOSCFile(const char * path)
 {
 	LOG("Loading %s", path);
 
-	pugi::xml_parse_result result = doc.load_file(path);
+	pugi::xml_parse_result result = doc_.load_file(path);
 	if (!result)
 	{
 		LOG("Error: %s", result.description());
 		return -1;
 	}
 
-	oscFilename = path;
+	oscFilename_ = path;
 
 	return 0;
 }
@@ -97,8 +116,8 @@ void ScenarioReader::loadOSCMem(const pugi::xml_document &xml_doc)
 {
 	LOG("Loading XML document from memory");
 
-	doc.reset(xml_doc);
-	oscFilename = "inline";
+	doc_.reset(xml_doc);
+	oscFilename_ = "inline";
 }
 
 int ScenarioReader::RegisterCatalogDirectory(pugi::xml_node catalogDirChild)
@@ -118,7 +137,7 @@ int ScenarioReader::RegisterCatalogDirectory(pugi::xml_node catalogDirChild)
 	}
 
 	// Directory name should be relative the XOSC file
-	std::string catalog_dir = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename), dirname);
+	std::string catalog_dir = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), dirname);
 
 	catalogs_->RegisterCatalogDirectory(catalogDirChild.name(), catalog_dir);
 	
@@ -183,7 +202,6 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 	}
 	else if (catalogs_->catalog_dirs_[i].type_ == CatalogType::CATALOG_MANEUVER)
 	{
-
 		for (pugi::xml_node maneuver_n = catalog_node.first_child(); maneuver_n; maneuver_n = maneuver_n.next_sibling())
 		{
 			std::string manever_name = ReadAttribute(maneuver_n.attribute("name"));
@@ -207,19 +225,28 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 	return catalog;
 }
 
-void ScenarioReader::parseParameterDeclaration()
+void ScenarioReader::parseParameterDeclaration(pugi::xml_node parameterDeclarationNode)
 {
 	LOG("Parsing parameters");
 
-	pugi::xml_node parameterDeclarationNode = doc.child("OpenSCENARIO").child("ParameterDeclaration");
-	
 	for (pugi::xml_node parameterDeclarationChild = parameterDeclarationNode.first_child(); parameterDeclarationChild; parameterDeclarationChild = parameterDeclarationChild.next_sibling())
 	{
-		parameterDeclaration.Parameter.resize(parameterDeclaration.Parameter.size() + 1);
+		ParameterStruct param;
 
-		parameterDeclaration.Parameter.back().name = parameterDeclarationChild.attribute("name").value();
-		parameterDeclaration.Parameter.back().type = parameterDeclarationChild.attribute("type").value();
-		parameterDeclaration.Parameter.back().value = parameterDeclarationChild.attribute("value").value();
+		param.name = parameterDeclarationChild.attribute("name").value();
+		
+		// Check for catalog parameter assignements, overriding default value
+		param.value = parameterDeclarationChild.attribute("value").value();
+		for (size_t i = 0; i < catalog_param_assignments.size(); i++)
+		{
+			if (param.name == catalog_param_assignments[i].name)
+			{
+				param.value = catalog_param_assignments[i].value;
+				break;
+			}
+		}
+		param.type = parameterDeclarationChild.attribute("type").value();
+		parameterDeclaration_.Parameter.insert(parameterDeclaration_.Parameter.begin(), param);
 	}
 }
 
@@ -227,7 +254,7 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 {
 	LOG("Parsing RoadNetwork");
 
-	pugi::xml_node roadNetworkNode = doc.child("OpenSCENARIO").child("RoadNetwork");
+	pugi::xml_node roadNetworkNode = doc_.child("OpenSCENARIO").child("RoadNetwork");
 
 	for (pugi::xml_node roadNetworkChild = roadNetworkNode.first_child(); roadNetworkChild; roadNetworkChild = roadNetworkChild.next_sibling())
 	{
@@ -253,7 +280,7 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 		LOG("Warning: No road network 3D model file loaded! Setting default path.");
 
 		// Since the scene graph file path is used to locate other 3D files, like vehicles, create a default path 
-		roadNetwork.SceneGraph.filepath = DirNameOf(oscFilename);
+		roadNetwork.SceneGraph.filepath = DirNameOf(oscFilename_);
 	}
 
 	LOG("Roadnetwork ODR: %s", roadNetwork.Logics.filepath.c_str());
@@ -386,7 +413,7 @@ void ScenarioReader::parseCatalogs()
 {
 	LOG("Parsing Catalogs");
 
-	pugi::xml_node catalogsNode = doc.child("OpenSCENARIO").child("Catalogs");
+	pugi::xml_node catalogsNode = doc_.child("OpenSCENARIO").child("Catalogs");
 
 	for (pugi::xml_node catalogsChild = catalogsNode.first_child(); catalogsChild; catalogsChild = catalogsChild.next_sibling())
 	{
@@ -394,18 +421,31 @@ void ScenarioReader::parseCatalogs()
 	}
 }
 
-
-
 void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 {
 	LOG("Parsing OSCFile %s", file.filepath.c_str());
 
-	file.filepath = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename), ReadAttribute(fileNode.attribute("filepath")));
+	file.filepath = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), ReadAttribute(fileNode.attribute("filepath")));
 
 }
 
-Entry* ScenarioReader::ResolveCatalogReference(std::string catalog_name, std::string entry_name)
+Entry* ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 {
+	std::string catalog_name;
+	std::string entry_name;
+
+	// Read any parameter assignments
+	for (pugi::xml_node param_n = node.child("Parameter"); param_n; param_n = param_n.next_sibling("Parameter"))
+	{
+		ParameterStruct param;
+		param.name = param_n.attribute("name").value();
+		param.value = ReadAttribute(param_n.attribute("value"));
+		catalog_param_assignments.push_back(param);
+	}
+
+	catalog_name = ReadAttribute(node.attribute("catalogName"));
+	entry_name = ReadAttribute(node.attribute("entryName"));
+
 	Catalog *catalog;
 
 	// Make sure the catalog item is loaded
@@ -429,7 +469,7 @@ int ScenarioReader::parseEntities()
 {
 	LOG("Parsing Entities");
 
-	pugi::xml_node enitiesNode = doc.child("OpenSCENARIO").child("Entities");
+	pugi::xml_node enitiesNode = doc_.child("OpenSCENARIO").child("Entities");
 
 	for (pugi::xml_node entitiesChild = enitiesNode.first_child(); entitiesChild; entitiesChild = entitiesChild.next_sibling())
 	{
@@ -442,7 +482,7 @@ int ScenarioReader::parseEntities()
 			if (objectChildName == "CatalogReference")
 			{
 			
-				Entry *entry = ResolveCatalogReference(ReadAttribute(objectChild.attribute("catalogName")), ReadAttribute(objectChild.attribute("entryName")));
+				Entry *entry = ResolveCatalogReference(objectChild);
 
 				if (entry == 0 || entry->element_ == 0)
 				{
@@ -458,6 +498,7 @@ int ScenarioReader::parseEntities()
 				{
 					LOG("Catalog of type %s not supported yet", entry->GetTypeAsStr().c_str());
 				}
+				restoreParameterDeclaration();
 			}
 			else if (objectChildName == "Vehicle")
 			{				
@@ -475,7 +516,7 @@ int ScenarioReader::parseEntities()
 			obj->name_ = ReadAttribute(entitiesChild.attribute("name"));
 			obj->id_ = (int)entities_->object_.size();
 			entities_->object_.push_back(obj);
-			objectCnt++;
+			objectCnt_++;
 		}
 	}
 
@@ -635,7 +676,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 						{
 							// Find route in catalog
 
-							Entry *entry = ResolveCatalogReference(ReadAttribute(routeRefChild.attribute("catalogName")), ReadAttribute(routeRefChild.attribute("entryName")));
+							Entry *entry = ResolveCatalogReference(routeRefChild);
 
 							if (entry == 0 || entry->element_ == 0)
 							{
@@ -654,6 +695,8 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 							}
 
 							pos->SetRoute(route);
+
+							restoreParameterDeclaration();
 						}
 					}
 				} 
@@ -1149,7 +1192,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							FollowRouteAction *action_follow_route = new FollowRouteAction;
 							
 							// Find route in catalog
-							Entry *entry = ResolveCatalogReference(ReadAttribute(followRouteChild.attribute("catalogName")), ReadAttribute(followRouteChild.attribute("entryName")));
+							Entry *entry = ResolveCatalogReference(followRouteChild);
 
 							if (entry == 0 || entry->element_ == 0)
 							{
@@ -1168,6 +1211,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE), entry->GetTypeAsStr().c_str());
 								return 0;
 							}
+
+							restoreParameterDeclaration();
 						}
 					}
 				}
@@ -1253,7 +1298,7 @@ void ScenarioReader::parseInit(Init &init)
 {
 	LOG("Parsing init");
 
-	pugi::xml_node actionsNode = doc.child("OpenSCENARIO").child("Storyboard").child("Init").child("Actions");
+	pugi::xml_node actionsNode = doc_.child("OpenSCENARIO").child("Storyboard").child("Init").child("Actions");
 
 	for (pugi::xml_node actionsChild = actionsNode.first_child(); actionsChild; actionsChild = actionsChild.next_sibling())
 	{
@@ -1645,7 +1690,7 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 
 		if (maneuverChildName == "ParameterDeclaration")
 		{
-			LOG("%s is not implemented", maneuverChildName.c_str());
+			addParameterDeclaration(maneuverChild);
 		}
 		else if (maneuverChildName == "Event")
 		{
@@ -1731,7 +1776,7 @@ int ScenarioReader::parseStory(std::vector<Story*> &storyVector)
 {
 	LOG("Parsing Story");
 
-	pugi::xml_node storyNode = doc.child("OpenSCENARIO").child("Storyboard").child("Story");
+	pugi::xml_node storyNode = doc_.child("OpenSCENARIO").child("Storyboard").child("Story");
 
 	for (; storyNode; storyNode = storyNode.next_sibling())
 	{
@@ -1742,7 +1787,7 @@ int ScenarioReader::parseStory(std::vector<Story*> &storyVector)
 			Story *story = new Story;
 
 			story->owner_ = ReadAttribute(storyNode.attribute("owner"));
-			story->name_ = ReadAttribute(storyNode.attribute("name"));;
+			story->name_ = ReadAttribute(storyNode.attribute("name"));
 
 			addParameter("$owner", story->owner_);
 
@@ -1793,9 +1838,10 @@ int ScenarioReader::parseStory(std::vector<Story*> &storyVector)
 
 						for (pugi::xml_node catalog_n = actChild.child("CatalogReference"); catalog_n; catalog_n = catalog_n.next_sibling("CatalogReference"))
 						{
-							// Maneuver catalog reference. The catalog entry is simply the maneuver XML node
 
-							Entry *entry = ResolveCatalogReference(ReadAttribute(actChild.attribute("catalogName")), ReadAttribute(actChild.attribute("entryName")));
+
+							// Maneuver catalog reference. The catalog entry is simply the maneuver XML node
+							Entry *entry = ResolveCatalogReference(catalog_n);
 
 							if (entry == 0 || entry->element_ == 0)
 							{
@@ -1817,6 +1863,9 @@ int ScenarioReader::parseStory(std::vector<Story*> &storyVector)
 							{
 								LOG("Catalog of type %s not supported yet", entry->GetTypeAsStr().c_str());
 							}
+
+							// Remove temporary parameters used for catalog reference
+							restoreParameterDeclaration();
 						}
 
 						for (pugi::xml_node maneuver_n = actChild.child("Maneuver"); maneuver_n; maneuver_n = maneuver_n.next_sibling("Maneuver"))

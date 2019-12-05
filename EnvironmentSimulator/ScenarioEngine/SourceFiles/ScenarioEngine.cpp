@@ -422,7 +422,7 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str());
 	odrManager = roadmanager::Position::GetOpenDrive();
 
-	scenarioReader->parseParameterDeclaration();
+	scenarioReader->parseGlobalParameterDeclaration();
 	scenarioReader->parseCatalogs();
 	scenarioReader->parseEntities();
 

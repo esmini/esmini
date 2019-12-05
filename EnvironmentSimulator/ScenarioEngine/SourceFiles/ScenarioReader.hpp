@@ -31,7 +31,7 @@ namespace scenarioengine
 	{
 	public:
 
-		ScenarioReader(Entities *entities, Catalogs *catalogs) : entities_(entities), catalogs_(catalogs), objectCnt(0) {}
+		ScenarioReader(Entities *entities, Catalogs *catalogs) : entities_(entities), catalogs_(catalogs), objectCnt_(0) {}
 		int loadOSCFile(const char * path);
 		void loadOSCMem(const pugi::xml_document &xml_doch);
 
@@ -42,7 +42,7 @@ namespace scenarioengine
 		void parseOSCFile(OSCFile &file, pugi::xml_node fileNode);
 
 		// ParameterDeclaration
-		void parseParameterDeclaration();
+		void parseGlobalParameterDeclaration();
 
 		// Catalogs
 		void parseCatalogs();
@@ -53,7 +53,7 @@ namespace scenarioengine
 
 		// Enitites
 		int parseEntities();
-		Entry* ScenarioReader::ResolveCatalogReference(std::string catalog_name, std::string entry_name);
+		Entry* ResolveCatalogReference(pugi::xml_node node);
 		Object* FindObjectByName(std::string name);
 
 		// Storyboard - Init
@@ -69,18 +69,24 @@ namespace scenarioengine
 		void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, ActSequence *act_sequence);
 
 		// Help functions
-		std::string getParameter(std::string name);
+		std::string getParameter(OSCParameterDeclaration &parameterDeclaration, std::string name);
 		void addParameter(std::string name, std::string value);
 
-		std::string getScenarioFilename() { return oscFilename; }
+		std::string getScenarioFilename() { return oscFilename_; }
 	
 	private:
-		pugi::xml_document doc;
-		OSCParameterDeclaration parameterDeclaration;
-		int objectCnt;
-		std::string oscFilename;
+		pugi::xml_document doc_;
+		OSCParameterDeclaration parameterDeclaration_;
+		int objectCnt_;
+		std::string oscFilename_;
 		Entities *entities_;
 		Catalogs *catalogs_;
+		int paramDeclarationSize_;  // original size, exluding added parameters
+		std::vector<ParameterStruct> catalog_param_assignments;
+
+		void parseParameterDeclaration(pugi::xml_node xml_node);
+		void addParameterDeclaration(pugi::xml_node xml_node);
+		void restoreParameterDeclaration();  // To what it was before addParameterDeclaration
 
 		// Use always this method when reading attributes, it will resolve any variables
 		std::string ReadAttribute(pugi::xml_attribute attribute, bool required = false);
