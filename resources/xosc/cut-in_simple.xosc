@@ -15,14 +15,9 @@
 	</ParameterDeclaration>
 
   	<Catalogs>  
-		<RouteCatalog> 
-		</RouteCatalog>
 		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
 		</VehicleCatalog>
-		<DriverCatalog>
-			<Directory path="../xosc/Catalogs/DriverCatalog"/>
-		</DriverCatalog>
 	</Catalogs>
 	
 	<RoadNetwork>
@@ -36,7 +31,6 @@
 		</Object>                                
 		<Object name="OverTaker">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
-			<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
 		</Object>                                
 	</Entities>
 

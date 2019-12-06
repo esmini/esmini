@@ -9,21 +9,18 @@
 		<Parameter name="$HostSpeed" type="double" value="10"/>
 		<Parameter name="$NPCInitialSpeed" type="double" value="10"/>
 		<Parameter name="$NPCFinalSpeed" type="double" value="7"/>
-		<Parameter name="$NPCStartPointS" type="double" value="0"/>
-		<Parameter name="$NPCSyncPointS" type="double" value="305"/>
+		<Parameter name="$NPCStartPointS" type="double" value="150"/>
+		<Parameter name="$NPCSyncPointS" type="double" value="455"/>
 		<Parameter name="$EgoSyncPoint1S" type="double" value="7"/>
 	</ParameterDeclaration>
   
 	<Catalogs>  
 		<RouteCatalog> 
-			<Directory path="../xosc/Catalogs/RouteCatalogFabriksgatan"/>
+			<Directory path="../xosc/Catalogs/Routes"/>
 		</RouteCatalog>
 		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
 		</VehicleCatalog>
-		<DriverCatalog>
-			<Directory path="../xosc/Catalogs/DriverCatalog"/>
-		</DriverCatalog>
 	</Catalogs>
 		
 	<RoadNetwork>
@@ -37,9 +34,6 @@
 		</Object>
 		<Object name="NPC">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$NPCVehicle"/>
-			<Controller>
-				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
-			</Controller>
 		</Object>
 
 	</Entities>
@@ -51,7 +45,7 @@
 					<Action>
 						<Routing>
 							<FollowRoute>
-								<CatalogReference catalogName="RouteCatalog" entryName="HostStraightRoute"/>
+								<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="HostStraightRoute"/>
 							</FollowRoute>
 						</Routing>
 					</Action>
@@ -59,7 +53,7 @@
 						<Position>
 							<Route>  
 								<RouteRef> 
-									<CatalogReference catalogName="RouteCatalog" entryName="HostStraightRoute"/>
+									<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="HostStraightRoute"/>
 								</RouteRef>
 								<Position>
 									<LaneCoord pathS="0" laneId="1"/>  
@@ -82,7 +76,7 @@
 					<Action>
 						<Routing>
 							<FollowRoute>
-								<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
+								<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="TargetLeftTurnRoute"/>
 							</FollowRoute>
 						</Routing>
 					</Action>
@@ -90,7 +84,7 @@
 						<Position>
 							<Route>  
 								<RouteRef> 
-									<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
+									<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="TargetLeftTurnRoute"/>
 								</RouteRef>
 								<Position>
 									<LaneCoord pathS="$NPCStartPointS" laneId="-1"/>  

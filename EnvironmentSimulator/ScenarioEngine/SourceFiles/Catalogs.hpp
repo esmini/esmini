@@ -42,11 +42,11 @@ namespace scenarioengine
 	public:
 
 		std::string name_;
-		void *element_;		
+		pugi::xml_node node_;
 		CatalogType type_;
 
-		Entry(CatalogType type, std::string name, void *element) : type_(type), name_(name), element_(element) {}
-		void* GetElement() { return element_; }
+		Entry(CatalogType type, std::string name, pugi::xml_node node) : type_(type), name_(name), node_(node) {}
+		pugi::xml_node GetNode() { return node_; }
 
 		static std::string GetTypeAsStr_(CatalogType type);
 		std::string GetTypeAsStr() { return GetTypeAsStr_(type_); }
@@ -140,23 +140,22 @@ namespace scenarioengine
 			return entry;
 		}
 
-		void *FindCatalogElement(std::string catalog_name, std::string entry_name)
+		pugi::xml_node FindCatalogNode(std::string catalog_name, std::string entry_name)
 		{
 			Entry *entry = FindCatalogEntry(catalog_name, entry_name);
-			void *element = 0;
+			pugi::xml_node node;
 
 			if (entry != 0)
 			{
-				element = entry->GetElement();
+				node = entry->GetNode();
 			}
 			else
 			{
 				LOG("Couldn't get element in entry %s in catalog %s", entry_name.c_str(), catalog_name.c_str());
 			}
 
-			return element;
+			return node;
 		}
-
 
 	};
 

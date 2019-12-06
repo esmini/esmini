@@ -23,7 +23,7 @@
  		<Parameter name="$TargetVehicle2" type="string" value="car_yellow"/>
 		<Parameter name="$HostSpeed" type="double" value="20"/>
 		<Parameter name="$TargetSpeed" type="double" value="7"/>
-		<Parameter name="$Target1SyncPointS" type="double" value="300"/>
+		<Parameter name="$Target1SyncPointS" type="double" value="450"/>
 		<Parameter name="$EgoSyncPoint1S" type="double" value="8"/>
 		<Parameter name="$Target2SyncPointS" type="double" value="300"/>
 		<Parameter name="$EgoSyncPoint2S" type="double" value="40"/>
@@ -31,14 +31,11 @@
   
 	<Catalogs>  
 		<RouteCatalog> 
-			<Directory path="../xosc/Catalogs/RouteCatalogFabriksgatan"/>			
+			<Directory path="../xosc/Catalogs/Routes"/>			
 		</RouteCatalog>
 		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
 		</VehicleCatalog>
-		<DriverCatalog>
-			<Directory path="../xosc/Catalogs/DriverCatalog"/>
-		</DriverCatalog>
 	</Catalogs>
 		
 	<RoadNetwork>
@@ -52,16 +49,9 @@
 		</Object>
 		<Object name="Target1">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
-			<Controller>
-				<!-- Target car controlled by a default (standard?) driver model -->
-				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
-			</Controller>
 		</Object>
 		<Object name="Target2">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle2"/>
-			<Controller>
-				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
-			</Controller>
 		</Object>
 	</Entities>
 
@@ -72,7 +62,7 @@
 					<Action>
 						<Routing>
 							<FollowRoute>
-								<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
+								<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="TargetLeftTurnRoute"/>
 							</FollowRoute>
 						</Routing>
 					</Action>
@@ -80,10 +70,10 @@
 						<Position>
 							<Route>  
 								<RouteRef> 
-									<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
+									<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="TargetLeftTurnRoute"/>
 								</RouteRef>
 								<Position>
-									<LaneCoord pathS="0" laneId="-1"/>  
+									<LaneCoord pathS="150" laneId="-1"/>  
 								</Position>
 							</Route>
 						</Position>
@@ -94,7 +84,7 @@
 					<Action>
 						<Routing>
 							<FollowRoute>
-								<CatalogReference catalogName="RouteCatalog" entryName="TargetStraightRoute"/>
+								<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="TargetStraightRoute"/>
 							</FollowRoute>
 						</Routing>
 					</Action>
@@ -102,7 +92,7 @@
 						<Position>
 							<Route>  
 								<RouteRef> 
-									<CatalogReference catalogName="RouteCatalog" entryName="TargetStraightRoute"/>
+									<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="TargetStraightRoute"/>
 								</RouteRef>
 								<Position>
 									<LaneCoord pathS="0" laneId="-1"/>  
@@ -116,7 +106,7 @@
 					<Action>
 						<Routing>
 							<FollowRoute>
-								<CatalogReference catalogName="RouteCatalog" entryName="HostStraightRoute"/>
+								<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="HostStraightRoute"/>
 							</FollowRoute>
 						</Routing>
 					</Action>
@@ -124,7 +114,7 @@
 						<Position>
 							<Route>  
 								<RouteRef> 
-									<CatalogReference catalogName="RouteCatalog" entryName="HostStraightRoute"/>
+									<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="HostStraightRoute"/>
 								</RouteRef>
 								<Position>
 									<LaneCoord pathS="0" laneId="1"/>  

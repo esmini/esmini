@@ -13,7 +13,7 @@
 		<RouteCatalog> 
 		</RouteCatalog>
 		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
 		</VehicleCatalog>
 		<DriverCatalog>
 			<Directory path="../xosc/Catalogs/DriverCatalog"/>
@@ -27,22 +27,13 @@
 
 	<Entities>
 		<Object name="Ego">
-
+            <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
             <Properties>
 				<Property name="control" value="internal" />
 			</Properties>
-			
-            <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
-			<Controller>
-				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
-			</Controller>                 
 		</Object>                                
 		<Object name="OverTaker">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
-			<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
-			<Controller>
-				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
-			</Controller>                 
 		</Object>                                
 	</Entities>
 

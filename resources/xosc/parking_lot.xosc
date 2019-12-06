@@ -9,14 +9,6 @@
 	</ParameterDeclaration>
   
 	<Catalogs>  
-		<RouteCatalog> 
-		</RouteCatalog>
-		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
-		</VehicleCatalog>
-		<DriverCatalog>
-			<Directory path="../xosc/Catalogs/DriverCatalog"/>
-		</DriverCatalog>
 	</Catalogs>
 
 	<RoadNetwork>
@@ -28,7 +20,6 @@
             <Properties>
                 <Property name="control" value="external" />
 			</Properties>
-			
             <Vehicle name="car_white" category="car">
                 <BoundingBox>
                     <Center x="1.4" y="0.0" z="0.9" />
@@ -45,13 +36,7 @@
                     <Property name="control" value="external" />
                 </Properties>
             </Vehicle>
-            
-            <Controller>
-				<Driver name="Erik">
-					<Description weight="80" height="1.8" eyeDistance="0.06" age="30" sex="male" />
-				</Driver>              
-			</Controller>                 
-		</Object>                                
+        </Object>                                
 	</Entities>
 
 	<Storyboard>

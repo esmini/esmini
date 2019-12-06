@@ -29,31 +29,32 @@ using namespace scenarioengine;
 
 void ScenarioReader::addParameterDeclaration(pugi::xml_node xml_node)
 {
-	paramDeclarationSize_ = (int)parameterDeclaration_.Parameter.size();
 	parseParameterDeclaration(xml_node);
 }
 
 void ScenarioReader::parseGlobalParameterDeclaration()
 {
 	parseParameterDeclaration(doc_.child("OpenSCENARIO").child("ParameterDeclaration"));
+	paramDeclarationSize_ = (int)parameterDeclaration_.Parameter.size();
 }
 
-void ScenarioReader::restoreParameterDeclaration()
+void ScenarioReader::RestoreParameterDeclaration()
 {
 	parameterDeclaration_.Parameter.erase(parameterDeclaration_.Parameter.begin(), parameterDeclaration_.Parameter.begin() + parameterDeclaration_.Parameter.size() - paramDeclarationSize_);
-	paramDeclarationSize_ = 0;
 	catalog_param_assignments.clear();
 }
 
 void ScenarioReader::addParameter(std::string name, std::string value)
 {
+	ParameterStruct param;
+
 	LOG("adding %s = %s", name.c_str(), value.c_str());
 
-	parameterDeclaration_.Parameter.resize(parameterDeclaration_.Parameter.size() + 1);
+	param.name = name;
+	param.type = "string";
+	param.value = value;
 
-	parameterDeclaration_.Parameter.front().name = name;
-	parameterDeclaration_.Parameter.front().type = "string";
-	parameterDeclaration_.Parameter.front().value = value;
+	parameterDeclaration_.Parameter.insert(parameterDeclaration_.Parameter.begin(), param);
 }
 
 std::string ScenarioReader::getParameter(OSCParameterDeclaration &parameterDeclaration, std::string name)
@@ -70,7 +71,7 @@ std::string ScenarioReader::getParameter(OSCParameterDeclaration &parameterDecla
 		}
 	}
 	LOG("Failed to resolve parameter %s", name.c_str());
-	throw std::exception("Failed to resolve parameter");
+	throw std::runtime_error("Failed to resolve parameter");
 	return 0;
 }
 
@@ -184,42 +185,16 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 	catalog->name_ = name;
 	catalog->type_ = catalogs_->catalog_dirs_[i].type_;
 
-	if (catalogs_->catalog_dirs_[i].type_ == CatalogType::CATALOG_ROUTE)
+	for (pugi::xml_node entry_n = catalog_node.first_child(); entry_n; entry_n = entry_n.next_sibling())
 	{
-		for (pugi::xml_node route_n = catalog_node.first_child(); route_n; route_n = route_n.next_sibling())
-		{
-			roadmanager::Route *route_item = parseOSCRoute(route_n);
-			catalog->AddEntry(new Entry(CatalogType::CATALOG_ROUTE, route_item->getName(), (void*)route_item));
-		}
+		std::string entry_name = ReadAttribute(entry_n.attribute("name"));
+		
+		// To copy a XML node it needs to be put into a XML doc
+		pugi::xml_document *xml_doc = new pugi::xml_document;
+		xml_doc->append_copy(entry_n);
+		catalog->AddEntry(new Entry(catalog->type_, entry_name, xml_doc->first_child()));
 	}
-	else if (catalogs_->catalog_dirs_[i].type_ == CatalogType::CATALOG_VEHICLE)
-	{
-		for (pugi::xml_node vehicle_n = catalog_node.first_child(); vehicle_n; vehicle_n = vehicle_n.next_sibling())
-		{
-			Vehicle *vehicle_item = parseOSCVehicle(vehicle_n);
-			catalog->AddEntry(new Entry(CatalogType::CATALOG_VEHICLE, vehicle_item->name_, (void*)vehicle_item));
-		}
-	}
-	else if (catalogs_->catalog_dirs_[i].type_ == CatalogType::CATALOG_MANEUVER)
-	{
-		for (pugi::xml_node maneuver_n = catalog_node.first_child(); maneuver_n; maneuver_n = maneuver_n.next_sibling())
-		{
-			std::string manever_name = ReadAttribute(maneuver_n.attribute("name"));
-
-			// To copy a XML node it needs to be put into a XML doc
-			pugi::xml_document *xml_doc = new pugi::xml_document;
-			xml_doc->append_copy(maneuver_n);
-
-			catalog->AddEntry(new Entry(CatalogType::CATALOG_MANEUVER, manever_name, (void*)xml_doc));
-		}
-	}
-	else
-	{
-		LOG("Catalog type %s not supported yet", catalog->GetTypeAsStr());
-		delete catalog;
-		return 0;
-	}
-
+	
 	catalogs_->AddCatalog(catalog);
 
 	return catalog;
@@ -322,6 +297,10 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 {
 	Vehicle *vehicle = new Vehicle();
 
+	if (vehicleNode == 0)
+	{
+		return 0;
+	}
 	vehicle->name_ = ReadAttribute(vehicleNode.attribute("name"));
 	LOG("Parsing Vehicle %s", vehicle->name_.c_str());
 	vehicle->SetCategory(ReadAttribute(vehicleNode.attribute("category")));
@@ -451,6 +430,7 @@ Entry* ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 	// Make sure the catalog item is loaded
 	if ((catalog = LoadCatalog(catalog_name)) == 0)
 	{
+		throw std::runtime_error(std::string("Failed to load catalog " + catalog_name));
 		return 0;
 	}
 
@@ -478,13 +458,12 @@ int ScenarioReader::parseEntities()
 		for (pugi::xml_node objectChild = entitiesChild.first_child(); objectChild; objectChild = objectChild.next_sibling())
 		{
 			std::string objectChildName(objectChild.name());
-
+			
 			if (objectChildName == "CatalogReference")
 			{
-			
 				Entry *entry = ResolveCatalogReference(objectChild);
 
-				if (entry == 0 || entry->element_ == 0)
+				if (entry == 0)
 				{
 					return -1;
 				}
@@ -492,13 +471,15 @@ int ScenarioReader::parseEntities()
 				if (entry->type_ == CatalogType::CATALOG_VEHICLE)
 				{
 					// Make a new instance from catalog entry 
-					obj = new Vehicle(*(Vehicle*)entry->GetElement());
+					Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
+					obj = vehicle;
 				}
 				else
 				{
-					LOG("Catalog of type %s not supported yet", entry->GetTypeAsStr().c_str());
+					LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
 				}
-				restoreParameterDeclaration();
+
+				RestoreParameterDeclaration();
 			}
 			else if (objectChildName == "Vehicle")
 			{				
@@ -675,10 +656,9 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 						else if (routeRefChildName == "CatalogReference")
 						{
 							// Find route in catalog
-
 							Entry *entry = ResolveCatalogReference(routeRefChild);
 
-							if (entry == 0 || entry->element_ == 0)
+							if (entry == 0)
 							{
 								return 0;
 							}
@@ -686,7 +666,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 							if (entry->type_ == CatalogType::CATALOG_ROUTE)
 							{
 								// Make a new instance from catalog entry 
-								route = new roadmanager::Route(*(roadmanager::Route*)entry->GetElement());
+								route = parseOSCRoute(entry->GetNode());
 							}
 							else
 							{
@@ -696,7 +676,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 
 							pos->SetRoute(route);
 
-							restoreParameterDeclaration();
+							RestoreParameterDeclaration();
 						}
 					}
 				} 
@@ -1090,7 +1070,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				}
 			}
 		}
-		else if (actionChild.name() == std::string("EXT_Synchronize"))
+		else if (actionChild.name() == std::string("EXT_Synchronize") || actionChild.name() == std::string("SynchronizeAction"))
 		{
 			SynchronizeAction *action_synch = new SynchronizeAction;
 
@@ -1194,7 +1174,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							// Find route in catalog
 							Entry *entry = ResolveCatalogReference(followRouteChild);
 
-							if (entry == 0 || entry->element_ == 0)
+							if (entry == 0 || entry->node_ == 0)
 							{
 								return 0;
 							}
@@ -1202,7 +1182,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							if (entry->type_ == CatalogType::CATALOG_ROUTE)
 							{
 								// Make a new instance from catalog entry 
-								action_follow_route->route_ = new roadmanager::Route(*(roadmanager::Route*)entry->GetElement());;
+								action_follow_route->route_ = parseOSCRoute(entry->GetNode());
 								action = action_follow_route;
 								break;
 							}
@@ -1212,7 +1192,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								return 0;
 							}
 
-							restoreParameterDeclaration();
+							RestoreParameterDeclaration();
 						}
 					}
 				}
@@ -1838,34 +1818,29 @@ int ScenarioReader::parseStory(std::vector<Story*> &storyVector)
 
 						for (pugi::xml_node catalog_n = actChild.child("CatalogReference"); catalog_n; catalog_n = catalog_n.next_sibling("CatalogReference"))
 						{
-
-
 							// Maneuver catalog reference. The catalog entry is simply the maneuver XML node
 							Entry *entry = ResolveCatalogReference(catalog_n);
 
-							if (entry == 0 || entry->element_ == 0)
+							if (entry == 0 || entry->node_ == 0)
 							{
 								return -1;
 							}
 
 							if (entry->type_ == CatalogType::CATALOG_MANEUVER)
 							{
-								// Make a new instance from catalog entry 
-								pugi::xml_document *xml_doc = (pugi::xml_document*)entry->GetElement();
-								pugi::xml_node node = xml_doc->first_child();  // xml node stored as first and only child in document
-
 								OSCManeuver *maneuver = new OSCManeuver;
 
-								parseOSCManeuver(maneuver, node, sequence);
+								// Make a new instance from catalog entry 
+								parseOSCManeuver(maneuver, entry->GetNode(), sequence);
 								sequence->maneuver_.push_back(maneuver);
 							}
 							else
 							{
-								LOG("Catalog of type %s not supported yet", entry->GetTypeAsStr().c_str());
+								LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
 							}
 
 							// Remove temporary parameters used for catalog reference
-							restoreParameterDeclaration();
+							RestoreParameterDeclaration();
 						}
 
 						for (pugi::xml_node maneuver_n = actChild.child("Maneuver"); maneuver_n; maneuver_n = maneuver_n.next_sibling("Maneuver"))

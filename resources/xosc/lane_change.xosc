@@ -10,14 +10,9 @@
 	</ParameterDeclaration>
   
 	<Catalogs>  
-		<RouteCatalog> 
-		</RouteCatalog>
 		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
 		</VehicleCatalog>
-		<DriverCatalog>
-			<Directory path="../xosc/Catalogs/DriverCatalog"/>
-		</DriverCatalog>
 	</Catalogs>
 
 	<RoadNetwork>
@@ -28,20 +23,9 @@
 	<Entities>
 		<Object name="Ego">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
-			<Controller>
-				<Driver name="Erik">
-					<Description weight="80" height="1.8" eyeDistance="0.06" age="30" sex="male" />
-				</Driver>              
-			</Controller>                 
 		</Object>                                
 		<Object name="Target">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
-			<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
-			<Controller>
-				<Driver name="Anders">
-					<Description weight="80" height="1.8" eyeDistance="0.06" age="30" sex="male" />
-				</Driver>              
-			</Controller>                 
 		</Object>                                
 	</Entities>
 

@@ -10,7 +10,7 @@
 			<!-- Target car shall drive west towards crossing, then turn left -->
 			<Waypoint strategy="shortest">
 				<Position>
-					<Lane roadId="2" laneId="-1" offset="0" s="250" />
+					<Lane roadId="2" laneId="-1" offset="0" s="100" />
 				</Position>
 			</Waypoint>
 			<Waypoint strategy="shortest">

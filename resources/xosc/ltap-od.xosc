@@ -20,25 +20,21 @@
 	<ParameterDeclaration>
 		<Parameter name="$HostVehicle" type="string" value="car_white_external"/>
 		<Parameter name="$TargetVehicle" type="string" value="car_red"/>
- 		<Parameter name="$TargetVehicle2" type="string" value="bus_blue"/>
 		<Parameter name="$HostSpeed" type="double" value="20"/>
 		<Parameter name="$TargetSpeed" type="double" value="7"/>
-		<Parameter name="$Target1SyncPointS" type="double" value="300"/>
+		<Parameter name="$Target1SyncPointS" type="double" value="450"/>
 		<Parameter name="$EgoSyncPoint1S" type="double" value="8"/>
-		<Parameter name="$Target2SyncPointS" type="double" value="300"/>
+		<Parameter name="$Target2SyncPointS" type="double" value="450"/>
 		<Parameter name="$EgoSyncPoint2S" type="double" value="40"/>
 	</ParameterDeclaration>
   
 	<Catalogs>  
 		<RouteCatalog> 
-			<Directory path="../xosc/Catalogs/RouteCatalogFabriksgatan"/>
+			<Directory path="../xosc/Catalogs/Routes"/>
 		</RouteCatalog>
 		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/VehicleCatalog"/>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
 		</VehicleCatalog>
-		<DriverCatalog>
-			<Directory path="../xosc/Catalogs/DriverCatalog"/>
-		</DriverCatalog>
 	</Catalogs>
 		
 	<RoadNetwork>
@@ -52,19 +48,7 @@
 		</Object>
 		<Object name="Target1">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
-			<Controller>
-				<!-- Target car controlled by a default (standard?) driver model -->
-				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
-			</Controller>
 		</Object>
-<!--		
-		<Object name="Target2">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle2"/>
-			<Controller>
-				<CatalogReference catalogName="DriverCatalog" entryName="DefaultDriver"/>
-			</Controller>
-		</Object>
--->
 	</Entities>
 
 	<Storyboard>
@@ -74,7 +58,7 @@
 					<Action>
 						<Routing>
 							<FollowRoute>
-								<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
+								<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="TargetLeftTurnRoute"/>
 							</FollowRoute>
 						</Routing>
 					</Action>
@@ -82,43 +66,20 @@
 						<Position>
 							<Route>  
 								<RouteRef> 
-									<CatalogReference catalogName="RouteCatalog" entryName="TargetLeftTurnRoute"/>
+									<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="TargetLeftTurnRoute"/>
 								</RouteRef>
 								<Position>
-									<LaneCoord pathS="0" laneId="-1"/>  
+									<LaneCoord pathS="150" laneId="-1"/>  
 								</Position>
 							</Route>
 						</Position>
 					</Action>
 				</Private>
-<!--				
-				<Private object="Target2">
-					<Action>
-						<Routing>
-							<FollowRoute>
-								<CatalogReference catalogName="RouteCatalog" entryName="TargetStraightRoute"/>
-							</FollowRoute>
-						</Routing>
-					</Action>
-					<Action>
-						<Position>
-							<Route>  
-								<RouteRef> 
-									<CatalogReference catalogName="RouteCatalog" entryName="TargetStraightRoute"/>
-								</RouteRef>
-								<Position>
-									<LaneCoord pathS="0" laneId="-1"/>  
-								</Position>
-							</Route>
-						</Position>
-					</Action>
-				</Private>
--->				
 				<Private object="Ego">
 					<Action>
 						<Routing>
 							<FollowRoute>
-								<CatalogReference catalogName="RouteCatalog" entryName="HostStraightRoute"/>
+								<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="HostStraightRoute"/>
 							</FollowRoute>
 						</Routing>
 					</Action>
@@ -126,7 +87,7 @@
 						<Position>
 							<Route>  
 								<RouteRef> 
-									<CatalogReference catalogName="RouteCatalog" entryName="HostStraightRoute"/>
+									<CatalogReference catalogName="RoutesAtFabriksgatan" entryName="HostStraightRoute"/>
 								</RouteRef>
 								<Position>
 									<LaneCoord pathS="0" laneId="1"/>  
@@ -217,76 +178,6 @@
 					</Start>
 				</Conditions>
 			</Act>
-<!--			
-			<Act name="LTAPActTarget2">
-				<Sequence name="LTAPSequenceT2" numberOfExecutions="1">
-					<Actors>
-						<Entity name="Target2"/>
-					</Actors>
-					<Maneuver name="ManeuverT2">
-						<Event name="SyncEventT2" priority="overwrite">
-							<Action name="SyncActionT2">
-								<Private>
-									<Meeting mode="route">
-										<Position>
-											<Lane roadId="2" laneId="-1" offset="0" s="$Target2SyncPointS" />
-										</Position>
-										<Relative mode="route" object="Ego" offsetTime="0" continuous="true" > 
-											<Position>
-												<Lane roadId="0" laneId="1" offset="0" s="$EgoSyncPoint2S" />
-											</Position>
-										</Relative>
-									</Meeting>
-								</Private>
-							</Action>
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="SyncConditionT2" delay="0.0" edge="rising">
-										<ByState>
-											<AtStart type="scene" name="-" rule="any"/>
-										</ByState>
-									</Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>
-						<Event name="ContinueAfterSyncT2" priority="overwrite">
-							<Action name="ContinueAfterSyncT2">
-								<Private>
-									<Longitudinal>
-										<Speed>
-											<Dynamics shape="linear" rate="1.0"/> 
-											<Target>
-												<Absolute value="$TargetSpeed" />
-											</Target>
-										</Speed>
-									</Longitudinal>
-								</Private>
-							</Action>							
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="StartOfScenarioT2" delay="0.0" edge="rising">
-										<ByState>
-											<AfterTermination type="action" name="SyncActionT2" rule="any"/>
-										</ByState>
-									</Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>
-					</Maneuver>
-				</Sequence>
-				<Conditions>
-					<Start>
-						<ConditionGroup>
-							<Condition name="LtapActStartConditionT2" delay="0" edge="rising">
-								<ByValue>
-									<SimulationTime value="0" rule="greater_than"/>
-								</ByValue>
-							</Condition>
-						</ConditionGroup>
-					</Start>
-				</Conditions>
-			</Act>
--->			
 		</Story>
 	</Storyboard>
 </OpenSCENARIO>
