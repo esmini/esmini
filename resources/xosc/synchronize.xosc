@@ -62,7 +62,7 @@
 			<CatalogReference catalogName="VehicleCatalog" entryName="$NPC2Vehicle"/>
 		</Object>                    
 		<Object name="NPC3">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$NPC4Vehicle"/>
+			<CatalogReference catalogName="VehicleCatalog" entryName="$NPC3Vehicle"/>
 		</Object>                                
         <Object name="NPC4">
 			<CatalogReference catalogName="VehicleCatalog" entryName="$NPC4Vehicle"/>
