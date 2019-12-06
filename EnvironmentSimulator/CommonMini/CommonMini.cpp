@@ -268,7 +268,8 @@ void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size)
 std::string DirNameOf(const std::string& fname)
 {
 	size_t pos = fname.find_last_of("\\/");
-	return (std::string::npos == pos) ? "" : fname.substr(0, pos);
+
+	return (std::string::npos == pos) ? "./" : fname.substr(0, pos);
 }
 
 std::string FileNameOf(const std::string& fname)
