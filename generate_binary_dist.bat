@@ -4,6 +4,9 @@ IF NOT EXIST %target_dir% ( mkdir %target_dir% )
 IF NOT EXIST %target_dir%\resources ( mkdir %target_dir%\resources )
 IF NOT EXIST %target_dir%\resources\xosc ( mkdir %target_dir%\resources\xosc )
 IF NOT EXIST %target_dir%\resources\xosc\Catalogs ( mkdir %target_dir%\resources\xosc\Catalogs )
+IF NOT EXIST %target_dir%\resources\xosc\Catalogs\Maneuvers ( mkdir %target_dir%\resources\xosc\Catalogs\Maneuvers )
+IF NOT EXIST %target_dir%\resources\xosc\Catalogs\Routes ( mkdir %target_dir%\resources\xosc\Catalogs\Routes )
+IF NOT EXIST %target_dir%\resources\xosc\Catalogs\Vehicles ( mkdir %target_dir%\resources\xosc\Catalogs\Vehicles )
 IF NOT EXIST %target_dir%\resources\xosc\extensions ( mkdir %target_dir%\resources\xosc\extensions )
 IF NOT EXIST %target_dir%\resources\xodr ( mkdir %target_dir%\resources\xodr )
 IF NOT EXIST %target_dir%\resources\models ( mkdir %target_dir%\resources\models )
@@ -24,7 +27,9 @@ copy resources\xosc\left-hand-traffic_internal.xosc %target_dir%\resources\xosc 
 copy resources\xosc\ltap-od-synch.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\synchronize.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\parking_lot.xosc %target_dir%\resources\xosc /y
-copy resources\xosc\Catalogs\*.* %target_dir%\resources\xosc\Catalogs /y
+copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
+copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
+copy resources\xosc\Catalogs\Vehicles\*.* %target_dir%\resources\xosc\Catalogs\Vehicles /y
 copy resources\xosc\extensions\*.* %target_dir%\resources\xosc\extensions /y
 IF NOT EXIST %target_dir%\bin\win64\Release ( mkdir %target_dir%\bin\win64\Release )
 
