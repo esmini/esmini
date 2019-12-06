@@ -347,6 +347,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	keyRight_ = false;
 	quit_request_ = false;
 	showInfoText = true;  // show info text HUD per default
+	showTrail = true;  // show trails per default
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
 
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
@@ -855,6 +856,12 @@ void Viewer::SetInfoText(const char* text)
 	}
 }
 
+void Viewer::ShowTrail(bool show)
+{
+	showTrail = show;
+	trails_->setNodeMask(showTrail ? 0xffffffff : 0x0);
+}
+
 void Viewer::SetInfoTextProjection(int width, int height)
 {
 	infoTextCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, width, 0, height));
@@ -896,7 +903,6 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 			}
 
 			viewer_->sensors_->setNodeMask(visible ? 0xffffffff : 0x0);
-			viewer_->trails_->setNodeMask(visible ? 0xffffffff : 0x0);
 		}
 	}
 	break;
@@ -951,12 +957,21 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		}
 	}
 	break;
-	case(osgGA::GUIEventAdapter::KEY_T):
+	case(osgGA::GUIEventAdapter::KEY_I):
 	{
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->showInfoText = !viewer_->showInfoText;
 			viewer_->infoTextCamera->setNodeMask(viewer_->showInfoText ? 0xffffffff : 0x0);
+		}
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_T):
+	{
+		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->showTrail = !viewer_->showTrail;
+			viewer_->trails_->setNodeMask(viewer_->showTrail ? 0xffffffff : 0x0);
 		}
 	}
 	break;

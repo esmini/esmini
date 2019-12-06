@@ -171,6 +171,7 @@ namespace viewer
 		osg::Group* trails_;
 		roadmanager::OpenDrive *odrManager_;
 		bool showInfoText;
+		bool showTrail;
 
 		osg::ref_ptr<osg::Camera> infoTextCamera;
 		osg::ref_ptr<osgText::Text> infoText;
@@ -196,6 +197,7 @@ namespace viewer
 		void SetInfoTextProjection(int width, int height);
 		void SetInfoText(const char* text);
 		void ShowInfoText(bool show);
+		void ShowTrail(bool show);
 		PointSensor* CreateSensor(int color[], bool create_ball, bool create_line, double ball_radius, double line_width);
 		bool CreateRoadSensors(CarModel *vehicle_model);
 

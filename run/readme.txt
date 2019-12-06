@@ -40,6 +40,8 @@ Key commands:
 	m: Toggle show/hide environmnet 3D model
 	s: Graphics performance statistics
 	f: Toggle full screen mode
+	i: Toggle info text showing time and speed
+	t: Toggle show trails after vehicles
 	ESC: quit
 
 

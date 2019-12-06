@@ -50,6 +50,7 @@ static const double minStepSize = 0.01;
 static vehicle::Vehicle *ego;
 static double simTime = 0;
 static int ego_id = -1;
+static bool drawTrails = false;
 
 roadmanager::OpenDrive *odrManager = 0;
 
@@ -273,6 +274,13 @@ static void viewer_thread(void *args)
 		scenarioViewer->ShowInfoText(false);
 	}
 
+	std::string trail_str;
+	parser->read("--trail", trail_str);
+	if (trail_str == "off")
+	{
+		scenarioViewer->ShowTrail(false);
+	}
+
 	double last_dot_time = 0;
 
 	while (!scenarioViewer->osgViewer_->done())
@@ -375,7 +383,8 @@ int main(int argc, char** argv)
 	arguments.getApplicationUsage()->addCommandLineOption("--osc <filename>", "OpenSCENARIO filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--control <mode>", "Ego control (\"osc\", \"internal\", \"external\", \"hybrid\"");
 	arguments.getApplicationUsage()->addCommandLineOption("--record <file.dat>", "Record position data into a file for later replay");
-	arguments.getApplicationUsage()->addCommandLineOption("--info_text <mode>", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
+	arguments.getApplicationUsage()->addCommandLineOption("--info_text <mode>", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ");
+	arguments.getApplicationUsage()->addCommandLineOption("--trails <mode>", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
 
 	if (arguments.argc() < 2)
 	{

@@ -4,4 +4,12 @@ The purpose of this document is to highlight changes breaking backward compatibi
 - External control flag replaced by enumeration
     Available modes: internal, external, hybrid
     EgoSimulator and EnvironmentSimulator argument syntax changed from --ext_control <on|off> to --control <internal|external|hybrid>
- 
+
+    
+2019-12-06 Version 1.2
+- Catalog handling updates
+  - Parameter assignment implemented (enabling variants or configuration of re-used catalog items)
+  - Name and structure updates:
+      When a scenario refers to a catalog entry esmini will first locate the catalog by searching all specified catalog directories for a file named "catalog name".xosc. So a catalog name is defined by the base file name. Filename extension .xosc is mandatory. The actual Catalog XML element attribute "name" is ignored. 
+      See synchronize.xosc for an example on how to (re-)use manuever catalog entries.
+- Trail visualization can be switched off by application argument (--trail <on/off>) and toggled by pressing key "t" in viewer window.
