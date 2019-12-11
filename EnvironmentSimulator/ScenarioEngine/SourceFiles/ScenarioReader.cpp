@@ -340,13 +340,12 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 		{
 			LOG("Unsupported property: %s", properties.property_[i].name_.c_str());
 		}
-
-		if (properties.file_.filepath_ != "")
-		{
-			vehicle->model_filepath_ = properties.file_.filepath_;
-		}
 	}
 
+	if (properties.file_.filepath_ != "")
+	{
+		vehicle->model_filepath_ = properties.file_.filepath_;
+	}
 
 	return vehicle;
 }
