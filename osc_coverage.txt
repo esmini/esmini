@@ -67,7 +67,7 @@ OSCTypeDefs
         RelativeLane                        Yes
         Route                               Yes
     OSCManeuver                             
-        ParameterDeclaration                No
+        ParameterDeclaration                Yes
         Event                               
             priority                        Yes
             Action                          
@@ -206,6 +206,6 @@ OSCTypeDefs
     OSCParameterDeclaration                 Yes
     OSCProperties                           Yes
     OSCCatalogReference                     Yes
-    OSCParameterAssignment                  No
+    OSCParameterAssignment                  Yes
     OSCOrientation                          Yes
     OSCPersonDescription                    No
