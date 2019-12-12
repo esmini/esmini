@@ -90,8 +90,6 @@ typedef struct
 	double steering_target_pos[3];
 	double steering_target_distance;
 	double steering_target_heading;
-
-	double trail_pos[3];
 } ScenarioVehicle;
 
 static std::vector<ScenarioVehicle> scenarioVehicle;

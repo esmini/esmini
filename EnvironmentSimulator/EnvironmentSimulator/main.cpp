@@ -59,12 +59,19 @@ static const double minStepSize = 0.01;
 static const bool freerun = true;
 static int viewer_state = VIEWER_NOT_STARTED;
 static double simTime = 0;
+static int COLOR_DARK_GRAY[3] = { 0x80, 0x80, 0x80 };
+static int COLOR_YELLOW[3] = { 0x85, 0x75, 0x40 };
+static int COLOR_RED[3] = { 0x90, 0x30, 0x30 };
 
 
 static ScenarioEngine *scenarioEngine;
 
 static SE_Thread thread;
 static SE_Mutex mutex;
+
+static bool drawTrails = false;
+
+#define TRAIL_DT 0.5
 
 void viewer_thread(void *args)
 {
@@ -84,10 +91,43 @@ void viewer_thread(void *args)
 		viewer->ShowInfoText(false);
 	}
 
+	std::string trail_str;
+	parser->read("--trail", trail_str);
+	if (trail_str == "off")
+	{
+		viewer->ShowTrail(false);
+	}
+
 	//  Create cars for visualization
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		if (viewer->AddCar(scenarioEngine->entities.object_[i]->model_filepath_, false, osg::Vec3(0.5, 0.5, 0.5)) == 0)
+		//  Create vehicles for visualization
+		bool transparent;
+		osg::Vec3 trail_color;
+		Object *obj = scenarioEngine->entities.object_[i];
+		if (obj->control_ == Object::Control::HYBRID_GHOST)
+		{
+			transparent = true;
+			trail_color[0] = ((double)COLOR_DARK_GRAY[0]) / 0xFF;
+			trail_color[1] = ((double)COLOR_DARK_GRAY[1]) / 0xFF;
+			trail_color[2] = ((double)COLOR_DARK_GRAY[2]) / 0xFF;
+		}
+		else if (obj->control_ == Object::Control::HYBRID_EXTERNAL || obj->control_ == Object::Control::EXTERNAL)
+		{
+			transparent = false;
+			trail_color[0] = ((double)COLOR_YELLOW[0]) / 0xFF;
+			trail_color[1] = ((double)COLOR_YELLOW[1]) / 0xFF;
+			trail_color[2] = ((double)COLOR_YELLOW[2]) / 0xFF;
+		}
+		else
+		{
+			transparent = false;
+			trail_color[0] = ((double)COLOR_RED[0]) / 0xFF;
+			trail_color[1] = ((double)COLOR_RED[1]) / 0xFF;
+			trail_color[2] = ((double)COLOR_RED[2]) / 0xFF;
+		}
+
+		if (viewer->AddCar(obj->model_filepath_, transparent, trail_color) == 0)
 		{
 			delete viewer;
 			viewer_state = VIEWER_FAILED;
@@ -95,8 +135,16 @@ void viewer_thread(void *args)
 		}
 	}
 
+	double last_dot_time = 0;
+
 	while (!viewer->osgViewer_->done())
 	{
+		bool add_dot = false;
+		if (simTime - last_dot_time > TRAIL_DT)
+		{
+			add_dot = true;
+			last_dot_time = simTime;
+		}
 
 		mutex.Lock();
 
@@ -104,11 +152,17 @@ void viewer_thread(void *args)
 		for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 		{
 			viewer::CarModel *car = viewer->cars_[i];
+			Object *obj = scenarioEngine->entities.object_[i];
 			roadmanager::Position pos = scenarioEngine->entities.object_[i]->pos_;
 
 			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
 			car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
-			car->UpdateWheels(scenarioEngine->entities.object_[i]->wheel_angle_, scenarioEngine->entities.object_[i]->wheel_rot_);
+			car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+
+			if (add_dot)
+			{
+				car->trail_->AddDot(simTime, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH());
+			}
 		}
 
 		// Update info text 
@@ -151,6 +205,7 @@ int main(int argc, char *argv[])
 	arguments.getApplicationUsage()->addCommandLineOption("--osc <filename>", "OpenSCENARIO filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--control <mode>", "Ego control (\"osc\", \"internal\", \"external\", \"hybrid\"");
 	arguments.getApplicationUsage()->addCommandLineOption("--info_text <mode>", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
+	arguments.getApplicationUsage()->addCommandLineOption("--trails <mode>", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
 
 	if (arguments.argc() < 2)
 	{
