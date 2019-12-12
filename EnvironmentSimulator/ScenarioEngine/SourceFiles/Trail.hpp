@@ -41,7 +41,9 @@ namespace scenarioengine
 		double GetSegmentlength(int index);
 		ObjectTrailState* GetStateByIndex(int index);
 		void GetPointOnSegmentByDist(int index, double dist, double &x, double &y, double &z);
-		void GetPointOnSegmentByS(int index, double s, double &x, double &y, double &z);
+		void GetPointOnSegmentBySNorm(int index, double s, double &x, double &y, double &z);
+		void GetSpeedOnSegmentByDist(int index, double dist, double &speed);
+		void GetSpeedOnSegmentBySNorm(int index, double s, double &speed);
 		double QuadDistToPoint(double x, double y, int idx);
 		/**
 		Get information suitable for driver modeling of a point along specified trail from a specified start point

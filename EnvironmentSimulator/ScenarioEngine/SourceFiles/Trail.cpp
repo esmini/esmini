@@ -14,7 +14,7 @@
 #include "Trail.hpp"
 #include "RoadManager.hpp"
 
-#define TRAIL_DT 0.2
+#define TRAIL_DT 0.5
 
 using namespace scenarioengine;
 
@@ -26,7 +26,7 @@ void ObjectTrail::AddState(float timestamp, float x, float y, float z, float spe
 		ObjectTrailState *state = GetStateLast();
 
 		// Check timestamp of previous state - add only if delta time has passed
-		if (state && timestamp >= state->timeStamp_ + TRAIL_DT)
+		if (state && timestamp < state->timeStamp_ + TRAIL_DT)
 		{
 			return;
 		}
@@ -161,7 +161,7 @@ double ObjectTrail::QuadDistToPoint(double x, double y, int idx)
 
 double ObjectTrail::GetSegmentlength(int index)
 {
-	if (index >= n_states_)
+	if (n_states_ < 2)
 	{
 		return 0;
 	}
@@ -170,7 +170,7 @@ double ObjectTrail::GetSegmentlength(int index)
 	return sqrt(pow(state_[next_index].x_ - state_[index].x_, 2) + pow(state_[next_index].y_ - state_[index].y_, 2));
 }
 
-void ObjectTrail::GetPointOnSegmentByS(int index, double s, double &x, double &y, double &z)
+void ObjectTrail::GetPointOnSegmentBySNorm(int index, double s, double &x, double &y, double &z)
 {
 	int next_index = GetNextSegmentIndex(index);
 
@@ -180,6 +180,10 @@ void ObjectTrail::GetPointOnSegmentByS(int index, double s, double &x, double &y
 
 void ObjectTrail::GetPointOnSegmentByDist(int index, double dist, double &x, double &y, double &z)
 {
+	if (n_states_ < 1)
+	{
+		return;
+	}
 	if (index >= n_states_)
 	{
 		index = n_states_ - 1;
@@ -189,13 +193,39 @@ void ObjectTrail::GetPointOnSegmentByDist(int index, double dist, double &x, dou
 	
 	double s = MIN(1.0, dist / segment_length);
 
-	GetPointOnSegmentByS(index, s, x, y, z);
+	GetPointOnSegmentBySNorm(index, s, x, y, z);
+}
+
+
+void ObjectTrail::GetSpeedOnSegmentBySNorm(int index, double s, double &speed)
+{
+	int next_index = GetNextSegmentIndex(index);
+
+	speed = state_[index].speed_ + s * (state_[next_index].speed_ - state_[index].speed_);
+}
+
+void ObjectTrail::GetSpeedOnSegmentByDist(int index, double dist, double &speed)
+{
+	if (n_states_ < 1)
+	{
+		return;
+	}
+	if (index >= n_states_)
+	{
+		index = n_states_ - 1;
+	}
+
+	double segment_length = MAX(GetSegmentlength(index), SMALL_NUMBER);
+
+	double s = MIN(1.0, dist / segment_length);
+
+	GetSpeedOnSegmentBySNorm(index, s, speed);
 }
 
 int ObjectTrail::FindPointAhead(int index_start, double s_start, double distance, double &x, double &y, double &z, double &speed, int &index_out, double &s_out)
 {
 	int i = index_start;
-	double dist_tmp = distance;
+	double dist_tmp = distance + s_start;
 
 	if (n_states_ == 0)
 	{
@@ -207,33 +237,32 @@ int ObjectTrail::FindPointAhead(int index_start, double s_start, double distance
 	for (int count = 0; count < n_states_; count++)
 	{
 		double segment_length = GetSegmentlength(i);
-
-		if (dist_tmp < segment_length)
-		{
-			// point is at this segment
-			GetPointOnSegmentByDist(i, dist_tmp, x, y, z);
-			speed = state_[i].speed_;
-			index_out = i;
-			s_out = dist_tmp;
-			return 0;
-		}
-		
 		int next_index = GetNextSegmentIndex(i);
-		if (next_index == i)
-		{
-			// at end of trail - just use end point
-			x = state_[i].x_;
-			y = state_[i].y_;
-			z = state_[i].z_;
 
+		if (dist_tmp < segment_length || next_index == i)
+		{
+			if (next_index == i)
+			{
+				// at end of trail - just use end point
+				x = state_[i].x_;
+				y = state_[i].y_;
+				z = state_[i].z_;
+				s_out = segment_length;
+			}
+			else
+			{
+				// point is at this segment
+				GetPointOnSegmentByDist(i, dist_tmp, x, y, z);
+				GetSpeedOnSegmentByDist(i, dist_tmp, speed);
+				s_out = dist_tmp;
+			}
+			index_out = i;
 			return 0;
 		}
 
 		dist_tmp -= segment_length;
 		i = next_index;
 	}
-
-	LOG("Point not found!");
 	
 	return -1;
 }
@@ -244,6 +273,7 @@ int ObjectTrail::FindClosestPoint(double x0, double y0, double &x, double &y, do
 	if (n_states_ <= 0)
 	{
 		x = y = 0;
+		idx = 0;
 		return -1;
 	}
 	else if (n_states_ == 1)
@@ -251,7 +281,8 @@ int ObjectTrail::FindClosestPoint(double x0, double y0, double &x, double &y, do
 		x = state_[0].x_;
 		y = state_[0].y_;
 		s = 0;
-		return -1;
+		idx = 0;
+		return 0;
 	}
 	
 	// Strategy: Find closest line segment
@@ -269,11 +300,27 @@ int ObjectTrail::FindClosestPoint(double x0, double y0, double &x, double &y, do
 
 	for (int count = 0; count<10; count++)
 	{
+		double segmentLength = GetSegmentlength(i);
 		int next_index = GetNextSegmentIndex(i);
+
+		//LOG("i %d next %d of %d", i, next_index, n_states_);
+		if (next_index == i)
+		{
+			// last segment
+			break;
+		}
+
 		double x1 = state_[i].x_;
 		double x2 = state_[next_index].x_;
 		double y1 = state_[i].y_;
 		double y2 = state_[next_index].y_;
+
+		if (segmentLength < SMALL_NUMBER)
+		{
+			i = next_index;
+			LOG("Segment too small, look go forward along trail");
+			continue;
+		}
 
 		// Find vector from point perpendicular to line segment
 		ProjectPointOnVector2D(x0, y0, x1, y1, x2, y2, x4, y4);
@@ -283,8 +330,8 @@ int ObjectTrail::FindClosestPoint(double x0, double y0, double &x, double &y, do
 
 		if (inside)
 		{
-			// Distance between given point and that point projected on the straight line
-			dist = PointDistance2D(x0, y0, x4, y4);
+			// Distance between given poin<t and that point projected on the straight line
+			dist = PointDistance2D(x4, y4, x0, y0);
 		}
 		else
 		{
@@ -308,9 +355,14 @@ int ObjectTrail::FindClosestPoint(double x0, double y0, double &x, double &y, do
 		{
 			distMin = dist;
 			idx = i;
-			s = sNorm;
-			x = x1 + s * (x2 - x1);
-			y = y1 + s * (y2 - y1);
+			x = x1 + sNorm * (x2 - x1);
+			y = y1 + sNorm * (y2 - y1);
+			s = sNorm * segmentLength;
+		}
+		else if (dist > distMin)
+		{
+			// Distance growing, no need to search further
+			break;
 		}
 
 		i = next_index;

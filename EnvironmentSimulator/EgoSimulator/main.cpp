@@ -52,6 +52,9 @@ static double simTime = 0;
 static int ego_id = -1;
 static bool drawTrails = false;
 
+#define TRAIL_DT 0.5
+#define GHOST_HEADSTART 2.0
+
 roadmanager::OpenDrive *odrManager = 0;
 
 typedef enum {
@@ -288,7 +291,7 @@ static void viewer_thread(void *args)
 		mutex.Lock();
 
 		bool add_dot = false;
-		if (simTime - last_dot_time > 0.2)
+		if (simTime - last_dot_time > TRAIL_DT)
 		{
 			add_dot = true;
 			last_dot_time = simTime;
@@ -415,7 +418,7 @@ int main(int argc, char** argv)
 	// Create scenario engine
 	try
 	{
-		scenarioEngine = new ScenarioEngine(oscFilename, 2.0, control);
+		scenarioEngine = new ScenarioEngine(oscFilename, GHOST_HEADSTART, control);
 		odrManager = scenarioEngine->getRoadManager();
 	}
 	catch (const std::exception& e)
@@ -477,19 +480,9 @@ int main(int argc, char** argv)
 				ScenarioVehicle *vh = &scenarioVehicle[i];
 				if (vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 				{
-					ObjectTrailState *trailState = 0;
-
 					// Set steering target point at a distance ahead proportional to the speed
-					trailState = vh->obj->ghost_->trail_.GetStateByIndex(vh->obj->trail_follow_index_);
-					if (trailState != 0)
-					{
-						vh->speed_target_distance = MAX(7, trailState->speed_ * 2.0);
-					}
-					else
-					{
-						vh->speed_target_distance = 7;
-					}
-					vh->steering_target_distance = 0.5 * vh->speed_target_distance;
+					vh->speed_target_distance = MAX(7, vh->obj->speed_ * 2.0);
+					vh->steering_target_distance = MAX(5, 0.25 * vh->speed_target_distance);
 
 					// find out what direction is forward, according to vehicle relative road heading 
 					if (GetAbsAngleDifference(vh->obj->pos_.GetH(), vh->obj->pos_.GetHRoadInDrivingDirection()) > M_PI_2)
@@ -523,11 +516,9 @@ int main(int argc, char** argv)
 					
 					// Let steering target heading influence speed target - slowing down when turning
 					vh->speed_target_speed = speed * (1 - vh->steering_target_heading / M_PI_2);
-					
-					//LOG("ahead [%d]: speed: %.2f ts %.2f dist: %.2f (%.2f, %.2f)", vh->obj->trail_follow_index_, trailState ? trailState->speed_ : -1, vh->speed_target_speed, vh->steering_target_distance, x, y);
 				}
 
-				if (vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL || vh->obj->GetControl() == Object::Control::EXTERNAL)
+				if (scenarioEngine->getSimulationTime() >= 0 && (vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL || vh->obj->GetControl() == Object::Control::EXTERNAL))
 				{
 					// Update vehicle dynamics/driver model
 					UpdateExternalVehicle(i, deltaSimTime, scenarioViewer);
