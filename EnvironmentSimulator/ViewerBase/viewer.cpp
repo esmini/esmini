@@ -225,25 +225,28 @@ CarModel::CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::r
 	retval[1] = AddWheel(car_node, "wheel_fr");
 	retval[2] = AddWheel(car_node, "wheel_rr");
 	retval[3] = AddWheel(car_node, "wheel_rl");
-	if (!(retval[0] && retval[1] && retval[2] && retval[3]))
+	if (!(retval[0] || retval[1] || retval[2] || retval[3]))
 	{
 		LOG("Missing all four wheel nodes in vehicle model %s - ignoring", car_node->getName().c_str());
 	}
-	else if (!retval[0])
+	else
 	{
-		LOG("Missing wheel node %s in vehicle model %s - ignoring","wheel_fl", car_node->getName().c_str());
-	}
-	else if (!retval[1])
-	{
-		LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fr", car_node->getName().c_str());
-	}
-	else if (!retval[2])
-	{
-		LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rr", car_node->getName().c_str());
-	}
-	else if (!retval[3])
-	{
-		LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rl", car_node->getName().c_str());
+		if (!retval[0])
+		{
+			LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fl", car_node->getName().c_str());
+		}
+		if (!retval[1])
+		{
+			LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fr", car_node->getName().c_str());
+		}
+		if (!retval[2])
+		{
+			LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rr", car_node->getName().c_str());
+		}
+		if (!retval[3])
+		{
+			LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rl", car_node->getName().c_str());
+		}
 	}
 
 	// Extract boundingbox of car to calculate size and center
@@ -557,15 +560,12 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 	osg::ComputeBoundsVisitor cbv;
 	node->accept(cbv);
 	osg::BoundingBox boundingBox = cbv.getBoundingBox();
-	const osg::MatrixList& m = node->getWorldMatrices();
-	osg::Vec3 minV = boundingBox._min * m.front();
-	osg::Vec3 maxV = boundingBox._max * m.front();
 
 	double xc, yc, dx, dy;
-	dx = maxV.x() - minV.x();
-	dy = maxV.y() - minV.y();
-	xc = (maxV.x() + minV.x()) / 2;
-	yc = (maxV.y() + minV.y()) / 2;
+	dx = boundingBox._max.x() - boundingBox._min.x();
+	dy = boundingBox._max.y() - boundingBox._min.y();
+	xc = (boundingBox._max.x() + boundingBox._min.x()) / 2;
+	yc = (boundingBox._max.y() + boundingBox._min.y()) / 2;
 
 	shadow_tx = new osg::PositionAttitudeTransform;
 	shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.0));
