@@ -412,8 +412,10 @@ Entry* ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 	std::string catalog_name;
 	std::string entry_name;
 
+	pugi::xml_node parameterAssignmentNode = node.child("ParameterAssignment");
+
 	// Read any parameter assignments
-	for (pugi::xml_node param_n = node.child("Parameter"); param_n; param_n = param_n.next_sibling("Parameter"))
+	for (pugi::xml_node param_n = parameterAssignmentNode.child("Parameter"); param_n; param_n = param_n.next_sibling("Parameter"))
 	{
 		ParameterStruct param;
 		param.name = param_n.attribute("name").value();
@@ -423,6 +425,8 @@ Entry* ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 
 	catalog_name = ReadAttribute(node.attribute("catalogName"));
 	entry_name = ReadAttribute(node.attribute("entryName"));
+
+	LOG("Assigned %d parameters for catalog %s entry %s", catalog_param_assignments.size(), catalog_name.c_str(), entry_name.c_str());
 
 	Catalog *catalog;
 

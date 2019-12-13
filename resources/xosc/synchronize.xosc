@@ -147,12 +147,14 @@
 						<Entity name="NPC1"/>
 					</Actors>
 					<CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
-                        <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
-                        <Parameter name="$NPCTargetLaneId" value="$NPC1LaneId"/>
-                        <Parameter name="$NPCFreeSpeed" value="$NPC1Speed"/>
-                        <Parameter name="$MS1EgoS" value="$MS1EgoS" />
-                        <Parameter name="$MS2EgoS" value="$MS2EgoS" />
-                        <Parameter name="$MS1NPC" value="$MS1NPC1S" />
+                        <ParameterAssignment>
+                            <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
+                            <Parameter name="$NPCTargetLaneId" value="$NPC1LaneId"/>
+                            <Parameter name="$NPCFreeSpeed" value="$NPC1Speed"/>
+                            <Parameter name="$MS1EgoS" value="$MS1EgoS" />
+                            <Parameter name="$MS2EgoS" value="$MS2EgoS" />
+                            <Parameter name="$MS1NPC" value="$MS1NPC1S" />
+                        </ParameterAssignment>
 					</CatalogReference>
 				</Sequence>
 				<Sequence name="Synchronize_NPC2_Sequence" numberOfExecutions="1">
@@ -160,12 +162,14 @@
 						<Entity name="NPC2"/>
 					</Actors>
 					<CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
-                        <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
-                        <Parameter name="$NPCTargetLaneId" value="$NPC2LaneId"/>
-                        <Parameter name="$NPCFreeSpeed" value="NPC2Speed"/>
-                        <Parameter name="$MS1EgoS" value="$MS1EgoS" />
-                        <Parameter name="$MS2EgoS" value="$MS2EgoS" />
-                        <Parameter name="$MS1NPC" value="$MS1NPC2S" />
+                        <ParameterAssignment>
+                            <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
+                            <Parameter name="$NPCTargetLaneId" value="$NPC2LaneId"/>
+                            <Parameter name="$NPCFreeSpeed" value="NPC2Speed"/>
+                            <Parameter name="$MS1EgoS" value="$MS1EgoS" />
+                            <Parameter name="$MS2EgoS" value="$MS2EgoS" />
+                            <Parameter name="$MS1NPC" value="$MS1NPC2S" />
+                        </ParameterAssignment>
 					</CatalogReference>
 				</Sequence>
 				<Sequence name="Synchronize_NPC3_Sequence" numberOfExecutions="1">
@@ -173,12 +177,14 @@
 						<Entity name="NPC3"/>
 					</Actors>
 					<CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
-                        <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
-                        <Parameter name="$NPCTargetLaneId" value="$NPC3LaneId"/>
-                        <Parameter name="$NPCFreeSpeed" value="NPC3Speed"/>
-                        <Parameter name="$MS1EgoS" value="$MS1EgoS" />
-                        <Parameter name="$MS2EgoS" value="$MS2EgoS" />
-                        <Parameter name="$MS1NPC" value="$MS1NPC3S" />
+                        <ParameterAssignment>
+                            <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
+                            <Parameter name="$NPCTargetLaneId" value="$NPC3LaneId"/>
+                            <Parameter name="$NPCFreeSpeed" value="NPC3Speed"/>
+                            <Parameter name="$MS1EgoS" value="$MS1EgoS" />
+                            <Parameter name="$MS2EgoS" value="$MS2EgoS" />
+                            <Parameter name="$MS1NPC" value="$MS1NPC3S" />
+                        </ParameterAssignment>
 					</CatalogReference>
 				</Sequence>
 				<Sequence name="Synchronize_NPC4_Sequence" numberOfExecutions="1">
@@ -186,12 +192,14 @@
 						<Entity name="NPC4"/>
 					</Actors>
 					<CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
-                        <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
-                        <Parameter name="$NPCTargetLaneId" value="$NPC4LaneId"/>
-                        <Parameter name="$NPCFreeSpeed" value="NPC4Speed"/>
-                        <Parameter name="$MS1EgoS" value="$MS1EgoS" />
-                        <Parameter name="$MS2EgoS" value="$MS2EgoS" />
-                        <Parameter name="$MS1NPC" value="$MS1NPC4S" />
+                        <ParameterAssignment>
+                            <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
+                            <Parameter name="$NPCTargetLaneId" value="$NPC4LaneId"/>
+                            <Parameter name="$NPCFreeSpeed" value="NPC4Speed"/>
+                            <Parameter name="$MS1EgoS" value="$MS1EgoS" />
+                            <Parameter name="$MS2EgoS" value="$MS2EgoS" />
+                            <Parameter name="$MS1NPC" value="$MS1NPC4S" />
+                        </ParameterAssignment>
 					</CatalogReference>
 				</Sequence>
                 <Conditions>
