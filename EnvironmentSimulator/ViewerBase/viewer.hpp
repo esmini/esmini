@@ -26,9 +26,9 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 
-#define TRAIL_DOT_LIFE_SPAN 30.0  // seconds
 #define TRAIL_DOT_FADE_DURATION 3.0  // seconds
 #define TRAIL_MAX_DOTS 500
+#define TRAIL_DOT_LIFE_SPAN (TRAIL_MAX_DOTS / 2.0 - 2.0 * TRAIL_DOT_FADE_DURATION ) // seconds
 
 namespace viewer
 {
@@ -36,11 +36,14 @@ namespace viewer
 	{
 	public:
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
+		double x_;
+		double y_;
+		double z_;
 		double near_;
 		double far_;
 		double fovH_;
 
-		SensorViewFrustum(double near, double far, double fovH);
+		SensorViewFrustum(double x, double y, double z, double near, double far, double fovH);
 	};
 
 	class AlphaFadingCallback : public osg::StateAttributeCallback
@@ -51,11 +54,15 @@ namespace viewer
 			_motion = new osgAnimation::InCubicMotion(0.0f, TRAIL_DOT_FADE_DURATION);
 			color_ = color;
 			viewer_ = viewer;
-			born_time_stamp_ = viewer_->elapsedTime();
-			time_stamp_ = born_time_stamp_;
+			Reset();
 		}
 		virtual void operator()(osg::StateAttribute*, osg::NodeVisitor*);
-		void Reset() { _motion->reset(); }
+		void Reset() 
+		{ 
+			born_time_stamp_ = viewer_->elapsedTime();
+			time_stamp_ = born_time_stamp_;
+			_motion->reset(); 
+		}
 
 	protected:
 		osg::ref_ptr<osgAnimation::InCubicMotion> _motion;
@@ -72,7 +79,6 @@ namespace viewer
 	public:
 		osg::ref_ptr<osg::PositionAttitudeTransform> dot_;
 		osg::ref_ptr<osg::Material> material_;
-		float time_born;
 
 		TrailDot(float time, double x, double y, double z, double heading,
 			osgViewer::Viewer *viewer, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color);

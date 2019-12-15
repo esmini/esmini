@@ -52,6 +52,7 @@ static vehicle::Vehicle *ego;
 static double simTime = 0;
 static int ego_id = -1;
 static bool drawTrails = false;
+static ObjectSensor *sensor;
 
 #define TRAIL_DT 0.5
 #define GHOST_HEADSTART 2.0
@@ -164,7 +165,8 @@ int SetupVehicles()
 			roadmanager::Position *pos = &vh.obj->pos_;
 			vh.dyn_model = new vehicle::Vehicle(pos->GetX(), pos->GetY(), pos->GetH(), vh.gfx_model->size_x);
 
-			viewer::SensorViewFrustum *sensorFrustum = new viewer::SensorViewFrustum(5, 20, M_PI / 2.0);
+			viewer::SensorViewFrustum *sensorFrustum = new viewer::SensorViewFrustum(
+				sensor->pos_.x, sensor->pos_.y, sensor->pos_.z, sensor->near_, sensor->far_, sensor->fovH_);
 			vh.gfx_model->txNode_->addChild(sensorFrustum->txNode_);
 		}
 		else
@@ -371,7 +373,6 @@ void log_callback(const char *str)
 int main(int argc, char** argv)
 {
 	double deltaSimTime;
-	ObjectSensor *sensor;
 
 	// Use logger callback
 	Logger::Inst().SetCallback(log_callback);
@@ -423,7 +424,7 @@ int main(int argc, char** argv)
 	{
 		scenarioEngine = new ScenarioEngine(oscFilename, GHOST_HEADSTART, control);
 		odrManager = scenarioEngine->getRoadManager();
-		sensor = new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[0], 2, 20, 90*M_PI/180.0, 2);
+		sensor = new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[0], 4, 0, 5, 50, 50*M_PI/180.0, 10);
 	}
 	catch (const std::exception& e)
 	{
@@ -537,7 +538,7 @@ int main(int argc, char** argv)
 			}
 
 			sensor->Update();
-			LOG("sensor identified %d objects", sensor->nObj_);
+			//LOG("sensor identified %d objects", sensor->nObj_);
 
 			scenarioEngine->step(deltaSimTime);
 

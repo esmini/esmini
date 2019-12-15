@@ -86,13 +86,14 @@ protected:
 	osg::ref_ptr<osg::Group> _node;
 };
 
-SensorViewFrustum::SensorViewFrustum(double near, double far, double fovH) : near_(near), far_(far), fovH_(fovH)
+SensorViewFrustum::SensorViewFrustum(double x, double y, double z, double near, double far, double fovH) : 
+	x_(x), y_(y), z_(z), near_(near), far_(far), fovH_(fovH)
 {
 	txNode_ = new osg::PositionAttitudeTransform;
 	int numSegments = 16 * fovH_ / M_PI;
 	double angleDelta = fovH_ / numSegments;
 	double angle = -fovH_ / 2.0;
-	double fovV_rate = 0.25;
+	double fovV_rate = 0.2;
 
 	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(4 * (numSegments+1));
 	osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(GL_QUADS, 2 * 4 + 4 * 4 * numSegments);
@@ -211,6 +212,7 @@ SensorViewFrustum::SensorViewFrustum(double near, double far, double fovH) : nea
 
 	txNode_->addChild(geode);
 	txNode_->addChild(geode2);
+	txNode_->setPosition(osg::Vec3(x_, y_, z_));
 }
 
 void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor* nv)
@@ -237,7 +239,6 @@ TrailDot::TrailDot(float time, double x, double y, double z, double heading,
 	double dot_radius = 0.8;
 	osg::ref_ptr<osg::Node> new_node;
 
-	time_born = time;
 	dot_ = new osg::PositionAttitudeTransform;
 	dot_->setPosition(osg::Vec3(x, y, z));
 	dot_->setScale(osg::Vec3(dot_radius, dot_radius, dot_radius));
@@ -327,7 +328,6 @@ void TrailDot::Reset(float time, double x, double y, double z)
 {
 	dot_->setPosition(osg::Vec3(x, y, z));
 	fade_callback_->Reset();
-	time_born = time;
 }
 
 void Trail::AddDot(float time, double x, double y, double z, double heading)
@@ -346,7 +346,6 @@ void Trail::AddDot(float time, double x, double y, double z, double heading)
 	{
 		current_ = 0;
 	}
-	LOG("Dots: %d", n_dots_);
 }
 
 osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName)

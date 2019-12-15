@@ -14,11 +14,25 @@
 
 using namespace scenarioengine;
 
-ObjectSensor::ObjectSensor(Entities *entities, Object *refobj, double near, double far, double fovH, int maxObj)
+BaseSensor::BaseSensor(BaseSensor::Type type, double pos_x, double pos_y)
+{
+	type_ = type;
+	pos_.x = pos_x;
+	pos_.y = pos_y;
+	pos_.z = 0.5;
+	pos_.h = 0;
+	pos_.p = 0;
+	pos_.r = 0;
+}
+
+ObjectSensor::ObjectSensor(Entities *entities, Object *refobj, double pos_x, double pos_y, double near, double far, double fovH, int maxObj):
+	BaseSensor(BaseSensor::Type::SENSOR_TYPE_OBJECT, pos_x, pos_y)
 {
 	entities_ = entities;
 	near_ = near;
+	near_sq_ = near_ * near_;
 	far_ = far;
+	far_sq_ = far_ * far_;
 	fovH_ = fovH;
 	maxObj_ = maxObj;
 	host_ = refobj;
@@ -51,16 +65,28 @@ void ObjectSensor::Update()
 		double hx2, hy2;
 		RotateVec2D(hx, hy, host_->pos_.GetH(), hx2, hy2);
 
+		double sensor_pos_x, sensor_pos_y;
+		RotateVec2D(pos_.x, pos_.y, host_->pos_.GetH(), sensor_pos_x, sensor_pos_y);
+
 		// Find vector from host to object
-		double xo = obj->pos_.GetX() - host_->pos_.GetX();
-		double yo = obj->pos_.GetY() - host_->pos_.GetY();
+		double xo = obj->pos_.GetX() - (host_->pos_.GetX() + sensor_pos_x);
+		double yo = obj->pos_.GetY() - (host_->pos_.GetY() + sensor_pos_y);
+
+		// First check distance
+		double dist_sq = (xo*xo + yo * yo);
+		if (dist_sq < near_sq_ || dist_sq > far_sq_)
+		{
+			// Not within near and far radius/distance
+			continue;
+		}
+
 		double xon, yon;
 		NormalizeVec2D(xo, yo, xon, yon);
 
 		// Find angle to object
 		double angle = acos(GetDotProduct2D(hx2, hy2, xon, yon));
-
-		if (angle < fovH_)
+		//LOG("angle: %.2f", 180*angle/M_PI);
+		if (angle < fovH_/2)
 		{
 			objList_[nObj_++] = obj->id_;
 		}
