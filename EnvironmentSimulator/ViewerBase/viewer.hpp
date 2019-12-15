@@ -26,12 +26,23 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 
-#define TRAIL_DOT_LIFE_SPAN 20.0  // seconds
+#define TRAIL_DOT_LIFE_SPAN 30.0  // seconds
 #define TRAIL_DOT_FADE_DURATION 3.0  // seconds
-#define TRAIL_MAX_DOTS 1000
+#define TRAIL_MAX_DOTS 500
 
 namespace viewer
 {
+	class SensorViewFrustum
+	{
+	public:
+		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
+		double near_;
+		double far_;
+		double fovH_;
+
+		SensorViewFrustum(double near, double far, double fovH);
+	};
+
 	class AlphaFadingCallback : public osg::StateAttributeCallback
 	{
 	public:

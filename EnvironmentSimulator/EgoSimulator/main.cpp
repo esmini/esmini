@@ -31,6 +31,7 @@
 #include "ScenarioEngine.hpp"
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
+#include "IdealSensor.hpp"
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -42,8 +43,8 @@ using namespace scenarioengine;
 static int COLOR_GREEN[3] = { 0x40, 0xA0, 0x50 };
 static int COLOR_DARK_GRAY[3] = { 0x80, 0x80, 0x80 };
 static int COLOR_GRAY[3] = { 0xBB, 0xBB, 0xBB };
-static int COLOR_YELLOW[3] = { 0x85, 0x75, 0x40 };
-static int COLOR_RED[3] = { 0x90, 0x30, 0x30 };
+static int COLOR_YELLOW[3] = { 0xC0, 0xB0, 0x70 };
+static int COLOR_RED[3] = { 0xA0, 0x40, 0x40 };
 
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
@@ -137,11 +138,11 @@ int SetupVehicles()
 			trail_color[1] = ((double)COLOR_RED[1]) / 0xFF;
 			trail_color[2] = ((double)COLOR_RED[2]) / 0xFF;
 		}
+		
 		if (scenarioViewer->AddCar(vh.obj->model_filepath_, transparent, trail_color) == 0)
 		{
 			return -1;
 		}
-
 		vh.gfx_model = scenarioViewer->cars_[i];
 
 		if (vh.obj->GetControl() == Object::Control::EXTERNAL)
@@ -162,6 +163,9 @@ int SetupVehicles()
 		{
 			roadmanager::Position *pos = &vh.obj->pos_;
 			vh.dyn_model = new vehicle::Vehicle(pos->GetX(), pos->GetY(), pos->GetH(), vh.gfx_model->size_x);
+
+			viewer::SensorViewFrustum *sensorFrustum = new viewer::SensorViewFrustum(5, 20, M_PI / 2.0);
+			vh.gfx_model->txNode_->addChild(sensorFrustum->txNode_);
 		}
 		else
 		{
@@ -367,6 +371,7 @@ void log_callback(const char *str)
 int main(int argc, char** argv)
 {
 	double deltaSimTime;
+	ObjectSensor *sensor;
 
 	// Use logger callback
 	Logger::Inst().SetCallback(log_callback);
@@ -418,6 +423,7 @@ int main(int argc, char** argv)
 	{
 		scenarioEngine = new ScenarioEngine(oscFilename, GHOST_HEADSTART, control);
 		odrManager = scenarioEngine->getRoadManager();
+		sensor = new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[0], 2, 20, 90*M_PI/180.0, 2);
 	}
 	catch (const std::exception& e)
 	{
@@ -529,6 +535,9 @@ int main(int argc, char** argv)
 						vh->dyn_model->speed_, vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_));
 				}
 			}
+
+			sensor->Update();
+			LOG("sensor identified %d objects", sensor->nObj_);
 
 			scenarioEngine->step(deltaSimTime);
 

@@ -21,6 +21,7 @@
 #include <osg/Geode> 
 #include <osg/Group> 
 #include <osg/ShapeDrawable>
+#include <osg/CullFace>
 #include <osgGA/TrackballManipulator>
 #include <osgGA/KeySwitchMatrixManipulator>
 #include <osgGA/FlightManipulator>
@@ -29,6 +30,7 @@
 #include <osgGA/SphericalManipulator>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgDB/Registry>
+#include <osgUtil/SmoothingVisitor>
 #include "CommonMini.hpp"
 
 #define SHADOW_SCALE 1.20
@@ -84,6 +86,133 @@ protected:
 	osg::ref_ptr<osg::Group> _node;
 };
 
+SensorViewFrustum::SensorViewFrustum(double near, double far, double fovH) : near_(near), far_(far), fovH_(fovH)
+{
+	txNode_ = new osg::PositionAttitudeTransform;
+	int numSegments = 16 * fovH_ / M_PI;
+	double angleDelta = fovH_ / numSegments;
+	double angle = -fovH_ / 2.0;
+	double fovV_rate = 0.25;
+
+	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(4 * (numSegments+1));
+	osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(GL_QUADS, 2 * 4 + 4 * 4 * numSegments);
+
+	osg::ref_ptr<osg::DrawElementsUInt> indicesC0 = new osg::DrawElementsUInt(GL_LINE_STRIP, numSegments+1);
+	osg::ref_ptr<osg::DrawElementsUInt> indicesC1 = new osg::DrawElementsUInt(GL_LINE_STRIP, numSegments+1);
+	osg::ref_ptr<osg::DrawElementsUInt> indicesC2 = new osg::DrawElementsUInt(GL_LINE_STRIP, numSegments+1);
+	osg::ref_ptr<osg::DrawElementsUInt> indicesC3 = new osg::DrawElementsUInt(GL_LINE_STRIP, numSegments+1);
+	osg::ref_ptr<osg::DrawElementsUInt> indicesC4 = new osg::DrawElementsUInt(GL_LINE_LOOP, 4);
+	osg::ref_ptr<osg::DrawElementsUInt> indicesC5 = new osg::DrawElementsUInt(GL_LINE_LOOP, 4);
+
+	size_t i;
+	unsigned int idx = 0;
+	unsigned int idx2 = 0;
+	unsigned int idxC = 0;
+
+	for (i = 0; i < numSegments+1; ++i, angle += angleDelta)
+	{
+		float x = cosf(angle);
+		float y = sinf(angle);
+
+		(*vertices)[i * 4 + 0].set(near_ * x, near_ * y, -near_ * fovV_rate);
+		(*vertices)[i * 4 + 3].set(far_ * x, far_ * y, -far_ * fovV_rate);
+		(*vertices)[i * 4 + 2].set(far_ * x, far_ * y, far_ * fovV_rate);
+		(*vertices)[i * 4 + 1].set(near_ * x, near_ * y, near_ * fovV_rate);
+
+		if (i > 0)
+		{
+			// Bottom face
+			(*indices)[idx++] = (i - 1) * 4 + 0;
+			(*indices)[idx++] = (i - 1) * 4 + 1;
+			(*indices)[idx++] = (i - 0) * 4 + 1;
+			(*indices)[idx++] = (i - 0) * 4 + 0;
+
+			// Top face
+			(*indices)[idx++] = (i - 1) * 4 + 3;
+			(*indices)[idx++] = (i - 0) * 4 + 3;
+			(*indices)[idx++] = (i - 0) * 4 + 2;
+			(*indices)[idx++] = (i - 1) * 4 + 2;
+
+			// Side facing host entity
+			(*indices)[idx++] = (i - 1) * 4 + 0;
+			(*indices)[idx++] = (i - 0) * 4 + 0;
+			(*indices)[idx++] = (i - 0) * 4 + 3;
+			(*indices)[idx++] = (i - 1) * 4 + 3;
+
+			// Side facing away from host entity
+			(*indices)[idx++] = (i - 1) * 4 + 1;
+			(*indices)[idx++] = (i - 1) * 4 + 2;
+			(*indices)[idx++] = (i - 0) * 4 + 2;
+			(*indices)[idx++] = (i - 0) * 4 + 1;
+		}
+		// Countour
+		(*indicesC0)[idxC] = i * 4 + 0;
+		(*indicesC1)[idxC] = i * 4 + 1;
+		(*indicesC2)[idxC] = i * 4 + 2;
+		(*indicesC3)[idxC++] = i * 4 + 3;
+	}
+
+	(*indicesC4)[0] = (*indices)[idx++] = 0;
+	(*indicesC4)[1] = (*indices)[idx++] = 3;
+	(*indicesC4)[2] = (*indices)[idx++] = 2;
+	(*indicesC4)[3] = (*indices)[idx++] = 1;
+			 	   
+	(*indicesC5)[0] = (*indices)[idx++] = (i - 1) * 4 + 0;
+	(*indicesC5)[1] = (*indices)[idx++] = (i - 1) * 4 + 1;
+	(*indicesC5)[2] = (*indices)[idx++] = (i - 1) * 4 + 2;
+	(*indicesC5)[3] = (*indices)[idx++] = (i - 1) * 4 + 3;
+
+	const osg::Vec4 normalColor(0.8f, 0.7f, 0.6f, 1.0f);
+	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array(1);
+	(*colors)[0] = normalColor;
+
+	osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+	osg::ref_ptr<osg::Geometry> geom2 = new osg::Geometry;
+	geom->setDataVariance(osg::Object::STATIC);
+	geom->setUseDisplayList(true);
+	geom->setUseVertexBufferObjects(true);
+	geom->setVertexArray(vertices.get());
+
+	geom2->setUseDisplayList(true);
+	geom2->setUseVertexBufferObjects(true);
+	geom2->setVertexArray(vertices.get());
+
+	geom->addPrimitiveSet(indices.get());
+	geom2->addPrimitiveSet(indicesC0.get());
+	geom2->addPrimitiveSet(indicesC1.get());
+	geom2->addPrimitiveSet(indicesC2.get());
+	geom2->addPrimitiveSet(indicesC3.get());
+	geom2->addPrimitiveSet(indicesC4.get());
+	geom2->addPrimitiveSet(indicesC5.get());
+	geom2->setColorArray(colors.get());
+	geom2->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+	osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	geode->addDrawable(geom.release());
+	osg::ref_ptr<osg::Material> material = new osg::Material;
+	material->setDiffuse(osg::Material::FRONT, osg::Vec4(1.0, 1.0, 1.0, 0.2));
+	material->setAmbient(osg::Material::FRONT, osg::Vec4(1.0, 1.0, 1.0, 0.2));
+
+	osg::ref_ptr<osg::StateSet> stateset = geode->getOrCreateStateSet(); // Get the StateSet of the group
+	stateset->setAttribute(material.get()); // Set Material 
+	
+	stateset->setMode(GL_BLEND, osg::StateAttribute::ON);
+	stateset->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+	stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
+	cull->setMode(osg::CullFace::BACK);
+	stateset->setAttributeAndModes(cull, osg::StateAttribute::ON);
+
+	osg::ref_ptr<osg::Geode> geode2 = new osg::Geode;
+	geom2->getOrCreateStateSet()->setAttribute(new osg::LineWidth(1.0f));
+	geom2->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	geode2->addDrawable(geom2.release());
+
+	txNode_->addChild(geode);
+	txNode_->addChild(geode2);
+}
+
 void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor* nv)
 {
 	osg::Material* material = static_cast<osg::Material*>(sa);
@@ -105,7 +234,7 @@ void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor* 
 TrailDot::TrailDot(float time, double x, double y, double z, double heading, 
 	osgViewer::Viewer *viewer, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color)
 {
-	double dot_radius = 0.4;
+	double dot_radius = 0.8;
 	osg::ref_ptr<osg::Node> new_node;
 
 	time_born = time;
@@ -119,7 +248,6 @@ TrailDot::TrailDot(float time, double x, double y, double z, double heading,
 		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 		geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
 		new_node = geode;
-
 	}
 	else
 	{
@@ -142,6 +270,57 @@ TrailDot::TrailDot(float time, double x, double y, double z, double heading,
 	stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 
 	parent->addChild(dot_);
+}
+
+static osg::ref_ptr<osg::Node> CreateDotGeometry()
+{
+	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(6);
+	osg::ref_ptr<osg::DrawElementsUInt> indices1 = new osg::DrawElementsUInt(GL_QUADS, 3 * 4);
+	osg::ref_ptr<osg::DrawElementsUInt> indices2 = new osg::DrawElementsUInt(GL_TRIANGLES, 3);
+	int idx = 0;
+
+	(*vertices)[idx++].set(0.0, -0.5, 0.0);
+	(*vertices)[idx++].set(0.87, 0.0, 0.0);
+	(*vertices)[idx++].set(0.0, 0.5, 0.0);
+	(*vertices)[idx++].set(0.0, -0.5, 0.15);
+	(*vertices)[idx++].set(0.87, 0.0, 0.15);
+	(*vertices)[idx++].set(0.0, 0.5, 0.15);
+
+	// sides
+	idx = 0;
+	(*indices1)[idx++] = 0;
+	(*indices1)[idx++] = 1;
+	(*indices1)[idx++] = 4;
+	(*indices1)[idx++] = 3;
+
+	(*indices1)[idx++] = 2;
+	(*indices1)[idx++] = 5;
+	(*indices1)[idx++] = 4;
+	(*indices1)[idx++] = 1;
+
+	(*indices1)[idx++] = 0;
+	(*indices1)[idx++] = 3;
+	(*indices1)[idx++] = 5;
+	(*indices1)[idx++] = 2;
+
+	// Top face
+	idx = 0;
+	(*indices2)[idx++] = 3;
+	(*indices2)[idx++] = 4;
+	(*indices2)[idx++] = 5;
+
+	osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+	geom->setDataVariance(osg::Object::DYNAMIC);
+	geom->setUseDisplayList(false);
+	geom->setUseVertexBufferObjects(true);
+	geom->setVertexArray(vertices.get());
+	geom->addPrimitiveSet(indices1.get());
+	geom->addPrimitiveSet(indices2.get());
+	osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	geode->addDrawable(geom.release());
+
+	return geode;
 }
 
 void TrailDot::Reset(float time, double x, double y, double z)
@@ -167,6 +346,7 @@ void Trail::AddDot(float time, double x, double y, double z, double heading)
 	{
 		current_ = 0;
 	}
+	LOG("Dots: %d", n_dots_);
 }
 
 osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName)
@@ -375,11 +555,15 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 
 	// Load shadow geometry - assume it resides in the same resource folder as the environment model
 	std::string dotFilename = DirNameOf(modelFilename).append("/" + std::string(ARROW_MODEL_FILEPATH));
+#if 0
 	dot_node_ = osgDB::readNodeFile(dotFilename);
 	if (!dot_node_)
 	{
 		LOG("Failed to load trail dot model %s\n", dotFilename.c_str());
 	}
+#else
+	dot_node_ = CreateDotGeometry();
+#endif
 
 	// set the scene to render
 	rootnode_ = new osg::MatrixTransform;

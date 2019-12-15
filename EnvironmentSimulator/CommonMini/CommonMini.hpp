@@ -112,11 +112,6 @@ bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, d
 int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2);
 
 /**
-  Calculate the distance from a point to a line segment limited by two points. 
-*/
-double GetDistanceFromPointToLineSegment2D(double px, double py, double vx1, double vy1, double vx2, double vy2, bool &inside);
-
-/**
   Retrieve the length of a 2D line segment
 */
 double GetLengthOfLine2D(double x1, double y1, double x2, double y2);
@@ -125,6 +120,16 @@ double GetLengthOfLine2D(double x1, double y1, double x2, double y2);
   Retrieve the length of a 3D vector
 */
 double GetLengthOfVector3D(double x, double y, double z);
+
+/**
+  Rotate a 2D vector 
+*/
+void RotateVec2D(double x, double y, double angle, double &xr, double &yr);
+
+/**
+  Normalize a 2D vector
+*/
+void NormalizeVec2D(double x, double y, double &xn, double &yn);
 
 /**
   Change byte order - can be useful for IP communication with non Intel platforms

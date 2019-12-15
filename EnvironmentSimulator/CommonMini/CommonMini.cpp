@@ -209,6 +209,12 @@ double GetLengthOfVector3D(double x, double y, double z)
 	return sqrt(x*x + y*y + z*z);
 }
 
+void RotateVec2D(double x, double y, double angle, double &xr, double &yr)
+{
+	xr = x * cos(angle) - y * sin(angle);
+	yr = x * sin(angle) + y * cos(angle);
+}
+
 void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size)
 {
 	unsigned char *ptr = buf;
@@ -286,6 +292,17 @@ double GetCrossProduct2D(double x1, double y1, double x2, double y2)
 double GetDotProduct2D(double x1, double y1, double x2, double y2)
 {
 	return x1 * x2 + y1 * y2;
+}
+
+void NormalizeVec2D(double x, double y, double &xn, double &yn)
+{
+	double len = sqrt(x*x + y*y);
+	if (len < SMALL_NUMBER)
+	{
+		len = SMALL_NUMBER;
+	}
+	xn = x / len;
+	yn = y / len;
 }
 
 Logger::Logger()
