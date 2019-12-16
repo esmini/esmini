@@ -53,6 +53,7 @@ static double simTime = 0;
 static int ego_id = -1;
 static bool drawTrails = false;
 static ObjectSensor *sensor;
+static viewer::SensorViewFrustum *sensorFrustum;
 
 #define TRAIL_DT 0.5
 #define GHOST_HEADSTART 2.0
@@ -165,8 +166,8 @@ int SetupVehicles()
 			roadmanager::Position *pos = &vh.obj->pos_;
 			vh.dyn_model = new vehicle::Vehicle(pos->GetX(), pos->GetY(), pos->GetH(), vh.gfx_model->size_x);
 
-			viewer::SensorViewFrustum *sensorFrustum = new viewer::SensorViewFrustum(
-				sensor->pos_.x, sensor->pos_.y, sensor->pos_.z, sensor->near_, sensor->far_, sensor->fovH_);
+			sensorFrustum = new viewer::SensorViewFrustum(
+				sensor->pos_.x, sensor->pos_.y, sensor->pos_.z, sensor->near_, sensor->far_, sensor->fovH_, sensor->maxObj_);
 			vh.gfx_model->txNode_->addChild(sensorFrustum->txNode_);
 		}
 		else
@@ -344,6 +345,15 @@ static void viewer_thread(void *args)
 			if (add_dot)
 			{
 				vh->gfx_model->trail_->AddDot(simTime, vh->obj->pos_.GetX(), vh->obj->pos_.GetY(), vh->obj->pos_.GetZ(), vh->obj->pos_.GetH());
+			}
+
+			if (sensorFrustum)
+			{
+				sensorFrustum->ResetAllObj();
+				for (size_t i = 0; i < sensor->nObj_; i++)
+				{
+					sensorFrustum->SetObj(i, sensor->hitList_[i].x_, sensor->hitList_[i].y_, sensor->hitList_[i].z_);
+				}
 			}
 		}		
 

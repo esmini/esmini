@@ -86,14 +86,75 @@ protected:
 	osg::ref_ptr<osg::Group> _node;
 };
 
-SensorViewFrustum::SensorViewFrustum(double x, double y, double z, double near, double far, double fovH) : 
-	x_(x), y_(y), z_(z), near_(near), far_(far), fovH_(fovH)
+Line::Line(double x0, double y0, double z0, double x1, double y1, double z1, double r, double g, double b)
+{
+	line_vertex_data_ = new osg::Vec3Array;
+	line_vertex_data_->push_back(osg::Vec3d(x0, y0, z0));
+	line_vertex_data_->push_back(osg::Vec3d(x1, y1, z1));
+
+	osg::ref_ptr<osg::Group> group = new osg::Group;
+	line_ = new osg::Geometry();
+
+	line_->setVertexArray(line_vertex_data_.get());
+	line_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
+
+	line_->getOrCreateStateSet()->setAttributeAndModes(new osg::LineWidth(2), osg::StateAttribute::ON);
+	line_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+	osg::ref_ptr<osg::Vec4Array> color_ = new osg::Vec4Array;
+	color_->push_back(osg::Vec4(r, g, b, 1.0));
+	line_->setColorArray(color_.get());
+	line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+}
+
+void Line::SetPoints(double x0, double y0, double z0, double x1, double y1, double z1)
+{
+	line_vertex_data_->clear();
+	line_vertex_data_->push_back(osg::Vec3d(x0, y0, z0));
+	line_vertex_data_->push_back(osg::Vec3d(x1, y1, z1));
+	line_->dirtyGLObjects();
+	line_->dirtyBound();
+	line_vertex_data_->dirty();
+}
+
+void SensorViewFrustum::ResetAllObj()
+{
+	for (size_t i = 0; i < nObj_; i++)
+	{
+		lines_[i]->SetPoints(0, 0, 0, 1, 0, 0);
+	}
+	nObj_ = 0;
+}
+
+void SensorViewFrustum::SetObj(int idx, double x, double y, double z)
+{
+	if (nObj_ >= maxObj_ - 1)
+	{
+		LOG("Max nr objects registered by sensor");
+		return;
+	}
+
+	lines_[nObj_++]->SetPoints(0, 0, 0, x, y, z);
+}
+
+SensorViewFrustum::SensorViewFrustum(double x, double y, double z, double near, double far, double fovH, int maxObj) : 
+	x_(x), y_(y), z_(z), near_(near), far_(far), fovH_(fovH), maxObj_(maxObj), nObj_(0)
 {
 	txNode_ = new osg::PositionAttitudeTransform;
 	int numSegments = 16 * fovH_ / M_PI;
 	double angleDelta = fovH_ / numSegments;
 	double angle = -fovH_ / 2.0;
 	double fovV_rate = 0.2;
+
+	line_group_ = new osg::Group;
+	for (size_t i = 0; i < maxObj_; i++)
+	{
+		Line *line = new Line(0, 0, 0, 1, 0, 0, 0.8, 0.8, 0.8);
+		line_group_->addChild(line->line_);
+		lines_.push_back(line);
+	}
+
+	txNode_->addChild(line_group_);
 
 	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(4 * (numSegments+1));
 	osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(GL_QUADS, 2 * 4 + 4 * 4 * numSegments);
@@ -554,15 +615,9 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 
 	// Load shadow geometry - assume it resides in the same resource folder as the environment model
 	std::string dotFilename = DirNameOf(modelFilename).append("/" + std::string(ARROW_MODEL_FILEPATH));
-#if 0
-	dot_node_ = osgDB::readNodeFile(dotFilename);
-	if (!dot_node_)
-	{
-		LOG("Failed to load trail dot model %s\n", dotFilename.c_str());
-	}
-#else
+
+	// Create 3D geometry for trail dots
 	dot_node_ = CreateDotGeometry();
-#endif
 
 	// set the scene to render
 	rootnode_ = new osg::MatrixTransform;

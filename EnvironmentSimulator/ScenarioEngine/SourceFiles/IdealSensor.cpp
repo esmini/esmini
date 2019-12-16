@@ -23,6 +23,9 @@ BaseSensor::BaseSensor(BaseSensor::Type type, double pos_x, double pos_y)
 	pos_.h = 0;
 	pos_.p = 0;
 	pos_.r = 0;
+	pos_.x_global = 0;
+	pos_.y_global = 0;
+	pos_.z_global = 0;
 }
 
 ObjectSensor::ObjectSensor(Entities *entities, Object *refobj, double pos_x, double pos_y, double near, double far, double fovH, int maxObj):
@@ -37,12 +40,12 @@ ObjectSensor::ObjectSensor(Entities *entities, Object *refobj, double pos_x, dou
 	maxObj_ = maxObj;
 	host_ = refobj;
 	nObj_ = 0;
-	objList_ = (int*)malloc(maxObj * sizeof(int));
+	hitList_ = (ObjectHit*)malloc(maxObj * sizeof(ObjectHit));
 }
 
 ObjectSensor::~ObjectSensor()
 {
-	free(objList_);
+	free(hitList_);
 }
 
 void ObjectSensor::Update()
@@ -67,10 +70,13 @@ void ObjectSensor::Update()
 
 		double sensor_pos_x, sensor_pos_y;
 		RotateVec2D(pos_.x, pos_.y, host_->pos_.GetH(), sensor_pos_x, sensor_pos_y);
+		pos_.x_global = host_->pos_.GetX() + sensor_pos_x;
+		pos_.y_global = host_->pos_.GetY() + sensor_pos_y;
+		pos_.z_global = host_->pos_.GetZ() + pos_.z;
 
 		// Find vector from host to object
-		double xo = obj->pos_.GetX() - (host_->pos_.GetX() + sensor_pos_x);
-		double yo = obj->pos_.GetY() - (host_->pos_.GetY() + sensor_pos_y);
+		double xo = obj->pos_.GetX() - pos_.x_global;
+		double yo = obj->pos_.GetY() - pos_.y_global;
 
 		// First check distance
 		double dist_sq = (xo*xo + yo * yo);
@@ -85,10 +91,18 @@ void ObjectSensor::Update()
 
 		// Find angle to object
 		double angle = acos(GetDotProduct2D(hx2, hy2, xon, yon));
-		//LOG("angle: %.2f", 180*angle/M_PI);
 		if (angle < fovH_/2)
 		{
-			objList_[nObj_++] = obj->id_;
+			hitList_[nObj_].obj_ = obj;
+
+			// Calculate hit object position in sensor local coordinates
+			double xl, yl;
+			RotateVec2D(xo, yo, -host_->pos_.GetH(), xl, yl);
+
+			hitList_[nObj_].x_ = xl;
+			hitList_[nObj_].y_ = yl;
+			hitList_[nObj_].z_ = obj->pos_.GetZ() - pos_.z_global + 0.7;
+			nObj_++;
 		}
 	}
 }

@@ -24,6 +24,9 @@ namespace scenarioengine
 		double h;
 		double p;
 		double r;
+		double x_global;
+		double y_global;
+		double z_global;
 	} SensorPosition;
 
 	class BaseSensor
@@ -49,6 +52,13 @@ namespace scenarioengine
 	class ObjectSensor : public BaseSensor
 	{
 	public:
+		typedef struct
+		{
+			Object *obj_;     // Identified object
+			double x_;		  // Position of object, in local coordinates from sensor
+			double y_;
+			double z_;
+		} ObjectHit;
 
 		double near_;         // Near limit field of view, from position of sensor
 		double near_sq_;      // Near squared - for performance purpose
@@ -57,9 +67,8 @@ namespace scenarioengine
 		double fovH_;         // Horizontal field of view, in degrees
 		double fovV_;         // Vertical field of view, in degrees
 		int maxObj_;          // Maximum length of object list
-					         
+		ObjectHit *hitList_;  // List of identified objects
 		Object *host_;        // Entity to which the sensor is attached
-		int *objList_;        // List of identified objects
 		int nObj_;            // Size of object list, i.e. number of identified objects
 
 		ObjectSensor(Entities *entities, Object *refobj, double pos_x, double pos_y, double near, double far, double fovH, int maxObj);

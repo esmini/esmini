@@ -32,18 +32,35 @@
 
 namespace viewer
 {
+	class Line
+	{
+	public:
+		osg::ref_ptr<osg::Geometry> line_;
+		osg::ref_ptr<osg::Vec3Array> line_vertex_data_;
+
+		Line(double x0, double y0, double z0, double x1, double y1, double z1, double r, double g, double b);
+		void SetPoints(double x0, double y0, double z0, double x1, double y1, double z1);
+	};
+
 	class SensorViewFrustum
 	{
 	public:
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
+		osg::ref_ptr<osg::Group> line_group_;
+		std::vector<Line*> lines_;
+		int nObj_;
 		double x_;
 		double y_;
 		double z_;
 		double near_;
 		double far_;
 		double fovH_;
+		int maxObj_;
 
-		SensorViewFrustum(double x, double y, double z, double near, double far, double fovH);
+		SensorViewFrustum(double x, double y, double z, double near, double far, double fovH, int maxObj);
+		~SensorViewFrustum() { lines_.clear(); }
+		void ResetAllObj();
+		void SetObj(int idx, double x, double y, double z);
 	};
 
 	class AlphaFadingCallback : public osg::StateAttributeCallback
