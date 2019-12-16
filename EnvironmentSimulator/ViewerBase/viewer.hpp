@@ -161,12 +161,12 @@ namespace viewer
 		PointSensor *trail_sensor_;
 		PointSensor *steering_sensor_;
 
-		CarModel::CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color);
+		CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color);
 		~CarModel();
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double h, double p, double r);
 		void UpdateWheels(double wheel_angle, double wheel_rotation);
-		void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
+		void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
 
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName);
 
