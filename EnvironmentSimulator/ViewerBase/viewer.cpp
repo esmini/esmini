@@ -32,6 +32,7 @@
 #include <osgDB/Registry>
 #include <osgUtil/SmoothingVisitor>
 #include "CommonMini.hpp"
+#include "ScenarioEngine.hpp"
 
 #define SHADOW_SCALE 1.20
 #define SHADOW_MODEL_FILEPATH "shadow_face.osgb"  
@@ -117,37 +118,21 @@ void Line::SetPoints(double x0, double y0, double z0, double x1, double y1, doub
 	line_vertex_data_->dirty();
 }
 
-void SensorViewFrustum::ResetAllObj()
+SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 {
-	for (size_t i = 0; i < nObj_; i++)
-	{
-		lines_[i]->SetPoints(0, 0, 0, 1, 0, 0);
-	}
-	nObj_ = 0;
-}
-
-void SensorViewFrustum::SetObj(int idx, double x, double y, double z)
-{
-	if (nObj_ >= maxObj_ - 1)
-	{
-		LOG("Max nr objects registered by sensor");
-		return;
-	}
-
-	lines_[nObj_++]->SetPoints(0, 0, 0, x, y, z);
-}
-
-SensorViewFrustum::SensorViewFrustum(double x, double y, double z, double near, double far, double fovH, int maxObj) : 
-	x_(x), y_(y), z_(z), near_(near), far_(far), fovH_(fovH), maxObj_(maxObj), nObj_(0)
-{
+	sensor_ = sensor;
 	txNode_ = new osg::PositionAttitudeTransform;
-	int numSegments = 16 * fovH_ / M_PI;
-	double angleDelta = fovH_ / numSegments;
-	double angle = -fovH_ / 2.0;
+	txNode_->setNodeMask(SENSOR_NODE_MASK);
+	parent->addChild(txNode_);
+
+	// Create geometry
+	int numSegments = 16 * sensor_->fovH_ / M_PI;
+	double angleDelta = sensor_->fovH_ / numSegments;
+	double angle = -sensor_->fovH_ / 2.0;
 	double fovV_rate = 0.2;
 
 	line_group_ = new osg::Group;
-	for (size_t i = 0; i < maxObj_; i++)
+	for (size_t i = 0; i < sensor_->maxObj_; i++)
 	{
 		Line *line = new Line(0, 0, 0, 1, 0, 0, 0.8, 0.8, 0.8);
 		line_group_->addChild(line->line_);
@@ -176,10 +161,10 @@ SensorViewFrustum::SensorViewFrustum(double x, double y, double z, double near, 
 		float x = cosf(angle);
 		float y = sinf(angle);
 
-		(*vertices)[i * 4 + 0].set(near_ * x, near_ * y, -near_ * fovV_rate);
-		(*vertices)[i * 4 + 3].set(far_ * x, far_ * y, -far_ * fovV_rate);
-		(*vertices)[i * 4 + 2].set(far_ * x, far_ * y, far_ * fovV_rate);
-		(*vertices)[i * 4 + 1].set(near_ * x, near_ * y, near_ * fovV_rate);
+		(*vertices)[i * 4 + 0].set(sensor_->near_ * x, sensor_->near_ * y, -sensor_->near_ * fovV_rate);
+		(*vertices)[i * 4 + 3].set(sensor_->far_ * x, sensor_->far_ * y, -sensor_->far_ * fovV_rate);
+		(*vertices)[i * 4 + 2].set(sensor_->far_ * x, sensor_->far_ * y, sensor_->far_ * fovV_rate);
+		(*vertices)[i * 4 + 1].set(sensor_->near_ * x, sensor_->near_ * y, sensor_->near_ * fovV_rate);
 
 		if (i > 0)
 		{
@@ -273,7 +258,22 @@ SensorViewFrustum::SensorViewFrustum(double x, double y, double z, double near, 
 
 	txNode_->addChild(geode);
 	txNode_->addChild(geode2);
-	txNode_->setPosition(osg::Vec3(x_, y_, z_));
+	txNode_->setPosition(osg::Vec3(sensor_->pos_.x, sensor_->pos_.y, sensor_->pos_.z));
+}
+
+void SensorViewFrustum::Update()
+{
+	// Visualize hits by a "line of sight"
+	for (size_t i = 0; i < sensor_->nObj_; i++)
+	{
+		lines_[i]->SetPoints(0, 0, 0, sensor_->hitList_[i].x_, sensor_->hitList_[i].y_, sensor_->hitList_[i].z_);
+	}
+
+	// Reset additional lines possibly previously in use
+	for (size_t i = sensor_->nObj_; i < sensor_->maxObj_; i++)
+	{
+		lines_[i]->SetPoints(0, 0, 0, 0, 0, 0);
+	}
 }
 
 void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor* nv)
@@ -590,7 +590,6 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	keyRight_ = false;
 	quit_request_ = false;
 	showInfoText = true;  // show info text HUD per default
-	showTrail = true;  // show trails per default
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
 
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
@@ -622,10 +621,16 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	// set the scene to render
 	rootnode_ = new osg::MatrixTransform;
 	envTx_ = new osg::PositionAttitudeTransform;
-	sensors_ = new osg::Group;
-	rootnode_->addChild(sensors_);
+	roadSensors_ = new osg::Group;
+	rootnode_->addChild(roadSensors_);
+	roadSensors_ = new osg::Group;
+	rootnode_->addChild(roadSensors_);
 	trails_ = new osg::Group;
 	rootnode_->addChild(trails_);
+
+	ShowTrail(true);  // show trails per default
+	ShowObjectSensors(false); // hide sensor frustums by default
+
 
 	// add environment
 	if (AddEnvironment(modelFilename) == -1)
@@ -954,7 +959,7 @@ PointSensor* Viewer::CreateSensor(int color[], bool create_ball, bool create_lin
 		sensor->ball_ = new osg::PositionAttitudeTransform;
 		sensor->ball_->setScale(osg::Vec3(ball_radius, ball_radius, ball_radius));
 		sensor->ball_->addChild(geode);
-		sensors_->addChild(sensor->ball_);
+		roadSensors_->addChild(sensor->ball_);
 
 		osg::Material *material = new osg::Material();
 		material->setDiffuse(osg::Material::FRONT, osg::Vec4(color[0] / (float)0xFF, color[1] / (float)0xFF, color[2] / (float)0xFF, 1.0));
@@ -987,7 +992,7 @@ PointSensor* Viewer::CreateSensor(int color[], bool create_ball, bool create_lin
 		sensor->line_->setColorArray(color_.get());
 		sensor->line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
 		//sensor->line_->setDataVariance(osg::Object::DYNAMIC);
-		sensors_->addChild(group);
+		roadSensors_->addChild(group);
 	}
 
 
@@ -1100,9 +1105,30 @@ void Viewer::ShowTrail(bool show)
 	trails_->setNodeMask(showTrail ? 0xffffffff : 0x0);
 }
 
+void Viewer::ShowObjectSensors(bool show)
+{
+	showObjectSensors = show;
+
+	if (show)
+	{
+		osgViewer_->getCamera()->setCullMask(osgViewer_->getCamera()->getCullMask() | SENSOR_NODE_MASK);
+	}
+	else
+	{
+		osgViewer_->getCamera()->setCullMask(osgViewer_->getCamera()->getCullMask() & ~SENSOR_NODE_MASK);
+	}
+}
+
 void Viewer::SetInfoTextProjection(int width, int height)
 {
 	infoTextCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, width, 0, height));
+}
+
+void Viewer::SetVehicleInFocus(int idx)
+{
+	currentCarInFocus_ = idx;
+	rubberbandManipulator_->setTrackNode(cars_[currentCarInFocus_]->txNode_, false);
+	nodeTrackerManipulator_->setTrackNode(cars_[currentCarInFocus_]->node_);
 }
 
 bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)
@@ -1140,7 +1166,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 				viewer_->odrLines_->setNodeMask(visible ? 0xffffffff : 0x0);
 			}
 
-			viewer_->sensors_->setNodeMask(visible ? 0xffffffff : 0x0);
+			viewer_->roadSensors_->setNodeMask(visible ? 0xffffffff : 0x0);
 		}
 	}
 	break;
@@ -1183,15 +1209,18 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	{
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			int step = (ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1;
-			viewer_->currentCarInFocus_ = (viewer_->currentCarInFocus_ + step) % (int)viewer_->cars_.size();
-			if (viewer_->currentCarInFocus_ < 0)
+			int idx = viewer_->currentCarInFocus_ + (ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1;
+
+			if (idx > viewer_->cars_.size())
 			{
-				viewer_->currentCarInFocus_ += viewer_->cars_.size();
+				idx = 0;
+			}
+			else if (idx > viewer_->cars_.size())
+			{
+				idx = viewer_->cars_.size() - 1;
 			}
 
-			viewer_->rubberbandManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_]->txNode_, false);
-			viewer_->nodeTrackerManipulator_->setTrackNode(viewer_->cars_[viewer_->currentCarInFocus_]->node_);
+			viewer_->SetVehicleInFocus(idx);
 		}
 	}
 	break;
@@ -1210,6 +1239,14 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		{
 			viewer_->showTrail = !viewer_->showTrail;
 			viewer_->trails_->setNodeMask(viewer_->showTrail ? 0xffffffff : 0x0);
+		}
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_R):
+	{
+		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->ShowObjectSensors(!viewer_->showObjectSensors);
 		}
 	}
 	break;

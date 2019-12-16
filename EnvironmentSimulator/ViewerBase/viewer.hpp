@@ -23,12 +23,17 @@
 #include <string>
 
 #include "RubberbandManipulator.hpp"
+#include "IdealSensor.hpp"
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 
 #define TRAIL_DOT_FADE_DURATION 3.0  // seconds
 #define TRAIL_MAX_DOTS 500
 #define TRAIL_DOT_LIFE_SPAN (TRAIL_MAX_DOTS / 2.0 - 2.0 * TRAIL_DOT_FADE_DURATION ) // seconds
+
+#define SENSOR_NODE_MASK 0x00000001
+
+using namespace scenarioengine;
 
 namespace viewer
 {
@@ -48,19 +53,11 @@ namespace viewer
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
 		osg::ref_ptr<osg::Group> line_group_;
 		std::vector<Line*> lines_;
-		int nObj_;
-		double x_;
-		double y_;
-		double z_;
-		double near_;
-		double far_;
-		double fovH_;
-		int maxObj_;
+		ObjectSensor *sensor_;
 
-		SensorViewFrustum(double x, double y, double z, double near, double far, double fovH, int maxObj);
+		SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent);
 		~SensorViewFrustum() { lines_.clear(); }
-		void ResetAllObj();
-		void SetObj(int idx, double x, double y, double z);
+		void Update();
 	};
 
 	class AlphaFadingCallback : public osg::StateAttributeCallback
@@ -201,17 +198,19 @@ namespace viewer
 		float lodScale_;
 		osgViewer::Viewer *osgViewer_;
 		osg::MatrixTransform* rootnode_;
-		osg::Group* sensors_;
+		osg::Group* roadSensors_;
 		osg::Group* trails_;
 		roadmanager::OpenDrive *odrManager_;
 		bool showInfoText;
 		bool showTrail;
+		bool showObjectSensors;
 
 		osg::ref_ptr<osg::Camera> infoTextCamera;
 		osg::ref_ptr<osgText::Text> infoText;
 
 		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines = false);
 		~Viewer();
+		void SetVehicleInFocus(int idx);
 		CarModel* AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
@@ -232,6 +231,7 @@ namespace viewer
 		void SetInfoText(const char* text);
 		void ShowInfoText(bool show);
 		void ShowTrail(bool show);
+		void ShowObjectSensors(bool show);
 		PointSensor* CreateSensor(int color[], bool create_ball, bool create_line, double ball_radius, double line_width);
 		bool CreateRoadSensors(CarModel *vehicle_model);
 

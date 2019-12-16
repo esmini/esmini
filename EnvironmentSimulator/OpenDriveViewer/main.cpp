@@ -232,7 +232,7 @@ int main(int argc, char** argv)
 			return 4;
 		}
 		printf("%d cars added\n", (int)cars.size());
-		viewer->currentCarInFocus_ = first_car_in_focus;
+		viewer->SetVehicleInFocus(first_car_in_focus);
 
 		__int64 now, lastTimeStamp = 0;
 

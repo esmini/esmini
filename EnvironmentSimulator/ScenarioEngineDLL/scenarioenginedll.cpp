@@ -64,7 +64,6 @@ static ViewerState viewer_state = ViewerState::VIEWER_NOT_RUNNING;
 // path should be relative the OpenDRIVE file
 static const char* carModelsFiles_[] =
 {
-	"../models/s90.osgb",
 	"../models/car_white.osgb",
 	"../models/car_blue.osgb",
 	"../models/car_red.osgb",
@@ -72,8 +71,8 @@ static const char* carModelsFiles_[] =
 	"../models/truck_yellow.osgb",
 	"../models/van_red.osgb",
 	"../models/bus_blue.osgb",
-	"../models/car_white.osgb",
-	"../models/car_white.osgb",
+	"../models/s90.osgb",
+	"../models/xc90.osgb",
 	"../models/car_white.osgb",
 };
 

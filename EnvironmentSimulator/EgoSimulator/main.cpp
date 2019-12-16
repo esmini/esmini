@@ -166,9 +166,10 @@ int SetupVehicles()
 			roadmanager::Position *pos = &vh.obj->pos_;
 			vh.dyn_model = new vehicle::Vehicle(pos->GetX(), pos->GetY(), pos->GetH(), vh.gfx_model->size_x);
 
-			sensorFrustum = new viewer::SensorViewFrustum(
-				sensor->pos_.x, sensor->pos_.y, sensor->pos_.z, sensor->near_, sensor->far_, sensor->fovH_, sensor->maxObj_);
-			vh.gfx_model->txNode_->addChild(sensorFrustum->txNode_);
+			if (sensor)
+			{
+				sensorFrustum = new viewer::SensorViewFrustum(sensor, vh.gfx_model->txNode_);
+			}
 		}
 		else
 		{
@@ -282,11 +283,18 @@ static void viewer_thread(void *args)
 		scenarioViewer->ShowInfoText(false);
 	}
 
-	std::string trail_str;
-	parser->read("--trail", trail_str);
-	if (trail_str == "off")
+	std::string trails_str;
+	parser->read("--trails", trails_str);
+	if (trails_str == "off")
 	{
 		scenarioViewer->ShowTrail(false);
+	}
+
+	std::string sensors_str;
+	parser->read("--sensors", sensors_str);
+	if (sensors_str == "on")
+	{
+		scenarioViewer->ShowObjectSensors(true);
 	}
 
 	double last_dot_time = 0;
@@ -349,11 +357,7 @@ static void viewer_thread(void *args)
 
 			if (sensorFrustum)
 			{
-				sensorFrustum->ResetAllObj();
-				for (size_t i = 0; i < sensor->nObj_; i++)
-				{
-					sensorFrustum->SetObj(i, sensor->hitList_[i].x_, sensor->hitList_[i].y_, sensor->hitList_[i].z_);
-				}
+				sensorFrustum->Update();
 			}
 		}		
 
@@ -402,6 +406,7 @@ int main(int argc, char** argv)
 	arguments.getApplicationUsage()->addCommandLineOption("--record <file.dat>", "Record position data into a file for later replay");
 	arguments.getApplicationUsage()->addCommandLineOption("--info_text <mode>", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ");
 	arguments.getApplicationUsage()->addCommandLineOption("--trails <mode>", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
+	arguments.getApplicationUsage()->addCommandLineOption("--sensors <mode>", "Show sensor frustums (\"on\", \"off\" (default)) (toggle during simulation by press 'r') ");
 
 	if (arguments.argc() < 2)
 	{

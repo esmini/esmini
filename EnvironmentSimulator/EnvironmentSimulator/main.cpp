@@ -92,7 +92,7 @@ void viewer_thread(void *args)
 	}
 
 	std::string trail_str;
-	parser->read("--trail", trail_str);
+	parser->read("--trails", trail_str);
 	if (trail_str == "off")
 	{
 		viewer->ShowTrail(false);

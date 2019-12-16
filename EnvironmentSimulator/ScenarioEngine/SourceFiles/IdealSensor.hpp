@@ -72,7 +72,7 @@ namespace scenarioengine
 		int nObj_;            // Size of object list, i.e. number of identified objects
 
 		ObjectSensor(Entities *entities, Object *refobj, double pos_x, double pos_y, double near, double far, double fovH, int maxObj);
-		ObjectSensor::~ObjectSensor();
+		~ObjectSensor();
 		void Update();
 
 	private:
