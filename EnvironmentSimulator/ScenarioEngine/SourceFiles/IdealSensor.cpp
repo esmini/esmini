@@ -14,12 +14,12 @@
 
 using namespace scenarioengine;
 
-BaseSensor::BaseSensor(BaseSensor::Type type, double pos_x, double pos_y)
+BaseSensor::BaseSensor(BaseSensor::Type type, double pos_x, double pos_y, double pos_z)
 {
 	type_ = type;
 	pos_.x = pos_x;
 	pos_.y = pos_y;
-	pos_.z = 0.5;
+	pos_.z = pos_z;
 	pos_.h = 0;
 	pos_.p = 0;
 	pos_.r = 0;
@@ -28,8 +28,9 @@ BaseSensor::BaseSensor(BaseSensor::Type type, double pos_x, double pos_y)
 	pos_.z_global = 0;
 }
 
-ObjectSensor::ObjectSensor(Entities *entities, Object *refobj, double pos_x, double pos_y, double near, double far, double fovH, int maxObj):
-	BaseSensor(BaseSensor::Type::SENSOR_TYPE_OBJECT, pos_x, pos_y)
+ObjectSensor::ObjectSensor(
+	Entities *entities, Object *refobj, double pos_x, double pos_y, double pos_z, double near, double far, double fovH, int maxObj) :	
+	BaseSensor(BaseSensor::Type::SENSOR_TYPE_OBJECT, pos_x, pos_y, pos_z)
 {
 	entities_ = entities;
 	near_ = near;
@@ -55,9 +56,9 @@ void ObjectSensor::Update()
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
 		Object *obj = entities_->object_[i];
-		if (obj == host_)
+		if (obj == host_ || obj->control_ == Object::Control::HYBRID_GHOST)
 		{
-			// skip own vehicle
+			// skip own vehicle and any ghost vehicles
 			continue;
 		}
 

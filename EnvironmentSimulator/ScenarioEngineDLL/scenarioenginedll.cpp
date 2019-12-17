@@ -35,8 +35,12 @@ typedef struct
 	bool flag_received_steering_target_pos;
 } ScenarioCar;
 
+
 static std::vector<ScenarioCar> scenarioCar;
 static viewer::Viewer *scViewer = 0;
+
+static std::vector<ObjectSensor*> sensor;
+static std::vector<viewer::SensorViewFrustum*> sensorFrustum;
 
 static bool closing = false;
 static SE_Thread thread;
@@ -247,6 +251,12 @@ void viewer_thread(void*)
 			3.6 * scenarioEngine->entities.object_[scViewer->currentCarInFocus_]->speed_);
 		scViewer->SetInfoText(str_buf);
 
+		// Update object sensors line visualization
+		for (size_t i = 0; i < sensorFrustum.size(); i++)
+		{
+			sensorFrustum[i]->Update();
+		}
+
 		mutex.Unlock();
 
 		scViewer->osgViewer_->frame();
@@ -280,6 +290,9 @@ static void resetScenario(void)
 		closing = true;  // Signal to viewer thread
 		thread.Wait();
 		closing = false;
+
+		sensor.clear();
+		sensorFrustum.clear();
 
 		delete scViewer;
 		scViewer = 0;
@@ -362,53 +375,6 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 		return 0;
 	}
 }
-
-#if 0
-static int GetRoadInfoAtGhost(int object_id, SE_RoadInfo *r_data)
-{
-	roadmanager::SteeringTargetInfo s_data;
-
-	if (scenarioGateway == 0)
-	{
-		return -1;
-	}
-
-	if (object_id >= scenarioGateway->getNumberOfObjects())
-	{
-		LOG("Object %d not available, only %d registered", object_id, scenarioGateway->getNumberOfObjects());
-		return -1;
-	}
-
-	if (scenarioEngine->entities.object_[object_id]->ghost_ == 0)
-	{
-		LOG("Ghost object not available for object id %d", object_id);
-		return -1;
-	}
-
-	if (scenarioEngine->entities.object_[object_id]->pos_.GetSteeringTargetInfo(&scenarioEngine->entities.object_[object_id]->ghost_->pos_, &s_data) != 0)
-	{
-		return -1;
-	}
-	else
-	{
-		// Copy data
-		r_data->local_pos_x = (float)s_data.local_pos[0];
-		r_data->local_pos_y = (float)s_data.local_pos[1];
-		r_data->local_pos_z = (float)s_data.local_pos[2];
-		r_data->global_pos_x = (float)s_data.global_pos[0];
-		r_data->global_pos_y = (float)s_data.global_pos[1];
-		r_data->global_pos_z = (float)s_data.global_pos[2];
-		r_data->angle = (float)s_data.angle;
-		r_data->curvature = (float)s_data.curvature;
-		r_data->road_heading = (float)s_data.road_heading;
-		r_data->road_pitch = (float)s_data.road_pitch;
-		r_data->road_roll = (float)s_data.road_roll;
-		r_data->speed_limit = (float)s_data.speed_limit;
-
-		return 0;
-	}
-}
-#endif
 
 static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *r_data, float *speed_ghost)
 {
@@ -579,6 +545,12 @@ extern "C"
 			scenarioEngine->step((double)dt);
 
 #if _SCENARIO_VIEWER
+			// Update sensors
+			for (size_t i = 0; i < sensor.size(); i++)
+			{
+				sensor[i]->Update();
+			}
+
 			mutex.Unlock();
 #endif
 		}
@@ -680,6 +652,53 @@ extern "C"
 		return 0;
 	}
 
+	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float rangeNear, float rangeFar, float fovH, int maxObj)
+	{
+		if (object_id < 0 || object_id >= scenarioEngine->entities.object_.size())
+		{
+			LOG("Invalid object_id (%d/%d)", object_id, scenarioEngine->entities.object_.size());
+			return -1;
+		}
+
+		ObjectSensor *sensor_ = new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_id], 
+			x, y, z, rangeNear, rangeFar, fovH, maxObj);
+
+		sensor.push_back(sensor_);
+
+		// Add visual representation of sensor to viewer
+#if _SCENARIO_VIEWER
+		if (scViewer)
+		{
+			mutex.Lock();
+
+			viewer::SensorViewFrustum *sensorFrustum_ = new viewer::SensorViewFrustum(sensor_, scViewer->cars_[object_id]->txNode_);
+			sensorFrustum.push_back(sensorFrustum_);
+
+			scViewer->ShowObjectSensors(true);
+			mutex.Unlock();
+		}
+
+#endif
+	
+		return 0;
+	}
+
+	SE_DLL_API int SE_FetchSensorObjectList(int object_id, int *list)
+	{
+		if (object_id < 0 || object_id >= scenarioEngine->entities.object_.size())
+		{
+			LOG("Invalid object_id (%d/%d)", object_id, scenarioEngine->entities.object_.size());
+			return -1;
+		}
+
+		for (int i = 0; i < sensor[object_id]->nObj_; i++)
+		{
+			list[i] = sensor[object_id]->hitList_[i].obj_->id_;
+		}
+
+		return sensor[object_id]->nObj_;
+	}
+
 	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int along_road_center)
 	{
 		if (scenarioGateway == 0 || object_id >= scenarioGateway->getNumberOfObjects())
@@ -697,36 +716,6 @@ extern "C"
 		return 0;
 	}
 
-#if 0
-	SE_DLL_API int SE_GetRoadInfoAtGhost(int object_id, SE_RoadInfo *data, float *speed_ghost, float *hwt_ghost)
-	{
-		if (scenarioGateway == 0 || object_id >= scenarioGateway->getNumberOfObjects())
-		{
-			return -1;
-		}
-
-		if (GetRoadInfoAtGhost(object_id, data) != 0)
-		{
-			return -1;
-		}
-
-		if (scenarioEngine->entities.object_[object_id]->ghost_)
-		{
-			*speed_ghost = (float)scenarioEngine->entities.object_[object_id]->ghost_->speed_;
-			
-			float ego_speed = (float)scenarioEngine->entities.object_[object_id]->speed_;
-			if (fabs(scenarioEngine->entities.object_[object_id]->speed_) < SMALL_NUMBER)
-			{
-				ego_speed = (float)(SMALL_NUMBER * SIGN(scenarioEngine->entities.object_[object_id]->speed_));
-			}
-			*hwt_ghost = (float)GetLengthOfVector3D(data->local_pos_x, data->local_pos_y, data->local_pos_z) / ego_speed;
-		}
-
-		Set_se_ghost_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
-
-		return 0;
-	}
-#else
 	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost)
 	{
 		if (scenarioGateway == 0 || object_id >= scenarioGateway->getNumberOfObjects())
@@ -743,6 +732,4 @@ extern "C"
 		//LOG("id %d dist %.2f x %.2f y %.2f z %.2f", object_id, lookahead_distance, data->global_pos_x, data->global_pos_y, data->global_pos_z);
 		return 0;
 	}
-
-#endif
 }

@@ -25,8 +25,16 @@
 
 static SE_ScenarioObjectState states[MAX_N_OBJECTS];
 
+void log_callback(const char *str)
+{
+	printf("%s\n", str);
+}
+
 int main(int argc, char *argv[])
 {
+	// Use logger callback
+	Logger::Inst().SetCallback(log_callback);
+
 	if (argc < 2)
 	{
 		LOG("Usage: %s <osc filename>\n", argv[0]);
@@ -39,12 +47,22 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 5.0f, 50.0f, (float)(50.0 * M_PI / 180.0), 10);
+	
+	int objList[2];
+	
 	for (int i = 0; i < 1000; i++)
 	{
 		if (SE_Step(TIME_STEP) != 0)
 		{
 			return 0;
 		}
+
+		int nHits = SE_FetchSensorObjectList(0, objList);
+		//for (int j = 0; j < nHits; j++)
+		//{
+		//	LOG("sensor hit obj_id %d", j, objList[j]);
+		//}
 
 		SE_sleep((unsigned int)(TIME_STEP * 1000));
 	}

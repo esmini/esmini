@@ -84,6 +84,28 @@ extern "C"
 	SE_DLL_API int SE_GetObjectStates(int *nObjects, SE_ScenarioObjectState* state);
 
 	/**
+	Create an ideal object sensor and attach to specified vehicle
+	@param object_id Handle to the object to which the sensor should be attached
+	@param x Position x coordinate of the sensor in vehicle local coordinates
+	@param y Position y coordinate of the sensor in vehicle local coordinates
+	@param z Position z coordinate of the sensor in vehicle local coordinates
+	@param fovH Horizontal field of view, in degrees
+	@param rangeNear Near value of the sensor depth range
+	@param rangeFar Far value of the sensor depth range
+	@param maxObj Maximum number of objects theat the sensor can track
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float rangeNear, float rangeFar, float fovH, int maxObj);
+
+	/**
+	Fetch list of identified objects from a sensor
+	@param object_id Handle to the object to which the sensor should is attached 
+	@param list Array of object indices
+	@return Number of identified objects, i.e. length of list0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_FetchSensorObjectList(int object_id, int *list);
+
+	/**
 	Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
 	@param object_id Handle to the position object from which to measure
 	@param lookahead_distance The distance, along the road, to the point

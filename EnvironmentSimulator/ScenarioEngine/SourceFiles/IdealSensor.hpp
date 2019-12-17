@@ -41,7 +41,7 @@ namespace scenarioengine
 		Type type_;
 		SensorPosition pos_;  // Position, relative host object
 
-		BaseSensor(BaseSensor::Type type, double pos_x, double pos_y);
+		BaseSensor(BaseSensor::Type type, double pos_x, double pos_y, double pos_z);
 
 		virtual void Update()
 		{
@@ -71,7 +71,7 @@ namespace scenarioengine
 		Object *host_;        // Entity to which the sensor is attached
 		int nObj_;            // Size of object list, i.e. number of identified objects
 
-		ObjectSensor(Entities *entities, Object *refobj, double pos_x, double pos_y, double near, double far, double fovH, int maxObj);
+		ObjectSensor(Entities *entities, Object *refobj, double pos_x, double pos_y, double z, double near, double far, double fovH, int maxObj);
 		~ObjectSensor();
 		void Update();
 
