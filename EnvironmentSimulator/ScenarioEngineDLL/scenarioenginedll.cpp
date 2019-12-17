@@ -12,6 +12,7 @@
 
 #include "scenarioenginedll.hpp"
 #include "ScenarioEngine.hpp"
+#include "IdealSensor.hpp"
 
 using namespace scenarioengine;
 
@@ -39,7 +40,6 @@ typedef struct
 static std::vector<ScenarioCar> scenarioCar;
 static viewer::Viewer *scViewer = 0;
 
-static std::vector<ObjectSensor*> sensor;
 static std::vector<viewer::SensorViewFrustum*> sensorFrustum;
 
 static bool closing = false;
@@ -86,6 +86,7 @@ static roadmanager::OpenDrive *roadManager = 0;
 double simTime = 0;
 double deltaSimTime = 0;  // external - used by Viewer::RubberBandCamera
 static char *args[] = { "kalle", "--window", "50", "50", "1000", "500" };
+static std::vector<ObjectSensor*> sensor;
 
 
 #ifdef _SCENARIO_VIEWER
