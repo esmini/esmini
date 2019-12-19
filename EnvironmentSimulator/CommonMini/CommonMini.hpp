@@ -59,6 +59,11 @@ void SE_sleep(unsigned int msec);
 std::string CombineDirectoryPathAndFilepath(std::string dir_path,  std::string file_path);
 
 /**
+  Retrieve the angle of a vector
+*/
+double GetAngleOfVector(double x, double y);
+
+/**
   Retrieve the absolute value of difference between two angles
 */
 double GetAbsAngleDifference(double angle1, double angle2);
@@ -95,6 +100,11 @@ int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double 
   Calculate distance between two 2D points
 */
 double PointDistance2D(double x0, double y0, double x1, double y1);
+
+/**
+  Calculate distance between two 2D points, return square value - avoiding square root operation
+*/
+double PointSquareDistance2D(double x0, double y0, double x1, double y1);
 
 /**
   Project a 2D point on a 2D vector 

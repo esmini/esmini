@@ -516,24 +516,25 @@ int main(int argc, char** argv)
 					memcpy(vh->speed_target_pos, data.global_pos, sizeof(vh->speed_target_pos));
 
 					// Steering - Find out a steering target along ghost vehicle trail
-					double x, y, z, s_out, speed = 0;
+					double s_out;
 					int index_out;
+					ObjectTrailState state;
+					state.speed_ = 0;
 
-					if (vh->obj->ghost_->trail_.FindPointAhead(vh->obj->trail_follow_index_, vh->obj->trail_follow_s_, vh->steering_target_distance,
-						x, y, z, speed, index_out, s_out) != 0)
+					if (vh->obj->ghost_->trail_.FindPointAhead(vh->obj->trail_follow_index_, vh->obj->trail_follow_s_, vh->steering_target_distance, state, index_out, s_out) != 0)
 					{
-						x = vh->obj->pos_.GetX();
-						y = vh->obj->pos_.GetY();
-						z = vh->obj->pos_.GetX();
-						speed = 0;
+						state.x_ = vh->obj->pos_.GetX();
+						state.y_ = vh->obj->pos_.GetY();
+						state.z_ = vh->obj->pos_.GetX();
+						state.speed_ = 0;
 					}
-					roadmanager::Position pos(x, y, 0, 0, 0, 0);
+					roadmanager::Position pos(state.x_, state.y_, 0, 0, 0, 0);
 					vh->obj->pos_.CalcSteeringTarget(&pos, &data);
 					memcpy(vh->steering_target_pos, data.global_pos, sizeof(vh->steering_target_pos));
 					vh->steering_target_heading = data.angle;
 					
 					// Let steering target heading influence speed target - slowing down when turning
-					vh->speed_target_speed = speed * (1 - vh->steering_target_heading / M_PI_2);
+					vh->speed_target_speed = state.speed_ * (1 - vh->steering_target_heading / M_PI_2);
 				}
 
 				if (scenarioEngine->getSimulationTime() >= 0 && (vh->obj->GetControl() == Object::Control::HYBRID_EXTERNAL || vh->obj->GetControl() == Object::Control::EXTERNAL))

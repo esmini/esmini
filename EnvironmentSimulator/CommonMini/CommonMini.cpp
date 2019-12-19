@@ -68,6 +68,19 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
 	return path;
 }
 
+double GetAngleOfVector(double x, double y)
+{
+	if (abs(x) < SMALL_NUMBER)
+	{
+		if (abs(y) < SMALL_NUMBER)
+		{
+			return 0; // undefined
+		}
+		x = SIGN(x) * SMALL_NUMBER;
+	}
+	return atan2(y, x);
+}
+
 double GetAbsAngleDifference(double angle1, double angle2)
 {
 	double diff = fmod(angle2 - angle1, 2 * M_PI);
@@ -175,6 +188,11 @@ int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, dou
 double PointDistance2D(double x0, double y0, double x1, double y1)
 {
 	return sqrt((x1 - x0)*(x1 - x0) + (y1 - y0) * (y1 - y0));
+}
+
+double PointSquareDistance2D(double x0, double y0, double x1, double y1)
+{
+	return (x1 - x0)*(x1 - x0) + (y1 - y0) * (y1 - y0);
 }
 
 void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double &px, double &py)

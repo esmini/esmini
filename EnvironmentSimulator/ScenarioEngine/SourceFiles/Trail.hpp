@@ -16,18 +16,20 @@
 
 namespace scenarioengine
 {
-	struct ObjectTrailState
+	typedef struct
 	{
 		float timeStamp_;
 		float x_;
 		float y_;
 		float z_;
+		float h_;
 		float speed_;
-	};
-
+	} ObjectTrailState;
+	
 	class ObjectTrail
 	{
 	public:
+
 		ObjectTrailState state_[TRAIL_MAX_STATES];
 		int n_states_;
 		int current_;
@@ -44,6 +46,8 @@ namespace scenarioengine
 		void GetPointOnSegmentBySNorm(int index, double s, double &x, double &y, double &z);
 		void GetSpeedOnSegmentByDist(int index, double dist, double &speed);
 		void GetSpeedOnSegmentBySNorm(int index, double s, double &speed);
+		void GetHeadingOnSegmentByDist(int index, double dist, double &heading);
+		void GetHeadingOnSegmentBySNorm(int index, double s, double &heading);
 		double QuadDistToPoint(double x, double y, int idx);
 		/**
 		Get information suitable for driver modeling of a point along specified trail from a specified start point
@@ -54,7 +58,7 @@ namespace scenarioengine
 		@param data Struct to fill in calculated values, see typdef for details
 		@return 0 if successful, -1 if not
 		*/
-		int FindPointAhead(int index_start, double s_start, double distance, double &x, double &y, double &z, double &speed, int &index_out, double &s_out);
+		int FindPointAhead(int index_start, double s_start, double distance, ObjectTrailState &state, int &index_out, double &s_out);
 
 
 		int FindClosestPoint(double x0, double y0, double &x, double &y, double &s, int &idx, int start_search_index);

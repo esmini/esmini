@@ -94,6 +94,11 @@ static std::vector<ObjectSensor*> sensor;
 
 static void Set_se_steering_target_pos(int id, float x, float y, float z)
 {
+	if (!(viewer_state == ViewerState::VIEWER_RUNNING))
+	{
+		return;
+	}
+	
 	scenarioCar[id].se_steering_target_pos[0] = x;
 	scenarioCar[id].se_steering_target_pos[1] = y;
 	scenarioCar[id].se_steering_target_pos[2] = z;
@@ -103,6 +108,11 @@ static void Set_se_steering_target_pos(int id, float x, float y, float z)
 
 static void Set_se_ghost_pos(int id, float x, float y, float z)
 {
+	if (!(viewer_state == ViewerState::VIEWER_RUNNING))
+	{
+		return;
+	}
+
 	scenarioCar[id].se_ghost_pos[0] = x;
 	scenarioCar[id].se_ghost_pos[1] = y;
 	scenarioCar[id].se_ghost_pos[2] = z;
@@ -240,9 +250,18 @@ void viewer_thread(void*)
 				c->carModel->SetRotation(c->state.pos.GetH(), c->state.pos.GetP(), c->state.pos.GetR());
 				c->carModel->UpdateWheelsDelta(c->state.wheel_angle, fmod(c->state.speed * deltaSimTime / 0.35, 2*M_PI));
 				
-				scViewer->UpdateSensor(c->carModel->speed_sensor_, &c->state.pos, c->se_steering_target_pos);
-				scViewer->UpdateSensor(c->carModel->steering_sensor_, &c->state.pos, c->se_ghost_pos);
-				scViewer->UpdateRoadSensors(c->carModel->road_sensor_, c->carModel->lane_sensor_, &c->state.pos);
+				if (c->carModel->speed_sensor_ && c->flag_received_steering_target_pos)
+				{
+					scViewer->UpdateSensor(c->carModel->speed_sensor_, &c->state.pos, c->se_steering_target_pos);
+				}
+				if (c->carModel->steering_sensor_ && c->flag_received_ghost_pos)
+				{
+					scViewer->UpdateSensor(c->carModel->steering_sensor_, &c->state.pos, c->se_ghost_pos);
+				}
+				if (c->carModel->road_sensor_)
+				{
+					scViewer->UpdateRoadSensors(c->carModel->road_sensor_, c->carModel->lane_sensor_, &c->state.pos);
+				}
 			}
 		}
 
@@ -371,6 +390,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 		r_data->road_heading = (float)s_data.road_heading;
 		r_data->road_pitch = (float)s_data.road_pitch;
 		r_data->road_roll = (float)s_data.road_roll;
+		r_data->trail_heading = r_data->road_heading;
 		r_data->speed_limit = (float)s_data.speed_limit;
 
 		return 0;
@@ -399,7 +419,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 		return -1;
 	}
 
-	double x, y, z, speed, s_out;
+	double s_out, x, y, z;
 	int index_out;
 
 	if (obj->ghost_->trail_.FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(), x, y,
@@ -415,9 +435,11 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 		z = obj->pos_.GetZ();
 	}
 
-	obj->ghost_->trail_.FindPointAhead(obj->trail_follow_index_, obj->trail_follow_s_, lookahead_distance, x, y, z, speed, index_out, s_out);
+	ObjectTrailState state;
+	state.h_ = obj->pos_.GetH();  // Set default trail heading aligned with road - in case trail is less than two points (no heading)
+	obj->ghost_->trail_.FindPointAhead(obj->trail_follow_index_, obj->trail_follow_s_, lookahead_distance, state, index_out, s_out);
 
-	roadmanager::Position pos(x, y, 0, 0, 0, 0);
+	roadmanager::Position pos(state.x_, state.y_, 0, 0, 0, 0);
 	obj->pos_.CalcSteeringTarget(&pos, &s_data);
 
 	// Copy data
@@ -430,9 +452,11 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	r_data->angle = (float)s_data.angle;
 	r_data->curvature = (float)s_data.curvature;
 	r_data->road_heading = (float)s_data.road_heading;
+	r_data->trail_heading = (float)state.h_;
 	r_data->road_pitch = (float)s_data.road_pitch;
 	r_data->road_roll = (float)s_data.road_roll;
 	r_data->speed_limit = (float)s_data.speed_limit;
+	LOG("h %.2f", r_data->trail_heading);
 
 	*speed_ghost = (float)obj->ghost_->speed_;
 
@@ -486,9 +510,9 @@ extern "C"
 			// Report all vehicles initially - to communicate initial position for external vehicles as well
 			scenarioEngine->step(0.0, true);
 
+			// Fast forward to time == 0 - launching hybrid ghost vehicles
 			while (scenarioEngine->getSimulationTime() < 0)
 			{
-				LOG("Step time %.2f", scenarioEngine->getSimulationTime());
 				scenarioEngine->step(0.05);
 			}
 
@@ -557,6 +581,11 @@ extern "C"
 		}
 
 		return 0;
+	}
+	
+	SE_DLL_API float SE_GetSimulationTime()
+	{
+		return (float)scenarioEngine->getSimulationTime();
 	}
 
 	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
@@ -655,49 +684,56 @@ extern "C"
 
 	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float rangeNear, float rangeFar, float fovH, int maxObj)
 	{
-		if (object_id < 0 || object_id >= scenarioEngine->entities.object_.size())
+		if (scenarioGateway != 0)
 		{
-			LOG("Invalid object_id (%d/%d)", object_id, scenarioEngine->entities.object_.size());
-			return -1;
-		}
 
-		ObjectSensor *sensor_ = new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_id], 
-			x, y, z, rangeNear, rangeFar, fovH, maxObj);
+			if (object_id < 0 || object_id >= scenarioEngine->entities.object_.size())
+			{
+				LOG("Invalid object_id (%d/%d)", object_id, scenarioEngine->entities.object_.size());
+				return -1;
+			}
 
-		sensor.push_back(sensor_);
+			ObjectSensor *sensor_ = new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_id],
+				x, y, z, rangeNear, rangeFar, fovH, maxObj);
 
-		// Add visual representation of sensor to viewer
+			sensor.push_back(sensor_);
+
+			// Add visual representation of sensor to viewer
 #if _SCENARIO_VIEWER
-		if (scViewer)
-		{
-			mutex.Lock();
+			if (scViewer)
+			{
+				mutex.Lock();
 
-			viewer::SensorViewFrustum *sensorFrustum_ = new viewer::SensorViewFrustum(sensor_, scViewer->cars_[object_id]->txNode_);
-			sensorFrustum.push_back(sensorFrustum_);
+				viewer::SensorViewFrustum *sensorFrustum_ = new viewer::SensorViewFrustum(sensor_, scViewer->cars_[object_id]->txNode_);
+				sensorFrustum.push_back(sensorFrustum_);
 
-			scViewer->ShowObjectSensors(true);
-			mutex.Unlock();
-		}
+				scViewer->ShowObjectSensors(true);
+				mutex.Unlock();
+			}
 
 #endif
-	
+		}
 		return 0;
 	}
 
 	SE_DLL_API int SE_FetchSensorObjectList(int object_id, int *list)
 	{
-		if (object_id < 0 || object_id >= scenarioEngine->entities.object_.size())
+		if (scenarioGateway != 0)
 		{
-			LOG("Invalid object_id (%d/%d)", object_id, scenarioEngine->entities.object_.size());
-			return -1;
-		}
+			if (object_id < 0 || object_id >= scenarioEngine->entities.object_.size())
+			{
+				LOG("Invalid object_id (%d/%d)", object_id, scenarioEngine->entities.object_.size());
+				return -1;
+			}
 
-		for (int i = 0; i < sensor[object_id]->nObj_; i++)
-		{
-			list[i] = sensor[object_id]->hitList_[i].obj_->id_;
-		}
+			for (int i = 0; i < sensor[object_id]->nObj_; i++)
+			{
+				list[i] = sensor[object_id]->hitList_[i].obj_->id_;
+			}
 
-		return sensor[object_id]->nObj_;
+			return sensor[object_id]->nObj_;
+		}
+		return 0;
 	}
 
 	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int along_road_center)

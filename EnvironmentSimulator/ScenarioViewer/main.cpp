@@ -64,6 +64,17 @@ int main(int argc, char *argv[])
 		//	LOG("sensor hit obj_id %d", j, objList[j]);
 		//}
 
+		SE_ScenarioObjectState state;
+		SE_GetObjectState(0, &state);
+			
+		if (state.control == 3)
+		{
+			SE_RoadInfo info;
+			float speed;
+			SE_GetRoadInfoAlongGhostTrail(0, 20, &info, &speed);
+			//LOG("y %.2f trail h %.2f speed %.2f", info.global_pos_y, info.trail_heading, speed);
+		}
+
 		SE_sleep((unsigned int)(TIME_STEP * 1000));
 	}
 

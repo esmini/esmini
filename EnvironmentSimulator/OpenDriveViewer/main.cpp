@@ -99,7 +99,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
-			for (double s = 5; s < road->GetLength() - average_distance;)
+			for (double s = 10; s < road->GetLength() - average_distance;)
 			{
 				// Pick lane by random
 				int lane_idx = ((double)road->GetNumberOfDrivingLanes(s) * mt_rand()) / (mt_rand.max)();
@@ -107,6 +107,12 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				if (lane == 0)
 				{
 					LOG("Failed locate driving lane %d at s %d", lane_idx, s);
+					continue;
+				}
+
+				if ((s < 100 && SIGN(lane->GetId()) > 0) || (road->GetLength() - s < 100 && SIGN(lane->GetId()) < 0))
+				{
+					// Skip vehicles too close to road end
 					continue;
 				}
 

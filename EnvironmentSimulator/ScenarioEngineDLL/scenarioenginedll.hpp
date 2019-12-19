@@ -51,7 +51,8 @@ typedef struct
 	float angle;			// heading angle to target from and relatove to vehicle (pivot position)
 	float road_heading;		// road heading at steering target point
 	float road_pitch;		// road pitch (inclination) at steering target point
-	float road_roll;		// road roll (camber) at steering target point
+	float road_roll;		// road roll (camber) at target point
+	float trail_heading;	// trail heading (only when used for trail lookups, else equals road_heading)
 	float curvature;		// road curvature at steering target point
 	float speed_limit;		// speed limit given by OpenDRIVE type entry
 } SE_RoadInfo;
@@ -74,6 +75,8 @@ extern "C"
 
 	SE_DLL_API int SE_Step(float dt);
 	SE_DLL_API void SE_Close();
+
+	SE_DLL_API float SE_GetSimulationTime();  // Get simulation time in seconds
 
 	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
 	SE_DLL_API int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);

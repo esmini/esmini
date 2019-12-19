@@ -462,6 +462,7 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	if (hybrid_objects)
 	{
 		this->simulationTime = -headstart_time_;
+		LOG("Hybrid objects involved - applying headstart of %.2f", headstart_time_);
 	}
 	else
 	{

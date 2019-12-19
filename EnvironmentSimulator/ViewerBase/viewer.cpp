@@ -995,9 +995,6 @@ PointSensor* Viewer::CreateSensor(int color[], bool create_ball, bool create_lin
 		roadSensors_->addChild(group);
 	}
 
-
-
-
 	return sensor;
 }
 
@@ -1209,13 +1206,13 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	{
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			int idx = viewer_->currentCarInFocus_ + (ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1;
+			int idx = viewer_->currentCarInFocus_ + ((ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1);
 
-			if (idx > viewer_->cars_.size())
+			if (idx >= (int)viewer_->cars_.size())
 			{
 				idx = 0;
 			}
-			else if (idx > viewer_->cars_.size())
+			else if (idx < 0)
 			{
 				idx = viewer_->cars_.size() - 1;
 			}

@@ -21,12 +21,14 @@ using namespace scenarioengine;
 
 void ObjectTrail::AddState(float timestamp, float x, float y, float z, float speed)
 {
+	ObjectTrailState *previous_state = 0;
+	
 	if (n_states_ > 0)
 	{
-		ObjectTrailState *state = GetStateLast();
+		previous_state = GetStateLast();
 
 		// Check timestamp of previous state - add only if delta time has passed
-		if (state && timestamp < state->timeStamp_ + TRAIL_DT)
+		if (previous_state && timestamp < previous_state->timeStamp_ + TRAIL_DT)
 		{
 			return;
 		}
@@ -37,6 +39,21 @@ void ObjectTrail::AddState(float timestamp, float x, float y, float z, float spe
 	state_[current_].y_ = y;
 	state_[current_].z_ = z;
 	state_[current_].speed_ = speed;
+
+	if (previous_state)
+	{
+		if (PointSquareDistance2D(state_[current_].x_, state_[current_].y_, previous_state->x_, previous_state->y_) > SMALL_NUMBER)
+		{
+			// Now when direction is defined by new point, add heading to previous segment
+			previous_state->h_ = (float)GetAngleOfVector(state_[current_].x_ - previous_state->x_, state_[current_].y_ - previous_state->y_);
+		}
+
+		state_[current_].h_ = previous_state->h_;  // set heading of last point to same as previous segment
+	}
+	else
+	{
+		state_[current_].h_ = 0;  // First point, direction not defined yet
+	}
 
 	current_ = (current_ + 1) % TRAIL_MAX_STATES;
 
@@ -85,8 +102,12 @@ ObjectTrailState* ObjectTrail::GetStateLast()
 	{
 		return 0;
 	}
-
-	return &state_[n_states_ - 1];
+	int lastIndex = current_ - 1;
+	if (lastIndex < 0)
+	{
+		lastIndex = n_states_ - 1;
+	}
+	return &state_[lastIndex];
 }
 
 int ObjectTrail::GetNextSegmentIndex(int index)
@@ -145,8 +166,8 @@ int ObjectTrail::GetPreviousSegmentIndex(int index)
 		}
 		else
 		{
-			// at first entry, no previous available
-			return 0;
+		// at first entry, no previous available
+		return 0;
 		}
 	}
 
@@ -156,7 +177,7 @@ int ObjectTrail::GetPreviousSegmentIndex(int index)
 
 double ObjectTrail::QuadDistToPoint(double x, double y, int idx)
 {
-	return (x - state_[idx].x_ ) * (x - state_[idx].x_) + (y - state_[idx].y_) * (y - state_[idx].y_);
+	return (x - state_[idx].x_) * (x - state_[idx].x_) + (y - state_[idx].y_) * (y - state_[idx].y_);
 }
 
 double ObjectTrail::GetSegmentlength(int index)
@@ -190,7 +211,7 @@ void ObjectTrail::GetPointOnSegmentByDist(int index, double dist, double &x, dou
 	}
 
 	double segment_length = MAX(GetSegmentlength(index), SMALL_NUMBER);
-	
+
 	double s = MIN(1.0, dist / segment_length);
 
 	GetPointOnSegmentBySNorm(index, s, x, y, z);
@@ -222,14 +243,46 @@ void ObjectTrail::GetSpeedOnSegmentByDist(int index, double dist, double &speed)
 	GetSpeedOnSegmentBySNorm(index, s, speed);
 }
 
-int ObjectTrail::FindPointAhead(int index_start, double s_start, double distance, double &x, double &y, double &z, double &speed, int &index_out, double &s_out)
+void ObjectTrail::GetHeadingOnSegmentBySNorm(int index, double s, double &heading)
+{
+	int next_index = GetNextSegmentIndex(index);
+
+	heading = state_[index].h_ + s * (state_[next_index].h_ - state_[index].h_);
+}
+
+void ObjectTrail::GetHeadingOnSegmentByDist(int index, double dist, double &heading)
+{
+	if (n_states_ < 1)
+	{
+		return;
+	}
+	if (index >= n_states_)
+	{
+		index = n_states_ - 1;
+	}
+
+	double segment_length = GetSegmentlength(index);
+
+	if (abs(segment_length) < SMALL_NUMBER)
+	{
+		// Use heading from previous state
+		heading = state_[GetPreviousSegmentIndex(index)].h_;
+	}
+	else
+	{
+		double s = MIN(1.0, dist / segment_length);
+		GetHeadingOnSegmentBySNorm(index, s, heading);
+	}
+}
+
+int ObjectTrail::FindPointAhead(int index_start, double s_start, double distance, ObjectTrailState &state, int &index_out, double &s_out)
 {
 	int i = index_start;
 	double dist_tmp = distance + s_start;
 
 	if (n_states_ == 0)
 	{
-		x = y = z = speed = 0;
+		state.x_ = state.y_ = state.z_ = state.speed_ = 0;
 		return 0;
 	}
 
@@ -244,16 +297,34 @@ int ObjectTrail::FindPointAhead(int index_start, double s_start, double distance
 			if (next_index == i)
 			{
 				// at end of trail - just use end point
-				x = state_[i].x_;
-				y = state_[i].y_;
-				z = state_[i].z_;
+				state.x_ = state_[i].x_;
+				state.y_ = state_[i].y_;
+				state.z_ = state_[i].z_;
+				state.speed_ = state_[i].speed_;
+				if (n_states_ > 1)
+				{
+					state.h_ = state_[i].h_;
+				}
 				s_out = segment_length;
 			}
 			else
 			{
-				// point is at this segment
+				// point is at this segment - find interpolated value
+				double x = state.x_;
+				double y = state.y_;
+				double z = state.z_;
+				double speed = state.speed_;
+				double h = state.h_;
 				GetPointOnSegmentByDist(i, dist_tmp, x, y, z);
 				GetSpeedOnSegmentByDist(i, dist_tmp, speed);
+				GetHeadingOnSegmentByDist(i, dist_tmp, h);
+
+				state.x_ = (float)x;
+				state.y_ = (float)y;
+				state.z_ = (float)z;
+				state.speed_ = (float)speed;
+				state.h_ = (float)h;
+
 				s_out = dist_tmp;
 			}
 			index_out = i;
