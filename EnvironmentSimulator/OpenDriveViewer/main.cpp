@@ -99,7 +99,8 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
-			for (double s = 10; s < road->GetLength() - average_distance;)
+			// Populate road lanes with vehicles at some random distances
+			for (double s = 10; s < road->GetLength() - average_distance; s += average_distance + (0.2 * average_distance * mt_rand()) / (mt_rand.max)())
 			{
 				// Pick lane by random
 				int lane_idx = ((double)road->GetNumberOfDrivingLanes(s) * mt_rand()) / (mt_rand.max)();
@@ -110,9 +111,11 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 					continue;
 				}
 
-				if ((s < 100 && SIGN(lane->GetId()) > 0) || (road->GetLength() - s < 100 && SIGN(lane->GetId()) < 0))
+
+				if ((SIGN(lane->GetId()) < 0) && (road->GetLength() - s < 100) && (road->GetLink(roadmanager::LinkType::SUCCESSOR) == 0) ||
+					(SIGN(lane->GetId()) > 0) && (s < 100) && (road->GetLink(roadmanager::LinkType::PREDECESSOR) == 0))
 				{
-					// Skip vehicles too close to road end
+					// Skip vehicles too close to road end - and where connecting road is missing
 					continue;
 				}
 
@@ -139,9 +142,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				{
 					first_car_in_focus = car_->id;
 				}
-				
-				// Add space to next vehicle
-				s += average_distance + (0.2 * average_distance * mt_rand()) / (mt_rand.max)();
+
 			}
 		}
 	}
@@ -161,8 +162,13 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 
 	if (car->pos->MoveAlongS(ds) != 0)
 	{
-		// invalid move -> reset position
-		car->pos->SetLanePos(car->road_id_init, car->lane_id_init, car->s_init, 0, 0);
+		// Start from beginning of road - not initial s-position
+		double start_s = 5;
+		if (car->lane_id_init > 0)
+		{
+			start_s = odrManager->GetRoadById(car->road_id_init)->GetLength() - 5;
+		}
+		car->pos->SetLanePos(car->road_id_init, car->lane_id_init, start_s, 0, 0);
 	}
 
 	if (car->model->txNode_ != 0)
