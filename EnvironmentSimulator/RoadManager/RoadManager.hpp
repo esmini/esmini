@@ -421,7 +421,7 @@ namespace roadmanager
 
 		int GetElementId() { return element_id_; }
 		LinkType GetType() { return type_; }
-		int GetElementType() { return element_type_; }
+		RoadLink::ElementType GetElementType() { return element_type_; }
 		ContactPointType GetContactPointType() { return contact_point_type_; }
 
 		void Print();
@@ -669,6 +669,20 @@ namespace roadmanager
 		int GetNumOfJunctions() { return (int)junction_.size(); }
 		bool IsDirectlyConnected(int road1_id, int road2_id, double &angle);
 		bool IsIndirectlyConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id = 0, int lane2_id = 0);
+
+		/**
+		Add any missing connections so that road connectivity is two-ways
+		Look at all road connections, and make sure they are defined both ways
+		@param idx index into the vector of roads
+		@return number of added connections
+		*/
+		int CheckConnections();
+		int CheckLink(Road *road, RoadLink *link, ContactPointType expected_contact_point_type);
+		int CheckConnectedRoad(Road *road, RoadLink *link, ContactPointType expected_contact_point_type, Road *road2, RoadLink *link2);
+		int CheckJunctionConnection(Junction *junction, Connection *connection);
+		std::string ContactPointType2Str(ContactPointType type);
+		std::string ElementType2Str(RoadLink::ElementType type);
+
 
 		void Print();
 	
