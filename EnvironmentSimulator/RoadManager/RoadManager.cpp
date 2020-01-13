@@ -1733,7 +1733,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		junction_.push_back(j);
 	}
 
-	CheckConnections();
+	// CheckConnections();
 
 	return true;
 }
@@ -2272,13 +2272,14 @@ int OpenDrive::CheckJunctionConnection(Junction *junction, Connection *connectio
 							{
 								if (junction->GetConnectionByIdx(k)->GetIncomingRoad() == road)
 								{
+									// Sharing same connecting road?
 									if (junction->GetConnectionByIdx(k)->GetConnectingRoad() == connection->GetConnectingRoad())
 									{
 										return 0;
 									}
 								}
 							}
-							LOG("Warning: Did not find reverse connection from road %d to %d via junction %d connecting road %d. Might be a flaw in the OpenDRIVE description.", 
+							LOG("Warning: Missing reverse connection from road %d to %d via junction %d connecting road %d. Potential issue in the OpenDRIVE file.", 
 								connection->GetIncomingRoad()->GetId(), road->GetId(), junction->GetId(), connection->GetConnectingRoad()->GetId());
 						}
 					}
@@ -3134,7 +3135,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 
 		if (n_connections == 0)
 		{
-			LOG("No connections from road id %d lane id %d in junction %d", road->GetId(), lane->GetId(), junction->GetId());
+//			LOG("No connections from road id %d lane id %d in junction %d", road->GetId(), lane->GetId(), junction->GetId());
 			return -1;
 		}
 		else if (n_connections == 1)
