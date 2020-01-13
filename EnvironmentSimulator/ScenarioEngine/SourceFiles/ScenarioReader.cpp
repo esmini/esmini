@@ -183,7 +183,6 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 
 	catalog = new Catalog();
 	catalog->name_ = name;
-	catalog->type_ = catalogs_->catalog_dirs_[i].type_;
 
 	for (pugi::xml_node entry_n = catalog_node.first_child(); entry_n; entry_n = entry_n.next_sibling())
 	{
@@ -192,9 +191,19 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 		// To copy a XML node it needs to be put into a XML doc
 		pugi::xml_document *xml_doc = new pugi::xml_document;
 		xml_doc->append_copy(entry_n);
-		catalog->AddEntry(new Entry(catalog->type_, entry_name, xml_doc->first_child()));
+		catalog->AddEntry(new Entry(entry_name, xml_doc->first_child()));
 	}
 	
+	// Get type by inspecting first entry
+	if (catalog->entry_.size() > 0)
+	{
+		catalog->type_ = catalog->entry_[0]->type_;
+	}
+	else
+	{
+		LOG("Warning: Catalog %s seems to be empty!", catalog->name_.c_str());
+	}
+
 	catalogs_->AddCatalog(catalog);
 
 	return catalog;
@@ -1191,7 +1200,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							}
 							else
 							{
-								LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE), entry->GetTypeAsStr().c_str());
+								LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE).c_str(), entry->GetTypeAsStr().c_str());
 								return 0;
 							}
 

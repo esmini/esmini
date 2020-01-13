@@ -15,6 +15,34 @@
 
 using namespace scenarioengine;
 
+CatalogType Entry::GetTypeByNodeName(pugi::xml_node node)
+{
+	if (!strcmp(node.name(), "Route"))
+	{
+		return CatalogType::CATALOG_ROUTE;
+	}
+	else if (!strcmp(node.name(), "Maneuver"))
+	{
+		return CatalogType::CATALOG_MANEUVER;
+	}
+	else if (!strcmp(node.name(), "Vehicle"))
+	{
+		return CatalogType::CATALOG_VEHICLE;
+	}
+	else
+	{
+		LOG("Unsupported catalog entry type: %s", node.name());
+	}
+	
+	return CatalogType::CATALOG_UNDEFINED;
+}
+
+Entry::Entry(std::string name, pugi::xml_node node)
+{
+	name_ = name;
+	node_ = node;
+	type_ = GetTypeByNodeName(node);
+}
 
 
 int Catalogs::RegisterCatalogDirectory(std::string type, std::string directory)

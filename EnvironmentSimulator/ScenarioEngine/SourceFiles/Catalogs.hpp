@@ -45,11 +45,12 @@ namespace scenarioengine
 		pugi::xml_node node_;
 		CatalogType type_;
 
-		Entry(CatalogType type, std::string name, pugi::xml_node node) : type_(type), name_(name), node_(node) {}
+		Entry(std::string name, pugi::xml_node node);
 		pugi::xml_node GetNode() { return node_; }
 
 		static std::string GetTypeAsStr_(CatalogType type);
 		std::string GetTypeAsStr() { return GetTypeAsStr_(type_); }
+		CatalogType Entry::GetTypeByNodeName(pugi::xml_node node);
 	};
 
 
