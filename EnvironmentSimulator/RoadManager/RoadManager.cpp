@@ -2072,31 +2072,17 @@ bool OpenDrive::IsIndirectlyConnected(int road1_id, int road2_id, int* &connecti
 	LinkType link_type;
 	RoadLink *link = 0;
 
-	// Look from road 1, both ends, for road 2
-	if (lane1_id < 0)
-	{
-		link_type = SUCCESSOR;
-		link = road1->GetLink(link_type);
-	}
-	else if (lane1_id > 0)
+	// Try both ends
+	link_type = SUCCESSOR;
+	link = road1->GetLink(link_type);
+	if (link == 0)
 	{
 		link_type = PREDECESSOR;
 		link = road1->GetLink(link_type);
-	}
-	else
-	{
-		// Try both ends
-		link_type = SUCCESSOR;
-		link = road1->GetLink(link_type);
 		if (link == 0)
 		{
-			link_type = PREDECESSOR;
-			link = road1->GetLink(link_type);
-			if (link == 0)
-			{
-				LOG("Link not found!\n");
-				return false;
-			}
+			LOG("Link not found!\n");
+			return false;
 		}
 	}
 	if (link == 0)
@@ -4001,7 +3987,7 @@ int Route::AddWaypoint(Position *position)
 
 		if (!connected)
 		{
-			LOG("Route::AddWaypoint Error: waypoint (%d, %d) is not connected to the previous one (%d, %d)\n",
+			LOG("Error: waypoint (%d, %d) is not connected to the previous one (%d, %d)\n",
 				position->GetTrackId(), position->GetLaneId(), prev_pos->GetTrackId(), prev_pos->GetLaneId());
 
 			return -1;
