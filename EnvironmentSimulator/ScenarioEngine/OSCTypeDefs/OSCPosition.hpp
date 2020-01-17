@@ -154,7 +154,8 @@ namespace scenarioengine
 		OSCPositionRoute(roadmanager::Route *route, double s, int laneId, double laneOffset);
 
 		void SetRoute(roadmanager::Route *route) { position_.SetRoute(route); }
-		void SetRouteRefLaneCoord(double pathS, int laneId, double laneOffset) { position_.SetRouteLanePosition(pathS, laneId, laneOffset); }
+		void SetRouteRefLaneCoord(roadmanager::Route *route, double pathS, int laneId, double laneOffset, OSCOrientation *orientation);
+		void SetRouteRefLaneCoord(roadmanager::Route *route, double pathS, int laneId, double laneOffset);
 		void SetRouteRelativeHeading(double h_relative) { position_.SetHeadingRelative(h_relative);  }
 		
 		void Print() { position_.Print(); }

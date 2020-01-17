@@ -561,7 +561,7 @@ int main(int argc, char** argv)
 
 			simTime += deltaSimTime;
 
-			//LOG("%d %d %.2f h: %.5f rh %.5f rh %.5f",
+			//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
 			//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
 			//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
 			//    scenarioEngine->entities.object_[0]->pos_.GetS(),

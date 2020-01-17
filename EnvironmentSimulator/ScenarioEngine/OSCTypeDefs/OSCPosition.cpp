@@ -108,3 +108,14 @@ OSCPositionRoute::OSCPositionRoute(roadmanager::Route *route, double s, int lane
 {
 	position_.SetRoute(route);
 }
+
+void OSCPositionRoute::SetRouteRefLaneCoord(roadmanager::Route *route, double pathS, int laneId, double laneOffset, OSCOrientation *orientation)
+{
+	position_.SetRouteLanePosition(route, pathS, laneId, laneOffset);
+	position_.SetHeading(orientation->h_);
+}
+
+void OSCPositionRoute::SetRouteRefLaneCoord(roadmanager::Route *route, double pathS, int laneId, double laneOffset)
+{
+	position_.SetRouteLanePosition(route, pathS, laneId, laneOffset);
+}

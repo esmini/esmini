@@ -46,8 +46,10 @@ ObjectState::ObjectState(int id, std::string name, int model_id, int control, do
 	state_.id = id;
 	state_.model_id = model_id;
 	state_.control = control;
+	state_.name[0] = 0;
 	state_.timeStamp = (float)timestamp;
 	strncpy(state_.name, name.c_str(), NAME_LEN);
+	state_.pos.Init();
 	state_.pos.SetInertiaPos(x, y, z, h, p, r);
 	state_.speed = (float)speed;
 	state_.wheel_angle = (float)wheel_angle;

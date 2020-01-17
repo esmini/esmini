@@ -54,6 +54,20 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 	return end_value;
 }
 
+void FollowRouteAction::Trig()
+{
+	if (object_->control_ == Object::Control::EXTERNAL ||
+		object_->control_ == Object::Control::HYBRID_EXTERNAL)
+	{
+		// motion control handed over 
+		return;
+	}
+
+	object_->pos_.SetRoute(route_);
+
+	OSCAction::Trig();
+}
+
 void LatLaneChangeAction::Trig()
 {
 	if (object_->control_ == Object::Control::EXTERNAL ||
@@ -107,7 +121,17 @@ void LatLaneChangeAction::Step(double dt)
 
 		t = dynamics_.transition_.Evaluate(factor, start_t_, target_t);
 		
-		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
+		if (object_->pos_.GetRoute())
+		{
+			// If on a route, stay in original lane
+			int lane_id = object_->pos_.GetLaneId();
+			object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
+			object_->pos_.ForceLaneId(lane_id);
+		}
+		else
+		{
+			object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
+		}
 		
 
 		if (object_->speed_ > SMALL_NUMBER)
@@ -121,7 +145,7 @@ void LatLaneChangeAction::Step(double dt)
 			angle = 0;
 		}
 
-		object_->pos_.SetHeadingRelativeDrivingDirection(angle);
+		object_->pos_.SetHeadingRelativeRoadDirection(angle);
 	}
 	else
 	{
@@ -166,7 +190,7 @@ void LatLaneOffsetAction::Step(double dt)
 		angle = 0;
 	}
 
-	object_->pos_.SetHeadingRelativeDrivingDirection(angle);
+	object_->pos_.SetHeadingRelativeRoadDirection(angle);
 }
 
 double LongSpeedAction::TargetRelative::GetValue()

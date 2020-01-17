@@ -651,6 +651,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 		{
 			roadmanager::Route *route = 0;
 			OSCPositionRoute *pos = new OSCPositionRoute();
+			OSCOrientation *orientation = 0;
 
 			for (pugi::xml_node routeChild = positionChild.first_child(); routeChild; routeChild = routeChild.next_sibling())
 			{
@@ -686,15 +687,14 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 								return 0;
 							}
 
-							pos->SetRoute(route);
-
 							RestoreParameterDeclaration();
 						}
 					}
 				} 
 				else if (routeChild.name() == std::string("Orientation"))
 				{
-					LOG("%s is not implemented", routeChild.name());
+					orientation = new OSCOrientation;
+					parseOSCOrientation(*orientation, routeChild);
 				}
 				else if (routeChild.name() == std::string("Position"))
 				{
@@ -721,11 +721,17 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 							{
 								lane_offset = strtod(ReadAttribute(positionChild.attribute("laneOffset")));
 							}
-
-							pos->SetRouteRefLaneCoord(s, lane_id, lane_offset);
-							if (lane_id > 0)
+							if (orientation)
 							{
-								pos->SetRouteRelativeHeading(M_PI);
+								pos->SetRouteRefLaneCoord(route, s, lane_id, lane_offset, orientation);
+							}
+							else
+							{
+								pos->SetRouteRefLaneCoord(route, s, lane_id, lane_offset);
+								if (lane_id > 0)
+								{
+									pos->SetRouteRelativeHeading(M_PI);
+								}
 							}
 						}
 					}

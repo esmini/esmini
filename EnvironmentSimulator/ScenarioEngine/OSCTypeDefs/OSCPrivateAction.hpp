@@ -588,7 +588,11 @@ namespace scenarioengine
 		void Step(double dt)
 		{
 			(void)dt;
-			object_->pos_ = *position_->GetRMPos();
+			object_->pos_.CopyRMPos(position_->GetRMPos());
+			if (type_ != OSCPosition::PositionType::ROUTE)
+			{
+				object_->pos_.CalcRoutePosition();
+			}
 			LOG("Step %s pos: ", object_->name_.c_str());
 			position_->Print();
 
@@ -625,18 +629,7 @@ namespace scenarioengine
 			(void)dt;
 		}
 
-		void Trig()
-		{
-			if (object_->control_ == Object::Control::EXTERNAL ||
-				object_->control_ == Object::Control::HYBRID_EXTERNAL)
-			{
-				// motion control handed over 
-				return;
-			}
-
-			object_->pos_.SetRoute(route_);
-			OSCAction::Trig();
-		}
+		void Trig();
 	};
 
 	class AutonomousAction : public OSCPrivateAction

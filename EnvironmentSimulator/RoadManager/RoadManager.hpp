@@ -524,7 +524,7 @@ namespace roadmanager
 		void AddElevation(Elevation *elevation);
 		void AddLaneSection(LaneSection *lane_section);
 		void AddLaneOffset(LaneOffset *lane_offset);
-		Elevation *GetElevation(int idx) { return elevation_profile_[idx]; }
+		Elevation *GetElevation(int idx);
 		int GetNumberOfElevations() { return (int)elevation_profile_.size(); }
 		double GetLaneOffset(double s);
 		double GetLaneOffsetPrim(double s);
@@ -667,7 +667,14 @@ namespace roadmanager
 		Junction* GetJunctionById(int id);
 		Junction* GetJunctionByIdx(int idx);
 		int GetNumOfJunctions() { return (int)junction_.size(); }
-		bool IsDirectlyConnected(int road1_id, int road2_id, double &angle);
+		/**
+		Check if two roads are connected directly
+		@param road1_id Id of the first road
+		@param road2_id Id of the second road
+		@param angle if connected, the angle between road 2 and road 1 is returned here
+		@return 0 if not connected, -1 if road 2 is the predecessor of road 1, +1 if road 2 is the successor of road 1
+		*/
+		int IsDirectlyConnected(int road1_id, int road2_id, double &angle);
 		bool IsIndirectlyConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id = 0, int lane2_id = 0);
 
 		/**
@@ -735,16 +742,18 @@ namespace roadmanager
 		static OpenDrive* GetOpenDrive();
 		int GotoClosestDrivingLaneAtCurrentPosition();
 		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
+		void ForceLaneId(int lane_id);
 		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
 		void SetHeading(double heading);
 		void SetHeadingRelative(double heading);
-		void SetHeadingRelativeDrivingDirection(double heading);
+		void SetHeadingRelativeRoadDirection(double heading);
 		void XYZH2TrackPos(double x, double y, double z, double h, bool copyZAndPitch = true);
 		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 		double FindDistToPos(Position *pos, RoadLink *link, int &call_count, int level_count, bool &found);
 
-		void SetRoute(Route *route) { route_ = route; }
+		void SetRoute(Route *route);
+		void CalcRoutePosition();
 		const roadmanager::Route* GetRoute() const { return route_; }
 		roadmanager::Route* GetRoute() { return route_; }
 
@@ -764,11 +773,9 @@ namespace roadmanager
 		/**
 		Move current position forward, or backwards, ds meters along the route
 		@param ds Distance to move, negative will move backwards
-		@param dLane Lane id offset, change to another lane one or several steps to the right (-) or left (+)
-		@param dLaneOffset Additional Lane offset, added to the lane offset as given by the waypoint
 		@return Non zero return value indicates error of some kind
 		*/
-		int MoveRouteDS(double ds, int dLane = 0, double dLaneOffset = 0);
+		int MoveRouteDS(double ds);
 
 		/**
 		Move current position to specified S-value along the route
@@ -777,16 +784,14 @@ namespace roadmanager
 		@param laneOffset Explicit (not delta/offset) lane offset value
 		@return Non zero return value indicates error of some kind
 		*/
-		int SetRouteLanePosition(double route_s, int laneId, double  laneOffset);
+		int SetRouteLanePosition(Route* route, double route_s, int laneId, double  laneOffset);
 
 		/**
 		Move current position to specified S-value along the route
 		@param route_s Distance to move, negative will move backwards
-		@param dLane Lane id offset, change to another lane one or several steps to the right (-) or left (+)
-		@param dLaneOffset Additional Lane offset, added to the lane offset as given by the waypoint
 		@return Non zero return value indicates error of some kind
 		*/
-		int SetRouteLaneOffset(double route_s, int dLane = 0, double  dLaneOffset = 0);
+		int SetRouteS(Route* route, double route_s);
 
 		/**
 		Straight (not route) distance between the current position and the one specified in argument
@@ -958,6 +963,8 @@ namespace roadmanager
 		*/
 		double GetDrivingDirection();
 
+		void CopyRMPos(Position *from);
+
 		void PrintTrackPos();
 		void PrintLanePos();
 		void PrintInertialPos();
@@ -1020,6 +1027,7 @@ namespace roadmanager
 		@return Non zero return value indicates error of some kind
 		*/
 		int AddWaypoint(Position *position);
+		int GetWayPointDirection(int index);
 
 		void setName(std::string name);
 		std::string getName();

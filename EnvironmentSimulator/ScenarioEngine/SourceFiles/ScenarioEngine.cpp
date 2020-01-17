@@ -489,18 +489,18 @@ void ScenarioEngine::stepObjects(double dt)
 		{
 			double steplen = obj->speed_ * dt;
 
-			// Adjustment movement to heading and road direction 
-			if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)
-			{
-				// If pointing in other direction 
-				steplen *= -1;
-			}
 			if (obj->pos_.GetRoute())
 			{
 				obj->pos_.MoveRouteDS(steplen);
 			}
 			else
 			{
+				// Adjustment movement to heading and road direction 
+				if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)
+				{
+					// If pointing in other direction 
+					steplen *= -1;
+				}
 				obj->pos_.MoveAlongS(steplen);
 			}
 		}
