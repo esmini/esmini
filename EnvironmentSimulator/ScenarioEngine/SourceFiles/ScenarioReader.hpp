@@ -50,6 +50,7 @@ namespace scenarioengine
 		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode);
 		void ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node);
 		Vehicle* parseOSCVehicle(pugi::xml_node vehicleNode);
+		Vehicle* createRandomOSCVehicle(std::string name);
 
 		// Enitites
 		int parseEntities();

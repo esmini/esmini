@@ -743,12 +743,6 @@ Viewer::~Viewer()
 
 CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color)
 {
-	if (modelFilepath == "")
-	{
-		LOG("No filename specified for car model!");
-		return 0;
-	}
-
 	// Load 3D model
 	std::string path = CombineDirectoryPathAndFilepath(getScenarioDir(), modelFilepath);
 
@@ -756,8 +750,23 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 
 	if (lod == 0)
 	{
-		LOG("Failed to load car model: %s", path.c_str());
-		return 0;
+		// Failed to load model for some reason - maybe no filename. Create a dummy stand-in geometry
+		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+		geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
+		lod = new osg::LOD;
+		lod->setRange(0, 0, LOD_DIST);
+		osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
+		lod->addChild(tx);
+		tx->setScale(osg::Vec3(5.0, 2.3, 1.7));
+		tx->setPosition(osg::Vec3(3.0, 0.0, 0.8));
+		tx->addChild(geode);
+
+		osg::Material *material = new osg::Material();
+		material->setDiffuse(osg::Material::FRONT, osg::Vec4(0.7, 0.7, 0.7, 1.0));
+		material->setAmbient(osg::Material::FRONT, osg::Vec4(0.7, 0.7, 0.7, 1.0));
+		tx->getOrCreateStateSet()->setAttribute(material);
+
+		LOG("No filename specified for car model! - creating a dummy model");
 	}
 
 	if (transparent)

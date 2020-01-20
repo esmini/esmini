@@ -302,6 +302,19 @@ void ScenarioReader::ParseOSCProperties(OSCProperties &properties, pugi::xml_nod
 	}
 }
 
+Vehicle* ScenarioReader::createRandomOSCVehicle(std::string name)
+{
+	Vehicle *vehicle = new Vehicle();
+
+	vehicle->name_ = name;
+	vehicle->category_ = Vehicle::Category::CAR;
+	vehicle->control_ = Object::Control::INTERNAL;
+	vehicle->model_id_ = -1;
+	vehicle->model_filepath_ = "";
+
+	return vehicle;
+}
+
 Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 {
 	Vehicle *vehicle = new Vehicle();
@@ -435,14 +448,17 @@ Entry* ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 	catalog_name = ReadAttribute(node.attribute("catalogName"));
 	entry_name = ReadAttribute(node.attribute("entryName"));
 
-	LOG("Assigned %d parameters for catalog %s entry %s", catalog_param_assignments.size(), catalog_name.c_str(), entry_name.c_str());
+	if (catalog_param_assignments.size() > 0)
+	{
+		LOG("Assigned %d parameters for catalog %s entry %s", catalog_param_assignments.size(), catalog_name.c_str(), entry_name.c_str());
+	}
 
 	Catalog *catalog;
 
 	// Make sure the catalog item is loaded
 	if ((catalog = LoadCatalog(catalog_name)) == 0)
 	{
-		throw std::runtime_error(std::string("Failed to load catalog " + catalog_name));
+		LOG("Failed to load catalog %s",  catalog_name.c_str());
 		return 0;
 	}
 
@@ -477,18 +493,24 @@ int ScenarioReader::parseEntities()
 
 				if (entry == 0)
 				{
-					return -1;
-				}
-
-				if (entry->type_ == CatalogType::CATALOG_VEHICLE)
-				{
-					// Make a new instance from catalog entry 
-					Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
+					// Invalid catalog reference - create random vehicle as fall-back
+					LOG("Could not find catalog vehicle, creating a random car as fall-back");
+					std::string entry_name = ReadAttribute(objectChild.attribute("entryName"));
+					Vehicle *vehicle = createRandomOSCVehicle(entry_name);
 					obj = vehicle;
 				}
 				else
 				{
-					LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
+					if (entry->type_ == CatalogType::CATALOG_VEHICLE)
+					{
+						// Make a new instance from catalog entry 
+						Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
+						obj = vehicle;
+					}
+					else
+					{
+						LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
+					}
 				}
 
 				RestoreParameterDeclaration();

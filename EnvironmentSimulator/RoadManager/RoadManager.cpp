@@ -1290,9 +1290,18 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 	pugi::xml_parse_result result = doc.load_file(filename);
 	if (!result)
 	{
-		throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(filename));
+		// Try current folder
+		std::string path = std::string(filename);
+		std::string base_filename = path.substr(path.find_last_of("/\\") + 1);
+		LOG("Failed to load %s - looking for file %s in current folder", filename, base_filename.c_str());
+		pugi::xml_parse_result result = doc.load_file(base_filename.c_str());
 
-		return false;
+		if (!result)
+		{
+			throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(filename));
+
+			return false;
+		}
 	}
 
 	pugi::xml_node node = doc.child("OpenDRIVE");
