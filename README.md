@@ -50,8 +50,20 @@ External dependencies: [3D models used by the example scenarios](https://drive.g
 Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.com/vtd-vires-virtual-test-drive/#creation).
 
 ## Related work
-
+### Scenario video clip generator
 [esmini-visualizer](https://github.com/matthewcoyle-cpc/esmini-visualiser) is a tool to automatically generate video visualizations of scenarios.
+
+### Scenario editor
+[RControlStation scenario editor](https://github.com/vedderb/rise_sdvp). An embryo to an OpenSCENARIO editor, part of Self-Driving Model Vehicle Platform (SDVP).
+
+Instruction:
+1. git clone https://github.com/vedderb/rise_sdvp
+1. cd rise_sdvp/Linux/RControlStation
+1. git clone https://github.com/esmini/esmini esmini
+1. Edit RControlStation.pro and uncomment the line: #DEFINES += HAS_SIM_SCEN
+1. Build the project. The editor is the last tab in RControlStation.
+
+The implementation is very limited at this point, but some things can be edited and the scenario can be executed and observed from above, as well as exported to the other tools. You have to start by importing one of the existing scenarios into the editor, as it cannot make a scenario from scratch.
 
 ## Data formats
 
