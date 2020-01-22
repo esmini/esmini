@@ -26,7 +26,7 @@
 		<Parameter name="$Target1SyncPointS" type="double" value="450"/>
 		<Parameter name="$EgoSyncPoint1S" type="double" value="8"/>
 		<Parameter name="$Target2SyncPointS" type="double" value="300"/>
-		<Parameter name="$EgoSyncPoint2S" type="double" value="25"/>
+		<Parameter name="$EgoSyncPoint2S" type="double" value="40"/>
 	</ParameterDeclaration>
   
 	<Catalogs>  
