@@ -37,7 +37,7 @@
 		<Route name="HostStraightRoute" closed="false">
 			<Waypoint strategy="shortest">
 				<Position>
-					<Lane roadId="0" laneId="1" offset="0" s="30" />
+					<Lane roadId="0" laneId="1" offset="0" s="40" />
 				</Position>
 			</Waypoint>
 			<Waypoint strategy="shortest">

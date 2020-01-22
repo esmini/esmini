@@ -594,6 +594,11 @@ bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
 	last_result_ = result;
 	evaluated_ = true;
 
+	if (trig)
+	{
+		LOG("Trigged %s (result: %d last_result: %d edge: %s", name_.c_str(), result, last_result_, Edge2Str(edge_).c_str());
+	}
+
 	if (trig && delay_ > 0)
 	{
 		timer_.Start();
@@ -629,11 +634,6 @@ bool TrigByDistance::Evaluate(Story *story, double sim_time)
 	{
 		dist = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y));
 
-		if (dist < value_)
-		{
-			result = true;
-		}
-
 		if (EvalDone(trig, triggering_entity_rule_))
 		{
 			break;
@@ -647,12 +647,18 @@ bool TrigByDistance::Evaluate(Story *story, double sim_time)
 	last_result_ = result;
 	evaluated_ = true;
 
+	if (trig)
+	{
+		LOG("Trigged %s (dist: %.2f condition: %.2f result: %d last_result: %d edge: %s", name_.c_str(), dist, value_, result, last_result_, Edge2Str(edge_).c_str());
+	}
+
 	if (trig && delay_ > 0)
 	{
 		timer_.Start();
 		LOG("Timer started");
 		return false;
 	}
+
 	return trig;
 }
 

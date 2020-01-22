@@ -561,13 +561,17 @@ int main(int argc, char** argv)
 
 			simTime += deltaSimTime;
 
-			//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
-			//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
-			//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
-			//    scenarioEngine->entities.object_[0]->pos_.GetS(),
-			//    scenarioEngine->entities.object_[0]->pos_.GetH(),
-			//    scenarioEngine->entities.object_[0]->pos_.GetHRoad(),
-			//    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
+#if 0
+			LOG("%d %d %.2f (%.2f, %.2f) h: %.5f road_h %.5f h_relative_road %.5f",
+			    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
+			    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
+				scenarioEngine->entities.object_[0]->pos_.GetS(),
+				scenarioEngine->entities.object_[0]->pos_.GetX(),
+				scenarioEngine->entities.object_[0]->pos_.GetY(),
+			    scenarioEngine->entities.object_[0]->pos_.GetH(),
+			    scenarioEngine->entities.object_[0]->pos_.GetHRoad(),
+			    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
+#endif
 
 			mutex.Unlock();
 		}

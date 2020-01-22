@@ -105,7 +105,14 @@ void LatLaneChangeAction::Step(double dt)
 	{
 		if (dynamics_.timing_type_ == Timing::TIME)
 		{
-			elapsed_ += dt;
+			double dt_adjusted = dt;
+
+			// Set a limit for lateral speed not to exceed longitudinal speed
+			if (dynamics_.timing_target_value_ * object_->speed_ < fabs(target_t - start_t_))
+			{
+				dt_adjusted = dt * object_->speed_ * dynamics_.timing_target_value_ / fabs(target_t - start_t_);
+			}
+			elapsed_ += dt_adjusted;
 		}
 		else if (dynamics_.timing_type_ == Timing::DISTANCE)
 		{
@@ -134,18 +141,19 @@ void LatLaneChangeAction::Step(double dt)
 		}
 		
 
-		if (object_->speed_ > SMALL_NUMBER)
-		{
-			angle = atan((t - t_old) / (object_->speed_ * dt));
-		}
-
 		if (factor > 1.0)
 		{
 			OSCAction::Stop();
-			angle = 0;
+			object_->pos_.SetHeadingRelativeRoadDirection(0);
 		}
-
-		object_->pos_.SetHeadingRelativeRoadDirection(angle);
+		else
+		{
+			if (object_->speed_ > SMALL_NUMBER)
+			{
+				angle = atan((t - t_old) / (object_->speed_ * dt));
+				object_->pos_.SetHeadingRelativeRoadDirection(angle);
+			}
+		}
 	}
 	else
 	{
