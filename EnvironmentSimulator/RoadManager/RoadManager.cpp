@@ -1032,32 +1032,26 @@ double Road::GetLaneOffsetPrim(double s)
 
 int Road::GetNumberOfLanes(double s)
 {
-	int i;
+	LaneSection *lsec = GetLaneSectionByS(s);
 
-	for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
+	if (lsec)
 	{
-		if (s < lane_section_[i]->GetS())
-		{
-			break;
-		}
+		return (lsec->GetNumberOfLanes());
 	}
 
-	return (lane_section_[i]->GetNumberOfLanes());
+	return 0;
 }
 
 int Road::GetNumberOfDrivingLanes(double s)
 {
-	int i;
+	LaneSection *lsec = GetLaneSectionByS(s);
 
-	for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
+	if (lsec)
 	{
-		if (s < lane_section_[i]->GetS())
-		{
-			break;
-		}
+		return (lsec->GetNumberOfDrivingLanes());
 	}
-
-	return (lane_section_[i]->GetNumberOfDrivingLanes());
+	
+	return 0;
 }
 
 Lane* Road::GetDrivingLaneByIdx(double s, int idx)
