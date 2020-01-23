@@ -54,6 +54,7 @@ static int ego_id = -1;
 static bool drawTrails = false;
 static std::vector<ObjectSensor*> sensor;
 static std::vector<viewer::SensorViewFrustum*> sensorFrustum;
+static int camera_mode = 0;
 
 #define TRAIL_DT 0.5
 #define GHOST_HEADSTART 2.0
@@ -296,6 +297,31 @@ static void viewer_thread(void *args)
 		scenarioViewer->ShowObjectSensors(true);
 	}
 
+	std::string camera_str;
+	parser->read("--camera_mode", camera_str);
+	if (camera_str == "orbit")
+	{
+		camera_mode = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
+	} 
+	else if (camera_str == "fixed")
+	{
+		camera_mode = osgGA::RubberbandManipulator::RB_MODE_FIXED;
+	}
+	else if (camera_str == "flex")
+	{
+		camera_mode = osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND;
+	}
+	else if (camera_str == "flex-orbit")
+	{
+		camera_mode = osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND_ORBIT;
+	}
+	else
+	{
+		LOG("Unsupported camera mode: %s - using default (orbit)", camera_str);
+	}
+
+	scenarioViewer->SetCameraMode(camera_mode);
+
 	double last_dot_time = 0;
 
 	while (!scenarioViewer->osgViewer_->done())
@@ -406,6 +432,7 @@ int main(int argc, char** argv)
 	arguments.getApplicationUsage()->addCommandLineOption("--info_text <mode>", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ");
 	arguments.getApplicationUsage()->addCommandLineOption("--trails <mode>", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
 	arguments.getApplicationUsage()->addCommandLineOption("--sensors <mode>", "Show sensor frustums (\"on\", \"off\" (default)) (toggle during simulation by press 'r') ");
+	arguments.getApplicationUsage()->addCommandLineOption("--camera_mode <mode>", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\") (toggle during simulation by press 'c') ");
 
 	if (arguments.argc() < 2)
 	{

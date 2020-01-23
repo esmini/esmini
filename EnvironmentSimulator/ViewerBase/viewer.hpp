@@ -210,6 +210,7 @@ namespace viewer
 
 		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines = false);
 		~Viewer();
+		void SetCameraMode(int mode);
 		void SetVehicleInFocus(int idx);
 		CarModel* AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color);
 		int AddEnvironment(const char* filename);

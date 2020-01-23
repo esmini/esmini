@@ -741,6 +741,17 @@ Viewer::~Viewer()
 	cars_.clear();
 }
 
+void Viewer::SetCameraMode(int mode)
+{
+	if (mode < 0 || mode >= osgGA::RubberbandManipulator::RB_NUM_MODES)
+	{
+		return;
+	}
+
+	camMode_ = mode;
+	rubberbandManipulator_->setMode(camMode_);
+}
+
 CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color)
 {
 	// Load 3D model
