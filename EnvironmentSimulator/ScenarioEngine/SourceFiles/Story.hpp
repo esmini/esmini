@@ -86,7 +86,8 @@ namespace scenarioengine
 	class Story
 	{
 	public:
-		Story();
+		Story(std::string name, std::string owner);
+
 		Act* FindActByName(std::string name);
 		Event* FindEventByName(std::string name);
 		OSCAction* FindActionByName(std::string name);
@@ -96,8 +97,16 @@ namespace scenarioengine
 
 		std::string owner_;
 		std::string name_;
-
-		void Step(double dt);
 	};
 
+	class StoryBoard
+	{
+	public:
+		Act* FindActByName(std::string name);
+		Event* FindEventByName(std::string name);
+		OSCAction* FindActionByName(std::string name); 
+		void Print();
+
+		std::vector<Story*> story_;
+	};
 }

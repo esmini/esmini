@@ -23,10 +23,8 @@
 
 namespace scenarioengine
 {
-
 	// Forward declaration 
-	class Story;
-	class Act;
+	class StoryBoard;
 
 	class Timer
 	{
@@ -75,7 +73,7 @@ namespace scenarioengine
 
 		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false), last_result_(false), edge_(ConditionEdge::ANY) {}
 
-		virtual bool Evaluate(Story *story, double sim_time) = 0;
+		virtual bool Evaluate(StoryBoard *storyBoard, double sim_time) = 0;
 		bool CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge);
 	};
 
@@ -131,7 +129,7 @@ namespace scenarioengine
 
 		TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
 
-		bool Evaluate(Story *story, double sim_time);
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByReachPosition : public TrigByEntity
@@ -142,7 +140,7 @@ namespace scenarioengine
 
 		TrigByReachPosition() : TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
 
-		bool Evaluate(Story *story, double sim_time);
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByDistance : public TrigByEntity
@@ -156,7 +154,7 @@ namespace scenarioengine
 
 		TrigByDistance() : TrigByEntity(TrigByEntity::EntityConditionType::DISTANCE) {}
 
-		bool Evaluate(Story *story, double sim_time);
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByRelativeDistance : public TrigByEntity
@@ -177,7 +175,7 @@ namespace scenarioengine
 
 		TrigByRelativeDistance() : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE) {}
 
-		bool Evaluate(Story *story, double sim_time);
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByState : public OSCCondition
@@ -204,7 +202,7 @@ namespace scenarioengine
 
 		TrigByState(Type type) : OSCCondition(BY_STATE), type_(type) {}
 
-		bool Evaluate(Story *story, double sim_time);
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigAtStart : public TrigByState
@@ -214,7 +212,7 @@ namespace scenarioengine
 
 		TrigAtStart() : TrigByState(TrigByState::Type::AT_START) {}
 
-		bool Evaluate(Story *story, double sim_time);
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigAfterTermination : public TrigByState
@@ -233,7 +231,7 @@ namespace scenarioengine
 
 		TrigAfterTermination() : TrigByState(TrigByState::Type::AFTER_TERMINATION) {}
 
-		bool Evaluate(Story *story, double sim_time);
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByValue : public OSCCondition
@@ -252,7 +250,7 @@ namespace scenarioengine
 
 		TrigByValue(Type type) : OSCCondition(BY_VALUE), type_(type) {}
 
-		bool Evaluate(Story *story, double sim_time);
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigBySimulationTime : public TrigByValue
@@ -262,7 +260,7 @@ namespace scenarioengine
 
 		TrigBySimulationTime() : TrigByValue(TrigByValue::Type::TIME_OF_DAY) {}
 
-		bool Evaluate(Story *story, double sim_time);
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
 }

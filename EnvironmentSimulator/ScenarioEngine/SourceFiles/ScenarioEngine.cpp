@@ -105,16 +105,17 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	}
 
 	// Story 
-	for (size_t i = 0; i < story.size(); i++)
+	for (size_t i = 0; i < storyBoard.story_.size(); i++)
 	{
-		for (size_t j = 0; j < story[i]->act_.size(); j++)
+		Story *story = storyBoard.story_[i];
+		for (size_t j = 0; j < story->act_.size(); j++)
 		{
 			// Update deactivated elements' state to inactive - This could probably be done in some other way...
-			for (size_t k = 0; k < story[i]->act_[j]->sequence_.size(); k++)
+			for (size_t k = 0; k < story->act_[j]->sequence_.size(); k++)
 			{
-				for (size_t l = 0; l < story[i]->act_[j]->sequence_[k]->maneuver_.size(); l++)
+				for (size_t l = 0; l < story->act_[j]->sequence_[k]->maneuver_.size(); l++)
 				{
-					OSCManeuver *maneuver = story[i]->act_[j]->sequence_[k]->maneuver_[l];
+					OSCManeuver *maneuver = story->act_[j]->sequence_[k]->maneuver_[l];
 
 					for (size_t m = 0; m < maneuver->event_.size(); m++)
 					{
@@ -132,22 +133,22 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 					}
 				}
 			}
-			if (story[i]->act_[j]->state_ == Act::State::DEACTIVATED)
+			if (story->act_[j]->state_ == Act::State::DEACTIVATED)
 			{
-				story[i]->act_[j]->state_ = Act::State::INACTIVE;
+				story->act_[j]->state_ = Act::State::INACTIVE;
 			}
 
 			// Check Act conditions
-			if (!story[i]->act_[j]->IsActive())
+			if (!story->act_[j]->IsActive())
 			{
 				// Check start conditions
-				for (size_t k = 0; k < story[i]->act_[j]->start_condition_group_.size(); k++)
+				for (size_t k = 0; k < story->act_[j]->start_condition_group_.size(); k++)
 				{
-					for (size_t l = 0; l < story[i]->act_[j]->start_condition_group_[k]->condition_.size(); l++)
+					for (size_t l = 0; l < story->act_[j]->start_condition_group_[k]->condition_.size(); l++)
 					{
-						if (story[i]->act_[j]->start_condition_group_[k]->condition_[l]->Evaluate(story[i], simulationTime))
+						if (story->act_[j]->start_condition_group_[k]->condition_[l]->Evaluate(&storyBoard, simulationTime))
 						{
-							story[i]->act_[j]->Trig();
+							story->act_[j]->Trig();
 						}
 					}
 				}
@@ -155,52 +156,52 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			else
 			{
 				// If activated last step, make transition to activated
-				if (story[i]->act_[j]->state_ == Act::State::ACTIVATED)
+				if (story->act_[j]->state_ == Act::State::ACTIVATED)
 				{
-					story[i]->act_[j]->state_ = Act::State::ACTIVE;
+					story->act_[j]->state_ = Act::State::ACTIVE;
 				}
 			}
 
-			if (story[i]->act_[j]->IsActive())
+			if (story->act_[j]->IsActive())
 			{
 				// Check end conditions
-				for (size_t k = 0; k < story[i]->act_[j]->end_condition_group_.size(); k++)
+				for (size_t k = 0; k < story->act_[j]->end_condition_group_.size(); k++)
 				{
-					for (size_t l = 0; l < story[i]->act_[j]->end_condition_group_[k]->condition_.size(); l++)
+					for (size_t l = 0; l < story->act_[j]->end_condition_group_[k]->condition_.size(); l++)
 					{
-						if (story[i]->act_[j]->end_condition_group_[k]->condition_[l]->Evaluate(story[i], simulationTime))
+						if (story->act_[j]->end_condition_group_[k]->condition_[l]->Evaluate(&storyBoard, simulationTime))
 						{
-							story[i]->act_[j]->Stop();
+							story->act_[j]->Stop();
 						}
 					}
 				}
 
 				// Check cancel conditions
-				for (size_t k = 0; k < story[i]->act_[j]->cancel_condition_group_.size(); k++)
+				for (size_t k = 0; k < story->act_[j]->cancel_condition_group_.size(); k++)
 				{
-					for (size_t l = 0; l < story[i]->act_[j]->cancel_condition_group_[k]->condition_.size(); l++)
+					for (size_t l = 0; l < story->act_[j]->cancel_condition_group_[k]->condition_.size(); l++)
 					{
-						if (story[i]->act_[j]->cancel_condition_group_[k]->condition_[l]->Evaluate(story[i], simulationTime))
+						if (story->act_[j]->cancel_condition_group_[k]->condition_[l]->Evaluate(&storyBoard, simulationTime))
 						{
-							story[i]->act_[j]->Stop();
+							story->act_[j]->Stop();
 						}
 					}
 				}
 			}
 
 			// Maneuvers
-			if (story[i]->act_[j]->IsActive())
+			if (story->act_[j]->IsActive())
 			{
-				for (size_t k = 0; k < story[i]->act_[j]->sequence_.size(); k++)
+				for (size_t k = 0; k < story->act_[j]->sequence_.size(); k++)
 				{
-					for (size_t l = 0; l < story[i]->act_[j]->sequence_[k]->maneuver_.size(); l++)
+					for (size_t l = 0; l < story->act_[j]->sequence_[k]->maneuver_.size(); l++)
 					{
-						OSCManeuver *maneuver = story[i]->act_[j]->sequence_[k]->maneuver_[l];
+						OSCManeuver *maneuver = story->act_[j]->sequence_[k]->maneuver_[l];
 
 						// Events - may only execute one at a time
 						for (size_t m = 0; m < maneuver->event_.size(); m++)
 						{
-							Event *event = story[i]->act_[j]->sequence_[k]->maneuver_[l]->event_[m];
+							Event *event = story->act_[j]->sequence_[k]->maneuver_[l]->event_[m];
 
 							if (event->IsActive())
 							{
@@ -234,7 +235,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 								{
 									for (size_t o = 0; o < event->start_condition_group_[n]->condition_.size(); o++)
 									{
-										if (event->start_condition_group_[n]->condition_[o]->Evaluate(story[i], simulationTime))
+										if (event->start_condition_group_[n]->condition_[o]->Evaluate(&storyBoard, simulationTime))
 										{
 											// Check priority
 											if (event->priority_ == Event::Priority::OVERWRITE)
@@ -433,7 +434,7 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	}
 	ResolveHybridVehicles();
 	scenarioReader->parseInit(init);
-	scenarioReader->parseStory(story);
+	scenarioReader->parseStoryBoard(storyBoard);
 
 	// Copy init actions from external buddy
 	// (Cloning of story actions are handled in the story parser)
@@ -472,10 +473,7 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	// Print loaded data
 	entities.Print();
 
-	for (size_t i = 0; i < story.size(); i++)
-	{
-		story[i]->Print();
-	}
+	storyBoard.Print();
 }
 
 void ScenarioEngine::stepObjects(double dt)

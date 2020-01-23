@@ -66,7 +66,7 @@ namespace scenarioengine
 		// Storyboard - Story
 		OSCCondition *parseOSCCondition(pugi::xml_node conditionNode);
 		//	void parseOSCConditionGroup(OSCConditionGroup *conditionGroup, pugi::xml_node conditionGroupNode);
-		int parseStory(std::vector<Story*> &storyVector);
+		int parseStoryBoard(StoryBoard &storyBoard);
 		void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, ActSequence *act_sequence);
 
 		// Help functions
@@ -90,7 +90,7 @@ namespace scenarioengine
 		void RestoreParameterDeclaration();  // To what it was before addParameterDeclaration
 
 		// Use always this method when reading attributes, it will resolve any variables
-		std::string ReadAttribute(pugi::xml_attribute attribute, bool required = false);
+		std::string ReadAttribute(pugi::xml_node, char *attribute, bool required = false);
 	};
 
 }

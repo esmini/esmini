@@ -72,8 +72,8 @@ namespace scenarioengine
 		// OpenSCENARIO parameters
 		Catalogs catalogs;
 		Init init;
-		std::vector<Story*> story;
 		ScenarioReader *scenarioReader;
+		StoryBoard storyBoard;
 		RoadNetwork roadNetwork;
 		roadmanager::OpenDrive *odrManager;
 

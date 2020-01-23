@@ -16,9 +16,9 @@
 using namespace scenarioengine;
 
 
-Story::Story()
+Story::Story(std::string name, std::string owner)
 {
-	LOG("Story: New Story created");
+	LOG("Story: New Story %s created, owner: %s", name, owner == "" ? "undefined" : owner);
 }
 
 Act* Story::FindActByName(std::string name)
@@ -88,9 +88,54 @@ void Story::Print()
 	LOG("Story: %s", name_.c_str());
 }
 
-void Story::Step(double dt)
+Act* StoryBoard::FindActByName(std::string name)
 {
-	(void)dt;
-//	for(int i=0; i<Act)
+	Act *act = 0;
+	for (size_t i = 0; i < story_.size(); i++)
+	{
+		if ((act = story_[i]->FindActByName(name)) != 0)
+		{
+			return act;
+		}
+	}
+
+	return 0;
+}
+
+Event* StoryBoard::FindEventByName(std::string name)
+{
+	Event *event = 0;
+	for (size_t i = 0; i < story_.size(); i++)
+	{
+		if ((event = story_[i]->FindEventByName(name)) != 0)
+		{
+			return event;
+		}
+	}
+
+	return 0;
+}
+
+OSCAction* StoryBoard::FindActionByName(std::string name)
+{
+	OSCAction *action = 0;
+	for (size_t i = 0; i < story_.size(); i++)
+	{
+		if ((action = story_[i]->FindActionByName(name)) != 0)
+		{
+			return action;
+		}
+	}
+
+	return 0;
+}
+
+void StoryBoard::Print()
+{
+	LOG("Storyboard:");
+	for (size_t i = 0; i < story_.size(); i++)
+	{
+		story_[i]->Print();
+	}
 }
 

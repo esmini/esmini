@@ -117,9 +117,9 @@ bool EvalDone(bool result, TrigByEntity::TriggeringEntitiesRule rule)
 	return false;
 }
 
-bool TrigByState::Evaluate(Story *story, double sim_time)
+bool TrigByState::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
-	(void)story;
+	(void)storyBoard;
 	(void)sim_time;
 	bool result = false;
 
@@ -147,7 +147,7 @@ bool TrigByState::Evaluate(Story *story, double sim_time)
 	return result;
 }
 
-bool TrigAtStart::Evaluate(Story *story, double sim_time)
+bool TrigAtStart::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
 	(void)sim_time;
 	bool trig = false;
@@ -172,7 +172,7 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 	}
 	else if (element_type_ == StoryElementType::ACTION)
 	{
-		OSCAction *action = story->FindActionByName(element_name_);
+		OSCAction *action = storyBoard->FindActionByName(element_name_);
 
 		if ( action )
 		{
@@ -194,7 +194,7 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 	}
 	else if (element_type_ == StoryElementType::ACT)
 	{
-		Act *act = story->FindActByName(element_name_);
+		Act *act = storyBoard->FindActByName(element_name_);
 		
 		if (act)
 		{
@@ -228,7 +228,7 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 	}
 	else if (element_type_ == StoryElementType::EVENT)
 	{
-		Event *event = story->FindEventByName(element_name_);
+		Event *event = storyBoard->FindEventByName(element_name_);
 
 		if (event)
 		{
@@ -268,6 +268,11 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 
 	evaluated_ = true;
 
+	if (trig)
+	{
+		LOG("Trigged %s (edge: %s", name_.c_str(), Edge2Str(edge_).c_str());
+	}
+
 	if (trig && delay_ > 0)
 	{
 		timer_.Start();
@@ -278,7 +283,7 @@ bool TrigAtStart::Evaluate(Story *story, double sim_time)
 	return trig;
 }
 
-bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
+bool TrigAfterTermination::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
 	(void)sim_time;
 	bool trig = false;
@@ -300,7 +305,7 @@ bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 	}
 	else if (element_type_ == StoryElementType::ACTION)
 	{
-		OSCAction *action = story->FindActionByName(element_name_);
+		OSCAction *action = storyBoard->FindActionByName(element_name_);
 
 		if (action)
 		{
@@ -334,7 +339,7 @@ bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 	}
 	else if (element_type_ == StoryElementType::ACT)
 	{
-		Act *act = story->FindActByName(element_name_);
+		Act *act = storyBoard->FindActByName(element_name_);
 
 		if (act)
 		{
@@ -368,7 +373,7 @@ bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 	}
 	else if (element_type_ == StoryElementType::EVENT)
 	{
-		Event *event = story->FindEventByName(element_name_);
+		Event *event = storyBoard->FindEventByName(element_name_);
 
 		if (event)
 		{
@@ -407,6 +412,11 @@ bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 
 	evaluated_ = true;
 
+	if (trig)
+	{
+		LOG("Trigged %s (edge: %s)", name_.c_str(), Edge2Str(edge_).c_str());
+	}
+
 	if (trig && delay_ > 0)
 	{
 		timer_.Start();
@@ -417,9 +427,9 @@ bool TrigAfterTermination::Evaluate(Story *story, double sim_time)
 	return trig;
 }
 
-bool TrigByValue::Evaluate(Story *story, double sim_time)
+bool TrigByValue::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
-	(void)story;
+	(void)storyBoard;
 	(void)sim_time;
 
 	if (timer_.Started())
@@ -448,9 +458,9 @@ bool TrigByValue::Evaluate(Story *story, double sim_time)
 	return result;
 }
 
-bool TrigBySimulationTime::Evaluate(Story *story, double sim_time)
+bool TrigBySimulationTime::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
-	(void)story;
+	(void)storyBoard;
 
 	bool result = false;
 	bool trig = false;
@@ -476,7 +486,7 @@ bool TrigBySimulationTime::Evaluate(Story *story, double sim_time)
 
 	if (trig)
 	{
-		LOG("Trigged %s (sim_time: %.2f >= condition: %.2f result: %d last_result: %d edge: %s", name_.c_str(), sim_time, value_, result, last_result_, Edge2Str(edge_).c_str());
+		LOG("Trigged %s (sim_time: %.2f >= condition: %.2f result: %d last_result: %d edge: %s)", name_.c_str(), sim_time, value_, result, last_result_, Edge2Str(edge_).c_str());
 	}
 
 	last_result_ = result;
@@ -491,9 +501,9 @@ bool TrigBySimulationTime::Evaluate(Story *story, double sim_time)
 	return trig;
 }
 
-bool TrigByTimeHeadway::Evaluate(Story *story, double sim_time)
+bool TrigByTimeHeadway::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
-	(void)story;
+	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
@@ -556,9 +566,9 @@ bool TrigByTimeHeadway::Evaluate(Story *story, double sim_time)
 	return trig;
 }
 
-bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
+bool TrigByReachPosition::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
-	(void)story;
+	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
@@ -609,9 +619,9 @@ bool TrigByReachPosition::Evaluate(Story *story, double sim_time)
 	return trig;
 }
 
-bool TrigByDistance::Evaluate(Story *story, double sim_time)
+bool TrigByDistance::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
-	(void)story;
+	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
@@ -662,9 +672,9 @@ bool TrigByDistance::Evaluate(Story *story, double sim_time)
 	return trig;
 }
 
-bool TrigByRelativeDistance::Evaluate(Story *story, double sim_time)
+bool TrigByRelativeDistance::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
-	(void)story;
+	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
