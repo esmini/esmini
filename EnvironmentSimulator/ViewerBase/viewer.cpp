@@ -1089,7 +1089,7 @@ int Viewer::AddEnvironment(const char* filename)
 	} 
 	else
 	{
-		printf("AddEnvironment: No environment 3D model specified - go ahead without\n");
+		LOG("AddEnvironment: No environment 3D model specified (%s) - go ahead without\n", filename);
 	}
 
 	envTx_->setPosition(osg::Vec3(0, 0, 0));

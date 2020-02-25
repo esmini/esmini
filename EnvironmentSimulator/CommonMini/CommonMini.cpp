@@ -299,7 +299,14 @@ std::string DirNameOf(const std::string& fname)
 std::string FileNameOf(const std::string& fname)
 {
 	size_t pos = fname.find_last_of("\\/");
-	return (std::string::npos == pos) ? "" : fname.substr(pos+1);
+	if (pos != std::string::npos)
+	{
+		return (fname.substr(pos+1));
+	}
+	else
+	{
+		return fname;  // Assume filename with no separator
+	}
 }
 
 double GetCrossProduct2D(double x1, double y1, double x2, double y2)
