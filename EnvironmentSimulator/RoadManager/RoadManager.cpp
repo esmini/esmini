@@ -3878,12 +3878,12 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data)
 	{
 		double radius = 1.0 / target.GetCurvature();
 		radius -= target.GetT(); // curvature positive in left curves, lat_offset positive left of reference lane
-		data->curvature = (float)(1.0 / radius);
+		data->curvature = (1.0 / radius);
 	}
 	else
 	{
 		// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
-		data->curvature = (float)target.GetCurvature();
+		data->curvature = target.GetCurvature();
 	}
 
 	data->pos[0] = target.GetX();

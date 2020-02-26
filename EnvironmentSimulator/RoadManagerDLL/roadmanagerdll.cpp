@@ -328,30 +328,6 @@ extern "C"
 
 		GetRoadLaneInfo(handle, lookahead_distance, data);
 
-		// First find out curvature at this lateral position from reference lane
-		double ref_curvature = position[handle].GetCurvature();
-		double lat_offset = position[handle].GetT();
-		double radius;
-		Position *pos = &position[handle];
-		
- 		if (fabs(ref_curvature) > SMALL_NUMBER)
-		{
-			radius = 1.0 / ref_curvature;
-			radius -= lat_offset; // curvature positive in left curves, lat_offset positive left of reference lane
-			data->curvature = (float)(1.0 / radius);
-		}
-		else
-		{
-			// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
-			data->curvature = (float)ref_curvature;
-		}
-
-		// Then find out the width of the lane at current s-value
-		Road *road = pos->GetRoadById(pos->GetTrackId());
-		data->width = (float)road->GetLaneWidthByS(pos->GetS(), pos->GetLaneId());
-
-		data->speed_limit = (float)road->GetSpeedByS(pos->GetS());
-
 		return 0;
 	}
 
