@@ -289,13 +289,7 @@ namespace OpenDRIVE
             pose.position.y = tmpPosData.z;
             pose.position.z = tmpPosData.x;
 
-            float rel_heading = -tmpPosData.hRelative * RAD2DEG;
-            float pitch = tmpPosData.p * RAD2DEG;
-            if (rel_heading < -90f || rel_heading > 90f) {
-                pitch *= -1;
-            }
-
-            pose.rotation = Quaternion.Euler(pitch, -tmpPosData.h * RAD2DEG, tmpPosData.r * RAD2DEG);
+            pose.rotation = Quaternion.Euler(tmpPosData.p * RAD2DEG, -tmpPosData.h * RAD2DEG, tmpPosData.r * RAD2DEG);
 
             return pose;
         }
