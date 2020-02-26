@@ -50,7 +50,7 @@ namespace OpenDRIVE
         public Quaternion rotation;
     }
 
-    
+
     [StructLayout(LayoutKind.Sequential)]
     public struct PositionXYZ
     {
@@ -102,7 +102,8 @@ namespace OpenDRIVE
 
         private static OpenDrivePositionData tmpPosData = new OpenDrivePositionData();
         private static Vector3 tmpPos = new Vector3();
-        private const float rad2Deg = 180f / Mathf.PI;
+        private const float RAD2DEG = 180f / Mathf.PI;
+        private const float deg2Rad = Mathf.Deg2Rad;
 
         private const string LIB_NAME = "RoadManagerDLL";
 
@@ -184,7 +185,7 @@ namespace OpenDRIVE
         public static extern int SetS(int index, float s);
 
         /// <summary>
-        /// Set position from world coordinates, road coordinates being calculated
+        /// Set position from world coordinates in the OpenDRIVE coordinate system.
         /// </summary>
         /// <param name="index">Handle to the position object</param>
         /// <param name="x">cartesian coordinate x value</param>
@@ -195,8 +196,18 @@ namespace OpenDRIVE
         /// <param name="r">rotation roll value</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_SetWorldPosition")]
-        public static extern int SetWorldPosition(int index, float x, float y, float z, float h, float p, float r);
+        public static extern int SetOpenDriveWorldPosition(int index, float x, float y, float z, float h, float p, float r);
 
+        /// <summary>
+        /// Set position from world coordinates in the Unity coordinate system.
+        /// </summary>
+        public static void SetWorldPosition(int index, Vector3 position, Vector3 rotationEuler)
+        {
+            Vector3 odrPos = GetOpenDrivePosition(position);
+            Vector3 odrRot = GetOpenDriveRotation(rotationEuler);
+            SetOpenDriveWorldPosition(index, odrPos.x, odrPos.y, odrPos.z, odrRot.x, odrRot.y, odrRot.z);
+        }
+        
         /// <summary>
         /// Set position from world X, Y and heading coordinates; Z, pitch and road coordinates being calculated
         /// </summary>
@@ -207,7 +218,7 @@ namespace OpenDRIVE
         /// <param name="h">rotation heading value</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport("RoadManagerDLL", EntryPoint = "RM_SetWorldXYZHPosition")]
-        public static extern int SetWorldXYZHPosition(int index, float x, float y, float z, float h);
+        public static extern int SetOpenDriveWorldXYZHPosition(int index, float x, float y, float z, float h);
 
         /// <summary>
         /// Move position forward along the road. Choose way randomly though any junctions.
@@ -264,7 +275,7 @@ namespace OpenDRIVE
         /// <returns>true if a valid path between the road positions was found and calculations could be performed</returns>
         [DllImport("RoadManagerDLL", EntryPoint = "RM_SubtractAFromB")]
         public static extern bool SubtractAFromB(int handleA, int handleB, ref PositionDiff pos_diff);
-        
+
         /// <summary>
         /// Returns the world position and rotation of the road user with handle index.
         /// </summary>
@@ -277,8 +288,51 @@ namespace OpenDRIVE
             pose.position.x = -tmpPosData.y;
             pose.position.y = tmpPosData.z;
             pose.position.z = tmpPosData.x;
-            pose.rotation = Quaternion.Euler(tmpPosData.p * rad2Deg, -tmpPosData.h * rad2Deg, tmpPosData.r * rad2Deg);
+
+            float rel_heading = -tmpPosData.hRelative * RAD2DEG;
+            float pitch = tmpPosData.p * RAD2DEG;
+            if (rel_heading < -90f || rel_heading > 90f) {
+                pitch *= -1;
+            }
+
+            pose.rotation = Quaternion.Euler(pitch, -tmpPosData.h * RAD2DEG, tmpPosData.r * RAD2DEG);
+
             return pose;
+        }
+
+        /// <summary>
+        /// Returns the world rotation of the road user with handle index.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public static Quaternion GetWorldRotation(int index)
+        {
+            GetOpenDrivePositionData(index, ref tmpPosData);
+
+            float rel_heading = -tmpPosData.hRelative * RAD2DEG;
+            float pitch = tmpPosData.p * RAD2DEG;
+            if (rel_heading < -90f || rel_heading > 90f) {
+                pitch *= -1;
+            }
+
+            return Quaternion.Euler(pitch, -tmpPosData.h * RAD2DEG, tmpPosData.r * RAD2DEG);
+        }
+        
+        /// <summary>
+        /// Returns the OpenDrive world coordinates given a position in Unity's coordinate system.
+        /// </summary>
+        public static Vector3 GetOpenDrivePosition(Vector3 unityPosition)
+        {
+            return new Vector3(unityPosition.z, -unityPosition.x, unityPosition.y);
+        }
+
+
+        /// <summary>
+        /// Returns the OpenDRIVE rotation given a rotation in Unity's coordinate system.
+        /// </summary>
+        public static Vector3 GetOpenDriveRotation(Vector3 unityRotationEuler)
+        {
+            return new Vector3(-unityRotationEuler.y * deg2Rad, unityRotationEuler.x * deg2Rad, unityRotationEuler.z * deg2Rad);
         }
 
         /// <summary>
@@ -306,10 +360,11 @@ namespace OpenDRIVE
             tmpPos.z = tmpPosData.x;
 
             // Find out pitch of road in driving direction
-            float heading = (-tmpPosData.hRelative * Mathf.Rad2Deg) % 360 + 360;
-            float pitch = tmpPosData.p * Mathf.Rad2Deg;
+            float rel_heading = (-tmpPosData.hRelative * RAD2DEG) % 360 + 360;
+            float pitch = tmpPosData.p * RAD2DEG;
 
-            go.transform.SetPositionAndRotation(tmpPos, Quaternion.Euler(pitch, -tmpPosData.h * rad2Deg, tmpPosData.r * rad2Deg));
+
+            go.transform.SetPositionAndRotation(tmpPos, Quaternion.Euler(pitch, -tmpPosData.h * RAD2DEG, tmpPosData.r * RAD2DEG));
         }
 
     }

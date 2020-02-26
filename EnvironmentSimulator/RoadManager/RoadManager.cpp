@@ -3886,6 +3886,9 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data)
 		data->curvature = (float)target.GetCurvature();
 	}
 
+	data->pos[0] = target.GetX();
+	data->pos[1] = target.GetY();
+	data->pos[2] = target.GetZ();
 	data->heading = target.GetHRoad();
 	data->pitch = target.GetP();
 	data->roll = target.GetR();

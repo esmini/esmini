@@ -77,9 +77,9 @@ static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo 
 
 	pos.GetRoadLaneInfo(lookahead_distance, &s_data);
 
-	r_data->pos[0] = (float)pos.GetX();
-	r_data->pos[1] = (float)pos.GetY();
-	r_data->pos[2] = (float)pos.GetZ();
+	r_data->pos[0] = (float)s_data.pos[0];
+	r_data->pos[1] = (float)s_data.pos[1];
+	r_data->pos[2] = (float)s_data.pos[2];
 	r_data->heading = (float)s_data.heading;
 	r_data->pitch = (float)s_data.pitch;
 	r_data->roll = (float)s_data.roll;
