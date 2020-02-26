@@ -180,7 +180,7 @@ extern "C"
 	Retrieve lane information from the position object (at current road, s-value and lane)
 	@param handle Handle to the position object
 	@param lookahead_distance The distance, along the road, to the point
-	@param data Struct including all result values, see LaneData typedef
+	@param data Struct including all result values, see RoadLaneInfo typedef
 	@return 0 if successful, -1 if not
 	*/
 	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data);
