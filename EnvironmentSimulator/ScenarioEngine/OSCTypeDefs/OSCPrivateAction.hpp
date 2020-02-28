@@ -589,7 +589,7 @@ namespace scenarioengine
 		{
 			(void)dt;
 			object_->pos_.CopyRMPos(position_->GetRMPos());
-			if (type_ != OSCPosition::PositionType::ROUTE)
+			if (position_->type_ != OSCPosition::PositionType::ROUTE)
 			{
 				object_->pos_.CalcRoutePosition();
 			}

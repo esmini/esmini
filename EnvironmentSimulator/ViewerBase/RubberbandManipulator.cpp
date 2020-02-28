@@ -161,9 +161,14 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea,GUIActionAdapter& u
 		case(GUIEventAdapter::FRAME):
 		{
 			static double old_frametime = 0;
+#if 1
 			double current_frame_time = ea.getTime();
 			double dt = current_frame_time - old_frametime;
 			old_frametime = current_frame_time;
+
+#else
+			double current_frame_time =  elapsedTime();
+#endif
 
 			if (dt > 1)
 			{

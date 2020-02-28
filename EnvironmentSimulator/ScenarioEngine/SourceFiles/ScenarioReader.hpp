@@ -31,7 +31,7 @@ namespace scenarioengine
 	{
 	public:
 
-		ScenarioReader(Entities *entities, Catalogs *catalogs) : entities_(entities), catalogs_(catalogs), objectCnt_(0), paramDeclarationSize_(0) {}
+		ScenarioReader(Entities *entities, Catalogs *catalogs) : objectCnt_(0), entities_(entities), catalogs_(catalogs), paramDeclarationSize_(0) {}
 		int loadOSCFile(const char * path);
 		void loadOSCMem(const pugi::xml_document &xml_doch);
 
@@ -90,7 +90,7 @@ namespace scenarioengine
 		void RestoreParameterDeclaration();  // To what it was before addParameterDeclaration
 
 		// Use always this method when reading attributes, it will resolve any variables
-		std::string ReadAttribute(pugi::xml_node, char *attribute, bool required = false);
+		std::string ReadAttribute(pugi::xml_node, std::string attribute, bool required = false);
 	};
 
 }

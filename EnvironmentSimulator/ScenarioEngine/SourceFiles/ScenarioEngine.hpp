@@ -79,7 +79,6 @@ namespace scenarioengine
 
 		// Simulation parameters
 		double simulationTime;
-		double timeStep;
 		double headstart_time_;
 
 		//Conditions conditions;

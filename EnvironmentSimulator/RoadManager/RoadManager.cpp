@@ -379,8 +379,6 @@ LaneSection* Road::GetLaneSectionByIdx(int idx)
 
 int Road::GetLaneSectionIdxByS(double s, int start_at)
 {
-	double length = 0;
-
 	if (start_at < 0 || start_at > lane_section_.size() - 1)
 	{
 		return -1;
@@ -692,8 +690,6 @@ double LaneSection::GetOuterOffset(double s, int lane_id)
 
 double LaneSection::GetCenterOffset(double s, int lane_id)
 {
-	int step = lane_id < 0 ? +1 : -1;
-
 	if (lane_id == 0)
 	{
 		// Reference lane (0) has no width
@@ -1966,7 +1962,7 @@ int OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double &angle)
 		
 	for (int i = 0; i < 2; i++)
 	{
-		if (link = road1->GetLink(i == 0 ? LinkType::SUCCESSOR : LinkType::PREDECESSOR))
+		if ((link = road1->GetLink(i == 0 ? LinkType::SUCCESSOR : LinkType::PREDECESSOR)))
 		{
 			if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
 			{
@@ -2016,8 +2012,8 @@ int OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double &angle)
 					}
 					// then check other case where road1 is outgoing from connecting road (connecting road is a road within junction)
 					else if (connection->GetConnectingRoad()->GetId() == road2_id && 
-						(connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START && connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR)->GetElementId() == road1_id ||
-						 connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END && connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetElementId() == road1_id) )
+						((connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START && connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR)->GetElementId() == road1_id) ||
+						 (connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END && connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetElementId() == road1_id)) )
 
 					{
 						if (connection->GetContactPoint() == CONTACT_POINT_START) // connecting road ends up connecting to road_1
@@ -3104,7 +3100,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 
 	if (road_link->GetElementId() == -1)
 	{
-		LOG("No connecting road or junction at rid %d link_type %s", road->GetId(), LinkType2Str(road_link->GetType()));
+		LOG("No connecting road or junction at rid %d link_type %s", road->GetId(), LinkType2Str(road_link->GetType()).c_str());
 		return -1;
 	}
 	
@@ -3112,7 +3108,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 	lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 	if (lane_section == 0)
 	{
-		LOG("No lane section rid %d ls_idx %d link_type  %s", road->GetId(), lane_section_idx_, LinkType2Str(road_link->GetType()));
+		LOG("No lane section rid %d ls_idx %d link_type  %s", road->GetId(), lane_section_idx_, LinkType2Str(road_link->GetType()).c_str());
 		return -1;
 	}
 
@@ -3120,7 +3116,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 	if (lane == 0)
 	{
 		LOG("No lane rid %d lidx %d nlanes %d link_type %s lsecidx %d\n", 
-			road->GetId(), lane_idx_, lane_section->GetNumberOfLanes(), LinkType2Str(road_link->GetType()), lane_section_idx_);
+			road->GetId(), lane_idx_, lane_section->GetNumberOfLanes(), LinkType2Str(road_link->GetType()).c_str(), lane_section_idx_);
 		return -1;
 	}
 	
@@ -3152,7 +3148,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 			return -1;
 		}
 	
-		int connection_idx;
+		int connection_idx = 0;
 		int n_connections = junction->GetNumberOfRoadConnections(road->GetId(), lane->GetId());
 
 		if (n_connections == 0)
@@ -3583,7 +3579,6 @@ double Position::getRelativeDistance(Position target_position, double &x, double
 
 double Position::FindDistToPos(Position *pos, RoadLink *link, int &call_count, int level_count, bool &found)
 {
-	double dist = 0;
 	double tmp_dist = 0;
 	Road *road = GetOpenDrive()->GetRoadById(GetTrackId());
 
@@ -3778,7 +3773,6 @@ void Position::SetRoute(Route *route)
 bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
 {
 	Road *road = GetOpenDrive()->GetRoadById(GetTrackId());
-	bool loop = false;
 	RoadLink *link = 0;
 	double dist = 0;
 	bool found = false;
@@ -4091,7 +4085,6 @@ int Position::SetRouteS(Route *route, double route_s)
 			double local_s = 0;
 
 			int route_direction = route->GetWayPointDirection((int)i);
-			int lane_direction = route->waypoint_[i]->GetLaneId();
 
 			if (route_direction == 0)
 			{
@@ -4174,7 +4167,6 @@ int Route::GetWayPointDirection(int index)
 		return 0;
 	}
 
-	Position *next_wp = 0;
 	OpenDrive *od = waypoint_[index]->GetOpenDrive();
 	Road *road = od->GetRoadById(waypoint_[index]->GetTrackId());
 	int connected = 0;

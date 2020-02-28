@@ -75,9 +75,9 @@ std::string ScenarioReader::getParameter(OSCParameterDeclaration &parameterDecla
 	return 0;
 }
 
-std::string ScenarioReader::ReadAttribute(pugi::xml_node node, char* attribute_name, bool required)
+std::string ScenarioReader::ReadAttribute(pugi::xml_node node, std::string attribute_name, bool required)
 {
-	if (!strcmp(attribute_name, ""))
+	if (!strcmp(attribute_name.c_str(), ""))
 	{
 		if (required)
 		{
@@ -88,7 +88,7 @@ std::string ScenarioReader::ReadAttribute(pugi::xml_node node, char* attribute_n
 
 	pugi::xml_attribute attr;
 	
-	if (attr = node.attribute(attribute_name))
+	if ((attr = node.attribute(attribute_name.c_str())))
 	{
 		if (attr.value()[0] == '$')
 		{
@@ -104,11 +104,11 @@ std::string ScenarioReader::ReadAttribute(pugi::xml_node node, char* attribute_n
 	{
 		if (required)
 		{
-			LOG("Error: missing required attribute: %s", attribute_name);
+			LOG("Error: missing required attribute: %s", attribute_name.c_str());
 		}
 		else
 		{
-			LOG("Warning: missing attribute: %s", attribute_name);
+			LOG("Warning: missing attribute: %s", attribute_name.c_str());
 		}
 	}
 
@@ -483,7 +483,7 @@ Entry* ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 	Entry *entry = catalog->FindEntryByName(entry_name);
 	if (entry == 0)
 	{
-		LOG("Failed to look up entry %s in catalog %s", entry_name, catalog_name);
+		LOG("Failed to look up entry %s in catalog %s", entry_name.c_str(), catalog_name.c_str());
 
 		return 0;
 	}
@@ -579,7 +579,7 @@ void ScenarioReader::parseOSCOrientation(OSCOrientation &orientation, pugi::xml_
 	}
 	else
 	{
-		LOG("Invalid orientation type: %d - using absolute", type_str);
+		LOG("Invalid orientation type: %d - using absolute", type_str.c_str());
 		orientation.type_ = OSCOrientation::OrientationType::ABSOLUTE;
 	}
 }
@@ -723,7 +723,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 							}
 							else
 							{
-								LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE), entry->GetTypeAsStr().c_str());
+								LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE).c_str(), entry->GetTypeAsStr().c_str());
 								return 0;
 							}
 
