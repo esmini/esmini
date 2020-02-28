@@ -113,10 +113,10 @@ extern "C"
 	@param object_id Handle to the position object from which to measure
 	@param lookahead_distance The distance, along the road, to the point
 	@param data Struct including all result values, see typedef for details
-	@param along_road_center Measure along the reference lane, i.e. at center of the road. Should be false for normal use cases
+	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int along_road_center);
+	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int lookAheadMode);
 
 	/**
 	Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle

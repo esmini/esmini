@@ -3864,10 +3864,21 @@ bool Position::IsAheadOf(Position target_position)
 	return(diff_x0 < 0);
 }
 
-int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data)
+int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, LookAheadMode lookAheadMode)
 {
 	Position target(*this);  // Make a copy of current position
-	target.offset_ = 0.0;  // Fix to lane center
+
+	if (lookAheadMode == LOOKAHEADMODE_AT_ROAD_CENTER)
+	{
+		// Look along reference lane requested, move pivot position to t=0 plus a small number in order to 
+		// fall into the right direction
+		target.SetTrackPos(target.GetTrackId(), target.GetS(), SMALL_NUMBER * SIGN(GetLaneId()), true);
+	}
+	else if (lookAheadMode == LOOKAHEADMODE_AT_LANE_CENTER)
+	{
+		// Look along current lane center requested, move pivot position accordingly 
+		target.SetLanePos(target.GetTrackId(), target.GetLaneId(), target.GetS(), 0);
+	}
 
 	if (fabs(lookahead_distance) > SMALL_NUMBER && target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT) != 0)
 	{
@@ -3959,20 +3970,24 @@ void Position::CalcSteeringTarget(Position *target, SteeringTargetInfo *data)
 	}
 }
 
-int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, bool along_reference_lane)
+int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, LookAheadMode lookAheadMode)
 {
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
 		return -1;
 	}
 	Position target(*this);  // Make a copy of current position
-	target.offset_ = 0.0;  // Fix to lane center
 
-	if (along_reference_lane)
+	if (lookAheadMode == LOOKAHEADMODE_AT_ROAD_CENTER)
 	{
 		// Look along reference lane requested, move pivot position to t=0 plus a small number in order to 
 		// fall into the right direction
 		target.SetTrackPos(target.GetTrackId(), target.GetS(), SMALL_NUMBER * SIGN(GetLaneId()), true);
+	}
+	else if (lookAheadMode == LOOKAHEADMODE_AT_LANE_CENTER)
+	{
+		// Look along current lane center requested, move pivot position accordingly 
+		target.SetLanePos(target.GetTrackId(), target.GetLaneId(), target.GetS(), 0);
 	}
 
 	if (fabs(lookahead_distance) > SMALL_NUMBER && target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT) != 0)

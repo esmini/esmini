@@ -730,6 +730,14 @@ namespace roadmanager
 	class Position
 	{
 	public:
+
+		enum LookAheadMode
+		{
+			LOOKAHEADMODE_AT_LANE_CENTER,
+			LOOKAHEADMODE_AT_ROAD_CENTER,
+			LOOKAHEADMODE_AT_CURRENT_LATERAL_OFFSET,
+		};
+
 		explicit Position();
 		explicit Position(int track_id, double s, double t);
 		explicit Position(int track_id, int lane_id, double s, double offset);
@@ -821,10 +829,10 @@ namespace roadmanager
 		Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
 		@param lookahead_distance The distance, along the road, to the point
 		@param data Struct to fill in calculated values, see typdef for details
-		@param along_reference_lane Measure along the reference lane, i.e. at center of the road. Should be false for normal use cases
+		@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
 		@return 0 if successful, -1 if not
 		*/
-		int GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, bool along_reference_lane);
+		int GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, LookAheadMode lookAheadMode);
 
 		/**
 		Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
@@ -838,9 +846,10 @@ namespace roadmanager
 		Get information of current lane at a specified distance from object along the road ahead
 		@param lookahead_distance The distance, along the road, to the point
 		@param data Struct to fill in calculated values, see typdef for details
+		@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
 		@return 0 if successful, -1 if not
 		*/
-		int GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data);
+		int GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, LookAheadMode lookAheadMode);
 
 		/**
 		Get information of current lane at a specified distance from object along the road ahead

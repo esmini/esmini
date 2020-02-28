@@ -539,7 +539,7 @@ int main(int argc, char** argv)
 					roadmanager::SteeringTargetInfo data;
 
 					// Speed - common speed target for these control modes
-					vh->obj->pos_.GetSteeringTargetInfo(vh->speed_target_distance, &data, true);
+					vh->obj->pos_.GetSteeringTargetInfo(vh->speed_target_distance, &data, roadmanager::Position::LOOKAHEADMODE_AT_ROAD_CENTER);
 					memcpy(vh->speed_target_pos, data.global_pos, sizeof(vh->speed_target_pos));
 
 					// Steering - Find out a steering target along ghost vehicle trail

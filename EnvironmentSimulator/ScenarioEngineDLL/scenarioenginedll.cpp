@@ -355,7 +355,7 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 
 }
 
-static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int along_reference_lane)
+static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int lookAheadMode)
 {
 	roadmanager::SteeringTargetInfo s_data;
 
@@ -372,7 +372,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 
 	roadmanager::Position *pos = &scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
 	
-	if (pos->GetSteeringTargetInfo(lookahead_distance, &s_data, (bool)along_reference_lane) != 0)
+	if (pos->GetSteeringTargetInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
 	{
 		return -1;
 	}

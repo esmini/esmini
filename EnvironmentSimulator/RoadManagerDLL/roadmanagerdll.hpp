@@ -181,9 +181,10 @@ extern "C"
 	@param handle Handle to the position object
 	@param lookahead_distance The distance, along the road, to the point
 	@param data Struct including all result values, see RoadLaneInfo typedef
+	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data);
+	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data, int lookAheadMode);
 
 	/**
 	Retrieve current speed limit (at current road, s-value and lane) based on ODR type elements or nr of lanes
@@ -198,10 +199,10 @@ extern "C"
 	@param handle Handle to the position object from which to measure
 	@param lookahead_distance The distance, along the road, to the point
 	@param data Struct including all result values, see SteeringTargetData typedef
-	@param along_road_center Measure along the reference lane, i.e. at center of the road. Should be false for normal use cases
+	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, RM_SteeringTargetInfo *data, int along_reference_lane);
+	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, RM_SteeringTargetInfo *data, int lookAheadMode);
 
 	/**
 	Find out the difference between two position objects, i.e. delta distance (long and lat) and delta laneId

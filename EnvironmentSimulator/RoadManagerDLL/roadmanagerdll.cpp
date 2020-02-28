@@ -19,7 +19,7 @@ using namespace roadmanager;
 static roadmanager::OpenDrive *odrManager = 0;
 static std::vector<Position> position;
 
-static int GetSteeringTarget(int index, float lookahead_distance, RM_SteeringTargetInfo *r_data, bool along_reference_lane)
+static int GetSteeringTarget(int index, float lookahead_distance, RM_SteeringTargetInfo *r_data, int lookAheadMode)
 {
 	roadmanager::SteeringTargetInfo s_data;
 
@@ -34,7 +34,7 @@ static int GetSteeringTarget(int index, float lookahead_distance, RM_SteeringTar
 		return -1;
 	}
 
-	if (position[index].GetSteeringTargetInfo(lookahead_distance, &s_data, along_reference_lane) != 0)
+	if (position[index].GetSteeringTargetInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
 	{
 		return -1;
 	}
@@ -58,7 +58,7 @@ static int GetSteeringTarget(int index, float lookahead_distance, RM_SteeringTar
 	}
 }
 
-static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo *r_data)
+static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo *r_data, int lookAheadMode)
 {
 	roadmanager::RoadLaneInfo s_data;
 
@@ -75,7 +75,7 @@ static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo 
 
 	roadmanager::Position pos = position[index];
 
-	pos.GetRoadLaneInfo(lookahead_distance, &s_data);
+	pos.GetRoadLaneInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode);
 
 	r_data->pos[0] = (float)s_data.pos[0];
 	r_data->pos[1] = (float)s_data.pos[1];
@@ -319,14 +319,14 @@ extern "C"
 		return 0;
 	}
 
-	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data)
+	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data, int lookAheadMode)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
 			return -1;
 		}
 
-		GetRoadLaneInfo(handle, lookahead_distance, data);
+		GetRoadLaneInfo(handle, lookahead_distance, data, lookAheadMode);
 
 		return 0;
 	}
@@ -341,14 +341,14 @@ extern "C"
 		return (float)position[handle].GetSpeedLimit();
 	}
 
-	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, RM_SteeringTargetInfo * data, int along_reference_lane)
+	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, RM_SteeringTargetInfo * data, int lookAheadMode)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
 			return -1;
 		}
 
-		if (GetSteeringTarget(handle, lookahead_distance, data, along_reference_lane) != 0)
+		if (GetSteeringTarget(handle, lookahead_distance, data, lookAheadMode) != 0)
 		{
 			return -1;
 		}
