@@ -3,6 +3,7 @@ image:
 - Visual Studio 2017
 - Visual Studio 2015
 - Ubuntu1804
+- macos-mojave
 configuration: Release
 platform:
 - x64
@@ -12,6 +13,7 @@ cache:
 - resources/models
 
 after_build:
+ - 
   cmd:
     7z a esmini-bin.zip bin/*
 
@@ -34,7 +36,40 @@ for:
           cmake ../ -DUSE_OSG=false
 
           make -j4
+          
+    after_build:
+      - sh: >-
+          zip esmini-bin.zip EnvironmentSimulator/RoadManagerDLL/libRoadManagerDLL.so EnvironmentSimulator/ScenarioEngineDLL/libScenarioEngineDLL.so
+          
+          appveyor PushArtifact esmini-bin.zip
 
+  -
+    matrix:
+      only:
+        - image: macos-mojave
+    build_script:
+      - echo MacOS Mojave build script
+      - sh: >-
+          chmod +x create_xcode_project.sh
+          
+          ./create_xcode_project.sh
+          
+          cd build
+          
+          xcodebuild -scheme install -configuration Release build
+
+    after_build:
+      - sh: >-
+          lipo -create EnvironmentSimulator/RoadManagerDLL/Release/libRoadManagerDLL.dylib -output ../bin/RoadManagerDLL.bundle
+          
+          lipo -create EnvironmentSimulator/ScenarioEngineDLL/Release/libScenarioEngineDLL.dylib -output ../bin/ScenarioEngineDLL.bundle
+
+          cd ..
+          
+          zip esmini-bin.zip bin -r
+          
+          appveyor PushArtifact esmini-bin.zip    
+          
   -
     matrix:
       only:
@@ -112,6 +147,8 @@ for:
     matrix:
       exclude:
         - image: Ubuntu1804
+          platform: x86
+        - image: macos-mojave
           platform: x86
         - image: Visual Studio 2015
           platform: x86
