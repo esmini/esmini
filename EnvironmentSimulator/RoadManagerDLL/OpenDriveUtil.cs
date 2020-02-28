@@ -244,9 +244,10 @@ namespace OpenDRIVE
         /// </summary>
         /// <param name="index">Handle to the position object from which to measure</param>
         /// <param name="data">Struct including all result values, see RoadLaneInfo typedef</param>
+        /// <param name "lookAheadMode">Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport("RoadManagerDLL", EntryPoint = "RM_GetLaneInfo")]
-        public static extern int GetLaneInfo(int index, float lookahead_distance, ref RoadLaneInfo data);
+        public static extern int GetLaneInfo(int index, float lookahead_distance, ref RoadLaneInfo data, int lookAheadMode);
 
         /// <summary>
         /// Retrieve current speed limit (at current road, s-value and lane) based on ODR type elements or nr of lanes
@@ -260,11 +261,12 @@ namespace OpenDRIVE
         /// Get the location, in global coordinate system, of the point at a specified distance from starting position along the road ahead
         /// </summary>
         /// <param name="index">Handle to the position object from which to measure</param>
-        /// <param name="lookahead_distance"></param>The distance, along the road, to the point</param>
+        /// <param name="lookahead_distance">The distance, along the road, to the point</param>
+        /// <param name "lookAheadMode">Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum</param>
         /// <param name="data">Struct including all result values, see SteeringTargetData typedef</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport("RoadManagerDLL", EntryPoint = "RM_GetSteeringTarget")]
-        public static extern int GetSteeringTarget(int index, float lookahead_distance, ref SteeringTargetData data, int along_reference_lane);
+        public static extern int GetSteeringTarget(int index, float lookahead_distance, ref SteeringTargetData data, int lookAheadMode);
 
         /// <summary>
         /// Find out the difference between two position objects, i.e. delta distance (long and lat) and delta laneId
