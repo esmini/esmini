@@ -532,7 +532,6 @@ int main(int argc, char** argv)
 					// find out what direction is forward, according to vehicle relative road heading 
 					if (GetAbsAngleDifference(vh->obj->pos_.GetH(), vh->obj->pos_.GetHRoadInDrivingDirection()) > M_PI_2)
 					{
-						vh->steering_target_distance *= -1;
 						vh->speed_target_distance *= -1;
 					}
 
