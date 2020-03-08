@@ -1,8 +1,10 @@
 #!/bin/sh
 
-rm -f esmini-demo_ubuntu.zip
+rm -rf esmini-demo 
 
-zip esmini-demo_ubuntu.zip \
+mkdir esmini-demo
+
+cp -p --parents -r \
 resources/xosc/basic_hybrid.xosc \
 resources/xosc/cut-in.xosc \
 resources/xosc/lane_change.xosc \
@@ -54,4 +56,9 @@ run/readme.txt \
 3rd_party_terms_and_licenses/* \
 LICENSE \
 release_notes.txt \
-bin/EgoSimulator
+bin/EgoSimulator \
+esmini-demo
+
+rm -f esmini-demo_ubuntu.zip
+
+zip -r esmini-demo_ubuntu.zip esmini-demo
