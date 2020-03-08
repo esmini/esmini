@@ -4,6 +4,8 @@ include_directories (
   ${COMMON_MINI_INCLUDE_DIR}  
 )
 
+set (TARGET ScenarioViewer)
+
 set ( SOURCES
   main.cpp
 )
@@ -11,17 +13,20 @@ set ( SOURCES
 set ( INCLUDES
 )
 
-add_executable ( ScenarioViewer ${SOURCES} ${INCLUDES} )
+add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
 add_definitions(-D_SCENARIO_VIEWER)
 
 target_link_libraries ( 
-	ScenarioViewer
+	${TARGET}
 	ScenarioEngineDLL
 	CommonMini
 	${TIME_LIB}
 )
 
-
-install ( TARGETS ScenarioViewer CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}/Release")
-install ( TARGETS ScenarioViewer CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}/Debug")
+if (UNIX)
+  install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")
+else()
+  install ( TARGETS ${TARGET} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}")
+  install ( TARGETS ${TARGET} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}")
+endif (UNIX)

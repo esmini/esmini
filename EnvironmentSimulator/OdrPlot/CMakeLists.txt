@@ -4,6 +4,8 @@ include_directories (
   ${COMMON_MINI_INCLUDE_DIR}  
 )
 
+set(TARGET OdrPlot)
+
 set ( SOURCES
   main.cpp
 )
@@ -11,14 +13,18 @@ set ( SOURCES
 set ( INCLUDES
 )
 
-add_executable ( OdrPlot ${SOURCES} ${INCLUDES} )
+add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
 target_link_libraries ( 
-	OdrPlot
+	${TARGET}
 	CommonMini	
 	RoadManager
 	${TIME_LIB}
 )
 
-install ( TARGETS OdrPlot CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}/Release")
-install ( TARGETS OdrPlot CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}/Debug")
+if (UNIX)
+  install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")
+else()
+  install ( TARGETS ${TARGET} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}")
+  install ( TARGETS ${TARGET} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}")
+endif (UNIX)

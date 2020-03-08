@@ -7,18 +7,20 @@ include_directories (
   ${COMMON_MINI_INCLUDE_DIR}
 )
 
+set(TARGET OpenDriveViewer)
+
 set ( SOURCES
 	main.cpp
 )
 
 link_directories( ${OSG_LIBRARIES_PATH} )
 
-add_executable ( OpenDriveViewer ${SOURCES} )
+add_executable ( ${TARGET} ${SOURCES} )
 
 add_definitions(-DOSG_LIBRARY_STATIC)
 
 target_link_libraries ( 
-	OpenDriveViewer
+	${TARGET}
 	RoadManager
 	ViewerBase
 	CommonMini
@@ -26,5 +28,9 @@ target_link_libraries (
 	${TIME_LIB}	
 )
 
-install ( TARGETS OpenDriveViewer CONFIGURATIONS release DESTINATION "${INSTALL_DIRECTORY}/Release")
-install ( TARGETS OpenDriveViewer CONFIGURATIONS debug DESTINATION "${INSTALL_DIRECTORY}/Debug")
+if (UNIX)
+  install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")
+else()
+  install ( TARGETS ${TARGET} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}")
+  install ( TARGETS ${TARGET} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}")
+endif (UNIX)

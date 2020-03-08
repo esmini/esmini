@@ -595,11 +595,13 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
 	arguments.read("--lodScale", lodScale_);
 
-#ifdef _WIN32
 	// When running on Linux in VirtualBox on Windows host - the application crashes when trying to apply AntiAlias as below
-	// If someone know how to query AA capabilites, please replace this #ifdef with dynamic check so that AA can work on Linux as well
-	osg::DisplaySettings::instance()->setNumMultiSamples(4);  // Set some AntiAliasing
-#endif
+	// If someone know how to query AA capabilites, please replace this argument option with dynamic check to switch on/off
+	int aa_mode = 4;
+	arguments.read("--aa_mode", aa_mode);
+	LOG("Anti-alias num subsampling: %d", aa_mode);
+
+	osg::DisplaySettings::instance()->setNumMultiSamples(aa_mode);  // Set some AntiAliasing
 
 	osgViewer_ = new osgViewer::Viewer(arguments); 
 

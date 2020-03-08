@@ -3,7 +3,7 @@
 
 cd /d "%~dp0"
 
-..\..\bin\win64\Release\OdrPlot.exe "%~1"
-..\..\EnvironmentSimulator\OdrPlot\xodr.py track.csv
+"../../bin/OdrPlot" "%~1"
+python "../../EnvironmentSimulator/OdrPlot/xodr.py" track.csv
 
 del track.csv

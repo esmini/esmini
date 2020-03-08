@@ -7,6 +7,8 @@ include_directories (
   ${COMMON_MINI_INCLUDE_DIR}
 )
 
+set(TARGET EgoSimulator)
+
 set ( SOURCES
 	main.cpp
 	vehicle.cpp
@@ -18,12 +20,12 @@ set ( INCLUDES
 
 link_directories( ${OSG_LIBRARIES_PATH} )
 
-add_executable ( EgoSimulator ${SOURCES} ${INCLUDES} )
+add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
 add_definitions(-DOSG_LIBRARY_STATIC)
 
 target_link_libraries ( 
-	EgoSimulator
+	${TARGET}
 	RoadManager
 	ScenarioEngine
 	ViewerBase
@@ -32,5 +34,9 @@ target_link_libraries (
 	${TIME_LIB}	
 )
 
-install ( TARGETS EgoSimulator CONFIGURATIONS release DESTINATION "${INSTALL_DIRECTORY}/Release")
-install ( TARGETS EgoSimulator CONFIGURATIONS debug DESTINATION "${INSTALL_DIRECTORY}/Debug")
+if (UNIX)
+  install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")
+else()
+  install ( TARGETS ${TARGET} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}")
+  install ( TARGETS ${TARGET} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}")
+endif (UNIX)

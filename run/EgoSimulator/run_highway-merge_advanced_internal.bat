@@ -1,1 +1,1 @@
-..\..\bin\win64\Release\EgoSimulator.exe --window 50 50 1024 576  --osc ../../resources/xosc/highway_merge_advanced.xosc --control internal --camera_mode flex-orbit
+"../../bin/EgoSimulator" --window 50 50 1024 576  --osc ../../resources/xosc/highway_merge_advanced.xosc --control internal --camera_mode flex-orbit

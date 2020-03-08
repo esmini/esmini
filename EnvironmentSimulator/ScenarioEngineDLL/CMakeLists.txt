@@ -7,12 +7,14 @@ include_directories (
   ${COMMON_MINI_INCLUDE_DIR}  
 )
 
+set(TARGET ScenarioEngineDLL)
+
 set ( SOURCES scenarioenginedll.cpp )
 set ( INCLUDES scenarioenginedll.hpp )
 
 link_directories( ${OSG_LIBRARIES_PATH} )
 
-add_library ( ScenarioEngineDLL SHARED ${SOURCES} ${INCLUDES} )
+add_library ( ${TARGET} SHARED ${SOURCES} ${INCLUDES} )
 
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -24,7 +26,7 @@ endif (USE_OSG)
 
 
 target_link_libraries ( 
-	ScenarioEngineDLL
+	${TARGET}
 	PRIVATE ScenarioEngine
 	PRIVATE RoadManager
 	PRIVATE CommonMini
@@ -32,6 +34,10 @@ target_link_libraries (
 	${viewer_libs}
 )
 
+if (UNIX)
+  install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")
+else()
+  install ( TARGETS ${TARGET} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}")
+  install ( TARGETS ${TARGET} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}")
+endif (UNIX)
 
-install ( TARGETS ScenarioEngineDLL CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}/Release")
-install ( TARGETS ScenarioEngineDLL CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}/Debug")

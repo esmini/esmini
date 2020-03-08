@@ -39,6 +39,8 @@ Nevertheless, regarding the above stated limitations, it was decided to release 
 
 ## Build and run
 
+Windows and Linux binary builds and demo packages are available at CI service [AppVeyor/esmini](https://ci.appveyor.com/project/esmini/esmini). If you want to build yourself, here is some instructions:
+
 - Windows instructions are found [here](BuildOnWindows.md).
 - Linux instructions are found [here](BuildOnLinux.md).
 

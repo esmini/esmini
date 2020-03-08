@@ -315,9 +315,9 @@ static void viewer_thread(void *args)
 	{
 		camera_mode = osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND_ORBIT;
 	}
-	else
+	else if (camera_str != "")
 	{
-		LOG("Unsupported camera mode: %s - using default (orbit)", camera_str);
+		LOG("Unsupported camera mode: %s - using default (orbit)", camera_str.c_str());
 	}
 
 	scenarioViewer->SetCameraMode(camera_mode);
@@ -433,6 +433,7 @@ int main(int argc, char** argv)
 	arguments.getApplicationUsage()->addCommandLineOption("--trails <mode>", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
 	arguments.getApplicationUsage()->addCommandLineOption("--sensors <mode>", "Show sensor frustums (\"on\", \"off\" (default)) (toggle during simulation by press 'r') ");
 	arguments.getApplicationUsage()->addCommandLineOption("--camera_mode <mode>", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\") (toggle during simulation by press 'c') ");
+	arguments.getApplicationUsage()->addCommandLineOption("--aa_mode <mode>", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)");
 
 	if (arguments.argc() < 2)
 	{

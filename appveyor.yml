@@ -1,47 +1,60 @@
 version: 1.2.{build}
+
 image:
 - Visual Studio 2017
-- Visual Studio 2015
+#- Visual Studio 2015
 - Ubuntu1804
-- macos-mojave
+#- macos-mojave
 configuration: Release
 platform:
 - x64
-- x86
+#- x86
 cache:
 - externals/OpenSceneGraph
 - resources/models
-
-after_build:
- - 
-  cmd:
-    7z a esmini-bin.zip bin/*
-
-    appveyor PushArtifact esmini-bin.zip
-
+    
+# publish package on tag build    
+deploy:
+  - provider: GitHub
+    tag: $(APPVEYOR_REPO_TAG_NAME)
+    release: esmini v$(appveyor_build_version)
+    description: 'Demo and binaries'
+    auth_token:
+      secure: 'Zsjm85fzs4eTdDJg1VB+Y8Lk+5bEJRBkeaEtYtnbtv2IUg1sanoQTub/55QYNBsY'
+    on:
+       APPVEYOR_REPO_TAG: true       # deploy on tag push only
+    
 for:
   -
     matrix:
       only:
         - image: Ubuntu1804
-    build_script:
+    init:
       - echo Ubuntu build script
       - sh: >-
-          sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
-
-          mkdir build
-
+          sudo apt-get install -y libgl1-mesa-dev libxrandr-dev libxinerama-dev
+          
+    build_script:
+      - sh: >-
+          ./create_ubuntu_gcc_project.sh
+          
           cd build
-
-          cmake ../ -DUSE_OSG=false
-
-          make -j4
+          
+          make -j4 install
           
     after_build:
       - sh: >-
-          zip esmini-bin.zip EnvironmentSimulator/RoadManagerDLL/libRoadManagerDLL.so EnvironmentSimulator/ScenarioEngineDLL/libScenarioEngineDLL.so
+          cd ..
           
-          appveyor PushArtifact esmini-bin.zip
+          zip -r esmini-bin_ubuntu.zip bin 
+          
+          chmod -R +x ./run/*
+
+          ./generate_binary_dist.sh
+              
+    artifacts:
+      - path: esmini-*_ubuntu.zip
+        name: ubuntu_artifacts
 
   -
     matrix:
@@ -68,7 +81,7 @@ for:
           
           zip esmini-bin.zip bin -r
           
-          appveyor PushArtifact esmini-bin.zip    
+          PushArtifact 
           
   -
     matrix:
@@ -96,9 +109,16 @@ for:
 
           generate_binary_dist.bat
 
-          7z a esmini-demo.zip esmini-demo/*
+    after_build:
+      - cmd:
+            7z a esmini-demo_win.zip esmini-demo/*
+ 
+            7z a esmini-bin_win.zip bin/*
 
-          appveyor PushArtifact esmini-demo.zip
+    artifacts:
+      - path: esmini-*_win.zip
+        name: windows_artifacts
+
   -
     matrix:
       only:

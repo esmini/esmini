@@ -1,1 +1,1 @@
-..\..\bin\win64\Release\Replayer.exe --window 50 50 800 400  -f ltap-od_win64.dat -s 1.0 --res_path ../../Resources
+"../../bin/Replayer" --window 50 50 800 400  -f ltap-od_win64.dat -s 1.0 --res_path ../../Resources

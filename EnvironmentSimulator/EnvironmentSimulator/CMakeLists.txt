@@ -9,6 +9,8 @@ include_directories (
   ${COMMON_MINI_INCLUDE_DIR}
 )
 
+set(TARGET EnvironmentSimulator)
+
 set ( SOURCES
   main.cpp
 )
@@ -18,12 +20,12 @@ set ( INCLUDES
 
 link_directories( ${OSG_LIBRARIES_PATH} )
 
-add_executable ( EnvironmentSimulator ${SOURCES} ${INCLUDES} )
+add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
 add_definitions(-DOSG_LIBRARY_STATIC)
 
 target_link_libraries ( 
-	EnvironmentSimulator
+	${TARGET}
 	ScenarioEngine
 	RoadManager
 	ViewerBase
@@ -33,5 +35,9 @@ target_link_libraries (
     ${SOCK_LIB}
 )
 
-install ( TARGETS EnvironmentSimulator CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}/Release")
-install ( TARGETS EnvironmentSimulator CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}/Debug")
+if (UNIX)
+  install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")
+else()
+  install ( TARGETS ${TARGET} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}")
+  install ( TARGETS ${TARGET} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}")
+endif (UNIX)
