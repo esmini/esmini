@@ -1,4 +1,4 @@
-version: 1.2.{build}
+version: 1.3.{build}
 
 image:
 - Visual Studio 2017
@@ -63,6 +63,7 @@ for:
     matrix:
       only:
         - image: macos-mojave
+
     build_script:
       - echo MacOS Mojave build script
       - sh: >-
@@ -82,9 +83,11 @@ for:
 
           cd ..
           
-          zip esmini-bin.zip bin -r
+          zip esmini-bin_mac.zip bin -r
           
-          PushArtifact 
+    artifacts:
+      - path: esmini-*_mac.zip
+        name: mac_artifacts
           
   -
     matrix:

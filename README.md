@@ -55,6 +55,8 @@ Environment models (roads, landscape, buildings...) have been created using [VIR
 ### Scenario video clip generator
 [esmini-visualizer](https://github.com/matthewcoyle-cpc/esmini-visualiser) is a tool to automatically generate video visualizations of scenarios.
 
+Note that it does not seem to work with Anti-Alias filtering. Therefore make sure to run EgoSimulator without Anti-Alias by providing argument "--aa_mode 0".
+
 ### Scenario editor
 [RControlStation scenario editor](https://github.com/vedderb/rise_sdvp). An embryo to an OpenSCENARIO editor, part of Self-Driving Model Vehicle Platform (SDVP).
 

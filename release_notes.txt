@@ -13,3 +13,12 @@ The purpose of this document is to highlight changes breaking backward compatibi
       When a scenario refers to a catalog entry esmini will first locate the catalog by searching all specified catalog directories for a file named "catalog name".xosc. So a catalog name is defined by the base file name. Filename extension .xosc is mandatory. The actual Catalog XML element attribute "name" is ignored. 
       See synchronize.xosc for an example on how to (re-)use manuever catalog entries.
 - Trail visualization can be switched off by application argument (--trail <on/off>) and toggled by pressing key "t" in viewer window.
+
+2020-03-08 Version 1.3
+- Anti-Alias filter control
+  - EgoSimulator now takes argument aa_mode <number of sub samplings> 
+      0 means no Anti-Alias. 4 is default.
+  - One use case is when running esmini (EgoSimulator) within docker on Linux - which seem to not support AntiAlias.
+- Mac CI build environment added. However only RoadManager and ScenarioEngine as shared libraries, and without graphics (OSG) support.
+- Linux binaries now includes graphics (OSG) support. 
+- Demo package for Linux added. Now CI builds and deploy demo for both Windows and Linux (Ubuntu 18.04).
