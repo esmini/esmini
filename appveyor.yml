@@ -20,7 +20,7 @@ cache:
 deploy:
   - provider: GitHub
     tag: $(APPVEYOR_REPO_TAG_NAME)
-    release: esmini v$(appveyor_build_version)
+    release: esmini $(APPVEYOR_REPO_TAG_NAME) (build $(APPVEYOR_BUILD_NUMBER))
     description: 'Demo and binaries'
     auth_token:
       secure: 'Zsjm85fzs4eTdDJg1VB+Y8Lk+5bEJRBkeaEtYtnbtv2IUg1sanoQTub/55QYNBsY'
