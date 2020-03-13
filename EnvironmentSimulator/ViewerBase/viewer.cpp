@@ -741,6 +741,8 @@ Viewer::~Viewer()
 		delete(cars_[i]);
 	}
 	cars_.clear();
+	delete osgViewer_;
+	osgViewer_ = 0;
 }
 
 void Viewer::SetCameraMode(int mode)
@@ -1271,8 +1273,8 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	break;
 	case(osgGA::GUIEventAdapter::KEY_Escape):
 	{
-		viewer_->osgViewer_->setDone(true);
 		viewer_->SetQuitRequest(true);
+		viewer_->osgViewer_->setDone(true);
 	}
 	break;
 	}

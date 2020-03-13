@@ -69,117 +69,101 @@ static ScenarioEngine *scenarioEngine;
 static SE_Thread thread;
 static SE_Mutex mutex;
 
-static bool drawTrails = false;
+static viewer::Viewer *viewer_;
+static bool quit_request = false;
 
 #define TRAIL_DT 0.5
 
-void viewer_thread(void *args)
+void scenario_frame()
 {
-	osg::ArgumentParser *parser = (osg::ArgumentParser*)args;
+	static __int64 lastTimeStamp = 0;
+	double deltaSimTime;
+	__int64 now;
 
-	// Create viewer
-	viewer::Viewer *viewer = new viewer::Viewer(
-		roadmanager::Position::GetOpenDrive(), 
-		scenarioEngine->getSceneGraphFilename().c_str(), 
-		scenarioEngine->getScenarioFilename().c_str(), 
-		*parser);
+	// Get milliseconds since Jan 1 1970
+	now = SE_getSystemTime();
+	deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
+	lastTimeStamp = now;
+	double adjust = 0;
 
-	std::string info_text_str;
-	parser->read("--info_text", info_text_str);
-	if (info_text_str == "off")
+	if (deltaSimTime > maxStepSize) // limit step size
 	{
-		viewer->ShowInfoText(false);
+		adjust = -(deltaSimTime - maxStepSize);
+	}
+	else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
+	{
+		adjust = minStepSize - deltaSimTime;
+		SE_sleep(adjust * 1000);
+		lastTimeStamp += adjust * 1000;
 	}
 
-	std::string trail_str;
-	parser->read("--trails", trail_str);
-	if (trail_str == "off")
+	deltaSimTime += adjust;
+
+	// Time operations
+	simTime = simTime + deltaSimTime;
+
+	// ScenarioEngine
+
+	mutex.Lock();
+
+	scenarioEngine->step(deltaSimTime);
+	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
+	//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
+	//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
+	//    scenarioEngine->entities.object_[0]->pos_.GetS(),
+	//    scenarioEngine->entities.object_[0]->pos_.GetH(),
+	//    scenarioEngine->entities.object_[0]->pos_.GetHRoad(),
+	//    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
+
+	mutex.Unlock();
+}
+
+void viewer_frame()
+{
+	static double last_dot_time = 0;
+
+	bool add_dot = false;
+	if (simTime - last_dot_time > TRAIL_DT)
 	{
-		viewer->ShowTrail(false);
+		add_dot = true;
+		last_dot_time = simTime;
 	}
 
-	//  Create cars for visualization
+	mutex.Lock();
+
+	// Visualize cars
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		//  Create vehicles for visualization
-		bool transparent;
-		osg::Vec3 trail_color;
+		viewer::CarModel *car = viewer_->cars_[i];
 		Object *obj = scenarioEngine->entities.object_[i];
-		if (obj->control_ == Object::Control::HYBRID_GHOST)
-		{
-			transparent = true;
-			trail_color[0] = ((double)COLOR_DARK_GRAY[0]) / 0xFF;
-			trail_color[1] = ((double)COLOR_DARK_GRAY[1]) / 0xFF;
-			trail_color[2] = ((double)COLOR_DARK_GRAY[2]) / 0xFF;
-		}
-		else if (obj->control_ == Object::Control::HYBRID_EXTERNAL || obj->control_ == Object::Control::EXTERNAL)
-		{
-			transparent = false;
-			trail_color[0] = ((double)COLOR_YELLOW[0]) / 0xFF;
-			trail_color[1] = ((double)COLOR_YELLOW[1]) / 0xFF;
-			trail_color[2] = ((double)COLOR_YELLOW[2]) / 0xFF;
-		}
-		else
-		{
-			transparent = false;
-			trail_color[0] = ((double)COLOR_RED[0]) / 0xFF;
-			trail_color[1] = ((double)COLOR_RED[1]) / 0xFF;
-			trail_color[2] = ((double)COLOR_RED[2]) / 0xFF;
-		}
+		roadmanager::Position pos = scenarioEngine->entities.object_[i]->pos_;
 
-		if (viewer->AddCar(obj->model_filepath_, transparent, trail_color) == 0)
+		car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
+		car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
+		car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+
+		if (add_dot)
 		{
-			delete viewer;
-			viewer_state = VIEWER_FAILED;
-			return;
+			car->trail_->AddDot(simTime, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH());
 		}
 	}
 
-	double last_dot_time = 0;
+	// Update info text 
+	static char str_buf[128];
+	snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", simTime, 3.6 * scenarioEngine->entities.object_[viewer_->currentCarInFocus_]->speed_);
+	viewer_->SetInfoText(str_buf);
 
-	while (!viewer->osgViewer_->done())
+	mutex.Unlock();
+
+	viewer_->osgViewer_->frame();
+}
+
+void scenario_thread(void *args)
+{
+	while (!quit_request)
 	{
-		bool add_dot = false;
-		if (simTime - last_dot_time > TRAIL_DT)
-		{
-			add_dot = true;
-			last_dot_time = simTime;
-		}
-
-		mutex.Lock();
-
-		// Visualize cars
-		for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
-		{
-			viewer::CarModel *car = viewer->cars_[i];
-			Object *obj = scenarioEngine->entities.object_[i];
-			roadmanager::Position pos = scenarioEngine->entities.object_[i]->pos_;
-
-			car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
-			car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
-			car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
-
-			if (add_dot)
-			{
-				car->trail_->AddDot(simTime, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH());
-			}
-		}
-
-		// Update info text 
-		static char str_buf[128];
-		snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", simTime, 3.6 * scenarioEngine->entities.object_[viewer->currentCarInFocus_]->speed_);
-		viewer->SetInfoText(str_buf);
-
-		mutex.Unlock();
-
-		viewer->osgViewer_->frame();
-		
-		viewer_state = VIEWER_RUNNING;
+		scenario_frame();
 	}
-
-	delete viewer;
-
-	viewer_state = VIEWER_DONE;
 }
 
 void log_callback(const char *str)
@@ -189,13 +173,6 @@ void log_callback(const char *str)
 
 int main(int argc, char *argv[])
 {	
-	double deltaSimTime;
-
-	// Simulation constants
-	double endTime = 100;
-	double simulationTime = 0;
-	double timeStep = 1;
-
 	// use an ArgumentParser object to manage the program arguments.
 	osg::ArgumentParser arguments(&argc, argv);
 
@@ -262,13 +239,64 @@ int main(int argc, char *argv[])
 	scenarioEngine->step(0.0, true);
 
 	// Launch viewer in a separate thread
-	thread.Start(viewer_thread, &arguments);
-	
-	// Wait for the viewer to launch
-	while (viewer_state == VIEWER_NOT_STARTED) SE_sleep(100);
-	if (viewer_state == VIEWER_FAILED)
+	osg::ArgumentParser *parser = (osg::ArgumentParser*)&arguments;
+
+	// Create viewer
+	viewer_ = new viewer::Viewer(
+		roadmanager::Position::GetOpenDrive(),
+		scenarioEngine->getSceneGraphFilename().c_str(),
+		scenarioEngine->getScenarioFilename().c_str(),
+		*parser);
+
+	std::string info_text_str;
+	parser->read("--info_text", info_text_str);
+	if (info_text_str == "off")
 	{
-		return -1;
+		viewer_->ShowInfoText(false);
+	}
+
+	std::string trail_str;
+	parser->read("--trails", trail_str);
+	if (trail_str == "off")
+	{
+		viewer_->ShowTrail(false);
+	}
+
+	//  Create cars for visualization
+	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	{
+		//  Create vehicles for visualization
+		bool transparent;
+		osg::Vec3 trail_color;
+		Object *obj = scenarioEngine->entities.object_[i];
+		if (obj->control_ == Object::Control::HYBRID_GHOST)
+		{
+			transparent = true;
+			trail_color[0] = ((double)COLOR_DARK_GRAY[0]) / 0xFF;
+			trail_color[1] = ((double)COLOR_DARK_GRAY[1]) / 0xFF;
+			trail_color[2] = ((double)COLOR_DARK_GRAY[2]) / 0xFF;
+		}
+		else if (obj->control_ == Object::Control::HYBRID_EXTERNAL || obj->control_ == Object::Control::EXTERNAL)
+		{
+			transparent = false;
+			trail_color[0] = ((double)COLOR_YELLOW[0]) / 0xFF;
+			trail_color[1] = ((double)COLOR_YELLOW[1]) / 0xFF;
+			trail_color[2] = ((double)COLOR_YELLOW[2]) / 0xFF;
+		}
+		else
+		{
+			transparent = false;
+			trail_color[0] = ((double)COLOR_RED[0]) / 0xFF;
+			trail_color[1] = ((double)COLOR_RED[1]) / 0xFF;
+			trail_color[2] = ((double)COLOR_RED[2]) / 0xFF;
+		}
+
+		if (viewer_->AddCar(obj->model_filepath_, transparent, trail_color) == 0)
+		{
+			delete viewer_;
+			viewer_ = 0;
+			return -1;
+		}
 	}
 
 	if(scenarioEngine->entities.object_[0]->GetControl() == Object::Control::EXTERNAL ||
@@ -278,46 +306,15 @@ int main(int argc, char *argv[])
 		StartServer(scenarioEngine);
 	}
 
-	__int64 now, lastTimeStamp = 0;
+	// Launch scenario engine in a separate thread
+	thread.Start(scenario_thread, 0);
 
-	while (viewer_state == VIEWER_RUNNING)
+	while (!viewer_->osgViewer_->done())
 	{
-		// Get milliseconds since Jan 1 1970
-		now = SE_getSystemTime();
-		deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
-		lastTimeStamp = now;
-		double adjust = 0;
-
-		if (deltaSimTime > maxStepSize) // limit step size
-		{
-			adjust = -(deltaSimTime - maxStepSize);
-		}
-		else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
-		{
-			adjust = minStepSize - deltaSimTime;
-			SE_sleep(adjust * 1000);
-			lastTimeStamp += adjust * 1000;
-		}
-
-		deltaSimTime += adjust;
-
-		// Time operations
-		simTime = simTime + deltaSimTime;
-
-		// ScenarioEngine
-		mutex.Lock();
-	
-		scenarioEngine->step(deltaSimTime);
-		//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
-		//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
-		//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
-		//    scenarioEngine->entities.object_[0]->pos_.GetS(),
-		//    scenarioEngine->entities.object_[0]->pos_.GetH(),
-		//    scenarioEngine->entities.object_[0]->pos_.GetHRoad(),
-		//    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
-
-		mutex.Unlock();
+		viewer_frame();
 	}
+	quit_request = true;
+	delete viewer_;
 
 	if (scenarioEngine->entities.object_[0]->GetControl() == Object::Control::EXTERNAL ||
 		scenarioEngine->entities.object_[0]->GetControl() == Object::Control::HYBRID_EXTERNAL)
