@@ -35,8 +35,6 @@
 
 using namespace scenarioengine;
 
-enum ViewerState { VIEWER_NOT_STARTED, VIEWER_RUNNING, VIEWER_DONE, VIEWER_FAILED };
-
 typedef enum
 {
 	CONTROL_BY_OSC,
@@ -56,19 +54,14 @@ std::string RequestControlMode2Str(RequestControlMode mode)
 
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
-static const bool freerun = true;
-static int viewer_state = VIEWER_NOT_STARTED;
 static double simTime = 0;
-static int COLOR_DARK_GRAY[3] = { 0x80, 0x80, 0x80 };
-static int COLOR_YELLOW[3] = { 0x85, 0x75, 0x40 };
-static int COLOR_RED[3] = { 0x90, 0x30, 0x30 };
-
+static double color_dark_gray[] = { 0.5, 0.5, 0.5 };
+static double color_yellow[] = { 0.55, 0.46, 0.4 };
+static double color_red[] = { 0.6, 0.2, 0.2 };
 
 static ScenarioEngine *scenarioEngine;
-
 static SE_Thread thread;
 static SE_Mutex mutex;
-
 static viewer::Viewer *viewer_;
 static bool quit_request = false;
 
@@ -173,6 +166,12 @@ void log_callback(const char *str)
 
 int main(int argc, char *argv[])
 {	
+	std::string arg_str;
+	bool threads = false;
+
+	// Use logger callback
+	Logger::Inst().SetCallback(log_callback);
+
 	// use an ArgumentParser object to manage the program arguments.
 	osg::ArgumentParser arguments(&argc, argv);
 
@@ -183,6 +182,7 @@ int main(int argc, char *argv[])
 	arguments.getApplicationUsage()->addCommandLineOption("--control <mode>", "Ego control (\"osc\", \"internal\", \"external\", \"hybrid\"");
 	arguments.getApplicationUsage()->addCommandLineOption("--info_text <mode>", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
 	arguments.getApplicationUsage()->addCommandLineOption("--trails <mode>", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 't') ");
+	arguments.getApplicationUsage()->addCommandLineOption("--threads", "Run viewer and scenario in separate threads");
 
 	if (arguments.argc() < 2)
 	{
@@ -193,25 +193,23 @@ int main(int argc, char *argv[])
 	std::string oscFilename;
 	arguments.read("--osc", oscFilename);
 
-	std::string control_str;
-	arguments.read("--control", control_str);
-
 	RequestControlMode control;
-	if (control_str == "osc" || control_str == "") control = RequestControlMode::CONTROL_BY_OSC;
-	else if (control_str == "internal") control = RequestControlMode::CONTROL_INTERNAL;
-	else if (control_str == "external") control = RequestControlMode::CONTROL_EXTERNAL;
-	else if (control_str == "hybrid") control = RequestControlMode::CONTROL_HYBRID;
+	arguments.read("--control", arg_str);
+	if (arg_str == "osc" || arg_str == "") control = RequestControlMode::CONTROL_BY_OSC;
+	else if (arg_str == "internal") control = RequestControlMode::CONTROL_INTERNAL;
+	else if (arg_str == "external") control = RequestControlMode::CONTROL_EXTERNAL;
+	else if (arg_str == "hybrid") control = RequestControlMode::CONTROL_HYBRID;
 	else
 	{
-		LOG("Unrecognized external control mode: %s", control_str.c_str());
+		LOG("Unrecognized external control mode: %s", arg_str.c_str());
 		control = RequestControlMode::CONTROL_BY_OSC;
 	}
 
-	std::string record_filename;
-	arguments.read("--record", record_filename);
-
-	// Use logger callback
-	Logger::Inst().SetCallback(log_callback);
+	if (arguments.read("--threads"))
+	{
+		threads = true;
+		LOG("Run viewer in separate thread");
+	}
 
 	// Create scenario engine
 	try 
@@ -228,36 +226,30 @@ int main(int argc, char *argv[])
 	ScenarioGateway *scenarioGateway = scenarioEngine->getScenarioGateway();
 
 	// Create a data file for later replay?
-	if (!record_filename.empty())
+	if (arguments.read("--record", arg_str))
 	{
-		LOG("Recording data to file %s", record_filename.c_str());
-		scenarioGateway->RecordToFile(record_filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
+		LOG("Recording data to file %s", arg_str.c_str());
+		scenarioGateway->RecordToFile(arg_str, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
 	}
 
-	// Step scenario engine - zero time - just to reach init state	
-	// Report all vehicles initially - to communicate initial position for external vehicles as well
+	// Step scenario engine - zero time - just to reach and report init state of all vehicles
 	scenarioEngine->step(0.0, true);
-
-	// Launch viewer in a separate thread
-	osg::ArgumentParser *parser = (osg::ArgumentParser*)&arguments;
 
 	// Create viewer
 	viewer_ = new viewer::Viewer(
 		roadmanager::Position::GetOpenDrive(),
 		scenarioEngine->getSceneGraphFilename().c_str(),
 		scenarioEngine->getScenarioFilename().c_str(),
-		*parser);
+		arguments);
 
-	std::string info_text_str;
-	parser->read("--info_text", info_text_str);
-	if (info_text_str == "off")
+	arguments.read("--info_text", arg_str);
+	if (arg_str == "off")
 	{
 		viewer_->ShowInfoText(false);
 	}
 
-	std::string trail_str;
-	parser->read("--trails", trail_str);
-	if (trail_str == "off")
+	arguments.read("--trails", arg_str);
+	if (arg_str == "off")
 	{
 		viewer_->ShowTrail(false);
 	}
@@ -266,31 +258,23 @@ int main(int argc, char *argv[])
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
 		//  Create vehicles for visualization
-		bool transparent;
 		osg::Vec3 trail_color;
 		Object *obj = scenarioEngine->entities.object_[i];
+
 		if (obj->control_ == Object::Control::HYBRID_GHOST)
 		{
-			transparent = true;
-			trail_color[0] = ((double)COLOR_DARK_GRAY[0]) / 0xFF;
-			trail_color[1] = ((double)COLOR_DARK_GRAY[1]) / 0xFF;
-			trail_color[2] = ((double)COLOR_DARK_GRAY[2]) / 0xFF;
+			trail_color.set(color_dark_gray[0], color_dark_gray[1], color_dark_gray[2]);
 		}
 		else if (obj->control_ == Object::Control::HYBRID_EXTERNAL || obj->control_ == Object::Control::EXTERNAL)
 		{
-			transparent = false;
-			trail_color[0] = ((double)COLOR_YELLOW[0]) / 0xFF;
-			trail_color[1] = ((double)COLOR_YELLOW[1]) / 0xFF;
-			trail_color[2] = ((double)COLOR_YELLOW[2]) / 0xFF;
+			trail_color.set(color_yellow[0], color_yellow[1], color_yellow[2]);
 		}
 		else
 		{
-			transparent = false;
-			trail_color[0] = ((double)COLOR_RED[0]) / 0xFF;
-			trail_color[1] = ((double)COLOR_RED[1]) / 0xFF;
-			trail_color[2] = ((double)COLOR_RED[2]) / 0xFF;
+			trail_color.set(color_red[0], color_red[1], color_red[2]);
 		}
 
+		bool transparent = obj->control_ == Object::Control::HYBRID_GHOST ? true : false;
 		if (viewer_->AddCar(obj->model_filepath_, transparent, trail_color) == 0)
 		{
 			delete viewer_;
@@ -306,11 +290,18 @@ int main(int argc, char *argv[])
 		StartServer(scenarioEngine);
 	}
 
-	// Launch scenario engine in a separate thread
-	thread.Start(scenario_thread, 0);
+	if (threads)
+	{
+		// Launch scenario engine in a separate thread
+		thread.Start(scenario_thread, 0);
+	}
 
 	while (!viewer_->osgViewer_->done())
 	{
+		if (!threads)
+		{
+			scenario_frame();
+		}
 		viewer_frame();
 	}
 	quit_request = true;

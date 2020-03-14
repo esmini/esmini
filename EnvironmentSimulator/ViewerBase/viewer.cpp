@@ -22,6 +22,7 @@
 #include <osg/Group> 
 #include <osg/ShapeDrawable>
 #include <osg/CullFace>
+#include <osgGA/StateSetManipulator>
 #include <osgGA/TrackballManipulator>
 #include <osgGA/KeySwitchMatrixManipulator>
 #include <osgGA/FlightManipulator>
@@ -693,6 +694,24 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 
 	// add the stats handler
 	osgViewer_->addEventHandler(new osgViewer::StatsHandler);
+
+	// add the state manipulator
+	osgViewer_->addEventHandler(new osgGA::StateSetManipulator(osgViewer_->getCamera()->getOrCreateStateSet()));
+
+	// add the thread model handler
+	osgViewer_->addEventHandler(new osgViewer::ThreadingHandler);
+
+	// add the help handler
+	osgViewer_->addEventHandler(new osgViewer::HelpHandler(arguments.getApplicationUsage()));
+
+	// add the record camera path handler
+	osgViewer_->addEventHandler(new osgViewer::RecordCameraPathHandler);
+
+	// add the LOD Scale handler
+	osgViewer_->addEventHandler(new osgViewer::LODScaleHandler);
+
+	// add the screen capture handler
+	osgViewer_->addEventHandler(new osgViewer::ScreenCaptureHandler);
 
 	osgViewer_->setReleaseContextAtEndOfFrameHint(false);
 
