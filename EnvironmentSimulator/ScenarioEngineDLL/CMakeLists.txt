@@ -3,6 +3,7 @@ include_directories (
   ${SCENARIOENGINE_INCLUDE_DIRS}
   ${ROADMANAGER_INCLUDE_DIR}
   ${VIEWER_BASE_INCLUDE_DIR}
+  ${PLAYER_BASE_INCLUDE_DIR}
   ${OSG_INCLUDE_DIR}
   ${COMMON_MINI_INCLUDE_DIR}  
 )
@@ -30,7 +31,9 @@ target_link_libraries (
 	PRIVATE ScenarioEngine
 	PRIVATE RoadManager
 	PRIVATE CommonMini
+    PRIVATE PlayerBase
 	PRIVATE ${TIME_LIB}	
+    PRIVATE ${SOCK_LIB}
 	${viewer_libs}
 )
 

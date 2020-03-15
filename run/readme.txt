@@ -9,10 +9,10 @@ Run esmini demo:
 Key commands:
 
 	Arrow keys is used to drive externally controlled Ego vehicle:
-	  Up:   Accelerate
-	  Down: Brake
-	  Left: Steer left
-	  Right: Steer right
+	  Up/w:    Accelerate
+	  Down/x:  Brake
+	  Left/a:  Steer left
+	  Right/d: Steer right
 
 	  (w, x, a and d alternatives) 
 
@@ -41,8 +41,14 @@ Key commands:
 	s: Graphics performance statistics
 	f: Toggle full screen mode
 	i: Toggle info text showing time and speed
-	t: Toggle show trails after vehicles
+	j: Toggle show trails after vehicles
 	ESC: quit
+
+	Viewer options:
+      t: Toggle textures
+      s: Rendering statistics
+      l: Toggle light
+      w: Toggle geometry mode (shading, wireframe, dots)
 
 
 Mouse control:

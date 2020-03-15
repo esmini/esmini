@@ -4,6 +4,7 @@ include_directories (
   ${RDB_INCLUDE_DIR}
   ${RAPIDXML_INCLUDE_DIR}
   ${VIEWER_BASE_INCLUDE_DIR}
+  ${PLAYER_BASE_INCLUDE_DIR}  
   ${OSG_INCLUDE_DIR}
   ${SCENARIOENGINE_INCLUDE_DIRS}
   ${COMMON_MINI_INCLUDE_DIR}
@@ -26,6 +27,7 @@ add_definitions(-DOSG_LIBRARY_STATIC)
 
 target_link_libraries ( 
 	${TARGET}
+	PlayerBase
 	ScenarioEngine
 	RoadManager
 	ViewerBase

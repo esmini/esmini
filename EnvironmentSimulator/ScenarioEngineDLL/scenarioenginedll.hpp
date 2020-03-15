@@ -73,7 +73,8 @@ extern "C"
 	*/
 	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int record, float headstart_time);
 
-	SE_DLL_API int SE_Step(float dt);
+	SE_DLL_API int SE_StepDT(float dt);
+	SE_DLL_API int SE_Step();
 	SE_DLL_API void SE_Close();
 
 	SE_DLL_API float SE_GetSimulationTime();  // Get simulation time in seconds

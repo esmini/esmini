@@ -289,6 +289,46 @@ void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size)
 
 #endif
 
+double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_time_step)
+{
+	double dt;
+	double adjust = 0;
+	__int64 now = SE_getSystemTime();
+
+	dt = (now - time_stamp) * 0.001;  // step size in seconds
+
+	if (dt > max_time_step) // limit step size
+	{
+		dt = max_time_step;
+	}
+	else if (dt < min_time_step)  // avoid CPU rush, sleep for a while
+	{
+		SE_sleep((int)(min_time_step - dt) * 1000);
+		now = SE_getSystemTime();
+		dt = (now - time_stamp) * 0.001;
+	}
+
+	time_stamp = now;
+
+	return dt;
+}
+
+std::vector<std::string> SplitString(const std::string &s, char separator)
+{
+	std::vector<std::string> output;
+	std::string::size_type prev_pos = 0, pos = 0;
+
+	while ((pos = s.find(separator, pos)) != std::string::npos)
+	{
+		std::string substring(s.substr(prev_pos, pos - prev_pos));
+		output.push_back(substring);
+		prev_pos = ++pos;
+	}
+	output.push_back(s.substr(prev_pos, pos - prev_pos)); // Last word
+
+	return output;
+}
+
 std::string DirNameOf(const std::string& fname)
 {
 	size_t pos = fname.find_last_of("\\/");
@@ -302,6 +342,27 @@ std::string FileNameOf(const std::string& fname)
 	if (pos != std::string::npos)
 	{
 		return (fname.substr(pos+1));
+	}
+	else
+	{
+		return fname;  // Assume filename with no separator
+	}
+}
+
+std::string FileNameWithoutExtOf(const std::string& fname)
+{
+	size_t start_pos = fname.find_last_of("\\/");
+	if (start_pos != std::string::npos)
+	{
+		size_t end_pos = fname.find_last_of(".");
+		if (end_pos != std::string::npos)
+		{
+			return (fname.substr(start_pos + 1, end_pos - start_pos - 1));
+		}
+		else
+		{
+			return (fname.substr(start_pos + 1));
+		}
 	}
 	else
 	{

@@ -60,8 +60,6 @@ namespace scenarioengine
 #ifdef _WIN32
 		WSACleanup();
 #endif
-
-		state = SERV_STOPPED;
 	}
 
 	void ServerThread(void *args)
@@ -72,6 +70,8 @@ namespace scenarioengine
 		static int iPortIn = DEFAULT_INPORT;   // Port for incoming packages
 		EgoStateBuffer_t buf;
 		socklen_t sender_addr_size = sizeof(sender_addr);
+
+		state = SERV_NOT_STARTED;
 
 #ifdef _WIN32
 		WSADATA wsa_data;
@@ -141,6 +141,8 @@ namespace scenarioengine
 		}
 
 		CloseGracefully(sock);
+
+		state = SERV_STOPPED;
 	}
 
 	void StartServer(ScenarioEngine *scenarioEngine)
@@ -164,6 +166,6 @@ namespace scenarioengine
 		}
 		
 		// Wait/block until UDP server closed gracefully
-		while (state != SERV_STOPPED) SE_sleep(100);
+		thread.Wait();
 	}
 }

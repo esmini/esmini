@@ -49,7 +49,7 @@
 // Time functions
 __int64 SE_getSystemTime();
 void SE_sleep(unsigned int msec);
-
+double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_time_step);
 
 // Useful operations
 
@@ -191,8 +191,10 @@ private:
 };
 
 
+std::vector<std::string> SplitString(const std::string &s, char separator);
 std::string DirNameOf(const std::string& fname);
 std::string FileNameOf(const std::string& fname);
+std::string FileNameWithoutExtOf(const std::string& fname);
 
 
 // Global Logger class

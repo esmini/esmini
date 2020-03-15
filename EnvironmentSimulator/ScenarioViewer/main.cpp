@@ -41,44 +41,48 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	if (SE_Init(argv[1], 0, 1, 0, 0.2f) != 0)
+	for (int a = 0; a < 1; a++)
 	{
-		LOG("Failed to load %s", argv[1]);
-		return -1;
-	}
 
-	SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 5.0f, 50.0f, (float)(50.0 * M_PI / 180.0), 10);
-	
-	int objList[2];
-	
-	for (int i = 0; i < 1000; i++)
-	{
-		if (SE_Step(TIME_STEP) != 0)
+		if (SE_Init(argv[1], 3, 1, 0, 0.2f) != 0)
 		{
-			return 0;
+			LOG("Failed to load %s", argv[1]);
+			return -1;
 		}
 
-		int nHits = SE_FetchSensorObjectList(0, objList);
-		//for (int j = 0; j < nHits; j++)
-		//{
-		//	LOG("sensor hit obj_id %d", j, objList[j]);
-		//}
+		SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 5.0f, 50.0f, (float)(50.0 * M_PI / 180.0), 10);
 
-		SE_ScenarioObjectState state;
-		SE_GetObjectState(0, &state);
+		int objList[2];
+	
+		for (int i = 0; i < 400; i++)
+		{
+			if (SE_StepDT(TIME_STEP) != 0)
+			{
+				return 0;
+			}
+
+			int nHits = SE_FetchSensorObjectList(0, objList);
+			for (int j = 0; j < nHits; j++)
+			{
+				LOG("sensor hit obj_id %d", j, objList[j]);
+			}
+
+			//SE_ScenarioObjectState state;
+			//SE_GetObjectState(0, &state);
 			
-		if (state.control == 3)
-		{
-			SE_RoadInfo info;
-			float speed;
-			SE_GetRoadInfoAlongGhostTrail(0, 20, &info, &speed);
-			//LOG("y %.2f trail h %.2f speed %.2f", info.global_pos_y, info.trail_heading, speed);
-		}
+			//if (state.control == 3)
+			//{
+			//	SE_RoadInfo info;
+			//	float speed;
+			//	SE_GetRoadInfoAlongGhostTrail(0, 20, &info, &speed);
+			//	//LOG("y %.2f trail h %.2f speed %.2f", info.global_pos_y, info.trail_heading, speed);
+			//}
 
-		SE_sleep((unsigned int)(TIME_STEP * 1000));
+			SE_sleep((unsigned int)(TIME_STEP * 1000));
+		}
+		SE_Close();
 	}
 
-	SE_Close();
 
 	return 0;
 }

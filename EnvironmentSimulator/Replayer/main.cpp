@@ -168,7 +168,7 @@ int main(int argc, char** argv)
 					LOG("Creating car %d - got state from gateway", state->id);
 
 					new_sc.id = state->id;
-					if ((new_sc.carModel = viewer->AddCar(carModelsFiles_[state->model_id], false, osg::Vec3(0.5, 0.5, 0.5))) == 0)
+					if ((new_sc.carModel = viewer->AddCar(carModelsFiles_[state->model_id], false, osg::Vec3(0.5, 0.5, 0.5), false)) == 0)
 					{
 						return -1;
 					}

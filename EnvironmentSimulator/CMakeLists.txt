@@ -1,5 +1,6 @@
 
 set ( VIEWER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ViewerBase" )
+set ( PLAYER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/PlayerBase" )
 set ( WORLDMANAGER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/WorldManager" )
 set ( REPLAY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Replayer" )
 set ( ROADMANAGER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/RoadManager" )
@@ -162,6 +163,7 @@ if (USE_OSG)
     add_subdirectory(OdrPlot)
   endif (NOT USE_ENVSIM_ADAPT)
   add_subdirectory(ViewerBase)
+  add_subdirectory(PlayerBase)
 
   if (NOT USE_ENVSIM_ADAPT)
     set_target_properties (EnvironmentSimulator PROPERTIES FOLDER ${ApplicationsFolder} )
@@ -172,5 +174,6 @@ if (USE_OSG)
     set_target_properties (OdrPlot PROPERTIES FOLDER ${ApplicationsFolder} )
   endif (NOT USE_ENVSIM_ADAPT)
   set_target_properties (ViewerBase PROPERTIES FOLDER ${ModulesFolder} )
+  set_target_properties (PlayerBase PROPERTIES FOLDER ${ModulesFolder} )
 
 endif (USE_OSG)
