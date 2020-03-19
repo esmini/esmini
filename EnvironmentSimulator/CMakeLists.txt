@@ -19,7 +19,13 @@ set ( COMMON_MINI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CommonMini")
 set ( OSG_VERSION "osg160" )
 set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
 
-if(UNIX)
+set( CMAKE_VERBOSE_MAKEFILE on )
+
+if (APPLE)
+  set ( TIME_LIB "" )
+  set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1yEFOB8HmNP5lPxYD4VJC-ry7XaBG9dsJ )
+  set ( OSG_DIR "${OSG_BASE_DIR}/mac" )
+elseif (UNIX)
   set ( TIME_LIB "" )
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1OufA3TUQjBTkaRvAuo0rSUwryvoqde8G )
   set ( OSG_DIR "${OSG_BASE_DIR}/linux" )
@@ -38,7 +44,7 @@ else()  # v10
   set ( TIME_LIB "" )
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1YxLVdQLhKBMGW4HB_ArJglRIpzuDiwhJ )
   set ( OSG_DIR "${OSG_BASE_DIR}/v10" )
-endif (UNIX)
+endif (APPLE)
 
 set ( OSG_INCLUDE_DIR 
 	"${OSG_DIR}/build/include"
@@ -53,13 +59,38 @@ set ( OSG_LIBRARIES_PATH
 #endif
 )
 
-if(UNIX)
-  SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-strip-all")
+if(APPLE)
+  SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip -framework OpenGL -framework Cocoa")
+
+  SET( "-framework OpenGL -framework Cocoa")
+  
+  link_directories(${OSG_LIBRARIES_PATH})
+
+  set ( OSG_LIBRARIES
+	
+	osgdb_serializers_osgsim.a
+	osgdb_serializers_osg.a
+	osgdb_osg.a
+	osgAnimation
+	osgText
+	osgSim
+	osgViewer
+	osgUtil
+	osgDB
+	osgGA
+	osg
+	OpenThreads
+	"-framework OpenGL"
+	"-framework Cocoa"
+	dl
+	libz.a
+	#db_fbx
+  )
+elseif(UNIX)
+   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-strip-all")
   
   link_directories(${OSG_LIBRARIES_PATH})
   
-#  set( CMAKE_VERBOSE_MAKEFILE on )
-
   set ( OSG_LIBRARIES
 	osgdb_serializers_osgsim.a
 	osgdb_serializers_osg.a
@@ -147,7 +178,7 @@ endif()
 set ( MODELS_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources" )
 set ( MODELS_DIR "${MODELS_BASE_DIR}/models" )
 set ( MODELS_PACKAGE_FILENAME models.7z)
-set ( MODELS_PACKAGE_URL https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc )
+set ( MODELS_PACKAGE_URL https://drive.google.com/uc?export=download&id=11a8njhkRIjLYMqCsSL9pU-d5_A8pMVhc )
 
 if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${MODELS_DIR} )
 	download_and_extract(${MODELS_PACKAGE_URL} ${MODELS_BASE_DIR} ${MODELS_PACKAGE_FILENAME})

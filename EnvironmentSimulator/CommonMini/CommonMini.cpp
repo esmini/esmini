@@ -547,7 +547,7 @@ void SE_Mutex::Unlock()
 
 void SE_Option::Usage()
 {
-	LOG("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), opt_arg_ != "" ? '<'+ opt_arg_ +'>' : "");
+	LOG("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? std::string('<'+ opt_arg_ +'>').c_str() : "");
 	LOG("\n      %s\n", opt_desc_.c_str());
 }
 

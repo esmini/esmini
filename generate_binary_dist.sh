@@ -4,7 +4,7 @@ rm -rf esmini-demo
 
 mkdir esmini-demo
 
-cp -p --parents -r \
+rsync -R \
 resources/xosc/basic_hybrid.xosc \
 resources/xosc/cut-in.xosc \
 resources/xosc/lane_change.xosc \
@@ -59,6 +59,6 @@ release_notes.txt \
 bin/EgoSimulator \
 esmini-demo
 
-rm -f esmini-demo_ubuntu.zip
+rm -f esmini-demo*.zip
 
-zip -r esmini-demo_ubuntu.zip esmini-demo
+zip -r esmini-demo.zip esmini-demo

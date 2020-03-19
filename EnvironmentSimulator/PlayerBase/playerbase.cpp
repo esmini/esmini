@@ -430,7 +430,7 @@ int ScenarioPlayer::Init(int argc, char *argv[])
 	if (threads)
 	{
 		// Launch scenario engine in a separate thread
-		thread.Start(scenario_thread, this);
+		thread.Start(scenario_thread, (void*)this);
 	}
 
 	return 0;

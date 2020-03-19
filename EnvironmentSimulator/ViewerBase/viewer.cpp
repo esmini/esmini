@@ -45,7 +45,7 @@ double color_green[3] = { 0.25, 0.6, 0.3 };
 double color_gray[3] = { 0.7, 0.7, 0.7 };
 double color_dark_gray[3] = { 0.5, 0.5, 0.5 };
 double color_red[3] = { 0.73, 0.26, 0.26 };
-double color_blue[3] = { 0.25, 0.38, 0x7 };
+double color_blue[3] = { 0.25, 0.38, 0.7 };
 double color_yellow[3] = { 0.75, 0.7, 0.4 };
 double color_white[3] = { 0.80, 0.80, 0.79 };
 
@@ -972,12 +972,12 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 
 				if (lane->GetId() == 0)
 				{
-					lineWidth->setWidth(5.0f);
+					lineWidth->setWidth(4.0f);
 					color->push_back(osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0));
 				}
 				else
 				{
-					lineWidth->setWidth(2.0f);
+					lineWidth->setWidth(1.5f);
 					color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
 				}
 

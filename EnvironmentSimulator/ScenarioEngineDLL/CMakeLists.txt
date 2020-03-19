@@ -28,10 +28,10 @@ endif (USE_OSG)
 
 target_link_libraries ( 
 	${TARGET}
+    PRIVATE PlayerBase
 	PRIVATE ScenarioEngine
 	PRIVATE RoadManager
 	PRIVATE CommonMini
-    PRIVATE PlayerBase
 	PRIVATE ${TIME_LIB}	
     PRIVATE ${SOCK_LIB}
 	${viewer_libs}

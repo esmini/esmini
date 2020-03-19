@@ -34,9 +34,9 @@ target_link_libraries (
 	ScenarioEngine
 	RoadManager
 	CommonMini
-    ${viewer_libs}
+    	${viewer_libs}
 	${TIME_LIB}	
-    ${SOCK_LIB}
+    	${SOCK_LIB}
 )
 
 if (UNIX)
