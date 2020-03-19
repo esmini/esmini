@@ -23,16 +23,18 @@ link_directories( ${OSG_LIBRARIES_PATH} )
 
 add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
-add_definitions(-DOSG_LIBRARY_STATIC)
+if (USE_OSG)
+  add_definitions(-DOSG_LIBRARY_STATIC -D_SCENARIO_VIEWER)
+  set (viewer_libs ViewerBase ${OSG_LIBRARIES})
+endif (USE_OSG)
 
 target_link_libraries ( 
 	${TARGET}
 	PlayerBase
 	ScenarioEngine
 	RoadManager
-	ViewerBase
+	${viewer_libs}
 	CommonMini
-	${OSG_LIBRARIES}
 	${TIME_LIB}
     ${SOCK_LIB}
 )

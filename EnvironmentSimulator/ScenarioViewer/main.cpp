@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 	for (int a = 0; a < 1; a++)
 	{
 
-		if (SE_Init(argv[1], 3, 1, 0, 0.2f) != 0)
+		if (SE_Init(argv[1], 1, 1, 0, 0.2f) != 0)
 		{
 			LOG("Failed to load %s", argv[1]);
 			return -1;
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
 		int objList[2];
 	
-		for (int i = 0; i < 400; i++)
+		for (int i = 0; i < 500; i++)
 		{
 			if (SE_StepDT(TIME_STEP) != 0)
 			{
@@ -62,10 +62,10 @@ int main(int argc, char *argv[])
 			}
 
 			int nHits = SE_FetchSensorObjectList(0, objList);
-			for (int j = 0; j < nHits; j++)
-			{
-				LOG("sensor hit obj_id %d", j, objList[j]);
-			}
+			//for (int j = 0; j < nHits; j++)
+			//{
+			//	LOG("sensor hit obj_id %d", j, objList[j]);
+			//}
 
 			//SE_ScenarioObjectState state;
 			//SE_GetObjectState(0, &state);
@@ -82,7 +82,6 @@ int main(int argc, char *argv[])
 		}
 		SE_Close();
 	}
-
 
 	return 0;
 }

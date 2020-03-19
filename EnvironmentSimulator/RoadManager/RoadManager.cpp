@@ -3295,8 +3295,9 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 	int max_links = 8;  // limit lookahead through junctions/links 
 	ContactPointType contact_point_type;
 
-	if (GetOpenDrive()->GetNumOfRoads() == 0)
+	if (GetOpenDrive()->GetNumOfRoads() == 0 || track_idx_ < 0)
 	{
+		// No roads available or current track undefined
 		return 0;
 	}
 

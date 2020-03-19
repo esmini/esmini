@@ -40,8 +40,10 @@ static int ego_id = -1;
 typedef struct
 {
 	scenarioengine::Object *obj;
-	viewer::CarModel *gfx_model;
 	vehicle::Vehicle *dyn_model;
+#ifdef _SCENARIO_VIEWER
+	viewer::CarModel *gfx_model;
+#endif
 
 	double speed_target_speed;
 	double steering_target_heading;
@@ -68,14 +70,14 @@ int SetupExternVehicles(ScenarioPlayer *player)
 			else
 			{
 				LOG("Registering Ego id %d", i);
-				ego_id = extern_vehicle.size();
+				ego_id = (int)extern_vehicle.size();
 			}
 
 			vh.steering_target_heading = 0;
 			vh.speed_target_speed = 0;
 
+#ifdef _SCENARIO_VIEWER
 			vh.gfx_model = player->viewer_->cars_[i];
-
 			if (obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 			{
 				player->viewer_->SensorSetPivotPos(vh.gfx_model->speed_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
@@ -84,8 +86,10 @@ int SetupExternVehicles(ScenarioPlayer *player)
 				player->viewer_->SensorSetPivotPos(vh.gfx_model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 				player->viewer_->SensorSetTargetPos(vh.gfx_model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 			}
-
-			vh.dyn_model = new vehicle::Vehicle(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH(), vh.gfx_model->size_x);
+			vh.dyn_model = new vehicle::Vehicle(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH(), vh.gfx_model->size_x); 
+#else
+			vh.dyn_model = new vehicle::Vehicle(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH(), 5.0);
+#endif
 			vh.obj = obj;
 
 			extern_vehicle.push_back(vh);
@@ -127,7 +131,10 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 		{
 			if (i == ego_id)
 			{
-				vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
+				vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE; 
+				vehicle::STEERING steer = vehicle::STEERING_NONE;
+#ifdef _SCENARIO_VIEWER
+
 				if (player->viewer_->getKeyUp())
 				{
 					accelerate = vehicle::THROTTLE_ACCELERATE;
@@ -137,7 +144,6 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 					accelerate = vehicle::THROTTLE_BRAKE;
 				}
 
-				vehicle::STEERING steer = vehicle::STEERING_NONE;
 				if (player->viewer_->getKeyLeft())
 				{
 					steer = vehicle::STEERING_LEFT;
@@ -146,7 +152,7 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 				{
 					steer = vehicle::STEERING_RIGHT;
 				}
-
+#endif
 				// Update vehicle motion
 				vh->dyn_model->DrivingControlBinary(deltaTimeStep, accelerate, steer);
 			}
@@ -167,7 +173,10 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 
 			// Speed - common speed target for these control modes
 			vh->obj->pos_.GetSteeringTargetInfo(speed_target_distance, &data, roadmanager::Position::LOOKAHEADMODE_AT_ROAD_CENTER);
+
+#ifdef _SCENARIO_VIEWER
 			player->viewer_->SensorSetTargetPos(vh->gfx_model->speed_sensor_, data.global_pos[0], data.global_pos[1], data.global_pos[2]);
+#endif
 
 			// Steering - Find out a steering target along ghost vehicle trail
 			double s_out;
@@ -177,16 +186,18 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 
 			if (vh->obj->ghost_->trail_.FindPointAhead(vh->obj->trail_follow_index_, vh->obj->trail_follow_s_, steering_target_distance, state, index_out, s_out) != 0)
 			{
-				state.x_ = vh->obj->pos_.GetX();
-				state.y_ = vh->obj->pos_.GetY();
-				state.z_ = vh->obj->pos_.GetX();
+				state.x_ = (float)vh->obj->pos_.GetX();
+				state.y_ = (float)vh->obj->pos_.GetY();
+				state.z_ = (float)vh->obj->pos_.GetX();
 				state.speed_ = 0;
 			}
 			roadmanager::Position pos(state.x_, state.y_, 0, 0, 0, 0);
 			vh->obj->pos_.CalcSteeringTarget(&pos, &data);
 			vh->steering_target_heading = data.angle;
-			player->viewer_->SensorSetTargetPos(vh->gfx_model->steering_sensor_, data.global_pos[0], data.global_pos[1], data.global_pos[2]);
 
+#ifdef _SCENARIO_VIEWER
+			player->viewer_->SensorSetTargetPos(vh->gfx_model->steering_sensor_, data.global_pos[0], data.global_pos[1], data.global_pos[2]);
+#endif
 
 			// Let steering target heading influence speed target - slowing down when turning
 			vh->speed_target_speed = state.speed_ * (1 - vh->steering_target_heading / M_PI_2);
@@ -203,7 +214,7 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 
 		// Report updated state to scenario gateway
 		std::string name = vh->obj->GetControl() == Object::Control::EXTERNAL ? "External_" : "Hybrid_external_" + i;
-		player->scenarioGateway->reportObject(ObjectState(i, name, 0, 1, player->scenarioEngine->getSimulationTime(),
+		player->scenarioGateway->reportObject(ObjectState((int)i, name, 0, 1, player->scenarioEngine->getSimulationTime(),
 			vh->dyn_model->posX_, vh->dyn_model->posY_, vh->dyn_model->posZ_,
 			vh->dyn_model->heading_, vh->dyn_model->pitch_, 0,
 			vh->dyn_model->speed_, vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_));

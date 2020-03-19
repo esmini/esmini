@@ -15,6 +15,8 @@ set ( INCLUDES
   playerbase.hpp
 )
 
-add_definitions(-DOSG_LIBRARY_STATIC)
+if (USE_OSG)
+  add_definitions(-DOSG_LIBRARY_STATIC -D_SCENARIO_VIEWER)
+endif (USE_OSG)
 
 add_library ( PlayerBase STATIC ${SOURCES} ${INCLUDES} )

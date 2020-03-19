@@ -15,11 +15,13 @@
 #include <random>
 
 #include "ScenarioEngine.hpp"
-#include "viewer.hpp"
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "Server.hpp"
 #include "IdealSensor.hpp"
+#ifdef _SCENARIO_VIEWER
+  #include "viewer.hpp"
+#endif
 
 using namespace scenarioengine;
 
@@ -44,22 +46,27 @@ public:
 
 	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;
+#ifdef _SCENARIO_VIEWER
 	viewer::Viewer *viewer_;
+	std::vector<viewer::SensorViewFrustum*> sensorFrustum;
+#endif
 	roadmanager::OpenDrive *odr_manager;
 	std::vector<ObjectSensor*> sensor;
-	std::vector<viewer::SensorViewFrustum*> sensorFrustum;
 	const double maxStepSize;
 	const double minStepSize;
 
 private:
 	std::string RequestControlMode2Str(RequestControlMode mode);
-	void ViewerFrame();
 	int Init(int argc, char *argv[]);
+#ifdef _SCENARIO_VIEWER
+	void ViewerFrame();
+#endif
 
-	const double trail_dt;
+	double trail_dt;
 	SE_Thread thread;
 	SE_Mutex mutex;
 	bool quit_request;
 	bool threads;
-
+	bool headless;
+	bool launch_server;
 };

@@ -54,20 +54,17 @@ set ( OSG_LIBRARIES_PATH
 )
 
 if(UNIX)
-   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-strip-all")
+  SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-strip-all")
   
   link_directories(${OSG_LIBRARIES_PATH})
   
 #  set( CMAKE_VERBOSE_MAKEFILE on )
 
   set ( OSG_LIBRARIES
-	
 	osgdb_serializers_osgsim.a
 	osgdb_serializers_osg.a
 	osgdb_osg.a
-    
 	osgAnimation
-
 	osgText
 	osgSim
 	osgViewer
@@ -75,7 +72,6 @@ if(UNIX)
 	osgDB
 	osgGA
 	osg
-
 	OpenThreads
 
 	GL
@@ -116,7 +112,11 @@ add_subdirectory(CommonMini)
 add_subdirectory(ScenarioEngine)
 add_subdirectory(RoadManagerDLL)
 add_subdirectory(ScenarioEngineDLL)
-
+add_subdirectory(PlayerBase)
+add_subdirectory(ScenarioViewer)
+add_subdirectory(EnvironmentSimulator)
+add_subdirectory(EgoSimulator)
+    
 set ( ModulesFolder Modules )
 set ( ApplicationsFolder Applications )  
 
@@ -155,15 +155,11 @@ endif()
 
 if (USE_OSG)
   if (NOT USE_ENVSIM_ADAPT)
-    add_subdirectory(EnvironmentSimulator)
-    add_subdirectory(ScenarioViewer)
-    add_subdirectory(EgoSimulator)
     add_subdirectory(Replayer)
     add_subdirectory(OpenDriveViewer)
     add_subdirectory(OdrPlot)
   endif (NOT USE_ENVSIM_ADAPT)
   add_subdirectory(ViewerBase)
-  add_subdirectory(PlayerBase)
 
   if (NOT USE_ENVSIM_ADAPT)
     set_target_properties (EnvironmentSimulator PROPERTIES FOLDER ${ApplicationsFolder} )

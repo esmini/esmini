@@ -15,7 +15,9 @@ set ( INCLUDES
 
 add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
-add_definitions(-D_SCENARIO_VIEWER)
+if (USE_OSG)
+  add_definitions(-D_SCENARIO_VIEWER)
+endif (USE_OSG)
 
 target_link_libraries ( 
 	${TARGET}

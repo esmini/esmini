@@ -216,3 +216,38 @@ private:
 
 	std::ofstream file_;
 };
+
+// Argument parser 
+
+class SE_Option
+{
+public:
+	std::string opt_str_;
+	std::string opt_desc_;
+	std::string opt_arg_;
+	bool set_;
+	std::string arg_value_;
+
+	SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "") :
+		opt_str_(opt_str), opt_desc_(opt_desc), opt_arg_(opt_arg), set_(false), arg_value_("") {}
+
+	void Usage();
+};
+
+class SE_Options
+{
+#define OPT_PREFIX "--"
+
+public:
+	void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "");
+	void PrintUsage();
+	bool GetOptionSet(std::string opt);
+	std::string GetOptionArg(std::string opt);
+	void ParseArgs(int argc, char* argv[]);
+
+private:
+	std::vector<SE_Option> option_;
+	std::string app_name_;
+
+	SE_Option *GetOption(std::string opt);
+};
