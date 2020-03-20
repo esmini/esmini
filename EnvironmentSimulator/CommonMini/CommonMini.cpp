@@ -303,9 +303,9 @@ double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_t
 	}
 	else if (dt < min_time_step)  // avoid CPU rush, sleep for a while
 	{
-		SE_sleep((int)(min_time_step - dt) * 1000);
+		SE_sleep((int)((min_time_step - dt) * 1000));
 		now = SE_getSystemTime();
-		dt = (now - time_stamp) * 0.001;
+		dt = min_time_step;
 	}
 
 	time_stamp = now;
@@ -547,8 +547,8 @@ void SE_Mutex::Unlock()
 
 void SE_Option::Usage()
 {
-	LOG("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? std::string('<'+ opt_arg_ +'>').c_str() : "");
-	LOG("\n      %s\n", opt_desc_.c_str());
+	printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? std::string('<'+ opt_arg_ +'>').c_str() : "");
+	printf("\n      %s\n", opt_desc_.c_str());
 }
 
 
@@ -560,12 +560,13 @@ void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::strin
 
 void SE_Options::PrintUsage()
 {
-	LOG("Usage %s: [options]", app_name_.c_str());
-	LOG("Options: ");
+	printf("\nUsage %s: [options]\n", app_name_.c_str());
+	printf("Options: \n");
 	for (size_t i = 0; i < option_.size(); i++)
 	{
 		option_[i].Usage();
 	}
+	printf("\n");
 }
 
 bool SE_Options::GetOptionSet(std::string opt)
@@ -596,17 +597,29 @@ std::string SE_Options::GetOptionArg(std::string opt)
 	}
 }
 
-void SE_Options::ParseArgs(int argc, char* argv[])
+static void ShiftArgs(int *argc, char** argv, int start_i)
+{
+	if (start_i >= 0 && start_i < *argc)
+	{
+		for (int i = start_i; i < *argc - 1; i++)
+		{
+			argv[i] = argv[i + 1];
+		}
+		(*argc)--;
+	}
+}
+
+void SE_Options::ParseArgs(int *argc, char* argv[])
 {
 	std::string app_name = argv[0];
 
-	for (size_t i = 1; i < argc; i++)
+	for (size_t i = 1; i < *argc;)
 	{
 		std::string arg = argv[i];
 
 		if (!(arg.substr(0, strlen(OPT_PREFIX)) == OPT_PREFIX))
 		{
-			LOG("Argument parser error: Option %s not recognized, should be prefixed by \"%s\"", argv[i], OPT_PREFIX);
+			i++;
 			continue;
 		}
 
@@ -617,19 +630,22 @@ void SE_Options::ParseArgs(int argc, char* argv[])
 			option->set_ = true;
 			if (option->opt_arg_ != "")
 			{
-				if (i < argc - 1)
+				if (i < *argc - 1)
 				{
-					option->arg_value_ = argv[++i];
+					option->arg_value_ = argv[i+1];
+					ShiftArgs(argc, argv, (int)i);
 				}
 				else
 				{
 					LOG("Argument parser error: Missing option %s argument", option->opt_str_.c_str());
+					i++;
 				}
 			}
+			ShiftArgs(argc, argv, (int)i);
 		}
 		else
 		{
-			LOG("Argument parser error: Option %s not supported", argv[i]);
+			i++;
 		}
 	}
 }

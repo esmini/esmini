@@ -277,6 +277,7 @@ int main(int argc, char** argv)
 
 			viewer->osgViewer_->frame();
 		}
+		delete viewer;
 	}
 	catch (std::logic_error &e)
 	{
@@ -293,7 +294,6 @@ int main(int argc, char** argv)
 	{
 		delete(cars[i]);
 	}
-
 	delete track_pos;
 	delete lane_pos;
 

@@ -36,13 +36,15 @@ class ScenarioPlayer
 	} RequestControlMode;
 
 public:
-	ScenarioPlayer(int argc, char *argv[]);
+	ScenarioPlayer(int &argc, char *argv[]);
 	~ScenarioPlayer();
 	bool IsQuitRequested() { return quit_request; }
 	void Frame();  // let player calculate actual time step
 	void Frame(double timestep_s);
 	void ScenarioFrame(double timestep_s);
 	void AddObjectSensor(int object_index, double pos_x, double pos_y, double pos_z, double near, double far, double fovH, int maxObj);
+	void SetFixedTimestep(double timestep) { fixed_timestep_ = timestep; }
+	double GetFixedTimestep() { return fixed_timestep_; }
 
 	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;
@@ -57,7 +59,7 @@ public:
 
 private:
 	std::string RequestControlMode2Str(RequestControlMode mode);
-	int Init(int argc, char *argv[]);
+	int Init(int &rgc, char *argv[]);
 #ifdef _SCENARIO_VIEWER
 	void ViewerFrame();
 #endif
@@ -69,4 +71,5 @@ private:
 	bool threads;
 	bool headless;
 	bool launch_server;
+	double fixed_timestep_;
 };

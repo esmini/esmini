@@ -41,13 +41,14 @@ std::string ScenarioPlayer::RequestControlMode2Str(RequestControlMode mode)
 	else return "Unknown";
 }
 
-ScenarioPlayer::ScenarioPlayer(int argc, char *argv[]) : 
+ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) : 
 	maxStepSize(0.1), minStepSize(0.01)
 {
 	quit_request = false;
 	threads = false;
 	headless = false;
 	launch_server = false;
+	fixed_timestep_ = -1.0;
 #ifdef _SCENARIO_VIEWER
 	trail_dt = TRAIL_DOTS_DT;
 #else
@@ -94,8 +95,15 @@ void ScenarioPlayer::Frame(double timestep_s)
 void ScenarioPlayer::Frame()
 {
 	static __int64 time_stamp = 0;
-
-	Frame(SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize));
+	double dt;
+	if ((dt = GetFixedTimestep()) < 0.0)
+	{
+		Frame(SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize));
+	}
+	else
+	{
+		Frame(dt);
+	}
 }
 
 void ScenarioPlayer::ScenarioFrame(double timestep_s)
@@ -183,7 +191,6 @@ void ScenarioPlayer::ViewerFrame()
 		{
 			car->trail_->AddDot(scenarioEngine->getSimulationTime(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH());
 		}
-
 	}
 
 	for (size_t i = 0; i < sensorFrustum.size(); i++)
@@ -214,7 +221,15 @@ void scenario_thread(void *args)
 
 	while (!player->IsQuitRequested())
 	{
-		player->ScenarioFrame(SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize));
+		double dt;
+		if ((dt = player->GetFixedTimestep()) < 0.0)
+		{
+			player->ScenarioFrame(SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize));
+		}
+		else
+		{
+			player->ScenarioFrame(dt);
+		}
 	}
 }
 
@@ -230,7 +245,7 @@ void ScenarioPlayer::AddObjectSensor(int object_index, double pos_x, double pos_
 	}
 }
 
-int ScenarioPlayer::Init(int argc, char *argv[])
+int ScenarioPlayer::Init(int &argc, char *argv[])
 {
 	std::string arg_str;
 
@@ -250,14 +265,15 @@ int ScenarioPlayer::Init(int argc, char *argv[])
 	opt.AddOption("threads", "Run viewer and scenario in separate threads");
 	opt.AddOption("headless", "Run without viewer");
 	opt.AddOption("server", "Launch server to receive state of external Ego simulator");
-
-	opt.ParseArgs(argc, argv);
+	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
 
 	if (argc < 3)
 	{
 		opt.PrintUsage();
 		return -1;
 	}
+
+	opt.ParseArgs(&argc, argv);
 
 	RequestControlMode control = RequestControlMode::CONTROL_BY_OSC;
 	if ((arg_str = opt.GetOptionArg("control")) != "")
@@ -285,6 +301,12 @@ int ScenarioPlayer::Init(int argc, char *argv[])
 	{
 		launch_server = true;
 		LOG("Launch server to receive state of external Ego simulator");
+	}
+
+	if ((arg_str = opt.GetOptionArg("fixed_timestep")) != "")
+	{
+		SetFixedTimestep(atof(arg_str.c_str()));
+		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
 	}
 
 	// Create scenario engine
@@ -405,7 +427,20 @@ int ScenarioPlayer::Init(int argc, char *argv[])
 				}
 			}
 		}
+
+		// Trig first viewer frame, it typically takes extra long due to initial loading of gfx content
+		ViewerFrame();
 #endif
+	}
+
+	if (argc > 1)
+	{
+		printf("\nUnrecognized arguments:\n");
+		for (size_t i = 1; i < argc; i++)
+		{
+			printf("  %s\n", argv[i]);
+		}
+		opt.PrintUsage();
 	}
 
 	// Add sensors

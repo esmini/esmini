@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
 		int objList[2];
 	
-		for (int i = 0; i < 500; i++)
+		for (int i = 0; i < 50; i++)
 		{
 			if (SE_StepDT(TIME_STEP) != 0)
 			{

@@ -251,7 +251,15 @@ int main(int argc, char *argv[])
 	
 	while (!player->IsQuitRequested())
 	{
-		double dt = SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize);
+		double dt;
+		if (player->GetFixedTimestep() > 0.0)
+		{
+			dt = player->GetFixedTimestep();
+		}
+		else
+		{
+			dt = SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize);
+		}
 
 		UpdateExternVehicles(dt, player);
 		player->Frame(dt);

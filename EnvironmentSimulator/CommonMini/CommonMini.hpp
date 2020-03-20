@@ -243,7 +243,7 @@ public:
 	void PrintUsage();
 	bool GetOptionSet(std::string opt);
 	std::string GetOptionArg(std::string opt);
-	void ParseArgs(int argc, char* argv[]);
+	void ParseArgs(int *argc, char* argv[]);
 
 private:
 	std::vector<SE_Option> option_;
