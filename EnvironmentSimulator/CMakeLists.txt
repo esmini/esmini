@@ -60,7 +60,7 @@ set ( OSG_LIBRARIES_PATH
 )
 
 if(APPLE)
-  SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip -framework OpenGL -framework Cocoa")
+  SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
 
   SET( "-framework OpenGL -framework Cocoa")
   

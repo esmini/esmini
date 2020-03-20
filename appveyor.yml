@@ -1,10 +1,12 @@
 version: 1.3.{build}
 
 image:
-#- Visual Studio 2017
-#- Visual Studio 2015
-#- Ubuntu1804
+- Visual Studio 2017
+- Visual Studio 2015
+- Ubuntu1804
+- macos
 - macos-mojave
+
 
 configuration: Release
 
@@ -64,7 +66,7 @@ for:
   -
     matrix:
       only:
-        - image: macos-mojave
+        - image: macos
 
     build_script:
       - echo MacOS Mojave build script
@@ -96,6 +98,42 @@ for:
     artifacts:
       - path: esmini-*_mac.zip
         name: mac_artifacts
+
+  -
+    matrix:
+      only:
+        - image: macos-mojave
+
+    build_script:
+      - echo MacOS Mojave build script
+      - sh: >-
+          chmod +x create_xcode_project.sh
+          
+          ./create_xcode_project.sh
+          
+          cd build
+          
+          xcodebuild -scheme install -configuration Release build
+
+    after_build:
+      - sh: >-
+          lipo -create EnvironmentSimulator/RoadManagerDLL/Release/libRoadManagerDLL.dylib -output ../bin/RoadManagerDLL.bundle
+          
+          lipo -create EnvironmentSimulator/ScenarioEngineDLL/Release/libScenarioEngineDLL.dylib -output ../bin/ScenarioEngineDLL.bundle
+
+          cd ..
+          
+          zip esmini-bin_mac_mojave.zip bin -r
+          
+          chmod -R +x ./run/*
+
+          ./generate_binary_dist.sh
+
+          mv esmini-demo.zip esmini-demo_mac_mojave.zip 
+
+    artifacts:
+      - path: esmini-*_mac_mojave.zip
+        name: mac_mojave_artifacts
           
   -
     matrix:
@@ -183,6 +221,8 @@ for:
         - image: Ubuntu1804
           platform: x86
         - image: macos-mojave
+          platform: x86
+        - image: macos
           platform: x86
         - image: Visual Studio 2015
           platform: x86
