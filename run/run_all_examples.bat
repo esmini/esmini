@@ -13,6 +13,6 @@ cd ..\OpenDriveViewer
 forfiles /m *.bat /c "cmd /c @path"
 
 cd ..\Replayer
-play_ltap-od_win64_hi-speed.bat
+forfiles /m *.bat /c "cmd /c @path"
 
 cd ..

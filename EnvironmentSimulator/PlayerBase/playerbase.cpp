@@ -435,12 +435,9 @@ int ScenarioPlayer::Init(int &argc, char *argv[])
 
 	if (argc > 1)
 	{
-		printf("\nUnrecognized arguments:\n");
-		for (size_t i = 1; i < argc; i++)
-		{
-			printf("  %s\n", argv[i]);
-		}
+		opt.PrintArgs(argc, argv, "Unrecognized arguments:");
 		opt.PrintUsage();
+		return -1;
 	}
 
 	// Add sensors

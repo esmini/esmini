@@ -241,6 +241,7 @@ class SE_Options
 public:
 	void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "");
 	void PrintUsage();
+	void PrintArgs(int argc, char *argv[], std::string message = "Unrecognized arguments:");
 	bool GetOptionSet(std::string opt);
 	std::string GetOptionArg(std::string opt);
 	void ParseArgs(int *argc, char* argv[]);

@@ -75,40 +75,26 @@ int main(int argc, char** argv)
 	roadmanager::OpenDrive *odrManager;
 	Replay *player;
 	double simTime = 0;
+	double time_scale = 1.0;
 
-	// use an ArgumentParser object to manage the program arguments.
-    osg::ArgumentParser arguments(&argc,argv);	
+	// use common options parser to manage the program arguments
+	SE_Options opt;
+	opt.AddOption("file", "Simulation recording data file", "filename");
+	opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
+	opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
 
-    arguments.getApplicationUsage()->setApplicationName(arguments.getApplicationName());
-    arguments.getApplicationUsage()->setDescription(arguments.getApplicationName());
-	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " [options]\n");
-	arguments.getApplicationUsage()->addCommandLineOption("-f <file.dat>", "Recording data file to replay");
-	arguments.getApplicationUsage()->addCommandLineOption("--res_path <path>", "path to Resources directory, relative or absolute");
-	arguments.getApplicationUsage()->addCommandLineOption("-s <factor>", "Time scale factor");
-
-	if (arguments.argc() < 2)
+	if (argc < 2)
 	{
-		arguments.getApplicationUsage()->write(std::cout, 1, 120, true);
+		opt.PrintUsage();
 		return -1;
 	}
 
-
-	std::string res_path;
-	arguments.read("--res_path", res_path);
-
-	std::string rec_filename;
-	arguments.read("-f", rec_filename);
-
-	std::string time_scale_str;
-	arguments.read("-s", time_scale_str);
-	double time_scale = stod(time_scale_str);
-
-
+	opt.ParseArgs(&argc, argv);
 
 	// Create player
 	try
 	{
-		player = new Replay(rec_filename);
+		player = new Replay(opt.GetOptionArg("file"));
 	}
 	catch (const std::exception& e)
 	{
@@ -116,21 +102,34 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-
 	try
 	{
-		std::string odr_path = res_path;
+		std::string odr_path = opt.GetOptionArg("res_path");
 		roadmanager::Position::LoadOpenDrive(odr_path.append("/xodr/").append(player->header_.odr_filename).c_str());
 		odrManager = roadmanager::Position::GetOpenDrive();
 
-		std::string model_path = res_path;
+		std::string model_path = opt.GetOptionArg("res_path");
+		osg::ArgumentParser arguments(&argc, argv);
 		viewer::Viewer *viewer = new viewer::Viewer(
 			odrManager, 
 			model_path.append("/models/").append(player->header_.model_filename).c_str(),
 			NULL,
 			arguments);
 
+		if (argc > 1)
+		{
+			opt.PrintArgs(argc, argv, "Unrecognized arguments:");
+			opt.PrintUsage();
+			return -1;
+		}
+		viewer->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
+
 		__int64 now, lastTimeStamp = 0;
+		
+		if (opt.GetOptionSet("time_scale"))
+		{
+			time_scale = atof(opt.GetOptionArg("time_scale").c_str());
+		}
 
 		while (!viewer->osgViewer_->done())
 		{
@@ -196,6 +195,7 @@ int main(int argc, char** argv)
 			// Update graphics
 			viewer->osgViewer_->frame();
 		}
+		delete viewer;
 	}
 	catch (std::logic_error &e)
 	{

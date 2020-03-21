@@ -569,6 +569,15 @@ void SE_Options::PrintUsage()
 	printf("\n");
 }
 
+void SE_Options::PrintArgs(int argc, char *argv[], std::string message)
+{
+	printf("\n%s\n", message.c_str());
+	for (size_t i = 1; i < argc; i++)
+	{
+		printf("  %s\n", argv[i]);
+	}
+}
+
 bool SE_Options::GetOptionSet(std::string opt)
 {
 	SE_Option *option = GetOption(opt);

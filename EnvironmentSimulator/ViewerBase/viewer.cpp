@@ -610,12 +610,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	osgViewer_ = new osgViewer::Viewer(arguments); 
 
 	// Decorate window border with application name
-	osgViewer::ViewerBase::Windows wins;
-	osgViewer_->getWindows(wins);
-	if (wins.size() > 0)
-	{
-		wins[0]->setWindowName("esmini - " + FileNameWithoutExtOf(arguments.getApplicationName()));
-	}
+	SetWindowTitle("esmini - " + FileNameWithoutExtOf(arguments.getApplicationName()) + (scenarioFilename ? " " + FileNameOf(scenarioFilename) : ""));
 
 	// Load shadow geometry - assume it resides in the same resource folder as the environment model
 	std::string shadowFilename = DirNameOf(modelFilename).append("/" + std::string(SHADOW_MODEL_FILEPATH));
@@ -1196,6 +1191,17 @@ void Viewer::SetVehicleInFocus(int idx)
 	currentCarInFocus_ = idx;
 	rubberbandManipulator_->setTrackNode(cars_[currentCarInFocus_]->txNode_, false);
 	nodeTrackerManipulator_->setTrackNode(cars_[currentCarInFocus_]->node_);
+}
+
+void Viewer::SetWindowTitle(std::string title)
+{
+	// Decorate window border with application name
+	osgViewer::ViewerBase::Windows wins;
+	osgViewer_->getWindows(wins);
+	if (wins.size() > 0)
+	{
+		wins[0]->setWindowName(title);
+	}
 }
 
 bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)
