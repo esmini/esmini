@@ -234,11 +234,14 @@ extern "C"
 		{
 			AddArgument("--record scenario.dat");
 		}
-		if (!use_viewer)
+		if (use_viewer)
+		{
+			AddArgument("--window 30 30 800 400");
+		}
+		else
 		{
 			AddArgument("--headless");
 		}
-		AddArgument("--window 30 30 800 400");
 		ConvertArguments();
 
 		// Create scenario engine

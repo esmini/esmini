@@ -16,7 +16,7 @@ set ( SCENARIOENGINE_INCLUDE_DIRS
 set ( COMMON_MINI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CommonMini")
 
 # OpenSceneGraph package adapted for this project
-set ( OSG_VERSION "osg160" )
+set ( OSG_VERSION "osg161" )
 set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
 
 set( CMAKE_VERBOSE_MAKEFILE on )
@@ -52,11 +52,7 @@ set ( OSG_INCLUDE_DIR
 )
 set ( OSG_LIBRARIES_PATH 
 	"${OSG_DIR}/lib" 
-#if(WIN32)
-	"${OSG_DIR}/lib/osgPlugins-3.7.0"
-#else
-	"${OSG_DIR}/lib/osgPlugins-3.6.3"
-#endif
+	"${OSG_DIR}/lib/osgPlugins-3.6.5"
 )
 
 if(APPLE)
@@ -68,9 +64,10 @@ if(APPLE)
 
   set ( OSG_LIBRARIES
 	
-	osgdb_serializers_osgsim.a
-	osgdb_serializers_osg.a
-	osgdb_osg.a
+	osgdb_serializers_osgsim
+	osgdb_serializers_osg
+	osgdb_osg
+    osgdb_jpeg
 	osgAnimation
 	osgText
 	osgSim
@@ -80,10 +77,12 @@ if(APPLE)
 	osgGA
 	osg
 	OpenThreads
+    jpeg
+
 	"-framework OpenGL"
 	"-framework Cocoa"
 	dl
-	libz.a
+	z
 	#db_fbx
   )
 elseif(UNIX)
@@ -92,9 +91,10 @@ elseif(UNIX)
   link_directories(${OSG_LIBRARIES_PATH})
   
   set ( OSG_LIBRARIES
-	osgdb_serializers_osgsim.a
-	osgdb_serializers_osg.a
-	osgdb_osg.a
+	osgdb_serializers_osgsim
+	osgdb_serializers_osg
+	osgdb_osg
+    osgdb_jpeg
 	osgAnimation
 	osgText
 	osgSim
@@ -104,12 +104,13 @@ elseif(UNIX)
 	osgGA
 	osg
 	OpenThreads
+    jpeg
 
 	GL
 	X11
 	Xrandr
 	dl
-	libz.a
+	z
     Xinerama
 	#db_fbx
   )
@@ -118,6 +119,7 @@ else() #not UNIX
 set ( OSG_LIBRARIES 
 	opengl32.lib
 	optimized zlibstatic.lib debug zlibstaticd.lib 
+	optimized jpeg.lib debug jpegd.lib 
 	optimized ${OSG_VERSION}-osg.lib debug ${OSG_VERSION}-osgd.lib
 	optimized ${OSG_VERSION}-osgAnimation.lib debug ${OSG_VERSION}-osgAnimationd.lib
 	optimized ${OSG_VERSION}-osgDB.lib debug ${OSG_VERSION}-osgDBd.lib
@@ -131,6 +133,7 @@ set ( OSG_LIBRARIES
 	optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
 	optimized osgdb_osg.lib debug osgdb_osgd.lib 	
 	optimized osgdb_fbx.lib debug osgdb_fbxd.lib 	
+    optimized osgdb_jpeg.lib debug osgdb_jpeg.lib
 )
 if (NOT WINSDK7_1)  # FBX not supporting winsdk 7.1
   list ( APPEND OSG_LIBRARIES optimized libfbxsdk-md.lib debug libfbxsdk-mdd.lib )
