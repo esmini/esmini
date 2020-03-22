@@ -140,7 +140,23 @@
 								</ConditionGroup>
 							</StartConditions>
 						</Event>
-					</Maneuver>
+						<Event name="QuitEvent" priority="overwrite">
+							<Action name="QuitAction">
+								<Global>
+									<EXT_Quit />
+								</Global>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="QuitCondition" delay="5" edge="rising">
+										<ByState>
+											<AfterTermination type="event" name="SyncEvent" rule="end"/>
+										</ByState>									
+                                    </Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
+                    </Maneuver>
 				</Sequence>
 				<Conditions>
 					<Start>

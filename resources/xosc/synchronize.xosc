@@ -214,6 +214,39 @@
 					</Start>
 				</Conditions>
 			</Act>
+            <Act name="QuitAct">
+                <Sequence name="QuitSequence" numberOfExecutions="1">
+					<Maneuver name="QuitManeuver">                    
+						<Event name="QuitEvent" priority="overwrite">
+							<Action name="QuitAction">
+								<Global>
+									<EXT_Quit />
+								</Global>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="QuitCondition" delay="0" edge="rising">
+										<ByValue>
+											<SimulationTime rule="greater_than" value="30" />
+										</ByValue>									
+                                    </Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
+					</Maneuver>
+                </Sequence>            
+                <Conditions>
+					<Start>
+						<ConditionGroup>
+							<Condition name="QuitActCondition" delay="0" >
+								<ByValue>
+									<SimulationTime value="0" rule="greater_than"/>
+								</ByValue>
+							</Condition>
+						</ConditionGroup>
+					</Start>
+				</Conditions>
+            </Act>
 		</Story>
 		<End>
 		</End>

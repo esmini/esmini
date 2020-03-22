@@ -117,6 +117,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	mutex.Lock();
 
 	scenarioEngine->step(timestep_s);
+
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
 	//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
 	//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
@@ -126,6 +127,11 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	//    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
 
 	mutex.Unlock();
+
+	if (scenarioEngine->GetQuitFlag())
+	{
+		quit_request = true;
+	}
 }
 
 #ifdef _SCENARIO_VIEWER
@@ -312,7 +318,12 @@ int ScenarioPlayer::Init(int &argc, char *argv[])
 	// Create scenario engine
 	try
 	{
-		arg_str = opt.GetOptionArg("osc");
+		if ((arg_str = opt.GetOptionArg("osc")) == "")
+		{
+			LOG("Missing OpenSCENARIO filename argument");
+			opt.PrintUsage();
+			return -1;
+		}
 		scenarioEngine = new ScenarioEngine(arg_str, GHOST_HEADSTART, (ScenarioEngine::RequestControlMode)control);
 	}
 	catch (std::logic_error &e)

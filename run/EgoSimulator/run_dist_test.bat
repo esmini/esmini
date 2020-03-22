@@ -1,1 +1,1 @@
-"../../bin/EgoSimulator" --window 50 50 1024 576  --osc ../../resources/xosc/distance_test.xosc --control external --trails off
+"../../bin/EgoSimulator" --window 50 50 1024 576  --clear-color 255,255,255 --osc ../../resources/xosc/distance_test.xosc --control external --trails off --info_text off

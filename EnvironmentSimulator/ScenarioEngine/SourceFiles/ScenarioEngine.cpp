@@ -29,6 +29,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double headstart_time
 {
 	// Load and parse data
 	LOG("Init %s", oscFilename.c_str());
+	quit_flag = false;
 	headstart_time_ = headstart_time;
 	scenarioReader = new ScenarioReader(&entities, &catalogs);
 	if (scenarioReader->loadOSCFile(oscFilename.c_str()) != 0)
@@ -41,6 +42,9 @@ void ScenarioEngine::InitScenario(std::string oscFilename, double headstart_time
 
 void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, double headstart_time, RequestControlMode control_mode_first_vehicle)
 {
+	LOG("Init %s", xml_doc.name());
+	quit_flag = false;
+	headstart_time_ = headstart_time;
 	scenarioReader->loadOSCMem(xml_doc);
 	parseScenario(control_mode_first_vehicle);
 }
@@ -155,7 +159,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			}
 			else
 			{
-				// If activated last step, make transition to activated
+				// If activated last step, make transition to active
 				if (story->act_[j]->state_ == Act::State::ACTIVATED)
 				{
 					story->act_[j]->state_ = Act::State::ACTIVE;
@@ -306,6 +310,13 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 									if (event->action_[n]->IsActive())
 									{
 										event->action_[n]->Step(deltaSimTime);
+										
+										// Handle exit action - set flag to indicate scenario is done and application can now quit
+										if (event->action_[n]->base_type_ == OSCAction::GLOBAL && ((OSCGlobalAction*)(event->action_[n]))->type_ == OSCGlobalAction::EXT_QUIT)
+										{
+											quit_flag = true;
+										}
+										
 										active = active || (event->action_[n]->IsActive());
 									}
 								}

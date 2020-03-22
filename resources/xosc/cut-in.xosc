@@ -149,6 +149,22 @@
 								</ConditionGroup>
 							</StartConditions>
 						</Event>
+						<Event name="Quit" priority="overwrite">
+							<Action name="QuitAction">
+								<Global>
+									<EXT_Quit />
+								</Global>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="QuitCondition" delay="3" edge="rising">
+										<ByState>
+											<AfterTermination type="event" name="OvertakerBrakeEvent" rule="end"/>
+										</ByState>									
+                                    </Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
 					</Maneuver>
 				</Sequence>
 				<Conditions>

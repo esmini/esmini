@@ -806,6 +806,37 @@ OSCPrivateAction::DynamicsShape ParseDynamicsShape(std::string shape)
 	return OSCPrivateAction::DynamicsShape::UNDEFINED;
 }
 
+OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
+{
+	OSCGlobalAction *action = 0;
+
+	for (pugi::xml_node actionChild = actionNode.first_child(); actionChild; actionChild = actionChild.next_sibling())
+	{
+		if (actionChild.name() == std::string("EXT_Quit"))
+		{
+			action = new EXT_QuitAction();
+		}
+		else
+		{
+			LOG("Unsupported global action: %s", actionChild.name());
+		}
+	}
+
+	if (action != 0)
+	{
+		if (actionNode.parent().attribute("name"))
+		{
+			action->name_ = ReadAttribute(actionNode.parent(), "name");
+		}
+		else
+		{
+			action->name_ = "no name";
+		}
+	}
+
+	return action;
+}
+
 // ------------------------------------------------------
 OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNode, Object *object)
 {
@@ -1351,7 +1382,6 @@ void ScenarioReader::parseInit(Init &init)
 		else if (actionsChildName == "UserDefined")
 		{
 			LOG("%s is not implemented", actionsChildName.c_str());
-
 		}
 		else if (actionsChildName == "Private")
 		{
@@ -1768,7 +1798,9 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 
 						if (childName == "Global")
 						{
-							LOG("%s is not implemented", childName.c_str());
+							LOG("Parsing global action %s", ReadAttribute(eventChild, "name").c_str());
+							OSCGlobalAction *action = parseOSCGlobalAction(actionChild);
+							event->action_.push_back((OSCAction*)action);
 						}
 						else if (childName == "UserDefined")
 						{

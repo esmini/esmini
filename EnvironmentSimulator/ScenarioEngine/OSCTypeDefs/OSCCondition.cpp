@@ -140,7 +140,7 @@ bool TrigByState::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (result && delay_ > 0)
 	{
 		timer_.Start();
-		LOG("Timer started");
+		LOG("Timer %.2fs started", delay_);
 		return false;
 	}
 
@@ -276,7 +276,7 @@ bool TrigAtStart::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (trig && delay_ > 0)
 	{
 		timer_.Start();
-		LOG("Timer started");
+		LOG("Timer %.2fs started", delay_);
 		return false;
 	}
 
@@ -346,21 +346,21 @@ bool TrigAfterTermination::Evaluate(StoryBoard *storyBoard, double sim_time)
 			Act::State state = act->state_;
 			if (edge_ == ConditionEdge::RISING)
 			{
-				if (state == (Act::State)OSCAction::State::DEACTIVATED)
+				if (state == Act::State::DEACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::FALLING)
 			{
-				if (state == (Act::State)OSCAction::State::ACTIVATED)
+				if (state == Act::State::ACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::ANY)
 			{
-				if (state == (Act::State)OSCAction::State::ACTIVATED || state == (Act::State)OSCAction::State::DEACTIVATED)
+				if (state == Act::State::ACTIVATED || state == Act::State::DEACTIVATED)
 				{
 					trig = true;
 				}
@@ -380,21 +380,21 @@ bool TrigAfterTermination::Evaluate(StoryBoard *storyBoard, double sim_time)
 			Event::State state = event->state_;
 			if (edge_ == ConditionEdge::RISING)
 			{
-				if (state == (Event::State)OSCAction::State::DEACTIVATED)
+				if (state == Event::DEACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::FALLING)
 			{
-				if (state == (Event::State)OSCAction::State::ACTIVATED)
+				if (state == Event::State::ACTIVATED)
 				{
 					trig = true;
 				}
 			}
 			else if (edge_ == ConditionEdge::ANY)
 			{
-				if (state == (Event::State)OSCAction::State::ACTIVATED || state == (Event::State)OSCAction::State::DEACTIVATED)
+				if (state == Event::State::ACTIVATED || state == Event::State::DEACTIVATED)
 				{
 					trig = true;
 				}
@@ -420,7 +420,7 @@ bool TrigAfterTermination::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (trig && delay_ > 0)
 	{
 		timer_.Start();
-		LOG("Timer started");
+		LOG("Timer %.2fs started", delay_);
 		return false;
 	}
 
@@ -451,7 +451,7 @@ bool TrigByValue::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (result && delay_ > 0)
 	{
 		timer_.Start();
-		LOG("Timer started");
+		LOG("Timer %.2fs started", delay_);
 		return false;
 	}
 
@@ -494,7 +494,7 @@ bool TrigBySimulationTime::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (trig && delay_ > 0)
 	{
 		timer_.Start();
-		LOG("Timer started");
+		LOG("Timer %.2fs started", delay_);
 		return false;
 	}
 
@@ -559,7 +559,7 @@ bool TrigByTimeHeadway::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (trig && delay_ > 0)
 	{
 		timer_.Start();
-		LOG("Timer started");
+		LOG("Timer %.2fs started", delay_);
 		return false;
 	}
 
@@ -612,7 +612,7 @@ bool TrigByReachPosition::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (trig && delay_ > 0)
 	{
 		timer_.Start();
-		LOG("Timer started");
+		LOG("Timer %.2fs started", delay_);
 		return false;
 	}
 
@@ -665,7 +665,7 @@ bool TrigByDistance::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (trig && delay_ > 0)
 	{
 		timer_.Start();
-		LOG("Timer started");
+		LOG("Timer %.2fs started", delay_);
 		return false;
 	}
 
@@ -733,7 +733,7 @@ bool TrigByRelativeDistance::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (trig && delay_ > 0)
 	{
 		timer_.Start();
-		LOG("Timer started");
+		LOG("Timer %.2fs started", delay_);
 		return false;
 	}
 

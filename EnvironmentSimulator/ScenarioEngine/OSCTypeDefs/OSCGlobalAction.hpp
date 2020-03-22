@@ -12,17 +12,58 @@
 
 #pragma once
 #include <iostream>
-#include <string>
+#include "OSCAction.hpp"
+#include "CommonMini.hpp"
 
 namespace scenarioengine
 {
 
-	class OSCGlobalAction
+	class OSCGlobalAction : public OSCAction
 	{
 	public:
-		void printOSCGlobalAction()
+		typedef enum
 		{
-		};
+			ENVIRONMENT,     // not supported yet
+			ENTITY,          // not supported yet
+			PARAMETER,       // not supported yet
+			INFRASTRUCTURE,  // not supported yet
+			TRAFFIC,         // not supported yet
+			EXT_QUIT,
+		} Type;
+
+		Type type_;
+
+		OSCGlobalAction(OSCGlobalAction::Type type) : OSCAction(OSCAction::BaseType::GLOBAL), type_(type)
+		{
+			LOG("");
+		}
+
+		virtual void print()
+		{
+			LOG("Virtual, should be overridden");
+		}
+
 	};
 
+	class EXT_QuitAction : public OSCGlobalAction
+	{
+	public:
+		EXT_QuitAction() : OSCGlobalAction(OSCGlobalAction::Type::EXT_QUIT) {}
+
+		void print()
+		{
+			LOG("");
+		}
+
+		void Step(double dt)
+		{
+			OSCAction::Stop();
+		}
+
+		void Trig()
+		{
+			OSCAction::Trig();
+		}
+	};
 }
+

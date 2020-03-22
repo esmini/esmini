@@ -129,6 +129,22 @@
 								</ConditionGroup>
 							</StartConditions>
 						</Event>
+						<Event name="QuitEvent" priority="overwrite">
+							<Action name="QuitAction">
+								<Global>
+									<EXT_Quit />
+								</Global>
+							</Action>
+							<StartConditions>
+								<ConditionGroup>
+									<Condition name="QuitCondition" delay="4" edge="rising">
+										<ByState>
+											<AfterTermination type="event" name="Lane change" rule="end"/>
+										</ByState>									
+                                    </Condition>
+								</ConditionGroup>
+							</StartConditions>
+						</Event>
 					</Maneuver>
 				</Sequence>
 				<Conditions>

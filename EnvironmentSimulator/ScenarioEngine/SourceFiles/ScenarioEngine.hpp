@@ -58,6 +58,7 @@ namespace scenarioengine
 		void step(double deltaSimTime, bool initial = false);
 		void printSimulationTime();
 		void stepObjects(double dt);
+		void exit();
 
 		std::string getScenarioFilename() { return scenarioReader->getScenarioFilename(); }
 		std::string getSceneGraphFilename() { return roadNetwork.SceneGraph.filepath; }
@@ -67,6 +68,7 @@ namespace scenarioengine
 		ScenarioGateway *getScenarioGateway();
 		Object::Control RequestControl2ObjectControl(RequestControlMode control);
 		double getSimulationTime() { return simulationTime; }
+		bool GetQuitFlag() { return quit_flag; }
 
 	private:
 		// OpenSCENARIO parameters
@@ -81,9 +83,10 @@ namespace scenarioengine
 		double simulationTime;
 		double headstart_time_;
 
-		//Conditions conditions;
-		//Actions actions;
 		ScenarioGateway scenarioGateway;
+
+		// execution control flags
+		bool quit_flag;
 
 		void parseScenario(RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
 		void ResolveHybridVehicles();

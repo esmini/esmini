@@ -573,6 +573,7 @@ void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta
 Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines)
 {
 	odrManager_ = odrManager;
+	bool clear_color;
 
 	if(scenarioFilename != NULL)
 	{ 
@@ -607,7 +608,9 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 
 	osg::DisplaySettings::instance()->setNumMultiSamples(aa_mode);  // Set some AntiAliasing
 
-	osgViewer_ = new osgViewer::Viewer(arguments); 
+	clear_color = (arguments.find("--clear-color") != -1);
+	
+	osgViewer_ = new osgViewer::Viewer(arguments);
 
 	// Decorate window border with application name
 	SetWindowTitle("esmini - " + FileNameWithoutExtOf(arguments.getApplicationName()) + (scenarioFilename ? " " + FileNameOf(scenarioFilename) : ""));
@@ -692,7 +695,11 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 
 	osgViewer_->getCamera()->setLODScale(lodScale_);
 	osgViewer_->getCamera()->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
-	osgViewer_->getCamera()->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 0.0f));
+	if (!clear_color)
+	{
+		// Default background color
+		osgViewer_->getCamera()->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 0.0f));
+	}
 
 	// add the window size toggle handler
 	osgViewer_->addEventHandler(new osgViewer::WindowSizeHandler);

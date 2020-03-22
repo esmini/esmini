@@ -19,6 +19,7 @@
 #include "OSCPosition.hpp"
 #include "OSCProperties.hpp"
 #include "pugixml.hpp"
+#include "OSCGlobalAction.hpp"
 
 #include <iostream>
 #include <string>
@@ -60,6 +61,7 @@ namespace scenarioengine
 		// Storyboard - Init
 		void parseInit(Init &init);
 		OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode, Object *object);
+		OSCGlobalAction *parseOSCGlobalAction(pugi::xml_node actionNode);
 		void parseOSCOrientation(OSCOrientation &orientation, pugi::xml_node orientationNode);
 		OSCPosition *parseOSCPosition(pugi::xml_node positionNode);
 
