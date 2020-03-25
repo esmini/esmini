@@ -19,7 +19,7 @@ set ( COMMON_MINI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CommonMini")
 set ( OSG_VERSION "osg161" )
 set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
 
-set( CMAKE_VERBOSE_MAKEFILE on )
+set( CMAKE_VERBOSE_MAKEFILE false )
 
 if (APPLE)
   set ( TIME_LIB "" )
@@ -133,7 +133,7 @@ set ( OSG_LIBRARIES
 	optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
 	optimized osgdb_osg.lib debug osgdb_osgd.lib 	
 	optimized osgdb_fbx.lib debug osgdb_fbxd.lib 	
-    optimized osgdb_jpeg.lib debug osgdb_jpeg.lib
+    optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
 )
 if (NOT WINSDK7_1)  # FBX not supporting winsdk 7.1
   list ( APPEND OSG_LIBRARIES optimized libfbxsdk-md.lib debug libfbxsdk-mdd.lib )

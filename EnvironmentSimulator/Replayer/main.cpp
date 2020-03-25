@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 			odrManager, 
 			model_path.append("/models/").append(player->header_.model_filename).c_str(),
 			NULL,
-			arguments);
+			arguments, &opt);
 
 		if (argc > 1)
 		{

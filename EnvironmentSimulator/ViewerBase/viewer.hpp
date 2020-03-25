@@ -220,7 +220,7 @@ namespace viewer
 		osg::ref_ptr<osg::Camera> infoTextCamera;
 		osg::ref_ptr<osgText::Text> infoText;
 
-		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines = false);
+		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, SE_Options *opt = 0);
 		~Viewer();
 		void SetCameraMode(int mode);
 		void SetVehicleInFocus(int idx);

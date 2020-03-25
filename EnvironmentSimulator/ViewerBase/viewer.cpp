@@ -576,10 +576,11 @@ void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta
 	UpdateWheels(wheel_angle, wheel_rot_ + wheel_rotation_delta);
 }
 
-Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, bool create_ego_debug_lines)
+Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, SE_Options *opt)
 {
 	odrManager_ = odrManager;
 	bool clear_color;
+	std::string arg_str;
 
 	if(scenarioFilename != NULL)
 	{ 
@@ -602,17 +603,19 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	quit_request_ = false;
 	showInfoText = true;  // show info text HUD per default
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
+	
+	// When running on Linux in VirtualBox on Windows host - the application crashes when trying to apply AntiAlias as below
+	// If someone know how to query AA capabilites, please replace this argument option with dynamic check to switch on/off
+	int aa_mode = 4;  // default value
+	if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
+	{
+		aa_mode = atoi(arg_str.c_str());
+	}
+	LOG("Anti-alias num subsampling: %d", aa_mode);
+	osg::DisplaySettings::instance()->setNumMultiSamples(aa_mode);
 
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
 	arguments.read("--lodScale", lodScale_);
-
-	// When running on Linux in VirtualBox on Windows host - the application crashes when trying to apply AntiAlias as below
-	// If someone know how to query AA capabilites, please replace this argument option with dynamic check to switch on/off
-	int aa_mode = 4;
-	arguments.read("--aa_mode", aa_mode);
-	LOG("Anti-alias num subsampling: %d", aa_mode);
-
-	osg::DisplaySettings::instance()->setNumMultiSamples(aa_mode);  // Set some AntiAliasing
 
 	clear_color = (arguments.find("--clear-color") != -1);
 	
@@ -1252,7 +1255,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 
 	switch (ea.getKey())
 	{
-	case(osgGA::GUIEventAdapter::KEY_C):
+	case(osgGA::GUIEventAdapter::KEY_K):
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->camMode_ += 1;
@@ -1280,7 +1283,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		}
 	}
 	break;
-	case(osgGA::GUIEventAdapter::KEY_M):
+	case(osgGA::GUIEventAdapter::KEY_P):
 	{
 		static bool visible = true;
 
@@ -1291,25 +1294,21 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		}
 	}
 	break;
-	case(osgGA::GUIEventAdapter::KEY_D):
 	case(osgGA::GUIEventAdapter::KEY_Right):
 	{
 		viewer_->setKeyRight(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
 	}
 	break;
-	case(osgGA::GUIEventAdapter::KEY_A):
 	case(osgGA::GUIEventAdapter::KEY_Left):
 	{
 		viewer_->setKeyLeft(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
 	}
 	break;
-	case(osgGA::GUIEventAdapter::KEY_W):
 	case(osgGA::GUIEventAdapter::KEY_Up):
 	{
 		viewer_->setKeyUp(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
 	}
 	break;
-	case(osgGA::GUIEventAdapter::KEY_X):
 	case(osgGA::GUIEventAdapter::KEY_Down):
 	{
 		viewer_->setKeyDown(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);

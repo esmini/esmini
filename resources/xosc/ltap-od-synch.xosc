@@ -148,10 +148,19 @@
 							</Action>
 							<StartConditions>
 								<ConditionGroup>
-									<Condition name="QuitCondition" delay="5" edge="rising">
-										<ByState>
-											<AfterTermination type="event" name="SyncEvent" rule="end"/>
-										</ByState>									
+									<Condition name="QuitCondition" delay="0" edge="rising">
+										<ByEntity>
+											<TriggeringEntities rule="any">
+												<Entity name="Ego" />
+											</TriggeringEntities>
+											<EntityCondition>
+												<ReachPosition tolerance="5.0" >
+													<Position>
+														<Lane roadId="2" laneId="1" s="270.0" />
+													</Position>
+												</ReachPosition>
+											</EntityCondition>
+										</ByEntity>
                                     </Condition>
 								</ConditionGroup>
 							</StartConditions>

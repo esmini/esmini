@@ -358,7 +358,7 @@ int ScenarioPlayer::Init(int &argc, char *argv[])
 			roadmanager::Position::GetOpenDrive(),
 			scenarioEngine->getSceneGraphFilename().c_str(),
 			scenarioEngine->getScenarioFilename().c_str(),
-			arguments);
+			arguments, &opt);
 
 		if (opt.GetOptionArg("info_text") == "off")
 		{

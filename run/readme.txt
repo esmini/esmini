@@ -9,10 +9,10 @@ Run esmini demo:
 Key commands:
 
 	Arrow keys is used to drive externally controlled Ego vehicle:
-	  Up/w:    Accelerate
-	  Down/x:  Brake
-	  Left/a:  Steer left
-	  Right/d: Steer right
+	  Up:    Accelerate
+	  Down:  Brake
+	  Left:  Steer left
+	  Right: Steer right
 
 	  (w, x, a and d alternatives) 
 
@@ -31,20 +31,20 @@ Key commands:
 		9. Trackball
 
 	When custom camera model (1) is activated:
-		c: Switch between the following sub models:
-			- RubberBand (imagine the camera attached to vehicle via elastic band 
+		k: Switch between the following sub models:
+			- Flex (imagine the camera attached to vehicle via an elastic string)
 			- Orbit (camera facing vehicle, rotating around it)
 			- Fixed (fix rotation, always straight behind vehicle) 
 
 	o: Toggle show/hide OpenDRIVE road feature lines
-	m: Toggle show/hide environmnet 3D model
-	s: Graphics performance statistics
-	f: Toggle full screen mode
+	p: Toggle show/hide environment 3D model
+	r: Toggle show/hide sensor view frustums
 	i: Toggle info text showing time and speed
 	j: Toggle show trails after vehicles
 	ESC: quit
 
 	Viewer options:
+      f: Toggle full screen mode
       t: Toggle textures
       s: Rendering statistics
       l: Toggle light
