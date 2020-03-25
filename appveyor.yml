@@ -90,7 +90,7 @@ for:
           
           cd run
           
-          for f in *.bat; do { echo 'cd `dirname "$0"`'; cat $f; } > $f.command; chmod +x $f.command ; done
+          for f in *.bat; do { echo 'cd `dirname "$0"`'; cat $f; } > $f.command; chmod +x $f.command; rm $f; done
           
           cd ..
           
