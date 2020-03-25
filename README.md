@@ -25,7 +25,7 @@ and a few applications that can be used as is or provide ideas for customized so
 
 Repository: <https://github.com/esmini/esmini>
 
-A pre-built demo package for Windows is available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\EgoSimulator" and run any of the bat-files.
+Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\EgoSimulator" and run any of the example scripts.
 
 The code is a result from the Swedish collaborative research project [Simulation Scenarios](https://sites.google.com/view/simulationscenarios).
 
@@ -42,24 +42,13 @@ Windows, Linux and Mac supported
 
 Latest release is found here: https://github.com/esmini/esmini/releases/latest
 
-All builds are available at the CI service: [AppVeyor/esmini](https://ci.appveyor.com/project/esmini/esmini). Click on a job, then find available files under the Artifact tab.
+All builds, successful and unsuccessful ones :), are available at the CI service [AppVeyor/esmini](https://ci.appveyor.com/project/esmini/esmini). Click on a job, then find files under the Artifact tab.
+
+3D models used by the example scenarios are included in the demo packages. They are also available [here](https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc). Unpack into esmini/resources. These assets works on all platforms.
+Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.com/vtd-vires-virtual-test-drive/#creation).
 
 ## Build
-If you want to build yourself, please find some instructions [here](BuildInstructions.md).
-
-Windows, Linux and Mac binary builds and demo packages are available as:
-GitHub release:
-CI service [AppVeyor/esmini](https://ci.appveyor.com/project/esmini/esmini). Click on a job, then find available files under the Artifact tab. If you want to build yourself, please find some instructions [here](BuildInstructions.md).
-
-- Windows instructions are found [here](docs/BuildOnWindows.md).
-- Linux instructions are found [here](docs/BuildOnLinux.md).
-
-For Mac, only the shared library variant without OSG has been tested (as a Unity3D native plugin). The script [create_xcode_project.sh](./create_xcode_project.sh) can be used as a starting point.
-
-Even though the code has been tested on Android there are unfortunately no automated scripts or even instructions available for that target platform.
-
-External dependencies: [3D models used by the example scenarios](https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc). Unpack into esmini/resources. These assets works on all platforms.
-Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.com/vtd-vires-virtual-test-drive/#creation).
+If you want to build yourself, please find some instructions [here](docs/BuildInstructions.md).
 
 ## Related work
 ### Scenario video clip generator
