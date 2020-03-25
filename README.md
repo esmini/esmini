@@ -35,14 +35,24 @@ Although allowed by the license this implementation is not primarily intended fo
 
 [OpenSCENARIO coverage](./osc_coverage.txt) is limited as it was developed on demand and defined by the research scope. Moreover, since the Simulation Scenario project is closed, no formal support should be expected from the initial contributors.
 
-Nevertheless, regarding the above stated limitations, it was decided to release the code as is, as a public outcome from the project. It can hopefully serve as guidance or just inspiration for those aspiring to build similar tools, or even get accustomed with the OpenSCENARIO format. All contributions are welcome!
+Nevertheless, regarding the above stated limitations, it was decided to release the code as is, as a public outcome from the project. It can hopefully serve as guidance or just inspiration for those aspiring to build similar tools, or even get accustomed with the OpenSCENARIO format. And of course, all contributions to further development are welcome!
 
-## Build and run
+## Binaries and demos
+Windows, Linux and Mac supported
 
-Windows and Linux binary builds and demo packages are available at CI service [AppVeyor/esmini](https://ci.appveyor.com/project/esmini/esmini). If you want to build yourself, here is some instructions:
+Latest release is found here: https://github.com/esmini/esmini/releases/latest
 
-- Windows instructions are found [here](BuildOnWindows.md).
-- Linux instructions are found [here](BuildOnLinux.md).
+All builds are available at the CI service: [AppVeyor/esmini](https://ci.appveyor.com/project/esmini/esmini). Click on a job, then find available files under the Artifact tab.
+
+## Build
+If you want to build yourself, please find some instructions [here](BuildInstructions.md).
+
+Windows, Linux and Mac binary builds and demo packages are available as:
+GitHub release:
+CI service [AppVeyor/esmini](https://ci.appveyor.com/project/esmini/esmini). Click on a job, then find available files under the Artifact tab. If you want to build yourself, please find some instructions [here](BuildInstructions.md).
+
+- Windows instructions are found [here](docs/BuildOnWindows.md).
+- Linux instructions are found [here](docs/BuildOnLinux.md).
 
 For Mac, only the shared library variant without OSG has been tested (as a Unity3D native plugin). The script [create_xcode_project.sh](./create_xcode_project.sh) can be used as a starting point.
 
