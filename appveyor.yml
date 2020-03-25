@@ -156,6 +156,14 @@ for:
           msbuild /m /property:Configuration=Release /p:Platform=win32 EnvironmentSimulator.sln
 
           cd..
+          
+    after_build:
+      - cmd:
+            7z a esmini-bin_win32.zip bin/*
+
+    artifacts:
+      - path: esmini-*_win*.zip
+        name: windows_32bit_binaries_artifacts           
   -
     matrix:
       only:
@@ -178,6 +186,15 @@ for:
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
 
           cd..
+          
+    after_build:
+      - cmd:
+            7z a esmini-bin_winSDK7-1.zip bin/*
+
+    artifacts:
+      - path: esmini-*_win*.zip
+        name: windows_SDK7-1_binaries_artifacts             
+
   -
     matrix:
       exclude:
