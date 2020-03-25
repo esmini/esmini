@@ -44,7 +44,7 @@ Latest release is found here: https://github.com/esmini/esmini/releases/latest
 
 All builds, successful and unsuccessful ones :), are available at the CI service [AppVeyor/esmini](https://ci.appveyor.com/project/esmini/esmini). Click on a job, then find files under the Artifact tab.
 
-3D models used by the example scenarios are included in the demo packages. They are also available [here](https://drive.google.com/uc?export=download&id=1RSbyFJoVahX1nGWAsdepsPsznAiNspUc). Unpack into esmini/resources. These assets works on all platforms.
+3D models used by the example scenarios are included in the demo packages. They are also available [here](https://drive.google.com/uc?export=download&id=11a8njhkRIjLYMqCsSL9pU-d5_A8pMVhc). Unpack into esmini/resources. These assets works on all platforms.
 Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.com/vtd-vires-virtual-test-drive/#creation).
 
 ## Build
