@@ -22,3 +22,11 @@ The purpose of this document is to highlight changes breaking backward compatibi
 - Mac CI build environment added. However only RoadManager and ScenarioEngine as shared libraries, and without graphics (OSG) support.
 - Linux binaries now includes graphics (OSG) support. 
 - Demo package for Linux added. Now CI builds and deploy demo for both Windows and Linux (Ubuntu 18.04).
+
+2020-03-25 Version 1.4
+- Demos (and binaries) supplied for Mac (Catalina) and Linux (Ubuntu 18.04 and Kubuntu 18.04) in addition to Windows.
+- jpeg screenshot. User can save a screen shot at any time by pressing key 'c'.
+- QuitAction. User can specify when to quit the scenario (and application) by means of OSC conditions, just as any OSC action.
+- Fixed timestep (--fixed_timestep <sec>). Enabling scenarios to be executed in split of a second and, by using the recording feature, it can be replayed in viewer afterwards. 
+- Threads (--threads). Put scenario execution into a separate thread, decoupled from the viewer, make it possible to e.g. pause scenario while moving camera.
+- New keyboard shortcut commands, and some moved to new key. Please see run/readme.txt for complete set.

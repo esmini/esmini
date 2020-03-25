@@ -1,10 +1,10 @@
 version: 1.3.{build}
 
 image:
-#- Visual Studio 2017
-#- Visual Studio 2015
+- Visual Studio 2017
+- Visual Studio 2015
 - Ubuntu1804
-#- macos
+- macos
 
 
 configuration: Release
@@ -14,7 +14,7 @@ platform:
 - x86
 
 cache:
-#- externals/OpenSceneGraph
+- externals/OpenSceneGraph
 - resources/models
     
 # publish package on tag build    
@@ -54,7 +54,7 @@ for:
           
           cd run
           
-          for f in $(find . -name '*.bat'); do { echo '#!/bin/sh'; cat $f; } > $f.sh; chmod +x $f.command; rm $f; done
+          for f in $(find . -name '*.bat'); do { echo '#!/bin/sh'; cat $f; } > $f.sh; chmod +x $f.sh; rm $f; done
           
           cd ..
 
