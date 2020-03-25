@@ -54,7 +54,7 @@ This will build all projects and copy the binaries into a dedicated folder found
 - There is a subfolder for each application including a few example batch- or script files
 - Simply doubleclick on any to run (might need to run from terminal in Linux/Mac)
 - For usage description of available options, start the application with no arguments.
-- Key commands (shortcuts) are described briefly in [run/readme.txt](run/readme.txt)
+- Key commands (shortcuts) are described briefly in [run/readme.txt](../run/readme.txt)
 
 # Build OSG
 Description of how to build OSG from scratch is found [here](BuildOSG.md).
