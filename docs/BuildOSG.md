@@ -16,13 +16,24 @@ esmini is designed to link all dependencies statically. Main reason is to have a
 ## Dependencies
 See this page for information: http://www.openscenegraph.org/index.php/download-section/32-third-party
 - Windows: Download pre-compiled package (small variant is enough) from page above
-- For Linux,
-http://www.openscenegraph.org/index.php/download-section/32-third-party.
-Pick the version matching your Visual Studio version
-Unpack into OpenSceneGraph root folder (same level as src directory)
-
+- For Linux and Mac, see info and links on page above. Probably only zlib and jpeglib are needed, see hints below.
 - Optional: For Autodesk FBX support, download and install fbx-sdk from:
 https://www.autodesk.com/products/fbx/overview. Pick the closest matching version, equal or older, to your Visual Studio version.
+
+### Some hints for Linux and Mac:
+- If zlib.a needed, more info: http://www.linuxfromscratch.org/lfs/view/6.6/chapter06/zlib.html
+- libjpeg (used for screenshots), download [jpegsr8d.zip](http://www.ijg.org/files/jpegsr8d.zip)  
+mac: ./configure, make  
+Linux: ./configure CFLAGS="-fPIC", make  
+then find libjpeg in .libs folder, put it in a folder pointed to by the cmake script, e.g. 3rd_party
+- On Mac: Currently (Catalina March 2020) there is a problem of rendered image only filling lower left quarter of the window. To avoid it: In OpenSceneGraph/src/osgViewer/GraphicsWindowCocoa.mm,
+under the block  
+`[_view setAutoresizingMask:  (NSViewWidthSizable | NSViewHeightSizable) ];`  
+`[_view setGraphicsWindowCocoa: this];`  
+`[_view setOpenGLContext:_context];`  
+add the line  
+`[_view setWantsBestResolutionOpenGLSurface: NO];`  
+Solution found [here](https://github.com/openscenegraph/OpenSceneGraph/issues/926#issuecomment-600080664)
 
 ## Build configuration
 To build OSG libraries for static linking in esmini, see following examples. All examples assumes you first have created a directory "build" directly under OSG root and moved into it.
@@ -42,24 +53,10 @@ To build OSG libraries for static linking in esmini, see following examples. All
 - Linux / Ubuntu  
 `cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DCMAKE_CXX_FLAGS=-fPIC -DCMAKE_INSTALL_PREFIX=../install`
 > PIC (Position Independent Code) is needed for static linking
+
 ### Compile
 - Windows: `msbuild /m /property:Configuration=Release OpenSceneGraph.sln` followed by `msbuild INSTALL.vcxproj`
 - Linux/macOS: `make -j4` followed by `make install`
-
-### Some hints for Linux and Mac:
-- If zlib.a needed, more info: http://www.linuxfromscratch.org/lfs/view/6.6/chapter06/zlib.html
-- libjpeg (used for screenshots), download [jpegsr8d.zip](http://www.ijg.org/files/jpegsr8d.zip)  
-mac: ./configure, make  
-Linux: ./configure CFLAGS="-fPIC", make  
-then find libjpeg in .libs folder, put it in a folder pointed to by the cmake script, e.g. 3rd_party
-- On Mac: Currently (Catalina March 2020) there is a problem of rendered image only filling lower left quarter of the window. To avoid it: In OpenSceneGraph/src/osgViewer/GraphicsWindowCocoa.mm,
-under the block  
-`[_view setAutoresizingMask:  (NSViewWidthSizable | NSViewHeightSizable) ];`  
-`[_view setGraphicsWindowCocoa: this];`  
-`[_view setOpenGLContext:_context];`  
-add the line  
-`[_view setWantsBestResolutionOpenGLSurface: NO];`  
-Solution found [here](https://github.com/openscenegraph/OpenSceneGraph/issues/926#issuecomment-600080664)
 
 To build the complete set of OSG applications (e.g. osgview and osgconv) you need to build OSG libraries for dynamic linking. cmake examples for Windows:
 
