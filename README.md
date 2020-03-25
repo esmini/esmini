@@ -25,7 +25,7 @@ and a few applications that can be used as is or provide ideas for customized so
 
 Repository: <https://github.com/esmini/esmini>
 
-Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\EgoSimulator" and run any of the example scripts.
+Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\EgoSimulator" and run any of the example scripts. See more info below under "Binaries and demos".
 
 The code is a result from the Swedish collaborative research project [Simulation Scenarios](https://sites.google.com/view/simulationscenarios).
 
@@ -43,6 +43,11 @@ Windows, Linux and Mac supported
 Latest release is found here: https://github.com/esmini/esmini/releases/latest
 
 All builds, successful and unsuccessful ones :), are available at the CI service [AppVeyor/esmini](https://ci.appveyor.com/project/esmini/esmini). Click on a job, then find files under the Artifact tab.
+
+On Mac the zip-package might be put in quarantine, to release it:
+`xattr -d com.apple.quarantine file.zip`
+or even better:
+`xattr -c file.zip`
 
 3D models used by the example scenarios are included in the demo packages. They are also available [here](https://drive.google.com/uc?export=download&id=11a8njhkRIjLYMqCsSL9pU-d5_A8pMVhc). Unpack into esmini/resources. These assets works on all platforms.
 Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.com/vtd-vires-virtual-test-drive/#creation).
