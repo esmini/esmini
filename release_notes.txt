@@ -28,5 +28,5 @@ The purpose of this document is to highlight changes breaking backward compatibi
 - jpeg screenshot. User can save a screen shot at any time by pressing key 'c'.
 - QuitAction. User can specify when to quit the scenario (and application) by means of OSC conditions, just as any OSC action.
 - Fixed timestep (--fixed_timestep <sec>). Enabling scenarios to be executed in split of a second and, by using the recording feature, it can be replayed in viewer afterwards. 
-- Threads (--threads). Put scenario execution into a separate thread, decoupled from the viewer, make it possible to e.g. pause scenario while moving camera.
+- Threads (--threads). Put scenario execution into a separate thread, decoupled from the viewer. Example of potential use case: Make it possible to pause scenario while moving camera.
 - New keyboard shortcut commands, and some moved to new key. Please see run/readme.txt for complete set.
