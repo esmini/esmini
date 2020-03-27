@@ -13,8 +13,8 @@ The following platforms are supported:
 All configurations defines an "Install" build target that compiles (if needed) and copies relevant binaries into a common "esmini/bin" folder recognized by the example scripts under the "esmini/run" folder.
 
 > Note:
-- For automatic downloading of external dependencies (OSG binaries) and 3D models, CMake version 3.11.4 or above is required (FetchContent_MakeAvailable was introduced).
-- In Windows, if you get an error like "the c compiler identification is unknown", then please make sure to install "Windows Universal CRT SDK" from the Visual Studio Installer tool.
+>- For automatic downloading of external dependencies (OSG binaries) and 3D models, CMake version 3.11.4 or above is required (FetchContent_MakeAvailable was introduced).
+>- In Windows, if you get an error like "the c compiler identification is unknown", then please make sure to install "Windows Universal CRT SDK" from the Visual Studio Installer tool.
 
 ## External dependencies
 CMake scripts will download two packages: External binary dependencies OpenSceneGraph (OSG) and 3D model resource files. If not using CMake, here are direct links:
@@ -25,7 +25,7 @@ CMake scripts will download two packages: External binary dependencies OpenScene
 - [OSG for Linux Ubuntu/Kubuntu 18.04](https://drive.google.com/uc?export=download&id=1OufA3TUQjBTkaRvAuo0rSUwryvoqde8G)
 - [OSG for Apple macOS Catalina](https://drive.google.com/uc?export=download&id=1yEFOB8HmNP5lPxYD4VJC-ry7XaBG9dsJ)
 
-Unpack into esmini/externals/OpenSceneGraph. For other platforms OSG needs to be downloaded and built separately (set CMake flag DYNAMIC_OPENSCENEGRAPH = true). See further information below.
+Unpack into esmini/externals/OpenSceneGraph. For other platforms OSG needs to be downloaded and built separately (set CMake flags DYNAMIC_OPENSCENEGRAPH and DYNAMIC_OPENTHREADS = false). See further information below.
 
 - [3D models used by the example scenarios](https://drive.google.com/uc?export=download&id=11a8njhkRIjLYMqCsSL9pU-d5_A8pMVhc).
 
