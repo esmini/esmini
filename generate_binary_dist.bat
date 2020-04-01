@@ -27,6 +27,7 @@ copy resources\xosc\left-hand-traffic_internal.xosc %target_dir%\resources\xosc 
 copy resources\xosc\ltap-od-synch.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\synchronize.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\parking_lot.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\cut-in_internal.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
 copy resources\xosc\Catalogs\Vehicles\*.* %target_dir%\resources\xosc\Catalogs\Vehicles /y

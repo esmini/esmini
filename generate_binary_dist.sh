@@ -17,6 +17,7 @@ resources/xosc/left-hand-traffic_internal.xosc \
 resources/xosc/ltap-od-synch.xosc \
 resources/xosc/synchronize.xosc \
 resources/xosc/parking_lot.xosc \
+resources/xosc/cut-in_internal.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
