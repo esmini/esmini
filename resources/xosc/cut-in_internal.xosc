@@ -9,9 +9,9 @@
         <Parameter name="$EgoStartS" type="double" value="50"/>
         <Parameter name="$TargetStartS" type="double" value="25"/>
         <Parameter name="$HeadwayTime_LaneChange" type="double" value="0.2"/>
-        <Parameter name="$Duration_LaneChange" type="double" value="1.5"/>
-        <Parameter name="$Distance_Brake" type="double" value="20.0"/>
-        <Parameter name="$BrakeRate" type="double" value="-7.0"/>
+        <Parameter name="$Duration_LaneChange" type="double" value="3.0"/>
+        <Parameter name="$Distance_Brake" type="double" value="40.0"/>
+        <Parameter name="$BrakeRate" type="double" value="-4.0"/>
     </ParameterDeclaration>
   
     <Catalogs>  
