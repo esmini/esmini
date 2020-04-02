@@ -700,19 +700,6 @@ namespace roadmanager
 		std::string odr_filename_;
 	};
 
-
-	typedef struct
-	{
-		double global_pos[3];   // steering target position, in global coordinate system
-		double local_pos[3];    // steering target position, relative vehicle (pivot position object) coordinate system
-		double angle;			// heading angle to steering target from and relatove to vehicle (pivot position)
-		double road_heading;	// road heading at steering target point
-		double road_pitch;		// road pitch (inclination) at steering target point
-		double road_roll;		// road roll (camber) at steering target point
-		double curvature;		// road curvature at steering target point
-		double speed_limit;		// speed limit given by OpenDRIVE type entry
-	} SteeringTargetInfo;
-
 	typedef struct
 	{
 		double pos[3];		// position, in global coordinate system
@@ -723,6 +710,20 @@ namespace roadmanager
 		double curvature;	// road curvature at steering target point
 		double speed_limit; // speed limit given by OpenDRIVE type entry
 	} RoadLaneInfo;
+	
+	typedef struct
+	{
+		RoadLaneInfo road_lane_info;  // Road info at probe target position
+		double relative_pos[3];       // probe target position relative vehicle (pivot position object) coordinate system
+		double relative_h;			  // heading angle to probe target from and relatove to vehicle (pivot position)
+	} RoadProbeInfo;
+
+	typedef struct
+	{
+		double ds;				// delta s (longitudinal distance)
+		double dt;				// delta t (lateral distance)
+		int dLaneId;			// delta laneId (increasing left and decreasing to the right)
+	} PositionDiff;
 
 	// Forward declaration of Route
 	class Route;
@@ -815,7 +816,7 @@ namespace roadmanager
 		@param positionB The position which will be subtracted from the current position object
 		@return true if position found and parameter values are valid, else false
 		*/
-		bool Delta(Position pos_b, double &ds, double &dt, int &dLaneId);
+		bool Delta(Position pos_b, PositionDiff &diff);
 
 		/**
 		Is the current position ahead of the one specified in argument
@@ -832,7 +833,7 @@ namespace roadmanager
 		@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
 		@return 0 if successful, -1 if not
 		*/
-		int GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, LookAheadMode lookAheadMode);
+		int GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode);
 
 		/**
 		Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
@@ -840,7 +841,7 @@ namespace roadmanager
 		@param data Struct to fill in calculated values, see typdef for details
 		@return 0 if successful, -1 if not
 		*/
-		int GetSteeringTargetInfo(Position *target_pos, SteeringTargetInfo *data);
+		int GetProbeInfo(Position *target_pos, RoadProbeInfo *data);
 
 		/**
 		Get information of current lane at a specified distance from object along the road ahead
@@ -859,7 +860,7 @@ namespace roadmanager
 		*/
 //		int GetTrailInfo(double lookahead_distance, RoadLaneInfo *data);
 
-		void CalcSteeringTarget(Position *target, SteeringTargetInfo *data);
+		void CalcProbeTarget(Position *target, RoadProbeInfo *data);
 
 		/**
 		Move position along the road network, forward or backward, from the current position

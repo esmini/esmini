@@ -35,18 +35,6 @@ typedef struct
 
 typedef struct
 {
-	float global_pos[3];    // steering target position, in global coordinate system
-	float local_pos[3];     // steering target position, relative vehicle (pivot position object) coordinate system
-	float angle;			// heading angle to steering target from and relatove to vehicle (pivot position)
-	float road_heading;		// road heading at steering target point
-	float road_pitch;		// road pitch (inclination) at steering target point
-	float road_roll;		// road roll (camber) at steering target point
-	float curvature;		// road curvature at steering target point
-	float speed_limit;
-} RM_SteeringTargetInfo;
-
-typedef struct
-{
 	float pos[3];			// position, in global coordinate system
 	float heading;			// road heading 
 	float pitch;			// road pitch 
@@ -58,9 +46,20 @@ typedef struct
 
 typedef struct
 {
+	RM_RoadLaneInfo road_lane_info; 
+	float relative_pos[3];  // steering target position, relative vehicle (pivot position object) coordinate system
+	float relative_h;		// heading angle to steering target from and relatove to vehicle (pivot position)
+} RM_RoadProbeInfo;
+
+typedef struct
+{
 	float ds;				// delta s (longitudinal distance)
 	float dt;				// delta t (lateral distance)
 	int dLaneId;			// delta laneId (increasing left and decreasing to the right)
+	float dx;				// delta x
+	float dy;				// delta y
+	float dz;				// delta z
+	float dh;				// delta heading
 } RM_PositionDiff;
 
 #ifdef __cplusplus
@@ -202,7 +201,7 @@ extern "C"
 	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, RM_SteeringTargetInfo *data, int lookAheadMode);
+	RM_DLL_API int RM_GetProbeInfo(int handle, float lookahead_distance, RM_RoadProbeInfo *data, int lookAheadMode);
 
 	/**
 	Find out the difference between two position objects, i.e. delta distance (long and lat) and delta laneId

@@ -3771,7 +3771,7 @@ void Position::SetRoute(Route *route)
 	CalcRoutePosition();
 }
 
-bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
+bool Position::Delta(Position pos_b, PositionDiff &diff)
 {
 	Road *road = GetOpenDrive()->GetRoadById(GetTrackId());
 	RoadLink *link = 0;
@@ -3786,23 +3786,23 @@ bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
 
 		// First look forward
 		link = road->GetLink(roadmanager::LinkType::SUCCESSOR);
-		ds = road->GetLength() - GetS();
+		diff.ds = road->GetLength() - GetS();
 		dist = FindDistToPos(&pos_b, link, call_count, level_count, found);
 
 		if (found)
 		{
-			ds += dist;
+			diff.ds += dist;
 		}
 		else
 		{
 			// Search backwards
 			link = road->GetLink(roadmanager::LinkType::PREDECESSOR);
-			ds = -GetS();
+			diff.ds = -GetS();
 			dist = FindDistToPos(&pos_b, link, call_count, level_count, found);
 
 			if (found)
 			{
-				ds -= dist;
+				diff.ds -= dist;
 			}
 		}		
 	}
@@ -3810,7 +3810,7 @@ bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
 	{
 		found = true;
 
-		ds = pos_b.GetS() - GetS();
+		diff.ds = pos_b.GetS() - GetS();
 
 		link = road->GetLink(roadmanager::LinkType::SUCCESSOR);
 
@@ -3819,13 +3819,13 @@ bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
 		{
 			if (link->GetElementId() == GetTrackId())  // Loop
 			{
-				if (ds > road->GetLength() / 2)
+				if (diff.ds > road->GetLength() / 2)
 				{
-					ds -= road->GetLength();
+					diff.ds -= road->GetLength();
 				}
-				else if (ds < -road->GetLength() / 2)
+				else if (diff.ds < -road->GetLength() / 2)
 				{
-					ds += road->GetLength();
+					diff.ds += road->GetLength();
 				}
 			}
 		}
@@ -3833,11 +3833,11 @@ bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
 
 	if (GetHRelative() > M_PI_2 && GetHRelative() < 3 * M_PI / 2)
 	{
-		ds *= -1;
+		diff.ds *= -1;
 	}
 
-	dLaneId = pos_b.GetLaneId() - GetLaneId();
-	dt = pos_b.GetT() - GetT();
+	diff.dLaneId = pos_b.GetLaneId() - GetLaneId();
+	diff.dt = pos_b.GetT() - GetT();
 
 	return found;
 }
@@ -3907,20 +3907,20 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, Loo
 	return 0;
 }
 
-void Position::CalcSteeringTarget(Position *target, SteeringTargetInfo *data)
+void Position::CalcProbeTarget(Position *target, RoadProbeInfo *data)
 {
-	data->global_pos[0] = target->GetX();
-	data->global_pos[1] = target->GetY();
-	data->global_pos[2] = target->GetZRoad();
+	data->road_lane_info.pos[0] = target->GetX();
+	data->road_lane_info.pos[1] = target->GetY();
+	data->road_lane_info.pos[2] = target->GetZRoad();
 
 	// find out local x, y, z
 	double diff_x = target->GetX() - GetX();
 	double diff_y = target->GetY() - GetY();
 	double diff_z = target->GetZRoad() - GetZRoad();
 
-	data->local_pos[0] = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
-	data->local_pos[1] = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
-	data->local_pos[2] = diff_z;
+	data->relative_pos[0] = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
+	data->relative_pos[1] = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
+	data->relative_pos[2] = diff_z;
 
 #if 0
 	// for validation
@@ -3930,42 +3930,42 @@ void Position::CalcSteeringTarget(Position *target, SteeringTargetInfo *data)
 #endif
 
 	// Calculate angle - by dot product
-	if (fabs(data->local_pos[0]) < SMALL_NUMBER && fabs(data->local_pos[1]) < SMALL_NUMBER && fabs(data->local_pos[2]) < SMALL_NUMBER)
+	if (fabs(data->relative_pos[0]) < SMALL_NUMBER && fabs(data->relative_pos[1]) < SMALL_NUMBER && fabs(data->relative_pos[2]) < SMALL_NUMBER)
 	{
-		data->angle = GetH();
+		data->relative_h = GetH();
 	}
 	else
 	{
 		double dot_prod =
-			(data->local_pos[0] * 1.0 + data->local_pos[1] * 0.0) /
-			sqrt(data->local_pos[0] * data->local_pos[0] + data->local_pos[1] * data->local_pos[1]);
-		data->angle = SIGN(data->local_pos[1]) * acos(dot_prod);
+			(data->relative_pos[0] * 1.0 + data->relative_pos[1] * 0.0) /
+			sqrt(data->relative_pos[0] * data->relative_pos[0] + data->relative_pos[1] * data->relative_pos[1]);
+		data->relative_h = SIGN(data->relative_pos[1]) * acos(dot_prod);
 	}
 
 	if (fabs(target->GetCurvature()) > SMALL_NUMBER)
 	{
 		double radius = 1.0 / target->GetCurvature();
 		radius -= target->GetT(); // curvature positive in left curves, lat_offset positive left of reference lane
-		data->curvature = (float)(1.0 / radius);
+		data->road_lane_info.curvature = (float)(1.0 / radius);
 	}
 	else
 	{
 		// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
-		data->curvature = (float)target->GetCurvature();
+		data->road_lane_info.curvature = (float)target->GetCurvature();
 	}
 
-	data->road_heading = target->GetHRoad();
-	data->road_pitch = target->GetPRoad();
-	data->road_roll = target->GetR();
+	data->road_lane_info.heading = target->GetHRoad();
+	data->road_lane_info.pitch = target->GetPRoad();
+	data->road_lane_info.roll = target->GetR();
 
 	Road *road = target->GetRoadById(target->GetTrackId());
 	if (road)
 	{
-		data->speed_limit = road->GetSpeedByS(target->GetS());
+		data->road_lane_info.speed_limit = road->GetSpeedByS(target->GetS());
 	}
 }
 
-int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, LookAheadMode lookAheadMode)
+int Position::GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode)
 {
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
@@ -3990,14 +3990,14 @@ int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInf
 		return -1;
 	}
 
-	CalcSteeringTarget(&target, data);
+	CalcProbeTarget(&target, data);
 
 	return 0;
 }
 
-int Position::GetSteeringTargetInfo(Position *target_pos, SteeringTargetInfo *data)
+int Position::GetProbeInfo(Position *target_pos, RoadProbeInfo *data)
 {
-	CalcSteeringTarget(target_pos, data);
+	CalcProbeTarget(target_pos, data);
 
 	return 0;
 }
