@@ -1085,6 +1085,42 @@ int Road::GetNumberOfDrivingLanesSide(double s, int side)
 	return (lane_section_[i]->GetNumberOfDrivingLanesSide(side));
 }
 
+double Road::GetDrivableWidth(double s)
+{
+	int i;
+	double minOffset = 0;
+	double maxOffset = 0;
+
+	for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
+	{
+		if (s < lane_section_[i]->GetS())
+		{
+			break;
+		}
+	}
+
+	if (i < GetNumberOfLaneSections())
+	{
+		for (size_t j = 0; j < lane_section_[i]->GetNumberOfLanes(); j++)
+		{
+			if (lane_section_[i]->GetLaneByIdx(j)->IsDriving())
+			{
+				double offset = lane_section_[i]->GetLaneByIdx(j)->GetOffsetFromRef();
+				if (offset < minOffset)
+				{
+					minOffset = offset;
+				}
+				else if (offset > maxOffset)
+				{
+					maxOffset = offset;
+				}
+			}
+		}
+	}
+
+	return (maxOffset - minOffset);
+}
+
 void Road::AddLaneOffset(LaneOffset *lane_offset)
 {
 	// Adjust lane offset length
@@ -2770,12 +2806,36 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 		}
 	}
 
+
 	x_ = x3;
 	y_ = y3;
 
-	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
+	for (int i = -1; i < GetOpenDrive()->GetNumOfRoads(); i++)
 	{
-		road = GetOpenDrive()->GetRoadByIdx(i);
+		if (i == -1)
+		{
+			// First check current road. IF the new point is ON this road, i.e. within drivable lanes, - then don't look further
+			if (current_road)
+			{
+				road = current_road;
+			}
+			else
+			{
+				continue;  // Skip, no current road
+			}
+		}
+		else
+		{
+			if (i == track_idx_)
+			{
+				continue; // Skip, already checked this one
+			}
+			else
+			{
+				road = GetOpenDrive()->GetRoadByIdx(i);
+			}
+		}
+
 		weight = 0;
 		angle = 0;
 
@@ -2790,16 +2850,39 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 		{
 			if (directlyConnectedMin) // if already found a directly connected position - add offset distance
 			{
-				weight = 3; 
+				weight = 3;
 			}
 
 			weight += 5;  // For non connected roads add additional "penalty" threshold  
 			directlyConnected = false;
 		}
 		
-		for (int j = 0; j < road->GetNumberOfGeometries(); j++)
+		for (int j = -1; j < road->GetNumberOfGeometries(); j++)
 		{
-			geom = road->GetGeometry(j);
+			if (j == -1)
+			{
+				if (road == current_road)
+				{
+					// If current road, first check current segment
+					geom = road->GetGeometry(geometry_idx_);
+				}
+				else
+				{
+					continue;  // no current road, skip
+				}
+			}
+			else
+			{
+				if (j == geometry_idx_)
+				{
+					continue; // Skip, already checked this one
+				}
+				else
+				{
+					geom = road->GetGeometry(j); 
+				}
+			}
+			
 			dist = GetDistToTrackGeom(x3, y3, z3, h3, road, geom, inside, sNorm);
 			
 			dist += weight + (inside ? 0 : 2);  // penalty for roads outside projection area
@@ -2811,6 +2894,13 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 				roadMin = road;
 				sNormMin = CLAMP(sNorm, 0.0, 1.0);
 				distMin = dist;
+			}
+
+			// Special case - if current road and distance within drivable lanes
+			if (road == current_road && dist < road->GetDrivableWidth(sNormMin * geomMin->GetLength()) / 2.0)
+			{
+				// Inside road drivable lanes boundry (at least approximately - assuming euqal width on both sides if road)
+				break;
 			}
 		}
 	}

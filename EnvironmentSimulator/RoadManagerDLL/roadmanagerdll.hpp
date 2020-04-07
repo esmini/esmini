@@ -46,9 +46,9 @@ typedef struct
 
 typedef struct
 {
-	RM_RoadLaneInfo road_lane_info; 
-	float relative_pos[3];  // steering target position, relative vehicle (pivot position object) coordinate system
-	float relative_h;		// heading angle to steering target from and relatove to vehicle (pivot position)
+	RM_RoadLaneInfo road_lane_info; // Road info at probe location
+	float relative_pos[3];          // probe position, relative vehicle (pivot position object) coordinate system
+	float relative_h;		        // heading angle to steering target from and relatove to vehicle (pivot position)
 } RM_RoadProbeInfo;
 
 typedef struct
@@ -56,10 +56,6 @@ typedef struct
 	float ds;				// delta s (longitudinal distance)
 	float dt;				// delta t (lateral distance)
 	int dLaneId;			// delta laneId (increasing left and decreasing to the right)
-	float dx;				// delta x
-	float dy;				// delta y
-	float dz;				// delta z
-	float dh;				// delta heading
 } RM_PositionDiff;
 
 #ifdef __cplusplus
@@ -152,11 +148,10 @@ extern "C"
 	@param handle Handle to the position object
 	@param x cartesian coordinate x value
 	@param y cartesian coordinate y value
-	@param z cartesian coordinate z value
 	@param h rotation heading value
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_SetWorldXYZHPosition(int handle, float x, float y, float z, float h);
+	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h);
 
 	/**
 	Move position forward along the road. Choose way randomly though any junctions.
@@ -176,28 +171,27 @@ extern "C"
 	RM_DLL_API int RM_GetPositionData(int handle, RM_PositionData *data);
 
 	/**
-	Retrieve lane information from the position object (at current road, s-value and lane)
-	@param handle Handle to the position object
-	@param lookahead_distance The distance, along the road, to the point
-	@param data Struct including all result values, see RoadLaneInfo typedef
-	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
-	@return 0 if successful, -1 if not
-	*/
-	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data, int lookAheadMode);
-
-	/**
 	Retrieve current speed limit (at current road, s-value and lane) based on ODR type elements or nr of lanes
 	@param handle Handle to the position object
 	@return 0 if successful, -1 if not
 	*/
 	RM_DLL_API float RM_GetSpeedLimit(int handle);
 
-	// Driver model functions
 	/**
-	Get the location, in global coordinate system, of the point at a specified distance from starting position along the road ahead
+	Retrieve lane information from the position object (at current road, s-value and lane)
+	@param handle Handle to the position object
+	@param lookahead_distance The distance, along the road, to the point of interest
+	@param data Struct including all result values, see RM_RoadLaneInfo typedef
+	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
+	@return 0 if successful, -1 if not
+	*/
+	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data, int lookAheadMode);
+
+	/**
+	As RM_GetLaneInfo plus relative location of point of interest (probe) from current position
 	@param handle Handle to the position object from which to measure
-	@param lookahead_distance The distance, along the road, to the point
-	@param data Struct including all result values, see SteeringTargetData typedef
+	@param lookahead_distance The distance, along the road to the probe (point of interest)
+	@param data Struct including all result values, see RM_RoadProbeInfo typedef
 	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
 	@return 0 if successful, -1 if not
 	*/
