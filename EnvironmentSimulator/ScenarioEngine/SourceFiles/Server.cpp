@@ -133,7 +133,7 @@ namespace scenarioengine
 				// Update Ego state
 				mutex.Lock();
 
-				scenarioGateway->reportObject(ObjectState(0, "Ego", 0, 1, 0, buf.x, buf.y, buf.z, buf.h, buf.p, buf.r, buf.speed, buf.wheel_angle, wheel_rot));
+				scenarioGateway->reportObject(0, "Ego", 0, 1, 0, buf.speed, buf.wheel_angle, wheel_rot, buf.x, buf.y, buf.z, buf.h, buf.p, buf.r);
 
 				mutex.Unlock();
 			}

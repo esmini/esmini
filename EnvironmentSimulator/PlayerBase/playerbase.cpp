@@ -25,7 +25,7 @@
 
 using namespace scenarioengine;
 
-#define GHOST_HEADSTART 5.0
+#define GHOST_HEADSTART 2.5
 
 void log_callback(const char *str)
 {

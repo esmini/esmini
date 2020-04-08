@@ -122,6 +122,31 @@ extern "C"
 		position.push_back(newPosition);
 		return (int)(position.size() - 1);  // return index of newly created 
 	}
+	
+	RM_DLL_API int RM_GetNrOfPositions()
+	{
+		return position.size();
+	}
+
+	RM_DLL_API int RM_DeletePosition(int handle)
+	{
+		if (handle == -1)
+		{
+			// Delete all items
+			position.clear();
+		}
+		else if (handle >= 0 && handle < position.size())
+		{
+			// Delete specific item
+			position.erase(position.begin() + handle);
+		}
+		else
+		{
+			return -1;
+		}
+
+		return 0;
+	}
 
 	RM_DLL_API int RM_GetNumberOfRoads()
 	{

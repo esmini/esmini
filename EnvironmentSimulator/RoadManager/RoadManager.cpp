@@ -481,11 +481,11 @@ double Road::GetLaneWidthByS(double s, int lane_id)
 		lsec = GetLaneSectionByIdx((int)i);
 		if (s < lsec->GetS() + lsec->GetLength())
 		{
-			break;
+			return lsec->GetWidth(s, lane_id);
 		}
 	}
 
-	return lsec->GetWidth(s, lane_id);
+	return 0.0;
 }
 
 double Road::GetSpeedByS(double s)
@@ -1085,11 +1085,11 @@ int Road::GetNumberOfDrivingLanesSide(double s, int side)
 	return (lane_section_[i]->GetNumberOfDrivingLanesSide(side));
 }
 
-double Road::GetDrivableWidth(double s)
+double Road::GetDrivableWidth(double s, int side)
 {
-	int i;
 	double minOffset = 0;
 	double maxOffset = 0;
+	size_t i;
 
 	for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
 	{
@@ -1103,9 +1103,15 @@ double Road::GetDrivableWidth(double s)
 	{
 		for (size_t j = 0; j < lane_section_[i]->GetNumberOfLanes(); j++)
 		{
-			if (lane_section_[i]->GetLaneByIdx(j)->IsDriving())
+			if (lane_section_[i]->GetLaneByIdx((int)j)->IsDriving())
 			{
-				double offset = lane_section_[i]->GetLaneByIdx(j)->GetOffsetFromRef();
+				int lane_id = lane_section_[i]->GetLaneIdByIdx((int)j);
+
+				if (side < 0 && lane_id > 0 || side > 0 && lane_id < 0)
+				{
+					continue;  // do not measure this side
+				}
+				double offset = SIGN(lane_id) * lane_section_[i]->GetOuterOffset(s, lane_id);
 				if (offset < minOffset)
 				{
 					minOffset = offset;
@@ -2791,6 +2797,7 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 	bool directlyConnectedMin = false;
 	double weight = 0; // Add some resistance to switch from current road, applying a stronger bound to current road
 	double angle = 0;
+	bool search_done = false;
 
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
@@ -2805,12 +2812,11 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 			return;
 		}
 	}
-
-
+	
 	x_ = x3;
 	y_ = y3;
 
-	for (int i = -1; i < GetOpenDrive()->GetNumOfRoads(); i++)
+	for (int i = -1; !search_done && i < GetOpenDrive()->GetNumOfRoads(); i++)
 	{
 		if (i == -1)
 		{
@@ -2826,7 +2832,7 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 		}
 		else
 		{
-			if (i == track_idx_)
+			if (current_road && i == track_idx_)
 			{
 				continue; // Skip, already checked this one
 			}
@@ -2873,7 +2879,7 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 			}
 			else
 			{
-				if (j == geometry_idx_)
+				if (road == current_road && j == geometry_idx_)
 				{
 					continue; // Skip, already checked this one
 				}
@@ -2896,11 +2902,15 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 				distMin = dist;
 			}
 
-			// Special case - if current road and distance within drivable lanes
-			if (road == current_road && dist < road->GetDrivableWidth(sNormMin * geomMin->GetLength()) / 2.0)
+			// Special case - if point is on current road
+			if (road == current_road)
 			{
-				// Inside road drivable lanes boundry (at least approximately - assuming euqal width on both sides if road)
-				break;
+				if (dist < road->GetLaneWidthByS(sNormMin * geomMin->GetLength(), lane_id_) / 2.0)
+				{
+					// If inside drivable lanes boundry, stay on current road
+					search_done = true;
+					break;
+				}
 			}
 		}
 	}

@@ -98,6 +98,17 @@ namespace OpenDRIVE
         [DllImport(LIB_NAME, EntryPoint = "RM_CreatePosition")]
         public static extern int CreatePosition();
 
+        /// <summary>Get the number of created position objects</summary>
+        /// <returns>The number of created position objects</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetNrOfPositions")]
+        public static extern int GetNrOfPositions(int index);
+
+        /// <summary>Delete one or all position object(s)</summary>
+        /// <param name="index">Handle to the position object. Set -1 to delete all.</param>
+        /// <returns>0 if successful, -1 if specified position(s) could not be deleted</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_DeletePosition")]
+        public static extern int DeletePosition();
+        
         /// <summaryGet the total number fo roads in the road network of the currently loaded OpenDRIVE file</summary>
         /// <returns>Number of roads</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetNumberOfRoads")]

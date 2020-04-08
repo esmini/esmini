@@ -74,6 +74,19 @@ extern "C"
 	RM_DLL_API int RM_CreatePosition();
 
 	/**
+	Get the number of created position objects
+	@return Number of created position objects
+	*/
+	RM_DLL_API int RM_GetNrOfPositions();
+
+	/**
+	Delete one or all position object(s)
+	@param hande Handle to the position object. Set -1 to delete all.
+	@return 0 if succesful, -1 if specified position(s) could not be deleted
+	*/
+	RM_DLL_API int RM_DeletePosition(int handle);
+
+	/**
 	Get the total number fo roads in the road network of the currently loaded OpenDRIVE file.
 	@return Number of roads
 	*/

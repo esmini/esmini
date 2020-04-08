@@ -14,7 +14,6 @@ Key commands:
 	  Left:  Steer left
 	  Right: Steer right
 
-	  (w, x, a and d alternatives) 
 
 	TAB: Move camera to next vehicle
 	Shift-TAB: Move camera to previoius vehicle
