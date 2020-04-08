@@ -1,1 +1,1 @@
-"../../bin/EnvironmentSimulator" --osc ../../resources/xosc/cut-in.xosc --headless
+"../../bin/EnvironmentSimulator" --window 50 50 800 400 --osc ../../resources/xosc/cut-in.xosc --threads

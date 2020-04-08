@@ -41,9 +41,9 @@ namespace scenarioengine
 	{
 	public:
 		ObjectState();
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, roadmanager::Position *pos, double speed, double wheel_angle, double wheel_rot);
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, double x, double y, double z, double h, double p, double r, double speed, double wheel_angle, double wheel_rot);
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed, double wheel_angle, double wheel_rot);
+		ObjectState(int id, std::string name, int model_id, int control, double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position *pos);
+		ObjectState(int id, std::string name, int model_id, int control, double timestamp, double speed, double wheel_angle, double wheel_rot, double x, double y, double z, double h, double p, double r);
+		ObjectState(int id, std::string name, int model_id, int control, double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s);
 
 		ObjectStateStruct getStruct() { return state_; }
 
@@ -64,14 +64,28 @@ namespace scenarioengine
 		ScenarioGateway();
 		~ScenarioGateway();
 
-		void reportObject(ObjectState objectState, bool update = false);
+		void reportObject(int id, std::string name, int model_id, int control,
+			double timestamp, double speed, double wheel_angle, double wheel_rot,
+			roadmanager::Position *pos);
+
+		void reportObject(int id, std::string name, int model_id, int control,
+			double timestamp, double speed, double wheel_angle, double wheel_rot,
+			double x, double y, double z, double h, double p, double r);
+
+		void reportObject(int id, std::string name, int model_id, int control,
+			double timestamp, double speed, double wheel_angle, double wheel_rot,
+			int roadId, int laneId, double laneOffset, double s);
+
 		int getNumberOfObjects() { return (int)objectState_.size(); }
 		ObjectState getObjectStateByIdx(int idx) { return *objectState_[idx]; }
 		ObjectState *getObjectStatePtrByIdx(int idx) { return objectState_[idx]; }
+		ObjectState *getObjectStatePtrById(int id);
 		int getObjectStateById(int idx, ObjectState &objState);
 		int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
 
 	private:
+		void updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot);
+
 		std::vector<ObjectState*> objectState_;
 		std::ofstream data_file_;
 	};

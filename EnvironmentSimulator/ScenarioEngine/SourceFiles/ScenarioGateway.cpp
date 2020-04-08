@@ -24,7 +24,7 @@ ObjectState::ObjectState()
 }
 
 
-ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, roadmanager::Position *pos, double speed, double wheel_angle, double wheel_rot)
+ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position *pos)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -39,7 +39,7 @@ ObjectState::ObjectState(int id, std::string name, int model_id, int control, do
 	state_.wheel_rot = (float)wheel_rot;
 }
 
-ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, double x, double y, double z, double h, double p, double r, double speed, double wheel_angle, double wheel_rot)
+ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, double speed, double wheel_angle, double wheel_rot, double x, double y, double z, double h, double p, double r)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -56,7 +56,7 @@ ObjectState::ObjectState(int id, std::string name, int model_id, int control, do
 	state_.wheel_rot = (float)wheel_rot;
 }
 
-ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, int roadId, int laneId, double laneOffset, double s, double speed, double wheel_angle, double wheel_rot)
+ObjectState::ObjectState(int id, std::string name, int model_id, int control, double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -106,6 +106,18 @@ ScenarioGateway::~ScenarioGateway()
 	data_file_.close();
 }
 
+ObjectState* ScenarioGateway::getObjectStatePtrById(int id)
+{
+	for (size_t i = 0; i < objectState_.size(); i++)
+	{
+		if (objectState_[i]->state_.id == id)
+		{
+			return objectState_[i];
+		}
+	}
+
+	return 0;
+}
 
 int ScenarioGateway::getObjectStateById(int id, ObjectState &objectState)
 {
@@ -120,50 +132,93 @@ int ScenarioGateway::getObjectStateById(int id, ObjectState &objectState)
 
 	// Indicate not found by returning non zero
 	return -1;
-
 }
 
-void ScenarioGateway::reportObject(ObjectState objectState, bool update)
+void ScenarioGateway::updateObjectInfo(ObjectState *obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot)
 {
-	bool found = false;
-	
-	// Check whether the object is already present in the list of active objects
-	for (size_t i = 0; i < objectState_.size(); i++)
+	if (!obj_state)
 	{
-		if (objectState_[i]->state_.id == objectState.state_.id)
-		{
-			found = true;
-			
-			if (update)
-			{
-				// Just update relevant fields
-				objectState_[i]->state_.pos = objectState.state_.pos;
-				objectState_[i]->state_.speed = objectState.state_.speed;
-				objectState_[i]->state_.timeStamp= objectState.state_.timeStamp;
-				objectState_[i]->state_.wheel_angle = objectState.state_.wheel_angle;
-			}
-			else
-			{
-				// Copy all fields
-				objectState_[i]->state_ = objectState.state_;
-			}
-			break;
-		}
+		return;
 	}
 
-	if (!found)
-	{
-		// Add object
-		LOG("Adding %s state: (%d, %.2f)", objectState.state_.name, objectState.state_.id, objectState.state_.timeStamp);
-		ObjectState *os = new ObjectState;
-		*os = objectState;
-		objectState_.push_back(os);
-	}
+	obj_state->state_.speed = (float)speed;
+	obj_state->state_.timeStamp = (float)timestamp;
+	obj_state->state_.wheel_angle = (float)wheel_angle;
+	obj_state->state_.wheel_rot = (float)wheel_rot;
 
 	// Write status to file - for later replay
 	if (data_file_.is_open())
 	{
-		data_file_.write((char*)&objectState, sizeof(objectState.state_));
+		data_file_.write((char*)(&obj_state->state_), sizeof(obj_state->state_));
+	}
+}
+
+void ScenarioGateway::reportObject(int id, std::string name, int model_id, int control,
+	double timestamp, double speed, double wheel_angle, double wheel_rot,
+	roadmanager::Position *pos)
+{
+	ObjectState *obj_state = getObjectStatePtrById(id);
+	
+	if (obj_state == 0)
+	{
+		// Create state and set permanent information
+		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
+		obj_state = new ObjectState(id, name, model_id, control, timestamp, speed, wheel_angle, wheel_rot, pos);
+
+		// Add object to collection
+		objectState_.push_back(obj_state);
+	}
+	else
+	{
+		// Update status
+		obj_state->state_.pos = *pos;
+		updateObjectInfo(obj_state, timestamp, speed, wheel_angle, wheel_rot);
+	}
+}
+
+void ScenarioGateway::reportObject(int id, std::string name, int model_id, int control, 
+	double timestamp, double speed, double wheel_angle, double wheel_rot,
+	double x, double y, double z, double h, double p, double r)
+{
+	ObjectState *obj_state = getObjectStatePtrById(id);
+
+	if (obj_state == 0)
+	{
+		// Create state and set permanent information
+		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
+		obj_state = new ObjectState(id, name, model_id, control, timestamp, speed, wheel_angle, wheel_rot, x, y, z, h, p, r);
+
+		// Add object to collection
+		objectState_.push_back(obj_state);
+	}
+	else
+	{
+		// Update status
+		obj_state->state_.pos.SetInertiaPos(x, y, z, h, p, r);
+		updateObjectInfo(obj_state, timestamp, speed, wheel_angle, wheel_rot);
+	}
+}
+
+void ScenarioGateway::reportObject(int id, std::string name, int model_id, int control, 
+	double timestamp, double speed, double wheel_angle, double wheel_rot,
+	int roadId, int laneId, double laneOffset, double s)
+{
+	ObjectState *obj_state = getObjectStatePtrById(id);
+
+	if (obj_state == 0)
+	{
+		// Create state and set permanent information
+		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
+		obj_state = new ObjectState(id, name, model_id, control, timestamp, speed, wheel_angle, wheel_rot, roadId, laneId, laneOffset, s);
+
+		// Add object to collection
+		objectState_.push_back(obj_state);
+	}
+	else
+	{
+		// Update status
+		obj_state->state_.pos.SetLanePos(roadId, laneId, s, laneOffset);
+		updateObjectInfo(obj_state, timestamp, speed, wheel_angle, wheel_rot);
 	}
 }
 

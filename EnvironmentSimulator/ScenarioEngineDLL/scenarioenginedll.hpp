@@ -40,6 +40,7 @@ typedef struct
 	float speed;
 } SE_ScenarioObjectState; 
 
+
 typedef struct
 {
 	float global_pos_x;     // target position, in global coordinate system

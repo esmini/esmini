@@ -19,9 +19,9 @@ using namespace roadmanager;
 static roadmanager::OpenDrive *odrManager = 0;
 static std::vector<Position> position;
 
-static int GetSteeringTarget(int index, float lookahead_distance, RM_SteeringTargetInfo *r_data, int lookAheadMode)
+static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r_data, int lookAheadMode)
 {
-	roadmanager::SteeringTargetInfo s_data;
+	roadmanager::RoadProbeInfo s_data;
 
 	if (odrManager == 0)
 	{
@@ -34,25 +34,25 @@ static int GetSteeringTarget(int index, float lookahead_distance, RM_SteeringTar
 		return -1;
 	}
 
-	if (position[index].GetSteeringTargetInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
+	if (position[index].GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
 	{
 		return -1;
 	}
 	else
 	{
 		// Copy data
-		r_data->local_pos[0] = (float)s_data.local_pos[0];
-		r_data->local_pos[1] = (float)s_data.local_pos[1];
-		r_data->local_pos[2] = (float)s_data.local_pos[2];
-		r_data->global_pos[0] = (float)s_data.global_pos[0];
-		r_data->global_pos[1] = (float)s_data.global_pos[1];
-		r_data->global_pos[2] = (float)s_data.global_pos[2];
-		r_data->angle = (float)s_data.angle;
-		r_data->curvature = (float)s_data.curvature;
-		r_data->road_heading = (float)s_data.road_heading;
-		r_data->road_pitch = (float)s_data.road_pitch;
-		r_data->road_roll = (float)s_data.road_roll;
-		r_data->speed_limit = (float)s_data.speed_limit;
+		r_data->road_lane_info.pos[0] = (float)s_data.road_lane_info.pos[0];
+		r_data->road_lane_info.pos[1] = (float)s_data.road_lane_info.pos[1];
+		r_data->road_lane_info.pos[2] = (float)s_data.road_lane_info.pos[2];
+		r_data->road_lane_info.curvature = (float)s_data.road_lane_info.curvature;
+		r_data->road_lane_info.heading = (float)s_data.road_lane_info.heading;
+		r_data->road_lane_info.pitch = (float)s_data.road_lane_info.pitch;
+		r_data->road_lane_info.roll = (float)s_data.road_lane_info.roll;
+		r_data->road_lane_info.speed_limit = (float)s_data.road_lane_info.speed_limit;
+		r_data->relative_pos[0] = (float)s_data.relative_pos[0];
+		r_data->relative_pos[1] = (float)s_data.relative_pos[1];
+		r_data->relative_pos[2] = (float)s_data.relative_pos[2];
+		r_data->relative_h = (float)s_data.relative_h;
 
 		return 0;
 	}
@@ -121,6 +121,31 @@ extern "C"
 		roadmanager::Position newPosition;
 		position.push_back(newPosition);
 		return (int)(position.size() - 1);  // return index of newly created 
+	}
+	
+	RM_DLL_API int RM_GetNrOfPositions()
+	{
+		return position.size();
+	}
+
+	RM_DLL_API int RM_DeletePosition(int handle)
+	{
+		if (handle == -1)
+		{
+			// Delete all items
+			position.clear();
+		}
+		else if (handle >= 0 && handle < position.size())
+		{
+			// Delete specific item
+			position.erase(position.begin() + handle);
+		}
+		else
+		{
+			return -1;
+		}
+
+		return 0;
 	}
 
 	RM_DLL_API int RM_GetNumberOfRoads()
@@ -251,7 +276,7 @@ extern "C"
 		return 0;
 	}
 
-	RM_DLL_API int RM_SetWorldXYZHPosition(int handle, float x, float y, float z, float h)
+	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
@@ -260,7 +285,7 @@ extern "C"
 		else
 		{
 			roadmanager::Position *pos = &position[handle];
-			pos->XYZH2TrackPos(x, y, z, h, true);
+			pos->XYZH2TrackPos(x, y, 0, h, true);
 		}
 
 		return 0;
@@ -341,14 +366,14 @@ extern "C"
 		return (float)position[handle].GetSpeedLimit();
 	}
 
-	RM_DLL_API int RM_GetSteeringTarget(int handle, float lookahead_distance, RM_SteeringTargetInfo * data, int lookAheadMode)
+	RM_DLL_API int RM_GetProbeInfo(int handle, float lookahead_distance, RM_RoadProbeInfo * data, int lookAheadMode)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
 			return -1;
 		}
 
-		if (GetSteeringTarget(handle, lookahead_distance, data, lookAheadMode) != 0)
+		if (GetProbeInfo(handle, lookahead_distance, data, lookAheadMode) != 0)
 		{
 			return -1;
 		}
@@ -363,14 +388,13 @@ extern "C"
 			return false;
 		}
 
-		double ds = 0, dt = 0;
-		int dl = 0;
-		bool result = position[handleA].Delta(position[handleB], ds, dt, dl);
+		PositionDiff diff;
+		bool result = position[handleA].Delta(position[handleB], diff);
 		if (result == true)
 		{
-			pos_diff->ds = (float)ds;
-			pos_diff->dt = (float)dt;
-			pos_diff->dLaneId = dl;
+			pos_diff->ds = (float)diff.ds;
+			pos_diff->dt = (float)diff.dt;
+			pos_diff->dLaneId = diff.dLaneId;
 		}
 
 		return result;

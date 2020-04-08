@@ -169,13 +169,13 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 				speed_target_distance *= -1;
 			}
 
-			roadmanager::SteeringTargetInfo data;
+			roadmanager::RoadProbeInfo data;
 
 			// Speed - common speed target for these control modes
-			vh->obj->pos_.GetSteeringTargetInfo(speed_target_distance, &data, roadmanager::Position::LOOKAHEADMODE_AT_ROAD_CENTER);
+			vh->obj->pos_.GetProbeInfo(speed_target_distance, &data, roadmanager::Position::LOOKAHEADMODE_AT_ROAD_CENTER);
 
 #ifdef _SCENARIO_VIEWER
-			player->viewer_->SensorSetTargetPos(vh->gfx_model->speed_sensor_, data.global_pos[0], data.global_pos[1], data.global_pos[2]);
+			player->viewer_->SensorSetTargetPos(vh->gfx_model->speed_sensor_, data.road_lane_info.pos[0], data.road_lane_info.pos[1], data.road_lane_info.pos[2]);
 #endif
 
 			// Steering - Find out a steering target along ghost vehicle trail
@@ -192,11 +192,11 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 				state.speed_ = 0;
 			}
 			roadmanager::Position pos(state.x_, state.y_, 0, 0, 0, 0);
-			vh->obj->pos_.CalcSteeringTarget(&pos, &data);
-			vh->steering_target_heading = data.angle;
+			vh->obj->pos_.GetProbeInfo(&pos, &data);
+			vh->steering_target_heading = data.relative_h;
 
 #ifdef _SCENARIO_VIEWER
-			player->viewer_->SensorSetTargetPos(vh->gfx_model->steering_sensor_, data.global_pos[0], data.global_pos[1], data.global_pos[2]);
+			player->viewer_->SensorSetTargetPos(vh->gfx_model->steering_sensor_, data.road_lane_info.pos[0], data.road_lane_info.pos[1], data.road_lane_info.pos[2]);
 #endif
 
 			// Let steering target heading influence speed target - slowing down when turning
@@ -214,11 +214,10 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 
 		// Report updated state to scenario gateway
 		std::string name = vh->obj->GetControl() == Object::Control::EXTERNAL ? "External_" : "Hybrid_external_" + i;
-		player->scenarioGateway->reportObject(ObjectState((int)i, name, 0, 1, player->scenarioEngine->getSimulationTime(),
+		player->scenarioGateway->reportObject(i, name, 0, 1, player->scenarioEngine->getSimulationTime(),
+			vh->dyn_model->speed_, vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_,
 			vh->dyn_model->posX_, vh->dyn_model->posY_, vh->dyn_model->posZ_,
-			vh->dyn_model->heading_, vh->dyn_model->pitch_, 0,
-			vh->dyn_model->speed_, vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_));
-
+			vh->dyn_model->heading_, vh->dyn_model->pitch_, 0);
 	}
 }
 

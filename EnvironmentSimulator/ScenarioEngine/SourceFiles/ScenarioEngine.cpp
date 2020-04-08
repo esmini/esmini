@@ -341,15 +341,15 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		if (initial)
 		{
 			// Report all scenario objects the initial run, to establish initial positions and speed = 0
-			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime,
-				&obj->pos_, 0, 0.0, 0.0));
+			scenarioGateway.reportObject(obj->id_, obj->name_, obj->model_id_, 
+				obj->control_, simulationTime, 0.0, 0.0, 0.0, &obj->pos_);
 		}
 		else if (obj->control_ == Object::Control::INTERNAL ||
 			obj->control_ == Object::Control::HYBRID_GHOST)
 		{
 			// Then report all except externally controlled objects
-			scenarioGateway.reportObject(ObjectState(obj->id_, obj->name_, obj->model_id_, obj->control_, simulationTime,
-				&obj->pos_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_));
+			scenarioGateway.reportObject(obj->id_, obj->name_, obj->model_id_, 
+				obj->control_, simulationTime, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 		}
 	}
 

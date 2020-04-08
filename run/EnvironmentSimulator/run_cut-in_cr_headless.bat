@@ -1,0 +1,1 @@
+"../../bin/EnvironmentSimulator" --osc ../../resources/xosc/cut-in_cr.xosc --headless  
