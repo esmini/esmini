@@ -41,11 +41,22 @@ sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs
 Windows and Mac: Install the [cmake](https://cmake.org/) application
 
 ## Build project
-These steps applies to Windows/Visual Studio. Other platforms are similar.
-1. First generate build configuration (see above)
+First generate build configuration (see above)
+
+Windows/Visual Studio
 1. Open generated solution, build*/EnvironmentSimulator.sln
 1. Select configuration, Debug or Release
 1. Build CMakePredefinedTargets/INSTALL (right-click and select build)
+
+macOS
+1. cd build
+1. xcodebuild -scheme install -configuration Release build
+
+- or open generated project in Xcode, and build from there
+
+Linux
+1. cd build
+1. make -j4 install
 
 This will build all projects and copy the binaries into a dedicated folder found by the demo batch scripts.
 
