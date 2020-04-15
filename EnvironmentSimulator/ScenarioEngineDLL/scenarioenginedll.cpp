@@ -276,9 +276,12 @@ extern "C"
 		if (player)
 		{
 			player->Frame();
+			return 0;
 		}
-
-		return 0;
+		else
+		{
+			return -1;
+		}
 	}
 
 	SE_DLL_API int SE_StepDT(float dt)
@@ -286,9 +289,12 @@ extern "C"
 		if (player)
 		{
 			player->Frame(dt);
+			return 0;
 		}
-
-		return 0;
+		else
+		{
+			return -1;
+		}
 	}
 	
 	SE_DLL_API float SE_GetSimulationTime()

@@ -74,10 +74,27 @@ extern "C"
 	*/
 	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int record, float headstart_time);
 
+	/**
+	Step the simulation forward with specified timestep
+	@param dt time step in seconds
+	@return 0 if successful, -1 if not
+	*/
 	SE_DLL_API int SE_StepDT(float dt);
+
+	/**
+	Step the simulation forward. Time step will be elapsed system (world) time since last step. Useful for interactive/realtime use cases.
+	@return 0 if successful, -1 if not
+	*/
 	SE_DLL_API int SE_Step();
+
+	/**
+	Stop simulation gracefully. Two purposes: 1. Release memory and 2. Prepare for next simulation, e.g. reset object lists.
+	*/
 	SE_DLL_API void SE_Close();
 
+	/**
+	Get simulation time in seconds
+	*/
 	SE_DLL_API float SE_GetSimulationTime();  // Get simulation time in seconds
 
 	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
@@ -115,7 +132,7 @@ extern "C"
 	@param object_id Handle to the position object from which to measure
 	@param lookahead_distance The distance, along the road, to the point
 	@param data Struct including all result values, see typedef for details
-	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
+	@param lookAheadMode Measurement strategy: Along 0=lane center, 1=road center (ref line) or 2=current lane offset. See roadmanager::Position::LookAheadMode enum
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int lookAheadMode);

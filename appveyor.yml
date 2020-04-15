@@ -129,10 +129,10 @@ for:
       - cmd:
             7z a esmini-demo_win.zip esmini-demo/*
  
-            7z a esmini-bin_win.zip bin/*
+            7z a esmini-bin_win_x64.zip bin/*
 
     artifacts:
-      - path: esmini-*_win.zip
+      - path: esmini-*_win*.zip
         name: windows_artifacts
 
   -
@@ -157,6 +157,15 @@ for:
           msbuild /m /property:Configuration=Release /p:Platform=win32 EnvironmentSimulator.sln
 
           cd..
+          
+    after_build:
+      - cmd:
+            7z a esmini-bin_win_x86.zip bin/*
+
+    artifacts:
+      - path: esmini-*_win*.zip
+        name: windows_artifacts
+          
   -
     matrix:
       only:
@@ -179,6 +188,15 @@ for:
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
 
           cd..
+          
+    after_build:
+      - cmd:
+            7z a esmini-bin_win_sdk7-1_x64.zip bin/*
+
+    artifacts:
+      - path: esmini-*_win*.zip
+        name: windows_artifacts
+          
   -
     matrix:
       exclude:
