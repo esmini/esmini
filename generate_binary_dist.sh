@@ -57,7 +57,6 @@ run/EgoSimulator/run_dist_test.* \
 run/EgoSimulator/run_synchronize_internal.* \
 run/EgoSimulator/run_synchronize_external.* \
 run/EgoSimulator/run_parking_lot.* \
-
 run/readme.txt \
 3rd_party_terms_and_licenses/* \
 LICENSE \
