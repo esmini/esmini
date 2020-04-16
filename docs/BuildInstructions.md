@@ -38,6 +38,8 @@ Linux Ubuntu 18.04
 ```
 sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake
 ```
+Also, g++ version >= 5 is needed for c++14 code support.
+
 Windows and Mac: Install the [cmake](https://cmake.org/) application
 
 ## Build project
