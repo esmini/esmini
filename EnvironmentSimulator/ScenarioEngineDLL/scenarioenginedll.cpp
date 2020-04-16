@@ -409,28 +409,32 @@ extern "C"
 
 			player->AddObjectSensor(object_id, x, y, z, rangeNear, rangeFar, fovH, maxObj);
 		}
+		
+		// Switch on sensor visualization as defult when sensors are added
+		player->viewer_->ShowObjectSensors(true);
+
 		return 0;
 	}
 
-	SE_DLL_API int SE_FetchSensorObjectList(int object_id, int *list)
+	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int *list)
 	{
 		if (player)
 		{
-			if (object_id < 0 || object_id >= player->scenarioEngine->entities.object_.size())
+			if (sensor_id < 0 || sensor_id >= player->sensor.size())
 			{
-				LOG("Invalid object_id (%d/%d)", object_id, player->scenarioEngine->entities.object_.size());
+				LOG("Invalid sensor_id (%d specified / %d available)", sensor_id, player->sensor.size());
 				return -1;
 			}
-			if (player->sensor.size() > object_id)
+
+			for (int i = 0; i < player->sensor[sensor_id]->nObj_; i++)
 			{
-				for (int i = 0; i < player->sensor[object_id]->nObj_; i++)
-				{
-					list[i] = player->sensor[object_id]->hitList_[i].obj_->id_;
-				}
-				return player->sensor[object_id]->nObj_;
+				list[i] = player->sensor[sensor_id]->hitList_[i].obj_->id_;
 			}
+			
+			return player->sensor[sensor_id]->nObj_;
 		}
-		return 0;
+		
+		return -1;
 	}
 
 	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int along_road_center)

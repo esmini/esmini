@@ -115,17 +115,17 @@ extern "C"
 	@param rangeNear Near value of the sensor depth range
 	@param rangeFar Far value of the sensor depth range
 	@param maxObj Maximum number of objects theat the sensor can track
-	@return 0 if successful, -1 if not
+	@return Sensor ID (Global index of sensor), -1 if unsucessful
 	*/
 	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float rangeNear, float rangeFar, float fovH, int maxObj);
 
 	/**
 	Fetch list of identified objects from a sensor
-	@param object_id Handle to the object to which the sensor should is attached 
+	@param sensor_id Handle (index) to the sensor
 	@param list Array of object indices
-	@return Number of identified objects, i.e. length of list0 if successful, -1 if not
+	@return Number of identified objects, i.e. length of list. -1 if unsuccesful.
 	*/
-	SE_DLL_API int SE_FetchSensorObjectList(int object_id, int *list);
+	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int *list);
 
 	/**
 	Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
