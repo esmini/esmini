@@ -1,14 +1,40 @@
 # Build and Run Instructions
 
 ## Build configurations
-The following platforms are supported:
+[CMake](https://cmake.org/) tool is used to create standard make configurations. A few example "create..." batch scripts are supplied as examples how to generate desired build setup.
 - VisualStudio 2017 / win64 / Windows SDK v10 / Release and Debug (default/preferred)
 - VisualStudio 2017 / win32 / Windows SDK v10 / Release and Debug
 - VisualStudio 2017 / win64 / Windows SDK v7.1 / Release and Debug
 - Ubuntu and Kubuntu (tested on 18.04) / gcc / Release
 - macOS (Catalina) / Xcode / Release
 
-[CMake](https://cmake.org/) tool is used to create standard make configurations. A few example "create..." batch scripts are supplied as examples how to generate desired build setup.
+However, it should be possible to configure custom variants using cmake. For example to use Visual Studio 2019 run the following commands from command prompt (CMD or PowerShell), assuming starting point is esmini root folder:
+```
+mkdir build
+cd build
+cmake .. -G "Visual Studio 16 2019"
+cmake --build . --config Release --target install
+```
+
+This will first generate Visual Studio solution and then compile esmini using MSVC toolset v142 (default with Visual Studio 2019). Default architecture is x64.
+
+If you want to compile with MSVC 2017 toolset just add directive to the generator as follows:
+```
+cmake .. -G "Visual Studio 16 2019" -T v141
+```
+
+A complete list of supported toolsets are available [here](https://cmake.org/cmake/help/v3.17/variable/MSVC_TOOLSET_VERSION.html)
+
+If you want to specify architecture you simply add -A x64 or -A win32. So for example, if you want to compile with MSVC 2015 toolset and for win32 use the following generator command:
+```
+cmake .. -G "Visual Studio 16 2019" -T v140 -A win32
+```
+Of course, building with a specific toolset requires it to be installed. Use [Visual Studio Installer](https://docs.microsoft.com/en-us/visualstudio/install/install-visual-studio?view=vs-2019). Steps:
+* choose "Modify"
+* make sure Desktop Development with C++ is checked
+* go to tab "Individual components" 
+* scroll down to "Compilers, build tools, and runtimes"
+* check the MSVC versions you need, e.g. "MSVC v140 - VS 2015 C++ build tools (v14.00)" and "MSVC v141 - VS 2017 C++ x64/x86 build tools (v14.16)"
 
 All configurations defines an "Install" build target that compiles (if needed) and copies relevant binaries into a common "esmini/bin" folder recognized by the example scripts under the "esmini/run" folder.
 
@@ -51,15 +77,17 @@ Windows/Visual Studio
 1. Build CMakePredefinedTargets/INSTALL (right-click and select build)
 
 macOS
-1. cd build
-1. xcodebuild -scheme install -configuration Release build
-
+```
+cd build
+xcodebuild -scheme install -configuration Release build
+```
 - or open generated project in Xcode, and build from there
 
 Linux
-1. cd build
-1. make -j4 install
-
+```
+cd build
+make -j4 install
+```
 This will build all projects and copy the binaries into a dedicated folder found by the demo batch scripts.
 
 ## Run demo applications

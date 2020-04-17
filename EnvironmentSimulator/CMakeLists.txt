@@ -29,21 +29,28 @@ elseif (UNIX)
   set ( TIME_LIB "" )
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1OufA3TUQjBTkaRvAuo0rSUwryvoqde8G )
   set ( OSG_DIR "${OSG_BASE_DIR}/linux" )
-elseif (WINSDK7_1)
-  set ( SOCK_LIB Ws2_32.lib )
-  set ( TIME_LIB winmm.lib )
-  set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1NBEvGZiTWmqxk-MEOq7uK1uh_vaUMaEL )
-  set ( OSG_DIR "${OSG_BASE_DIR}/winsdk71" )
-elseif ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
-  set ( SOCK_LIB Ws2_32.lib )
-  set ( TIME_LIB "" )  
-  set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=10dV9P0qOeJUgTtsSDld4AlbClE--SivX )
-  set ( OSG_DIR "${OSG_BASE_DIR}/win32" )
-else()  # v10
-  set ( SOCK_LIB Ws2_32.lib )
-  set ( TIME_LIB "" )
-  set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1YxLVdQLhKBMGW4HB_ArJglRIpzuDiwhJ )
-  set ( OSG_DIR "${OSG_BASE_DIR}/v10" )
+elseif (WIN32)
+  if (WINSDK7_1)
+    message ("Configuring for Windows SDK v7.1 x64")
+    set ( SOCK_LIB Ws2_32.lib )
+    set ( TIME_LIB winmm.lib )
+    set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1NBEvGZiTWmqxk-MEOq7uK1uh_vaUMaEL )
+    set ( OSG_DIR "${OSG_BASE_DIR}/winsdk71" )
+  elseif ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
+    message ("Configuring for Windows SDK v10 win32")
+    set ( SOCK_LIB Ws2_32.lib )
+    set ( TIME_LIB "" )
+    set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=10dV9P0qOeJUgTtsSDld4AlbClE--SivX )
+    set ( OSG_DIR "${OSG_BASE_DIR}/win32" )
+  elseif ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64")
+    message ("Configuring for Windows SDK v10 x64")
+    set ( SOCK_LIB Ws2_32.lib )
+    set ( TIME_LIB "" )
+    set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1YxLVdQLhKBMGW4HB_ArJglRIpzuDiwhJ )
+    set ( OSG_DIR "${OSG_BASE_DIR}/v10" )
+  else ()
+    message ("Unknown configuration")
+  endif ()
 endif (APPLE)
 
 set ( OSG_INCLUDE_DIR 
@@ -135,9 +142,10 @@ set ( OSG_LIBRARIES
 	optimized osgdb_fbx.lib debug osgdb_fbxd.lib 	
     optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
 )
-if (NOT WINSDK7_1)  # FBX not supporting winsdk 7.1
-  list ( APPEND OSG_LIBRARIES optimized libfbxsdk-md.lib debug libfbxsdk-mdd.lib )
-endif()
+#
+#if (NOT WINSDK7_1)  # FBX not supporting winsdk 7.1
+#  list ( APPEND OSG_LIBRARIES optimized libfbxsdk-md.lib debug libfbxsdk-mdd.lib )
+#endif()
 
 endif() #Endif UNIX
 
