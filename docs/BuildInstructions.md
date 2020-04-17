@@ -25,9 +25,9 @@ cmake .. -G "Visual Studio 16 2019" -T v141
 
 A complete list of supported toolsets are available [here](https://cmake.org/cmake/help/v3.17/variable/MSVC_TOOLSET_VERSION.html)
 
-If you want to specify architecture you simply add -A x64 or -A win32. So for example, if you want to compile with MSVC 2015 toolset and for win32 use the following generator command:
+If you want to specify architecture you simply add -A x64 or -A Win32. So for example, if you want to compile with MSVC 2015 toolset and for win32 use the following generator command:
 ```
-cmake .. -G "Visual Studio 16 2019" -T v140 -A win32
+cmake .. -G "Visual Studio 16 2019" -T v140 -A Win32
 ```
 Of course, building with a specific toolset requires it to be installed. Use [Visual Studio Installer](https://docs.microsoft.com/en-us/visualstudio/install/install-visual-studio?view=vs-2019). Steps:
 * choose "Modify"
