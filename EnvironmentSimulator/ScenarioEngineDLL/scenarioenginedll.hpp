@@ -24,7 +24,7 @@ typedef struct
 {
 	int id;					  // Automatically generated unique object id 
 	int model_id;             // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
-	int control;		      // 0= undefined, 1=internal, 2=external, 4=hybrid_ghost, 3=hybrid_external
+	int control;		      // 0= undefined, 1=internal, 2=external, 3=hybrid_external, 4=hybrid_ghost
 	float timestamp;
 	float x;
 	float y;
