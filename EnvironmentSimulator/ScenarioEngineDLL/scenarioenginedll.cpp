@@ -191,7 +191,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	r_data->road_roll = (float)s_data.road_lane_info.roll;
 	r_data->speed_limit = (float)s_data.road_lane_info.speed_limit;
 
-	*speed_ghost = (float)obj->ghost_->speed_;
+	*speed_ghost = (float)state.speed_;
 
 	return 0;
 }
