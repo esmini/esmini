@@ -198,7 +198,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 
 extern "C"
 {
-	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int record, float headstart_time)
+	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int threads, int record, float headstart_time)
 	{
 		resetScenario();
 
@@ -240,6 +240,11 @@ extern "C"
 		else
 		{
 			AddArgument("--headless");
+		}
+		if (threads)
+		{
+			AddArgument("--threads");
+			LOG("Threads arg created");
 		}
 		ConvertArguments();
 

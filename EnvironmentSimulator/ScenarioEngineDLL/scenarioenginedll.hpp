@@ -68,11 +68,12 @@ extern "C"
 	@param oscFilename Path to the OpenSCEANRIO file
 	@param control Ego control 0=by OSC 1=Internal 2=External 3=Hybrid
 	@param use_viewer 0=no viewer, 1=use viewer
+	@param threads 0=single thread, 1=viewer in a separate thread, parallel to scenario engine
 	@param record Create recording for later playback 0=no recording 1=recording
 	@param headstart_time For hybrid control mode launch ghost vehicle with this headstart time 
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int record, float headstart_time);
+	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int threads, int record, float headstart_time);
 
 	/**
 	Step the simulation forward with specified timestep

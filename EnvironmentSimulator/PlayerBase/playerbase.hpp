@@ -27,6 +27,7 @@ using namespace scenarioengine;
 
 class ScenarioPlayer
 {
+public:
 	typedef enum
 	{
 		CONTROL_BY_OSC,
@@ -35,7 +36,13 @@ class ScenarioPlayer
 		CONTROL_HYBRID
 	} RequestControlMode;
 
-public:
+	typedef enum
+	{
+		VIEWER_STATE_NOT_STARTED,
+		VIEWER_STATE_STARTED,
+		VIEWER_STATE_DONE
+	} ViewerState;
+
 	ScenarioPlayer(int &argc, char *argv[]);
 	~ScenarioPlayer();
 	bool IsQuitRequested() { return quit_request; }
@@ -51,18 +58,20 @@ public:
 #ifdef _SCENARIO_VIEWER
 	viewer::Viewer *viewer_;
 	std::vector<viewer::SensorViewFrustum*> sensorFrustum;
+	ViewerState viewerState_;
+	int InitViewer();
+	void CloseViewer();
+	void ViewerFrame();
 #endif
 	roadmanager::OpenDrive *odr_manager;
 	std::vector<ObjectSensor*> sensor;
 	const double maxStepSize;
 	const double minStepSize;
+	SE_Options opt;
 
 private:
 	std::string RequestControlMode2Str(RequestControlMode mode);
-	int Init(int &rgc, char *argv[]);
-#ifdef _SCENARIO_VIEWER
-	void ViewerFrame();
-#endif
+	int Init();
 
 	double trail_dt;
 	SE_Thread thread;
@@ -72,4 +81,6 @@ private:
 	bool headless;
 	bool launch_server;
 	double fixed_timestep_;
+	int& argc_;
+	char** argv_;
 };

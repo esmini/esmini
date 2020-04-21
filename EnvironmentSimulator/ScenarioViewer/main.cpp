@@ -22,6 +22,7 @@
 
 #define MAX_N_OBJECTS 10
 #define TIME_STEP 0.017f
+#define DURATION 20
 
 static SE_ScenarioObjectState states[MAX_N_OBJECTS];
 
@@ -44,7 +45,7 @@ int main(int argc, char *argv[])
 	for (int a = 0; a < 1; a++)
 	{
 
-		if (SE_Init(argv[1], 1, 1, 0, 0.2f) != 0)
+		if (SE_Init(argv[1], 1, 1, 1, 0, 2.0f) != 0)
 		{
 			LOG("Failed to load %s", argv[1]);
 			return -1;
@@ -52,35 +53,48 @@ int main(int argc, char *argv[])
 
 		SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 5.0f, 50.0f, (float)(50.0 * M_PI / 180.0), 10);
 
-		int objList[2];
 	
-		// Run for 20 seconds
-		for (int i = 0; i < 20 / TIME_STEP; i++)
+		for (int i = 0; i*TIME_STEP < DURATION; i++)
 		{
 			if (SE_StepDT(TIME_STEP) != 0)
 			{
 				return 0;
 			}
 
+#if 0  // set to 1 to demonstrate how to query sensors 
+
+			int objList[2];
 			int nHits = SE_FetchSensorObjectList(0, objList);
-			//for (int j = 0; j < nHits; j++)
-			//{
-			//	LOG("sensor hit obj_id %d", j, objList[j]);
-			//}
+			for (int j = 0; j < nHits; j++)
+			{
+				LOG("sensor hit obj_id %d", j, objList[j]);
+			}
 
-			//SE_ScenarioObjectState state;
-			//SE_GetObjectState(0, &state);
-			
-			//if (state.control == 3)
-			//{
-			//	SE_RoadInfo info;
-			//	float speed;
-			//	SE_GetRoadInfoAlongGhostTrail(0, 20, &info, &speed);
-			//	//LOG("y %.2f trail h %.2f speed %.2f", info.global_pos_y, info.trail_heading, speed);
-			//}
+			SE_ScenarioObjectState state;
+			SE_GetObjectState(0, &state);
+			if (state.control == 3)
+			{
+				SE_RoadInfo info;
+				float speed;
+				SE_GetRoadInfoAlongGhostTrail(0, 20, &info, &speed);
+				//LOG("y %.2f trail h %.2f speed %.2f", info.global_pos_y, info.trail_heading, speed);
+			}
+#endif
 
-			SE_sleep((unsigned int)(TIME_STEP * 1000));
+			if (i == (int)(0.5*DURATION / TIME_STEP))
+			{
+				// Halfway through, pause the simulation for a few seconds
+				// to demonstrate how camera can still move independently
+				// when running viewer in a separate thread
+				SE_sleep(4000);
+			}
+			else
+			{
+				// Normal case, sleep until its time for next simulation step
+				SE_sleep((unsigned int)(TIME_STEP * 1000));
+			}
 		}
+
 		SE_Close();
 	}
 
