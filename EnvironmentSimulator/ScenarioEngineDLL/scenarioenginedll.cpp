@@ -247,7 +247,7 @@ extern "C"
 			LOG("Threads arg created");
 		}
 
-		AddArgument(std::string("--ghost_headstart " + std::to_string(headstart_time)).c_str());
+		AddArgument(std::string("--ghost_headstart " + std::to_string((long double)headstart_time)).c_str());
 
 		ConvertArguments();
 
