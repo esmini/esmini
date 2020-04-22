@@ -12,7 +12,7 @@ platform:
 - x86
 
 cache:
-- externals/OpenSceneGraph
+#- externals/OpenSceneGraph
 - resources/models
     
 before_build:
@@ -47,6 +47,10 @@ for:
           
           make -j4 install
           
+          cd ../build-debug
+          
+          make -j4
+          
     after_build:
       - sh: >-
           cd ..
@@ -57,7 +61,12 @@ for:
 
           ./generate_binary_dist.sh
 
-          mv esmini-demo.zip esmini-demo_ubuntu.zip 
+          if [ "$APPVEYOR_REPO_TAG" == 1 ]; 
+          then     
+              mv esmini-demo.zip esmini-demo_ubuntu.zip;
+          else
+              rm esmini-demo.zip;
+          fi
               
     artifacts:
       - path: esmini-*_ubuntu.zip
@@ -92,8 +101,13 @@ for:
           chmod -R +x ./run/*
 
           ./generate_binary_dist.sh
-
-          mv esmini-demo.zip esmini-demo_mac_catalina.zip 
+          
+          if [ "$APPVEYOR_REPO_TAG" == 1 ]; 
+          then     
+              mv esmini-demo.zip esmini-demo_mac_catalina.zip;
+          else
+              rm esmini-demo.zip;
+          fi
 
     artifacts:
       - path: esmini-*_mac_catalina.zip
@@ -127,10 +141,9 @@ for:
 
     after_build:
       - cmd:
-            7z a esmini-demo_win.zip esmini-demo/*
- 
             7z a esmini-bin_win_x64.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
-
+                        
+            IF %APPVEYOR_REPO_TAG%==1 (7z a esmini-demo_win.zip esmini-demo/*)
 
     artifacts:
       - path: esmini-*_win*.zip
