@@ -391,6 +391,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("headless", "Run without viewer");
 	opt.AddOption("server", "Launch server to receive state of external Ego simulator");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
+	opt.AddOption("ghost_headstart", "Launch Ego ghost at specified headstart time", "time");
 
 	if (argc_ < 3)
 	{
@@ -439,6 +440,17 @@ int ScenarioPlayer::Init()
 		SetFixedTimestep(atof(arg_str.c_str()));
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
 	}
+	
+	double ghost_headstart = GHOST_HEADSTART;
+	if ((arg_str = opt.GetOptionArg("ghost_headstart")) != "")
+	{
+		ghost_headstart = atof(arg_str.c_str());
+		LOG("Any ghosts will be launched with headstart %.2f seconds", ghost_headstart);
+	}
+	else
+	{
+		LOG("Any ghosts will be launched with headstart %.2f seconds (default)", ghost_headstart);
+	}
 
 	// Create scenario engine
 	try
@@ -449,7 +461,7 @@ int ScenarioPlayer::Init()
 			opt.PrintUsage();
 			return -1;
 		}
-		scenarioEngine = new ScenarioEngine(arg_str, GHOST_HEADSTART, (ScenarioEngine::RequestControlMode)control);
+		scenarioEngine = new ScenarioEngine(arg_str, ghost_headstart, (ScenarioEngine::RequestControlMode)control);
 	}
 	catch (std::logic_error &e)
 	{

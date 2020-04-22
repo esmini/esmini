@@ -246,6 +246,9 @@ extern "C"
 			AddArgument("--threads");
 			LOG("Threads arg created");
 		}
+
+		AddArgument(std::string("--ghost_headstart " + std::to_string(headstart_time)).c_str());
+
 		ConvertArguments();
 
 		// Create scenario engine
