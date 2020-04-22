@@ -51,7 +51,7 @@ for:
       - sh: >-
           cd ..
           
-          zip -r esmini-bin_ubuntu.zip bin 
+          zip -r esmini-bin_ubuntu.zip bin EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp 
           
           chmod -R +x ./run/*
 
@@ -87,7 +87,7 @@ for:
 
           cd ..
           
-          zip esmini-bin_mac_catalina.zip bin -r
+          zip -r esmini-bin_mac_catalina.zip bin EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp 
           
           chmod -R +x ./run/*
 
@@ -129,7 +129,8 @@ for:
       - cmd:
             7z a esmini-demo_win.zip esmini-demo/*
  
-            7z a esmini-bin_win_x64.zip bin/*
+            7z a esmini-bin_win_x64.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp
+
 
     artifacts:
       - path: esmini-*_win*.zip
@@ -160,7 +161,7 @@ for:
           
     after_build:
       - cmd:
-            7z a esmini-bin_win_x86.zip bin/*
+            7z a esmini-bin_win_x86.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp 
 
     artifacts:
       - path: esmini-*_win*.zip
@@ -191,7 +192,7 @@ for:
           
     after_build:
       - cmd:
-            7z a esmini-bin_win_sdk7-1_x64.zip bin/*
+            7z a esmini-bin_win_sdk7-1_x64.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp 
 
     artifacts:
       - path: esmini-*_win*.zip
