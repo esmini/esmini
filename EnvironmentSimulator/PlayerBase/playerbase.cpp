@@ -49,6 +49,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	headless = false;
 	launch_server = false;
 	fixed_timestep_ = -1.0;
+	viewer_ = 0;
 #ifdef _SCENARIO_VIEWER
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
 	trail_dt = TRAIL_DOTS_DT;

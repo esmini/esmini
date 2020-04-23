@@ -419,7 +419,10 @@ extern "C"
 		}
 		
 		// Switch on sensor visualization as defult when sensors are added
-		player->viewer_->ShowObjectSensors(true);
+		if (player->viewer_)
+		{ 
+			player->viewer_->ShowObjectSensors(true);
+		}
 
 		return 0;
 	}
