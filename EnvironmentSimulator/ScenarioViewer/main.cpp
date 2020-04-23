@@ -22,7 +22,8 @@
 
 #define MAX_N_OBJECTS 10
 #define TIME_STEP 0.017f
-#define DURATION 20
+#define DURATION 25
+#define MAX_DETECTIONS 8
 
 static SE_ScenarioObjectState states[MAX_N_OBJECTS];
 
@@ -51,11 +52,12 @@ int main(int argc, char *argv[])
 			return -1;
 		}
 
-		SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 0.0f, 6.0f, 50.0f, (float)(50.0 * M_PI / 180.0), 10);
-		//SE_AddObjectSensor(0, 2.0f, 1.0f, 0.5f, 1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), 10);
-		//SE_AddObjectSensor(0, 2.0f, -1.0f, 0.5f, -1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), 10);
-		//SE_AddObjectSensor(0, -1.0f, 0.0f, 0.5f, 3.14f, 5.0f, 30.0f, (float)(50.0 * M_PI / 180.0), 10);
-	
+		// Add four sensors around the vehicle
+		SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 0.0f, 6.0f, 50.0f, (float)(50.0 * M_PI / 180.0), MAX_DETECTIONS);
+		SE_AddObjectSensor(0, 2.0f, 1.0f, 0.5f, 1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), MAX_DETECTIONS);
+		SE_AddObjectSensor(0, 2.0f, -1.0f, 0.5f, -1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), MAX_DETECTIONS);
+		SE_AddObjectSensor(0, -1.0f, 0.0f, 0.5f, 3.14f, 5.0f, 30.0f, (float)(50.0 * M_PI / 180.0), MAX_DETECTIONS);
+
 		for (int i = 0; i*TIME_STEP < DURATION; i++)
 		{
 			if (SE_StepDT(TIME_STEP) != 0)
@@ -65,16 +67,17 @@ int main(int argc, char *argv[])
 
 #if 1  // set to 1 to demonstrate how to query sensors - only first one in this case
 
-			int objList[2];
-			int nHits = SE_FetchSensorObjectList(0, objList);
-			for (int j = 0; j < nHits; j++)
+			printf("Detections [sensor ID, Object ids]:");
+			int objList[MAX_DETECTIONS];  // make room for max nr vehicles, as specified when added sensor
+			for (int j = 0; j < 4; j++)
 			{
-				LOG("sensor hit obj_id %d", j, objList[j]);
+				int nHits = SE_FetchSensorObjectList(j, objList);
+				for (int k = 0; k < nHits; k++)
+				{
+					printf(" [%d, %d]", j, objList[k]);
+				}
 			}
-			if (nHits == 0)
-			{
-				LOG("No hits");
-			}
+			printf("\n");
 #endif
 
 			if (i == (int)(0.5*DURATION / TIME_STEP))
