@@ -404,7 +404,7 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float rangeNear, float rangeFar, float fovH, int maxObj)
+	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj)
 	{
 		if (player)
 		{
@@ -415,14 +415,10 @@ extern "C"
 				return -1;
 			}
 
-			player->AddObjectSensor(object_id, x, y, z, rangeNear, rangeFar, fovH, maxObj);
+			player->AddObjectSensor(object_id, x, y, z, h, rangeNear, rangeFar, fovH, maxObj);
 		}
 		
-		// Switch on sensor visualization as defult when sensors are added
-		if (player->viewer_)
-		{ 
-			player->viewer_->ShowObjectSensors(true);
-		}
+		player->ShowObjectSensors(true);
 
 		return 0;
 	}

@@ -112,13 +112,14 @@ extern "C"
 	@param x Position x coordinate of the sensor in vehicle local coordinates
 	@param y Position y coordinate of the sensor in vehicle local coordinates
 	@param z Position z coordinate of the sensor in vehicle local coordinates
+	@param h heading of the sensor in vehicle local coordinates
 	@param fovH Horizontal field of view, in degrees
 	@param rangeNear Near value of the sensor depth range
 	@param rangeFar Far value of the sensor depth range
 	@param maxObj Maximum number of objects theat the sensor can track
 	@return Sensor ID (Global index of sensor), -1 if unsucessful
 	*/
-	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float rangeNear, float rangeFar, float fovH, int maxObj);
+	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj);
 
 	/**
 	Fetch list of identified objects from a sensor

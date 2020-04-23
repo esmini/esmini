@@ -49,7 +49,9 @@ public:
 	void Frame();  // let player calculate actual time step
 	void Frame(double timestep_s);
 	void ScenarioFrame(double timestep_s);
-	void AddObjectSensor(int object_index, double pos_x, double pos_y, double pos_z, double near, double far, double fovH, int maxObj);
+	void ShowObjectSensors(bool mode);
+	void AddObjectSensor(int object_index, double pos_x, double pos_y, double pos_z, double heading, 
+		double near, double far, double fovH, int maxObj);
 	void SetFixedTimestep(double timestep) { fixed_timestep_ = timestep; }
 	double GetFixedTimestep() { return fixed_timestep_; }
 

@@ -14,13 +14,13 @@
 
 using namespace scenarioengine;
 
-BaseSensor::BaseSensor(BaseSensor::Type type, double pos_x, double pos_y, double pos_z)
+BaseSensor::BaseSensor(BaseSensor::Type type, double pos_x, double pos_y, double pos_z, double heading)
 {
 	type_ = type;
 	pos_.x = pos_x;
 	pos_.y = pos_y;
 	pos_.z = pos_z;
-	pos_.h = 0;
+	pos_.h = heading;
 	pos_.p = 0;
 	pos_.r = 0;
 	pos_.x_global = 0;
@@ -29,8 +29,8 @@ BaseSensor::BaseSensor(BaseSensor::Type type, double pos_x, double pos_y, double
 }
 
 ObjectSensor::ObjectSensor(
-	Entities *entities, Object *refobj, double pos_x, double pos_y, double pos_z, double near, double far, double fovH, int maxObj) :	
-	BaseSensor(BaseSensor::Type::SENSOR_TYPE_OBJECT, pos_x, pos_y, pos_z)
+	Entities *entities, Object *refobj, double pos_x, double pos_y, double pos_z, double heading, double near, double far, double fovH, int maxObj) :	
+	BaseSensor(BaseSensor::Type::SENSOR_TYPE_OBJECT, pos_x, pos_y, pos_z, heading)
 {
 	entities_ = entities;
 	near_ = near;
@@ -63,6 +63,7 @@ void ObjectSensor::Update()
 		}
 
 		// Check whether object is within field of view
+
 		// find out angle between heading vector and line to object
 		double hx = 1.0;
 		double hy = 0.0;
@@ -92,13 +93,14 @@ void ObjectSensor::Update()
 
 		// Find angle to object
 		double angle = acos(GetDotProduct2D(hx2, hy2, xon, yon));
-		if (angle < fovH_/2)
+		double rel_angle = GetAbsAngleDifference(angle, pos_.h);
+		if (rel_angle < fovH_/2)
 		{
 			hitList_[nObj_].obj_ = obj;
 
 			// Calculate hit object position in sensor local coordinates
 			double xl, yl;
-			RotateVec2D(xo, yo, -host_->pos_.GetH(), xl, yl);
+			RotateVec2D(xo, yo, -GetAngleSum(host_->pos_.GetH(), pos_.h), xl, yl);
 
 			hitList_[nObj_].x_ = xl;
 			hitList_[nObj_].y_ = yl;

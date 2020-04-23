@@ -64,7 +64,7 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path,  std::string f
 double GetAngleOfVector(double x, double y);
 
 /**
-  Retrieve the absolute value of difference between two angles
+  Retrieve the absolute value of difference between two angles (angle2 - angle1)
 */
 double GetAbsAngleDifference(double angle1, double angle2);
 

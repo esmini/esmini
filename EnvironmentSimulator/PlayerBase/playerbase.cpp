@@ -360,15 +360,27 @@ void viewer_thread(void *args)
 
 #endif
 
-void ScenarioPlayer::AddObjectSensor(int object_index, double pos_x, double pos_y, double pos_z, double near, double far, double fovH, int maxObj)
+void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, double z, double h, double near, double far, double fovH, int maxObj)
 {
-	sensor.push_back(new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_index], 
-		pos_x, pos_y, pos_z, near, far, fovH, maxObj));
+	sensor.push_back(new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_index], x, y, z, h, near, far, fovH, maxObj));
  	if (!headless)
 	{
 #ifdef _SCENARIO_VIEWER
+		mutex.Lock();
 		sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->cars_[object_index]->txNode_));
+		mutex.Unlock();
 #endif
+	}
+}
+
+void ScenarioPlayer::ShowObjectSensors(bool mode)
+{
+	// Switch on sensor visualization as defult when sensors are added
+	if (viewer_)
+	{
+		mutex.Lock();
+		viewer_->ShowObjectSensors(mode);
+		mutex.Unlock();
 	}
 }
 
@@ -484,7 +496,6 @@ int ScenarioPlayer::Init()
 	// Step scenario engine - zero time - just to reach and report init state of all vehicles
 	scenarioEngine->step(0.0, true);
 
-
 	if (!headless)
 	{
 
@@ -526,7 +537,7 @@ int ScenarioPlayer::Init()
 		return -1;
 	}
 
-	// Add sensors
+	// Add a front looking sensor to each external vehicle
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
 		Object *obj = scenarioEngine->entities.object_[i];
@@ -534,7 +545,7 @@ int ScenarioPlayer::Init()
 		if (obj->GetControl() == Object::Control::EXTERNAL ||
 			obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 		{
-			AddObjectSensor((int)i, 4, 0, 0.5, 5, 50, 50 * M_PI / 180.0, 10);
+			AddObjectSensor((int)i, 4, 0, 0.5, 0, 5, 50, 50 * M_PI / 180.0, 10);
 		}
 	}
 
