@@ -61,6 +61,7 @@ run/readme.txt \
 3rd_party_terms_and_licenses/* \
 LICENSE \
 release_notes.txt \
+version.txt \
 bin/EgoSimulator \
 esmini-demo
 
