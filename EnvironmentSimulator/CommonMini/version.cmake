@@ -20,7 +20,6 @@ else()
         COMMAND git describe --exact-match --tags
         OUTPUT_VARIABLE GIT_TAG ERROR_QUIET)
     execute_process(
-#        COMMAND git rev-parse --abbrev-ref HEAD
         COMMAND git name-rev --name-only HEAD
         OUTPUT_VARIABLE GIT_BRANCH)
 
@@ -33,24 +32,27 @@ endif()
 
 set(VERSION "const char* ESMINI_GIT_REV=\"${GIT_REV}${GIT_DIFF}\";
 const char* ESMINI_GIT_TAG=\"${GIT_TAG}\";
-const char* ESMINI_GIT_BRANCH=\"${GIT_BRANCH}\";")
+const char* ESMINI_GIT_BRANCH=\"${GIT_BRANCH}\";\n")
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/version.cpp)
-    file(READ version.cpp VERSION_)
+    file(READ version.cpp VERSION_FROM_FILE)
 else()
-    set(VERSION_ "")
+    set(VERSION_FROM_FILE "")
 endif()
 
-if (NOT "${VERSION}" STREQUAL "${VERSION_}")
-    file(WRITE version.cpp "${VERSION}")
+if (NOT "${VERSION_FROM_FILE}" STREQUAL "${VERSION}")
+    file(WRITE version.cpp "${VERSION}" )
+    set (VERSION_FROM_FILE ${VERSION} )
 endif()
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/buildnr.cpp)
-    file(WRITE buildnr.cpp "const char* ESMINI_BUILD_VERSION=\"N/A - client build\";")
+    file(WRITE buildnr.cpp "const char* ESMINI_BUILD_VERSION=\"N/A - client build\";\n")
 endif()
 
-STRING(REGEX REPLACE "const char\\* " "" VERSION_TO_FILE ${VERSION_})
-message(${VERSION_TO_FILE})
+STRING(REGEX REPLACE "const char\\* " "" VERSION_TO_TXT_FILE ${VERSION_FROM_FILE} )
+
 file(READ buildnr.cpp BUILD_NR_)
-STRING(REGEX REPLACE "const char\\* " "" BUILD_NR_TO_FILE ${BUILD_NR_})
-file(WRITE ../../version.txt "${VERSION_TO_FILE}\n${BUILD_NR_TO_FILE}\n")
+
+STRING(REGEX REPLACE "const char\\* " "" BUILD_NR_TO_TXT_FILE ${BUILD_NR_})
+
+file(WRITE version.txt "${VERSION_TO_TXT_FILE}${BUILD_NR_TO_TXT_FILE}")
