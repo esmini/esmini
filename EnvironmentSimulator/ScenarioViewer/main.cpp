@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 				return 0;
 			}
 
-#if 0  // set to 1 to demonstrate how to query sensors - only first one in this case
+#if 1  // set to 1 to demonstrate how to query sensors - only first one in this case
 
 			int objList[2];
 			int nHits = SE_FetchSensorObjectList(0, objList);
@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
 				// Halfway through, pause the simulation for a few seconds
 				// to demonstrate how camera can still move independently
 				// when running viewer in a separate thread
+				LOG("Taking a 4 sec nap - if running with threads you can move camera around meanwhile");
 				SE_sleep(4000);
 			}
 			else
@@ -89,8 +90,6 @@ int main(int argc, char *argv[])
 				// Normal case, sleep until its time for next simulation step
 				SE_sleep((unsigned int)(TIME_STEP * 1000));
 			}
-
-			SE_sleep((unsigned int)(TIME_STEP * 1000));
 		}
 
 		SE_Close();
