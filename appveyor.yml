@@ -12,7 +12,7 @@ platform:
 - x86
 
 cache:
-#- externals/OpenSceneGraph
+- externals/OpenSceneGraph
 - resources/models
     
 skip_commits:
