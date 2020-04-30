@@ -125,7 +125,7 @@ extern "C"
 	
 	RM_DLL_API int RM_GetNrOfPositions()
 	{
-		return position.size();
+		return (int)position.size();
 	}
 
 	RM_DLL_API int RM_DeletePosition(int handle)

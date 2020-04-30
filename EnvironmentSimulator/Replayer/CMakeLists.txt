@@ -7,25 +7,21 @@ include_directories (
   ${COMMON_MINI_INCLUDE_DIR}
 )
 
-set (TARGET Replayer)
-
-set ( SOURCES
-	main.cpp
-	Replay.cpp
-)
-
 set ( INCLUDES
 	Replay.hpp
 )
 
-link_directories( ${OSG_LIBRARIES_PATH} )
-
-add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
-
+# Replayer target
+set (TARGET1 Replayer)
 add_definitions(-DOSG_LIBRARY_STATIC)
-
+set ( SOURCES
+	main.cpp
+	Replay.cpp
+)
+link_directories( ${OSG_LIBRARIES_PATH} )
+add_executable ( ${TARGET1} ${SOURCES} ${INCLUDES} )
 target_link_libraries ( 
-	${TARGET}
+	${TARGET1}
 	RoadManager
 	ScenarioEngine
 	ViewerBase
@@ -34,10 +30,15 @@ target_link_libraries (
 	${TIME_LIB}	
 )
 
-if (UNIX)
-  install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")
-else()
-  install ( TARGETS ${TARGET} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}")
-  install ( TARGETS ${TARGET} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}")
-endif (UNIX)
+# dat2ascii target
+set (TARGET2 dat2ascii)
+add_executable ( ${TARGET2} dat2ascii.cpp Replay.cpp )
+target_link_libraries ( ${TARGET2} RoadManager CommonMini ${TIME_LIB} )
 
+
+if (UNIX)
+  install ( TARGETS ${TARGET1} ${TARGET2} DESTINATION "${INSTALL_DIRECTORY}")
+else()
+  install ( TARGETS ${TARGET} ${TARGET2} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}")
+  install ( TARGETS ${TARGET} ${TARGET2} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}")
+endif (UNIX)
