@@ -13,7 +13,7 @@ platform:
 
 cache:
 - externals/OpenSceneGraph
-- resources/models
+#- resources/models
     
 skip_commits:
   message: /#skip_build/

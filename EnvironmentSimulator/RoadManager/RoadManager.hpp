@@ -461,11 +461,11 @@ namespace roadmanager
 	{
 	public:
 
-		Road(int id, std::string name) : id_(id), name_(name), length_(0) {}
+		Road(int id, std::string name) : id_(id), name_(name), length_(0), junction_(0) {}
 		~Road();
 
 		void Print();
-		void SetI(int id) { id_ = id; }
+		void SetId(int id) { id_ = id; }
 		int GetId() { return id_; }
 		void SetName(std::string name) { name_ = name; }
 		Geometry *GetGeometry(int idx);
@@ -551,9 +551,9 @@ namespace roadmanager
 	{
 	public:
 		LaneRoadLaneConnection() :
-			lane_id_(0), connecting_road_id_(-1), connecting_lane_id_(0) {}
+			lane_id_(0), connecting_road_id_(-1), connecting_lane_id_(0), contact_point_(ContactPointType::CONTACT_POINT_NONE) {}
 		LaneRoadLaneConnection(int lane_id, int connecting_road_id, int connecting_lane_id) :
-			lane_id_(lane_id), connecting_road_id_(connecting_road_id), connecting_lane_id_(connecting_lane_id) {}
+			lane_id_(lane_id), connecting_road_id_(connecting_road_id), connecting_lane_id_(connecting_lane_id), contact_point_(ContactPointType::CONTACT_POINT_NONE) {}
 		void SetLane(int id) { lane_id_ = id; }
 		void SetConnectingRoad(int id) { connecting_road_id_ = id; }
 		void SetConnectingLane(int id) { connecting_lane_id_ = id; }
@@ -619,7 +619,7 @@ namespace roadmanager
 		Connection *GetConnectionByIdx(int idx) { return connection_[idx]; }
 		int GetConnectingRoadIdFromIncomingRoadId(int incomingRoadId, int index);
 		void Print();
-	
+
 	private:
 		std::vector<Connection*> connection_;
 		int id_;
@@ -940,6 +940,11 @@ namespace roadmanager
 		double GetHRoadInDrivingDirection();
 
 		/**
+		Retrieve the heading angle (radians) relative driving direction (lane sign considered)
+		*/
+		double GetHRelativeDrivingDirection();
+
+		/**
 		Retrieve the relative heading angle (radians)
 		*/
 		double GetHRelative() const { return h_relative_; }
@@ -1046,6 +1051,35 @@ namespace roadmanager
 
 		std::vector<Position*> waypoint_;
 		std::string name;
+	};
+
+	// A Road Path is a linked list of road links (road connections or junctions)
+	// between a starting position and a target position
+	// The path can be calculated automatically 
+	class RoadPath
+	{
+	public:
+
+		typedef struct PathNode
+		{
+			RoadLink *link;
+			double dist;
+			Road* fromRoad;
+			PathNode* previous;
+		} PathNode;
+
+		std::vector<PathNode*> visited_;
+		std::vector<PathNode*> unvisited_;
+		Position *startPos_;
+		Position *targetPos_;
+
+		RoadPath(Position* startPos, Position* targetPos) : startPos_(startPos), targetPos_(targetPos) {};
+		~RoadPath();
+
+		int Calculate(double &dist);
+	
+	private:
+		bool CheckRoad(Road* checkRoad, RoadPath::PathNode* srcNode, Road* fromRoad);
 	};
 
 

@@ -1959,6 +1959,241 @@ void Junction::Print()
 	}
 }
 
+bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fromRoad)
+{
+	Road* targetRoad = targetPos_->GetOpenDrive()->GetRoadById(targetPos_->GetTrackId());
+	
+	RoadLink* nextLink = 0;
+
+	if (srcNode->link->GetType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
+	{
+		if (srcNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END)
+		{
+			nextLink = checkRoad->GetLink(LinkType::PREDECESSOR);
+		}
+		else
+		{
+			nextLink = checkRoad->GetLink(LinkType::SUCCESSOR);
+		}
+	}
+	else if (srcNode->link->GetType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
+	{
+		if (checkRoad->GetLink(LinkType::SUCCESSOR) && 
+			checkRoad->GetLink(LinkType::SUCCESSOR)->GetElementId() == fromRoad->GetId())
+		{
+			nextLink = checkRoad->GetLink(LinkType::PREDECESSOR);
+		}
+		else if (checkRoad->GetLink(LinkType::PREDECESSOR) &&
+			checkRoad->GetLink(LinkType::PREDECESSOR)->GetElementId() == fromRoad->GetId())
+		{
+			nextLink = checkRoad->GetLink(LinkType::SUCCESSOR);
+		}
+	}
+
+	if (nextLink == 0)
+	{
+		// end of road
+		return false;
+	}
+
+	// Check if next node is already visited
+	for (size_t i = 0; i < visited_.size(); i++)
+	{
+		if (visited_[i]->link == nextLink)
+		{
+			// Already visited, ignore and return
+			return false;
+		}
+	}
+
+	// Check if next node is already among unvisited
+	size_t i;
+	for (i = 0; i < unvisited_.size(); i++)
+	{
+		if (unvisited_[i]->link == nextLink)
+		{
+			// Consider it, i.e. calc distance and potentially store it (if less than old) 
+			if (srcNode->dist + checkRoad->GetLength() < unvisited_[i]->dist)
+			{
+				unvisited_[i]->dist = srcNode->dist + checkRoad->GetLength();
+			}
+		}
+	}
+
+	if (i == unvisited_.size())
+	{
+		// link not visited before, add it
+		PathNode *pNode = new PathNode;
+		pNode->dist = srcNode->dist + checkRoad->GetLength();
+		pNode->link = nextLink;
+		pNode->fromRoad = checkRoad;
+		pNode->previous = srcNode;
+		unvisited_.push_back(pNode);
+	}
+
+	return true;
+}
+
+int RoadPath::Calculate(double &dist)
+{
+	OpenDrive* odr = startPos_->GetOpenDrive();
+	RoadLink *link = 0;
+	Junction *junction = 0;
+	Road* startRoad = odr->GetRoadById(startPos_->GetTrackId());
+	Road* targetRoad = odr->GetRoadById(targetPos_->GetTrackId());
+	Road* pivotRoad = startRoad;
+	Road* nextRoad = startRoad;
+	bool found = false;
+	double tmpDist = 0;
+	size_t i;
+	
+	// This method will find and measure the length of the shortest path 
+	// between a start position and a target position
+	// The implementation is based on Dijkstra's algorithm
+	// https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+
+	// Look both forward and backwards from start position
+	for (i = 0; i < 2; i++)
+	{
+		if (i == 0)
+		{
+			tmpDist = startPos_->GetS();  // distance to first road link is distance to start of road
+			link = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find first road link forward along vehicle direction
+		}
+		else
+		{
+			tmpDist = pivotRoad->GetLength() - startPos_->GetS();  // distance to end of road
+			link = pivotRoad->GetLink(LinkType::SUCCESSOR);
+		}
+
+		// If only forward direction would be of interest, add something like:
+		// if (abs(startPos_->GetHRelative()) > M_PI_2 && abs(startPos_->GetHRelative()) < 3 * M_PI / 2)
+		// then choose predecessor, else successor 
+
+		if (link)
+		{
+			PathNode* pNode = new PathNode;
+			pNode->dist = tmpDist;
+			pNode->link = link;
+			pNode->fromRoad = pivotRoad;
+			pNode->previous = 0;
+			unvisited_.push_back(pNode);
+		}
+	}
+
+	if (startRoad == targetRoad)
+	{
+		// Special case: On same road, distance is equal to delta s
+		dist = abs(targetPos_->GetS() - startPos_->GetS());
+		return 0;
+	}
+
+	if (unvisited_.size() == 0)
+	{
+		// No links
+		dist = 0;
+		return -1;
+	}
+
+	for (i = 0; i < 100 && !found && unvisited_.size() > 0; i++)
+	{
+		found = false;
+		
+		// Find unvisited PathNode with shortest distance
+		double minDist = LARGE_NUMBER;
+		int minIndex = 0;
+		for (size_t j = 0; j < unvisited_.size(); j++)
+		{
+			if (unvisited_[j]->dist < minDist)
+			{
+				minIndex = (int)j;
+				minDist = unvisited_[j]->dist;
+			}
+		}
+
+		link = unvisited_[minIndex]->link;
+		tmpDist = unvisited_[minIndex]->dist;
+		pivotRoad = unvisited_[minIndex]->fromRoad;
+
+		// - Inspect all unvisited neighbor nodes (links), measure edge (road) distance to that link
+		// - Note the total distance 
+		// - If not already in invisited list, put it there. 
+		// - Update distance to this link if shorter than previously registered value
+		if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
+		{
+			// only one edge (road)
+			nextRoad = odr->GetRoadById(link->GetElementId());
+
+			if (nextRoad == targetRoad)
+			{
+				// Special case: On same road, distance is equal to delta s, direction considered
+				if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)
+				{
+					tmpDist += targetPos_->GetS();
+				}
+				else
+				{
+					tmpDist += nextRoad->GetLength() - targetPos_->GetS();
+				}
+				
+				found = true;
+			}
+			else
+			{
+				CheckRoad(nextRoad, unvisited_[minIndex], pivotRoad);
+			}
+		}
+		else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
+		{
+			// check all outgoing edges (connecting roads) from the link (junction)
+			junction = odr->GetJunctionById(link->GetElementId());
+			for (size_t j = 0; j < junction->GetNoConnectionsFromRoadId(pivotRoad->GetId()); j++)
+			{
+				Road * nextRoad = odr->GetRoadById(junction->GetConnectingRoadIdFromIncomingRoadId(pivotRoad->GetId(), (int)j));
+				if (nextRoad == 0)
+				{
+					return 0;
+				}
+
+				if (nextRoad == targetRoad)
+				{
+					// Special case: On same road, distance is equal to delta s
+					tmpDist += targetPos_->GetS();
+					found = true;
+				}
+				else
+				{ 
+					CheckRoad(nextRoad, unvisited_[minIndex], pivotRoad);
+				}
+			}
+		}
+		
+		// Mark pivot link as visited (move it from unvisited to visited)
+		visited_.push_back(unvisited_[minIndex]);
+		unvisited_.erase(unvisited_.begin() + minIndex);
+	}
+
+	dist = tmpDist;
+
+	return found ? 0 : -1;
+}
+
+
+RoadPath::~RoadPath()
+{
+	for (size_t i = 0; i < visited_.size(); i++)
+	{
+		delete(visited_[i]);
+	}
+	visited_.clear();
+
+	for (size_t i = 0; i < unvisited_.size(); i++)
+	{
+		delete(unvisited_[i]);
+	}
+	unvisited_.clear();
+}
+
 OpenDrive::~OpenDrive()
 {
 	for (size_t i = 0; i < road_.size(); i++)
@@ -3581,6 +3816,11 @@ double Position::GetHRoadInDrivingDirection()
 	return h_road_ + (lane_id_ > 0 ? M_PI : 0);
 }
 
+double Position::GetHRelativeDrivingDirection()
+{
+	return GetAngleDifference(h_, GetDrivingDirection());
+}
+
 double Position::GetSpeedLimit()
 {
 	double speed_limit = 70 / 3.6;  // some default speed
@@ -3678,134 +3918,6 @@ double Position::getRelativeDistance(Position target_position, double &x, double
 	return sign * sqrt((x * x) + (y * y));
 }
 
-double Position::FindDistToPos(Position *pos, RoadLink *link, Road* road, int &call_count, int level_count, bool &found)
-{
-	double tmp_dist = 0;
-
-	if (!link)
-	{
-		return 0;
-	}
-
-	if (++call_count > 20 || level_count > 3)
-	{
-		return 0;
-	}
-
-	if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
-	{
-		Road *next_road = GetOpenDrive()->GetRoadById(link->GetElementId());
-		if (link->GetElementId() == pos->GetTrackId())
-		{
-			if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)
-			{
-				found = true;
-				return pos->GetS();
-			}
-			else if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_END)
-			{
-				found = true;
-				return next_road->GetLength() - pos->GetS();
-			}
-			else
-			{
-				LOG("Unexpected link contact point type: %d", link->GetContactPointType());
-				return 0;
-			}
-		}
-		else
-		{
-			RoadLink *next_link = 0;
-
-			if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)
-			{
-				next_link = next_road->GetLink(LinkType::SUCCESSOR);
-			}
-			else if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_END)
-			{
-				next_link = next_road->GetLink(LinkType::PREDECESSOR);
-			}
-
-			if(next_link == 0)
-			{
-				// no link 
-				return 0;
-			}
-
-			tmp_dist = FindDistToPos(pos, next_link, next_road, call_count, level_count, found);
-			if (found)
-			{
-				return next_road->GetLength() + tmp_dist;
-			}
-			else
-			{
-				return 0;
-			}
-		}
-	}
-	else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
-	{
-		Junction *junction = GetOpenDrive()->GetJunctionById(link->GetElementId());
-		
-		for (size_t i = 0; i < junction->GetNoConnectionsFromRoadId(road->GetId()); i++)
-		{
-			Road *next_road = GetOpenDrive()->GetRoadById(junction->GetConnectingRoadIdFromIncomingRoadId(road->GetId(), (int)i));
-			if (next_road == 0)
-			{
-				LOG("Failed look up connecting road");
-				return 0;
-			}
-
-			if (next_road->GetId() == pos->GetTrackId())
-			{
-				if (next_road->GetLink(LinkType::PREDECESSOR)->GetElementId() == road->GetId())
-				{
-					found = true;
-					return pos->GetS();
-				}
-				else if (next_road->GetLink(LinkType::SUCCESSOR)->GetElementId() == road->GetId())
-				{
-					found = true;
-					return junction->GetConnectionByIdx((int)i)->GetConnectingRoad()->GetLength() - pos->GetS();;
-				}
-				else
-				{
-					LOG("Unexpected contact point type: %d", link->GetContactPointType());
-				}
-			}
-			else
-			{
-				if (next_road->GetLink(LinkType::SUCCESSOR)->GetElementId() == road->GetId())
-				{
-					link = next_road->GetLink(LinkType::PREDECESSOR);
-				}
-				else if (next_road->GetLink(LinkType::PREDECESSOR)->GetElementId() == road->GetId())
-				{
-					link = next_road->GetLink(LinkType::SUCCESSOR);
-				}
-				else
-				{
-					// connecting road no no connection to road
-					continue;
-				}
-
-				tmp_dist = FindDistToPos(pos, link, next_road, call_count, level_count+1, found);
-				if(found)
-				{
-					return next_road->GetLength() + tmp_dist;
-				}
-			}
-		}
-	}
-	else
-	{
-		LOG("Unexpected link element type: %d", link->GetElementType());
-		return 0;
-	}
-
-	return 0;
-}
-
 void Position::CalcRoutePosition()
 {
 	if (route_ == 0)
@@ -3872,71 +3984,43 @@ void Position::SetRoute(Route *route)
 
 bool Position::Delta(Position pos_b, PositionDiff &diff)
 {
-	Road *road = GetOpenDrive()->GetRoadById(GetTrackId());
-	RoadLink *link = 0;
 	double dist = 0;
-	bool found = false;
+	bool found;
 
-	if (pos_b.GetTrackId() != GetTrackId())
+	RoadPath *path = new RoadPath(this, &pos_b);
+
+	if (found = (path->Calculate(dist) == 0))
 	{
-		// Look along road segments and through junctions
-		int call_count = 0;
-		int level_count = 0;
+		diff.dLaneId = GetLaneId() - pos_b.GetLaneId();
+		diff.ds = dist;
+		diff.dt = GetT() - pos_b.GetT();
 
-		// First look forward
-		link = road->GetLink(roadmanager::LinkType::SUCCESSOR);
-		diff.ds = road->GetLength() - GetS();
-		dist = FindDistToPos(&pos_b, link, road, call_count, level_count, found);
-
-		if (found)
+#if 0   // Change to 1 to print some info on stdout - e.g. for debugging
+		printf("Dist %.2f Path (reversed): %d", dist, pos_b.GetTrackId());
+		if (path->visited_.size() > 0)
 		{
-			diff.ds += dist;
-		}
-		else
-		{
-			// Search backwards
-			link = road->GetLink(roadmanager::LinkType::PREDECESSOR);
-			diff.ds = -GetS();
-			dist = FindDistToPos(&pos_b, link, road, call_count, level_count, found);
+			RoadPath::PathNode* node = path->visited_.back();
 
-			if (found)
+			while (node)
 			{
-				diff.ds -= dist;
+				if (node->fromRoad != 0)
+				{
+					printf(" <- %d", node->fromRoad->GetId());
+				}
+				node = node->previous;
 			}
-		}		
+		}
+		printf("\n");
+#endif
 	}
 	else
 	{
-		found = true;
-
-		diff.ds = pos_b.GetS() - GetS();
-
-		link = road->GetLink(roadmanager::LinkType::SUCCESSOR);
-
-		// Check whether road is looping
-		if (link && link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
-		{
-			if (link->GetElementId() == GetTrackId())  // Loop
-			{
-				if (diff.ds > road->GetLength() / 2)
-				{
-					diff.ds -= road->GetLength();
-				}
-				else if (diff.ds < -road->GetLength() / 2)
-				{
-					diff.ds += road->GetLength();
-				}
-			}
-		}
+		diff.dLaneId = 0;
+		diff.ds = 0;
+		diff.dt = 0;
 	}
 
-	if (GetHRelative() > M_PI_2 && GetHRelative() < 3 * M_PI / 2)
-	{
-		diff.ds *= -1;
-	}
-
-	diff.dLaneId = pos_b.GetLaneId() - GetLaneId();
-	diff.dt = pos_b.GetT() - GetT();
+	delete path;
 
 	return found;
 }
