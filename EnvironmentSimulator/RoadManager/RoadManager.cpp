@@ -3678,10 +3678,9 @@ double Position::getRelativeDistance(Position target_position, double &x, double
 	return sign * sqrt((x * x) + (y * y));
 }
 
-double Position::FindDistToPos(Position *pos, RoadLink *link, int &call_count, int level_count, bool &found)
+double Position::FindDistToPos(Position *pos, RoadLink *link, Road* road, int &call_count, int level_count, bool &found)
 {
 	double tmp_dist = 0;
-	Road *road = GetOpenDrive()->GetRoadById(GetTrackId());
 
 	if (!link)
 	{
@@ -3733,7 +3732,7 @@ double Position::FindDistToPos(Position *pos, RoadLink *link, int &call_count, i
 				return 0;
 			}
 
-			tmp_dist = FindDistToPos(pos, next_link, call_count, level_count, found);
+			tmp_dist = FindDistToPos(pos, next_link, next_road, call_count, level_count, found);
 			if (found)
 			{
 				return next_road->GetLength() + tmp_dist;
@@ -3759,12 +3758,12 @@ double Position::FindDistToPos(Position *pos, RoadLink *link, int &call_count, i
 
 			if (next_road->GetId() == pos->GetTrackId())
 			{
-				if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)
+				if (next_road->GetLink(LinkType::PREDECESSOR)->GetElementId() == road->GetId())
 				{
 					found = true;
 					return pos->GetS();
 				}
-				else if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_END)
+				else if (next_road->GetLink(LinkType::SUCCESSOR)->GetElementId() == road->GetId())
 				{
 					found = true;
 					return junction->GetConnectionByIdx((int)i)->GetConnectingRoad()->GetLength() - pos->GetS();;
@@ -3790,7 +3789,7 @@ double Position::FindDistToPos(Position *pos, RoadLink *link, int &call_count, i
 					continue;
 				}
 
-				tmp_dist = FindDistToPos(pos, link, call_count, level_count+1, found);
+				tmp_dist = FindDistToPos(pos, link, next_road, call_count, level_count+1, found);
 				if(found)
 				{
 					return next_road->GetLength() + tmp_dist;
@@ -3887,7 +3886,7 @@ bool Position::Delta(Position pos_b, PositionDiff &diff)
 		// First look forward
 		link = road->GetLink(roadmanager::LinkType::SUCCESSOR);
 		diff.ds = road->GetLength() - GetS();
-		dist = FindDistToPos(&pos_b, link, call_count, level_count, found);
+		dist = FindDistToPos(&pos_b, link, road, call_count, level_count, found);
 
 		if (found)
 		{
@@ -3898,7 +3897,7 @@ bool Position::Delta(Position pos_b, PositionDiff &diff)
 			// Search backwards
 			link = road->GetLink(roadmanager::LinkType::PREDECESSOR);
 			diff.ds = -GetS();
-			dist = FindDistToPos(&pos_b, link, call_count, level_count, found);
+			dist = FindDistToPos(&pos_b, link, road, call_count, level_count, found);
 
 			if (found)
 			{

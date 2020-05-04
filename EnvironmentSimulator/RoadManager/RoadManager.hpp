@@ -760,7 +760,7 @@ namespace roadmanager
 		void SetHeadingRelativeRoadDirection(double heading);
 		void XYZH2TrackPos(double x, double y, double z, double h, bool copyZAndPitch = true);
 		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
-		double FindDistToPos(Position *pos, RoadLink *link, int &call_count, int level_count, bool &found);
+		double FindDistToPos(Position *pos, RoadLink *link, Road *road, int &call_count, int level_count, bool &found);
 
 		void SetRoute(Route *route);
 		void CalcRoutePosition();
