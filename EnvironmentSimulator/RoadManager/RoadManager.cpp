@@ -481,11 +481,11 @@ double Road::GetLaneWidthByS(double s, int lane_id)
 		lsec = GetLaneSectionByIdx((int)i);
 		if (s < lsec->GetS() + lsec->GetLength())
 		{
-			break;
+			return lsec->GetWidth(s, lane_id);
 		}
 	}
 
-	return lsec->GetWidth(s, lane_id);
+	return 0.0;
 }
 
 double Road::GetSpeedByS(double s)
@@ -1083,6 +1083,48 @@ int Road::GetNumberOfDrivingLanesSide(double s, int side)
 	}
 
 	return (lane_section_[i]->GetNumberOfDrivingLanesSide(side));
+}
+
+double Road::GetDrivableWidth(double s, int side)
+{
+	double minOffset = 0;
+	double maxOffset = 0;
+	size_t i;
+
+	for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
+	{
+		if (s < lane_section_[i]->GetS())
+		{
+			break;
+		}
+	}
+
+	if (i < GetNumberOfLaneSections())
+	{
+		for (size_t j = 0; j < lane_section_[i]->GetNumberOfLanes(); j++)
+		{
+			if (lane_section_[i]->GetLaneByIdx((int)j)->IsDriving())
+			{
+				int lane_id = lane_section_[i]->GetLaneIdByIdx((int)j);
+
+				if (side < 0 && lane_id > 0 || side > 0 && lane_id < 0)
+				{
+					continue;  // do not measure this side
+				}
+				double offset = SIGN(lane_id) * lane_section_[i]->GetOuterOffset(s, lane_id);
+				if (offset < minOffset)
+				{
+					minOffset = offset;
+				}
+				else if (offset > maxOffset)
+				{
+					maxOffset = offset;
+				}
+			}
+		}
+	}
+
+	return (maxOffset - minOffset);
 }
 
 void Road::AddLaneOffset(LaneOffset *lane_offset)
@@ -2755,6 +2797,7 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 	bool directlyConnectedMin = false;
 	double weight = 0; // Add some resistance to switch from current road, applying a stronger bound to current road
 	double angle = 0;
+	bool search_done = false;
 
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
@@ -2769,13 +2812,36 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 			return;
 		}
 	}
-
+	
 	x_ = x3;
 	y_ = y3;
 
-	for (int i = 0; i < GetOpenDrive()->GetNumOfRoads(); i++)
+	for (int i = -1; !search_done && i < GetOpenDrive()->GetNumOfRoads(); i++)
 	{
-		road = GetOpenDrive()->GetRoadByIdx(i);
+		if (i == -1)
+		{
+			// First check current road. IF the new point is ON this road, i.e. within drivable lanes, - then don't look further
+			if (current_road)
+			{
+				road = current_road;
+			}
+			else
+			{
+				continue;  // Skip, no current road
+			}
+		}
+		else
+		{
+			if (current_road && i == track_idx_)
+			{
+				continue; // Skip, already checked this one
+			}
+			else
+			{
+				road = GetOpenDrive()->GetRoadByIdx(i);
+			}
+		}
+
 		weight = 0;
 		angle = 0;
 
@@ -2790,16 +2856,39 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 		{
 			if (directlyConnectedMin) // if already found a directly connected position - add offset distance
 			{
-				weight = 3; 
+				weight = 3;
 			}
 
 			weight += 5;  // For non connected roads add additional "penalty" threshold  
 			directlyConnected = false;
 		}
 		
-		for (int j = 0; j < road->GetNumberOfGeometries(); j++)
+		for (int j = -1; j < road->GetNumberOfGeometries(); j++)
 		{
-			geom = road->GetGeometry(j);
+			if (j == -1)
+			{
+				if (road == current_road)
+				{
+					// If current road, first check current segment
+					geom = road->GetGeometry(geometry_idx_);
+				}
+				else
+				{
+					continue;  // no current road, skip
+				}
+			}
+			else
+			{
+				if (road == current_road && j == geometry_idx_)
+				{
+					continue; // Skip, already checked this one
+				}
+				else
+				{
+					geom = road->GetGeometry(j); 
+				}
+			}
+			
 			dist = GetDistToTrackGeom(x3, y3, z3, h3, road, geom, inside, sNorm);
 			
 			dist += weight + (inside ? 0 : 2);  // penalty for roads outside projection area
@@ -2811,6 +2900,17 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 				roadMin = road;
 				sNormMin = CLAMP(sNorm, 0.0, 1.0);
 				distMin = dist;
+			}
+
+			// Special case - if point is on current road
+			if (road == current_road)
+			{
+				if (dist < road->GetLaneWidthByS(sNormMin * geomMin->GetLength(), lane_id_) / 2.0)
+				{
+					// If inside drivable lanes boundry, stay on current road
+					search_done = true;
+					break;
+				}
 			}
 		}
 	}
@@ -3770,7 +3870,7 @@ void Position::SetRoute(Route *route)
 	CalcRoutePosition();
 }
 
-bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
+bool Position::Delta(Position pos_b, PositionDiff &diff)
 {
 	Road *road = GetOpenDrive()->GetRoadById(GetTrackId());
 	RoadLink *link = 0;
@@ -3785,23 +3885,23 @@ bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
 
 		// First look forward
 		link = road->GetLink(roadmanager::LinkType::SUCCESSOR);
-		ds = road->GetLength() - GetS();
+		diff.ds = road->GetLength() - GetS();
 		dist = FindDistToPos(&pos_b, link, road, call_count, level_count, found);
 
 		if (found)
 		{
-			ds += dist;
+			diff.ds += dist;
 		}
 		else
 		{
 			// Search backwards
 			link = road->GetLink(roadmanager::LinkType::PREDECESSOR);
-			ds = -GetS();
+			diff.ds = -GetS();
 			dist = FindDistToPos(&pos_b, link, road, call_count, level_count, found);
 
 			if (found)
 			{
-				ds -= dist;
+				diff.ds -= dist;
 			}
 		}		
 	}
@@ -3809,7 +3909,7 @@ bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
 	{
 		found = true;
 
-		ds = pos_b.GetS() - GetS();
+		diff.ds = pos_b.GetS() - GetS();
 
 		link = road->GetLink(roadmanager::LinkType::SUCCESSOR);
 
@@ -3818,13 +3918,13 @@ bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
 		{
 			if (link->GetElementId() == GetTrackId())  // Loop
 			{
-				if (ds > road->GetLength() / 2)
+				if (diff.ds > road->GetLength() / 2)
 				{
-					ds -= road->GetLength();
+					diff.ds -= road->GetLength();
 				}
-				else if (ds < -road->GetLength() / 2)
+				else if (diff.ds < -road->GetLength() / 2)
 				{
-					ds += road->GetLength();
+					diff.ds += road->GetLength();
 				}
 			}
 		}
@@ -3832,11 +3932,11 @@ bool Position::Delta(Position pos_b, double &ds, double &dt, int &dLaneId)
 
 	if (GetHRelative() > M_PI_2 && GetHRelative() < 3 * M_PI / 2)
 	{
-		ds *= -1;
+		diff.ds *= -1;
 	}
 
-	dLaneId = pos_b.GetLaneId() - GetLaneId();
-	dt = pos_b.GetT() - GetT();
+	diff.dLaneId = pos_b.GetLaneId() - GetLaneId();
+	diff.dt = pos_b.GetT() - GetT();
 
 	return found;
 }
@@ -3906,20 +4006,20 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, Loo
 	return 0;
 }
 
-void Position::CalcSteeringTarget(Position *target, SteeringTargetInfo *data)
+void Position::CalcProbeTarget(Position *target, RoadProbeInfo *data)
 {
-	data->global_pos[0] = target->GetX();
-	data->global_pos[1] = target->GetY();
-	data->global_pos[2] = target->GetZRoad();
+	data->road_lane_info.pos[0] = target->GetX();
+	data->road_lane_info.pos[1] = target->GetY();
+	data->road_lane_info.pos[2] = target->GetZRoad();
 
 	// find out local x, y, z
 	double diff_x = target->GetX() - GetX();
 	double diff_y = target->GetY() - GetY();
 	double diff_z = target->GetZRoad() - GetZRoad();
 
-	data->local_pos[0] = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
-	data->local_pos[1] = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
-	data->local_pos[2] = diff_z;
+	data->relative_pos[0] = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
+	data->relative_pos[1] = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
+	data->relative_pos[2] = diff_z;
 
 #if 0
 	// for validation
@@ -3929,42 +4029,42 @@ void Position::CalcSteeringTarget(Position *target, SteeringTargetInfo *data)
 #endif
 
 	// Calculate angle - by dot product
-	if (fabs(data->local_pos[0]) < SMALL_NUMBER && fabs(data->local_pos[1]) < SMALL_NUMBER && fabs(data->local_pos[2]) < SMALL_NUMBER)
+	if (fabs(data->relative_pos[0]) < SMALL_NUMBER && fabs(data->relative_pos[1]) < SMALL_NUMBER && fabs(data->relative_pos[2]) < SMALL_NUMBER)
 	{
-		data->angle = GetH();
+		data->relative_h = GetH();
 	}
 	else
 	{
 		double dot_prod =
-			(data->local_pos[0] * 1.0 + data->local_pos[1] * 0.0) /
-			sqrt(data->local_pos[0] * data->local_pos[0] + data->local_pos[1] * data->local_pos[1]);
-		data->angle = SIGN(data->local_pos[1]) * acos(dot_prod);
+			(data->relative_pos[0] * 1.0 + data->relative_pos[1] * 0.0) /
+			sqrt(data->relative_pos[0] * data->relative_pos[0] + data->relative_pos[1] * data->relative_pos[1]);
+		data->relative_h = SIGN(data->relative_pos[1]) * acos(dot_prod);
 	}
 
 	if (fabs(target->GetCurvature()) > SMALL_NUMBER)
 	{
 		double radius = 1.0 / target->GetCurvature();
 		radius -= target->GetT(); // curvature positive in left curves, lat_offset positive left of reference lane
-		data->curvature = (float)(1.0 / radius);
+		data->road_lane_info.curvature = (float)(1.0 / radius);
 	}
 	else
 	{
 		// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
-		data->curvature = (float)target->GetCurvature();
+		data->road_lane_info.curvature = (float)target->GetCurvature();
 	}
 
-	data->road_heading = target->GetHRoad();
-	data->road_pitch = target->GetPRoad();
-	data->road_roll = target->GetR();
+	data->road_lane_info.heading = target->GetHRoad();
+	data->road_lane_info.pitch = target->GetPRoad();
+	data->road_lane_info.roll = target->GetR();
 
 	Road *road = target->GetRoadById(target->GetTrackId());
 	if (road)
 	{
-		data->speed_limit = road->GetSpeedByS(target->GetS());
+		data->road_lane_info.speed_limit = road->GetSpeedByS(target->GetS());
 	}
 }
 
-int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInfo *data, LookAheadMode lookAheadMode)
+int Position::GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode)
 {
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
@@ -3989,14 +4089,14 @@ int Position::GetSteeringTargetInfo(double lookahead_distance, SteeringTargetInf
 		return -1;
 	}
 
-	CalcSteeringTarget(&target, data);
+	CalcProbeTarget(&target, data);
 
 	return 0;
 }
 
-int Position::GetSteeringTargetInfo(Position *target_pos, SteeringTargetInfo *data)
+int Position::GetProbeInfo(Position *target_pos, RoadProbeInfo *data)
 {
-	CalcSteeringTarget(target_pos, data);
+	CalcProbeTarget(target_pos, data);
 
 	return 0;
 }

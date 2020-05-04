@@ -27,6 +27,7 @@ using namespace scenarioengine;
 
 class ScenarioPlayer
 {
+public:
 	typedef enum
 	{
 		CONTROL_BY_OSC,
@@ -35,14 +36,22 @@ class ScenarioPlayer
 		CONTROL_HYBRID
 	} RequestControlMode;
 
-public:
+	typedef enum
+	{
+		VIEWER_STATE_NOT_STARTED,
+		VIEWER_STATE_STARTED,
+		VIEWER_STATE_DONE
+	} ViewerState;
+
 	ScenarioPlayer(int &argc, char *argv[]);
 	~ScenarioPlayer();
 	bool IsQuitRequested() { return quit_request; }
 	void Frame();  // let player calculate actual time step
 	void Frame(double timestep_s);
 	void ScenarioFrame(double timestep_s);
-	void AddObjectSensor(int object_index, double pos_x, double pos_y, double pos_z, double near, double far, double fovH, int maxObj);
+	void ShowObjectSensors(bool mode);
+	void AddObjectSensor(int object_index, double pos_x, double pos_y, double pos_z, double heading, 
+		double near, double far, double fovH, int maxObj);
 	void SetFixedTimestep(double timestep) { fixed_timestep_ = timestep; }
 	double GetFixedTimestep() { return fixed_timestep_; }
 
@@ -51,18 +60,20 @@ public:
 #ifdef _SCENARIO_VIEWER
 	viewer::Viewer *viewer_;
 	std::vector<viewer::SensorViewFrustum*> sensorFrustum;
+	ViewerState viewerState_;
+	int InitViewer();
+	void CloseViewer();
+	void ViewerFrame();
 #endif
 	roadmanager::OpenDrive *odr_manager;
 	std::vector<ObjectSensor*> sensor;
 	const double maxStepSize;
 	const double minStepSize;
+	SE_Options opt;
 
 private:
 	std::string RequestControlMode2Str(RequestControlMode mode);
-	int Init(int &rgc, char *argv[]);
-#ifdef _SCENARIO_VIEWER
-	void ViewerFrame();
-#endif
+	int Init();
 
 	double trail_dt;
 	SE_Thread thread;
@@ -72,4 +83,6 @@ private:
 	bool headless;
 	bool launch_server;
 	double fixed_timestep_;
+	int& argc_;
+	char** argv_;
 };

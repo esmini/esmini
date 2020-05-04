@@ -23,7 +23,7 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0)
 	if (file_.fail())
 	{
 		LOG("Cannot open file: %s", filename.c_str());
-		return;
+		throw std::invalid_argument(std::string("Cannot open file: ") + filename);
 	}
 
 	file_.read((char*)&header_, sizeof(header_));

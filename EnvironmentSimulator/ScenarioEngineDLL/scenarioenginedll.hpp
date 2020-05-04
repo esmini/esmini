@@ -24,7 +24,7 @@ typedef struct
 {
 	int id;					  // Automatically generated unique object id 
 	int model_id;             // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
-	int control;		      // 0= undefined, 1=internal, 2=external, 4=hybrid_ghost, 3=hybrid_external
+	int control;		      // 0= undefined, 1=internal, 2=external, 3=hybrid_external, 4=hybrid_ghost
 	float timestamp;
 	float x;
 	float y;
@@ -39,6 +39,7 @@ typedef struct
 	float s;
 	float speed;
 } SE_ScenarioObjectState; 
+
 
 typedef struct
 {
@@ -67,16 +68,34 @@ extern "C"
 	@param oscFilename Path to the OpenSCEANRIO file
 	@param control Ego control 0=by OSC 1=Internal 2=External 3=Hybrid
 	@param use_viewer 0=no viewer, 1=use viewer
+	@param threads 0=single thread, 1=viewer in a separate thread, parallel to scenario engine
 	@param record Create recording for later playback 0=no recording 1=recording
 	@param headstart_time For hybrid control mode launch ghost vehicle with this headstart time 
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int record, float headstart_time);
+	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int threads, int record, float headstart_time);
 
+	/**
+	Step the simulation forward with specified timestep
+	@param dt time step in seconds
+	@return 0 if successful, -1 if not
+	*/
 	SE_DLL_API int SE_StepDT(float dt);
+
+	/**
+	Step the simulation forward. Time step will be elapsed system (world) time since last step. Useful for interactive/realtime use cases.
+	@return 0 if successful, -1 if not
+	*/
 	SE_DLL_API int SE_Step();
+
+	/**
+	Stop simulation gracefully. Two purposes: 1. Release memory and 2. Prepare for next simulation, e.g. reset object lists.
+	*/
 	SE_DLL_API void SE_Close();
 
+	/**
+	Get simulation time in seconds
+	*/
 	SE_DLL_API float SE_GetSimulationTime();  // Get simulation time in seconds
 
 	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
@@ -93,28 +112,29 @@ extern "C"
 	@param x Position x coordinate of the sensor in vehicle local coordinates
 	@param y Position y coordinate of the sensor in vehicle local coordinates
 	@param z Position z coordinate of the sensor in vehicle local coordinates
+	@param h heading of the sensor in vehicle local coordinates
 	@param fovH Horizontal field of view, in degrees
 	@param rangeNear Near value of the sensor depth range
 	@param rangeFar Far value of the sensor depth range
 	@param maxObj Maximum number of objects theat the sensor can track
-	@return 0 if successful, -1 if not
+	@return Sensor ID (Global index of sensor), -1 if unsucessful
 	*/
-	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float rangeNear, float rangeFar, float fovH, int maxObj);
+	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj);
 
 	/**
 	Fetch list of identified objects from a sensor
-	@param object_id Handle to the object to which the sensor should is attached 
+	@param sensor_id Handle (index) to the sensor
 	@param list Array of object indices
-	@return Number of identified objects, i.e. length of list0 if successful, -1 if not
+	@return Number of identified objects, i.e. length of list. -1 if unsuccesful.
 	*/
-	SE_DLL_API int SE_FetchSensorObjectList(int object_id, int *list);
+	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int *list);
 
 	/**
 	Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
 	@param object_id Handle to the position object from which to measure
 	@param lookahead_distance The distance, along the road, to the point
 	@param data Struct including all result values, see typedef for details
-	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
+	@param lookAheadMode Measurement strategy: Along 0=lane center, 1=road center (ref line) or 2=current lane offset. See roadmanager::Position::LookAheadMode enum
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int lookAheadMode);

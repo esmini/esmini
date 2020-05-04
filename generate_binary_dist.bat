@@ -27,6 +27,8 @@ copy resources\xosc\left-hand-traffic_internal.xosc %target_dir%\resources\xosc 
 copy resources\xosc\ltap-od-synch.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\synchronize.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\parking_lot.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\cut-in_internal.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\lane_change_simple.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
 copy resources\xosc\Catalogs\Vehicles\*.* %target_dir%\resources\xosc\Catalogs\Vehicles /y
@@ -37,6 +39,7 @@ copy resources\xodr\e6mini.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\fabriksgatan.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\jolengatan.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\straight_500m.xodr %target_dir%\resources\xodr /y
+copy resources\xodr\curve_r100.xodr %target_dir%\resources\xodr /y
 
 copy resources\models\bus_blue.osgb %target_dir%\resources\models /y
 copy resources\models\car_blue.osgb %target_dir%\resources\models /y
@@ -52,6 +55,7 @@ copy resources\models\fabriksgatan.osgb %target_dir%\resources\models /y
 copy resources\models\jolengatan.osgb %target_dir%\resources\models /y
 copy resources\models\straight_500m.osgb %target_dir%\resources\models /y
 copy resources\models\parking_lot.osgb %target_dir%\resources\models /y
+copy resources\models\curve_r100.osgb %target_dir%\resources\models /y
 
 copy run\EgoSimulator\run_basic_hybrid.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_ltap-od-synch_external.bat %target_dir%\run\EgoSimulator /y
@@ -60,6 +64,7 @@ copy run\EgoSimulator\run_highway-merge_advanced_internal.bat %target_dir%\run\E
 copy run\EgoSimulator\run_cut-in_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_lane_change.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_lane_change_simple.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_left-hand-traffic_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_dist_test.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_synchronize_internal.bat %target_dir%\run\EgoSimulator /y
@@ -71,5 +76,6 @@ copy run\readme.txt %target_dir% /y
 copy 3rd_party_terms_and_licenses\* %target_dir%\3rd_party_terms_and_licenses /y
 copy LICENSE %target_dir% /y
 copy release_notes.txt %target_dir% /y
+copy version.txt %target_dir% /y
 
 copy bin\EgoSimulator.exe %target_dir%\bin /y

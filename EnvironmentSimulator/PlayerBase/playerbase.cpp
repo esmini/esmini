@@ -25,7 +25,7 @@
 
 using namespace scenarioengine;
 
-#define GHOST_HEADSTART 5.0
+#define GHOST_HEADSTART 2.5
 
 void log_callback(const char *str)
 {
@@ -42,20 +42,22 @@ std::string ScenarioPlayer::RequestControlMode2Str(RequestControlMode mode)
 }
 
 ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) : 
-	maxStepSize(0.1), minStepSize(0.01)
+	maxStepSize(0.1), minStepSize(0.01), argc_(argc), argv_(argv)
 {
 	quit_request = false;
 	threads = false;
 	headless = false;
 	launch_server = false;
 	fixed_timestep_ = -1.0;
+	viewer_ = 0;
 #ifdef _SCENARIO_VIEWER
+	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
 	trail_dt = TRAIL_DOTS_DT;
 #else
 	trail_dt = 0;
 #endif
 
-	if (Init(argc, argv) != 0)
+	if (Init() != 0)
 	{
 		throw std::invalid_argument("Failed to initialize scenario player");
 	}
@@ -72,7 +74,15 @@ ScenarioPlayer::~ScenarioPlayer()
 	if (!headless)
 	{
 #ifdef _SCENARIO_VIEWER
-		delete viewer_;
+		if (threads)
+		{
+			viewer_->SetQuitRequest(true);
+			thread.Wait();
+		}
+		else
+		{
+			CloseViewer();
+		}
 #endif
 	}
 	delete scenarioEngine;
@@ -80,14 +90,15 @@ ScenarioPlayer::~ScenarioPlayer()
 
 void ScenarioPlayer::Frame(double timestep_s)
 {
-	if (!threads)
-	{
-		ScenarioFrame(timestep_s);
-	}
+	ScenarioFrame(timestep_s);
+
 	if (!headless)
 	{
 #ifdef _SCENARIO_VIEWER
-		ViewerFrame();
+		if (!threads)
+		{
+			ViewerFrame();
+		}
 #endif
 	}
 }
@@ -213,45 +224,167 @@ void ScenarioPlayer::ViewerFrame()
 	mutex.Unlock();
 
 	viewer_->osgViewer_->frame();
+
 	if (viewer_->osgViewer_->done())
 	{
+		LOG("Quit requested from viewer - probably ESC button pressed");
+		viewerState_ = ViewerState::VIEWER_STATE_DONE;
 		quit_request = true;
 	}
-}
-#endif
 
-void scenario_thread(void *args)
+}
+
+void ScenarioPlayer::CloseViewer()
+{
+	delete viewer_;
+	viewerState_ = ScenarioPlayer::ViewerState::VIEWER_STATE_DONE;
+}
+
+int ScenarioPlayer::InitViewer()
+{
+	std::string arg_str;
+
+	// Create viewer
+	osg::ArgumentParser arguments(&argc_, argv_);
+	viewer_ = new viewer::Viewer(
+		roadmanager::Position::GetOpenDrive(),
+		scenarioEngine->getSceneGraphFilename().c_str(),
+		scenarioEngine->getScenarioFilename().c_str(),
+		arguments, &opt);
+
+	if (opt.GetOptionArg("info_text") == "off")
+	{
+		viewer_->ShowInfoText(false);
+	}
+
+	if (opt.GetOptionArg("trails") == "off")
+	{
+		viewer_->ShowTrail(false);
+	}
+
+	if (opt.GetOptionArg("sensors") == "on")
+	{
+		viewer_->ShowObjectSensors(true);
+	}
+
+	if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
+	{
+		if (arg_str == "orbit")
+		{
+			viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_ORBIT);
+		}
+		else if (arg_str == "fixed")
+		{
+			viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_FIXED);
+		}
+		else if (arg_str == "flex")
+		{
+			viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND);
+		}
+		else if (arg_str == "flex-orbit")
+		{
+			viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND_ORBIT);
+		}
+		else
+		{
+			LOG("Unsupported camera mode: %s - using default (orbit)", arg_str.c_str());
+		}
+	}
+
+	//  Create cars for visualization
+	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	{
+		//  Create vehicles for visualization
+		osg::Vec3 trail_color;
+		Object* obj = scenarioEngine->entities.object_[i];
+
+		if (obj->control_ == Object::Control::HYBRID_GHOST)
+		{
+			trail_color.set(color_gray[0], color_gray[1], color_gray[2]);
+		}
+		else if (obj->control_ == Object::Control::HYBRID_EXTERNAL || obj->control_ == Object::Control::EXTERNAL)
+		{
+			trail_color.set(color_yellow[0], color_yellow[1], color_yellow[2]);
+		}
+		else
+		{
+			trail_color.set(color_red[0], color_red[1], color_red[2]);
+		}
+
+		bool transparent = obj->control_ == Object::Control::HYBRID_GHOST ? true : false;
+		bool road_sensor = obj->control_ == Object::Control::HYBRID_GHOST || obj->control_ == Object::Control::EXTERNAL ? true : false;
+		if (viewer_->AddCar(obj->model_filepath_, transparent, trail_color, road_sensor) == 0)
+		{
+			delete viewer_;
+			viewer_ = 0;
+			return -1;
+		}
+
+		if (obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+		{
+			viewer_->cars_.back()->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
+			if (odr_manager->GetNumOfRoads() > 0)
+			{
+				viewer_->cars_.back()->speed_sensor_ = viewer_->CreateSensor(color_gray, true, true, 0.4, 1);
+				viewer_->cars_.back()->trail_sensor_ = viewer_->CreateSensor(color_red, true, false, 0.4, 3);
+			}
+		}
+	}
+
+	// Trig first viewer frame, it typically takes extra long due to initial loading of gfx content
+	ViewerFrame();
+
+	viewerState_ = ViewerState::VIEWER_STATE_STARTED;
+
+	return 0;
+}
+
+void viewer_thread(void *args)
 {
 	ScenarioPlayer *player = (ScenarioPlayer*)args;
 	__int64 time_stamp = 0;
 
-	while (!player->IsQuitRequested())
+	if (player->InitViewer() != 0)
 	{
-		double dt;
-		if ((dt = player->GetFixedTimestep()) < 0.0)
-		{
-			player->ScenarioFrame(SE_getSimTimeStep(time_stamp, player->minStepSize, player->maxStepSize));
-		}
-		else
-		{
-			player->ScenarioFrame(dt);
-		}
+		LOG("Failed to initialize the Viewer!");
+		return;
 	}
+
+	while (!player->viewer_->GetQuitRequest() && !player->viewer_->osgViewer_->done())
+	{
+		player->ViewerFrame();
+	}
+
+	player->CloseViewer();
 }
 
-void ScenarioPlayer::AddObjectSensor(int object_index, double pos_x, double pos_y, double pos_z, double near, double far, double fovH, int maxObj)
+#endif
+
+void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, double z, double h, double near, double far, double fovH, int maxObj)
 {
-	sensor.push_back(new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_index], 
-		pos_x, pos_y, pos_z, near, far, fovH, maxObj));
+	sensor.push_back(new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_index], x, y, z, h, near, far, fovH, maxObj));
  	if (!headless)
 	{
 #ifdef _SCENARIO_VIEWER
+		mutex.Lock();
 		sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->cars_[object_index]->txNode_));
+		mutex.Unlock();
 #endif
 	}
 }
 
-int ScenarioPlayer::Init(int &argc, char *argv[])
+void ScenarioPlayer::ShowObjectSensors(bool mode)
+{
+	// Switch on sensor visualization as defult when sensors are added
+	if (viewer_)
+	{
+		mutex.Lock();
+		viewer_->ShowObjectSensors(mode);
+		mutex.Unlock();
+	}
+}
+
+int ScenarioPlayer::Init()
 {
 	std::string arg_str;
 
@@ -259,7 +392,6 @@ int ScenarioPlayer::Init(int &argc, char *argv[])
 	Logger::Inst().SetCallback(log_callback);
 
 	// use an ArgumentParser object to manage the program arguments.
-	SE_Options opt;
 	opt.AddOption("osc", "OpenSCENARIO filename", "filename");
 	opt.AddOption("control", "Ego control (\"osc\", \"internal\", \"external\", \"hybrid\"", "mode");
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
@@ -268,18 +400,19 @@ int ScenarioPlayer::Init(int &argc, char *argv[])
 	opt.AddOption("sensors", "Show sensor frustums (\"on\", \"off\" (default)) (toggle during simulation by press 'r') ", "mode");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\") (toggle during simulation by press 'c') ", "mode");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
-	opt.AddOption("threads", "Run viewer and scenario in separate threads");
+	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
 	opt.AddOption("headless", "Run without viewer");
 	opt.AddOption("server", "Launch server to receive state of external Ego simulator");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
+	opt.AddOption("ghost_headstart", "Launch Ego ghost at specified headstart time", "time");
 
-	if (argc < 3)
+	if (argc_ < 3)
 	{
 		opt.PrintUsage();
 		return -1;
 	}
 
-	opt.ParseArgs(&argc, argv);
+	opt.ParseArgs(&argc_, argv_);
 
 	RequestControlMode control = RequestControlMode::CONTROL_BY_OSC;
 	if ((arg_str = opt.GetOptionArg("control")) != "")
@@ -293,8 +426,14 @@ int ScenarioPlayer::Init(int &argc, char *argv[])
 
 	if (opt.GetOptionSet("threads"))
 	{
+#ifdef __APPLE__
+		LOG("Separate viewer thread requested. Unfortunately only supported on Windows and Linux.");
+		LOG("See https://www.mail-archive.com/osg-users@lists.openscenegraph.org/msg72698.html for an explanation.");
+		return -1;
+#else
 		threads = true;
 		LOG("Run viewer in separate thread");
+#endif
 	}
 
 	if (opt.GetOptionSet("headless"))
@@ -314,6 +453,17 @@ int ScenarioPlayer::Init(int &argc, char *argv[])
 		SetFixedTimestep(atof(arg_str.c_str()));
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
 	}
+	
+	double ghost_headstart = GHOST_HEADSTART;
+	if ((arg_str = opt.GetOptionArg("ghost_headstart")) != "")
+	{
+		ghost_headstart = atof(arg_str.c_str());
+		LOG("Any ghosts will be launched with headstart %.2f seconds", ghost_headstart);
+	}
+	else
+	{
+		LOG("Any ghosts will be launched with headstart %.2f seconds (default)", ghost_headstart);
+	}
 
 	// Create scenario engine
 	try
@@ -324,7 +474,7 @@ int ScenarioPlayer::Init(int &argc, char *argv[])
 			opt.PrintUsage();
 			return -1;
 		}
-		scenarioEngine = new ScenarioEngine(arg_str, GHOST_HEADSTART, (ScenarioEngine::RequestControlMode)control);
+		scenarioEngine = new ScenarioEngine(arg_str, ghost_headstart, (ScenarioEngine::RequestControlMode)control);
 	}
 	catch (std::logic_error &e)
 	{
@@ -346,112 +496,48 @@ int ScenarioPlayer::Init(int &argc, char *argv[])
 	// Step scenario engine - zero time - just to reach and report init state of all vehicles
 	scenarioEngine->step(0.0, true);
 
-
 	if (!headless)
 	{
 
 #ifdef _SCENARIO_VIEWER
 
-		// Create viewer
-		osg::ArgumentParser arguments(&argc, argv);
-		viewer_ = new viewer::Viewer(
-			roadmanager::Position::GetOpenDrive(),
-			scenarioEngine->getSceneGraphFilename().c_str(),
-			scenarioEngine->getScenarioFilename().c_str(),
-			arguments, &opt);
-
-		if (opt.GetOptionArg("info_text") == "off")
+		if (threads)
 		{
-			viewer_->ShowInfoText(false);
-		}
+			// Launch Viewer in a separate thread
+			thread.Start(viewer_thread, (void*)this);
 
-		if (opt.GetOptionArg("trails") == "off")
-		{
-			viewer_->ShowTrail(false);
-		}
-
-		if (opt.GetOptionArg("sensors") == "on")
-		{
-			viewer_->ShowObjectSensors(true);
-		}
-
-		if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
-		{
-			if (arg_str == "orbit")
+			// Wait for viewer to initialize
+			for (int i = 0; i < 60 && viewerState_ == VIEWER_STATE_NOT_STARTED; i++)
 			{
-				viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_ORBIT);
-			}
-			else if (arg_str == "fixed")
-			{
-				viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_FIXED);
-			}
-			else if (arg_str == "flex")
-			{
-				viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND);
-			}
-			else if (arg_str == "flex-orbit")
-			{
-				viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND_ORBIT);
-			}
-			else 
-			{
-				LOG("Unsupported camera mode: %s - using default (orbit)", arg_str.c_str());
-			}
-		}
-
-		//  Create cars for visualization
-		for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
-		{
-			//  Create vehicles for visualization
-			osg::Vec3 trail_color;
-			Object *obj = scenarioEngine->entities.object_[i];
-
-			if (obj->control_ == Object::Control::HYBRID_GHOST)
-			{
-				trail_color.set(color_gray[0], color_gray[1], color_gray[2]);
-			}
-			else if (obj->control_ == Object::Control::HYBRID_EXTERNAL || obj->control_ == Object::Control::EXTERNAL)
-			{
-				trail_color.set(color_yellow[0], color_yellow[1], color_yellow[2]);
-			}
-			else
-			{
-				trail_color.set(color_red[0], color_red[1], color_red[2]);
+				SE_sleep(100);
 			}
 
-			bool transparent = obj->control_ == Object::Control::HYBRID_GHOST ? true : false;
-			bool road_sensor = obj->control_ == Object::Control::HYBRID_GHOST || obj->control_ == Object::Control::EXTERNAL ? true : false;
-			if (viewer_->AddCar(obj->model_filepath_, transparent, trail_color, road_sensor) == 0)
+			if (viewerState_ == ViewerState::VIEWER_STATE_NOT_STARTED)
 			{
-				delete viewer_;
-				viewer_ = 0;
+				LOG("Viewer still not ready. Start scenario anyway. Viewer will launch when ready.");
+			}
+			else if (viewerState_ == ViewerState::VIEWER_STATE_DONE)
+			{
+				LOG("Viewer already signaled done - something went wrong");
 				return -1;
 			}
-
-			if (obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
-			{
-				viewer_->cars_.back()->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
-				if (odr_manager->GetNumOfRoads() > 0)
-				{
-					viewer_->cars_.back()->speed_sensor_ = viewer_->CreateSensor(color_gray, true, true, 0.4, 1);
-					viewer_->cars_.back()->trail_sensor_ = viewer_->CreateSensor(color_red, true, false, 0.4, 3);
-				}
-			}
+		}
+		else
+		{
+			InitViewer();
 		}
 
-		// Trig first viewer frame, it typically takes extra long due to initial loading of gfx content
-		ViewerFrame();
 #endif
 	}
 
-	if (argc > 1)
+	if (argc_ > 1)
 	{
-		opt.PrintArgs(argc, argv, "Unrecognized arguments:");
+		opt.PrintArgs(argc_, argv_, "Unrecognized arguments:");
 		opt.PrintUsage();
 		return -1;
 	}
 
-	// Add sensors
+	// Add a front looking sensor to each external vehicle
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
 		Object *obj = scenarioEngine->entities.object_[i];
@@ -459,7 +545,7 @@ int ScenarioPlayer::Init(int &argc, char *argv[])
 		if (obj->GetControl() == Object::Control::EXTERNAL ||
 			obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 		{
-			AddObjectSensor((int)i, 4, 0, 0.5, 5, 50, 50 * M_PI / 180.0, 10);
+			AddObjectSensor((int)i, 4, 0, 0.5, 0, 5, 50, 50 * M_PI / 180.0, 10);
 		}
 	}
 
@@ -468,12 +554,6 @@ int ScenarioPlayer::Init(int &argc, char *argv[])
 	{
 		// Launch UDP server to receive external Ego state
 		StartServer(scenarioEngine);
-	}
-
-	if (threads)
-	{
-		// Launch scenario engine in a separate thread
-		thread.Start(scenario_thread, (void*)this);
 	}
 
 	return 0;

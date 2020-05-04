@@ -83,7 +83,7 @@ double GetAngleOfVector(double x, double y)
 
 double GetAbsAngleDifference(double angle1, double angle2)
 {
-	double diff = fmod(angle2 - angle1, 2 * M_PI);
+	double diff = fmod(angle1 - angle2, 2 * M_PI);
 
 	if (diff < 0)
 	{
@@ -100,11 +100,15 @@ double GetAbsAngleDifference(double angle1, double angle2)
 
 double GetAngleDifference(double angle1, double angle2)
 {
-	double diff = fmod(angle2 - angle1, 2 * M_PI);
+	double diff = fmod(angle1 - angle2, 2 * M_PI);
 
-	if (diff < 0)
+	if (diff < -M_PI)
 	{
 		diff += 2 * M_PI;
+	}
+	else if (diff > M_PI)
+	{
+		diff -= 2 * M_PI;
 	}
 
 	return diff;
@@ -112,7 +116,7 @@ double GetAngleDifference(double angle1, double angle2)
 
 double GetAngleSum(double angle1, double angle2)
 {
-	double sum = fmod(angle2 + angle1, 2 * M_PI);
+	double sum = fmod(angle1 + angle2, 2 * M_PI);
 
 	if (sum < 0)
 	{

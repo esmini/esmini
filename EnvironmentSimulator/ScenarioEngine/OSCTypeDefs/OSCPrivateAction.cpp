@@ -476,20 +476,22 @@ void SynchronizeAction::Step(double dt)
 	(void)dt;
 
 	// Calculate distance along road/route
-	double masterDist, dist, dT;
-	int dl;
+	double masterDist, dist;
+	roadmanager::PositionDiff diff;
 
-	if (!master_object_->pos_.Delta(*target_position_master_, masterDist, dT, dl))
+	if (!master_object_->pos_.Delta(*target_position_master_, diff))
 	{
 		LOG("No road network path between master vehicle and master target pos");
 		return;
 	}
+	masterDist = diff.ds;
 
-	if (!object_->pos_.Delta(*target_position_, dist, dT, dl))
+	if (!object_->pos_.Delta(*target_position_, diff))
 	{
 		LOG("No road network path between master vehicle and master target pos");
 		return;
 	}
+	dist = diff.ds;
 
 	double masterTimeToDest = LARGE_NUMBER;
 

@@ -269,6 +269,7 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	txNode_->addChild(geode);
 	txNode_->addChild(geode2);
 	txNode_->setPosition(osg::Vec3(sensor_->pos_.x, sensor_->pos_.y, sensor_->pos_.z));
+	txNode_->setAttitude(osg::Quat(sensor_->pos_.h, osg::Vec3(0, 0, 1)));
 }
 
 void SensorViewFrustum::Update()
@@ -326,7 +327,7 @@ TrailDot::TrailDot(float time, double x, double y, double z, double heading,
 		// Clone into a unique object for unique material and alpha fading
 		new_node = dynamic_cast<osg::Node*>(dot_node->clone(osg::CopyOp()));
 	}
-
+	
 	dot_->addChild(new_node);
 
 	material_ = new osg::Material;
@@ -346,6 +347,7 @@ TrailDot::TrailDot(float time, double x, double y, double z, double heading,
 
 static osg::ref_ptr<osg::Node> CreateDotGeometry()
 {
+	double height = 0.17;
 	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(6);
 	osg::ref_ptr<osg::DrawElementsUInt> indices1 = new osg::DrawElementsUInt(GL_QUADS, 3 * 4);
 	osg::ref_ptr<osg::DrawElementsUInt> indices2 = new osg::DrawElementsUInt(GL_TRIANGLES, 3);
@@ -354,9 +356,9 @@ static osg::ref_ptr<osg::Node> CreateDotGeometry()
 	(*vertices)[idx++].set(0.0, -0.5, 0.0);
 	(*vertices)[idx++].set(0.87, 0.0, 0.0);
 	(*vertices)[idx++].set(0.0, 0.5, 0.0);
-	(*vertices)[idx++].set(0.0, -0.5, 0.15);
-	(*vertices)[idx++].set(0.87, 0.0, 0.15);
-	(*vertices)[idx++].set(0.0, 0.5, 0.15);
+	(*vertices)[idx++].set(0.0, -0.5, height);
+	(*vertices)[idx++].set(0.87, 0.0, height);
+	(*vertices)[idx++].set(0.0, 0.5, height);
 
 	// sides
 	idx = 0;
@@ -395,9 +397,16 @@ static osg::ref_ptr<osg::Node> CreateDotGeometry()
 	return geode;
 }
 
-void TrailDot::Reset(float time, double x, double y, double z)
+void TrailDot::Reset(float time, double x, double y, double z, double heading)
 {
 	dot_->setPosition(osg::Vec3(x, y, z));
+
+	dot_->setAttitude(osg::Quat(
+		0, osg::Vec3(1, 0, 0),       // Roll
+		0, osg::Vec3(0, 1, 0),       // Pitch
+		heading, osg::Vec3(0, 0, 1)) // Heading
+	); 
+
 	fade_callback_->Reset();
 }
 
@@ -410,7 +419,7 @@ void Trail::AddDot(float time, double x, double y, double z, double heading)
 	}
 	else
 	{
-		dot_[current_]->Reset(time, x, y, z);
+		dot_[current_]->Reset(time, x, y, z, heading);
 	}
 
 	if (++current_ >= TRAIL_MAX_DOTS)

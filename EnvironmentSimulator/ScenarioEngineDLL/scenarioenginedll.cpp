@@ -91,7 +91,7 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 
 static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int lookAheadMode)
 {
-	roadmanager::SteeringTargetInfo s_data;
+	roadmanager::RoadProbeInfo s_data;
 
 	if (player == 0)
 	{
@@ -106,26 +106,26 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 
 	roadmanager::Position *pos = &player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
 	
-	if (pos->GetSteeringTargetInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
+	if (pos->GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
 	{
 		return -1;
 	}
 	else
 	{
 		// Copy data
-		r_data->local_pos_x = (float)s_data.local_pos[0];
-		r_data->local_pos_y = (float)s_data.local_pos[1];
-		r_data->local_pos_z = (float)s_data.local_pos[2];
-		r_data->global_pos_x = (float)s_data.global_pos[0];
-		r_data->global_pos_y = (float)s_data.global_pos[1];
-		r_data->global_pos_z = (float)s_data.global_pos[2];
-		r_data->angle = (float)s_data.angle;
-		r_data->curvature = (float)s_data.curvature;
-		r_data->road_heading = (float)s_data.road_heading;
-		r_data->road_pitch = (float)s_data.road_pitch;
-		r_data->road_roll = (float)s_data.road_roll;
+		r_data->local_pos_x = (float)s_data.relative_pos[0];
+		r_data->local_pos_y = (float)s_data.relative_pos[1];
+		r_data->local_pos_z = (float)s_data.relative_pos[2];
+		r_data->global_pos_x = (float)s_data.road_lane_info.pos[0];
+		r_data->global_pos_y = (float)s_data.road_lane_info.pos[1];
+		r_data->global_pos_z = (float)s_data.road_lane_info.pos[2];
+		r_data->angle = (float)s_data.relative_h;
+		r_data->curvature = (float)s_data.road_lane_info.curvature;
+		r_data->road_heading = (float)s_data.road_lane_info.heading;
+		r_data->road_pitch = (float)s_data.road_lane_info.pitch;
+		r_data->road_roll = (float)s_data.road_lane_info.roll;
 		r_data->trail_heading = r_data->road_heading;
-		r_data->speed_limit = (float)s_data.speed_limit;
+		r_data->speed_limit = (float)s_data.road_lane_info.speed_limit;
 
 		return 0;
 	}
@@ -133,7 +133,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 
 static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *r_data, float *speed_ghost)
 {
-	roadmanager::SteeringTargetInfo s_data;
+	roadmanager::RoadProbeInfo s_data;
 
 	if (player == 0)
 	{
@@ -174,32 +174,31 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	obj->ghost_->trail_.FindPointAhead(obj->trail_follow_index_, obj->trail_follow_s_, lookahead_distance, state, index_out, s_out);
 
 	roadmanager::Position pos(state.x_, state.y_, 0, 0, 0, 0);
-	obj->pos_.CalcSteeringTarget(&pos, &s_data);
+	obj->pos_.CalcProbeTarget(&pos, &s_data);
 
 	// Copy data
-	r_data->local_pos_x = (float)s_data.local_pos[0];
-	r_data->local_pos_y = (float)s_data.local_pos[1];
-	r_data->local_pos_z = (float)s_data.local_pos[2];
-	r_data->global_pos_x = (float)s_data.global_pos[0];
-	r_data->global_pos_y = (float)s_data.global_pos[1];
-	r_data->global_pos_z = (float)s_data.global_pos[2];
-	r_data->angle = (float)s_data.angle;
-	r_data->curvature = (float)s_data.curvature;
-	r_data->road_heading = (float)s_data.road_heading;
+	r_data->local_pos_x = (float)s_data.relative_pos[0];
+	r_data->local_pos_y = (float)s_data.relative_pos[1];
+	r_data->local_pos_z = (float)s_data.relative_pos[2];
+	r_data->global_pos_x = (float)s_data.road_lane_info.pos[0];
+	r_data->global_pos_y = (float)s_data.road_lane_info.pos[1];
+	r_data->global_pos_z = (float)s_data.road_lane_info.pos[2];
+	r_data->angle = (float)s_data.relative_h;
+	r_data->curvature = (float)s_data.road_lane_info.curvature;
+	r_data->road_heading = (float)s_data.road_lane_info.heading;
 	r_data->trail_heading = (float)state.h_;
-	r_data->road_pitch = (float)s_data.road_pitch;
-	r_data->road_roll = (float)s_data.road_roll;
-	r_data->speed_limit = (float)s_data.speed_limit;
-	LOG("h %.2f", r_data->trail_heading);
+	r_data->road_pitch = (float)s_data.road_lane_info.pitch;
+	r_data->road_roll = (float)s_data.road_lane_info.roll;
+	r_data->speed_limit = (float)s_data.road_lane_info.speed_limit;
 
-	*speed_ghost = (float)obj->ghost_->speed_;
+	*speed_ghost = (float)state.speed_;
 
 	return 0;
 }
 
 extern "C"
 {
-	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int record, float headstart_time)
+	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int threads, int record, float headstart_time)
 	{
 		resetScenario();
 
@@ -242,6 +241,14 @@ extern "C"
 		{
 			AddArgument("--headless");
 		}
+		if (threads)
+		{
+			AddArgument("--threads");
+			LOG("Threads arg created");
+		}
+
+		AddArgument(std::string("--ghost_headstart " + std::to_string((long double)headstart_time)).c_str());
+
 		ConvertArguments();
 
 		// Create scenario engine
@@ -277,9 +284,12 @@ extern "C"
 		if (player)
 		{
 			player->Frame();
+			return 0;
 		}
-
-		return 0;
+		else
+		{
+			return -1;
+		}
 	}
 
 	SE_DLL_API int SE_StepDT(float dt)
@@ -287,9 +297,12 @@ extern "C"
 		if (player)
 		{
 			player->Frame(dt);
+			return 0;
 		}
-
-		return 0;
+		else
+		{
+			return -1;
+		}
 	}
 	
 	SE_DLL_API float SE_GetSimulationTime()
@@ -306,7 +319,7 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
-				player->scenarioGateway->reportObject(ObjectState(id, obj->name_, obj->model_id_, control, timestamp, x, y, z, h, p, r, speed, 0, 0), true);
+				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, timestamp, speed, 0, 0, x, y, z, h, p, r);
 			}
 		}
 
@@ -322,7 +335,7 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
-				player->scenarioGateway->reportObject(ObjectState(id, obj->name_, obj->model_id_, control, timestamp, roadId, laneId, laneOffset, s, speed, 0, 0), true);
+				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
 			}
 		}
 
@@ -391,7 +404,7 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float rangeNear, float rangeFar, float fovH, int maxObj)
+	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj)
 	{
 		if (player)
 		{
@@ -402,30 +415,33 @@ extern "C"
 				return -1;
 			}
 
-			player->AddObjectSensor(object_id, x, y, z, rangeNear, rangeFar, fovH, maxObj);
+			player->AddObjectSensor(object_id, x, y, z, h, rangeNear, rangeFar, fovH, maxObj);
 		}
+		
+		player->ShowObjectSensors(true);
+
 		return 0;
 	}
 
-	SE_DLL_API int SE_FetchSensorObjectList(int object_id, int *list)
+	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int *list)
 	{
 		if (player)
 		{
-			if (object_id < 0 || object_id >= player->scenarioEngine->entities.object_.size())
+			if (sensor_id < 0 || sensor_id >= player->sensor.size())
 			{
-				LOG("Invalid object_id (%d/%d)", object_id, player->scenarioEngine->entities.object_.size());
+				LOG("Invalid sensor_id (%d specified / %d available)", sensor_id, player->sensor.size());
 				return -1;
 			}
-			if (player->sensor.size() > object_id)
+
+			for (int i = 0; i < player->sensor[sensor_id]->nObj_; i++)
 			{
-				for (int i = 0; i < player->sensor[object_id]->nObj_; i++)
-				{
-					list[i] = player->sensor[object_id]->hitList_[i].obj_->id_;
-				}
-				return player->sensor[object_id]->nObj_;
+				list[i] = player->sensor[sensor_id]->hitList_[i].obj_->id_;
 			}
+			
+			return player->sensor[sensor_id]->nObj_;
 		}
-		return 0;
+		
+		return -1;
 	}
 
 	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int along_road_center)

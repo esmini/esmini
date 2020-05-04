@@ -105,7 +105,7 @@ namespace viewer
 
 		TrailDot(float time, double x, double y, double z, double heading,
 			osgViewer::Viewer *viewer, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color);
-		void Reset(float time, double x, double y, double z);
+		void Reset(float time, double x, double y, double z, double heading);
 
 	private:
 		AlphaFadingCallback *fade_callback_;

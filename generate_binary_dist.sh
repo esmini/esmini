@@ -17,6 +17,8 @@ resources/xosc/left-hand-traffic_internal.xosc \
 resources/xosc/ltap-od-synch.xosc \
 resources/xosc/synchronize.xosc \
 resources/xosc/parking_lot.xosc \
+resources/xosc/cut-in_internal.xosc \
+resources/xosc/lane_change_simple.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -26,6 +28,7 @@ resources/xodr/e6mini.xodr \
 resources/xodr/fabriksgatan.xodr \
 resources/xodr/jolengatan.xodr \
 resources/xodr/straight_500m.xodr \
+resources/xodr/curve_r100.xodr \
 resources/models/bus_blue.osgb \
 resources/models/car_blue.osgb \
 resources/models/car_red.osgb \
@@ -40,6 +43,7 @@ resources/models/fabriksgatan.osgb \
 resources/models/jolengatan.osgb \
 resources/models/straight_500m.osgb \
 resources/models/parking_lot.osgb \
+resources/models/curve_r100.osgb \
 run/EgoSimulator/run_basic_hybrid.* \
 run/EgoSimulator/run_ltap-od-synch_external.* \
 run/EgoSimulator/run_ltap-od_two_targets_internal.* \
@@ -47,6 +51,7 @@ run/EgoSimulator/run_highway-merge_advanced_internal.* \
 run/EgoSimulator/run_cut-in_internal.* \
 run/EgoSimulator/run_cut-in_external.* \
 run/EgoSimulator/run_lane_change.* \
+run/EgoSimulator/run_lane_change_simple.* \
 run/EgoSimulator/run_left-hand-traffic_internal.* \
 run/EgoSimulator/run_dist_test.* \
 run/EgoSimulator/run_synchronize_internal.* \
@@ -56,6 +61,7 @@ run/readme.txt \
 3rd_party_terms_and_licenses/* \
 LICENSE \
 release_notes.txt \
+version.txt \
 bin/EgoSimulator \
 esmini-demo
 

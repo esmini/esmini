@@ -84,7 +84,7 @@
                                     <Entity name="Ego" />
                                 </TriggeringEntities>
                                 <EntityCondition>
-                                    <ReachPosition tolerance="1.0" >
+                                    <ReachPosition tolerance="5.0" >
                                         <Position>
                                             <Lane roadId="0" laneId="$EgoTargetLaneId" s="$MS2EgoS" />
                                         </Position>

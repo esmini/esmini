@@ -37,8 +37,8 @@ namespace scenarioengine
 			UNDEFINED,
 			INTERNAL,
 			EXTERNAL,
-			HYBRID_GHOST,
 			HYBRID_EXTERNAL,
+			HYBRID_GHOST
 		} Control;
 
 		struct Property

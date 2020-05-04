@@ -15,8 +15,18 @@ cache:
 - externals/OpenSceneGraph
 - resources/models
     
+skip_commits:
+  message: /#skip_build/
+  files:
+    - 'docs/*'
+    - '*.txt'
+
 before_build:
   - cmd: gitversion /l console /output buildserver
+  
+  - ps: |
+        echo "const char* ESMINI_BUILD_VERSION=`"$env:APPVEYOR_BUILD_VERSION`";"  | Out-File -Encoding ascii EnvironmentSimulator/CommonMini/buildnr.cpp
+        type EnvironmentSimulator/CommonMini/buildnr.cpp
 
 # publish package on tag build
 deploy:
@@ -47,17 +57,26 @@ for:
           
           make -j4 install
           
+          cd ../build-debug
+          
+          make -j4
+          
     after_build:
       - sh: >-
           cd ..
           
-          zip -r esmini-bin_ubuntu.zip bin 
+          zip -r esmini-bin_ubuntu.zip bin EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt
           
           chmod -R +x ./run/*
 
           ./generate_binary_dist.sh
 
-          mv esmini-demo.zip esmini-demo_ubuntu.zip 
+          if [ "$APPVEYOR_REPO_TAG" == 1 ]; 
+          then     
+              mv esmini-demo.zip esmini-demo_ubuntu.zip;
+          else
+              rm esmini-demo.zip;
+          fi
               
     artifacts:
       - path: esmini-*_ubuntu.zip
@@ -87,13 +106,18 @@ for:
 
           cd ..
           
-          zip esmini-bin_mac_catalina.zip bin -r
+          zip -r esmini-bin_mac_catalina.zip bin EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
           
           chmod -R +x ./run/*
 
           ./generate_binary_dist.sh
-
-          mv esmini-demo.zip esmini-demo_mac_catalina.zip 
+          
+          if [ "$APPVEYOR_REPO_TAG" == 1 ]; 
+          then     
+              mv esmini-demo.zip esmini-demo_mac_catalina.zip;
+          else
+              rm esmini-demo.zip;
+          fi
 
     artifacts:
       - path: esmini-*_mac_catalina.zip
@@ -113,10 +137,6 @@ for:
           
           cmake.exe -G "Visual Studio 15 Win64" -D USE_OSG=True ..
           
-      - ps: |
-          echo "const char* ESMINI_BUILD_VERSION=`"$env:APPVEYOR_BUILD_VERSION`";"  | Out-File ../EnvironmentSimulator/CommonMini/buildnr.cpp
-          type ../EnvironmentSimulator/CommonMini/buildnr.cpp
-          
       - cmd: 
 
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
@@ -127,12 +147,12 @@ for:
 
     after_build:
       - cmd:
-            7z a esmini-demo_win.zip esmini-demo/*
- 
-            7z a esmini-bin_win.zip bin/*
+            7z a esmini-bin_win_x64.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
+                        
+            IF %APPVEYOR_REPO_TAG%==1 (7z a esmini-demo_win.zip esmini-demo/*)
 
     artifacts:
-      - path: esmini-*_win.zip
+      - path: esmini-*_win*.zip
         name: windows_artifacts
 
   -
@@ -149,14 +169,19 @@ for:
 
           cmake -G "Visual Studio 15" -D USE_OSG=True ..
 
-      - ps: |
-          ((Get-Content -path ../EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path ../EnvironmentSimulator/CommonMini/version.cpp
-          type ../EnvironmentSimulator/CommonMini/version.cpp
-
       - cmd:
           msbuild /m /property:Configuration=Release /p:Platform=win32 EnvironmentSimulator.sln
 
           cd..
+          
+    after_build:
+      - cmd:
+            7z a esmini-bin_win_x86.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
+
+    artifacts:
+      - path: esmini-*_win*.zip
+        name: windows_artifacts
+          
   -
     matrix:
       only:
@@ -171,14 +196,19 @@ for:
 
           cmake -G "Visual Studio 14 2015 Win64" -T "Windows7.1SDK" -D WINSDK7_1=True -D USE_OSG=True ..
 
-      - ps: |
-          ((Get-Content -path ../EnvironmentSimulator/CommonMini/version.cpp -Raw) -replace 'TBD',"$env:APPVEYOR_BUILD_VERSION") | Set-Content -Path ../EnvironmentSimulator/CommonMini/version.cpp
-          type ../EnvironmentSimulator/CommonMini/version.cpp
-
       - cmd:
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
 
           cd..
+          
+    after_build:
+      - cmd:
+            7z a esmini-bin_win_sdk7-1_x64.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
+
+    artifacts:
+      - path: esmini-*_win*.zip
+        name: windows_artifacts
+          
   -
     matrix:
       exclude:

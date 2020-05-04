@@ -19,7 +19,7 @@ set ( COMMON_MINI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CommonMini")
 set ( OSG_VERSION "osg161" )
 set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
 
-set( CMAKE_VERBOSE_MAKEFILE false )
+set( CMAKE_VERBOSE_MAKEFILE true )
 
 if (APPLE)
   set ( TIME_LIB "" )
@@ -29,21 +29,28 @@ elseif (UNIX)
   set ( TIME_LIB "" )
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1OufA3TUQjBTkaRvAuo0rSUwryvoqde8G )
   set ( OSG_DIR "${OSG_BASE_DIR}/linux" )
-elseif (WINSDK7_1)
-  set ( SOCK_LIB Ws2_32.lib )
-  set ( TIME_LIB winmm.lib )
-  set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1NBEvGZiTWmqxk-MEOq7uK1uh_vaUMaEL )
-  set ( OSG_DIR "${OSG_BASE_DIR}/winsdk71" )
-elseif ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
-  set ( SOCK_LIB Ws2_32.lib )
-  set ( TIME_LIB "" )  
-  set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=10dV9P0qOeJUgTtsSDld4AlbClE--SivX )
-  set ( OSG_DIR "${OSG_BASE_DIR}/win32" )
-else()  # v10
-  set ( SOCK_LIB Ws2_32.lib )
-  set ( TIME_LIB "" )
-  set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1YxLVdQLhKBMGW4HB_ArJglRIpzuDiwhJ )
-  set ( OSG_DIR "${OSG_BASE_DIR}/v10" )
+elseif (WIN32)
+  if (WINSDK7_1)
+    message ("Configuring for Windows SDK v7.1 x64")
+    set ( SOCK_LIB Ws2_32.lib )
+    set ( TIME_LIB winmm.lib )
+    set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1NBEvGZiTWmqxk-MEOq7uK1uh_vaUMaEL )
+    set ( OSG_DIR "${OSG_BASE_DIR}/winsdk71" )
+  elseif ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
+    message ("Configuring for Windows SDK v10 win32")
+    set ( SOCK_LIB Ws2_32.lib )
+    set ( TIME_LIB "" )
+    set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=10dV9P0qOeJUgTtsSDld4AlbClE--SivX )
+    set ( OSG_DIR "${OSG_BASE_DIR}/win32" )
+  elseif ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64")
+    message ("Configuring for Windows SDK v10 x64")
+    set ( SOCK_LIB Ws2_32.lib )
+    set ( TIME_LIB "" )
+    set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1YxLVdQLhKBMGW4HB_ArJglRIpzuDiwhJ )
+    set ( OSG_DIR "${OSG_BASE_DIR}/v10" )
+  else ()
+    message ("Unknown configuration")
+  endif ()
 endif (APPLE)
 
 set ( OSG_INCLUDE_DIR 
@@ -64,80 +71,82 @@ if(APPLE)
 
   set ( OSG_LIBRARIES
 	
-	osgdb_serializers_osgsim
-	osgdb_serializers_osg
-	osgdb_osg
+    osgdb_serializers_osgsim
+    osgdb_serializers_osg
+    osgdb_osg
     osgdb_jpeg
-	osgAnimation
-	osgText
-	osgSim
-	osgViewer
-	osgUtil
-	osgDB
-	osgGA
-	osg
-	OpenThreads
+    osgAnimation
+    osgText
+    osgSim
+    osgViewer
+    osgUtil
+    osgDB
+    osgGA
+    osg
+    OpenThreads
     jpeg
 
-	"-framework OpenGL"
-	"-framework Cocoa"
-	dl
-	z
-	#db_fbx
+    "-framework OpenGL"
+    "-framework Cocoa"
+    dl
+    z
+    #db_fbx
   )
 elseif(UNIX)
-   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-strip-all")
+   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
   
   link_directories(${OSG_LIBRARIES_PATH})
   
   set ( OSG_LIBRARIES
-	osgdb_serializers_osgsim
-	osgdb_serializers_osg
-	osgdb_osg
-    osgdb_jpeg
-	osgAnimation
-	osgText
-	osgSim
-	osgViewer
-	osgUtil
-	osgDB
-	osgGA
-	osg
-	OpenThreads
-    jpeg
+    optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd 
+    optimized osgdb_serializers_osg debug osgdb_serializers_osgd
+    optimized osgdb_osg debug osgdb_osgd 
+    optimized osgdb_jpeg debug osgdb_jpegd
+    optimized osgAnimation debug osgAnimationd
+    optimized osgText debug osgTextd
+    optimized osgSim debug osgSimd
+    optimized osgViewer debug osgViewerd
+    optimized osgUtil debug osgUtild
+    optimized osgDB debug osgDBd
+    optimized osgGA debug osgGAd
+    optimized osg debug osgd
+    optimized OpenThreads debug OpenThreadsd
+    optimized jpeg debug jpegd
 
-	GL
-	X11
-	Xrandr
-	dl
-	z
+    GL
+    X11
+    Xrandr
+    dl
+    z
     Xinerama
-	#db_fbx
+    fontconfig
+    #db_fbx
   )
 else() #not UNIX
 
 set ( OSG_LIBRARIES 
-	opengl32.lib
-	optimized zlibstatic.lib debug zlibstaticd.lib 
-	optimized jpeg.lib debug jpegd.lib 
-	optimized ${OSG_VERSION}-osg.lib debug ${OSG_VERSION}-osgd.lib
-	optimized ${OSG_VERSION}-osgAnimation.lib debug ${OSG_VERSION}-osgAnimationd.lib
-	optimized ${OSG_VERSION}-osgDB.lib debug ${OSG_VERSION}-osgDBd.lib
-	optimized ${OSG_VERSION}-osgGA.lib debug ${OSG_VERSION}-osgGAd.lib
-	optimized ${OSG_VERSION}-osgViewer.lib debug ${OSG_VERSION}-osgViewerd.lib
-	optimized ${OSG_VERSION}-osgText.lib debug ${OSG_VERSION}-osgTextd.lib
-	optimized ${OSG_VERSION}-osgUtil.lib debug ${OSG_VERSION}-osgUtild.lib
-	optimized ${OSG_VERSION}-osgSim.lib debug ${OSG_VERSION}-osgSimd.lib
-	optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
-	optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
-	optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
-	optimized osgdb_osg.lib debug osgdb_osgd.lib 	
-	optimized osgdb_fbx.lib debug osgdb_fbxd.lib 	
+    opengl32.lib
+    optimized zlibstatic.lib debug zlibstaticd.lib 
+    optimized jpeg.lib debug jpegd.lib 
+    optimized ${OSG_VERSION}-osg.lib debug ${OSG_VERSION}-osgd.lib
+    optimized ${OSG_VERSION}-osgAnimation.lib debug ${OSG_VERSION}-osgAnimationd.lib
+    optimized ${OSG_VERSION}-osgDB.lib debug ${OSG_VERSION}-osgDBd.lib
+    optimized ${OSG_VERSION}-osgGA.lib debug ${OSG_VERSION}-osgGAd.lib
+    optimized ${OSG_VERSION}-osgViewer.lib debug ${OSG_VERSION}-osgViewerd.lib
+    optimized ${OSG_VERSION}-osgText.lib debug ${OSG_VERSION}-osgTextd.lib
+    optimized ${OSG_VERSION}-osgUtil.lib debug ${OSG_VERSION}-osgUtild.lib
+    optimized ${OSG_VERSION}-osgSim.lib debug ${OSG_VERSION}-osgSimd.lib
+    optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
+    optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
+    optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
+    optimized osgdb_osg.lib debug osgdb_osgd.lib 	
+    optimized osgdb_fbx.lib debug osgdb_fbxd.lib 	
     optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
 )
-if (NOT WINSDK7_1)  # FBX not supporting winsdk 7.1
-  list ( APPEND OSG_LIBRARIES optimized libfbxsdk-md.lib debug libfbxsdk-mdd.lib )
-endif()
+#
+#if (NOT WINSDK7_1)  # FBX not supporting winsdk 7.1
+#  list ( APPEND OSG_LIBRARIES optimized libfbxsdk-md.lib debug libfbxsdk-mdd.lib )
+#endif()
 
 endif() #Endif UNIX
 
@@ -200,6 +209,7 @@ if (USE_OSG)
     set_target_properties (ScenarioViewer PROPERTIES FOLDER ${ApplicationsFolder} )
     set_target_properties (EgoSimulator PROPERTIES FOLDER ${ApplicationsFolder} )
     set_target_properties (Replayer PROPERTIES FOLDER ${ApplicationsFolder} )
+    set_target_properties (dat2ascii PROPERTIES FOLDER ${ApplicationsFolder} )    
     set_target_properties (OpenDriveViewer PROPERTIES FOLDER ${ApplicationsFolder} )
     set_target_properties (OdrPlot PROPERTIES FOLDER ${ApplicationsFolder} )
   endif (NOT USE_ENVSIM_ADAPT)

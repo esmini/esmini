@@ -1,1 +1,1 @@
-"../../bin/ScenarioViewer" ../../resources/xosc/cut-in.xosc
+"../../bin/ScenarioViewer" ../../resources/xosc/cut-in.xosc --sensors

@@ -531,20 +531,21 @@ bool TrigByTimeHeadway::Evaluate(StoryBoard *storyBoard, double sim_time)
 		//  - when object is still or going reverse 
 		if (rel_dist < 0 || object_->speed_ < SMALL_NUMBER)
 		{
-			hwt = LARGE_NUMBER;
+			hwt = -1;
 		}
 		else
 		{
 			hwt = fabs(rel_dist / object_->speed_);
+
+			result = EvaluateRule(hwt, value_, rule_);
+			trig = CheckEdge(result, last_result_, edge_);
+
+			if (EvalDone(trig, triggering_entity_rule_))
+			{
+				break;
+			}
 		}
 
-		result = EvaluateRule(hwt, value_, rule_);
-		trig = CheckEdge(result, last_result_, edge_);
-
-		if (EvalDone(trig, triggering_entity_rule_))
-		{
-			break;
-		}
 	}
 
 	//LOG("Trig? %s hwt: %.2f %s %.2f, %s (dist: %.2f)", name_.c_str(), hwt, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str(), rel_dist);
