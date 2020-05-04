@@ -65,7 +65,7 @@ for:
       - sh: >-
           cd ..
           
-          if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#no_bins* ]]; 
+          if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#skip_bins* ]]; 
           then 
             echo "Skip create and push binary artifacts";
           else
@@ -111,7 +111,7 @@ for:
 
           cd ..
           
-          if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#no_bins* ]]; 
+          if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#skip_bins* ]]; 
           then 
             echo "Skip create and push binary artifacts";
           else
@@ -156,15 +156,24 @@ for:
           generate_binary_dist.bat
 
     after_build:
-      - cmd:
-          echo %APPVEYOR_REPO_COMMIT_MESSAGE% | find "#no_bins" >nul
-          if errorlevel 1 (
-            echo Skip create and push binary artifacts
-          ) else (
+      - ps: |
+          if ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match '#skip_bins')
+          {
+            echo "Skip binary artifacts"
+          }
+          else
+          {
             7z a esmini-bin_win_x64.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
-          )
-                      
-          IF %APPVEYOR_REPO_TAG%==1 (7z a esmini-demo_win.zip esmini-demo/*)
+          }
+          
+          if ($Env:APPVEYOR_REPO_TAG -eq $true)
+          {
+            7z a esmini-demo_win.zip esmini-demo/*
+          }
+          else
+          {
+            echo "Skip demos"
+          }
 
     artifacts:
       - path: esmini-*_win*.zip
@@ -190,14 +199,16 @@ for:
           cd..
           
     after_build:
-      - cmd:
-          echo %APPVEYOR_REPO_COMMIT_MESSAGE% | find "#no_bins" >nul
-          if errorlevel 1 (
-            echo Skip create and push binary artifacts
-          ) else (
+      - ps: |
+          if ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match '#skip_bins')
+          {
+            echo "Skip binary artifacts"
+          }
+          else
+          {
             7z a esmini-bin_win_x86.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
-          )      
-
+          }
+          
     artifacts:
       - path: esmini-*_win*.zip
         name: windows_artifacts
@@ -222,13 +233,15 @@ for:
           cd..
           
     after_build:
-      - cmd:
-          echo %APPVEYOR_REPO_COMMIT_MESSAGE% | find "#no_bins" >nul
-          if errorlevel 1 (
-            echo Skip create and push binary artifacts
-          ) else (
+      - ps: |
+          if ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match '#skip_bins')
+          {
+            echo "Skip binary artifacts"
+          }
+          else
+          {
             7z a esmini-bin_win_sdk7-1_x64.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
-          )         
+          }    
 
     artifacts:
       - path: esmini-*_win*.zip
