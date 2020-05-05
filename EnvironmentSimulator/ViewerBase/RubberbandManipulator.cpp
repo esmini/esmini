@@ -18,11 +18,16 @@
 
 #include <iostream>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+
 using namespace osg;
 using namespace osgGA;
 
 const float springFC = 16.0f;
 const float orbitCameraDistance = 25.0f;
+const float topCameraDistance = 70.0f;
 const float orbitCameraAngle = 13.0f;
 const float orbitCameraRotation = -14.0f;
 
@@ -30,10 +35,10 @@ const float orbitCameraRotation = -14.0f;
 
 RubberbandManipulator::RubberbandManipulator(unsigned int mode)
 {
-	setMode(mode);
 	_cameraAngle = orbitCameraAngle;
 	_cameraDistance = orbitCameraDistance;
 	_cameraRotation = orbitCameraRotation;
+	setMode(mode);
 }
 
 RubberbandManipulator::~RubberbandManipulator()
@@ -42,12 +47,22 @@ RubberbandManipulator::~RubberbandManipulator()
 
 void RubberbandManipulator::setMode(unsigned int mode)
 {
+	// If leaving top view, then reset elevation angle
+	if (_mode == RB_MODE_TOP)
+	{
+		_cameraAngle = orbitCameraAngle;
+	}
+	
 	_mode = mode;
 
-	if(mode == RB_MODE_RUBBER_BAND)
+	if (mode == RB_MODE_RUBBER_BAND)
 	{
 		_cameraAngle = orbitCameraAngle;
 		_cameraDistance = orbitCameraDistance;
+	}
+	else if (mode == RB_MODE_TOP)
+	{
+		_cameraDistance = topCameraDistance;
 	}
 }
 
@@ -231,18 +246,24 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 	osg::Vec3 cameraOffset(0, 0, 0);
 	osg::Vec3 cameraTargetPosition(0, 0, 0);
 	osg::Vec3 cameraToTarget(0, 0, 0);
-
+	float x, y, z;
 
 	computeNodeCenterAndRotation(nodeCenter, nodeRotation);
 
-	if(_mode == RB_MODE_RUBBER_BAND)
+	if (_mode == RB_MODE_TOP)
+	{
+		_cameraRotation = -90;
+		_cameraAngle = 90;
+		x = -_cameraDistance * (cosf(_cameraRotation*0.0174533) * cosf(_cameraAngle*0.0174533));
+		y = -_cameraDistance * (sinf(_cameraRotation*0.0174533) * cosf(_cameraAngle*0.0174533));
+		cameraOffset.set(x, y, _cameraDistance);  // Put a small number to prevent undefined camera angle
+	}
+	else if(_mode == RB_MODE_RUBBER_BAND)
 	{
 		cameraOffset.set(-_cameraDistance, 0.0, _cameraDistance * atan(_cameraAngle*0.0174533));
 	}
 	else
 	{
-		float x, y, z;
-
 		if(_mode == RB_MODE_FIXED)
 		{
 			_cameraRotation = 0;
@@ -281,7 +302,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 		cameraAcc = cameraToTarget * springFC - cameraVel * springDC;
 		cameraVel += cameraAcc * dt;
 
-		if (_mode == RB_MODE_FIXED || _mode == RB_MODE_ORBIT)
+		if (_mode == RB_MODE_FIXED || _mode == RB_MODE_ORBIT || _mode == RB_MODE_TOP)
 		{
 			_eye = nodeCenter + cameraTargetPosition;
 		}
@@ -292,7 +313,14 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 	}
 
 	// Create the view matrix
-	_matrix.makeLookAt(_eye, nodeCenter, up);
+	if (_mode == RB_MODE_TOP)
+	{
+		_matrix.makeLookAt(_eye, nodeCenter, osg::Vec3(nodeRotation*osg::Vec3(0, -1, 0)));
+	}
+	else
+	{
+		_matrix.makeLookAt(_eye, nodeCenter, up);
+	}
 
     return true;
 }

@@ -285,6 +285,10 @@ int ScenarioPlayer::InitViewer()
 		{
 			viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND_ORBIT);
 		}
+		else if (arg_str == "top")
+		{
+			viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_TOP);
+		}
 		else
 		{
 			LOG("Unsupported camera mode: %s - using default (orbit)", arg_str.c_str());
@@ -398,7 +402,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 't') ", "mode");
 	opt.AddOption("trails", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 't') ", "mode");
 	opt.AddOption("sensors", "Show sensor frustums (\"on\", \"off\" (default)) (toggle during simulation by press 'r') ", "mode");
-	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\") (toggle during simulation by press 'c') ", "mode");
+	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'c') ", "mode");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
 	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
 	opt.AddOption("headless", "Run without viewer");

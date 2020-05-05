@@ -218,6 +218,14 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 			vh->dyn_model->speed_, vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_,
 			vh->dyn_model->posX_, vh->dyn_model->posY_, vh->dyn_model->posZ_,
 			vh->dyn_model->heading_, vh->dyn_model->pitch_, 0);
+
+#if 0    
+		// Check distance 
+		roadmanager::Position distant_pos;
+		distant_pos.SetLanePos(227, -1, 40, 0);
+		roadmanager::PositionDiff diff;
+		bool found = vh->obj->pos_.Delta(distant_pos, diff);
+#endif
 	}
 }
 

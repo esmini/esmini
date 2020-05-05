@@ -878,7 +878,8 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 	if (cars_.size() == 1)
 	{
 		currentCarInFocus_ = 0;
-		rubberbandManipulator_->setTrackNode(cars_.back()->txNode_, true);
+		rubberbandManipulator_->setTrackNode(cars_.back()->txNode_, 
+			rubberbandManipulator_->getMode() == osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_TOP ? false : true);
 		nodeTrackerManipulator_->setTrackNode(cars_.back()->node_);
 	}
 	

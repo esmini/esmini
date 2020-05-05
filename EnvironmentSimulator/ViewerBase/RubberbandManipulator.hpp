@@ -25,12 +25,13 @@ class RubberbandManipulator : public osgGA::CameraManipulator
 {
 	public:
 
-		enum 
+		enum CAMERA_MODE
 		{
 			RB_MODE_ORBIT,
 			RB_MODE_FIXED,
 			RB_MODE_RUBBER_BAND,
 			RB_MODE_RUBBER_BAND_ORBIT,
+			RB_MODE_TOP,
 			RB_NUM_MODES
 		};
 
@@ -64,6 +65,8 @@ class RubberbandManipulator : public osgGA::CameraManipulator
         virtual void getUsage(osg::ApplicationUsage& usage) const;
 
 		void setMode(unsigned int mode);
+
+		int getMode() { return _mode; }
 
 		void computeNodeCenterAndRotation(osg::Vec3d& nodeCenter, osg::Quat& nodeRotation) const;
 		

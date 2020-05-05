@@ -1,1 +1,1 @@
-"../../bin/EgoSimulator" --window 50 50 1024 576  --osc ../../resources/xosc/synchronize.xosc --control internal --trails off
+"../../bin/EgoSimulator" --window 50 50 1024 576  --osc ../../resources/xosc/synchronize.xosc --control internal --trails off --camera_mode top
