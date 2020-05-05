@@ -71,32 +71,32 @@ using namespace roadmanager;
 
 double Polynomial::Evaluate(double s)
 {
-	double p = s / (s_max_);
+	double p = s * p_scale_;
 
 	return (a_ + p * b_ + p * p*c_ + p * p*p*d_);
 }
 
 double Polynomial::EvaluatePrim(double s)
 {
-	double p = s / (s_max_);
+	double p = s * p_scale_;
 
 	return (b_ + 2 * p*c_ + 3 * p*p*d_);
 }
 
 double Polynomial::EvaluatePrimPrim(double s)
 {
-	double p = s / (s_max_);
+	double p = s * p_scale_;
 
 	return (2 * c_ + 6 * p*d_);
 }
 
-void Polynomial::Set(double a, double b, double c, double d, double s_max)
+void Polynomial::Set(double a, double b, double c, double d, double p_scale)
 {
 	a_ = a;
 	b_ = b;
 	c_ = c;
 	d_ = d;
-	s_max_ = s_max;
+	p_scale_ = p_scale;
 }
 
 void Geometry::Print()
@@ -243,15 +243,8 @@ void ParamPoly3::Print()
 
 void ParamPoly3::EvaluateDS(double ds, double *x, double *y, double *h)
 {
-	double p = ds;
-
-	if (GetPRange() == ParamPoly3::P_RANGE_NORMALIZED)
-	{
-		p /= GetLength();
-	}
-
-	double u_local = poly3U_.Evaluate(p);
-	double v_local = poly3V_.Evaluate(p);
+	double u_local = poly3U_.Evaluate(ds);
+	double v_local = poly3V_.Evaluate(ds);
 
 	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
 	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());
@@ -260,7 +253,7 @@ void ParamPoly3::EvaluateDS(double ds, double *x, double *y, double *h)
 
 double ParamPoly3::EvaluateCurvatureDS(double ds)
 {
-	return poly3V_.EvaluatePrimPrim(ds) / poly3U_.EvaluatePrim(ds);;
+	return poly3V_.EvaluatePrimPrim(ds) / poly3U_.EvaluatePrim(ds);
 }
 
 void Elevation::Print()
@@ -311,8 +304,8 @@ void LaneWidth::Print()
 
 void LaneOffset::Print()
 {
-	LOG("LaneOffset s %.2f a %.4f b %.2f c %.2f d %.2f s_max %.2f length %.2f\n",
-		s_, polynomial_.GetA(), polynomial_.GetB(), polynomial_.GetC(), polynomial_.GetD(), polynomial_.GetSMax(), length_);
+	LOG("LaneOffset s %.2f a %.4f b %.2f c %.2f d %.2f length %.2f\n",
+		s_, polynomial_.GetA(), polynomial_.GetB(), polynomial_.GetC(), polynomial_.GetD(), length_);
 }
 
 double LaneOffset::GetLaneOffset(double s)
@@ -2058,12 +2051,12 @@ int RoadPath::Calculate(double &dist)
 		if (i == 0)
 		{
 			tmpDist = startPos_->GetS();  // distance to first road link is distance to start of road
-			link = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find first road link forward along vehicle direction
+			link = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
 		}
 		else
 		{
 			tmpDist = pivotRoad->GetLength() - startPos_->GetS();  // distance to end of road
-			link = pivotRoad->GetLink(LinkType::SUCCESSOR);
+			link = pivotRoad->GetLink(LinkType::SUCCESSOR);  // Find link to previous road or junction
 		}
 
 		// If only forward direction would be of interest, add something like:
@@ -3022,7 +3015,7 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 	double dist;
 	double distMin = std::numeric_limits<double>::infinity();
 	double sNorm;
-	double sNormMin;
+	double sNormMin = 0;
 	Geometry *geom, *current_geom;
 	Geometry *geomMin = 0;
 	Road *road, *current_road = 0;

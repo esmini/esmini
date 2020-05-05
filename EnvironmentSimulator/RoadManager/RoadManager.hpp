@@ -25,19 +25,17 @@ namespace roadmanager
 	class Polynomial
 	{
 	public:
-		Polynomial() : a_(0), b_(0), c_(0), d_(0), s_max_(1.0) {}
-		Polynomial(double a, double b, double c, double d, double s_max = 1) : a_(a), b_(b), c_(c), d_(d), s_max_(s_max) {}
-		void Set(double a, double b, double c, double d, double s_max = 1);
+		Polynomial() : a_(0), b_(0), c_(0), d_(0), p_scale_(1.0) {}
+		Polynomial(double a, double b, double c, double d, double p_scale = 1) : a_(a), b_(b), c_(c), d_(d), p_scale_(p_scale) {}
+		void Set(double a, double b, double c, double d, double p_scale = 1);
 		void SetA(double a) { a_ = a; }
 		void SetB(double b) { b_ = b; }
 		void SetC(double c) { c_ = c; }
 		void SetD(double d) { d_ = d; }
-		void SetSMax(double s_max) { s_max_ = s_max; }
 		double GetA() { return a_; }
 		double GetB() { return b_; }
 		double GetC() { return c_; }
 		double GetD() { return d_; }
-		double GetSMax() { return s_max_; }
 		double Evaluate(double s);
 		double EvaluatePrim(double s);
 		double EvaluatePrimPrim(double s);
@@ -47,7 +45,7 @@ namespace roadmanager
 		double b_;
 		double c_;
 		double d_;
-		double s_max_;
+		double p_scale_;
 	};
 
 
@@ -64,7 +62,7 @@ namespace roadmanager
 			GEOMETRY_TYPE_PARAM_POLY3,
 		};
 
-		Geometry() : s_(0.0), x_(0.0), y_(0), hdg_(0), length_(0), type_(GEOMETRY_TYPE_UNKNOWN) {}
+		Geometry() : s_(0.0), x_(0.0), y_(0), hdg_(0), length_(0), type_(GeometryType::GEOMETRY_TYPE_UNKNOWN) {}
 		Geometry(double s, double x, double y, double hdg, double length, GeometryType type) :
 			s_(s), x_(x), y_(y), hdg_(hdg), length_(length), type_(type) {}
 		virtual ~Geometry() {}
@@ -190,23 +188,19 @@ namespace roadmanager
 		ParamPoly3(
 			double s, double x, double y, double hdg, double length,
 			double aU, double bU, double cU, double dU, double aV, double bV, double cV, double dV, PRangeType p_range) :
-			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_PARAM_POLY3), p_range_(p_range)
+			Geometry(s, x, y, hdg, length, GeometryType::GEOMETRY_TYPE_PARAM_POLY3)
 		{
-			poly3U_.Set(aU, bU, cU, dU);
-			poly3V_.Set(aV, bV, cV, dV);
+			poly3U_.Set(aU, bU, cU, dU, p_range == PRangeType::P_RANGE_NORMALIZED ? 1.0/length : 1.0);
+			poly3V_.Set(aV, bV, cV, dV, p_range == PRangeType::P_RANGE_NORMALIZED ? 1.0/length : 1.0);
 		}
 		~ParamPoly3() {};
 
-		double GetPRange() { return p_range_; }
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
 
 		Polynomial poly3U_;
 		Polynomial poly3V_;
-
-	private:
-		int p_range_;
 	};
 
 

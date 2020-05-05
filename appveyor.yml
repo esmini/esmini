@@ -67,7 +67,7 @@ for:
           
           if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#skip_bins* ]]; 
           then 
-            echo "Skip create and push binary artifacts";
+            echo "Skip binary artifacts";
           else
             zip -r esmini-bin_ubuntu.zip bin EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt
           fi
@@ -113,7 +113,7 @@ for:
           
           if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#skip_bins* ]]; 
           then 
-            echo "Skip create and push binary artifacts";
+            echo "Skip binary artifacts";
           else
             zip -r esmini-bin_mac_catalina.zip bin EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
           fi
