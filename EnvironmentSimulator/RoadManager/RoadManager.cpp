@@ -255,7 +255,7 @@ void ParamPoly3::EvaluateDS(double ds, double *x, double *y, double *h)
 
 	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
 	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());
-	*h = GetHdg() + poly3V_.EvaluatePrim(p) / poly3U_.EvaluatePrim(p);
+	*h = GetHdg() + atan2(poly3V_.EvaluatePrim(ds), poly3U_.EvaluatePrim(ds));
 }
 
 double ParamPoly3::EvaluateCurvatureDS(double ds)
