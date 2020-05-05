@@ -17,9 +17,6 @@ cache:
     
 skip_commits:
   message: /#skip_build/
-  files:
-    - 'docs/*'
-    - '*.txt'
 
 before_build:
   - cmd: gitversion /l console /output buildserver
