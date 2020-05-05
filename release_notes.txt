@@ -30,3 +30,10 @@ The purpose of this document is to highlight changes breaking backward compatibi
 - Fixed timestep (--fixed_timestep <sec>). Enabling scenarios to be executed in split of a second and, by using the recording feature, it can be replayed in viewer afterwards. 
 - Threads (--threads). Put scenario execution into a separate thread, decoupled from the viewer. Example of potential use case: Make it possible to pause scenario while moving camera.
 - New keyboard shortcut commands, and some moved to new key. Please see run/readme.txt for complete set.
+
+2020-05-05 Version 1.4.6
+- Added heading to sensors so that one entity can have multiple sensors in different directions
+- Improved position Delta functionality. It will calculate shortest path and distance between two positions more generically and correctly.
+- Added road model (multi_intersections.xodr/osgb) with multiple junctions. Useful for testing the shortest path functionality.
+- Added new camera mode: top view (press 'k' multiple times to toggle or specify "--camera_mode top" as command line argument).
+- Some bugfixes. E.g. ParamPoly3 with Normalized parameter range.
