@@ -1066,10 +1066,20 @@ namespace roadmanager
 		std::vector<PathNode*> unvisited_;
 		Position *startPos_;
 		Position *targetPos_;
+		int direction_;  // direction of path from starting pos. 0==not set, 1==forward, 2==backward
 
 		RoadPath(Position* startPos, Position* targetPos) : startPos_(startPos), targetPos_(targetPos) {};
 		~RoadPath();
 
+		/**
+		Calculate shortest path between starting position and target position, 
+		using Dijkstra's algorithm https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+		it also calculates the length of the path, or distance between the positions
+		positive distance means that the shortest path was found in forward direction
+		negative distance means that the shortest path goes in opposite direction from the heading of the starting position
+		@param dist A reference parameter into which the calculated path distance is stored
+		@return 0 on success, -1 on failure e.g. path not found
+		*/
 		int Calculate(double &dist);
 	
 	private:

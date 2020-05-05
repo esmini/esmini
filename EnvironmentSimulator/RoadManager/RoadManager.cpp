@@ -2166,7 +2166,36 @@ int RoadPath::Calculate(double &dist)
 		unvisited_.erase(unvisited_.begin() + minIndex);
 	}
 
-	dist = tmpDist;
+	if (found)
+	{
+		// Find out whether the path goes forward or backwards from starting position
+		if (visited_.size() > 0)
+		{
+			RoadPath::PathNode* node = visited_.back();
+
+			while (node)
+			{
+				if (node->previous == 0)
+				{
+					// This is the first node - inspect whether it is in front or behind start position
+					if ((node->link == startRoad->GetLink(LinkType::PREDECESSOR) && 
+						abs(startPos_->GetHRelative()) > M_PI_2 && abs(startPos_->GetHRelative()) < 3 * M_PI / 2) ||
+						((node->link == startRoad->GetLink(LinkType::SUCCESSOR) &&
+						abs(startPos_->GetHRelative()) < M_PI_2 || abs(startPos_->GetHRelative()) > 3 * M_PI / 2)))
+					{
+						direction_ = 1;
+					}
+					else
+					{
+						direction_ = -1;
+					}
+				}
+				node = node->previous;
+			}
+		}
+	}
+
+	dist = direction_ * tmpDist;
 
 	return found ? 0 : -1;
 }
