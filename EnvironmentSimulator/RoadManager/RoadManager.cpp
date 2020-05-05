@@ -2929,8 +2929,8 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 	geomMin->EvaluateDS(dsMin, &x, &y, &h_road_);
 	
 	// Apply lane offset
-	x += roadMin->GetLaneOffset(dsMin) * cos(h_road_ + M_PI_2);
-	y += roadMin->GetLaneOffset(dsMin) * sin(h_road_ + M_PI_2);
+	x += roadMin->GetLaneOffset(sMin) * cos(h_road_ + M_PI_2);
+	y += roadMin->GetLaneOffset(sMin) * sin(h_road_ + M_PI_2);
 	distMin = PointDistance2D(x3, y3, x, y);
 
 	// Check whether the point is left or right side of road
