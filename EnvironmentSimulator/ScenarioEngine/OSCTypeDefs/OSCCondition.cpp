@@ -59,7 +59,11 @@ bool EvaluateRule(double a, double b, Rule rule)
 
 bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge)
 {
-	if (evaluated_ && edge == OSCCondition::ConditionEdge::ANY)
+	if (edge == OSCCondition::ConditionEdge::NONE)
+	{
+		return new_value;
+	}
+	else if (evaluated_ && edge == OSCCondition::ConditionEdge::RISING_OR_FALLING)
 	{
 		return new_value != old_value;
 	}
@@ -95,9 +99,13 @@ std::string Edge2Str(OSCCondition::ConditionEdge edge)
 	{
 		return "Rising";
 	}
-	else if (edge == OSCCondition::ConditionEdge::ANY)
+	else if (edge == OSCCondition::ConditionEdge::RISING_OR_FALLING)
 	{
-		return "Any";
+		return "RisingOrFalling";
+	}
+	else if (edge == OSCCondition::ConditionEdge::NONE)
+	{
+		return "NONE";
 	}
 
 	return "Unknown edge";
@@ -117,11 +125,10 @@ bool EvalDone(bool result, TrigByEntity::TriggeringEntitiesRule rule)
 	return false;
 }
 
-bool TrigByState::Evaluate(StoryBoard *storyBoard, double sim_time)
+bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
 	(void)storyBoard;
 	(void)sim_time;
-	bool result = false;
 
 	if (timer_.Started())
 	{
@@ -134,392 +141,142 @@ bool TrigByState::Evaluate(StoryBoard *storyBoard, double sim_time)
 		return false;
 	}
 
+	bool result = CheckCondition(storyBoard, sim_time);
+	bool trig = CheckEdge(result, last_result_, edge_);
+
 	last_result_ = result;
 	evaluated_ = true;
 
-	if (result && delay_ > 0)
+	if (trig && delay_ > 0)
 	{
 		timer_.Start();
 		LOG("Timer %.2fs started", delay_);
 		return false;
+	}
+
+	return trig;
+}
+
+bool ConditionGroup::Evaluate(StoryBoard *storyBoard, double sim_time)
+{
+	if (condition_.size() == 0)
+	{
+		return false;
+	}
+
+	bool result = true;
+	for (size_t i = 0; i < condition_.size(); i++)
+	{
+		// AND operator, all must be true
+		result &= condition_[i]->Evaluate(storyBoard, sim_time);
 	}
 
 	return result;
 }
 
-bool TrigAtStart::Evaluate(StoryBoard *storyBoard, double sim_time)
+bool Trigger::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
-	(void)sim_time;
-	bool trig = false;
-
-	if (timer_.Started())
-	{
-		if (timer_.DurationS() > delay_)
-		{
-			LOG("Timer expired at %.2f seconds", timer_.DurationS());
-			timer_.Reset();
-			return true;
-		}
-		return false;
-	}
-
-	if (element_type_ == StoryElementType::SCENE)
-	{
-		if (edge_ == ConditionEdge::RISING || edge_ == ConditionEdge::ANY)
-		{
-			trig = true;
-		}
-	}
-	else if (element_type_ == StoryElementType::ACTION)
-	{
-		OSCAction *action = storyBoard->FindActionByName(element_name_);
-
-		if ( action )
-		{
-			OSCAction::State state = action->state_;
-			//LOG("Action %s state %d", action->name_.c_str(), state);
-			if(edge_ == ConditionEdge::RISING && state == OSCAction::State::ACTIVATED)
-			{
-				trig = true;
-			}
-			else if (edge_ == ConditionEdge::FALLING && state == OSCAction::State::DEACTIVATED)
-			{
-				trig = true;
-			}
-			else if(edge_ == ConditionEdge::ANY && (state == OSCAction::State::ACTIVATED || state == OSCAction::State::DEACTIVATED))
-			{
-				trig = true;
-			}
-		}
-	}
-	else if (element_type_ == StoryElementType::ACT)
-	{
-		Act *act = storyBoard->FindActByName(element_name_);
-		
-		if (act)
-		{
-			Act::State state = act->state_;
-			if (edge_ == ConditionEdge::RISING)
-			{
-				if (state == Act::State::ACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else if (edge_ == ConditionEdge::FALLING)
-			{
-				if (state == Act::State::DEACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else if (edge_ == ConditionEdge::ANY)
-			{
-				if (state == Act::State::ACTIVATED || state == Act::State::DEACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else
-			{
-				LOG("Unknown edge type: %d", edge_);
-			}
-		}
-	}
-	else if (element_type_ == StoryElementType::EVENT)
-	{
-		Event *event = storyBoard->FindEventByName(element_name_);
-
-		if (event)
-		{
-			Event::State state = event->state_;
-			if (edge_ == ConditionEdge::RISING)
-			{
-				if(state == Event::State::ACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else if (edge_ == ConditionEdge::FALLING)
-			{
-				if (state == Event::State::DEACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else if (edge_ == ConditionEdge::ANY)
-			{
-				if (state == Event::State::ACTIVATED || state == Event::State::DEACTIVATED)
-				{
-
-					trig = true;
-				}
-			}
-			else
-			{
-				LOG("Unknown edge type: %d", edge_);
-			}
-		}
-	}
-	else
-	{
-		LOG("Story element type %d not supported yet", element_type_);
-	}
-
-	evaluated_ = true;
-
-	if (trig)
-	{
-		LOG("Trigged %s (edge: %s", name_.c_str(), Edge2Str(edge_).c_str());
-	}
-
-	if (trig && delay_ > 0)
-	{
-		timer_.Start();
-		LOG("Timer %.2fs started", delay_);
-		return false;
-	}
-
-	return trig;
-}
-
-bool TrigAfterTermination::Evaluate(StoryBoard *storyBoard, double sim_time)
-{
-	(void)sim_time;
-	bool trig = false;
-
-	if (timer_.Started())
-	{
-		if (timer_.DurationS() > delay_)
-		{
-			LOG("Timer expired at %.2f seconds", timer_.DurationS());
-			timer_.Reset();
-			return true;
-		}
-		return false;
-	}
-
-	if (element_type_ == StoryElementType::SCENE)
-	{
-		trig = false;
-	}
-	else if (element_type_ == StoryElementType::ACTION)
-	{
-		OSCAction *action = storyBoard->FindActionByName(element_name_);
-
-		if (action)
-		{
-			OSCAction::State state = action->state_;
-			if (edge_ == ConditionEdge::RISING)
-			{
-				if (state == OSCAction::State::DEACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else if (edge_ == ConditionEdge::FALLING)
-			{
-				if(state == OSCAction::State::ACTIVATED)
-				{ 
-					trig = true;
-				}
-			}
-			else if (edge_ == ConditionEdge::ANY)
-			{
-				if (state == OSCAction::State::ACTIVATED || state == OSCAction::State::DEACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else
-			{
-				LOG("Unknown edge type: %d", edge_);
-			}
-		}
-	}
-	else if (element_type_ == StoryElementType::ACT)
-	{
-		Act *act = storyBoard->FindActByName(element_name_);
-
-		if (act)
-		{
-			Act::State state = act->state_;
-			if (edge_ == ConditionEdge::RISING)
-			{
-				if (state == Act::State::DEACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else if (edge_ == ConditionEdge::FALLING)
-			{
-				if (state == Act::State::ACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else if (edge_ == ConditionEdge::ANY)
-			{
-				if (state == Act::State::ACTIVATED || state == Act::State::DEACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else
-			{
-				LOG("Unknown edge type: %d", edge_);
-			}
-		}
-	}
-	else if (element_type_ == StoryElementType::EVENT)
-	{
-		Event *event = storyBoard->FindEventByName(element_name_);
-
-		if (event)
-		{
-			Event::State state = event->state_;
-			if (edge_ == ConditionEdge::RISING)
-			{
-				if (state == Event::DEACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else if (edge_ == ConditionEdge::FALLING)
-			{
-				if (state == Event::State::ACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else if (edge_ == ConditionEdge::ANY)
-			{
-				if (state == Event::State::ACTIVATED || state == Event::State::DEACTIVATED)
-				{
-					trig = true;
-				}
-			}
-			else
-			{
-				LOG("Unknown edge type: %d", edge_);
-			}
-		}
-	}
-	else
-	{
-		LOG("Story element type %d not supported yet", element_type_);
-	}
-
-	evaluated_ = true;
-
-	if (trig)
-	{
-		LOG("Trigged %s (edge: %s)", name_.c_str(), Edge2Str(edge_).c_str());
-	}
-
-	if (trig && delay_ > 0)
-	{
-		timer_.Start();
-		LOG("Timer %.2fs started", delay_);
-		return false;
-	}
-
-	return trig;
-}
-
-bool TrigByValue::Evaluate(StoryBoard *storyBoard, double sim_time)
-{
-	(void)storyBoard;
-	(void)sim_time;
-
-	if (timer_.Started())
-	{
-		if (timer_.DurationS() > delay_)
-		{
-			LOG("Timer expired at %.2f seconds", timer_.DurationS());
-			timer_.Reset();
-			return true;
-		}
-		return false;
-	}
-
 	bool result = false;
 
-	last_result_ = result;
-	evaluated_ = true;
-
-	if (result && delay_ > 0)
+	for (size_t i = 0; i < conditionGroup_.size(); i++)
 	{
-		timer_.Start();
-		LOG("Timer %.2fs started", delay_);
-		return false;
+		// OR operator, at least one must be true
+		result |= conditionGroup_[i]->Evaluate(storyBoard, sim_time);
 	}
 
 	return result;
 }
 
-bool TrigBySimulationTime::Evaluate(StoryBoard *storyBoard, double sim_time)
+bool TrigByState::CheckCondition(StoryBoard *storyBoard, double sim_time)
+{
+	(void)sim_time;
+	bool result = false;
+	StoryBoardElement *element = 0;
+
+
+	if (element_type_ == StoryBoardElement::ElementType::STORY)
+	{
+		if (evaluated_ == false)
+		{
+			result = state_ == CondElementState::START_TRANSITION;
+		}
+		else
+		{
+			result = state_ == CondElementState::RUNNING;
+		}
+	}
+	else
+	{
+		if (element_type_ == StoryBoardElement::ElementType::ACTION)
+		{
+			element = storyBoard->FindActionByName(element_name_);
+		}
+		else if (element_type_ == StoryBoardElement::ElementType::ACT)
+		{
+			element = storyBoard->FindActByName(element_name_);
+		}
+		else if (element_type_ == StoryBoardElement::ElementType::EVENT)
+		{
+			element = storyBoard->FindEventByName(element_name_);
+		}
+		else
+		{
+			LOG("Story element type %d not supported yet", element_type_);
+			return false;
+		}
+
+		if (state_ == CondElementState::STANDBY)
+		{
+			result = element->state_ == StoryBoardElement::State::STANDBY;
+		}
+		else if (state_ == CondElementState::RUNNING)
+		{
+			result = element->state_ == StoryBoardElement::State::RUNNING;
+		}
+		else if (state_ == CondElementState::COMPLETE)
+		{
+			result = element->state_ == StoryBoardElement::State::COMPLETE;
+		}
+		else if (state_ == CondElementState::END_TRANSITION)
+		{
+			result = element->transition_ == StoryBoardElement::Transition::END_TRANSITION;
+		}
+		else if (state_ == CondElementState::SKIP_TRANSITION)
+		{
+			result = element->transition_ == StoryBoardElement::Transition::SKIP_TRANSITION;
+		}
+		else if (state_ == CondElementState::START_TRANSITION)
+		{
+			result = element->transition_ == StoryBoardElement::Transition::START_TRANSITION;
+		}
+		else if (state_ == CondElementState::STOP_TRANSITION)
+		{
+			result = element->transition_ == StoryBoardElement::Transition::STOP_TRANSITION;
+		}
+		else
+		{
+			LOG("Invalid state: %d", state_);
+		}
+		//printf("state: %d\n", element->state_);
+	}
+
+	return result;
+}
+
+bool TrigBySimulationTime::CheckCondition(StoryBoard *storyBoard, double sim_time)
 {
 	(void)storyBoard;
 
-	bool result = false;
-	bool trig = false;
-	
-	if (timer_.Started())
-	{
-		if (timer_.DurationS() > delay_)
-		{
-			LOG("Timer expired at %.2f seconds", timer_.DurationS());
-			timer_.Reset();
-			return true;
-		}
-		return false;
-	}
-
-	// Special case for simulation time: Since many scenarios use simtime == 0 as start condition, 
-	// consider simtime == 0 as a change (rising from false) by setting evaluated_ = true from start
-	evaluated_ = true;
-
-	result = EvaluateRule(sim_time, value_, rule_);
-
-	trig = CheckEdge(result, last_result_, edge_);
-
-	if (trig)
-	{
-		LOG("Trigged %s (sim_time: %.2f >= condition: %.2f result: %d last_result: %d edge: %s)", name_.c_str(), sim_time, value_, result, last_result_, Edge2Str(edge_).c_str());
-	}
-
-	last_result_ = result;
-
-	if (trig && delay_ > 0)
-	{
-		timer_.Start();
-		LOG("Timer %.2fs started", delay_);
-		return false;
-	}
-
-	return trig;
+	return EvaluateRule(sim_time, value_, rule_);
 }
 
-bool TrigByTimeHeadway::Evaluate(StoryBoard *storyBoard, double sim_time)
+bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 {
 	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
-	bool trig = false;
 	double rel_dist, hwt;
-
-	if (timer_.Started())
-	{
-		if (timer_.DurationS() > delay_)
-		{
-			LOG("Timer expired at %.2f seconds", timer_.DurationS());
-			timer_.Reset();
-			return true;
-		}
-		return false;
-	}
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
@@ -538,9 +295,8 @@ bool TrigByTimeHeadway::Evaluate(StoryBoard *storyBoard, double sim_time)
 			hwt = fabs(rel_dist / object_->speed_);
 
 			result = EvaluateRule(hwt, value_, rule_);
-			trig = CheckEdge(result, last_result_, edge_);
 
-			if (EvalDone(trig, triggering_entity_rule_))
+			if (EvalDone(result, triggering_entity_rule_))  
 			{
 				break;
 			}
@@ -548,44 +304,16 @@ bool TrigByTimeHeadway::Evaluate(StoryBoard *storyBoard, double sim_time)
 
 	}
 
-	//LOG("Trig? %s hwt: %.2f %s %.2f, %s (dist: %.2f)", name_.c_str(), hwt, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str(), rel_dist);
-	if (trig)
-	{
-		LOG("Trigged %s hwt: %.2f %s %.2f, %s", name_.c_str(), hwt, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
-	}
-
-	last_result_ = result;
-	evaluated_ = true;
-
-	if (trig && delay_ > 0)
-	{
-		timer_.Start();
-		LOG("Timer %.2fs started", delay_);
-		return false;
-	}
-
-	return trig;
+	return result;
 }
 
-bool TrigByReachPosition::Evaluate(StoryBoard *storyBoard, double sim_time)
+bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time)
 {
 	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
-	bool trig = false;
 	double x, y;
-
-	if (timer_.Started())
-	{
-		if (timer_.DurationS() > delay_)
-		{
-			LOG("Timer expired at %.2f seconds", timer_.DurationS());
-			timer_.Reset();
-			return true;
-		}
-		return false;
-	}
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
@@ -594,104 +322,46 @@ bool TrigByReachPosition::Evaluate(StoryBoard *storyBoard, double sim_time)
 			result = true;
 		}
 
-		if (EvalDone(trig, triggering_entity_rule_))
+		if (EvalDone(result, triggering_entity_rule_))
 		{
 			break;
 		}
 	}
 
-	trig = CheckEdge(result, last_result_, edge_);
-
-	last_result_ = result;
-	evaluated_ = true;
-
-	if (trig)
-	{
-		LOG("Trigged %s (result: %d last_result: %d edge: %s", name_.c_str(), result, last_result_, Edge2Str(edge_).c_str());
-	}
-
-	if (trig && delay_ > 0)
-	{
-		timer_.Start();
-		LOG("Timer %.2fs started", delay_);
-		return false;
-	}
-
-	return trig;
+	return result;
 }
 
-bool TrigByDistance::Evaluate(StoryBoard *storyBoard, double sim_time)
+bool TrigByDistance::CheckCondition(StoryBoard *storyBoard, double sim_time)
 {
 	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
-	bool trig = false;
 	double x, y;
 	double dist;
-
-	if (timer_.Started())
-	{
-		if (timer_.DurationS() > delay_)
-		{
-			LOG("Timer expired at %.2f seconds", timer_.DurationS());
-			timer_.Reset();
-			return true;
-		}
-		return false;
-	}
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		dist = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y));
 
-		if (EvalDone(trig, triggering_entity_rule_))
+		result = EvaluateRule(dist, value_, rule_);
+
+		if (EvalDone(result, triggering_entity_rule_))
 		{
 			break;
 		}
 	}
-
-	result = EvaluateRule(dist, value_, rule_);
-
-	trig = CheckEdge(result, last_result_, edge_);
-
-	last_result_ = result;
-	evaluated_ = true;
-
-	if (trig)
-	{
-		LOG("Trigged %s (dist: %.2f condition: %.2f result: %d last_result: %d edge: %s", name_.c_str(), dist, value_, result, last_result_, Edge2Str(edge_).c_str());
-	}
-
-	if (trig && delay_ > 0)
-	{
-		timer_.Start();
-		LOG("Timer %.2fs started", delay_);
-		return false;
-	}
-
-	return trig;
+	
+	return result;
 }
 
-bool TrigByRelativeDistance::Evaluate(StoryBoard *storyBoard, double sim_time)
+bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_time)
 {
 	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
-	bool trig = false;
 	double rel_dist, rel_intertial_dist, x, y;
-
-	if (timer_.Started())
-	{
-		if (timer_.DurationS() > delay_)
-		{
-			LOG("Timer expired at %.2f seconds", timer_.DurationS());
-			timer_.Reset();
-			return true;
-		}
-		return false;
-	}
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
@@ -715,28 +385,32 @@ bool TrigByRelativeDistance::Evaluate(StoryBoard *storyBoard, double sim_time)
 		}
 
 		result = EvaluateRule(rel_dist, value_, rule_);
-		trig = CheckEdge(result, last_result_, edge_);
+
 		if (EvalDone(result, triggering_entity_rule_))
 		{
 			break;
 		}
 	}
 
-	//LOG("RelDist Trig? %s rel_dist: %.2f %s %.2f, %s", name_.c_str(), rel_dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
-	if (trig)
+	return result;
+}
+
+bool TrigByTraveledDistance::CheckCondition(StoryBoard* storyBoard, double sim_time)
+{
+	(void)storyBoard;
+	(void)sim_time;
+
+	bool result = false;
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		LOG("Trigged %s rel_dist: %.2f %s %.2f, %s (%d, %d)", name_.c_str(), rel_dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str(), result, last_result_);
+		result = triggering_entities_.entity_[i].object_->odometer_ >= value_;
+
+		if (EvalDone(result, triggering_entity_rule_))
+		{
+			break;
+		}
 	}
 
-	last_result_ = result;
-	evaluated_ = true;
-
-	if (trig && delay_ > 0)
-	{
-		timer_.Start();
-		LOG("Timer %.2fs started", delay_);
-		return false;
-	}
-
-	return trig;
+	return result;
 }

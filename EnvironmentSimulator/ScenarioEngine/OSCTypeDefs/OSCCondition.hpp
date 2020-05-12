@@ -18,6 +18,7 @@
 #include <math.h>
 #include "OSCCommon.hpp"
 #include "CommonMini.hpp"
+#include "OSCAction.hpp"
 #include "Entities.hpp"
 #include "OSCPosition.hpp"
 
@@ -59,7 +60,8 @@ namespace scenarioengine
 		{
 			RISING,
 			FALLING,
-			ANY,
+			RISING_OR_FALLING,
+			NONE,
 			UNDEFINED
 		} ConditionEdge;
 
@@ -71,10 +73,27 @@ namespace scenarioengine
 		ConditionEdge edge_;
 		Timer timer_;
 
-		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false), last_result_(false), edge_(ConditionEdge::ANY) {}
+		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false), last_result_(false), edge_(ConditionEdge::NONE) {}
 
-		virtual bool Evaluate(StoryBoard *storyBoard, double sim_time) = 0;
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
+		virtual bool CheckCondition(StoryBoard *storyBoard, double sim_time) = 0;
 		bool CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge);
+	};
+
+	class ConditionGroup
+	{
+	public:
+		std::vector<OSCCondition*> condition_;
+
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
+	};
+
+	class Trigger
+	{
+	public:
+		std::vector<ConditionGroup*> conditionGroup_;
+
+		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByEntity : public OSCCondition
@@ -103,6 +122,7 @@ namespace scenarioengine
 			DISTANCE,
 			RELATIVE_DISTANCE,
 			REACH_POSITION,
+			TRAVELED_DISTANCE,
 			// not complete at all
 		} EntityConditionType;
 
@@ -129,7 +149,7 @@ namespace scenarioengine
 
 		TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
 
-		bool Evaluate(StoryBoard *storyBoard, double sim_time);
+		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByReachPosition : public TrigByEntity
@@ -140,7 +160,7 @@ namespace scenarioengine
 
 		TrigByReachPosition() : TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
 
-		bool Evaluate(StoryBoard *storyBoard, double sim_time);
+		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByDistance : public TrigByEntity
@@ -154,7 +174,17 @@ namespace scenarioengine
 
 		TrigByDistance() : TrigByEntity(TrigByEntity::EntityConditionType::DISTANCE) {}
 
-		bool Evaluate(StoryBoard *storyBoard, double sim_time);
+		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
+	};
+
+	class TrigByTraveledDistance : public TrigByEntity
+	{
+	public:
+		double value_;
+
+		TrigByTraveledDistance() : value_(0), TrigByEntity(TrigByEntity::EntityConditionType::TRAVELED_DISTANCE) {}
+
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
 	};
 
 	class TrigByRelativeDistance : public TrigByEntity
@@ -175,63 +205,35 @@ namespace scenarioengine
 
 		TrigByRelativeDistance() : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE) {}
 
-		bool Evaluate(StoryBoard *storyBoard, double sim_time);
+		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByState : public OSCCondition
 	{
 	public:
-		typedef enum
-		{
-			AT_START,
-			AFTER_TERMINATION,
-		} Type;
 
 		typedef enum
 		{
-			ACT,
-			SCENE,
-			MANEUVER,
-			EVENT,
-			ACTION,
-			UNDEFINED
-		} StoryElementType;
+			STANDBY,
+			RUNNING,
+			COMPLETE,
+			UNDEFINED_ELEMENT_STATE,
+			START_TRANSITION,  
+			END_TRANSITION,
+			STOP_TRANSITION,
+			SKIP_TRANSITION,
+			COMPLETE_TRANSITION,
+			UNDEFINED_ELEMENT_TRANSITION
+		} CondElementState;
 
-		Type type_;
+		CondElementState state_;
+		StoryBoardElement::ElementType element_type_;
 		std::string element_name_;
 
-		TrigByState(Type type) : OSCCondition(BY_STATE), type_(type) {}
+		TrigByState(CondElementState state, StoryBoardElement::ElementType element_type, std::string element_name) :
+			OSCCondition(BY_STATE), state_(state), element_type_(element_type), element_name_(element_name) {}
 
-		bool Evaluate(StoryBoard *storyBoard, double sim_time);
-	};
-
-	class TrigAtStart : public TrigByState
-	{
-	public:
-		StoryElementType element_type_;
-
-		TrigAtStart() : TrigByState(TrigByState::Type::AT_START) {}
-
-		bool Evaluate(StoryBoard *storyBoard, double sim_time);
-	};
-
-	class TrigAfterTermination : public TrigByState
-	{
-	public:
-		typedef enum
-		{
-			END,
-			CANCEL,
-			ANY,
-			UNDEFINED
-		} AfterTerminationRule;
-
-		AfterTerminationRule rule_;
-		StoryElementType element_type_;
-
-		TrigAfterTermination() : TrigByState(TrigByState::Type::AFTER_TERMINATION) {}
-
-		bool Evaluate(StoryBoard *storyBoard, double sim_time);
+		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByValue : public OSCCondition
@@ -249,8 +251,6 @@ namespace scenarioengine
 		Rule rule_;
 
 		TrigByValue(Type type) : OSCCondition(BY_VALUE), type_(type) {}
-
-		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigBySimulationTime : public TrigByValue
@@ -260,7 +260,7 @@ namespace scenarioengine
 
 		TrigBySimulationTime() : TrigByValue(TrigByValue::Type::TIME_OF_DAY) {}
 
-		bool Evaluate(StoryBoard *storyBoard, double sim_time);
+		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
 	};
 
 }

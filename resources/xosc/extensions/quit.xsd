@@ -1,5 +1,0 @@
-<xsd:complexType name="OSCGlobalAction">
-    <xsd:choice>
-        <xsd:element name="EXT_Quit" />
-    </xsd:choice>
-</xsd:complexType>

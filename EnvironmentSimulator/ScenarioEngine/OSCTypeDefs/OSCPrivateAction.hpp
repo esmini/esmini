@@ -38,14 +38,21 @@ namespace scenarioengine
 			LAT_LANE_OFFSET,
 			LAT_DISTANCE,
 			VISIBILITY,
-			MEETING_ABSOLUTE,
-			MEETING_RELATIVE,
 			AUTONOMOUS,
 			CONTROLLER,
 			POSITION,
 			FOLLOW_ROUTE,
+			FOLLOW_TRAJECTORY,
 			SYNCHRONIZE
 		} Type;
+
+		typedef enum
+		{
+			RATE,
+			TIME,
+			DISTANCE,
+			DIMENSION_UNDEFINED
+		} DynamicsDimension;
 
 		typedef enum
 		{
@@ -53,26 +60,25 @@ namespace scenarioengine
 			CUBIC,
 			SINUSOIDAL,
 			STEP,
-			UNDEFINED
+			SHAPE_UNDEFINED
 		} DynamicsShape;
 
 		class TransitionDynamics
 		{
 		public:
 			DynamicsShape shape_;
+			DynamicsDimension dimension_;
+			double target_value_;
 
 			double Evaluate(double factor, double start_value, double end_value);  // 0 = start_value, 1 = end_value
 
-			TransitionDynamics() : shape_(DynamicsShape::STEP) {}
+			TransitionDynamics() : shape_(DynamicsShape::STEP), dimension_(DynamicsDimension::TIME), target_value_(0) {}
 		};
 
 		Type type_;
 		Object *object_;
 
-		OSCPrivateAction(OSCPrivateAction::Type type) : OSCAction(OSCAction::BaseType::PRIVATE), type_(type)
-		{
-			LOG("");
-		}
+		OSCPrivateAction(OSCPrivateAction::Type type) : OSCAction(OSCAction::BaseType::PRIVATE), type_(type) {}
 
 		virtual void print()
 		{
@@ -91,19 +97,7 @@ namespace scenarioengine
 	{
 	public:
 
-		typedef enum
-		{
-			RATE,
-			TIME,
-			DISTANCE
-		} Timing;
-
-		struct
-		{
-			Timing timing_type_;
-			double timing_target_value_;
-			TransitionDynamics transition_;
-		} dynamics_;
+		TransitionDynamics transition_dynamics_;
 
 		class Target
 		{
@@ -159,17 +153,15 @@ namespace scenarioengine
 		double start_speed_;
 		double elapsed_;
 
-		LongSpeedAction() : OSCPrivateAction(OSCPrivateAction::Type::LONG_SPEED), target_(0)
+		LongSpeedAction() : OSCPrivateAction(OSCPrivateAction::Type::LONG_SPEED), target_(0), start_speed_(0)
 		{
-			dynamics_.timing_type_ = Timing::TIME;  // Make default
-			dynamics_.timing_target_value_ = 0.0;
 			elapsed_ = 0;
 		}
 
 		LongSpeedAction(const LongSpeedAction &action) : OSCPrivateAction(OSCPrivateAction::Type::LONG_SPEED)
 		{
 			target_ = action.target_;
-			dynamics_ = action.dynamics_;
+			transition_dynamics_ = action.transition_dynamics_;
 			elapsed_ = action.elapsed_;
 			start_speed_ = action.start_speed_;
 		}
@@ -180,9 +172,9 @@ namespace scenarioengine
 			return new_action;
 		}
 		
-		void Trig();
+		void Start();
 
-		void Step(double dt);
+		void Step(double dt, double simTime);
 
 		void print()
 		{
@@ -233,9 +225,9 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Trig();
+		void Start();
 
-		void Step(double dt);
+		void Step(double dt, double simTime);
 
 		void print()
 		{
@@ -249,18 +241,7 @@ namespace scenarioengine
 	class LatLaneChangeAction : public OSCPrivateAction
 	{
 	public:
-		typedef enum
-		{
-			TIME,
-			DISTANCE
-		} Timing;
-
-		struct
-		{
-			Timing timing_type_;
-			double timing_target_value_;
-			TransitionDynamics transition_;
-		} dynamics_;
+		TransitionDynamics transition_dynamics_;
 
 		class Target
 		{
@@ -288,7 +269,7 @@ namespace scenarioengine
 		public:
 			Object *object_;
 
-			TargetRelative() : Target(Target::Type::RELATIVE) {}
+			TargetRelative() : Target(Target::Type::RELATIVE), object_(0) {}
 		};
 
 		Target *target_;
@@ -297,16 +278,15 @@ namespace scenarioengine
 		int target_lane_id_;
 		double elapsed_;
 
-		LatLaneChangeAction(LatLaneChangeAction::Timing timing_type = Timing::TIME) : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_CHANGE)
+		LatLaneChangeAction(LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME) : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_CHANGE)
 		{
-			dynamics_.timing_type_ = timing_type;
-			dynamics_.timing_target_value_ = 0.0;
+			transition_dynamics_.dimension_ = timing_type;
 			elapsed_ = 0;
 		}
 
 		LatLaneChangeAction(const LatLaneChangeAction &action) : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_CHANGE)
 		{
-			dynamics_ = action.dynamics_;
+			transition_dynamics_ = action.transition_dynamics_;
 			target_ = action.target_;
 			start_t_ = action.start_t_;
 			target_lane_offset_ = action.target_lane_offset_;
@@ -320,9 +300,9 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt);
+		void Step(double dt, double simTime);
 
-		void Trig();
+		void Start();
 
 	};
 
@@ -392,106 +372,8 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Trig();
-		void Step(double dt);
-	};
-
-	class MeetingAbsoluteAction : public OSCPrivateAction
-	{
-	public:
-		typedef enum
-		{
-			STRAIGHT,
-			ROUTE
-		} MeetingPositionMode;
-
-		MeetingPositionMode mode_;
-		roadmanager::Position *target_position_;
-		double time_to_destination_;
-
-		MeetingAbsoluteAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_ABSOLUTE) {}
-
-		MeetingAbsoluteAction(const MeetingAbsoluteAction &action) : OSCPrivateAction(OSCPrivateAction::Type::MEETING_ABSOLUTE)
-		{
-			mode_ = action.mode_;
-			target_position_ = action.target_position_;
-			time_to_destination_ = action.time_to_destination_;
-		}
-
-		OSCPrivateAction* Copy()
-		{
-			MeetingAbsoluteAction *new_action = new MeetingAbsoluteAction(*this);
-			return new_action;
-		}
-
-		void Step(double dt)
-		{
-			(void)dt;
-			LOG("Step %s", object_->name_.c_str());
-		}
-
-		void Trig()
-		{
-			if (object_->control_ == Object::Control::EXTERNAL || 
-				object_->control_ == Object::Control::HYBRID_EXTERNAL)
-			{
-				// motion control handed over 
-				return;
-			}
-
-			OSCAction::Trig();
-		}
-	};
-
-	class MeetingRelativeAction : public OSCPrivateAction
-	{
-	public:
-		typedef enum
-		{
-			STRAIGHT,
-			ROUTE
-		} MeetingPositionMode;
-
-		MeetingPositionMode mode_;
-		roadmanager::Position *own_target_position_;
-
-		Object *relative_object_;
-		roadmanager::Position *relative_target_position_;
-
-		double offsetTime_;
-		bool continuous_;
-
-		MeetingRelativeAction() : OSCPrivateAction(OSCPrivateAction::Type::MEETING_RELATIVE) {}
-
-		MeetingRelativeAction(const MeetingRelativeAction &action) : OSCPrivateAction(OSCPrivateAction::Type::MEETING_RELATIVE)
-		{
-			mode_ = action.mode_;
-			own_target_position_ = action.own_target_position_;
-			relative_object_ = action.relative_object_;
-			relative_target_position_ = action.relative_target_position_;
-			offsetTime_ = action.offsetTime_;
-			continuous_ = action.continuous_;
-		}
-
-		OSCPrivateAction* Copy()
-		{
-			MeetingRelativeAction *new_action = new MeetingRelativeAction(*this);
-			return new_action;
-		}
-
-		void Step(double dt);
-
-		void Trig()
-		{
-			if (object_->control_ == Object::Control::EXTERNAL ||
-				object_->control_ == Object::Control::HYBRID_EXTERNAL)
-			{
-				// motion control handed over 
-				return;
-			}
-
-			OSCAction::Trig();
-		}
+		void Start();
+		void Step(double dt, double simTime);
 	};
 
 	class SynchronizeAction : public OSCPrivateAction
@@ -528,9 +410,9 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt);
+		void Step(double dt, double simTime);
 
-		void Trig()
+		void Start()
 		{
 			if (object_->control_ == Object::Control::EXTERNAL ||
 				object_->control_ == Object::Control::HYBRID_EXTERNAL)
@@ -539,7 +421,7 @@ namespace scenarioengine
 				return;
 			}
 
-			OSCAction::Trig();
+			OSCAction::Start();
 		}
 
 	private:
@@ -585,9 +467,10 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt)
+		void Step(double dt, double simTime)
 		{
 			(void)dt;
+			(void)simTime;
 			object_->pos_.CopyRMPos(position_->GetRMPos());
 			if (position_->type_ != OSCPosition::PositionType::ROUTE)
 			{
@@ -599,11 +482,7 @@ namespace scenarioengine
 			OSCAction::Stop();
 		}
 
-		void Trig()
-		{
-			// Allow even for external control
-			OSCAction::Trig();
-		}
+		void Start();
 	};
 
 	class FollowRouteAction : public OSCPrivateAction
@@ -624,12 +503,51 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt)
+		void Step(double dt, double simTime)
 		{
 			(void)dt;
+			(void)simTime;
 		}
 
-		void Trig();
+		void Start();
+	};
+
+	class FollowTrajectoryAction : public OSCPrivateAction
+	{
+	public:
+		typedef enum {
+			NONE,
+			TIMING_RELATIVE,
+			TIMING_ABSOLUTE
+		} TimingDomain;
+
+		roadmanager::Trajectory* traj_;
+		TimingDomain timing_domain_;
+		double timing_scale_;
+		double timing_offset_;
+		double time_;
+
+		FollowTrajectoryAction() : traj_(0), timing_domain_(TimingDomain::NONE), timing_scale_(1), 
+			timing_offset_(0), time_(0), OSCPrivateAction(OSCPrivateAction::Type::FOLLOW_TRAJECTORY) {}
+
+		FollowTrajectoryAction(const FollowTrajectoryAction& action) : OSCPrivateAction(OSCPrivateAction::Type::FOLLOW_TRAJECTORY)
+		{
+			traj_ = action.traj_;
+			timing_domain_ = action.timing_domain_;
+			timing_scale_ = action.timing_scale_;
+			timing_offset_ = action.timing_offset_;
+			time_ = 0;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			FollowTrajectoryAction* new_action = new FollowTrajectoryAction(*this);
+			return new_action;
+		}
+
+		void Step(double dt, double simTime);
+
+		void Start();
 	};
 
 	class AutonomousAction : public OSCPrivateAction
@@ -659,9 +577,9 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt) { }  // put driver model here
+		void Step(double dt, double simTime) { }  // put driver model here
 
-		void Trig()
+		void Start()
 		{
 			if (object_->control_ == Object::Control::EXTERNAL ||
 				object_->control_ == Object::Control::HYBRID_EXTERNAL)
@@ -681,7 +599,7 @@ namespace scenarioengine
 				LOG("Non existing driver model deactivated");
 			}
 
-			OSCAction::Trig();
+			OSCAction::Start();
 		}
 	};
 }

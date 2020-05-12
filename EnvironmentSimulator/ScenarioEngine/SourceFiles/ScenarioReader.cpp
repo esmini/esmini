@@ -27,20 +27,22 @@ namespace {
 
 using namespace scenarioengine;
 
-void ScenarioReader::addParameterDeclaration(pugi::xml_node xml_node)
+void ScenarioReader::addParameterDeclarations(pugi::xml_node xml_node)
 {
-	parseParameterDeclaration(xml_node);
+	parseParameterDeclarations(xml_node, &parameterDeclarations_);
 }
 
-void ScenarioReader::parseGlobalParameterDeclaration()
+void ScenarioReader::parseGlobalParameterDeclarations()
 {
-	parseParameterDeclaration(doc_.child("OpenSCENARIO").child("ParameterDeclaration"));
-	paramDeclarationSize_ = (int)parameterDeclaration_.Parameter.size();
+	parseParameterDeclarations(doc_.child("OpenSCENARIO").child("ParameterDeclarations"), &parameterDeclarations_);
+	paramDeclarationsSize_ = (int)parameterDeclarations_.Parameter.size();
 }
 
-void ScenarioReader::RestoreParameterDeclaration()
+void ScenarioReader::RestoreParameterDeclarations()
 {
-	parameterDeclaration_.Parameter.erase(parameterDeclaration_.Parameter.begin(), parameterDeclaration_.Parameter.begin() + parameterDeclaration_.Parameter.size() - paramDeclarationSize_);
+	parameterDeclarations_.Parameter.erase(
+		parameterDeclarations_.Parameter.begin(), 
+		parameterDeclarations_.Parameter.begin() + parameterDeclarations_.Parameter.size() - paramDeclarationsSize_);
 	catalog_param_assignments.clear();
 }
 
@@ -54,10 +56,10 @@ void ScenarioReader::addParameter(std::string name, std::string value)
 	param.type = "string";
 	param.value = value;
 
-	parameterDeclaration_.Parameter.insert(parameterDeclaration_.Parameter.begin(), param);
+	parameterDeclarations_.Parameter.insert(parameterDeclarations_.Parameter.begin(), param);
 }
 
-std::string ScenarioReader::getParameter(OSCParameterDeclaration &parameterDeclaration, std::string name)
+std::string ScenarioReader::getParameter(OSCParameterDeclarations &parameterDeclaration, std::string name)
 {
 	LOG("Resolve parameter %s", name.c_str());
 
@@ -93,7 +95,7 @@ std::string ScenarioReader::ReadAttribute(pugi::xml_node node, std::string attri
 		if (attr.value()[0] == '$')
 		{
 			// Resolve variable
-			return getParameter(parameterDeclaration_, attr.value());
+			return getParameter(parameterDeclarations_, attr.value());
 		}
 		else
 		{
@@ -227,18 +229,18 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 	return catalog;
 }
 
-void ScenarioReader::parseParameterDeclaration(pugi::xml_node parameterDeclarationNode)
+void ScenarioReader::parseParameterDeclarations(pugi::xml_node parameterDeclarationsNode, OSCParameterDeclarations *pd)
 {
-	LOG("Parsing parameters");
+	LOG("Parsing ParameterDeclarations");
 
-	for (pugi::xml_node parameterDeclarationChild = parameterDeclarationNode.first_child(); parameterDeclarationChild; parameterDeclarationChild = parameterDeclarationChild.next_sibling())
+	for (pugi::xml_node pdChild = parameterDeclarationsNode.first_child(); pdChild; pdChild = pdChild.next_sibling())
 	{
 		ParameterStruct param;
 
-		param.name = parameterDeclarationChild.attribute("name").value();
+		param.name = pdChild.attribute("name").value();
 		
 		// Check for catalog parameter assignements, overriding default value
-		param.value = parameterDeclarationChild.attribute("value").value();
+		param.value = pdChild.attribute("value").value();
 		for (size_t i = 0; i < catalog_param_assignments.size(); i++)
 		{
 			if (param.name == catalog_param_assignments[i].name)
@@ -247,8 +249,8 @@ void ScenarioReader::parseParameterDeclaration(pugi::xml_node parameterDeclarati
 				break;
 			}
 		}
-		param.type = parameterDeclarationChild.attribute("type").value();
-		parameterDeclaration_.Parameter.insert(parameterDeclaration_.Parameter.begin(), param);
+		param.type = pdChild.attribute("parameterType").value();
+		pd->Parameter.insert(pd->Parameter.begin(), param);
 	}
 }
 
@@ -262,31 +264,31 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 	{
 		std::string roadNetworkChildName(roadNetworkChild.name());
 
-		if (roadNetworkChildName == "Logics")
+		if (roadNetworkChildName == "LogicFile")
 		{
-			parseOSCFile(roadNetwork.Logics, roadNetworkChild);
+			parseOSCFile(roadNetwork.logicFile, roadNetworkChild);
 		}
-		else if (roadNetworkChildName == "SceneGraph")
+		else if (roadNetworkChildName == "SceneGraphFile")
 		{
-			parseOSCFile(roadNetwork.SceneGraph, roadNetworkChild);
+			parseOSCFile(roadNetwork.sceneGraphFile, roadNetworkChild);
 		}
 	}
 
-	if (roadNetwork.Logics.filepath == "")
+	if (roadNetwork.logicFile.filepath == "")
 	{
 		LOG("Warning: No road network ODR file loaded!");
 	}
 	
-	if (roadNetwork.SceneGraph.filepath == "")
+	if (roadNetwork.sceneGraphFile.filepath == "")
 	{
 		LOG("Warning: No road network 3D model file loaded! Setting default path.");
 
 		// Since the scene graph file path is used to locate other 3D files, like vehicles, create a default path 
-		roadNetwork.SceneGraph.filepath = DirNameOf(oscFilename_);
+		roadNetwork.sceneGraphFile.filepath = DirNameOf(oscFilename_);
 	}
 
-	LOG("Roadnetwork ODR: %s", roadNetwork.Logics.filepath.c_str());
-	LOG("Scenegraph: %s", roadNetwork.SceneGraph.filepath.c_str());
+	LOG("Roadnetwork ODR: %s", roadNetwork.logicFile.filepath.c_str());
+	LOG("Scenegraph: %s", roadNetwork.sceneGraphFile.filepath.c_str());
 }
 
 void ScenarioReader::ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node)
@@ -343,7 +345,7 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	}
 	vehicle->name_ = ReadAttribute(vehicleNode, "name");
 	LOG("Parsing Vehicle %s", vehicle->name_.c_str());
-	vehicle->SetCategory(ReadAttribute(vehicleNode, "category"));
+	vehicle->SetCategory(ReadAttribute(vehicleNode, "vehicleCategory"));
 
 	OSCProperties properties;
 	ParseOSCProperties(properties, vehicleNode);
@@ -414,15 +416,20 @@ roadmanager::Route* ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
 		if (routeChildName == "ParameterDeclaration")
 		{
 			LOG("%s is not implemented", routeChildName.c_str());
-
 		}
 		else if (routeChildName == "Waypoint")
 		{
 			OSCPosition *pos = parseOSCPosition(routeChild.first_child());
-			route->AddWaypoint(pos->GetRMPos());
+			if (pos)
+			{
+				route->AddWaypoint(pos->GetRMPos());
+			}
+			else
+			{
+				LOG("Failed to parse waypoint position");
+			}
 		}
 	}
-	LOG("parseOSCRoute finished");
 
 	return route;
 }
@@ -431,7 +438,7 @@ void ScenarioReader::parseCatalogs()
 {
 	LOG("Parsing Catalogs");
 
-	pugi::xml_node catalogsNode = doc_.child("OpenSCENARIO").child("Catalogs");
+	pugi::xml_node catalogsNode = doc_.child("OpenSCENARIO").child("CatalogLocations");
 
 	for (pugi::xml_node catalogsChild = catalogsNode.first_child(); catalogsChild; catalogsChild = catalogsChild.next_sibling())
 	{
@@ -441,10 +448,80 @@ void ScenarioReader::parseCatalogs()
 
 void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 {
-	LOG("Parsing OSCFile %s", file.filepath.c_str());
-
 	file.filepath = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), ReadAttribute(fileNode, "filepath"));
+}
 
+roadmanager::Trajectory* ScenarioReader::parseTrajectory(pugi::xml_node node)
+{
+	roadmanager::Trajectory* traj = new roadmanager::Trajectory;
+	roadmanager::Shape* shape = 0;
+	bool params = false;
+
+	traj->name_ = ReadAttribute(node, "name");
+	traj->closed_ = ReadAttribute(node, "closed") == "true" ? true : false;
+
+	LOG("Parsing Trajectory %s", traj->name_.c_str());
+
+	for (pugi::xml_node childNode = node.first_child(); childNode; childNode = childNode.next_sibling())
+	{
+		std::string childNodeName(childNode.name());
+
+		if (childNodeName == "ParameterDeclarations")
+		{
+			params = true;
+			addParameterDeclarations(childNode);
+		}
+		else if (childNodeName == "Shape")
+		{
+			LOG("Parsing trajectory shape");
+
+			pugi::xml_node shapeNode = childNode.first_child();
+			if (!shapeNode)
+			{
+				throw std::runtime_error("Missing Trajectory Shape");
+			}
+
+			std::string shapeType = shapeNode.name();
+			if (shapeType == "Polyline")
+			{
+				LOG("Parsing Polyline");
+				roadmanager::PolyLine* pline = new roadmanager::PolyLine();
+				for (pugi::xml_node vertexNode = shapeNode.first_child(); vertexNode; vertexNode = vertexNode.next_sibling())
+				{
+					pugi::xml_node posNode = vertexNode.child("Position");
+					if (!posNode)
+					{
+						throw std::runtime_error("Missing Trajectory/Polyline/Vertex/Position node");
+					}
+					OSCPosition* pos = parseOSCPosition(posNode);
+					double time = strtod(ReadAttribute(vertexNode, "time"));
+					pline->AddVertex(*pos->GetRMPos(), time);
+				}
+				shape = pline;
+			}
+			else if (shapeType == "Clothoid")
+			{
+				LOG("Trajectory type Clothoid not supported yet");
+			}
+			else if (shapeType == "Nurbs")
+			{
+				LOG("Trajectory type Nurbs not supported yet");
+			}
+			else
+			{
+				throw std::runtime_error("Unexpected/unsupported Trajectory type: " + shapeType);
+			}
+			if (!shape)
+			{
+				throw std::runtime_error("Missing Trajectory/Shape element");
+			}
+			traj->shape_ = shape;
+		}
+	}
+
+	if (params) RestoreParameterDeclarations();
+
+	return traj;
 }
 
 Entry* ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
@@ -452,13 +529,13 @@ Entry* ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 	std::string catalog_name;
 	std::string entry_name;
 
-	pugi::xml_node parameterAssignmentNode = node.child("ParameterAssignment");
+	pugi::xml_node parameterAssignmentsNode = node.child("ParameterAssignments");
 
 	// Read any parameter assignments
-	for (pugi::xml_node param_n = parameterAssignmentNode.child("Parameter"); param_n; param_n = param_n.next_sibling("Parameter"))
+	for (pugi::xml_node param_n = parameterAssignmentsNode.child("ParameterAssignment"); param_n; param_n = param_n.next_sibling("ParameterAssignment"))
 	{
 		ParameterStruct param;
-		param.name = param_n.attribute("name").value();
+		param.name = param_n.attribute("parameterRef").value();
 		param.value = ReadAttribute(param_n, "value");
 		catalog_param_assignments.push_back(param);
 	}
@@ -531,7 +608,7 @@ int ScenarioReader::parseEntities()
 					}
 				}
 
-				RestoreParameterDeclaration();
+				RestoreParameterDeclarations();
 			}
 			else if (objectChildName == "Vehicle")
 			{				
@@ -586,201 +663,230 @@ void ScenarioReader::parseOSCOrientation(OSCOrientation &orientation, pugi::xml_
 
 OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 {
-	LOG("Parsing OSCPosition");
+	OSCPosition *pos_return = 0;
 
-	OSCPosition *pos_return;
+	pugi::xml_node positionChild = positionNode.first_child();
 
-	for (pugi::xml_node positionChild = positionNode.first_child(); positionChild; positionChild = positionChild.next_sibling())
+	LOG("Parsing %s: ", positionChild.name());
+
+	std::string positionChildName(positionChild.name());
+
+	if (positionChildName == "WorldPosition")
 	{
-		std::string positionChildName(positionChild.name());
 
-		if (positionChildName == "World")
+		double x = strtod(ReadAttribute(positionChild, "x"));
+		double y = strtod(ReadAttribute(positionChild, "y"));
+		double z = strtod(ReadAttribute(positionChild, "z"));
+		double h = strtod(ReadAttribute(positionChild, "h"));
+		double p = strtod(ReadAttribute(positionChild, "p"));
+		double r = strtod(ReadAttribute(positionChild, "r"));
+
+		OSCPositionWorld *pos = new OSCPositionWorld(x, y, z, h, p, r);
+
+		pos_return = (OSCPosition*)pos;
+	}
+	else if (positionChildName == "RelativeWorldPosition")
+	{
+		double dx, dy, dz;
+
+		dx = strtod(ReadAttribute(positionChild, "dx"));
+		dy = strtod(ReadAttribute(positionChild, "dy"));
+		dz = strtod(ReadAttribute(positionChild, "dz"));
+		Object* object = FindObjectByName(ReadAttribute(positionChild, "entityRef"));
+		
+		// Check for optional Orientation element
+		pugi::xml_node orientation_node = positionChild.child("Orientation");
+		OSCOrientation orientation;
+		if (orientation_node)
 		{
-
-			double x = strtod(ReadAttribute(positionChild, "x"));
-			double y = strtod(ReadAttribute(positionChild, "y"));
-			double z = strtod(ReadAttribute(positionChild, "z"));
-			double h = strtod(ReadAttribute(positionChild, "h"));
-			double p = strtod(ReadAttribute(positionChild, "p"));
-			double r = strtod(ReadAttribute(positionChild, "r"));
-
-			OSCPositionWorld *pos = new OSCPositionWorld(x, y, z, h, p, r);
-
-			pos_return = (OSCPosition*)pos;
+			parseOSCOrientation(orientation, orientation_node);
 		}
-		else if (positionChildName == "RelativeWorld")
+		else
 		{
-			LOG("%s is not implemented ", positionChildName.c_str());
+			// Calculate orientation
+			orientation.h_ = GetAngleOfVector(dx, dy);
 		}
-		else if (positionChildName == "RelativeObject")
-		{
-			double dx, dy, dz;
+
+		OSCPositionRelativeWorld* pos = new OSCPositionRelativeWorld(object, dx, dy, dz, orientation);
+
+		pos_return = (OSCPosition*)pos;
+	}
+	else if (positionChildName == "RelativeObjectPosition")
+	{
+		double dx, dy, dz;
 			
-			dx = strtod(ReadAttribute(positionChild, "dx"));
-			dy = strtod(ReadAttribute(positionChild, "dy"));
-			dz = strtod(ReadAttribute(positionChild, "dz"));
-			Object *object = FindObjectByName(ReadAttribute(positionChild, "object"));
+		dx = strtod(ReadAttribute(positionChild, "dx"));
+		dy = strtod(ReadAttribute(positionChild, "dy"));
+		dz = strtod(ReadAttribute(positionChild, "dz"));
+		Object *object = FindObjectByName(ReadAttribute(positionChild, "entityRef"));
 
-			// Check for optional Orientation element
-			pugi::xml_node orientation_node = positionChild.child("Orientation");
-			OSCOrientation orientation;
-			if (orientation_node)
-			{
-				parseOSCOrientation(orientation, orientation_node);
-			}
-
-			OSCPositionRelativeObject *pos = new OSCPositionRelativeObject(object, dx, dy, dz, orientation);
-
-			pos_return = (OSCPosition*)pos;
-		}
-		else if (positionChildName == "RelativeLane")
+		// Check for optional Orientation element
+		pugi::xml_node orientation_node = positionChild.child("Orientation");
+		OSCOrientation orientation;
+		if (orientation_node)
 		{
-			int dLane;
-			double ds, offset;
+			parseOSCOrientation(orientation, orientation_node);
+		}
 
-			dLane = strtoi(ReadAttribute(positionChild, "dLane"));
-			ds = strtod(ReadAttribute(positionChild, "ds"));
+		OSCPositionRelativeObject *pos = new OSCPositionRelativeObject(object, dx, dy, dz, orientation);
+
+		pos_return = (OSCPosition*)pos;
+	}
+	else if (positionChildName == "RelativeLanePosition")
+	{
+		int dLane;
+		double ds, offset;
+
+		dLane = strtoi(ReadAttribute(positionChild, "dLane"));
+		ds = strtod(ReadAttribute(positionChild, "ds"));
+		offset = strtod(ReadAttribute(positionChild, "offset"));
+		Object *object = FindObjectByName(ReadAttribute(positionChild, "entityRef"));
+
+		// Check for optional Orientation element
+		pugi::xml_node orientation_node = positionChild.child("Orientation");
+		OSCOrientation orientation;
+		if (orientation_node)
+		{
+			parseOSCOrientation(orientation, orientation_node);
+		}
+
+		OSCPositionRelativeLane *pos = new OSCPositionRelativeLane(object, dLane, ds, offset, orientation);
+
+		pos_return = (OSCPosition*)pos;
+	}
+	else if (positionChildName == "RoadPosition")
+	{
+		LOG("%s is not implemented ", positionChildName.c_str());
+	}
+	else if (positionChildName == "RelativeRoadPosition")
+	{
+		LOG("%s is not implemented ", positionChildName.c_str());
+	}
+	else if (positionChildName == "LanePosition")
+	{
+		int road_id = strtoi(ReadAttribute(positionChild, "roadId"));
+		int lane_id = strtoi(ReadAttribute(positionChild, "laneId"));
+		double s = strtod(ReadAttribute(positionChild, "s"));
+
+		double offset = 0;  // Default value of optional parameter
+		if (positionChild.attribute("offset"))
+		{
 			offset = strtod(ReadAttribute(positionChild, "offset"));
-			Object *object = FindObjectByName(ReadAttribute(positionChild, "object"));
-
-			// Check for optional Orientation element
-			pugi::xml_node orientation_node = positionChild.child("Orientation");
-			OSCOrientation orientation;
-			if (orientation_node)
-			{
-				parseOSCOrientation(orientation, orientation_node);
-			}
-
-			OSCPositionRelativeLane *pos = new OSCPositionRelativeLane(object, dLane, ds, offset, orientation);
-
-			pos_return = (OSCPosition*)pos;
 		}
-		else if (positionChildName == "Road")
+
+		// Check for optional Orientation element
+		pugi::xml_node orientation_node = positionChild.child("Orientation");
+		OSCOrientation orientation;
+		if (orientation_node)
 		{
-			LOG("%s is not implemented ", positionChildName.c_str());
+			parseOSCOrientation(orientation, orientation_node);
 		}
-		else if (positionChildName == "RelativeRoad")
+
+		OSCPositionLane *pos = new OSCPositionLane(road_id, lane_id, s, offset, orientation);
+
+		pos_return = (OSCPosition*)pos;
+	}
+	else if (positionChildName == "RoutePosition")
+	{
+		roadmanager::Route *route = 0;
+		OSCPositionRoute *pos = new OSCPositionRoute();
+		OSCOrientation *orientation = 0;
+
+		for (pugi::xml_node routeChild = positionChild.first_child(); routeChild; routeChild = routeChild.next_sibling())
 		{
-			LOG("%s is not implemented ", positionChildName.c_str());
-		}
-		else if (positionChildName == "Lane")
-		{
-			int road_id = strtoi(ReadAttribute(positionChild, "roadId"));
-			int lane_id = strtoi(ReadAttribute(positionChild, "laneId"));
-			double s = strtod(ReadAttribute(positionChild, "s"));
-
-			double offset = 0;  // Default value of optional parameter
-			if (positionChild.attribute("offset"))
+			if (routeChild.name() == std::string("RouteRef"))
 			{
-				offset = strtod(ReadAttribute(positionChild, "offset"));
-			}
-
-			// Check for optional Orientation element
-			pugi::xml_node orientation_node = positionChild.child("Orientation");
-			OSCOrientation orientation;
-			if (orientation_node)
-			{
-				parseOSCOrientation(orientation, orientation_node);
-			}
-
-			OSCPositionLane *pos = new OSCPositionLane(road_id, lane_id, s, offset, orientation);
-
-			pos_return = (OSCPosition*)pos;
-		}
-		else if (positionChildName == "Route")
-		{
-			roadmanager::Route *route = 0;
-			OSCPositionRoute *pos = new OSCPositionRoute();
-			OSCOrientation *orientation = 0;
-
-			for (pugi::xml_node routeChild = positionChild.first_child(); routeChild; routeChild = routeChild.next_sibling())
-			{
-				if (routeChild.name() == std::string("RouteRef"))
+				for (pugi::xml_node routeRefChild = routeChild.first_child(); routeRefChild; routeRefChild = routeRefChild.next_sibling())
 				{
-					for (pugi::xml_node routeRefChild = routeChild.first_child(); routeRefChild; routeRefChild = routeRefChild.next_sibling())
+					std::string routeRefChildName(routeRefChild.name());
+
+					if (routeRefChildName == "Route")
 					{
-						std::string routeRefChildName(routeRefChild.name());
-
-						if (routeRefChildName == "Route")
-						{
-							// Add inline route to route catalog
-							LOG("Inline route reference not supported yet - put the route into a catalog");
-						}
-						else if (routeRefChildName == "CatalogReference")
-						{
-							// Find route in catalog
-							Entry *entry = ResolveCatalogReference(routeRefChild);
-
-							if (entry == 0)
-							{
-								return 0;
-							}
-
-							if (entry->type_ == CatalogType::CATALOG_ROUTE)
-							{
-								// Make a new instance from catalog entry 
-								route = parseOSCRoute(entry->GetNode());
-							}
-							else
-							{
-								LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE).c_str(), entry->GetTypeAsStr().c_str());
-								return 0;
-							}
-
-							RestoreParameterDeclaration();
-						}
+						// Add inline route to route catalog
+						LOG("Inline route reference not supported yet - put the route into a catalog");
 					}
-				} 
-				else if (routeChild.name() == std::string("Orientation"))
-				{
-					orientation = new OSCOrientation;
-					parseOSCOrientation(*orientation, routeChild);
-				}
-				else if (routeChild.name() == std::string("Position"))
-				{
-					for (pugi::xml_node positionChild = routeChild.first_child(); positionChild; positionChild = positionChild.next_sibling())
+					else if (routeRefChildName == "CatalogReference")
 					{
-						std::string positionChildName(positionChild.name());
+						// Find route in catalog
+						Entry *entry = ResolveCatalogReference(routeRefChild);
 
-						if (positionChildName == "Current")
+						if (entry == 0)
 						{
-							LOG("%s is not implemented", positionChildName.c_str());
+							return 0;
 						}
-						else if (positionChildName == "RoadCoord")
-						{
-							LOG("%s is not implemented", positionChildName.c_str());
-						}
-						else if (positionChildName == "LaneCoord")
-						{
-							double s = strtod(ReadAttribute(positionChild, "pathS"));
-							int lane_id = strtoi(ReadAttribute(positionChild, "laneId"));
-							double lane_offset = 0;
 
-							pugi::xml_attribute laneOffsetAttribute = positionChild.attribute("laneOffset");
-							if (laneOffsetAttribute != NULL)
+						if (entry->type_ == CatalogType::CATALOG_ROUTE)
+						{
+							// Make a new instance from catalog entry 
+							route = parseOSCRoute(entry->GetNode());
+						}
+						else
+						{
+							LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE).c_str(), entry->GetTypeAsStr().c_str());
+							return 0;
+						}
+
+						RestoreParameterDeclarations();
+					}
+				}
+			} 
+			else if (routeChild.name() == std::string("Orientation"))
+			{
+				orientation = new OSCOrientation;
+				parseOSCOrientation(*orientation, routeChild);
+			}
+			else if (routeChild.name() == std::string("InRoutePosition"))
+			{
+				for (pugi::xml_node positionChild = routeChild.first_child(); positionChild; positionChild = positionChild.next_sibling())
+				{
+					std::string positionChildName(positionChild.name());
+
+					if (positionChildName == "FromCurrentEntity")
+					{
+						LOG("%s is not implemented", positionChildName.c_str());
+					}
+					else if (positionChildName == "FromRoadCoordinates")
+					{
+						LOG("%s is not implemented", positionChildName.c_str());
+					}
+					else if (positionChildName == "FromLaneCoordinates")
+					{
+						double s = strtod(ReadAttribute(positionChild, "pathS"));
+						int lane_id = strtoi(ReadAttribute(positionChild, "laneId"));
+						double lane_offset = 0;
+
+						pugi::xml_attribute laneOffsetAttribute = positionChild.attribute("laneOffset");
+						if (laneOffsetAttribute != NULL)
+						{
+							lane_offset = strtod(ReadAttribute(positionChild, "laneOffset"));
+						}
+						if (orientation)
+						{
+							pos->SetRouteRefLaneCoord(route, s, lane_id, lane_offset, orientation);
+						}
+						else
+						{
+							pos->SetRouteRefLaneCoord(route, s, lane_id, lane_offset);
+							if (lane_id > 0)
 							{
-								lane_offset = strtod(ReadAttribute(positionChild, "laneOffset"));
-							}
-							if (orientation)
-							{
-								pos->SetRouteRefLaneCoord(route, s, lane_id, lane_offset, orientation);
-							}
-							else
-							{
-								pos->SetRouteRefLaneCoord(route, s, lane_id, lane_offset);
-								if (lane_id > 0)
-								{
-									pos->SetRouteRelativeHeading(M_PI);
-								}
+								pos->SetRouteRelativeHeading(M_PI);
 							}
 						}
 					}
 				}
 			}
-			pos_return = (OSCPosition*)pos;
 		}
+		pos_return = (OSCPosition*)pos;
 	}
 
+	if (pos_return)
+	{
+		pos_return->Print();
+	}
+	else
+	{
+		throw std::runtime_error("Failed parse position");
+	}
 	return pos_return;
 }
 
@@ -803,23 +909,52 @@ OSCPrivateAction::DynamicsShape ParseDynamicsShape(std::string shape)
 		LOG("Dynamics shape %s not implemented", shape.c_str());
 	}
 
-	return OSCPrivateAction::DynamicsShape::UNDEFINED;
+	return OSCPrivateAction::DynamicsShape::SHAPE_UNDEFINED;
+}
+
+OSCPrivateAction::DynamicsDimension ParseDynamicsDimension(std::string dimension)
+{
+	if (dimension == "rate")
+	{
+		return OSCPrivateAction::DynamicsDimension::RATE;
+	}
+	else if (dimension == "time")
+	{
+		return OSCPrivateAction::DynamicsDimension::TIME;
+	}
+	else if (dimension == "distance")
+	{
+		return OSCPrivateAction::DynamicsDimension::DISTANCE;
+	}
+	else
+	{
+		LOG("Dynamics dimension %s not supported", dimension.c_str());
+	}
+
+	return OSCPrivateAction::DynamicsDimension::DIMENSION_UNDEFINED;
+}
+
+int ScenarioReader::ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td)
+{
+	td.shape_ = ParseDynamicsShape(ReadAttribute(node, "dynamicsShape"));
+	td.dimension_ = ParseDynamicsDimension(ReadAttribute(node, "dynamicsDimension"));
+	td.target_value_ = strtod(ReadAttribute(node, "value"));
+
+	return 0;
 }
 
 OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 {
 	OSCGlobalAction *action = 0;
 
+	if (actionNode.first_child() == 0)
+	{
+		throw std::runtime_error("Missing action child node");
+	}
+
 	for (pugi::xml_node actionChild = actionNode.first_child(); actionChild; actionChild = actionChild.next_sibling())
 	{
-		if (actionChild.name() == std::string("EXT_Quit"))
-		{
-			action = new EXT_QuitAction();
-		}
-		else
-		{
-			LOG("Unsupported global action: %s", actionChild.name());
-		}
+		LOG("Unsupported global action: %s", actionChild.name());
 	}
 
 	if (action != 0)
@@ -844,43 +979,25 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
 	for (pugi::xml_node actionChild = actionNode.first_child(); actionChild; actionChild = actionChild.next_sibling())
 	{
-		if (actionChild.name() == std::string("Longitudinal"))
+		if (actionChild.name() == std::string("LongitudinalAction"))
 		{
 			for (pugi::xml_node longitudinalChild = actionChild.first_child(); longitudinalChild; longitudinalChild = longitudinalChild.next_sibling())
 			{
-				if (longitudinalChild.name() == std::string("Speed"))
+				if (longitudinalChild.name() == std::string("SpeedAction"))
 				{
 					LongSpeedAction *action_speed = new LongSpeedAction();
 
 					for (pugi::xml_node speedChild = longitudinalChild.first_child(); speedChild; speedChild = speedChild.next_sibling())
 					{
-						if (speedChild.name() == std::string("Dynamics"))
+						if (speedChild.name() == std::string("SpeedActionDynamics"))
 						{
-							action_speed->dynamics_.transition_. shape_ = ParseDynamicsShape(ReadAttribute(speedChild, "shape"));
-							
-							if (speedChild.attribute("rate"))
-							{
-								action_speed->dynamics_.timing_type_ = LongSpeedAction::Timing::RATE;
-								action_speed->dynamics_.timing_target_value_ = strtod(ReadAttribute(speedChild, "rate"));
-							}
-
-							if (speedChild.attribute("time"))
-							{
-								action_speed->dynamics_.timing_type_ = LongSpeedAction::Timing::TIME;
-								action_speed->dynamics_.timing_target_value_ = strtod(ReadAttribute(speedChild, "time"));
-							}
-
-							if (speedChild.attribute("distance"))
-							{
-								action_speed->dynamics_.timing_type_ = LongSpeedAction::Timing::DISTANCE;
-								action_speed->dynamics_.timing_target_value_ = strtod(ReadAttribute(speedChild, "distance"));
-							}
+							ParseTransitionDynamics(speedChild, action_speed->transition_dynamics_);
 						}
-						else if (speedChild.name() == std::string("Target"))
+						else if (speedChild.name() == std::string("SpeedActionTarget"))
 						{
 							for (pugi::xml_node targetChild = speedChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
 							{
-								if (targetChild.name() == std::string("Relative"))
+								if (targetChild.name() == std::string("RelativeTargetSpeed"))
 								{
 									LongSpeedAction::TargetRelative *target_rel = new LongSpeedAction::TargetRelative;
 
@@ -890,9 +1007,9 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 										ReadAttribute(targetChild, "continuous") == "true" ||
 										ReadAttribute(targetChild, "continuous") == "1");
 									
-									target_rel->object_ = FindObjectByName(ReadAttribute(targetChild, "object"));
+									target_rel->object_ = FindObjectByName(ReadAttribute(targetChild, "entityRef"));
 
-									std::string value_type = ReadAttribute(targetChild, "valueType");
+									std::string value_type = ReadAttribute(targetChild, "speedTargetValueType");
 									if (value_type == "delta")
 									{
 										target_rel->value_type_ = LongSpeedAction::TargetRelative::ValueType::DELTA;
@@ -912,7 +1029,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									}
 									action_speed->target_ = target_rel;
 								}
-								else if (targetChild.name() == std::string("Absolute"))
+								else if (targetChild.name() == std::string("AbsoluteTargetSpeed"))
 								{
 									LongSpeedAction::TargetAbsolute *target_abs = new LongSpeedAction::TargetAbsolute;
 
@@ -928,38 +1045,23 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					}
 					action = action_speed;
 				}
-				else if (longitudinalChild.name() == std::string("Distance"))
+				else if (longitudinalChild.name() == std::string("LongitudinalDistanceAction"))
 				{
 					LongDistanceAction *action_dist = new LongDistanceAction();
 
-					pugi::xml_node dynamics_node = longitudinalChild.child("Dynamics");
+					pugi::xml_node dynamics_node = longitudinalChild.child("DynamicConstraints");
 					if (dynamics_node != NULL)
 					{
-						if (dynamics_node.child("None"))
-						{
-							action_dist->dynamics_.none_ = true;
-						}
-						else
-						{
-							pugi::xml_node limits_node = dynamics_node.child("Limited");
-							if (limits_node != NULL)
-							{
-								action_dist->dynamics_.max_acceleration_ = strtod(ReadAttribute(limits_node, "maxAcceleration"));
-								action_dist->dynamics_.max_deceleration_ = strtod(ReadAttribute(limits_node, "maxDeceleration"));
-								action_dist->dynamics_.max_speed_ = strtod(ReadAttribute(limits_node, "maxSpeed"));
-							}
-							else
-							{
-								LOG("Limited element missing");
-							}
-						}
+						action_dist->dynamics_.max_acceleration_ = strtod(ReadAttribute(dynamics_node, "maxAcceleration"));
+						action_dist->dynamics_.max_deceleration_ = strtod(ReadAttribute(dynamics_node, "maxDeceleration"));
+						action_dist->dynamics_.max_speed_ = strtod(ReadAttribute(dynamics_node, "maxSpeed"));
 					}
 					else
 					{
-						LOG("Missing child \"Dynamics\"");
+						action_dist->dynamics_.none_ = true;
 					}
 					
-					action_dist->target_object_ = FindObjectByName(ReadAttribute(longitudinalChild, "object"));
+					action_dist->target_object_ = FindObjectByName(ReadAttribute(longitudinalChild, "entityRef"));
 					if (longitudinalChild.attribute("distance"))
 					{
 						action_dist->dist_type_ = LongDistanceAction::DistType::DISTANCE;
@@ -974,6 +1076,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					{
 						LOG("Need distance or timeGap");
 					}
+					
+					if (longitudinalChild.attribute("continuous"))
+					{
+						LOG("continuous flag assumed and always on by default");
+					}
+
 					std::string freespace = ReadAttribute(longitudinalChild, "freespace");
 					if (freespace == "true" || freespace == "1") action_dist->freespace_ = true;
 					else action_dist->freespace_ = false;
@@ -982,11 +1090,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				}
 			}
 		}
-		else if (actionChild.name() == std::string("Lateral"))
+		else if (actionChild.name() == std::string("LateralAction"))
 		{
 			for (pugi::xml_node lateralChild = actionChild.first_child(); lateralChild; lateralChild = lateralChild.next_sibling())
 			{
-				if (lateralChild.name() == std::string("LaneChange"))
+				if (lateralChild.name() == std::string("LaneChangeAction"))
 				{
 					LatLaneChangeAction *action_lane = new LatLaneChangeAction();
 
@@ -1001,40 +1109,29 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
 					for (pugi::xml_node laneChangeChild = lateralChild.first_child(); laneChangeChild; laneChangeChild = laneChangeChild.next_sibling())
 					{
-						if (laneChangeChild.name() == std::string("Dynamics"))
+						if (laneChangeChild.name() == std::string("LaneChangeActionDynamics"))
 						{
-							if (ReadAttribute(laneChangeChild, "time") != "")
-							{
-								action_lane->dynamics_.timing_type_ = LatLaneChangeAction::Timing::TIME;
-								action_lane->dynamics_.timing_target_value_ = strtod(ReadAttribute(laneChangeChild, "time"));
-							}
-							else if (ReadAttribute(laneChangeChild, "distance") != "")
-							{
-								action_lane->dynamics_.timing_type_ = LatLaneChangeAction::Timing::DISTANCE;
-								action_lane->dynamics_.timing_target_value_ = strtod(ReadAttribute(laneChangeChild, "distance"));
-							}
-
-							action_lane->dynamics_.transition_.shape_ = ParseDynamicsShape(ReadAttribute(laneChangeChild, "shape"));
+							ParseTransitionDynamics(laneChangeChild, action_lane->transition_dynamics_);
 						}
-						else if (laneChangeChild.name() == std::string("Target"))
+						else if (laneChangeChild.name() == std::string("LaneChangeTarget"))
 						{
 							LatLaneChangeAction::Target *target;
 
 							for (pugi::xml_node targetChild = laneChangeChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
 							{
-								if (targetChild.name() == std::string("Relative"))
+								if (targetChild.name() == std::string("RelativeTargetLane"))
 								{
 									LatLaneChangeAction::TargetRelative *target_rel = new LatLaneChangeAction::TargetRelative;
 
-									if ((target_rel->object_ = FindObjectByName(ReadAttribute(targetChild, "object"))) == 0)
+									if ((target_rel->object_ = FindObjectByName(ReadAttribute(targetChild, "entityRef"))) == 0)
 									{
-										LOG("Failed to find object %s", ReadAttribute(targetChild, "object").c_str());
+										LOG("Failed to find object %s", ReadAttribute(targetChild, "entityRef").c_str());
 										return 0;
 									}
 									target_rel->value_ = strtoi(ReadAttribute(targetChild, "value"));
 									target = target_rel;
 								}
-								else if (targetChild.name() == std::string("Absolute"))
+								else if (targetChild.name() == std::string("AbsoluteTargetLane"))
 								{
 									LatLaneChangeAction::TargetAbsolute *target_abs = new LatLaneChangeAction::TargetAbsolute;
 
@@ -1047,40 +1144,39 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					}
 					action = action_lane;
 				}
-				else if(lateralChild.name() == std::string("LaneOffset"))
+				else if(lateralChild.name() == std::string("LaneOffsetAction"))
 				{
 					LatLaneOffsetAction *action_lane = new LatLaneOffsetAction();
 					for (pugi::xml_node laneOffsetChild = lateralChild.first_child(); laneOffsetChild; laneOffsetChild = laneOffsetChild.next_sibling())
 					{
-						if (laneOffsetChild.name() == std::string("Dynamics"))
+						if (laneOffsetChild.name() == std::string("LaneOffsetActionDynamics"))
 						{
 							if (ReadAttribute(laneOffsetChild, "maxLateralAcc") != "")
 							{
-								action_lane->dynamics_.max_lateral_acc_= strtod(ReadAttribute(laneOffsetChild, "maxLateralAcc"));
+								action_lane->dynamics_.max_lateral_acc_ = strtod(ReadAttribute(laneOffsetChild, "maxLateralAcc"));
+								if (action_lane->dynamics_.max_lateral_acc_ < SMALL_NUMBER)
+								{
+									action_lane->dynamics_.max_lateral_acc_ = SMALL_NUMBER;
+								}
 							}
 
-							if (ReadAttribute(laneOffsetChild, "duration") != "")
-							{
-								action_lane->dynamics_.duration_ = strtod(ReadAttribute(laneOffsetChild, "duration"));
-							}
-
-							action_lane->dynamics_.transition_.shape_ = ParseDynamicsShape(ReadAttribute(laneOffsetChild, "shape"));
+							action_lane->dynamics_.transition_.shape_ = ParseDynamicsShape(ReadAttribute(laneOffsetChild, "dynamicsShape"));
 						}
-						else if (laneOffsetChild.name() == std::string("Target"))
+						else if (laneOffsetChild.name() == std::string("LaneOffsetTarget"))
 						{
 							LatLaneOffsetAction::Target *target;
 
 							for (pugi::xml_node targetChild = laneOffsetChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
 							{
-								if (targetChild.name() == std::string("Relative"))
+								if (targetChild.name() == std::string("RelativeTargetLaneOffset"))
 								{
 									LatLaneOffsetAction::TargetRelative *target_rel = new LatLaneOffsetAction::TargetRelative;
 
-									target_rel->object_ = FindObjectByName(ReadAttribute(targetChild, "object"));
+									target_rel->object_ = FindObjectByName(ReadAttribute(targetChild, "entityRef"));
 									target_rel->value_ = strtod(ReadAttribute(targetChild, "value"));
 									target = target_rel;
 								}
-								else if (targetChild.name() == std::string("Absolute"))
+								else if (targetChild.name() == std::string("AbsoluteTargetLaneOffset"))
 								{
 									LatLaneOffsetAction::TargetAbsolute *target_abs = new LatLaneOffsetAction::TargetAbsolute;
 
@@ -1091,6 +1187,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							action_lane->target_ = target;
 						}
 					}
+					// Approximate duration (not conforming to OSC 1.0), assume one lane of 5 meter
+					action_lane->dynamics_.duration_ = sqrt(5.0 / action_lane->dynamics_.max_lateral_acc_);
 					action = action_lane;
 				}
 				else
@@ -1099,71 +1197,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				}
 			}
 		}
-		else if (actionChild.name() == std::string("Meeting"))
-		{
-			OSCPosition *pos = 0;
-
-			pugi::xml_node pos_child = actionChild.child("Position");
-			if (pos_child)
-			{
-				pos = parseOSCPosition(pos_child);
-			}
-
-			pugi::xml_node rel_child = actionChild.child("Relative");
-			if (rel_child)
-			{
-				MeetingRelativeAction *meeting_rel = new MeetingRelativeAction;
-
-				meeting_rel->own_target_position_ = pos->GetRMPos();
-
-				std::string mode = ReadAttribute(rel_child, "mode");
-				if (mode == "straight")
-				{
-					meeting_rel->mode_ = MeetingRelativeAction::MeetingPositionMode::STRAIGHT;
-				}
-				else if (mode == "route")
-				{
-					meeting_rel->mode_ = MeetingRelativeAction::MeetingPositionMode::ROUTE;
-				}
-				else
-				{
-					LOG("mode %s invalid", mode.c_str());
-				}
-
-				meeting_rel->relative_object_ = FindObjectByName(ReadAttribute(rel_child, "object"));
-				meeting_rel->continuous_ = (
-					ReadAttribute(rel_child, "continuous") == "true" ||
-					ReadAttribute(rel_child, "continuous") == "1");
-				meeting_rel->offsetTime_ = strtod(ReadAttribute(rel_child, "offsetTime"));
-
-				OSCPosition *pos_relative_object = 0;
-				pugi::xml_node pos_node = rel_child.child("Position");
-				if (pos_node != NULL)
-				{
-					pos_relative_object = parseOSCPosition(pos_node);
-				}
-				meeting_rel->relative_target_position_ = pos_relative_object->GetRMPos();
-
-				action = meeting_rel;
-			} 
-			else
-			{
-				pugi::xml_node abs_child = actionChild.child("Absolute");
-				if (abs_child)
-				{
-					MeetingAbsoluteAction *meeting_abs = new MeetingAbsoluteAction;
-					meeting_abs->target_position_ = pos->GetRMPos();
-					meeting_abs->time_to_destination_ = strtod(ReadAttribute(abs_child, "TimeToDestination"));
-
-					action = meeting_abs;
-				}
-			}
-		}
-		else if (actionChild.name() == std::string("EXT_Synchronize") || actionChild.name() == std::string("SynchronizeAction"))
+		else if (actionChild.name() == std::string("SynchronizeAction"))
 		{
 			SynchronizeAction *action_synch = new SynchronizeAction;
 
-			std::string master_object_str = ReadAttribute(actionChild, "masterObject");
+			std::string master_object_str = ReadAttribute(actionChild, "masterEntityRef");
 			action_synch->master_object_ = FindObjectByName(master_object_str);
 
 			pugi::xml_node target_position_master_node = actionChild.child("TargetPositionMaster");
@@ -1182,12 +1220,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 			}
 			action_synch->target_position_ = parseOSCPosition(target_position_node)->GetRMPos();
 
-			pugi::xml_node target_speed_node = actionChild.child("TargetSpeed");
+			pugi::xml_node target_speed_node = actionChild.child("FinalSpeed");
 			if (target_speed_node)
 			{
-				LOG("Parsing optional element \"TargetSpeed\"");
+				LOG("Parsing optional element \"FinalSpeed\"");
 
-				pugi::xml_node target_speed_element = target_speed_node.child("Absolute");
+				pugi::xml_node target_speed_element = target_speed_node.child("AbsoluteSpeed");
 				if (target_speed_element != NULL)
 				{
 					LongSpeedAction::TargetAbsolute *targetSpeedAbs = new LongSpeedAction::TargetAbsolute;
@@ -1196,7 +1234,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				}
 				else
 				{
-					pugi::xml_node target_speed_element = target_speed_node.child("RelativeMaster");
+					pugi::xml_node target_speed_element = target_speed_node.child("RelativeSpeedToMaster");
 
 					if (target_speed_element != NULL)
 					{
@@ -1208,7 +1246,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
 						targetSpeedRel->object_ = action_synch->master_object_;  // Master object is the pivot vehicle 
 
-						std::string value_type = ReadAttribute(target_speed_element, "valueType");
+						std::string value_type = ReadAttribute(target_speed_element, "speedTargetValueType");
 						if (value_type == "delta")
 						{
 							targetSpeedRel->value_type_ = LongSpeedAction::TargetRelative::ValueType::DELTA;
@@ -1237,24 +1275,26 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 			}
 			action = action_synch;
 		}
-		else if (actionChild.name() == std::string("Position"))
+		else if (actionChild.name() == std::string("TeleportAction"))
 		{
 			PositionAction *action_pos = new PositionAction;
-			OSCPosition *pos = parseOSCPosition(actionChild);
+			OSCPosition *pos = parseOSCPosition(actionChild.first_child());
 			action_pos->position_ = pos;
 			action = action_pos;
 		}
-		else if (actionChild.name() == std::string("Routing"))
+		else if (actionChild.name() == std::string("RoutingAction"))
 		{
 			for (pugi::xml_node routingChild = actionChild.first_child(); routingChild; routingChild = routingChild.next_sibling())
 			{
-				if (routingChild.name() == std::string("FollowRoute"))
+				if (routingChild.name() == std::string("AssignRouteAction"))
 				{
 					for (pugi::xml_node followRouteChild = routingChild.first_child(); followRouteChild; followRouteChild = followRouteChild.next_sibling())
 					{
 						if (followRouteChild.name() == std::string("Route"))
 						{
-							LOG("%s is not implemented", followRouteChild.name());
+							FollowRouteAction* action_follow_route = new FollowRouteAction;
+							action_follow_route->route_ = parseOSCRoute(followRouteChild);
+							action = action_follow_route;
 						}
 						else if (followRouteChild.name() == std::string("CatalogReference"))
 						{
@@ -1281,9 +1321,82 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								return 0;
 							}
 
-							RestoreParameterDeclaration();
+							RestoreParameterDeclarations();
 						}
 					}
+				}
+				else if (routingChild.name() == std::string("FollowTrajectoryAction"))
+				{
+					FollowTrajectoryAction* action_follow_trajectory = new FollowTrajectoryAction;
+
+					for (pugi::xml_node followTrajetoryChild = routingChild.first_child(); followTrajetoryChild; followTrajetoryChild = followTrajetoryChild.next_sibling())
+					{
+						if (followTrajetoryChild.name() == std::string("Trajectory"))
+						{
+							action_follow_trajectory->traj_ = parseTrajectory(routingChild.child("Trajectory"));
+						}
+						else if (followTrajetoryChild.name() == std::string("CatalogReference"))
+						{
+							// Find trajectory in catalog
+							Entry* entry = ResolveCatalogReference(followTrajetoryChild);
+
+							if (entry == 0 || entry->node_ == 0)
+							{
+								return 0;
+							}
+
+							if (entry->type_ == CatalogType::CATALOG_TRAJECTORY)
+							{
+								// Make a new instance from catalog entry 
+								action_follow_trajectory->traj_ = parseTrajectory(entry->GetNode());
+								break;
+							}
+							else
+							{
+								LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE).c_str(), entry->GetTypeAsStr().c_str());
+								return 0;
+							}
+
+							RestoreParameterDeclarations();
+						}
+						else if (followTrajetoryChild.name() == std::string("TimeReference"))
+						{
+							pugi::xml_node timingNode = followTrajetoryChild.first_child();
+							if (timingNode && std::string(timingNode.name()) == "Timing")
+							{
+								std::string timeDomain = ReadAttribute(timingNode, "domainAbsoluteRelative");
+								if (timeDomain == "relative")
+								{
+									action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::TIMING_RELATIVE;
+								}
+								else if (timeDomain == "absolute")
+								{
+									action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::TIMING_ABSOLUTE;
+								}
+								else
+								{
+									throw std::runtime_error("Unexpected TimeDomain: " + timeDomain);
+								}
+
+								action_follow_trajectory->timing_scale_ = strtod(ReadAttribute(timingNode, "scale"));
+								action_follow_trajectory->timing_offset_ = strtod(ReadAttribute(timingNode, "offset"));
+							}
+						}
+						else if (followTrajetoryChild.name() == std::string("TrajectoryFollowingMode"))
+						{
+							LOG("trajectoryFollowingMode not implemented yet - applying \"position\"");
+						}
+						else
+						{
+							throw std::runtime_error("Unexpected element: " + std::string(followTrajetoryChild.name()));
+						}
+
+					}
+					action = action_follow_trajectory;
+				}
+				else
+				{
+					throw std::runtime_error("Action is not supported: " + std::string(routingChild.name()));
 				}
 			}
 		}
@@ -1327,8 +1440,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		}
 		else
 		{
-			LOG("%s is not supported", actionChild.name());
-
+			throw std::runtime_error("Action is not supported: " + std::string(actionChild.name()));
 		}
 	}
 
@@ -1371,36 +1483,64 @@ void ScenarioReader::parseInit(Init &init)
 
 	for (pugi::xml_node actionsChild = actionsNode.first_child(); actionsChild; actionsChild = actionsChild.next_sibling())
 	{
-
 		std::string actionsChildName(actionsChild.name());
 
-		if (actionsChildName == "Global")
+		if (actionsChildName == "GlobalAction")
 		{
-			LOG("%s is not implemented", actionsChildName.c_str());
-
+			LOG("Init %s is not implemented", actionsChildName.c_str());
 		}
 		else if (actionsChildName == "UserDefined")
 		{
-			LOG("%s is not implemented", actionsChildName.c_str());
+			LOG("Init %s is not implemented", actionsChildName.c_str());
 		}
 		else if (actionsChildName == "Private")
 		{
-			Object *object;
+			Object *entityRef;
 
-			object = FindObjectByName(ReadAttribute(actionsChild, "object"));
-			if (object != NULL)
+			entityRef = FindObjectByName(ReadAttribute(actionsChild, "entityRef"));
+			if (entityRef != NULL)
 			{
 				for (pugi::xml_node privateChild = actionsChild.first_child(); privateChild; privateChild = privateChild.next_sibling())
 				{
-					OSCPrivateAction *action = parseOSCPrivateAction(privateChild, object);
+					// Assume children are PrivateActions
+					OSCPrivateAction *action = parseOSCPrivateAction(privateChild, entityRef);
 					if (action == 0)
 					{
 						LOG("Failed to parse private action");
 						return;
 					}
-					action->name_ = "Init " + object->name_ + " " + privateChild.first_child().name();
+					action->name_ = "Init " + entityRef->name_ + " " + privateChild.first_child().name();
 					init.private_action_.push_back(action);
 				}
+			}
+		}
+	}
+
+	// Now, potentially the list of init actions needs to be sorted based on dependencies
+	for (size_t i = 1; i < init.private_action_.size(); i++)
+	{
+		// If relative actions depends on earlier action, switch position
+		for (size_t j = 0; j < i; j++)
+		{
+			Object* obj = 0;
+			if (init.private_action_[j]->type_ == OSCPrivateAction::Type::POSITION)
+			{
+				PositionAction* action = (PositionAction*)init.private_action_[j];
+				if (action->position_->type_ == OSCPosition::PositionType::RELATIVE_LANE)
+				{
+					obj = ((OSCPositionRelativeLane*)action->position_)->object_;
+				}
+				else if (action->position_->type_ == OSCPosition::PositionType::RELATIVE_OBJECT)
+				{
+					obj = ((OSCPositionRelativeObject*)action->position_)->object_;
+				}
+			}
+			if (obj == init.private_action_[i]->object_)
+			{
+				// swap places
+				OSCPrivateAction* tmp_action = init.private_action_[i];
+				init.private_action_[i] = init.private_action_[j];
+				init.private_action_[j] = tmp_action;
 			}
 		}
 	}
@@ -1417,9 +1557,13 @@ static OSCCondition::ConditionEdge ParseConditionEdge(std::string edge)
 	{
 		return OSCCondition::ConditionEdge::FALLING;
 	}
-	else if (edge == "any")
+	else if (edge == "risingOrFalling")
 	{
-		return OSCCondition::ConditionEdge::ANY;
+		return OSCCondition::ConditionEdge::RISING_OR_FALLING;
+	}
+	else if (edge == "none")
+	{
+		return OSCCondition::ConditionEdge::NONE;
 	}
 	else
 	{
@@ -1431,81 +1575,119 @@ static OSCCondition::ConditionEdge ParseConditionEdge(std::string edge)
 
 static Rule ParseRule(std::string rule)
 {
-	if (rule == "greater_than")
+	if (rule == "greaterThan")
 	{
 		return Rule::GREATER_THAN;
 	}
-	else if (rule == "less_than")
+	else if (rule == "lessThan")
 	{
 		return Rule::LESS_THAN;
 	}
-	else if (rule == "equal_to")
+	else if (rule == "equalTo")
 	{
 		return Rule::EQUAL_TO;
 	}
 	else
 	{
-		LOG("Invalid rule %s", rule.c_str());
+		LOG("Invalid or missing rule %s", rule.c_str());
 	}
 
 	return Rule::UNDEFINED;
 }
 
-static TrigByState::StoryElementType ParseElementType(std::string element_type)
+static TrigByState::CondElementState ParseState(std::string state)
 {
-	if (element_type == "act")
+	if (state == "startTransition")
 	{
-		return TrigByState::StoryElementType::ACT;
+		return TrigByState::CondElementState::START_TRANSITION;
 	}
-	else if (element_type == "action")
+	else if (state == "endTransition")
 	{
-		return TrigByState::StoryElementType::ACTION;
+		return TrigByState::CondElementState::END_TRANSITION;
 	}
-	else if (element_type == "scene")
+	else if (state == "stopTransition")
 	{
-		return TrigByState::StoryElementType::SCENE;
+		return TrigByState::CondElementState::STOP_TRANSITION;
 	}
-	else if (element_type == "maneuver")
+	else if (state == "skipTransition")
 	{
-		return TrigByState::StoryElementType::MANEUVER;
+		return TrigByState::CondElementState::SKIP_TRANSITION;
 	}
-	else if (element_type == "event")
+	else if (state == "completeState")
 	{
-		return TrigByState::StoryElementType::EVENT;
+		return TrigByState::CondElementState::COMPLETE;
 	}
-	else if (element_type == "action")
+	else if (state == "runningState")
 	{
-		return TrigByState::StoryElementType::ACTION;
+		return TrigByState::CondElementState::RUNNING;
+	}
+	else if (state == "standbyState")
+	{
+		return TrigByState::CondElementState::STANDBY;
 	}
 	else
 	{
-		LOG("Invalid element type %s", element_type.c_str());
+		LOG("Invalid state %s", state.c_str());
 	}
 
-	return TrigByState::StoryElementType::UNDEFINED;
+	return TrigByState::CondElementState::UNDEFINED_ELEMENT_STATE;
+}
+
+static StoryBoardElement::ElementType ParseElementType(std::string element_type)
+{
+	if (element_type == "story")
+	{
+		return StoryBoardElement::ElementType::STORY;
+	}
+	else if (element_type == "act")
+	{
+		return StoryBoardElement::ElementType::ACT;
+	}
+	else if (element_type == "maneuver")
+	{
+		return StoryBoardElement::ElementType::MANEUVER;
+	}
+	else if (element_type == "event")
+	{
+		return StoryBoardElement::ElementType::EVENT;
+	}
+	else if (element_type == "action")
+	{
+		return StoryBoardElement::ElementType::ACTION;
+	}
+	else
+	{
+		LOG("Invalid or unsupported element type %s", element_type.c_str());
+	}
+
+	return StoryBoardElement::ElementType::UNDEFINED_ELEMENT_TYPE;
 }
 // ------------------------------------------
 OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 {
 	LOG("Parsing OSCCondition %s", ReadAttribute(conditionNode, "name").c_str());
 
-	OSCCondition *condition;
+	OSCCondition *condition = 0;
 
 	for (pugi::xml_node conditionChild = conditionNode.first_child(); conditionChild; conditionChild = conditionChild.next_sibling())
 	{
 		std::string conditionChildName(conditionChild.name());
-		if (conditionChildName == "ByEntity")
+		if (conditionChildName == "ByEntityCondition")
 		{
 			pugi::xml_node entity_condition = conditionChild.child("EntityCondition");
-			if (entity_condition != NULL)
+			if (entity_condition == NULL)
+			{
+				throw std::runtime_error("Missing EntityCondition");
+			}
+			else
 			{
 				for (pugi::xml_node condition_node = entity_condition.first_child(); condition_node; condition_node = condition_node.next_sibling())
 				{
 					std::string condition_type(condition_node.name());
-					if (condition_type == "TimeHeadway")
+					if (condition_type == "TimeHeadwayCondition")
 					{
 						TrigByTimeHeadway *trigger = new TrigByTimeHeadway;
-						trigger->object_ = FindObjectByName(ReadAttribute(condition_node, "entity"));
+						trigger->object_ = FindObjectByName(ReadAttribute(condition_node, "entityRef"));
 
 						std::string along_route_str = ReadAttribute(condition_node, "alongRoute");
 						if ((along_route_str == "true") || (along_route_str == "1"))
@@ -1531,7 +1713,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						condition = trigger;
 					}
-					else if (condition_type == "ReachPosition")
+					else if (condition_type == "ReachPositionCondition")
 					{
 						TrigByReachPosition *trigger = new TrigByReachPosition;
 
@@ -1550,12 +1732,12 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						condition = trigger;
 					}
-					else if (condition_type == "RelativeDistance")
+					else if (condition_type == "RelativeDistanceCondition")
 					{
 						TrigByRelativeDistance *trigger = new TrigByRelativeDistance;
-						trigger->object_ = FindObjectByName(ReadAttribute(condition_node, "entity"));
+						trigger->object_ = FindObjectByName(ReadAttribute(condition_node, "entityRef"));
 
-						std::string type = ReadAttribute(condition_node, "type");
+						std::string type = ReadAttribute(condition_node, "relativeDistanceType");
 						if ((type == "longitudinal") || (type == "Longitudinal"))
 						{
 							trigger->type_ = TrigByRelativeDistance::RelativeDistanceType::LONGITUDINAL;
@@ -1564,7 +1746,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						{
 							trigger->type_ = TrigByRelativeDistance::RelativeDistanceType::LATERAL;
 						}
-						else if ((type == "inertial") || (type == "Inertial"))
+						else if ((type == "cartesianDistance") || (type == "CartesianDistance"))
 						{
 							trigger->type_ = TrigByRelativeDistance::RelativeDistanceType::INTERIAL;
 						}
@@ -1587,7 +1769,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						condition = trigger;
 					}
-					else if (condition_type == "Distance")
+					else if (condition_type == "DistanceCondition")
 					{
 						TrigByDistance *trigger = new TrigByDistance;
 
@@ -1622,6 +1804,14 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						condition = trigger;
 					}
+					else if (condition_type == "TraveledDistanceCondition")
+					{
+						TrigByTraveledDistance* trigger = new TrigByTraveledDistance;
+
+						trigger->value_ = strtod(ReadAttribute(condition_node, "value"));
+						
+						condition = trigger;
+					}
 					else
 					{
 						LOG("Entity condition %s not supported", condition_type.c_str());
@@ -1634,7 +1824,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 			{
 				TrigByEntity *trigger = (TrigByEntity*)condition;				
 				
-				std::string trig_ent_rule = ReadAttribute(triggering_entities, "rule");
+				std::string trig_ent_rule = ReadAttribute(triggering_entities, "triggeringEntitiesRule");
 				if (trig_ent_rule == "any")
 				{
 					trigger->triggering_entity_rule_ = TrigByEntity::TriggeringEntitiesRule::ANY;
@@ -1652,68 +1842,35 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 				{
 					std::string triggeringEntitiesChildName(triggeringEntitiesChild.name());
 
-					if (triggeringEntitiesChildName == "Entity")
+					if (triggeringEntitiesChildName == "EntityRef")
 					{
 						TrigByEntity::Entity entity;
-						entity.object_ = FindObjectByName(ReadAttribute(triggeringEntitiesChild, "name"));
+						entity.object_ = FindObjectByName(ReadAttribute(triggeringEntitiesChild, "entityRef"));
 						trigger->triggering_entities_.entity_.push_back(entity);
 					}
 				}
 			}
 		}
-		else if (conditionChildName == "ByState")
-		{
-			for (pugi::xml_node byStateChild = conditionChild.first_child(); byStateChild; byStateChild = byStateChild.next_sibling())
-			{
-				std::string byStateChildName(byStateChild.name());
-
-				if (byStateChildName == "AtStart")
-				{
-					TrigAtStart *trigger = new TrigAtStart;
-					trigger->element_type_ = ParseElementType(ReadAttribute(byStateChild, "type"));
-					trigger->element_name_ = ReadAttribute(byStateChild, "name");
-					condition = trigger;
-				}
-				else if (byStateChildName == "AfterTermination")
-				{
-					TrigAfterTermination *trigger = new TrigAfterTermination;
-					trigger->element_name_ = ReadAttribute(byStateChild, "name");
-					trigger->element_type_ = ParseElementType(ReadAttribute(byStateChild, "type"));
-					std::string term_rule = ReadAttribute(byStateChild, "rule");
-					if (term_rule == "end")
-					{
-						trigger->rule_ = TrigAfterTermination::AfterTerminationRule::END;
-					} 
-					else if (term_rule == "cancel")
-					{
-						trigger->rule_ = TrigAfterTermination::AfterTerminationRule::CANCEL;
-					}
-					else if (term_rule == "any")
-					{
-						trigger->rule_ = TrigAfterTermination::AfterTerminationRule::ANY;
-					}
-					else
-					{
-						LOG("Invalid AfterTerminationRule %s", term_rule.c_str());
-					}					
-					condition = trigger;
-				}
-				else 
-				{
-					LOG("%s is not implemented", byStateChildName.c_str());
-				}
-			}
-		}
-		else if (conditionChildName == "ByValue")
+		else if (conditionChildName == "ByValueCondition")
 		{
 			for (pugi::xml_node byValueChild = conditionChild.first_child(); byValueChild; byValueChild = byValueChild.next_sibling())
 			{
 				std::string byValueChildName(byValueChild.name());
-				if (byValueChildName == "SimulationTime")
+				if (byValueChildName == "SimulationTimeCondition")
 				{
 					TrigBySimulationTime *trigger = new TrigBySimulationTime;
 					trigger->value_ = strtod(ReadAttribute(byValueChild, "value"));
 					trigger->rule_ = ParseRule(ReadAttribute(byValueChild, "rule"));
+					condition = trigger;
+				}
+				else if (byValueChildName == "StoryboardElementStateCondition")
+				{
+					StoryBoardElement::ElementType element_type = ParseElementType(ReadAttribute(byValueChild, "storyboardElementType"));
+					TrigByState::CondElementState state = ParseState(ReadAttribute(byValueChild, "state"));
+					std::string element_name = ReadAttribute(byValueChild, "storyboardElementRef");
+
+					TrigByState *trigger = new TrigByState(state, element_type, element_name);
+
 					condition = trigger;
 				}
 				else
@@ -1724,9 +1881,15 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 		}
 		else
 		{
-			LOG("Condition %s not supported\n", conditionChildName.c_str());
+			throw std::runtime_error("Unsupported condition %s\n" + conditionChildName);
 		}
 	}
+
+	if (condition == 0) 
+	{
+		return 0;
+	}
+
 	condition->name_ = ReadAttribute(conditionNode, "name");
 	if (conditionNode.attribute("delay") != NULL)
 	{
@@ -1737,17 +1900,41 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 		LOG("Attribute \"delay\" missing");
 	}
 
-	std::string edge_str = ReadAttribute(conditionNode, "edge");
+	std::string edge_str = ReadAttribute(conditionNode, "conditionEdge");
 	if (edge_str != "")
 	{
 		condition->edge_ = ParseConditionEdge(edge_str);
+	}
+	else
+	{
+		condition->edge_ = OSCCondition::ConditionEdge::NONE;
 	}
 
 	return condition;
 }
 
+Trigger* ScenarioReader::parseTrigger(pugi::xml_node triggerNode)
+{
+	LOG("Parsing Trigger");
+	Trigger *trigger = new Trigger;
 
-void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, ActSequence *act_sequence)
+	for (pugi::xml_node cgNode = triggerNode.first_child(); cgNode; cgNode = cgNode.next_sibling())
+	{
+		ConditionGroup *condition_group = new ConditionGroup;
+
+		for (pugi::xml_node cNode = cgNode.first_child(); cNode; cNode = cNode.next_sibling())
+		{
+			OSCCondition *condition = parseOSCCondition(cNode);
+			condition_group->condition_.push_back(condition);
+		}
+
+		trigger->conditionGroup_.push_back(condition_group);
+	}
+
+	return trigger;
+}
+
+void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, ManeuverGroup *mGroup)
 {
 	maneuver->name_ = ReadAttribute(maneuverNode, "name");
 	LOG("Parsing OSCManeuver %s", maneuver->name_.c_str());
@@ -1756,9 +1943,9 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 	{
 		std::string maneuverChildName(maneuverChild.name());
 
-		if (maneuverChildName == "ParameterDeclaration")
+		if (maneuverChildName == "ParameterDeclarations")
 		{
-			addParameterDeclaration(maneuverChild);
+			addParameterDeclarations(maneuverChild);
 		}
 		else if (maneuverChildName == "Event")
 		{
@@ -1772,18 +1959,19 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 			{
 				event->priority_ = Event::Priority::OVERWRITE;
 			}
-			else if (prio == "following")
-			{
-				event->priority_ = Event::Priority::FOLLOWING;
-			}
 			else if (prio == "skip")
 			{
 				event->priority_ = Event::Priority::SKIP;
+			}
+			else if (prio == "parallel")
+			{
+				event->priority_ = Event::Priority::PARALLEL;
 			}
 			else
 			{
 				LOG("Invalid priority: %s", prio.c_str());
 			}
+			event->max_num_executions_ = strtoi(ReadAttribute(maneuverChild, "maximumExecutionCount"));
 
 			for (pugi::xml_node eventChild = maneuverChild.first_child(); eventChild; eventChild = eventChild.next_sibling())
 			{
@@ -1796,41 +1984,30 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 					{
 						std::string childName(actionChild.name());
 
-						if (childName == "Global")
+						if (childName == "GlobalAction")
 						{
 							LOG("Parsing global action %s", ReadAttribute(eventChild, "name").c_str());
 							OSCGlobalAction *action = parseOSCGlobalAction(actionChild);
 							event->action_.push_back((OSCAction*)action);
 						}
-						else if (childName == "UserDefined")
+						else if (childName == "UserDefinedAction")
 						{
 							LOG("%s is not implemented", childName.c_str());
 						}
-						else if (childName == "Private")
+						else if (childName == "PrivateAction")
 						{
-							for (size_t i = 0; i < act_sequence->actor_.size(); i++)
+							for (size_t i = 0; i < mGroup->actor_.size(); i++)
 							{
 								LOG("Parsing private action %s", ReadAttribute(eventChild, "name").c_str());
-								OSCPrivateAction *action = parseOSCPrivateAction(actionChild, act_sequence->actor_[i]->object_);
+								OSCPrivateAction *action = parseOSCPrivateAction(actionChild, mGroup->actor_[i]->object_);
 								event->action_.push_back((OSCAction*)action);
 							}
 						}
 					}
 				}
-				else if (childName == "StartConditions")
+				else if (childName == "StartTrigger")
 				{
-					for (pugi::xml_node startConditionsChild = eventChild.first_child(); startConditionsChild; startConditionsChild = startConditionsChild.next_sibling())
-					{
-						OSCConditionGroup *condition_group = new OSCConditionGroup;
-
-						for (pugi::xml_node conditionGroupChild = startConditionsChild.first_child(); conditionGroupChild; conditionGroupChild = conditionGroupChild.next_sibling())
-						{
-							OSCCondition *condition = parseOSCCondition(conditionGroupChild);
-							condition_group->condition_.push_back(condition);
-						}
-
-						event->start_condition_group_.push_back(condition_group);
-					}
+					event->start_trigger_ = parseTrigger(eventChild);
 				}
 				else
 				{
@@ -1840,6 +2017,19 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 			maneuver->event_.push_back(event);
 		}
 	}
+}
+
+ConditionGroup* ScenarioReader::ParseConditionGroup(pugi::xml_node node)
+{
+	ConditionGroup* cg = new ConditionGroup();
+
+	for (pugi::xml_node conditionNode = node.first_child(); conditionNode; conditionNode = conditionNode.next_sibling())
+	{
+		OSCCondition* condition = parseOSCCondition(conditionNode);
+		cg->condition_.push_back(condition);
+	}
+
+	return cg;
 }
 
 int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
@@ -1855,10 +2045,12 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 		if (storyNodeName == "Story")
 		{
 			std::string name = ReadAttribute(storyNode, "name", true);
-			std::string owner = ReadAttribute(storyNode, "owner");
-			addParameter("$owner", owner);
+			Story *story = new Story(name);
 
-			Story *story = new Story(name, owner);
+			if (!strcmp(storyNode.first_child().name(), "ParameterDeclarations"))
+			{
+				addParameterDeclarations(storyNode.first_child());
+			}
 
 			for (pugi::xml_node storyChild = storyNode.child("Act"); storyChild; storyChild = storyChild.next_sibling("Act"))
 			{
@@ -1871,36 +2063,36 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 
 					std::string childName(actChild.name());
 
-					if (childName == "Sequence")
+					if (childName == "ManeuverGroup")
 					{
-						ActSequence *sequence = new ActSequence;
+						ManeuverGroup *mGroup = new ManeuverGroup;
 
-						sequence->number_of_executions_ = strtoi(ReadAttribute(actChild, "numberOfExecutions"));
-						sequence->name_ = ReadAttribute(actChild, "name");
+						mGroup->max_num_executions_ = strtoi(ReadAttribute(actChild, "maximumExecutionCount"));
+						mGroup->name_ = ReadAttribute(actChild, "name");
 
 						pugi::xml_node actors_node = actChild.child("Actors");
 						if (actors_node != NULL)
 						{
 							for (pugi::xml_node actorsChild = actors_node.first_child(); actorsChild; actorsChild = actorsChild.next_sibling())
 							{
-								ActSequence::Actor *actor = new ActSequence::Actor;
+								ManeuverGroup::Actor *actor = new ManeuverGroup::Actor;
 
 								std::string actorsChildName(actorsChild.name());
-								if (actorsChildName == "Entity")
+								if (actorsChildName == "EntityRef")
 								{
-									actor->object_ = FindObjectByName(ReadAttribute(actorsChild, "name"));
+									actor->object_ = FindObjectByName(ReadAttribute(actorsChild, "entityRef"));
 								}
 								else if (actorsChildName == "ByCondition")
 								{
 									LOG("Actor by condition - not implemented");
 								}
-								sequence->actor_.push_back(actor);
+								mGroup->actor_.push_back(actor);
 								if (actor->object_->ghost_)
 								{
 									// Add ghost as well
-									ActSequence::Actor *actor = new ActSequence::Actor;
-									actor->object_ = FindObjectByName(ReadAttribute(actorsChild, "name").append("_ghost"));
-									sequence->actor_.push_back(actor);
+									ManeuverGroup::Actor *actor = new ManeuverGroup::Actor;
+									actor->object_ = FindObjectByName(ReadAttribute(actorsChild, "entityRef").append("_ghost"));
+									mGroup->actor_.push_back(actor);
 								}
 							}
 						}
@@ -1920,8 +2112,8 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 								OSCManeuver *maneuver = new OSCManeuver;
 
 								// Make a new instance from catalog entry 
-								parseOSCManeuver(maneuver, entry->GetNode(), sequence);
-								sequence->maneuver_.push_back(maneuver);
+								parseOSCManeuver(maneuver, entry->GetNode(), mGroup);
+								mGroup->maneuver_.push_back(maneuver);
 							}
 							else
 							{
@@ -1929,7 +2121,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 							}
 
 							// Remove temporary parameters used for catalog reference
-							RestoreParameterDeclaration();
+							RestoreParameterDeclarations();
 						}
 
 						for (pugi::xml_node maneuver_n = actChild.child("Maneuver"); maneuver_n; maneuver_n = maneuver_n.next_sibling("Maneuver"))
@@ -1937,57 +2129,25 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 						{
 							OSCManeuver *maneuver = new OSCManeuver;
 
-							parseOSCManeuver(maneuver, maneuver_n, sequence);
-							sequence->maneuver_.push_back(maneuver);
+							parseOSCManeuver(maneuver, maneuver_n, mGroup);
+							mGroup->maneuver_.push_back(maneuver);
 						}
 
-						act->sequence_.push_back(sequence);
+						act->maneuverGroup_.push_back(mGroup);
 					}
-					else if (childName == "Conditions")
+					else if (childName == "StartTrigger")
+					{	
+						act->start_trigger_ = parseTrigger(actChild);
+					}
+					else if (childName == "StopTrigger")
 					{
-						for (pugi::xml_node conditionsChild = actChild.first_child(); conditionsChild; conditionsChild = conditionsChild.next_sibling())
-						{
-							std::string conditionsChildName(conditionsChild.name());
-							if (conditionsChildName == "Start")
-							{
-								for (pugi::xml_node startChild = conditionsChild.first_child(); startChild; startChild = startChild.next_sibling())
-								{
-									OSCConditionGroup *condition_group = new OSCConditionGroup;
-
-									for (pugi::xml_node conditionGroupChild = startChild.first_child(); conditionGroupChild; conditionGroupChild = conditionGroupChild.next_sibling())
-									{
-										OSCCondition *condition = parseOSCCondition(conditionGroupChild);
-										condition_group->condition_.push_back(condition);
-									}
-
-									act->start_condition_group_.push_back(condition_group);
-								}
-							}
-							else if (conditionsChildName == "End")
-							{
-								for (pugi::xml_node endChild = conditionsChild.first_child(); endChild; endChild = conditionsChild.next_sibling())
-								{
-									OSCConditionGroup *condition_group = new OSCConditionGroup;
-
-									for (pugi::xml_node conditionGroupChild = endChild.first_child(); conditionGroupChild; conditionGroupChild = conditionGroupChild.next_sibling())
-									{
-										OSCCondition *condition = parseOSCCondition(conditionGroupChild);
-										condition_group->condition_.push_back(condition);
-									}
-
-									act->end_condition_group_.push_back(condition_group);
-								}
-							}
-							else if (conditionsChildName == "Cancel")
-							{
-								LOG("%s is not implemented", conditionsChildName.c_str());
-							}
-						}
+						act->stop_trigger_ = parseTrigger(actChild);
 					}
 				}
 				story->act_.push_back(act);
 			}
 			storyBoard.story_.push_back(story);
+			RestoreParameterDeclarations();
 		}
 	}
 

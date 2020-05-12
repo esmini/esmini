@@ -118,19 +118,20 @@
                <Maneuver name="ManeuverNPC">
                   <Event name="SyncEvent" priority="overwrite">
                      <Action name="SyncActionNPC">
-						<PrivateAction>
-							<SynchronizeAction masterEntityRef="Ego" >
-								<TargetPositionMaster>
-									<LanePosition roadId="0" laneId="1" offset="0" s="$EgoSyncPoint1S" />
-								</TargetPositionMaster>    
-								<TargetPosition>
-									<LanePosition roadId="2" laneId="-1" offset="0" s="$NPCSyncPointS" />
-								</TargetPosition>    
-								<FinalSpeed>
-									<AbsoluteSpeed value="$NPCFinalSpeed" />
-								</FinalSpeed>
-							</SynchronizeAction>
-						</PrivateAction>
+                        <PrivateAction>
+                            <SynchronizeAction masterEntityRef="Ego" >
+                                <TargetPositionMaster>
+                                    <LanePosition roadId="0" laneId="1" offset="0" s="$EgoSyncPoint1S" />
+                                </TargetPositionMaster>    
+                                <TargetPosition>
+                                    <LanePosition roadId="2" laneId="-1" offset="0" s="$NPCSyncPointS" />
+                                </TargetPosition>    
+                                <FinalSpeed>
+                                    <!-- <Absolute value="$NPCFinalSpeed" /> -->
+                                    <RelativeSpeedToMaster value="-3" speedTargetValueType="delta" />
+                                </FinalSpeed>
+                            </SynchronizeAction>
+                         </PrivateAction>
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
@@ -148,31 +149,13 @@
             </ManeuverGroup>
             <StartTrigger>
                <ConditionGroup>
-                  <Condition name="LtapActStartConditionNPC" delay="0" conditionEdge="rising">
+                  <Condition name="LtapActStartConditionNPC" delay="0" conditionEdge="none">
                      <ByValueCondition>
                         <SimulationTimeCondition value="0" rule="greaterThan"/>
                      </ByValueCondition>
                   </Condition>
                </ConditionGroup>
             </StartTrigger>
-            <StopTrigger>
-               <ConditionGroup>
-                   <Condition name="QuitCondition" delay="0" conditionEdge="rising">
-					  <ByEntityCondition>
-						 <TriggeringEntities triggeringEntitiesRule="any">
-							<EntityRef entityRef="Ego"/>
-						 </TriggeringEntities>
-						 <EntityCondition>
-							<ReachPositionCondition tolerance="5.0">
-							   <Position>
-								  <LanePosition roadId="2" laneId="1" s="270.0"/>
-							   </Position>
-							</ReachPositionCondition>
-						 </EntityCondition>
-					  </ByEntityCondition>		
-			      </Condition>
-               </ConditionGroup>
-			</StopTrigger>
          </Act>
       </Story>
    </Storyboard>

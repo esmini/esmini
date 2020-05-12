@@ -1,95 +1,111 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    
-	<FileHeader revMajor="0" revMinor="9" date="2020-05-12T10:00:00" description="dummy" author="esmini"/>
-
-	<ParameterDeclaration>
-        <Parameter name="$TargetVehicle" type="string" value="car_red" />
-	</ParameterDeclaration>
-	
-	<RoadNetwork>
-		<Logics filepath="../xodr/straight_500m.xodr"/>
-		<SceneGraph filepath="../models/straight_500m.osgb"/>
-	</RoadNetwork>
-
-	<Catalogs>  
-		<RouteCatalog> 
-		</RouteCatalog>
-		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/Vehicles"/>
-		</VehicleCatalog>
-	</Catalogs>
-    
-	<Entities>
-		<Object name="Ego">
-            <Vehicle name="car_white" category="car">
-                <BoundingBox>
-                    <Center x="1.4" y="0.0" z="0.9" />
-                    <Dimension width="2.0" length="5.0" height="1.8" />
-                </BoundingBox>
-                <Performance maxSpeed="69" maxDeceleration="30" mass="2000" />
-                <Axles>
-                    <Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
-                    <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
-                </Axles>
-                <Properties>
-                    <File filepath="../models/car_white.osgb"/>
-                    <Property name="model_id" value="0" />
-                    <Property name="control" value="hybrid" />
-                </Properties>
-            </Vehicle>
-		</Object>
-		<Object name="Target">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
-		</Object>         		
-	</Entities>
-
-	<Storyboard>
-		<Init>
-			<Actions>
-				<Private object="Ego">
-					<Action>
-						<Longitudinal>
-							<Speed>
-								<Dynamics shape="step"/>
-								<Target>
-									<Absolute value="20" />
-								</Target>
-							</Speed>
-						</Longitudinal>
-					</Action>
-					<Action>
-						<Position>
-							<Lane roadId="1" laneId="-1" offset="0" s="50" />
-						</Position>
-					</Action>
-				</Private>
-				<Private object="Target">
-					<Action>
-						<Longitudinal>
-							<Speed>
-								<Dynamics shape="step"/>
-								<Target>
-									<Absolute value="0" />
-								</Target>
-							</Speed>
-						</Longitudinal>
-					</Action>
-					<Action>
-						<Position>
-							<Lane roadId="1" laneId="-1" offset="0" s="350" />
-						</Position>
-					</Action>
-				</Private>
-			</Actions>
-		</Init>
-		
-		<Story>
-		</Story>
-		
-		<End>
-		</End>
-		
-	</Storyboard>
-
+   <FileHeader revMajor="0"
+               revMinor="9"
+               date="2020-05-12T10:00:00"
+               description="dummy"
+               author="esmini"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="$TargetVehicle" parameterType="string" value="car_red"/>
+   </ParameterDeclarations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_500m.xodr"/>
+      <SceneGraphFile filepath="../models/straight_500m.osgb"/>
+   </RoadNetwork>
+   <CatalogLocations>
+      <RouteCatalog/>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <Vehicle name="car_white" vehicleCategory="car">
+            <BoundingBox>
+               <Center x="1.4" y="0.0" z="0.9"/>
+               <Dimensions width="2.0" length="5.0" height="1.8"/>
+            </BoundingBox>
+            <Performance maxSpeed="69" maxDeceleration="30"/>
+            <Axles>
+               <FrontAxle maxSteering="30"
+                          wheelDiameter="0.8"
+                          trackWidth="1.68"
+                          positionX="2.98"
+                          positionZ="0.4"/>
+               <RearAxle maxSteering="30"
+                         wheelDiameter="0.8"
+                         trackWidth="1.68"
+                         positionX="0"
+                         positionZ="0.4"/>
+            </Axles>
+            <Properties>
+               <File filepath="../models/car_white.osgb"/>
+               <Property name="model_id" value="0"/>
+               <Property name="control" value="hybrid"/>
+            </Properties>
+         </Vehicle>
+      </ScenarioObject>
+      <ScenarioObject name="Target">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="20"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="350"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+	  <Story>
+         <Act name="DummyAct">
+            <ManeuverGroup maximumExecutionCount="1" name="DummyManueverGroup">
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="StartTrigger" delay="0" conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>	  
+      </Story>
+   </Storyboard>
 </OpenSCENARIO>

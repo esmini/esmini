@@ -24,8 +24,8 @@ namespace scenarioengine
 	public:
 		RoadNetwork();
 
-		OSCFile Logics;
-		OSCFile SceneGraph;
+		OSCFile logicFile;
+		OSCFile sceneGraphFile;
 
 		void Print();
 	};

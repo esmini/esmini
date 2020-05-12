@@ -1,175 +1,244 @@
-<?xml version="1.0" encoding="utf-8"?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-
-    <FileHeader revMajor="0" revMinor="9" date="2018-11-8T17:00:00" author="Erik Gunnarsson"/>
-
-    <Catalog name="VehicleCatalog">
-
-        <Vehicle name="car_white" category="car">
-            <BoundingBox>
-                <Center x="1.4" y="0.0" z="0.9" />
-                <Dimension width="2.0" length="5.0" height="1.8" />
-            </BoundingBox>
-            <Performance maxSpeed="69" maxDeceleration="30" mass="2000" />
-            <Axles>
-                <Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
-                <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
-            </Axles>
-			<Properties>
-				<File filepath="../models/car_white.osgb"/>
-				<Property name="control" value="internal" />                
-				<Property name="model_id" value="0" />
-			</Properties>
-        </Vehicle>
-		
-        <Vehicle name="car_white_external" category="car">
-            <BoundingBox>
-                <Center x="1.4" y="0.0" z="0.9" />
-                <Dimension width="2.0" length="5.0" height="1.8" />
-            </BoundingBox>
-            <Performance maxSpeed="69" maxDeceleration="30" mass="2000" />
-            <Axles>
-                <Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
-                <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
-            </Axles>
-			<Properties>
-				<File filepath="../models/car_white.osgb"/>
-				<Property name="control" value="external" />
-				<Property name="model_id" value="0" />
-			</Properties>
-        </Vehicle>
-        
-        <Vehicle name="car_white_hybrid" category="car">
-            <BoundingBox>
-                <Center x="1.4" y="0.0" z="0.9" />
-                <Dimension width="2.0" length="5.0" height="1.8" />
-            </BoundingBox>
-            <Performance maxSpeed="69" maxDeceleration="30" mass="2000" />
-            <Axles>
-                <Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
-                <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
-            </Axles>
-			<Properties>
-				<File filepath="../models/car_white.osgb"/>
-				<Property name="control" value="hybrid" />
-				<Property name="model_id" value="0" />
-			</Properties>
-        </Vehicle>        
-		
-		<Vehicle name="car_blue" category="car">
-			<BoundingBox>
-				<Center x="1.4" y="0.0" z="0.9" />
-				<Dimension width="2.0" length="5.0" height="1.8" />
-			</BoundingBox>
-			<Performance maxSpeed="69" maxDeceleration="30" mass="2000" />
-			<Axles>
-				<Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
-				<Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
-			</Axles>
-			<Properties>
-				<File filepath="../models/car_blue.osgb"/>
-				<Property name="control" value="internal" />                
-				<Property name="model_id" value="1" />
-			</Properties>
-		</Vehicle>
-
-		<Vehicle name="car_blue_external" category="car">
-			<BoundingBox>
-				<Center x="1.4" y="0.0" z="0.9" />
-				<Dimension width="2.0" length="5.0" height="1.8" />
-			</BoundingBox>
-			<Performance maxSpeed="69" maxDeceleration="30" mass="2000" />
-			<Axles>
-				<Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
-				<Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
-			</Axles>
-			<Properties>
-				<File filepath="../models/car_blue.osgb"/>
-				<Property name="control" value="external" />                
-				<Property name="model_id" value="1" />
-			</Properties>
-		</Vehicle>
-
-        <Vehicle name="car_red" category="car">
-            <BoundingBox>
-                <Center x="1.3" y="0.0" z="0.8" />
-                <Dimension width="1.8" length="4.5" height="1.5" />
-            </BoundingBox>
-            <Performance maxSpeed="70" maxDeceleration="30" mass="1800" />
-            <Axles>
-                <Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
-                <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
-            </Axles>
-			<Properties>
-				<File filepath="../models/car_red.osgb"/>
-				<Property name="model_id" value="2" />
-			</Properties>
-        </Vehicle>
-
-        <Vehicle name="car_yellow" category="car">
-            <BoundingBox>
-                <Center x="1.3" y="0.0" z="0.8" />
-                <Dimension width="1.8" length="4.5" height="1.5" />
-            </BoundingBox>
-            <Performance maxSpeed="70" maxDeceleration="30" mass="1800" />
-            <Axles>
-                <Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
-                <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
-            </Axles>
-			<Properties>
-				<File filepath="../models/car_yellow.osgb"/>
-				<Property name="model_id" value="3" />
-			</Properties>
-        </Vehicle>
-
-        <Vehicle name="truck_yellow" category="truck">
-            <BoundingBox>
-                <Center x="1.3" y="0.0" z="0.8" />
-                <Dimension width="1.8" length="4.5" height="1.5" />
-            </BoundingBox>
-            <Performance maxSpeed="70" maxDeceleration="30" mass="1800" />
-            <Axles>
-                <Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
-                <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
-            </Axles>
-			<Properties>
-				<File filepath="../models/truck_yellow.osgb"/>
-				<Property name="model_id" value="4" />
-			</Properties>
-        </Vehicle>
-
-        <Vehicle name="van_red" category="truck">
-            <BoundingBox>
-                <Center x="1.3" y="0.0" z="0.8" />
-                <Dimension width="1.8" length="4.5" height="1.5" />
-            </BoundingBox>
-            <Performance maxSpeed="70" maxDeceleration="30" mass="1800" />
-            <Axles>
-                <Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
-                <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
-            </Axles>
-			<Properties>
-				<File filepath="../models/van_red.osgb"/>
-				<Property name="model_id" value="5" />
-			</Properties>
-        </Vehicle>
-		
-        <Vehicle name="bus_blue" category="bus">
-            <BoundingBox>
-                <Center x="1.3" y="0.0" z="0.8" />
-                <Dimension width="1.8" length="4.5" height="1.5" />
-            </BoundingBox>
-            <Performance maxSpeed="70" maxDeceleration="30" mass="1800" />
-            <Axles>
-                <Front maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="2.98" positionZ="0.4" />
-                <Rear maxSteering="30" wheelDiameter="0.8"  trackWidth="1.68" positionX="0" positionZ="0.4" />
-            </Axles>
-			<Properties>
-				<File filepath="../models/bus_blue.osgb"/>
-				<Property name="model_id" value="6" />
-			</Properties>
-        </Vehicle>
-
-	</Catalog>
+   <FileHeader revMajor="0"
+               revMinor="9"
+               date="2018-11-8T17:00:00"
+               author="Erik Gunnarsson"/>
+   <Catalog name="VehicleCatalog">
+      <Vehicle name="car_white" vehicleCategory="car">
+         <BoundingBox>
+            <Center x="1.4" y="0.0" z="0.9"/>
+            <Dimensions width="2.0" length="5.0" height="1.8"/>
+         </BoundingBox>
+         <Performance maxSpeed="69" maxDeceleration="30"/>
+         <Axles>
+            <FrontAxle maxSteering="30"
+                       wheelDiameter="0.8"
+                       trackWidth="1.68"
+                       positionX="2.98"
+                       positionZ="0.4"/>
+            <RearAxle maxSteering="30"
+                      wheelDiameter="0.8"
+                      trackWidth="1.68"
+                      positionX="0"
+                      positionZ="0.4"/>
+         </Axles>
+         <Properties>
+            <File filepath="../models/car_white.osgb"/>
+            <Property name="control" value="internal"/>
+            <Property name="model_id" value="0"/>
+         </Properties>
+      </Vehicle>
+      <Vehicle name="car_white_external" vehicleCategory="car">
+         <BoundingBox>
+            <Center x="1.4" y="0.0" z="0.9"/>
+            <Dimensions width="2.0" length="5.0" height="1.8"/>
+         </BoundingBox>
+         <Performance maxSpeed="69" maxDeceleration="30"/>
+         <Axles>
+            <FrontAxle maxSteering="30"
+                       wheelDiameter="0.8"
+                       trackWidth="1.68"
+                       positionX="2.98"
+                       positionZ="0.4"/>
+            <RearAxle maxSteering="30"
+                      wheelDiameter="0.8"
+                      trackWidth="1.68"
+                      positionX="0"
+                      positionZ="0.4"/>
+         </Axles>
+         <Properties>
+            <File filepath="../models/car_white.osgb"/>
+            <Property name="control" value="external"/>
+            <Property name="model_id" value="0"/>
+         </Properties>
+      </Vehicle>
+      <Vehicle name="car_white_hybrid" vehicleCategory="car">
+         <BoundingBox>
+            <Center x="1.4" y="0.0" z="0.9"/>
+            <Dimensions width="2.0" length="5.0" height="1.8"/>
+         </BoundingBox>
+         <Performance maxSpeed="69" maxDeceleration="30"/>
+         <Axles>
+            <FrontAxle maxSteering="30"
+                       wheelDiameter="0.8"
+                       trackWidth="1.68"
+                       positionX="2.98"
+                       positionZ="0.4"/>
+            <RearAxle maxSteering="30"
+                      wheelDiameter="0.8"
+                      trackWidth="1.68"
+                      positionX="0"
+                      positionZ="0.4"/>
+         </Axles>
+         <Properties>
+            <File filepath="../models/car_white.osgb"/>
+            <Property name="control" value="hybrid"/>
+            <Property name="model_id" value="0"/>
+         </Properties>
+      </Vehicle>
+      <Vehicle name="car_blue" vehicleCategory="car">
+         <BoundingBox>
+            <Center x="1.4" y="0.0" z="0.9"/>
+            <Dimensions width="2.0" length="5.0" height="1.8"/>
+         </BoundingBox>
+         <Performance maxSpeed="69" maxDeceleration="30"/>
+         <Axles>
+            <FrontAxle maxSteering="30"
+                       wheelDiameter="0.8"
+                       trackWidth="1.68"
+                       positionX="2.98"
+                       positionZ="0.4"/>
+            <RearAxle maxSteering="30"
+                      wheelDiameter="0.8"
+                      trackWidth="1.68"
+                      positionX="0"
+                      positionZ="0.4"/>
+         </Axles>
+         <Properties>
+            <File filepath="../models/car_blue.osgb"/>
+            <Property name="control" value="internal"/>
+            <Property name="model_id" value="1"/>
+         </Properties>
+      </Vehicle>
+      <Vehicle name="car_blue_external" vehicleCategory="car">
+         <BoundingBox>
+            <Center x="1.4" y="0.0" z="0.9"/>
+            <Dimensions width="2.0" length="5.0" height="1.8"/>
+         </BoundingBox>
+         <Performance maxSpeed="69" maxDeceleration="30"/>
+         <Axles>
+            <FrontAxle maxSteering="30"
+                       wheelDiameter="0.8"
+                       trackWidth="1.68"
+                       positionX="2.98"
+                       positionZ="0.4"/>
+            <RearAxle maxSteering="30"
+                      wheelDiameter="0.8"
+                      trackWidth="1.68"
+                      positionX="0"
+                      positionZ="0.4"/>
+         </Axles>
+         <Properties>
+            <File filepath="../models/car_blue.osgb"/>
+            <Property name="control" value="external"/>
+            <Property name="model_id" value="1"/>
+         </Properties>
+      </Vehicle>
+      <Vehicle name="car_red" vehicleCategory="car">
+         <BoundingBox>
+            <Center x="1.3" y="0.0" z="0.8"/>
+            <Dimensions width="1.8" length="4.5" height="1.5"/>
+         </BoundingBox>
+         <Performance maxSpeed="70" maxDeceleration="30"/>
+         <Axles>
+            <FrontAxle maxSteering="30"
+                       wheelDiameter="0.8"
+                       trackWidth="1.68"
+                       positionX="2.98"
+                       positionZ="0.4"/>
+            <RearAxle maxSteering="30"
+                      wheelDiameter="0.8"
+                      trackWidth="1.68"
+                      positionX="0"
+                      positionZ="0.4"/>
+         </Axles>
+         <Properties>
+            <File filepath="../models/car_red.osgb"/>
+            <Property name="model_id" value="2"/>
+         </Properties>
+      </Vehicle>
+      <Vehicle name="car_yellow" vehicleCategory="car">
+         <BoundingBox>
+            <Center x="1.3" y="0.0" z="0.8"/>
+            <Dimensions width="1.8" length="4.5" height="1.5"/>
+         </BoundingBox>
+         <Performance maxSpeed="70" maxDeceleration="30"/>
+         <Axles>
+            <FrontAxle maxSteering="30"
+                       wheelDiameter="0.8"
+                       trackWidth="1.68"
+                       positionX="2.98"
+                       positionZ="0.4"/>
+            <RearAxle maxSteering="30"
+                      wheelDiameter="0.8"
+                      trackWidth="1.68"
+                      positionX="0"
+                      positionZ="0.4"/>
+         </Axles>
+         <Properties>
+            <File filepath="../models/car_yellow.osgb"/>
+            <Property name="model_id" value="3"/>
+         </Properties>
+      </Vehicle>
+      <Vehicle name="truck_yellow" vehicleCategory="truck">
+         <BoundingBox>
+            <Center x="1.3" y="0.0" z="0.8"/>
+            <Dimensions width="1.8" length="4.5" height="1.5"/>
+         </BoundingBox>
+         <Performance maxSpeed="70" maxDeceleration="30"/>
+         <Axles>
+            <FrontAxle maxSteering="30"
+                       wheelDiameter="0.8"
+                       trackWidth="1.68"
+                       positionX="2.98"
+                       positionZ="0.4"/>
+            <RearAxle maxSteering="30"
+                      wheelDiameter="0.8"
+                      trackWidth="1.68"
+                      positionX="0"
+                      positionZ="0.4"/>
+         </Axles>
+         <Properties>
+            <File filepath="../models/truck_yellow.osgb"/>
+            <Property name="model_id" value="4"/>
+         </Properties>
+      </Vehicle>
+      <Vehicle name="van_red" vehicleCategory="truck">
+         <BoundingBox>
+            <Center x="1.3" y="0.0" z="0.8"/>
+            <Dimensions width="1.8" length="4.5" height="1.5"/>
+         </BoundingBox>
+         <Performance maxSpeed="70" maxDeceleration="30"/>
+         <Axles>
+            <FrontAxle maxSteering="30"
+                       wheelDiameter="0.8"
+                       trackWidth="1.68"
+                       positionX="2.98"
+                       positionZ="0.4"/>
+            <RearAxle maxSteering="30"
+                      wheelDiameter="0.8"
+                      trackWidth="1.68"
+                      positionX="0"
+                      positionZ="0.4"/>
+         </Axles>
+         <Properties>
+            <File filepath="../models/van_red.osgb"/>
+            <Property name="model_id" value="5"/>
+         </Properties>
+      </Vehicle>
+      <Vehicle name="bus_blue" vehicleCategory="bus">
+         <BoundingBox>
+            <Center x="1.3" y="0.0" z="0.8"/>
+            <Dimensions width="1.8" length="4.5" height="1.5"/>
+         </BoundingBox>
+         <Performance maxSpeed="70" maxDeceleration="30"/>
+         <Axles>
+            <FrontAxle maxSteering="30"
+                       wheelDiameter="0.8"
+                       trackWidth="1.68"
+                       positionX="2.98"
+                       positionZ="0.4"/>
+            <RearAxle maxSteering="30"
+                      wheelDiameter="0.8"
+                      trackWidth="1.68"
+                      positionX="0"
+                      positionZ="0.4"/>
+         </Axles>
+         <Properties>
+            <File filepath="../models/bus_blue.osgb"/>
+            <Property name="model_id" value="6"/>
+         </Properties>
+      </Vehicle>
+   </Catalog>
 </OpenSCENARIO>

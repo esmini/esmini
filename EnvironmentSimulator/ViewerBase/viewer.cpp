@@ -846,13 +846,26 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 		lod->setRange(0, 0, LOD_DIST);
 		osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
 		lod->addChild(tx);
-		tx->setScale(osg::Vec3(5.0, 2.3, 1.7));
-		tx->setPosition(osg::Vec3(3.0, 0.0, 0.8));
+
+		// Set dimensions of the vehicle "box"
+		tx->setScale(osg::Vec3(4.0, 2.0, 1.2));
+		tx->setPosition(osg::Vec3(3.0, 0.0, 0.6));
 		tx->addChild(geode);
 
 		osg::Material *material = new osg::Material();
-		material->setDiffuse(osg::Material::FRONT, osg::Vec4(0.7, 0.7, 0.7, 1.0));
-		material->setAmbient(osg::Material::FRONT, osg::Vec4(0.7, 0.7, 0.7, 1.0));
+
+		// Set color of vehicle based on its index
+		double* color;
+		double b = 1.5;  // brighness
+		int index = cars_.size() % 4; 
+
+		if (index == 0) color = color_white;
+		else if (index == 1) color = color_red;
+		else if (index == 2) color = color_blue;
+		else color = color_yellow;
+
+		material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+		material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
 		tx->getOrCreateStateSet()->setAttribute(material);
 
 		LOG("No filename specified for car model! - creating a dummy model");

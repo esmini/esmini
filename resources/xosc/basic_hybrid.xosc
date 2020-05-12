@@ -1,211 +1,209 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    
-	<FileHeader revMajor="0" revMinor="9" date="2019-10-23T10:00:00" description="basic ego hybrid test" author="Knabe"/>
-
-    <ParameterDeclaration>
-		<Parameter name="$EgoVehicle" type="string" value="car_white_hybrid" />
-		<Parameter name="$EgoStartS" type="double" value="50"/>
-	</ParameterDeclaration>
-  
-	<Catalogs>  
-		<RouteCatalog/> 
-		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/Vehicles"/>
-		</VehicleCatalog>
-		<DriverCatalog/>
-	</Catalogs>
-
-	<RoadNetwork>
-		<Logics filepath="../xodr/e6mini.xodr"/>
-		<SceneGraph filepath="../models/e6mini.osgb"/>
-	</RoadNetwork>
-
-	<Entities>
-		<Object name="Ego">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
-		</Object>                                
-	</Entities>
-
-	<Storyboard>
-		<Init>
-			<Actions>
-				<Private object="Ego">
-					<Action>
-						<Position>
-							<Lane roadId="0" laneId="-3" offset="0" s="$EgoStartS" />
-						</Position>
-					</Action>
-					<Action>
-						<Longitudinal>
-							<Speed>
-								<Dynamics shape="step"/>
-								<Target>
-									<Absolute value="30" />
-								</Target>
-							</Speed>
-						</Longitudinal>
-					</Action>
-				</Private>
-			</Actions>
-		</Init>
-		
-		<Story name="Story" owner="Ego">
-			<Act name="Act">
-				<Sequence name="Sequence" numberOfExecutions="1">
-					<Actors>
-						<Entity name="Ego"/>
-						<!-- <Entity name="Ego2"/> -->
-					</Actors>
-					<Maneuver name="Maneuver1">
-						<Event name="SpeedEvent1" priority="overwrite" >
-							<Action name="SpeedChange">
-								<Private>
-									<Longitudinal>
-										<Speed>
-											<Dynamics shape="linear" time="2"/>
-											<Target>
-												<Absolute value="50" />
-											</Target>
-										</Speed>
-									</Longitudinal>
-								</Private>
-							</Action>
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="SpeedCondition1" delay="0" edge="rising" >
-										<ByValue>
-											<SimulationTime value="3" rule="greater_than"/>
-										</ByValue>
-									</Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>
-						<Event name="LaneChange1" priority="overwrite">
-							<Action name="LaneChangeAction1">
-								<Private>
-									<Lateral>
-										<LaneChange>
-											<Dynamics shape="sinusoidal" time="2"/>
-											<Target>
-												<Absolute value="-2"/>
-											</Target>
-										</LaneChange>
-									</Lateral>
-								</Private>
-							</Action>
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="LaneChangeCondition" delay="0" edge="rising">
-										<ByValue>
-											<SimulationTime value="6" rule="greater_than"/>
-										</ByValue>
-									</Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>
-						<Event name="LaneChange2" priority="overwrite">
-							<Action name="LaneChangeAction2">
-								<Private>
-									<Lateral>
-										<LaneChange>
-											<Dynamics shape="sinusoidal" time="2"/>
-											<Target>
-												<Absolute value="-3"/>
-											</Target>
-										</LaneChange>
-									</Lateral>
-								</Private>
-							</Action>
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="LaneChangeCondition" delay="0" edge="rising">
-										<ByValue>
-											<SimulationTime value="9" rule="greater_than"/>
-										</ByValue>
-									</Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>                        
-						<Event name="SpeedEvent2" priority="overwrite" >
-							<Action name="SpeedChange2">
-								<Private>
-									<Longitudinal>
-										<Speed>
-											<Dynamics shape="linear" time="2"/>
-											<Target>
-												<Absolute value="10" />
-											</Target>
-										</Speed>
-									</Longitudinal>
-								</Private>
-							</Action>
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="SpeedCondition1" delay="0" edge="rising" >
-										<ByValue>
-											<SimulationTime value="12" rule="greater_than"/>
-										</ByValue>
-									</Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>     
-						<Event name="StopEvent" priority="overwrite" >
-							<Action name="Stop">
-								<Private>
-									<Longitudinal>
-										<Speed>
-											<Dynamics shape="linear" rate="10"/>
-											<Target>
-												<Absolute value="0" />
-											</Target>
-										</Speed>
-									</Longitudinal>
-								</Private>
-							</Action>
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="StopCondition" delay="0" edge="rising" >
-										<ByValue>
-											<SimulationTime value="15" rule="greater_than"/>
-										</ByValue>
-									</Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>                         
-						<Event name="QuitEvent" priority="overwrite">
-							<Action name="QuitAction">
-								<Global>
-									<EXT_Quit />
-								</Global>
-							</Action>
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="QuitCondition" delay="8" edge="rising">
-										<ByState>
-											<AfterTermination type="event" name="StopEvent" rule="end"/>
-										</ByState>									
-                                    </Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>                        
-					</Maneuver>
-				</Sequence>
-				<Conditions>
-					<Start>
-						<ConditionGroup>
-							<Condition name="ActStart" delay="0" >
-								<ByValue>
-									<SimulationTime value="0" rule="greater_than"/>
-								</ByValue>
-							</Condition>
-						</ConditionGroup>
-					</Start>
-				</Conditions>
-			</Act>
-		</Story>
-		<End>
-		</End>
-	</Storyboard>
-
+   <FileHeader revMajor="0"
+               revMinor="9"
+               date="2019-10-23T10:00:00"
+               description="basic ego hybrid test"
+               author="Knabe"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="$EgoVehicle" parameterType="string" value="car_white_hybrid"/>
+      <ParameterDeclaration name="$EgoStartS" parameterType="double" value="50"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <RouteCatalog/>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog/>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/e6mini.xodr"/>
+      <SceneGraphFile filepath="../models/e6mini.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-3" offset="0" s="$EgoStartS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+         <ParameterDeclarations>
+            <ParameterDeclaration parameterType="string" name="$owner" value="Ego"/>
+         </ParameterDeclarations>
+         <Act name="Act">
+            <ManeuverGroup maximumExecutionCount="1" name="Sequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="Maneuver1">
+                  <Event name="SpeedEvent1" priority="overwrite">
+                     <Action name="SpeedChange">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="2" dynamicsDimension="time"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="50"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                            <Condition name="FirstSpeedCondition" delay="0" edge="none">
+                                <ByValueCondition>
+                                    <StoryboardElementStateCondition 
+                                        storyboardElementType="story" 
+                                        storyboardElementRef="Story"
+                                        state="runningState"/>
+                                </ByValueCondition>									
+                            </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="LaneChange1" priority="overwrite">
+                     <Action name="LaneChangeAction1">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-2"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LaneChangeCondition" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="6" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="LaneChange2" priority="overwrite">
+                     <Action name="LaneChangeAction2">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-3"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LaneChangeCondition" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="9" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="SpeedEvent2" priority="overwrite">
+                     <Action name="SpeedChange2">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="2" dynamicsDimension="time"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="10"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="SpeedCondition1" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="12" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="StopEvent" priority="overwrite">
+                     <Action name="Stop">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="10" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="StopCondition" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="15" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="ActStart" delay="0">
+                    <ByValueCondition>
+                        <StoryboardElementStateCondition 
+                            storyboardElementType="story" 
+                            storyboardElementRef="Story"
+                            state="runningState"/>
+                    </ByValueCondition>		
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger>
+               <ConditionGroup>
+                    <Condition name="EventStopCondition" delay="8" edge="rising">
+                        <ByValueCondition>
+                            <StoryboardElementStateCondition 
+                                storyboardElementType="event" 
+                                storyboardElementRef="StopEvent"
+                                state="completeState"/>
+                        </ByValueCondition>									
+                    </Condition>
+               </ConditionGroup>
+            </StopTrigger>
+         </Act>
+      </Story>
+   </Storyboard>
 </OpenSCENARIO>

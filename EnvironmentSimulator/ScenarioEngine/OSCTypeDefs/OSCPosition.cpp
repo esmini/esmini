@@ -53,23 +53,44 @@ OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset
 OSCPositionRelativeObject::OSCPositionRelativeObject(Object *object, double dx, double dy, double dz, OSCOrientation orientation) : 
 	OSCPosition(PositionType::RELATIVE_OBJECT), object_(object), dx_(dx), dy_(dy), dz_(dz), o_(orientation)
 {
+	position_.SetRelativePosition(&object->pos_, roadmanager::Position::PositionType::RELATIVE_OBJECT);
 }
 
 void OSCPositionRelativeObject::Evaluate()
+{
+	return;
+}
+
+void OSCPositionRelativeObject::Print()
+{
+	LOG("");
+	object_->pos_.Print();
+	LOG("dx: %.2f dy: %.2f dz: %.2f", dx_, dy_, dz_);
+	LOG("orientation: h %.2f p %.2f r %.2f %s", o_.h_, o_.p_, o_.r_, o_.type_ == OSCOrientation::OrientationType::ABSOLUTE ? "Absolute" : "Relative");
+}
+
+
+OSCPositionRelativeWorld::OSCPositionRelativeWorld(Object* object, double dx, double dy, double dz, OSCOrientation orientation) :
+	OSCPosition(PositionType::RELATIVE_WORLD), object_(object), dx_(dx), dy_(dy), dz_(dz), o_(orientation)
+{
+	position_.SetRelativePosition(&object->pos_, roadmanager::Position::PositionType::RELATIVE_WORLD);
+}
+
+void OSCPositionRelativeWorld::Evaluate()
 {
 	if (o_.type_ == OSCOrientation::OrientationType::ABSOLUTE)
 	{
 		position_.SetInertiaPos(object_->pos_.GetX() + dx_, object_->pos_.GetY() + dy_, object_->pos_.GetZ() + dz_,
 			o_.h_, o_.p_, o_.r_);
 	}
-	else 
+	else
 	{
 		position_.SetInertiaPos(object_->pos_.GetX() + dx_, object_->pos_.GetY() + dy_, object_->pos_.GetZ() + dz_,
 			object_->pos_.GetH() + o_.h_, object_->pos_.GetP() + o_.p_, object_->pos_.GetR() + o_.r_);
 	}
 }
 
-void OSCPositionRelativeObject::Print()
+void OSCPositionRelativeWorld::Print()
 {
 	LOG("");
 	object_->pos_.Print();

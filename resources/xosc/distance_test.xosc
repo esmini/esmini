@@ -1,93 +1,90 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-
-	<FileHeader revMajor="0" revMinor="9" date="2017-11-27T10:00:00"
-		description="Simulation Scenarios - Hiwghway Merge" author="SimS" />
-
-	<ParameterDeclaration>
-		<Parameter name="$Gap_dist" type="double" value="15" />
-		<Parameter name="$Max_acc" type="double" value="15" />
-		<Parameter name="$Max_ret" type="double" value="15" />
-	</ParameterDeclaration>
-
-	<Catalogs>
-		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/Vehicles"/>
-		</VehicleCatalog>
-	</Catalogs>
-
-	<RoadNetwork>
-		<Logics filepath="../xodr/straight_500m.xodr" />
-		<SceneGraph filepath="../models/straight_500m.osgb" />
-	</RoadNetwork>
-
-	<Entities>
-		<Object name="Ego">
-			<CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
-		</Object>
-
-		<Object name="Dummy">
-			<CatalogReference catalogName="VehicleCatalog" entryName="car_red" />
-		</Object>
-
-	</Entities>
-
-	<Storyboard>
-		<Init>
-			<Actions>
-				<Private object="Ego">
-					<Action>
-						<Position>
-							<Lane roadId="1" s="50.0" laneId="-1" offset="0.0" />
-						</Position>
-					</Action>
-					<Action>
-						<Longitudinal>
-							<Speed>
-								<Dynamics shape="step" />
-								<Target>
-									<Absolute value="15" />
-								</Target>
-							</Speed>
-						</Longitudinal>
-					</Action>
-				</Private>
-
-				<Private object="Dummy">
-					<Action>
-						<Position>
-							<Lane roadId="1" s="10.0" laneId="-1" offset="0.0" />
-						</Position>
-					</Action>
-					<Action>
-						<Longitudinal>
-							<Speed>
-								<Dynamics shape="step" />
-								<Target>
-									<Absolute value="15.0" />  
-								</Target>
-							</Speed>
-						</Longitudinal>
-					</Action>
-					<Action>
-						<Longitudinal>
-							<Distance object="Ego" freespace="true" distance="$Gap_dist">
-								<Dynamics>
-									<Limited maxSpeed="40" maxAcceleration="$Max_acc" maxDeceleration="$Max_ret" />
-								</Dynamics>
-							</Distance>
-						</Longitudinal>
-					</Action>
-				</Private>
-
-			</Actions>
-		</Init>
-
-		<Story name="Story_DistTest" owner="Dummy">
-			<Act name="Act_DistTest">
-			</Act>
-		</Story>
-        
-	</Storyboard>
-    
+   <FileHeader revMajor="0"
+               revMinor="9"
+               date="2017-11-27T10:00:00"
+               description="Simulation Scenarios - Hiwghway Merge"
+               author="SimS"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="$Gap_dist" parameterType="double" value="15"/>
+      <ParameterDeclaration name="$Max_acc" parameterType="double" value="15"/>
+      <ParameterDeclaration name="$Max_ret" parameterType="double" value="15"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_500m.xodr"/>
+      <SceneGraphFile filepath="../models/straight_500m.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+      </ScenarioObject>
+      <ScenarioObject name="Dummy">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0.0" s="50.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="15"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Dummy">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0.0" s="10.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="15.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <LongitudinalDistanceAction continuous="true"
+                                                 entityRef="Ego"
+                                                 distance="$Gap_dist"
+                                                 freespace="true">
+                        <DynamicConstraints maxAcceleration="$Max_acc" maxDeceleration="$Max_ret" maxSpeed="40"/>
+                     </LongitudinalDistanceAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story_DistTest">
+         <ParameterDeclarations>
+            <ParameterDeclaration parameterType="string" name="$owner" value="Dummy"/>
+         </ParameterDeclarations>
+         <Act name="Act_DistTest"/>
+      </Story>
+   </Storyboard>
 </OpenSCENARIO>

@@ -94,7 +94,8 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		// kick off init actions
 		for (size_t i = 0; i < init.private_action_.size(); i++)
 		{
-			init.private_action_[i]->Trig();
+			init.private_action_[i]->Start();
+			init.private_action_[i]->UpdateState();
 		}
 	}
 
@@ -104,187 +105,135 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		if (init.private_action_[i]->IsActive())
 		{
 			//LOG("Stepping action of type %d", init.private_action_[i]->action_[j]->type_)
-			init.private_action_[i]->Step(deltaSimTime);
+			init.private_action_[i]->Step(deltaSimTime, getSimulationTime());
+			init.private_action_[i]->UpdateState();
 		}
 	}
 
 	// Story 
+	bool all_done = true;
 	for (size_t i = 0; i < storyBoard.story_.size(); i++)
 	{
 		Story *story = storyBoard.story_[i];
+
 		for (size_t j = 0; j < story->act_.size(); j++)
 		{
-			// Update deactivated elements' state to inactive - This could probably be done in some other way...
-			for (size_t k = 0; k < story->act_[j]->sequence_.size(); k++)
+			Act *act = story->act_[j];
+
+			// Update elements' state - moving from transitions to stable states
+			for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
 			{
-				for (size_t l = 0; l < story->act_[j]->sequence_[k]->maneuver_.size(); l++)
+				for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
 				{
-					OSCManeuver *maneuver = story->act_[j]->sequence_[k]->maneuver_[l];
+					OSCManeuver *maneuver = act->maneuverGroup_[k]->maneuver_[l];
 
 					for (size_t m = 0; m < maneuver->event_.size(); m++)
 					{
 						for (size_t n = 0; n < maneuver->event_[m]->action_.size(); n++)
 						{
-							if (maneuver->event_[m]->action_[n]->state_ == OSCAction::State::DEACTIVATED)
-							{
-								maneuver->event_[m]->action_[n]->state_ = OSCAction::State::INACTIVE;
-							}
+							maneuver->event_[m]->action_[n]->UpdateState();
 						}
-						if (maneuver->event_[m]->state_ == Event::State::DEACTIVATED)
-						{
-							maneuver->event_[m]->state_ = Event::State::INACTIVE;
-						}
+						maneuver->event_[m]->UpdateState();
 					}
 				}
 			}
-			if (story->act_[j]->state_ == Act::State::DEACTIVATED)
-			{
-				story->act_[j]->state_ = Act::State::INACTIVE;
-			}
 
-			// Check Act conditions
-			if (!story->act_[j]->IsActive())
+			act->UpdateState();
+
+			if (act->IsTriggable())
 			{
 				// Check start conditions
-				for (size_t k = 0; k < story->act_[j]->start_condition_group_.size(); k++)
+				if (!act->start_trigger_)
 				{
-					for (size_t l = 0; l < story->act_[j]->start_condition_group_[k]->condition_.size(); l++)
-					{
-						if (story->act_[j]->start_condition_group_[k]->condition_[l]->Evaluate(&storyBoard, simulationTime))
-						{
-							story->act_[j]->Trig();
-						}
-					}
+					// Start act even if there's no trigger
+					act->Start();
 				}
-			}
-			else
-			{
-				// If activated last step, make transition to active
-				if (story->act_[j]->state_ == Act::State::ACTIVATED)
+				else if (act->start_trigger_->Evaluate(&storyBoard, simulationTime) == true)
 				{
-					story->act_[j]->state_ = Act::State::ACTIVE;
+					act->Start();
 				}
 			}
 
-			if (story->act_[j]->IsActive())
+			if (act->IsActive() && act->stop_trigger_)
 			{
-				// Check end conditions
-				for (size_t k = 0; k < story->act_[j]->end_condition_group_.size(); k++)
+				if (act->stop_trigger_->Evaluate(&storyBoard, simulationTime) == true)
 				{
-					for (size_t l = 0; l < story->act_[j]->end_condition_group_[k]->condition_.size(); l++)
-					{
-						if (story->act_[j]->end_condition_group_[k]->condition_[l]->Evaluate(&storyBoard, simulationTime))
-						{
-							story->act_[j]->Stop();
-						}
-					}
-				}
-
-				// Check cancel conditions
-				for (size_t k = 0; k < story->act_[j]->cancel_condition_group_.size(); k++)
-				{
-					for (size_t l = 0; l < story->act_[j]->cancel_condition_group_[k]->condition_.size(); l++)
-					{
-						if (story->act_[j]->cancel_condition_group_[k]->condition_[l]->Evaluate(&storyBoard, simulationTime))
-						{
-							story->act_[j]->Stop();
-						}
-					}
+					act->End();
 				}
 			}
+
+			// Check whether all acts are done
+			all_done = all_done && act->state_ == Act::State::COMPLETE;
 
 			// Maneuvers
-			if (story->act_[j]->IsActive())
+			if (act->IsActive())
 			{
-				for (size_t k = 0; k < story->act_[j]->sequence_.size(); k++)
+				for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
 				{
-					for (size_t l = 0; l < story->act_[j]->sequence_[k]->maneuver_.size(); l++)
+					for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
 					{
-						OSCManeuver *maneuver = story->act_[j]->sequence_[k]->maneuver_[l];
-
-						// Events - may only execute one at a time
-						for (size_t m = 0; m < maneuver->event_.size(); m++)
-						{
-							Event *event = story->act_[j]->sequence_[k]->maneuver_[l]->event_[m];
-
-							if (event->IsActive())
-							{
-								// If just activated, make transition to active
-								if (event->state_ == (Event::State)Act::State::ACTIVATED)
-								{
-									event->state_ = Event::State::ACTIVE;
-								}
-							}
-							else if (event->state_ == (Event::State)Act::State::DEACTIVATED)
-							{
-								// If just deactivated, make transition to inactive
-								event->state_ = Event::State::INACTIVE;
-							}
-						}
-						if (maneuver->GetActiveEventIdx() == -1 && maneuver->GetWaitingEventIdx() >= 0)
-						{
-							// When no active event, it's OK to trig waiting event
-							maneuver->event_[maneuver->GetWaitingEventIdx()]->Trig();
-						}
-
+						OSCManeuver *maneuver = act->maneuverGroup_[k]->maneuver_[l];
 
 						for (size_t m = 0; m < maneuver->event_.size(); m++)
 						{
 							Event *event = maneuver->event_[m];
 
-							if (event->Triggable())
+							if (event->IsTriggable())
 							{
 								// Check event conditions
-								for (size_t n = 0; n < event->start_condition_group_.size(); n++)
+								if (event->start_trigger_->Evaluate(&storyBoard, simulationTime) == true)
 								{
-									for (size_t o = 0; o < event->start_condition_group_[n]->condition_.size(); o++)
+									// Check priority
+									if (event->priority_ == Event::Priority::OVERWRITE)
 									{
-										if (event->start_condition_group_[n]->condition_[o]->Evaluate(&storyBoard, simulationTime))
+										// Activate trigged event
+										if (event->IsActive())
 										{
-											// Check priority
-											if (event->priority_ == Event::Priority::OVERWRITE)
-											{
-												// Deactivate any currently active event
-												if (maneuver->GetActiveEventIdx() >= 0)
-												{
-													LOG("Event %s cancelled", maneuver->event_[maneuver->GetActiveEventIdx()]->name_.c_str());
-													maneuver->event_[maneuver->GetActiveEventIdx()]->Stop();
-												}
-
-												// Activate trigged event
-												event->Trig();
-											}
-											else if (event->priority_ == Event::Priority::FOLLOWING)
-											{
-												// If already an active event, this event will wait
-												if (maneuver->GetActiveEventIdx() >= 0)
-												{
-													event->state_ = Event::State::WAITING;
-													LOG("Event %s is running, trigged event %s is waiting",
-														maneuver->event_[maneuver->GetActiveEventIdx()]->name_.c_str(), event->name_.c_str());
-												}
-												else
-												{
-													event->Trig();
-												}
-											}
-											else if (event->priority_ == Event::Priority::SKIP)
-											{
-												if (maneuver->GetActiveEventIdx() >= 0)
-												{
-													LOG("Event %s is running, skipping trigged %s",
-														maneuver->event_[maneuver->GetActiveEventIdx()]->name_.c_str(), event->name_.c_str());
-												}
-												else
-												{
-													event->Trig();
-												}
-											}
-											else
-											{
-												LOG("Unknown event priority: %d", event->priority_);
-											}
+											LOG("Can't overwrite own running event (%s) - skip trig", event->name_.c_str());
 										}
+										else
+										{
+											// Deactivate any currently active event
+											for (size_t n = 0; n < maneuver->event_.size(); n++)
+											{
+												if (maneuver->event_[n]->IsActive())
+												{
+													maneuver->event_[n]->End();
+													LOG("Event %s ended, overwritten by event %s",
+														maneuver->event_[n]->name_.c_str(), event->name_.c_str());
+												}
+											}
+
+											event->Start();
+										}
+									}
+									else if (event->priority_ == Event::Priority::SKIP)
+									{
+										if (maneuver->IsAnyEventActive())
+										{
+											LOG("Event is running, skipping trigged %s", event->name_.c_str());
+										}
+										else
+										{
+											event->Start();
+										}
+									}
+									else if (event->priority_ == Event::Priority::PARALLEL)
+									{
+										// Don't care if any other action is ongoing, launch anyway
+										if (event->IsActive())
+										{
+											LOG("Event %s already running, trigger ignored", event->name_.c_str());
+										}
+										else if (maneuver->IsAnyEventActive())
+										{
+											LOG("Event(s) ongoing, %s will run in parallel", event->name_.c_str());
+										}
+										event->Start();
+									}
+									else
+									{
+										LOG("Unknown event priority: %d", event->priority_);
 									}
 								}
 							}
@@ -296,26 +245,9 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 
 								for (size_t n = 0; n < event->action_.size(); n++)
 								{
-									//LOG("action %s state 1: %d", event->action_[n]->name_.c_str(), event->action_[n]->state_);
-									//LOG("action %s state 2: %d", event->action_[n]->name_.c_str(), event->action_[n]->state_);
-									if (event->action_[n]->state_ == OSCAction::State::TRIGGED)
-									{
-										event->action_[n]->state_ = OSCAction::State::ACTIVATED;
-									}
-									else if (event->action_[n]->state_ == OSCAction::State::ACTIVATED)
-									{
-										event->action_[n]->state_ = OSCAction::State::ACTIVE;
-									}
-
 									if (event->action_[n]->IsActive())
 									{
-										event->action_[n]->Step(deltaSimTime);
-										
-										// Handle exit action - set flag to indicate scenario is done and application can now quit
-										if (event->action_[n]->base_type_ == OSCAction::GLOBAL && ((OSCGlobalAction*)(event->action_[n]))->type_ == OSCGlobalAction::EXT_QUIT)
-										{
-											quit_flag = true;
-										}
+										event->action_[n]->Step(deltaSimTime, getSimulationTime());
 										
 										active = active || (event->action_[n]->IsActive());
 									}
@@ -323,7 +255,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 								if (!active)
 								{
 									// Actions done -> Set event done
-									event->Stop();
+									event->End();
 								}
 							}
 						}
@@ -354,6 +286,12 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	}
 
 	stepObjects(deltaSimTime);
+
+	if (all_done)
+	{
+		LOG("All acts are done, quit now");
+		quit_flag = true;
+	}
 }
 
 void ScenarioEngine::printSimulationTime()
@@ -429,12 +367,13 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 {
 	bool hybrid_objects = false;
 
+	scenarioReader->parseGlobalParameterDeclarations();
+
 	// Init road manager
 	scenarioReader->parseRoadNetwork(roadNetwork);
 	roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str());
 	odrManager = roadmanager::Position::GetOpenDrive();
 
-	scenarioReader->parseGlobalParameterDeclaration();
 	scenarioReader->parseCatalogs();
 	scenarioReader->parseEntities();
 
@@ -502,7 +441,11 @@ void ScenarioEngine::stepObjects(double dt)
 			{
 				obj->pos_.MoveRouteDS(steplen);
 			}
-			else
+			else if (obj->pos_.GetTrajectory())
+			{
+				// Do nothing - updates handled by followTrajectoryAction
+			}
+			else 
 			{
 				// Adjustment movement to heading and road direction 
 				if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)
@@ -512,6 +455,7 @@ void ScenarioEngine::stepObjects(double dt)
 				}
 				obj->pos_.MoveAlongS(steplen);
 			}
+			obj->odometer_ += abs(steplen);  // odometer always measure all movements as positive, I guess...
 		}
 		obj->trail_.AddState((float)simulationTime, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
 	}

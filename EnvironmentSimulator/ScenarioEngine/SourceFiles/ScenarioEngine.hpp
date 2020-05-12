@@ -61,8 +61,8 @@ namespace scenarioengine
 		void exit();
 
 		std::string getScenarioFilename() { return scenarioReader->getScenarioFilename(); }
-		std::string getSceneGraphFilename() { return roadNetwork.SceneGraph.filepath; }
-		std::string getOdrFilename() { return roadNetwork.Logics.filepath; }
+		std::string getSceneGraphFilename() { return roadNetwork.sceneGraphFile.filepath; }
+		std::string getOdrFilename() { return roadNetwork.logicFile.filepath; }
 		roadmanager::OpenDrive *getRoadManager() { return odrManager; }
 
 		ScenarioGateway *getScenarioGateway();

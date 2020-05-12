@@ -541,18 +541,6 @@ int ScenarioPlayer::Init()
 		return -1;
 	}
 
-	// Add a front looking sensor to each external vehicle
-	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
-	{
-		Object *obj = scenarioEngine->entities.object_[i];
-
-		if (obj->GetControl() == Object::Control::EXTERNAL ||
-			obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
-		{
-			AddObjectSensor((int)i, 4, 0, 0.5, 0, 5, 50, 50 * M_PI / 180.0, 10);
-		}
-	}
-
 	if (launch_server && (scenarioEngine->entities.object_[0]->GetControl() == Object::Control::EXTERNAL ||
 		scenarioEngine->entities.object_[0]->GetControl() == Object::Control::HYBRID_EXTERNAL))
 	{

@@ -62,9 +62,11 @@ namespace scenarioengine
 		int model_id_;
 		Object *ghost_;     // If hybrid control mode, this will point to the ghost entity
 		ObjectTrail trail_;
+		double odometer_;
 
 		Object(Type type) : type_(type), id_(0), trail_follow_index_(0), control_(Object::Control::INTERNAL),
-			speed_(0), wheel_angle_(0), wheel_rot_(0), route_(0), model_filepath_(""), ghost_(0), trail_follow_s_(0) {}
+			speed_(0), wheel_angle_(0), wheel_rot_(0), route_(0), model_filepath_(""), ghost_(0), trail_follow_s_(0),
+		    odometer_(0) {}
 		void SetControl(Control control) { control_ = control; }
 		Control GetControl() { return control_; }
 	};

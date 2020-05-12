@@ -54,7 +54,7 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 	return end_value;
 }
 
-void FollowRouteAction::Trig()
+void FollowRouteAction::Start()
 {
 	if (object_->control_ == Object::Control::EXTERNAL ||
 		object_->control_ == Object::Control::HYBRID_EXTERNAL)
@@ -65,10 +65,10 @@ void FollowRouteAction::Trig()
 
 	object_->pos_.SetRoute(route_);
 
-	OSCAction::Trig();
+	OSCAction::Start();
 }
 
-void LatLaneChangeAction::Trig()
+void FollowTrajectoryAction::Start()
 {
 	if (object_->control_ == Object::Control::EXTERNAL ||
 		object_->control_ == Object::Control::HYBRID_EXTERNAL)
@@ -76,7 +76,55 @@ void LatLaneChangeAction::Trig()
 		// motion control handed over 
 		return;
 	}
-	OSCAction::Trig();
+
+	traj_->Freeze();
+	object_->pos_.SetTrajectory(traj_);
+	
+	OSCAction::Start();
+}
+
+void FollowTrajectoryAction::Step(double dt, double simTime)
+{
+	time_ += timing_scale_ * dt;
+
+	if (!traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->shape_->length_ - DISTANCE_TOLERANCE))
+	{
+		// Disconnect trajectory
+		object_->pos_.SetTrajectory(0);
+
+		// Calculate road coordinates from final inertia (X, Y) coordinates
+		roadmanager::Position* p = &object_->pos_;
+		p->XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetHRoad(), true);
+
+		OSCAction::End();
+	}
+	else
+	{
+		// Move along trajectory
+		if (timing_domain_ == TimingDomain::NONE)
+		{
+			object_->pos_.MoveTrajectoryDS(object_->speed_ * dt);
+		}
+		else if (timing_domain_ == TimingDomain::TIMING_RELATIVE)
+		{
+			object_->pos_.SetTrajectoryPosByTime(traj_, time_ + timing_offset_);
+		}
+		else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
+		{
+			object_->pos_.SetTrajectoryPosByTime(traj_, simTime * timing_scale_ + timing_offset_);
+		}
+	}
+}
+
+void LatLaneChangeAction::Start()
+{
+	if (object_->control_ == Object::Control::EXTERNAL ||
+		object_->control_ == Object::Control::HYBRID_EXTERNAL)
+	{
+		// motion control handed over 
+		return;
+	}
+	OSCAction::Start();
 
 	if (target_->type_ == Target::Type::ABSOLUTE)
 	{
@@ -89,7 +137,7 @@ void LatLaneChangeAction::Trig()
 	start_t_ = object_->pos_.GetT();
 }
 
-void LatLaneChangeAction::Step(double dt)
+void LatLaneChangeAction::Step(double dt, double simTime)
 {
 	double target_t;
 	double t, t_old;
@@ -101,32 +149,32 @@ void LatLaneChangeAction::Step(double dt)
 		object_->pos_.GetOpenDrive()->GetRoadById(object_->pos_.GetTrackId())->GetCenterOffset(object_->pos_.GetS(), target_lane_id_) +
 		target_lane_offset_;
 
-	if (dynamics_.timing_type_ == Timing::TIME || dynamics_.timing_type_ == Timing::DISTANCE)
+	if (transition_dynamics_.dimension_ == DynamicsDimension::TIME || transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
 	{
-		if (dynamics_.timing_type_ == Timing::TIME)
+		if (transition_dynamics_.dimension_ == DynamicsDimension::TIME)
 		{
 			double dt_adjusted = dt;
 
 			// Set a limit for lateral speed not to exceed longitudinal speed
-			if (dynamics_.timing_target_value_ * object_->speed_ < fabs(target_t - start_t_))
+			if (transition_dynamics_.target_value_ * object_->speed_ < fabs(target_t - start_t_))
 			{
-				dt_adjusted = dt * object_->speed_ * dynamics_.timing_target_value_ / fabs(target_t - start_t_);
+				dt_adjusted = dt * object_->speed_ * transition_dynamics_.target_value_ / fabs(target_t - start_t_);
 			}
 			elapsed_ += dt_adjusted;
 		}
-		else if (dynamics_.timing_type_ == Timing::DISTANCE)
+		else if (transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
 		{
 			elapsed_ += object_->speed_ * dt;
 		}
 		else
 		{
-			LOG("Unexpected timing type: %d", dynamics_.timing_type_);
+			LOG("Unexpected timing type: %d", transition_dynamics_.dimension_);
 		}
 
-		factor = elapsed_ / dynamics_.timing_target_value_;
+		factor = elapsed_ / transition_dynamics_.target_value_;
 		t_old = object_->pos_.GetT();
 
-		t = dynamics_.transition_.Evaluate(factor, start_t_, target_t);
+		t = transition_dynamics_.Evaluate(factor, start_t_, target_t);
 		
 		if (object_->pos_.GetRoute())
 		{
@@ -143,7 +191,7 @@ void LatLaneChangeAction::Step(double dt)
 
 		if (factor > 1.0)
 		{
-			OSCAction::Stop();
+			OSCAction::End();
 			object_->pos_.SetHeadingRelativeRoadDirection(0);
 		}
 		else
@@ -157,11 +205,11 @@ void LatLaneChangeAction::Step(double dt)
 	}
 	else
 	{
-		LOG("Timing type %d not supported yet", dynamics_.timing_type_);
+		LOG("Timing type %d not supported yet", transition_dynamics_.dimension_);
 	}
 }
 
-void LatLaneOffsetAction::Trig()
+void LatLaneOffsetAction::Start()
 {
 	if (object_->control_ == Object::Control::EXTERNAL ||
 		object_->control_ == Object::Control::HYBRID_EXTERNAL)
@@ -170,11 +218,11 @@ void LatLaneOffsetAction::Trig()
 		return;
 	}
 
-	OSCAction::Trig();
+	OSCAction::Start();
 	start_lane_offset_ = object_->pos_.GetOffset();
 }
 
-void LatLaneOffsetAction::Step(double dt)
+void LatLaneOffsetAction::Step(double dt, double simTime)
 {
 	double factor, lane_offset;
 	double angle = 0;
@@ -194,7 +242,7 @@ void LatLaneOffsetAction::Step(double dt)
 
 	if (factor > 1.0)
 	{
-		OSCAction::Stop();
+		OSCAction::End();
 		angle = 0;
 	}
 
@@ -233,7 +281,7 @@ double LongSpeedAction::TargetRelative::GetValue()
 	return 0;
 }
 
-void LongSpeedAction::Trig()
+void LongSpeedAction::Start()
 {
 	if (object_->control_ == Object::Control::EXTERNAL ||
 		object_->control_ == Object::Control::HYBRID_EXTERNAL)
@@ -242,27 +290,27 @@ void LongSpeedAction::Trig()
 		return;
 	}
 
-	OSCAction::Trig();
+	OSCAction::Start();
 
 	start_speed_ = object_->speed_;
 }
 
-void LongSpeedAction::Step(double dt)
+void LongSpeedAction::Step(double dt, double simTime)
 {
 	double factor = 0.0;
 	double new_speed = 0;
 	bool target_speed_reached = false;
 
-	if (dynamics_.transition_.shape_ == DynamicsShape::STEP)
+	if (transition_dynamics_.shape_ == DynamicsShape::STEP)
 	{
 		new_speed = target_->GetValue();
 		target_speed_reached = true;
 	}
-	else if (dynamics_.timing_type_ == Timing::RATE)
+	else if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
 	{
 		elapsed_ += dt;
 		double speed_diff = target_->GetValue() - object_->speed_;
-		new_speed = object_->speed_ + SIGN(speed_diff) * fabs(dynamics_.timing_target_value_) * dt;
+		new_speed = object_->speed_ + SIGN(speed_diff) * fabs(transition_dynamics_.target_value_) * dt;
 
 		// Check if speed changed passed target value
 		if ((object_->speed_ > target_->GetValue() && new_speed < target_->GetValue()) ||
@@ -272,10 +320,10 @@ void LongSpeedAction::Step(double dt)
 			target_speed_reached = true;
 		}
 	}
-	else if (dynamics_.timing_type_ == Timing::TIME)
+	else if (transition_dynamics_.dimension_ == DynamicsDimension::TIME)
 	{
 		elapsed_ += dt;
-		factor = elapsed_ / (dynamics_.timing_target_value_);
+		factor = elapsed_ / (transition_dynamics_.target_value_);
 
 		if(factor > 1.0)
 		{
@@ -284,12 +332,12 @@ void LongSpeedAction::Step(double dt)
 		}
 		else
 		{
-			new_speed = dynamics_.transition_.Evaluate(factor, start_speed_, target_->GetValue());
+			new_speed = transition_dynamics_.Evaluate(factor, start_speed_, target_->GetValue());
 		}
 	}
 	else
 	{
-		LOG("Timing type %d not supported yet", dynamics_.timing_type_);
+		LOG("Timing type %d not supported yet", transition_dynamics_.dimension_);
 		new_speed = target_->GetValue();
 		OSCAction::Stop();
 
@@ -298,13 +346,13 @@ void LongSpeedAction::Step(double dt)
 
 	if (target_speed_reached && !(target_->type_ == Target::Type::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
 	{
-		OSCAction::Stop();
+		OSCAction::End();
 	}
 
 	object_->speed_ = new_speed;
 }
 
-void LongDistanceAction::Step(double dt)
+void LongDistanceAction::Step(double dt, double simTime)
 {
 	// Find out current distance
 	double x, y;
@@ -362,7 +410,7 @@ void LongDistanceAction::Step(double dt)
 //	LOG("Dist %.2f diff %.2f acc %.2f speed %.2f", distance, distance_diff, acc, object_->speed_);
 }
 
-void LongDistanceAction::Trig()
+void LongDistanceAction::Start()
 {
 	if (target_object_ == 0)
 	{
@@ -370,33 +418,20 @@ void LongDistanceAction::Trig()
 		return;
 	}
 
-	OSCAction::Trig();
+	OSCAction::Start();
 }
 
-void MeetingRelativeAction::Step(double dt)
+void PositionAction::Start()
 {
-	(void)dt;
-
-	// Calculate straight distance, not along road/route. To be improved.
-	double x, y;
-	double pivotDist = object_->pos_.getRelativeDistance(*own_target_position_, x, y);
-	double targetTimeToDest = LARGE_NUMBER;
-	double relativeDist = MAX(0, relative_object_->pos_.getRelativeDistance(*relative_target_position_, x, y));
-
-	if (relative_object_->speed_ > SMALL_NUMBER)
+	// Evaluate position, potentially dependent on other entities
+	if (position_->type_ == OSCPosition::PositionType::RELATIVE_LANE)
 	{
-		targetTimeToDest = relativeDist / relative_object_->speed_;
+		OSCPositionRelativeLane* osc_pos = (OSCPositionRelativeLane*)position_;
+		roadmanager::Position* pos = position_->GetRMPos();
+		pos->CopyRMPos(&osc_pos->object_->pos_);
+		pos->SetLanePos(pos->GetTrackId(), pos->GetLaneId() + osc_pos->dLane_, pos->GetS() + osc_pos->ds_, pos->GetOffset() + osc_pos->offset_);
 	}
-
-	// Done when either of the vehicles reaches the destination
-	if (relativeDist < DISTANCE_TOLERANCE || (targetTimeToDest + offsetTime_) < SMALL_NUMBER)
-	{
-		OSCAction::Stop();
-	}
-	else
-	{
-		object_->speed_ = pivotDist / (targetTimeToDest + offsetTime_);
-	}
+	OSCAction::Start();
 }
 
 double SynchronizeAction::CalcSpeedForLinearProfile(double v_final, double time, double dist)
@@ -471,7 +506,7 @@ void SynchronizeAction::PrintStatus(const char* custom_msg)
 		Mode2Str(mode_), mode_, SubMode2Str(submode_), submode_);
 }
 
-void SynchronizeAction::Step(double dt)
+void SynchronizeAction::Step(double dt, double simTime)
 {
 	(void)dt;
 
@@ -503,7 +538,7 @@ void SynchronizeAction::Step(double dt)
 	// Done when either of the vehicles reaches the destination
 	if (dist < DISTANCE_TOLERANCE || (masterTimeToDest) < SMALL_NUMBER)
 	{
-		OSCAction::Stop();
+		OSCAction::End();
 	}
 	else
 	{

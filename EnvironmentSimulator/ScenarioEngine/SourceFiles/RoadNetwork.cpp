@@ -22,7 +22,7 @@ RoadNetwork::RoadNetwork()
 void RoadNetwork::Print()
 {
 	LOG("Logics: ");
-	Logics.Print();
+	logicFile.Print();
 	LOG("SceneGraph: %s");
-	SceneGraph.Print();
+	sceneGraphFile.Print();
 }

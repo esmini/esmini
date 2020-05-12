@@ -28,7 +28,6 @@ namespace scenarioengine
 			PARAMETER,       // not supported yet
 			INFRASTRUCTURE,  // not supported yet
 			TRAFFIC,         // not supported yet
-			EXT_QUIT,
 		} Type;
 
 		Type type_;
@@ -45,25 +44,5 @@ namespace scenarioengine
 
 	};
 
-	class EXT_QuitAction : public OSCGlobalAction
-	{
-	public:
-		EXT_QuitAction() : OSCGlobalAction(OSCGlobalAction::Type::EXT_QUIT) {}
-
-		void print()
-		{
-			LOG("");
-		}
-
-		void Step(double dt)
-		{
-			OSCAction::Stop();
-		}
-
-		void Trig()
-		{
-			OSCAction::Trig();
-		}
-	};
 }
 

@@ -9,7 +9,7 @@ Catalogs
     MiscObjectCatalog                       No
     EnvironmentCatalog                      No
     ManeuverCatalog                         Yes
-    TrajectoryCatalog                       No
+    TrajectoryCatalog                       Yes (untested)
     RouteCatalog                            Yes
                                             
 RoadNetwork                                 
@@ -33,20 +33,19 @@ Storyboard
             Private                         Yes
     Story                                   
         Act                                 
-            Sequence                        
-                numberOfExecutions          No
+            ManeuverGroup                        
+                numberOfExecutions          Yes
                 Actors                      
                     Entity                  Yes
                     ByCondition             No
                 CatalogReference            Yes
                 Maneuver                    Yes
-            Conditions                      
-                Start                       Yes
-                End                         Yes
-                Cancel                      No
-    EndConditions                           No
+            Trigger                      
+                StartTrigger                Yes
+                StopTrigger                 Yes
+    StopTrigger                             Yes
 OSCTypeDefs                                 
-    OSCTrajectory                           No
+    OSCTrajectory                           Yes (PolyLine only and limited testing)
     OSCRoute                                
         closed                              No
         ParameterDeclaration                No
@@ -59,7 +58,7 @@ OSCTypeDefs
     OSCTrafficDefinition                    Yes
     OSCPosition                             
         World                               Yes
-        RelativeWorld                       No
+        RelativeWorld                       Yes
         RelativeObject                      Yes
         Road                                No
         RelativeRoad                        No
@@ -103,7 +102,7 @@ OSCTypeDefs
                 StandStill                  No
                 Speed                       No
                 RelativeSpeed               No
-                TraveledDistance            No
+                TraveledDistance            Yes
                 ReachPosition               Yes
                 Distance                    Yes
                 RelativeDistance            Yes
@@ -120,7 +119,8 @@ OSCTypeDefs
         edge                                
             rising                          Yes
             falling                         Yes
-            any                             Yes
+            risingOrFalling                 Yes
+            none                            Yes
     OSCConditionGroup                       Yes
     OSCPrivateAction                        
         Longitudinal                        
@@ -184,8 +184,8 @@ OSCTypeDefs
                         value               Yes
             Distance                        No
         Visibility                          No
-        Meeting                             Yes
-        Autonomous                          No
+        Synchronize                         Yes
+        Autonomous                          Yes
         Controller                          No
         Position                            Yes
         Routing                             

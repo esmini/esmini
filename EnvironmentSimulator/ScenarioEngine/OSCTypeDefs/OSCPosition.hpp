@@ -127,6 +127,33 @@ namespace scenarioengine
 		}
 	};
 
+	class OSCPositionRelativeWorld : OSCPosition
+	{
+	public:
+		Object* object_;
+		double dx_;
+		double dy_;
+		double dz_;
+		OSCOrientation o_;
+
+		OSCPositionRelativeWorld(Object* object, double dx, double dy, double dz, OSCOrientation orientation);
+
+		double GetX() { Evaluate(); return position_.GetX(); }
+		double GetY() { Evaluate(); return position_.GetY(); }
+		double GetZ() { Evaluate(); return position_.GetZ(); }
+		double GetH() { Evaluate(); return position_.GetH(); }
+		double GetP() { Evaluate(); return position_.GetP(); }
+		double GetR() { Evaluate(); return position_.GetR(); }
+
+		void Print();
+		void Evaluate();
+		roadmanager::Position* GetRMPos()
+		{
+			Evaluate();
+			return &position_;
+		}
+	};
+
 	class OSCPositionRelativeLane : OSCPosition
 	{
 	public:

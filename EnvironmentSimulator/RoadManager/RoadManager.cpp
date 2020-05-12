@@ -2679,6 +2679,7 @@ void Position::Init()
 	lane_id_ = 0;
 	s_ = 0.0;
 	s_route_ = 0.0;
+	s_trajectory_ = 0.0;
 	t_ = 0.0;
 	offset_ = 0.0;
 	x_ = 0.0;
@@ -2692,6 +2693,8 @@ void Position::Init()
 	h_relative_ = 0.0;
 	curvature_ = 0.0;
 	p_road_ = 0.0;
+	rel_pos_ = 0;
+	type_ = PositionType::NORMAL;
 
 	z_road_ = 0.0;
 	track_idx_ = -1;
@@ -2700,6 +2703,7 @@ void Position::Init()
 	lane_idx_ = -1;
 	elevation_idx_ = -1;
 	route_ = 0;
+	trajectory_ = 0;
 }
 
 Position::Position()
@@ -3279,7 +3283,7 @@ void Position::Lane2Track()
 
 void Position::XYZ2Track(bool alignZAndPitch)
 {
-	XYZH2TrackPos(GetX(), GetY(), GetZ(), GetH(), alignZAndPitch);
+	XYZH2TrackPos(x_, y_, z_, h_, alignZAndPitch);
 }
 
 int Position::SetLongitudinalTrackPos(int track_id, double s)
@@ -4004,6 +4008,11 @@ void Position::SetRoute(Route *route)
 	CalcRoutePosition();
 }
 
+void Position::SetTrajectory(Trajectory* trajectory)
+{
+	trajectory_ = trajectory;
+}
+
 bool Position::Delta(Position pos_b, PositionDiff &diff)
 {
 	double dist = 0;
@@ -4207,6 +4216,134 @@ int Position::GetProbeInfo(Position *target_pos, RoadProbeInfo *data)
 	return 0;
 }
 
+double Position::GetX()
+{
+	if (!rel_pos_)
+	{
+		return x_;
+	}
+	else if (type_ == PositionType::RELATIVE_OBJECT)
+	{
+		return rel_pos_->GetX() + x_ * cos(rel_pos_->GetH()) - y_ * sin(rel_pos_->GetH());
+	}
+	else if (type_ == PositionType::RELATIVE_WORLD)
+	{
+		return x_ + rel_pos_->GetX();
+	}
+	else
+	{
+		LOG("Unexpected PositionType: %d", type_);
+	}
+
+	return x_;
+}
+
+double Position::GetY()
+{
+	if (!rel_pos_)
+	{
+		return y_;
+	}
+	else if (type_ == PositionType::RELATIVE_OBJECT)
+	{
+		return rel_pos_->GetY() + y_ * cos(rel_pos_->GetH()) + x_ * sin(rel_pos_->GetH());
+	}
+	else if (type_ == PositionType::RELATIVE_WORLD)
+	{
+		return y_ + rel_pos_->GetY();
+	}
+	else
+	{
+		LOG("Unexpected PositionType: %d", type_);
+	}
+
+	return y_;
+}
+
+double Position::GetZ()
+{
+	if (!rel_pos_)
+	{
+		return z_;
+	}
+	else if (type_ == PositionType::RELATIVE_OBJECT || type_ == PositionType::RELATIVE_WORLD)
+	{
+		return z_ + rel_pos_->GetZ();
+	}
+	else
+	{
+		LOG("Unexpected PositionType: %d", type_);
+	}
+
+	return z_;
+}
+
+double Position::GetH()
+{
+	if (!rel_pos_)
+	{
+		return h_;
+	}
+	else if (type_ == PositionType::RELATIVE_OBJECT)
+	{
+		return h_ + rel_pos_->GetH();
+	}
+	else if (type_ == PositionType::RELATIVE_WORLD)
+	{
+		return h_;
+	}
+	else
+	{
+		LOG("Unexpected PositionType: %d", type_);
+	}
+	
+	return h_;
+}
+
+double Position::GetP()
+{
+	if (!rel_pos_)
+	{
+		return p_;
+	}
+	else if (type_ == PositionType::RELATIVE_OBJECT)
+	{
+		return p_ + rel_pos_->GetP();
+	}
+	else if (type_ == PositionType::RELATIVE_WORLD)
+	{
+		return p_;
+	}
+	else
+	{
+		LOG("Unexpected PositionType: %d", type_);
+	}
+
+	return p_;
+}
+
+double Position::GetR()
+{
+	if (!rel_pos_)
+	{
+		return r_;
+	}
+	else if (type_ == PositionType::RELATIVE_OBJECT)
+	{
+		return r_ + rel_pos_->GetR();
+	}
+	else if (type_ == PositionType::RELATIVE_WORLD)
+	{
+		return r_;
+	}
+	else
+	{
+		LOG("Unexpected PositionType: %d", type_);
+	}
+
+	return r_;
+}
+
 int Position::SetRoutePosition(Position *position)
 {
 	if(!route_)
@@ -4254,6 +4391,161 @@ int Position::SetRouteLanePosition(Route *route, double route_s, int laneId, dou
 	SetLanePos(track_id_, laneId, s_, laneOffset);
 
 	return 0;
+}
+
+void PolyLine::AddVertex(Position pos, double time)
+{
+	Vertex* v = new Vertex();
+	v->pos_ = pos;
+	v->time_ = time;
+	vertex_.push_back(v);
+	if (vertex_.size() > 1)
+	{
+		length_ += PointDistance2D(
+			vertex_[vertex_.size() - 2]->pos_.GetX(),
+			vertex_[vertex_.size() - 2]->pos_.GetY(),
+			vertex_[vertex_.size() - 1]->pos_.GetX(),
+			vertex_[vertex_.size() - 1]->pos_.GetY());
+	}
+}
+
+int Position::MoveTrajectoryDS(double ds)
+{
+	if (!trajectory_)
+	{
+		return -1;
+	}
+
+	if (trajectory_->shape_->type_ == Shape::POLYLINE)
+	{
+		PolyLine* pline = (PolyLine*)trajectory_->shape_;
+		if (pline->vertex_.size() == 0)
+		{
+			return -1;
+		}
+		SetTrajectoryS(trajectory_, s_trajectory_ + ds);
+	}
+	else
+	{
+		LOG("Trajectory types Clothoid and Nurbs not supported yet");
+	}
+
+	return 0;
+}
+
+int Position::SetTrajectoryPosByTime(Trajectory* trajectory, double time)
+{
+	double s = 0;
+	double incr_time = 0;
+	double tot_dist = 0;
+
+	// Find out corresponding S-value
+	size_t i = 0;
+	if (trajectory->shape_->type_ == Shape::POLYLINE)
+	{
+		PolyLine* pline = (PolyLine*)trajectory->shape_;
+
+
+		for (i = 0; i < pline->vertex_.size()-1; i++)
+		{
+			double t0 = pline->vertex_[i]->time_;
+			double t1 = pline->vertex_[i+1]->time_;
+			Position* vp0 = &pline->vertex_[i]->pos_;
+			Position* vp1 = &pline->vertex_[i+1]->pos_;
+
+			double dist = PointDistance2D(vp0->GetX(), vp0->GetY(), vp1->GetX(), vp1->GetY());
+
+			if (time < t1)
+			{
+				double a = (time - t0) / (t1 - t0);
+				s += a * dist;
+				break;
+			}
+			s += dist;
+		}
+	}
+	else
+	{
+		LOG("Trajectory types Clothoid and Nurbs not supported yet");
+	}
+	
+//	LOG("i %d t %.2f s %.2f", i, time, s);
+
+	SetTrajectoryS(trajectory_, s);
+
+	return 0;
+}
+
+int Position::SetTrajectoryS(Trajectory* trajectory, double traj_s)
+{
+	if (!trajectory)
+	{
+		return -1;
+	}
+
+	s_trajectory_ = traj_s;
+	
+	if (trajectory->shape_->type_ == Shape::POLYLINE)
+	{
+		PolyLine* pline = (PolyLine*)trajectory->shape_;
+		if (pline->vertex_.size() == 0)
+		{
+			return -1;
+		}
+		else if (pline->vertex_.size() == 1)
+		{
+			// Only one vertex 
+			Position* vpos = &pline->vertex_[0]->pos_;
+			SetInertiaPos(vpos->GetX(), vpos->GetY(), vpos->GetZ(), vpos->GetH(), vpos->GetP(), vpos->GetR(), false);
+			
+			return 0;
+		}
+
+		double tot_dist = 0;
+		size_t i;
+		for (i = 0; i < pline->vertex_.size()-1; i++)
+		{
+			Position* vp0 = &pline->vertex_[i]->pos_;
+			Position* vp1 = &pline->vertex_[i+1]->pos_;
+			
+			double dist = PointDistance2D(vp0->GetX(), vp0->GetY(), vp1->GetX(), vp1->GetY());
+			if (traj_s < tot_dist + dist)
+			{
+				// At segment, make a linear interpolation
+				double a = (traj_s - tot_dist) / dist; // a = interpolation factor
+				double x = (1 - a) * vp0->GetX() + a * vp1->GetX();
+				double y = (1 - a) * vp0->GetY() + a * vp1->GetY();
+				double z = (1 - a) * vp0->GetZ() + a * vp1->GetZ();
+
+				SetInertiaPos(
+					(1 - a) * vp0->GetX() + a * vp1->GetX(),
+					(1 - a) * vp0->GetY() + a * vp1->GetY(),
+					(1 - a) * vp0->GetZ() + a * vp1->GetZ(),
+					(1 - a) * vp0->GetH() + a * vp1->GetH(),
+					(1 - a) * vp0->GetP() + a * vp1->GetP(),
+					(1 - a) * vp0->GetR() + a * vp1->GetR(),
+					false);
+				
+				return 0;
+			}
+			tot_dist += dist;
+		}
+
+		if (i == pline->vertex_.size())
+		{
+			// passed length of trajectory, use final vertex
+			Position* vpos = &pline->vertex_.back()->pos_;
+			SetInertiaPos(vpos->GetX(), vpos->GetY(), vpos->GetZ(), vpos->GetH(), vpos->GetP(), vpos->GetR(), false);
+
+			return 0;
+		}
+	}
+	else
+	{
+		LOG("Trajectory types Clothoid and Nurbs not supported yet");
+	}
+
+	return -1;
 }
 
 int Position::SetRouteS(Route *route, double route_s)
@@ -4312,6 +4604,13 @@ int Position::SetRouteS(Route *route, double route_s)
 	}
 
 	return -1;
+}
+
+void Position::ReleaseRelation()
+{
+	// Freeze position and then disconnect 
+	SetInertiaPos(GetX(), GetY(), GetZ(), GetH(), GetP(), GetR(), true);
+	SetRelativePosition(0, PositionType::NORMAL);
 }
 
 int Route::AddWaypoint(Position *position)
@@ -4410,4 +4709,21 @@ void Route::setName(std::string name)
 std::string Route::getName()
 {
 	return name;
+}
+
+void Trajectory::Freeze()
+{
+	if (shape_->type_ == Shape::ShapeType::POLYLINE)
+	{
+		PolyLine* pline = (PolyLine*)shape_;
+		
+		for (size_t i = 0; i < pline->vertex_.size(); i++)
+		{
+			pline->vertex_[i]->pos_.ReleaseRelation();
+		}
+	}
+	else
+	{
+		LOG("Clothoid and Nurbs trajectory types not supported yet");
+	}
 }

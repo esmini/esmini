@@ -1,51 +1,57 @@
-<?xml version="1.0" encoding="utf-8"?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-
-    <FileHeader revMajor="0" revMinor="9" date="2018-11-8T17:00:00" author="Erik Gunnarsson"/>
-
-    <Catalog name="RoutesAtFabriksgatan">
-			
-		<Route name="TargetLeftTurnRoute" closed="false">
-			<!-- Target car shall drive west towards crossing, then turn left -->
-			<Waypoint strategy="shortest">
-				<Position>
-					<Lane roadId="2" laneId="-1" offset="0" s="100" />
-				</Position>
-			</Waypoint>
-			<Waypoint strategy="shortest">
-				<Position>
-					<Lane roadId="1" laneId="-1" offset="0" s="0" />	<!-- all roads head towards crossing -->
-				</Position>
-			</Waypoint>
-		</Route>
-		
-		<Route name="TargetStraightRoute" closed="false">
-			<!-- Target car shall drive west towards crossing, then turn left -->
-			<Waypoint strategy="shortest">
-				<Position>
-					<Lane roadId="2" laneId="-1" offset="0" s="280" />
-				</Position>
-			</Waypoint>
-			<Waypoint strategy="shortest">
-				<Position>
-					<Lane roadId="0" laneId="-1" offset="0" s="0" />	<!-- all roads head towards crossing -->
-				</Position>
-			</Waypoint>
-		</Route>
-		
-		<Route name="HostStraightRoute" closed="false">
-			<Waypoint strategy="shortest">
-				<Position>
-					<Lane roadId="0" laneId="1" offset="0" s="63" />
-				</Position>
-			</Waypoint>
-			<Waypoint strategy="shortest">
-				<Position>
-					<Lane roadId="2" laneId="1" offset="0" s="0" />	<!-- road 2 has opposite direction -->
-				</Position>
-			</Waypoint>
-		</Route>
-
-    </Catalog>
+   <FileHeader revMajor="0"
+               revMinor="9"
+               date="2020-05-16T17:00:00"
+               author="SimS"/>
+   <Catalog name="RoutesAtFabriksgatan">
+      <Route name="TargetStraightLeftToRight" closed="false">
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="3" laneId="-1" offset="0" s="70"/>
+            </Position>
+         </Waypoint>
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="1" laneId="-1" offset="0" s="0"/>
+            </Position>
+         </Waypoint>
+      </Route>
+      <Route name="TargetLeftTurnRoute" closed="false">
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="2" laneId="-1" offset="0" s="100"/>
+            </Position>
+         </Waypoint>
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="1" laneId="-1" offset="0" s="0"/>
+            </Position>
+         </Waypoint>
+      </Route>
+      <Route name="TargetStraightRoute" closed="false">
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="2" laneId="-1" offset="0" s="280"/>
+            </Position>
+         </Waypoint>
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="0" laneId="-1" offset="0" s="0"/>
+            </Position>
+         </Waypoint>
+      </Route>
+      <Route name="HostStraightRoute" closed="false">
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="0" laneId="1" offset="0" s="63"/>
+            </Position>
+         </Waypoint>
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="2" laneId="1" offset="0" s="0"/>
+            </Position>
+         </Waypoint>
+      </Route>
+   </Catalog>
 </OpenSCENARIO>

@@ -11,27 +11,36 @@
  */
 
 #pragma once
-#include "OSCCondition.hpp"
+
+#include <iostream>
+#include <string>
 
 #include <iostream>
 #include <string>
 #include <vector>
 
+#include "CommonMini.hpp"
+
 namespace scenarioengine
 {
 
-	// Forward declaration
-	class OSCCondition;
+	struct ParameterStruct
+	{
+		std::string name;
+		std::string type; // Wrong type
+		std::string value;
+	};
 
-	class OSCConditionGroup
+	class OSCParameterDeclarations
 	{
 	public:
-		std::vector<OSCCondition*> condition_;
 
-		void Print()
+		std::vector<ParameterStruct> Parameter;
+
+		void printOSCParameterDeclarations()
 		{
-			LOG("\t - ConditionGroup");
-		}
+			LOG("\n");
+		};
 	};
 
 }

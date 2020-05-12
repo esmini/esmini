@@ -1,255 +1,240 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    
-	<FileHeader revMajor="1" revMinor="1" date="2019-12-06T10:00:00" description="Synchronize" author="Emil Knabe"/>
-
-    <ParameterDeclaration>
-		<Parameter name="$EgoVehicle" type="string" value="car_white" />
-        <Parameter name="$NPC1Vehicle" type="string" value="car_red" />
-        <Parameter name="$NPC2Vehicle" type="string" value="truck_yellow" />
-        <Parameter name="$NPC3Vehicle" type="string" value="bus_blue" />
-        <Parameter name="$NPC4Vehicle" type="string" value="car_yellow" />
-        <Parameter name="$MS1Vehicle" type="string" value="car_yellow" />
-        <Parameter name="$MS2Vehicle" type="string" value="van_red" />
-		<Parameter name="$EgoSpeed" type="double" value="20" />
-		<Parameter name="$NPC1Speed" type="double" value="30" />
-		<Parameter name="$NPC2Speed" type="double" value="19" />
-		<Parameter name="$NPC3Speed" type="double" value="17" />
-		<Parameter name="$EgoLaneId" type="int" value="-3" />
-		<Parameter name="$NPC1LaneId" type="int" value="-2" />
-		<Parameter name="$NPC2LaneId" type="int" value="-3" />
-		<Parameter name="$NPC3LaneId" type="int" value="-4" />
-		<Parameter name="$NPC4LaneId" type="int" value="-3" />
-        <Parameter name="$EgoStartS" type="double" value="100" />
-        <Parameter name="$NPC1StartS" type="double" value="150" />
-        <Parameter name="$NPC2StartS" type="double" value="20" />
-        <Parameter name="$NPC3StartS" type="double" value="70" />
-        <Parameter name="$NPC4StartS" type="double" value="170" />
-        <Parameter name="$MS1EgoS" type="double" value="300" />
-        <Parameter name="$MS1NPC1S" type="double" value="305" />
-        <Parameter name="$MS1NPC2S" type="double" value="285" />
-        <Parameter name="$MS1NPC3S" type="double" value="297" />
-        <Parameter name="$MS1NPC4S" type="double" value="330" />
-        <Parameter name="$MS2EgoS" type="double" value="500" />
-        <Parameter name="$AccRate" type="double" value="3" />
-        <Parameter name="$BrakeRate" type="double" value="-5" />
-	</ParameterDeclaration>
-  
-	<Catalogs>  
-		<RouteCatalog/> 
-		<ManeuverCatalog> 
-			<Directory path="../xosc/Catalogs/Maneuvers"/>        
-		</ManeuverCatalog> 
-		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/Vehicles"/>
-		</VehicleCatalog>
-		<DriverCatalog/>
-	</Catalogs>
-
-	<RoadNetwork>
-		<Logics filepath="../xodr/e6mini.xodr"/>
-		<SceneGraph filepath="../models/e6mini.osgb"/>
-	</RoadNetwork>
-
-	<Entities>
-		<Object name="Ego">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
-		</Object>                                
-		<Object name="NPC1">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$NPC1Vehicle"/>
-		</Object>                                
-        <Object name="NPC2">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$NPC2Vehicle"/>
-		</Object>                    
-		<Object name="NPC3">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$NPC3Vehicle"/>
-		</Object>                                
-        <Object name="NPC4">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$NPC4Vehicle"/>
-		</Object>                    
-		<Object name="MS1">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$MS1Vehicle"/>
-		</Object>                                
-		<Object name="MS2">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$MS2Vehicle"/>
-		</Object>                                
-	</Entities>
-
-	<Storyboard>
-		<Init>
-			<Actions>
-				<Private object="Ego">
-					<Action>
-						<Position>
-							<Lane roadId="0" laneId="$EgoLaneId" offset="0" s="$EgoStartS" />
-						</Position>
-					</Action>
-					<Action>
-						<Longitudinal>
-							<Speed>
-								<Dynamics shape="step"/>
-								<Target>
-									<Absolute value="$EgoSpeed" />
-								</Target>
-							</Speed>
-						</Longitudinal>
-					</Action>
-				</Private>
-				<Private object="NPC1">
-					<Action>
-						<Position>
-							<Lane roadId="0" laneId="$NPC1LaneId" offset="0" s="$NPC1StartS" />
-						</Position>
-					</Action>
-				</Private>
-				<Private object="NPC2">
-					<Action>
-						<Position>
-							<Lane roadId="0" laneId="$NPC2LaneId" offset="0" s="$NPC2StartS" />
-						</Position>
-					</Action>
-				</Private>
-				<Private object="NPC3">
-					<Action>
-						<Position>
-							<Lane roadId="0" laneId="$NPC3LaneId" offset="0" s="$NPC3StartS" />
-						</Position>
-					</Action>
-				</Private>
-				<Private object="NPC4">
-					<Action>
-						<Position>
-							<Lane roadId="0" laneId="$NPC4LaneId" offset="0" s="$NPC4StartS" />
-						</Position>
-					</Action>
-				</Private>
-				<Private object="MS1">
-					<Action>
-						<Position>
-							<Lane roadId="0" laneId="-5" offset="0" s="$MS1EgoS" />
-						</Position>
-					</Action>
-				</Private>
-				<Private object="MS2">
-					<Action>
-						<Position>
-							<Lane roadId="0" laneId="-5" offset="0" s="$MS2EgoS" />
-						</Position>
-					</Action>
-				</Private>
-			</Actions>
-		</Init>
-		
-		<Story name="Synchronize_Story" owner="Ego">
-			<Act name="Synchronize_Act">
-				<Sequence name="Synchronize_NPC1_Sequence" numberOfExecutions="1">
-					<Actors>
-						<Entity name="NPC1"/>
-					</Actors>
-					<CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
-                        <ParameterAssignment>
-                            <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
-                            <Parameter name="$NPCTargetLaneId" value="$NPC1LaneId"/>
-                            <Parameter name="$NPCFreeSpeed" value="$NPC1Speed"/>
-                            <Parameter name="$MS1EgoS" value="$MS1EgoS" />
-                            <Parameter name="$MS2EgoS" value="$MS2EgoS" />
-                            <Parameter name="$MS1NPC" value="$MS1NPC1S" />
-                        </ParameterAssignment>
-					</CatalogReference>
-				</Sequence>
-				<Sequence name="Synchronize_NPC2_Sequence" numberOfExecutions="1">
-					<Actors>
-						<Entity name="NPC2"/>
-					</Actors>
-					<CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
-                        <ParameterAssignment>
-                            <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
-                            <Parameter name="$NPCTargetLaneId" value="$NPC2LaneId"/>
-                            <Parameter name="$NPCFreeSpeed" value="NPC2Speed"/>
-                            <Parameter name="$MS1EgoS" value="$MS1EgoS" />
-                            <Parameter name="$MS2EgoS" value="$MS2EgoS" />
-                            <Parameter name="$MS1NPC" value="$MS1NPC2S" />
-                        </ParameterAssignment>
-					</CatalogReference>
-				</Sequence>
-				<Sequence name="Synchronize_NPC3_Sequence" numberOfExecutions="1">
-					<Actors>
-						<Entity name="NPC3"/>
-					</Actors>
-					<CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
-                        <ParameterAssignment>
-                            <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
-                            <Parameter name="$NPCTargetLaneId" value="$NPC3LaneId"/>
-                            <Parameter name="$NPCFreeSpeed" value="NPC3Speed"/>
-                            <Parameter name="$MS1EgoS" value="$MS1EgoS" />
-                            <Parameter name="$MS2EgoS" value="$MS2EgoS" />
-                            <Parameter name="$MS1NPC" value="$MS1NPC3S" />
-                        </ParameterAssignment>
-					</CatalogReference>
-				</Sequence>
-				<Sequence name="Synchronize_NPC4_Sequence" numberOfExecutions="1">
-					<Actors>
-						<Entity name="NPC4"/>
-					</Actors>
-					<CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
-                        <ParameterAssignment>
-                            <Parameter name="$EgoTargetLaneId" value="$EgoLaneId"/>
-                            <Parameter name="$NPCTargetLaneId" value="$NPC4LaneId"/>
-                            <Parameter name="$NPCFreeSpeed" value="NPC4Speed"/>
-                            <Parameter name="$MS1EgoS" value="$MS1EgoS" />
-                            <Parameter name="$MS2EgoS" value="$MS2EgoS" />
-                            <Parameter name="$MS1NPC" value="$MS1NPC4S" />
-                        </ParameterAssignment>
-					</CatalogReference>
-				</Sequence>
-                <Conditions>
-					<Start>
-						<ConditionGroup>
-							<Condition name="Synchronize_Condition" delay="0" >
-								<ByValue>
-									<SimulationTime value="0" rule="greater_than"/>
-								</ByValue>
-							</Condition>
-						</ConditionGroup>
-					</Start>
-				</Conditions>
-			</Act>
-            <Act name="QuitAct">
-                <Sequence name="QuitSequence" numberOfExecutions="1">
-					<Maneuver name="QuitManeuver">                    
-						<Event name="QuitEvent" priority="overwrite">
-							<Action name="QuitAction">
-								<Global>
-									<EXT_Quit />
-								</Global>
-							</Action>
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="QuitCondition" delay="0" edge="rising">
-										<ByValue>
-											<SimulationTime rule="greater_than" value="30" />
-										</ByValue>									
-                                    </Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>
-					</Maneuver>
-                </Sequence>            
-                <Conditions>
-					<Start>
-						<ConditionGroup>
-							<Condition name="QuitActCondition" delay="0" >
-								<ByValue>
-									<SimulationTime value="0" rule="greater_than"/>
-								</ByValue>
-							</Condition>
-						</ConditionGroup>
-					</Start>
-				</Conditions>
-            </Act>
-		</Story>
-		<End>
-		</End>
-	</Storyboard>
-
+   <FileHeader revMajor="1"
+               revMinor="1"
+               date="2019-12-06T10:00:00"
+               description="Synchronize"
+               author="Emil Knabe"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="$EgoVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="$NPC1Vehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="$NPC2Vehicle" parameterType="string" value="truck_yellow"/>
+      <ParameterDeclaration name="$NPC3Vehicle" parameterType="string" value="bus_blue"/>
+      <ParameterDeclaration name="$NPC4Vehicle" parameterType="string" value="car_yellow"/>
+      <ParameterDeclaration name="$MS1Vehicle" parameterType="string" value="car_yellow"/>
+      <ParameterDeclaration name="$MS2Vehicle" parameterType="string" value="van_red"/>
+      <ParameterDeclaration name="$EgoSpeed" parameterType="double" value="20"/>
+      <ParameterDeclaration name="$NPC1Speed" parameterType="double" value="30"/>
+      <ParameterDeclaration name="$NPC2Speed" parameterType="double" value="19"/>
+      <ParameterDeclaration name="$NPC3Speed" parameterType="double" value="17"/>
+      <ParameterDeclaration name="$EgoLaneId" parameterType="int" value="-3"/>
+      <ParameterDeclaration name="$NPC1LaneId" parameterType="int" value="-2"/>
+      <ParameterDeclaration name="$NPC2LaneId" parameterType="int" value="-3"/>
+      <ParameterDeclaration name="$NPC3LaneId" parameterType="int" value="-4"/>
+      <ParameterDeclaration name="$NPC4LaneId" parameterType="int" value="-3"/>
+      <ParameterDeclaration name="$EgoStartS" parameterType="double" value="100"/>
+      <ParameterDeclaration name="$NPC1StartS" parameterType="double" value="150"/>
+      <ParameterDeclaration name="$NPC2StartS" parameterType="double" value="20"/>
+      <ParameterDeclaration name="$NPC3StartS" parameterType="double" value="70"/>
+      <ParameterDeclaration name="$NPC4StartS" parameterType="double" value="170"/>
+      <ParameterDeclaration name="$MS1EgoS" parameterType="double" value="300"/>
+      <ParameterDeclaration name="$MS1NPC1S" parameterType="double" value="305"/>
+      <ParameterDeclaration name="$MS1NPC2S" parameterType="double" value="285"/>
+      <ParameterDeclaration name="$MS1NPC3S" parameterType="double" value="297"/>
+      <ParameterDeclaration name="$MS1NPC4S" parameterType="double" value="330"/>
+      <ParameterDeclaration name="$MS2EgoS" parameterType="double" value="500"/>
+      <ParameterDeclaration name="$AccRate" parameterType="double" value="3"/>
+      <ParameterDeclaration name="$BrakeRate" parameterType="double" value="-5"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <RouteCatalog/>
+      <ManeuverCatalog>
+         <Directory path="../xosc/Catalogs/Maneuvers"/>
+      </ManeuverCatalog>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog/>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/e6mini.xodr"/>
+      <SceneGraphFile filepath="../models/e6mini.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="NPC1">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$NPC1Vehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="NPC2">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$NPC2Vehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="NPC3">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$NPC3Vehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="NPC4">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$NPC4Vehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="MS1">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$MS1Vehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="MS2">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$MS2Vehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="$EgoLaneId" offset="0" s="$EgoStartS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="$EgoSpeed"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="NPC1">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="$NPC1LaneId" offset="0" s="$NPC1StartS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="NPC2">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="$NPC2LaneId" offset="0" s="$NPC2StartS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="NPC3">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="$NPC3LaneId" offset="0" s="$NPC3StartS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="NPC4">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="$NPC4LaneId" offset="0" s="$NPC4StartS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="MS1">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-5" offset="0" s="$MS1EgoS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="MS2">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-5" offset="0" s="$MS2EgoS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Synchronize_Story">
+         <ParameterDeclarations>
+            <ParameterDeclaration parameterType="string" name="$owner" value="Ego"/>
+         </ParameterDeclarations>
+         <Act name="Synchronize_Act">
+            <ManeuverGroup maximumExecutionCount="1" name="Synchronize_NPC1_Sequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="NPC1"/>
+               </Actors>
+               <CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
+                  <ParameterAssignments>
+                     <ParameterAssignment parameterRef="$EgoTargetLaneId" value="$EgoLaneId"/>
+                     <ParameterAssignment parameterRef="$NPCTargetLaneId" value="$NPC1LaneId"/>
+                     <ParameterAssignment parameterRef="$NPCFreeSpeed" value="$NPC1Speed"/>
+                     <ParameterAssignment parameterRef="$MS1EgoS" value="$MS1EgoS"/>
+                     <ParameterAssignment parameterRef="$MS2EgoS" value="$MS2EgoS"/>
+                     <ParameterAssignment parameterRef="$MS1NPC" value="$MS1NPC1S"/>
+                  </ParameterAssignments>
+               </CatalogReference>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="Synchronize_NPC2_Sequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="NPC2"/>
+               </Actors>
+               <CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
+                  <ParameterAssignments>
+                     <ParameterAssignment parameterRef="$EgoTargetLaneId" value="$EgoLaneId"/>
+                     <ParameterAssignment parameterRef="$NPCTargetLaneId" value="$NPC2LaneId"/>
+                     <ParameterAssignment parameterRef="$NPCFreeSpeed" value="NPC2Speed"/>
+                     <ParameterAssignment parameterRef="$MS1EgoS" value="$MS1EgoS"/>
+                     <ParameterAssignment parameterRef="$MS2EgoS" value="$MS2EgoS"/>
+                     <ParameterAssignment parameterRef="$MS1NPC" value="$MS1NPC2S"/>
+                  </ParameterAssignments>
+               </CatalogReference>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="Synchronize_NPC3_Sequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="NPC3"/>
+               </Actors>
+               <CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
+                  <ParameterAssignments>
+                     <ParameterAssignment parameterRef="$EgoTargetLaneId" value="$EgoLaneId"/>
+                     <ParameterAssignment parameterRef="$NPCTargetLaneId" value="$NPC3LaneId"/>
+                     <ParameterAssignment parameterRef="$NPCFreeSpeed" value="NPC3Speed"/>
+                     <ParameterAssignment parameterRef="$MS1EgoS" value="$MS1EgoS"/>
+                     <ParameterAssignment parameterRef="$MS2EgoS" value="$MS2EgoS"/>
+                     <ParameterAssignment parameterRef="$MS1NPC" value="$MS1NPC3S"/>
+                  </ParameterAssignments>
+               </CatalogReference>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="Synchronize_NPC4_Sequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="NPC4"/>
+               </Actors>
+               <CatalogReference catalogName="HWManeuvers" entryName="Synchronize_NPC">
+                  <ParameterAssignments>
+                     <ParameterAssignment parameterRef="$EgoTargetLaneId" value="$EgoLaneId"/>
+                     <ParameterAssignment parameterRef="$NPCTargetLaneId" value="$NPC4LaneId"/>
+                     <ParameterAssignment parameterRef="$NPCFreeSpeed" value="NPC4Speed"/>
+                     <ParameterAssignment parameterRef="$MS1EgoS" value="$MS1EgoS"/>
+                     <ParameterAssignment parameterRef="$MS2EgoS" value="$MS2EgoS"/>
+                     <ParameterAssignment parameterRef="$MS1NPC" value="$MS1NPC4S"/>
+                  </ParameterAssignments>
+               </CatalogReference>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="Synchronize_Condition" delay="0">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger>
+               <ConditionGroup>
+                  <Condition name="QuitActCondition" delay="0">
+			          <ByValueCondition>
+                          <SimulationTimeCondition value="30" rule="greaterThan"/>
+                      </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StopTrigger>
+         </Act>
+      </Story>
+   </Storyboard>
 </OpenSCENARIO>

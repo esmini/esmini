@@ -1,167 +1,161 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-    
-	<FileHeader revMajor="0" revMinor="9" date="2017-06-09T10:00:00" description="Cut-in" author="SimS"/>
-
-    <ParameterDeclaration>
-		<Parameter name="$HostVehicle" type="string" value="car_white" />
-		<Parameter name="$EgoStartS" type="double" value="50"/>
-        <Parameter name="$TargetVehicle" type="string" value="car_red" />
-	</ParameterDeclaration>
-  
-	<Catalogs>  
-		<VehicleCatalog>
-			<Directory path="../xosc/Catalogs/Vehicles"/>
-		</VehicleCatalog>
-	</Catalogs>
-
-	<RoadNetwork>
-		<Logics filepath="../xodr/jolengatan.xodr"/>
-		<SceneGraph filepath="../models/jolengatan.osgb"/>
-	</RoadNetwork>
-
-	<Entities>
-		<Object name="Ego">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
-		</Object>                                
-		<Object name="Target">
-			<CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
-		</Object>                                
-	</Entities>
-
-	<Storyboard>
-		<Init>
-			<Actions>
-				<Private object="Ego">
-					<Action>
-						<Position>
-							<Lane roadId="1" laneId="-1" offset="0" s="50" />
-						</Position>
-					</Action>
-					<Action>
-						<Longitudinal>
-							<Speed>
-								<Dynamics shape="step"/>
-								<Target>
-									<Absolute value="20" />
-								</Target>
-							</Speed>
-						</Longitudinal>
-					</Action>
-				</Private>
-				<Private object="Target">
-					<Action>
-						<Position>
-							<Lane roadId="1" laneId="1" offset="0" s="300" />
-						</Position>
-					</Action>
-					<Action>
-						<Longitudinal>
-							<Speed>
-								<Dynamics shape="step"/>
-								<Target>
-									<Absolute value="20" />
-								</Target>
-							</Speed>
-						</Longitudinal>
-					</Action>
-				</Private>
-			</Actions>
-		</Init>
-		
-		<Story name="Lane change" owner="Ego">
-			<Act name="Lane change">
-				<Sequence name="Lane change" numberOfExecutions="1">
-					<Actors>
-						<Entity name="$owner"/>
-					</Actors>
-					<Maneuver name="Lane change">
-						<Event name="Lane change" priority="overwrite" >
-							<Action name="Lane change">
-								<Private>
-                                    <Lateral>
-                                        <LaneChange>
-                                            <Dynamics time="2" shape="sinusoidal"/>
-                                            <Target>
-                                                <Relative object="Ego" value="2"/> <!--note that this means moving to driving lane of the opposite direction, not the centreline-->
-                                            </Target>
-                                        </LaneChange>
-                                    </Lateral>
-								</Private>
-							</Action>
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="Lane change" delay="0" edge="rising" >
-                                        <ByValue>
-                                            <SimulationTime value="4" rule="greater_than"/>
-                                        </ByValue>
-									</Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>
-					</Maneuver>
-				</Sequence>
-				<Sequence name="Lane change 2" numberOfExecutions="1">
-					<Actors>
-						<Entity name="Target"/>
-					</Actors>
-					<Maneuver name="Lane change">
-						<Event name="Lane change" priority="overwrite" >
-							<Action name="Lane change">
-								<Private>
-                                    <Lateral>
-                                        <LaneChange>
-                                            <Dynamics time="2" shape="sinusoidal"/>
-                                            <Target>
-                                                <Relative object="Target" value="-2"/> <!--note that this means moving to driving lane of the opposite direction, not the centreline-->
-                                            </Target>
-                                        </LaneChange>
-                                    </Lateral>
-								</Private>
-							</Action>
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="Lane change" delay="0" edge="rising" >
-                                        <ByValue>
-                                            <SimulationTime value="3" rule="greater_than"/>
-                                        </ByValue>
-									</Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>
-						<Event name="QuitEvent" priority="overwrite">
-							<Action name="QuitAction">
-								<Global>
-									<EXT_Quit />
-								</Global>
-							</Action>
-							<StartConditions>
-								<ConditionGroup>
-									<Condition name="QuitCondition" delay="4" edge="rising">
-										<ByState>
-											<AfterTermination type="event" name="Lane change" rule="end"/>
-										</ByState>									
-                                    </Condition>
-								</ConditionGroup>
-							</StartConditions>
-						</Event>
-					</Maneuver>
-				</Sequence>
-				<Conditions>
-					<Start>
-						<ConditionGroup>
-							<Condition name="CutInActStart" delay="0" edge="any">
-								<ByValue>
-									<SimulationTime value="0" rule="greater_than"/>
-								</ByValue>
-							</Condition>
-						</ConditionGroup>
-					</Start>
-				</Conditions>
-			</Act>
-		</Story>
-		<End>
-		</End>
-	</Storyboard>
-
+   <FileHeader revMajor="0"
+               revMinor="9"
+               date="2017-06-09T10:00:00"
+               description="Cut-in"
+               author="SimS"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="$HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="$EgoStartS" parameterType="double" value="50"/>
+      <ParameterDeclaration name="$TargetVehicle" parameterType="string" value="car_red"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/jolengatan.xodr"/>
+      <SceneGraphFile filepath="../models/jolengatan.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="20"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="1" offset="0" s="300"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="20"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Lane change">
+         <ParameterDeclarations>
+            <ParameterDeclaration parameterType="string" name="$owner" value="Ego"/>
+         </ParameterDeclarations>
+         <Act name="Lane change">
+            <ManeuverGroup maximumExecutionCount="1" name="Lane change">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="$owner"/>
+               </Actors>
+               <Maneuver name="Lane change">
+                  <Event name="Lane change" priority="overwrite">
+                     <Action name="Lane change">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="Ego" value="2"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Lane change" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="4" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="Lane change 2">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Target"/>
+               </Actors>
+               <Maneuver name="Lane change">
+                  <Event name="Lane change" priority="overwrite">
+                     <Action name="Lane change">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="Target" value="-2"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Lane change" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="3" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="CutInActStart" delay="0" conditionEdge="risingOrFalling">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger>
+               <ConditionGroup>
+                  <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+                     <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event"
+                                                         storyboardElementRef="Lane change"
+                                                         state="endTransition"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StopTrigger>            
+         </Act>
+      </Story>
+   </Storyboard>
 </OpenSCENARIO>

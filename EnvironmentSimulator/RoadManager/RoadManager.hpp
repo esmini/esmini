@@ -720,12 +720,20 @@ namespace roadmanager
 		int dLaneId;			// delta laneId (increasing left and decreasing to the right)
 	} PositionDiff;
 
-	// Forward declaration of Route
+	// Forward declarations
 	class Route;
+	class Trajectory;
 
 	class Position
 	{
 	public:
+
+		enum PositionType
+		{
+			NORMAL,
+			RELATIVE_OBJECT,
+			RELATIVE_WORLD
+		};
 
 		enum LookAheadMode
 		{
@@ -754,12 +762,22 @@ namespace roadmanager
 		void SetHeadingRelativeRoadDirection(double heading);
 		void XYZH2TrackPos(double x, double y, double z, double h, bool copyZAndPitch = true);
 		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
-		double FindDistToPos(Position *pos, RoadLink *link, Road *road, int &call_count, int level_count, bool &found);
+		
+		void SetRelativePosition(Position* rel_pos, PositionType type)
+		{
+			rel_pos_ = rel_pos;
+			type_ = type;
+		}
+
+		void ReleaseRelation();
 
 		void SetRoute(Route *route);
 		void CalcRoutePosition();
 		const roadmanager::Route* GetRoute() const { return route_; }
-		roadmanager::Route* GetRoute() { return route_; }
+		Route* GetRoute() { return route_; }
+		Trajectory* GetTrajectory() { return trajectory_; }
+
+		void SetTrajectory(Trajectory* trajectory);
 
 		/**
 		Set the current position along the route.
@@ -796,6 +814,28 @@ namespace roadmanager
 		@return Non zero return value indicates error of some kind
 		*/
 		int SetRouteS(Route* route, double route_s);
+
+		/**
+		Move current position forward, or backwards, ds meters along the trajectory
+		@param ds Distance to move, negative will move backwards
+		@return Non zero return value indicates error of some kind
+		*/
+		int MoveTrajectoryDS(double ds);
+
+		/**
+		Move current position to specified S-value along the trajectory
+		@param trajectory_s Distance to move, negative will move backwards
+		@return Non zero return value indicates error of some kind
+		*/
+		int SetTrajectoryS(Trajectory* trajectory, double trajectory_s);
+
+		int SetTrajectoryPosByTime(Trajectory* trajectory, double time);
+
+		/**
+		Retrieve the S-value of the current route position. Note: This is the S along the
+		complete route, not the actual individual roads.
+		*/
+		double GetTrajectoryS() { return s_trajectory_; }
 
 		/**
 		Straight (not route) distance between the current position and the one specified in argument
@@ -901,17 +941,17 @@ namespace roadmanager
 		/**
 		Retrieve the world coordinate X-value
 		*/
-		double GetX() const { return x_; }
+		double GetX();
 
 		/**
 		Retrieve the world coordinate Y-value
 		*/
-		double GetY() const { return y_; }
+		double GetY();
 
 		/**
 		Retrieve the world coordinate Z-value
 		*/
-		double GetZ() const { return z_; }
+		double GetZ();
 
 		/**
 		Retrieve the road Z-value 
@@ -921,7 +961,7 @@ namespace roadmanager
 		/**
 		Retrieve the world coordinate heading angle (radians)
 		*/
-		double GetH() const { return h_; }
+		double GetH();
 
 		/**
 		Retrieve the road heading angle (radians)
@@ -946,7 +986,7 @@ namespace roadmanager
 		/**
 		Retrieve the world coordinate pitch angle (radians)
 		*/
-		double GetP() const { return p_; }
+		double GetP();
 
 		/**
 		Retrieve the road pitch value
@@ -956,7 +996,7 @@ namespace roadmanager
 		/**
 		Retrieve the world coordinate roll angle (radians)
 		*/
-		double GetR() const { return r_; }
+		double GetR();
 
 		/**
 		Retrieve the road curvature at current position
@@ -981,7 +1021,7 @@ namespace roadmanager
 
 		void Print();
 		void PrintXY();
-	
+
 	protected:
 		void Track2Lane();
 		void Track2XYZ();
@@ -994,6 +1034,9 @@ namespace roadmanager
 		// route reference
 		Route  *route_;			// if pointer set, the position corresponds to a point along (s) the route
 
+		// route reference
+		Trajectory* trajectory_; // if pointer set, the position corresponds to a point along (s) the trajectory
+
 		// track reference
 		int     track_id_;
 		double  s_;				// longitudinal point/distance along the track
@@ -1004,7 +1047,10 @@ namespace roadmanager
 		double  h_offset_;		// local heading offset given by lane width and offset 
 		double  h_relative_;	// heading relative to the road (h_ = h_road_ + h_relative_)
 		double  s_route_;		// longitudinal point/distance along the route
+		double  s_trajectory_;	// longitudinal point/distance along the trajectory
 		double  curvature_;
+		Position* rel_pos_;
+		PositionType type_;
 
 		// inertial reference
 		double	x_;
@@ -1084,6 +1130,75 @@ namespace roadmanager
 	
 	private:
 		bool CheckRoad(Road* checkRoad, RoadPath::PathNode* srcNode, Road* fromRoad);
+	};
+
+
+	// Trajectory stuff
+	class Shape
+	{
+	public:
+		typedef enum
+		{
+			POLYLINE,
+			CLOTHOID,
+			NURBS,
+			SHAPE_TYPE_UNDEFINED
+		} ShapeType;
+
+		Shape(ShapeType type) : type_(type), length_(0) {}
+
+		ShapeType type_;
+		double length_;
+	};
+
+	class PolyLine : public Shape
+	{
+	public:
+
+		class Vertex
+		{
+		public:
+			Position pos_;
+			double time_;
+		};
+
+		PolyLine() : Shape(ShapeType::POLYLINE) {}
+		void AddVertex(Position pos, double time = 0);
+
+		std::vector<Vertex*> vertex_;
+	};
+
+	class Clothoid : public Shape
+	{
+	public:
+
+		Clothoid(roadmanager::Position pos, double curv, double curvDot, double len, double tStart, double tEnd) : Shape(ShapeType::CLOTHOID)
+		{
+			pos_ = pos;
+			clothoid_ = new roadmanager::Spiral(0, pos_.GetX(), pos_.GetY(), pos_.GetH(), len, curv, curv + curvDot * len);
+		}
+
+		roadmanager::Spiral* clothoid_;
+		roadmanager::Position pos_;
+	};
+
+	class Nurbs : public Shape
+	{
+	public:
+		Nurbs() : Shape(ShapeType::NURBS) {}
+	};
+
+	class Trajectory
+	{
+	public:
+		Shape* shape_;
+
+		Trajectory(Shape* shape, std::string name, bool closed) : shape_(shape), name_(name), closed_(closed) {}
+		Trajectory() : shape_(0), closed_(false) {}
+		void Freeze();
+
+		std::string name_;
+		bool closed_;
 	};
 
 
