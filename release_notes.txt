@@ -37,3 +37,11 @@ The purpose of this document is to highlight changes breaking backward compatibi
 - Added road model (multi_intersections.xodr/osgb) with multiple junctions. Useful for testing the shortest path functionality.
 - Added new camera mode: top view (press 'k' multiple times to toggle or specify "--camera_mode top" as command line argument).
 - Some bugfixes. E.g. ParamPoly3 with Normalized parameter range.
+
+2020-05-19 Version 1.5.0
+- Updated to support OpenSCENARIO 1.0. Note: no legacy support for 0.9.1
+- Updated demo scenarios to v1.0
+- Improved condition handling, fully supporting AND (within ConditionGroup) and OR (Multiple ConditionGroups) combinations
+- Refactored runtime model supporting StoryBoardElement states, also obeying nrOfExecutions attribute
+- Initial Trajectory support. PolyLine only, so far and limited testing performed.
+- Added support for TraveledDistance condition 
