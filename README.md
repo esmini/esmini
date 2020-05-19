@@ -27,15 +27,17 @@ Repository: <https://github.com/esmini/esmini>
 
 Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\EgoSimulator" and run any of the example scripts. See more info below under "Binaries and demos".
 
+**Please note**: From version 1.5 esmini only supports OpenSCENARIO v1.0. All demo scenarios has been updated from 0.9.1 to 1.0. ASAM provides a transformation scheme (migration0_9_1to1_0.xslt, part of the OpenSCENARIO 1.0 release bundle) that can be used with tools for automatic migration of XML files.
+
 The code is a result from the Swedish collaborative research project [Simulation Scenarios](https://sites.google.com/view/simulationscenarios).
+
+## Background
 
 The purpose of this implementation was to explore and get familiar with the emerging [OpenSCENARIO](https://www.asam.net/standards/detail/openscenario/) data format. The development aimed at supporting various platforms such as Windows, Mac, Linux, and Android. Tool integration and portability were high priorities, the project outcomes should be capable of incorporation in native C++ applications as well as other frameworks like Unity3D (C#) and MATLAB/Simulink, among many others.
 
 Although allowed by the license this implementation is not primarily intended for production use. The code was developed ad hoc to answer research questions connected with the ongoing project. Therefore, code quality, as expected from standard production applications, is lacking when it comes to clarity, structure, comments, error handling and coding guidelines.
 
 [OpenSCENARIO coverage](./osc_coverage.txt) is limited as it was developed on demand and defined by the research scope. Moreover, since the Simulation Scenario project is closed, no formal support should be expected from the initial contributors.  
-**Please note**: While OpenSCENARIO v1.0 has been release, esmini is currently only supporting v0.9.1.
-
 Nevertheless, regarding the above stated limitations, it was decided to release the code as is, as a public outcome from the project. It can hopefully serve as guidance or just inspiration for those aspiring to build similar tools, or even get accustomed with the OpenSCENARIO format. And of course, all contributions to further development are welcome!
 
 ## Binaries and demos
@@ -75,7 +77,7 @@ Instruction:
 The implementation is very limited at this point, but some things can be edited and the scenario can be executed and observed from above, as well as exported to the other tools. You have to start by importing one of the existing scenarios into the editor, as it cannot make a scenario from scratch.
 
 ### Carla Simulator
-[Carla](http://carla.org/) is an [Unreal](https://www.unrealengine.com/) based open source simulator worth to check out. Already [support for OpenSCENARIO v1.0](https://github.com/carla-simulator/scenario_runner/blob/master/Docs/openscenario_support.md).
+[Carla](http://carla.org/) is an [Unreal](https://www.unrealengine.com/) based open source simulator worth to check out.
 
 ## Data formats
 
