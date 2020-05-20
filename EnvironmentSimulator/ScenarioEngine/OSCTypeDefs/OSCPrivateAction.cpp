@@ -363,6 +363,9 @@ void LongDistanceAction::Step(double dt, double simTime)
 	double dc;
 	double requested_dist;
 
+	// Just interested in the x-axis component of the distance
+	distance = x;
+
 	if (dist_type_ == DistType::DISTANCE)
 	{
 		requested_dist = distance_;
