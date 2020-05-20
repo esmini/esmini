@@ -1055,6 +1055,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						action_dist->dynamics_.max_acceleration_ = strtod(ReadAttribute(dynamics_node, "maxAcceleration"));
 						action_dist->dynamics_.max_deceleration_ = strtod(ReadAttribute(dynamics_node, "maxDeceleration"));
 						action_dist->dynamics_.max_speed_ = strtod(ReadAttribute(dynamics_node, "maxSpeed"));
+                        action_dist->dynamics_.none_ = false;
 					}
 					else
 					{

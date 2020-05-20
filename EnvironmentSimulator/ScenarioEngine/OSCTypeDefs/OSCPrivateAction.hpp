@@ -207,6 +207,10 @@ namespace scenarioengine
 
 		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::Type::LONG_DISTANCE), target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0)
 		{
+            dynamics_.max_acceleration_ = 0;
+            dynamics_.max_deceleration_ = 0;
+            dynamics_.max_speed_ = 0;
+            dynamics_.none_ = true;            
 		}
 
 		LongDistanceAction(const LongDistanceAction &action) : OSCPrivateAction(OSCPrivateAction::Type::LONG_DISTANCE)
