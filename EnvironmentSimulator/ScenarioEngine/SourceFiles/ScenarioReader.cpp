@@ -1053,7 +1053,19 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					if (dynamics_node != NULL)
 					{
 						action_dist->dynamics_.max_acceleration_ = strtod(ReadAttribute(dynamics_node, "maxAcceleration"));
+						if (action_dist->dynamics_.max_acceleration_ < SMALL_NUMBER)
+						{
+							LOG("Unexpected small maxAcceleration value: %.2, replacing with %.2f", action_dist->dynamics_.max_acceleration_, 10);
+							action_dist->dynamics_.max_acceleration_ = 10.0;
+						}
+
 						action_dist->dynamics_.max_deceleration_ = strtod(ReadAttribute(dynamics_node, "maxDeceleration"));
+						if (action_dist->dynamics_.max_deceleration_ < SMALL_NUMBER)
+						{
+							LOG("Unexpected small maxDeceleration value: %.2, replacing with %.2f", action_dist->dynamics_.max_deceleration_, 10);
+							action_dist->dynamics_.max_deceleration_ = 10.0;
+						}
+
 						action_dist->dynamics_.max_speed_ = strtod(ReadAttribute(dynamics_node, "maxSpeed"));
                         action_dist->dynamics_.none_ = false;
 					}
