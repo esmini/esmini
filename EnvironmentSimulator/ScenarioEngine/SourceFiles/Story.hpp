@@ -61,18 +61,19 @@ namespace scenarioengine
 		void Print();
 
 		std::vector<Act*> act_;
-
 		std::string name_;
 	};
 
 	class StoryBoard
 	{
 	public:
+		StoryBoard() : stop_trigger_(0) {}
 		Act* FindActByName(std::string name);
 		Event* FindEventByName(std::string name);
 		OSCAction* FindActionByName(std::string name); 
 		void Print();
 
 		std::vector<Story*> story_;
+		Trigger *stop_trigger_;
 	};
 }

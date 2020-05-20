@@ -160,5 +160,14 @@
             </StartTrigger>
          </Act>
       </Story>
+      <StopTrigger>
+          <ConditionGroup>
+              <Condition conditionEdge="rising" delay="0" name="simulation_end">
+                  <ByValueCondition>
+                      <SimulationTimeCondition rule="greaterThan" value="17"/>
+                  </ByValueCondition>
+              </Condition>
+          </ConditionGroup>
+      </StopTrigger>      
    </Storyboard>
 </OpenSCENARIO>

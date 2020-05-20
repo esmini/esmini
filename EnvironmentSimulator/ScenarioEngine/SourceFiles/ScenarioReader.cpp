@@ -2067,100 +2067,109 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 
 			for (pugi::xml_node storyChild = storyNode.child("Act"); storyChild; storyChild = storyChild.next_sibling("Act"))
 			{
-				Act *act = new Act;
-
-				act->name_ = ReadAttribute(storyChild, "name");
-
-				for (pugi::xml_node actChild = storyChild.first_child(); actChild; actChild = actChild.next_sibling())
+				std::string childName(storyChild.name());
+				
+				if (childName == "Act")
 				{
+					Act *act = new Act;
 
-					std::string childName(actChild.name());
+					act->name_ = ReadAttribute(storyChild, "name");
 
-					if (childName == "ManeuverGroup")
+					for (pugi::xml_node actChild = storyChild.first_child(); actChild; actChild = actChild.next_sibling())
 					{
-						ManeuverGroup *mGroup = new ManeuverGroup;
 
-						mGroup->max_num_executions_ = strtoi(ReadAttribute(actChild, "maximumExecutionCount"));
-						mGroup->name_ = ReadAttribute(actChild, "name");
+						std::string childName(actChild.name());
 
-						pugi::xml_node actors_node = actChild.child("Actors");
-						if (actors_node != NULL)
+						if (childName == "ManeuverGroup")
 						{
-							for (pugi::xml_node actorsChild = actors_node.first_child(); actorsChild; actorsChild = actorsChild.next_sibling())
-							{
-								ManeuverGroup::Actor *actor = new ManeuverGroup::Actor;
+							ManeuverGroup *mGroup = new ManeuverGroup;
 
-								std::string actorsChildName(actorsChild.name());
-								if (actorsChildName == "EntityRef")
+							mGroup->max_num_executions_ = strtoi(ReadAttribute(actChild, "maximumExecutionCount"));
+							mGroup->name_ = ReadAttribute(actChild, "name");
+
+							pugi::xml_node actors_node = actChild.child("Actors");
+							if (actors_node != NULL)
+							{
+								for (pugi::xml_node actorsChild = actors_node.first_child(); actorsChild; actorsChild = actorsChild.next_sibling())
 								{
-									actor->object_ = FindObjectByName(ReadAttribute(actorsChild, "entityRef"));
-								}
-								else if (actorsChildName == "ByCondition")
-								{
-									LOG("Actor by condition - not implemented");
-								}
-								mGroup->actor_.push_back(actor);
-								if (actor->object_->ghost_)
-								{
-									// Add ghost as well
 									ManeuverGroup::Actor *actor = new ManeuverGroup::Actor;
-									actor->object_ = FindObjectByName(ReadAttribute(actorsChild, "entityRef").append("_ghost"));
+
+									std::string actorsChildName(actorsChild.name());
+									if (actorsChildName == "EntityRef")
+									{
+										actor->object_ = FindObjectByName(ReadAttribute(actorsChild, "entityRef"));
+									}
+									else if (actorsChildName == "ByCondition")
+									{
+										LOG("Actor by condition - not implemented");
+									}
 									mGroup->actor_.push_back(actor);
+									if (actor->object_->ghost_)
+									{
+										// Add ghost as well
+										ManeuverGroup::Actor *actor = new ManeuverGroup::Actor;
+										actor->object_ = FindObjectByName(ReadAttribute(actorsChild, "entityRef").append("_ghost"));
+										mGroup->actor_.push_back(actor);
+									}
 								}
 							}
-						}
 
-						for (pugi::xml_node catalog_n = actChild.child("CatalogReference"); catalog_n; catalog_n = catalog_n.next_sibling("CatalogReference"))
+							for (pugi::xml_node catalog_n = actChild.child("CatalogReference"); catalog_n; catalog_n = catalog_n.next_sibling("CatalogReference"))
+							{
+								// Maneuver catalog reference. The catalog entry is simply the maneuver XML node
+								Entry *entry = ResolveCatalogReference(catalog_n);
+
+								if (entry == 0 || entry->node_ == 0)
+								{
+									return -1;
+								}
+
+								if (entry->type_ == CatalogType::CATALOG_MANEUVER)
+								{
+									OSCManeuver *maneuver = new OSCManeuver;
+
+									// Make a new instance from catalog entry 
+									parseOSCManeuver(maneuver, entry->GetNode(), mGroup);
+									mGroup->maneuver_.push_back(maneuver);
+								}
+								else
+								{
+									LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
+								}
+
+								// Remove temporary parameters used for catalog reference
+								RestoreParameterDeclarations();
+							}
+
+							for (pugi::xml_node maneuver_n = actChild.child("Maneuver"); maneuver_n; maneuver_n = maneuver_n.next_sibling("Maneuver"))
+								if (maneuver_n != NULL)
+								{
+									OSCManeuver *maneuver = new OSCManeuver;
+
+									parseOSCManeuver(maneuver, maneuver_n, mGroup);
+									mGroup->maneuver_.push_back(maneuver);
+								}
+
+							act->maneuverGroup_.push_back(mGroup);
+						}
+						else if (childName == "StartTrigger")
 						{
-							// Maneuver catalog reference. The catalog entry is simply the maneuver XML node
-							Entry *entry = ResolveCatalogReference(catalog_n);
-
-							if (entry == 0 || entry->node_ == 0)
-							{
-								return -1;
-							}
-
-							if (entry->type_ == CatalogType::CATALOG_MANEUVER)
-							{
-								OSCManeuver *maneuver = new OSCManeuver;
-
-								// Make a new instance from catalog entry 
-								parseOSCManeuver(maneuver, entry->GetNode(), mGroup);
-								mGroup->maneuver_.push_back(maneuver);
-							}
-							else
-							{
-								LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
-							}
-
-							// Remove temporary parameters used for catalog reference
-							RestoreParameterDeclarations();
+							act->start_trigger_ = parseTrigger(actChild);
 						}
-
-						for (pugi::xml_node maneuver_n = actChild.child("Maneuver"); maneuver_n; maneuver_n = maneuver_n.next_sibling("Maneuver"))
-						if (maneuver_n != NULL)
+						else if (childName == "StopTrigger")
 						{
-							OSCManeuver *maneuver = new OSCManeuver;
-
-							parseOSCManeuver(maneuver, maneuver_n, mGroup);
-							mGroup->maneuver_.push_back(maneuver);
+							act->stop_trigger_ = parseTrigger(actChild);
 						}
-
-						act->maneuverGroup_.push_back(mGroup);
 					}
-					else if (childName == "StartTrigger")
-					{	
-						act->start_trigger_ = parseTrigger(actChild);
-					}
-					else if (childName == "StopTrigger")
-					{
-						act->stop_trigger_ = parseTrigger(actChild);
-					}
+					story->act_.push_back(act);
 				}
-				story->act_.push_back(act);
 			}
 			storyBoard.story_.push_back(story);
 			RestoreParameterDeclarations();
+		}
+		else if (storyNodeName == "StopTrigger")
+		{
+			storyBoard.stop_trigger_ = parseTrigger(storyNode);
 		}
 	}
 

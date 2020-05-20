@@ -111,6 +111,14 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	}
 
 	// Story 
+	
+	// First evaluate StoryBoard stopTrigger
+	if (storyBoard.stop_trigger_ && storyBoard.stop_trigger_->Evaluate(&storyBoard, simulationTime) == true)
+	{
+		quit_flag = true;
+		return;
+	}
+
 	bool all_done = true;
 	for (size_t i = 0; i < storyBoard.story_.size(); i++)
 	{
