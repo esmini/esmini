@@ -731,8 +731,16 @@ namespace roadmanager
 		enum PositionType
 		{
 			NORMAL,
+			ROUTE,
 			RELATIVE_OBJECT,
-			RELATIVE_WORLD
+			RELATIVE_WORLD,
+			RELATIVE_LANE
+		};
+
+		enum OrientationType
+		{
+			ORIENTATION_RELATIVE,
+			ORIENTATION_ABSOLUTE
 		};
 
 		enum LookAheadMode
@@ -768,6 +776,8 @@ namespace roadmanager
 			rel_pos_ = rel_pos;
 			type_ = type;
 		}
+
+		Position* GetRelativePosition() { return rel_pos_; }
 
 		void ReleaseRelation();
 
@@ -909,13 +919,13 @@ namespace roadmanager
 		Retrieve the track/road ID from the position object
 		@return track/road ID
 		*/
-		int GetTrackId() const { return track_id_; }
+		int GetTrackId();
 
 		/**
 		Retrieve the lane ID from the position object
 		@return lane ID
 		*/
-		int GetLaneId() const { return lane_id_; }
+		int GetLaneId();
 
 		/**
 		Retrieve a road segment specified by road ID
@@ -926,17 +936,17 @@ namespace roadmanager
 		/**
 		Retrieve the s value (distance along the road segment)
 		*/
-		double GetS() const { return s_; }
+		double GetS();
 
 		/**
 		Retrieve the t value (lateral distance from reference lanem (id=0))
 		*/
-		double GetT() const { return t_; }
+		double GetT();
 
 		/**
 		Retrieve the offset from current lane
 		*/
-		double GetOffset() const { return offset_; }
+		double GetOffset();
 
 		/**
 		Retrieve the world coordinate X-value
@@ -981,7 +991,7 @@ namespace roadmanager
 		/**
 		Retrieve the relative heading angle (radians)
 		*/
-		double GetHRelative() const { return h_relative_; }
+		double GetHRelative();
 
 		/**
 		Retrieve the world coordinate pitch angle (radians)
@@ -992,6 +1002,11 @@ namespace roadmanager
 		Retrieve the road pitch value
 		*/
 		double GetPRoad() const { return p_road_; }
+
+		/**
+		Retrieve the road pitch value, driving direction considered
+		*/
+		double GetPRoadInDrivingDirection();
 
 		/**
 		Retrieve the world coordinate roll angle (radians)
@@ -1012,6 +1027,20 @@ namespace roadmanager
 		Retrieve the road heading/direction at current position, and in the direction given by current lane
 		*/
 		double GetDrivingDirection();
+
+		PositionType GetType() { return type_; }
+
+		void SetTrackId(int trackId) { track_id_ = trackId; }
+		void SetLaneId(int laneId) { lane_id_ = laneId; }
+		void SetS(double s) { s_ = s; }
+		void SetOffset(double offset) { offset_ = offset; }
+		void SetX(double x) { x_ = x; }
+		void SetY(double y) { y_ = y; }
+		void SetZ(double z) { z_ = z; }
+		void SetH(double h) { h_ = h; }
+		void SetP(double p) { p_ = p; }
+		void SetR(double r) { r_ = r; }
+		void SetOrientationType(OrientationType type) { orientation_type_ = type; }
 
 		void CopyRMPos(Position *from);
 
@@ -1051,6 +1080,7 @@ namespace roadmanager
 		double  curvature_;
 		Position* rel_pos_;
 		PositionType type_;
+		OrientationType orientation_type_;  // Applicable for relative positions
 
 		// inertial reference
 		double	x_;

@@ -341,7 +341,7 @@ void LongSpeedAction::Step(double dt, double simTime)
 		new_speed = target_->GetValue();
 		OSCAction::Stop();
 
-		return;
+return;
 	}
 
 	if (target_speed_reached && !(target_->type_ == Target::Type::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
@@ -410,7 +410,7 @@ void LongDistanceAction::Step(double dt, double simTime)
 		}
 	}
 
-//	LOG("Dist %.2f diff %.2f acc %.2f speed %.2f", distance, distance_diff, acc, object_->speed_);
+	//	LOG("Dist %.2f diff %.2f acc %.2f speed %.2f", distance, distance_diff, acc, object_->speed_);
 }
 
 void LongDistanceAction::Start()
@@ -426,16 +426,31 @@ void LongDistanceAction::Start()
 
 void PositionAction::Start()
 {
-	// Evaluate position, potentially dependent on other entities
-	if (position_->type_ == OSCPosition::PositionType::RELATIVE_LANE)
-	{
-		OSCPositionRelativeLane* osc_pos = (OSCPositionRelativeLane*)position_;
-		roadmanager::Position* pos = position_->GetRMPos();
-		pos->CopyRMPos(&osc_pos->object_->pos_);
-		pos->SetLanePos(pos->GetTrackId(), pos->GetLaneId() + osc_pos->dLane_, pos->GetS() + osc_pos->ds_, pos->GetOffset() + osc_pos->offset_);
-	}
 	OSCAction::Start();
 }
+
+void PositionAction::Step(double dt, double simTime)
+{
+	(void)dt;
+	(void)simTime;
+
+	object_->pos_.CopyRMPos(position_);
+
+	// Resolve any relative positions
+	object_->pos_.ReleaseRelation();
+
+	if (object_->pos_.GetType() != roadmanager::Position::PositionType::ROUTE)
+	{
+		object_->pos_.CalcRoutePosition();
+	}
+
+	LOG("Step %s pos: ", object_->name_.c_str());
+	position_->Print();
+
+	OSCAction::Stop();
+}
+
+
 
 double SynchronizeAction::CalcSpeedForLinearProfile(double v_final, double time, double dist)
 {

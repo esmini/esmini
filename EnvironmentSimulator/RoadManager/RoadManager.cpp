@@ -2695,6 +2695,7 @@ void Position::Init()
 	p_road_ = 0.0;
 	rel_pos_ = 0;
 	type_ = PositionType::NORMAL;
+	orientation_type_ = OrientationType::ORIENTATION_ABSOLUTE;
 
 	z_road_ = 0.0;
 	track_idx_ = -1;
@@ -3298,6 +3299,11 @@ int Position::SetLongitudinalTrackPos(int track_id, double s)
 	if ((road = GetOpenDrive()->GetRoadById(track_id)) == 0)
 	{
 		LOG("Position::Set Error: track %d not found\n", track_id);
+		
+		// Just hard code values and return
+		track_id_ = track_id;
+		s_ = s;
+
 		return -1;
 	}
 	if (track_id != track_id_)
@@ -3656,6 +3662,27 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 	int max_links = 8;  // limit lookahead through junctions/links 
 	ContactPointType contact_point_type;
 
+	if (type_ == PositionType::RELATIVE_LANE)
+	{
+		// Create a temporary position to evaluate in relative lane coordinates
+		Position pos = *this->rel_pos_;
+
+		// First move position along s
+		pos.MoveAlongS(this->s_);
+		
+		// Then move laterally
+		pos.SetLanePos(pos.track_id_, pos.lane_id_ + this->lane_id_, pos.s_, pos.offset_ + this->offset_);
+
+		this->x_ = pos.x_;
+		this->y_ = pos.y_;
+		this->z_ = pos.z_;
+		this->h_ = pos.h_;
+		this->p_ = pos.p_;
+		this->r_ = pos.r_;
+
+		return 0;
+	}
+
 	if (GetOpenDrive()->GetNumOfRoads() == 0 || track_idx_ < 0)
 	{
 		// No roads available or current track undefined
@@ -3712,6 +3739,8 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 
 	if (SetLongitudinalTrackPos(track_id, s) != 0)
 	{
+		lane_id_ = lane_id;
+		offset_ = offset;
 		return;
 	}
 
@@ -3719,6 +3748,8 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	if (road == 0)
 	{
 		LOG("Position::Set Error: track %d not available\n", track_id);
+		lane_id_ = lane_id;
+		offset_ = offset;
 		return;
 	}
 
@@ -3840,6 +3871,11 @@ double Position::GetCurvature()
 double Position::GetHRoadInDrivingDirection()
 {
 	return h_road_ + (lane_id_ > 0 ? M_PI : 0);
+}
+
+double Position::GetPRoadInDrivingDirection()
+{
+	return p_road_ * (lane_id_ > 0 ? -1 : 1);
 }
 
 double Position::GetHRelativeDrivingDirection()
@@ -4216,6 +4252,56 @@ int Position::GetProbeInfo(Position *target_pos, RoadProbeInfo *data)
 	return 0;
 }
 
+int Position::GetTrackId() 
+{ 
+	if (rel_pos_ && type_ == PositionType::RELATIVE_LANE)
+	{
+		return rel_pos_->GetTrackId();
+	}
+
+	return track_id_; 
+}
+
+int Position::GetLaneId()
+{
+	if (rel_pos_ && type_ == PositionType::RELATIVE_LANE)
+	{
+		return rel_pos_->GetLaneId() + lane_id_;
+	}
+
+	return lane_id_;
+}
+
+double Position::GetS()
+{
+	if (rel_pos_ && type_ == PositionType::RELATIVE_LANE)
+	{
+		return rel_pos_->GetS() + s_;
+	}
+
+	return s_;
+}
+
+double Position::GetT()
+{
+	if (rel_pos_ && type_ == PositionType::RELATIVE_LANE)
+	{
+		return rel_pos_->GetT() + t_;
+	}
+
+	return t_;
+}
+
+double Position::GetOffset()
+{
+	if (rel_pos_ && type_ == PositionType::RELATIVE_LANE)
+	{
+		return rel_pos_->GetOffset() + offset_;
+	}
+
+	return offset_;
+}
+
 double Position::GetX()
 {
 	if (!rel_pos_)
@@ -4229,6 +4315,10 @@ double Position::GetX()
 	else if (type_ == PositionType::RELATIVE_WORLD)
 	{
 		return x_ + rel_pos_->GetX();
+	}
+	else if (type_ == PositionType::RELATIVE_LANE)
+	{
+		return x_;
 	}
 	else
 	{
@@ -4252,6 +4342,10 @@ double Position::GetY()
 	{
 		return y_ + rel_pos_->GetY();
 	}
+	else if (type_ == PositionType::RELATIVE_LANE)
+	{
+		return y_;
+	}
 	else
 	{
 		LOG("Unexpected PositionType: %d", type_);
@@ -4270,6 +4364,10 @@ double Position::GetZ()
 	{
 		return z_ + rel_pos_->GetZ();
 	}
+	else if (type_ == PositionType::RELATIVE_LANE)
+	{
+		return z_;
+	}
 	else
 	{
 		LOG("Unexpected PositionType: %d", type_);
@@ -4284,13 +4382,27 @@ double Position::GetH()
 	{
 		return h_;
 	}
-	else if (type_ == PositionType::RELATIVE_OBJECT)
+	else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
 	{
-		return h_ + rel_pos_->GetH();
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return h_;
+		}
+		else
+		{
+			return h_ + rel_pos_->GetH();
+		}
 	}
-	else if (type_ == PositionType::RELATIVE_WORLD)
+	else if (type_ == PositionType::RELATIVE_LANE)
 	{
-		return h_;
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return h_;
+		}
+		else
+		{
+			return h_ + GetHRoadInDrivingDirection();
+		}
 	}
 	else
 	{
@@ -4300,19 +4412,69 @@ double Position::GetH()
 	return h_;
 }
 
+double Position::GetHRelative()
+{
+	if (!rel_pos_)
+	{
+		return h_relative_;
+	}
+	else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
+	{
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return h_relative_;
+		}
+		else
+		{
+			return h_relative_ + rel_pos_->GetHRelative();
+		}
+	}
+	else if (type_ == PositionType::RELATIVE_LANE)
+	{
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return h_relative_;
+		}
+		else
+		{
+			return h_relative_ + GetHRoadInDrivingDirection();
+		}
+	}
+	else
+	{
+		LOG("Unexpected PositionType: %d", type_);
+	}
+
+	return h_relative_;
+}
+
 double Position::GetP()
 {
 	if (!rel_pos_)
 	{
 		return p_;
 	}
-	else if (type_ == PositionType::RELATIVE_OBJECT)
+	else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
 	{
-		return p_ + rel_pos_->GetP();
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return p_;
+		}
+		else
+		{
+			return p_ + rel_pos_->GetP();
+		}
 	}
-	else if (type_ == PositionType::RELATIVE_WORLD)
+	else if (type_ == PositionType::RELATIVE_LANE)
 	{
-		return p_;
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return p_;
+		}
+		else
+		{
+			return p_ + GetPRoadInDrivingDirection();
+		}
 	}
 	else
 	{
@@ -4328,13 +4490,27 @@ double Position::GetR()
 	{
 		return r_;
 	}
-	else if (type_ == PositionType::RELATIVE_OBJECT)
+	else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
 	{
-		return r_ + rel_pos_->GetR();
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return r_;
+		}
+		else
+		{
+			return r_ + rel_pos_->GetR();
+		}
 	}
-	else if (type_ == PositionType::RELATIVE_WORLD)
+	else if (type_ == PositionType::RELATIVE_LANE)
 	{
-		return r_;
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return r_;
+		}
+		else
+		{
+			return r_;  // road R not implemented yet
+		}
 	}
 	else
 	{
@@ -4609,7 +4785,36 @@ int Position::SetRouteS(Route *route, double route_s)
 void Position::ReleaseRelation()
 {
 	// Freeze position and then disconnect 
-	SetInertiaPos(GetX(), GetY(), GetZ(), GetH(), GetP(), GetR(), true);
+	if (type_ == Position::PositionType::RELATIVE_LANE)
+	{
+		
+		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
+		{
+			// Save requested heading angle, since SetLanePos will modify it
+			double h = h_relative_;
+
+			// Resolve requested position
+			SetLanePos(GetTrackId(), GetLaneId(), GetS(), GetOffset());
+
+			// Finally set requested heading
+			if (lane_id_ > 0)
+			{
+				// In lanes going opposite road direction, add 180 degrees
+				h = GetAngleSum(h, M_PI);
+			}
+			SetHeadingRelative(h);
+		}
+		else
+		{
+			double h = h_;
+			SetLanePos(GetTrackId(), GetLaneId(), GetS(), GetOffset());
+			SetHeading(h);
+		}
+	}
+	else if (type_ == PositionType::RELATIVE_OBJECT || type_ == PositionType::RELATIVE_WORLD)
+	{
+		SetInertiaPos(GetX(), GetY(), GetZ(), GetH(), GetP(), GetR(), true);
+	}
 	SetRelativePosition(0, PositionType::NORMAL);
 }
 
@@ -4717,9 +4922,19 @@ void Trajectory::Freeze()
 	{
 		PolyLine* pline = (PolyLine*)shape_;
 		
+		pline->length_ = 0;
+
 		for (size_t i = 0; i < pline->vertex_.size(); i++)
 		{
 			pline->vertex_[i]->pos_.ReleaseRelation();
+			if (i > 0)
+			{
+				pline->length_ += PointDistance2D(
+					pline->vertex_[i-1]->pos_.GetX(),
+					pline->vertex_[i-1]->pos_.GetY(),
+					pline->vertex_[i]->pos_.GetX(),
+					pline->vertex_[i]->pos_.GetY());
+			}
 		}
 	}
 	else

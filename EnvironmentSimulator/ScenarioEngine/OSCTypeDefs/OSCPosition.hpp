@@ -27,17 +27,11 @@ namespace scenarioengine
 	class OSCOrientation
 	{
 	public:
-		typedef enum
-		{
-			RELATIVE,
-			ABSOLUTE,
-			UNDEFINED
-		} OrientationType;
 
-		OSCOrientation() : type_(OrientationType::UNDEFINED), h_(0), p_(0), r_(0) {}
-		OSCOrientation(OrientationType type, double h, double p, double r) : type_(type), h_(h), p_(p), r_(r) {}
+		OSCOrientation() : type_(roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE), h_(0), p_(0), r_(0) {}
+		OSCOrientation(roadmanager::Position::OrientationType type, double h, double p, double r) : type_(type), h_(h), p_(p), r_(r) {}
 
-		OrientationType type_;
+		roadmanager::Position::OrientationType type_;
 		double h_; 
 		double p_;
 		double r_;
@@ -73,7 +67,6 @@ namespace scenarioengine
 		virtual double GetP() { return position_.GetP(); }
 		virtual double GetR() { return position_.GetR(); }
 		virtual void Print() = 0;
-		virtual void Evaluate() = 0;
 		virtual roadmanager::Position *GetRMPos() { return &position_; }
 
 	protected:
@@ -87,7 +80,6 @@ namespace scenarioengine
 		OSCPositionWorld(double x, double y, double z, double h, double p, double r);
 
 		void Print() { position_.Print(); }
-		void Evaluate() {}  // No need to evaluate, position already in cartesian coordinates
 	};
 
 	class OSCPositionLane : OSCPosition
@@ -97,32 +89,19 @@ namespace scenarioengine
 		OSCPositionLane(int roadId, int landId, double s, double offset, OSCOrientation orientation);
 
 		void Print() { position_.Print(); }
-		void Evaluate() {}  // No need to evaluate, position already in cartesian coordinates
 	};
 
 	class OSCPositionRelativeObject : OSCPosition
 	{
 	public:
 		Object *object_;
-		double dx_;
-		double dy_;
-		double dz_;
-		OSCOrientation o_;
 
 		OSCPositionRelativeObject(Object *object, double dx, double dy, double dz, OSCOrientation orientation);
 
-		double GetX() { Evaluate(); return position_.GetX(); }
-		double GetY() { Evaluate(); return position_.GetY(); }
-		double GetZ() { Evaluate(); return position_.GetZ(); }
-		double GetH() { Evaluate(); return position_.GetH(); }
-		double GetP() { Evaluate(); return position_.GetP(); }
-		double GetR() { Evaluate(); return position_.GetR(); }
-
 		void Print();
-		void Evaluate();
+
 		roadmanager::Position *GetRMPos() 
 		{ 
-			Evaluate();
 			return &position_;
 		}
 	};
@@ -131,25 +110,12 @@ namespace scenarioengine
 	{
 	public:
 		Object* object_;
-		double dx_;
-		double dy_;
-		double dz_;
-		OSCOrientation o_;
 
 		OSCPositionRelativeWorld(Object* object, double dx, double dy, double dz, OSCOrientation orientation);
 
-		double GetX() { Evaluate(); return position_.GetX(); }
-		double GetY() { Evaluate(); return position_.GetY(); }
-		double GetZ() { Evaluate(); return position_.GetZ(); }
-		double GetH() { Evaluate(); return position_.GetH(); }
-		double GetP() { Evaluate(); return position_.GetP(); }
-		double GetR() { Evaluate(); return position_.GetR(); }
-
 		void Print();
-		void Evaluate();
 		roadmanager::Position* GetRMPos()
 		{
-			Evaluate();
 			return &position_;
 		}
 	};
@@ -158,18 +124,14 @@ namespace scenarioengine
 	{
 	public:
 		Object *object_;
-		int dLane_;
-		double ds_;
-		double offset_;
+
 		OSCOrientation o_;
 
 		OSCPositionRelativeLane(Object *object, int dLane, double ds, double offset, OSCOrientation orientation);
 
 		void Print();
-		void Evaluate();
 		roadmanager::Position *GetRMPos()
 		{
-			Evaluate();
 			return &position_;
 		}
 	};
@@ -186,7 +148,6 @@ namespace scenarioengine
 		void SetRouteRelativeHeading(double h_relative) { position_.SetHeadingRelative(h_relative);  }
 		
 		void Print() { position_.Print(); }
-		void Evaluate() {}  // No need to evaluate, position already in cartesian coordinates
 	};
 
 }

@@ -456,7 +456,7 @@ namespace scenarioengine
 	class PositionAction : public OSCPrivateAction
 	{
 	public:
-		OSCPosition *position_;
+		roadmanager::Position *position_;
 
 		PositionAction() : OSCPrivateAction(OSCPrivateAction::Type::POSITION) {}
 		
@@ -471,21 +471,7 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt, double simTime)
-		{
-			(void)dt;
-			(void)simTime;
-			object_->pos_.CopyRMPos(position_->GetRMPos());
-			if (position_->type_ != OSCPosition::PositionType::ROUTE)
-			{
-				object_->pos_.CalcRoutePosition();
-			}
-			LOG("Step %s pos: ", object_->name_.c_str());
-			position_->Print();
-
-			OSCAction::Stop();
-		}
-
+		void Step(double dt, double simTime);
 		void Start();
 	};
 

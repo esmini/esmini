@@ -643,21 +643,21 @@ void ScenarioReader::parseOSCOrientation(OSCOrientation &orientation, pugi::xml_
 
 	if (type_str == "relative")
 	{
-		orientation.type_ = OSCOrientation::OrientationType::RELATIVE;
+		orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_RELATIVE;
 	}
 	else if (type_str == "absolute")
 	{
-		orientation.type_ = OSCOrientation::OrientationType::ABSOLUTE;
+		orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE;
 	}
 	else if (type_str == "")
 	{
 		LOG("No orientation type specified - using absolute");
-		orientation.type_ = OSCOrientation::OrientationType::ABSOLUTE;
+		orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE;
 	}
 	else
 	{
 		LOG("Invalid orientation type: %d - using absolute", type_str.c_str());
-		orientation.type_ = OSCOrientation::OrientationType::ABSOLUTE;
+		orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE;
 	}
 }
 
@@ -749,6 +749,11 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 		{
 			parseOSCOrientation(orientation, orientation_node);
 		}
+		else
+		{
+			// If no orientation specified, assume Relative is preferred
+			orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_RELATIVE;
+		}
 
 		OSCPositionRelativeLane *pos = new OSCPositionRelativeLane(object, dLane, ds, offset, orientation);
 
@@ -780,6 +785,11 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 		if (orientation_node)
 		{
 			parseOSCOrientation(orientation, orientation_node);
+		}
+		else
+		{
+			// If no orientation specified, assume Relative is preferred
+			orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_RELATIVE;
 		}
 
 		OSCPositionLane *pos = new OSCPositionLane(road_id, lane_id, s, offset, orientation);
@@ -1292,7 +1302,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		{
 			PositionAction *action_pos = new PositionAction;
 			OSCPosition *pos = parseOSCPosition(actionChild.first_child());
-			action_pos->position_ = pos;
+			action_pos->position_ = pos->GetRMPos();
 			action = action_pos;
 		}
 		else if (actionChild.name() == std::string("RoutingAction"))
@@ -1535,20 +1545,20 @@ void ScenarioReader::parseInit(Init &init)
 		// If relative actions depends on earlier action, switch position
 		for (size_t j = 0; j < i; j++)
 		{
-			Object* obj = 0;
+			roadmanager::Position* pos = 0;
 			if (init.private_action_[j]->type_ == OSCPrivateAction::Type::POSITION)
 			{
 				PositionAction* action = (PositionAction*)init.private_action_[j];
-				if (action->position_->type_ == OSCPosition::PositionType::RELATIVE_LANE)
+				if (action->position_->GetType() == roadmanager::Position::PositionType::RELATIVE_LANE)
 				{
-					obj = ((OSCPositionRelativeLane*)action->position_)->object_;
+					pos = ((roadmanager::Position*)action->position_)->GetRelativePosition();
 				}
-				else if (action->position_->type_ == OSCPosition::PositionType::RELATIVE_OBJECT)
+				else if (action->position_->GetType() == roadmanager::Position::PositionType::RELATIVE_OBJECT)
 				{
-					obj = ((OSCPositionRelativeObject*)action->position_)->object_;
+					pos = ((roadmanager::Position*)action->position_)->GetRelativePosition();
 				}
 			}
-			if (obj == init.private_action_[i]->object_)
+			if (pos == &init.private_action_[i]->object_->pos_)
 			{
 				// swap places
 				OSCPrivateAction* tmp_action = init.private_action_[i];
