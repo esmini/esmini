@@ -59,6 +59,9 @@ Environment models (roads, landscape, buildings...) have been created using [VIR
 If you want to build yourself, please find some instructions [here](docs/BuildInstructions.md).
 
 ## Related work
+### pyoscx
+[pyoscx](https://github.com/pyoscx/pyoscx) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate the OpenSCENARIO 1.0 XML counterpart. 
+
 ### Scenario video clip generator
 [esmini-visualizer](https://github.com/matthewcoyle-cpc/esmini-visualiser) is a tool to automatically generate video visualizations of scenarios.
 
