@@ -2076,8 +2076,31 @@ int RoadPath::Calculate(double &dist)
 
 	if (startRoad == targetRoad)
 	{
+		int direction = 0;
+
+		dist = targetPos_->GetS() - startPos_->GetS();
+
 		// Special case: On same road, distance is equal to delta s
-		dist = abs(targetPos_->GetS() - startPos_->GetS());
+		if (startPos_->GetLaneId() < 0)
+		{
+			if (startPos_->GetHRelative() > M_PI_2 && startPos_->GetHRelative() < 3 * M_PI_2)
+			{
+				// facing opposite road direction
+				dist *= -1;
+			}
+		}
+		else
+		{
+			// decreasing in lanes with positive IDs
+			dist *= -1;
+			
+			if (startPos_->GetHRelative() < M_PI_2 || startPos_->GetHRelative() > 3 * M_PI_2)
+			{
+				// facing along road direction
+				dist *= -1;
+			}
+		}
+
 		return 0;
 	}
 

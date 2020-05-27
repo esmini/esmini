@@ -350,11 +350,19 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time, 
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		double x, y;
-		rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
-		
-		// Only consider x-component of the distance
-		rel_dist = x;
+		if (along_route_ == true)
+		{
+			roadmanager::PositionDiff diff;
+			triggering_entities_.entity_[i].object_->pos_.Delta(object_->pos_, diff);
+			rel_dist = diff.ds;
+		}
+		else
+		{
+			double x, y;
+			rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
+			// Only consider X-component of distance vector
+			rel_dist = x;
+		}
 
 		// Headway time not defined for cases:
 		//  - when target object is behind 
@@ -421,12 +429,21 @@ bool TrigByDistance::CheckCondition(StoryBoard *storyBoard, double sim_time, boo
 	(void)sim_time;
 
 	bool result = false;
-	double x, y;
 	double dist = 0;
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		dist = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y));
+		if (along_route_ == true)
+		{
+			roadmanager::PositionDiff diff;
+			triggering_entities_.entity_[i].object_->pos_.Delta(*position_->GetRMPos(), diff);
+			dist = fabs(diff.ds);
+		}
+		else
+		{
+			double x, y;
+			dist = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y));
+		}
 
 		result = EvaluateRule(dist, value_, rule_);
 
@@ -455,6 +472,7 @@ bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_t
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
+
 		rel_intertial_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
 
 		if (type_ == RelativeDistanceType::LONGITUDINAL)
