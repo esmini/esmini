@@ -141,7 +141,7 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 		return false;
 	}
 
-	bool result = CheckCondition(storyBoard, sim_time);
+	bool result = CheckCondition(storyBoard, sim_time, false);
 	bool trig = CheckEdge(result, last_result_, edge_);
 
 	last_result_ = result;
@@ -153,6 +153,14 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 		LOG("Timer %.2fs started", delay_);
 		return false;
 	}
+
+	// Print a log message first time condition evaluates to true
+	if (trig && trig != last_trig_)
+	{
+		CheckCondition(storyBoard, sim_time, true);
+	}
+	
+	last_trig_ = trig;
 
 	return trig;
 }
@@ -187,7 +195,7 @@ bool Trigger::Evaluate(StoryBoard *storyBoard, double sim_time)
 	return result;
 }
 
-bool TrigByState::CheckCondition(StoryBoard *storyBoard, double sim_time)
+bool TrigByState::CheckCondition(StoryBoard *storyBoard, double sim_time, bool log)
 {
 	(void)sim_time;
 	bool result = false;
@@ -257,31 +265,96 @@ bool TrigByState::CheckCondition(StoryBoard *storyBoard, double sim_time)
 		{
 			LOG("Invalid state: %d", state_);
 		}
-		//printf("state: %d\n", element->state_);
+	}
+
+	if (log) 
+	{
+		LOG("%s == %s, element: %s state: %s, edge: %s", name_.c_str(), result ? "true" : "false", 
+			element_name_.c_str(), CondElementState2Str(state_).c_str(), Edge2Str(edge_).c_str());
 	}
 
 	return result;
 }
 
-bool TrigBySimulationTime::CheckCondition(StoryBoard *storyBoard, double sim_time)
+std::string TrigByState::CondElementState2Str(CondElementState state)
 {
-	(void)storyBoard;
-
-	return EvaluateRule(sim_time, value_, rule_);
+	if (state == STANDBY)
+	{
+		return "STANDBY";
+	}
+	else if (state == RUNNING)
+	{
+		return "RUNNING";
+	}
+	else if (state == COMPLETE)
+	{
+		return "COMPLETE";
+	}
+	else if (state == UNDEFINED_ELEMENT_STATE)
+	{
+		return "UNDEFINED_ELEMENT_STATE";
+	}
+	else if (state == START_TRANSITION)
+	{
+		return "START_TRANSITION";
+	}
+	else if (state == END_TRANSITION)
+	{
+		return "END_TRANSITION";
+	}
+	else if (state == STOP_TRANSITION)
+	{
+		return "STOP_TRANSITION";
+	}
+	else if (state == SKIP_TRANSITION)
+	{
+		return "SKIP_TRANSITION";
+	}
+	else if (state == COMPLETE_TRANSITION)
+	{
+		return "COMPLETE_TRANSITION";
+	}
+	else if (state == UNDEFINED_ELEMENT_TRANSITION)
+	{
+		return "UNDEFINED_ELEMENT_TRANSITION";
+	}
+	else
+	{
+		LOG("Unknown state: %d", state);
+	}
+	
+	return "Unknown state";
 }
 
-bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
+bool TrigBySimulationTime::CheckCondition(StoryBoard *storyBoard, double sim_time, bool log)
+{
+	(void)storyBoard;
+	bool result = EvaluateRule(sim_time, value_, rule_);
+
+	if (log)
+	{
+		LOG("%s == %s, sim_time: %.2f %s %.2f edge: %s", name_.c_str(), result ? "true" : "false",
+			sim_time, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+	}
+
+	return result;
+}
+
+bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time, bool log)
 {
 	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
-	double rel_dist, hwt;
+	double rel_dist, hwt = 0;
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		double x, y;
 		rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
+		
+		// Only consider x-component of the distance
+		rel_dist = x;
 
 		// Headway time not defined for cases:
 		//  - when target object is behind 
@@ -301,23 +374,28 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 				break;
 			}
 		}
-
+	}
+	if (log)
+	{
+		LOG("%s == %s, HWT: %.2f %s %.2f, edge %s", name_.c_str(), result ? "true" : "false",
+			hwt, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
 	}
 
 	return result;
 }
 
-bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time)
+bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time, bool log)
 {
 	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
-	double x, y;
+	double x, y, dist = 0;
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		if (fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y)) < tolerance_)
+		dist = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y));
+		if (dist < tolerance_)
 		{
 			result = true;
 		}
@@ -328,17 +406,23 @@ bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time
 		}
 	}
 
+	if (log)
+	{
+		LOG("%s == %s, distance %.2f < tolerance (%.2f), edge: %s", name_.c_str(), result ? "true" : "false", 
+			dist, tolerance_, Edge2Str(edge_).c_str());
+	}
+
 	return result;
 }
 
-bool TrigByDistance::CheckCondition(StoryBoard *storyBoard, double sim_time)
+bool TrigByDistance::CheckCondition(StoryBoard *storyBoard, double sim_time, bool log)
 {
 	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
 	double x, y;
-	double dist;
+	double dist = 0;
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
@@ -352,16 +436,22 @@ bool TrigByDistance::CheckCondition(StoryBoard *storyBoard, double sim_time)
 		}
 	}
 	
+	if (log)
+	{
+		LOG("%s == %s, dist: %.2f %s %.2f, edge: %s", name_.c_str(), result ? "true" : "false", 
+			dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+	}
+
 	return result;
 }
 
-bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_time)
+bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_time, bool log)
 {
 	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
-	double rel_dist, rel_intertial_dist, x, y;
+	double rel_dist = 0, rel_intertial_dist, x, y;
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
@@ -392,24 +482,38 @@ bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_t
 		}
 	}
 
+	if (log)
+	{
+		LOG("%s == %s, rel_dist: %.2f %s %.2f, edge: %s", name_.c_str(), result ? "true" : "false",
+			rel_dist, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+	}
+
 	return result;
 }
 
-bool TrigByTraveledDistance::CheckCondition(StoryBoard* storyBoard, double sim_time)
+bool TrigByTraveledDistance::CheckCondition(StoryBoard* storyBoard, double sim_time, bool log)
 {
 	(void)storyBoard;
 	(void)sim_time;
 
 	bool result = false;
+	double odom = 0;
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		result = triggering_entities_.entity_[i].object_->odometer_ >= value_;
+		odom = triggering_entities_.entity_[i].object_->odometer_;
+		result = odom >= value_;
 
 		if (EvalDone(result, triggering_entity_rule_))
 		{
 			break;
 		}
+	}
+
+	if (log)
+	{
+		LOG("%s == %s, traveled_dist: %.2f >= %.2f, edge: %s", name_.c_str(), result ? "true" : "false",
+			odom, value_, Edge2Str(edge_).c_str());
 	}
 
 	return result;

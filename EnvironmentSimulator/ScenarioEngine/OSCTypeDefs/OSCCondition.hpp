@@ -70,13 +70,15 @@ namespace scenarioengine
 		double delay_;
 		bool evaluated_;
 		bool last_result_;  // result from last evaluation
+		bool last_trig_;    // trig value from last evaluation
 		ConditionEdge edge_;
 		Timer timer_;
 
-		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false), last_result_(false), edge_(ConditionEdge::NONE) {}
+		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false), 
+			last_result_(false), last_trig_(false), edge_(ConditionEdge::NONE) {}
 
 		bool Evaluate(StoryBoard *storyBoard, double sim_time);
-		virtual bool CheckCondition(StoryBoard *storyBoard, double sim_time) = 0;
+		virtual bool CheckCondition(StoryBoard *storyBoard, double sim_time, bool log = false) = 0;
 		bool CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge);
 	};
 
@@ -147,9 +149,8 @@ namespace scenarioengine
 		bool along_route_;
 		Rule rule_;
 
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
 		TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
-
-		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByReachPosition : public TrigByEntity
@@ -158,9 +159,8 @@ namespace scenarioengine
 		OSCPosition *position_;
 		double tolerance_;
 
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
 		TrigByReachPosition() : TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
-
-		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByDistance : public TrigByEntity
@@ -171,10 +171,9 @@ namespace scenarioengine
 		bool freespace_;
 		bool along_route_;
 		Rule rule_;
-
+		
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
 		TrigByDistance() : TrigByEntity(TrigByEntity::EntityConditionType::DISTANCE) {}
-
-		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByTraveledDistance : public TrigByEntity
@@ -182,9 +181,8 @@ namespace scenarioengine
 	public:
 		double value_;
 
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false); 
 		TrigByTraveledDistance() : value_(0), TrigByEntity(TrigByEntity::EntityConditionType::TRAVELED_DISTANCE) {}
-
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
 	};
 
 	class TrigByRelativeDistance : public TrigByEntity
@@ -203,9 +201,8 @@ namespace scenarioengine
 		RelativeDistanceType type_;
 		Rule rule_;
 
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false); 
 		TrigByRelativeDistance() : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE) {}
-
-		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
 	};
 
 	class TrigByState : public OSCCondition
@@ -230,10 +227,10 @@ namespace scenarioengine
 		StoryBoardElement::ElementType element_type_;
 		std::string element_name_;
 
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false); 
 		TrigByState(CondElementState state, StoryBoardElement::ElementType element_type, std::string element_name) :
 			OSCCondition(BY_STATE), state_(state), element_type_(element_type), element_name_(element_name) {}
-
-		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
+		std::string CondElementState2Str(CondElementState state);
 	};
 
 	class TrigByValue : public OSCCondition
@@ -258,9 +255,8 @@ namespace scenarioengine
 	public:
 		double value_;
 
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
 		TrigBySimulationTime() : TrigByValue(TrigByValue::Type::TIME_OF_DAY) {}
-
-		bool CheckCondition(StoryBoard *storyBoard, double sim_time);
 	};
 
 }
