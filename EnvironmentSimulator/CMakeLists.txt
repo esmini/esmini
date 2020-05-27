@@ -21,6 +21,7 @@ set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
 
 set( CMAKE_VERBOSE_MAKEFILE true )
 
+
 if (APPLE)
   set ( TIME_LIB "" )
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1yEFOB8HmNP5lPxYD4VJC-ry7XaBG9dsJ )
