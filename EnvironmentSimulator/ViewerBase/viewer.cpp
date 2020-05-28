@@ -40,9 +40,10 @@
 
 #define SHADOW_SCALE 1.20
 #define SHADOW_MODEL_FILEPATH "shadow_face.osgb"  
-#define ARROW_MODEL_FILEPATH "arrow.osgb"  
+#define ARROW_MODEL_FILEPATH "arrow.osgb"
 #define LOD_DIST 3000
 #define LOD_SCALE_DEFAULT 1.0
+#define DEFAULT_AA_MULTISAMPLES 4
 
 double color_green[3] = { 0.25, 0.6, 0.3 };
 double color_gray[3] = { 0.7, 0.7, 0.7 };
@@ -613,22 +614,51 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	showInfoText = true;  // show info text HUD per default
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
 	
-	// When running on Linux in VirtualBox on Windows host - the application crashes when trying to apply AntiAlias as below
-	// If someone know how to query AA capabilites, please replace this argument option with dynamic check to switch on/off
-	int aa_mode = 4;  // default value
+	int aa_mode = DEFAULT_AA_MULTISAMPLES;  
 	if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
 	{
 		aa_mode = atoi(arg_str.c_str());
 	}
-	LOG("Anti-alias num subsampling: %d", aa_mode);
+	LOG("Anti-Aliasing number of subsamples: %d", aa_mode);
 	osg::DisplaySettings::instance()->setNumMultiSamples(aa_mode);
 
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");
 	arguments.read("--lodScale", lodScale_);
 
 	clear_color = (arguments.find("--clear-color") != -1);
-	
+
+	// Store arguments in case we need to create a second viewer if the first fails
+	int argc = arguments.argc();
+	char **argv = (char**)malloc(argc * sizeof(char*));
+	for (int i = 0; i < argc; i++)
+	{
+		argv[i] = (char*)malloc(strlen(arguments.argv()[i]) + 1);  // +1 to include null termination
+		strncpy(argv[i], arguments.argv()[i], strlen(arguments.argv()[i]) + 1);
+	}
+
 	osgViewer_ = new osgViewer::Viewer(arguments);
+	
+	// Check if the viewer has been created correctly - window created is a indication
+	osgViewer::ViewerBase::Windows wins;
+	osgViewer_->getWindows(wins);
+	if (wins.size() == 0)
+	{
+		// Viewer failed to create window. Probably Anti Aliasing is not supported on executing platform.
+		// Make another attempt without AA
+		LOG("Viewer failure. Probably requested level of Anti Aliasing (%d multisamples) is not supported - try a lower number. Making another attempt without Anti-Alias.", aa_mode);
+		osg::DisplaySettings::instance()->setNumMultiSamples(0);
+		delete osgViewer_;
+		osg::ArgumentParser args2(&argc, argv);
+		osgViewer_ = new osgViewer::Viewer(args2);
+	}
+	else
+	{
+		for (int i = 0; i < argc; i++)
+		{
+			free(argv[i]);
+		}
+		free(argv);
+	}
 
 	// Decorate window border with application name
 	SetWindowTitle("esmini - " + FileNameWithoutExtOf(arguments.getApplicationName()) + (scenarioFilename ? " " + FileNameOf(scenarioFilename) : ""));
