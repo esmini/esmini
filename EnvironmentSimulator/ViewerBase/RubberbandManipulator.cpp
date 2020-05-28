@@ -290,8 +290,11 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 	{
 		if (dt < 0)
 		{
-			notify(INFO) << "warning dt = "<< dt << "\n";
 			dt = 0.0f;
+		}
+		if (dt > 0.1)
+		{
+			dt = 0.1f;
 		}
 
 		// Find the vector between target position and actual camera position

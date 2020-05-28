@@ -4132,6 +4132,38 @@ bool Position::IsAheadOf(Position target_position)
 	return(diff_x0 < 0);
 }
 
+int Position::GetRoadLaneInfo(RoadLaneInfo *data)
+{
+	if (fabs(GetCurvature()) > SMALL_NUMBER)
+	{
+		double radius = 1.0 / GetCurvature();
+		radius -= GetT(); // curvature positive in left curves, lat_offset positive left of reference lane
+		data->curvature = (1.0 / radius);
+	}
+	else
+	{
+		// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
+		data->curvature = GetCurvature();
+	}
+
+	data->pos[0] = GetX();
+	data->pos[1] = GetY();
+	data->pos[2] = GetZRoad();
+	data->heading = GetHRoad();
+	data->pitch = GetP();
+	data->roll = GetR();
+
+	// Then find out the width of the lane at current s-value
+	Road *road = GetRoadById(GetTrackId());
+	if (road)
+	{
+		data->width = road->GetLaneWidthByS(GetS(), GetLaneId());
+		data->speed_limit = road->GetSpeedByS(GetS());
+	}
+
+	return 0;
+}
+
 int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, LookAheadMode lookAheadMode)
 {
 	Position target(*this);  // Make a copy of current position
@@ -4153,38 +4185,14 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, Loo
 		return -1;
 	}
 	
-	if (fabs(target.GetCurvature()) > SMALL_NUMBER)
-	{
-		double radius = 1.0 / target.GetCurvature();
-		radius -= target.GetT(); // curvature positive in left curves, lat_offset positive left of reference lane
-		data->curvature = (1.0 / radius);
-	}
-	else
-	{
-		// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
-		data->curvature = target.GetCurvature();
-	}
-
-	data->pos[0] = target.GetX();
-	data->pos[1] = target.GetY();
-	data->pos[2] = target.GetZ();
-	data->heading = target.GetHRoad();
-	data->pitch = target.GetP();
-	data->roll = target.GetR();
-
-	// Then find out the width of the lane at current s-value
-	Road *road = target.GetRoadById(target.GetTrackId());
-	data->width = road->GetLaneWidthByS(target.GetS(), target.GetLaneId());
-	data->speed_limit = road->GetSpeedByS(target.GetS());
+	target.GetRoadLaneInfo(data);
 
 	return 0;
 }
 
 void Position::CalcProbeTarget(Position *target, RoadProbeInfo *data)
 {
-	data->road_lane_info.pos[0] = target->GetX();
-	data->road_lane_info.pos[1] = target->GetY();
-	data->road_lane_info.pos[2] = target->GetZRoad();
+	target->GetRoadLaneInfo(&data->road_lane_info);
 
 	// find out local x, y, z
 	double diff_x = target->GetX() - GetX();
@@ -4215,27 +4223,6 @@ void Position::CalcProbeTarget(Position *target, RoadProbeInfo *data)
 		data->relative_h = SIGN(data->relative_pos[1]) * acos(dot_prod);
 	}
 
-	if (fabs(target->GetCurvature()) > SMALL_NUMBER)
-	{
-		double radius = 1.0 / target->GetCurvature();
-		radius -= target->GetT(); // curvature positive in left curves, lat_offset positive left of reference lane
-		data->road_lane_info.curvature = (float)(1.0 / radius);
-	}
-	else
-	{
-		// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
-		data->road_lane_info.curvature = (float)target->GetCurvature();
-	}
-
-	data->road_lane_info.heading = target->GetHRoad();
-	data->road_lane_info.pitch = target->GetPRoad();
-	data->road_lane_info.roll = target->GetR();
-
-	Road *road = target->GetRoadById(target->GetTrackId());
-	if (road)
-	{
-		data->road_lane_info.speed_limit = road->GetSpeedByS(target->GetS());
-	}
 }
 
 int Position::GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode)

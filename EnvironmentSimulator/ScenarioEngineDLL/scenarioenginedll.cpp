@@ -196,6 +196,38 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	return 0;
 }
 
+static int GetRoadLaneInfo(int object_id, float lookahead_distance, SE_LaneInfo *dll_data, int lookAheadMode)
+{
+	roadmanager::RoadLaneInfo rm_data;
+
+	if (player == 0)
+	{
+		return -1;
+	}
+
+	if (object_id >= player->scenarioGateway->getNumberOfObjects())
+	{
+		LOG("Object %d not available, only %d registered", object_id, player->scenarioGateway->getNumberOfObjects());
+		return -1;
+	}
+
+	roadmanager::Position *pos = &player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
+
+	pos->GetRoadLaneInfo(lookahead_distance, &rm_data, (roadmanager::Position::LookAheadMode)lookAheadMode);
+
+	dll_data->x = (float)rm_data.pos[0];
+	dll_data->y = (float)rm_data.pos[1];
+	dll_data->z = (float)rm_data.pos[2];
+	dll_data->heading = (float)rm_data.heading;
+	dll_data->pitch = (float)rm_data.pitch;
+	dll_data->roll = (float)rm_data.roll;
+	dll_data->curvature = (float)rm_data.curvature;
+	dll_data->speed_limit = (float)rm_data.speed_limit;
+	dll_data->width = (float)rm_data.width;
+
+	return 0;
+}
+
 extern "C"
 {
 	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int threads, int record, float headstart_time)
@@ -444,19 +476,28 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int along_road_center)
+	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int lookAheadMode)
 	{
 		if (player == 0 || object_id >= player->scenarioGateway->getNumberOfObjects())
 		{
 			return -1;
 		}
 
-		if (GetRoadInfoAtDistance(object_id, lookahead_distance, data, along_road_center) != 0)
+		if (GetRoadInfoAtDistance(object_id, lookahead_distance, data, lookAheadMode) != 0)
 		{
 			return -1;
 		}
 
 //		Set_se_steering_target_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_GetLaneInfoAtDistance(int object_id, float lookahead_distance, SE_LaneInfo *data, int lookAheadMode)
+	{
+		roadmanager::RoadLaneInfo s_data;
+
+		GetRoadLaneInfo(object_id, lookahead_distance, data, lookAheadMode);
 
 		return 0;
 	}

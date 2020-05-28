@@ -80,6 +80,17 @@ int main(int argc, char *argv[])
 			printf("\n");
 #endif
 
+#if 0  // set to 1 to demonstrate example of how to query road information
+			SE_LaneInfo data;
+			double look_ahead_distance = 10;
+			int id = 0;
+
+			SE_GetLaneInfoAtDistance(id, look_ahead_distance, &data, 0);
+
+			LOG("Road info at %.2f meter from Vehicle %d: pos (%.2f, %.2f, %.2f) curvature %.5f (r %.2f) heading %.2f pitch %.2f lane width %.2f",
+				look_ahead_distance, id, data.x, data.y, data.z, data.curvature, 1.0 / data.curvature,  data.heading, data.pitch, data.width);
+#endif
+
 			if (i == (int)(0.5*DURATION / TIME_STEP))
 			{
 				// Halfway through, pause the simulation for a few seconds

@@ -896,6 +896,7 @@ namespace roadmanager
 		@return 0 if successful, -1 if not
 		*/
 		int GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, LookAheadMode lookAheadMode);
+		int GetRoadLaneInfo(RoadLaneInfo *data);
 
 		/**
 		Get information of current lane at a specified distance from object along the road ahead
