@@ -264,6 +264,113 @@ namespace roadmanager
 		double s_offset_;
 	};
 
+	class LaneRoadMarkTypeLine
+	{
+	public:
+		enum RoadMarkTypeLineRule
+		{
+			NO_PASSING,
+			CAUTION,
+			NONE
+		};
+
+		LaneRoadMarkTypeLine(double length, double space, double t_offset, double s_offset, RoadMarkTypeLineRule rule, double width): 
+		length_(length), space_(space), t_offset_(t_offset), s_offset_(s_offset), rule_(rule), width_(width) {}
+
+	private:
+		double length_;
+		double space_;
+		double t_offset_;
+		double s_offset_;
+		RoadMarkTypeLineRule rule_;
+		double width_;
+	};
+
+	class LaneRoadMarkType
+	{
+	public:
+		LaneRoadMarkType(std::string name, double width) : name_(name), width_(width) {}
+		
+		void AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine) { lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine); }
+		std::string GetName() { return name_; }
+		double GetWidth() { return width_; }
+		void Print();
+
+	private:
+		std::string name_;
+		double width_;
+		std::vector<LaneRoadMarkTypeLine*> lane_roadMarkTypeLine_;
+	};
+
+	class LaneRoadMark
+	{
+	public:
+		enum RoadMarkType
+		{
+			NONE_TYPE,
+			SOLID,
+			BROKEN,
+			SOLID_SOLID,
+			SOLID_BROKEN,
+			BROKEN_SOLID,
+			BROKEN_BROKEN,
+			BOTTS_DOTS,
+			GRASS,
+			CURB
+		};
+
+		enum RoadMarkWeight
+		{
+			STANDARD,
+			BOLD
+		};
+
+		enum RoadMarkColor
+		{
+			STANDARD_COLOR, // equivalent to white
+			BLUE,
+			GREEN,
+			RED,
+			WHITE,
+			YELLOW
+		};
+
+		enum RoadMarkMaterial
+		{
+			STANDARD_MATERIAL // only "standard" is available for now
+		};
+
+		enum RoadMarkLaneChange
+		{
+			INCREASE,
+			DECREASE,
+			BOTH,
+			NONE_LANECHANGE
+		};
+
+		LaneRoadMark(double s_offset, RoadMarkType type, RoadMarkWeight weight, RoadMarkColor color, 
+		RoadMarkMaterial material, RoadMarkLaneChange lane_change, double width, double height): 
+		s_offset_(s_offset), type_(type), weight_(weight), color_(color), material_(material), lane_change_(lane_change), 
+		width_(width), height_(height) {}
+		void AddType(LaneRoadMarkType *lane_roadMarkType) { lane_roadMarkType_ = lane_roadMarkType; }
+
+	private:
+	// Add width and height here also
+		double s_offset_;
+		RoadMarkType type_;
+		RoadMarkWeight weight_;
+		RoadMarkColor color_;
+		RoadMarkMaterial material_;
+		RoadMarkLaneChange lane_change_;
+		double width_;
+		double height_;
+		LaneRoadMarkType *lane_roadMarkType_;
+	};
+
+	
+
+	
+
 	class LaneOffset
 	{
 	public:
@@ -335,6 +442,7 @@ namespace roadmanager
 		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
 		double GetOffsetFromRef() { return offset_from_ref_; }
 		void AddLaneWIdth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
+		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
 		int IsDriving();
 		void Print();
 
@@ -345,6 +453,7 @@ namespace roadmanager
 		double offset_from_ref_;
 		std::vector<LaneLink*> link_;
 		std::vector<LaneWidth*> lane_width_;
+		std::vector<LaneRoadMark*> lane_roadMark_;
 	};
 
 	class LaneSection

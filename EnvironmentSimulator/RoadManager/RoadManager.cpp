@@ -1710,6 +1710,200 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								double d = atof(width.attribute("d").value());
 								lane->AddLaneWIdth(new LaneWidth(s_offset, a, b, c, d));
 							}
+							
+							// roadMark
+							for (pugi::xml_node roadMark = lane_node->child("roadMark"); roadMark; roadMark = roadMark.next_sibling("roadMark"))
+							{
+								// s_offset
+								double s_offset = atof(roadMark.attribute("sOffset").value());
+
+								// type
+								LaneRoadMark::RoadMarkType roadMark_type = LaneRoadMark::NONE_TYPE;
+								if (roadMark.attribute("type") == 0 || !strcmp(roadMark.attribute("type").value(), ""))
+								{
+									LOG("Lane road mark type error");
+								}
+								if (!strcmp(roadMark.attribute("type").value(), "none"))
+								{
+									roadMark_type = LaneRoadMark::NONE_TYPE;
+								}
+								else  if (!strcmp(roadMark.attribute("type").value(), "solid"))
+								{
+									roadMark_type = LaneRoadMark::SOLID;
+								}
+								else  if (!strcmp(roadMark.attribute("type").value(), "broken"))
+								{
+									roadMark_type = LaneRoadMark::BROKEN;
+								}
+								else  if (!strcmp(roadMark.attribute("type").value(), "solid solid"))
+								{
+									roadMark_type = LaneRoadMark::SOLID_SOLID;
+								}
+								else  if (!strcmp(roadMark.attribute("type").value(), "solid broken"))
+								{
+									roadMark_type = LaneRoadMark::SOLID_BROKEN;
+								}
+								else  if (!strcmp(roadMark.attribute("type").value(), "broken solid"))
+								{
+									roadMark_type = LaneRoadMark::BROKEN_SOLID;
+								}
+								else  if (!strcmp(roadMark.attribute("type").value(), "broken broken"))
+								{
+									roadMark_type = LaneRoadMark::BROKEN_BROKEN;
+								}
+								else  if (!strcmp(roadMark.attribute("type").value(), "botts dots"))
+								{
+									roadMark_type = LaneRoadMark::BOTTS_DOTS;
+								}
+								else  if (!strcmp(roadMark.attribute("type").value(), "grass"))
+								{
+									roadMark_type = LaneRoadMark::GRASS;
+								}	
+								else  if (!strcmp(roadMark.attribute("type").value(), "curb"))
+								{
+									roadMark_type = LaneRoadMark::CURB;
+								}
+								else
+								{
+									LOG("unknown lane road mark type: %s (road id=%d)\n", roadMark.attribute("type").value(), r->GetId());
+								}
+
+								// weight
+								LaneRoadMark::RoadMarkWeight roadMark_weight = LaneRoadMark::STANDARD;
+								if (roadMark.attribute("weight") == 0 || !strcmp(roadMark.attribute("weight").value(), ""))
+								{
+									LOG("Lane road mark weight error");
+								}
+								if (!strcmp(roadMark.attribute("weight").value(), "standard"))
+								{
+									roadMark_weight = LaneRoadMark::STANDARD;
+								}
+								else  if (!strcmp(roadMark.attribute("weight").value(), "bold"))
+								{
+									roadMark_weight = LaneRoadMark::BOLD;
+								}
+								else
+								{
+									LOG("unknown lane road mark weight: %s (road id=%d)\n", roadMark.attribute("type").value(), r->GetId());
+								}	
+
+								// color
+								LaneRoadMark::RoadMarkColor roadMark_color = LaneRoadMark::STANDARD_COLOR;
+								if (roadMark.attribute("color") == 0 || !strcmp(roadMark.attribute("color").value(), ""))
+								{
+									LOG("Lane road mark color error");
+								}
+								if (!strcmp(roadMark.attribute("color").value(), "standard"))
+								{
+									roadMark_color = LaneRoadMark::STANDARD_COLOR;
+								}
+								else  if (!strcmp(roadMark.attribute("color").value(), "blue"))
+								{
+									roadMark_color = LaneRoadMark::BLUE;
+								}
+								else  if (!strcmp(roadMark.attribute("color").value(), "green"))
+								{
+									roadMark_color = LaneRoadMark::GREEN;
+								}
+								else  if (!strcmp(roadMark.attribute("color").value(), "red"))
+								{
+									roadMark_color = LaneRoadMark::RED;
+								}
+								else  if (!strcmp(roadMark.attribute("color").value(), "white"))
+								{
+									roadMark_color = LaneRoadMark::WHITE;
+								}
+								else  if (!strcmp(roadMark.attribute("color").value(), "yellow"))
+								{
+									roadMark_color = LaneRoadMark::YELLOW;
+								}
+								else
+								{
+									LOG("unknown lane road mark color: %s (road id=%d)\n", roadMark.attribute("color").value(), r->GetId());
+								}
+
+								// material
+								LaneRoadMark::RoadMarkMaterial roadMark_material = LaneRoadMark::STANDARD_MATERIAL;
+
+								// laneChange
+								LaneRoadMark::RoadMarkLaneChange roadMark_laneChange = LaneRoadMark::NONE_LANECHANGE;
+								if (roadMark.attribute("laneChange") == 0 || !strcmp(roadMark.attribute("laneChange").value(), ""))
+								{
+									LOG("Lane road mark lane change error");
+								}
+								if (!strcmp(roadMark.attribute("laneChange").value(), "none"))
+								{
+									roadMark_laneChange = LaneRoadMark::NONE_LANECHANGE;
+								}
+								else  if (!strcmp(roadMark.attribute("laneChange").value(), "increase"))
+								{
+									roadMark_laneChange = LaneRoadMark::INCREASE;
+								}
+								else  if (!strcmp(roadMark.attribute("laneChange").value(), "decrease"))
+								{
+									roadMark_laneChange = LaneRoadMark::DECREASE;
+								}	
+								else  if (!strcmp(roadMark.attribute("laneChange").value(), "both"))
+								{
+									roadMark_laneChange = LaneRoadMark::BOTH;
+								}
+								else
+								{
+									LOG("unknown lane road mark lane change: %s (road id=%d)\n", roadMark.attribute("laneChange").value(), r->GetId());
+								}
+								
+								double roadMark_width = atof(roadMark.attribute("width").value());
+								double roadMark_height = atof(roadMark.attribute("height").value());
+								LaneRoadMark *lane_roadMark = new LaneRoadMark(s_offset, roadMark_type, roadMark_weight, roadMark_color, 
+								roadMark_material, roadMark_laneChange, roadMark_width, roadMark_height);
+								lane->AddLaneRoadMark(lane_roadMark);
+
+								// sub_type
+								pugi::xml_node sub_type = roadMark.child("type");
+								if (sub_type != NULL)
+								{
+									std::string sub_type_name = sub_type.attribute("name").value();
+									double sub_type_width = atof(sub_type.attribute("width").value());
+									LaneRoadMarkType *lane_roadMarkType = new LaneRoadMarkType(sub_type_name, sub_type_width);
+									lane_roadMark->AddType(lane_roadMarkType);
+
+									for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
+									{
+										double length = atof(line.attribute("length").value());
+										double space = atof(line.attribute("space").value());
+										double t_offset = atof(line.attribute("t_offset").value());
+										double s_offset = atof(line.attribute("s_offset").value());
+
+										// rule
+										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+										if (line.attribute("rule") == 0 || !strcmp(line.attribute("rule").value(), ""))
+										{
+											LOG("Lane road mark type line rule error");
+										}
+										if (!strcmp(line.attribute("rule").value(), "none"))
+										{
+											rule = LaneRoadMarkTypeLine::NONE;
+										}
+										else  if (!strcmp(line.attribute("rule").value(), "caution"))
+										{
+											rule = LaneRoadMarkTypeLine::CAUTION;
+										}
+										else  if (!strcmp(line.attribute("rule").value(), "no passing"))
+										{
+											rule = LaneRoadMarkTypeLine::NO_PASSING;
+										}
+										else
+										{
+											LOG("unknown lane road mark type line rule: %s (road id=%d)\n", line.attribute("rule").value(), r->GetId());
+										}
+
+										double width = atof(line.attribute("width").value());
+
+										LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(length, space, t_offset, s_offset, rule, width);
+										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+									}
+								}
+							}
 						}
 					}
 				}
