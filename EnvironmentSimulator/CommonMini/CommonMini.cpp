@@ -68,6 +68,18 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
 	return path;
 }
 
+double GetAngleIn2PIInterval(double angle)
+{
+	angle = fmod(angle, 2 * M_PI);
+
+	if (angle < 0)
+	{
+		angle += 2 * M_PI;
+	}
+
+	return angle;
+}
+
 double GetAngleOfVector(double x, double y)
 {
 	if (abs(x) < SMALL_NUMBER)
@@ -95,7 +107,7 @@ double GetAbsAngleDifference(double angle1, double angle2)
 		diff = 2 * M_PI - diff;
 	}
 
-	return diff;
+	return GetAngleIn2PIInterval(diff);
 }
 
 double GetAngleDifference(double angle1, double angle2)

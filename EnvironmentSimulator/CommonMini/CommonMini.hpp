@@ -59,6 +59,11 @@ double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_t
 std::string CombineDirectoryPathAndFilepath(std::string dir_path,  std::string file_path);
 
 /**
+  Retrieve the angle in the range [0,2*PI]
+*/
+double GetAngleIn2PIInterval(double angle);
+
+/**
   Retrieve the angle of a vector
 */
 double GetAngleOfVector(double x, double y);

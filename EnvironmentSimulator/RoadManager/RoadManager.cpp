@@ -4042,7 +4042,16 @@ void Position::SetInertiaPos(double x, double y, double z, double h, double p, d
 void Position::SetHeading(double heading)
 {
 	h_ = heading;
-	h_relative_ = GetAngleDifference(h_, h_road_);
+	if (h_ < 0)
+	{
+		h_ = fmod(h_, 2 * M_PI) + 2*M_PI;
+	}
+	else if (h_ > 2 * M_PI)
+	{
+		h_ = fmod(h_, 2 * M_PI);
+	}
+
+	h_relative_ = GetAngleIn2PIInterval(GetAngleDifference(h_, h_road_));
 }
 
 void Position::SetHeadingRelative(double heading)
@@ -4057,10 +4066,14 @@ void Position::SetHeadingRelative(double heading)
 
 void Position::SetHeadingRelativeRoadDirection(double heading)
 {
-	if (h_relative_ > M_PI/2 && h_relative_ < 3 * M_PI / 2)
+	if (h_relative_ > M_PI_2 && h_relative_ < 3 * M_PI_2)
 	{
 		// Driving towards road direction
 		h_relative_ = fmod(-heading + M_PI, 2 * M_PI);
+		if (h_relative_ < 0)
+		{
+			h_relative_ += 2 * M_PI;
+		}
 		//LOG("Driving towards road direction h_ %.2f h_relative_ %.2f heading %.2f ", h_, h_relative_, heading);
 	}
 	else

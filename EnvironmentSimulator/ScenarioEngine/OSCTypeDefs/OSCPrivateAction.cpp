@@ -94,7 +94,16 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 
 		// Calculate road coordinates from final inertia (X, Y) coordinates
 		roadmanager::Position* p = &object_->pos_;
-		p->XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetHRoad(), true);
+
+		// Find heading along road and driving direction
+		if (object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2)
+		{
+			p->XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetHRoad() + M_PI, true);
+		}
+		else
+		{
+			p->XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetHRoad(), true);
+		}
 
 		OSCAction::End();
 	}
