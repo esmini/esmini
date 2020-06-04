@@ -18,6 +18,10 @@ set ( COMMON_MINI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CommonMini")
 # OpenSceneGraph package adapted for this project
 set ( OSG_VERSION "osg161" )
 set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
+set ( PB_VERSION "3.5.0" )
+set ( PB_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/protobuf" )
+set ( OSI_VERSION "1?" )
+set ( OSI_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OSI" )
 
 set( CMAKE_VERBOSE_MAKEFILE true )
 
@@ -30,6 +34,10 @@ elseif (UNIX)
   set ( TIME_LIB "" )
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1OufA3TUQjBTkaRvAuo0rSUwryvoqde8G )
   set ( OSG_DIR "${OSG_BASE_DIR}/linux" )
+  set ( PB_PACKAGE_URL https://drive.google.com/uc?export=download&id=1vYVfenaP_o6dVwtA7-9yNVxjLmEXaUOe)
+  set ( PB_DIR "${PB_BASE_DIR}/linux" )
+  set ( OSI_PACKAGE_URL https://drive.google.com/uc?export=download&id=13YDmeQTn7GWP2e-ifJfddCEx5skNin_3 )
+  set ( OSI_DIR "${OSI_BASE_DIR}/linux" )
 elseif (WIN32)
   if (WINSDK7_1)
     message ("Configuring for Windows SDK v7.1 x64")
@@ -62,6 +70,7 @@ set ( OSG_LIBRARIES_PATH
 	"${OSG_DIR}/lib" 
 	"${OSG_DIR}/lib/osgPlugins-3.6.5"
 )
+
 
 if(APPLE)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
@@ -97,6 +106,7 @@ elseif(UNIX)
    SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
   
   link_directories(${OSG_LIBRARIES_PATH})
+  link_directories(${PB_LIBRARIES_PATH})
   
   set ( OSG_LIBRARIES
     optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd 
@@ -123,6 +133,7 @@ elseif(UNIX)
     fontconfig
     #db_fbx
   )
+
 else() #not UNIX
 
 set ( OSG_LIBRARIES 
@@ -179,7 +190,7 @@ function (download_and_extract url target_folder target_filename)
 	
 	message (STATUS "extracting ${target_filename} ... ")
 	execute_process (COMMAND ${CMAKE_COMMAND} -E tar xfz ${target_filename} WORKING_DIRECTORY ${target_folder})
-	file (REMOVE ${target_folder}/${target_filename})
+	#file (REMOVE ${target_folder}/${target_filename})
 endfunction (download_and_extract)
 
 # download OpenSceneGraph 
@@ -187,6 +198,31 @@ set ( OSG_PACKAGE_FILENAME "osg.7z" )
 if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSG_DIR} )
 	download_and_extract( ${OSG_PACKAGE_URL} ${OSG_BASE_DIR} ${OSG_PACKAGE_FILENAME} )
 endif()
+
+# download protobuf 
+set ( PB_PACKAGE_FILENAME "protobuf.7z" )
+if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${PB_DIR} )
+	download_and_extract( ${PB_PACKAGE_URL} ${PB_BASE_DIR} ${PB_PACKAGE_FILENAME} )
+endif()
+
+# download OSI
+set ( OSI_PACKAGE_FILENAME "osi.zip" )
+if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSI_DIR} )
+	download_and_extract( ${OSI_PACKAGE_URL} ${OSI_BASE_DIR} ${OSI_PACKAGE_FILENAME} )
+endif()
+
+set (CMAKE_PREFIX_PATH  ${CMAKE_PREFIX_PATH} ${PB_DIR}/lib)
+set (CMAKE_PREFIX_PATH  ${CMAKE_PREFIX_PATH} ${PB_DIR}/bin)
+
+include(${PB_DIR}/cmake/FindProtobuf.cmake)
+
+set(PROTOBUF_INCLUDE_DIR ${PB_DIR}/include)
+include_directories(${PROTOBUF_INCLUDE_DIR})
+
+add_library(osi_lib SHARED IMPORTED GLOBAL)
+set_property(TARGET osi_lib PROPERTY IMPORTED_LOCATION "${OSI_DIR}/lib/libopen_simulation_interface.so")
+include_directories(${OSI_DIR}/include)
+execute_process(COMMAND ${OSI_DIR}/protos/proto.sh WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../externals)
 
 set ( MODELS_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources" )
 set ( MODELS_DIR "${MODELS_BASE_DIR}/models" )

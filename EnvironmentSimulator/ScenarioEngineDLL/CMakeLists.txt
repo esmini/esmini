@@ -13,7 +13,7 @@ set(TARGET ScenarioEngineDLL)
 set ( SOURCES scenarioenginedll.cpp )
 set ( INCLUDES scenarioenginedll.hpp )
 
-link_directories( ${OSG_LIBRARIES_PATH} )
+link_directories( ${OSG_LIBRARIES_PATH} ${PB_LIBRARIES_PATH} )
 
 add_library ( ${TARGET} SHARED ${SOURCES} ${INCLUDES} )
 
@@ -34,7 +34,9 @@ target_link_libraries (
 	PRIVATE CommonMini
 	PRIVATE ${TIME_LIB}	
     PRIVATE ${SOCK_LIB}
-	${viewer_libs}
+  ${viewer_libs}
+  ${PROTOBUF_LIBRARY}
+  osi_lib
 )
 
 if (UNIX)
