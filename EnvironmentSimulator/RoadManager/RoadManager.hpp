@@ -568,17 +568,17 @@ namespace roadmanager
 		enum Type
 		{
 			NONETYPE,
-			T1000001,
-			T1000002,
-			T1000007,
-			T1000008,
-			T1000009,
-			T1000010,
-			T1000011,
-			T1000012,
-			T1000013,
-			T1000014,
-			T1000015
+			T1000001, // traditional red-yellow-green light
+			T1000002, // 2 subtypes: pedestrian light (red or green & only red)
+			T1000007, // 4 subtypes: pedestrian + cyclists light (red or green & only red & only yellow & only green)
+			T1000008, // 3 subtypes: yellow light (no arrow & left arrow & right arrow)
+			T1000009, // 2 subtypes: red-yellow light & solid yellow or green light
+			T1000010, // 2 subtypes: yellow-green light (only left arrows & only right arrows)
+			T1000011, // 5 subtypes: red-yellow-green light (only left arrows & only right arrows & only straight arrows & straight+left arrows & straight+right arrows)
+			T1000012, // 2 subtypes: green light (left arrow & right arrow)
+			T1000013, // red-green cyclist light
+			T1000014, // yellow tram light
+			T1000015  // yellow pedestrian light
 		};
 
 		enum SubType
