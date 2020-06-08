@@ -981,6 +981,29 @@ Elevation* Road::GetElevation(int idx)
 	return elevation_profile_[idx];
 }
 
+void Road::AddSignal(Signal *signal)
+{
+	// Adjust signal length
+	if (signal_.size() > 0)
+	{
+		Signal *sig_previous = signal_.back();
+		sig_previous->SetLength(signal->GetS() - sig_previous->GetS());
+	}
+	signal->SetLength(length_ - signal->GetS());
+
+	signal_.push_back((Signal*)signal);
+}
+
+Signal* Road::GetSignal(int idx)
+{ 
+	if (idx < 0 || idx >= signal_.size())
+	{
+		return 0;
+	}
+	
+	return signal_[idx];
+}
+
 double Road::GetLaneOffset(double s)
 {
 	int i = 0;
