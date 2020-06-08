@@ -1937,6 +1937,177 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			}
 		}
 
+		pugi::xml_node signals = road_node.child("signals");
+		if (signals != NULL)
+		{
+			for (pugi::xml_node signal = signals.child("signal"); signal; signal = signal.next_sibling())
+			{
+				double s = atof(signal.attribute("s").value());
+				double t = atof(signal.attribute("t").value());
+				int id = atoi(signal.attribute("id").value());
+				std::string name = signal.attribute("name").value();
+				
+				// dynamic
+				bool dynamic = false;
+				if (!strcmp(signal.attribute("dynamic").value(), ""))
+				{
+					LOG("Signal dynamic check error");
+				}
+				if (!strcmp(signal.attribute("dynamic").value(), "no"))
+				{
+					dynamic = false;
+				}
+				else  if (!strcmp(signal.attribute("rule").value(), "yes"))
+				{
+					dynamic = true;
+				}
+				else
+				{
+					LOG("unknown dynamic signal identification: %s (road id=%d)\n", signal.attribute("dynamic").value(), r->GetId());
+				}
+
+				// orientation
+				Signal::Orientation orientation = Signal::NONE;
+				if (signal.attribute("orientation") == 0 || !strcmp(signal.attribute("orientation").value(), ""))
+				{
+					LOG("Road signal orientation error");
+				}
+				if (!strcmp(signal.attribute("orientation").value(), "none"))
+				{
+					orientation = Signal::NONE;
+				}
+				else  if (!strcmp(signal.attribute("orientation").value(), "+"))
+				{
+					orientation = Signal::POSITIVE;
+				}
+				else  if (!strcmp(signal.attribute("orientation").value(), "-"))
+				{
+					orientation = Signal::NEGATIVE;
+				}
+				else
+				{
+					LOG("unknown road signal orientation: %s (road id=%d)\n", signal.attribute("orientation").value(), r->GetId());
+				}
+
+				double  z_offset = atof(signal.attribute("zOffset").value());
+				std::string country = signal.attribute("country").value();
+
+				// type
+				Signal::Type type = Signal::NONETYPE;
+				if (signal.attribute("type") == 0 || !strcmp(signal.attribute("type").value(), ""))
+				{
+					LOG("Road signal type error");
+				}
+				if (!strcmp(signal.attribute("type").value(), "none") || !strcmp(signal.attribute("type").value(), "-1"))
+				{
+					type = Signal::NONETYPE;
+				}				
+				else  if (!strcmp(signal.attribute("type").value(), "1000001"))
+				{
+					type = Signal::T1000001;
+				}
+				else  if (!strcmp(signal.attribute("type").value(), "1000002"))
+				{
+					type = Signal::T1000002;
+				}
+				else  if (!strcmp(signal.attribute("type").value(), "1000007"))
+				{
+					type = Signal::T1000007;
+				}
+				else  if (!strcmp(signal.attribute("type").value(), "1000008"))
+				{
+					type = Signal::T1000008;
+				}
+				else  if (!strcmp(signal.attribute("type").value(), "1000009"))
+				{
+					type = Signal::T1000009;
+				}
+				else  if (!strcmp(signal.attribute("type").value(), "1000010"))
+				{
+					type = Signal::T1000010;
+				}
+				else  if (!strcmp(signal.attribute("type").value(), "1000011"))
+				{
+					type = Signal::T1000011;
+				}
+				else  if (!strcmp(signal.attribute("type").value(), "1000012"))
+				{
+					type = Signal::T1000012;
+				}
+				else  if (!strcmp(signal.attribute("type").value(), "1000013"))
+				{
+					type = Signal::T1000013;
+				}
+				else  if (!strcmp(signal.attribute("type").value(), "1000014"))
+				{
+					type = Signal::T1000014;
+				}
+				else  if (!strcmp(signal.attribute("type").value(), "1000015"))
+				{
+					type = Signal::T1000015;
+				}																
+				else
+				{
+					LOG("unknown road signal type: %s (road id=%d)\n", signal.attribute("type").value(), r->GetId());
+				}
+
+				// sub_type
+				Signal::SubType sub_type = Signal::NONESUBTYPE;
+				if (signal.attribute("subtype") == 0 || !strcmp(signal.attribute("subtype").value(), ""))
+				{
+					LOG("Road signal sub-type error");
+				}
+				if (!strcmp(signal.attribute("subtype").value(), "none") || !strcmp(signal.attribute("subtype").value(), "-1"))
+				{
+					sub_type = Signal::NONESUBTYPE;
+				}
+				else  if (!strcmp(signal.attribute("subtype").value(), "10"))
+				{
+					sub_type = Signal::SUBT10;
+				}
+				else  if (!strcmp(signal.attribute("subtype").value(), "20"))
+				{
+					sub_type = Signal::SUBT20;
+				}
+				else  if (!strcmp(signal.attribute("subtype").value(), "30"))
+				{
+					sub_type = Signal::SUBT30;
+				}
+				else  if (!strcmp(signal.attribute("subtype").value(), "40"))
+				{
+					sub_type = Signal::SUBT40;
+				}
+				else  if (!strcmp(signal.attribute("subtype").value(), "50"))
+				{
+					sub_type = Signal::SUBT50;
+				}
+				else
+				{
+					LOG("unknown road signal sub-type: %s (road id=%d)\n", signal.attribute("subtype").value(), r->GetId());
+				}
+
+				double value = atof(signal.attribute("value").value());
+				std::string unit = signal.attribute("unit").value();
+				double height = atof(signal.attribute("height").value());
+				double width = atof(signal.attribute("width").value());
+				std::string text = signal.attribute("text").value();
+				double h_offset = atof(signal.attribute("hOffset").value());
+				double pitch = atof(signal.attribute("pitch").value());
+				double roll = atof(signal.attribute("roll").value());
+
+				Signal *sig = new Signal(s, t, id, name, dynamic, orientation, z_offset, country, type, sub_type, value, unit, height,
+				width, text, h_offset, pitch, roll);
+				if (sig != NULL)
+				{
+					r->AddSignal(sig);
+				}
+				else
+				{
+					LOG("Signal: Major error\n");
+				}
+			}
+		}
+
 		if (r->GetNumberOfLaneSections() == 0)
 		{
 			// Add empty center reference lane
