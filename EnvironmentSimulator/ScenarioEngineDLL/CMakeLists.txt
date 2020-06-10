@@ -5,7 +5,8 @@ include_directories (
   ${VIEWER_BASE_INCLUDE_DIR}
   ${PLAYER_BASE_INCLUDE_DIR}
   ${OSG_INCLUDE_DIR}
-  ${COMMON_MINI_INCLUDE_DIR}  
+  ${COMMON_MINI_INCLUDE_DIR} 
+  ${OSI_DIR}/include 
 )
 
 set(TARGET ScenarioEngineDLL)
@@ -13,7 +14,7 @@ set(TARGET ScenarioEngineDLL)
 set ( SOURCES scenarioenginedll.cpp )
 set ( INCLUDES scenarioenginedll.hpp )
 
-link_directories( ${OSG_LIBRARIES_PATH} ${PB_LIBRARIES_PATH} )
+link_directories( ${OSG_LIBRARIES_PATH})
 
 add_library ( ${TARGET} SHARED ${SOURCES} ${INCLUDES} )
 
@@ -25,18 +26,19 @@ if (USE_OSG)
   set (viewer_libs 	PRIVATE ViewerBase PRIVATE ${OSG_LIBRARIES})
 endif (USE_OSG)
 
+add_library(osi_lib SHARED IMPORTED GLOBAL)
+set_property(TARGET osi_lib PROPERTY IMPORTED_LOCATION "${OSI_DIR}/lib/osi_proto_combined.a")
 
 target_link_libraries ( 
 	${TARGET}
-    PRIVATE PlayerBase
+  PRIVATE PlayerBase
 	PRIVATE ScenarioEngine
 	PRIVATE RoadManager
 	PRIVATE CommonMini
 	PRIVATE ${TIME_LIB}	
-    PRIVATE ${SOCK_LIB}
+  PRIVATE ${SOCK_LIB}
   ${viewer_libs}
-  ${PROTOBUF_LIBRARY}
-  osi_lib
+  PRIVATE osi_lib
 )
 
 if (UNIX)

@@ -13,6 +13,8 @@
 #include "playerbase.hpp"
 #include "scenarioenginedll.hpp"
 #include "IdealSensor.hpp"
+#include "osi_common.pb.h"
+#include <string>
 
 using namespace scenarioengine;
 
