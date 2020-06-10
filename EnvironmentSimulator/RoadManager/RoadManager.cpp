@@ -3163,6 +3163,70 @@ OpenDrive* Position::GetOpenDrive()
 	return &od; 
 }
 
+void Poly3::CalculateOSIPoints(double curr_s, double next_s, Polynomial poly3)
+{
+
+}
+
+void OpenDrive::SetOSIForOpenDrive()
+{
+	Geometry *geom, *next_geom;
+	OSIPoints *osi_points;
+	double curr_s, next_s;
+	for (size_t i=0; i<road_.size(); i++)
+	{
+		int number_of_geometries = road_[i]->GetNumberOfGeometries();
+		double road_length = road_[i]->GetLength();
+
+		for (size_t j=0; j<number_of_geometries; j++)
+		{
+			geom = road_[i]->GetGeometry(j);
+			curr_s = geom->GetS();
+			if (j == number_of_geometries)
+			{
+				next_s = road_length;
+			}
+			else
+			{
+				next_geom = road_[i]->GetGeometry(j+1);
+				next_s = next_geom->GetS();
+			}
+			
+			next_geom = road_[i]->GetGeometry(j+1);
+			if (geom->GetType() == Geometry::GEOMETRY_TYPE_UNKNOWN)
+			{
+				LOG("OpenDrive::SetOSIForOpenDrive Error: Unknown geometry type %d\n", j);
+				return;
+			}
+			else if (geom->GetType() == Geometry::GEOMETRY_TYPE_LINE)
+			{
+				Line *line = (Line*)geom;
+			}
+			else if (geom->GetType() == Geometry::GEOMETRY_TYPE_ARC)
+			{
+				Arc *arc = (Arc*)geom;
+			}
+			else if (geom->GetType() == Geometry::GEOMETRY_TYPE_SPIRAL)
+			{
+				Spiral *spiral = (Spiral*)geom;
+			}
+			else if (geom->GetType() == Geometry::GEOMETRY_TYPE_POLY3)
+			{
+				Poly3 *poly3 = (Poly3*)geom;
+				poly3->CalculateOSIPoints(curr_s, next_s, poly3->GetPoly3());
+			}
+			else if (geom->GetType() == Geometry::GEOMETRY_TYPE_PARAM_POLY3)
+			{
+				ParamPoly3 *param_poly3 = (ParamPoly3*)geom;
+			}
+			else
+			{
+				LOG("OpenDrive::SetOSIForOpenDrive Error: Unknown geometry type %d\n", j);
+			}	
+		}	
+	}
+}
+
 int LaneSection::GetClosestLaneIdx(double s, double t, double &offset)
 {
 	double min_offset = t;  // Initial offset relates to reference line

@@ -48,6 +48,17 @@ namespace roadmanager
 		double p_scale_;
 	};
 
+	class OSIPoints
+	{
+		public:
+		OSIPoints() : s_(0), x_(0), y_(0) {}
+		OSIPoints(std::vector<double> s, std::vector<double> x, std::vector<double> y) : s_(s), x_(x), y_(y) {}
+
+		private:
+			std::vector<double> s_;
+			std::vector<double> x_;
+			std::vector<double> y_;
+	};
 
 	class Geometry
 	{
@@ -96,6 +107,8 @@ namespace roadmanager
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds) { (void)ds; return 0; }
+
+		OSIPoints osi_points_;
 	};
 
 
@@ -110,6 +123,8 @@ namespace roadmanager
 		double GetRadius() { return std::fabs(1.0 / curvature_); }
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
+
+		OSIPoints osi_points_;
 
 	private:
 		double curvature_;
@@ -140,6 +155,8 @@ namespace roadmanager
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
 
+		OSIPoints osi_points_;
+
 	private:
 		double curv_start_;
 		double curv_end_;
@@ -158,17 +175,20 @@ namespace roadmanager
 			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_POLY3), umax_(0.0)
 		{
 			poly3_.Set(a, b, c, d);
-			
 		}
 		~Poly3() {};
 		
 		void SetUMax(double umax) { umax_ = umax; }
 		double GetUMax() { return umax_; }
 		void Print();
+		Polynomial GetPoly3() {return poly3_;}
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
+		void CalculateOSIPoints(double curr_s, double next_s, Polynomial poly3);
 
 		Polynomial poly3_;
+		OSIPoints osi_points_;
+
 
 	private:
 		double umax_;
@@ -821,6 +841,10 @@ namespace roadmanager
 		@param id road ID as specified in the OpenDRIVE file
 		*/
 		Road* GetRoadById(int id);
+
+		// Setting information based on the OSI standards for OpenDrive elements
+		void SetOSIForOpenDrive();
+		
 
 		/**
 		Retrieve a road segment specified by road vector element index
