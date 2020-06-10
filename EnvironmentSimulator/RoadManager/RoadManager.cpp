@@ -3192,7 +3192,6 @@ void OpenDrive::SetOSIForOpenDrive()
 				next_s = next_geom->GetS();
 			}
 			
-			next_geom = road_[i]->GetGeometry(j+1);
 			if (geom->GetType() == Geometry::GEOMETRY_TYPE_UNKNOWN)
 			{
 				LOG("OpenDrive::SetOSIForOpenDrive Error: Unknown geometry type %d\n", j);
