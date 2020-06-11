@@ -193,7 +193,7 @@ namespace roadmanager
 		OSIPoints GetOSIPoints() {return osi_points_;}
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
-		void CalculateOSIPoints(double curr_s, double next_s, Polynomial poly3);
+		void CalculatePoly3OSIPoints(double curr_s, double next_s);
 
 		Polynomial poly3_;
 		OSIPoints osi_points_;

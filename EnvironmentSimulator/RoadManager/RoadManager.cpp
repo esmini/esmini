@@ -3163,9 +3163,63 @@ OpenDrive* Position::GetOpenDrive()
 	return &od; 
 }
 
-void Poly3::CalculateOSIPoints(double curr_s, double next_s, Polynomial poly3)
+void Poly3::CalculatePoly3OSIPoints(double curr_s, double next_s)
 {
+	// Given Poly3 coefficients for Poly3 function -> V(u) = d*u^3 + c*u^2 + b*u + a
+	double a = poly3_.GetA();
+	double b = poly3_.GetB();
+	double c = poly3_.GetC();
+	double d = poly3_.GetD();
 
+	// Initialization to start recursive OSI point finder on Poly3 curve
+	double osi_s, osi_x, osi_y;
+	double u0, u1, V0, V1, k, m;
+	double s0 = curr_s;
+	double s1 = next_s;
+	std::vector<double> poly3_roots;
+	double curr_root, u_intersect;
+
+	while(true)
+	{
+		// Conversion from s-coordinate to u-coordinate
+		u0 = s0;
+		u1 = (s1 - s0)*cos(atan(b));
+
+		// Tangent line -> f(u) = k*u + m
+		V0 = poly3_.Evaluate(u0);
+		V1 = poly3_.Evaluate(u1);
+		k = (V1 - V0)/(u1 - u0);
+		m = V0 - k*u0;
+
+		// V(u)  = d*u^3 + c*u^2 + b*u + a
+		// f(u)  = k*u + m
+		// V'(u) = 3du^2 + 2cu + b
+		// The maximum distance between V(u) and f(u) will be the root of V'(u) = f'(u) 
+		// 3du^2 + 2cu + b = k -> 3d^2 + 2cu + (b-k) = 0
+		// Roots -> [-2c +- sqrt(4c^2 - 4*3d*(b-k))] / 2*3d
+		poly3_roots.push_back((-2*c + sqrt(pow(2*c,2) - 4*3*d*(b-k))) / (2*3*d));
+		poly3_roots.push_back((-2*c - sqrt(pow(2*c,2) - 4*3*d*(b-k))) / (2*3*d));
+
+		for (int k=0; k<poly3_roots.size(); k++)
+		{
+			curr_root = poly3_roots[k];
+			if (curr_root>u0 && curr_root<u1)
+			{
+				// curr_root -> calculated tangent point of V(u) at slope "k"
+				// g(u) -> Perpendicular line formula to the tangent line
+				// g(u) = V(curr_root) + curr_root/k - u/k
+				// The intersection point of f(u) and g(u) will give the point which has maximum distance to our poly3 curve
+				// f(u_intersect) = g(u_intersect) -> k*u_intersect+m = V(curr_root) + curr_root/k - u_intersect/k
+				// (k + 1/k)*u_intersect = V(curr_root) + curr_root/k - m
+				u_intersect =  (poly3_.Evaluate(curr_root) + curr_root/k - m) / (k + 1/k);
+				// IN PROGRESS ...
+			}
+			else
+			{
+				LOG("Poly3::CalculatePoly3OSIPoints Error: The tangent point %d is out of range [%d-%d]\n", poly3_roots[k], u0, u1);
+			}
+		}
+	}
 }
 
 void OpenDrive::SetOSIForOpenDrive()
@@ -3173,12 +3227,12 @@ void OpenDrive::SetOSIForOpenDrive()
 	Geometry *geom, *next_geom;
 	OSIPoints *osi_points;
 	double curr_s, next_s;
-	for (size_t i=0; i<road_.size(); i++)
+	for (int i=0; i<road_.size(); i++)
 	{
 		int number_of_geometries = road_[i]->GetNumberOfGeometries();
 		double road_length = road_[i]->GetLength();
 
-		for (size_t j=0; j<number_of_geometries; j++)
+		for (int j=0; j<number_of_geometries; j++)
 		{
 			geom = road_[i]->GetGeometry(j);
 			curr_s = geom->GetS();
@@ -3212,7 +3266,7 @@ void OpenDrive::SetOSIForOpenDrive()
 			else if (geom->GetType() == Geometry::GEOMETRY_TYPE_POLY3)
 			{
 				Poly3 *poly3 = (Poly3*)geom;
-				poly3->CalculateOSIPoints(curr_s, next_s, poly3->GetPoly3());
+				poly3->CalculatePoly3OSIPoints(curr_s, next_s);
 			}
 			else if (geom->GetType() == Geometry::GEOMETRY_TYPE_PARAM_POLY3)
 			{
