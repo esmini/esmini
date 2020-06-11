@@ -34,7 +34,7 @@ elseif (UNIX)
   set ( TIME_LIB "" )
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1OufA3TUQjBTkaRvAuo0rSUwryvoqde8G )
   set ( OSG_DIR "${OSG_BASE_DIR}/linux" )
-  set ( OSI_PACKAGE_URL https://drive.google.com/uc?export=download&id=1Z-CWK4h2OJSWJd7ZpV46qm_OqO8Tt3Tc )
+  set ( OSI_PACKAGE_URL https://drive.google.com/uc?export=download&id=1ZIQ4Hq6VUrYO-cs4hUe7iTB6_CtYVPUH )
   set ( OSI_DIR "${OSI_BASE_DIR}/linux" )
 elseif (WIN32)
   if (WINSDK7_1)
@@ -188,7 +188,7 @@ function (download_and_extract url target_folder target_filename)
 	
 	message (STATUS "extracting ${target_filename} ... ")
 	execute_process (COMMAND ${CMAKE_COMMAND} -E tar xfz ${target_filename} WORKING_DIRECTORY ${target_folder})
-	#file (REMOVE ${target_folder}/${target_filename})
+	file (REMOVE ${target_folder}/${target_filename})
 endfunction (download_and_extract)
 
 # download OpenSceneGraph 
