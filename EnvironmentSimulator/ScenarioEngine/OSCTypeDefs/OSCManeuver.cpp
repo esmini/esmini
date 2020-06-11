@@ -18,6 +18,8 @@ void Event::Start()
 {
 	for (size_t i = 0; i < action_.size(); i++)
 	{
+		// Restart actions
+		action_[i]->Reset();
 		action_[i]->Start();
 	}
 	StoryBoardElement::Start();
