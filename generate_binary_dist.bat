@@ -24,7 +24,7 @@ copy resources\xosc\highway_merge_advanced.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\ltap-od_two_targets.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\distance_test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\left-hand-traffic_internal.xosc %target_dir%\resources\xosc /y
-copy resources\xosc\ltap-od-synch.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\ltap-od.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\synchronize.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\parking_lot.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_internal.xosc %target_dir%\resources\xosc /y
@@ -58,8 +58,8 @@ copy resources\models\parking_lot.osgb %target_dir%\resources\models /y
 copy resources\models\curve_r100.osgb %target_dir%\resources\models /y
 
 copy run\EgoSimulator\run_basic_hybrid.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_ltap-od-synch_external.bat %target_dir%\run\EgoSimulator /y
-copy run\EgoSimulator\run_ltap-od_two_targets_internal.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_ltap-od_external.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_ltap-od_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_highway-merge_advanced_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_external.bat %target_dir%\run\EgoSimulator /y

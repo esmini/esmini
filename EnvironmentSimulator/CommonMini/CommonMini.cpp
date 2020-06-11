@@ -138,6 +138,18 @@ double GetAngleSum(double angle1, double angle2)
 	return sum;
 }
 
+double GetAngleInInterval2PI(double angle)
+{
+	double angle2 = fmod(angle, 2 * M_PI);
+
+	if (angle2 < 0)
+	{
+		angle2 += 2 * M_PI;
+	}
+
+	return angle2;
+}
+
 int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double ay2, double bx1, double by1, double bx2, double by2, double &x3, double &y3)
 {
 	// Inspiration: https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection

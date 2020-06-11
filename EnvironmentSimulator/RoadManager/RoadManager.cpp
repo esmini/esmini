@@ -3731,7 +3731,8 @@ void Position::Track2XYZ()
 	double x_local = (t_ + road->GetLaneOffset(s_)) * cos(h_road_ + M_PI_2);
 	double y_local = (t_ + road->GetLaneOffset(s_)) * sin(h_road_ + M_PI_2);
 	h_road_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_;
-	h_ = h_road_ + h_relative_;  // Update heading, taking relative heading into account
+	h_road_ = GetAngleInInterval2PI(h_road_);
+	h_ = GetAngleInInterval2PI(h_road_ + h_relative_);  // Update heading, taking relative heading into account
 	x_ += x_local;
 	y_ += y_local;
 
@@ -4299,25 +4300,12 @@ void Position::SetInertiaPos(double x, double y, double z, double h, double p, d
 void Position::SetHeading(double heading)
 {
 	h_ = heading;
-	if (h_ < 0)
-	{
-		h_ = fmod(h_, 2 * M_PI) + 2*M_PI;
-	}
-	else if (h_ > 2 * M_PI)
-	{
-		h_ = fmod(h_, 2 * M_PI);
-	}
-
-	h_relative_ = GetAngleIn2PIInterval(GetAngleDifference(h_, h_road_));
+	h_relative_ = GetAngleInInterval2PI(GetAngleDifference(h_, h_road_));
 }
 
 void Position::SetHeadingRelative(double heading)
 {
-	h_relative_ = fmod(heading, 2 * M_PI);
-	if (h_relative_ < 0)
-	{
-		h_relative_ += 2 * M_PI;
-	}
+	h_relative_ = GetAngleInInterval2PI(heading);
 	h_ = GetAngleSum(h_road_, h_relative_);
 }
 
@@ -4326,16 +4314,12 @@ void Position::SetHeadingRelativeRoadDirection(double heading)
 	if (h_relative_ > M_PI_2 && h_relative_ < 3 * M_PI_2)
 	{
 		// Driving towards road direction
-		h_relative_ = fmod(-heading + M_PI, 2 * M_PI);
-		if (h_relative_ < 0)
-		{
-			h_relative_ += 2 * M_PI;
-		}
+		h_relative_ = GetAngleInInterval2PI(-heading + M_PI);
 		//LOG("Driving towards road direction h_ %.2f h_relative_ %.2f heading %.2f ", h_, h_relative_, heading);
 	}
 	else
 	{
-		h_relative_ = fmod(heading, 2 * M_PI);
+		h_relative_ = GetAngleInInterval2PI(heading);
 		//LOG("Driving along road direction h_ %.2f h_relative_ %.2f heading %.2f ", h_, h_relative_, heading);
 	}
 	h_ = GetAngleSum(h_road_, h_relative_);
@@ -4900,7 +4884,7 @@ double Position::GetHRelative()
 		}
 		else
 		{
-			return h_relative_ + rel_pos_->GetHRelative();
+			return GetAngleInInterval2PI(h_relative_ + rel_pos_->GetHRelative());
 		}
 	}
 	else if (type_ == PositionType::RELATIVE_LANE)
@@ -4911,7 +4895,7 @@ double Position::GetHRelative()
 		}
 		else
 		{
-			return h_relative_ + GetHRoadInDrivingDirection();
+			return GetAngleInInterval2PI(h_relative_ + GetHRoadInDrivingDirection());
 		}
 	}
 	else

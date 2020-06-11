@@ -18,6 +18,7 @@
 #include <vector>
 #include <list>
 #include "pugixml.hpp"
+#include "CommonMini.hpp"
 
 namespace roadmanager
 {
@@ -86,7 +87,7 @@ namespace roadmanager
 		double GetLength() { return length_; }
 		double GetX() { return x_; }
 		double GetY() { return y_; }
-		double GetHdg() { return hdg_; }
+		double GetHdg() { return GetAngleInInterval2PI(hdg_); }
 		double GetS() { return s_; }
 		virtual double EvaluateCurvatureDS(double ds) = 0;
 		virtual void Print();

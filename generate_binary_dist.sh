@@ -14,7 +14,7 @@ resources/xosc/highway_merge_advanced.xosc \
 resources/xosc/ltap-od_two_targets.xosc \
 resources/xosc/distance_test.xosc \
 resources/xosc/left-hand-traffic_internal.xosc \
-resources/xosc/ltap-od-synch.xosc \
+resources/xosc/ltap-od.xosc \
 resources/xosc/synchronize.xosc \
 resources/xosc/parking_lot.xosc \
 resources/xosc/cut-in_internal.xosc \
@@ -45,8 +45,8 @@ resources/models/straight_500m.osgb \
 resources/models/parking_lot.osgb \
 resources/models/curve_r100.osgb \
 run/EgoSimulator/run_basic_hybrid.* \
-run/EgoSimulator/run_ltap-od-synch_external.* \
-run/EgoSimulator/run_ltap-od_two_targets_internal.* \
+run/EgoSimulator/run_ltap-od_external.* \
+run/EgoSimulator/run_ltap-od_internal.* \
 run/EgoSimulator/run_highway-merge_advanced_internal.* \
 run/EgoSimulator/run_cut-in_internal.* \
 run/EgoSimulator/run_cut-in_external.* \
