@@ -21,7 +21,6 @@ copy resources\xosc\lane_change.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_simple.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\highway_merge.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\highway_merge_advanced.xosc %target_dir%\resources\xosc /y
-copy resources\xosc\ltap-od_two_targets.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\distance_test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\left-hand-traffic_internal.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\ltap-od.xosc %target_dir%\resources\xosc /y
@@ -32,7 +31,6 @@ copy resources\xosc\lane_change_simple.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
 copy resources\xosc\Catalogs\Vehicles\*.* %target_dir%\resources\xosc\Catalogs\Vehicles /y
-copy resources\xosc\extensions\*.* %target_dir%\resources\xosc\extensions /y
 
 copy resources\xodr\soderleden.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\e6mini.xodr %target_dir%\resources\xodr /y

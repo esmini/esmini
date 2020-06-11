@@ -11,7 +11,6 @@ resources/xosc/lane_change.xosc \
 resources/xosc/cut-in_simple.xosc \
 resources/xosc/highway_merge.xosc \
 resources/xosc/highway_merge_advanced.xosc \
-resources/xosc/ltap-od_two_targets.xosc \
 resources/xosc/distance_test.xosc \
 resources/xosc/left-hand-traffic_internal.xosc \
 resources/xosc/ltap-od.xosc \
@@ -22,7 +21,6 @@ resources/xosc/lane_change_simple.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
-resources/xosc/extensions/*.* \
 resources/xodr/soderleden.xodr \
 resources/xodr/e6mini.xodr \
 resources/xodr/fabriksgatan.xodr \
