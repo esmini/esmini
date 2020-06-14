@@ -52,17 +52,17 @@ namespace roadmanager
 	class OSIPoints
 	{
 		public:
-		OSIPoints() : s_(0), x_(0), y_(0) {}
-		OSIPoints(std::vector<double> s, std::vector<double> x, std::vector<double> y) : s_(s), x_(x), y_(y) {}
-		void Set(std::vector<double> s, std::vector<double> x, std::vector<double> y);
-		std::vector<double> GetS() {return s_;}
-		std::vector<double> GetX() {return x_;}
-		std::vector<double> GetY() {return y_;}
+			OSIPoints() : x_(double(0)), y_(double(0)), h_(double(0)) {}
+			OSIPoints(std::vector<double> x, std::vector<double> y, std::vector<double> h) : x_(x), y_(y), h_(h) {}
+			void Set(std::vector<double> x, std::vector<double> y, std::vector<double> h) { x_ = x; y_ = y; h_ = h;}
+			std::vector<double> GetX() {return x_;}
+			std::vector<double> GetY() {return y_;}
+			std::vector<double> GetH() {return h_;}
 
 		private:
-			std::vector<double> s_;
 			std::vector<double> x_;
 			std::vector<double> y_;
+			std::vector<double> h_;
 	};
 
 	class Geometry
@@ -193,7 +193,7 @@ namespace roadmanager
 		OSIPoints GetOSIPoints() {return osi_points_;}
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
-		void CalculatePoly3OSIPoints(double curr_s, double next_s);
+		void CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x, double curr_y, double curr_hdg);
 
 		Polynomial poly3_;
 		OSIPoints osi_points_;
