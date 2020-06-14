@@ -3225,7 +3225,7 @@ void Poly3::CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x,
 					curr_root_dist.push_back(pow(curr_root-u_intersect,2) + pow(poly3_.Evaluate(curr_root)-(k*u_intersect+m),2));			}
 				else
 				{
-					LOG("Poly3::CalculatePoly3OSIPoints Error: The tangent point %d is out of range [%d-%d]\n", poly3_roots[q], u0, u1);
+					LOG("Poly3::CalculatePoly3OSIPoints Error: The tangent point %d is out of range [%d-%d]\n", poly3_roots[q], u0[w], u1[w]);
 				}
 			}
 
