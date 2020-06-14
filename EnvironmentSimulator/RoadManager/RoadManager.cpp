@@ -51,7 +51,6 @@
 #include <limits>
 #include <algorithm>
 
-
 #include "RoadManager.hpp"
 #include "odrSpiral.h"
 #include "pugixml.hpp"
@@ -3256,6 +3255,7 @@ void Poly3::CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x,
 
 			for (int m=0; m<osi_req_check.size(); m++)
 			{
+				// Finding mid-point of given interval and creating multiple intervals using that mid-point
 				if (osi_req_check[m])
 				{
 					umid = (u1_temporary[m]-u0_temporary[m])/2 + u0_temporary[m];
@@ -3266,7 +3266,8 @@ void Poly3::CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x,
 				}
 				else
 				{
-					continue;
+					osi_u.push_back(u0_temporary[m]);
+					osi_u.push_back(u1_temporary[m]);
 				}	
 			}
 			u0_temporary.clear();
@@ -3274,9 +3275,15 @@ void Poly3::CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x,
 		}
 		osi_req_check.clear();
 	}
-	osi_u = u0;
+
+	// Cut the same exact osi points from the vector
+	osi_u.insert(osi_u.end(), u0.begin(), u0.end());
 	osi_u.push_back(u1.back());
-	
+	std::sort(osi_u.begin(), osi_u.end());
+	auto last = std::unique(osi_u.begin(), osi_u.end());
+	osi_u.erase(last, osi_u.end());
+
+	// Convert u-v OSI coordindates to x-y-h OSI coordinates 
 	for (int n=0; n<osi_u.size(); n++)
 	{
 		osi_x.push_back(curr_x + osi_u[n]*cos(curr_hdg) - poly3_.Evaluate(osi_u[n])*sin(curr_hdg));
