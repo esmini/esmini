@@ -3177,11 +3177,10 @@ void Poly3::CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x,
 	double V0, V1, k, m;
 	double s0 = curr_s;
 	double s1 = next_s;
-	std::vector<double> poly3_roots, curr_root_dist, next_point_collector;
+	std::vector<double> poly3_roots, curr_root_dist;
 	std::vector<bool> osi_req_check;
 	double umid, curr_root, u_intersect;
 	double max_dist;
-	int max_dist_index;
 
 	// Conversion from s-coordinate to u-coordinate
 	u0.push_back(0);
@@ -3200,7 +3199,7 @@ void Poly3::CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x,
 			// V(u)  = d*u^3 + c*u^2 + b*u + a
 			// f(u)  = k*u + m
 			// V'(u) = 3du^2 + 2cu + b
-			// The maximum distance between V(u) and f(u) will be the root of V'(u) = f'(u) 
+			// The maximum distance between f(u) and V(u) will be from the point where f'(u) = V'(u) 
 			// 3du^2 + 2cu + b = k -> 3d^2 + 2cu + (b-k) = 0
 			// Roots -> [-2c +- sqrt(4c^2 - 4*3d*(b-k))] / 2*3d
 			poly3_roots.push_back((-2*c + sqrt(pow(2*c,2) - 4*3*d*(b-k))) / (2*3*d));
@@ -3220,8 +3219,8 @@ void Poly3::CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x,
 					// (k + 1/k)*u_intersect = V(curr_root) + curr_root/k - m
 					u_intersect = (poly3_.Evaluate(curr_root) + curr_root/k - m) / (k + 1/k);
 
-					// Maximum distance can easily be found by calculating the distance between curr_root and u_intersect
-					curr_root_dist.push_back(pow(curr_root-u_intersect,2) + pow(poly3_.Evaluate(curr_root)-(k*u_intersect+m),2));			}
+					// Maximum distance can easily be found by calculating the distance between [curr_root, V(curr_root)] and [u_intersect, f(u_intersect)]
+					curr_root_dist.push_back(sqrt(pow(curr_root-u_intersect,2) + pow(poly3_.Evaluate(curr_root)-(k*u_intersect+m),2)));			}
 				else
 				{
 					LOG("Poly3::CalculatePoly3OSIPoints Error: The tangent point %d is out of range [%d-%d]\n", poly3_roots[q], u0[w], u1[w]);
@@ -3291,7 +3290,148 @@ void Poly3::CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x,
 		osi_h.push_back(curr_hdg + poly3_.EvaluatePrim(osi_u[n]));
 	}
 	osi_points_.Set(osi_x, osi_y, osi_h);
-	std::cout << "All OSI points for the given geometry is successfully merged" << std::endl;
+	std::cout << "All OSI points for the given geometry (poly3) is successfully merged" << std::endl;
+}
+
+void ParamPoly3::CalculateParamPoly3OSIPoints(double curr_x, double curr_y, double curr_hdg)
+{
+	// Given ParamPoly3 coefficients for ParamPoly3 function
+	// -> U(p) = d_u*p^3 + c_u*p^2 + b_u*p + a_u
+	double a_u = poly3U_.GetA();
+	double b_u = poly3U_.GetB();
+	double c_u = poly3U_.GetC();
+	double d_u = poly3U_.GetD();
+
+	// -> V(p) = d_v*p^3 + c_v*p^2 + b_v*p + a_v
+	double a_v = poly3V_.GetA();
+	double b_v = poly3V_.GetB();
+	double c_v = poly3V_.GetC();
+	double d_v = poly3V_.GetD();
+
+	// Initialization to start recursive OSI point finder on ParamPoly3 curve
+	std::vector<double> p0, p1, p0_temporary, p1_temporary;
+	std::vector<double> osi_p, osi_x, osi_y, osi_h;
+	double U_p0, U_p1, V_p0, V_p1, k, m;
+	std::vector<double> parampoly3_roots, curr_root_dist;
+	std::vector<bool> osi_req_check;
+	double pmid, curr_root, u_intersect;
+	double max_dist;
+
+	// Getting the pRange for the ParamPoly3 curve
+	p0.push_back(0);
+	p1.push_back(poly3U_.GetPscale());
+
+	while(true)
+	{
+		for (int w=0; w<p0.size(); w++)
+		{
+			// Tangent line -> f(u) = k*u + m
+			U_p0 = poly3U_.Evaluate(p0[w]);
+			U_p1 = poly3U_.Evaluate(p1[w]);
+			V_p0 = poly3V_.Evaluate(p0[w]);
+			V_p1 = poly3V_.Evaluate(p1[w]);
+
+			k = (V_p1 - V_p0)/(U_p1 - U_p0);
+			m = V_p0 - k*U_p0;
+
+			// U(p) = d_u*p^3 + c_u*p^2 + b_u*p + a_u
+			// V(p) = d_v*p^3 + c_v*p^2 + b_v*p + a_v
+			// U'(p) = 3d_u*p^2 + 2c_u*p + b_u
+			// V'(p) = 3d_v*p^2 + 2c_v*p + b_v
+			// The maximum distance between f(u) and [U(p), V(p)] will be from the point where f'(u) = V'(p) / U'(p)
+			// (3d_v*p^2 + 2c_v*p + b_v) / (3d_u*p^2 + 2c_u*p + b_u) = k
+			// 3d_v*p^2 + 2c_v*p + b_v = 3d_u*k*p^2 + 2c_u*k*p + b_u*k
+			// (3d_v-3d_u*k)p^2 + (2c_v-2c_u*k)p + (b_v-b_u*k) = 0
+			// Roots -> [(2c_u*k-2c_v) +- sqrt((2c_v-2c_u*k)^2 - 4*(3d_v-3d_u*k)*(b_v-b_u*k)] / 2*(3d_v-3d_u*k)
+			parampoly3_roots.push_back((2*c_u*k-2*c_v + sqrt(pow(2*c_v-2*c_u*k,2) - 4*(3*d_v-3*d_u*k)*(b_v-b_u*k))) / (2*(3*d_v-3*d_u*k)));
+			parampoly3_roots.push_back((2*c_u*k-2*c_v - sqrt(pow(2*c_v-2*c_u*k,2) - 4*(3*d_v-3*d_u*k)*(b_v-b_u*k))) / (2*(3*d_v-3*d_u*k)));
+			
+			// Looping through each root
+			for (int q=0; q<parampoly3_roots.size(); q++)
+			{
+				curr_root = parampoly3_roots[q];
+				if (curr_root>p0[w] && curr_root<p1[w])
+				{
+					// curr_root -> calculated tangent point of [U(p),V(p)] at slope "k"
+					// g(u) -> Perpendicular line formula to the tangent line
+					// g(u) = V(curr_root) + U(curr_root)/k - u/k
+					// The intersection point of f(u) and g(u) will give the point which has maximum distance to our parampoly3 curve
+					// f(u_intersect) = g(u_intersect) -> k*u_intersect+m = V(curr_root) + U(curr_root)/k - u_intersect/k
+					// (k + 1/k)*u_intersect = V(curr_root) + U(curr_root)/k - m
+					u_intersect = (poly3V_.Evaluate(curr_root) + poly3U_.Evaluate(curr_root)/k - m) / (k + 1/k);
+
+					// Maximum distance can easily be found by calculating the distance between [U(curr_root), V(curr_root)} and [u_intersect, f[u_intersect]
+					curr_root_dist.push_back(sqrt(pow(poly3U_.Evaluate(curr_root)-u_intersect,2) + pow(poly3V_.Evaluate(curr_root)-(k*u_intersect+m),2)));			}
+				else
+				{
+					LOG("ParamPoly3::CalculateParamPoly3OSIPoints Error: The tangent point %d is out of range [%d-%d]\n", parampoly3_roots[q], p0[w], p1[w]);
+				}
+			}
+
+			// Check OSI maximum distance requirement
+			max_dist = *std::max_element(curr_root_dist.begin(), curr_root_dist.end());
+			if (max_dist > 0.05)
+			{
+				osi_req_check.push_back(true);
+			}
+			else
+			{
+				osi_req_check.push_back(false);
+			}	
+		}
+
+		// If all points satisfy the requirement, it means all osi points for given geometry is found
+		if (std::all_of(osi_req_check.begin(), osi_req_check.end(), [](bool x){return x==false;}))
+		{
+			std::cout << "All OSI points for the given geometry is successfully found" << std::endl;
+			break;
+		}
+		else
+		{
+			p0_temporary = p0;
+			p1_temporary = p1;
+			p0.clear();
+			p1.clear();
+
+			for (int m=0; m<osi_req_check.size(); m++)
+			{
+				// Finding mid-point of given interval and creating multiple intervals using that mid-point
+				if (osi_req_check[m])
+				{
+					pmid = (p1_temporary[m]-p0_temporary[m])/2 + p0_temporary[m];
+					p0.push_back(p0_temporary[m]);
+					p1.push_back(pmid);
+					p0.push_back(pmid);
+					p1.push_back(p1_temporary[m]);
+				}
+				else
+				{
+					osi_p.push_back(p0_temporary[m]);
+					osi_p.push_back(p1_temporary[m]);
+				}	
+			}
+			p0_temporary.clear();
+			p1_temporary.clear();	
+		}
+		osi_req_check.clear();
+	}
+
+	// Cut the same exact osi points from the vector
+	osi_p.insert(osi_p.end(), p0.begin(), p0.end());
+	osi_p.push_back(p1.back());
+	std::sort(osi_p.begin(), osi_p.end());
+	auto last = std::unique(osi_p.begin(), osi_p.end());
+	osi_p.erase(last, osi_p.end());
+
+	// Convert u(p)-v(p) OSI coordindates to x-y-h OSI coordinates 
+	for (int n=0; n<osi_p.size(); n++)
+	{
+		osi_x.push_back(curr_x + poly3U_.Evaluate(osi_p[n])*cos(curr_hdg) - poly3V_.Evaluate(osi_p[n])*sin(curr_hdg));
+		osi_y.push_back(curr_y + poly3U_.Evaluate(osi_p[n])*sin(curr_hdg) + poly3V_.Evaluate(osi_p[n])*cos(curr_hdg));
+		osi_h.push_back(curr_hdg + poly3V_.EvaluatePrim(osi_p[n])/poly3U_.EvaluatePrim(osi_p[n]));
+	}
+	osi_points_.Set(osi_x, osi_y, osi_h);
+	std::cout << "All OSI points for the given geometry (parampoly3) is successfully merged" << std::endl;
 }
 
 void OpenDrive::SetOSIForOpenDrive()
@@ -3346,6 +3486,7 @@ void OpenDrive::SetOSIForOpenDrive()
 			else if (geom->GetType() == Geometry::GEOMETRY_TYPE_PARAM_POLY3)
 			{
 				ParamPoly3 *param_poly3 = (ParamPoly3*)geom;
+				param_poly3->CalculateParamPoly3OSIPoints(curr_x, curr_y, curr_hdg);
 			}
 			else
 			{

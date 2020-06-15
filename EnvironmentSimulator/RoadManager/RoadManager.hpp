@@ -37,6 +37,7 @@ namespace roadmanager
 		double GetB() { return b_; }
 		double GetC() { return c_; }
 		double GetD() { return d_; }
+		double GetPscale() { return p_scale_; }
 		double Evaluate(double s);
 		double EvaluatePrim(double s);
 		double EvaluatePrimPrim(double s);
@@ -230,6 +231,8 @@ namespace roadmanager
 		OSIPoints GetOSIPoints() {return osi_points_;}
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
+		void CalculateParamPoly3OSIPoints(double curr_x, double curr_y, double curr_hdg);
+		
 
 		Polynomial poly3U_;
 		Polynomial poly3V_;
