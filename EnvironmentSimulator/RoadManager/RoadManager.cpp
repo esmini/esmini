@@ -3242,7 +3242,6 @@ void Poly3::CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x,
 		// If all points satisfy the requirement, it means all osi points for given geometry is found
 		if (std::all_of(osi_req_check.begin(), osi_req_check.end(), [](bool x){return x==false;}))
 		{
-			std::cout << "All OSI points for the given geometry is successfully found" << std::endl;
 			break;
 		}
 		else
@@ -3383,7 +3382,6 @@ void ParamPoly3::CalculateParamPoly3OSIPoints(double curr_x, double curr_y, doub
 		// If all points satisfy the requirement, it means all osi points for given geometry is found
 		if (std::all_of(osi_req_check.begin(), osi_req_check.end(), [](bool x){return x==false;}))
 		{
-			std::cout << "All OSI points for the given geometry is successfully found" << std::endl;
 			break;
 		}
 		else
