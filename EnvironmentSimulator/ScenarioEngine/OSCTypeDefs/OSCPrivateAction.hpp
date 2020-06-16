@@ -44,7 +44,7 @@ namespace scenarioengine
 			FOLLOW_ROUTE,
 			FOLLOW_TRAJECTORY,
 			SYNCHRONIZE
-		} Type;
+		} ActionType;
 
 		typedef enum
 		{
@@ -75,10 +75,10 @@ namespace scenarioengine
 			TransitionDynamics() : shape_(DynamicsShape::STEP), dimension_(DynamicsDimension::TIME), target_value_(0) {}
 		};
 
-		Type type_;
+		ActionType type_;
 		Object *object_;
 
-		OSCPrivateAction(OSCPrivateAction::Type type) : OSCAction(OSCAction::BaseType::PRIVATE), type_(type) {}
+		OSCPrivateAction(OSCPrivateAction::ActionType type) : OSCAction(OSCAction::BaseType::PRIVATE), type_(type), object_(0) {}
 
 		virtual void print()
 		{
@@ -106,19 +106,19 @@ namespace scenarioengine
 			{
 				ABSOLUTE,
 				RELATIVE
-			} Type;
+			} TargetType;
 
-			Type type_;
+			TargetType type_;
 			double value_;
 
-			Target(Type type) : type_(type) {}
+			Target(TargetType type) : type_(type), value_(0) {}
 			virtual double GetValue() = 0;
 		};
 
 		class TargetAbsolute : public Target
 		{
 		public:
-			TargetAbsolute() : Target(Type::ABSOLUTE) {}
+			TargetAbsolute() : Target(TargetType::ABSOLUTE) {}
 
 			double GetValue()
 			{
@@ -140,7 +140,7 @@ namespace scenarioengine
 			ValueType value_type_;
 			bool continuous_;
 
-			TargetRelative() : Target(Type::RELATIVE), continuous_(false), consumed_(false), object_speed_(0) {}
+			TargetRelative() : Target(TargetType::RELATIVE), continuous_(false), consumed_(false), object_speed_(0) {}
 
 			double GetValue();
 
@@ -153,12 +153,12 @@ namespace scenarioengine
 		double start_speed_;
 		double elapsed_;
 
-		LongSpeedAction() : OSCPrivateAction(OSCPrivateAction::Type::LONG_SPEED), target_(0), start_speed_(0)
+		LongSpeedAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED), target_(0), start_speed_(0)
 		{
 			elapsed_ = 0;
 		}
 
-		LongSpeedAction(const LongSpeedAction &action) : OSCPrivateAction(OSCPrivateAction::Type::LONG_SPEED)
+		LongSpeedAction(const LongSpeedAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED)
 		{
 			target_ = action.target_;
 			transition_dynamics_ = action.transition_dynamics_;
@@ -205,7 +205,7 @@ namespace scenarioengine
 		DistType dist_type_;
 		double freespace_;
 
-		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::Type::LONG_DISTANCE), target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0)
+		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE), target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0)
 		{
             dynamics_.max_acceleration_ = 0;
             dynamics_.max_deceleration_ = 0;
@@ -213,7 +213,7 @@ namespace scenarioengine
             dynamics_.none_ = true;            
 		}
 
-		LongDistanceAction(const LongDistanceAction &action) : OSCPrivateAction(OSCPrivateAction::Type::LONG_DISTANCE)
+		LongDistanceAction(const LongDistanceAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE)
 		{
 			target_object_ = action.target_object_;
 			dynamics_ = action.dynamics_;
@@ -282,13 +282,13 @@ namespace scenarioengine
 		int target_lane_id_;
 		double elapsed_;
 
-		LatLaneChangeAction(LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME) : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_CHANGE)
+		LatLaneChangeAction(LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
 		{
 			transition_dynamics_.dimension_ = timing_type;
 			elapsed_ = 0;
 		}
 
-		LatLaneChangeAction(const LatLaneChangeAction &action) : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_CHANGE)
+		LatLaneChangeAction(const LatLaneChangeAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
 		{
 			transition_dynamics_ = action.transition_dynamics_;
 			target_ = action.target_;
@@ -354,7 +354,7 @@ namespace scenarioengine
 		double elapsed_;
 		double start_lane_offset_;
 
-		LatLaneOffsetAction() : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_OFFSET)
+		LatLaneOffsetAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET)
 		{
 			LOG("");
 			dynamics_.max_lateral_acc_ = 0;
@@ -362,7 +362,7 @@ namespace scenarioengine
 			elapsed_ = 0;
 		}
 
-		LatLaneOffsetAction(const LatLaneOffsetAction &action) : OSCPrivateAction(OSCPrivateAction::Type::LAT_LANE_OFFSET)
+		LatLaneOffsetAction(const LatLaneOffsetAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET)
 		{
 			target_ = action.target_;
 			elapsed_ = action.elapsed_;
@@ -388,7 +388,7 @@ namespace scenarioengine
 		Object *master_object_;
 		LongSpeedAction::Target *final_speed_;
 
-		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::Type::SYNCHRONIZE) 
+		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE) 
 		{
 			master_object_ = 0;
 			final_speed_ = 0;
@@ -398,7 +398,7 @@ namespace scenarioengine
 			submode_ = SynchSubmode::SUBMODE_NONE;
 		}
 
-		SynchronizeAction(const SynchronizeAction &action) : OSCPrivateAction(OSCPrivateAction::Type::SYNCHRONIZE)
+		SynchronizeAction(const SynchronizeAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE)
 		{
 			master_object_ = action.master_object_;
 			final_speed_ = action.final_speed_;
@@ -458,9 +458,9 @@ namespace scenarioengine
 	public:
 		roadmanager::Position *position_;
 
-		PositionAction() : OSCPrivateAction(OSCPrivateAction::Type::POSITION) {}
+		PositionAction() : OSCPrivateAction(OSCPrivateAction::ActionType::POSITION) {}
 		
-		PositionAction(const PositionAction &action) : OSCPrivateAction(OSCPrivateAction::Type::POSITION) 
+		PositionAction(const PositionAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::POSITION) 
 		{
 			position_ = action.position_;
 		}
@@ -480,9 +480,9 @@ namespace scenarioengine
 	public:
 		roadmanager::Route *route_;
 
-		FollowRouteAction() : OSCPrivateAction(OSCPrivateAction::Type::FOLLOW_ROUTE) {}
+		FollowRouteAction() : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_ROUTE) {}
 
-		FollowRouteAction(const FollowRouteAction &action) : OSCPrivateAction(OSCPrivateAction::Type::FOLLOW_ROUTE)
+		FollowRouteAction(const FollowRouteAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_ROUTE)
 		{
 			route_ = action.route_;
 		}
@@ -518,9 +518,9 @@ namespace scenarioengine
 		double time_;
 
 		FollowTrajectoryAction() : traj_(0), timing_domain_(TimingDomain::NONE), timing_scale_(1), 
-			timing_offset_(0), time_(0), OSCPrivateAction(OSCPrivateAction::Type::FOLLOW_TRAJECTORY) {}
+			timing_offset_(0), time_(0), OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY) {}
 
-		FollowTrajectoryAction(const FollowTrajectoryAction& action) : OSCPrivateAction(OSCPrivateAction::Type::FOLLOW_TRAJECTORY)
+		FollowTrajectoryAction(const FollowTrajectoryAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY)
 		{
 			traj_ = action.traj_;
 			timing_domain_ = action.timing_domain_;
@@ -553,9 +553,9 @@ namespace scenarioengine
 		DomainType domain_;
 		bool activate_;
 
-		AutonomousAction() : OSCPrivateAction(OSCPrivateAction::Type::AUTONOMOUS) {}
+		AutonomousAction() : OSCPrivateAction(OSCPrivateAction::ActionType::AUTONOMOUS) {}
 
-		AutonomousAction(const AutonomousAction &action) : OSCPrivateAction(OSCPrivateAction::Type::AUTONOMOUS) 
+		AutonomousAction(const AutonomousAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::AUTONOMOUS) 
 		{
 			domain_ = action.domain_;
 			activate_ = action.activate_;

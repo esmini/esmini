@@ -83,6 +83,7 @@ private:
 	bool headless;
 	bool launch_server;
 	double fixed_timestep_;
+	std::string osi_receiver_addr;
 	int& argc_;
 	char** argv_;
 };

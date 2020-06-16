@@ -6,6 +6,7 @@ include_directories (
   ${COMMON_MINI_INCLUDE_DIR}  
   ${REPLAY_INCLUDE_DIR}  
   ${RDB_INCLUDE_DIR}
+  ${OSI_INCLUDE_DIR}
 )
 
 file(GLOB SRC_OSCTYPEDEFS "${CMAKE_CURRENT_LIST_DIR}/OSCTypeDefs/*.[hc]pp")

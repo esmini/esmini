@@ -15,9 +15,19 @@
   * In addition to Init and Step, it shows how to retrieve the state of scenario objects.
   */
 
+
+#include "osi_common.pb.h"
+#include "osi_object.pb.h"
+#include "osi_sensorview.pb.h"
+#include "osi_version.pb.h"
+
 #include "stdio.h"
 #include "scenarioenginedll.hpp"
 #include "CommonMini.hpp"
+
+#define DEMONSTRATE_SENSORS 1
+#define DEMONSTRATE_OSI 0
+#define DEMONSTRATE_ROADINFO 0
 
 
 #define MAX_N_OBJECTS 10
@@ -52,11 +62,18 @@ int main(int argc, char *argv[])
 			return -1;
 		}
 
+#if DEMONSTRATE_SENSORS
 		// Add four sensors around the vehicle
 		SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 0.0f, 6.0f, 50.0f, (float)(50.0 * M_PI / 180.0), MAX_DETECTIONS);
 		SE_AddObjectSensor(0, 2.0f, 1.0f, 0.5f, 1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), MAX_DETECTIONS);
 		SE_AddObjectSensor(0, 2.0f, -1.0f, 0.5f, -1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), MAX_DETECTIONS);
 		SE_AddObjectSensor(0, -1.0f, 0.0f, 0.5f, 3.14f, 5.0f, 30.0f, (float)(50.0 * M_PI / 180.0), MAX_DETECTIONS);
+#endif
+
+#if DEMONSTRATE_OSI
+		osi3::SensorView sv;
+		SE_OpenOSISocket("127.0.0.1");
+#endif
 
 		for (int i = 0; i*TIME_STEP < DURATION; i++)
 		{
@@ -65,7 +82,48 @@ int main(int argc, char *argv[])
 				return 0;
 			}
 
-#if 1  // set to 1 to demonstrate how to query sensors - only first one in this case
+#if DEMONSTRATE_OSI  // set to 1 to demonstrate example of how to query OSI Ground Truth
+
+			int svSize = 0;
+
+			// Fetch and parse OSI message
+			const char* buf = SE_GetOSISensorView(&svSize);
+			sv.ParseFromArray(buf, svSize);
+			
+			// Print timestamp
+			printf("timestamp: %.2f\n", sv.mutable_global_ground_truth()->mutable_timestamp()->seconds() +
+				1E-9 * sv.mutable_global_ground_truth()->mutable_timestamp()->nanos());
+
+			// Print object id, position, orientation and velocity
+			for (int i = 0; i < sv.mutable_global_ground_truth()->mutable_moving_object()->size(); i++)
+			{
+				printf(" obj id %lld pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
+					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_id()->value(),
+					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->x(),
+					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->y(),
+					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->z(),
+					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_orientation()->yaw(),
+					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_orientation()->pitch(),
+					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_orientation()->roll(),
+					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_velocity()->x(),
+					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_velocity()->y(),
+					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_velocity()->z()
+				);
+			}
+#endif		
+
+#if DEMONSTRATE_ROADINFO  // set to 1 to demonstrate example of how to query road information
+			SE_RoadInfo data;
+			double look_ahead_distance = 10;
+			int id = 0;
+
+			SE_GetRoadInfoAtDistance(id, look_ahead_distance, &data, 0);
+
+			LOG("Road info at %.2f meter from Vehicle %d: pos (%.2f, %.2f, %.2f) curvature %.5f (r %.2f) heading %.2f pitch %.2f lane width %.2f",
+				look_ahead_distance, id, data.global_pos_x, data.global_pos_y, data.global_pos_z, data.curvature, 1.0 / data.curvature,  data.road_heading, data.road_pitch);
+#endif
+
+#if DEMONSTRATE_SENSORS  
 
 			printf("Detections [sensor ID, Object ids]:");
 			int objList[MAX_DETECTIONS];  // make room for max nr vehicles, as specified when added sensor
@@ -80,18 +138,7 @@ int main(int argc, char *argv[])
 			printf("\n");
 #endif
 
-#if 0  // set to 1 to demonstrate example of how to query road information
-			SE_LaneInfo data;
-			double look_ahead_distance = 10;
-			int id = 0;
-
-			SE_GetLaneInfoAtDistance(id, look_ahead_distance, &data, 0);
-
-			LOG("Road info at %.2f meter from Vehicle %d: pos (%.2f, %.2f, %.2f) curvature %.5f (r %.2f) heading %.2f pitch %.2f lane width %.2f",
-				look_ahead_distance, id, data.x, data.y, data.z, data.curvature, 1.0 / data.curvature,  data.heading, data.pitch, data.width);
-#endif
-
-			if (i == (int)(0.5*DURATION / TIME_STEP))
+			if (i == (int)(0.5 * DURATION / TIME_STEP))
 			{
 				// Halfway through, pause the simulation for a few seconds
 				// to demonstrate how camera can still move independently

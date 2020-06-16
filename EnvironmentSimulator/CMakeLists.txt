@@ -54,7 +54,9 @@ elseif (WIN32)
     set ( SOCK_LIB Ws2_32.lib )
     set ( TIME_LIB "" )
     set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1YxLVdQLhKBMGW4HB_ArJglRIpzuDiwhJ )
+    set ( OSI_PACKAGE_URL https://drive.google.com/uc?export=download&id=168Qf08TktrVc-WNFm4xZ1SNUG3v7ENeG )
     set ( OSG_DIR "${OSG_BASE_DIR}/v10" )
+    set ( OSI_DIR "${OSI_BASE_DIR}/v10" )
   else ()
     message ("Unknown configuration")
   endif ()
@@ -69,6 +71,7 @@ set ( OSG_LIBRARIES_PATH
 	"${OSG_DIR}/lib/osgPlugins-3.6.5"
 )
 
+set ( OSI_INCLUDE_DIR "${OSI_DIR}/include" )
 
 if(APPLE)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
@@ -131,28 +134,38 @@ elseif(UNIX)
     fontconfig
     #db_fbx
   )
+  
+  set ( OSI_LIBRARIES 
+	libprotobuf.a
+	libopen_simulation_interface_pic.a
+  )
 
 else() #not UNIX
 
-set ( OSG_LIBRARIES 
-    opengl32.lib
-    optimized zlibstatic.lib debug zlibstaticd.lib 
-    optimized jpeg.lib debug jpegd.lib 
-    optimized ${OSG_VERSION}-osg.lib debug ${OSG_VERSION}-osgd.lib
-    optimized ${OSG_VERSION}-osgAnimation.lib debug ${OSG_VERSION}-osgAnimationd.lib
-    optimized ${OSG_VERSION}-osgDB.lib debug ${OSG_VERSION}-osgDBd.lib
-    optimized ${OSG_VERSION}-osgGA.lib debug ${OSG_VERSION}-osgGAd.lib
-    optimized ${OSG_VERSION}-osgViewer.lib debug ${OSG_VERSION}-osgViewerd.lib
-    optimized ${OSG_VERSION}-osgText.lib debug ${OSG_VERSION}-osgTextd.lib
-    optimized ${OSG_VERSION}-osgUtil.lib debug ${OSG_VERSION}-osgUtild.lib
-    optimized ${OSG_VERSION}-osgSim.lib debug ${OSG_VERSION}-osgSimd.lib
-    optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
-    optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
-    optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
-    optimized osgdb_osg.lib debug osgdb_osgd.lib 	
-    optimized osgdb_fbx.lib debug osgdb_fbxd.lib 	
-    optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
-)
+  set ( OSG_LIBRARIES 
+      opengl32.lib
+      optimized zlibstatic.lib debug zlibstaticd.lib 
+      optimized jpeg.lib debug jpegd.lib 
+      optimized ${OSG_VERSION}-osg.lib debug ${OSG_VERSION}-osgd.lib
+      optimized ${OSG_VERSION}-osgAnimation.lib debug ${OSG_VERSION}-osgAnimationd.lib
+      optimized ${OSG_VERSION}-osgDB.lib debug ${OSG_VERSION}-osgDBd.lib
+      optimized ${OSG_VERSION}-osgGA.lib debug ${OSG_VERSION}-osgGAd.lib
+      optimized ${OSG_VERSION}-osgViewer.lib debug ${OSG_VERSION}-osgViewerd.lib
+      optimized ${OSG_VERSION}-osgText.lib debug ${OSG_VERSION}-osgTextd.lib
+      optimized ${OSG_VERSION}-osgUtil.lib debug ${OSG_VERSION}-osgUtild.lib
+      optimized ${OSG_VERSION}-osgSim.lib debug ${OSG_VERSION}-osgSimd.lib
+      optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
+      optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
+      optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
+      optimized osgdb_osg.lib debug osgdb_osgd.lib 	
+      optimized osgdb_fbx.lib debug osgdb_fbxd.lib 	
+      optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
+  )
+
+  set ( OSI_LIBRARIES 
+	optimized libprotobuf.lib debug libprotobufd.lib
+	optimized open_simulation_interface_pic.lib debug open_simulation_interface_picd.lib
+  )
 #
 #if (NOT WINSDK7_1)  # FBX not supporting winsdk 7.1
 #  list ( APPEND OSG_LIBRARIES optimized libfbxsdk-md.lib debug libfbxsdk-mdd.lib )
@@ -198,7 +211,7 @@ if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSG_DIR} )
 endif()
 
 # download OSI
-set ( OSI_PACKAGE_FILENAME "osi.zip" )
+set ( OSI_PACKAGE_FILENAME "osi.7z" )
 if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSI_DIR} )
 	download_and_extract( ${OSI_PACKAGE_URL} ${OSI_BASE_DIR} ${OSI_PACKAGE_FILENAME} )
 endif()
@@ -226,6 +239,7 @@ if (USE_OSG)
     set_target_properties (EgoSimulator PROPERTIES FOLDER ${ApplicationsFolder} )
     set_target_properties (Replayer PROPERTIES FOLDER ${ApplicationsFolder} )
     set_target_properties (dat2ascii PROPERTIES FOLDER ${ApplicationsFolder} )    
+    set_target_properties (osi_receiver PROPERTIES FOLDER ${ApplicationsFolder} )    
     set_target_properties (OpenDriveViewer PROPERTIES FOLDER ${ApplicationsFolder} )
     set_target_properties (OdrPlot PROPERTIES FOLDER ${ApplicationsFolder} )
   endif (NOT USE_ENVSIM_ADAPT)

@@ -29,13 +29,13 @@ BaseSensor::BaseSensor(BaseSensor::Type type, double pos_x, double pos_y, double
 }
 
 ObjectSensor::ObjectSensor(
-	Entities *entities, Object *refobj, double pos_x, double pos_y, double pos_z, double heading, double near, double far, double fovH, int maxObj) :	
+	Entities *entities, Object *refobj, double pos_x, double pos_y, double pos_z, double heading, double nearClip, double farClip, double fovH, int maxObj) :
 	BaseSensor(BaseSensor::Type::SENSOR_TYPE_OBJECT, pos_x, pos_y, pos_z, heading)
 {
 	entities_ = entities;
-	near_ = near;
+	near_ = nearClip;
 	near_sq_ = near_ * near_;
-	far_ = far;
+	far_ = farClip;
 	far_sq_ = far_ * far_;
 	fovH_ = fovH;
 	maxObj_ = maxObj;

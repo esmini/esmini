@@ -19,10 +19,28 @@
 #include <vector>
 #include <math.h>
 
+#ifdef _WIN32
+	//#include <winsock2.h>
+	//#include <Ws2tcpip.h>
+#else
+	 /* Assume that any non-Windows platform uses POSIX-style sockets instead. */
+	#include <sys/socket.h>
+	#include <arpa/inet.h>
+	#include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
+	#include <unistd.h> /* Needed for close() */
+#endif
+
 namespace scenarioengine
 {
 
 #define NAME_LEN 32
+
+
+	typedef struct 
+	{
+		std::string sensor_view;
+		unsigned int size;
+	} OSISensorView;
 
 	struct ObjectStateStruct
 	{
@@ -60,7 +78,6 @@ namespace scenarioengine
 	class ScenarioGateway
 	{
 	public:
-
 		ScenarioGateway();
 		~ScenarioGateway();
 
@@ -82,12 +99,17 @@ namespace scenarioengine
 		ObjectState *getObjectStatePtrById(int id);
 		int getObjectStateById(int idx, ObjectState &objState);
 		int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
+		int UpdateOSISensorView();
+		const char* GetOSISensorView(int* size);
+		int OpenSocket(std::string ipaddr);
+		int CloseSocket();
 
 	private:
 		void updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot);
 
 		std::vector<ObjectState*> objectState_;
 		std::ofstream data_file_;
+		bool sendOSIoverUDP;
 	};
 
 }

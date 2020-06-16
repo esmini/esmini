@@ -20,6 +20,7 @@
 
 #define SE_NAME_SIZE 32
 
+
 typedef struct
 {
 	int id;					  // Automatically generated unique object id 
@@ -40,18 +41,6 @@ typedef struct
 	float speed;
 } SE_ScenarioObjectState; 
 
-typedef struct
-{
-	float x;                // target position, in global coordinate system
-	float y;                // target position, in global coordinate system
-	float z;                // target position, in global coordinate system
-	float heading;		    // road heading at steering target point
-	float pitch;		    // road pitch (inclination) at steering target point
-	float roll;		        // road roll (camber) at target point
-	float curvature;		// road curvature at steering target point
-	float speed_limit;		// speed limit given by OpenDRIVE type entry
-	float width;            // with of the lane 
-} SE_LaneInfo;
 
 typedef struct
 {
@@ -106,6 +95,11 @@ extern "C"
 	SE_DLL_API void SE_Close();
 
 	/**
+	Send OSI packages over UDP to specified IP address
+	*/
+	SE_DLL_API int SE_OpenOSISocket(char *ipaddr);
+
+	/**
 	Get simulation time in seconds
 	*/
 	SE_DLL_API float SE_GetSimulationTime();  // Get simulation time in seconds
@@ -114,9 +108,11 @@ extern "C"
 	SE_DLL_API int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
 
 	SE_DLL_API int SE_GetNumberOfObjects();
+
 	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState *state);
 	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state);
-	SE_DLL_API int SE_GetObjectStates(int *nObjects, SE_ScenarioObjectState* state);
+
+	SE_DLL_API const char* SE_GetOSISensorView(int* size);
 
 	/**
 	Create an ideal object sensor and attach to specified vehicle
@@ -143,23 +139,13 @@ extern "C"
 
 	/**
 	Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
-	@param object_id Id of the object from which to measure
+	@param object_id Handle to the position object from which to measure
 	@param lookahead_distance The distance, along the road, to the point
 	@param data Struct including all result values, see typedef for details
 	@param lookAheadMode Measurement strategy: Along 0=lane center, 1=road center (ref line) or 2=current lane offset. See roadmanager::Position::LookAheadMode enum
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int lookAheadMode);
-
-	/**
-	Get road information of a point at a specified distance from object along the road ahead 
-	@param object_id Id of the object from which to measure
-	@param lookahead_distance The distance, along the road, to the point
-	@param data Struct including all result values, see typedef for details
-	@param lookAheadMode Measurement strategy: Along 0=lane center, 1=road center (ref line) or 2=current lane offset. See roadmanager::Position::LookAheadMode enum
-	@return 0 if successful, -1 if not
-	*/
-	SE_DLL_API int SE_GetLaneInfoAtDistance(int object_id, float lookahead_distance, SE_LaneInfo *data, int lookAheadMode);
 
 	/**
 	Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle

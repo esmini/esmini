@@ -50,6 +50,8 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	launch_server = false;
 	fixed_timestep_ = -1.0;
 	viewer_ = 0;
+	osi_receiver_addr = "";
+
 #ifdef _SCENARIO_VIEWER
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
 	trail_dt = TRAIL_DOTS_DT;
@@ -408,6 +410,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("headless", "Run without viewer");
 	opt.AddOption("server", "Launch server to receive state of external Ego simulator");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
+	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
 	opt.AddOption("ghost_headstart", "Launch Ego ghost at specified headstart time", "time");
 
 	if (argc_ < 3)
@@ -489,7 +492,13 @@ int ScenarioPlayer::Init()
 	// Fetch scenario gateway and OpenDRIVE manager objects
 	scenarioGateway = scenarioEngine->getScenarioGateway();
 	odr_manager = scenarioEngine->getRoadManager();
-	
+
+	if (opt.GetOptionSet("osi_receiver_ip"))
+	{
+		scenarioGateway->OpenSocket(opt.GetOptionArg("osi_receiver_ip"));
+	}
+
+
 	// Create a data file for later replay?
 	if ((arg_str = opt.GetOptionArg("record")) != "")
 	{
