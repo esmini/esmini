@@ -136,8 +136,8 @@ elseif(UNIX)
   )
   
   set ( OSI_LIBRARIES 
-	libprotobuf.a
 	libopen_simulation_interface_pic.a
+  libprotobuf.a
   )
 
 else() #not UNIX

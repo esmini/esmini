@@ -18,6 +18,8 @@ SOURCE_GROUP(OSCTypeDefs FILES ${SRC_OSCTYPEDEFS})
 SOURCE_GROUP("Source Files" FILES ${SRC_SOURCEFILES})
 SOURCE_GROUP("External Libraries" FILES ${SRC_ADDITIONAL})
 
+link_directories(${OSI_DIR}/lib )
+
 add_library ( ScenarioEngine STATIC 
 ${SRC_OSCTYPEDEFS} 
 ${SRC_SOURCEFILES} 
@@ -25,5 +27,5 @@ ${SRC_ADDITIONAL} )
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-
+target_link_libraries(ScenarioEngine ${OSI_LIBRARIES})
 	
