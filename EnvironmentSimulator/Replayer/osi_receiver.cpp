@@ -21,9 +21,7 @@
 #include <signal.h>
 
 
-#ifdef _WINDOWS
-    #include <windows.h>
-#else
+#ifndef _WINDOWS
     #include <unistd.h>
     #define Sleep(x) usleep((x)*1000)
 #endif
@@ -134,8 +132,8 @@ int main(int argc, char* argv[])
 			// Print object id, position, orientation and velocity
 			for (int i = 0; i < sv.mutable_global_ground_truth()->mutable_moving_object()->size(); i++)
 			{
-				printf(" obj id %ld pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_id()->value(),
+				printf(" obj id %d pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
+					(int)sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_id()->value(),
 					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->x(),
 					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->y(),
 					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->z(),
