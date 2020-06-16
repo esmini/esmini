@@ -42,8 +42,8 @@ static struct {
 static OSISensorView osiSensorView;
 std::ofstream osi_file;
 
-static SOCKET sendSocket;
-static sockaddr_in recvAddr;
+static int sendSocket;
+static struct sockaddr_in recvAddr;
 
 
 ObjectState::ObjectState()
@@ -177,7 +177,7 @@ int ScenarioGateway::OpenSocket(std::string ipaddr)
 #endif
 
 	// create socket for outgoing UDP packages
-	sendSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	sendSocket = (int)socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sendSocket < 0) {
 		LOG("socket failed");
 		return -1;
@@ -294,7 +294,7 @@ int ScenarioGateway::UpdateOSISensorView()
 	// send over udp - skip size (package size == message size)
 	if (sendSocket)
 	{
-		int sendResult = sendto(sendSocket, (char*)osiSensorView.sensor_view.c_str(), osiSensorView.size, 0, (SOCKADDR*)&recvAddr, sizeof(recvAddr));
+		int sendResult = sendto(sendSocket, (char*)osiSensorView.sensor_view.c_str(), osiSensorView.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
 		if (sendResult != osiSensorView.size)
 		{
 			LOG("Failed send osi package over UDP");
