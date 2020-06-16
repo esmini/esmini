@@ -19,7 +19,7 @@ set ( INCLUDES
 	vehicle.hpp
 )
 
-link_directories( ${OSG_LIBRARIES_PATH} )
+link_directories( ${OSG_LIBRARIES_PATH} ${OSI_DIR}/lib )
 
 add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
@@ -34,9 +34,10 @@ target_link_libraries (
 	ScenarioEngine
 	RoadManager
 	CommonMini
-    	${viewer_libs}
+    ${viewer_libs}
+	${OSI_LIBRARIES}
 	${TIME_LIB}	
-    	${SOCK_LIB}
+    ${SOCK_LIB}
 )
 
 if (UNIX)

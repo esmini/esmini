@@ -19,7 +19,7 @@ set ( SOURCES
 set ( INCLUDES
 )
 
-link_directories( ${OSG_LIBRARIES_PATH} )
+link_directories( ${OSG_LIBRARIES_PATH} ${OSI_DIR}/lib )
 
 add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
@@ -34,6 +34,7 @@ target_link_libraries (
 	ScenarioEngine
 	RoadManager
 	${viewer_libs}
+	${OSI_LIBRARIES}
 	CommonMini
 	${TIME_LIB}
     ${SOCK_LIB}
