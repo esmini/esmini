@@ -194,7 +194,7 @@ namespace roadmanager
 		OSIPoints GetOSIPoints() {return osi_points_;}
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
-		void CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x, double curr_y, double curr_hdg);
+		//void CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x, double curr_y, double curr_hdg);
 
 		Polynomial poly3_;
 		OSIPoints osi_points_;
@@ -231,9 +231,8 @@ namespace roadmanager
 		OSIPoints GetOSIPoints() {return osi_points_;}
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
-		void CalculateParamPoly3OSIPoints(double curr_x, double curr_y, double curr_hdg);
+		//void CalculateParamPoly3OSIPoints(double curr_x, double curr_y, double curr_hdg);
 		
-
 		Polynomial poly3U_;
 		Polynomial poly3V_;
 		OSIPoints osi_points_;
@@ -859,7 +858,8 @@ namespace roadmanager
 		Road* GetRoadById(int id);
 
 		// Setting information based on the OSI standards for OpenDrive elements
-		void SetOSIForOpenDrive();
+		//void SetOSIForOpenDrive();
+		void SetOSIForLane();
 		
 
 		/**
