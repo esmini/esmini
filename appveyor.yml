@@ -1,19 +1,19 @@
 image:
 - Visual Studio 2017
-- Visual Studio 2015
+#- Visual Studio 2015
 - Ubuntu1804
-- macos
+#- macos
 
 
 configuration: Release
 
 platform:
 - x64
-- x86
+#- x86
 
 cache:
-- externals/OpenSceneGraph
-- resources/models
+#- externals/OpenSceneGraph
+#- resources/models
     
 skip_commits:
   message: /#skip_build/
