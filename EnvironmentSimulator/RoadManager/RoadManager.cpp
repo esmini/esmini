@@ -1958,7 +1958,7 @@ bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fro
 	
 	RoadLink* nextLink = 0;
 
-	if (srcNode->link->GetType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
+	if (srcNode->link->GetElementType() == RoadLink::RoadLink::ELEMENT_TYPE_ROAD)
 	{
 		if (srcNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END)
 		{
@@ -1969,7 +1969,7 @@ bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fro
 			nextLink = checkRoad->GetLink(LinkType::SUCCESSOR);
 		}
 	}
-	else if (srcNode->link->GetType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
+	else if (srcNode->link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
 	{
 		if (checkRoad->GetLink(LinkType::SUCCESSOR) && 
 			checkRoad->GetLink(LinkType::SUCCESSOR)->GetElementId() == fromRoad->GetId())

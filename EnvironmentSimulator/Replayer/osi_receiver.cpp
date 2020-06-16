@@ -20,6 +20,14 @@
 #include "osi_version.pb.h"
 #include <signal.h>
 
+
+#ifdef _WINDOWS
+    #include <windows.h>
+#else
+    #include <unistd.h>
+    #define Sleep(x) usleep((x)*1000)
+#endif
+
 static bool quit;
 
 #ifdef _WIN32
@@ -60,7 +68,7 @@ static void signal_handler(int s)
 	quit = true;
 }
 
-int main(char* argv[], int argc)
+int main(int argc, char* argv[])
 {
 	static int sock;
 	struct sockaddr_in server_addr;
@@ -126,7 +134,7 @@ int main(char* argv[], int argc)
 			// Print object id, position, orientation and velocity
 			for (int i = 0; i < sv.mutable_global_ground_truth()->mutable_moving_object()->size(); i++)
 			{
-				printf(" obj id %lld pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
+				printf(" obj id %ld pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
 					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_id()->value(),
 					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->x(),
 					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->y(),
