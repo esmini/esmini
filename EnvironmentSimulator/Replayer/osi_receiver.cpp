@@ -18,8 +18,9 @@
 #include "osi_object.pb.h"
 #include "osi_sensorview.pb.h"
 #include "osi_version.pb.h"
-#include <conio.h>
+#include <signal.h>
 
+static bool quit;
 
 #ifdef _WIN32
 	#include <winsock2.h>
@@ -52,6 +53,13 @@ void CloseGracefully(int socket)
 #endif
 }
 
+static void signal_handler(int s) 
+{
+	printf("Caught signal %d - quiting\n", s);
+
+	quit = true;
+}
+
 int main(char* argv[], int argc)
 {
 	static int sock;
@@ -60,7 +68,10 @@ int main(char* argv[], int argc)
 	static int iPortIn = OSI_OUT_PORT;   // Port for incoming packages
 	char buf[1024];
 	socklen_t sender_addr_size = sizeof(sender_addr);
-	bool quit = false;
+	quit = false;
+
+	// Setup signal handler to catch Ctrl-C
+	signal(SIGINT, signal_handler);
 
 #ifdef _WIN32
 	WSADATA wsa_data;
@@ -94,7 +105,7 @@ int main(char* argv[], int argc)
 		return -1;
 	}
 
-	printf("Socket open. Waiting for OSI messages on port %d. Press ESC to quit.\n", OSI_OUT_PORT);
+	printf("Socket open. Waiting for OSI messages on port %d. Press Ctrl-C to quit.\n", OSI_OUT_PORT);
 
 	osi3::SensorView sv;
 
@@ -134,15 +145,7 @@ int main(char* argv[], int argc)
 			// No incoming messages, wait for a little while before polling again
 			Sleep(10);
 		}
-
-		if (_kbhit() != 0 && _getch() == 27) 
-		{
-			quit = true;
-		}
-
 	}
-
-	CloseGracefully(sock);
 
 	return 0;
 }
