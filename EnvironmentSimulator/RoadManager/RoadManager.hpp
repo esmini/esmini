@@ -843,8 +843,7 @@ namespace roadmanager
 		Road* GetRoadById(int id);
 
 		// Setting information based on the OSI standards for OpenDrive elements
-		//void SetOSIForOpenDrive();
-		void SetOSIForLane();
+		void SetOSI();
 		
 
 		/**

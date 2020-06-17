@@ -3163,40 +3163,18 @@ OpenDrive* Position::GetOpenDrive()
 	return &od; 
 }
 
-void OpenDrive::SetOSIForLane()
+void OpenDrive::SetOSI()
 {
 	// Initialization
-	std::vector<Geometry*> geom, crucial_geom;
 	LaneSection *lsec, *lsec_next;
 	std::vector<double> geom_start, geom_length;
-	int number_of_geometries, number_of_lane_sections;
+	int number_of_lane_sections;
 	double road_length, lsec_length;
 
 	// Looping through each lane section under each road under the consideration of lane's corresponding geometry
 	for (int i=0; i<road_.size(); i++)
 	{
-		number_of_geometries = road_[i]->GetNumberOfGeometries();
 		road_length = road_[i]->GetLength();
-
-		// Get all geometries
-		for (int j=0; j<number_of_geometries; j++)
-		{
-			geom.push_back(road_[i]->GetGeometry(j));
-		}
-
-		// Collect starting position and the length of each geometry
-		for (int m=0; m<geom.size(); m++)
-		{
-			geom_start.push_back(geom[m]->GetS());
-			if (m == geom.size()-1)
-			{
-				geom_length.push_back(road_length-geom[m]->GetS());
-			}
-			else
-			{
-				geom_length.push_back(geom[m+1]->GetS()-geom[m]->GetS());
-			}
-		}
 
 		// Looping through each lane section
 		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
@@ -3212,19 +3190,6 @@ void OpenDrive::SetOSIForLane()
 			{
 				lsec_next = road_[i]->GetLaneSectionByIdx(k+1);
 				lsec_length = lsec_next->GetS()-lsec->GetS();	
-			}
-
-			// Trim all unnessary geometries for this particular lane section
-			for (int n=0; n<geom_start.size(); n++)
-			{
-				if ((lsec->GetS() > geom_start[n]+geom_length[n]) || (lsec->GetS()+lsec_length < geom_start[n]))
-				{
-					continue;
-				}
-				else
-				{
-					crucial_geom.push_back(geom[n]);
-				}
 			}
 		}	
 	}
