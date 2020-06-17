@@ -353,6 +353,7 @@ const char* ScenarioGateway::GetOSIRoadLane(int* size, int lane_idx)
 {
 	//*size = osiSensorView.size;
 	//return osiSensorView.sensor_view.data();
+        return 0; 
 }
 
 void ScenarioGateway::updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot)

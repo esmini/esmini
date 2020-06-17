@@ -27,8 +27,8 @@ set( CMAKE_VERBOSE_MAKEFILE true )
 
 
 if (APPLE)
-  set ( TIME_LIB "" )
-  set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1ZIQ4Hq6VUrYO-cs4hUe7iTB6_CtYVPUH )
+  set ( TIME_LIB "" ) 
+  set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1zy9neztZP7mY88zbm-oVP24Vzr-LTUeY )
   set ( OSG_DIR "${OSG_BASE_DIR}/mac" )
   set ( OSI_PACKAGE_URL https://drive.google.com/uc?export=download&id=1xcwteK9t4O--9cnnY3kuEdYuXz8_S2nQ )
   set ( OSI_DIR "${OSI_BASE_DIR}/mac" )
