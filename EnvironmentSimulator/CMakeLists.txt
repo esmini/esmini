@@ -75,13 +75,13 @@ set ( OSI_INCLUDE_DIR "${OSI_DIR}/include" )
 
 set ( OSI_LIBRARIES_PATH "${OSI_DIR}/lib" )
 
+link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} )
+
 if(APPLE)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
 
   SET( "-framework OpenGL -framework Cocoa")
   
-  link_directories(${OSG_LIBRARIES_PATH})
-
   set ( OSG_LIBRARIES
 	
     osgdb_serializers_osgsim
@@ -107,8 +107,6 @@ if(APPLE)
   )
 elseif(UNIX)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
-  
-  link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} )
   
   set ( OSG_LIBRARIES
     optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd 
