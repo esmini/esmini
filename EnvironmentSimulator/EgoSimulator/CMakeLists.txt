@@ -19,8 +19,6 @@ set ( INCLUDES
 	vehicle.hpp
 )
 
-link_directories( ${OSG_LIBRARIES_PATH} ${OSI_DIR}/lib )
-
 add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
 if (USE_OSG)

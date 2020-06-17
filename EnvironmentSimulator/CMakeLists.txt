@@ -73,6 +73,8 @@ set ( OSG_LIBRARIES_PATH
 
 set ( OSI_INCLUDE_DIR "${OSI_DIR}/include" )
 
+set ( OSI_LIBRARIES_PATH "${OSI_DIR}/lib" )
+
 if(APPLE)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
 
@@ -104,10 +106,9 @@ if(APPLE)
     #db_fbx
   )
 elseif(UNIX)
-   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
+  SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
   
-  link_directories(${OSG_LIBRARIES_PATH})
-  link_directories(${PB_LIBRARIES_PATH})
+  link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} )
   
   set ( OSG_LIBRARIES
     optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd 
@@ -136,8 +137,8 @@ elseif(UNIX)
   )
   
   set ( OSI_LIBRARIES 
-	libopen_simulation_interface_pic.a
-  libprotobuf.a
+	open_simulation_interface_pic
+	protobuf
   )
 
 else() #not UNIX

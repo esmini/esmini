@@ -24,9 +24,9 @@ endif (USE_OSG)
 
 target_link_libraries ( 
 	${TARGET}
-    ${OSI_LIBRARIES}
 	ScenarioEngineDLL
 	CommonMini
+	${OSI_LIBRARIES}
 	${TIME_LIB}
 )
 
