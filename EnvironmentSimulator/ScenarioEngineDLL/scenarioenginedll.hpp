@@ -114,6 +114,8 @@ extern "C"
 
 	SE_DLL_API const char* SE_GetOSISensorView(int* size);
 
+	SE_DLL_API const char* SE_GetOSIRoadLane(int* size, int lane_idx);
+
 	/**
 	Create an ideal object sensor and attach to specified vehicle
 	@param object_id Handle to the object to which the sensor should be attached
