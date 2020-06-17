@@ -135,8 +135,8 @@ elseif(UNIX)
   )
   
   set ( OSI_LIBRARIES 
-	open_simulation_interface_pic
-	protobuf
+	optimized open_simulation_interface_pic debug open_simulation_interface_picd
+	optimized protobuf debug protobufd
   )
 
 else() #not UNIX
