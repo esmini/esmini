@@ -39,12 +39,7 @@ static struct {
 	std::vector<osi3::MovingObject*> mobj;
 } mobj_osi_internal;
 
-static struct {
-	osi3::Lane *ln; 
-} mlane_osi_internal; 
-
 static OSISensorView osiSensorView;
-static OSIRoadLane osiRoadLane; 
 std::ofstream osi_file;
 
 static int sendSocket;
@@ -313,46 +308,10 @@ int ScenarioGateway::UpdateOSISensorView()
 	return -1;
 }
 
-int ScenarioGateway::UpdateOSIRoadLane()
-{
-	// Update mlane_osi_internal
-	
-	mlane_osi_internal.ln->SerializeToString(&osiRoadLane.lane_info);
-	osiRoadLane.size = (unsigned int)mlane_osi_internal.ln->ByteSizeLong();
-
-	// write to file, first size of message
-	osi_file.write((char*)&osiRoadLane.size, sizeof(osiRoadLane.size));
-
-	// write to file, actual message - the sensorview object including timestamp and moving objects
-	osi_file.write(osiRoadLane.lane_info.c_str(), osiRoadLane.size);
-
-	// send over udp - skip size (package size == message size)
-	if (sendSocket)
-	{
-		int sendResult = sendto(sendSocket, (char*)osiRoadLane.lane_info.c_str(), osiRoadLane.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
-		if (sendResult != osiRoadLane.size)
-		{
-			LOG("Failed send osi package over UDP");
-#ifdef _WIN32
-			wprintf(L"send failed with error: %d\n", WSAGetLastError());
-#endif
-		}
-	}
-
-	// Indicate not found by returning non zero
-	return -1;
-}
-
 const char* ScenarioGateway::GetOSISensorView(int* size)
 {
 	*size = osiSensorView.size;
 	return osiSensorView.sensor_view.data();
-}
-
-const char* ScenarioGateway::GetOSIRoadLane(int* size, int lane_idx)
-{
-	//*size = osiSensorView.size;
-	//return osiSensorView.sensor_view.data();
 }
 
 void ScenarioGateway::updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot)
