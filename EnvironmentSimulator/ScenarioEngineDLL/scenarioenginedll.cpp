@@ -382,6 +382,17 @@ extern "C"
 		return 0;
 	}
 
+	SE_DLL_API const char* SE_GetOSIRoadLane(int* size, int lane_idx)
+	{
+		if (player)
+		{
+			return player->scenarioGateway->GetOSIRoadLane(size, lane_idx);
+		}
+
+		*size = 0;
+		return 0;
+	}
+
 	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state)
 	{
 		if (player)
