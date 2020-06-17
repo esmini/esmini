@@ -111,11 +111,9 @@ namespace roadmanager
 		~Line() {};
 
 		void Print();
-		OSIPoints GetOSIPoints() {return osi_points_;}
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds) { (void)ds; return 0; }
 
-		OSIPoints osi_points_;
 	};
 
 
@@ -128,11 +126,8 @@ namespace roadmanager
 
 		double EvaluateCurvatureDS(double ds) { (void)ds; return curvature_; }
 		double GetRadius() { return std::fabs(1.0 / curvature_); }
-		OSIPoints GetOSIPoints() {return osi_points_;}
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
-
-		OSIPoints osi_points_;
 
 	private:
 		double curvature_;
@@ -154,7 +149,6 @@ namespace roadmanager
 		double GetH0() { return h0_; }
 		double GetS0() { return s0_; }
 		double GetCDot() { return c_dot_; }
-		OSIPoints GetOSIPoints() {return osi_points_;}
 		void SetX0(double x0) { x0_ = x0; }
 		void SetY0(double y0) { y0_ = y0; }
 		void SetH0(double h0) { h0_ = h0; }
@@ -163,8 +157,6 @@ namespace roadmanager
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
-
-		OSIPoints osi_points_;
 
 	private:
 		double curv_start_;
@@ -191,14 +183,10 @@ namespace roadmanager
 		double GetUMax() { return umax_; }
 		void Print();
 		Polynomial GetPoly3() {return poly3_;}
-		OSIPoints GetOSIPoints() {return osi_points_;}
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
-		//void CalculatePoly3OSIPoints(double curr_s, double next_s, double curr_x, double curr_y, double curr_hdg);
 
 		Polynomial poly3_;
-		OSIPoints osi_points_;
-
 
 	private:
 		double umax_;
@@ -228,14 +216,11 @@ namespace roadmanager
 		void Print();
 		Polynomial GetPoly3U() {return poly3U_;}
 		Polynomial GetPoly3V() {return poly3V_;}
-		OSIPoints GetOSIPoints() {return osi_points_;}
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
-		//void CalculateParamPoly3OSIPoints(double curr_x, double curr_y, double curr_hdg);
 		
 		Polynomial poly3U_;
 		Polynomial poly3V_;
-		OSIPoints osi_points_;
 	};
 
 
