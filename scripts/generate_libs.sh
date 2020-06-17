@@ -54,39 +54,6 @@ BUILD_MODE=Release  # Relase / Debug
 
 osi_root_dir=$(pwd)
 
-if [ ! -d doxygen ] 
-then
-    echo -------------------------- Downloading Doxygen ----------------------------------
-    cd $osi_root_dir
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        curl "https://www.doxygen.nl/files/doxygen-1.8.18.linux.bin.tar.gz" -o doxygen-1.8.18.linux.bin.tar.gz
-        tar zxvf doxygen-1.8.18.linux.bin.tar.gz
-        mv doxygen-1.8.18 doxygen
-    elif [[ "$OSTYPE" == "win32" ]]; then
-        mkdir doxygen
-        cd doxygen
-        curl "https://www.doxygen.nl/files/doxygen-1.8.18.windows.x64.bin.zip" -o doxygen-1.8.18.windows.x64.bin.zip
-        unzip doxygen-1.8.18.windows.x64.bin.zip
-    fi
-else
-    echo doxygen folder already exists, continue with next step...
-fi
-
-if [ ! -d graphviz ] 
-then
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        echo "Please install graphviz: sudo apt install graphviz"
-    elif [[ "$OSTYPE" == "win32" ]]; then
-        echo -------------------- Downloading Graphviz \(dot for doxygen\) ---------------------------
-        cd $osi_root_dir
-        mkdir graphviz
-        cd graphviz
-        curl https://graphviz.gitlab.io/_pages/Download/windows/graphviz-2.38.zip -o graphviz-2.38.zip
-        unzip graphviz-2.38.zip
-    fi
-fi
-
-
 echo ------------------------ Installing zlib ------------------------------------
 cd $osi_root_dir
 
@@ -110,7 +77,11 @@ then
 		rm CMakeCache.txt
 		cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" 
 		cmake --build . --target install
+	elif [[ "$OSTYPE" == "darwin"* ]]; then
+		cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" 
+		cmake --build . --target install
 	else
+
 		cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install ..
 		cmake --build . --config Debug --target install
 		cmake --build . --config Release --target install
@@ -129,17 +100,19 @@ then
     cd protobuf
     git checkout v3.11.4
     mkdir build-code; cd build-code
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    if [[ "$OSTYPE" == "linux-gnu"* || "$OSTYPE" == "darwin"* ]]; then
         ZLIB_FILE_RELEASE=libz.a
 		ZLIB_FILE_DEBUG=libzd.a
     elif [[ "$OSTYPE" == "win32" ]]; then
         ZLIB_FILE_RELEASE=libz.lib
 		ZLIB_FILE_DEBUG=libzd.lib
-	fi
+    fi
 
-    cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib-1.2.11/install/lib/$ZLIB_FILE_DEBUG -DZLIB_INCLUDE_DIR=../../zlib-1.2.11/install/include -DCMAKE_INSTALL_PREFIX=../protobuf-install -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fPIC" 
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib-1.2.11/install/lib/$ZLIB_FILE_DEBUG -DZLIB_INCLUDE_DIR=../../zlib-1.2.11/install/include -DCMAKE_INSTALL_PREFIX=../protobuf-install -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fPIC" 
 
-    cmake --build . --target install
+        cmake --build . --target install
+    fi
 
     cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib-1.2.11/install/lib/$ZLIB_FILE_RELEASE -DZLIB_INCLUDE_DIR=../../zlib-1.2.11/install/include -DCMAKE_INSTALL_PREFIX=../protobuf-install -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"
 
@@ -160,6 +133,7 @@ else
     echo proto2cpp folder already exists, continue with next step...
 fi
 
+
 echo --------------------- Installing OSI -----------------------------
 cd $osi_root_dir
 
@@ -171,12 +145,6 @@ then
     mkdir build
     cd build
 
-    if [[ "$OSTYPE" == "win32" ]]; then
-		export DOXYGEN_EXECUTABLE=../../doxygen/doxygen.exe
-    else
-		export DOXYGEN_EXECUTABLE=../../doxygen/doxygen
-	fi
-
     export INSTALL_ROOT_DIR=../install
     export INSTALL_OSI_LIB_DIR=$INSTALL_ROOT_DIR/osi-lib
     mkdir $INSTALL_ROOT_DIR
@@ -185,26 +153,31 @@ then
     mkdir $INSTALL_OSI_LIB_DIR/include
 
     export PATH=$PATH:../../graphviz/release/bin:../../protobuf/protobuf-install/bin
-    
-    cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_LIBRARY_PATH=../protobuf/protobuf-install/lib .. 
 
-    # First bild OSI submodule separately since we need to rename the library before linking with the application
-    cmake --build . --config Debug --target install
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        echo stop     
+        cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_LIBRARY_PATH=../protobuf/protobuf-install/lib .. 
 
-	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        cp $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface.so $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interfaced.so
+        # First bild OSI submodule separately since we need to rename the library before linking with the application
+        cmake --build . --config Debug --target install
+
+       if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+   	    cp $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface.so $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interfaced.so
 	    mv $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_pic.a $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_picd.a
 	    mv $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_static.a $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_staticd.a
 	    touch $INSTALL_OSI_LIB_DIR/lib/osi3/kalle.txt
-	elif [[ "$OSTYPE" == "win32" ]]; then 
+       elif [[ "$OSTYPE" == "win32" ]]; then 
 	    mv $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface.dll $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interfaced.dll 
-	    mv $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_pic.lib $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_picd.lib 
+    	    mv $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_pic.lib $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_picd.lib 
 	    mv $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_static.lib $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_staticd.lib
-	fi
+       fi
+    fi
 
-    cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=../protobuf/protobuf-install/lib .. 
+    
+    cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=../protobuf/protobuf-install/lib -DCMAKE_CXX_STANDARD=11 .. 
 
     cmake --build . --config Release --target install
+
 else
     echo open-simulation-interface folder already exists, continue with next step...
 fi

@@ -28,8 +28,10 @@ set( CMAKE_VERBOSE_MAKEFILE true )
 
 if (APPLE)
   set ( TIME_LIB "" )
-  set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1yEFOB8HmNP5lPxYD4VJC-ry7XaBG9dsJ )
+  set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1ZIQ4Hq6VUrYO-cs4hUe7iTB6_CtYVPUH )
   set ( OSG_DIR "${OSG_BASE_DIR}/mac" )
+  set ( OSI_PACKAGE_URL https://drive.google.com/uc?export=download&id=1xcwteK9t4O--9cnnY3kuEdYuXz8_S2nQ )
+  set ( OSI_DIR "${OSI_BASE_DIR}/mac" )
 elseif (UNIX)
   set ( TIME_LIB "" )
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1OufA3TUQjBTkaRvAuo0rSUwryvoqde8G )
@@ -105,6 +107,12 @@ if(APPLE)
     z
     #db_fbx
   )
+
+  set ( OSI_LIBRARIES 
+	open_simulation_interface_pic
+	protobuf
+  )
+
 elseif(UNIX)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
   
