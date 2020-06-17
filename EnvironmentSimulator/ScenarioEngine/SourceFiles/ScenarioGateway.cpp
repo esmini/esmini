@@ -276,6 +276,7 @@ int ScenarioGateway::UpdateOSISensorView()
 
 	for (size_t i = 0; i < objectState_.size(); i++)
 	{
+		mobj_osi_internal.mobj[i]->mutable_vehicle_attributes()->mutable_driver_id()->set_value((uint64_t)objectState_[i]->state_.control);  // a placeholder for control mode
 		mobj_osi_internal.mobj[i]->mutable_base()->mutable_position()->set_x(objectState_[i]->state_.pos.GetX());
 		mobj_osi_internal.mobj[i]->mutable_base()->mutable_position()->set_y(objectState_[i]->state_.pos.GetY());
 		mobj_osi_internal.mobj[i]->mutable_base()->mutable_position()->set_z(objectState_[i]->state_.pos.GetZ());
