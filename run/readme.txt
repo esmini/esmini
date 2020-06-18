@@ -49,6 +49,8 @@ Key commands:
       s: Rendering statistics
       l: Toggle light
       w: Toggle geometry mode (shading, wireframe, dots)
+	  c: Save screenshot in JPEG format - in the folder where the application was started from
+	  h: Help 
 
 
 Mouse control:
