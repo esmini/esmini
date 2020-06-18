@@ -353,7 +353,7 @@ void LongSpeedAction::Step(double dt, double simTime)
 return;
 	}
 
-	if (target_speed_reached && !(target_->type_ == Target::Type::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
+	if (target_speed_reached && !(target_->type_ == Target::TargetType::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
 	{
 		OSCAction::End();
 	}

@@ -2,6 +2,7 @@
 include_directories (
   ${SCENARIOENGINE_DLL_INCLUDE_DIR}
   ${COMMON_MINI_INCLUDE_DIR}  
+  ${OSI_INCLUDE_DIR}
 )
 
 set (TARGET ScenarioViewer)
@@ -13,6 +14,8 @@ set ( SOURCES
 set ( INCLUDES
 )
 
+link_directories( ${OSI_DIR}/lib )
+
 add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
 if (USE_OSG)
@@ -23,6 +26,7 @@ target_link_libraries (
 	${TARGET}
 	ScenarioEngineDLL
 	CommonMini
+	${OSI_LIBRARIES}
 	${TIME_LIB}
 )
 

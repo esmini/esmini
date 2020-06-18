@@ -6,6 +6,7 @@ include_directories (
   ${COMMON_MINI_INCLUDE_DIR}  
   ${REPLAY_INCLUDE_DIR}  
   ${RDB_INCLUDE_DIR}
+  ${OSI_INCLUDE_DIR}
 )
 
 file(GLOB SRC_OSCTYPEDEFS "${CMAKE_CURRENT_LIST_DIR}/OSCTypeDefs/*.[hc]pp")
@@ -20,7 +21,8 @@ SOURCE_GROUP("External Libraries" FILES ${SRC_ADDITIONAL})
 add_library ( ScenarioEngine STATIC 
 ${SRC_OSCTYPEDEFS} 
 ${SRC_SOURCEFILES} 
-${SRC_ADDITIONAL} )
+${SRC_ADDITIONAL} 
+)
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 

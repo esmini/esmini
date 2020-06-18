@@ -1546,7 +1546,7 @@ void ScenarioReader::parseInit(Init &init)
 		for (size_t j = 0; j < i; j++)
 		{
 			roadmanager::Position* pos = 0;
-			if (init.private_action_[j]->type_ == OSCPrivateAction::Type::POSITION)
+			if (init.private_action_[j]->type_ == OSCPrivateAction::ActionType::POSITION)
 			{
 				PositionAction* action = (PositionAction*)init.private_action_[j];
 				if (action->position_->GetType() == roadmanager::Position::PositionType::RELATIVE_LANE)

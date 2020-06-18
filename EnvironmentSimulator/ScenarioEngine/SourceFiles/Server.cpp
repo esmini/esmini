@@ -70,6 +70,7 @@ namespace scenarioengine
 		static int iPortIn = DEFAULT_INPORT;   // Port for incoming packages
 		EgoStateBuffer_t buf;
 		socklen_t sender_addr_size = sizeof(sender_addr);
+		struct timeval tv;
 
 		state = SERV_NOT_STARTED;
 
@@ -90,9 +91,20 @@ namespace scenarioengine
 			return;
 		}
 
-		//set timer for recv_socket
-		static int timeout = ES_SERV_TIMEOUT;
-		setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
+		//set timer for receive operations
+		tv.tv_sec = 0;
+		tv.tv_usec = ES_SERV_TIMEOUT;
+#ifdef _WIN32
+		int timeout_msec = 1000 * tv.tv_sec + tv.tv_usec;
+		if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_msec, sizeof(timeout_msec)) == 0)
+#else
+		if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&tv, sizeof(tv)) == 0)
+#endif
+		{
+			printf("socket SO_RCVTIMEO (receive timeout) not supported on this platform\n");
+		}
+
+
 
 		server_addr.sin_family = AF_INET;
 		server_addr.sin_port = htons(iPortIn);

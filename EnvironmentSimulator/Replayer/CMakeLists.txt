@@ -5,6 +5,7 @@ include_directories (
   ${VIEWER_BASE_INCLUDE_DIR}
   ${OSG_INCLUDE_DIR}
   ${COMMON_MINI_INCLUDE_DIR}
+  ${OSI_INCLUDE_DIR}
 )
 
 set ( INCLUDES
@@ -36,9 +37,16 @@ add_executable ( ${TARGET2} dat2ascii.cpp Replay.cpp )
 target_link_libraries ( ${TARGET2} RoadManager CommonMini ${TIME_LIB} )
 
 
+# osi_receiver target
+set (TARGET3 osi_receiver)
+add_executable ( ${TARGET3} osi_receiver.cpp )
+target_link_libraries ( ${TARGET3} ${OSI_LIBRARIES} ${TIME_LIB} ${SOCK_LIB})
+
+# Install directives
+
 if (UNIX)
-  install ( TARGETS ${TARGET1} ${TARGET2} DESTINATION "${INSTALL_DIRECTORY}")
+  install ( TARGETS ${TARGET1} ${TARGET2} ${TARGET3} DESTINATION "${INSTALL_DIRECTORY}")
 else()
-  install ( TARGETS ${TARGET1} ${TARGET2} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}")
-  install ( TARGETS ${TARGET1} ${TARGET2} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}")
+  install ( TARGETS ${TARGET1} ${TARGET2} ${TARGET3} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}")
+  install ( TARGETS ${TARGET1} ${TARGET2} ${TARGET3} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}")
 endif (UNIX)
