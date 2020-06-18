@@ -45,3 +45,12 @@ The purpose of this document is to highlight changes breaking backward compatibi
 - Refactored runtime model supporting StoryBoardElement states, also obeying nrOfExecutions attribute
 - Initial Trajectory support. PolyLine only, so far and limited testing performed.
 - Added support for TraveledDistance condition 
+
+2020-06-18 Version 1.6.0
+- OSI support, initial framework established. 
+- So far population of OSI global groundtruth moving objects. 
+- OSI data is populated and provided to user in three ways: 
+    1. OSI trace file (always created, in folder where application was started)
+	2. UDP messages (option to send OSI messages to specified host/IP address)
+	3. API to fetch OSI data via function call (in ScenarioEngineDLL)
+- osi_receiver is a minimalistic demo-application showing how to receive OSI over UDP
