@@ -845,6 +845,7 @@ namespace roadmanager
 
 		// Setting information based on the OSI standards for OpenDrive elements
 		void SetOSI();
+		bool CheckOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1);
 		
 
 		/**

@@ -66,6 +66,9 @@ using namespace roadmanager;
 #define MIN(x, y) (y < x ? y : x)
 #define CLAMP(x, a, b) (MIN(MAX(x, a), b))
 #define MAX_TRACK_DIST 10
+#define OSI_LANE_CALC_REQUIREMENT 0.05 // [m]
+#define OSI_POINT_CALC_STEPSIZE 1 // [m]
+#define OSI_TANGENT_LINE_TOLERANCE 0.01 // [m]
 
 
 
@@ -3163,35 +3166,155 @@ OpenDrive* Position::GetOpenDrive()
 	return &od; 
 }
 
+bool OpenDrive::CheckOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1)
+{
+	// Creating tangent line around the point (First Point) with given tolerance 
+	double k_0 = (y0[2]-y0[0])/(x0[2]-x0[0]);
+	double m_0 = y0[1] - k_0*x0[1];
+
+	// Creating tangent line around the point (Second Point) with given tolerance 
+	double k_1 = (y1[2]-y1[0])/(x1[2]-x1[0]);
+	double m_1 = y1[1] - k_1*x1[1];
+
+	// Intersection point of the tangent lines
+	double intersect_tangent_x = (m_0 - m_1) / (k_1 - k_0);
+	double intersect_tangent_y = k_0*intersect_tangent_x + m_0;
+
+	// Creating real line between the First Point and Second Point
+	double k = (y1[1] - y0[1]) / (x1[1] - x0[1]);
+	double m = y0[1] - k*x0[1];
+
+	// The maximum distance can be found between the real line and a tangent line: passing through [u_intersect, y_intersect] with slope "k"
+	// The perpendicular line to the tangent line can be formulated as f(Q) = intersect_tangent_y + (intersect_tangent_x / k) - Q/k
+	// Then the point on the real line which gives maximum distance -> f(Q) = k*Q + m
+	double intersect_x = (intersect_tangent_y + (intersect_tangent_x/k) - m) / (k + 1/k);
+	double intersect_y = k*intersect_x + m;
+	double max_distance = sqrt(pow(intersect_y-intersect_tangent_y,2) + pow(intersect_x-intersect_tangent_x,2));
+	
+	if (max_distance < OSI_LANE_CALC_REQUIREMENT)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 void OpenDrive::SetOSI()
 {
 	// Initialization
-	LaneSection *lsec, *lsec_next;
-	std::vector<double> geom_start, geom_length;
-	int number_of_lane_sections;
-	double road_length, lsec_length;
+	Position* pos;
+	Road *road;
+	LaneSection *lsec;
+	Lane *lane;
+	int number_of_lane_sections, number_of_lanes, counter;
+	double road_length, lsec_start, lsec_end;
+	std::vector<double> x0, y0, x1, y1, osi_x, osi_y;
+	double s0, s1, s1_prev;
+	bool osi_requirement;
 
-	// Looping through each lane section under each road under the consideration of lane's corresponding geometry
+	// Looping through each road 
 	for (int i=0; i<road_.size(); i++)
 	{
-		road_length = road_[i]->GetLength();
+		road = road_[i];
 
 		// Looping through each lane section
 		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
-		for (int k=0; k<number_of_lane_sections; k++)
+		for (int j=0; j<number_of_lane_sections; j++)
 		{
-			// Get the current lane section and its length
-			lsec = road_[i]->GetLaneSectionByIdx(k);
-			if (k == number_of_lane_sections-1)
+			// Get the ending position of the current lane section
+			lsec = road->GetLaneSectionByIdx(j);
+			if (j == number_of_lane_sections-1)
 			{
-				lsec_length = road_length-lsec->GetS();
+				lsec_end = road->GetLength();	
 			}
 			else
 			{
-				lsec_next = road_[i]->GetLaneSectionByIdx(k+1);
-				lsec_length = lsec_next->GetS()-lsec->GetS();	
+				lsec_end = road->GetLaneSectionByIdx(j+1)->GetS();
 			}
-		}	
+			
+			// Starting points of the each lane section for OSI calculations
+			s0 = lsec->GetS();
+			s1 = s0+OSI_POINT_CALC_STEPSIZE;
+			s1_prev = s0;
+
+			// Looping through each lane
+			number_of_lanes = lsec->GetNumberOfLanes();
+			for (int k=0; k<number_of_lanes; k++)
+			{
+				lane = lsec->GetLaneByIdx(k);
+				counter = 0;
+
+				// Looping through sequential points along the track determined by "OSI_POINT_CALC_STEPSIZE"
+				while(true)
+				{
+					counter++;
+
+					// [XO, YO] = closest position with given (-) tolerance
+					pos->SetLanePos(road->GetId(), lane->GetId(), s0-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+					x0.push_back(pos->GetX());
+					y0.push_back(pos->GetY());
+
+					// [XO, YO] = Real position with no tolerance
+					pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
+					x0.push_back(pos->GetX());
+					y0.push_back(pos->GetY());
+
+					// [XO, YO] = closest position with given (+) tolerance
+					pos->SetLanePos(road->GetId(), lane->GetId(), s0+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+					x0.push_back(pos->GetX());
+					y0.push_back(pos->GetY());
+
+					// Add the starting point of each lane as osi point
+					if (counter == 1)
+					{
+						osi_x.push_back(x0[1]);
+						osi_y.push_back(x0[1]);	
+					}
+
+					// [X1, Y1] = closest position with given (-) tolerance																																																																																																												
+					pos->SetLanePos(road->GetId(), lane->GetId(), s1-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+					x1.push_back(pos->GetX());																																	
+					y1.push_back(pos->GetY());
+
+					// [X1, Y1] = Real position with no tolerance																																																								
+					pos->SetLanePos(road->GetId(), lane->GetId(), s1, 0, j);
+					x1.push_back(pos->GetX());
+					y1.push_back(pos->GetY());
+
+					// [X1, Y1] = closest position with given (+) tolerance
+					pos->SetLanePos(road->GetId(), lane->GetId(), s1+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+					x1.push_back(pos->GetX());
+					y1.push_back(pos->GetY());
+
+					osi_requirement = CheckOSIRequirement(x0, y0, x1, y1);
+					if (osi_requirement)
+					{
+						s1_prev = s1;
+						s1 = s1 + OSI_POINT_CALC_STEPSIZE;
+
+					}
+					else
+					{
+						s0 = s1_prev;
+						s1 = s0 + OSI_POINT_CALC_STEPSIZE;
+						pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
+						osi_x.push_back(pos->GetX());
+						osi_x.push_back(pos->GetY());
+					}
+
+					if (s1 >= lsec_end)
+					{
+						pos->SetLanePos(road->GetId(), lane->GetId(), lsec_end, 0, j);
+						osi_x.push_back(pos->GetX());
+						osi_x.push_back(pos->GetY());
+						//TO DO : add the points to the corresponding lane pointer before breaking the loop
+						break;
+					}
+				}
+			}
+		}
 	}
 }
 
