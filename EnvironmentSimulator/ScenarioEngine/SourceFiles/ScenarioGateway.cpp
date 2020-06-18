@@ -314,10 +314,140 @@ int ScenarioGateway::UpdateOSISensorView()
 	return -1;
 }
 
-int ScenarioGateway::UpdateOSIRoadLane()
+int ScenarioGateway::UpdateOSIRoadLane(int object_id, int lane_idx)
 {
-	// Update mlane_osi_internal
+	// Check if object_id exists
+	if (object_id >= getNumberOfObjects())
+	{
+		LOG("Object %d not available, only %d registered", object_id, getNumberOfObjects());
+		return -1;
+	}
+	
+	// Find position of the object 
+	roadmanager::Position pos;
+	for (size_t i = 0; i < getNumberOfObjects() ; i++)
+	{
+		if (object_id == objectState_[i]->state_.id)
+		{
+			pos = objectState_[i]->state_.pos;
+		}		
+	}
+	// Find road, LaneSection and Lane where the object is 
+	// STILL TO DO: use the lane_idx to look to adjecent lanes 
+	int road_id = pos.GetTrackId();
+	roadmanager::Road* road = pos.GetRoadById(road_id);
+	roadmanager::LaneSection* lane_section = road->GetLaneSectionByS(pos.GetS());
+	double offset; 
+	int closest_lane_idx = lane_section->GetClosestLaneIdx(pos.GetS(), pos.GetT(), offset);
+	roadmanager::Lane* lane = lane_section->GetLaneByIdx(closest_lane_idx);
+	roadmanager::Lane::LaneType lanetype = lane->GetLaneType();	
 
+	//update lane id
+	mlane_osi_internal.ln->mutable_id()->set_value((uint64_t)pos.GetLaneId()); 
+
+	// update classification type
+	// STILL TO DO: add more types
+	osi3::Lane_Classification_Type class_type;
+	if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING)
+	{
+		class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING; 
+	}
+	else
+	{
+		class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_UNKNOWN; 
+	}
+	mlane_osi_internal.ln->mutable_classification()->set_type(class_type);
+
+	// update classification is_vehicle_in_lane 
+	bool is_veh_on_lane; 
+	if (lane_idx == 0 )
+	{
+		is_veh_on_lane = true;
+	}
+	else
+	{
+		is_veh_on_lane = false; 
+	}
+	mlane_osi_internal.ln->mutable_classification()->set_is_host_vehicle_lane(is_veh_on_lane);
+
+	// STILL TO DO: update lane centerline points
+	double x = 0;
+	double y = 0;
+	double z = 0; 
+	osi3::Vector3d* centerLine = mlane_osi_internal.ln->mutable_classification()->add_centerline(); 
+	centerLine->set_x(x);
+	centerLine->set_y(y);
+	centerLine->set_z(z);
+
+	// STILL TO DO: check if object is moving in the same direction of the lane centerline points 
+	bool center_is_driving = true; 
+	mlane_osi_internal.ln->mutable_classification()->set_centerline_is_driving_direction(center_is_driving); 
+
+	// update lane_id for lanes on the left andlanes on the righ 
+	int n_lanes_in_section = lane_section->GetNumberOfLanes();
+	std::vector<int> lanes_on_left; 
+	std::vector<int> lanes_on_right;
+	for (int i = 0; i < n_lanes_in_section; i++)
+	{
+		if (lane_section->GetLaneIdByIdx(i)< pos.GetLaneId() )
+		{
+			lanes_on_left.push_back(lane_section->GetLaneIdByIdx(i));
+		}
+		else if (lane_section->GetLaneIdByIdx(i)> pos.GetLaneId() )
+		{
+			lanes_on_right.push_back(lane_section->GetLaneIdByIdx(i));
+		}
+		
+	}
+	std::sort(lanes_on_left.begin(),lanes_on_left.end());
+	std::reverse(lanes_on_left.begin(),lanes_on_left.end());
+	std::sort(lanes_on_right.begin(),lanes_on_right.end());
+
+	for (int i = 0 ; i++; i< lanes_on_left.size())
+	{
+		osi3::Identifier* left_id = mlane_osi_internal.ln->mutable_classification()->add_left_adjacent_lane_id();
+		left_id->set_value((uint64_t)lanes_on_left[i]);  
+	}
+	for (int i = 0; i++ ;i < lanes_on_right.size())
+	{
+		osi3::Identifier* right_id = mlane_osi_internal.ln->mutable_classification()->add_right_adjacent_lane_id(); 
+		right_id->set_value((uint64_t)lanes_on_right[i]); 
+	}
+
+	// update lane paiting 
+	// STILL TO DO: when I get a vector of predecessors and successors I need to create all possible combinations
+	roadmanager::LaneLink* lane_pre = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
+	roadmanager::LaneLink* lane_succ = lane->GetLink(roadmanager::LinkType::SUCCESSOR); 
+	osi3::Lane_Classification_LanePairing* lane_pair = mlane_osi_internal.ln->mutable_classification()->add_lane_pairing();
+	lane_pair->mutable_antecessor_lane_id()->set_value(lane_pre->GetId()); 
+	lane_pair->mutable_successor_lane_id()->set_value(lane_succ->GetId()); 
+
+	// STILL TO DO:
+	double right_bound_id = 0; 
+	osi3::Identifier* right_lane_bound_id = mlane_osi_internal.ln->mutable_classification()->add_right_lane_boundary_id(); 
+	right_lane_bound_id->set_value(right_bound_id); 
+
+	// STILL TO DO: 
+	double left_bound_id = 0; 
+	osi3::Identifier* left_lane_bound_id = mlane_osi_internal.ln->mutable_classification()->add_left_lane_boundary_id(); 
+	left_lane_bound_id->set_value(left_bound_id); 
+	
+	// STILL TO DO:
+	double free_bound_id = 0; 
+	osi3::Identifier* free_lane_bound_id = mlane_osi_internal.ln->mutable_classification()->add_free_lane_boundary_id(); 
+	free_lane_bound_id->set_value(free_bound_id); 
+
+	// STILL TO DO: 
+	double temp = 0; 
+	mlane_osi_internal.ln->mutable_classification()->mutable_road_condition()->set_surface_temperature(temp);
+	mlane_osi_internal.ln->mutable_classification()->mutable_road_condition()->set_surface_water_film(temp);
+	mlane_osi_internal.ln->mutable_classification()->mutable_road_condition()->set_surface_freezing_point(temp);
+	mlane_osi_internal.ln->mutable_classification()->mutable_road_condition()->set_surface_ice(temp);
+	mlane_osi_internal.ln->mutable_classification()->mutable_road_condition()->set_surface_roughness(temp);
+	mlane_osi_internal.ln->mutable_classification()->mutable_road_condition()->set_surface_texture(temp);
+	
+
+	
 	mlane_osi_internal.ln->SerializeToString(&osiRoadLane.lane_info);
 	osiRoadLane.size = (unsigned int)mlane_osi_internal.ln->ByteSizeLong();
 
@@ -352,9 +482,8 @@ const char* ScenarioGateway::GetOSISensorView(int* size)
 
 const char* ScenarioGateway::GetOSIRoadLane(int* size, int lane_idx)
 {
-	//*size = osiSensorView.size;
-	//return osiSensorView.sensor_view.data();
-        return 0; 
+	*size = osiRoadLane.size;
+	return osiRoadLane.lane_info.data();
 }
 
 void ScenarioGateway::updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot)

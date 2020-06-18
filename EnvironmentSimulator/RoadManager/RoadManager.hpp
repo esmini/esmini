@@ -460,6 +460,7 @@ namespace roadmanager
 		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
 		int IsDriving();
 		void Print();
+		LaneType GetLaneType() {return type_; }
 
 	private:
 		int id_;		// center = 0, left > 0, right < 0
