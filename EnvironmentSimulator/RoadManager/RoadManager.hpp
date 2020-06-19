@@ -53,16 +53,18 @@ namespace roadmanager
 	class OSIPoints
 	{
 		public:
-			OSIPoints() : x_(double(0)), y_(double(0)), h_(double(0)) {}
-			OSIPoints(std::vector<double> x, std::vector<double> y, std::vector<double> h) : x_(x), y_(y), h_(h) {}
-			void Set(std::vector<double> x, std::vector<double> y, std::vector<double> h) { x_ = x; y_ = y; h_ = h;}
+			OSIPoints() : x_(double(0)), y_(double(0)), z_(double(0)), h_(double(0)) {}
+			OSIPoints(std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : x_(x), y_(y), z_(z), h_(h) {}
+			void Set(std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) { x_ = x; y_ = y; z_ = z; h_ = h;}
 			std::vector<double> GetX() {return x_;}
 			std::vector<double> GetY() {return y_;}
+			std::vector<double> GetZ() {return z_;}
 			std::vector<double> GetH() {return h_;}
 
 		private:
 			std::vector<double> x_;
 			std::vector<double> y_;
+			std::vector<double> z_;
 			std::vector<double> h_;
 	};
 
@@ -461,6 +463,8 @@ namespace roadmanager
 		int IsDriving();
 		void Print();
 		LaneType GetLaneType() {return type_; }
+		OSIPoints GetOSIPoints() {return osi_points_;}
+		OSIPoints osi_points_;
 
 	private:
 		int id_;		// center = 0, left > 0, right < 0

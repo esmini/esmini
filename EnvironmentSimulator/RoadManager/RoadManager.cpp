@@ -3210,7 +3210,7 @@ void OpenDrive::SetOSI()
 	Lane *lane;
 	int number_of_lane_sections, number_of_lanes, counter;
 	double road_length, lsec_start, lsec_end;
-	std::vector<double> x0, y0, x1, y1, osi_x, osi_y;
+	std::vector<double> x0, y0, x1, y1, osi_x, osi_y, osi_z, osi_h;
 	double s0, s1, s1_prev;
 	bool osi_requirement;
 
@@ -3261,17 +3261,19 @@ void OpenDrive::SetOSI()
 					x0.push_back(pos->GetX());
 					y0.push_back(pos->GetY());
 
+					// Add the starting point of each lane as osi point
+					if (counter == 1)
+					{
+						osi_x.push_back(pos->GetX());
+						osi_y.push_back(pos->GetY());
+						osi_z.push_back(pos->GetZ());
+						osi_h.push_back(pos->GetH());
+					}
+
 					// [XO, YO] = closest position with given (+) tolerance
 					pos->SetLanePos(road->GetId(), lane->GetId(), s0+OSI_TANGENT_LINE_TOLERANCE, 0, j);
 					x0.push_back(pos->GetX());
 					y0.push_back(pos->GetY());
-
-					// Add the starting point of each lane as osi point
-					if (counter == 1)
-					{
-						osi_x.push_back(x0[1]);
-						osi_y.push_back(x0[1]);	
-					}
 
 					// [X1, Y1] = closest position with given (-) tolerance																																																																																																												
 					pos->SetLanePos(road->GetId(), lane->GetId(), s1-OSI_TANGENT_LINE_TOLERANCE, 0, j);
@@ -3288,7 +3290,13 @@ void OpenDrive::SetOSI()
 					x1.push_back(pos->GetX());
 					y1.push_back(pos->GetY());
 
+					// Check OSI Requirement between current given points
 					osi_requirement = CheckOSIRequirement(x0, y0, x1, y1);
+
+					// If requirement is satisfied -> look further points
+					// If requirement is not satisfied:
+						// Assign last satisfied point as OSI point
+						// Continue searching from the last satisfied point
 					if (osi_requirement)
 					{
 						s1_prev = s1;
@@ -3299,20 +3307,41 @@ void OpenDrive::SetOSI()
 					{
 						s0 = s1_prev;
 						s1 = s0 + OSI_POINT_CALC_STEPSIZE;
-						pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
-						osi_x.push_back(pos->GetX());
-						osi_x.push_back(pos->GetY());
+
+						if (counter != 1)
+						{
+							pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
+							osi_x.push_back(pos->GetX());
+							osi_y.push_back(pos->GetY());
+							osi_z.push_back(pos->GetZ());
+							osi_h.push_back(pos->GetH());
+						}
 					}
 
+					// If the end of the lane reached, assign end of the lane as final OSI point for current lane
 					if (s1 >= lsec_end)
 					{
 						pos->SetLanePos(road->GetId(), lane->GetId(), lsec_end, 0, j);
 						osi_x.push_back(pos->GetX());
-						osi_x.push_back(pos->GetY());
-						//TO DO : add the points to the corresponding lane pointer before breaking the loop
+						osi_y.push_back(pos->GetY());
+						osi_z.push_back(pos->GetZ());
+						osi_h.push_back(pos->GetH());
 						break;
 					}
 				}
+
+				// Set all collected osi points for the current lane
+				lane->osi_points_.Set(osi_x, osi_y, osi_z, osi_h);
+				LOG("OSI Points for lane %d within lane section %d for road %d are populated successfully", k, j, i);
+
+				// Clear collectors for next iteration
+				x0.clear();
+				y0.clear();
+				x1.clear();
+				y1.clear();
+				osi_x.clear();
+				osi_y.clear();
+				osi_h.clear();	
 			}
 		}
 	}
