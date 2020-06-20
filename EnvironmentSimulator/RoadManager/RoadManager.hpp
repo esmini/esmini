@@ -842,15 +842,16 @@ namespace roadmanager
 		std::string GetOpenDriveFilename() { return odr_filename_; }
 
 		/**
+		Setting information based on the OSI standards for OpenDrive elements
+		*/
+		bool SetOSI();
+		bool CheckOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1);
+		
+		/**
 		Retrieve a road segment specified by road ID 
 		@param id road ID as specified in the OpenDRIVE file
 		*/
 		Road* GetRoadById(int id);
-
-		// Setting information based on the OSI standards for OpenDrive elements
-		void SetOSI();
-		bool CheckOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1);
-		
 
 		/**
 		Retrieve a road segment specified by road vector element index

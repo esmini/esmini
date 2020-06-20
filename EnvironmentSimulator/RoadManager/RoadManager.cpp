@@ -3201,10 +3201,10 @@ bool OpenDrive::CheckOSIRequirement(std::vector<double> x0, std::vector<double> 
 	}
 }
 
-void OpenDrive::SetOSI()
+bool OpenDrive::SetOSI()
 {
 	// Initialization
-	Position* pos;
+	Position* pos = new roadmanager::Position();
 	Road *road;
 	LaneSection *lsec;
 	Lane *lane;
@@ -3332,7 +3332,7 @@ void OpenDrive::SetOSI()
 
 				// Set all collected osi points for the current lane
 				lane->osi_points_.Set(osi_x, osi_y, osi_z, osi_h);
-				LOG("OSI Points for lane %d within lane section %d for road %d are populated successfully", k, j, i);
+				LOG("OSI Points for lane %d within lane section %d for road %d are populated successfully", lane->GetId(), j, i);
 
 				// Clear collectors for next iteration
 				x0.clear();
@@ -3341,10 +3341,16 @@ void OpenDrive::SetOSI()
 				y1.clear();
 				osi_x.clear();
 				osi_y.clear();
-				osi_h.clear();	
+				osi_h.clear();
+
+				// Re-assign the starting point of the next lane as the start point of the current lane section for OSI calculations
+				s0 = lsec->GetS();
+				s1 = s0+OSI_POINT_CALC_STEPSIZE;
+				s1_prev = s0;	
 			}
 		}
 	}
+	return true;
 }
 
 int LaneSection::GetClosestLaneIdx(double s, double t, double &offset)
