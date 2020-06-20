@@ -3341,6 +3341,7 @@ bool OpenDrive::SetOSI()
 				y1.clear();
 				osi_x.clear();
 				osi_y.clear();
+				osi_z.clear();
 				osi_h.clear();
 
 				// Re-assign the starting point of the next lane as the start point of the current lane section for OSI calculations
