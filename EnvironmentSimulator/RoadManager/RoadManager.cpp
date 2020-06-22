@@ -3191,7 +3191,9 @@ bool OpenDrive::CheckOSIRequirement(std::vector<double> x0, std::vector<double> 
 	double intersect_y = k*intersect_x + m;
 	double max_distance = sqrt(pow(intersect_y-intersect_tangent_y,2) + pow(intersect_x-intersect_tangent_x,2));
 	
-	if (max_distance < OSI_LANE_CALC_REQUIREMENT)
+	// Max distance can be "nan" when the lane is perfectly straigt and hence k = 0.
+	// In this case, it satisfies OSI_LANE_CALC_REQUIREMENT since it is a perfect line
+	if (max_distance < OSI_LANE_CALC_REQUIREMENT || isnan(max_distance))
 	{
 		return true;
 	}
