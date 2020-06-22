@@ -3328,17 +3328,19 @@ bool OpenDrive::SetOSI()
 						osi_h.push_back(pos->GetH());
 						break;
 					}
+
+					// Clear x-y collectors for next iteration
+					x0.clear();
+					y0.clear();
+					x1.clear();
+					y1.clear();
 				}
 
 				// Set all collected osi points for the current lane
 				lane->osi_points_.Set(osi_x, osi_y, osi_z, osi_h);
 				LOG("OSI Points for lane %d within lane section %d for road %d are populated successfully", lane->GetId(), j, i);
 
-				// Clear collectors for next iteration
-				x0.clear();
-				y0.clear();
-				x1.clear();
-				y1.clear();
+				// Clear osi collectors for next iteration
 				osi_x.clear();
 				osi_y.clear();
 				osi_z.clear();
