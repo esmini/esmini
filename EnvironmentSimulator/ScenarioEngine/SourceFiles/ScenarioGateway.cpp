@@ -403,12 +403,12 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id, int lane_idx)
 	std::reverse(lanes_on_left.begin(),lanes_on_left.end());
 	std::sort(lanes_on_right.begin(),lanes_on_right.end());
 
-	for (int i = 0 ; i++; i< lanes_on_left.size())
+	for (int i = 0; i < lanes_on_left.size(); i++)
 	{
 		osi3::Identifier* left_id = mlane_osi_internal.ln->mutable_classification()->add_left_adjacent_lane_id();
 		left_id->set_value((uint64_t)lanes_on_left[i]);  
 	}
-	for (int i = 0; i++ ;i < lanes_on_right.size())
+	for (int i = 0; i < lanes_on_right.size(); i++)
 	{
 		osi3::Identifier* right_id = mlane_osi_internal.ln->mutable_classification()->add_right_adjacent_lane_id(); 
 		right_id->set_value((uint64_t)lanes_on_right[i]); 
@@ -423,17 +423,17 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id, int lane_idx)
 	lane_pair->mutable_successor_lane_id()->set_value(lane_succ->GetId()); 
 
 	// STILL TO DO:
-	double right_bound_id = 0; 
+	int right_bound_id = 0; 
 	osi3::Identifier* right_lane_bound_id = mlane_osi_internal.ln->mutable_classification()->add_right_lane_boundary_id(); 
 	right_lane_bound_id->set_value(right_bound_id); 
 
 	// STILL TO DO: 
-	double left_bound_id = 0; 
+	int left_bound_id = 0; 
 	osi3::Identifier* left_lane_bound_id = mlane_osi_internal.ln->mutable_classification()->add_left_lane_boundary_id(); 
 	left_lane_bound_id->set_value(left_bound_id); 
 	
 	// STILL TO DO:
-	double free_bound_id = 0; 
+	int free_bound_id = 0; 
 	osi3::Identifier* free_lane_bound_id = mlane_osi_internal.ln->mutable_classification()->add_free_lane_boundary_id(); 
 	free_lane_bound_id->set_value(free_bound_id); 
 

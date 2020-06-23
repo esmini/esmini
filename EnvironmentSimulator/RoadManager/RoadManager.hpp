@@ -53,7 +53,7 @@ namespace roadmanager
 	class OSIPoints
 	{
 		public:
-			OSIPoints() : x_(double(0)), y_(double(0)), z_(double(0)), h_(double(0)) {}
+			OSIPoints() {}
 			OSIPoints(std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : x_(x), y_(y), z_(z), h_(h) {}
 			void Set(std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) { x_ = x; y_ = y; z_ = z; h_ = h;}
 			std::vector<double> GetX() {return x_;}

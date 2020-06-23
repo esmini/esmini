@@ -3211,7 +3211,7 @@ bool OpenDrive::SetOSI()
 	LaneSection *lsec;
 	Lane *lane;
 	int number_of_lane_sections, number_of_lanes, counter;
-	double road_length, lsec_start, lsec_end;
+	double lsec_end;
 	std::vector<double> x0, y0, x1, y1, osi_x, osi_y, osi_z, osi_h;
 	double s0, s1, s1_prev;
 	bool osi_requirement;
