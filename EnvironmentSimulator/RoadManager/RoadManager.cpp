@@ -3220,6 +3220,7 @@ bool OpenDrive::SetOSI()
 	Road *road;
 	LaneSection *lsec;
 	Lane *lane;
+	LaneRoadMark *lane_roadMark;
 	int number_of_lane_sections, number_of_lanes, number_of_roadmarks, counter;
 	double lsec_end;
 	std::vector<double> x0, y0, x1, y1, osi_x, osi_y, osi_z, osi_h;
@@ -3363,13 +3364,14 @@ bool OpenDrive::SetOSI()
 				s1 = s0+OSI_POINT_CALC_STEPSIZE;
 				s1_prev = s0;
 
-				/*// Looping through each roadMark within the lane
-				number_of_roadmarks = lane->GetNumberOfRoadMarks();
+				// Looping through each roadMark within the lane
+				/*number_of_roadmarks = lane->GetNumberOfRoadMarks();
 				for (int m=0; m<number_of_roadmarks; m++)
 				{
-						INPROGRESS
+					lsec->GetS();
+					lane_roadMark = lane->GetLaneRoadMarkByIdx(m);
+					IN PROGRESS ...
 				}*/
-
 			}
 		}
 	}
@@ -3907,6 +3909,23 @@ void Position::Lane2Track()
 	}
 }
 
+void Position::RoadMark2Track()
+{
+	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	t_ = 0;
+
+	if (road != 0 && road->GetNumberOfLaneSections() > 0)
+	{
+		LaneSection *lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+
+		if (lane_section != 0)
+		{
+			t_ = offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+			h_offset_ = lane_section->GetOuterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+		}
+	}
+}
+
 void Position::XYZ2Track(bool alignZAndPitch)
 {
 	XYZH2TrackPos(x_, y_, z_, h_, alignZAndPitch);
@@ -4429,6 +4448,82 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	//}
 
 	Lane2Track();
+	Track2XYZ();
+}
+
+void Position::SetRoadMarkPos(int track_id, int lane_id, double s, double offset, int lane_section_idx)
+{
+	offset_ = offset;
+	int old_lane_id = lane_id_;
+	int old_track_id = track_id_;
+
+	if (SetLongitudinalTrackPos(track_id, s) != 0)
+	{
+		lane_id_ = lane_id;
+		offset_ = offset;
+		return;
+	}
+
+	Road *road = GetOpenDrive()->GetRoadById(track_id);
+	if (road == 0)
+	{
+		LOG("Position::Set Error: track %d not available\n", track_id);
+		lane_id_ = lane_id;
+		offset_ = offset;
+		return;
+	}
+
+	if (lane_id != lane_id_ && lane_section_idx == -1)
+	{
+		// New lane ID might indicate a discreet jump to a new, distant position, reset lane section, if not specified in func parameter)
+		lane_section_idx = road->GetLaneSectionIdxByS(s);
+	}
+
+	LaneSection *lane_section = 0;
+	if (lane_section_idx > -1)  // If lane section was specified or reset
+	{
+		lane_section_idx_ = lane_section_idx;
+		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+
+		lane_id_ = lane_id;
+	}
+	else  // Find LaneSection and info according to s
+	{
+		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_);
+		lane_section_idx_ = lane_info.lane_section_idx_;
+		lane_id_ = lane_info.lane_id_;
+		
+		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+	}
+
+	if (lane_section != 0)
+	{
+		lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
+		if (lane_idx_ == -1)
+		{
+			LOG("lane_idx %d fail for lane id %d\n", lane_idx_, lane_id_);
+			lane_idx_ = 0;
+		}
+	}
+	else
+	{
+		LOG("Position::Set (lanepos) Error - lanesection NULL lsidx %d rid %d lid %d\n",
+			lane_section_idx_, road->GetId(), lane_id_);
+	}
+
+	// Check road direction when on new track 
+	if (old_lane_id != 0 && lane_id_ != 0 && track_id_ != old_track_id && SIGN(lane_id_) != SIGN(old_lane_id))
+	{
+		h_relative_ = GetAngleSum(h_relative_, M_PI);
+	}
+
+	// If moved over to opposite driving direction, then turn relative heading 180 degrees
+	//if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))
+	//{
+	//	h_relative_ = GetAngleSum(h_relative_, M_PI);
+	//}
+
+	RoadMark2Track();
 	Track2XYZ();
 }
 
