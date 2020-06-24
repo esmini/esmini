@@ -305,6 +305,16 @@ void LaneWidth::Print()
 		s_offset_, poly3_.GetA(), poly3_.GetB(), poly3_.GetC(), poly3_.GetD());
 }
 
+LaneRoadMark* Lane::GetLaneRoadMarkByIdx(int idx)
+{
+	if (idx < (int)lane_roadMark_.size())
+	{
+		return lane_roadMark_[idx];
+	}
+
+	return 0;
+}
+
 void LaneOffset::Print()
 {
 	LOG("LaneOffset s %.2f a %.4f b %.2f c %.2f d %.2f length %.2f\n",
@@ -3210,7 +3220,7 @@ bool OpenDrive::SetOSI()
 	Road *road;
 	LaneSection *lsec;
 	Lane *lane;
-	int number_of_lane_sections, number_of_lanes, counter;
+	int number_of_lane_sections, number_of_lanes, number_of_roadmarks, counter;
 	double lsec_end;
 	std::vector<double> x0, y0, x1, y1, osi_x, osi_y, osi_z, osi_h;
 	double s0, s1, s1_prev;
@@ -3351,7 +3361,15 @@ bool OpenDrive::SetOSI()
 				// Re-assign the starting point of the next lane as the start point of the current lane section for OSI calculations
 				s0 = lsec->GetS();
 				s1 = s0+OSI_POINT_CALC_STEPSIZE;
-				s1_prev = s0;	
+				s1_prev = s0;
+
+				/*// Looping through each roadMark within the lane
+				number_of_roadmarks = lane->GetNumberOfRoadMarks();
+				for (int m=0; m<number_of_roadmarks; m++)
+				{
+						INPROGRESS
+				}*/
+
 			}
 		}
 	}

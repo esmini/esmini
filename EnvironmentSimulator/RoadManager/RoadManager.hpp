@@ -460,6 +460,8 @@ namespace roadmanager
 		double GetOffsetFromRef() { return offset_from_ref_; }
 		void AddLaneWIdth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
 		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
+		LaneRoadMark* GetLaneRoadMarkByIdx(int idx);
+		int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
 		int IsDriving();
 		void Print();
 		LaneType GetLaneType() {return type_; }
