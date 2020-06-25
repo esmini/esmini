@@ -60,6 +60,10 @@ namespace roadmanager
 			std::vector<double> GetY() {return y_;}
 			std::vector<double> GetZ() {return z_;}
 			std::vector<double> GetH() {return h_;}
+			double GetXfromIdx(int i) {return x_[i];}
+			double GetYfromIdx(int i) {return y_[i];}
+			double GetZfromIdx(int i) {return z_[i];}
+			int GetNumOfOSIPoints() {return x_.size();}
 
 		private:
 			std::vector<double> x_;

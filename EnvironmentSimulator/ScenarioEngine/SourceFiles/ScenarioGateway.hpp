@@ -44,7 +44,7 @@ namespace scenarioengine
 
 	typedef struct 
 	{
-		std::string lane_info;
+		std::string osi_lane_info;
 		unsigned int size;
 	} OSIRoadLane;
 
@@ -106,15 +106,15 @@ namespace scenarioengine
 		int getObjectStateById(int idx, ObjectState &objState);
 		int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
 		int UpdateOSISensorView();
-		int UpdateOSIRoadLane(int object_id, int lane_idx);
+		int UpdateOSIMovingObject(); 
+		int UpdateOSIRoadLane(int object_id);
 		const char* GetOSISensorView(int* size);
-		const char* GetOSIRoadLane(int* size, int lane_idx);
+		const char* GetOSIRoadLane(int* size, int object_id);
 		int OpenSocket(std::string ipaddr);
 		int CloseSocket();
 
 	private:
 		void updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot);
-
 		std::vector<ObjectState*> objectState_;
 		std::ofstream data_file_;
 		bool sendOSIoverUDP;
