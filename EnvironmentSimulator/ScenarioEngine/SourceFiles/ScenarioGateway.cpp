@@ -254,7 +254,7 @@ int ScenarioGateway::UpdateOSISensorView()
 	
 	UpdateOSIMovingObject();
 	//collect all information of lanes in the lane section where obj=0 is
-	UpdateOSIRoadLane(0); 
+//	UpdateOSIRoadLane(0); 
 
 	mobj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
 	osiSensorView.size = (unsigned int)mobj_osi_internal.sv->ByteSizeLong();
