@@ -3319,6 +3319,7 @@ bool OpenDrive::SetOSI()
 					else
 					{
 						s0 = s1_prev;
+						s1_prev = s1;
 						s1 = s0 + OSI_POINT_CALC_STEPSIZE;
 
 						if (counter != 1)
