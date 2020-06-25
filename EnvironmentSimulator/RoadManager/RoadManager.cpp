@@ -57,6 +57,8 @@
 #include "CommonMini.hpp"
 
 static std::mt19937 mt_rand;
+static unsigned int global_lane_counter;
+
 
 using namespace std;
 using namespace roadmanager;
@@ -764,6 +766,7 @@ double LaneSection::GetCenterOffsetHeading(double s, int lane_id)
 
 void LaneSection::AddLane(Lane *lane)
 {
+	lane->SetGlobalId(global_lane_counter++);
 	lane_.push_back(lane);
 }
 
