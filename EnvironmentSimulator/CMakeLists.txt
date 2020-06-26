@@ -25,7 +25,6 @@ set ( OSI_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OSI" )
 
 set( CMAKE_VERBOSE_MAKEFILE true )
 
-
 if (APPLE)
   set ( TIME_LIB "" ) 
   set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1zy9neztZP7mY88zbm-oVP24Vzr-LTUeY )
