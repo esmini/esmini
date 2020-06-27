@@ -317,6 +317,26 @@ LaneRoadMark* Lane::GetLaneRoadMarkByIdx(int idx)
 	return 0;
 }
 
+LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx)
+{
+	if (idx < (int)lane_roadMarkType_.size())
+	{
+		return lane_roadMarkType_[idx];
+	}
+
+	return 0;
+}
+
+LaneRoadMarkTypeLine* LaneRoadMarkType::GetLaneRoadMarkTypeLineByIdx(int idx)
+{
+	if (idx < (int)lane_roadMarkTypeLine_.size())
+	{
+		return lane_roadMarkTypeLine_[idx];
+	}
+
+	return 0;
+}
+
 void LaneOffset::Print()
 {
 	LOG("LaneOffset s %.2f a %.4f b %.2f c %.2f d %.2f length %.2f\n",
@@ -1898,48 +1918,50 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								lane->AddLaneRoadMark(lane_roadMark);
 
 								// sub_type
-								pugi::xml_node sub_type = roadMark.child("type");
-								if (sub_type != NULL)
+								for (pugi::xml_node sub_type = roadMark.child("type"); sub_type; sub_type = sub_type.next_sibling("type"))
 								{
-									std::string sub_type_name = sub_type.attribute("name").value();
-									double sub_type_width = atof(sub_type.attribute("width").value());
-									LaneRoadMarkType *lane_roadMarkType = new LaneRoadMarkType(sub_type_name, sub_type_width);
-									lane_roadMark->AddType(lane_roadMarkType);
-
-									for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
+									if (sub_type != NULL)
 									{
-										double length = atof(line.attribute("length").value());
-										double space = atof(line.attribute("space").value());
-										double t_offset = atof(line.attribute("t_offset").value());
-										double s_offset = atof(line.attribute("s_offset").value());
+										std::string sub_type_name = sub_type.attribute("name").value();
+										double sub_type_width = atof(sub_type.attribute("width").value());
+										LaneRoadMarkType *lane_roadMarkType = new LaneRoadMarkType(sub_type_name, sub_type_width);
+										lane_roadMark->AddType(lane_roadMarkType);
 
-										// rule
-										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-										if (line.attribute("rule") == 0 || !strcmp(line.attribute("rule").value(), ""))
+										for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
 										{
-											LOG("Lane road mark type line rule error");
-										}
-										if (!strcmp(line.attribute("rule").value(), "none"))
-										{
-											rule = LaneRoadMarkTypeLine::NONE;
-										}
-										else  if (!strcmp(line.attribute("rule").value(), "caution"))
-										{
-											rule = LaneRoadMarkTypeLine::CAUTION;
-										}
-										else  if (!strcmp(line.attribute("rule").value(), "no passing"))
-										{
-											rule = LaneRoadMarkTypeLine::NO_PASSING;
-										}
-										else
-										{
-											LOG("unknown lane road mark type line rule: %s (road id=%d)\n", line.attribute("rule").value(), r->GetId());
-										}
+											double length = atof(line.attribute("length").value());
+											double space = atof(line.attribute("space").value());
+											double t_offset = atof(line.attribute("t_offset").value());
+											double s_offset = atof(line.attribute("s_offset").value());
 
-										double width = atof(line.attribute("width").value());
+											// rule
+											LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+											if (line.attribute("rule") == 0 || !strcmp(line.attribute("rule").value(), ""))
+											{
+												LOG("Lane road mark type line rule error");
+											}
+											if (!strcmp(line.attribute("rule").value(), "none"))
+											{
+												rule = LaneRoadMarkTypeLine::NONE;
+											}
+											else  if (!strcmp(line.attribute("rule").value(), "caution"))
+											{
+												rule = LaneRoadMarkTypeLine::CAUTION;
+											}
+											else  if (!strcmp(line.attribute("rule").value(), "no passing"))
+											{
+												rule = LaneRoadMarkTypeLine::NO_PASSING;
+											}
+											else
+											{
+												LOG("unknown lane road mark type line rule: %s (road id=%d)\n", line.attribute("rule").value(), r->GetId());
+											}
 
-										LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(length, space, t_offset, s_offset, rule, width);
-										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+											double width = atof(line.attribute("width").value());
+
+											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(length, space, t_offset, s_offset, rule, width);
+											lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+										}
 									}
 								}
 							}
@@ -3374,13 +3396,12 @@ bool OpenDrive::SetOSI()
 				s1 = s0+OSI_POINT_CALC_STEPSIZE;
 				s1_prev = s0;
 
-				// Looping through each roadMark within the lane
-				/*number_of_roadmarks = lane->GetNumberOfRoadMarks();
+				/*// Looping through each roadMark within the lane
+				number_of_roadmarks = lane->GetNumberOfRoadMarks();
 				for (int m=0; m<number_of_roadmarks; m++)
 				{
 					lsec->GetS();
 					lane_roadMark = lane->GetLaneRoadMarkByIdx(m);
-					IN PROGRESS ...
 				}*/
 			}
 		}
@@ -4461,7 +4482,7 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	Track2XYZ();
 }
 
-void Position::SetRoadMarkPos(int track_id, int lane_id, double s, double offset, int lane_section_idx)
+void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int roadmarktype_idx, int roadmarkline_idx, double s, double offset, int lane_section_idx)
 {
 	offset_ = offset;
 	int old_lane_id = lane_id_;
@@ -4471,6 +4492,9 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, double s, double offset
 	{
 		lane_id_ = lane_id;
 		offset_ = offset;
+		roadmark_idx_ = roadmark_idx;
+		roadmarktype_idx_ = roadmarktype_idx;
+		roadmarkline_idx_ = roadmarkline_idx;
 		return;
 	}
 
@@ -4526,6 +4550,55 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, double s, double offset
 	{
 		h_relative_ = GetAngleSum(h_relative_, M_PI);
 	}
+
+	Lane *lane = lane_section->GetLaneByIdx(lane_idx_);
+	if (lane != 0)
+	{
+		roadmark_idx_ = roadmark_idx;
+	}
+	
+	LaneRoadMark *lane_roadmark = lane->GetLaneRoadMarkByIdx(roadmark_idx_);
+	if (lane_roadmark != 0)
+	{
+		s_ = s_ + lane_roadmark->GetSOffset();
+	}
+	else
+	{
+		LOG("roadmark_idx_ %d fail for lane id %d\n", roadmark_idx_, lane_idx_);
+		roadmark_idx_ = 0;
+	}
+
+	if (lane_roadmark->GetNumberOfRoadMarkTypes() != 0)
+	{
+		roadmarktype_idx_ = roadmarktype_idx;
+	}
+
+	LaneRoadMarkType *lane_roadmarktype = lane_roadmark->GetLaneRoadMarkTypeByIdx(roadmarktype_idx_);
+	if (lane_roadmarktype != 0)
+	{
+		roadmarkline_idx_ = roadmarkline_idx;
+	}
+	else
+	{
+		LOG("roadmarktype_idx_ %d fail for roadmark_idx %d\n", roadmarktype_idx_, roadmark_idx_);
+		roadmarktype_idx_ = 0;
+		roadmarkline_idx_ = 0;
+	}
+
+	LaneRoadMarkTypeLine *lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(roadmarkline_idx_);
+	if (lane_roadmarktypeline != 0)
+	{
+		s_ = s_ + lane_roadmarktypeline->GetSOffset();
+	}
+	else
+	{
+		LOG("roadmarktypeline_idx_ %d fail for roadmarktype_idx %d\n", roadmarkline_idx_, roadmarktype_idx_);
+		roadmarkline_idx_ = 0;
+	}
+	
+		
+
+	
 
 	// If moved over to opposite driving direction, then turn relative heading 180 degrees
 	//if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))

@@ -302,6 +302,7 @@ namespace roadmanager
 
 		LaneRoadMarkTypeLine(double length, double space, double t_offset, double s_offset, RoadMarkTypeLineRule rule, double width): 
 		length_(length), space_(space), t_offset_(t_offset), s_offset_(s_offset), rule_(rule), width_(width) {}
+		double GetSOffset() { return s_offset_; }
 
 	private:
 		double length_;
@@ -320,6 +321,7 @@ namespace roadmanager
 		void AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine) { lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine); }
 		std::string GetName() { return name_; }
 		double GetWidth() { return width_; }
+		LaneRoadMarkTypeLine* GetLaneRoadMarkTypeLineByIdx(int idx);
 		void Print();
 
 	private:
@@ -378,7 +380,11 @@ namespace roadmanager
 		RoadMarkMaterial material, RoadMarkLaneChange lane_change, double width, double height): 
 		s_offset_(s_offset), type_(type), weight_(weight), color_(color), material_(material), lane_change_(lane_change), 
 		width_(width), height_(height) {}
-		void AddType(LaneRoadMarkType *lane_roadMarkType) { lane_roadMarkType_ = lane_roadMarkType; }
+		void AddType(LaneRoadMarkType *lane_roadMarkType) { lane_roadMarkType_.push_back(lane_roadMarkType); }
+		int GetNumberOfRoadMarkTypes() { return (int)lane_roadMarkType_.size(); }
+		LaneRoadMarkType* GetLaneRoadMarkTypeByIdx(int idx);
+		double GetSOffset() { return s_offset_; }
+		double GetWidth() { return width_; }
 
 	private:
 		double s_offset_;
@@ -389,7 +395,7 @@ namespace roadmanager
 		RoadMarkLaneChange lane_change_;
 		double width_;
 		double height_;
-		LaneRoadMarkType *lane_roadMarkType_;
+		std::vector<LaneRoadMarkType*> lane_roadMarkType_;
 	};
 
 	class LaneOffset
@@ -981,7 +987,7 @@ namespace roadmanager
 		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
 		void ForceLaneId(int lane_id);
 		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
-		void SetRoadMarkPos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
+		void SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int roadmarktype_idx, int roadmarkline_idx, double s, double offset, int lane_section_idx = -1);
 		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
 		void SetHeading(double heading);
 		void SetHeadingRelative(double heading);
@@ -1289,15 +1295,15 @@ namespace roadmanager
 
 		// track reference
 		int     track_id_;
-		double  s_;				// longitudinal point/distance along the track
-		double  t_;				// lateral position relative reference line (geometry)
-		int     lane_id_;		// lane reference
-		double  offset_;		// lateral position relative lane given by lane_id
-		double  h_road_;		// heading of the road
-		double  h_offset_;		// local heading offset given by lane width and offset 
-		double  h_relative_;	// heading relative to the road (h_ = h_road_ + h_relative_)
-		double  s_route_;		// longitudinal point/distance along the route
-		double  s_trajectory_;	// longitudinal point/distance along the trajectory
+		double  s_;					// longitudinal point/distance along the track
+		double  t_;					// lateral position relative reference line (geometry)
+		int     lane_id_;			// lane reference
+		double  offset_;			// lateral position relative lane given by lane_id
+		double  h_road_;			// heading of the road
+		double  h_offset_;			// local heading offset given by lane width and offset 
+		double  h_relative_;		// heading relative to the road (h_ = h_road_ + h_relative_)
+		double  s_route_;			// longitudinal point/distance along the route
+		double  s_trajectory_;		// longitudinal point/distance along the trajectory
 		double  curvature_;
 		Position* rel_pos_;
 		PositionType type_;
@@ -1314,11 +1320,14 @@ namespace roadmanager
 		double	p_road_;
 
 		// keep track for fast incremental updates of the position
-		int		track_idx_;		// road index 
-		int		lane_idx_;		// road index 
-		int		lane_section_idx_;	// lane section
-		int		geometry_idx_;	// index of the segment within the track given by track_idx
-		int		elevation_idx_;	// index of the current elevation entry 
+		int		track_idx_;				// road index 
+		int		lane_idx_;				// lane index 
+		int 	roadmark_idx_;  		// laneroadmark index
+		int 	roadmarktype_idx_;  		// laneroadmark index
+		int 	roadmarkline_idx_;  	// laneroadmarkline index
+		int		lane_section_idx_;		// lane section
+		int		geometry_idx_;			// index of the segment within the track given by track_idx
+		int		elevation_idx_;			// index of the current elevation entry 
 	};
 
 
