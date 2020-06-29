@@ -304,6 +304,11 @@ namespace roadmanager
 		length_(length), space_(space), t_offset_(t_offset), s_offset_(s_offset), rule_(rule), width_(width) {}
 		double GetSOffset() { return s_offset_; }
 		double GetTOffset() { return t_offset_; }
+		double GetLength() {return length_;}
+		double GetSpace() {return space_;}
+		double GetWidth() {return width_;}
+		OSIPoints GetOSIPoints() {return osi_points_;}
+		OSIPoints osi_points_;
 
 	private:
 		double length_;
@@ -323,6 +328,7 @@ namespace roadmanager
 		std::string GetName() { return name_; }
 		double GetWidth() { return width_; }
 		LaneRoadMarkTypeLine* GetLaneRoadMarkTypeLineByIdx(int idx);
+		int GetNumberOfRoadMarkTypeLines() { return (int)lane_roadMarkTypeLine_.size(); }
 		void Print();
 
 	private:
