@@ -303,6 +303,7 @@ namespace roadmanager
 		LaneRoadMarkTypeLine(double length, double space, double t_offset, double s_offset, RoadMarkTypeLineRule rule, double width): 
 		length_(length), space_(space), t_offset_(t_offset), s_offset_(s_offset), rule_(rule), width_(width) {}
 		double GetSOffset() { return s_offset_; }
+		double GetTOffset() { return t_offset_; }
 
 	private:
 		double length_;

@@ -3954,6 +3954,15 @@ void Position::RoadMark2Track()
 			t_ = offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
 			h_offset_ = lane_section->GetOuterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
 		}
+		Lane *lane = lane_section->GetLaneByIdx(lane_idx_);
+		LaneRoadMark *lane_roadmark = lane->GetLaneRoadMarkByIdx(roadmark_idx_);
+		LaneRoadMarkType *lane_roadmarktype = lane_roadmark->GetLaneRoadMarkTypeByIdx(roadmarktype_idx_);
+		LaneRoadMarkTypeLine *lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(roadmarkline_idx_);
+		
+		if (lane_roadmarktypeline != 0)
+		{
+			t_ = t_ + lane_roadmarktypeline->GetTOffset();
+		}
 	}
 }
 
@@ -4596,10 +4605,6 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 		roadmarkline_idx_ = 0;
 	}
 	
-		
-
-	
-
 	// If moved over to opposite driving direction, then turn relative heading 180 degrees
 	//if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))
 	//{
