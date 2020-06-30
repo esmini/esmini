@@ -3451,7 +3451,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 					{
 						lane_roadMark = lane->GetLaneRoadMarkByIdx(m);
 						s_roadmark = lsec->GetS() + lane_roadMark->GetSOffset();
-						if (m == number_of_roadmarks)
+						if (m == number_of_roadmarks-1)
 						{
 							s_end_roadmark = lsec_end;
 						}
@@ -3474,7 +3474,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 								s_roadmarkline = s_roadmark + lane_roadMarkTypeLine->GetSOffset();
 								if (lane_roadMarkTypeLine != 0)
 								{
-									if (n == number_of_roadmarklines)
+									if (n == number_of_roadmarklines-1)
 									{
 										s_end_roadmarkline = s_end_roadmark;
 									}
