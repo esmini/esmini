@@ -392,6 +392,7 @@ namespace roadmanager
 		LaneRoadMarkType* GetLaneRoadMarkTypeByIdx(int idx);
 		double GetSOffset() { return s_offset_; }
 		double GetWidth() { return width_; }
+		double GetType() { return type_; }
 
 	private:
 		double s_offset_;

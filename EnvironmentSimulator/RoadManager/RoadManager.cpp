@@ -3482,19 +3482,29 @@ void OpenDrive::SetRoadMarkOSIPoints()
 										s_end_roadmarkline = lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n+1)->GetSOffset();
 									}
 
-									// Setting OSI points for each roadmarkline
-									while(true)
+									if (lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::BROKEN)
 									{
-										pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmarkline, 0, j);
-										osi_x_rm.push_back(pos->GetX());
-										osi_y_rm.push_back(pos->GetY());
-										osi_z_rm.push_back(pos->GetZ());
-										osi_h_rm.push_back(pos->GetH());
 
-										s_roadmarkline += lane_roadMarkTypeLine->GetLength() + lane_roadMarkTypeLine->GetSpace();
-										if (s_roadmarkline >= s_end_roadmarkline)
+										// Setting OSI points for each roadmarkline
+										while(true)
 										{
-											break;
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmarkline, 0, j);
+											osi_x_rm.push_back(pos->GetX());
+											osi_y_rm.push_back(pos->GetY());
+											osi_z_rm.push_back(pos->GetZ());
+											osi_h_rm.push_back(pos->GetH());
+
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmarkline+lane_roadMarkTypeLine->GetLength(), 0, j);
+											osi_x_rm.push_back(pos->GetX());
+											osi_y_rm.push_back(pos->GetY());
+											osi_z_rm.push_back(pos->GetZ());
+											osi_h_rm.push_back(pos->GetH());
+
+											s_roadmarkline += lane_roadMarkTypeLine->GetLength() + lane_roadMarkTypeLine->GetSpace();
+											if (s_roadmarkline >= s_end_roadmarkline)
+											{
+												break;
+											}
 										}
 									}
 
