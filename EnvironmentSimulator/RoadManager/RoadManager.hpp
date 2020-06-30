@@ -1073,7 +1073,8 @@ namespace roadmanager
 
 		/**
 		Find out the difference between two position objects, in effect subtracting the values 
-		@param positionB The position which will be subtracted from the current position object
+		It can be used to calculate the distance from current position to another one (pos_b)
+		@param pos_b The position from which to subtract the current position (this position object)
 		@return true if position found and parameter values are valid, else false
 		*/
 		bool Delta(Position pos_b, PositionDiff &diff);
