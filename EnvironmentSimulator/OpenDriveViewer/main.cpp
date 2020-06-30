@@ -232,6 +232,10 @@ int main(int argc, char** argv)
 			return -1;
 		}
 		roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
+		if (!odrManager->SetRoadOSI())
+		{
+			LOG("OpenDrive::SetRoadOSI Failed to create OSI points for OpenDrive road!\n");
+		}
 
 		viewer::Viewer *viewer = new viewer::Viewer(
 			odrManager,
