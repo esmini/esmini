@@ -54,8 +54,9 @@ namespace roadmanager
 	{
 		public:
 			OSIPoints() {}
-			OSIPoints(std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : x_(x), y_(y), z_(z), h_(h) {}
-			void Set(std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) { x_ = x; y_ = y; z_ = z; h_ = h;}
+			OSIPoints(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : x_(x), y_(y), z_(z), h_(h) {}
+			void Set(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) { s_ = s; x_ = x; y_ = y; z_ = z; h_ = h;}
+			std::vector<double> GetS() {return s_;}
 			std::vector<double> GetX() {return x_;}
 			std::vector<double> GetY() {return y_;}
 			std::vector<double> GetZ() {return z_;}
@@ -66,6 +67,7 @@ namespace roadmanager
 			int GetNumOfOSIPoints() {return (int)x_.size();}
 
 		private:
+			std::vector<double> s_;
 			std::vector<double> x_;
 			std::vector<double> y_;
 			std::vector<double> z_;

@@ -1041,53 +1041,25 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 			for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
 			{
 				roadmanager::Lane *lane = lane_section->GetLaneByIdx(j);
-				osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
-				osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
-				osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-				osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
+
+				// osg references for osi points on the lane center
 				osg::ref_ptr<osg::Geometry> osi_geom = new osg::Geometry;
 				osg::ref_ptr<osg::Vec3Array> osi_points = new osg::Vec3Array;
 				osg::ref_ptr<osg::Vec4Array> osi_color = new osg::Vec4Array;
 				osg::ref_ptr<osg::Point> osi_point = new osg::Point();
+				
+				// osg references for drawing lines on the lane center using osi points
+				osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+				osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
+				osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+				osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 
+				roadmanager::OSIPoints curr_osi;
 				if (!lane->IsDriving() && lane->GetId() != 0)
 				{
 					continue;
 				}
 
-				for (int k = 0; k < steps + 1; k++)
-				{
-					pos->SetLanePos(road->GetId(), lane->GetId(), MIN(s_end, s_start + k * step_length), 0, i);
-					point.set(pos->GetX(), pos->GetY(), pos->GetZ() + z_offset);
-					points->push_back(point);
-				}
-
-				if (lane->GetId() == 0)
-				{
-					lineWidth->setWidth(4.0f);
-					color->push_back(osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0));
-				}
-				else
-				{
-					lineWidth->setWidth(1.5f);
-					color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
-				}
-
-				geom->setVertexArray(points.get());
-				geom->setColorArray(color.get());
-				geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-				geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, points->size()));
-				geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
-				geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-				odrLines_->addChild(geom);
-
-				if (lane->GetId() == 0)
-				{
-					continue;
-				}
-
-				roadmanager::OSIPoints curr_osi;
 				curr_osi = lane->GetOSIPoints();
 				for (int m = 0; m < curr_osi.GetX().size(); m++)
 				{
@@ -1102,8 +1074,28 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 				osi_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_points->size()));
 				osi_geom->getOrCreateStateSet()->setAttributeAndModes(osi_point, osg::StateAttribute::ON);
 				osi_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
+					
 				odrLines_->addChild(osi_geom);
+
+				if (lane->GetId() == 0)
+				{
+					lineWidth->setWidth(4.0f);
+					color->push_back(osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0));
+				}
+				else
+				{
+					lineWidth->setWidth(1.5f);
+					color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
+				}
+
+				geom->setVertexArray(osi_points.get());
+				geom->setColorArray(color.get());
+				geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+				geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_points->size()));
+				geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+				geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+				odrLines_->addChild(geom);
 			}
 		}
 	}

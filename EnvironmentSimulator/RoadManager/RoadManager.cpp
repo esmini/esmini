@@ -3253,7 +3253,7 @@ void OpenDrive::SetLaneOSIPoints()
 	Lane *lane;
 	int number_of_lane_sections, number_of_lanes, counter;
 	double lsec_end;
-	std::vector<double> x0, y0, x1, y1, osi_x, osi_y, osi_z, osi_h;
+	std::vector<double> x0, y0, x1, y1, osi_s, osi_x, osi_y, osi_z, osi_h;
 	double s0, s1, s1_prev;
 	bool osi_requirement;
 
@@ -3307,6 +3307,7 @@ void OpenDrive::SetLaneOSIPoints()
 					// Add the starting point of each lane as osi point
 					if (counter == 1)
 					{
+						osi_s.push_back(s0);
 						osi_x.push_back(pos->GetX());
 						osi_y.push_back(pos->GetY());
 						osi_z.push_back(pos->GetZ());
@@ -3355,6 +3356,7 @@ void OpenDrive::SetLaneOSIPoints()
 						if (counter != 1)
 						{
 							pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
+							osi_s.push_back(s0);
 							osi_x.push_back(pos->GetX());
 							osi_y.push_back(pos->GetY());
 							osi_z.push_back(pos->GetZ());
@@ -3366,6 +3368,7 @@ void OpenDrive::SetLaneOSIPoints()
 					if (s1 >= lsec_end)
 					{
 						pos->SetLanePos(road->GetId(), lane->GetId(), lsec_end, 0, j);
+						osi_s.push_back(lsec_end);
 						osi_x.push_back(pos->GetX());
 						osi_y.push_back(pos->GetY());
 						osi_z.push_back(pos->GetZ());
@@ -3381,7 +3384,7 @@ void OpenDrive::SetLaneOSIPoints()
 				}
 
 				// Set all collected osi points for the current lane
-				lane->osi_points_.Set(osi_x, osi_y, osi_z, osi_h);
+				lane->osi_points_.Set(osi_s, osi_x, osi_y, osi_z, osi_h);
 				LOG("OSI Points for lane %d within lane section %d for road %d are populated successfully", lane->GetId(), j, i);
 
 				// Clear osi collectors for next iteration
@@ -3412,9 +3415,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 	int number_of_lane_sections, number_of_lanes, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines, counter;
 	double lsec_end;
 	double s_roadmark, s_end_roadmark, s_roadmarkline, s_end_roadmarkline;
-	std::vector<double> osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm;
-	double s0, s1, s1_prev;
-	bool osi_requirement;
+	std::vector<double> osi_s_rm, osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm;
 
 	// Looping through each road 
 	for (int i=0; i<road_.size(); i++)
@@ -3489,12 +3490,14 @@ void OpenDrive::SetRoadMarkOSIPoints()
 										while(true)
 										{
 											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmarkline, 0, j);
+											osi_s_rm.push_back(s_roadmarkline);
 											osi_x_rm.push_back(pos->GetX());
 											osi_y_rm.push_back(pos->GetY());
 											osi_z_rm.push_back(pos->GetZ());
 											osi_h_rm.push_back(pos->GetH());
 
 											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmarkline+lane_roadMarkTypeLine->GetLength(), 0, j);
+											osi_s_rm.push_back(s_roadmarkline+lane_roadMarkTypeLine->GetLength());
 											osi_x_rm.push_back(pos->GetX());
 											osi_y_rm.push_back(pos->GetY());
 											osi_z_rm.push_back(pos->GetZ());
@@ -3509,10 +3512,11 @@ void OpenDrive::SetRoadMarkOSIPoints()
 									}
 
 									// Set all collected osi points for the current lane rpadmarkline
-									lane_roadMarkTypeLine->osi_points_.Set(osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm);
+									lane_roadMarkTypeLine->osi_points_.Set(osi_s_rm, osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm);
 									LOG("OSI Points for laneroadmarktypeline %d within laneroadmark %d for lane %d are populated successfully", n, m, lane->GetId());
 
-									// Clear osi collectors for roadmarks for next iteration 
+									// Clear osi collectors for roadmarks for next iteration
+									osi_s_rm.clear();
 									osi_x_rm.clear();
 									osi_y_rm.clear();
 									osi_z_rm.clear();
