@@ -336,6 +336,12 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 	// find road and lane section from the object position
 	int road_id = pos.GetTrackId();
 	roadmanager::Road* road = pos.GetRoadById(road_id);
+	if (road == 0)
+	{
+		LOG("Requested road ID: %d not present in road network", road_id);
+		return -1;
+	}
+
 	roadmanager::LaneSection* lane_section = road->GetLaneSectionByS(pos.GetS());
 	// loop over all lanes 
 	for (int i=0; i<lane_section->GetNumberOfLanes(); i++)

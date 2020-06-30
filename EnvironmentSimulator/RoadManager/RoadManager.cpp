@@ -2446,6 +2446,12 @@ int RoadPath::Calculate(double &dist)
 	// The implementation is based on Dijkstra's algorithm
 	// https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
 
+	if (pivotRoad == 0)
+	{
+		LOG("Invalid startpos road ID: %d", startPos_->GetTrackId());
+		return -1;
+	}
+
 	// Look both forward and backwards from start position
 	for (i = 0; i < 2; i++)
 	{

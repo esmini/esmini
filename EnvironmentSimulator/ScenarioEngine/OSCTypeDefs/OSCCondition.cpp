@@ -367,13 +367,13 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time, 
 		// Headway time not defined for cases:
 		//  - when target object is behind 
 		//  - when object is still or going reverse 
-		if (rel_dist < 0 || object_->speed_ < SMALL_NUMBER)
+		if (rel_dist < 0 || triggering_entities_.entity_[i].object_->speed_ < SMALL_NUMBER)
 		{
 			hwt = -1;
 		}
 		else
 		{
-			hwt = fabs(rel_dist / object_->speed_);
+			hwt = fabs(rel_dist / triggering_entities_.entity_[i].object_->speed_);
 
 			result = EvaluateRule(hwt, value_, rule_);
 
