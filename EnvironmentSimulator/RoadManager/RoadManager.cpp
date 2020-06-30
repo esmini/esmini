@@ -3207,7 +3207,7 @@ OpenDrive* Position::GetOpenDrive()
 	return &od; 
 }
 
-bool OpenDrive::CheckOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1)
+bool OpenDrive::CheckLaneOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1)
 {
 	// Creating tangent line around the point (First Point) with given tolerance 
 	double k_0 = (y0[2]-y0[0])/(x0[2]-x0[0]);
@@ -3244,19 +3244,16 @@ bool OpenDrive::CheckOSIRequirement(std::vector<double> x0, std::vector<double> 
 	}
 }
 
-bool OpenDrive::SetOSI()
+void OpenDrive::SetLaneOSIPoints()
 {
 	// Initialization
 	Position* pos = new roadmanager::Position();
 	Road *road;
 	LaneSection *lsec;
 	Lane *lane;
-	LaneRoadMark *lane_roadMark;
-	LaneRoadMarkType *lane_roadMarkType;
-	LaneRoadMarkTypeLine *lane_roadMarkTypeLine;
-	int number_of_lane_sections, number_of_lanes, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines, counter;
+	int number_of_lane_sections, number_of_lanes, counter;
 	double lsec_end;
-	std::vector<double> x0, y0, x1, y1, osi_x, osi_y, osi_z, osi_h, osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm;
+	std::vector<double> x0, y0, x1, y1, osi_x, osi_y, osi_z, osi_h;
 	double s0, s1, s1_prev;
 	bool osi_requirement;
 
@@ -3337,7 +3334,7 @@ bool OpenDrive::SetOSI()
 					y1.push_back(pos->GetY());
 
 					// Check OSI Requirement between current given points
-					osi_requirement = CheckOSIRequirement(x0, y0, x1, y1);
+					osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
 
 					// If requirement is satisfied -> look further points
 					// If requirement is not satisfied:
@@ -3397,9 +3394,55 @@ bool OpenDrive::SetOSI()
 				s0 = lsec->GetS();
 				s1 = s0+OSI_POINT_CALC_STEPSIZE;
 				s1_prev = s0;
+			}
+		}
+	}
+}
+
+void OpenDrive::SetRoadMarkOSIPoints()
+{
+	// Initialization
+	Position* pos = new roadmanager::Position();
+	Road *road;
+	LaneSection *lsec;
+	Lane *lane;
+	LaneRoadMark *lane_roadMark;
+	LaneRoadMarkType *lane_roadMarkType;
+	LaneRoadMarkTypeLine *lane_roadMarkTypeLine;
+	int number_of_lane_sections, number_of_lanes, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines, counter;
+	double lsec_end;
+	double s_roadmark, s_end_roadmark, s_roadmarkline, s_end_roadmarkline;
+	std::vector<double> x0, y0, x1, y1, osi_x, osi_y, osi_z, osi_h, osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm;
+	double s0, s1, s1_prev;
+	bool osi_requirement;
+
+	// Looping through each road 
+	for (int i=0; i<road_.size(); i++)
+	{
+		road = road_[i];
+
+		// Looping through each lane section
+		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
+		for (int j=0; j<number_of_lane_sections; j++)
+		{
+			// Get the ending position of the current lane section
+			lsec = road->GetLaneSectionByIdx(j);
+			if (j == number_of_lane_sections-1)
+			{
+				lsec_end = road->GetLength();	
+			}
+			else
+			{
+				lsec_end = road->GetLaneSectionByIdx(j+1)->GetS();
+			}
+
+			// Looping through each lane
+			number_of_lanes = lsec->GetNumberOfLanes();
+			for (int k=0; k<number_of_lanes; k++)
+			{
+				lane = lsec->GetLaneByIdx(k);
 
 				// Looping through each roadMark within the lane
-				double s_roadmark, s_end_roadmark, s_roadmarkline, s_end_roadmarkline;
 				number_of_roadmarks = lane->GetNumberOfRoadMarks();
 				if (number_of_roadmarks != 0)
 				{
@@ -3451,11 +3494,6 @@ bool OpenDrive::SetOSI()
 										s_roadmarkline += lane_roadMarkTypeLine->GetLength() + lane_roadMarkTypeLine->GetSpace();
 										if (s_roadmarkline >= s_end_roadmarkline)
 										{
-											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_end_roadmarkline, 0, j);
-											osi_x_rm.push_back(pos->GetX());
-											osi_y_rm.push_back(pos->GetY());
-											osi_z_rm.push_back(pos->GetZ());
-											osi_h_rm.push_back(pos->GetH());
 											break;
 										}
 									}
@@ -3489,6 +3527,12 @@ bool OpenDrive::SetOSI()
 			}
 		}
 	}
+}
+
+bool OpenDrive::SetRoadOSI()
+{
+	SetLaneOSIPoints();
+	SetRoadMarkOSIPoints();
 	return true;
 }
 

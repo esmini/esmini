@@ -384,9 +384,9 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	scenarioReader->parseRoadNetwork(roadNetwork);
 	roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str());
 	odrManager = roadmanager::Position::GetOpenDrive();
-	if (!odrManager->SetOSI())
+	if (!odrManager->SetRoadOSI())
 	{
-		LOG("OpenDrive::SetOSI Failed to create OSI points for OpenDrive road!\n");
+		LOG("OpenDrive::SetRoadOSI Failed to create OSI points for OpenDrive road!\n");
 	}
 
 	scenarioReader->parseCatalogs();
