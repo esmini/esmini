@@ -435,6 +435,17 @@ namespace roadmanager
 		double length_;
 	};
 
+	class LaneGlobalID
+	{
+		int id; 
+	public:
+		LaneGlobalID() {
+			static int counter = 0; 
+			id = counter++; 
+		}
+		int get_id() { return id; }
+	};
+
 	class Lane
 	{
 	public:
@@ -487,11 +498,12 @@ namespace roadmanager
 		LaneType GetLaneType() {return type_; }
 		OSIPoints GetOSIPoints() {return osi_points_;}
 		OSIPoints osi_points_;
-		void SetGlobalId(int id) { global_id_ = id; }
+		void SetGlobalId();
 		int GetGlobalId() { return global_id_; }
 
 	private:
 		int id_;		// center = 0, left > 0, right < 0
+		LaneGlobalID laneglobalID_;  // class that generates the unique ID for OSI
 		int global_id_;  // Unique ID for OSI 
 		LaneType type_;
 		int level_;	// boolean, true = keep lane on level

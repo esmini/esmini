@@ -272,6 +272,11 @@ void LaneLink::Print()
 	LOG("LaneLink type: %d id: %d\n", type_, id_);
 }
 
+void Lane::SetGlobalId()
+{ 
+	global_id_ = laneglobalID_.get_id(); 
+}
+
 LaneWidth *Lane::GetWidthByS(double s)
 {
 	if (lane_width_.size() == 0)
@@ -786,7 +791,8 @@ double LaneSection::GetCenterOffsetHeading(double s, int lane_id)
 
 void LaneSection::AddLane(Lane *lane)
 {
-	lane->SetGlobalId(global_lane_counter++);
+	lane->SetGlobalId();
+	global_lane_counter++;
 	lane_.push_back(lane);
 }
 
