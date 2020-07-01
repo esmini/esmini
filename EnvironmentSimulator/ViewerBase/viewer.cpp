@@ -982,7 +982,88 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 
 bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od, osg::Group* parent)
 {
+	double z_offset = 0.10;
+	roadmanager::Position* pos = new roadmanager::Position();
+	osg::Vec3 point(0, 0, 0);
+	odrLines_ = new osg::Group;
 
+	for (int r = 0; r < od->GetNumOfRoads(); r++)
+	{
+		roadmanager::Road *road = od->GetRoadByIdx(r);
+		for (int i = 0; i < road->GetNumberOfLaneSections(); i++)
+		{
+			roadmanager::LaneSection *lane_section = road->GetLaneSectionByIdx(i);
+			for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
+			{
+				roadmanager::Lane *lane = lane_section->GetLaneByIdx(j);
+				for (int k = 0; k < lane->GetNumberOfRoadMarks(); k++)
+				{
+					roadmanager::LaneRoadMark *lane_roadmark = lane->GetLaneRoadMarkByIdx(k);
+					for (int m = 0; m < lane_roadmark->GetNumberOfRoadMarkTypes(); m++)
+					{
+						roadmanager::LaneRoadMarkType * lane_roadmarktype = lane_roadmark->GetLaneRoadMarkTypeByIdx(m);
+						for (int n = 0; n < lane_roadmarktype->GetNumberOfRoadMarkTypeLines(); n++)
+						{
+							roadmanager::LaneRoadMarkTypeLine * lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(n);
+
+							if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN)
+							{
+								roadmanager::OSIPoints curr_osi_rm;
+								curr_osi_rm = lane_roadmarktypeline->GetOSIPoints();
+								for (int q = 0; q < curr_osi_rm.GetX().size(); q+=2)
+								{
+									// osg references for road mark osi points
+									osg::ref_ptr<osg::Geometry> osi_rm_geom = new osg::Geometry;
+									osg::ref_ptr<osg::Vec3Array> osi_rm_points = new osg::Vec3Array;
+									osg::ref_ptr<osg::Vec4Array> osi_rm_color = new osg::Vec4Array;
+									osg::ref_ptr<osg::Point> osi_rm_point = new osg::Point();
+									
+									// osg references for drawing lines between each road mark osi points
+									osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+									osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
+									osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+									osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
+
+									// start point of each road mark
+									point.set(curr_osi_rm.GetX()[q], curr_osi_rm.GetY()[q], curr_osi_rm.GetZ()[q] + z_offset);
+									osi_rm_points->push_back(point);
+
+									// end point of each road mark
+									point.set(curr_osi_rm.GetX()[q+1], curr_osi_rm.GetY()[q+1], curr_osi_rm.GetZ()[q+1] + z_offset);
+									osi_rm_points->push_back(point);
+
+									osi_rm_color->push_back(osg::Vec4(color_yellow[0], color_yellow[1], color_yellow[2], 1.0));
+
+									// Put points at the start and end of the roadmark
+									osi_rm_point->setSize(6.0f);
+									osi_rm_geom->setVertexArray(osi_rm_points.get());
+									osi_rm_geom->setColorArray(osi_rm_color.get());
+									osi_rm_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+									osi_rm_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_rm_points->size()));
+									osi_rm_geom->getOrCreateStateSet()->setAttributeAndModes(osi_rm_point, osg::StateAttribute::ON);
+									osi_rm_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+									odrLines_->addChild(osi_rm_geom);
+
+									// Draw lines from the start of the roadmark to the end of the roadmark
+									lineWidth->setWidth(1.5f);
+									geom->setVertexArray(osi_rm_points.get());
+									geom->setColorArray(osi_rm_color.get());
+									geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+									geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_rm_points->size()));
+									geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+									geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+									odrLines_->addChild(geom);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	parent->addChild(odrLines_);
 	return true;
 }
 

@@ -4096,11 +4096,12 @@ void Position::RoadMark2Track()
 	{
 		LaneSection *lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 
-		if (lane_section != 0)
+		if (lane_section != 0 && lane_id_ !=0)
 		{
 			t_ = offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
 			h_offset_ = lane_section->GetOuterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
 		}
+
 		Lane *lane = lane_section->GetLaneByIdx(lane_idx_);
 		LaneRoadMark *lane_roadmark = lane->GetLaneRoadMarkByIdx(roadmark_idx_);
 		LaneRoadMarkType *lane_roadmarktype = lane_roadmark->GetLaneRoadMarkTypeByIdx(roadmarktype_idx_);
