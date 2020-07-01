@@ -288,6 +288,11 @@ LaneWidth *Lane::GetWidthByS(double s)
 	return lane_width_.back();
 }
 
+void Lane::SetGlobalId()
+{ 
+	global_id_ = laneglobalID_.get_id(); 
+}
+
 LaneLink *Lane::GetLink(LinkType type)
 {
 	for (int i=0; i<(int)link_.size(); i++)
@@ -786,7 +791,8 @@ double LaneSection::GetCenterOffsetHeading(double s, int lane_id)
 
 void LaneSection::AddLane(Lane *lane)
 {
-	lane->SetGlobalId(global_lane_counter++);
+	lane->SetGlobalId();
+	global_lane_counter++;
 	lane_.push_back(lane);
 }
 
@@ -2470,12 +2476,6 @@ int RoadPath::Calculate(double &dist)
 	// between a start position and a target position
 	// The implementation is based on Dijkstra's algorithm
 	// https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
-
-	if (pivotRoad == 0)
-	{
-		LOG("Invalid startpos road ID: %d", startPos_->GetTrackId());
-		return -1;
-	}
 
 	// Look both forward and backwards from start position
 	for (i = 0; i < 2; i++)
@@ -5005,9 +5005,9 @@ bool Position::Delta(Position pos_b, PositionDiff &diff)
 
 	if (found = (path->Calculate(dist) == 0))
 	{
-		diff.dLaneId = pos_b.GetLaneId() - GetLaneId();
+		diff.dLaneId = GetLaneId() - pos_b.GetLaneId();
 		diff.ds = dist;
-		diff.dt = pos_b.GetT() - GetT();
+		diff.dt = GetT() - pos_b.GetT();
 
 #if 0   // Change to 1 to print some info on stdout - e.g. for debugging
 		printf("Dist %.2f Path (reversed): %d", dist, pos_b.GetTrackId());
