@@ -253,7 +253,7 @@ int ScenarioGateway::UpdateOSISensorView()
 	);
 	
 	UpdateOSIMovingObject();
-	//collects lane information of the whole OpenDrive file 
+	//collect all information of lanes in the lane section where obj=0 is
 	UpdateOSIRoadLane(0); 
 
 	mobj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
@@ -316,14 +316,14 @@ int ScenarioGateway::UpdateOSIMovingObject()
 
 int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in the lane section where the object_id is 
 {
-	//Check if object_id exists
+	// Check if object_id exists
 	if (object_id >= getNumberOfObjects())
 	{
 		LOG("Object %d not available, only %d registered", object_id, getNumberOfObjects());
 		return -1;
 	}
 	
-	//Find position of the object 
+	// Find position of the object 
 	roadmanager::Position pos;
 	for (size_t i = 0; i < getNumberOfObjects() ; i++)
 	{
@@ -333,166 +333,161 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 		}		
 	}
 	
-	//Find road and lane section from the object position
-	static roadmanager::OpenDrive* opendrive = pos.GetOpenDrive();
-
-	//Loop over all roads 
-	for (int i = 0; i<opendrive->GetNumOfRoads(); i++)
+	// find road and lane section from the object position
+	int road_id = pos.GetTrackId();
+	roadmanager::Road* road = pos.GetRoadById(road_id);
+	if (road == 0)
 	{
+		LOG("Requested road ID: %d not present in road network", road_id);
+		return -1;
+	}
+
+	roadmanager::LaneSection* lane_section = road->GetLaneSectionByS(pos.GetS());
+	// loop over all lanes 
+	for (int i=0; i<lane_section->GetNumberOfLanes(); i++)
+	{
+		roadmanager::Lane* lane = lane_section->GetLaneByIdx(i);
+		osi3::Lane* osi_lane = 0;
+		int lane_id = lane->GetGlobalId();
 		
-		roadmanager::Road* road = opendrive->GetRoadByIdx(i);
-
-		// loop over all lane sections 
-		for (int j= 0; j<road->GetNumberOfLaneSections(); j++)
+		// Check if this lane is already pushed to OSI
+		for (int j=0; j < mobj_osi_internal.ln.size(); j++)
 		{
-			roadmanager::LaneSection* lane_section = road->GetLaneSectionByIdx(j);
-
-			// loop over all lanes 
-			for (int i=0; i<lane_section->GetNumberOfLanes(); i++)
+			if (mobj_osi_internal.ln[j]->mutable_id()->value() == lane_id)
 			{
-				roadmanager::Lane* lane = lane_section->GetLaneByIdx(i);
-				osi3::Lane* osi_lane = 0;
-				int lane_id = lane->GetGlobalId();
-				
-				// Check if this lane is already pushed to OSI
-				for (int j=0; j < mobj_osi_internal.ln.size(); j++)
+				osi_lane = mobj_osi_internal.ln[j];
+
+				// update classification is_vehicle_in_lane 
+				bool is_veh_on_lane;
+				int lane_of_vehicle = pos.GetLaneId();
+				if (lane_id == lane_of_vehicle)
 				{
-					if (mobj_osi_internal.ln[j]->mutable_id()->value() == lane_id)
-					{
-						osi_lane = mobj_osi_internal.ln[j];
-
-						// update classification is_vehicle_in_lane 
-						bool is_veh_on_lane;
-						int lane_of_vehicle = pos.GetLaneId();
-						if (lane_id == lane_of_vehicle)
-						{
-							is_veh_on_lane = true;
-						}
-						else
-						{
-							is_veh_on_lane = false;
-						}
-						osi_lane->mutable_classification()->set_is_host_vehicle_lane(is_veh_on_lane);
-
-						// STILL TO DO: check if object is moving in the same direction of the lane centerline points 
-						bool center_is_driving = true;
-						osi_lane->mutable_classification()->set_centerline_is_driving_direction(center_is_driving);
-						break;
-					}
+					is_veh_on_lane = true;
 				}
-				if (!osi_lane)
+				else
 				{
-					osi_lane = mobj_osi_internal.sv->mutable_global_ground_truth()->add_lane();
-					osi_lane->mutable_id()->set_value(lane_id);
-
-
-					// update classification type
-					// STILL TO DO: add more types
-					roadmanager::Lane::LaneType lanetype = lane->GetLaneType();
-					osi3::Lane_Classification_Type class_type;
-					if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING)
-					{
-						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
-					}
-					else
-					{
-						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_UNKNOWN;
-					}
-					osi_lane->mutable_classification()->set_type(class_type);
-
-					//update lane centerline points
-					int n_osi_points = lane->GetOSIPoints().GetNumOfOSIPoints();
-					for (int j = 0; j < n_osi_points; j++)
-					{
-						osi3::Vector3d* centerLine = osi_lane->mutable_classification()->add_centerline();
-						centerLine->set_x(lane->GetOSIPoints().GetXfromIdx(j));
-						centerLine->set_y(lane->GetOSIPoints().GetYfromIdx(j));
-						centerLine->set_z(lane->GetOSIPoints().GetZfromIdx(j));
-					}
-
-					// update lane_id for lanes on the left and lanes on the right 
-					int n_lanes_in_section = lane_section->GetNumberOfLanes();
-					std::vector<int> lanes_on_left;
-					std::vector<int> lanes_on_right;
-					for (int j = 0; j < n_lanes_in_section; j++)
-					{
-						if (lane_section->GetLaneIdByIdx(j) < lane_id)
-						{
-							lanes_on_left.push_back(lane_section->GetLaneIdByIdx(j));
-						}
-						else if (lane_section->GetLaneIdByIdx(j) > lane_id)
-						{
-							lanes_on_right.push_back(lane_section->GetLaneIdByIdx(j));
-						}
-					}
-					std::sort(lanes_on_left.begin(), lanes_on_left.end());
-					std::reverse(lanes_on_left.begin(), lanes_on_left.end());
-					std::sort(lanes_on_right.begin(), lanes_on_right.end());
-
-					for (int j = 0; j < lanes_on_left.size(); j++)
-					{
-						osi3::Identifier* left_id = osi_lane->mutable_classification()->add_left_adjacent_lane_id();
-						left_id->set_value((uint64_t)lanes_on_left[j]);
-					}
-					for (int j = 0; j < lanes_on_right.size(); j++)
-					{
-						osi3::Identifier* right_id = osi_lane->mutable_classification()->add_right_adjacent_lane_id();
-						right_id->set_value((uint64_t)lanes_on_right[j]);
-					}
-
-					// update lane pairing 
-					// STILL TO DO: when I get a vector of predecessors and successors I need to create all possible combinations
-					roadmanager::LaneLink* lane_pre = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
-					roadmanager::LaneLink* lane_succ = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
-					bool exist_link = false;
-					if (lane_pre != 0)
-					{
-						osi3::Lane_Classification_LanePairing* lane_pair = osi_lane->mutable_classification()->add_lane_pairing();
-						lane_pair->mutable_antecessor_lane_id()->set_value(lane_pre->GetId());
-						if (lane_succ != 0)
-						{
-							lane_pair->mutable_successor_lane_id()->set_value(lane_succ->GetId());
-						}
-					}
-					else if (lane_succ != 0)
-					{
-						osi3::Lane_Classification_LanePairing* lane_pair = osi_lane->mutable_classification()->add_lane_pairing();
-						lane_pair->mutable_successor_lane_id()->set_value(lane_succ->GetId());
-						if (lane_pre != 0)
-						{
-							lane_pair->mutable_antecessor_lane_id()->set_value(lane_pre->GetId());
-						}
-					}
-
-					// STILL TO DO:
-					int right_bound_id = 0;
-					osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-					right_lane_bound_id->set_value(right_bound_id);
-
-					// STILL TO DO: 
-					int left_bound_id = 0;
-					osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-					left_lane_bound_id->set_value(left_bound_id);
-
-					// STILL TO DO:
-					int free_bound_id = 0;
-					osi3::Identifier* free_lane_bound_id = osi_lane->mutable_classification()->add_free_lane_boundary_id();
-					free_lane_bound_id->set_value(free_bound_id);
-
-					// STILL TO DO: 
-					double temp = 0;
-					osi_lane->mutable_classification()->mutable_road_condition()->set_surface_temperature(temp);
-					osi_lane->mutable_classification()->mutable_road_condition()->set_surface_water_film(temp);
-					osi_lane->mutable_classification()->mutable_road_condition()->set_surface_freezing_point(temp);
-					osi_lane->mutable_classification()->mutable_road_condition()->set_surface_ice(temp);
-					osi_lane->mutable_classification()->mutable_road_condition()->set_surface_roughness(temp);
-					osi_lane->mutable_classification()->mutable_road_condition()->set_surface_texture(temp);
-
-					mobj_osi_internal.ln.push_back(osi_lane);
+					is_veh_on_lane = false;
 				}
+				osi_lane->mutable_classification()->set_is_host_vehicle_lane(is_veh_on_lane);
+
+				// STILL TO DO: check if object is moving in the same direction of the lane centerline points 
+				bool center_is_driving = true;
+				osi_lane->mutable_classification()->set_centerline_is_driving_direction(center_is_driving);
+				break;
 			}
 		}
-	}	
+		if (!osi_lane)
+		{
+			osi_lane = mobj_osi_internal.sv->mutable_global_ground_truth()->add_lane();
+			osi_lane->mutable_id()->set_value(lane_id);
+
+
+			// update classification type
+			// STILL TO DO: add more types
+			roadmanager::Lane::LaneType lanetype = lane->GetLaneType();
+			osi3::Lane_Classification_Type class_type;
+			if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING)
+			{
+				class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
+			}
+			else
+			{
+				class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_UNKNOWN;
+			}
+			osi_lane->mutable_classification()->set_type(class_type);
+
+			//update lane centerline points
+			int n_osi_points = lane->GetOSIPoints().GetNumOfOSIPoints();
+			for (int j = 0; j < n_osi_points; j++)
+			{
+				osi3::Vector3d* centerLine = osi_lane->mutable_classification()->add_centerline();
+				centerLine->set_x(lane->GetOSIPoints().GetXfromIdx(j));
+				centerLine->set_y(lane->GetOSIPoints().GetYfromIdx(j));
+				centerLine->set_z(lane->GetOSIPoints().GetZfromIdx(j));
+			}
+
+			// update lane_id for lanes on the left and lanes on the right 
+			int n_lanes_in_section = lane_section->GetNumberOfLanes();
+			std::vector<int> lanes_on_left;
+			std::vector<int> lanes_on_right;
+			for (int j = 0; j < n_lanes_in_section; j++)
+			{
+				if (lane_section->GetLaneIdByIdx(j) < lane_id)
+				{
+					lanes_on_left.push_back(lane_section->GetLaneIdByIdx(j));
+				}
+				else if (lane_section->GetLaneIdByIdx(j) > lane_id)
+				{
+					lanes_on_right.push_back(lane_section->GetLaneIdByIdx(j));
+				}
+			}
+			std::sort(lanes_on_left.begin(), lanes_on_left.end());
+			std::reverse(lanes_on_left.begin(), lanes_on_left.end());
+			std::sort(lanes_on_right.begin(), lanes_on_right.end());
+
+			for (int j = 0; j < lanes_on_left.size(); j++)
+			{
+				osi3::Identifier* left_id = osi_lane->mutable_classification()->add_left_adjacent_lane_id();
+				left_id->set_value((uint64_t)lanes_on_left[j]);
+			}
+			for (int j = 0; j < lanes_on_right.size(); j++)
+			{
+				osi3::Identifier* right_id = osi_lane->mutable_classification()->add_right_adjacent_lane_id();
+				right_id->set_value((uint64_t)lanes_on_right[j]);
+			}
+
+			// update lane pairing 
+			// STILL TO DO: when I get a vector of predecessors and successors I need to create all possible combinations
+			roadmanager::LaneLink* lane_pre = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
+			roadmanager::LaneLink* lane_succ = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
+			bool exist_link = false;
+			if (lane_pre != 0)
+			{
+				osi3::Lane_Classification_LanePairing* lane_pair = osi_lane->mutable_classification()->add_lane_pairing();
+				lane_pair->mutable_antecessor_lane_id()->set_value(lane_pre->GetId());
+				if (lane_succ != 0)
+				{
+					lane_pair->mutable_successor_lane_id()->set_value(lane_succ->GetId());
+				}
+			}
+			else if (lane_succ != 0)
+			{
+				osi3::Lane_Classification_LanePairing* lane_pair = osi_lane->mutable_classification()->add_lane_pairing();
+				lane_pair->mutable_successor_lane_id()->set_value(lane_succ->GetId());
+				if (lane_pre != 0)
+				{
+					lane_pair->mutable_antecessor_lane_id()->set_value(lane_pre->GetId());
+				}
+			}
+
+			// STILL TO DO:
+			int right_bound_id = 0;
+			osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+			right_lane_bound_id->set_value(right_bound_id);
+
+			// STILL TO DO: 
+			int left_bound_id = 0;
+			osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+			left_lane_bound_id->set_value(left_bound_id);
+
+			// STILL TO DO:
+			int free_bound_id = 0;
+			osi3::Identifier* free_lane_bound_id = osi_lane->mutable_classification()->add_free_lane_boundary_id();
+			free_lane_bound_id->set_value(free_bound_id);
+
+			// STILL TO DO: 
+			double temp = 0;
+			osi_lane->mutable_classification()->mutable_road_condition()->set_surface_temperature(temp);
+			osi_lane->mutable_classification()->mutable_road_condition()->set_surface_water_film(temp);
+			osi_lane->mutable_classification()->mutable_road_condition()->set_surface_freezing_point(temp);
+			osi_lane->mutable_classification()->mutable_road_condition()->set_surface_ice(temp);
+			osi_lane->mutable_classification()->mutable_road_condition()->set_surface_roughness(temp);
+			osi_lane->mutable_classification()->mutable_road_condition()->set_surface_texture(temp);
+
+			mobj_osi_internal.ln.push_back(osi_lane);
+		}
+
+	}
 
 	return 0;
 }

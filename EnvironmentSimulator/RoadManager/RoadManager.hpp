@@ -435,18 +435,6 @@ namespace roadmanager
 		double length_;
 	};
 
-
-	class LaneGlobalID
-	{
-		int id; 
-	public:
-		LaneGlobalID() {
-			static int counter = 0; 
-			id = counter++; 
-		}
-		int get_id() { return id; }
-	};
-
 	class Lane
 	{
 	public:
@@ -499,13 +487,12 @@ namespace roadmanager
 		LaneType GetLaneType() {return type_; }
 		OSIPoints GetOSIPoints() {return osi_points_;}
 		OSIPoints osi_points_;
-		void SetGlobalId();
+		void SetGlobalId(int id) { global_id_ = id; }
 		int GetGlobalId() { return global_id_; }
 
 	private:
 		int id_;		// center = 0, left > 0, right < 0
-		LaneGlobalID laneglobalID_;  // class that generates the unique ID for OSI
-		int global_id_; // Unique ID for OSI 
+		int global_id_;  // Unique ID for OSI 
 		LaneType type_;
 		int level_;	// boolean, true = keep lane on level
 		double offset_from_ref_;
@@ -1107,7 +1094,8 @@ namespace roadmanager
 
 		/**
 		Find out the difference between two position objects, in effect subtracting the values 
-		@param positionB The position which will be subtracted from the current position object
+		It can be used to calculate the distance from current position to another one (pos_b)
+		@param pos_b The position from which to subtract the current position (this position object)
 		@return true if position found and parameter values are valid, else false
 		*/
 		bool Delta(Position pos_b, PositionDiff &diff);
