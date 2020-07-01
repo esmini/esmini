@@ -256,6 +256,7 @@ namespace viewer
 		std::string scenarioDir_;
 
 		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
+		bool CreateRoadMarkLines(roadmanager::OpenDrive* od, osg::Group* parent);
 		bool keyUp_;
 		bool keyDown_;
 		bool keyLeft_;

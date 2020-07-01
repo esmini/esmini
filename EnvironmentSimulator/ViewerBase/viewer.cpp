@@ -723,6 +723,11 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 		LOG("Viewer::Viewer Failed to create road lines!\n");
 	}
 
+	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadMarkLines(odrManager, rootnode_))
+	{
+		LOG("Viewer::Viewer Failed to create road mark lines!\n");
+	}
+
 #if 0
 	osgViewer_->setSceneData(shadowedScene);
 #else
@@ -975,14 +980,18 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 	return lod;
 }
 
+bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od, osg::Group* parent)
+{
+
+	return true;
+}
+
 bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 {
-	double step_length_target = 1;
 	double z_offset = 0.10;
 	roadmanager::Position* pos = new roadmanager::Position();
 	osg::Vec3 point(0, 0, 0);
 	odrLines_ = new osg::Group;
-
 
 	for (int r = 0; r < od->GetNumOfRoads(); r++)
 	{
@@ -1033,11 +1042,6 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 		for (int i = 0; i < road->GetNumberOfLaneSections(); i++)
 		{
 			roadmanager::LaneSection *lane_section = road->GetLaneSectionByIdx(i);
-			double s_start = lane_section->GetS();
-			double s_end = s_start + lane_section->GetLength();
-			int steps = (int)((s_end - s_start) / step_length_target);
-			double step_length = (s_end - s_start) / steps;
-
 			for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
 			{
 				roadmanager::Lane *lane = lane_section->GetLaneByIdx(j);
