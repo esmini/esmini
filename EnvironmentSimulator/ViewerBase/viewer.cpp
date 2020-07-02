@@ -706,8 +706,11 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	rootnode_->addChild(roadSensors_);
 	trails_ = new osg::Group;
 	rootnode_->addChild(trails_);
+	odrLines_ = new osg::Group;
+	rootnode_->addChild(odrLines_);
 
 	ShowTrail(true);  // show trails per default
+	ShowRoadFeatures(true);
 	ShowObjectSensors(false); // hide sensor frustums by default
 
 
@@ -718,12 +721,12 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	}
 	rootnode_->addChild(envTx_);
 
-	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager, rootnode_))
+	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager))
 	{
 		LOG("Viewer::Viewer Failed to create road lines!\n");
 	}
 
-	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadMarkLines(odrManager, rootnode_))
+	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadMarkLines(odrManager))
 	{
 		LOG("Viewer::Viewer Failed to create road mark lines!\n");
 	}
@@ -980,7 +983,7 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 	return lod;
 }
 
-bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od, osg::Group* parent)
+bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 {
 	double z_offset = 0.10;
 	roadmanager::Position* pos = new roadmanager::Position();
@@ -1109,16 +1112,15 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od, osg::Group* parent)
 			}
 		}
 	}
-	parent->addChild(odrLines_);
+
 	return true;
 }
 
-bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
+bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 {
 	double z_offset = 0.10;
 	roadmanager::Position* pos = new roadmanager::Position();
 	osg::Vec3 point(0, 0, 0);
-	odrLines_ = new osg::Group;
 
 	for (int r = 0; r < od->GetNumOfRoads(); r++)
 	{
@@ -1231,7 +1233,6 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 		}
 	}
 
-	parent->addChild(odrLines_);
 	return true;
 }
 
@@ -1410,6 +1411,13 @@ void Viewer::ShowTrail(bool show)
 	trails_->setNodeMask(showTrail ? 0xffffffff : 0x0);
 }
 
+void Viewer::ShowRoadFeatures(bool show)
+{
+	showRoadFeatures = show;
+	odrLines_->setNodeMask(showRoadFeatures ? 0xffffffff : 0x0);
+	roadSensors_->setNodeMask(showRoadFeatures ? 0xffffffff : 0x0);
+}
+
 void Viewer::ShowObjectSensors(bool show)
 {
 	showObjectSensors = show;
@@ -1471,18 +1479,9 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		break;
 	case(osgGA::GUIEventAdapter::KEY_O):
 	{
-		static bool visible = true;
-
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			visible = !visible;
-
-			if (viewer_->odrLines_)
-			{
-				viewer_->odrLines_->setNodeMask(visible ? 0xffffffff : 0x0);
-			}
-
-			viewer_->roadSensors_->setNodeMask(visible ? 0xffffffff : 0x0);
+			viewer_->ShowRoadFeatures(!viewer_->showRoadFeatures);
 		}
 	}
 	break;

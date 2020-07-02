@@ -1,1 +1,1 @@
-"../../bin/EgoSimulator" --window 50 50 1024 576  --osc ../../resources/xosc/cut-in_internal.xosc 
+"../../bin/EgoSimulator" --window 50 50 1024 576  --osc ../../resources/xosc/cut-in_internal.xosc  --road_features off

@@ -31,10 +31,11 @@ Key commands:
 
 	When custom camera model (1) is activated:
 		k: Switch between the following sub models:
-			- Flex  (imagine the camera attached to vehicle via an elastic string)
-			- Orbit (camera facing vehicle, rotating around it)
-			- Fixed (fix rotation, always straight behind vehicle) 
-			- Top   (top view, fixed rotation, always straight above vehicle) 
+			- Orbit      (camera facing vehicle, rotating around it)
+			- Fixed      (fix rotation, always straight behind vehicle) 
+			- Flex       (imagine the camera attached to vehicle via an elastic string)
+			- Flex-orbit (Like flex but allows for roatation around vehicle)
+			- Top        (top view, fixed rotation, always straight above vehicle) 
 
 	o: Toggle show/hide OpenDRIVE road feature lines
 	p: Toggle show/hide environment 3D model

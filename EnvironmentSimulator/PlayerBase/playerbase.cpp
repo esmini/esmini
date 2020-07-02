@@ -264,6 +264,11 @@ int ScenarioPlayer::InitViewer()
 		viewer_->ShowTrail(false);
 	}
 
+	if (opt.GetOptionArg("road_features") == "off")
+	{
+		viewer_->ShowRoadFeatures(false);
+	}
+
 	if (opt.GetOptionArg("sensors") == "on")
 	{
 		viewer_->ShowObjectSensors(true);
@@ -401,10 +406,11 @@ int ScenarioPlayer::Init()
 	opt.AddOption("osc", "OpenSCENARIO filename", "filename");
 	opt.AddOption("control", "Ego control (\"osc\", \"internal\", \"external\", \"hybrid\"", "mode");
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
-	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 't') ", "mode");
-	opt.AddOption("trails", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 't') ", "mode");
+	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
+	opt.AddOption("trails", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 'j') ", "mode");
+	opt.AddOption("road_features", "Show road features (\"on\" (default), \"off\") (toggle during simulation by press 'o') ", "mode");
 	opt.AddOption("sensors", "Show sensor frustums (\"on\", \"off\" (default)) (toggle during simulation by press 'r') ", "mode");
-	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'c') ", "mode");
+	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
 	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
 	opt.AddOption("headless", "Run without viewer");

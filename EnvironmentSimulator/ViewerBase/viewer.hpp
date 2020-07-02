@@ -215,6 +215,7 @@ namespace viewer
 		roadmanager::OpenDrive *odrManager_;
 		bool showInfoText;
 		bool showTrail;
+		bool showRoadFeatures;
 		bool showObjectSensors;
 
 		osg::ref_ptr<osg::Camera> infoTextCamera;
@@ -246,6 +247,7 @@ namespace viewer
 		void SetInfoText(const char* text);
 		void ShowInfoText(bool show);
 		void ShowTrail(bool show);
+		void ShowRoadFeatures(bool show);
 		void ShowObjectSensors(bool show);
 		PointSensor* CreateSensor(double color[], bool create_ball, bool create_line, double ball_radius, double line_width);
 		bool CreateRoadSensors(CarModel *vehicle_model);
@@ -255,8 +257,8 @@ namespace viewer
 
 		std::string scenarioDir_;
 
-		bool CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent);
-		bool CreateRoadMarkLines(roadmanager::OpenDrive* od, osg::Group* parent);
+		bool CreateRoadLines(roadmanager::OpenDrive* od);
+		bool CreateRoadMarkLines(roadmanager::OpenDrive* od);
 		bool keyUp_;
 		bool keyDown_;
 		bool keyLeft_;
