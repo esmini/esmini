@@ -1004,11 +1004,11 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od, osg::Group* parent)
 						for (int n = 0; n < lane_roadmarktype->GetNumberOfRoadMarkTypeLines(); n++)
 						{
 							roadmanager::LaneRoadMarkTypeLine * lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(n);
+							roadmanager::OSIPoints curr_osi_rm;
+							curr_osi_rm = lane_roadmarktypeline->GetOSIPoints();
 
 							if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN)
 							{
-								roadmanager::OSIPoints curr_osi_rm;
-								curr_osi_rm = lane_roadmarktypeline->GetOSIPoints();
 								for (int q = 0; q < curr_osi_rm.GetX().size(); q+=2)
 								{
 									// osg references for road mark osi points
@@ -1031,7 +1031,7 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od, osg::Group* parent)
 									point.set(curr_osi_rm.GetX()[q+1], curr_osi_rm.GetY()[q+1], curr_osi_rm.GetZ()[q+1] + z_offset);
 									osi_rm_points->push_back(point);
 
-									osi_rm_color->push_back(osg::Vec4(color_yellow[0], color_yellow[1], color_yellow[2], 1.0));
+									osi_rm_color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
 
 									// Put points at the start and end of the roadmark
 									osi_rm_point->setSize(6.0f);
@@ -1055,6 +1055,53 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od, osg::Group* parent)
 
 									odrLines_->addChild(geom);
 								}
+							}
+							else if(lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID)
+							{
+								// osg references for road mark osi points
+								osg::ref_ptr<osg::Geometry> osi_rm_geom = new osg::Geometry;
+								osg::ref_ptr<osg::Vec3Array> osi_rm_points = new osg::Vec3Array;
+								osg::ref_ptr<osg::Vec4Array> osi_rm_color = new osg::Vec4Array;
+								osg::ref_ptr<osg::Point> osi_rm_point = new osg::Point();
+									
+								// osg references for drawing lines between each road mark osi points
+								osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+								osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
+								osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+								osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
+
+								// Creating points for the given roadmark
+								for (int m = 0; m < curr_osi_rm.GetX().size(); m++)
+								{
+									point.set(curr_osi_rm.GetX()[m], curr_osi_rm.GetY()[m], curr_osi_rm.GetZ()[m] + z_offset);
+									osi_rm_points->push_back(point);
+									osi_rm_color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
+								}
+
+								// Put points on selected locations
+								osi_rm_point->setSize(6.0f);
+								osi_rm_geom->setVertexArray(osi_rm_points.get());
+								osi_rm_geom->setColorArray(osi_rm_color.get());
+								osi_rm_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+								osi_rm_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_rm_points->size()));
+								osi_rm_geom->getOrCreateStateSet()->setAttributeAndModes(osi_rm_point, osg::StateAttribute::ON);
+								osi_rm_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+									
+								odrLines_->addChild(osi_rm_geom);
+
+								// Draw lines between each selected points
+								lineWidth->setWidth(1.5f);
+								color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
+
+								geom->setVertexArray(osi_rm_points.get());
+								geom->setColorArray(color.get());
+								geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+								geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_rm_points->size()));
+								geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+								geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+								odrLines_->addChild(geom);
+
 							}
 						}
 					}
@@ -1149,7 +1196,7 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 				{
 					point.set(curr_osi.GetX()[m], curr_osi.GetY()[m], curr_osi.GetZ()[m] + z_offset);
 					osi_points->push_back(point);
-					osi_color->push_back(osg::Vec4(color_green[0], color_green[1], color_green[2], 1.0));
+					osi_color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
 				}
 				osi_point->setSize(6.0f);
 				osi_geom->setVertexArray(osi_points.get());
