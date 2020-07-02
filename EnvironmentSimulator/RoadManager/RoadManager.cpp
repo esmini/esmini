@@ -3250,7 +3250,7 @@ bool OpenDrive::CheckLaneOSIRequirement(std::vector<double> x0, std::vector<doub
 	}
 }
 
-void OpenDrive::SetLaneOSIPoints()
+void OpenDrive::SetLaneCenterOSIPoints()
 {
 	// Initialization
 	Position* pos = new roadmanager::Position();
@@ -3408,7 +3408,7 @@ void OpenDrive::SetLaneOSIPoints()
 	}
 }
 
-void OpenDrive::SetRoadMarkOSIPoints()
+void OpenDrive::SetBrokenRoadMarkOSIPoints()
 {
 	// Initialization
 	Position* pos = new roadmanager::Position();
@@ -3551,8 +3551,8 @@ void OpenDrive::SetRoadMarkOSIPoints()
 
 bool OpenDrive::SetRoadOSI()
 {
-	SetLaneOSIPoints();
-	SetRoadMarkOSIPoints();
+	SetLaneCenterOSIPoints();
+	SetBrokenRoadMarkOSIPoints();
 	return true;
 }
 

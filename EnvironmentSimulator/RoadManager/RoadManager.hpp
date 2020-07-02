@@ -883,8 +883,8 @@ namespace roadmanager
 		*/
 		bool SetRoadOSI();
 		bool CheckLaneOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1);
-		void SetLaneOSIPoints();
-		void SetRoadMarkOSIPoints();
+		void SetLaneCenterOSIPoints();
+		void SetBrokenRoadMarkOSIPoints();
 		
 		/**
 		Retrieve a road segment specified by road ID 
