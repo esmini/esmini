@@ -3250,7 +3250,7 @@ bool OpenDrive::CheckLaneOSIRequirement(std::vector<double> x0, std::vector<doub
 	}
 }
 
-void OpenDrive::SetLaneCenterOSIPoints()
+void OpenDrive::SetLaneOSIPoints()
 {
 	// Initialization
 	Position* pos = new roadmanager::Position();
@@ -3408,7 +3408,7 @@ void OpenDrive::SetLaneCenterOSIPoints()
 	}
 }
 
-void OpenDrive::SetBrokenRoadMarkOSIPoints()
+void OpenDrive::SetRoadMarkOSIPoints()
 {
 	// Initialization
 	Position* pos = new roadmanager::Position();
@@ -3419,9 +3419,9 @@ void OpenDrive::SetBrokenRoadMarkOSIPoints()
 	LaneRoadMarkType *lane_roadMarkType;
 	LaneRoadMarkTypeLine *lane_roadMarkTypeLine;
 	int number_of_lane_sections, number_of_lanes, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines, counter;
-	double lsec_end;
-	double s_roadmark, s_end_roadmark, s_roadmarkline, s_end_roadmarkline;
-	std::vector<double> osi_s_rm, osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm;
+	double s0, s1, s1_prev, lsec_end, s_roadmark, s_end_roadmark, s_roadmarkline, s_end_roadmarkline;
+	std::vector<double> x0, x1, y0, y1, osi_s_rm, osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm;
+	bool osi_requirement;
 
 	// Looping through each road 
 	for (int i=0; i<road_.size(); i++)
@@ -3516,6 +3516,108 @@ void OpenDrive::SetBrokenRoadMarkOSIPoints()
 											}
 										}
 									}
+									else if (lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::SOLID)
+									{
+										s0 = s_roadmarkline;
+										s1 = s0+OSI_POINT_CALC_STEPSIZE;
+										s1_prev = s0;
+										counter = 0;
+										
+										while(true)
+										{
+											counter++;
+
+											// [XO, YO] = closest position with given (-) tolerance
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s0-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+											x0.push_back(pos->GetX());
+											y0.push_back(pos->GetY());
+
+											// [XO, YO] = Real position with no tolerance
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s0, 0, j);
+											x0.push_back(pos->GetX());
+											y0.push_back(pos->GetY());
+
+											// Add the starting point of each lane as osi point
+											if (counter == 1)
+											{
+												osi_s_rm.push_back(s0);
+												osi_x_rm.push_back(pos->GetX());
+												osi_y_rm.push_back(pos->GetY());
+												osi_z_rm.push_back(pos->GetZ());
+												osi_h_rm.push_back(pos->GetH());
+											}
+
+											// [XO, YO] = closest position with given (+) tolerance
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s0+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+											x0.push_back(pos->GetX());
+											y0.push_back(pos->GetY());
+
+											// [X1, Y1] = closest position with given (-) tolerance																																																																																																												
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s1-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+											x1.push_back(pos->GetX());																																	
+											y1.push_back(pos->GetY());
+
+											// [X1, Y1] = Real position with no tolerance																																																								
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s1, 0, j);
+											x1.push_back(pos->GetX());
+											y1.push_back(pos->GetY());
+
+											// [X1, Y1] = closest position with given (+) tolerance
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s1+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+											x1.push_back(pos->GetX());
+											y1.push_back(pos->GetY());
+
+											// Check OSI Requirement between current given points
+											osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
+
+											// If requirement is satisfied -> look further points
+											// If requirement is not satisfied:
+												// Assign last satisfied point as OSI point
+												// Continue searching from the last satisfied point
+											if (osi_requirement)
+											{
+												s1_prev = s1;
+												s1 = s1 + OSI_POINT_CALC_STEPSIZE;
+
+											}
+											else
+											{
+												s0 = s1_prev;
+												s1_prev = s1;
+												s1 = s0 + OSI_POINT_CALC_STEPSIZE;
+
+												if (counter != 1)
+												{
+													pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s0, 0, j);
+													osi_s_rm.push_back(s0);
+													osi_x_rm.push_back(pos->GetX());
+													osi_y_rm.push_back(pos->GetY());
+													osi_z_rm.push_back(pos->GetZ());
+													osi_h_rm.push_back(pos->GetH());
+												}
+											}
+
+											// If the end of the road mark line reached, assign end of the road mark line as final OSI point for current road mark line
+											if (s1 >= s_end_roadmarkline)
+											{
+												pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_end_roadmarkline, 0, j);
+												osi_s_rm.push_back(s_end_roadmarkline);
+												osi_x_rm.push_back(pos->GetX());
+												osi_y_rm.push_back(pos->GetY());
+												osi_z_rm.push_back(pos->GetZ());
+												osi_h_rm.push_back(pos->GetH());
+												break;
+											}
+
+											// Clear x-y collectors for next iteration
+											x0.clear();
+											y0.clear();
+											x1.clear();
+											y1.clear();
+
+										}
+									}
+
 
 									// Set all collected osi points for the current lane rpadmarkline
 									lane_roadMarkTypeLine->osi_points_.Set(osi_s_rm, osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm);
@@ -3551,8 +3653,8 @@ void OpenDrive::SetBrokenRoadMarkOSIPoints()
 
 bool OpenDrive::SetRoadOSI()
 {
-	SetLaneCenterOSIPoints();
-	SetBrokenRoadMarkOSIPoints();
+	SetLaneOSIPoints();
+	SetRoadMarkOSIPoints();
 	return true;
 }
 
