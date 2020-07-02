@@ -12,6 +12,7 @@
 
 #pragma once
 #include "RoadManager.hpp"
+#include "Entities.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -81,6 +82,8 @@ namespace scenarioengine
 	};
 
 
+	
+
 	class ScenarioGateway
 	{
 	public:
@@ -99,6 +102,8 @@ namespace scenarioengine
 			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			int roadId, int laneId, double laneOffset, double s);
 
+		void removeObject(int id);
+		void removeObject(std::string name);
 		int getNumberOfObjects() { return (int)objectState_.size(); }
 		ObjectState getObjectStateByIdx(int idx) { return *objectState_[idx]; }
 		ObjectState *getObjectStatePtrByIdx(int idx) { return objectState_[idx]; }
@@ -119,5 +124,18 @@ namespace scenarioengine
 		std::ofstream data_file_;
 		bool sendOSIoverUDP;
 	};
+	class SumoController
+	{
+		public:
+			SumoController(std::string file); //, Vehicle defaultvehicle);
+			SumoController();
+			void step(double time, Entities* entities, ScenarioGateway* scegw);
 
+		private:
+			Entities* entities;
+			bool sumo_used;
+			// std::vector<SumoId> ids;
+
+
+	};
 }

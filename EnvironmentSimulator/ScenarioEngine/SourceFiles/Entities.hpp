@@ -38,7 +38,8 @@ namespace scenarioengine
 			INTERNAL,
 			EXTERNAL,
 			HYBRID_EXTERNAL,
-			HYBRID_GHOST
+			HYBRID_GHOST,
+			SUMO
 		} Control;
 
 		struct Property
@@ -119,15 +120,19 @@ namespace scenarioengine
 
 	public:
 
-		Entities() {}
+		Entities() {};
 
 		void Print()
 		{
 			LOG("");
 		}
-
+		
 		std::vector<Object*> object_;
-
+		int addObject(Object* obj);
+		void removeObject(int id);
+		void removeObject(std::string name);
+		int getNewId();
+		bool indexExists(int id);
 	};
 
 }

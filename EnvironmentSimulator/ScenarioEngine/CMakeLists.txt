@@ -7,7 +7,12 @@ include_directories (
   ${REPLAY_INCLUDE_DIR}  
   ${RDB_INCLUDE_DIR}
   ${OSI_INCLUDE_DIR}
+
 )
+include_directories("/home/e9387011/sumo/src/libsumo")
+include_directories("/home/e9387011/sumo/src")
+include_directories("/home/e9387011/sumo/build/cmake-build/src/")
+include_directories("/home/e9387011/sumo/src/utils/geom")
 
 file(GLOB SRC_OSCTYPEDEFS "${CMAKE_CURRENT_LIST_DIR}/OSCTypeDefs/*.[hc]pp")
 file(GLOB SRC_SOURCEFILES "${CMAKE_CURRENT_LIST_DIR}/SourceFiles/*.[hc]pp")
@@ -23,6 +28,7 @@ ${SRC_OSCTYPEDEFS}
 ${SRC_SOURCEFILES} 
 ${SRC_ADDITIONAL} 
 )
+
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 

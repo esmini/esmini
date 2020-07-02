@@ -624,8 +624,7 @@ int ScenarioReader::parseEntities()
 		if (obj != 0)
 		{
 			obj->name_ = ReadAttribute(entitiesChild, "name");
-			obj->id_ = (int)entities_->object_.size();
-			entities_->object_.push_back(obj);
+			entities_->addObject(obj); 
 			objectCnt_++;
 		}
 	}

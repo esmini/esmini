@@ -29,6 +29,10 @@
 #include <unistd.h> /* Needed for close() */
 #endif
 
+#include <Simulation.h>
+#include <Vehicle.h>
+#include <TraCIDefs.h>
+
 using namespace scenarioengine;
 
 
@@ -574,6 +578,28 @@ void ScenarioGateway::reportObject(int id, std::string name, int model_id, int c
 	}
 }
 
+void ScenarioGateway::removeObject(int id)
+{
+	for (size_t i = 0; i < objectState_.size(); i++) 
+	{
+		if (objectState_[i]->state_.id == id) 
+		{
+			objectState_.erase(objectState_.begin() + i);
+		}
+	}
+}
+
+void ScenarioGateway::removeObject(std::string name)
+{
+	for (size_t i = 0; i < objectState_.size(); i++) 
+	{
+		if (objectState_[i]->state_.name == name) 
+		{
+			objectState_.erase(objectState_.begin() + i);
+		}
+	}
+}
+
 int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename, std::string  model_filename)
 {
 	if (!filename.empty())
@@ -592,4 +618,69 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
 	}
 
 	return 0;
+}
+
+
+
+
+SumoController::SumoController(std::string file)
+{
+	
+	std::vector<std::string> options;
+	options.push_back(file);
+	
+	// libsumo::Simulation::load(options);
+	sumo_used = true;
+}
+SumoController::SumoController()
+{
+	sumo_used = false;
+}
+void SumoController::step(double time, Entities* entities, ScenarioGateway* scegw)
+{
+	if (sumo_used)
+	{
+		libsumo::Simulation::step(time);
+		// if (libsumo::Simulation::getDepartedNumber() > 0) {
+		// 	std::vector<std::string> deplist = libsumo::Simulation::getDepartedIDList();
+		// 	for (std::vector<std::string>::iterator name = deplist.begin(); name != deplist.end(); ++name) {
+		// 		Vehicle *vehicle = new Vehicle();
+		// 		// copy the default vehicle stuffs here
+
+		// 		vehicle->name_ = *name;
+		// 		entities->addObject(vehicle);
+
+		// 		// scegw->addObject(); // maybe add this in the future?
+		// 	}
+		// }
+
+		// if (libsumo::Simulation::getArrivedNumber() > 0) {
+		// std::vector<std::string> deplist = libsumo::Simulation::getArrivedIDList();
+		// 	for (std::vector<std::string>::iterator j = deplist.begin(); j != deplist.end(); ++j) {
+		// 		for(std::vector<std::string>::iterator it = entities->object_.begin(); it != entities->object_.end(); ++it) {
+		// 			if (*it == *j) {
+		// 				// entities->removeObject(*it);
+		// 				// scegw->removeObject(*it);
+		// 			}
+		// 		}
+		// 	}
+		// }
+
+		for (size_t i = 0; i < entities->object_.size(); i++) 
+		{
+			if (entities->object_[i]->control_ == Object::Control::SUMO)
+			{
+				std::string sumoid = entities->object_[i]->name_;
+				libsumo::TraCIPosition pos = libsumo::Vehicle::getPosition3D(sumoid);
+
+				entities->object_[i]->speed_ = libsumo::Vehicle::getSpeed(sumoid);
+				entities->object_[i]->pos_.SetX(pos.x);
+				entities->object_[i]->pos_.SetY(pos.y);
+				entities->object_[i]->pos_.SetZ(pos.z);
+				entities->object_[i]->pos_.SetH(libsumo::Vehicle::getAngle(sumoid));
+				entities->object_[i]->pos_.SetP(libsumo::Vehicle::getSlope(sumoid));
+			}
+        }
+
+	}
 }

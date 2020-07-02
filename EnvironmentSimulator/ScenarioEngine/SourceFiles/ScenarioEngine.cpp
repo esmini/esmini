@@ -297,7 +297,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	scenarioGateway.UpdateOSISensorView();
 
 	stepObjects(deltaSimTime);
-
+	// sumo.step();
 	if (all_done)
 	{
 		LOG("All acts are done, quit now");
@@ -360,7 +360,8 @@ void ScenarioEngine::ResolveHybridVehicles()
 			external_vehicle->ghost_ = entities.object_[i];
 
 			entities.object_[i]->id_ = (int)entities.object_.size();
-			entities.object_.push_back(entities.object_[i]);
+			//KOLLA DETTA
+			entities.addObject(entities.object_[i]);
 			entities.object_[i] = external_vehicle;
 			entities.object_[i]->id_ = (int)i;
 		}
