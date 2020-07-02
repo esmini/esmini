@@ -985,7 +985,6 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od, osg::Group* parent)
 	double z_offset = 0.10;
 	roadmanager::Position* pos = new roadmanager::Position();
 	osg::Vec3 point(0, 0, 0);
-	odrLines_ = new osg::Group;
 
 	for (int r = 0; r < od->GetNumOfRoads(); r++)
 	{
