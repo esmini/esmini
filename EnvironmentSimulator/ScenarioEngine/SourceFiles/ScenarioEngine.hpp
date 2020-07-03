@@ -82,8 +82,10 @@ namespace scenarioengine
 		// Simulation parameters
 		double simulationTime;
 		double headstart_time_;
-
+		std::string sumofile;
+		Vehicle sumotemplate;
 		ScenarioGateway scenarioGateway;
+		SumoController *sumocontroller;
 
 		// execution control flags
 		bool quit_flag;

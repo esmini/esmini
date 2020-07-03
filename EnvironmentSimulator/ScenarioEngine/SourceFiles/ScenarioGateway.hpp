@@ -127,12 +127,14 @@ namespace scenarioengine
 	class SumoController
 	{
 		public:
-			SumoController(std::string file); //, Vehicle defaultvehicle);
+			SumoController(std::string file, Entities* entities, ScenarioGateway* scenarioGateway, Vehicle* vehicletemplate); 
 			SumoController();
-			void step(double time, Entities* entities, ScenarioGateway* scegw);
+			void step(double time);
 
 		private:
-			Entities* entities;
+			Entities* entities_;
+			ScenarioGateway* scenarioGateway_;
+			Vehicle* template_;
 			bool sumo_used;
 			// std::vector<SumoId> ids;
 

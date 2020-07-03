@@ -623,64 +623,72 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
 
 
 
-SumoController::SumoController(std::string file)
+SumoController::SumoController(std::string file, Entities* entities, ScenarioGateway* scenarioGateway, Vehicle* vehicletemplate)
 {
-	
+	entities_ = entities;
+	scenarioGateway_ = scenarioGateway;
+	template_ = vehicletemplate;
 	std::vector<std::string> options;
+
 	options.push_back(file);
 	
-	// libsumo::Simulation::load(options);
+	libsumo::Simulation::load(options);
 	sumo_used = true;
 }
 SumoController::SumoController()
 {
 	sumo_used = false;
 }
-void SumoController::step(double time, Entities* entities, ScenarioGateway* scegw)
+void SumoController::step(double time)
 {
 	if (sumo_used)
 	{
 		libsumo::Simulation::step(time);
-		// if (libsumo::Simulation::getDepartedNumber() > 0) {
-		// 	std::vector<std::string> deplist = libsumo::Simulation::getDepartedIDList();
-		// 	for (std::vector<std::string>::iterator name = deplist.begin(); name != deplist.end(); ++name) {
-		// 		Vehicle *vehicle = new Vehicle();
-		// 		// copy the default vehicle stuffs here
-
-		// 		vehicle->name_ = *name;
-		// 		entities->addObject(vehicle);
-
-		// 		// scegw->addObject(); // maybe add this in the future?
-		// 	}
-		// }
-
-		// if (libsumo::Simulation::getArrivedNumber() > 0) {
-		// std::vector<std::string> deplist = libsumo::Simulation::getArrivedIDList();
-		// 	for (std::vector<std::string>::iterator j = deplist.begin(); j != deplist.end(); ++j) {
-		// 		for(std::vector<std::string>::iterator it = entities->object_.begin(); it != entities->object_.end(); ++it) {
-		// 			if (*it == *j) {
-		// 				// entities->removeObject(*it);
-		// 				// scegw->removeObject(*it);
-		// 			}
-		// 		}
-		// 	}
-		// }
-
-		for (size_t i = 0; i < entities->object_.size(); i++) 
-		{
-			if (entities->object_[i]->control_ == Object::Control::SUMO)
+		if (libsumo::Simulation::getDepartedNumber() > 0) {
+			std::vector<std::string> deplist = libsumo::Simulation::getDepartedIDList();
+			// for (std::vector<std::string>::iterator name = deplist.begin(); name != deplist.end(); ++name) {
+			for (size_t i = 0; i < deplist.size(); i++)
 			{
-				std::string sumoid = entities->object_[i]->name_;
+				Vehicle *vehicle = new Vehicle();
+				// copy the default vehicle stuffs here
+
+				vehicle->name_ = deplist[i];
+				entities_->addObject(vehicle);
+
+				// scenarioGateway_->addObject(); // maybe add this in the future?
+			}
+		}
+
+		if (libsumo::Simulation::getArrivedNumber() > 0) {
+		std::vector<std::string> arrivelist = libsumo::Simulation::getArrivedIDList();
+			// for (std::vector<std::string>::iterator j = deplist.begin(); j != deplist.end(); ++j) {
+			for (size_t i = 0; i < arrivelist.size();i++)
+			{
+				// for(std::vector<std::string>::iterator it = entities->object_.begin(); it != entities->object_.end(); ++it) {
+				for (size_t j = 0; j < entities_->object_.size(); j++)
+				{
+					if (arrivelist[i] == entities_->object_[j]->name_) {
+						entities_->removeObject(arrivelist[i]);
+						scenarioGateway_->removeObject(arrivelist[i]);
+					}
+				}
+			}
+		}
+
+		for (size_t i = 0; i < entities_->object_.size(); i++)
+		{
+			if (entities_->object_[i]->control_ == Object::Control::SUMO)
+			{
+				std::string sumoid = entities_->object_[i]->name_;
 				libsumo::TraCIPosition pos = libsumo::Vehicle::getPosition3D(sumoid);
 
-				entities->object_[i]->speed_ = libsumo::Vehicle::getSpeed(sumoid);
-				entities->object_[i]->pos_.SetX(pos.x);
-				entities->object_[i]->pos_.SetY(pos.y);
-				entities->object_[i]->pos_.SetZ(pos.z);
-				entities->object_[i]->pos_.SetH(libsumo::Vehicle::getAngle(sumoid));
-				entities->object_[i]->pos_.SetP(libsumo::Vehicle::getSlope(sumoid));
+				entities_->object_[i]->speed_ = libsumo::Vehicle::getSpeed(sumoid);
+				entities_->object_[i]->pos_.SetX(pos.x);
+				entities_->object_[i]->pos_.SetY(pos.y);
+				entities_->object_[i]->pos_.SetZ(pos.z);
+				entities_->object_[i]->pos_.SetH(libsumo::Vehicle::getAngle(sumoid));
+				entities_->object_[i]->pos_.SetP(libsumo::Vehicle::getSlope(sumoid));
 			}
         }
-
 	}
 }
