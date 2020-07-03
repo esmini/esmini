@@ -3215,12 +3215,27 @@ OpenDrive* Position::GetOpenDrive()
 
 bool OpenDrive::CheckLaneOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1)
 {
-	// Creating tangent line around the point (First Point) with given tolerance 
-	double k_0 = (y0[2]-y0[0])/(x0[2]-x0[0]);
+	double x0_tan_diff, y0_tan_diff, x1_tan_diff, y1_tan_diff;
+	x0_tan_diff = x0[2]-x0[0];
+	y0_tan_diff = y0[2]-y0[0];
+	x1_tan_diff = x1[2]-x1[0];
+	y1_tan_diff = y1[2]-y1[0];
+
+	// Avoiding Zero Denominator in OSI point calculations
+	if(x0_tan_diff == 0) {x0_tan_diff+=0.001; }
+
+	if(y0_tan_diff == 0) {y0_tan_diff+=0.001; }
+
+	if(x1_tan_diff == 0) {x1_tan_diff+=0.001; }
+
+	if(y1_tan_diff == 0) {y1_tan_diff+=0.001; }
+
+	// Creating tangent line around the point (First Point) with given tolerance
+	double k_0 = y0_tan_diff/x0_tan_diff;
 	double m_0 = y0[1] - k_0*x0[1];
 
 	// Creating tangent line around the point (Second Point) with given tolerance 
-	double k_1 = (y1[2]-y1[0])/(x1[2]-x1[0]);
+	double k_1 = y1_tan_diff/x1_tan_diff;
 	double m_1 = y1[1] - k_1*x1[1];
 
 	// Intersection point of the tangent lines
@@ -3341,8 +3356,15 @@ void OpenDrive::SetLaneOSIPoints()
 					y1.push_back(pos->GetY());
 
 					// Check OSI Requirement between current given points
-					osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
-
+					if (x1[1]-x0[1] != 0 && y1[1]-y0[1] != 0)
+					{
+						osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
+					}
+					else
+					{
+						osi_requirement = true;
+					}
+					
 					// If requirement is satisfied -> look further points
 					// If requirement is not satisfied:
 						// Assign last satisfied point as OSI point
@@ -3393,6 +3415,7 @@ void OpenDrive::SetLaneOSIPoints()
 				lane->osi_points_.Set(osi_s, osi_x, osi_y, osi_z, osi_h);
 
 				// Clear osi collectors for next iteration
+				osi_s.clear();
 				osi_x.clear();
 				osi_y.clear();
 				osi_z.clear();
