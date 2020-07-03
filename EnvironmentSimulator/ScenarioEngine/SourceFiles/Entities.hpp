@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -115,6 +115,17 @@ namespace scenarioengine
 		}
 	};
 
+	// define a contorller class just to parse sumo controller config file
+	class Controller
+	{
+	public:
+    std::string name_;
+		std::string config_filepath_;
+
+		Controller() : name_(""),config_filepath_("") {}
+
+	};
+
 	class Entities
 	{
 
@@ -126,8 +137,13 @@ namespace scenarioengine
 		{
 			LOG("");
 		}
-		
+
 		std::vector<Object*> object_;
+
+		// create a sumo vehicle template and sumo config file in Entities class
+		Object* sumo_vehicle;
+		std::string sumo_config_path;
+
 		int addObject(Object* obj);
 		void removeObject(int id);
 		void removeObject(std::string name);

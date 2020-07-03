@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -29,11 +29,15 @@ CatalogType Entry::GetTypeByNodeName(pugi::xml_node node)
 	{
 		return CatalogType::CATALOG_VEHICLE;
 	}
+	else if (!strcmp(node.name(), "Controller"))
+	{
+		return CatalogType::CATALOG_CONTROLLER;
+	}
 	else
 	{
 		LOG("Unsupported catalog entry type: %s", node.name());
 	}
-	
+
 	return CatalogType::CATALOG_UNDEFINED;
 }
 
@@ -62,6 +66,10 @@ int Catalogs::RegisterCatalogDirectory(std::string type, std::string directory)
 	{
 		entry.type_ = CatalogType::CATALOG_ROUTE;
 	}
+	else if (type == "ControllerCatalog")
+	{
+		entry.type_ = CatalogType::CATALOG_CONTROLLER;
+	}
 	else
 	{
 		LOG("Warning: %s not yet supported", type.c_str());
@@ -84,6 +92,7 @@ std::string Entry::GetTypeAsStr_(CatalogType type)
 		else if (type == CATALOG_MANEUVER) return "MANEUVER";
 		else if (type == CATALOG_TRAJECTORY) return "TRAJECTORY";
 		else if (type == CATALOG_ROUTE) return "ROUTE";
+		else if (type == CATALOG_CONTROLLER) return "CONTROLLER";
 		else if (type == CATALOG_UNDEFINED) return "UNDEFINED";
 		else LOG("Type %d not recognized", type);
 
