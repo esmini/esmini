@@ -237,7 +237,7 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 
 	return catalog;
 }
-
+>>>>>>> Revert "add acceleration to object and update ScenarioGateway related functions"
 void ScenarioReader::parseParameterDeclarations(pugi::xml_node parameterDeclarationsNode, OSCParameterDeclarations *pd)
 {
 	LOG("Parsing ParameterDeclarations");

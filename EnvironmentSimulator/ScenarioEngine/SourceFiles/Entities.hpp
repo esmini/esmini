@@ -90,6 +90,8 @@ namespace scenarioengine
 		} Category;
 
 		Category category_;
+		OSCBoundingBox boundingbox_;
+		double acceleration_;
 
 
 		Vehicle() : Object(Object::Type::VEHICLE), category_(Category::CAR) {}
