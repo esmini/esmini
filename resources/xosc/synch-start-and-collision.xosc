@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="0"
+               revMinor="9"
+               date="2017-06-09T10:00:00"
+               description="LTAP-OD"
+               author="Fredrik Persson, Emil Knabe"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="$HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="$HostSpeed" parameterType="double" value="10"/>
+      <ParameterDeclaration name="$NPCVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="$NPCSpeed" parameterType="double" value="5"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <RouteCatalog>
+         <Directory path="../xosc/Catalogs/Routes"/>
+      </RouteCatalog>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/multi_intersections.xodr"/>
+      <SceneGraphFile filepath="../models/multi_intersections.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="NPC">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$NPCVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="NPCParked">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <RoutingAction>
+                     <AssignRouteAction>
+                        <CatalogReference catalogName="RoutesAtMultiIntersections" entryName="HostStraightRoute"/>
+                     </AssignRouteAction>
+                  </RoutingAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <RoutePosition>
+                           <RouteRef>
+                              <CatalogReference catalogName="RoutesAtMultiIntersections" entryName="HostStraightRoute"/>
+                           </RouteRef>
+                           <InRoutePosition>
+                              <FromLaneCoordinates pathS="0" laneId="1"/>
+                           </InRoutePosition>
+                        </RoutePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="$HostSpeed"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="NPC">
+               <PrivateAction>
+                  <RoutingAction>
+                     <AssignRouteAction>
+                        <CatalogReference catalogName="RoutesAtMultiIntersections" entryName="TargetStraightLeftToRight"/>
+                     </AssignRouteAction>
+                  </RoutingAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <RoutePosition>
+                           <RouteRef>
+                              <CatalogReference catalogName="RoutesAtMultiIntersections" entryName="TargetStraightLeftToRight"/>
+                           </RouteRef>
+                           <InRoutePosition>
+                              <FromLaneCoordinates pathS="80" laneId="1"/>
+                           </InRoutePosition>
+                        </RoutePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="NPCParked">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="242" laneId="1" offset="3" s="0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="LTAPStory">
+         <ParameterDeclarations>
+            <ParameterDeclaration parameterType="string" name="$owner" value="NPC"/>
+         </ParameterDeclarations>
+         <Act name="LTAPActNPC">
+            <ManeuverGroup maximumExecutionCount="1" name="LTAPSequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="NPC"/>
+               </Actors>
+               <Maneuver name="ManeuverNPC">
+                  <Event name="SetNPCSpeedEvent" priority="overwrite">
+                     <Action name="SetNPCSpeedAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="step"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$NPCSpeed"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                       </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="SyncConditionNPC" delay="0.0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <!-- 6 seconds to parked car/synch position -->
+                                    <TimeHeadwayCondition entityRef="NPCParked"
+                                                          value="6"
+                                                          freespace="true"
+                                                          alongRoute="true"
+                                                          rule="lessThan"/>
+                                 </EntityCondition>                              
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="SyncEvent" priority="overwrite">
+                     <Action name="SyncActionNPC">
+						<PrivateAction>
+							<SynchronizeAction masterEntityRef="Ego" >
+								<TargetPositionMaster>
+									<LanePosition roadId="240" laneId="1" offset="0" s="8" />
+								</TargetPositionMaster>    
+                                <!-- It's about 30 meter to synch position -->
+								<TargetPosition>
+									<LanePosition roadId="236" laneId="1" offset="0" s="10" />
+								</TargetPosition>    
+								<FinalSpeed>
+									<AbsoluteSpeed value="$NPCSpeed" />
+								</FinalSpeed>
+							</SynchronizeAction>
+						</PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="SyncConditionNPC" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="event"
+                                                                  storyboardElementRef="SetNPCSpeedEvent"
+                                                                  state="endTransition"/>                         
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LtapActStartConditionNPC" delay="0" conditionEdge="rising">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger>
+               <ConditionGroup>
+                   <Condition name="QuitCondition" delay="0" conditionEdge="rising">
+					  <ByEntityCondition>
+						 <TriggeringEntities triggeringEntitiesRule="any">
+							<EntityRef entityRef="Ego"/>
+						 </TriggeringEntities>
+						 <EntityCondition>
+							<ReachPositionCondition tolerance="5.0">
+							   <Position>
+								  <LanePosition roadId="235" laneId="-1" s="100.0"/>
+							   </Position>
+							</ReachPositionCondition>
+						 </EntityCondition>
+					  </ByEntityCondition>		
+			      </Condition>
+               </ConditionGroup>
+			</StopTrigger>
+         </Act>
+      </Story>
+   </Storyboard>
+</OpenSCENARIO>

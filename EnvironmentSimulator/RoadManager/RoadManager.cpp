@@ -3371,7 +3371,7 @@ void OpenDrive::SetLaneOSIPoints()
 					}
 
 					// If the end of the lane reached, assign end of the lane as final OSI point for current lane
-					if (s1 >= lsec_end)
+					if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end)
 					{
 						pos->SetLanePos(road->GetId(), lane->GetId(), lsec_end, 0, j);
 						osi_s.push_back(lsec_end);
@@ -3391,7 +3391,6 @@ void OpenDrive::SetLaneOSIPoints()
 
 				// Set all collected osi points for the current lane
 				lane->osi_points_.Set(osi_s, osi_x, osi_y, osi_z, osi_h);
-				LOG("OSI Points for lane %d within lane section %d for road %d are populated successfully", lane->GetId(), j, i);
 
 				// Clear osi collectors for next iteration
 				osi_x.clear();
@@ -3621,7 +3620,6 @@ void OpenDrive::SetRoadMarkOSIPoints()
 
 									// Set all collected osi points for the current lane rpadmarkline
 									lane_roadMarkTypeLine->osi_points_.Set(osi_s_rm, osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm);
-									LOG("OSI Points for laneroadmarktypeline %d within laneroadmark %d for lane %d are populated successfully", n, m, lane->GetId());
 
 									// Clear osi collectors for roadmarks for next iteration
 									osi_s_rm.clear();
