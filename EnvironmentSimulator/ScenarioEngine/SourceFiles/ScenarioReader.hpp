@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -20,6 +20,7 @@
 #include "OSCProperties.hpp"
 #include "pugixml.hpp"
 #include "OSCGlobalAction.hpp"
+#include "OSCBoundingBox.hpp"
 
 #include <iostream>
 #include <string>
@@ -51,6 +52,7 @@ namespace scenarioengine
 		Catalog* LoadCatalog(std::string name);
 		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode);
 		void ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node);
+		void ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_node &xml_node);
 		Vehicle* parseOSCVehicle(pugi::xml_node vehicleNode);
 		Vehicle* createRandomOSCVehicle(std::string name);
 
@@ -78,7 +80,7 @@ namespace scenarioengine
 		void addParameter(std::string name, std::string value);
 
 		std::string getScenarioFilename() { return oscFilename_; }
-	
+
 	private:
 		pugi::xml_document doc_;
 		OSCParameterDeclarations parameterDeclarations_;

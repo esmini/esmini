@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -18,6 +18,7 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "Trail.hpp"
+#include "OSCBoundingBox.hpp"
 
 namespace scenarioengine
 {
@@ -88,8 +89,10 @@ namespace scenarioengine
 		} Category;
 
 		Category category_;
+		OSCBoundingBox boundingbox_;
+		double acceleration_;
 
-		Vehicle() : Object(Object::Type::VEHICLE), category_(Category::CAR) {}
+		Vehicle() : Object(Object::Type::VEHICLE), category_(Category::CAR),acceleration_(0) {}
 
 		void SetCategory(std::string category)
 		{
