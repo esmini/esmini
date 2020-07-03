@@ -292,17 +292,6 @@ namespace roadmanager
 		double s_offset_;
 	};
 
-		class LaneRoadMarkTypeLineID
-	{
-		int id; 
-	public:
-		LaneRoadMarkTypeLineID() {
-			static int counter = 0; 
-			id = counter++; 
-		}
-		int get_id() { return id; }
-	};
-
 	class LaneRoadMarkTypeLine
 	{
 	public:
@@ -322,8 +311,6 @@ namespace roadmanager
 		double GetWidth() {return width_;}
 		OSIPoints GetOSIPoints() {return osi_points_;}
 		OSIPoints osi_points_;
-		void SetGlobalId();
-		int GetGlobalId() { return global_id_; }
 
 	private:
 		double length_;
@@ -332,8 +319,6 @@ namespace roadmanager
 		double s_offset_;
 		RoadMarkTypeLineRule rule_;
 		double width_;
-		LaneRoadMarkTypeLineID lineglobalID_;  // class that generates the unique ID for OSI
-		int global_id_;  // Unique ID for OSI
 	};
 
 	class LaneRoadMarkType
@@ -341,7 +326,7 @@ namespace roadmanager
 	public:
 		LaneRoadMarkType(std::string name, double width) : name_(name), width_(width) {}
 		
-		void AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine); 
+		void AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine) { lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine); }
 		std::string GetName() { return name_; }
 		double GetWidth() { return width_; }
 		LaneRoadMarkTypeLine* GetLaneRoadMarkTypeLineByIdx(int idx);
@@ -359,16 +344,16 @@ namespace roadmanager
 	public:
 		enum RoadMarkType
 		{
-			NONE_TYPE = 1,
-			SOLID = 2,
-			BROKEN = 3,
-			SOLID_SOLID = 4,
-			SOLID_BROKEN = 5,
-			BROKEN_SOLID = 6,
-			BROKEN_BROKEN = 7,
-			BOTTS_DOTS = 8,
-			GRASS = 9,
-			CURB = 10
+			NONE_TYPE,
+			SOLID,
+			BROKEN,
+			SOLID_SOLID,
+			SOLID_BROKEN,
+			BROKEN_SOLID,
+			BROKEN_BROKEN,
+			BOTTS_DOTS,
+			GRASS,
+			CURB
 		};
 
 		enum RoadMarkWeight
@@ -409,9 +394,7 @@ namespace roadmanager
 		LaneRoadMarkType* GetLaneRoadMarkTypeByIdx(int idx);
 		double GetSOffset() { return s_offset_; }
 		double GetWidth() { return width_; }
-		RoadMarkType GetType() { return type_; }
-		double GetHeight() { return height_; }
-		RoadMarkColor GetColor() { return color_; }
+		double GetType() { return type_; }
 
 	private:
 		double s_offset_;

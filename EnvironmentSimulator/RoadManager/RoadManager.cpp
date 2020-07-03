@@ -277,11 +277,6 @@ void Lane::SetGlobalId()
 	global_id_ = laneglobalID_.get_id(); 
 }
 
-void LaneRoadMarkTypeLine::SetGlobalId()
-{ 
-	global_id_ = lineglobalID_.get_id(); 
-}
-
 LaneWidth *Lane::GetWidthByS(double s)
 {
 	if (lane_width_.size() == 0)
@@ -345,12 +340,6 @@ LaneRoadMarkTypeLine* LaneRoadMarkType::GetLaneRoadMarkTypeLineByIdx(int idx)
 	}
 
 	return 0;
-}
-
-void LaneRoadMarkType::AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine)
-{ 
-	lane_roadMarkTypeLine->SetGlobalId();
-	lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine); 
 }
 
 void LaneOffset::Print()
