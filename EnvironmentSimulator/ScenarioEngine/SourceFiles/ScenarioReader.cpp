@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -41,7 +41,7 @@ void ScenarioReader::parseGlobalParameterDeclarations()
 void ScenarioReader::RestoreParameterDeclarations()
 {
 	parameterDeclarations_.Parameter.erase(
-		parameterDeclarations_.Parameter.begin(), 
+		parameterDeclarations_.Parameter.begin(),
 		parameterDeclarations_.Parameter.begin() + parameterDeclarations_.Parameter.size() - paramDeclarationsSize_);
 	catalog_param_assignments.clear();
 }
@@ -89,7 +89,7 @@ std::string ScenarioReader::ReadAttribute(pugi::xml_node node, std::string attri
 	}
 
 	pugi::xml_attribute attr;
-	
+
 	if ((attr = node.attribute(attribute_name.c_str())))
 	{
 		if (attr.value()[0] == '$')
@@ -161,7 +161,7 @@ int ScenarioReader::RegisterCatalogDirectory(pugi::xml_node catalogDirChild)
 	std::string catalog_dir = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), dirname);
 
 	catalogs_->RegisterCatalogDirectory(catalogDirChild.name(), catalog_dir);
-	
+
 	return 0;
 }
 
@@ -176,7 +176,7 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 		return catalog;
 	}
 
-	// Not found, try to locate it in one the registered catalog directories 
+	// Not found, try to locate it in one the registered catalog directories
 	pugi::xml_document catalog_doc;
 	size_t i;
 	for (i = 0; i < catalogs_->catalog_dirs_.size(); i++)
@@ -207,13 +207,13 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 	for (pugi::xml_node entry_n = catalog_node.first_child(); entry_n; entry_n = entry_n.next_sibling())
 	{
 		std::string entry_name = ReadAttribute(entry_n, "name");
-		
+
 		// To copy a XML node it needs to be put into a XML doc
 		pugi::xml_document *xml_doc = new pugi::xml_document;
 		xml_doc->append_copy(entry_n);
 		catalog->AddEntry(new Entry(entry_name, xml_doc->first_child()));
 	}
-	
+
 	// Get type by inspecting first entry
 	if (catalog->entry_.size() > 0)
 	{
@@ -238,7 +238,7 @@ void ScenarioReader::parseParameterDeclarations(pugi::xml_node parameterDeclarat
 		ParameterStruct param;
 
 		param.name = pdChild.attribute("name").value();
-		
+
 		// Check for catalog parameter assignements, overriding default value
 		param.value = pdChild.attribute("value").value();
 		for (size_t i = 0; i < catalog_param_assignments.size(); i++)
@@ -278,12 +278,12 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 	{
 		LOG("Warning: No road network ODR file loaded!");
 	}
-	
+
 	if (roadNetwork.sceneGraphFile.filepath == "")
 	{
 		LOG("Warning: No road network 3D model file loaded! Setting default path.");
 
-		// Since the scene graph file path is used to locate other 3D files, like vehicles, create a default path 
+		// Since the scene graph file path is used to locate other 3D files, like vehicles, create a default path
 		roadNetwork.sceneGraphFile.filepath = DirNameOf(oscFilename_);
 	}
 
@@ -335,6 +335,32 @@ Vehicle* ScenarioReader::createRandomOSCVehicle(std::string name)
 	return vehicle;
 }
 
+void ScenarioReader::ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_node &xml_node)
+{
+	pugi::xml_node boundingbox_node = xml_node.child("BoundingBox");
+	if (boundingbox_node != NULL)
+	{
+		for (pugi::xml_node boundingboxChild = boundingbox_node.first_child(); boundingboxChild; boundingboxChild = boundingboxChild.next_sibling())
+		{
+			std::string boundingboxChildName(boundingboxChild.name());
+			if (boundingboxChildName == "Center")
+			{
+				boundingbox.center_.x_ = std::stod(ReadAttribute(boundingboxChild, "x"));
+				boundingbox.center_.y_ = std::stod(ReadAttribute(boundingboxChild, "y"));
+				boundingbox.center_.z_ = std::stod(ReadAttribute(boundingboxChild, "z"));
+			} else if (boundingboxChildName == "Dimensions")
+			{
+				boundingbox.dimensions_.width_ = std::stod(ReadAttribute(boundingboxChild, "width"));
+				boundingbox.dimensions_.length_ = std::stod(ReadAttribute(boundingboxChild, "length"));
+				boundingbox.dimensions_.height_ = std::stod(ReadAttribute(boundingboxChild, "height"));
+			} else {
+				LOG("Not valid boudingbox attribute name:%s",boundingboxChildName);
+			}
+		}
+		//LOG("Parsing boundingbox for vehicle:%s,center_x:%f, dimensions_width: %f.",ReadAttribute(xml_node, "name").c_str(),boundingbox.center_.x_,boundingbox.dimensions_.width_);
+	}
+}
+
 Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 {
 	Vehicle *vehicle = new Vehicle();
@@ -367,7 +393,7 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 			{
 				// This will be the ghost vehicle, controlled by scenario engine,
 				// which the externally controlled vehicle will follow
-				vehicle->control_ = Object::Control::HYBRID_GHOST;  
+				vehicle->control_ = Object::Control::HYBRID_GHOST;
 			}
 			else
 			{
@@ -388,6 +414,9 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	{
 		vehicle->model_filepath_ = properties.file_.filepath_;
 	}
+
+	OSCBoundingBox boundingbox;
+	ParseOSCBoundingBox(boundingbox,vehicleNode);
 
 	return vehicle;
 }
@@ -581,7 +610,7 @@ int ScenarioReader::parseEntities()
 		for (pugi::xml_node objectChild = entitiesChild.first_child(); objectChild; objectChild = objectChild.next_sibling())
 		{
 			std::string objectChildName(objectChild.name());
-			
+
 			if (objectChildName == "CatalogReference")
 			{
 				Entry *entry = ResolveCatalogReference(objectChild);
@@ -598,7 +627,7 @@ int ScenarioReader::parseEntities()
 				{
 					if (entry->type_ == CatalogType::CATALOG_VEHICLE)
 					{
-						// Make a new instance from catalog entry 
+						// Make a new instance from catalog entry
 						Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
 						obj = vehicle;
 					}
@@ -611,7 +640,7 @@ int ScenarioReader::parseEntities()
 				RestoreParameterDeclarations();
 			}
 			else if (objectChildName == "Vehicle")
-			{				
+			{
 				Vehicle *vehicle = parseOSCVehicle(objectChild);
 				obj = vehicle;
 			}
@@ -620,7 +649,7 @@ int ScenarioReader::parseEntities()
 				LOG("%s not supported yet", objectChildName.c_str());
 			}
 		}
-		
+
 		if (obj != 0)
 		{
 			obj->name_ = ReadAttribute(entitiesChild, "name");
@@ -693,7 +722,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 		dy = strtod(ReadAttribute(positionChild, "dy"));
 		dz = strtod(ReadAttribute(positionChild, "dz"));
 		Object* object = FindObjectByName(ReadAttribute(positionChild, "entityRef"));
-		
+
 		// Check for optional Orientation element
 		pugi::xml_node orientation_node = positionChild.child("Orientation");
 		OSCOrientation orientation;
@@ -714,7 +743,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 	else if (positionChildName == "RelativeObjectPosition")
 	{
 		double dx, dy, dz;
-			
+
 		dx = strtod(ReadAttribute(positionChild, "dx"));
 		dy = strtod(ReadAttribute(positionChild, "dy"));
 		dz = strtod(ReadAttribute(positionChild, "dz"));
@@ -827,7 +856,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 
 						if (entry->type_ == CatalogType::CATALOG_ROUTE)
 						{
-							// Make a new instance from catalog entry 
+							// Make a new instance from catalog entry
 							route = parseOSCRoute(entry->GetNode());
 						}
 						else
@@ -839,7 +868,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 						RestoreParameterDeclarations();
 					}
 				}
-			} 
+			}
 			else if (routeChild.name() == std::string("Orientation"))
 			{
 				orientation = new OSCOrientation;
@@ -1016,7 +1045,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									target_rel->continuous_ = (
 										ReadAttribute(targetChild, "continuous") == "true" ||
 										ReadAttribute(targetChild, "continuous") == "1");
-									
+
 									target_rel->object_ = FindObjectByName(ReadAttribute(targetChild, "entityRef"));
 
 									std::string value_type = ReadAttribute(targetChild, "speedTargetValueType");
@@ -1083,7 +1112,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					{
 						action_dist->dynamics_.none_ = true;
 					}
-					
+
 					action_dist->target_object_ = FindObjectByName(ReadAttribute(longitudinalChild, "entityRef"));
 					if (longitudinalChild.attribute("distance"))
 					{
@@ -1099,7 +1128,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					{
 						LOG("Need distance or timeGap");
 					}
-					
+
 					if (longitudinalChild.attribute("continuous"))
 					{
 						LOG("continuous flag assumed and always on by default");
@@ -1267,7 +1296,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
 						targetSpeedRel->continuous_ = true;  // Continuous adaption needed
 
-						targetSpeedRel->object_ = action_synch->master_object_;  // Master object is the pivot vehicle 
+						targetSpeedRel->object_ = action_synch->master_object_;  // Master object is the pivot vehicle
 
 						std::string value_type = ReadAttribute(target_speed_element, "speedTargetValueType");
 						if (value_type == "delta")
@@ -1322,7 +1351,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						else if (followRouteChild.name() == std::string("CatalogReference"))
 						{
 							FollowRouteAction *action_follow_route = new FollowRouteAction;
-							
+
 							// Find route in catalog
 							Entry *entry = ResolveCatalogReference(followRouteChild);
 
@@ -1333,7 +1362,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
 							if (entry->type_ == CatalogType::CATALOG_ROUTE)
 							{
-								// Make a new instance from catalog entry 
+								// Make a new instance from catalog entry
 								action_follow_route->route_ = parseOSCRoute(entry->GetNode());
 								action = action_follow_route;
 								break;
@@ -1370,7 +1399,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
 							if (entry->type_ == CatalogType::CATALOG_TRAJECTORY)
 							{
-								// Make a new instance from catalog entry 
+								// Make a new instance from catalog entry
 								action_follow_trajectory->traj_ = parseTrajectory(entry->GetNode());
 								break;
 							}
@@ -1430,7 +1459,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 			activateControllerAction->longitudinal_ = ReadAttribute(actionChild, "longitudinal") == "true";
 			activateControllerAction->lateral_ = ReadAttribute(actionChild, "lateral") == "true";
 
-			LOG("ActivateControllerAction: Longitudinal: %s Lateral: %s", 
+			LOG("ActivateControllerAction: Longitudinal: %s Lateral: %s",
 				activateControllerAction->longitudinal_ ? "true" : "false",
 				activateControllerAction->lateral_ ? "true" : "false"
 			);
@@ -1808,7 +1837,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						TrigByTraveledDistance* trigger = new TrigByTraveledDistance;
 
 						trigger->value_ = strtod(ReadAttribute(condition_node, "value"));
-						
+
 						condition = trigger;
 					}
 					else
@@ -1821,8 +1850,8 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 			pugi::xml_node triggering_entities = conditionChild.child("TriggeringEntities");
 			if (triggering_entities != NULL)
 			{
-				TrigByEntity *trigger = (TrigByEntity*)condition;				
-				
+				TrigByEntity *trigger = (TrigByEntity*)condition;
+
 				std::string trig_ent_rule = ReadAttribute(triggering_entities, "triggeringEntitiesRule");
 				if (trig_ent_rule == "any")
 				{
@@ -1884,7 +1913,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 		}
 	}
 
-	if (condition == 0) 
+	if (condition == 0)
 	{
 		return 0;
 	}
@@ -2054,7 +2083,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 			for (pugi::xml_node storyChild = storyNode.child("Act"); storyChild; storyChild = storyChild.next_sibling("Act"))
 			{
 				std::string childName(storyChild.name());
-				
+
 				if (childName == "Act")
 				{
 					Act *act = new Act;
@@ -2114,7 +2143,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 								{
 									OSCManeuver *maneuver = new OSCManeuver;
 
-									// Make a new instance from catalog entry 
+									// Make a new instance from catalog entry
 									parseOSCManeuver(maneuver, entry->GetNode(), mGroup);
 									mGroup->maneuver_.push_back(maneuver);
 								}
@@ -2161,5 +2190,3 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 
 	return 0;
 }
-
-
