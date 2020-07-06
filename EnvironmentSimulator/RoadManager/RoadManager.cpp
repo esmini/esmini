@@ -350,7 +350,7 @@ LaneRoadMarkTypeLine* LaneRoadMarkType::GetLaneRoadMarkTypeLineByIdx(int idx)
 void LaneRoadMarkType::AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine)
 { 
 	lane_roadMarkTypeLine->SetGlobalId();
-	lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine); 
+	lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine);  
 }
 
 void LaneOffset::Print()
@@ -1978,6 +1978,9 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(length, space, t_offset, s_offset, rule, width);
 											lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+											int line_global_id = lane_roadMarkTypeLine->GetGlobalId(); 
+											//link line to lane 
+											lane->SetLineId(line_global_id);
 										}
 									}
 								}
