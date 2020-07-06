@@ -292,22 +292,29 @@ namespace roadmanager
 		double s_offset_;
 	};
 
-	class LaneRoadMarkTypeLineID
+	class LaneBoundaryID
 	{
 		int id; 
 	public:
-		LaneRoadMarkTypeLineID() {
+		LaneBoundaryID() {
 			static int counter = 0; 
 			id = counter++; 
 		}
 		int get_id() { return id; }
 	};
 
-	struct RoadMarkInfo
+	class DrivingBorder
 	{
-		int roadmark_idx_;
-		int roadmarkline_idx_;
-	};
+	public: 
+		DrivingBorder(); 	
+		OSIPoints GetOSIPoints() {return osi_points_;}
+		OSIPoints osi_points_;	
+		void SetGlobalId();
+		int GetGlobalId() {return global_id_; } 
+	private: 
+		int global_id_; 
+		LaneBoundaryID borderglobalID_; 
+	}; 
 
 	class LaneRoadMarkTypeLine
 	{
@@ -338,7 +345,7 @@ namespace roadmanager
 		double s_offset_;
 		RoadMarkTypeLineRule rule_;
 		double width_;
-		LaneRoadMarkTypeLineID lineglobalID_;  // class that generates the unique ID for OSI
+		LaneBoundaryID lineglobalID_;  // class that generates the unique ID for OSI
 		int global_id_;  // Unique ID for OSI
 	};
 
@@ -511,7 +518,6 @@ namespace roadmanager
 		LaneWidth *GetWidthByS(double s);
 		LaneLink *GetLink(LinkType type);
 		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
-		RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
 		double GetOffsetFromRef() { return offset_from_ref_; }
 		void AddLaneWIdth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
 		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
@@ -524,20 +530,22 @@ namespace roadmanager
 		OSIPoints osi_points_;
 		void SetGlobalId();
 		int GetGlobalId() { return global_id_; }
-		void SetLineId(int line_id) {line_id_.push_back(line_id); }
-		std::vector<int> GetLineId() {return line_id_; }
+		std::vector<int> GetLineGlobalIds(); 
+		//void SetLineId(int line_id) {line_id_.push_back(line_id); }
+		//std::vector<int> GetLineId() {return line_id_; }
 
 	private:
 		int id_;		// center = 0, left > 0, right < 0
 		LaneGlobalID laneglobalID_;  // class that generates the unique ID for OSI
 		int global_id_;  // Unique ID for OSI 
-		std::vector<int> line_id_; 
+		//std::vector<int> line_id_; 
 		LaneType type_;
 		int level_;	// boolean, true = keep lane on level
 		double offset_from_ref_;
 		std::vector<LaneLink*> link_;
 		std::vector<LaneWidth*> lane_width_;
 		std::vector<LaneRoadMark*> lane_roadMark_;
+		std::vector<DrivingBorder> driving_border_; 
 	};
 
 	class LaneSection

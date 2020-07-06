@@ -600,7 +600,7 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 					if (lane_id > 0 )
 					{
 						osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-						std::vector<int> line_ids = lane->GetLineId(); 
+						std::vector<int> line_ids = lane->GetLineGlobalIds(); 
 						if (!line_ids.empty())
 						{
 							left_lane_bound_id->set_value(line_ids[0]);
@@ -611,7 +611,7 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 					if (lane_id < 0 )
 					{
 						osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-						std::vector<int> line_ids = lane->GetLineId(); 
+						std::vector<int> line_ids = lane->GetLineGlobalIds(); 
 						if (!line_ids.empty())
 						{
 							right_lane_bound_id->set_value(line_ids[0]);
