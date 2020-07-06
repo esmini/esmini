@@ -215,7 +215,7 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 		// Report updated state to scenario gateway
 		std::string name = vh->obj->GetControl() == Object::Control::EXTERNAL ? "External_" : "Hybrid_external_" + i;
 		player->scenarioGateway->reportObject(i, name, 0, 1, vh->obj->boundingbox_,player->scenarioEngine->getSimulationTime(),
-			vh->dyn_model->speed_, vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_,
+			vh->dyn_model->speed_, vh->dyn_model->acceleration_,vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_,
 			vh->dyn_model->posX_, vh->dyn_model->posY_, vh->dyn_model->posZ_,
 			vh->dyn_model->heading_, vh->dyn_model->pitch_, 0);
 
