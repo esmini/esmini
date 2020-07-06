@@ -36,9 +36,9 @@ namespace scenarioengine
   public:
 
     Center() : x_(0),y_(0),z_(0) {}
-    double x_;
-    double y_;
-    double z_;
+    float x_;
+    float y_;
+    float z_;
   };
 
 /*
@@ -54,9 +54,9 @@ height 	double 	Height of the entity's bounding box. Unit: m; Range: [0..inf[.
   public:
     Dimensions() : width_(0),length_(0),height_() {}
 
-    double width_;
-    double length_;
-    double height_;
+    float width_;
+    float length_;
+    float height_;
 
   };
 
