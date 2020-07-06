@@ -39,7 +39,6 @@ typedef struct
 	float laneOffset;
 	float s;
 	float speed;
-	float acceleration;
 	double centerOffsetX;
 	double centerOffsetY;
 	double centerOffsetZ;
@@ -111,8 +110,8 @@ extern "C"
 	*/
 	SE_DLL_API float SE_GetSimulationTime();  // Get simulation time in seconds
 
-	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed, float acceleration);
-	SE_DLL_API int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed, float acceleration);
+	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
+	SE_DLL_API int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
 
 	SE_DLL_API int SE_GetNumberOfObjects();
 
