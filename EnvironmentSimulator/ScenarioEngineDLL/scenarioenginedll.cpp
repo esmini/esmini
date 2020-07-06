@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -87,6 +87,12 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 	state->laneId = (int)gw_state->pos.GetLaneId();
 	state->s = (float)gw_state->pos.GetS();
 	state->laneOffset = (float)gw_state->pos.GetOffset();
+	state->centerOffsetX = gw_state->boundingbox.center_.x_;
+	state->centerOffsetY = gw_state->boundingbox.center_.y_;
+	state->centerOffsetZ = gw_state->boundingbox.center_.z_;
+	state->width = gw_state->boundingbox.dimensions_.width_;
+	state->length = gw_state->boundingbox.dimensions_.length_;
+	state->height = gw_state->boundingbox.dimensions_.height_;
 
 }
 
@@ -106,7 +112,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 	}
 
 	roadmanager::Position *pos = &player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
-	
+
 	if (pos->GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
 	{
 		return -1;
@@ -208,7 +214,7 @@ extern "C"
 		{
 			LOG("use_viewer flag set, but no viewer available (compiled without -D _SCENARIO_VIEWER");
 		}
-#endif	
+#endif
 
 		AddArgument("viewer");  // name of application
 		AddArgument("--osc");
@@ -311,7 +317,7 @@ extern "C"
 			return -1;
 		}
 	}
-	
+
 	SE_DLL_API float SE_GetSimulationTime()
 	{
 		return (float)player->scenarioEngine->getSimulationTime();
@@ -326,7 +332,7 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
-				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, timestamp, speed, 0, 0, x, y, z, h, p, r);
+				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, obj->boundingbox_, timestamp, speed, 0, 0, x, y, z, h, p, r);
 			}
 		}
 
@@ -342,7 +348,7 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
-				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
+				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, obj->boundingbox_, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
 			}
 		}
 
@@ -468,7 +474,7 @@ extern "C"
 
 			player->AddObjectSensor(object_id, x, y, z, h, rangeNear, rangeFar, fovH, maxObj);
 		}
-		
+
 		player->ShowObjectSensors(true);
 
 		return 0;
@@ -488,10 +494,10 @@ extern "C"
 			{
 				list[i] = player->sensor[sensor_id]->hitList_[i].obj_->id_;
 			}
-			
+
 			return player->sensor[sensor_id]->nObj_;
 		}
-		
+
 		return -1;
 	}
 
