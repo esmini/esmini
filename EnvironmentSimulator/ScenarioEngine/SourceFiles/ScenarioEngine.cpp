@@ -98,7 +98,9 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			init.private_action_[i]->UpdateState();
 		}
 	}
+	
 	sumocontroller->step(simulationTime);
+	
 	// Step inital actions - might be extened in time (more than one step)
 	for (size_t i = 0; i < init.private_action_.size(); i++)
 	{
@@ -294,6 +296,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	}
 
 	// And send OSI info
+
 	scenarioGateway.UpdateOSISensorView();
 
 	stepObjects(deltaSimTime);
@@ -415,15 +418,18 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 			init.private_action_.push_back(paction);
 		}
 	}
-	sumofile = "";
+	LOG("Checking if sumo is supposed to be used");
 	// create sumo controller
-	if (sumofile.empty())
+	if (entities.sumo_config_path.empty())
 	{
 		sumocontroller = new SumoController();
+		LOG("RUnning without sumo");
 	}
 	else
 	{
-		sumocontroller = new SumoController(sumofile,&entities,&scenarioGateway,&sumotemplate);
+		sumocontroller = new SumoController(entities.sumo_config_path,&entities,&scenarioGateway,&sumotemplate);
+
+		LOG("Running with sumo.");
 	}
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
