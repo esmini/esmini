@@ -345,14 +345,14 @@ void ScenarioReader::ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_
 			std::string boundingboxChildName(boundingboxChild.name());
 			if (boundingboxChildName == "Center")
 			{
-				boundingbox.center_.x_ = std::stod(ReadAttribute(boundingboxChild, "x"));
-				boundingbox.center_.y_ = std::stod(ReadAttribute(boundingboxChild, "y"));
-				boundingbox.center_.z_ = std::stod(ReadAttribute(boundingboxChild, "z"));
+				boundingbox.center_.x_ = std::stof(ReadAttribute(boundingboxChild, "x"));
+				boundingbox.center_.y_ = std::stof(ReadAttribute(boundingboxChild, "y"));
+				boundingbox.center_.z_ = std::stof(ReadAttribute(boundingboxChild, "z"));
 			} else if (boundingboxChildName == "Dimensions")
 			{
-				boundingbox.dimensions_.width_ = std::stod(ReadAttribute(boundingboxChild, "width"));
-				boundingbox.dimensions_.length_ = std::stod(ReadAttribute(boundingboxChild, "length"));
-				boundingbox.dimensions_.height_ = std::stod(ReadAttribute(boundingboxChild, "height"));
+				boundingbox.dimensions_.width_ = std::stof(ReadAttribute(boundingboxChild, "width"));
+				boundingbox.dimensions_.length_ = std::stof(ReadAttribute(boundingboxChild, "length"));
+				boundingbox.dimensions_.height_ = std::stof(ReadAttribute(boundingboxChild, "height"));
 			} else {
 				LOG("Not valid boudingbox attribute name:%s",boundingboxChildName.c_str());
 			}
