@@ -363,7 +363,7 @@ void ScenarioReader::ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_
 				boundingbox.dimensions_.length_ = std::stod(ReadAttribute(boundingboxChild, "length"));
 				boundingbox.dimensions_.height_ = std::stod(ReadAttribute(boundingboxChild, "height"));
 			} else {
-				LOG("Not valid boudingbox attribute name:%s",boundingboxChildName);
+				LOG("Not valid boudingbox attribute name:%s",boundingboxChildName.c_str());
 			}
 		}
 		//LOG("Parsing boundingbox for vehicle:%s,center_x:%f, dimensions_width: %f.",ReadAttribute(xml_node, "name").c_str(),boundingbox.center_.x_,boundingbox.dimensions_.width_);
