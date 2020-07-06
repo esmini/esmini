@@ -427,7 +427,7 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	}
 	else
 	{
-		sumocontroller = new SumoController(entities.sumo_config_path,&entities,&scenarioGateway,&sumotemplate);
+		sumocontroller = new SumoController(&entities,&scenarioGateway);
 
 		LOG("Running with sumo.");
 	}

@@ -623,14 +623,13 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
 
 
 
-SumoController::SumoController(std::string file, Entities* entities, ScenarioGateway* scenarioGateway, Vehicle* vehicletemplate)
+SumoController::SumoController(Entities* entities, ScenarioGateway* scenarioGateway)
 {
 	entities_ = entities;
 	scenarioGateway_ = scenarioGateway;
-	template_ = vehicletemplate;
 	std::vector<std::string> options;
 
-	options.push_back(file);
+	options.push_back(entities_->sumo_config_path);
 	
 	libsumo::Simulation::load(options);
 	sumo_used = true;
@@ -643,8 +642,6 @@ void SumoController::step(double time)
 {
 	if (sumo_used)
 	{
-		
-
 		libsumo::Simulation::step(time);
 		if (libsumo::Simulation::getDepartedNumber() > 0) {
 			std::vector<std::string> deplist = libsumo::Simulation::getDepartedIDList();
@@ -656,7 +653,10 @@ void SumoController::step(double time)
 
 				vehicle->name_ = deplist[i];
 				vehicle->control_ = Object::Control::SUMO;
+				LOG(entities_->sumo_vehicle->model_filepath_.c_str());
+				vehicle->model_filepath_ = entities_->sumo_vehicle->model_filepath_;
 				entities_->addObject(vehicle);
+
 
 				// scenarioGateway_->addObject(); // maybe add this in the future?
 			}
@@ -694,8 +694,8 @@ void SumoController::step(double time)
 				if (i == 1)
 				{
 					// libsumo::TraCIPosition pos = libsumo::Vehicle::getPosition3D(sumoid);
-					LOG(pos.getString().c_str());
-					LOG("heading %f",libsumo::Vehicle::getAngle(sumoid));
+					// LOG(pos.getString().c_str());
+					// LOG("heading %f",libsumo::Vehicle::getAngle(sumoid));
 					// LOG("slope %f",libsumo::Vehicle::getSlope(sumoid)*3.14159265359/180);
 				}
 			}

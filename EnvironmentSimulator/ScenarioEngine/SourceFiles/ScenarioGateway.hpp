@@ -127,7 +127,7 @@ namespace scenarioengine
 	class SumoController
 	{
 		public:
-			SumoController(std::string file, Entities* entities, ScenarioGateway* scenarioGateway, Vehicle* vehicletemplate); 
+			SumoController(Entities* entities, ScenarioGateway* scenarioGateway); 
 			SumoController();
 			void step(double time);
 
