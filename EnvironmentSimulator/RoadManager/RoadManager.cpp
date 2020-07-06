@@ -327,6 +327,27 @@ LaneRoadMark* Lane::GetLaneRoadMarkByIdx(int idx)
 	return 0;
 }
 
+std::vector<int> Lane::GetLineGlobalIds()
+{
+	std::vector<int> line_ids; 
+	for (int i = 0; i<GetNumberOfRoadMarks(); i++)
+	{
+		LaneRoadMark* laneroadmark =  GetLaneRoadMarkByIdx(i);
+		for (int j = 0; j<laneroadmark->GetNumberOfRoadMarkTypes(); j++)
+		{
+			LaneRoadMarkType* laneroadmarktype = laneroadmark->GetLaneRoadMarkTypeByIdx(j); 
+
+			for (int h = 0; h<laneroadmarktype->GetNumberOfRoadMarkTypeLines(); h++)
+			{
+				LaneRoadMarkTypeLine* laneroadmarktypeline =  laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(h);
+				line_ids.push_back(laneroadmarktypeline->GetGlobalId()); 
+			}
+		}
+	}
+
+	return line_ids; 
+}
+
 LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx)
 {
 	if (idx < (int)lane_roadMarkType_.size())
@@ -2091,9 +2112,6 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(length, space, t_offset, s_offset, rule, width);
 											lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
-											int line_global_id = lane_roadMarkTypeLine->GetGlobalId(); 
-											//link line to lane 
-											lane->SetLineId(line_global_id);
 										}
 									}
 								}

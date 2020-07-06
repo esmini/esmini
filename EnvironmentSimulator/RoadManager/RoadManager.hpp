@@ -524,14 +524,12 @@ namespace roadmanager
 		OSIPoints osi_points_;
 		void SetGlobalId();
 		int GetGlobalId() { return global_id_; }
-		void SetLineId(int line_id) {line_id_.push_back(line_id); }
-		std::vector<int> GetLineId() {return line_id_; }
+		std::vector<int> GetLineGlobalIds(); 
 
 	private:
 		int id_;		// center = 0, left > 0, right < 0
 		LaneGlobalID laneglobalID_;  // class that generates the unique ID for OSI
 		int global_id_;  // Unique ID for OSI 
-		std::vector<int> line_id_; 
 		LaneType type_;
 		int level_;	// boolean, true = keep lane on level
 		double offset_from_ref_;
