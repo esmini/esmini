@@ -292,7 +292,7 @@ namespace roadmanager
 		double s_offset_;
 	};
 
-		class LaneRoadMarkTypeLineID
+	class LaneRoadMarkTypeLineID
 	{
 		int id; 
 	public:
@@ -301,6 +301,12 @@ namespace roadmanager
 			id = counter++; 
 		}
 		int get_id() { return id; }
+	};
+
+	struct RoadMarkInfo
+	{
+		int roadmark_idx_;
+		int roadmarkline_idx_;
 	};
 
 	class LaneRoadMarkTypeLine
@@ -505,6 +511,7 @@ namespace roadmanager
 		LaneWidth *GetWidthByS(double s);
 		LaneLink *GetLink(LinkType type);
 		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
+		RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
 		double GetOffsetFromRef() { return offset_from_ref_; }
 		void AddLaneWIdth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
 		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
