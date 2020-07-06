@@ -834,6 +834,119 @@ double LaneSection::GetOffsetBetweenLanes(int lane_id1, int lane_id2, double s)
 	return (laneCenter2 - laneCenter1);
 }
 
+// Offset from closest left road mark to current position
+RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s)
+{
+	Position* pos = new roadmanager::Position();
+	Road *road = pos->GetRoadById(track_id);
+	LaneSection *lsec;
+	Lane *lane;
+	LaneRoadMark *lane_roadMark;
+	LaneRoadMarkType *lane_roadMarkType;
+	LaneRoadMarkTypeLine *lane_roadMarkTypeLine;
+	RoadMarkInfo rm_info;
+	int lsec_idx, number_of_lsec, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
+	double s_roadmark, s_roadmarkline, s_end_roadmark, s_end_roadmarkline, lsec_end;
+	if (road == 0)
+	{
+		LOG("Position::Set Error: track %d not available\n", track_id);
+	}
+	else
+	{
+		lsec_idx = road->GetLaneSectionIdxByS(s);
+	}
+
+	lsec = road->GetLaneSectionByIdx(lsec_idx);
+	if (lsec == 0)
+	{
+		LOG("Position::Set Error: lane section %d not available\n", lsec_idx);
+	}
+	else
+	{
+		number_of_lsec = road->GetNumberOfLaneSections();
+		if (lsec_idx == number_of_lsec-1)
+		{
+			lsec_end = road->GetLength();	
+		}
+		else
+		{
+			lsec_end = road->GetLaneSectionByIdx(lsec_idx+1)->GetS();
+		}
+	}
+	
+	lane = lsec->GetLaneById(lane_id);
+	if (lane == 0)
+	{
+		LOG("Position::Set Error: lane section %d not available\n", lane_id);
+	}
+
+	number_of_roadmarks = lane->GetNumberOfRoadMarks();
+	for (int m=0; m<number_of_roadmarks; m++)
+	{
+		lane_roadMark = lane->GetLaneRoadMarkByIdx(m);
+		s_roadmark = lsec->GetS() + lane_roadMark->GetSOffset();
+		if (m == number_of_roadmarks-1)
+		{
+			s_end_roadmark = lsec_end;
+		}
+		else
+		{
+			s_end_roadmark = lane->GetLaneRoadMarkByIdx(m+1)->GetSOffset();
+		}
+		
+		// Check the existence of "type" keyword under roadmark
+		number_of_roadmarktypes = lane_roadMark->GetNumberOfRoadMarkTypes();
+		if (number_of_roadmarktypes != 0)
+		{
+			lane_roadMarkType = lane_roadMark->GetLaneRoadMarkTypeByIdx(0);
+			number_of_roadmarklines = lane_roadMarkType->GetNumberOfRoadMarkTypeLines();
+
+			// Looping through each roadmarkline under roadmark
+			for (int n=0; n<number_of_roadmarklines; n++)
+			{
+				lane_roadMarkTypeLine = lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n);
+				s_roadmarkline = s_roadmark + lane_roadMarkTypeLine->GetSOffset();
+				if (lane_roadMarkTypeLine != 0)
+				{
+					if (n == number_of_roadmarklines-1)
+					{
+						s_end_roadmarkline = s_end_roadmark;
+					}
+					else
+					{
+						s_end_roadmarkline = lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n+1)->GetSOffset();
+					}
+				}
+
+				if (s >= s_roadmarkline && s < s_end_roadmarkline)
+				{
+					rm_info.roadmark_idx_ = m;
+					rm_info.roadmarkline_idx_ = n;
+				}
+				else
+				{
+					continue;
+				}
+			}
+		}
+		else
+		{
+			rm_info.roadmarkline_idx_ = 0;
+			if (s >= s_roadmark && s < s_end_roadmark)
+			{
+				rm_info.roadmark_idx_ = m;
+			}
+			else
+			{
+				continue;
+			}
+			
+		}
+		
+	}
+	return rm_info;
+}
+
 RoadLink::RoadLink(LinkType type, pugi::xml_node node)
 {
 	string element_type = node.attribute("elementType").value();
