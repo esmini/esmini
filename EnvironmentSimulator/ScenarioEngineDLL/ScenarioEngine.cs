@@ -43,10 +43,10 @@ public class ScenarioEngine : MonoBehaviour
     public static extern void SE_Step(float dt);
 
     [DllImport("ScenarioEngineDLL", EntryPoint = "SE_ReportObjectPos")]
-    public static extern int SE_ReportObjectPos(int id, string name, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
+    public static extern int SE_ReportObjectPos(int id, string name, float timestamp, float x, float y, float z, float h, float p, float r, float speed, float acceleration);
 
     [DllImport("ScenarioEngineDLL", EntryPoint = "SE_ReportObjectRoadPos")]
-    public static extern int SE_ReportObjectRoadPos(int id, string name, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
+    public static extern int SE_ReportObjectRoadPos(int id, string name, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed, float acceleration);
 
     [DllImport("ScenarioEngineDLL", EntryPoint = "SE_GetNumberOfObjects")]
     public static extern int SE_GetNumberOfObjects();
@@ -99,7 +99,7 @@ public class ScenarioEngine : MonoBehaviour
 
         //Calls the TaskOnClick/TaskWithParameters method when you click the Button
         btn1.onClick.AddListener(delegate {
-            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "cut-in_mw.xosc", 
+            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "cut-in_mw.xosc",
             "e6mini",
             false);
         });
@@ -200,10 +200,10 @@ public class ScenarioEngine : MonoBehaviour
         if (control_ego_ && !fetchEgo)
         {
             Transform c = cars[0].transform;
-         
+
             // Report ego position
-            SE_ReportObjectPos(0, "Ego", simTime, c.position.z, -c.position.x, c.position.y, 
-                -c.eulerAngles.y * Mathf.PI / 180.0f, -c.eulerAngles.x * Mathf.PI / 180.0f, c.eulerAngles.z * Mathf.PI / 180.0f, 
+            SE_ReportObjectPos(0, "Ego", simTime, c.position.z, -c.position.x, c.position.y,
+                -c.eulerAngles.y * Mathf.PI / 180.0f, -c.eulerAngles.x * Mathf.PI / 180.0f, c.eulerAngles.z * Mathf.PI / 180.0f,
                 egoBody.velocity.magnitude);
         }
 
@@ -258,7 +258,7 @@ public class ScenarioEngine : MonoBehaviour
             Vector3 diffUnitVec = diffVec.normalized;
 
             float acceleration = tension * diffVec.magnitude - Mathf.Sqrt(2 * tension) * speed;
-    
+
             Vector3 newPos = _cam.transform.position + (speed + acceleration * Time.deltaTime) * diffUnitVec * Time.deltaTime;
             speed = (newPos - _cam.transform.position).magnitude / Time.deltaTime;
 
