@@ -1,11 +1,11 @@
-/*
- * esmini - Environment Simulator Minimalistic
+/* 
+ * esmini - Environment Simulator Minimalistic 
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- *
+ * 
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -45,7 +45,6 @@ Vehicle::Vehicle(double x, double y, double h, double length)
 	velAngle_ = 0;
 	velAngleRelVehicleLongAxis_ = 0;
 	speed_ = 0;
-	acceleration_ = 0;
 	wheelAngle_ = 0.0;
 	wheelRotation_ = 0.0;
 	headingDot_ = 0.0;
@@ -90,7 +89,7 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 	// Make steering wheel speed dependent
 	double steering_scale = 1.0 / (1 + 0.02 * speed_ * speed_);
 	wheelAngle_ = wheelAngle_ + steering_scale * STEERING_RATE * steering  * dt;
-
+	
 	// Self-aligning
 	wheelAngle_ *= 0.92;
 
@@ -112,7 +111,7 @@ void Vehicle::Update(double dt)
 
 	velAngleRelVehicleLongAxis_ = atan(0.15 * tan(wheelAngle_));  // Origo is between rear wheel axles on ground level, estimated 15% along X axis
 	velAngle_ = velAngleRelVehicleLongAxis_ + heading_;
-	headingDot_ = speed_ * sin(velAngleRelVehicleLongAxis_) / (length_ * 0.15);
+	headingDot_ = speed_ * sin(velAngleRelVehicleLongAxis_) / (length_ * 0.15);  
 
 	velX_ = speed_ * cos(velAngle_);
 	velY_ = speed_ * sin(velAngle_);
@@ -120,3 +119,4 @@ void Vehicle::Update(double dt)
 	posX_ += dt * velX_;
 	posY_ += dt * velY_;
 }
+
