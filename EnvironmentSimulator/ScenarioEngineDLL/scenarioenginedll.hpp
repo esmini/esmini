@@ -39,12 +39,12 @@ typedef struct
 	float laneOffset;
 	float s;
 	float speed;
-	double centerOffsetX;
-	double centerOffsetY;
-	double centerOffsetZ;
-	double width;
-	double length;
-	double height;
+	float centerOffsetX;
+	float centerOffsetY;
+	float centerOffsetZ;
+	float width;
+	float length;
+	float height;
 } SE_ScenarioObjectState;
 
 
