@@ -1,11 +1,11 @@
-﻿/* 
- * esmini - Environment Simulator Minimalistic 
+﻿/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -23,7 +23,7 @@
 
 typedef struct
 {
-	int id;					  // Automatically generated unique object id 
+	int id;					  // Automatically generated unique object id
 	int model_id;             // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
 	int control;		      // 0= undefined, 1=internal, 2=external, 3=hybrid_external, 4=hybrid_ghost
 	float timestamp;
@@ -39,7 +39,13 @@ typedef struct
 	float laneOffset;
 	float s;
 	float speed;
-} SE_ScenarioObjectState; 
+	double centerOffsetX;
+	double centerOffsetY;
+	double centerOffsetZ;
+	double width;
+	double length;
+	double height;
+} SE_ScenarioObjectState;
 
 
 typedef struct
@@ -71,7 +77,7 @@ extern "C"
 	@param use_viewer 0=no viewer, 1=use viewer
 	@param threads 0=single thread, 1=viewer in a separate thread, parallel to scenario engine
 	@param record Create recording for later playback 0=no recording 1=recording
-	@param headstart_time For hybrid control mode launch ghost vehicle with this headstart time 
+	@param headstart_time For hybrid control mode launch ghost vehicle with this headstart time
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int threads, int record, float headstart_time);
@@ -165,7 +171,7 @@ extern "C"
 	*/
 	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost);
 
-	
+
 #ifdef __cplusplus
 }
 #endif

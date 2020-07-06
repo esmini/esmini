@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -54,14 +54,14 @@ ScenarioEngine::~ScenarioEngine()
 	LOG("Closing");
 }
 
-void ScenarioEngine::step(double deltaSimTime, bool initial)	
+void ScenarioEngine::step(double deltaSimTime, bool initial)
 {
 	simulationTime += deltaSimTime;
 
 	if (entities.object_.size() == 0)
 	{
 		return;
-	}	
+	}
 
 	// Fetch external states from gateway, except the initial run where scenario engine sets all positions
 	if (!initial)
@@ -110,8 +110,8 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		}
 	}
 
-	// Story 
-	
+	// Story
+
 	// First evaluate StoryBoard stopTrigger
 	if (storyBoard.stop_trigger_ && storyBoard.stop_trigger_->Evaluate(&storyBoard, simulationTime) == true)
 	{
@@ -256,7 +256,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 									if (event->action_[n]->IsActive())
 									{
 										event->action_[n]->Step(deltaSimTime, getSimulationTime());
-										
+
 										active = active || (event->action_[n]->IsActive());
 									}
 								}
@@ -277,19 +277,19 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
 		Object *obj = entities.object_[i];
-		
+
 		if (initial)
 		{
 			// Report all scenario objects the initial run, to establish initial positions and speed = 0
-			scenarioGateway.reportObject(obj->id_, obj->name_, obj->model_id_, 
-				obj->control_, simulationTime, 0.0, 0.0, 0.0, &obj->pos_);
+			scenarioGateway.reportObject(obj->id_, obj->name_, obj->model_id_,
+				obj->control_, obj->boundingbox_, simulationTime, 0.0, 0.0, 0.0, &obj->pos_);
 		}
 		else if (obj->control_ == Object::Control::INTERNAL ||
 			obj->control_ == Object::Control::HYBRID_GHOST)
 		{
 			// Then report all except externally controlled objects
-			scenarioGateway.reportObject(obj->id_, obj->name_, obj->model_id_, 
-				obj->control_, simulationTime, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+			scenarioGateway.reportObject(obj->id_, obj->name_, obj->model_id_,
+				obj->control_, obj->boundingbox_, simulationTime, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 		}
 	}
 
@@ -432,7 +432,7 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 		}
 	}
 
-	
+
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
 		if (entities.object_[i]->control_ == Object::Control::HYBRID_GHOST)
@@ -477,12 +477,12 @@ void ScenarioEngine::stepObjects(double dt)
 			{
 				// Do nothing - updates handled by followTrajectoryAction
 			}
-			else 
+			else
 			{
-				// Adjustment movement to heading and road direction 
+				// Adjustment movement to heading and road direction
 				if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)
 				{
-					// If pointing in other direction 
+					// If pointing in other direction
 					steplen *= -1;
 				}
 				obj->pos_.MoveAlongS(steplen);
@@ -492,4 +492,3 @@ void ScenarioEngine::stepObjects(double dt)
 		obj->trail_.AddState((float)simulationTime, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
 	}
 }
-
