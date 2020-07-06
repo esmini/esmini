@@ -58,7 +58,6 @@ namespace scenarioengine
 		char name[NAME_LEN];
 		roadmanager::Position pos;
 		float speed;
-		float acceleration;
 		float wheel_angle;
 		float wheel_rot;
 		/*double acceleration;
@@ -75,9 +74,9 @@ namespace scenarioengine
 	{
 	public:
 		ObjectState();
-		ObjectState(int id, std::string name, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double acceleration, double wheel_angle, double wheel_rot, roadmanager::Position *pos);
-		ObjectState(int id, std::string name, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double acceleration, double wheel_angle, double wheel_rot, double x, double y, double z, double h, double p, double r);
-		ObjectState(int id, std::string name, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double acceleration, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s);
+		ObjectState(int id, std::string name, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position *pos);
+		ObjectState(int id, std::string name, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double wheel_angle, double wheel_rot, double x, double y, double z, double h, double p, double r);
+		ObjectState(int id, std::string name, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s);
 
 		ObjectStateStruct getStruct() { return state_; }
 
@@ -98,15 +97,15 @@ namespace scenarioengine
 		~ScenarioGateway();
 
 		void reportObject(int id, std::string name, int model_id, int control,OSCBoundingBox boundingbox,
-			double timestamp, double speed, double acceleration, double wheel_angle, double wheel_rot,
+			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			roadmanager::Position *pos);
 
 		void reportObject(int id, std::string name, int model_id, int control,OSCBoundingBox boundingbox,
-			double timestamp, double speed, double acceleration, double wheel_angle, double wheel_rot,
+			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			double x, double y, double z, double h, double p, double r);
 
 		void reportObject(int id, std::string name, int model_id, int control,OSCBoundingBox boundingbox,
-			double timestamp, double speed, double acceleration, double wheel_angle, double wheel_rot,
+			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			int roadId, int laneId, double laneOffset, double s);
 
 		int getNumberOfObjects() { return (int)objectState_.size(); }
@@ -124,7 +123,7 @@ namespace scenarioengine
 		int CloseSocket();
 
 	private:
-		void updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double acceleration, double wheel_angle, double wheel_rot);
+		void updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot);
 		std::vector<ObjectState*> objectState_;
 		std::ofstream data_file_;
 		bool sendOSIoverUDP;
