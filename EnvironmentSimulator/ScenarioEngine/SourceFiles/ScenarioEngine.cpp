@@ -54,11 +54,9 @@ ScenarioEngine::~ScenarioEngine()
 	LOG("Closing");
 }
 
-<<<<<<< HEAD
-void ScenarioEngine::step(double deltaSimTime, bool osi_file, bool initial)	
-=======
-void ScenarioEngine::step(double deltaSimTime, bool initial)
->>>>>>> modify scenariogateway w.r.t object boundingbox
+
+void ScenarioEngine::step(double deltaSimTime, bool osi_file, bool initial)
+
 {
 	simulationTime += deltaSimTime;
 
@@ -299,8 +297,8 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 
 	// And send OSI info
 	scenarioGateway.UpdateOSISensorView(osi_file);
-	
-	
+
+
 
 	stepObjects(deltaSimTime);
 
@@ -389,7 +387,7 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	// Init road manager
 	scenarioReader->parseRoadNetwork(roadNetwork);
 
-	// First assume absolute path or relative to current directory 
+	// First assume absolute path or relative to current directory
 	if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
 	{
 		// Then try relative path to scenario directory
