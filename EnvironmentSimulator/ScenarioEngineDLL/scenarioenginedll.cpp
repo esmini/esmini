@@ -323,7 +323,7 @@ extern "C"
 		return (float)player->scenarioEngine->getSimulationTime();
 	}
 
-	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed, float acceleration)
+	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
 	{
 		if (player)
 		{
@@ -332,14 +332,14 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
-				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, obj->boundingbox_, timestamp, speed, acceleration, 0, 0, x, y, z, h, p, r);
+				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, obj->boundingbox_, timestamp, speed, 0, 0, x, y, z, h, p, r);
 			}
 		}
 
 		return 0;
 	}
 
-	SE_DLL_API int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed, float acceleration)
+	SE_DLL_API int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
 	{
 		if (player)
 		{
@@ -348,7 +348,7 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
-				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, obj->boundingbox_, timestamp, speed, acceleration, 0, 0, roadId, laneId, laneOffset, s);
+				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, obj->boundingbox_, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
 			}
 		}
 

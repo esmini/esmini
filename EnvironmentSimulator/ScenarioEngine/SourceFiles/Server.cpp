@@ -140,14 +140,14 @@ namespace scenarioengine
 			if (ret >= 0)
 			{
 				printf("Server: Received Ego pos (%.2f, %.2f, %.2f) rot: (%.2f, %.2f, %.2f) speed: %.2f (%.2f km/h) wheel_angle: %.2f (%.2f deg)\n",
-					buf.x, buf.y, buf.z, buf.h, buf.p, buf.r, buf.speed, 3.6 * buf.speed, buf.acceleration, buf.wheel_angle, 180 * buf.wheel_angle / M_PI);
+					buf.x, buf.y, buf.z, buf.h, buf.p, buf.r, buf.speed, 3.6 * buf.speed, buf.wheel_angle, 180 * buf.wheel_angle / M_PI);
 
 				// Update Ego state
 				mutex.Lock();
 
 				OSCBoundingBox bbox; // dummy bariable just to feed into the function
 
-				scenarioGateway->reportObject(0, "Ego", 0, 1, bbox,0, buf.speed, buf.acceleration, buf.wheel_angle, wheel_rot, buf.x, buf.y, buf.z, buf.h, buf.p, buf.r);
+				scenarioGateway->reportObject(0, "Ego", 0, 1, bbox,0, buf.speed, buf.wheel_angle, wheel_rot,  buf.x, buf.y, buf.z, buf.h, buf.p, buf.r);
 
 				mutex.Unlock();
 			}
