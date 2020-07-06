@@ -461,12 +461,13 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 	return tx_node;
 }
 
-CarModel::CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color)
+CarModel::CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color,std::string name)
 {
 	if (!lod)
 	{
 		return;
 	}
+	name_ = name;
 	node_ = lod;
 	speed_sensor_ = 0;
 	steering_sensor_ = 0;
@@ -860,7 +861,7 @@ void Viewer::SetCameraMode(int mode)
 	rubberbandManipulator_->setMode(camMode_);
 }
 
-CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor)
+CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor,std::string name)
 {
 	// Load 3D model
 	std::string path = CombineDirectoryPathAndFilepath(getScenarioDir(), modelFilepath);
@@ -916,7 +917,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 		state->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 	}
 
-	cars_.push_back(new CarModel(osgViewer_, lod, rootnode_, trails_, dot_node_, trail_color));
+	cars_.push_back(new CarModel(osgViewer_, lod, rootnode_, trails_, dot_node_, trail_color,name));
 	// Focus on first added car
 	if (cars_.size() == 1)
 	{
@@ -932,6 +933,17 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 	}
 
 	return cars_.back();
+}
+
+void Viewer::RemoveCar(std::string name)
+{
+	for (size_t i = 0; i < cars_.size(); i++) 
+	{
+		if (cars_[i]->name_ == name) 
+		{
+			cars_.erase(cars_.begin() + i);
+		}
+	}
 }
 
 osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)

@@ -166,6 +166,7 @@ namespace viewer
 		double center_y;
 		double wheel_angle_;
 		double wheel_rot_;
+		std::string name_;
 		std::string filename_;
 		PointSensor *speed_sensor_;
 		PointSensor *road_sensor_;
@@ -173,7 +174,7 @@ namespace viewer
 		PointSensor *trail_sensor_;
 		PointSensor *steering_sensor_;
 
-		CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color);
+		CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
 		~CarModel();
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double h, double p, double r);
@@ -224,7 +225,8 @@ namespace viewer
 		~Viewer();
 		void SetCameraMode(int mode);
 		void SetVehicleInFocus(int idx);
-		CarModel* AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor);
+		CarModel* AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor, std::string name);
+		void RemoveCar(std::string name);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
 		void UpdateSensor(PointSensor *sensor);

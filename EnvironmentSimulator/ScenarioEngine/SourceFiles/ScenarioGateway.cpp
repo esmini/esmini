@@ -643,6 +643,8 @@ void SumoController::step(double time)
 {
 	if (sumo_used)
 	{
+		
+
 		libsumo::Simulation::step(time);
 		if (libsumo::Simulation::getDepartedNumber() > 0) {
 			std::vector<std::string> deplist = libsumo::Simulation::getDepartedIDList();
@@ -653,6 +655,7 @@ void SumoController::step(double time)
 				// copy the default vehicle stuffs here
 
 				vehicle->name_ = deplist[i];
+				vehicle->control_ = Object::Control::SUMO;
 				entities_->addObject(vehicle);
 
 				// scenarioGateway_->addObject(); // maybe add this in the future?
@@ -681,13 +684,20 @@ void SumoController::step(double time)
 			{
 				std::string sumoid = entities_->object_[i]->name_;
 				libsumo::TraCIPosition pos = libsumo::Vehicle::getPosition3D(sumoid);
-
 				entities_->object_[i]->speed_ = libsumo::Vehicle::getSpeed(sumoid);
-				entities_->object_[i]->pos_.SetX(pos.x);
-				entities_->object_[i]->pos_.SetY(pos.y);
-				entities_->object_[i]->pos_.SetZ(pos.z);
-				entities_->object_[i]->pos_.SetH(libsumo::Vehicle::getAngle(sumoid));
-				entities_->object_[i]->pos_.SetP(libsumo::Vehicle::getSlope(sumoid));
+				entities_->object_[i]->pos_.SetInertiaPos(pos.x,pos.y,pos.z,-libsumo::Vehicle::getAngle(sumoid)*3.14159265359/180+ 3.14159265359/2,libsumo::Vehicle::getSlope(sumoid)*3.14159265359/180,0);
+				// entities_->object_[i]->pos_.SetX(pos.x);
+				// entities_->object_[i]->pos_.SetY(pos.y);
+				// entities_->object_[i]->pos_.SetZ(pos.z);
+				// entities_->object_[i]->pos_.SetH(libsumo::Vehicle::getAngle(sumoid)*3.14159265359/180 + 3.14159265359/2);
+				// entities_->object_[i]->pos_.SetP(libsumo::Vehicle::getSlope(sumoid)*3.14159265359/180);
+				if (i == 1)
+				{
+					// libsumo::TraCIPosition pos = libsumo::Vehicle::getPosition3D(sumoid);
+					LOG(pos.getString().c_str());
+					LOG("heading %f",libsumo::Vehicle::getAngle(sumoid));
+					// LOG("slope %f",libsumo::Vehicle::getSlope(sumoid)*3.14159265359/180);
+				}
 			}
         }
 	}

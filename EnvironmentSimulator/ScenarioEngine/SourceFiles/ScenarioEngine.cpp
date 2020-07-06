@@ -99,7 +99,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		}
 	}
 	
-	sumocontroller->step(simulationTime);
+	sumocontroller->step(getSimulationTime());
 	
 	// Step inital actions - might be extened in time (more than one step)
 	for (size_t i = 0; i < init.private_action_.size(); i++)

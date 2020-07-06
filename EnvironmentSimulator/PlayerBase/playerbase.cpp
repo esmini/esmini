@@ -93,7 +93,7 @@ ScenarioPlayer::~ScenarioPlayer()
 void ScenarioPlayer::Frame(double timestep_s)
 {
 	ScenarioFrame(timestep_s);
-
+	
 	if (!headless)
 	{
 #ifdef _SCENARIO_VIEWER
@@ -126,12 +126,12 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 		sensor[i]->Update();
 		//LOG("sensor identified %d objects", sensor[i]->nObj_);
 	}
-
+	
 	mutex.Lock();
-
+	
 	scenarioEngine->step(timestep_s);
-
-	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
+	
+	// LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
 	//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
 	//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
 	//    scenarioEngine->entities.object_[0]->pos_.GetS(),
@@ -140,7 +140,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	//    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
 
 	mutex.Unlock();
-
+	
 	if (scenarioEngine->GetQuitFlag())
 	{
 		quit_request = true;
@@ -161,6 +161,56 @@ void ScenarioPlayer::ViewerFrame()
 
 	mutex.Lock();
 
+
+	// Add or remove cars (for sumo)
+	
+	if (scenarioEngine->entities.object_.size() > viewer_->cars_.size())
+	{
+		LOG("add new car");
+		// add cars missing
+		for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+		{
+			bool toadd = true;
+			for (size_t j = 0; j < viewer_->cars_.size(); j++)
+			{
+				if (scenarioEngine->entities.object_[i]->name_ == viewer_->cars_[j]->name_)
+				{
+					toadd = false;
+				}
+			}
+			if (toadd)
+			{
+				LOG("adding car:");
+				// LOG(scenarioEngine->entities.object_[i]->name_);
+				// add car
+				osg::Vec3 trail_color;
+				trail_color.set(color_blue[0], color_blue[1], color_blue[2]);
+				// ADD FILE HERE
+				viewer_->AddCar(scenarioEngine->entities.object_[i]->model_filepath_, false,trail_color, false ,scenarioEngine->entities.object_[i]->name_);
+			}
+		}
+	} 
+	else if (scenarioEngine->entities.object_.size() < viewer_->cars_.size())
+	{
+		// remove obsolete cars
+		for (size_t j = 0; j < viewer_->cars_.size(); j++)
+		{
+			bool toremove = true;
+			for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+			{
+				if (scenarioEngine->entities.object_[i]->name_ == viewer_->cars_[j]->name_)
+				{
+					toremove = false;
+				}
+				
+			}
+			if (toremove)
+			{
+				// remove car
+				viewer_->RemoveCar(viewer_->cars_[j]->name_);
+			}
+		}
+	}
 	// Visualize cars
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
@@ -319,7 +369,7 @@ int ScenarioPlayer::InitViewer()
 
 		bool transparent = obj->control_ == Object::Control::HYBRID_GHOST ? true : false;
 		bool road_sensor = obj->control_ == Object::Control::HYBRID_GHOST || obj->control_ == Object::Control::EXTERNAL ? true : false;
-		if (viewer_->AddCar(obj->model_filepath_, transparent, trail_color, road_sensor) == 0)
+		if (viewer_->AddCar(obj->model_filepath_, transparent, trail_color, road_sensor,obj->name_) == 0)
 		{
 			delete viewer_;
 			viewer_ = 0;
