@@ -596,15 +596,37 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 						}
 					}
 
-					// STILL TO DO:
-					int right_bound_id = 0;
+					// Set left lane boundary ID for right lanes 
+					if (lane_id > 0 )
+					{
+						osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+						std::vector<int> line_ids = lane->GetLineId(); 
+						if (!line_ids.empty())
+						{
+							left_lane_bound_id->set_value(line_ids[0]);
+						}	
+						// look at right lane and check if it has line ID 					
+					}
+					// Set right lane boundary ID for left lanes 
+					if (lane_id < 0 )
+					{
+						osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+						std::vector<int> line_ids = lane->GetLineId(); 
+						if (!line_ids.empty())
+						{
+							right_lane_bound_id->set_value(line_ids[0]);
+						}	
+						// look at right lane and check if it has a left id 					
+					}
+
+					/*int right_bound_id = 0;
 					osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-					right_lane_bound_id->set_value(right_bound_id);
+					right_lane_bound_id->set_value(right_bound_id);*/
 
 					// STILL TO DO: 
-					int left_bound_id = 0;
+					/*int left_bound_id = 0;
 					osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-					left_lane_bound_id->set_value(left_bound_id);
+					left_lane_bound_id->set_value(left_bound_id);*/
 
 					// STILL TO DO:
 					int free_bound_id = 0;
