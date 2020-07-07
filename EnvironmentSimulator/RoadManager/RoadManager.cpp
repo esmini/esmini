@@ -654,6 +654,19 @@ int LaneSection::GetLaneIdxById(int id)
 	return -1;
 }
 
+int LaneSection::GetLaneGlobalIdByIdx(int idx)
+{
+	if (idx > (int)lane_.size() - 1)
+	{
+		LOG("LaneSection::GetLaneIdByIdx Error: index %d, only %d lanes\n", idx, (int)lane_.size());
+		return 0;
+	}
+	else
+	{
+		return (lane_[idx]->GetGlobalId());
+	}
+}
+
 int LaneSection::GetNumberOfDrivingLanes()
 {
 	int counter = 0;

@@ -27,6 +27,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
 #include <unistd.h> /* Needed for close() */
+#include<bits/stdc++.h> 
+#include <utility> 
 #endif
 
 using namespace scenarioengine;
@@ -480,18 +482,19 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 			roadmanager::LaneSection* lane_section = road->GetLaneSectionByIdx(j);
 
 			// loop over all lanes 
-			for (int i=0; i<lane_section->GetNumberOfLanes(); i++)
+			for (int k=0; k<lane_section->GetNumberOfLanes(); k++)
 			{
-				roadmanager::Lane* lane = lane_section->GetLaneByIdx(i);
+				roadmanager::Lane* lane = lane_section->GetLaneByIdx(k);
 				osi3::Lane* osi_lane = 0;
-				int lane_id = lane->GetGlobalId();
+				int lane_global_id = lane->GetGlobalId();
+				int lane_id = lane->GetId();
 				
 				// Check if this lane is already pushed to OSI
-				for (int j=0; j < mobj_osi_internal.ln.size(); j++)
+				for (int jj=0; jj < mobj_osi_internal.ln.size(); jj++)
 				{
-					if (mobj_osi_internal.ln[j]->mutable_id()->value() == lane_id)
+					if (mobj_osi_internal.ln[jj]->mutable_id()->value() == lane_global_id)
 					{
-						osi_lane = mobj_osi_internal.ln[j];
+						osi_lane = mobj_osi_internal.ln[jj];
 
 						// update classification is_vehicle_in_lane 
 						bool is_veh_on_lane;
@@ -515,7 +518,7 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 				if (!osi_lane)
 				{
 					osi_lane = mobj_osi_internal.sv->mutable_global_ground_truth()->add_lane();
-					osi_lane->mutable_id()->set_value(lane_id);
+					osi_lane->mutable_id()->set_value(lane_global_id);
 
 
 					// update classification type
@@ -534,42 +537,58 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 
 					//update lane centerline points
 					int n_osi_points = lane->GetOSIPoints().GetNumOfOSIPoints();
-					for (int j = 0; j < n_osi_points; j++)
+					for (int jj = 0; jj < n_osi_points; jj++)
 					{
 						osi3::Vector3d* centerLine = osi_lane->mutable_classification()->add_centerline();
-						centerLine->set_x(lane->GetOSIPoints().GetXfromIdx(j));
-						centerLine->set_y(lane->GetOSIPoints().GetYfromIdx(j));
-						centerLine->set_z(lane->GetOSIPoints().GetZfromIdx(j));
+						centerLine->set_x(lane->GetOSIPoints().GetXfromIdx(jj));
+						centerLine->set_y(lane->GetOSIPoints().GetYfromIdx(jj));
+						centerLine->set_z(lane->GetOSIPoints().GetZfromIdx(jj));
 					}
 
 					// update lane_id for lanes on the left and lanes on the right 
 					int n_lanes_in_section = lane_section->GetNumberOfLanes();
-					std::vector<int> lanes_on_left;
-					std::vector<int> lanes_on_right;
-					for (int j = 0; j < n_lanes_in_section; j++)
+					//std::vector<int> left_lane_id;
+					//std::vector<int> right_lane_id;
+					//std::vector<int> left_lane_globalid;
+					//std::vector<int> right_lane_globalid;
+					std::vector< std::pair <int,int> > globalid_ids_left; 
+					std::vector< std::pair <int,int> > globalid_ids_right; 
+					for (int jj = 0; jj < n_lanes_in_section; jj++)
 					{
-						if (lane_section->GetLaneIdByIdx(j) < lane_id)
+						if (lane_section->GetLaneIdByIdx(jj) > lane_id)
 						{
-							lanes_on_left.push_back(lane_section->GetLaneIdByIdx(j));
+							//left_lane_globalid.push_back(lane_section->GetLaneGlobalIdByIdx(jj));
+							//left_lane_id.push_back(lane_section->GetLaneIdByIdx(jj));
+							//globalid_ids_left
+							globalid_ids_left.push_back( std::make_pair(lane_section->GetLaneIdByIdx(jj) , lane_section->GetLaneGlobalIdByIdx(jj) ) ); 
 						}
-						else if (lane_section->GetLaneIdByIdx(j) > lane_id)
+						else if (lane_section->GetLaneIdByIdx(jj) < lane_id)
 						{
-							lanes_on_right.push_back(lane_section->GetLaneIdByIdx(j));
+							//right_lane_globalid.push_back(lane_section->GetLaneGlobalIdByIdx(jj));
+							//right_lane_id.push_back(lane_section->GetLaneIdByIdx(jj));
+							globalid_ids_right.push_back( std::make_pair(lane_section->GetLaneIdByIdx(jj) , lane_section->GetLaneGlobalIdByIdx(jj) ) ); 
 						}
 					}
-					std::sort(lanes_on_left.begin(), lanes_on_left.end());
-					std::reverse(lanes_on_left.begin(), lanes_on_left.end());
-					std::sort(lanes_on_right.begin(), lanes_on_right.end());
+					// order global id with local id to maintain geographical order 
+					std::sort(globalid_ids_left.begin(), globalid_ids_left.end()); 
+					std::sort(globalid_ids_right.begin(), globalid_ids_right.end()); 
+					std::reverse(globalid_ids_right.begin(), globalid_ids_right.end());
+					//for (int i=0; i<n; i++) 
+        			//	vect.push_back( make_pair(arr[i],arr1[i]) ); 
+					//std::sort(lanes_on_left.begin(), lanes_on_left.end());
+					//std::reverse(lanes_on_left.begin(), lanes_on_left.end());
+					//std::sort(lanes_on_right.begin(), lanes_on_right.end());
 
-					for (int j = 0; j < lanes_on_left.size(); j++)
+					for (int jj = 0; jj < globalid_ids_left.size(); jj++)
 					{
 						osi3::Identifier* left_id = osi_lane->mutable_classification()->add_left_adjacent_lane_id();
-						left_id->set_value((uint64_t)lanes_on_left[j]);
+						left_id->set_value((uint64_t)globalid_ids_left[jj].second);
+						//vect[i].first 
 					}
-					for (int j = 0; j < lanes_on_right.size(); j++)
+					for (int jj = 0; jj < globalid_ids_right.size(); jj++)
 					{
 						osi3::Identifier* right_id = osi_lane->mutable_classification()->add_right_adjacent_lane_id();
-						right_id->set_value((uint64_t)lanes_on_right[j]);
+						right_id->set_value((uint64_t)globalid_ids_right[jj].second);
 					}
 
 					// update lane pairing 
@@ -596,29 +615,54 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 						}
 					}
 
-					// Set left lane boundary ID for right lanes 
-					if (lane_id > 0 )
+					// Set left and right lane boundary ID 
+					// STILL TO DO: double lanes?						
+					std::vector<int> line_ids = lane->GetLineGlobalIds(); 
+					if (!line_ids.empty())
 					{
-						osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-						std::vector<int> line_ids = lane->GetLineGlobalIds(); 
-						if (!line_ids.empty())
+						for (int jj = 0; jj < line_ids.size(); jj++ )
 						{
-							left_lane_bound_id->set_value(line_ids[0]);
-						}	
-						// look at right lane and check if it has line ID 					
+							if (lane_id > 0 )
+							{
+								osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+								left_lane_bound_id->set_value(line_ids[jj]);
+							}
+							if (lane_id < 0 )
+							{
+								osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+								right_lane_bound_id->set_value(line_ids[jj]);
+							}								
+						}							
 					}
-					// Set right lane boundary ID for left lanes 
-					if (lane_id < 0 )
+					int next_lane_id; 	
+					if (lane_id < 0)
 					{
-						osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-						std::vector<int> line_ids = lane->GetLineGlobalIds(); 
-						if (!line_ids.empty())
-						{
-							right_lane_bound_id->set_value(line_ids[0]);
-						}	
-						// look at right lane and check if it has a left id 					
+						next_lane_id = lane_id+1; 
 					}
-					
+					else if (lane_id > 0)
+					{
+						next_lane_id = lane_id-1; 
+					}
+					// look at right lane and check if it has line ID for the left line ID
+					roadmanager::Lane* next_lane = lane_section->GetLaneById(next_lane_id); 
+					std::vector<int> nextlane_line_ids = next_lane->GetLineGlobalIds();	
+					if (!nextlane_line_ids.empty())
+					{
+						for (int jj = 0; jj < nextlane_line_ids.size(); jj++ )
+						{
+							if (lane_id>0)
+							{
+								osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+								right_lane_bound_id->set_value(nextlane_line_ids[jj]);
+							}
+							else if (lane_id<0)
+							{
+								osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+								left_lane_bound_id->set_value(nextlane_line_ids[jj]);
+							}								
+						}							
+					}	
+	
 					/*int right_bound_id = 0;
 					osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
 					right_lane_bound_id->set_value(right_bound_id);*/

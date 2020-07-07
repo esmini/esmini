@@ -549,6 +549,7 @@ namespace roadmanager
 		int FindClosestDrivingLane(int id);
 		int GetLaneIdByIdx(int idx);
 		int GetLaneIdxById(int id);
+		int GetLaneGlobalIdByIdx(int idx);
 		double GetOuterOffset(double s, int lane_id);
 		double GetWidth(double s, int lane_id);
 		int GetClosestLaneIdx(double s, double t, double &offset);
