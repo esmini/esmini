@@ -648,8 +648,11 @@ void SumoController::InitalizeObjects()
 	{
 		for (size_t j = 0; j < entities_->object_.size(); j++)
 		{
-			libsumo::Vehicle::add(entities_->object_[j]->name_,"");
-			updatePositions();
+			if (entities_->object_[j]->control_ != Object::Control::HYBRID_GHOST) 
+			{
+				libsumo::Vehicle::add(entities_->object_[j]->name_,"");
+				updatePositions();
+			}
 		}
 	}
 }
@@ -661,9 +664,10 @@ void SumoController::updatePositions()
 	{
 		for (size_t i = 0; i < entities_->object_.size(); i++)
 		{
-			if (entities_->object_[i]->control_ != Object::Control::SUMO)
+			if ((entities_->object_[i]->control_ != Object::Control::SUMO) && (entities_->object_[i]->control_ != Object::Control::HYBRID_GHOST))
 			{
 				libsumo::Vehicle::moveToXY(entities_->object_[i]->name_,"random",0,entities_->object_[i]->pos_.GetX(),entities_->object_[i]->pos_.GetY(),entities_->object_[i]->pos_.GetH());
+				libsumo::Vehicle::setSpeed(entities_->object_[i]->name_,entities_->object_[i]->speed_);
 			}
 		}
 	}

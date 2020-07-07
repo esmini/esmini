@@ -280,7 +280,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
 		Object *obj = entities.object_[i];
-		
+
 		if (initial)
 		{
 			// Report all scenario objects the initial run, to establish initial positions and speed = 0
@@ -351,25 +351,23 @@ void ScenarioEngine::ResolveHybridVehicles()
 	{
 		if (entities.object_[i]->control_ == Object::Control::HYBRID_GHOST)
 		{
-			// Create a vehicle for external control
+			// Create a ghost vehicle
 			Vehicle *external_vehicle = new Vehicle();
 
-			// Copy all properties from the ghost
+			// Copy all properties to the ghost
 			*external_vehicle = *(Vehicle*)entities.object_[i];
 
 			// Add "_ghost" to original vehicle name
-			entities.object_[i]->name_.append("_ghost");
-
+			external_vehicle->name_.append("_ghost");
+			// add to entities
+			entities.addObject(external_vehicle);
 			// Adjust some properties for the externally controlled buddy
-			external_vehicle->control_ = Object::Control::HYBRID_EXTERNAL;
+			entities.object_[i]->control_ = Object::Control::HYBRID_EXTERNAL;
 			// Connect external vehicle to the ghost
-			external_vehicle->ghost_ = entities.object_[i];
+			entities.object_[i]->ghost_ = external_vehicle;
 
-			entities.object_[i]->id_ = (int)entities.object_.size();
-			//KOLLA DETTA
-			entities.addObject(entities.object_[i]);
-			entities.object_[i] = external_vehicle;
-			entities.object_[i]->id_ = (int)i;
+
+
 		}
 	}
 
