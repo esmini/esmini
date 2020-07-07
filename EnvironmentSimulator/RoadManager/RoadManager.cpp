@@ -6157,4 +6157,5 @@ void Trajectory::Freeze()
 	{
 		LOG("Clothoid and Nurbs trajectory types not supported yet");
 	}
+	
 }
