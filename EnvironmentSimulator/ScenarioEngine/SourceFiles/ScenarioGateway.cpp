@@ -26,9 +26,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
-#include <unistd.h> /* Needed for close() */
-#include<bits/stdc++.h> 
-#include <utility> 
+#include <unistd.h> /* Needed for close() */ 
 #endif
 
 using namespace scenarioengine;
