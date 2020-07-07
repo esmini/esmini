@@ -166,7 +166,6 @@ void ScenarioPlayer::ViewerFrame()
 	
 	if (scenarioEngine->entities.object_.size() > viewer_->cars_.size())
 	{
-		LOG("add new car");
 		// add cars missing
 		for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 		{
@@ -180,12 +179,9 @@ void ScenarioPlayer::ViewerFrame()
 			}
 			if (toadd)
 			{
-				LOG("adding car:");
-				// LOG(scenarioEngine->entities.object_[i]->name_);
 				// add car
 				osg::Vec3 trail_color;
 				trail_color.set(color_blue[0], color_blue[1], color_blue[2]);
-				// ADD FILE HERE
 				viewer_->AddCar(scenarioEngine->entities.object_[i]->model_filepath_, false,trail_color, false ,scenarioEngine->entities.object_[i]->name_);
 			}
 		}

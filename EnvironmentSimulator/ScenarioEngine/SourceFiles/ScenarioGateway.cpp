@@ -625,6 +625,7 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
 
 SumoController::SumoController(Entities* entities, ScenarioGateway* scenarioGateway)
 {
+	// initalize sumo with the configuration file
 	entities_ = entities;
 	scenarioGateway_ = scenarioGateway;
 	std::vector<std::string> options;
@@ -634,43 +635,76 @@ SumoController::SumoController(Entities* entities, ScenarioGateway* scenarioGate
 	libsumo::Simulation::load(options);
 	sumo_used = true;
 }
+
 SumoController::SumoController()
 {
 	sumo_used = false;
 }
-void SumoController::step(double time)
-{
+
+void SumoController::InitalizeObjects()
+{	
+	// Adds all vehicles added in openscenario to the sumosimulation
 	if (sumo_used)
 	{
+		for (size_t j = 0; j < entities_->object_.size(); j++)
+		{
+			libsumo::Vehicle::add(entities_->object_[j]->name_,"");
+			updatePositions();
+		}
+	}
+}
+
+void SumoController::updatePositions()
+{
+	// Updates all positions for non-sumo controlled vehicles
+	if (sumo_used)
+	{
+		for (size_t i = 0; i < entities_->object_.size(); i++)
+		{
+			if (entities_->object_[i]->control_ != Object::Control::SUMO)
+			{
+				libsumo::Vehicle::moveToXY(entities_->object_[i]->name_,"random",0,entities_->object_[i]->pos_.GetX(),entities_->object_[i]->pos_.GetY(),entities_->object_[i]->pos_.GetH());
+			}
+		}
+	}
+}
+
+void SumoController::step(double time)
+{
+	// stepping funciton for sumo, adds/removes vehicles (based on sumo), 
+	// updates all positions of vehicles in the simulation that are controlled by sumo
+	if (sumo_used)
+	{
+		// do sumo timestep
 		libsumo::Simulation::step(time);
+
+		// check if any new cars has been added by sumo and add them to entities
 		if (libsumo::Simulation::getDepartedNumber() > 0) {
 			std::vector<std::string> deplist = libsumo::Simulation::getDepartedIDList();
-			// for (std::vector<std::string>::iterator name = deplist.begin(); name != deplist.end(); ++name) {
 			for (size_t i = 0; i < deplist.size(); i++)
 			{
-				Vehicle *vehicle = new Vehicle();
-				// copy the default vehicle stuffs here
-
-				vehicle->name_ = deplist[i];
-				vehicle->control_ = Object::Control::SUMO;
-				LOG(entities_->sumo_vehicle->model_filepath_.c_str());
-				vehicle->model_filepath_ = entities_->sumo_vehicle->model_filepath_;
-				entities_->addObject(vehicle);
-
-
-				// scenarioGateway_->addObject(); // maybe add this in the future?
+				if (!entities_->nameExists(deplist[i]))
+				{
+					Vehicle *vehicle = new Vehicle();
+					// copy the default vehicle stuff here (add bounding box and so on)
+					LOG("Adding new vehicle: %s",deplist[i].c_str());
+					vehicle->name_ = deplist[i];
+					vehicle->control_ = Object::Control::SUMO;
+					vehicle->model_filepath_ = entities_->sumo_vehicle->model_filepath_;
+					entities_->addObject(vehicle);
+				}
 			}
 		}
 
+		// check if any cars have been removed by sumo and remove them from scenarioGateway and entities
 		if (libsumo::Simulation::getArrivedNumber() > 0) {
-		std::vector<std::string> arrivelist = libsumo::Simulation::getArrivedIDList();
-			// for (std::vector<std::string>::iterator j = deplist.begin(); j != deplist.end(); ++j) {
+			std::vector<std::string> arrivelist = libsumo::Simulation::getArrivedIDList();
 			for (size_t i = 0; i < arrivelist.size();i++)
 			{
-				// for(std::vector<std::string>::iterator it = entities->object_.begin(); it != entities->object_.end(); ++it) {
 				for (size_t j = 0; j < entities_->object_.size(); j++)
 				{
 					if (arrivelist[i] == entities_->object_[j]->name_) {
+						LOG("Removing vehicle: %s",arrivelist[i].c_str());
 						entities_->removeObject(arrivelist[i]);
 						scenarioGateway_->removeObject(arrivelist[i]);
 					}
@@ -678,6 +712,7 @@ void SumoController::step(double time)
 			}
 		}
 
+		// Update the position of all cars controlled by sumo
 		for (size_t i = 0; i < entities_->object_.size(); i++)
 		{
 			if (entities_->object_[i]->control_ == Object::Control::SUMO)
@@ -686,18 +721,6 @@ void SumoController::step(double time)
 				libsumo::TraCIPosition pos = libsumo::Vehicle::getPosition3D(sumoid);
 				entities_->object_[i]->speed_ = libsumo::Vehicle::getSpeed(sumoid);
 				entities_->object_[i]->pos_.SetInertiaPos(pos.x,pos.y,pos.z,-libsumo::Vehicle::getAngle(sumoid)*3.14159265359/180+ 3.14159265359/2,libsumo::Vehicle::getSlope(sumoid)*3.14159265359/180,0);
-				// entities_->object_[i]->pos_.SetX(pos.x);
-				// entities_->object_[i]->pos_.SetY(pos.y);
-				// entities_->object_[i]->pos_.SetZ(pos.z);
-				// entities_->object_[i]->pos_.SetH(libsumo::Vehicle::getAngle(sumoid)*3.14159265359/180 + 3.14159265359/2);
-				// entities_->object_[i]->pos_.SetP(libsumo::Vehicle::getSlope(sumoid)*3.14159265359/180);
-				if (i == 1)
-				{
-					// libsumo::TraCIPosition pos = libsumo::Vehicle::getPosition3D(sumoid);
-					// LOG(pos.getString().c_str());
-					// LOG("heading %f",libsumo::Vehicle::getAngle(sumoid));
-					// LOG("slope %f",libsumo::Vehicle::getSlope(sumoid)*3.14159265359/180);
-				}
 			}
         }
 	}

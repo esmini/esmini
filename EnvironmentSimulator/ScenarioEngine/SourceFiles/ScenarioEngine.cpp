@@ -97,6 +97,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			init.private_action_[i]->Start();
 			init.private_action_[i]->UpdateState();
 		}
+		sumocontroller->InitalizeObjects();
 	}
 	
 	sumocontroller->step(getSimulationTime());
@@ -295,6 +296,8 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		}
 	}
 
+	// update positions to sumo
+	sumocontroller->updatePositions();
 	// And send OSI info
 
 	scenarioGateway.UpdateOSISensorView();

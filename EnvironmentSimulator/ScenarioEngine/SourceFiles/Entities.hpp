@@ -149,6 +149,7 @@ namespace scenarioengine
 		void removeObject(std::string name);
 		int getNewId();
 		bool indexExists(int id);
+		bool nameExists(std::string name);
 	};
 
 }

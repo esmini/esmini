@@ -47,6 +47,17 @@ void Entities::removeObject(std::string name)
 	}
 }
 
+bool Entities::nameExists(std::string name)
+{
+	for (size_t i = 0; i < object_.size(); i++) 
+	{
+		if (object_[i]->name_ == name) 
+		{
+			return true;
+		}
+	}
+	return false;
+}
 bool Entities::indexExists(int id) 
 {
 	for (size_t i = 0; i < object_.size(); i++) 

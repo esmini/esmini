@@ -127,9 +127,11 @@ namespace scenarioengine
 	class SumoController
 	{
 		public:
-			SumoController(Entities* entities, ScenarioGateway* scenarioGateway); 
+			SumoController(Entities* entities, ScenarioGateway* scenarioGateway);
 			SumoController();
+			void InitalizeObjects();
 			void step(double time);
+			void updatePositions();
 
 		private:
 			Entities* entities_;
