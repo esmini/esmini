@@ -426,6 +426,7 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 
 	OSCBoundingBox boundingbox;
 	ParseOSCBoundingBox(boundingbox,vehicleNode);
+	vehicle->boundingbox_=boundingbox;
 
 	return vehicle;
 }
