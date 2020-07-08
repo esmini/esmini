@@ -651,9 +651,9 @@ void SumoController::InitalizeObjects()
 			if (entities_->object_[j]->control_ != Object::Control::HYBRID_GHOST) 
 			{
 				libsumo::Vehicle::add(entities_->object_[j]->name_,"");
-				updatePositions();
 			}
 		}
+		updatePositions();
 	}
 }
 
