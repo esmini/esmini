@@ -316,14 +316,14 @@ int ScenarioGateway::UpdateOSIMovingObject()
 
 int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in the lane section where the object_id is 
 {
-	//Check if object_id exists
+	// Check if object_id exists
 	if (object_id >= getNumberOfObjects())
 	{
 		LOG("Object %d not available, only %d registered", object_id, getNumberOfObjects());
 		return -1;
 	}
 	
-	//Find position of the object 
+	// Find position of the object 
 	roadmanager::Position pos;
 	for (size_t i = 0; i < getNumberOfObjects() ; i++)
 	{
@@ -333,10 +333,10 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 		}		
 	}
 	
-	//Find road and lane section from the object position
+	// Find road and lane section from the object position
 	static roadmanager::OpenDrive* opendrive = pos.GetOpenDrive();
 
-	//Loop over all roads 
+	// Loop over all roads 
 	for (int i = 0; i<opendrive->GetNumOfRoads(); i++)
 	{
 		

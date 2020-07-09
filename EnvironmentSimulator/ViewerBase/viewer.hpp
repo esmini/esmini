@@ -202,6 +202,7 @@ namespace viewer
 
 		// Road debug visualization
 		osg::ref_ptr<osg::Group> odrLines_;
+		osg::ref_ptr<osg::Group> osiLines_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> envTx_;
 		osg::ref_ptr<osg::Node> environment_;
 		osg::ref_ptr<osgGA::RubberbandManipulator> rubberbandManipulator_;
@@ -216,6 +217,7 @@ namespace viewer
 		bool showInfoText;
 		bool showTrail;
 		bool showRoadFeatures;
+		bool showOSIFeatures;
 		bool showObjectSensors;
 
 		osg::ref_ptr<osg::Camera> infoTextCamera;
@@ -248,6 +250,7 @@ namespace viewer
 		void ShowInfoText(bool show);
 		void ShowTrail(bool show);
 		void ShowRoadFeatures(bool show);
+		void ShowOSIFeatures(bool show);
 		void ShowObjectSensors(bool show);
 		PointSensor* CreateSensor(double color[], bool create_ball, bool create_line, double ball_radius, double line_width);
 		bool CreateRoadSensors(CarModel *vehicle_model);

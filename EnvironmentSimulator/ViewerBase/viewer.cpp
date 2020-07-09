@@ -712,9 +712,12 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	rootnode_->addChild(trails_);
 	odrLines_ = new osg::Group;
 	rootnode_->addChild(odrLines_);
+	osiLines_ = new osg::Group;
+	rootnode_->addChild(osiLines_);
 
 	ShowTrail(true);  // show trails per default
 	ShowRoadFeatures(true);
+	ShowOSIFeatures(false); // hide OSI features by default
 	ShowObjectSensors(false); // hide sensor frustums by default
 
 
@@ -1060,7 +1063,7 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 									osi_rm_geom->getOrCreateStateSet()->setAttributeAndModes(osi_rm_point, osg::StateAttribute::ON);
 									osi_rm_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
-									odrLines_->addChild(osi_rm_geom);
+									osiLines_->addChild(osi_rm_geom);
 
 									// Draw lines from the start of the roadmark to the end of the roadmark
 									lineWidth->setWidth(1.5f);
@@ -1071,7 +1074,7 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 									geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
 									geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
-									odrLines_->addChild(geom);
+									osiLines_->addChild(geom);
 								}
 							}
 							else if(lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID)
@@ -1105,7 +1108,7 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 								osi_rm_geom->getOrCreateStateSet()->setAttributeAndModes(osi_rm_point, osg::StateAttribute::ON);
 								osi_rm_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 									
-								odrLines_->addChild(osi_rm_geom);
+								osiLines_->addChild(osi_rm_geom);
 
 								// Draw lines between each selected points
 								lineWidth->setWidth(1.5f);
@@ -1118,7 +1121,7 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 								geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
 								geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
-								odrLines_->addChild(geom);
+								osiLines_->addChild(geom);
 
 							}
 						}
@@ -1432,6 +1435,12 @@ void Viewer::ShowRoadFeatures(bool show)
 	roadSensors_->setNodeMask(showRoadFeatures ? 0xffffffff : 0x0);
 }
 
+void Viewer::ShowOSIFeatures(bool show)
+{
+	showOSIFeatures = show;
+	osiLines_->setNodeMask(showOSIFeatures ? 0xffffffff : 0x0);
+}
+
 void Viewer::ShowObjectSensors(bool show)
 {
 	showObjectSensors = show;
@@ -1496,6 +1505,14 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->ShowRoadFeatures(!viewer_->showRoadFeatures);
+		}
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_U):
+	{
+		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->ShowOSIFeatures(!viewer_->showOSIFeatures);
 		}
 	}
 	break;
