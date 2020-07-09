@@ -678,11 +678,23 @@ int ScenarioReader::parseEntities()
 			obj->name_ = ReadAttribute(entitiesChild, "name");
 			entities_->addObject(obj);
 			objectCnt_++;
-		} else if (obj != 0 & ctrl != 0)
+		} 
+		else if (obj != 0 & ctrl != 0)
 		{
 			// if sumo contorlled vehicle, the object will be passed to sumo template, and
+			pugi::xml_parse_result sumoconf = docsumo_.load_file(ctrl->config_filepath_.c_str());
+			std::string networkfile = ReadAttribute(docsumo_.child("configuration").child("input").child("net-file"),"value");
+			pugi::xml_parse_result sumonet = docsumo_.load_file(networkfile.c_str());
+			pugi::xml_node location = docsumo_.child("net").child("location");
+			std::string netoffset = ReadAttribute(location, "netOffset");
+			std::size_t delim = netoffset.find(',');
+			entities_->sumo_x_offset = std::stof(netoffset.substr(0,delim));
+			entities_->sumo_y_offset = std::stof(netoffset.substr(delim+1,netoffset.npos));
+			
+			
 			entities_->sumo_vehicle = obj;
 			entities_->sumo_config_path = ctrl->config_filepath_;
+
 		}
 	}
 
@@ -1479,43 +1491,19 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				}
 			}
 		}
-		else if (actionChild.name() == std::string("Autonomous"))
+		else if (actionChild.name() == std::string("ActivateControllerAction"))
 		{
-			AutonomousAction *autonomous = new AutonomousAction;
+			ActivateControllerAction * activateControllerAction = new ActivateControllerAction;
 
-			std::string activate_str = ReadAttribute(actionChild, "activate");
-			if (activate_str == "true" || activate_str == "1")
-			{
-				autonomous->activate_ = true;
-			}
-			else if (activate_str == "false" || activate_str == "0")
-			{
-				autonomous->activate_ = false;
-			}
-			else
-			{
-				LOG("Invalid activation value: %s", activate_str.c_str());
-			}
+			activateControllerAction->longitudinal_ = ReadAttribute(actionChild, "longitudinal") == "true";
+			activateControllerAction->lateral_ = ReadAttribute(actionChild, "lateral") == "true";
 
-			std::string domain_str = ReadAttribute(actionChild, "domain");
-			if (domain_str == "longitudinal")
-			{
-				autonomous->domain_ = AutonomousAction::DomainType::LONGITUDINAL;
-			}
-			else if (domain_str == "lateral")
-			{
-				autonomous->domain_ = AutonomousAction::DomainType::LATERAL;
-			}
-			else if (domain_str == "both")
-			{
-				autonomous->domain_ = AutonomousAction::DomainType::BOTH;
-			}
-			else
-			{
-				LOG("Invalid domain: %s", domain_str.c_str());
-			}
+			LOG("ActivateControllerAction: Longitudinal: %s Lateral: %s", 
+				activateControllerAction->longitudinal_ ? "true" : "false",
+				activateControllerAction->lateral_ ? "true" : "false"
+			);
 
-			action = autonomous;
+			action = activateControllerAction;
 		}
 		else
 		{

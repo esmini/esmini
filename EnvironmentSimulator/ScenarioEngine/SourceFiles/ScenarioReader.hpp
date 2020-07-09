@@ -82,6 +82,7 @@ namespace scenarioengine
 
 	private:
 		pugi::xml_document doc_;
+		pugi::xml_document docsumo_;
 		OSCParameterDeclarations parameterDeclarations_;
 		int objectCnt_;
 		std::string oscFilename_;

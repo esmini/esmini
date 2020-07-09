@@ -97,10 +97,10 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			init.private_action_[i]->Start();
 			init.private_action_[i]->UpdateState();
 		}
-		sumocontroller->InitalizeObjects();
+		// sumocontroller->InitalizeObjects();
 	}
 	
-	sumocontroller->step(getSimulationTime());
+	
 	
 	// Step inital actions - might be extened in time (more than one step)
 	for (size_t i = 0; i < init.private_action_.size(); i++)
@@ -112,6 +112,12 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			init.private_action_[i]->UpdateState();
 		}
 	}
+
+	if (initial)
+	{
+		sumocontroller->InitalizeObjects();
+	}
+	sumocontroller->step(getSimulationTime());
 
 	// Story 
 	
@@ -389,9 +395,9 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	scenarioReader->parseRoadNetwork(roadNetwork);
 	roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str());
 	odrManager = roadmanager::Position::GetOpenDrive();
-	if (!odrManager->SetOSI())
-	{
-		LOG("OpenDrive::SetOSI Failed to create OSI points for OpenDrive road!\n");
+	if (!odrManager->SetRoadOSI())
+	{ 
+		LOG("OpenDrive::SetRoadOSI Failed to create OSI points for OpenDrive road!\n");
 	}
 
 	scenarioReader->parseCatalogs();

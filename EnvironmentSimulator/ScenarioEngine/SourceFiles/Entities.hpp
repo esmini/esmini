@@ -143,6 +143,8 @@ namespace scenarioengine
 		// create a sumo vehicle template and sumo config file in Entities class
 		Object* sumo_vehicle;
 		std::string sumo_config_path;
+		float sumo_x_offset;
+		float sumo_y_offset;
 
 		int addObject(Object* obj);
 		void removeObject(int id);
