@@ -252,12 +252,17 @@ int ScenarioGateway::UpdateOSISensorView()
 	mobj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_nanos((uint32_t)(
 		(objectState_[0]->state_.timeStamp - (int64_t)objectState_[0]->state_.timeStamp) * 1e9)
 	);
+
+	double time_stamp = objectState_[0]->state_.timeStamp; 
 	
 	UpdateOSIMovingObject();
 	//collect all information of lanes in the lane section where obj=0 is
-	UpdateOSIRoadLane(0); 
-
-	UpdateOSILaneBoundary(); 
+	UpdateOSIRoadLane(); 
+	if (time_stamp == 0)
+	{
+		UpdateOSILaneBoundary(); 
+	}
+	
 
 	mobj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
 	osiSensorView.size = (unsigned int)mobj_osi_internal.sv->ByteSizeLong();
@@ -338,115 +343,159 @@ int ScenarioGateway::UpdateOSILaneBoundary()
 			{
 				roadmanager::Lane* lane = lane_section->GetLaneByIdx(k); 
 
-				// loop over RoadMarks 
-				for (int ii = 0; ii < lane->GetNumberOfRoadMarks(); ii++)
+				int n_roadmarks = lane->GetNumberOfRoadMarks(); 
+				if (n_roadmarks != 0)
 				{
-					roadmanager::LaneRoadMark* laneroadmark = lane->GetLaneRoadMarkByIdx(ii); 
-
-					//loop over road mark types 
-					for (int jj = 0; jj < laneroadmark->GetNumberOfRoadMarkTypes(); jj++)
+					// loop over RoadMarks 
+					for (int ii = 0; ii < lane->GetNumberOfRoadMarks(); ii++)
 					{
-						roadmanager::LaneRoadMarkType* laneroadmarktype = laneroadmark->GetLaneRoadMarkTypeByIdx(jj); 
+						roadmanager::LaneRoadMark* laneroadmark = lane->GetLaneRoadMarkByIdx(ii); 
 
-						// loop over LaneRoadMarkTypeLine
-						for (int kk = 0; kk< laneroadmarktype->GetNumberOfRoadMarkTypeLines(); kk++)
+						//loop over road mark types 
+						for (int jj = 0; jj < laneroadmark->GetNumberOfRoadMarkTypes(); jj++)
 						{
-							int num_lines = laneroadmarktype->GetNumberOfRoadMarkTypeLines(); 
-							roadmanager::LaneRoadMarkTypeLine* laneroadmarktypeline = laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(kk); 
+							roadmanager::LaneRoadMarkType* laneroadmarktype = laneroadmark->GetLaneRoadMarkTypeByIdx(jj); 
 
-							osi3::LaneBoundary* osi_laneboundary = 0;
-							int line_id = laneroadmarktypeline->GetGlobalId();
-
-							// Check if this line is already pushed to OSI
-							for (int h=0; h < mobj_osi_internal.lnb.size(); h++)
+							// loop over LaneRoadMarkTypeLine
+							for (int kk = 0; kk< laneroadmarktype->GetNumberOfRoadMarkTypeLines(); kk++)
 							{
-								if (mobj_osi_internal.lnb[h]->mutable_id()->value() == line_id)
-								{
-									osi_laneboundary = mobj_osi_internal.lnb[h];									
-								}								
-							}
-							if (!osi_laneboundary)
-							{
-								osi_laneboundary = mobj_osi_internal.sv->mutable_global_ground_truth()->add_lane_boundary();
+								int num_lines = laneroadmarktype->GetNumberOfRoadMarkTypeLines(); 
+								roadmanager::LaneRoadMarkTypeLine* laneroadmarktypeline = laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(kk); 
 
-								// update id 									
-								osi_laneboundary->mutable_id()->set_value(line_id);
+								osi3::LaneBoundary* osi_laneboundary = 0;
+								int line_id = laneroadmarktypeline->GetGlobalId();
 
-								int n_osi_points = laneroadmarktypeline->GetOSIPoints().GetNumOfOSIPoints();
-								for (int h = 0; h < n_osi_points; h++)
+								// Check if this line is already pushed to OSI
+								for (int h=0; h < mobj_osi_internal.lnb.size(); h++)
 								{
-									osi3::LaneBoundary_BoundaryPoint* boundary_point = osi_laneboundary->add_boundary_line();
-									boundary_point->mutable_position()->set_x(laneroadmarktypeline->GetOSIPoints().GetXfromIdx(h));
-									boundary_point->mutable_position()->set_y(laneroadmarktypeline->GetOSIPoints().GetYfromIdx(h));
-									boundary_point->mutable_position()->set_z(laneroadmarktypeline->GetOSIPoints().GetZfromIdx(h));									
-									boundary_point->set_width(laneroadmarktypeline->GetWidth());
-									boundary_point->set_height(laneroadmark->GetHeight());
+									if (mobj_osi_internal.lnb[h]->mutable_id()->value() == line_id)
+									{
+										osi_laneboundary = mobj_osi_internal.lnb[h];									
+									}								
 								}
-
-								// update classification type 
-								osi3::LaneBoundary_Classification_Type classific_type;
-								roadmanager::LaneRoadMark::RoadMarkType tyype = laneroadmark->GetType(); 
-								osi3::LaneBoundary_Classification_Type osi_type = osi_laneboundary->mutable_classification()->type(); 
-								switch(laneroadmark->GetType())
+								if (!osi_laneboundary)
 								{
-									case roadmanager::LaneRoadMark::RoadMarkType::NONE_TYPE: 
-									classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_UNKNOWN;
-									break; 
-									case roadmanager::LaneRoadMark::RoadMarkType::SOLID: 
-									classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_SOLID_LINE;
-									break; 
-									case roadmanager::LaneRoadMark::RoadMarkType::BROKEN: 
-									classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_DASHED_LINE;
-									break; 
-									default: classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_SOLID_LINE;
+									osi_laneboundary = mobj_osi_internal.sv->mutable_global_ground_truth()->add_lane_boundary();
+
+									// update id 									
+									osi_laneboundary->mutable_id()->set_value(line_id);
+
+									int n_osi_points = laneroadmarktypeline->GetOSIPoints().GetNumOfOSIPoints();
+									for (int h = 0; h < n_osi_points; h++)
+									{
+										osi3::LaneBoundary_BoundaryPoint* boundary_point = osi_laneboundary->add_boundary_line();
+										boundary_point->mutable_position()->set_x(laneroadmarktypeline->GetOSIPoints().GetXfromIdx(h));
+										boundary_point->mutable_position()->set_y(laneroadmarktypeline->GetOSIPoints().GetYfromIdx(h));
+										boundary_point->mutable_position()->set_z(laneroadmarktypeline->GetOSIPoints().GetZfromIdx(h));									
+										boundary_point->set_width(laneroadmarktypeline->GetWidth());
+										boundary_point->set_height(laneroadmark->GetHeight());
+									}
+
+									// update classification type 
+									osi3::LaneBoundary_Classification_Type classific_type;
+									roadmanager::LaneRoadMark::RoadMarkType tyype = laneroadmark->GetType(); 
+									osi3::LaneBoundary_Classification_Type osi_type = osi_laneboundary->mutable_classification()->type(); 
+									switch(laneroadmark->GetType())
+									{
+										case roadmanager::LaneRoadMark::RoadMarkType::NONE_TYPE: 
+										classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_UNKNOWN;
+										break; 
+										case roadmanager::LaneRoadMark::RoadMarkType::SOLID: 
+										classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_SOLID_LINE;
+										break; 
+										case roadmanager::LaneRoadMark::RoadMarkType::BROKEN: 
+										classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_DASHED_LINE;
+										break; 
+										default: classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_SOLID_LINE;
+									}
+									osi_laneboundary->mutable_classification()->set_type(classific_type); 
+									osi_type = osi_laneboundary->mutable_classification()->type(); 
+									
+									// update classification color 
+									osi3::LaneBoundary_Classification_Color classific_col; 
+									switch(laneroadmark->GetColor())
+									{
+										case roadmanager::LaneRoadMark::RoadMarkColor::STANDARD_COLOR: 
+										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_WHITE;
+										break; 
+										case roadmanager::LaneRoadMark::RoadMarkColor::BLUE: 
+										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_BLUE;
+										break; 
+										case roadmanager::LaneRoadMark::RoadMarkColor::GREEN: 
+										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_GREEN;
+										break; 
+										case roadmanager::LaneRoadMark::RoadMarkColor::RED: 
+										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_RED;
+										break; 
+										case roadmanager::LaneRoadMark::RoadMarkColor::WHITE: 
+										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_WHITE;
+										break; 
+										case roadmanager::LaneRoadMark::RoadMarkColor::YELLOW: 
+										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_YELLOW;
+										break; 
+										default: classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_WHITE;
+									}								
+									osi_laneboundary->mutable_classification()->set_color(classific_col); 
+
+									// update limiting structure id only if the type of lane boundary is set to TYPE_STRUCTURE - for now it is not implemented 
+									//osi_laneboundary->mutable_classification()->mutable_limiting_structure_id(0)->set_value(0);
+
+									mobj_osi_internal.lnb.push_back(osi_laneboundary);
+
 								}
-								osi_laneboundary->mutable_classification()->set_type(classific_type); 
-								osi_type = osi_laneboundary->mutable_classification()->type(); 
-								
-								// update classification color 
-								osi3::LaneBoundary_Classification_Color classific_col; 
-								switch(laneroadmark->GetColor())
-								{
-									case roadmanager::LaneRoadMark::RoadMarkColor::STANDARD_COLOR: 
-									classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_WHITE;
-									break; 
-									case roadmanager::LaneRoadMark::RoadMarkColor::BLUE: 
-									classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_BLUE;
-									break; 
-									case roadmanager::LaneRoadMark::RoadMarkColor::GREEN: 
-									classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_GREEN;
-									break; 
-									case roadmanager::LaneRoadMark::RoadMarkColor::RED: 
-									classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_RED;
-									break; 
-									case roadmanager::LaneRoadMark::RoadMarkColor::WHITE: 
-									classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_WHITE;
-									break; 
-									case roadmanager::LaneRoadMark::RoadMarkColor::YELLOW: 
-									classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_YELLOW;
-									break; 
-									default: classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_WHITE;
-								}								
-								osi_laneboundary->mutable_classification()->set_color(classific_col); 
-
-								// update limiting structure id only if the type of lane boundary is set to TYPE_STRUCTURE - for now it is not implemented 
-								//osi_laneboundary->mutable_classification()->mutable_limiting_structure_id(0)->set_value(0);
-
-								mobj_osi_internal.lnb.push_back(osi_laneboundary);
-
 							}
 						}
 					}
 				}
+				else
+				{
+					roadmanager::LaneBoundaryOSI* laneboundary = lane->GetLaneBoundary(); 
+					// Check if this line is already pushed to OSI
+					int boundary_id = laneboundary->GetGlobalId();
+					osi3::LaneBoundary* osi_laneboundary = 0;
+					for (int h=0; h < mobj_osi_internal.lnb.size(); h++)
+					{
+						if (mobj_osi_internal.lnb[h]->mutable_id()->value() == boundary_id)
+						{
+							osi_laneboundary = mobj_osi_internal.lnb[h];									
+						}								
+					}
+					if (!osi_laneboundary)
+					{
+						osi_laneboundary = mobj_osi_internal.sv->mutable_global_ground_truth()->add_lane_boundary();
+
+						// update id 									
+						osi_laneboundary->mutable_id()->set_value(boundary_id);
+
+						int n_osi_points = laneboundary->GetOSIPoints().GetNumOfOSIPoints();
+						for (int h = 0; h < n_osi_points; h++)
+						{
+							osi3::LaneBoundary_BoundaryPoint* boundary_point = osi_laneboundary->add_boundary_line();
+							boundary_point->mutable_position()->set_x(laneboundary->GetOSIPoints().GetXfromIdx(h));
+							boundary_point->mutable_position()->set_y(laneboundary->GetOSIPoints().GetYfromIdx(h));
+							boundary_point->mutable_position()->set_z(laneboundary->GetOSIPoints().GetZfromIdx(h));									
+							//boundary_point->set_width(laneboundary->GetWidth());
+							//boundary_point->set_height(laneroadmark->GetHeight());
+						}
+
+						osi3::LaneBoundary_Classification_Type classific_type = osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_SOLID_LINE;
+						osi_laneboundary->mutable_classification()->set_type(classific_type); 
+
+						osi3::LaneBoundary_Classification_Color classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_WHITE;
+						osi_laneboundary->mutable_classification()->set_color(classific_col); 
+
+						mobj_osi_internal.lnb.push_back(osi_laneboundary);
+					}
+				}				
 			}
 		}
-
 	}
 } 
 
-int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in the lane section where the object_id is 
+int ScenarioGateway::UpdateOSIRoadLane() 
 {
-	//Check if object_id exists
+	//Check if object with id = 0 exists // we are supposing vehicle with id = 0 is the hst vehicle 
+	int object_id = 0; 
 	if (object_id >= getNumberOfObjects())
 	{
 		LOG("Object %d not available, only %d registered", object_id, getNumberOfObjects());
@@ -464,9 +513,7 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 	}
 	
 	//Retrieve opendrive class from RoadManager 
-	static roadmanager::OpenDrive* opendrive = pos.GetOpenDrive();
-	//static roadmanager::OpenDrive* opendrive = roadmanager::Position::GetOpenDrive();
-
+	static roadmanager::OpenDrive* opendrive = roadmanager::Position::GetOpenDrive();
 
 	//Loop over all roads 
 	for (int i = 0; i<opendrive->GetNumOfRoads(); i++)
@@ -545,25 +592,17 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 
 					// update lane_id for lanes on the left and lanes on the right 
 					int n_lanes_in_section = lane_section->GetNumberOfLanes();
-					//std::vector<int> left_lane_id;
-					//std::vector<int> right_lane_id;
-					//std::vector<int> left_lane_globalid;
-					//std::vector<int> right_lane_globalid;
 					std::vector< std::pair <int,int> > globalid_ids_left; 
 					std::vector< std::pair <int,int> > globalid_ids_right; 
 					for (int jj = 0; jj < n_lanes_in_section; jj++)
 					{
 						if (lane_section->GetLaneIdByIdx(jj) > lane_id)
 						{
-							//left_lane_globalid.push_back(lane_section->GetLaneGlobalIdByIdx(jj));
-							//left_lane_id.push_back(lane_section->GetLaneIdByIdx(jj));
-							//globalid_ids_left
 							globalid_ids_left.push_back( std::make_pair(lane_section->GetLaneIdByIdx(jj) , lane_section->GetLaneGlobalIdByIdx(jj) ) ); 
 						}
 						else if (lane_section->GetLaneIdByIdx(jj) < lane_id)
 						{
-							//right_lane_globalid.push_back(lane_section->GetLaneGlobalIdByIdx(jj));
-							//right_lane_id.push_back(lane_section->GetLaneIdByIdx(jj));
+
 							globalid_ids_right.push_back( std::make_pair(lane_section->GetLaneIdByIdx(jj) , lane_section->GetLaneGlobalIdByIdx(jj) ) ); 
 						}
 					}
@@ -571,11 +610,6 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 					std::sort(globalid_ids_left.begin(), globalid_ids_left.end()); 
 					std::sort(globalid_ids_right.begin(), globalid_ids_right.end()); 
 					std::reverse(globalid_ids_right.begin(), globalid_ids_right.end());
-					//for (int i=0; i<n; i++) 
-        			//	vect.push_back( make_pair(arr[i],arr1[i]) ); 
-					//std::sort(lanes_on_left.begin(), lanes_on_left.end());
-					//std::reverse(lanes_on_left.begin(), lanes_on_left.end());
-					//std::sort(lanes_on_right.begin(), lanes_on_right.end());
 
 					for (int jj = 0; jj < globalid_ids_left.size(); jj++)
 					{
@@ -660,15 +694,6 @@ int ScenarioGateway::UpdateOSIRoadLane(int object_id) // returns all lanes in th
 							}								
 						}							
 					}	
-	
-					/*int right_bound_id = 0;
-					osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-					right_lane_bound_id->set_value(right_bound_id);*/
-
-					// STILL TO DO: 
-					/*int left_bound_id = 0;
-					osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-					left_lane_bound_id->set_value(left_bound_id);*/
 
 					// STILL TO DO:
 					int free_bound_id = 0;

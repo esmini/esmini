@@ -277,6 +277,11 @@ void Lane::SetGlobalId()
 	global_id_ = laneglobalID_.get_id(); 
 }
 
+void LaneBoundaryOSI::SetGlobalId()
+{ 
+	global_id_ = laneboundaryglobalID_.get_id(); 
+}
+
 void LaneRoadMarkTypeLine::SetGlobalId()
 { 
 	global_id_ = lineglobalID_.get_id(); 
@@ -373,6 +378,12 @@ void LaneRoadMarkType::AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine)
 	lane_roadMarkTypeLine->SetGlobalId();
 	lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine);  
 }
+
+void Lane::SetLaneBoundary(LaneBoundaryOSI *lane_boundary) 
+{	
+	lane_boundary->SetGlobalId();
+	lane_boundary_ = lane_boundary; 
+} 
 
 void LaneOffset::Print()
 {
@@ -3594,6 +3605,178 @@ void OpenDrive::SetLaneOSIPoints()
 	}
 }
 
+void OpenDrive::SetLaneBoundaryPoints()
+{
+	// Initialization
+	Position* pos = new roadmanager::Position();
+	Road *road;
+	LaneSection *lsec;
+	Lane *lane;
+	int number_of_lane_sections, number_of_lanes, counter;
+	double lsec_end;
+	std::vector<double> x0, y0, x1, y1, osi_s, osi_x, osi_y, osi_z, osi_h;
+	double s0, s1, s1_prev;
+	bool osi_requirement; 
+
+	// Looping through each road 
+	for (int i=0; i<road_.size(); i++)
+	{
+		road = road_[i];
+
+		// Looping through each lane section
+		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
+		for (int j=0; j<number_of_lane_sections; j++)
+		{
+			// Get the ending position of the current lane section
+			lsec = road->GetLaneSectionByIdx(j);
+			if (j == number_of_lane_sections-1)
+			{
+				lsec_end = road->GetLength();	
+			}
+			else
+			{
+				lsec_end = road->GetLaneSectionByIdx(j+1)->GetS();
+			}
+			
+			// Starting points of the each lane section for OSI calculations
+			s0 = lsec->GetS();
+			s1 = s0+OSI_POINT_CALC_STEPSIZE;
+			s1_prev = s0;
+
+			// Looping through each lane
+			number_of_lanes = lsec->GetNumberOfLanes();
+			for (int k=0; k<number_of_lanes; k++)
+			{
+				lane = lsec->GetLaneByIdx(k);
+				counter = 0;
+
+				int n_roadmarks = lane->GetNumberOfRoadMarks(); 
+				if (n_roadmarks == 0)
+				{
+					// Looping through sequential points along the track determined by "OSI_POINT_CALC_STEPSIZE"
+					while(true)
+					{
+						counter++;
+
+						// [XO, YO] = closest position with given (-) tolerance
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						x0.push_back(pos->GetX());
+						y0.push_back(pos->GetY());
+
+						// [XO, YO] = Real position with no tolerance
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
+						x0.push_back(pos->GetX());
+						y0.push_back(pos->GetY());
+
+						// Add the starting point of each lane as osi point
+						if (counter == 1)
+						{
+							osi_s.push_back(s0);
+							osi_x.push_back(pos->GetX());
+							osi_y.push_back(pos->GetY());
+							osi_z.push_back(pos->GetZ());
+							osi_h.push_back(pos->GetH());
+						}
+
+						// [XO, YO] = closest position with given (+) tolerance
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						x0.push_back(pos->GetX());
+						y0.push_back(pos->GetY());
+
+						// [X1, Y1] = closest position with given (-) tolerance																																																																																																												
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						x1.push_back(pos->GetX());																																	
+						y1.push_back(pos->GetY());
+
+						// [X1, Y1] = Real position with no tolerance																																																								
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1, 0, j);
+						x1.push_back(pos->GetX());
+						y1.push_back(pos->GetY());
+
+						// [X1, Y1] = closest position with given (+) tolerance
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						x1.push_back(pos->GetX());
+						y1.push_back(pos->GetY());
+
+						// Check OSI Requirement between current given points
+						if (x1[1]-x0[1] != 0 && y1[1]-y0[1] != 0)
+						{
+							osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
+						}
+						else
+						{
+							osi_requirement = true;
+						}
+						
+						// If requirement is satisfied -> look further points
+						// If requirement is not satisfied:
+							// Assign last satisfied point as OSI point
+							// Continue searching from the last satisfied point
+						if (osi_requirement)
+						{
+							s1_prev = s1;
+							s1 = s1 + OSI_POINT_CALC_STEPSIZE;
+
+						}
+						else
+						{
+							s0 = s1_prev;
+							s1_prev = s1;
+							s1 = s0 + OSI_POINT_CALC_STEPSIZE;
+
+							if (counter != 1)
+							{
+								pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
+								osi_s.push_back(s0);
+								osi_x.push_back(pos->GetX());
+								osi_y.push_back(pos->GetY());
+								osi_z.push_back(pos->GetZ());
+								osi_h.push_back(pos->GetH());
+							}
+						}
+
+						// If the end of the lane reached, assign end of the lane as final OSI point for current lane
+						if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end)
+						{
+							pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), lsec_end, 0, j);
+							osi_s.push_back(lsec_end);
+							osi_x.push_back(pos->GetX());
+							osi_y.push_back(pos->GetY());
+							osi_z.push_back(pos->GetZ());
+							osi_h.push_back(pos->GetH());
+							break;
+						}
+
+						// Clear x-y collectors for next iteration
+						x0.clear();
+						y0.clear();
+						x1.clear();
+						y1.clear();
+					}
+					// Initialization of LaneBoundary class
+					LaneBoundaryOSI * lb = new LaneBoundaryOSI((int)0); 
+					// add the lane boundary class to the lane class and generating the global id 
+					lane->SetLaneBoundary(lb); 
+					//Fills up the osi points in the lane boundary class 
+					lb->osi_points_.Set(osi_s, osi_x, osi_y, osi_z, osi_h);
+					// Clear osi collectors for next iteration
+					osi_s.clear();
+					osi_x.clear();
+					osi_y.clear();
+					osi_z.clear();
+					osi_h.clear();
+
+					// Re-assign the starting point of the next lane as the start point of the current lane section for OSI calculations
+					s0 = lsec->GetS();
+					s1 = s0+OSI_POINT_CALC_STEPSIZE;
+					s1_prev = s0;
+					std::cout << "Create LaneBoundary for lane with local id " << lane->GetId() << std::endl; 
+				}
+			}
+		}
+	} 
+}
+
 void OpenDrive::SetRoadMarkOSIPoints()
 {
 	// Initialization
@@ -3639,6 +3822,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 				number_of_roadmarks = lane->GetNumberOfRoadMarks();
 				if (number_of_roadmarks != 0)
 				{
+					
 					for (int m=0; m<number_of_roadmarks; m++)
 					{
 						lane_roadMark = lane->GetLaneRoadMarkByIdx(m);
@@ -3841,6 +4025,7 @@ bool OpenDrive::SetRoadOSI()
 {
 	SetLaneOSIPoints();
 	SetRoadMarkOSIPoints();
+	SetLaneBoundaryPoints(); 
 	return true;
 }
 
@@ -4356,6 +4541,23 @@ void Position::Track2XYZ()
 
 	// z = Elevation 
 	EvaluateRoadZPitchRoll(true);
+}
+
+void Position::LaneBoundary2Track()
+{
+	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	t_ = 0;
+
+	if (road != 0 && road->GetNumberOfLaneSections() > 0)
+	{
+		LaneSection *lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+
+		if (lane_section != 0 && lane_id_ !=0)
+		{
+			t_ = offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+			h_offset_ = lane_section->GetOuterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+		}
+	}
 }
 
 void Position::Lane2Track()
@@ -4924,6 +5126,83 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	//}
 
 	Lane2Track();
+	Track2XYZ();
+}
+
+void Position::SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx)
+{
+	offset_ = offset;
+	int old_lane_id = lane_id_;
+	int old_track_id = track_id_;
+
+	if (SetLongitudinalTrackPos(track_id, s) != 0)
+	{
+		lane_id_ = lane_id;
+		offset_ = offset;
+		return;
+	}
+
+	Road *road = GetOpenDrive()->GetRoadById(track_id);
+	if (road == 0)
+	{
+		LOG("Position::Set Error: track %d not available\n", track_id);
+		lane_id_ = lane_id;
+		offset_ = offset;
+		return;
+	}
+
+	if (lane_id != lane_id_ && lane_section_idx == -1)
+	{
+		// New lane ID might indicate a discreet jump to a new, distant position, reset lane section, if not specified in func parameter)
+		lane_section_idx = road->GetLaneSectionIdxByS(s);
+	}
+
+	LaneSection *lane_section = 0;
+	if (lane_section_idx > -1)  // If lane section was specified or reset
+	{
+		lane_section_idx_ = lane_section_idx;
+		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+
+		lane_id_ = lane_id;
+	}
+	else  // Find LaneSection and info according to s
+	{
+		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_);
+		lane_section_idx_ = lane_info.lane_section_idx_;
+		lane_id_ = lane_info.lane_id_;
+		
+		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+	}
+
+	if (lane_section != 0)
+	{
+		lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
+		if (lane_idx_ == -1)
+		{
+			LOG("lane_idx %d fail for lane id %d\n", lane_idx_, lane_id_);
+			lane_idx_ = 0;
+		}
+	}
+	else
+	{
+		LOG("Position::Set (lanepos) Error - lanesection NULL lsidx %d rid %d lid %d\n",
+			lane_section_idx_, road->GetId(), lane_id_);
+	}
+
+	// Check road direction when on new track 
+	if (old_lane_id != 0 && lane_id_ != 0 && track_id_ != old_track_id && SIGN(lane_id_) != SIGN(old_lane_id))
+	{
+		h_relative_ = GetAngleSum(h_relative_, M_PI);
+	}
+
+	// If moved over to opposite driving direction, then turn relative heading 180 degrees
+	//if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))
+	//{
+	//	h_relative_ = GetAngleSum(h_relative_, M_PI);
+	//}
+
+	//Lane2Track();
+	LaneBoundary2Track(); 
 	Track2XYZ();
 }
 

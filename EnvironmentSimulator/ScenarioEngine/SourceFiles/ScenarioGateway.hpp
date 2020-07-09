@@ -105,10 +105,22 @@ namespace scenarioengine
 		ObjectState *getObjectStatePtrById(int id);
 		int getObjectStateById(int idx, ObjectState &objState);
 		int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
+		/**
+		Fills up the osi message with SensorView 
+		*/
 		int UpdateOSISensorView();
+		/**
+		Fills up the osi message with Moving Object 
+		*/
 		int UpdateOSIMovingObject();
+		/**
+		Fills up the osi message with Lane Boundary  
+		*/
 		int UpdateOSILaneBoundary();  
-		int UpdateOSIRoadLane(int object_id);
+		/**
+		Fills up the osi message with Lanes  
+		*/
+		int UpdateOSIRoadLane();
 		const char* GetOSISensorView(int* size);
 		const char* GetOSIRoadLane(int* size, int object_id);
 		int OpenSocket(std::string ipaddr);
