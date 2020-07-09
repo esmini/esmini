@@ -43,6 +43,7 @@ static struct {
 
 static OSISensorView osiSensorView;
 static OSIRoadLane osiRoadLane; 
+static OSIRoadLaneBoundary osiRoadLaneBoundary; 
 std::ofstream osi_file;
 
 static int sendSocket;
@@ -760,6 +761,27 @@ const char* ScenarioGateway::GetOSIRoadLane(int* size, int object_id)
 	osiRoadLane.size = (unsigned int)mobj_osi_internal.ln[idx]->ByteSizeLong();
 	*size = osiRoadLane.size;
 	return osiRoadLane.osi_lane_info.data();
+}
+
+const char* ScenarioGateway::GetOSIRoadLaneBoundary(int* size, int global_id)
+{	
+	// find the lane bounday in the sensor view and save its index 
+	int idx; 
+	for (int i = 0; i<mobj_osi_internal.lnb.size(); i++)
+	{
+		osi3::Identifier identifier = mobj_osi_internal.lnb[i]->id();
+		int found_id = (int)identifier.value(); 
+		if (found_id == global_id)
+		{
+			idx = i; 
+		}
+	}
+
+	// serialize to string the single lane 
+	mobj_osi_internal.lnb[idx]->SerializeToString(&osiRoadLaneBoundary.osi_lane_boundary_info);
+	osiRoadLaneBoundary.size = (unsigned int)mobj_osi_internal.lnb[idx]->ByteSizeLong();
+	*size = osiRoadLaneBoundary.size;
+	return osiRoadLaneBoundary.osi_lane_boundary_info.data();
 }
 
 void ScenarioGateway::updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot)

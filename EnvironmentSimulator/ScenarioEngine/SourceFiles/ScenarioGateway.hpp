@@ -48,6 +48,12 @@ namespace scenarioengine
 		unsigned int size;
 	} OSIRoadLane;
 
+	typedef struct 
+	{
+		std::string osi_lane_boundary_info;
+		unsigned int size;
+	} OSIRoadLaneBoundary;
+
 	struct ObjectStateStruct
 	{
 		int id;
@@ -123,6 +129,7 @@ namespace scenarioengine
 		int UpdateOSIRoadLane();
 		const char* GetOSISensorView(int* size);
 		const char* GetOSIRoadLane(int* size, int object_id);
+		const char* GetOSIRoadLaneBoundary(int* size, int global_id);
 		int OpenSocket(std::string ipaddr);
 		int CloseSocket();
 
