@@ -668,11 +668,15 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	shadow_node_ = osgDB::readNodeFile(shadowFilename);
 	if (!shadow_node_)
 	{
-		LOG("Failed to load shadow model %s\n", shadowFilename.c_str());
+		// assume path is relative scenario directory
+		LOG("Failed to locate %s. Looking relative scenario directory %s", shadowFilename.c_str(), getScenarioDir().c_str());
+		shadowFilename = CombineDirectoryPathAndFilepath(DirNameOf(scenarioFilename), shadowFilename);
+		shadow_node_ = osgDB::readNodeFile(shadowFilename);
+		if (!shadow_node_)
+		{
+			LOG("Failed to load shadow model %s\n", shadowFilename.c_str());
+		}
 	}
-
-	// Load shadow geometry - assume it resides in the same resource folder as the environment model
-	std::string dotFilename = DirNameOf(modelFilename).append("/" + std::string(ARROW_MODEL_FILEPATH));
 
 	// Create 3D geometry for trail dots
 	dot_node_ = CreateDotGeometry();
@@ -717,7 +721,12 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	// add environment
 	if (AddEnvironment(modelFilename) == -1)
 	{
-		LOG("Failed to load environment model: %s", modelFilename);
+		// Look relative scenario directory
+		LOG("Failed to locate %s. Looking relative scenario directory %s", modelFilename, getScenarioDir().c_str());
+		if (AddEnvironment(CombineDirectoryPathAndFilepath(getScenarioDir(),  modelFilename).c_str()) == -1)
+		{
+			LOG("Failed to read environment model %s! If file is missing, check SharePoint/SharedDocuments/models", modelFilename);
+		}
 	}
 	rootnode_->addChild(envTx_);
 
@@ -871,42 +880,49 @@ void Viewer::SetCameraMode(int mode)
 CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor)
 {
 	// Load 3D model
-	std::string path = CombineDirectoryPathAndFilepath(getScenarioDir(), modelFilepath);
+	std::string path = modelFilepath;
 
 	osg::ref_ptr<osg::LOD> lod = LoadCarModel(path.c_str());
 
 	if (lod == 0)
 	{
-		// Failed to load model for some reason - maybe no filename. Create a dummy stand-in geometry
-		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-		geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
-		lod = new osg::LOD;
-		lod->setRange(0, 0, LOD_DIST);
-		osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
-		lod->addChild(tx);
+		// Assume path is relative scenario directory
+		LOG("Failed to locate %s. Looking relative scenario directory %s", path.c_str(), getScenarioDir().c_str());
+		lod = LoadCarModel(CombineDirectoryPathAndFilepath(getScenarioDir(), path).c_str());
 
-		// Set dimensions of the vehicle "box"
-		tx->setScale(osg::Vec3(4.0, 2.0, 1.2));
-		tx->setPosition(osg::Vec3(3.0, 0.0, 0.6));
-		tx->addChild(geode);
+		if (lod == 0)
+		{
+			// Failed to load model for some reason - maybe no filename. Create a dummy stand-in geometry
+			LOG("No filename specified for car model! - creating a dummy model");
 
-		osg::Material *material = new osg::Material();
+			osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+			geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
+			lod = new osg::LOD;
+			lod->setRange(0, 0, LOD_DIST);
+			osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
+			lod->addChild(tx);
 
-		// Set color of vehicle based on its index
-		double* color;
-		double b = 1.5;  // brighness
-		int index = cars_.size() % 4; 
+			// Set dimensions of the vehicle "box"
+			tx->setScale(osg::Vec3(4.0, 2.0, 1.2));
+			tx->setPosition(osg::Vec3(3.0, 0.0, 0.6));
+			tx->addChild(geode);
 
-		if (index == 0) color = color_white;
-		else if (index == 1) color = color_red;
-		else if (index == 2) color = color_blue;
-		else color = color_yellow;
+			osg::Material* material = new osg::Material();
 
-		material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
-		material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
-		tx->getOrCreateStateSet()->setAttribute(material);
+			// Set color of vehicle based on its index
+			double* color;
+			double b = 1.5;  // brighness
+			int index = cars_.size() % 4;
 
-		LOG("No filename specified for car model! - creating a dummy model");
+			if (index == 0) color = color_white;
+			else if (index == 1) color = color_red;
+			else if (index == 2) color = color_blue;
+			else color = color_yellow;
+
+			material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+			material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+			tx->getOrCreateStateSet()->setAttribute(material);
+		}
 	}
 
 	if (transparent)
@@ -951,7 +967,6 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 	node = osgDB::readNodeFile(filename);
 	if (!node)
 	{
-		printf("Failed to load car model %s\n", filename);
 		return 0;
 	}
 
@@ -1365,12 +1380,11 @@ int Viewer::AddEnvironment(const char* filename)
 	}
 
 	// load and apply new model
+	// First, assume absolute path or relative current directory
 	if (strcmp(FileNameOf(filename).c_str(), ""))
 	{
-		environment_ = osgDB::readNodeFile(filename);
-		if (environment_ == 0)
+		if ((environment_ = osgDB::readNodeFile(filename)) == 0)
 		{
-			LOG("Failed to read environment model %s! If file is missing, check SharePoint/SharedDocuments/models", filename);
 			return -1;
 		}
 

@@ -157,8 +157,7 @@ int ScenarioReader::RegisterCatalogDirectory(pugi::xml_node catalogDirChild)
 		return -1;
 	}
 
-	// Directory name should be relative the XOSC file
-	std::string catalog_dir = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), dirname);
+	std::string catalog_dir = dirname;
 
 	catalogs_->RegisterCatalogDirectory(catalogDirChild.name(), catalog_dir);
 	
@@ -181,10 +180,20 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 	size_t i;
 	for (i = 0; i < catalogs_->catalog_dirs_.size(); i++)
 	{
+		// First assume absolute path or relative current directory
 		std::string file_path = catalogs_->catalog_dirs_[i].dir_name_ + "/" + name + ".xosc";
 
 		// Load it
 		pugi::xml_parse_result result = catalog_doc.load_file(file_path.c_str());
+
+		if (!result)
+		{
+			// Then assume relative path to scenario directory - which perhaps should be the expected location
+			std::string file_path = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), catalogs_->catalog_dirs_[i].dir_name_) + "/" + name + ".xosc";
+
+			// Load it
+			result = catalog_doc.load_file(file_path.c_str());
+		}
 
 		if (result)
 		{
@@ -448,7 +457,7 @@ void ScenarioReader::parseCatalogs()
 
 void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 {
-	file.filepath = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), ReadAttribute(fileNode, "filepath"));
+	file.filepath = ReadAttribute(fileNode, "filepath");
 }
 
 roadmanager::Trajectory* ScenarioReader::parseTrajectory(pugi::xml_node node)

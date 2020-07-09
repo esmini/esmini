@@ -382,7 +382,24 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 
 	// Init road manager
 	scenarioReader->parseRoadNetwork(roadNetwork);
-	roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str());
+
+	// First assume absolute path or relative to current directory 
+	if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
+	{
+		// Then try relative path to scenario directory
+		if (!roadmanager::Position::LoadOpenDrive(CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename()).c_str()))
+		{
+			// Finally look for the file in current directory
+			std::string path = std::string(getOdrFilename().c_str());
+			std::string base_filename = path.substr(path.find_last_of("/\\") + 1);
+			LOG("Failed to load %s - looking for file %s in current folder", getOdrFilename().c_str(), base_filename.c_str());
+			if (!roadmanager::Position::LoadOpenDrive(base_filename.c_str()))
+			{
+				throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(getOdrFilename().c_str()));
+			}
+		}
+	}
+
 	odrManager = roadmanager::Position::GetOpenDrive();
 	if (!odrManager->SetRoadOSI())
 	{
