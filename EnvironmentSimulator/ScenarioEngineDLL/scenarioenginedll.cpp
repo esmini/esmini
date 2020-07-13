@@ -404,7 +404,7 @@ extern "C"
 		return 0;
 	}
 	
-	SE_DLL_API const std::vector<int> SE_GetOSILaneBoundaryIds(int object_id)
+	SE_DLL_API std::vector<int> SE_GetOSILaneBoundaryIds(int object_id)
 	{
 		if (player)
 		{
@@ -412,6 +412,16 @@ extern "C"
 		}
 
 		return {};
+	}
+
+	SE_DLL_API int SE_UpdateOSISensorView()
+	{
+		if (player)
+		{
+			return player->scenarioGateway->UpdateOSISensorView();
+		}
+
+		return 0;
 	}
 
 	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state)

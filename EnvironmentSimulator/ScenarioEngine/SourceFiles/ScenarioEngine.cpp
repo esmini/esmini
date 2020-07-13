@@ -294,7 +294,11 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	}
 
 	// And send OSI info
-	scenarioGateway.UpdateOSISensorView();
+	if (simulationTime == 0)
+	{
+		scenarioGateway.UpdateOSISensorView();
+	}
+	
 
 	stepObjects(deltaSimTime);
 

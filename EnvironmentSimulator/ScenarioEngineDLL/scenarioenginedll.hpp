@@ -111,6 +111,10 @@ extern "C"
 
 	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState *state);
 	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state);
+	/**
+	The SE_GetOSISensorView function returns a char array containing the osi SensorView serialized to a string
+	*/
+	SE_DLL_API int SE_UpdateOSISensorView();
 
 	/**
 	The SE_GetOSISensorView function returns a char array containing the osi SensorView serialized to a string
@@ -128,7 +132,7 @@ extern "C"
 	/**
 	The SE_GetOSILaneBoundaryIds function the global ids for left, far elft, right and far right lane boundaries
 	*/
-	SE_DLL_API const std::vector<int> SE_GetOSILaneBoundaryIds(int object_id);
+	SE_DLL_API std::vector<int> SE_GetOSILaneBoundaryIds(int object_id);
 
 	/**
 	Create an ideal object sensor and attach to specified vehicle
