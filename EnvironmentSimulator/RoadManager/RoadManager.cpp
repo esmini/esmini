@@ -5780,6 +5780,38 @@ int Position::GetLaneId()
 	return lane_id_;
 }
 
+int Position::GetLaneGlobalId()
+{
+	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	if (road == 0)
+	{
+		LOG("No road %d", track_idx_);
+		return -1;
+	}
+
+	LaneSection *lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+
+	if (lane_section == 0)
+	{
+		LOG("No lane section for idx %d - keeping current lane setting\n", lane_section_idx_);
+		return -1;
+	}
+
+	double offset;
+	int lane_idx = lane_section->GetClosestLaneIdx(s_, t_, offset);
+
+	if (lane_idx == -1)
+	{
+		LOG("Failed to find a valid drivable lane");
+		return -1;
+	}
+
+	lane_id_ = lane_section->GetLaneGlobalIdByIdx(lane_idx);
+	offset_ = offset;
+
+	return 0;
+}
+
 double Position::GetS()
 {
 	if (rel_pos_ && type_ == PositionType::RELATIVE_LANE)

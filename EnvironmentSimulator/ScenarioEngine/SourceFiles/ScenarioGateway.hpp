@@ -130,6 +130,7 @@ namespace scenarioengine
 		const char* GetOSISensorView(int* size);
 		const char* GetOSIRoadLane(int* size, int object_id);
 		const char* GetOSIRoadLaneBoundary(int* size, int global_id);
+		const std::vector<int> GetOSILaneBoundaryIds(int object_id);
 		int OpenSocket(std::string ipaddr);
 		int CloseSocket();
 

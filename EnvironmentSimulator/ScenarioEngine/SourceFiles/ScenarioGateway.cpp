@@ -744,7 +744,7 @@ const char* ScenarioGateway::GetOSIRoadLane(int* size, int object_id)
 	} 
 
 	// find the lane in the sensor view and save its index in the sensor view
-	int lane_id_of_vehicle = pos.GetLaneId();
+	int lane_id_of_vehicle = pos.GetLaneGlobalId();
 	int idx; 
 	for (int i = 0; i<mobj_osi_internal.ln.size(); i++)
 	{
@@ -782,6 +782,86 @@ const char* ScenarioGateway::GetOSIRoadLaneBoundary(int* size, int global_id)
 	osiRoadLaneBoundary.size = (unsigned int)mobj_osi_internal.lnb[idx]->ByteSizeLong();
 	*size = osiRoadLaneBoundary.size;
 	return osiRoadLaneBoundary.osi_lane_boundary_info.data();
+}
+
+const std::vector<int> ScenarioGateway::GetOSILaneBoundaryIds(int object_id)
+{	
+	// Check if object_id exists
+	if (object_id >= getNumberOfObjects())
+	{
+		LOG("Object %d not available, only %d registered", object_id, getNumberOfObjects());
+	}	
+
+	// Find position of the object 
+	roadmanager::Position pos;
+	for (size_t i = 0; i < getNumberOfObjects() ; i++)
+	{
+		if (object_id == objectState_[i]->state_.id)
+		{
+			pos = objectState_[i]->state_.pos;
+		}		
+	} 
+
+	// find the lane in the sensor view and save its index in the sensor view
+	int lane_id_of_vehicle = pos.GetLaneGlobalId();
+	int idx; 
+	for (int i = 0; i<mobj_osi_internal.ln.size(); i++)
+	{
+		osi3::Identifier identifier = mobj_osi_internal.ln[i]->id();
+		int found_id = (int)identifier.value(); 
+		if (found_id == lane_id_of_vehicle)
+		{
+			idx = i; 
+		}
+	}
+	// find left and right lane boundary ids 
+	osi3::Identifier left = mobj_osi_internal.ln[idx]->mutable_classification()->right_lane_boundary_id(0);
+	osi3::Identifier right = mobj_osi_internal.ln[idx]->mutable_classification()->left_lane_boundary_id(0);
+	int left_id = (int)left.value(); 
+	int right_id = (int)right.value(); 
+
+	// find first left lane
+	osi3::Identifier Left_lane_id = mobj_osi_internal.ln[idx]->mutable_classification()->left_adjacent_lane_id(0);
+	int left_lane_id = (int)Left_lane_id.value(); 
+	//int lane_id_of_vehicle = pos.GetLaneGlobalId();
+	//int idx; 
+	for (int i = 0; i<mobj_osi_internal.ln.size(); i++)
+	{
+		osi3::Identifier identifier = mobj_osi_internal.ln[i]->id();
+		int found_id = (int)identifier.value(); 
+		if (found_id == left_lane_id)
+		{
+			idx = i; 
+		}
+	}
+	osi3::Identifier Far_left_boudary_id = mobj_osi_internal.ln[idx]->mutable_classification()->left_lane_boundary_id(0);
+	int far_left_boudary_id = (int)Far_left_boudary_id.value(); 
+
+	// find first left lane
+	osi3::Identifier Right_lane_id = mobj_osi_internal.ln[idx]->mutable_classification()->right_adjacent_lane_id(0);
+	int right_lane_id = (int)Right_lane_id.value(); 
+	//int lane_id_of_vehicle = pos.GetLaneGlobalId();
+	//int idx; 
+	for (int i = 0; i<mobj_osi_internal.ln.size(); i++)
+	{
+		osi3::Identifier identifier = mobj_osi_internal.ln[i]->id();
+		int found_id = (int)identifier.value(); 
+		if (found_id == right_lane_id)
+		{
+			idx = i; 
+		}
+	}
+	osi3::Identifier Far_right_boudary_id = mobj_osi_internal.ln[idx]->mutable_classification()->right_lane_boundary_id(0);
+	int far_right_boudary_id = (int)Far_right_boudary_id.value(); 
+						
+	std::vector<int> final_lb_ids; 
+	
+	final_lb_ids.push_back(far_left_boudary_id);
+	final_lb_ids.push_back(left_id);
+	final_lb_ids.push_back(right_id); 
+	final_lb_ids.push_back(far_right_boudary_id);
+
+	return final_lb_ids; 
 }
 
 void ScenarioGateway::updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot)

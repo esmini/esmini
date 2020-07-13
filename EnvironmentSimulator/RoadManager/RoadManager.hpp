@@ -1238,6 +1238,11 @@ namespace roadmanager
 		@return lane ID
 		*/
 		int GetLaneId();
+		/**
+		Retrieve the global lane ID from the position object
+		@return lane ID
+		*/
+		int GetLaneGlobalId();
 
 		/**
 		Retrieve a road segment specified by road ID

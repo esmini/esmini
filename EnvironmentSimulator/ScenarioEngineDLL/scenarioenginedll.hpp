@@ -125,6 +125,10 @@ extern "C"
 	The SE_GetOSIRoadLane function returns a char array containing the osi Lane Boundary information/message with the specified GLOBAL id 
 	*/
 	SE_DLL_API const char* SE_GetOSILaneBoundary(int* size, int global_id);
+	/**
+	The SE_GetOSILaneBoundaryIds function the global ids for left, far elft, right and far right lane boundaries
+	*/
+	SE_DLL_API const std::vector<int> SE_GetOSILaneBoundaryIds(int object_id);
 
 	/**
 	Create an ideal object sensor and attach to specified vehicle
