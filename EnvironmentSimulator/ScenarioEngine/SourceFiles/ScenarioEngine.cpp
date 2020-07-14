@@ -54,7 +54,7 @@ ScenarioEngine::~ScenarioEngine()
 	LOG("Closing");
 }
 
-void ScenarioEngine::step(double deltaSimTime, bool initial)	
+void ScenarioEngine::step(double deltaSimTime, bool osi_file, bool initial)	
 {
 	simulationTime += deltaSimTime;
 
@@ -294,7 +294,9 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	}
 
 	// And send OSI info
-	scenarioGateway.UpdateOSISensorView();
+	scenarioGateway.UpdateOSISensorView(osi_file);
+	
+	
 
 	stepObjects(deltaSimTime);
 

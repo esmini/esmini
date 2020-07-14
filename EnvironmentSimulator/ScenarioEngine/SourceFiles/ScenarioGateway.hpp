@@ -48,6 +48,12 @@ namespace scenarioengine
 		unsigned int size;
 	} OSIRoadLane;
 
+	typedef struct 
+	{
+		std::string osi_lane_boundary_info;
+		unsigned int size;
+	} OSIRoadLaneBoundary;
+
 	struct ObjectStateStruct
 	{
 		int id;
@@ -105,11 +111,26 @@ namespace scenarioengine
 		ObjectState *getObjectStatePtrById(int id);
 		int getObjectStateById(int idx, ObjectState &objState);
 		int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
-		int UpdateOSISensorView();
-		int UpdateOSIMovingObject(); 
-		int UpdateOSIRoadLane(int object_id);
+		/**
+		Fills up the osi message with SensorView 
+		*/
+		int UpdateOSISensorView(bool osi_file_bool, bool api_request = false);
+		/**
+		Fills up the osi message with Moving Object 
+		*/
+		int UpdateOSIMovingObject();
+		/**
+		Fills up the osi message with Lane Boundary  
+		*/
+		int UpdateOSILaneBoundary();  
+		/**
+		Fills up the osi message with Lanes  
+		*/
+		int UpdateOSIRoadLane();
 		const char* GetOSISensorView(int* size);
 		const char* GetOSIRoadLane(int* size, int object_id);
+		const char* GetOSIRoadLaneBoundary(int* size, int global_id);
+		const std::vector<int> GetOSILaneBoundaryIds(int object_id);
 		int OpenSocket(std::string ipaddr);
 		int CloseSocket();
 

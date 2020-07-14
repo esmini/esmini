@@ -393,6 +393,35 @@ extern "C"
 		return 0;
 	}
 
+	SE_DLL_API const char* SE_GetOSILaneBoundary(int* size, int global_id)
+	{
+		if (player)
+		{
+			return player->scenarioGateway->GetOSIRoadLaneBoundary(size, global_id);
+		}
+
+		*size = 0;
+		return 0;
+	}
+	
+	SE_DLL_API void SE_GetOSILaneBoundaryIds(std::vector<int>* ids, int object_id)
+	{
+		if (player)
+		{
+			*ids = player->scenarioGateway->GetOSILaneBoundaryIds(object_id);
+		}
+	}
+
+	SE_DLL_API int SE_UpdateOSISensorView()
+	{
+		if (player)
+		{
+			return player->scenarioGateway->UpdateOSISensorView(false, true);
+		}
+
+		return 0;
+	}
+
 	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state)
 	{
 		if (player)
