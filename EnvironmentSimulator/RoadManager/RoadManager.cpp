@@ -2778,8 +2778,15 @@ int RoadPath::Calculate(double &dist)
 
 				if (nextRoad == targetRoad)
 				{
-					// Special case: On same road, distance is equal to delta s
-					tmpDist += targetPos_->GetS();
+					// Special case: On same road, distance is equal to delta s, direction considered
+					if (nextRoad->GetLink(LinkType::PREDECESSOR)->GetElementId() == pivotRoad->GetId())
+					{
+						tmpDist += targetPos_->GetS();
+					}
+					else
+					{
+						tmpDist += nextRoad->GetLength() - targetPos_->GetS();
+					}
 					found = true;
 				}
 				else
