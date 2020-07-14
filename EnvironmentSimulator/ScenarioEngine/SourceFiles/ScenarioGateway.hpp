@@ -1,17 +1,18 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
 
 #pragma once
 #include "RoadManager.hpp"
+#include "OSCBoundingBox.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -36,19 +37,19 @@ namespace scenarioengine
 #define NAME_LEN 32
 
 
-	typedef struct 
+	typedef struct
 	{
 		std::string sensor_view;
 		unsigned int size;
 	} OSISensorView;
 
-	typedef struct 
+	typedef struct
 	{
 		std::string osi_lane_info;
 		unsigned int size;
 	} OSIRoadLane;
 
-	typedef struct 
+	typedef struct
 	{
 		std::string osi_lane_boundary_info;
 		unsigned int size;
@@ -65,15 +66,23 @@ namespace scenarioengine
 		float speed;
 		float wheel_angle;
 		float wheel_rot;
+		/*double acceleration;
+		double CenterOffsetX;
+		double CenterOffsetY;
+		double CenterOffsetZ;
+		double width;
+		double length;
+		double height;*/
+		OSCBoundingBox boundingbox;
 	};
 
 	class ObjectState
 	{
 	public:
 		ObjectState();
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position *pos);
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, double speed, double wheel_angle, double wheel_rot, double x, double y, double z, double h, double p, double r);
-		ObjectState(int id, std::string name, int model_id, int control, double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s);
+		ObjectState(int id, std::string name, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position *pos);
+		ObjectState(int id, std::string name, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double wheel_angle, double wheel_rot, double x, double y, double z, double h, double p, double r);
+		ObjectState(int id, std::string name, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s);
 
 		ObjectStateStruct getStruct() { return state_; }
 
@@ -93,15 +102,15 @@ namespace scenarioengine
 		ScenarioGateway();
 		~ScenarioGateway();
 
-		void reportObject(int id, std::string name, int model_id, int control,
+		void reportObject(int id, std::string name, int model_id, int control,OSCBoundingBox boundingbox,
 			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			roadmanager::Position *pos);
 
-		void reportObject(int id, std::string name, int model_id, int control,
+		void reportObject(int id, std::string name, int model_id, int control,OSCBoundingBox boundingbox,
 			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			double x, double y, double z, double h, double p, double r);
 
-		void reportObject(int id, std::string name, int model_id, int control,
+		void reportObject(int id, std::string name, int model_id, int control,OSCBoundingBox boundingbox,
 			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			int roadId, int laneId, double laneOffset, double s);
 
@@ -112,19 +121,19 @@ namespace scenarioengine
 		int getObjectStateById(int idx, ObjectState &objState);
 		int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
 		/**
-		Fills up the osi message with SensorView 
+		Fills up the osi message with SensorView
 		*/
 		int UpdateOSISensorView(bool osi_file_bool, bool api_request = false);
 		/**
-		Fills up the osi message with Moving Object 
+		Fills up the osi message with Moving Object
 		*/
 		int UpdateOSIMovingObject();
 		/**
-		Fills up the osi message with Lane Boundary  
+		Fills up the osi message with Lane Boundary
 		*/
-		int UpdateOSILaneBoundary();  
+		int UpdateOSILaneBoundary();
 		/**
-		Fills up the osi message with Lanes  
+		Fills up the osi message with Lanes
 		*/
 		int UpdateOSIRoadLane();
 		const char* GetOSISensorView(int* size);

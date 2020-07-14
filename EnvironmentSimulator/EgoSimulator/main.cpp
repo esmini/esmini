@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -14,13 +14,13 @@
  * This application is an example of how to integrate a simple Ego vehicle into the environment simulator
  * The vehicle is implemented in a separate module (vehicle.cpp)
  * Communication is by means of function calls
- * 
+ *
  * Ego means that the vehicle is controlled externally, e.g. interactively by a human-in-the-loop
  * or by an AD controller or by an external test framework providing stimuli for a vehicle simulator
  *
  * This application support three types of vehicle controls:
  * 1. Internal: Scenario engine executes according to OpenSCENARIO description (default)
- * 2. External: The vehicle is controlled by the user. 
+ * 2. External: The vehicle is controlled by the user.
  * 3. Hyybrid: Automatic driver model following a ghost vehicle performing the scenario as i 1.
  */
 
@@ -86,7 +86,7 @@ int SetupExternVehicles(ScenarioPlayer *player)
 				player->viewer_->SensorSetPivotPos(vh.gfx_model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 				player->viewer_->SensorSetTargetPos(vh.gfx_model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 			}
-			vh.dyn_model = new vehicle::Vehicle(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH(), vh.gfx_model->size_x); 
+			vh.dyn_model = new vehicle::Vehicle(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH(), vh.gfx_model->size_x);
 #else
 			vh.dyn_model = new vehicle::Vehicle(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH(), 5.0);
 #endif
@@ -131,7 +131,7 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 		{
 			if (i == ego_id)
 			{
-				vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE; 
+				vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
 				vehicle::STEERING steer = vehicle::STEERING_NONE;
 #ifdef _SCENARIO_VIEWER
 
@@ -163,7 +163,7 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 			double speed_target_distance = MAX(7, vh->obj->speed_ * 2.0);
 			double steering_target_distance = MAX(5, 0.25 * speed_target_distance);
 
-			// find out what direction is forward, according to vehicle relative road heading 
+			// find out what direction is forward, according to vehicle relative road heading
 			if (GetAbsAngleDifference(vh->obj->pos_.GetH(), vh->obj->pos_.GetHRoadInDrivingDirection()) > M_PI_2)
 			{
 				speed_target_distance *= -1;
@@ -214,13 +214,13 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 
 		// Report updated state to scenario gateway
 		std::string name = vh->obj->GetControl() == Object::Control::EXTERNAL ? "External_" : "Hybrid_external_" + i;
-		player->scenarioGateway->reportObject(i, name, 0, 1, player->scenarioEngine->getSimulationTime(),
+		player->scenarioGateway->reportObject(i, name, 0, 1, vh->obj->boundingbox_,player->scenarioEngine->getSimulationTime(),
 			vh->dyn_model->speed_, vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_,
 			vh->dyn_model->posX_, vh->dyn_model->posY_, vh->dyn_model->posZ_,
 			vh->dyn_model->heading_, vh->dyn_model->pitch_, 0);
 
-#if 0    
-		// Check distance 
+#if 0
+		// Check distance
 		roadmanager::Position distant_pos;
 		distant_pos.SetLanePos(227, -1, 40, 0);
 		roadmanager::PositionDiff diff;
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
 	}
 
 	SetupExternVehicles(player);
-	
+
 	while (!player->IsQuitRequested())
 	{
 		double dt;
@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
 	}
 
 	DeleteExternVehicles();
-	
+
 	delete player;
 
 	return 0;

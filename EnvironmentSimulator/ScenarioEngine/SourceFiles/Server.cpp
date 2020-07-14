@@ -32,7 +32,7 @@
 
 using namespace scenarioengine;
 
-#define DEFAULT_INPORT 48199 
+#define DEFAULT_INPORT 48199
 #define ES_SERV_TIMEOUT 500
 
 // #define SWAP_BYTE_ORDER_ESMINI  // Set when Ego state is sent from non Intel platforms, such as dSPACE
@@ -117,7 +117,7 @@ namespace scenarioengine
 			return;
 		}
 		state = SERV_RUNNING;
-		
+
 		double x_old = 0.0;
 		double y_old = 0.0;
 		double wheel_rot = 0.0;
@@ -126,7 +126,7 @@ namespace scenarioengine
 		while (state == SERV_RUNNING)
 		{
 			int ret = recvfrom(sock, (char*)&buf, sizeof(EgoStateBuffer_t), 0, (struct sockaddr *)&sender_addr, &sender_addr_size);
-			
+
 #ifdef SWAP_BYTE_ORDER_ESMINI
 			SwapByteOrder((unsigned char*)&buf, 4, sizeof(buf));
 #endif
@@ -145,7 +145,9 @@ namespace scenarioengine
 				// Update Ego state
 				mutex.Lock();
 
-				scenarioGateway->reportObject(0, "Ego", 0, 1, 0, buf.speed, buf.wheel_angle, wheel_rot, buf.x, buf.y, buf.z, buf.h, buf.p, buf.r);
+				OSCBoundingBox bbox; // dummy bariable just to feed into the function
+
+				scenarioGateway->reportObject(0, "Ego", 0, 1, bbox,0, buf.speed, buf.wheel_angle, wheel_rot,  buf.x, buf.y, buf.z, buf.h, buf.p, buf.r);
 
 				mutex.Unlock();
 			}
@@ -159,7 +161,7 @@ namespace scenarioengine
 
 	void StartServer(ScenarioEngine *scenarioEngine)
 	{
-		// Fetch ScenarioGateway 
+		// Fetch ScenarioGateway
 		scenarioGateway = scenarioEngine->getScenarioGateway();
 
 		thread.Start(ServerThread, NULL);
@@ -176,7 +178,7 @@ namespace scenarioengine
 		{
 			state = SERV_STOPPED;
 		}
-		
+
 		// Wait/block until UDP server closed gracefully
 		thread.Wait();
 	}
