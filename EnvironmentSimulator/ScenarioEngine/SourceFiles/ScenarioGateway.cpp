@@ -137,11 +137,11 @@ ScenarioGateway::ScenarioGateway()
 	mobj_osi_internal.sv->mutable_timestamp()->set_seconds(0);
 	mobj_osi_internal.sv->mutable_timestamp()->set_seconds(0);
 
-	osi_file = std::ofstream("move_obj.osi", std::ios_base::binary);
+	/*osi_file = std::ofstream("move_obj.osi", std::ios_base::binary);
 	if (!osi_file.good())
 	{
 		LOG("Failed open osi_s file");
-	}
+	}*/
 }
 
 
@@ -161,9 +161,10 @@ ScenarioGateway::~ScenarioGateway()
 	data_file_.close();
 
 	CloseSocket();
-
-	osi_file.close();
-
+	if (osi_file.is_open())
+	{
+		osi_file.close();
+	}
 
 	// Assume osi cleans up allocated data
 }
@@ -247,43 +248,55 @@ int ScenarioGateway::getObjectStateById(int id, ObjectState& objectState)
 	return -1;
 }
 
-int ScenarioGateway::UpdateOSISensorView()
+int ScenarioGateway::UpdateOSISensorView(bool osi_file_bool, bool api_request )
 {
-	mobj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_seconds((int64_t)objectState_[0]->state_.timeStamp);
-	mobj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_nanos((uint32_t)(
-		(objectState_[0]->state_.timeStamp - (int64_t)objectState_[0]->state_.timeStamp) * 1e9)
-	);
-
 	double time_stamp = objectState_[0]->state_.timeStamp; 
-	
-	UpdateOSIMovingObject();
-	//collect all information of lanes in the lane section where obj=0 is
-	UpdateOSIRoadLane(); 
-	if (time_stamp == 0)
+	if (api_request == true ||  osi_file_bool == true)
 	{
+		mobj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_seconds((int64_t)objectState_[0]->state_.timeStamp);
+		mobj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_nanos((uint32_t)(
+			(objectState_[0]->state_.timeStamp - (int64_t)objectState_[0]->state_.timeStamp) * 1e9)
+		);
+		
+		UpdateOSIMovingObject();
+		//collect all information of lanes in the lane section where obj=0 is
+		UpdateOSIRoadLane(); 
+
 		UpdateOSILaneBoundary(); 
+
+		mobj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
+		osiSensorView.size = (unsigned int)mobj_osi_internal.sv->ByteSizeLong();
 	}
-	
 
-	mobj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
-	osiSensorView.size = (unsigned int)mobj_osi_internal.sv->ByteSizeLong();
 
-	// write to file, first size of message
-	osi_file.write((char*)&osiSensorView.size, sizeof(osiSensorView.size));
-
-	// write to file, actual message - the sensorview object including timestamp and moving objects
-	osi_file.write(osiSensorView.sensor_view.c_str(), osiSensorView.size);
-
-	// send over udp - skip size (package size == message size)
-	if (sendSocket)
+	if (osi_file_bool == true)
 	{
-		int sendResult = sendto(sendSocket, (char*)osiSensorView.sensor_view.c_str(), osiSensorView.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
-		if (sendResult != osiSensorView.size)
+		if (time_stamp == 0)
 		{
-			LOG("Failed send osi package over UDP");
-#ifdef _WIN32
-			wprintf(L"send failed with error: %d\n", WSAGetLastError());
-#endif
+			osi_file = std::ofstream("move_obj.osi", std::ios_base::binary);
+			if (!osi_file.good())
+			{
+				LOG("Failed open osi_s file");
+			}
+		}
+
+		// write to file, first size of message
+		osi_file.write((char*)&osiSensorView.size, sizeof(osiSensorView.size));
+
+		// write to file, actual message - the sensorview object including timestamp and moving objects
+		osi_file.write(osiSensorView.sensor_view.c_str(), osiSensorView.size);
+
+		// send over udp - skip size (package size == message size)
+		if (sendSocket)
+		{
+			int sendResult = sendto(sendSocket, (char*)osiSensorView.sensor_view.c_str(), osiSensorView.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
+			if (sendResult != osiSensorView.size)
+			{
+				LOG("Failed send osi package over UDP");
+	#ifdef _WIN32
+				wprintf(L"send failed with error: %d\n", WSAGetLastError());
+	#endif
+			}
 		}
 	}
 

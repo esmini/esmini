@@ -132,7 +132,7 @@ extern "C"
 	/**
 	The SE_GetOSILaneBoundaryIds function the global ids for left, far elft, right and far right lane boundaries
 	*/
-	SE_DLL_API std::vector<int> SE_GetOSILaneBoundaryIds(int object_id);
+	SE_DLL_API void SE_GetOSILaneBoundaryIds(std::vector<int>* ids, int object_id);
 
 	/**
 	Create an ideal object sensor and attach to specified vehicle

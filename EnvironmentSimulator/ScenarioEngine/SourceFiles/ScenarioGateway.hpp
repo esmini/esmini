@@ -114,7 +114,7 @@ namespace scenarioengine
 		/**
 		Fills up the osi message with SensorView 
 		*/
-		int UpdateOSISensorView();
+		int UpdateOSISensorView(bool osi_file_bool, bool api_request = false);
 		/**
 		Fills up the osi message with Moving Object 
 		*/

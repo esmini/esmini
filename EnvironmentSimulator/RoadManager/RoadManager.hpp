@@ -292,18 +292,18 @@ namespace roadmanager
 		double s_offset_;
 	};
 
-	class LaneRoadMarkTypeLineID
+	class LaneBoundaryID
 	{
 		int id; 
 	public:
-		LaneRoadMarkTypeLineID() {
+		LaneBoundaryID() {
 			static int counter_a = 0; 
 			id = counter_a++; 
 		}
 		int get_id() { return id; }
 	};
 
-	class LaneBoundaryID
+	/*class LaneBoundaryID
 	{
 		int id; 
 	public:
@@ -312,7 +312,7 @@ namespace roadmanager
 			id = counter_b++; 
 		}
 		int get_id() { return id; }
-	};
+	};*/
 
 	class LaneBoundaryOSI
 	{
@@ -325,7 +325,7 @@ namespace roadmanager
 		OSIPoints GetOSIPoints() {return osi_points_;}
 		OSIPoints osi_points_;
 	private:
-		LaneRoadMarkTypeLineID laneboundaryglobalID_;  // class that generates the unique ID for OSI
+		LaneBoundaryID laneboundaryglobalID_;  // class that generates the unique ID for OSI
 		int global_id_;  // Unique ID for OSI
 		//int ciccia_; 
 	};
@@ -365,7 +365,7 @@ namespace roadmanager
 		double s_offset_;
 		RoadMarkTypeLineRule rule_;
 		double width_;
-		LaneRoadMarkTypeLineID lineglobalID_;  // class that generates the unique ID for OSI
+		LaneBoundaryID lineglobalID_;  // class that generates the unique ID for OSI
 		int global_id_;  // Unique ID for OSI
 	};
 

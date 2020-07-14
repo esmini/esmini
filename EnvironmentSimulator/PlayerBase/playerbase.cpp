@@ -51,6 +51,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	fixed_timestep_ = -1.0;
 	viewer_ = 0;
 	osi_receiver_addr = "";
+	osi_file = false; 
 
 #ifdef _SCENARIO_VIEWER
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
@@ -129,7 +130,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 
 	mutex.Lock();
 
-	scenarioEngine->step(timestep_s);
+	scenarioEngine->step(timestep_s, osi_file);
 
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
 	//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
@@ -412,6 +413,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
 	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
 	opt.AddOption("ghost_headstart", "Launch Ego ghost at specified headstart time", "time");
+	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))");
 
 	if (argc_ < 3)
 	{
@@ -472,6 +474,12 @@ int ScenarioPlayer::Init()
 		LOG("Any ghosts will be launched with headstart %.2f seconds (default)", ghost_headstart);
 	}
 
+	if (opt.GetOptionSet("osi_file"))
+	{
+		osi_file = true; 
+		//LOG("Launch server to receive state of external Ego simulator");
+	}
+
 	// Create scenario engine
 	try
 	{
@@ -507,7 +515,7 @@ int ScenarioPlayer::Init()
 	}
 
 	// Step scenario engine - zero time - just to reach and report init state of all vehicles
-	scenarioEngine->step(0.0, true);
+	scenarioEngine->step(0.0, osi_file, true);
 
 	if (!headless)
 	{
