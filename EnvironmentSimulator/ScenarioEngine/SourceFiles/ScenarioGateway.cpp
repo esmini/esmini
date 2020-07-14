@@ -515,6 +515,8 @@ int ScenarioGateway::UpdateOSILaneBoundary()
 			}
 		}
 	}
+
+	return 0;
 }
 
 int ScenarioGateway::UpdateOSIRoadLane()
@@ -558,6 +560,11 @@ int ScenarioGateway::UpdateOSIRoadLane()
 				osi3::Lane* osi_lane = 0;
 				int lane_global_id = lane->GetGlobalId();
 				int lane_id = lane->GetId();
+
+				if (lane_id == 0)
+				{
+					continue;  // do not consider reference lane (which has width == 0)
+				}
 
 				// Check if this lane is already pushed to OSI
 				for (int jj=0; jj < mobj_osi_internal.ln.size(); jj++)
@@ -691,7 +698,9 @@ int ScenarioGateway::UpdateOSIRoadLane()
 							}
 						}
 					}
-					int next_lane_id;
+                    
+					int next_lane_id = 0;
+
 					if (lane_id < 0)
 					{
 						next_lane_id = lane_id+1;
