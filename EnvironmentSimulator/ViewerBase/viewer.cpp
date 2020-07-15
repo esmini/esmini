@@ -1226,7 +1226,7 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 				osi_geom->getOrCreateStateSet()->setAttributeAndModes(osi_point, osg::StateAttribute::ON);
 				osi_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 					
-				odrLines_->addChild(osi_geom);
+				osiLines_->addChild(osi_geom);
 
 				if (lane->GetId() == 0)
 				{
