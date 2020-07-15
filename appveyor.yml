@@ -44,8 +44,8 @@ for:
     init:
       - echo Ubuntu build script
       - sh: >-
-          # update seems to be needed occasionally 
           sudo apt-get update
+
           sudo apt-get install -y libgl1-mesa-dev libxrandr-dev libxinerama-dev
           
     build_script:
