@@ -422,7 +422,7 @@ extern "C"
 	{
 		if (player)
 		{
-			return player->scenarioGateway->UpdateOSISensorView(false, true);
+			return player->scenarioGateway->UpdateOSISensorView(false);
 		}
 
 		return 0;

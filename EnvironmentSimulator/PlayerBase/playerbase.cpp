@@ -132,6 +132,12 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 
 	scenarioEngine->step(timestep_s, osi_file);
 
+	// Update OSI info
+	if (osi_file || scenarioGateway->GetSocket())
+	{
+		scenarioEngine->getScenarioGateway()->UpdateOSISensorView(osi_file);
+	}
+
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
 	//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
 	//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
@@ -420,7 +426,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
 	opt.AddOption("ghost_headstart", "Launch Ego ghost at specified headstart time", "time");
 	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))");
-
+		
 	if (argc_ < 3)
 	{
 		opt.PrintUsage();
@@ -482,8 +488,7 @@ int ScenarioPlayer::Init()
 
 	if (opt.GetOptionSet("osi_file"))
 	{
-		osi_file = true; 
-		//LOG("Launch server to receive state of external Ego simulator");
+		osi_file = true;
 	}
 
 	// Create scenario engine
@@ -521,7 +526,13 @@ int ScenarioPlayer::Init()
 	}
 
 	// Step scenario engine - zero time - just to reach and report init state of all vehicles
-	scenarioEngine->step(0.0, osi_file, true);
+	scenarioEngine->step(0.0, true);
+
+	// Update OSI info
+	if (osi_file || scenarioGateway->GetSocket())
+	{
+		scenarioEngine->getScenarioGateway()->UpdateOSISensorView(osi_file);
+	}
 
 	if (!headless)
 	{

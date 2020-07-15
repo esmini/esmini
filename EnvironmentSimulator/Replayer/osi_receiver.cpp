@@ -41,6 +41,7 @@ static bool quit;
 
 #define OSI_OUT_PORT 48198
 #define ES_SERV_TIMEOUT 500
+#define MAX_MSG_SIZE 102400
 
 
 void CloseGracefully(int socket)
@@ -72,7 +73,7 @@ int main(int argc, char* argv[])
 	struct sockaddr_in server_addr;
 	struct sockaddr_in sender_addr;
 	static int iPortIn = OSI_OUT_PORT;   // Port for incoming packages
-	char buf[1024];
+	char buf[MAX_MSG_SIZE];
 	socklen_t sender_addr_size = sizeof(sender_addr);
 	struct timeval tv;
 	
@@ -103,7 +104,7 @@ int main(int argc, char* argv[])
 	tv.tv_usec = ES_SERV_TIMEOUT;
 #ifdef _WIN32
 	int timeout_msec = 1000 * tv.tv_sec + tv.tv_usec;
-	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_msec, sizeof(timeout_msec)) == 0)
+	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_msec, sizeof(timeout_msec)) < 0)
 #else
 	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&tv, sizeof(tv)) == 0)
 #endif
@@ -133,7 +134,6 @@ int main(int argc, char* argv[])
 
 		if (ret > 0)
 		{
-
 			sv.ParseFromArray(buf, ret);
 
 			// Print timestamp

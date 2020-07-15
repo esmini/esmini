@@ -46,9 +46,7 @@ static OSIRoadLane osiRoadLane;
 static OSIRoadLaneBoundary osiRoadLaneBoundary;
 std::ofstream osi_file;
 
-static int sendSocket;
 static struct sockaddr_in recvAddr;
-
 
 ObjectState::ObjectState()
 {
@@ -259,26 +257,23 @@ int ScenarioGateway::getObjectStateById(int id, ObjectState& objectState)
 	return -1;
 }
 
-int ScenarioGateway::UpdateOSISensorView(bool osi_file_bool, bool api_request )
+int ScenarioGateway::UpdateOSISensorView(bool osi_file_bool)
 {
 	double time_stamp = objectState_[0]->state_.timeStamp;
-	if (api_request == true ||  osi_file_bool == true)
-	{
-		mobj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_seconds((int64_t)objectState_[0]->state_.timeStamp);
-		mobj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_nanos((uint32_t)(
-			(objectState_[0]->state_.timeStamp - (int64_t)objectState_[0]->state_.timeStamp) * 1e9)
-		);
 
-		UpdateOSIMovingObject();
-		//collect all information of lanes in the lane section where obj=0 is
-		UpdateOSIRoadLane();
+	mobj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_seconds((int64_t)objectState_[0]->state_.timeStamp);
+	mobj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_nanos((uint32_t)(
+		(objectState_[0]->state_.timeStamp - (int64_t)objectState_[0]->state_.timeStamp) * 1e9)
+	);
 
-		UpdateOSILaneBoundary();
+	UpdateOSIMovingObject();
+	//collect all information of lanes in the lane section where obj=0 is
+	UpdateOSIRoadLane();
 
-		mobj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
-		osiSensorView.size = (unsigned int)mobj_osi_internal.sv->ByteSizeLong();
-	}
+	UpdateOSILaneBoundary();
 
+	mobj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
+	osiSensorView.size = (unsigned int)mobj_osi_internal.sv->ByteSizeLong();
 
 	if (osi_file_bool == true)
 	{
@@ -296,18 +291,20 @@ int ScenarioGateway::UpdateOSISensorView(bool osi_file_bool, bool api_request )
 
 		// write to file, actual message - the sensorview object including timestamp and moving objects
 		osi_file.write(osiSensorView.sensor_view.c_str(), osiSensorView.size);
+	}
 
+	if (sendSocket)
+	{
 		// send over udp - skip size (package size == message size)
-		if (sendSocket)
+
+		int sendResult = sendto(sendSocket, (char*)osiSensorView.sensor_view.c_str(), osiSensorView.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
+
+		if (sendResult != osiSensorView.size)
 		{
-			int sendResult = sendto(sendSocket, (char*)osiSensorView.sensor_view.c_str(), osiSensorView.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
-			if (sendResult != osiSensorView.size)
-			{
-				LOG("Failed send osi package over UDP");
-	#ifdef _WIN32
-				wprintf(L"send failed with error: %d\n", WSAGetLastError());
-	#endif
-			}
+			LOG("Failed send osi package over UDP");
+#ifdef _WIN32
+			wprintf(L"send failed with error: %d\n", WSAGetLastError());
+#endif
 		}
 	}
 

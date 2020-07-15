@@ -55,7 +55,7 @@ namespace scenarioengine
 		void InitScenario(std::string oscFilename, double headstart_time, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
 		void InitScenario(const pugi::xml_document &xml_doc, double headstart_time, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
 
-		void step(double deltaSimTime, bool osi_file, bool initial = false);
+		void step(double deltaSimTime, bool initial = false);
 		void printSimulationTime();
 		void stepObjects(double dt);
 		void exit();

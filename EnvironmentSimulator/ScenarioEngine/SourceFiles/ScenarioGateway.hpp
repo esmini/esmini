@@ -123,7 +123,7 @@ namespace scenarioengine
 		/**
 		Fills up the osi message with SensorView
 		*/
-		int UpdateOSISensorView(bool osi_file_bool, bool api_request = false);
+		int UpdateOSISensorView(bool osi_file_bool);
 		/**
 		Fills up the osi message with Moving Object
 		*/
@@ -142,12 +142,13 @@ namespace scenarioengine
 		const std::vector<int> GetOSILaneBoundaryIds(int object_id);
 		int OpenSocket(std::string ipaddr);
 		int CloseSocket();
+		int GetSocket() { return sendSocket; }
 
 	private:
 		void updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot);
 		std::vector<ObjectState*> objectState_;
 		std::ofstream data_file_;
-		bool sendOSIoverUDP;
+		int sendSocket;
 	};
 
 }

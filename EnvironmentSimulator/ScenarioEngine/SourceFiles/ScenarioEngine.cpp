@@ -55,7 +55,7 @@ ScenarioEngine::~ScenarioEngine()
 }
 
 
-void ScenarioEngine::step(double deltaSimTime, bool osi_file, bool initial)
+void ScenarioEngine::step(double deltaSimTime, bool initial)
 
 {
 	simulationTime += deltaSimTime;
@@ -294,9 +294,6 @@ void ScenarioEngine::step(double deltaSimTime, bool osi_file, bool initial)
 				obj->control_, obj->boundingbox_, simulationTime, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 		}
 	}
-
-	// And send OSI info
-	scenarioGateway.UpdateOSISensorView(osi_file, true);
 
 	stepObjects(deltaSimTime);
 
