@@ -410,12 +410,13 @@ extern "C"
 		return 0;
 	}
 	
-	SE_DLL_API void SE_GetOSILaneBoundaryIds(std::vector<int>* ids, int object_id)
+	SE_DLL_API void SE_GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id)
 	{
 		if (player)
 		{
-			*ids = player->scenarioGateway->GetOSILaneBoundaryIds(object_id);
+			player->scenarioGateway->GetOSILaneBoundaryIds(ids, object_id);			
 		}
+		return; 
 	}
 
 	SE_DLL_API int SE_UpdateOSISensorView()

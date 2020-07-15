@@ -5780,7 +5780,7 @@ int Position::GetLaneId()
 
 int Position::GetLaneGlobalId()
 {
-	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	Road *road = GetRoadById(GetTrackId());
 	if (road == 0)
 	{
 		LOG("No road %d", track_idx_);
@@ -5807,7 +5807,7 @@ int Position::GetLaneGlobalId()
 	lane_id_ = lane_section->GetLaneGlobalIdByIdx(lane_idx);
 	offset_ = offset;
 
-	return 0;
+	return lane_id_;
 }
 
 double Position::GetS()
