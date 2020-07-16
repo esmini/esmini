@@ -256,7 +256,7 @@ namespace scenarioengine
 		double value_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
-		TrigBySimulationTime() : TrigByValue(TrigByValue::Type::TIME_OF_DAY) {}
+		TrigBySimulationTime() : TrigByValue(TrigByValue::Type::SIMULATION_TIME) {}
 	};
 
 }

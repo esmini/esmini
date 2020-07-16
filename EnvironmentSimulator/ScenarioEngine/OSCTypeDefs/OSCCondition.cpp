@@ -333,7 +333,7 @@ bool TrigBySimulationTime::CheckCondition(StoryBoard *storyBoard, double sim_tim
 
 	if (log)
 	{
-		LOG("%s == %s, sim_time: %.2f %s %.2f edge: %s", name_.c_str(), result ? "true" : "false",
+		LOG("%s == %s, sim_time: %.4f %s %.2f edge: %s", name_.c_str(), result ? "true" : "false",
 			sim_time, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
 	}
 
