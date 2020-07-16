@@ -148,8 +148,6 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 				}
 			}
 
-			act->UpdateState();
-
 			if (act->IsTriggable())
 			{
 				// Check start conditions
@@ -171,6 +169,8 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 					act->End();
 				}
 			}
+
+			act->UpdateState();
 
 			// Check whether all acts are done
 			all_done = all_done && act->state_ == Act::State::COMPLETE;
