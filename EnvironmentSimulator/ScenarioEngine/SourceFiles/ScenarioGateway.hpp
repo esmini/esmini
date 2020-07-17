@@ -140,6 +140,8 @@ namespace scenarioengine
 		const char* GetOSIRoadLane(int* size, int object_id);
 		const char* GetOSIRoadLaneBoundary(int* size, int global_id);
 		void GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id);
+		bool IsCentralOSILane(int lane_idx);
+		int GetLaneIdxfromIdOSI(int lane_id);
 		int OpenSocket(std::string ipaddr);
 		int CloseSocket();
 		int GetSocket() { return sendSocket; }

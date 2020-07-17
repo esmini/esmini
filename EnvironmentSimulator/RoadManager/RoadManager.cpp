@@ -353,6 +353,11 @@ std::vector<int> Lane::GetLineGlobalIds()
 	return line_ids; 
 }
 
+int Lane::GetLaneBoundaryGlobalId()
+{
+	return lane_boundary_->GetGlobalId(); 
+}
+
 LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx)
 {
 	if (idx < (int)lane_roadMarkType_.size())
@@ -4049,6 +4054,28 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double &offset)
 	return candidate_lane_idx;
 }
 
+int LaneSection::GetClosestWhateverLaneIdx(double s, double t, double &offset)
+{
+	double min_offset = t;  // Initial offset relates to reference line
+	int candidate_lane_idx = -1;
+
+	for (int i = 0; i < GetNumberOfLanes(); i++)  // Search through all lanes
+	{
+		int lane_id = GetLaneIdByIdx(i);
+		double laneCenterOffset = SIGN(lane_id) * GetCenterOffset(s, lane_id);
+
+		if ((candidate_lane_idx == -1 || fabs(t - laneCenterOffset) < fabs(min_offset)))
+		{
+			min_offset = t - laneCenterOffset;
+ 			candidate_lane_idx = i;
+		}
+	}
+
+	offset = min_offset;
+
+	return candidate_lane_idx;
+}
+
 int Position::GotoClosestDrivingLaneAtCurrentPosition()
 {
 	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
@@ -5796,7 +5823,7 @@ int Position::GetLaneGlobalId()
 	}
 
 	double offset;
-	int lane_idx = lane_section->GetClosestLaneIdx(s_, t_, offset);
+	int lane_idx = lane_section->GetClosestWhateverLaneIdx(s_, t_, offset);
 
 	if (lane_idx == -1)
 	{

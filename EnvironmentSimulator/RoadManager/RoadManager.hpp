@@ -543,6 +543,7 @@ namespace roadmanager
 		std::vector<int> GetLineGlobalIds(); 
 		void SetLaneBoundary(LaneBoundaryOSI *lane_boundary);
 		LaneBoundaryOSI* GetLaneBoundary() {return lane_boundary_; }
+		int GetLaneBoundaryGlobalId();
 
 	private:
 		int id_;		// center = 0, left > 0, right < 0
@@ -572,7 +573,8 @@ namespace roadmanager
 		double GetOuterOffset(double s, int lane_id);
 		double GetWidth(double s, int lane_id);
 		int GetClosestLaneIdx(double s, double t, double &offset);
-
+		int GetClosestWhateverLaneIdx(double s, double t, double &offset);
+		
 		/**
 		Get lateral position of lane center, from road reference lane (lane id=0)
 		Example: If lane id 1 is 5 m wide and lane id 2 is 4 m wide, then 

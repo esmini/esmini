@@ -418,7 +418,7 @@ extern "C"
 		}
 		return; 
 	}
-
+	
 	SE_DLL_API int SE_UpdateOSISensorView()
 	{
 		if (player)
