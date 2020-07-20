@@ -70,18 +70,18 @@
             </Private>
          </Actions>
       </Init>
-      <Story name="Lane change">
+      <Story name="Lane change story">
          <ParameterDeclarations>
             <ParameterDeclaration parameterType="string" name="$owner" value="Ego"/>
          </ParameterDeclarations>
-         <Act name="Lane change">
+         <Act name="Lane change act">
             <ManeuverGroup maximumExecutionCount="1" name="Lane change">
                <Actors selectTriggeringEntities="false">
                   <EntityRef entityRef="$owner"/>
                </Actors>
-               <Maneuver name="Lane change">
-                  <Event name="Lane change" priority="overwrite">
-                     <Action name="Lane change">
+               <Maneuver name="Lane change Ego maneuver">
+                  <Event name="Lane change Ego event" priority="overwrite">
+                     <Action name="Lane change Ego action">
                         <PrivateAction>
                            <LateralAction>
                               <LaneChangeAction>
@@ -95,7 +95,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="Lane change" delay="0" conditionEdge="rising">
+                           <Condition name="Lane change Ego condition" delay="0" conditionEdge="rising">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="4" rule="greaterThan"/>
                               </ByValueCondition>
@@ -109,9 +109,9 @@
                <Actors selectTriggeringEntities="false">
                   <EntityRef entityRef="Target"/>
                </Actors>
-               <Maneuver name="Lane change">
-                  <Event name="Lane change" priority="overwrite">
-                     <Action name="Lane change">
+               <Maneuver name="Lane change Target maneuver">
+                  <Event name="Lane change Target event" priority="overwrite">
+                     <Action name="Lane change Target action">
                         <PrivateAction>
                            <LateralAction>
                               <LaneChangeAction>
@@ -125,7 +125,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="Lane change" delay="0" conditionEdge="rising">
+                           <Condition name="Lane change Target condition" delay="0" conditionEdge="rising">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="3" rule="greaterThan"/>
                               </ByValueCondition>
@@ -149,7 +149,7 @@
                   <Condition name="QuitCondition" delay="4" conditionEdge="rising">
                      <ByValueCondition>
                         <StoryboardElementStateCondition storyboardElementType="event"
-                                                         storyboardElementRef="Lane change"
+                                                         storyboardElementRef="Lane change Ego event"
                                                          state="endTransition"/>
                      </ByValueCondition>
                   </Condition>

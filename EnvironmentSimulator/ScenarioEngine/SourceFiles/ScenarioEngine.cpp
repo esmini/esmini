@@ -121,7 +121,8 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		return;
 	}
 
-	bool all_done = true;
+	// Then evaluate all stories
+	bool all_done = true;  // This flag will indicate whether all acts are done or not
 	for (size_t i = 0; i < storyBoard.story_.size(); i++)
 	{
 		Story *story = storyBoard.story_[i];
@@ -129,24 +130,6 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		for (size_t j = 0; j < story->act_.size(); j++)
 		{
 			Act *act = story->act_[j];
-
-			// Update elements' state - moving from transitions to stable states
-			for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
-			{
-				for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
-				{
-					OSCManeuver *maneuver = act->maneuverGroup_[k]->maneuver_[l];
-
-					for (size_t m = 0; m < maneuver->event_.size(); m++)
-					{
-						for (size_t n = 0; n < maneuver->event_[m]->action_.size(); n++)
-						{
-							maneuver->event_[m]->action_[n]->UpdateState();
-						}
-						maneuver->event_[m]->UpdateState();
-					}
-				}
-			}
 
 			if (act->IsTriggable())
 			{
@@ -172,8 +155,26 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 
 			act->UpdateState();
 
-			// Check whether all acts are done
+			// Check whether this act is done - and update flag for all acts
 			all_done = all_done && act->state_ == Act::State::COMPLETE;
+
+			// Update state of sub elements - moving from transitions to stable states
+			for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
+			{
+				for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
+				{
+					OSCManeuver *maneuver = act->maneuverGroup_[k]->maneuver_[l];
+
+					for (size_t m = 0; m < maneuver->event_.size(); m++)
+					{
+						for (size_t n = 0; n < maneuver->event_[m]->action_.size(); n++)
+						{
+							maneuver->event_[m]->action_[n]->UpdateState();
+						}
+						maneuver->event_[m]->UpdateState();
+					}
+				}
+			}
 
 			// Maneuvers
 			if (act->IsActive())
