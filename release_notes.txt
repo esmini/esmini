@@ -54,3 +54,7 @@ The purpose of this document is to highlight changes breaking backward compatibi
 	2. UDP messages (option to send OSI messages to specified host/IP address)
 	3. API to fetch OSI data via function call (in ScenarioEngineDLL)
 - osi_receiver is a minimalistic demo-application showing how to receive OSI over UDP
+
+2020-07-24 Version 1.6.3
+- OSI support extended with road information (lane and road marks) 
+- Bugfix: RelativeTargetLane (used in LaneChangeAction) is now calculated correctly, skipping reference lane and considering vehicle orientation so that positive lane changes will go left and negative to the right. Scenarios making use of RelativeTargetLane might need to be updated accordingly.
