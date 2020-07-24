@@ -141,7 +141,15 @@ void LatLaneChangeAction::Start()
 	}
 	else if (target_->type_ == Target::Type::RELATIVE)
 	{
-		target_lane_id_ = ((TargetRelative*)target_)->object_->pos_.GetLaneId() + target_->value_;
+		// Find out number of lanes to move left (positive) or right (negative) relative own vehicle direction
+		int left_direction = object_->pos_.GetHRelative() < M_PI_2 || object_->pos_.GetHRelative() > 3 * M_PI_2 ? 1 : -1;
+		target_lane_id_ = ((TargetRelative*)target_)->object_->pos_.GetLaneId() + left_direction * target_->value_;
+		
+		if (target_lane_id_ == 0 || (SIGN(target_lane_id_) != SIGN(object_->pos_.GetLaneId())))
+		{
+			// Skip reference lane (id == 0)
+			target_lane_id_ += left_direction * SIGN(target_->value_);
+		}
 	}
 	start_t_ = object_->pos_.GetT();
 }
