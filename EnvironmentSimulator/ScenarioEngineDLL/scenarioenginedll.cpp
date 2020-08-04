@@ -281,10 +281,19 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API bool SE_GetQuitFlag()
+	SE_DLL_API int SE_GetQuitFlag()
 	{
-		bool quit_flag;
-		quit_flag = player->scenarioEngine->GetQuitFlag();
+		int quit_flag;
+		if(player)
+		{
+			if(player->scenarioEngine->GetQuitFlag())
+				quit_flag = 1;
+			else
+				quit_flag = 0;
+		}
+		else
+			quit_flag = 2;
+		
 	}
 
 	SE_DLL_API void SE_Close()

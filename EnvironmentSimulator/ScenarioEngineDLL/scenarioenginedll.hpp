@@ -98,7 +98,7 @@ extern "C"
 	/**
 	Get the bool value of the end of the scenario
 	*/
-	SE_DLL_API bool SE_GetQuitFlag();
+	SE_DLL_API int SE_GetQuitFlag();
 
 	/**
 	Stop simulation gracefully. Two purposes: 1. Release memory and 2. Prepare for next simulation, e.g. reset object lists.
