@@ -96,6 +96,11 @@ extern "C"
 	SE_DLL_API int SE_Step();
 
 	/**
+	Get the bool value of the end of the scenario
+	*/
+	SE_DLL_API bool SE_GetQuitFlag();
+
+	/**
 	Stop simulation gracefully. Two purposes: 1. Release memory and 2. Prepare for next simulation, e.g. reset object lists.
 	*/
 	SE_DLL_API void SE_Close();
