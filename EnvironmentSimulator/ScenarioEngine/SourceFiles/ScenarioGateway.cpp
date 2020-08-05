@@ -674,11 +674,26 @@ int ScenarioGateway::UpdateOSIRoadLane()
 
 					if (lane_id == 0) // for central lane I use the laneboundary osi points as right and left boundary so that it can be used from both sides
 					{
-						int laneboundary_global_id = lane->GetLaneBoundaryGlobalId(); 
-						osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-						left_lane_bound_id->set_value(laneboundary_global_id);
-						osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-						right_lane_bound_id->set_value(laneboundary_global_id);
+						// check if lane has road mark 
+						std::vector<int> line_ids = lane->GetLineGlobalIds();
+						if (!line_ids.empty()) // lane has RoadMarks 
+						{
+							for (int jj = 0; jj < line_ids.size(); jj++ )
+							{
+								osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+								left_lane_bound_id->set_value(line_ids[jj]);
+								osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+								right_lane_bound_id->set_value(line_ids[jj]);
+							}
+						}
+						else // no road marks -> we take lane boundary 
+						{
+							int laneboundary_global_id = lane->GetLaneBoundaryGlobalId(); 
+							osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+							left_lane_bound_id->set_value(laneboundary_global_id);
+							osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+							right_lane_bound_id->set_value(laneboundary_global_id);
+						}
 					}
 					else
 					{

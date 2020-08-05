@@ -293,6 +293,8 @@ extern "C"
 		}
 		else
 			quit_flag = 2;
+
+		return quit_flag; 
 		
 	}
 
