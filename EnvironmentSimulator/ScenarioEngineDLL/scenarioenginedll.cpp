@@ -286,7 +286,7 @@ extern "C"
 		int quit_flag;
 		if(player)
 		{
-			if(player->scenarioEngine->GetQuitFlag())
+			if(player->IsQuitRequested())
 				quit_flag = 1;
 			else
 				quit_flag = 0;
