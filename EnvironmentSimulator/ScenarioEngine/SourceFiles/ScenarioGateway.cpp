@@ -926,48 +926,76 @@ void ScenarioGateway::GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id
 
 	// find the lane in the sensor view and save its index
 	int lane_id_of_vehicle = pos.GetLaneGlobalId();
-	//int local_id = pos.GetLaneId();
 	idx_central = GetLaneIdxfromIdOSI(lane_id_of_vehicle); 
 	
-	// find left and right lane boundary ids of central lane
-	osi3::Identifier left_lane = mobj_osi_internal.ln[idx_central]->mutable_classification()->left_lane_boundary_id(0);
-	osi3::Identifier right_lane = mobj_osi_internal.ln[idx_central]->mutable_classification()->right_lane_boundary_id(0);
-	left_lb_id = (int)left_lane.value(); 
-	right_lb_id = (int)right_lane.value(); 
+	// find left and right lane boundary ids of central lane	
+	if (mobj_osi_internal.ln[idx_central]->mutable_classification()->left_lane_boundary_id_size() == 0 )
+	{
+		left_lb_id = -1;  
+	}
+	else
+	{
+		osi3::Identifier left_lane = mobj_osi_internal.ln[idx_central]->mutable_classification()->left_lane_boundary_id(0);
+		left_lb_id = (int)left_lane.value(); 
+	}
+
+	if (mobj_osi_internal.ln[idx_central]->mutable_classification()->right_lane_boundary_id_size() == 0 )
+	{
+		right_lb_id = -1; 
+	}
+	else
+	{
+		osi3::Identifier right_lane = mobj_osi_internal.ln[idx_central]->mutable_classification()->right_lane_boundary_id(0);
+		right_lb_id = (int)right_lane.value(); 
+	}
 
 	// find first left lane
-	osi3::Identifier Left_lane_id = mobj_osi_internal.ln[idx_central]->mutable_classification()->left_adjacent_lane_id(0);
-	int left_lane_id = (int)Left_lane_id.value(); 	
-	idx_left = GetLaneIdxfromIdOSI(left_lane_id); 
-	if (IsCentralOSILane(idx_left))
-	{
-		// if it is central lane -> we look for its left one 
-		Left_lane_id = mobj_osi_internal.ln[idx_left]->mutable_classification()->left_adjacent_lane_id(0);
-		left_lane_id = (int)Left_lane_id.value(); 	
-		idx_left = GetLaneIdxfromIdOSI(left_lane_id); 
+	if (mobj_osi_internal.ln[idx_central]->mutable_classification()->left_adjacent_lane_id_size() == 0 )
+	{ 
+		far_left_lb_id = -1; 
 	}
-	// save left boundary of left lane as far left lane boundary of central lane
-	osi3::Identifier Far_left_lb_id = mobj_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id(0);
-	far_left_lb_id = (int)Far_left_lb_id.value();	
+	else
+	{
+
+		osi3::Identifier Left_lane_id = mobj_osi_internal.ln[idx_central]->mutable_classification()->left_adjacent_lane_id(0);
+		int left_lane_id = (int)Left_lane_id.value(); 	
+		idx_left = GetLaneIdxfromIdOSI(left_lane_id); 
+		if (IsCentralOSILane(idx_left))
+		{
+			// if it is central lane -> we look for its left one 
+			Left_lane_id = mobj_osi_internal.ln[idx_left]->mutable_classification()->left_adjacent_lane_id(0);
+			left_lane_id = (int)Left_lane_id.value(); 	
+			idx_left = GetLaneIdxfromIdOSI(left_lane_id); 
+		}
+		// save left boundary of left lane as far left lane boundary of central lane
+		osi3::Identifier Far_left_lb_id = mobj_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id(0);
+		far_left_lb_id = (int)Far_left_lb_id.value();
+	}
+		
 
 	// now find first right lane
-	osi3::Identifier Right_lane_id = mobj_osi_internal.ln[idx_central]->mutable_classification()->right_adjacent_lane_id(0);
-	int right_lane_id = (int)Right_lane_id.value();   
-	idx_right = GetLaneIdxfromIdOSI(right_lane_id);
-	if (IsCentralOSILane(idx_right))
+	if (mobj_osi_internal.ln[idx_central]->mutable_classification()->right_adjacent_lane_id_size() == 0 )
 	{
-		// it is central lane -> we look for its right one 
-		Right_lane_id = mobj_osi_internal.ln[idx_right]->mutable_classification()->right_adjacent_lane_id(0);
-		right_lane_id = (int)Left_lane_id.value(); 	
-		// find left lane index 
-		idx_right = GetLaneIdxfromIdOSI(right_lane_id); 
+		far_right_lb_id = -1; 
 	}
-	// save right boundary of right lane as far right lane boundary of central lane 
-	osi3::Identifier Far_right_lb_id = mobj_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id(0);
-	far_right_lb_id = (int)Far_right_lb_id.value(); 
-
-	
-	// push all ids into vector 
+	else
+	{
+		osi3::Identifier Right_lane_id = mobj_osi_internal.ln[idx_central]->mutable_classification()->right_adjacent_lane_id(0);
+		int right_lane_id = (int)Right_lane_id.value();   
+		idx_right = GetLaneIdxfromIdOSI(right_lane_id);
+		if (IsCentralOSILane(idx_right))
+		{
+			// if it is central lane -> we look for its right one 
+			Right_lane_id = mobj_osi_internal.ln[idx_right]->mutable_classification()->right_adjacent_lane_id(0);
+			right_lane_id = (int)Right_lane_id.value(); 	 
+			idx_right = GetLaneIdxfromIdOSI(right_lane_id); 
+		}
+		// save right boundary of right lane as far right lane boundary of central lane 
+		osi3::Identifier Far_right_lb_id = mobj_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id(0);
+		far_right_lb_id = (int)Far_right_lb_id.value(); 
+	}
+		
+	// push all ids into output vector 
 	final_lb_ids.push_back(far_left_lb_id);
 	final_lb_ids.push_back(left_lb_id);
 	final_lb_ids.push_back(right_lb_id); 
