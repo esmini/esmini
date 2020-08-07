@@ -20,9 +20,12 @@
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
 
+extern int g_Lane_id;
+extern int g_Laneb_id;
+
+
 namespace roadmanager
 {
-
 	class Polynomial
 	{
 	public:
@@ -292,17 +295,6 @@ namespace roadmanager
 		double s_offset_;
 	};
 
-	class LaneBoundaryID
-	{
-		int id; 
-	public:
-		LaneBoundaryID() {
-			static int counter_a = 0; 
-			id = counter_a++; 
-		}
-		int get_id() { return id; }
-	};
-
 	class LaneBoundaryOSI
 	{
 	public:
@@ -314,9 +306,7 @@ namespace roadmanager
 		OSIPoints GetOSIPoints() {return osi_points_;}
 		OSIPoints osi_points_;
 	private:
-		LaneBoundaryID laneboundaryglobalID_;  // class that generates the unique ID for OSI
-		int global_id_;  // Unique ID for OSI
-		//int ciccia_; 
+		int global_id_;  // Unique ID for OSI 
 	};
 
 	struct RoadMarkInfo
@@ -337,6 +327,7 @@ namespace roadmanager
 
 		LaneRoadMarkTypeLine(double length, double space, double t_offset, double s_offset, RoadMarkTypeLineRule rule, double width): 
 		length_(length), space_(space), t_offset_(t_offset), s_offset_(s_offset), rule_(rule), width_(width) {}
+		~LaneRoadMarkTypeLine() {}; 
 		double GetSOffset() { return s_offset_; }
 		double GetTOffset() { return t_offset_; }
 		double GetLength() {return length_;}
@@ -354,7 +345,6 @@ namespace roadmanager
 		double s_offset_;
 		RoadMarkTypeLineRule rule_;
 		double width_;
-		LaneBoundaryID lineglobalID_;  // class that generates the unique ID for OSI
 		int global_id_;  // Unique ID for OSI
 	};
 
@@ -474,17 +464,6 @@ namespace roadmanager
 		double length_;
 	};
 
-	class LaneGlobalID
-	{
-		int id; 
-	public:
-		LaneGlobalID() {
-			static int counter = 0; 
-			id = counter++; 
-		}
-		int get_id() { return id; }
-	};
-
 	class Lane
 	{
 	public:
@@ -547,7 +526,6 @@ namespace roadmanager
 
 	private:
 		int id_;		// center = 0, left > 0, right < 0
-		LaneGlobalID laneglobalID_;  // class that generates the unique ID for OSI
 		int global_id_;  // Unique ID for OSI 
 		LaneType type_;
 		int level_;	// boolean, true = keep lane on level
@@ -909,7 +887,7 @@ namespace roadmanager
 	class OpenDrive
 	{
 	public:
-		OpenDrive() {};
+		OpenDrive() {}; 
 		OpenDrive(const char *filename);
 		~OpenDrive();
 

@@ -58,6 +58,7 @@
 
 static std::mt19937 mt_rand;
 static unsigned int global_lane_counter;
+ 
 
 
 using namespace std;
@@ -72,6 +73,8 @@ using namespace roadmanager;
 #define OSI_POINT_CALC_STEPSIZE 1 // [m]
 #define OSI_TANGENT_LINE_TOLERANCE 0.01 // [m]
 
+int g_Lane_id;
+int g_Laneb_id;
 
 
 double Polynomial::Evaluate(double s)
@@ -274,17 +277,20 @@ void LaneLink::Print()
 
 void Lane::SetGlobalId()
 { 
-	global_id_ = laneglobalID_.get_id(); 
+	global_id_ = g_Lane_id; 
+	g_Lane_id++; 
 }
 
 void LaneBoundaryOSI::SetGlobalId()
-{ 
-	global_id_ = laneboundaryglobalID_.get_id(); 
+{  
+	global_id_ = g_Laneb_id; 
+	g_Laneb_id++; 
 }
 
 void LaneRoadMarkTypeLine::SetGlobalId()
-{ 
-	global_id_ = lineglobalID_.get_id(); 
+{  
+	global_id_ = g_Laneb_id; 
+	g_Laneb_id++;
 }
 
 LaneWidth *Lane::GetWidthByS(double s)
@@ -2866,6 +2872,7 @@ OpenDrive::~OpenDrive()
 	{
 		delete(junction_[i]);
 	}
+
 }
 
 int OpenDrive::GetTrackIdxById(int id)

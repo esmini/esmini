@@ -89,6 +89,9 @@ ScenarioPlayer::~ScenarioPlayer()
 #endif
 	}
 	delete scenarioEngine;
+	std::cout << "Reset global IDs" << std::endl; 
+	g_Lane_id = 0; 
+	g_Laneb_id = 0;
 }
 
 void ScenarioPlayer::Frame(double timestep_s)
