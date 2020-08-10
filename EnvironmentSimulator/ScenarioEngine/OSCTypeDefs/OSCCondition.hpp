@@ -27,22 +27,27 @@ namespace scenarioengine
 	// Forward declaration 
 	class StoryBoard;
 
-	class Timer
+	class SimulationTimer
 	{
 	public:
-		__int64 start_time_;
+		double start_time_;
+		bool started_;
 
-		Timer() : start_time_(0) {}
-		void Start() 
+		SimulationTimer() : start_time_(0), started_(false) {}
+		void Start(double timestamp_ms)
 		{ 
-			start_time_ = SE_getSystemTime(); 
+			start_time_ = timestamp_ms;
+			started_ = true;
 		}
 		
-		void Reset() { start_time_ = 0; }
+		void Reset() 
+		{ 
+			start_time_ = 0; 
+			started_ = false;
+		}
 
-		bool Started() { return start_time_ > 0 ? true : false; }
-		double DurationS() { return 1E-3 * (SE_getSystemTime() - start_time_);  }
-		
+		bool Started() { return started_; }
+		double DurationS(double timestamp_ms) { return timestamp_ms - start_time_;  }
 	};
 	
 	class OSCCondition
@@ -72,7 +77,7 @@ namespace scenarioengine
 		bool last_result_;  // result from last evaluation
 		bool last_trig_;    // trig value from last evaluation
 		ConditionEdge edge_;
-		Timer timer_;
+		SimulationTimer timer_;
 
 		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false), 
 			last_result_(false), last_trig_(false), edge_(ConditionEdge::NONE) {}
