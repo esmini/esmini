@@ -279,6 +279,11 @@ int ScenarioPlayer::InitViewer()
 		viewer_->ShowRoadFeatures(false);
 	}
 
+	if (opt.GetOptionArg("osi_features") == "on")
+	{
+		viewer_->ShowOSIFeatures(true);
+	}
+
 	if (opt.GetOptionArg("sensors") == "on")
 	{
 		viewer_->ShowObjectSensors(true);
@@ -419,6 +424,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
 	opt.AddOption("trails", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 'j') ", "mode");
 	opt.AddOption("road_features", "Show road features (\"on\" (default), \"off\") (toggle during simulation by press 'o') ", "mode");
+	opt.AddOption("osi_features", "Show OSI road features (\"on\", \"off\" (default)) (toggle during simulation by press 'u') ", "mode");
 	opt.AddOption("sensors", "Show sensor frustums (\"on\", \"off\" (default)) (toggle during simulation by press 'r') ", "mode");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
