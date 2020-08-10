@@ -975,7 +975,7 @@ void ScenarioGateway::GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id
 			} 
 		}
 		// save left boundary of left lane as far left lane boundary of central lane
-		if (mobj_osi_internal.ln[idx_left]->mutable_classification()->right_adjacent_lane_id_size() == 0 )
+		if (mobj_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id_size() == 0 )
 		{
 			far_right_lb_id = -1; 
 		}
@@ -1013,7 +1013,7 @@ void ScenarioGateway::GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id
 			}
 		}
 		// save right boundary of right lane as far right lane boundary of central lane 
-		if (mobj_osi_internal.ln[idx_right]->mutable_classification()->right_adjacent_lane_id_size() == 0 )
+		if (mobj_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id_size() == 0 )
 		{
 			far_right_lb_id = -1; 
 		}
