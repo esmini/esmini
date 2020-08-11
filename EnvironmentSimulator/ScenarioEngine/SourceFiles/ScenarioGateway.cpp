@@ -643,9 +643,7 @@ int ScenarioGateway::UpdateOSIRoadLane()
 
 					// update driving direction 
 					double teta = pos.GetHRelative(); 
-					std::cout << "GetHRelative gives me " << teta << std::endl; 
-					bool driving_direction = IsAngleStraight(teta); 
-					std::cout << "The angle is straight " << driving_direction << std::endl; 						 
+					bool driving_direction = IsAngleStraight(teta); 						 
 					osi_lane->mutable_classification()->set_centerline_is_driving_direction(driving_direction);
 
 					// update lane_id for lanes on the left and lanes on the right
