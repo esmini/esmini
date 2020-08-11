@@ -136,6 +136,10 @@ namespace scenarioengine
 		Fills up the osi message with Lanes
 		*/
 		int UpdateOSIRoadLane();
+		/**
+		This function checks if the angle is in the interval of [-pi/2, +pi/2]
+		*/
+		bool IsAngleStraight(double teta); 
 		const char* GetOSISensorView(int* size);
 		const char* GetOSIRoadLane(int* size, int object_id);
 		const char* GetOSIRoadLaneBoundary(int* size, int global_id);

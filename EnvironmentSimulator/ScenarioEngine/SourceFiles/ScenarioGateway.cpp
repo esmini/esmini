@@ -17,6 +17,7 @@
 #include "osi_object.pb.h"
 #include "osi_sensorview.pb.h"
 #include "osi_version.pb.h"
+#include <cmath>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -516,6 +517,25 @@ int ScenarioGateway::UpdateOSILaneBoundary()
 	return 0;
 }
 
+bool ScenarioGateway::IsAngleStraight(double teta)
+{
+	teta = fmod(teta + M_PI,2*M_PI);
+
+    if (teta < 0)
+        teta += 2*M_PI;
+
+    teta = teta - M_PI;
+
+	if (teta >= -(M_PI/2) && teta<= (M_PI/2))
+	{
+		return true; 
+	}
+	else
+	{
+		return false; 
+	}
+}
+
 int ScenarioGateway::UpdateOSIRoadLane()
 {
 	//Check if object with id = 0 exists // we are supposing vehicle with id = 0 is the hst vehicle
@@ -580,8 +600,13 @@ int ScenarioGateway::UpdateOSIRoadLane()
 						osi_lane->mutable_classification()->set_is_host_vehicle_lane(is_veh_on_lane);
 
 						// STILL TO DO: check if object is moving in the same direction of the lane centerline points
-						bool center_is_driving = true;
-						osi_lane->mutable_classification()->set_centerline_is_driving_direction(center_is_driving);
+						double teta = pos.GetHRelative(); 
+						std::cout << "GetHRelative gives me " << teta << std::endl; 
+
+						bool driving_direction = IsAngleStraight(teta); 
+						std::cout << "The angle is straight " << driving_direction << std::endl; 
+
+						osi_lane->mutable_classification()->set_centerline_is_driving_direction(driving_direction);
 						break;
 					}
 				}
@@ -615,6 +640,13 @@ int ScenarioGateway::UpdateOSIRoadLane()
 						centerLine->set_y(lane->GetOSIPoints().GetYfromIdx(jj));
 						centerLine->set_z(lane->GetOSIPoints().GetZfromIdx(jj));
 					}
+
+					// update driving direction 
+					double teta = pos.GetHRelative(); 
+					std::cout << "GetHRelative gives me " << teta << std::endl; 
+					bool driving_direction = IsAngleStraight(teta); 
+					std::cout << "The angle is straight " << driving_direction << std::endl; 						 
+					osi_lane->mutable_classification()->set_centerline_is_driving_direction(driving_direction);
 
 					// update lane_id for lanes on the left and lanes on the right
 					int n_lanes_in_section = lane_section->GetNumberOfLanes();
