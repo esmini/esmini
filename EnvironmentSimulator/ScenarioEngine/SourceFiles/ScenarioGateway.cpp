@@ -538,19 +538,11 @@ bool ScenarioGateway::IsAngleStraight(double teta)
 
 int ScenarioGateway::UpdateOSIRoadLane()
 {
-	//Check if object with id = 0 exists // we are supposing vehicle with id = 0 is the hst vehicle
-	int object_id = 0;
-	if (object_id >= getNumberOfObjects())
-	{
-		LOG("Object %d not available, only %d registered", object_id, getNumberOfObjects());
-		return -1;
-	}
-
-	// Find position of the object
+	// Find ego vehicle 
 	roadmanager::Position pos;
 	for (size_t i = 0; i < getNumberOfObjects() ; i++)
 	{
-		if (object_id == objectState_[i]->state_.id)
+		if (objectState_[i]->state_.control == 3) // external hybrid is host 
 		{
 			pos = objectState_[i]->state_.pos;
 		}
@@ -586,52 +578,66 @@ int ScenarioGateway::UpdateOSIRoadLane()
 					{
 						osi_lane = mobj_osi_internal.ln[jj];
 
-						// update classification is_vehicle_in_lane
-						bool is_veh_on_lane;
-						int lane_of_vehicle = pos.GetLaneId();
-						if (lane_id == lane_of_vehicle)
+						// update classification is_host_vehicle_in_lane
+						bool is_ego_on_lane = false;
+						if (lane_id == pos.GetLaneId())
 						{
-							is_veh_on_lane = true;
+							is_ego_on_lane = true;
 						}
-						else
-						{
-							is_veh_on_lane = false;
-						}
-						osi_lane->mutable_classification()->set_is_host_vehicle_lane(is_veh_on_lane);
-
-						// STILL TO DO: check if object is moving in the same direction of the lane centerline points
-						double teta = pos.GetHRelative(); 
-						std::cout << "GetHRelative gives me " << teta << std::endl; 
-
-						bool driving_direction = IsAngleStraight(teta); 
-						std::cout << "The angle is straight " << driving_direction << std::endl; 
-
-						osi_lane->mutable_classification()->set_centerline_is_driving_direction(driving_direction);
+						osi_lane->mutable_classification()->set_is_host_vehicle_lane(is_ego_on_lane);
 						break;
 					}
 				}
 				// if the lane is not already in the osi message we add it all 
 				if (!osi_lane) 
 				{
-
+					// LANE ID 
 					osi_lane = mobj_osi_internal.sv->mutable_global_ground_truth()->add_lane();
 					osi_lane->mutable_id()->set_value(lane_global_id);
 
-					// update classification type
-					// STILL TO DO: add more types
+					// CLASSIFICATION TYPE 
 					roadmanager::Lane::LaneType lanetype = lane->GetLaneType();
 					osi3::Lane_Classification_Type class_type;
-					if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING)
+
+					if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING 		|| \
+						lanetype == roadmanager::Lane::LaneType::LANE_TYPE_PARKING		|| \	
+						lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIDIRECTIONAL 	 )		
 					{
 						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
 					}
-					else
+					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_STOP 		|| \						
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIKING 		|| \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK 	|| \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BORDER   	|| \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RESTRICTED   || \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ROADMARKS    || \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_TRAM   		|| \ 
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RAIL   			 )
+					{
+						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+					}
+					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ENTRY 		|| \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_EXIT 		|| \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_OFF_RAMP 	|| \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ON_RAMP 		|| \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_MEDIAN 		|| \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SHOULDER 		 )
+					{
+						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION;					
+					}
+					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL1 	|| \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL2 	|| \
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL3 		 ) 
+					{
+						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_OTHER;					
+					}
+					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_NONE )
 					{
 						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_UNKNOWN;
 					}
 					osi_lane->mutable_classification()->set_type(class_type);
 
-					//update lane centerline points
+					// CENTERLINE POINTS 
 					int n_osi_points = lane->GetOSIPoints().GetNumOfOSIPoints();
 					for (int jj = 0; jj < n_osi_points; jj++)
 					{
@@ -641,12 +647,15 @@ int ScenarioGateway::UpdateOSIRoadLane()
 						centerLine->set_z(lane->GetOSIPoints().GetZfromIdx(jj));
 					}
 
-					// update driving direction 
-					double teta = pos.GetHRelative(); 
-					bool driving_direction = IsAngleStraight(teta); 						 
+					// DRIVING DIRECTION 
+					bool driving_direction = true; 
+					if (lane_id >= 0)
+					{
+						driving_direction = false; 
+					} 						 
 					osi_lane->mutable_classification()->set_centerline_is_driving_direction(driving_direction);
 
-					// update lane_id for lanes on the left and lanes on the right
+					// LEFT AND RIGHT LANE IDS 
 					int n_lanes_in_section = lane_section->GetNumberOfLanes();
 					std::vector< std::pair <int,int> > globalid_ids_left;
 					std::vector< std::pair <int,int> > globalid_ids_right;
@@ -662,7 +671,7 @@ int ScenarioGateway::UpdateOSIRoadLane()
 							globalid_ids_right.push_back( std::make_pair(lane_section->GetLaneIdByIdx(jj) , lane_section->GetLaneGlobalIdByIdx(jj) ) );
 						}
 					}
-					// order global id with local id to maintain geographical order
+						// order global id with local id to maintain geographical order
 					std::sort(globalid_ids_left.begin(), globalid_ids_left.end());
 					std::sort(globalid_ids_right.begin(), globalid_ids_right.end());
 					std::reverse(globalid_ids_right.begin(), globalid_ids_right.end());
@@ -678,7 +687,7 @@ int ScenarioGateway::UpdateOSIRoadLane()
 						right_id->set_value((uint64_t)globalid_ids_right[jj].second);
 					}
 
-					// update lane pairing
+					// LANE PAIRING 
 					// STILL TO DO: when I get a vector of predecessors and successors I need to create all possible combinations
 					roadmanager::LaneLink* lane_pre = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
 					roadmanager::LaneLink* lane_succ = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
@@ -702,6 +711,7 @@ int ScenarioGateway::UpdateOSIRoadLane()
 						}
 					}
 
+					// LANE BOUNDARY IDS 
 					if (lane_id == 0) // for central lane I use the laneboundary osi points as right and left boundary so that it can be used from both sides
 					{
 						// check if lane has road mark 
@@ -840,10 +850,12 @@ const char* ScenarioGateway::GetOSIRoadLane(int* size, int object_id)
 	if (object_id >= getNumberOfObjects())
 	{
 		LOG("Object %d not available, only %d registered", object_id, getNumberOfObjects());
+		*size = 0; 
+		return 0; 
 	}
 
 	// Find position of the object
-	roadmanager::Position pos;
+	roadmanager::Position pos; 
 	for (size_t i = 0; i < getNumberOfObjects() ; i++)
 	{
 		if (object_id == objectState_[i]->state_.id)
@@ -866,6 +878,10 @@ const char* ScenarioGateway::GetOSIRoadLane(int* size, int object_id)
 		}
 	}
 
+	// check if object is moving in the same direction of the lane centerline points
+	//double teta = pos.GetHRelative(); 
+	//bool driving_direction = IsAngleStraight(teta); 	
+
 	// serialize to string the single lane
 	mobj_osi_internal.ln[idx]->SerializeToString(&osiRoadLane.osi_lane_info);
 	osiRoadLane.size = (unsigned int)mobj_osi_internal.ln[idx]->ByteSizeLong();
@@ -877,7 +893,7 @@ const char* ScenarioGateway::GetOSIRoadLane(int* size, int object_id)
 const char* ScenarioGateway::GetOSIRoadLaneBoundary(int* size, int global_id)
 {
 	// find the lane bounday in the sensor view and save its index
-	int idx;
+	int idx = -1;
 	for (int i = 0; i<mobj_osi_internal.lnb.size(); i++)
 	{
 		osi3::Identifier identifier = mobj_osi_internal.lnb[i]->id();
@@ -887,6 +903,11 @@ const char* ScenarioGateway::GetOSIRoadLaneBoundary(int* size, int global_id)
 			idx = i;
 			break; 
 		}
+	}
+
+	if (idx == -1)
+	{
+		return 0; 
 	}
 
 	// serialize to string the single lane
@@ -942,6 +963,8 @@ void ScenarioGateway::GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id
 	if (object_id >= getNumberOfObjects())
 	{
 		LOG("Object %d not available, only %d registered", object_id, getNumberOfObjects());
+		ids = {-1, -1, -1, -1}; 
+		return; 
 	}	
 
 	// Find position of the object 
