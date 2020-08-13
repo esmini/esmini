@@ -599,34 +599,34 @@ int ScenarioGateway::UpdateOSIRoadLane()
 					roadmanager::Lane::LaneType lanetype = lane->GetLaneType();
 					osi3::Lane_Classification_Type class_type;
 
-					if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING 		|| \
-						lanetype == roadmanager::Lane::LaneType::LANE_TYPE_PARKING		|| \	
+					if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING 		|| 
+						lanetype == roadmanager::Lane::LaneType::LANE_TYPE_PARKING		|| 	
 						lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIDIRECTIONAL 	 )		
 					{
 						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
 					}
-					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_STOP 		|| \						
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIKING 		|| \
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK 	|| \
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BORDER   	|| \
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RESTRICTED   || \
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ROADMARKS    || \
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_TRAM   		|| \ 
+					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_STOP 		|| 						
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIKING 		|| 
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK 	|| 
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BORDER   	|| 
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RESTRICTED   || 
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ROADMARKS    || 
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_TRAM   		|| 
 							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RAIL   			 )
 					{
 						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
 					}
-					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ENTRY 		|| \
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_EXIT 		|| \
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_OFF_RAMP 	|| \
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ON_RAMP 		|| \
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_MEDIAN 		|| \
+					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ENTRY 		|| 
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_EXIT 		|| 
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_OFF_RAMP 	|| 
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ON_RAMP 		|| 
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_MEDIAN 		|| 
 							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SHOULDER 		 )
 					{
 						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION;					
 					}
-					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL1 	|| \
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL2 	|| \
+					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL1 	|| 
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL2 	|| 
 							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL3 		 ) 
 					{
 						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_OTHER;					

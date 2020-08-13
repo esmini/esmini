@@ -133,7 +133,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 
 	mutex.Lock();
 
-	scenarioEngine->step(timestep_s, osi_file);
+	scenarioEngine->step(timestep_s);
 
 	// Update OSI info
 	if (osi_file || scenarioGateway->GetSocket())
@@ -434,7 +434,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
 	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
 	opt.AddOption("ghost_headstart", "Launch Ego ghost at specified headstart time", "time");
-	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))");
+	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))", "mode");
 		
 	if (argc_ < 3)
 	{
@@ -495,7 +495,7 @@ int ScenarioPlayer::Init()
 		LOG("Any ghosts will be launched with headstart %.2f seconds (default)", ghost_headstart);
 	}
 
-	if (opt.GetOptionSet("osi_file"))
+	if (opt.GetOptionArg("osi_file") ==  "on")
 	{
 		osi_file = true;
 	}
