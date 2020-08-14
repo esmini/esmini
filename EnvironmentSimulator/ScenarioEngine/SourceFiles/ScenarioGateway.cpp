@@ -263,7 +263,7 @@ bool ScenarioGateway::OpenOSIFile()
 	osi_file = std::ofstream("move_obj.osi", std::ios_base::binary);
 	if (!osi_file.good())
 	{
-		LOG("Failed open osi_s file");
+		LOG("Failed open osi file");
 		return false; 
 	}
 	return true; 
@@ -279,6 +279,13 @@ bool ScenarioGateway::WriteOSIFile()
 
 	// write to file, actual message - the sensorview object including timestamp and moving objects
 	osi_file.write(osiSensorView.sensor_view.c_str(), osiSensorView.size);
+
+	if (!osi_file.good())
+	{
+		LOG("Failed write osi file");
+		return false; 
+	}
+	return true; 
 }
 
 int ScenarioGateway::UpdateOSISensorView()
