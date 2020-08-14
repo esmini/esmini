@@ -121,9 +121,17 @@ namespace scenarioengine
 		int getObjectStateById(int idx, ObjectState &objState);
 		int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
 		/**
+		Creates and opens osi file 
+		*/
+		bool OpenOSIFile();
+		/**
+		Writes SensorView in the OSI file 
+		*/
+		bool WriteOSIFile();
+		/**
 		Fills up the osi message with SensorView
 		*/
-		int UpdateOSISensorView(bool osi_file_bool);
+		int UpdateOSISensorView();
 		/**
 		Fills up the osi message with Moving Object
 		*/

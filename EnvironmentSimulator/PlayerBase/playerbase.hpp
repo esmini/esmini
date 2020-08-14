@@ -54,6 +54,7 @@ public:
 		double near, double far, double fovH, int maxObj);
 	void SetFixedTimestep(double timestep) { fixed_timestep_ = timestep; }
 	double GetFixedTimestep() { return fixed_timestep_; }
+	int GetOSIFreq() { return osi_freq_; }
 
 	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;
@@ -84,6 +85,7 @@ private:
 	bool launch_server;
 	double fixed_timestep_;
 	bool osi_file; 
+	int osi_freq_; 
 	std::string osi_receiver_addr;
 	int& argc_;
 	char** argv_;
