@@ -440,10 +440,30 @@ extern "C"
 	{
 		if (player)
 		{
-			return player->scenarioGateway->UpdateOSISensorView(false);
+			return player->scenarioGateway->UpdateOSISensorView();
 		}
 
 		return 0;
+	}
+
+	SE_DLL_API bool SE_OSIFileOpen()
+	{
+		if (player)
+		{
+			return player->scenarioGateway->OpenOSIFile();
+		}
+
+		return false;
+	}
+
+	SE_DLL_API bool SE_OSIFileWrite()
+	{		
+		if (player)
+		{
+			return player->scenarioGateway->WriteOSIFile();
+		}
+
+		return false;
 	}
 
 	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state)

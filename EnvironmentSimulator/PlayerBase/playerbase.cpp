@@ -27,6 +27,8 @@ using namespace scenarioengine;
 
 #define GHOST_HEADSTART 2.5
 
+static int osi_counter = 0; 
+
 void log_callback(const char *str)
 {
 	printf("%s\n", str);
@@ -52,6 +54,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	viewer_ = 0;
 	osi_receiver_addr = "";
 	osi_file = false; 
+	osi_freq_ = 1; 
 
 #ifdef _SCENARIO_VIEWER
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
@@ -138,7 +141,12 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	// Update OSI info
 	if (osi_file || scenarioGateway->GetSocket())
 	{
-		scenarioEngine->getScenarioGateway()->UpdateOSISensorView(osi_file);
+		osi_counter++; 
+		scenarioEngine->getScenarioGateway()->UpdateOSISensorView();
+		if (osi_counter % osi_freq_ == 0 )
+		{
+			scenarioEngine->getScenarioGateway()->WriteOSIFile();
+		}		
 	}
 
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
@@ -435,6 +443,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
 	opt.AddOption("ghost_headstart", "Launch Ego ghost at specified headstart time", "time");
 	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))", "mode");
+	opt.AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
 		
 	if (argc_ < 3)
 	{
@@ -499,6 +508,16 @@ int ScenarioPlayer::Init()
 	{
 		osi_file = true;
 	}
+	if ((arg_str = opt.GetOptionArg("osi_freq")) != "")
+	{
+		if (osi_file == false)
+		{
+			LOG("Specify osi frequence without --osi_file on is not possible"); 
+			return -1; 
+		}
+		osi_freq_ = atoi(arg_str.c_str());
+		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
+	}
 
 	// Create scenario engine
 	try
@@ -540,7 +559,9 @@ int ScenarioPlayer::Init()
 	// Update OSI info
 	if (osi_file || scenarioGateway->GetSocket())
 	{
-		scenarioEngine->getScenarioGateway()->UpdateOSISensorView(osi_file);
+		scenarioEngine->getScenarioGateway()->UpdateOSISensorView();
+		scenarioEngine->getScenarioGateway()->OpenOSIFile();
+		scenarioEngine->getScenarioGateway()->WriteOSIFile();
 	}
 
 	if (!headless)
