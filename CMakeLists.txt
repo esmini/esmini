@@ -47,3 +47,4 @@ include_directories( ${PUGIXML_INCLUDE_DIR} )
 set(USE_OSG True CACHE BOOL "If projects that depend on OpenSceneGraph should be compiled.")
 
 add_subdirectory(EnvironmentSimulator)
+

@@ -23,6 +23,10 @@ set ( PB_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/protobuf" )
 set ( OSI_VERSION "1?" )
 set ( OSI_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OSI" )
 
+# GoogleTest package
+set ( GTEST_VERSION "1.10.1" )
+set ( GTEST_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/googletest" )
+
 set( CMAKE_VERBOSE_MAKEFILE true )
 
 if (APPLE)
@@ -37,6 +41,8 @@ elseif (UNIX)
   set ( OSG_DIR "${OSG_BASE_DIR}/linux" )
   set ( OSI_PACKAGE_URL https://drive.google.com/uc?export=download&id=1ZIQ4Hq6VUrYO-cs4hUe7iTB6_CtYVPUH )
   set ( OSI_DIR "${OSI_BASE_DIR}/linux" )
+  set ( GTEST_PACKAGE_URL https://drive.google.com/uc?export=download&id=19bFhtkoCD6Nk84EgxFrgVTa9Z4Gt7_3g )
+  set ( GTEST_DIR "${GTEST_BASE_DIR}/googletest/linux" )
 elseif (WIN32)
   if (WINSDK7_1)
     message ("Configuring for Windows SDK v7.1 x64")
@@ -76,7 +82,11 @@ set ( OSI_INCLUDE_DIR "${OSI_DIR}/include" )
 
 set ( OSI_LIBRARIES_PATH "${OSI_DIR}/lib" )
 
-link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} )
+set ( GTEST_INCLUDE_DIR "${GTEST_DIR}/include" )
+
+set ( GTEST_LIBRARIES_PATH "${GTEST_DIR}/lib" )
+
+link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} ${GTEST_LIBRARIES_PATH})
 
 if(APPLE)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
@@ -146,6 +156,13 @@ elseif(UNIX)
 	optimized protobuf debug protobufd
   )
 
+  set (GTEST_LIBRARIES
+  optimized gmock debug gmockd
+  optimized gmock_main debug gmock_maind
+  optimized gtest debug gtestd
+  optimized gtest_main debug gtest_maind
+  )
+
 else() #not UNIX
 
   set ( OSG_LIBRARIES 
@@ -188,6 +205,9 @@ add_subdirectory(PlayerBase)
 add_subdirectory(ScenarioViewer)
 add_subdirectory(EnvironmentSimulator)
 add_subdirectory(EgoSimulator)
+
+# Add unittest folder
+add_subdirectory(Unittest)
     
 set ( ModulesFolder Modules )
 set ( ApplicationsFolder Applications )  
@@ -220,6 +240,12 @@ endif()
 set ( OSI_PACKAGE_FILENAME "osi.7z" )
 if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSI_DIR} )
 	download_and_extract( ${OSI_PACKAGE_URL} ${OSI_BASE_DIR} ${OSI_PACKAGE_FILENAME} )
+endif()
+
+# dowanload googletest
+set ( GTEST_PACKAGE_FILENAME "googletest.7z" )
+if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${GTEST_DIR} )
+	download_and_extract( ${GTEST_PACKAGE_URL} ${GTEST_BASE_DIR} ${GTEST_PACKAGE_FILENAME} )
 endif()
 
 set ( MODELS_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources" )
