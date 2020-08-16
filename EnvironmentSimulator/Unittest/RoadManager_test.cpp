@@ -34,11 +34,6 @@ PolynomialTestFixture::~PolynomialTestFixture()
 {
 }
 
-TEST_F(PolynomialTestFixture, asd)
-{
-    ASSERT_EQ(0,poly.GetA());
-}
-
 TEST_F(PolynomialTestFixture, TestConstructorEmpty)
 {
     ASSERT_EQ(0, poly.GetA());
