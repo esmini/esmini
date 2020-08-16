@@ -19,7 +19,7 @@ class PolynomialTestFixture: public testing::Test
         //static void SetUpTestCase();
         //static void TearDownTestCase();
     protected:
-        Polynomial *poly;
+        Polynomial poly;
 };
 
 PolynomialTestFixture::PolynomialTestFixture()
@@ -34,55 +34,70 @@ PolynomialTestFixture::~PolynomialTestFixture()
 {
 }
 
+TEST_F(PolynomialTestFixture, asd)
+{
+    ASSERT_EQ(0,poly.GetA());
+}
+
 TEST_F(PolynomialTestFixture, TestConstructorEmpty)
 {
-    ASSERT_EQ(0, poly->GetA());
-    ASSERT_EQ(0, poly->GetB());
-    ASSERT_EQ(0, poly->GetC());
-    ASSERT_EQ(0, poly->GetD());
-    ASSERT_EQ(1, poly->GetPscale());
+    ASSERT_EQ(0, poly.GetA());
+    ASSERT_EQ(0, poly.GetB());
+    ASSERT_EQ(0, poly.GetC());
+    ASSERT_EQ(0, poly.GetD());
+    ASSERT_EQ(1, poly.GetPscale());
 }
 
 TEST_F(PolynomialTestFixture, TestConstructorArgument)
 {
-    Polynomial *poly = new Polynomial(1,-2,3,-4);
-    ASSERT_EQ(1, poly->GetA());
-    ASSERT_EQ(-2, poly->GetB());
-    ASSERT_EQ(3, poly->GetC());
-    ASSERT_EQ(-4, poly->GetD());
-    ASSERT_EQ(1, poly->GetPscale());
-    delete poly;
+    Polynomial poly = Polynomial(1,-2,3,-4);
+    ASSERT_EQ(1, poly.GetA());
+    ASSERT_EQ(-2, poly.GetB());
+    ASSERT_EQ(3, poly.GetC());
+    ASSERT_EQ(-4, poly.GetD());
+    ASSERT_EQ(1, poly.GetPscale());
 }
 
 TEST_F(PolynomialTestFixture, TestConstructorArgumentPscale)
 {
-    Polynomial *poly = new Polynomial(1,-2,3,-4,2);
-    ASSERT_EQ(1, poly->GetA());
-    ASSERT_EQ(-2, poly->GetB());
-    ASSERT_EQ(3, poly->GetC());
-    ASSERT_EQ(-4, poly->GetD());
-    ASSERT_EQ(2, poly->GetPscale());
-    delete poly;
+    Polynomial poly = Polynomial(1,-2,3,-4,2);
+    ASSERT_EQ(1, poly.GetA());
+    ASSERT_EQ(-2, poly.GetB());
+    ASSERT_EQ(3, poly.GetC());
+    ASSERT_EQ(-4, poly.GetD());
+    ASSERT_EQ(2, poly.GetPscale());
 }
 
 TEST_F(PolynomialTestFixture, TestSetGet)
 {
-    poly->Set(1,-2,3,-4);
-    ASSERT_EQ(1, poly->GetA());
-    ASSERT_EQ(-2, poly->GetB());
-    ASSERT_EQ(3, poly->GetC());
-    ASSERT_EQ(-4, poly->GetD());
-    ASSERT_EQ(1, poly->GetPscale());
+    poly.Set(1,-2,3,-4);
+    ASSERT_EQ(1, poly.GetA());
+    ASSERT_EQ(-2, poly.GetB());
+    ASSERT_EQ(3, poly.GetC());
+    ASSERT_EQ(-4, poly.GetD());
+    ASSERT_EQ(1, poly.GetPscale());
 }
 
 TEST_F(PolynomialTestFixture, TestSetGetPscale)
 {
-    poly->Set(1,-2,3,-4, 2);
-    ASSERT_EQ(1, poly->GetA());
-    ASSERT_EQ(-2, poly->GetB());
-    ASSERT_EQ(3, poly->GetC());
-    ASSERT_EQ(-4, poly->GetD());
-    ASSERT_EQ(2, poly->GetPscale());
+    poly.Set(1,-2,3,-4, 2);
+    ASSERT_EQ(1, poly.GetA());
+    ASSERT_EQ(-2, poly.GetB());
+    ASSERT_EQ(3, poly.GetC());
+    ASSERT_EQ(-4, poly.GetD());
+    ASSERT_EQ(2, poly.GetPscale());
+}
+
+TEST_F(PolynomialTestFixture, TestSetGetIndividual)
+{
+    poly.SetA(1);
+    poly.SetB(-2);
+    poly.SetC(3);
+    poly.SetD(-4);
+    ASSERT_EQ(1, poly.GetA());
+    ASSERT_EQ(-2, poly.GetB());
+    ASSERT_EQ(3, poly.GetC());
+    ASSERT_EQ(-4, poly.GetD());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
