@@ -21,4 +21,4 @@ macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES)
 endmacro()
 
 package_add_test_with_libraries(tmp_test tmp_test.cpp PlayerBase)
-package_add_test_with_libraries(os_test os_test.cpp PlayerBase)
+package_add_test_with_libraries(OperatingSystem_test OperatingSystem_test.cpp PlayerBase)
