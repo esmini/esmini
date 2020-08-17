@@ -99,6 +99,8 @@ ScenarioPlayer::~ScenarioPlayer()
 
 void ScenarioPlayer::Frame(double timestep_s)
 {
+	static bool messageShown = false;
+
 	ScenarioFrame(timestep_s);
 
 	if (!headless)
@@ -110,12 +112,20 @@ void ScenarioPlayer::Frame(double timestep_s)
 		}
 #endif
 	}
+
+	if (scenarioEngine->getSimulationTime() > 600 && !messageShown)
+	{
+		LOG("Info: Simulation time > 1 hour. Put a stopTrigger for automatic ending");
+		messageShown = true;
+	}
+
 }
 
 void ScenarioPlayer::Frame()
 {
 	static __int64 time_stamp = 0;
 	double dt;
+
 	if ((dt = GetFixedTimestep()) < 0.0)
 	{
 		Frame(SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize));
@@ -602,7 +612,6 @@ int ScenarioPlayer::Init()
 	{
 		opt.PrintArgs(argc_, argv_, "Unrecognized arguments:");
 		opt.PrintUsage();
-		return -1;
 	}
 
 	if (launch_server && (scenarioEngine->entities.object_[0]->GetControl() == Object::Control::EXTERNAL ||
