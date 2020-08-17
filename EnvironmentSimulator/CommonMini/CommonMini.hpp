@@ -262,3 +262,21 @@ private:
 
 	SE_Option *GetOption(std::string opt);
 };
+
+class SE_SystemTimer
+{
+public:
+	__int64 start_time_;
+
+	SE_SystemTimer() : start_time_(0) {}
+	void Start()
+	{
+		start_time_ = SE_getSystemTime();
+	}
+
+	void Reset() { start_time_ = 0; }
+
+	bool Started() { return start_time_ > 0 ? true : false; }
+	double DurationS() { return 1E-3 * (SE_getSystemTime() - start_time_); }
+
+};

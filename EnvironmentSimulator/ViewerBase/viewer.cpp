@@ -669,11 +669,15 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	shadow_node_ = osgDB::readNodeFile(shadowFilename);
 	if (!shadow_node_)
 	{
-		LOG("Failed to load shadow model %s\n", shadowFilename.c_str());
+		// assume path is relative scenario directory
+		LOG("Failed to locate %s. Looking relative scenario directory %s", shadowFilename.c_str(), getScenarioDir().c_str());
+		shadowFilename = CombineDirectoryPathAndFilepath(DirNameOf(scenarioFilename), shadowFilename);
+		shadow_node_ = osgDB::readNodeFile(shadowFilename);
+		if (!shadow_node_)
+		{
+			LOG("Failed to load shadow model %s\n", shadowFilename.c_str());
+		}
 	}
-
-	// Load shadow geometry - assume it resides in the same resource folder as the environment model
-	std::string dotFilename = DirNameOf(modelFilename).append("/" + std::string(ARROW_MODEL_FILEPATH));
 
 	// Create 3D geometry for trail dots
 	dot_node_ = CreateDotGeometry();
@@ -707,21 +711,37 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	rootnode_->addChild(roadSensors_);
 	trails_ = new osg::Group;
 	rootnode_->addChild(trails_);
+	odrLines_ = new osg::Group;
+	rootnode_->addChild(odrLines_);
+	osiLines_ = new osg::Group;
+	rootnode_->addChild(osiLines_);
 
 	ShowTrail(true);  // show trails per default
+	ShowRoadFeatures(true);
+	ShowOSIFeatures(false); // hide OSI features by default
 	ShowObjectSensors(false); // hide sensor frustums by default
 
 
 	// add environment
 	if (AddEnvironment(modelFilename) == -1)
 	{
-		LOG("Failed to load environment model: %s", modelFilename);
+		// Look relative scenario directory
+		LOG("Failed to locate %s. Looking relative scenario directory %s", modelFilename, getScenarioDir().c_str());
+		if (AddEnvironment(CombineDirectoryPathAndFilepath(getScenarioDir(),  modelFilename).c_str()) == -1)
+		{
+			LOG("Failed to read environment model %s! If file is missing, check SharePoint/SharedDocuments/models", modelFilename);
+		}
 	}
 	rootnode_->addChild(envTx_);
 
-	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager, rootnode_))
+	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager))
 	{
 		LOG("Viewer::Viewer Failed to create road lines!\n");
+	}
+
+	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadMarkLines(odrManager))
+	{
+		LOG("Viewer::Viewer Failed to create road mark lines!\n");
 	}
 
 #if 0
@@ -864,42 +884,49 @@ void Viewer::SetCameraMode(int mode)
 CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor,std::string name)
 {
 	// Load 3D model
-	std::string path = CombineDirectoryPathAndFilepath(getScenarioDir(), modelFilepath);
+	std::string path = modelFilepath;
 
 	osg::ref_ptr<osg::LOD> lod = LoadCarModel(path.c_str());
 
 	if (lod == 0)
 	{
-		// Failed to load model for some reason - maybe no filename. Create a dummy stand-in geometry
-		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-		geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
-		lod = new osg::LOD;
-		lod->setRange(0, 0, LOD_DIST);
-		osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
-		lod->addChild(tx);
+		// Assume path is relative scenario directory
+		LOG("Failed to locate %s. Looking relative scenario directory %s", path.c_str(), getScenarioDir().c_str());
+		lod = LoadCarModel(CombineDirectoryPathAndFilepath(getScenarioDir(), path).c_str());
 
-		// Set dimensions of the vehicle "box"
-		tx->setScale(osg::Vec3(4.0, 2.0, 1.2));
-		tx->setPosition(osg::Vec3(3.0, 0.0, 0.6));
-		tx->addChild(geode);
+		if (lod == 0)
+		{
+			// Failed to load model for some reason - maybe no filename. Create a dummy stand-in geometry
+			LOG("No filename specified for car model! - creating a dummy model");
 
-		osg::Material *material = new osg::Material();
+			osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+			geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
+			lod = new osg::LOD;
+			lod->setRange(0, 0, LOD_DIST);
+			osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
+			lod->addChild(tx);
 
-		// Set color of vehicle based on its index
-		double* color;
-		double b = 1.5;  // brighness
-		int index = cars_.size() % 4; 
+			// Set dimensions of the vehicle "box"
+			tx->setScale(osg::Vec3(4.0, 2.0, 1.2));
+			tx->setPosition(osg::Vec3(3.0, 0.0, 0.6));
+			tx->addChild(geode);
 
-		if (index == 0) color = color_white;
-		else if (index == 1) color = color_red;
-		else if (index == 2) color = color_blue;
-		else color = color_yellow;
+			osg::Material* material = new osg::Material();
 
-		material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
-		material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
-		tx->getOrCreateStateSet()->setAttribute(material);
+			// Set color of vehicle based on its index
+			double* color;
+			double b = 1.5;  // brighness
+			int index = cars_.size() % 4;
 
-		LOG("No filename specified for car model! - creating a dummy model");
+			if (index == 0) color = color_white;
+			else if (index == 1) color = color_red;
+			else if (index == 2) color = color_blue;
+			else color = color_yellow;
+
+			material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+			material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+			tx->getOrCreateStateSet()->setAttribute(material);
+		}
 	}
 
 	if (transparent)
@@ -955,7 +982,6 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 	node = osgDB::readNodeFile(filename);
 	if (!node)
 	{
-		printf("Failed to load car model %s\n", filename);
 		return 0;
 	}
 
@@ -987,14 +1013,144 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 	return lod;
 }
 
-bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
+bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 {
-	double step_length_target = 1;
 	double z_offset = 0.10;
 	roadmanager::Position* pos = new roadmanager::Position();
 	osg::Vec3 point(0, 0, 0);
-	odrLines_ = new osg::Group;
 
+	for (int r = 0; r < od->GetNumOfRoads(); r++)
+	{
+		roadmanager::Road *road = od->GetRoadByIdx(r);
+		for (int i = 0; i < road->GetNumberOfLaneSections(); i++)
+		{
+			roadmanager::LaneSection *lane_section = road->GetLaneSectionByIdx(i);
+			for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
+			{
+				roadmanager::Lane *lane = lane_section->GetLaneByIdx(j);
+				for (int k = 0; k < lane->GetNumberOfRoadMarks(); k++)
+				{
+					roadmanager::LaneRoadMark *lane_roadmark = lane->GetLaneRoadMarkByIdx(k);
+					for (int m = 0; m < lane_roadmark->GetNumberOfRoadMarkTypes(); m++)
+					{
+						roadmanager::LaneRoadMarkType * lane_roadmarktype = lane_roadmark->GetLaneRoadMarkTypeByIdx(m);
+						for (int n = 0; n < lane_roadmarktype->GetNumberOfRoadMarkTypeLines(); n++)
+						{
+							roadmanager::LaneRoadMarkTypeLine * lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(n);
+							roadmanager::OSIPoints curr_osi_rm;
+							curr_osi_rm = lane_roadmarktypeline->GetOSIPoints();
+
+							if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN)
+							{
+								for (int q = 0; q < curr_osi_rm.GetX().size(); q+=2)
+								{
+									// osg references for road mark osi points
+									osg::ref_ptr<osg::Geometry> osi_rm_geom = new osg::Geometry;
+									osg::ref_ptr<osg::Vec3Array> osi_rm_points = new osg::Vec3Array;
+									osg::ref_ptr<osg::Vec4Array> osi_rm_color = new osg::Vec4Array;
+									osg::ref_ptr<osg::Point> osi_rm_point = new osg::Point();
+									
+									// osg references for drawing lines between each road mark osi points
+									osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+									osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
+									osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+									osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
+
+									// start point of each road mark
+									point.set(curr_osi_rm.GetX()[q], curr_osi_rm.GetY()[q], curr_osi_rm.GetZ()[q] + z_offset);
+									osi_rm_points->push_back(point);
+
+									// end point of each road mark
+									point.set(curr_osi_rm.GetX()[q+1], curr_osi_rm.GetY()[q+1], curr_osi_rm.GetZ()[q+1] + z_offset);
+									osi_rm_points->push_back(point);
+
+									osi_rm_color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
+
+									// Put points at the start and end of the roadmark
+									osi_rm_point->setSize(6.0f);
+									osi_rm_geom->setVertexArray(osi_rm_points.get());
+									osi_rm_geom->setColorArray(osi_rm_color.get());
+									osi_rm_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+									osi_rm_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_rm_points->size()));
+									osi_rm_geom->getOrCreateStateSet()->setAttributeAndModes(osi_rm_point, osg::StateAttribute::ON);
+									osi_rm_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+									osiLines_->addChild(osi_rm_geom);
+
+									// Draw lines from the start of the roadmark to the end of the roadmark
+									lineWidth->setWidth(1.5f);
+									geom->setVertexArray(osi_rm_points.get());
+									geom->setColorArray(osi_rm_color.get());
+									geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+									geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_rm_points->size()));
+									geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+									geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+									osiLines_->addChild(geom);
+								}
+							}
+							else if(lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID)
+							{
+								// osg references for road mark osi points
+								osg::ref_ptr<osg::Geometry> osi_rm_geom = new osg::Geometry;
+								osg::ref_ptr<osg::Vec3Array> osi_rm_points = new osg::Vec3Array;
+								osg::ref_ptr<osg::Vec4Array> osi_rm_color = new osg::Vec4Array;
+								osg::ref_ptr<osg::Point> osi_rm_point = new osg::Point();
+									
+								// osg references for drawing lines between each road mark osi points
+								osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+								osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
+								osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+								osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
+
+								// Creating points for the given roadmark
+								for (int m = 0; m < curr_osi_rm.GetX().size(); m++)
+								{
+									point.set(curr_osi_rm.GetX()[m], curr_osi_rm.GetY()[m], curr_osi_rm.GetZ()[m] + z_offset);
+									osi_rm_points->push_back(point);
+									osi_rm_color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
+								}
+
+								// Put points on selected locations
+								osi_rm_point->setSize(6.0f);
+								osi_rm_geom->setVertexArray(osi_rm_points.get());
+								osi_rm_geom->setColorArray(osi_rm_color.get());
+								osi_rm_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+								osi_rm_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_rm_points->size()));
+								osi_rm_geom->getOrCreateStateSet()->setAttributeAndModes(osi_rm_point, osg::StateAttribute::ON);
+								osi_rm_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+									
+								osiLines_->addChild(osi_rm_geom);
+
+								// Draw lines between each selected points
+								lineWidth->setWidth(1.5f);
+								color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
+
+								geom->setVertexArray(osi_rm_points.get());
+								geom->setColorArray(color.get());
+								geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+								geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_rm_points->size()));
+								geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+								geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+								osiLines_->addChild(geom);
+
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
+{
+	double z_offset = 0.10;
+	roadmanager::Position* pos = new roadmanager::Position();
+	osg::Vec3 point(0, 0, 0);
 
 	for (int r = 0; r < od->GetNumOfRoads(); r++)
 	{
@@ -1045,34 +1201,44 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 		for (int i = 0; i < road->GetNumberOfLaneSections(); i++)
 		{
 			roadmanager::LaneSection *lane_section = road->GetLaneSectionByIdx(i);
-			double s_start = lane_section->GetS();
-			double s_end = s_start + lane_section->GetLength();
-			int steps = (int)((s_end - s_start) / step_length_target);
-			double step_length = (s_end - s_start) / steps;
-
 			for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
 			{
 				roadmanager::Lane *lane = lane_section->GetLaneByIdx(j);
-				osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
-				osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
-				osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-				osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
+
+				// osg references for osi points on the lane center
 				osg::ref_ptr<osg::Geometry> osi_geom = new osg::Geometry;
 				osg::ref_ptr<osg::Vec3Array> osi_points = new osg::Vec3Array;
 				osg::ref_ptr<osg::Vec4Array> osi_color = new osg::Vec4Array;
 				osg::ref_ptr<osg::Point> osi_point = new osg::Point();
+				
+				// osg references for drawing lines on the lane center using osi points
+				osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+				osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
+				osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+				osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 
+				roadmanager::OSIPoints curr_osi;
 				if (!lane->IsDriving() && lane->GetId() != 0)
 				{
 					continue;
 				}
 
-				for (int k = 0; k < steps + 1; k++)
+				curr_osi = lane->GetOSIPoints();
+				for (int m = 0; m < curr_osi.GetX().size(); m++)
 				{
-					pos->SetLanePos(road->GetId(), lane->GetId(), MIN(s_end, s_start + k * step_length), 0, i);
-					point.set(pos->GetX(), pos->GetY(), pos->GetZ() + z_offset);
-					points->push_back(point);
+					point.set(curr_osi.GetX()[m], curr_osi.GetY()[m], curr_osi.GetZ()[m] + z_offset);
+					osi_points->push_back(point);
+					osi_color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
 				}
+				osi_point->setSize(6.0f);
+				osi_geom->setVertexArray(osi_points.get());
+				osi_geom->setColorArray(osi_color.get());
+				osi_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+				osi_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_points->size()));
+				osi_geom->getOrCreateStateSet()->setAttributeAndModes(osi_point, osg::StateAttribute::ON);
+				osi_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+					
+				osiLines_->addChild(osi_geom);
 
 				if (lane->GetId() == 0)
 				{
@@ -1085,42 +1251,18 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od, osg::Group* parent)
 					color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
 				}
 
-				geom->setVertexArray(points.get());
+				geom->setVertexArray(osi_points.get());
 				geom->setColorArray(color.get());
 				geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-				geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, points->size()));
+				geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_points->size()));
 				geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
 				geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 				odrLines_->addChild(geom);
-
-				if (lane->GetId() == 0)
-				{
-					continue;
-				}
-
-				roadmanager::OSIPoints curr_osi;
-				curr_osi = lane->GetOSIPoints();
-				for (int m = 0; m < curr_osi.GetX().size(); m++)
-				{
-					point.set(curr_osi.GetX()[m], curr_osi.GetY()[m], curr_osi.GetZ()[m] + z_offset);
-					osi_points->push_back(point);
-					osi_color->push_back(osg::Vec4(color_green[0], color_green[1], color_green[2], 1.0));
-				}
-				osi_point->setSize(6.0f);
-				osi_geom->setVertexArray(osi_points.get());
-				osi_geom->setColorArray(osi_color.get());
-				osi_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-				osi_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_points->size()));
-				osi_geom->getOrCreateStateSet()->setAttributeAndModes(osi_point, osg::StateAttribute::ON);
-				osi_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-				odrLines_->addChild(osi_geom);
 			}
 		}
 	}
 
-	parent->addChild(odrLines_);
 	return true;
 }
 
@@ -1253,12 +1395,11 @@ int Viewer::AddEnvironment(const char* filename)
 	}
 
 	// load and apply new model
+	// First, assume absolute path or relative current directory
 	if (strcmp(FileNameOf(filename).c_str(), ""))
 	{
-		environment_ = osgDB::readNodeFile(filename);
-		if (environment_ == 0)
+		if ((environment_ = osgDB::readNodeFile(filename)) == 0)
 		{
-			LOG("Failed to read environment model %s! If file is missing, check SharePoint/SharedDocuments/models", filename);
 			return -1;
 		}
 
@@ -1297,6 +1438,19 @@ void Viewer::ShowTrail(bool show)
 {
 	showTrail = show;
 	trails_->setNodeMask(showTrail ? 0xffffffff : 0x0);
+}
+
+void Viewer::ShowRoadFeatures(bool show)
+{
+	showRoadFeatures = show;
+	odrLines_->setNodeMask(showRoadFeatures ? 0xffffffff : 0x0);
+	roadSensors_->setNodeMask(showRoadFeatures ? 0xffffffff : 0x0);
+}
+
+void Viewer::ShowOSIFeatures(bool show)
+{
+	showOSIFeatures = show;
+	osiLines_->setNodeMask(showOSIFeatures ? 0xffffffff : 0x0);
 }
 
 void Viewer::ShowObjectSensors(bool show)
@@ -1360,18 +1514,17 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		break;
 	case(osgGA::GUIEventAdapter::KEY_O):
 	{
-		static bool visible = true;
-
 		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			visible = !visible;
-
-			if (viewer_->odrLines_)
-			{
-				viewer_->odrLines_->setNodeMask(visible ? 0xffffffff : 0x0);
-			}
-
-			viewer_->roadSensors_->setNodeMask(visible ? 0xffffffff : 0x0);
+			viewer_->ShowRoadFeatures(!viewer_->showRoadFeatures);
+		}
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_U):
+	{
+		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->ShowOSIFeatures(!viewer_->showOSIFeatures);
 		}
 	}
 	break;

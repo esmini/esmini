@@ -1,11 +1,11 @@
-﻿/* 
- * esmini - Environment Simulator Minimalistic 
+﻿/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -23,7 +23,7 @@
 
 typedef struct
 {
-	int id;					  // Automatically generated unique object id 
+	int id;					  // Automatically generated unique object id
 	int model_id;             // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
 	int control;		      // 0= undefined, 1=internal, 2=external, 3=hybrid_external, 4=hybrid_ghost
 	float timestamp;
@@ -39,7 +39,13 @@ typedef struct
 	float laneOffset;
 	float s;
 	float speed;
-} SE_ScenarioObjectState; 
+	float centerOffsetX;
+	float centerOffsetY;
+	float centerOffsetZ;
+	float width;
+	float length;
+	float height;
+} SE_ScenarioObjectState;
 
 
 typedef struct
@@ -71,7 +77,7 @@ extern "C"
 	@param use_viewer 0=no viewer, 1=use viewer
 	@param threads 0=single thread, 1=viewer in a separate thread, parallel to scenario engine
 	@param record Create recording for later playback 0=no recording 1=recording
-	@param headstart_time For hybrid control mode launch ghost vehicle with this headstart time 
+	@param headstart_time For hybrid control mode launch ghost vehicle with this headstart time
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_Init(const char *oscFilename, int control, int use_viewer, int threads, int record, float headstart_time);
@@ -88,6 +94,11 @@ extern "C"
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_Step();
+
+	/**
+	Get the bool value of the end of the scenario
+	*/
+	SE_DLL_API int SE_GetQuitFlag();
 
 	/**
 	Stop simulation gracefully. Two purposes: 1. Release memory and 2. Prepare for next simulation, e.g. reset object lists.
@@ -111,10 +122,28 @@ extern "C"
 
 	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState *state);
 	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state);
+	/**
+	The SE_GetOSISensorView function returns a char array containing the osi SensorView serialized to a string
+	*/
+	SE_DLL_API int SE_UpdateOSISensorView();
 
+	/**
+	The SE_GetOSISensorView function returns a char array containing the osi SensorView serialized to a string
+	*/
 	SE_DLL_API const char* SE_GetOSISensorView(int* size);
 
-	SE_DLL_API const char* SE_GetOSIRoadLane(int* size, int lane_idx);
+	/**
+	The SE_GetOSIRoadLane function returns a char array containing the osi Lane information/message of the lane where the object with object_id is, serialized to a string
+	*/
+	SE_DLL_API const char* SE_GetOSIRoadLane(int* size, int object_id);
+	/**
+	The SE_GetOSIRoadLane function returns a char array containing the osi Lane Boundary information/message with the specified GLOBAL id
+	*/
+	SE_DLL_API const char* SE_GetOSILaneBoundary(int* size, int global_id);
+	/**
+	The SE_GetOSILaneBoundaryIds function the global ids for left, far elft, right and far right lane boundaries
+	*/
+	SE_DLL_API void SE_GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id);
 
 	/**
 	Create an ideal object sensor and attach to specified vehicle
@@ -159,7 +188,7 @@ extern "C"
 	*/
 	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost);
 
-	
+
 #ifdef __cplusplus
 }
 #endif

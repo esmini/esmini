@@ -112,8 +112,8 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				}
 
 
-				if ((SIGN(lane->GetId()) < 0) && (road->GetLength() - s < 100) && (road->GetLink(roadmanager::LinkType::SUCCESSOR) == 0) ||
-					(SIGN(lane->GetId()) > 0) && (s < 100) && (road->GetLink(roadmanager::LinkType::PREDECESSOR) == 0))
+				if ((SIGN(lane->GetId()) < 0) && (road->GetLength() - s < 50) && (road->GetLink(roadmanager::LinkType::SUCCESSOR) == 0) ||
+					(SIGN(lane->GetId()) > 0) && (s < 50) && (road->GetLink(roadmanager::LinkType::PREDECESSOR) == 0))
 				{
 					// Skip vehicles too close to road end - and where connecting road is missing
 					continue;
@@ -232,6 +232,10 @@ int main(int argc, char** argv)
 			return -1;
 		}
 		roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
+		if (!odrManager->SetRoadOSI())
+		{
+			LOG("OpenDrive::SetRoadOSI Failed to create OSI points for OpenDrive road!\n");
+		}
 
 		viewer::Viewer *viewer = new viewer::Viewer(
 			odrManager,

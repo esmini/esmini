@@ -132,9 +132,9 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 
 	if (timer_.Started())
 	{
-		if (timer_.DurationS() > delay_)
+		if (timer_.DurationS(sim_time) > delay_)
 		{
-			LOG("Timer expired at %.2f seconds", timer_.DurationS());
+			LOG("Timer expired at %.2f seconds", timer_.DurationS(sim_time));
 			timer_.Reset();
 			return true;
 		}
@@ -149,7 +149,7 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 
 	if (trig && delay_ > 0)
 	{
-		timer_.Start();
+		timer_.Start(sim_time);
 		LOG("Timer %.2fs started", delay_);
 		return false;
 	}
@@ -333,7 +333,7 @@ bool TrigBySimulationTime::CheckCondition(StoryBoard *storyBoard, double sim_tim
 
 	if (log)
 	{
-		LOG("%s == %s, sim_time: %.2f %s %.2f edge: %s", name_.c_str(), result ? "true" : "false",
+		LOG("%s == %s, sim_time: %.4f %s %.2f edge: %s", name_.c_str(), result ? "true" : "false",
 			sim_time, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
 	}
 
@@ -367,13 +367,13 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time, 
 		// Headway time not defined for cases:
 		//  - when target object is behind 
 		//  - when object is still or going reverse 
-		if (rel_dist < 0 || object_->speed_ < SMALL_NUMBER)
+		if (rel_dist < 0 || triggering_entities_.entity_[i].object_->speed_ < SMALL_NUMBER)
 		{
 			hwt = -1;
 		}
 		else
 		{
-			hwt = fabs(rel_dist / object_->speed_);
+			hwt = fabs(rel_dist / triggering_entities_.entity_[i].object_->speed_);
 
 			result = EvaluateRule(hwt, value_, rule_);
 

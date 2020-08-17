@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -54,14 +54,16 @@ ScenarioEngine::~ScenarioEngine()
 	LOG("Closing");
 }
 
-void ScenarioEngine::step(double deltaSimTime, bool initial)	
+
+void ScenarioEngine::step(double deltaSimTime, bool initial)
+
 {
 	simulationTime += deltaSimTime;
 
 	if (entities.object_.size() == 0)
 	{
 		return;
-	}	
+	}
 
 	// Fetch external states from gateway, except the initial run where scenario engine sets all positions
 	if (!initial)
@@ -128,7 +130,8 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		return;
 	}
 
-	bool all_done = true;
+	// Then evaluate all stories
+	bool all_done = true;  // This flag will indicate whether all acts are done or not
 	for (size_t i = 0; i < storyBoard.story_.size(); i++)
 	{
 		Story *story = storyBoard.story_[i];
@@ -136,26 +139,6 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		for (size_t j = 0; j < story->act_.size(); j++)
 		{
 			Act *act = story->act_[j];
-
-			// Update elements' state - moving from transitions to stable states
-			for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
-			{
-				for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
-				{
-					OSCManeuver *maneuver = act->maneuverGroup_[k]->maneuver_[l];
-
-					for (size_t m = 0; m < maneuver->event_.size(); m++)
-					{
-						for (size_t n = 0; n < maneuver->event_[m]->action_.size(); n++)
-						{
-							maneuver->event_[m]->action_[n]->UpdateState();
-						}
-						maneuver->event_[m]->UpdateState();
-					}
-				}
-			}
-
-			act->UpdateState();
 
 			if (act->IsTriggable())
 			{
@@ -179,8 +162,28 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 				}
 			}
 
-			// Check whether all acts are done
+			act->UpdateState();
+
+			// Check whether this act is done - and update flag for all acts
 			all_done = all_done && act->state_ == Act::State::COMPLETE;
+
+			// Update state of sub elements - moving from transitions to stable states
+			for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
+			{
+				for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
+				{
+					OSCManeuver *maneuver = act->maneuverGroup_[k]->maneuver_[l];
+
+					for (size_t m = 0; m < maneuver->event_.size(); m++)
+					{
+						for (size_t n = 0; n < maneuver->event_[m]->action_.size(); n++)
+						{
+							maneuver->event_[m]->action_[n]->UpdateState();
+						}
+						maneuver->event_[m]->UpdateState();
+					}
+				}
+			}
 
 			// Maneuvers
 			if (act->IsActive())
@@ -265,7 +268,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 									if (event->action_[n]->IsActive())
 									{
 										event->action_[n]->Step(deltaSimTime, getSimulationTime());
-										
+
 										active = active || (event->action_[n]->IsActive());
 									}
 								}
@@ -290,23 +293,20 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		if (initial)
 		{
 			// Report all scenario objects the initial run, to establish initial positions and speed = 0
-			scenarioGateway.reportObject(obj->id_, obj->name_, obj->model_id_, 
-				obj->control_, simulationTime, 0.0, 0.0, 0.0, &obj->pos_);
+			scenarioGateway.reportObject(obj->id_, obj->name_, obj->model_id_,
+				obj->control_, obj->boundingbox_, simulationTime, 0.0, 0.0, 0.0, &obj->pos_);
 		}
 		else if (obj->control_ == Object::Control::INTERNAL ||
 			obj->control_ == Object::Control::HYBRID_GHOST)
 		{
 			// Then report all except externally controlled objects
-			scenarioGateway.reportObject(obj->id_, obj->name_, obj->model_id_, 
-				obj->control_, simulationTime, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+			scenarioGateway.reportObject(obj->id_, obj->name_, obj->model_id_,
+				obj->control_, obj->boundingbox_, simulationTime, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 		}
 	}
 
 	// update positions to sumo
 	sumocontroller->updatePositions();
-	// And send OSI info
-
-	scenarioGateway.UpdateOSISensorView();
 
 	stepObjects(deltaSimTime);
 	
@@ -393,10 +393,27 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 
 	// Init road manager
 	scenarioReader->parseRoadNetwork(roadNetwork);
-	roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str());
+
+	// First assume absolute path or relative to current directory
+	if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
+	{
+		// Then try relative path to scenario directory
+		if (!roadmanager::Position::LoadOpenDrive(CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename()).c_str()))
+		{
+			// Finally look for the file in current directory
+			std::string path = std::string(getOdrFilename().c_str());
+			std::string base_filename = path.substr(path.find_last_of("/\\") + 1);
+			LOG("Failed to load %s - looking for file %s in current folder", getOdrFilename().c_str(), base_filename.c_str());
+			if (!roadmanager::Position::LoadOpenDrive(base_filename.c_str()))
+			{
+				throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(getOdrFilename().c_str()));
+			}
+		}
+	}
+
 	odrManager = roadmanager::Position::GetOpenDrive();
 	if (!odrManager->SetRoadOSI())
-	{ 
+	{
 		LOG("OpenDrive::SetRoadOSI Failed to create OSI points for OpenDrive road!\n");
 	}
 
@@ -425,8 +442,9 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 			init.private_action_.push_back(paction);
 		}
 	}
-	LOG("Checking if sumo is supposed to be used");
+
 	// create sumo controller
+	LOG("Checking if sumo is supposed to be used");
 	if (entities.sumo_config_path.empty())
 	{
 		sumocontroller = new SumoController();
@@ -438,6 +456,7 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 
 		LOG("Running with sumo.");
 	}
+
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
 		if (entities.object_[i]->control_ == Object::Control::HYBRID_GHOST)
@@ -482,12 +501,12 @@ void ScenarioEngine::stepObjects(double dt)
 			{
 				// Do nothing - updates handled by followTrajectoryAction
 			}
-			else 
+			else
 			{
-				// Adjustment movement to heading and road direction 
+				// Adjustment movement to heading and road direction
 				if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)
 				{
-					// If pointing in other direction 
+					// If pointing in other direction
 					steplen *= -1;
 				}
 				obj->pos_.MoveAlongS(steplen);
@@ -497,4 +516,3 @@ void ScenarioEngine::stepObjects(double dt)
 		obj->trail_.AddState((float)simulationTime, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
 	}
 }
-

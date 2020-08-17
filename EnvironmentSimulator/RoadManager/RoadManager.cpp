@@ -57,6 +57,9 @@
 #include "CommonMini.hpp"
 
 static std::mt19937 mt_rand;
+static unsigned int global_lane_counter;
+ 
+
 
 using namespace std;
 using namespace roadmanager;
@@ -70,6 +73,8 @@ using namespace roadmanager;
 #define OSI_POINT_CALC_STEPSIZE 1 // [m]
 #define OSI_TANGENT_LINE_TOLERANCE 0.01 // [m]
 
+int g_Lane_id;
+int g_Laneb_id;
 
 
 double Polynomial::Evaluate(double s)
@@ -270,6 +275,24 @@ void LaneLink::Print()
 	LOG("LaneLink type: %d id: %d\n", type_, id_);
 }
 
+void Lane::SetGlobalId()
+{ 
+	global_id_ = g_Lane_id; 
+	g_Lane_id++; 
+}
+
+void LaneBoundaryOSI::SetGlobalId()
+{  
+	global_id_ = g_Laneb_id; 
+	g_Laneb_id++; 
+}
+
+void LaneRoadMarkTypeLine::SetGlobalId()
+{  
+	global_id_ = g_Laneb_id; 
+	g_Laneb_id++;
+}
+
 LaneWidth *Lane::GetWidthByS(double s)
 {
 	if (lane_width_.size() == 0)
@@ -304,6 +327,74 @@ void LaneWidth::Print()
 	LOG("LaneWidth: sOffset: %.2f, a: %.2f, b: %.2f, c: %.2f, d: %.2f\n",
 		s_offset_, poly3_.GetA(), poly3_.GetB(), poly3_.GetC(), poly3_.GetD());
 }
+
+LaneRoadMark* Lane::GetLaneRoadMarkByIdx(int idx)
+{
+	if (idx < (int)lane_roadMark_.size())
+	{
+		return lane_roadMark_[idx];
+	}
+
+	return 0;
+}
+
+std::vector<int> Lane::GetLineGlobalIds()
+{
+	std::vector<int> line_ids; 
+	for (int i = 0; i<GetNumberOfRoadMarks(); i++)
+	{
+		LaneRoadMark* laneroadmark =  GetLaneRoadMarkByIdx(i);
+		for (int j = 0; j<laneroadmark->GetNumberOfRoadMarkTypes(); j++)
+		{
+			LaneRoadMarkType* laneroadmarktype = laneroadmark->GetLaneRoadMarkTypeByIdx(j); 
+
+			for (int h = 0; h<laneroadmarktype->GetNumberOfRoadMarkTypeLines(); h++)
+			{
+				LaneRoadMarkTypeLine* laneroadmarktypeline =  laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(h);
+				line_ids.push_back(laneroadmarktypeline->GetGlobalId()); 
+			}
+		}
+	}
+
+	return line_ids; 
+}
+
+int Lane::GetLaneBoundaryGlobalId()
+{
+	return lane_boundary_->GetGlobalId(); 
+}
+
+LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx)
+{
+	if (idx < (int)lane_roadMarkType_.size())
+	{
+		return lane_roadMarkType_[idx];
+	}
+
+	return 0;
+}
+
+LaneRoadMarkTypeLine* LaneRoadMarkType::GetLaneRoadMarkTypeLineByIdx(int idx)
+{
+	if (idx < (int)lane_roadMarkTypeLine_.size())
+	{
+		return lane_roadMarkTypeLine_[idx];
+	}
+
+	return 0;
+}
+
+void LaneRoadMarkType::AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine)
+{ 
+	lane_roadMarkTypeLine->SetGlobalId();
+	lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine);  
+}
+
+void Lane::SetLaneBoundary(LaneBoundaryOSI *lane_boundary) 
+{	
+	lane_boundary->SetGlobalId();
+	lane_boundary_ = lane_boundary; 
+} 
 
 void LaneOffset::Print()
 {
@@ -585,6 +676,19 @@ int LaneSection::GetLaneIdxById(int id)
 	return -1;
 }
 
+int LaneSection::GetLaneGlobalIdByIdx(int idx)
+{
+	if (idx > (int)lane_.size() - 1)
+	{
+		LOG("LaneSection::GetLaneIdByIdx Error: index %d, only %d lanes\n", idx, (int)lane_.size());
+		return 0;
+	}
+	else
+	{
+		return (lane_[idx]->GetGlobalId());
+	}
+}
+
 int LaneSection::GetNumberOfDrivingLanes()
 {
 	int counter = 0;
@@ -754,6 +858,8 @@ double LaneSection::GetCenterOffsetHeading(double s, int lane_id)
 
 void LaneSection::AddLane(Lane *lane)
 {
+	lane->SetGlobalId();
+	global_lane_counter++;
 	lane_.push_back(lane);
 }
 
@@ -793,6 +899,126 @@ double LaneSection::GetOffsetBetweenLanes(int lane_id1, int lane_id2, double s)
 	double laneCenter1 = GetCenterOffset(s, lane_id1) * SIGN(lane_id1);
 	double laneCenter2 = GetCenterOffset(s, lane_id2) * SIGN(lane_id2);
 	return (laneCenter2 - laneCenter1);
+}
+
+// Offset from closest left road mark to current position
+RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s)
+{
+	Position* pos = new roadmanager::Position();
+	Road *road = pos->GetRoadById(track_id);
+	LaneSection *lsec;
+	Lane *lane;
+	LaneRoadMark *lane_roadMark;
+	LaneRoadMarkType *lane_roadMarkType;
+	LaneRoadMarkTypeLine *lane_roadMarkTypeLine;
+	RoadMarkInfo rm_info;
+	int lsec_idx, number_of_lsec, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
+	double s_roadmark, s_roadmarkline, s_end_roadmark, s_end_roadmarkline, lsec_end;
+	if (road == 0)
+	{
+		LOG("Position::Set Error: track %d not available\n", track_id);
+	}
+	else
+	{
+		lsec_idx = road->GetLaneSectionIdxByS(s);
+	}
+
+	lsec = road->GetLaneSectionByIdx(lsec_idx);
+	if (lsec == 0)
+	{
+		LOG("Position::Set Error: lane section %d not available\n", lsec_idx);
+	}
+	else
+	{
+		number_of_lsec = road->GetNumberOfLaneSections();
+		if (lsec_idx == number_of_lsec-1)
+		{
+			lsec_end = road->GetLength();	
+		}
+		else
+		{
+			lsec_end = road->GetLaneSectionByIdx(lsec_idx+1)->GetS();
+		}
+	}
+
+	lane = lsec->GetLaneById(lane_id);
+	if (lane == 0)
+	{
+		LOG("Position::Set Error: lane section %d not available\n", lane_id);
+	}
+
+	number_of_roadmarks = lane->GetNumberOfRoadMarks();
+
+	if (number_of_roadmarks == 0)
+	{
+		rm_info.roadmark_idx_ = -1;
+		rm_info.roadmarkline_idx_ = -1;
+	}
+	else
+	{
+		for (int m=0; m<number_of_roadmarks; m++)
+		{
+			lane_roadMark = lane->GetLaneRoadMarkByIdx(m);
+			s_roadmark = lsec->GetS() + lane_roadMark->GetSOffset();
+			if (m == number_of_roadmarks-1)
+			{
+				s_end_roadmark = lsec_end;
+			}
+			else
+			{
+				s_end_roadmark = lane->GetLaneRoadMarkByIdx(m+1)->GetSOffset();
+			}
+
+			// Check the existence of "type" keyword under roadmark
+			number_of_roadmarktypes = lane_roadMark->GetNumberOfRoadMarkTypes();
+			if (number_of_roadmarktypes != 0)
+			{
+				lane_roadMarkType = lane_roadMark->GetLaneRoadMarkTypeByIdx(0);
+				number_of_roadmarklines = lane_roadMarkType->GetNumberOfRoadMarkTypeLines();
+
+				// Looping through each roadmarkline under roadmark
+				for (int n=0; n<number_of_roadmarklines; n++)
+				{
+					lane_roadMarkTypeLine = lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n);
+					s_roadmarkline = s_roadmark + lane_roadMarkTypeLine->GetSOffset();
+					if (lane_roadMarkTypeLine != 0)
+					{
+						if (n == number_of_roadmarklines-1)
+						{
+							s_end_roadmarkline = s_end_roadmark;
+						}
+						else
+						{
+							s_end_roadmarkline = lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n+1)->GetSOffset();
+						}
+					}
+
+					if (s >= s_roadmarkline && s < s_end_roadmarkline)
+					{
+						rm_info.roadmark_idx_ = m;
+						rm_info.roadmarkline_idx_ = n;
+					}
+					else
+					{
+						continue;
+					}
+				}
+			}
+			else
+			{
+				rm_info.roadmarkline_idx_ = 0;
+				if (s >= s_roadmark && s < s_end_roadmark)
+				{
+					rm_info.roadmark_idx_ = m;
+				}
+				else
+				{
+					continue;
+				}
+			}
+		}	
+	}
+	return rm_info;
 }
 
 RoadLink::RoadLink(LinkType type, pugi::xml_node node)
@@ -1338,21 +1564,12 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 	}
 
 	pugi::xml_document doc;
+
+	// First assume absolute path
 	pugi::xml_parse_result result = doc.load_file(filename);
 	if (!result)
 	{
-		// Try current folder
-		std::string path = std::string(filename);
-		std::string base_filename = path.substr(path.find_last_of("/\\") + 1);
-		LOG("Failed to load %s - looking for file %s in current folder", filename, base_filename.c_str());
-		pugi::xml_parse_result result = doc.load_file(base_filename.c_str());
-
-		if (!result)
-		{
-			throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(filename));
-
-			return false;
-		}
+		return false;
 	}
 
 	pugi::xml_node node = doc.child("OpenDRIVE");
@@ -1885,48 +2102,50 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								lane->AddLaneRoadMark(lane_roadMark);
 
 								// sub_type
-								pugi::xml_node sub_type = roadMark.child("type");
-								if (sub_type != NULL)
+								for (pugi::xml_node sub_type = roadMark.child("type"); sub_type; sub_type = sub_type.next_sibling("type"))
 								{
-									std::string sub_type_name = sub_type.attribute("name").value();
-									double sub_type_width = atof(sub_type.attribute("width").value());
-									LaneRoadMarkType *lane_roadMarkType = new LaneRoadMarkType(sub_type_name, sub_type_width);
-									lane_roadMark->AddType(lane_roadMarkType);
-
-									for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
+									if (sub_type != NULL)
 									{
-										double length = atof(line.attribute("length").value());
-										double space = atof(line.attribute("space").value());
-										double t_offset = atof(line.attribute("t_offset").value());
-										double s_offset = atof(line.attribute("s_offset").value());
+										std::string sub_type_name = sub_type.attribute("name").value();
+										double sub_type_width = atof(sub_type.attribute("width").value());
+										LaneRoadMarkType *lane_roadMarkType = new LaneRoadMarkType(sub_type_name, sub_type_width);
+										lane_roadMark->AddType(lane_roadMarkType);
 
-										// rule
-										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-										if (line.attribute("rule") == 0 || !strcmp(line.attribute("rule").value(), ""))
+										for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
 										{
-											LOG("Lane road mark type line rule error");
-										}
-										if (!strcmp(line.attribute("rule").value(), "none"))
-										{
-											rule = LaneRoadMarkTypeLine::NONE;
-										}
-										else  if (!strcmp(line.attribute("rule").value(), "caution"))
-										{
-											rule = LaneRoadMarkTypeLine::CAUTION;
-										}
-										else  if (!strcmp(line.attribute("rule").value(), "no passing"))
-										{
-											rule = LaneRoadMarkTypeLine::NO_PASSING;
-										}
-										else
-										{
-											LOG("unknown lane road mark type line rule: %s (road id=%d)\n", line.attribute("rule").value(), r->GetId());
-										}
+											double length = atof(line.attribute("length").value());
+											double space = atof(line.attribute("space").value());
+											double t_offset = atof(line.attribute("t_offset").value());
+											double s_offset = atof(line.attribute("s_offset").value());
 
-										double width = atof(line.attribute("width").value());
+											// rule
+											LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+											if (line.attribute("rule") == 0 || !strcmp(line.attribute("rule").value(), ""))
+											{
+												LOG("Lane road mark type line rule error");
+											}
+											if (!strcmp(line.attribute("rule").value(), "none"))
+											{
+												rule = LaneRoadMarkTypeLine::NONE;
+											}
+											else  if (!strcmp(line.attribute("rule").value(), "caution"))
+											{
+												rule = LaneRoadMarkTypeLine::CAUTION;
+											}
+											else  if (!strcmp(line.attribute("rule").value(), "no passing"))
+											{
+												rule = LaneRoadMarkTypeLine::NO_PASSING;
+											}
+											else
+											{
+												LOG("unknown lane road mark type line rule: %s (road id=%d)\n", line.attribute("rule").value(), r->GetId());
+											}
 
-										LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(length, space, t_offset, s_offset, rule, width);
-										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+											double width = atof(line.attribute("width").value());
+
+											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(length, space, t_offset, s_offset, rule, width);
+											lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+										}
 									}
 								}
 							}
@@ -2436,6 +2655,12 @@ int RoadPath::Calculate(double &dist)
 	// The implementation is based on Dijkstra's algorithm
 	// https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
 
+	if (pivotRoad == 0)
+	{
+		LOG("Invalid startpos road ID: %d", startPos_->GetTrackId());
+		return -1;
+	}
+
 	// Look both forward and backwards from start position
 	for (i = 0; i < 2; i++)
 	{
@@ -2564,8 +2789,15 @@ int RoadPath::Calculate(double &dist)
 
 				if (nextRoad == targetRoad)
 				{
-					// Special case: On same road, distance is equal to delta s
-					tmpDist += targetPos_->GetS();
+					// Special case: On same road, distance is equal to delta s, direction considered
+					if (nextRoad->GetLink(LinkType::PREDECESSOR)->GetElementId() == pivotRoad->GetId())
+					{
+						tmpDist += targetPos_->GetS();
+					}
+					else
+					{
+						tmpDist += nextRoad->GetLength() - targetPos_->GetS();
+					}
 					found = true;
 				}
 				else
@@ -2640,6 +2872,7 @@ OpenDrive::~OpenDrive()
 	{
 		delete(junction_[i]);
 	}
+
 }
 
 int OpenDrive::GetTrackIdxById(int id)
@@ -3166,14 +3399,29 @@ OpenDrive* Position::GetOpenDrive()
 	return &od; 
 }
 
-bool OpenDrive::CheckOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1)
+bool OpenDrive::CheckLaneOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1)
 {
-	// Creating tangent line around the point (First Point) with given tolerance 
-	double k_0 = (y0[2]-y0[0])/(x0[2]-x0[0]);
+	double x0_tan_diff, y0_tan_diff, x1_tan_diff, y1_tan_diff;
+	x0_tan_diff = x0[2]-x0[0];
+	y0_tan_diff = y0[2]-y0[0];
+	x1_tan_diff = x1[2]-x1[0];
+	y1_tan_diff = y1[2]-y1[0];
+
+	// Avoiding Zero Denominator in OSI point calculations
+	if(x0_tan_diff == 0) {x0_tan_diff+=0.001; }
+
+	if(y0_tan_diff == 0) {y0_tan_diff+=0.001; }
+
+	if(x1_tan_diff == 0) {x1_tan_diff+=0.001; }
+
+	if(y1_tan_diff == 0) {y1_tan_diff+=0.001; }
+
+	// Creating tangent line around the point (First Point) with given tolerance
+	double k_0 = y0_tan_diff/x0_tan_diff;
 	double m_0 = y0[1] - k_0*x0[1];
 
 	// Creating tangent line around the point (Second Point) with given tolerance 
-	double k_1 = (y1[2]-y1[0])/(x1[2]-x1[0]);
+	double k_1 = y1_tan_diff/x1_tan_diff;
 	double m_1 = y1[1] - k_1*x1[1];
 
 	// Intersection point of the tangent lines
@@ -3203,7 +3451,7 @@ bool OpenDrive::CheckOSIRequirement(std::vector<double> x0, std::vector<double> 
 	}
 }
 
-bool OpenDrive::SetOSI()
+void OpenDrive::SetLaneOSIPoints()
 {
 	// Initialization
 	Position* pos = new roadmanager::Position();
@@ -3212,7 +3460,7 @@ bool OpenDrive::SetOSI()
 	Lane *lane;
 	int number_of_lane_sections, number_of_lanes, counter;
 	double lsec_end;
-	std::vector<double> x0, y0, x1, y1, osi_x, osi_y, osi_z, osi_h;
+	std::vector<double> x0, y0, x1, y1, osi_s, osi_x, osi_y, osi_z, osi_h;
 	double s0, s1, s1_prev;
 	bool osi_requirement;
 
@@ -3266,6 +3514,7 @@ bool OpenDrive::SetOSI()
 					// Add the starting point of each lane as osi point
 					if (counter == 1)
 					{
+						osi_s.push_back(s0);
 						osi_x.push_back(pos->GetX());
 						osi_y.push_back(pos->GetY());
 						osi_z.push_back(pos->GetZ());
@@ -3293,8 +3542,15 @@ bool OpenDrive::SetOSI()
 					y1.push_back(pos->GetY());
 
 					// Check OSI Requirement between current given points
-					osi_requirement = CheckOSIRequirement(x0, y0, x1, y1);
-
+					if (x1[1]-x0[1] != 0 && y1[1]-y0[1] != 0)
+					{
+						osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
+					}
+					else
+					{
+						osi_requirement = true;
+					}
+					
 					// If requirement is satisfied -> look further points
 					// If requirement is not satisfied:
 						// Assign last satisfied point as OSI point
@@ -3308,11 +3564,13 @@ bool OpenDrive::SetOSI()
 					else
 					{
 						s0 = s1_prev;
+						s1_prev = s1;
 						s1 = s0 + OSI_POINT_CALC_STEPSIZE;
 
 						if (counter != 1)
 						{
 							pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
+							osi_s.push_back(s0);
 							osi_x.push_back(pos->GetX());
 							osi_y.push_back(pos->GetY());
 							osi_z.push_back(pos->GetZ());
@@ -3321,9 +3579,10 @@ bool OpenDrive::SetOSI()
 					}
 
 					// If the end of the lane reached, assign end of the lane as final OSI point for current lane
-					if (s1 >= lsec_end)
+					if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end)
 					{
 						pos->SetLanePos(road->GetId(), lane->GetId(), lsec_end, 0, j);
+						osi_s.push_back(lsec_end);
 						osi_x.push_back(pos->GetX());
 						osi_y.push_back(pos->GetY());
 						osi_z.push_back(pos->GetZ());
@@ -3339,10 +3598,10 @@ bool OpenDrive::SetOSI()
 				}
 
 				// Set all collected osi points for the current lane
-				lane->osi_points_.Set(osi_x, osi_y, osi_z, osi_h);
-				LOG("OSI Points for lane %d within lane section %d for road %d are populated successfully", lane->GetId(), j, i);
+				lane->osi_points_.Set(osi_s, osi_x, osi_y, osi_z, osi_h);
 
 				// Clear osi collectors for next iteration
+				osi_s.clear();
 				osi_x.clear();
 				osi_y.clear();
 				osi_z.clear();
@@ -3351,10 +3610,432 @@ bool OpenDrive::SetOSI()
 				// Re-assign the starting point of the next lane as the start point of the current lane section for OSI calculations
 				s0 = lsec->GetS();
 				s1 = s0+OSI_POINT_CALC_STEPSIZE;
-				s1_prev = s0;	
+				s1_prev = s0;
 			}
 		}
 	}
+}
+
+void OpenDrive::SetLaneBoundaryPoints()
+{
+	// Initialization
+	Position* pos = new roadmanager::Position();
+	Road *road;
+	LaneSection *lsec;
+	Lane *lane;
+	int number_of_lane_sections, number_of_lanes, counter;
+	double lsec_end;
+	std::vector<double> x0, y0, x1, y1, osi_s, osi_x, osi_y, osi_z, osi_h;
+	double s0, s1, s1_prev;
+	bool osi_requirement; 
+
+	// Looping through each road 
+	for (int i=0; i<road_.size(); i++)
+	{
+		road = road_[i];
+
+		// Looping through each lane section
+		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
+		for (int j=0; j<number_of_lane_sections; j++)
+		{
+			// Get the ending position of the current lane section
+			lsec = road->GetLaneSectionByIdx(j);
+			if (j == number_of_lane_sections-1)
+			{
+				lsec_end = road->GetLength();	
+			}
+			else
+			{
+				lsec_end = road->GetLaneSectionByIdx(j+1)->GetS();
+			}
+			
+			// Starting points of the each lane section for OSI calculations
+			s0 = lsec->GetS();
+			s1 = s0+OSI_POINT_CALC_STEPSIZE;
+			s1_prev = s0;
+
+			// Looping through each lane
+			number_of_lanes = lsec->GetNumberOfLanes();
+			for (int k=0; k<number_of_lanes; k++)
+			{
+				lane = lsec->GetLaneByIdx(k);
+				counter = 0;
+
+				int n_roadmarks = lane->GetNumberOfRoadMarks(); 
+				if (n_roadmarks == 0)
+				{
+					// Looping through sequential points along the track determined by "OSI_POINT_CALC_STEPSIZE"
+					while(true)
+					{
+						counter++;
+
+						// [XO, YO] = closest position with given (-) tolerance
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						x0.push_back(pos->GetX());
+						y0.push_back(pos->GetY());
+
+						// [XO, YO] = Real position with no tolerance
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
+						x0.push_back(pos->GetX());
+						y0.push_back(pos->GetY());
+
+						// Add the starting point of each lane as osi point
+						if (counter == 1)
+						{
+							osi_s.push_back(s0);
+							osi_x.push_back(pos->GetX());
+							osi_y.push_back(pos->GetY());
+							osi_z.push_back(pos->GetZ());
+							osi_h.push_back(pos->GetH());
+						}
+
+						// [XO, YO] = closest position with given (+) tolerance
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						x0.push_back(pos->GetX());
+						y0.push_back(pos->GetY());
+
+						// [X1, Y1] = closest position with given (-) tolerance																																																																																																												
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						x1.push_back(pos->GetX());																																	
+						y1.push_back(pos->GetY());
+
+						// [X1, Y1] = Real position with no tolerance																																																								
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1, 0, j);
+						x1.push_back(pos->GetX());
+						y1.push_back(pos->GetY());
+
+						// [X1, Y1] = closest position with given (+) tolerance
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						x1.push_back(pos->GetX());
+						y1.push_back(pos->GetY());
+
+						// Check OSI Requirement between current given points
+						if (x1[1]-x0[1] != 0 && y1[1]-y0[1] != 0)
+						{
+							osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
+						}
+						else
+						{
+							osi_requirement = true;
+						}
+						
+						// If requirement is satisfied -> look further points
+						// If requirement is not satisfied:
+							// Assign last satisfied point as OSI point
+							// Continue searching from the last satisfied point
+						if (osi_requirement)
+						{
+							s1_prev = s1;
+							s1 = s1 + OSI_POINT_CALC_STEPSIZE;
+
+						}
+						else
+						{
+							s0 = s1_prev;
+							s1_prev = s1;
+							s1 = s0 + OSI_POINT_CALC_STEPSIZE;
+
+							if (counter != 1)
+							{
+								pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
+								osi_s.push_back(s0);
+								osi_x.push_back(pos->GetX());
+								osi_y.push_back(pos->GetY());
+								osi_z.push_back(pos->GetZ());
+								osi_h.push_back(pos->GetH());
+							}
+						}
+
+						// If the end of the lane reached, assign end of the lane as final OSI point for current lane
+						if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end)
+						{
+							pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), lsec_end, 0, j);
+							osi_s.push_back(lsec_end);
+							osi_x.push_back(pos->GetX());
+							osi_y.push_back(pos->GetY());
+							osi_z.push_back(pos->GetZ());
+							osi_h.push_back(pos->GetH());
+							break;
+						}
+
+						// Clear x-y collectors for next iteration
+						x0.clear();
+						y0.clear();
+						x1.clear();
+						y1.clear();
+					}
+					// Initialization of LaneBoundary class
+					LaneBoundaryOSI * lb = new LaneBoundaryOSI((int)0); 
+					// add the lane boundary class to the lane class and generating the global id 
+					lane->SetLaneBoundary(lb); 
+					//Fills up the osi points in the lane boundary class 
+					lb->osi_points_.Set(osi_s, osi_x, osi_y, osi_z, osi_h);
+					// Clear osi collectors for next iteration
+					osi_s.clear();
+					osi_x.clear();
+					osi_y.clear();
+					osi_z.clear();
+					osi_h.clear();
+
+					// Re-assign the starting point of the next lane as the start point of the current lane section for OSI calculations
+					s0 = lsec->GetS();
+					s1 = s0+OSI_POINT_CALC_STEPSIZE;
+					s1_prev = s0;
+					std::cout << "Create LaneBoundary for lane with local id " << lane->GetId() << std::endl; 
+				}
+			}
+		}
+	} 
+}
+
+void OpenDrive::SetRoadMarkOSIPoints()
+{
+	// Initialization
+	Position* pos = new roadmanager::Position();
+	Road *road;
+	LaneSection *lsec;
+	Lane *lane;
+	LaneRoadMark *lane_roadMark;
+	LaneRoadMarkType *lane_roadMarkType;
+	LaneRoadMarkTypeLine *lane_roadMarkTypeLine;
+	int number_of_lane_sections, number_of_lanes, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines, counter;
+	double s0, s1, s1_prev, lsec_end, s_roadmark, s_end_roadmark, s_roadmarkline, s_end_roadmarkline;
+	std::vector<double> x0, x1, y0, y1, osi_s_rm, osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm;
+	bool osi_requirement;
+
+	// Looping through each road 
+	for (int i=0; i<road_.size(); i++)
+	{
+		road = road_[i];
+
+		// Looping through each lane section
+		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
+		for (int j=0; j<number_of_lane_sections; j++)
+		{
+			// Get the ending position of the current lane section
+			lsec = road->GetLaneSectionByIdx(j);
+			if (j == number_of_lane_sections-1)
+			{
+				lsec_end = road->GetLength();	
+			}
+			else
+			{
+				lsec_end = road->GetLaneSectionByIdx(j+1)->GetS();
+			}
+
+			// Looping through each lane
+			number_of_lanes = lsec->GetNumberOfLanes();
+			for (int k=0; k<number_of_lanes; k++)
+			{
+				lane = lsec->GetLaneByIdx(k);
+
+				// Looping through each roadMark within the lane
+				number_of_roadmarks = lane->GetNumberOfRoadMarks();
+				if (number_of_roadmarks != 0)
+				{
+					
+					for (int m=0; m<number_of_roadmarks; m++)
+					{
+						lane_roadMark = lane->GetLaneRoadMarkByIdx(m);
+						s_roadmark = lsec->GetS() + lane_roadMark->GetSOffset();
+						if (m == number_of_roadmarks-1)
+						{
+							s_end_roadmark = lsec_end;
+						}
+						else
+						{
+							s_end_roadmark = lane->GetLaneRoadMarkByIdx(m+1)->GetSOffset();
+						}
+						
+						// Check the existence of "type" keyword under roadmark
+						number_of_roadmarktypes = lane_roadMark->GetNumberOfRoadMarkTypes();
+						if (number_of_roadmarktypes != 0)
+						{
+							lane_roadMarkType = lane_roadMark->GetLaneRoadMarkTypeByIdx(0);
+							number_of_roadmarklines = lane_roadMarkType->GetNumberOfRoadMarkTypeLines();
+
+							// Looping through each roadmarkline under roadmark
+							for (int n=0; n<number_of_roadmarklines; n++)
+							{
+								lane_roadMarkTypeLine = lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n);
+								s_roadmarkline = s_roadmark + lane_roadMarkTypeLine->GetSOffset();
+								if (lane_roadMarkTypeLine != 0)
+								{
+									if (n == number_of_roadmarklines-1)
+									{
+										s_end_roadmarkline = s_end_roadmark;
+									}
+									else
+									{
+										s_end_roadmarkline = lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n+1)->GetSOffset();
+									}
+
+									if (lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::BROKEN)
+									{
+
+										// Setting OSI points for each roadmarkline
+										while(true)
+										{
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmarkline, 0, j);
+											osi_s_rm.push_back(s_roadmarkline);
+											osi_x_rm.push_back(pos->GetX());
+											osi_y_rm.push_back(pos->GetY());
+											osi_z_rm.push_back(pos->GetZ());
+											osi_h_rm.push_back(pos->GetH());
+
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmarkline+lane_roadMarkTypeLine->GetLength(), 0, j);
+											osi_s_rm.push_back(s_roadmarkline+lane_roadMarkTypeLine->GetLength());
+											osi_x_rm.push_back(pos->GetX());
+											osi_y_rm.push_back(pos->GetY());
+											osi_z_rm.push_back(pos->GetZ());
+											osi_h_rm.push_back(pos->GetH());
+
+											s_roadmarkline += lane_roadMarkTypeLine->GetLength() + lane_roadMarkTypeLine->GetSpace();
+											if (s_roadmarkline >= s_end_roadmarkline)
+											{
+												break;
+											}
+										}
+									}
+									else if (lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::SOLID)
+									{
+										s0 = s_roadmarkline;
+										s1 = s0+OSI_POINT_CALC_STEPSIZE;
+										s1_prev = s0;
+										counter = 0;
+										
+										while(true)
+										{
+											counter++;
+
+											// [XO, YO] = closest position with given (-) tolerance
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s0-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+											x0.push_back(pos->GetX());
+											y0.push_back(pos->GetY());
+
+											// [XO, YO] = Real position with no tolerance
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s0, 0, j);
+											x0.push_back(pos->GetX());
+											y0.push_back(pos->GetY());
+
+											// Add the starting point of each lane as osi point
+											if (counter == 1)
+											{
+												osi_s_rm.push_back(s0);
+												osi_x_rm.push_back(pos->GetX());
+												osi_y_rm.push_back(pos->GetY());
+												osi_z_rm.push_back(pos->GetZ());
+												osi_h_rm.push_back(pos->GetH());
+											}
+
+											// [XO, YO] = closest position with given (+) tolerance
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s0+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+											x0.push_back(pos->GetX());
+											y0.push_back(pos->GetY());
+
+											// [X1, Y1] = closest position with given (-) tolerance																																																																																																												
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s1-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+											x1.push_back(pos->GetX());																																	
+											y1.push_back(pos->GetY());
+
+											// [X1, Y1] = Real position with no tolerance																																																								
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s1, 0, j);
+											x1.push_back(pos->GetX());
+											y1.push_back(pos->GetY());
+
+											// [X1, Y1] = closest position with given (+) tolerance
+											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s1+OSI_TANGENT_LINE_TOLERANCE, 0, j);
+											x1.push_back(pos->GetX());
+											y1.push_back(pos->GetY());
+
+											// Check OSI Requirement between current given points
+											osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
+
+											// If requirement is satisfied -> look further points
+											// If requirement is not satisfied:
+												// Assign last satisfied point as OSI point
+												// Continue searching from the last satisfied point
+											if (osi_requirement)
+											{
+												s1_prev = s1;
+												s1 = s1 + OSI_POINT_CALC_STEPSIZE;
+
+											}
+											else
+											{
+												s0 = s1_prev;
+												s1_prev = s1;
+												s1 = s0 + OSI_POINT_CALC_STEPSIZE;
+
+												if (counter != 1)
+												{
+													pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s0, 0, j);
+													osi_s_rm.push_back(s0);
+													osi_x_rm.push_back(pos->GetX());
+													osi_y_rm.push_back(pos->GetY());
+													osi_z_rm.push_back(pos->GetZ());
+													osi_h_rm.push_back(pos->GetH());
+												}
+											}
+
+											// If the end of the road mark line reached, assign end of the road mark line as final OSI point for current road mark line
+											if (s1 >= s_end_roadmarkline)
+											{
+												pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_end_roadmarkline, 0, j);
+												osi_s_rm.push_back(s_end_roadmarkline);
+												osi_x_rm.push_back(pos->GetX());
+												osi_y_rm.push_back(pos->GetY());
+												osi_z_rm.push_back(pos->GetZ());
+												osi_h_rm.push_back(pos->GetH());
+												break;
+											}
+
+											// Clear x-y collectors for next iteration
+											x0.clear();
+											y0.clear();
+											x1.clear();
+											y1.clear();
+
+										}
+									}
+
+
+									// Set all collected osi points for the current lane rpadmarkline
+									lane_roadMarkTypeLine->osi_points_.Set(osi_s_rm, osi_x_rm, osi_y_rm, osi_z_rm, osi_h_rm);
+
+									// Clear osi collectors for roadmarks for next iteration
+									osi_s_rm.clear();
+									osi_x_rm.clear();
+									osi_y_rm.clear();
+									osi_z_rm.clear();
+									osi_h_rm.clear();
+								}
+								else
+								{
+									LOG("LaneRoadMarkTypeLine %d for LaneRoadMarkType for LaneRoadMark %d for lane %d is not defined", n, m, lane->GetId());
+								}
+							}
+						}
+						else
+						{
+							LOG("LaneRoadMarkType for LaneRoadMark %d for lane %d is not defined", m, lane->GetId());
+						}	
+					}
+				}
+				else
+				{
+					LOG("LaneRoadMarks for lane %d is not defined", lane->GetId());
+				}
+			}
+		}
+	}
+}
+
+bool OpenDrive::SetRoadOSI()
+{
+	SetLaneOSIPoints();
+	SetRoadMarkOSIPoints();
+	SetLaneBoundaryPoints(); 
 	return true;
 }
 
@@ -3369,6 +4050,28 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double &offset)
 		double laneCenterOffset = SIGN(lane_id) * GetCenterOffset(s, lane_id);
 
 		if (GetLaneById(lane_id)->IsDriving() && (candidate_lane_idx == -1 || fabs(t - laneCenterOffset) < fabs(min_offset)))
+		{
+			min_offset = t - laneCenterOffset;
+ 			candidate_lane_idx = i;
+		}
+	}
+
+	offset = min_offset;
+
+	return candidate_lane_idx;
+}
+
+int LaneSection::GetClosestWhateverLaneIdx(double s, double t, double &offset)
+{
+	double min_offset = t;  // Initial offset relates to reference line
+	int candidate_lane_idx = -1;
+
+	for (int i = 0; i < GetNumberOfLanes(); i++)  // Search through all lanes
+	{
+		int lane_id = GetLaneIdByIdx(i);
+		double laneCenterOffset = SIGN(lane_id) * GetCenterOffset(s, lane_id);
+
+		if ((candidate_lane_idx == -1 || fabs(t - laneCenterOffset) < fabs(min_offset)))
 		{
 			min_offset = t - laneCenterOffset;
  			candidate_lane_idx = i;
@@ -3872,6 +4575,23 @@ void Position::Track2XYZ()
 	EvaluateRoadZPitchRoll(true);
 }
 
+void Position::LaneBoundary2Track()
+{
+	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	t_ = 0;
+
+	if (road != 0 && road->GetNumberOfLaneSections() > 0)
+	{
+		LaneSection *lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+
+		if (lane_section != 0 && lane_id_ !=0)
+		{
+			t_ = offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+			h_offset_ = lane_section->GetOuterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+		}
+	}
+}
+
 void Position::Lane2Track()
 {
 	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
@@ -3885,6 +4605,33 @@ void Position::Lane2Track()
 		{
 			t_ = offset_ + lane_section->GetCenterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
 			h_offset_ = lane_section->GetCenterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+		}
+	}
+}
+
+void Position::RoadMark2Track()
+{
+	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	t_ = 0;
+
+	if (road != 0 && road->GetNumberOfLaneSections() > 0)
+	{
+		LaneSection *lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+
+		if (lane_section != 0 && lane_id_ !=0)
+		{
+			t_ = offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+			h_offset_ = lane_section->GetOuterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+		}
+
+		Lane *lane = lane_section->GetLaneByIdx(lane_idx_);
+		LaneRoadMark *lane_roadmark = lane->GetLaneRoadMarkByIdx(roadmark_idx_);
+		LaneRoadMarkType *lane_roadmarktype = lane_roadmark->GetLaneRoadMarkTypeByIdx(roadmarktype_idx_);
+		LaneRoadMarkTypeLine *lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(roadmarkline_idx_);
+		
+		if (lane_roadmarktypeline != 0)
+		{
+			t_ = t_ + lane_roadmarktypeline->GetTOffset();
 		}
 	}
 }
@@ -4414,6 +5161,209 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 	Track2XYZ();
 }
 
+void Position::SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx)
+{
+	offset_ = offset;
+	int old_lane_id = lane_id_;
+	int old_track_id = track_id_;
+
+	if (SetLongitudinalTrackPos(track_id, s) != 0)
+	{
+		lane_id_ = lane_id;
+		offset_ = offset;
+		return;
+	}
+
+	Road *road = GetOpenDrive()->GetRoadById(track_id);
+	if (road == 0)
+	{
+		LOG("Position::Set Error: track %d not available\n", track_id);
+		lane_id_ = lane_id;
+		offset_ = offset;
+		return;
+	}
+
+	if (lane_id != lane_id_ && lane_section_idx == -1)
+	{
+		// New lane ID might indicate a discreet jump to a new, distant position, reset lane section, if not specified in func parameter)
+		lane_section_idx = road->GetLaneSectionIdxByS(s);
+	}
+
+	LaneSection *lane_section = 0;
+	if (lane_section_idx > -1)  // If lane section was specified or reset
+	{
+		lane_section_idx_ = lane_section_idx;
+		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+
+		lane_id_ = lane_id;
+	}
+	else  // Find LaneSection and info according to s
+	{
+		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_);
+		lane_section_idx_ = lane_info.lane_section_idx_;
+		lane_id_ = lane_info.lane_id_;
+		
+		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+	}
+
+	if (lane_section != 0)
+	{
+		lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
+		if (lane_idx_ == -1)
+		{
+			LOG("lane_idx %d fail for lane id %d\n", lane_idx_, lane_id_);
+			lane_idx_ = 0;
+		}
+	}
+	else
+	{
+		LOG("Position::Set (lanepos) Error - lanesection NULL lsidx %d rid %d lid %d\n",
+			lane_section_idx_, road->GetId(), lane_id_);
+	}
+
+	// Check road direction when on new track 
+	if (old_lane_id != 0 && lane_id_ != 0 && track_id_ != old_track_id && SIGN(lane_id_) != SIGN(old_lane_id))
+	{
+		h_relative_ = GetAngleSum(h_relative_, M_PI);
+	}
+
+	// If moved over to opposite driving direction, then turn relative heading 180 degrees
+	//if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))
+	//{
+	//	h_relative_ = GetAngleSum(h_relative_, M_PI);
+	//}
+
+	//Lane2Track();
+	LaneBoundary2Track(); 
+	Track2XYZ();
+}
+
+void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int roadmarktype_idx, int roadmarkline_idx, double s, double offset, int lane_section_idx)
+{
+	offset_ = offset;
+	int old_lane_id = lane_id_;
+	int old_track_id = track_id_;
+
+	if (SetLongitudinalTrackPos(track_id, s) != 0)
+	{
+		lane_id_ = lane_id;
+		offset_ = offset;
+		roadmark_idx_ = roadmark_idx;
+		roadmarktype_idx_ = roadmarktype_idx;
+		roadmarkline_idx_ = roadmarkline_idx;
+		return;
+	}
+
+	Road *road = GetOpenDrive()->GetRoadById(track_id);
+	if (road == 0)
+	{
+		LOG("Position::Set Error: track %d not available\n", track_id);
+		lane_id_ = lane_id;
+		offset_ = offset;
+		return;
+	}
+
+	if (lane_id != lane_id_ && lane_section_idx == -1)
+	{
+		// New lane ID might indicate a discreet jump to a new, distant position, reset lane section, if not specified in func parameter)
+		lane_section_idx = road->GetLaneSectionIdxByS(s);
+	}
+
+	LaneSection *lane_section = 0;
+	if (lane_section_idx > -1)  // If lane section was specified or reset
+	{
+		lane_section_idx_ = lane_section_idx;
+		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+
+		lane_id_ = lane_id;
+	}
+	else  // Find LaneSection and info according to s
+	{
+		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_);
+		lane_section_idx_ = lane_info.lane_section_idx_;
+		lane_id_ = lane_info.lane_id_;
+		
+		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+	}
+
+	if (lane_section != 0)
+	{
+		lane_idx_ = lane_section->GetLaneIdxById(lane_id_);
+		if (lane_idx_ == -1)
+		{
+			LOG("lane_idx %d fail for lane id %d\n", lane_idx_, lane_id_);
+			lane_idx_ = 0;
+		}
+	}
+	else
+	{
+		LOG("Position::Set (lanepos) Error - lanesection NULL lsidx %d rid %d lid %d\n",
+			lane_section_idx_, road->GetId(), lane_id_);
+	}
+
+	// Check road direction when on new track 
+	if (old_lane_id != 0 && lane_id_ != 0 && track_id_ != old_track_id && SIGN(lane_id_) != SIGN(old_lane_id))
+	{
+		h_relative_ = GetAngleSum(h_relative_, M_PI);
+	}
+
+	Lane *lane = lane_section->GetLaneByIdx(lane_idx_);
+	if (lane != 0)
+	{
+		roadmark_idx_ = roadmark_idx;
+	}
+	
+	LaneRoadMark *lane_roadmark = lane->GetLaneRoadMarkByIdx(roadmark_idx_);
+	if (lane_roadmark != 0)
+	{
+		s_ = s_ + lane_roadmark->GetSOffset();
+	}
+	else
+	{
+		LOG("roadmark_idx_ %d fail for lane id %d\n", roadmark_idx_, lane_idx_);
+		roadmark_idx_ = 0;
+	}
+
+	if (lane_roadmark->GetNumberOfRoadMarkTypes() != 0)
+	{
+		roadmarktype_idx_ = roadmarktype_idx;
+	}
+	else
+	{
+		roadmarktype_idx_ = 0;
+	}
+	
+	LaneRoadMarkType *lane_roadmarktype = lane_roadmark->GetLaneRoadMarkTypeByIdx(roadmarktype_idx_);
+	if (lane_roadmarktype != 0)
+	{
+		roadmarkline_idx_ = roadmarkline_idx;
+		LaneRoadMarkTypeLine *lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(roadmarkline_idx_);
+		if (lane_roadmarktypeline != 0)
+		{
+			s_ = s_ + lane_roadmarktypeline->GetSOffset();
+		}
+		else
+		{
+			LOG("roadmarktypeline_idx_ %d fail for roadmarktype_idx %d\n", roadmarkline_idx_, roadmarktype_idx_);
+			roadmarkline_idx_ = 0;
+		}
+	}
+	else
+	{
+		LOG("roadmarktype_idx_ %d fail for roadmark_idx %d\n", roadmarktype_idx_, roadmark_idx_);
+		roadmarkline_idx_ = 0;
+	}
+
+	// If moved over to opposite driving direction, then turn relative heading 180 degrees
+	//if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))
+	//{
+	//	h_relative_ = GetAngleSum(h_relative_, M_PI);
+	//}
+
+	RoadMark2Track();
+	Track2XYZ();
+}
+
 void Position::SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos)
 {
 	x_ = x;
@@ -4661,9 +5611,9 @@ bool Position::Delta(Position pos_b, PositionDiff &diff)
 
 	if (found = (path->Calculate(dist) == 0))
 	{
-		diff.dLaneId = GetLaneId() - pos_b.GetLaneId();
+		diff.dLaneId = pos_b.GetLaneId() - GetLaneId();
 		diff.ds = dist;
-		diff.dt = GetT() - pos_b.GetT();
+		diff.dt = pos_b.GetT() - GetT();
 
 #if 0   // Change to 1 to print some info on stdout - e.g. for debugging
 		printf("Dist %.2f Path (reversed): %d", dist, pos_b.GetTrackId());
@@ -4858,6 +5808,38 @@ int Position::GetLaneId()
 	{
 		return rel_pos_->GetLaneId() + lane_id_;
 	}
+
+	return lane_id_;
+}
+
+int Position::GetLaneGlobalId()
+{
+	Road *road = GetRoadById(GetTrackId());
+	if (road == 0)
+	{
+		LOG("No road %d", track_idx_);
+		return -1;
+	}
+
+	LaneSection *lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
+
+	if (lane_section == 0)
+	{
+		LOG("No lane section for idx %d - keeping current lane setting\n", lane_section_idx_);
+		return -1;
+	}
+
+	double offset;
+	int lane_idx = lane_section->GetClosestWhateverLaneIdx(s_, t_, offset);
+
+	if (lane_idx == -1)
+	{
+		LOG("Failed to find a valid drivable lane");
+		return -1;
+	}
+
+	lane_id_ = lane_section->GetLaneGlobalIdByIdx(lane_idx);
+	offset_ = offset;
 
 	return lane_id_;
 }

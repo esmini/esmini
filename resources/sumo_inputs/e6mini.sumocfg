@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+    <input>
+        <net-file value="e6mini.net.xml"/>
+        <route-files value="e6mini.rou.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="1000"/>
+        <step-length value="0.01" />
+    </time>
+    <time-to-teleport value="-1"/>
+    <lateral-resolution value="0.5"/>
+</configuration>

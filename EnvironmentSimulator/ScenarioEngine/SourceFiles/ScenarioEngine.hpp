@@ -49,7 +49,6 @@ namespace scenarioengine
 
 		ScenarioEngine(std::string oscFilename, double headstart_time = DEFAULT_HEADSTART_TIME, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
 		ScenarioEngine(const pugi::xml_document &xml_doc, double headstart_time = DEFAULT_HEADSTART_TIME, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
-		ScenarioEngine() {};
 		~ScenarioEngine();
 
 		void InitScenario(std::string oscFilename, double headstart_time, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
@@ -58,7 +57,6 @@ namespace scenarioengine
 		void step(double deltaSimTime, bool initial = false);
 		void printSimulationTime();
 		void stepObjects(double dt);
-		void exit();
 
 		std::string getScenarioFilename() { return scenarioReader->getScenarioFilename(); }
 		std::string getSceneGraphFilename() { return roadNetwork.sceneGraphFile.filepath; }

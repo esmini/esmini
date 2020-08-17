@@ -18,13 +18,12 @@ set ( COMMON_MINI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CommonMini")
 # OpenSceneGraph package adapted for this project
 set ( OSG_VERSION "osg161" )
 set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
-set ( PB_VERSION "3.5.0" )
-set ( PB_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/protobuf" )
-set ( OSI_VERSION "1?" )
+#set ( PB_VERSION "3.5.0" )
+#set ( OSI_VERSION "1?" )
 set ( OSI_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OSI" )
+set ( SUMO_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/SUMO" )
 
 set( CMAKE_VERBOSE_MAKEFILE true )
-
 
 if (APPLE)
   set ( TIME_LIB "" ) 
@@ -57,8 +56,10 @@ elseif (WIN32)
     set ( TIME_LIB "" )
     set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1YxLVdQLhKBMGW4HB_ArJglRIpzuDiwhJ )
     set ( OSI_PACKAGE_URL https://drive.google.com/uc?export=download&id=168Qf08TktrVc-WNFm4xZ1SNUG3v7ENeG )
+    set ( SUMO_PACKAGE_URL https://drive.google.com/uc?export=download&id=1C7FzC7fwjdm8jWP43gaDijj4gRCfI_4L )
     set ( OSG_DIR "${OSG_BASE_DIR}/v10" )
     set ( OSI_DIR "${OSI_BASE_DIR}/v10" )
+    set ( SUMO_DIR "${SUMO_BASE_DIR}/v10" )
   else ()
     message ("Unknown configuration")
   endif ()
@@ -74,10 +75,12 @@ set ( OSG_LIBRARIES_PATH
 )
 
 set ( OSI_INCLUDE_DIR "${OSI_DIR}/include" )
-
 set ( OSI_LIBRARIES_PATH "${OSI_DIR}/lib" )
 
-link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} )
+set ( SUMO_INCLUDE_DIR "${SUMO_DIR}/include" )
+set ( SUMO_LIBRARIES_PATH "${SUMO_DIR}/lib" )
+
+link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} ${SUMO_LIBRARIES_PATH})
 
 if(APPLE)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
@@ -146,9 +149,43 @@ elseif(UNIX)
 	optimized open_simulation_interface_pic debug open_simulation_interface_picd
 	optimized protobuf debug protobufd
   )
+  
+  set ( SUMO_LIBRARIES 
+    optimized foreign_phemlight debug foreign_phemlightd
+    optimized foreign_tcpip debug foreign_tcpipd
+    optimized libsumostatic debug libsumostaticd
+    optimized mesosim debug mesosimd
+    optimized microsim debug microsimd
+    optimized microsim_actions debug microsim_actionsd
+    optimized microsim_cfmodels debug microsim_cfmodelsd
+    optimized microsim_devices debug microsim_devicesd
+    optimized microsim_engine debug microsim_engined
+    optimized microsim_lcmodels debug microsim_lcmodelsd
+    optimized microsim_output debug microsim_outputd
+    optimized microsim_traffic_lights debug microsim_traffic_lightsd
+    optimized microsim_transportables debug microsim_transportablesd
+    optimized microsim_trigger debug microsim_triggerd
+    optimized netload debug netloadd
+    optimized traciserver debug traciserverd
+    optimized utils_common debug utils_commond
+    optimized utils_distribution debug utils_distributiond
+    optimized utils_emissions debug utils_emissionsd
+    optimized utils_geom debug utils_geomd
+    optimized utils_iodevices debug utils_iodevicesd
+    optimized utils_options debug utils_optionsd
+    optimized utils_shapes debug utils_shapesd
+    optimized utils_traction_wire debug utils_traction_wired
+    optimized utils_vehicle debug utils_vehicled
+    optimized utils_xml debug utils_xmld
+    optimized xerces-c_3 debug xerces-c_3D
+    optimized zlibstatic debug zlibstaticd
+  )
 
 else() #not UNIX
 
+  # Get rid of historical macros preventing SUMO integration
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D NOMINMAX ")
+  
   set ( OSG_LIBRARIES 
       opengl32.lib
       optimized zlibstatic.lib debug zlibstaticd.lib 
@@ -173,6 +210,37 @@ else() #not UNIX
 	optimized libprotobuf.lib debug libprotobufd.lib
 	optimized open_simulation_interface_pic.lib debug open_simulation_interface_picd.lib
   )
+
+  set ( SUMO_LIBRARIES 
+    optimized foreign_phemlight.lib debug foreign_phemlightd.lib
+    optimized foreign_tcpip.lib debug foreign_tcpipd.lib
+    optimized libsumostatic.lib debug libsumostaticd.lib
+    optimized mesosim.lib debug mesosimd.lib
+    optimized microsim.lib debug microsimd.lib
+    optimized microsim_actions.lib debug microsim_actionsd.lib
+    optimized microsim_cfmodels.lib debug microsim_cfmodelsd.lib
+    optimized microsim_devices.lib debug microsim_devicesd.lib
+    optimized microsim_engine.lib debug microsim_engined.lib
+    optimized microsim_lcmodels.lib debug microsim_lcmodelsd.lib
+    optimized microsim_output.lib debug microsim_outputd.lib
+    optimized microsim_traffic_lights.lib debug microsim_traffic_lightsd.lib
+    optimized microsim_transportables.lib debug microsim_transportablesd.lib
+    optimized microsim_trigger.lib debug microsim_triggerd.lib
+    optimized netload.lib debug netloadd.lib
+    optimized traciserver.lib debug traciserverd.lib
+    optimized utils_common.lib debug utils_commond.lib
+    optimized utils_distribution.lib debug utils_distributiond.lib
+    optimized utils_emissions.lib debug utils_emissionsd.lib
+    optimized utils_geom.lib debug utils_geomd.lib
+    optimized utils_iodevices.lib debug utils_iodevicesd.lib
+    optimized utils_options.lib debug utils_optionsd.lib
+    optimized utils_shapes.lib debug utils_shapesd.lib
+    optimized utils_traction_wire.lib debug utils_traction_wired.lib
+    optimized utils_vehicle.lib debug utils_vehicled.lib
+    optimized utils_xml.lib debug utils_xmld.lib
+    optimized xerces-c_3.lib debug xerces-c_3D.lib
+    optimized zlibstatic.lib debug zlibstaticd.lib
+  )  
 #
 #if (NOT WINSDK7_1)  # FBX not supporting winsdk 7.1
 #  list ( APPEND OSG_LIBRARIES optimized libfbxsdk-md.lib debug libfbxsdk-mdd.lib )
@@ -221,6 +289,12 @@ endif()
 set ( OSI_PACKAGE_FILENAME "osi.7z" )
 if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSI_DIR} )
 	download_and_extract( ${OSI_PACKAGE_URL} ${OSI_BASE_DIR} ${OSI_PACKAGE_FILENAME} )
+endif()
+
+# download SUMO
+set ( SUMO_PACKAGE_FILENAME "sumo.7z" )
+if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${SUMO_DIR} )
+	download_and_extract( ${SUMO_PACKAGE_URL} ${SUMO_BASE_DIR} ${SUMO_PACKAGE_FILENAME} )
 endif()
 
 set ( MODELS_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources" )

@@ -51,6 +51,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	fixed_timestep_ = -1.0;
 	viewer_ = 0;
 	osi_receiver_addr = "";
+	osi_file = false; 
 
 #ifdef _SCENARIO_VIEWER
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
@@ -88,6 +89,9 @@ ScenarioPlayer::~ScenarioPlayer()
 #endif
 	}
 	delete scenarioEngine;
+	std::cout << "Reset global IDs" << std::endl; 
+	g_Lane_id = 0; 
+	g_Laneb_id = 0;
 }
 
 void ScenarioPlayer::Frame(double timestep_s)
@@ -130,8 +134,14 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	mutex.Lock();
 	
 	scenarioEngine->step(timestep_s);
-	
-	// LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
+
+	// Update OSI info
+	if (osi_file || scenarioGateway->GetSocket())
+	{
+		scenarioEngine->getScenarioGateway()->UpdateOSISensorView(osi_file);
+	}
+
+	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
 	//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
 	//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
 	//    scenarioEngine->entities.object_[0]->pos_.GetS(),
@@ -310,6 +320,16 @@ int ScenarioPlayer::InitViewer()
 		viewer_->ShowTrail(false);
 	}
 
+	if (opt.GetOptionArg("road_features") == "off")
+	{
+		viewer_->ShowRoadFeatures(false);
+	}
+
+	if (opt.GetOptionArg("osi_features") == "on")
+	{
+		viewer_->ShowOSIFeatures(true);
+	}
+
 	if (opt.GetOptionArg("sensors") == "on")
 	{
 		viewer_->ShowObjectSensors(true);
@@ -447,10 +467,12 @@ int ScenarioPlayer::Init()
 	opt.AddOption("osc", "OpenSCENARIO filename", "filename");
 	opt.AddOption("control", "Ego control (\"osc\", \"internal\", \"external\", \"hybrid\"", "mode");
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
-	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 't') ", "mode");
-	opt.AddOption("trails", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 't') ", "mode");
+	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
+	opt.AddOption("trails", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 'j') ", "mode");
+	opt.AddOption("road_features", "Show road features (\"on\" (default), \"off\") (toggle during simulation by press 'o') ", "mode");
+	opt.AddOption("osi_features", "Show OSI road features (\"on\", \"off\" (default)) (toggle during simulation by press 'u') ", "mode");
 	opt.AddOption("sensors", "Show sensor frustums (\"on\", \"off\" (default)) (toggle during simulation by press 'r') ", "mode");
-	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'c') ", "mode");
+	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
 	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
 	opt.AddOption("headless", "Run without viewer");
@@ -458,7 +480,8 @@ int ScenarioPlayer::Init()
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
 	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
 	opt.AddOption("ghost_headstart", "Launch Ego ghost at specified headstart time", "time");
-
+	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))", "mode");
+		
 	if (argc_ < 3)
 	{
 		opt.PrintUsage();
@@ -518,6 +541,11 @@ int ScenarioPlayer::Init()
 		LOG("Any ghosts will be launched with headstart %.2f seconds (default)", ghost_headstart);
 	}
 
+	if (opt.GetOptionArg("osi_file") ==  "on")
+	{
+		osi_file = true;
+	}
+
 	// Create scenario engine
 	try
 	{
@@ -554,6 +582,12 @@ int ScenarioPlayer::Init()
 
 	// Step scenario engine - zero time - just to reach and report init state of all vehicles
 	scenarioEngine->step(0.0, true);
+
+	// Update OSI info
+	if (osi_file || scenarioGateway->GetSocket())
+	{
+		scenarioEngine->getScenarioGateway()->UpdateOSISensorView(osi_file);
+	}
 
 	if (!headless)
 	{

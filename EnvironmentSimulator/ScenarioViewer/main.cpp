@@ -28,6 +28,7 @@
 #define DEMONSTRATE_SENSORS 1
 #define DEMONSTRATE_OSI 0
 #define DEMONSTRATE_ROADINFO 0
+#define DEMONSTRATE_THREAD 1
 
 
 #define MAX_N_OBJECTS 10
@@ -138,7 +139,7 @@ int main(int argc, char *argv[])
 			printf("\n");
 #endif
 
-			if (i == (int)(0.5 * DURATION / TIME_STEP))
+			if (DEMONSTRATE_THREAD && i == (int)(0.5 * DURATION / TIME_STEP))
 			{
 				// Halfway through, pause the simulation for a few seconds
 				// to demonstrate how camera can still move independently

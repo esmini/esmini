@@ -18,6 +18,7 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "Trail.hpp"
+#include "OSCBoundingBox.hpp"
 
 namespace scenarioengine
 {
@@ -64,6 +65,7 @@ namespace scenarioengine
 		Object *ghost_;     // If hybrid control mode, this will point to the ghost entity
 		ObjectTrail trail_;
 		double odometer_;
+		OSCBoundingBox boundingbox_;
 
 		Object(Type type) : type_(type), id_(0), trail_follow_index_(0), control_(Object::Control::INTERNAL),
 			speed_(0), wheel_angle_(0), wheel_rot_(0), route_(0), model_filepath_(""), ghost_(0), trail_follow_s_(0),
@@ -89,6 +91,7 @@ namespace scenarioengine
 		} Category;
 
 		Category category_;
+
 
 		Vehicle() : Object(Object::Type::VEHICLE), category_(Category::CAR) {}
 
@@ -119,16 +122,15 @@ namespace scenarioengine
 	class Controller
 	{
 	public:
-    std::string name_;
+		std::string name_;
 		std::string config_filepath_;
 
-		Controller() : name_(""),config_filepath_("") {}
+		Controller() : name_(""), config_filepath_("") {}
 
 	};
 
 	class Entities
 	{
-
 	public:
 
 		Entities() {};

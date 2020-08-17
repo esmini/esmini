@@ -20,6 +20,7 @@
 #include "OSCProperties.hpp"
 #include "pugixml.hpp"
 #include "OSCGlobalAction.hpp"
+#include "OSCBoundingBox.hpp"
 
 #include <iostream>
 #include <string>
@@ -51,6 +52,7 @@ namespace scenarioengine
 		Catalog* LoadCatalog(std::string name);
 		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode);
 		void ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node);
+		void ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_node &xml_node);
 		Vehicle* parseOSCVehicle(pugi::xml_node vehicleNode);
 		Vehicle* createRandomOSCVehicle(std::string name);
 		Controller* parseOSCObjectController(pugi::xml_node vehicleNode);

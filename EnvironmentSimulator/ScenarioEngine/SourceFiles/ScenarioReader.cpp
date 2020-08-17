@@ -157,8 +157,7 @@ int ScenarioReader::RegisterCatalogDirectory(pugi::xml_node catalogDirChild)
 		return -1;
 	}
 
-	// Directory name should be relative the XOSC file
-	std::string catalog_dir = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), dirname);
+	std::string catalog_dir = dirname;
 
 	catalogs_->RegisterCatalogDirectory(catalogDirChild.name(), catalog_dir);
 
@@ -181,10 +180,20 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 	size_t i;
 	for (i = 0; i < catalogs_->catalog_dirs_.size(); i++)
 	{
+		// First assume absolute path or relative current directory
 		std::string file_path = catalogs_->catalog_dirs_[i].dir_name_ + "/" + name + ".xosc";
 
 		// Load it
 		pugi::xml_parse_result result = catalog_doc.load_file(file_path.c_str());
+
+		if (!result)
+		{
+			// Then assume relative path to scenario directory - which perhaps should be the expected location
+			std::string file_path = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), catalogs_->catalog_dirs_[i].dir_name_) + "/" + name + ".xosc";
+
+			// Load it
+			result = catalog_doc.load_file(file_path.c_str());
+		}
 
 		if (result)
 		{
@@ -335,6 +344,32 @@ Vehicle* ScenarioReader::createRandomOSCVehicle(std::string name)
 	return vehicle;
 }
 
+void ScenarioReader::ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_node &xml_node)
+{
+	pugi::xml_node boundingbox_node = xml_node.child("BoundingBox");
+	if (boundingbox_node != NULL)
+	{
+		for (pugi::xml_node boundingboxChild = boundingbox_node.first_child(); boundingboxChild; boundingboxChild = boundingboxChild.next_sibling())
+		{
+			std::string boundingboxChildName(boundingboxChild.name());
+			if (boundingboxChildName == "Center")
+			{
+				boundingbox.center_.x_ = std::stof(ReadAttribute(boundingboxChild, "x"));
+				boundingbox.center_.y_ = std::stof(ReadAttribute(boundingboxChild, "y"));
+				boundingbox.center_.z_ = std::stof(ReadAttribute(boundingboxChild, "z"));
+			} else if (boundingboxChildName == "Dimensions")
+			{
+				boundingbox.dimensions_.width_ = std::stof(ReadAttribute(boundingboxChild, "width"));
+				boundingbox.dimensions_.length_ = std::stof(ReadAttribute(boundingboxChild, "length"));
+				boundingbox.dimensions_.height_ = std::stof(ReadAttribute(boundingboxChild, "height"));
+			} else {
+				LOG("Not valid boudingbox attribute name:%s",boundingboxChildName.c_str());
+			}
+		}
+		//LOG("Parsing boundingbox for vehicle:%s,center_x:%f, dimensions_width: %f.",ReadAttribute(xml_node, "name").c_str(),boundingbox.center_.x_,boundingbox.dimensions_.width_);
+	}
+}
+
 Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 {
 	Vehicle *vehicle = new Vehicle();
@@ -388,6 +423,10 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	{
 		vehicle->model_filepath_ = properties.file_.filepath_;
 	}
+
+	OSCBoundingBox boundingbox;
+	ParseOSCBoundingBox(boundingbox,vehicleNode);
+	vehicle->boundingbox_=boundingbox;
 
 	return vehicle;
 }
@@ -470,7 +509,7 @@ void ScenarioReader::parseCatalogs()
 
 void ScenarioReader::parseOSCFile(OSCFile &file, pugi::xml_node fileNode)
 {
-	file.filepath = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), ReadAttribute(fileNode, "filepath"));
+	file.filepath = ReadAttribute(fileNode, "filepath");
 }
 
 roadmanager::Trajectory* ScenarioReader::parseTrajectory(pugi::xml_node node)
@@ -673,28 +712,66 @@ int ScenarioReader::parseEntities()
 			}
 		}
 
-		if (obj != 0 & ctrl ==0)
+		if (obj != 0 && ctrl == 0)
 		{
 			obj->name_ = ReadAttribute(entitiesChild, "name");
 			entities_->addObject(obj);
 			objectCnt_++;
 		} 
-		else if (obj != 0 & ctrl != 0)
+		else if (obj != 0 && ctrl != 0)
 		{
 			// if sumo contorlled vehicle, the object will be passed to sumo template, and
-			pugi::xml_parse_result sumoconf = docsumo_.load_file(ctrl->config_filepath_.c_str());
-			std::string networkfile = ReadAttribute(docsumo_.child("configuration").child("input").child("net-file"),"value");
-			pugi::xml_parse_result sumonet = docsumo_.load_file(networkfile.c_str());
+			std::string configfile_path = ctrl->config_filepath_;
+			
+			pugi::xml_parse_result sumoconf = docsumo_.load_file(configfile_path.c_str());
+			if (sumoconf.status == pugi::status_file_not_found)
+			{
+				// Then assume relative path to scenario directory - which perhaps should be the expected location
+				configfile_path = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), configfile_path);
+				sumoconf = docsumo_.load_file(configfile_path.c_str());
+
+				if (sumoconf.status == pugi::status_file_not_found)
+				{
+					// Give up
+					LOG("Failed to load SUMO config file %s", configfile_path.c_str());
+					return -1;
+				}
+				else
+				{
+					// Update file path
+					ctrl->config_filepath_ = configfile_path;
+				}
+			}
+
+			std::vector<std::string> file_name_candidates;
+			file_name_candidates.push_back(ReadAttribute(docsumo_.child("configuration").child("input").child("net-file"), "value"));
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(configfile_path), file_name_candidates[0]));
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), file_name_candidates[0]));
+			pugi::xml_parse_result sumonet;
+			size_t i;
+			for (i = 0; i < file_name_candidates.size(); i++)
+			{
+				sumonet = docsumo_.load_file(file_name_candidates[i].c_str());
+				if (sumonet.status == pugi::status_ok)
+				{
+					break;
+				}
+			}
+			if (sumonet.status != pugi::status_ok)
+			{
+				// Give up
+				LOG("Failed to load SUMO net file %s", file_name_candidates[0].c_str());
+				return -1;
+			}
+
 			pugi::xml_node location = docsumo_.child("net").child("location");
 			std::string netoffset = ReadAttribute(location, "netOffset");
 			std::size_t delim = netoffset.find(',');
 			entities_->sumo_x_offset = std::stof(netoffset.substr(0,delim));
-			entities_->sumo_y_offset = std::stof(netoffset.substr(delim+1,netoffset.npos));
-			
+			entities_->sumo_y_offset = std::stof(netoffset.substr(delim+1,netoffset.npos));			
 			
 			entities_->sumo_vehicle = obj;
 			entities_->sumo_config_path = ctrl->config_filepath_;
-
 		}
 	}
 
@@ -1498,7 +1575,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 			activateControllerAction->longitudinal_ = ReadAttribute(actionChild, "longitudinal") == "true";
 			activateControllerAction->lateral_ = ReadAttribute(actionChild, "lateral") == "true";
 
-			LOG("ActivateControllerAction: Longitudinal: %s Lateral: %s", 
+			LOG("ActivateControllerAction: Longitudinal: %s Lateral: %s",
 				activateControllerAction->longitudinal_ ? "true" : "false",
 				activateControllerAction->lateral_ ? "true" : "false"
 			);

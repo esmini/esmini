@@ -20,9 +20,12 @@
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
 
+extern int g_Lane_id;
+extern int g_Laneb_id;
+
+
 namespace roadmanager
 {
-
 	class Polynomial
 	{
 	public:
@@ -54,14 +57,20 @@ namespace roadmanager
 	{
 		public:
 			OSIPoints() {}
-			OSIPoints(std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : x_(x), y_(y), z_(z), h_(h) {}
-			void Set(std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) { x_ = x; y_ = y; z_ = z; h_ = h;}
+			OSIPoints(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : x_(x), y_(y), z_(z), h_(h) {}
+			void Set(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) { s_ = s; x_ = x; y_ = y; z_ = z; h_ = h;}
+			std::vector<double> GetS() {return s_;}
 			std::vector<double> GetX() {return x_;}
 			std::vector<double> GetY() {return y_;}
 			std::vector<double> GetZ() {return z_;}
 			std::vector<double> GetH() {return h_;}
+			double GetXfromIdx(int i) {return x_[i];}
+			double GetYfromIdx(int i) {return y_[i];}
+			double GetZfromIdx(int i) {return z_[i];}
+			int GetNumOfOSIPoints() {return (int)x_.size();}
 
 		private:
+			std::vector<double> s_;
 			std::vector<double> x_;
 			std::vector<double> y_;
 			std::vector<double> z_;
@@ -286,6 +295,26 @@ namespace roadmanager
 		double s_offset_;
 	};
 
+	class LaneBoundaryOSI
+	{
+	public:
+		LaneBoundaryOSI(int gbid): global_id_(gbid) {}
+		~LaneBoundaryOSI() {};
+		void SetLaneBoundaryOSIID(int init); 
+		void SetGlobalId();
+		int GetGlobalId() { return global_id_; }
+		OSIPoints GetOSIPoints() {return osi_points_;}
+		OSIPoints osi_points_;
+	private:
+		int global_id_;  // Unique ID for OSI 
+	};
+
+	struct RoadMarkInfo
+	{
+		int roadmark_idx_;
+		int roadmarkline_idx_;
+	};
+
 	class LaneRoadMarkTypeLine
 	{
 	public:
@@ -298,6 +327,16 @@ namespace roadmanager
 
 		LaneRoadMarkTypeLine(double length, double space, double t_offset, double s_offset, RoadMarkTypeLineRule rule, double width): 
 		length_(length), space_(space), t_offset_(t_offset), s_offset_(s_offset), rule_(rule), width_(width) {}
+		~LaneRoadMarkTypeLine() {}; 
+		double GetSOffset() { return s_offset_; }
+		double GetTOffset() { return t_offset_; }
+		double GetLength() {return length_;}
+		double GetSpace() {return space_;}
+		double GetWidth() {return width_;}
+		OSIPoints GetOSIPoints() {return osi_points_;}
+		OSIPoints osi_points_;
+		void SetGlobalId();
+		int GetGlobalId() { return global_id_; }
 
 	private:
 		double length_;
@@ -306,6 +345,7 @@ namespace roadmanager
 		double s_offset_;
 		RoadMarkTypeLineRule rule_;
 		double width_;
+		int global_id_;  // Unique ID for OSI
 	};
 
 	class LaneRoadMarkType
@@ -313,9 +353,11 @@ namespace roadmanager
 	public:
 		LaneRoadMarkType(std::string name, double width) : name_(name), width_(width) {}
 		
-		void AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine) { lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine); }
+		void AddLine(LaneRoadMarkTypeLine *lane_roadMarkTypeLine); 
 		std::string GetName() { return name_; }
 		double GetWidth() { return width_; }
+		LaneRoadMarkTypeLine* GetLaneRoadMarkTypeLineByIdx(int idx);
+		int GetNumberOfRoadMarkTypeLines() { return (int)lane_roadMarkTypeLine_.size(); }
 		void Print();
 
 	private:
@@ -329,16 +371,16 @@ namespace roadmanager
 	public:
 		enum RoadMarkType
 		{
-			NONE_TYPE,
-			SOLID,
-			BROKEN,
-			SOLID_SOLID,
-			SOLID_BROKEN,
-			BROKEN_SOLID,
-			BROKEN_BROKEN,
-			BOTTS_DOTS,
-			GRASS,
-			CURB
+			NONE_TYPE = 1,
+			SOLID = 2,
+			BROKEN = 3,
+			SOLID_SOLID = 4,
+			SOLID_BROKEN = 5,
+			BROKEN_SOLID = 6,
+			BROKEN_BROKEN = 7,
+			BOTTS_DOTS = 8,
+			GRASS = 9,
+			CURB = 10
 		};
 
 		enum RoadMarkWeight
@@ -374,7 +416,14 @@ namespace roadmanager
 		RoadMarkMaterial material, RoadMarkLaneChange lane_change, double width, double height): 
 		s_offset_(s_offset), type_(type), weight_(weight), color_(color), material_(material), lane_change_(lane_change), 
 		width_(width), height_(height) {}
-		void AddType(LaneRoadMarkType *lane_roadMarkType) { lane_roadMarkType_ = lane_roadMarkType; }
+		void AddType(LaneRoadMarkType *lane_roadMarkType) { lane_roadMarkType_.push_back(lane_roadMarkType); }
+		int GetNumberOfRoadMarkTypes() { return (int)lane_roadMarkType_.size(); }
+		LaneRoadMarkType* GetLaneRoadMarkTypeByIdx(int idx);
+		double GetSOffset() { return s_offset_; }
+		double GetWidth() { return width_; }
+		RoadMarkType GetType() { return type_; }
+		double GetHeight() { return height_; }
+		RoadMarkColor GetColor() { return color_; }
 
 	private:
 		double s_offset_;
@@ -385,7 +434,7 @@ namespace roadmanager
 		RoadMarkLaneChange lane_change_;
 		double width_;
 		double height_;
-		LaneRoadMarkType *lane_roadMarkType_;
+		std::vector<LaneRoadMarkType*> lane_roadMarkType_;
 	};
 
 	class LaneOffset
@@ -458,22 +507,33 @@ namespace roadmanager
 		LaneLink *GetLink(LinkType type);
 		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
 		double GetOffsetFromRef() { return offset_from_ref_; }
+		RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
 		void AddLaneWIdth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
 		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
+		LaneRoadMark* GetLaneRoadMarkByIdx(int idx);
+		int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
 		int IsDriving();
 		void Print();
-		LaneType GetLaneType() {return type_; }
-		OSIPoints GetOSIPoints() {return osi_points_;}
+		LaneType GetLaneType() { return type_; }
+		OSIPoints GetOSIPoints() { return osi_points_;}
 		OSIPoints osi_points_;
+		void SetGlobalId();
+		int GetGlobalId() { return global_id_; }
+		std::vector<int> GetLineGlobalIds(); 
+		void SetLaneBoundary(LaneBoundaryOSI *lane_boundary);
+		LaneBoundaryOSI* GetLaneBoundary() {return lane_boundary_; }
+		int GetLaneBoundaryGlobalId();
 
 	private:
 		int id_;		// center = 0, left > 0, right < 0
+		int global_id_;  // Unique ID for OSI 
 		LaneType type_;
 		int level_;	// boolean, true = keep lane on level
 		double offset_from_ref_;
 		std::vector<LaneLink*> link_;
 		std::vector<LaneWidth*> lane_width_;
 		std::vector<LaneRoadMark*> lane_roadMark_;
+		LaneBoundaryOSI* lane_boundary_; 
 	};
 
 	class LaneSection
@@ -487,10 +547,12 @@ namespace roadmanager
 		int FindClosestDrivingLane(int id);
 		int GetLaneIdByIdx(int idx);
 		int GetLaneIdxById(int id);
+		int GetLaneGlobalIdByIdx(int idx);
 		double GetOuterOffset(double s, int lane_id);
 		double GetWidth(double s, int lane_id);
 		int GetClosestLaneIdx(double s, double t, double &offset);
-
+		int GetClosestWhateverLaneIdx(double s, double t, double &offset);
+		
 		/**
 		Get lateral position of lane center, from road reference lane (lane id=0)
 		Example: If lane id 1 is 5 m wide and lane id 2 is 4 m wide, then 
@@ -825,7 +887,7 @@ namespace roadmanager
 	class OpenDrive
 	{
 	public:
-		OpenDrive() {};
+		OpenDrive() {}; 
 		OpenDrive(const char *filename);
 		~OpenDrive();
 
@@ -844,8 +906,15 @@ namespace roadmanager
 		/**
 		Setting information based on the OSI standards for OpenDrive elements
 		*/
-		bool SetOSI();
-		bool CheckOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1);
+		bool SetRoadOSI();
+		bool CheckLaneOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1);
+		void SetLaneOSIPoints();
+		void SetRoadMarkOSIPoints();
+		/**
+		Checks all lanes - if a lane has RoadMarks it does nothing. If a lane does not have roadmarks 
+		then it creates a LaneBoundary following the lane border (left border for left lanes, right border for right lanes)
+		*/
+		void SetLaneBoundaryPoints();
 		
 		/**
 		Retrieve a road segment specified by road ID 
@@ -972,6 +1041,8 @@ namespace roadmanager
 		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
 		void ForceLaneId(int lane_id);
 		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
+		void SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
+		void SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int roadmarktype_idx, int roadmarkline_idx, double s, double offset, int lane_section_idx = -1);
 		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
 		void SetHeading(double heading);
 		void SetHeadingRelative(double heading);
@@ -1066,7 +1137,8 @@ namespace roadmanager
 
 		/**
 		Find out the difference between two position objects, in effect subtracting the values 
-		@param positionB The position which will be subtracted from the current position object
+		It can be used to calculate the distance from current position to another one (pos_b)
+		@param pos_b The position from which to subtract the current position (this position object)
 		@return true if position found and parameter values are valid, else false
 		*/
 		bool Delta(Position pos_b, PositionDiff &diff);
@@ -1135,6 +1207,11 @@ namespace roadmanager
 		@return lane ID
 		*/
 		int GetLaneId();
+		/**
+		Retrieve the global lane ID from the position object
+		@return lane ID
+		*/
+		int GetLaneGlobalId();
 
 		/**
 		Retrieve a road segment specified by road ID
@@ -1264,6 +1341,11 @@ namespace roadmanager
 		void Track2Lane();
 		void Track2XYZ();
 		void Lane2Track();
+		void RoadMark2Track();
+		/**
+		Set position to the border of lane (right border for right lanes, left border for left lanes)
+		*/
+		void LaneBoundary2Track();
 		void XYZ2Track(bool alignZAndPitch = false);
 		int SetLongitudinalTrackPos(int track_id, double s);
 		bool EvaluateRoadZPitchRoll(bool alignZPitchRoll);
@@ -1277,15 +1359,15 @@ namespace roadmanager
 
 		// track reference
 		int     track_id_;
-		double  s_;				// longitudinal point/distance along the track
-		double  t_;				// lateral position relative reference line (geometry)
-		int     lane_id_;		// lane reference
-		double  offset_;		// lateral position relative lane given by lane_id
-		double  h_road_;		// heading of the road
-		double  h_offset_;		// local heading offset given by lane width and offset 
-		double  h_relative_;	// heading relative to the road (h_ = h_road_ + h_relative_)
-		double  s_route_;		// longitudinal point/distance along the route
-		double  s_trajectory_;	// longitudinal point/distance along the trajectory
+		double  s_;					// longitudinal point/distance along the track
+		double  t_;					// lateral position relative reference line (geometry)
+		int     lane_id_;			// lane reference
+		double  offset_;			// lateral position relative lane given by lane_id
+		double  h_road_;			// heading of the road
+		double  h_offset_;			// local heading offset given by lane width and offset 
+		double  h_relative_;		// heading relative to the road (h_ = h_road_ + h_relative_)
+		double  s_route_;			// longitudinal point/distance along the route
+		double  s_trajectory_;		// longitudinal point/distance along the trajectory
 		double  curvature_;
 		Position* rel_pos_;
 		PositionType type_;
@@ -1302,11 +1384,14 @@ namespace roadmanager
 		double	p_road_;
 
 		// keep track for fast incremental updates of the position
-		int		track_idx_;		// road index 
-		int		lane_idx_;		// road index 
-		int		lane_section_idx_;	// lane section
-		int		geometry_idx_;	// index of the segment within the track given by track_idx
-		int		elevation_idx_;	// index of the current elevation entry 
+		int		track_idx_;				// road index 
+		int		lane_idx_;				// lane index 
+		int 	roadmark_idx_;  		// laneroadmark index
+		int 	roadmarktype_idx_;  		// laneroadmark index
+		int 	roadmarkline_idx_;  	// laneroadmarkline index
+		int		lane_section_idx_;		// lane section
+		int		geometry_idx_;			// index of the segment within the track given by track_idx
+		int		elevation_idx_;			// index of the current elevation entry 
 	};
 
 

@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 	}
 	catch (const std::exception& e)
 	{
-		printf(e.what());
+		printf("%s", e.what());
 		return -1;
 	}
 

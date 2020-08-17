@@ -38,8 +38,8 @@ namespace scenarioengine
 			LAT_LANE_OFFSET,
 			LAT_DISTANCE,
 			VISIBILITY,
-			AUTONOMOUS,
 			CONTROLLER,
+			ACTIVATE_CONTROLLER,
 			POSITION,
 			FOLLOW_ROUTE,
 			FOLLOW_TRAJECTORY,
@@ -540,30 +540,23 @@ namespace scenarioengine
 		void Start();
 	};
 
-	class AutonomousAction : public OSCPrivateAction
+	class ActivateControllerAction : public OSCPrivateAction
 	{
 	public:
-		typedef enum
+		bool longitudinal_;
+		bool lateral_;
+
+		ActivateControllerAction() : longitudinal_(false), lateral_(false), OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
+
+		ActivateControllerAction(const ActivateControllerAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
 		{
-			LONGITUDINAL,
-			LATERAL,
-			BOTH
-		} DomainType;
-
-		DomainType domain_;
-		bool activate_;
-
-		AutonomousAction() : OSCPrivateAction(OSCPrivateAction::ActionType::AUTONOMOUS) {}
-
-		AutonomousAction(const AutonomousAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::AUTONOMOUS) 
-		{
-			domain_ = action.domain_;
-			activate_ = action.activate_;
+			longitudinal_ = action.longitudinal_;
+			lateral_ = action.lateral_;
 		}
 
 		OSCPrivateAction* Copy()
 		{
-			AutonomousAction *new_action = new AutonomousAction(*this);
+			ActivateControllerAction* new_action = new ActivateControllerAction(*this);
 			return new_action;
 		}
 
@@ -578,16 +571,7 @@ namespace scenarioengine
 				return;
 			}
 
-			if (activate_ == true)
-			{
-				// activate driver model
-				LOG("Non existing driver model activated");
-			}
-			else
-			{
-				// activate driver model
-				LOG("Non existing driver model deactivated");
-			}
+			LOG("Dummy driver model activated");
 
 			OSCAction::Start();
 		}
