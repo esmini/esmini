@@ -10,9 +10,7 @@ endif()
 
 project (EnvironmentSimulator)
 
-if(NOT MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-else()
+if(MSVC)
   set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
 endif()
 set(CMAKE_CXX_STANDARD 14)
