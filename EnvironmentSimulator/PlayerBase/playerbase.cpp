@@ -113,7 +113,7 @@ void ScenarioPlayer::Frame(double timestep_s)
 #endif
 	}
 
-	if (scenarioEngine->getSimulationTime() > 600 && !messageShown)
+	if (scenarioEngine->getSimulationTime() > 3600 && !messageShown)
 	{
 		LOG("Info: Simulation time > 1 hour. Put a stopTrigger for automatic ending");
 		messageShown = true;
