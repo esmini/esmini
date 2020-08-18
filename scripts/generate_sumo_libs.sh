@@ -38,6 +38,7 @@ if [ "$OSTYPE" == "msys" ]; then
     LIB_EXT="lib"
     CXXFLAGS=""
     CFLAGS=""
+    LIB_PREFIX=""
     
 	# Visual Studio 2019 - default toolkit
 	# GENERATOR=("Visual Studio 16 2019")
@@ -46,13 +47,14 @@ if [ "$OSTYPE" == "msys" ]; then
 	# Visual Studio 2017 - default toolkit
 	# GENERATOR=("Visual Studio 15 2017 Win64")
 	# GENERATOR_ARGUMENTS="-T ${GENERATOR_TOOLSET}"
-elif [ "$OSTYPE" == "darwin"* ] || [ "$OSTYPE" == "linux-gnu"* ]; then
+elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
 	# Unix Makefiles (for Ubuntu and other Linux systems)
 	GENERATOR=("Unix Makefiles")
 	GENERATOR_ARGUMENTS=""
     LIB_EXT="a"
     CXXFLAGS="-fPIC" 
     CFLAGS="-fPIC"
+    LIB_PREFIX="lib"
 else
 	echo Unknown OSTYPE: $OSTYPE
 fi
@@ -79,17 +81,20 @@ then
     mkdir build
     cd build
 
-    if [ "$OSTYPE" == "darwin"* ] || [ "$OSTYPE" == "linux-gnu"* ]; then
-		cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release ..
-		cmake --build . --target install
-
-        if [ "$OSTYPE" == "linux-gnu"* ]; then
+    if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
+        
+        if [[ "$OSTYPE" == "linux"* ]]; then
             # Also build debug version on Linux
-            rm CMakeCache.txt
-            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug ..
+            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fPIC" ..
             cmake --build . --target install
-            mv ../install/lib/zlib.${LIB_EXT} ../install/lib/zlibd.${LIB_EXT}
+            mv ../install/lib/libz.${LIB_EXT} ../install/lib/zlibstaticd.${LIB_EXT}
         fi
+
+        rm CMakeCache.txt
+        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-fPIC" ..
+		cmake --build . --target install 
+        mv ../install/lib/libz.${LIB_EXT} ../install/lib/zlibstatic.${LIB_EXT}
+
 	elif [ "$OSTYPE" == "msys" ]; then
 		cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install ..
 		cmake --build . --config Debug --target install
@@ -105,6 +110,8 @@ fi
 echo ------------------------ Installing Xerces ------------------------------------
 cd $sumo_root_dir
 
+# in module cmake/XercesICU.cmake, comment out FIND statement: #find_package(ICU COMPONENTS uc data)
+
 if [ ! -d xerces-c-3.2.2 ]; then
  	if [ ! -f xerces-c-3.2.2.zip ]; then
   	    curl "https://archive.apache.org/dist/xerces/c/3/sources/xerces-c-3.2.2.zip" -o xerces-c-3.2.2.zip
@@ -112,21 +119,24 @@ if [ ! -d xerces-c-3.2.2 ]; then
     unzip xerces-c-3.2.2.zip
     cd xerces-c-3.2.2
     mkdir xerces-install
-    
-    
-    if [ "$OSTYPE" == "darwin"* ] || [ "$OSTYPE" == "linux-gnu"* ]; then
-		cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Release ..
-		cmake --build . --target install
 
-        if [ "$OSTYPE" == "linux-gnu"* ]; then
-            # Also build debug version on Linux
+    # Patch config to exlude ICU
+    sed -i 's/include(XercesICU)/#include(XercesICU)/g' CMakeLists.txt
+    
+    if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
+        # Also build debug version on Linux
+        cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Debug -Dnetwork=OFF -DCMAKE_CXX_FLAGS="-fPIC"
+        cmake --build . --target install
+        mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/xerces-c_3D.${LIB_EXT}
+
+        if [[ "$OSTYPE" == "linux"* ]]; then
             rm CMakeCache.txt
-            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Debug ..
+            cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Release -Dnetwork=OFF -DCMAKE_CXX_FLAGS="-fPIC"
             cmake --build . --target install
-#            mv xerces-install/lib/zlib.${LIB_EXT} ../install/lib/zlibd.${LIB_EXT}
+            mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/xerces-c_3.${LIB_EXT}
         fi
 	elif [ "$OSTYPE" == "msys" ]; then
-        cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install
+        cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -Dnetwork=OFF
         cmake --build . --config Debug --target install --clean-first  
         cmake --build . --config Release --target install 
 	else
@@ -140,20 +150,39 @@ echo ------------------------ Installing Sumo ----------------------------------
 cd $sumo_root_dir
 
 if [ ! -d sumo ]; then
-#    git clone https://github.com/eclipse/sumo.git --depth 1 --branch v1_6_0
+    git clone https://github.com/eclipse/sumo.git --depth 1 --branch v1_6_0
     cd sumo
-    mkdir build-code; cd build-code
 
-    ZLIB_LIBRARY_RELEASE=$sumo_root_dir/zlib-1.2.11/install/lib/zlib.${LIB_EXT}
-    ZLIB_LIBRARY_DEBUG=$sumo_root_dir/zlib-1.2.11/install/lib/zlibd.${LIB_EXT}
+    # Patch config to exlude Proj and FOX
+    sed -i 's/find_package(Proj)/#find_package(Proj)/g' CMakeLists.txt
+    sed -i 's/find_package(FOX)/#find_package(FOX)/g' CMakeLists.txt
+
+    mkdir build-code; cd build-code
+    
+    ZLIB_LIBRARY_RELEASE=$sumo_root_dir/zlib-1.2.11/install/lib/zlibstatic.${LIB_EXT}
+    ZLIB_LIBRARY_DEBUG=$sumo_root_dir/zlib-1.2.11/install/lib/zlibstaticd.${LIB_EXT}
+    
     XercesC_LIBRARY_RELEASE=$sumo_root_dir/xerces-c-3.2.2/xerces-install/lib/xerces-c_3.${LIB_EXT}
     XercesC_LIBRARY_DEBUG=$sumo_root_dir/xerces-c-3.2.2/xerces-install/lib/xerces-c_3D.${LIB_EXT}
     XercesC_INCLUDE_DIR=$sumo_root_dir/xerces-c-3.2.2/xerces-install/include
     XercesC_VERSION=3.2.2
-
-    if [ "$OSTYPE" != "darwin"* ]; then
+    
+    if [[ "$OSTYPE" != "darwin"* ]]; then
         cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib-1.2.11/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_DEBUG} -DENABLE_PYTHON_BINDINGS=OFF -DENABLE_JAVA_BINDINGS=OFF -DCHECK_OPTIONAL_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DXercesC_INCLUDE_DIR=${XercesC_INCLUDE_DIR} -DXercesC_LIBRARY=${XercesC_LIBRARY_DEBUG} -DXercesC_VERSION=${XercesC_VERSION}
         cmake --build . --config Debug
+        
+        for f in ${LIB_PREFIX}libsumostatic.${LIB_EXT} ${LIB_PREFIX}microsim_engine.${LIB_EXT} ${LIB_PREFIX}foreign_tcpip.${LIB_EXT} ${LIB_PREFIX}utils_traction_wire.${LIB_EXT} ${LIB_PREFIX}microsim_trigger.${LIB_EXT} ${LIB_PREFIX}microsim_actions.${LIB_EXT} ${LIB_PREFIX}traciserver.${LIB_EXT} ${LIB_PREFIX}mesosim.${LIB_EXT} ${LIB_PREFIX}foreign_phemlight.${LIB_EXT} ${LIB_PREFIX}microsim_cfmodels.${LIB_EXT} ${LIB_PREFIX}utils_iodevices.${LIB_EXT} ${LIB_PREFIX}microsim_lcmodels.${LIB_EXT} ${LIB_PREFIX}microsim_traffic_lights.${LIB_EXT} ${LIB_PREFIX}utils_shapes.${LIB_EXT} ${LIB_PREFIX}utils_emissions.${LIB_EXT} ${LIB_PREFIX}microsim_output.${LIB_EXT} ${LIB_PREFIX}netload.${LIB_EXT} ${LIB_PREFIX}microsim_devices.${LIB_EXT} ${LIB_PREFIX}microsim_transportables.${LIB_EXT} ${LIB_PREFIX}microsim.${LIB_EXT} ${LIB_PREFIX}utils_xml.${LIB_EXT} ${LIB_PREFIX}utils_vehicle.${LIB_EXT} ${LIB_PREFIX}utils_geom.${LIB_EXT} ${LIB_PREFIX}utils_common.${LIB_EXT} ${LIB_PREFIX}utils_distribution.${LIB_EXT} ${LIB_PREFIX}utils_options.${LIB_EXT}
+        do
+            if [[ "$OSTYPE" = "msys" ]]; then
+                file_path=`find . -path "*Debug/$f"`
+            else
+                file_path=`find . -name "$f"`
+            fi
+            new_file=$(echo $file_path | sed s/\\.${LIB_EXT}/d\\.${LIB_EXT}/)
+            echo "Renaming $file_path -> $new_file"
+            mv $file_path $new_file
+        done
+    
     fi
 
     rm CMakeCache.txt
@@ -207,22 +236,20 @@ then
         cp $f $sumo_root_dir/esmini/externals/sumo/include/libsumo
     done
 
-#    cd $sumo_root_dir/sumo/src
-#    cp **/*.h --parents $sumo_root_dir/esmini/externals/sumo/include
-
     echo Copying libraries
 
     cp $sumo_root_dir/zlib-1.2.11/install/lib/zlibstatic*.${LIB_EXT} $sumo_root_dir/esmini/externals/sumo/lib
     cp $sumo_root_dir/xerces-c-3.2.2/xerces-install/lib/xerces-c_3*.${LIB_EXT} $sumo_root_dir/esmini/externals/sumo/lib
     
     cd $sumo_root_dir/sumo/build-code/src
-    for f in libsumostatic.${LIB_EXT} microsim_engine.${LIB_EXT} foreign_tcpip.${LIB_EXT} utils_traction_wire.${LIB_EXT} microsim_trigger.${LIB_EXT} microsim_actions.${LIB_EXT} traciserver.${LIB_EXT} mesosim.${LIB_EXT} foreign_phemlight.${LIB_EXT} microsim_cfmodels.${LIB_EXT} utils_iodevices.${LIB_EXT} microsim_lcmodels.${LIB_EXT} microsim_traffic_lights.${LIB_EXT} utils_shapes.${LIB_EXT} utils_emissions.${LIB_EXT} microsim_output.${LIB_EXT} netload.${LIB_EXT} microsim_devices.${LIB_EXT} microsim_transportables.${LIB_EXT} microsim.${LIB_EXT} utils_xml.${LIB_EXT} utils_vehicle.${LIB_EXT} utils_geom.${LIB_EXT} utils_common.${LIB_EXT} utils_distribution.${LIB_EXT} utils_options.${LIB_EXT}
+
+    for f in ${LIB_PREFIX}libsumostaticd?.${LIB_EXT} ${LIB_PREFIX}microsim_engined?.${LIB_EXT} ${LIB_PREFIX}foreign_tcpipd?.${LIB_EXT} ${LIB_PREFIX}utils_traction_wired?.${LIB_EXT} ${LIB_PREFIX}microsim_triggerd?.${LIB_EXT} ${LIB_PREFIX}microsim_actionsd?.${LIB_EXT} ${LIB_PREFIX}traciserverd?.${LIB_EXT} ${LIB_PREFIX}mesosimd?.${LIB_EXT} ${LIB_PREFIX}foreign_phemlightd?.${LIB_EXT} ${LIB_PREFIX}microsim_cfmodelsd?.${LIB_EXT} ${LIB_PREFIX}utils_iodevicesd?.${LIB_EXT} ${LIB_PREFIX}microsim_lcmodelsd?.${LIB_EXT} ${LIB_PREFIX}microsim_traffic_lightsd?.${LIB_EXT} ${LIB_PREFIX}utils_shapesd?.${LIB_EXT} ${LIB_PREFIX}utils_emissionsd?.${LIB_EXT} ${LIB_PREFIX}microsim_outputd?.${LIB_EXT} ${LIB_PREFIX}netloadd?.${LIB_EXT} ${LIB_PREFIX}microsim_devicesd?.${LIB_EXT} ${LIB_PREFIX}microsim_transportablesd?.${LIB_EXT} ${LIB_PREFIX}microsimd?.${LIB_EXT} ${LIB_PREFIX}utils_xmld?.${LIB_EXT} ${LIB_PREFIX}utils_vehicled?.${LIB_EXT} ${LIB_PREFIX}utils_geomd?.${LIB_EXT} ${LIB_PREFIX}utils_commond?.${LIB_EXT} ${LIB_PREFIX}utils_distributiond?.${LIB_EXT} ${LIB_PREFIX}utils_optionsd?.${LIB_EXT}
     do
-        newfile=$(echo $f |sed -e "s/\.${LIB_EXT}/d\.${LIB_EXT}/")
-        echo "Renaming $f -> $newfile"
-        find . -path "*Debug/$f" -exec cp {} $sumo_root_dir/esmini/externals/sumo/lib/$newfile \;
-        find . -path "*Release/$f" -exec cp {} $sumo_root_dir/esmini/externals/sumo/lib/$f \;
+        echo $f
+        find . -type f -regex .*"$f" -exec cp {} $sumo_root_dir/esmini/externals/sumo/lib/ \;
     done
+
+    # To create the 7z package, use: 7z a filename.7z -m0=LZMA .
     
 else
     echo sumo files probably already copied, continue with next step...

@@ -37,6 +37,8 @@ elseif (UNIX)
   set ( OSG_DIR "${OSG_BASE_DIR}/linux" )
   set ( OSI_PACKAGE_URL https://drive.google.com/uc?export=download&id=1ZIQ4Hq6VUrYO-cs4hUe7iTB6_CtYVPUH )
   set ( OSI_DIR "${OSI_BASE_DIR}/linux" )
+  set ( SUMO_PACKAGE_URL https://drive.google.com/uc?export=download&id=1ThXnLQjULcMr_wxVprns5JMgXzm1NGcu )
+  set ( SUMO_DIR "${SUMO_BASE_DIR}/linux" )
 elseif (WIN32)
   if (WINSDK7_1)
     message ("Configuring for Windows SDK v7.1 x64")
@@ -151,34 +153,41 @@ elseif(UNIX)
   )
   
   set ( SUMO_LIBRARIES 
-    optimized foreign_phemlight debug foreign_phemlightd
-    optimized foreign_tcpip debug foreign_tcpipd
     optimized libsumostatic debug libsumostaticd
-    optimized mesosim debug mesosimd
-    optimized microsim debug microsimd
+    optimized traciserver debug traciserverd
+    optimized netload debug netloadd
+    optimized microsim_cfmodels debug microsim_cfmodelsd
+    optimized microsim_engine debug microsim_engined
+    optimized microsim_lcmodels debug microsim_lcmodelsd
+    optimized microsim_devices debug microsim_devicesd
+    optimized microsim_trigger debug microsim_triggerd
+    optimized microsim_output debug microsim_outputd
+    optimized microsim_transportables debug microsim_transportablesd
     optimized microsim_actions debug microsim_actionsd
+    optimized microsim_traffic_lights debug microsim_traffic_lightsd
+    optimized microsim debug microsimd
+    optimized mesosim debug mesosimd
+    optimized utils_emissions debug utils_emissionsd
+    optimized foreign_phemlight debug foreign_phemlightd
+    optimized utils_vehicle debug utils_vehicled
+    optimized utils_distribution debug utils_distributiond
+    optimized utils_shapes debug utils_shapesd
+    optimized utils_options debug utils_optionsd
+    optimized utils_xml debug utils_xmld
+    optimized utils_geom debug utils_geomd
+    optimized utils_common debug utils_commond
+    optimized utils_iodevices debug utils_iodevicesd
+    optimized utils_traction_wire debug utils_traction_wired
+    optimized foreign_tcpip debug foreign_tcpipd
+    optimized zlibstatic debug zlibstaticd
+    optimized xerces-c_3 debug xerces-c_3D
+    optimized traciserver debug traciserverd
+    optimized libsumostatic debug libsumostaticd
     optimized microsim_cfmodels debug microsim_cfmodelsd
     optimized microsim_devices debug microsim_devicesd
     optimized microsim_engine debug microsim_engined
-    optimized microsim_lcmodels debug microsim_lcmodelsd
-    optimized microsim_output debug microsim_outputd
-    optimized microsim_traffic_lights debug microsim_traffic_lightsd
-    optimized microsim_transportables debug microsim_transportablesd
-    optimized microsim_trigger debug microsim_triggerd
-    optimized netload debug netloadd
-    optimized traciserver debug traciserverd
-    optimized utils_common debug utils_commond
-    optimized utils_distribution debug utils_distributiond
-    optimized utils_emissions debug utils_emissionsd
-    optimized utils_geom debug utils_geomd
-    optimized utils_iodevices debug utils_iodevicesd
-    optimized utils_options debug utils_optionsd
-    optimized utils_shapes debug utils_shapesd
-    optimized utils_traction_wire debug utils_traction_wired
-    optimized utils_vehicle debug utils_vehicled
-    optimized utils_xml debug utils_xmld
-    optimized xerces-c_3 debug xerces-c_3D
-    optimized zlibstatic debug zlibstaticd
+    optimized microsim_output debug microsim_outputd    
+    optimized microsim_transportables debug microsim_transportablesd    
   )
 
 else() #not UNIX
