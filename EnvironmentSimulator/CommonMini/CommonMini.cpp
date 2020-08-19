@@ -504,12 +504,13 @@ Logger& Logger::Inst()
 	return instance;
 }
 
-
-
-
-
-
-//Constructor
+/*
+ * Logger for all vehicles contained in the Entities vector.
+ * 
+ * Builds a header based on the number of vehicles then prints data
+ * in columnar format, with time running from top to bottom and
+ * vehicles running from left to right, starting with the Ego vehicle
+ */
 VehicleLogger::VehicleLogger(std::string scenario_filename, int numvehicles)
 {
 #ifndef SUPPRESS_LOG
@@ -520,6 +521,7 @@ VehicleLogger::VehicleLogger(std::string scenario_filename, int numvehicles)
 	}
 #endif
 
+	//Standard ESMINI log header, appended with Scenario file name and vehicle count
 	static char message[1024];
 	snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
 	file_ << message << std::endl;
@@ -534,26 +536,38 @@ VehicleLogger::VehicleLogger(std::string scenario_filename, int numvehicles)
 	snprintf(message, 1024, "Number of Vehicles: %d", numvehicles);
 	file_ << message << std::endl;
 
-	//Ego vehicle is always present, so at least one set of vehicle data should stored 
-	//Index and TimeStamp are included in this first column set
-	snprintf(message, 1024, "Index [-] , TimeStamp [sec] , #1 Entitity_Name [-] , #1 Entitity_ID [-] , #1 Current_Speed [m/sec] , #1 Wheel_Angle [deg] , #1 Wheel_Rotation [-] , #1 World_Position_X [-] , #1 World_Position_Y [-] , #1 World_Position_Z [-] , #1 Distance_Travelled_Along_Road_Segment [m] , #1 Lateral_Distance_Lanem [m] , #1 World_Heading_Angle [rad] , #1 Relative_Heading_Angle [rad] , #1 Relative_Heading_Angle_Drive_Direction [rad] , #1 World_Pitch_Angle [rad] , #1 Road_Curvature [1/m] , ");
+	//Ego vehicle is always present, at least one set of vehicle data values should be stored 
+	//Index and TimeStamp are included in this first set of columns 
+	const char* egoHeader = "Index [-] , TimeStamp [sec] , #1 Entitity_Name [-] , "
+		"#1 Entitity_ID [-] , #1 Current_Speed [m/sec] , #1 Wheel_Angle [deg] , "
+		"#1 Wheel_Rotation [-] , #1 World_Position_X [-] , #1 World_Position_Y [-] , "
+		"#1 World_Position_Z [-] , #1 Distance_Travelled_Along_Road_Segment [m] , "
+		"#1 Lateral_Distance_Lanem [m] , #1 World_Heading_Angle [rad] , "
+		"#1 Relative_Heading_Angle [rad] , #1 Relative_Heading_Angle_Drive_Direction [rad] , "
+		"#1 World_Pitch_Angle [rad] , #1 Road_Curvature [1/m] , ";
+	snprintf(message, 1024, egoHeader);
 	file_ << message;
 
-	//Based on number of vehicels in Entities, extend the header accordingly
+	//Based on number of vehicels in the Entities vector, extend the header accordingly
+	const char* npcHeader = "#%d Entitity_Name [-] , #%d Entitity_ID [-] , "
+		"#%d Current_Speed [m/sec] , #%d Wheel_Angle [deg] , #%d Wheel_Rotation [-] , "
+		"#%d World_Position_X [-] , #%d World_Position_Y [-] , #%d World_Position_Z [-] , "
+		"#%d Distance_Travelled_Along_Road_Segment [m] , #%d Lateral_Distance_Lanem [m] , "
+		"#%d World_Heading_Angle [rad] , %d Relative_Heading_Angle [rad] , "
+		"#%d Relative_Heading_Angle_Drive_Direction [rad] , #%d World_Pitch_Angle [rad] , "
+		"#%d Road_Curvature [1/m] , ";
 	for (int i = 2; i <= numvehicles; i++)
 	{
-		snprintf(message, 1024, "#%d Entitity_Name [-] , #%d Entitity_ID [-] , #%d Current_Speed [m/sec] , #%d Wheel_Angle [deg] , #%d Wheel_Rotation [-] , #%d World_Position_X [-] , #%d World_Position_Y [-] , #%d World_Position_Z [-] , #%d Distance_Travelled_Along_Road_Segment [m] , #%d Lateral_Distance_Lanem [m] , #%d World_Heading_Angle [rad] , #%d Relative_Heading_Angle [rad] , #%d Relative_Heading_Angle_Drive_Direction [rad] , #%d World_Pitch_Angle [rad] , #%d Road_Curvature [1/m] , ", i, i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+		snprintf(message, 1024, npcHeader, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i);
 		file_ << message;
 	}
 	file_ << std::endl;
-
 
 	file_.flush();
 
 	callback_ = 0;
 }
 
-//Destructor
 VehicleLogger::~VehicleLogger()
 {
 	if (file_.is_open())
@@ -564,21 +578,28 @@ VehicleLogger::~VehicleLogger()
 	callback_ = 0;
 }
 
-void VehicleLogger::LogVehicleData(bool isendline, int indexcounter, double timestamp, char const* name_, int id_, double speed_, double wheel_angle_, double wheel_rot_,
-	double posX_, double posY_, double posZ_, double distance_road_, double distance_lanem_, double heading_, double heading_angle_, double heading_angle_driving_direction_, 
+void VehicleLogger::LogVehicleData(bool isendline, int indexcounter, double timestamp, 
+	char const* name_, int id_, double speed_, double wheel_angle_, double wheel_rot_,
+	double posX_, double posY_, double posZ_, double distance_road_, double distance_lanem_, 
+	double heading_, double heading_angle_, double heading_angle_driving_direction_, 
 	double pitch_, double curvature_, ...)
 {
-	//Char buffer
 	static char complete_entry[2048];
 
-
-
-	//If this is data for the Ego vehicle, position 0 in the Entities vector, print using the first format
+	//If this data is for Ego (position 0 in the Entities vector) print using the first format
 	//Otherwise use the second format
 	if (id_ == 0)
-		snprintf(complete_entry, 2048, "%d , %f , %s , %d , %f , %f , %f , %f , %f , %f , %f , %f, %f, %f, %f, %f , %f ,", indexcounter, timestamp, name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_, posZ_, distance_road_, distance_lanem_, heading_, heading_angle_, heading_angle_driving_direction_, pitch_, curvature_);
+		snprintf(complete_entry, 2048, 
+			"%d , %f , %s , %d , %f , %f , %f , %f , %f , %f , %f , %f, %f, %f, %f, %f , %f ,",
+			indexcounter, timestamp, name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_, 
+			posZ_, distance_road_, distance_lanem_, heading_, heading_angle_, 
+			heading_angle_driving_direction_, pitch_, curvature_);
 	else
-		snprintf(complete_entry, 2048, "%s , %d , %f , %f , %f , %f , %f , %f , %f , %f, %f, %f, %f, % f , %f,", name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_, posZ_, distance_road_, distance_lanem_, heading_, heading_angle_, heading_angle_driving_direction_, pitch_, curvature_);
+		snprintf(complete_entry, 2048, 
+			"%s , %d , %f , %f , %f , %f , %f , %f , %f , %f, %f, %f, %f, % f , %f,", 
+			name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_, posZ_, distance_road_,
+			distance_lanem_, heading_, heading_angle_, heading_angle_driving_direction_, pitch_,
+			curvature_);
 
 	//Add lines horizontally until the endline is reached
 	if (isendline == false)
@@ -598,7 +619,6 @@ void VehicleLogger::LogVehicleData(bool isendline, int indexcounter, double time
 	}
 }
 
-//callback
 void VehicleLogger::SetCallback(FuncPtr callback)
 {
 	callback_ = callback;
@@ -616,12 +636,12 @@ void VehicleLogger::SetCallback(FuncPtr callback)
 }
 
 //instantiator
+//Filename and vehicle number are used for dynamic header creation
 VehicleLogger& VehicleLogger::InstVehicleLog(std::string scenario_filename, int numvehicles)
 {
 	static VehicleLogger instance(scenario_filename, numvehicles);
 	return instance;
 }
-
 
 SE_Thread::~SE_Thread()
 {
