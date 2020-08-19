@@ -154,9 +154,19 @@ elseif(UNIX)
   
   set ( SUMO_LIBRARIES 
     optimized libsumostatic debug libsumostaticd
-    optimized traciserver debug traciserverd
     optimized netload debug netloadd
-    optimized microsim_cfmodels debug microsim_cfmodelsd
+    optimized traciserver debug traciserverd
+    optimized libsumostatic debug libsumostaticd
+    optimized utils_vehicle debug utils_vehicled
+    optimized utils_distribution debug utils_distributiond
+    optimized utils_shapes debug utils_shapesd
+    optimized utils_options debug utils_optionsd
+    optimized utils_xml debug utils_xmld
+    optimized utils_geom debug utils_geomd
+    optimized utils_common debug utils_commond
+    optimized utils_iodevices debug utils_iodevicesd
+    optimized utils_traction_wire debug utils_traction_wired
+    optimized utils_emissions debug utils_emissionsd
     optimized microsim_engine debug microsim_engined
     optimized microsim_lcmodels debug microsim_lcmodelsd
     optimized microsim_devices debug microsim_devicesd
@@ -167,27 +177,11 @@ elseif(UNIX)
     optimized microsim_traffic_lights debug microsim_traffic_lightsd
     optimized microsim debug microsimd
     optimized mesosim debug mesosimd
-    optimized utils_emissions debug utils_emissionsd
     optimized foreign_phemlight debug foreign_phemlightd
-    optimized utils_vehicle debug utils_vehicled
-    optimized utils_distribution debug utils_distributiond
-    optimized utils_shapes debug utils_shapesd
-    optimized utils_options debug utils_optionsd
-    optimized utils_xml debug utils_xmld
-    optimized utils_geom debug utils_geomd
-    optimized utils_common debug utils_commond
-    optimized utils_iodevices debug utils_iodevicesd
-    optimized utils_traction_wire debug utils_traction_wired
     optimized foreign_tcpip debug foreign_tcpipd
+    optimized microsim_cfmodels debug microsim_cfmodelsd
     optimized zlibstatic debug zlibstaticd
     optimized xerces-c_3 debug xerces-c_3D
-    optimized traciserver debug traciserverd
-    optimized libsumostatic debug libsumostaticd
-    optimized microsim_cfmodels debug microsim_cfmodelsd
-    optimized microsim_devices debug microsim_devicesd
-    optimized microsim_engine debug microsim_engined
-    optimized microsim_output debug microsim_outputd    
-    optimized microsim_transportables debug microsim_transportablesd    
   )
 
 else() #not UNIX

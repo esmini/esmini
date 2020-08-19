@@ -154,8 +154,8 @@ if [ ! -d sumo ]; then
     cd sumo
 
     # Patch config to exlude Proj and FOX
-    sed -i 's/find_package(Proj)/#find_package(Proj)/g' CMakeLists.txt
-    sed -i 's/find_package(FOX)/#find_package(FOX)/g' CMakeLists.txt
+#    sed -i 's/find_package(Proj)/#find_package(Proj)/g' CMakeLists.txt
+#    sed -i 's/find_package(FOX)/#find_package(FOX)/g' CMakeLists.txt
 
     mkdir build-code; cd build-code
     
@@ -168,7 +168,7 @@ if [ ! -d sumo ]; then
     XercesC_VERSION=3.2.2
     
     if [[ "$OSTYPE" != "darwin"* ]]; then
-        cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib-1.2.11/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_DEBUG} -DENABLE_PYTHON_BINDINGS=OFF -DENABLE_JAVA_BINDINGS=OFF -DCHECK_OPTIONAL_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DXercesC_INCLUDE_DIR=${XercesC_INCLUDE_DIR} -DXercesC_LIBRARY=${XercesC_LIBRARY_DEBUG} -DXercesC_VERSION=${XercesC_VERSION}
+        cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib-1.2.11/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_DEBUG} -DENABLE_PYTHON_BINDINGS=OFF -DENABLE_JAVA_BINDINGS=OFF -DCHECK_OPTIONAL_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DXercesC_INCLUDE_DIR=${XercesC_INCLUDE_DIR} -DXercesC_LIBRARY=${XercesC_LIBRARY_DEBUG} -DXercesC_VERSION=${XercesC_VERSION} -DPROJ_LIBRARY= -DFOX_CONFIG=
         cmake --build . --config Debug
         
         for f in ${LIB_PREFIX}libsumostatic.${LIB_EXT} ${LIB_PREFIX}microsim_engine.${LIB_EXT} ${LIB_PREFIX}foreign_tcpip.${LIB_EXT} ${LIB_PREFIX}utils_traction_wire.${LIB_EXT} ${LIB_PREFIX}microsim_trigger.${LIB_EXT} ${LIB_PREFIX}microsim_actions.${LIB_EXT} ${LIB_PREFIX}traciserver.${LIB_EXT} ${LIB_PREFIX}mesosim.${LIB_EXT} ${LIB_PREFIX}foreign_phemlight.${LIB_EXT} ${LIB_PREFIX}microsim_cfmodels.${LIB_EXT} ${LIB_PREFIX}utils_iodevices.${LIB_EXT} ${LIB_PREFIX}microsim_lcmodels.${LIB_EXT} ${LIB_PREFIX}microsim_traffic_lights.${LIB_EXT} ${LIB_PREFIX}utils_shapes.${LIB_EXT} ${LIB_PREFIX}utils_emissions.${LIB_EXT} ${LIB_PREFIX}microsim_output.${LIB_EXT} ${LIB_PREFIX}netload.${LIB_EXT} ${LIB_PREFIX}microsim_devices.${LIB_EXT} ${LIB_PREFIX}microsim_transportables.${LIB_EXT} ${LIB_PREFIX}microsim.${LIB_EXT} ${LIB_PREFIX}utils_xml.${LIB_EXT} ${LIB_PREFIX}utils_vehicle.${LIB_EXT} ${LIB_PREFIX}utils_geom.${LIB_EXT} ${LIB_PREFIX}utils_common.${LIB_EXT} ${LIB_PREFIX}utils_distribution.${LIB_EXT} ${LIB_PREFIX}utils_options.${LIB_EXT}
