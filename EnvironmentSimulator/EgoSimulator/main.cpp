@@ -30,6 +30,8 @@
 
 #include "playerbase.hpp"
 #include "vehicle.hpp"
+#include "CommonMini.cpp"
+
 
 static vehicle::Vehicle *ego;
 static int ego_id = -1;
@@ -256,6 +258,11 @@ int main(int argc, char *argv[])
 
 	SetupExternVehicles(player);
 
+	//Vehicle Logger code
+	VehicleLogger& egoLog = VehicleLogger::InstVehicleLog(player->scenarioEngine->getScenarioFilename(), player->scenarioEngine->entities.object_.size());
+	//Counter for indexing each log entry
+	int indexcounter = 0;
+
 	while (!player->IsQuitRequested())
 	{
 		double dt;
@@ -270,6 +277,37 @@ int main(int argc, char *argv[])
 
 		UpdateExternVehicles(dt, player);
 		player->Frame(dt);
+
+
+
+		//Flag for signalling end of data line, all vehicles reported
+		bool isendline = false;
+
+		//For each vehicle (entitity) stored in the ScenarioPlayer
+		for (size_t i = 0; i < player->scenarioEngine->entities.object_.size(); i++)
+		{
+			//Create a pointer to the object at position i in the entities vector
+			Object *obj = player->scenarioEngine->entities.object_[i];
+
+			//Create a Position object for extracting this vehicles XYZ coordinates
+			roadmanager::Position pos = obj->pos_;
+
+			//Extract the String name of the object and store in a compatable const char array
+			const char *name_ = &(*obj->name_.c_str());
+
+			if ((i + 1) == player->scenarioEngine->entities.object_.size())
+			{
+				isendline = true;
+			}
+
+			//Log the extracted data of a normal INTERNAL ego vehicle, or additonal scenario vehicles
+			egoLog.LogVehicleData(isendline, indexcounter, player->scenarioEngine->getSimulationTime(), name_,
+				obj->id_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, pos.GetX(), pos.GetY(), pos.GetZ(),
+				pos.GetS(), pos.GetT(), pos.GetH(), pos.GetHRelative(), pos.GetHRelativeDrivingDirection(),
+				pos.GetP(), pos.GetCurvature());
+
+			indexcounter += 1;
+		}
 	}
 
 	DeleteExternVehicles();
