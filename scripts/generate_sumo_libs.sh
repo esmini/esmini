@@ -88,9 +88,9 @@ then
             cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fPIC" ..
             cmake --build . --target install
             mv ../install/lib/libz.${LIB_EXT} ../install/lib/zlibstaticd.${LIB_EXT}
+            rm CMakeCache.txt
         fi
 
-        rm CMakeCache.txt
         cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-fPIC" ..
 		cmake --build . --target install 
         mv ../install/lib/libz.${LIB_EXT} ../install/lib/zlibstatic.${LIB_EXT}
@@ -121,21 +121,22 @@ if [ ! -d xerces-c-3.2.2 ]; then
     mkdir xerces-install
 
     # Patch config to exlude ICU
-    sed -i 's/include(XercesICU)/#include(XercesICU)/g' CMakeLists.txt
+    sed -ie 's/include(XercesICU)/#include(XercesICU)/g' CMakeLists.txt
     
     if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
-        # Also build debug version on Linux
-        cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Debug -Dnetwork=OFF -DCMAKE_CXX_FLAGS="-fPIC"
-        cmake --build . --target install
-        mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/xerces-c_3D.${LIB_EXT}
-
-        if [[ "$OSTYPE" == "linux"* ]]; then
-            rm CMakeCache.txt
-            cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Release -Dnetwork=OFF -DCMAKE_CXX_FLAGS="-fPIC"
+	if [[ "$OSTYPE" == "linux"* ]]; then        
+            # Build debug version only on Linux (and Win)
+            cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Debug -Dnetwork=OFF -DCMAKE_CXX_FLAGS="-fPIC"
             cmake --build . --target install
-            mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/xerces-c_3.${LIB_EXT}
+            mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/xerces-c_3D.${LIB_EXT}
+            rm CMakeCache.txt
         fi
-	elif [ "$OSTYPE" == "msys" ]; then
+        
+        cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Release -Dnetwork=OFF -DCMAKE_CXX_FLAGS="-fPIC"
+        cmake --build . --target install
+        mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/xerces-c_3.${LIB_EXT}
+
+    elif [ "$OSTYPE" == "msys" ]; then
         cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -Dnetwork=OFF
         cmake --build . --config Debug --target install --clean-first  
         cmake --build . --config Release --target install 
@@ -183,9 +184,13 @@ if [ ! -d sumo ]; then
             mv $file_path $new_file
         done
     
+        rm CMakeCache.txt
     fi
 
-    rm CMakeCache.txt
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        export LDFLAGS="-framework CoreServices"
+    fi
+
     cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_INCLUDE_DIR=${sumo_root_dir}/zlib-1.2.11/install/include -DZLIB_LIBRARY=${ZLIB_LIBRARY_RELEASE} -DENABLE_PYTHON_BINDINGS=OFF -DENABLE_JAVA_BINDINGS=OFF -DCHECK_OPTIONAL_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DXercesC_INCLUDE_DIR=${XercesC_INCLUDE_DIR} -DXercesC_LIBRARY=${XercesC_LIBRARY_RELEASE} -DXercesC_VERSION=${XercesC_VERSION}
 
     cmake --build . --config Release --clean-first  
@@ -246,7 +251,7 @@ then
     for f in ${LIB_PREFIX}libsumostaticd?.${LIB_EXT} ${LIB_PREFIX}microsim_engined?.${LIB_EXT} ${LIB_PREFIX}foreign_tcpipd?.${LIB_EXT} ${LIB_PREFIX}utils_traction_wired?.${LIB_EXT} ${LIB_PREFIX}microsim_triggerd?.${LIB_EXT} ${LIB_PREFIX}microsim_actionsd?.${LIB_EXT} ${LIB_PREFIX}traciserverd?.${LIB_EXT} ${LIB_PREFIX}mesosimd?.${LIB_EXT} ${LIB_PREFIX}foreign_phemlightd?.${LIB_EXT} ${LIB_PREFIX}microsim_cfmodelsd?.${LIB_EXT} ${LIB_PREFIX}utils_iodevicesd?.${LIB_EXT} ${LIB_PREFIX}microsim_lcmodelsd?.${LIB_EXT} ${LIB_PREFIX}microsim_traffic_lightsd?.${LIB_EXT} ${LIB_PREFIX}utils_shapesd?.${LIB_EXT} ${LIB_PREFIX}utils_emissionsd?.${LIB_EXT} ${LIB_PREFIX}microsim_outputd?.${LIB_EXT} ${LIB_PREFIX}netloadd?.${LIB_EXT} ${LIB_PREFIX}microsim_devicesd?.${LIB_EXT} ${LIB_PREFIX}microsim_transportablesd?.${LIB_EXT} ${LIB_PREFIX}microsimd?.${LIB_EXT} ${LIB_PREFIX}utils_xmld?.${LIB_EXT} ${LIB_PREFIX}utils_vehicled?.${LIB_EXT} ${LIB_PREFIX}utils_geomd?.${LIB_EXT} ${LIB_PREFIX}utils_commond?.${LIB_EXT} ${LIB_PREFIX}utils_distributiond?.${LIB_EXT} ${LIB_PREFIX}utils_optionsd?.${LIB_EXT}
     do
         echo $f
-        find . -type f -regex .*"$f" -exec cp {} $sumo_root_dir/esmini/externals/sumo/lib/ \;
+        find -E . -type f -regex ".*$f" -exec cp {} $sumo_root_dir/esmini/externals/sumo/lib/ \;
     done
 
     # To create the 7z package, use: 7z a filename.7z -m0=LZMA .
