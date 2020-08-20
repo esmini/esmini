@@ -87,13 +87,13 @@ then
             # Also build debug version on Linux
             cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fPIC" ..
             cmake --build . --target install
-            mv ../install/lib/libz.${LIB_EXT} ../install/lib/zlibstaticd.${LIB_EXT}
+            mv ../install/lib/libz.${LIB_EXT} ../install/lib/libzlibstaticd.${LIB_EXT}
             rm CMakeCache.txt
         fi
 
         cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-fPIC" ..
 		cmake --build . --target install 
-        mv ../install/lib/libz.${LIB_EXT} ../install/lib/zlibstatic.${LIB_EXT}
+        mv ../install/lib/libz.${LIB_EXT} ../install/lib/libzlibstatic.${LIB_EXT}
 
 	elif [ "$OSTYPE" == "msys" ]; then
 		cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install ..
@@ -124,17 +124,17 @@ if [ ! -d xerces-c-3.2.2 ]; then
     sed -ie 's/include(XercesICU)/#include(XercesICU)/g' CMakeLists.txt
     
     if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
-	if [[ "$OSTYPE" == "linux"* ]]; then        
+        if [[ "$OSTYPE" == "linux"* ]]; then        
             # Build debug version only on Linux (and Win)
             cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Debug -Dnetwork=OFF -DCMAKE_CXX_FLAGS="-fPIC"
             cmake --build . --target install
-            mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/xerces-c_3D.${LIB_EXT}
+            mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/libxerces-c_3D.${LIB_EXT}
             rm CMakeCache.txt
         fi
         
         cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -DCMAKE_BUILD_TYPE=Release -Dnetwork=OFF -DCMAKE_CXX_FLAGS="-fPIC"
         cmake --build . --target install
-        mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/xerces-c_3.${LIB_EXT}
+        mv xerces-install/lib/libxerces-c-3.2.${LIB_EXT} xerces-install/lib/libxerces-c_3.${LIB_EXT}
 
     elif [ "$OSTYPE" == "msys" ]; then
         cmake . -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=xerces-install -Dnetwork=OFF
@@ -154,17 +154,13 @@ if [ ! -d sumo ]; then
     git clone https://github.com/eclipse/sumo.git --depth 1 --branch v1_6_0
     cd sumo
 
-    # Patch config to exlude Proj and FOX
-#    sed -i 's/find_package(Proj)/#find_package(Proj)/g' CMakeLists.txt
-#    sed -i 's/find_package(FOX)/#find_package(FOX)/g' CMakeLists.txt
-
     mkdir build-code; cd build-code
     
-    ZLIB_LIBRARY_RELEASE=$sumo_root_dir/zlib-1.2.11/install/lib/zlibstatic.${LIB_EXT}
-    ZLIB_LIBRARY_DEBUG=$sumo_root_dir/zlib-1.2.11/install/lib/zlibstaticd.${LIB_EXT}
+    ZLIB_LIBRARY_RELEASE=$sumo_root_dir/zlib-1.2.11/install/lib/${LIB_PREFIX}zlibstatic.${LIB_EXT}
+    ZLIB_LIBRARY_DEBUG=$sumo_root_dir/zlib-1.2.11/install/lib/${LIB_PREFIX}zlibstaticd.${LIB_EXT}
     
-    XercesC_LIBRARY_RELEASE=$sumo_root_dir/xerces-c-3.2.2/xerces-install/lib/xerces-c_3.${LIB_EXT}
-    XercesC_LIBRARY_DEBUG=$sumo_root_dir/xerces-c-3.2.2/xerces-install/lib/xerces-c_3D.${LIB_EXT}
+    XercesC_LIBRARY_RELEASE=$sumo_root_dir/xerces-c-3.2.2/xerces-install/lib/${LIB_PREFIX}xerces-c_3.${LIB_EXT}
+    XercesC_LIBRARY_DEBUG=$sumo_root_dir/xerces-c-3.2.2/xerces-install/lib/${LIB_PREFIX}xerces-c_3D.${LIB_EXT}
     XercesC_INCLUDE_DIR=$sumo_root_dir/xerces-c-3.2.2/xerces-install/include
     XercesC_VERSION=3.2.2
     
