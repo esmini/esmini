@@ -514,21 +514,6 @@ int ScenarioPlayer::Init()
 		LOG("Any ghosts will be launched with headstart %.2f seconds (default)", ghost_headstart);
 	}
 
-	if (opt.GetOptionArg("osi_file") ==  "on")
-	{
-		osi_file = true;
-	}
-	if ((arg_str = opt.GetOptionArg("osi_freq")) != "")
-	{
-		if (osi_file == false)
-		{
-			LOG("Specify osi frequence without --osi_file on is not possible"); 
-			return -1; 
-		}
-		osi_freq_ = atoi(arg_str.c_str());
-		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
-	}
-
 	// Create scenario engine
 	try
 	{
@@ -555,6 +540,25 @@ int ScenarioPlayer::Init()
 		scenarioGateway->OpenSocket(opt.GetOptionArg("osi_receiver_ip"));
 	}
 
+	if (opt.GetOptionArg("osi_file") == "on")
+	{
+		osi_file = true;
+		if (scenarioGateway->OpenOSIFile() == false)
+		{
+			osi_file = false;
+		}
+	}
+
+	if ((arg_str = opt.GetOptionArg("osi_freq")) != "")
+	{
+		if (osi_file == false)
+		{
+			LOG("Specify osi frequence without --osi_file on is not possible");
+			return -1;
+		}
+		osi_freq_ = atoi(arg_str.c_str());
+		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
+	}
 
 	// Create a data file for later replay?
 	if ((arg_str = opt.GetOptionArg("record")) != "")
@@ -570,8 +574,10 @@ int ScenarioPlayer::Init()
 	if (osi_file || scenarioGateway->GetSocket())
 	{
 		scenarioEngine->getScenarioGateway()->UpdateOSISensorView();
-		scenarioEngine->getScenarioGateway()->OpenOSIFile();
-		scenarioEngine->getScenarioGateway()->WriteOSIFile();
+		if (osi_file)
+		{
+			scenarioEngine->getScenarioGateway()->WriteOSIFile();
+		}
 	}
 
 	if (!headless)
