@@ -221,6 +221,54 @@ INSTANTIATE_TEST_CASE_P(TestEvaluatePrimPrimParamArgument, PolynomialTestEvaluat
 //////////////////////////////////////////////////////////////////////
 
 
+/******************************************
+* Test the LineLink class
+******************************************/
+// Tests the class constructor.
+TEST(LaneLinkTest, DefaultConstructor) {
+    LaneLink lane_link(UNKNOWN, 0);
+    EXPECT_EQ(UNKNOWN, lane_link.GetType());
+    EXPECT_EQ(0,lane_link.GetId());
+}
+
+/******************************************
+* Test the LaneWidth class
+******************************************/
+// Tests the class constructor.
+TEST(LaneWidthTest, DefaultConstructor) {
+    LaneWidth lane_width(1, 1, 1, 1, 1);
+    EXPECT_EQ(1, lane_width.GetSOffset());
+}
+
+/******************************************
+* Test the LaneBoundaryOSI class
+******************************************/
+
+/******************************************
+* Test the LaneRoadMarkTypeLine class
+******************************************/
+class LaneRoadMarkTypeLineTest :public ::testing::TestWithParam<std::tuple<double,double,double,double,LaneRoadMarkTypeLine::RoadMarkTypeLineRule,double>> {};
+// inp: length,space,t_offset,s_offset,rule,width
+// expected: 
+
+TEST_P(LaneRoadMarkTypeLineTest, DefaultConstructor) {
+    LaneRoadMarkTypeLine lane_roadmarking = LaneRoadMarkTypeLine(
+        std::get<0>(GetParam()),
+        std::get<1>(GetParam()),
+        std::get<2>(GetParam()),
+        std::get<3>(GetParam()),
+        std::get<4>(GetParam()),
+        std::get<5>(GetParam()));
+    EXPECT_EQ(lane_roadmarking.GetLength(),std::get<0>(GetParam()));
+    EXPECT_EQ(lane_roadmarking.GetSpace(),std::get<1>(GetParam()));
+    EXPECT_EQ(lane_roadmarking.GetTOffset(),std::get<2>(GetParam()));
+    EXPECT_EQ(lane_roadmarking.GetSOffset(),std::get<3>(GetParam()));
+}
+
+INSTANTIATE_TEST_CASE_P(LaneRoadMarkTypeLineTests,LaneRoadMarkTypeLineTest,::testing::Values(
+    std::make_tuple(100,100,0,0,LaneRoadMarkTypeLine::NO_PASSING,2),
+    std::make_tuple(10,10,-1,1,LaneRoadMarkTypeLine::CAUTION,6)));
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
