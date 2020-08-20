@@ -228,17 +228,17 @@ private:
 };
 
 // Global Vehicle Data Logger
-class VehicleLogger
+class CSV_Logger
 {
 public:
 	typedef void(*FuncPtr)(const char*);
 
 	//Instantiator
-	static VehicleLogger& InstVehicleLog(std::string scenario_filename,
-		int numvehicles);
+	static CSV_Logger& InstVehicleLog(std::string scenario_filename,
+		int numvehicles, std::string csv_filename);
 
 	//Logging function called by VehicleLogger object using pass by value
-	void LogVehicleData(bool isendline, int indexcounter, double timestamp, 
+	void LogVehicleData(bool isendline, double timestamp, 
 		char const* name_, int id_, double speed_, double wheel_angle_,
 		double wheel_rot_, double posX_, double posY_, double posZ_,
 		double distance_road_, double distance_lanem_, double heading_,
@@ -249,10 +249,13 @@ public:
 
 private:
 	//Constructor to be called by instantiator
-	VehicleLogger(std::string scenario_filename, int numvehicles);
+	CSV_Logger(std::string scenario_filename, int numvehicles, std::string csv_filename);
 
 	//Destructor
-	~VehicleLogger();
+	~CSV_Logger();
+
+	//Counter for indexing each log entry
+	int data_index_;
 
 	//File output stream
 	std::ofstream file_;

@@ -511,15 +511,16 @@ Logger& Logger::Inst()
  * in columnar format, with time running from top to bottom and
  * vehicles running from left to right, starting with the Ego vehicle
  */
-VehicleLogger::VehicleLogger(std::string scenario_filename, int numvehicles)
+CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::string csv_filename)
 {
-#ifndef SUPPRESS_LOG
-	file_.open("VehicleLog.csv");
+
+	file_.open(csv_filename);
 	if (file_.fail())
 	{
 		throw std::iostream::failure(std::string("Cannot open file: ") + "VehicleLog.csv");
 	}
-#endif
+
+	data_index_ = 0;
 
 	//Standard ESMINI log header, appended with Scenario file name and vehicle count
 	static char message[1024];
@@ -568,7 +569,7 @@ VehicleLogger::VehicleLogger(std::string scenario_filename, int numvehicles)
 	callback_ = 0;
 }
 
-VehicleLogger::~VehicleLogger()
+CSV_Logger::~CSV_Logger()
 {
 	if (file_.is_open())
 	{
@@ -578,24 +579,24 @@ VehicleLogger::~VehicleLogger()
 	callback_ = 0;
 }
 
-void VehicleLogger::LogVehicleData(bool isendline, int indexcounter, double timestamp, 
+void CSV_Logger::LogVehicleData(bool isendline, double timestamp,
 	char const* name_, int id_, double speed_, double wheel_angle_, double wheel_rot_,
 	double posX_, double posY_, double posZ_, double distance_road_, double distance_lanem_, 
 	double heading_, double heading_angle_, double heading_angle_driving_direction_, 
 	double pitch_, double curvature_, ...)
 {
-	static char complete_entry[2048];
+	static char data_entry[2048];
 
 	//If this data is for Ego (position 0 in the Entities vector) print using the first format
 	//Otherwise use the second format
 	if (id_ == 0)
-		snprintf(complete_entry, 2048, 
+		snprintf(data_entry, 2048,
 			"%d , %f , %s , %d , %f , %f , %f , %f , %f , %f , %f , %f, %f, %f, %f, %f , %f ,",
-			indexcounter, timestamp, name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_, 
+			data_index_, timestamp, name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_,
 			posZ_, distance_road_, distance_lanem_, heading_, heading_angle_, 
 			heading_angle_driving_direction_, pitch_, curvature_);
 	else
-		snprintf(complete_entry, 2048, 
+		snprintf(data_entry, 2048,
 			"%s , %d , %f , %f , %f , %f , %f , %f , %f , %f, %f, %f, %f, % f , %f,", 
 			name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_, posZ_, distance_road_,
 			distance_lanem_, heading_, heading_angle_, heading_angle_driving_direction_, pitch_,
@@ -604,22 +605,26 @@ void VehicleLogger::LogVehicleData(bool isendline, int indexcounter, double time
 	//Add lines horizontally until the endline is reached
 	if (isendline == false)
 	{
-		file_ << complete_entry;
+		file_ << data_entry;
 	}
 	else if (file_.is_open())
 	{
 
-		file_ << complete_entry << std::endl;
+		file_ << data_entry << std::endl;
 		file_.flush();
+		
+		data_index_++;
 	}
+
+	
 
 	if (callback_)
 	{
-		callback_(complete_entry);
+		callback_(data_entry);
 	}
 }
 
-void VehicleLogger::SetCallback(FuncPtr callback)
+void CSV_Logger::SetCallback(FuncPtr callback)
 {
 	callback_ = callback;
 
@@ -637,9 +642,9 @@ void VehicleLogger::SetCallback(FuncPtr callback)
 
 //instantiator
 //Filename and vehicle number are used for dynamic header creation
-VehicleLogger& VehicleLogger::InstVehicleLog(std::string scenario_filename, int numvehicles)
+CSV_Logger& CSV_Logger::InstVehicleLog(std::string scenario_filename, int numvehicles, std::string csv_filename)
 {
-	static VehicleLogger instance(scenario_filename, numvehicles);
+	static CSV_Logger instance(scenario_filename, numvehicles, csv_filename);
 	return instance;
 }
 
