@@ -347,9 +347,12 @@ int ScenarioGateway::UpdateOSIMovingObject()
 		mobj_osi_internal.mobj[i]->mutable_base()->mutable_orientation()->set_yaw(objectState_[i]->state_.pos.GetH());
 		mobj_osi_internal.mobj[i]->mutable_base()->mutable_orientation()->set_pitch(objectState_[i]->state_.pos.GetP());
 		mobj_osi_internal.mobj[i]->mutable_base()->mutable_orientation()->set_roll(objectState_[i]->state_.pos.GetR());
-		mobj_osi_internal.mobj[i]->mutable_base()->mutable_velocity()->set_x(objectState_[i]->state_.speed * cos(objectState_[i]->state_.pos.GetH()));
-		mobj_osi_internal.mobj[i]->mutable_base()->mutable_velocity()->set_y(objectState_[i]->state_.speed * sin(objectState_[i]->state_.pos.GetH()));
+		mobj_osi_internal.mobj[i]->mutable_base()->mutable_velocity()->set_x(objectState_[i]->state_.pos.GetVelX());
+		mobj_osi_internal.mobj[i]->mutable_base()->mutable_velocity()->set_y(objectState_[i]->state_.pos.GetVelY());
 		mobj_osi_internal.mobj[i]->mutable_base()->mutable_velocity()->set_z(0);  // assume neglectable speed in z dimension
+		mobj_osi_internal.mobj[i]->mutable_base()->mutable_acceleration()->set_x(objectState_[i]->state_.pos.GetAccX());
+		mobj_osi_internal.mobj[i]->mutable_base()->mutable_acceleration()->set_y(objectState_[i]->state_.pos.GetAccY());
+		mobj_osi_internal.mobj[i]->mutable_base()->mutable_acceleration()->set_z(0);  // assume neglectable speed in z dimension
 	}
 
 	return 0;

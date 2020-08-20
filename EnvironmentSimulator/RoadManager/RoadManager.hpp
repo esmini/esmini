@@ -1326,6 +1326,19 @@ namespace roadmanager
 		void SetH(double h) { h_ = h; }
 		void SetP(double p) { p_ = p; }
 		void SetR(double r) { r_ = r; }
+		void SetVelX(double x) { velX_ = x; }
+		void SetVelY(double y) { velY_ = y; }
+		void SetVelZ(double z) { velZ_ = z; }
+		void SetAccX(double x) { accX_ = x; }
+		void SetAccY(double y) { accY_ = y; }
+		void SetAccZ(double z) { accZ_ = z; }
+		double GetVelX() { return velX_; }
+		double GetVelY() { return velY_; }
+		double GetVelZ() { return velZ_; }
+		double GetAccX() { return accX_; }
+		double GetAccY() { return accY_; }
+		double GetAccZ() { return accZ_; }
+
 		void SetOrientationType(OrientationType type) { orientation_type_ = type; }
 
 		void CopyRMPos(Position *from);
@@ -1380,6 +1393,12 @@ namespace roadmanager
 		double	h_;
 		double	p_;
 		double	r_;
+		double	velX_;
+		double	velY_;
+		double	velZ_;
+		double	accX_;
+		double	accY_;
+		double	accZ_;
 		double	z_road_;
 		double	p_road_;
 
