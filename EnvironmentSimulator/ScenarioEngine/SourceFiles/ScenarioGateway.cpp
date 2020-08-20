@@ -175,7 +175,6 @@ ScenarioGateway::~ScenarioGateway()
 		osi_file.close();
 	}
 
-
 	// Assume osi cleans up allocated data
 }
 
@@ -258,7 +257,37 @@ int ScenarioGateway::getObjectStateById(int id, ObjectState& objectState)
 	return -1;
 }
 
-int ScenarioGateway::UpdateOSISensorView(bool osi_file_bool)
+bool ScenarioGateway::OpenOSIFile()
+{
+	osi_file = std::ofstream("move_obj.osi", std::ios_base::binary);
+	if (!osi_file.good())
+	{
+		LOG("Failed open osi file");
+		return false; 
+	}
+	return true; 
+}
+
+bool ScenarioGateway::WriteOSIFile()
+{
+	mobj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
+	osiSensorView.size = (unsigned int)mobj_osi_internal.sv->ByteSizeLong();
+
+	// write to file, first size of message
+	osi_file.write((char*)&osiSensorView.size, sizeof(osiSensorView.size));
+
+	// write to file, actual message - the sensorview object including timestamp and moving objects
+	osi_file.write(osiSensorView.sensor_view.c_str(), osiSensorView.size);
+
+	if (!osi_file.good())
+	{
+		LOG("Failed write osi file");
+		return false; 
+	}
+	return true; 
+}
+
+int ScenarioGateway::UpdateOSISensorView()
 {
 	double time_stamp = objectState_[0]->state_.timeStamp;
 
@@ -273,32 +302,11 @@ int ScenarioGateway::UpdateOSISensorView(bool osi_file_bool)
 
 	UpdateOSILaneBoundary();
 
-	mobj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
-	osiSensorView.size = (unsigned int)mobj_osi_internal.sv->ByteSizeLong();
-
-	if (osi_file_bool == true)
-	{
-		if (time_stamp == 0)
-		{
-			osi_file = std::ofstream("move_obj.osi", std::ios_base::binary);
-			if (!osi_file.good())
-			{
-				LOG("Failed open osi_s file");
-			}
-		}
-
-		// write to file, first size of message
-		osi_file.write((char*)&osiSensorView.size, sizeof(osiSensorView.size));
-
-		// write to file, actual message - the sensorview object including timestamp and moving objects
-		osi_file.write(osiSensorView.sensor_view.c_str(), osiSensorView.size);
-	}
-
 	if (sendSocket)
 	{
 		// send over udp - skip size (package size == message size)
-
 		int sendResult = sendto(sendSocket, (char*)osiSensorView.sensor_view.c_str(), osiSensorView.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
+
 		if (sendResult != osiSensorView.size)
 		{
 			LOG("Failed send osi package over UDP");

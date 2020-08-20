@@ -121,8 +121,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	}
 	sumocontroller->step(getSimulationTime());
 
-	// Story 
-	
+	// Story
 	// First evaluate StoryBoard stopTrigger
 	if (storyBoard.stop_trigger_ && storyBoard.stop_trigger_->Evaluate(&storyBoard, simulationTime) == true)
 	{

@@ -146,6 +146,16 @@ extern "C"
 	SE_DLL_API void SE_GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id);
 
 	/**
+	Create and open osi file 
+	*/
+	SE_DLL_API bool SE_OSIFileOpen();
+
+	/**
+	Create and open osi file 
+	*/
+	SE_DLL_API bool SE_OSIFileWrite();
+
+	/**
 	Create an ideal object sensor and attach to specified vehicle
 	@param object_id Handle to the object to which the sensor should be attached
 	@param x Position x coordinate of the sensor in vehicle local coordinates

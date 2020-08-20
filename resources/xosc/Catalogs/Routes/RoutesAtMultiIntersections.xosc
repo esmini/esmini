@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="0"
+               revMinor="9"
+               date="2020-05-16T17:00:00"
+               author="SimS"/>
+   <Catalog name="RoutesAtMultiIntersections">
+      <Route name="TargetStraightLeftToRight" closed="false">
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="230" laneId="1" offset="0" s="100"/>
+            </Position>
+         </Waypoint>
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="229" laneId="-1" offset="0" s="100"/>
+            </Position>
+         </Waypoint>
+      </Route>
+      <Route name="HostStraightRoute" closed="false">
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="242" laneId="1" offset="0" s="100"/>
+            </Position>
+         </Waypoint>
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="235" laneId="-1" offset="0" s="100"/>
+            </Position>
+         </Waypoint>
+      </Route>
+   </Catalog>
+</OpenSCENARIO>

@@ -1,6 +1,6 @@
 <?xml version="1.0" standalone="yes"?>
 <OpenDRIVE>
-    <header revMajor="1" revMinor="4" name="" version="1.00" date="Sun May  3 08:26:01 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00">
+    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Jul  1 07:45:00 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00">
     </header>
     <road name="" length="1.0900000000000000e+02" id="196" junction="-1">
         <link>
@@ -59,6 +59,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -71,8 +74,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -87,6 +96,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -190,6 +202,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -202,6 +217,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -214,8 +232,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -230,6 +254,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -242,6 +269,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -323,6 +353,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -338,6 +371,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -351,6 +387,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -421,6 +460,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -433,6 +475,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -484,6 +529,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -499,6 +547,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -572,6 +623,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -585,8 +639,14 @@
                         <width sOffset="3.3500000000000000e+01" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="-1.7301038062283738e-02" d="4.5231472058258139e-04"/>
                         <width sOffset="5.9000000000000000e+01" a="0.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.5000000000000000e+01" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <fillet pos="none" style="none" id="0" />
@@ -598,8 +658,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -614,6 +680,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -730,6 +799,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -782,6 +854,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -833,6 +908,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -848,6 +926,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -861,6 +942,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -1050,6 +1134,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1062,8 +1149,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1078,10 +1171,19 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <roadMark sOffset="6.0000000000000000e+01" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1095,6 +1197,9 @@
                         <width sOffset="3.3500000000000000e+01" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="-1.7301038062283738e-02" d="4.5231472058258139e-04"/>
                         <width sOffset="5.9000000000000000e+01" a="0.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <fillet pos="none" style="none" id="0" />
@@ -1195,6 +1300,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -1210,6 +1318,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -1261,6 +1372,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -1276,6 +1390,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -1327,6 +1444,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1342,6 +1462,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -1355,6 +1478,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -1423,6 +1549,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1438,6 +1567,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -1451,6 +1583,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -1533,6 +1668,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -1545,6 +1683,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1557,8 +1698,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1573,6 +1720,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1595,6 +1745,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -1689,6 +1842,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -1701,6 +1857,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1713,8 +1872,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1729,6 +1894,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1752,6 +1920,9 @@
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -1834,6 +2005,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1849,6 +2023,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -1862,6 +2039,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -1929,6 +2109,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -1944,6 +2127,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -1957,6 +2143,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -2024,6 +2213,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -2039,6 +2231,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -2090,6 +2285,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -2105,6 +2303,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -2169,6 +2370,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -2181,6 +2385,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -2193,8 +2400,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -2209,6 +2422,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -2232,6 +2448,9 @@
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -2300,6 +2519,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="2.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.3000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.3000000000000000e-01">
+                                <line length="3.0000000000000000e+00" space="5.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.3000000000000000e-01" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -2315,6 +2537,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -2381,6 +2606,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -2396,10 +2624,19 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.5000000000000000e+00" type="broken" weight="bold" color="standard" width="2.5000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="2.5000000000000000e-01">
+                                <line length="1.5000000000000000e+00" space="2.5000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="2.5000000000000000e-01" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="1.8000000000000000e+01" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -2473,6 +2710,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -2485,8 +2725,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -2501,6 +2747,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -2606,6 +2855,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -2618,6 +2870,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -2630,8 +2885,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -2646,6 +2907,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -2658,6 +2922,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -2737,6 +3004,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -2752,6 +3022,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -2765,6 +3038,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -2832,6 +3108,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -2847,6 +3126,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -2860,6 +3142,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -2927,6 +3212,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -2942,6 +3230,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -2993,6 +3284,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -3008,6 +3302,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -3082,6 +3379,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -3094,8 +3394,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -3110,6 +3416,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -3210,10 +3519,19 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.5000000000000000e+00" type="broken" weight="standard" color="standard" width="2.0000000000000001e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="2.0000000000000001e-01" >
+                                <line length="1.0000000000000000e+00" space="1.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="2.0000000000000001e-01"/>
+                            </type>
                         </roadMark>
                         <roadMark sOffset="1.8000000000000000e+01" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -3253,6 +3571,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -3268,10 +3589,19 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.5000000000000000e+00" type="broken" weight="standard" color="standard" width="2.0000000000000001e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="2.0000000000000001e-01" >
+                                <line length="1.0000000000000000e+00" space="1.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="2.0000000000000001e-01"/>
+                            </type>
                         </roadMark>
                         <roadMark sOffset="1.8000000000000000e+01" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -3323,6 +3653,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -3338,6 +3671,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -3351,6 +3687,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -3418,6 +3757,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -3433,6 +3775,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -3446,6 +3791,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -3630,6 +3978,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -3642,8 +3993,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -3657,6 +4014,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -3761,6 +4121,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -3776,6 +4139,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -3827,6 +4193,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -3842,6 +4211,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -3907,6 +4279,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -3919,6 +4294,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -3931,8 +4309,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -3947,6 +4331,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -3969,6 +4356,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -4063,6 +4453,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -4075,6 +4468,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4087,8 +4483,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4103,6 +4505,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4126,6 +4531,9 @@
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -4208,6 +4616,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4223,6 +4634,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -4236,6 +4650,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -4303,6 +4720,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4318,6 +4738,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -4331,6 +4754,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -4398,6 +4824,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -4413,6 +4842,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -4464,6 +4896,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -4479,6 +4914,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -4543,6 +4981,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -4555,6 +4996,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4567,8 +5011,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4583,6 +5033,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4606,6 +5059,9 @@
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -4674,6 +5130,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="2.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.3000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.3000000000000000e-01">
+                                <line length="3.0000000000000000e+00" space="5.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.3000000000000000e-01" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4689,6 +5148,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -4755,6 +5217,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -4770,10 +5235,19 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.5000000000000000e+00" type="broken" weight="bold" color="standard" width="2.5000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="2.5000000000000000e-01">
+                                <line length="1.5000000000000000e+00" space="2.5000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="2.5000000000000000e-01" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="1.8000000000000000e+01" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -4847,6 +5321,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -4860,6 +5337,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4872,8 +5352,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4889,6 +5375,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -4914,6 +5403,9 @@
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -4993,6 +5485,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -5005,6 +5500,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5017,8 +5515,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5033,6 +5537,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5055,6 +5562,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -5149,6 +5659,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -5161,6 +5674,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5173,8 +5689,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5189,6 +5711,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5212,6 +5737,9 @@
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -5294,6 +5822,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5309,6 +5840,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -5322,6 +5856,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -5389,6 +5926,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5404,6 +5944,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -5417,6 +5960,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -5484,6 +6030,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -5499,6 +6048,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -5550,6 +6102,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -5565,6 +6120,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -5629,6 +6187,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -5641,6 +6202,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5653,8 +6217,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5669,6 +6239,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5692,6 +6265,9 @@
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -5760,6 +6336,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="2.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.3000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.3000000000000000e-01">
+                                <line length="3.0000000000000000e+00" space="5.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.3000000000000000e-01" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5775,6 +6354,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -5841,6 +6423,9 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
@@ -5856,10 +6441,19 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.5000000000000000e+00" type="broken" weight="bold" color="standard" width="2.5000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="2.5000000000000000e-01">
+                                <line length="1.5000000000000000e+00" space="2.5000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="2.5000000000000000e-01" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="1.8000000000000000e+01" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="pav_no_dir" mapping="auto" />
@@ -5933,6 +6527,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -5946,6 +6543,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5958,8 +6558,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -5975,6 +6581,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -6000,6 +6609,9 @@
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -6086,6 +6698,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -6099,6 +6714,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -6111,8 +6729,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -6128,6 +6752,9 @@
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -6153,6 +6780,9 @@
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
@@ -6184,7 +6814,6 @@
     </road>
     <road name="" length="2.1424777960737720e+02" id="284" junction="-1">
         <link>
-            <predecessor elementType="road" elementId="229" contactPoint="end" />
             <successor elementType="road" elementId="256" contactPoint="end" />
         </link>
         <planView>
@@ -6218,7 +6847,6 @@
                     </lane>
                     <lane id="3" type="sidewalk" level= "false">
                         <link>
-                            <predecessor id="3"/>
                             <successor id="-3"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
@@ -6233,11 +6861,13 @@
                     </lane>
                     <lane id="2" type="border" level= "false">
                         <link>
-                            <predecessor id="2"/>
                             <successor id="-2"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
@@ -6246,11 +6876,13 @@
                     </lane>
                     <lane id="1" type="driving" level= "false">
                         <link>
-                            <predecessor id="1"/>
                             <successor id="-1"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -6263,8 +6895,14 @@
                         <link>
                         </link>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <roadMark sOffset="4.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="6.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -6275,11 +6913,13 @@
                 <right>
                     <lane id="-1" type="driving" level= "false">
                         <link>
-                            <predecessor id="-1"/>
                             <successor id="1"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
+                            <type name="solid" width="0.0000000000000000e+00" >
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="0.0000000000000000e+00"/>
+                            </type>
                         </roadMark>
                         <userData code="viStyleDef">
                             <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
@@ -6288,7 +6928,6 @@
                     </lane>
                     <lane id="-2" type="border" level= "false">
                         <link>
-                            <predecessor id="-2"/>
                             <successor id="2"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
@@ -6299,12 +6938,14 @@
                     </lane>
                     <lane id="-3" type="sidewalk" level= "false">
                         <link>
-                            <predecessor id="-3"/>
                             <successor id="3"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
+                            <type name="none" width="0.0000000000000000e+00">
+                                <line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="none" width="0.0000000000000000e+00" />
+                            </type>
                         </roadMark>
                         <height sOffset="0.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
                         <height sOffset="2.0000000000000000e+00" inner="2.0000000000000000e-02" outer="1.2000000000000000e-01"/>
