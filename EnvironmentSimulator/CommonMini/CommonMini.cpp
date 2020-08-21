@@ -513,11 +513,23 @@ Logger& Logger::Inst()
  */
 CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::string csv_filename)
 {
-
-	file_.open(csv_filename);
-	if (file_.fail())
+	// Check if csv file extension is present
+	if (csv_filename.find(".csv", (csv_filename.length() - 4)) != std::string::npos)
 	{
-		throw std::iostream::failure(std::string("Cannot open file: ") + "VehicleLog.csv");
+		file_.open(csv_filename);
+		if (file_.fail())
+		{
+			throw std::iostream::failure(std::string("Cannot open file: ") + csv_filename);
+		}
+	}
+	else
+	{
+		std::cout << "Filename must contain .csv file extension. Using default name \"VehicleLog.csv\"";
+		file_.open("VehicleLog.csv");
+		if (file_.fail())
+		{
+			throw std::iostream::failure(std::string("Cannot open file: ") + "VehicleLog.csv");
+		}
 	}
 
 	data_index_ = 0;
