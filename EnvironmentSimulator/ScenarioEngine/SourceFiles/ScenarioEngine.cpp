@@ -504,7 +504,7 @@ void ScenarioEngine::stepObjects(double dt)
 				obj->pos_.SetVelY((obj->pos_.GetY() - pos_y_old) / dt);
 				obj->pos_.SetAccX((obj->pos_.GetVelX() - vel_x_old) / dt);
 				obj->pos_.SetAccY((obj->pos_.GetVelY() - vel_y_old) / dt);
-				double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), heading_old) / dt);
+				double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), heading_old) / dt;
 				obj->pos_.SetHRate(heading_rate_new);
 				obj->pos_.SetHAcc(GetAngleDifference(heading_rate_new, heading_rate_old) / dt);
 			}
