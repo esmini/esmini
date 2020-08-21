@@ -490,6 +490,12 @@ void ScenarioEngine::stepObjects(double dt)
 		if ((simulationTime > 0 && obj->control_ == Object::Control::INTERNAL) ||
 			obj->control_ == Object::Control::HYBRID_GHOST)
 		{
+			double pos_x_old = obj->pos_.GetX();
+			double pos_y_old = obj->pos_.GetY();
+			double vel_x_old = obj->pos_.GetVelX();
+			double vel_y_old = obj->pos_.GetVelY();
+			double heading_old = obj->pos_.GetH();
+
 			double steplen = obj->speed_ * dt;
 
 			if (obj->pos_.GetRoute())
@@ -508,9 +514,20 @@ void ScenarioEngine::stepObjects(double dt)
 					// If pointing in other direction
 					steplen *= -1;
 				}
+				
 				obj->pos_.MoveAlongS(steplen);
 			}
 			obj->odometer_ += abs(steplen);  // odometer always measure all movements as positive, I guess...
+
+			// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
+			if (dt > SMALL_NUMBER)
+			{
+				obj->pos_.SetVelX((obj->pos_.GetX() - pos_x_old) / dt);
+				obj->pos_.SetVelY((obj->pos_.GetY() - pos_y_old) / dt);
+				obj->pos_.SetAccX((obj->pos_.GetVelX() - vel_x_old) / dt);
+				obj->pos_.SetAccY((obj->pos_.GetVelY() - vel_y_old) / dt);
+				obj->pos_.SetHRate(GetAngleDifference(obj->pos_.GetH(), heading_old) / dt);
+			}
 		}
 		obj->trail_.AddState((float)simulationTime, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
 	}

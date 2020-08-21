@@ -881,7 +881,7 @@ void Viewer::SetCameraMode(int mode)
 	rubberbandManipulator_->setMode(camMode_);
 }
 
-CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor,std::string name)
+CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor, std::string name)
 {
 	// Load 3D model
 	std::string path = modelFilepath;
@@ -944,7 +944,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 		state->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 	}
 
-	cars_.push_back(new CarModel(osgViewer_, lod, rootnode_, trails_, dot_node_, trail_color,name));
+	cars_.push_back(new CarModel(osgViewer_, lod, rootnode_, trails_, dot_node_, trail_color, name));
 	// Focus on first added car
 	if (cars_.size() == 1)
 	{
