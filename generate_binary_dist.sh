@@ -43,6 +43,7 @@ resources/models/jolengatan.osgb \
 resources/models/straight_500m.osgb \
 resources/models/parking_lot.osgb \
 resources/models/curve_r100.osgb \
+resources/sumo_inputs/e6mini* \
 run/EgoSimulator/run_basic_hybrid.* \
 run/EgoSimulator/run_ltap-od_external.* \
 run/EgoSimulator/run_ltap-od_internal.* \

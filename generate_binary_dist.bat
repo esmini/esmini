@@ -10,6 +10,7 @@ IF NOT EXIST %target_dir%\resources\xosc\Catalogs\Vehicles ( mkdir %target_dir%\
 IF NOT EXIST %target_dir%\resources\xosc\extensions ( mkdir %target_dir%\resources\xosc\extensions )
 IF NOT EXIST %target_dir%\resources\xodr ( mkdir %target_dir%\resources\xodr )
 IF NOT EXIST %target_dir%\resources\models ( mkdir %target_dir%\resources\models )
+IF NOT EXIST %target_dir%\resources\sumo_inputs ( mkdir %target_dir%\resources\sumo_inputs )
 IF NOT EXIST %target_dir%\run ( mkdir %target_dir%\run )
 IF NOT EXIST %target_dir%\run\EgoSimulator ( mkdir %target_dir%\run\EgoSimulator )
 IF NOT EXIST %target_dir%\bin ( mkdir %target_dir%\bin )
@@ -55,6 +56,8 @@ copy resources\models\jolengatan.osgb %target_dir%\resources\models /y
 copy resources\models\straight_500m.osgb %target_dir%\resources\models /y
 copy resources\models\parking_lot.osgb %target_dir%\resources\models /y
 copy resources\models\curve_r100.osgb %target_dir%\resources\models /y
+
+copy resources\sumo_inputs\e6mini* %target_dir%\resources\sumo_inputs /y
 
 copy run\EgoSimulator\run_basic_hybrid.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_ltap-od_external.bat %target_dir%\run\EgoSimulator /y
