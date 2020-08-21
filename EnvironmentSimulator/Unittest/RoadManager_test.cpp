@@ -249,7 +249,6 @@ TEST(LaneWidthTest, DefaultConstructor) {
 ******************************************/
 class LaneRoadMarkTypeLineTest :public ::testing::TestWithParam<std::tuple<double,double,double,double,LaneRoadMarkTypeLine::RoadMarkTypeLineRule,double>> {};
 // inp: length,space,t_offset,s_offset,rule,width
-// expected: 
 
 TEST_P(LaneRoadMarkTypeLineTest, DefaultConstructor) {
     LaneRoadMarkTypeLine lane_roadmarking = LaneRoadMarkTypeLine(
@@ -259,15 +258,87 @@ TEST_P(LaneRoadMarkTypeLineTest, DefaultConstructor) {
         std::get<3>(GetParam()),
         std::get<4>(GetParam()),
         std::get<5>(GetParam()));
+
     EXPECT_EQ(lane_roadmarking.GetLength(),std::get<0>(GetParam()));
     EXPECT_EQ(lane_roadmarking.GetSpace(),std::get<1>(GetParam()));
     EXPECT_EQ(lane_roadmarking.GetTOffset(),std::get<2>(GetParam()));
     EXPECT_EQ(lane_roadmarking.GetSOffset(),std::get<3>(GetParam()));
+
+    // Test SetGlobalId method
+    // OSI related stuff not implemented yet
+    //lane_roadmarking.SetGlobalId();
+    //EXPECT_EQ(lane_roadmarking.GetGlobalId(), 0);
 }
 
 INSTANTIATE_TEST_CASE_P(LaneRoadMarkTypeLineTests,LaneRoadMarkTypeLineTest,::testing::Values(
     std::make_tuple(100,100,0,0,LaneRoadMarkTypeLine::NO_PASSING,2),
     std::make_tuple(10,10,-1,1,LaneRoadMarkTypeLine::CAUTION,6)));
+
+/******************************************
+* Test the LaneRoadMarkType class
+******************************************/
+class LaneRoadMarkTypeTest : public ::testing::Test {
+    protected:
+    void SetUp() override { lane_test_0 = new LaneRoadMarkType("test", 0.2); }
+    LaneRoadMarkType* lane_test_0;
+};
+
+TEST_F(LaneRoadMarkTypeTest, DefaultConstructor) {
+    EXPECT_EQ(lane_test_0->GetName(),"test");
+    EXPECT_EQ(lane_test_0->GetWidth(),0.2);
+}
+
+TEST_F(LaneRoadMarkTypeTest,AddLine) {
+    LaneRoadMarkTypeLine * line_0 = new LaneRoadMarkTypeLine(100,100,0,0,LaneRoadMarkTypeLine::NO_PASSING,2);
+    lane_test_0->AddLine(line_0);
+    EXPECT_EQ(lane_test_0->GetNumberOfRoadMarkTypeLines(), 1);
+
+    // test GetLaneRoadMarkTypeLineByIdx method
+    EXPECT_EQ(lane_test_0->GetLaneRoadMarkTypeLineByIdx(0)->GetLength(), line_0->GetLength());
+}
+
+/******************************************
+* Test the LaneRoadMark class
+******************************************/
+class LaneRoadMarkTest :public ::testing::TestWithParam<std::tuple<double,LaneRoadMark::RoadMarkType,LaneRoadMark::RoadMarkWeight,LaneRoadMark::RoadMarkColor,LaneRoadMark::RoadMarkMaterial,LaneRoadMark::RoadMarkLaneChange,double,double>> {};
+// inp: s_offset,type,weight,color,material,lane_change,width,height
+
+TEST_P(LaneRoadMarkTest, DefaultConstructor) {
+    LaneRoadMark lane_test_0 = LaneRoadMark(
+        std::get<0>(GetParam()),
+        std::get<1>(GetParam()),
+        std::get<2>(GetParam()),
+        std::get<3>(GetParam()),
+        std::get<4>(GetParam()),
+        std::get<5>(GetParam()),
+        std::get<6>(GetParam()),
+        std::get<7>(GetParam()));
+
+    EXPECT_EQ(lane_test_0.GetSOffset(),std::get<0>(GetParam()));
+    EXPECT_EQ(lane_test_0.GetType(),std::get<1>(GetParam()));
+    EXPECT_EQ(lane_test_0.GetColor(),std::get<3>(GetParam()));
+    EXPECT_EQ(lane_test_0.GetWidth(),std::get<6>(GetParam()));
+    EXPECT_EQ(lane_test_0.GetHeight(),std::get<7>(GetParam()));
+
+    LaneRoadMarkType * type_test_0 = new LaneRoadMarkType("test", 0.2);
+    lane_test_0.AddType(type_test_0);
+    EXPECT_EQ(lane_test_0.GetNumberOfRoadMarkTypes(),1);
+    EXPECT_EQ(lane_test_0.GetLaneRoadMarkTypeByIdx(0)->GetName(),type_test_0->GetName());
+}
+
+INSTANTIATE_TEST_CASE_P(LaneRoadMarkTests,LaneRoadMarkTest,::testing::Values(
+    std::make_tuple(0,LaneRoadMark::NONE_TYPE,
+        LaneRoadMark::STANDARD,
+        LaneRoadMark::STANDARD_COLOR,
+        LaneRoadMark::STANDARD_MATERIAL,
+        LaneRoadMark::INCREASE,0.2,0),
+    std::make_tuple(100,LaneRoadMark::SOLID,
+        LaneRoadMark::BOLD,
+        LaneRoadMark::BLUE,
+        LaneRoadMark::STANDARD_MATERIAL,
+        LaneRoadMark::DECREASE,0.2,-1)));
+
+
 
 int main(int argc, char **argv)
 {
