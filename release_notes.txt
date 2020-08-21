@@ -58,3 +58,12 @@ The purpose of this document is to highlight changes breaking backward compatibi
 2020-07-24 Version 1.6.3
 - OSI support extended with road information (lane and road marks) 
 - Bugfix: RelativeTargetLane (used in LaneChangeAction) is now calculated correctly, skipping reference lane and considering vehicle orientation so that positive lane changes will go left and negative to the right. Scenarios making use of RelativeTargetLane might need to be updated accordingly.
+
+2020-08-21 Version 1.6.4
+- SUMO support integrated (via libsumostatic), first limited shot.
+  - SUMO vehicles created by means of object controller. See example cut-in_sumo.xosc.
+  - Note that you need to re-run cmake script in order to fetch SUMO dependency package (including headers and pre-built libraries).
+- Further OSI values populated, e.g. velocity and acceleration
+- OSI trace file not created by default, activated with argument "--osi_file on"
+- Condition/trigger timer now based on simulation time instead of system time
+

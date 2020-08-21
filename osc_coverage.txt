@@ -190,7 +190,7 @@ OSCTypeDefs
         Position                            Yes
         Routing                             
             FollowRoute                     Yes
-            FollowTrajectory                No
+            FollowTrajectory                Partly (Only polyline trajectory supported so far)
             AcquirePosition                 No
     OSCUserDefinedAction                    No
     OSCGlobalAction                         
