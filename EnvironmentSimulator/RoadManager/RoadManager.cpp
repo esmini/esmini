@@ -3341,6 +3341,7 @@ void Position::Init()
 	accX_ = 0.0;
 	accY_ = 0.0;
 	accZ_ = 0.0;
+	rateH_ = 0.0;
 	h_offset_ = 0.0;
 	h_road_ = 0.0;
 	h_relative_ = 0.0;
