@@ -56,7 +56,7 @@ public:
 	double GetFixedTimestep() { return fixed_timestep_; }
 	int GetOSIFreq() { return osi_freq_; }
 	
-	CSV_Logger *CSV_Log;
+	CSV_Logger *CSV_Log = NULL;
 	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;
 #ifdef _SCENARIO_VIEWER
