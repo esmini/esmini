@@ -17,6 +17,7 @@ resources/xosc/ltap-od.xosc \
 resources/xosc/synchronize.xosc \
 resources/xosc/parking_lot.xosc \
 resources/xosc/cut-in_internal.xosc \
+resources/xosc/cut-in_sumo.xosc \
 resources/xosc/lane_change_simple.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
@@ -48,6 +49,7 @@ run/EgoSimulator/run_ltap-od_internal.* \
 run/EgoSimulator/run_highway-merge_advanced_internal.* \
 run/EgoSimulator/run_cut-in_internal.* \
 run/EgoSimulator/run_cut-in_external.* \
+run/EgoSimulator/run_cut-in_sumo.* \
 run/EgoSimulator/run_lane_change.* \
 run/EgoSimulator/run_lane_change_simple.* \
 run/EgoSimulator/run_left-hand-traffic_internal.* \

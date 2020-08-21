@@ -152,11 +152,14 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	if (osi_file || scenarioGateway->GetSocket())
 	{
 		osi_counter++; 
-		scenarioEngine->getScenarioGateway()->UpdateOSISensorView();
 		if (osi_counter % osi_freq_ == 0 )
 		{
-			scenarioEngine->getScenarioGateway()->WriteOSIFile();
-		}		
+			scenarioEngine->getScenarioGateway()->UpdateOSISensorView();
+			if (osi_file)
+			{
+				scenarioEngine->getScenarioGateway()->WriteOSIFile();
+			}
+		}	
 	}
 
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",

@@ -27,6 +27,7 @@ copy resources\xosc\ltap-od.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\synchronize.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\parking_lot.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_internal.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\cut-in_sumo.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\lane_change_simple.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
@@ -61,6 +62,7 @@ copy run\EgoSimulator\run_ltap-od_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_highway-merge_advanced_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_cut-in_external.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_cut-in_sumo.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_lane_change.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_lane_change_simple.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_left-hand-traffic_internal.bat %target_dir%\run\EgoSimulator /y
