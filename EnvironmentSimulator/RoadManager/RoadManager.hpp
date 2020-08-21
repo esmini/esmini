@@ -1324,7 +1324,8 @@ namespace roadmanager
 		void SetY(double y) { y_ = y; }
 		void SetZ(double z) { z_ = z; }
 		void SetH(double h) { h_ = h; }
-		void SetHRate(double h) { rateH_ = h; }
+		void SetHRate(double h_rate) { h_rate_ = h_rate; }
+		void SetHAcc(double h_acc) { h_acc_ = h_acc; }
 		void SetP(double p) { p_ = p; }
 		void SetR(double r) { r_ = r; }
 		void SetVelX(double x) { velX_ = x; }
@@ -1339,7 +1340,8 @@ namespace roadmanager
 		double GetAccX() { return accX_; }
 		double GetAccY() { return accY_; }
 		double GetAccZ() { return accZ_; }
-		double GetHRate() { return rateH_; }
+		double GetHRate() { return h_rate_; }
+		double GetHAcc() { return h_acc_; }
 
 		void SetOrientationType(OrientationType type) { orientation_type_ = type; }
 
@@ -1393,7 +1395,8 @@ namespace roadmanager
 		double	y_;
 		double	z_;
 		double	h_;
-		double  rateH_;
+		double  h_rate_;
+		double  h_acc_;
 		double	p_;
 		double	r_;
 		double	velX_;

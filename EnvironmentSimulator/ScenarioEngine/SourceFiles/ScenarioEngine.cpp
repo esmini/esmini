@@ -495,6 +495,7 @@ void ScenarioEngine::stepObjects(double dt)
 			double vel_x_old = obj->pos_.GetVelX();
 			double vel_y_old = obj->pos_.GetVelY();
 			double heading_old = obj->pos_.GetH();
+			double heading_rate_old = obj->pos_.GetHRate();
 
 			double steplen = obj->speed_ * dt;
 
@@ -526,7 +527,9 @@ void ScenarioEngine::stepObjects(double dt)
 				obj->pos_.SetVelY((obj->pos_.GetY() - pos_y_old) / dt);
 				obj->pos_.SetAccX((obj->pos_.GetVelX() - vel_x_old) / dt);
 				obj->pos_.SetAccY((obj->pos_.GetVelY() - vel_y_old) / dt);
-				obj->pos_.SetHRate(GetAngleDifference(obj->pos_.GetH(), heading_old) / dt);
+				double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), heading_old) / dt;
+				obj->pos_.SetHRate(heading_rate_new);
+				obj->pos_.SetHAcc(GetAngleDifference(heading_rate_new, heading_rate_old) / dt);
 			}
 		}
 		obj->trail_.AddState((float)simulationTime, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
