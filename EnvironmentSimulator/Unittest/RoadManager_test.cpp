@@ -7,8 +7,9 @@
 
 using namespace roadmanager;
 
-
+//////////////////////////////////////////////////////////////////////
 ////////// TESTS FOR CLASS -> Polynomial //////////
+//////////////////////////////////////////////////////////////////////
 
 class PolynomialTestFixture: public testing::Test
 {
@@ -216,10 +217,13 @@ INSTANTIATE_TEST_CASE_P(TestEvaluatePrimPrimParamArgument, PolynomialTestEvaluat
                                                 std::make_tuple(0, 6)));
 
 //////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 
 
-
+//////////////////////////////////////////////////////////////////////
 ////////// TESTS FOR CLASS -> OSIPoints //////////
+//////////////////////////////////////////////////////////////////////
 
 class OSIPointsTestFixture: public testing::Test
 {
@@ -360,9 +364,13 @@ TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
 }
 
 //////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 
 
-////////// TESTS FOR CLASS -> LineGeom //////////
+//////////////////////////////////////////////////////////////////////
+////////// TESTS FOR CLASS -> Line (Geometry) //////////
+//////////////////////////////////////////////////////////////////////
 
 class LineGeomTestFixture: public testing::Test
 {
@@ -478,6 +486,131 @@ INSTANTIATE_TEST_CASE_P(TestEvaluateDsArgumentParam, LineGeomTestEvaluateDsArgum
                                                 std::make_tuple(0.0, -1.0, 1.0, M_PI),
                                                 std::make_tuple(1.0, -2.0, 1.0+sin(M_PI), M_PI),
                                                 std::make_tuple(100.0, -101.0, 1.0+100*sin(M_PI), M_PI)));
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+////////// TESTS FOR CLASS -> Arc (Geometry) //////////
+//////////////////////////////////////////////////////////////////////
+
+class ArcGeomTestFixture: public testing::Test
+{
+    public:
+        ArcGeomTestFixture();
+        ArcGeomTestFixture(double s, double x, double y, double hdg, double length, double curvature);
+        virtual ~ArcGeomTestFixture();
+    protected:
+        Arc arc;
+};
+
+ArcGeomTestFixture::ArcGeomTestFixture()
+{
+}
+
+ArcGeomTestFixture::ArcGeomTestFixture(double s, double x, double y, double hdg, double length, double curvature)
+{
+}
+
+ArcGeomTestFixture::~ArcGeomTestFixture()
+{
+}
+
+//*************************************************************************************
+TEST_F(ArcGeomTestFixture, TestConstructorArgument)
+{
+    ASSERT_EQ(0.0, arc.GetCurvature());
+    EXPECT_EQ(arc.GetType(), Geometry::GEOMETRY_TYPE_UNKNOWN);
+
+    Arc arc_second = Arc(2, -1, 1, 5*M_PI, 4, 5);
+    ASSERT_EQ(5.0, arc_second.GetCurvature());
+    EXPECT_EQ(arc_second.GetType(), Geometry::GEOMETRY_TYPE_ARC);
+}
+
+TEST_F(ArcGeomTestFixture, TestEvaluateCurvatureDS)
+{
+    ASSERT_EQ(arc.EvaluateCurvatureDS(0), 0.0);
+    ASSERT_EQ(arc.EvaluateCurvatureDS(10), 0.0);
+    ASSERT_EQ(arc.EvaluateCurvatureDS(100), 0.0);
+    ASSERT_EQ(arc.EvaluateCurvatureDS(1000), 0.0);
+
+    Arc arc_second = Arc(2, -1, 1, 5*M_PI, 4, 5);
+
+    ASSERT_EQ(arc_second.EvaluateCurvatureDS(0), 5.0);
+    ASSERT_EQ(arc_second.EvaluateCurvatureDS(10), 5.0);
+    ASSERT_EQ(arc_second.EvaluateCurvatureDS(100), 5.0);
+    ASSERT_EQ(arc_second.EvaluateCurvatureDS(1000), 5.0);
+}
+
+TEST_F(ArcGeomTestFixture, TestGetRadius)
+{
+    Arc arc_second = Arc(2, -1, 1, 5*M_PI, 4, 5);
+    ASSERT_EQ(arc_second.GetRadius(), 0.2);
+
+    Arc arc_third = Arc(2, -1, 1, 5*M_PI, 4, -10);
+    ASSERT_EQ(arc_third.GetRadius(), 0.1);
+}
+
+
+/*class LineGeomTestEvaluateDsEmptyConstructor: public testing::TestWithParam<std::tuple<double, double, double, double>>
+{
+    public:
+    protected:
+        Line line;
+};
+
+TEST_P(LineGeomTestEvaluateDsEmptyConstructor, TestLineGeomEvaluateDsEmpty)
+{
+    std::tuple<double, double, double, double> tuple = GetParam();
+    ASSERT_GE(std::get<0>(tuple), 0);
+    double *x, *y, *h;
+    double my_x = line.GetX();
+    double my_y = line.GetY();
+    double my_h = line.GetHdg();
+    x = &my_x;
+    y = &my_y;
+    h = &my_h;
+    line.EvaluateDS(std::get<0>(tuple), x, y, h);
+    ASSERT_EQ(*x, std::get<1>(tuple));
+    ASSERT_EQ(*y, std::get<2>(tuple));
+    ASSERT_EQ(*h, std::get<3>(tuple));
+}
+
+INSTANTIATE_TEST_CASE_P(TestEvaluateDsEmptyParam, LineGeomTestEvaluateDsEmptyConstructor, testing::Values(
+                                                std::make_tuple(0, 0, 0, 0),
+                                                std::make_tuple(1, 1, 0, 0),
+                                                std::make_tuple(100, 100, 0, 0)));
+
+class LineGeomTestEvaluateDsArgumentConstructor: public testing::TestWithParam<std::tuple<double, double, double, double>>
+{
+    public:
+    protected:
+        Line line{2.0, -1.0, 1.0, 5*M_PI, 4.0};
+};
+
+TEST_P(LineGeomTestEvaluateDsArgumentConstructor, TestLineGeomEvaluateDsArgument)
+{
+    std::tuple<double, double, double, double> tuple = GetParam();
+    ASSERT_GE(std::get<0>(tuple), 0);
+    double *x, *y, *h;
+    double my_x = line.GetX();
+    double my_y = line.GetY();
+    double my_h = line.GetHdg();
+    x = &my_x;
+    y = &my_y;
+    h = &my_h;
+    line.EvaluateDS(std::get<0>(tuple), x, y, h);
+    ASSERT_EQ(*x, std::get<1>(tuple));
+    ASSERT_EQ(*y, std::get<2>(tuple));
+    ASSERT_EQ(*h, std::get<3>(tuple));
+}
+
+INSTANTIATE_TEST_CASE_P(TestEvaluateDsArgumentParam, LineGeomTestEvaluateDsArgumentConstructor, testing::Values(
+                                                std::make_tuple(0.0, -1.0, 1.0, M_PI),
+                                                std::make_tuple(1.0, -2.0, 1.0+sin(M_PI), M_PI),
+                                                std::make_tuple(100.0, -101.0, 1.0+100*sin(M_PI), M_PI)));*/
 
 //////////////////////////////////////////////////////////////////////
 
