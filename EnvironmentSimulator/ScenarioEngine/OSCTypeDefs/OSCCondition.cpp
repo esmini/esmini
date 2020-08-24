@@ -536,3 +536,35 @@ bool TrigByTraveledDistance::CheckCondition(StoryBoard* storyBoard, double sim_t
 
 	return result;
 }
+
+bool TrigByEndOfRoad::CheckCondition(StoryBoard* storyBoard, double sim_time, bool log)
+{
+	(void)storyBoard;
+	(void)sim_time;
+
+	bool result = false;
+	double current_duration = 0;
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+	{
+		if (triggering_entities_.entity_[i].object_->IsEndOfRoad())
+		{
+			current_duration = sim_time - triggering_entities_.entity_[i].object_->GetEndOfRoadTimestamp();
+		}
+		
+		result = current_duration > duration_;
+
+		if (EvalDone(result, triggering_entity_rule_))
+		{
+			break;
+		}
+	}
+
+	if (log)
+	{
+		LOG("%s == %s, end_of_road duration: %.2f >= %.2f, edge: %s", name_.c_str(), result ? "true" : "false",
+			current_duration, duration_, Edge2Str(edge_).c_str());
+	}
+
+	return result;
+}

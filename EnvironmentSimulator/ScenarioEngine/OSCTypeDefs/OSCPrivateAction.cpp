@@ -152,6 +152,7 @@ void LatLaneChangeAction::Start()
 		}
 	}
 	start_t_ = object_->pos_.GetT();
+	elapsed_ = 0;
 }
 
 void LatLaneChangeAction::Step(double dt, double simTime)

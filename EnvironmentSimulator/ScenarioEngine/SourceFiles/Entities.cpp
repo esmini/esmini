@@ -17,13 +17,36 @@
 
 using namespace scenarioengine;
 
-int Entities::addObject(Object* obj) 
+void Object::SetEndOfRoad(bool state, double time)
+{
+	if (state == true)
+	{
+		end_of_road_timestamp_ = time;
+	}
+	else
+	{
+		end_of_road_timestamp_ = 0.0;
+	}
+}
+
+void Object::SetOffRoad(bool state, double time)
+{
+	if (state == true)
+	{
+		off_road_timestamp_ = time;
+	}
+	else
+	{
+		off_road_timestamp_ = 0.0;
+	}
+}
+
+int Entities::addObject(Object* obj)
 {
 	obj->id_ = getNewId();
 	object_.push_back(obj);
 	return obj->id_;
 }
-
 
 void Entities::removeObject(int id) 
 {

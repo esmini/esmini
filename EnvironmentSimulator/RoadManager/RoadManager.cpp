@@ -1543,6 +1543,9 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 	if (replace)
 	{
+		g_Lane_id = 0;
+		g_Laneb_id = 0; 
+		
 		for (size_t i=0; i<road_.size(); i++)
 		{
 			delete road_[i];
@@ -4361,7 +4364,7 @@ double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, R
 	return fabs(min_lane_dist) + fabs(GetZ() - z);
 }
 
-void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool alignZPitchRoll)
+int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool alignZPitchRoll)
 {
 	double dist;
 	double distMin = std::numeric_limits<double>::infinity();
@@ -4380,7 +4383,7 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
-		return;
+		return ErrorCode::ERROR_GENERIC;
 	}
 
 	if ((current_road = GetOpenDrive()->GetRoadByIdx(track_idx_)) != 0)
@@ -4388,7 +4391,7 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 		if ((current_geom = current_road->GetGeometry(geometry_idx_)) == 0)
 		{
 			LOG("Invalid geometry index %d\n", geometry_idx_);
-			return;
+			return ErrorCode::ERROR_GENERIC;
 		}
 	}
 	
@@ -4497,7 +4500,7 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 	if (roadMin == 0)
 	{
 		LOG("Error finding minimum distance\n");
-		return;
+		return ErrorCode::ERROR_GENERIC;
 	}
 
 	double dsMin = sNormMin * geomMin->GetLength();
@@ -4520,9 +4523,11 @@ void Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool al
 	SetHeading(h3);
 
 	// Find out what lane and set position
-	SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);
+	int retvalue = SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);
 
 	EvaluateRoadZPitchRoll(alignZPitchRoll);
+
+	return retvalue;
 }
 	
 
@@ -4547,25 +4552,25 @@ bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 	return ret_value;
 }
 
-void Position::Track2XYZ()
+int Position::Track2XYZ()
 {
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
-		return;
+		return ErrorCode::ERROR_GENERIC;
 	}
 
 	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
 	if (road == 0)
 	{
 		LOG("Position::Track2XYZ Error: No road %d\n", track_idx_);
-		return;
+		return ErrorCode::ERROR_GENERIC;
 	}
 
 	Geometry *geometry = road->GetGeometry(geometry_idx_);
 	if (geometry == 0)
 	{
 		LOG("Position::Track2XYZ Error: No geometry %d\n", geometry_idx_);
-		return;
+		return ErrorCode::ERROR_GENERIC;
 	}
 
 	geometry->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_road_);
@@ -4581,6 +4586,8 @@ void Position::Track2XYZ()
 
 	// z = Elevation 
 	EvaluateRoadZPitchRoll(true);
+
+	return ErrorCode::ERROR_NO_ERROR;
 }
 
 void Position::LaneBoundary2Track()
@@ -4655,7 +4662,7 @@ int Position::SetLongitudinalTrackPos(int track_id, double s)
 
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
-		return -1;
+		return ErrorCode::ERROR_GENERIC;
 	}
 	
 	if ((road = GetOpenDrive()->GetRoadById(track_id)) == 0)
@@ -4666,7 +4673,7 @@ int Position::SetLongitudinalTrackPos(int track_id, double s)
 		track_id_ = track_id;
 		s_ = s;
 
-		return -1;
+		return ErrorCode::ERROR_GENERIC;
 	}
 	if (track_id != track_id_)
 	{
@@ -4680,6 +4687,27 @@ int Position::SetLongitudinalTrackPos(int track_id, double s)
 		lane_idx_ = 0;
 	}
 
+
+	Geometry *geometry = road->GetGeometry(geometry_idx_);
+	// check if still on same geometry
+	if (s > geometry->GetS() + geometry->GetLength())
+	{
+		while (s > geometry->GetS() + geometry->GetLength() && geometry_idx_ < road->GetNumberOfGeometries() - 1)
+		{
+			// Move to next geometry
+			geometry = road->GetGeometry(++geometry_idx_);
+		}
+	}
+	else if (s < geometry->GetS())
+	{
+		while (s < geometry->GetS() && geometry_idx_ > 0)
+		{
+			// Move to previous geometry
+			geometry = road->GetGeometry(--geometry_idx_);
+		}
+	}
+
+
 	if (s > road->GetLength())
 	{
 		if (s > road->GetLength() + SMALL_NUMBER)
@@ -4687,40 +4715,19 @@ int Position::SetLongitudinalTrackPos(int track_id, double s)
 			LOG("Position::Set Warning: s (%.2f) too large, track %d only %.2f m long\n", s, track_id_, road->GetLength());
 		}
 		s_ = road->GetLength();
+		return ErrorCode::ERROR_END_OF_ROAD;
 	}
 	else
 	{
 		s_ = s;
 	}
 
-	Geometry *geometry = road->GetGeometry(geometry_idx_);
-	// check if still on same geometry
-	if (s_ > geometry->GetS() + geometry->GetLength())
-	{
-		while (s_ > geometry->GetS() + geometry->GetLength() && geometry_idx_ < road->GetNumberOfGeometries() - 1)
-		{
-			// Move to next geometry
-			geometry = road->GetGeometry(++geometry_idx_);
-		}
-	}
-	else if (s_ < geometry->GetS())
-	{
-		while (s_ < geometry->GetS() && geometry_idx_ > 0)
-		{
-			// Move to previous geometry
-			geometry = road->GetGeometry(--geometry_idx_);
-		}
-	}
-
 	return 0;
 }
 
-void Position::SetTrackPos(int track_id, double s, double t, bool calculateXYZ)
+int Position::SetTrackPos(int track_id, double s, double t, bool calculateXYZ)
 {
-	if (SetLongitudinalTrackPos(track_id, s) != 0)
-	{
-		return;
-	}
+	int retvalue = SetLongitudinalTrackPos(track_id, s);
 
 	t_ = t;
 	Track2Lane();
@@ -4728,6 +4735,8 @@ void Position::SetTrackPos(int track_id, double s, double t, bool calculateXYZ)
 	{
 		Track2XYZ();
 	}
+
+	return retvalue;
 }
 
 void Position::ForceLaneId(int lane_id)
@@ -5082,8 +5091,7 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 			// Failed to find a connection, stay at end of current road
 			SetLanePos(track_id_, lane_id_, s_stop, offset_);
 
-			// Return special code
-			return 1;
+			return ErrorCode::ERROR_END_OF_ROAD;
 		}
 
 		ds = SIGN(ds) * fabs(ds_signed);
@@ -5093,17 +5101,18 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 	return 0;
 }
 
-void Position::SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx)
+int Position::SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx)
 {
 	offset_ = offset;
 	int old_lane_id = lane_id_;
 	int old_track_id = track_id_;
-
-	if (SetLongitudinalTrackPos(track_id, s) != 0)
+	int retvalue;
+	
+	if ((retvalue = SetLongitudinalTrackPos(track_id, s)) != ErrorCode::ERROR_NO_ERROR)
 	{
 		lane_id_ = lane_id;
 		offset_ = offset;
-		return;
+		return retvalue;
 	}
 
 	Road *road = GetOpenDrive()->GetRoadById(track_id);
@@ -5112,7 +5121,7 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 		LOG("Position::Set Error: track %d not available\n", track_id);
 		lane_id_ = lane_id;
 		offset_ = offset;
-		return;
+		return ErrorCode::ERROR_GENERIC;
 	}
 
 	if (lane_id != lane_id_ && lane_section_idx == -1)
@@ -5167,6 +5176,8 @@ void Position::SetLanePos(int track_id, int lane_id, double s, double offset, in
 
 	Lane2Track();
 	Track2XYZ();
+
+	return 0;
 }
 
 void Position::SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx)
@@ -5174,8 +5185,9 @@ void Position::SetLaneBoundaryPos(int track_id, int lane_id, double s, double of
 	offset_ = offset;
 	int old_lane_id = lane_id_;
 	int old_track_id = track_id_;
+	int retval;
 
-	if (SetLongitudinalTrackPos(track_id, s) != 0)
+	if ((retval = SetLongitudinalTrackPos(track_id, s)) != 0)
 	{
 		lane_id_ = lane_id;
 		offset_ = offset;
@@ -5244,6 +5256,8 @@ void Position::SetLaneBoundaryPos(int track_id, int lane_id, double s, double of
 	//Lane2Track();
 	LaneBoundary2Track(); 
 	Track2XYZ();
+
+	return;
 }
 
 void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int roadmarktype_idx, int roadmarkline_idx, double s, double offset, int lane_section_idx)
@@ -5372,7 +5386,7 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 	Track2XYZ();
 }
 
-void Position::SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos)
+int Position::SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos)
 {
 	x_ = x;
 	y_ = y;
@@ -5385,6 +5399,8 @@ void Position::SetInertiaPos(double x, double y, double z, double h, double p, d
 	{
 		XYZ2Track();
 	}
+
+	return 0;
 }
 
 void Position::SetHeading(double heading)
@@ -5718,9 +5734,14 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, Loo
 		target.SetLanePos(target.GetTrackId(), target.GetLaneId(), target.GetS(), 0);
 	}
 
-	if (fabs(lookahead_distance) > SMALL_NUMBER && target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT) != 0)
+	if (fabs(lookahead_distance) > SMALL_NUMBER)
 	{
-		return -1;
+		int retval = target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT);
+		
+		if (retval != 0)
+		{
+			return retval;
+		}
 	}
 	
 	target.GetRoadLaneInfo(data);
@@ -5783,9 +5804,14 @@ int Position::GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookA
 		target.SetLanePos(target.GetTrackId(), target.GetLaneId(), target.GetS(), 0);
 	}
 
-	if (fabs(lookahead_distance) > SMALL_NUMBER && target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT) != 0)
+	if (fabs(lookahead_distance) > SMALL_NUMBER)
 	{
-		return -1;
+		int retval = target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT);
+
+		if (retval != 0)
+		{
+			return retval;
+		}
 	}
 
 	CalcProbeTarget(&target, data);
@@ -6127,16 +6153,15 @@ int Position::MoveRouteDS(double ds)
 {
 	if (!route_)
 	{
-		return -1;
+		return ErrorCode::ERROR_GENERIC;
 	}
 
 	if (route_->waypoint_.size() == 0)
 	{
-		return -1;
+		return ErrorCode::ERROR_GENERIC;
 	}
-	SetRouteS(route_, s_route_ + ds);
-
-	return 0;
+	
+	return SetRouteS(route_, s_route_ + ds);
 }
 
 int Position::SetRouteLanePosition(Route *route, double route_s, int laneId, double  laneOffset)
@@ -6309,7 +6334,7 @@ int Position::SetRouteS(Route *route, double route_s)
 	if (route->waypoint_.size() == 0)
 	{
 		LOG("SetOffset No waypoints!");
-		return -1;
+		return ErrorCode::ERROR_GENERIC;
 	}
 
 	OpenDrive *od = route->waypoint_[0]->GetOpenDrive();
@@ -6343,7 +6368,7 @@ int Position::SetRouteS(Route *route, double route_s)
 			if (route_direction == 0)
 			{
 				LOG("Unexpected lack of connection within route at waypoint %d", i);
-				return -1;
+				return ErrorCode::ERROR_GENERIC;
 			}
 
 			local_s = s_route_ - route_length + initial_s_offset;
@@ -6359,7 +6384,7 @@ int Position::SetRouteS(Route *route, double route_s)
 		initial_s_offset = 0;  // For all following road segments, calculate length from beginning
 	}
 
-	return -1;
+	return ErrorCode::ERROR_END_OF_ROUTE;
 }
 
 void Position::ReleaseRelation()

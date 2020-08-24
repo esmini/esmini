@@ -29,7 +29,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="0" laneId="-1" offset="0" s="50"/>
+                        <LanePosition roadId="0" laneId="-1" offset="0" s="20"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -38,7 +38,7 @@
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step"/>
                         <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="20"/>
+                           <AbsoluteTargetSpeed value="25"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
@@ -56,8 +56,8 @@
                   <EntityRef entityRef="$owner"/>
                </Actors>
                <Maneuver name="Lane change maneuver">
-                  <Event name="Lane change event" priority="overwrite">
-                     <Action name="Lane change">
+                  <Event name="Lane change event" maximumExecutionCount="2" priority="overwrite">
+                     <Action name="Lane change action">
                         <PrivateAction>
                            <LateralAction>
                               <LaneChangeAction>
@@ -72,9 +72,45 @@
                      <StartTrigger>
                         <ConditionGroup>
                            <Condition name="Lane change condition" delay="0" conditionEdge="rising">
-                              <ByValueCondition>
-                                 <SimulationTimeCondition value="3" rule="greaterThan"/>
-                              </ByValueCondition>
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <ReachPositionCondition tolerance="1.0">
+                                       <Position>
+                                          <LanePosition roadId="0" laneId="-1" s="50.0"/>
+                                       </Position>
+                                    </ReachPositionCondition>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="End Of Road maneuver">
+                  <Event name="End Of Road event" maximumExecutionCount="3" priority="overwrite">
+                     <Action name="End Of Road action">
+                        <PrivateAction>
+                            <TeleportAction>
+                                <Position>
+                                    <LanePosition roadId="0" laneId="-1" offset="0" s="10"/>
+                                </Position>
+                            </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                            <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
+                                <ByEntityCondition>
+                                    <TriggeringEntities triggeringEntitiesRule="any">
+                                        <EntityRef entityRef="Ego"/>
+                                    </TriggeringEntities>                                
+                                    <EntityCondition>
+                                        <EndOfRoadCondition duration="2.5" rule="greaterThan"/>
+                                    </EntityCondition>
+                                </ByEntityCondition>
                            </Condition>
                         </ConditionGroup>
                      </StartTrigger>
@@ -90,7 +126,18 @@
                   </Condition>
                </ConditionGroup>
             </StartTrigger>
-         </Act>
+            <StopTrigger>
+               <ConditionGroup>
+                  <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+                     <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event"
+                                                         storyboardElementRef="End Of Road event"
+                                                         state="completeState"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StopTrigger>       
+      </Act>
       </Story>
    </Storyboard>
 </OpenSCENARIO>

@@ -1956,6 +1956,14 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						condition = trigger;
 					}
+					else if (condition_type == "EndOfRoadCondition")
+					{
+						TrigByEndOfRoad* trigger = new TrigByEndOfRoad;
+
+						trigger->duration_ = strtod(ReadAttribute(condition_node, "duration"));
+
+						condition = trigger;
+					}
 					else
 					{
 						LOG("Entity condition %s not supported", condition_type.c_str());

@@ -93,7 +93,7 @@ OSCTypeDefs
                     any                     Yes
                     all                     Yes
             Condition                       
-                EndOfRoad                   No
+                EndOfRoad                   Yes
                 Collision                   No
                 Offroad                     No
                 TimeHeadway                 Yes

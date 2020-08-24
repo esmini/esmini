@@ -1027,6 +1027,15 @@ namespace roadmanager
 			LOOKAHEADMODE_AT_CURRENT_LATERAL_OFFSET,
 		};
 
+		enum ErrorCode
+		{
+			ERROR_NO_ERROR = 0,
+			ERROR_GENERIC = -1,
+			ERROR_END_OF_ROAD = -2,
+			ERROR_END_OF_ROUTE = -3,
+			ERROR_OFF_ROAD = -4,
+		};
+
 		explicit Position();
 		explicit Position(int track_id, double s, double t);
 		explicit Position(int track_id, int lane_id, double s, double offset);
@@ -1038,16 +1047,16 @@ namespace roadmanager
 		static bool LoadOpenDrive(const char *filename);
 		static OpenDrive* GetOpenDrive();
 		int GotoClosestDrivingLaneAtCurrentPosition();
-		void SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
+		int SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
 		void ForceLaneId(int lane_id);
-		void SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
+		int SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int roadmarktype_idx, int roadmarkline_idx, double s, double offset, int lane_section_idx = -1);
-		void SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
+		int SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
 		void SetHeading(double heading);
 		void SetHeadingRelative(double heading);
 		void SetHeadingRelativeRoadDirection(double heading);
-		void XYZH2TrackPos(double x, double y, double z, double h, bool copyZAndPitch = true);
+		int XYZH2TrackPos(double x, double y, double z, double h, bool copyZAndPitch = true);
 		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 		
 		void SetRelativePosition(Position* rel_pos, PositionType type)
@@ -1084,7 +1093,7 @@ namespace roadmanager
 		/**
 		Move current position forward, or backwards, ds meters along the route
 		@param ds Distance to move, negative will move backwards
-		@return Non zero return value indicates error of some kind
+		@return Non zero return value indicates error of some kind, most likely End Of Route
 		*/
 		int MoveRouteDS(double ds);
 
@@ -1100,7 +1109,7 @@ namespace roadmanager
 		/**
 		Move current position to specified S-value along the route
 		@param route_s Distance to move, negative will move backwards
-		@return Non zero return value indicates error of some kind
+		@return Non zero return value indicates error of some kind, most likely End Of Route
 		*/
 		int SetRouteS(Route* route, double route_s);
 
@@ -1356,7 +1365,7 @@ namespace roadmanager
 
 	protected:
 		void Track2Lane();
-		void Track2XYZ();
+		int Track2XYZ();
 		void Lane2Track();
 		void RoadMark2Track();
 		/**

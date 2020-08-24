@@ -394,19 +394,26 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	// Init road manager
 	scenarioReader->parseRoadNetwork(roadNetwork);
 
-	// First assume absolute path or relative to current directory
-	if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
+	if (getOdrFilename().empty())
 	{
-		// Then try relative path to scenario directory
-		if (!roadmanager::Position::LoadOpenDrive(CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename()).c_str()))
+		LOG("No OpenDRIVE file specified, continue without");
+	}
+	else
+	{
+		// First assume absolute path or relative to current directory
+		if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
 		{
-			// Finally look for the file in current directory
-			std::string path = std::string(getOdrFilename().c_str());
-			std::string base_filename = path.substr(path.find_last_of("/\\") + 1);
-			LOG("Failed to load %s - looking for file %s in current folder", getOdrFilename().c_str(), base_filename.c_str());
-			if (!roadmanager::Position::LoadOpenDrive(base_filename.c_str()))
+			// Then try relative path to scenario directory
+			if (!roadmanager::Position::LoadOpenDrive(CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename()).c_str()))
 			{
-				throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(getOdrFilename().c_str()));
+				// Finally look for the file in current directory
+				std::string path = std::string(getOdrFilename().c_str());
+				std::string base_filename = path.substr(path.find_last_of("/\\") + 1);
+				LOG("Failed to load %s - looking for file %s in current folder", getOdrFilename().c_str(), base_filename.c_str());
+				if (!roadmanager::Position::LoadOpenDrive(base_filename.c_str()))
+				{
+					throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(getOdrFilename().c_str()));
+				}
 			}
 		}
 	}
@@ -498,12 +505,24 @@ void ScenarioEngine::stepObjects(double dt)
 		if (obj->control_ == Object::Control::INTERNAL ||
 			obj->control_ == Object::Control::HYBRID_GHOST)
 		{
-
+			int retvalue = 0;
 			double steplen = obj->speed_ * dt;
 
 			if (obj->pos_.GetRoute())
 			{
-				obj->pos_.MoveRouteDS(steplen);
+				int retvalue = obj->pos_.MoveRouteDS(steplen);
+
+				if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
+				{
+					if (!obj->IsEndOfRoad())
+					{
+						obj->SetEndOfRoad(true, simulationTime);
+					}
+				}
+				else
+				{
+					obj->SetEndOfRoad(false);
+				}
 			}
 			else if (obj->pos_.GetTrajectory())
 			{
@@ -518,7 +537,19 @@ void ScenarioEngine::stepObjects(double dt)
 					steplen *= -1;
 				}
 				
-				obj->pos_.MoveAlongS(steplen);
+				retvalue = obj->pos_.MoveAlongS(steplen);
+
+				if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD)
+				{
+					if (!obj->IsEndOfRoad())
+					{
+						obj->SetEndOfRoad(true, simulationTime);
+					}
+				}
+				else
+				{
+					obj->SetEndOfRoad(false);
+				}
 			}
 			obj->odometer_ += abs(steplen);  // odometer always measure all movements as positive, I guess...
 		}

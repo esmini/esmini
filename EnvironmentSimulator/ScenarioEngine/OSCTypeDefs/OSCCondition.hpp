@@ -130,6 +130,7 @@ namespace scenarioengine
 			RELATIVE_DISTANCE,
 			REACH_POSITION,
 			TRAVELED_DISTANCE,
+			END_OF_ROAD,
 			// not complete at all
 		} EntityConditionType;
 
@@ -208,6 +209,21 @@ namespace scenarioengine
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false); 
 		TrigByRelativeDistance() : TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE) {}
+	};
+
+	class TrigByEndOfRoad : public TrigByEntity
+	{
+	public:
+
+		Object* object_;
+		double duration_;
+		Rule rule_;
+
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
+		TrigByEndOfRoad() : TrigByEntity(TrigByEntity::EntityConditionType::END_OF_ROAD) {}
+
+	private:
+		double elapsed_time_;
 	};
 
 	class TrigByState : public OSCCondition
