@@ -218,6 +218,172 @@ INSTANTIATE_TEST_CASE_P(TestEvaluatePrimPrimParamArgument, PolynomialTestEvaluat
 
 ////////// TESTS FOR CLASS -> OSIPoints //////////
 
+class OSIPointsTestFixture: public testing::Test
+{
+    public:
+        OSIPointsTestFixture();
+        OSIPointsTestFixture(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h);
+        virtual ~OSIPointsTestFixture();
+    protected:
+        OSIPoints osi_points;
+};
+
+OSIPointsTestFixture::OSIPointsTestFixture()
+{
+}
+
+OSIPointsTestFixture::OSIPointsTestFixture(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h)
+{
+}
+
+OSIPointsTestFixture::~OSIPointsTestFixture()
+{
+}
+
+TEST_F(OSIPointsTestFixture, TestConstructorEmpty)
+{
+    ASSERT_EQ(0, osi_points.GetS().size());
+    ASSERT_EQ(0, osi_points.GetX().size());
+    ASSERT_EQ(0, osi_points.GetY().size());
+    ASSERT_EQ(0, osi_points.GetZ().size());
+    ASSERT_EQ(0, osi_points.GetH().size());
+}
+
+TEST_F(OSIPointsTestFixture, TestConstructorArgument)
+{
+    std::vector<double> s {0, -1, 2};
+    std::vector<double> x {0, -1, 2};
+    std::vector<double> y {0, -1, 2};
+    std::vector<double> z {0, -1, 2};
+    std::vector<double> h {0, -1, 2};
+
+    OSIPoints osi_points = OSIPoints(s, x, y, z, h);
+
+    std::vector<double> s_expected = osi_points.GetS();
+    std::vector<double> x_expected = osi_points.GetX();
+    std::vector<double> y_expected = osi_points.GetY();
+    std::vector<double> z_expected = osi_points.GetZ();
+    std::vector<double> h_expected = osi_points.GetH();
+
+    ASSERT_EQ(s, s_expected);
+    ASSERT_EQ(x, x_expected);
+    ASSERT_EQ(y, y_expected);
+    ASSERT_EQ(z, z_expected);
+    ASSERT_EQ(h, h_expected);
+}
+
+TEST_F(OSIPointsTestFixture, TestSetGet)
+{
+    std::vector<double> s {0, -1, 2};
+    std::vector<double> x {0, -1, 2};
+    std::vector<double> y {0, -1, 2};
+    std::vector<double> z {0, -1, 2};
+    std::vector<double> h {0, -1, 2};
+    
+    osi_points.Set(s,x,y,z,h);
+
+    std::vector<double> s_expected = osi_points.GetS();
+    std::vector<double> x_expected = osi_points.GetX();
+    std::vector<double> y_expected = osi_points.GetY();
+    std::vector<double> z_expected = osi_points.GetZ();
+    std::vector<double> h_expected = osi_points.GetH();
+
+    ASSERT_EQ(s, s_expected);
+    ASSERT_EQ(x, x_expected);
+    ASSERT_EQ(y, y_expected);
+    ASSERT_EQ(z, z_expected);
+    ASSERT_EQ(h, h_expected);
+}
+
+TEST_F(OSIPointsTestFixture, TestGetFromIdxEmpty)
+{
+    ASSERT_THROW(osi_points.GetXfromIdx(-1), std::runtime_error);
+    ASSERT_THROW(osi_points.GetYfromIdx(-1), std::runtime_error);
+    ASSERT_THROW(osi_points.GetZfromIdx(-1), std::runtime_error);
+    ASSERT_THROW(osi_points.GetXfromIdx(0), std::runtime_error);
+    ASSERT_THROW(osi_points.GetYfromIdx(0), std::runtime_error);
+    ASSERT_THROW(osi_points.GetZfromIdx(0), std::runtime_error);
+    ASSERT_THROW(osi_points.GetXfromIdx(1), std::runtime_error);
+    ASSERT_THROW(osi_points.GetYfromIdx(1), std::runtime_error);
+    ASSERT_THROW(osi_points.GetZfromIdx(1), std::runtime_error);
+}
+
+TEST_F(OSIPointsTestFixture, TestGetFromIdx)
+{
+    std::vector<double> s {0, -1, 2};
+    std::vector<double> x {0, -1, 2};
+    std::vector<double> y {0, -1, 2};
+    std::vector<double> z {0, -1, 2};
+    std::vector<double> h {0, -1, 2};
+
+    OSIPoints osi_points = OSIPoints(s, x, y, z, h);
+
+    ASSERT_EQ(osi_points.GetXfromIdx(0), (double)0);
+    ASSERT_EQ(osi_points.GetXfromIdx(1), (double)-1);
+    ASSERT_EQ(osi_points.GetXfromIdx(2), (double)2);
+
+    ASSERT_EQ(osi_points.GetYfromIdx(0), (double)0);
+    ASSERT_EQ(osi_points.GetYfromIdx(1), (double)-1);
+    ASSERT_EQ(osi_points.GetYfromIdx(2), (double)2);
+
+    ASSERT_EQ(osi_points.GetZfromIdx(0), (double)0);
+    ASSERT_EQ(osi_points.GetZfromIdx(1), (double)-1);
+    ASSERT_EQ(osi_points.GetZfromIdx(2), (double)2);
+}
+
+TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPointsCorrupt)
+{
+    std::vector<double> s {0, -1, 2};
+    std::vector<double> x {0, 2};
+    std::vector<double> y {0, -1, 2};
+    std::vector<double> z {0, 2};
+    std::vector<double> h {0, -1, 2};
+
+    OSIPoints osi_points = OSIPoints(s, x, y, z, h);
+    ASSERT_THROW(osi_points.GetNumOfOSIPoints(), std::runtime_error);
+}
+
+TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
+{
+    ASSERT_EQ(osi_points.GetNumOfOSIPoints(), 0);
+    std::vector<double> s {0, -1, 2};
+    std::vector<double> x {0, -1, 2};
+    std::vector<double> y {0, -1, 2};
+    std::vector<double> z {0, -1, 2};
+    std::vector<double> h {0, -1, 2};
+
+    OSIPoints osi_points_second = OSIPoints(s, x, y, z, h);
+    ASSERT_EQ(osi_points_second.GetNumOfOSIPoints(), 3);
+}
+
+
+
+
+/*class OSIPoints
+	{
+		public:
+			OSIPoints() {}
+			OSIPoints(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : x_(x), y_(y), z_(z), h_(h) {}
+			void Set(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) { s_ = s; x_ = x; y_ = y; z_ = z; h_ = h;}
+			std::vector<double> GetS() {return s_;}
+			std::vector<double> GetX() {return x_;}
+			std::vector<double> GetY() {return y_;}
+			std::vector<double> GetZ() {return z_;}
+			std::vector<double> GetH() {return h_;}
+			double GetXfromIdx(int i) {return x_[i];}
+			double GetYfromIdx(int i) {return y_[i];}
+			double GetZfromIdx(int i) {return z_[i];}
+			int GetNumOfOSIPoints() {return (int)x_.size();}
+
+		private:
+			std::vector<double> s_;
+			std::vector<double> x_;
+			std::vector<double> y_;
+			std::vector<double> z_;
+			std::vector<double> h_;
+	};*/
+
+
 //////////////////////////////////////////////////////////////////////
 
 
