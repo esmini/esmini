@@ -1543,9 +1543,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 	if (replace)
 	{
-		g_Lane_id = 0;
-		g_Laneb_id = 0; 
-		
+		std::cout << "Reset global IDs" << std::endl; 
+		g_Lane_id = 0; 
+		g_Laneb_id = 0;
+
 		for (size_t i=0; i<road_.size(); i++)
 		{
 			delete road_[i];

@@ -162,7 +162,6 @@ ScenarioGateway::~ScenarioGateway()
 	}
 	objectState_.clear();
 
-	//	free(osiSensorView.sensor_view);
 	osiSensorView.size = 0;
 	osiRoadLane.size=0;
 
@@ -270,9 +269,6 @@ bool ScenarioGateway::OpenOSIFile()
 
 bool ScenarioGateway::WriteOSIFile()
 {
-	mobj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
-	osiSensorView.size = (unsigned int)mobj_osi_internal.sv->ByteSizeLong();
-
 	// write to file, first size of message
 	osi_file.write((char*)&osiSensorView.size, sizeof(osiSensorView.size));
 
@@ -301,6 +297,9 @@ int ScenarioGateway::UpdateOSISensorView()
 	UpdateOSIRoadLane();
 
 	UpdateOSILaneBoundary();
+
+	mobj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
+	osiSensorView.size = (unsigned int)mobj_osi_internal.sv->ByteSizeLong();
 
 	if (sendSocket)
 	{

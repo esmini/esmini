@@ -20,9 +20,6 @@
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
 
-extern int g_Lane_id;
-extern int g_Laneb_id;
-
 
 namespace roadmanager
 {
