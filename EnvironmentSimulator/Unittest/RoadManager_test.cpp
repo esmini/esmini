@@ -216,6 +216,8 @@ INSTANTIATE_TEST_CASE_P(TestEvaluatePrimPrimParamArgument, PolynomialTestEvaluat
 
 //////////////////////////////////////////////////////////////////////
 
+
+
 ////////// TESTS FOR CLASS -> OSIPoints //////////
 
 class OSIPointsTestFixture: public testing::Test
@@ -356,35 +358,13 @@ TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
     ASSERT_EQ(osi_points_second.GetNumOfOSIPoints(), 3);
 }
 
-
-
-
-/*class OSIPoints
-	{
-		public:
-			OSIPoints() {}
-			OSIPoints(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : x_(x), y_(y), z_(z), h_(h) {}
-			void Set(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) { s_ = s; x_ = x; y_ = y; z_ = z; h_ = h;}
-			std::vector<double> GetS() {return s_;}
-			std::vector<double> GetX() {return x_;}
-			std::vector<double> GetY() {return y_;}
-			std::vector<double> GetZ() {return z_;}
-			std::vector<double> GetH() {return h_;}
-			double GetXfromIdx(int i) {return x_[i];}
-			double GetYfromIdx(int i) {return y_[i];}
-			double GetZfromIdx(int i) {return z_[i];}
-			int GetNumOfOSIPoints() {return (int)x_.size();}
-
-		private:
-			std::vector<double> s_;
-			std::vector<double> x_;
-			std::vector<double> y_;
-			std::vector<double> z_;
-			std::vector<double> h_;
-	};*/
-
-
 //////////////////////////////////////////////////////////////////////
+
+
+////////// TESTS FOR CLASS -> Geometry //////////
+
+
+
 
 
 /******************************************
