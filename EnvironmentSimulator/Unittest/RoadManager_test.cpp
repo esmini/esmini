@@ -1,5 +1,6 @@
 #include <iostream>
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "RoadManager.hpp"
 #include <vector>
 #include <stdexcept>
@@ -361,7 +362,116 @@ TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
 //////////////////////////////////////////////////////////////////////
 
 
-////////// TESTS FOR CLASS -> Geometry //////////
+////////// TESTS FOR CLASS -> LineGeom //////////
+
+class LineGeomTestFixture: public testing::Test
+{
+    public:
+        LineGeomTestFixture();
+        LineGeomTestFixture(double s, double x, double y, double hdg, double length);
+        virtual ~LineGeomTestFixture();
+    protected:
+        Line line;
+};
+
+LineGeomTestFixture::LineGeomTestFixture()
+{
+}
+
+LineGeomTestFixture::LineGeomTestFixture(double s, double x, double y, double hdg, double length)
+{
+}
+
+LineGeomTestFixture::~LineGeomTestFixture()
+{
+}
+
+TEST_F(LineGeomTestFixture, TestConstructorArgument)
+{
+    ASSERT_EQ(0, line.GetS());
+    ASSERT_EQ(0, line.GetX());
+    ASSERT_EQ(0, line.GetY());
+    ASSERT_EQ(0, line.GetHdg());
+    ASSERT_EQ(0, line.GetLength());
+    EXPECT_EQ(line.GetType(), Geometry::GEOMETRY_TYPE_UNKNOWN);
+
+    Line line_second = Line(2, -1, 1, 5*M_PI, 4);
+    ASSERT_EQ(2, line_second.GetS());
+    ASSERT_EQ(-1, line_second.GetX());
+    ASSERT_EQ(1, line_second.GetY());
+    ASSERT_EQ(M_PI, line_second.GetHdg());
+    ASSERT_EQ(4, line_second.GetLength());
+    EXPECT_EQ(line_second.GetType(), Geometry::GEOMETRY_TYPE_LINE);
+
+    Line line_third = Line(2, -1, 1, -5*M_PI, 4);
+    ASSERT_EQ(2, line_third.GetS());
+    ASSERT_EQ(-1, line_third.GetX());
+    ASSERT_EQ(1, line_third.GetY());
+    ASSERT_EQ(M_PI, line_third.GetHdg());
+    ASSERT_EQ(4, line_third.GetLength());
+    EXPECT_EQ(line_third.GetType(), Geometry::GEOMETRY_TYPE_LINE);
+}
+
+
+class LineGeomTestEvaluateDsEmptyConstructor: public testing::TestWithParam<std::tuple<double, double, double, double>>
+{
+    public:
+    protected:
+        Line line;
+};
+
+TEST_P(LineGeomTestEvaluateDsEmptyConstructor, TestLineGeomEvaluateDsEmpty)
+{
+    std::tuple<double, double, double, double> tuple = GetParam();
+    ASSERT_GE(std::get<0>(tuple), 0);
+    double *x, *y, *h;
+    double my_x = line.GetX();
+    double my_y = line.GetY();
+    double my_h = line.GetHdg();
+    x = &my_x;
+    y = &my_y;
+    h = &my_h;
+    line.EvaluateDS(std::get<0>(tuple), x, y, h);
+    ASSERT_EQ(*x, std::get<1>(tuple));
+    ASSERT_EQ(*y, std::get<2>(tuple));
+    ASSERT_EQ(*h, std::get<3>(tuple));
+}
+
+INSTANTIATE_TEST_CASE_P(TestEvaluateDsEmptyParam, LineGeomTestEvaluateDsEmptyConstructor, testing::Values(
+                                                std::make_tuple(0, 0, 0, 0),
+                                                std::make_tuple(1, 1, 0, 0),
+                                                std::make_tuple(100, 100, 0, 0)));
+
+class LineGeomTestEvaluateDsArgumentConstructor: public testing::TestWithParam<std::tuple<double, double, double, double>>
+{
+    public:
+    protected:
+        Line line{2.0, -1.0, 1.0, 5*M_PI, 4.0};
+};
+
+TEST_P(LineGeomTestEvaluateDsArgumentConstructor, TestLineGeomEvaluateDsArgument)
+{
+    std::tuple<double, double, double, double> tuple = GetParam();
+    ASSERT_GE(std::get<0>(tuple), 0);
+    double *x, *y, *h;
+    double my_x = line.GetX();
+    double my_y = line.GetY();
+    double my_h = line.GetHdg();
+    x = &my_x;
+    y = &my_y;
+    h = &my_h;
+    line.EvaluateDS(std::get<0>(tuple), x, y, h);
+    ASSERT_EQ(*x, std::get<1>(tuple));
+    ASSERT_EQ(*y, std::get<2>(tuple));
+    ASSERT_EQ(*h, std::get<3>(tuple));
+}
+
+INSTANTIATE_TEST_CASE_P(TestEvaluateDsArgumentParam, LineGeomTestEvaluateDsArgumentConstructor, testing::Values(
+                                                std::make_tuple(0.0, -1.0, 1.0, M_PI),
+                                                std::make_tuple(1.0, -2.0, 1.0+sin(M_PI), M_PI),
+                                                std::make_tuple(100.0, -101.0, 1.0+100*sin(M_PI), M_PI)));
+
+//////////////////////////////////////////////////////////////////////
 
 
 

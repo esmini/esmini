@@ -97,9 +97,9 @@ namespace roadmanager
 
 		GeometryType GetType() { return type_; }
 		double GetLength() { return length_; }
-		double GetX() { return x_; }
-		double GetY() { return y_; }
-		double GetHdg() { return GetAngleInInterval2PI(hdg_); }
+		virtual double GetX() { return x_; }
+		virtual double GetY() { return y_; }
+		virtual double GetHdg() { return GetAngleInInterval2PI(hdg_); }
 		double GetS() { return s_; }
 		virtual double EvaluateCurvatureDS(double ds) = 0;
 		virtual void Print();
@@ -118,6 +118,7 @@ namespace roadmanager
 	class Line : public Geometry
 	{
 	public:
+		Line() {}
 		Line(double s, double x, double y, double hdg, double length) : Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_LINE) {}
 		~Line() {};
 
