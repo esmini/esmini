@@ -412,6 +412,14 @@ TEST_F(LineGeomTestFixture, TestConstructorArgument)
     EXPECT_EQ(line_third.GetType(), Geometry::GEOMETRY_TYPE_LINE);
 }
 
+TEST_F(LineGeomTestFixture, TestEvaluateCurvatureDS)
+{
+    ASSERT_EQ(line.EvaluateCurvatureDS(0), 0.0);
+    ASSERT_EQ(line.EvaluateCurvatureDS(10), 0.0);
+    ASSERT_EQ(line.EvaluateCurvatureDS(100), 0.0);
+    ASSERT_EQ(line.EvaluateCurvatureDS(1000), 0.0);
+}
+
 
 class LineGeomTestEvaluateDsEmptyConstructor: public testing::TestWithParam<std::tuple<double, double, double, double>>
 {
