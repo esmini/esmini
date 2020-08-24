@@ -485,6 +485,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("osc", "OpenSCENARIO filename", "filename");
 	opt.AddOption("control", "Ego control (\"osc\", \"internal\", \"external\", \"hybrid\"", "mode");
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
+	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
 	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
 	opt.AddOption("trails", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 'j') ", "mode");
 	opt.AddOption("road_features", "Show road features (\"on\" (default), \"off\") (toggle during simulation by press 'o') ", "mode");
@@ -500,8 +501,6 @@ int ScenarioPlayer::Init()
 	opt.AddOption("ghost_headstart", "Launch Ego ghost at specified headstart time", "time");
 	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))", "mode");
 	opt.AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
-	//Add the options
-	opt.AddOption("csv_logger", "Log all vehicle data in csv file", "csv_filename");
 
 	if (argc_ < 3)
 	{
