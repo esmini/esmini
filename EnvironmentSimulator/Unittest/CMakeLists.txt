@@ -1,5 +1,6 @@
 include_directories (
   ${SCENARIOENGINE_INCLUDE_DIRS}
+  ${SCENARIOENGINE_DLL_INCLUDE_DIR}
   ${COMMON_MINI_INCLUDE_DIR}  
   ${ROADMANAGER_INCLUDE_DIR}
   ${VIEWER_BASE_INCLUDE_DIR}
@@ -22,3 +23,4 @@ endmacro()
 
 package_add_test_with_libraries(OperatingSystem_test OperatingSystem_test.cpp PlayerBase)
 package_add_test_with_libraries(RoadManager_test RoadManager_test.cpp RoadManager)
+package_add_test_with_libraries(ScenarioEngineDll_test ScenarioEngineDll_test.cpp ScenarioEngineDLL)
