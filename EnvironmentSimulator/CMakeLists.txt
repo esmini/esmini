@@ -23,6 +23,10 @@ set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
 set ( OSI_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OSI" )
 set ( SUMO_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/SUMO" )
 
+# GoogleTest package
+set ( GTEST_VERSION "1.10.1" )
+set ( GTEST_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/googletest" )
+
 set( CMAKE_VERBOSE_MAKEFILE true )
 
 if (APPLE)
@@ -41,6 +45,8 @@ elseif (UNIX)
   set ( OSI_DIR "${OSI_BASE_DIR}/linux" )
   set ( SUMO_PACKAGE_URL https://drive.google.com/uc?export=download&id=1ThXnLQjULcMr_wxVprns5JMgXzm1NGcu )
   set ( SUMO_DIR "${SUMO_BASE_DIR}/linux" )
+  set ( GTEST_PACKAGE_URL https://drive.google.com/uc?export=download&id=19bFhtkoCD6Nk84EgxFrgVTa9Z4Gt7_3g )
+  set ( GTEST_DIR "${GTEST_BASE_DIR}/linux" )
 elseif (WIN32)
   if (WINSDK7_1)
     message ("Configuring for Windows SDK v7.1 x64")
@@ -86,6 +92,11 @@ set ( SUMO_LIBRARIES_PATH "${SUMO_DIR}/lib" )
 
 link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} ${SUMO_LIBRARIES_PATH})
 
+set ( GTEST_INCLUDE_DIR "${GTEST_DIR}/include" )
+set ( GTEST_LIBRARIES_PATH "${GTEST_DIR}/lib" )
+
+link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} ${GTEST_LIBRARIES_PATH})
+
 if(APPLE)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
 
@@ -119,7 +130,8 @@ if(APPLE)
 	open_simulation_interface_pic
 	protobuf
   )
-  set ( SUMO_LIBRARIES 
+
+  set ( SUMO_LIBRARIES 
     optimized libsumostatic debug libsumostaticd
     optimized netload debug netloadd
     optimized traciserver debug traciserverd
@@ -217,6 +229,13 @@ elseif(UNIX)
     optimized xerces-c_3 debug xerces-c_3D
   )
 
+  set (GTEST_LIBRARIES
+  optimized gmock debug gmockd
+  optimized gmock_main debug gmock_maind
+  optimized gtest debug gtestd
+  optimized gtest_main debug gtest_maind
+  )
+
 else() #not UNIX
 
   # Get rid of historical macros preventing SUMO integration
@@ -293,6 +312,9 @@ add_subdirectory(PlayerBase)
 add_subdirectory(ScenarioViewer)
 add_subdirectory(EnvironmentSimulator)
 add_subdirectory(EgoSimulator)
+
+# Add unittest folder
+add_subdirectory(Unittest)
     
 set ( ModulesFolder Modules )
 set ( ApplicationsFolder Applications )  
@@ -330,7 +352,13 @@ endif()
 # download SUMO
 set ( SUMO_PACKAGE_FILENAME "sumo.7z" )
 if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${SUMO_DIR} )
-	download_and_extract( ${SUMO_PACKAGE_URL} ${SUMO_BASE_DIR} ${SUMO_PACKAGE_FILENAME} )
+  download_and_extract( ${SUMO_PACKAGE_URL} ${SUMO_BASE_DIR} ${SUMO_PACKAGE_FILENAME} )
+endif()
+
+# download googletest
+set ( GTEST_PACKAGE_FILENAME "googletest.7z" )
+if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${GTEST_DIR} )
+	download_and_extract( ${GTEST_PACKAGE_URL} ${GTEST_BASE_DIR} ${GTEST_PACKAGE_FILENAME} )
 endif()
 
 set ( MODELS_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources" )

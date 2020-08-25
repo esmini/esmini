@@ -107,6 +107,79 @@ void Polynomial::Set(double a, double b, double c, double d, double p_scale)
 	p_scale_ = p_scale;
 }
 
+double OSIPoints::GetXfromIdx(int i) 
+{
+	if(x_.size() < i || x_.size() == 0)
+	{
+		throw std::runtime_error("OSIPoints::GetXFromIdx(int i) -> exceeds index");
+	}
+	else if(x_.size() < 0)
+	{
+		throw std::runtime_error("OSIPoints::GetXFromIdx(int i) -> index must be larger than 0");
+	}
+	else
+	{
+		return x_[i];
+	}	
+}
+
+double OSIPoints::GetYfromIdx(int i) 
+{
+	if(y_.size() < i || y_.size() == 0)
+	{
+		throw std::runtime_error("OSIPoints::GetYFromIdx(int i) -> exceeds index");
+	}
+	else if(y_.size() < 0)
+	{
+		throw std::runtime_error("OSIPoints::GetYFromIdx(int i) -> index must be larger than 0");
+	}
+	else
+	{
+		return y_[i];
+	}	
+}
+
+double OSIPoints::GetZfromIdx(int i) 
+{
+	if(z_.size() < i || z_.size() == 0)
+	{
+		throw std::runtime_error("OSIPoints::GetZFromIdx(int i) -> exceeds index");
+	}
+	else if(z_.size() < 0)
+	{
+		throw std::runtime_error("OSIPoints::GetZFromIdx(int i) -> index must be larger than 0");
+	}
+	else
+	{
+		return z_[i];
+	}	
+}
+
+int OSIPoints::GetNumOfOSIPoints() 
+{
+	int osi_size = s_.size();
+	if(x_.size() != osi_size)
+	{
+		throw std::runtime_error("OSIPoints::GetNumOfOSIPoints() -> mismatch size in assigned osi points for x");
+	}
+	else if(y_.size() != osi_size)
+	{
+		throw std::runtime_error("OSIPoints::GetNumOfOSIPoints() -> mismatch size in assigned osi points for y");
+	}
+	else if(z_.size() != osi_size)
+	{
+		throw std::runtime_error("OSIPoints::GetNumOfOSIPoints() -> mismatch size in assigned osi points for z");
+	}
+	else if(h_.size() != osi_size)
+	{
+		throw std::runtime_error("OSIPoints::GetNumOfOSIPoints() -> mismatch size in assigned osi points for h");
+	}
+	else
+	{
+		return (int)x_.size();
+	}
+}
+
 void Geometry::Print()
 {
 	LOG("Geometry virtual Print\n");

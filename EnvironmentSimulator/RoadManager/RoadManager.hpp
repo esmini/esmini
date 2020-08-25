@@ -54,17 +54,17 @@ namespace roadmanager
 	{
 		public:
 			OSIPoints() {}
-			OSIPoints(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : x_(x), y_(y), z_(z), h_(h) {}
+			OSIPoints(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : s_(s), x_(x), y_(y), z_(z), h_(h) {}
 			void Set(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) { s_ = s; x_ = x; y_ = y; z_ = z; h_ = h;}
 			std::vector<double> GetS() {return s_;}
 			std::vector<double> GetX() {return x_;}
 			std::vector<double> GetY() {return y_;}
 			std::vector<double> GetZ() {return z_;}
 			std::vector<double> GetH() {return h_;}
-			double GetXfromIdx(int i) {return x_[i];}
-			double GetYfromIdx(int i) {return y_[i];}
-			double GetZfromIdx(int i) {return z_[i];}
-			int GetNumOfOSIPoints() {return (int)x_.size();}
+			double GetXfromIdx(int i);
+			double GetYfromIdx(int i);
+			double GetZfromIdx(int i);
+			int GetNumOfOSIPoints();
 
 		private:
 			std::vector<double> s_;
@@ -94,9 +94,9 @@ namespace roadmanager
 
 		GeometryType GetType() { return type_; }
 		double GetLength() { return length_; }
-		double GetX() { return x_; }
-		double GetY() { return y_; }
-		double GetHdg() { return GetAngleInInterval2PI(hdg_); }
+		virtual double GetX() { return x_; }
+		virtual double GetY() { return y_; }
+		virtual double GetHdg() { return GetAngleInInterval2PI(hdg_); }
 		double GetS() { return s_; }
 		virtual double EvaluateCurvatureDS(double ds) = 0;
 		virtual void Print();
@@ -115,6 +115,7 @@ namespace roadmanager
 	class Line : public Geometry
 	{
 	public:
+		Line() {}
 		Line(double s, double x, double y, double hdg, double length) : Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_LINE) {}
 		~Line() {};
 
@@ -128,12 +129,14 @@ namespace roadmanager
 	class Arc : public Geometry
 	{
 	public:
+		Arc(): curvature_(0.0) {}
 		Arc(double s, double x, double y, double hdg, double length, double curvature) :
 			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_ARC), curvature_(curvature) {}
 		~Arc() {}
 
 		double EvaluateCurvatureDS(double ds) { (void)ds; return curvature_; }
 		double GetRadius() { return std::fabs(1.0 / curvature_); }
+		double GetCurvature() { return curvature_; }
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 
