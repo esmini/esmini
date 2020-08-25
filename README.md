@@ -58,6 +58,15 @@ Environment models (roads, landscape, buildings...) have been created using [VIR
 ## Build
 If you want to build yourself, please find some instructions [here](docs/BuildInstructions.md).
 
+## Run esmini
+Either get the demo or build yourself. To run demos:
+1. Navigate to run/EgoSimulator
+2. Run any of the provided batch-script examples (double click on or run from command line)
+
+Further info:
+* [Launch commands](./docs/commands.txt)
+* [Runtime control](./docs/readme.txt)
+
 ## Related work
 ### pyoscx
 [pyoscx](https://github.com/pyoscx/pyoscx) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate the OpenSCENARIO 1.0 XML counterpart. 
@@ -89,3 +98,5 @@ describes the road network, the static part of a scenario.
 
 [OpenSCENARIO](https://www.asam.net/standards/detail/openscenario/)
 describes the dynamic content on top of a road network, e.g. traffic maneuvers and weather conditions.
+
+
