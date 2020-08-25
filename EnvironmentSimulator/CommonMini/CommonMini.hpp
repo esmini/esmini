@@ -227,6 +227,44 @@ private:
 	std::ofstream file_;
 };
 
+// Global Vehicle Data Logger
+class CSV_Logger
+{
+public:
+	typedef void(*FuncPtr)(const char*);
+
+	//Instantiator
+	static CSV_Logger& InstVehicleLog(std::string scenario_filename,
+		int numvehicles, std::string csv_filename);
+
+	//Logging function called by VehicleLogger object using pass by value
+	void LogVehicleData(bool isendline, double timestamp, 
+		char const* name_, int id_, double speed_, double wheel_angle_,
+		double wheel_rot_, double posX_, double posY_, double posZ_,
+		double distance_road_, double distance_lanem_, double heading_,
+		double heading_angle_, double heading_angle_driving_direction_,
+		double pitch_, double curvature_, ...);
+
+	void SetCallback(FuncPtr callback);
+
+private:
+	//Constructor to be called by instantiator
+	CSV_Logger(std::string scenario_filename, int numvehicles, std::string csv_filename);
+
+	//Destructor
+	~CSV_Logger();
+
+	//Counter for indexing each log entry
+	int data_index_;
+
+	//File output stream
+	std::ofstream file_;
+
+	//Callback function pointer for error logging
+	FuncPtr callback_;
+};
+
+
 // Argument parser 
 
 class SE_Option
