@@ -358,9 +358,11 @@ if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${SUMO_DIR} )
 endif()
 
 # download googletest
-set ( GTEST_PACKAGE_FILENAME "googletest.7z" )
-if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${GTEST_DIR} )
-	download_and_extract( ${GTEST_PACKAGE_URL} ${GTEST_BASE_DIR} ${GTEST_PACKAGE_FILENAME} )
+if(UNIX)
+  set ( GTEST_PACKAGE_FILENAME "googletest.7z" )
+  if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${GTEST_DIR} )
+	  download_and_extract( ${GTEST_PACKAGE_URL} ${GTEST_BASE_DIR} ${GTEST_PACKAGE_FILENAME} )
+  endif()
 endif()
 
 set ( MODELS_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources" )
