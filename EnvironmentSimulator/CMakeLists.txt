@@ -67,9 +67,11 @@ elseif (WIN32)
     set ( OSG_PACKAGE_URL https://drive.google.com/uc?export=download&id=1YxLVdQLhKBMGW4HB_ArJglRIpzuDiwhJ )
     set ( OSI_PACKAGE_URL https://drive.google.com/uc?export=download&id=168Qf08TktrVc-WNFm4xZ1SNUG3v7ENeG )
     set ( SUMO_PACKAGE_URL https://drive.google.com/uc?export=download&id=1C7FzC7fwjdm8jWP43gaDijj4gRCfI_4L )
+    set ( GTEST_PACKAGE_URL https://drive.google.com/uc?export=download&id=1ZKKBWhnIZMDJ-Dt8isuFnvWavflutkQJ )
     set ( OSG_DIR "${OSG_BASE_DIR}/v10" )
     set ( OSI_DIR "${OSI_BASE_DIR}/v10" )
     set ( SUMO_DIR "${SUMO_BASE_DIR}/v10" )
+    set ( GTEST_DIR "${GTEST_BASE_DIR}/v10" )
   else ()
     message ("Unknown configuration")
   endif ()
@@ -230,10 +232,10 @@ elseif(UNIX)
   )
 
   set (GTEST_LIBRARIES
-  optimized gmock debug gmockd
-  optimized gmock_main debug gmock_maind
-  optimized gtest debug gtestd
-  optimized gtest_main debug gtest_maind
+    optimized gmock debug gmockd
+    optimized gmock_main debug gmock_maind
+    optimized gtest debug gtestd
+    optimized gtest_main debug gtest_maind
   )
 
 else() #not UNIX
@@ -296,6 +298,13 @@ else() #not UNIX
     optimized xerces-c_3.lib debug xerces-c_3D.lib
     optimized zlibstatic.lib debug zlibstaticd.lib
   )  
+
+  set (GTEST_LIBRARIES
+    optimized gmock.lib debug gmockd.lib
+    optimized gmock_main.lib debug gmock_maind.lib
+    optimized gtest.lib debug gtestd.lib
+    optimized gtest_main.lib debug gtest_maind.lib
+  )
 #
 #if (NOT WINSDK7_1)  # FBX not supporting winsdk 7.1
 #  list ( APPEND OSG_LIBRARIES optimized libfbxsdk-md.lib debug libfbxsdk-mdd.lib )
@@ -316,7 +325,7 @@ add_subdirectory(EgoSimulator)
 # Add unittest folder
 if(APPLE)
   message ("Not available yet")
-elseif(UNIX)
+else()
   add_subdirectory(Unittest)
 endif()
     
@@ -363,7 +372,7 @@ endif()
 if(APPLE)
   message ("Not available yet")
 
-elseif(UNIX)
+else()
   set ( GTEST_PACKAGE_FILENAME "googletest.7z" )
   if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${GTEST_DIR} )
 	  download_and_extract( ${GTEST_PACKAGE_URL} ${GTEST_BASE_DIR} ${GTEST_PACKAGE_FILENAME} )

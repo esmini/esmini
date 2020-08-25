@@ -157,7 +157,8 @@ double OSIPoints::GetZfromIdx(int i)
 
 int OSIPoints::GetNumOfOSIPoints() 
 {
-	int osi_size = s_.size();
+	size_t osi_size = s_.size();
+
 	if(x_.size() != osi_size)
 	{
 		throw std::runtime_error("OSIPoints::GetNumOfOSIPoints() -> mismatch size in assigned osi points for x");
