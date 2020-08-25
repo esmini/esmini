@@ -144,7 +144,8 @@ int main(int argc, char *argv[])
 				// Halfway through, pause the simulation for a few seconds
 				// to demonstrate how camera can still move independently
 				// when running viewer in a separate thread
-				LOG("Taking a 4 sec nap - if running with threads you can move camera around meanwhile");
+				// Only Linux and Win supported (due to OSG and MacOS issue)
+				LOG("Taking a 4 sec nap - if running with threads (Win/Linux) you can move camera around meanwhile");
 				SE_sleep(4000);
 			}
 			else

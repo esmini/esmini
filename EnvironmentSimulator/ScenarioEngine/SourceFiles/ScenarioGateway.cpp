@@ -141,8 +141,6 @@ ScenarioGateway::ScenarioGateway()
 {
 	sendSocket = 0;
 
-	objectState_.clear();
-
 	mobj_osi_internal.sv = new osi3::SensorView();
 
 	mobj_osi_internal.sv->mutable_version()->set_version_major(3);
@@ -162,6 +160,16 @@ ScenarioGateway::~ScenarioGateway()
 	}
 	objectState_.clear();
 
+	if (mobj_osi_internal.sv)
+	{
+		mobj_osi_internal.sv->Clear();
+		delete mobj_osi_internal.sv;
+	}
+
+	mobj_osi_internal.mobj.clear();
+	mobj_osi_internal.ln.clear();
+	mobj_osi_internal.lnb.clear();
+
 	osiSensorView.size = 0;
 	osiRoadLane.size=0;
 
@@ -173,8 +181,7 @@ ScenarioGateway::~ScenarioGateway()
 	{
 		osi_file.close();
 	}
-
-	// Assume osi cleans up allocated data
+	
 }
 
 int ScenarioGateway::OpenSocket(std::string ipaddr)

@@ -1543,7 +1543,6 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 	if (replace)
 	{
-		std::cout << "Reset global IDs" << std::endl; 
 		g_Lane_id = 0; 
 		g_Laneb_id = 0;
 
@@ -2876,7 +2875,6 @@ OpenDrive::~OpenDrive()
 	{
 		delete(junction_[i]);
 	}
-
 }
 
 int OpenDrive::GetTrackIdxById(int id)
