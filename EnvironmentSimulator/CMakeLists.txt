@@ -358,7 +358,10 @@ if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${SUMO_DIR} )
 endif()
 
 # download googletest
-if(UNIX)
+if(APPLE)
+  message ("Not available yet")
+
+elseif(UNIX)
   set ( GTEST_PACKAGE_FILENAME "googletest.7z" )
   if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${GTEST_DIR} )
 	  download_and_extract( ${GTEST_PACKAGE_URL} ${GTEST_BASE_DIR} ${GTEST_PACKAGE_FILENAME} )
