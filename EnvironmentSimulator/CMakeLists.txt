@@ -314,7 +314,9 @@ add_subdirectory(EnvironmentSimulator)
 add_subdirectory(EgoSimulator)
 
 # Add unittest folder
-add_subdirectory(Unittest)
+if(UNIX)
+  add_subdirectory(Unittest)
+endif()
     
 set ( ModulesFolder Modules )
 set ( ApplicationsFolder Applications )  
