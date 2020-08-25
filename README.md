@@ -43,9 +43,7 @@ Nevertheless, regarding the above stated limitations, it was decided to release 
 ## Binaries and demos
 Windows, Linux and Mac supported
 
-Latest release is found here: https://github.com/esmini/esmini/releases/latest
-
-All builds, successful and unsuccessful ones :), are available at the CI service [AppVeyor/esmini](https://ci.appveyor.com/project/esmini/esmini). Click on a job, then find files under the Artifact tab.
+Latest release including source, binaries and demo packages is found here: https://github.com/esmini/esmini/releases/latest 
 
 On Mac the zip-package might be put in quarantine, to release it:
 `xattr -d com.apple.quarantine file.zip`
@@ -53,7 +51,7 @@ or even better:
 `xattr -c file.zip`
 
 3D models used by the example scenarios are included in the demo packages. They are also available [here](https://drive.google.com/uc?export=download&id=11a8njhkRIjLYMqCsSL9pU-d5_A8pMVhc). Unpack into esmini/resources. These assets works on all platforms.
-Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.com/vtd-vires-virtual-test-drive/#creation).
+Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.mscsoftware.com/solutions/3d-environment-road-network).
 
 ## Build
 If you want to build yourself, please find some instructions [here](docs/BuildInstructions.md).
