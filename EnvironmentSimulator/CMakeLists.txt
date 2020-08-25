@@ -314,7 +314,9 @@ add_subdirectory(EnvironmentSimulator)
 add_subdirectory(EgoSimulator)
 
 # Add unittest folder
-if(UNIX)
+if(APPLE)
+  message ("Not available yet")
+elseif(UNIX)
   add_subdirectory(Unittest)
 endif()
     
