@@ -7,6 +7,8 @@
 
 using namespace roadmanager;
 
+#define TRIG_ERR_MARGIN 0.001
+
 //////////////////////////////////////////////////////////////////////
 ////////// TESTS FOR CLASS -> Polynomial //////////
 //////////////////////////////////////////////////////////////////////
@@ -482,7 +484,7 @@ TEST_P(LineGeomTestEvaluateDsArgumentConstructor, TestLineGeomEvaluateDsArgument
     ASSERT_EQ(*h, std::get<3>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluateDsArgumentParam, LineGeomTestEvaluateDsArgumentConstructor, testing::Values(
+INSTANTIATE_TEST_CASE_P(TestEvaluateLineDsArgumentParam, LineGeomTestEvaluateDsArgumentConstructor, testing::Values(
                                                 std::make_tuple(0.0, -1.0, 1.0, M_PI),
                                                 std::make_tuple(1.0, -2.0, 1.0+sin(M_PI), M_PI),
                                                 std::make_tuple(100.0, -101.0, 1.0+100*sin(M_PI), M_PI)));
@@ -553,64 +555,63 @@ TEST_F(ArcGeomTestFixture, TestGetRadius)
     ASSERT_EQ(arc_third.GetRadius(), 0.1);
 }
 
-
-/*class LineGeomTestEvaluateDsEmptyConstructor: public testing::TestWithParam<std::tuple<double, double, double, double>>
+class ArcGeomTestEvaluateDsCurvPositive: public testing::TestWithParam<std::tuple<double, double, double, double>>
 {
     public:
     protected:
-        Line line;
+        Arc arc{2.0, -1.0, 1.0, 5*M_PI, 4.0, 1.0};
 };
 
-TEST_P(LineGeomTestEvaluateDsEmptyConstructor, TestLineGeomEvaluateDsEmpty)
+TEST_P(ArcGeomTestEvaluateDsCurvPositive, TestArcGeomEvaluateDsArgument)
 {
     std::tuple<double, double, double, double> tuple = GetParam();
     ASSERT_GE(std::get<0>(tuple), 0);
     double *x, *y, *h;
-    double my_x = line.GetX();
-    double my_y = line.GetY();
-    double my_h = line.GetHdg();
+    double my_x = arc.GetX();
+    double my_y = arc.GetY();
+    double my_h = arc.GetHdg();
     x = &my_x;
     y = &my_y;
     h = &my_h;
-    line.EvaluateDS(std::get<0>(tuple), x, y, h);
-    ASSERT_EQ(*x, std::get<1>(tuple));
-    ASSERT_EQ(*y, std::get<2>(tuple));
+    arc.EvaluateDS(std::get<0>(tuple), x, y, h);
+    testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN));
+    testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN));
     ASSERT_EQ(*h, std::get<3>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluateDsEmptyParam, LineGeomTestEvaluateDsEmptyConstructor, testing::Values(
-                                                std::make_tuple(0, 0, 0, 0),
-                                                std::make_tuple(1, 1, 0, 0),
-                                                std::make_tuple(100, 100, 0, 0)));
-
-class LineGeomTestEvaluateDsArgumentConstructor: public testing::TestWithParam<std::tuple<double, double, double, double>>
-{
-    public:
-    protected:
-        Line line{2.0, -1.0, 1.0, 5*M_PI, 4.0};
-};
-
-TEST_P(LineGeomTestEvaluateDsArgumentConstructor, TestLineGeomEvaluateDsArgument)
-{
-    std::tuple<double, double, double, double> tuple = GetParam();
-    ASSERT_GE(std::get<0>(tuple), 0);
-    double *x, *y, *h;
-    double my_x = line.GetX();
-    double my_y = line.GetY();
-    double my_h = line.GetHdg();
-    x = &my_x;
-    y = &my_y;
-    h = &my_h;
-    line.EvaluateDS(std::get<0>(tuple), x, y, h);
-    ASSERT_EQ(*x, std::get<1>(tuple));
-    ASSERT_EQ(*y, std::get<2>(tuple));
-    ASSERT_EQ(*h, std::get<3>(tuple));
-}
-
-INSTANTIATE_TEST_CASE_P(TestEvaluateDsArgumentParam, LineGeomTestEvaluateDsArgumentConstructor, testing::Values(
+INSTANTIATE_TEST_CASE_P(TestEvaluateArcDsArgumentParam, ArcGeomTestEvaluateDsCurvPositive, testing::Values(
                                                 std::make_tuple(0.0, -1.0, 1.0, M_PI),
-                                                std::make_tuple(1.0, -2.0, 1.0+sin(M_PI), M_PI),
-                                                std::make_tuple(100.0, -101.0, 1.0+100*sin(M_PI), M_PI)));*/
+                                                std::make_tuple(1.0, -1.0-cos(271), -1.0-sin(271), M_PI+1),
+                                                std::make_tuple(90.0, 0, 2, M_PI+90)));
+
+class ArcGeomTestEvaluateDsCurvNegative: public testing::TestWithParam<std::tuple<double, double, double, double>>
+{
+    public:
+    protected:
+        Arc arc{2.0, -1.0, 1.0, 5*M_PI, 4.0, -1.0};
+};
+
+TEST_P(ArcGeomTestEvaluateDsCurvNegative, TestArcGeomEvaluateDsArgument)
+{
+    std::tuple<double, double, double, double> tuple = GetParam();
+    ASSERT_GE(std::get<0>(tuple), 0);
+    double *x, *y, *h;
+    double my_x = arc.GetX();
+    double my_y = arc.GetY();
+    double my_h = arc.GetHdg();
+    x = &my_x;
+    y = &my_y;
+    h = &my_h;
+    arc.EvaluateDS(std::get<0>(tuple), x, y, h);
+    testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN));
+    testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN));
+    ASSERT_EQ(*h, std::get<3>(tuple));
+}
+
+INSTANTIATE_TEST_CASE_P(TestEvaluateArcDsArgumentParam, ArcGeomTestEvaluateDsCurvNegative, testing::Values(
+                                                std::make_tuple(0.0, -1.0, 1.0, M_PI),
+                                                std::make_tuple(1.0, -1.0-cos(91), 2.0-sin(91), M_PI-1),
+                                                std::make_tuple(90.0, -2, 2, M_PI-90)));                                    
 
 //////////////////////////////////////////////////////////////////////
 
