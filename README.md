@@ -5,7 +5,7 @@
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Build Status](https://img.shields.io/appveyor/ci/esmini/esmini/master.svg)](https://ci.appveyor.com/project/esmini/esmini)
 
-![Screenshot](resources/screenshot.jpg?raw=true "Screenshot")
+![Screenshot](https://github.com/esmini/esmini/blob/master/resources/screenshot.jpg?raw=true "Screenshot")
 
 It contains the following main modules:
 
@@ -54,7 +54,7 @@ or even better:
 Environment models (roads, landscape, buildings...) have been created using [VIRES Road Network Editor](https://vires.mscsoftware.com/solutions/3d-environment-road-network).
 
 ## Build
-If you want to build yourself, please find some instructions [here](docs/BuildInstructions.md).
+If you want to build yourself, please find some instructions [here](https://github.com/esmini/esmini/blob/master/docs/BuildInstructions.md).
 
 ## Run esmini
 Either get the demo or build yourself. To run demos:
@@ -62,8 +62,8 @@ Either get the demo or build yourself. To run demos:
 2. Run any of the provided batch-script examples (double click on or run from command line)
 
 Further info:
-* [Launch commands](./docs/commands.txt)
-* [Runtime control](./docs/readme.txt)
+* [Launch commands](https://github.com/esmini/esmini/blob/master/docs/commands.txt)
+* [Runtime control](https://github.com/esmini/esmini/blob/master/docs/readme.txt)
 
 ## Related work
 ### pyoscx
