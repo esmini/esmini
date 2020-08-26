@@ -1,4 +1,4 @@
-esmini GIT REV: 5810a50
+esmini GIT REV: 581b3a6
 
 Usage : [options]
 Options: 
@@ -8,6 +8,8 @@ Options:
       Ego control ("osc", "internal", "external", "hybrid"
   --record <filename>
       Record position data into a file for later replay
+  --csv_logger <csv_filename>
+      Log data for each vehicle in ASCII csv format
   --info_text <mode>
       Show info text HUD ("on" (default), "off") (toggle during simulation by press 'i') 
   --trails <mode>
@@ -38,5 +40,4 @@ Options:
       save osi messages in file ("on", "off" (default))
   --osi_freq <frequence>
       relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps
-
 

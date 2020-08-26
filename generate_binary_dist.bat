@@ -74,7 +74,8 @@ copy run\EgoSimulator\run_synchronize_internal.bat %target_dir%\run\EgoSimulator
 copy run\EgoSimulator\run_synchronize_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_parking_lot.bat %target_dir%\run\EgoSimulator /y
 
-copy run\readme.txt %target_dir% /y
+copy docs\readme.txt %target_dir% /y
+copy docs\commands.txt %target_dir% /y
 
 copy 3rd_party_terms_and_licenses\* %target_dir%\3rd_party_terms_and_licenses /y
 copy LICENSE %target_dir% /y
