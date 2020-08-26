@@ -918,7 +918,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 			}
 			else
 			{
-				LOG("Failed to locate %s. Tried %s and %s. Creating a dummy model instead", path.c_str(), path2);
+				LOG("Failed to locate %s. Tried %s and %s. Creating a dummy model instead", path.c_str(), path2.c_str());
 			}
 
 			osg::ref_ptr<osg::Geode> geode = new osg::Geode;
