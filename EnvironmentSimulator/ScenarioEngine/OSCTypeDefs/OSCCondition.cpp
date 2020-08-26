@@ -233,6 +233,12 @@ bool TrigByState::CheckCondition(StoryBoard *storyBoard, double sim_time, bool l
 			return false;
 		}
 
+		if (element == 0)
+		{
+			LOG("Story board element \"%s\" not found", element_name_.c_str());
+			return false;
+		}
+
 		if (state_ == CondElementState::STANDBY)
 		{
 			result = element->state_ == StoryBoardElement::State::STANDBY;
