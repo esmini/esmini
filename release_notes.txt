@@ -1,5 +1,10 @@
 The purpose of this document is to highlight changes breaking backward compatibility, i.e. updates to scenarios and start scripts might be required.
 
+2020-08-26 Version 1.7.1
+- CSV logging feature
+- EndOfRoad trigger
+- Unit test framework based on Google Test
+
 2020-08-21 Version 1.7.0
 - SUMO support integrated (via libsumostatic), first limited shot.
   - SUMO vehicles created by means of object controller. See example cut-in_sumo.xosc.
