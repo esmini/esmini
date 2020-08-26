@@ -1,9 +1,10 @@
 The purpose of this document is to highlight changes breaking backward compatibility, i.e. updates to scenarios and start scripts might be required.
 
-2020-08-26 Version 1.7.1
+2020-08-26 Version 1.7.2
 - CSV logging feature
 - EndOfRoad trigger
 - Unit test framework based on Google Test
+- Cleaned irrelevant error messages
 
 2020-08-21 Version 1.7.0
 - SUMO support integrated (via libsumostatic), first limited shot.
