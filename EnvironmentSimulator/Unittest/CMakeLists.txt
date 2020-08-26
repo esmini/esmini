@@ -6,6 +6,7 @@ include_directories (
   ${VIEWER_BASE_INCLUDE_DIR}
   ${PLAYER_BASE_INCLUDE_DIR}
   ${GTEST_INCLUDE_DIR}
+  ${OSI_INCLUDE_DIR}
 )
 
 macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES)

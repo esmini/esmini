@@ -1,0 +1,575 @@
+<?xml version="1.0" ?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceShemaLocation="OpenSccenario.xsd">
+	<FileHeader author="inatale" date="2020-08-11 10:27:09.988153" decription="full_e6mini" revMajor="1" revMinor="0"/>
+	<ParameterDeclarations/>
+	<CatalogLocations>
+		<VehicleCatalog>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
+		</VehicleCatalog>
+	</CatalogLocations>
+	<RoadNetwork>
+		<LogicFile filepath="../xodr/e6mini.xodr"/>
+		<SceneGraphFile filepath="../models/e6mini.osgb"/>
+	</RoadNetwork>
+	<Entities>
+		<ScenarioObject name="vehicle0">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="0"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle1">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="1"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle2">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="2"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle3">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="3"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle4">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="4"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle5">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="5"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle6">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="6"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle8">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="8"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle9">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="9"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle10">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="10"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle11">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="11"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle12">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="12"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle13">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="13"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+		<ScenarioObject name="vehicle14">
+			<Vehicle name="car_red" vehicleCategory="car">
+				<ParameterDeclarations/>
+				<BoundingBox>
+					<Center x="1.3" y="0" z="0.8"/>
+					<Dimensions height="1.5" length="4.5" width="1.8"/>
+				</BoundingBox>
+				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+				<Axels>
+					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axels>
+				<Properties>
+					<Property name="model_id" value="14"/>
+					<File filepath="../models/car_red.osgb"/>
+				</Properties>
+			</Vehicle>
+		</ScenarioObject>
+	</Entities>
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private entityRef="vehicle0">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="-7" offset="0" roadId="0" s="15"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle1">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="-6" offset="0" roadId="0" s="15"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle2">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="-5" offset="0" roadId="0" s="15"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle3">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="-4" offset="0" roadId="0" s="15"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle4">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="-3" offset="0" roadId="0" s="15"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle5">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="-2" offset="0" roadId="0" s="15"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle6">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="-1" offset="0" roadId="0" s="15"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle8">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="1" offset="0" roadId="0" s="15">
+									<Orientation h="3.14" type="relative"/>
+								</LanePosition>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle9">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="2" offset="0" roadId="0" s="15">
+									<Orientation h="3.14" type="relative"/>
+								</LanePosition>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle10">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="3" offset="0" roadId="0" s="15">
+									<Orientation h="3.14" type="relative"/>
+								</LanePosition>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle11">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="4" offset="0" roadId="0" s="15">
+									<Orientation h="3.14" type="relative"/>
+								</LanePosition>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle12">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="5" offset="0" roadId="0" s="15">
+									<Orientation h="3.14" type="relative"/>
+								</LanePosition>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle13">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="6" offset="0" roadId="0" s="15">
+									<Orientation h="3.14" type="relative"/>
+								</LanePosition>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+				<Private entityRef="vehicle14">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="7" offset="0" roadId="0" s="15">
+									<Orientation h="3.14" type="relative"/>
+								</LanePosition>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+				</Private>
+			</Actions>
+		</Init>
+		<Story name="mystory">
+			<ParameterDeclarations/>
+			<Act name="my_act">
+				<ManeuverGroup maximumExecutionCount="1" name="mangroup">
+					<Actors selectTriggeringEntities="False">
+						<EntityRef entityRef="vehicle1"/>
+					</Actors>
+				</ManeuverGroup>
+				<StartTrigger>
+					<ConditionGroup>
+						<Condition conditionEdge="rising" delay="0" name="starttrigger">
+							<ByValueCondition>
+								<SimulationTimeCondition rule="greaterThan" value="0"/>
+							</ByValueCondition>
+						</Condition>
+					</ConditionGroup>
+				</StartTrigger>
+				<StopTrigger/>
+			</Act>
+		</Story>
+		<StopTrigger/>
+	</Storyboard>
+</OpenSCENARIO>
