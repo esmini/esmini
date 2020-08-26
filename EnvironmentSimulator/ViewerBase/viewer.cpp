@@ -488,7 +488,7 @@ CarModel::CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::r
 	retval[3] = AddWheel(car_node, "wheel_rl");
 	if (!(retval[0] || retval[1] || retval[2] || retval[3]))
 	{
-		LOG("Missing all four wheel nodes in vehicle model %s - ignoring", car_node->getName().c_str());
+		LOG("No wheel nodes in model %s. No problem, wheels will just not appear to roll or steer", car_node->getName().c_str());
 	}
 	else
 	{
@@ -614,6 +614,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	quit_request_ = false;
 	showInfoText = true;  // show info text HUD per default
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
+	shadow_node_ = NULL;
 	
 	int aa_mode = DEFAULT_AA_MULTISAMPLES;  
 	if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
@@ -666,16 +667,21 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 
 	// Load shadow geometry - assume it resides in the same resource folder as the environment model
 	std::string shadowFilename = DirNameOf(modelFilename).append("/" + std::string(SHADOW_MODEL_FILEPATH));
-	shadow_node_ = osgDB::readNodeFile(shadowFilename);
+	if (FileExists(shadowFilename.c_str()))
+	{
+		shadow_node_ = osgDB::readNodeFile(shadowFilename);
+	}
 	if (!shadow_node_)
 	{
 		// assume path is relative scenario directory
-		LOG("Failed to locate %s. Looking relative scenario directory %s", shadowFilename.c_str(), getScenarioDir().c_str());
-		shadowFilename = CombineDirectoryPathAndFilepath(DirNameOf(scenarioFilename), shadowFilename);
-		shadow_node_ = osgDB::readNodeFile(shadowFilename);
+		std::string shadowFilename2 = CombineDirectoryPathAndFilepath(DirNameOf(scenarioFilename), shadowFilename);
+		if (FileExists(shadowFilename2.c_str()))
+		{
+			shadow_node_ = osgDB::readNodeFile(shadowFilename2);
+		}
 		if (!shadow_node_)
 		{
-			LOG("Failed to load shadow model %s\n", shadowFilename.c_str());
+			LOG("Failed to load shadow model %s. Tried %s and %s\n", shadowFilename.c_str(), shadowFilename2.c_str());
 		}
 	}
 
@@ -723,13 +729,14 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 
 
 	// add environment
-	if (AddEnvironment(modelFilename) == -1)
+	if (!FileExists(modelFilename) || (AddEnvironment(modelFilename) == -1))
 	{
 		// Look relative scenario directory
-		LOG("Failed to locate %s. Looking relative scenario directory %s", modelFilename, getScenarioDir().c_str());
-		if (AddEnvironment(CombineDirectoryPathAndFilepath(getScenarioDir(),  modelFilename).c_str()) == -1)
+		std::string modelFilename2 = CombineDirectoryPathAndFilepath(getScenarioDir(), modelFilename).c_str();
+		if (!FileExists(modelFilename2.c_str()) || (AddEnvironment(modelFilename2.c_str()) == -1))
 		{
-			LOG("Failed to read environment model %s! If file is missing, check SharePoint/SharedDocuments/models", modelFilename);
+			LOG("Failed to read environment model %s! Also tried %s. If file is missing, check SharePoint/SharedDocuments/models", 
+				modelFilename, CombineDirectoryPathAndFilepath(getScenarioDir(), modelFilename).c_str());
 		}
 	}
 	rootnode_->addChild(envTx_);
@@ -885,19 +892,34 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 {
 	// Load 3D model
 	std::string path = modelFilepath;
+	osg::ref_ptr<osg::LOD> lod;
 
-	osg::ref_ptr<osg::LOD> lod = LoadCarModel(path.c_str());
+	if (FileExists(path.c_str()))
+	{
+		lod = LoadCarModel(path.c_str());
+	}
 
 	if (lod == 0)
 	{
 		// Assume path is relative scenario directory
-		LOG("Failed to locate %s. Looking relative scenario directory %s", path.c_str(), getScenarioDir().c_str());
-		lod = LoadCarModel(CombineDirectoryPathAndFilepath(getScenarioDir(), path).c_str());
-
+		std::string path2 = CombineDirectoryPathAndFilepath(getScenarioDir(), path).c_str();
+		
+		if (FileExists(path2.c_str()))
+		{
+			lod = LoadCarModel(path2.c_str());
+		}
+		
 		if (lod == 0)
 		{
 			// Failed to load model for some reason - maybe no filename. Create a dummy stand-in geometry
-			LOG("No filename specified for car model! - creating a dummy model");
+			if (path == "")
+			{
+				LOG("No filename specified for car model! - creating a dummy model");
+			}
+			else
+			{
+				LOG("Failed to locate %s. Tried %s and %s. Creating a dummy model instead", path.c_str(), path2);
+			}
 
 			osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 			geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));

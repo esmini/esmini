@@ -3865,7 +3865,6 @@ void OpenDrive::SetLaneBoundaryPoints()
 					s0 = lsec->GetS();
 					s1 = s0+OSI_POINT_CALC_STEPSIZE;
 					s1_prev = s0;
-					std::cout << "Create LaneBoundary for lane with local id " << lane->GetId() << std::endl; 
 				}
 			}
 		}
@@ -4108,7 +4107,10 @@ void OpenDrive::SetRoadMarkOSIPoints()
 				}
 				else
 				{
-					LOG("LaneRoadMarks for lane %d is not defined", lane->GetId());
+					if (lane->IsDriving())
+					{
+						LOG("LaneRoadMarks for driving lane %d on road %d is not defined", lane->GetId(), road->GetId());
+					}
 				}
 			}
 		}

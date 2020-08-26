@@ -12,4 +12,6 @@ version.txt
 log.txt
 externals/OpenSceneGraph
 externals/OSI
+externals/SUMO
+externals/googletest
 resources/models

@@ -47,6 +47,12 @@ const char* esmini_build_version(void)
 	return ESMINI_BUILD_VERSION;
 }
 
+bool FileExists(const char* fileName)
+{
+	std::ifstream infile(fileName);
+	return infile.good();
+}
+
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path)
 {
 	std::string path = file_path;

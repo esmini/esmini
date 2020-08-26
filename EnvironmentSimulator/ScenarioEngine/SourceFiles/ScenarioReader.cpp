@@ -184,9 +184,9 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 		std::string file_path = catalogs_->catalog_dirs_[i].dir_name_ + "/" + name + ".xosc";
 
 		// Load it
-		pugi::xml_parse_result result = catalog_doc.load_file(file_path.c_str());
+		pugi::xml_parse_result result;
 
-		if (!result)
+		if (!FileExists(file_path.c_str()) || !(result = catalog_doc.load_file(file_path.c_str())))
 		{
 			// Then assume relative path to scenario directory - which perhaps should be the expected location
 			std::string file_path = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), catalogs_->catalog_dirs_[i].dir_name_) + "/" + name + ".xosc";
@@ -720,25 +720,24 @@ int ScenarioReader::parseEntities()
 		} 
 		else if (obj != 0 && ctrl != 0)
 		{
-			// if sumo contorlled vehicle, the object will be passed to sumo template, and
+			// if sumo controlled vehicle, the object will be passed to sumo template, and
 			std::string configfile_path = ctrl->config_filepath_;
 			
-			pugi::xml_parse_result sumoconf = docsumo_.load_file(configfile_path.c_str());
-			if (sumoconf.status == pugi::status_file_not_found)
+			if (!FileExists(configfile_path.c_str()) || (docsumo_.load_file(configfile_path.c_str()).status == pugi::status_file_not_found))
 			{
 				// Then assume relative path to scenario directory - which perhaps should be the expected location
-				configfile_path = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), configfile_path);
-				sumoconf = docsumo_.load_file(configfile_path.c_str());
+				std::string configfile_path2 = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), configfile_path);
 
-				if (sumoconf.status == pugi::status_file_not_found)
+				if (!FileExists(configfile_path2.c_str()) || (docsumo_.load_file(configfile_path2.c_str()).status == pugi::status_file_not_found))
 				{
 					// Give up
-					LOG("Failed to load SUMO config file %s", configfile_path.c_str());
+					LOG("Failed to load SUMO config file %s, also tried %s", configfile_path.c_str(), configfile_path2.c_str());
 					return -1;
 				}
 				else
 				{
 					// Update file path
+					configfile_path = configfile_path2;
 					ctrl->config_filepath_ = configfile_path;
 				}
 			}

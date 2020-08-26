@@ -401,10 +401,12 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	else
 	{
 		// First assume absolute path or relative to current directory
-		if (!roadmanager::Position::LoadOpenDrive(getOdrFilename().c_str()))
+		std::string filename = getOdrFilename();
+		if (!FileExists(filename.c_str()) || !roadmanager::Position::LoadOpenDrive(filename.c_str()))
 		{
 			// Then try relative path to scenario directory
-			if (!roadmanager::Position::LoadOpenDrive(CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename()).c_str()))
+			filename = CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename());
+			if (!FileExists(filename.c_str()) || !roadmanager::Position::LoadOpenDrive(filename.c_str()))
 			{
 				// Finally look for the file in current directory
 				std::string path = std::string(getOdrFilename().c_str());
@@ -451,17 +453,14 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	}
 
 	// create sumo controller
-	LOG("Checking if sumo is supposed to be used");
 	if (entities.sumo_config_path.empty())
 	{
 		sumocontroller = new SumoController();
-		LOG("RUnning without sumo");
 	}
 	else
 	{
 		sumocontroller = new SumoController(&entities,&scenarioGateway);
-
-		LOG("Running with sumo.");
+		LOG("Running with SUMO");
 	}
 
 	for (size_t i = 0; i < entities.object_.size(); i++)

@@ -54,6 +54,11 @@ double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_t
 // Useful operations
 
 /**
+  Checks whether file with given path exists or not
+*/
+bool FileExists(const char* fileName);
+
+/**
   Concatenate a directory path and a file path
 */
 std::string CombineDirectoryPathAndFilepath(std::string dir_path,  std::string file_path);
