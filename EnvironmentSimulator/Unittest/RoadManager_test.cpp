@@ -573,15 +573,15 @@ TEST_P(ArcGeomTestEvaluateDsCurvPositive, TestArcGeomEvaluateDsArgument)
     y = &my_y;
     h = &my_h;
     arc.EvaluateDS(std::get<0>(tuple), x, y, h);
-    testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN));
-    testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN));
+    ASSERT_THAT(*x, testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN)));
+    ASSERT_THAT(*y,  testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN)));
     ASSERT_EQ(*h, std::get<3>(tuple));
 }
 
 INSTANTIATE_TEST_CASE_P(TestEvaluateArcDsArgumentParam, ArcGeomTestEvaluateDsCurvPositive, testing::Values(
                                                 std::make_tuple(0.0, -1.0, 1.0, M_PI),
-                                                std::make_tuple(1.0, -1.0-cos(271), -1.0-sin(271), M_PI+1),
-                                                std::make_tuple(90.0, 0, 2, M_PI+90)));
+                                                std::make_tuple(M_PI/2, -2.0, 0.0, M_PI+M_PI/2),
+                                                std::make_tuple(M_PI, -1.0, -1.0, 2*M_PI)));
 
 class ArcGeomTestEvaluateDsCurvNegative: public testing::TestWithParam<std::tuple<double, double, double, double>>
 {
@@ -602,15 +602,15 @@ TEST_P(ArcGeomTestEvaluateDsCurvNegative, TestArcGeomEvaluateDsArgument)
     y = &my_y;
     h = &my_h;
     arc.EvaluateDS(std::get<0>(tuple), x, y, h);
-    testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN));
-    testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN));
+    ASSERT_THAT(*x, testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN)));
+    ASSERT_THAT(*y,  testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN)));
     ASSERT_EQ(*h, std::get<3>(tuple));
 }
 
 INSTANTIATE_TEST_CASE_P(TestEvaluateArcDsArgumentParam, ArcGeomTestEvaluateDsCurvNegative, testing::Values(
                                                 std::make_tuple(0.0, -1.0, 1.0, M_PI),
-                                                std::make_tuple(1.0, -1.0-cos(91), 2.0-sin(91), M_PI-1),
-                                                std::make_tuple(90.0, -2, 2, M_PI-90)));                                    
+                                                std::make_tuple(M_PI/2, -2.0, 2.0, M_PI-M_PI/2),
+                                                std::make_tuple(M_PI, -1.0, 3.0, 0)));                                    
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -619,6 +619,88 @@ INSTANTIATE_TEST_CASE_P(TestEvaluateArcDsArgumentParam, ArcGeomTestEvaluateDsCur
 
 //////////////////////////////////////////////////////////////////////
 ////////// TESTS FOR CLASS -> Spiral (Geometry) //////////
+//////////////////////////////////////////////////////////////////////
+
+class SpiralGeomTestFixture: public testing::Test
+{
+    public:
+        SpiralGeomTestFixture();
+        SpiralGeomTestFixture(double s, double x, double y, double hdg, double length, double curv_start, double curv_end);
+        virtual ~SpiralGeomTestFixture();
+    protected:
+        Spiral spiral;
+};
+
+SpiralGeomTestFixture::SpiralGeomTestFixture()
+{
+}
+
+SpiralGeomTestFixture::SpiralGeomTestFixture(double s, double x, double y, double hdg, double length, double curv_start, double curv_end)
+{
+}
+
+SpiralGeomTestFixture::~SpiralGeomTestFixture()
+{
+}
+
+TEST_F(SpiralGeomTestFixture, TestConstructorArgument)
+{
+    ASSERT_EQ(0.0, spiral.GetCurvStart());
+    ASSERT_EQ(0.0, spiral.GetCurvEnd());
+    ASSERT_EQ(0.0, spiral.GetCDot());
+    ASSERT_EQ(0.0, spiral.GetX0());
+    ASSERT_EQ(0.0, spiral.GetY0());
+    ASSERT_EQ(0.0, spiral.GetH0());
+    ASSERT_EQ(0.0, spiral.GetS0());
+    EXPECT_EQ(spiral.GetType(), Geometry::GEOMETRY_TYPE_UNKNOWN);
+
+    Spiral spiral_second = Spiral(2, -1, 1, 5*M_PI, 4, 2, 10);
+    ASSERT_EQ(2.0, spiral_second.GetCurvStart());
+    ASSERT_EQ(10.0, spiral_second.GetCurvEnd());
+    ASSERT_EQ(0.0, spiral_second.GetCDot());
+    ASSERT_EQ(0.0, spiral_second.GetX0());
+    ASSERT_EQ(0.0, spiral_second.GetY0());
+    ASSERT_EQ(0.0, spiral_second.GetH0());
+    ASSERT_EQ(0.0, spiral_second.GetS0());
+    EXPECT_EQ(spiral_second.GetType(), Geometry::GEOMETRY_TYPE_SPIRAL);
+}
+
+TEST_F(SpiralGeomTestFixture, TestGetSet)
+{
+    spiral.SetX0(5);
+    spiral.SetY0(-10);
+    spiral.SetH0(15);
+    spiral.SetS0(-20);
+    spiral.SetCDot(0);
+    
+    ASSERT_EQ(5.0, spiral.GetX0());
+    ASSERT_EQ(-10.0, spiral.GetY0());
+    ASSERT_EQ(15.0, spiral.GetH0());
+    ASSERT_EQ(-20.0, spiral.GetS0());
+    ASSERT_EQ(0.0, spiral.GetCDot());
+}
+
+TEST_F(SpiralGeomTestFixture, TestEvaluateCurvatureDS)
+{
+    Spiral spiral_second = Spiral(2, -1, 1, 5*M_PI, 4, 2, 10);
+
+    ASSERT_EQ(spiral_second.EvaluateCurvatureDS(0), 2.0);
+    ASSERT_EQ(spiral_second.EvaluateCurvatureDS(10), 22.0);
+    ASSERT_EQ(spiral_second.EvaluateCurvatureDS(100), 202.0);
+    ASSERT_EQ(spiral_second.EvaluateCurvatureDS(1000), 2002.0);
+}
+
+/*
+TODO: Remaining Test for this class is to test EvaluateDs function which inclides odrSpiral function
+as extern void -> Check this later.
+*/
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////
+////////// TESTS FOR CLASS -> Poly3 (Geometry) //////////
 //////////////////////////////////////////////////////////////////////
 
 

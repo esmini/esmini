@@ -148,6 +148,7 @@ namespace roadmanager
 	class Spiral : public Geometry
 	{
 	public:
+		Spiral(): curv_start_(0.0), curv_end_(0.0), c_dot_(0.0), x0_(0.0), y0_(0.0), h0_(0.0), s0_(0.0) {}
 		Spiral(double s, double x, double y, double hdg, double length, double curv_start, double curv_end) :
 			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_SPIRAL),
 			curv_start_(curv_start), curv_end_(curv_end), c_dot_(0.0), x0_(0.0), y0_(0.0), h0_(0.0), s0_(0.0) {}
