@@ -1,1 +1,1 @@
-"../../bin/EgoSimulator" --screen 0 --osc ../../resources/xosc/synchronize.xosc --control external
+"../../bin/EgoSimulator" --screen 0 --osc ../../resources/xosc/synchronize.xosc --control external --trails off --road_features off

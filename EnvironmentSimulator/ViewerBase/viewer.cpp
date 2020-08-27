@@ -1524,8 +1524,11 @@ void Viewer::SetInfoTextProjection(int width, int height)
 void Viewer::SetVehicleInFocus(int idx)
 {
 	currentCarInFocus_ = idx;
-	rubberbandManipulator_->setTrackNode(cars_[currentCarInFocus_]->txNode_, false);
-	nodeTrackerManipulator_->setTrackNode(cars_[currentCarInFocus_]->node_);
+	if (cars_.size() > idx)
+	{
+		rubberbandManipulator_->setTrackNode(cars_[currentCarInFocus_]->txNode_, false);
+		nodeTrackerManipulator_->setTrackNode(cars_[currentCarInFocus_]->node_);
+	}
 }
 
 void Viewer::SetWindowTitle(std::string title)

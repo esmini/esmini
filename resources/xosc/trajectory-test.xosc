@@ -106,12 +106,12 @@
                         <EntityRef entityRef="$owner"/>
                     </Actors>
                     <Maneuver name="my_maneuver">
-                        <Event maximumExecutionCount="1" name="myfirstevent" priority="overwrite">
-                            <Action name="newspeed">
+                        <Event maximumExecutionCount="1" name="FollowTrajectory1Event" priority="overwrite">
+                            <Action name="FollowTrajectory1Action">
                                 <PrivateAction>
                                     <RoutingAction>
                                         <FollowTrajectoryAction>
-                                            <Trajectory closed="False" name="my_trajectory">
+                                            <Trajectory closed="False" name="Trajectory1">
                                                 <ParameterDeclarations/>
                                                 <Shape>
                                                     <Polyline>
@@ -148,7 +148,7 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition conditionEdge="rising" delay="0.2" name="mytesttrigger">
+                                    <Condition conditionEdge="rising" delay="0.2" name="FollowTrajectory1Trigger">
                                         <ByEntityCondition>
                                             <TriggeringEntities triggeringEntitiesRule="any">
                                                 <EntityRef entityRef="Ego"/>
@@ -161,6 +161,41 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event maximumExecutionCount="1" name="FollowTrajectory2Event" priority="overwrite">
+                            <Action name="FollowTrajectory2Action">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <Trajectory closed="False" name="Trajectory2">
+                                                <ParameterDeclarations/>
+                                                <Shape>
+                                                    <Clothoid curvature="-0.1" curvatureDot="0.00035" length="70" startTime="0" stopTime="4">
+                                                        <Position>
+                                                            <RelativeLanePosition dLane="0" ds="0" entityRef="Target" offset="0.0"/>
+                                                        </Position>
+                                                    </Clothoid>
+                                                </Shape>
+                                            </Trajectory>
+                                            <TimeReference>
+                                                <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode name="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                               <ConditionGroup>
+                                  <Condition name="FollowTrajectory2Trigger" delay="0" conditionEdge="rising">
+                                     <ByValueCondition>
+                                        <StoryboardElementStateCondition storyboardElementType="event"
+                                                                         storyboardElementRef="FollowTrajectory1Event"
+                                                                         state="endTransition"/>
+                                     </ByValueCondition>
+                                  </Condition>
+                               </ConditionGroup>
+                            </StartTrigger>
+                        </Event>                        
                     </Maneuver>
                 </ManeuverGroup>
                 <StartTrigger>

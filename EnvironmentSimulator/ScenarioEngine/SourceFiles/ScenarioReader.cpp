@@ -562,7 +562,23 @@ roadmanager::Trajectory* ScenarioReader::parseTrajectory(pugi::xml_node node)
 			}
 			else if (shapeType == "Clothoid")
 			{
-				LOG("Trajectory type Clothoid not supported yet");
+				LOG("Parsing Clothoid");
+				pugi::xml_node posNode = shapeNode.child("Position");
+				OSCPosition* pos = parseOSCPosition(posNode);
+				
+				double curvature = strtod(ReadAttribute(shapeNode, "curvature"));
+				double curvatureDot = strtod(ReadAttribute(shapeNode, "curvatureDot"));
+				double length = strtod(ReadAttribute(shapeNode, "length"));
+				double startTime = strtod(ReadAttribute(shapeNode, "startTime"));
+				double stopTime = strtod(ReadAttribute(shapeNode, "stopTime"));
+
+				LOG("Adding clothoid(x=%.2f y=%.2f h=%.2f curv=%.2f curvDot=%.2f len=%.2f startTime=%.2f stopTime=%.2f",
+					pos->GetRMPos()->GetX(), pos->GetRMPos()->GetY(), pos->GetRMPos()->GetH(), curvature, curvatureDot, length, startTime, stopTime);
+
+				roadmanager::Clothoid* clothoid = new roadmanager::Clothoid(*pos->GetRMPos(), curvature, curvatureDot, length, startTime, stopTime);
+				clothoid->spiral_->Print();
+				
+				shape = clothoid;
 			}
 			else if (shapeType == "Nurbs")
 			{

@@ -30,6 +30,7 @@ copy resources\xosc\left-hand-traffic_internal.xosc %target_dir%\resources\xosc 
 copy resources\xosc\ltap-od.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\synchronize.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\parking_lot.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\trajectory-test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_internal.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_sumo.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\lane_change_simple.xosc %target_dir%\resources\xosc /y
@@ -76,6 +77,7 @@ copy run\EgoSimulator\run_dist_test.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_synchronize_internal.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_synchronize_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_parking_lot.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_trajectory-test.bat %target_dir%\run\EgoSimulator /y
 
 copy docs\readme.txt %target_dir% /y
 copy docs\commands.txt %target_dir% /y

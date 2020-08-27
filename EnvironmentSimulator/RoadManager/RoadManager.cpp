@@ -237,58 +237,144 @@ void Arc::EvaluateDS(double ds, double *x, double *y, double *h)
 	*h = GetHdg() + angle;
 }
 
-void Spiral::Print()
+Spiral::Spiral(double s, double x, double y, double hdg, double length, double curv_start, double curv_end) :
+	Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_SPIRAL),
+	curv_start_(curv_start), curv_end_(curv_end), c_dot_(0.0), x0_(0.0), y0_(0.0), h0_(0.0), s0_(0.0), arc_(0), line_(0)
 {
-	LOG("Spiral x: %.2f, y: %.2f, h: %.2f start curvature: %.4f end curvature: %.4f length: %.2f\n",
-		GetX(), GetY(), GetHdg(), GetCurvStart(), GetCurvEnd(), GetLength());
+	SetCDot((curv_end_ - curv_start_) / length_);
+
+	if (fabs(GetCDot()) < SMALL_NUMBER)
+	{
+		// constant radius => clothoid is actually a line or an arc
+		if (fabs(this->GetCurvStart()) < SMALL_NUMBER)  // Line
+		{
+			line_ = new Line(s, x, y, hdg, length);
+		}
+		else  // Arc
+		{
+			arc_ = new Arc(s, x, y, hdg, length, curv_start);
+		}
+	}
+	else
+	{
+		if (fabs(curv_start_) > SMALL_NUMBER)
+		{
+			// not starting from zero curvature (straight line)
+			// How long do we need to follow the spiral to reach start curve value?
+			SetS0(curv_start_ / c_dot_);
+
+			// Find out x, y, heading of start position
+			double x0, y0, h0;
+			odrSpiral(GetS0(), c_dot_, &x0, &y0, &h0);
+
+			SetX0(x0);
+			SetY0(y0);
+			SetH0(h0);
+		}
+	}
 }
 
-void Spiral::EvaluateDS(double ds, double *x, double *y, double *h)
+void Spiral::Print()
 {
-	double xTmp, yTmp, t, curv_a, curv_b, h_start;
+	LOG("Spiral x: %.2f, y: %.2f, h: %.2f start curvature: %.4f end curvature: %.4f length: %.2f %s\n",
+		GetX(), GetY(), GetHdg(), GetCurvStart(), GetCurvEnd(), GetLength(),
+		arc_ != 0 ? " - actually an Arc" : line_ != 0 ? "- actually a Line" : "");
+}
 
-	curv_a = GetCurvStart();
-	curv_b = GetCurvEnd();
-	h_start = GetHdg();
+void Spiral::EvaluateDS(double ds, double* x, double* y, double* h)
+{
+	double xTmp, yTmp, t;
 
-	if (abs(curv_b) > abs(curv_a))
+	if (line_ != 0)
 	{
-		odrSpiral(ds + GetS0(), GetCDot(), &xTmp, &yTmp, &t);
-		*h = t;
+		line_->EvaluateDS(ds, x, y, h);
 	}
-	else  // backwards, starting from sharper curve - ending with lower curvature
+	else if (arc_ != 0)
 	{
-		double x0, y0, t0, x1, y1, t1;
-
-		odrSpiral(GetS0() + GetLength(), GetCDot(), &x0, &y0, &t0);
-		odrSpiral(GetS0() + GetLength() - ds, GetCDot(), &x1, &y1, &t1);
-
-		xTmp = x0 - x1;
-		yTmp = y0 - y1;
-
-		// rotate point according to heading, and translate to start position
-		h_start -= t0;
-		*h = t1 - t0;
+		arc_->EvaluateDS(ds, x, y, h);
 	}
+	else
+	{
+		odrSpiral(s0_ + ds, c_dot_, &xTmp, &yTmp, &t);
 
-	*h += GetHdg() - GetH0();
+		*h = t - GetH0() + GetHdg();
 
-	double x1, x2, y1, y2;
+		double x1, x2, y1, y2;
 
-	// transform spline segment to origo and start angle = 0
-	x1 = xTmp - GetX0();
-	y1 = yTmp - GetY0();
-	x2 = x1 * cos(-GetH0()) - y1 * sin(-GetH0());
-	y2 = x1 * sin(-GetH0()) + y1 * cos(-GetH0());
+		// transform spline segment to origo and start angle = 0
+		x1 = xTmp - GetX0();
+		y1 = yTmp - GetY0();
+		x2 = x1 * cos(-GetH0()) - y1 * sin(-GetH0());
+		y2 = x1 * sin(-GetH0()) + y1 * cos(-GetH0());
 
-	// Then transform according to segment start position and heading
-	*x = GetX() + x2 * cos(h_start) - y2 * sin(h_start);
-	*y = GetY() + x2 * sin(h_start) + y2 * cos(h_start);
+		// Then transform according to segment start position and heading
+		*x = GetX() + x2 * cos(GetHdg()) - y2 * sin(GetHdg());
+		*y = GetY() + x2 * sin(GetHdg()) + y2 * cos(GetHdg());
+	}
 }
 
 double Spiral::EvaluateCurvatureDS(double ds)
 {
-	return (curv_start_ + (ds / GetLength())* (curv_end_ - curv_start_));
+	if (line_ != 0)
+	{
+		return LARGE_NUMBER;
+	}
+	else if (arc_ != 0)
+	{
+		return arc_->GetCurvature();
+	}
+	else
+	{
+		return (curv_start_ + (ds / GetLength()) * (curv_end_ - curv_start_));
+	}
+}
+
+void Spiral::SetX(double x)
+{
+	if (line_ != 0)
+	{
+		line_->SetX(x);
+	}
+	else if (arc_ != 0)
+	{
+		arc_->SetX(x);
+	}
+	else
+	{
+		x_ = x;
+	}
+}
+
+void Spiral::SetY(double y)
+{
+	if (line_ != 0)
+	{
+		line_->SetY(y);
+	}
+	else if (arc_ != 0)
+	{
+		arc_->SetY(y);
+	}
+	else
+	{
+		y_ = y;
+	}
+}
+
+void Spiral::SetHdg(double h)
+{
+	if (line_ != 0)
+	{
+		line_->SetHdg(h);
+	}
+	else if (arc_ != 0)
+	{
+		arc_->SetHdg(h);
+	}
+	else
+	{
+		hdg_ = h;
+	}
 }
 
 void Poly3::Print()
@@ -1195,40 +1281,6 @@ void Road::AddArc(Arc *arc)
 
 void Road::AddSpiral(Spiral *spiral)
 {
-	if (abs(spiral->GetCurvEnd()) > CURV_ZERO && abs(spiral->GetCurvStart()) > CURV_ZERO)
-	{
-		// not starting from zero curvature (straight line)
-		// need to calculate S starting value, and rotation 
-
-		// First identify end with lowest curvature
-		double curvature_min;
-		if (abs(spiral->GetCurvStart()) < abs(spiral->GetCurvEnd()))
-		{
-			curvature_min = spiral->GetCurvStart();
-		}
-		else
-		{
-			curvature_min = spiral->GetCurvEnd();
-		}
-
-		// How long do we need to follow the spiral to reach min curve value?
-		double c_dot = (spiral->GetCurvEnd() - spiral->GetCurvStart()) / spiral->GetLength();
-		double ds = curvature_min / c_dot;
-
-		// Find out x, y, heading of start position
-		double x, y, heading;
-		odrSpiral(ds, c_dot, &x, &y, &heading);
-
-		spiral->SetX0(x);
-		spiral->SetY0(y);
-		spiral->SetH0(heading);
-		spiral->SetS0(ds);
-		spiral->SetCDot(c_dot);
-	}
-	else
-	{
-		spiral->SetCDot((spiral->GetCurvEnd() - spiral->GetCurvStart()) / spiral->GetLength());
-	}
 	geometry_.push_back((Geometry*)spiral);
 }
 
@@ -5699,6 +5751,9 @@ void Position::SetRoute(Route *route)
 void Position::SetTrajectory(Trajectory* trajectory)
 {
 	trajectory_ = trajectory;
+
+	// Reset trajectory S value
+	s_trajectory_ = 0;
 }
 
 bool Position::Delta(Position pos_b, PositionDiff &diff)
@@ -6281,6 +6336,10 @@ int Position::MoveTrajectoryDS(double ds)
 		}
 		SetTrajectoryS(trajectory_, s_trajectory_ + ds);
 	}
+	else if (trajectory_->shape_->type_ == Shape::CLOTHOID)
+	{
+		SetTrajectoryS(trajectory_, s_trajectory_ + ds);
+	}
 	else
 	{
 		LOG("Trajectory types Clothoid and Nurbs not supported yet");
@@ -6301,7 +6360,6 @@ int Position::SetTrajectoryPosByTime(Trajectory* trajectory, double time)
 	{
 		PolyLine* pline = (PolyLine*)trajectory->shape_;
 
-
 		for (i = 0; i < pline->vertex_.size()-1; i++)
 		{
 			double t0 = pline->vertex_[i]->time_;
@@ -6318,6 +6376,20 @@ int Position::SetTrajectoryPosByTime(Trajectory* trajectory, double time)
 				break;
 			}
 			s += dist;
+		}
+	}
+	else if (trajectory->shape_->type_ == Shape::CLOTHOID)
+	{
+		Clothoid* clothoid = (Clothoid*)trajectory->shape_;
+
+		if (time > clothoid->t_start_ && time < clothoid->t_end_)
+		{
+			double t = time - clothoid->t_start_;
+			s = clothoid->length_ * (t - clothoid->t_start_) / (clothoid->t_end_ - clothoid->t_start_);
+		}
+		else
+		{
+			LOG("Requested time %s outside range [%.2f, %.2f]", clothoid->t_start_, clothoid->t_end_);
 		}
 	}
 	else
@@ -6396,9 +6468,18 @@ int Position::SetTrajectoryS(Trajectory* trajectory, double traj_s)
 			return 0;
 		}
 	}
+	else if (trajectory->shape_->type_ == Shape::CLOTHOID)
+	{
+		double x, y, h;
+		Clothoid* clothoid = (Clothoid*)trajectory_->shape_;
+
+		clothoid->spiral_->EvaluateDS(traj_s, &x, &y, &h);
+		SetInertiaPos(x, y, 0.0, h, 0.0, 0.0, false);
+		return 0;
+	}
 	else
 	{
-		LOG("Trajectory types Clothoid and Nurbs not supported yet");
+		LOG("Trajectory type Nurbs not supported yet");
 	}
 
 	return -1;
@@ -6617,8 +6698,19 @@ void Trajectory::Freeze()
 			}
 		}
 	}
+	else if (shape_->type_ == Shape::ShapeType::CLOTHOID)
+	{
+		Clothoid* clothoid = (Clothoid*)shape_;
+		
+		clothoid->pos_.ReleaseRelation();
+
+		clothoid->spiral_->SetX(clothoid->pos_.GetX());
+		clothoid->spiral_->SetY(clothoid->pos_.GetY());
+		clothoid->spiral_->SetHdg(clothoid->pos_.GetH());
+
+	}
 	else
 	{
-		LOG("Clothoid and Nurbs trajectory types not supported yet");
+		LOG("Nurbs trajectory type not supported yet");
 	}
 }

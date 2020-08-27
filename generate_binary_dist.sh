@@ -16,6 +16,7 @@ resources/xosc/left-hand-traffic_internal.xosc \
 resources/xosc/ltap-od.xosc \
 resources/xosc/synchronize.xosc \
 resources/xosc/parking_lot.xosc \
+resources/xosc/trajectory-test.xosc \
 resources/xosc/cut-in_internal.xosc \
 resources/xosc/cut-in_sumo.xosc \
 resources/xosc/lane_change_simple.xosc \
@@ -58,6 +59,7 @@ run/EgoSimulator/run_dist_test.* \
 run/EgoSimulator/run_synchronize_internal.* \
 run/EgoSimulator/run_synchronize_external.* \
 run/EgoSimulator/run_parking_lot.* \
+run/EgoSimulator/run_trajectory-test.* \
 docs/readme.txt \
 docs/commands.txt \
 3rd_party_terms_and_licenses/* \
