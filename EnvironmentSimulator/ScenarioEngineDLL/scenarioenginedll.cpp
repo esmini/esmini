@@ -433,10 +433,13 @@ extern "C"
 		{
 			std::vector<int> ids_vector;
 			player->scenarioGateway->GetOSILaneBoundaryIds(ids_vector, object_id);
-			ids->far_left_lb_id = ids_vector[0];
-			ids->left_lb_id = ids_vector[1];
-			ids->right_lb_id = ids_vector[2];
-			ids->far_right_lb_id = ids_vector[3];
+			if (!ids_vector.empty())
+			{
+				ids->far_left_lb_id = ids_vector[0];
+				ids->left_lb_id = ids_vector[1];
+				ids->right_lb_id = ids_vector[2];
+				ids->far_right_lb_id = ids_vector[3];
+			}
 		}
 		return; 
 	}
