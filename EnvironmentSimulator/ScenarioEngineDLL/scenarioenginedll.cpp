@@ -427,11 +427,16 @@ extern "C"
 		return 0;
 	}
 	
-	SE_DLL_API void SE_GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id)
+	SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId* ids)
 	{
 		if (player)
 		{
-			player->scenarioGateway->GetOSILaneBoundaryIds(ids, object_id);			
+			std::vector<int> ids_vector;
+			player->scenarioGateway->GetOSILaneBoundaryIds(ids_vector, object_id);
+			ids->far_left_lb_id = ids_vector[0];
+			ids->left_lb_id = ids_vector[1];
+			ids->right_lb_id = ids_vector[2];
+			ids->far_right_lb_id = ids_vector[3];
 		}
 		return; 
 	}

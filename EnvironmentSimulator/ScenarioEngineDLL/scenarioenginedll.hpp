@@ -65,6 +65,13 @@ typedef struct
 	float speed_limit;		// speed limit given by OpenDRIVE type entry
 } SE_RoadInfo;
 
+typedef struct 
+{
+	int far_left_lb_id;
+	int left_lb_id;
+	int right_lb_id;
+	int far_right_lb_id;
+} SE_LaneBoundaryId;
 
 #ifdef __cplusplus
 extern "C"
@@ -142,8 +149,10 @@ extern "C"
 	SE_DLL_API const char* SE_GetOSILaneBoundary(int* size, int global_id);
 	/**
 	The SE_GetOSILaneBoundaryIds function the global ids for left, far elft, right and far right lane boundaries
+	@param object_id Handle to the object to which the sensor should be attached
+	@param ids Reference to a struct which will be filled with the Ids
 	*/
-	SE_DLL_API void SE_GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id);
+	SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId* ids);
 
 	/**
 	Create and open osi file 
