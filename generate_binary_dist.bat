@@ -14,7 +14,10 @@ IF NOT EXIST %target_dir%\resources\sumo_inputs ( mkdir %target_dir%\resources\s
 IF NOT EXIST %target_dir%\run ( mkdir %target_dir%\run )
 IF NOT EXIST %target_dir%\run\EgoSimulator ( mkdir %target_dir%\run\EgoSimulator )
 IF NOT EXIST %target_dir%\bin ( mkdir %target_dir%\bin )
+IF NOT EXIST %target_dir%\lib ( mkdir %target_dir%\lib )
+IF NOT EXIST %target_dir%\include ( mkdir %target_dir%\include )
 IF NOT EXIST %target_dir%\3rd_party_terms_and_licenses ( mkdir %target_dir%\3rd_party_terms_and_licenses )
+IF NOT EXIST %target_dir%\Hello-World_coding-example ( mkdir %target_dir%\Hello-World_coding-example )
 
 copy resources\xosc\basic_hybrid.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in.xosc %target_dir%\resources\xosc /y
@@ -83,3 +86,9 @@ copy release_notes.txt %target_dir% /y
 copy version.txt %target_dir% /y
 
 copy bin\EgoSimulator.exe %target_dir%\bin /y
+copy bin\ScenarioEngineDLL.* %target_dir%\lib /y
+copy EnvironmentSimulator\ScenarioEngineDLL\scenarioenginedll.hpp %target_dir%\include /y
+
+copy EnvironmentSimulator\Hello-World_coding-example esmini-demo\Hello-World_coding-example
+copy bin\ScenarioEngineDLL.* esmini-demo\Hello-World_coding-example
+copy EnvironmentSimulator\ScenarioEngineDLL\scenarioenginedll.hpp esmini-demo\Hello-World_coding-example
