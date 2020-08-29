@@ -665,26 +665,6 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	// Decorate window border with application name
 	SetWindowTitle("esmini - " + FileNameWithoutExtOf(arguments.getApplicationName()) + (scenarioFilename ? " " + FileNameOf(scenarioFilename) : ""));
 
-	// Load shadow geometry - assume it resides in the same resource folder as the environment model
-	std::string shadowFilename = DirNameOf(modelFilename).append("/" + std::string(SHADOW_MODEL_FILEPATH));
-	if (FileExists(shadowFilename.c_str()))
-	{
-		shadow_node_ = osgDB::readNodeFile(shadowFilename);
-	}
-	if (!shadow_node_)
-	{
-		// assume path is relative scenario directory
-		std::string shadowFilename2 = CombineDirectoryPathAndFilepath(DirNameOf(scenarioFilename), shadowFilename);
-		if (FileExists(shadowFilename2.c_str()))
-		{
-			shadow_node_ = osgDB::readNodeFile(shadowFilename2);
-		}
-		if (!shadow_node_)
-		{
-			LOG("Failed to load shadow model %s. Tried %s and %s\n", shadowFilename.c_str(), shadowFilename2.c_str());
-		}
-	}
-
 	// Create 3D geometry for trail dots
 	dot_node_ = CreateDotGeometry();
 
@@ -711,6 +691,8 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 #endif
 
 	envTx_ = new osg::PositionAttitudeTransform;
+	rootnode_->addChild(envTx_);
+
 	roadSensors_ = new osg::Group;
 	rootnode_->addChild(roadSensors_);
 	roadSensors_ = new osg::Group;
@@ -727,19 +709,34 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	ShowOSIFeatures(false); // hide OSI features by default
 	ShowObjectSensors(false); // hide sensor frustums by default
 
-
 	// add environment
-	if (!FileExists(modelFilename) || (AddEnvironment(modelFilename) == -1))
+	if (modelFilename != 0 && (!FileExists(modelFilename) || (AddEnvironment(modelFilename) == -1)))
 	{
 		// Look relative scenario directory
-		std::string modelFilename2 = CombineDirectoryPathAndFilepath(getScenarioDir(), modelFilename).c_str();
-		if (!FileExists(modelFilename2.c_str()) || (AddEnvironment(modelFilename2.c_str()) == -1))
+		const char* filename = 0;
+		if (scenarioFilename != 0)
 		{
-			LOG("Failed to read environment model %s! Also tried %s. If file is missing, check SharePoint/SharedDocuments/models", 
-				modelFilename, CombineDirectoryPathAndFilepath(getScenarioDir(), modelFilename).c_str());
+			filename = scenarioFilename;
+		}
+		else if (!odrManager->GetOpenDriveFilename().empty())
+		{
+			filename = odrManager->GetOpenDriveFilename().c_str();
+		}
+
+		if (filename != 0)
+		{
+			std::string modelFilename2 = CombineDirectoryPathAndFilepath(DirNameOf(filename), modelFilename).c_str();
+			if (!FileExists(modelFilename2.c_str()) || (AddEnvironment(modelFilename2.c_str()) == -1))
+			{
+				LOG("Failed to read environment model %s! Also tried %s. If file is missing, check SharePoint/SharedDocuments/models",
+					modelFilename, CombineDirectoryPathAndFilepath(getScenarioDir(), modelFilename).c_str());
+			}
+		}
+		else
+		{
+			LOG("Failed to locate environment model based on xosc or xodr locations - continue without");
 		}
 	}
-	rootnode_->addChild(envTx_);
 
 	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager))
 	{
@@ -1017,14 +1014,25 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 	xc = (boundingBox._max.x() + boundingBox._min.x()) / 2;
 	yc = (boundingBox._max.y() + boundingBox._min.y()) / 2;
 
-	shadow_tx = new osg::PositionAttitudeTransform;
-	shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.0));
-	shadow_tx->setScale(osg::Vec3d(SHADOW_SCALE*(dx / 2), SHADOW_SCALE*(dy / 2), 1.0));
-	shadow_tx->addChild(shadow_node_);
-
+	if (!shadow_node_)
+	{
+		LoadShadowfile(filename);
+	}
+	
 	osg::ref_ptr<osg::Group> group = new osg::Group;
+
+	if (shadow_node_)
+	{
+		shadow_tx = new osg::PositionAttitudeTransform;
+		shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.0));
+		shadow_tx->setScale(osg::Vec3d(SHADOW_SCALE*(dx / 2), SHADOW_SCALE*(dy / 2), 1.0));
+		shadow_tx->addChild(shadow_node_);
+
+		group->addChild(shadow_tx);
+	}
+
 	group->addChild(node);
-	group->addChild(shadow_tx);
+
 	group->setName(FileNameOf(filename));
 
 	lod = new osg::LOD();
@@ -1405,6 +1413,25 @@ void Viewer::UpdateSensor(PointSensor *sensor)
 	{
 		sensor->ball_->setPosition(sensor->target_pos);
 	}
+}
+
+int Viewer::LoadShadowfile(std::string vehicleModelFilename)
+{
+	// Load shadow geometry - assume it resides in the same resource folder as the vehicle model
+	std::string shadowFilename = DirNameOf(vehicleModelFilename).append("/" + std::string(SHADOW_MODEL_FILEPATH));
+	if (FileExists(shadowFilename.c_str()))
+	{
+		shadow_node_ = osgDB::readNodeFile(shadowFilename);
+	}
+
+	if (!shadow_node_)
+	{
+		LOG("Failed to locate shadow model %s based on vehicle model filename %s - continue without", 
+			SHADOW_MODEL_FILEPATH, vehicleModelFilename);
+		return -1;
+	}
+
+	return 0;
 }
 
 int Viewer::AddEnvironment(const char* filename)

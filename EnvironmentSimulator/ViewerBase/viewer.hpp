@@ -230,6 +230,7 @@ namespace viewer
 		void SetVehicleInFocus(int idx);
 		CarModel* AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor, std::string name);
 		void RemoveCar(std::string name);
+		int LoadShadowfile(std::string vehicleModelFilename);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
 		void UpdateSensor(PointSensor *sensor);
