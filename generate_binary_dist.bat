@@ -89,6 +89,6 @@ copy bin\EgoSimulator.exe %target_dir%\bin /y
 copy bin\ScenarioEngineDLL.* %target_dir%\lib /y
 copy EnvironmentSimulator\ScenarioEngineDLL\scenarioenginedll.hpp %target_dir%\include /y
 
-copy EnvironmentSimulator\Hello-World_coding-example esmini-demo\Hello-World_coding-example
+copy Hello-World_coding-example esmini-demo\Hello-World_coding-example
 copy bin\ScenarioEngineDLL.* esmini-demo\Hello-World_coding-example
 copy EnvironmentSimulator\ScenarioEngineDLL\scenarioenginedll.hpp esmini-demo\Hello-World_coding-example

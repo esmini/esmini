@@ -67,7 +67,7 @@ version.txt \
 bin/EgoSimulator \
 esmini-demo
 
-cp -r EnvironmentSimulator/Hello-World_coding-example esmini-demo
+cp -r Hello-World_coding-example esmini-demo
 cp bin/libScenarioEngineDLL.* esmini-demo/Hello-World_coding-example
 cp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp esmini-demo/Hello-World_coding-example
 
