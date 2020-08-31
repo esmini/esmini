@@ -1,5 +1,10 @@
 The purpose of this document is to highlight changes breaking backward compatibility, i.e. updates to scenarios and start scripts might be required.
 
+2020-08-31 Version 1.7.5
+- Added Hello World coding example
+- Fixed a bug preventing shared library (ScenarioEngineDLL) to run with viewer on Mac
+- Fixed crash when running with only OpenDRIVE road description (i.e. without scenegraph 3D model). 
+
 2020-08-26 Version 1.7.2
 - CSV logging feature
 - EndOfRoad trigger
