@@ -20,7 +20,7 @@ class PolynomialTestFixture: public testing::Test
         PolynomialTestFixture(double a, double b, double c, double d, double p_scale);
         virtual ~PolynomialTestFixture();
     protected:
-        Polynomial poly;
+        Polynomial polynomial;
 };
 
 
@@ -38,81 +38,81 @@ PolynomialTestFixture::~PolynomialTestFixture()
 
 TEST_F(PolynomialTestFixture, TestConstructorEmpty)
 {
-    ASSERT_EQ(0, poly.GetA());
-    ASSERT_EQ(0, poly.GetB());
-    ASSERT_EQ(0, poly.GetC());
-    ASSERT_EQ(0, poly.GetD());
-    ASSERT_EQ(1, poly.GetPscale());
+    ASSERT_EQ(0, polynomial.GetA());
+    ASSERT_EQ(0, polynomial.GetB());
+    ASSERT_EQ(0, polynomial.GetC());
+    ASSERT_EQ(0, polynomial.GetD());
+    ASSERT_EQ(1, polynomial.GetPscale());
 }
 
 TEST_F(PolynomialTestFixture, TestConstructorArgument)
 {
-    Polynomial poly = Polynomial(1,-2,3,-4);
-    ASSERT_EQ(1, poly.GetA());
-    ASSERT_EQ(-2, poly.GetB());
-    ASSERT_EQ(3, poly.GetC());
-    ASSERT_EQ(-4, poly.GetD());
-    ASSERT_EQ(1, poly.GetPscale());
+    Polynomial polynomial = Polynomial(1,-2,3,-4);
+    ASSERT_EQ(1, polynomial.GetA());
+    ASSERT_EQ(-2, polynomial.GetB());
+    ASSERT_EQ(3, polynomial.GetC());
+    ASSERT_EQ(-4, polynomial.GetD());
+    ASSERT_EQ(1, polynomial.GetPscale());
 }
 
 TEST_F(PolynomialTestFixture, TestConstructorArgumentPscale)
 {
-    Polynomial poly = Polynomial(1,-2,3,-4,2);
-    ASSERT_EQ(1, poly.GetA());
-    ASSERT_EQ(-2, poly.GetB());
-    ASSERT_EQ(3, poly.GetC());
-    ASSERT_EQ(-4, poly.GetD());
-    ASSERT_EQ(2, poly.GetPscale());
+    Polynomial polynomial = Polynomial(1,-2,3,-4,2);
+    ASSERT_EQ(1, polynomial.GetA());
+    ASSERT_EQ(-2, polynomial.GetB());
+    ASSERT_EQ(3, polynomial.GetC());
+    ASSERT_EQ(-4, polynomial.GetD());
+    ASSERT_EQ(2, polynomial.GetPscale());
 }
 
 TEST_F(PolynomialTestFixture, TestSetGet)
 {
-    poly.Set(1,-2,3,-4);
-    ASSERT_EQ(1, poly.GetA());
-    ASSERT_EQ(-2, poly.GetB());
-    ASSERT_EQ(3, poly.GetC());
-    ASSERT_EQ(-4, poly.GetD());
-    ASSERT_EQ(1, poly.GetPscale());
+    polynomial.Set(1,-2,3,-4);
+    ASSERT_EQ(1, polynomial.GetA());
+    ASSERT_EQ(-2, polynomial.GetB());
+    ASSERT_EQ(3, polynomial.GetC());
+    ASSERT_EQ(-4, polynomial.GetD());
+    ASSERT_EQ(1, polynomial.GetPscale());
 }
 
 TEST_F(PolynomialTestFixture, TestSetGetPscale)
 {
-    poly.Set(1,-2,3,-4, 2);
-    ASSERT_EQ(1, poly.GetA());
-    ASSERT_EQ(-2, poly.GetB());
-    ASSERT_EQ(3, poly.GetC());
-    ASSERT_EQ(-4, poly.GetD());
-    ASSERT_EQ(2, poly.GetPscale());
+    polynomial.Set(1,-2,3,-4, 2);
+    ASSERT_EQ(1, polynomial.GetA());
+    ASSERT_EQ(-2, polynomial.GetB());
+    ASSERT_EQ(3, polynomial.GetC());
+    ASSERT_EQ(-4, polynomial.GetD());
+    ASSERT_EQ(2, polynomial.GetPscale());
 }
 
 TEST_F(PolynomialTestFixture, TestSetGetIndividual)
 {
-    poly.SetA(1);
-    poly.SetB(-2);
-    poly.SetC(3);
-    poly.SetD(-4);
-    ASSERT_EQ(1, poly.GetA());
-    ASSERT_EQ(-2, poly.GetB());
-    ASSERT_EQ(3, poly.GetC());
-    ASSERT_EQ(-4, poly.GetD());
+    polynomial.SetA(1);
+    polynomial.SetB(-2);
+    polynomial.SetC(3);
+    polynomial.SetD(-4);
+    ASSERT_EQ(1, polynomial.GetA());
+    ASSERT_EQ(-2, polynomial.GetB());
+    ASSERT_EQ(3, polynomial.GetC());
+    ASSERT_EQ(-4, polynomial.GetD());
 }
 
 class PolynomialTestEvaluateEmptyParametrized: public testing::TestWithParam<std::tuple<double, double>>
 {
     public:
     protected:
-        Polynomial poly_empty;
+        Polynomial polynomial_empty;
 };
 
 TEST_P(PolynomialTestEvaluateEmptyParametrized, TestEvaluateEmptyConstructor)
 {
     std::tuple<double, double> tuple = GetParam();
     ASSERT_GE(std::get<0>(tuple), 0);
-    poly_empty.SetA(1);
-    poly_empty.SetB(-2);
-    poly_empty.SetC(3);
-    poly_empty.SetD(-4);
-    ASSERT_EQ(poly_empty.Evaluate(std::get<0>(tuple)), std::get<1>(tuple));
+    polynomial_empty.SetA(1);
+    polynomial_empty.SetB(-2);
+    polynomial_empty.SetC(3);
+    polynomial_empty.SetD(-4);
+    ASSERT_EQ(polynomial_empty.Evaluate(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
 INSTANTIATE_TEST_CASE_P(TestEvaluateParamEmpty, PolynomialTestEvaluateEmptyParametrized, testing::Values(
@@ -123,14 +123,14 @@ class PolynomialTestEvaluateArgumentParametrized: public testing::TestWithParam<
 {
     public:
     protected:
-        Polynomial poly_argument{1,-2,3,-4,2};
+        Polynomial polynomial_argument{1,-2,3,-4,2};
 };
 
 TEST_P(PolynomialTestEvaluateArgumentParametrized, TestEvaluateArgumentConstructor)
 {
     std::tuple<double, double> tuple = GetParam();
     ASSERT_GE(std::get<0>(tuple), 0);
-    ASSERT_EQ(poly_argument.Evaluate(std::get<0>(tuple)), std::get<1>(tuple));
+    ASSERT_EQ(polynomial_argument.Evaluate(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
 INSTANTIATE_TEST_CASE_P(TestEvaluateParamArgument, PolynomialTestEvaluateArgumentParametrized, testing::Values(
@@ -142,18 +142,18 @@ class PolynomialTestEvaluatePrimEmptyParametrized: public testing::TestWithParam
 {
     public:
     protected:
-        Polynomial poly_empty;
+        Polynomial polynomial_empty;
 };
 
 TEST_P(PolynomialTestEvaluatePrimEmptyParametrized, TestEvaluatePrimEmptyConstructor)
 {
     std::tuple<double, double> tuple = GetParam();
     ASSERT_GE(std::get<0>(tuple), 0);
-    poly_empty.SetA(1);
-    poly_empty.SetB(-2);
-    poly_empty.SetC(3);
-    poly_empty.SetD(-4);
-    ASSERT_EQ(poly_empty.EvaluatePrim(std::get<0>(tuple)), std::get<1>(tuple));
+    polynomial_empty.SetA(1);
+    polynomial_empty.SetB(-2);
+    polynomial_empty.SetC(3);
+    polynomial_empty.SetD(-4);
+    ASSERT_EQ(polynomial_empty.EvaluatePrim(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
 INSTANTIATE_TEST_CASE_P(TestEvaluatePrimParamEmpty, PolynomialTestEvaluatePrimEmptyParametrized, testing::Values(
@@ -164,14 +164,14 @@ class PolynomialTestEvaluatePrimArgumentParametrized: public testing::TestWithPa
 {
     public:
     protected:
-        Polynomial poly_argument{1,-2,3,-4,2};
+        Polynomial polynomial_argument{1,-2,3,-4,2};
 };
 
 TEST_P(PolynomialTestEvaluatePrimArgumentParametrized, TestEvaluatePrimArgumentConstructor)
 {
     std::tuple<double, double> tuple = GetParam();
     ASSERT_GE(std::get<0>(tuple), 0);
-    ASSERT_EQ(poly_argument.EvaluatePrim(std::get<0>(tuple)), std::get<1>(tuple));
+    ASSERT_EQ(polynomial_argument.EvaluatePrim(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
 INSTANTIATE_TEST_CASE_P(TestEvaluatePrimParamArgument, PolynomialTestEvaluatePrimArgumentParametrized, testing::Values(
@@ -182,18 +182,18 @@ class PolynomialTestEvaluatePrimPrimEmptyParametrized: public testing::TestWithP
 {
     public:
     protected:
-        Polynomial poly_empty;
+        Polynomial polynomial_empty;
 };
 
 TEST_P(PolynomialTestEvaluatePrimPrimEmptyParametrized, TestEvaluatePrimPrimEmptyConstructor)
 {
     std::tuple<double, double> tuple = GetParam();
     ASSERT_GE(std::get<0>(tuple), 0);
-    poly_empty.SetA(1);
-    poly_empty.SetB(-2);
-    poly_empty.SetC(3);
-    poly_empty.SetD(-4);
-    ASSERT_EQ(poly_empty.EvaluatePrimPrim(std::get<0>(tuple)), std::get<1>(tuple));
+    polynomial_empty.SetA(1);
+    polynomial_empty.SetB(-2);
+    polynomial_empty.SetC(3);
+    polynomial_empty.SetD(-4);
+    ASSERT_EQ(polynomial_empty.EvaluatePrimPrim(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
 INSTANTIATE_TEST_CASE_P(TestEvaluatePrimPrimParamEmpty, PolynomialTestEvaluatePrimPrimEmptyParametrized, testing::Values(
@@ -204,14 +204,14 @@ class PolynomialTestEvaluatePrimPrimArgumentParametrized: public testing::TestWi
 {
     public:
     protected:
-        Polynomial poly_argument{1,-2,3,-4,2};
+        Polynomial polynomial_argument{1,-2,3,-4,2};
 };
 
 TEST_P(PolynomialTestEvaluatePrimPrimArgumentParametrized, TestEvaluatePrimPrimArgumentConstructor)
 {
     std::tuple<double, double> tuple = GetParam();
     ASSERT_GE(std::get<0>(tuple), 0);
-    ASSERT_EQ(poly_argument.EvaluatePrimPrim(std::get<0>(tuple)), std::get<1>(tuple));
+    ASSERT_EQ(polynomial_argument.EvaluatePrimPrim(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
 INSTANTIATE_TEST_CASE_P(TestEvaluatePrimPrimParamArgument, PolynomialTestEvaluatePrimPrimArgumentParametrized, testing::Values(
@@ -703,6 +703,122 @@ as extern void -> Check this later.
 ////////// TESTS FOR CLASS -> Poly3 (Geometry) //////////
 //////////////////////////////////////////////////////////////////////
 
+class Poly3GeomTestFixture: public testing::Test
+{
+    public:
+        Poly3GeomTestFixture();
+        Poly3GeomTestFixture(double s, double x, double y, double hdg, double length, double a, double b, double c, double d);
+        virtual ~Poly3GeomTestFixture();
+    protected:
+        Poly3 poly3;
+};
+
+Poly3GeomTestFixture::Poly3GeomTestFixture()
+{
+}
+
+Poly3GeomTestFixture::Poly3GeomTestFixture(double s, double x, double y, double hdg, double length, double a, double b, double c, double d)
+{
+}
+
+Poly3GeomTestFixture::~Poly3GeomTestFixture()
+{
+}
+
+TEST_F(Poly3GeomTestFixture, TestPoly3UMaxGetSetArgumentConstructor)
+{
+    ASSERT_EQ(0.0, poly3.GetUMax());
+    EXPECT_EQ(poly3.GetType(), Geometry::GEOMETRY_TYPE_UNKNOWN);
+    poly3.SetUMax(5);
+    ASSERT_EQ(poly3.GetUMax(), 5.0);
+
+    Poly3 poly3_second = Poly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4);
+    ASSERT_EQ(0.0, poly3_second.GetUMax());
+    EXPECT_EQ(poly3_second.GetType(), Geometry::GEOMETRY_TYPE_POLY3);
+    ASSERT_EQ(poly3_second.poly3_.GetA(), 1.0);
+    ASSERT_EQ(poly3_second.poly3_.GetB(), -2.0);
+    ASSERT_EQ(poly3_second.poly3_.GetC(), 3.0);
+    ASSERT_EQ(poly3_second.poly3_.GetD(), -4.0);
+    ASSERT_EQ(poly3_second.poly3_.GetPscale(), 1.0);
+
+    Polynomial my_polynomial = poly3_second.GetPoly3();
+    ASSERT_EQ(poly3_second.poly3_.GetA(), my_polynomial.GetA());
+    ASSERT_EQ(poly3_second.poly3_.GetB(), my_polynomial.GetB());
+    ASSERT_EQ(poly3_second.poly3_.GetC(), my_polynomial.GetC());
+    ASSERT_EQ(poly3_second.poly3_.GetD(), my_polynomial.GetD());
+    ASSERT_EQ(poly3_second.poly3_.GetPscale(), my_polynomial.GetPscale());
+}
+
+TEST_F(Poly3GeomTestFixture, TestEvaluateCurvatureDS)
+{
+    Poly3 poly3_second = Poly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4);
+
+    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(0), 6.0);
+    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(10), -234.0);
+    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(100), -2394.0);
+    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(1000), -23994.0);
+}
+
+class Poly3GeomTestEvaluateDsCurvUmaxZero: public testing::TestWithParam<std::tuple<double, double, double, double>>
+{
+    public:
+    protected:
+        Poly3 poly3 = Poly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4);
+};
+
+TEST_P(Poly3GeomTestEvaluateDsCurvUmaxZero, TestPoly3GeomEvaluateDsArgument)
+{
+    std::tuple<double, double, double, double> tuple = GetParam();
+    ASSERT_GE(std::get<0>(tuple), 0);
+    double *x, *y, *h;
+    double my_x = poly3.GetX();
+    double my_y = poly3.GetY();
+    double my_h = poly3.GetHdg();
+    x = &my_x;
+    y = &my_y;
+    h = &my_h;
+    poly3.EvaluateDS(std::get<0>(tuple), x, y, h);
+    ASSERT_THAT(*x, testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN)));
+    ASSERT_THAT(*y,  testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN)));
+    ASSERT_EQ(*h, std::get<3>(tuple));
+}
+
+INSTANTIATE_TEST_CASE_P(TestEvaluatePoly3DsArgumentParam, Poly3GeomTestEvaluateDsCurvUmaxZero, testing::Values(
+                                                std::make_tuple(0.0, -1.0, 0.0, M_PI-2),
+                                                std::make_tuple(10.0, -1.0, 0.0, M_PI-2),
+                                                std::make_tuple(100.0, -1.0, 0.0, M_PI-2),
+                                                std::make_tuple(1000.0, -1.0, 0.0, M_PI-2)));
+
+class Poly3GeomTestEvaluateDsCurvUmaxNonZero: public testing::TestWithParam<std::tuple<double, double, double, double>>
+{
+    public:
+    protected:
+        Poly3 poly3 = Poly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4);
+};
+
+TEST_P(Poly3GeomTestEvaluateDsCurvUmaxNonZero, TestPoly3GeomEvaluateDsArgument)
+{
+    std::tuple<double, double, double, double> tuple = GetParam();
+    ASSERT_GE(std::get<0>(tuple), 0);
+    double *x, *y, *h;
+    double my_x = poly3.GetX();
+    double my_y = poly3.GetY();
+    double my_h = poly3.GetHdg();
+    x = &my_x;
+    y = &my_y;
+    h = &my_h;
+    poly3.SetUMax(1.0);
+    poly3.EvaluateDS(std::get<0>(tuple), x, y, h);
+    ASSERT_THAT(*x, testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN)));
+    ASSERT_THAT(*y,  testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN)));
+    ASSERT_EQ(*h, std::get<3>(tuple));
+}
+
+INSTANTIATE_TEST_CASE_P(TestEvaluatePoly3DsArgumentParam, Poly3GeomTestEvaluateDsCurvUmaxNonZero, testing::Values(
+                                                std::make_tuple(0.0, -1.0, 0.0, M_PI-2.0),
+                                                std::make_tuple(4.0, -2.0, 3.0, M_PI-8.0)));
+                                                //std::make_tuple(100.0, -1.0, 0.0, M_PI-2),
+                                                //std::make_tuple(1000.0, -1.0, 0.0, M_PI-2)));
 
 
 
