@@ -1427,7 +1427,7 @@ int Viewer::LoadShadowfile(std::string vehicleModelFilename)
 	if (!shadow_node_)
 	{
 		LOG("Failed to locate shadow model %s based on vehicle model filename %s - continue without", 
-			SHADOW_MODEL_FILEPATH, vehicleModelFilename);
+			SHADOW_MODEL_FILEPATH, vehicleModelFilename.c_str());
 		return -1;
 	}
 
