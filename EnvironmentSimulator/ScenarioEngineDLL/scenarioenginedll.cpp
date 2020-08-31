@@ -242,7 +242,7 @@ extern "C"
 		}
 		if (use_viewer)
 		{
-			AddArgument("--window 30 30 800 400");
+			AddArgument("--window 50 50 800 400");
 		}
 		else
 		{
