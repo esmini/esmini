@@ -224,6 +224,7 @@ namespace roadmanager
 			P_RANGE_ARC_LENGTH
 		};
 
+		ParamPoly3() {}
 		ParamPoly3(
 			double s, double x, double y, double hdg, double length,
 			double aU, double bU, double cU, double dU, double aV, double bV, double cV, double dV, PRangeType p_range) :

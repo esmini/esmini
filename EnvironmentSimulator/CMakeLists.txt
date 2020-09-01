@@ -169,8 +169,10 @@ elseif(UNIX)
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
   elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    SET(CMAKE_CXX_FLAGS "-march=native -O0 -std=c++14 -pthread -fPIC")
-  endif()
+    SET(CMAKE_CXX_FLAGS "-march=native -O0 -std=c++14 -pthread -fPIC")  
+  else()
+    SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
+endif()
   
   set ( OSG_LIBRARIES
     optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd 
