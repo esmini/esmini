@@ -95,14 +95,17 @@ namespace roadmanager
 		GeometryType GetType() { return type_; }
 		double GetLength() { return length_; }
 		virtual double GetX() { return x_; }
+		void SetX(double x) { x_ = x; }
 		virtual double GetY() { return y_; }
+		void SetY(double y) { y_ = y; }
 		virtual double GetHdg() { return GetAngleInInterval2PI(hdg_); }
+		void SetHdg(double hdg) { hdg_ = hdg; }
 		double GetS() { return s_; }
 		virtual double EvaluateCurvatureDS(double ds) = 0;
 		virtual void Print();
 		virtual void EvaluateDS(double ds, double *x, double *y, double *h);
 
-	private:
+	protected:
 		double s_;
 		double x_;
 		double y_;
@@ -148,9 +151,9 @@ namespace roadmanager
 	class Spiral : public Geometry
 	{
 	public:
-		Spiral(double s, double x, double y, double hdg, double length, double curv_start, double curv_end) :
-			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_SPIRAL),
-			curv_start_(curv_start), curv_end_(curv_end), c_dot_(0.0), x0_(0.0), y0_(0.0), h0_(0.0), s0_(0.0) {}
+		Spiral(): curv_start_(0.0), curv_end_(0.0), c_dot_(0.0), x0_(0.0), y0_(0.0), h0_(0.0), s0_(0.0), arc_(0), line_(0) {}
+		Spiral(double s, double x, double y, double hdg, double length, double curv_start, double curv_end);
+			
 		~Spiral() {};
 
 		double GetCurvStart() { return curv_start_; }
@@ -168,6 +171,12 @@ namespace roadmanager
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
+		void SetX(double x);
+		void SetY(double y);
+		void SetHdg(double h);
+
+		Arc* arc_;
+		Line* line_;
 
 	private:
 		double curv_start_;
@@ -183,6 +192,7 @@ namespace roadmanager
 	class Poly3 : public Geometry
 	{
 	public:
+		Poly3(): umax_(0.0) {}
 		Poly3(double s, double x, double y, double hdg, double length, double a, double b, double c, double d) :
 			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_POLY3), umax_(0.0)
 		{
@@ -1533,11 +1543,16 @@ namespace roadmanager
 		Clothoid(roadmanager::Position pos, double curv, double curvDot, double len, double tStart, double tEnd) : Shape(ShapeType::CLOTHOID)
 		{
 			pos_ = pos;
-			clothoid_ = new roadmanager::Spiral(0, pos_.GetX(), pos_.GetY(), pos_.GetH(), len, curv, curv + curvDot * len);
+			spiral_ = new roadmanager::Spiral(0, pos_.GetX(), pos_.GetY(), pos_.GetH(), len, curv, curv + curvDot * len);
+			length_ = len;
+			t_start_ = tStart;
+			t_end_ = tEnd;
 		}
 
-		roadmanager::Spiral* clothoid_;
-		roadmanager::Position pos_;
+		Position pos_;
+		roadmanager::Spiral* spiral_;  // make use of the OpenDRIVE clothoid definition
+		double t_start_;
+		double t_end_;
 	};
 
 	class Nurbs : public Shape

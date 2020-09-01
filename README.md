@@ -65,6 +65,10 @@ Further info:
 * [Launch commands](https://github.com/esmini/esmini/blob/master/docs/commands.txt)
 * [Runtime control](https://github.com/esmini/esmini/blob/master/docs/readme.txt)
 
+## esmini shared library
+The easiest way of integrating esmini in your custom application is to link the all inclusive shared library ScenarioEngineDLL. In spite of the name it's available also on Linux and Mac.
+See [this "Hello World" tutorial](https://github.com/esmini/esmini/blob/master/Hello-World_coding-example/README.md) on how to create a minimalistic application based on it.
+
 ## Related work
 ### pyoscx
 [pyoscx](https://github.com/pyoscx/pyoscx) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate the OpenSCENARIO 1.0 XML counterpart. 

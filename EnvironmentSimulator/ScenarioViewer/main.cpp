@@ -87,6 +87,7 @@ int main(int argc, char *argv[])
 
 			int svSize = 0;
 
+			SE_UpdateOSISensorView();
 			// Fetch and parse OSI message
 			const char* buf = SE_GetOSISensorView(&svSize);
 			sv.ParseFromArray(buf, svSize);

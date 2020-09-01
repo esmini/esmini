@@ -12,16 +12,16 @@ include_directories (
 macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES)
     add_executable(${TESTNAME} ${FILES})
 
-    target_link_libraries(${TESTNAME} ${GTEST_LIBRARIES} ${LIBRARIES})
+    target_link_libraries(${TESTNAME} ${GTEST_LIBRARIES} ${LIBRARIES} ${ARGN})
 
     set_target_properties(${TESTNAME} PROPERTIES FOLDER Unittest)
 
     add_test(
-    NAME ${TESTNAME}
-    COMMAND ${TESTNAME}
+      NAME ${TESTNAME}
+      COMMAND ${TESTNAME}
     )
 endmacro()
 
 package_add_test_with_libraries(OperatingSystem_test OperatingSystem_test.cpp PlayerBase)
 package_add_test_with_libraries(RoadManager_test RoadManager_test.cpp RoadManager)
-package_add_test_with_libraries(ScenarioEngineDll_test ScenarioEngineDll_test.cpp ScenarioEngineDLL)
+package_add_test_with_libraries(ScenarioEngineDll_test ScenarioEngineDll_test.cpp ScenarioEngineDLL ${OSI_LIBRARIES})

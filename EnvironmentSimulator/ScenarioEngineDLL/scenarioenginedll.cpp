@@ -242,7 +242,7 @@ extern "C"
 		}
 		if (use_viewer)
 		{
-			AddArgument("--window 30 30 800 400");
+			AddArgument("--window 50 50 800 400");
 		}
 		else
 		{
@@ -427,11 +427,19 @@ extern "C"
 		return 0;
 	}
 	
-	SE_DLL_API void SE_GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id)
+	SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId* ids)
 	{
 		if (player)
 		{
-			player->scenarioGateway->GetOSILaneBoundaryIds(ids, object_id);			
+			std::vector<int> ids_vector;
+			player->scenarioGateway->GetOSILaneBoundaryIds(ids_vector, object_id);
+			if (!ids_vector.empty())
+			{
+				ids->far_left_lb_id = ids_vector[0];
+				ids->left_lb_id = ids_vector[1];
+				ids->right_lb_id = ids_vector[2];
+				ids->far_right_lb_id = ids_vector[3];
+			}
 		}
 		return; 
 	}
