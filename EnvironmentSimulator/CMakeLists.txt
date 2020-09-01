@@ -166,7 +166,11 @@ if(APPLE)
   )
 
 elseif(UNIX)
-  SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
+  if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
+  elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    SET(CMAKE_CXX_FLAGS "-march=native -O0 -std=c++14 -pthread -fPIC")
+  endif()
   
   set ( OSG_LIBRARIES
     optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd 
