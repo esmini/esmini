@@ -1241,6 +1241,24 @@ LaneTestFixture::~LaneTestFixture()
 {
 }
 
+TEST_F(LaneTestFixture, TestLaneCostructor)
+{
+    /*ASSERT_EQ(laneoffset.GetLength(), 0.0);
+    ASSERT_EQ(laneoffset.GetS(), 0.0);
+
+    laneoffset.SetLength(4.0);
+    ASSERT_EQ(laneoffset.GetLength(), 4.0);
+
+    LaneOffset laneoffset_second = LaneOffset(2.0, 1.0, -2.0, 3.0, -4.0);
+    laneoffset_second.Set(2.0, 1.0, -2.0, 3.0, -4.0);
+    ASSERT_EQ(laneoffset_second.GetS(), 2.0);
+    ASSERT_EQ(laneoffset_second.GetPolynomial().GetA(), 1.0);
+    ASSERT_EQ(laneoffset_second.GetPolynomial().GetB(), -2.0);
+    ASSERT_EQ(laneoffset_second.GetPolynomial().GetC(), 3.0);
+    ASSERT_EQ(laneoffset_second.GetPolynomial().GetD(), -4.0);
+    ASSERT_EQ(laneoffset_second.GetPolynomial().GetPscale(), 1.0);*/
+}
+
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////

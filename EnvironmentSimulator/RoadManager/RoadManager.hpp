@@ -514,32 +514,46 @@ namespace roadmanager
 			LANE_TYPE_ON_RAMP,
 		};
 
+		// Construct & Destruct
 		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(0), offset_from_ref_(0.0), global_id_(0) {}
 		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(1), offset_from_ref_(0), global_id_(0) {}
 		~Lane() {}
-		void AddLink(LaneLink *lane_link) { link_.push_back(lane_link); }
+
+		// Base Functions
 		int GetId() { return id_; }
+		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
+		double GetOffsetFromRef() { return offset_from_ref_; }
+		LaneType GetLaneType() { return type_; }
+		int GetGlobalId() { return global_id_; }
+
+		// Add Functions
+		void AddLink(LaneLink *lane_link) { link_.push_back(lane_link); }
+		void AddLaneWIdth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
+		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
+		
+		// Get Functions
 		LaneWidth *GetWidthByIndex(int index) { return lane_width_[index]; }
 		LaneWidth *GetWidthByS(double s);
 		LaneLink *GetLink(LinkType type);
-		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
-		double GetOffsetFromRef() { return offset_from_ref_; }
 		RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
-		void AddLaneWIdth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
-		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
 		LaneRoadMark* GetLaneRoadMarkByIdx(int idx);
-		int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
-		int IsDriving();
-		void Print();
-		LaneType GetLaneType() { return type_; }
 		OSIPoints GetOSIPoints() { return osi_points_;}
-		OSIPoints osi_points_;
-		void SetGlobalId();
-		int GetGlobalId() { return global_id_; }
+		int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
 		std::vector<int> GetLineGlobalIds(); 
-		void SetLaneBoundary(LaneBoundaryOSI *lane_boundary);
 		LaneBoundaryOSI* GetLaneBoundary() {return lane_boundary_; }
 		int GetLaneBoundaryGlobalId();
+
+		// Set Functions
+		void SetGlobalId();
+		void SetLaneBoundary(LaneBoundaryOSI *lane_boundary);
+
+		// Others
+		int IsDriving();
+		void Print();
+		OSIPoints osi_points_;
+		
+		
+
 
 	private:
 		int id_;		// center = 0, left > 0, right < 0
