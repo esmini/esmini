@@ -886,75 +886,43 @@ TEST_F(ParamPoly3GeomTestFixture, TestParamPoly3ArgumentConstructor)
     ASSERT_EQ(parampoly3_second.poly3V_.GetPscale(), my_polynomialV.GetPscale());
 }
 
-/*TEST_F(Poly3GeomTestFixture, TestEvaluateCurvatureDS)
+TEST_F(ParamPoly3GeomTestFixture, TestEvaluateCurvatureDS)
 {
-    Poly3 poly3_second = Poly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4);
+    ParamPoly3 parampoly3_second = ParamPoly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4, 1, -2, 3, -4, ParamPoly3::PRangeType::P_RANGE_UNKNOWN);
 
-    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(0), 6.0);
-    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(10), -234.0);
-    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(100), -2394.0);
-    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(1000), -23994.0);
+    ASSERT_EQ(parampoly3_second.EvaluateCurvatureDS(0), -3.0);
+    ASSERT_EQ(parampoly3_second.EvaluateCurvatureDS(10), 234.0/1142.0);
+    ASSERT_EQ(parampoly3_second.EvaluateCurvatureDS(100), 2394.0/119402.0);
+    ASSERT_EQ(parampoly3_second.EvaluateCurvatureDS(1000), 23994.0/11994002.0);
 }
 
-class Poly3GeomTestEvaluateDsCurvUmaxZero: public testing::TestWithParam<std::tuple<double, double, double, double>>
+class ParamPoly3GeomTestEvaluateDsCurv: public testing::TestWithParam<std::tuple<double, double, double, double>>
 {
     public:
     protected:
-        Poly3 poly3 = Poly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4);
+        ParamPoly3 parampoly3 = ParamPoly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4, 1, -2, 3, -4, ParamPoly3::PRangeType::P_RANGE_UNKNOWN);
 };
 
-TEST_P(Poly3GeomTestEvaluateDsCurvUmaxZero, TestPoly3GeomEvaluateDsArgument)
+TEST_P(ParamPoly3GeomTestEvaluateDsCurv, TestParamPoly3GeomEvaluateDsArgument)
 {
     std::tuple<double, double, double, double> tuple = GetParam();
     ASSERT_GE(std::get<0>(tuple), 0);
     double *x, *y, *h;
-    double my_x = poly3.GetX();
-    double my_y = poly3.GetY();
-    double my_h = poly3.GetHdg();
+    double my_x = parampoly3.GetX();
+    double my_y = parampoly3.GetY();
+    double my_h = parampoly3.GetHdg();
     x = &my_x;
     y = &my_y;
     h = &my_h;
-    poly3.EvaluateDS(std::get<0>(tuple), x, y, h);
+    parampoly3.EvaluateDS(std::get<0>(tuple), x, y, h);
     ASSERT_THAT(*x, testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN)));
     ASSERT_THAT(*y,  testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN)));
     ASSERT_EQ(*h, std::get<3>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluatePoly3DsArgumentParam, Poly3GeomTestEvaluateDsCurvUmaxZero, testing::Values(
-                                                std::make_tuple(0.0, -1.0, 0.0, M_PI-2),
-                                                std::make_tuple(10.0, -1.0, 0.0, M_PI-2),
-                                                std::make_tuple(100.0, -1.0, 0.0, M_PI-2),
-                                                std::make_tuple(1000.0, -1.0, 0.0, M_PI-2)));
-
-class Poly3GeomTestEvaluateDsCurvUmaxNonZero: public testing::TestWithParam<std::tuple<double, double, double, double>>
-{
-    public:
-    protected:
-        Poly3 poly3 = Poly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4);
-};
-
-TEST_P(Poly3GeomTestEvaluateDsCurvUmaxNonZero, TestPoly3GeomEvaluateDsArgument)
-{
-    std::tuple<double, double, double, double> tuple = GetParam();
-    ASSERT_GE(std::get<0>(tuple), 0);
-    double *x, *y, *h;
-    double my_x = poly3.GetX();
-    double my_y = poly3.GetY();
-    double my_h = poly3.GetHdg();
-    x = &my_x;
-    y = &my_y;
-    h = &my_h;
-    poly3.SetUMax(1.0);
-    poly3.EvaluateDS(std::get<0>(tuple), x, y, h);
-    ASSERT_THAT(*x, testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN)));
-    ASSERT_THAT(*y,  testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN)));
-    ASSERT_EQ(*h, std::get<3>(tuple));
-}
-
-INSTANTIATE_TEST_CASE_P(TestEvaluatePoly3DsArgumentParam, Poly3GeomTestEvaluateDsCurvUmaxNonZero, testing::Values(
-                                                std::make_tuple(0.0, -1.0, 0.0, M_PI-2.0),
-                                                std::make_tuple(4.0, -2.0, 3.0, M_PI-8.0)));
-*/
+INSTANTIATE_TEST_CASE_P(TestEvaluateParamPoly3DsArgumentParam, ParamPoly3GeomTestEvaluateDsCurv, testing::Values(
+                                                std::make_tuple(0.0, -2.0, 0.0, M_PI+atan2(-2.0,-2.0)),
+                                                std::make_tuple(10.0, 3718.0, 3720.0, M_PI+atan2(-2.0,-2.0))));
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////

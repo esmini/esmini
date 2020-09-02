@@ -416,6 +416,8 @@ void ParamPoly3::EvaluateDS(double ds, double *x, double *y, double *h)
 
 	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
 	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());
+	std::cout << "my hdg is: " << GetHdg()  << std::endl;
+	std::cout << "my atan2 is: " << atan2(poly3V_.EvaluatePrim(ds), poly3U_.EvaluatePrim(ds)) << std::endl; 
 	*h = GetHdg() + atan2(poly3V_.EvaluatePrim(ds), poly3U_.EvaluatePrim(ds));
 }
 
