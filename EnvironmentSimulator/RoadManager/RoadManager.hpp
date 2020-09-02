@@ -249,10 +249,12 @@ namespace roadmanager
 	class Elevation
 	{
 	public:
+		Elevation(): s_(0.0), length_(0.0) {}
 		Elevation(double s, double a, double b, double c, double d) : s_(s), length_(0)
 		{
 			poly3_.Set(a, b, c, d);
 		}
+		~Elevation() {};
 
 		double GetS() { return s_; }
 		void SetLength(double length) { length_ = length; }
