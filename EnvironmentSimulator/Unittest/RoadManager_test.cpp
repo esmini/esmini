@@ -1216,12 +1216,30 @@ INSTANTIATE_TEST_CASE_P(TestGetLaneOffsetPrimParam, LaneOffsetGetLaneOffsetPrimT
 
 
 //////////////////////////////////////////////////////////////////////
-////////// TESTS FOR CLASS -> Lane //////////////////////////////////
+////////// TESTS FOR CLASS -> Lane ///////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-// TODO
-// TODO
-// TODO
+class LaneTestFixture: public testing::Test
+{
+    public:
+        LaneTestFixture();
+        LaneTestFixture(double s, double a, double b, double c, double d); 
+        virtual ~LaneTestFixture();
+    protected:
+        Lane lane;
+};
+
+LaneTestFixture::LaneTestFixture()
+{
+}
+
+LaneTestFixture::LaneTestFixture(double s, double a, double b, double c, double d)
+{
+}
+
+LaneTestFixture::~LaneTestFixture()
+{
+}
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////

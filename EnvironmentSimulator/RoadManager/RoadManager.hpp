@@ -514,7 +514,9 @@ namespace roadmanager
 			LANE_TYPE_ON_RAMP,
 		};
 
-		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(1), offset_from_ref_(0) {}
+		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(0), offset_from_ref_(0.0), global_id_(0) {}
+		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(1), offset_from_ref_(0), global_id_(0) {}
+		~Lane() {}
 		void AddLink(LaneLink *lane_link) { link_.push_back(lane_link); }
 		int GetId() { return id_; }
 		LaneWidth *GetWidthByIndex(int index) { return lane_width_[index]; }
