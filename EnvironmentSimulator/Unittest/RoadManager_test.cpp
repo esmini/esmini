@@ -1135,6 +1135,90 @@ INSTANTIATE_TEST_CASE_P(LaneRoadMarkTests,LaneRoadMarkTest,::testing::Values(
 ////////// TESTS FOR CLASS -> LaneOffSet ///////////////////////////
 //////////////////////////////////////////////////////////////////////
 
+class LaneOffsetTestFixture: public testing::Test
+{
+    public:
+        LaneOffsetTestFixture();
+        LaneOffsetTestFixture(double s, double a, double b, double c, double d); 
+        virtual ~LaneOffsetTestFixture();
+    protected:
+        LaneOffset laneoffset;
+};
+
+LaneOffsetTestFixture::LaneOffsetTestFixture()
+{
+}
+
+LaneOffsetTestFixture::LaneOffsetTestFixture(double s, double a, double b, double c, double d)
+{
+}
+
+LaneOffsetTestFixture::~LaneOffsetTestFixture()
+{
+}
+
+TEST_F(LaneOffsetTestFixture, TestLaneOffSetCommon)
+{
+    ASSERT_EQ(laneoffset.GetLength(), 0.0);
+    ASSERT_EQ(laneoffset.GetS(), 0.0);
+
+    laneoffset.SetLength(4.0);
+    ASSERT_EQ(laneoffset.GetLength(), 4.0);
+
+    LaneOffset laneoffset_second = LaneOffset(2.0, 1.0, -2.0, 3.0, -4.0);
+    laneoffset_second.Set(2.0, 1.0, -2.0, 3.0, -4.0);
+    ASSERT_EQ(laneoffset_second.GetS(), 2.0);
+    ASSERT_EQ(laneoffset_second.GetPolynomial().GetA(), 1.0);
+    ASSERT_EQ(laneoffset_second.GetPolynomial().GetB(), -2.0);
+    ASSERT_EQ(laneoffset_second.GetPolynomial().GetC(), 3.0);
+    ASSERT_EQ(laneoffset_second.GetPolynomial().GetD(), -4.0);
+    ASSERT_EQ(laneoffset_second.GetPolynomial().GetPscale(), 1.0);
+}
+
+class LaneOffsetGetLaneOffsetTest: public testing::TestWithParam<std::tuple<double, double>>
+{
+    public:
+    protected:
+        LaneOffset laneoffset = LaneOffset(2.0, 1.0, -2.0, 3.0, -4.0);
+};
+
+TEST_P(LaneOffsetGetLaneOffsetTest, TestGetLaneOffset)
+{
+    std::tuple<double, double> tuple = GetParam();
+    ASSERT_EQ(laneoffset.GetLaneOffset(std::get<0>(tuple)), std::get<1>(tuple));
+}
+
+INSTANTIATE_TEST_CASE_P(TestGetLaneOffsetParam, LaneOffsetGetLaneOffsetTest, testing::Values(
+                                                std::make_tuple(0.0, 49.0),
+                                                std::make_tuple(10.0, -1871.0)));
+                                            
+
+class LaneOffsetGetLaneOffsetPrimTest: public testing::TestWithParam<std::tuple<double, double>>
+{
+    public:
+    protected:
+        LaneOffset laneoffset = LaneOffset(2.0, 1.0, -2.0, 3.0, -4.0);
+};
+
+TEST_P(LaneOffsetGetLaneOffsetPrimTest, TestGetLaneOffsetPrim)
+{
+    std::tuple<double, double> tuple = GetParam();
+    ASSERT_EQ(laneoffset.GetLaneOffsetPrim(std::get<0>(tuple)), std::get<1>(tuple));
+}
+
+INSTANTIATE_TEST_CASE_P(TestGetLaneOffsetPrimParam, LaneOffsetGetLaneOffsetPrimTest, testing::Values(
+                                                std::make_tuple(0.0, -62),
+                                                std::make_tuple(10.0, -722.0)));
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+////////// TESTS FOR CLASS -> Lane //////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
 // TODO
 // TODO
 // TODO
