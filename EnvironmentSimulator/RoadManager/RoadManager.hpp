@@ -519,9 +519,8 @@ namespace roadmanager
 		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(1), offset_from_ref_(0), global_id_(0) {}
 		~Lane() {}
 
-		// Base Functions
+		// Base Get Functions
 		int GetId() { return id_; }
-		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
 		double GetOffsetFromRef() { return offset_from_ref_; }
 		LaneType GetLaneType() { return type_; }
 		int GetGlobalId() { return global_id_; }
@@ -546,6 +545,7 @@ namespace roadmanager
 		// Set Functions
 		void SetGlobalId();
 		void SetLaneBoundary(LaneBoundaryOSI *lane_boundary);
+		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
 
 		// Others
 		int IsDriving();
