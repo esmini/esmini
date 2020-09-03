@@ -1297,10 +1297,7 @@ TEST_F(LaneTestFixture, TestLaneGetWidth)
 {
     LaneWidth *lanewidth = new LaneWidth(2.0, 1.0, -2.0, 3.0, -4.0);
     LaneWidth *lanewidth_second = new LaneWidth(10.0, 2.0, -3.0, 4.0, -5.0);
-    
-    ASSERT_THROW(lane.GetWidthByIndex(-1), std::runtime_error);
-    ASSERT_THROW(lane.GetWidthByIndex(2), std::runtime_error);
-    ASSERT_THROW(lane.GetWidthByIndex(3), std::runtime_error);
+
     LaneWidth *dummywidth = 0;
     ASSERT_EQ(lane.GetWidthByS(0), dummywidth);
     ASSERT_EQ(lane.GetWidthByS(5), dummywidth);
@@ -1308,6 +1305,10 @@ TEST_F(LaneTestFixture, TestLaneGetWidth)
 
     lane.AddLaneWidth(lanewidth);
     lane.AddLaneWidth(lanewidth_second);
+
+    ASSERT_THROW(lane.GetWidthByIndex(-1), std::runtime_error);
+    ASSERT_THROW(lane.GetWidthByIndex(2), std::runtime_error);
+    ASSERT_THROW(lane.GetWidthByIndex(3), std::runtime_error);
 
     LaneWidth *mylanewidth = lane.GetWidthByIndex(0);
     LaneWidth *mylanewidth_s = lane.GetWidthByS(1);
@@ -1349,6 +1350,30 @@ TEST_F(LaneTestFixture, TestLaneGetWidth)
 
     delete lanewidth;
     delete lanewidth_second;
+}
+
+TEST_F(LaneTestFixture, TestLaneGetRoadMark)
+{
+    LaneRoadMark *laneroadmark = new LaneRoadMark(2.0, LaneRoadMark::RoadMarkType::BROKEN, LaneRoadMark::RoadMarkWeight::STANDARD,
+    LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
+    
+    lane.AddLaneRoadMark(laneroadmark);
+
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(-1), std::runtime_error);
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(1), std::runtime_error);
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(2), std::runtime_error);
+
+    LaneRoadMark *mylaneroadmark = lane.GetLaneRoadMarkByIdx(0);
+    ASSERT_EQ(mylaneroadmark->GetSOffset(), 2.0);
+    ASSERT_EQ(mylaneroadmark->GetWidth(), 4.0);
+    ASSERT_EQ(mylaneroadmark->GetHeight(), 2.0);
+    ASSERT_EQ(mylaneroadmark->GetType(), LaneRoadMark::RoadMarkType::BROKEN);
+    ASSERT_EQ(mylaneroadmark->GetWeight(), LaneRoadMark::RoadMarkWeight::STANDARD);
+    ASSERT_EQ(mylaneroadmark->GetColor(), LaneRoadMark::RoadMarkColor::RED);
+    ASSERT_EQ(mylaneroadmark->GetMaterial(), LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL);
+    ASSERT_EQ(mylaneroadmark->GetLaneChange(), LaneRoadMark::RoadMarkLaneChange::BOTH);
+    
+    delete laneroadmark;
 }
 
 //////////////////////////////////////////////////////////////////////

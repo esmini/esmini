@@ -429,14 +429,20 @@ namespace roadmanager
 		RoadMarkMaterial material, RoadMarkLaneChange lane_change, double width, double height): 
 		s_offset_(s_offset), type_(type), weight_(weight), color_(color), material_(material), lane_change_(lane_change), 
 		width_(width), height_(height) {}
+
 		void AddType(LaneRoadMarkType *lane_roadMarkType) { lane_roadMarkType_.push_back(lane_roadMarkType); }
-		int GetNumberOfRoadMarkTypes() { return (int)lane_roadMarkType_.size(); }
-		LaneRoadMarkType* GetLaneRoadMarkTypeByIdx(int idx);
+
 		double GetSOffset() { return s_offset_; }
 		double GetWidth() { return width_; }
-		RoadMarkType GetType() { return type_; }
 		double GetHeight() { return height_; }
+		RoadMarkType GetType() { return type_; }
+		RoadMarkWeight GetWeight() { return weight_; }
 		RoadMarkColor GetColor() { return color_; }
+		RoadMarkMaterial GetMaterial() { return material_; }
+		RoadMarkLaneChange GetLaneChange() { return lane_change_; }
+
+		int GetNumberOfRoadMarkTypes() { return (int)lane_roadMarkType_.size(); }
+		LaneRoadMarkType* GetLaneRoadMarkTypeByIdx(int idx);
 
 	private:
 		double s_offset_;
@@ -538,9 +544,9 @@ namespace roadmanager
 		LaneLink *GetLink(LinkType type);
 		LaneWidth *GetWidthByIndex(int index);
 		LaneWidth *GetWidthByS(double s);
-		
-		RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
 		LaneRoadMark* GetLaneRoadMarkByIdx(int idx);
+
+		RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
 		OSIPoints GetOSIPoints() { return osi_points_;}
 		std::vector<int> GetLineGlobalIds(); 
 		LaneBoundaryOSI* GetLaneBoundary() {return lane_boundary_; }

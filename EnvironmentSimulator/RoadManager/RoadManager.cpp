@@ -457,11 +457,11 @@ LaneWidth *Lane::GetWidthByIndex(int index)
 { 
 	if(lane_width_.size() <= index || lane_width_.size() == 0)
 	{
-		throw std::runtime_error("LaneWidth::GetWidthByIndex(int index) -> exceeds index");
+		throw std::runtime_error("Lane::GetWidthByIndex(int index) -> exceeds index");
 	}
 	else if(lane_width_.size() < 0)
 	{
-		throw std::runtime_error("LaneWidth::GetWidthByIndex(int index) -> index must be larger than 0");
+		throw std::runtime_error("Lane::GetWidthByIndex(int index) -> index must be larger than 0");
 	}
 	else
 	{
@@ -506,12 +506,18 @@ void LaneWidth::Print()
 
 LaneRoadMark* Lane::GetLaneRoadMarkByIdx(int idx)
 {
-	if (idx < (int)lane_roadMark_.size())
+	if(lane_roadMark_.size() <= idx || lane_roadMark_.size() == 0)
+	{
+		throw std::runtime_error("Lane::GetLaneRoadMarkByIdx(int idx) -> exceeds index");
+	}
+	else if(lane_roadMark_.size() < 0)
+	{
+		throw std::runtime_error("Lane::GetLaneRoadMarkByIdx(int idx) -> index must be larger than 0");
+	}
+	else
 	{
 		return lane_roadMark_[idx];
 	}
-
-	return 0;
 }
 
 std::vector<int> Lane::GetLineGlobalIds()
