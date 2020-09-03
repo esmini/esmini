@@ -656,13 +656,13 @@ int ScenarioGateway::UpdateOSIRoadLane()
 					osi_lane->mutable_classification()->set_type(class_type);
 
 					// CENTERLINE POINTS 
-					int n_osi_points = lane->GetOSIPoints().GetNumOfOSIPoints();
+					int n_osi_points = lane->GetOSIPoints()->GetNumOfOSIPoints();
 					for (int jj = 0; jj < n_osi_points; jj++)
 					{
 						osi3::Vector3d* centerLine = osi_lane->mutable_classification()->add_centerline();
-						centerLine->set_x(lane->GetOSIPoints().GetXfromIdx(jj));
-						centerLine->set_y(lane->GetOSIPoints().GetYfromIdx(jj));
-						centerLine->set_z(lane->GetOSIPoints().GetZfromIdx(jj));
+						centerLine->set_x(lane->GetOSIPoints()->GetXfromIdx(jj));
+						centerLine->set_y(lane->GetOSIPoints()->GetYfromIdx(jj));
+						centerLine->set_z(lane->GetOSIPoints()->GetZfromIdx(jj));
 					}
 
 					// DRIVING DIRECTION 

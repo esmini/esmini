@@ -4048,8 +4048,12 @@ void OpenDrive::SetRoadMarkOSIPoints()
 											osi_h_rm.push_back(pos->GetH());
 
 											s_roadmarkline += lane_roadMarkTypeLine->GetLength() + lane_roadMarkTypeLine->GetSpace();
-											if (s_roadmarkline >= s_end_roadmarkline)
+											if (s_roadmarkline < SMALL_NUMBER || s_roadmarkline >= s_end_roadmarkline)
 											{
+												if (s_roadmarkline < SMALL_NUMBER)
+												{
+													LOG("Roadmark length + space = 0 - ignoring");
+												}
 												break;
 											}
 										}
@@ -5415,6 +5419,21 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 	int old_lane_id = lane_id_;
 	int old_track_id = track_id_;
 
+	Road* road = GetOpenDrive()->GetRoadById(track_id);
+	if (road == 0)
+	{
+		LOG("Position::Set Error: track %d not available\n", track_id);
+		lane_id_ = lane_id;
+		offset_ = offset;
+		return;
+	}
+
+	if (s > road->GetLength())
+	{
+		LOG("Truncate road mark s pos (%.2f) to road length (%.2f)", s, road->GetLength());
+		s = road->GetLength();
+	}
+
 	if (SetLongitudinalTrackPos(track_id, s) != 0)
 	{
 		lane_id_ = lane_id;
@@ -5425,14 +5444,6 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 		return;
 	}
 
-	Road *road = GetOpenDrive()->GetRoadById(track_id);
-	if (road == 0)
-	{
-		LOG("Position::Set Error: track %d not available\n", track_id);
-		lane_id_ = lane_id;
-		offset_ = offset;
-		return;
-	}
 
 	if (lane_id != lane_id_ && lane_section_idx == -1)
 	{

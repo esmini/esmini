@@ -915,7 +915,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 			}
 			else
 			{
-				LOG("Failed to locate %s. Tried %s and %s. Creating a dummy model instead", path.c_str(), path2.c_str());
+				LOG("Failed to locate model %s, also trued %s. Creating a dummy model instead", path.c_str(), path2.c_str());
 			}
 
 			osg::ref_ptr<osg::Geode> geode = new osg::Geode;
@@ -1182,6 +1182,8 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 	roadmanager::Position* pos = new roadmanager::Position();
 	osg::Vec3 point(0, 0, 0);
 
+	roadmanager::OSIPoints* curr_osi;
+
 	for (int r = 0; r < od->GetNumOfRoads(); r++)
 	{
 		roadmanager::Road *road = od->GetRoadByIdx(r);
@@ -1247,16 +1249,16 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 				osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
 				osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 
-				roadmanager::OSIPoints curr_osi;
 				if (!lane->IsDriving() && lane->GetId() != 0)
 				{
 					continue;
 				}
 
 				curr_osi = lane->GetOSIPoints();
-				for (int m = 0; m < curr_osi.GetX().size(); m++)
+
+				for (int m = 0; m < curr_osi->GetX().size(); m++)
 				{
-					point.set(curr_osi.GetX()[m], curr_osi.GetY()[m], curr_osi.GetZ()[m] + z_offset);
+					point.set(curr_osi->GetX()[m], curr_osi->GetY()[m], curr_osi->GetZ()[m] + z_offset);
 					osi_points->push_back(point);
 					osi_color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
 				}

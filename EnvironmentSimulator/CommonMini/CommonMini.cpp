@@ -57,7 +57,7 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
 {
 	std::string path = file_path;
 
-	if (file_path[0] != '/')
+	if (file_path[0] != '/' || file_path[0] != '\\' || file_path[1] != ':')
 	{
 		// Relative path. Make sure it starts with ".." or "./"
 		if (path[0] != '.')
