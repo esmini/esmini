@@ -531,13 +531,16 @@ namespace roadmanager
 		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
 		
 		// Get Functions
+		int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
+		int GetNumberOfLinks() { return (int)link_.size(); }
+		int GetNumberOfLaneWidths() { return (int)lane_width_.size(); }
+
 		LaneWidth *GetWidthByIndex(int index) { return lane_width_[index]; }
 		LaneWidth *GetWidthByS(double s);
 		LaneLink *GetLink(LinkType type);
 		RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
 		LaneRoadMark* GetLaneRoadMarkByIdx(int idx);
 		OSIPoints GetOSIPoints() { return osi_points_;}
-		int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
 		std::vector<int> GetLineGlobalIds(); 
 		LaneBoundaryOSI* GetLaneBoundary() {return lane_boundary_; }
 		int GetLaneBoundaryGlobalId();

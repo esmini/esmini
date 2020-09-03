@@ -1255,6 +1255,44 @@ TEST_F(LaneTestFixture, TestLaneBaseGetConstructor)
     ASSERT_EQ(lane_second.GetGlobalId(), 0.0);
 }
 
+TEST_F(LaneTestFixture, TestLaneAddFunctions)
+{
+    ASSERT_EQ(lane.GetNumberOfLinks(), 0);
+    ASSERT_EQ(lane.GetNumberOfRoadMarks(), 0);
+    ASSERT_EQ(lane.GetNumberOfLaneWidths(), 0);
+
+    LaneLink *lanelink = new LaneLink(LinkType::SUCCESSOR, 3);
+    LaneWidth *lanewidth = new LaneWidth(2.0, 1.0, -2.0, -3.0, 4.0);
+    LaneRoadMark *laneroadmark = new LaneRoadMark(2.0, LaneRoadMark::RoadMarkType::BROKEN, LaneRoadMark::RoadMarkWeight::STANDARD,
+    LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
+
+    lane.AddLink(lanelink);
+    lane.AddLaneWIdth(lanewidth);
+    lane.AddLaneRoadMark(laneroadmark);
+
+    ASSERT_EQ(lane.GetNumberOfLinks(), 1);
+    ASSERT_EQ(lane.GetNumberOfLaneWidths(), 1);
+    ASSERT_EQ(lane.GetNumberOfRoadMarks(), 1);
+
+    delete lanelink;
+    delete lanewidth;
+    delete laneroadmark;
+}
+
+TEST_F(LaneTestFixture, TestLaneGetLink)
+{
+    LaneLink *lanelink = new LaneLink(LinkType::SUCCESSOR, 3);
+    lane.AddLink(lanelink);
+    LaneLink *mylanelink = lane.GetLink(LinkType::PREDECESSOR);
+    LaneLink *dummylink = 0;
+    ASSERT_EQ(mylanelink, dummylink);
+    LaneLink *mylanelink_second = lane.GetLink(LinkType::SUCCESSOR);
+    ASSERT_EQ(mylanelink_second->GetType(), LinkType::SUCCESSOR);
+    ASSERT_EQ(mylanelink_second->GetId(), 3);
+    
+    delete lanelink;
+}
+
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
