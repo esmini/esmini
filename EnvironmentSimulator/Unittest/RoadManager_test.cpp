@@ -1267,7 +1267,7 @@ TEST_F(LaneTestFixture, TestLaneAddFunctions)
     LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
 
     lane.AddLink(lanelink);
-    lane.AddLaneWIdth(lanewidth);
+    lane.AddLaneWidth(lanewidth);
     lane.AddLaneRoadMark(laneroadmark);
 
     ASSERT_EQ(lane.GetNumberOfLinks(), 1);
@@ -1291,6 +1291,64 @@ TEST_F(LaneTestFixture, TestLaneGetLink)
     ASSERT_EQ(mylanelink_second->GetId(), 3);
     
     delete lanelink;
+}
+
+TEST_F(LaneTestFixture, TestLaneGetWidth)
+{
+    LaneWidth *lanewidth = new LaneWidth(2.0, 1.0, -2.0, 3.0, -4.0);
+    LaneWidth *lanewidth_second = new LaneWidth(10.0, 2.0, -3.0, 4.0, -5.0);
+    
+    ASSERT_THROW(lane.GetWidthByIndex(-1), std::runtime_error);
+    ASSERT_THROW(lane.GetWidthByIndex(2), std::runtime_error);
+    ASSERT_THROW(lane.GetWidthByIndex(3), std::runtime_error);
+    LaneWidth *dummywidth = 0;
+    ASSERT_EQ(lane.GetWidthByS(0), dummywidth);
+    ASSERT_EQ(lane.GetWidthByS(5), dummywidth);
+    ASSERT_EQ(lane.GetWidthByS(10), dummywidth);
+
+    lane.AddLaneWidth(lanewidth);
+    lane.AddLaneWidth(lanewidth_second);
+
+    LaneWidth *mylanewidth = lane.GetWidthByIndex(0);
+    LaneWidth *mylanewidth_s = lane.GetWidthByS(1);
+    ASSERT_EQ(mylanewidth->GetSOffset(), 2.0);
+    ASSERT_EQ(mylanewidth->poly3_.GetA(), 1.0);
+    ASSERT_EQ(mylanewidth->poly3_.GetB(), -2.0);
+    ASSERT_EQ(mylanewidth->poly3_.GetC(), 3.0);
+    ASSERT_EQ(mylanewidth->poly3_.GetD(), -4.0);
+    ASSERT_EQ(mylanewidth->poly3_.GetPscale(), 1.0);
+    ASSERT_EQ(mylanewidth_s->GetSOffset(), 2.0);
+    ASSERT_EQ(mylanewidth_s->poly3_.GetA(), 1.0);
+    ASSERT_EQ(mylanewidth_s->poly3_.GetB(), -2.0);
+    ASSERT_EQ(mylanewidth_s->poly3_.GetC(), 3.0);
+    ASSERT_EQ(mylanewidth_s->poly3_.GetD(), -4.0);
+    ASSERT_EQ(mylanewidth_s->poly3_.GetPscale(), 1.0);
+
+    LaneWidth *mylanewidth_second = lane.GetWidthByIndex(1);
+    LaneWidth *mylanewidth_s_second = lane.GetWidthByS(5);
+    ASSERT_EQ(mylanewidth_second->GetSOffset(), 10.0);
+    ASSERT_EQ(mylanewidth_second->poly3_.GetA(), 2.0);
+    ASSERT_EQ(mylanewidth_second->poly3_.GetB(), -3.0);
+    ASSERT_EQ(mylanewidth_second->poly3_.GetC(), 4.0);
+    ASSERT_EQ(mylanewidth_second->poly3_.GetD(), -5.0);
+    ASSERT_EQ(mylanewidth_second->poly3_.GetPscale(), 1.0);
+    ASSERT_EQ(mylanewidth_s_second->GetSOffset(), 2.0);
+    ASSERT_EQ(mylanewidth_s_second->poly3_.GetA(), 1.0);
+    ASSERT_EQ(mylanewidth_s_second->poly3_.GetB(), -2.0);
+    ASSERT_EQ(mylanewidth_s_second->poly3_.GetC(), 3.0);
+    ASSERT_EQ(mylanewidth_s_second->poly3_.GetD(), -4.0);
+    ASSERT_EQ(mylanewidth_s_second->poly3_.GetPscale(), 1.0);
+
+    LaneWidth *mylanewidth_s_final = lane.GetWidthByS(1000000);
+    ASSERT_EQ(mylanewidth_s_final->GetSOffset(), 10.0);
+    ASSERT_EQ(mylanewidth_s_final->poly3_.GetA(), 2.0);
+    ASSERT_EQ(mylanewidth_s_final->poly3_.GetB(), -3.0);
+    ASSERT_EQ(mylanewidth_s_final->poly3_.GetC(), 4.0);
+    ASSERT_EQ(mylanewidth_s_final->poly3_.GetD(), -5.0);
+    ASSERT_EQ(mylanewidth_s_final->poly3_.GetPscale(), 1.0);
+
+    delete lanewidth;
+    delete lanewidth_second;
 }
 
 //////////////////////////////////////////////////////////////////////

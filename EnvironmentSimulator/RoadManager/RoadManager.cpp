@@ -109,7 +109,7 @@ void Polynomial::Set(double a, double b, double c, double d, double p_scale)
 
 double OSIPoints::GetXfromIdx(int i) 
 {
-	if(x_.size() < i || x_.size() == 0)
+	if(x_.size() <= i || x_.size() == 0)
 	{
 		throw std::runtime_error("OSIPoints::GetXFromIdx(int i) -> exceeds index");
 	}
@@ -125,7 +125,7 @@ double OSIPoints::GetXfromIdx(int i)
 
 double OSIPoints::GetYfromIdx(int i) 
 {
-	if(y_.size() < i || y_.size() == 0)
+	if(y_.size() <= i || y_.size() == 0)
 	{
 		throw std::runtime_error("OSIPoints::GetYFromIdx(int i) -> exceeds index");
 	}
@@ -141,7 +141,7 @@ double OSIPoints::GetYfromIdx(int i)
 
 double OSIPoints::GetZfromIdx(int i) 
 {
-	if(z_.size() < i || z_.size() == 0)
+	if(z_.size() <= i || z_.size() == 0)
 	{
 		throw std::runtime_error("OSIPoints::GetZFromIdx(int i) -> exceeds index");
 	}
@@ -451,6 +451,22 @@ void LaneRoadMarkTypeLine::SetGlobalId()
 {  
 	global_id_ = g_Laneb_id; 
 	g_Laneb_id++;
+}
+
+LaneWidth *Lane::GetWidthByIndex(int index)
+{ 
+	if(lane_width_.size() <= index || lane_width_.size() == 0)
+	{
+		throw std::runtime_error("LaneWidth::GetWidthByIndex(int index) -> exceeds index");
+	}
+	else if(lane_width_.size() < 0)
+	{
+		throw std::runtime_error("LaneWidth::GetWidthByIndex(int index) -> index must be larger than 0");
+	}
+	else
+	{
+		return lane_width_[index];
+	}	
 }
 
 LaneWidth *Lane::GetWidthByS(double s)
@@ -2080,7 +2096,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								double b = atof(width.attribute("b").value());
 								double c = atof(width.attribute("c").value());
 								double d = atof(width.attribute("d").value());
-								lane->AddLaneWIdth(new LaneWidth(s_offset, a, b, c, d));
+								lane->AddLaneWidth(new LaneWidth(s_offset, a, b, c, d));
 							}
 							
 							// roadMark

@@ -527,7 +527,7 @@ namespace roadmanager
 
 		// Add Functions
 		void AddLink(LaneLink *lane_link) { link_.push_back(lane_link); }
-		void AddLaneWIdth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
+		void AddLaneWidth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
 		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
 		
 		// Get Functions
@@ -535,9 +535,10 @@ namespace roadmanager
 		int GetNumberOfLinks() { return (int)link_.size(); }
 		int GetNumberOfLaneWidths() { return (int)lane_width_.size(); }
 
-		LaneWidth *GetWidthByIndex(int index) { return lane_width_[index]; }
-		LaneWidth *GetWidthByS(double s);
 		LaneLink *GetLink(LinkType type);
+		LaneWidth *GetWidthByIndex(int index);
+		LaneWidth *GetWidthByS(double s);
+		
 		RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
 		LaneRoadMark* GetLaneRoadMarkByIdx(int idx);
 		OSIPoints GetOSIPoints() { return osi_points_;}
