@@ -4338,10 +4338,10 @@ double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, R
 	geom->EvaluateDS(geom->GetLength(), &x2, &y2, &h2);
 
 	// Apply lane offset
-	x1 += road->GetLaneOffset(0) * cos(h1 + M_PI_2);
-	y1 += road->GetLaneOffset(geom->GetLength()) * sin(h1 + M_PI_2);
-	x2 += road->GetLaneOffset(0) * cos(h2 + M_PI_2);
-	y2 += road->GetLaneOffset(geom->GetLength()) * sin(h2 + M_PI_2);
+	x1 += road->GetLaneOffset(geom->GetS()) * cos(h1 + M_PI_2);
+	y1 += road->GetLaneOffset(geom->GetS() + geom->GetLength()) * sin(h1 + M_PI_2);
+	x2 += road->GetLaneOffset(geom->GetS()) * cos(h2 + M_PI_2);
+	y2 += road->GetLaneOffset(geom->GetS() + geom->GetLength()) * sin(h2 + M_PI_2);
 
 	// Find vector from point perpendicular to line segment
 	double x4, y4;
