@@ -1,1 +1,0 @@
-..\..\..\bin\EgoSimulator.exe --window 50 50 1024 576  --osc ../../../resources/xosc/cut-in_cr.xosc --control external

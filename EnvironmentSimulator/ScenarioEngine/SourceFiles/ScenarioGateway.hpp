@@ -15,46 +15,10 @@
 #include "OSCBoundingBox.hpp"
 #include "Entities.hpp"
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <math.h>
-
-#ifdef _WIN32
-	//#include <winsock2.h>
-	//#include <Ws2tcpip.h>
-#else
-	 /* Assume that any non-Windows platform uses POSIX-style sockets instead. */
-	#include <sys/socket.h>
-	#include <arpa/inet.h>
-	#include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
-	#include <unistd.h> /* Needed for close() */
-#endif
-
 namespace scenarioengine
 {
 
 #define NAME_LEN 32
-
-
-	typedef struct
-	{
-		std::string sensor_view;
-		unsigned int size;
-	} OSISensorView;
-
-	typedef struct
-	{
-		std::string osi_lane_info;
-		unsigned int size;
-	} OSIRoadLane;
-
-	typedef struct
-	{
-		std::string osi_lane_boundary_info;
-		unsigned int size;
-	} OSIRoadLaneBoundary;
 
 	struct ObjectStateStruct
 	{
@@ -97,8 +61,6 @@ namespace scenarioengine
 	};
 
 
-	
-
 	class ScenarioGateway
 	{
 	public:
@@ -125,49 +87,12 @@ namespace scenarioengine
 		ObjectState *getObjectStatePtrById(int id);
 		int getObjectStateById(int idx, ObjectState &objState);
 		int RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
-		/**
-		Creates and opens osi file 
-		*/
-		bool OpenOSIFile();
-		/**
-		Writes SensorView in the OSI file 
-		*/
-		bool WriteOSIFile();
-		/**
-		Fills up the osi message with SensorView
-		*/
-		int UpdateOSISensorView();
-		/**
-		Fills up the osi message with Moving Object
-		*/
-		int UpdateOSIMovingObject();
-		/**
-		Fills up the osi message with Lane Boundary
-		*/
-		int UpdateOSILaneBoundary();
-		/**
-		Fills up the osi message with Lanes
-		*/
-		int UpdateOSIRoadLane();
-		/**
-		This function checks if the angle is in the interval of [-pi/2, +pi/2]
-		*/
-		bool IsAngleStraight(double teta); 
-		const char* GetOSISensorView(int* size);
-		const char* GetOSIRoadLane(int* size, int object_id);
-		const char* GetOSIRoadLaneBoundary(int* size, int global_id);
-		void GetOSILaneBoundaryIds(std::vector<int> &ids, int object_id);
-		bool IsCentralOSILane(int lane_idx);
-		int GetLaneIdxfromIdOSI(int lane_id);
-		int OpenSocket(std::string ipaddr);
-		int CloseSocket();
-		int GetSocket() { return sendSocket; }
+
+		std::vector<ObjectState*> objectState_;
 
 	private:
 		void updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot);
-		std::vector<ObjectState*> objectState_;
 		std::ofstream data_file_;
-		int sendSocket;
 	};
 
 	class SumoController
