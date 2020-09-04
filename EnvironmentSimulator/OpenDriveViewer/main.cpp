@@ -1,4 +1,4 @@
-/* 
+	/* 
  * esmini - Environment Simulator Minimalistic 
  * https://github.com/esmini/esmini
  *
@@ -201,6 +201,8 @@ int main(int argc, char** argv)
 	arguments.getApplicationUsage()->addCommandLineOption("--model <filename>", "3D model filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--density <number>", "density (cars / 100 m)", std::to_string((long long) (DEFAULT_DENSITY)));
 	arguments.getApplicationUsage()->addCommandLineOption("--speed <number>", "speed (km/h)", std::to_string((long long) (DEFAULT_SPEED)));
+	arguments.getApplicationUsage()->addCommandLineOption("--osi_features <string>", "Show OSI road features (\"on\"/\"off\") (toggle during simulation with key 'u')", "off");
+
 
 	if (arguments.argc() < 2)
 	{
@@ -220,6 +222,25 @@ int main(int argc, char** argv)
 	arguments.read("--speed", speed);
 	printf("speed: %.2f\n", speed);
 	speed /= 3.6;
+
+	std::string osi_features_str;
+	arguments.read("--osi_features", osi_features_str);
+	bool osi_features;
+	if (osi_features_str == "on")
+	{
+		osi_features = true;
+	}
+	else if (osi_features_str == "off")
+	{
+		osi_features = false;
+	}
+	else if (osi_features_str != "")
+	{
+		printf("Unexpected osi_features value: %s\n", osi_features_str.c_str());
+		arguments.getApplicationUsage()->write(std::cout, 1, 120, true);
+		return -1;
+	}
+	printf("osi_features: %s\n", osi_features ? "on" : "off");
 
 	roadmanager::Position *lane_pos = new roadmanager::Position();
 	roadmanager::Position *track_pos = new roadmanager::Position();
@@ -242,6 +263,8 @@ int main(int argc, char** argv)
 			modelFilename.c_str(),
 			NULL,
 			arguments);
+
+		viewer->ShowOSIFeatures(osi_features);
 
 		if (SetupCars(odrManager, viewer) == -1)
 		{
