@@ -14,16 +14,20 @@
 #include <string>
 #include <random>
 
+
 #include "ScenarioEngine.hpp"
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "Server.hpp"
 #include "IdealSensor.hpp"
+#include "OSIReporter.hpp"
 #ifdef _SCENARIO_VIEWER
   #include "viewer.hpp"
 #endif
 
+
 using namespace scenarioengine;
+
 
 class ScenarioPlayer
 {
@@ -59,6 +63,7 @@ public:
 	CSV_Logger *CSV_Log;
 	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;
+	OSIReporter *osiReporter;
 #ifdef _SCENARIO_VIEWER
 	viewer::Viewer *viewer_;
 	std::vector<viewer::SensorViewFrustum*> sensorFrustum;

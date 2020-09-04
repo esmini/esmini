@@ -1,1 +1,0 @@
-..\..\..\bin\OpenDriveViewer.exe --odr ..\..\..\resources\xodr\soderleden.xodr --model ..\..\..\resources\models\soderleden.osgb --debug 0.5 --window 50 50 1000 600 --density 4 %*

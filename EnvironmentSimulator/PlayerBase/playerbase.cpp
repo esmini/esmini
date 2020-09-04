@@ -56,6 +56,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	osi_file = false; 
 	osi_freq_ = 1;
 	CSV_Log = NULL;
+	osiReporter = NULL;
 
 #ifdef _SCENARIO_VIEWER
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
@@ -93,6 +94,11 @@ ScenarioPlayer::~ScenarioPlayer()
 #endif
 	}
 	delete scenarioEngine; 
+
+	if (osiReporter)
+	{
+		delete osiReporter;
+	}
 }
 
 void ScenarioPlayer::Frame(double timestep_s)
@@ -136,26 +142,27 @@ void ScenarioPlayer::Frame()
 
 void ScenarioPlayer::ScenarioFrame(double timestep_s)
 {
-	for (size_t i = 0; i < sensor.size(); i++)
-	{
-		sensor[i]->Update();
-		//LOG("sensor identified %d objects", sensor[i]->nObj_);
-	}
-	
 	mutex.Lock();
 	
 	scenarioEngine->step(timestep_s);
 
+	for (size_t i = 0; i < sensor.size(); i++)
+	{
+		sensor[i]->Update();
+	}
+
+	osiReporter->ReportSensors(sensor);
+
 	// Update OSI info
-	if (osi_file || scenarioGateway->GetSocket())
+	if (osi_file || osiReporter->GetSocket())
 	{
 		osi_counter++; 
 		if (osi_counter % osi_freq_ == 0 )
 		{
-			scenarioEngine->getScenarioGateway()->UpdateOSISensorView();
+			osiReporter->UpdateOSISensorView(scenarioGateway->objectState_);
 			if (osi_file)
 			{
-				scenarioEngine->getScenarioGateway()->WriteOSIFile();
+				osiReporter->WriteOSIFile();
 			}
 		}	
 	}
@@ -582,16 +589,17 @@ int ScenarioPlayer::Init()
 	// Fetch scenario gateway and OpenDRIVE manager objects
 	scenarioGateway = scenarioEngine->getScenarioGateway();
 	odr_manager = scenarioEngine->getRoadManager();
+	osiReporter = new OSIReporter();
 
 	if (opt.GetOptionSet("osi_receiver_ip"))
 	{
-		scenarioGateway->OpenSocket(opt.GetOptionArg("osi_receiver_ip"));
+		osiReporter->OpenSocket(opt.GetOptionArg("osi_receiver_ip"));
 	}
 	
 	if (opt.GetOptionArg("osi_file") ==  "on")
 	{
 		osi_file = true;
-		if (scenarioGateway->OpenOSIFile() == false)
+		if (osiReporter->OpenOSIFile() == false)
 		{
 			osi_file = false;
 		}
@@ -627,12 +635,12 @@ int ScenarioPlayer::Init()
 	scenarioEngine->step(0.0, true);
 
 	// Update OSI info
-	if (osi_file || scenarioGateway->GetSocket())
+	if (osi_file || osiReporter->GetSocket())
 	{
-		scenarioEngine->getScenarioGateway()->UpdateOSISensorView();
+		osiReporter->UpdateOSISensorView(scenarioGateway->objectState_);
 		if (osi_file)
 		{
-			scenarioEngine->getScenarioGateway()->WriteOSIFile();
+			osiReporter->WriteOSIFile();
 		}
 	}
 

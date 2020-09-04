@@ -53,6 +53,7 @@ double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_t
 
 // Useful operations
 
+
 /**
   Checks whether file with given path exists or not
 */
@@ -92,6 +93,11 @@ double GetAngleInInterval2PI(double angle);
   Retrieve difference between two angles
 */
 double GetAngleDifference(double angle1, double angle2);
+
+/**
+  This function checks if the angle is in the interval of [-pi/2, +pi/2]
+*/
+bool IsAngleStraight(double teta);
 
 /**
   Retrieve the cross product of two vectors where z=0

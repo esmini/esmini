@@ -305,7 +305,7 @@ extern "C"
 
 	SE_DLL_API int SE_OpenOSISocket(char* ipaddr)
 	{
-		player->scenarioGateway->OpenSocket(ipaddr);
+		player->osiReporter->OpenSocket(ipaddr);
 		return 0;
 	}
 
@@ -398,7 +398,7 @@ extern "C"
 	{
 		if (player)
 		{
-			return player->scenarioGateway->GetOSISensorView(size);
+			return player->osiReporter->GetOSISensorView(size);
 		}
 
 		*size = 0;
@@ -409,7 +409,7 @@ extern "C"
 	{
 		if (player)
 		{
-			return player->scenarioGateway->GetOSIRoadLane(size, object_id);
+			return player->osiReporter->GetOSIRoadLane(player->scenarioGateway->objectState_, size, object_id);
 		}
 
 		*size = 0;
@@ -420,7 +420,7 @@ extern "C"
 	{
 		if (player)
 		{
-			return player->scenarioGateway->GetOSIRoadLaneBoundary(size, global_id);
+			return player->osiReporter->GetOSIRoadLaneBoundary(size, global_id);
 		}
 
 		*size = 0;
@@ -432,7 +432,7 @@ extern "C"
 		if (player)
 		{
 			std::vector<int> ids_vector;
-			player->scenarioGateway->GetOSILaneBoundaryIds(ids_vector, object_id);
+			player->osiReporter->GetOSILaneBoundaryIds(player->scenarioGateway->objectState_, ids_vector, object_id);
 			if (!ids_vector.empty())
 			{
 				ids->far_left_lb_id = ids_vector[0];
@@ -448,7 +448,7 @@ extern "C"
 	{
 		if (player)
 		{
-			return player->scenarioGateway->UpdateOSISensorView();
+			return player->osiReporter->UpdateOSISensorView(player->scenarioGateway->objectState_);
 		}
 
 		return 0;
@@ -458,7 +458,7 @@ extern "C"
 	{
 		if (player)
 		{
-			return player->scenarioGateway->OpenOSIFile();
+			return player->osiReporter->OpenOSIFile();
 		}
 
 		return false;
@@ -468,7 +468,7 @@ extern "C"
 	{		
 		if (player)
 		{
-			return player->scenarioGateway->WriteOSIFile();
+			return player->osiReporter->WriteOSIFile();
 		}
 
 		return false;
