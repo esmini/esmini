@@ -45,7 +45,7 @@ Storyboard
                 StopTrigger                 Yes
     StopTrigger                             Yes
 OSCTypeDefs                                 
-    OSCTrajectory                           Yes (PolyLine only and limited testing)
+    OSCTrajectory                           Yes (PolyLine and clothoid, not Nurbs. Limited testing.)
     OSCRoute                                
         closed                              No
         ParameterDeclaration                No

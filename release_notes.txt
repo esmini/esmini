@@ -1,5 +1,8 @@
 The purpose of this document is to highlight changes breaking backward compatibility, i.e. updates to scenarios and start scripts might be required.
 
+2020-09-04 Version 1.7.6
+- Added trajectory clothoid support 
+
 2020-08-31 Version 1.7.5
 - Added Hello World coding example
 - Fixed a bug preventing shared library (ScenarioEngineDLL) to run with viewer on Mac
