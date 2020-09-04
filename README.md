@@ -37,13 +37,13 @@ The purpose of this implementation was to explore and get familiar with the emer
 
 Although allowed by the license this implementation is not primarily intended for production use. The code was developed ad hoc to answer research questions connected with the ongoing project. Therefore, code quality, as expected from standard production applications, is lacking when it comes to clarity, structure, comments, error handling and coding guidelines.
 
-[OpenSCENARIO coverage](./osc_coverage.txt) is limited as it was developed on demand and defined by the research scope. Moreover, since the Simulation Scenarios project is closed, no formal support should be expected from the initial contributors.  
+[OpenSCENARIO coverage](./osc_coverage.txt) is limited as it was developed on demand and defined by the research scope. Moreover, since the Simulation Scenarios project is closed, no formal support should be expected from the initial contributors.
 Nevertheless, regarding the above stated limitations, it was decided to release the code as is, as a public outcome from the project. It can hopefully serve as guidance or just inspiration for those aspiring to build similar tools, or even get accustomed with the OpenSCENARIO format. And of course, all contributions to further development are welcome!
 
 ## Binaries and demos
 Windows, Linux and Mac supported
 
-Latest release including source, binaries and demo packages is found here: https://github.com/esmini/esmini/releases/latest 
+Latest release including source, binaries and demo packages is found here: https://github.com/esmini/esmini/releases/latest
 
 On Mac the zip-package might be put in quarantine, to release it:
 `xattr -d com.apple.quarantine file.zip`
@@ -71,7 +71,7 @@ See [this "Hello World" tutorial](https://github.com/esmini/esmini/blob/master/H
 
 ## Related work
 ### pyoscx
-[pyoscx](https://github.com/pyoscx/pyoscx) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate the OpenSCENARIO 1.0 XML counterpart. 
+[pyoscx](https://github.com/pyoscx/pyoscx) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate the OpenSCENARIO 1.0 XML counterpart.
 
 ### Scenario video clip generator
 [esmini-visualizer](https://github.com/matthewcoyle-cpc/esmini-visualiser) is a tool to automatically generate video visualizations of scenarios.
@@ -100,5 +100,3 @@ describes the road network, the static part of a scenario.
 
 [OpenSCENARIO](https://www.asam.net/standards/detail/openscenario/)
 describes the dynamic content on top of a road network, e.g. traffic maneuvers and weather conditions.
-
-
