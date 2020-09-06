@@ -159,7 +159,6 @@ int OSIReporter::CloseSocket()
 void OSIReporter::ReportSensors(std::vector<ObjectSensor*> sensor)
 {
 	const int max_detections = 10;
-	int objList[max_detections];  // max nr objects hits received from sensor
 
 	if (sensor.size() == 0)
 	{
@@ -169,16 +168,15 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor*> sensor)
 	// Below is just some stub code hinting how ideal sensor data can be collected
 	// Remains to implement OSI output :)
 
-	printf("Detections [sensor ID, Object ids]:");
+	printf("Sensor detections:\n");
 	
 	for (int i = 0; i < sensor.size(); i++)
 	{
-		for (int j = 0; j < sensor[i]->nObj_ && j < max_detections; j++)
+		for (int j = 0; j < sensor[i]->nObj_; j++)
 		{
-			printf(" [%d, %d]", i, objList[j]);
+			printf("  sensor %d obj_id: %d pos: %.2f, %.2f \n", i, sensor[i]->hitList_[j].obj_->id_, sensor[i]->hitList_[j].x_, sensor[i]->hitList_[j].y_);
 		}
 	}
-	printf("\n");
 }
 
 bool OSIReporter::OpenOSIFile()
