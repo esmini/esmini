@@ -48,6 +48,31 @@
       <ScenarioObject name="Target">
          <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
       </ScenarioObject>
+      <ScenarioObject name="Cyclist">
+         <Vehicle name="bicycle" vehicleCategory="bicycle">
+            <BoundingBox>
+               <Center x="0.0" y="0.0" z="0.8"/>
+               <Dimensions width="0.3" length="1.5" height="1.6"/>
+            </BoundingBox>
+            <Performance maxSpeed="30" maxDeceleration="5"/>
+            <Axles>
+               <FrontAxle maxSteering="30"
+                          wheelDiameter="0.8"
+                          trackWidth="1.68"
+                          positionX="2.98"
+                          positionZ="0.4"/>
+               <RearAxle maxSteering="30"
+                         wheelDiameter="0.8"
+                         trackWidth="1.68"
+                         positionX="0"
+                         positionZ="0.4"/>
+            </Axles>
+            <Properties>
+               <File filepath="../models/cyclist.osgb"/>
+               <Property name="control" value="internal"/>
+            </Properties>
+         </Vehicle>
+      </ScenarioObject>
       <ScenarioObject name="Pedestrian">
          <Pedestrian name="Pedestrian1" pedestrianCategory="pedestrian" model="WalkingMale" mass="80">
             <BoundingBox>
@@ -55,8 +80,8 @@
                <Dimensions width="0.9" length="0.25" height="1.8"/>
             </BoundingBox>
             <Properties>
-               <File filepath="../models/car_white.osgb"/>
-               <Property name="control" value="hybrid"/>
+               <File filepath="../models/walkman.osgb"/>
+               <Property name="control" value="internal"/>
             </Properties>
          </Pedestrian>
       </ScenarioObject>
@@ -117,6 +142,25 @@
                   <TeleportAction>
                      <Position>
                         <LanePosition roadId="1" laneId="-1" offset="-0.9" s="150"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Cyclist">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="10"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0.1" s="100"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>

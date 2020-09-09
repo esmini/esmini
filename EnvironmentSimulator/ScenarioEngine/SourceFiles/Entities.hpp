@@ -117,6 +117,10 @@ namespace scenarioengine
 			{
 				category_ = Vehicle::Category::BUS;
 			}
+			else if (category == "bicycle")
+			{
+				category_ = Vehicle::Category::BICYCLE;
+			}
 			else
 			{
 				LOG("Vehicle category %s not supported yet", category.c_str());
