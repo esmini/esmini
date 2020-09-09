@@ -865,7 +865,7 @@ int ScenarioReader::parseEntities()
 		}
 		else if (entitiesChildName == "EntitySelection")
 		{
-			LOG("Parsing %s: is not implemented yet", entitiesChildName);
+			LOG("Parsing %s: is not implemented yet", entitiesChildName.c_str());
 		}
 		else
 		{
