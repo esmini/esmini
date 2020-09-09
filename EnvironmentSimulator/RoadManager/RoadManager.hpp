@@ -56,11 +56,11 @@ namespace roadmanager
 			OSIPoints() {}
 			OSIPoints(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : s_(s), x_(x), y_(y), z_(z), h_(h) {}
 			void Set(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) { s_ = s; x_ = x; y_ = y; z_ = z; h_ = h;}
-			std::vector<double> GetS() {return s_;}
-			std::vector<double> GetX() {return x_;}
-			std::vector<double> GetY() {return y_;}
-			std::vector<double> GetZ() {return z_;}
-			std::vector<double> GetH() {return h_;}
+			std::vector<double>& GetS() {return s_;}
+			std::vector<double>& GetX() {return x_;}
+			std::vector<double>& GetY() {return y_;}
+			std::vector<double>& GetZ() {return z_;}
+			std::vector<double>& GetH() {return h_;}
 			double GetXfromIdx(int i);
 			double GetYfromIdx(int i);
 			double GetZfromIdx(int i);
@@ -495,30 +495,37 @@ namespace roadmanager
 			LANE_POS_RIGHT
 		};
 
-		enum LaneType
+		typedef enum 
 		{
-			LANE_TYPE_NONE,
-			LANE_TYPE_DRIVING,
-			LANE_TYPE_STOP,
-			LANE_TYPE_SHOULDER,
-			LANE_TYPE_BIKING,
-			LANE_TYPE_SIDEWALK,
-			LANE_TYPE_BORDER,
-			LANE_TYPE_RESTRICTED,
-			LANE_TYPE_PARKING,
-			LANE_TYPE_BIDIRECTIONAL,
-			LANE_TYPE_MEDIAN,
-			LANE_TYPE_SPECIAL1,
-			LANE_TYPE_SPECIAL2,
-			LANE_TYPE_SPECIAL3,
-			LANE_TYPE_ROADMARKS,
-			LANE_TYPE_TRAM,
-			LANE_TYPE_RAIL,
-			LANE_TYPE_ENTRY,
-			LANE_TYPE_EXIT,
-			LANE_TYPE_OFF_RAMP,
-			LANE_TYPE_ON_RAMP,
-		};
+			LANE_TYPE_NONE =          (1 << 0),
+			LANE_TYPE_DRIVING =       (1 << 1),
+			LANE_TYPE_STOP =          (1 << 2),
+			LANE_TYPE_SHOULDER =      (1 << 3),
+			LANE_TYPE_BIKING =        (1 << 4),
+			LANE_TYPE_SIDEWALK =      (1 << 5),
+			LANE_TYPE_BORDER =        (1 << 6),
+			LANE_TYPE_RESTRICTED =    (1 << 7),
+			LANE_TYPE_PARKING =       (1 << 8),
+			LANE_TYPE_BIDIRECTIONAL = (1 << 9),
+			LANE_TYPE_MEDIAN =        (1 << 10),
+			LANE_TYPE_SPECIAL1 =      (1 << 11),
+			LANE_TYPE_SPECIAL2 =      (1 << 12),
+			LANE_TYPE_SPECIAL3 =      (1 << 13),
+			LANE_TYPE_ROADMARKS =     (1 << 14),
+			LANE_TYPE_TRAM =          (1 << 15),
+			LANE_TYPE_RAIL =          (1 << 16),
+			LANE_TYPE_ENTRY =         (1 << 17),
+			LANE_TYPE_EXIT =          (1 << 18),
+			LANE_TYPE_OFF_RAMP =      (1 << 19),
+			LANE_TYPE_ON_RAMP =       (1 << 20),
+			LANE_TYPE_ANY_DRIVING =   LANE_TYPE_DRIVING |
+			                          LANE_TYPE_ENTRY | 
+			                          LANE_TYPE_EXIT | 
+			                          LANE_TYPE_OFF_RAMP | 
+			                          LANE_TYPE_ON_RAMP | 
+			                          LANE_TYPE_PARKING,
+			LANE_TYPE_ANY =           (0xFFFFFFFF)
+		} LaneType;
 
 		// Construct & Destruct
 		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(0), offset_from_ref_(0.0), global_id_(0) {}
@@ -558,7 +565,8 @@ namespace roadmanager
 		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
 
 		// Others
-		int IsDriving();
+		bool IsType(Lane::LaneType type);
+		bool IsDriving();
 		void Print();
 		OSIPoints osi_points_;
 		
@@ -591,7 +599,7 @@ namespace roadmanager
 		int GetLaneGlobalIdByIdx(int idx);
 		double GetOuterOffset(double s, int lane_id);
 		double GetWidth(double s, int lane_id);
-		int GetClosestLaneIdx(double s, double t, double &offset);
+		int GetClosestLaneIdx(double s, double t, double &offset, Lane::LaneType laneType = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 		int GetClosestWhateverLaneIdx(double s, double t, double &offset);
 		
 		/**
@@ -1077,6 +1085,13 @@ namespace roadmanager
 			ERROR_OFF_ROAD = -4,
 		};
 
+		enum UpdateTrackPosMode
+		{
+			UPDATE_NOT_XYZH,
+			UPDATE_XYZ,
+			UPDATE_XYZH
+		};
+
 		explicit Position();
 		explicit Position(int track_id, double s, double t);
 		explicit Position(int track_id, int lane_id, double s, double offset);
@@ -1088,7 +1103,15 @@ namespace roadmanager
 		static bool LoadOpenDrive(const char *filename);
 		static OpenDrive* GetOpenDrive();
 		int GotoClosestDrivingLaneAtCurrentPosition();
-		int SetTrackPos(int track_id, double s, double t, bool calculateXYZ = true);
+
+		/**
+		Specify position by track coordinate (road_id, s, t)
+		@param track_id Id of the road (track)
+		@param s Distance to the position along and from the start of the road (track)
+		@param updateMode UPDATE_NOT_XYZH: no update of x, y, z, h UPDATE_XYZ: recalculate x, y, z UPDATE_XYZH relaculate x, y, z and align h
+		@return Non zero return value indicates error of some kind
+		*/
+		int SetTrackPos(int track_id, double s, double t, UpdateTrackPosMode updateMode = UpdateTrackPosMode::UPDATE_XYZH);
 		void ForceLaneId(int lane_id);
 		int SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
@@ -1097,7 +1120,17 @@ namespace roadmanager
 		void SetHeading(double heading);
 		void SetHeadingRelative(double heading);
 		void SetHeadingRelativeRoadDirection(double heading);
-		int XYZH2TrackPos(double x, double y, double z, double h, bool copyZAndPitch = true);
+		
+		/**
+		Specify position by cartesian coordinate (x, y, z, h)
+		@param x X-coordinate
+		@param y Y-coordinate
+		@param z Z-coordinate
+		@param alignZAndPitch Align Z-coordinate to road elevation and Heading to tangent of the road 
+		@return Non zero return value indicates error of some kind
+		*/
+		int XYZH2TrackPos(double x, double y, double z, double h, bool alignZAndPitch = true);
+		
 		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 		
 		void SetRelativePosition(Position* rel_pos, PositionType type)
@@ -1395,6 +1428,13 @@ namespace roadmanager
 
 		void SetOrientationType(OrientationType type) { orientation_type_ = type; }
 
+		/**
+		Specify which lane types the position object snaps to (is aware of)
+		@param laneTypes A combination (bitmask) of lane types
+		@return -
+		*/
+		void SetSnapLaneTypes(Lane::LaneType laneTypes) { snapToLaneTypes_ = laneTypes; }
+
 		void CopyRMPos(Position *from);
 
 		void PrintTrackPos();
@@ -1406,7 +1446,7 @@ namespace roadmanager
 
 	protected:
 		void Track2Lane();
-		int Track2XYZ();
+		int Track2XYZ(bool alignH = true);
 		void Lane2Track();
 		void RoadMark2Track();
 		/**
@@ -1416,7 +1456,6 @@ namespace roadmanager
 		void XYZ2Track(bool alignZAndPitch = false);
 		int SetLongitudinalTrackPos(int track_id, double s);
 		bool EvaluateRoadZPitchRoll(bool alignZPitchRoll);
-		double GetDistToTrackGeom(double x3, double y3, double z3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm);
 
 		// route reference
 		Route  *route_;			// if pointer set, the position corresponds to a point along (s) the route
@@ -1439,6 +1478,7 @@ namespace roadmanager
 		Position* rel_pos_;
 		PositionType type_;
 		OrientationType orientation_type_;  // Applicable for relative positions
+		Lane::LaneType snapToLaneTypes_;    // Bitmask of lanes that the position will snap to
 
 		// inertial reference
 		double	x_;

@@ -59,6 +59,7 @@ namespace vehicle
 		double wheelAngle_;
 		double wheelRotation_;
 		double headingDot_;
+		bool handbrake_;
 
 		double target_speed_;
 

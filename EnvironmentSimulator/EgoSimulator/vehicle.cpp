@@ -45,6 +45,7 @@ Vehicle::Vehicle(double x, double y, double h, double length)
 	velAngle_ = 0;
 	velAngleRelVehicleLongAxis_ = 0;
 	speed_ = 0;
+	handbrake_ = false;
 	wheelAngle_ = 0.0;
 	wheelRotation_ = 0.0;
 	headingDot_ = 0.0;
@@ -79,10 +80,30 @@ void Vehicle::DrivingControlTarget(double dt, double heading_to_target, double t
 
 void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steering)
 {
-	speed_ += ACCELERATION_SCALE * throttle * dt;
-	speed_ *= (1 - SPEED_DECLINE);
+	double oldSpeed = speed_;
 
-	speed_ = CLAMP(speed_, -1.2*max_speed_, 1.2*max_speed_);
+	if (handbrake_ == true)
+	{
+		if (throttle == THROTTLE::THROTTLE_NONE)
+		{
+			handbrake_ = false;
+		}
+	}
+	else 
+	{
+		speed_ += ACCELERATION_SCALE * throttle * dt;
+
+		if (oldSpeed > 0 && speed_ < 0)
+		{
+			speed_ = 0;
+			handbrake_ = true;
+		}
+		else
+		{
+			speed_ *= (1 - SPEED_DECLINE);
+			speed_ = CLAMP(speed_, -1.2 * max_speed_, 1.2 * max_speed_);
+		}
+	}
 
 	// Calculate steering
 

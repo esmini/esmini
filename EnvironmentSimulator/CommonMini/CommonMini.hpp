@@ -123,6 +123,20 @@ int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double 
 double PointDistance2D(double x0, double y0, double x1, double y1);
 
 /**
+ Calculate (shortest) distance between a point to a line, in 2D 
+ Inspiration: https://www.geeksforgeeks.org/shortest-distance-between-a-line-and-a-point-in-a-3-d-plane/
+ But modified so that negtive distance means point is on right side of the line and vice versa
+ @param px X-coordinate of the point
+ @param py Y-coordinate of the point
+ @param lx0 X-coordinate of the first endpoint of the line
+ @param ly0 Y-coordinate of the first endpoint of the line
+ @param lx1 X-coordinate of the second endpoint of the line
+ @param ly1 Y-coordinate of the second endpoint of the line
+ @return Signed distance (negative on the right, positive to the left)
+*/
+double PointToLineDistance2DSigned(double px, double py, double lx0, double ly0, double lx1, double ly1);
+
+/**
   Calculate distance between two 2D points, return square value - avoiding square root operation
 */
 double PointSquareDistance2D(double x0, double y0, double x1, double y1);

@@ -609,29 +609,24 @@ void Lane::Print()
 	}
 }
 
-int Lane::IsDriving()
+bool Lane::IsType(Lane::LaneType type)
 {
 	if (GetId() == 0)
 	{
-		return 0;  // Ref lane no width -> no driving
+		return false;  // Ref lane no width -> no driving
 	}
 
-	switch (type_)
+	return bool(type_ & type);
+}
+
+bool Lane::IsDriving()
+{
+	if (GetId() == 0)
 	{
-	case Lane::LANE_TYPE_DRIVING:
-	case Lane::LANE_TYPE_ENTRY:
-	case Lane::LANE_TYPE_EXIT:
-	case Lane::LANE_TYPE_OFF_RAMP:
-	case Lane::LANE_TYPE_ON_RAMP:
-	case Lane::LANE_TYPE_PARKING:
-		return 1;
-		break;
-	default:
-		// Avoid code analysis warning
-	break;
+		return false;  // Ref lane no width -> no driving
 	}
 
-	return 0;
+	return bool(type_ & Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 }
 
 LaneSection* Road::GetLaneSectionByIdx(int idx)
@@ -1611,7 +1606,7 @@ bool Road::GetZAndPitchByS(double s, double *z, double *pitch, int *index)
 			return true;
 		}
 	}
-
+	*z = 0;
 	return false;
 }
 
@@ -2070,6 +2065,13 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 							}
 
 							int lane_id = atoi(lane_node->attribute("id").value());
+
+							// If lane ID == 0, make sure it's not a driving lane
+							if (lane_id == 0 && lane_type == Lane::LANE_TYPE_DRIVING)
+							{
+								lane_type = Lane::LANE_TYPE_NONE;
+							}
+							
 							Lane *lane = new Lane(lane_id, lane_type);
 							if (lane == NULL)
 							{
@@ -3501,6 +3503,7 @@ void Position::Init()
 	rel_pos_ = 0;
 	type_ = PositionType::NORMAL;
 	orientation_type_ = OrientationType::ORIENTATION_ABSOLUTE;
+	snapToLaneTypes_ = Lane::LaneType::LANE_TYPE_ANY_DRIVING;
 
 	z_road_ = 0.0;
 	track_idx_ = -1;
@@ -3676,7 +3679,7 @@ void OpenDrive::SetLaneOSIPoints()
 						osi_x.push_back(pos->GetX());
 						osi_y.push_back(pos->GetY());
 						osi_z.push_back(pos->GetZ());
-						osi_h.push_back(pos->GetH());
+						osi_h.push_back(pos->GetHRoad());
 					}
 
 					// [XO, YO] = closest position with given (+) tolerance
@@ -3711,7 +3714,7 @@ void OpenDrive::SetLaneOSIPoints()
 					
 					// If requirement is satisfied -> look further points
 					// If requirement is not satisfied:
-						// Assign last satisfied point as OSI point
+						// Assign last unique satisfied point as OSI point
 						// Continue searching from the last satisfied point
 					if (osi_requirement)
 					{
@@ -3719,20 +3722,29 @@ void OpenDrive::SetLaneOSIPoints()
 						s1 = s1 + OSI_POINT_CALC_STEPSIZE;
 
 					}
-					else
+					else 
 					{
-						s0 = s1_prev;
-						s1_prev = s1;
-						s1 = s0 + OSI_POINT_CALC_STEPSIZE;
-
-						if (counter != 1)
+						if (s1 - s0 < OSI_POINT_CALC_STEPSIZE + SMALL_NUMBER)
 						{
-							pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
-							osi_s.push_back(s0);
-							osi_x.push_back(pos->GetX());
-							osi_y.push_back(pos->GetY());
-							osi_z.push_back(pos->GetZ());
-							osi_h.push_back(pos->GetH());
+							// Back to last point and try smaller step forward
+							s1_prev = s1;
+							s1 = s0 + (s1 - s0) * 0.5;
+						}
+						else
+						{
+							s0 = s1_prev;
+							s1_prev = s1;
+							s1 = s0 + OSI_POINT_CALC_STEPSIZE;
+
+							if (counter != 1)
+							{
+								pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
+								osi_s.push_back(s0);
+								osi_x.push_back(pos->GetX());
+								osi_y.push_back(pos->GetY());
+								osi_z.push_back(pos->GetZ());
+								osi_h.push_back(pos->GetHRoad());
+							}
 						}
 					}
 
@@ -3744,7 +3756,7 @@ void OpenDrive::SetLaneOSIPoints()
 						osi_x.push_back(pos->GetX());
 						osi_y.push_back(pos->GetY());
 						osi_z.push_back(pos->GetZ());
-						osi_h.push_back(pos->GetH());
+						osi_h.push_back(pos->GetHRoad());
 						break;
 					}
 
@@ -4203,7 +4215,7 @@ bool OpenDrive::SetRoadOSI()
 	return true;
 }
 
-int LaneSection::GetClosestLaneIdx(double s, double t, double &offset)
+int LaneSection::GetClosestLaneIdx(double s, double t, double &offset, Lane::LaneType laneType)
 {
 	double min_offset = t;  // Initial offset relates to reference line
 	int candidate_lane_idx = -1;
@@ -4213,10 +4225,13 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double &offset)
 		int lane_id = GetLaneIdByIdx(i);
 		double laneCenterOffset = SIGN(lane_id) * GetCenterOffset(s, lane_id);
 
-		if (GetLaneById(lane_id)->IsDriving() && (candidate_lane_idx == -1 || fabs(t - laneCenterOffset) < fabs(min_offset)))
+		if (laneType & GetLaneById(lane_id)->GetLaneType())
 		{
-			min_offset = t - laneCenterOffset;
- 			candidate_lane_idx = i;
+			if (candidate_lane_idx == -1 || fabs(t - laneCenterOffset) < fabs(min_offset))
+			{
+				min_offset = t - laneCenterOffset;
+				candidate_lane_idx = i;
+			}
 		}
 	}
 
@@ -4306,7 +4321,7 @@ void Position::Track2Lane()
 
 	// Find the closest driving lane within the lane section
 	double offset;
-	int lane_idx = lane_section->GetClosestLaneIdx(s_, t_, offset);
+	int lane_idx = lane_section->GetClosestLaneIdx(s_, t_, offset, snapToLaneTypes_);
 
 	if (lane_idx == -1)
 	{
@@ -4321,241 +4336,42 @@ void Position::Track2Lane()
 	lane_section_idx_ = lane_section_idx;
 }
 
-double Position::GetDistToTrackGeom(double x3, double y3, double z3, double h, Road *road, Geometry *geom, bool &inside, double &sNorm)
+int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool alignZAndPitch)
 {
-	// Step 1: Approximate geometry with a line, and check distance roughly
+	// Overall method:
+	//   1. Iterate over all roads, looking at OSI points of each lane sections center line (lane 0)
+	//   2. Identify line segment (between two OSI points) closest to xyz point
+	//   3. Identify which vertex of the line is closest
+	//   4. Given the normals of lines on each side of the vertex, identify which line the points projects onto
+	//   5. The s value for projected xyz point on the line segment corresponds to the rate 
+	//      between angle from xyz point to projected point and the difference of angle normals
 
-	double x1, y1, h1;
-	double x2, y2, h2;
-	int side;
-	double dist = 0;
-	double dsMin = 0;
-	double z = 0;
-	double min_lane_dist;
-
-	// Evaluate line endpoints to get a straight line in between
-	geom->EvaluateDS(0, &x1, &y1, &h1);
-	geom->EvaluateDS(geom->GetLength(), &x2, &y2, &h2);
-
-	// Apply lane offset
-	x1 += road->GetLaneOffset(geom->GetS()) * cos(h1 + M_PI_2);
-	y1 += road->GetLaneOffset(geom->GetS() + geom->GetLength()) * sin(h1 + M_PI_2);
-	x2 += road->GetLaneOffset(geom->GetS()) * cos(h2 + M_PI_2);
-	y2 += road->GetLaneOffset(geom->GetS() + geom->GetLength()) * sin(h2 + M_PI_2);
-
-	// Find vector from point perpendicular to line segment
-	double x4, y4;
-	ProjectPointOnVector2D(x3, y3, x1, y1, x2, y2, x4, y4);
-
-	// Check whether the projected point is inside or outside line segment
-	inside = PointInBetweenVectorEndpoints(x4, y4, x1, y1, x2, y2, sNorm);
-
-	if (inside)
-	{
-		// Distance between given point and that point projected on the straight line
-		dist = PointDistance2D(x3, y3, x4, y4);
-	}
-	else
-	{
-		// Distance is measured between point to closest endpoint of line
-		double d1, d2;
-
-		d1 = PointDistance2D(x3, y3, x1, y1);
-		d2 = PointDistance2D(x3, y3, x2, y2);
-		if (d1 < d2)
-		{
-			dist = d1;
-			dsMin = 0;
-			sNorm = 0;
-		}
-		else
-		{
-			dist = d2;
-			dsMin = geom->GetLength();
-			sNorm = 1;
-		}
-	}
-
-	// Find out what side of the straight line the gigen point is located
-	side = PointSideOfVec(x3, y3, x1, y1, x2, y2);
-
-	// Now, calculate accurate distance from given point to road geometry - not to a straight line
-	// But do this only for relevant geometries within reasonable short distance - 
-	// else just use approximate distance value as calculated above
-
-	if (dist < 50 + 0.5 * geom->GetLength())  // Extend search area for long geometries since they might bend from the straight line
-	{
-		// Step 2: Find s value within given geometry segment
-		// If heading at start and end points of the geometry are practically equal let's approximate with a straight line
-		if (GetAbsAngleDifference(h1, h2) < 0.01)
-		{
-			// If small heading difference, treat segment as a straight line 
-			// Just use the normalized s value from calculation above, but clip at 0 and 1 to keep it inside geometry boundries
-			dsMin = CLAMP(sNorm, 0.0, 1.0) * geom->GetLength();
-		}
-		else
-		{
-			// Strategy: 
-			// 1. Find intersection of the two geometry endpoint tangents 
-			// 2. Define a line segment from intersection to the point of query
-			// 3. Find out angles between this line segment l1 and extended tangents t1 and t2
-			// 4. s value corresponds to the angle between l1 and t1 divided by angle between t2 and t1
-
-			double t1x1, t1y1, t1x2, t1y2, t2x1, t2y1, t2x2, t2y2, px, py, l1x, l1y;
-
-			// Define tangent vectors from geometry start- and end point respectivelly 
-			t1x1 = x1;
-			t1y1 = y1;
-			t1x2 = t1x1 + cos(h1 + M_PI_2);
-			t1y2 = t1y1 + sin(h1 + M_PI_2);
-
-			t2x1 = x2;
-			t2y1 = y2;
-			t2x2 = t2x1 + cos(h2 + M_PI_2);
-			t2y2 = t2y1 + sin(h2 + M_PI_2);
-
-			if (GetIntersectionOfTwoLineSegments(t1x1, t1y1, t1x2, t1y2, t2x1, t2y1, t2x2, t2y2, px, py) == 0)
-			{
-				l1x = px - x3;
-				l1y = py - y3;
-
-				// First normalize l1
-				double l1_len = sqrt(l1x * l1x + l1y * l1y);
-				double l1_norm_x = l1x / l1_len;
-				double l1_norm_y = l1y / l1_len;
-
-				// Redefine tangents in direction towards intersection point
-				double t1x = px - x1;
-				double t1y = py - y1;
-				double t2x = px - x2;
-				double t2y = py - y2;
-				double t1_len = sqrt(t1x * t1x + t1y * t1y);
-				double t1_norm_x = t1x / t1_len;
-				double t1_norm_y = t1y / t1_len;
-				double t2_len = sqrt(t2x * t2x + t2y * t2y);
-				double t2_norm_x = t2x / t2_len;
-				double t2_norm_y = t2y / t2_len;
-
-
-
-				// Then run acos on dot products to find angles
-				double angle1 = acos(GetDotProduct2D(l1_norm_x, l1_norm_y, t1_norm_x, t1_norm_y));
-				double angle2 = acos(GetDotProduct2D(t2_norm_x, t2_norm_y, t1_norm_x, t1_norm_y));
-
-				// Check whether point is inside fan shape that that extends perpendicular from endpoints along tangents
-				double d1 = GetDotProduct2D(cos(h1), sin(h1), x3 - x1, y3 - y1);
-				double d2 = GetDotProduct2D(cos(h2), sin(h2), x3 - x2, y3 - y2);
-
-				if (d1 > 0 && d2 < 0)  // if angle is not within {-90:90} 
-				{
-					inside = true;
-					sNorm = angle1 / angle2;
-					dsMin = geom->GetLength() * sNorm;
-				}
-				else
-				{
-					inside = false;
-				}
-			}
-			else
-			{
-				// Lines are close to parallell, meaning geometry is or close to a straight line - keep calculations from the approx method above
-			}
-		}
-	
-		double sMin = geom->GetS() + dsMin;
-		double x, y;
-		double pitch = 0;
-
-
-		// Find out Z level
-		road->GetZAndPitchByS(sMin, &z, &pitch, &elevation_idx_);
-
-		// Step 3: Find exact position along road geometry at calculated s-value
-		// and calculated distance from this point on road to given point 
-
-		geom->EvaluateDS(dsMin, &x, &y, &h);
-		// Apply lane offset
-		x += road->GetLaneOffset(sMin) * cos(h + M_PI_2);
-		y += road->GetLaneOffset(sMin) * sin(h + M_PI_2);
-		dist = PointDistance2D(x3, y3, x, y);
-
-		// Check whether the point is left or right side of road
-		// x3, y3 is the point checked against a vector aligned with heading
-		side = PointSideOfVec(x3, y3, x, y, x + cos(h), y + sin(h));
-
-		// dist is now actually the lateral distance from reference lane, e.g. track coordinate t-value
-
-		// Finally calculate exakt distance, but only for inside points
-		LaneSection *lane_section = road->GetLaneSectionByS(sMin);
-		min_lane_dist = std::numeric_limits<double>::infinity();
-		if (lane_section != 0)
-		{
-			for (int i = 0; i < lane_section->GetNumberOfLanes(); i++)
-			{
-				if (lane_section->GetLaneByIdx(i)->IsDriving())
-				{
-					double lane_dist;
-					{
-						double signed_offset = dist * SIGN(side);
-						double signed_lane_center_offset = SIGN(lane_section->GetLaneIdByIdx(i)) * lane_section->GetCenterOffset(sMin, lane_section->GetLaneIdByIdx(i));
-						lane_dist = signed_offset - signed_lane_center_offset;
-						if (fabs(lane_dist) < fabs(min_lane_dist))
-						{
-							min_lane_dist = lane_dist;
-						}
-					}
-				}
-			}
-		}
-	} 
-	else
-	{
-		min_lane_dist = dist;
-	}
-
-	return fabs(min_lane_dist) + fabs(GetZ() - z);
-}
-
-int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool alignZPitchRoll)
-{
-	double dist;
-	double distMin = std::numeric_limits<double>::infinity();
-	double sNorm;
-	double sNormMin = 0;
-	Geometry *geom, *current_geom;
-	Geometry *geomMin = 0;
 	Road *road, *current_road = 0;
 	Road *roadMin = 0;
-	bool inside = false;
 	bool directlyConnected = false;
 	bool directlyConnectedMin = false;
 	double weight = 0; // Add some resistance to switch from current road, applying a stronger bound to current road
 	double angle = 0;
 	bool search_done = false;
+	double closestS = 0;
+	int laneSectionMinIndex = -1;
+	int j2, k2, jMin=-1, kMin=-1, jMinLocal, kMinLocal;
+	double closestPointDist = INFINITY;
 
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
 		return ErrorCode::ERROR_GENERIC;
 	}
 
-	if ((current_road = GetOpenDrive()->GetRoadByIdx(track_idx_)) != 0)
-	{
-		if ((current_geom = current_road->GetGeometry(geometry_idx_)) == 0)
-		{
-			LOG("Invalid geometry index %d\n", geometry_idx_);
-			return ErrorCode::ERROR_GENERIC;
-		}
-	}
-	
-	x_ = x3;
-	y_ = y3;
+	current_road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+
+	// First step is to identify closest road and OSI line segment
 
 	for (int i = -1; !search_done && i < GetOpenDrive()->GetNumOfRoads(); i++)
 	{
 		if (i == -1)
 		{
-			// First check current road. IF the new point is ON this road, i.e. within drivable lanes, - then don't look further
+			// First check current road (from last known position). 
 			if (current_road)
 			{
 				road = current_road;
@@ -4577,6 +4393,14 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 			}
 		}
 
+		// Check whether complete road is too far away - then skip to next
+		const double potentialWidthOfRoad = 25;
+		if (PointDistance2D(x3, y3, road->GetGeometry(0)->GetX(), road->GetGeometry(0)->GetY()) -
+			(road->GetLength() + potentialWidthOfRoad) > closestPointDist)  // add potential width of the road
+		{
+			continue;
+		}
+
 		weight = 0;
 		angle = 0;
 
@@ -4591,64 +4415,116 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 		{
 			if (directlyConnectedMin) // if already found a directly connected position - add offset distance
 			{
-				weight = 3;
+				weight = 2;
 			}
 
-			weight += 5;  // For non connected roads add additional "penalty" threshold  
+			weight += 3;  // For non connected roads add additional "penalty" threshold  
 			directlyConnected = false;
 		}
-		
-		for (int j = -1; j < road->GetNumberOfGeometries(); j++)
+
+		for (int j = 0; j < road->GetNumberOfLaneSections(); j++)
 		{
-			if (j == -1)
+			OSIPoints* osiPoints = road->GetLaneSectionByIdx(j)->GetLaneById(0)->GetOSIPoints();
+
+			// Find closest line or point
+			for (int k = 0; k < osiPoints->GetNumOfOSIPoints(); k++)
 			{
-				if (road == current_road)
+				double distTmp;
+				double z = z = osiPoints->GetZ()[k];
+				double lateralOffset = 0;
+				bool inside = false;
+
+				double cp = GetCrossProduct2D(cos(osiPoints->GetH()[k]), sin(osiPoints->GetH()[k]), x3 - osiPoints->GetX()[k], y3 - osiPoints->GetY()[k]);
+				double width = road->GetDrivableWidth(osiPoints->GetS()[k], SIGN(cp));
+
+				double x2, y2, z2;
+
+				jMinLocal = j;
+				kMinLocal = k;
+
+				// Measure distance to line between current and next point
+				if (j == road->GetNumberOfLaneSections() - 1 && k == osiPoints->GetNumOfOSIPoints() - 1)
 				{
-					// If current road, first check current segment
-					geom = road->GetGeometry(geometry_idx_);
+					// Last point on road
+					jMinLocal = j;
+					kMinLocal = k;
 				}
 				else
 				{
-					continue;  // no current road, skip
-				}
-			}
-			else
-			{
-				if (road == current_road && j == geometry_idx_)
-				{
-					continue; // Skip, already checked this one
-				}
-				else
-				{
-					geom = road->GetGeometry(j); 
-				}
-			}
-			
-			dist = GetDistToTrackGeom(x3, y3, z3, h3, road, geom, inside, sNorm);
-			
-			dist += weight + (inside ? 0 : 2);  // penalty for roads outside projection area
+					double px, py;
+					if (k == osiPoints->GetNumOfOSIPoints() - 1)
+					{
+						// End of lane section, look into next one
+						j2 = MIN(j + 1, road->GetNumberOfLaneSections() - 1);
+						k2 = MIN(1, road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 1);
+					}
+					else
+					{
+						k2 = k + 1;
+						j2 = j;
+					}
+					x2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetX()[k2];
+					y2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetY()[k2];
+					z2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetZ()[k2];
 
-			if (dist < distMin)
-			{
-				geomMin = geom;
-				directlyConnectedMin = directlyConnected;
-				roadMin = road;
-				sNormMin = CLAMP(sNorm, 0.0, 1.0);
-				distMin = dist;
-			}
+					ProjectPointOnVector2D(x3, y3, osiPoints->GetX()[k], osiPoints->GetY()[k], x2, y2, px, py);
+					distTmp = PointDistance2D(x3, y3, px, py);
+					
+					double sLocal;
+					inside = PointInBetweenVectorEndpoints(px, py, osiPoints->GetX()[k], osiPoints->GetY()[k], x2, y2, sLocal);
+					if (inside)
+					{
+						z = (1 - sLocal) * osiPoints->GetZ()[k] + sLocal * z2;
+						// subtract width of the road
+						distTmp = distTmp - width;
+						if (distTmp < 0)
+						{
+							// On road - stop searching further
+							distTmp = 0;
+							search_done = true;
+						}
+					}
 
-			// Special case - if point is on current road
-			if (road == current_road)
-			{
-				if (dist < road->GetLaneWidthByS(sNormMin * geomMin->GetLength(), lane_id_) / 2.0)
+					// Find closest point of the two
+					if (PointSquareDistance2D(x3, y3, osiPoints->GetX()[k], osiPoints->GetY()[k]) <
+						PointSquareDistance2D(x3, y3, x2, y2))
+					{
+						jMinLocal = j;
+						kMinLocal = k;
+					}
+					else
+					{
+						jMinLocal = j2;
+						kMinLocal = k2;
+					}
+				}
+				
+				if (!inside)
 				{
-					// If inside drivable lanes boundry, stay on current road
-					search_done = true;
-					break;
+					distTmp = PointDistance2D(x3, y3,
+						road->GetLaneSectionByIdx(jMinLocal)->GetLaneById(0)->GetOSIPoints()->GetX()[kMinLocal],
+						road->GetLaneSectionByIdx(jMinLocal)->GetLaneById(0)->GetOSIPoints()->GetY()[kMinLocal]);
+				}
+
+				// in case of multiple roads with the same reference line, also look at width of the road of relevant side
+				// side of road is determined by cross product of position (relative OSI point) and road heading
+				distTmp += fabs(z3 - z);
+				distTmp += weight;
+				
+				if (distTmp < closestPointDist)
+				{
+					closestPointDist = distTmp;
+					roadMin = road;
+					jMin = jMinLocal;
+					kMin = kMinLocal;
 				}
 			}
 		}
 	}
+
+	// The closest OSI vertex has been identified
+	// Now, find out exact road s-value based on interpolation of normal angles
+	// for the two lines having the vertex in common 
 
 	if (roadMin == 0)
 	{
@@ -4656,29 +4532,207 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 		return ErrorCode::ERROR_GENERIC;
 	}
 
-	double dsMin = sNormMin * geomMin->GetLength();
-	double sMin = geomMin->GetS() + dsMin;
-	double x, y;
+	if (jMin != -1 && kMin != -1)
+	{
+		// Find out what line the points projects to, starting or ending with closest point?
+		// Do this by comparing the angle to the position with the road normal at found point
 
-	// Found closest geometry. Now calculate exact distance to geometry. First find point perpendicular on geometry.
-	geomMin->EvaluateDS(dsMin, &x, &y, &h_road_);
-	
-	// Apply lane offset
-	x += roadMin->GetLaneOffset(sMin) * cos(h_road_ + M_PI_2);
-	y += roadMin->GetLaneOffset(sMin) * sin(h_road_ + M_PI_2);
-	distMin = PointDistance2D(x3, y3, x, y);
+		typedef struct {
+			double x;
+			double y;
+			double z;
+			double h;
+			double s;
+		} OSIPoint;
 
-	// Check whether the point is left or right side of road
-	// x3, y3 is the point checked against closest point on geometry
-	int side = PointSideOfVec(x3, y3, x, y, x + cos(h_road_), y + sin(h_road_));
+		OSIPoint osip_closest, osip_first, osip_second;
+		osip_closest.x = roadMin->GetLaneSectionByIdx(jMin)->GetLaneById(0)->GetOSIPoints()->GetX()[kMin];
+		osip_closest.y = roadMin->GetLaneSectionByIdx(jMin)->GetLaneById(0)->GetOSIPoints()->GetY()[kMin];
+		osip_closest.z = roadMin->GetLaneSectionByIdx(jMin)->GetLaneById(0)->GetOSIPoints()->GetZ()[kMin];
+		osip_closest.h = roadMin->GetLaneSectionByIdx(jMin)->GetLaneById(0)->GetOSIPoints()->GetH()[kMin];
+		osip_closest.s = roadMin->GetLaneSectionByIdx(jMin)->GetLaneById(0)->GetOSIPoints()->GetS()[kMin];
 
-	// Set specified heading
+		double xTangent = cos(osip_closest.h);
+		double yTangent = sin(osip_closest.h);
+		double dotP = GetDotProduct2D(xTangent, yTangent, x3 - osip_closest.x, y3 - osip_closest.y);
+		
+		int jFirst, jSecond, kFirst, kSecond;
+
+		if (dotP > 0)
+		{
+			// Positive dot product means closest OSI point is behind
+			osip_first = osip_closest;
+			jFirst = jMin;
+			kFirst = kMin;
+
+			if (kMin < roadMin->GetLaneSectionByIdx(jMin)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 1)
+			{
+				jSecond = jMin;
+				kSecond = kMin + 1;
+			}
+			else
+			{
+				if (jMin < roadMin->GetNumberOfLaneSections() - 1)
+				{
+					jSecond = jMin + 1;
+					if (roadMin->GetLaneSectionByIdx(jSecond)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() > 1)
+					{
+						kSecond = 1; // Skip first point, it's the same as last in last lane section
+					}
+					else
+					{
+						kSecond = 0; // Only one point available in lane section - don't go further
+					}
+				}
+				else
+				{
+					// Last point
+					jSecond = jMin;
+					kSecond = kMin;
+				}
+			}
+			osip_second.x = roadMin->GetLaneSectionByIdx(jSecond)->GetLaneById(0)->GetOSIPoints()->GetX()[kSecond];
+			osip_second.y = roadMin->GetLaneSectionByIdx(jSecond)->GetLaneById(0)->GetOSIPoints()->GetY()[kSecond];
+			osip_second.z = roadMin->GetLaneSectionByIdx(jSecond)->GetLaneById(0)->GetOSIPoints()->GetZ()[kSecond];
+			osip_second.h = roadMin->GetLaneSectionByIdx(jSecond)->GetLaneById(0)->GetOSIPoints()->GetH()[kSecond];
+			osip_second.s = roadMin->GetLaneSectionByIdx(jSecond)->GetLaneById(0)->GetOSIPoints()->GetS()[kSecond];
+		}
+		else
+		{
+			// Negative dot product means closest OSI point is ahead
+			osip_second = osip_closest;
+			jSecond = jMin;
+			kSecond = kMin;
+
+			if (kMin > 0)
+			{
+				jFirst = jMin;
+				kFirst = kMin - 1;
+			}
+			else
+			{
+				if (jMin > 0)
+				{
+					jFirst = jMin - 1;
+					if (roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() > 1)
+					{
+						// Skip last point, it's the same as first in successor lane section
+						kFirst = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 2; 
+					}
+					else
+					{
+						// Only one point available in lane section - don't go further
+						kFirst = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 1;
+					}
+				}
+				else
+				{
+					// First point
+					jFirst = jMin;
+					kFirst = kMin;
+				}
+			}
+			osip_first.x = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetX()[kFirst];
+			osip_first.y = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetY()[kFirst];
+			osip_first.z = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetZ()[kFirst];
+			osip_first.h = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetH()[kFirst];
+			osip_first.s = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetS()[kFirst];
+		}
+
+		if (jFirst == jSecond && kFirst == kSecond)  
+		{
+			// Same point
+			closestS = osip_first.s;
+		}
+		else
+		{
+			// Different points
+			double angleBetweenNormals, angleToPosition;
+			double normalIntersectionX, normalIntersectionY;
+			double sNorm = 0;
+
+			// Check for straight line
+			if (fabs(osip_first.h - osip_second.h) < SMALL_NUMBER)
+			{
+				double px, py;
+				ProjectPointOnVector2D(x3, y3, osip_first.x, osip_first.y, osip_second.x, osip_second.y, px, py);
+
+				// Find relative position of projected point on line segment
+				double l1 = GetLengthOfLine2D(osip_first.x, osip_first.y, px, py);
+				double l2 = GetLengthOfLine2D(osip_first.x, osip_first.y, osip_second.x, osip_second.y);
+				sNorm = l1 / l2;
+			}
+			else
+			{
+				// Find normals at end points of line segment
+				double xn0, yn0, xn1, yn1;
+				RotateVec2D(cos(osip_first.h), sin(osip_first.h), M_PI_2, xn0, yn0);
+				RotateVec2D(cos(osip_second.h), sin(osip_second.h), M_PI_2, xn1, yn1);
+
+				// Find intersection of extended normals 
+				GetIntersectionOfTwoLineSegments(
+					osip_first.x, osip_first.y,
+					osip_first.x + xn0, osip_first.y + yn0,
+					osip_second.x, osip_second.y,
+					osip_second.x + xn1, osip_second.y + yn1,
+					normalIntersectionX, normalIntersectionY);
+
+				// Align normal vectors to direction from intersection towards line segment
+				NormalizeVec2D(osip_first.x - normalIntersectionX, osip_first.y - normalIntersectionY, xn0, yn0);
+				NormalizeVec2D(osip_second.x - normalIntersectionX, osip_second.y - normalIntersectionY, xn1, yn1);
+
+				// Find angle between normals
+				angleBetweenNormals = acos(GetDotProduct2D(-xn0, -yn0, -xn1, -yn1));
+
+				// Find angle between the two vectors:
+				// 1. line between normals intersection and the point of query
+				// 2. Normal in the first point of closest line segment (turned around to match direction of first line)
+				double lx = normalIntersectionX - x3;
+				double ly = normalIntersectionY - y3;
+				double lLength = sqrt(lx * lx + ly * ly);
+				angleToPosition = acos(GetDotProduct2D(-xn0, -yn0, lx / lLength, ly / lLength));
+
+				// Finally calculate interpolation factor 
+				sNorm = angleToPosition / angleBetweenNormals;
+
+				//printf("road_id %d jMin %d kMin %d lx %.2f ly %.2f angle0 %.2f angle1 %.2f normalIntersectionX %.2f normalIntersectionY %.2f sNorm %.2f\n",
+				//	roadMin->GetId(), jMin, kMin, lx, ly, angleToPosition, angleBetweenNormals, normalIntersectionX, normalIntersectionY, sNorm);
+			}
+
+			closestS = (1 - sNorm) * osip_first.s + sNorm * osip_second.s;
+			closestS = CLAMP(closestS, 0, roadMin->GetLength());
+		}
+	}
+	else
+	{
+		LOG("Unexpected: No closest OSI point found!");
+	}
+
+	// Set position exact on center line
+	int retvalue = SetTrackPos(roadMin->GetId(), closestS, 0, UpdateTrackPosMode::UPDATE_XYZ);
+	double xCenterLine = GetX();
+	double yCenterLine = GetY();
+
+	// Find out actual lateral position
+	double latOffset = PointToLineDistance2DSigned(
+		x3, y3, xCenterLine, yCenterLine,
+		xCenterLine + cos(GetHRoad()), yCenterLine + sin(GetHRoad()));
+
+	// Update lateral offsets
+	SetTrackPos(roadMin->GetId(), closestS, latOffset, UpdateTrackPosMode::UPDATE_NOT_XYZH);
+
+	static int rid = 0;
+	if (roadMin->GetId() != rid)
+	{
+		rid = roadMin->GetId();
+	}
+
+	// Set specified position and heading
+	SetX(x3);
+	SetY(y3);
 	SetHeading(h3);
 
-	// Find out what lane and set position
-	int retvalue = SetTrackPos(roadMin->GetId(), sMin, distMin * side, false);
-
-	EvaluateRoadZPitchRoll(alignZPitchRoll);
+	EvaluateRoadZPitchRoll(alignZAndPitch);
 
 	return retvalue;
 }
@@ -4695,7 +4749,7 @@ bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 		r_ = 0;  // Road roll not implementade yet
 
 		// Find out pitch of road in driving direction
-		if (GetHRelative() > M_PI / 2 && GetHRelative() < 3 * M_PI / 2)
+		if (GetHRelative() > M_PI_2 && GetHRelative() < 3 * M_PI_2)
 		{
 			p_ *= -1;
 			// r_ *= -1;
@@ -4705,7 +4759,7 @@ bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 	return ret_value;
 }
 
-int Position::Track2XYZ()
+int Position::Track2XYZ(bool alignH)
 {
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
@@ -4733,7 +4787,17 @@ int Position::Track2XYZ()
 	double y_local = (t_ + road->GetLaneOffset(s_)) * sin(h_road_ + M_PI_2);
 	h_road_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_;
 	h_road_ = GetAngleInInterval2PI(h_road_);
-	h_ = GetAngleInInterval2PI(h_road_ + h_relative_);  // Update heading, taking relative heading into account
+	if (alignH)
+	{
+		// Update heading, taking relative heading into account
+		h_ = GetAngleInInterval2PI(h_road_ + h_relative_);
+	}
+	else
+	{
+		// road heading might have changed - update h_relative
+		h_relative_ = GetAngleInInterval2PI(h_ - h_road_);
+	}
+
 	x_ += x_local;
 	y_ += y_local;
 
@@ -4878,15 +4942,19 @@ int Position::SetLongitudinalTrackPos(int track_id, double s)
 	return 0;
 }
 
-int Position::SetTrackPos(int track_id, double s, double t, bool calculateXYZ)
+int Position::SetTrackPos(int track_id, double s, double t, UpdateTrackPosMode updateMode)
 {
 	int retvalue = SetLongitudinalTrackPos(track_id, s);
 
 	t_ = t;
 	Track2Lane();
-	if (calculateXYZ)
+	if (updateMode == UpdateTrackPosMode::UPDATE_XYZ)
 	{
-		Track2XYZ();
+		Track2XYZ(false);
+	}
+	else if (updateMode == UpdateTrackPosMode::UPDATE_XYZH)
+	{
+		Track2XYZ(true);
 	}
 
 	return retvalue;
@@ -5123,11 +5191,11 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 		// Find closest lane on new road - by convert to track pos and then set lane offset = 0
 		if (road_link->GetContactPointType() == CONTACT_POINT_START)
 		{
-			SetTrackPos(next_road->GetId(), 0, GetT(), false);
+			SetTrackPos(next_road->GetId(), 0, GetT(), UpdateTrackPosMode::UPDATE_NOT_XYZH);
 		}
 		else if (road_link->GetContactPointType() == CONTACT_POINT_END)
 		{
-			SetTrackPos(next_road->GetId(), next_road->GetLength(), GetT(), false);
+			SetTrackPos(next_road->GetId(), next_road->GetLength(), GetT(), UpdateTrackPosMode::UPDATE_NOT_XYZH);
 		}
 		offset_ = 0;
 
@@ -5889,7 +5957,7 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, Loo
 	{
 		// Look along reference lane requested, move pivot position to t=0 plus a small number in order to 
 		// fall into the right direction
-		target.SetTrackPos(target.GetTrackId(), target.GetS(), SMALL_NUMBER * SIGN(GetLaneId()), true);
+		target.SetTrackPos(target.GetTrackId(), target.GetS(), SMALL_NUMBER * SIGN(GetLaneId()));
 	}
 	else if (lookAheadMode == LOOKAHEADMODE_AT_LANE_CENTER)
 	{
@@ -5959,7 +6027,7 @@ int Position::GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookA
 	{
 		// Look along reference lane requested, move pivot position to t=0 plus a small number in order to 
 		// fall into the right direction
-		target.SetTrackPos(target.GetTrackId(), target.GetS(), SMALL_NUMBER * SIGN(GetLaneId()), true);
+		target.SetTrackPos(target.GetTrackId(), target.GetS(), SMALL_NUMBER * SIGN(GetLaneId()));
 	}
 	else if (lookAheadMode == LOOKAHEADMODE_AT_LANE_CENTER)
 	{
