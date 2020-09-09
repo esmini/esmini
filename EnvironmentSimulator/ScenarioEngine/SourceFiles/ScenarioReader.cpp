@@ -653,143 +653,154 @@ int ScenarioReader::parseEntities()
 
 	for (pugi::xml_node entitiesChild = enitiesNode.first_child(); entitiesChild; entitiesChild = entitiesChild.next_sibling())
 	{
-		Object *obj = 0;
-		Controller *ctrl = 0;
-
-		for (pugi::xml_node objectChild = entitiesChild.first_child(); objectChild; objectChild = objectChild.next_sibling())
+		std::string entitiesChildName(entitiesChild.name());
+		if (entitiesChildName == "ScenarioObject")
 		{
-			std::string objectChildName(objectChild.name());
+			Object *obj = 0;
+			Controller *ctrl = 0;
 
-			if (objectChildName == "CatalogReference")
+			for (pugi::xml_node objectChild = entitiesChild.first_child(); objectChild; objectChild = objectChild.next_sibling())
 			{
-				Entry *entry = ResolveCatalogReference(objectChild);
+				std::string objectChildName(objectChild.name());
 
-				if (entry == 0)
+				if (objectChildName == "CatalogReference")
 				{
-					// Invalid catalog reference - create random vehicle as fall-back
-					LOG("Could not find catalog vehicle, creating a random car as fall-back");
-					std::string entry_name = ReadAttribute(objectChild, "entryName");
-					Vehicle *vehicle = createRandomOSCVehicle(entry_name);
-					obj = vehicle;
-				}
-				else
-				{
-					if (entry->type_ == CatalogType::CATALOG_VEHICLE)
+					Entry *entry = ResolveCatalogReference(objectChild);
+
+					if (entry == 0)
 					{
-						// Make a new instance from catalog entry
-						Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
+						// Invalid catalog reference - create random vehicle as fall-back
+						LOG("Could not find catalog vehicle, creating a random car as fall-back");
+						std::string entry_name = ReadAttribute(objectChild, "entryName");
+						Vehicle *vehicle = createRandomOSCVehicle(entry_name);
 						obj = vehicle;
 					}
 					else
 					{
-						LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
-					}
-				}
-
-				RestoreParameterDeclarations();
-			}
-			else if (objectChildName == "Vehicle")
-			{
-				Vehicle *vehicle = parseOSCVehicle(objectChild);
-				obj = vehicle;
-			}
-			else if (objectChildName == "ObjectController")
-			{
-				//get the sub child under ObjectController (should only be one)
-				pugi::xml_node objectSubChild = objectChild.first_child();
-				std::string objectSubChildName(objectSubChild.name());
-				if (objectSubChildName == "CatalogReference")
-				{
-					Entry *entry = ResolveCatalogReference(objectSubChild);
-
-					if (entry == 0){
-						LOG("No entry found");
-					} else {
-						if (entry->type_ == CatalogType::CATALOG_CONTROLLER)
+						if (entry->type_ == CatalogType::CATALOG_VEHICLE)
 						{
-							LOG("START!!! Parsing traffic controller from reference");
-							Controller *controller = parseOSCObjectController(entry->GetNode());
-							ctrl = controller;
-							LOG("Parsing traffic controller from reference: %s",ctrl->name_.c_str());
-						} else {
+							// Make a new instance from catalog entry
+							Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
+							obj = vehicle;
+						}
+						else
+						{
 							LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
 						}
 					}
-				}
-				else {
-					Controller *controller = parseOSCObjectController(objectSubChild);
-					ctrl = controller;
-					LOG("Parsing traffic controller: %s",ctrl->name_.c_str());
-				}
-			}
-			else
-			{
-				LOG("%s not supported yet", objectChildName.c_str());
-			}
-		}
 
-		if (obj != 0 && ctrl == 0)
-		{
-			obj->name_ = ReadAttribute(entitiesChild, "name");
-			entities_->addObject(obj);
-			objectCnt_++;
-		} 
-		else if (obj != 0 && ctrl != 0)
-		{
-			// if sumo controlled vehicle, the object will be passed to sumo template, and
-			std::string configfile_path = ctrl->config_filepath_;
-			
-			if (!FileExists(configfile_path.c_str()) || (docsumo_.load_file(configfile_path.c_str()).status == pugi::status_file_not_found))
-			{
-				// Then assume relative path to scenario directory - which perhaps should be the expected location
-				std::string configfile_path2 = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), configfile_path);
-
-				if (!FileExists(configfile_path2.c_str()) || (docsumo_.load_file(configfile_path2.c_str()).status == pugi::status_file_not_found))
+					RestoreParameterDeclarations();
+				}
+				else if (objectChildName == "Vehicle")
 				{
-					// Give up
-					LOG("Failed to load SUMO config file %s, also tried %s", configfile_path.c_str(), configfile_path2.c_str());
-					return -1;
+					Vehicle *vehicle = parseOSCVehicle(objectChild);
+					obj = vehicle;
+				}
+				else if (objectChildName == "ObjectController")
+				{
+					//get the sub child under ObjectController (should only be one)
+					pugi::xml_node objectSubChild = objectChild.first_child();
+					std::string objectSubChildName(objectSubChild.name());
+					if (objectSubChildName == "CatalogReference")
+					{
+						Entry *entry = ResolveCatalogReference(objectSubChild);
+
+						if (entry == 0){
+							LOG("No entry found");
+						} else {
+							if (entry->type_ == CatalogType::CATALOG_CONTROLLER)
+							{
+								LOG("START!!! Parsing traffic controller from reference");
+								Controller *controller = parseOSCObjectController(entry->GetNode());
+								ctrl = controller;
+								LOG("Parsing traffic controller from reference: %s",ctrl->name_.c_str());
+							} else {
+								LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
+							}
+						}
+					}
+					else {
+						Controller *controller = parseOSCObjectController(objectSubChild);
+						ctrl = controller;
+						LOG("Parsing traffic controller: %s",ctrl->name_.c_str());
+					}
 				}
 				else
 				{
-					// Update file path
-					configfile_path = configfile_path2;
-					ctrl->config_filepath_ = configfile_path;
+					LOG("%s not supported yet", objectChildName.c_str());
 				}
 			}
 
-			std::vector<std::string> file_name_candidates;
-			file_name_candidates.push_back(ReadAttribute(docsumo_.child("configuration").child("input").child("net-file"), "value"));
-			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(configfile_path), file_name_candidates[0]));
-			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), file_name_candidates[0]));
-			pugi::xml_parse_result sumonet;
-			size_t i;
-			for (i = 0; i < file_name_candidates.size(); i++)
+			if (obj != 0 && ctrl == 0)
 			{
-				sumonet = docsumo_.load_file(file_name_candidates[i].c_str());
-				if (sumonet.status == pugi::status_ok)
+				obj->name_ = ReadAttribute(entitiesChild, "name");
+				entities_->addObject(obj);
+				objectCnt_++;
+			} 
+			else if (obj != 0 && ctrl != 0)
+			{
+				// if sumo controlled vehicle, the object will be passed to sumo template, and
+				std::string configfile_path = ctrl->config_filepath_;
+				
+				if (!FileExists(configfile_path.c_str()) || (docsumo_.load_file(configfile_path.c_str()).status == pugi::status_file_not_found))
 				{
-					break;
-				}
-			}
-			if (sumonet.status != pugi::status_ok)
-			{
-				// Give up
-				LOG("Failed to load SUMO net file %s", file_name_candidates[0].c_str());
-				return -1;
-			}
+					// Then assume relative path to scenario directory - which perhaps should be the expected location
+					std::string configfile_path2 = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), configfile_path);
 
-			pugi::xml_node location = docsumo_.child("net").child("location");
-			std::string netoffset = ReadAttribute(location, "netOffset");
-			std::size_t delim = netoffset.find(',');
-			entities_->sumo_x_offset = std::stof(netoffset.substr(0,delim));
-			entities_->sumo_y_offset = std::stof(netoffset.substr(delim+1,netoffset.npos));			
-			
-			entities_->sumo_vehicle = obj;
-			entities_->sumo_config_path = ctrl->config_filepath_;
+					if (!FileExists(configfile_path2.c_str()) || (docsumo_.load_file(configfile_path2.c_str()).status == pugi::status_file_not_found))
+					{
+						// Give up
+						LOG("Failed to load SUMO config file %s, also tried %s", configfile_path.c_str(), configfile_path2.c_str());
+						return -1;
+					}
+					else
+					{
+						// Update file path
+						configfile_path = configfile_path2;
+						ctrl->config_filepath_ = configfile_path;
+					}
+				}
+
+				std::vector<std::string> file_name_candidates;
+				file_name_candidates.push_back(ReadAttribute(docsumo_.child("configuration").child("input").child("net-file"), "value"));
+				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(configfile_path), file_name_candidates[0]));
+				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), file_name_candidates[0]));
+				pugi::xml_parse_result sumonet;
+				size_t i;
+				for (i = 0; i < file_name_candidates.size(); i++)
+				{
+					sumonet = docsumo_.load_file(file_name_candidates[i].c_str());
+					if (sumonet.status == pugi::status_ok)
+					{
+						break;
+					}
+				}
+				if (sumonet.status != pugi::status_ok)
+				{
+					// Give up
+					LOG("Failed to load SUMO net file %s", file_name_candidates[0].c_str());
+					return -1;
+				}
+
+				pugi::xml_node location = docsumo_.child("net").child("location");
+				std::string netoffset = ReadAttribute(location, "netOffset");
+				std::size_t delim = netoffset.find(',');
+				entities_->sumo_x_offset = std::stof(netoffset.substr(0,delim));
+				entities_->sumo_y_offset = std::stof(netoffset.substr(delim+1,netoffset.npos));			
+				
+				entities_->sumo_vehicle = obj;
+				entities_->sumo_config_path = ctrl->config_filepath_;
+			}
+		}
+		else if (entitiesChildName == "EntitySelection")
+		{
+			LOG("Parsing %s: is not implemented yet", entitiesChildName);
+		}
+		else
+		{
+			// DO NOTHING
 		}
 	}
-
 	return 0;
 }
 
