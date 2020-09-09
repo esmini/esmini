@@ -126,6 +126,47 @@ namespace scenarioengine
 		}
 	};
 
+    class Pedestrian : public Object
+	{
+	public:
+		typedef enum
+		{
+			PEDESTRIAN,
+			WHEELCHAIR,
+			ANIMAL
+		} Category;
+
+		std::string model_; /**< Definition of the model of the pedestrian. */
+		double mass_; /**< The mass of a pedestrian in kg. */
+		Category pedestrain_category_; /**< Category type of pedestrian. */
+		
+		// name, boundingBox and properties are included in base Object class.
+
+		Pedestrian() : Object(Object::Type::PEDESTRIAN), pedestrain_category_(Category::PEDESTRIAN) {}
+
+		void SetCategory(std::string category)
+		{
+			if (category == "pedestrian")
+			{
+				pedestrain_category_ = Pedestrian::Category::PEDESTRIAN;
+			}
+			else if (category == "wheelchair")
+			{
+				pedestrain_category_ = Pedestrian::Category::WHEELCHAIR;
+			}
+			else if (category == "animal")
+			{
+				pedestrain_category_ = Pedestrian::Category::ANIMAL;
+			}
+			else
+			{
+				LOG("Pedestrian category %s not supported yet", category.c_str());
+			}
+
+			return;
+		}
+
+	};
 	// define a contorller class just to parse sumo controller config file
 	class Controller
 	{

@@ -431,6 +431,72 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	return vehicle;
 }
 
+Pedestrian* ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
+{
+	Pedestrian* pedestrian = new Pedestrian();
+
+	if (pedestrianNode == 0)
+	{
+		return 0;
+	}
+
+	pedestrian->name_ = ReadAttribute(pedestrianNode, "name");
+	LOG("Parsing Pedestrian %s", pedestrian->name_.c_str());
+	pedestrian->SetCategory(ReadAttribute(pedestrianNode, "pedestrianCategory"));
+	pedestrian->model_ = ReadAttribute(pedestrianNode, "pedestrianCategory");
+	pedestrian->mass_ = strtod(ReadAttribute(pedestrianNode, "mass"));
+
+	// Parse BoundingBox
+	OSCBoundingBox boundingbox;
+	ParseOSCBoundingBox(boundingbox,pedestrianNode);
+	pedestrian->boundingbox_=boundingbox;
+
+	// Parse Properties
+	OSCProperties properties;
+	ParseOSCProperties(properties, pedestrianNode);
+
+	for(size_t i=0; i<properties.property_.size(); i++)
+	{
+		// Check if the property is something supported
+		if (properties.property_[i].name_ == "control")
+		{
+			if (properties.property_[i].value_ == "internal")
+			{
+				pedestrian->control_ = Object::Control::INTERNAL;
+			}
+			else if (properties.property_[i].value_ == "external")
+			{
+				pedestrian->control_ = Object::Control::EXTERNAL;
+			}
+			else if (properties.property_[i].value_ == "hybrid")
+			{
+				// This will be the ghost vehicle, controlled by scenario engine,
+				// which the externally controlled vehicle will follow
+				pedestrian->control_ = Object::Control::HYBRID_GHOST;
+			}
+			else
+			{
+				pedestrian->control_ = Object::Control::UNDEFINED;
+			}
+		}
+		else if (properties.property_[i].name_ == "model_id")
+		{
+			pedestrian->model_id_ = strtoi(properties.property_[i].value_);
+		}
+		else
+		{
+			LOG("Unsupported property: %s", properties.property_[i].name_.c_str());
+		}
+	}
+
+	if (properties.file_.filepath_ != "")
+	{
+		pedestrian->model_filepath_ = properties.file_.filepath_;
+	}
+
+	return pedestrian;
+}
+
 Controller* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNode)
 {
 	Controller *controller = new Controller();
@@ -695,6 +761,11 @@ int ScenarioReader::parseEntities()
 				{
 					Vehicle *vehicle = parseOSCVehicle(objectChild);
 					obj = vehicle;
+				}
+				else if (objectChildName == "Pedestrian")
+				{
+					Pedestrian *pedestrian = parseOSCPedestrian(objectChild);
+					obj = pedestrian;
 				}
 				else if (objectChildName == "ObjectController")
 				{

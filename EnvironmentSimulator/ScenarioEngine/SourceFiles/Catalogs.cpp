@@ -29,6 +29,10 @@ CatalogType Entry::GetTypeByNodeName(pugi::xml_node node)
 	{
 		return CatalogType::CATALOG_VEHICLE;
 	}
+	else if (!strcmp(node.name(), "Pedestrian"))
+	{
+		return CatalogType::CATALOG_PEDESTRIAN;
+	}
 	else if (!strcmp(node.name(), "Controller"))
 	{
 		return CatalogType::CATALOG_CONTROLLER;
@@ -57,6 +61,10 @@ int Catalogs::RegisterCatalogDirectory(std::string type, std::string directory)
 	if (type == "VehicleCatalog")
 	{
 		entry.type_ = CatalogType::CATALOG_VEHICLE;
+	}
+	else if (type == "PedestrianCatalog")
+	{
+		entry.type_ = CatalogType::CATALOG_PEDESTRIAN;
 	}
 	else if (type == "ManeuverCatalog")
 	{

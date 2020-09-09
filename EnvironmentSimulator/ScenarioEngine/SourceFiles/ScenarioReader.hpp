@@ -54,6 +54,7 @@ namespace scenarioengine
 		void ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node);
 		void ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_node &xml_node);
 		Vehicle* parseOSCVehicle(pugi::xml_node vehicleNode);
+		Pedestrian* parseOSCPedestrian(pugi::xml_node pedestrianNode);
 		Vehicle* createRandomOSCVehicle(std::string name);
 		Controller* parseOSCObjectController(pugi::xml_node vehicleNode);
 
