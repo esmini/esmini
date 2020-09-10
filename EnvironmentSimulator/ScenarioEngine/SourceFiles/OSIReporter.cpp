@@ -249,17 +249,49 @@ int OSIReporter::UpdateOSIMovingObject(std::vector<ObjectState*> objectState)
 		osi3::MovingObject* mobj = mobj_osi_internal.sv->mutable_global_ground_truth()->add_moving_object();
 
 		mobj->mutable_id()->set_value(mobj_osi_internal.mobj.size());
-		mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MEDIUM_CAR);
-		mobj->mutable_base()->mutable_dimension()->set_height(1.5);
-		mobj->mutable_base()->mutable_dimension()->set_width(1.75);
-		mobj->mutable_base()->mutable_dimension()->set_length(4.0);
 
 		mobj_osi_internal.mobj.push_back(mobj);
 	}
 
 	for (size_t i = 0; i < objectState.size(); i++)
 	{
-		mobj_osi_internal.mobj[i]->mutable_vehicle_attributes()->mutable_driver_id()->set_value((uint64_t)objectState[i]->state_.control);  // a placeholder for control mode
+		//Set the type of object from (Unknown, other, vehicle, pedestrian, animal), if vehicle, MovingObject::vehicle_extension has to be filled
+		if(objectState[i]->state_.obj_type==static_cast<int>(Object::Type::VEHICLE))
+		{
+			mobj_osi_internal.mobj[i]->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_VEHICLE);
+			if(objectState[i]->state_.obj_category==static_cast<int>(Vehicle::Category::CAR))
+			{
+				mobj_osi_internal.mobj[i]->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MEDIUM_CAR); 
+			} else if (objectState[i]->state_.obj_category==static_cast<int>(Vehicle::Category::BICYCLE))
+			{
+				mobj_osi_internal.mobj[i]->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_BICYCLE); 
+			} else
+			{
+				mobj_osi_internal.mobj[i]->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN); 
+				std::cout<<"[Esmini-OSIReporter]: Unsupported moving vehicle type"<<std::endl;
+			}
+	
+			mobj_osi_internal.mobj[i]->mutable_vehicle_attributes()->mutable_driver_id()->set_value((uint64_t)objectState[i]->state_.control);  // a placeholder for control mode
+			mobj_osi_internal.mobj[i]->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_x((double)(objectState[i]->state_.boundingbox.center_.x_));
+			mobj_osi_internal.mobj[i]->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_y((double)(objectState[i]->state_.boundingbox.center_.y_));
+			mobj_osi_internal.mobj[i]->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_z((double)(objectState[i]->state_.boundingbox.center_.z_));
+		} else if (objectState[i]->state_.obj_type==static_cast<int>(Object::Type::PEDESTRIAN) && objectState[i]->state_.obj_category!=static_cast<int>(Pedestrian::Category::ANIMAL))
+		{
+			mobj_osi_internal.mobj[i]->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_PEDESTRIAN);
+			
+		} else if (objectState[i]->state_.obj_type==static_cast<int>(Object::Type::PEDESTRIAN) && objectState[i]->state_.obj_category==static_cast<int>(Pedestrian::Category::ANIMAL))
+		{
+			mobj_osi_internal.mobj[i]->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_ANIMAL);
+		} else
+		{
+			mobj_osi_internal.mobj[i]->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
+			std::cout<<"[Esmini-OSIReporter]: Unsupported moving object type"<<std::endl;
+		} 
+			
+		mobj_osi_internal.mobj[i]->mutable_base()->mutable_dimension()->set_height(objectState[i]->state_.boundingbox.dimensions_.height_);
+		mobj_osi_internal.mobj[i]->mutable_base()->mutable_dimension()->set_width(objectState[i]->state_.boundingbox.dimensions_.width_);
+		mobj_osi_internal.mobj[i]->mutable_base()->mutable_dimension()->set_length(objectState[i]->state_.boundingbox.dimensions_.length_);
+		
 		mobj_osi_internal.mobj[i]->mutable_base()->mutable_position()->set_x(objectState[i]->state_.pos.GetX());
 		mobj_osi_internal.mobj[i]->mutable_base()->mutable_position()->set_y(objectState[i]->state_.pos.GetY());
 		mobj_osi_internal.mobj[i]->mutable_base()->mutable_position()->set_z(objectState[i]->state_.pos.GetZ());

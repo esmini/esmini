@@ -50,6 +50,7 @@ namespace scenarioengine
 		};
 
 		Type type_;
+		int category_holder_; // placehoder for specific object category in vehicle, pedestrian or misobject
 		std::string name_;
 		int id_;
 		int trail_follow_index_;  // only in case of hybrid_external following a ghost
@@ -101,7 +102,9 @@ namespace scenarioengine
 		Category category_;
 
 
-		Vehicle() : Object(Object::Type::VEHICLE), category_(Category::CAR) {}
+		Vehicle() : Object(Object::Type::VEHICLE), category_(Category::CAR) {
+			category_holder_ = static_cast<int>(category_);
+		}
 
 		void SetCategory(std::string category)
 		{
@@ -147,7 +150,11 @@ namespace scenarioengine
 		
 		// name, boundingBox and properties are included in base Object class.
 
-		Pedestrian() : Object(Object::Type::PEDESTRIAN), model_(""), mass_(0.0), name_(""), pedestrain_category_(Category::PEDESTRIAN) {}
+		Pedestrian() : Object(Object::Type::PEDESTRIAN), 
+		model_(""), mass_(0.0), name_(""), 
+		pedestrain_category_(Category::PEDESTRIAN) {
+			category_holder_ = static_cast<int>(pedestrain_category_);
+		}
 
 		void SetCategory(std::string category)
 		{
@@ -202,7 +209,10 @@ namespace scenarioengine
 		std::string name_; 
 		Category category_; 
 
-		MiscObject() : Object(Object::Type::MISC_OBJECT), model_(""), mass_(0.0), name_(""), category_(Category::NONE) {}
+		MiscObject() : Object(Object::Type::MISC_OBJECT), model_(""), mass_(0.0), name_(""), 
+		category_(Category::NONE) {
+			category_holder_ = static_cast<int>(category_);
+		}
 
 		void SetCategory(std::string category)
 		{

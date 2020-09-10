@@ -349,7 +349,7 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
-				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, obj->boundingbox_, timestamp, speed, 0, 0, x, y, z, h, p, r);
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_, control, obj->boundingbox_, timestamp, speed, 0, 0, x, y, z, h, p, r);
 			}
 		}
 
@@ -365,7 +365,7 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				int control = obj->control_ == Object::Control::EXTERNAL || obj->control_ == Object::Control::HYBRID_EXTERNAL;
-				player->scenarioGateway->reportObject(id, obj->name_, obj->model_id_, control, obj->boundingbox_, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_, control, obj->boundingbox_, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
 			}
 		}
 
