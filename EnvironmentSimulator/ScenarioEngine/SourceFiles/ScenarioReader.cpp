@@ -470,8 +470,6 @@ Pedestrian* ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 			}
 			else if (properties.property_[i].value_ == "hybrid")
 			{
-				// This will be the ghost vehicle, controlled by scenario engine,
-				// which the externally controlled vehicle will follow
 				pedestrian->control_ = Object::Control::HYBRID_GHOST;
 			}
 			else
@@ -495,6 +493,70 @@ Pedestrian* ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 	}
 
 	return pedestrian;
+}
+
+MiscObject* ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
+{
+	MiscObject* miscObject = new MiscObject();
+
+	if (miscObjectNode == 0)
+	{
+		return 0;
+	}
+
+	miscObject->name_ = ReadAttribute(miscObjectNode, "name");
+	LOG("Parsing MiscObject %s", miscObject->name_.c_str());
+	miscObject->SetCategory(ReadAttribute(miscObjectNode, "MiscObjectCategory"));
+	miscObject->model_ = ReadAttribute(miscObjectNode, "MiscObjectCategory");
+	miscObject->mass_ = strtod(ReadAttribute(miscObjectNode, "mass"));
+
+	// Parse BoundingBox
+	OSCBoundingBox boundingbox;
+	ParseOSCBoundingBox(boundingbox,miscObjectNode);
+	miscObject->boundingbox_=boundingbox;
+
+	// Parse Properties
+	OSCProperties properties;
+	ParseOSCProperties(properties, miscObjectNode);
+
+	for(size_t i=0; i<properties.property_.size(); i++)
+	{
+		// Check if the property is something supported
+		if (properties.property_[i].name_ == "control")
+		{
+			if (properties.property_[i].value_ == "internal")
+			{
+				miscObject->control_ = Object::Control::INTERNAL;
+			}
+			else if (properties.property_[i].value_ == "external")
+			{
+				miscObject->control_ = Object::Control::EXTERNAL;
+			}
+			else if (properties.property_[i].value_ == "hybrid")
+			{
+				miscObject->control_ = Object::Control::HYBRID_GHOST;
+			}
+			else
+			{
+				miscObject->control_ = Object::Control::UNDEFINED;
+			}
+		}
+		else if (properties.property_[i].name_ == "model_id")
+		{
+			miscObject->model_id_ = strtoi(properties.property_[i].value_);
+		}
+		else
+		{
+			LOG("Unsupported property: %s", properties.property_[i].name_.c_str());
+		}
+	}
+
+	if (properties.file_.filepath_ != "")
+	{
+		miscObject->model_filepath_ = properties.file_.filepath_;
+	}
+
+	return miscObject;
 }
 
 Controller* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNode)
@@ -766,6 +828,11 @@ int ScenarioReader::parseEntities()
 				{
 					Pedestrian *pedestrian = parseOSCPedestrian(objectChild);
 					obj = pedestrian;
+				}
+				else if (objectChildName == "MiscObject")
+				{
+					MiscObject *miscObject = parseOSCMiscObject(objectChild);
+					obj = miscObject;
 				}
 				else if (objectChildName == "ObjectController")
 				{

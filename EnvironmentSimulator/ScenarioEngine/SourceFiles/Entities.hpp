@@ -142,11 +142,12 @@ namespace scenarioengine
 
 		std::string model_; /**< Definition of the model of the pedestrian. */
 		double mass_; /**< The mass of a pedestrian in kg. */
+		std::string name_;
 		Category pedestrain_category_; /**< Category type of pedestrian. */
 		
 		// name, boundingBox and properties are included in base Object class.
 
-		Pedestrian() : Object(Object::Type::PEDESTRIAN), pedestrain_category_(Category::PEDESTRIAN) {}
+		Pedestrian() : Object(Object::Type::PEDESTRIAN), model_(""), mass_(0.0), name_(""), pedestrain_category_(Category::PEDESTRIAN) {}
 
 		void SetCategory(std::string category)
 		{
@@ -165,6 +166,117 @@ namespace scenarioengine
 			else
 			{
 				LOG("Pedestrian category %s not supported yet", category.c_str());
+			}
+
+			return;
+		}
+
+	};
+
+ class MiscObject : public Object
+	{
+	public:
+		typedef enum
+		{
+			NONE,
+			OBSTACLE,
+			POLE,
+			TREE,
+			VEGETATION,
+			BARRIER,
+			BUILDING,
+			PARKINGSPACE,
+			PATCH,
+			RAILING,
+			TRAFFICISLAND,
+			CROSSWALK,
+			STREETLAMP,
+			GANTRY,
+			SOUNDBARRIER,
+			WIND,
+			ROADMARK
+		} Category;
+
+		std::string model_; 
+		double mass_;
+		std::string name_; 
+		Category category_; 
+
+		MiscObject() : Object(Object::Type::MISC_OBJECT), model_(""), mass_(0.0), name_(""), category_(Category::NONE) {}
+
+		void SetCategory(std::string category)
+		{
+			if (category == "none")
+			{
+				category_ = MiscObject::Category::NONE;
+			}
+			else if (category == "obstacle")
+			{
+				category_ = MiscObject::Category::OBSTACLE;
+			}
+			else if (category == "pole")
+			{
+				category_ = MiscObject::Category::POLE;
+			}
+			else if (category == "tree")
+			{
+				category_ = MiscObject::Category::TREE;
+			}
+			else if (category == "vegetation")
+			{
+				category_ = MiscObject::Category::VEGETATION;
+			}
+			else if (category == "barrier")
+			{
+				category_ = MiscObject::Category::BARRIER;
+			}
+			else if (category == "building")
+			{
+				category_ = MiscObject::Category::BUILDING;
+			}
+			else if (category == "parkingSpace")
+			{
+				category_ = MiscObject::Category::PARKINGSPACE;
+			}
+			else if (category == "patch")
+			{
+				category_ = MiscObject::Category::PATCH;
+			}
+			else if (category == "railing")
+			{
+				category_ = MiscObject::Category::RAILING;
+			}
+			else if (category == "trafficIsland")
+			{
+				category_ = MiscObject::Category::TRAFFICISLAND;
+			}
+			else if (category == "crosswalk")
+			{
+				category_ = MiscObject::Category::CROSSWALK;
+			}
+			else if (category == "streetLamp")
+			{
+				category_ = MiscObject::Category::STREETLAMP;
+			}
+			else if (category == "gantry")
+			{
+				category_ = MiscObject::Category::GANTRY;
+			}
+			else if (category == "soundBarrier")
+			{
+				category_ = MiscObject::Category::SOUNDBARRIER;
+			}
+			else if (category == "wind")
+			{
+				category_ = MiscObject::Category::WIND;
+			}
+			else if (category == "roadMark")
+			{
+				category_ = MiscObject::Category::ROADMARK;
+			}
+			else
+			{
+				LOG("MiscObject category %s not supported yet", category.c_str());
 			}
 
 			return;
