@@ -44,9 +44,13 @@ public:
 	*/
 	int UpdateOSISensorView(std::vector<ObjectState*> objectState);
 	/**
+	Fills up the osi message with Stationary Object
+	*/
+	int UpdateOSIStationaryObject(ObjectState* objectState);
+	/**
 	Fills up the osi message with Moving Object
 	*/
-	int UpdateOSIMovingObject(std::vector<ObjectState*> objectState);
+	int UpdateOSIMovingObject(ObjectState* objectState);
 	/**
 	Fills up the osi message with Lane Boundary
 	*/
