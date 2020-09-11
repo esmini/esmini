@@ -51,7 +51,6 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	headless = false;
 	launch_server = false;
 	fixed_timestep_ = -1.0;
-	viewer_ = 0;
 	osi_receiver_addr = "";
 	osi_file = false; 
 	osi_freq_ = 1;
@@ -61,6 +60,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 #ifdef _SCENARIO_VIEWER
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
 	trail_dt = TRAIL_DOTS_DT;
+	viewer_ = 0;
 #else
 	trail_dt = 0;
 #endif
@@ -474,12 +474,14 @@ void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, doubl
 void ScenarioPlayer::ShowObjectSensors(bool mode)
 {
 	// Switch on sensor visualization as defult when sensors are added
+	#ifdef _SCENARIO_VIEWER
 	if (viewer_)
 	{
 		mutex.Lock();
 		viewer_->ShowObjectSensors(mode);
 		mutex.Unlock();
 	}
+	#endif
 }
 
 int ScenarioPlayer::Init()
