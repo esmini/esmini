@@ -107,10 +107,6 @@ int main(int argc, char** argv)
 		std::string odr_path = opt.GetOptionArg("res_path");
 		roadmanager::Position::LoadOpenDrive(odr_path.append("/xodr/").append(player->header_.odr_filename).c_str());
 		odrManager = roadmanager::Position::GetOpenDrive();
-		if (!odrManager->SetRoadOSI())
-		{
-			LOG("OpenDrive::SetRoadOSI Failed to create OSI points for OpenDrive road!\n");
-		}
 
 		std::string model_path = opt.GetOptionArg("res_path");
 		osg::ArgumentParser arguments(&argc, argv);

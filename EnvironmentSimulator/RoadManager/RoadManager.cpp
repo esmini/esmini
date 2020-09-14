@@ -2542,6 +2542,11 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 	// CheckConnections();
 
+	if (!SetRoadOSI())
+	{
+		LOG("Failed to create OSI points for OpenDrive road!");
+	}
+
 	return true;
 }
 
