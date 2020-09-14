@@ -47,7 +47,6 @@ typedef struct
 	float height;
 } SE_ScenarioObjectState;
 
-
 typedef struct
 {
 	float global_pos_x;     // target position, in global coordinate system

@@ -82,6 +82,7 @@ int SetupExternVehicles(ScenarioPlayer *player)
 
 			if (player->viewer_)
 			{
+#if _SCENARIO_VIEWER
 				vh.gfx_model = player->viewer_->cars_[i];
 				if (obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
 				{
@@ -91,6 +92,7 @@ int SetupExternVehicles(ScenarioPlayer *player)
 					player->viewer_->SensorSetPivotPos(vh.gfx_model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 					player->viewer_->SensorSetTargetPos(vh.gfx_model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 				}
+#endif
 			}
 
 			vh.dyn_model = new vehicle::Vehicle(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH(), vh.obj->boundingbox_.dimensions_.length_);
@@ -135,6 +137,7 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 				vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
 				vehicle::STEERING steer = vehicle::STEERING_NONE;
 
+#if _SCENARIO_VIEWER
 				if (player->viewer_)
 				{
 					if (player->viewer_->getKeyUp())
@@ -155,7 +158,7 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 						steer = vehicle::STEERING_RIGHT;
 					}
 				}
-
+#endif
 				// Update vehicle motion
 				vh->dyn_model->DrivingControlBinary(deltaTimeStep, accelerate, steer);
 			}
@@ -177,10 +180,12 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 			// Speed - common speed target for these control modes
 			vh->obj->pos_.GetProbeInfo(speed_target_distance, &data, roadmanager::Position::LOOKAHEADMODE_AT_ROAD_CENTER);
 
+#if _SCENARIO_VIEWER
 			if (player->viewer_)
 			{
 				player->viewer_->SensorSetTargetPos(vh->gfx_model->speed_sensor_, data.road_lane_info.pos[0], data.road_lane_info.pos[1], data.road_lane_info.pos[2]);
 			}
+#endif
 
 			// Steering - Find out a steering target along ghost vehicle trail
 			double s_out;
@@ -200,10 +205,13 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 			vh->obj->pos_.GetProbeInfo(&pos, &data);
 			vh->steering_target_heading = data.relative_h;
 
+
+#ifdef _SCENARIO_VIEWER
 			if (player->viewer_)
 			{
 				player->viewer_->SensorSetTargetPos(vh->gfx_model->steering_sensor_, data.road_lane_info.pos[0], data.road_lane_info.pos[1], data.road_lane_info.pos[2]);
 			}
+#endif
 
 			// Let steering target heading influence speed target - slowing down when turning
 			vh->speed_target_speed = state.speed_ * (1 - vh->steering_target_heading / M_PI_2);
@@ -220,7 +228,7 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 
 		// Report updated state to scenario gateway
 		std::string name = vh->obj->GetControl() == Object::Control::EXTERNAL ? "External_" : "Hybrid_external_" + i;
-		player->scenarioGateway->reportObject(i, name, static_cast<int>(Object::Type::VEHICLE), static_cast<int>(Vehicle::Category::CAR), 0, 1, vh->obj->boundingbox_,player->scenarioEngine->getSimulationTime(),
+		player->scenarioGateway->reportObject((int)i, name, static_cast<int>(Object::Type::VEHICLE), static_cast<int>(Vehicle::Category::CAR), 0, 1, vh->obj->boundingbox_,player->scenarioEngine->getSimulationTime(),
 			vh->dyn_model->speed_, vh->dyn_model->wheelAngle_, vh->dyn_model->wheelRotation_,
 			vh->dyn_model->posX_, vh->dyn_model->posY_, vh->dyn_model->posZ_,
 			vh->dyn_model->heading_, vh->dyn_model->pitch_, 0);

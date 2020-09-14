@@ -79,6 +79,7 @@ ScenarioPlayer::~ScenarioPlayer()
 		StopServer();
 	}
 
+#if _SCENARIO_VIEWER
 	if (!headless)
 	{
 		if (viewer_)
@@ -94,6 +95,7 @@ ScenarioPlayer::~ScenarioPlayer()
 			}
 		}
 	}
+#endif
 	delete scenarioEngine; 
 
 	if (osiReporter)
@@ -110,10 +112,12 @@ void ScenarioPlayer::Frame(double timestep_s)
 	
 	if (!headless && viewer_)
 	{
+#if _SCENARIO_VIEWER
 		if (!threads)
 		{
 			ViewerFrame();
 		}
+#endif
 	}
 
 	if (scenarioEngine->getSimulationTime() > 3600 && !messageShown)
@@ -477,24 +481,28 @@ void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, doubl
 	sensor.push_back(new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_index], x, y, z, h, near, far, fovH, maxObj));
  	if (!headless)
 	{
+#if _SCENARIO_VIEWER
 		if (viewer_)
 		{
 			mutex.Lock();
 			sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->cars_[object_index]->txNode_));
 			mutex.Unlock();
 		}
+#endif
 	}
 }
 
 void ScenarioPlayer::ShowObjectSensors(bool mode)
 {
 	// Switch on sensor visualization as defult when sensors are added
+#if _SCENARIO_VIEWER
 	if (viewer_)
 	{
 		mutex.Lock();
 		viewer_->ShowObjectSensors(mode);
 		mutex.Unlock();
 	}
+#endif
 }
 
 int ScenarioPlayer::Init()
@@ -635,7 +643,7 @@ int ScenarioPlayer::Init()
 	if (opt.GetOptionSet("csv_logger"))
 	{
 		CSV_Log = &CSV_Logger::InstVehicleLog(scenarioEngine->getScenarioFilename(),
-			scenarioEngine->entities.object_.size(), opt.GetOptionArg("csv_logger"));
+			(int)scenarioEngine->entities.object_.size(), opt.GetOptionArg("csv_logger"));
 		LOG("Log all vehicle data in csv file");
 	}
 
