@@ -56,11 +56,11 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	osi_freq_ = 1;
 	CSV_Log = NULL;
 	osiReporter = NULL;
+	viewer_ = 0;
 
 #ifdef _SCENARIO_VIEWER
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
 	trail_dt = TRAIL_DOTS_DT;
-	viewer_ = 0;
 #else
 	trail_dt = 0;
 #endif
@@ -81,17 +81,18 @@ ScenarioPlayer::~ScenarioPlayer()
 
 	if (!headless)
 	{
-#ifdef _SCENARIO_VIEWER
-		if (threads)
+		if (viewer_)
 		{
-			viewer_->SetQuitRequest(true);
-			thread.Wait();
+			if (threads)
+			{
+				viewer_->SetQuitRequest(true);
+				thread.Wait();
+			}
+			else
+			{
+				CloseViewer();
+			}
 		}
-		else
-		{
-			CloseViewer();
-		}
-#endif
 	}
 	delete scenarioEngine; 
 
@@ -107,14 +108,12 @@ void ScenarioPlayer::Frame(double timestep_s)
 
 	ScenarioFrame(timestep_s);
 	
-	if (!headless)
+	if (!headless && viewer_)
 	{
-#ifdef _SCENARIO_VIEWER
 		if (!threads)
 		{
 			ViewerFrame();
 		}
-#endif
 	}
 
 	if (scenarioEngine->getSimulationTime() > 3600 && !messageShown)
@@ -165,6 +164,34 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 				osiReporter->WriteOSIFile();
 			}
 		}	
+	}
+
+	// Update position along ghost trails
+	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	{
+		Object* obj = scenarioEngine->entities.object_[i];
+
+		if (obj->GetControl() == Object::Control::EXTERNAL ||
+			obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+		{
+
+			if (obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+			{
+				if (obj->ghost_->trail_.FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(),
+					obj->trail_closest_pos_[0], obj->trail_closest_pos_[1],
+					obj->trail_follow_s_, obj->trail_follow_index_, obj->trail_follow_index_) == 0)
+				{
+					obj->trail_closest_pos_[2] = obj->pos_.GetZ();
+				}
+				else
+				{
+					// Failed find point along trail, copy entity position
+					obj->trail_closest_pos_[0] = obj->pos_.GetX();
+					obj->trail_closest_pos_[1] = obj->pos_.GetY();
+					obj->trail_closest_pos_[2] = obj->pos_.GetZ();
+				}
+			}
+		}
 	}
 
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
@@ -265,20 +292,7 @@ void ScenarioPlayer::ViewerFrame()
 				viewer_->SensorSetPivotPos(car->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 				viewer_->UpdateSensor(car->steering_sensor_);
 
-				double closest_pos[3];
-				if (obj->ghost_->trail_.FindClosestPoint(pos.GetX(), pos.GetY(), closest_pos[0], closest_pos[1],
-					obj->trail_follow_s_, obj->trail_follow_index_, obj->trail_follow_index_) == 0)
-				{
-					closest_pos[2] = obj->pos_.GetZ();
-				}
-				else
-				{
-					// Failed find point along trail, copy entity position
-					closest_pos[0] = obj->pos_.GetX();
-					closest_pos[1] = obj->pos_.GetY();
-					closest_pos[2] = obj->pos_.GetZ();
-				}
-				viewer_->SensorSetPivotPos(car->trail_sensor_, closest_pos[0], closest_pos[1], closest_pos[2]);
+				viewer_->SensorSetPivotPos(car->trail_sensor_, obj->trail_closest_pos_[0], obj->trail_closest_pos_[1], obj->trail_closest_pos_[2]);
 				viewer_->SensorSetTargetPos(car->trail_sensor_, pos.GetX(), pos.GetY(), pos.GetZ());
 				viewer_->UpdateSensor(car->trail_sensor_);
 			}
@@ -463,25 +477,24 @@ void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, doubl
 	sensor.push_back(new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_index], x, y, z, h, near, far, fovH, maxObj));
  	if (!headless)
 	{
-#ifdef _SCENARIO_VIEWER
-		mutex.Lock();
-		sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->cars_[object_index]->txNode_));
-		mutex.Unlock();
-#endif
+		if (viewer_)
+		{
+			mutex.Lock();
+			sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->cars_[object_index]->txNode_));
+			mutex.Unlock();
+		}
 	}
 }
 
 void ScenarioPlayer::ShowObjectSensors(bool mode)
 {
 	// Switch on sensor visualization as defult when sensors are added
-	#ifdef _SCENARIO_VIEWER
 	if (viewer_)
 	{
 		mutex.Lock();
 		viewer_->ShowObjectSensors(mode);
 		mutex.Unlock();
 	}
-	#endif
 }
 
 int ScenarioPlayer::Init()

@@ -310,11 +310,11 @@ int ObjectTrail::FindPointAhead(int index_start, double s_start, double distance
 			else
 			{
 				// point is at this segment - find interpolated value
-				double x = state.x_;
-				double y = state.y_;
-				double z = state.z_;
-				double speed = state.speed_;
-				double h = state.h_;
+				double x;
+				double y;
+				double z;
+				double speed;
+				double h;
 				GetPointOnSegmentByDist(i, dist_tmp, x, y, z);
 				GetSpeedOnSegmentByDist(i, dist_tmp, speed);
 				GetHeadingOnSegmentByDist(i, dist_tmp, h);

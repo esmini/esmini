@@ -55,6 +55,7 @@ namespace scenarioengine
 		int id_;
 		int trail_follow_index_;  // only in case of hybrid_external following a ghost
 		double trail_follow_s_;  // only in case of hybrid_external following a ghost
+		double trail_closest_pos_[3];
 		Control control_;
 		double speed_;
 		double wheel_angle_;
@@ -72,7 +73,12 @@ namespace scenarioengine
 
 		Object(Type type) : type_(type), id_(0), trail_follow_index_(0), control_(Object::Control::INTERNAL),
 			speed_(0), wheel_angle_(0), wheel_rot_(0), route_(0), model_filepath_(""), ghost_(0), trail_follow_s_(0),
-		    odometer_(0), end_of_road_timestamp_(0.0), off_road_timestamp_(0.0) {}
+		    odometer_(0), end_of_road_timestamp_(0.0), off_road_timestamp_(0.0) 
+		{
+			trail_closest_pos_[0] = 0.0;
+			trail_closest_pos_[1] = 0.0;
+			trail_closest_pos_[2] = 0.0;
+		}
 		void SetControl(Control control) { control_ = control; }
 		void SetEndOfRoad(bool state, double time = 0.0);
 		bool IsEndOfRoad() { return end_of_road_timestamp_ > SMALL_NUMBER; }

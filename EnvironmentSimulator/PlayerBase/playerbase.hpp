@@ -71,6 +71,8 @@ public:
 	int InitViewer();
 	void CloseViewer();
 	void ViewerFrame();
+#else
+	void* viewer_;
 #endif
 	roadmanager::OpenDrive *odr_manager;
 	std::vector<ObjectSensor*> sensor;

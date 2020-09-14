@@ -78,22 +78,22 @@ int SetupExternVehicles(ScenarioPlayer *player)
 			vh.steering_target_heading = 0;
 			vh.speed_target_speed = 0;
 
-#ifdef _SCENARIO_VIEWER
-			vh.gfx_model = player->viewer_->cars_[i];
-			if (obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
-			{
-				player->viewer_->SensorSetPivotPos(vh.gfx_model->speed_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-				player->viewer_->SensorSetTargetPos(vh.gfx_model->speed_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-
-				player->viewer_->SensorSetPivotPos(vh.gfx_model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-				player->viewer_->SensorSetTargetPos(vh.gfx_model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-			}
-			vh.dyn_model = new vehicle::Vehicle(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH(), vh.gfx_model->size_x);
-#else
-			vh.dyn_model = new vehicle::Vehicle(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH(), 5.0);
-#endif
 			vh.obj = obj;
 
+			if (player->viewer_)
+			{
+				vh.gfx_model = player->viewer_->cars_[i];
+				if (obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+				{
+					player->viewer_->SensorSetPivotPos(vh.gfx_model->speed_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+					player->viewer_->SensorSetTargetPos(vh.gfx_model->speed_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+
+					player->viewer_->SensorSetPivotPos(vh.gfx_model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+					player->viewer_->SensorSetTargetPos(vh.gfx_model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+				}
+			}
+
+			vh.dyn_model = new vehicle::Vehicle(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH(), vh.obj->boundingbox_.dimensions_.length_);
 			extern_vehicle.push_back(vh);
 		}
 	}
@@ -134,26 +134,28 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 			{
 				vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
 				vehicle::STEERING steer = vehicle::STEERING_NONE;
-#ifdef _SCENARIO_VIEWER
 
-				if (player->viewer_->getKeyUp())
+				if (player->viewer_)
 				{
-					accelerate = vehicle::THROTTLE_ACCELERATE;
-				}
-				else if (player->viewer_->getKeyDown())
-				{
-					accelerate = vehicle::THROTTLE_BRAKE;
+					if (player->viewer_->getKeyUp())
+					{
+						accelerate = vehicle::THROTTLE_ACCELERATE;
+					}
+					else if (player->viewer_->getKeyDown())
+					{
+						accelerate = vehicle::THROTTLE_BRAKE;
+					}
+
+					if (player->viewer_->getKeyLeft())
+					{
+						steer = vehicle::STEERING_LEFT;
+					}
+					else if (player->viewer_->getKeyRight())
+					{
+						steer = vehicle::STEERING_RIGHT;
+					}
 				}
 
-				if (player->viewer_->getKeyLeft())
-				{
-					steer = vehicle::STEERING_LEFT;
-				}
-				else if (player->viewer_->getKeyRight())
-				{
-					steer = vehicle::STEERING_RIGHT;
-				}
-#endif
 				// Update vehicle motion
 				vh->dyn_model->DrivingControlBinary(deltaTimeStep, accelerate, steer);
 			}
@@ -175,9 +177,10 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 			// Speed - common speed target for these control modes
 			vh->obj->pos_.GetProbeInfo(speed_target_distance, &data, roadmanager::Position::LOOKAHEADMODE_AT_ROAD_CENTER);
 
-#ifdef _SCENARIO_VIEWER
-			player->viewer_->SensorSetTargetPos(vh->gfx_model->speed_sensor_, data.road_lane_info.pos[0], data.road_lane_info.pos[1], data.road_lane_info.pos[2]);
-#endif
+			if (player->viewer_)
+			{
+				player->viewer_->SensorSetTargetPos(vh->gfx_model->speed_sensor_, data.road_lane_info.pos[0], data.road_lane_info.pos[1], data.road_lane_info.pos[2]);
+			}
 
 			// Steering - Find out a steering target along ghost vehicle trail
 			double s_out;
@@ -192,13 +195,15 @@ void UpdateExternVehicles(double deltaTimeStep, ScenarioPlayer *player)
 				state.z_ = (float)vh->obj->pos_.GetX();
 				state.speed_ = 0;
 			}
+
 			roadmanager::Position pos(state.x_, state.y_, 0, 0, 0, 0);
 			vh->obj->pos_.GetProbeInfo(&pos, &data);
 			vh->steering_target_heading = data.relative_h;
 
-#ifdef _SCENARIO_VIEWER
-			player->viewer_->SensorSetTargetPos(vh->gfx_model->steering_sensor_, data.road_lane_info.pos[0], data.road_lane_info.pos[1], data.road_lane_info.pos[2]);
-#endif
+			if (player->viewer_)
+			{
+				player->viewer_->SensorSetTargetPos(vh->gfx_model->steering_sensor_, data.road_lane_info.pos[0], data.road_lane_info.pos[1], data.road_lane_info.pos[2]);
+			}
 
 			// Let steering target heading influence speed target - slowing down when turning
 			vh->speed_target_speed = state.speed_ * (1 - vh->steering_target_heading / M_PI_2);
