@@ -389,7 +389,7 @@ int ObjectTrail::FindClosestPoint(double x0, double y0, double &x, double &y, do
 		if (segmentLength < SMALL_NUMBER)
 		{
 			i = next_index;
-			LOG("Segment too small, look go forward along trail");
+			// Segment too small, skip and go forward along trail
 			continue;
 		}
 
