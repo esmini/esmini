@@ -198,6 +198,18 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 		}
 	}
 
+	// Check for any callbacks to be made
+	for (size_t i = 0; i < callback.size(); i++)
+	{
+		ObjectState *os = scenarioGateway->getObjectStatePtrById(callback[i].id);
+		if (os)
+		{
+			ObjectStateStruct state;
+			state = os->getStruct();
+			callback[i].func(&state, callback[i].data);
+		}
+	}
+
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
 	//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
 	//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
@@ -717,4 +729,13 @@ int ScenarioPlayer::Init()
 	}
 
 	return 0;
+}
+
+void ScenarioPlayer::RegisterObjCallback(int id, ObjCallbackFunc func, void *data)
+{
+	ObjCallback cb;
+	cb.id = id;
+	cb.func = func;
+	cb.data = data;
+	callback.push_back(cb);
 }

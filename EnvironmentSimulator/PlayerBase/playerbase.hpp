@@ -47,6 +47,15 @@ public:
 		VIEWER_STATE_DONE
 	} ViewerState;
 
+	typedef void (*ObjCallbackFunc)(ObjectStateStruct*, void*);
+
+	typedef struct 
+	{
+		int id;
+		ObjCallbackFunc func;
+		void* data;
+	} ObjCallback;
+
 	ScenarioPlayer(int &argc, char *argv[]);
 	~ScenarioPlayer();
 	bool IsQuitRequested() { return quit_request; }
@@ -59,6 +68,7 @@ public:
 	void SetFixedTimestep(double timestep) { fixed_timestep_ = timestep; }
 	double GetFixedTimestep() { return fixed_timestep_; }
 	int GetOSIFreq() { return osi_freq_; }
+	void RegisterObjCallback(int id, ObjCallbackFunc func, void *data);
 	
 	CSV_Logger *CSV_Log;
 	ScenarioEngine *scenarioEngine;
@@ -79,6 +89,7 @@ public:
 	const double maxStepSize;
 	const double minStepSize;
 	SE_Options opt;
+	std::vector<ObjCallback> callback;
 	std::string exe_path_;
 
 private:

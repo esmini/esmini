@@ -164,9 +164,9 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor*> sensor)
 	{
 		return;
 	}
-
-	// Below is just some stub code hinting how ideal sensor data can be collected
-	// Remains to implement OSI output :)
+	
+#if 0  
+	// stub code hinting how ideal sensor data can be collected
 
 	printf("Sensor detections:\n");
 	
@@ -177,6 +177,7 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor*> sensor)
 			printf("  sensor %d obj_id: %d pos: %.2f, %.2f \n", i, sensor[i]->hitList_[j].obj_->id_, sensor[i]->hitList_[j].x_, sensor[i]->hitList_[j].y_);
 		}
 	}
+#endif 
 }
 
 bool OSIReporter::OpenOSIFile()

@@ -29,7 +29,7 @@
 #define DEMONSTRATE_OSI 0
 #define DEMONSTRATE_ROADINFO 0
 #define DEMONSTRATE_THREAD 1
-
+#define DEMONSTRATE_CALLBACK 0
 
 #define MAX_N_OBJECTS 10
 #define TIME_STEP 0.017f
@@ -38,13 +38,47 @@
 
 static SE_ScenarioObjectState states[MAX_N_OBJECTS];
 
+typedef struct
+{
+	int counter;
+} Stuff;
+
 void log_callback(const char *str)
 {
 	printf("%s\n", str);
 }
 
+void objectCallback(SE_ScenarioObjectState* state, void *my_data)
+{
+	const double startTrigTime = 3.0;
+	const double latDist = 3.5;
+	const double duration = 5.0;
+	static bool firstTime = true;
+	static double latOffset0;
+
+	Stuff* stuff = (Stuff*)my_data;
+	
+	printf("mydata.counter: %d\n", stuff->counter);
+
+	if (SE_GetSimulationTime() > startTrigTime && SE_GetSimulationTime() < startTrigTime + duration)
+	{
+		if (firstTime)
+		{
+			latOffset0 = state->laneOffset;
+			firstTime = false;
+		}
+		else 
+		{
+			float latOffset = latOffset0 + latDist * (SE_GetSimulationTime() - startTrigTime)/duration;
+			SE_ReportObjectRoadPos(state->id, state->timestamp, state->roadId, state->laneId, latOffset, state->s, state->speed);
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
+	Stuff stuff;
+	
 	// Use logger callback
 	Logger::Inst().SetCallback(log_callback);
 
@@ -56,12 +90,17 @@ int main(int argc, char *argv[])
 
 	for (int a = 0; a < 1; a++)
 	{
+		stuff.counter = 0;
 
 		if (SE_Init(argv[1], 0, 1, 1, 0, 2.0f) != 0)
 		{
 			LOG("Failed to load %s", argv[1]);
 			return -1;
 		}
+
+#if DEMONSTRATE_CALLBACK
+		SE_RegisterObjectCallback(0, objectCallback, (void*)&stuff);
+#endif
 
 #if DEMONSTRATE_SENSORS
 		// Add four sensors around the vehicle
@@ -83,6 +122,7 @@ int main(int argc, char *argv[])
 				return 0;
 			}
 
+			stuff.counter++;
 #if DEMONSTRATE_OSI  // set to 1 to demonstrate example of how to query OSI Ground Truth
 
 			int svSize = 0;

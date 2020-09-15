@@ -25,6 +25,15 @@ static char **argv = 0;
 static int argc = 0;
 static std::vector<std::string> args_v;
 
+typedef struct
+{
+	int id;
+	void (*func)(SE_ScenarioObjectState*, void*);
+	void* data;
+} SE_ObjCallback;
+
+static std::vector<SE_ObjCallback> objCallback;
+
 static void resetScenario(void)
 {
 	if (player)
@@ -93,7 +102,32 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 	state->width = gw_state->boundingbox.dimensions_.width_;
 	state->length = gw_state->boundingbox.dimensions_.length_;
 	state->height = gw_state->boundingbox.dimensions_.height_;
+}
 
+static void copyStateToScenarioGateway(ObjectStateStruct* gw_state, SE_ScenarioObjectState* state)
+{
+	gw_state->id = state->id;
+	gw_state->model_id = state->model_id;
+	gw_state->control = state->control;
+	//	strncpy(state->name, gw_state->name, NAME_LEN);
+	gw_state->timeStamp = state->timestamp;
+	gw_state->pos.SetX(state->x);
+	gw_state->pos.SetY(state->y);
+	gw_state->pos.SetZ(state->z);
+	gw_state->pos.SetH(state->h);
+	gw_state->pos.SetP(state->p);
+	gw_state->pos.SetR(state->r);
+	gw_state->speed = state->speed;
+	gw_state->pos.SetTrackPos(state->roadId, state->s, state->t, roadmanager::Position::UpdateTrackPosMode::UPDATE_NOT_XYZH);
+	gw_state->pos.SetLaneId(state->laneId);
+	gw_state->pos.SetS(state->s);
+	gw_state->pos.SetOffset(state->laneOffset);
+	gw_state->boundingbox.center_.x_ = state->centerOffsetX;
+	gw_state->boundingbox.center_.y_ = state->centerOffsetY;
+	gw_state->boundingbox.center_.z_ = state->centerOffsetZ;
+	gw_state->boundingbox.dimensions_.width_ = state->width;
+	gw_state->boundingbox.dimensions_.length_ = state->length;
+	gw_state->boundingbox.dimensions_.height_ = state->height;
 }
 
 static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int lookAheadMode)
@@ -526,21 +560,21 @@ extern "C"
 
 	SE_DLL_API int SE_GetObjectStates(int *nObjects, SE_ScenarioObjectState* state)
 	{
-		int i;
+	int i;
 
-		if (player)
+	if (player)
+	{
+		for (i = 0; i < *nObjects && i < player->scenarioGateway->getNumberOfObjects(); i++)
 		{
-			for (i = 0; i < *nObjects && i < player->scenarioGateway->getNumberOfObjects(); i++)
-			{
-				copyStateFromScenarioGateway(&state[i], &player->scenarioGateway->getObjectStatePtrByIdx(i)->state_);
-			}
-			*nObjects = i;
+			copyStateFromScenarioGateway(&state[i], &player->scenarioGateway->getObjectStatePtrByIdx(i)->state_);
 		}
-		else
-		{
-			*nObjects = 0;
-		}
-		return 0;
+		*nObjects = i;
+	}
+	else
+	{
+		*nObjects = 0;
+	}
+	return 0;
 	}
 
 	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj)
@@ -562,7 +596,7 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int *list)
+	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int* list)
 	{
 		if (player)
 		{
@@ -583,7 +617,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int along_road_center)
+	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo* data, int along_road_center)
 	{
 		if (player == 0 || object_id >= player->scenarioGateway->getNumberOfObjects())
 		{
@@ -595,12 +629,12 @@ extern "C"
 			return -1;
 		}
 
-//		Set_se_steering_target_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
+		//		Set_se_steering_target_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
 
 		return 0;
 	}
 
-	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost)
+	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo* data, float* speed_ghost)
 	{
 		if (player == 0 || object_id >= player->scenarioGateway->getNumberOfObjects())
 		{
@@ -612,8 +646,34 @@ extern "C"
 			return -1;
 		}
 
-//		Set_se_ghost_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
-		//LOG("id %d dist %.2f x %.2f y %.2f z %.2f", object_id, lookahead_distance, data->global_pos_x, data->global_pos_y, data->global_pos_z);
+		//		Set_se_ghost_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
+				//LOG("id %d dist %.2f x %.2f y %.2f z %.2f", object_id, lookahead_distance, data->global_pos_x, data->global_pos_y, data->global_pos_z);
 		return 0;
+	}
+
+	void callback(ObjectStateStruct* state, void* my_data)
+	{
+		for (size_t i = 0; i < objCallback.size(); i++)
+		{
+			if (objCallback[i].id == state->id)
+			{
+				SE_ScenarioObjectState se_state;
+				copyStateFromScenarioGateway(&se_state, state);
+				objCallback[i].func(&se_state, my_data);
+			}
+		}
+	}
+
+	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState*, void*), void *user_data)
+	{
+		if (player == 0 || object_id >= player->scenarioGateway->getNumberOfObjects())
+		{
+			return;
+		}
+		SE_ObjCallback cb;
+		cb.id = object_id;
+		cb.func = fnPtr;
+		objCallback.push_back(cb);
+		player->RegisterObjCallback(object_id, callback, user_data);
 	}
 }

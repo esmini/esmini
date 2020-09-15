@@ -72,6 +72,7 @@ typedef struct
 	int far_right_lb_id;
 } SE_LaneBoundaryId;
 
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -206,6 +207,9 @@ extern "C"
 	*/
 	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost);
 
+	/**
+	*/
+	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState*, void*), void *user_data);
 
 #ifdef __cplusplus
 }

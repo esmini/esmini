@@ -781,13 +781,13 @@ namespace roadmanager
 		...
 		@param idx index into the vector of lane sections
 		*/
-		virtual LaneSection *GetLaneSectionByIdx(int idx);
+		LaneSection *GetLaneSectionByIdx(int idx);
 		
 		/**
 		Retrieve the lanesection index at specified s-value
 		@param s distance along the road segment
 		*/
-		virtual int GetLaneSectionIdxByS(double s, int start_at = 0);
+		int GetLaneSectionIdxByS(double s, int start_at = 0);
 
 		/**
 		Retrieve the lanesection at specified s-value
@@ -971,7 +971,7 @@ namespace roadmanager
 		Retrieve a road segment specified by road ID 
 		@param id road ID as specified in the OpenDRIVE file
 		*/
-		virtual Road* GetRoadById(int id);
+		Road* GetRoadById(int id);
 
 		/**
 		Retrieve a road segment specified by road vector element index
