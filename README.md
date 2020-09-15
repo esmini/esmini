@@ -73,6 +73,9 @@ See [this "Hello World" tutorial](https://github.com/esmini/esmini/blob/master/H
 ### pyoscx
 [pyoscx](https://github.com/pyoscx/pyoscx) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate the OpenSCENARIO 1.0 XML counterpart. 
 
+### pyodrx
+[pyodrx](https://github.com/pyoscx/pyodrx) is a Python based road network creation framework. The idea is to write road networks in a high-level script format and automatically generate the OpenDRIVE (1.4 as of today) XML counterpart.
+
 ### Scenario video clip generator
 [esmini-visualizer](https://github.com/matthewcoyle-cpc/esmini-visualiser) is a tool to automatically generate video visualizations of scenarios.
 
