@@ -238,7 +238,14 @@ extern "C"
 		}
 		if (record)
 		{
-			AddArgument("--record scenario.dat");
+			AddArgument("--record");
+			const char* ext = ".dat";
+			const char* filename = FileNameWithoutExtOf(oscFilename).c_str();
+			char* des = (char*)malloc(strlen(filename)+strlen(ext)+1);
+			strcpy(des, filename);
+			strcat(des, ext);
+			AddArgument(des);
+			free(des);
 		}
 		if (use_viewer)
 		{
