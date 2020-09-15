@@ -33,8 +33,8 @@
 
 static struct {
 	osi3::SensorView *sv;
-	std::vector<osi3::StationaryObject*> sobj;
-	std::vector<osi3::MovingObject*> mobj;
+	osi3::StationaryObject *sobj;
+	osi3::MovingObject *mobj;
 	std::vector<osi3::Lane*> ln;
 	std::vector<osi3::LaneBoundary*> lnb;
 } obj_osi_internal;
@@ -91,7 +91,6 @@ OSIReporter::~OSIReporter()
 		delete obj_osi_internal.sv;
 	}
 
-	obj_osi_internal.mobj.clear();
 	obj_osi_internal.ln.clear();
 	obj_osi_internal.lnb.clear();
 
@@ -209,6 +208,8 @@ bool OSIReporter::WriteOSIFile()
 
 int OSIReporter::UpdateOSISensorView(std::vector<ObjectState*> objectState)
 {
+	obj_osi_internal.sv->mutable_global_ground_truth()->clear_moving_object();
+	obj_osi_internal.sv->mutable_global_ground_truth()->clear_stationary_object();
 	double time_stamp = objectState[0]->state_.timeStamp;
 
 	obj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_seconds((int64_t)objectState[0]->state_.timeStamp);
@@ -260,36 +261,39 @@ int OSIReporter::UpdateOSISensorView(std::vector<ObjectState*> objectState)
 
 int OSIReporter::UpdateOSIStationaryObject(ObjectState* objectState)
 {
-	// Create OSI Stationary object
-	osi3::StationaryObject* sobj = obj_osi_internal.sv->mutable_global_ground_truth()->add_stationary_object();
-	sobj->mutable_id()->set_value(obj_osi_internal.sobj.size());
+	// Create OSI Stationary Object
+	obj_osi_internal.sobj = obj_osi_internal.sv->mutable_global_ground_truth()->add_stationary_object();
+
+	// Set OSI Stationary Object Mutable ID
+	int sobj_size = obj_osi_internal.sv->mutable_global_ground_truth()->mutable_stationary_object()->size();
+	obj_osi_internal.sobj->mutable_id()->set_value(sobj_size-1);
 	
 	// Set OSI Stationary Object Type and Classification
 	if(objectState->state_.obj_category == static_cast<int>(Object::Type::MISC_OBJECT))
 	{
 		if(objectState->state_.obj_category == static_cast<int>(MiscObject::Category::NONE))
 		{
-			sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_UNKNOWN);
+			obj_osi_internal.sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_UNKNOWN);
 		} 
 		else if (objectState->state_.obj_category == static_cast<int>(MiscObject::Category::POLE))
 		{
-			sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE); 
+			obj_osi_internal.sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE); 
 		}
 		else if (objectState->state_.obj_category == static_cast<int>(MiscObject::Category::TREE))
 		{
-			sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_TREE); 
+			obj_osi_internal.sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_TREE); 
 		}
 		else if (objectState->state_.obj_category == static_cast<int>(MiscObject::Category::VEGETATION))
 		{
-			sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_VEGETATION); 
+			obj_osi_internal.sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_VEGETATION); 
 		}
 		else if (objectState->state_.obj_category == static_cast<int>(MiscObject::Category::BARRIER))
 		{
-			sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER); 
+			obj_osi_internal.sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER); 
 		}
 		else if (objectState->state_.obj_category == static_cast<int>(MiscObject::Category::BUILDING))
 		{
-			sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BUILDING); 
+			obj_osi_internal.sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BUILDING); 
 		}
 		else if (objectState->state_.obj_category == static_cast<int>(MiscObject::Category::OBSTACLE) ||
 				objectState->state_.obj_category == static_cast<int>(MiscObject::Category::PARKINGSPACE) || 
@@ -303,11 +307,11 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState* objectState)
 				objectState->state_.obj_category == static_cast<int>(MiscObject::Category::WIND) ||
 				objectState->state_.obj_category == static_cast<int>(MiscObject::Category::ROADMARK))
 		{
-			sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER); 
+			obj_osi_internal.sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER); 
 		}
 		else
 		{
-			sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_UNKNOWN); 
+			obj_osi_internal.sobj->mutable_classification()->set_type(osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_UNKNOWN); 
 			LOG("OSIReporter::UpdateOSIStationaryObject -> Unsupported stationary object category");
 		}
 	}
@@ -317,47 +321,48 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState* objectState)
 	}
 
 	// Set OSI Stationary Object Boundingbox
-	sobj->mutable_base()->mutable_dimension()->set_height(objectState->state_.boundingbox.dimensions_.height_);
-	sobj->mutable_base()->mutable_dimension()->set_width(objectState->state_.boundingbox.dimensions_.width_);
-	sobj->mutable_base()->mutable_dimension()->set_length(objectState->state_.boundingbox.dimensions_.length_);
+	obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(objectState->state_.boundingbox.dimensions_.height_);
+	obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(objectState->state_.boundingbox.dimensions_.width_);
+	obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(objectState->state_.boundingbox.dimensions_.length_);
 
 	// Set OSI Stationary Object Position 
-	sobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX());
-	sobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY());
-	sobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ());
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX());
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY());
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ());
 
 	// Set OSI Stationary Object Orientation 
-	sobj->mutable_base()->mutable_orientation()->set_roll(objectState->state_.pos.GetR());
-	sobj->mutable_base()->mutable_orientation()->set_pitch(objectState->state_.pos.GetP());
-	sobj->mutable_base()->mutable_orientation()->set_yaw(objectState->state_.pos.GetH());
-	
-	// Append OSI Stationary Object to OSI structure
-	obj_osi_internal.sobj.push_back(sobj);
+	obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(objectState->state_.pos.GetR());
+	obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(objectState->state_.pos.GetP());
+	obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(objectState->state_.pos.GetH());
+
 	return 0;
 }
 
 int OSIReporter::UpdateOSIMovingObject(ObjectState* objectState)
 {
 	// Create OSI Moving object
-	osi3::MovingObject* mobj = obj_osi_internal.sv->mutable_global_ground_truth()->add_moving_object();
-	mobj->mutable_id()->set_value(obj_osi_internal.mobj.size());
-	
+	obj_osi_internal.mobj = obj_osi_internal.sv->mutable_global_ground_truth()->add_moving_object();
+
+	// Set OSI Moving Object Mutable ID
+	int mobj_size = obj_osi_internal.sv->mutable_global_ground_truth()->mutable_moving_object()->size();
+	obj_osi_internal.mobj->mutable_id()->set_value(mobj_size-1);
+
 	// Set OSI Moving Object Type and Classification
 	if(objectState->state_.obj_type == static_cast<int>(Object::Type::VEHICLE))
 	{
-		mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_VEHICLE);
+		obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_VEHICLE);
 
 		if(objectState->state_.obj_category == static_cast<int>(Vehicle::Category::CAR))
 		{
-			mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MEDIUM_CAR); 
+			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MEDIUM_CAR); 
 		} 
 		else if (objectState->state_.obj_category == static_cast<int>(Vehicle::Category::BICYCLE))
 		{
-			mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_BICYCLE); 
+			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_BICYCLE); 
 		} 
 		else
 		{
-			mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN); 
+			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN); 
 			LOG("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object category");
 		}
 	}
@@ -365,19 +370,19 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState* objectState)
 	{
 		if (objectState->state_.obj_category!=static_cast<int>(Pedestrian::Category::PEDESTRIAN))
 		{
-			mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_PEDESTRIAN);
+			obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_PEDESTRIAN);
 		}
 		else if (objectState->state_.obj_category!=static_cast<int>(Pedestrian::Category::ANIMAL))
 		{
-			mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_ANIMAL);
+			obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_ANIMAL);
 		}
 		else if (objectState->state_.obj_category!=static_cast<int>(Pedestrian::Category::WHEELCHAIR))
 		{
-			mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_OTHER);
+			obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_OTHER);
 		}
 		else
 		{
-			mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
+			obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
 			LOG("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object category");
 		}
 	}
@@ -387,40 +392,37 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState* objectState)
 	}
 
 	// Set OSI Moving Object Control Type
-	mobj->mutable_vehicle_attributes()->mutable_driver_id()->set_value((uint64_t)objectState->state_.control);
+	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_driver_id()->set_value((uint64_t)objectState->state_.control);
 
 	// Set OSI Moving Object Boundingbox
-	mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_x((double)(objectState->state_.boundingbox.center_.x_));
-	mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_y((double)(objectState->state_.boundingbox.center_.y_));
-	mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_z((double)(objectState->state_.boundingbox.center_.z_));
-	mobj->mutable_base()->mutable_dimension()->set_height(objectState->state_.boundingbox.dimensions_.height_);
-	mobj->mutable_base()->mutable_dimension()->set_width(objectState->state_.boundingbox.dimensions_.width_);
-	mobj->mutable_base()->mutable_dimension()->set_length(objectState->state_.boundingbox.dimensions_.length_);
+	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_x((double)(objectState->state_.boundingbox.center_.x_));
+	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_y((double)(objectState->state_.boundingbox.center_.y_));
+	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_z((double)(objectState->state_.boundingbox.center_.z_));
+	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_height(objectState->state_.boundingbox.dimensions_.height_);
+	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_width(objectState->state_.boundingbox.dimensions_.width_);
+	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_length(objectState->state_.boundingbox.dimensions_.length_);
 
 	// Set OSI Moving Object Position 
-	mobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX());
-	mobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY());
-	mobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ());
+	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX());
+	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY());
+	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ());
 
 	// Set OSI Moving Object Orientation
-	mobj->mutable_base()->mutable_orientation()->set_roll(objectState->state_.pos.GetR());
-	mobj->mutable_base()->mutable_orientation()->set_pitch(objectState->state_.pos.GetP());
-	mobj->mutable_base()->mutable_orientation()->set_yaw(objectState->state_.pos.GetH());
-	mobj->mutable_base()->mutable_orientation_rate()->set_yaw(objectState->state_.pos.GetHRate());
-	mobj->mutable_base()->mutable_orientation_acceleration()->set_yaw(objectState->state_.pos.GetHAcc());
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_roll(objectState->state_.pos.GetR());
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_pitch(objectState->state_.pos.GetP());
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_yaw(objectState->state_.pos.GetH());
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation_rate()->set_yaw(objectState->state_.pos.GetHRate());
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation_acceleration()->set_yaw(objectState->state_.pos.GetHAcc());
 
 	// Set OSI Moving Object Velocity 
-	mobj->mutable_base()->mutable_velocity()->set_x(objectState->state_.pos.GetVelX());
-	mobj->mutable_base()->mutable_velocity()->set_y(objectState->state_.pos.GetVelY());
-	mobj->mutable_base()->mutable_velocity()->set_z(0);  // assume neglectable speed in z dimension
+	obj_osi_internal.mobj->mutable_base()->mutable_velocity()->set_x(objectState->state_.pos.GetVelX());
+	obj_osi_internal.mobj->mutable_base()->mutable_velocity()->set_y(objectState->state_.pos.GetVelY());
+	obj_osi_internal.mobj->mutable_base()->mutable_velocity()->set_z(0);  // assume neglectable speed in z dimension
 
 	// Set OSI Moving Object Acceleration 
-	mobj->mutable_base()->mutable_acceleration()->set_x(objectState->state_.pos.GetAccX());
-	mobj->mutable_base()->mutable_acceleration()->set_y(objectState->state_.pos.GetAccY());
-	mobj->mutable_base()->mutable_acceleration()->set_z(0);  // assume neglectable speed in z dimension
-	
-	// Append OSI Moving Object to OSI structure
-	obj_osi_internal.mobj.push_back(mobj);
+	obj_osi_internal.mobj->mutable_base()->mutable_acceleration()->set_x(objectState->state_.pos.GetAccX());
+	obj_osi_internal.mobj->mutable_base()->mutable_acceleration()->set_y(objectState->state_.pos.GetAccY());
+	obj_osi_internal.mobj->mutable_base()->mutable_acceleration()->set_z(0);  // assume neglectable speed in z dimension
 
 	return 0;
 }
