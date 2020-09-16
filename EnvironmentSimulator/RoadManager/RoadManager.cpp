@@ -227,8 +227,8 @@ void Arc::EvaluateDS(double ds, double *x, double *y, double *h)
 	else
 	{
 		// starting from -90 degrees going counter clockwise
-		x_local = cos(angle + 3.0 * M_PI / 2.0);
-		y_local = sin(angle + 3.0 * M_PI / 2.0) + 1;  // +1 transform to y = 0
+		x_local = cos(angle + 3.0 * M_PI_2);
+		y_local = sin(angle + 3.0 * M_PI_2) + 1;  // +1 transform to y = 0
 	}
 
 	// Rotate according to heading and scale according to radius

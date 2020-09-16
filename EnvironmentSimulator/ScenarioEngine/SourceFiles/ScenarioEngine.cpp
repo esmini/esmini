@@ -507,6 +507,7 @@ void ScenarioEngine::stepObjects(double dt)
 			if (obj->pos_.GetRoute())
 			{
 				int retvalue = obj->pos_.MoveRouteDS(steplen);
+				obj->odometer_ += abs(steplen);  // odometer always measure all movements as positive, I guess...
 
 				if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
 				{
@@ -534,6 +535,7 @@ void ScenarioEngine::stepObjects(double dt)
 				}
 				
 				retvalue = obj->pos_.MoveAlongS(steplen);
+				obj->odometer_ += abs(steplen);  // odometer always measure all movements as positive, I guess...
 
 				if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD)
 				{
@@ -547,7 +549,6 @@ void ScenarioEngine::stepObjects(double dt)
 					obj->SetEndOfRoad(false);
 				}
 			}
-			obj->odometer_ += abs(steplen);  // odometer always measure all movements as positive, I guess...
 		}
 
 		// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys

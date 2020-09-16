@@ -87,6 +87,10 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 {
 	time_ += timing_scale_ * dt;
 
+	// Measure length of movement for odometer
+	double x0 = object_->pos_.GetX();
+	double y0 = object_->pos_.GetY();
+
 	if (!traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->shape_->length_ - DISTANCE_TOLERANCE))
 	{
 		// Disconnect trajectory
@@ -123,6 +127,7 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 			object_->pos_.SetTrajectoryPosByTime(traj_, simTime * timing_scale_ + timing_offset_);
 		}
 	}
+	object_->odometer_ += PointDistance2D(x0, y0, object_->pos_.GetX(), object_->pos_.GetY());
 }
 
 void LatLaneChangeAction::Start()
