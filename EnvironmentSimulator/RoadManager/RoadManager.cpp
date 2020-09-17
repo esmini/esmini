@@ -1818,6 +1818,19 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			{
 				r->AddLink(new RoadLink(PREDECESSOR, predecessor));
 			}
+
+			if (r->GetJunction() != -1)
+			{
+				// As connecting road it is expected to have connections in both ends
+				if (successor == NULL)
+				{
+					LOG("Warning: connecting road %d in junction %d lacks successor", r->GetId(), r->GetJunction());
+				}
+				if (predecessor == NULL)
+				{
+					LOG("Warning: connecting road %d in junction %d lacks predesessor", r->GetId(), r->GetJunction());
+				}
+			}
 		}
 
 		pugi::xml_node plan_view = road_node.child("planView");
@@ -2511,6 +2524,14 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				int connecting_road_id = atoi(connection_node.attribute("connectingRoad").value());
 				Road *incoming_road = GetRoadById(incoming_road_id);
 				Road *connecting_road = GetRoadById(connecting_road_id);
+
+				// Check that the connecting road is referring back to this junction
+				if (connecting_road->GetJunction() != j->GetId())
+				{
+					LOG("Warning: Connecting road (id %d) junction attribute (%d) is not referring back to junction %d which is making use of it", 
+						connecting_road->GetId(), connecting_road->GetJunction(), j->GetId());
+				}
+
 				ContactPointType contact_point = CONTACT_POINT_UNKNOWN;
 				std::string contact_point_str = connection_node.attribute("contactPoint").value();
 				if (contact_point_str == "start")
@@ -3115,9 +3136,11 @@ int OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double &angle)
 					}
 					// then check other case where road1 is outgoing from connecting road (connecting road is a road within junction)
 					else if (connection->GetConnectingRoad()->GetId() == road2_id && 
-						((connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START && connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR)->GetElementId() == road1_id) ||
-						 (connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END && connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetElementId() == road1_id)) )
-
+						((connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START && 
+							connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR) && connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR)->GetElementId() == road1_id) ||
+						 (connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END && 
+							connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR) && connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetElementId() == road1_id))
+						)
 					{
 						if (connection->GetContactPoint() == CONTACT_POINT_START) // connecting road ends up connecting to road_1
 						{
