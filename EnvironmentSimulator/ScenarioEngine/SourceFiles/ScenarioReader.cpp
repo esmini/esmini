@@ -1010,11 +1010,6 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 		{
 			parseOSCOrientation(orientation, orientation_node);
 		}
-		else
-		{
-			// Calculate orientation
-			orientation.h_ = GetAngleOfVector(dx, dy);
-		}
 
 		OSCPositionRelativeWorld* pos = new OSCPositionRelativeWorld(object, dx, dy, dz, orientation);
 
