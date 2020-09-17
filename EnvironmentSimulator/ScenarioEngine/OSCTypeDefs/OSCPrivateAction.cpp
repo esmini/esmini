@@ -80,6 +80,9 @@ void FollowTrajectoryAction::Start()
 	traj_->Freeze();
 	object_->pos_.SetTrajectory(traj_);
 	
+	object_->dirty_lat_ = true;
+	object_->dirty_long_ = true;
+
 	OSCAction::Start();
 }
 
@@ -98,16 +101,6 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 
 		// Calculate road coordinates from final inertia (X, Y) coordinates
 		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetH(), false);
-
-		// Find heading along road and driving direction
-		if (object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2)
-		{
-			object_->pos_.SetHeadingRelativeRoadDirection(M_PI);
-		}
-		else
-		{
-			object_->pos_.SetHeadingRelativeRoadDirection(0);
-		}
 
 		OSCAction::End();
 	}
@@ -128,6 +121,9 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 		}
 	}
 	object_->odometer_ += PointDistance2D(x0, y0, object_->pos_.GetX(), object_->pos_.GetY());
+
+	object_->dirty_lat_ = true;
+	object_->dirty_long_ = true;
 }
 
 void LatLaneChangeAction::Start()
@@ -225,6 +221,8 @@ void LatLaneChangeAction::Step(double dt, double simTime)
 				object_->pos_.SetHeadingRelativeRoadDirection(angle);
 			}
 		}
+
+		object_->dirty_lat_ = true;
 	}
 	else
 	{
@@ -270,6 +268,8 @@ void LatLaneOffsetAction::Step(double dt, double simTime)
 	}
 
 	object_->pos_.SetHeadingRelativeRoadDirection(angle);
+
+	object_->dirty_lat_ = true;
 }
 
 double LongSpeedAction::TargetRelative::GetValue()
@@ -406,6 +406,8 @@ void LongDistanceAction::Step(double dt, double simTime)
 		// Set position according to distance and copy speed of target vehicle
 		object_->pos_.MoveAlongS(distance_diff);
 		object_->speed_ = target_object_->speed_;
+
+		object_->dirty_long_ = true;
 	}
 	else
 	{
@@ -462,13 +464,15 @@ void PositionAction::Step(double dt, double simTime)
 	// Resolve any relative positions
 	object_->pos_.ReleaseRelation();
 
-	if (object_->pos_.GetType() != roadmanager::Position::PositionType::ROUTE)
+	if (object_->pos_.GetType() == roadmanager::Position::PositionType::ROUTE)
 	{
 		object_->pos_.CalcRoutePosition();
 	}
 
 	LOG("Step %s pos: ", object_->name_.c_str());
 	position_->Print();
+	object_->dirty_lat_ = true;
+	object_->dirty_long_ = true;
 
 	OSCAction::Stop();
 }

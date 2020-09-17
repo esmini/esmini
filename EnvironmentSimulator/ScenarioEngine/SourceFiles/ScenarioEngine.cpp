@@ -70,6 +70,20 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	{
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
+			Object* obj = entities.object_[i];
+
+			// reset indicators of applied control
+			obj->dirty_lat_ = false;
+			obj->dirty_long_ = false;
+
+			// Store some values for derivation
+			obj->state_old.pos_x = obj->pos_.GetX();
+			obj->state_old.pos_y = obj->pos_.GetY();
+			obj->state_old.vel_x = obj->pos_.GetVelX();
+			obj->state_old.vel_y = obj->pos_.GetVelY();
+			obj->state_old.h = obj->pos_.GetH();
+			obj->state_old.h_rate = obj->pos_.GetHRate();
+
 			if (entities.object_[i]->control_ == Object::Control::EXTERNAL ||
 				entities.object_[i]->control_ == Object::Control::HYBRID_EXTERNAL)
 			{
@@ -491,13 +505,6 @@ void ScenarioEngine::stepObjects(double dt)
 	{
 		Object *obj = entities.object_[i];
 
-		double pos_x_old = obj->pos_.GetX();
-		double pos_y_old = obj->pos_.GetY();
-		double vel_x_old = obj->pos_.GetVelX();
-		double vel_y_old = obj->pos_.GetVelY();
-		double heading_old = obj->pos_.GetH();
-		double heading_rate_old = obj->pos_.GetHRate();
-
 		if (obj->control_ == Object::Control::INTERNAL ||
 			obj->control_ == Object::Control::HYBRID_GHOST)
 		{
@@ -521,12 +528,21 @@ void ScenarioEngine::stepObjects(double dt)
 					obj->SetEndOfRoad(false);
 				}
 			}
-			else if (obj->pos_.GetTrajectory())
+			else if (!obj->dirty_long_)  // No action has updated longitudinal dimension
 			{
-				// Do nothing - updates handled by followTrajectoryAction
-			}
-			else
-			{
+				if (!obj->dirty_lat_)  // No action has updated lateral dimension
+				{
+					// make sure entity is aligned to the road 
+					if (obj->pos_.GetHRelative() > M_PI_2 && obj->pos_.GetHRelative() < 3 * M_PI_2)
+					{
+						obj->pos_.SetHeadingRelative(M_PI);
+					}
+					else
+					{
+						obj->pos_.SetHeadingRelative(0);
+					}
+				}
+
 				// Adjustment movement to heading and road direction
 				if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)
 				{
@@ -554,13 +570,13 @@ void ScenarioEngine::stepObjects(double dt)
 		// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
 		if (dt > SMALL_NUMBER)
 		{
-			obj->pos_.SetVelX((obj->pos_.GetX() - pos_x_old) / dt);
-			obj->pos_.SetVelY((obj->pos_.GetY() - pos_y_old) / dt);
-			obj->pos_.SetAccX((obj->pos_.GetVelX() - vel_x_old) / dt);
-			obj->pos_.SetAccY((obj->pos_.GetVelY() - vel_y_old) / dt);
-			double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), heading_old) / dt;
+			obj->pos_.SetVelX((obj->pos_.GetX() - obj->state_old.pos_x) / dt);
+			obj->pos_.SetVelY((obj->pos_.GetY() - obj->state_old.pos_y) / dt);
+			obj->pos_.SetAccX((obj->pos_.GetVelX() - obj->state_old.vel_x) / dt);
+			obj->pos_.SetAccY((obj->pos_.GetVelY() - obj->state_old.vel_y) / dt);
+			double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), obj->state_old.h) / dt;
 			obj->pos_.SetHRate(heading_rate_new);
-			obj->pos_.SetHAcc(GetAngleDifference(heading_rate_new, heading_rate_old) / dt);
+			obj->pos_.SetHAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt);
 		}
 		else
 		{

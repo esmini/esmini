@@ -80,7 +80,9 @@ namespace scenarioengine
 
 		bool IsActive()
 		{
-			return state_ == State::RUNNING;
+			// Also consider when just being activated - indicated by next_state == running
+			// to avoid single frames of no updates (zero motion)
+			return (state_ == State::RUNNING || next_state_ == State::RUNNING);
 		}
 
 		bool IsTriggable()

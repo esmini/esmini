@@ -5677,12 +5677,10 @@ void Position::SetHeadingRelativeRoadDirection(double heading)
 	{
 		// Driving towards road direction
 		h_relative_ = GetAngleInInterval2PI(-heading + M_PI);
-		//LOG("Driving towards road direction h_ %.2f h_relative_ %.2f heading %.2f ", h_, h_relative_, heading);
 	}
 	else
 	{
 		h_relative_ = GetAngleInInterval2PI(heading);
-		//LOG("Driving along road direction h_ %.2f h_relative_ %.2f heading %.2f ", h_, h_relative_, heading);
 	}
 	h_ = GetAngleSum(h_road_, h_relative_);
 }
@@ -6518,7 +6516,7 @@ int Position::SetTrajectoryPosByTime(Trajectory* trajectory, double time)
 		}
 		else
 		{
-			LOG("Requested time %s outside range [%.2f, %.2f]", clothoid->t_start_, clothoid->t_end_);
+			LOG("Requested time %.2f outside range [%.2f, %.2f]", time, clothoid->t_start_, clothoid->t_end_);
 		}
 	}
 	else

@@ -71,13 +71,32 @@ namespace scenarioengine
 		double end_of_road_timestamp_;  
 		double off_road_timestamp_;
 
+		bool dirty_long_;
+		bool dirty_lat_;
+
+		struct {
+			double pos_x;
+			double pos_y;
+			double vel_x;
+			double vel_y;
+			double h;
+			double h_rate;
+		} state_old;
+
 		Object(Type type) : type_(type), id_(0), trail_follow_index_(0), control_(Object::Control::INTERNAL),
 			speed_(0), wheel_angle_(0), wheel_rot_(0), route_(0), model_filepath_(""), ghost_(0), trail_follow_s_(0),
-		    odometer_(0), end_of_road_timestamp_(0.0), off_road_timestamp_(0.0) 
+			odometer_(0), end_of_road_timestamp_(0.0), off_road_timestamp_(0.0), dirty_long_(0), dirty_lat_(0)
 		{
 			trail_closest_pos_[0] = 0.0;
 			trail_closest_pos_[1] = 0.0;
 			trail_closest_pos_[2] = 0.0;
+
+			state_old.pos_x = 0;
+			state_old.pos_y = 0;
+			state_old.vel_x = 0;
+			state_old.vel_y = 0;
+			state_old.h = 0;
+			state_old.h_rate = 0;
 		}
 		void SetControl(Control control) { control_ = control; }
 		void SetEndOfRoad(bool state, double time = 0.0);

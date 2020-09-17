@@ -225,7 +225,7 @@ int main(int argc, char** argv)
 
 	std::string osi_features_str;
 	arguments.read("--osi_features", osi_features_str);
-	bool osi_features;
+	bool osi_features = false;
 	if (osi_features_str == "on")
 	{
 		osi_features = true;
