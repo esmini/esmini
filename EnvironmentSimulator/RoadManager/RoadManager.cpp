@@ -3268,10 +3268,24 @@ bool OpenDrive::IsIndirectlyConnected(int road1_id, int road2_id, int* &connecti
 
 				if (connection->GetIncomingRoad()->GetId() == road1_id)
 				{
-					// Found a connecting road - now check if it connects to second road
-					Road *connecting_road = connection->GetConnectingRoad();
-					RoadLink *exit_link = 0;
+					Road* connecting_road = connection->GetConnectingRoad();
+					RoadLink* exit_link = 0;
 
+					// Found a connecting road - first check if this is the second road
+					if (connecting_road->GetId() == road2_id)
+					{
+						// Check lanes
+						for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++)
+						{
+							if (connection->GetLaneLink(j)->from_ == lane1_id &&
+								connection->GetLaneLink(j)->to_ == lane2_id)
+							{
+								return true;
+							}
+						}
+					}
+					
+					// Then check if it connects to second road
 					if (connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START)
 					{
 						exit_link = connecting_road->GetLink(SUCCESSOR);
