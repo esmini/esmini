@@ -1708,6 +1708,15 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								action_follow_trajectory->timing_scale_ = strtod(ReadAttribute(timingNode, "scale"));
 								action_follow_trajectory->timing_offset_ = strtod(ReadAttribute(timingNode, "offset"));
 							}
+							else if (timingNode && std::string(timingNode.name()) == "None")
+							{
+								action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::NONE;
+							}
+							else
+							{
+								LOG("Unexpected TimeReference element: %s", timingNode.name());
+							}
+
 						}
 						else if (followTrajetoryChild.name() == std::string("TrajectoryFollowingMode"))
 						{
