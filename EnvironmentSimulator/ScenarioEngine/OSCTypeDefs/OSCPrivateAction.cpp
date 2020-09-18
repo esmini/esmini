@@ -68,6 +68,14 @@ void FollowRouteAction::Start()
 	OSCAction::Start();
 }
 
+void FollowRouteAction::End()
+{
+	// Disconnect route
+	object_->pos_.SetRoute(0);
+
+	OSCAction::End();
+}
+
 void FollowTrajectoryAction::Start()
 {
 	if (object_->control_ == Object::Control::EXTERNAL ||
@@ -86,6 +94,14 @@ void FollowTrajectoryAction::Start()
 	OSCAction::Start();
 }
 
+void FollowTrajectoryAction::End()
+{
+	// Disconnect trajectory
+	object_->pos_.SetTrajectory(0);
+
+	OSCAction::End();
+}
+
 void FollowTrajectoryAction::Step(double dt, double simTime)
 {
 	time_ += timing_scale_ * dt;
@@ -96,13 +112,10 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 
 	if (!traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->shape_->length_ - DISTANCE_TOLERANCE))
 	{
-		// Disconnect trajectory
-		object_->pos_.SetTrajectory(0);
-
 		// Calculate road coordinates from final inertia (X, Y) coordinates
 		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetH(), false);
-
-		OSCAction::End();
+		
+		End();
 	}
 	else
 	{

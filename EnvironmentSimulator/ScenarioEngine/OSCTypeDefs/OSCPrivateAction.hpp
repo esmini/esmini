@@ -500,6 +500,7 @@ namespace scenarioengine
 		}
 
 		void Start();
+		void End();
 	};
 
 	class FollowTrajectoryAction : public OSCPrivateAction
@@ -538,6 +539,7 @@ namespace scenarioengine
 		void Step(double dt, double simTime);
 
 		void Start();
+		void End();
 	};
 
 	class ActivateControllerAction : public OSCPrivateAction
