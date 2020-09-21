@@ -13,6 +13,8 @@
 #include "ScenarioEngine.hpp"
 #include "CommonMini.hpp"
 
+#define WHEEL_RADIUS 0.35
+
 using namespace scenarioengine;
 
 ScenarioEngine::ScenarioEngine(std::string oscFilename, double headstart_time, RequestControlMode control_mode_first_vehicle)
@@ -577,6 +579,13 @@ void ScenarioEngine::stepObjects(double dt)
 			double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), obj->state_old.h) / dt;
 			obj->pos_.SetHRate(heading_rate_new);
 			obj->pos_.SetHAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt);
+			
+			// Update wheel rotations of internal scenario objects
+			if (obj->control_ == Object::Control::INTERNAL || obj->control_ == Object::Control::HYBRID_GHOST)
+			{
+				obj->wheel_rot_ = fmod(obj->wheel_rot_ + obj->speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
+				obj->wheel_angle_ = heading_rate_new / 2;
+			}
 		}
 		else
 		{
