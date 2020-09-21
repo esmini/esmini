@@ -64,7 +64,7 @@ typedef struct
 	float speed_limit;		// speed limit given by OpenDRIVE type entry
 } SE_RoadInfo;
 
-typedef struct 
+typedef struct
 {
 	int far_left_lb_id;
 	int left_lb_id;
@@ -118,6 +118,16 @@ extern "C"
 	SE_DLL_API int SE_OpenOSISocket(char *ipaddr);
 
 	/**
+	Switch off logging to OSI file(s)
+	*/
+	SE_DLL_API void SE_DisableOSIFile();
+
+	/**
+	Switch on logging to OSI file(s)
+	*/
+	SE_DLL_API void SE_EnableOSIFile();
+
+	/**
 	Get simulation time in seconds
 	*/
 	SE_DLL_API float SE_GetSimulationTime();  // Get simulation time in seconds
@@ -130,7 +140,7 @@ extern "C"
 	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState *state);
 	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state);
 	/**
-	The SE_GetOSISensorView function returns a char array containing the osi SensorView serialized to a string
+	The SE_UpdateOSISensorView function returns a char array containing the osi SensorView serialized to a string
 	*/
 	SE_DLL_API int SE_UpdateOSISensorView();
 
@@ -138,6 +148,12 @@ extern "C"
 	The SE_GetOSISensorView function returns a char array containing the osi SensorView serialized to a string
 	*/
 	SE_DLL_API const char* SE_GetOSISensorView(int* size);
+
+	/**
+	The SE_GetOSISensorViewRaw function returns a char array containing the OSI SensorView information
+	@return osi3::SensorView*
+	*/
+	SE_DLL_API const char* SE_GetOSISensorViewRaw();
 
 	/**
 	The SE_GetOSIRoadLane function returns a char array containing the osi Lane information/message of the lane where the object with object_id is, serialized to a string
@@ -155,12 +171,18 @@ extern "C"
 	SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId* ids);
 
 	/**
-	Create and open osi file 
+	The SE_GetOSISensorDataRaw function returns a char array containing the OSI SensorData information
+	@return osi3::SensorData*
+	*/
+	SE_DLL_API const char* SE_GetOSISensorDataRaw();
+
+	/**
+	Create and open osi file
 	*/
 	SE_DLL_API bool SE_OSIFileOpen();
 
 	/**
-	Create and open osi file 
+	Create and open osi file
 	*/
 	SE_DLL_API bool SE_OSIFileWrite();
 
@@ -209,6 +231,7 @@ extern "C"
 
 	/**
 	*/
+//	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState*, void*));
 	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState*, void*), void *user_data);
 
 #ifdef __cplusplus

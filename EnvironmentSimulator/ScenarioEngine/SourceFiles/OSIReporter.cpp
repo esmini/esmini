@@ -15,7 +15,9 @@
 #include "osi_common.pb.h"
 #include "osi_object.pb.h"
 #include "osi_sensorview.pb.h"
+#include "osi_sensordata.pb.h"
 #include "osi_version.pb.h"
+#include "osi_common.pb.h"
 #include <cmath>
 
 #ifdef _WIN32
@@ -32,6 +34,7 @@
 #define OSI_OUT_PORT 48198
 
 static struct {
+	osi3::SensorData *sd;
 	osi3::SensorView *sv;
 	osi3::StationaryObject *sobj;
 	osi3::MovingObject *mobj;
@@ -80,6 +83,9 @@ OSIReporter::OSIReporter()
 
 	obj_osi_internal.sv->mutable_timestamp()->set_seconds(0);
 	obj_osi_internal.sv->mutable_timestamp()->set_seconds(0);
+
+    // Sensor Data
+    obj_osi_internal.sd = new osi3::SensorData();
 }
 
 
@@ -102,7 +108,7 @@ OSIReporter::~OSIReporter()
 	{
 		osi_file.close();
 	}
-	
+
 }
 
 int OSIReporter::OpenSocket(std::string ipaddr)
@@ -164,20 +170,37 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor*> sensor)
 	{
 		return;
 	}
-	
-#if 0  
-	// stub code hinting how ideal sensor data can be collected
-
-	printf("Sensor detections:\n");
-	
+	while (obj_osi_internal.sd->sensor_view_size() < sensor.size()){
+		obj_osi_internal.sd->add_sensor_view();
+	}
 	for (int i = 0; i < sensor.size(); i++)
 	{
+        // Clear history
+        obj_osi_internal.sd->mutable_sensor_view(i)->mutable_global_ground_truth()->clear_moving_object();
 		for (int j = 0; j < sensor[i]->nObj_; j++)
 		{
-			printf("  sensor %d obj_id: %d pos: %.2f, %.2f \n", i, sensor[i]->hitList_[j].obj_->id_, sensor[i]->hitList_[j].x_, sensor[i]->hitList_[j].y_);
+            // Create moving object
+            osi3::MovingObject* mobj;
+            mobj = obj_osi_internal.sd->mutable_sensor_view(i)->mutable_global_ground_truth()->add_moving_object();
+
+            // Populate sensor data
+            mobj->mutable_id()->set_value(sensor[i]->hitList_[j].obj_->id_);
+			mobj->mutable_base()->mutable_position()->set_x(sensor[i]->hitList_[j].x_);
+			mobj->mutable_base()->mutable_position()->set_y(sensor[i]->hitList_[j].y_);
+			mobj->mutable_base()->mutable_position()->set_z(sensor[i]->hitList_[j].z_);
+			mobj->mutable_base()->mutable_velocity()->set_x(sensor[i]->hitList_[j].velX_);
+			mobj->mutable_base()->mutable_velocity()->set_y(sensor[i]->hitList_[j].velY_);
+			mobj->mutable_base()->mutable_acceleration()->set_x(sensor[i]->hitList_[j].accX_);
+			mobj->mutable_base()->mutable_acceleration()->set_y(sensor[i]->hitList_[j].accY_);
+			mobj->mutable_base()->mutable_orientation()->set_yaw(sensor[i]->hitList_[j].yaw_);
+			mobj->mutable_base()->mutable_orientation_rate()->set_yaw(sensor[i]->hitList_[j].yawRate_);
+			mobj->mutable_base()->mutable_orientation_acceleration()->set_yaw(sensor[i]->hitList_[j].yawAcc_);
+			mobj->mutable_base()->mutable_dimension()->set_height(sensor[i]->hitList_[j].obj_->boundingbox_.dimensions_.height_);
+			mobj->mutable_base()->mutable_dimension()->set_length(sensor[i]->hitList_[j].obj_->boundingbox_.dimensions_.length_);
+			mobj->mutable_base()->mutable_dimension()->set_width(sensor[i]->hitList_[j].obj_->boundingbox_.dimensions_.width_);
+			
 		}
 	}
-#endif 
 }
 
 bool OSIReporter::OpenOSIFile()
@@ -186,9 +209,9 @@ bool OSIReporter::OpenOSIFile()
 	if (!osi_file.good())
 	{
 		LOG("Failed open osi file");
-		return false; 
+		return false;
 	}
-	return true; 
+	return true;
 }
 
 bool OSIReporter::WriteOSIFile()
@@ -202,9 +225,9 @@ bool OSIReporter::WriteOSIFile()
 	if (!osi_file.good())
 	{
 		LOG("Failed write osi file");
-		return false; 
+		return false;
 	}
-	return true; 
+	return true;
 }
 
 int OSIReporter::UpdateOSISensorView(std::vector<ObjectState*> objectState)
@@ -234,7 +257,8 @@ int OSIReporter::UpdateOSISensorView(std::vector<ObjectState*> objectState)
 			LOG("Warning: Object type %d is not supported in OSIReporter, and hence no OSI update for this object", objectState[i]->state_.obj_type);
 		}
 	}
-	
+	UpdateOSIHostVehicleData(objectState[0]);
+
 	//collect all information of lanes in the lane section where obj=0 is
 	UpdateOSIRoadLane(objectState);
 
@@ -257,6 +281,27 @@ int OSIReporter::UpdateOSISensorView(std::vector<ObjectState*> objectState)
 		}
 	}
 
+	return 0;
+}
+
+int OSIReporter::UpdateOSIHostVehicleData(ObjectState* objectState)
+{
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_x(objectState->state_.pos.GetX());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_y(objectState->state_.pos.GetY());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_z(objectState->state_.pos.GetZ());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_velocity()->set_x(objectState->state_.pos.GetVelX());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_velocity()->set_y(objectState->state_.pos.GetVelY());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_velocity()->set_z(objectState->state_.pos.GetVelZ());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_x(objectState->state_.pos.GetAccX());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_y(objectState->state_.pos.GetAccY());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_z(objectState->state_.pos.GetAccZ());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation()->set_yaw(objectState->state_.pos.GetH());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation_rate()->set_yaw(objectState->state_.pos.GetHRate());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation_acceleration()->set_yaw(objectState->state_.pos.GetHAcc());
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_dimension()->set_height(objectState->state_.boundingbox.dimensions_.height_);
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_dimension()->set_width(objectState->state_.boundingbox.dimensions_.width_);
+	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_dimension()->set_length(objectState->state_.boundingbox.dimensions_.length_);
+	
 	return 0;
 }
 
@@ -450,7 +495,7 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 				roadmanager::Lane* lane = lane_section->GetLaneByIdx(k);
 
 				int n_roadmarks = lane->GetNumberOfRoadMarks();
-				if (n_roadmarks != 0) // if there are road marks 
+				if (n_roadmarks != 0) // if there are road marks
 				{
 					// loop over RoadMarks
 					for (int ii = 0; ii < lane->GetNumberOfRoadMarks(); ii++)
@@ -553,7 +598,7 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 						}
 					}
 				}
-				else // if there are no road marks I take the lane boundary 
+				else // if there are no road marks I take the lane boundary
 				{
 					roadmanager::LaneBoundaryOSI* laneboundary = lane->GetLaneBoundary();
 					// Check if this line is already pushed to OSI
@@ -602,11 +647,11 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 
 int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 {
-	// Find ego vehicle 
+	// Find ego vehicle
 	roadmanager::Position pos;
 	for (size_t i = 0; i < objectState.size() ; i++)
 	{
-		if (objectState[i]->state_.control == 3) // external hybrid is host 
+		if (objectState[i]->state_.control == 3) // external hybrid is host
 		{
 			pos = objectState[i]->state_.pos;
 		}
@@ -652,48 +697,48 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						break;
 					}
 				}
-				// if the lane is not already in the osi message we add it all 
-				if (!osi_lane) 
+				// if the lane is not already in the osi message we add it all
+				if (!osi_lane)
 				{
 					// LANE ID 
 					osi_lane = obj_osi_internal.sv->mutable_global_ground_truth()->add_lane();
 					osi_lane->mutable_id()->set_value(lane_global_id);
 
-					// CLASSIFICATION TYPE 
+					// CLASSIFICATION TYPE
 					roadmanager::Lane::LaneType lanetype = lane->GetLaneType();
 					osi3::Lane_Classification_Type class_type;
 
-					if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING 		|| 
-						lanetype == roadmanager::Lane::LaneType::LANE_TYPE_PARKING		|| 	
-						lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIDIRECTIONAL 	 )		
+					if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING 		||
+						lanetype == roadmanager::Lane::LaneType::LANE_TYPE_PARKING		||
+						lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIDIRECTIONAL 	 )
 					{
 						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
 					}
-					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_STOP 		|| 						
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIKING 		|| 
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK 	|| 
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BORDER   	|| 
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RESTRICTED   || 
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ROADMARKS    || 
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_TRAM   		|| 
+					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_STOP 		||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIKING 		||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK 	||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BORDER   	||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RESTRICTED   ||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ROADMARKS    ||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_TRAM   		||
 							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RAIL   			 )
 					{
 						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
 					}
-					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ENTRY 		|| 
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_EXIT 		|| 
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_OFF_RAMP 	|| 
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ON_RAMP 		|| 
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_MEDIAN 		|| 
+					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ENTRY 		||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_EXIT 		||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_OFF_RAMP 	||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ON_RAMP 		||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_MEDIAN 		||
 							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SHOULDER 		 )
 					{
-						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION;					
+						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION;
 					}
-					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL1 	|| 
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL2 	|| 
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL3 		 ) 
+					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL1 	||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL2 	||
+							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL3 		 )
 					{
-						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_OTHER;					
+						class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_OTHER;
 					}
 					else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_NONE )
 					{
@@ -701,7 +746,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 					}
 					osi_lane->mutable_classification()->set_type(class_type);
 
-					// CENTERLINE POINTS 
+					// CENTERLINE POINTS
 					int n_osi_points = lane->GetOSIPoints()->GetNumOfOSIPoints();
 					for (int jj = 0; jj < n_osi_points; jj++)
 					{
@@ -711,15 +756,15 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						centerLine->set_z(lane->GetOSIPoints()->GetZfromIdx(jj));
 					}
 
-					// DRIVING DIRECTION 
-					bool driving_direction = true; 
+					// DRIVING DIRECTION
+					bool driving_direction = true;
 					if (lane_id >= 0)
 					{
-						driving_direction = false; 
-					} 						 
+						driving_direction = false;
+					}
 					osi_lane->mutable_classification()->set_centerline_is_driving_direction(driving_direction);
 
-					// LEFT AND RIGHT LANE IDS 
+					// LEFT AND RIGHT LANE IDS
 					int n_lanes_in_section = lane_section->GetNumberOfLanes();
 					std::vector< std::pair <int,int> > globalid_ids_left;
 					std::vector< std::pair <int,int> > globalid_ids_right;
@@ -751,7 +796,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						right_id->set_value((uint64_t)globalid_ids_right[jj].second);
 					}
 
-					// LANE PAIRING 
+					// LANE PAIRING
 					// STILL TO DO: when I get a vector of predecessors and successors I need to create all possible combinations
 					roadmanager::LaneLink* lane_pre = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
 					roadmanager::LaneLink* lane_succ = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
@@ -775,12 +820,12 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						}
 					}
 
-					// LANE BOUNDARY IDS 
+					// LANE BOUNDARY IDS
 					if (lane_id == 0) // for central lane I use the laneboundary osi points as right and left boundary so that it can be used from both sides
 					{
-						// check if lane has road mark 
+						// check if lane has road mark
 						std::vector<int> line_ids = lane->GetLineGlobalIds();
-						if (!line_ids.empty()) // lane has RoadMarks 
+						if (!line_ids.empty()) // lane has RoadMarks
 						{
 							for (int jj = 0; jj < line_ids.size(); jj++ )
 							{
@@ -790,9 +835,9 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 								right_lane_bound_id->set_value(line_ids[jj]);
 							}
 						}
-						else // no road marks -> we take lane boundary 
+						else // no road marks -> we take lane boundary
 						{
-							int laneboundary_global_id = lane->GetLaneBoundaryGlobalId(); 
+							int laneboundary_global_id = lane->GetLaneBoundaryGlobalId();
 							osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
 							left_lane_bound_id->set_value(laneboundary_global_id);
 							osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
@@ -803,7 +848,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 					{
 						// Set left/right laneboundary ID for left/right lanes- we use LaneMarks is they exist, if not we take laneboundary
 						std::vector<int> line_ids = lane->GetLineGlobalIds();
-						if (!line_ids.empty()) // lane has RoadMarks 
+						if (!line_ids.empty()) // lane has RoadMarks
 						{
 							for (int jj = 0; jj < line_ids.size(); jj++ )
 							{
@@ -821,7 +866,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						}
 						else
 						{
-							int laneboundary_global_id = lane->GetLaneBoundaryGlobalId(); 
+							int laneboundary_global_id = lane->GetLaneBoundaryGlobalId();
 							if (lane_id > 0 )
 							{
 								osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
@@ -836,7 +881,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 
 						// Set right/left laneboundary ID for left/right lanes - we look at neightbour lanes
 						int next_lane_id = 0;
-						if (lane_id < 0) // if lane is on the right, then it contains its right boundary. So I need to look into its left lane for the left boundary 
+						if (lane_id < 0) // if lane is on the right, then it contains its right boundary. So I need to look into its left lane for the left boundary
 						{
 							next_lane_id = lane_id+1;
 						}
@@ -854,7 +899,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 								if (lane_id<0)
 								{
 									osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-									left_lane_bound_id->set_value(nextlane_line_ids[jj]);								
+									left_lane_bound_id->set_value(nextlane_line_ids[jj]);
 								}
 								else if (lane_id>0)
 								{
@@ -865,19 +910,19 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						}
 						else // if the neightbour lane does not have Lines for RoadMakrs we take the LaneBoundary
 						{
-							int next_laneboundary_global_id = next_lane->GetLaneBoundaryGlobalId(); 
+							int next_laneboundary_global_id = next_lane->GetLaneBoundaryGlobalId();
 							if (lane_id < 0 )
 							{
-								osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();							
+								osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
 								left_lane_bound_id->set_value(next_laneboundary_global_id);
 							}
 							if (lane_id > 0 )
-							{								
+							{
 								osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
 								right_lane_bound_id->set_value(next_laneboundary_global_id);
 							}
 						}
-					}   
+					}
 
 					// STILL TO DO:
 					int free_bound_id = 0;
@@ -908,18 +953,23 @@ const char* OSIReporter::GetOSISensorView(int* size)
 	return osiSensorView.sensor_view.data();
 }
 
+const char* OSIReporter::GetOSISensorViewRaw()
+{
+	return (const char*) obj_osi_internal.sv;
+}
+
 const char* OSIReporter::GetOSIRoadLane(std::vector<ObjectState*> objectState, int* size, int object_id)
 {
 	// Check if object_id exists
 	if (object_id >= objectState.size())
 	{
 		LOG("Object %d not available, only %d registered", object_id, objectState.size());
-		*size = 0; 
-		return 0; 
+		*size = 0;
+		return 0;
 	}
 
 	// Find position of the object
-	roadmanager::Position pos; 
+	roadmanager::Position pos;
 	for (size_t i = 0; i < objectState.size() ; i++)
 	{
 		if (object_id == objectState[i]->state_.id)
@@ -938,7 +988,7 @@ const char* OSIReporter::GetOSIRoadLane(std::vector<ObjectState*> objectState, i
 		if (found_id == lane_id_of_vehicle)
 		{
 			idx = i;
-			break; 
+			break;
 		}
 	}
 
@@ -961,13 +1011,13 @@ const char* OSIReporter::GetOSIRoadLaneBoundary(int* size, int global_id)
 		if (found_id == global_id)
 		{
 			idx = i;
-			break; 
+			break;
 		}
 	}
 
 	if (idx == -1)
 	{
-		return 0; 
+		return 0;
 	}
 
 	// serialize to string the single lane
@@ -986,13 +1036,13 @@ bool OSIReporter::IsCentralOSILane(int lane_idx)
 	osi3::Identifier Right_lb_id = obj_osi_internal.ln[lane_idx]->mutable_classification()->right_lane_boundary_id(0);
 	int right_lb_id = (int)Right_lb_id.value();
 
-	if (left_lb_id == right_lb_id) 
+	if (left_lb_id == right_lb_id)
 	{
-		return true; 
+		return true;
 	}
 	else
 	{
-		return false; 
+		return false;
 	}
 }
 
@@ -1005,37 +1055,37 @@ int OSIReporter::GetLaneIdxfromIdOSI(int lane_id)
 		int found_id = (int)identifier.value(); 
 		if (found_id == lane_id)
 		{
-			idx = i; 
-			break; 
+			idx = i;
+			break;
 		}
 	}
-	return idx; 
+	return idx;
 }
 
 void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, std::vector<int> &ids, int object_id)
 {
-	int idx_central, idx_left, idx_right; 
-	int left_lb_id, right_lb_id; 
-	int far_left_lb_id, far_right_lb_id;  
-	std::vector<int> final_lb_ids;   
+	int idx_central, idx_left, idx_right;
+	int left_lb_id, right_lb_id;
+	int far_left_lb_id, far_right_lb_id;
+	std::vector<int> final_lb_ids;
 
 	// Check if object_id exists
 	if (object_id >= objectState.size())
 	{
 		LOG("Object %d not available, only %d registered", object_id, objectState.size());
-		ids = {-1, -1, -1, -1}; 
-		return; 
-	}	
+		ids = {-1, -1, -1, -1};
+		return;
+	}
 
-	// Find position of the object 
+	// Find position of the object
 	roadmanager::Position pos;
 	for (size_t i = 0; i < objectState.size(); i++)
 	{
 		if (object_id == objectState[i]->state_.id)
 		{
 			pos = objectState[i]->state_.pos;
-		}		
-	} 
+		}
+	}
 
 	// find the lane in the sensor view and save its index
 	int lane_id_of_vehicle = pos.GetLaneGlobalId();
@@ -1044,7 +1094,7 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, s
 	// find left and right lane boundary ids of central lane	
 	if (obj_osi_internal.ln[idx_central]->mutable_classification()->left_lane_boundary_id_size() == 0 )
 	{
-		left_lb_id = -1;  
+		left_lb_id = -1;
 	}
 	else
 	{
@@ -1054,7 +1104,7 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, s
 
 	if (obj_osi_internal.ln[idx_central]->mutable_classification()->right_lane_boundary_id_size() == 0 )
 	{
-		right_lb_id = -1; 
+		right_lb_id = -1;
 	}
 	else
 	{
@@ -1078,33 +1128,33 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, s
 			// if it is central lane -> we look for its left one
 			if (obj_osi_internal.ln[idx_left]->mutable_classification()->left_adjacent_lane_id_size() == 0 )
 			{
-				far_right_lb_id = -1; 
-			} 
+				far_right_lb_id = -1;
+			}
 			else
 			{
 				Left_lane_id = obj_osi_internal.ln[idx_left]->mutable_classification()->left_adjacent_lane_id(0);
 				left_lane_id = (int)Left_lane_id.value(); 	
 				idx_left = GetLaneIdxfromIdOSI(left_lane_id);
-			} 
+			}
 		}
 		// save left boundary of left lane as far left lane boundary of central lane
 		if (obj_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id_size() == 0 )
 		{
-			far_right_lb_id = -1; 
+			far_right_lb_id = -1;
 		}
 		else
 		{
 			osi3::Identifier Far_left_lb_id = obj_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id(0);
 			far_left_lb_id = (int)Far_left_lb_id.value();
 		}
-		
+
 	}
-		
+
 
 	// now find first right lane
 	if (obj_osi_internal.ln[idx_central]->mutable_classification()->right_adjacent_lane_id_size() == 0 )
 	{
-		far_right_lb_id = -1; 
+		far_right_lb_id = -1;
 	}
 	else
 	{
@@ -1116,7 +1166,7 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, s
 			// if it is central lane -> we look for its right one 
 			if (obj_osi_internal.ln[idx_right]->mutable_classification()->right_adjacent_lane_id_size() == 0 )
 			{
-				far_right_lb_id = -1; 
+				far_right_lb_id = -1;
 			}
 			else
 			{
@@ -1128,24 +1178,29 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, s
 		// save right boundary of right lane as far right lane boundary of central lane 
 		if (obj_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id_size() == 0 )
 		{
-			far_right_lb_id = -1; 
+			far_right_lb_id = -1;
 		}
 		else
 		{
 			osi3::Identifier Far_right_lb_id = obj_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id(0);
 			far_right_lb_id = (int)Far_right_lb_id.value();
 		}
-		 
+
 	}
-		
-	// push all ids into output vector 
+
+	// push all ids into output vector
 	final_lb_ids.push_back(far_left_lb_id);
 	final_lb_ids.push_back(left_lb_id);
-	final_lb_ids.push_back(right_lb_id); 
+	final_lb_ids.push_back(right_lb_id);
 	final_lb_ids.push_back(far_right_lb_id);
 
-	ids = final_lb_ids; 
+	ids = final_lb_ids;
 
 	return;
 
+}
+
+const char* OSIReporter::GetOSISensorDataRaw()
+{
+    return (const char*) obj_osi_internal.sd;
 }

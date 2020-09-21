@@ -172,6 +172,13 @@ double GetLengthOfVector3D(double x, double y, double z);
 void RotateVec2D(double x, double y, double angle, double &xr, double &yr);
 
 /**
+  Convert target (x,y) coordinates to coordinate system of the host 
+*/
+void Global2LocalCoordinates(double xTargetGlobal, double yTargetGlobal, 
+							 double xHostGlobal, double yHostGlobal, double angleHost, 
+							 double &targetXforHost, double &targetYforHost);
+
+/**
   Normalize a 2D vector
 */
 void NormalizeVec2D(double x, double y, double &xn, double &yn);

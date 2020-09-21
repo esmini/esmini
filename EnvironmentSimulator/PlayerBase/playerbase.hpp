@@ -59,6 +59,7 @@ public:
 	ScenarioPlayer(int &argc, char *argv[]);
 	~ScenarioPlayer();
 	bool IsQuitRequested() { return quit_request; }
+	void SetOSIFileStatus(bool is_on);
 	void Frame();  // let player calculate actual time step
 	void Frame(double timestep_s);
 	void ScenarioFrame(double timestep_s);

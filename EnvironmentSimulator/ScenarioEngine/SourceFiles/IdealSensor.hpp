@@ -58,6 +58,15 @@ namespace scenarioengine
 			double x_;		  // Position of object, in local coordinates from sensor
 			double y_;
 			double z_;
+			double velX_;	  // Velocity of object in local coordinates from sensor
+			double velY_;
+			double velZ_;
+			double accX_;	  // Acceleration of object in local coordinates from sensor
+			double accY_;
+			double accZ_;
+			double yaw_;	  // Yaw of object in local coordinates from sensor
+			double yawRate_;
+			double yawAcc_;
 		} ObjectHit;
 
 		double near_;         // Near limit field of view, from position of sensor

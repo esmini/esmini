@@ -14,7 +14,6 @@
 
 #include "IdealSensor.hpp"
 #include "ScenarioGateway.hpp"
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -48,6 +47,10 @@ public:
 	*/
 	int UpdateOSIStationaryObject(ObjectState* objectState);
 	/**
+	Fills up the osi message with Host Vehicle data
+	*/
+	int UpdateOSIHostVehicleData(ObjectState* objectState);
+	/**
 	Fills up the osi message with Moving Object
 	*/
 	int UpdateOSIMovingObject(ObjectState* objectState);
@@ -61,9 +64,11 @@ public:
 	int UpdateOSIRoadLane(std::vector<ObjectState*> objectState);
 
 	const char* GetOSISensorView(int* size);
+	const char* GetOSISensorViewRaw();
 	const char* GetOSIRoadLane(std::vector<ObjectState*> objectState, int* size, int object_id);
 	const char* GetOSIRoadLaneBoundary(int* size, int global_id);
 	void GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, std::vector<int>& ids, int object_id);
+    const char* GetOSISensorDataRaw();
 	bool IsCentralOSILane(int lane_idx);
 	int GetLaneIdxfromIdOSI(int lane_id);
 	int OpenSocket(std::string ipaddr);

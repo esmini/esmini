@@ -27,7 +27,7 @@ using namespace scenarioengine;
 
 #define GHOST_HEADSTART 2.5
 
-static int osi_counter = 0; 
+static int osi_counter = 0;
 
 void log_callback(const char *str)
 {
@@ -43,7 +43,7 @@ std::string ScenarioPlayer::RequestControlMode2Str(RequestControlMode mode)
 	else return "Unknown";
 }
 
-ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) : 
+ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	maxStepSize(0.1), minStepSize(0.01), argc_(argc), argv_(argv)
 {
 	quit_request = false;
@@ -52,7 +52,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	launch_server = false;
 	fixed_timestep_ = -1.0;
 	osi_receiver_addr = "";
-	osi_file = false; 
+	osi_file = false;
 	osi_freq_ = 1;
 	CSV_Log = NULL;
 	osiReporter = NULL;
@@ -104,6 +104,17 @@ ScenarioPlayer::~ScenarioPlayer()
 	}
 }
 
+void ScenarioPlayer::SetOSIFileStatus(bool is_on)
+{
+	if (osiReporter)
+	{
+		if (is_on && osiReporter->OpenOSIFile())
+		{
+			osi_file = is_on;
+		}
+	}
+}
+
 void ScenarioPlayer::Frame(double timestep_s)
 {
 	static bool messageShown = false;
@@ -146,7 +157,7 @@ void ScenarioPlayer::Frame()
 void ScenarioPlayer::ScenarioFrame(double timestep_s)
 {
 	mutex.Lock();
-	
+
 	scenarioEngine->step(timestep_s);
 
 	for (size_t i = 0; i < sensor.size(); i++)
@@ -159,7 +170,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	// Update OSI info
 	if (osi_file || osiReporter->GetSocket())
 	{
-		osi_counter++; 
+		osi_counter++;
 		if (osi_counter % osi_freq_ == 0 )
 		{
 			osiReporter->UpdateOSISensorView(scenarioGateway->objectState_);
@@ -167,7 +178,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 			{
 				osiReporter->WriteOSIFile();
 			}
-		}	
+		}
 	}
 
 	// Update position along ghost trails
@@ -219,7 +230,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	//    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
 
 	mutex.Unlock();
-	
+
 	if (scenarioEngine->GetQuitFlag())
 	{
 		quit_request = true;
@@ -242,7 +253,7 @@ void ScenarioPlayer::ViewerFrame()
 
 
 	// Add or remove cars (for sumo)
-	
+
 	if (scenarioEngine->entities.object_.size() > viewer_->cars_.size())
 	{
 		// add cars missing
@@ -264,7 +275,7 @@ void ScenarioPlayer::ViewerFrame()
 				viewer_->AddCar(scenarioEngine->entities.object_[i]->model_filepath_, false,trail_color, false ,scenarioEngine->entities.object_[i]->name_);
 			}
 		}
-	} 
+	}
 	else if (scenarioEngine->entities.object_.size() < viewer_->cars_.size())
 	{
 		// remove obsolete cars
@@ -277,7 +288,7 @@ void ScenarioPlayer::ViewerFrame()
 				{
 					toremove = false;
 				}
-				
+
 			}
 			if (toremove)
 			{
@@ -329,9 +340,9 @@ void ScenarioPlayer::ViewerFrame()
 		sensorFrustum[i]->Update();
 	}
 
-	// Update info text 
+	// Update info text
 	static char str_buf[128];
-	snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", scenarioEngine->getSimulationTime(), 
+	snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", scenarioEngine->getSimulationTime(),
 		3.6 * scenarioEngine->entities.object_[viewer_->currentCarInFocus_]->speed_);
 	viewer_->SetInfoText(str_buf);
 
@@ -594,7 +605,7 @@ int ScenarioPlayer::Init()
 		SetFixedTimestep(atof(arg_str.c_str()));
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
 	}
-	
+
 	double ghost_headstart = GHOST_HEADSTART;
 	if ((arg_str = opt.GetOptionArg("ghost_headstart")) != "")
 	{
@@ -632,7 +643,7 @@ int ScenarioPlayer::Init()
 	{
 		osiReporter->OpenSocket(opt.GetOptionArg("osi_receiver_ip"));
 	}
-	
+
 	if (opt.GetOptionArg("osi_file") ==  "on")
 	{
 		osi_file = true;
@@ -641,17 +652,17 @@ int ScenarioPlayer::Init()
 			osi_file = false;
 		}
 	}
-	
+
 	if ((arg_str = opt.GetOptionArg("osi_freq")) != "")
 	{
 		if (osi_file == false)
 		{
-			LOG("Specify osi frequence without --osi_file on is not possible"); 
+			LOG("Specifying osi frequency without --osi_file on is not possible");
 			return -1; 
 		}
 		osi_freq_ = atoi(arg_str.c_str());
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
-	}	
+	}
 
 	// Initialize CSV logger for recording vehicle data
 	if (opt.GetOptionSet("csv_logger"))
