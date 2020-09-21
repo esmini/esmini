@@ -4,6 +4,7 @@
 #include "RoadManager.hpp"
 #include <vector>
 #include <stdexcept>
+#include "mocks/RoadManager_mocks.cpp"
 
 using namespace roadmanager;
 
@@ -1356,7 +1357,6 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark)
 {
     LaneRoadMark *laneroadmark = new LaneRoadMark(2.0, LaneRoadMark::RoadMarkType::BROKEN, LaneRoadMark::RoadMarkWeight::STANDARD,
     LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
-    
     lane.AddLaneRoadMark(laneroadmark);
 
     ASSERT_THROW(lane.GetLaneRoadMarkByIdx(-1), std::runtime_error);
@@ -1372,8 +1372,20 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark)
     ASSERT_EQ(mylaneroadmark->GetColor(), LaneRoadMark::RoadMarkColor::RED);
     ASSERT_EQ(mylaneroadmark->GetMaterial(), LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL);
     ASSERT_EQ(mylaneroadmark->GetLaneChange(), LaneRoadMark::RoadMarkLaneChange::BOTH);
-    
+
     delete laneroadmark;
+}
+
+
+LaneMock::LaneMock(int id, Lane::LaneType type) : Lane(id, type)
+{
+
+}
+
+TEST(TestLane, TestRoadMarkInfo)
+{
+    LaneMock mockedlane(0, Lane::LaneType::LANE_TYPE_DRIVING);
+    EXPECT_CALL(mockedlane, GetRoadMarkInfoByS(1, 0, 2.0));
 }
 
 //////////////////////////////////////////////////////////////////////

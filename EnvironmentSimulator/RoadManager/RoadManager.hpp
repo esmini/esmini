@@ -553,7 +553,7 @@ namespace roadmanager
 		LaneWidth *GetWidthByS(double s);
 		LaneRoadMark* GetLaneRoadMarkByIdx(int idx);
 
-		RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
+		virtual RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
 		OSIPoints* GetOSIPoints() { return &osi_points_;}
 		std::vector<int> GetLineGlobalIds(); 
 		LaneBoundaryOSI* GetLaneBoundary() {return lane_boundary_; }
