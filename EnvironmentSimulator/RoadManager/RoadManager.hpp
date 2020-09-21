@@ -544,7 +544,7 @@ namespace roadmanager
 		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
 		
 		// Get Functions
-		int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
+		virtual int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
 		int GetNumberOfLinks() { return (int)link_.size(); }
 		int GetNumberOfLaneWidths() { return (int)lane_width_.size(); }
 
@@ -553,7 +553,7 @@ namespace roadmanager
 		LaneWidth *GetWidthByS(double s);
 		LaneRoadMark* GetLaneRoadMarkByIdx(int idx);
 
-		virtual RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
+		RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
 		OSIPoints* GetOSIPoints() { return &osi_points_;}
 		std::vector<int> GetLineGlobalIds(); 
 		LaneBoundaryOSI* GetLaneBoundary() {return lane_boundary_; }
@@ -784,13 +784,13 @@ namespace roadmanager
 		...
 		@param idx index into the vector of lane sections
 		*/
-		LaneSection *GetLaneSectionByIdx(int idx);
+		virtual LaneSection *GetLaneSectionByIdx(int idx);
 		
 		/**
 		Retrieve the lanesection index at specified s-value
 		@param s distance along the road segment
 		*/
-		int GetLaneSectionIdxByS(double s, int start_at = 0);
+		virtual int GetLaneSectionIdxByS(double s, int start_at = 0);
 
 		/**
 		Retrieve the lanesection at specified s-value
@@ -969,7 +969,7 @@ namespace roadmanager
 		Retrieve a road segment specified by road ID 
 		@param id road ID as specified in the OpenDRIVE file
 		*/
-		Road* GetRoadById(int id);
+		virtual Road* GetRoadById(int id);
 
 		/**
 		Retrieve a road segment specified by road vector element index
@@ -1300,7 +1300,7 @@ namespace roadmanager
 		Retrieve a road segment specified by road ID
 		@param id road ID as specified in the OpenDRIVE file
 		*/
-		Road *GetRoadById(int id) { return GetOpenDrive()->GetRoadById(id);	}
+		virtual Road *GetRoadById(int id) { return GetOpenDrive()->GetRoadById(id);	}
 
 		/**
 		Retrieve the s value (distance along the road segment)

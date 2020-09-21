@@ -1089,11 +1089,12 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s)
 	LaneRoadMarkType *lane_roadMarkType;
 	LaneRoadMarkTypeLine *lane_roadMarkTypeLine;
 	RoadMarkInfo rm_info;
-	int lsec_idx, number_of_lsec, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
+	/*int lsec_idx, number_of_lsec, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
 	double s_roadmark, s_roadmarkline, s_end_roadmark, s_end_roadmarkline, lsec_end;
 	if (road == 0)
 	{
 		LOG("Position::Set Error: track %d not available\n", track_id);
+		lsec_idx = -1;
 	}
 	else
 	{
@@ -1101,6 +1102,7 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s)
 	}
 
 	lsec = road->GetLaneSectionByIdx(lsec_idx);
+
 	if (lsec == 0)
 	{
 		LOG("Position::Set Error: lane section %d not available\n", lsec_idx);
@@ -1195,6 +1197,7 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s)
 			}
 		}	
 	}
+	delete pos;*/
 	return rm_info;
 }
 

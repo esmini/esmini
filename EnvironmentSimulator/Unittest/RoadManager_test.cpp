@@ -1,9 +1,10 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "RoadManager.hpp"
 #include <vector>
 #include <stdexcept>
+
+#include "RoadManager.hpp"
 #include "mocks/RoadManager_mocks.cpp"
 
 using namespace roadmanager;
@@ -1382,10 +1383,44 @@ LaneMock::LaneMock(int id, Lane::LaneType type) : Lane(id, type)
 
 }
 
-TEST(TestLane, TestRoadMarkInfo)
+LaneSectionMock::LaneSectionMock(double s) : LaneSection(s)
 {
-    LaneMock mockedlane(0, Lane::LaneType::LANE_TYPE_DRIVING);
-    EXPECT_CALL(mockedlane, GetRoadMarkInfoByS(1, 0, 2.0));
+
+}
+
+RoadMock::RoadMock(int id, std::string name) : Road(id, name)
+{
+
+}
+
+PositionMock::PositionMock(int track_id, double s, double t) : Position(track_id, s, t)
+{
+
+}
+
+TEST(TestLane, TestRoadMarkInfoFailCase)
+{
+    /*LaneMock mockedlane(0, Lane::LaneType::LANE_TYPE_DRIVING);
+    LaneSectionMock mockedlsec(0.0);
+    RoadMock mockedroad(0, "my_road");
+    PositionMock mockedpos(0, 2.0, 0.0);
+
+    Lane lane = Lane(0, Lane::LaneType::LANE_TYPE_DRIVING);
+    Road *road = 0;
+    LaneSection *lsec = 0;
+    Lane *dummylane = 0;
+
+    EXPECT_CALL(mockedpos, GetRoadById(testing::_)).Times(0);
+    //EXPECT_CALL(mockedroad, GetLaneSectionIdxByS(testing::_, testing::_)).Times(0);
+    //EXPECT_CALL(mockedroad, GetLaneSectionByIdx(-1)).Times(1).WillOnce(testing::Return(lsec));
+    //EXPECT_CALL(mockedlsec, GetLaneById(0)).Times(1).WillOnce(testing::Return(dummylane));
+    //EXPECT_CALL(mockedlane, GetNumberOfRoadMarks()).Times(1).WillOnce(testing::Return(0));
+
+    ASSERT_ANY_THROW(lane.GetRoadMarkInfoByS(mockedroad.GetId(), mockedlane.GetId(), 2.0));
+
+    //ASSERT_EQ(rmarkinfo.roadmark_idx_, -1);
+    //ASSERT_EQ(rmarkinfo.roadmarkline_idx_, -1);*/
+    
 }
 
 //////////////////////////////////////////////////////////////////////
