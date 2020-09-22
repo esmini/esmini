@@ -1376,6 +1376,41 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark)
     delete laneroadmark;
 }
 
+/*
+TODO: The test for Lane::GetRoadMarkInfoByS.
+*/
+
+TEST_F(LaneTestFixture, TestLaneGetOSIPoints)
+{
+    OSIPoints *osi_points = lane.GetOSIPoints();
+    ASSERT_EQ(osi_points->GetS().size(), 0);
+    ASSERT_EQ(osi_points->GetX().size(), 0);
+    ASSERT_EQ(osi_points->GetY().size(), 0);
+    ASSERT_EQ(osi_points->GetZ().size(), 0);
+    ASSERT_EQ(osi_points->GetH().size(), 0);
+
+    std::vector<double> s {0, -1, 2};
+    std::vector<double> x {0, -1, 2};
+    std::vector<double> y {0, -1, 2};
+    std::vector<double> z {0, -1, 2};
+    std::vector<double> h {0, -1, 2};
+    lane.osi_points_.Set(s, x, y, z, h);
+
+    OSIPoints *osi_points_second = lane.GetOSIPoints();
+    ASSERT_EQ(osi_points->GetS().size(), 3);
+    ASSERT_EQ(osi_points->GetX().size(), 3);
+    ASSERT_EQ(osi_points->GetY().size(), 3);
+    ASSERT_EQ(osi_points->GetZ().size(), 3);
+    ASSERT_EQ(osi_points->GetH().size(), 3);
+
+    ASSERT_EQ(osi_points->GetS()[0], 0);
+    ASSERT_EQ(osi_points->GetS()[1], -1);
+    ASSERT_EQ(osi_points->GetS()[2], 2);
+}
+
+
+
+
 
 int main(int argc, char **argv)
 {

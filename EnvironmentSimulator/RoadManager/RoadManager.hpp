@@ -569,9 +569,6 @@ namespace roadmanager
 		bool IsDriving();
 		void Print();
 		OSIPoints osi_points_;
-		
-		
-
 
 	private:
 		int id_;		// center = 0, left > 0, right < 0
@@ -1300,7 +1297,7 @@ namespace roadmanager
 		Retrieve a road segment specified by road ID
 		@param id road ID as specified in the OpenDRIVE file
 		*/
-		virtual Road *GetRoadById(int id) { return GetOpenDrive()->GetRoadById(id);	}
+		Road *GetRoadById(int id) { return GetOpenDrive()->GetRoadById(id);	}
 
 		/**
 		Retrieve the s value (distance along the road segment)
