@@ -507,8 +507,8 @@ void ScenarioEngine::stepObjects(double dt)
 	{
 		Object *obj = entities.object_[i];
 
-		if (obj->control_ == Object::Control::INTERNAL ||
-			obj->control_ == Object::Control::HYBRID_GHOST)
+		if (obj->speed_ > SMALL_NUMBER && (obj->control_ == Object::Control::INTERNAL ||
+			obj->control_ == Object::Control::HYBRID_GHOST))
 		{
 			int retvalue = 0;
 			double steplen = obj->speed_ * dt;
