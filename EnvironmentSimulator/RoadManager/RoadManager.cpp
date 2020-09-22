@@ -1683,14 +1683,19 @@ OpenDrive::OpenDrive(const char *filename)
 	}
 }
 
+void OpenDrive::InitGlobalLaneIds()
+{
+	g_Lane_id = 0; 
+	g_Laneb_id = 0;
+}
+
 bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 {
 	mt_rand.seed((unsigned int)time(0));
 
 	if (replace)
 	{
-		g_Lane_id = 0; 
-		g_Laneb_id = 0;
+		InitGlobalLaneIds();
 
 		for (size_t i=0; i<road_.size(); i++)
 		{

@@ -544,7 +544,7 @@ namespace roadmanager
 		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
 		
 		// Get Functions
-		virtual int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
+		int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
 		int GetNumberOfLinks() { return (int)link_.size(); }
 		int GetNumberOfLaneWidths() { return (int)lane_width_.size(); }
 
@@ -943,6 +943,11 @@ namespace roadmanager
 		@param replace If true any old road data will be erased, else new will be added to the old
 		*/
 		bool LoadOpenDriveFile(const char *filename, bool replace = true);
+		
+		/**
+		Initialize the global ids for lanes
+		*/ 
+		void InitGlobalLaneIds();
 
 		/**
 		Get the filename of currently loaded OpenDRIVE file

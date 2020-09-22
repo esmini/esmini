@@ -1408,9 +1408,52 @@ TEST_F(LaneTestFixture, TestLaneGetOSIPoints)
     ASSERT_EQ(osi_points->GetS()[2], 2);
 }
 
+TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
+{
+    LaneRoadMark *laneroadmark = new LaneRoadMark(0, LaneRoadMark::RoadMarkType::BROKEN, LaneRoadMark::RoadMarkWeight::STANDARD,
+    LaneRoadMark::RoadMarkColor::STANDARD_COLOR, LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH,
+    1.0, 1.0);
+    LaneRoadMark *laneroadmark_second = new LaneRoadMark(50, LaneRoadMark::RoadMarkType::BROKEN, LaneRoadMark::RoadMarkWeight::STANDARD,
+    LaneRoadMark::RoadMarkColor::STANDARD_COLOR, LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH,
+    2.0, 2.0);
 
+    LaneRoadMarkType *laneroadmarktype = new LaneRoadMarkType("type1", 1.0);
+    LaneRoadMarkType *laneroadmarktype_second = new LaneRoadMarkType("type2", 1.0);
+    
+    LaneRoadMarkTypeLine *laneRoadMarktypeline = new LaneRoadMarkTypeLine(3.0, 1.0, 0.5, 0.0, LaneRoadMarkTypeLine::RoadMarkTypeLineRule::CAUTION, 1.0);
+    LaneRoadMarkTypeLine *laneRoadMarktypeline_second = new LaneRoadMarkTypeLine(3.0, 1.0, 0.5, 50.0, LaneRoadMarkTypeLine::RoadMarkTypeLineRule::CAUTION, 1.0);
 
+    laneroadmark->AddType(laneroadmarktype);
+    laneroadmark->AddType(laneroadmarktype_second);
 
+    laneroadmarktype->AddLine(laneRoadMarktypeline);
+    laneroadmarktype->AddLine(laneRoadMarktypeline_second);
+    laneroadmarktype_second->AddLine(laneRoadMarktypeline_second);
+
+    lane.AddLaneRoadMark(laneroadmark);
+    lane.AddLaneRoadMark(laneroadmark_second);
+
+    OpenDrive *odr;
+    odr->InitGlobalLaneIds();
+    laneRoadMarktypeline->SetGlobalId();
+    laneRoadMarktypeline_second->SetGlobalId();
+
+    std::vector<int> all_glob_ids = lane.GetLineGlobalIds();
+
+    ASSERT_THAT(all_glob_ids.size(),3);
+    ASSERT_THAT(laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(0)->GetGlobalId(), 0);
+    ASSERT_THAT(laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(1)->GetGlobalId(), 1);
+    ASSERT_THAT(laneroadmarktype_second->GetLaneRoadMarkTypeLineByIdx(0)->GetGlobalId(), 1);
+
+    delete laneroadmark;
+    delete laneroadmark_second;
+
+    delete laneroadmarktype;
+    delete laneroadmarktype_second;
+
+    delete laneRoadMarktypeline;
+    delete laneRoadMarktypeline_second;
+}
 
 int main(int argc, char **argv)
 {
