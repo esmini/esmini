@@ -10,7 +10,6 @@ include_directories (
 )
 
 macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES)
-    file(GLOB SRC "${CMAKE_CURRENT_SOURCE_DIR}/mocks/*.cpp")
     add_executable(${TESTNAME} ${FILES} ${SRC})
 
     target_link_libraries(${TESTNAME} ${GTEST_LIBRARIES} ${LIBRARIES} ${ARGN})
