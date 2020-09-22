@@ -67,13 +67,13 @@ std::vector<Car*> cars;
 // path should be relative the OpenDRIVE file
 static const char* carModelsFiles_[] =
 {
-	"../models/car_white.osgb",
-	"../models/car_blue.osgb",
-	"../models/car_red.osgb",
-	"../models/car_yellow.osgb",
-	"../models/truck_yellow.osgb",
-	"../models/van_red.osgb",
-	"../models/bus_blue.osgb",
+	"car_white.osgb",
+	"car_blue.osgb",
+	"car_red.osgb",
+	"car_yellow.osgb",
+	"truck_yellow.osgb",
+	"van_red.osgb",
+	"bus_blue.osgb",
 };
 
 std::vector<osg::ref_ptr<osg::LOD>> carModels_;
@@ -258,6 +258,7 @@ int main(int argc, char** argv)
 			odrManager,
 			modelFilename.c_str(),
 			NULL,
+			argv[0],
 			arguments);
 
 		viewer->ShowOSIFeatures(osi_features);

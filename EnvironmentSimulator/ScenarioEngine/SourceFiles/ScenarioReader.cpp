@@ -976,8 +976,6 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 
 	pugi::xml_node positionChild = positionNode.first_child();
 
-	LOG("Parsing %s: ", positionChild.name());
-
 	std::string positionChildName(positionChild.name());
 
 	if (positionChildName == "WorldPosition")
@@ -1193,14 +1191,11 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 		pos_return = (OSCPosition*)pos;
 	}
 
-	if (pos_return)
-	{
-		pos_return->Print();
-	}
-	else
+	if (pos_return == 0)
 	{
 		throw std::runtime_error("Failed parse position");
 	}
+
 	return pos_return;
 }
 

@@ -352,6 +352,7 @@ int ScenarioPlayer::InitViewer()
 		roadmanager::Position::GetOpenDrive(),
 		scenarioEngine->getSceneGraphFilename().c_str(),
 		scenarioEngine->getScenarioFilename().c_str(),
+		exe_path_.c_str(),
 		arguments, &opt);
 
 	if (opt.GetOptionArg("info_text") == "off")
@@ -539,6 +540,7 @@ int ScenarioPlayer::Init()
 		return -1;
 	}
 
+	exe_path_ = argv_[0];
 	opt.ParseArgs(&argc_, argv_);
 
 	RequestControlMode control = RequestControlMode::CONTROL_BY_OSC;

@@ -220,11 +220,12 @@ namespace viewer
 		bool showRoadFeatures;
 		bool showOSIFeatures;
 		bool showObjectSensors;
+		std::string exe_path_;
 
 		osg::ref_ptr<osg::Camera> infoTextCamera;
 		osg::ref_ptr<osgText::Text> infoText;
 
-		Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, SE_Options *opt = 0);
+		Viewer(roadmanager::OpenDrive *odrManager, const char* modelFilename, const char* scenarioFilename, const char* exe_path, osg::ArgumentParser arguments, SE_Options* opt = 0);
 		~Viewer();
 		void SetCameraMode(int mode);
 		void SetVehicleInFocus(int idx);

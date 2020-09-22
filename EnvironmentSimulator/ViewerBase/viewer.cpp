@@ -587,7 +587,7 @@ void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta
 	UpdateWheels(wheel_angle, wheel_rot_ + wheel_rotation_delta);
 }
 
-Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, const char *scenarioFilename, osg::ArgumentParser arguments, SE_Options *opt)
+Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, const char* scenarioFilename, const char* exe_path, osg::ArgumentParser arguments, SE_Options* opt)
 {
 	odrManager_ = odrManager;
 	bool clear_color;
@@ -703,6 +703,7 @@ Viewer::Viewer(roadmanager::OpenDrive *odrManager, const char *modelFilename, co
 	rootnode_->addChild(odrLines_);
 	osiLines_ = new osg::Group;
 	rootnode_->addChild(osiLines_);
+	exe_path_ = exe_path;
 
 	ShowTrail(true);  // show trails per default
 	ShowRoadFeatures(true);
@@ -905,46 +906,57 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 		{
 			lod = LoadCarModel(path2.c_str());
 		}
-		
+
 		if (lod == 0)
 		{
-			// Failed to load model for some reason - maybe no filename. Create a dummy stand-in geometry
-			if (path == "")
+			std::string path3 = CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", path).c_str();
+			
+			if (FileExists(path3.c_str()))
 			{
-				LOG("No filename specified for car model! - creating a dummy model");
+				lod = LoadCarModel(path3.c_str());
 			}
-			else
+			
+
+			if (lod == 0)
 			{
-				LOG("Failed to locate model %s, also trued %s. Creating a dummy model instead", path.c_str(), path2.c_str());
+				// Failed to load model for some reason - maybe no filename. Create a dummy stand-in geometry
+				if (path == "")
+				{
+					LOG("No filename specified for car model! - creating a dummy model");
+				}
+				else
+				{
+					LOG("Failed to locate model %s, also tried %s and %s. Creating a dummy model instead", path.c_str(), path2.c_str(), path3.c_str());
+				}
+
+				osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+				geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
+				lod = new osg::LOD;
+				lod->setRange(0, 0, LOD_DIST);
+				osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
+				lod->addChild(tx);
+
+				// Set dimensions of the vehicle "box"
+				tx->setScale(osg::Vec3(4.0, 2.0, 1.2));
+				tx->setPosition(osg::Vec3(3.0, 0.0, 0.6));
+				tx->addChild(geode);
+
+				osg::Material* material = new osg::Material();
+
+				// Set color of vehicle based on its index
+				double* color;
+				double b = 1.5;  // brighness
+				int index = cars_.size() % 4;
+
+				if (index == 0) color = color_white;
+				else if (index == 1) color = color_red;
+				else if (index == 2) color = color_blue;
+				else color = color_yellow;
+
+				material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+				material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+				tx->getOrCreateStateSet()->setAttribute(material);
 			}
-
-			osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-			geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
-			lod = new osg::LOD;
-			lod->setRange(0, 0, LOD_DIST);
-			osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
-			lod->addChild(tx);
-
-			// Set dimensions of the vehicle "box"
-			tx->setScale(osg::Vec3(4.0, 2.0, 1.2));
-			tx->setPosition(osg::Vec3(3.0, 0.0, 0.6));
-			tx->addChild(geode);
-
-			osg::Material* material = new osg::Material();
-
-			// Set color of vehicle based on its index
-			double* color;
-			double b = 1.5;  // brighness
-			int index = cars_.size() % 4;
-
-			if (index == 0) color = color_white;
-			else if (index == 1) color = color_red;
-			else if (index == 2) color = color_blue;
-			else color = color_yellow;
-
-			material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
-			material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
-			tx->getOrCreateStateSet()->setAttribute(material);
 		}
 	}
 

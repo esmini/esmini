@@ -79,6 +79,7 @@ public:
 	const double maxStepSize;
 	const double minStepSize;
 	SE_Options opt;
+	std::string exe_path_;
 
 private:
 	std::string RequestControlMode2Str(RequestControlMode mode);
