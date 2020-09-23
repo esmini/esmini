@@ -1,5 +1,12 @@
 The purpose of this document is to highlight changes breaking backward compatibility, i.e. updates to scenarios and start scripts might be required.
 
+2020-09-23 Version 1.7.7
+- OSI raw struct output option
+- OSI sensor view in local coordinates
+- Callback mechanism to override (part of) entity states
+- Improved WorldCoordinate(x, y, z) to RoadCoordinate(road, lane, offset) mapping
+- Many minor bugfixes and improvements (and probably a few new bugs)
+
 2020-09-04 Version 1.7.6
 - Added trajectory clothoid support 
 
