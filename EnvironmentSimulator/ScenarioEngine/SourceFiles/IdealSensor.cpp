@@ -105,6 +105,45 @@ void ObjectSensor::Update()
 			hitList_[nObj_].x_ = xl;
 			hitList_[nObj_].y_ = yl;
 			hitList_[nObj_].z_ = obj->pos_.GetZ() - pos_.z_global + 0.7;
+
+			// Calculate hit object velocity in sensor local coordinates
+			double xVelTarget = obj->pos_.GetVelX();
+			double yVelTarget = obj->pos_.GetVelY();
+			double xVelHost = host_->pos_.GetVelX(); 
+			double yVelHost = host_->pos_.GetVelY(); 
+			double angleHost = -GetAngleSum(host_->pos_.GetH(), pos_.h); 
+			double targetVelXforHost, targetVelYforHost;
+			Global2LocalCoordinates(xVelTarget, yVelTarget,
+									xVelHost, yVelHost, angleHost,
+									targetVelXforHost, targetVelYforHost);
+			hitList_[nObj_].velX_ = targetVelXforHost;
+			hitList_[nObj_].velY_ = targetVelYforHost;
+
+			// Calculate hit object acceleration in sensor local coordinates
+			double xAccTarget = obj->pos_.GetAccX();
+			double yAccTarget = obj->pos_.GetAccY();
+			double xAccHost = host_->pos_.GetAccX(); 
+			double yAccHost = host_->pos_.GetAccY(); 
+			double targetAccXforHost, targetAccYforHost;
+			Global2LocalCoordinates(xAccTarget, yAccTarget,
+									xAccHost, yAccHost, angleHost,
+									targetAccXforHost, targetAccYforHost);
+			hitList_[nObj_].accX_ = targetAccXforHost;
+			hitList_[nObj_].accY_ = targetAccYforHost;
+
+			// Calculate hit object yaw, yaw rate and yaw acceleration in sensor local coordinates
+			double yawTarget = obj->pos_.GetH();
+			double yawHost = GetAngleSum(host_->pos_.GetH(), pos_.h);
+			hitList_[nObj_].yaw_ = GetAngleDifference(yawTarget, yawHost);
+
+			double yawRateTarget = obj->pos_.GetHRate();
+			double yawRateHost = host_->pos_.GetHRate();
+			hitList_[nObj_].yawRate_ = GetAngleDifference(yawRateTarget, yawRateHost);
+
+			double yawAccTarget = obj->pos_.GetHAcc();
+			double yawAccHost = host_->pos_.GetHAcc();
+			hitList_[nObj_].yawAcc_ = GetAngleDifference(yawAccTarget, yawAccHost);
+
 			nObj_++;
 		}
 	}

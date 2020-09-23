@@ -297,6 +297,16 @@ void RotateVec2D(double x, double y, double angle, double &xr, double &yr)
 	yr = x * sin(angle) + y * cos(angle);
 }
 
+void Global2LocalCoordinates(double xTargetGlobal, double yTargetGlobal, 
+							 double xHostGlobal, double yHostGlobal, double angleHost, 
+							 double &targetXforHost, double &targetYforHost)
+{
+	double relativeX = xTargetGlobal - xHostGlobal;
+	double relativeY = yTargetGlobal - yHostGlobal;
+	targetXforHost = relativeX * cos(angleHost) - relativeY * sin(angleHost);
+	targetYforHost = relativeX * sin(angleHost) + relativeY * cos(angleHost);
+}
+
 void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size)
 {
 	unsigned char *ptr = buf;

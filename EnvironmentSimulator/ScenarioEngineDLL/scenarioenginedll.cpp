@@ -13,6 +13,8 @@
 #include "playerbase.hpp"
 #include "scenarioenginedll.hpp"
 #include "IdealSensor.hpp"
+#include "osi_sensordata.pb.h"
+
 #include <string>
 
 using namespace scenarioengine;
@@ -335,8 +337,8 @@ extern "C"
 		else
 			quit_flag = 2;
 
-		return quit_flag; 
-		
+		return quit_flag;
+
 	}
 
 	SE_DLL_API void SE_Close()
@@ -446,6 +448,16 @@ extern "C"
 		return 0;
 	}
 
+	SE_DLL_API const char* SE_GetOSISensorViewRaw()
+	{
+		if (player)
+		{
+			return (const char*) player->osiReporter->GetOSISensorViewRaw();
+		}
+
+		return 0;
+	}
+
 	SE_DLL_API const char* SE_GetOSIRoadLane(int* size, int object_id)
 	{
 		if (player)
@@ -467,7 +479,7 @@ extern "C"
 		*size = 0;
 		return 0;
 	}
-	
+
 	SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId* ids)
 	{
 		if (player)
@@ -482,14 +494,24 @@ extern "C"
 				ids->far_right_lb_id = ids_vector[3];
 			}
 		}
-		return; 
+		return;
 	}
-	
+
 	SE_DLL_API int SE_UpdateOSISensorView()
 	{
 		if (player)
 		{
 			return player->osiReporter->UpdateOSISensorView(player->scenarioGateway->objectState_);
+		}
+
+		return 0;
+	}
+
+    SE_DLL_API const char* SE_GetOSISensorDataRaw()
+	{
+		if (player)
+		{
+			return (const char*) player->osiReporter->GetOSISensorDataRaw();
 		}
 
 		return 0;
@@ -506,7 +528,7 @@ extern "C"
 	}
 
 	SE_DLL_API bool SE_OSIFileWrite()
-	{		
+	{
 		if (player)
 		{
 			return player->osiReporter->WriteOSIFile();
@@ -596,7 +618,23 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int* list)
+	SE_DLL_API void SE_DisableOSIFile()
+	{
+		if (player)
+		{
+			player->SetOSIFileStatus(false);
+		}
+	}
+
+	SE_DLL_API void SE_EnableOSIFile()
+	{
+		if (player)
+		{
+			player->SetOSIFileStatus(true);
+		}
+	}
+
+	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int *list)
 	{
 		if (player)
 		{

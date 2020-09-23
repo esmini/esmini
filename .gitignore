@@ -15,3 +15,5 @@ externals/OSI
 externals/SUMO
 externals/googletest
 resources/models
+.pyenv
+.vscode
