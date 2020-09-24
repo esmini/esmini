@@ -1177,6 +1177,7 @@ TEST_F(LaneOffsetTestFixture, TestLaneOffSetCommon)
     ASSERT_EQ(laneoffset_second.GetPolynomial().GetPscale(), 1.0);
 }
 
+
 class LaneOffsetGetLaneOffsetTest: public testing::TestWithParam<std::tuple<double, double>>
 {
     public:
