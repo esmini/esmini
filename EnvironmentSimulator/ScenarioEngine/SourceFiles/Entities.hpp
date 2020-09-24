@@ -73,6 +73,7 @@ namespace scenarioengine
 
 		bool dirty_long_;
 		bool dirty_lat_;
+		bool reset_;
 
 		struct {
 			double pos_x;
@@ -85,7 +86,7 @@ namespace scenarioengine
 
 		Object(Type type) : type_(type), id_(0), trail_follow_index_(0), control_(Object::Control::INTERNAL),
 			speed_(0), wheel_angle_(0), wheel_rot_(0), route_(0), model_filepath_(""), ghost_(0), trail_follow_s_(0),
-			odometer_(0), end_of_road_timestamp_(0.0), off_road_timestamp_(0.0), dirty_long_(0), dirty_lat_(0)
+			odometer_(0), end_of_road_timestamp_(0.0), off_road_timestamp_(0.0), dirty_long_(0), dirty_lat_(0), reset_(0)
 		{
 			trail_closest_pos_[0] = 0.0;
 			trail_closest_pos_[1] = 0.0;

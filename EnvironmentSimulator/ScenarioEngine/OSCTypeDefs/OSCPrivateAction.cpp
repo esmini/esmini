@@ -133,7 +133,6 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 			object_->pos_.SetTrajectoryPosByTime(traj_, simTime * timing_scale_ + timing_offset_);
 		}
 	}
-	object_->odometer_ += PointDistance2D(x0, y0, object_->pos_.GetX(), object_->pos_.GetY());
 
 	object_->dirty_lat_ = true;
 	object_->dirty_long_ = true;
@@ -486,6 +485,7 @@ void PositionAction::Step(double dt, double simTime)
 	position_->Print();
 	object_->dirty_lat_ = true;
 	object_->dirty_long_ = true;
+	object_->reset_ = true;
 
 	OSCAction::Stop();
 }

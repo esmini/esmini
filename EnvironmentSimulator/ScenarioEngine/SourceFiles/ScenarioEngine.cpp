@@ -80,6 +80,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			obj->state_old.vel_y = obj->pos_.GetVelY();
 			obj->state_old.h = obj->pos_.GetH();
 			obj->state_old.h_rate = obj->pos_.GetHRate();
+			obj->reset_ = true;
 		}
 
 		// kick off init actions
@@ -99,6 +100,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			// reset indicators of applied control
 			obj->dirty_lat_ = false;
 			obj->dirty_long_ = false;
+			obj->reset_ = false;
 
 			if (entities.object_[i]->control_ == Object::Control::EXTERNAL ||
 				entities.object_[i]->control_ == Object::Control::HYBRID_EXTERNAL ||
@@ -505,7 +507,6 @@ void ScenarioEngine::stepObjects(double dt)
 			if (obj->pos_.GetRoute())
 			{
 				int retvalue = obj->pos_.MoveRouteDS(steplen);
-				obj->odometer_ += abs(steplen);  // odometer always measure all movements as positive, I guess...
 
 				if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
 				{
@@ -542,7 +543,6 @@ void ScenarioEngine::stepObjects(double dt)
 				}
 				
 				retvalue = obj->pos_.MoveAlongS(steplen);
-				obj->odometer_ += abs(steplen);  // odometer always measure all movements as positive, I guess...
 
 				if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD)
 				{
@@ -559,10 +559,13 @@ void ScenarioEngine::stepObjects(double dt)
 		}
 
 		// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
+		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
+		double dy = obj->pos_.GetY() - obj->state_old.pos_y;
+
 		if (dt > SMALL_NUMBER)
 		{
-			obj->pos_.SetVelX((obj->pos_.GetX() - obj->state_old.pos_x) / dt);
-			obj->pos_.SetVelY((obj->pos_.GetY() - obj->state_old.pos_y) / dt);
+			obj->pos_.SetVelX(dx / dt);
+			obj->pos_.SetVelY(dy / dt);
 			obj->pos_.SetAccX((obj->pos_.GetVelX() - obj->state_old.vel_x) / dt);
 			obj->pos_.SetAccY((obj->pos_.GetVelY() - obj->state_old.vel_y) / dt);
 			double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), obj->state_old.h) / dt;
@@ -576,19 +579,24 @@ void ScenarioEngine::stepObjects(double dt)
 				obj->wheel_angle_ = heading_rate_new / 2;
 			}
 
-			// store current values for next loop
-			obj->state_old.pos_x = obj->pos_.GetX();
-			obj->state_old.pos_y = obj->pos_.GetY();
-			obj->state_old.vel_x = obj->pos_.GetVelX();
-			obj->state_old.vel_y = obj->pos_.GetVelY();
-			obj->state_old.h = obj->pos_.GetH();
-			obj->state_old.h_rate = obj->pos_.GetHRate();
 		}
 		else
 		{
 			// calculate approximated velocity vector based on current heading
 			obj->pos_.SetVelX(obj->speed_ * cos(obj->pos_.GetH()));
 			obj->pos_.SetVelY(obj->speed_ * sin(obj->pos_.GetH()));
+		}
+
+		// store current values for next loop
+		obj->state_old.pos_x = obj->pos_.GetX();
+		obj->state_old.pos_y = obj->pos_.GetY();
+		obj->state_old.vel_x = obj->pos_.GetVelX();
+		obj->state_old.vel_y = obj->pos_.GetVelY();
+		obj->state_old.h = obj->pos_.GetH();
+		obj->state_old.h_rate = obj->pos_.GetHRate();
+		if (!obj->reset_)
+		{
+			obj->odometer_ += abs(sqrt(dx * dx + dy * dy));  // odometer always measure all movements as positive, I guess...
 		}
 
 		obj->trail_.AddState((float)simulationTime, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
