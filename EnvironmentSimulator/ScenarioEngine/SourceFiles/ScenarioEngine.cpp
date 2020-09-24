@@ -309,15 +309,8 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	{
 		Object *obj = entities.object_[i];
 
-		if (initial || // Report all scenario objects the initial run, to establish initial states
-			obj->control_ == Object::Control::INTERNAL ||
-			obj->control_ == Object::Control::HYBRID_GHOST ||
-			obj->control_ == Object::Control::SUMO)
-		{
-			// Then report all except externally controlled objects
-			scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_,obj->model_id_,
-				obj->control_, obj->boundingbox_, simulationTime, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
-		}
+		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_,obj->model_id_,
+			obj->control_, obj->boundingbox_, simulationTime, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 	}
 
 	// update positions to sumo
@@ -599,6 +592,5 @@ void ScenarioEngine::stepObjects(double dt)
 		}
 
 		obj->trail_.AddState((float)simulationTime, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
-
 	}
 }
