@@ -67,9 +67,31 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		return;
 	}
 
-	// Fetch external states from gateway, except the initial run where scenario engine sets all positions
-	if (!initial)
+	if (initial)
 	{
+		// Set initial values for speed and acceleration derivation
+		for (size_t i = 0; i < entities.object_.size(); i++)
+		{
+			Object* obj = entities.object_[i];
+
+			obj->state_old.pos_x = obj->pos_.GetX();
+			obj->state_old.pos_y = obj->pos_.GetY();
+			obj->state_old.vel_x = obj->pos_.GetVelX();
+			obj->state_old.vel_y = obj->pos_.GetVelY();
+			obj->state_old.h = obj->pos_.GetH();
+			obj->state_old.h_rate = obj->pos_.GetHRate();
+		}
+
+		// kick off init actions
+		for (size_t i = 0; i < init.private_action_.size(); i++)
+		{
+			init.private_action_[i]->Start();
+			init.private_action_[i]->UpdateState();
+		}
+	}
+	else
+	{
+		// Fetch external states from gateway, except the initial run where scenario engine sets all positions
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
 			Object* obj = entities.object_[i];
@@ -77,14 +99,6 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			// reset indicators of applied control
 			obj->dirty_lat_ = false;
 			obj->dirty_long_ = false;
-
-			// Store some values for derivation
-			obj->state_old.pos_x = obj->pos_.GetX();
-			obj->state_old.pos_y = obj->pos_.GetY();
-			obj->state_old.vel_x = obj->pos_.GetVelX();
-			obj->state_old.vel_y = obj->pos_.GetVelY();
-			obj->state_old.h = obj->pos_.GetH();
-			obj->state_old.h_rate = obj->pos_.GetHRate();
 
 			if (entities.object_[i]->control_ == Object::Control::EXTERNAL ||
 				entities.object_[i]->control_ == Object::Control::HYBRID_EXTERNAL ||
@@ -108,19 +122,6 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		}
 	}
 
-	// Kick off initial actions
-	if (initial)
-	{
-		// kick off init actions
-		for (size_t i = 0; i < init.private_action_.size(); i++)
-		{
-			init.private_action_[i]->Start();
-			init.private_action_[i]->UpdateState();
-		}
-	}
-	
-	
-	
 	// Step inital actions - might be extened in time (more than one step)
 	for (size_t i = 0; i < init.private_action_.size(); i++)
 	{
@@ -581,6 +582,14 @@ void ScenarioEngine::stepObjects(double dt)
 				obj->wheel_rot_ = fmod(obj->wheel_rot_ + obj->speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
 				obj->wheel_angle_ = heading_rate_new / 2;
 			}
+
+			// store current values for next loop
+			obj->state_old.pos_x = obj->pos_.GetX();
+			obj->state_old.pos_y = obj->pos_.GetY();
+			obj->state_old.vel_x = obj->pos_.GetVelX();
+			obj->state_old.vel_y = obj->pos_.GetVelY();
+			obj->state_old.h = obj->pos_.GetH();
+			obj->state_old.h_rate = obj->pos_.GetHRate();
 		}
 		else
 		{
@@ -590,5 +599,6 @@ void ScenarioEngine::stepObjects(double dt)
 		}
 
 		obj->trail_.AddState((float)simulationTime, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
+
 	}
 }
