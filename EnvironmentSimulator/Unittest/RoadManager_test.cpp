@@ -25,6 +25,7 @@ class PolynomialTestFixture: public testing::Test
 };
 
 
+
 PolynomialTestFixture::PolynomialTestFixture()
 {
 }
