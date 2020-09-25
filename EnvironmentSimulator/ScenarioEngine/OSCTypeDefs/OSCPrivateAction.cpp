@@ -56,13 +56,6 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 
 void FollowRouteAction::Start()
 {
-	if (object_->control_ == Object::Control::EXTERNAL ||
-		object_->control_ == Object::Control::HYBRID_EXTERNAL)
-	{
-		// motion control handed over 
-		return;
-	}
-
 	object_->pos_.SetRoute(route_);
 
 	OSCAction::Start();

@@ -4417,7 +4417,19 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 
 	// First step is to identify closest road and OSI line segment
 
-	for (int i = -1; !search_done && i < GetOpenDrive()->GetNumOfRoads(); i++)
+	size_t nrOfRoads;
+	if (route_)
+	{
+		// Route assigned. Iterate over all roads in the route. I.e. check all waypoints road ID.
+		nrOfRoads = route_->waypoint_.size();
+	}
+	else
+	{
+		// Iterate over all roads in the road network
+		nrOfRoads = GetOpenDrive()->GetNumOfRoads();
+	}
+	
+	for (int i = -1; !search_done && i < (int)nrOfRoads; i++)
 	{
 		if (i == -1)
 		{
@@ -4439,7 +4451,14 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 			}
 			else
 			{
-				road = GetOpenDrive()->GetRoadByIdx(i);
+				if (route_)
+				{
+					road = GetOpenDrive()->GetRoadById(route_->waypoint_[i]->GetTrackId());
+				}
+				else
+				{
+					road = GetOpenDrive()->GetRoadByIdx(i);
+				}
 			}
 		}
 
@@ -4783,6 +4802,12 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 	SetHeading(h3);
 
 	EvaluateRoadZPitchRoll(alignZAndPitch);
+
+	// If on a route, calculate corresponding route position
+	if (route_)
+	{
+		CalcRoutePosition();
+	}
 
 	return retvalue;
 }
@@ -5877,7 +5902,7 @@ void Position::CalcRoutePosition()
 			// remove remaming s from road
 			if (direction > 0)
 			{
-				dist -= GetRoadById(route_->waypoint_[i]->GetTrackId())->GetLength() - GetS();
+				dist -= (GetRoadById(route_->waypoint_[i]->GetTrackId())->GetLength() - GetS());
 			}
 			else
 			{
@@ -6085,7 +6110,15 @@ int Position::GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookA
 
 	if (fabs(lookahead_distance) > SMALL_NUMBER)
 	{
-		int retval = target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT);
+		int retval;
+		if (target.route_)
+		{
+			retval = target.MoveRouteDS(lookahead_distance);
+		}
+		else
+		{
+			retval = target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT);
+		}
 
 		if (retval != 0)
 		{
