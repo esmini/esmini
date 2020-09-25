@@ -97,7 +97,7 @@ OSCTypeDefs
                 Collision                   No
                 Offroad                     No
                 TimeHeadway                 Yes
-                TimeToCollision             No
+                TimeToCollision             Yes
                 Acceleration                No
                 StandStill                  No
                 Speed                       No

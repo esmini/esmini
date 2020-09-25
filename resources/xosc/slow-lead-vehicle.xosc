@@ -100,11 +100,14 @@
                                     <EntityRef entityRef="$owner"/>
                                  </TriggeringEntities>
                                  <EntityCondition>
-                                    <TimeHeadwayCondition entityRef="Lead"
-                                                          value="2.6"
-                                                          freespace="true"
-                                                          alongRoute="true"
-                                                          rule="lessThan"/>
+                                    <TimeToCollisionCondition value="2.7"
+                                                         freespace="true"
+                                                         alongRoute="true"
+                                                         rule="lessThan" >
+                                        <TimeToCollisionConditionTarget >
+                                            <EntityRef entityRef="Lead" />
+                                        </TimeToCollisionConditionTarget>
+                                    </TimeToCollisionCondition>
                                  </EntityCondition>
                               </ByEntityCondition>
                            </Condition>

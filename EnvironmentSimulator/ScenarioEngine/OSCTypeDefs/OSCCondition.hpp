@@ -131,6 +131,7 @@ namespace scenarioengine
 			REACH_POSITION,
 			TRAVELED_DISTANCE,
 			END_OF_ROAD,
+			TIME_TO_COLLISION,
 			// not complete at all
 		} EntityConditionType;
 
@@ -157,6 +158,20 @@ namespace scenarioengine
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
 		TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
+	};
+
+	class TrigByTimeToCollision : public TrigByEntity
+	{
+	public:
+		Object* object_;
+		OSCPosition* position_;
+		double value_;
+		bool freespace_;
+		bool along_route_;
+		Rule rule_;
+
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
+		TrigByTimeToCollision() : object_(0), position_(0), TrigByEntity(TrigByEntity::EntityConditionType::TIME_TO_COLLISION) {}
 	};
 
 	class TrigByReachPosition : public TrigByEntity

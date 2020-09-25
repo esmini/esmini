@@ -398,6 +398,77 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time, 
 	return result;
 }
 
+bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_time, bool log)
+{
+	(void)storyBoard;
+	(void)sim_time;
+
+	bool result = false;
+	double rel_dist, ttc = 0, rel_speed;
+	roadmanager::Position* pos;
+	if (object_)
+	{
+		pos = &object_->pos_;
+	}
+	else if (position_)
+	{
+		pos = position_->GetRMPos();
+	}
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+	{
+		if (along_route_ == true)
+		{
+			roadmanager::PositionDiff diff;
+			triggering_entities_.entity_[i].object_->pos_.Delta(*pos, diff);
+			rel_dist = diff.ds;
+		}
+		else
+		{
+			double x, y;
+			rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*pos, x, y);
+			// Only consider X-component of distance vector
+			rel_dist = x;
+		}
+
+		if (object_)
+		{
+			rel_speed = triggering_entities_.entity_[i].object_->speed_ - object_->speed_;
+		}
+		else
+		{
+			rel_speed = triggering_entities_.entity_[i].object_->speed_;
+		}
+
+		// TimeToCollision (TTC) not defined for cases:
+		//  - when target object is behind 
+		//  - when triggering entity speed is <=0 (still or going reverse)
+		//  - when distance is constant or increasing
+		if (rel_dist < 0 || triggering_entities_.entity_[i].object_->speed_ < SMALL_NUMBER || rel_speed <= SMALL_NUMBER)
+		{
+			ttc = -1;
+		}
+		else
+		{
+			ttc = fabs(rel_dist / rel_speed);
+
+			result = EvaluateRule(ttc, value_, rule_);
+
+			if (EvalDone(result, triggering_entity_rule_))
+			{
+				break;
+			}
+		}
+	}
+	if (log)
+	{
+		LOG("%s == %s, TTC: %.2f %s %.2f, edge %s", name_.c_str(), result ? "true" : "false",
+			ttc, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+	}
+
+	return result;
+}
+
 bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time, bool log)
 {
 	(void)storyBoard;

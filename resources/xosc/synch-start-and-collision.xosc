@@ -30,9 +30,6 @@
       <ScenarioObject name="NPC">
          <CatalogReference catalogName="VehicleCatalog" entryName="$NPCVehicle"/>
       </ScenarioObject>
-      <ScenarioObject name="NPCParked">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
-      </ScenarioObject>
    </Entities>
    <Storyboard>
       <Init>
@@ -103,15 +100,6 @@
                   </LongitudinalAction>
                </PrivateAction>
             </Private>
-            <Private entityRef="NPCParked">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="242" laneId="1" offset="3" s="0"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-            </Private>
          </Actions>
       </Init>
       <Story name="LTAPStory">
@@ -146,11 +134,16 @@
                                  </TriggeringEntities>
                                  <EntityCondition>
                                     <!-- 6 seconds to parked car/synch position -->
-                                    <TimeHeadwayCondition entityRef="NPCParked"
-                                                          value="6"
-                                                          freespace="true"
-                                                          alongRoute="true"
-                                                          rule="lessThan"/>
+                                    <TimeToCollisionCondition value="6"
+                                                         freespace="true"
+                                                         alongRoute="true"
+                                                         rule="lessThan" >
+                                        <TimeToCollisionConditionTarget >
+                                            <Position>
+                                                <LanePosition roadId="242" laneId="1" offset="3" s="0"/>
+                                            </Position>
+                                        </TimeToCollisionConditionTarget>
+                                    </TimeToCollisionCondition>
                                  </EntityCondition>                              
                               </ByEntityCondition>
                            </Condition>

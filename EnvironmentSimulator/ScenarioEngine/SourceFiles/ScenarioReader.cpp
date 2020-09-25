@@ -2020,6 +2020,51 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						condition = trigger;
 					}
+					if (condition_type == "TimeToCollisionCondition")
+					{
+						TrigByTimeToCollision* trigger = new TrigByTimeToCollision;
+
+						pugi::xml_node target = condition_node.child("TimeToCollisionConditionTarget");
+						pugi::xml_node targetChild = target.first_child();
+						std::string targetChildName(targetChild.name());
+						if (targetChildName == "Position")
+						{
+							trigger->position_ = parseOSCPosition(targetChild);
+						}
+						else if (targetChildName == "EntityRef")
+						{
+							trigger->object_ = FindObjectByName(ReadAttribute(targetChild, "entityRef"));
+						}
+						else
+						{
+							LOG("Unexpected target type: %s", targetChildName.c_str());
+							return 0;
+						}
+						
+						std::string along_route_str = ReadAttribute(condition_node, "alongRoute");
+						if ((along_route_str == "true") || (along_route_str == "1"))
+						{
+							trigger->along_route_ = true;
+						}
+						else
+						{
+							trigger->along_route_ = false;
+						}
+
+						std::string freespace_str = ReadAttribute(condition_node, "freespace");
+						if ((freespace_str == "true") || (freespace_str == "1"))
+						{
+							trigger->freespace_ = true;
+						}
+						else
+						{
+							trigger->freespace_ = false;
+						}
+						trigger->value_ = strtod(ReadAttribute(condition_node, "value"));
+						trigger->rule_ = ParseRule(ReadAttribute(condition_node, "rule"));
+
+						condition = trigger;
+					}
 					else if (condition_type == "ReachPositionCondition")
 					{
 						TrigByReachPosition *trigger = new TrigByReachPosition;
