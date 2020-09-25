@@ -5360,11 +5360,10 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 	// the SIGN() adjustment. But for now this adjustment means that a positive dLaneOffset always moves left?
 	offset_ += dLaneOffset * -SIGN(GetLaneId());
 	double s_stop = 0;
+	ds_signed = -SIGN(GetLaneId()) * ds; // adjust sign of ds according to lane direction - right lane is < 0 in road dir
 	
 	for (int i = 0; i < max_links; i++)
 	{
-		ds_signed = -SIGN(GetLaneId()) * ds; // adjust sign of ds according to lane direction - right lane is < 0 in road dir
-
 		if (s_ + ds_signed > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
 		{
 			ds_signed = s_ + ds_signed - GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
@@ -5390,7 +5389,12 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 			return ErrorCode::ERROR_END_OF_ROAD;
 		}
 
-		ds = SIGN(ds) * fabs(ds_signed);
+		// Roads aren't going the same direction, we flip ds
+		if ((link->GetType() == LinkType::PREDECESSOR && contact_point_type == ContactPointType::CONTACT_POINT_START) ||
+		    (link->GetType() == LinkType::SUCCESSOR && contact_point_type == ContactPointType::CONTACT_POINT_END))
+		{
+			ds_signed *= -1;
+		}
 	}
 
 	SetLanePos(track_id_, lane_id_, s_ + ds_signed, offset_);
