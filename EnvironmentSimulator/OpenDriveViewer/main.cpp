@@ -46,6 +46,7 @@ static const bool freerun = true;
 static std::mt19937 mt_rand;
 static double density = DEFAULT_DENSITY;
 static double speed = DEFAULT_SPEED;
+static double global_speed_factor = 1.0;
 static int first_car_in_focus = -1;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
@@ -157,7 +158,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime)
 {
-	double speed = car->pos->GetSpeedLimit() * car->speed_factor;
+	double speed = car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor;
 	double ds = speed * deltaSimTime; // right lane is < 0 in road dir;
 
 	if (car->pos->MoveAlongS(ds) != 0)
@@ -200,7 +201,7 @@ int main(int argc, char** argv)
 	arguments.getApplicationUsage()->addCommandLineOption("--odr <filename>", "OpenDRIVE filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--model <filename>", "3D model filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--density <number>", "density (cars / 100 m)", std::to_string((long long) (DEFAULT_DENSITY)));
-	arguments.getApplicationUsage()->addCommandLineOption("--speed <number>", "speed (km/h)", std::to_string((long long) (DEFAULT_SPEED)));
+	arguments.getApplicationUsage()->addCommandLineOption("--speed_factor <number>", "speed factor", std::to_string((long long) (global_speed_factor)));
 	arguments.getApplicationUsage()->addCommandLineOption("--osi_features <string>", "Show OSI road features (\"on\"/\"off\") (toggle during simulation with key 'u')", "off");
 
 
@@ -219,9 +220,8 @@ int main(int argc, char** argv)
 	arguments.read("--density", density);
 	printf("density: %.2f\n", density);
 
-	arguments.read("--speed", speed);
-	printf("speed: %.2f\n", speed);
-	speed /= 3.6;
+	arguments.read("--speed_factor", global_speed_factor);
+	printf("global speed factor: %.2f\n", global_speed_factor);
 
 	std::string osi_features_str;
 	arguments.read("--osi_features", osi_features_str);
