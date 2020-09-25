@@ -56,7 +56,7 @@ typedef struct
 	int lane_id_init;
 	double s_init;
 	roadmanager::Position *pos;
-	double speed_offset;  // speed vary bewtween lanes, m/s
+	double speed_factor;  // speed vary bewtween lanes, m/s
 	viewer::CarModel *model;
 	int id;
 } Car;
@@ -125,7 +125,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 				Car *car_ = new Car;
 				// Higher speeds in lanes closer to reference lane
-				car_->speed_offset = -2 * abs(lane->GetId());
+				car_->speed_factor = 0.5 + 0.5 / abs(lane->GetId());  // Speed vary between 0.5 to 1.0 times default speed
 				car_->road_id_init = odrManager->GetRoadByIdx(r)->GetId();
 				car_->lane_id_init = lane->GetId();
 				car_->s_init = s;
@@ -157,7 +157,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime)
 {
-	double speed = car->pos->GetSpeedLimit() + car->speed_offset;
+	double speed = car->pos->GetSpeedLimit() * car->speed_factor;
 	double ds = speed * deltaSimTime; // right lane is < 0 in road dir;
 
 	if (car->pos->MoveAlongS(ds) != 0)
