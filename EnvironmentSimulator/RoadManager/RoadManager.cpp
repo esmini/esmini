@@ -5361,27 +5361,35 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 	offset_ += dLaneOffset * -SIGN(GetLaneId());
 	double s_stop = 0;
 	
+	// move from road to road until ds-value is within road length or maximum of connections has been crossed
 	for (int i = 0; i < max_links; i++)
 	{
 		ds_signed = -SIGN(GetLaneId()) * ds; // adjust sign of ds according to lane direction - right lane is < 0 in road dir
 
 		if (s_ + ds_signed > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
 		{
+			// Calculate remaining s-value once we moved to the connected road
 			ds_signed = s_ + ds_signed - GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
 			link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(SUCCESSOR);
+
+			// register s-value at end of the road, to be used in case of bad connection
 			s_stop = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
 		}
 		else if (s_ + ds_signed < 0)
 		{
+			// Calculate remaining s-value once we moved to the connected road
 			ds_signed = s_ + ds_signed;
 			link = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(PREDECESSOR);
+
+			// register s-value at end of the road, to be used in case of bad connection
 			s_stop = 0;
 		}
-		else  // New position is within current track
+		else  // New position is within current track (road)
 		{
 			break;
 		}
 
+		// If link is OK then move to the start- or endpoint of the connected road, depending on contact point
 		if (!link || link->GetElementId() == -1 || MoveToConnectingRoad(link, contact_point_type, strategy) != 0)
 		{
 			// Failed to find a connection, stay at end of current road
@@ -5390,10 +5398,13 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 			return ErrorCode::ERROR_END_OF_ROAD;
 		}
 
+		// Calculate new ds based on original requested direction (sign of ds) and remaining length
 		ds = SIGN(ds) * fabs(ds_signed);
 	}
 
+	// Finally, update the position with the adjusted s-value 
 	SetLanePos(track_id_, lane_id_, s_ + ds_signed, offset_);
+
 	return 0;
 }
 
