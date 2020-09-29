@@ -441,6 +441,7 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	ResolveHybridVehicles();
 	scenarioReader->parseInit(init);
 	scenarioReader->parseStoryBoard(storyBoard);
+	storyBoard.entities_ = &entities; 
 
 	// Copy init actions from external buddy
 	// (Cloning of story actions are handled in the story parser)

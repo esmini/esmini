@@ -464,6 +464,15 @@ void PositionAction::Step(double dt, double simTime)
 	(void)dt;
 	(void)simTime;
 
+	roadmanager::Position tmpPos;
+
+	if (position_->GetRelativePosition() == &object_->pos_)
+	{
+		// Special case: Relative to itself - need to make a copy before reseting
+		tmpPos = object_->pos_;
+		position_->SetRelativePosition(&tmpPos, position_->GetType());
+	}
+
 	object_->pos_.CopyRMPos(position_);
 
 	// Resolve any relative positions
@@ -475,7 +484,7 @@ void PositionAction::Step(double dt, double simTime)
 	}
 
 	LOG("Step %s pos: ", object_->name_.c_str());
-	position_->Print();
+	object_->pos_.Print();
 	object_->dirty_lat_ = true;
 	object_->dirty_long_ = true;
 	object_->reset_ = true;

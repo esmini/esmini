@@ -1457,7 +1457,7 @@ namespace roadmanager
 		void LaneBoundary2Track();
 		void XYZ2Track(bool alignZAndPitch = false);
 		int SetLongitudinalTrackPos(int track_id, double s);
-		bool EvaluateRoadZPitchRoll(bool alignZPitchRoll);
+		bool EvaluateRoadZPitch(bool alignZPitch);
 
 		// route reference
 		Route  *route_;			// if pointer set, the position corresponds to a point along (s) the route

@@ -71,6 +71,7 @@ namespace scenarioengine
 		Act* FindActByName(std::string name);
 		Event* FindEventByName(std::string name);
 		OSCAction* FindActionByName(std::string name); 
+		Entities* entities_;
 		void Print();
 
 		std::vector<Story*> story_;

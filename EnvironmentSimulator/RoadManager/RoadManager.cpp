@@ -4801,7 +4801,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 	SetY(y3);
 	SetHeading(h3);
 
-	EvaluateRoadZPitchRoll(alignZAndPitch);
+	EvaluateRoadZPitch(alignZAndPitch);
 
 	// If on a route, calculate corresponding route position
 	if (route_)
@@ -4813,21 +4813,19 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 }
 	
 
-bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
+bool Position::EvaluateRoadZPitch(bool alignZPitch)
 {
 	bool ret_value = GetRoadById(track_id_)->GetZAndPitchByS(s_, &z_road_, &p_road_, &elevation_idx_);
 
-	if (alignZPitchRoll)
+	if (alignZPitch)
 	{
 		z_ = z_road_;
 		p_ = p_road_;
-		r_ = 0;  // Road roll not implementade yet
 
 		// Find out pitch of road in driving direction
 		if (GetHRelative() > M_PI_2 && GetHRelative() < 3 * M_PI_2)
 		{
 			p_ *= -1;
-			// r_ *= -1;
 		}
 	}
 
@@ -4877,7 +4875,7 @@ int Position::Track2XYZ(bool alignH)
 	y_ += y_local;
 
 	// z = Elevation 
-	EvaluateRoadZPitchRoll(true);
+	EvaluateRoadZPitch(true);
 
 	return ErrorCode::ERROR_NO_ERROR;
 }
@@ -6154,7 +6152,7 @@ int Position::GetProbeInfo(Position *target_pos, RoadProbeInfo *data)
 
 int Position::GetTrackId() 
 { 
-	if (rel_pos_ && type_ == PositionType::RELATIVE_LANE)
+	if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
 	{
 		return rel_pos_->GetTrackId();
 	}
@@ -6164,7 +6162,7 @@ int Position::GetTrackId()
 
 int Position::GetLaneId()
 {
-	if (rel_pos_ && type_ == PositionType::RELATIVE_LANE)
+	if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
 	{
 		return rel_pos_->GetLaneId() + lane_id_;
 	}
@@ -6206,7 +6204,7 @@ int Position::GetLaneGlobalId()
 
 double Position::GetS()
 {
-	if (rel_pos_ && type_ == PositionType::RELATIVE_LANE)
+	if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
 	{
 		return rel_pos_->GetS() + s_;
 	}
@@ -6216,7 +6214,7 @@ double Position::GetS()
 
 double Position::GetT()
 {
-	if (rel_pos_ && type_ == PositionType::RELATIVE_LANE)
+	if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
 	{
 		return rel_pos_->GetT() + t_;
 	}
@@ -6226,7 +6224,7 @@ double Position::GetT()
 
 double Position::GetOffset()
 {
-	if (rel_pos_ && type_ == PositionType::RELATIVE_LANE)
+	if (rel_pos_ && rel_pos_ != this && rel_pos_ && type_ == PositionType::RELATIVE_LANE)
 	{
 		return rel_pos_->GetOffset() + offset_;
 	}
@@ -6236,7 +6234,7 @@ double Position::GetOffset()
 
 double Position::GetX()
 {
-	if (!rel_pos_)
+	if (!rel_pos_ || rel_pos_ == this)
 	{
 		return x_;
 	}
@@ -6262,7 +6260,7 @@ double Position::GetX()
 
 double Position::GetY()
 {
-	if (!rel_pos_)
+	if (!rel_pos_ || rel_pos_ == this)
 	{
 		return y_;
 	}
@@ -6288,7 +6286,7 @@ double Position::GetY()
 
 double Position::GetZ()
 {
-	if (!rel_pos_)
+	if (!rel_pos_ || rel_pos_ == this)
 	{
 		return z_;
 	}
@@ -6310,7 +6308,7 @@ double Position::GetZ()
 
 double Position::GetH()
 {
-	if (!rel_pos_)
+	if (!rel_pos_ || rel_pos_ == this)
 	{
 		return h_;
 	}
@@ -6346,7 +6344,7 @@ double Position::GetH()
 
 double Position::GetHRelative()
 {
-	if (!rel_pos_)
+	if (!rel_pos_ || rel_pos_ == this)
 	{
 		return h_relative_;
 	}
@@ -6382,7 +6380,7 @@ double Position::GetHRelative()
 
 double Position::GetP()
 {
-	if (!rel_pos_)
+	if (!rel_pos_ || rel_pos_ == this)
 	{
 		return p_;
 	}
@@ -6418,7 +6416,7 @@ double Position::GetP()
 
 double Position::GetR()
 {
-	if (!rel_pos_)
+	if (!rel_pos_ || rel_pos_ == this)
 	{
 		return r_;
 	}
@@ -6760,6 +6758,8 @@ void Position::ReleaseRelation()
 				h = GetAngleSum(h, M_PI);
 			}
 			SetHeadingRelative(h);
+			SetP(GetP());
+			SetR(GetR());
 		}
 		else
 		{

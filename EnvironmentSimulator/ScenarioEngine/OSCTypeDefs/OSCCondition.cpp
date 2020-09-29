@@ -586,6 +586,56 @@ bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_t
 	return result;
 }
 
+bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time, bool log)
+{
+	(void)storyBoard;
+	(void)sim_time;
+
+	bool result = false;
+	double dist = 0, x, y;
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+	{
+		if (object_)
+		{
+			dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
+			if (dist < triggering_entities_.entity_[i].object_->boundingbox_.dimensions_.length_)
+			{
+				result = true;
+			}
+		}
+		else
+		{
+			// check all intances of specifed object type
+			// only vehicles supported for now
+			for (size_t j = 0; j < storyBoard->entities_->object_.size(); j++)
+			{
+				if (storyBoard->entities_->object_[j]->type_ == type_)
+				{
+					dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
+					if (dist < triggering_entities_.entity_[i].object_->boundingbox_.dimensions_.length_)
+					{
+						result = true;
+						break;  // no need to look further
+					}
+				}
+			}
+		}
+
+		if (EvalDone(result, triggering_entity_rule_))
+		{
+			break;
+		}
+	}
+
+	if (log)
+	{
+		LOG("%s == %s, dist: %.2f, edge: %s", name_.c_str(), result ? "true" : "false", dist, Edge2Str(edge_).c_str());
+	}
+
+	return result;
+}
+
 bool TrigByTraveledDistance::CheckCondition(StoryBoard* storyBoard, double sim_time, bool log)
 {
 	(void)storyBoard;

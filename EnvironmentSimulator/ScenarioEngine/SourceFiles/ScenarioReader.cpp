@@ -124,7 +124,7 @@ int ScenarioReader::loadOSCFile(const char * path)
 	pugi::xml_parse_result result = doc_.load_file(path);
 	if (!result)
 	{
-		LOG("Error: %s", result.description());
+		LOG("%s at offset (character position): %d", result.description(), result.offset);
 		return -1;
 	}
 
@@ -1188,11 +1188,13 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 				}
 			}
 		}
+
 		pos_return = (OSCPosition*)pos;
 	}
 
 	if (pos_return == 0)
 	{
+		LOG("Failed parse position (node %s)", positionNode.name());
 		throw std::runtime_error("Failed parse position");
 	}
 
@@ -2118,6 +2120,16 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						}
 						trigger->value_ = strtod(ReadAttribute(condition_node, "value"));
 						trigger->rule_ = ParseRule(ReadAttribute(condition_node, "rule"));
+
+						condition = trigger;
+					}
+					else if (condition_type == "CollisionCondition")
+					{
+						TrigByCollision* trigger = new TrigByCollision;
+
+						pugi::xml_node target = condition_node.child("EntityRef");
+
+						trigger->object_ = FindObjectByName(ReadAttribute(target, "entityRef"));
 
 						condition = trigger;
 					}
