@@ -679,7 +679,7 @@ int Road::GetLaneSectionIdxByS(double s, int start_at)
 	return (int)i;
 }
 
-LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id, Lane::LaneType laneType)
+LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id, int laneTypeMask)
 {
 	LaneInfo lane_info;
 	
@@ -717,9 +717,9 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 			}
 
 			// If new lane is not of snapping type, try to move into a close valid lane
-			if (laneType & lane_section->GetLaneById(lane_info.lane_id_)->GetLaneType())
+			if (laneTypeMask & lane_section->GetLaneById(lane_info.lane_id_)->GetLaneType())
 			{
-				lane_info.lane_id_ = lane_section->FindClosestSnappingLane(lane_info.lane_id_, laneType);
+				lane_info.lane_id_ = lane_section->FindClosestSnappingLane(lane_info.lane_id_, laneTypeMask);
 				if (lane_info.lane_id_ == 0)
 				{
 					LOG("Failed to find a closest snapping lane");
@@ -808,14 +808,14 @@ Lane* LaneSection::GetLaneById(int id)
 	return 0;
 }
 
-int LaneSection::FindClosestSnappingLane(int id, Lane::LaneType laneType)
+int LaneSection::FindClosestSnappingLane(int id, int laneTypeMask)
 {
 	int id_best = id;
 	size_t delta_best = lane_.size() + 1;
 
 	for (size_t i = 0; i < lane_.size(); i++)
 	{
-		if (laneType & lane_[i]->GetLaneType())
+		if (laneTypeMask & lane_[i]->GetLaneType())
 		{
 			if ((abs(lane_[i]->GetId() - id) < delta_best) || 
 				(abs(lane_[i]->GetId() - id) == delta_best && abs(lane_[i]->GetId()) < abs(id_best)))
@@ -2651,7 +2651,7 @@ int Junction::GetNumberOfRoadConnections(int roadId, int laneId)
 	return counter;
 }
 
-LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, int idx)
+LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, int idx, int laneTypeMask)
 {
 	int counter = 0;
 	LaneRoadLaneConnection lane_road_lane_connection;
@@ -2683,7 +2683,7 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, 
 						{
 							laneSectionId = connection->GetConnectingRoad()->GetNumberOfLaneSections() - 1;
 						}
-						if (!connection->GetConnectingRoad()->GetLaneSectionByIdx(laneSectionId)->GetLaneById(lane_link->to_)->IsDriving())
+						if (!(connection->GetConnectingRoad()->GetLaneSectionByIdx(laneSectionId)->GetLaneById(lane_link->to_)->GetLaneType() & laneTypeMask))
 						{
 							LOG("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to %d, %d\n",
 								roadId, laneId, connection->GetConnectingRoad()->GetId(), lane_link->to_);
@@ -4265,7 +4265,7 @@ bool OpenDrive::SetRoadOSI()
 	return true;
 }
 
-int LaneSection::GetClosestLaneIdx(double s, double t, double &offset, Lane::LaneType laneType)
+int LaneSection::GetClosestLaneIdx(double s, double t, double &offset, int laneTypeMask)
 {
 	double min_offset = t;  // Initial offset relates to reference line
 	int candidate_lane_idx = -1;
@@ -4275,7 +4275,7 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double &offset, Lane::Lan
 		int lane_id = GetLaneIdByIdx(i);
 		double laneCenterOffset = SIGN(lane_id) * GetCenterOffset(s, lane_id);
 
-		if (laneType & GetLaneById(lane_id)->GetLaneType())
+		if (laneTypeMask & GetLaneById(lane_id)->GetLaneType())
 		{
 			if (candidate_lane_idx == -1 || fabs(t - laneCenterOffset) < fabs(min_offset))
 			{
@@ -5203,7 +5203,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 				for (int i = 0; i < n_connections; i++)
 				{
 					LaneRoadLaneConnection lane_road_lane_connection = 
-						junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), i);
+						junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), i, snapToLaneTypes_);
 					next_road = GetOpenDrive()->GetRoadById(lane_road_lane_connection.GetConnectingRoadId()); 
 
 					Position test_pos;
@@ -5243,7 +5243,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 			}
 		}
 
-		LaneRoadLaneConnection lane_road_lane_connection = junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), connection_idx);
+		LaneRoadLaneConnection lane_road_lane_connection = junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), connection_idx, snapToLaneTypes_);
 		contact_point_type = lane_road_lane_connection.contact_point_;
 
 		new_lane_id = lane_road_lane_connection.GetConnectinglaneId();
@@ -5276,13 +5276,11 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 	}
 
 	double new_offset = offset_;
-	// EG: Suggestion, positiv offset_ should always move towards the reference line
-	// it simplifies lane change action since we dont have to consider if we change track during the action
-	// but then we need to consider this when we convert between offset_ and t_ etc.
-	// now I do this to keep same world position after we go to different track, I think... :)
-	if (SIGN(lane_id_) != SIGN(new_lane_id))
+	if ((road_link->GetType() == LinkType::PREDECESSOR && contact_point_type == ContactPointType::CONTACT_POINT_START) ||
+		(road_link->GetType() == LinkType::SUCCESSOR && contact_point_type == ContactPointType::CONTACT_POINT_END))
 	{
-		new_offset *= -1;
+		h_relative_ = GetAngleSum(h_relative_, M_PI);
+		new_offset = -offset_;
 	}
 
 	// Find out if connecting to start or end of new road
@@ -5354,11 +5352,9 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 		return 0;
 	}
 
-	// EG: If offset_ is not along reference line, but instead along lane direction then we dont need
-	// the SIGN() adjustment. But for now this adjustment means that a positive dLaneOffset always moves left?
-	offset_ += dLaneOffset * -SIGN(GetLaneId());
 	double s_stop = 0;
 	ds_signed = -SIGN(GetLaneId()) * ds; // adjust sign of ds according to lane direction - right lane is < 0 in road dir
+	double signed_dLaneOffset = dLaneOffset;
 	
 	// move from road to road until ds-value is within road length or maximum of connections has been crossed
 	for (int i = 0; i < max_links; i++)
@@ -5395,16 +5391,21 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 			return ErrorCode::ERROR_END_OF_ROAD;
 		}
 
-		// Roads aren't going the same direction, we flip ds
-		if ((link->GetType() == LinkType::PREDECESSOR && contact_point_type == ContactPointType::CONTACT_POINT_START) ||
-		    (link->GetType() == LinkType::SUCCESSOR && contact_point_type == ContactPointType::CONTACT_POINT_END))
+		// Adjust sign of ds based on connection point
+		if (contact_point_type == ContactPointType::CONTACT_POINT_END)
 		{
-			ds_signed *= -1;
+			ds_signed = -fabs(ds_signed);
+			signed_dLaneOffset = -dLaneOffset;
+		}
+		else 
+		{
+			ds_signed = fabs(ds_signed);
+			signed_dLaneOffset = dLaneOffset;
 		}
 	}
 
-	// Finally, update the position with the adjusted s-value 
-	SetLanePos(track_id_, lane_id_, s_ + ds_signed, offset_);
+	// Finally, update the position with the adjusted s and offset values
+	SetLanePos(track_id_, lane_id_, s_ + ds_signed, offset_ + signed_dLaneOffset);
 
 	return 0;
 }
@@ -5469,18 +5470,6 @@ int Position::SetLanePos(int track_id, int lane_id, double s, double offset, int
 		LOG("Position::Set (lanepos) Error - lanesection NULL lsidx %d rid %d lid %d\n",
 			lane_section_idx_, road->GetId(), lane_id_);
 	}
-
-	// Check road direction when on new track 
-	if (old_lane_id != 0 && lane_id_ != 0 && track_id_ != old_track_id && SIGN(lane_id_) != SIGN(old_lane_id))
-	{
-		h_relative_ = GetAngleSum(h_relative_, M_PI);
-	}
-
-	// If moved over to opposite driving direction, then turn relative heading 180 degrees
-	//if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))
-	//{
-	//	h_relative_ = GetAngleSum(h_relative_, M_PI);
-	//}
 
 	Lane2Track();
 	Track2XYZ();
@@ -6702,6 +6691,7 @@ int Position::SetRouteS(Route *route, double route_s)
 
 	double route_length = 0;
 	s_route_ = route_s;
+	double new_offset = offset_;
 
 	// Find out what road and local s value
 	for (size_t i = 0; i < route->waypoint_.size(); i++)
@@ -6725,9 +6715,16 @@ int Position::SetRouteS(Route *route, double route_s)
 			if (route_direction < 0)  // along waypoint road direction
 			{
 				local_s = road_length - local_s;
+				SetHeadingRelative(M_PI);
+				new_offset = -offset_;
+			}
+			else
+			{
+				SetHeadingRelative(0);
+				new_offset = offset_;
 			}
 
-			SetLanePos(route->waypoint_[i]->GetTrackId(), route->waypoint_[i]->GetLaneId(), local_s, GetOffset());
+			SetLanePos(route->waypoint_[i]->GetTrackId(), route->waypoint_[i]->GetLaneId(), local_s, new_offset);
 			return 0;
 		}
 		route_length += road_length - initial_s_offset;

@@ -590,13 +590,13 @@ namespace roadmanager
 		double GetS() { return s_; }
 		Lane* GetLaneByIdx(int idx);
 		Lane* GetLaneById(int id);
-		int FindClosestSnappingLane(int id, Lane::LaneType laneType = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
+		int FindClosestSnappingLane(int id, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 		int GetLaneIdByIdx(int idx);
 		int GetLaneIdxById(int id);
 		int GetLaneGlobalIdByIdx(int idx);
 		double GetOuterOffset(double s, int lane_id);
 		double GetWidth(double s, int lane_id);
-		int GetClosestLaneIdx(double s, double t, double &offset, Lane::LaneType laneType = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
+		int GetClosestLaneIdx(double s, double t, double &offset, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 		int GetClosestWhateverLaneIdx(double s, double t, double &offset);
 		
 		/**
@@ -804,7 +804,7 @@ namespace roadmanager
 		*/
 		double GetCenterOffset(double s, int lane_id);
 
-		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id, Lane::LaneType laneType = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
+		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 		double GetLaneWidthByS(double s, int lane_id);
 		double GetSpeedByS(double s);
 		bool GetZAndPitchByS(double s, double *z, double *pitch, int *index);
@@ -917,7 +917,8 @@ namespace roadmanager
 		std::string GetName() { return name_; }
 		int GetNumberOfConnections() { return (int)connection_.size(); }
 		int GetNumberOfRoadConnections(int roadId, int laneId);
-		LaneRoadLaneConnection GetRoadConnectionByIdx(int roadId, int laneId, int idx);
+		LaneRoadLaneConnection GetRoadConnectionByIdx(int roadId, int laneId, int idx, 
+			int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 		void AddConnection(Connection *connection) { connection_.push_back(connection); }
 		int GetNoConnectionsFromRoadId(int incomingRoadId);
 		Connection *GetConnectionByIdx(int idx) { return connection_[idx]; }
@@ -1435,7 +1436,7 @@ namespace roadmanager
 		@param laneTypes A combination (bitmask) of lane types
 		@return -
 		*/
-		void SetSnapLaneTypes(Lane::LaneType laneTypes) { snapToLaneTypes_ = laneTypes; }
+		void SetSnapLaneTypes(int laneTypeMask) { snapToLaneTypes_ = laneTypeMask; }
 
 		void CopyRMPos(Position *from);
 
@@ -1480,7 +1481,7 @@ namespace roadmanager
 		Position* rel_pos_;
 		PositionType type_;
 		OrientationType orientation_type_;  // Applicable for relative positions
-		Lane::LaneType snapToLaneTypes_;    // Bitmask of lanes that the position will snap to
+		int snapToLaneTypes_;  // Bitmask of lanes that the position will snap to
 
 		// inertial reference
 		double	x_;

@@ -81,7 +81,7 @@
                     <TeleportAction>
                         <Position>
                             <LanePosition laneId="3" offset="0.5" roadId="0" s="15" >
-                                <Orientation type="relative" h="0"/>
+                                <Orientation type="relative" h="0" p="0" r="0" />
                             </LanePosition>
                         </Position>
                     </TeleportAction>
@@ -123,42 +123,42 @@
                                                     <Vertex>
                                                         <Position>
                                                             <LanePosition laneId="3" offset="0.5" roadId="0" s="15" >
-                                                                <Orientation type="relative" h="0"/>
+                                                                <Orientation type="relative" h="0" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
                                                     </Vertex>
                                                     <Vertex>
                                                         <Position>
                                                             <LanePosition laneId="3" offset="0.5" roadId="0" s="10.5" >
-                                                                <Orientation type="relative" h="0"/>
+                                                                <Orientation type="relative" h="0" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
                                                     </Vertex>
                                                     <Vertex>
                                                         <Position>
                                                             <LanePosition laneId="3" offset="0.0" roadId="0" s="10" >
-                                                                <Orientation type="relative" h="1.57"/>
+                                                                <Orientation type="relative" h="1.57" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
                                                     </Vertex>
                                                     <Vertex>
                                                         <Position>
                                                             <LanePosition laneId="-3" offset="0.0" roadId="0" s="10" >
-                                                                <Orientation type="relative" h="4.71"/>
+                                                                <Orientation type="relative" h="4.71" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
                                                     </Vertex>
                                                     <Vertex>
                                                         <Position>
                                                             <LanePosition laneId="-3" offset="-0.5" roadId="0" s="9.5" >
-                                                                <Orientation type="relative" h="3.14"/>
+                                                                <Orientation type="relative" h="3.14" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
                                                     </Vertex>
                                                     <Vertex>
                                                         <Position>
                                                             <LanePosition laneId="-3" offset="-0.5" roadId="0" s="0" >
-                                                                <Orientation type="relative" h="3.14"/>
+                                                                <Orientation type="relative" h="3.14" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
                                                     </Vertex>
