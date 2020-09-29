@@ -590,7 +590,7 @@ namespace roadmanager
 		double GetS() { return s_; }
 		Lane* GetLaneByIdx(int idx);
 		Lane* GetLaneById(int id);
-		int FindClosestDrivingLane(int id);
+		int FindClosestSnappingLane(int id, Lane::LaneType laneType = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 		int GetLaneIdByIdx(int idx);
 		int GetLaneIdxById(int id);
 		int GetLaneGlobalIdByIdx(int idx);
@@ -804,7 +804,7 @@ namespace roadmanager
 		*/
 		double GetCenterOffset(double s, int lane_id);
 
-		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id);
+		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id, Lane::LaneType laneType = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 		double GetLaneWidthByS(double s, int lane_id);
 		double GetSpeedByS(double s);
 		bool GetZAndPitchByS(double s, double *z, double *pitch, int *index);

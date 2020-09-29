@@ -679,7 +679,7 @@ int Road::GetLaneSectionIdxByS(double s, int start_at)
 	return (int)i;
 }
 
-LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id)
+LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_lane_id, Lane::LaneType laneType)
 {
 	LaneInfo lane_info;
 	
@@ -716,13 +716,13 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 				}
 			}
 
-			// If new lane is not driving, try to move into a close driving lane
-			if (!lane_section->GetLaneById(lane_info.lane_id_)->IsDriving())
+			// If new lane is not of snapping type, try to move into a close valid lane
+			if (laneType & lane_section->GetLaneById(lane_info.lane_id_)->GetLaneType())
 			{
-				lane_info.lane_id_ = lane_section->FindClosestDrivingLane(lane_info.lane_id_);
+				lane_info.lane_id_ = lane_section->FindClosestSnappingLane(lane_info.lane_id_, laneType);
 				if (lane_info.lane_id_ == 0)
 				{
-					LOG("Failed to find a closest driving lane");
+					LOG("Failed to find a closest snapping lane");
 				}
 			}
 		}
@@ -808,14 +808,14 @@ Lane* LaneSection::GetLaneById(int id)
 	return 0;
 }
 
-int LaneSection::FindClosestDrivingLane(int id)
+int LaneSection::FindClosestSnappingLane(int id, Lane::LaneType laneType)
 {
 	int id_best = id;
 	size_t delta_best = lane_.size() + 1;
 
 	for (size_t i = 0; i < lane_.size(); i++)
 	{
-		if (lane_[i]->IsDriving())
+		if (laneType & lane_[i]->GetLaneType())
 		{
 			if ((abs(lane_[i]->GetId() - id) < delta_best) || 
 				(abs(lane_[i]->GetId() - id) == delta_best && abs(lane_[i]->GetId()) < abs(id_best)))
@@ -5360,12 +5360,11 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 	// the SIGN() adjustment. But for now this adjustment means that a positive dLaneOffset always moves left?
 	offset_ += dLaneOffset * -SIGN(GetLaneId());
 	double s_stop = 0;
+	ds_signed = -SIGN(GetLaneId()) * ds; // adjust sign of ds according to lane direction - right lane is < 0 in road dir
 	
 	// move from road to road until ds-value is within road length or maximum of connections has been crossed
 	for (int i = 0; i < max_links; i++)
 	{
-		ds_signed = -SIGN(GetLaneId()) * ds; // adjust sign of ds according to lane direction - right lane is < 0 in road dir
-
 		if (s_ + ds_signed > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
 		{
 			// Calculate remaining s-value once we moved to the connected road
@@ -5398,8 +5397,12 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 			return ErrorCode::ERROR_END_OF_ROAD;
 		}
 
-		// Calculate new ds based on original requested direction (sign of ds) and remaining length
-		ds = SIGN(ds) * fabs(ds_signed);
+		// Roads aren't going the same direction, we flip ds
+		if ((link->GetType() == LinkType::PREDECESSOR && contact_point_type == ContactPointType::CONTACT_POINT_START) ||
+		    (link->GetType() == LinkType::SUCCESSOR && contact_point_type == ContactPointType::CONTACT_POINT_END))
+		{
+			ds_signed *= -1;
+		}
 	}
 
 	// Finally, update the position with the adjusted s-value 
@@ -5447,7 +5450,7 @@ int Position::SetLanePos(int track_id, int lane_id, double s, double offset, int
 	}
 	else  // Find LaneSection and info according to s
 	{
-		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_);
+		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_, snapToLaneTypes_);
 		lane_section_idx_ = lane_info.lane_section_idx_;
 		lane_id_ = lane_info.lane_id_;
 		
@@ -5526,7 +5529,7 @@ void Position::SetLaneBoundaryPos(int track_id, int lane_id, double s, double of
 	}
 	else  // Find LaneSection and info according to s
 	{
-		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_);
+		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_, snapToLaneTypes_);
 		lane_section_idx_ = lane_info.lane_section_idx_;
 		lane_id_ = lane_info.lane_id_;
 		
@@ -5615,7 +5618,7 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 	}
 	else  // Find LaneSection and info according to s
 	{
-		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_);
+		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_, snapToLaneTypes_);
 		lane_section_idx_ = lane_info.lane_section_idx_;
 		lane_id_ = lane_info.lane_id_;
 		
