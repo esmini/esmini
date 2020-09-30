@@ -27,6 +27,8 @@ namespace {
 
 using namespace scenarioengine;
 
+#define PARAMETER_PREFIX "$"
+
 void ScenarioReader::addParameterDeclarations(pugi::xml_node xml_node)
 {
 	parseParameterDeclarations(xml_node, &parameterDeclarations_);
@@ -66,7 +68,8 @@ std::string ScenarioReader::getParameter(OSCParameterDeclarations &parameterDecl
 	// If string already present in parameterDeclaration
 	for (size_t i = 0; i < parameterDeclaration.Parameter.size(); i++)
 	{
-		if (parameterDeclaration.Parameter[i].name == name)
+		if (PARAMETER_PREFIX + parameterDeclaration.Parameter[i].name == name || // parameter names should not include prefix
+			parameterDeclaration.Parameter[i].name == name)  // But support also parameter name including prefix
 		{
 			LOG("%s replaced with %s", name.c_str(), parameterDeclaration.Parameter[i].value.c_str());
 			return parameterDeclaration.Parameter[i].value;

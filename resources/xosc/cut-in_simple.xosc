@@ -6,10 +6,10 @@
                description="Cut-in"
                author="SimS"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="$TargetVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="$HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
-      <ParameterDeclaration name="$HeadwayTime_Brake" parameterType="double" value="1.0"/>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
+      <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="1.0"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -73,7 +73,7 @@
       </Init>
       <Story name="CutInAndBrakeStory">
          <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="$owner" value="OverTaker"/>
+            <ParameterDeclaration parameterType="string" name="owner" value="OverTaker"/>
          </ParameterDeclarations>
          <Act name="CutInAndBrakeAct">
             <ManeuverGroup maximumExecutionCount="1" name="CutInAndBrakeSequence">

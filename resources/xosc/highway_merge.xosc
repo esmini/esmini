@@ -6,11 +6,11 @@
                description="Simulation Scenarios - Hiwghway Merge"
                author="SimS"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$Gap1_time" parameterType="double" value="2.5"/>
-      <ParameterDeclaration name="$Gap2_time" parameterType="double" value="3"/>
-      <ParameterDeclaration name="$Max_acc" parameterType="double" value="2"/>
-      <ParameterDeclaration name="$Max_ret" parameterType="double" value="5"/>
-      <ParameterDeclaration name="$A1_speed" parameterType="double" value="25"/>
+      <ParameterDeclaration name="Gap1_time" parameterType="double" value="2.5"/>
+      <ParameterDeclaration name="Gap2_time" parameterType="double" value="3"/>
+      <ParameterDeclaration name="Max_acc" parameterType="double" value="2"/>
+      <ParameterDeclaration name="Max_ret" parameterType="double" value="5"/>
+      <ParameterDeclaration name="A1_speed" parameterType="double" value="25"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -168,7 +168,7 @@
       </Init>
       <Story name="Highway_Merge_Story">
          <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="$owner" value="Ego"/>
+            <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
          </ParameterDeclarations>
          <Act name="Act1">
             <ManeuverGroup maximumExecutionCount="1" name="Highway_Merge_SequenceEgo">

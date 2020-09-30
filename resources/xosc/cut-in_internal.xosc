@@ -6,14 +6,14 @@
                description="Cut-in"
                author="Knabe"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="$TargetVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="$EgoStartS" parameterType="double" value="50"/>
-      <ParameterDeclaration name="$TargetStartS" parameterType="double" value="25"/>
-      <ParameterDeclaration name="$HeadwayTime_LaneChange" parameterType="double" value="0.2"/>
-      <ParameterDeclaration name="$Duration_LaneChange" parameterType="double" value="1.5"/>
-      <ParameterDeclaration name="$Distance_Brake" parameterType="double" value="20.0"/>
-      <ParameterDeclaration name="$BrakeRate" parameterType="double" value="-7.0"/>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="EgoStartS" parameterType="double" value="50"/>
+      <ParameterDeclaration name="TargetStartS" parameterType="double" value="25"/>
+      <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.2"/>
+      <ParameterDeclaration name="Duration_LaneChange" parameterType="double" value="1.5"/>
+      <ParameterDeclaration name="Distance_Brake" parameterType="double" value="20.0"/>
+      <ParameterDeclaration name="BrakeRate" parameterType="double" value="-7.0"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -80,7 +80,7 @@
       </Init>
       <Story name="CutInAndBrakeStory">
          <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="$owner" value="OverTaker"/>
+            <ParameterDeclaration parameterType="string" name="owner" value="OverTaker"/>
          </ParameterDeclarations>
          <Act name="CutInAndBrakeAct">
             <ManeuverGroup maximumExecutionCount="1" name="CutInAndBrakeSequence">

@@ -6,9 +6,9 @@
                description="Simulation Scenarios - Hiwghway Merge"
                author="SimS"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$Gap_dist" parameterType="double" value="15"/>
-      <ParameterDeclaration name="$Max_acc" parameterType="double" value="15"/>
-      <ParameterDeclaration name="$Max_ret" parameterType="double" value="15"/>
+      <ParameterDeclaration name="Gap_dist" parameterType="double" value="15"/>
+      <ParameterDeclaration name="Max_acc" parameterType="double" value="15"/>
+      <ParameterDeclaration name="Max_ret" parameterType="double" value="15"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -82,7 +82,7 @@
       </Init>
       <Story name="Story_DistTest">
          <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="$owner" value="Dummy"/>
+            <ParameterDeclaration parameterType="string" name="owner" value="Dummy"/>
          </ParameterDeclarations>
          <Act name="Act_DistTest"/>
       </Story>

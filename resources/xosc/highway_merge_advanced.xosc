@@ -6,14 +6,14 @@
                description="Simulation Scenarios - Hiwghway Merge"
                author="SimS"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$gap_normal" parameterType="double" value="20"/>
-      <ParameterDeclaration name="$gap_small" parameterType="double" value="7"/>
-      <ParameterDeclaration name="$lat_limit" parameterType="double" value="3.25"/>
-      <ParameterDeclaration name="$max_acc" parameterType="double" value="10"/>
-      <ParameterDeclaration name="$max_ret" parameterType="double" value="7"/>
-      <ParameterDeclaration name="$max_speed" parameterType="double" value="50"/>
-      <ParameterDeclaration name="$A1_speed" parameterType="double" value="12"/>
-      <ParameterDeclaration name="$Ego_speed" parameterType="double" value="15"/>
+      <ParameterDeclaration name="gap_normal" parameterType="double" value="20"/>
+      <ParameterDeclaration name="gap_small" parameterType="double" value="7"/>
+      <ParameterDeclaration name="lat_limit" parameterType="double" value="3.25"/>
+      <ParameterDeclaration name="max_acc" parameterType="double" value="10"/>
+      <ParameterDeclaration name="max_ret" parameterType="double" value="7"/>
+      <ParameterDeclaration name="max_speed" parameterType="double" value="50"/>
+      <ParameterDeclaration name="A1_speed" parameterType="double" value="12"/>
+      <ParameterDeclaration name="Ego_speed" parameterType="double" value="15"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -171,7 +171,7 @@
       </Init>
       <Story name="Highway_Merge_Story">
          <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="$owner" value="Ego"/>
+            <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
          </ParameterDeclarations>
          <Act name="EgoAct">
             <ManeuverGroup maximumExecutionCount="1" name="Highway_Merge_SequenceEgo">

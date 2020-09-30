@@ -6,14 +6,14 @@
                description="LTAP-OD"
                author="Fredrik Persson, Emil Knabe"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="$NPCVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="$HostSpeed" parameterType="double" value="10"/>
-      <ParameterDeclaration name="$NPCInitialSpeed" parameterType="double" value="10"/>
-      <ParameterDeclaration name="$NPCFinalSpeed" parameterType="double" value="7"/>
-      <ParameterDeclaration name="$NPCStartPointS" parameterType="double" value="150"/>
-      <ParameterDeclaration name="$NPCSyncPointS" parameterType="double" value="455"/>
-      <ParameterDeclaration name="$EgoSyncPoint1S" parameterType="double" value="7"/>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="NPCVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="HostSpeed" parameterType="double" value="10"/>
+      <ParameterDeclaration name="NPCInitialSpeed" parameterType="double" value="10"/>
+      <ParameterDeclaration name="NPCFinalSpeed" parameterType="double" value="7"/>
+      <ParameterDeclaration name="NPCStartPointS" parameterType="double" value="150"/>
+      <ParameterDeclaration name="NPCSyncPointS" parameterType="double" value="455"/>
+      <ParameterDeclaration name="EgoSyncPoint1S" parameterType="double" value="7"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <RouteCatalog>
@@ -108,7 +108,7 @@
       </Init>
       <Story name="LTAPStory">
          <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="$owner" value="NPC"/>
+            <ParameterDeclaration parameterType="string" name="owner" value="NPC"/>
          </ParameterDeclarations>
          <Act name="LTAPActNPC">
             <ManeuverGroup maximumExecutionCount="1" name="LTAPSequence">

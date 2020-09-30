@@ -6,8 +6,8 @@
                description="basic ego hybrid test"
                author="Knabe"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$EgoVehicle" parameterType="string" value="car_white_hybrid"/>
-      <ParameterDeclaration name="$EgoStartS" parameterType="double" value="50"/>
+      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white_hybrid"/>
+      <ParameterDeclaration name="EgoStartS" parameterType="double" value="50"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <RouteCatalog/>
@@ -51,7 +51,7 @@
       </Init>
       <Story name="Story">
          <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="$owner" value="Ego"/>
+            <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
          </ParameterDeclarations>
          <Act name="Act">
             <ManeuverGroup maximumExecutionCount="1" name="Sequence">

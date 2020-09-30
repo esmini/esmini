@@ -6,9 +6,9 @@
                description="Cut-in"
                author="SimS"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="$TargetVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="$EgoStartS" parameterType="double" value="40"/>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="EgoStartS" parameterType="double" value="40"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <RouteCatalog/>

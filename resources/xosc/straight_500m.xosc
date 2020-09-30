@@ -6,7 +6,7 @@
                description="dummy"
                author="esmini"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
    </ParameterDeclarations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/straight_500m.xodr"/>

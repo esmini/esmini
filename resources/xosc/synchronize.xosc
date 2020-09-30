@@ -6,35 +6,35 @@
                description="Synchronize"
                author="Emil Knabe"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$EgoVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="$NPC1Vehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="$NPC2Vehicle" parameterType="string" value="truck_yellow"/>
-      <ParameterDeclaration name="$NPC3Vehicle" parameterType="string" value="bus_blue"/>
-      <ParameterDeclaration name="$NPC4Vehicle" parameterType="string" value="car_yellow"/>
-      <ParameterDeclaration name="$MS1Vehicle" parameterType="string" value="car_yellow"/>
-      <ParameterDeclaration name="$MS2Vehicle" parameterType="string" value="van_red"/>
-      <ParameterDeclaration name="$EgoSpeed" parameterType="double" value="20"/>
-      <ParameterDeclaration name="$NPC1Speed" parameterType="double" value="30"/>
-      <ParameterDeclaration name="$NPC2Speed" parameterType="double" value="19"/>
-      <ParameterDeclaration name="$NPC3Speed" parameterType="double" value="17"/>
-      <ParameterDeclaration name="$EgoLaneId" parameterType="int" value="-3"/>
-      <ParameterDeclaration name="$NPC1LaneId" parameterType="int" value="-2"/>
-      <ParameterDeclaration name="$NPC2LaneId" parameterType="int" value="-3"/>
-      <ParameterDeclaration name="$NPC3LaneId" parameterType="int" value="-4"/>
-      <ParameterDeclaration name="$NPC4LaneId" parameterType="int" value="-3"/>
-      <ParameterDeclaration name="$EgoStartS" parameterType="double" value="100"/>
-      <ParameterDeclaration name="$NPC1StartS" parameterType="double" value="150"/>
-      <ParameterDeclaration name="$NPC2StartS" parameterType="double" value="20"/>
-      <ParameterDeclaration name="$NPC3StartS" parameterType="double" value="70"/>
-      <ParameterDeclaration name="$NPC4StartS" parameterType="double" value="170"/>
-      <ParameterDeclaration name="$MS1EgoS" parameterType="double" value="300"/>
-      <ParameterDeclaration name="$MS1NPC1S" parameterType="double" value="305"/>
-      <ParameterDeclaration name="$MS1NPC2S" parameterType="double" value="285"/>
-      <ParameterDeclaration name="$MS1NPC3S" parameterType="double" value="297"/>
-      <ParameterDeclaration name="$MS1NPC4S" parameterType="double" value="330"/>
-      <ParameterDeclaration name="$MS2EgoS" parameterType="double" value="500"/>
-      <ParameterDeclaration name="$AccRate" parameterType="double" value="3"/>
-      <ParameterDeclaration name="$BrakeRate" parameterType="double" value="-5"/>
+      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="NPC1Vehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="NPC2Vehicle" parameterType="string" value="truck_yellow"/>
+      <ParameterDeclaration name="NPC3Vehicle" parameterType="string" value="bus_blue"/>
+      <ParameterDeclaration name="NPC4Vehicle" parameterType="string" value="car_yellow"/>
+      <ParameterDeclaration name="MS1Vehicle" parameterType="string" value="car_yellow"/>
+      <ParameterDeclaration name="MS2Vehicle" parameterType="string" value="van_red"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="20"/>
+      <ParameterDeclaration name="NPC1Speed" parameterType="double" value="30"/>
+      <ParameterDeclaration name="NPC2Speed" parameterType="double" value="19"/>
+      <ParameterDeclaration name="NPC3Speed" parameterType="double" value="17"/>
+      <ParameterDeclaration name="EgoLaneId" parameterType="int" value="-3"/>
+      <ParameterDeclaration name="NPC1LaneId" parameterType="int" value="-2"/>
+      <ParameterDeclaration name="NPC2LaneId" parameterType="int" value="-3"/>
+      <ParameterDeclaration name="NPC3LaneId" parameterType="int" value="-4"/>
+      <ParameterDeclaration name="NPC4LaneId" parameterType="int" value="-3"/>
+      <ParameterDeclaration name="EgoStartS" parameterType="double" value="100"/>
+      <ParameterDeclaration name="NPC1StartS" parameterType="double" value="150"/>
+      <ParameterDeclaration name="NPC2StartS" parameterType="double" value="20"/>
+      <ParameterDeclaration name="NPC3StartS" parameterType="double" value="70"/>
+      <ParameterDeclaration name="NPC4StartS" parameterType="double" value="170"/>
+      <ParameterDeclaration name="MS1EgoS" parameterType="double" value="300"/>
+      <ParameterDeclaration name="MS1NPC1S" parameterType="double" value="305"/>
+      <ParameterDeclaration name="MS1NPC2S" parameterType="double" value="285"/>
+      <ParameterDeclaration name="MS1NPC3S" parameterType="double" value="297"/>
+      <ParameterDeclaration name="MS1NPC4S" parameterType="double" value="330"/>
+      <ParameterDeclaration name="MS2EgoS" parameterType="double" value="500"/>
+      <ParameterDeclaration name="AccRate" parameterType="double" value="3"/>
+      <ParameterDeclaration name="BrakeRate" parameterType="double" value="-5"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <RouteCatalog/>
@@ -153,7 +153,7 @@
       </Init>
       <Story name="Synchronize_Story">
          <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="$owner" value="Ego"/>
+            <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
          </ParameterDeclarations>
          <Act name="Synchronize_Act">
             <ManeuverGroup maximumExecutionCount="1" name="Synchronize_NPC1_Sequence">

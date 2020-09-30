@@ -2,8 +2,8 @@
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceShemaLocation="OpenSccenario.xsd">
     <FileHeader author="Mandolin" date="2020-05-23 18:34:25.159274" decription="myscenario" revMajor="1" revMinor="0"/>
     <ParameterDeclarations>
-        <ParameterDeclaration name="$HostVehicle" parameterType="string" value="car_white"/>
-        <ParameterDeclaration name="$TargetVehicle" parameterType="string" value="car_red"/>
+        <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+        <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
     </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
@@ -98,7 +98,7 @@
         </Init>
         <Story name="mystory">
             <ParameterDeclarations>
-                <ParameterDeclaration name="$owner" parameterType="string" value="Target"/>
+                <ParameterDeclaration name="owner" parameterType="string" value="Target"/>
             </ParameterDeclarations>
             <Act name="my_act">
                 <ManeuverGroup maximumExecutionCount="1" name="mangroup">

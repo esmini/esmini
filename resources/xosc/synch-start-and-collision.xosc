@@ -6,10 +6,10 @@
                description="LTAP-OD"
                author="Fredrik Persson, Emil Knabe"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="$HostSpeed" parameterType="double" value="10"/>
-      <ParameterDeclaration name="$NPCVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="$NPCSpeed" parameterType="double" value="5"/>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="HostSpeed" parameterType="double" value="10"/>
+      <ParameterDeclaration name="NPCVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="NPCSpeed" parameterType="double" value="5"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <RouteCatalog>
@@ -104,7 +104,7 @@
       </Init>
       <Story name="LTAPStory">
          <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="$owner" value="NPC"/>
+            <ParameterDeclaration parameterType="string" name="owner" value="NPC"/>
          </ParameterDeclarations>
          <Act name="LTAPActNPC">
             <ManeuverGroup maximumExecutionCount="1" name="LTAPSequence">

@@ -8,12 +8,12 @@
    <Catalog name="HWManeuvers">
       <Maneuver name="Synchronize_NPC">
          <ParameterDeclarations>
-            <ParameterDeclaration name="$EgoTargetLaneId" parameterType="string" value="-3"/>
-            <ParameterDeclaration name="$NPCTargetLaneId" parameterType="string" value="-2"/>
-            <ParameterDeclaration name="$NPCFreeSpeed" parameterType="string" value="30"/>
-            <ParameterDeclaration name="$MS1EgoS" parameterType="double" value="300"/>
-            <ParameterDeclaration name="$MS2EgoS" parameterType="double" value="500"/>
-            <ParameterDeclaration name="$MS1NPC" parameterType="double" value="100"/>
+            <ParameterDeclaration name="EgoTargetLaneId" parameterType="string" value="-3"/>
+            <ParameterDeclaration name="NPCTargetLaneId" parameterType="string" value="-2"/>
+            <ParameterDeclaration name="NPCFreeSpeed" parameterType="string" value="30"/>
+            <ParameterDeclaration name="MS1EgoS" parameterType="double" value="300"/>
+            <ParameterDeclaration name="MS2EgoS" parameterType="double" value="500"/>
+            <ParameterDeclaration name="MS1NPC" parameterType="double" value="100"/>
          </ParameterDeclarations>
          <Event name="Synchronize_NPC_Event" priority="overwrite">
             <Action name="Synchronize_NPC_Action">

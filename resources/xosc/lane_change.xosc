@@ -6,9 +6,9 @@
                description="Cut-in"
                author="SimS"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="$HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="$EgoStartS" parameterType="double" value="50"/>
-      <ParameterDeclaration name="$TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="EgoStartS" parameterType="double" value="50"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -72,7 +72,7 @@
       </Init>
       <Story name="Lane change story">
          <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="$owner" value="Ego"/>
+            <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
          </ParameterDeclarations>
          <Act name="Lane change act">
             <ManeuverGroup maximumExecutionCount="1" name="Lane change">
