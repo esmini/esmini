@@ -40,8 +40,8 @@ namespace scenarioengine
 			VISIBILITY,
 			CONTROLLER,
 			ACTIVATE_CONTROLLER,
-			POSITION,
-			FOLLOW_ROUTE,
+			TELEPORT,
+			ASSIGN_ROUTE,
 			FOLLOW_TRAJECTORY,
 			SYNCHRONIZE
 		} ActionType;
@@ -453,21 +453,21 @@ namespace scenarioengine
 		const char* SubMode2Str(SynchSubmode submode);
 	};
 
-	class PositionAction : public OSCPrivateAction
+	class TeleportAction : public OSCPrivateAction
 	{
 	public:
 		roadmanager::Position *position_;
 
-		PositionAction() : OSCPrivateAction(OSCPrivateAction::ActionType::POSITION) {}
+		TeleportAction() : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT) {}
 		
-		PositionAction(const PositionAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::POSITION) 
+		TeleportAction(const TeleportAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT) 
 		{
 			position_ = action.position_;
 		}
 
 		OSCPrivateAction* Copy()
 		{
-			PositionAction *new_action = new PositionAction(*this);
+			TeleportAction *new_action = new TeleportAction(*this);
 			return new_action;
 		}
 
@@ -475,21 +475,21 @@ namespace scenarioengine
 		void Start();
 	};
 
-	class FollowRouteAction : public OSCPrivateAction
+	class AssignRouteAction : public OSCPrivateAction
 	{
 	public:
 		roadmanager::Route *route_;
 
-		FollowRouteAction() : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_ROUTE) {}
+		AssignRouteAction() : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE) {}
 
-		FollowRouteAction(const FollowRouteAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_ROUTE)
+		AssignRouteAction(const AssignRouteAction&action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE)
 		{
 			route_ = action.route_;
 		}
 
 		OSCPrivateAction* Copy()
 		{
-			FollowRouteAction *new_action = new FollowRouteAction(*this);
+			AssignRouteAction* new_action = new AssignRouteAction(*this);
 			return new_action;
 		}
 

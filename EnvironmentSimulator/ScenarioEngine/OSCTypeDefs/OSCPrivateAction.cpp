@@ -54,14 +54,14 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 	return end_value;
 }
 
-void FollowRouteAction::Start()
+void AssignRouteAction::Start()
 {
 	object_->pos_.SetRoute(route_);
 
 	OSCAction::Start();
 }
 
-void FollowRouteAction::End()
+void AssignRouteAction::End()
 {
 	// Disconnect route
 	object_->pos_.SetRoute(0);
@@ -459,12 +459,12 @@ void LongDistanceAction::Start()
 	OSCAction::Start();
 }
 
-void PositionAction::Start()
+void TeleportAction::Start()
 {
 	OSCAction::Start();
 }
 
-void PositionAction::Step(double dt, double simTime)
+void TeleportAction::Step(double dt, double simTime)
 {
 	(void)dt;
 	(void)simTime;
