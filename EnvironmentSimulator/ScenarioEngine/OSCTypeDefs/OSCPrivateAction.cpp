@@ -105,6 +105,7 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 
 	if (!traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->shape_->length_ - DISTANCE_TOLERANCE))
 	{
+		// Reached end of trajectory
 		// Calculate road coordinates from final inertia (X, Y) coordinates
 		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetH(), false);
 		
@@ -119,11 +120,15 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 		}
 		else if (timing_domain_ == TimingDomain::TIMING_RELATIVE)
 		{
+			double s_old = object_->pos_.GetTrajectoryS();
 			object_->pos_.SetTrajectoryPosByTime(traj_, time_ + timing_offset_);
+			object_->speed_ = (object_->pos_.GetTrajectoryS() - s_old) / dt;
 		}
 		else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
 		{
+			double s_old = object_->pos_.GetTrajectoryS();
 			object_->pos_.SetTrajectoryPosByTime(traj_, simTime * timing_scale_ + timing_offset_);
+			object_->speed_ = (object_->pos_.GetTrajectoryS() - s_old) / dt;
 		}
 	}
 
