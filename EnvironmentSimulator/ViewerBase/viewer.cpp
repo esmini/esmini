@@ -1084,8 +1084,11 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 
 							if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN)
 							{
-								for (int q = 0; q < curr_osi_rm.GetX().size(); q+=2)
+								for (int q = 0; q < curr_osi_rm.GetPoints().size(); q+=2)
 								{
+									roadmanager::OSIPoints::OSIPointStruct osi_point1 = curr_osi_rm.GetPoint(q);
+									roadmanager::OSIPoints::OSIPointStruct osi_point2 = curr_osi_rm.GetPoint(q+1);
+
 									// osg references for road mark osi points
 									osg::ref_ptr<osg::Geometry> osi_rm_geom = new osg::Geometry;
 									osg::ref_ptr<osg::Vec3Array> osi_rm_points = new osg::Vec3Array;
@@ -1099,11 +1102,11 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 									osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 
 									// start point of each road mark
-									point.set(curr_osi_rm.GetX()[q], curr_osi_rm.GetY()[q], curr_osi_rm.GetZ()[q] + z_offset);
+									point.set(osi_point1.x, osi_point1.y, osi_point1.z + z_offset);
 									osi_rm_points->push_back(point);
 
 									// end point of each road mark
-									point.set(curr_osi_rm.GetX()[q+1], curr_osi_rm.GetY()[q+1], curr_osi_rm.GetZ()[q+1] + z_offset);
+									point.set(osi_point2.x, osi_point2.y, osi_point2.z + z_offset);
 									osi_rm_points->push_back(point);
 
 									osi_rm_color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
@@ -1146,9 +1149,9 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 								osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 
 								// Creating points for the given roadmark
-								for (int m = 0; m < curr_osi_rm.GetX().size(); m++)
+								for (int m = 0; m < curr_osi_rm.GetPoints().size(); m++)
 								{
-									point.set(curr_osi_rm.GetX()[m], curr_osi_rm.GetY()[m], curr_osi_rm.GetZ()[m] + z_offset);
+									point.set(curr_osi_rm.GetPoint(m).x, curr_osi_rm.GetPoint(m).y, curr_osi_rm.GetPoint(m).z + z_offset);
 									osi_rm_points->push_back(point);
 									osi_rm_color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
 								}
@@ -1268,9 +1271,10 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 
 				curr_osi = lane->GetOSIPoints();
 
-				for (int m = 0; m < curr_osi->GetX().size(); m++)
+				for (int m = 0; m < curr_osi->GetPoints().size(); m++)
 				{
-					point.set(curr_osi->GetX()[m], curr_osi->GetY()[m], curr_osi->GetZ()[m] + z_offset);
+					roadmanager::OSIPoints::OSIPointStruct osi_point = curr_osi->GetPoint(m);
+					point.set(osi_point.x, osi_point.y, osi_point.z + z_offset);
 					osi_points->push_back(point);
 					osi_color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
 				}

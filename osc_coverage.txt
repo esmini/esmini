@@ -189,11 +189,11 @@ OSCTypeDefs
             Distance                        No
         Visibility                          No
         Synchronize                         Yes
-        Autonomous                          Yes
-        Controller                          No
-        Position                            Yes
+        ActivateController                  Yes
+        Controller                          No (only default controller supported)
+        TeleportAction                      Yes
         Routing                             
-            FollowRoute                     Yes
+            AssignRoute                     Yes
             FollowTrajectory                Partly (Only polyline trajectory supported so far)
             AcquirePosition                 No
     OSCUserDefinedAction                    No

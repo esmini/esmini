@@ -1117,8 +1117,8 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 
 					if (routeRefChildName == "Route")
 					{
-						// Add inline route to route catalog
-						LOG("Inline route reference not supported yet - put the route into a catalog");
+						// Parse inline route 
+						route = parseOSCRoute(routeRefChild);
 					}
 					else if (routeRefChildName == "CatalogReference")
 					{
@@ -1604,7 +1604,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		}
 		else if (actionChild.name() == std::string("TeleportAction"))
 		{
-			PositionAction *action_pos = new PositionAction;
+			TeleportAction *action_pos = new TeleportAction;
 			OSCPosition *pos = parseOSCPosition(actionChild.first_child());
 			action_pos->position_ = pos->GetRMPos();
 			action = action_pos;
@@ -1615,20 +1615,20 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 			{
 				if (routingChild.name() == std::string("AssignRouteAction"))
 				{
-					for (pugi::xml_node followRouteChild = routingChild.first_child(); followRouteChild; followRouteChild = followRouteChild.next_sibling())
+					for (pugi::xml_node assignRouteChild = routingChild.first_child(); assignRouteChild; assignRouteChild = assignRouteChild.next_sibling())
 					{
-						if (followRouteChild.name() == std::string("Route"))
+						if (assignRouteChild.name() == std::string("Route"))
 						{
-							FollowRouteAction* action_follow_route = new FollowRouteAction;
-							action_follow_route->route_ = parseOSCRoute(followRouteChild);
+							AssignRouteAction* action_follow_route = new AssignRouteAction;
+							action_follow_route->route_ = parseOSCRoute(assignRouteChild);
 							action = action_follow_route;
 						}
-						else if (followRouteChild.name() == std::string("CatalogReference"))
+						else if (assignRouteChild.name() == std::string("CatalogReference"))
 						{
-							FollowRouteAction *action_follow_route = new FollowRouteAction;
+							AssignRouteAction* action_assign_route = new AssignRouteAction;
 
 							// Find route in catalog
-							Entry *entry = ResolveCatalogReference(followRouteChild);
+							Entry *entry = ResolveCatalogReference(assignRouteChild);
 
 							if (entry == 0 || entry->node_ == 0)
 							{
@@ -1638,8 +1638,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							if (entry->type_ == CatalogType::CATALOG_ROUTE)
 							{
 								// Make a new instance from catalog entry
-								action_follow_route->route_ = parseOSCRoute(entry->GetNode());
-								action = action_follow_route;
+								action_assign_route->route_ = parseOSCRoute(entry->GetNode());
+								action = action_assign_route;
 								break;
 							}
 							else
@@ -1835,9 +1835,9 @@ void ScenarioReader::parseInit(Init &init)
 		for (size_t j = 0; j < i; j++)
 		{
 			roadmanager::Position* pos = 0;
-			if (init.private_action_[j]->type_ == OSCPrivateAction::ActionType::POSITION)
+			if (init.private_action_[j]->type_ == OSCPrivateAction::ActionType::TELEPORT)
 			{
-				PositionAction* action = (PositionAction*)init.private_action_[j];
+				TeleportAction* action = (TeleportAction*)init.private_action_[j];
 				if (action->position_->GetType() == roadmanager::Position::PositionType::RELATIVE_LANE)
 				{
 					pos = ((roadmanager::Position*)action->position_)->GetRelativePosition();

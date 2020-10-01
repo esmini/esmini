@@ -53,25 +53,27 @@ namespace roadmanager
 	class OSIPoints
 	{
 		public:
+			typedef struct
+			{
+				double s;
+				double x;
+				double y;
+				double z;
+				double h;
+			} OSIPointStruct;
+
 			OSIPoints() {}
-			OSIPoints(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) : s_(s), x_(x), y_(y), z_(z), h_(h) {}
-			void Set(std::vector<double> s, std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> h) { s_ = s; x_ = x; y_ = y; z_ = z; h_ = h;}
-			std::vector<double>& GetS() {return s_;}
-			std::vector<double>& GetX() {return x_;}
-			std::vector<double>& GetY() {return y_;}
-			std::vector<double>& GetZ() {return z_;}
-			std::vector<double>& GetH() {return h_;}
+			OSIPoints(std::vector<OSIPointStruct> points) : point_(points) {}
+			void Set(std::vector<OSIPointStruct> points) { point_ = points; }
+			std::vector<OSIPointStruct>& GetPoints() {return point_;}
+			OSIPointStruct& GetPoint(int i);
 			double GetXfromIdx(int i);
 			double GetYfromIdx(int i);
 			double GetZfromIdx(int i);
 			int GetNumOfOSIPoints();
 
 		private:
-			std::vector<double> s_;
-			std::vector<double> x_;
-			std::vector<double> y_;
-			std::vector<double> z_;
-			std::vector<double> h_;
+			std::vector<OSIPointStruct> point_;
 	};
 
 	class Geometry

@@ -34,6 +34,9 @@ copy resources\xosc\trajectory-test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_internal.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_sumo.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\lane_change_simple.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\pedestrian.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\pedestrian_collision.xosc %target_dir%\resources\xosc /y
+
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
 copy resources\xosc\Catalogs\Vehicles\*.* %target_dir%\resources\xosc\Catalogs\Vehicles /y
@@ -60,6 +63,7 @@ copy resources\models\jolengatan.osgb %target_dir%\resources\models /y
 copy resources\models\straight_500m.osgb %target_dir%\resources\models /y
 copy resources\models\parking_lot.osgb %target_dir%\resources\models /y
 copy resources\models\curve_r100.osgb %target_dir%\resources\models /y
+copy resources\models\walkman.osgb %target_dir%\resources\models /y
 
 copy resources\sumo_inputs\e6mini* %target_dir%\resources\sumo_inputs /y
 
@@ -78,6 +82,8 @@ copy run\EgoSimulator\run_synchronize_internal.bat %target_dir%\run\EgoSimulator
 copy run\EgoSimulator\run_synchronize_external.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_parking_lot.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_trajectory-test.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_pedestrian.bat %target_dir%\run\EgoSimulator /y
+copy run\EgoSimulator\run_pedestrian_collision.bat %target_dir%\run\EgoSimulator /y
 
 copy docs\readme.txt %target_dir% /y
 copy docs\commands.txt %target_dir% /y

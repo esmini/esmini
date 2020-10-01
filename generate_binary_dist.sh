@@ -20,6 +20,8 @@ resources/xosc/trajectory-test.xosc \
 resources/xosc/cut-in_internal.xosc \
 resources/xosc/cut-in_sumo.xosc \
 resources/xosc/lane_change_simple.xosc \
+resources/xosc/pedestrian.xosc \
+resources/xosc/pedestrian_collision.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -44,6 +46,7 @@ resources/models/jolengatan.osgb \
 resources/models/straight_500m.osgb \
 resources/models/parking_lot.osgb \
 resources/models/curve_r100.osgb \
+resources/models/walkman.osgb \
 resources/sumo_inputs/e6mini* \
 run/EgoSimulator/run_basic_hybrid.* \
 run/EgoSimulator/run_ltap-od_external.* \
@@ -60,6 +63,7 @@ run/EgoSimulator/run_synchronize_internal.* \
 run/EgoSimulator/run_synchronize_external.* \
 run/EgoSimulator/run_parking_lot.* \
 run/EgoSimulator/run_trajectory-test.* \
+run/EgoSimulator/run_pedestrian*.* \
 docs/readme.txt \
 docs/commands.txt \
 3rd_party_terms_and_licenses/* \
