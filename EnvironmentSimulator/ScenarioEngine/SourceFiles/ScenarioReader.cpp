@@ -884,71 +884,73 @@ int ScenarioReader::parseEntities()
 				}
 			}
 
-			if (obj != 0 && ctrl == 0)
+
+			if (ctrl != 0 && ctrl->name_ == "sumo_configuration")
 			{
-				obj->name_ = ReadAttribute(entitiesChild, "name");
-				entities_->addObject(obj);
-				objectCnt_++;
-			} 
-			else if (obj != 0 && ctrl != 0)
-			{
-				if (ctrl->name_ == "sumo_configuration")
+				// if sumo controlled vehicle, the object will be passed to sumo template, and
+				std::string configfile_path = ctrl->config_filepath_;
+
+				if (!FileExists(configfile_path.c_str()) || (docsumo_.load_file(configfile_path.c_str()).status == pugi::status_file_not_found))
 				{
-					// if sumo controlled vehicle, the object will be passed to sumo template, and
-					std::string configfile_path = ctrl->config_filepath_;
+					// Then assume relative path to scenario directory - which perhaps should be the expected location
+					std::string configfile_path2 = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), configfile_path);
 
-					if (!FileExists(configfile_path.c_str()) || (docsumo_.load_file(configfile_path.c_str()).status == pugi::status_file_not_found))
-					{
-						// Then assume relative path to scenario directory - which perhaps should be the expected location
-						std::string configfile_path2 = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), configfile_path);
-
-						if (!FileExists(configfile_path2.c_str()) || (docsumo_.load_file(configfile_path2.c_str()).status == pugi::status_file_not_found))
-						{
-							// Give up
-							LOG("Failed to load SUMO config file %s, also tried %s", configfile_path.c_str(), configfile_path2.c_str());
-							return -1;
-						}
-						else
-						{
-							// Update file path
-							configfile_path = configfile_path2;
-							ctrl->config_filepath_ = configfile_path;
-						}
-					}
-
-					std::vector<std::string> file_name_candidates;
-					file_name_candidates.push_back(ReadAttribute(docsumo_.child("configuration").child("input").child("net-file"), "value"));
-					file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(configfile_path), file_name_candidates[0]));
-					file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), file_name_candidates[0]));
-					pugi::xml_parse_result sumonet;
-					size_t i;
-					for (i = 0; i < file_name_candidates.size(); i++)
-					{
-						sumonet = docsumo_.load_file(file_name_candidates[i].c_str());
-						if (sumonet.status == pugi::status_ok)
-						{
-							break;
-						}
-					}
-					if (sumonet.status != pugi::status_ok)
+					if (!FileExists(configfile_path2.c_str()) || (docsumo_.load_file(configfile_path2.c_str()).status == pugi::status_file_not_found))
 					{
 						// Give up
-						LOG("Failed to load SUMO net file %s", file_name_candidates[0].c_str());
+						LOG("Failed to load SUMO config file %s, also tried %s", configfile_path.c_str(), configfile_path2.c_str());
 						return -1;
 					}
-
-					pugi::xml_node location = docsumo_.child("net").child("location");
-					std::string netoffset = ReadAttribute(location, "netOffset");
-					std::size_t delim = netoffset.find(',');
-					entities_->sumo_x_offset = std::stof(netoffset.substr(0, delim));
-					entities_->sumo_y_offset = std::stof(netoffset.substr(delim + 1, netoffset.npos));
-
-					entities_->sumo_vehicle = obj;
-					entities_->sumo_config_path = ctrl->config_filepath_;
+					else
+					{
+						// Update file path
+						configfile_path = configfile_path2;
+						ctrl->config_filepath_ = configfile_path;
+					}
 				}
-				else
+
+				std::vector<std::string> file_name_candidates;
+				file_name_candidates.push_back(ReadAttribute(docsumo_.child("configuration").child("input").child("net-file"), "value"));
+				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(configfile_path), file_name_candidates[0]));
+				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), file_name_candidates[0]));
+				pugi::xml_parse_result sumonet;
+				size_t i;
+				for (i = 0; i < file_name_candidates.size(); i++)
+				{
+					sumonet = docsumo_.load_file(file_name_candidates[i].c_str());
+					if (sumonet.status == pugi::status_ok)
+					{
+						break;
+					}
+				}
+				if (sumonet.status != pugi::status_ok)
+				{
+					// Give up
+					LOG("Failed to load SUMO net file %s", file_name_candidates[0].c_str());
+					return -1;
+				}
+
+				pugi::xml_node location = docsumo_.child("net").child("location");
+				std::string netoffset = ReadAttribute(location, "netOffset");
+				std::size_t delim = netoffset.find(',');
+				entities_->sumo_x_offset = std::stof(netoffset.substr(0, delim));
+				entities_->sumo_y_offset = std::stof(netoffset.substr(delim + 1, netoffset.npos));
+
+				entities_->sumo_vehicle = obj;
+				entities_->sumo_config_path = ctrl->config_filepath_;
+			}
+			else
+			{
+				if (ctrl != 0)
 				{
 					LOG("Controller \"%s\" registered, but is not recognized by esmini", ctrl->name_.c_str());
+				}
+
+				if (obj != 0)
+				{
+					obj->name_ = ReadAttribute(entitiesChild, "name");
+					entities_->addObject(obj);
+					objectCnt_++;
 				}
 			}
 		}
