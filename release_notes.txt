@@ -1,5 +1,11 @@
 The purpose of this document is to highlight changes breaking backward compatibility, i.e. updates to scenarios and start scripts might be required.
 
+2020-10-02 Version 1.7.10
+- Fix assumption that all controllers are SUMO config type
+- Fix parameter name bug
+- Add OpenDriveViewer to demo package
+- Some additional minor bug fixes
+
 2020-10-01 Version 1.7.9
 - Improved OSI performance 
 - Added pedestrian example scenario
