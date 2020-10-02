@@ -2,6 +2,7 @@ The purpose of this document is to highlight changes breaking backward compatibi
 
 2020-10-02 Version 1.7.11
 - Fix bug deleting any entity with defined controller
+- Add another OpenDriveViewer example run script
 
 2020-10-02 Version 1.7.10
 - Fix assumption that all controllers are SUMO config type
