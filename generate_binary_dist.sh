@@ -31,6 +31,7 @@ resources/xodr/fabriksgatan.xodr \
 resources/xodr/jolengatan.xodr \
 resources/xodr/straight_500m.xodr \
 resources/xodr/curve_r100.xodr \
+resources/xodr/multi_intersections.xodr \
 resources/models/bus_blue.osgb \
 resources/models/car_blue.osgb \
 resources/models/car_red.osgb \
@@ -47,6 +48,7 @@ resources/models/straight_500m.osgb \
 resources/models/parking_lot.osgb \
 resources/models/curve_r100.osgb \
 resources/models/walkman.osgb \
+resources/models/multi_intersections.osgb \
 resources/sumo_inputs/e6mini* \
 run/EgoSimulator/run_basic_hybrid.* \
 run/EgoSimulator/run_ltap-od_external.* \
@@ -64,6 +66,8 @@ run/EgoSimulator/run_synchronize_external.* \
 run/EgoSimulator/run_parking_lot.* \
 run/EgoSimulator/run_trajectory-test.* \
 run/EgoSimulator/run_pedestrian*.* \
+run/OpenDriveViewer/run_e6mini*.* \
+run/OpenDriveViewer/run_multi_intersections*.* \
 docs/readme.txt \
 docs/commands.txt \
 3rd_party_terms_and_licenses/* \
@@ -71,6 +75,7 @@ LICENSE \
 release_notes.txt \
 version.txt \
 bin/EgoSimulator \
+bin/OpenDriveViewer \
 esmini-demo
 
 cp -r Hello-World_coding-example esmini-demo

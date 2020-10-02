@@ -13,6 +13,7 @@ IF NOT EXIST %target_dir%\resources\models ( mkdir %target_dir%\resources\models
 IF NOT EXIST %target_dir%\resources\sumo_inputs ( mkdir %target_dir%\resources\sumo_inputs )
 IF NOT EXIST %target_dir%\run ( mkdir %target_dir%\run )
 IF NOT EXIST %target_dir%\run\EgoSimulator ( mkdir %target_dir%\run\EgoSimulator )
+IF NOT EXIST %target_dir%\run\OpenDriveViewer ( mkdir %target_dir%\run\OpenDriveViewer )
 IF NOT EXIST %target_dir%\bin ( mkdir %target_dir%\bin )
 IF NOT EXIST %target_dir%\lib ( mkdir %target_dir%\lib )
 IF NOT EXIST %target_dir%\include ( mkdir %target_dir%\include )
@@ -47,6 +48,7 @@ copy resources\xodr\fabriksgatan.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\jolengatan.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\straight_500m.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\curve_r100.xodr %target_dir%\resources\xodr /y
+copy resources\xodr\multi_intersections.xodr %target_dir%\resources\xodr /y
 
 copy resources\models\bus_blue.osgb %target_dir%\resources\models /y
 copy resources\models\car_blue.osgb %target_dir%\resources\models /y
@@ -64,6 +66,7 @@ copy resources\models\straight_500m.osgb %target_dir%\resources\models /y
 copy resources\models\parking_lot.osgb %target_dir%\resources\models /y
 copy resources\models\curve_r100.osgb %target_dir%\resources\models /y
 copy resources\models\walkman.osgb %target_dir%\resources\models /y
+copy resources\models\multi_intersections.osgb %target_dir%\resources\models /y
 
 copy resources\sumo_inputs\e6mini* %target_dir%\resources\sumo_inputs /y
 
@@ -85,6 +88,9 @@ copy run\EgoSimulator\run_trajectory-test.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_pedestrian.bat %target_dir%\run\EgoSimulator /y
 copy run\EgoSimulator\run_pedestrian_collision.bat %target_dir%\run\EgoSimulator /y
 
+copy run\OpenDriveViewer\run_e6mini.bat %target_dir%\run\OpenDriveViewer /y
+copy run\OpenDriveViewer\run_multi_intersections.bat %target_dir%\run\OpenDriveViewer /y
+
 copy docs\readme.txt %target_dir% /y
 copy docs\commands.txt %target_dir% /y
 
@@ -94,6 +100,7 @@ copy release_notes.txt %target_dir% /y
 copy version.txt %target_dir% /y
 
 copy bin\EgoSimulator.exe %target_dir%\bin /y
+copy bin\OpenDriveViewer.exe %target_dir%\bin /y
 copy bin\ScenarioEngineDLL.* %target_dir%\lib /y
 copy EnvironmentSimulator\ScenarioEngineDLL\scenarioenginedll.hpp %target_dir%\include /y
 

@@ -592,14 +592,12 @@ namespace roadmanager
 		double GetS() { return s_; }
 		Lane* GetLaneByIdx(int idx);
 		Lane* GetLaneById(int id);
-		int FindClosestSnappingLane(int id, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 		int GetLaneIdByIdx(int idx);
 		int GetLaneIdxById(int id);
 		int GetLaneGlobalIdByIdx(int idx);
 		double GetOuterOffset(double s, int lane_id);
 		double GetWidth(double s, int lane_id);
 		int GetClosestLaneIdx(double s, double t, double &offset, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
-		int GetClosestWhateverLaneIdx(double s, double t, double &offset);
 		
 		/**
 		Get lateral position of lane center, from road reference lane (lane id=0)

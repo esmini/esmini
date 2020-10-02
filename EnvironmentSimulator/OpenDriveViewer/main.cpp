@@ -55,6 +55,7 @@ typedef struct
 {
 	int road_id_init;
 	int lane_id_init;
+	double heading_init;
 	double s_init;
 	roadmanager::Position *pos;
 	double speed_factor;  // speed vary bewtween lanes, m/s
@@ -132,6 +133,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				car_->s_init = s;
 				car_->pos = new roadmanager::Position(odrManager->GetRoadByIdx(r)->GetId(), lane->GetId(), s, 0);
 				car_->pos->SetHeadingRelative(lane->GetId() < 0 ? 0 : M_PI);
+				car_->heading_init = car_->pos->GetHRelative();
 
 				if ((car_->model = viewer->AddCar(carModelsFiles_[carModelID], false, osg::Vec3(0.5, 0.5, 0.5), false,"")) == 0)
 				{
@@ -170,6 +172,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 			start_s = odrManager->GetRoadById(car->road_id_init)->GetLength() - 5;
 		}
 		car->pos->SetLanePos(car->road_id_init, car->lane_id_init, start_s, 0, 0);
+		car->pos->SetHeadingRelative(car->heading_init);
 	}
 
 	if (car->model->txNode_ != 0)

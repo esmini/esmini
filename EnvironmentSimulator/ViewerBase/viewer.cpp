@@ -938,7 +938,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 
 				// Set dimensions of the vehicle "box"
 				tx->setScale(osg::Vec3(4.0, 2.0, 1.2));
-				tx->setPosition(osg::Vec3(3.0, 0.0, 0.6));
+				tx->setPosition(osg::Vec3(1.5, 0.0, 0.6));
 				tx->addChild(geode);
 
 				osg::Material* material = new osg::Material();

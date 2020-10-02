@@ -712,9 +712,11 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 			}
 
 			// If new lane is not of snapping type, try to move into a close valid lane
-			if (laneTypeMask & lane_section->GetLaneById(lane_info.lane_id_)->GetLaneType())
+			Lane* lane = lane_section->GetLaneById(lane_info.lane_id_);
+			if (!(laneTypeMask & lane_section->GetLaneById(lane_info.lane_id_)->GetLaneType()))
 			{
-				lane_info.lane_id_ = lane_section->FindClosestSnappingLane(lane_info.lane_id_, laneTypeMask);
+				double offset = 0;
+				lane_info.lane_id_ = lane_section->GetLaneByIdx(lane_section->GetClosestLaneIdx(s, lane->GetOffsetFromRef(), offset, laneTypeMask))->GetId();
 				if (lane_info.lane_id_ == 0)
 				{
 					LOG("Failed to find a closest snapping lane");
@@ -801,26 +803,6 @@ Lane* LaneSection::GetLaneById(int id)
 		}
 	}
 	return 0;
-}
-
-int LaneSection::FindClosestSnappingLane(int id, int laneTypeMask)
-{
-	int id_best = id;
-	size_t delta_best = lane_.size() + 1;
-
-	for (size_t i = 0; i < lane_.size(); i++)
-	{
-		if (laneTypeMask & lane_[i]->GetLaneType())
-		{
-			if ((abs(lane_[i]->GetId() - id) < delta_best) || 
-				(abs(lane_[i]->GetId() - id) == delta_best && abs(lane_[i]->GetId()) < abs(id_best)))
-			{
-				delta_best = abs(lane_[i]->GetId() - id);
-				id_best = lane_[i]->GetId();
-			}
-		}
-	}
-	return id_best;
 }
 
 int LaneSection::GetLaneIdByIdx(int idx)
@@ -4230,12 +4212,14 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double &offset, int laneT
 	double min_offset = t;  // Initial offset relates to reference line
 	int candidate_lane_idx = -1;
 
+
 	for (int i = 0; i < GetNumberOfLanes(); i++)  // Search through all lanes
 	{
 		int lane_id = GetLaneIdByIdx(i);
 		double laneCenterOffset = SIGN(lane_id) * GetCenterOffset(s, lane_id);
 
-		if (laneTypeMask & GetLaneById(lane_id)->GetLaneType())
+		// Only consider lanes with non zero width and with matching lane type
+		if (GetWidth(s, lane_id) > SMALL_NUMBER && laneTypeMask & GetLaneById(lane_id)->GetLaneType())
 		{
 			if (candidate_lane_idx == -1 || fabs(t - laneCenterOffset) < fabs(min_offset))
 			{
@@ -4252,28 +4236,6 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double &offset, int laneT
 		// Fall back to reference lane
 		candidate_lane_idx = GetLaneIdxById(0);
 	}
-
-	return candidate_lane_idx;
-}
-
-int LaneSection::GetClosestWhateverLaneIdx(double s, double t, double &offset)
-{
-	double min_offset = t;  // Initial offset relates to reference line
-	int candidate_lane_idx = -1;
-
-	for (int i = 0; i < GetNumberOfLanes(); i++)  // Search through all lanes
-	{
-		int lane_id = GetLaneIdByIdx(i);
-		double laneCenterOffset = SIGN(lane_id) * GetCenterOffset(s, lane_id);
-
-		if ((candidate_lane_idx == -1 || fabs(t - laneCenterOffset) < fabs(min_offset)))
-		{
-			min_offset = t - laneCenterOffset;
- 			candidate_lane_idx = i;
-		}
-	}
-
-	offset = min_offset;
 
 	return candidate_lane_idx;
 }
@@ -5354,6 +5316,19 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 	// Finally, update the position with the adjusted s and offset values
 	SetLanePos(track_id_, lane_id_, s_ + ds_signed, offset_ + signed_dLaneOffset);
 
+	// Check if lane has narrowed down to zero width
+	Road* road = GetOpenDrive()->GetRoadById(track_id_);
+	LaneInfo li = road->GetLaneInfoByS(GetS(), lane_section_idx_, lane_id_, snapToLaneTypes_);
+	if (road->GetLaneWidthByS(GetS(), li.lane_id_) < SMALL_NUMBER)
+	{
+		double offset = 0;
+		int old_lane_id = lane_id_;
+		int new_lane_idx = road->GetLaneSectionByIdx(li.lane_section_idx_)->GetClosestLaneIdx(GetS(), GetT(), offset, snapToLaneTypes_);
+		int new_lane_id = road->GetLaneSectionByIdx(li.lane_section_idx_)->GetLaneByIdx(new_lane_idx)->GetId();
+		SetLanePos(track_id_, new_lane_id, GetS(), 0);
+		LOG("Lane %d on road %d is or became zero width, moved to closest available lane: %d", road->GetId(), old_lane_id, GetLaneId());
+	}
+
 	return 0;
 }
 
@@ -5399,7 +5374,7 @@ int Position::SetLanePos(int track_id, int lane_id, double s, double offset, int
 		LaneInfo lane_info = road->GetLaneInfoByS(s_, lane_section_idx_, lane_id_, snapToLaneTypes_);
 		lane_section_idx_ = lane_info.lane_section_idx_;
 		lane_id_ = lane_info.lane_id_;
-		
+
 		lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 	}
 
@@ -6124,7 +6099,7 @@ int Position::GetLaneGlobalId()
 	}
 
 	double offset;
-	int lane_idx = lane_section->GetClosestWhateverLaneIdx(s_, t_, offset);
+	int lane_idx = lane_section->GetClosestLaneIdx(s_, t_, offset, Lane::LaneType::LANE_TYPE_ANY);
 
 	if (lane_idx == -1)
 	{
