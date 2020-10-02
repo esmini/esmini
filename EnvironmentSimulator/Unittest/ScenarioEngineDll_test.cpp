@@ -586,7 +586,17 @@ TEST(OSIFile, writeosifile_no_init) {
 	EXPECT_EQ(write, false);	 
 }
 
-class GetSensorViewTests :public ::testing::TestWithParam<std::tuple<std::string,int>> {};
+typedef struct
+{
+	float length;
+	float width;
+	float height;
+	float centerOffsetX;
+	float centerOffsetY;
+	float centerOffsetZ;
+} bounding_box;
+
+class GetSensorViewTests :public ::testing::TestWithParam<std::tuple<std::string,int, int, bounding_box>> {};
 // inp: nto excisting lane boundary global id 
 // expected: size of osi lane boundary message = 0
 
@@ -610,15 +620,34 @@ TEST_P(GetSensorViewTests, receive_SensorView) {
 
 	int n_lanes = osi_sv.mutable_global_ground_truth()->lane_size();
 
+	int n_objects = osi_sv.mutable_global_ground_truth()->mutable_moving_object()->size();
+
+	int ego_index = 0; // ego vehicle are always first in tested scenarios
+
+	float ego_length = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->length();
+	float ego_width = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->width();
+	float ego_height = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->height();
+	float ego_xoffset = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->x();
+	float ego_yoffset = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->y();
+	float ego_zoffset = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->z();
+
+
 	EXPECT_EQ(n_lanes, std::get<1>(GetParam())); 
+	EXPECT_EQ(n_objects, std::get<2>(GetParam())); 
+	EXPECT_EQ(ego_length, std::get<3>(GetParam()).length); 
+	EXPECT_EQ(ego_width, std::get<3>(GetParam()).width); 
+	EXPECT_EQ(ego_height, std::get<3>(GetParam()).height); 
+	EXPECT_EQ(ego_xoffset, std::get<3>(GetParam()).centerOffsetX); 
+	EXPECT_EQ(ego_yoffset, std::get<3>(GetParam()).centerOffsetY); 
+	EXPECT_EQ(ego_zoffset, std::get<3>(GetParam()).centerOffsetZ); 
  
 }
 
 INSTANTIATE_TEST_CASE_P(EsminiAPITests,GetSensorViewTests,::testing::Values(
-    std::make_tuple("../../../resources/xosc/cut-in.xosc", 15 ),
-    std::make_tuple("../../../resources/xosc/straight_500m.xosc", 7 ),
-    std::make_tuple("../../../resources/xosc/highway_merge.xosc", 40 )));
-
+    std::make_tuple("../../../resources/xosc/cut-in.xosc", 15, 2, bounding_box{5.0,2.0,1.8,1.4,0.0,0.9} ),
+    std::make_tuple("../../../resources/xosc/straight_500m.xosc", 7, 2, bounding_box{5.0,2.0,1.8,1.4,0.0,0.9} ),
+    std::make_tuple("../../../resources/xosc/highway_merge.xosc", 40, 6, bounding_box{5.0,2.0,1.8,1.4,0.0,0.9} )));
+// scenario_file_name, number_of_lanes, number_of_objects, ego_bounding_box
 
 
 TEST(GetSensorViewTests, receive_SensorView_no_init) {
