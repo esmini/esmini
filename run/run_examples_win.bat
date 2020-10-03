@@ -1,18 +1,15 @@
 @rem Run all prepared batch scripts in selected subfolders 
 
-cd EgoSimulator
+cd esmini
 forfiles /m *.bat /c "cmd /c @path"
 
-cd ..\EnvironmentSimulator
+cd ..\esmini-dyn
 forfiles /m *.bat /c "cmd /c @path"
 
-cd ..\ScenarioViewer
+cd ..\odrviewer
 forfiles /m *.bat /c "cmd /c @path"
 
-cd ..\OpenDriveViewer
-forfiles /m *.bat /c "cmd /c @path"
-
-cd ..\Replayer
+cd ..\replayer
 forfiles /m *.bat /c "cmd /c @path"
 
 cd ..

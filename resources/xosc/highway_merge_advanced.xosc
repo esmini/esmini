@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- This is a merge scenario demonstrating advanced usage of conditions. -->
+<!-- Whenever the white car tries to merge, the yellow car will close the -->
+<!-- gap (but only three times according to MaximumExectionCount setting. -->
 <OpenSCENARIO>
-   <FileHeader revMajor="0"
-               revMinor="9"
+   <FileHeader revMajor="1"
+               revMinor="0"
                date="2017-11-27T10:00:00"
-               description="Simulation Scenarios - Hiwghway Merge"
+               description="Advanced Highway Merge with disrespectful driver"
                author="SimS"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="gap_normal" parameterType="double" value="20"/>
@@ -26,7 +29,7 @@
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_external"/>
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
       </ScenarioObject>
       <ScenarioObject name="A1">
          <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>

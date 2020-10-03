@@ -5,9 +5,10 @@ include_directories (
   ${VIEWER_BASE_INCLUDE_DIR}
   ${OSG_INCLUDE_DIR}
   ${COMMON_MINI_INCLUDE_DIR}
+  ${CONTROLLERS_INCLUDE_DIR}
 )
 
-set(TARGET OpenDriveViewer)
+set(TARGET odrviewer)
 
 set ( SOURCES
 	main.cpp

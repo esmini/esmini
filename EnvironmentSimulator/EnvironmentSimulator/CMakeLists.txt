@@ -8,6 +8,7 @@ include_directories (
   ${OSG_INCLUDE_DIR}
   ${SCENARIOENGINE_INCLUDE_DIRS}
   ${COMMON_MINI_INCLUDE_DIR}
+  ${CONTROLLERS_INCLUDE_DIR}  
 )
 
 set(TARGET EnvironmentSimulator)
@@ -37,6 +38,7 @@ target_link_libraries (
 	${OSI_LIBRARIES}
     ${SUMO_LIBRARIES}
 	CommonMini
+    Controllers
 	${TIME_LIB}
     ${SOCK_LIB}
 )

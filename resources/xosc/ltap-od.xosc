@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Two vehicles approaching an intersection from opposite directions. The target  -->
+<!-- vehicle will make a left turn just in front of the straight going Ego vehicle  -->
+<!-- This scenario demonstrates use of the Synchronize Action which makes sure that -->
+<!-- the critical situation will arise whatever speed profile the Ego has.          -->
 <OpenSCENARIO>
-   <FileHeader revMajor="0"
-               revMinor="9"
+   <FileHeader revMajor="1"
+               revMinor="0"
                date="2017-06-09T10:00:00"
-               description="LTAP-OD"
+               description="LTAP-OD variant where target vehicle intercepts Ego path"
                author="Fredrik Persson, Emil Knabe"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
@@ -30,6 +34,9 @@
    <Entities>
       <ScenarioObject name="Ego">
          <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+         <ObjectController>
+            <Controller name="InteractiveController" />
+         </ObjectController>         
       </ScenarioObject>
       <ScenarioObject name="NPC">
          <CatalogReference catalogName="VehicleCatalog" entryName="$NPCVehicle"/>
@@ -59,6 +66,9 @@
                         </RoutePosition>
                      </Position>
                   </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
                </PrivateAction>
                <PrivateAction>
                   <LongitudinalAction>
@@ -118,19 +128,19 @@
                <Maneuver name="ManeuverNPC">
                   <Event name="SyncEvent" priority="overwrite">
                      <Action name="SyncActionNPC">
-						<PrivateAction>
-							<SynchronizeAction masterEntityRef="Ego" >
-								<TargetPositionMaster>
-									<LanePosition roadId="0" laneId="1" offset="0" s="$EgoSyncPoint1S" />
-								</TargetPositionMaster>    
-								<TargetPosition>
-									<LanePosition roadId="2" laneId="-1" offset="0" s="$NPCSyncPointS" />
-								</TargetPosition>    
-								<FinalSpeed>
-									<AbsoluteSpeed value="$NPCFinalSpeed" />
-								</FinalSpeed>
-							</SynchronizeAction>
-						</PrivateAction>
+                        <PrivateAction>
+                            <SynchronizeAction masterEntityRef="Ego" >
+                                <TargetPositionMaster>
+                                    <LanePosition roadId="0" laneId="1" offset="0" s="$EgoSyncPoint1S" />
+                                </TargetPositionMaster>    
+                                <TargetPosition>
+                                    <LanePosition roadId="2" laneId="-1" offset="0" s="$NPCSyncPointS" />
+                                </TargetPosition>    
+                                <FinalSpeed>
+                                    <AbsoluteSpeed value="$NPCFinalSpeed" />
+                                </FinalSpeed>
+                            </SynchronizeAction>
+                         </PrivateAction>
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
@@ -148,7 +158,7 @@
             </ManeuverGroup>
             <StartTrigger>
                <ConditionGroup>
-                  <Condition name="LtapActStartConditionNPC" delay="0" conditionEdge="rising">
+                  <Condition name="LtapActStartConditionNPC" delay="0" conditionEdge="none">
                      <ByValueCondition>
                         <SimulationTimeCondition value="0" rule="greaterThan"/>
                      </ByValueCondition>

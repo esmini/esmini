@@ -24,4 +24,4 @@ endmacro()
 
 package_add_test_with_libraries(OperatingSystem_test OperatingSystem_test.cpp PlayerBase)
 package_add_test_with_libraries(RoadManager_test RoadManager_test.cpp RoadManager)
-package_add_test_with_libraries(ScenarioEngineDll_test ScenarioEngineDll_test.cpp ScenarioEngineDLL ${OSI_LIBRARIES})
+package_add_test_with_libraries(ScenarioEngineDll_test ScenarioEngineDll_test.cpp esminiLib ${OSI_LIBRARIES})

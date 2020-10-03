@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- A simple lane change scenario demonstrates the EndOfRoad condition.   -->
+<!-- When car reaches the end of the road it will be teleported back to    -->
+<!-- the start position and start over the maneuver. This will be repeated -->
+<!-- twice according to event maximumExecutionCount.                       -->
 <OpenSCENARIO>
-   <FileHeader revMajor="0"
-               revMinor="9"
+   <FileHeader revMajor="1"
+               revMinor="0"
                date="2017-06-09T10:00:00"
-               description="Cut-in"
-               author="SimS"/>
+               description="Basic lane change repeated after reaching end-of-road"
+               author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
    </ParameterDeclarations>

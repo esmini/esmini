@@ -56,6 +56,11 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 
 void AssignRouteAction::Start()
 {
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
+	{
+		// lateral motion controlled elsewhere
+		return;
+	}
 	object_->pos_.SetRoute(route_);
 
 	OSCAction::Start();
@@ -71,13 +76,13 @@ void AssignRouteAction::End()
 
 void FollowTrajectoryAction::Start()
 {
-	if (object_->control_ == Object::Control::EXTERNAL ||
-		object_->control_ == Object::Control::HYBRID_EXTERNAL)
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
 	{
-		// motion control handed over 
+		// lateral motion controlled elsewhere
+		// other action or controller already updated lateral dimension of object 
+		// potentially longitudinal dimension could be updated separatelly - but skip that for now
 		return;
 	}
-
 	traj_->Freeze();
 	object_->pos_.SetTrajectory(traj_);
 	
@@ -97,6 +102,14 @@ void FollowTrajectoryAction::End()
 
 void FollowTrajectoryAction::Step(double dt, double simTime)
 {
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
+	{
+		// lateral motion controlled elsewhere
+		// other action or controller already updated lateral dimension of object 
+		// potentially longitudinal dimension could be updated separatelly - but skip that for now
+		return;
+	}
+
 	time_ += timing_scale_ * dt;
 
 	// Measure length of movement for odometer
@@ -114,7 +127,8 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 	else
 	{
 		// Move along trajectory
-		if (timing_domain_ == TimingDomain::NONE)
+		if (timing_domain_ == TimingDomain::NONE || 
+			object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))  
 		{
 			object_->pos_.MoveTrajectoryDS(object_->speed_ * dt);
 		}
@@ -138,10 +152,9 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 
 void LatLaneChangeAction::Start()
 {
-	if (object_->control_ == Object::Control::EXTERNAL ||
-		object_->control_ == Object::Control::HYBRID_EXTERNAL)
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
 	{
-		// motion control handed over 
+		// lateral motion controlled elsewhere
 		return;
 	}
 	OSCAction::Start();
@@ -206,6 +219,12 @@ void LatLaneChangeAction::Step(double dt, double simTime)
 	double factor;
 	double angle = 0;
 
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
+	{
+		// lateral motion controlled elsewhere
+		return;
+	}
+
 	target_t =
 		SIGN(target_lane_id_) *
 		object_->pos_.GetOpenDrive()->GetRoadById(object_->pos_.GetTrackId())->GetCenterOffset(object_->pos_.GetS(), target_lane_id_) +
@@ -267,10 +286,9 @@ void LatLaneChangeAction::Step(double dt, double simTime)
 
 void LatLaneOffsetAction::Start()
 {
-	if (object_->control_ == Object::Control::EXTERNAL ||
-		object_->control_ == Object::Control::HYBRID_EXTERNAL)
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
 	{
-		// motion control handed over 
+		// lateral motion controlled elsewhere
 		return;
 	}
 
@@ -283,6 +301,12 @@ void LatLaneOffsetAction::Step(double dt, double simTime)
 	double factor, lane_offset;
 	double angle = 0;
 	double old_lane_offset = object_->pos_.GetOffset();
+
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
+	{
+		// lateral motion controlled elsewhere
+		return;
+	}
 
 	elapsed_ += dt;
 	factor = elapsed_ / dynamics_.duration_;
@@ -341,13 +365,11 @@ double LongSpeedAction::TargetRelative::GetValue()
 
 void LongSpeedAction::Start()
 {
-	if (object_->control_ == Object::Control::EXTERNAL ||
-		object_->control_ == Object::Control::HYBRID_EXTERNAL)
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
 	{
-		// motion control handed over 
+		// longitudinal motion controlled elsewhere
 		return;
 	}
-
 	OSCAction::Start();
 
 	start_speed_ = object_->speed_;
@@ -358,6 +380,12 @@ void LongSpeedAction::Step(double dt, double simTime)
 	double factor = 0.0;
 	double new_speed = 0;
 	bool target_speed_reached = false;
+
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	{
+		// longitudinal motion controlled elsewhere
+		return;
+	}
 
 	if (transition_dynamics_.shape_ == DynamicsShape::STEP)
 	{
@@ -399,7 +427,7 @@ void LongSpeedAction::Step(double dt, double simTime)
 		new_speed = target_->GetValue();
 		OSCAction::Stop();
 
-return;
+		return;
 	}
 
 	if (target_speed_reached && !(target_->type_ == Target::TargetType::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
@@ -410,8 +438,31 @@ return;
 	object_->speed_ = new_speed;
 }
 
+void LongDistanceAction::Start()
+{
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	{
+		// longitudinal motion controlled elsewhere
+		return;
+	}
+
+	if (target_object_ == 0)
+	{
+		LOG("Can't trig without set target object ");
+		return;
+	}
+
+	OSCAction::Start();
+}
+
 void LongDistanceAction::Step(double dt, double simTime)
 {
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	{
+		// longitudinal motion controlled elsewhere
+		return;
+	}
+
 	// Find out current distance
 	double x, y;
 	double distance = object_->pos_.getRelativeDistance(target_object_->pos_, x, y);
@@ -473,19 +524,14 @@ void LongDistanceAction::Step(double dt, double simTime)
 	//	LOG("Dist %.2f diff %.2f acc %.2f speed %.2f", distance, distance_diff, acc, object_->speed_);
 }
 
-void LongDistanceAction::Start()
-{
-	if (target_object_ == 0)
-	{
-		LOG("Can't trig without set target object ");
-		return;
-	}
-
-	OSCAction::Start();
-}
-
 void TeleportAction::Start()
 {
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL | 
+		Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	{
+		// motion controlled elsewhere
+		return;
+	}
 	OSCAction::Start();
 }
 
@@ -493,6 +539,13 @@ void TeleportAction::Step(double dt, double simTime)
 {
 	(void)dt;
 	(void)simTime;
+
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL |
+		Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	{
+		// motion controlled elsewhere
+		return;
+	}
 
 	roadmanager::Position tmpPos;
 
@@ -521,8 +574,6 @@ void TeleportAction::Step(double dt, double simTime)
 
 	OSCAction::Stop();
 }
-
-
 
 double SynchronizeAction::CalcSpeedForLinearProfile(double v_final, double time, double dist)
 {
@@ -596,9 +647,26 @@ void SynchronizeAction::PrintStatus(const char* custom_msg)
 		Mode2Str(mode_), mode_, SubMode2Str(submode_), submode_);
 }
 
+void SynchronizeAction::Start()
+{
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	{
+		// longitudinal motion controlled elsewhere
+		return;
+	}
+
+	OSCAction::Start();
+}
+
 void SynchronizeAction::Step(double dt, double simTime)
 {
 	(void)dt;
+
+	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	{
+		// longitudinal motion controlled elsewhere
+		return;
+	}
 
 	// Calculate distance along road/route
 	double masterDist, dist;

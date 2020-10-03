@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Two cars approaching from opposite directions. Both changing lane cross road -->
+<!-- reference line. Purpose is to validate esmini lane change functionality.     -->
 <OpenSCENARIO>
-   <FileHeader revMajor="0"
-               revMinor="9"
-               date="2017-06-09T10:00:00"
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2019-06-09T10:00:00"
                description="Cut-in"
-               author="SimS"/>
+               author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="EgoStartS" parameterType="double" value="50"/>

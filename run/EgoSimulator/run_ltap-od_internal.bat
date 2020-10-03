@@ -1,1 +1,0 @@
-"../../bin/EgoSimulator" --window 50 50 800 400 --osc ../../resources/xosc/ltap-od.xosc --control internal --trails off

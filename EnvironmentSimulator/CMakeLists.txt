@@ -4,8 +4,8 @@ set ( PLAYER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/PlayerBase" )
 set ( WORLDMANAGER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/WorldManager" )
 set ( REPLAY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Replayer" )
 set ( ROADMANAGER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/RoadManager" )
-set ( ROADMANAGER_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/RoadManagerDLL" )
-set ( SCENARIOENGINE_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ScenarioEngineDLL" )
+set ( ROADMANAGER_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/esminiRMSharedLibrary" )
+set ( SCENARIOENGINE_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/esminiSharedLibrary" )
 set ( SCENARIOENGINE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ScenarioEngine/SourceFiles")
 set ( SCENARIOENGINE_INCLUDE_DIRS
  "${SCENARIOENGINE_INCLUDE_DIR}"
@@ -14,12 +14,11 @@ set ( SCENARIOENGINE_INCLUDE_DIRS
  "${CMAKE_CURRENT_SOURCE_DIR}/ScenarioEngine/OSCTypeDefs"
  )
 set ( COMMON_MINI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CommonMini")
+set ( CONTROLLERS_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Controllers")
 
 # OpenSceneGraph package adapted for this project
 set ( OSG_VERSION "osg161" )
 set ( OSG_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OpenSceneGraph" )
-#set ( PB_VERSION "3.5.0" )
-#set ( OSI_VERSION "1?" )
 set ( OSI_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/OSI" )
 set ( SUMO_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/SUMO" )
 
@@ -312,21 +311,18 @@ else() #not UNIX
     optimized gtest_main.lib debug gtest_maind.lib
   )
 #
-#if (NOT WINSDK7_1)  # FBX not supporting winsdk 7.1
-#  list ( APPEND OSG_LIBRARIES optimized libfbxsdk-md.lib debug libfbxsdk-mdd.lib )
-#endif()
 
 endif() #Endif UNIX
 
 add_subdirectory(RoadManager)
 add_subdirectory(CommonMini)
+add_subdirectory(Controllers)
 add_subdirectory(ScenarioEngine)
-add_subdirectory(RoadManagerDLL)
-add_subdirectory(ScenarioEngineDLL)
+add_subdirectory(esminiSharedLibrary)
+add_subdirectory(esminiRMSharedLibrary)
 add_subdirectory(PlayerBase)
-add_subdirectory(ScenarioViewer)
-add_subdirectory(EnvironmentSimulator)
-add_subdirectory(EgoSimulator)
+add_subdirectory(esminiSimulatorDynamic)
+add_subdirectory(esminiSimulatorStatic)
 
 # Add unittest folder
 if(APPLE)
@@ -337,12 +333,13 @@ endif()
     
 set ( ModulesFolder Modules )
 set ( ApplicationsFolder Applications )  
+set ( LibrariesFolder Libraries )  
 
 set_target_properties (RoadManager PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (CommonMini PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (ScenarioEngine PROPERTIES FOLDER ${ModulesFolder} )
-set_target_properties (RoadManagerDLL PROPERTIES FOLDER ${ModulesFolder} )
-set_target_properties (ScenarioEngineDLL PROPERTIES FOLDER ${ModulesFolder} )
+set_target_properties (RoadManager PROPERTIES FOLDER ${ModulesFolder} )
+set_target_properties (ScenarioEngine PROPERTIES FOLDER ${ModulesFolder} )
 
 #
 # Download library and content binary packets
@@ -403,16 +400,18 @@ if (USE_OSG)
   add_subdirectory(ViewerBase)
 
   if (NOT USE_ENVSIM_ADAPT)
-    set_target_properties (EnvironmentSimulator PROPERTIES FOLDER ${ApplicationsFolder} )
-    set_target_properties (ScenarioViewer PROPERTIES FOLDER ${ApplicationsFolder} )
-    set_target_properties (EgoSimulator PROPERTIES FOLDER ${ApplicationsFolder} )
-    set_target_properties (Replayer PROPERTIES FOLDER ${ApplicationsFolder} )
+    set_target_properties (esmini PROPERTIES FOLDER ${ApplicationsFolder} )
+    set_target_properties (esmini-dyn PROPERTIES FOLDER ${ApplicationsFolder} )
+    set_target_properties (replayer PROPERTIES FOLDER ${ApplicationsFolder} )
     set_target_properties (dat2ascii PROPERTIES FOLDER ${ApplicationsFolder} )    
-    set_target_properties (osi_receiver PROPERTIES FOLDER ${ApplicationsFolder} )    
-    set_target_properties (OpenDriveViewer PROPERTIES FOLDER ${ApplicationsFolder} )
-    set_target_properties (OdrPlot PROPERTIES FOLDER ${ApplicationsFolder} )
+    set_target_properties (osireceiver PROPERTIES FOLDER ${ApplicationsFolder} )    
+    set_target_properties (odrviewer PROPERTIES FOLDER ${ApplicationsFolder} )
+    set_target_properties (odrplot PROPERTIES FOLDER ${ApplicationsFolder} )
   endif (NOT USE_ENVSIM_ADAPT)
   set_target_properties (ViewerBase PROPERTIES FOLDER ${ModulesFolder} )
   set_target_properties (PlayerBase PROPERTIES FOLDER ${ModulesFolder} )
+  set_target_properties (Controllers PROPERTIES FOLDER ${ModulesFolder} )
+  set_target_properties (esminiLib PROPERTIES FOLDER ${LibrariesFolder} )
+  set_target_properties (esminiRMLib PROPERTIES FOLDER ${LibrariesFolder} )
 
 endif (USE_OSG)

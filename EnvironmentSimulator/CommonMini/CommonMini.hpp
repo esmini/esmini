@@ -238,6 +238,8 @@ std::string DirNameOf(const std::string& fname);
 std::string FileNameOf(const std::string& fname);
 std::string FileNameWithoutExtOf(const std::string& fname);
 
+int strtoi(std::string s);
+double strtod(std::string s);
 
 // Global Logger class
 class Logger
@@ -349,4 +351,60 @@ public:
 	bool Started() { return start_time_ > 0 ? true : false; }
 	double DurationS() { return 1E-3 * (SE_getSystemTime() - start_time_); }
 
+};
+
+class DampedSpring
+{
+public:
+	// Custom damping factor, set 0 for no damping
+	DampedSpring() : x_(0), x0_(0), t_(0), d_(0), v_(0), critical_(false) {};
+
+	// Custom damping factor, set 0 for no damping
+	DampedSpring(double startValue, double targetValue, double tension, double damping) :
+		x_(startValue), x0_(targetValue), t_(tension), d_(damping), v_(0), critical_(false) {};
+
+	// Critically damped (optimal)
+	DampedSpring(double startValue, double targetValue, double tension) :
+		x_(startValue), x0_(targetValue), t_(tension), d_(2 * sqrt(tension)), v_(0), critical_(true) {};
+
+	void Update(double timeStep)
+	{
+		v_ = v_ + (-t_ * (x_ - x0_) - d_ * v_) * timeStep;
+		x_ = x_ + v_ * timeStep;
+	};
+
+	void SetValue(double value) { x_ = value; }
+	double GetValue() { return x_; }
+	double GetV() { return v_; }
+	void SetV(double value) { v_ = value; }
+	void SetTargetValue(double targetValue) { x0_ = targetValue; }
+
+	void SetTension(double tension)
+	{ 
+		t_ = tension; 
+		if (critical_)
+		{
+			d_ = 2 * sqrt(t_);
+		}
+	}
+
+	void SetDamping(double damping) 
+	{ 
+		d_ = damping; 
+		critical_ = false;
+	}
+
+	void SetOptimalDamping() 
+	{ 
+		d_ = 2 * sqrt(t_); 
+		critical_ = true;
+	}
+	
+private:
+	double x0_;
+	double x_;
+	double v_;
+	double t_;
+	double d_;
+	bool critical_;
 };

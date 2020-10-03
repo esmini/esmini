@@ -36,6 +36,30 @@ namespace scenarioengine
 
 		std::vector<Property> property_;
 		File file_;  // Should be no more than one?
+
+		bool ValueExists(std::string key)
+		{
+			for (size_t i = 0; i < property_.size(); i++)
+			{
+				if (key == property_[i].name_)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		std::string GetValueStr(std::string key)
+		{
+			for (size_t i = 0; i < property_.size(); i++)
+			{
+				if (key == property_[i].name_)
+				{
+					return property_[i].value_;
+				}
+			}
+			return "";
+		}
 	};
 
 }

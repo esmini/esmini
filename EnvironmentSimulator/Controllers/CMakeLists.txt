@@ -1,0 +1,17 @@
+
+include_directories (
+  ${SCENARIOENGINE_INCLUDE_DIRS}
+  ${ROADMANAGER_INCLUDE_DIR}
+  ${COMMON_MINI_INCLUDE_DIR}
+  ${SUMO_INCLUDE_DIR}  
+)
+
+file(GLOB CONTROLLERS_SOURCES
+    "*.cpp"
+)
+
+file(GLOB CONTROLLERS_INCLUDES
+    "*.hpp"
+)
+
+add_library ( Controllers STATIC ${CONTROLLERS_SOURCES} ${CONTROLLERS_INCLUDES} )

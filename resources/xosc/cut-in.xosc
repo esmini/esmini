@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate basic manevers and use of interactive controller -->
+<!-- In this case the user controls the white car being overtaken -->
 <OpenSCENARIO>
-   <FileHeader revMajor="0"
-               revMinor="9"
-               date="2017-06-09T10:00:00"
-               description="Cut-in"
-               author="SimS"/>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2020-10-09T10:00:00"
+               description="Basic cut-in with interactive controller"
+               author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
@@ -23,7 +25,10 @@
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+        <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+        <ObjectController>
+            <Controller name="InteractiveController" />
+        </ObjectController>
       </ScenarioObject>
       <ScenarioObject name="OverTaker">
          <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
@@ -34,6 +39,16 @@
          <Actions>
             <Private entityRef="Ego">
                <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-3" offset="0" s="$EgoStartS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>
+               <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" />
@@ -42,13 +57,6 @@
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="0" laneId="-3" offset="0" s="$EgoStartS"/>
-                     </Position>
-                  </TeleportAction>
                </PrivateAction>
             </Private>
             <Private entityRef="OverTaker">
@@ -177,6 +185,17 @@
                   </Condition>
                </ConditionGroup>
             </StartTrigger>
+            <StopTrigger>
+                <ConditionGroup>
+                   <Condition name="ActStopCondition" delay="5" conditionEdge="rising">
+                      <ByValueCondition>
+                         <StoryboardElementStateCondition storyboardElementType="event"
+                                                          storyboardElementRef="OvertakerBrakeEvent"
+                                                          state="endTransition"/>
+                      </ByValueCondition>
+                   </Condition>
+                </ConditionGroup>
+            </StopTrigger>
          </Act>
       </Story>
    </Storyboard>

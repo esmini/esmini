@@ -56,7 +56,7 @@ void ObjectSensor::Update()
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
 		Object *obj = entities_->object_[i];
-		if (obj == host_ || obj->control_ == Object::Control::HYBRID_GHOST)
+		if (obj == host_ || obj->GetControllerType() == Controller::CONTROLLER_GHOST)
 		{
 			// skip own vehicle and any ghost vehicles
 			continue;

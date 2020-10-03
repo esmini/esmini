@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrates the somewhat advanced Synchronize action. The idea of this scenario is -->
+<!-- Ego vehicle (white car) getting boxed in or surrounded by other vehicles. The       -->
+<!-- constellation is enforced by the Synchronize action. Suddenly the constallation     -->
+<!-- is released and vehicles are driving at individual speeds. Finally the lead vehicle -->
+<!-- suddently brakes to a stop.                                                         -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="1"
-               date="2019-12-06T10:00:00"
-               description="Synchronize"
+               revMinor="0"
+               date="2020-03-01T10:00:00"
+               description="Enforce box-in situation using Synchronize action"
                author="Emil Knabe"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
@@ -53,6 +58,9 @@
    <Entities>
       <ScenarioObject name="Ego">
          <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+        <ObjectController>
+            <Controller name="InteractiveController" />
+        </ObjectController>         
       </ScenarioObject>
       <ScenarioObject name="NPC1">
          <CatalogReference catalogName="VehicleCatalog" entryName="$NPC1Vehicle"/>
@@ -84,6 +92,9 @@
                      </Position>
                   </TeleportAction>
                </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>               
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>

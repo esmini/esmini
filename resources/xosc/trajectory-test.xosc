@@ -1,4 +1,8 @@
 <?xml version="1.0" ?>
+<!-- A totally unrealistic example of using trajectories. In this case two events are used to connect -->
+<!-- two separate trajectories into one consecutive path. The trajectory coordinates are specified    -->
+<!-- with relative positions which means that the actual location will be aligned to the referred     -->
+<!-- entity, in this case the Ego vehicle, at the very moment the event being triggered.              -->
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceShemaLocation="OpenSccenario.xsd">
     <FileHeader author="Mandolin" date="2020-05-23 18:34:25.159274" decription="myscenario" revMajor="1" revMinor="0"/>
     <ParameterDeclarations>

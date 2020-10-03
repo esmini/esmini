@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- This is a simple merge scenario. The lane change is triggered purely by -->
+<!-- the car reaching a specified road position, not considering other cars. -->
 <OpenSCENARIO>
-   <FileHeader revMajor="0"
-               revMinor="9"
+   <FileHeader revMajor="1"
+               revMinor="0"
                date="2017-11-27T10:00:00"
-               description="Simulation Scenarios - Hiwghway Merge"
+               description="A basic lane merge scenario"
                author="SimS"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="Gap1_time" parameterType="double" value="2.5"/>

@@ -5,6 +5,7 @@ include_directories (
   ${ROADMANAGER_INCLUDE_DIR}
   ${OSG_INCLUDE_DIR}
   ${VIEWER_BASE_INCLUDE_DIR}
+  ${CONTROLLERS_INCLUDE_DIR}  
 )
 
 set ( SOURCES

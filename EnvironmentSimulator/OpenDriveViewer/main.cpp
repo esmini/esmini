@@ -102,7 +102,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
 			// Populate road lanes with vehicles at some random distances
-			for (double s = 10; s < road->GetLength() - average_distance; s += average_distance + (0.2 * average_distance * mt_rand()) / (mt_rand.max)())
+			for (double s = 10; s < road->GetLength() - average_distance; s += average_distance + 0.2 * average_distance * mt_rand() / mt_rand.max())
 			{
 				// Pick lane by random
 				int lane_idx = ((double)road->GetNumberOfDrivingLanes(s) * mt_rand()) / (mt_rand.max)();
@@ -193,7 +193,7 @@ int main(int argc, char** argv)
 	// Use logger callback
 	Logger::Inst().SetCallback(log_callback);
 
-	mt_rand.seed(time(0));
+	mt_rand.seed((unsigned int)time(0));
 
 	// use an ArgumentParser object to manage the program arguments.
     osg::ArgumentParser arguments(&argc,argv);	

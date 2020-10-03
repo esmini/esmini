@@ -57,6 +57,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	CSV_Log = NULL;
 	osiReporter = NULL;
 	viewer_ = 0;
+	disable_controllers_ = false;
 
 #ifdef _SCENARIO_VIEWER
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
@@ -73,8 +74,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 
 ScenarioPlayer::~ScenarioPlayer()
 {
-	if (launch_server && (scenarioEngine->entities.object_[0]->GetControl() == Object::Control::EXTERNAL ||
-		scenarioEngine->entities.object_[0]->GetControl() == Object::Control::HYBRID_EXTERNAL))
+	if (launch_server)
 	{
 		StopServer();
 	}
@@ -186,13 +186,12 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	{
 		Object* obj = scenarioEngine->entities.object_[i];
 
-		if (obj->GetControl() == Object::Control::EXTERNAL ||
-			obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+		if (obj->GetControllerType() == Controller::Type::CONTROLLER_EXTERNAL ||
+			obj->GetControllerType() == Controller::Type::CONTROLLER_FOLLOW_GHOST)
 		{
-
-			if (obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+			if (obj->controller_->GetGhost())
 			{
-				if (obj->ghost_->trail_.FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(),
+				if (obj->controller_->GetGhost()->trail_.FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(),
 					obj->trail_closest_pos_[0], obj->trail_closest_pos_[1],
 					obj->trail_follow_s_, obj->trail_follow_index_, obj->trail_follow_index_) == 0)
 				{
@@ -308,22 +307,20 @@ void ScenarioPlayer::ViewerFrame()
 		car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
 		car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
 
-		if (obj->GetControl() == Object::Control::EXTERNAL ||
-			obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+		if (obj->GetControllerType() == Controller::Type::CONTROLLER_EXTERNAL ||
+			obj->GetControllerType() == Controller::Type::CONTROLLER_FOLLOW_GHOST)
 		{
-
-			if (obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+			if (obj->controller_->GetGhost())
 			{
-				viewer_->SensorSetPivotPos(car->speed_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-				viewer_->UpdateSensor(car->speed_sensor_);
 				viewer_->SensorSetPivotPos(car->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+				viewer_->SensorSetTargetPos(car->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
 				viewer_->UpdateSensor(car->steering_sensor_);
 
 				viewer_->SensorSetPivotPos(car->trail_sensor_, obj->trail_closest_pos_[0], obj->trail_closest_pos_[1], obj->trail_closest_pos_[2]);
 				viewer_->SensorSetTargetPos(car->trail_sensor_, pos.GetX(), pos.GetY(), pos.GetZ());
 				viewer_->UpdateSensor(car->trail_sensor_);
 			}
-			else if (odr_manager->GetNumOfRoads() > 0 && obj->GetControl() == Object::Control::EXTERNAL)
+			else if (odr_manager->GetNumOfRoads() > 0)
 			{
 				viewer_->UpdateRoadSensors(car->road_sensor_, car->lane_sensor_, &pos);
 			}
@@ -383,14 +380,14 @@ int ScenarioPlayer::InitViewer()
 		viewer_->ShowInfoText(false);
 	}
 
-	if (opt.GetOptionArg("trails") == "off")
+	if (opt.GetOptionSet("trails"))
 	{
-		viewer_->ShowTrail(false);
+		viewer_->ShowTrail(true);
 	}
 
-	if (opt.GetOptionArg("road_features") == "off")
+	if (opt.GetOptionSet("road_features"))
 	{
-		viewer_->ShowRoadFeatures(false);
+		viewer_->ShowRoadFeatures(true);
 	}
 
 	if (opt.GetOptionArg("osi_features") == "on")
@@ -398,7 +395,7 @@ int ScenarioPlayer::InitViewer()
 		viewer_->ShowOSIFeatures(true);
 	}
 
-	if (opt.GetOptionArg("sensors") == "on")
+	if (opt.GetOptionSet("sensors"))
 	{
 		viewer_->ShowObjectSensors(true);
 	}
@@ -434,15 +431,15 @@ int ScenarioPlayer::InitViewer()
 	//  Create cars for visualization
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		//  Create vehicles for visualization
 		osg::Vec3 trail_color;
 		Object* obj = scenarioEngine->entities.object_[i];
 
-		if (obj->control_ == Object::Control::HYBRID_GHOST)
+		// Create trajectory/trails for all entities
+		if (obj->GetControllerType() == Controller::Type::CONTROLLER_GHOST)
 		{
 			trail_color.set(color_gray[0], color_gray[1], color_gray[2]);
 		}
-		else if (obj->control_ == Object::Control::HYBRID_EXTERNAL || obj->control_ == Object::Control::EXTERNAL)
+		else if (obj->GetControllerType() == Controller::Type::CONTROLLER_EXTERNAL)
 		{
 			trail_color.set(color_yellow[0], color_yellow[1], color_yellow[2]);
 		}
@@ -451,8 +448,10 @@ int ScenarioPlayer::InitViewer()
 			trail_color.set(color_red[0], color_red[1], color_red[2]);
 		}
 
-		bool transparent = obj->control_ == Object::Control::HYBRID_GHOST ? true : false;
-		bool road_sensor = obj->control_ == Object::Control::HYBRID_GHOST || obj->control_ == Object::Control::EXTERNAL ? true : false;
+		//  Create vehicles for visualization
+		bool transparent = obj->GetControllerType() == Controller::Type::CONTROLLER_GHOST ? true : false;
+		bool road_sensor = obj->GetControllerType() == Controller::Type::CONTROLLER_GHOST ||
+			obj->GetControllerType() == Controller::Type::CONTROLLER_EXTERNAL ? true : false;
 		if (viewer_->AddCar(obj->model_filepath_, transparent, trail_color, road_sensor, obj->name_) == 0)
 		{
 			delete viewer_;
@@ -460,13 +459,40 @@ int ScenarioPlayer::InitViewer()
 			return -1;
 		}
 
-		if (obj->GetControl() == Object::Control::HYBRID_EXTERNAL)
+		// If following a ghost vehicle, add visual representation of speed and steering sensors
+		if (scenarioEngine->entities.object_[i]->GetControllerType() == Controller::CONTROLLER_EXTERNAL ||
+			scenarioEngine->entities.object_[i]->GetControllerType() == Controller::CONTROLLER_FOLLOW_GHOST)
 		{
-			viewer_->cars_.back()->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
-			if (odr_manager->GetNumOfRoads() > 0)
+			if (scenarioEngine->entities.object_[i]->controller_->GetGhost())
 			{
-				viewer_->cars_.back()->speed_sensor_ = viewer_->CreateSensor(color_gray, true, true, 0.4, 1);
-				viewer_->cars_.back()->trail_sensor_ = viewer_->CreateSensor(color_red, true, false, 0.4, 3);
+				viewer::CarModel* vh = viewer_->cars_.back();
+				vh->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
+				if (odr_manager->GetNumOfRoads() > 0)
+				{
+					vh->trail_sensor_ = viewer_->CreateSensor(color_red, true, false, 0.4, 3);
+				}
+
+				viewer_->SensorSetPivotPos(vh->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+				viewer_->SensorSetTargetPos(vh->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+			}
+		}
+	}
+
+	// Choose vehicle to look at initially (switch with 'Tab')
+	// and find out maximum headstart time for ghosts
+	viewer_->SetVehicleInFocus(0);
+	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	{
+		Object* obj = scenarioEngine->entities.object_[i];
+		
+		if (obj->GetControllerType() == Controller::Type::CONTROLLER_INTERACTIVE ||
+			obj->GetControllerType() == Controller::Type::CONTROLLER_EXTERNAL ||
+			obj->GetControllerType() == Controller::Type::CONTROLLER_FOLLOW_GHOST)
+		{
+			if (viewer_->GetVehicleInFocus() == 0)
+			{
+				// Focus on first vehicle of specified types
+				viewer_->SetVehicleInFocus(i);
 			}
 		}
 	}
@@ -538,14 +564,14 @@ int ScenarioPlayer::Init()
 
 	// use an ArgumentParser object to manage the program arguments.
 	opt.AddOption("osc", "OpenSCENARIO filename", "filename");
-	opt.AddOption("control", "Ego control (\"osc\", \"internal\", \"external\", \"hybrid\"", "mode");
+	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
 	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
-	opt.AddOption("trails", "Show trails (\"on\" (default), \"off\") (toggle during simulation by press 'j') ", "mode");
-	opt.AddOption("road_features", "Show road features (\"on\" (default), \"off\") (toggle during simulation by press 'o') ", "mode");
+	opt.AddOption("trails", "Show trails (toggle during simulation by press 'j')");
+	opt.AddOption("road_features", "Show OpenDRIVE road features");
 	opt.AddOption("osi_features", "Show OSI road features (\"on\", \"off\" (default)) (toggle during simulation by press 'u') ", "mode");
-	opt.AddOption("sensors", "Show sensor frustums (\"on\", \"off\" (default)) (toggle during simulation by press 'r') ", "mode");
+	opt.AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
 	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
@@ -553,7 +579,6 @@ int ScenarioPlayer::Init()
 	opt.AddOption("server", "Launch server to receive state of external Ego simulator");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
 	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
-	opt.AddOption("ghost_headstart", "Launch Ego ghost at specified headstart time", "time");
 	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))", "mode");
 	opt.AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
 
@@ -606,15 +631,10 @@ int ScenarioPlayer::Init()
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
 	}
 
-	double ghost_headstart = GHOST_HEADSTART;
-	if ((arg_str = opt.GetOptionArg("ghost_headstart")) != "")
+	if (opt.GetOptionSet("disable_controllers"))
 	{
-		ghost_headstart = atof(arg_str.c_str());
-		LOG("Any ghosts will be launched with headstart %.2f seconds", ghost_headstart);
-	}
-	else
-	{
-		LOG("Any ghosts will be launched with headstart %.2f seconds (default)", ghost_headstart);
+		disable_controllers_ = true;
+		LOG("Disable entity controllers");
 	}
 
 	// Create scenario engine
@@ -626,7 +646,7 @@ int ScenarioPlayer::Init()
 			opt.PrintUsage();
 			return -1;
 		}
-		scenarioEngine = new ScenarioEngine(arg_str, ghost_headstart, (ScenarioEngine::RequestControlMode)control);
+		scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
 	}
 	catch (std::logic_error &e)
 	{
@@ -723,6 +743,7 @@ int ScenarioPlayer::Init()
 			InitViewer();
 		}
 
+		viewer_->RegisterKeyEventCallback(ReportKeyEvent, this);
 #endif
 	}
 
@@ -732,8 +753,7 @@ int ScenarioPlayer::Init()
 		opt.PrintUsage();
 	}
 
-	if (launch_server && (scenarioEngine->entities.object_[0]->GetControl() == Object::Control::EXTERNAL ||
-		scenarioEngine->entities.object_[0]->GetControl() == Object::Control::HYBRID_EXTERNAL))
+	if (launch_server)
 	{
 		// Launch UDP server to receive external Ego state
 		StartServer(scenarioEngine);
@@ -749,4 +769,13 @@ void ScenarioPlayer::RegisterObjCallback(int id, ObjCallbackFunc func, void *dat
 	cb.func = func;
 	cb.data = data;
 	callback.push_back(cb);
+}
+
+void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
+{
+	ScenarioPlayer* player = (ScenarioPlayer*)data;
+	for (size_t i = 0; i < player->scenarioEngine->GetScenarioReader()->controller_.size(); i++)
+	{
+		player->scenarioEngine->GetScenarioReader()->controller_[i]->ReportKeyEvent(keyEvent->key_, keyEvent->down_);
+	}
 }

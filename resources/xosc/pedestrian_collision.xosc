@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate how a simple trajectory can be defined and assigned to a moving -->
+<!-- entity, in this case a pedestrian. A collision, detected by the Collision   -->
+<!-- condition, is indicated by pedestrian falling (roll rotation). However, the -->
+<!-- pedestrian rises quickly indicating that he or she survived the situation.  -->
 <OpenSCENARIO>
-   <FileHeader revMajor="0"
-               revMinor="9"
-               date="2017-06-09T10:00:00"
-               description="LTAP-OD"
-               author="Fredrik Persson, Emil Knabe"/>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2020-10-02T10:00:00"
+               description="Pedestrian involved in a critical situation. Car fails to brake."
+               author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="HostSpeed" parameterType="double" value="9"/>
@@ -236,7 +240,7 @@
                         </Action>
                         <StartTrigger>
                             <ConditionGroup>
-                                <Condition conditionEdge="rising" delay="1.2" name="ped_raise_condition">
+                                <Condition conditionEdge="rising" delay="1.0" name="ped_raise_condition">
                                     <ByValueCondition>
                                         <StoryboardElementStateCondition 
                                             storyboardElementType="action" 

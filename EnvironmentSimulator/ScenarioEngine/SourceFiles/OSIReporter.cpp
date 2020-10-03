@@ -439,7 +439,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState* objectState)
 	}
 
 	// Set OSI Moving Object Control Type
-	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_driver_id()->set_value((uint64_t)objectState->state_.control);
+	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_driver_id()->set_value((uint64_t)objectState->state_.ctrl_type);
 
 	// Set OSI Moving Object Boundingbox
 	obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_x((double)(objectState->state_.boundingbox.center_.x_));
@@ -650,9 +650,9 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 {
 	// Find ego vehicle
 	roadmanager::Position pos;
-	for (size_t i = 0; i < objectState.size() ; i++)
+	for (size_t i = 0; i < objectState.size(); i++)
 	{
-		if (objectState[i]->state_.control == 3) // external hybrid is host
+		if (objectState[i]->state_.ctrl_type == Controller::Type::CONTROLLER_EXTERNAL) // external is host
 		{
 			pos = objectState[i]->state_.pos;
 		}

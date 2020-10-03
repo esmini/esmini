@@ -26,7 +26,7 @@ namespace scenarioengine
 		int model_id;
 		int obj_type; // 0=Vehicle, 1=Pedestrian, 2=MiscObj
 		int obj_category; // sub type for vehicle, pedestrian and miscobj
-		int control; // 0= undefined, 1=internal, 2=external, 3=hybrid_external, 4=hybrid_ghost
+		int ctrl_type;  // See Controller::Type enum
 		float timeStamp;
 		char name[NAME_LEN];
 		roadmanager::Position pos;
@@ -40,9 +40,9 @@ namespace scenarioengine
 	{
 	public:
 		ObjectState();
-		ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position *pos);
-		ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double wheel_angle, double wheel_rot, double x, double y, double z, double h, double p, double r);
-		ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int control, OSCBoundingBox boundingbox,double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s);
+		ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox, double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position* pos);
+		ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox, double timestamp, double speed, double wheel_angle, double wheel_rot, double x, double y, double z, double h, double p, double r);
+		ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox, double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s);
 
 		ObjectStateStruct getStruct() { return state_; }
 
@@ -62,15 +62,15 @@ namespace scenarioengine
 		ScenarioGateway();
 		~ScenarioGateway();
 
-		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int control,OSCBoundingBox boundingbox,
+		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			roadmanager::Position *pos);
 
-		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int control,OSCBoundingBox boundingbox,
+		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			double x, double y, double z, double h, double p, double r);
 
-		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int control,OSCBoundingBox boundingbox,
+		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			int roadId, int laneId, double laneOffset, double s);
 
@@ -92,12 +92,6 @@ namespace scenarioengine
 
 	class SumoController
 	{
-		public:
-			SumoController(Entities* entities, ScenarioGateway* scenarioGateway);
-			SumoController();
-			void InitalizeObjects();
-			void step(double time);
-			void updatePositions();
 
 		private:
 			Entities* entities_;

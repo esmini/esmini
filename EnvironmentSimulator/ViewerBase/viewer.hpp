@@ -188,6 +188,20 @@ namespace viewer
 
 	};
 
+	typedef struct
+	{
+		int key_;
+		bool down_;
+	} KeyEvent;
+
+	typedef void (*KeyEventCallbackFunc)(KeyEvent*, void*);
+
+	typedef struct
+	{
+		KeyEventCallbackFunc func;
+		void* data;
+	} KeyEventCallback;
+
 	class Viewer
 	{
 	public:
@@ -221,6 +235,7 @@ namespace viewer
 		bool showOSIFeatures;
 		bool showObjectSensors;
 		std::string exe_path_;
+		std::vector<KeyEventCallback> callback_;
 
 		osg::ref_ptr<osg::Camera> infoTextCamera;
 		osg::ref_ptr<osgText::Text> infoText;
@@ -229,6 +244,7 @@ namespace viewer
 		~Viewer();
 		void SetCameraMode(int mode);
 		void SetVehicleInFocus(int idx);
+		int GetVehicleInFocus() { return currentCarInFocus_; }
 		CarModel* AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor, std::string name);
 		void RemoveCar(std::string name);
 		int LoadShadowfile(std::string vehicleModelFilename);
@@ -259,6 +275,7 @@ namespace viewer
 		PointSensor* CreateSensor(double color[], bool create_ball, bool create_line, double ball_radius, double line_width);
 		bool CreateRoadSensors(CarModel *vehicle_model);
 		void SetWindowTitle(std::string title);
+		void RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data);
 
 	private:
 

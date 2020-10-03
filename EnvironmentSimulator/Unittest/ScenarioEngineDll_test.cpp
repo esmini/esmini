@@ -5,7 +5,7 @@
 #include "osi_object.pb.h"
 #include "osi_sensorview.pb.h"
 #include "osi_version.pb.h"
-#include "scenarioenginedll.hpp"
+#include "esminiLib.hpp"
 #include <vector>
 #include <stdexcept>
 #include <fstream>
@@ -20,7 +20,7 @@ TEST_P(GetNumberOfObjectsTest, number_of_objects) {
 	//std::string scenario_file = "../../esmini/resources/xosc/cut-in.xosc"; 
 	
 	const char * Scenario_file = scenario_file.c_str();
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 
 	int n_Objects = SE_GetNumberOfObjects();	
 	SE_Close();	
@@ -50,7 +50,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids) {
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc"; 
 	//std::string scenario_file = std::get<0>(GetParam()); 
 	const char * Scenario_file = scenario_file.c_str();
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 
 	int n_Objects = SE_GetNumberOfObjects();
 	//std::cout << "NUMBER OBJECTS IS " << n_Objects << std::endl; 	
@@ -85,7 +85,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids_no_obj) {
 
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);	
+	SE_Init(Scenario_file, 0, 0, 0, 0);	
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth(); 
 
@@ -107,7 +107,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj) {
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
 	
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);	
+	SE_Init(Scenario_file, 0, 0, 0, 0);	
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth();   	 
  
@@ -126,7 +126,7 @@ TEST(GetOSIRoadLaneTest, lane_id) {
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
 	
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);	
+	SE_Init(Scenario_file, 0, 0, 0, 0);	
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth();   	
 
@@ -160,7 +160,7 @@ TEST(GetOSIRoadLaneTest, left_lane_id) {
 
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 
 	int n_Objects = SE_GetNumberOfObjects();	
 	
@@ -212,7 +212,7 @@ TEST(GetOSIRoadLaneTest, right_lane_id) {
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
 
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
@@ -258,7 +258,7 @@ TEST(GetOSIRoadLaneTest, right_lane_boundary_id) {
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
 
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
@@ -302,7 +302,7 @@ TEST(GetOSIRoadLaneTest, left_lane_boundary_id) {
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
 
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
@@ -348,7 +348,7 @@ TEST_P(GetOSIRoadLaneTest, centerline_is_driving_direction) {
 	std::string scenario_file = std::get<0>(GetParam());   
 	const char * Scenario_file = scenario_file.c_str();
 
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth();  
 
@@ -398,7 +398,7 @@ TEST(GetOSIRoadLaneTest, is_host_vehicle_lane) {
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
 
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
@@ -435,7 +435,7 @@ TEST(GetOSIRoadLaneTest, lane_classification) {
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
 
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
@@ -481,7 +481,7 @@ TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing) {
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
 
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth();  
 	int lb_size; 
@@ -521,7 +521,7 @@ TEST_P(GetOSILaneBoundaryTests, lane_boundary_id_not_existing) {
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
 
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth();  
 	int lb_size = 0; 
@@ -546,7 +546,7 @@ TEST(OSIFile, writeosifile_two_step) {
 	const char * Scenario_file = scenario_file.c_str();
 	std::streamoff file_size1, file_size2, file_sizeend;
 
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth(); 	
@@ -607,7 +607,7 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth) {
 	int sv_size = 0; 
 	osi3::GroundTruth osi_gt;
 
-	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 
 	//SE_OSIFileOpen(); 
 
@@ -630,7 +630,6 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth) {
 	float ego_xoffset = (float)osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->x();
 	float ego_yoffset = (float)osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->y();
 	float ego_zoffset = (float)osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->z();
-
 
 	EXPECT_EQ(n_lanes, std::get<1>(GetParam())); 
 	EXPECT_EQ(n_objects, std::get<2>(GetParam())); 
@@ -666,7 +665,7 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj) {
 	int sv_size = 0; 
 	osi3::GroundTruth osi_gt;
 
-	SE_Init("../../../EnvironmentSimulator/Unittest/scenarios/miscobj_basic.xosc", 1, 0, 1, 0, 0);
+	SE_Init("../../../EnvironmentSimulator/Unittest/scenarios/miscobj_basic.xosc", 0, 0, 0, 0);
 
 	//SE_OSIFileOpen(); 
 

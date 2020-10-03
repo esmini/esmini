@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate how LaneOffsetAction can be used for overtaking maneuvers, giving -->
+<!-- explicit control over lateral offset in relation to original position.        -->
 <OpenSCENARIO>
-   <FileHeader revMajor="0"
-               revMinor="9"
+   <FileHeader revMajor="1"
+               revMinor="0"
                date="2017-06-09T10:00:00"
                description="Cut-in"
                author="SimS"/>

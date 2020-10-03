@@ -1,43 +1,38 @@
-esmini GIT REV: 581b3a6
-
 Usage : [options]
-Options: 
+Options:
   --osc <filename>
       OpenSCENARIO filename
-  --control <mode>
-      Ego control ("osc", "internal", "external", "hybrid"
+  --disable_controllers
+      Disable controllers
   --record <filename>
       Record position data into a file for later replay
   --csv_logger <csv_filename>
       Log data for each vehicle in ASCII csv format
   --info_text <mode>
-      Show info text HUD ("on" (default), "off") (toggle during simulation by press 'i') 
-  --trails <mode>
-      Show trails ("on" (default), "off") (toggle during simulation by press 'j') 
-  --road_features <mode>
-      Show road features ("on" (default), "off") (toggle during simulation by press 'o') 
+      Show info text HUD ("on" (default), "off") (toggle during simulation by press 'i')
+  --trails
+      Show trails (toggle during simulation by press 'j')
+  --road_features
+      Show OpenDRIVE road features
   --osi_features <mode>
-      Show OSI road features ("on", "off" (default)) (toggle during simulation by press 'u') 
-  --sensors <mode>
-      Show sensor frustums ("on", "off" (default)) (toggle during simulation by press 'r') 
+      Show OSI road features ("on", "off" (default)) (toggle during simulation by press 'u')
+  --sensors
+      Show sensor frustums (toggle during simulation by press 'r')
   --camera_mode <mode>
-      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top") (toggle during simulation by press 'k') 
+      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top") (toggle during simulation by press 'k')
   --aa_mode <mode>
       Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)
-  --threads 
+  --threads
       Run viewer in a separate thread, parallel to scenario engine
-  --headless 
+  --headless
       Run without viewer
-  --server 
+  --server
       Launch server to receive state of external Ego simulator
   --fixed_timestep <timestep>
       Run simulation decoupled from realtime, with specified timesteps
   --osi_receiver_ip <IP address>
       IP address where to send OSI UDP packages
-  --ghost_headstart <time>
-      Launch Ego ghost at specified headstart time
   --osi_file <mode>
       save osi messages in file ("on", "off" (default))
   --osi_freq <frequence>
       relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps
-

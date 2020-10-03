@@ -23,7 +23,6 @@
 
 namespace scenarioengine
 {
-
 	struct ParameterStruct
 	{
 		std::string name;

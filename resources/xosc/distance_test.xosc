@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- This scenario demonstrates the keep distance action -->
 <OpenSCENARIO>
-   <FileHeader revMajor="0"
-               revMinor="9"
+   <FileHeader revMajor="1"
+               revMinor="0"
                date="2017-11-27T10:00:00"
-               description="Simulation Scenarios - Hiwghway Merge"
+               description="Keep distance"
                author="SimS"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="Gap_dist" parameterType="double" value="15"/>
@@ -22,6 +23,9 @@
    <Entities>
       <ScenarioObject name="Ego">
          <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+         <ObjectController>
+             <Controller name="InteractiveController" />
+         </ObjectController>
       </ScenarioObject>
       <ScenarioObject name="Dummy">
          <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
@@ -37,6 +41,9 @@
                         <LanePosition roadId="1" laneId="-1" offset="0.0" s="50.0"/>
                      </Position>
                   </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
                </PrivateAction>
                <PrivateAction>
                   <LongitudinalAction>

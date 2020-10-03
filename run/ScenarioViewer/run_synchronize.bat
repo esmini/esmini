@@ -1,1 +1,0 @@
-"../../bin/ScenarioViewer" ../../resources/xosc/synchronize.xosc %*

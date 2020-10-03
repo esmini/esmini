@@ -330,6 +330,16 @@ void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size)
 	}
 }
 
+int strtoi(std::string s) 
+{
+	return atoi(s.c_str());
+}
+
+double strtod(std::string s) 
+{
+	return atof(s.c_str());
+}
+
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 
 	#include <windows.h>

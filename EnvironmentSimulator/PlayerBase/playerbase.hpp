@@ -28,6 +28,7 @@
 
 using namespace scenarioengine;
 
+void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data);
 
 class ScenarioPlayer
 {
@@ -70,7 +71,7 @@ public:
 	double GetFixedTimestep() { return fixed_timestep_; }
 	int GetOSIFreq() { return osi_freq_; }
 	void RegisterObjCallback(int id, ObjCallbackFunc func, void *data);
-	
+		
 	CSV_Logger *CSV_Log;
 	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;
@@ -104,6 +105,7 @@ private:
 	bool threads;
 	bool headless;
 	bool launch_server;
+	bool disable_controllers_;
 	double fixed_timestep_;
 	bool osi_file; 
 	int osi_freq_; 

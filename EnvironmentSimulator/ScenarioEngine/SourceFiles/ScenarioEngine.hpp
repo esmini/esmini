@@ -29,30 +29,18 @@
 
 namespace scenarioengine
 {
-	#define DEFAULT_HEADSTART_TIME 1.0
-
 	class ScenarioEngine
 	{
 	public:
 
-		typedef enum
-		{
-			CONTROL_BY_OSC,
-			CONTROL_INTERNAL,
-			CONTROL_EXTERNAL,
-			CONTROL_HYBRID
-		} RequestControlMode;
-
 		Entities entities;
 
-		//	Cars cars;
-
-		ScenarioEngine(std::string oscFilename, double headstart_time = DEFAULT_HEADSTART_TIME, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
-		ScenarioEngine(const pugi::xml_document &xml_doc, double headstart_time = DEFAULT_HEADSTART_TIME, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
+		ScenarioEngine(std::string oscFilename, bool disable_controllers = false);
+		ScenarioEngine(const pugi::xml_document &xml_doc, bool disable_controllers = false);
 		~ScenarioEngine();
 
-		void InitScenario(std::string oscFilename, double headstart_time, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
-		void InitScenario(const pugi::xml_document &xml_doc, double headstart_time, RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
+		void InitScenario(std::string oscFilename, bool disable_controllers = false);
+		void InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers = false);
 
 		void step(double deltaSimTime, bool initial = false);
 		void printSimulationTime();
@@ -64,32 +52,34 @@ namespace scenarioengine
 		roadmanager::OpenDrive *getRoadManager() { return odrManager; }
 
 		ScenarioGateway *getScenarioGateway();
-		Object::Control RequestControl2ObjectControl(RequestControlMode control);
-		double getSimulationTime() { return simulationTime; }
+		double getSimulationTime() { return simulationTime_; }
 		bool GetQuitFlag() { return quit_flag; }
+		ScenarioReader* scenarioReader;
+		ScenarioReader* GetScenarioReader() { return scenarioReader; }
+		void SetHeadstartTime(double headstartTime) { headstart_time_ = headstartTime; }
+		double GetHeadstartTime() { return headstart_time_; }
+		void SetSimulationTime(double time) { simulationTime_ = time; }
 
 	private:
 		// OpenSCENARIO parameters
 		Catalogs catalogs;
 		Init init;
-		ScenarioReader *scenarioReader;
 		StoryBoard storyBoard;
 		RoadNetwork roadNetwork;
 		roadmanager::OpenDrive *odrManager;
+		bool disable_controllers_;
 
 		// Simulation parameters
-		double simulationTime;
+		double simulationTime_;
 		double headstart_time_;
 		std::string sumofile;
 		Vehicle sumotemplate;
 		ScenarioGateway scenarioGateway;
-		SumoController *sumocontroller;
 
 		// execution control flags
 		bool quit_flag;
 
-		void parseScenario(RequestControlMode control_mode_first_vehicle = CONTROL_BY_OSC);
-		void ResolveHybridVehicles();
+		void parseScenario();
 	};
 
 }

@@ -25,11 +25,6 @@
 #include <unistd.h> /* Needed for close() */
 #endif
 
-#include <utils/geom/PositionVector.h>
-#include <libsumo/Simulation.h>
-#include <libsumo/Vehicle.h>
-#include <libsumo/TraCIDefs.h>
-
 using namespace scenarioengine;
 
 ObjectState::ObjectState()
@@ -39,8 +34,8 @@ ObjectState::ObjectState()
 }
 
 
-ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int control,\
- OSCBoundingBox boundingbox, double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position* pos)
+ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,
+	OSCBoundingBox boundingbox, double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position* pos)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -48,7 +43,7 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.obj_type = obj_type;
 	state_.obj_category = obj_category;
 	state_.model_id = model_id;
-	state_.control = control;
+	state_.ctrl_type = ctrl_type;
 	state_.timeStamp = (float)timestamp;
 	strncpy(state_.name, name.c_str(), NAME_LEN);
 	state_.pos = *pos;
@@ -58,8 +53,8 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.boundingbox = boundingbox;
 }
 
-ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int control,\
-OSCBoundingBox boundingbox, double timestamp, double speed, double wheel_angle, double wheel_rot, double x, double y, double z, double h, double p, double r)
+ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
+	double timestamp, double speed, double wheel_angle, double wheel_rot, double x, double y, double z, double h, double p, double r)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -67,7 +62,7 @@ OSCBoundingBox boundingbox, double timestamp, double speed, double wheel_angle, 
 	state_.obj_type = obj_type;
 	state_.obj_category = obj_category;
 	state_.model_id = model_id;
-	state_.control = control;
+	state_.ctrl_type = ctrl_type;
 	state_.name[0] = 0;
 	state_.timeStamp = (float)timestamp;
 	strncpy(state_.name, name.c_str(), NAME_LEN);
@@ -79,8 +74,8 @@ OSCBoundingBox boundingbox, double timestamp, double speed, double wheel_angle, 
 	state_.boundingbox = boundingbox;
 }
 
-ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int control,\
- OSCBoundingBox boundingbox, double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s)
+ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
+	double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -88,7 +83,7 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.obj_type = obj_type;
 	state_.obj_category = obj_category;
 	state_.model_id = model_id;
-	state_.control = control;
+	state_.ctrl_type = ctrl_type;
 	state_.timeStamp = (float)timestamp;
 	strncpy(state_.name, name.c_str(), NAME_LEN);
 	state_.pos.SetLanePos(roadId, laneId, s, laneOffset);
@@ -100,11 +95,11 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 
 void ObjectState::Print()
 {
-	LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\tcontrol: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f\twheel_angle %.2f",
+	LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\tctrl_type: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f\twheel_angle %.2f",
 		state_.id,
 		state_.name,
 		state_.model_id,
-		state_.control,
+		state_.ctrl_type,
 		state_.timeStamp,
 		state_.pos.GetX(),
 		state_.pos.GetY(),
@@ -187,7 +182,7 @@ void ScenarioGateway::updateObjectInfo(ObjectState* obj_state, double timestamp,
 	}
 }
 
-void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int control, OSCBoundingBox boundingbox,
+void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int host, OSCBoundingBox boundingbox,
 	double timestamp, double speed, double wheel_angle, double wheel_rot,
 	roadmanager::Position* pos)
 {
@@ -197,7 +192,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	{
 		// Create state and set permanent information
 		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
-		obj_state = new ObjectState(id, name,obj_type,obj_category, model_id, control, boundingbox, timestamp, speed, wheel_angle, wheel_rot, pos);
+		obj_state = new ObjectState(id, name,obj_type,obj_category, model_id, host, boundingbox, timestamp, speed, wheel_angle, wheel_rot, pos);
 
 		// Specify lanes relevant to the object (will snap to them)
 		obj_state->state_.pos.SetSnapLaneTypes(roadmanager::Lane::LaneType::LANE_TYPE_ANY_DRIVING);
@@ -213,7 +208,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	}
 }
 
-void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int control, OSCBoundingBox boundingbox,
+void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int host, OSCBoundingBox boundingbox,
 	double timestamp, double speed, double wheel_angle, double wheel_rot,
 	double x, double y, double z, double h, double p, double r)
 {
@@ -223,7 +218,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	{
 		// Create state and set permanent information
 		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
-		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, control, boundingbox, timestamp, speed, wheel_angle, wheel_rot, x, y, z, h, p, r);
+		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, host, boundingbox, timestamp, speed, wheel_angle, wheel_rot, x, y, z, h, p, r);
 
 		// Add object to collection
 		objectState_.push_back(obj_state);
@@ -236,7 +231,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	}
 }
 
-void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int control, OSCBoundingBox boundingbox,
+void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int host, OSCBoundingBox boundingbox,
 	double timestamp, double speed, double wheel_angle, double wheel_rot,
 	int roadId, int laneId, double laneOffset, double s)
 {
@@ -246,7 +241,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	{
 		// Create state and set permanent information
 		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
-		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, control, boundingbox,timestamp, speed, wheel_angle, wheel_rot, roadId, laneId, laneOffset, s);
+		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, host, boundingbox,timestamp, speed, wheel_angle, wheel_rot, roadId, laneId, laneOffset, s);
 
 		// Add object to collection
 		objectState_.push_back(obj_state);
@@ -299,114 +294,4 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
 	}
 
 	return 0;
-}
-
-SumoController::SumoController(Entities* entities, ScenarioGateway* scenarioGateway)
-{
-	// initalize sumo with the configuration file
-	entities_ = entities;
-	scenarioGateway_ = scenarioGateway;
-	std::vector<std::string> options;
-
-	options.push_back("-c " + entities_->sumo_config_path);
-	options.push_back("--xml-validation");
-	options.push_back("never");
-	
-	libsumo::Simulation::load(options);
-	sumo_used = true;
-}
-
-SumoController::SumoController()
-{
-	sumo_used = false;
-}
-
-void SumoController::InitalizeObjects()
-{	
-	// Adds all vehicles added in openscenario to the sumosimulation
-	if (sumo_used)
-	{
-		for (size_t j = 0; j < entities_->object_.size(); j++)
-		{
-			if (entities_->object_[j]->control_ != Object::Control::HYBRID_GHOST) 
-			{
-				libsumo::Vehicle::add(entities_->object_[j]->name_,"");
-			}
-		}
-		updatePositions();
-	}
-}
-
-void SumoController::updatePositions()
-{
-	// Updates all positions for non-sumo controlled vehicles
-	if (sumo_used)
-	{
-		for (size_t i = 0; i < entities_->object_.size(); i++)
-		{
-			if ((entities_->object_[i]->control_ != Object::Control::SUMO) && (entities_->object_[i]->control_ != Object::Control::HYBRID_GHOST))
-			{
-				libsumo::Vehicle::moveToXY(entities_->object_[i]->name_,"random",0,entities_->object_[i]->pos_.GetX()+entities_->sumo_x_offset,entities_->object_[i]->pos_.GetY()+entities_->sumo_y_offset,entities_->object_[i]->pos_.GetH(),0);
-				libsumo::Vehicle::setSpeed(entities_->object_[i]->name_,entities_->object_[i]->speed_);
-			}
-		}
-	}
-}
-
-void SumoController::step(double time)
-{
-	// stepping funciton for sumo, adds/removes vehicles (based on sumo), 
-	// updates all positions of vehicles in the simulation that are controlled by sumo
-	if (sumo_used)
-	{
-		// do sumo timestep
-		libsumo::Simulation::step(time);
-
-		// check if any new cars has been added by sumo and add them to entities
-		if (libsumo::Simulation::getDepartedNumber() > 0) {
-			std::vector<std::string> deplist = libsumo::Simulation::getDepartedIDList();
-			for (size_t i = 0; i < deplist.size(); i++)
-			{
-				if (!entities_->nameExists(deplist[i]))
-				{
-					Vehicle *vehicle = new Vehicle();
-					// copy the default vehicle stuff here (add bounding box and so on)
-					LOG("Adding new vehicle: %s",deplist[i].c_str());
-					vehicle->name_ = deplist[i];
-					vehicle->control_ = Object::Control::SUMO;
-					vehicle->model_filepath_ = entities_->sumo_vehicle->model_filepath_;
-					entities_->addObject(vehicle);
-				}
-			}
-		}
-
-		// check if any cars have been removed by sumo and remove them from scenarioGateway and entities
-		if (libsumo::Simulation::getArrivedNumber() > 0) {
-			std::vector<std::string> arrivelist = libsumo::Simulation::getArrivedIDList();
-			for (size_t i = 0; i < arrivelist.size();i++)
-			{
-				for (size_t j = 0; j < entities_->object_.size(); j++)
-				{
-					if (arrivelist[i] == entities_->object_[j]->name_) {
-						LOG("Removing vehicle: %s",arrivelist[i].c_str());
-						entities_->removeObject(arrivelist[i]);
-						scenarioGateway_->removeObject(arrivelist[i]);
-					}
-				}
-			}
-		}
-
-		// Update the position of all cars controlled by sumo
-		for (size_t i = 0; i < entities_->object_.size(); i++)
-		{
-			if (entities_->object_[i]->control_ == Object::Control::SUMO)
-			{
-				std::string sumoid = entities_->object_[i]->name_;
-				libsumo::TraCIPosition pos = libsumo::Vehicle::getPosition3D(sumoid);
-				entities_->object_[i]->speed_ = libsumo::Vehicle::getSpeed(sumoid);
-				entities_->object_[i]->pos_.SetInertiaPos(pos.x-entities_->sumo_x_offset,pos.y-entities_->sumo_y_offset,pos.z,-libsumo::Vehicle::getAngle(sumoid)*3.14159265359/180+ 3.14159265359/2,libsumo::Vehicle::getSlope(sumoid)*3.14159265359/180,0);
-			}
-        }
-	}
-
 }

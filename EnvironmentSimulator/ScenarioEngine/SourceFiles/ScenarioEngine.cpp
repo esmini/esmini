@@ -17,38 +17,42 @@
 
 using namespace scenarioengine;
 
-ScenarioEngine::ScenarioEngine(std::string oscFilename, double headstart_time, RequestControlMode control_mode_first_vehicle)
+ScenarioEngine::ScenarioEngine(std::string oscFilename, bool disable_controllers)
 {
-	InitScenario(oscFilename, headstart_time, control_mode_first_vehicle);
+	InitScenario(oscFilename, disable_controllers);
 }
 
-ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, double headstart_time, RequestControlMode control_mode_first_vehicle)
+ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, bool disable_controllers)
 {
-	InitScenario(xml_doc, headstart_time, control_mode_first_vehicle);
+	InitScenario(xml_doc, disable_controllers);
 }
 
-void ScenarioEngine::InitScenario(std::string oscFilename, double headstart_time, RequestControlMode control_mode_first_vehicle)
+void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controllers)
 {
 	// Load and parse data
 	LOG("Init %s", oscFilename.c_str());
 	quit_flag = false;
-	headstart_time_ = headstart_time;
-	scenarioReader = new ScenarioReader(&entities, &catalogs);
+	disable_controllers_ = disable_controllers;
+	headstart_time_ = 0;
+	simulationTime_ = 0;
+	scenarioReader = new ScenarioReader(&entities, &catalogs, disable_controllers);
 	if (scenarioReader->loadOSCFile(oscFilename.c_str()) != 0)
 	{
 		throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
 	}
 
-	parseScenario(control_mode_first_vehicle);
+	parseScenario();
 }
 
-void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, double headstart_time, RequestControlMode control_mode_first_vehicle)
+void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers)
 {
 	LOG("Init %s", xml_doc.name());
 	quit_flag = false;
-	headstart_time_ = headstart_time;
+	disable_controllers_ = disable_controllers;
+	headstart_time_ = 0;
+	simulationTime_ = 0;
 	scenarioReader->loadOSCMem(xml_doc);
-	parseScenario(control_mode_first_vehicle);
+	parseScenario();
 }
 
 ScenarioEngine::~ScenarioEngine()
@@ -58,9 +62,8 @@ ScenarioEngine::~ScenarioEngine()
 
 
 void ScenarioEngine::step(double deltaSimTime, bool initial)
-
 {
-	simulationTime += deltaSimTime;
+	simulationTime_ += deltaSimTime;
 
 	if (entities.object_.size() == 0)
 	{
@@ -69,6 +72,15 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 
 	if (initial)
 	{
+		if (!disable_controllers_)
+		{ 
+			// Initialize controllers
+			for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
+			{
+				scenarioReader->controller_[i]->Init();
+			}
+		}
+
 		// Set initial values for speed and acceleration derivation
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
@@ -92,34 +104,45 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	}
 	else
 	{
+		// reset indicators of applied control
+		for (size_t i = 0; i < entities.object_.size(); i++)
+		{
+			entities.object_[i]->dirty_lat_ = false;
+			entities.object_[i]->dirty_long_ = false;
+			entities.object_[i]->reset_ = false;
+		}
+
+		// Run controllers
+		if (!disable_controllers_)
+		{
+			for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
+			{
+				if (scenarioReader->controller_[i]->Active())
+				{
+					if (simulationTime_ > 0 || scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_GHOST)
+					{
+						scenarioReader->controller_[i]->Step(deltaSimTime);
+					}
+				}
+			}
+		}
+
 		// Fetch external states from gateway, except the initial run where scenario engine sets all positions
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
 			Object* obj = entities.object_[i];
+			ObjectState o;
 
-			// reset indicators of applied control
-			obj->dirty_lat_ = false;
-			obj->dirty_long_ = false;
-			obj->reset_ = false;
-
-			if (entities.object_[i]->control_ == Object::Control::EXTERNAL ||
-				entities.object_[i]->control_ == Object::Control::HYBRID_EXTERNAL ||
-				// Also allow for internal objects being updated via gateway, e.g. using callbacks
-				entities.object_[i]->control_ == Object::Control::INTERNAL)
+			if (scenarioGateway.getObjectStateById(entities.object_[i]->id_, o) != 0)
 			{
-				ObjectState o;
-
-				if (scenarioGateway.getObjectStateById(entities.object_[i]->id_, o) != 0)
-				{
-					LOG("Gateway did not provide state for external car %d", entities.object_[i]->id_);
-				}
-				else
-				{
-					entities.object_[i]->pos_ = o.state_.pos;
-					entities.object_[i]->speed_ = o.state_.speed;
-					entities.object_[i]->wheel_angle_ = o.state_.wheel_angle;
-					entities.object_[i]->wheel_rot_ = o.state_.wheel_rot;
-				}
+				LOG("Gateway did not provide state for external car %d", entities.object_[i]->id_);
+			}
+			else
+			{
+				entities.object_[i]->pos_ = o.state_.pos;
+				entities.object_[i]->speed_ = o.state_.speed;
+				entities.object_[i]->wheel_angle_ = o.state_.wheel_angle;
+				entities.object_[i]->wheel_rot_ = o.state_.wheel_rot;
 			}
 		}
 	}
@@ -135,15 +158,9 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		}
 	}
 
-	if (initial)
-	{
-		sumocontroller->InitalizeObjects();
-	}
-	sumocontroller->step(getSimulationTime());
-
 	// Story
 	// First evaluate StoryBoard stopTrigger
-	if (storyBoard.stop_trigger_ && storyBoard.stop_trigger_->Evaluate(&storyBoard, simulationTime) == true)
+	if (storyBoard.stop_trigger_ && storyBoard.stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
 	{
 		quit_flag = true;
 		return;
@@ -167,7 +184,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 					// Start act even if there's no trigger
 					act->Start();
 				}
-				else if (act->start_trigger_->Evaluate(&storyBoard, simulationTime) == true)
+				else if (act->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
 				{
 					act->Start();
 				}
@@ -175,7 +192,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 
 			if (act->IsActive() && act->stop_trigger_)
 			{
-				if (act->stop_trigger_->Evaluate(&storyBoard, simulationTime) == true)
+				if (act->stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
 				{
 					act->End();
 				}
@@ -220,7 +237,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 							if (event->IsTriggable())
 							{
 								// Check event conditions
-								if (event->start_trigger_->Evaluate(&storyBoard, simulationTime) == true)
+								if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
 								{
 									// Check priority
 									if (event->priority_ == Event::Priority::OVERWRITE)
@@ -312,11 +329,19 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		Object *obj = entities.object_[i];
 
 		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_,obj->model_id_,
-			obj->control_, obj->boundingbox_, simulationTime, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+			obj->GetControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 	}
 
-	// update positions to sumo
-	sumocontroller->updatePositions();
+	if (!disable_controllers_)
+	{
+		for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
+		{
+			if (scenarioReader->controller_[i]->Active())
+			{
+				scenarioReader->controller_[i]->PostFrame();
+			}
+		}
+	}
 	
 	if (all_done)
 	{
@@ -327,7 +352,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 
 void ScenarioEngine::printSimulationTime()
 {
-	LOG("simulationTime = %.2f", simulationTime);
+	LOG("simulationTime = %.2f", simulationTime_);
 }
 
 ScenarioGateway *ScenarioEngine::getScenarioGateway()
@@ -335,65 +360,11 @@ ScenarioGateway *ScenarioEngine::getScenarioGateway()
 	return &scenarioGateway;
 }
 
-Object::Control ScenarioEngine::RequestControl2ObjectControl(RequestControlMode control)
-{
-	if (entities.object_.size() > 0)
-	{
-		if (control == CONTROL_INTERNAL)
-		{
-			return Object::Control::INTERNAL;
-		}
-		else if (control == CONTROL_EXTERNAL)
-		{
-			return Object::Control::EXTERNAL;
-		}
-		else if (control == CONTROL_HYBRID)
-		{
-			return Object::Control::HYBRID_GHOST;
-		}
-	}
-
-	LOG("Unexpected requested control mode: %d - falling back to default (INTERNAL)");
-	return Object::Control::INTERNAL;
-}
-
-void ScenarioEngine::ResolveHybridVehicles()
-{
-	// Identify any hybrid objects. Make it ghost and create an externally controlled buddy
-	size_t num_objects = entities.object_.size();
-	for (size_t i = 0; i < num_objects; i++)
-	{
-		if (entities.object_[i]->control_ == Object::Control::HYBRID_GHOST)
-		{
-			// Create a ghost vehicle
-			Vehicle *external_vehicle = new Vehicle();
-
-			// Copy all properties to the ghost
-			*external_vehicle = *(Vehicle*)entities.object_[i];
-
-			// Add "_ghost" to original vehicle name
-			external_vehicle->name_.append("_ghost");
-			// add to entities
-			entities.addObject(external_vehicle);
-			// Adjust some properties for the externally controlled buddy
-			entities.object_[i]->control_ = Object::Control::HYBRID_EXTERNAL;
-			// Connect external vehicle to the ghost
-			entities.object_[i]->ghost_ = external_vehicle;
-		}
-	}
-
-	for (size_t i = 0; i < entities.object_.size(); i++)
-	{
-		LOG("i %d id %d mode %d ghost id %d", i, entities.object_[i]->id_, entities.object_[i]->control_,
-			entities.object_[i]->ghost_ ? entities.object_[i]->ghost_->id_ : -1);
-	}
-
-}
-
-void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle)
+void ScenarioEngine::parseScenario()
 {
 	bool hybrid_objects = false;
 
+	scenarioReader->SetGateway(&scenarioGateway);
 	scenarioReader->parseGlobalParameterDeclarations();
 
 	// Init road manager
@@ -430,58 +401,23 @@ void ScenarioEngine::parseScenario(RequestControlMode control_mode_first_vehicle
 	scenarioReader->parseCatalogs();
 	scenarioReader->parseEntities();
 
-	// Possibly override control mode of first vehicle
-	if (control_mode_first_vehicle != CONTROL_BY_OSC)
-	{
-		entities.object_[0]->SetControl(RequestControl2ObjectControl(control_mode_first_vehicle));
-	}
-	ResolveHybridVehicles();
 	scenarioReader->parseInit(init);
 	scenarioReader->parseStoryBoard(storyBoard);
 	storyBoard.entities_ = &entities; 
 
-	// Copy init actions from external buddy
-	// (Cloning of story actions are handled in the story parser)
-
-	size_t num_private_actions = init.private_action_.size();
-	for (size_t i = 0; i < num_private_actions; i++)
-	{
-		if (init.private_action_[i]->object_->ghost_)
-		{
-			OSCPrivateAction *paction = init.private_action_[i]->Copy();
-			paction->object_ = init.private_action_[i]->object_->ghost_;
-			init.private_action_.push_back(paction);
-		}
-	}
-
-	// create sumo controller
-	if (entities.sumo_config_path.empty())
-	{
-		sumocontroller = new SumoController();
-	}
-	else
-	{
-		sumocontroller = new SumoController(&entities,&scenarioGateway);
-		LOG("Running with SUMO");
-	}
-
+	SetSimulationTime(0);
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
-		if (entities.object_[i]->control_ == Object::Control::HYBRID_GHOST)
-		{
-			hybrid_objects = true;
-			break;
-		}
-	}
+		Object* obj = entities.object_[i];
 
-	if (hybrid_objects)
-	{
-		this->simulationTime = -headstart_time_;
-		LOG("Hybrid objects involved - applying headstart of %.2f", headstart_time_);
-	}
-	else
-	{
-		this->simulationTime = 0;
+		if (!disable_controllers_ && obj->GetControllerType() == Controller::Type::CONTROLLER_GHOST)
+		{
+			if (obj->controller_->GetHeadstartTime() > GetHeadstartTime())
+			{
+				SetHeadstartTime(obj->controller_->GetHeadstartTime());
+				SetSimulationTime(-obj->controller_->GetHeadstartTime());
+			}
+		}
 	}
 
 	// Print loaded data
@@ -496,8 +432,12 @@ void ScenarioEngine::stepObjects(double dt)
 	{
 		Object *obj = entities.object_[i];
 
-		if (fabs(obj->speed_) > SMALL_NUMBER && ((simulationTime > 0 && obj->control_ == Object::Control::INTERNAL) ||
-			obj->control_ == Object::Control::HYBRID_GHOST))
+		if (simulationTime_ < 0 && obj->GetControllerType() != Controller::Type::CONTROLLER_GHOST)
+		{
+			continue;  // only ghosts allowed to execute before time == 0
+		}
+
+		if (fabs(obj->speed_) > SMALL_NUMBER)  // do not move objects when speed is zero
 		{
 			int retvalue = 0;
 			double steplen = obj->speed_ * dt;
@@ -511,7 +451,7 @@ void ScenarioEngine::stepObjects(double dt)
 				steplen += steplen * curvature * offset;
 			}
 
-			if (obj->pos_.GetRoute())
+			if (obj->pos_.GetRoute() && !obj->dirty_lat_)
 			{
 				int retvalue = obj->pos_.MoveRouteDS(steplen);
 
@@ -519,7 +459,7 @@ void ScenarioEngine::stepObjects(double dt)
 				{
 					if (!obj->IsEndOfRoad())
 					{
-						obj->SetEndOfRoad(true, simulationTime);
+						obj->SetEndOfRoad(true, simulationTime_);
 					}
 				}
 				else
@@ -548,14 +488,14 @@ void ScenarioEngine::stepObjects(double dt)
 					// If pointing in other direction
 					steplen *= -1;
 				}
-				
+
 				retvalue = obj->pos_.MoveAlongS(steplen);
 
 				if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD)
 				{
 					if (!obj->IsEndOfRoad())
 					{
-						obj->SetEndOfRoad(true, simulationTime);
+						obj->SetEndOfRoad(true, simulationTime_);
 					}
 				}
 				else
@@ -580,10 +520,13 @@ void ScenarioEngine::stepObjects(double dt)
 			obj->pos_.SetHAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt);
 			
 			// Update wheel rotations of internal scenario objects
-			if (obj->control_ == Object::Control::INTERNAL || obj->control_ == Object::Control::HYBRID_GHOST)
+			if (obj->GetControllerType() == Controller::Type::CONTROLLER_DEFAULT && !obj->dirty_lat_)
+			{
+				obj->wheel_angle_ = heading_rate_new / 2;
+			}
+			if (obj->GetControllerType() == Controller::Type::CONTROLLER_DEFAULT && !obj->dirty_long_)
 			{
 				obj->wheel_rot_ = fmod(obj->wheel_rot_ + obj->speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
-				obj->wheel_angle_ = heading_rate_new / 2;
 			}
 
 		}
@@ -601,11 +544,12 @@ void ScenarioEngine::stepObjects(double dt)
 		obj->state_old.vel_y = obj->pos_.GetVelY();
 		obj->state_old.h = obj->pos_.GetH();
 		obj->state_old.h_rate = obj->pos_.GetHRate();
+
 		if (!obj->reset_)
 		{
 			obj->odometer_ += abs(sqrt(dx * dx + dy * dy));  // odometer always measure all movements as positive, I guess...
 		}
 
-		obj->trail_.AddState((float)simulationTime, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
+		obj->trail_.AddState((float)simulationTime_, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
 	}
 }

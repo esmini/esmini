@@ -4,7 +4,7 @@ include_directories (
   ${COMMON_MINI_INCLUDE_DIR}  
 )
 
-set(TARGET OdrPlot)
+set(TARGET odrplot)
 
 set ( SOURCES
   main.cpp

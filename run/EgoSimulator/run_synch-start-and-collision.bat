@@ -1,1 +1,0 @@
-"../../bin/EgoSimulator" --window 50 50 1024 576  --osc ../../resources/xosc/synch-start-and-collision.xosc --control internal --camera_mode flex-orbit --road_features off

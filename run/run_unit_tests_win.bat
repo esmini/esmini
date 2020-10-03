@@ -2,7 +2,7 @@
 
 cd ..\buildVS2019_64_v141\EnvironmentSimulator\Unittest
 
-set PATH=%PATH%;..\ScenarioEngineDLL\Release
+set PATH=%PATH%;..\esminiSharedLibrary\Release
 
 Release\OperatingSystem_test.exe
 pause
@@ -12,3 +12,5 @@ pause
 
 Release\ScenarioEngineDll_test.exe
 pause
+
+cd ..\..\..\run

@@ -1,0 +1,1 @@
+"../../bin/esmini" --screen 0 --osc ../../resources/xosc/synchronize.xosc 

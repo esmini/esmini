@@ -1,4 +1,5 @@
 <?xml version="1.0" ?>
+<!-- Demonstrate a way of integrating SUMO vehicles in esmini simulations -->
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceShemaLocation="OpenSccenario.xsd">
 	<FileHeader author="Mandolin" date="2020-08-14 08:57:00.756371" decription="adaptspeed_example" revMajor="1" revMinor="0"/>
 	<ParameterDeclarations/>
@@ -36,7 +37,7 @@
 		<ScenarioObject name="SumoVehicles">
 			<CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
 			<ObjectController>
-				<Controller name="sumo_configuration">
+				<Controller name="SumoController">
 					<ParameterDeclarations/>
 					<Properties>
 						<File filepath="../sumo_inputs/e6mini.sumocfg"/>

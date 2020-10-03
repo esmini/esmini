@@ -20,8 +20,10 @@
 #include "Trail.hpp"
 #include "OSCBoundingBox.hpp"
 
+
 namespace scenarioengine
 {
+	class Controller;  // Forward declaration
 
 	class Object
 	{
@@ -33,16 +35,6 @@ namespace scenarioengine
 			MISC_OBJECT
 		} Type;
 
-		typedef enum
-		{
-			UNDEFINED,
-			INTERNAL,
-			EXTERNAL,
-			HYBRID_EXTERNAL,
-			HYBRID_GHOST,
-			SUMO
-		} Control;
-
 		struct Property
 		{
 			std::string name_;
@@ -53,27 +45,30 @@ namespace scenarioengine
 		int category_holder_; // placehoder for specific object category in vehicle, pedestrian or misobject
 		std::string name_;
 		int id_;
-		int trail_follow_index_;  // only in case of hybrid_external following a ghost
-		double trail_follow_s_;  // only in case of hybrid_external following a ghost
+
+		// Ghost following stuff
+		int trail_follow_index_;
+		double trail_follow_s_;
 		double trail_closest_pos_[3];
-		Control control_;
+		double sensor_pos_[3];
+
 		double speed_;
 		double wheel_angle_;
 		double wheel_rot_;
 		roadmanager::Position pos_;
-		roadmanager::Route *route_;
+		roadmanager::Route* route_;
 		std::string model_filepath_;
 		int model_id_;
-		Object *ghost_;     // If hybrid control mode, this will point to the ghost entity
 		ObjectTrail trail_;
 		double odometer_;
 		OSCBoundingBox boundingbox_;
-		double end_of_road_timestamp_;  
+		double end_of_road_timestamp_;
 		double off_road_timestamp_;
 
 		bool dirty_long_;
 		bool dirty_lat_;
-		bool reset_;
+		bool reset_; // indicate discreet movement, teleporting, no odometer update
+		Controller* controller_; // reference to any assigned controller object
 
 		struct {
 			double pos_x;
@@ -84,13 +79,17 @@ namespace scenarioengine
 			double h_rate;
 		} state_old;
 
-		Object(Type type) : type_(type), id_(0), trail_follow_index_(0), control_(Object::Control::INTERNAL),
-			speed_(0), wheel_angle_(0), wheel_rot_(0), route_(0), model_filepath_(""), ghost_(0), trail_follow_s_(0),
-			odometer_(0), end_of_road_timestamp_(0.0), off_road_timestamp_(0.0), dirty_long_(0), dirty_lat_(0), reset_(0)
+		Object(Type type) : type_(type), id_(0), trail_follow_index_(0), speed_(0), wheel_angle_(0), wheel_rot_(0),
+			route_(0), model_filepath_(""), trail_follow_s_(0), odometer_(0), end_of_road_timestamp_(0.0),
+			off_road_timestamp_(0.0), dirty_long_(0), dirty_lat_(0), reset_(0), controller_(0)
 		{
 			trail_closest_pos_[0] = 0.0;
 			trail_closest_pos_[1] = 0.0;
 			trail_closest_pos_[2] = 0.0;
+
+			sensor_pos_[0] = 0;
+			sensor_pos_[1] = 0;
+			sensor_pos_[2] = 0;
 
 			state_old.pos_x = 0;
 			state_old.pos_y = 0;
@@ -99,14 +98,20 @@ namespace scenarioengine
 			state_old.h = 0;
 			state_old.h_rate = 0;
 		}
-		void SetControl(Control control) { control_ = control; }
 		void SetEndOfRoad(bool state, double time = 0.0);
 		bool IsEndOfRoad() { return end_of_road_timestamp_ > SMALL_NUMBER; }
 		double GetEndOfRoadTimestamp() { return end_of_road_timestamp_; }
 		void SetOffRoad(bool state, double time = 0.0);
 		bool IsOffRoad() { return off_road_timestamp_ > SMALL_NUMBER; }
 		double GetOffRoadTimestamp() { return off_road_timestamp_; }
-		Control GetControl() { return control_; }
+		void SetSpeed(double speed) { speed_ = speed; }
+		double GetSpeed() { return speed_; }
+		void SetAssignedController(Controller* controller)
+		{ 
+			controller_ = controller; 
+		}
+		int GetControllerType();
+		bool IsControllerActiveOnDomains(int domainMask);
 	};
 
 	class Vehicle : public Object
@@ -322,17 +327,7 @@ namespace scenarioengine
 		}
 
 	};
-	// define a contorller class just to parse sumo controller config file
-	class Controller
-	{
-	public:
-		std::string name_;
-		std::string config_filepath_;
-
-		Controller() : name_(""), config_filepath_("") {}
-
-	};
-
+	
 	class Entities
 	{
 	public:
@@ -346,11 +341,8 @@ namespace scenarioengine
 
 		std::vector<Object*> object_;
 
-		// create a sumo vehicle template and sumo config file in Entities class
+		// create a sumo vehicle template and a sumo controller 
 		Object* sumo_vehicle;
-		std::string sumo_config_path;
-		float sumo_x_offset;
-		float sumo_y_offset;
 
 		int addObject(Object* obj);
 		void removeObject(int id);
@@ -358,6 +350,7 @@ namespace scenarioengine
 		int getNewId();
 		bool indexExists(int id);
 		bool nameExists(std::string name);
+		Object* GetObjectByName(std::string name);
 	};
 
 }

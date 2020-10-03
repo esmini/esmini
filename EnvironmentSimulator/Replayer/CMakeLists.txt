@@ -6,6 +6,7 @@ include_directories (
   ${OSG_INCLUDE_DIR}
   ${COMMON_MINI_INCLUDE_DIR}
   ${OSI_INCLUDE_DIR}
+  ${CONTROLLERS_INCLUDE_DIR}
 )
 
 set ( INCLUDES
@@ -13,7 +14,7 @@ set ( INCLUDES
 )
 
 # Replayer target
-set (TARGET1 Replayer)
+set (TARGET1 replayer)
 add_definitions(-DOSG_LIBRARY_STATIC)
 set ( SOURCES
 	main.cpp
@@ -38,7 +39,7 @@ target_link_libraries ( ${TARGET2} RoadManager CommonMini ${TIME_LIB} )
 
 
 # osi_receiver target
-set (TARGET3 osi_receiver)
+set (TARGET3 osireceiver)
 add_executable ( ${TARGET3} osi_receiver.cpp )
 target_link_libraries ( ${TARGET3} ${OSI_LIBRARIES} ${TIME_LIB} ${SOCK_LIB})
 

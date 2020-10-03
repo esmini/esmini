@@ -36,7 +36,7 @@
 #include <osgShadow/ShadowedScene>
 #include <osgUtil/SmoothingVisitor>
 #include "CommonMini.hpp"
-#include "ScenarioEngine.hpp"
+//#include "ScenarioEngine.hpp"
 
 #define SHADOW_SCALE 1.20
 #define SHADOW_MODEL_FILEPATH "shadow_face.osgb"  
@@ -615,7 +615,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	showInfoText = true;  // show info text HUD per default
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
 	shadow_node_ = NULL;
-	
+	environment_ = NULL;
+
 	int aa_mode = DEFAULT_AA_MULTISAMPLES;  
 	if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
 	{
@@ -663,7 +664,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	}
 
 	// Decorate window border with application name
-	SetWindowTitle("esmini - " + FileNameWithoutExtOf(arguments.getApplicationName()) + (scenarioFilename ? " " + FileNameOf(scenarioFilename) : ""));
+	SetWindowTitle(FileNameWithoutExtOf(arguments.getApplicationName()) + (scenarioFilename ? " " + FileNameOf(scenarioFilename) : ""));
 
 	// Create 3D geometry for trail dots
 	dot_node_ = CreateDotGeometry();
@@ -705,10 +706,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	rootnode_->addChild(osiLines_);
 	exe_path_ = exe_path;
 
-	ShowTrail(true);  // show trails per default
+	ShowTrail(false);  // hide trails per default
 	ShowRoadFeatures(true);
 	ShowOSIFeatures(false); // hide OSI features by default
 	ShowObjectSensors(false); // hide sensor frustums by default
+	ShowRoadFeatures(false); // hide road features by default
 
 	// add environment
 	if (modelFilename != 0 && (!FileExists(modelFilename) || (AddEnvironment(modelFilename) == -1)))
@@ -737,6 +739,12 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		{
 			LOG("Failed to locate environment model based on xosc or xodr locations - continue without");
 		}
+	}
+	if (environment_ == 0)
+	{
+		// No environment model, i.e. visual model of the road network, loaded - 
+		// enforce visualization of OpenDRIVE features
+		ShowRoadFeatures(true);
 	}
 
 	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager))
@@ -1554,6 +1562,14 @@ void Viewer::SetWindowTitle(std::string title)
 	}
 }
 
+void Viewer::RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data)
+{
+	KeyEventCallback cb;
+	cb.func = func;
+	cb.data = data;
+	callback_.push_back(cb);
+}
+
 bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)
 {
 	switch (ea.getEventType())
@@ -1566,7 +1582,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	switch (ea.getKey())
 	{
 	case(osgGA::GUIEventAdapter::KEY_K):
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->camMode_ += 1;
 			if (viewer_->camMode_ >= osgGA::RubberbandManipulator::RB_NUM_MODES)
@@ -1578,7 +1594,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		break;
 	case(osgGA::GUIEventAdapter::KEY_O):
 	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->ShowRoadFeatures(!viewer_->showRoadFeatures);
 		}
@@ -1586,7 +1602,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	break;
 	case(osgGA::GUIEventAdapter::KEY_U):
 	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->ShowOSIFeatures(!viewer_->showOSIFeatures);
 		}
@@ -1596,7 +1612,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	{
 		static bool visible = true;
 
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			visible = !visible;
 			viewer_->envTx_->setNodeMask(visible ? 0xffffffff : 0x0);
@@ -1605,27 +1621,27 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	break;
 	case(osgGA::GUIEventAdapter::KEY_Right):
 	{
-		viewer_->setKeyRight(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
+		viewer_->setKeyRight(ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN);
 	}
 	break;
 	case(osgGA::GUIEventAdapter::KEY_Left):
 	{
-		viewer_->setKeyLeft(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
+		viewer_->setKeyLeft(ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN);
 	}
 	break;
 	case(osgGA::GUIEventAdapter::KEY_Up):
 	{
-		viewer_->setKeyUp(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
+		viewer_->setKeyUp(ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN);
 	}
 	break;
 	case(osgGA::GUIEventAdapter::KEY_Down):
 	{
-		viewer_->setKeyDown(ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN);
+		viewer_->setKeyDown(ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN);
 	}
 	break;
 	case(osgGA::GUIEventAdapter::KEY_Tab):
 	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			int idx = viewer_->currentCarInFocus_ + ((ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1);
 
@@ -1644,7 +1660,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	break;
 	case(osgGA::GUIEventAdapter::KEY_I):
 	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->showInfoText = !viewer_->showInfoText;
 			viewer_->infoTextCamera->setNodeMask(viewer_->showInfoText ? 0xffffffff : 0x0);
@@ -1653,7 +1669,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	break;
 	case(osgGA::GUIEventAdapter::KEY_J):
 	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->showTrail = !viewer_->showTrail;
 			viewer_->trails_->setNodeMask(viewer_->showTrail ? 0xffffffff : 0x0);
@@ -1662,7 +1678,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	break;
 	case(osgGA::GUIEventAdapter::KEY_R):
 	{
-		if (ea.getEventType() == osgGA::GUIEventAdapter::KEYDOWN)
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->ShowObjectSensors(!viewer_->showObjectSensors);
 		}
@@ -1674,6 +1690,16 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		viewer_->osgViewer_->setDone(true);
 	}
 	break;
+	}
+
+	// Send key event to registered callback subscribers
+	if (ea.getKey() > 0)
+	{
+		for (size_t i = 0; i < viewer_->callback_.size(); i++)
+		{
+			KeyEvent ke = { ea.getKey(), ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN ? true : false };
+			viewer_->callback_[i].func(&ke, viewer_->callback_[i].data);
+		}
 	}
 
 	return false;

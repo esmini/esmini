@@ -13,7 +13,7 @@
 #pragma once
 
 #include "Entities.hpp"
-
+#include "Controller.hpp"
 
 using namespace scenarioengine;
 
@@ -38,6 +38,30 @@ void Object::SetOffRoad(bool state, double time)
 	else
 	{
 		off_road_timestamp_ = 0.0;
+	}
+}
+
+int Object::GetControllerType()
+{
+	if (controller_)
+	{
+		return controller_->GetType();
+	}
+	else
+	{
+		return Controller::Type::CONTROLLER_DEFAULT;
+	}
+}
+
+bool Object::IsControllerActiveOnDomains(int domainMask)
+{
+	if (controller_)
+	{
+		return controller_->domain_ & domainMask;
+	}
+	else
+	{
+		return false;
 	}
 }
 
@@ -81,6 +105,7 @@ bool Entities::nameExists(std::string name)
 	}
 	return false;
 }
+
 bool Entities::indexExists(int id) 
 {
 	for (size_t i = 0; i < object_.size(); i++) 
@@ -102,3 +127,19 @@ int Entities::getNewId()
 	}
 	return retint;
 }
+
+
+Object* Entities::GetObjectByName(std::string name)
+{
+	for (size_t i = 0; i < object_.size(); i++)
+	{
+		if (name == object_[i]->name_)
+		{
+			return object_[i];
+		}
+	}
+
+	LOG("Failed to find object %s", name.c_str());
+	throw std::runtime_error(std::string("Failed to find object " + name).c_str());
+}
+

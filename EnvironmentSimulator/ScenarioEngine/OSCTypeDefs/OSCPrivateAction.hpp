@@ -16,6 +16,7 @@
 #include "OSCPosition.hpp"
 #include "Entities.hpp"
 #include "CommonMini.hpp"
+#include "Controller.hpp"
 
 #include <iostream>
 #include <string>
@@ -39,6 +40,7 @@ namespace scenarioengine
 			LAT_DISTANCE,
 			VISIBILITY,
 			CONTROLLER,
+			ASSIGN_CONTROLLER,
 			ACTIVATE_CONTROLLER,
 			TELEPORT,
 			ASSIGN_ROUTE,
@@ -415,18 +417,7 @@ namespace scenarioengine
 		}
 
 		void Step(double dt, double simTime);
-
-		void Start()
-		{
-			if (object_->control_ == Object::Control::EXTERNAL ||
-				object_->control_ == Object::Control::HYBRID_EXTERNAL)
-			{
-				// motion control handed over 
-				return;
-			}
-
-			OSCAction::Start();
-		}
+		void Start();
 
 	private:
 		typedef enum {
@@ -542,18 +533,68 @@ namespace scenarioengine
 		void End();
 	};
 
+	class AssignControllerAction : public OSCPrivateAction
+	{
+	public:
+		Controller* controller_;
+
+		AssignControllerAction(Controller *controller): controller_(controller),
+			OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER) {}
+
+		AssignControllerAction(const AssignControllerAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER) 
+		{
+			controller_ = action.controller_;
+		};
+
+		OSCPrivateAction* Copy()
+		{
+			AssignControllerAction* new_action = new AssignControllerAction(*this);
+			return new_action;
+		}
+
+		void Step(double dt, double simTime) { }  // put driver model here
+
+		void Start()
+		{
+			if (controller_ == 0)
+			{
+				// Detach any controller from object
+				if (object_->controller_)
+				{
+					Controller* ctrl = (Controller*)object_->controller_;
+					ctrl->Assign(0);
+					object_->SetAssignedController(0);
+				}
+			}
+			else
+			{
+				controller_->Assign(object_);
+			}
+
+			OSCAction::Start();
+		}
+	};
+
 	class ActivateControllerAction : public OSCPrivateAction
 	{
 	public:
-		bool longitudinal_;
-		bool lateral_;
+		int domainMask_;
 
-		ActivateControllerAction() : longitudinal_(false), lateral_(false), OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
+		/**
+		Default constructor assuming both domains (lat/long) activated
+		@param domainMask bitmask according to Controller::ControllerDomain type
+		*/
+		ActivateControllerAction() : domainMask_(Controller::ControllerDomain::CTRL_BOTH), OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
 
-		ActivateControllerAction(const ActivateControllerAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
+		/**
+		Constructor with domain specification
+		@param domainMask bitmask according to Controller::ControllerDomain type
+		*/
+		ActivateControllerAction(int domainMask) : domainMask_(domainMask), OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
+
+		ActivateControllerAction(const ActivateControllerAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
 		{
-			longitudinal_ = action.longitudinal_;
-			lateral_ = action.lateral_;
+			domainMask_ = action.domainMask_;
 		}
 
 		OSCPrivateAction* Copy()
@@ -562,20 +603,21 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt, double simTime) { }  // put driver model here
-
-		void Start()
+		void Step(double dt, double simTime) 
 		{
-			if (object_->control_ == Object::Control::EXTERNAL ||
-				object_->control_ == Object::Control::HYBRID_EXTERNAL)
+			if (object_->GetControllerType() != Controller::Type::CONTROLLER_DEFAULT)
 			{
-				// motion control handed over 
-				return;
+				if (!object_->controller_->Active())
+				{
+					object_->controller_->Activate(domainMask_);
+				}
 			}
+		}  
 
-			LOG("Dummy driver model activated");
-
-			OSCAction::Start();
+		void End()
+		{
+			object_->controller_->Deactivate();
+			OSCAction::End();
 		}
 	};
 }
