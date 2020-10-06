@@ -1,5 +1,8 @@
 The purpose of this document is to highlight changes breaking backward compatibility, i.e. updates to scenarios and start scripts might be required.
 
+2020-10-06 Version 1.7.12
+- Fix pedestrian catalog support
+
 2020-10-02 Version 1.7.11
 - Fix bug deleting any entity with defined controller
 - Add another OpenDriveViewer example run script
