@@ -820,6 +820,12 @@ int ScenarioReader::parseEntities()
 							Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
 							obj = vehicle;
 						}
+						else if (entry->type_ == CatalogType::CATALOG_PEDESTRIAN)
+						{
+							// Make a new instance from catalog entry
+							Pedestrian* pedestrian = parseOSCPedestrian(entry->GetNode());
+							obj = pedestrian;
+						}
 						else
 						{
 							LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
