@@ -17,6 +17,9 @@
       <VehicleCatalog>
          <Directory path="../xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
+      <PedestrianCatalog>
+         <Directory path="../xosc/Catalogs/Pedestrians"/>
+      </PedestrianCatalog>
    </CatalogLocations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/fabriksgatan.xodr"/>
@@ -27,17 +30,7 @@
            <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
        </ScenarioObject>
        <ScenarioObject name="pedestrian_adult">
-          <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="PedestrianCategory.pedestrian">
-             <ParameterDeclarations/>
-             <BoundingBox>
-                <Center x="0.06" y="0.0" z="0.923"/>
-                <Dimensions height="1.8" length="0.6" width="0.5"/>
-             </BoundingBox>
-             <Properties>
-                <Property name="control" value="internal"/>
-                <File filepath="../models/walkman.osgb"/>
-             </Properties>
-          </Pedestrian>
+           <CatalogReference catalogName="PedestrianCatalog" entryName="pedestrian_adult"/>
        </ScenarioObject>
     </Entities>
    <Storyboard>

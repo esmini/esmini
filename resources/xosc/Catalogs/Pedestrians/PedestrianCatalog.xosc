@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2020-10-06T17:00:00"
+               author="esmini"/>
+   <Catalog name="PedestrianCatalog">
+      <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="PedestrianCategory.pedestrian">
+         <ParameterDeclarations/>
+         <BoundingBox>
+            <Center x="0.06" y="0.0" z="0.923"/>
+            <Dimensions height="1.8" length="0.6" width="0.5"/>
+         </BoundingBox>
+         <Properties>
+            <Property name="control" value="internal"/>
+            <File filepath="../models/walkman.osgb"/>
+         </Properties>
+      </Pedestrian>
+      <Pedestrian mass="70" model="EPTa" name="pedestrian_adult2" pedestrianCategory="PedestrianCategory.pedestrian">
+         <ParameterDeclarations/>
+         <BoundingBox>
+            <Center x="0.06" y="0.0" z="0.923"/>
+            <Dimensions height="1.8" length="0.6" width="0.5"/>
+         </BoundingBox>
+         <Properties>
+            <Property name="control" value="internal"/>
+            <File filepath="../models/walkman.osgb"/>
+         </Properties>
+      </Pedestrian>
+   </Catalog>
+</OpenSCENARIO>
