@@ -643,7 +643,7 @@ void CSV_Logger::LogVehicleData(bool isendline, double timestamp,
 			heading_angle_driving_direction_, pitch_, curvature_);
 	else
 		snprintf(data_entry, 2048,
-			"%s , %d , %f , %f , %f , %f , %f , %f , %f , %f, %f, %f, %f, % f , %f,", 
+			"%s , %d , %f , %f , %f , %f , %f , %f , %f , %f, %f, %f, %f, %f , %f,",
 			name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_, posZ_, distance_road_,
 			distance_lanem_, heading_, heading_angle_, heading_angle_driving_direction_, pitch_,
 			curvature_);

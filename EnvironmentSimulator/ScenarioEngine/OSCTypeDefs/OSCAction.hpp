@@ -82,7 +82,9 @@ namespace scenarioengine
 		{
 			// Also consider when just being activated - indicated by next_state == running
 			// to avoid single frames of no updates (zero motion)
-			return (state_ == State::RUNNING || next_state_ == State::RUNNING);
+			// Elements on transition to end or stop states also considered not active
+			return ((state_ == State::RUNNING || next_state_ == State::RUNNING) && 
+				(transition_ != Transition::END_TRANSITION && transition_ != Transition::STOP_TRANSITION));
 		}
 
 		bool IsTriggable()

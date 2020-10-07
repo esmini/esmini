@@ -379,9 +379,6 @@ void ScenarioEngine::ResolveHybridVehicles()
 			entities.object_[i]->control_ = Object::Control::HYBRID_EXTERNAL;
 			// Connect external vehicle to the ghost
 			entities.object_[i]->ghost_ = external_vehicle;
-
-
-
 		}
 	}
 
@@ -504,6 +501,15 @@ void ScenarioEngine::stepObjects(double dt)
 		{
 			int retvalue = 0;
 			double steplen = obj->speed_ * dt;
+
+			// Add or subtract stepsize according to curvature and offset, in order to keep constant speed
+			double curvature = obj->pos_.GetCurvature();
+			double offset = obj->pos_.GetT();
+			if (abs(curvature) > SMALL_NUMBER)
+			{
+				// Approximate delta length by sampling curvature in current position
+				steplen += steplen * curvature * offset;
+			}
 
 			if (obj->pos_.GetRoute())
 			{

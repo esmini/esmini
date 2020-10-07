@@ -29,7 +29,10 @@ void Event::End()
 {
 	for (size_t i = 0; i < action_.size(); i++)
 	{
-		action_[i]->End();
+		if (action_[i]->IsActive())
+		{
+			action_[i]->End();
+		}
 	}
 	StoryBoardElement::End();
 }
