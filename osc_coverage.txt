@@ -165,6 +165,7 @@ OSCTypeDefs
                     choice                  
                         time                Yes
                         distance            Yes
+                        rate                Yes
                 Target                      
                     Relative                
                         object              Yes
