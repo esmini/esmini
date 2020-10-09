@@ -663,6 +663,65 @@ TEST(GetSensorViewTests, receive_SensorView_no_init) {
 
 
 
+TEST(GetMiscObjFromSensorView, receive_miscobj) {
+
+	int sv_size = 0; 
+	osi3::SensorView osi_sv;
+
+	SE_Init("../../../EnvironmentSimulator/Unittest/scenarios/miscobj_basic.xosc", 1, 0, 1, 0, 0);
+
+	//SE_OSIFileOpen(); 
+
+	SE_StepDT(0.001f);	
+
+	SE_UpdateOSISensorView(); 
+
+	const char* sv = SE_GetOSISensorView(&sv_size);
+	osi_sv.ParseFromArray(sv, sv_size);	
+
+	int n_miscobjects = osi_sv.mutable_global_ground_truth()->mutable_stationary_object()->size();
+
+	uint64_t miscobj_id = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_id()->value();
+	osi3::StationaryObject_Classification_Type miscobj_type = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_classification()->type();
+
+	double miscobj_length = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_dimension()->length();
+	double miscobj_width = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_dimension()->width();
+	double miscobj_height = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_dimension()->height();
+
+	double miscobj_x = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_position()->x();
+	double miscobj_y = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_position()->y();
+	double miscobj_z = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_position()->z();
+
+	double miscobj_roll = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_orientation()->roll();
+	double miscobj_pitch = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_orientation()->pitch();
+	double miscobj_yaw = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_orientation()->yaw();
+
+
+
+
+	EXPECT_EQ(n_miscobjects, 1); 
+	EXPECT_EQ(miscobj_id, 0); 
+
+	EXPECT_EQ(miscobj_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER); 
+
+	EXPECT_EQ(miscobj_length, 200); 
+	EXPECT_EQ(miscobj_width, 100); 
+	EXPECT_EQ(miscobj_height, 5); 
+
+	EXPECT_EQ(miscobj_x, 10); 
+	EXPECT_EQ(miscobj_y, 10); 
+	EXPECT_EQ(miscobj_z, 0.0); // adjusted to the road z  
+
+
+	EXPECT_EQ(miscobj_roll, 5.0); 
+	EXPECT_EQ(miscobj_pitch, 0.0); // adjusted to the road pitch 
+	EXPECT_EQ(miscobj_yaw, 5.0);  
+ 
+}
+
+
+
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);

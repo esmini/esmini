@@ -315,7 +315,7 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState* objectState)
 	obj_osi_internal.sobj->mutable_id()->set_value(sobj_size-1);
 	
 	// Set OSI Stationary Object Type and Classification
-	if(objectState->state_.obj_category == static_cast<int>(Object::Type::MISC_OBJECT))
+	if(objectState->state_.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
 	{
 		if(objectState->state_.obj_category == static_cast<int>(MiscObject::Category::NONE))
 		{
