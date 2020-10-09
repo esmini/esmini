@@ -162,6 +162,34 @@ void LatLaneChangeAction::Start()
 			target_lane_id_ += left_direction * SIGN(target_->value_);
 		}
 	}
+
+	// if dynamics dimension is rate, transform into distance
+	if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
+	{
+		double lat_distance = object_->pos_.GetT() - target_->value_;
+		double rate = transition_dynamics_.target_value_;
+
+		if (transition_dynamics_.shape_ == DynamicsShape::LINEAR)
+		{
+			// longitudinal distance = long_speed * time = long_speed * lat_dist / lat_speed 
+			if (fabs(rate) > SMALL_NUMBER)
+			{
+				transition_dynamics_.target_value_ = fabs(object_->speed_ * lat_distance / rate);
+			}
+			else
+			{
+				// rate close to zero. Choose a random large distance.
+				transition_dynamics_.target_value_ = 500;
+			}
+		}
+		else if (transition_dynamics_.shape_ == DynamicsShape::SINUSOIDAL)
+		{
+			// Calculate corresponding distance with a magic formula
+			transition_dynamics_.target_value_ = fabs(0.5 * lat_distance * M_PI *
+				sqrt(object_->speed_ * object_->speed_ - rate * rate) / rate);
+		}
+	}
+
 	start_t_ = object_->pos_.GetT();
 	elapsed_ = 0;
 }
@@ -169,7 +197,8 @@ void LatLaneChangeAction::Start()
 void LatLaneChangeAction::Step(double dt, double simTime)
 {
 	double target_t;
-	double t, t_old;
+	double t;
+	double t_old = object_->pos_.GetT();;
 	double factor;
 	double angle = 0;
 
@@ -178,66 +207,58 @@ void LatLaneChangeAction::Step(double dt, double simTime)
 		object_->pos_.GetOpenDrive()->GetRoadById(object_->pos_.GetTrackId())->GetCenterOffset(object_->pos_.GetS(), target_lane_id_) +
 		target_lane_offset_;
 
-	if (transition_dynamics_.dimension_ == DynamicsDimension::TIME || transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
+	if (transition_dynamics_.dimension_ == DynamicsDimension::TIME)
 	{
-		if (transition_dynamics_.dimension_ == DynamicsDimension::TIME)
-		{
-			double dt_adjusted = dt;
+		double dt_adjusted = dt;
 
-			// Set a limit for lateral speed not to exceed longitudinal speed
-			if (transition_dynamics_.target_value_ * object_->speed_ < fabs(target_t - start_t_))
-			{
-				dt_adjusted = dt * object_->speed_ * transition_dynamics_.target_value_ / fabs(target_t - start_t_);
-			}
-			elapsed_ += dt_adjusted;
-		}
-		else if (transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
+		// Set a limit for lateral speed not to exceed longitudinal speed
+		if (transition_dynamics_.target_value_ * object_->speed_ < fabs(target_t - start_t_))
 		{
-			elapsed_ += object_->speed_ * dt;
+			dt_adjusted = dt * object_->speed_ * transition_dynamics_.target_value_ / fabs(target_t - start_t_);
 		}
-		else
-		{
-			LOG("Unexpected timing type: %d", transition_dynamics_.dimension_);
-		}
-
-		factor = elapsed_ / transition_dynamics_.target_value_;
-		t_old = object_->pos_.GetT();
-
-		t = transition_dynamics_.Evaluate(factor, start_t_, target_t);
-		
-		if (object_->pos_.GetRoute())
-		{
-			// If on a route, stay in original lane
-			int lane_id = object_->pos_.GetLaneId();
-			object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
-			object_->pos_.ForceLaneId(lane_id);
-		}
-		else
-		{
-			object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
-		}
-		
-
-		if (factor > 1.0)
-		{
-			OSCAction::End();
-			object_->pos_.SetHeadingRelativeRoadDirection(0);
-		}
-		else
-		{
-			if (object_->speed_ > SMALL_NUMBER)
-			{
-				angle = atan((t - t_old) / (object_->speed_ * dt));
-				object_->pos_.SetHeadingRelativeRoadDirection(angle);
-			}
-		}
-
-		object_->dirty_lat_ = true;
+		elapsed_ += dt_adjusted;
+	}
+	else if (transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE ||
+			transition_dynamics_.dimension_ == DynamicsDimension::RATE)
+	{
+		elapsed_ += object_->speed_ * dt;
 	}
 	else
 	{
-		LOG("Timing type %d not supported yet", transition_dynamics_.dimension_);
+		LOG("Unexpected timing type: %d", transition_dynamics_.dimension_);
 	}
+
+	factor = elapsed_ / transition_dynamics_.target_value_;
+	t = transition_dynamics_.Evaluate(factor, start_t_, target_t);
+
+	if (object_->pos_.GetRoute())
+	{
+		// If on a route, stay in original lane
+		int lane_id = object_->pos_.GetLaneId();
+		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
+		object_->pos_.ForceLaneId(lane_id);
+	}
+	else
+	{
+		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
+	}
+		
+
+	if (factor > 1.0 || abs(t - target_t) < SMALL_NUMBER || SIGN(t - start_t_) != SIGN(target_t - start_t_))
+	{
+		OSCAction::End();
+		object_->pos_.SetHeadingRelativeRoadDirection(0);
+	}
+	else
+	{
+		if (object_->speed_ > SMALL_NUMBER)
+		{
+			angle = atan((t - t_old) / (object_->speed_ * dt));
+			object_->pos_.SetHeadingRelativeRoadDirection(angle);
+		}
+	}
+
+	object_->dirty_lat_ = true;
 }
 
 void LatLaneOffsetAction::Start()

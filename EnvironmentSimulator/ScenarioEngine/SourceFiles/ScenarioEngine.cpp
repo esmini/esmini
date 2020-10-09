@@ -496,7 +496,7 @@ void ScenarioEngine::stepObjects(double dt)
 	{
 		Object *obj = entities.object_[i];
 
-		if (fabs(obj->speed_) > SMALL_NUMBER && (obj->control_ == Object::Control::INTERNAL ||
+		if (fabs(obj->speed_) > SMALL_NUMBER && ((simulationTime > 0 && obj->control_ == Object::Control::INTERNAL) ||
 			obj->control_ == Object::Control::HYBRID_GHOST))
 		{
 			int retvalue = 0;
