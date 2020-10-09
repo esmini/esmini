@@ -166,7 +166,11 @@ void LatLaneChangeAction::Start()
 	// if dynamics dimension is rate, transform into distance
 	if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
 	{
-		double lat_distance = object_->pos_.GetT() - target_->value_;
+		double target_t =
+			SIGN(target_lane_id_) *
+			object_->pos_.GetOpenDrive()->GetRoadById(object_->pos_.GetTrackId())->GetCenterOffset(object_->pos_.GetS(), target_lane_id_) +
+			target_lane_offset_;
+		double lat_distance = object_->pos_.GetT() - target_t;
 		double rate = transition_dynamics_.target_value_;
 
 		if (transition_dynamics_.shape_ == DynamicsShape::LINEAR)
