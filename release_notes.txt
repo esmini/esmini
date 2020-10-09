@@ -1,5 +1,8 @@
 The purpose of this document is to highlight changes breaking backward compatibility, i.e. updates to scenarios and start scripts might be required.
 
+2020-10-09 Version 1.7.13
+- Added support for lane change dynamics by rate
+
 2020-10-06 Version 1.7.12
 - Fix pedestrian catalog support
 
