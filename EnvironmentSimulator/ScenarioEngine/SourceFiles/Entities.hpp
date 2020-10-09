@@ -154,7 +154,6 @@ namespace scenarioengine
 			{
 				LOG("Vehicle category %s not supported yet", category.c_str());
 			}
-			category_holder_ = static_cast<int>(category_);
 
 			return;
 		}
@@ -173,35 +172,34 @@ namespace scenarioengine
 		std::string model_; /**< Definition of the model of the pedestrian. */
 		double mass_; /**< The mass of a pedestrian in kg. */
 		std::string name_;
-		Category category_; /**< Category type of pedestrian. */
+		Category pedestrain_category_; /**< Category type of pedestrian. */
 		
 		// name, boundingBox and properties are included in base Object class.
 
 		Pedestrian() : Object(Object::Type::PEDESTRIAN), 
 		model_(""), mass_(0.0), name_(""), 
-		category_(Category::PEDESTRIAN) {
-			category_holder_ = static_cast<int>(category_);
+		pedestrain_category_(Category::PEDESTRIAN) {
+			category_holder_ = static_cast<int>(pedestrain_category_);
 		}
 
 		void SetCategory(std::string category)
 		{
 			if (category == "pedestrian")
 			{
-				category_ = Pedestrian::Category::PEDESTRIAN;
+				pedestrain_category_ = Pedestrian::Category::PEDESTRIAN;
 			}
 			else if (category == "wheelchair")
 			{
-				category_ = Pedestrian::Category::WHEELCHAIR;
+				pedestrain_category_ = Pedestrian::Category::WHEELCHAIR;
 			}
 			else if (category == "animal")
 			{
-				category_ = Pedestrian::Category::ANIMAL;
+				pedestrain_category_ = Pedestrian::Category::ANIMAL;
 			}
 			else
 			{
 				LOG("Pedestrian category %s not supported yet", category.c_str());
 			}
-			category_holder_ = static_cast<int>(category_);
 
 			return;
 		}
@@ -314,9 +312,8 @@ namespace scenarioengine
 			}
 			else
 			{
-				LOG("MiscObject category %s not supported yet", category.c_str());				
+				LOG("MiscObject category %s not supported yet", category.c_str());
 			}
-			category_holder_ = static_cast<int>(category_);
 
 			return;
 		}
