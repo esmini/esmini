@@ -32,9 +32,9 @@ ControllerFollowGhost::ControllerFollowGhost(Controller::Type type, std::string 
 	{
 		std::string ghost_name = properties.GetValueStr("ghost");
 		ghost_ = entities->GetObjectByName(ghost_name);
-		if (ghost_ <= 0)
+		if (ghost_ == 0)
 		{
-			LOG("Error: Failed to find ghost %s", ghost_name);
+			LOG("Error: Failed to find ghost %s", ghost_name.c_str());
 		}
 	}
 }
