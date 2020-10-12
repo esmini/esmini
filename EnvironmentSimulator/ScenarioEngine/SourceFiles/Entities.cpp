@@ -140,6 +140,7 @@ Object* Entities::GetObjectByName(std::string name)
 	}
 
 	LOG("Failed to find object %s", name.c_str());
-	throw std::runtime_error(std::string("Failed to find object " + name).c_str());
+	
+	return 0;
 }
 
