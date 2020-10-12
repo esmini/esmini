@@ -12,16 +12,16 @@ It contains the following main modules:
 - RoadManager. A library providing an interface to road networks described in the OpenDRIVE format.
 - ScenarioEngine. A library providing an interface to traffic scenarios described in the OpenSCENARIO format.
 - ViewerBase. A library based on [OpenSceneGraph](http://www.openscenegraph.org/) providing a simple visualization of the road and scenario.
-- ScenarioEngineDLL. A library packaging the above three modules into a single library with a simplified API.
+- esminiLib. A library packaging the above three modules into a single shared library with a simplified API.
 
 and a few applications that can be used as is or provide ideas for customized solutions:
 
-- EnvironmentSimulator. A simple scenario player linking ScenarioEngine and Viewer modules statically.
-- ScenarioViewer. A minimalistic example using the scenarioengine DLL to play OpenSCENARIO files.
-- EgoSimulator. An example of how to integrate a simple Ego vehicle with the scenario engine.
-- OdrPlot. Produces a data file from OpenDRIVE for plotting the road network in Python.
-- OpenDriveViewer. Visualize OpenDRIVE road network with populated dummy traffic.
-- Replayer. Re-play previously executed scenarios.
+- esmini. A scenario player application linking ScenarioEngine and Viewer modules statically.
+- esmini-dyn. A minimalistic example using the esminiLib to play OpenSCENARIO files.
+- odrplot. Produces a data file from OpenDRIVE for plotting the road network in Python.
+- odrviewer. Visualize OpenDRIVE road network with populated dummy traffic.
+- replayer. Re-play previously executed scenarios.
+- osireceiver. A simple application receiving OSI messages from esmini over UDP.
 
 Repository: <https://github.com/esmini/esmini>
 
@@ -43,7 +43,7 @@ Nevertheless, regarding the above stated limitations, it was decided to release 
 ## Binaries and demos
 Windows, Linux and Mac supported
 
-Latest release including source, binaries and demo packages is found here: https://github.com/esmini/esmini/releases/latest 
+Latest release including source, binaries and demo packages is found here: https://github.com/esmini/esmini/releases/latest
 
 On Mac the zip-package might be put in quarantine, to release it:
 `xattr -d com.apple.quarantine file.zip`
@@ -71,7 +71,7 @@ See [this "Hello World" tutorial](https://github.com/esmini/esmini/blob/master/H
 
 ## Related work
 ### pyoscx
-[pyoscx](https://github.com/pyoscx/pyoscx) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate the OpenSCENARIO 1.0 XML counterpart. 
+[pyoscx](https://github.com/pyoscx/pyoscx) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate the OpenSCENARIO 1.0 XML counterpart.
 
 ### pyodrx
 [pyodrx](https://github.com/pyoscx/pyodrx) is a Python based road network creation framework. The idea is to write road networks in a high-level script format and automatically generate the OpenDRIVE (1.4 as of today) XML counterpart.
@@ -103,5 +103,3 @@ describes the road network, the static part of a scenario.
 
 [OpenSCENARIO](https://www.asam.net/standards/detail/openscenario/)
 describes the dynamic content on top of a road network, e.g. traffic maneuvers and weather conditions.
-
-
