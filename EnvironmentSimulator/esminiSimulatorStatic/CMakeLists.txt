@@ -26,8 +26,8 @@ endif (USE_OSG)
 target_link_libraries ( 
 	${TARGET}
 	PlayerBase    
-    Controllers
 	ScenarioEngine
+    Controllers
 	RoadManager
 	CommonMini
     ${viewer_libs}

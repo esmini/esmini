@@ -21,6 +21,7 @@ resources/xosc/trajectory-test.xosc \
 resources/xosc/lane_change_simple.xosc \
 resources/xosc/pedestrian.xosc \
 resources/xosc/pedestrian_collision.xosc \
+resources/xosc/sloppy-driver.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -65,6 +66,7 @@ run/esmini/run_synchronize_interactive.* \
 run/esmini/run_parking_lot.* \
 run/esmini/run_trajectory-test.* \
 run/esmini/run_pedestrian*.* \
+run/esmini/run_sloppy_driver*.* \
 run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 docs/readme.txt \

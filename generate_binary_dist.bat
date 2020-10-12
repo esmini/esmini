@@ -36,6 +36,7 @@ copy resources\xosc\trajectory-test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\lane_change_simple.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\pedestrian.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\pedestrian_collision.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\sloppy-driver.xosc %target_dir%\resources\xosc /y
 
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
@@ -86,6 +87,7 @@ copy run\esmini\run_parking_lot.bat %target_dir%\run\esmini /y
 copy run\esmini\run_trajectory-test.bat %target_dir%\run\esmini /y
 copy run\esmini\run_pedestrian.bat %target_dir%\run\esmini /y
 copy run\esmini\run_pedestrian_collision.bat %target_dir%\run\esmini /y
+copy run\esmini\run_sloppy_driver.bat %target_dir%\run\esmini /y
 
 copy run\odrviewer\run_e6mini.bat %target_dir%\run\odrviewer /y
 copy run\odrviewer\run_multi_intersections.bat %target_dir%\run\odrviewer /y
