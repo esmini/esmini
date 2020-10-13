@@ -22,9 +22,10 @@ IF NOT EXIST %target_dir%\Hello-World_coding-example ( mkdir %target_dir%\Hello-
 
 copy resources\xosc\basic_ghost.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\cut-in_interactive.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_sumo.xosc %target_dir%\resources\xosc /y
-copy resources\xosc\lane_change.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_simple.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\lane_change.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\highway_merge.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\highway_merge_advanced.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\distance_test.xosc %target_dir%\resources\xosc /y

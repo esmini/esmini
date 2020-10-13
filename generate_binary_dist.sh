@@ -7,9 +7,10 @@ mkdir esmini-demo
 rsync -R \
 resources/xosc/basic_ghost.xosc \
 resources/xosc/cut-in.xosc \
+resources/xosc/cut-in_interactive.xosc \
 resources/xosc/cut-in_sumo.xosc \
-resources/xosc/lane_change.xosc \
 resources/xosc/cut-in_simple.xosc \
+resources/xosc/lane_change.xosc \
 resources/xosc/highway_merge.xosc \
 resources/xosc/highway_merge_advanced.xosc \
 resources/xosc/distance_test.xosc \

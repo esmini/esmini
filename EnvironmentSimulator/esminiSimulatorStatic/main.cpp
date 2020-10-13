@@ -10,28 +10,12 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-/*
- * This application is an example of how to integrate a simple Ego vehicle into the environment simulator
- * The vehicle is implemented in a separate module (vehicle.cpp)
- * Communication is by means of function calls
- *
- * Ego means that the vehicle is controlled externally, e.g. interactively by a human-in-the-loop
- * or by an AD controller or by an external test framework providing stimuli for a vehicle simulator
- *
- * This application support three types of vehicle controls:
- * 1. Internal: Scenario engine executes according to OpenSCENARIO description (default)
- * 2. External: The vehicle is controlled by the user.
- * 3. Hyybrid: Automatic driver model following a ghost vehicle performing the scenario as i 1.
- */
-
 
 #include "playerbase.hpp"
 #include "CommonMini.cpp"
 
-
 #define MIN_TIME_STEP 0.01
 #define MAX_TIME_STEP 0.1
-
 
 void UpdateCSV_Log(ScenarioPlayer *player)
 {
