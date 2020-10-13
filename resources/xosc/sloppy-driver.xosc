@@ -6,6 +6,7 @@
 <!-- time 10.0: Sloppy Driver (high sloppiness)                                                   -->
 <!-- time 20.0: Interactive (user control via arrow keys)                                         -->
 <!-- time 30.0: Sloppy Driver (low sloppiness)                                                    -->
+<!-- time 40.0: DefaultController                                                                 -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
                revMinor="0"
