@@ -28,10 +28,10 @@ namespace scenarioengine
 		float sumo_y_offset_;
 		double time_;
 		pugi::xml_document docsumo_;
-		std::string configfile_path_;
+		OSCProperties properties_;
 
-		ControllerSumo(Controller::Type type, std::string name, std::string configfile_path, 
-			Entities *entities, ScenarioGateway* gateway, Parameters* parameters);
+		ControllerSumo(Controller::Type type, std::string name, Entities *entities, ScenarioGateway* gateway, 
+			Parameters* parameters, OSCProperties properties);
 
 		void Init();
 		void Step(double time);

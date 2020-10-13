@@ -23,21 +23,26 @@
 
 using namespace scenarioengine;
 
-ControllerSumo::ControllerSumo(Controller::Type type, std::string name, std::string configfile_path, 
-	Entities* entities, ScenarioGateway* gateway, Parameters* parameters) :
-	time_(0), sumo_x_offset_(0), sumo_y_offset_(0), configfile_path_(configfile_path), 
-	Controller(type, name, entities, gateway)
+ControllerSumo::ControllerSumo(Controller::Type type, std::string name, Entities* entities, ScenarioGateway* gateway, 
+	Parameters* parameters, OSCProperties properties) :	properties_(properties), time_(0), sumo_x_offset_(0), 
+	sumo_y_offset_(0), Controller(type, name, entities, gateway)
 {
-	if (docsumo_.load_file(configfile_path.c_str()).status == pugi::status_file_not_found)
+	if (properties_.file_.filepath_.empty())
 	{
-		LOG("Failed to load SUMO config file %s", configfile_path.c_str());
-		throw std::invalid_argument(std::string("Cannot open file: ") + configfile_path);
+		LOG("No filename!");
+		return;
+	}
+
+	if (docsumo_.load_file(properties_.file_.filepath_.c_str()).status == pugi::status_file_not_found)
+	{
+		LOG("Failed to load SUMO config file %s", properties_.file_.filepath_.c_str());
+		throw std::invalid_argument(std::string("Cannot open file: ") + properties_.file_.filepath_);
 		return;
 	}
 
 	std::vector<std::string> file_name_candidates;
 	file_name_candidates.push_back(parameters->ReadAttribute(docsumo_.child("configuration").child("input").child("net-file"), "value"));
-	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(configfile_path), file_name_candidates[0]));
+	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(properties_.file_.filepath_), file_name_candidates[0]));
 	pugi::xml_parse_result sumonet;
 	size_t i;
 	for (i = 0; i < file_name_candidates.size(); i++)
@@ -64,7 +69,7 @@ ControllerSumo::ControllerSumo(Controller::Type type, std::string name, std::str
 
 	std::vector<std::string> options;
 
-	options.push_back("-c " + configfile_path);
+	options.push_back("-c " + properties_.file_.filepath_);
 	options.push_back("--xml-validation");
 	options.push_back("never");
 

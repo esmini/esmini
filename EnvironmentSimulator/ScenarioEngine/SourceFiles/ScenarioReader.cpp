@@ -449,7 +449,7 @@ Controller* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 	if (name == "SumoController")
 	{
 		controller = new ControllerSumo(Controller::Type::CONTROLLER_SUMO,
-			name, properties.file_.filepath_, entities_, gateway_, &parameters);
+			name, entities_, gateway_, &parameters, properties);
 	}
 	if (name == "SloppyDriverController")
 	{
