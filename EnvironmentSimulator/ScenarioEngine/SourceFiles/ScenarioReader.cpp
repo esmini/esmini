@@ -441,6 +441,11 @@ Controller* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 		}
 	}
 
+	if (name == "DefaultController")
+	{
+		// Fall back to esmini default operation - no controller involved
+		controller = 0;
+	}
 	if (name == "SumoController")
 	{
 		controller = new ControllerSumo(Controller::Type::CONTROLLER_SUMO,
@@ -1654,9 +1659,9 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							if (controller)
 							{
 								controller_.push_back(controller);
-								AssignControllerAction* assignControllerAction = new AssignControllerAction(controller);
-								action = assignControllerAction;
 							}
+							AssignControllerAction* assignControllerAction = new AssignControllerAction(controller);
+							action = assignControllerAction;
 						}
 						else if (controllerDefNode.name() == std::string("CatalogReference"))
 						{
