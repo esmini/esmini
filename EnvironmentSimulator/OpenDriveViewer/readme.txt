@@ -1,26 +1,30 @@
-OpenDriveViewer is a simple application for viewing OpenDRIVE files.
+odrviewer is a simple application for viewing OpenDRIVE files.
 
 Optionally it can populate the road lanes with randomized dummy vehicles, which will go until end of road then starting over from initial position. If reaching a junction with multiple options, it will randomly chose its way out.
 
 Application is launched from command line (or batch file). 
 
-
-Usage: opendriveviewer [options]
+Usage: C:\eknabe1\GIT\esmini\bin\odrviewer.exe --odr filename [options]
 
 Options [and default value]:
-  --density <number>  [1]
+  --density <number>       [1]
           density (cars / 100 m)
   --model <filename>
           3D model filename
   --odr <filename>
           OpenDRIVE filename
-  --speed <number>    [70]
-          speed (km/h)
+  --osi_features <string>  [off]
+          Show OSI road features ("on"/"off") (toggle during simulation with key 'u')
+  --speed_factor <number>  [1]
+          speed factor
+  -h or --help
+          Display command line parameters
 
 Additional options forwarded to OpenSceneGraph:
   --window <x y w h>
           Set the position (x,y) and size (w,h) of the viewer window.		
-		  
+  --screen <num>
+          Set the screen to use when multiple screens are present.
   --clear-color <color>
           Set the background color of the viewer in the form "r,g,b[,a]".		  
 

@@ -200,7 +200,8 @@ int main(int argc, char** argv)
 
     arguments.getApplicationUsage()->setApplicationName(arguments.getApplicationName());
     arguments.getApplicationUsage()->setDescription(arguments.getApplicationName());
-	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " [options]\n");
+	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " --odr filename [options]\n");
+	arguments.getApplicationUsage()->addCommandLineOption("-h or --help", "Display command line parameters");
 	arguments.getApplicationUsage()->addCommandLineOption("--odr <filename>", "OpenDRIVE filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--model <filename>", "3D model filename");
 	arguments.getApplicationUsage()->addCommandLineOption("--density <number>", "density (cars / 100 m)", std::to_string((long long) (DEFAULT_DENSITY)));
@@ -212,6 +213,12 @@ int main(int argc, char** argv)
 	{
 		arguments.getApplicationUsage()->write(std::cout, 1, 120, true);
 		return -1;
+	}
+
+	if (arguments.read("-h") || arguments.read("--help"))
+	{
+		arguments.getApplicationUsage()->write(std::cout, 1, 120, true);
+		return 0;
 	}
 
 	std::string odrFilename;
@@ -264,6 +271,7 @@ int main(int argc, char** argv)
 			argv[0],
 			arguments);
 
+		viewer->ShowRoadFeatures(true);
 		viewer->ShowOSIFeatures(osi_features);
 
 		if (SetupCars(odrManager, viewer) == -1)
