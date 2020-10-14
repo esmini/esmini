@@ -74,32 +74,33 @@ void ControllerFollowGhost::Step(double timeStep)
 		state.z_ = (float)object_->pos_.GetZ();
 		state.speed_ = 0;
 	}
-	
+
 	// Update object sensor position for visualization
 	object_->sensor_pos_[0] = state.x_;
 	object_->sensor_pos_[1] = state.y_;
 	object_->sensor_pos_[2] = state.z_;
 
-	double dx = state.x_ - object_->pos_.GetX();
-	double dy = state.y_ - object_->pos_.GetY();
-	double len = sqrt(dx * dx + dy * dy);
+	double diffGlobal[2] = { state.x_ - object_->pos_.GetX(), state.y_ - object_->pos_.GetY() };
+	double len = sqrt(diffGlobal[0] * diffGlobal[0] + diffGlobal[1] * diffGlobal[1]);
 	if (len > SMALL_NUMBER)
 	{
-		dx /= len;
-		dy /= len;
+		diffGlobal[0] /= len;
+		diffGlobal[1] /= len;
 	}
 	else
 	{
-		dx = 0;
-		dy = 0;
+		diffGlobal[0] = 0;
+		diffGlobal[1] = 0;
 	}
 
 	// Find heading to the point
-	double globalH = asin(GetCrossProduct2D(1.0, 0.0, dx, dy));
-	double localH = GetAngleDifference(globalH, object_->pos_.GetH());
+	double egoDirGlobal[2];
+	RotateVec2D(1.0, 0.0, object_->pos_.GetH(), egoDirGlobal[0], egoDirGlobal[1]);
+
+	double diffH = asin(GetCrossProduct2D(egoDirGlobal[0], egoDirGlobal[1], diffGlobal[0], diffGlobal[1]));
 
 	// Update driver model target values
-	vehicle_.DrivingControlTarget(timeStep, localH, state.speed_);
+	vehicle_.DrivingControlTarget(timeStep, diffH, state.speed_);
 
 	// Register updated vehicle position 
 	object_->pos_.XYZH2TrackPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_);
