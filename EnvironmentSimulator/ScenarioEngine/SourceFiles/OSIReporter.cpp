@@ -414,15 +414,15 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState* objectState)
 	}
 	else if (objectState->state_.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
 	{
-		if (objectState->state_.obj_category!=static_cast<int>(Pedestrian::Category::PEDESTRIAN))
+		if (objectState->state_.obj_category==static_cast<int>(Pedestrian::Category::PEDESTRIAN))
 		{
 			obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_PEDESTRIAN);
 		}
-		else if (objectState->state_.obj_category!=static_cast<int>(Pedestrian::Category::ANIMAL))
+		else if (objectState->state_.obj_category==static_cast<int>(Pedestrian::Category::ANIMAL))
 		{
 			obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_ANIMAL);
 		}
-		else if (objectState->state_.obj_category!=static_cast<int>(Pedestrian::Category::WHEELCHAIR))
+		else if (objectState->state_.obj_category==static_cast<int>(Pedestrian::Category::WHEELCHAIR))
 		{
 			obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_OTHER);
 		}
