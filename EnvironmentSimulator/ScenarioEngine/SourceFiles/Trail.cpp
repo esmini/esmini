@@ -197,6 +197,7 @@ void ObjectTrail::GetPointOnSegmentBySNorm(int index, double s, double &x, doubl
 
 	x = state_[index].x_ + s * (state_[next_index].x_ - state_[index].x_);
 	y = state_[index].y_ + s * (state_[next_index].y_ - state_[index].y_);
+	z = state_[index].z_ + s * (state_[next_index].z_ - state_[index].z_);
 }
 
 void ObjectTrail::GetPointOnSegmentByDist(int index, double dist, double &x, double &y, double &z)

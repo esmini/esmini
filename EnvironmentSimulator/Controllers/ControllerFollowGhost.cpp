@@ -57,16 +57,8 @@ void ControllerFollowGhost::PostFrame()
 
 void ControllerFollowGhost::Step(double timeStep)
 {
-	roadmanager::RoadProbeInfo probe_info;
-
 	// Set steering target point at a distance ahead proportional to the speed
 	double probe_target_distance = MAX(7, 0.5 * object_->speed_);
-
-	// find out what direction is forward, according to vehicle relative road heading
-	if (GetAbsAngleDifference(object_->pos_.GetH(), object_->pos_.GetHRoadInDrivingDirection()) > M_PI_2)
-	{
-		probe_target_distance *= -1;
-	}
 
 	// Find out a steering target along ghost vehicle trail
 	double s_out;
@@ -79,19 +71,35 @@ void ControllerFollowGhost::Step(double timeStep)
 	{
 		state.x_ = (float)object_->pos_.GetX();
 		state.y_ = (float)object_->pos_.GetY();
-		state.z_ = (float)object_->pos_.GetX();
+		state.z_ = (float)object_->pos_.GetZ();
 		state.speed_ = 0;
 	}
-
-	// Define a position object at that position and probe to find out more details
-	roadmanager::Position pos(state.x_, state.y_, 0, 0, 0, 0);
-	object_->pos_.GetProbeInfo(&pos, &probe_info);
-
+	
 	// Update object sensor position for visualization
-	for (int i = 0; i < 3; i++) object_->sensor_pos_[i] = probe_info.road_lane_info.pos[i];
+	object_->sensor_pos_[0] = state.x_;
+	object_->sensor_pos_[1] = state.y_;
+	object_->sensor_pos_[2] = state.z_;
+
+	double dx = state.x_ - object_->pos_.GetX();
+	double dy = state.y_ - object_->pos_.GetY();
+	double len = sqrt(dx * dx + dy * dy);
+	if (len > SMALL_NUMBER)
+	{
+		dx /= len;
+		dy /= len;
+	}
+	else
+	{
+		dx = 0;
+		dy = 0;
+	}
+
+	// Find heading to the point
+	double globalH = acos(GetDotProduct2D(1.0, 0.0, dx, dy));
+	double localH = GetAngleDifference(globalH, object_->pos_.GetH());
 
 	// Update driver model target values
-	vehicle_.DrivingControlTarget(timeStep, probe_info.relative_h, state.speed_);
+	vehicle_.DrivingControlTarget(timeStep, localH, state.speed_);
 
 	// Register updated vehicle position 
 	object_->pos_.XYZH2TrackPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_);
