@@ -434,12 +434,10 @@ void ScenarioEngine::stepObjects(double dt)
 	{
 		Object *obj = entities.object_[i];
 
-		if (simulationTime_ < 0 && obj->GetControllerType() != Controller::Type::CONTROLLER_TYPE_GHOST)
-		{
-			continue;  // only ghosts allowed to execute before time == 0
-		}
-
-		if (fabs(obj->speed_) > SMALL_NUMBER)  // do not move objects when speed is zero
+		// Do not move objects when speed is zero, 
+		// and only ghosts allowed to execute before time == 0
+		if (fabs(obj->speed_) > SMALL_NUMBER &&  
+			(simulationTime_ > 0 || obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST) )
 		{
 			int retvalue = 0;
 			double steplen = obj->speed_ * dt;

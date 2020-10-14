@@ -95,7 +95,7 @@ void ControllerFollowGhost::Step(double timeStep)
 	}
 
 	// Find heading to the point
-	double globalH = acos(GetDotProduct2D(1.0, 0.0, dx, dy));
+	double globalH = asin(GetCrossProduct2D(1.0, 0.0, dx, dy));
 	double localH = GetAngleDifference(globalH, object_->pos_.GetH());
 
 	// Update driver model target values
