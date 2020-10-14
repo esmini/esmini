@@ -18,18 +18,16 @@
 #include <math.h>
 
 #include "vehicle.hpp"
+#include "CommonMini.hpp"
 
 using namespace vehicle;
 
 #define STEERING_RATE 5.0
+#define LENGTH_DEFAULT 5.0
 #define STEERING_MAX_ANGLE (60 * M_PI / 180)
 #define ACCELERATION_SCALE 40
 #define SPEED_DECLINE 0.001
 #define WHEEL_RADIUS 0.35
-#define SIGN(X) (X<0?-1:1)
-#define MAX(a, b) (a>b ? a : b)
-#define MIN(a, b) (a<b ? a : b)
-#define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))
 #define TARGET_HWT 1.0
 
 Vehicle::Vehicle(double x, double y, double h, double length)
@@ -120,7 +118,7 @@ void Vehicle::Update(double dt)
 
 	velAngleRelVehicleLongAxis_ = atan(0.15 * tan(wheelAngle_));  // Origo is between rear wheel axles on ground level, estimated 15% along X axis
 	velAngle_ = velAngleRelVehicleLongAxis_ + heading_;
-	headingDot_ = speed_ * sin(velAngleRelVehicleLongAxis_) / (length_ * 0.15);  
+	headingDot_ = speed_ * sin(velAngleRelVehicleLongAxis_) / (length_ * 0.15); 
 
 	velX_ = speed_ * cos(velAngle_);
 	velY_ = speed_ * sin(velAngle_);
@@ -134,6 +132,7 @@ void Vehicle::Reset()
 	posX_ = 0;
 	posY_ = 0;
 	posZ_ = 0;
+	length_ = LENGTH_DEFAULT;
 	heading_ = 0;
 	pitch_ = 0;
 	velX_ = 0;

@@ -57,12 +57,42 @@ bool Object::IsControllerActiveOnDomains(int domainMask)
 {
 	if (controller_)
 	{
+		return controller_->GetDomain() == domainMask;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Object::IsControllerActiveOnAnyOfDomains(int domainMask)
+{
+	if (controller_)
+	{
 		return controller_->GetDomain() & domainMask;
 	}
 	else
 	{
 		return false;
 	}
+}
+
+int Object::GetControllerMode()
+{
+	if (controller_)
+	{
+		return controller_->GetMode();
+	}
+	else
+	{
+		return 0;  // default
+	}
+}
+
+void Object::SetVisibilityMask(int mask)
+{
+	visibilityMask_ = mask;
+	SetDirtyBits(dirty_ | DirtyBit::VISIBILITY);
 }
 
 int Entities::addObject(Object* obj)
@@ -144,3 +174,17 @@ Object* Entities::GetObjectByName(std::string name)
 	return 0;
 }
 
+Object* Entities::GetObjectById(int id)
+{
+	for (size_t i = 0; i < object_.size(); i++)
+	{
+		if (id == object_[i]->id_)
+		{
+			return object_[i];
+		}
+	}
+
+	LOG("Failed to find object with id %d", id);
+
+	return 0;
+}

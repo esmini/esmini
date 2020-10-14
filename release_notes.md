@@ -8,8 +8,8 @@ Since much of the unique functionality previously implemented in EgoSimulator is
 
 While doing such major reworks we also took the opportunity to rename applications and some modules, hopefully making things a little bit clearer, at least for newcomers. The changes add and remove features also breaking backward compatibility, hence the update of major version number.
 
-News:
-- Support controller concept
+Controller details:
+- Controller catalogs supported
 - The following controllers, in addition to default controller, have been implemented:
   - ExternalController
       Vehicle will not be updated by the scenario. It's state is expected to be reported via gateway.
@@ -28,7 +28,10 @@ News:
     These controllers now can be utilized also via the shared library.
     These controllers now can be activated/deactivated dynamically by means of OSC triggers
 
-Changes:
+Other new featuers:
+- VisibilityAction - makes object visible or invisible for sensors and/or graphics (visual presentation)
+
+Structural changes:
   - Special controller modes External, Internal and Hybrid have been removed (replaced by controllers)
   - ScenarioEngineDLL renamed to esminiLib
   - RoadManagerDLL renamed to esminiRMLib
@@ -42,7 +45,7 @@ Changes:
 Note:
   - Previous use of control modes, e.g. external for interactive driving, now has to be specified in terms of controllers in the OpenSCENARIO file. Two steps needed: 1. AssignController and 2. ActivateController. See sloppy-driver.xosc for an example.
   - These changes affects some headerfile names, which might need to be updated in custom code.
-  - Scripts referring to executables need updates, e.g. change any "EgoSimulator" or "EnvironmentSimulator" to "esmini"
+  - Scripts referring to executables need updates, e.g. change any "EgoSimulator" or "EnvironmentSimulator" to "esmini" (however EgoSimulator will be provided as a raw copy of esmini executable during a deprecation period of a few releases)
 
 #### 2020-10-09 Version 1.7.13
 - Added support for lane change dynamics by rate

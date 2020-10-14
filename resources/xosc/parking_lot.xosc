@@ -11,7 +11,11 @@
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="EgoStartS" parameterType="double" value="143   "/>
    </ParameterDeclarations>
-   <CatalogLocations/>
+   <CatalogLocations>
+      <ControllerCatalog>
+         <Directory path="../xosc/Catalogs/Controllers" />
+      </ControllerCatalog>      
+   </CatalogLocations>
    <RoadNetwork>
       <SceneGraphFile filepath="../models/parking_lot.osgb"/>
    </RoadNetwork>
@@ -41,7 +45,7 @@
             </Properties>
          </Vehicle>
          <ObjectController>
-            <Controller name="InteractiveController" />
+             <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
          </ObjectController>
       </ScenarioObject>
    </Entities>

@@ -193,7 +193,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	Object* ghost = 0;
 	if (obj->GetControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 	{
-		ghost = obj->controller_->GetGhost();
+		ghost = obj->GetGhost();
 		if (ghost == 0)
 		{
 			LOG("Ghost object not available for object id %d", object_id);
@@ -536,7 +536,7 @@ extern "C"
 		Object* ghost = 0;
 		if(player->scenarioEngine->entities.object_[index]->GetControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 		{
-			ghost = player->scenarioEngine->entities.object_[index]->controller_->GetGhost();
+			ghost = player->scenarioEngine->entities.object_[index]->GetGhost();
 		}
 		return ghost != 0 ? 1 : 0;
 	}
@@ -552,7 +552,7 @@ extern "C"
 				{
 					if (player->scenarioEngine->entities.object_[index]->GetControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 					{
-						ghost = player->scenarioEngine->entities.object_[index]->controller_->GetGhost();
+						ghost = player->scenarioEngine->entities.object_[index]->GetGhost();
 					}
 					if (ghost)
 					{

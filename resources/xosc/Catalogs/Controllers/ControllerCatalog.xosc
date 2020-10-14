@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2020-10-204T10:00:00"
+               description="Controller catalog"
+               author="esmini-team"/>
+	<Catalog name="ControllerCatalog">
+		<Controller name="kalle">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="Sloppiness" parameterType="double" value="0.5" /> 
+            </ParameterDeclarations>        
+            <Properties>
+                <Property name="esminiController" value="SloppyDriverController" />
+                <Property name="sloppiness" value="$Sloppiness" />
+            </Properties>
+		</Controller>    
+		<Controller name="interactiveDriver">
+            <Properties>
+                <Property name="esminiController" value="InteractiveController" />
+            </Properties>
+		</Controller>
+		<Controller name="externalController">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="UseGhost" parameterType="bool" value="false" /> 
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" /> 
+            </ParameterDeclarations>
+			<Properties>
+				<Property name="esminiController" value="FollowGhostController" />
+                <Property name="useGhost" value="$UseGhost" />
+                <Property name="headstartTime"  value="$HeadStartTime" />
+			</Properties>
+		</Controller>
+		<Controller name="cspas">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="UseGhost" parameterType="bool" value="true" /> 
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" /> 
+            </ParameterDeclarations>
+			<Properties>
+                <Property name="esminiController" value="ExternalController" />            
+				<Property name="useGhost" value="$UseGhost" />
+				<Property name="headstartTime" value="$HeadStartTime" />
+			</Properties>
+		</Controller>        
+		<Controller name="cspas5s">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="UseGhost" parameterType="bool" value="true" /> 
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="5" /> 
+            </ParameterDeclarations>
+			<Properties>
+                <Property name="esminiController" value="ExternalController" />                   
+				<Property name="useGhost" value="$UseGhost" />
+				<Property name="headstartTime" value="$HeadStartTime" />
+			</Properties>
+		</Controller>
+		<Controller name="cspas10s">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="UseGhost" parameterType="bool" value="true" /> 
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="10" /> 
+            </ParameterDeclarations>
+			<Properties>
+				<Property name="useGhost" value="$UseGhost" />
+				<Property name="headstartTime" value="$HeadStartTime" />
+			</Properties>
+		</Controller>        
+		<Controller name="followGhost">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="6" /> 
+            </ParameterDeclarations>
+			<Properties>
+				<Property name="esminiController" value="FollowGhostController" />
+                <Property name="headstartTime"  value="$HeadStartTime" />
+			</Properties>
+		</Controller>
+		<Controller name="sumoController">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="CfgFile" parameterType="string" value="../sumo_inputs/e6mini.sumocfg" /> 
+            </ParameterDeclarations>			
+            <Properties>
+				<Property name="esminiController" value="SumoController" />
+				<File filepath="$CfgFile"/>
+			</Properties>
+		</Controller>
+	</Catalog>
+</OpenSCENARIO>

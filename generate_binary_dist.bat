@@ -20,11 +20,12 @@ IF NOT EXIST %target_dir%\include ( mkdir %target_dir%\include )
 IF NOT EXIST %target_dir%\3rd_party_terms_and_licenses ( mkdir %target_dir%\3rd_party_terms_and_licenses )
 IF NOT EXIST %target_dir%\Hello-World_coding-example ( mkdir %target_dir%\Hello-World_coding-example )
 
-copy resources\xosc\basic_ghost.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\follow_ghost.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_interactive.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_sumo.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\cut-in_simple.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\cut-in_visibility.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\lane_change.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\highway_merge.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\highway_merge_advanced.xosc %target_dir%\resources\xosc /y
@@ -37,7 +38,7 @@ copy resources\xosc\trajectory-test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\lane_change_simple.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\pedestrian.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\pedestrian_collision.xosc %target_dir%\resources\xosc /y
-copy resources\xosc\sloppy-driver.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\controller_test.xosc %target_dir%\resources\xosc /y
 
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
@@ -71,7 +72,7 @@ copy resources\models\multi_intersections.osgb %target_dir%\resources\models /y
 
 copy resources\sumo_inputs\e6mini* %target_dir%\resources\sumo_inputs /y
 
-copy run\esmini\run_basic_ghost.bat %target_dir%\run\esmini /y
+copy run\esmini\run_follow_ghost.bat %target_dir%\run\esmini /y
 copy run\esmini\run_ltap-od_interactive.bat %target_dir%\run\esmini /y
 copy run\esmini\run_ltap-od.bat %target_dir%\run\esmini /y
 copy run\esmini\run_highway-merge_advanced_internal.bat %target_dir%\run\esmini /y
@@ -88,7 +89,7 @@ copy run\esmini\run_parking_lot.bat %target_dir%\run\esmini /y
 copy run\esmini\run_trajectory-test.bat %target_dir%\run\esmini /y
 copy run\esmini\run_pedestrian.bat %target_dir%\run\esmini /y
 copy run\esmini\run_pedestrian_collision.bat %target_dir%\run\esmini /y
-copy run\esmini\run_sloppy_driver.bat %target_dir%\run\esmini /y
+copy run\esmini\run_controller_test.bat %target_dir%\run\esmini /y
 
 copy run\odrviewer\run_e6mini.bat %target_dir%\run\odrviewer /y
 copy run\odrviewer\run_multi_intersections.bat %target_dir%\run\odrviewer /y
@@ -98,10 +99,11 @@ copy docs\commands.txt %target_dir% /y
 
 copy 3rd_party_terms_and_licenses\* %target_dir%\3rd_party_terms_and_licenses /y
 copy LICENSE %target_dir% /y
-copy release_notes.txt %target_dir% /y
+copy release_notes.md %target_dir% /y
 copy version.txt %target_dir% /y
 
 copy bin\esmini.exe %target_dir%\bin /y
+copy bin\esmini.exe %target_dir%\bin\EgoSimulator.exe /y
 copy bin\odrviewer.exe %target_dir%\bin /y
 copy bin\esminiLib.* %target_dir%\lib /y
 copy EnvironmentSimulator\esminiSharedLibrary\esminiLib.hpp %target_dir%\include /y

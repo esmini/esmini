@@ -43,6 +43,7 @@
 #define SIGN(X) ((X<0)?-1:1)
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
+#define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))
 
 #define LOG(Format_, ...)  Logger::Inst().Log(__FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
 
@@ -380,6 +381,7 @@ public:
 	double GetV() { return v_; }
 	void SetV(double value) { v_ = value; }
 	void SetTargetValue(double targetValue) { x0_ = targetValue; }
+	double GetTargetValue() { return x0_; }
 
 	void SetTension(double tension)
 	{ 

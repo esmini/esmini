@@ -20,6 +20,7 @@
 #include <osg/Material>
 #include <osgText/Text>
 #include <osgAnimation/EaseMotion>
+#include <osg/BlendColor>
 #include <string>
 
 #include "RubberbandManipulator.hpp"
@@ -173,6 +174,9 @@ namespace viewer
 		PointSensor *lane_sensor_;
 		PointSensor *trail_sensor_;
 		PointSensor *steering_sensor_;
+		osg::ref_ptr<osg::BlendColor> blend_color_;
+		osg::ref_ptr<osg::StateSet> state_set_;
+		osg::ref_ptr<osg::Switch> switch_;
 
 		CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
 		~CarModel();
@@ -180,6 +184,7 @@ namespace viewer
 		void SetRotation(double h, double p, double r);
 		void UpdateWheels(double wheel_angle, double wheel_rotation);
 		void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
+		void SetTransparency(double factor);
 
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName);
 
@@ -245,7 +250,7 @@ namespace viewer
 		void SetCameraMode(int mode);
 		void SetVehicleInFocus(int idx);
 		int GetVehicleInFocus() { return currentCarInFocus_; }
-		CarModel* AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor, std::string name);
+		CarModel* AddCar(std::string modelFilepath, osg::Vec3 trail_color, bool road_sensor, std::string name);
 		void RemoveCar(std::string name);
 		int LoadShadowfile(std::string vehicleModelFilename);
 		int AddEnvironment(const char* filename);

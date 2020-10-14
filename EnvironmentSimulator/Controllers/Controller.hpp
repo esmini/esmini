@@ -16,15 +16,12 @@
 #include "OSCProperties.hpp"
 #include "Parameters.hpp"
 
-#define CONTROLLER_BASE_NAME "BaseClass"
-#define CONTROLLER_BASE_TYPE -1
+#define CONTROLLER_ADVANCED_BASE_TYPE_NAME "ControllerClass"
+#define CONTROLLER_ADVANCED_BASE_TYPE_ID -1
 
 namespace scenarioengine
 {
-
-
 	// Forward declarations
-//	class ScenarioPlayer;
 	class ScenarioGateway;
 	class Entities;
 	class Object;
@@ -61,56 +58,58 @@ namespace scenarioengine
 			CTRL_LONGITUDINAL = 1,
 			CTRL_LATERAL = 2,
 			CTRL_BOTH = 3  // Also works as bitmask combi of LONG/LAT (1 | 2)
-		} ControllerDomain;
+		} Domain;
 
+		typedef enum
+		{
+			MODE_NONE,     // Controller not available or it is not active
+			MODE_OVERRIDE, // Actions from the scenario are not applied, default
+			MODE_ADDITIVE, // Actions from the scenario are applied
+		} Mode;
+
+		typedef struct
+		{
+			std::string name;
+			std::string type;
+			OSCProperties* properties;
+			Entities* entities;
+			ScenarioGateway* gateway;
+			Parameters* parameters;
+		} InitArgs;
 
 		Controller() : entities_(0), gateway_(0) {}
-		Controller(std::string name, Entities* entities, ScenarioGateway* gateway, Parameters* parameters, OSCProperties* properties) :
-			name_(name), entities_(entities), gateway_(gateway), object_(0), domain_(0), ghost_(0), headstart_time_(0) {}
+		Controller(InitArgs* args);
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_BASE_NAME; }
+		static const char* GetTypeNameStatic() { return CONTROLLER_ADVANCED_BASE_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_BASE_TYPE; }
+		static const int GetTypeStatic() { return CONTROLLER_ADVANCED_BASE_TYPE_ID; }
 		virtual int GetType() { return GetTypeStatic(); }
 
-		void SetGhost(Object* ghost) { ghost_ = ghost; }
-		Object* GetGhost() { return ghost_; }
-		double GetHeadstartTime() { return headstart_time_; }
-		std::string GetName() { return name_; }
-		int GetDomain() { return domain_; }
-		
 		virtual void Assign(Object* object);
 		virtual void Activate(int domainMask) { domain_ = domainMask; };
 		virtual void Deactivate() { domain_ = 0; };
 		virtual void Init() {};
-		virtual void PostFrame() {};
 		virtual void ReportKeyEvent(int key, bool down);
 
 		// Base class Step function should be called from derived classes
 		virtual void Step(double timeStep);
 
-		bool Active();
+		bool Active() { return domain_ != 0; };
+		std::string GetName() { return name_; }
+		int GetDomain() { return domain_; }
+		int GetMode() { return mode_; }
+		std::string Mode2Str(int mode);
 
 	protected:
-		//		ScenarioPlayer* player_;
+		int domain_;  // bitmask according to ControllerDomain type
+		std::string name_;
+		std::string type_name_;
 		Entities* entities_;
 		ScenarioGateway* gateway_;
 		Object* object_;  // The object to which the controller is attached and hence controls
-		Object* ghost_;  // Some controllers follows another ghost vehicle
-		int domain_;  // bitmask according to ControllerDomain type
-		double headstart_time_;
-		std::string name_;
-
+		int mode_; // add to scenario actions or replace 
 	};
 
-	typedef Controller* (*ControllerInstantiateFunction) (
-		std::string name,
-		Entities* player,
-		ScenarioGateway* gateway,
-		Parameters* parameters,
-		OSCProperties* properties
-		);
-
-
-	Controller* InstantiateController(std::string name, Entities* entities, ScenarioGateway* gateway, Parameters* parameters, OSCProperties* properties);
+	typedef Controller* (*ControllerInstantiateFunction) (void* args);
+	Controller* InstantiateController(void* args);
 }

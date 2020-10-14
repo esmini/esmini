@@ -65,9 +65,6 @@ using namespace std;
 using namespace roadmanager;
 
 #define CURV_ZERO 0.00001
-#define MAX(x, y) (y > x ? y : x)
-#define MIN(x, y) (y < x ? y : x)
-#define CLAMP(x, a, b) (MIN(MAX(x, a), b))
 #define MAX_TRACK_DIST 10
 #define OSI_LANE_CALC_REQUIREMENT 0.05 // [m]
 #define OSI_POINT_CALC_STEPSIZE 1 // [m]

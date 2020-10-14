@@ -31,6 +31,29 @@ namespace scenarioengine
 		} Actor;
 
 		ManeuverGroup() : StoryBoardElement(StoryBoardElement::ElementType::MANEUVER_GROUP) {}
+		Object* FindActorByName(std::string name)
+		{
+			for (size_t i = 0; i < actor_.size(); i++)
+			{
+				if (actor_[i]->object_->name_ == name)
+				{
+					return actor_[i]->object_;
+				}
+			}
+			return 0;
+		}
+
+		bool IsObjectActor(Object* object)
+		{
+			for (size_t i = 0; i < actor_.size(); i++)
+			{
+				if (actor_[i]->object_ == object)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
 
 		std::vector<Actor*> actor_;
 		std::vector<OSCManeuver*> maneuver_;

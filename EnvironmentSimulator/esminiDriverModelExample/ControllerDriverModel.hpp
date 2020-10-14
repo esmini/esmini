@@ -14,22 +14,28 @@
 
 #include <string>
 #include "Controller.hpp"
+#include "pugixml.hpp"
 #include "Parameters.hpp"
+#include "Entities.hpp"
+#include "vehicle.hpp"
 
-#define CONTROLLER_GHOST_NAME "GhostController"
+#define CONTROLLER_DRIVER_MODEL_NAME "DriverModelController"
+#define CONTROLLER_TYPE_DRIVER_MODEL 1
 
 namespace scenarioengine
 {
 	// base class for controllers
-	class ControllerGhost: public Controller
+	class ControllerDriverModel: public Controller
 	{
 	public:
-		ControllerGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
+		ControllerDriverModel(std::string name, Entities* entities, ScenarioGateway* gateway,
 			Parameters* parameters, OSCProperties* properties);
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_GHOST_NAME; }
+		static const char* GetTypeNameStatic() { return CONTROLLER_DRIVER_MODEL_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_TYPE_GHOST; }
+		
+		// Make sure to define a unique ID for your controller
+		static const int GetTypeStatic() { return Controller::Type::USER_CONTROLLER_TYPE_BASE + CONTROLLER_TYPE_DRIVER_MODEL; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();
@@ -37,8 +43,11 @@ namespace scenarioengine
 		void PostFrame();
 		void Activate(int domainMask);
 		void ReportKeyEvent(int key, bool down);
+
+	private:
+		vehicle::Vehicle vehicle_;
 	};
 
-	Controller* InstantiateControllerGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Controller* InstantiateControllerDriverModel(std::string name, Entities* entities, ScenarioGateway* gateway,
 		Parameters* parameters, OSCProperties* properties);
 }

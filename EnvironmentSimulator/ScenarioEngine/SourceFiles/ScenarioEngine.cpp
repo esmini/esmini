@@ -12,6 +12,7 @@
 
 #include "ScenarioEngine.hpp"
 #include "CommonMini.hpp"
+#include "ControllerFollowGhost.hpp"
 
 #define WHEEL_RADIUS 0.35
 
@@ -72,15 +73,6 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 
 	if (initial)
 	{
-		if (!disable_controllers_)
-		{ 
-			// Initialize controllers
-			for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
-			{
-				scenarioReader->controller_[i]->Init();
-			}
-		}
-
 		// Set initial values for speed and acceleration derivation
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
@@ -104,27 +96,15 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	}
 	else
 	{
-		// reset indicators of applied control
+		// reset indicators of applied control and visiblity
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
-			entities.object_[i]->dirty_lat_ = false;
-			entities.object_[i]->dirty_long_ = false;
+			entities.object_[i]->ClearDirtyBits(
+				Object::DirtyBit::LATERAL | 
+				Object::DirtyBit::LONGITUDINAL | 
+				Object::DirtyBit::VISIBILITY
+			);
 			entities.object_[i]->reset_ = false;
-		}
-
-		// Run controllers
-		if (!disable_controllers_)
-		{
-			for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
-			{
-				if (scenarioReader->controller_[i]->Active())
-				{
-					if (simulationTime_ > 0 || scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_GHOST)
-					{
-						scenarioReader->controller_[i]->Step(deltaSimTime);
-					}
-				}
-			}
 		}
 
 		// Fetch external states from gateway, except the initial run where scenario engine sets all positions
@@ -321,28 +301,36 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		}
 	}
 
-	stepObjects(deltaSimTime);
-
-	// Report resulting states to the gateway
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
-		Object *obj = entities.object_[i];
-
-		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_,obj->model_id_,
-			obj->GetControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+		Object* obj = entities.object_[i];
+		// Do not move objects when speed is zero, 
+		// and only ghosts allowed to execute before time == 0
+		if (!(obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
+			fabs(obj->speed_) > SMALL_NUMBER &&
+			(simulationTime_ > 0 || obj->IsGhost()))
+		{
+			defaultController(obj, deltaSimTime);
+		}
 	}
 
+	// Apply controllers
 	if (!disable_controllers_)
 	{
 		for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
 		{
 			if (scenarioReader->controller_[i]->Active())
 			{
-				scenarioReader->controller_[i]->PostFrame();
+				if (simulationTime_ > 0)
+				{
+					scenarioReader->controller_[i]->Step(deltaSimTime);
+				}
 			}
 		}
 	}
-	
+
+	updateObjectStates(deltaSimTime);
+
 	if (all_done)
 	{
 		LOG("All acts are done, quit now");
@@ -406,21 +394,43 @@ void ScenarioEngine::parseScenario()
 	scenarioReader->parseInit(init);
 	scenarioReader->parseStoryBoard(storyBoard);
 	storyBoard.entities_ = &entities; 
-
+	
 	SetSimulationTime(0);
-	for (size_t i = 0; i < entities.object_.size(); i++)
-	{
-		Object* obj = entities.object_[i];
 
-		if (!disable_controllers_ && obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST)
+	// Finally, now when all entities have been loaded, initialize the controllers
+	if (!disable_controllers_)
+	{
+		// Initialize controllers
+		for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
 		{
-			if (obj->controller_->GetHeadstartTime() > GetHeadstartTime())
+			scenarioReader->controller_[i]->Init();
+		}
+
+		// find out maximum headstart time for ghosts
+		for (size_t i = 0; i < entities.object_.size(); i++)
+		{
+			Object* obj = entities.object_[i];
+
+			if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
 			{
-				SetHeadstartTime(obj->controller_->GetHeadstartTime());
-				SetSimulationTime(-obj->controller_->GetHeadstartTime());
+				SetupGhost(obj);
+
+				if (obj->ghost_)
+				{
+					if (obj->ghost_->GetHeadstartTime() > GetHeadstartTime())
+					{
+						SetHeadstartTime(obj->ghost_->GetHeadstartTime());
+						SetSimulationTime(-obj->ghost_->GetHeadstartTime());
+					}
+				}
 			}
 		}
 	}
+	else
+	{
+		DisableAndRemoveControllers();
+	}
+
 
 	// Print loaded data
 	entities.Print();
@@ -428,82 +438,85 @@ void ScenarioEngine::parseScenario()
 	storyBoard.Print();
 }
 
-void ScenarioEngine::stepObjects(double dt)
+void ScenarioEngine::defaultController(Object* obj, double dt)
+{
+	int retvalue = 0;
+	double steplen = obj->speed_ * dt;
+
+	// Add or subtract stepsize according to curvature and offset, in order to keep constant speed
+	double curvature = obj->pos_.GetCurvature();
+	double offset = obj->pos_.GetT();
+	if (abs(curvature) > SMALL_NUMBER)
+	{
+		// Approximate delta length by sampling curvature in current position
+		steplen += steplen * curvature * offset;
+	}
+
+	if (obj->pos_.GetRoute() && !obj->CheckDirtyBits(Object::DirtyBit::LATERAL))
+	{
+		int retvalue = obj->pos_.MoveRouteDS(steplen);
+
+		if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
+		{
+			if (!obj->IsEndOfRoad())
+			{
+				obj->SetEndOfRoad(true, simulationTime_);
+			}
+		}
+		else
+		{
+			obj->SetEndOfRoad(false);
+		}
+	}
+	else if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL)) // No action has updated longitudinal dimension
+	{
+		if (!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
+		{
+			if (!obj->CheckDirtyBits(Object::DirtyBit::LATERAL))  // No action has updated lateral dimension
+			{
+				// make sure entity is aligned to the road 
+				if (obj->pos_.GetHRelative() > M_PI_2 && obj->pos_.GetHRelative() < 3 * M_PI_2)
+				{
+					obj->pos_.SetHeadingRelative(M_PI);
+				}
+				else
+				{
+					obj->pos_.SetHeadingRelative(0);
+				}
+			}
+		}
+		
+		if (!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
+		{
+			// Adjustment movement to heading and road direction
+			if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)
+			{
+				// If pointing in other direction
+				steplen *= -1;
+			}
+
+			retvalue = obj->pos_.MoveAlongS(steplen);
+		}
+
+		if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD)
+		{
+			if (!obj->IsEndOfRoad())
+			{
+				obj->SetEndOfRoad(true, simulationTime_);
+			}
+		}
+		else
+		{
+			obj->SetEndOfRoad(false);
+		}
+	}
+}
+
+void ScenarioEngine::updateObjectStates(double dt)
 {
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
 		Object *obj = entities.object_[i];
-
-		// Do not move objects when speed is zero, 
-		// and only ghosts allowed to execute before time == 0
-		if (fabs(obj->speed_) > SMALL_NUMBER &&  
-			(simulationTime_ > 0 || obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST) )
-		{
-			int retvalue = 0;
-			double steplen = obj->speed_ * dt;
-
-			// Add or subtract stepsize according to curvature and offset, in order to keep constant speed
-			double curvature = obj->pos_.GetCurvature();
-			double offset = obj->pos_.GetT();
-			if (abs(curvature) > SMALL_NUMBER)
-			{
-				// Approximate delta length by sampling curvature in current position
-				steplen += steplen * curvature * offset;
-			}
-
-			if (obj->pos_.GetRoute() && !obj->dirty_lat_)
-			{
-				int retvalue = obj->pos_.MoveRouteDS(steplen);
-
-				if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
-				{
-					if (!obj->IsEndOfRoad())
-					{
-						obj->SetEndOfRoad(true, simulationTime_);
-					}
-				}
-				else
-				{
-					obj->SetEndOfRoad(false);
-				}
-			}
-			else if (!obj->dirty_long_)  // No action has updated longitudinal dimension
-			{
-				if (!obj->dirty_lat_)  // No action has updated lateral dimension
-				{
-					// make sure entity is aligned to the road 
-					if (obj->pos_.GetHRelative() > M_PI_2 && obj->pos_.GetHRelative() < 3 * M_PI_2)
-					{
-						obj->pos_.SetHeadingRelative(M_PI);
-					}
-					else
-					{
-						obj->pos_.SetHeadingRelative(0);
-					}
-				}
-
-				// Adjustment movement to heading and road direction
-				if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)
-				{
-					// If pointing in other direction
-					steplen *= -1;
-				}
-
-				retvalue = obj->pos_.MoveAlongS(steplen);
-
-				if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD)
-				{
-					if (!obj->IsEndOfRoad())
-					{
-						obj->SetEndOfRoad(true, simulationTime_);
-					}
-				}
-				else
-				{
-					obj->SetEndOfRoad(false);
-				}
-			}
-		}
 
 		// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
@@ -520,15 +533,14 @@ void ScenarioEngine::stepObjects(double dt)
 			obj->pos_.SetHAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt);
 			
 			// Update wheel rotations of internal scenario objects
-			if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_DEFAULT && !obj->dirty_lat_)
+			if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
 			{
 				obj->wheel_angle_ = heading_rate_new / 2;
 			}
-			if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_DEFAULT && !obj->dirty_long_)
+			if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
 			{
 				obj->wheel_rot_ = fmod(obj->wheel_rot_ + obj->speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
 			}
-
 		}
 		else
 		{
@@ -551,5 +563,137 @@ void ScenarioEngine::stepObjects(double dt)
 		}
 
 		obj->trail_.AddState((float)simulationTime_, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
+
+		// Report state to the gateway
+		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_, obj->model_id_,
+			obj->GetControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 	}
+}
+
+void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Object* obj2, double timeOffset)
+{
+	if (trigger == 0)
+	{
+		return;
+	}
+	for (size_t i = 0; i < trigger->conditionGroup_.size(); i++)
+	{
+		for (size_t j = 0; j < trigger->conditionGroup_[i]->condition_.size(); j++)
+		{
+			OSCCondition* cond = trigger->conditionGroup_[i]->condition_[j];
+			if (cond->base_type_ == OSCCondition::ConditionType::BY_ENTITY)
+			{
+				TrigByEntity* trig = (TrigByEntity*)cond;
+				for (size_t k = 0; k < trig->triggering_entities_.entity_.size(); k++)
+				{
+					if (trig->triggering_entities_.entity_[k].object_ == obj1)
+					{
+						trig->triggering_entities_.entity_[k].object_ = obj2;
+					}
+				}
+			}
+			else if (cond->base_type_ == OSCCondition::ConditionType::BY_VALUE)
+			{
+				TrigByValue* trig = (TrigByValue*)cond;
+				if (trig->type_ == TrigByValue::Type::SIMULATION_TIME)
+				{
+					((TrigBySimulationTime*)(trig))->value_ += timeOffset;
+				}
+			}
+		}
+	}
+}
+
+void ScenarioEngine::SetupGhost(Object* object)
+{
+	// FollowGhostController special treatment:
+	// Create a new (ghost) vehicle and copy all actions from base object
+
+	Vehicle* ghost = new Vehicle(*(Vehicle*)object);
+	object->SetGhost(ghost);
+	ghost->name_ += "_ghost";
+	ghost->ghost_ = 0;
+	ghost->controller_ = 0;
+	ghost->isGhost_ = true;
+	ghost->SetHeadstartTime(object->headstart_time_);
+	entities.addObject(ghost);
+	object->SetHeadstartTime(0);
+
+	for (size_t i = 0; i < init.private_action_.size(); i++)
+	{
+		OSCPrivateAction* action = init.private_action_[i];
+		if (action->object_ == object)
+		{
+			OSCPrivateAction* newAction = action->Copy();
+			newAction->object_ = ghost;
+			init.private_action_.push_back(newAction);
+		}
+	}
+
+	ReplaceObjectInTrigger(storyBoard.stop_trigger_, object, ghost, -ghost->GetHeadstartTime());
+
+	for (size_t i = 0; i < storyBoard.story_.size(); i++)
+	{
+		Story* story = storyBoard.story_[i];
+
+		for (size_t j = 0; j < story->act_.size(); j++)
+		{
+			Act* act = story->act_[j];
+			ReplaceObjectInTrigger(act->start_trigger_, object, ghost, -ghost->GetHeadstartTime());
+			ReplaceObjectInTrigger(act->stop_trigger_, object, ghost, -ghost->GetHeadstartTime());
+			for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
+			{
+				ManeuverGroup* mg = act->maneuverGroup_[k];
+				for (size_t l = 0; l < mg->actor_.size();l++)
+				{
+					if (mg->actor_[l]->object_ == object)
+					{
+						// Replace actor
+						mg->actor_[l]->object_ = ghost;
+					}
+				}
+				for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
+				{
+					OSCManeuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
+					for (size_t m = 0; m < maneuver->event_.size(); m++)
+					{
+						Event* event = maneuver->event_[m];
+						bool ghostIsActor = false;
+						for (size_t n = 0; n < event->action_.size(); n++)
+						{
+							OSCAction* action = event->action_[n];
+							if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+							{
+								OSCPrivateAction* pa = (OSCPrivateAction*)action;
+								if (pa->object_ == object)
+								{
+									// Replace object
+									pa->ReplaceObjectRefs(object, ghost);
+									ghostIsActor = true;
+								}
+							}
+						}
+						if (ghostIsActor)
+						{
+							ReplaceObjectInTrigger(event->start_trigger_, object, ghost, -ghost->GetHeadstartTime());
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void ScenarioEngine::DisableAndRemoveControllers()
+{
+	// Remove controllers
+	for (size_t e = 0; e < entities.object_.size(); e++)
+	{
+		entities.object_[e]->controller_ = 0;
+	}
+	for (size_t c = 0; c < scenarioReader->controller_.size(); c++)
+	{
+		delete(scenarioReader->controller_[c]);
+	}
+	scenarioReader->controller_.clear();
 }

@@ -12,8 +12,8 @@
 
 #pragma once
 #include <iostream>
+#include <vector>
 #include <string>
-#include "CommonMini.hpp"
 
 namespace scenarioengine
 {

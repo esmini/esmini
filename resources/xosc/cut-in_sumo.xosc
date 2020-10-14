@@ -7,6 +7,9 @@
 		<VehicleCatalog>
 			<Directory path="../xosc/Catalogs/Vehicles"/>
 		</VehicleCatalog>
+		<ControllerCatalog>
+			<Directory path="../xosc/Catalogs/Controllers"/>
+		</ControllerCatalog>
 	</CatalogLocations>
 	<RoadNetwork>
 		<LogicFile filepath="../xodr/e6mini.xodr"/>
@@ -26,7 +29,6 @@
 					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
 				</Axels>
 				<Properties>
-					<Property name="control" value="internal"/>
 					<File filepath="../models/car_white.osgb"/>
 				</Properties>
 			</Vehicle>
@@ -37,12 +39,7 @@
 		<ScenarioObject name="SumoVehicles">
 			<CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
 			<ObjectController>
-				<Controller name="SumoController">
-					<ParameterDeclarations/>
-					<Properties>
-						<File filepath="../sumo_inputs/e6mini.sumocfg"/>
-					</Properties>
-				</Controller>
+                <CatalogReference catalogName="ControllerCatalog" entryName="sumoController"/>
 			</ObjectController>
 		</ScenarioObject>
 	</Entities>

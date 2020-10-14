@@ -71,6 +71,7 @@ public:
 	double GetFixedTimestep() { return fixed_timestep_; }
 	int GetOSIFreq() { return osi_freq_; }
 	void RegisterObjCallback(int id, ObjCallbackFunc func, void *data);
+	void UpdateCSV_Log();
 		
 	CSV_Logger *CSV_Log;
 	ScenarioEngine *scenarioEngine;

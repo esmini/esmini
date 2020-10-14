@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Demonstrate basic maneuvers and use of interactive controller -->
-<!-- In this case the user controls the white car being overtaken  -->
+
+<!-- Demonstrate the VisibilityAction during a cut-in event -->
+<!-- A red car will overtake and then cut in in front of a white car. The white car have sensors mounted.  -->
+<!-- Initially the red car is detected by the sensors. But then the red car becames invisible for sensors. -->
+<!-- Then the red car is becoming visible for sensors again, but invisible for graphics. So it will then   -->
+<!-- disappear from the view. Finally the red car becomes visible for both sensors and graphics again.     -->
+<!-- then handing over to the user to drive interactivelly for a while, then finally take control          -->
+<!-- again with some improved performance (less sloppiness).                                               -->
+<!-- time  0.0: Red car visible for both sensors and graphics                                              -->
+<!-- time  4.0: Red car invisible for sensors, visible for graphics                                        -->
+<!-- time  7.0: Red car visible for sensors, invisible for graphics                                        -->
+<!-- time 10.0: Red car visible for both sensors and graphics                                              -->
+
 <OpenSCENARIO>
    <FileHeader revMajor="1"
                revMinor="0"
@@ -18,9 +29,6 @@
       <VehicleCatalog>
          <Directory path="../xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
-      <ControllerCatalog>
-         <Directory path="../xosc/Catalogs/Controllers" />
-      </ControllerCatalog>
    </CatalogLocations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/e6mini.xodr"/>
@@ -29,9 +37,6 @@
    <Entities>
       <ScenarioObject name="Ego">
         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
-        <ObjectController>
-            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
-        </ObjectController>
       </ScenarioObject>
       <ScenarioObject name="OverTaker">
          <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
@@ -47,9 +52,6 @@
                         <LanePosition roadId="0" laneId="-3" offset="0" s="$EgoStartS"/>
                      </Position>
                   </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                    <ActivateControllerAction longitudinal="true" lateral="true" />
                </PrivateAction>
                <PrivateAction>
                   <LongitudinalAction>
@@ -177,6 +179,54 @@
                         </ConditionGroup>
                      </StartTrigger>
                   </Event>
+                  <Event name="VisibilityHideForSensorsEvent" priority="parallel">
+                     <Action name="VisibilityHideForSensorsAction">
+                        <PrivateAction>
+                           <VisibilityAction sensors="false" />
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="VisibilityHideForSensorsCondition" delay="0.0" conditionEdge="none">
+                               <ByValueCondition>
+                                  <SimulationTimeCondition value="4" rule="greaterThan"/>
+                               </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="VisibilityHideEvent" priority="parallel">
+                     <Action name="VisibilityHideAction">
+                        <PrivateAction>
+                           <VisibilityAction graphics="false" sensors="true" />
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="VisibilityHideCondition" delay="0.0" conditionEdge="none">
+                               <ByValueCondition>
+                                  <SimulationTimeCondition value="7" rule="greaterThan"/>
+                               </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="VisibilityReappearEvent" priority="parallel">
+                     <Action name="VisibilityReappearAction">
+                        <PrivateAction>
+                           <VisibilityAction graphics="true" sensors="true" />
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="VisibilityReappearCondition" delay="0.0" conditionEdge="none">
+                               <ByValueCondition>
+                                  <SimulationTimeCondition value="10" rule="greaterThan"/>
+                               </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>                  
                </Maneuver>
             </ManeuverGroup>
             <StartTrigger>

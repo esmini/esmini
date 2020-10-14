@@ -17,19 +17,56 @@
 
 using namespace scenarioengine;
 
-Controller* scenarioengine::InstantiateController(std::string name, Entities* entities, 
-	ScenarioGateway* gateway, Parameters* parameters, OSCProperties* properties)
+Controller* scenarioengine::InstantiateController(void* args)
 {
 	LOG("The base class should not be instantiated");
-	return 0;
+
+	return new Controller((Controller:: InitArgs*)args);
+}
+
+Controller::Controller(InitArgs* args) : name_(args->name), type_name_(args->type), entities_(args->entities), 
+	gateway_(args->gateway), domain_(0), mode_(Controller::Mode::MODE_OVERRIDE)
+{
+	if (args->properties->ValueExists("mode"))
+	{
+		std::string mode = args->properties->GetValueStr("mode");
+		if (mode == "override")
+		{
+			mode_ = Mode::MODE_OVERRIDE;
+		}
+		else if (mode == "additive")
+		{
+			mode_ = Mode::MODE_ADDITIVE;
+		}
+		else
+		{
+			LOG("Unexpected mode \"%s\", falling back to default \"override\"", mode);
+			mode_ = Mode::MODE_OVERRIDE;
+		}
+	}
 }
 
 void Controller::Step(double timeStep)
 {
 	if (object_)
 	{
-		object_->dirty_lat_ = domain_ & ControllerDomain::CTRL_LATERAL;
-		object_->dirty_long_ = domain_ & ControllerDomain::CTRL_LONGITUDINAL;
+		if (mode_ == Mode::MODE_OVERRIDE)
+		{
+			if (domain_ & Domain::CTRL_LATERAL)
+			{
+				object_->SetDirtyBits(Object::DirtyBit::LATERAL);
+			}
+
+			if (domain_ & Domain::CTRL_LONGITUDINAL)
+			{
+				object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
+
+			}
+		}
+		else
+		{
+			object_->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+		}
 	}
 }
 
@@ -47,16 +84,34 @@ void Controller::Assign(Object* object)
 	else
 	{
 		object_ = object;
+		
+		// Attach controller to object
 		object_->SetAssignedController(this);
 	}
-}
-
-bool Controller::Active()
-{
-	return (object_ != 0 && domain_ != 0);
 }
 
 void Controller::ReportKeyEvent(int key, bool down)
 {
 	LOG("Key %c %s", key, down ? "down" : "up");
+}
+
+std::string Controller::Mode2Str(int mode)
+{
+	if (mode == Controller::Mode::MODE_OVERRIDE)
+	{
+		return "override";
+	}
+	else if (mode == Controller::Mode::MODE_ADDITIVE)
+	{
+		return "additive";
+	}
+	else if (mode == Controller::Mode::MODE_NONE)
+	{
+		return "none";
+	}
+	else
+	{
+		LOG("Unexpected mode \"%d\"", mode);
+		return "invalid mode";
+	}
 }

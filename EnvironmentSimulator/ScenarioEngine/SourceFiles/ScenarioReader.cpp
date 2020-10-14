@@ -14,18 +14,19 @@
 #include "CommonMini.hpp"
 #include "ControllerSloppyDriver.hpp"
 #include "ControllerInteractive.hpp"
-#include "ControllerSumo.hpp"
-#include "ControllerGhost.hpp"
-#include "ControllerExternal.hpp"
 #include "ControllerFollowGhost.hpp"
+#include "ControllerSumo.hpp"
+#include "ControllerExternal.hpp"
 
 #include <cstdlib>
 
-namespace {
-
-}
-
 using namespace scenarioengine;
+
+namespace scenarioengine
+{
+	static ControllerPool controllerPoolStatic;
+	ControllerPool ScenarioReader::controllerPool_ = controllerPoolStatic;
+}
 
 ScenarioReader::~ScenarioReader()
 {
@@ -41,10 +42,9 @@ void ScenarioReader::LoadControllers()
 	// Register all internal controllers. The user may register custom ones as well before reading the scenario.
 	RegisterController(ControllerSloppyDriver::GetTypeNameStatic(), InstantiateControllerSloppyDriver);
 	RegisterController(ControllerInteractive::GetTypeNameStatic(), InstantiateControllerInteractive);
-	RegisterController(ControllerExternal::GetTypeNameStatic(), InstantiateControllerExternal);
-	RegisterController(ControllerGhost::GetTypeNameStatic(), InstantiateControllerGhost);
 	RegisterController(ControllerFollowGhost::GetTypeNameStatic(), InstantiateControllerFollowGhost);
 	RegisterController(ControllerSumo::GetTypeNameStatic(), InstantiateControllerSumo);
+	RegisterController(ControllerExternal::GetTypeNameStatic(), InstantiateControllerExternal);
 }
 
 int ScenarioReader::loadOSCFile(const char * path)
@@ -410,22 +410,23 @@ MiscObject* ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
 Controller* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNode)
 {
 	std::string name = parameters.ReadAttribute(controllerNode, "name");
-	OSCProperties properties;
-	ParseOSCProperties(properties, controllerNode);
 	Controller* controller = 0;
-	std::string filename = properties.file_.filepath_;
+	OSCProperties properties;
 
-	if (disable_controllers_)
+	// First check for parameter declaration
+	pugi::xml_node paramDecl = controllerNode.child("ParameterDeclarations");
+	if (paramDecl)
 	{
-		LOG("Controllers diabled. Ignoring %s", name.c_str());
-		return 0;
+		parameters.addParameterDeclarations(paramDecl);
 	}
 
+	// Then read any properties
+	ParseOSCProperties(properties, controllerNode);
+	std::string filename = properties.file_.filepath_;
 
 	if (controllerNode == 0)
 	{
-		LOG("Warning: Empty controllernode");
-		return 0;
+		LOG("Warning: Empty controller node");
 	}
 
 	LOG("Parsing Controller %s", name.c_str());
@@ -442,7 +443,6 @@ Controller* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 			{
 				// Give up
 				LOG("Failed to localize controller file %s, also tried %s", filename.c_str(), filename2.c_str());
-				return 0;
 			}
 			else
 			{
@@ -452,22 +452,41 @@ Controller* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 		}
 	}
 
-	if (name == "DefaultController")
+	// Find controller type among registered ones
+	std::string ctrlType = properties.GetValueStr("esminiController");
+	if (ctrlType.empty())
+	{
+		LOG("esminiController property missing!");
+	}
+
+	if (ctrlType == "DefaultController")
 	{
 		// Fall back to esmini default operation - no controller involved
 		controller = 0;
 	}
-	else 
+	else
 	{
-		ControllerPool::ControllerEntry* ctrl_entry = controllerPool_.GetControllerByName(name);
+		ControllerPool::ControllerEntry* ctrl_entry = ScenarioReader::controllerPool_.GetControllerByType(ctrlType);
 		if (ctrl_entry)
 		{
-			controller = ctrl_entry->instantiateFunction(name, entities_, gateway_, &parameters, &properties);
+			Controller::InitArgs args;
+			args.name = name;
+			args.type = ctrlType;
+			args.entities = entities_;
+			args.gateway = gateway_;
+			args.parameters = &parameters;
+			args.properties = &properties;
+			controller = (Controller*)ctrl_entry->instantiateFunction(&args);
 		}
 		else
 		{
-			LOG("Unsupported controller: %s", name.c_str());
+			LOG("Unsupported controller type: %s", ctrlType.c_str());
 		}
+	}
+
+	if (paramDecl)
+	{
+		parameters.RestoreParameterDeclarations();
 	}
 
 	return controller;
@@ -763,6 +782,11 @@ int ScenarioReader::parseEntities()
 						LOG("Parsing controller: %s", objectSubChild.name());
 						ctrl = parseOSCObjectController(objectSubChild);
 					}
+					if (ctrl)
+					{
+						// ObjectControllers are assigned automatically
+						ctrl->Assign(obj);
+					}
 				}
 				else
 				{
@@ -770,31 +794,34 @@ int ScenarioReader::parseEntities()
 				}
 			}
 
+			if (obj != 0 && !(ctrl && ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_SUMO))
+			{
+				// Add all vehicles to the entity collection, except SUMO template vehicles
+				obj->name_ = parameters.ReadAttribute(entitiesChild, "name");
+				entities_->addObject(obj);
+				objectCnt_++;
+			}
+
 			if (ctrl)
 			{
-				ctrl->Assign(obj);
+				if (ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_SUMO)
+				{
+					// Set template vehicle to be used for all vehicles spawned from SUMO
+					((ControllerSumo*)ctrl)->SetSumoVehicle(obj);
+
+					// SUMO controller is special in the sense that it is always active
+					ctrl->Activate(Controller::Domain::CTRL_BOTH);
+
+					// SUMO controller is not assigned to any scenario vehicle
+				}
+				else if (ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
+				{
+					// Ghost controllers are assigned and activated from start, to get correct headstart 
+					ctrl->Assign(obj);
+				}
 				controller_.push_back(ctrl);
 			}
 
-			if (ctrl && ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_SUMO)
-			{
-				LOG("SUMO Controller registered");
-				
-				// Set template vehicle to be used for all vehicles spawned from SUMO
-				entities_->sumo_vehicle = obj;
-
-				// SUMO controller is special in the sense that it is always active
-				ctrl->Activate(Controller::ControllerDomain::CTRL_BOTH);
-			}
-			else
-			{
-				if (obj != 0)
-				{
-					obj->name_ = parameters.ReadAttribute(entitiesChild, "name");
-					entities_->addObject(obj);
-					objectCnt_++;
-				}
-			}
 		}
 		else if (entitiesChildName == "EntitySelection")
 		{
@@ -1601,22 +1628,17 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		}
 		else if (actionChild.name() == std::string("ActivateControllerAction"))
 		{
-			if (disable_controllers_)
-			{
-				LOG("Ignoring action %s since controllers are disabled", actionChild.name());
-				continue;
-			}
 			bool domain_longitudinal = parameters.ReadAttribute(actionChild, "longitudinal") == "true";
 			bool domain_lateral = parameters.ReadAttribute(actionChild, "lateral") == "true";
 
 			int domainMask = 0;
 			if (domain_longitudinal)
 			{
-				domainMask |= Controller::ControllerDomain::CTRL_LONGITUDINAL;
+				domainMask |= Controller::Domain::CTRL_LONGITUDINAL;
 			}
 			if (domain_lateral)
 			{
-				domainMask |= Controller::ControllerDomain::CTRL_LATERAL;
+				domainMask |= Controller::Domain::CTRL_LATERAL;
 			}
 
 			ActivateControllerAction * activateControllerAction = new ActivateControllerAction(domainMask);
@@ -1630,11 +1652,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		}
 		else if (actionChild.name() == std::string("ControllerAction"))
 		{
-			if (disable_controllers_)
-			{
-				continue;
-			}
-
 			for (pugi::xml_node controllerChild = actionChild.first_child(); controllerChild; controllerChild = controllerChild.next_sibling())
 			{
 				if (controllerChild.name() == std::string("AssignControllerAction"))
@@ -1645,21 +1662,40 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						if (controllerDefNode.name() == std::string("Controller"))
 						{
 							controller = parseOSCObjectController(controllerDefNode);
-							if (controller)
-							{
-								controller_.push_back(controller);
-							}
-							AssignControllerAction* assignControllerAction = new AssignControllerAction(controller);
-							action = assignControllerAction;
 						}
 						else if (controllerDefNode.name() == std::string("CatalogReference"))
 						{
-							LOG("Controller catalogs not supported yet");
+							Entry* entry = ResolveCatalogReference(controllerDefNode);
+
+							if (entry == 0)
+							{
+								LOG("No entry found");
+							}
+							else
+							{
+								if (entry->type_ == CatalogType::CATALOG_CONTROLLER)
+								{
+									LOG("Parsing controller from reference: %s", entry->GetNode().name());
+									controller = parseOSCObjectController(entry->GetNode());
+								}
+								else
+								{
+									LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
+								}
+							}
 						}
 						else
 						{
 							LOG("Unexpected AssignControllerAction subelement: %s", controllerDefNode.name());
+							return 0;
 						}
+
+						if (controller)
+						{
+							controller_.push_back(controller);
+						}
+						AssignControllerAction* assignControllerAction = new AssignControllerAction(controller);
+						action = assignControllerAction;
 					}
 				}
 				else if (controllerChild.name() == std::string("OverrideControllerValueAction"))
@@ -1671,6 +1707,38 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					LOG("Unexpected ControllerAction subelement: %s", controllerChild.name());
 				}
 			}
+		}
+		else if (actionChild.name() == std::string("VisibilityAction"))
+		{
+			bool graphics = true;
+			bool traffic = true;
+			bool sensors = true;
+
+			// Find attributes
+			std::string attributeString = parameters.ReadAttribute(actionChild, "graphics");
+			if (attributeString == "false" || attributeString == "False")
+			{
+				graphics = false;
+			}
+
+			attributeString = parameters.ReadAttribute(actionChild, "traffic");
+			if (attributeString == "false" || attributeString == "False")
+			{
+				traffic = false;
+			}
+
+			attributeString = parameters.ReadAttribute(actionChild, "sensors");
+			if (attributeString == "false" || attributeString == "False")
+			{
+				sensors = false;
+			}
+
+			VisibilityAction* visAction = new VisibilityAction();
+			visAction->graphics_ = graphics;
+			visAction->traffic_ = traffic;
+			visAction->sensors_ = sensors;
+
+			action = visAction;
 		}
 		else
 		{
@@ -2286,7 +2354,7 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 								}
 								else
 								{
-									LOG("Failed to parse Init action %s - continue regardless");
+									LOG("Failed to parse Init action - continue regardless");
 								}
 							}
 						}

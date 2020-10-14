@@ -22,36 +22,30 @@
 
 using namespace scenarioengine;
 
-Controller* scenarioengine::InstantiateControllerExternal(std::string name, Entities* entities, ScenarioGateway* gateway,
-	Parameters* parameters, OSCProperties* properties)
+
+Controller* scenarioengine::InstantiateControllerExternal(void* args)
 {
-	return new ControllerExternal(name, entities, gateway, parameters, properties);
+	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+
+	return new ControllerExternal(initArgs);
 }
 
-ControllerExternal::ControllerExternal(std::string name, Entities* entities, ScenarioGateway* gateway,
-	Parameters* parameters, OSCProperties* properties) :
-	Controller(name, entities, gateway, parameters, properties)
+ControllerExternal::ControllerExternal(InitArgs* args) : Controller(args)
 {
-	if (properties->ValueExists("ghost"))
+	if (args->properties->ValueExists("ghost"))
 	{
-		std::string ghost_name = properties->GetValueStr("ghost");
-		ghost_ = entities->GetObjectByName(ghost_name);
+		std::string ghost_name = args->properties->GetValueStr("ghost");
+		ghost_ = args->entities->GetObjectByName(ghost_name);
 		if (ghost_ == 0)
 		{
 			LOG("Error: Failed to find ghost %s", ghost_name.c_str());
 		}
 	}
-	LOG("");
 }
 
 void ControllerExternal::Init()
 {
 	Controller::Init();
-}
-
-void ControllerExternal::PostFrame()
-{
-	Controller::PostFrame();
 }
 
 void ControllerExternal::Step(double timeStep)

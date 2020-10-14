@@ -35,6 +35,21 @@ namespace scenarioengine
 			MISC_OBJECT
 		} Type;
 
+		typedef enum {
+			NONE =            0,
+			LONGITUDINAL =   (1 << 0),
+			LATERAL =        (1 << 1),
+			WHEEL_ANGLE =    (1 << 2),
+			WHEEL_ROTATION = (1 << 3),
+			VISIBILITY =     (1 << 4)
+		} DirtyBit;
+
+		typedef enum {
+			GRAPHICS = (1 << 0),
+			TRAFFIC  = (1 << 1),
+			SENSORS  = (1 << 2),
+		} Visibility;
+
 		struct Property
 		{
 			std::string name_;
@@ -51,6 +66,7 @@ namespace scenarioengine
 		double trail_follow_s_;
 		double trail_closest_pos_[3];
 		double sensor_pos_[3];
+		Object* ghost_;
 
 		double speed_;
 		double wheel_angle_;
@@ -64,11 +80,13 @@ namespace scenarioengine
 		OSCBoundingBox boundingbox_;
 		double end_of_road_timestamp_;
 		double off_road_timestamp_;
+		double headstart_time_;
+		int visibilityMask_;
 
-		bool dirty_long_;
-		bool dirty_lat_;
+		int dirty_; 
 		bool reset_; // indicate discreet movement, teleporting, no odometer update
 		Controller* controller_; // reference to any assigned controller object
+		bool isGhost_;
 
 		struct {
 			double pos_x;
@@ -81,7 +99,8 @@ namespace scenarioengine
 
 		Object(Type type) : type_(type), id_(0), trail_follow_index_(0), speed_(0), wheel_angle_(0), wheel_rot_(0),
 			route_(0), model_filepath_(""), trail_follow_s_(0), odometer_(0), end_of_road_timestamp_(0.0),
-			off_road_timestamp_(0.0), dirty_long_(0), dirty_lat_(0), reset_(0), controller_(0)
+			off_road_timestamp_(0.0), dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0),
+			visibilityMask_(0xFF), isGhost_(false)
 		{
 			trail_closest_pos_[0] = 0.0;
 			trail_closest_pos_[1] = 0.0;
@@ -107,11 +126,36 @@ namespace scenarioengine
 		void SetSpeed(double speed) { speed_ = speed; }
 		double GetSpeed() { return speed_; }
 		void SetAssignedController(Controller* controller)
-		{ 
-			controller_ = controller; 
+		{
+			controller_ = controller;
 		}
 		int GetControllerType();
 		bool IsControllerActiveOnDomains(int domainMask);
+		bool IsControllerActiveOnAnyOfDomains(int domainMask);
+		bool IsControllerActive() { return IsControllerActiveOnAnyOfDomains(0xff); }
+		int GetControllerMode();
+		int GetId() { return id_; }
+		void SetHeadstartTime(double headstartTime) { headstart_time_ = headstartTime; }
+		double GetHeadstartTime() { return headstart_time_; }
+		void SetGhost(Object* ghost) { ghost_ = ghost; }
+		Object* GetGhost() { return ghost_; }
+		void SetVisibilityMask(int mask);
+		bool IsGhost() { return isGhost_; }
+
+		bool CheckDirtyBits(int bits)
+		{
+			return bool(dirty_ & bits);
+		}
+
+		void SetDirtyBits(int bits)
+		{
+			dirty_ |= bits;
+		}
+
+		void ClearDirtyBits(int bits)
+		{
+			dirty_ &= ~bits;
+		}
 	};
 
 	class Vehicle : public Object
@@ -342,8 +386,6 @@ namespace scenarioengine
 		std::vector<Object*> object_;
 
 		// create a sumo vehicle template and a sumo controller 
-		Object* sumo_vehicle;
-
 		int addObject(Object* obj);
 		void removeObject(int id);
 		void removeObject(std::string name);
@@ -351,6 +393,7 @@ namespace scenarioengine
 		bool indexExists(int id);
 		bool nameExists(std::string name);
 		Object* GetObjectByName(std::string name);
+		Object* GetObjectById(int id);
 	};
 
 }

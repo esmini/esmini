@@ -11,6 +11,7 @@
  */
 
 
+#include "ControllerDriverModel.hpp"
 #include "playerbase.hpp"
 #include "CommonMini.cpp"
 
@@ -18,10 +19,12 @@
 #define MAX_TIME_STEP 0.1
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	ScenarioPlayer *player;
+	ScenarioPlayer* player;
 	__int64 time_stamp = 0;
+
+//	ScenarioReader::RegisterController("DriverModelController", InstantiateControllerDriverModel);
 
 	try
 	{

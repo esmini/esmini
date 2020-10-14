@@ -49,7 +49,9 @@
       <VehicleCatalog>
          <Directory path="../xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
-      <ControllerCatalog/>
+      <ControllerCatalog>
+         <Directory path="../xosc/Catalogs/Controllers" />
+      </ControllerCatalog>    
    </CatalogLocations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/e6mini.xodr"/>
@@ -58,9 +60,9 @@
    <Entities>
       <ScenarioObject name="Ego">
          <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
-        <ObjectController>
-            <Controller name="InteractiveController" />
-        </ObjectController>         
+         <ObjectController>
+             <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+         </ObjectController>
       </ScenarioObject>
       <ScenarioObject name="NPC1">
          <CatalogReference catalogName="VehicleCatalog" entryName="$NPC1Vehicle"/>

@@ -62,6 +62,12 @@ void ObjectSensor::Update()
 			continue;
 		}
 
+		if (!(obj->visibilityMask_ & Object::Visibility::SENSORS))
+		{
+			// Object is not visible for sensors
+			continue;
+		}
+
 		// Check whether object is within field of view
 
 		// find out angle between heading vector and line to object

@@ -13,42 +13,33 @@
       <ParameterDeclaration name="EgoStartS" parameterType="double" value="50"/>
    </ParameterDeclarations>
    <CatalogLocations>
-      <RouteCatalog/>
       <VehicleCatalog>
          <Directory path="../xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
-      <ControllerCatalog/>
+      <ControllerCatalog>
+         <Directory path="../xosc/Catalogs/Controllers" />
+      </ControllerCatalog>
    </CatalogLocations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/e6mini.xodr"/>
       <SceneGraphFile filepath="../models/e6mini.osgb"/>
    </RoadNetwork>
    <Entities>
-        <ScenarioObject name="EgoGhost">
-            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
-            <ObjectController>
-                <Controller name="GhostController">
-                    <Properties>
-                        <Property name="headstartTime" value="2.0" />
-                    </Properties>
-                </Controller>            
-            </ObjectController>
-        </ScenarioObject>   
         <ScenarioObject name="Ego">
-            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
             <ObjectController>
-                <Controller name="FollowGhostController">
-                    <Properties>
-                        <Property name="ghost" value="EgoGhost" />
-                    </Properties>
-                </Controller>
+                <CatalogReference catalogName="ControllerCatalog" entryName="cspas" >
+                    <ParameterAssignments>
+                        <ParameterAssignment parameterRef="$HeadStartTime" value="2" />
+                    </ParameterAssignments>
+                </CatalogReference>
             </ObjectController>
         </ScenarioObject>
    </Entities>
    <Storyboard>
       <Init>
          <Actions>
-            <Private entityRef="EgoGhost">
+            <Private entityRef="Ego">
                <PrivateAction>
                   <TeleportAction>
                      <Position>
@@ -66,29 +57,20 @@
                      </SpeedAction>
                   </LongitudinalAction>
                </PrivateAction>
-            </Private>
-            <Private entityRef="Ego">
                <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="0" laneId="-3" offset="0" s="$EgoStartS"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-                <PrivateAction>
-                    <ActivateControllerAction longitudinal="true" lateral="true" />
-                </PrivateAction>
+                  <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>               
             </Private>
          </Actions>
       </Init>
       <Story name="Story">
          <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="owner" value="EgoGhost"/>
+            <ParameterDeclaration parameterType="string" name="owner" value="Ego"/>
          </ParameterDeclarations>
          <Act name="Act">
             <ManeuverGroup maximumExecutionCount="1" name="Sequence">
                <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="EgoGhost"/>
+                  <EntityRef entityRef="Ego"/>
                </Actors>
                <Maneuver name="Maneuver1">
                   <Event name="SpeedEvent1" priority="overwrite">
@@ -225,7 +207,7 @@
             </StartTrigger>
             <StopTrigger>
                <ConditionGroup>
-                    <Condition name="EventStopCondition" delay="8" edge="rising">
+                    <Condition name="EventStopCondition" delay="6" edge="rising">
                         <ByValueCondition>
                             <StoryboardElementStateCondition 
                                 storyboardElementType="event" 

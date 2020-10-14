@@ -262,10 +262,16 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	cull->setMode(osg::CullFace::BACK);
 	stateset->setAttributeAndModes(cull, osg::StateAttribute::ON);
 
+	// Draw only wireframe to 
+	osg::PolygonMode* polygonMode = new osg::PolygonMode;
+	polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+	stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+
 	osg::ref_ptr<osg::Geode> geode2 = new osg::Geode;
 	geom2->getOrCreateStateSet()->setAttribute(new osg::LineWidth(1.0f));
 	geom2->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 	geode2->addDrawable(geom2.release());
+
 
 	txNode_->addChild(geode);
 	txNode_->addChild(geode2);
@@ -475,6 +481,8 @@ CarModel::CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::r
 	lane_sensor_ = 0;
 	trail_sensor_ = 0;
 	viewer_ = viewer;
+	state_set_ = 0;
+	blend_color_ = 0;
 
 	wheel_angle_ = 0;
 	wheel_rot_ = 0;
@@ -587,6 +595,27 @@ void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta
 	UpdateWheels(wheel_angle, wheel_rot_ + wheel_rotation_delta);
 }
 
+class TrailerCallback : public osg::NodeCallback
+{
+public:
+	TrailerCallback(osg::Geometry* ribbon) :
+		_ribbon(ribbon) {}
+	virtual void operator()(osg::Node* node,
+		osg::NodeVisitor* nv);
+protected:
+	osg::observer_ptr<osg::Geometry> _ribbon;
+};
+
+void CarModel::SetTransparency(double factor)
+{
+	if (factor < 0 || factor > 1)
+	{
+		LOG("Clamping transparency factor %.2f to [0:1]", factor);
+		factor = CLAMP(factor, 0, 1); 
+	}
+	blend_color_->setConstantColor(osg::Vec4(1, 1, 1, 1-factor));
+}
+
 Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, const char* scenarioFilename, const char* exe_path, osg::ArgumentParser arguments, SE_Options* opt)
 {
 	odrManager_ = odrManager;
@@ -668,6 +697,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 
 	// set the scene to render
 	rootnode_ = new osg::MatrixTransform;
+	
 
 #if 0
 	// Setup shadows
@@ -814,7 +844,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	osgViewer_->addEventHandler(new osgGA::StateSetManipulator(osgViewer_->getCamera()->getOrCreateStateSet()));
 
 	// add the thread model handler
-	osgViewer_->addEventHandler(new osgViewer::ThreadingHandler);
+//	osgViewer_->addEventHandler(new osgViewer::ThreadingHandler);
+	// Hard code single thread model. Can't get setDataVariance(DYNAMIC)
+	// to work with some state changes. And callbacks for all possible
+	// nodes would be too much overhead. Solve when needed.
+	osgViewer_->setThreadingModel(osgViewer::ViewerBase::SingleThreaded);
 
 	// add the help handler
 	osgViewer_->addEventHandler(new osgViewer::HelpHandler(arguments.getApplicationUsage()));
@@ -844,7 +878,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	// Overlay text
 	osg::ref_ptr<osg::Geode> textGeode = new osg::Geode;
 	osg::Vec4 layoutColor(0.9f, 0.9f, 0.9f, 1.0f);
-	float layoutCharacterSize = 15.0f;
+	float layoutCharacterSize = 12.0f;
 
 	infoText = new osgText::Text;
 	infoText->setColor(layoutColor);
@@ -891,7 +925,7 @@ void Viewer::SetCameraMode(int mode)
 	rubberbandManipulator_->setMode(camMode_);
 }
 
-CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 trail_color, bool road_sensor, std::string name)
+CarModel* Viewer::AddCar(std::string modelFilepath, osg::Vec3 trail_color, bool road_sensor, std::string name)
 {
 	// Load 3D model
 	std::string path = modelFilepath;
@@ -900,6 +934,7 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 	std::vector<std::string> file_name_candidates;
 	file_name_candidates.push_back(path.c_str());
 	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(getScenarioDir(), path).c_str());
+	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(roadmanager::Position::GetOpenDrive()->GetOpenDriveFilename()), path).c_str());
 	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", path).c_str());
 	size_t i;
 	for (i = 0; i < file_name_candidates.size(); i++)
@@ -959,22 +994,19 @@ CarModel* Viewer::AddCar(std::string modelFilepath, bool transparent, osg::Vec3 
 		tx->getOrCreateStateSet()->setAttribute(material);
 	}
 
-	if (transparent)
-	{
-		osg::StateSet* state = lod->getOrCreateStateSet(); //Creating material
+	CarModel* car = new CarModel(osgViewer_, lod, rootnode_, trails_, dot_node_, trail_color, name);
+	car->state_set_ = lod->getOrCreateStateSet(); //Creating material
+	car->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
+	car->state_set_->setAttributeAndModes(car->blend_color_);
+	car->blend_color_->setDataVariance(osg::Object::DYNAMIC);
 
-		osg::BlendColor* bc = new osg::BlendColor(osg::Vec4(1, 1, 1, transparent ? 0.4 : 1));
-		state->setAttributeAndModes(bc);
+	osg::BlendFunc* bf = new osg::BlendFunc(osg::BlendFunc::CONSTANT_ALPHA, osg::BlendFunc::ONE_MINUS_CONSTANT_ALPHA);
+	car->state_set_->setAttributeAndModes(bf);
+	car->state_set_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+	car->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 
-		osg::BlendFunc* bf = new   //Blending
-			osg::BlendFunc(osg::BlendFunc::CONSTANT_ALPHA, osg::BlendFunc::ONE_MINUS_CONSTANT_ALPHA);
-	
-		state->setAttributeAndModes(bf);
-		state->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
-		state->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
-	}
+	cars_.push_back(car);
 
-	cars_.push_back(new CarModel(osgViewer_, lod, rootnode_, trails_, dot_node_, trail_color, name));
 	// Focus on first added car
 	if (cars_.size() == 1)
 	{
@@ -1032,6 +1064,8 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 	
 	osg::ref_ptr<osg::Group> group = new osg::Group;
 
+	group->addChild(node);
+
 	if (shadow_node_)
 	{
 		shadow_tx = new osg::PositionAttitudeTransform;
@@ -1041,8 +1075,6 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 
 		group->addChild(shadow_tx);
 	}
-
-	group->addChild(node);
 
 	group->setName(FileNameOf(filename));
 

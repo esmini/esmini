@@ -44,7 +44,11 @@ namespace scenarioengine
 
 		void step(double deltaSimTime, bool initial = false);
 		void printSimulationTime();
-		void stepObjects(double dt);
+		void updateObjectStates(double dt);
+		void defaultController(Object* obj, double dt);
+		void ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Object* obj2, double timeOffset);
+		void SetupGhost(Object* object);
+		void DisableAndRemoveControllers();
 
 		std::string getScenarioFilename() { return scenarioReader->getScenarioFilename(); }
 		std::string getSceneGraphFilename() { return roadNetwork.sceneGraphFile.filepath; }

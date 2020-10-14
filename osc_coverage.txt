@@ -3,8 +3,8 @@ OpenSCENARIO
 ParameterDeclaration                        Yes
 Catalogs                                    
     VehicleCatalog                          Yes
-    DriverCatalog                           No
-    PedestrianCatalog                       No
+    ControllerCatalog                       Yes
+    PedestrianCatalog                       Yes
     PedestrianControllerCatalog             No
     MiscObjectCatalog                       No
     EnvironmentCatalog                      No
@@ -17,14 +17,14 @@ RoadNetwork
     SceneGraph                              Yes
     Signals                                 No
 Entities                                    
-    Object                                  
-        Controller                          No
-        choice                              
+    ScenarioObject                          
+        Controller                          Yes
+        EntityObject                           
             CatalogReference                Yes
             Vehicle                         Yes
-            Pedestrian                      No
-            MiscObject                      No
-    Selection                               No
+            Pedestrian                      Yes
+            MiscObject                      Yes
+    EntitySelection                         No
 Storyboard                                  
     Init                                    
         Actions                             

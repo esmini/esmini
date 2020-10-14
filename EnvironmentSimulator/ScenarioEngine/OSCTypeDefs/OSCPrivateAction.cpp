@@ -56,14 +56,16 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 
 void AssignRouteAction::Start()
 {
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
+	object_->pos_.SetRoute(route_);
+
+	OSCAction::Start();
+
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
 	{
 		// lateral motion controlled elsewhere
 		return;
 	}
-	object_->pos_.SetRoute(route_);
-
-	OSCAction::Start();
 }
 
 void AssignRouteAction::End()
@@ -74,35 +76,52 @@ void AssignRouteAction::End()
 	OSCAction::End();
 }
 
+void AssignRouteAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+	if (object_ == obj1)
+	{
+		object_ = obj2;
+	}
+	for (size_t i = 0; i < route_->waypoint_.size(); i++)
+	{
+		route_->waypoint_[i]->ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
+	}
+}
+
 void FollowTrajectoryAction::Start()
 {
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
+	OSCAction::Start();
+
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
 	{
 		// lateral motion controlled elsewhere
 		// other action or controller already updated lateral dimension of object 
 		// potentially longitudinal dimension could be updated separatelly - but skip that for now
 		return;
 	}
+
 	traj_->Freeze();
 	object_->pos_.SetTrajectory(traj_);
 	
-	object_->dirty_lat_ = true;
-	object_->dirty_long_ = true;
-
-	OSCAction::Start();
+	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 }
 
 void FollowTrajectoryAction::End()
 {
+	OSCAction::End();
+
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
+
 	// Disconnect trajectory
 	object_->pos_.SetTrajectory(0);
-
-	OSCAction::End();
 }
 
 void FollowTrajectoryAction::Step(double dt, double simTime)
 {
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
 	{
 		// lateral motion controlled elsewhere
 		// other action or controller already updated lateral dimension of object 
@@ -128,7 +147,7 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 	{
 		// Move along trajectory
 		if (timing_domain_ == TimingDomain::NONE || 
-			object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))  
+			object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))  
 		{
 			object_->pos_.MoveTrajectoryDS(object_->speed_ * dt);
 		}
@@ -146,18 +165,41 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 		}
 	}
 
-	object_->dirty_lat_ = true;
-	object_->dirty_long_ = true;
+	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+}
+
+void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+	if (object_ == obj1)
+	{
+		object_ = obj2;
+	}
+	if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::CLOTHOID)
+	{
+		roadmanager::Clothoid* cl = (roadmanager::Clothoid*)traj_->shape_;
+		cl->pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
+	}
+	else if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::POLYLINE)
+	{
+		roadmanager::PolyLine* pl = (roadmanager::PolyLine*)traj_->shape_;
+		for (size_t i = 0; i < pl->vertex_.size(); i++)
+		{
+			pl->vertex_[i]->pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
+		}
+	}
+
 }
 
 void LatLaneChangeAction::Start()
 {
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
+	OSCAction::Start();
+
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
 	{
 		// lateral motion controlled elsewhere
 		return;
 	}
-	OSCAction::Start();
 
 	if (target_->type_ == Target::Type::ABSOLUTE)
 	{
@@ -176,14 +218,15 @@ void LatLaneChangeAction::Start()
 		}
 	}
 
+	target_t_ =
+		SIGN(target_lane_id_) *
+		object_->pos_.GetOpenDrive()->GetRoadById(object_->pos_.GetTrackId())->GetCenterOffset(object_->pos_.GetS(), target_lane_id_) +
+		target_lane_offset_;
+
 	// if dynamics dimension is rate, transform into distance
 	if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
 	{
-		double target_t =
-			SIGN(target_lane_id_) *
-			object_->pos_.GetOpenDrive()->GetRoadById(object_->pos_.GetTrackId())->GetCenterOffset(object_->pos_.GetS(), target_lane_id_) +
-			target_lane_offset_;
-		double lat_distance = object_->pos_.GetT() - target_t;
+		double lat_distance = object_->pos_.GetT() - target_t_;
 		double rate = transition_dynamics_.target_value_;
 
 		if (transition_dynamics_.shape_ == DynamicsShape::LINEAR)
@@ -207,37 +250,32 @@ void LatLaneChangeAction::Start()
 		}
 	}
 
-	start_t_ = object_->pos_.GetT();
+	t_ = start_t_ = object_->pos_.GetT();
+
 	elapsed_ = 0;
 }
 
 void LatLaneChangeAction::Step(double dt, double simTime)
 {
-	double target_t;
-	double t;
-	double t_old = object_->pos_.GetT();;
+	double t_old = t_;
 	double factor;
 	double angle = 0;
 
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
 	{
 		// lateral motion controlled elsewhere
 		return;
 	}
-
-	target_t =
-		SIGN(target_lane_id_) *
-		object_->pos_.GetOpenDrive()->GetRoadById(object_->pos_.GetTrackId())->GetCenterOffset(object_->pos_.GetS(), target_lane_id_) +
-		target_lane_offset_;
 
 	if (transition_dynamics_.dimension_ == DynamicsDimension::TIME)
 	{
 		double dt_adjusted = dt;
 
 		// Set a limit for lateral speed not to exceed longitudinal speed
-		if (transition_dynamics_.target_value_ * object_->speed_ < fabs(target_t - start_t_))
+		if (transition_dynamics_.target_value_ * object_->speed_ < fabs(target_t_ - start_t_))
 		{
-			dt_adjusted = dt * object_->speed_ * transition_dynamics_.target_value_ / fabs(target_t - start_t_);
+			dt_adjusted = dt * object_->speed_ * transition_dynamics_.target_value_ / fabs(target_t_ - start_t_);
 		}
 		elapsed_ += dt_adjusted;
 	}
@@ -252,22 +290,22 @@ void LatLaneChangeAction::Step(double dt, double simTime)
 	}
 
 	factor = elapsed_ / transition_dynamics_.target_value_;
-	t = transition_dynamics_.Evaluate(factor, start_t_, target_t);
+	t_ = transition_dynamics_.Evaluate(factor, start_t_, target_t_);
 
 	if (object_->pos_.GetRoute())
 	{
 		// If on a route, stay in original lane
 		int lane_id = object_->pos_.GetLaneId();
-		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
+		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t_);
 		object_->pos_.ForceLaneId(lane_id);
 	}
 	else
 	{
-		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t);
+		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t_);
 	}
 		
 
-	if (factor > 1.0 || abs(t - target_t) < SMALL_NUMBER || SIGN(t - start_t_) != SIGN(target_t - start_t_))
+	if (factor > 1.0 || abs(t_ - target_t_) < SMALL_NUMBER || SIGN(t_ - start_t_) != SIGN(target_t_ - start_t_))
 	{
 		OSCAction::End();
 		object_->pos_.SetHeadingRelativeRoadDirection(0);
@@ -276,23 +314,41 @@ void LatLaneChangeAction::Step(double dt, double simTime)
 	{
 		if (object_->speed_ > SMALL_NUMBER)
 		{
-			angle = atan((t - t_old) / (object_->speed_ * dt));
+			angle = atan((t_ - t_old) / (object_->speed_ * dt));
 			object_->pos_.SetHeadingRelativeRoadDirection(angle);
 		}
 	}
 
-	object_->dirty_lat_ = true;
+	object_->SetDirtyBits(Object::DirtyBit::LATERAL);
+}
+
+void LatLaneChangeAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+	if (object_ == obj1)
+	{
+		object_ = obj2;
+	}
+
+	if (target_->type_ == Target::Type::RELATIVE)
+	{
+		if (((TargetRelative*)target_)->object_ == obj1)
+		{
+			((TargetRelative*)target_)->object_ = obj2;
+		}
+	}
 }
 
 void LatLaneOffsetAction::Start()
 {
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
+	OSCAction::Start();
+
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
 	{
 		// lateral motion controlled elsewhere
 		return;
 	}
 
-	OSCAction::Start();
 	start_lane_offset_ = object_->pos_.GetOffset();
 }
 
@@ -302,7 +358,8 @@ void LatLaneOffsetAction::Step(double dt, double simTime)
 	double angle = 0;
 	double old_lane_offset = object_->pos_.GetOffset();
 
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LATERAL))
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
 	{
 		// lateral motion controlled elsewhere
 		return;
@@ -328,9 +385,24 @@ void LatLaneOffsetAction::Step(double dt, double simTime)
 
 	object_->pos_.SetHeadingRelativeRoadDirection(angle);
 
-	object_->dirty_lat_ = true;
+	object_->SetDirtyBits(Object::DirtyBit::LATERAL);
 }
 
+void LatLaneOffsetAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+	if (object_ == obj1)
+	{
+		object_ = obj2;
+	}
+
+	if (target_->type_ == Target::Type::RELATIVE)
+	{
+		if (((TargetRelative*)target_)->object_ = obj1)
+		{
+			((TargetRelative*)target_)->object_ = obj2;
+		}
+	}
+}
 double LongSpeedAction::TargetRelative::GetValue()
 {
 	if (!continuous_)
@@ -365,12 +437,14 @@ double LongSpeedAction::TargetRelative::GetValue()
 
 void LongSpeedAction::Start()
 {
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	OSCAction::Start();
+
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
 	{
 		// longitudinal motion controlled elsewhere
 		return;
 	}
-	OSCAction::Start();
 
 	start_speed_ = object_->speed_;
 }
@@ -381,7 +455,8 @@ void LongSpeedAction::Step(double dt, double simTime)
 	double new_speed = 0;
 	bool target_speed_reached = false;
 
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
 	{
 		// longitudinal motion controlled elsewhere
 		return;
@@ -438,14 +513,24 @@ void LongSpeedAction::Step(double dt, double simTime)
 	object_->speed_ = new_speed;
 }
 
-void LongDistanceAction::Start()
+void LongSpeedAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 {
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	if (object_ == obj1)
 	{
-		// longitudinal motion controlled elsewhere
-		return;
+		object_ = obj2;
 	}
 
+	if (target_->type_ == Target::TargetType::RELATIVE)
+	{
+		if (((TargetRelative*)target_)->object_ == obj1)
+		{
+			((TargetRelative*)target_)->object_ = obj2;
+		}
+	}
+}
+
+void LongDistanceAction::Start()
+{
 	if (target_object_ == 0)
 	{
 		LOG("Can't trig without set target object ");
@@ -457,7 +542,8 @@ void LongDistanceAction::Start()
 
 void LongDistanceAction::Step(double dt, double simTime)
 {
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
 	{
 		// longitudinal motion controlled elsewhere
 		return;
@@ -493,7 +579,7 @@ void LongDistanceAction::Step(double dt, double simTime)
 		object_->pos_.MoveAlongS(distance_diff);
 		object_->speed_ = target_object_->speed_;
 
-		object_->dirty_long_ = true;
+		object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
 	}
 	else
 	{
@@ -524,24 +610,25 @@ void LongDistanceAction::Step(double dt, double simTime)
 	//	LOG("Dist %.2f diff %.2f acc %.2f speed %.2f", distance, distance_diff, acc, object_->speed_);
 }
 
-void TeleportAction::Start()
+void LongDistanceAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 {
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL | 
-		Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	if (object_ == obj1)
 	{
-		// motion controlled elsewhere
-		return;
+		object_ = obj2;
 	}
-	OSCAction::Start();
+
+	if (target_object_ == obj1)
+	{
+		target_object_ = obj2;
+	}
 }
 
-void TeleportAction::Step(double dt, double simTime)
+void TeleportAction::Start()
 {
-	(void)dt;
-	(void)simTime;
+	OSCAction::Start();
 
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL |
-		Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL | Controller::Domain::CTRL_LONGITUDINAL))
 	{
 		// motion controlled elsewhere
 		return;
@@ -566,13 +653,26 @@ void TeleportAction::Step(double dt, double simTime)
 		object_->pos_.CalcRoutePosition();
 	}
 
-	LOG("Step %s pos: ", object_->name_.c_str());
+	LOG("%s pos: ", object_->name_.c_str());
 	object_->pos_.Print();
-	object_->dirty_lat_ = true;
-	object_->dirty_long_ = true;
+	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 	object_->reset_ = true;
+}
+
+void TeleportAction::Step(double dt, double simTime)
+{
+	(void)dt;
+	(void)simTime;
 
 	OSCAction::Stop();
+}
+
+void TeleportAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+	if (object_ == obj1)
+	{
+		object_ = obj2;
+	}
 }
 
 double SynchronizeAction::CalcSpeedForLinearProfile(double v_final, double time, double dist)
@@ -649,20 +749,22 @@ void SynchronizeAction::PrintStatus(const char* custom_msg)
 
 void SynchronizeAction::Start()
 {
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	OSCAction::Start();
+
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
 	{
 		// longitudinal motion controlled elsewhere
 		return;
 	}
-
-	OSCAction::Start();
 }
 
 void SynchronizeAction::Step(double dt, double simTime)
 {
 	(void)dt;
 
-	if (object_->IsControllerActiveOnDomains(Controller::ControllerDomain::CTRL_LONGITUDINAL))
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
 	{
 		// longitudinal motion controlled elsewhere
 		return;
@@ -945,4 +1047,22 @@ void SynchronizeAction::Step(double dt, double simTime)
 
 		object_->speed_ += acc * dt;
 	}
+}
+
+void VisibilityAction::Start()
+{
+	OSCAction::Start();
+	object_->SetVisibilityMask(
+		(graphics_ ? Object::Visibility::GRAPHICS : 0) |
+		(traffic_ ? Object::Visibility::TRAFFIC : 0) |
+		(sensors_ ? Object::Visibility::SENSORS : 0)
+	);
+}
+
+void VisibilityAction::Step(double dt, double simTime)
+{
+	(void)dt;
+	(void)simTime;
+
+	OSCAction::Stop();
 }

@@ -25,15 +25,14 @@
 
 using namespace scenarioengine;
 
-Controller* scenarioengine::InstantiateControllerInteractive(std::string name, Entities* entities, ScenarioGateway* gateway,
-	Parameters* parameters, OSCProperties* properties)
+Controller* scenarioengine::InstantiateControllerInteractive(void* args)
 {
-	return new ControllerInteractive(name, entities, gateway, parameters, properties);
+	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+
+	return new ControllerInteractive(initArgs);
 }
 
-ControllerInteractive::ControllerInteractive(std::string name, Entities* entities, ScenarioGateway* gateway,
-	Parameters* parameters, OSCProperties* properties) :
-	Controller(name, entities, gateway, parameters, properties)
+ControllerInteractive::ControllerInteractive(InitArgs* args) : Controller(args)
 {
 	LOG("");
 }
@@ -42,11 +41,6 @@ void ControllerInteractive::Init()
 {
 
 	Controller::Init();
-}
-
-void ControllerInteractive::PostFrame()
-{
-	Controller::PostFrame();
 }
 
 void ControllerInteractive::Step(double timeStep)
@@ -70,23 +64,30 @@ void ControllerInteractive::Step(double timeStep)
 
 	// Update vehicle motion
 	vehicle_.DrivingControlBinary(timeStep, 
-		(domain_ & ControllerDomain::CTRL_LONGITUDINAL) ? accelerate : vehicle::THROTTLE_NONE, 
-		(domain_ & ControllerDomain::CTRL_LATERAL) ? steer : vehicle::STEERING_NONE);
+		(domain_ & Controller::Domain::CTRL_LONGITUDINAL) ? accelerate : vehicle::THROTTLE_NONE, 
+		(domain_ & Controller::Domain::CTRL_LATERAL) ? steer : vehicle::STEERING_NONE);
 
-	// Set OpenDRIVE position
-	object_->pos_.XYZH2TrackPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_);
+	// Set road position
+	object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_, 0, 0);
 
 	// Fetch Z and Pitch from OpenDRIVE position
 	vehicle_.posZ_ = object_->pos_.GetZ();
 	vehicle_.pitch_ = object_->pos_.GetP();
 
-	// Report updated state to scenario gateway
+	object_->SetSpeed(vehicle_.speed_);
 
-	gateway_->reportObject(object_->id_, object_->name_, static_cast<int>(Object::Type::VEHICLE), 
-		static_cast<int>(Vehicle::Category::CAR), 0, object_->GetControllerType(), object_->boundingbox_, 0,
-		vehicle_.speed_, vehicle_.wheelAngle_, vehicle_.wheelRotation_,
-		vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_,
-		vehicle_.heading_, vehicle_.pitch_, 0);
+	// Update wheels wrt domains
+	if (domain_ & Controller::Domain::CTRL_LONGITUDINAL)
+	{
+		object_->wheel_angle_ = vehicle_.wheelRotation_;
+		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+	}
+
+	if (domain_ & Controller::Domain::CTRL_LATERAL)
+	{
+		object_->wheel_angle_ = vehicle_.wheelAngle_;
+		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
+	}
 
 	Controller::Step(timeStep);
 }

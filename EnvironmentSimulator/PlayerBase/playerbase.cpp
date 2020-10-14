@@ -181,33 +181,6 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 		}
 	}
 
-	// Update position along ghost trails
-	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
-	{
-		Object* obj = scenarioEngine->entities.object_[i];
-
-		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
-			obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
-		{
-			if (obj->controller_->GetGhost())
-			{
-				if (obj->controller_->GetGhost()->trail_.FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(),
-					obj->trail_closest_pos_[0], obj->trail_closest_pos_[1],
-					obj->trail_follow_s_, obj->trail_follow_index_, obj->trail_follow_index_) == 0)
-				{
-					obj->trail_closest_pos_[2] = obj->pos_.GetZ();
-				}
-				else
-				{
-					// Failed find point along trail, copy entity position
-					obj->trail_closest_pos_[0] = obj->pos_.GetX();
-					obj->trail_closest_pos_[1] = obj->pos_.GetY();
-					obj->trail_closest_pos_[2] = obj->pos_.GetZ();
-				}
-			}
-		}
-	}
-
 	// Check for any callbacks to be made
 	for (size_t i = 0; i < callback.size(); i++)
 	{
@@ -271,7 +244,7 @@ void ScenarioPlayer::ViewerFrame()
 				// add car
 				osg::Vec3 trail_color;
 				trail_color.set(color_blue[0], color_blue[1], color_blue[2]);
-				viewer_->AddCar(scenarioEngine->entities.object_[i]->model_filepath_, false,trail_color, false ,scenarioEngine->entities.object_[i]->name_);
+				viewer_->AddCar(scenarioEngine->entities.object_[i]->model_filepath_, trail_color, false ,scenarioEngine->entities.object_[i]->name_);
 			}
 		}
 	}
@@ -307,15 +280,37 @@ void ScenarioPlayer::ViewerFrame()
 		car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
 		car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
 
-		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
-			obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
+		// Check if visibility has been modified since last frame
+		if (obj->CheckDirtyBits(Object::DirtyBit::VISIBILITY))
 		{
-			if (obj->controller_->GetGhost())
+			if (obj->visibilityMask_ & Object::Visibility::GRAPHICS)
+			{
+				car->txNode_->setNodeMask(0xffffffff);
+				if (obj->visibilityMask_ & Object::Visibility::SENSORS)
+				{
+					car->SetTransparency(0.0);
+				}
+				else
+				{
+					car->SetTransparency(0.6);
+				}
+			}
+			else
+			{
+				car->txNode_->setNodeMask(0x0);
+			}
+		}
+
+		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL || obj->GetGhost())
+		{
+			if (car->steering_sensor_)
 			{
 				viewer_->SensorSetPivotPos(car->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 				viewer_->SensorSetTargetPos(car->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
 				viewer_->UpdateSensor(car->steering_sensor_);
-
+			}
+			if (car->trail_sensor_)
+			{
 				viewer_->SensorSetPivotPos(car->trail_sensor_, obj->trail_closest_pos_[0], obj->trail_closest_pos_[1], obj->trail_closest_pos_[2]);
 				viewer_->SensorSetTargetPos(car->trail_sensor_, pos.GetX(), pos.GetY(), pos.GetZ());
 				viewer_->UpdateSensor(car->trail_sensor_);
@@ -339,12 +334,12 @@ void ScenarioPlayer::ViewerFrame()
 
 	// Update info text
 	static char str_buf[128];
-	snprintf(str_buf, sizeof(str_buf), "%.2fs %.2fkm/h", scenarioEngine->getSimulationTime(),
+	snprintf(str_buf, sizeof(str_buf), "%.2fs entity[%d]: %s %.2fkm/h", scenarioEngine->getSimulationTime(),
+		viewer_->currentCarInFocus_, scenarioEngine->entities.object_[viewer_->currentCarInFocus_]->name_.c_str(),
 		3.6 * scenarioEngine->entities.object_[viewer_->currentCarInFocus_]->speed_);
 	viewer_->SetInfoText(str_buf);
 
 	mutex.Unlock();
-
 	viewer_->osgViewer_->frame();
 
 	if (viewer_->osgViewer_->done())
@@ -435,7 +430,7 @@ int ScenarioPlayer::InitViewer()
 		Object* obj = scenarioEngine->entities.object_[i];
 
 		// Create trajectory/trails for all entities
-		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST)
+		if (obj->IsGhost())
 		{
 			trail_color.set(color_gray[0], color_gray[1], color_gray[2]);
 		}
@@ -449,10 +444,8 @@ int ScenarioPlayer::InitViewer()
 		}
 
 		//  Create vehicles for visualization
-		bool transparent = obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST ? true : false;
-		bool road_sensor = obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST ||
-			obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ? true : false;
-		if (viewer_->AddCar(obj->model_filepath_, transparent, trail_color, road_sensor, obj->name_) == 0)
+		bool road_sensor = obj->GetGhost() ? true : false;
+		if (viewer_->AddCar(obj->model_filepath_, trail_color, road_sensor, obj->name_) == 0)
 		{
 			delete viewer_;
 			viewer_ = 0;
@@ -460,26 +453,26 @@ int ScenarioPlayer::InitViewer()
 		}
 
 		// If following a ghost vehicle, add visual representation of speed and steering sensors
-		if (scenarioEngine->entities.object_[i]->GetControllerType() == Controller::CONTROLLER_TYPE_EXTERNAL ||
-			scenarioEngine->entities.object_[i]->GetControllerType() == Controller::CONTROLLER_TYPE_FOLLOW_GHOST)
+		if (scenarioEngine->entities.object_[i]->GetGhost())
 		{
-			if (scenarioEngine->entities.object_[i]->controller_->GetGhost())
+			viewer::CarModel* vh = viewer_->cars_.back();
+			vh->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
+			if (odr_manager->GetNumOfRoads() > 0)
 			{
-				viewer::CarModel* vh = viewer_->cars_.back();
-				vh->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
-				if (odr_manager->GetNumOfRoads() > 0)
-				{
-					vh->trail_sensor_ = viewer_->CreateSensor(color_red, true, false, 0.4, 3);
-				}
-
-				viewer_->SensorSetPivotPos(vh->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-				viewer_->SensorSetTargetPos(vh->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+				vh->trail_sensor_ = viewer_->CreateSensor(color_red, true, false, 0.4, 3);
 			}
+
+			viewer_->SensorSetPivotPos(vh->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+			viewer_->SensorSetTargetPos(vh->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+		}
+		else if (scenarioEngine->entities.object_[i]->IsGhost())
+		{
+			scenarioEngine->entities.object_[i]->SetVisibilityMask(scenarioEngine->entities.object_[i]->visibilityMask_ &= ~(Object::Visibility::SENSORS));
+//			viewer_->cars_.back()->SetTransparency(0.6);
 		}
 	}
 
 	// Choose vehicle to look at initially (switch with 'Tab')
-	// and find out maximum headstart time for ghosts
 	viewer_->SetVehicleInFocus(0);
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
@@ -774,6 +767,37 @@ void ScenarioPlayer::RegisterObjCallback(int id, ObjCallbackFunc func, void *dat
 	callback.push_back(cb);
 }
 
+void ScenarioPlayer::UpdateCSV_Log()
+{
+	//Flag for signalling end of data line, all vehicles reported
+	bool isendline = false;
+
+	//For each vehicle (entitity) stored in the ScenarioPlayer
+	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	{
+		//Create a pointer to the object at position i in the entities vector
+		Object* obj = scenarioEngine->entities.object_[i];
+
+		//Create a Position object for extracting this vehicles XYZ coordinates
+		roadmanager::Position pos = obj->pos_;
+
+		//Extract the String name of the object and store in a compatable const char array
+		const char* name_ = &(*obj->name_.c_str());
+
+		if ((i + 1) == scenarioEngine->entities.object_.size())
+		{
+			isendline = true;
+		}
+
+		//Log the extracted data of ego vehicle and additonal scenario vehicles
+		CSV_Log->LogVehicleData(isendline, scenarioEngine->getSimulationTime(), name_,
+			obj->id_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_,
+			pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetS(), pos.GetT(), pos.GetH(),
+			pos.GetHRelative(), pos.GetHRelativeDrivingDirection(),
+			pos.GetP(), pos.GetCurvature());
+	}
+}
+
 void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 {
 	ScenarioPlayer* player = (ScenarioPlayer*)data;
@@ -782,3 +806,4 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 		player->scenarioEngine->GetScenarioReader()->controller_[i]->ReportKeyEvent(keyEvent->key_, keyEvent->down_);
 	}
 }
+

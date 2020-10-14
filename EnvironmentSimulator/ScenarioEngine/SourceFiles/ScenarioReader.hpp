@@ -37,7 +37,7 @@ namespace scenarioengine
 	public:
 		typedef struct
 		{
-			std::string name;
+			std::string type;
 			ControllerInstantiateFunction instantiateFunction;
 		} ControllerEntry;
 
@@ -51,11 +51,11 @@ namespace scenarioengine
 			controller_.push_back(entry);
 		}
 
-		ControllerEntry* GetControllerByName(std::string name)
+		ControllerEntry* GetControllerByType(std::string type)
 		{
 			for (size_t i=0; i<controller_.size(); i++)
 			{
-				if (controller_[i].name == name)
+				if (controller_[i].type == type)
 				{
 					return &controller_[i];
 				}
@@ -64,7 +64,6 @@ namespace scenarioengine
 		}
 
 	};
-
 
 
 	class ScenarioReader
@@ -77,7 +76,6 @@ namespace scenarioengine
 		int loadOSCFile(const char * path);
 		void loadOSCMem(const pugi::xml_document &xml_doch);
 		void SetGateway(ScenarioGateway* gateway) { gateway_ = gateway; }
-		void RegisterEmbeddedControllers();
 		int RegisterCatalogDirectory(pugi::xml_node catalogDirChild);
 
 		// RoadNetwork
@@ -117,9 +115,9 @@ namespace scenarioengine
 		void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, ManeuverGroup *mGroup);
 
 		std::string getScenarioFilename() { return oscFilename_; }
-		void RegisterController(std::string type_name, ControllerInstantiateFunction function)
+		static void RegisterController(std::string type_name, ControllerInstantiateFunction function)
 		{
-			controllerPool_.AddController(type_name, function);
+			ScenarioReader::controllerPool_.AddController(type_name, function);
 		}
 		void LoadControllers();
 		std::vector<Controller*> controller_;
@@ -133,7 +131,7 @@ namespace scenarioengine
 		Parameters parameters;
 		ScenarioGateway* gateway_;
 		bool disable_controllers_;
-		ControllerPool controllerPool_;
+		static ControllerPool controllerPool_;
 
 		int ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
 		ConditionGroup* ParseConditionGroup(pugi::xml_node node);

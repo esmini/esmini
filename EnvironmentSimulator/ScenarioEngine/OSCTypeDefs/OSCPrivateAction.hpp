@@ -93,6 +93,8 @@ namespace scenarioengine
 			return 0;
 		};
 
+		virtual void ReplaceObjectRefs(Object* obj1, Object* obj2) {};
+
 	};
 
 	class LongSpeedAction : public OSCPrivateAction
@@ -138,7 +140,7 @@ namespace scenarioengine
 				FACTOR
 			} ValueType;
 
-			Object *object_;
+			Object* object_;
 			ValueType value_type_;
 			bool continuous_;
 
@@ -151,7 +153,7 @@ namespace scenarioengine
 			double object_speed_;
 		};
 
-		Target *target_;
+		Target* target_;
 		double start_speed_;
 		double elapsed_;
 
@@ -160,7 +162,7 @@ namespace scenarioengine
 			elapsed_ = 0;
 		}
 
-		LongSpeedAction(const LongSpeedAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED)
+		LongSpeedAction(const LongSpeedAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED)
 		{
 			target_ = action.target_;
 			transition_dynamics_ = action.transition_dynamics_;
@@ -170,10 +172,10 @@ namespace scenarioengine
 
 		OSCPrivateAction* Copy()
 		{
-			LongSpeedAction *new_action = new LongSpeedAction(*this);
+			LongSpeedAction* new_action = new LongSpeedAction(*this);
 			return new_action;
 		}
-		
+
 		void Start();
 
 		void Step(double dt, double simTime);
@@ -182,6 +184,8 @@ namespace scenarioengine
 		{
 			LOG("");
 		}
+
+		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};
 
 	class LongDistanceAction : public OSCPrivateAction
@@ -240,6 +244,8 @@ namespace scenarioengine
 			LOG("");
 		}
 
+		void ReplaceObjectRefs(Object* obj1, Object* obj2);
+
 	private:
 		double acceleration_;
 	};
@@ -273,36 +279,42 @@ namespace scenarioengine
 		class TargetRelative : public Target
 		{
 		public:
-			Object *object_;
+			Object* object_;
 
 			TargetRelative() : Target(Target::Type::RELATIVE), object_(0) {}
 		};
 
-		Target *target_;
+		Target* target_;
 		double start_t_;
+		double target_t_;
 		double target_lane_offset_;
 		int target_lane_id_;
 		double elapsed_;
+		double t_;
 
 		LatLaneChangeAction(LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
 		{
 			transition_dynamics_.dimension_ = timing_type;
 			elapsed_ = 0;
+			target_t_ = 0;
+			t_ = 0;
 		}
 
-		LatLaneChangeAction(const LatLaneChangeAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
+		LatLaneChangeAction(const LatLaneChangeAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
 		{
 			transition_dynamics_ = action.transition_dynamics_;
 			target_ = action.target_;
 			start_t_ = action.start_t_;
+			target_t_ = action.target_t_;
 			target_lane_offset_ = action.target_lane_offset_;
 			target_lane_id_ = action.target_lane_id_;
 			elapsed_ = action.elapsed_;
+			t_ = action.t_;
 		}
 
 		OSCPrivateAction* Copy()
 		{
-			LatLaneChangeAction *new_action = new LatLaneChangeAction(*this);
+			LatLaneChangeAction* new_action = new LatLaneChangeAction(*this);
 			return new_action;
 		}
 
@@ -310,6 +322,7 @@ namespace scenarioengine
 
 		void Start();
 
+		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};
 
 	class LatLaneOffsetAction : public OSCPrivateAction
@@ -380,6 +393,8 @@ namespace scenarioengine
 
 		void Start();
 		void Step(double dt, double simTime);
+
+		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};
 
 	class SynchronizeAction : public OSCPrivateAction
@@ -442,6 +457,19 @@ namespace scenarioengine
 		void PrintStatus(const char* custom_msg);
 		const char* Mode2Str(SynchMode mode);
 		const char* SubMode2Str(SynchSubmode submode);
+
+		void ReplaceObjectRefs(Object* obj1, Object* obj2)
+		{
+			if (object_ == obj1)
+			{
+				object_ = obj2;
+			}
+
+			if (master_object_ == obj1)
+			{
+				master_object_ = obj2;
+			}
+		}
 	};
 
 	class TeleportAction : public OSCPrivateAction
@@ -464,6 +492,8 @@ namespace scenarioengine
 
 		void Step(double dt, double simTime);
 		void Start();
+
+		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};
 
 	class AssignRouteAction : public OSCPrivateAction
@@ -492,6 +522,8 @@ namespace scenarioengine
 
 		void Start();
 		void End();
+
+		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};
 
 	class FollowTrajectoryAction : public OSCPrivateAction
@@ -531,6 +563,8 @@ namespace scenarioengine
 
 		void Start();
 		void End();
+
+		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};
 
 	class AssignControllerAction : public OSCPrivateAction
@@ -552,7 +586,7 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt, double simTime) { }  // put driver model here
+		void Step(double dt, double simTime) { } 
 
 		void Start()
 		{
@@ -582,17 +616,20 @@ namespace scenarioengine
 
 		/**
 		Default constructor assuming both domains (lat/long) activated
-		@param domainMask bitmask according to Controller::ControllerDomain type
+		@param domainMask bitmask according to Controller::Domain type
 		*/
-		ActivateControllerAction() : domainMask_(Controller::ControllerDomain::CTRL_BOTH), OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
+		ActivateControllerAction() : domainMask_(Controller::Domain::CTRL_BOTH), 
+			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
 
 		/**
 		Constructor with domain specification
-		@param domainMask bitmask according to Controller::ControllerDomain type
+		@param domainMask bitmask according to Controller::Domain type
 		*/
-		ActivateControllerAction(int domainMask) : domainMask_(domainMask), OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
+		ActivateControllerAction(int domainMask) : domainMask_(domainMask), 
+			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
 
-		ActivateControllerAction(const ActivateControllerAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
+		ActivateControllerAction(const ActivateControllerAction& action) : 
+			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
 		{
 			domainMask_ = action.domainMask_;
 		}
@@ -603,7 +640,7 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt, double simTime) 
+		void Start()
 		{
 			if (object_->GetControllerType() != 0)
 			{
@@ -612,12 +649,53 @@ namespace scenarioengine
 					object_->controller_->Activate(domainMask_);
 				}
 			}
+			else
+			{
+				LOG("No controller assigned!");
+			}
+			OSCAction::Start();
+		}
+
+		void Step(double dt, double simTime) 
+		{
 		}  
 
 		void End()
 		{
-			object_->controller_->Deactivate();
-			OSCAction::End();
+			if (object_->GetControllerType() != 0)
+			{
+				object_->controller_->Deactivate();
+				OSCAction::End();
+			}
 		}
+	};
+
+	class VisibilityAction : public OSCPrivateAction
+	{
+	public:
+
+		bool graphics_;
+		bool traffic_;
+		bool sensors_;
+
+		VisibilityAction() : graphics_(true), traffic_(true), sensors_(true),
+			OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY) {}
+
+		VisibilityAction(const VisibilityAction& action) : graphics_(true), traffic_(true), sensors_(true),
+			OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY)
+		{
+			graphics_ = action.graphics_;
+			traffic_ = action.traffic_;
+			sensors_ = action.sensors_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			VisibilityAction* new_action = new VisibilityAction(*this);
+			return new_action;
+		}
+
+		void Step(double dt, double simTime);
+		void Start();
 	};
 }

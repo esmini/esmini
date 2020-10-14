@@ -1,1 +1,0 @@
-"../../bin/esmini" --window 50 50 1024 576  --osc ../../resources/xosc/basic_ghost.xosc --trails --road_features

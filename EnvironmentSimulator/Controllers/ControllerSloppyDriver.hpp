@@ -17,7 +17,7 @@
 #include "pugixml.hpp"
 #include "Parameters.hpp"
 
-#define CONTROLLER_SLOPPY_DRIVER_NAME "SloppyDriverController"
+#define CONTROLLER_SLOPPY_DRIVER_TYPE_NAME "SloppyDriverController"
 
 namespace scenarioengine
 {
@@ -26,17 +26,15 @@ namespace scenarioengine
 	{
 	public:
 
-		ControllerSloppyDriver(std::string name, Entities* entities, ScenarioGateway* gateway, 
-			Parameters* parameters, OSCProperties* properties);
+		ControllerSloppyDriver(InitArgs* args);
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_SLOPPY_DRIVER_NAME; }
+		static const char* GetTypeNameStatic() { return CONTROLLER_SLOPPY_DRIVER_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
 		static const int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();
 		void Step(double timeStep);
-		void PostFrame();
 		void Activate(int domainMask);
 		void ReportKeyEvent(int key, bool down);
 
@@ -48,7 +46,7 @@ namespace scenarioengine
 		double speedTimer_;
 		double speedTimerDuration_;
 		DampedSpring speedFilter_;
-
+		double relativeH_;
 		double initT_;
 		double lateralTimer_;
 		double lateralTimerDuration_;
@@ -56,6 +54,5 @@ namespace scenarioengine
 		const char* type_name_ = "SloppyDriver";
 	};
 
-	Controller* InstantiateControllerSloppyDriver(std::string name, Entities* entities, ScenarioGateway* gateway,
-		Parameters* parameters, OSCProperties* properties);
+	Controller* InstantiateControllerSloppyDriver(void* args);
 }

@@ -24,35 +24,32 @@
 
 using namespace scenarioengine;
 
-Controller* scenarioengine::InstantiateControllerFollowGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
-	Parameters* parameters, OSCProperties* properties)
+Controller* scenarioengine::InstantiateControllerFollowGhost(void* args)
 {
-	return new ControllerFollowGhost(name, entities, gateway, parameters, properties);
+	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
+
+	return new ControllerFollowGhost(initArgs);
 }
 
-ControllerFollowGhost::ControllerFollowGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
-	Parameters* parameters, OSCProperties* properties) :
-	Controller(name, entities, gateway, parameters, properties)
+ControllerFollowGhost::ControllerFollowGhost(InitArgs* args) : Controller(args)
 {
-	if (properties->ValueExists("ghost"))
+	if (args->properties->ValueExists("headstartTime"))
 	{
-		std::string ghost_name = properties->GetValueStr("ghost");
-		ghost_ = entities->GetObjectByName(ghost_name);
-		if (ghost_ == 0)
-		{
-			LOG("Error: Failed to find ghost %s", ghost_name.c_str());
-		}
+		headstart_time_ = strtod(args->properties->GetValueStr("headstartTime"));
+	}
+
+	// FollowGhost controller forced into override mode - will not perform any scenario actions
+	if (mode_ != Mode::MODE_OVERRIDE)
+	{
+		LOG("FollowGhost controller mode \"%s\" not applicable. Using override mode instead.", Mode2Str(mode_).c_str());
+		mode_ = Controller::Mode::MODE_OVERRIDE;
 	}
 }
 
 void ControllerFollowGhost::Init()
 {
+	object_->SetHeadstartTime(headstart_time_);
 	Controller::Init();
-}
-
-void ControllerFollowGhost::PostFrame()
-{
-	Controller::PostFrame();
 }
 
 void ControllerFollowGhost::Step(double timeStep)
@@ -60,13 +57,35 @@ void ControllerFollowGhost::Step(double timeStep)
 	// Set steering target point at a distance ahead proportional to the speed
 	double probe_target_distance = MAX(7, 0.5 * object_->speed_);
 
+	// Update position along ghost trails
+	if (object_->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
+		object_->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
+	{
+		if (object_->GetGhost())
+		{
+			if (object_->GetGhost()->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
+				object_->trail_closest_pos_[0], object_->trail_closest_pos_[1],
+				object_->trail_follow_s_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
+			{
+				object_->trail_closest_pos_[2] = object_->pos_.GetZ();
+			}
+			else
+			{
+				// Failed find point along trail, copy entity position
+				object_->trail_closest_pos_[0] = object_->pos_.GetX();
+				object_->trail_closest_pos_[1] = object_->pos_.GetY();
+				object_->trail_closest_pos_[2] = object_->pos_.GetZ();
+			}
+		}
+	}
+
 	// Find out a steering target along ghost vehicle trail
 	double s_out;
 	int index_out;
 	ObjectTrailState state;
 
 	// Locate a point at given distance from own vehicle along the ghost trajectory
-	if (ghost_ && ghost_->trail_.FindPointAhead(
+	if (object_->GetGhost() && object_->GetGhost()->trail_.FindPointAhead(
 		object_->trail_follow_index_, object_->trail_follow_s_, probe_target_distance, state, index_out, s_out) != 0)
 	{
 		state.x_ = (float)object_->pos_.GetX();
@@ -105,16 +124,31 @@ void ControllerFollowGhost::Step(double timeStep)
 	// Register updated vehicle position 
 	object_->pos_.XYZH2TrackPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_);
 
+	object_->SetSpeed(vehicle_.speed_);
+
 	// Fetch Z and Pitch from road position
 	vehicle_.posZ_ = object_->pos_.GetZ();
 	vehicle_.pitch_ = object_->pos_.GetP();
+	
+	// Update wheels wrt domains
+	if (domain_ & Controller::Domain::CTRL_LONGITUDINAL)
+	{
+		object_->wheel_angle_ = vehicle_.wheelRotation_;
+		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+	}
+
+	if (domain_ & Controller::Domain::CTRL_LATERAL)
+	{
+		object_->wheel_angle_ = vehicle_.wheelAngle_;
+		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
+	}
 
 	// Report updated state to scenario gateway
-	gateway_->reportObject(object_->id_, object_->name_, static_cast<int>(Object::Type::VEHICLE), static_cast<int>(Vehicle::Category::CAR),
-		0, object_->GetControllerType(), object_->boundingbox_, 0,
-		vehicle_.speed_, vehicle_.wheelAngle_, vehicle_.wheelRotation_,
-		vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_,
-		vehicle_.heading_, vehicle_.pitch_, 0);
+	//gateway_->reportObject(object_->id_, object_->name_, static_cast<int>(Object::Type::VEHICLE), static_cast<int>(Vehicle::Category::CAR),
+	//	0, object_->GetControllerType(), object_->boundingbox_, 0,
+	//	vehicle_.speed_, vehicle_.wheelAngle_, vehicle_.wheelRotation_,
+	//	vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_,
+	//	vehicle_.heading_, vehicle_.pitch_, 0);
 
 	Controller::Step(timeStep);
 }

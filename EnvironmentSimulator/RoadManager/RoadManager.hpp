@@ -1447,6 +1447,14 @@ namespace roadmanager
 		void Print();
 		void PrintXY();
 
+		void ReplaceObjectRefs(Position* pos1, Position* pos2)
+		{
+			if (rel_pos_ == pos1)
+			{
+				rel_pos_ = pos2;
+			}
+		}
+
 	protected:
 		void Track2Lane();
 		int Track2XYZ(bool alignH = true);

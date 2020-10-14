@@ -270,7 +270,7 @@
                         <StoryboardElementStateCondition 
                             storyboardElementType="action" 
                             storyboardElementRef="raise_action" 
-                            state="endTransition"
+                            state="completeState"
                         />
 					  </ByValueCondition>		
 			      </Condition>

@@ -19,7 +19,7 @@
 #include "Entities.hpp"
 #include "vehicle.hpp"
 
-#define CONTROLLER_FOLLOW_GHOST_NAME "FollowGhostController"
+#define CONTROLLER_FOLLOW_GHOST_TYPE_NAME "FollowGhostController"
 
 namespace scenarioengine
 {
@@ -29,24 +29,22 @@ namespace scenarioengine
 	class ControllerFollowGhost: public Controller
 	{
 	public:
-		ControllerFollowGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
-			Parameters* parameters, OSCProperties* properties);
+		ControllerFollowGhost(InitArgs *args);
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_FOLLOW_GHOST_NAME; }
+		static const char* GetTypeNameStatic() { return CONTROLLER_FOLLOW_GHOST_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
 		static const int GetTypeStatic() { return CONTROLLER_TYPE_FOLLOW_GHOST; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();
 		void Step(double timeStep);
-		void PostFrame();
 		void Activate(int domainMask);
 		void ReportKeyEvent(int key, bool down);
 
 	private:
 		vehicle::Vehicle vehicle_;
+		double headstart_time_;
 	};
 
-	Controller* InstantiateControllerFollowGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
-		Parameters* parameters, OSCProperties* properties);
+	Controller* InstantiateControllerFollowGhost(void* args);
 }
