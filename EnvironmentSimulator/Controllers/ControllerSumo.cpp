@@ -23,26 +23,32 @@
 
 using namespace scenarioengine;
 
-ControllerSumo::ControllerSumo(Controller::Type type, std::string name, Entities* entities, ScenarioGateway* gateway, 
-	Parameters* parameters, OSCProperties properties) :	properties_(properties), time_(0), sumo_x_offset_(0), 
-	sumo_y_offset_(0), Controller(type, name, entities, gateway)
+Controller* scenarioengine::InstantiateControllerSumo(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Parameters* parameters, OSCProperties* properties)
 {
-	if (properties_.file_.filepath_.empty())
+	return new ControllerSumo(name, entities, gateway, parameters, properties);
+}
+
+ControllerSumo::ControllerSumo(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Parameters* parameters, OSCProperties* properties) :
+	Controller(name, entities, gateway, parameters, properties)
+{
+	if (properties->file_.filepath_.empty())
 	{
 		LOG("No filename!");
 		return;
 	}
 
-	if (docsumo_.load_file(properties_.file_.filepath_.c_str()).status == pugi::status_file_not_found)
+	if (docsumo_.load_file(properties->file_.filepath_.c_str()).status == pugi::status_file_not_found)
 	{
-		LOG("Failed to load SUMO config file %s", properties_.file_.filepath_.c_str());
-		throw std::invalid_argument(std::string("Cannot open file: ") + properties_.file_.filepath_);
+		LOG("Failed to load SUMO config file %s", properties->file_.filepath_.c_str());
+		throw std::invalid_argument(std::string("Cannot open file: ") + properties->file_.filepath_);
 		return;
 	}
 
 	std::vector<std::string> file_name_candidates;
 	file_name_candidates.push_back(parameters->ReadAttribute(docsumo_.child("configuration").child("input").child("net-file"), "value"));
-	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(properties_.file_.filepath_), file_name_candidates[0]));
+	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(properties->file_.filepath_), file_name_candidates[0]));
 	pugi::xml_parse_result sumonet;
 	size_t i;
 	for (i = 0; i < file_name_candidates.size(); i++)
@@ -69,7 +75,7 @@ ControllerSumo::ControllerSumo(Controller::Type type, std::string name, Entities
 
 	std::vector<std::string> options;
 
-	options.push_back("-c " + properties_.file_.filepath_);
+	options.push_back("-c " + properties->file_.filepath_);
 	options.push_back("--xml-validation");
 	options.push_back("never");
 
@@ -81,7 +87,7 @@ void ControllerSumo::Init()
 	// Adds all vehicles added in openscenario to the sumosimulation
 	for (size_t j = 0; j < entities_->object_.size(); j++)
 	{
-		if (!(entities_->object_[j]->GetControllerType() == Controller::Type::CONTROLLER_GHOST))
+		if (!(entities_->object_[j]->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST))
 		{
 			libsumo::Vehicle::add(entities_->object_[j]->name_, "");
 		}
@@ -95,8 +101,8 @@ void ControllerSumo::PostFrame()
 	// Updates all positions for non-sumo controlled vehicles
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
-		if (entities_->object_[i]->GetControllerType() != Controller::Type::CONTROLLER_SUMO &&
-			entities_->object_[i]->GetControllerType() != Controller::Type::CONTROLLER_GHOST)
+		if (entities_->object_[i]->GetControllerType() != Controller::Type::CONTROLLER_TYPE_SUMO &&
+			entities_->object_[i]->GetControllerType() != Controller::Type::CONTROLLER_TYPE_GHOST)
 		{
 			libsumo::Vehicle::moveToXY(entities_->object_[i]->name_, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_, 
 				entities_->object_[i]->pos_.GetY() + sumo_y_offset_, entities_->object_[i]->pos_.GetH(), 0);
@@ -150,7 +156,7 @@ void ControllerSumo::Step(double timeStep)
 	// Update the position of all cars controlled by sumo
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
-		if (entities_->object_[i]->GetControllerType() == Controller::Type::CONTROLLER_SUMO)
+		if (entities_->object_[i]->GetControllerType() == Controller::Type::CONTROLLER_TYPE_SUMO)
 		{
 			Object* obj = entities_->object_[i];
 

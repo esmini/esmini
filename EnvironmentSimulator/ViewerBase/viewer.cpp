@@ -663,9 +663,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		free(argv);
 	}
 
-	// Decorate window border with application name
-	SetWindowTitle(FileNameWithoutExtOf(arguments.getApplicationName()) + (scenarioFilename ? " " + FileNameOf(scenarioFilename) : ""));
-
 	// Create 3D geometry for trail dots
 	dot_node_ = CreateDotGeometry();
 
@@ -1560,6 +1557,46 @@ void Viewer::SetWindowTitle(std::string title)
 	{
 		wins[0]->setWindowName(title);
 	}
+}
+
+void Viewer::SetWindowTitleFromArgs(std::vector<std::string> &args)
+{
+	std::string titleString;
+	for (int i = 0; i < args.size(); i++)
+	{
+		std::string arg = args[i];
+		if (i == 0)
+		{
+			arg = FileNameWithoutExtOf(arg);
+		}
+		else if (arg == "--osc" || arg == "--odr" || arg == "--model")
+		{
+			titleString += std::string(arg) + " ";
+			i++;
+			arg = FileNameOf(std::string(args[i]));
+		}
+		else if (arg == "--window")
+		{
+			i += 4;
+			continue;
+		}
+
+		titleString += std::string(arg) + " ";
+	}
+	
+	SetWindowTitle(titleString);
+}
+
+void Viewer::SetWindowTitleFromArgs(int argc, char* argv[])
+{
+	std::vector<std::string> args;
+
+	for (int i = 0; i < argc; i++)
+	{
+		args.push_back(argv[i]);
+	}
+
+	SetWindowTitleFromArgs(args);
 }
 
 void Viewer::RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data)

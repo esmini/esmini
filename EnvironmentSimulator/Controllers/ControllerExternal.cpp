@@ -22,13 +22,19 @@
 
 using namespace scenarioengine;
 
-ControllerExternal::ControllerExternal(Controller::Type type, std::string name, Entities* entities,
-	ScenarioGateway* gateway, Parameters* parameters, OSCProperties properties) :
-	Controller(type, name, entities, gateway)
+Controller* scenarioengine::InstantiateControllerExternal(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Parameters* parameters, OSCProperties* properties)
 {
-	if (properties.ValueExists("ghost"))
+	return new ControllerExternal(name, entities, gateway, parameters, properties);
+}
+
+ControllerExternal::ControllerExternal(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Parameters* parameters, OSCProperties* properties) :
+	Controller(name, entities, gateway, parameters, properties)
+{
+	if (properties->ValueExists("ghost"))
 	{
-		std::string ghost_name = properties.GetValueStr("ghost");
+		std::string ghost_name = properties->GetValueStr("ghost");
 		ghost_ = entities->GetObjectByName(ghost_name);
 		if (ghost_ == 0)
 		{

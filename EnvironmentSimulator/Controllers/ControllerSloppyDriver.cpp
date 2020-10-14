@@ -29,13 +29,19 @@ static std::mt19937 mt_rand;
 
 #define WHEEL_RADIUS 0.35
 
-ControllerSloppyDriver::ControllerSloppyDriver(Controller::Type type, std::string name, Entities* entities, 
-	ScenarioGateway* gateway, OSCProperties properties) : properties_(properties), sloppiness_(0.5), 
-	Controller(type, name, entities, gateway)
+Controller* scenarioengine::InstantiateControllerSloppyDriver(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Parameters* parameters, OSCProperties* properties)
 {
-	if (properties.ValueExists("sloppiness"))
+	return new ControllerSloppyDriver(name, entities, gateway, parameters, properties);
+}
+
+ControllerSloppyDriver::ControllerSloppyDriver(std::string name, Entities* entities, 
+	ScenarioGateway* gateway, Parameters* parameters, OSCProperties* properties) : sloppiness_(0.5),
+	Controller(name, entities, gateway, parameters, properties)
+{
+	if (properties->ValueExists("sloppiness"))
 	{
-		sloppiness_ = strtod(properties.GetValueStr("sloppiness"));
+		sloppiness_ = strtod(properties->GetValueStr("sloppiness"));
 	}
 }
 
@@ -78,8 +84,18 @@ void ControllerSloppyDriver::Step(double timeStep)
 		speedFilter_.Update(timeStep);
 		
 		speed = MAX(speedFilter_.GetValue(), 0);  // Don't go reverse
-		pos.MoveAlongS(timeStep * object_->GetSpeed());
-
+		
+		// Adjustment movement to heading and road direction
+		if (GetAbsAngleDifference(object_->pos_.GetH(), object_->pos_.GetDrivingDirection()) > M_PI_2)
+		{
+			// If pointing in other direction
+			pos.MoveAlongS(-timeStep * object_->GetSpeed());
+		}
+		else
+		{
+			pos.MoveAlongS(timeStep * object_->GetSpeed());
+		}
+		
 		speedTimer_ -= timeStep;
 	}
 

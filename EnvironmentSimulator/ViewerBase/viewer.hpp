@@ -275,6 +275,8 @@ namespace viewer
 		PointSensor* CreateSensor(double color[], bool create_ball, bool create_line, double ball_radius, double line_width);
 		bool CreateRoadSensors(CarModel *vehicle_model);
 		void SetWindowTitle(std::string title);
+		void SetWindowTitleFromArgs(std::vector<std::string> &arg);
+		void SetWindowTitleFromArgs(int argc, char* argv[]);
 		void RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data);
 
 	private:

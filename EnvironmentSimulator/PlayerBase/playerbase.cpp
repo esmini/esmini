@@ -186,8 +186,8 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	{
 		Object* obj = scenarioEngine->entities.object_[i];
 
-		if (obj->GetControllerType() == Controller::Type::CONTROLLER_EXTERNAL ||
-			obj->GetControllerType() == Controller::Type::CONTROLLER_FOLLOW_GHOST)
+		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
+			obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
 		{
 			if (obj->controller_->GetGhost())
 			{
@@ -307,8 +307,8 @@ void ScenarioPlayer::ViewerFrame()
 		car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
 		car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
 
-		if (obj->GetControllerType() == Controller::Type::CONTROLLER_EXTERNAL ||
-			obj->GetControllerType() == Controller::Type::CONTROLLER_FOLLOW_GHOST)
+		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
+			obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
 		{
 			if (obj->controller_->GetGhost())
 			{
@@ -390,7 +390,7 @@ int ScenarioPlayer::InitViewer()
 		viewer_->ShowRoadFeatures(true);
 	}
 
-	if (opt.GetOptionArg("osi_features") == "on")
+	if (opt.GetOptionSet("osi_features"))
 	{
 		viewer_->ShowOSIFeatures(true);
 	}
@@ -435,11 +435,11 @@ int ScenarioPlayer::InitViewer()
 		Object* obj = scenarioEngine->entities.object_[i];
 
 		// Create trajectory/trails for all entities
-		if (obj->GetControllerType() == Controller::Type::CONTROLLER_GHOST)
+		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST)
 		{
 			trail_color.set(color_gray[0], color_gray[1], color_gray[2]);
 		}
-		else if (obj->GetControllerType() == Controller::Type::CONTROLLER_EXTERNAL)
+		else if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
 		{
 			trail_color.set(color_yellow[0], color_yellow[1], color_yellow[2]);
 		}
@@ -449,9 +449,9 @@ int ScenarioPlayer::InitViewer()
 		}
 
 		//  Create vehicles for visualization
-		bool transparent = obj->GetControllerType() == Controller::Type::CONTROLLER_GHOST ? true : false;
-		bool road_sensor = obj->GetControllerType() == Controller::Type::CONTROLLER_GHOST ||
-			obj->GetControllerType() == Controller::Type::CONTROLLER_EXTERNAL ? true : false;
+		bool transparent = obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST ? true : false;
+		bool road_sensor = obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST ||
+			obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ? true : false;
 		if (viewer_->AddCar(obj->model_filepath_, transparent, trail_color, road_sensor, obj->name_) == 0)
 		{
 			delete viewer_;
@@ -460,8 +460,8 @@ int ScenarioPlayer::InitViewer()
 		}
 
 		// If following a ghost vehicle, add visual representation of speed and steering sensors
-		if (scenarioEngine->entities.object_[i]->GetControllerType() == Controller::CONTROLLER_EXTERNAL ||
-			scenarioEngine->entities.object_[i]->GetControllerType() == Controller::CONTROLLER_FOLLOW_GHOST)
+		if (scenarioEngine->entities.object_[i]->GetControllerType() == Controller::CONTROLLER_TYPE_EXTERNAL ||
+			scenarioEngine->entities.object_[i]->GetControllerType() == Controller::CONTROLLER_TYPE_FOLLOW_GHOST)
 		{
 			if (scenarioEngine->entities.object_[i]->controller_->GetGhost())
 			{
@@ -485,9 +485,9 @@ int ScenarioPlayer::InitViewer()
 	{
 		Object* obj = scenarioEngine->entities.object_[i];
 		
-		if (obj->GetControllerType() == Controller::Type::CONTROLLER_INTERACTIVE ||
-			obj->GetControllerType() == Controller::Type::CONTROLLER_EXTERNAL ||
-			obj->GetControllerType() == Controller::Type::CONTROLLER_FOLLOW_GHOST)
+		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_INTERACTIVE ||
+			obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
+			obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
 		{
 			if (viewer_->GetVehicleInFocus() == 0)
 			{
@@ -569,8 +569,8 @@ int ScenarioPlayer::Init()
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
 	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
 	opt.AddOption("trails", "Show trails (toggle during simulation by press 'j')");
-	opt.AddOption("road_features", "Show OpenDRIVE road features");
-	opt.AddOption("osi_features", "Show OSI road features (\"on\", \"off\" (default)) (toggle during simulation by press 'u') ", "mode");
+	opt.AddOption("road_features", "Show OpenDRIVE road features (toggle during simulation by press 'o') ");
+	opt.AddOption("osi_features", "Show OSI road features (toggle during simulation by press 'u') ");
 	opt.AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
@@ -742,6 +742,9 @@ int ScenarioPlayer::Init()
 		{
 			InitViewer();
 		}
+
+		// Decorate window border with application name and arguments
+		viewer_->SetWindowTitleFromArgs(opt.GetOriginalArgs());
 
 		viewer_->RegisterKeyEventCallback(ReportKeyEvent, this);
 #endif

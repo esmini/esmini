@@ -16,6 +16,7 @@
 #include "Controller.hpp"
 #include "Parameters.hpp"
 
+#define CONTROLLER_GHOST_NAME "GhostController"
 
 namespace scenarioengine
 {
@@ -23,8 +24,13 @@ namespace scenarioengine
 	class ControllerGhost: public Controller
 	{
 	public:
+		ControllerGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
+			Parameters* parameters, OSCProperties* properties);
 
-		ControllerGhost(Controller::Type type, std::string name, Entities *entities, ScenarioGateway* gateway, OSCProperties properties);
+		static const char* GetTypeNameStatic() { return CONTROLLER_GHOST_NAME; }
+		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
+		static const int GetTypeStatic() { return CONTROLLER_TYPE_GHOST; }
+		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();
 		void Step(double timeStep);
@@ -32,4 +38,7 @@ namespace scenarioengine
 		void Activate(int domainMask);
 		void ReportKeyEvent(int key, bool down);
 	};
+
+	Controller* InstantiateControllerGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
+		Parameters* parameters, OSCProperties* properties);
 }

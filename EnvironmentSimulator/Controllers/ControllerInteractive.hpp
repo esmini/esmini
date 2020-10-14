@@ -18,6 +18,8 @@
 #include "Parameters.hpp"
 #include "vehicle.hpp"
 
+#define CONTROLLER_INTERACTIVE_NAME "InteractiveController"
+
 namespace scenarioengine
 {
 	// base class for controllers
@@ -25,14 +27,19 @@ namespace scenarioengine
 	{
 	public:
 
-		ControllerInteractive(Controller::Type type, std::string name, 
-			Entities *entities, ScenarioGateway* gateway);
+		ControllerInteractive(std::string name, Entities* entities, ScenarioGateway* gateway,
+			Parameters* parameters, OSCProperties* properties);
 
 		void Init();
 		void Step(double timeStep);
 		void PostFrame();
 		void Activate(int domainMask);
 		void ReportKeyEvent(int key, bool down);
+
+		static const char* GetTypeNameStatic() { return CONTROLLER_INTERACTIVE_NAME; }
+		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
+		static const int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_INTERACTIVE; }
+		virtual int GetType() { return GetTypeStatic(); }
 
 	private:
 		vehicle::Vehicle vehicle_;
@@ -44,4 +51,6 @@ namespace scenarioengine
 
 	};
 
+	Controller* InstantiateControllerInteractive(std::string name, Entities* entities, ScenarioGateway* gateway,
+		Parameters* parameters, OSCProperties* properties);
 }

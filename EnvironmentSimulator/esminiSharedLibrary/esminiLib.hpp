@@ -269,10 +269,12 @@ extern "C"
 	The SE_GetOSIRoadLane function returns a char array containing the osi Lane information/message of the lane where the object with object_id is, serialized to a string
 	*/
 	SE_DLL_API const char* SE_GetOSIRoadLane(int* size, int object_id);
+	
 	/**
 	The SE_GetOSIRoadLane function returns a char array containing the osi Lane Boundary information/message with the specified GLOBAL id
 	*/
 	SE_DLL_API const char* SE_GetOSILaneBoundary(int* size, int global_id);
+	
 	/**
 	The SE_GetOSILaneBoundaryIds function the global ids for left, far elft, right and far right lane boundaries
 	@param object_id Handle to the object to which the sensor should be attached

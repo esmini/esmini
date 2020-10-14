@@ -22,15 +22,50 @@
 #include "OSCGlobalAction.hpp"
 #include "OSCBoundingBox.hpp"
 #include "Parameters.hpp"
-//#include "Controller.hpp"
+#include "Controller.hpp"
 #include "ScenarioGateway.hpp"
 
 #include <iostream>
 #include <string>
 #include <vector>
 
+
 namespace scenarioengine
 {
+	class ControllerPool
+	{
+	public:
+		typedef struct
+		{
+			std::string name;
+			ControllerInstantiateFunction instantiateFunction;
+		} ControllerEntry;
+
+		ControllerPool() {};
+
+		std::vector<ControllerEntry> controller_;
+
+		void AddController(std::string name, ControllerInstantiateFunction function)
+		{
+			ControllerEntry entry = { name, function };
+			controller_.push_back(entry);
+		}
+
+		ControllerEntry* GetControllerByName(std::string name)
+		{
+			for (size_t i=0; i<controller_.size(); i++)
+			{
+				if (controller_[i].name == name)
+				{
+					return &controller_[i];
+				}
+			}
+			return 0;
+		}
+
+	};
+
+
 
 	class ScenarioReader
 	{
@@ -42,7 +77,7 @@ namespace scenarioengine
 		int loadOSCFile(const char * path);
 		void loadOSCMem(const pugi::xml_document &xml_doch);
 		void SetGateway(ScenarioGateway* gateway) { gateway_ = gateway; }
-
+		void RegisterEmbeddedControllers();
 		int RegisterCatalogDirectory(pugi::xml_node catalogDirChild);
 
 		// RoadNetwork
@@ -66,7 +101,6 @@ namespace scenarioengine
 		// Enitites
 		int parseEntities();
 		Entry* ResolveCatalogReference(pugi::xml_node node);
-		Object* FindObjectByName(std::string name);
 
 		// Storyboard - Init
 		void parseInit(Init &init);
@@ -83,7 +117,11 @@ namespace scenarioengine
 		void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, ManeuverGroup *mGroup);
 
 		std::string getScenarioFilename() { return oscFilename_; }
-
+		void RegisterController(std::string type_name, ControllerInstantiateFunction function)
+		{
+			controllerPool_.AddController(type_name, function);
+		}
+		void LoadControllers();
 		std::vector<Controller*> controller_;
 
 	private:
@@ -95,6 +133,7 @@ namespace scenarioengine
 		Parameters parameters;
 		ScenarioGateway* gateway_;
 		bool disable_controllers_;
+		ControllerPool controllerPool_;
 
 		int ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
 		ConditionGroup* ParseConditionGroup(pugi::xml_node node);

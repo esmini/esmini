@@ -17,6 +17,7 @@
 #include "pugixml.hpp"
 #include "Parameters.hpp"
 
+#define CONTROLLER_SLOPPY_DRIVER_NAME "SloppyDriverController"
 
 namespace scenarioengine
 {
@@ -25,14 +26,20 @@ namespace scenarioengine
 	{
 	public:
 
-		ControllerSloppyDriver(Controller::Type type, std::string name, Entities *entities, 
-			ScenarioGateway* gateway, OSCProperties properties);
+		ControllerSloppyDriver(std::string name, Entities* entities, ScenarioGateway* gateway, 
+			Parameters* parameters, OSCProperties* properties);
+
+		static const char* GetTypeNameStatic() { return CONTROLLER_SLOPPY_DRIVER_NAME; }
+		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
+		static const int GetTypeStatic() { return Controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER; }
+		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();
 		void Step(double timeStep);
 		void PostFrame();
 		void Activate(int domainMask);
 		void ReportKeyEvent(int key, bool down);
+
 
 	private:
 		double sloppiness_;  // range [0-1], default = 0.5
@@ -46,6 +53,9 @@ namespace scenarioengine
 		double lateralTimer_;
 		double lateralTimerDuration_;
 		DampedSpring lateralFilter_;
+		const char* type_name_ = "SloppyDriver";
 	};
 
+	Controller* InstantiateControllerSloppyDriver(std::string name, Entities* entities, ScenarioGateway* gateway,
+		Parameters* parameters, OSCProperties* properties);
 }

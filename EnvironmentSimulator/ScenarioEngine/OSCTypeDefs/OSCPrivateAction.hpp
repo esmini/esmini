@@ -605,7 +605,7 @@ namespace scenarioengine
 
 		void Step(double dt, double simTime) 
 		{
-			if (object_->GetControllerType() != Controller::Type::CONTROLLER_DEFAULT)
+			if (object_->GetControllerType() != 0)
 			{
 				if (!object_->controller_->Active())
 				{

@@ -652,7 +652,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 	roadmanager::Position pos;
 	for (size_t i = 0; i < objectState.size(); i++)
 	{
-		if (objectState[i]->state_.ctrl_type == Controller::Type::CONTROLLER_EXTERNAL) // external is host
+		if (objectState[i]->state_.ctrl_type == Controller::Type::CONTROLLER_TYPE_EXTERNAL) // external is host
 		{
 			pos = objectState[i]->state_.pos;
 		}

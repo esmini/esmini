@@ -12,10 +12,10 @@
 
 #include "ScenarioReader.hpp"
 #include "CommonMini.hpp"
-#include "ControllerSumo.hpp"
 #include "ControllerSloppyDriver.hpp"
-#include "ControllerGhost.hpp"
 #include "ControllerInteractive.hpp"
+#include "ControllerSumo.hpp"
+#include "ControllerGhost.hpp"
 #include "ControllerExternal.hpp"
 #include "ControllerFollowGhost.hpp"
 
@@ -34,6 +34,17 @@ ScenarioReader::~ScenarioReader()
 		delete controller_[i];
 	}
 	controller_.clear();
+}
+
+void ScenarioReader::LoadControllers()
+{
+	// Register all internal controllers. The user may register custom ones as well before reading the scenario.
+	RegisterController(ControllerSloppyDriver::GetTypeNameStatic(), InstantiateControllerSloppyDriver);
+	RegisterController(ControllerInteractive::GetTypeNameStatic(), InstantiateControllerInteractive);
+	RegisterController(ControllerExternal::GetTypeNameStatic(), InstantiateControllerExternal);
+	RegisterController(ControllerGhost::GetTypeNameStatic(), InstantiateControllerGhost);
+	RegisterController(ControllerFollowGhost::GetTypeNameStatic(), InstantiateControllerFollowGhost);
+	RegisterController(ControllerSumo::GetTypeNameStatic(), InstantiateControllerSumo);
 }
 
 int ScenarioReader::loadOSCFile(const char * path)
@@ -430,7 +441,7 @@ Controller* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 			if (!FileExists(filename2.c_str()))
 			{
 				// Give up
-				LOG("Failed to localize SUMO config file %s, also tried %s", filename.c_str(), filename.c_str());
+				LOG("Failed to localize controller file %s, also tried %s", filename.c_str(), filename2.c_str());
 				return 0;
 			}
 			else
@@ -446,39 +457,17 @@ Controller* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 		// Fall back to esmini default operation - no controller involved
 		controller = 0;
 	}
-	if (name == "SumoController")
+	else 
 	{
-		controller = new ControllerSumo(Controller::Type::CONTROLLER_SUMO,
-			name, entities_, gateway_, &parameters, properties);
-	}
-	if (name == "SloppyDriverController")
-	{
-		controller = new ControllerSloppyDriver(Controller::Type::CONTROLLER_SLOPPY_DRIVER,
-			name, entities_, gateway_, properties);
-	}
-	else if (name == "InteractiveController")
-	{
-		controller = new ControllerInteractive(Controller::Type::CONTROLLER_INTERACTIVE,
-			name, entities_, gateway_);
-	}
-	else if (name == "ExternalController")
-	{
-		controller = new ControllerExternal(Controller::Type::CONTROLLER_EXTERNAL,
-			name, entities_, gateway_, &parameters, properties);
-	}
-	else if (name == "GhostController")
-	{
-		controller = new ControllerGhost(Controller::Type::CONTROLLER_GHOST,
-			name, entities_, gateway_, properties);
-	}
-	else if (name == "FollowGhostController")
-	{
-		controller = new ControllerFollowGhost(Controller::Type::CONTROLLER_FOLLOW_GHOST,
-			name, entities_, gateway_, &parameters, properties);
-	}
-	else
-	{
-		LOG("Unsupported controller: %s", name.c_str());
+		ControllerPool::ControllerEntry* ctrl_entry = controllerPool_.GetControllerByName(name);
+		if (ctrl_entry)
+		{
+			controller = ctrl_entry->instantiateFunction(name, entities_, gateway_, &parameters, &properties);
+		}
+		else
+		{
+			LOG("Unsupported controller: %s", name.c_str());
+		}
 	}
 
 	return controller;
@@ -787,7 +776,7 @@ int ScenarioReader::parseEntities()
 				controller_.push_back(ctrl);
 			}
 
-			if (ctrl && ctrl->name_ == "SumoController")
+			if (ctrl && ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_SUMO)
 			{
 				LOG("SUMO Controller registered");
 				

@@ -13,9 +13,9 @@ Options:
   --trails
       Show trails (toggle during simulation by press 'j')
   --road_features
-      Show OpenDRIVE road features
-  --osi_features <mode>
-      Show OSI road features ("on", "off" (default)) (toggle during simulation by press 'u')
+      Show OpenDRIVE road features (toggle during simulation by press 'o')
+  --osi_features
+      Show OSI road features (toggle during simulation by press 'u')
   --sensors
       Show sensor frustums (toggle during simulation by press 'r')
   --camera_mode <mode>
@@ -36,3 +36,5 @@ Options:
       save osi messages in file ("on", "off" (default))
   --osi_freq <frequence>
       relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps
+
+main.cpp / 62 / main(): Failed to initialize scenario player

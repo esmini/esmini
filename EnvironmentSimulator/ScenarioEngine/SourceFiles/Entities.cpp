@@ -49,7 +49,7 @@ int Object::GetControllerType()
 	}
 	else
 	{
-		return Controller::Type::CONTROLLER_DEFAULT;
+		return 0;
 	}
 }
 
@@ -57,7 +57,7 @@ bool Object::IsControllerActiveOnDomains(int domainMask)
 {
 	if (controller_)
 	{
-		return controller_->domain_ & domainMask;
+		return controller_->GetDomain() & domainMask;
 	}
 	else
 	{

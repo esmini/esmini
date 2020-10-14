@@ -25,9 +25,15 @@
 
 using namespace scenarioengine;
 
-ControllerInteractive::ControllerInteractive(Controller::Type type, std::string name, 
-	Entities* entities, ScenarioGateway* gateway) :
-	Controller(type, name, entities, gateway)
+Controller* scenarioengine::InstantiateControllerInteractive(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Parameters* parameters, OSCProperties* properties)
+{
+	return new ControllerInteractive(name, entities, gateway, parameters, properties);
+}
+
+ControllerInteractive::ControllerInteractive(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Parameters* parameters, OSCProperties* properties) :
+	Controller(name, entities, gateway, parameters, properties)
 {
 	LOG("");
 }

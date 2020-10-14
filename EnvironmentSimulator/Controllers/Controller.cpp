@@ -17,6 +17,13 @@
 
 using namespace scenarioengine;
 
+Controller* scenarioengine::InstantiateController(std::string name, Entities* entities, 
+	ScenarioGateway* gateway, Parameters* parameters, OSCProperties* properties)
+{
+	LOG("The base class should not be instantiated");
+	return 0;
+}
+
 void Controller::Step(double timeStep)
 {
 	if (object_)

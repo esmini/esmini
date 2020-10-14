@@ -119,7 +119,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			{
 				if (scenarioReader->controller_[i]->Active())
 				{
-					if (simulationTime_ > 0 || scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_GHOST)
+					if (simulationTime_ > 0 || scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_GHOST)
 					{
 						scenarioReader->controller_[i]->Step(deltaSimTime);
 					}
@@ -364,6 +364,8 @@ void ScenarioEngine::parseScenario()
 {
 	bool hybrid_objects = false;
 
+	scenarioReader->LoadControllers();
+
 	scenarioReader->SetGateway(&scenarioGateway);
 	scenarioReader->parseGlobalParameterDeclarations();
 
@@ -410,7 +412,7 @@ void ScenarioEngine::parseScenario()
 	{
 		Object* obj = entities.object_[i];
 
-		if (!disable_controllers_ && obj->GetControllerType() == Controller::Type::CONTROLLER_GHOST)
+		if (!disable_controllers_ && obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST)
 		{
 			if (obj->controller_->GetHeadstartTime() > GetHeadstartTime())
 			{
@@ -432,7 +434,7 @@ void ScenarioEngine::stepObjects(double dt)
 	{
 		Object *obj = entities.object_[i];
 
-		if (simulationTime_ < 0 && obj->GetControllerType() != Controller::Type::CONTROLLER_GHOST)
+		if (simulationTime_ < 0 && obj->GetControllerType() != Controller::Type::CONTROLLER_TYPE_GHOST)
 		{
 			continue;  // only ghosts allowed to execute before time == 0
 		}
@@ -520,11 +522,11 @@ void ScenarioEngine::stepObjects(double dt)
 			obj->pos_.SetHAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt);
 			
 			// Update wheel rotations of internal scenario objects
-			if (obj->GetControllerType() == Controller::Type::CONTROLLER_DEFAULT && !obj->dirty_lat_)
+			if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_DEFAULT && !obj->dirty_lat_)
 			{
 				obj->wheel_angle_ = heading_rate_new / 2;
 			}
-			if (obj->GetControllerType() == Controller::Type::CONTROLLER_DEFAULT && !obj->dirty_long_)
+			if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_DEFAULT && !obj->dirty_long_)
 			{
 				obj->wheel_rot_ = fmod(obj->wheel_rot_ + obj->speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
 			}

@@ -327,10 +327,12 @@ public:
 	bool GetOptionSet(std::string opt);
 	std::string GetOptionArg(std::string opt);
 	void ParseArgs(int *argc, char* argv[]);
+	std::vector<std::string>& GetOriginalArgs() { return originalArgs_; }
 
 private:
 	std::vector<SE_Option> option_;
 	std::string app_name_;
+	std::vector<std::string> originalArgs_;
 
 	SE_Option *GetOption(std::string opt);
 };

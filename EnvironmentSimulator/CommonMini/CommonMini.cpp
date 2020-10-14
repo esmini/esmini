@@ -850,6 +850,11 @@ void SE_Options::ParseArgs(int *argc, char* argv[])
 {
 	std::string app_name = argv[0];
 
+	for (size_t i = 0; i < *argc; i++)
+	{
+		originalArgs_.push_back(argv[i]);
+	}
+
 	for (size_t i = 1; i < *argc;)
 	{
 		std::string arg = argv[i];

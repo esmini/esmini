@@ -22,13 +22,19 @@
 
 using namespace scenarioengine;
 
-ControllerGhost::ControllerGhost(Controller::Type type, std::string name,
-	Entities* entities, ScenarioGateway* gateway, OSCProperties properties) : 
-	Controller(Controller::Type::CONTROLLER_GHOST, name, entities, gateway)
+Controller* scenarioengine::InstantiateControllerGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Parameters* parameters, OSCProperties* properties)
 {
-	if (properties.ValueExists("headstartTime"))
+	return new ControllerGhost(name, entities, gateway, parameters, properties);
+}
+
+ControllerGhost::ControllerGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Parameters* parameters, OSCProperties* properties) :
+	Controller(name, entities, gateway, parameters, properties)
+{
+	if (properties->ValueExists("headstartTime"))
 	{
-		headstart_time_ = strtod(properties.GetValueStr("headstartTime"));
+		headstart_time_ = strtod(properties->GetValueStr("headstartTime"));
 	}
 }
 

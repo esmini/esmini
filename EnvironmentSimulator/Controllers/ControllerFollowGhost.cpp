@@ -24,13 +24,19 @@
 
 using namespace scenarioengine;
 
-ControllerFollowGhost::ControllerFollowGhost(Controller::Type type, std::string name, Entities* entities,
-	ScenarioGateway* gateway, Parameters* parameters, OSCProperties properties) :
-	Controller(type, name, entities, gateway)
+Controller* scenarioengine::InstantiateControllerFollowGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Parameters* parameters, OSCProperties* properties)
 {
-	if (properties.ValueExists("ghost"))
+	return new ControllerFollowGhost(name, entities, gateway, parameters, properties);
+}
+
+ControllerFollowGhost::ControllerFollowGhost(std::string name, Entities* entities, ScenarioGateway* gateway,
+	Parameters* parameters, OSCProperties* properties) :
+	Controller(name, entities, gateway, parameters, properties)
+{
+	if (properties->ValueExists("ghost"))
 	{
-		std::string ghost_name = properties.GetValueStr("ghost");
+		std::string ghost_name = properties->GetValueStr("ghost");
 		ghost_ = entities->GetObjectByName(ghost_name);
 		if (ghost_ == 0)
 		{

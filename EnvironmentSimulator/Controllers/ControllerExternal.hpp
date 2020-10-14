@@ -16,15 +16,21 @@
 #include "Controller.hpp"
 #include "Parameters.hpp"
 
+#define CONTROLLER_EXTERNAL_NAME "ExternalController"
+
 namespace scenarioengine
 {
 	// base class for controllers
 	class ControllerExternal: public Controller
 	{
 	public:
+		ControllerExternal(std::string name, Entities* entities, ScenarioGateway* gateway,
+			Parameters* parameters, OSCProperties* properties);
 
-		ControllerExternal(Controller::Type type, std::string name, Entities *entities,
-			ScenarioGateway* gateway, Parameters* parameters, OSCProperties properties);
+		static const char* GetTypeNameStatic() { return CONTROLLER_EXTERNAL_NAME; }
+		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
+		static const int GetTypeStatic() { return CONTROLLER_TYPE_EXTERNAL; }
+		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();
 		void Step(double timeStep);
@@ -33,4 +39,6 @@ namespace scenarioengine
 		void ReportKeyEvent(int key, bool down);
 	};
 
+	Controller* InstantiateControllerExternal(std::string name, Entities* entities, ScenarioGateway* gateway,
+		Parameters* parameters, OSCProperties* properties);
 }

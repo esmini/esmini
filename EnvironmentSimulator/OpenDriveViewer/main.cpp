@@ -195,8 +195,11 @@ int main(int argc, char** argv)
 
 	mt_rand.seed((unsigned int)time(0));
 
+	std::vector<std::string> args;
+	for (int i = 0; i < argc; i++) args.push_back(argv[i]);
+
 	// use an ArgumentParser object to manage the program arguments.
-    osg::ArgumentParser arguments(&argc,argv);	
+    osg::ArgumentParser arguments(&argc,argv);
 
     arguments.getApplicationUsage()->setApplicationName(arguments.getApplicationName());
     arguments.getApplicationUsage()->setDescription(arguments.getApplicationName());
@@ -271,6 +274,7 @@ int main(int argc, char** argv)
 			argv[0],
 			arguments);
 
+		viewer->SetWindowTitleFromArgs(args);
 		viewer->ShowRoadFeatures(true);
 		viewer->ShowOSIFeatures(osi_features);
 

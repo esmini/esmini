@@ -112,4 +112,5 @@ private:
 	std::string osi_receiver_addr;
 	int& argc_;
 	char** argv_;
+	std::string titleString;
 };

@@ -17,6 +17,7 @@
 #include "pugixml.hpp"
 #include "Parameters.hpp"
 
+#define CONTROLLER_SUMO_NAME "SumoController"
 
 namespace scenarioengine
 {
@@ -28,10 +29,14 @@ namespace scenarioengine
 		float sumo_y_offset_;
 		double time_;
 		pugi::xml_document docsumo_;
-		OSCProperties properties_;
 
-		ControllerSumo(Controller::Type type, std::string name, Entities *entities, ScenarioGateway* gateway, 
-			Parameters* parameters, OSCProperties properties);
+		ControllerSumo(std::string name, Entities* entities, ScenarioGateway* gateway,
+			Parameters* parameters, OSCProperties* properties);
+
+		static const char* GetTypeNameStatic() { return CONTROLLER_SUMO_NAME; }
+		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
+		static const int GetTypeStatic() { return CONTROLLER_TYPE_SUMO; }
+		virtual int GetType() { return GetTypeStatic(); }
 
 		void Init();
 		void Step(double time);
@@ -39,4 +44,6 @@ namespace scenarioengine
 		void Activate(int domainMask);
 	};
 
+	Controller* InstantiateControllerSumo(std::string name, Entities* entities, ScenarioGateway* gateway,
+		Parameters* parameters, OSCProperties* properties);
 }
