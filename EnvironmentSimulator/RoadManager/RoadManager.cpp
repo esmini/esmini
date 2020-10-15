@@ -538,7 +538,14 @@ std::vector<int> Lane::GetLineGlobalIds()
 
 int Lane::GetLaneBoundaryGlobalId()
 {
-	return lane_boundary_->GetGlobalId(); 
+	if (lane_boundary_)
+	{
+		return lane_boundary_->GetGlobalId();
+	}
+	else
+	{
+		return -1;
+	}
 }
 
 LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx)

@@ -838,10 +838,13 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						else // no road marks -> we take lane boundary
 						{
 							int laneboundary_global_id = lane->GetLaneBoundaryGlobalId();
-							osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-							left_lane_bound_id->set_value(laneboundary_global_id);
-							osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-							right_lane_bound_id->set_value(laneboundary_global_id);
+							if (laneboundary_global_id >= 0)
+							{
+								osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+								left_lane_bound_id->set_value(laneboundary_global_id);
+								osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+								right_lane_bound_id->set_value(laneboundary_global_id);
+							}
 						}
 					}
 					else
@@ -867,12 +870,12 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						else
 						{
 							int laneboundary_global_id = lane->GetLaneBoundaryGlobalId();
-							if (lane_id > 0 )
+							if (lane_id > 0 && laneboundary_global_id >= 0)
 							{
 								osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
 								left_lane_bound_id->set_value(laneboundary_global_id);
 							}
-							if (lane_id < 0 )
+							if (lane_id < 0 && laneboundary_global_id >= 0)
 							{
 								osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
 								right_lane_bound_id->set_value(laneboundary_global_id);
@@ -911,12 +914,12 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						else // if the neightbour lane does not have Lines for RoadMakrs we take the LaneBoundary
 						{
 							int next_laneboundary_global_id = next_lane->GetLaneBoundaryGlobalId();
-							if (lane_id < 0 )
+							if (lane_id < 0 && next_laneboundary_global_id >= 0)
 							{
 								osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
 								left_lane_bound_id->set_value(next_laneboundary_global_id);
 							}
-							if (lane_id > 0 )
+							if (lane_id > 0 && next_laneboundary_global_id >= 0)
 							{
 								osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
 								right_lane_bound_id->set_value(next_laneboundary_global_id);
