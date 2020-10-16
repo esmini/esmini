@@ -18,7 +18,7 @@
 
 #include "osi_common.pb.h"
 #include "osi_object.pb.h"
-#include "osi_sensorview.pb.h"
+#include "osi_groundtruth.pb.h"
 #include "osi_version.pb.h"
 
 #include "stdio.h"
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 #endif
 
 #if DEMONSTRATE_OSI
-		osi3::SensorView sv;
+		osi3::GroundTruth gt;
 		SE_OpenOSISocket("127.0.0.1");
 #endif
 
@@ -127,29 +127,29 @@ int main(int argc, char *argv[])
 
 			int svSize = 0;
 
-			SE_UpdateOSISensorView();
+			SE_UpdateOSIGroundTruth();
 			// Fetch and parse OSI message
-			const char* buf = SE_GetOSISensorView(&svSize);
-			sv.ParseFromArray(buf, svSize);
+			const char* buf = SE_GetOSIGroundTruth(&svSize);
+			gt.ParseFromArray(buf, svSize);
 			
 			// Print timestamp
-			printf("timestamp: %.2f\n", sv.mutable_global_ground_truth()->mutable_timestamp()->seconds() +
-				1E-9 * sv.mutable_global_ground_truth()->mutable_timestamp()->nanos());
+			printf("timestamp: %.2f\n", gt->mutable_timestamp()->seconds() +
+				1E-9 * gt->mutable_timestamp()->nanos());
 
 			// Print object id, position, orientation and velocity
-			for (int i = 0; i < sv.mutable_global_ground_truth()->mutable_moving_object()->size(); i++)
+			for (int i = 0; i < gt->mutable_moving_object()->size(); i++)
 			{
 				printf(" obj id %lld pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_id()->value(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->x(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->y(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->z(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_orientation()->yaw(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_orientation()->pitch(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_orientation()->roll(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_velocity()->x(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_velocity()->y(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_velocity()->z()
+					gt->mutable_moving_object(i)->mutable_id()->value(),
+					gt->mutable_moving_object(i)->mutable_base()->mutable_position()->x(),
+					gt->mutable_moving_object(i)->mutable_base()->mutable_position()->y(),
+					gt->mutable_moving_object(i)->mutable_base()->mutable_position()->z(),
+					gt->mutable_moving_object(i)->mutable_base()->mutable_orientation()->yaw(),
+					gt->mutable_moving_object(i)->mutable_base()->mutable_orientation()->pitch(),
+					gt->mutable_moving_object(i)->mutable_base()->mutable_orientation()->roll(),
+					gt->mutable_moving_object(i)->mutable_base()->mutable_velocity()->x(),
+					gt->mutable_moving_object(i)->mutable_base()->mutable_velocity()->y(),
+					gt->mutable_moving_object(i)->mutable_base()->mutable_velocity()->z()
 				);
 			}
 #endif		

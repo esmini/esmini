@@ -14,7 +14,7 @@
 #include "OSIReporter.hpp"
 #include "osi_common.pb.h"
 #include "osi_object.pb.h"
-#include "osi_sensorview.pb.h"
+#include "osi_groundtruth.pb.h"
 #include "osi_sensordata.pb.h"
 #include "osi_version.pb.h"
 #include "osi_common.pb.h"
@@ -35,7 +35,7 @@
 
 static struct {
 	osi3::SensorData *sd;
-	osi3::SensorView *sv;
+	osi3::GroundTruth *gt;
 	osi3::StationaryObject *sobj;
 	osi3::MovingObject *mobj;
 	std::vector<osi3::Lane*> ln;
@@ -44,9 +44,9 @@ static struct {
 
 typedef struct
 {
-	std::string sensor_view;
+	std::string ground_truth;
 	unsigned int size;
-} OSISensorView;
+} OSIGroundTruth;
 
 typedef struct
 {
@@ -62,7 +62,7 @@ typedef struct
 
 using namespace scenarioengine;
 
-static OSISensorView osiSensorView;
+static OSIGroundTruth osiGroundTruth;
 static OSIRoadLane osiRoadLane;
 static OSIRoadLaneBoundary osiRoadLaneBoundary;
 std::ofstream osi_file;
@@ -75,14 +75,14 @@ OSIReporter::OSIReporter()
 {
 	sendSocket = 0;
 
-	obj_osi_internal.sv = new osi3::SensorView();
+	obj_osi_internal.gt = new osi3::GroundTruth();
 
-	obj_osi_internal.sv->mutable_version()->set_version_major(3);
-	obj_osi_internal.sv->mutable_version()->set_version_minor(0);
-	obj_osi_internal.sv->mutable_version()->set_version_patch(0);
+	obj_osi_internal.gt->mutable_version()->set_version_major(3);
+	obj_osi_internal.gt->mutable_version()->set_version_minor(0);
+	obj_osi_internal.gt->mutable_version()->set_version_patch(0);
 
-	obj_osi_internal.sv->mutable_timestamp()->set_seconds(0);
-	obj_osi_internal.sv->mutable_timestamp()->set_seconds(0);
+	obj_osi_internal.gt->mutable_timestamp()->set_seconds(0);
+	obj_osi_internal.gt->mutable_timestamp()->set_seconds(0);
 
     // Sensor Data
     obj_osi_internal.sd = new osi3::SensorData();
@@ -91,16 +91,16 @@ OSIReporter::OSIReporter()
 
 OSIReporter::~OSIReporter()
 {
-	if (obj_osi_internal.sv)
+	if (obj_osi_internal.gt)
 	{
-		obj_osi_internal.sv->Clear();
-		delete obj_osi_internal.sv;
+		obj_osi_internal.gt->Clear();
+		delete obj_osi_internal.gt;
 	}
 
 	obj_osi_internal.ln.clear();
 	obj_osi_internal.lnb.clear();
 
-	osiSensorView.size = 0;
+	osiGroundTruth.size = 0;
 	osiRoadLane.size=0;
 
 	CloseSocket();
@@ -217,10 +217,10 @@ bool OSIReporter::OpenOSIFile()
 bool OSIReporter::WriteOSIFile()
 {
 	// write to file, first size of message
-	osi_file.write((char*)&osiSensorView.size, sizeof(osiSensorView.size));
+	osi_file.write((char*)&osiGroundTruth.size, sizeof(osiGroundTruth.size));
 
-	// write to file, actual message - the sensorview object including timestamp and moving objects
-	osi_file.write(osiSensorView.sensor_view.c_str(), osiSensorView.size);
+	// write to file, actual message - the groundtruth object including timestamp and moving objects
+	osi_file.write(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
 
 	if (!osi_file.good())
 	{
@@ -230,14 +230,14 @@ bool OSIReporter::WriteOSIFile()
 	return true;
 }
 
-int OSIReporter::UpdateOSISensorView(std::vector<ObjectState*> objectState)
+int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 {
-	obj_osi_internal.sv->mutable_global_ground_truth()->clear_moving_object();
-	obj_osi_internal.sv->mutable_global_ground_truth()->clear_stationary_object();
+	obj_osi_internal.gt->clear_moving_object();
+	obj_osi_internal.gt->clear_stationary_object();
 	double time_stamp = objectState[0]->state_.timeStamp;
 
-	obj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_seconds((int64_t)objectState[0]->state_.timeStamp);
-	obj_osi_internal.sv->mutable_global_ground_truth()->mutable_timestamp()->set_nanos((uint32_t)(
+	obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)objectState[0]->state_.timeStamp);
+	obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)(
 		(objectState[0]->state_.timeStamp - (int64_t)objectState[0]->state_.timeStamp) * 1e9)
 	);
 
@@ -257,22 +257,23 @@ int OSIReporter::UpdateOSISensorView(std::vector<ObjectState*> objectState)
 			LOG("Warning: Object type %d is not supported in OSIReporter, and hence no OSI update for this object", objectState[i]->state_.obj_type);
 		}
 	}
-	UpdateOSIHostVehicleData(objectState[0]);
+	// UpdateOSIHostVehicleData(objectState[0]);
 
 	//collect all information of lanes in the lane section where obj=0 is
 	UpdateOSIRoadLane(objectState);
 
 	UpdateOSILaneBoundary(objectState);
 
-	obj_osi_internal.sv->SerializeToString(&osiSensorView.sensor_view);
-	osiSensorView.size = (unsigned int)obj_osi_internal.sv->ByteSizeLong();
+	
 
 	if (sendSocket)
 	{
+		obj_osi_internal.gt->SerializeToString(&osiGroundTruth.ground_truth);
+		osiGroundTruth.size = (unsigned int)obj_osi_internal.gt->ByteSizeLong();
 		// send over udp - skip size (package size == message size)
-		int sendResult = sendto(sendSocket, (char*)osiSensorView.sensor_view.c_str(), osiSensorView.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
+		int sendResult = sendto(sendSocket, (char*)osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
 
-		if (sendResult != osiSensorView.size)
+		if (sendResult != osiGroundTruth.size)
 		{
 			LOG("Failed send osi package over UDP");
 #ifdef _WIN32
@@ -286,21 +287,21 @@ int OSIReporter::UpdateOSISensorView(std::vector<ObjectState*> objectState)
 
 int OSIReporter::UpdateOSIHostVehicleData(ObjectState* objectState)
 {
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_x(objectState->state_.pos.GetX());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_y(objectState->state_.pos.GetY());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_z(objectState->state_.pos.GetZ());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_velocity()->set_x(objectState->state_.pos.GetVelX());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_velocity()->set_y(objectState->state_.pos.GetVelY());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_velocity()->set_z(objectState->state_.pos.GetVelZ());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_x(objectState->state_.pos.GetAccX());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_y(objectState->state_.pos.GetAccY());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_z(objectState->state_.pos.GetAccZ());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation()->set_yaw(objectState->state_.pos.GetH());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation_rate()->set_yaw(objectState->state_.pos.GetHRate());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation_acceleration()->set_yaw(objectState->state_.pos.GetHAcc());
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_dimension()->set_height(objectState->state_.boundingbox.dimensions_.height_);
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_dimension()->set_width(objectState->state_.boundingbox.dimensions_.width_);
-	obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_dimension()->set_length(objectState->state_.boundingbox.dimensions_.length_);
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_x(objectState->state_.pos.GetX());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_y(objectState->state_.pos.GetY());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_z(objectState->state_.pos.GetZ());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_velocity()->set_x(objectState->state_.pos.GetVelX());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_velocity()->set_y(objectState->state_.pos.GetVelY());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_velocity()->set_z(objectState->state_.pos.GetVelZ());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_x(objectState->state_.pos.GetAccX());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_y(objectState->state_.pos.GetAccY());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_z(objectState->state_.pos.GetAccZ());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation()->set_yaw(objectState->state_.pos.GetH());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation_rate()->set_yaw(objectState->state_.pos.GetHRate());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation_acceleration()->set_yaw(objectState->state_.pos.GetHAcc());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_dimension()->set_height(objectState->state_.boundingbox.dimensions_.height_);
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_dimension()->set_width(objectState->state_.boundingbox.dimensions_.width_);
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_dimension()->set_length(objectState->state_.boundingbox.dimensions_.length_);
 	
 	return 0;
 }
@@ -308,10 +309,10 @@ int OSIReporter::UpdateOSIHostVehicleData(ObjectState* objectState)
 int OSIReporter::UpdateOSIStationaryObject(ObjectState* objectState)
 {
 	// Create OSI Stationary Object
-	obj_osi_internal.sobj = obj_osi_internal.sv->mutable_global_ground_truth()->add_stationary_object();
+	obj_osi_internal.sobj = obj_osi_internal.gt->add_stationary_object();
 
 	// Set OSI Stationary Object Mutable ID
-	int sobj_size = obj_osi_internal.sv->mutable_global_ground_truth()->mutable_stationary_object()->size();
+	int sobj_size = obj_osi_internal.gt->mutable_stationary_object()->size();
 	obj_osi_internal.sobj->mutable_id()->set_value(sobj_size-1);
 	
 	// Set OSI Stationary Object Type and Classification
@@ -387,10 +388,10 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState* objectState)
 int OSIReporter::UpdateOSIMovingObject(ObjectState* objectState)
 {
 	// Create OSI Moving object
-	obj_osi_internal.mobj = obj_osi_internal.sv->mutable_global_ground_truth()->add_moving_object();
+	obj_osi_internal.mobj = obj_osi_internal.gt->add_moving_object();
 
 	// Set OSI Moving Object Mutable ID
-	int mobj_size = obj_osi_internal.sv->mutable_global_ground_truth()->mutable_moving_object()->size();
+	int mobj_size = obj_osi_internal.gt->mutable_moving_object()->size();
 	obj_osi_internal.mobj->mutable_id()->set_value(mobj_size-1);
 
 	// Set OSI Moving Object Type and Classification
@@ -526,7 +527,7 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 								}
 								if (!osi_laneboundary)
 								{
-									osi_laneboundary = obj_osi_internal.sv->mutable_global_ground_truth()->add_lane_boundary();
+									osi_laneboundary = obj_osi_internal.gt->add_lane_boundary();
 
 									// update id
 									osi_laneboundary->mutable_id()->set_value(line_id);
@@ -613,7 +614,7 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 					}
 					if (!osi_laneboundary)
 					{
-						osi_laneboundary = obj_osi_internal.sv->mutable_global_ground_truth()->add_lane_boundary();
+						osi_laneboundary = obj_osi_internal.gt->add_lane_boundary();
 
 						// update id
 						osi_laneboundary->mutable_id()->set_value(boundary_id);
@@ -701,7 +702,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 				if (!osi_lane)
 				{
 					// LANE ID 
-					osi_lane = obj_osi_internal.sv->mutable_global_ground_truth()->add_lane();
+					osi_lane = obj_osi_internal.gt->add_lane();
 					osi_lane->mutable_id()->set_value(lane_global_id);
 
 					// CLASSIFICATION TYPE
@@ -950,15 +951,20 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 	return 0;
 }
 
-const char* OSIReporter::GetOSISensorView(int* size)
+const char* OSIReporter::GetOSIGroundTruth(int* size)
 {
-	*size = osiSensorView.size;
-	return osiSensorView.sensor_view.data();
+	if (!sendSocket) 
+	{
+		obj_osi_internal.gt->SerializeToString(&osiGroundTruth.ground_truth);
+		osiGroundTruth.size = (unsigned int)obj_osi_internal.gt->ByteSizeLong();
+	}
+	*size = osiGroundTruth.size;
+	return osiGroundTruth.ground_truth.data();
 }
 
-const char* OSIReporter::GetOSISensorViewRaw()
+const char* OSIReporter::GetOSIGroundTruthRaw()
 {
-	return (const char*) obj_osi_internal.sv;
+	return (const char*) obj_osi_internal.gt;
 }
 
 const char* OSIReporter::GetOSIRoadLane(std::vector<ObjectState*> objectState, int* size, int object_id)

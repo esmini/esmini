@@ -173,7 +173,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 		osi_counter++;
 		if (osi_counter % osi_freq_ == 0 )
 		{
-			osiReporter->UpdateOSISensorView(scenarioGateway->objectState_);
+			osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
 			if (osi_file)
 			{
 				osiReporter->WriteOSIFile();
@@ -685,7 +685,7 @@ int ScenarioPlayer::Init()
 	// Update OSI info
 	if (osi_file || osiReporter->GetSocket())
 	{
-		osiReporter->UpdateOSISensorView(scenarioGateway->objectState_);
+		osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
 		if (osi_file)
 		{
 			osiReporter->WriteOSIFile();

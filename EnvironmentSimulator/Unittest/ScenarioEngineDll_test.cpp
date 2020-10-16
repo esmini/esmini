@@ -56,7 +56,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids) {
 	//std::cout << "NUMBER OBJECTS IS " << n_Objects << std::endl; 	
 	
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView(); 
+	SE_UpdateOSIGroundTruth(); 
 	
 	std::vector<int> lane_bound = {-1, 8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14, -1}; 
 	for (int i=0; i<n_Objects; i++)
@@ -87,7 +87,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids_no_obj) {
 	const char * Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);	
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView(); 
+	SE_UpdateOSIGroundTruth(); 
 
 	SE_LaneBoundaryId ids;
 	SE_LaneBoundaryId right_lanes_id = { -1, -1, -1, -1 };
@@ -109,7 +109,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj) {
 	
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);	
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView();   	 
+	SE_UpdateOSIGroundTruth();   	 
  
 	int road_lane_size; 
 
@@ -128,7 +128,7 @@ TEST(GetOSIRoadLaneTest, lane_id) {
 	
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);	
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView();   	
+	SE_UpdateOSIGroundTruth();   	
 
 	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};  
  
@@ -165,7 +165,7 @@ TEST(GetOSIRoadLaneTest, left_lane_id) {
 	int n_Objects = SE_GetNumberOfObjects();	
 	
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView();  
+	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
 	osi3::Lane osi_lane;
 
@@ -214,7 +214,7 @@ TEST(GetOSIRoadLaneTest, right_lane_id) {
 
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView();  
+	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
 	osi3::Lane osi_lane;
  
@@ -260,7 +260,7 @@ TEST(GetOSIRoadLaneTest, right_lane_boundary_id) {
 
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView();  
+	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
 	osi3::Lane osi_lane;
  
@@ -304,7 +304,7 @@ TEST(GetOSIRoadLaneTest, left_lane_boundary_id) {
 
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView();  
+	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
 	osi3::Lane osi_lane;
  
@@ -350,7 +350,7 @@ TEST_P(GetOSIRoadLaneTest, centerline_is_driving_direction) {
 
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView();  
+	SE_UpdateOSIGroundTruth();  
 
 	int road_lane_size; 
 	osi3::Lane osi_lane; 
@@ -400,7 +400,7 @@ TEST(GetOSIRoadLaneTest, is_host_vehicle_lane) {
 
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView();  
+	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
 	osi3::Lane osi_lane;
  
@@ -437,7 +437,7 @@ TEST(GetOSIRoadLaneTest, lane_classification) {
 
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView();  
+	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
 	osi3::Lane osi_lane;
  
@@ -483,7 +483,7 @@ TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing) {
 
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView();  
+	SE_UpdateOSIGroundTruth();  
 	int lb_size; 
 	osi3::LaneBoundary osi_lb;
  
@@ -523,7 +523,7 @@ TEST_P(GetOSILaneBoundaryTests, lane_boundary_id_not_existing) {
 
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView();  
+	SE_UpdateOSIGroundTruth();  
 	int lb_size = 0; 
 
 	const char* lb = SE_GetOSILaneBoundary(&lb_size, std::get<0>(GetParam()) );
@@ -549,7 +549,7 @@ TEST(OSIFile, writeosifile_two_step) {
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
 
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView(); 	
+	SE_UpdateOSIGroundTruth(); 	
 	SE_OSIFileOpen(); 
 	SE_OSIFileWrite();
 
@@ -560,7 +560,7 @@ TEST(OSIFile, writeosifile_two_step) {
 
 
 	SE_StepDT(0.001f);		
-	SE_UpdateOSISensorView(); 	 
+	SE_UpdateOSIGroundTruth(); 	 
 	SE_OSIFileWrite(); 
 
 	in_file.seekg(0, std::ios::end);
@@ -596,16 +596,16 @@ typedef struct
 	float centerOffsetZ;
 } bounding_box;
 
-class GetSensorViewTests :public ::testing::TestWithParam<std::tuple<std::string,int, int, bounding_box>> {};
+class GetGroundTruthTests :public ::testing::TestWithParam<std::tuple<std::string,int, int, bounding_box>> {};
 // inp: nto excisting lane boundary global id 
 // expected: size of osi lane boundary message = 0
 
-TEST_P(GetSensorViewTests, receive_SensorView) {
+TEST_P(GetGroundTruthTests, receive_GroundTruth) {
 
 	std::string scenario_file = std::get<0>(GetParam());  
 	const char * Scenario_file = scenario_file.c_str();
 	int sv_size = 0; 
-	osi3::SensorView osi_sv;
+	osi3::GroundTruth osi_gt;
 
 	SE_Init(Scenario_file, 1, 0, 1, 0, 0);
 
@@ -613,23 +613,23 @@ TEST_P(GetSensorViewTests, receive_SensorView) {
 
 	SE_StepDT(0.001f);	
 
-	SE_UpdateOSISensorView(); 
+	SE_UpdateOSIGroundTruth(); 
 
-	const char* sv = SE_GetOSISensorView(&sv_size);
-	osi_sv.ParseFromArray(sv, sv_size);	
+	const char* sv = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(sv, sv_size);	
 
-	int n_lanes = osi_sv.mutable_global_ground_truth()->lane_size();
+	int n_lanes = osi_gt.lane_size();
 
-	int n_objects = osi_sv.mutable_global_ground_truth()->mutable_moving_object()->size();
+	int n_objects = osi_gt.mutable_moving_object()->size();
 
 	int ego_index = 0; // ego vehicle are always first in tested scenarios
 
-	float ego_length = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->length();
-	float ego_width = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->width();
-	float ego_height = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->height();
-	float ego_xoffset = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->x();
-	float ego_yoffset = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->y();
-	float ego_zoffset = osi_sv.mutable_global_ground_truth()->mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->z();
+	float ego_length = osi_gt.mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->length();
+	float ego_width = osi_gt.mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->width();
+	float ego_height = osi_gt.mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->height();
+	float ego_xoffset = osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->x();
+	float ego_yoffset = osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->y();
+	float ego_zoffset = osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->z();
 
 
 	EXPECT_EQ(n_lanes, std::get<1>(GetParam())); 
@@ -643,28 +643,28 @@ TEST_P(GetSensorViewTests, receive_SensorView) {
  
 }
 
-INSTANTIATE_TEST_CASE_P(EsminiAPITests,GetSensorViewTests,::testing::Values(
+INSTANTIATE_TEST_CASE_P(EsminiAPITests,GetGroundTruthTests,::testing::Values(
     std::make_tuple("../../../resources/xosc/cut-in.xosc", 15, 2, bounding_box{5.0,2.0,1.8,1.4,0.0,0.9} ),
     std::make_tuple("../../../resources/xosc/straight_500m.xosc", 7, 2, bounding_box{5.0,2.0,1.8,1.4,0.0,0.9} ),
     std::make_tuple("../../../resources/xosc/highway_merge.xosc", 40, 6, bounding_box{5.0,2.0,1.8,1.4,0.0,0.9} )));
 // scenario_file_name, number_of_lanes, number_of_objects, ego_bounding_box
 
 
-TEST(GetSensorViewTests, receive_SensorView_no_init) {
+TEST(GetGroundTruthTests, receive_GroundTruth_no_init) {
 
 	int sv_size = 0; 
-	osi3::SensorView osi_sv; 
+	osi3::GroundTruth osi_gt; 
 
-	const char* sv = SE_GetOSISensorView(&sv_size);
+	const char* sv = SE_GetOSIGroundTruth(&sv_size);
 
 	EXPECT_EQ(sv_size, 0);  
 }
 
 
-TEST(GetMiscObjFromSensorView, receive_miscobj) {
+TEST(GetMiscObjFromGroundTruth, receive_miscobj) {
 
 	int sv_size = 0; 
-	osi3::SensorView osi_sv;
+	osi3::GroundTruth osi_gt;
 
 	SE_Init("../../../EnvironmentSimulator/Unittest/scenarios/miscobj_basic.xosc", 1, 0, 1, 0, 0);
 
@@ -672,27 +672,27 @@ TEST(GetMiscObjFromSensorView, receive_miscobj) {
 
 	SE_StepDT(0.001f);	
 
-	SE_UpdateOSISensorView(); 
+	SE_UpdateOSIGroundTruth(); 
 
-	const char* sv = SE_GetOSISensorView(&sv_size);
-	osi_sv.ParseFromArray(sv, sv_size);	
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
 
-	int n_miscobjects = osi_sv.mutable_global_ground_truth()->mutable_stationary_object()->size();
+	int n_miscobjects = osi_gt.mutable_stationary_object()->size();
 
-	uint64_t miscobj_id = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_id()->value();
-	osi3::StationaryObject_Classification_Type miscobj_type = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_classification()->type();
+	uint64_t miscobj_id = osi_gt.mutable_stationary_object(0)->mutable_id()->value();
+	osi3::StationaryObject_Classification_Type miscobj_type = osi_gt.mutable_stationary_object(0)->mutable_classification()->type();
 
-	double miscobj_length = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_dimension()->length();
-	double miscobj_width = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_dimension()->width();
-	double miscobj_height = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_dimension()->height();
+	double miscobj_length = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_dimension()->length();
+	double miscobj_width = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_dimension()->width();
+	double miscobj_height = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_dimension()->height();
 
-	double miscobj_x = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_position()->x();
-	double miscobj_y = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_position()->y();
-	double miscobj_z = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_position()->z();
+	double miscobj_x = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_position()->x();
+	double miscobj_y = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_position()->y();
+	double miscobj_z = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_position()->z();
 
-	double miscobj_roll = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_orientation()->roll();
-	double miscobj_pitch = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_orientation()->pitch();
-	double miscobj_yaw = osi_sv.mutable_global_ground_truth()->mutable_stationary_object(0)->mutable_base()->mutable_orientation()->yaw();
+	double miscobj_roll = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_orientation()->roll();
+	double miscobj_pitch = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_orientation()->pitch();
+	double miscobj_yaw = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_orientation()->yaw();
 
 
 

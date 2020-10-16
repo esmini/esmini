@@ -35,13 +35,13 @@ public:
 	*/
 	bool OpenOSIFile();
 	/**
-	Writes SensorView in the OSI file
+	Writes GroundTruth in the OSI file
 	*/
 	bool WriteOSIFile();
 	/**
-	Fills up the osi message with SensorView
+	Fills up the osi message with GroundTruth
 	*/
-	int UpdateOSISensorView(std::vector<ObjectState*> objectState);
+	int UpdateOSIGroundTruth(std::vector<ObjectState*> objectState);
 	/**
 	Fills up the osi message with Stationary Object
 	*/
@@ -63,8 +63,8 @@ public:
 	*/
 	int UpdateOSIRoadLane(std::vector<ObjectState*> objectState);
 
-	const char* GetOSISensorView(int* size);
-	const char* GetOSISensorViewRaw();
+	const char* GetOSIGroundTruth(int* size);
+	const char* GetOSIGroundTruthRaw();
 	const char* GetOSIRoadLane(std::vector<ObjectState*> objectState, int* size, int object_id);
 	const char* GetOSIRoadLaneBoundary(int* size, int global_id);
 	void GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, std::vector<int>& ids, int object_id);

@@ -244,20 +244,20 @@ extern "C"
 	SE_DLL_API void SE_EnableOSIFile();
 
 	/**
-	The SE_UpdateOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
+	The SE_UpdateOSISensorView function returns a char array containing the osi SensorView serialized to a string
 	*/
-	SE_DLL_API int SE_UpdateOSIGroundTruth();
+	SE_DLL_API int SE_UpdateOSISensorView();
 
 	/**
-	The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
+	The SE_GetOSISensorView function returns a char array containing the osi SensorView serialized to a string
 	*/
-	SE_DLL_API const char* SE_GetOSIGroundTruth(int* size);
+	SE_DLL_API const char* SE_GetOSISensorView(int* size);
 
 	/**
-	The SE_GetOSIGroundTruthRaw function returns a char array containing the OSI GroundTruth information
-	@return osi3::GroundTruth*
+	The SE_GetOSISensorViewRaw function returns a char array containing the OSI SensorView information
+	@return osi3::SensorView*
 	*/
-	SE_DLL_API const char* SE_GetOSIGroundTruthRaw();
+	SE_DLL_API const char* SE_GetOSISensorViewRaw();
 
 	/**
 	The SE_GetOSIRoadLane function returns a char array containing the osi Lane information/message of the lane where the object with object_id is, serialized to a string

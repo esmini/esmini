@@ -437,22 +437,22 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API const char* SE_GetOSISensorView(int* size)
+	SE_DLL_API const char* SE_GetOSIGroundTruth(int* size)
 	{
 		if (player)
 		{
-			return player->osiReporter->GetOSISensorView(size);
+			return player->osiReporter->GetOSIGroundTruth(size);
 		}
 
 		*size = 0;
 		return 0;
 	}
 
-	SE_DLL_API const char* SE_GetOSISensorViewRaw()
+	SE_DLL_API const char* SE_GetOSIGroundTruthRaw()
 	{
 		if (player)
 		{
-			return (const char*) player->osiReporter->GetOSISensorViewRaw();
+			return (const char*) player->osiReporter->GetOSIGroundTruthRaw();
 		}
 
 		return 0;
@@ -497,11 +497,11 @@ extern "C"
 		return;
 	}
 
-	SE_DLL_API int SE_UpdateOSISensorView()
+	SE_DLL_API int SE_UpdateOSIGroundTruth()
 	{
 		if (player)
 		{
-			return player->osiReporter->UpdateOSISensorView(player->scenarioGateway->objectState_);
+			return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
 		}
 
 		return 0;
