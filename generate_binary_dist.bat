@@ -107,8 +107,8 @@ copy bin\esmini.exe %target_dir%\bin /y
 copy bin\esmini.exe %target_dir%\bin\EgoSimulator.exe /y
 copy bin\odrviewer.exe %target_dir%\bin /y
 copy bin\esminiLib.* %target_dir%\lib /y
-copy EnvironmentSimulator\esminiSharedLibrary\esminiLib.hpp %target_dir%\include /y
+copy EnvironmentSimulator\Libraries\esminiLib\esminiLib.hpp %target_dir%\include /y
 
 copy Hello-World_coding-example esmini-demo\Hello-World_coding-example
 copy bin\esminiLib.* esmini-demo\Hello-World_coding-example
-copy EnvironmentSimulator\esminiSharedLibrary\esminiLib.hpp esmini-demo\Hello-World_coding-example
+copy EnvironmentSimulator\Libraries\esminiLib\esminiLib.hpp esmini-demo\Hello-World_coding-example

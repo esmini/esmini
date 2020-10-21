@@ -82,10 +82,12 @@ bin/esmini \
 bin/odrviewer \
 esmini-demo
 
-cp bin/esmini bin/EgoSimulator
+cp bin/esmini esmini-demo/bin/EgoSimulator
 cp -r Hello-World_coding-example esmini-demo
 cp bin/libesminiLib.* esmini-demo/Hello-World_coding-example
-cp EnvironmentSimulator/esminiSharedLibrary/esminiLib.hpp esmini-demo/Hello-World_coding-example
+cp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini-demo/Hello-World_coding-example
+mkdir esmini-demo/include
+cp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini-demo/include
 
 rm -f esmini-demo*.zip
 

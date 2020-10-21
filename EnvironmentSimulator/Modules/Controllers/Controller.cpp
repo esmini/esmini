@@ -40,7 +40,7 @@ Controller::Controller(InitArgs* args) : name_(args->name), type_name_(args->typ
 		}
 		else
 		{
-			LOG("Unexpected mode \"%s\", falling back to default \"override\"", mode);
+			LOG("Unexpected mode \"%s\", falling back to default \"override\"", mode.c_str());
 			mode_ = Mode::MODE_OVERRIDE;
 		}
 	}
