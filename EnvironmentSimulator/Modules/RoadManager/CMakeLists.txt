@@ -10,7 +10,7 @@ set ( SOURCES
   odrSpiral.cpp
 )
 
-set ( SRC_ADDITIONAL ../../externals/pugixml/pugixml.cpp)
+set ( SRC_ADDITIONAL ../../../externals/pugixml/pugixml.cpp)
 
 SOURCE_GROUP("External Libraries" FILES ${SRC_ADDITIONAL})
 

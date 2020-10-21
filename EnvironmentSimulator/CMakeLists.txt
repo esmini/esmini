@@ -1,20 +1,19 @@
 
-set ( VIEWER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ViewerBase" )
-set ( PLAYER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/PlayerBase" )
-set ( WORLDMANAGER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/WorldManager" )
-set ( REPLAY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Replayer" )
-set ( ROADMANAGER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/RoadManager" )
-set ( ROADMANAGER_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/esminiRMSharedLibrary" )
-set ( SCENARIOENGINE_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/esminiSharedLibrary" )
-set ( SCENARIOENGINE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ScenarioEngine/SourceFiles")
+set ( VIEWER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ViewerBase" )
+set ( PLAYER_BASE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/PlayerBase" )
+set ( ROADMANAGER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/RoadManager" )
+set ( SCENARIOENGINE_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ScenarioEngine/SourceFiles")
+set ( ROADMANAGER_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Libraries/esminiRMLib" )
+set ( SCENARIOENGINE_DLL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Libraries/esminiLib" )
+set ( REPLAY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Applications/Replayer" )
 set ( SCENARIOENGINE_INCLUDE_DIRS
  "${SCENARIOENGINE_INCLUDE_DIR}"
- "${CMAKE_CURRENT_SOURCE_DIR}/ScenarioEngine/Actions"
- "${CMAKE_CURRENT_SOURCE_DIR}/ScenarioEngine/Conditions"
- "${CMAKE_CURRENT_SOURCE_DIR}/ScenarioEngine/OSCTypeDefs"
+ "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ScenarioEngine/Actions"
+ "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ScenarioEngine/Conditions"
+ "${CMAKE_CURRENT_SOURCE_DIR}/Modules/ScenarioEngine/OSCTypeDefs"
  )
-set ( COMMON_MINI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/CommonMini")
-set ( CONTROLLERS_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Controllers")
+set ( COMMON_MINI_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/CommonMini")
+set ( CONTROLLERS_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Modules/Controllers")
 
 # OpenSceneGraph package adapted for this project
 set ( OSG_VERSION "osg161" )
@@ -314,16 +313,15 @@ else() #not UNIX
 
 endif() #Endif UNIX
 
-add_subdirectory(RoadManager)
-add_subdirectory(CommonMini)
-add_subdirectory(Controllers)
-add_subdirectory(ScenarioEngine)
-add_subdirectory(esminiSharedLibrary)
-add_subdirectory(esminiRMSharedLibrary)
-add_subdirectory(PlayerBase)
-add_subdirectory(esminiSimulatorDynamic)
-add_subdirectory(esminiSimulatorStatic)
-# add_subdirectory(esminiDriverModelExample)
+add_subdirectory(Modules/CommonMini)
+add_subdirectory(Modules/Controllers)
+add_subdirectory(Modules/PlayerBase)
+add_subdirectory(Modules/RoadManager)
+add_subdirectory(Modules/ScenarioEngine)
+add_subdirectory(Libraries/esminiLib)
+add_subdirectory(Libraries/esminiRMLib)
+add_subdirectory(Applications/esmini)
+add_subdirectory(Applications/esmini-dyn)
 
 # Add unittest folder
 if(APPLE)
@@ -394,11 +392,11 @@ endif()
 
 if (USE_OSG)
   if (NOT USE_ENVSIM_ADAPT)
-    add_subdirectory(Replayer)
-    add_subdirectory(OpenDriveViewer)
-    add_subdirectory(OdrPlot)
+    add_subdirectory(Applications/Replayer)
+    add_subdirectory(Applications/OpenDriveViewer)
+    add_subdirectory(Applications/OdrPlot)
   endif (NOT USE_ENVSIM_ADAPT)
-  add_subdirectory(ViewerBase)
+  add_subdirectory(Modules/ViewerBase)
 
   if (NOT USE_ENVSIM_ADAPT)
     set_target_properties (esmini PROPERTIES FOLDER ${ApplicationsFolder} )

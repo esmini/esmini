@@ -13,8 +13,7 @@ Controller details:
 - The following controllers, in addition to default controller, have been implemented:
   - ExternalController
       Vehicle will not be updated by the scenario. It's state is expected to be reported via gateway.
-  - GhostController
-      Vehicle will be launched with some headway time. It can be used as a target by a driver model, e.g. of an external vehicle.
+      The optional Ghost feature will launch a fore-runner vehicle to perform the scenario and create a trajectory for the external driver model to follow.
   - FollowGhostController
       An example of a (simple) vehicle and driver model using a Ghost as reference.
   - InteractiveController

@@ -15,7 +15,7 @@ include_directories (
 file(GLOB SRC_OSCTYPEDEFS "${CMAKE_CURRENT_LIST_DIR}/OSCTypeDefs/*.[hc]pp")
 file(GLOB SRC_SOURCEFILES "${CMAKE_CURRENT_LIST_DIR}/SourceFiles/*.[hc]pp")
 
-set ( SRC_ADDITIONAL ../../externals/pugixml/pugixml.cpp)
+set ( SRC_ADDITIONAL ../../../externals/pugixml/pugixml.cpp)
 
 SOURCE_GROUP(OSCTypeDefs FILES ${SRC_OSCTYPEDEFS})
 SOURCE_GROUP("Source Files" FILES ${SRC_SOURCEFILES})
