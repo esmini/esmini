@@ -6,7 +6,7 @@
                description="Controller catalog"
                author="esmini-team"/>
 	<Catalog name="ControllerCatalog">
-		<Controller name="kalle">
+		<Controller name="sloppyDriver">
             <ParameterDeclarations>
                 <ParameterDeclaration name="Sloppiness" parameterType="double" value="0.5" /> 
             </ParameterDeclarations>        
@@ -55,6 +55,7 @@
 		</Controller>
 		<Controller name="cspas10s">
             <ParameterDeclarations>
+                <Property name="esminiController" value="ExternalController" />                   
                 <ParameterDeclaration name="UseGhost" parameterType="bool" value="true" /> 
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="10" /> 
             </ParameterDeclarations>
