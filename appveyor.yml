@@ -22,8 +22,8 @@ before_build:
   - cmd: gitversion /l console /output buildserver
   
   - ps: |
-        echo "const char* ESMINI_BUILD_VERSION=`"$env:APPVEYOR_BUILD_VERSION`";"  | Out-File -Encoding ascii EnvironmentSimulator/CommonMini/buildnr.cpp
-        type EnvironmentSimulator/CommonMini/buildnr.cpp
+        echo "const char* ESMINI_BUILD_VERSION=`"$env:APPVEYOR_BUILD_VERSION`";"  | Out-File -Encoding ascii EnvironmentSimulator/Modules/CommonMini/buildnr.cpp
+        type EnvironmentSimulator/Modules/CommonMini/buildnr.cpp
 
 # publish package on tag build
 deploy:
@@ -68,7 +68,7 @@ for:
           then 
             echo "Skip binary artifacts";
           else
-            zip -r esmini-bin_ubuntu.zip bin EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt
+            zip -r esmini-bin_ubuntu.zip bin EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp version.txt
           fi
           
           chmod -R +x ./run/*
@@ -104,9 +104,9 @@ for:
 
     after_build:
       - sh: >-
-          lipo -create EnvironmentSimulator/RoadManagerDLL/Release/libRoadManagerDLL.dylib -output ../bin/RoadManagerDLL.bundle
+          lipo -create EnvironmentSimulator/Libraries/esminiRMLib/Release/esminiRMLib.dylib -output ../bin/esminiRMLib.bundle
           
-          lipo -create EnvironmentSimulator/ScenarioEngineDLL/Release/libScenarioEngineDLL.dylib -output ../bin/ScenarioEngineDLL.bundle
+          lipo -create EnvironmentSimulator/Libraries/esminiLib/Release/esminiLib.dylib -output ../bin/esminiLib.bundle
 
           cd ..
           
@@ -114,7 +114,7 @@ for:
           then 
             echo "Skip binary artifacts";
           else
-            zip -r esmini-bin_mac_catalina.zip bin EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
+            zip -r esmini-bin_mac_catalina.zip bin EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp version.txt 
           fi
           
           chmod -R +x ./run/*
@@ -162,7 +162,7 @@ for:
           }
           else
           {
-            7z a esmini-bin_win_x64.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
+            7z a esmini-bin_win_x64.zip bin/* EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp version.txt 
           }
           
           if ($Env:APPVEYOR_REPO_TAG -eq $true)
@@ -205,7 +205,7 @@ for:
           }
           else
           {
-            7z a esmini-bin_win_x86.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
+            7z a esmini-bin_win_x86.zip bin/* EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp version.txt 
           }
           
     artifacts:
@@ -239,7 +239,7 @@ for:
           }
           else
           {
-            7z a esmini-bin_win_sdk7-1_x64.zip bin/* EnvironmentSimulator/RoadManagerDLL/roadmanagerdll.hpp EnvironmentSimulator/ScenarioEngineDLL/scenarioenginedll.hpp version.txt 
+            7z a esmini-bin_win_sdk7-1_x64.zip bin/* EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp version.txt 
           }    
 
     artifacts:
