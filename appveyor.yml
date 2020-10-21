@@ -104,9 +104,9 @@ for:
 
     after_build:
       - sh: >-
-          lipo -create EnvironmentSimulator/Libraries/esminiRMLib/Release/esminiRMLib.dylib -output ../bin/esminiRMLib.bundle
+          lipo -create EnvironmentSimulator/Libraries/esminiRMLib/Release/libesminiRMLib.dylib -output ../bin/esminiRMLib.bundle
           
-          lipo -create EnvironmentSimulator/Libraries/esminiLib/Release/esminiLib.dylib -output ../bin/esminiLib.bundle
+          lipo -create EnvironmentSimulator/Libraries/esminiLib/Release/libesminiLib.dylib -output ../bin/esminiLib.bundle
 
           cd ..
           
