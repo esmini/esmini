@@ -28,7 +28,7 @@
         <ScenarioObject name="Ego">
             <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
             <ObjectController>
-                <CatalogReference catalogName="ControllerCatalog" entryName="cspas" >
+                <CatalogReference catalogName="ControllerCatalog" entryName="followGhost" >
                     <ParameterAssignments>
                         <ParameterAssignment parameterRef="$HeadStartTime" value="2" />
                     </ParameterAssignments>

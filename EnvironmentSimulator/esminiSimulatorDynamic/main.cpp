@@ -25,7 +25,7 @@
 #include "esminiLib.hpp"
 #include "CommonMini.hpp"
 
-#define DEMONSTRATE_SENSORS 1
+#define DEMONSTRATE_SENSORS 0
 #define DEMONSTRATE_OSI 0
 #define DEMONSTRATE_ROADINFO 0
 #define DEMONSTRATE_THREAD 0
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 	{
 		stuff.counter = 0;
 
-		if (SE_Init(argv[1], 1, 1, 1, 0) != 0)
+		if (SE_Init(argv[1], 0, 1, 1, 0) != 0)
 		{
 			LOG("Failed to load %s", argv[1]);
 			return -1;

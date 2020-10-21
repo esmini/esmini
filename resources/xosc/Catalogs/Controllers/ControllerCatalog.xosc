@@ -28,7 +28,7 @@
 			<Properties>
 				<Property name="esminiController" value="ExternalController" />
                 <Property name="useGhost" value="$UseGhost" />
-                <Property name="headstartTime"  value="$HeadStartTime" />
+                <Property name="headstartTime" value="$HeadStartTime" />
 			</Properties>
 		</Controller>
 		<Controller name="cspas">

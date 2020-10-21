@@ -57,7 +57,7 @@ bool Object::IsControllerActiveOnDomains(int domainMask)
 {
 	if (controller_)
 	{
-		return controller_->GetDomain() == domainMask;
+		return (controller_->GetDomain() & domainMask) == domainMask;
 	}
 	else
 	{

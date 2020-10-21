@@ -150,7 +150,7 @@ public class ScenarioEngine : MonoBehaviour
     public static extern int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, ref RoadInfo data, ref float speed_ghost);
 
     private string scenarioFolder;
-    public Button btn_cutin, btn_cutin_ego, btn_ltapod, btn_ltapod_ego, btn_basic_ego_internal, btn_basic_ego_external, btn_basic_ego_hybrid, btn_two_ghosts;
+    public Button btn_cutin, btn_cutin_interactive, btn_ltapod, btn_follow_ghost;
     public Toggle toggle_osg;
     public float tension = 10.0f;
     public bool osg_viewer = false;
@@ -193,31 +193,23 @@ public class ScenarioEngine : MonoBehaviour
         camTarget = new GameObject("camTarget");
 
         Button btn1 = btn_cutin.GetComponent<Button>();
-        Button btn1b = btn_cutin_ego.GetComponent<Button>();
-        Button btn2 = btn_ltapod.GetComponent<Button>();
-        Button btn3 = btn_ltapod_ego.GetComponent<Button>();
-        Button btn4 = btn_basic_ego_internal.GetComponent<Button>();
-        Button btn5 = btn_basic_ego_external.GetComponent<Button>();
+        Button btn2 = btn_cutin_interactive.GetComponent<Button>();
+        Button btn3 = btn_ltapod.GetComponent<Button>();
+        Button btn4 = btn_follow_ghost.GetComponent<Button>();
         Toggle t_osg = toggle_osg.GetComponent<Toggle>();
 
         //Calls the TaskOnClick/TaskWithParameters method when you click the Button
         btn1.onClick.AddListener(delegate {
-            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "cut-in.xosc", "e6mini", 1, t_osg.isOn, false);
-        });
-        btn1b.onClick.AddListener(delegate {
-            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "cut-in.xosc", "e6mini", 0, t_osg.isOn, true);
+            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "cut-in_external.xosc", "e6mini", 1, t_osg.isOn, false);
         });
         btn2.onClick.AddListener(delegate {
-            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "ltap-od.xosc", "fabriksg", 1, t_osg.isOn, false);
+            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "cut-in_external.xosc", "e6mini", 0, t_osg.isOn, true);
         });
         btn3.onClick.AddListener(delegate {
-            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "ltap-od.xosc", "fabriksg", 0, t_osg.isOn, true);
+            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "ltap-od.xosc", "fabriksg", 1, t_osg.isOn, false);
         });
         btn4.onClick.AddListener(delegate {
-            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "basic_ghost.xosc", "e6mini", 0, t_osg.isOn, false);
-        });
-        btn5.onClick.AddListener(delegate {
-            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "basic_ghost.xosc", "e6mini", 1, t_osg.isOn, false);
+            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "follow_ghost.xosc", "e6mini", 0, t_osg.isOn, false);
         });
     }
 
@@ -364,7 +356,6 @@ public class ScenarioEngine : MonoBehaviour
             }
 
             GameObject car = cars[i];
-
             if (SE_ObjectHasGhost(state.id) == 1 && SE_GetSimulationTime() > 0.0)
             {
                 // Get road and ghost sensors

@@ -30,11 +30,19 @@ Controller* scenarioengine::InstantiateControllerExternal(void* args)
 	return new ControllerExternal(initArgs);
 }
 
-ControllerExternal::ControllerExternal(InitArgs* args) : Controller(args)
+ControllerExternal::ControllerExternal(InitArgs* args) : useGhost_(false), Controller(args)
 {
-	if (args->properties->ValueExists("ghost"))
+	if (args->properties->ValueExists("useGhost"))
 	{
-		bool useGhost = strtoi(args->properties->GetValueStr("UseGhost"));
+		useGhost_ = (args->properties->GetValueStr("useGhost") == "true" ||
+			args->properties->GetValueStr("useGhost") == "True");
+	}
+
+	// External controller forced into override mode - will not perform any scenario actions
+	if (mode_ != Mode::MODE_OVERRIDE)
+	{
+		LOG("External controller mode \"%s\" not applicable. Using override mode instead.", Mode2Str(mode_).c_str());
+		mode_ = Controller::Mode::MODE_OVERRIDE;
 	}
 }
 
@@ -67,6 +75,13 @@ void ControllerExternal::Step(double timeStep)
 
 void ControllerExternal::Activate(int domainMask)
 {
+	// External controller forced into both domains
+	if (domain_ != Domain::CTRL_BOTH)
+	{
+		LOG("External controller forced into operation of both domains (lat/long)");
+		domain_ = Domain::CTRL_BOTH;
+	}
+
 	Controller::Activate(domainMask);
 }
 

@@ -27,6 +27,7 @@ resources/xosc/controller_test.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
+resources/xosc/Catalogs/Controllers/*.* \
 resources/xodr/soderleden.xodr \
 resources/xodr/e6mini.xodr \
 resources/xodr/fabriksgatan.xodr \
@@ -53,13 +54,12 @@ resources/models/walkman.osgb \
 resources/models/multi_intersections.osgb \
 resources/sumo_inputs/e6mini* \
 run/esmini/run_follow_ghost.* \
-run/esmini/run_ltap-od_external.* \
-run/esmini/run_ltap-od_internal.* \
+run/esmini/run_ltap-od_interactive.* \
+run/esmini/run_ltap-od.* \
 run/esmini/run_highway-merge_advanced_internal.* \
 run/esmini/run_cut-in.* \
 run/esmini/run_cut-in_interactive.* \
 run/esmini/run_cut-in_sumo.* \
-run/esmini/run_cut-in_visibility.* \
 run/esmini/run_lane_change.* \
 run/esmini/run_lane_change_simple.* \
 run/esmini/run_left-hand-traffic_internal.* \

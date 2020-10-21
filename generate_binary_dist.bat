@@ -43,6 +43,7 @@ copy resources\xosc\controller_test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
 copy resources\xosc\Catalogs\Vehicles\*.* %target_dir%\resources\xosc\Catalogs\Vehicles /y
+copy resources\xosc\Catalogs\Controllers\*.* %target_dir%\resources\xosc\Catalogs\Controllers /y
 
 copy resources\xodr\soderleden.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\e6mini.xodr %target_dir%\resources\xodr /y

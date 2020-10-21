@@ -35,6 +35,10 @@ namespace scenarioengine
 		void Step(double timeStep);
 		void Activate(int domainMask);
 		void ReportKeyEvent(int key, bool down);
+		bool UseGhost() { return useGhost_; }
+
+	private:
+		bool useGhost_;
 	};
 
 	Controller* InstantiateControllerExternal(void* args);

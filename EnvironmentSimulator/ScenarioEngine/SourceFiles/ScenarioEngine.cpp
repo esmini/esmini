@@ -13,6 +13,7 @@
 #include "ScenarioEngine.hpp"
 #include "CommonMini.hpp"
 #include "ControllerFollowGhost.hpp"
+#include "ControllerExternal.hpp"
 
 #define WHEEL_RADIUS 0.35
 
@@ -412,7 +413,8 @@ void ScenarioEngine::parseScenario()
 			Object* obj = entities.object_[i];
 
 			if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST ||
-				obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
+				(obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL &&
+					((ControllerExternal*)(obj->controller_))->UseGhost()))
 			{
 				SetupGhost(obj);
 
