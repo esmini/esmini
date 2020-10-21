@@ -411,7 +411,8 @@ void ScenarioEngine::parseScenario()
 		{
 			Object* obj = entities.object_[i];
 
-			if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
+			if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST ||
+				obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
 			{
 				SetupGhost(obj);
 

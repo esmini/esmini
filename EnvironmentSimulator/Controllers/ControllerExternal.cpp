@@ -34,12 +34,7 @@ ControllerExternal::ControllerExternal(InitArgs* args) : Controller(args)
 {
 	if (args->properties->ValueExists("ghost"))
 	{
-		std::string ghost_name = args->properties->GetValueStr("ghost");
-		ghost_ = args->entities->GetObjectByName(ghost_name);
-		if (ghost_ == 0)
-		{
-			LOG("Error: Failed to find ghost %s", ghost_name.c_str());
-		}
+		bool useGhost = strtoi(args->properties->GetValueStr("UseGhost"));
 	}
 }
 
@@ -50,9 +45,9 @@ void ControllerExternal::Init()
 
 void ControllerExternal::Step(double timeStep)
 {
-	if (ghost_)
+	if (object_->ghost_)
 	{
-		if (ghost_->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
+		if (object_->ghost_->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
 			object_->trail_closest_pos_[0], object_->trail_closest_pos_[1],
 			object_->trail_follow_s_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
 		{

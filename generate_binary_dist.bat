@@ -7,7 +7,7 @@ IF NOT EXIST %target_dir%\resources\xosc\Catalogs ( mkdir %target_dir%\resources
 IF NOT EXIST %target_dir%\resources\xosc\Catalogs\Maneuvers ( mkdir %target_dir%\resources\xosc\Catalogs\Maneuvers )
 IF NOT EXIST %target_dir%\resources\xosc\Catalogs\Routes ( mkdir %target_dir%\resources\xosc\Catalogs\Routes )
 IF NOT EXIST %target_dir%\resources\xosc\Catalogs\Vehicles ( mkdir %target_dir%\resources\xosc\Catalogs\Vehicles )
-IF NOT EXIST %target_dir%\resources\xosc\extensions ( mkdir %target_dir%\resources\xosc\extensions )
+IF NOT EXIST %target_dir%\resources\xosc\Catalogs\Controllers ( mkdir %target_dir%\resources\xosc\Catalogs\Controllers )
 IF NOT EXIST %target_dir%\resources\xodr ( mkdir %target_dir%\resources\xodr )
 IF NOT EXIST %target_dir%\resources\models ( mkdir %target_dir%\resources\models )
 IF NOT EXIST %target_dir%\resources\sumo_inputs ( mkdir %target_dir%\resources\sumo_inputs )

@@ -301,7 +301,7 @@ void ScenarioPlayer::ViewerFrame()
 			}
 		}
 
-		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL || obj->GetGhost())
+		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST && obj->GetGhost())
 		{
 			if (car->steering_sensor_)
 			{
