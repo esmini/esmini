@@ -643,9 +643,9 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth) {
 }
 
 INSTANTIATE_TEST_CASE_P(EsminiAPITests,GetGroundTruthTests,::testing::Values(
-    std::make_tuple("../../../resources/xosc/cut-in.xosc", 15, 2, bounding_box{5.0,2.0,1.8,1.4,0.0,0.9} ),
-    std::make_tuple("../../../resources/xosc/straight_500m.xosc", 7, 2, bounding_box{5.0,2.0,1.8,1.4,0.0,0.9} ),
-    std::make_tuple("../../../resources/xosc/highway_merge.xosc", 40, 6, bounding_box{5.0,2.0,1.8,1.4,0.0,0.9} )));
+    std::make_tuple("../../../resources/xosc/cut-in.xosc", 15, 2, bounding_box{5.0f,2.0f,1.8f,1.4f,0.0f,0.9f} ),
+    std::make_tuple("../../../resources/xosc/straight_500m.xosc", 7, 2, bounding_box{5.0f,2.0f,1.8f,1.4f,0.0f,0.9f} ),
+    std::make_tuple("../../../resources/xosc/highway_merge.xosc", 40, 6, bounding_box{5.0f,2.0f,1.8f,1.4f,0.0f,0.9f} )));
 // scenario_file_name, number_of_lanes, number_of_objects, ego_bounding_box
 
 
