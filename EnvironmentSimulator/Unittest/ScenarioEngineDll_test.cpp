@@ -624,12 +624,12 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth) {
 
 	int ego_index = 0; // ego vehicle are always first in tested scenarios
 
-	float ego_length = osi_gt.mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->length();
-	float ego_width = osi_gt.mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->width();
-	float ego_height = osi_gt.mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->height();
-	float ego_xoffset = osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->x();
-	float ego_yoffset = osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->y();
-	float ego_zoffset = osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->z();
+	float ego_length = (float)osi_gt.mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->length();
+	float ego_width = (float)osi_gt.mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->width();
+	float ego_height = (float)osi_gt.mutable_moving_object(ego_index)->mutable_base()->mutable_dimension()->height();
+	float ego_xoffset = (float)osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->x();
+	float ego_yoffset = (float)osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->y();
+	float ego_zoffset = (float)osi_gt.mutable_moving_object(ego_index)->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->z();
 
 
 	EXPECT_EQ(n_lanes, std::get<1>(GetParam())); 

@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
 
 	printf("Socket open. Waiting for OSI messages on port %d. Press Ctrl-C to quit.\n", OSI_OUT_PORT);
 
-	osi3::SensorView sv;
+	osi3::GroundTruth gt;
 
 	while (!quit)
 	{
@@ -134,26 +134,26 @@ int main(int argc, char* argv[])
 
 		if (ret > 0)
 		{
-			sv.ParseFromArray(buf, ret);
+			gt.ParseFromArray(buf, ret);
 
 			// Print timestamp
-			printf("timestamp: %.2f\n", sv.mutable_global_ground_truth()->mutable_timestamp()->seconds() +
-				1E-9 * sv.mutable_global_ground_truth()->mutable_timestamp()->nanos());
+			printf("timestamp: %.2f\n", gt.mutable_timestamp()->seconds() +
+				1E-9 * gt.mutable_timestamp()->nanos());
 
 			// Print object id, position, orientation and velocity
-			for (int i = 0; i < sv.mutable_global_ground_truth()->mutable_moving_object()->size(); i++)
+			for (int i = 0; i < gt.mutable_moving_object()->size(); i++)
 			{
 				printf(" obj id %d pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
-					(int)sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_id()->value(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->x(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->y(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_position()->z(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_orientation()->yaw(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_orientation()->pitch(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_orientation()->roll(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_velocity()->x(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_velocity()->y(),
-					sv.mutable_global_ground_truth()->mutable_moving_object(i)->mutable_base()->mutable_velocity()->z()
+					(int)gt.mutable_moving_object(i)->mutable_id()->value(),
+					gt.mutable_moving_object(i)->mutable_base()->mutable_position()->x(),
+					gt.mutable_moving_object(i)->mutable_base()->mutable_position()->y(),
+					gt.mutable_moving_object(i)->mutable_base()->mutable_position()->z(),
+					gt.mutable_moving_object(i)->mutable_base()->mutable_orientation()->yaw(),
+					gt.mutable_moving_object(i)->mutable_base()->mutable_orientation()->pitch(),
+					gt.mutable_moving_object(i)->mutable_base()->mutable_orientation()->roll(),
+					gt.mutable_moving_object(i)->mutable_base()->mutable_velocity()->x(),
+					gt.mutable_moving_object(i)->mutable_base()->mutable_velocity()->y(),
+					gt.mutable_moving_object(i)->mutable_base()->mutable_velocity()->z()
 				);
 			}
 		}

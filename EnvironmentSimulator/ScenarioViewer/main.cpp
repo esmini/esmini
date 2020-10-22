@@ -28,7 +28,7 @@
 #define DEMONSTRATE_SENSORS 1
 #define DEMONSTRATE_OSI 0
 #define DEMONSTRATE_ROADINFO 0
-#define DEMONSTRATE_THREAD 1
+#define DEMONSTRATE_THREAD 0
 #define DEMONSTRATE_CALLBACK 0
 
 #define MAX_N_OBJECTS 10
@@ -69,7 +69,7 @@ void objectCallback(SE_ScenarioObjectState* state, void *my_data)
 		}
 		else 
 		{
-			float latOffset = latOffset0 + latDist * (SE_GetSimulationTime() - startTrigTime)/duration;
+			float latOffset = (float)(latOffset0 + latDist * (SE_GetSimulationTime() - startTrigTime)/duration);
 			SE_ReportObjectRoadPos(state->id, state->timestamp, state->roadId, state->laneId, latOffset, state->s, state->speed);
 		}
 	}
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 #endif
 
 #if DEMONSTRATE_OSI
-		osi3::GroundTruth gt;
+		osi3::GroundTruth* gt;
 		SE_OpenOSISocket("127.0.0.1");
 #endif
 
@@ -129,8 +129,7 @@ int main(int argc, char *argv[])
 
 			SE_UpdateOSIGroundTruth();
 			// Fetch and parse OSI message
-			const char* buf = SE_GetOSIGroundTruth(&svSize);
-			gt.ParseFromArray(buf, svSize);
+			gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
 			
 			// Print timestamp
 			printf("timestamp: %.2f\n", gt->mutable_timestamp()->seconds() +
