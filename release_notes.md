@@ -1,7 +1,7 @@
 ## esmini release notes
 The purpose of this document is to highlight relevant changes introducing new features or breaking backward compatibility, i.e. requiring updates to scenarios and start scripts.
 
-#### 2020-10-12 Version 2.0.0
+#### 2020-10-23 Version 2.0.0
 The major functional change is the implementation of the OpenSCENARIO controller concept. A side effect is that much of the former application specific functionality such as Ghost concept, interactive driving control and external control now has moved out from the application(s) core and into different controllers.
 
 Since much of the unique functionality previously implemented in EgoSimulator is moved into controllers, the actual application code gets much simpler and it makes no sense to have different applications for different use cases. Hence we decided to slim down to only two applications: 1. "esmini" which links internal modules statically and have full access to internal API's and 2. "esmini-dyn" demonstrating use of the high-level dynamic shared library.

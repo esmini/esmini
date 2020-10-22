@@ -41,7 +41,7 @@ public:
 	/**
 	Flush (force write) the OSI file
 	*/
-	void OSIReporter::FlushOSIFile();
+	void FlushOSIFile();
 	/**
 	Fills up the osi message with GroundTruth
 	*/
