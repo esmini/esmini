@@ -94,7 +94,7 @@ void ControllerSumo::Init()
 	// Adds all vehicles added in openscenario to the sumosimulation
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
-		if (!(entities_->object_[i]->GetControllerType() == Controller::Type::CONTROLLER_TYPE_GHOST))
+		if (!(entities_->object_[i]->IsGhost()))
 		{
 			libsumo::Vehicle::add(entities_->object_[i]->name_, "");
 			libsumo::Vehicle::moveToXY(entities_->object_[i]->name_, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,
@@ -161,7 +161,7 @@ void ControllerSumo::Step(double timeStep)
 
 			obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
-		else if (entities_->object_[i]->GetControllerType() != Controller::Type::CONTROLLER_TYPE_GHOST)
+		else if (entities_->object_[i]->IsGhost())
 		{
 			// Updates all positions for non-sumo controlled vehicles
 			libsumo::Vehicle::moveToXY(entities_->object_[i]->name_, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,

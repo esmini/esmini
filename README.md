@@ -7,16 +7,14 @@
 
 ![Screenshot](https://github.com/esmini/esmini/blob/master/resources/screenshot.jpg?raw=true "Screenshot")
 
-It contains the following main modules:
+It contains the following main libraries:
 
-- RoadManager. A library providing an interface to road networks described in the OpenDRIVE format.
-- ScenarioEngine. A library providing an interface to traffic scenarios described in the OpenSCENARIO format.
-- ViewerBase. A library based on [OpenSceneGraph](http://www.openscenegraph.org/) providing a simple visualization of the road and scenario.
-- esminiLib. A library packaging the above three modules into a single shared library with a simplified API.
+- RoadManager (esminiRMLib). A library providing an interface to road networks described in the OpenDRIVE format.
+- ScenarioEngine (esminiLib). The main library providing a viewer and API interface to traffic scenarios described in the OpenSCENARIO format. This library includes RoadManager.
 
 and a few applications that can be used as is or provide ideas for customized solutions:
 
-- esmini. A scenario player application linking ScenarioEngine and Viewer modules statically.
+- esmini. A scenario player application linking esmini modules statically.
 - esmini-dyn. A minimalistic example using the esminiLib to play OpenSCENARIO files.
 - odrplot. Produces a data file from OpenDRIVE for plotting the road network in Python.
 - odrviewer. Visualize OpenDRIVE road network with populated dummy traffic.
@@ -69,6 +67,16 @@ Further info:
 The easiest way of integrating esmini in your custom application is to link the all inclusive shared library ScenarioEngineDLL. In spite of the name it's available also on Linux and Mac.
 See [this "Hello World" tutorial](https://github.com/esmini/esmini/blob/master/Hello-World_coding-example/README.md) on how to create a minimalistic application based on it.
 
+## esmini controllers
+
+esmini comes with a few controllers (ways of controlling individual entities in the scenario):
+
+- DefaultController. Performs actions exactly as specified in the OpenSCENARIO file. Assigned to entities by default.
+- InteractiveController. Hand over control to the user via keyboard arrow keys.
+- FollowGhost. A ghost-twin is performing the events a few seconds ahead. The entity will then follow its trajectory.
+- ExternalController. State (position, rotation ...) expected to be reported from external simulator via API. Ghost trajectory can be created for an external driver model as reference.
+- SumoController. A way of integrating SUMO controlled vehicles in a scenario.
+ 
 ## Related work
 ### pyoscx
 [pyoscx](https://github.com/pyoscx/pyoscx) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate the OpenSCENARIO 1.0 XML counterpart.

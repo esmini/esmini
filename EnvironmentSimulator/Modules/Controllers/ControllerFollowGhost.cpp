@@ -49,6 +49,7 @@ ControllerFollowGhost::ControllerFollowGhost(InitArgs* args) : Controller(args)
 void ControllerFollowGhost::Init()
 {
 	object_->SetHeadstartTime(headstart_time_);
+	
 	Controller::Init();
 }
 

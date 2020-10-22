@@ -39,6 +39,7 @@ namespace scenarioengine
 
 	private:
 		bool useGhost_;
+		double headstart_time_;
 	};
 
 	Controller* InstantiateControllerExternal(void* args);
