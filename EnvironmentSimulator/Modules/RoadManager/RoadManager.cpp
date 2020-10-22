@@ -4205,9 +4205,13 @@ void OpenDrive::SetRoadMarkOSIPoints()
 
 bool OpenDrive::SetRoadOSI()
 {
+	LOG("Generating OSI lanes");
 	SetLaneOSIPoints();
+	LOG("Generating OSI road marks");
 	SetRoadMarkOSIPoints();
-	SetLaneBoundaryPoints(); 
+	LOG("Generating OSI lane boundaries");
+	SetLaneBoundaryPoints();
+	LOG("OSI road features done");
 	return true;
 }
 

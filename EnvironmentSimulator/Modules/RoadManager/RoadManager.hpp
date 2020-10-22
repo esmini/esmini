@@ -315,7 +315,6 @@ namespace roadmanager
 	public:
 		LaneBoundaryOSI(int gbid): global_id_(gbid) {}
 		~LaneBoundaryOSI() {};
-		void SetLaneBoundaryOSIID(int init); 
 		void SetGlobalId();
 		int GetGlobalId() { return global_id_; }
 		OSIPoints GetOSIPoints() {return osi_points_;}

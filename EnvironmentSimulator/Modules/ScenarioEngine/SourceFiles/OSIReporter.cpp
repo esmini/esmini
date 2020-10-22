@@ -230,6 +230,14 @@ bool OSIReporter::WriteOSIFile()
 	return true;
 }
 
+void OSIReporter::FlushOSIFile()
+{
+	if (osi_file.good())
+	{
+		osi_file.flush();
+	}
+}
+
 int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 {
 	obj_osi_internal.gt->clear_moving_object();

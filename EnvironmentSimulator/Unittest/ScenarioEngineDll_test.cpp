@@ -551,7 +551,7 @@ TEST(OSIFile, writeosifile_two_step) {
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth(); 	
 	SE_OSIFileOpen(); 
-	SE_OSIFileWrite();
+	SE_OSIFileWrite(true);
 
 	std::ifstream in_file("move_obj.osi", std::ios::binary);
    	in_file.seekg(0, std::ios::end);
@@ -561,7 +561,7 @@ TEST(OSIFile, writeosifile_two_step) {
 
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth(); 	 
-	SE_OSIFileWrite(); 
+	SE_OSIFileWrite(true);
 
 	in_file.seekg(0, std::ios::end);
    	file_size2 = in_file.tellg();

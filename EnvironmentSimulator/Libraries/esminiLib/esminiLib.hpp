@@ -296,7 +296,7 @@ extern "C"
 	/**
 	Create and open osi file
 	*/
-	SE_DLL_API bool SE_OSIFileWrite();
+	SE_DLL_API bool SE_OSIFileWrite(bool flush = false);
 
 
 #ifdef __cplusplus

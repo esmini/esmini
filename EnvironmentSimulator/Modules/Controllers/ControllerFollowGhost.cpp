@@ -144,13 +144,6 @@ void ControllerFollowGhost::Step(double timeStep)
 		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
 	}
 
-	// Report updated state to scenario gateway
-	//gateway_->reportObject(object_->id_, object_->name_, static_cast<int>(Object::Type::VEHICLE), static_cast<int>(Vehicle::Category::CAR),
-	//	0, object_->GetControllerType(), object_->boundingbox_, 0,
-	//	vehicle_.speed_, vehicle_.wheelAngle_, vehicle_.wheelRotation_,
-	//	vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_,
-	//	vehicle_.heading_, vehicle_.pitch_, 0);
-
 	Controller::Step(timeStep);
 }
 

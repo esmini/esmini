@@ -39,6 +39,10 @@ public:
 	*/
 	bool WriteOSIFile();
 	/**
+	Flush (force write) the OSI file
+	*/
+	void OSIReporter::FlushOSIFile();
+	/**
 	Fills up the osi message with GroundTruth
 	*/
 	int UpdateOSIGroundTruth(std::vector<ObjectState*> objectState);

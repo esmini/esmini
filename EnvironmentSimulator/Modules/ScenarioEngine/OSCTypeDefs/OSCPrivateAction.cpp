@@ -446,8 +446,16 @@ void LongSpeedAction::Start()
 		return;
 	}
 
-	start_speed_ = object_->speed_;
-}
+	if (transition_dynamics_.shape_ == DynamicsShape::STEP)
+	{
+		object_->SetSpeed(target_->GetValue());
+		OSCAction::End();
+	}
+	else
+	{
+		start_speed_ = object_->speed_;
+	}
+ }
 
 void LongSpeedAction::Step(double dt, double simTime)
 {
@@ -462,12 +470,7 @@ void LongSpeedAction::Step(double dt, double simTime)
 		return;
 	}
 
-	if (transition_dynamics_.shape_ == DynamicsShape::STEP)
-	{
-		new_speed = target_->GetValue();
-		target_speed_reached = true;
-	}
-	else if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
+	if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
 	{
 		elapsed_ += dt;
 		double speed_diff = target_->GetValue() - object_->speed_;

@@ -473,7 +473,8 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 	}
 	else if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL)) // No action has updated longitudinal dimension
 	{
-		if (!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
+		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE || 
+			!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
 		{
 			if (!obj->CheckDirtyBits(Object::DirtyBit::LATERAL))  // No action has updated lateral dimension
 			{
@@ -489,7 +490,8 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 			}
 		}
 		
-		if (!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
+		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE || 
+			!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
 		{
 			// Adjustment movement to heading and road direction
 			if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)

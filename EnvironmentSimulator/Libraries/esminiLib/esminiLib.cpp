@@ -521,14 +521,20 @@ extern "C"
 		return false;
 	}
 
-	SE_DLL_API bool SE_OSIFileWrite()
+	SE_DLL_API bool SE_OSIFileWrite(bool flush)
 	{
+		bool retval = false;
+
 		if (player)
 		{
-			return player->osiReporter->WriteOSIFile();
+			retval = player->osiReporter->WriteOSIFile();
+			if (flush)
+			{
+				player->osiReporter->FlushOSIFile();
+			}
 		}
 
-		return false;
+		return retval;
 	}
 
 	SE_DLL_API int SE_ObjectHasGhost(int index)

@@ -2,7 +2,7 @@
 
 cd ..\buildVS2019_64_v141\EnvironmentSimulator\Unittest
 
-set PATH=%PATH%;..\esminiSharedLibrary\Release
+set PATH=%PATH%;..\Libraries\esminiLib\Release
 
 Release\OperatingSystem_test.exe
 pause
