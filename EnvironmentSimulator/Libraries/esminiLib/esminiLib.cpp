@@ -409,6 +409,67 @@ extern "C"
 		return 0;
 	}
 
+	SE_DLL_API int SE_ReportObjectSpeed(int id, float speed)
+	{
+		if (player)
+		{
+			if (id < player->scenarioEngine->entities.object_.size())
+			{
+				Object* obj = player->scenarioEngine->entities.object_[id];
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_,
+					obj->GetControllerType(), obj->boundingbox_, 0, speed, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+			}
+			else
+			{
+				return -1;
+			}
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_ReportObjectLateralPosition(int id, float t)
+	{
+		if (player)
+		{
+			if (id < player->scenarioEngine->entities.object_.size())
+			{
+				// reuse some values
+				Object* obj = player->scenarioEngine->entities.object_[id];
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_,
+					obj->GetControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_, 
+					obj->wheel_rot_, obj->pos_.GetTrackId(), t, obj->pos_.GetS());
+			}
+			else
+			{
+				return -1;
+			}
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_ReportObjectLateralLanePosition(int id, int laneId, float laneOffset)
+	{
+		if (player)
+		{
+			if (id < player->scenarioEngine->entities.object_.size())
+			{
+				// reuse some values
+				Object* obj = player->scenarioEngine->entities.object_[id];
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_,
+					obj->GetControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_,
+					obj->wheel_rot_, obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), laneOffset, obj->pos_.GetS());
+			}
+			else
+			{
+				return -1;
+			}
+		}
+
+		return 0;
+	}
+
 	SE_DLL_API int SE_GetNumberOfObjects()
 	{
 		if (player)

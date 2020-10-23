@@ -2,36 +2,38 @@
 The purpose of this document is to highlight relevant changes introducing new features or breaking backward compatibility, i.e. requiring updates to scenarios and start scripts.
 
 #### 2020-10-23 Version 2.0.0
-The major functional change is the implementation of the OpenSCENARIO controller concept. A side effect is that much of the former application specific functionality such as Ghost concept, interactive driving control and external control now has moved out from the application(s) core and into different controllers.
+The major functional change is the implementation of the OpenSCENARIO controller concept. A side effect is that much of the functionality such as Ghost concept, interactive driving and external control previously assiciated and hardcoded in different applications now has moved out from the application(s) core and into different controllers which can be activated on demand in a more flexible way.
 
-Since much of the unique functionality previously implemented in EgoSimulator is moved into controllers, the actual application code gets much simpler and it makes no sense to have different applications for different use cases. Hence we decided to slim down to only two applications: 1. "esmini" which links internal modules statically and have full access to internal API's and 2. "esmini-dyn" demonstrating use of the high-level dynamic shared library.
+The actual application code gets much simpler and it makes no sense to have different applications for different use cases. As a result we decided to slim down to only two applications: 
+1. `esmini` linking internal modules statically providing full access to internal API's 
+2. `esmini-dyn` demonstrating use of the high-level dynamic shared library.
 
-While doing such major reworks we also took the opportunity to rename applications and some modules, hopefully making things a little bit clearer, at least for newcomers. The changes add and remove features also breaking backward compatibility, hence the update of major version number.
+While doing such major reworks we also took the opportunity to rename applications and some modules, hopefully making things a little bit clearer, at least for newcomers. The changes breaks backward compatibility, calling for the update of major version number.
 
-Controller details:
+**Controller details:**
 - Controller catalogs supported
 - The following controllers, in addition to default controller, have been implemented:
-  - ExternalController
+  - **ExternalController**
       Vehicle will not be updated by the scenario. It's state is expected to be reported via gateway.
       The optional Ghost feature will launch a fore-runner vehicle to perform the scenario and create a trajectory for the external driver model to follow.
-  - FollowGhostController
+  - **FollowGhostController**
       An example of a (simple) vehicle and driver model using a Ghost as reference.
-  - InteractiveController
+  - **InteractiveController**
       A simple vehicle model controlled by the user via keyboard (arrow keys)
-  - SloppyDriverController
+  - **SloppyDriverController**
       Another example of a driver model, adding some random speed and lateral deviation to the default road following behavior. This controller is useless, it's pure purpose is to provide an example of separating lontitudinal and lateral control.
-  - SumoController
+  - **SumoController**
       A way to integrate SUMO simulation. OpenSCENARIO vehicles are reported to SUMO, and SUMO vehicles are reported back to esmini.
 
-  Note:
-    These controllers now can be utilized also via the shared library.
-    These controllers now can be activated/deactivated dynamically by means of OSC triggers
+These controllers can now be utilized also via the shared library. As OpenSCENARIO actions they are activated/deactivated dynamically by means of OSC triggers. 
 
-Other new featuers:
+For more information about esmini controllers please see [Controllers.md](https://github.com/esmini/esmini/blob/master/docs/Controllers.md)
+
+**Other new featuers:**
 - VisibilityAction - makes object visible or invisible for sensors and/or graphics (visual presentation)
 
-Structural changes:
-  - Special controller modes External, Internal and Hybrid have been removed (replaced by controllers)
+**Structural changes:**
+  - Special control modes External, Internal and Hybrid have been removed (replaced by controllers)
   - ScenarioEngineDLL renamed to esminiLib
   - RoadManagerDLL renamed to esminiRMLib
   - EnvironmentSimulator removed (with controllers this got identical with the EgoSimulator)

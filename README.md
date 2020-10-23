@@ -23,7 +23,7 @@ and a few applications that can be used as is or provide ideas for customized so
 
 Repository: <https://github.com/esmini/esmini>
 
-Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\EgoSimulator" and run any of the example scripts. See more info below under "Binaries and demos".
+Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\esmini" and run any of the example scripts. See more info below under "Binaries and demos".
 
 **Please note**: From version 1.5 esmini only supports OpenSCENARIO v1.0. All demo scenarios has been updated from 0.9.1 to 1.0. ASAM provides a transformation scheme (migration0_9_1to1_0.xslt, part of the OpenSCENARIO 1.0 release bundle) that can be used with tools for automatic migration of XML files.
 
@@ -56,7 +56,7 @@ If you want to build yourself, please find some instructions [here](https://gith
 
 ## Run esmini
 Either get the demo or build yourself. To run demos:
-1. Navigate to run/EgoSimulator
+1. Navigate to run/esmini
 2. Run any of the provided batch-script examples (double click on or run from command line)
 
 Further info:
@@ -76,6 +76,8 @@ esmini comes with a few controllers (ways of controlling individual entities in 
 - FollowGhost. A ghost-twin is performing the events a few seconds ahead. The entity will then follow its trajectory.
 - ExternalController. State (position, rotation ...) expected to be reported from external simulator via API. Ghost trajectory can be created for an external driver model as reference.
 - SumoController. A way of integrating SUMO controlled vehicles in a scenario.
+
+More information [here](https://github.com/esmini/esmini/blob/master/docs/Controllers.md).
  
 ## Related work
 ### pyoscx
@@ -84,10 +86,13 @@ esmini comes with a few controllers (ways of controlling individual entities in 
 ### pyodrx
 [pyodrx](https://github.com/pyoscx/pyodrx) is a Python based road network creation framework. The idea is to write road networks in a high-level script format and automatically generate the OpenDRIVE (1.4 as of today) XML counterpart.
 
+### ALKS scenarios
+[OSC-ALKS-scenarios](https://github.com/arauschert/OSC-ALKS-scenarios) is a collection of scenarios for Automated Lane Keeping System testing. "BMW has taken on the task of implementing the test scenarios from the ALKS regulation using OpenSCENARIO and OpenDRIVE resulting in a bundle of XML files executable with standard compliant simulators."
+
 ### Scenario video clip generator
 [esmini-visualizer](https://github.com/matthewcoyle-cpc/esmini-visualiser) is a tool to automatically generate video visualizations of scenarios.
 
-Note that it does not seem to work with Anti-Alias filtering. Therefore make sure to run EgoSimulator without Anti-Alias by providing argument "--aa_mode 0".
+Note that it does not seem to work with Anti-Alias filtering. Therefore make sure to run `esmini` without Anti-Alias by providing argument `--aa_mode 0`.
 
 ### Scenario editor
 [RControlStation scenario editor](https://github.com/vedderb/rise_sdvp). An embryo to an OpenSCENARIO editor, part of Self-Driving Model Vehicle Platform (SDVP).

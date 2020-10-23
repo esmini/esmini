@@ -149,6 +149,31 @@ extern "C"
 	SE_DLL_API int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
 
 	/**
+	Report object longitudinal speed. Useful for an external longitudinal controller.
+	@param id Id of the object
+	@param speed Speed in forward direction of the enitity
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_ReportObjectSpeed(int id, float speed);
+
+	/**
+	Report object lateral position relative road centerline. Useful for an external lateral controller.
+	@param id Id of the object
+	@param t Lateral position
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_ReportObjectLateralPosition(int id, float t);
+
+	/**
+	Report object lateral position by lane id and lane offset. Useful for an external lateral controller.
+	@param id Id of the object
+	@param laneId Id of the lane
+	@param laneOffset Lateral offset from center of specified lane
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_ReportObjectLateralLanePosition(int id, int laneId, float laneOffset);
+
+	/**
 	Get the number of entities in the current scenario
 	@return Number of entities
 	*/

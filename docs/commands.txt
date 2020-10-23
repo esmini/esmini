@@ -36,5 +36,3 @@ Options:
       save osi messages in file ("on", "off" (default))
   --osi_freq <frequence>
       relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps
-
-main.cpp / 62 / main(): Failed to initialize scenario player

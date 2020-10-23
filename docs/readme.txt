@@ -3,7 +3,7 @@ Environment Simulator Minimalistic (esmini) is a basic OpenSCENARIO player.
 Home: https://github.com/esmini/esmini
 
 Run esmini demo:
-    1. Navigate to run/EgoSimulator
+    1. Navigate to run/esmini
     2. Run any of the provided batch-script examples (double click on or run from command line)
 
 Key commands:

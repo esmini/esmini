@@ -93,6 +93,25 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 	state_.boundingbox = boundingbox;
 }
 
+ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
+	double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, double lateralOffset, double s)
+{
+	memset(&state_, 0, sizeof(ObjectStateStruct));
+
+	state_.id = id;
+	state_.obj_type = obj_type;
+	state_.obj_category = obj_category;
+	state_.model_id = model_id;
+	state_.ctrl_type = ctrl_type;
+	state_.timeStamp = (float)timestamp;
+	strncpy(state_.name, name.c_str(), NAME_LEN);
+	state_.pos.SetTrackPos(roadId, s, lateralOffset);
+	state_.speed = (float)speed;
+	state_.wheel_angle = (float)wheel_angle;
+	state_.wheel_rot = (float)wheel_rot;
+	state_.boundingbox = boundingbox;
+}
+
 void ObjectState::Print()
 {
 	LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\tctrl_type: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f\twheel_angle %.2f",
@@ -232,8 +251,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 }
 
 void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int host, OSCBoundingBox boundingbox,
-	double timestamp, double speed, double wheel_angle, double wheel_rot,
-	int roadId, int laneId, double laneOffset, double s)
+	double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s)
 {
 	ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -250,6 +268,28 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	{
 		// Update status
 		obj_state->state_.pos.SetLanePos(roadId, laneId, s, laneOffset);
+		updateObjectInfo(obj_state, timestamp, speed, wheel_angle, wheel_rot);
+	}
+}
+
+void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int host, OSCBoundingBox boundingbox,
+	double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, double lateralOffset, double s)
+{
+	ObjectState* obj_state = getObjectStatePtrById(id);
+
+	if (obj_state == 0)
+	{
+		// Create state and set permanent information
+		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
+		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, host, boundingbox, timestamp, speed, wheel_angle, wheel_rot, roadId, lateralOffset, s);
+
+		// Add object to collection
+		objectState_.push_back(obj_state);
+	}
+	else
+	{
+		// Update status
+		obj_state->state_.pos.SetTrackPos(roadId, s, lateralOffset);
 		updateObjectInfo(obj_state, timestamp, speed, wheel_angle, wheel_rot);
 	}
 }

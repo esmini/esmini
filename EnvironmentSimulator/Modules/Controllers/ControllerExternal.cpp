@@ -82,13 +82,6 @@ void ControllerExternal::Step(double timeStep)
 
 void ControllerExternal::Activate(int domainMask)
 {
-	// External controller forced into both domains
-	if (domain_ != Domain::CTRL_BOTH)
-	{
-		LOG("External controller forced into operation of both domains (lat/long)");
-		domain_ = Domain::CTRL_BOTH;
-	}
-
 	Controller::Activate(domainMask);
 }
 

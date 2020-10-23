@@ -50,9 +50,6 @@
                   </TeleportAction>
                </PrivateAction>
                <PrivateAction>
-                    <ActivateControllerAction longitudinal="true" lateral="true" />
-               </PrivateAction>
-               <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" />
@@ -61,6 +58,9 @@
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="false" lateral="true" />
                </PrivateAction>
             </Private>
             <Private entityRef="OverTaker">
