@@ -280,27 +280,6 @@ void ScenarioPlayer::ViewerFrame()
 		car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
 		car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
 
-		// Check if visibility has been modified since last frame
-		if (obj->CheckDirtyBits(Object::DirtyBit::VISIBILITY))
-		{
-			if (obj->visibilityMask_ & Object::Visibility::GRAPHICS)
-			{
-				car->txNode_->setNodeMask(0xffffffff);
-				if (obj->visibilityMask_ & Object::Visibility::SENSORS)
-				{
-					car->SetTransparency(0.0);
-				}
-				else
-				{
-					car->SetTransparency(0.6);
-				}
-			}
-			else
-			{
-				car->txNode_->setNodeMask(0x0);
-			}
-		}
-
 		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST && obj->GetGhost())
 		{
 			if (car->steering_sensor_)
@@ -451,6 +430,9 @@ int ScenarioPlayer::InitViewer()
 			viewer_ = 0;
 			return -1;
 		}
+		// Connect callback for setting transparency
+		viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(viewer_->cars_.back()->txNode_, obj, viewer_->cars_.back());
+		viewer_->cars_.back()->txNode_->setUpdateCallback(cb);
 
 		// If following a ghost vehicle, add visual representation of speed and steering sensors
 		if (scenarioEngine->entities.object_[i]->GetGhost())

@@ -30,7 +30,7 @@ deploy:
   - provider: GitHub
     tag: $(APPVEYOR_REPO_TAG_NAME)
     release: esmini $(GitVersion_MajorMinorPatch) (build $(APPVEYOR_BUILD_NUMBER))
-    description: 'Demo and binaries'
+    description: 'Demo and binaries. For information about changes and new features see [release notes](https://github.com/esmini/esmini/blob/master/release_notes.md).'
     auth_token:
       secure: 'Zsjm85fzs4eTdDJg1VB+Y8Lk+5bEJRBkeaEtYtnbtv2IUg1sanoQTub/55QYNBsY'
     on:

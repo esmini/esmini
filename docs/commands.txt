@@ -36,3 +36,14 @@ Options:
       save osi messages in file ("on", "off" (default))
   --osi_freq <frequence>
       relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps
+
+The graphics engine (OpenSceneGraph) provides some additional options, here are a few useful ones: 
+ 
+  --window <x y w h>
+      Set the position (x,y) and size (w,h) of the viewer window.
+  --screen <num>    
+      Set the screen to use when multiple screens are present.
+  --clear-color <color>
+      Set the background color of the viewer in the form
+  --borderless-window <x y w h>
+      Set the position (x,y) and size (w,h) of a borderless viewer window.

@@ -449,7 +449,10 @@ void LongSpeedAction::Start()
 	if (transition_dynamics_.shape_ == DynamicsShape::STEP)
 	{
 		object_->SetSpeed(target_->GetValue());
-		OSCAction::End();
+		if (!(target_->type_ == Target::TargetType::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
+		{
+			OSCAction::End();
+		}
 	}
 	else
 	{

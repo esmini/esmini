@@ -294,6 +294,32 @@ void SensorViewFrustum::Update()
 	}
 }
 
+void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
+{
+	if (object_->CheckDirtyBits(scenarioengine::Object::DirtyBit::VISIBILITY))
+	{
+		if (object_->visibilityMask_ & scenarioengine::Object::Visibility::GRAPHICS)
+		{
+			car_->txNode_->getChild(0)->setNodeMask(0xffffffff);
+			if (object_->visibilityMask_ & scenarioengine::Object::Visibility::SENSORS)
+			{
+				car_->SetTransparency(0.0);
+			}
+			else
+			{
+				car_->SetTransparency(0.6);
+			}
+		}
+		else
+		{
+			// Must set 0-mask on child node, otherwise it will not be traversed...
+			car_->txNode_->getChild(0)->setNodeMask(0x0);
+		}
+	}
+	object_->ClearDirtyBits(scenarioengine::Object::DirtyBit::VISIBILITY);
+
+}
+
 void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor* nv)
 {
 	osg::Material* material = static_cast<osg::Material*>(sa);
@@ -595,17 +621,6 @@ void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta
 	UpdateWheels(wheel_angle, wheel_rot_ + wheel_rotation_delta);
 }
 
-class TrailerCallback : public osg::NodeCallback
-{
-public:
-	TrailerCallback(osg::Geometry* ribbon) :
-		_ribbon(ribbon) {}
-	virtual void operator()(osg::Node* node,
-		osg::NodeVisitor* nv);
-protected:
-	osg::observer_ptr<osg::Geometry> _ribbon;
-};
-
 void CarModel::SetTransparency(double factor)
 {
 	if (factor < 0 || factor > 1)
@@ -843,12 +858,18 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	// add the state manipulator
 	osgViewer_->addEventHandler(new osgGA::StateSetManipulator(osgViewer_->getCamera()->getOrCreateStateSet()));
 
+#if 0
 	// add the thread model handler
-//	osgViewer_->addEventHandler(new osgViewer::ThreadingHandler);
+	osgViewer_->addEventHandler(new osgViewer::ThreadingHandler);
+#else
+	// If we see problem with chrashes when manipulating graphic nodes or states, in spite of 
+	// trying to use callback mechanisms, then locking to single thread might be a solution. 
+
 	// Hard code single thread model. Can't get setDataVariance(DYNAMIC)
 	// to work with some state changes. And callbacks for all possible
 	// nodes would be too much overhead. Solve when needed.
 	osgViewer_->setThreadingModel(osgViewer::ViewerBase::SingleThreaded);
+#endif
 
 	// add the help handler
 	osgViewer_->addEventHandler(new osgViewer::HelpHandler(arguments.getApplicationUsage()));

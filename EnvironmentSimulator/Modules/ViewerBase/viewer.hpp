@@ -193,6 +193,26 @@ namespace viewer
 
 	};
 
+	class VisibilityCallback : public osg::NodeCallback
+	{
+	public:
+		VisibilityCallback(osg::Node* node, scenarioengine::Object* object, CarModel* car)
+		{
+			node_ = (osg::LOD*)node;
+			object_ = object;
+			car_ = car;
+		}
+		virtual void operator()(osg::Node*, osg::NodeVisitor*);
+
+	protected:
+		osg::ref_ptr<osgAnimation::InCubicMotion> _motion;
+
+	private:
+		scenarioengine::Object* object_;
+		CarModel* car_;
+		osg::LOD* node_;
+	};
+
 	typedef struct
 	{
 		int key_;

@@ -161,7 +161,7 @@ void ControllerSumo::Step(double timeStep)
 
 			obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
-		else if (entities_->object_[i]->IsGhost())
+		else if (!entities_->object_[i]->IsGhost())
 		{
 			// Updates all positions for non-sumo controlled vehicles
 			libsumo::Vehicle::moveToXY(entities_->object_[i]->name_, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,

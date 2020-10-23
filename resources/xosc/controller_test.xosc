@@ -183,6 +183,24 @@
                   </Condition>
                </ConditionGroup>
             </StartTrigger>                 
+            <StopTrigger>
+                <ConditionGroup>
+                   <Condition name="EgoLaneChangeCondition" delay="0.0" conditionEdge="none">
+                      <ByEntityCondition>
+                         <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Ego"/>
+                         </TriggeringEntities>
+                         <EntityCondition>
+                            <ReachPositionCondition tolerance="10.0">
+                               <Position>
+                                  <LanePosition roadId="0" laneId="0" s="750.0"/>
+                               </Position>
+                            </ReachPositionCondition>
+                         </EntityCondition>
+                      </ByEntityCondition>
+                   </Condition>
+                </ConditionGroup>
+            </StopTrigger> 
          </Act>
       </Story>
    </Storyboard>

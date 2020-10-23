@@ -150,9 +150,8 @@ A simple driver model. A ghost-twin performing the events a few seconds ahead. T
 
 Domain support: `longitudinal` and `lateral` (in combination only).
 
-|Properties|
-|--------|-------|--|
-|headstartTime|seconds|ghost will be launched at `time = 0 - headstartTime`|
+Properties: 
+- `headstartTime` (seconds): Ghost will be launched at `time = 0 - headstartTime`
 
 
 #### ExternalController
@@ -160,19 +159,17 @@ The entity will not be moved by the scenario. Instead its state (position, rotat
 
 Domain support: `longitudinal` and/or `lateral` (independent).
 
-|Properties|
-|--------|-------|--|
-|useGhost|true/false|enable or disable (default) the ghost feature|
-|headstartTime|seconds|optional ghost will be launched at `time = 0 - headstartTime`|
+Properties: 
+- `useGhost` (true/false): Enable or disable (default) the ghost feature
+- `headstartTime` (seconds): Optional ghost will be launched at `time = 0 - headstartTime`
 
 #### SumoController 
 A way of integrating SUMO controlled vehicles in a scenario. OpenSCENARIO vehicles are reported to SUMO, and SUMO vehicles are reported back to esmini. A reference to a SUMO config file is provided as input to the controller. See [cut-in_sumo.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_sumo.xosc) for an example.
 
 Domain support: `longitudinal` and `lateral` (in combination only).
 
-|Properties|
-|--------|-------|
-|file|path to the SUMO configuration file|
+Properties:
+- `file`: Path to the SUMO configuration file
 
 
 > Note: Sumo controller is always and automatically assigned and activated from start of the simulation. 
@@ -182,7 +179,6 @@ Domain support: `longitudinal` and `lateral` (in combination only).
 
 Domain support: `longitudinal` and/or `lateral` (independent).
 
-|Properties|
-|--------|-------|--|
-|sloppiness|double [0:1]|level of sloppiness, 0=perfect 1=bad |
+Properties:
+- `sloppiness` (double [0:1]): Level of sloppiness, 0=perfect 1=bad
 

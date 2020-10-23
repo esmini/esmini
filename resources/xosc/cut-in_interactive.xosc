@@ -29,16 +29,12 @@
    <Entities>
       <ScenarioObject name="Ego">
         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+        <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+        </ObjectController>
       </ScenarioObject>
       <ScenarioObject name="OverTaker">
          <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
-        <ObjectController>
-            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" >
-                <Properties>
-                    <Property name="mode" value="additive" />
-                </Properties>
-            </CatalogReference>
-        </ObjectController>
       </ScenarioObject>
    </Entities>
    <Storyboard>
@@ -51,6 +47,9 @@
                         <LanePosition roadId="0" laneId="-3" offset="0" s="$EgoStartS"/>
                      </Position>
                   </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
                </PrivateAction>
                <PrivateAction>
                   <LongitudinalAction>
@@ -70,9 +69,6 @@
                         <LanePosition roadId="0" laneId="-2" offset="0" s="25"/>
                      </Position>
                   </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                    <ActivateControllerAction longitudinal="true" lateral="true" />
                </PrivateAction>
             </Private>
          </Actions>

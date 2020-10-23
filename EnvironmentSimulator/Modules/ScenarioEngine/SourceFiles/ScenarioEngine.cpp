@@ -102,8 +102,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		{
 			entities.object_[i]->ClearDirtyBits(
 				Object::DirtyBit::LATERAL | 
-				Object::DirtyBit::LONGITUDINAL | 
-				Object::DirtyBit::VISIBILITY
+				Object::DirtyBit::LONGITUDINAL
 			);
 			entities.object_[i]->reset_ = false;
 		}
