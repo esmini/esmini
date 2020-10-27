@@ -97,12 +97,13 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 	}
 	else
 	{
-		// reset indicators of applied control and visiblity
+		// reset indicators of applied control 
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
 			entities.object_[i]->ClearDirtyBits(
 				Object::DirtyBit::LATERAL | 
-				Object::DirtyBit::LONGITUDINAL
+				Object::DirtyBit::LONGITUDINAL |
+				Object::DirtyBit::SPEED
 			);
 			entities.object_[i]->reset_ = false;
 		}

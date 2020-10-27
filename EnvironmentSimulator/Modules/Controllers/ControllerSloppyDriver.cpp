@@ -29,6 +29,16 @@ static std::mt19937 mt_rand;
 
 #define WHEEL_RADIUS 0.35
 
+double SinusoidalTransition::GetValue()
+{
+	return start_ + amplitude_ * (offset_ + cos(startAngle_ + factor_ * M_PI));
+}
+
+double SinusoidalTransition::GetHeading()
+{
+	return -amplitude_ * sin(startAngle_ + factor_ * M_PI);
+}
+
 Controller* scenarioengine::InstantiateControllerSloppyDriver(void* args)
 {
 	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
@@ -36,7 +46,7 @@ Controller* scenarioengine::InstantiateControllerSloppyDriver(void* args)
 	return new ControllerSloppyDriver(initArgs);
 }
 
-ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : sloppiness_(0.5),
+ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : sloppiness_(0.5), time_(0), 
 	Controller(args)
 {
 	if (args->properties->ValueExists("sloppiness"))
@@ -58,96 +68,118 @@ void ControllerSloppyDriver::Step(double timeStep)
 	{
 		return;
 	}
-	
-	// Do modification to a local position object and then report to gateway
-	double lateral_offset = initT_;
-	double hRate = 0;
-	double oldSpeed = speedFilter_.GetValue();
 
+	time_ += timeStep;
+
+	if (object_->CheckDirtyBits(Object::DirtyBit::SPEED))
+	{
+		// Speed has been updated by Default Driver, update our reference speed
+		referenceSpeed_ = object_->GetSpeed();
+	}
+
+	// Do modification to a local position object and then report to gateway
 	if (object_ && domain_ & Controller::Domain::CTRL_LONGITUDINAL)
 	{
-		if (speedTimer_ < 0)
+		if (speedTimer_.Expired(time_))
 		{
-			// vary next speed target value in proportion to current speed
-			double targetValue = initSpeed_ + object_->GetSpeed() * sloppiness_ * (1.0 * mt_rand() / mt_rand.max() - 0.5);
-			speedFilter_.SetTargetValue(targetValue);
-
 			// restart timer - 50% variation
-			speedTimer_ = speedTimerDuration_ + speedTimerDuration_ * (1.0 * mt_rand() / mt_rand.max() - 0.5);
+			double timerValue = speedTimerAverage_ * (1.0 + (1.0 * mt_rand() / mt_rand.max() - 0.5));
+			speedTimer_.Start(time_, timerValue);
+
+			// target speed +/- 35%	
+			initSpeed_ = referenceSpeed_ * targetFactor_;
+			targetFactor_ = 1 + 0.7*sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * mt_rand() / mt_rand.max() - 0.5);
 		}
-		speedFilter_.Update(timeStep);
-		
+
+		double steplen = 0;
+		double weight = speedTimer_.Elapsed(time_) / speedTimer_.GetDuration();
+		double oldSpeed_ = currentSpeed_;
+
+		currentSpeed_ = initSpeed_ * (1-weight) + targetFactor_ * referenceSpeed_ * weight;
+		currentSpeed_ = MAX(currentSpeed_, 0);
+		object_->SetSpeed(currentSpeed_);
+
 		if (mode_ == Mode::MODE_OVERRIDE)
 		{
-			object_->SetSpeed(MAX(speedFilter_.GetValue(), 0));  // Don't go reverse
-						
-			// Adjustment movement to heading and road direction
-			if (GetAbsAngleDifference(object_->pos_.GetH(), object_->pos_.GetDrivingDirection()) > M_PI_2)
-			{
-				// If pointing in other direction
-				object_->pos_.MoveAlongS(-timeStep * object_->GetSpeed());
-			}
-			else
-			{
-				object_->pos_.MoveAlongS(timeStep * object_->GetSpeed());
-			}
+			steplen = currentSpeed_ * timeStep;
+			object_->SetSpeed(currentSpeed_);
 		}
 		else
 		{
-			object_->SetSpeed(object_->GetSpeed() + speedFilter_.GetValue() - oldSpeed);
+			if (object_->CheckDirtyBits(Object::DirtyBit::SPEED))
+			{
+				// Default Driver has moved by reference speed
+				steplen = (currentSpeed_ - referenceSpeed_) * timeStep;
+			}
+			else
+			{
+				// Default Driver has moved by old_speed
+				steplen = (currentSpeed_ - oldSpeed_) * timeStep;
+			}
+		}
+
+		// Adjustment movement to heading and road direction
+		if (GetAbsAngleDifference(object_->pos_.GetH(), object_->pos_.GetDrivingDirection()) > M_PI_2)
+		{
+			// If pointing in other direction
+			steplen *= -1;
 		}
 		
-		speedTimer_ -= timeStep;
+		if (fabs(object_->GetSpeed()) > SMALL_NUMBER)
+		{
+			object_->pos_.MoveAlongS(steplen, 0);
+		}
 	}
 
 	if (object_ && domain_ & Controller::Domain::CTRL_LATERAL)
 	{
-		double oldT = lateralFilter_.GetValue();
-		double oldRelativeH = relativeH_;
-
-		if (lateralTimer_ < 0)
+		if (lateralTimer_.Expired(time_))
 		{
 			// max lateral displacement is about half lane width (7/2) 
-			double targetValue = initT_ + 7.0 * sloppiness_ * (1.0 * mt_rand() / mt_rand.max() - 0.5);
-			lateralFilter_.SetTargetValue(targetValue);
+			tFuzz0 = tFuzzTarget;
+			tFuzzTarget = 2 * sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * mt_rand() / mt_rand.max() - 0.5);
 
 			// restart timer - 50% variation
-			lateralTimer_ = lateralTimerDuration_ + lateralTimerDuration_ * (1.0 * mt_rand() / mt_rand.max() - 0.5);
+			double timerValue = lateralTimerAverage_ * (1.0 + (1.0 * mt_rand() / mt_rand.max() - 0.5));
+			lateralTimer_.Start(time_, timerValue);
 		}
-
-		lateralFilter_.Update(timeStep);
-		
-		if (fabs(object_->GetSpeed()) > SMALL_NUMBER)
-		{
-			// Adjust heading to lateral motion 
-			relativeH_ = atan(lateralFilter_.GetV() / object_->GetSpeed());
-		}
-		else
-		{
-			// Keep heading
-			relativeH_ = object_->pos_.GetHRelative();
-		}
-
+		double h_error;
 		if (mode_ == Mode::MODE_OVERRIDE)
 		{
-			object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), lateralFilter_.GetValue());
-			object_->pos_.SetHeadingRelative(relativeH_);
+			h_error = object_->pos_.GetHRelative();
 		}
 		else
 		{
-			object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(),
-				object_->pos_.GetT() + lateralFilter_.GetValue() - oldT);
-			
-			// Relative heading is reset by Default Controller each frame
-			// Calculate new relative heading (vehicles heading relative the road direction)
-			// by finding out the sum lateral movement (per unit longitudinal movement) from 
-			// Default Controller and this controller
-			double dTDefaultCtrl = tan(object_->pos_.GetHRelative());
-			double dTThisCtrl = (lateralFilter_.GetValue() - oldT) / (object_->GetSpeed() * timeStep);
-			object_->pos_.SetHeadingRelative(atan(dTDefaultCtrl + dTThisCtrl));
+			h_error = currentH_;
 		}
+		
+		// Normalize h_error to [-PI, PI]
+		h_error = h_error > M_PI ? h_error -= 2 * M_PI : h_error;
 
-		lateralTimer_ -= timeStep;
+		double tFuzz = tFuzz0 + (tFuzzTarget - tFuzz0) * lateralTimer_.Elapsed(time_) / lateralTimer_.duration_;
+		double lat_error = lat_error = currentT_ + tFuzz;
+		
+		// Adjust lane offset for driving direction and tweak these to tune performance
+		double lat_constant = -0.02;
+		double h_constant = -0.05;
+		double dh = (lat_constant * lat_error + h_constant * h_error) * timeStep * object_->GetSpeed();
+		double dt = object_->GetSpeed() * timeStep * sin(currentH_ + dh);
+
+		// Move car according to speed and heading
+		if (fabs(object_->GetSpeed()) > SMALL_NUMBER)
+		{
+			object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), object_->pos_.GetT() + dt);
+			if (mode_ == Mode::MODE_OVERRIDE)
+			{
+				object_->pos_.SetHeadingRelative(currentH_ + dh);
+			}
+			else
+			{
+				object_->pos_.SetHeadingRelative(object_->pos_.GetHRelative() + currentH_ + dh);
+			}
+			currentT_ += dt;
+			currentH_ += dh;
+		}
 	}
 
 	Controller::Step(timeStep);
@@ -161,43 +193,17 @@ void ControllerSloppyDriver::Activate(int domainMask)
 		{
 			LOG("Warning, sloppiness is %.2f recommended range is [0:1]", sloppiness_);
 		}
-		speedTimerDuration_ = 3;
-		speedTimer_ = speedTimerDuration_;
-		speedFilter_.SetTension(0.4);
-		speedFilter_.SetOptimalDamping();
-		if (mode_ == Mode::MODE_OVERRIDE)
-		{
-			initSpeed_ = object_->GetSpeed();
-			speedFilter_.SetTargetValue(object_->GetSpeed());
-			speedFilter_.SetValue(object_->GetSpeed());
-		}
-		else
-		{
-			initSpeed_ = 0;
-			speedFilter_.SetTargetValue(0);
-			speedFilter_.SetValue(0);
-		}
+		speedTimerAverage_ = 3;
+		speedTimer_.Start(0, speedTimerAverage_);
+		targetFactor_ = 1;
+		currentSpeed_ = initSpeed_ = referenceSpeed_ = object_->GetSpeed();
 
-
-		lateralTimerDuration_ = 0.7;
-		lateralTimer_ = lateralTimerDuration_;
-		lateralFilter_.SetTension(0.3);
-		lateralFilter_.SetOptimalDamping();
-		if (mode_ == Mode::MODE_OVERRIDE)
-		{
-			lateralFilter_.SetTargetValue(object_->pos_.GetT());
-			lateralFilter_.SetValue(object_->pos_.GetT());
-			initT_ = object_->pos_.GetT();
-			relativeH_ = object_->pos_.GetH();
-		}
-		else
-		{
-			lateralFilter_.SetTargetValue(0);
-			lateralFilter_.SetValue(0);
-			initT_ = 0;
-			relativeH_ = 0;
-		}
-		lateralFilter_.SetV(tan(object_->pos_.GetHRelative()) * object_->GetSpeed());
+		lateralTimerAverage_ = 1.5;
+		lateralTimer_.Start(0, lateralTimerAverage_);
+		tFuzzTarget = 0;
+		tFuzz0 = 0;
+		currentT_ = 0;
+		currentH_ = object_->pos_.GetHRelative();
 	}
 
 	Controller::Activate(domainMask);

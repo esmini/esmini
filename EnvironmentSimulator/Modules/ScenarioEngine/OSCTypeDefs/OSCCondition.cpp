@@ -132,9 +132,9 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 
 	if (timer_.Started())
 	{
-		if (timer_.DurationS(sim_time) > delay_)
+		if (timer_.Expired(sim_time))
 		{
-			LOG("Timer expired at %.2f seconds", timer_.DurationS(sim_time));
+			LOG("Timer expired at %.2f seconds", timer_.Elapsed(sim_time));
 			timer_.Reset();
 			return true;
 		}
@@ -149,7 +149,7 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 
 	if (trig && delay_ > 0)
 	{
-		timer_.Start(sim_time);
+		timer_.Start(sim_time, delay_);
 		LOG("Timer %.2fs started", delay_);
 		return false;
 	}

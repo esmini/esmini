@@ -150,22 +150,23 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 			object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))  
 		{
 			object_->pos_.MoveTrajectoryDS(object_->speed_ * dt);
+			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
 		else if (timing_domain_ == TimingDomain::TIMING_RELATIVE)
 		{
 			double s_old = object_->pos_.GetTrajectoryS();
 			object_->pos_.SetTrajectoryPosByTime(traj_, time_ + timing_offset_);
 			object_->speed_ = (object_->pos_.GetTrajectoryS() - s_old) / dt;
+			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
 		}
 		else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
 		{
 			double s_old = object_->pos_.GetTrajectoryS();
 			object_->pos_.SetTrajectoryPosByTime(traj_, simTime * timing_scale_ + timing_offset_);
 			object_->speed_ = (object_->pos_.GetTrajectoryS() - s_old) / dt;
+			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
 		}
 	}
-
-	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 }
 
 void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
@@ -449,6 +450,7 @@ void LongSpeedAction::Start()
 	if (transition_dynamics_.shape_ == DynamicsShape::STEP)
 	{
 		object_->SetSpeed(target_->GetValue());
+		object_->SetDirtyBits(Object::DirtyBit::SPEED);
 		if (!(target_->type_ == Target::TargetType::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
 		{
 			OSCAction::End();
@@ -476,8 +478,9 @@ void LongSpeedAction::Step(double dt, double simTime)
 	if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
 	{
 		elapsed_ += dt;
-		double speed_diff = target_->GetValue() - object_->speed_;
-		new_speed = object_->speed_ + SIGN(speed_diff) * fabs(transition_dynamics_.target_value_) * dt;
+		
+		// Assume user want to reach target speed, ignore sign of rate
+		new_speed = start_speed_ + SIGN(target_->GetValue() - start_speed_) * fabs(transition_dynamics_.target_value_) * elapsed_;
 
 		// Check if speed changed passed target value
 		if ((object_->speed_ > target_->GetValue() && new_speed < target_->GetValue()) ||
@@ -517,6 +520,7 @@ void LongSpeedAction::Step(double dt, double simTime)
 	}
 
 	object_->speed_ = new_speed;
+	object_->SetDirtyBits(Object::DirtyBit::SPEED);
 }
 
 void LongSpeedAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
@@ -585,7 +589,7 @@ void LongDistanceAction::Step(double dt, double simTime)
 		object_->pos_.MoveAlongS(distance_diff);
 		object_->speed_ = target_object_->speed_;
 
-		object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
+		object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
 	}
 	else
 	{
@@ -611,6 +615,7 @@ void LongDistanceAction::Step(double dt, double simTime)
 		{
 			object_->speed_ = -dynamics_.max_speed_;
 		}
+		object_->SetDirtyBits(Object::DirtyBit::SPEED);
 	}
 
 	//	LOG("Dist %.2f diff %.2f acc %.2f speed %.2f", distance, distance_diff, acc, object_->speed_);
@@ -1052,6 +1057,7 @@ void SynchronizeAction::Step(double dt, double simTime)
 		}
 
 		object_->speed_ += acc * dt;
+		object_->SetDirtyBits(Object::DirtyBit::SPEED);
 	}
 }
 

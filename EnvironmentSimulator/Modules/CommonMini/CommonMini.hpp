@@ -66,11 +66,6 @@ bool FileExists(const char* fileName);
 std::string CombineDirectoryPathAndFilepath(std::string dir_path,  std::string file_path);
 
 /**
-  Retrieve the angle in the range [0,2*PI]
-*/
-double GetAngleIn2PIInterval(double angle);
-
-/**
   Retrieve the angle of a vector
 */
 double GetAngleOfVector(double x, double y);
@@ -342,18 +337,73 @@ class SE_SystemTimer
 {
 public:
 	__int64 start_time_;
+	double duration_;
 
 	SE_SystemTimer() : start_time_(0) {}
 	void Start()
 	{
 		start_time_ = SE_getSystemTime();
 	}
+	void Start(double duration)
+	{
+		start_time_ = SE_getSystemTime();
+		duration_ = duration;
+	}
 
 	void Reset() { start_time_ = 0; }
-
 	bool Started() { return start_time_ > 0 ? true : false; }
-	double DurationS() { return 1E-3 * (SE_getSystemTime() - start_time_); }
+	void SetDuration(double duration) { duration_ = duration; }
+	double Elapsed() { return 1E-3 * (SE_getSystemTime() - start_time_); }
+	double Remaining() 
+	{ 
+		if (Expired())
+		{
+			return 0;
+		}
+		else
+		{
+			return duration_ - Elapsed();
+		}
+	}
+	bool Expired() { return Elapsed() > duration_; }
+};
 
+
+class SE_SimulationTimer
+{
+public:
+	double start_time_;
+	double duration_;
+
+	SE_SimulationTimer() : start_time_(0), duration_(0) {}
+	void Start(double timestamp_s, double duration)
+	{
+		start_time_ = timestamp_s;
+		duration_ = duration;
+	}
+
+	void Reset()
+	{
+		start_time_ = 0;
+		duration_ = 0;
+	}
+
+	double Remaining(double timestamp_s)
+	{
+		if (Expired(timestamp_s))
+		{
+			return 0;
+		}
+		else
+		{
+			return duration_ - Elapsed(timestamp_s);
+		}
+	}
+
+	bool Started() { return duration_ > SMALL_NUMBER; }
+	double Elapsed(double timestamp_s) { return timestamp_s - start_time_; }
+	double Expired(double timestamp_s) { return timestamp_s - start_time_ > duration_; }
+	double GetDuration() { return duration_; }
 };
 
 class DampedSpring

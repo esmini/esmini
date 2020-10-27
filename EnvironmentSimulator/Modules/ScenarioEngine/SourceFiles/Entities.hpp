@@ -39,9 +39,10 @@ namespace scenarioengine
 			NONE =            0,
 			LONGITUDINAL =   (1 << 0),
 			LATERAL =        (1 << 1),
-			WHEEL_ANGLE =    (1 << 2),
-			WHEEL_ROTATION = (1 << 3),
-			VISIBILITY =     (1 << 4)
+			SPEED =          (1 << 2),
+			WHEEL_ANGLE =    (1 << 3),
+			WHEEL_ROTATION = (1 << 4),
+			VISIBILITY =     (1 << 5)
 		} DirtyBit;
 
 		typedef enum {

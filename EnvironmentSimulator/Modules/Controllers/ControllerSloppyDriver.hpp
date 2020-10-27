@@ -21,6 +21,32 @@
 
 namespace scenarioengine
 {
+	class SinusoidalTransition
+	{
+	public:
+		SinusoidalTransition() : amplitude_(0), startAngle_(0), start_(0) {}
+
+		void Init(double start, double targetValueRelative)
+		{
+			amplitude_ = fabs(0.5 * targetValueRelative);
+			startAngle_ = SIGN(targetValueRelative) > 0 ? M_PI : 0;
+			offset_ = SIGN(targetValueRelative) > 0 ? +1 : -1;
+			start_ = start;
+			factor_ = 0.0;
+		}
+
+		double amplitude_;
+		double start_;
+		double startAngle_;
+		double offset_;
+		double factor_;
+
+		double GetValue();
+		double GetFactor() { return factor_; }
+		double GetHeading();
+		void SetFactor(double factor) { factor_ = factor; }
+	};
+
 	// base class for controllers
 	class ControllerSloppyDriver: public Controller
 	{
@@ -42,15 +68,22 @@ namespace scenarioengine
 	private:
 		double sloppiness_;  // range [0-1], default = 0.5
 		OSCProperties properties_;
-		double initSpeed_;
-		double speedTimer_;
-		double speedTimerDuration_;
-		DampedSpring speedFilter_;
-		double relativeH_;
-		double initT_;
-		double lateralTimer_;
-		double lateralTimerDuration_;
-		DampedSpring lateralFilter_;
+		double time_;
+
+		SE_SimulationTimer speedTimer_;
+		double speedTimerAverage_;
+		double referenceSpeed_; // set by default driver
+		double initSpeed_;  // start speed for each timer period
+		double currentSpeed_;
+		double targetFactor_;  // factor to multiply reference speed
+
+		SE_SimulationTimer lateralTimer_;
+		double lateralTimerAverage_;
+		double currentT_;
+		double tFuzz0;
+		double tFuzzTarget;
+		double currentH_;
+
 		const char* type_name_ = "SloppyDriver";
 	};
 
