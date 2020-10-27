@@ -108,7 +108,6 @@ private:
 	bool launch_server;
 	bool disable_controllers_;
 	double fixed_timestep_;
-	bool osi_file; 
 	int osi_freq_; 
 	std::string osi_receiver_addr;
 	int& argc_;

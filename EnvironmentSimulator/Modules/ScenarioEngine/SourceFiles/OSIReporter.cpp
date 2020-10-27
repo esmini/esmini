@@ -65,7 +65,6 @@ using namespace scenarioengine;
 static OSIGroundTruth osiGroundTruth;
 static OSIRoadLane osiRoadLane;
 static OSIRoadLaneBoundary osiRoadLaneBoundary;
-std::ofstream osi_file;
 
 static struct sockaddr_in recvAddr;
 
@@ -214,8 +213,18 @@ bool OSIReporter::OpenOSIFile()
 	return true;
 }
 
+void OSIReporter::CloseOSIFile()
+{
+	osi_file.close();
+}
+
 bool OSIReporter::WriteOSIFile()
 {
+	if (!osi_file.good())
+	{
+		return false;
+	}
+
 	// write to file, first size of message
 	osi_file.write((char*)&osiGroundTruth.size, sizeof(osiGroundTruth.size));
 
@@ -272,12 +281,14 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 
 	UpdateOSILaneBoundary(objectState);
 
-	
-
-	if (sendSocket)
+	if (GetSocket() || IsFileOpen())
 	{
 		obj_osi_internal.gt->SerializeToString(&osiGroundTruth.ground_truth);
 		osiGroundTruth.size = (unsigned int)obj_osi_internal.gt->ByteSizeLong();
+	}
+
+	if (sendSocket)
+	{
 		// send over udp - skip size (package size == message size)
 		int sendResult = sendto(sendSocket, (char*)osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
 
@@ -288,6 +299,11 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 			wprintf(L"send failed with error: %d\n", WSAGetLastError());
 #endif
 		}
+	}
+
+	if (IsFileOpen())
+	{
+		WriteOSIFile();
 	}
 
 	return 0;
@@ -961,8 +977,9 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 
 const char* OSIReporter::GetOSIGroundTruth(int* size)
 {
-	if (!sendSocket) 
+	if (!(GetSocket() || IsFileOpen())) 
 	{
+		// Data has not been serialized
 		obj_osi_internal.gt->SerializeToString(&osiGroundTruth.ground_truth);
 		osiGroundTruth.size = (unsigned int)obj_osi_internal.gt->ByteSizeLong();
 	}

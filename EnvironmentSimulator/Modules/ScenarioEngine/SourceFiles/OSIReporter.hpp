@@ -35,6 +35,10 @@ public:
 	*/
 	bool OpenOSIFile();
 	/**
+	Closes any open osi file
+	*/
+	void CloseOSIFile();
+	/**
 	Writes GroundTruth in the OSI file
 	*/
 	bool WriteOSIFile();
@@ -78,10 +82,10 @@ public:
 	int OpenSocket(std::string ipaddr);
 	int CloseSocket();
 	int GetSocket() { return sendSocket; }
-
+	bool IsFileOpen() { return osi_file.is_open(); }
 	void ReportSensors(std::vector<ObjectSensor*> sensor);
 
 private:
 	int sendSocket;
-
+	std::ofstream osi_file;
 };

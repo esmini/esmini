@@ -52,7 +52,6 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	launch_server = false;
 	fixed_timestep_ = -1.0;
 	osi_receiver_addr = "";
-	osi_file = false;
 	osi_freq_ = 1;
 	CSV_Log = NULL;
 	osiReporter = NULL;
@@ -108,9 +107,13 @@ void ScenarioPlayer::SetOSIFileStatus(bool is_on)
 {
 	if (osiReporter)
 	{
-		if (is_on && osiReporter->OpenOSIFile())
+		if (is_on)
 		{
-			osi_file = is_on;
+			osiReporter->OpenOSIFile();
+		}
+		else
+		{
+			osiReporter->CloseOSIFile();
 		}
 	}
 }
@@ -168,16 +171,12 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	osiReporter->ReportSensors(sensor);
 
 	// Update OSI info
-	if (osi_file || osiReporter->GetSocket())
+	if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
 	{
 		osi_counter++;
 		if (osi_counter % osi_freq_ == 0 )
 		{
 			osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-			if (osi_file)
-			{
-				osiReporter->WriteOSIFile();
-			}
 		}
 	}
 
@@ -641,16 +640,12 @@ int ScenarioPlayer::Init()
 
 	if (opt.GetOptionArg("osi_file") ==  "on")
 	{
-		osi_file = true;
-		if (osiReporter->OpenOSIFile() == false)
-		{
-			osi_file = false;
-		}
+		osiReporter->OpenOSIFile();
 	}
 
 	if ((arg_str = opt.GetOptionArg("osi_freq")) != "")
 	{
-		if (osi_file == false)
+		if (!osiReporter->IsFileOpen())
 		{
 			LOG("Specifying osi frequency without --osi_file on is not possible");
 			return -1; 
@@ -678,14 +673,7 @@ int ScenarioPlayer::Init()
 	scenarioEngine->step(0.0, true);
 
 	// Update OSI info
-	if (osi_file || osiReporter->GetSocket())
-	{
-		osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-		if (osi_file)
-		{
-			osiReporter->WriteOSIFile();
-		}
-	}
+	osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
 
 	if (!headless)
 	{

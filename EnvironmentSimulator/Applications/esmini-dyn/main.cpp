@@ -113,6 +113,7 @@ int main(int argc, char *argv[])
 #if DEMONSTRATE_OSI
 		osi3::GroundTruth* gt;
 		SE_OpenOSISocket("127.0.0.1");
+		SE_OSIFileOpen();
 #endif
 
 		for (int i = 0; i*TIME_STEP < DURATION; i++)
