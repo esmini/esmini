@@ -25,7 +25,7 @@ Controller* scenarioengine::InstantiateController(void* args)
 }
 
 Controller::Controller(InitArgs* args) : name_(args->name), type_name_(args->type), entities_(args->entities), 
-	gateway_(args->gateway), domain_(0), mode_(Controller::Mode::MODE_OVERRIDE)
+	gateway_(args->gateway), domain_(0), mode_(Controller::Mode::MODE_OVERRIDE), object_(0)
 {
 	if (args->properties->ValueExists("mode"))
 	{

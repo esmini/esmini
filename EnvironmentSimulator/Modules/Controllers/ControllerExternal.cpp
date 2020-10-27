@@ -53,7 +53,16 @@ ControllerExternal::ControllerExternal(InitArgs* args) : useGhost_(false), Contr
 
 void ControllerExternal::Init()
 {
-	object_->SetHeadstartTime(headstart_time_);
+	if (object_)
+	{
+		object_->SetHeadstartTime(headstart_time_);
+	}
+	else if (useGhost_)
+	{
+		LOG("External controller with ghost needs to be assigned by ObjectController");
+		LOG("  in the Init section, in order for the headstart time to be correctly registered.");
+		LOG("  -> ignoring the headstartTime attribute.");
+	}
 
 	Controller::Init();
 }
