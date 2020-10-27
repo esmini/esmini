@@ -43,12 +43,13 @@ void Object::SetOffRoad(bool state, double time)
 
 int Object::GetControllerType()
 {
-	if (controller_)
+	if (controller_ && controller_->GetDomain())
 	{
 		return controller_->GetType();
 	}
 	else
 	{
+		// Report 0 if not assigned or not activated on any domain
 		return 0;
 	}
 }

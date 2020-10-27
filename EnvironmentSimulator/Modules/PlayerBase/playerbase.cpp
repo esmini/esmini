@@ -34,15 +34,6 @@ void log_callback(const char *str)
 	printf("%s\n", str);
 }
 
-std::string ScenarioPlayer::RequestControlMode2Str(RequestControlMode mode)
-{
-	if (mode == RequestControlMode::CONTROL_BY_OSC) return "by OSC";
-	else if (mode == RequestControlMode::CONTROL_INTERNAL) return "Internal";
-	else if (mode == RequestControlMode::CONTROL_EXTERNAL) return "External";
-	else if (mode == RequestControlMode::CONTROL_HYBRID) return "Hybrid";
-	else return "Unknown";
-}
-
 ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	maxStepSize(0.1), minStepSize(0.01), argc_(argc), argv_(argv)
 {
@@ -564,16 +555,6 @@ int ScenarioPlayer::Init()
 
 	exe_path_ = argv_[0];
 	opt.ParseArgs(&argc_, argv_);
-
-	RequestControlMode control = RequestControlMode::CONTROL_BY_OSC;
-	if ((arg_str = opt.GetOptionArg("control")) != "")
-	{
-		if (arg_str == "osc" || arg_str == "") control = RequestControlMode::CONTROL_BY_OSC;
-		else if (arg_str == "internal") control = RequestControlMode::CONTROL_INTERNAL;
-		else if (arg_str == "external") control = RequestControlMode::CONTROL_EXTERNAL;
-		else if (arg_str == "hybrid") control = RequestControlMode::CONTROL_HYBRID;
-		else LOG("Unrecognized external control mode: %s - defaulting to ", arg_str.c_str());
-	}
 
 	if (opt.GetOptionSet("threads"))
 	{
