@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 50 50 1024 576 --osc ../../resources/xosc/trajectory-test.xosc --road_features
+"../../bin/esmini" --window 50 50 1024 576 --osc ../../resources/xosc/trajectory-test.xosc --road_features on

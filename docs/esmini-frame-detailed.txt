@@ -29,9 +29,7 @@ SE<<--Controllers:
 deactivate Controllers
 
 activate SE
-
 GW<-SE:Report updated states
-
 SE-->Player:
 deactivate SE
 
@@ -43,6 +41,7 @@ deactivate External App
 end
 
 SE<-Player:Prep OSI Ground Truth
+
 activate SE
 GW<-SE:Get states
 deactivate SE

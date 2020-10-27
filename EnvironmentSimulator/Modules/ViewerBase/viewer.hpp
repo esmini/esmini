@@ -33,8 +33,6 @@
 #define TRAIL_MAX_DOTS 50
 #define TRAIL_DOT_LIFE_SPAN (0.5 * TRAIL_MAX_DOTS * TRAIL_DOTS_DT) // Start fade when half of the dots have been launched (seconds)
 
-#define SENSOR_NODE_MASK 0x00000001
-
 extern double color_green[3];
 extern double color_gray[3];
 extern double color_dark_gray[3];
@@ -47,6 +45,20 @@ using namespace scenarioengine;
 
 namespace viewer
 {
+	typedef enum
+	{
+		NODE_MASK_NONE =           (0),
+		NODE_MASK_OBJECT_SENSORS = (1 << 0),
+		NODE_MASK_TRAILS =         (1 << 1),
+		NODE_MASK_ODR_FEATURES =   (1 << 2),
+		NODE_MASK_OSI_POINTS =     (1 << 3),
+		NODE_MASK_OSI_LINES =      (1 << 4),
+		NODE_MASK_ENV_MODEL =      (1 << 5),
+		NODE_MASK_ENTITY_MODEL =   (1 << 6),
+		NODE_MASK_ENTITY_BB =      (1 << 7),
+		NODE_MASK_INFO =           (1 << 8),
+	} NodeMask;
+
 	class Line
 	{
 	public:
@@ -154,54 +166,74 @@ namespace viewer
 		PointSensor(): line_(0), line_vertex_data_(0), ball_(0) {}
 	};
 
-	class CarModel
+	class EntityModel
 	{
 	public:
-		osg::ref_ptr<osg::LOD> node_;
+
+		typedef enum {
+			ENTITY_TYPE_VEHICLE,
+			ENTITY_TYPE_OTHER
+		} EntityType;
+
+		osg::ref_ptr<osg::Group> group_;
+		osg::ref_ptr<osg::LOD> lod_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
-		std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> wheel_;
-		osg::ref_ptr<osg::LOD> model;
+		osg::ref_ptr<osg::Group> bb_;
 		osg::Quat quat_;
 		double size_x;
 		double size_y;
 		double center_x;
 		double center_y;
-		double wheel_angle_;
-		double wheel_rot_;
+		static const int entity_type_ = ENTITY_TYPE_OTHER;
+		virtual int GetType() { return entity_type_; }
+
 		std::string name_;
 		std::string filename_;
-		PointSensor *speed_sensor_;
-		PointSensor *road_sensor_;
-		PointSensor *lane_sensor_;
-		PointSensor *trail_sensor_;
-		PointSensor *steering_sensor_;
 		osg::ref_ptr<osg::BlendColor> blend_color_;
 		osg::ref_ptr<osg::StateSet> state_set_;
-		osg::ref_ptr<osg::Switch> switch_;
 
-		CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
-		~CarModel();
+		EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> 
+			trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double h, double p, double r);
-		void UpdateWheels(double wheel_angle, double wheel_rotation);
-		void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
+
 		void SetTransparency(double factor);
 
-		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName);
 
-		Trail *trail_;
-		osgViewer::Viewer *viewer_;
+		Trail* trail_;
+		osgViewer::Viewer* viewer_;
+	};
 
+	class CarModel : public EntityModel
+	{
+	public:
+		std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> wheel_;
+		double wheel_angle_;
+		double wheel_rot_;
+		PointSensor* speed_sensor_;
+		PointSensor* road_sensor_;
+		PointSensor* lane_sensor_;
+		PointSensor* trail_sensor_;
+		PointSensor* steering_sensor_;
+		static const int entity_type_ = ENTITY_TYPE_VEHICLE;
+		virtual int GetType() { return entity_type_; }
+
+		CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group>
+			trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
+		~CarModel();
+		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName);
+		void UpdateWheels(double wheel_angle, double wheel_rotation);
+		void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
 	};
 
 	class VisibilityCallback : public osg::NodeCallback
 	{
 	public:
-		VisibilityCallback(osg::Node* node, scenarioengine::Object* object, CarModel* car)
+		VisibilityCallback(osg::Node* node, scenarioengine::Object* object, EntityModel* entity)
 		{
 			node_ = (osg::LOD*)node;
 			object_ = object;
-			car_ = car;
+			entity_ = entity;
 		}
 		virtual void operator()(osg::Node*, osg::NodeVisitor*);
 
@@ -210,7 +242,7 @@ namespace viewer
 
 	private:
 		scenarioengine::Object* object_;
-		CarModel* car_;
+		EntityModel* entity_;
 		osg::LOD* node_;
 	};
 
@@ -219,6 +251,14 @@ namespace viewer
 		int key_;
 		bool down_;
 	} KeyEvent;
+
+	typedef enum
+	{
+		ENTITY_HIDE,
+		ENTITY_3D_MODEL,
+		ENTITY_BOUNDINGBOX,
+		ENTITY_BOTH
+	} ENTITY_SHOW_MODE;
 
 	typedef void (*KeyEventCallbackFunc)(KeyEvent*, void*);
 
@@ -244,22 +284,20 @@ namespace viewer
 		// Road debug visualization
 		osg::ref_ptr<osg::Group> odrLines_;
 		osg::ref_ptr<osg::Group> osiLines_;
+		osg::ref_ptr<osg::Group> osiPoints_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> envTx_;
 		osg::ref_ptr<osg::Node> environment_;
 		osg::ref_ptr<osgGA::RubberbandManipulator> rubberbandManipulator_;
 		osg::ref_ptr<osgGA::NodeTrackerManipulator> nodeTrackerManipulator_;
-		std::vector<CarModel*> cars_;
+		std::vector<EntityModel*> entities_;
 		float lodScale_;
 		osgViewer::Viewer *osgViewer_;
 		osg::MatrixTransform* rootnode_;
-		osg::Group* roadSensors_;
-		osg::Group* trails_;
+		osg::ref_ptr<osg::Group> roadSensors_;
+		osg::ref_ptr<osg::Group> trails_;
 		roadmanager::OpenDrive *odrManager_;
 		bool showInfoText;
-		bool showTrail;
-		bool showRoadFeatures;
-		bool showOSIFeatures;
-		bool showObjectSensors;
+
 		std::string exe_path_;
 		std::vector<KeyEventCallback> callback_;
 
@@ -270,12 +308,13 @@ namespace viewer
 		~Viewer();
 		void SetCameraMode(int mode);
 		void SetVehicleInFocus(int idx);
-		int GetVehicleInFocus() { return currentCarInFocus_; }
-		CarModel* AddCar(std::string modelFilepath, osg::Vec3 trail_color, bool road_sensor, std::string name);
+		int GetEntityInFocus() { return currentCarInFocus_; }
+		EntityModel* AddEntityModel(std::string modelFilepath, osg::Vec3 trail_color, EntityModel::EntityType type, 
+			bool road_sensor, std::string name, OSCBoundingBox *boundingBox);
 		void RemoveCar(std::string name);
 		int LoadShadowfile(std::string vehicleModelFilename);
 		int AddEnvironment(const char* filename);
-		osg::ref_ptr<osg::LOD> LoadCarModel(const char *filename);
+		osg::ref_ptr<osg::Group> LoadEntityModel(const char *filename);
 		void UpdateSensor(PointSensor *sensor);
 		void SensorSetPivotPos(PointSensor *sensor, double x, double y, double z);
 		void SensorSetTargetPos(PointSensor *sensor, double x, double y, double z);
@@ -294,10 +333,11 @@ namespace viewer
 		void SetInfoTextProjection(int width, int height);
 		void SetInfoText(const char* text);
 		void ShowInfoText(bool show);
-		void ShowTrail(bool show);
-		void ShowRoadFeatures(bool show);
-		void ShowOSIFeatures(bool show);
-		void ShowObjectSensors(bool show);
+		void SetNodeMaskBits(int bits);
+		void SetNodeMaskBits(int mask, int bits);
+		void ClearNodeMaskBits(int bits);
+		void ToggleNodeMaskBits(int bits);
+		int GetNodeMaskBit(int mask);
 		PointSensor* CreateSensor(double color[], bool create_ball, bool create_line, double ball_radius, double line_width);
 		bool CreateRoadSensors(CarModel *vehicle_model);
 		void SetWindowTitle(std::string title);
@@ -325,7 +365,7 @@ namespace viewer
 		bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&);
 
 	private:
-		Viewer * viewer_;
+		Viewer* viewer_;
 	};
 }
 

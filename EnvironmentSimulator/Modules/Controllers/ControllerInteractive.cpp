@@ -76,7 +76,15 @@ void ControllerInteractive::Step(double timeStep)
 	if (domain_ == Controller::Domain::CTRL_LONGITUDINAL)
 	{
 		// Only longitudinal control, move along road
-		object_->pos_.MoveAlongS(vehicle_.speed_ * timeStep);
+		double steplen = vehicle_.speed_* timeStep;
+
+		// Adjustment movement to heading and road direction
+		if (GetAbsAngleDifference(object_->pos_.GetH(), object_->pos_.GetDrivingDirection()) > M_PI_2)
+		{
+			// If pointing in other direction
+			steplen *= -1;
+		}
+		object_->pos_.MoveAlongS(steplen);
 	}
 	else 
 	{
@@ -87,6 +95,19 @@ void ControllerInteractive::Step(double timeStep)
 	// Fetch Z and Pitch from OpenDRIVE position
 	vehicle_.posZ_ = object_->pos_.GetZ();
 	vehicle_.pitch_ = object_->pos_.GetP();
+
+	// Update wheels wrt domains
+	if (domain_ & Controller::Domain::CTRL_LONGITUDINAL)
+	{
+		object_->wheel_rot_ = vehicle_.wheelRotation_;
+		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+	}
+
+	if (domain_ & Controller::Domain::CTRL_LATERAL)
+	{
+		object_->wheel_angle_ = vehicle_.wheelAngle_;
+		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
+	}
 
 	gateway_->reportObject(object_->id_, object_->name_, static_cast<int>(object_->type_), object_->category_holder_, object_->model_id_,
 		object_->GetActivatedControllerType(), object_->boundingbox_, 0, vehicle_.speed_, object_->wheel_angle_, object_->wheel_rot_, &object_->pos_);

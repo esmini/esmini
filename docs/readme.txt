@@ -38,11 +38,13 @@ Key commands:
             - Top        (top view, fixed rotation, always straight above vehicle) 
 
     o: Toggle show/hide OpenDRIVE road feature lines
-    u: Toggle show/hide OSI road feature lines
+    u: Toggle show/hide OSI road lines
+    y: Toggle show/hide OSI road points
     p: Toggle show/hide environment 3D model
     r: Toggle show/hide sensor view frustums
     i: Toggle info text showing time and speed
     j: Toggle show trails after vehicles
+    , (comma): Switch entity view: Model only / Bounding box / Model + Bounding box / None 
     ESC: quit
 
     Viewer options:

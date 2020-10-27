@@ -94,7 +94,7 @@
                      <Action name="AssignInteractiveControllerAction">
                        <PrivateAction>
                             <ControllerAction>
-                                <AssignLateralControllerAction >
+                                <AssignControllerAction >
                                     <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
                                 </AssignControllerAction> 
                             </ControllerAction>

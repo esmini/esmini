@@ -12,10 +12,14 @@ Options:
       Show info text HUD ("on" (default), "off") (toggle during simulation by press 'i')
   --trails
       Show trails (toggle during simulation by press 'j')
-  --road_features
-      Show OpenDRIVE road features (toggle during simulation by press 'o')
-  --osi_features
-      Show OSI road features (toggle during simulation by press 'u')
+  --road_features <mode>
+      Show OpenDRIVE road features ("on", "off"  (default)) (toggle during simulation by press 'o')
+  --bounding_boxes
+      Show entities as bounding boxes (toggle modes on key ',')
+  --osi_lines
+      Show OSI road lines (toggle during simulation by press 'u')
+  --osi_points
+      Show OSI road pointss (toggle during simulation by press 'y')
   --sensors
       Show sensor frustums (toggle during simulation by press 'r')
   --camera_mode <mode>

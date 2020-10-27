@@ -37,15 +37,15 @@ double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 typedef struct
 {
 	int id;
-	viewer::CarModel *carModel;
+	viewer::EntityModel *entityModel;
 	roadmanager::Position pos;
-} ScenarioCar;
+} ScenarioEntity;
 
-static std::vector<ScenarioCar> scenarioCar;
+static std::vector<ScenarioEntity> scenarioEntity;
 
 // Car models used for populating the road network according to scenario object model ID
 // path should be relative the OpenDRIVE file
-static const char* carModelsFiles_[] =
+static const char* entityModelsFiles_[] =
 {
 	"car_white.osgb",
 	"car_blue.osgb",
@@ -57,13 +57,13 @@ static const char* carModelsFiles_[] =
 };
 
 
-ScenarioCar *getScenarioCarById(int id)
+ScenarioEntity *getScenarioEntityById(int id)
 {
-	for (size_t i=0; i<scenarioCar.size(); i++)
+	for (size_t i=0; i<scenarioEntity.size(); i++)
 	{
-		if (scenarioCar[i].id == id)
+		if (scenarioEntity[i].id == id)
 		{
-			return &scenarioCar[i];
+			return &scenarioEntity[i];
 		}
 	}
 
@@ -158,25 +158,26 @@ int main(int argc, char** argv)
 			ObjectStateStruct *state = player->GetState(index);
 			while (state != 0)
 			{
-				ScenarioCar *sc = getScenarioCarById(state->id);
+				ScenarioEntity *sc = getScenarioEntityById(state->id);
 
 				// If not available, create it
 				if (sc == 0)
 				{
-					ScenarioCar new_sc;
+					ScenarioEntity new_sc;
 
 					LOG("Creating car %d - got state from gateway", state->id);
 
 					new_sc.id = state->id;
-					if ((new_sc.carModel = viewer->AddCar(carModelsFiles_[state->model_id], osg::Vec3(0.5, 0.5, 0.5), false,"")) == 0)
+					if ((new_sc.entityModel = viewer->AddEntityModel(entityModelsFiles_[state->model_id], osg::Vec3(0.5, 0.5, 0.5),
+						viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER, false, "", 0)) == 0)
 					{
 						return -1;
 					}
 
 					// Add it to the list of scenario cars
-					scenarioCar.push_back(new_sc);
+					scenarioEntity.push_back(new_sc);
 
-					sc = &scenarioCar.back();
+					sc = &scenarioEntity.back();
 				}
 
 				sc->pos = state->pos;
@@ -186,11 +187,11 @@ int main(int argc, char** argv)
 			}
 
 			// Visualize scenario cars
-			for (size_t i=0; i<scenarioCar.size(); i++)
+			for (size_t i=0; i<scenarioEntity.size(); i++)
 			{
-				ScenarioCar *c = &scenarioCar[i];
-				c->carModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
-				c->carModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
+				ScenarioEntity *c = &scenarioEntity[i];
+				c->entityModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
+				c->entityModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
 			}
 
 			// Update graphics

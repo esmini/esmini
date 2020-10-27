@@ -12,11 +12,11 @@ participant Viewer
 
 External App->Player:Step (timestep)
 SE<-Player:Step scenario
+
 activate SE
 SE->SE:Evaluate triggers
 SE->SE:Step Default Controller
 note right of SE:execute actions
-
 SE->Controllers:Execute
 deactivate SE
 

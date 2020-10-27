@@ -12,7 +12,6 @@
             <Dimensions height="1.8" length="0.6" width="0.5"/>
          </BoundingBox>
          <Properties>
-            <Property name="control" value="internal"/>
             <File filepath="../models/walkman.osgb"/>
          </Properties>
       </Pedestrian>
@@ -23,8 +22,17 @@
             <Dimensions height="1.8" length="0.6" width="0.5"/>
          </BoundingBox>
          <Properties>
-            <Property name="control" value="internal"/>
             <File filepath="../models/walkman.osgb"/>
+         </Properties>
+      </Pedestrian>
+      <Pedestrian mass="80" model="moose-standard-model" name="moose" pedestrianCategory="PedestrianCategory.animal">
+         <ParameterDeclarations/>
+         <BoundingBox>
+            <Center x="0.06" y="0.0" z="0.923"/>
+            <Dimensions height="1.9" length="2.82" width="0.3"/>
+         </BoundingBox>
+         <Properties>
+            <File filepath="../models/moose_cc0.osgb"/>
          </Properties>
       </Pedestrian>
    </Catalog>

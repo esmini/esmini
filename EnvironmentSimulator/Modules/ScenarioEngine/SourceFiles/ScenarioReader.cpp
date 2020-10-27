@@ -278,6 +278,16 @@ void ScenarioReader::ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_
 		}
 		//LOG("Parsing boundingbox for vehicle:%s,center_x:%f, dimensions_width: %f.",ReadAttribute(xml_node, "name").c_str(),boundingbox.center_.x_,boundingbox.dimensions_.width_);
 	}
+	else
+	{
+		// Fill empy values to indicate missing bounding box
+		boundingbox.center_.x_ = 0;
+		boundingbox.center_.y_ = 0;
+		boundingbox.center_.z_ = 0;
+		boundingbox.dimensions_.length_ = 0;
+		boundingbox.dimensions_.width_ = 0;
+		boundingbox.dimensions_.height_ = 0;
+	}
 }
 
 Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
@@ -313,7 +323,7 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	}
 
 	OSCBoundingBox boundingbox;
-	ParseOSCBoundingBox(boundingbox,vehicleNode);
+	ParseOSCBoundingBox(boundingbox, vehicleNode);
 	vehicle->boundingbox_=boundingbox;
 
 	return vehicle;
@@ -875,12 +885,12 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 	if (positionChildName == "WorldPosition")
 	{
 
-		double x = strtod(parameters.ReadAttribute(positionChild, "x"));
-		double y = strtod(parameters.ReadAttribute(positionChild, "y"));
-		double z = strtod(parameters.ReadAttribute(positionChild, "z"));
-		double h = strtod(parameters.ReadAttribute(positionChild, "h"));
-		double p = strtod(parameters.ReadAttribute(positionChild, "p"));
-		double r = strtod(parameters.ReadAttribute(positionChild, "r"));
+		double x = strtod(parameters.ReadAttribute(positionChild, "x", true));
+		double y = strtod(parameters.ReadAttribute(positionChild, "y", true));
+		double z = strtod(parameters.ReadAttribute(positionChild, "z", false));
+		double h = strtod(parameters.ReadAttribute(positionChild, "h", false));
+		double p = strtod(parameters.ReadAttribute(positionChild, "p", false));
+		double r = strtod(parameters.ReadAttribute(positionChild, "r", false));
 
 		OSCPositionWorld *pos = new OSCPositionWorld(x, y, z, h, p, r);
 

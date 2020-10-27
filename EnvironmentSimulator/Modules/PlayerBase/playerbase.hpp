@@ -98,7 +98,6 @@ public:
 	std::string exe_path_;
 
 private:
-	std::string RequestControlMode2Str(RequestControlMode mode);
 	int Init();
 
 	double trail_dt;

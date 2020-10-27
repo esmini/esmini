@@ -134,7 +134,7 @@ void ControllerFollowGhost::Step(double timeStep)
 	// Update wheels wrt domains
 	if (domain_ & Controller::Domain::CTRL_LONGITUDINAL)
 	{
-		object_->wheel_angle_ = vehicle_.wheelRotation_;
+		object_->wheel_rot_ = vehicle_.wheelRotation_;
 		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
 	}
 

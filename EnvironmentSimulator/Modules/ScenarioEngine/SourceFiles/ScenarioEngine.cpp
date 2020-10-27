@@ -107,7 +107,9 @@ void ScenarioEngine::step(double deltaSimTime)
 			obj->ClearDirtyBits(
 				Object::DirtyBit::LATERAL | 
 				Object::DirtyBit::LONGITUDINAL |
-				Object::DirtyBit::SPEED
+				Object::DirtyBit::SPEED |
+				Object::DirtyBit::WHEEL_ANGLE |
+				Object::DirtyBit::WHEEL_ROTATION
 			);
 			obj->reset_ = false;
 
@@ -555,7 +557,7 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 			// Update wheel rotations of internal scenario objects
 			if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
 			{
-				obj->wheel_angle_ = heading_rate_new / 2;
+				obj->wheel_angle_ = SIGN(obj->GetSpeed()) * heading_rate_new / 2;
 			}
 			if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
 			{

@@ -59,7 +59,7 @@ typedef struct
 	double s_init;
 	roadmanager::Position *pos;
 	double speed_factor;  // speed vary bewtween lanes, m/s
-	viewer::CarModel *model;
+	viewer::EntityModel *model;
 	int id;
 } Car;
 
@@ -135,7 +135,8 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				car_->pos->SetHeadingRelative(lane->GetId() < 0 ? 0 : M_PI);
 				car_->heading_init = car_->pos->GetHRelative();
 
-				if ((car_->model = viewer->AddCar(carModelsFiles_[carModelID], osg::Vec3(0.5, 0.5, 0.5), false,"")) == 0)
+				if ((car_->model = viewer->AddEntityModel(carModelsFiles_[carModelID], osg::Vec3(0.5, 0.5, 0.5), 
+					viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, "", 0)) == 0)
 				{
 					return -1;
 				}
@@ -193,67 +194,44 @@ int main(int argc, char** argv)
 	// Use logger callback
 	Logger::Inst().SetCallback(log_callback);
 
+	SE_Options opt;
+
 	mt_rand.seed((unsigned int)time(0));
 
 	std::vector<std::string> args;
 	for (int i = 0; i < argc; i++) args.push_back(argv[i]);
 
 	// use an ArgumentParser object to manage the program arguments.
-    osg::ArgumentParser arguments(&argc,argv);
+	opt.AddOption("odr", "OpenDRIVE filename", "odr_filename");
+	opt.AddOption("model", "3D Model filename", "model_filename");
+	opt.AddOption("density", "density (cars / 100 m)", "density");
+	opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor");
+	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
+	opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
+	opt.AddOption("help", "Show this help message");
 
-    arguments.getApplicationUsage()->setApplicationName(arguments.getApplicationName());
-    arguments.getApplicationUsage()->setDescription(arguments.getApplicationName());
-	arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName() + " --odr filename [options]\n");
-	arguments.getApplicationUsage()->addCommandLineOption("-h or --help", "Display command line parameters");
-	arguments.getApplicationUsage()->addCommandLineOption("--odr <filename>", "OpenDRIVE filename");
-	arguments.getApplicationUsage()->addCommandLineOption("--model <filename>", "3D model filename");
-	arguments.getApplicationUsage()->addCommandLineOption("--density <number>", "density (cars / 100 m)", std::to_string((long long) (DEFAULT_DENSITY)));
-	arguments.getApplicationUsage()->addCommandLineOption("--speed_factor <number>", "speed factor", std::to_string((long long) (global_speed_factor)));
-	arguments.getApplicationUsage()->addCommandLineOption("--osi_features <string>", "Show OSI road features (\"on\"/\"off\") (toggle during simulation with key 'u')", "off");
+	opt.ParseArgs(&argc, argv);
 
-
-	if (arguments.argc() < 2)
+	if (argc < 2 || opt.GetOptionSet("help"))
 	{
-		arguments.getApplicationUsage()->write(std::cout, 1, 120, true);
+		opt.PrintUsage();
 		return -1;
 	}
-
-	if (arguments.read("-h") || arguments.read("--help"))
+	
+	std::string odrFilename = opt.GetOptionArg("odr");
+	std::string modelFilename = opt.GetOptionArg("model");
+	
+	if (opt.GetOptionArg("density") != "")
 	{
-		arguments.getApplicationUsage()->write(std::cout, 1, 120, true);
-		return 0;
+		density = strtod(opt.GetOptionArg("density"));
 	}
-
-	std::string odrFilename;
-	arguments.read("--odr", odrFilename);
-
-	std::string modelFilename;
-	arguments.read("--model", modelFilename);
-
-	arguments.read("--density", density);
 	printf("density: %.2f\n", density);
 
-	arguments.read("--speed_factor", global_speed_factor);
+	if (opt.GetOptionArg("speed_factor") != "")
+	{
+		global_speed_factor = strtod(opt.GetOptionArg("speed_factor"));
+	}
 	printf("global speed factor: %.2f\n", global_speed_factor);
-
-	std::string osi_features_str;
-	arguments.read("--osi_features", osi_features_str);
-	bool osi_features = false;
-	if (osi_features_str == "on")
-	{
-		osi_features = true;
-	}
-	else if (osi_features_str == "off")
-	{
-		osi_features = false;
-	}
-	else if (osi_features_str != "")
-	{
-		printf("Unexpected osi_features value: %s\n", osi_features_str.c_str());
-		arguments.getApplicationUsage()->write(std::cout, 1, 120, true);
-		return -1;
-	}
-	printf("osi_features: %s\n", osi_features ? "on" : "off");
 
 	roadmanager::Position *lane_pos = new roadmanager::Position();
 	roadmanager::Position *track_pos = new roadmanager::Position();
@@ -267,16 +245,32 @@ int main(int argc, char** argv)
 		}
 		roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
 
+		osg::ArgumentParser arguments(&argc, argv);
 		viewer::Viewer *viewer = new viewer::Viewer(
 			odrManager,
 			modelFilename.c_str(),
 			NULL,
 			argv[0],
-			arguments);
+			arguments,
+			&opt);
 
 		viewer->SetWindowTitleFromArgs(args);
-		viewer->ShowRoadFeatures(true);
-		viewer->ShowOSIFeatures(osi_features);
+		
+		viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+
+		if (opt.GetOptionSet("osi_lines"))
+		{
+			viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_LINES);
+		}
+
+		if (opt.GetOptionSet("osi_points"))
+		{
+			viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_POINTS);
+		}
+
+		printf("osi_features: lines %s points %s \n",
+			viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_LINES) ? "on" : "off",
+			viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_POINTS) ? "on" : "off");
 
 		if (SetupCars(odrManager, viewer) == -1)
 		{

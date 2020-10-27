@@ -219,84 +219,97 @@ void ScenarioPlayer::ViewerFrame()
 
 	// Add or remove cars (for sumo)
 
-	if (scenarioEngine->entities.object_.size() > viewer_->cars_.size())
+	if (scenarioEngine->entities.object_.size() > viewer_->entities_.size())
 	{
 		// add cars missing
 		for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 		{
 			bool toadd = true;
-			for (size_t j = 0; j < viewer_->cars_.size(); j++)
+			if (scenarioEngine->entities.object_[i]->type_ == Object::Type::VEHICLE)
 			{
-				if (scenarioEngine->entities.object_[i]->name_ == viewer_->cars_[j]->name_)
+				for (size_t j = 0; j < viewer_->entities_.size(); j++)
 				{
-					toadd = false;
+					if (scenarioEngine->entities.object_[i]->name_ == viewer_->entities_[j]->name_)
+					{
+						toadd = false;
+					}
 				}
-			}
-			if (toadd)
-			{
-				// add car
-				osg::Vec3 trail_color;
-				trail_color.set(color_blue[0], color_blue[1], color_blue[2]);
-				viewer_->AddCar(scenarioEngine->entities.object_[i]->model_filepath_, trail_color, false ,scenarioEngine->entities.object_[i]->name_);
+				if (toadd)
+				{
+					// add car
+					osg::Vec3 trail_color;
+					trail_color.set(color_blue[0], color_blue[1], color_blue[2]);
+					viewer_->AddEntityModel(scenarioEngine->entities.object_[i]->model_filepath_, trail_color, 
+						viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, 
+						scenarioEngine->entities.object_[i]->name_, &scenarioEngine->entities.object_[i]->boundingbox_);
+				}
 			}
 		}
 	}
-	else if (scenarioEngine->entities.object_.size() < viewer_->cars_.size())
+	else if (scenarioEngine->entities.object_.size() < viewer_->entities_.size())
 	{
 		// remove obsolete cars
-		for (size_t j = 0; j < viewer_->cars_.size(); j++)
+		for (size_t j = 0; j < viewer_->entities_.size(); j++)
 		{
-			bool toremove = true;
-			for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+			if (viewer_->entities_[j]->entity_type_ == viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
 			{
-				if (scenarioEngine->entities.object_[i]->name_ == viewer_->cars_[j]->name_)
+				bool toremove = true;
+				for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 				{
-					toremove = false;
-				}
+					if (scenarioEngine->entities.object_[i]->name_ == viewer_->entities_[j]->name_)
+					{
+						toremove = false;
+					}
 
-			}
-			if (toremove)
-			{
-				// remove car
-				viewer_->RemoveCar(viewer_->cars_[j]->name_);
+				}
+				if (toremove)
+				{
+					// remove car
+					viewer_->RemoveCar(viewer_->entities_[j]->name_);
+				}
 			}
 		}
 	}
-	// Visualize cars
+	// Visualize entities
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		viewer::CarModel *car = viewer_->cars_[i];
+		viewer::EntityModel *entity = viewer_->entities_[i];
 		Object *obj = scenarioEngine->entities.object_[i];
 		roadmanager::Position pos = obj->pos_;
 
-		car->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
-		car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
-		car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+		entity->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
+		entity->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
 
-		if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST && obj->GetGhost())
+		if (entity->GetType() == viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
 		{
-			if (car->steering_sensor_)
-			{
-				viewer_->SensorSetPivotPos(car->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-				viewer_->SensorSetTargetPos(car->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
-				viewer_->UpdateSensor(car->steering_sensor_);
-			}
-			if (car->trail_sensor_)
-			{
-				viewer_->SensorSetPivotPos(car->trail_sensor_, obj->trail_closest_pos_[0], obj->trail_closest_pos_[1], obj->trail_closest_pos_[2]);
-				viewer_->SensorSetTargetPos(car->trail_sensor_, pos.GetX(), pos.GetY(), pos.GetZ());
-				viewer_->UpdateSensor(car->trail_sensor_);
-			}
-		}
+			viewer::CarModel* car = (viewer::CarModel*)entity;
+			car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
 
-		if (car->road_sensor_ && odr_manager->GetNumOfRoads() > 0)
-		{
-			viewer_->UpdateRoadSensors(car->road_sensor_, car->lane_sensor_, &pos);
+			if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST && obj->GetGhost())
+			{
+				if (car->steering_sensor_)
+				{
+					viewer_->SensorSetPivotPos(car->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+					viewer_->SensorSetTargetPos(car->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
+					viewer_->UpdateSensor(car->steering_sensor_);
+				}
+				if (car->trail_sensor_)
+				{
+					viewer_->SensorSetPivotPos(car->trail_sensor_, obj->trail_closest_pos_[0], obj->trail_closest_pos_[1], obj->trail_closest_pos_[2]);
+					viewer_->SensorSetTargetPos(car->trail_sensor_, pos.GetX(), pos.GetY(), pos.GetZ());
+					viewer_->UpdateSensor(car->trail_sensor_);
+				}
+			}
+
+			if (odr_manager->GetNumOfRoads() > 0 && car->road_sensor_)
+			{
+				viewer_->UpdateRoadSensors(car->road_sensor_, car->lane_sensor_, &pos);
+			}
 		}
 
 		if (add_dot)
 		{
-			car->trail_->AddDot(scenarioEngine->getSimulationTime(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH());
+			entity->trail_->AddDot(scenarioEngine->getSimulationTime(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH());
 		}
 	}
 
@@ -350,22 +363,31 @@ int ScenarioPlayer::InitViewer()
 
 	if (opt.GetOptionSet("trails"))
 	{
-		viewer_->ShowTrail(true);
+		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAILS);
 	}
 
-	if (opt.GetOptionSet("road_features"))
+	if (opt.GetOptionArg("road_features") == "on")
 	{
-		viewer_->ShowRoadFeatures(true);
+		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+	}
+	else if (opt.GetOptionArg("road_features") == "off")
+	{
+		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
 	}
 
-	if (opt.GetOptionSet("osi_features"))
+	if (opt.GetOptionSet("osi_lines"))
 	{
-		viewer_->ShowOSIFeatures(true);
+		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_LINES);
+	}
+
+	if (opt.GetOptionSet("osi_points"))
+	{
+		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_POINTS);
 	}
 
 	if (opt.GetOptionSet("sensors"))
 	{
-		viewer_->ShowObjectSensors(true);
+		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OBJECT_SENSORS);
 	}
 
 	if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
@@ -396,7 +418,13 @@ int ScenarioPlayer::InitViewer()
 		}
 	}
 
-	//  Create cars for visualization
+	if (opt.GetOptionSet("bounding_boxes"))
+	{
+		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL);
+		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_BB);
+	}
+
+	//  Create visual models
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
 		osg::Vec3 trail_color;
@@ -425,20 +453,23 @@ int ScenarioPlayer::InitViewer()
 			road_sensor = true;
 		}
 
-		if (viewer_->AddCar(obj->model_filepath_, trail_color, road_sensor, obj->name_) == 0)
+		if (viewer_->AddEntityModel(obj->model_filepath_, trail_color,
+			obj->type_ == Object::Type::VEHICLE ? viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE : viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER,
+			road_sensor, obj->name_, &obj->boundingbox_) == 0)
 		{
 			delete viewer_;
 			viewer_ = 0;
 			return -1;
 		}
+
 		// Connect callback for setting transparency
-		viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(viewer_->cars_.back()->txNode_, obj, viewer_->cars_.back());
-		viewer_->cars_.back()->txNode_->setUpdateCallback(cb);
+		viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(viewer_->entities_.back()->txNode_, obj, viewer_->entities_.back());
+		viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
 
 		// If following a ghost vehicle, add visual representation of speed and steering sensors
 		if (scenarioEngine->entities.object_[i]->GetGhost())
 		{
-			viewer::CarModel* vh = viewer_->cars_.back();
+			viewer::CarModel* vh = (viewer::CarModel*)viewer_->entities_.back();
 			vh->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
 			if (odr_manager->GetNumOfRoads() > 0)
 			{
@@ -464,7 +495,7 @@ int ScenarioPlayer::InitViewer()
 			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
 			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
 		{
-			if (viewer_->GetVehicleInFocus() == 0)
+			if (viewer_->GetEntityInFocus() == 0)
 			{
 				// Focus on first vehicle of specified types
 				viewer_->SetVehicleInFocus(i);
@@ -510,7 +541,7 @@ void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, doubl
 		if (viewer_)
 		{
 			mutex.Lock();
-			sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->cars_[object_index]->txNode_));
+			sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->entities_[object_index]->txNode_));
 			mutex.Unlock();
 		}
 #endif
@@ -524,7 +555,14 @@ void ScenarioPlayer::ShowObjectSensors(bool mode)
 	if (viewer_)
 	{
 		mutex.Lock();
-		viewer_->ShowObjectSensors(mode);
+		if (mode == false)
+		{
+			viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_OBJECT_SENSORS);
+		}
+		else
+		{
+			viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OBJECT_SENSORS);
+		}
 		mutex.Unlock();
 	}
 #endif
@@ -544,8 +582,10 @@ int ScenarioPlayer::Init()
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
 	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
 	opt.AddOption("trails", "Show trails (toggle during simulation by press 'j')");
-	opt.AddOption("road_features", "Show OpenDRIVE road features (toggle during simulation by press 'o') ");
-	opt.AddOption("osi_features", "Show OSI road features (toggle during simulation by press 'u') ");
+	opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
+	opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
+	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
+	opt.AddOption("osi_points", "Show OSI road pointss (toggle during simulation by press 'y') ");
 	opt.AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
@@ -662,13 +702,6 @@ int ScenarioPlayer::Init()
 
 	// Step scenario engine - zero time - just to reach and report init state of all vehicles
 	ScenarioFrame(0.0);
-
-#if 0  // replaced by Frame
-	scenarioEngine->step(0.0, true);
-
-	// Update OSI info
-	osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-#endif
 	
 	if (!headless)
 	{

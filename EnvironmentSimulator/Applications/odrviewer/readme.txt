@@ -4,22 +4,23 @@ Optionally it can populate the road lanes with randomized dummy vehicles, which 
 
 Application is launched from command line (or batch file). 
 
-Usage: C:\eknabe1\GIT\esmini\bin\odrviewer.exe --odr filename [options]
-
-Options [and default value]:
-  --density <number>       [1]
-          density (cars / 100 m)
-  --model <filename>
-          3D model filename
-  --odr <filename>
-          OpenDRIVE filename
-  --osi_features <string>  [off]
-          Show OSI road features ("on"/"off") (toggle during simulation with key 'u')
-  --speed_factor <number>  [1]
-          speed factor
-  -h or --help
-          Display command line parameters
-
+Usage : [options]
+Options:
+  --odr <odr_filename>
+      OpenDRIVE filename
+  --model <model_filename>
+      3D Model filename
+  --density <density>
+      density (cars / 100 m)
+  --speed_factor <speed_factor>
+      speed_factor <number>
+  --osi_lines
+      Show OSI road lines (toggle during simulation by press 'u')
+  --osi_points
+      Show OSI road points (toggle during simulation by press 'y')
+  --help
+      Show this help message
+      
 Additional options forwarded to OpenSceneGraph:
   --window <x y w h>
           Set the position (x,y) and size (w,h) of the viewer window.		
@@ -30,19 +31,19 @@ Additional options forwarded to OpenSceneGraph:
 
 Example 1 - View the ODR file and some random traffic on a 3D model, window mode 1000 x 500:
 
-   OpenDriveViewer.exe --odr xodr\e6mini.xodr --model models\e6mini.osgb --window 50 50 1000 500
+   odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --window 50 50 1000 500
 
 Example 2 - just ODR, fullscreen
 
-   OpenDriveViewer.exe --odr xodr\e6mini.xodr
+   odrviewer --odr xodr\e6mini.xodr
 
 Example 3 - remove traffic
 
-   OpenDriveViewer.exe --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0 --window 50 50 1000 500
+   odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0 --window 50 50 1000 500
 
 Example 4 - sparse traffic (about 0.5 vehicle per 100 meter = 1 per 200 m)
 
-   OpenDriveViewer.exe --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0.5 --window 50 50 1000 500
+   odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0.5 --window 50 50 1000 500
 
 
 Key commands
