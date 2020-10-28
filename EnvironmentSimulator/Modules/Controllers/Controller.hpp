@@ -40,7 +40,8 @@ namespace scenarioengine
 			CONTROLLER_TYPE_SLOPPY_DRIVER,
 			CONTROLLER_TYPE_SUMO,
 			N_CONTROLLER_TYPES,
-			USER_CONTROLLER_TYPE_BASE = 1000
+			GHOST_RESERVED_TYPE = 100,
+			USER_CONTROLLER_TYPE_BASE = 1000,
 		};
 
 		enum  // copy key enums from OSG GUIEventAdapter
