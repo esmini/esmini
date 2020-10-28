@@ -495,6 +495,9 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState* objectState)
 	obj_osi_internal.mobj->mutable_base()->mutable_acceleration()->set_y(objectState->state_.pos.GetAccY());
 	obj_osi_internal.mobj->mutable_base()->mutable_acceleration()->set_z(0);  // assume neglectable speed in z dimension
 
+	// Set OSI Moving Object Lane ID
+	obj_osi_internal.mobj->mutable_assigned_lane_id(objectState->state_.pos.GetLaneGlobalId());
+
 	return 0;
 }
 
