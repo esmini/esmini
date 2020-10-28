@@ -113,17 +113,21 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			Object* obj = entities.object_[i];
 			ObjectState o;
 
-			if (scenarioGateway.getObjectStateById(entities.object_[i]->id_, o) != 0)
+			if(!obj->isGhost_)
 			{
-				LOG("Gateway did not provide state for external car %d", entities.object_[i]->id_);
+				if (scenarioGateway.getObjectStateById(entities.object_[i]->id_, o) != 0)
+				{
+					LOG("Gateway did not provide state for external car %d", entities.object_[i]->id_);
+				}
+				else
+				{
+					entities.object_[i]->pos_ = o.state_.pos;
+					entities.object_[i]->speed_ = o.state_.speed;
+					entities.object_[i]->wheel_angle_ = o.state_.wheel_angle;
+					entities.object_[i]->wheel_rot_ = o.state_.wheel_rot;
+				}
 			}
-			else
-			{
-				entities.object_[i]->pos_ = o.state_.pos;
-				entities.object_[i]->speed_ = o.state_.speed;
-				entities.object_[i]->wheel_angle_ = o.state_.wheel_angle;
-				entities.object_[i]->wheel_rot_ = o.state_.wheel_rot;
-			}
+			
 		}
 	}
 
@@ -567,10 +571,14 @@ void ScenarioEngine::updateObjectStates(double dt)
 		}
 
 		obj->trail_.AddState((float)simulationTime_, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
-
-		// Report state to the gateway
-		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_, obj->model_id_,
+        
+		if(!obj->isGhost_)
+		{
+			// Report state to the gateway
+			scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_, obj->model_id_,
 			obj->GetActivatedControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+		}
+		
 	}
 }
 
