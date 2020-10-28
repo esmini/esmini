@@ -392,9 +392,9 @@ endif()
 
 if (USE_OSG)
   if (NOT USE_ENVSIM_ADAPT)
-    add_subdirectory(Applications/Replayer)
-    add_subdirectory(Applications/OpenDriveViewer)
-    add_subdirectory(Applications/OdrPlot)
+    add_subdirectory(Applications/replayer)
+    add_subdirectory(Applications/odrviewer)
+    add_subdirectory(Applications/odrplot)
   endif (NOT USE_ENVSIM_ADAPT)
   add_subdirectory(Modules/ViewerBase)
 
