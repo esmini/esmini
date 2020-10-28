@@ -4226,8 +4226,8 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double &offset, int laneT
 		int lane_id = GetLaneIdByIdx(i);
 		double laneCenterOffset = SIGN(lane_id) * GetCenterOffset(s, lane_id);
 
-		// Only consider lanes with non zero width and with matching lane type
-		if (GetWidth(s, lane_id) > SMALL_NUMBER && laneTypeMask & GetLaneById(lane_id)->GetLaneType())
+		// Only consider lanes with matching lane type
+		if (laneTypeMask & GetLaneById(lane_id)->GetLaneType())
 		{
 			if (candidate_lane_idx == -1 || fabs(t - laneCenterOffset) < fabs(min_offset))
 			{
