@@ -28,7 +28,9 @@
 
 using namespace scenarioengine;
 
-void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data);
+#ifdef _SCENARIO_VIEWER
+	void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data);
+#endif
 
 class ScenarioPlayer
 {

@@ -749,12 +749,14 @@ void ScenarioPlayer::UpdateCSV_Log()
 	}
 }
 
-void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
-{
-	ScenarioPlayer* player = (ScenarioPlayer*)data;
-	for (size_t i = 0; i < player->scenarioEngine->GetScenarioReader()->controller_.size(); i++)
+#ifdef _SCENARIO_VIEWER
+	void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 	{
-		player->scenarioEngine->GetScenarioReader()->controller_[i]->ReportKeyEvent(keyEvent->key_, keyEvent->down_);
+		ScenarioPlayer* player = (ScenarioPlayer*)data;
+		for (size_t i = 0; i < player->scenarioEngine->GetScenarioReader()->controller_.size(); i++)
+		{
+			player->scenarioEngine->GetScenarioReader()->controller_[i]->ReportKeyEvent(keyEvent->key_, keyEvent->down_);
+		}
 	}
-}
+#endif
 
