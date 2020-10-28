@@ -96,11 +96,7 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 	{
 		if (required)
 		{
-			LOG("Error: missing required attribute: %s", attribute_name.c_str());
-		}
-		else
-		{
-			LOG("Warning: missing attribute: %s", attribute_name.c_str());
+			LOG("Warning: missing required attribute: %s", attribute_name.c_str());
 		}
 	}
 

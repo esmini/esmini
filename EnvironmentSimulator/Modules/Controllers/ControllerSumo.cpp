@@ -149,7 +149,7 @@ void ControllerSumo::Step(double timeStep)
 	// Update the position of all cars controlled by sumo
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
-		if (entities_->object_[i]->GetControllerType() == Controller::Type::CONTROLLER_TYPE_SUMO)
+		if (entities_->object_[i]->GetActivatedControllerType() == Controller::Type::CONTROLLER_TYPE_SUMO)
 		{
 			Object* obj = entities_->object_[i];
 

@@ -41,7 +41,20 @@ void Object::SetOffRoad(bool state, double time)
 	}
 }
 
-int Object::GetControllerType()
+int Object::GetAssignedControllerType()
+{
+	if (controller_)
+	{
+		return controller_->GetType();
+	}
+	else
+	{
+		// Report 0 if not assigned or not activated on any domain
+		return 0;
+	}
+}
+
+int Object::GetActivatedControllerType()
 {
 	if (controller_ && controller_->GetDomain())
 	{

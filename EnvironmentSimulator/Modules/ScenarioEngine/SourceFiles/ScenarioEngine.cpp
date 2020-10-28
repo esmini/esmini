@@ -411,8 +411,8 @@ void ScenarioEngine::parseScenario()
 		{
 			Object* obj = entities.object_[i];
 
-			if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST ||
-				(obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL &&
+			if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST ||
+				(obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL &&
 					((ControllerExternal*)(obj->controller_))->UseGhost()))
 			{
 				SetupGhost(obj);
@@ -570,7 +570,7 @@ void ScenarioEngine::updateObjectStates(double dt)
 
 		// Report state to the gateway
 		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_, obj->model_id_,
-			obj->GetControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+			obj->GetActivatedControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 	}
 }
 

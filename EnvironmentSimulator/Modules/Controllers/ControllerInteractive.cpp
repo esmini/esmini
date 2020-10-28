@@ -62,13 +62,28 @@ void ControllerInteractive::Step(double timeStep)
 	}
 	vehicle_.SetMaxSpeed(speed_limit);
 
+	if (!(domain_ & Controller::Domain::CTRL_LONGITUDINAL))
+	{
+		// Fetch speed from Default Controller
+		vehicle_.speed_ = object_->GetSpeed();
+	}
+
 	// Update vehicle motion
 	vehicle_.DrivingControlBinary(timeStep, 
-		(domain_ & Controller::Domain::CTRL_LONGITUDINAL) ? accelerate : vehicle::THROTTLE_NONE, 
-		(domain_ & Controller::Domain::CTRL_LATERAL) ? steer : vehicle::STEERING_NONE);
+		(domain_ & Controller::Domain::CTRL_LONGITUDINAL) ? accelerate : vehicle::THROTTLE_DISABLE, 
+		(domain_ & Controller::Domain::CTRL_LATERAL) ? steer : vehicle::STEERING_DISABLE);
 
-	// Set road position
-	object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_, 0, 0);
+	if (domain_ == Controller::Domain::CTRL_LONGITUDINAL)
+	{
+		// Only longitudinal control, update speed and move along road
+		object_->SetSpeed(vehicle_.speed_);
+		object_->pos_.MoveAlongS(vehicle_.speed_ * timeStep);
+	}
+	else 
+	{
+		// Set road position
+		object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_, 0, 0);
+	}
 
 	// Fetch Z and Pitch from OpenDRIVE position
 	vehicle_.posZ_ = object_->pos_.GetZ();

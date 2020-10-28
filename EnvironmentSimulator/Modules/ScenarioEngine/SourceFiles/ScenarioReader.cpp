@@ -1140,9 +1140,9 @@ OSCPrivateAction::DynamicsDimension ParseDynamicsDimension(std::string dimension
 
 int ScenarioReader::ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td)
 {
-	td.shape_ = ParseDynamicsShape(parameters.ReadAttribute(node, "dynamicsShape"));
-	td.dimension_ = ParseDynamicsDimension(parameters.ReadAttribute(node, "dynamicsDimension"));
-	td.target_value_ = strtod(parameters.ReadAttribute(node, "value"));
+	td.shape_ = ParseDynamicsShape(parameters.ReadAttribute(node, "dynamicsShape", true));
+	td.dimension_ = ParseDynamicsDimension(parameters.ReadAttribute(node, "dynamicsDimension", true));
+	td.target_value_ = strtod(parameters.ReadAttribute(node, "value", true));
 
 	return 0;
 }
@@ -1998,7 +1998,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						condition = trigger;
 					}
-					if (condition_type == "TimeToCollisionCondition")
+					else if (condition_type == "TimeToCollisionCondition")
 					{
 						TrigByTimeToCollision* trigger = new TrigByTimeToCollision;
 

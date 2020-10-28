@@ -59,8 +59,8 @@ void ControllerFollowGhost::Step(double timeStep)
 	double probe_target_distance = MAX(7, 0.5 * object_->speed_);
 
 	// Update position along ghost trails
-	if (object_->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
-		object_->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
+	if (object_->GetActivatedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
+		object_->GetActivatedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
 	{
 		if (object_->GetGhost())
 		{

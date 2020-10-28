@@ -129,7 +129,8 @@ namespace scenarioengine
 		{
 			controller_ = controller;
 		}
-		int GetControllerType();
+		int GetAssignedControllerType();
+		int GetActivatedControllerType();
 		bool IsControllerActiveOnDomains(int domainMask);
 		bool IsControllerActiveOnAnyOfDomains(int domainMask);
 		bool IsControllerActive() { return IsControllerActiveOnAnyOfDomains(0xff); }

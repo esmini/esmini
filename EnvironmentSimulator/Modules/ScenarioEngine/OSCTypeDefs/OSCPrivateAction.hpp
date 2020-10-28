@@ -642,7 +642,7 @@ namespace scenarioengine
 
 		void Start()
 		{
-			if (object_->GetControllerType() != 0)
+			if (object_->GetAssignedControllerType() != 0)
 			{
 				if (!object_->controller_->Active())
 				{
@@ -662,7 +662,7 @@ namespace scenarioengine
 
 		void End()
 		{
-			if (object_->GetControllerType() != 0)
+			if (object_->GetActivatedControllerType() != 0)
 			{
 				object_->controller_->Deactivate();
 				OSCAction::End();

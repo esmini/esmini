@@ -191,7 +191,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 
 	Object *obj = player->scenarioEngine->entities.object_[object_id];
 	Object* ghost = 0;
-	if (obj->GetControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
+	if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 	{
 		ghost = obj->GetGhost();
 		if (ghost == 0)
@@ -386,7 +386,7 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_, 
-					obj->GetControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, x, y, z, h, p, r);
+					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, x, y, z, h, p, r);
 			}
 		}
 
@@ -402,7 +402,7 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_, 
-					obj->GetControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
+					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
 			}
 		}
 
@@ -417,7 +417,7 @@ extern "C"
 			{
 				Object* obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_,
-					obj->GetControllerType(), obj->boundingbox_, 0, speed, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+					obj->GetActivatedControllerType(), obj->boundingbox_, 0, speed, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 			}
 			else
 			{
@@ -437,7 +437,7 @@ extern "C"
 				// reuse some values
 				Object* obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_,
-					obj->GetControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_, 
+					obj->GetActivatedControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_,
 					obj->wheel_rot_, obj->pos_.GetTrackId(), t, obj->pos_.GetS());
 			}
 			else
@@ -458,7 +458,7 @@ extern "C"
 				// reuse some values
 				Object* obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_,
-					obj->GetControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_,
+					obj->GetActivatedControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_,
 					obj->wheel_rot_, obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), laneOffset, obj->pos_.GetS());
 			}
 			else
@@ -601,7 +601,7 @@ extern "C"
 	SE_DLL_API int SE_ObjectHasGhost(int index)
 	{
 		Object* ghost = 0;
-		if(player->scenarioEngine->entities.object_[index]->GetControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
+		if(player->scenarioEngine->entities.object_[index]->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 		{
 			ghost = player->scenarioEngine->entities.object_[index]->GetGhost();
 		}
@@ -617,7 +617,7 @@ extern "C"
 			{
 				for (size_t i = 0; i < player->scenarioEngine->entities.object_.size(); i++)  // ghost index always higher than external buddy
 				{
-					if (player->scenarioEngine->entities.object_[index]->GetControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
+					if (player->scenarioEngine->entities.object_[index]->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 					{
 						ghost = player->scenarioEngine->entities.object_[index]->GetGhost();
 					}

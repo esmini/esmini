@@ -67,41 +67,46 @@ void Vehicle::DrivingControlTarget(double dt, double heading_to_target, double t
 void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steering)
 {
 	double oldSpeed = speed_;
-	
-	if (handbrake_ == true)
-	{
-		if (throttle == THROTTLE::THROTTLE_NONE)
-		{
-			handbrake_ = false;
-		}
-	}
-	else 
-	{
-		speed_ += ACCELERATION_SCALE * throttle * dt;
 
-		if (oldSpeed > 0 && speed_ < 0)
+	if (throttle != THROTTLE::THROTTLE_DISABLE)
+	{
+		if (handbrake_ == true)
 		{
-			speed_ = 0;
-			handbrake_ = true;
+			if (throttle == THROTTLE::THROTTLE_NONE)
+			{
+				handbrake_ = false;
+			}
 		}
 		else
 		{
-			speed_ *= (1 - SPEED_DECLINE);
-			speed_ = CLAMP(speed_, -1.2 * max_speed_, 1.2 * max_speed_);
+			speed_ += ACCELERATION_SCALE * throttle * dt;
+
+			if (oldSpeed > 0 && speed_ < 0)
+			{
+				speed_ = 0;
+				handbrake_ = true;
+			}
+			else
+			{
+				speed_ *= (1 - SPEED_DECLINE);
+				speed_ = CLAMP(speed_, -1.2 * max_speed_, 1.2 * max_speed_);
+			}
 		}
 	}
 
 	// Calculate steering
+	if (steering != STEERING::STEERING_DISABLE)
+	{
+		// Make steering wheel speed dependent
+		double steering_scale = 1.0 / (1 + 0.02 * speed_ * speed_);
+		wheelAngle_ = wheelAngle_ + steering_scale * STEERING_RATE * steering * dt;
 
-	// Make steering wheel speed dependent
-	double steering_scale = 1.0 / (1 + 0.02 * speed_ * speed_);
-	wheelAngle_ = wheelAngle_ + steering_scale * STEERING_RATE * steering  * dt;
-	
-	// Self-aligning
-	wheelAngle_ *= 0.92;
+		// Self-aligning
+		wheelAngle_ *= 0.92;
 
-	// Limit wheel angle
-	wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
+		// Limit wheel angle
+		wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
+	}
 
 	Update(dt);
 }

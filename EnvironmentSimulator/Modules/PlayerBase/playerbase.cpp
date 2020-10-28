@@ -270,7 +270,7 @@ void ScenarioPlayer::ViewerFrame()
 		car->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
 		car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
 
-		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST && obj->GetGhost())
+		if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST && obj->GetGhost())
 		{
 			if (car->steering_sensor_)
 			{
@@ -403,7 +403,7 @@ int ScenarioPlayer::InitViewer()
 		{
 			trail_color.set(color_gray[0], color_gray[1], color_gray[2]);
 		}
-		else if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
+		else if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
 		{
 			trail_color.set(color_yellow[0], color_yellow[1], color_yellow[2]);
 		}
@@ -450,9 +450,9 @@ int ScenarioPlayer::InitViewer()
 	{
 		Object* obj = scenarioEngine->entities.object_[i];
 		
-		if (obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_INTERACTIVE ||
-			obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
-			obj->GetControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
+		if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_INTERACTIVE ||
+			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
+			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
 		{
 			if (viewer_->GetVehicleInFocus() == 0)
 			{
