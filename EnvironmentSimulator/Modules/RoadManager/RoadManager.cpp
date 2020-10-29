@@ -6115,10 +6115,7 @@ int Position::GetLaneGlobalId()
 		return -1;
 	}
 
-	lane_id_ = lane_section->GetLaneGlobalIdByIdx(lane_idx);
-	offset_ = offset;
-
-	return lane_id_;
+	return lane_section->GetLaneGlobalIdByIdx(lane_idx);
 }
 
 double Position::GetS()
