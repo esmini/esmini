@@ -263,7 +263,7 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	stateset->setAttributeAndModes(cull, osg::StateAttribute::ON);
 
 	// Draw only wireframe to 
-	osg::PolygonMode* polygonMode = new osg::PolygonMode;
+	osg::ref_ptr<osg::PolygonMode> polygonMode = new osg::PolygonMode;
 	polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
 	stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
 
@@ -277,6 +277,15 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	txNode_->addChild(geode2);
 	txNode_->setPosition(osg::Vec3(sensor_->pos_.x, sensor_->pos_.y, sensor_->pos_.z));
 	txNode_->setAttitude(osg::Quat(sensor_->pos_.h, osg::Vec3(0, 0, 1)));
+}
+
+SensorViewFrustum::~SensorViewFrustum()
+{
+	for (size_t i = 0; i < lines_.size(); i++)
+	{
+		delete lines_[i];
+	}
+	lines_.clear();
 }
 
 void SensorViewFrustum::Update()
@@ -461,6 +470,14 @@ void Trail::AddDot(float time, double x, double y, double z, double heading)
 	}
 }
 
+Trail::~Trail()
+{
+	for (size_t i = 0; i < n_dots_; i++)
+	{
+		delete (dot_[i]);
+	}
+}
+
 osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName)
 {
 	osg::ref_ptr<osg::PositionAttitudeTransform> tx_node = 0;
@@ -570,6 +587,7 @@ CarModel::CarModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::LOD> lod, osg::r
 CarModel::~CarModel()
 {
 	wheel_.clear();
+	delete trail_;
 }
 
 void CarModel::SetPosition(double x, double y, double z)
@@ -1110,7 +1128,6 @@ osg::ref_ptr<osg::LOD> Viewer::LoadCarModel(const char *filename)
 bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 {
 	double z_offset = 0.10;
-	roadmanager::Position* pos = new roadmanager::Position();
 	osg::Vec3 point(0, 0, 0);
 
 	for (int r = 0; r < od->GetNumOfRoads(); r++)
@@ -1363,6 +1380,8 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 		}
 	}
 
+	delete pos;
+
 	return true;
 }
 
@@ -1389,7 +1408,7 @@ PointSensor* Viewer::CreateSensor(double color[], bool create_ball, bool create_
 		sensor->ball_->addChild(geode);
 		roadSensors_->addChild(sensor->ball_);
 
-		osg::Material *material = new osg::Material();
+		osg::ref_ptr<osg::Material> material = new osg::Material();
 		material->setDiffuse(osg::Material::FRONT, osg::Vec4(color[0], color[1], color[2], 1.0));
 		material->setAmbient(osg::Material::FRONT, osg::Vec4(color[0], color[1], color[2], 1.0));
 		sensor->ball_->getOrCreateStateSet()->setAttribute(material);

@@ -96,6 +96,12 @@ OSIReporter::~OSIReporter()
 		delete obj_osi_internal.gt;
 	}
 
+	if (obj_osi_internal.sd)
+	{
+		obj_osi_internal.sd->Clear();
+		delete obj_osi_internal.sd;
+	}
+
 	obj_osi_internal.ln.clear();
 	obj_osi_internal.lnb.clear();
 
