@@ -37,6 +37,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 	disable_controllers_ = disable_controllers;
 	headstart_time_ = 0;
 	simulationTime_ = 0;
+	initialized_ = false;
 	scenarioReader = new ScenarioReader(&entities, &catalogs, disable_controllers);
 	if (scenarioReader->loadOSCFile(oscFilename.c_str()) != 0)
 	{
@@ -62,8 +63,7 @@ ScenarioEngine::~ScenarioEngine()
 	LOG("Closing");
 }
 
-
-void ScenarioEngine::step(double deltaSimTime, bool initial)
+void ScenarioEngine::step(double deltaSimTime)
 {
 	simulationTime_ += deltaSimTime;
 
@@ -72,7 +72,7 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		return;
 	}
 
-	if (initial)
+	if (!initialized_)
 	{
 		// Set initial values for speed and acceleration derivation
 		for (size_t i = 0; i < entities.object_.size(); i++)
@@ -94,36 +94,34 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 			init.private_action_[i]->Start();
 			init.private_action_[i]->UpdateState();
 		}
+		initialized_ = true;
 	}
 	else
 	{
 		// reset indicators of applied control 
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
-			entities.object_[i]->ClearDirtyBits(
+			Object* obj = entities.object_[i];
+			ObjectState o;
+
+			obj->ClearDirtyBits(
 				Object::DirtyBit::LATERAL | 
 				Object::DirtyBit::LONGITUDINAL |
 				Object::DirtyBit::SPEED
 			);
-			entities.object_[i]->reset_ = false;
-		}
+			obj->reset_ = false;
 
-		// Fetch external states from gateway, except the initial run where scenario engine sets all positions
-		for (size_t i = 0; i < entities.object_.size(); i++)
-		{
-			Object* obj = entities.object_[i];
-			ObjectState o;
-
-			if (scenarioGateway.getObjectStateById(entities.object_[i]->id_, o) != 0)
+			// Fetch states from gateway, in case external reports
+			if (scenarioGateway.getObjectStateById(obj->id_, o) != 0)
 			{
-				LOG("Gateway did not provide state for external car %d", entities.object_[i]->id_);
+				LOG("Gateway did not provide state for external car %d", obj->id_);
 			}
 			else
 			{
-				entities.object_[i]->pos_ = o.state_.pos;
-				entities.object_[i]->speed_ = o.state_.speed;
-				entities.object_[i]->wheel_angle_ = o.state_.wheel_angle;
-				entities.object_[i]->wheel_rot_ = o.state_.wheel_rot;
+				obj->pos_ = o.state_.pos;
+				obj->speed_ = o.state_.speed;
+				obj->wheel_angle_ = o.state_.wheel_angle;
+				obj->wheel_rot_ = o.state_.wheel_rot;
 			}
 		}
 	}
@@ -313,6 +311,10 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		{
 			defaultController(obj, deltaSimTime);
 		}
+
+		// Report state to the gateway
+		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_, obj->model_id_,
+			obj->GetActivatedControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 	}
 
 	// Apply controllers
@@ -330,13 +332,12 @@ void ScenarioEngine::step(double deltaSimTime, bool initial)
 		}
 	}
 
-	updateObjectStates(deltaSimTime);
-
 	if (all_done)
 	{
 		LOG("All acts are done, quit now");
 		quit_flag = true;
 	}
+
 }
 
 void ScenarioEngine::printSimulationTime()
@@ -434,7 +435,6 @@ void ScenarioEngine::parseScenario()
 		DisableAndRemoveControllers();
 	}
 
-
 	// Print loaded data
 	entities.Print();
 
@@ -517,11 +517,26 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 	}
 }
 
-void ScenarioEngine::updateObjectStates(double dt)
+void ScenarioEngine::prepareOSIGroundTruth(double dt)
 {
+
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
 		Object *obj = entities.object_[i];
+		ObjectState o;
+
+		// Fetch external states from gateway
+		if (scenarioGateway.getObjectStateById(entities.object_[i]->id_, o) != 0)
+		{
+			LOG("Gateway did not provide state for external car %d", entities.object_[i]->id_);
+		}
+		else
+		{
+			entities.object_[i]->pos_ = o.state_.pos;
+			entities.object_[i]->speed_ = o.state_.speed;
+			entities.object_[i]->wheel_angle_ = o.state_.wheel_angle;
+			entities.object_[i]->wheel_rot_ = o.state_.wheel_rot;
+		}
 
 		// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
@@ -568,10 +583,6 @@ void ScenarioEngine::updateObjectStates(double dt)
 		}
 
 		obj->trail_.AddState((float)simulationTime_, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
-
-		// Report state to the gateway
-		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_, obj->model_id_,
-			obj->GetActivatedControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 	}
 }
 

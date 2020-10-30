@@ -75,8 +75,7 @@ void ControllerInteractive::Step(double timeStep)
 
 	if (domain_ == Controller::Domain::CTRL_LONGITUDINAL)
 	{
-		// Only longitudinal control, update speed and move along road
-		object_->SetSpeed(vehicle_.speed_);
+		// Only longitudinal control, move along road
 		object_->pos_.MoveAlongS(vehicle_.speed_ * timeStep);
 	}
 	else 
@@ -89,20 +88,8 @@ void ControllerInteractive::Step(double timeStep)
 	vehicle_.posZ_ = object_->pos_.GetZ();
 	vehicle_.pitch_ = object_->pos_.GetP();
 
-	object_->SetSpeed(vehicle_.speed_);
-
-	// Update wheels wrt domains
-	if (domain_ & Controller::Domain::CTRL_LONGITUDINAL)
-	{
-		object_->wheel_angle_ = vehicle_.wheelRotation_;
-		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
-	}
-
-	if (domain_ & Controller::Domain::CTRL_LATERAL)
-	{
-		object_->wheel_angle_ = vehicle_.wheelAngle_;
-		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
-	}
+	gateway_->reportObject(object_->id_, object_->name_, static_cast<int>(object_->type_), object_->category_holder_, object_->model_id_,
+		object_->GetActivatedControllerType(), object_->boundingbox_, 0, vehicle_.speed_, object_->wheel_angle_, object_->wheel_rot_, &object_->pos_);
 
 	Controller::Step(timeStep);
 }

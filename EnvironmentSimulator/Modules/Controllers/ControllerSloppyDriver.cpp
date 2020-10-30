@@ -76,6 +76,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 		// Speed has been updated by Default Driver, update our reference speed
 		referenceSpeed_ = object_->GetSpeed();
 	}
+	currentSpeed_ = object_->GetSpeed();
 
 	// Do modification to a local position object and then report to gateway
 	if (object_ && domain_ & Controller::Domain::CTRL_LONGITUDINAL)
@@ -92,12 +93,10 @@ void ControllerSloppyDriver::Step(double timeStep)
 		}
 
 		double steplen = 0;
-		double weight = speedTimer_.Elapsed(time_) / speedTimer_.GetDuration();
-		double oldSpeed_ = currentSpeed_;
+		double weight = speedTimer_.Elapsed(time_) / speedTimer_.GetDuration();		
 
 		currentSpeed_ = initSpeed_ * (1-weight) + targetFactor_ * referenceSpeed_ * weight;
 		currentSpeed_ = MAX(currentSpeed_, 0);
-		object_->SetSpeed(currentSpeed_);
 
 		if (mode_ == Mode::MODE_OVERRIDE)
 		{
@@ -114,7 +113,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 			else
 			{
 				// Default Driver has moved by old_speed
-				steplen = (currentSpeed_ - oldSpeed_) * timeStep;
+				steplen = (currentSpeed_ - object_->GetSpeed()) * timeStep;
 			}
 		}
 
@@ -166,7 +165,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 		double dt = object_->GetSpeed() * timeStep * sin(currentH_ + dh);
 
 		// Move car according to speed and heading
-		if (fabs(object_->GetSpeed()) > SMALL_NUMBER)
+		if (object_->GetSpeed() > SMALL_NUMBER)  // Use old speed set by Default Controller to decide whether heading should be updated
 		{
 			object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), object_->pos_.GetT() + dt);
 			if (mode_ == Mode::MODE_OVERRIDE)
@@ -181,6 +180,9 @@ void ControllerSloppyDriver::Step(double timeStep)
 			currentH_ += dh;
 		}
 	}
+
+	gateway_->reportObject(object_->id_, object_->name_, static_cast<int>(object_->type_), object_->category_holder_, object_->model_id_,
+		object_->GetActivatedControllerType(), object_->boundingbox_, 0, currentSpeed_, object_->wheel_angle_, object_->wheel_rot_, &object_->pos_);
 
 	Controller::Step(timeStep);
 }

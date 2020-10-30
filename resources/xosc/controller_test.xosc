@@ -3,9 +3,10 @@
 <!-- then handing over to the user to drive interactivelly for a while, then finally take control -->
 <!-- again with some improved performance (less sloppiness).                                      -->
 <!-- time  0.0: Default Controller                                                                -->
-<!-- time 10.0: SloppyDriver lateral domain only, high sloppiness                                 -->
-<!-- time 20.0: InteractiveDriver user control via arrow keys)                                    -->
-<!-- time 30.0: SloppyDriver long and lat domains, low sloppiness                                 -->
+<!-- time  2.0: SloppyDriver lateral domain only, high sloppiness                                 -->
+<!-- time 10.0: InteractiveDriver user lateral control via arrow keys)                            -->
+<!-- time 20.0: InteractiveDriver user longitudinal control via arrow keys)                       -->
+<!-- time 30.0: SloppyDriver long domain, low sloppiness                                          -->
 <!-- time 40.0: DefaultController                                                                 -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
@@ -65,7 +66,7 @@
                </Actors>
                <Maneuver name="ControllerManuever">
                   <Event name="SloppyDriverEvent" maximumExecutionCount="1" priority="overwrite">
-                     <Action name="AssignControllerAction1">
+                     <Action name="AssignSloppyDriverControllerAction">
                        <PrivateAction>
                           <ControllerAction>
                             <AssignControllerAction>
@@ -74,10 +75,35 @@
                           </ControllerAction>
                        </PrivateAction>
                      </Action>
-                     <Action name="ActivateControllerAction1">
+                     <Action name="ActivateSloppyDriverControllerAction">
                        <PrivateAction>
                             <ActivateControllerAction longitudinal="false" lateral="true" />
                        </PrivateAction>
+                     </Action>
+                    <StartTrigger>
+                       <ConditionGroup>
+                          <Condition name="" delay="0" conditionEdge="none">
+                             <ByValueCondition>
+                                <SimulationTimeCondition value="2" rule="greaterThan"/>
+                             </ByValueCondition>
+                          </Condition>
+                       </ConditionGroup>
+                    </StartTrigger>
+                  </Event>
+                  <Event name="LateralnteractiveEvent" maximumExecutionCount="1" priority="overwrite">
+                     <Action name="AssignInteractiveControllerAction">
+                       <PrivateAction>
+                            <ControllerAction>
+                                <AssignLateralControllerAction >
+                                    <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+                                </AssignControllerAction> 
+                            </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="ActivateLateralInteractiveControllerAction">
+                        <PrivateAction>
+                            <ActivateControllerAction longitudinal="false" lateral="true" />
+                        </PrivateAction>
                      </Action>
                     <StartTrigger>
                        <ConditionGroup>
@@ -88,9 +114,9 @@
                           </Condition>
                        </ConditionGroup>
                     </StartTrigger>
-                  </Event>
-                  <Event name="InteractiveEvent" maximumExecutionCount="1" priority="overwrite">
-                     <Action name="AssignControllerAction2">
+                  </Event>                  
+                  <Event name="LongitudinalInteractiveInteractiveEvent" maximumExecutionCount="1" priority="overwrite">
+                     <Action name="AssignLongitudinalInteractiveControllerAction">
                        <PrivateAction>
                             <ControllerAction>
                                 <AssignControllerAction >
@@ -99,9 +125,9 @@
                             </ControllerAction>
                         </PrivateAction>
                      </Action>
-                     <Action name="ActivateControllerAction2">
+                     <Action name="ActivateInteractiveControllerAction">
                         <PrivateAction>
-                            <ActivateControllerAction longitudinal="true" lateral="true" />
+                            <ActivateControllerAction longitudinal="true" lateral="false" />
                         </PrivateAction>
                      </Action>
                     <StartTrigger>
@@ -113,9 +139,9 @@
                           </Condition>
                        </ConditionGroup>
                     </StartTrigger>
-                  </Event>                  
+                  </Event>                        
                   <Event name="BetterSloppyDriverEvent" maximumExecutionCount="1" priority="overwrite">
-                     <Action name="AssignControllerAction3">
+                     <Action name="AssignBetterSloppyDriverControllerAction">
                        <PrivateAction>
                             <ControllerAction>
                             <AssignControllerAction>
@@ -128,9 +154,9 @@
                             </ControllerAction>
                         </PrivateAction>
                      </Action>
-                     <Action name="ActivateControllerAction3">
+                     <Action name="ActivateBetterSloppyDriverControllerAction">
                         <PrivateAction>
-                            <ActivateControllerAction longitudinal="true" lateral="true" />
+                            <ActivateControllerAction longitudinal="true" lateral="false" />
                         </PrivateAction>
                      </Action>
                     <StartTrigger>
@@ -144,7 +170,7 @@
                     </StartTrigger>
                   </Event>                  
                   <Event name="DefaultControllerEvent" maximumExecutionCount="1" priority="overwrite">
-                     <Action name="AssignControllerAction4">
+                     <Action name="AssignDefaultControllerAction">
                        <PrivateAction>
                             <ControllerAction>
                                 <AssignControllerAction>
@@ -157,7 +183,7 @@
                             </ControllerAction>
                         </PrivateAction>
                      </Action>
-                     <Action name="ActivateControllerAction4">
+                     <Action name="ActivateDefaultControllerAction">
                         <PrivateAction>
                             <ActivateControllerAction longitudinal="true" lateral="true" />
                         </PrivateAction>

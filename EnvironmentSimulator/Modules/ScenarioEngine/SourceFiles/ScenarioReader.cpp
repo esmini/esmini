@@ -808,6 +808,7 @@ int ScenarioReader::parseEntities()
 				{
 					// Set template vehicle to be used for all vehicles spawned from SUMO
 					((ControllerSumo*)ctrl)->SetSumoVehicle(obj);
+					obj->id_ = -1;
 
 					// SUMO controller is special in the sense that it is always active
 					ctrl->Activate(Controller::Domain::CTRL_BOTH);

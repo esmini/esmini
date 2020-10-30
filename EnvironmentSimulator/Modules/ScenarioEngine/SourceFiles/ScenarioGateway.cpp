@@ -201,7 +201,7 @@ void ScenarioGateway::updateObjectInfo(ObjectState* obj_state, double timestamp,
 	}
 }
 
-void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int host, OSCBoundingBox boundingbox,
+void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 	double timestamp, double speed, double wheel_angle, double wheel_rot,
 	roadmanager::Position* pos)
 {
@@ -211,7 +211,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	{
 		// Create state and set permanent information
 		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
-		obj_state = new ObjectState(id, name,obj_type,obj_category, model_id, host, boundingbox, timestamp, speed, wheel_angle, wheel_rot, pos);
+		obj_state = new ObjectState(id, name,obj_type,obj_category, model_id, ctrl_type, boundingbox, timestamp, speed, wheel_angle, wheel_rot, pos);
 
 		// Specify lanes relevant to the object (will snap to them)
 		obj_state->state_.pos.SetSnapLaneTypes(roadmanager::Lane::LaneType::LANE_TYPE_ANY_DRIVING);
@@ -227,7 +227,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	}
 }
 
-void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int host, OSCBoundingBox boundingbox,
+void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 	double timestamp, double speed, double wheel_angle, double wheel_rot,
 	double x, double y, double z, double h, double p, double r)
 {
@@ -237,7 +237,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	{
 		// Create state and set permanent information
 		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
-		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, host, boundingbox, timestamp, speed, wheel_angle, wheel_rot, x, y, z, h, p, r);
+		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, ctrl_type, boundingbox, timestamp, speed, wheel_angle, wheel_rot, x, y, z, h, p, r);
 
 		// Add object to collection
 		objectState_.push_back(obj_state);
@@ -250,7 +250,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	}
 }
 
-void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int host, OSCBoundingBox boundingbox,
+void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 	double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s)
 {
 	ObjectState* obj_state = getObjectStatePtrById(id);
@@ -259,7 +259,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	{
 		// Create state and set permanent information
 		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
-		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, host, boundingbox,timestamp, speed, wheel_angle, wheel_rot, roadId, laneId, laneOffset, s);
+		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, ctrl_type, boundingbox,timestamp, speed, wheel_angle, wheel_rot, roadId, laneId, laneOffset, s);
 
 		// Add object to collection
 		objectState_.push_back(obj_state);
@@ -272,7 +272,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	}
 }
 
-void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int host, OSCBoundingBox boundingbox,
+void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 	double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, double lateralOffset, double s)
 {
 	ObjectState* obj_state = getObjectStatePtrById(id);
@@ -281,7 +281,7 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	{
 		// Create state and set permanent information
 		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
-		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, host, boundingbox, timestamp, speed, wheel_angle, wheel_rot, roadId, lateralOffset, s);
+		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, ctrl_type, boundingbox, timestamp, speed, wheel_angle, wheel_rot, roadId, lateralOffset, s);
 
 		// Add object to collection
 		objectState_.push_back(obj_state);

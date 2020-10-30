@@ -160,6 +160,10 @@ void ControllerSumo::Step(double timeStep)
 				-libsumo::Vehicle::getAngle(sumoid) * M_PI / 180 + M_PI / 2, libsumo::Vehicle::getSlope(sumoid) * M_PI / 180, 0);
 
 			obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+
+			// Report updated state to the gateway
+			gateway_->reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_, obj->model_id_,
+					obj->GetActivatedControllerType(), obj->boundingbox_, time_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 		}
 		else if (!entities_->object_[i]->IsGhost())
 		{

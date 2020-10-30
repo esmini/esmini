@@ -31,7 +31,12 @@
       <ScenarioObject name="Ego">
         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
         <ObjectController>
-            <CatalogReference catalogName="ControllerCatalog" entryName="externalController" />
+            <Controller name="myController">
+                <Properties>
+                    <Property name="esminiController" value="ExternalController" />
+                    <Property name="mode" value="override"/>
+                </Properties>
+            </Controller>            
         </ObjectController>
       </ScenarioObject>
       <ScenarioObject name="OverTaker">
@@ -60,7 +65,7 @@
                   </LongitudinalAction>
                </PrivateAction>
                <PrivateAction>
-                    <ActivateControllerAction longitudinal="false" lateral="true" />
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
                </PrivateAction>
             </Private>
             <Private entityRef="OverTaker">

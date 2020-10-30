@@ -99,6 +99,7 @@ namespace scenarioengine
 		int GetDomain() { return domain_; }
 		int GetMode() { return mode_; }
 		std::string Mode2Str(int mode);
+		Object* GetObject() { return object_; }
 
 	protected:
 		int domain_;  // bitmask according to ControllerDomain type

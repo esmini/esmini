@@ -42,13 +42,6 @@ ControllerExternal::ControllerExternal(InitArgs* args) : useGhost_(false), Contr
 	{
 		headstart_time_ = strtod(args->properties->GetValueStr("headstartTime"));
 	}
-
-	// External controller forced into override mode - will not perform any scenario actions
-	if (mode_ != Mode::MODE_OVERRIDE)
-	{
-		LOG("External controller mode \"%s\" not applicable. Using override mode instead.", Mode2Str(mode_).c_str());
-		mode_ = Controller::Mode::MODE_OVERRIDE;
-	}
 }
 
 void ControllerExternal::Init()

@@ -153,13 +153,13 @@ Domain support: `longitudinal` and `lateral` (in combination only).
 Properties: 
 - `headstartTime` (seconds): Ghost will be launched at `time = 0 - headstartTime`
 
-
 #### ExternalController
 The entity will not be moved by the scenario. Instead its state (position, rotation ...) is expected to be reported from external simulator via API, e.g. [SE_ReportObjectPos](https://github.com/esmini/esmini/blob/c98a3d5db483ee2142c2c01f4b100eec36cc4e90/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L136). Ghost trajectory can optionally be created for an external driver model to use as reference.
 
 Domain support: `longitudinal` and/or `lateral` (independent).
 
 Properties: 
+- `mode` (override/additive): Disable default controller (override - default) or apply default controller before handing over to this controller (additive)
 - `useGhost` (true/false): Enable or disable (default) the ghost feature
 - `headstartTime` (seconds): Optional ghost will be launched at `time = 0 - headstartTime`
 
@@ -181,4 +181,5 @@ Domain support: `longitudinal` and/or `lateral` (independent).
 
 Properties:
 - `sloppiness` (double [0:1]): Level of sloppiness, 0=perfect 1=bad
+- - `mode` (override/additive): Disable default controller (override - default) or apply default controller before handing over to this controller (additive)
 

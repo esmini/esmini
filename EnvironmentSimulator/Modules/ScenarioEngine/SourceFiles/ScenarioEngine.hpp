@@ -42,9 +42,9 @@ namespace scenarioengine
 		void InitScenario(std::string oscFilename, bool disable_controllers = false);
 		void InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers = false);
 
-		void step(double deltaSimTime, bool initial = false);
+		void step(double deltaSimTime);
 		void printSimulationTime();
-		void updateObjectStates(double dt);
+		void prepareOSIGroundTruth(double dt);
 		void defaultController(Object* obj, double dt);
 		void ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Object* obj2, double timeOffset);
 		void SetupGhost(Object* object);
@@ -82,6 +82,7 @@ namespace scenarioengine
 
 		// execution control flags
 		bool quit_flag;
+		bool initialized_;
 
 		void parseScenario();
 	};

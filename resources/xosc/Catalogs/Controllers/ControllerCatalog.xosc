@@ -9,10 +9,12 @@
 		<Controller name="sloppyDriver">
             <ParameterDeclarations>
                 <ParameterDeclaration name="Sloppiness" parameterType="double" value="0.5" /> 
+                <ParameterDeclaration name="Mode" parameterType="string" value="additive" /> 
             </ParameterDeclarations>        
             <Properties>
                 <Property name="esminiController" value="SloppyDriverController" />
                 <Property name="sloppiness" value="$Sloppiness" />
+                <Property name="mode" value="$Mode" />
             </Properties>
 		</Controller>    
 		<Controller name="interactiveDriver">
@@ -24,11 +26,13 @@
             <ParameterDeclarations>
                 <ParameterDeclaration name="UseGhost" parameterType="bool" value="false" /> 
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" /> 
+                <ParameterDeclaration name="Mode" parameterType="string" value="additive" /> 
             </ParameterDeclarations>
 			<Properties>
 				<Property name="esminiController" value="ExternalController" />
                 <Property name="useGhost" value="$UseGhost" />
                 <Property name="headstartTime" value="$HeadStartTime" />
+                <Property name="mode" value="$Mode" />                
 			</Properties>
 		</Controller>
 		<Controller name="cspas">

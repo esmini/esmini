@@ -154,23 +154,6 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 
 	scenarioEngine->step(timestep_s);
 
-	for (size_t i = 0; i < sensor.size(); i++)
-	{
-		sensor[i]->Update();
-	}
-
-	osiReporter->ReportSensors(sensor);
-
-	// Update OSI info
-	if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
-	{
-		osi_counter++;
-		if (osi_counter % osi_freq_ == 0 )
-		{
-			osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-		}
-	}
-
 	// Check for any callbacks to be made
 	for (size_t i = 0; i < callback.size(); i++)
 	{
@@ -183,6 +166,27 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 		}
 	}
 
+	scenarioEngine->prepareOSIGroundTruth(timestep_s);
+
+	mutex.Unlock();
+
+	for (size_t i = 0; i < sensor.size(); i++)
+	{
+		sensor[i]->Update();
+	}
+
+	osiReporter->ReportSensors(sensor);
+
+	// Update OSI info
+	if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
+	{
+		osi_counter++;
+		if (osi_counter % osi_freq_ == 0)
+		{
+			osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
+		}
+	}
+
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
 	//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
 	//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
@@ -191,7 +195,6 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	//    scenarioEngine->entities.object_[0]->pos_.GetHRoad(),
 	//    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
 
-	mutex.Unlock();
 
 	if (scenarioEngine->GetQuitFlag())
 	{
@@ -284,10 +287,11 @@ void ScenarioPlayer::ViewerFrame()
 				viewer_->SensorSetTargetPos(car->trail_sensor_, pos.GetX(), pos.GetY(), pos.GetZ());
 				viewer_->UpdateSensor(car->trail_sensor_);
 			}
-			else if (odr_manager->GetNumOfRoads() > 0)
-			{
-				viewer_->UpdateRoadSensors(car->road_sensor_, car->lane_sensor_, &pos);
-			}
+		}
+
+		if (car->road_sensor_ && odr_manager->GetNumOfRoads() > 0)
+		{
+			viewer_->UpdateRoadSensors(car->road_sensor_, car->lane_sensor_, &pos);
 		}
 
 		if (add_dot)
@@ -413,7 +417,14 @@ int ScenarioPlayer::InitViewer()
 		}
 
 		//  Create vehicles for visualization
-		bool road_sensor = obj->GetGhost() ? true : false;
+		bool road_sensor = false;
+		if (road_sensor = obj->GetGhost() ||
+			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_INTERACTIVE ||
+			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
+		{
+			road_sensor = true;
+		}
+
 		if (viewer_->AddCar(obj->model_filepath_, trail_color, road_sensor, obj->name_) == 0)
 		{
 			delete viewer_;
@@ -440,7 +451,6 @@ int ScenarioPlayer::InitViewer()
 		else if (scenarioEngine->entities.object_[i]->IsGhost())
 		{
 			scenarioEngine->entities.object_[i]->SetVisibilityMask(scenarioEngine->entities.object_[i]->visibilityMask_ &= ~(Object::Visibility::SENSORS));
-//			viewer_->cars_.back()->SetTransparency(0.6);
 		}
 	}
 
@@ -651,11 +661,15 @@ int ScenarioPlayer::Init()
 	}
 
 	// Step scenario engine - zero time - just to reach and report init state of all vehicles
+	ScenarioFrame(0.0);
+
+#if 0  // replaced by Frame
 	scenarioEngine->step(0.0, true);
 
 	// Update OSI info
 	osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-
+#endif
+	
 	if (!headless)
 	{
 

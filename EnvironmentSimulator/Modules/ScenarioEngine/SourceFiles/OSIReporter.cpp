@@ -1018,12 +1018,13 @@ const char* OSIReporter::GetOSIRoadLane(std::vector<ObjectState*> objectState, i
 		if (object_id == objectState[i]->state_.id)
 		{
 			pos = objectState[i]->state_.pos;
+			break;
 		}
 	}
 
 	// find the lane in the sensor view and save its index in the sensor view
 	int lane_id_of_vehicle = pos.GetLaneGlobalId();
-	int idx;
+	int idx = -1;
 	for (int i = 0; i<obj_osi_internal.ln.size(); i++)
 	{
 		osi3::Identifier identifier = obj_osi_internal.ln[i]->id();
@@ -1034,7 +1035,11 @@ const char* OSIReporter::GetOSIRoadLane(std::vector<ObjectState*> objectState, i
 			break;
 		}
 	}
-
+	if (idx < 0)
+	{
+		LOG("Failed to locate vehicle lane id!");
+		return 0;
+	}
 	// serialize to string the single lane
 	obj_osi_internal.ln[idx]->SerializeToString(&osiRoadLane.osi_lane_info);
 	osiRoadLane.size = (unsigned int)obj_osi_internal.ln[idx]->ByteSizeLong();
