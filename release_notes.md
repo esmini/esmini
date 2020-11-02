@@ -1,6 +1,12 @@
 ## esmini release notes
 The purpose of this document is to highlight relevant changes introducing new features or breaking backward compatibility, i.e. requiring updates to scenarios and start scripts.
 
+#### 2020-11-02 Version 2.0.1
+- Fixed issue with syncronizeAction and trajectory following entities
+- Added correctly dimensioned (according to OSC entity def) bounding box. Toggle show on key ',' (comma)
+- Fixed execution order so that controllers and callback are applied AFTER default controller
+- Some additional minor fixes
+
 #### 2020-10-23 Version 2.0.0
 The major functional change is the implementation of the OpenSCENARIO controller concept. A side effect is that much of the functionality such as Ghost concept, interactive driving and external control previously assiciated and hardcoded in different applications now has moved out from the application(s) core and into different controllers which can be activated on demand in a more flexible way.
 
