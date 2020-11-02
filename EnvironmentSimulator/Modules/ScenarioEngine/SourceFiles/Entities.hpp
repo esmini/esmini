@@ -124,7 +124,11 @@ namespace scenarioengine
 		void SetOffRoad(bool state, double time = 0.0);
 		bool IsOffRoad() { return off_road_timestamp_ > SMALL_NUMBER; }
 		double GetOffRoadTimestamp() { return off_road_timestamp_; }
-		void SetSpeed(double speed) { speed_ = speed; }
+		void SetSpeed(double speed) 
+		{ 
+			speed_ = speed; 
+			SetDirtyBits(Object::DirtyBit::SPEED);
+		}
 		double GetSpeed() { return speed_; }
 		void SetAssignedController(Controller* controller)
 		{

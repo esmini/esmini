@@ -156,15 +156,15 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 		{
 			double s_old = object_->pos_.GetTrajectoryS();
 			object_->pos_.SetTrajectoryPosByTime(traj_, time_ + timing_offset_);
-			object_->speed_ = (object_->pos_.GetTrajectoryS() - s_old) / dt;
-			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+			object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / dt);
+			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
 		else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
 		{
 			double s_old = object_->pos_.GetTrajectoryS();
 			object_->pos_.SetTrajectoryPosByTime(traj_, simTime * timing_scale_ + timing_offset_);
-			object_->speed_ = (object_->pos_.GetTrajectoryS() - s_old) / dt;
-			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+			object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / dt);
+			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
 	}
 }
@@ -450,7 +450,6 @@ void LongSpeedAction::Start()
 	if (transition_dynamics_.shape_ == DynamicsShape::STEP)
 	{
 		object_->SetSpeed(target_->GetValue());
-		object_->SetDirtyBits(Object::DirtyBit::SPEED);
 		if (!(target_->type_ == Target::TargetType::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
 		{
 			OSCAction::End();
@@ -519,8 +518,7 @@ void LongSpeedAction::Step(double dt, double simTime)
 		OSCAction::End();
 	}
 
-	object_->speed_ = new_speed;
-	object_->SetDirtyBits(Object::DirtyBit::SPEED);
+	object_->SetSpeed(new_speed);
 }
 
 void LongSpeedAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
@@ -587,9 +585,9 @@ void LongDistanceAction::Step(double dt, double simTime)
 	{
 		// Set position according to distance and copy speed of target vehicle
 		object_->pos_.MoveAlongS(distance_diff);
-		object_->speed_ = target_object_->speed_;
+		object_->SetSpeed(target_object_->speed_);
 
-		object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+		object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
 	}
 	else
 	{
@@ -605,17 +603,16 @@ void LongDistanceAction::Step(double dt, double simTime)
 			acc = -dynamics_.max_deceleration_;
 		}
 
-		object_->speed_ += acc * dt;
+		object_->SetSpeed(object_->GetSpeed() + acc * dt);
 
-		if (object_->speed_ > dynamics_.max_speed_)
+		if (object_->GetSpeed() > dynamics_.max_speed_)
 		{
-			object_->speed_ = dynamics_.max_speed_;
+			object_->SetSpeed(dynamics_.max_speed_);
 		}
-		else if (object_->speed_ < -dynamics_.max_speed_)
+		else if (object_->GetSpeed() < -dynamics_.max_speed_)
 		{
-			object_->speed_ = -dynamics_.max_speed_;
+			object_->SetSpeed(-dynamics_.max_speed_);
 		}
-		object_->SetDirtyBits(Object::DirtyBit::SPEED);
 	}
 
 	//	LOG("Dist %.2f diff %.2f acc %.2f speed %.2f", distance, distance_diff, acc, object_->speed_);
@@ -785,17 +782,19 @@ void SynchronizeAction::Step(double dt, double simTime)
 	double masterDist, dist;
 	roadmanager::PositionDiff diff;
 
-	if (!master_object_->pos_.Delta(*target_position_master_, diff))
+	if (master_object_->pos_.GetTrajectory() || !master_object_->pos_.Delta(*target_position_master_, diff))
 	{
-		LOG("No road network path between master vehicle and master target pos");
-		return;
+		// No road network path between master vehicle and master target pos - using world coordinate distance
+		diff.ds = GetLengthOfLine2D(master_object_->pos_.GetX(), master_object_->pos_.GetY(),
+			target_position_master_->GetX(), target_position_master_->GetY());
 	}
 	masterDist = diff.ds;
 
-	if (!object_->pos_.Delta(*target_position_, diff))
+	if (object_->pos_.GetTrajectory() || !object_->pos_.Delta(*target_position_, diff))
 	{
-		LOG("No road network path between master vehicle and master target pos");
-		return;
+		// No road network path between action vehicle and action target pos - using world coordinate distance
+		diff.ds = GetLengthOfLine2D(object_->pos_.GetX(), object_->pos_.GetY(),
+			target_position_->GetX(), target_position_->GetY());
 	}
 	dist = diff.ds;
 
@@ -815,8 +814,6 @@ void SynchronizeAction::Step(double dt, double simTime)
 	{
 		double average_speed = dist / masterTimeToDest;
 		double acc = 0;
-
-		//LOG("dist: %.2f time: %.2f final speed: %.2f", dist, masterTimeToDest, final_speed_->GetValue());
 
 		if (final_speed_)
 		{
@@ -898,7 +895,7 @@ void SynchronizeAction::Step(double dt, double simTime)
 				object_->speed_ += acc * dt;
 				if (object_->speed_ < 0)
 				{
-					object_->speed_ = 0;
+					object_->SetSpeed(0);
 					mode_ = SynchMode::MODE_WAITING;  // wait for master to move
 					PrintStatus("Waiting");
 				}
@@ -916,14 +913,14 @@ void SynchronizeAction::Step(double dt, double simTime)
 				else
 				{
 					// Stay still
-					object_->speed_ = 0;
+					object_->SetSpeed(0);
 					return;
 				}
 			}
 			
 			if (mode_ == SynchMode::MODE_LINEAR)
 			{
-				object_->speed_ = MAX(0, CalcSpeedForLinearProfile(MAX(0, final_speed_->GetValue()), masterTimeToDest, dist));
+				object_->SetSpeed(MAX(0, CalcSpeedForLinearProfile(MAX(0, final_speed_->GetValue()), masterTimeToDest, dist)));
 				return;
 			}
 			else if (masterTimeToDest < LARGE_NUMBER) 
@@ -1041,7 +1038,7 @@ void SynchronizeAction::Step(double dt, double simTime)
 				if (v0 + acc * dt < 0)
 				{
 					// Reached to a stop
-					object_->speed_ = 0;
+					object_->SetSpeed(0);
 					mode_ = SynchMode::MODE_STOPPED;
 					PrintStatus("Stopped");
 
@@ -1056,8 +1053,7 @@ void SynchronizeAction::Step(double dt, double simTime)
 			acc = (final_speed_ - object_->speed_) / masterTimeToDest;
 		}
 
-		object_->speed_ += acc * dt;
-		object_->SetDirtyBits(Object::DirtyBit::SPEED);
+		object_->SetSpeed(object_->GetSpeed() + acc * dt);
 	}
 }
 

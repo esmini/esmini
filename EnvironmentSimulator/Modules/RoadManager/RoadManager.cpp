@@ -6562,7 +6562,7 @@ int Position::SetTrajectoryS(Trajectory* trajectory, double traj_s)
 					(1 - a) * vp0->GetH() + a * vp1->GetH(),
 					(1 - a) * vp0->GetP() + a * vp1->GetP(),
 					(1 - a) * vp0->GetR() + a * vp1->GetR(),
-					false);
+					true);
 				
 				return 0;
 			}
