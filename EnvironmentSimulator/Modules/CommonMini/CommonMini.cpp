@@ -598,7 +598,7 @@ CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::stri
 		"#%d Current_Speed [m/sec] , #%d Wheel_Angle [deg] , #%d Wheel_Rotation [-] , "
 		"#%d World_Position_X [-] , #%d World_Position_Y [-] , #%d World_Position_Z [-] , "
 		"#%d Distance_Travelled_Along_Road_Segment [m] , #%d Lateral_Distance_Lanem [m] , "
-		"#%d World_Heading_Angle [rad] , %d Relative_Heading_Angle [rad] , "
+		"#%d World_Heading_Angle [rad] , #%d Relative_Heading_Angle [rad] , "
 		"#%d Relative_Heading_Angle_Drive_Direction [rad] , #%d World_Pitch_Angle [rad] , "
 		"#%d Road_Curvature [1/m] , ";
 	for (int i = 2; i <= numvehicles; i++)
