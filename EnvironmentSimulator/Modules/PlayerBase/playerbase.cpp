@@ -168,6 +168,8 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 
 	scenarioEngine->prepareOSIGroundTruth(timestep_s);
 
+	scenarioGateway->WriteStatesToFile();
+
 	mutex.Unlock();
 
 	for (size_t i = 0; i < sensor.size(); i++)
@@ -446,7 +448,7 @@ int ScenarioPlayer::InitViewer()
 
 		//  Create vehicles for visualization
 		bool road_sensor = false;
-		if (road_sensor = obj->GetGhost() ||
+		if (obj->GetGhost() ||
 			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_INTERACTIVE ||
 			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
 		{

@@ -1010,6 +1010,7 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec3 trail_c
 	std::vector<std::string> file_name_candidates;
 	file_name_candidates.push_back(path.c_str());
 	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(getScenarioDir(), path).c_str());
+	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(getScenarioDir(), std::string("../models/" + path)).c_str());
 	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(roadmanager::Position::GetOpenDrive()->GetOpenDriveFilename()), path).c_str());
 	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", path).c_str());
 	size_t i;

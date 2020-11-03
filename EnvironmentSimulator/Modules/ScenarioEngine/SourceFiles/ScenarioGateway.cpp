@@ -193,12 +193,6 @@ void ScenarioGateway::updateObjectInfo(ObjectState* obj_state, double timestamp,
 	obj_state->state_.timeStamp = (float)timestamp;
 	obj_state->state_.wheel_angle = (float)wheel_angle;
 	obj_state->state_.wheel_rot = (float)wheel_rot;
-
-	// Write status to file - for later replay
-	if (data_file_.is_open())
-	{
-		data_file_.write((char*)(&obj_state->state_), sizeof(obj_state->state_));
-	}
 }
 
 void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
@@ -312,6 +306,18 @@ void ScenarioGateway::removeObject(std::string name)
 		if (objectState_[i]->state_.name == name) 
 		{
 			objectState_.erase(objectState_.begin() + i);
+		}
+	}
+}
+
+void ScenarioGateway::WriteStatesToFile()
+{
+	if (data_file_.is_open())
+	{
+		// Write status to file - for later replay
+		for (size_t i = 0; i < objectState_.size(); i++)
+		{
+			data_file_.write((char*)(&objectState_[i]->state_), sizeof(objectState_[i]->state_));
 		}
 	}
 }

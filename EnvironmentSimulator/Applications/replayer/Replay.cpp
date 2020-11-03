@@ -40,6 +40,12 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0)
 			data_.push_back(data);
 		}
 	}
+
+	if (data_.size() > 0)
+	{
+		// Register first entry timestamp as starting time
+		time_ = data_[0].timeStamp;
+	}
 }
 
 Replay::~Replay()
