@@ -29,8 +29,8 @@
 using namespace scenarioengine;
 
 static const double stepSize = 0.01;
-static const double maxStepSize = 0.1;
-static const double minStepSize = 0.01;
+static const double maxStepSize = 1.0;
+static const double minStepSize = 0.001;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
@@ -76,12 +76,15 @@ int main(int argc, char** argv)
 	Replay *player;
 	double simTime = 0;
 	double time_scale = 1.0;
+	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
+	static char info_str_buf[128];
 
 	// use common options parser to manage the program arguments
 	SE_Options opt;
 	opt.AddOption("file", "Simulation recording data file", "filename");
 	opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
 	opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
+	opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
 
 	if (argc < 2)
 	{
@@ -109,7 +112,9 @@ int main(int argc, char** argv)
 		odrManager = roadmanager::Position::GetOpenDrive();
 
 		std::string model_path = opt.GetOptionArg("res_path");
+		
 		osg::ArgumentParser arguments(&argc, argv);
+
 		viewer::Viewer *viewer = new viewer::Viewer(
 			odrManager, 
 			model_path.append("/models/").append(player->header_.model_filename).c_str(),
@@ -132,11 +137,25 @@ int main(int argc, char** argv)
 			time_scale = atof(opt.GetOptionArg("time_scale").c_str());
 		}
 
+		std::string view_mode_string = opt.GetOptionArg("view_mode");
+		if (view_mode_string == "boundingbox")
+		{
+			view_mode = viewer::NodeMask::NODE_MASK_ENTITY_BB;
+		}
+		else if (view_mode_string == "both")
+		{
+			view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB;
+		}
+		viewer->SetNodeMaskBits(
+			viewer::NodeMask::NODE_MASK_ENTITY_MODEL | 
+			viewer::NodeMask::NODE_MASK_ENTITY_BB, 
+			view_mode);
+
 		while (!viewer->osgViewer_->done())
 		{
 			// Get milliseconds since Jan 1 1970
 			now = SE_getSystemTime();
-			deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
+			deltaSimTime = time_scale * (now - lastTimeStamp) / 1000.0;  // step size in seconds
 			lastTimeStamp = now;
 			if (deltaSimTime > maxStepSize) // limit step size
 			{
@@ -151,7 +170,7 @@ int main(int argc, char** argv)
 			// Time operations
 			simTime = simTime + deltaSimTime;
 
-			player->Step(deltaSimTime * time_scale);
+			player->Step(deltaSimTime);
 
 			// Fetch states of scenario objects
 			int index = 0;
@@ -169,7 +188,7 @@ int main(int argc, char** argv)
 
 					new_sc.id = state->id;
 					if ((new_sc.entityModel = viewer->AddEntityModel(entityModelsFiles_[state->model_id], osg::Vec3(0.5, 0.5, 0.5),
-						viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER, false, "", 0)) == 0)
+						viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER, false, state->name, &state->boundingbox)) == 0)
 					{
 						return -1;
 					}
@@ -182,6 +201,14 @@ int main(int argc, char** argv)
 
 				sc->pos = state->pos;
 
+				if (index == viewer->currentCarInFocus_)
+				{
+					// Update overlay info text
+					snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s %.2fkm/h", 
+						simTime, state->id, state->name, 3.6 * state->speed);
+					viewer->SetInfoText(info_str_buf);
+				}
+				
 				index++;
 				state = player->GetState(index);
 			}
