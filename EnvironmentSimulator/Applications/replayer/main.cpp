@@ -29,7 +29,7 @@
 using namespace scenarioengine;
 
 static const double stepSize = 0.01;
-static const double maxStepSize = 1.0;
+static const double maxStepSize = 0.1;
 static const double minStepSize = 0.001;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
@@ -77,6 +77,7 @@ int main(int argc, char** argv)
 	double simTime = 0;
 	double time_scale = 1.0;
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
+	bool no_ghost = false;
 	static char info_str_buf[128];
 
 	// use common options parser to manage the program arguments
@@ -85,6 +86,7 @@ int main(int argc, char** argv)
 	opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
 	opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
 	opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
+	opt.AddOption("no_ghost", "Remove ghost entities");
 
 	if (argc < 2)
 	{
@@ -98,6 +100,7 @@ int main(int argc, char** argv)
 	try
 	{
 		player = new Replay(opt.GetOptionArg("file"));
+		simTime = player->time_;
 	}
 	catch (const std::exception& e)
 	{
@@ -137,6 +140,7 @@ int main(int argc, char** argv)
 			time_scale = atof(opt.GetOptionArg("time_scale").c_str());
 		}
 
+		// Set visual representation of entities
 		std::string view_mode_string = opt.GetOptionArg("view_mode");
 		if (view_mode_string == "boundingbox")
 		{
@@ -151,11 +155,16 @@ int main(int argc, char** argv)
 			viewer::NodeMask::NODE_MASK_ENTITY_BB, 
 			view_mode);
 
+		if (opt.GetOptionSet("no_ghost"))
+		{
+			no_ghost = true;
+		}
+
 		while (!viewer->osgViewer_->done())
 		{
 			// Get milliseconds since Jan 1 1970
 			now = SE_getSystemTime();
-			deltaSimTime = time_scale * (now - lastTimeStamp) / 1000.0;  // step size in seconds
+			deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
 			lastTimeStamp = now;
 			if (deltaSimTime > maxStepSize) // limit step size
 			{
@@ -166,6 +175,7 @@ int main(int argc, char** argv)
 				SE_sleep(minStepSize - deltaSimTime);
 				deltaSimTime = minStepSize;
 			}
+			deltaSimTime *= time_scale;
 
 			// Time operations
 			simTime = simTime + deltaSimTime;
@@ -173,10 +183,15 @@ int main(int argc, char** argv)
 			player->Step(deltaSimTime);
 
 			// Fetch states of scenario objects
-			int index = 0;
-			ObjectStateStruct *state = player->GetState(index);
-			while (state != 0)
+			ObjectStateStruct* state;
+			
+			for (int index = 0; (state = player->GetState(index)) != 0; index++)
 			{
+				if (no_ghost && state->ctrl_type == 100)  // control type 100 indicates ghost
+				{
+					continue;
+				}
+
 				ScenarioEntity *sc = getScenarioEntityById(state->id);
 
 				// If not available, create it
@@ -208,9 +223,6 @@ int main(int argc, char** argv)
 						simTime, state->id, state->name, 3.6 * state->speed);
 					viewer->SetInfoText(info_str_buf);
 				}
-				
-				index++;
-				state = player->GetState(index);
 			}
 
 			// Visualize scenario cars
