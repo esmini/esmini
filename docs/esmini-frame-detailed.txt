@@ -44,6 +44,7 @@ SE<-Player:Prep OSI Ground Truth
 
 activate SE
 GW<-SE:Get states
+GW<-SE:Report calculated values
 deactivate SE
 GW<-Player:Write states to .dat file
 Player->OSI:Report OSI GT

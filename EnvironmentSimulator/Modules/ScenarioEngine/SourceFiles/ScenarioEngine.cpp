@@ -534,12 +534,11 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 		}
 		else
 		{
-			entities.object_[i]->pos_ = o.state_.pos;
-			entities.object_[i]->speed_ = o.state_.speed;
-			entities.object_[i]->wheel_angle_ = o.state_.wheel_angle;
-			entities.object_[i]->wheel_rot_ = o.state_.wheel_rot;
+			obj->pos_ = o.state_.pos;
+			obj->speed_ = o.state_.speed;
+			obj->wheel_angle_ = o.state_.wheel_angle;
+			obj->wheel_rot_ = o.state_.wheel_rot;
 		}
-
 		// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
 		double dy = obj->pos_.GetY() - obj->state_old.pos_y;
@@ -570,6 +569,10 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 			obj->pos_.SetVelX(obj->speed_ * cos(obj->pos_.GetH()));
 			obj->pos_.SetVelY(obj->speed_ * sin(obj->pos_.GetH()));
 		}
+
+		// Report updated pos values to the gateway
+		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_, obj->model_id_,
+			obj->GetActivatedControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 
 		// store current values for next loop
 		obj->state_old.pos_x = obj->pos_.GetX();
