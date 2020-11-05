@@ -681,6 +681,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	odrManager_ = odrManager;
 	bool clear_color;
 	std::string arg_str;
+	osgViewer_ = 0;
 
 	if(scenarioFilename != NULL)
 	{ 
@@ -729,7 +730,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	}
 
 	osgViewer_ = new osgViewer::Viewer(arguments);
-	
+
 	// Check if the viewer has been created correctly - window created is a indication
 	osgViewer::ViewerBase::Windows wins;
 	osgViewer_->getWindows(wins);
@@ -742,6 +743,13 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		delete osgViewer_;
 		osg::ArgumentParser args2(&argc, argv);
 		osgViewer_ = new osgViewer::Viewer(args2);
+		osgViewer_->getWindows(wins);
+		if (wins.size() == 0)
+		{
+			LOG("Failed second attempt opening a viewer window. Give up.");
+			delete osgViewer_;
+			return;
+		}
 	}
 	else
 	{

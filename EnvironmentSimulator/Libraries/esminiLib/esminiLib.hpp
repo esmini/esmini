@@ -323,6 +323,7 @@ extern "C"
 	*/
 	SE_DLL_API bool SE_OSIFileWrite(bool flush = false);
 
+	SE_DLL_API void SE_LogMessage(char* message);
 
 #ifdef __cplusplus
 }

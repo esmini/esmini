@@ -29,7 +29,7 @@ using namespace scenarioengine;
 
 static int osi_counter = 0;
 
-void log_callback(const char *str)
+static void log_callback(const char *str)
 {
 	printf("%s\n", str);
 }
@@ -358,6 +358,12 @@ int ScenarioPlayer::InitViewer()
 		exe_path_.c_str(),
 		arguments, &opt);
 
+	if (viewer_->osgViewer_ == 0)
+	{
+		viewerState_ = ViewerState::VIEWER_STATE_FAILED;
+		return -1;
+	}
+
 	if (opt.GetOptionArg("info_text") == "off")
 	{
 		viewer_->ShowInfoText(false);
@@ -520,7 +526,6 @@ void viewer_thread(void *args)
 
 	if (player->InitViewer() != 0)
 	{
-		LOG("Failed to initialize the Viewer!");
 		return;
 	}
 
@@ -575,7 +580,10 @@ int ScenarioPlayer::Init()
 	std::string arg_str;
 
 	// Use logger callback
-	Logger::Inst().SetCallback(log_callback);
+	if (!(Logger::Inst().IsCallbackSet()))
+	{
+		Logger::Inst().SetCallback(log_callback);
+	}
 
 	// use an ArgumentParser object to manage the program arguments.
 	opt.AddOption("osc", "OpenSCENARIO filename", "filename");
@@ -728,6 +736,11 @@ int ScenarioPlayer::Init()
 			else if (viewerState_ == ViewerState::VIEWER_STATE_DONE)
 			{
 				LOG("Viewer already signaled done - something went wrong");
+				return -1;
+			}
+			else if (viewerState_ == ViewerState::VIEWER_STATE_FAILED)
+			{
+				LOG("Viewer initialization failed");
 				return -1;
 			}
 		}

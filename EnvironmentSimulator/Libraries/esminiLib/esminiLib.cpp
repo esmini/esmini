@@ -36,6 +36,11 @@ typedef struct
 
 static std::vector<SE_ObjCallback> objCallback;
 
+static void log_callback(const char* str)
+{
+	printf("%s\n", str);
+}
+
 static void resetScenario(void)
 {
 	if (player)
@@ -71,12 +76,14 @@ static void ConvertArguments()
 {
 	argc = (int)args_v.size();
 	argv = (char**)malloc(argc * sizeof(char*));
+	std::string argument_list;
 	for (int i = 0; i < argc; i++)
 	{
 		argv[i] = (char*)malloc((args_v[i].size() + 1) * sizeof(char));
 		strcpy(argv[i], args_v[i].c_str());
-		LOG("arg[%d]: %s", i, argv[i]);
+		argument_list += std::string(" ") + argv[i];
 	}
+	LOG("Player arguments: %s", argument_list.c_str());
 }
 
 static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectStateStruct *gw_state)
@@ -250,6 +257,8 @@ extern "C"
 	{
 		resetScenario();
 
+		Logger::Inst().SetCallback(log_callback);
+
 #ifndef _SCENARIO_VIEWER
 		if (use_viewer)
 		{
@@ -279,13 +288,11 @@ extern "C"
 		if (threads)
 		{
 			AddArgument("--threads");
-			LOG("Threads arg created");
 		}
 
 		if (disable_ctrls)
 		{
 			AddArgument("--disable_controllers");
-			LOG("Disable any controllers");
 		}
 
 		ConvertArguments();
@@ -295,13 +302,6 @@ extern "C"
 		{
 			// Initialize the scenario engine and viewer
 			player = new ScenarioPlayer(argc, argv);
-
-			// Fast forward to time == 0 - launching hybrid ghost vehicles
-			//while (player->scenarioEngine->getSimulationTime() < 0)
-			//{
-			//	player->Frame(0.05);
-			//}
-
 		}
 		catch (const std::exception& e)
 		{
@@ -592,6 +592,12 @@ extern "C"
 
 		return retval;
 	}
+
+	SE_DLL_API void SE_LogMessage(char* message)
+	{
+		LOG(message);
+	}
+
 
 	SE_DLL_API int SE_ObjectHasGhost(int index)
 	{

@@ -43,11 +43,6 @@ typedef struct
 	int counter;
 } Stuff;
 
-void log_callback(const char *str)
-{
-	printf("%s\n", str);
-}
-
 void objectCallback(SE_ScenarioObjectState* state, void *my_data)
 {
 	const double startTrigTime = 7.0;
@@ -79,12 +74,9 @@ int main(int argc, char *argv[])
 {
 	Stuff stuff;
 	
-	// Use logger callback
-	Logger::Inst().SetCallback(log_callback);
-
 	if (argc < 2)
 	{
-		LOG("Usage: %s <osc filename>\n", argv[0]);
+		printf("Usage: %s <osc filename>\n", argv[0]);
 		return -1;
 	}
 
@@ -94,8 +86,8 @@ int main(int argc, char *argv[])
 
 		if (SE_Init(argv[1], 0, 1, 1, 0) != 0)
 		{
-			LOG("Failed to load %s", argv[1]);
-			return -1;
+			printf("Failed to load %s", argv[1]);
+			continue;
 		}
 
 #if DEMONSTRATE_CALLBACK
@@ -161,7 +153,7 @@ int main(int argc, char *argv[])
 
 			SE_GetRoadInfoAtDistance(id, look_ahead_distance, &data, 0);
 
-			LOG("Road info at %.2f meter from Vehicle %d: pos (%.2f, %.2f, %.2f) curvature %.5f (r %.2f) heading %.2f pitch %.2f lane width %.2f",
+			printf("Road info at %.2f meter from Vehicle %d: pos (%.2f, %.2f, %.2f) curvature %.5f (r %.2f) heading %.2f pitch %.2f lane width %.2f\n",
 				look_ahead_distance, id, data.global_pos_x, data.global_pos_y, data.global_pos_z, data.curvature, 1.0 / data.curvature,  data.road_heading, data.road_pitch);
 #endif
 
@@ -186,7 +178,7 @@ int main(int argc, char *argv[])
 				// to demonstrate how camera can still move independently
 				// when running viewer in a separate thread
 				// Only Linux and Win supported (due to OSG and MacOS issue)
-				LOG("Taking a 4 sec nap - if running with threads (Win/Linux) you can move camera around meanwhile");
+				printf("Taking a 4 sec nap - if running with threads (Win/Linux) you can move camera around meanwhile\n");
 				SE_sleep(4000);
 			}
 			else

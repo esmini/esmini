@@ -497,6 +497,11 @@ Logger::~Logger()
 	callback_ = 0;
 }
 
+bool Logger::IsCallbackSet()
+{
+	return callback_ != 0; 
+}
+
 void Logger::Log(char const* file, char const* func, int line, char const* format, ...)
 {
 	static char complete_entry[2048];
@@ -544,8 +549,8 @@ void Logger::SetCallback(FuncPtr callback)
 
 Logger& Logger::Inst()
 {
-	static Logger instance;
-	return instance;
+	static Logger instance_;
+	return instance_;
 }
 
 /*
@@ -694,14 +699,7 @@ CSV_Logger& CSV_Logger::InstVehicleLog(std::string scenario_filename, int numveh
 
 SE_Thread::~SE_Thread()
 {
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
-
-#else
-	if (thread_.joinable())
-	{
-		thread_.join();
-	}
-#endif
+	Wait();
 }
 
 void SE_Thread::Start(void(*func_ptr)(void*), void *arg)
@@ -717,9 +715,12 @@ void SE_Thread::Start(void(*func_ptr)(void*), void *arg)
 void SE_Thread::Wait()
 {
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
-	WaitForSingleObject((HANDLE)thread_, 1000);  // Should never need to wait for more than 1 sec
+	WaitForSingleObject((HANDLE)thread_, 3000);  // Should never need to wait for more than 3 sec
 #else
-	thread_.join();
+	if (thread_.joinable())
+	{
+		thread_.join();
+	}
 #endif
 }
 

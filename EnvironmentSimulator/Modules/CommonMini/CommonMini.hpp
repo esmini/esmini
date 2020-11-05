@@ -246,6 +246,7 @@ public:
 	static Logger& Inst();
 	void Log(char const* func, char const* file, int line, char const* format, ...);
 	void SetCallback(FuncPtr callback);
+	bool IsCallbackSet();
 
 private:
 	bool use_logfile_;
