@@ -2,9 +2,9 @@
 The simplest preparation is to get the demo package from [the latest relase](https://github.com/esmini/esmini/releases/latest) and then head on to the steps below.
 
 But, of course, if you already have checked out the esmini project from GitHub and compiled it you're basically set. Just copy the runtime shared library to the Hello-World_coding_example folder. Exact filename depends on the platform as follows: 
-* Windows: ScenarioEngineDLL.dll
-* Linux: libScenarioEngineDLL.so
-* Windows: libScenarioEngineDLL.dylib
+* Windows: esminiLib.dll
+* Linux: libesminiLib.so
+* Mac: libesminiLib.dylib
 
 #### steps
 1. Navigate to the folder Hello-World_coding-example.
@@ -20,13 +20,13 @@ On Linux you might need to define LD_LIBRARY PATH first, like this: ```export LD
 
 If you have any IDE installed, e.g. Visual Studio (Win) or Xcode (Mac), cmake might have produced project files for it, e.g. "build/esmini-player.sln".
 
-> **Note:** On Windows there are two library files: ScenarioEngineDLL.lib and ScenarioEngineDLL.dll. The .lib file (basically only table of contents of the library) is used for compile time linking while the .dll (actual code) for runtime dynamic linking. On other platforms there is only one library file, .so (Shared Object) in Linux and .dylib (Dynamic Library) on Mac, which is used for both compile time and runtime linking.
+> **Note:** On Windows there are two library files: esminiLib.lib and esminiLib.dll. The .lib file (basically only table of contents of the library) is used for compile time linking while the .dll (actual code) for runtime dynamic linking. On other platforms there is only one library file, .so (Shared Object) in Linux and .dylib (Dynamic Library) on Mac, which is used for both compile time and runtime linking.
 
 Here follows a few code examples to try out, e.g. by modifying main.cpp:
 
 #### Hello world - load and play a scenario
 ```C++
-#include "scenarioenginedll.hpp"
+#include "esminiLib.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 ```
 #### Add optional argument to load any scenario
 ```C++
-#include "scenarioenginedll.hpp"
+#include "esminiLib.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 #### Fetch state of scenario objects
 ```C++
 #include "stdio.h"
-#include "scenarioenginedll.hpp"
+#include "esminiLib.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 ```
 #### External control of Ego
 ```C++
-#include "scenarioenginedll.hpp"
+#include "esminiLib.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
 #### Ideal sensors
 ```C++
 #include "stdio.h"
-#include "scenarioenginedll.hpp"
+#include "esminiLib.hpp"
 
 #define MAX_HITS 10
 
@@ -145,13 +145,13 @@ A Python wrapper for esmini can easily be created using "ctypes" (thanks David K
 ```Python
 import ctypes
 
-se = ctypes.CDLL("./ScenarioEngineDLL.dll")
+se = ctypes.CDLL("./esminiLib.dll")
 se.SE_Init(b"../resources/xosc/cut-in.xosc", 1, 1, 0, 0, 2)
  
 for i in range (500):
     se.SE_Step()
 ```
 **Note:** Library name varies with the platform:
-* Win: ScenarioEngineDLL.dll
-* Linux: libScenarioEngineDLL.so
-* Mac: libScenarioEngineDLL.dylib
+* Windows: esminiLib.dll
+* Linux: libesminiLib.so
+* Mac: libesminiLib.dylib
