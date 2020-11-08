@@ -5139,6 +5139,10 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 
 bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 {
+	if (track_id_ < 0)
+	{
+		return false;
+	}
 	bool ret_value = GetRoadById(track_id_)->GetZAndPitchByS(s_, &z_road_, &p_road_, &elevation_idx_);
 	ret_value &= GetRoadById(track_id_)->UpdateZAndRollBySAndT(s_, t_, &z_road_, &r_road_, &super_elevation_idx_);
 

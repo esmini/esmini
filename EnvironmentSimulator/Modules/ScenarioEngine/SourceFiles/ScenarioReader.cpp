@@ -1201,6 +1201,10 @@ OSCPrivateAction::DynamicsShape ParseDynamicsShape(std::string shape)
 	{
 		return OSCPrivateAction::DynamicsShape::STEP;
 	}
+	else if (shape == "cubic")
+	{
+		return OSCPrivateAction::DynamicsShape::CUBIC;
+	}
 	else
 	{
 		std::string msg = "Dynamics shape " + shape + " not supported yet";
@@ -1392,7 +1396,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							action_dist->dynamics_.max_deceleration_ = 10.0;
 						}
 
-						action_dist->dynamics_.max_speed_ = strtod(parameters.ReadAttribute(dynamics_node, "maxSpeed"));
+						if (!dynamics_node.attribute("maxSpeed"))
+						{
+							action_dist->dynamics_.max_speed_ = 250 / 3.6;  // Use default 250 kph if attribute is missing
+						}
+						else
+						{
+							action_dist->dynamics_.max_speed_ = strtod(parameters.ReadAttribute(dynamics_node, "maxSpeed"));
+						}
                         action_dist->dynamics_.none_ = false;
 					}
 					else
@@ -1507,6 +1518,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									action_lane->dynamics_.max_lateral_acc_ = SMALL_NUMBER;
 								}
 							}
+							else
+							{
+								action_lane->dynamics_.max_lateral_acc_ = 0.5;  // Just set some reasonable default value
+								LOG("Missing optional LaneOffsetAction maxLateralAcc attribute. Using default: %.2f", action_lane->dynamics_.max_lateral_acc_);
+							}
 
 							action_lane->dynamics_.transition_.shape_ = ParseDynamicsShape(parameters.ReadAttribute(laneOffsetChild, "dynamicsShape"));
 						}
@@ -1537,8 +1553,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					{
 						throw std::runtime_error("Missing LaneOffset Target");
 					}
-					// Approximate duration (not conforming to OSC 1.0), assume one lane of 5 meter
-					action_lane->dynamics_.duration_ = sqrt(5.0 / action_lane->dynamics_.max_lateral_acc_);
 					action = action_lane;
 				}
 				else

@@ -111,7 +111,7 @@
                         <PrivateAction>
                            <LateralAction>
                               <LaneOffsetAction>
-                                 <LaneOffsetActionDynamics dynamicsShape="sinusoidal" maxLateralAcc="0.5" />  
+                                 <LaneOffsetActionDynamics dynamicsShape="sinusoidal" maxLateralAcc="3.5" />  
                                  <LaneOffsetTarget>
                                     <AbsoluteTargetLaneOffset value="8"/>
                                  </LaneOffsetTarget>
@@ -136,7 +136,7 @@
                         <PrivateAction>
                            <LateralAction>
                               <LaneChangeAction>
-                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="3" dynamicsDimension="time"/>
+                                 <LaneChangeActionDynamics dynamicsShape="cubic" value="3" dynamicsDimension="time"/>
                                  <LaneChangeTarget>
                                     <AbsoluteTargetLane value="1"/>
                                  </LaneChangeTarget>

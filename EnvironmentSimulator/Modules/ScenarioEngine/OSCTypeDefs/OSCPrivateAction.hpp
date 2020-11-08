@@ -332,7 +332,6 @@ namespace scenarioengine
 		struct
 		{
 			double max_lateral_acc_;
-			double duration_;
 			TransitionDynamics transition_;
 		} dynamics_;
 
@@ -365,18 +364,18 @@ namespace scenarioengine
 			TargetRelative() : Target(Target::Type::RELATIVE) {}
 		};
 
-
 		Target *target_;
 		double elapsed_;
 		double start_lane_offset_;
+		double target_lane_offset_;
 
 		LatLaneOffsetAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET)
 		{
 			LOG("");
 			dynamics_.max_lateral_acc_ = 0;
-			dynamics_.duration_ = 0;
 			elapsed_ = 0;
 			target_ = 0;
+			target_lane_offset_ = 0;
 		}
 
 		LatLaneOffsetAction(const LatLaneOffsetAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET)
@@ -384,6 +383,7 @@ namespace scenarioengine
 			target_ = action.target_;
 			elapsed_ = action.elapsed_;
 			start_lane_offset_ = action.start_lane_offset_;
+			target_lane_offset_ = action.target_lane_offset_;
 			dynamics_ = action.dynamics_;
 		}
 

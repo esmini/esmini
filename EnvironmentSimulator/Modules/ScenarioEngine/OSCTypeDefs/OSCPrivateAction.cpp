@@ -43,8 +43,10 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 	}
 	else if (shape_ == DynamicsShape::CUBIC)
 	{
-		LOG("Dynamics Cubic not implemented");
-		return end_value;
+		// Equation: https://www.desmos.com/calculator/axwne0wvnh
+		// t(3(x/d)^2-2(x/d)^3)
+		double val = start_value + (end_value - start_value) * (3 * factor * factor - 2 * factor * factor * factor);
+		return val;
 	}
 	else
 	{
@@ -233,7 +235,7 @@ void LatLaneChangeAction::Start()
 	{
 		// Find out target lane relative referred vehicle
 		target_lane_id_ = ((TargetRelative*)target_)->object_->pos_.GetLaneId() + target_->value_;
-		
+
 		if (target_lane_id_ == 0 || SIGN(((TargetRelative*)target_)->object_->pos_.GetLaneId()) != SIGN(target_lane_id_))
 		{
 			// Skip reference lane (id == 0)
@@ -250,7 +252,7 @@ void LatLaneChangeAction::Start()
 	if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
 	{
 		double lat_distance = object_->pos_.GetT() - target_t_;
-		double rate = transition_dynamics_.target_value_;
+		double rate = fabs(transition_dynamics_.target_value_);
 
 		if (transition_dynamics_.shape_ == DynamicsShape::LINEAR)
 		{
@@ -267,9 +269,19 @@ void LatLaneChangeAction::Start()
 		}
 		else if (transition_dynamics_.shape_ == DynamicsShape::SINUSOIDAL)
 		{
-			// Calculate corresponding distance with a magic formula
-			transition_dynamics_.target_value_ = fabs(0.5 * lat_distance * M_PI *
-				sqrt(object_->speed_ * object_->speed_ - rate * rate) / rate);
+			// distance = longitudinal speed * duration
+			// duration based on equation: https://www.desmos.com/calculator/kuq26iz0aw
+			transition_dynamics_.target_value_ = object_->GetSpeed() * M_PI * fabs(lat_distance / (2 * rate));
+		}
+		else if (transition_dynamics_.shape_ == DynamicsShape::CUBIC)
+		{
+			// Equations: https://www.desmos.com/calculator/axwne0wvnh
+			// special case where duration is a function of lateral acceleration
+			// Calculate corresponding distance from duration, given speed:
+			// duration = 3 * lat_distance / (2 * rate) = distance / speed
+			// Finally, distance = longitudinal speed * duration
+			transition_dynamics_.target_value_ = object_->speed_ * 3 * fabs(lat_distance) / (2 * rate);
+			LOG("Cubic shape with rate translated into distance=%.2f m", transition_dynamics_.target_value_);
 		}
 	}
 
@@ -335,7 +347,7 @@ void LatLaneChangeAction::Step(double dt, double)
 	}
 	else
 	{
-		if (object_->speed_ > SMALL_NUMBER)
+		if (object_->speed_ * dt > SMALL_NUMBER)
 		{
 			angle = atan((t_ - t_old) / (object_->speed_ * dt));
 			object_->pos_.SetHeadingRelativeRoadDirection(angle);
@@ -373,6 +385,55 @@ void LatLaneOffsetAction::Start()
 	}
 
 	start_lane_offset_ = object_->pos_.GetOffset();
+
+	if (target_->type_ == Target::Type::ABSOLUTE)
+	{
+		target_lane_offset_ = target_->value_;
+	}
+	else if (target_->type_ == Target::Type::RELATIVE)
+	{
+		// Register what lane action object belongs to
+		int lane_id = object_->pos_.GetLaneId();
+
+		// Find out referred object track position
+		roadmanager::Position refpos = ((TargetRelative*)target_)->object_->pos_;
+		refpos.SetTrackPos(refpos.GetTrackId(), refpos.GetS(), refpos.GetT() + target_->value_);
+		refpos.ForceLaneId(lane_id);
+
+		target_lane_offset_ = refpos.GetT() + target_->value_;
+	}
+
+	double duration = 0;
+	// Convert max lateral acceleration to distance for given shape
+	if (dynamics_.transition_.shape_ == DynamicsShape::STEP)
+	{
+		dynamics_.transition_.target_value_ = 0.0;
+	}
+	else if (dynamics_.transition_.shape_ == DynamicsShape::LINEAR ||
+		dynamics_.transition_.shape_ == DynamicsShape::SINUSOIDAL)
+	{
+		if (dynamics_.transition_.shape_ == DynamicsShape::LINEAR)
+		{
+			// linear transition means infinite acc at t=0. Instead, use acceleration profile from sinusoidal
+			LOG("Use sinusoidal shape for calculating linear laneOffset action duration based on max lateral acceleration");
+		}
+		// Equation for duration: https://www.desmos.com/calculator/peck6bzibp
+		duration = sqrt(M_PI * M_PI * (fabs(target_lane_offset_ - object_->pos_.GetOffset())) / (dynamics_.max_lateral_acc_ * 2));
+		dynamics_.transition_.target_value_ = object_->GetSpeed() * duration;
+	}
+	else if (dynamics_.transition_.shape_ == DynamicsShape::CUBIC)
+	{
+		// based on equation: https://www.desmos.com/calculator/axwne0wvnh
+		// max acceleration at endpoints, e.g t=0 
+		duration = sqrt(6 * fabs(target_lane_offset_ - object_->pos_.GetOffset()) / dynamics_.max_lateral_acc_);
+		dynamics_.transition_.target_value_ = object_->GetSpeed() * duration;;
+	}
+	else
+	{
+		throw std::runtime_error("Unexpected shape type: " + dynamics_.transition_.shape_);
+	}
+	LOG("Started LaneOffset with max lateral acc: %.2f -> duration: %.2f <=> distance: %.2f",
+		dynamics_.max_lateral_acc_, duration, dynamics_.transition_.target_value_);
 }
 
 void LatLaneOffsetAction::Step(double dt, double)
@@ -388,8 +449,9 @@ void LatLaneOffsetAction::Step(double dt, double)
 		return;
 	}
 
-	elapsed_ += dt;
-	factor = elapsed_ / dynamics_.duration_;
+	elapsed_ += object_->speed_ * dt;
+
+	factor = elapsed_ / dynamics_.transition_.target_value_;
 
 	lane_offset = dynamics_.transition_.Evaluate(factor, start_lane_offset_, target_->value_);
 
@@ -480,18 +542,6 @@ void LongSpeedAction::Start()
 	else
 	{
 		start_speed_ = object_->speed_;
-
-		// Convert distance to time
-		if (transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
-		{
-			if (transition_dynamics_.shape_ == DynamicsShape::LINEAR ||
-				transition_dynamics_.shape_ == DynamicsShape::SINUSOIDAL)  // Approximate sine with linear acceleration
-			{
-				double distance = transition_dynamics_.target_value_;
-				transition_dynamics_.target_value_ = 2 * distance / (start_speed_ + target_->GetValue());
-			}
-		}
-
 	}
  }
 
@@ -526,10 +576,13 @@ void LongSpeedAction::Step(double dt, double)
 	}
 	else 
 	{
-		if (transition_dynamics_.dimension_ == DynamicsDimension::TIME ||
-			transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
+		if (transition_dynamics_.dimension_ == DynamicsDimension::TIME)
 		{
 			elapsed_ += dt;
+		}
+		else if (transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
+		{
+			elapsed_ += object_->GetSpeed() + dt;
 		}
 		else
 		{
@@ -550,12 +603,12 @@ void LongSpeedAction::Step(double dt, double)
 		}
 	}
 
+	object_->SetSpeed(new_speed);
+
 	if (target_speed_reached && !(target_->type_ == Target::TargetType::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
 	{
 		OSCAction::End();
 	}
-
-	object_->SetSpeed(new_speed);
 }
 
 void LongSpeedAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
