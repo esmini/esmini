@@ -26,6 +26,7 @@ namespace scenarioengine
 {
 
 	#define DISTANCE_TOLERANCE (0.5)  // meter
+	#define SYNCH_DISTANCE_TOLERANCE (1.0)  // meter
 	#define IS_ZERO(x) (x < SMALL_NUMBER && x > -SMALL_NUMBER)
 
 	class OSCPrivateAction : public OSCAction
@@ -413,6 +414,8 @@ namespace scenarioengine
 			target_position_ = 0;
 			mode_ = SynchMode::MODE_NONE;
 			submode_ = SynchSubmode::SUBMODE_NONE;
+			lastDist_ = LARGE_NUMBER;
+			lastMasterDist_ = LARGE_NUMBER;
 		}
 
 		SynchronizeAction(const SynchronizeAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE)
@@ -423,6 +426,8 @@ namespace scenarioengine
 			target_position_ = action.target_position_;
 			mode_ = action.mode_;
 			submode_ = action.submode_;
+			lastDist_ = LARGE_NUMBER;
+			lastMasterDist_ = LARGE_NUMBER;
 		}
 
 		OSCPrivateAction* Copy()
@@ -452,6 +457,10 @@ namespace scenarioengine
 
 		SynchMode mode_;
 		SynchSubmode submode_;
+
+		// Store calculated distances to use for comparison
+		double lastDist_;  
+		double lastMasterDist_;
 
 		double CalcSpeedForLinearProfile(double v_final, double time, double dist);
 		void PrintStatus(const char* custom_msg);

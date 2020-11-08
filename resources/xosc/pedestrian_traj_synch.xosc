@@ -16,14 +16,14 @@
       <ParameterDeclaration name="EY0" parameterType="double" value="-70"/>            
       <ParameterDeclaration name="EXEnd" parameterType="double" value="20"/>
       <ParameterDeclaration name="EYEnd" parameterType="double" value="39"/>         
-      <ParameterDeclaration name="ESyncX" parameterType="double" value="28.5"/>
-      <ParameterDeclaration name="ESyncY" parameterType="double" value="-7.5"/>            
+      <ParameterDeclaration name="ESyncX" parameterType="double" value="29.0"/>
+      <ParameterDeclaration name="ESyncY" parameterType="double" value="-10.5"/>            
       <ParameterDeclaration name="PX0" parameterType="double" value="40"/>
       <ParameterDeclaration name="PY0" parameterType="double" value="-5"/>            
       <ParameterDeclaration name="PXEnd" parameterType="double" value="10"/>
       <ParameterDeclaration name="PYEnd" parameterType="double" value="-10"/>            
       <ParameterDeclaration name="PSyncX" parameterType="double" value="28.5"/>
-      <ParameterDeclaration name="PSyncY" parameterType="double" value="-7.5"/>            
+      <ParameterDeclaration name="PSyncY" parameterType="double" value="-8.0"/>            
    </ParameterDeclarations>
    <CatalogLocations>
       <RouteCatalog>
@@ -108,7 +108,7 @@
                     <EntityRef entityRef="pedestrian_adult"/>
                 </Actors>
                 <Maneuver name="ped_maneuver">
-                    <Event maximumExecutionCount="1" name="ped_event" priority="overwrite">
+                    <Event maximumExecutionCount="1" name="ped_synch_event" priority="parallel">
                          <Action name="SyncAction">
                             <PrivateAction>
                                 <SynchronizeAction masterEntityRef="Ego" >
@@ -124,6 +124,22 @@
                                 </SynchronizeAction>
                              </PrivateAction>
                          </Action>                        
+                         <StartTrigger>
+                            <ConditionGroup>
+                                <Condition conditionEdge="rising" delay="0" name="ped_synch_condition">
+                                    <ByEntityCondition>
+                                        <TriggeringEntities triggeringEntitiesRule="any">
+                                            <EntityRef entityRef="Ego"/>
+                                        </TriggeringEntities>
+                                        <EntityCondition>
+                                            <TraveledDistanceCondition value="1"/>
+                                        </EntityCondition>
+                                    </ByEntityCondition>
+                                </Condition>
+                            </ConditionGroup>
+                        </StartTrigger>
+                    </Event>
+                    <Event maximumExecutionCount="1" name="ped_follow_trajectory" priority="overwrite">
                          <Action name="walk_route">
                             <PrivateAction>
                                 <RoutingAction>
@@ -156,21 +172,16 @@
                                     </FollowTrajectoryAction>
                                 </RoutingAction>
                             </PrivateAction>
-                         </Action>
+                         </Action>           
                          <StartTrigger>
                             <ConditionGroup>
-                                <Condition conditionEdge="rising" delay="0" name="ped_walk_event">
-                                    <ByEntityCondition>
-                                        <TriggeringEntities triggeringEntitiesRule="any">
-                                            <EntityRef entityRef="Ego"/>
-                                        </TriggeringEntities>
-                                        <EntityCondition>
-                                            <TraveledDistanceCondition value="1"/>
-                                        </EntityCondition>
-                                    </ByEntityCondition>
-                                </Condition>
+                               <Condition name="ped_follow_trajectory_condition" delay="0" conditionEdge="none">
+                                  <ByValueCondition>
+                                     <SimulationTimeCondition value="0" rule="greaterThan"/>
+                                  </ByValueCondition>
+                               </Condition>
                             </ConditionGroup>
-                        </StartTrigger>
+                        </StartTrigger>                         
                     </Event>
                 </Maneuver>
             </ManeuverGroup>

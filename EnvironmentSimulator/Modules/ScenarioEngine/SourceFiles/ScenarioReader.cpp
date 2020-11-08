@@ -1143,10 +1143,9 @@ OSCPrivateAction::DynamicsDimension ParseDynamicsDimension(std::string dimension
 	}
 	else
 	{
-		LOG("Dynamics dimension %s not supported", dimension.c_str());
+		LOG("Dynamics dimension %s not supported - fall back to TIME", dimension.c_str());
+		return OSCPrivateAction::DynamicsDimension::TIME;
 	}
-
-	return OSCPrivateAction::DynamicsDimension::DIMENSION_UNDEFINED;
 }
 
 int ScenarioReader::ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td)

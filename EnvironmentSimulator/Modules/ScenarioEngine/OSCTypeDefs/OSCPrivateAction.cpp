@@ -508,9 +508,7 @@ void LongSpeedAction::Step(double dt, double simTime)
 	{
 		LOG("Timing type %d not supported yet", transition_dynamics_.dimension_);
 		new_speed = target_->GetValue();
-		OSCAction::Stop();
-
-		return;
+		target_speed_reached = true;
 	}
 
 	if (target_speed_reached && !(target_->type_ == Target::TargetType::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
@@ -717,15 +715,15 @@ const char* SynchronizeAction::Mode2Str(SynchMode mode)
 	}
 	else if (mode == SynchMode::MODE_STOP_IMMEDIATELY)
 	{
-		return "MODE_STOP_IMMEDIATELY";
+	return "MODE_STOP_IMMEDIATELY";
 	}
 	else if (mode == SynchMode::MODE_WAITING)
 	{
-		return "MODE_WAITING";
+	return "MODE_WAITING";
 	}
 	else
 	{
-		return "Unknown mode";
+	return "Unknown mode";
 	}
 }
 
@@ -770,6 +768,7 @@ void SynchronizeAction::Start()
 void SynchronizeAction::Step(double dt, double simTime)
 {
 	(void)dt;
+	bool done = false;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
@@ -788,7 +787,7 @@ void SynchronizeAction::Step(double dt, double simTime)
 		diff.ds = GetLengthOfLine2D(master_object_->pos_.GetX(), master_object_->pos_.GetY(),
 			target_position_master_->GetX(), target_position_master_->GetY());
 	}
-	masterDist = diff.ds;
+	masterDist = fabs(diff.ds);
 
 	if (object_->pos_.GetTrajectory() || !object_->pos_.Delta(*target_position_, diff))
 	{
@@ -796,22 +795,57 @@ void SynchronizeAction::Step(double dt, double simTime)
 		diff.ds = GetLengthOfLine2D(object_->pos_.GetX(), object_->pos_.GetY(),
 			target_position_->GetX(), target_position_->GetY());
 	}
-	dist = diff.ds;
+	dist = fabs(diff.ds);
 
-	double masterTimeToDest = LARGE_NUMBER;
-
-	if (master_object_->speed_ > SMALL_NUMBER)
+	// Done when 1. either of the vehicles reaches the destination, within tolerance
+	// or 2. distance increases, indicating missed destination out of tolerance distance
+	if (dist < SYNCH_DISTANCE_TOLERANCE + SMALL_NUMBER)
 	{
-		masterTimeToDest = masterDist / master_object_->speed_;
+		LOG("Synchronize dist (%.2f) < tolerance (%.2f)", dist, SYNCH_DISTANCE_TOLERANCE);
+		if (final_speed_)
+		{
+			object_->SetSpeed(final_speed_->GetValue());
+		}
+		done = true;
+	}
+	else if (masterDist < SYNCH_DISTANCE_TOLERANCE + SMALL_NUMBER)
+	{
+		LOG("Synchronize masterDist (%.2f) < tolerance (%.2f)", masterDist, SYNCH_DISTANCE_TOLERANCE);
+		if (final_speed_)
+		{
+			object_->SetSpeed(final_speed_->GetValue());
+		}
+		done = true;
+	}
+	else if (dist > lastDist_)
+	{
+		LOG("Synchronize dist increasing (%.2f > %.2f) - missed destination", dist, lastDist_);
+		done = true;
+	}
+	else if (masterDist > lastMasterDist_)
+	{
+		LOG("Synchronize masterDist increasing (%.2f > %.2f) - missed destination", masterDist, lastMasterDist_);
+		done = true;
 	}
 
-	// Done when either of the vehicles reaches the destination
-	if (dist < DISTANCE_TOLERANCE || (masterTimeToDest) < SMALL_NUMBER)
+	lastDist_ = dist;
+	lastMasterDist_ = masterDist;
+
+	// for calculations, measure distance to toleration area/radius
+	dist = MAX(dist - SYNCH_DISTANCE_TOLERANCE, SMALL_NUMBER);
+	masterDist = MAX(masterDist - SYNCH_DISTANCE_TOLERANCE, SMALL_NUMBER);
+
+	if (done)
 	{
 		OSCAction::End();
 	}
 	else
 	{
+		double masterTimeToDest = LARGE_NUMBER;
+		if (master_object_->speed_ > SMALL_NUMBER)
+		{
+			masterTimeToDest = masterDist / master_object_->speed_;
+		}
 		double average_speed = dist / masterTimeToDest;
 		double acc = 0;
 
