@@ -28,9 +28,13 @@
 
 using namespace scenarioengine;
 
+#define TIME_SCALE_FACTOR 1.1
+
 static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.001;
+static bool pause = false;  // continuous play
+static double time_scale = 1.0;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
@@ -70,12 +74,42 @@ ScenarioEntity *getScenarioEntityById(int id)
 	return 0;
 }
 
+void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
+{
+	Replay* player = (Replay*)data;
+
+	if (keyEvent->down_)
+	{
+		if (keyEvent->key_ == KeyType::KEY_Right)
+		{
+			player->GoToNextFrame();
+			pause = true;  // step by step
+		}
+		else if (keyEvent->key_ == KeyType::KEY_Left)
+		{
+			player->GoToPreviousFrame();
+			pause = true;  // step by step
+		}
+		else if (keyEvent->key_ == KeyType::KEY_Space)
+		{
+			pause = !pause;
+		}
+		else if (keyEvent->key_ == KeyType::KEY_Up)
+		{
+			time_scale = MIN(100, time_scale * TIME_SCALE_FACTOR);
+		}
+		else if (keyEvent->key_ == KeyType::KEY_Down)
+		{
+			time_scale = MAX(0.01, time_scale / TIME_SCALE_FACTOR);
+		}
+	}
+}
+
 int main(int argc, char** argv)
 {
 	roadmanager::OpenDrive *odrManager;
 	Replay *player;
 	double simTime = 0;
-	double time_scale = 1.0;
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
 	bool no_ghost = false;
 	static char info_str_buf[128];
@@ -85,6 +119,9 @@ int main(int argc, char** argv)
 	opt.AddOption("file", "Simulation recording data file", "filename");
 	opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
 	opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
+	opt.AddOption("start_time", "Start playing at timestamp", "ms");
+	opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
+	opt.AddOption("repeat", "loop scenario");
 	opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
 	opt.AddOption("no_ghost", "Remove ghost entities");
 
@@ -96,11 +133,17 @@ int main(int argc, char** argv)
 
 	opt.ParseArgs(&argc, argv);
 
+	if (opt.GetOptionArg("file").empty())
+	{
+		printf("Missing file argument\n");
+		opt.PrintUsage();
+		return -1;
+	}
+
 	// Create player
 	try
 	{
 		player = new Replay(opt.GetOptionArg("file"));
-		simTime = player->time_;
 	}
 	catch (const std::exception& e)
 	{
@@ -125,6 +168,8 @@ int main(int argc, char** argv)
 			argv[0],
 			arguments, &opt);
 
+		viewer->RegisterKeyEventCallback(ReportKeyEvent, player);
+
 		if (argc > 1)
 		{
 			opt.PrintArgs(argc, argv, "Unrecognized arguments:");
@@ -138,6 +183,15 @@ int main(int argc, char** argv)
 		if (opt.GetOptionSet("time_scale"))
 		{
 			time_scale = atof(opt.GetOptionArg("time_scale").c_str());
+			if (time_scale < SMALL_NUMBER)
+			{
+				time_scale = SMALL_NUMBER;
+			}
+		}
+
+		if (opt.GetOptionSet("repeat"))
+		{
+			player->SetRepeat(true);
 		}
 
 		// Set visual representation of entities
@@ -160,6 +214,42 @@ int main(int argc, char** argv)
 			no_ghost = true;
 		}
 
+		std::string start_time_str = opt.GetOptionArg("start_time");
+		if (!start_time_str.empty())
+		{
+			double startTime = 1E-3 * strtod(start_time_str);
+			if (startTime < player->data_[0].timeStamp)
+			{
+				printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n", startTime, player->data_[0].timeStamp);
+				startTime = player->data_[0].timeStamp;
+			}
+			else if (startTime > player->data_[player->data_.size() - 1].timeStamp)
+			{
+				printf("Specified start time (%.2f) > first timestamp (%.2f), adapting.\n", startTime, player->data_[0].timeStamp);
+				startTime = player->data_[player->data_.size() - 1].timeStamp;
+			}
+			player->SetStartTime(startTime);
+		}
+
+		std::string stop_time_str = opt.GetOptionArg("stop_time");
+		if (!stop_time_str.empty())
+		{
+			double stopTime = 1E-3 * strtod(stop_time_str);
+			if (stopTime > player->data_[player->data_.size()-1].timeStamp)
+			{
+				printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->data_[0].timeStamp);
+				stopTime = player->data_[player->data_.size() - 1].timeStamp;
+			}
+			else if (stopTime < player->data_[0].timeStamp)
+			{
+				printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n", simTime, player->data_[0].timeStamp);
+				stopTime = player->data_[0].timeStamp;
+			}
+			player->SetStopTime(stopTime);
+		}
+
+		simTime = player->GetStartTime();
+
 		while (!viewer->osgViewer_->done())
 		{
 			// Get milliseconds since Jan 1 1970
@@ -177,10 +267,11 @@ int main(int argc, char** argv)
 			}
 			deltaSimTime *= time_scale;
 
-			// Time operations
-			simTime = simTime + deltaSimTime;
-
-			player->Step(deltaSimTime);
+			if (!pause)
+			{
+				player->GoToTime(simTime + deltaSimTime);
+			}
+			simTime = player->GetTime();  // potentially wrapped for repeat
 
 			// Fetch states of scenario objects
 			ObjectStateStruct* state;
@@ -219,8 +310,8 @@ int main(int argc, char** argv)
 				if (index == viewer->currentCarInFocus_)
 				{
 					// Update overlay info text
-					snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s %.2fkm/h", 
-						simTime, state->id, state->name, 3.6 * state->speed);
+					snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s %.2fkm/h timeScale: %.2f", 
+						simTime, state->id, state->name, 3.6 * state->speed, time_scale);
 					viewer->SetInfoText(info_str_buf);
 				}
 			}

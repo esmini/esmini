@@ -5,7 +5,13 @@ build*/*
 *~
 *.pdb
 *.osi
+*.osih
 *.dat
+*.zip
+*.bak
+*.csv
+*.exe
+*.dll
 buildnr.cpp
 version.cpp
 version.txt
@@ -15,5 +21,6 @@ externals/OSI
 externals/SUMO
 externals/googletest
 resources/models
+Hello-World_coding-example/build
 .pyenv
 .vscode

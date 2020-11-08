@@ -28,21 +28,45 @@ namespace scenarioengine
 		char model_filename[REPLAY_FILENAME_SIZE];
 	} ReplayHeader;
 
-
+	typedef enum  // copy key enums from OSG GUIEventAdapter
+	{
+		KEY_Left = 0xFF51,        /* Left arrow */
+		KEY_Up = 0xFF52,          /* Up arrow */
+		KEY_Right = 0xFF53,       /* Right arrow */
+		KEY_Down = 0xFF54,        /* Down arrow */
+		KEY_Space = 0x20,         /* Space */
+	} KeyType;
 
 	class Replay
 	{
 	public:
-		Replay(std::string filename);
-		~Replay();
-		void Step(double dt);
-		ObjectStateStruct * GetState(int id);
-
 		ReplayHeader header_;
 		std::vector<ObjectStateStruct> data_;
+
+		Replay(std::string filename);
+		~Replay();
+		void GoToTime(double dt);
+		void GoToNextFrame();
+		void GoToPreviousFrame();
+		ObjectStateStruct * GetState(int id);
+		void SetStartTime(double time);
+		void SetStopTime(double time);
+		double GetStartTime() { return startTime_; }
+		double GetTime() { return time_; }
+		int GetIndex() { return index_; }
+		void SetRepeat(bool repeat) { repeat_ = repeat; }
+
+private:
 		std::ifstream file_;
 		double time_;
+		double startTime_;
+		double stopTime_;
+		unsigned int startIndex_;
+		unsigned int stopIndex_;
 		unsigned int index_;
+		bool repeat_;
+
+		int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
 	};
 
 }
