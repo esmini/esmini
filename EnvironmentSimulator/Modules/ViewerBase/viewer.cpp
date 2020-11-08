@@ -721,7 +721,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	clear_color = (arguments.find("--clear-color") != -1);
 
 	// Store arguments in case we need to create a second viewer if the first fails
-	int argc = arguments.argc();
+	int argc = arguments.argc() + 2;  // make room for screen argument
 	char **argv = (char**)malloc(argc * sizeof(char*));
 	for (int i = 0; i < argc; i++)
 	{
@@ -738,16 +738,24 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	{
 		// Viewer failed to create window. Probably Anti Aliasing is not supported on executing platform.
 		// Make another attempt without AA
-		LOG("Viewer failure. Probably requested level of Anti Aliasing (%d multisamples) is not supported - try a lower number. Making another attempt without Anti-Alias.", aa_mode);
+		LOG("Viewer failure. Probably requested level of Anti Aliasing (%d multisamples) is not supported - try a lower number. Making another attempt without Anti-Alias and single screen.", aa_mode);
 		osg::DisplaySettings::instance()->setNumMultiSamples(0);
 		delete osgViewer_;
 		osg::ArgumentParser args2(&argc, argv);
+		// force single screen
+		strncpy(argv[argc - 2], "--screen", strlen("--screen") + 1);
+		strncpy(argv[argc - 1], "0", strlen("0") + 1);
+
 		osgViewer_ = new osgViewer::Viewer(args2);
 		osgViewer_->getWindows(wins);
 		if (wins.size() == 0)
 		{
 			LOG("Failed second attempt opening a viewer window. Give up.");
 			delete osgViewer_;
+			for (int i = 0; i < argc; i++)
+			{
+				free(argv[i]);
+			}
 			return;
 		}
 	}
