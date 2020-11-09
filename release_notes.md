@@ -1,6 +1,14 @@
 ## esmini release notes
 The purpose of this document is to highlight relevant changes introducing new features or breaking backward compatibility, i.e. requiring updates to scenarios and start scripts.
 
+#### 2020-11-09 Version 2.0.2
+- Added pause and step features to replayer
+- Solved issue with ghost vehicles in replayer
+- Improved end criterias for SynchronizeAction end, detecting when destination gas been passed (increasing dsistance)
+- SynchronizeAction: Added tolerances to target positions. Can be set with attribute. Default 1m.
+- Corrected some paths in HelloWorld code example
+- Some additional minor fixes
+
 #### 2020-11-02 Version 2.0.1
 - Fixed issue with syncronizeAction and trajectory following entities
 - Added correctly dimensioned (according to OSC entity def) bounding box. Toggle show on key ',' (comma)
