@@ -111,11 +111,11 @@
                     <Event maximumExecutionCount="1" name="ped_synch_event" priority="parallel">
                          <Action name="SyncAction">
                             <PrivateAction>
-                                <SynchronizeAction masterEntityRef="Ego" >
-                                    <TargetPositionMaster tolerance="1.0" >
+                                <SynchronizeAction masterEntityRef="Ego" targetToleranceMaster="1.0" targetTolerance="1.0" >
+                                    <TargetPositionMaster>
                                         <WorldPosition x="$ESyncX" y="$ESyncY" h="3.3" />
                                     </TargetPositionMaster>    
-                                    <TargetPosition tolerance="1.0" >
+                                    <TargetPosition>
                                         <WorldPosition x="$PSyncX" y="$PSyncY" h="3.3" />
                                     </TargetPosition>    
                                     <FinalSpeed>
