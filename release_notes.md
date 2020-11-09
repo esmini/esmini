@@ -4,7 +4,6 @@ The purpose of this document is to highlight relevant changes introducing new fe
 #### 2020-11-09 Version 2.0.3
 - Fix model ID issue in replayer (caused crash when scenario involves pedestrians)
 - Adjusted syntax (XSD) for optional SynchronizeAction tolerances (OpenSCENARIO extension)
-- Some additional minor fixes
 
 #### 2020-11-09 Version 2.0.2
 - Added pause and step features to replayer
