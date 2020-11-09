@@ -567,6 +567,7 @@ namespace roadmanager
 
 		// Others
 		bool IsType(Lane::LaneType type);
+		bool IsCenter();
 		bool IsDriving();
 		void Print();
 		OSIPoints osi_points_;
@@ -580,7 +581,7 @@ namespace roadmanager
 		std::vector<LaneLink*> link_;
 		std::vector<LaneWidth*> lane_width_;
 		std::vector<LaneRoadMark*> lane_roadMark_;
-		LaneBoundaryOSI* lane_boundary_; 
+		LaneBoundaryOSI* lane_boundary_;
 	};
 
 	class LaneSection
@@ -593,7 +594,9 @@ namespace roadmanager
 		Lane* GetLaneById(int id);
 		int GetLaneIdByIdx(int idx);
 		int GetLaneIdxById(int id);
+		bool IsOSILaneById(int id);
 		int GetLaneGlobalIdByIdx(int idx);
+		int GetLaneGlobalIdById(int id);
 		double GetOuterOffset(double s, int lane_id);
 		double GetWidth(double s, int lane_id);
 		int GetClosestLaneIdx(double s, double t, double &offset, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);

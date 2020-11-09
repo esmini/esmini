@@ -608,6 +608,17 @@ void Lane::Print()
 	}
 }
 
+bool Lane::IsCenter()
+{
+	if (GetId() == 0)
+	{
+		return true;  // Ref lane no width -> no driving
+	}
+	else
+	{
+		return false;
+	}
+}
 bool Lane::IsType(Lane::LaneType type)
 {
 	if (GetId() == 0)
@@ -797,6 +808,21 @@ Lane* LaneSection::GetLaneByIdx(int idx)
 	return 0;
 }
 
+bool LaneSection::IsOSILaneById(int id)
+{
+	Lane* lane = GetLaneById(id);
+	if (lane == 0)
+	{
+		return false;
+	}
+	else
+	{
+		return !lane->IsCenter();
+	}
+		
+	
+}
+
 Lane* LaneSection::GetLaneById(int id)
 {
 	for (size_t i=0; i<lane_.size(); i++)
@@ -845,6 +871,17 @@ int LaneSection::GetLaneGlobalIdByIdx(int idx)
 	{
 		return (lane_[idx]->GetGlobalId());
 	}
+}
+int LaneSection::GetLaneGlobalIdById(int id)
+{
+	for (size_t i=0; i<(int)lane_.size(); i++)
+	{
+		if (lane_[i]->GetId() == id)
+		{
+			return lane_[i]->GetGlobalId();
+		}
+	}
+	return -1;
 }
 
 int LaneSection::GetNumberOfDrivingLanes()
