@@ -58,6 +58,8 @@ static const char* entityModelsFiles_[] =
 	"truck_yellow.osgb",
 	"van_red.osgb",
 	"bus_blue.osgb",
+	"walkman.osgb",
+	"moose_cc0.osgb"
 };
 
 
@@ -122,6 +124,7 @@ int main(int argc, char** argv)
 	opt.AddOption("start_time", "Start playing at timestamp", "ms");
 	opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
 	opt.AddOption("repeat", "loop scenario");
+	opt.AddOption("road_features", "Show OpenDRIVE road features");
 	opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
 	opt.AddOption("no_ghost", "Remove ghost entities");
 
@@ -153,8 +156,31 @@ int main(int argc, char** argv)
 
 	try
 	{
-		std::string odr_path = opt.GetOptionArg("res_path");
-		roadmanager::Position::LoadOpenDrive(odr_path.append("/xodr/").append(player->header_.odr_filename).c_str());
+
+		std::vector<std::string> file_name_candidates;
+		std::string odr_path = opt.GetOptionArg("res_path").append("/xodr/").append(player->header_.odr_filename).c_str();
+
+		file_name_candidates.push_back(odr_path.c_str());
+		file_name_candidates.push_back(player->header_.odr_filename);
+		size_t i;
+		for (i = 0; i < file_name_candidates.size(); i++)
+		{
+			printf("Trying to open %s\n", file_name_candidates[i].c_str());
+			if (FileExists(file_name_candidates[i].c_str()))
+			{
+				if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()))
+				{
+					break;
+				}
+			}
+		}
+
+		if (i == file_name_candidates.size())
+		{
+			printf("Failed to load OpenDRIVE file %s\n", player->header_.odr_filename);
+			return -1;
+		}
+
 		odrManager = roadmanager::Position::GetOpenDrive();
 
 		std::string model_path = opt.GetOptionArg("res_path");
@@ -192,6 +218,15 @@ int main(int argc, char** argv)
 		if (opt.GetOptionSet("repeat"))
 		{
 			player->SetRepeat(true);
+		}
+
+		if (opt.GetOptionSet("road_features"))
+		{
+			viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+		}
+		else
+		{
+			viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES, 0x0);
 		}
 
 		// Set visual representation of entities
@@ -293,6 +328,10 @@ int main(int argc, char** argv)
 					LOG("Creating car %d - got state from gateway", state->id);
 
 					new_sc.id = state->id;
+					if (state->model_id >= sizeof(entityModelsFiles_) / sizeof(char*))
+					{
+						state->model_id = 0;
+					}
 					if ((new_sc.entityModel = viewer->AddEntityModel(entityModelsFiles_[state->model_id], osg::Vec3(0.5, 0.5, 0.5),
 						viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER, false, state->name, &state->boundingbox)) == 0)
 					{

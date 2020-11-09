@@ -13,6 +13,7 @@
          </BoundingBox>
          <Properties>
             <File filepath="../models/walkman.osgb"/>
+            <Property name="model_id" value="7"/>       
          </Properties>
       </Pedestrian>
       <Pedestrian mass="70" model="EPTa" name="pedestrian_adult2" pedestrianCategory="PedestrianCategory.pedestrian">
@@ -23,6 +24,7 @@
          </BoundingBox>
          <Properties>
             <File filepath="../models/walkman.osgb"/>
+            <Property name="model_id" value="7"/>                    
          </Properties>
       </Pedestrian>
       <Pedestrian mass="80" model="moose-standard-model" name="moose" pedestrianCategory="PedestrianCategory.animal">
@@ -33,6 +35,7 @@
          </BoundingBox>
          <Properties>
             <File filepath="../models/moose_cc0.osgb"/>
+            <Property name="model_id" value="8"/>            
          </Properties>
       </Pedestrian>
    </Catalog>
