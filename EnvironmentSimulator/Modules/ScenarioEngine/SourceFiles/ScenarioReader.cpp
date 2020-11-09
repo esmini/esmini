@@ -1438,7 +1438,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				return 0;
 			}
 			action_synch->target_position_master_ = parseOSCPosition(target_position_master_node)->GetRMPos();
-			action_synch->tolerance_master_ = strtod(parameters.ReadAttribute(target_position_master_node, "tolerance"));
+			if (parameters.ReadAttribute(target_position_master_node, "tolerance") != "")
+			{
+				action_synch->tolerance_master_ = strtod(parameters.ReadAttribute(target_position_master_node, "tolerance"));
+			}
 
 			pugi::xml_node target_position_node = actionChild.child("TargetPosition");
 			if (!target_position_node)
@@ -1447,7 +1450,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				return 0;
 			}
 			action_synch->target_position_ = parseOSCPosition(target_position_node)->GetRMPos();
-			action_synch->tolerance_ = strtod(parameters.ReadAttribute(target_position_node, "tolerance"));
+			if (parameters.ReadAttribute(target_position_node, "tolerance") != "")
+			{
+				action_synch->tolerance_ = strtod(parameters.ReadAttribute(target_position_node, "tolerance"));
+			}
 
 			pugi::xml_node target_speed_node = actionChild.child("FinalSpeed");
 			if (target_speed_node)
