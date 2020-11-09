@@ -797,20 +797,19 @@ void SynchronizeAction::Step(double dt, double simTime)
 	}
 	dist = fabs(diff.ds);
 
-	// Done when 1. either of the vehicles reaches the destination, within tolerance
-	// or 2. distance increases, indicating missed destination out of tolerance distance
-	if (dist < SYNCH_DISTANCE_TOLERANCE + SMALL_NUMBER)
+	// Done when distance increases, indicating that destination just has been reached or passed
+	if (dist < tolerance_ + SMALL_NUMBER)
 	{
-		LOG("Synchronize dist (%.2f) < tolerance (%.2f)", dist, SYNCH_DISTANCE_TOLERANCE);
+		LOG("Synchronize dist (%.2f) < tolerance (%.2f)", dist, tolerance_);
 		if (final_speed_)
 		{
 			object_->SetSpeed(final_speed_->GetValue());
 		}
 		done = true;
 	}
-	else if (masterDist < SYNCH_DISTANCE_TOLERANCE + SMALL_NUMBER)
+	else if (masterDist < tolerance_master_ + SMALL_NUMBER)
 	{
-		LOG("Synchronize masterDist (%.2f) < tolerance (%.2f)", masterDist, SYNCH_DISTANCE_TOLERANCE);
+		LOG("Synchronize masterDist (%.2f) < tolerance (%.2f)", masterDist, tolerance_master_);
 		if (final_speed_)
 		{
 			object_->SetSpeed(final_speed_->GetValue());
@@ -832,8 +831,8 @@ void SynchronizeAction::Step(double dt, double simTime)
 	lastMasterDist_ = masterDist;
 
 	// for calculations, measure distance to toleration area/radius
-	dist = MAX(dist - SYNCH_DISTANCE_TOLERANCE, SMALL_NUMBER);
-	masterDist = MAX(masterDist - SYNCH_DISTANCE_TOLERANCE, SMALL_NUMBER);
+	dist = MAX(dist - tolerance_, SMALL_NUMBER);
+	masterDist = MAX(masterDist - tolerance_master_, SMALL_NUMBER);
 
 	if (done)
 	{

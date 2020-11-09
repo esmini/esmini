@@ -405,6 +405,8 @@ namespace scenarioengine
 		roadmanager::Position *target_position_;
 		Object *master_object_;
 		LongSpeedAction::Target *final_speed_;
+		double tolerance_;
+		double tolerance_master_;
 
 		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE) 
 		{
@@ -416,6 +418,8 @@ namespace scenarioengine
 			submode_ = SynchSubmode::SUBMODE_NONE;
 			lastDist_ = LARGE_NUMBER;
 			lastMasterDist_ = LARGE_NUMBER;
+			tolerance_ = SYNCH_DISTANCE_TOLERANCE;
+			tolerance_master_ = SYNCH_DISTANCE_TOLERANCE;
 		}
 
 		SynchronizeAction(const SynchronizeAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE)
@@ -428,6 +432,8 @@ namespace scenarioengine
 			submode_ = action.submode_;
 			lastDist_ = LARGE_NUMBER;
 			lastMasterDist_ = LARGE_NUMBER;
+			tolerance_ = SYNCH_DISTANCE_TOLERANCE;
+			tolerance_master_ = SYNCH_DISTANCE_TOLERANCE;
 		}
 
 		OSCPrivateAction* Copy()

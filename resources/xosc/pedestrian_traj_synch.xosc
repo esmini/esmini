@@ -112,10 +112,10 @@
                          <Action name="SyncAction">
                             <PrivateAction>
                                 <SynchronizeAction masterEntityRef="Ego" >
-                                    <TargetPositionMaster>
+                                    <TargetPositionMaster tolerance="1.0" >
                                         <WorldPosition x="$ESyncX" y="$ESyncY" h="3.3" />
                                     </TargetPositionMaster>    
-                                    <TargetPosition>
+                                    <TargetPosition tolerance="1.0" >
                                         <WorldPosition x="$PSyncX" y="$PSyncY" h="3.3" />
                                     </TargetPosition>    
                                     <FinalSpeed>
