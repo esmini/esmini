@@ -14,6 +14,7 @@
 #include "esminiLib.hpp"
 #include "IdealSensor.hpp"
 #include "osi_sensordata.pb.h"
+#include "vehicle.hpp"
 
 #include <string>
 
@@ -154,6 +155,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 		return -1;
 	}
 
+	
 	roadmanager::Position *pos = &player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
 
 	if (pos->GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
@@ -176,6 +178,20 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 		r_data->road_roll = (float)s_data.road_lane_info.roll;
 		r_data->trail_heading = r_data->road_heading;
 		r_data->speed_limit = (float)s_data.road_lane_info.speed_limit;
+
+
+		// Add visualization of forward looking road sensor probe
+		if (player->viewer_->entities_[object_id]->GetType() == viewer::EntityModel::ENTITY_TYPE_VEHICLE)
+		{
+			viewer::CarModel* model = (viewer::CarModel*)player->viewer_->entities_[object_id];
+			model->steering_sensor_->Show();
+			player->viewer_->SensorSetPivotPos(model->steering_sensor_, pos->GetX(), pos->GetY(), pos->GetZ());
+			player->viewer_->SensorSetTargetPos(model->steering_sensor_, 
+				s_data.road_lane_info.pos[0], 
+				s_data.road_lane_info.pos[1],
+				s_data.road_lane_info.pos[2]);
+			player->viewer_->UpdateSensor(model->steering_sensor_);
+		}
 
 		return 0;
 	}
@@ -251,20 +267,51 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	return 0;
 }
 
+static int InitScenario()
+{
+	Logger::Inst().SetCallback(log_callback);
+
+	ConvertArguments();
+
+	// Create scenario engine
+	try
+	{
+		// Initialize the scenario engine and viewer
+		player = new ScenarioPlayer(argc, argv);
+	}
+	catch (const std::exception& e)
+	{
+		LOG(e.what());
+		resetScenario();
+		return -1;
+	}
+
+	return 0;
+}
+
 extern "C"
 {
-	SE_DLL_API int SE_Init(const char *oscFilename, int disable_ctrls, int use_viewer, int threads, int record)
+	SE_DLL_API int SE_InitWithArgs(int argc, char* argv[])
 	{
 		resetScenario();
 
-		Logger::Inst().SetCallback(log_callback);
+		for (int i = 0; i < argc; i++)
+		{
+			AddArgument(argv[i]);
+		}
 
+		return InitScenario();
+	}
+
+	SE_DLL_API int SE_Init(const char *oscFilename, int disable_ctrls, int use_viewer, int threads, int record)
+	{
 #ifndef _SCENARIO_VIEWER
 		if (use_viewer)
 		{
 			LOG("use_viewer flag set, but no viewer available (compiled without -D _SCENARIO_VIEWER");
 		}
 #endif
+		resetScenario();
 
 		AddArgument("viewer");  // name of application
 		AddArgument("--osc");
@@ -295,22 +342,7 @@ extern "C"
 			AddArgument("--disable_controllers");
 		}
 
-		ConvertArguments();
-
-		// Create scenario engine
-		try
-		{
-			// Initialize the scenario engine and viewer
-			player = new ScenarioPlayer(argc, argv);
-		}
-		catch (const std::exception& e)
-		{
-			LOG(e.what());
-			resetScenario();
-			return -1;
-		}
-
-		return 0;
+		return InitScenario();
 	}
 
 	SE_DLL_API int SE_GetQuitFlag()
@@ -790,5 +822,56 @@ extern "C"
 		cb.func = fnPtr;
 		objCallback.push_back(cb);
 		player->RegisterObjCallback(object_id, callback, user_data);
+	}
+
+
+	// Simple vehicle 
+	SE_DLL_API void* SE_SimpleVehicleCreate(float x, float y, float h, float length)
+	{
+		vehicle::Vehicle* v = new vehicle::Vehicle(x, y, h, length);
+		return (void*)v;
+	}
+
+	SE_DLL_API void SE_SimpleVehicleDelete(void* handleSimpleVehicle)
+	{
+		if (handleSimpleVehicle)
+		{
+			free((vehicle::Vehicle*)handleSimpleVehicle);
+			handleSimpleVehicle = 0;
+		}
+	}
+
+	SE_DLL_API void SE_SimpleVehicleControl(void* handleSimpleVehicle, double dt, int throttle, int steering)
+	{
+		if (handleSimpleVehicle == 0)
+		{
+			return;
+		}
+
+		((vehicle::Vehicle*)handleSimpleVehicle)->DrivingControlBinary(dt,
+			(vehicle::THROTTLE)throttle, (vehicle::STEERING)steering);
+	}
+
+	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void* handleSimpleVehicle, float speed)
+	{
+		if (handleSimpleVehicle == 0)
+		{
+			return;
+		}
+		((vehicle::Vehicle*)handleSimpleVehicle)->SetMaxSpeed(speed);
+	}
+
+	SE_DLL_API void SE_SimpleVehicleGetState(void* handleSimpleVehicle, SE_SimpleVehicleState* state)
+	{
+		if (handleSimpleVehicle == 0)
+		{
+			return;
+		}
+		state->x = ((vehicle::Vehicle*)handleSimpleVehicle)->posX_;
+		state->y = ((vehicle::Vehicle*)handleSimpleVehicle)->posY_;
+		state->z = ((vehicle::Vehicle*)handleSimpleVehicle)->posZ_;
+		state->h = ((vehicle::Vehicle*)handleSimpleVehicle)->heading_;
+		state->p = ((vehicle::Vehicle*)handleSimpleVehicle)->pitch_;
+		state->speed = ((vehicle::Vehicle*)handleSimpleVehicle)->speed_;
 	}
 }

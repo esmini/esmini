@@ -26,7 +26,7 @@
             <ParameterDeclarations>
                 <ParameterDeclaration name="UseGhost" parameterType="bool" value="false" /> 
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" /> 
-                <ParameterDeclaration name="Mode" parameterType="string" value="additive" /> 
+                <ParameterDeclaration name="Mode" parameterType="string" value="override" /> 
             </ParameterDeclarations>
 			<Properties>
 				<Property name="esminiController" value="ExternalController" />

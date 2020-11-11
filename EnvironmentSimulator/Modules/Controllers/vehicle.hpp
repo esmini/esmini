@@ -14,21 +14,21 @@
 
 namespace vehicle
 { 
-	enum THROTTLE
+	typedef enum 
 	{
 		THROTTLE_BRAKE = -1,
 		THROTTLE_NONE = 0,
 		THROTTLE_ACCELERATE = 1,
 		THROTTLE_DISABLE = 2
-	};
+	} THROTTLE;
 
-	enum STEERING
+	typedef enum 
 	{
 		STEERING_RIGHT = -1,
 		STEERING_NONE = 0,
 		STEERING_LEFT = 1,
 		STEERING_DISABLE = 2
-	};
+	} STEERING;
 
 	class Vehicle
 	{
@@ -36,7 +36,7 @@ namespace vehicle
 		Vehicle() { Reset(); }
 		Vehicle(double x, double y, double h, double length);
 		void Update(double dt);
-		void DrivingControlTarget(double dt, double heading_to_target, double headway_time_to_target);
+		void DrivingControlTarget(double dt, double heading_to_target, double target_speed);
 		void DrivingControlBinary(double dt, THROTTLE throttle, STEERING steering);
 		void SetWheelAngle(double angle);
 		void SetWheelRotation(double rotation);

@@ -72,6 +72,16 @@ typedef struct
 	int far_right_lb_id;
 } SE_LaneBoundaryId;
 
+typedef struct
+{
+	float x;
+	float y;
+	float z;
+	float h;
+	float p;
+	float speed;
+} SE_SimpleVehicleState;
+
 
 #ifdef __cplusplus
 extern "C"
@@ -91,6 +101,15 @@ extern "C"
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_Init(const char *oscFilename, int disable_ctrls, int use_viewer, int threads, int record);
+
+	/**
+	Initialize the scenario engine
+	@param oscFilename Path to the OpenSCEANRIO file
+	@param argc Number of arguments
+	@param argv Arguments
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_InitWithArgs(int argc, char* argv[]);
 
 	/**
 	Step the simulation forward with specified timestep
@@ -325,6 +344,13 @@ extern "C"
 
 	SE_DLL_API void SE_LogMessage(char* message);
 
+	// Simple vehicle 
+	SE_DLL_API void* SE_SimpleVehicleCreate(float x, float y, float h, float length);
+	SE_DLL_API void SE_SimpleVehicleDelete(void* handleSimpleVehicle);
+	SE_DLL_API void SE_SimpleVehicleControl(void* handleSimpleVehicle, double dt, int throttle, int steering);  // throttle and steering [-1, 0 or 1]
+	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void* handleSimpleVehicle, float speed);
+	SE_DLL_API void SE_SimpleVehicleGetState(void* handleSimpleVehicle, SE_SimpleVehicleState* state);
+	
 #ifdef __cplusplus
 }
 #endif

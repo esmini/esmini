@@ -25,7 +25,8 @@
 #include "esminiLib.hpp"
 #include "CommonMini.hpp"
 
-#define DEMONSTRATE_SENSORS 1
+#define DEMONSTRATE_SENSORS 0
+#define DEMONSTRATE_DRIVER_MODEL 1
 #define DEMONSTRATE_OSI 0
 #define DEMONSTRATE_ROADINFO 0
 #define DEMONSTRATE_THREAD 0
@@ -42,6 +43,12 @@ typedef struct
 {
 	int counter;
 } Stuff;
+
+typedef struct
+{
+	void* handle;
+	SE_SimpleVehicleState state;
+} SimpleVehicle;
 
 void objectCallback(SE_ScenarioObjectState* state, void *my_data)
 {
@@ -73,22 +80,45 @@ void objectCallback(SE_ScenarioObjectState* state, void *my_data)
 int main(int argc, char *argv[])
 {
 	Stuff stuff;
-	
+	SimpleVehicle vehicle = { 0, {0, 0, 0, 0, 0, 0} };
+	char* filename = 0;
+
 	if (argc < 2)
 	{
-		printf("Usage: %s <osc filename>\n", argv[0]);
-		return -1;
+		printf("Usage variant 1: %s <osc filename>\n", argv[0]);
+		printf("Usage variant 2: %s --osc <filename> [additional arguments - see esmini documentation]\n", argv[0]);
 	}
+	else if (argc == 2)
+	{
+		// Single argument assumed to be osc filename
+		filename = argv[1];
+	}
+
 
 	for (int a = 0; a < 1; a++)
 	{
 		stuff.counter = 0;
 
-		if (SE_Init(argv[1], 0, 1, 1, 0) != 0)
+		if (filename)
 		{
-			printf("Failed to load %s", argv[1]);
-			continue;
+			if (SE_Init(filename, 0, 1, 1, 0) != 0)
+			{
+				printf("Failed to load %s", filename);
+				break;
+			}
 		}
+		else
+		{
+			if (SE_InitWithArgs(argc, argv) != 0)
+			{
+				printf("Failed to initialize the scenario with given arguments\n");
+				break;
+			}
+		}
+
+#if DEMONSTRATE_DRIVER_MODEL
+		vehicle.handle = SE_SimpleVehicleCreate(0, -2.5, 0.0, 4);
+#endif
 
 #if DEMONSTRATE_CALLBACK
 		SE_RegisterObjectCallback(0, objectCallback, (void*)&stuff);
@@ -108,7 +138,7 @@ int main(int argc, char *argv[])
 		SE_OSIFileOpen();
 #endif
 
-		for (int i = 0; i*TIME_STEP < DURATION; i++)
+		for (int i = 0; i*TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
 		{
 			if (SE_StepDT(TIME_STEP) != 0)
 			{
@@ -172,6 +202,24 @@ int main(int argc, char *argv[])
 			printf("\n");
 #endif
 
+#if DEMONSTRATE_DRIVER_MODEL
+			SE_RoadInfo roadInfo;
+			SE_GetRoadInfoAtDistance(0, 5 + 0.5f*vehicle.state.speed, &roadInfo, 0);
+
+			int steering = 0;
+			if (fabs(roadInfo.angle) > 0.01)
+			{ 
+				// Steer towards target point -1 or 1
+				steering = SIGN(roadInfo.angle);
+			}
+			
+			SE_SimpleVehicleControl(vehicle.handle, TIME_STEP, vehicle.state.speed < 25, steering);
+			SE_SimpleVehicleGetState(vehicle.handle, &vehicle.state);
+			
+			SE_ReportObjectPos(0, i * TIME_STEP, vehicle.state.x, vehicle.state.y, vehicle.state.z, 
+				vehicle.state.h, vehicle.state.p, 0, vehicle.state.speed);
+#endif
+
 			if (DEMONSTRATE_THREAD && i == (int)(0.5 * DURATION / TIME_STEP))
 			{
 				// Halfway through, pause the simulation for a few seconds
@@ -189,6 +237,7 @@ int main(int argc, char *argv[])
 		}
 
 		SE_Close();
+		SE_SimpleVehicleDelete(vehicle.handle);
 	}
 
 	return 0;

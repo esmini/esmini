@@ -483,22 +483,29 @@ int ScenarioPlayer::InitViewer()
 		viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(viewer_->entities_.back()->txNode_, obj, viewer_->entities_.back());
 		viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
 
-		// If following a ghost vehicle, add visual representation of speed and steering sensors
-		if (scenarioEngine->entities.object_[i]->GetGhost())
+		if (viewer_->entities_.back()->GetType() == viewer::EntityModel::ENTITY_TYPE_VEHICLE)
 		{
-			viewer::CarModel* vh = (viewer::CarModel*)viewer_->entities_.back();
-			vh->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
-			if (odr_manager->GetNumOfRoads() > 0)
-			{
-				vh->trail_sensor_ = viewer_->CreateSensor(color_red, true, false, 0.4, 3);
-			}
+			viewer::CarModel* model = (viewer::CarModel*)viewer_->entities_.back();
 
-			viewer_->SensorSetPivotPos(vh->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-			viewer_->SensorSetTargetPos(vh->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-		}
-		else if (scenarioEngine->entities.object_[i]->IsGhost())
-		{
-			scenarioEngine->entities.object_[i]->SetVisibilityMask(scenarioEngine->entities.object_[i]->visibilityMask_ &= ~(Object::Visibility::SENSORS));
+			// Add a sensor to show when query road info ahead
+			model->steering_sensor_ = viewer_->CreateSensor(color_white, true, true, 0.4, 3);
+			viewer_->SensorSetPivotPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+			viewer_->SensorSetTargetPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+			model->steering_sensor_->Hide();
+
+			// If following a ghost vehicle, add visual representation of speed and steering sensors
+			if (scenarioEngine->entities.object_[i]->GetGhost())
+			{
+				if (odr_manager->GetNumOfRoads() > 0)
+				{
+					model->trail_sensor_ = viewer_->CreateSensor(color_red, true, false, 0.4, 3);
+				}
+
+			}
+			else if (scenarioEngine->entities.object_[i]->IsGhost())
+			{
+				scenarioEngine->entities.object_[i]->SetVisibilityMask(scenarioEngine->entities.object_[i]->visibilityMask_ &= ~(Object::Visibility::SENSORS));
+			}
 		}
 	}
 

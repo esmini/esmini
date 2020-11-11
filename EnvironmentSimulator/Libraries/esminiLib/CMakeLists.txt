@@ -12,8 +12,8 @@ include_directories (
 
 set(TARGET esminiLib)
 
-set ( SOURCES esminiLib.cpp )
-set ( INCLUDES esminiLib.hpp )
+set ( SOURCES esminiLib.cpp ../../Modules/Controllers/vehicle.cpp )
+set ( INCLUDES esminiLib.hpp ../../Modules/Controllers/vehicle.hpp )
 
 
 add_library ( ${TARGET} SHARED ${SOURCES} ${INCLUDES} )

@@ -571,7 +571,6 @@ CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, os
 	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name):
 	EntityModel(viewer, group, parent, trail_parent, dot_node, trail_color, name)
 {
-	speed_sensor_ = 0;
 	steering_sensor_ = 0;
 	road_sensor_ = 0;
 	lane_sensor_ = 0;
@@ -1154,9 +1153,19 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec3 trail_c
 		nodeTrackerManipulator_->setTrackNode(entities_.back()->txNode_);
 	}
 
-	if (type == EntityModel::EntityType::ENTITY_TYPE_VEHICLE && road_sensor)
+	if (type == EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
 	{
-		CreateRoadSensors((CarModel*)entities_.back());
+		CarModel* vehicle = (CarModel*)entities_.back();
+		CreateRoadSensors(vehicle);
+		
+		if (road_sensor)
+		{
+			vehicle->road_sensor_->Show();
+		}
+		else
+		{
+			vehicle->road_sensor_->Hide();
+		}
 	}
 
 	return entities_.back();
@@ -1490,6 +1499,7 @@ bool Viewer::CreateRoadSensors(CarModel *vehicle_model)
 PointSensor* Viewer::CreateSensor(double color[], bool create_ball, bool create_line, double ball_radius, double line_width)
 {
 	PointSensor *sensor = new PointSensor();
+	sensor->group_ = new osg::Group();
 
 	// Point
 	if (create_ball)
@@ -1499,13 +1509,13 @@ PointSensor* Viewer::CreateSensor(double color[], bool create_ball, bool create_
 		sensor->ball_ = new osg::PositionAttitudeTransform;
 		sensor->ball_->setScale(osg::Vec3(ball_radius, ball_radius, ball_radius));
 		sensor->ball_->addChild(geode);
-		roadSensors_->addChild(sensor->ball_);
-
+		
 		osg::ref_ptr<osg::Material> material = new osg::Material();
 		material->setDiffuse(osg::Material::FRONT, osg::Vec4(color[0], color[1], color[2], 1.0));
 		material->setAmbient(osg::Material::FRONT, osg::Vec4(color[0], color[1], color[2], 1.0));
 		sensor->ball_->getOrCreateStateSet()->setAttribute(material);
 		sensor->ball_radius_ = ball_radius;
+		sensor->group_->addChild(sensor->ball_);
 	}
 
 	// line
@@ -1532,8 +1542,12 @@ PointSensor* Viewer::CreateSensor(double color[], bool create_ball, bool create_
 		sensor->line_->setColorArray(color_.get());
 		sensor->line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
 		//sensor->line_->setDataVariance(osg::Object::DYNAMIC);
-		roadSensors_->addChild(group);
+		sensor->group_->addChild(group);
 	}
+
+	// Make sensor visible as default
+	roadSensors_->addChild(sensor->group_);
+	sensor->Show();
 
 	return sensor;
 }

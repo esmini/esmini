@@ -57,6 +57,7 @@ namespace viewer
 		NODE_MASK_ENTITY_MODEL =   (1 << 6),
 		NODE_MASK_ENTITY_BB =      (1 << 7),
 		NODE_MASK_INFO =           (1 << 8),
+		NODE_MASK_ROAD_SENSORS =   (1 << 9),
 	} NodeMask;
 
 	class Line
@@ -155,6 +156,7 @@ namespace viewer
 	class PointSensor
 	{
 	public:
+		osg::ref_ptr<osg::Group> group_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> ball_;
 		double ball_radius_;
 		osg::ref_ptr<osg::Geometry> line_;
@@ -163,7 +165,9 @@ namespace viewer
 		osg::Vec3 pivot_pos;
 		osg::Vec3 target_pos;
 
-		PointSensor(): line_(0), line_vertex_data_(0), ball_(0) {}
+		PointSensor() : line_(0), line_vertex_data_(0), ball_(0) {};
+		void Show() { group_->setNodeMask(NODE_MASK_ROAD_SENSORS); }
+		void Hide() { group_->setNodeMask(0x0); };
 	};
 
 	class EntityModel
@@ -210,7 +214,6 @@ namespace viewer
 		std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> wheel_;
 		double wheel_angle_;
 		double wheel_rot_;
-		PointSensor* speed_sensor_;
 		PointSensor* road_sensor_;
 		PointSensor* lane_sensor_;
 		PointSensor* trail_sensor_;
