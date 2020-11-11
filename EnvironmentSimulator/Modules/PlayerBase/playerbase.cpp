@@ -322,9 +322,18 @@ void ScenarioPlayer::ViewerFrame()
 
 	// Update info text
 	static char str_buf[128];
-	snprintf(str_buf, sizeof(str_buf), "%.2fs entity[%d]: %s %.2fkm/h", scenarioEngine->getSimulationTime(),
-		viewer_->currentCarInFocus_, scenarioEngine->entities.object_[viewer_->currentCarInFocus_]->name_.c_str(),
-		3.6 * scenarioEngine->entities.object_[viewer_->currentCarInFocus_]->speed_);
+	if (viewer_->currentCarInFocus_ >= 0 && viewer_->currentCarInFocus_ < viewer_->entities_.size())
+	{
+		Object* obj = scenarioEngine->entities.object_[viewer_->currentCarInFocus_];
+		snprintf(str_buf, sizeof(str_buf), "%.2fs entity[%d]: %s %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", scenarioEngine->getSimulationTime(),
+			viewer_->currentCarInFocus_, obj->name_.c_str(), 3.6 * obj->speed_, 
+			obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), obj->pos_.GetOffset(), obj->pos_.GetS(), 
+			obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH());
+	}
+	else
+	{
+		snprintf(str_buf, sizeof(str_buf), "No object in focus...");
+	}
 	viewer_->SetInfoText(str_buf);
 
 	mutex.Unlock();
