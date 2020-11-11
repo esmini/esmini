@@ -210,15 +210,22 @@ int main(int argc, char** argv)
 	opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
 	opt.AddOption("help", "Show this help message");
 
-	opt.ParseArgs(&argc, argv);
-
 	if (argc < 2 || opt.GetOptionSet("help"))
 	{
 		opt.PrintUsage();
 		return -1;
 	}
-	
+
+	opt.ParseArgs(&argc, argv);
+
 	std::string odrFilename = opt.GetOptionArg("odr");
+	if (odrFilename.empty())
+	{
+		printf("Missing required argument --odr\n");
+		opt.PrintUsage();
+		return -1;
+	}
+
 	std::string modelFilename = opt.GetOptionArg("model");
 	
 	if (opt.GetOptionArg("density") != "")
