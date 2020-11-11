@@ -590,8 +590,10 @@ void LongDistanceAction::Step(double dt, double simTime)
 	else
 	{
 		// Apply damped spring model with critical/optimal damping factor		
-		dc = 2 * sqrt(spring_constant);
-		acc = distance_diff * spring_constant - speed_diff * dc;
+		// Adjust tension in spring in proportion to max acceleration. Experimental, may be removed.
+		double spring_constant_adjusted = 0.1 * dynamics_.max_acceleration_ * spring_constant;
+		dc = 2 * sqrt(spring_constant_adjusted);
+		acc = distance_diff * spring_constant_adjusted - speed_diff * dc;
 		if (acc > dynamics_.max_acceleration_)
 		{
 			acc = dynamics_.max_acceleration_;
