@@ -4312,6 +4312,7 @@ int Position::GotoClosestDrivingLaneAtCurrentPosition()
 	}
 
 	lane_id_ = lane_section->GetLaneIdByIdx(lane_idx);
+
 	offset_ = offset;
 
 	return 0;
@@ -6150,6 +6151,19 @@ int Position::GetLaneGlobalId()
 	{
 		LOG("Failed to find a valid drivable lane");
 		return -1;
+	}
+
+	// Check if it is not a center lane
+	int lane_id = lane_section->GetLaneIdByIdx(lane_idx);
+	if(!lane_section->IsOSILaneById(lane_id))
+	{
+		if(offset>=0)
+		{
+			lane_id = 1;
+		} else {
+			lane_id = -1;
+		}
+		lane_idx = lane_section->GetLaneIdxById(lane_id);
 	}
 
 	return lane_section->GetLaneGlobalIdByIdx(lane_idx);
