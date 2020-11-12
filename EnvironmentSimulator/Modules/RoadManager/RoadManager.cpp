@@ -384,11 +384,13 @@ void Poly3::EvaluateDS(double ds, double *x, double *y, double *h)
 
 	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
 	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());
-	*h = GetHdg() + poly3_.EvaluatePrim(p);
+	*h = GetHdg() + atan(poly3_.EvaluatePrim(p));
 }
 
 double Poly3::EvaluateCurvatureDS(double ds)
 {
+	double p = (ds / GetLength()) * GetUMax();
+
 	return poly3_.EvaluatePrimPrim(ds);
 }
 
@@ -1338,7 +1340,7 @@ void Road::AddPoly3(Poly3 *poly3)
 	while(s < p3->GetLength() - 0.5*step_len)
 	{
 		x1 = x0 + step_len;
-		y1 = p3->poly3_.Evaluate(s);
+		y1 = p3->poly3_.Evaluate(x1);
 		s += sqrt((x1 - x0)*(x1 - x0) + (y1 - y0)*(y1 - y0));
 		x0 = x1;
 		y0 = y1;
