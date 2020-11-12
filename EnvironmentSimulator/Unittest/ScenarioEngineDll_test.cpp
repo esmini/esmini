@@ -138,7 +138,7 @@ TEST(GetOSIRoadLaneTest, lane_id) {
 
 	for (int i=0; i<lanes.size(); i++)
 	{		
-		int lane_id = lanes[14-i]; 
+		int lane_id = lanes[lanes.size() - 1 - i];
 		if (lane_id == 7) // no vehicle in central lane
 		{
 			continue;
@@ -170,14 +170,14 @@ TEST(GetOSIRoadLaneTest, left_lane_id) {
 	osi3::Lane osi_lane;
 
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future 
-	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};  
+	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};  
  
 	int obj_id = 0; 
 
 	for (int i=0; i<lanes.size(); i++)
 	{
 		 
-		int lane_id = lanes[14-i]; 
+		int lane_id = lanes[lanes.size() - 1 - i];
 		if (lane_id == 7) // no vehicle in central lane
 		{
 			continue;
@@ -219,13 +219,13 @@ TEST(GetOSIRoadLaneTest, right_lane_id) {
 	osi3::Lane osi_lane;
  
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future 
-	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};  
+	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};  
 
 	int obj_id = 0; 
 
 	for (int i=0; i<lanes.size(); i++)
 	{
-		int lane_id = lanes[14-i]; 
+		int lane_id = lanes[lanes.size() - 1 - i];
 		if (lane_id == 7) // no vehicle in central lane
 		{
 			continue;
@@ -643,9 +643,9 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth) {
 }
 
 INSTANTIATE_TEST_CASE_P(EsminiAPITests,GetGroundTruthTests,::testing::Values(
-    std::make_tuple("../../../resources/xosc/cut-in.xosc", 15, 2, bounding_box{5.0f,2.0f,1.8f,1.4f,0.0f,0.9f} ),
-    std::make_tuple("../../../resources/xosc/straight_500m.xosc", 7, 2, bounding_box{5.0f,2.0f,1.8f,1.4f,0.0f,0.9f} ),
-    std::make_tuple("../../../resources/xosc/highway_merge.xosc", 40, 6, bounding_box{5.0f,2.0f,1.8f,1.4f,0.0f,0.9f} )));
+    std::make_tuple("../../../resources/xosc/cut-in.xosc", 14, 2, bounding_box{5.0f,2.0f,1.8f,1.4f,0.0f,0.9f} ),
+    std::make_tuple("../../../resources/xosc/straight_500m.xosc", 6, 2, bounding_box{5.0f,2.0f,1.8f,1.4f,0.0f,0.9f} ),
+    std::make_tuple("../../../resources/xosc/highway_merge.xosc", 33, 6, bounding_box{5.0f,2.0f,1.8f,1.4f,0.0f,0.9f} )));
 // scenario_file_name, number_of_lanes, number_of_objects, ego_bounding_box
 
 
