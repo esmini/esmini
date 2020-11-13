@@ -6,7 +6,8 @@ But, of course, if you already have checked out the esmini project from GitHub a
 * Linux: libesminiLib.so
 * Mac: libesminiLib.dylib
 
-#### steps
+#### steps to build the "Hello World" esmini-player application
+1. Make sure you have built esminiLib (you should have library files in the esmini/bin folder).
 1. Navigate to the folder Hello-World_coding-example.
 1. From a command prompt run the following commands to create build scripts and build the provided code example:
 	```
@@ -30,7 +31,7 @@ Here follows a few code examples to try out, e.g. by modifying main.cpp:
 
 int main(int argc, char* argv[])
 {
-	SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0, 0.0f);
+	SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
 
 	for (int i = 0; i < 500; i++)
 	{
@@ -46,9 +47,14 @@ int main(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-	const char* filename = argc > 1 ? argv[1] : "../resources/xosc/cut-in.xosc";
-
-	SE_Init(filename, 0, 1, 0, 0, 0.0f);
+	if (argc > 1)
+	{
+		SE_InitWithArgs(argc, argv);
+	}
+	else
+	{
+		SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
+	}
 
 	for (int i = 0; i < 500; i++)
 	{
@@ -58,6 +64,12 @@ int main(int argc, char* argv[])
 	return 0;
 }
 ```
+You can now specify esmini arguments according to [esmini launch commands](https://github.com/esmini/esmini/blob/master/docs/commands.txt).
+
+Example:
+```
+\esmini-player.exe --window 50 50 1000 500 --osc ..\resources\xosc\pedestrian.xosc
+```
 #### Fetch state of scenario objects
 ```C++
 #include "stdio.h"
@@ -65,7 +77,7 @@ int main(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-	SE_Init("../resources/xosc/cut-in.xosc", 1, 1, 0, 0, 0.0f);
+	SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
 
 	for (int i = 0; i < 500; i++)
 	{
@@ -76,25 +88,28 @@ int main(int argc, char* argv[])
 			SE_ScenarioObjectState state;
 
 			SE_GetObjectState(j, &state);
-			printf("frame[%d] object[%d] pos[%.2f, %.2f] \n", i, j, state.x, state.y);
+			printf("time [%.2f] object[%d] pos[%.2f, %.2f] \n", state.timestamp, j, state.x, state.y);
 		}
 	}
 
 	return 0;
 }
-
 ```
+
 #### External control of Ego
+A silly example showing how you can just take control over vehicle state via the API. The Ego car will move one meter along the Y-axis for each frame...
+
+Now we will also introduce the quit_flag, which lets you quit by pressing 'Esc' key.
 ```C++
 #include "esminiLib.hpp"
 
 int main(int argc, char* argv[])
 {
-	const char* filename = argc > 1 ? argv[1] : "../resources/xosc/cut-in.xosc";
+	const char* filename = argc > 1 ? argv[1] : "../resources/xosc/cut-in_external.xosc";
 
-	SE_Init(filename, 2, 1, 0, 0, 0);
+	SE_Init(filename, 0, 1, 0, 0);
 
-	for (int i = 0; i < 500; i++)
+	for (int i = 0; i < 500 && !(SE_GetQuitFlag() == 1); i++)
 	{
 		SE_Step();
 		SE_ReportObjectPos(0, 0.0f, 8.0f, (float)i, 0.0f, 1.57f, 0.0f, 0.0f, 15.0f);
@@ -102,7 +117,45 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
+
 ```
+
+#### Control controllers
+Try to run cut-in_interactive.xosc, as below.
+```C++
+#include "esminiLib.hpp"
+
+int main(int argc, char* argv[])
+{
+	SE_Init("../resources/xosc/cut-in_interactive.xosc", 0, 1, 0, 0);
+
+	for (int i = 0; i < 2000 && !(SE_GetQuitFlag() == 1); i++)
+	{
+		SE_Step();
+	}
+
+	return 0;
+}
+```
+Control the Ego vehicle with arrow keys. 
+
+To disable controllers and hand over to default scenario behavior set first argument flag:
+```C++
+#include "esminiLib.hpp"
+
+int main(int argc, char* argv[])
+{
+	SE_Init("../resources/xosc/cut-in_interactive.xosc", 1, 1, 0, 0);
+
+	for (int i = 0; i < 2000 && !(SE_GetQuitFlag() == 1); i++)
+	{
+		SE_Step();
+	}
+
+	return 0;
+}
+```
+
 #### Ideal sensors
 ```C++
 #include "stdio.h"
@@ -112,14 +165,12 @@ int main(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-	const char* filename = argc > 1 ? argv[1] : "../resources/xosc/cut-in.xosc";
-
-	SE_Init(filename, 0, 1, 0, 0, 0.0f);
+	SE_Init("../resources/xosc/cut-in.xosc", 1, 1, 0, 0);
 
 	SE_AddObjectSensor(0, 2.0, 1.0, 0.5, 1.57, 1.0, 50.0, 1.57, MAX_HITS);
 	SE_AddObjectSensor(0, -1.0, 0.0, 0.5, 3.14, 0.5, 20.0, 1.57, MAX_HITS);
 
-	for (int i = 0; i < 500; i++)
+	for (int i = 0; i < 2000 && !(SE_GetQuitFlag() == 1); i++)
 	{
 		SE_Step();
 

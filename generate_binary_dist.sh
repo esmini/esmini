@@ -28,6 +28,7 @@ resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
 resources/xosc/Catalogs/Controllers/*.* \
+resources/xosc/Catalogs/Pedestrians/*.* \
 resources/xodr/soderleden.xodr \
 resources/xodr/e6mini.xodr \
 resources/xodr/fabriksgatan.xodr \

@@ -2,9 +2,7 @@
 
 ## Build configurations
 [CMake](https://cmake.org/) tool is used to create standard make configurations. A few example "create..." batch scripts are supplied as examples how to generate desired build setup.
-- VisualStudio 2017 / win64 / Windows SDK v10 / Release and Debug (default/preferred)
-- VisualStudio 2017 / win32 / Windows SDK v10 / Release and Debug
-- VisualStudio 2017 / win64 / Windows SDK v7.1 / Release and Debug
+- VisualStudio / win64 / Windows SDK v10 / Release and Debug
 - Ubuntu and Kubuntu (tested on 18.04) / gcc / Release
 - macOS (Catalina) / Xcode / Release
 
@@ -70,6 +68,13 @@ Windows and Mac: Install the [cmake](https://cmake.org/) application
 
 ## Build project
 First generate build configuration (see above)
+
+Then it should work on all platform to build using cmake as follows:
+```
+cmake --build . --config Release --target install
+```
+
+Or you can go with platform specific ways of building:
 
 Windows/Visual Studio
 1. Open generated solution, build*/EnvironmentSimulator.sln
