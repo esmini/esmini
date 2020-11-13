@@ -2212,6 +2212,10 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					{
 						TrigByEntity::Entity entity;
 						entity.object_ = entities_->GetObjectByName(parameters.ReadAttribute(triggeringEntitiesChild, "entityRef"));
+						if (entity.object_ == 0)
+						{
+							throw std::runtime_error("Failed to find referenced entity - see log");
+						}
 						trigger->triggering_entities_.entity_.push_back(entity);
 					}
 				}

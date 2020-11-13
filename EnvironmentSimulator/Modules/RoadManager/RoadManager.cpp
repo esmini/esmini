@@ -374,14 +374,10 @@ Poly3::Poly3(double s, double x, double y, double hdg, double length, double a, 
 {
 	poly3_.Set(a, b, c, d);
 
-	// Calculate umax (valid interval)
-	int step_len = 1;
-	double sTmp = 0;
 	double xTmp = 0;
 	double yTmp = 0;
-	double hTmp = 0;
 
-	EvaluateDS(GetLength()-SMALL_NUMBER, &xTmp, &yTmp, &hTmp);
+	EvaluateDSLocal(GetLength()-SMALL_NUMBER, xTmp, yTmp);
 	SetUMax(xTmp);
 }
 
@@ -391,38 +387,46 @@ void Poly3::Print()
 		GetX(), GetY(), GetHdg(), GetLength(), poly3_.GetA(), poly3_.GetB(), poly3_.GetC(), poly3_.GetD());
 }
 
-void Poly3::EvaluateDS(double ds, double *x, double *y, double *h)
+void Poly3::EvaluateDSLocal(double ds, double &u, double &v)
 {
 	double distTmp = 0;
-	double u_local=0;
-	double v_local=0;
 	double steplen = MIN(10, ds);  // along u axis - to be tuned
+
+	u = v = 0;
 
 	if (ds > length_ - SMALL_NUMBER)
 	{
-		u_local = umax_;
-		v_local = poly3_.Evaluate(u_local);
+		u = umax_;
+		v = poly3_.Evaluate(u);
 	}
 	else if (ds > SMALL_NUMBER)
 	{
 		for (double uTmp = 0; uTmp < length_; uTmp += steplen)
 		{
 			double vTmp = poly3_.Evaluate(uTmp);
-			double delta = sqrt((uTmp - u_local) * (uTmp - u_local) + (vTmp - v_local) * (vTmp - v_local));
+			double delta = sqrt((uTmp - u) * (uTmp - u) + (vTmp - v) * (vTmp - v));
 
 			if (distTmp + delta > ds)
 			{
 				// interpolate
 				double w = (distTmp + delta - ds) / MAX(delta, SMALL_NUMBER);
-				u_local = w * u_local  + (1 - w) * uTmp;
-				v_local = poly3_.Evaluate(u_local);
+				u = w * u + (1 - w) * uTmp;
+				v = poly3_.Evaluate(u);
 				break;
 			}
 			distTmp += delta;
-			u_local = uTmp;
-			v_local = vTmp;
+			u = uTmp;
+			v = vTmp;
 		}
 	}
+}
+
+void Poly3::EvaluateDS(double ds, double *x, double *y, double *h)
+{
+	double u_local = 0;
+	double v_local = 0;
+
+	EvaluateDSLocal(ds, u_local, v_local);
 
 	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
 	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());

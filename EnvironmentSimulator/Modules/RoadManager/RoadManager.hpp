@@ -209,6 +209,7 @@ namespace roadmanager
 
 	private:
 		double umax_;
+		void Poly3::EvaluateDSLocal(double ds, double& u, double& v);
 	};
 
 
