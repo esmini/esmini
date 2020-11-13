@@ -1,6 +1,13 @@
 ## esmini release notes
 The purpose of this document is to highlight relevant changes introducing new features or breaking backward compatibility, i.e. requiring updates to scenarios and start scripts.
 
+#### 2020-11-13 Version 2.0.4
+- Align Hello World instructions with updated API
+- Fix OpenDRIVE poly3 issues
+- Adjust keepDistance tension proportional to MaxAcc (experimental)
+- Add position to on-screen info
+- Some additional minor fixes
+
 #### 2020-11-09 Version 2.0.3
 - Fix model ID issue in replayer (caused crash when scenario involves pedestrians)
 - Adjusted syntax (XSD) for optional SynchronizeAction tolerances (OpenSCENARIO extension)
