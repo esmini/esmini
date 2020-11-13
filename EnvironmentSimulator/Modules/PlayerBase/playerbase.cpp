@@ -488,10 +488,19 @@ int ScenarioPlayer::InitViewer()
 			viewer::CarModel* model = (viewer::CarModel*)viewer_->entities_.back();
 
 			// Add a sensor to show when query road info ahead
-			model->steering_sensor_ = viewer_->CreateSensor(color_white, true, true, 0.4, 3);
+			model->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
 			viewer_->SensorSetPivotPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 			viewer_->SensorSetTargetPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-			model->steering_sensor_->Hide();
+			if (obj->ghost_)
+			{
+				// Show steering sensor when following a ghost
+				model->steering_sensor_->Show();
+			}
+			else
+			{
+				// Otherwise hide it (as default)
+				model->steering_sensor_->Hide();
+			}
 
 			// If following a ghost vehicle, add visual representation of speed and steering sensors
 			if (scenarioEngine->entities.object_[i]->GetGhost())

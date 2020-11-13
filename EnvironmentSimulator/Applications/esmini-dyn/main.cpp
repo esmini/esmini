@@ -25,8 +25,7 @@
 #include "esminiLib.hpp"
 #include "CommonMini.hpp"
 
-#define DEMONSTRATE_SENSORS 0
-#define DEMONSTRATE_DRIVER_MODEL 1
+#define DEMONSTRATE_SENSORS 1
 #define DEMONSTRATE_OSI 0
 #define DEMONSTRATE_ROADINFO 0
 #define DEMONSTRATE_THREAD 0
@@ -116,10 +115,6 @@ int main(int argc, char *argv[])
 			}
 		}
 
-#if DEMONSTRATE_DRIVER_MODEL
-		vehicle.handle = SE_SimpleVehicleCreate(0, -2.5, 0.0, 4);
-#endif
-
 #if DEMONSTRATE_CALLBACK
 		SE_RegisterObjectCallback(0, objectCallback, (void*)&stuff);
 #endif
@@ -200,24 +195,6 @@ int main(int argc, char *argv[])
 				}
 			}
 			printf("\n");
-#endif
-
-#if DEMONSTRATE_DRIVER_MODEL
-			SE_RoadInfo roadInfo;
-			SE_GetRoadInfoAtDistance(0, 5 + 0.5f*vehicle.state.speed, &roadInfo, 0);
-
-			int steering = 0;
-			if (fabs(roadInfo.angle) > 0.01)
-			{ 
-				// Steer towards target point -1 or 1
-				steering = SIGN(roadInfo.angle);
-			}
-			
-			SE_SimpleVehicleControl(vehicle.handle, TIME_STEP, vehicle.state.speed < 25, steering);
-			SE_SimpleVehicleGetState(vehicle.handle, &vehicle.state);
-			
-			SE_ReportObjectPos(0, i * TIME_STEP, vehicle.state.x, vehicle.state.y, vehicle.state.z, 
-				vehicle.state.h, vehicle.state.p, 0, vehicle.state.speed);
 #endif
 
 			if (DEMONSTRATE_THREAD && i == (int)(0.5 * DURATION / TIME_STEP))
