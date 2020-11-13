@@ -127,7 +127,12 @@ void Vehicle::Update(double dt)
 
 	velX_ = speed_ * cos(velAngle_);
 	velY_ = speed_ * sin(velAngle_);
-	heading_ += dt * headingDot_;
+	heading_ = fmod(heading_ + dt * headingDot_, 2 * M_PI);
+	if (heading_ < 0)
+	{
+		heading_ += 2 * M_PI;
+	}
+	
 	posX_ += dt * velX_;
 	posY_ += dt * velY_;
 }

@@ -195,11 +195,7 @@ namespace roadmanager
 	{
 	public:
 		Poly3(): umax_(0.0) {}
-		Poly3(double s, double x, double y, double hdg, double length, double a, double b, double c, double d) :
-			Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_POLY3), umax_(0.0)
-		{
-			poly3_.Set(a, b, c, d);
-		}
+		Poly3(double s, double x, double y, double hdg, double length, double a, double b, double c, double d);
 		~Poly3() {};
 		
 		void SetUMax(double umax) { umax_ = umax; }

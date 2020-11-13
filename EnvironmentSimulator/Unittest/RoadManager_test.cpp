@@ -728,13 +728,13 @@ TEST_F(Poly3GeomTestFixture, TestPoly3UMaxGetSetArgumentConstructor)
     poly3.SetUMax(5);
     ASSERT_EQ(poly3.GetUMax(), 5.0);
 
-    Poly3 poly3_second = Poly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4);
-    ASSERT_EQ(0.0, poly3_second.GetUMax());
+    Poly3 poly3_second = poly3 = Poly3(0, 0, 0, 0, 1, 0, 0, 1, -2);
+    ASSERT_THAT(poly3_second.GetUMax(), testing::AllOf(testing::Gt(0.707107 - TRIG_ERR_MARGIN), testing::Lt(0.707107 + TRIG_ERR_MARGIN)));
     EXPECT_EQ(poly3_second.GetType(), Geometry::GEOMETRY_TYPE_POLY3);
-    ASSERT_EQ(poly3_second.poly3_.GetA(), 1.0);
-    ASSERT_EQ(poly3_second.poly3_.GetB(), -2.0);
-    ASSERT_EQ(poly3_second.poly3_.GetC(), 3.0);
-    ASSERT_EQ(poly3_second.poly3_.GetD(), -4.0);
+    ASSERT_EQ(poly3_second.poly3_.GetA(), 0.0);
+    ASSERT_EQ(poly3_second.poly3_.GetB(), 0.0);
+    ASSERT_EQ(poly3_second.poly3_.GetC(), 1.0);
+    ASSERT_EQ(poly3_second.poly3_.GetD(), -2.0);
     ASSERT_EQ(poly3_second.poly3_.GetPscale(), 1.0);
 
     Polynomial my_polynomial = poly3_second.GetPoly3();
@@ -747,19 +747,19 @@ TEST_F(Poly3GeomTestFixture, TestPoly3UMaxGetSetArgumentConstructor)
 
 TEST_F(Poly3GeomTestFixture, TestEvaluateCurvatureDS)
 {
-    Poly3 poly3_second = Poly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4);
+    Poly3 poly3_second = poly3 = Poly3(0, 0, 0, 0, 1, 0, 0, 1, -2);
 
-    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(0), 6.0);
-    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(10), -234.0);
-    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(100), -2394.0);
-    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(1000), -23994.0);
+    ASSERT_EQ(poly3_second.EvaluateCurvatureDS(0), 2.0);
+    ASSERT_THAT(poly3_second.EvaluateCurvatureDS(0.1), testing::AllOf(testing::Gt(0.8 - TRIG_ERR_MARGIN), testing::Lt(0.8 + TRIG_ERR_MARGIN)));
+    ASSERT_THAT(poly3_second.EvaluateCurvatureDS(0.8), testing::AllOf(testing::Gt(-7.6 - TRIG_ERR_MARGIN), testing::Lt(-7.6 + TRIG_ERR_MARGIN)));
+    ASSERT_THAT(poly3_second.EvaluateCurvatureDS(1.0), testing::AllOf(testing::Gt(-10 - TRIG_ERR_MARGIN), testing::Lt(-10 + TRIG_ERR_MARGIN)));
 }
 
 class Poly3GeomTestEvaluateDsCurvUmaxZero: public testing::TestWithParam<std::tuple<double, double, double, double>>
 {
     public:
     protected:
-        Poly3 poly3 = Poly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4);
+        Poly3 poly3 = Poly3(0, 0, 0, 0, 1, 0, 0, 1, -2);
 };
 
 TEST_P(Poly3GeomTestEvaluateDsCurvUmaxZero, TestPoly3GeomEvaluateDsArgument)
@@ -776,20 +776,20 @@ TEST_P(Poly3GeomTestEvaluateDsCurvUmaxZero, TestPoly3GeomEvaluateDsArgument)
     poly3.EvaluateDS(std::get<0>(tuple), x, y, h);
     ASSERT_THAT(*x, testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN)));
     ASSERT_THAT(*y,  testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN)));
-    ASSERT_EQ(*h, std::get<3>(tuple));
+    ASSERT_THAT(*h, testing::AllOf(testing::Gt(std::get<3>(tuple) - TRIG_ERR_MARGIN), testing::Lt(std::get<3>(tuple) + TRIG_ERR_MARGIN)));
 }
 
 INSTANTIATE_TEST_CASE_P(TestEvaluatePoly3DsArgumentParam, Poly3GeomTestEvaluateDsCurvUmaxZero, testing::Values(
-                                                std::make_tuple(0.0, -1.0, 0.0, M_PI-2),
-                                                std::make_tuple(10.0, -1.0, 0.0, M_PI-2),
-                                                std::make_tuple(100.0, -1.0, 0.0, M_PI-2),
-                                                std::make_tuple(1000.0, -1.0, 0.0, M_PI-2)));
+                                                std::make_tuple(0.1, 0.1, 0.008, 0.139),
+                                                std::make_tuple(0.2, 0.199, 0.024, 0.159),
+                                                std::make_tuple(0.8, 0.721, -0.230, -1.033),
+                                                std::make_tuple(1.0, 0.707, -0.207, -1.008)));
 
 class Poly3GeomTestEvaluateDsCurvUmaxNonZero: public testing::TestWithParam<std::tuple<double, double, double, double>>
 {
     public:
     protected:
-        Poly3 poly3 = Poly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4);
+        Poly3 poly3 = Poly3(0, 0, 0, 0, 2, 0, 0, 1, -2);
 };
 
 TEST_P(Poly3GeomTestEvaluateDsCurvUmaxNonZero, TestPoly3GeomEvaluateDsArgument)
@@ -807,12 +807,12 @@ TEST_P(Poly3GeomTestEvaluateDsCurvUmaxNonZero, TestPoly3GeomEvaluateDsArgument)
     poly3.EvaluateDS(std::get<0>(tuple), x, y, h);
     ASSERT_THAT(*x, testing::AllOf(testing::Gt(std::get<1>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<1>(tuple)+TRIG_ERR_MARGIN)));
     ASSERT_THAT(*y,  testing::AllOf(testing::Gt(std::get<2>(tuple)-TRIG_ERR_MARGIN), testing::Lt(std::get<2>(tuple)+TRIG_ERR_MARGIN)));
-    ASSERT_EQ(*h, std::get<3>(tuple));
+    ASSERT_THAT(*h, testing::AllOf(testing::Gt(std::get<3>(tuple) - TRIG_ERR_MARGIN), testing::Lt(std::get<3>(tuple) + TRIG_ERR_MARGIN)));
 }
 
 INSTANTIATE_TEST_CASE_P(TestEvaluatePoly3DsArgumentParam, Poly3GeomTestEvaluateDsCurvUmaxNonZero, testing::Values(
-                                                std::make_tuple(0.0, -1.0, 0.0, M_PI-2.0),
-                                                std::make_tuple(4.0, -2.0, 3.0, M_PI-8.0)));
+                                                std::make_tuple(0.0, 0.0, 0.0, 0.0),
+                                                std::make_tuple(2.0, 1.0, -1.0, -1.326)));
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////

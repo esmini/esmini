@@ -369,6 +369,22 @@ void Spiral::SetHdg(double h)
 	}
 }
 
+Poly3::Poly3(double s, double x, double y, double hdg, double length, double a, double b, double c, double d) :
+	Geometry(s, x, y, hdg, length, GEOMETRY_TYPE_POLY3), umax_(0.0)
+{
+	poly3_.Set(a, b, c, d);
+
+	// Calculate umax (valid interval)
+	int step_len = 1;
+	double sTmp = 0;
+	double xTmp = 0;
+	double yTmp = 0;
+	double hTmp = 0;
+
+	EvaluateDS(GetLength()-SMALL_NUMBER, &xTmp, &yTmp, &hTmp);
+	SetUMax(xTmp);
+}
+
 void Poly3::Print()
 {
 	LOG("Poly3 x: %.2f, y: %.2f, h: %.2f length: %.2f a: %.2f b: %.2f c: %.2f d: %.2f\n",
@@ -377,14 +393,40 @@ void Poly3::Print()
 
 void Poly3::EvaluateDS(double ds, double *x, double *y, double *h)
 {
-	double p = (ds / GetLength()) * GetUMax();
+	double distTmp = 0;
+	double u_local=0;
+	double v_local=0;
+	double steplen = MIN(10, ds);  // along u axis - to be tuned
 
-	double u_local = p;
-	double v_local = poly3_.Evaluate(p);
+	if (ds > length_ - SMALL_NUMBER)
+	{
+		u_local = umax_;
+		v_local = poly3_.Evaluate(u_local);
+	}
+	else if (ds > SMALL_NUMBER)
+	{
+		for (double uTmp = 0; uTmp < length_; uTmp += steplen)
+		{
+			double vTmp = poly3_.Evaluate(uTmp);
+			double delta = sqrt((uTmp - u_local) * (uTmp - u_local) + (vTmp - v_local) * (vTmp - v_local));
+
+			if (distTmp + delta > ds)
+			{
+				// interpolate
+				double w = (distTmp + delta - ds) / MAX(delta, SMALL_NUMBER);
+				u_local = w * u_local  + (1 - w) * uTmp;
+				v_local = poly3_.Evaluate(u_local);
+				break;
+			}
+			distTmp += delta;
+			u_local = uTmp;
+			v_local = vTmp;
+		}
+	}
 
 	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
 	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());
-	*h = GetHdg() + atan(poly3_.EvaluatePrim(p));
+	*h = GetHdg() + atan(poly3_.EvaluatePrim(u_local));
 }
 
 double Poly3::EvaluateCurvatureDS(double ds)
@@ -1327,25 +1369,6 @@ void Road::AddSpiral(Spiral *spiral)
 void Road::AddPoly3(Poly3 *poly3)
 {
 	geometry_.push_back((Geometry*)poly3);
-	Poly3 *p3 = (Poly3*)geometry_.back();
-	
-	// Calculate umax (valid interval)
-	int step_len = 1;
-	double s = 0;
-	double x0 = 0;
-	double y0 = 0;
-	double x1 = 0;
-	double y1 = 0;
-
-	while(s < p3->GetLength() - 0.5*step_len)
-	{
-		x1 = x0 + step_len;
-		y1 = p3->poly3_.Evaluate(x1);
-		s += sqrt((x1 - x0)*(x1 - x0) + (y1 - y0)*(y1 - y0));
-		x0 = x1;
-		y0 = y1;
-	}
-	p3->SetUMax(x0);
 }
 
 void Road::AddParamPoly3(ParamPoly3 *param_poly3)
