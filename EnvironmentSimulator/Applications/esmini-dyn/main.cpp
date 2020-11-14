@@ -25,7 +25,7 @@
 #include "esminiLib.hpp"
 #include "CommonMini.hpp"
 
-#define DEMONSTRATE_SENSORS 0
+#define DEMONSTRATE_SENSORS 1
 #define DEMONSTRATE_DRIVER_MODEL 0
 #define DEMONSTRATE_OSI 0
 #define DEMONSTRATE_ROADINFO 0

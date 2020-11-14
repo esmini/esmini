@@ -4552,9 +4552,9 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 						distTmp = distTmp - width;
 						if (distTmp < 0)
 						{
-							// On road - stop searching further
+							// On road - distance is zero, but continue search because
+							// we could be in a junction where roads are overlapping
 							distTmp = 0;
-							search_done = true;
 						}
 					}
 
