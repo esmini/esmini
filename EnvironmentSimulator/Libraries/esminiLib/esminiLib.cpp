@@ -181,7 +181,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 
 
 		// Add visualization of forward looking road sensor probe
-		if (player->viewer_->entities_[object_id]->GetType() == viewer::EntityModel::ENTITY_TYPE_VEHICLE)
+		if (player->viewer_ && player->viewer_->entities_[object_id]->GetType() == viewer::EntityModel::ENTITY_TYPE_VEHICLE)
 		{
 			viewer::CarModel* model = (viewer::CarModel*)player->viewer_->entities_[object_id];
 			model->steering_sensor_->Show();
@@ -824,6 +824,13 @@ extern "C"
 		player->RegisterObjCallback(object_id, callback, user_data);
 	}
 
+	SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
+	{
+		if (player && player->viewer_)
+		{
+			player->viewer_->SetNodeMaskBits(featureType, enable ? featureType : 0x0);
+		}
+	}
 
 	// Simple vehicle 
 	SE_DLL_API void* SE_SimpleVehicleCreate(float x, float y, float h, float length)
@@ -841,7 +848,7 @@ extern "C"
 		}
 	}
 
-	SE_DLL_API void SE_SimpleVehicleControl(void* handleSimpleVehicle, double dt, int throttle, int steering)
+	SE_DLL_API void SE_SimpleVehicleControlBinary(void* handleSimpleVehicle, double dt, int throttle, int steering)
 	{
 		if (handleSimpleVehicle == 0)
 		{
@@ -850,6 +857,16 @@ extern "C"
 
 		((vehicle::Vehicle*)handleSimpleVehicle)->DrivingControlBinary(dt,
 			(vehicle::THROTTLE)throttle, (vehicle::STEERING)steering);
+	}
+
+	SE_DLL_API void SE_SimpleVehicleControlAnalog(void* handleSimpleVehicle, double dt, double throttle, double steering)
+	{
+		if (handleSimpleVehicle == 0)
+		{
+			return;
+		}
+
+		((vehicle::Vehicle*)handleSimpleVehicle)->DrivingControlAnalog(dt, throttle, steering);
 	}
 
 	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void* handleSimpleVehicle, float speed)

@@ -25,7 +25,8 @@
 #include "esminiLib.hpp"
 #include "CommonMini.hpp"
 
-#define DEMONSTRATE_SENSORS 1
+#define DEMONSTRATE_SENSORS 0
+#define DEMONSTRATE_DRIVER_MODEL 0
 #define DEMONSTRATE_OSI 0
 #define DEMONSTRATE_ROADINFO 0
 #define DEMONSTRATE_THREAD 0
@@ -82,10 +83,10 @@ int main(int argc, char *argv[])
 	SimpleVehicle vehicle = { 0, {0, 0, 0, 0, 0, 0} };
 	char* filename = 0;
 
-	if (argc < 2)
+	if (!filename == 0 && argc < 2)
 	{
-		printf("Usage variant 1: %s <osc filename>\n", argv[0]);
-		printf("Usage variant 2: %s --osc <filename> [additional arguments - see esmini documentation]\n", argv[0]);
+		printf("Usage variant 1: %s <osc filename>\n", FileNameOf(argv[0]).c_str());
+		printf("Usage variant 2: %s --osc <filename> [additional arguments - see esmini documentation]\n", FileNameOf(argv[0]).c_str());
 	}
 	else if (argc == 2)
 	{
@@ -100,7 +101,7 @@ int main(int argc, char *argv[])
 
 		if (filename)
 		{
-			if (SE_Init(filename, 0, 1, 1, 0) != 0)
+			if (SE_Init(filename, 0, 1, DEMONSTRATE_THREAD, 0) != 0)
 			{
 				printf("Failed to load %s", filename);
 				break;
@@ -114,6 +115,13 @@ int main(int argc, char *argv[])
 				break;
 			}
 		}
+
+#if DEMONSTRATE_DRIVER_MODEL
+		SE_ScenarioObjectState state;
+		SE_GetObjectState(0, &state);
+		vehicle.handle = SE_SimpleVehicleCreate(state.x, state.y, state.h, 4.0);
+		SE_ViewerShowFeature((1 << 2), true);
+#endif
 
 #if DEMONSTRATE_CALLBACK
 		SE_RegisterObjectCallback(0, objectCallback, (void*)&stuff);
@@ -135,7 +143,7 @@ int main(int argc, char *argv[])
 
 		for (int i = 0; i*TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
 		{
-			if (SE_StepDT(TIME_STEP) != 0)
+			if (SE_Step() != 0)
 			{
 				return 0;
 			}
@@ -173,13 +181,14 @@ int main(int argc, char *argv[])
 
 #if DEMONSTRATE_ROADINFO  // set to 1 to demonstrate example of how to query road information
 			SE_RoadInfo data;
-			double look_ahead_distance = 10;
+			float look_ahead_distance = 10;
 			int id = 0;
 
 			SE_GetRoadInfoAtDistance(id, look_ahead_distance, &data, 0);
 
-			printf("Road info at %.2f meter from Vehicle %d: pos (%.2f, %.2f, %.2f) curvature %.5f (r %.2f) heading %.2f pitch %.2f lane width %.2f\n",
-				look_ahead_distance, id, data.global_pos_x, data.global_pos_y, data.global_pos_z, data.curvature, 1.0 / data.curvature,  data.road_heading, data.road_pitch);
+			printf("Road info at %.2f meter from Vehicle %d: pos (%.2f, %.2f, %.2f) curvature %.5f (r %.2f) heading %.2f pitch %.2f\n",
+				look_ahead_distance, id, data.global_pos_x, data.global_pos_y, data.global_pos_z, data.curvature, 1.0 / data.curvature,  
+				data.road_heading, data.road_pitch);
 #endif
 
 #if DEMONSTRATE_SENSORS  
@@ -197,19 +206,41 @@ int main(int argc, char *argv[])
 			printf("\n");
 #endif
 
-			if (DEMONSTRATE_THREAD && i == (int)(0.5 * DURATION / TIME_STEP))
-			{
-				// Halfway through, pause the simulation for a few seconds
-				// to demonstrate how camera can still move independently
-				// when running viewer in a separate thread
-				// Only Linux and Win supported (due to OSG and MacOS issue)
-				printf("Taking a 4 sec nap - if running with threads (Win/Linux) you can move camera around meanwhile\n");
-				SE_sleep(4000);
+#if DEMONSTRATE_DRIVER_MODEL
+			SE_RoadInfo roadInfo;
+			SE_GetRoadInfoAtDistance(0, 5 + 0.5f*vehicle.state.speed, &roadInfo, 0);
+
+			double steering = 0;
+			if (fabs(roadInfo.angle) > 0.01)
+			{ 
+				// Steer towards target point -1 or 1
+				steering = roadInfo.angle;
 			}
-			else
+			double speedTarget = vehicle.state.speed < 25 ? 1.0 : 0.0;
+			speedTarget /= (1 + 20*fabs(steering));
+			SE_SimpleVehicleControlAnalog(vehicle.handle, TIME_STEP, speedTarget, roadInfo.angle);
+			SE_SimpleVehicleGetState(vehicle.handle, &vehicle.state);
+			
+			SE_ReportObjectPos(0, i * TIME_STEP, vehicle.state.x, vehicle.state.y, vehicle.state.z, 
+				vehicle.state.h, vehicle.state.p, 0, vehicle.state.speed);
+#endif
+
+			if (DEMONSTRATE_THREAD)
 			{
-				// Normal case, sleep until its time for next simulation step
-				SE_sleep((unsigned int)(TIME_STEP * 1000));
+				if (i == (int)(0.5 * DURATION / TIME_STEP))
+				{
+					// Halfway through, pause the simulation for a few seconds
+					// to demonstrate how camera can still move independently
+					// when running viewer in a separate thread
+					// Only Linux and Win supported (due to OSG and MacOS issue)
+					printf("Taking a 4 sec nap - if running with threads (Win/Linux) you can move camera around meanwhile\n");
+					SE_sleep(4000);
+				}
+				else
+				{
+					// Normal case, sleep until its time for next simulation step
+					SE_sleep((unsigned int)(TIME_STEP * 1000));
+				}
 			}
 		}
 

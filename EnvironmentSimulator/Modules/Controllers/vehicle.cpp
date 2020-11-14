@@ -37,6 +37,8 @@ Vehicle::Vehicle(double x, double y, double h, double length)
 	posY_ = y;
 	heading_ = h;
 	length_ = length;
+	throttle_disabled_ = false;
+	steering_disabled_ = false;
 }
 #define MAX_WHEEL_ANGLE (60 * M_PI / 180)
 
@@ -68,7 +70,7 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 {
 	double oldSpeed = speed_;
 
-	if (throttle != THROTTLE::THROTTLE_DISABLE)
+	if (!throttle_disabled_)
 	{
 		if (handbrake_ == true)
 		{
@@ -95,7 +97,7 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 	}
 
 	// Calculate steering
-	if (steering != STEERING::STEERING_DISABLE)
+	if (!steering_disabled_)
 	{
 		// Make steering wheel speed dependent
 		double steering_scale = 1.0 / (1 + 0.02 * speed_ * speed_);
@@ -103,6 +105,53 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 
 		// Self-aligning
 		wheelAngle_ *= 0.92;
+
+		// Limit wheel angle
+		wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
+	}
+
+	Update(dt);
+}
+
+void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
+{
+	double oldSpeed = speed_;
+
+	if (!throttle_disabled_)
+	{
+		if (handbrake_ == true)
+		{
+			if (fabs(throttle) < SMALL_NUMBER)
+			{
+				handbrake_ = false;
+			}
+		}
+		else
+		{
+			speed_ += ACCELERATION_SCALE * throttle * dt;
+
+			if (oldSpeed > 0 && speed_ < 0)
+			{
+				speed_ = 0;
+				handbrake_ = true;
+			}
+			else
+			{
+				speed_ *= (1 - SPEED_DECLINE);
+				speed_ = CLAMP(speed_, -1.2 * max_speed_, 1.2 * max_speed_);
+			}
+		}
+	}
+
+	// Calculate steering
+	if (!steering_disabled_)
+	{
+		// Make steering slightly wheel speed dependent
+		double steering_scale = 1.0 / (1 + 0.005 * speed_ * speed_);
+		wheelAngle_ = wheelAngle_ + steering_scale * STEERING_RATE * steering * dt;
+
+		// Self-aligning
+		wheelAngle_ *= 0.95;
 
 		// Limit wheel angle
 		wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);

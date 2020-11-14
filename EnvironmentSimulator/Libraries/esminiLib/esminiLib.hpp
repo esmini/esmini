@@ -344,10 +344,19 @@ extern "C"
 
 	SE_DLL_API void SE_LogMessage(char* message);
 
+	// Viewer settings
+	/**
+	The SE_GetOSILaneBoundaryIds function the global ids for left, far elft, right and far right lane boundaries
+	@param featureType Type of the features, see viewer::NodeMask typedef
+	@param enable Set true to show features, false to hide
+	*/
+	SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable);
+
 	// Simple vehicle 
 	SE_DLL_API void* SE_SimpleVehicleCreate(float x, float y, float h, float length);
 	SE_DLL_API void SE_SimpleVehicleDelete(void* handleSimpleVehicle);
-	SE_DLL_API void SE_SimpleVehicleControl(void* handleSimpleVehicle, double dt, int throttle, int steering);  // throttle and steering [-1, 0 or 1]
+	SE_DLL_API void SE_SimpleVehicleControlBinary(void* handleSimpleVehicle, double dt, int throttle, int steering);  // throttle and steering [-1, 0 or 1]
+	SE_DLL_API void SE_SimpleVehicleControlAnalog(void* handleSimpleVehicle, double dt, double throttle, double steering);  // throttle and steering [-1, 0 or 1]
 	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void* handleSimpleVehicle, float speed);
 	SE_DLL_API void SE_SimpleVehicleGetState(void* handleSimpleVehicle, SE_SimpleVehicleState* state);
 	

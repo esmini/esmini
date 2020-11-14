@@ -69,9 +69,9 @@ void ControllerInteractive::Step(double timeStep)
 	}
 
 	// Update vehicle motion
-	vehicle_.DrivingControlBinary(timeStep, 
-		(domain_ & Controller::Domain::CTRL_LONGITUDINAL) ? accelerate : vehicle::THROTTLE_DISABLE, 
-		(domain_ & Controller::Domain::CTRL_LATERAL) ? steer : vehicle::STEERING_DISABLE);
+	vehicle_.SetThrottleDisabled(domain_ & Controller::Domain::CTRL_LONGITUDINAL ? false : true);
+	vehicle_.SetSteeringDisabled(domain_ & Controller::Domain::CTRL_LATERAL ? false : true);
+	vehicle_.DrivingControlBinary(timeStep, accelerate, steer);
 
 	if (domain_ == Controller::Domain::CTRL_LONGITUDINAL)
 	{

@@ -19,7 +19,6 @@ namespace vehicle
 		THROTTLE_BRAKE = -1,
 		THROTTLE_NONE = 0,
 		THROTTLE_ACCELERATE = 1,
-		THROTTLE_DISABLE = 2
 	} THROTTLE;
 
 	typedef enum 
@@ -27,7 +26,6 @@ namespace vehicle
 		STEERING_RIGHT = -1,
 		STEERING_NONE = 0,
 		STEERING_LEFT = 1,
-		STEERING_DISABLE = 2
 	} STEERING;
 
 	class Vehicle
@@ -38,6 +36,7 @@ namespace vehicle
 		void Update(double dt);
 		void DrivingControlTarget(double dt, double heading_to_target, double target_speed);
 		void DrivingControlBinary(double dt, THROTTLE throttle, STEERING steering);
+		void DrivingControlAnalog(double dt, double throttle, double steering);
 		void SetWheelAngle(double angle);
 		void SetWheelRotation(double rotation);
 		void SetLength(double length) { length_ = length; }
@@ -50,6 +49,10 @@ namespace vehicle
 		}
 		void SetMaxSpeed(double speed) { max_speed_ = speed; }
 		double GetMaxSpeed() { return max_speed_; }
+		bool GetThrottleDisabled() { return steering_disabled_; }
+		void SetThrottleDisabled(bool value) { throttle_disabled_ = value; }
+		bool GetSteeringDisabled() { return steering_disabled_; }
+		void SetSteeringDisabled(bool value) { steering_disabled_ = value; }
 		void Reset();
 
 		double posX_;
@@ -74,6 +77,8 @@ namespace vehicle
 
 	private:
 		double max_speed_;
+		bool throttle_disabled_;
+		bool steering_disabled_;
 	};
 
 }
