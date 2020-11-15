@@ -1,6 +1,16 @@
 ## esmini release notes
 The purpose of this document is to highlight relevant changes introducing new features or breaking backward compatibility, i.e. requiring updates to scenarios and start scripts.
 
+#### 2020-11-15 Version 2.0.5
+- Added a simple vehicle and driver model example to Hello World code guide
+- Change interpretation of relative lane in LaneChangeAction. Now sign of relative lane is always according to reference line, regardless of driving direction. To our understanding better complying with OpenSCENARIO 1.0.
+- Add analog driver control to the simple vehicle model class
+- Improve XYZ2Track method. Now consider overlapping roads (in junctions) when searching best match (not just first hit).
+- Add missing pedestrian catalog
+- Fix a memory bug potentially causing crash when --disable_controllers flag is set
+- Added a small curvy road with and without elevation profile
+- Some additional minor fixes
+
 #### 2020-11-13 Version 2.0.4
 - Align Hello World instructions with updated API
 - Fix OpenDRIVE poly3 issues
