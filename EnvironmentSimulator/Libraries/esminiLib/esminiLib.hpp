@@ -353,11 +353,49 @@ extern "C"
 	SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable);
 
 	// Simple vehicle 
+	/**
+	Create an instance of a simplistic vehicle based on a 2D bicycle kincematic model
+	@param x Initial position X world coordinate
+	@param y Initial position Y world coordinate
+	@param h Initial heading
+	@param length Length of the vehicle
+	@return Handle to the created object
+	*/
 	SE_DLL_API void* SE_SimpleVehicleCreate(float x, float y, float h, float length);
+
+	/**
+	Delete an instance of the simplistic vehicle model
+	*/
 	SE_DLL_API void SE_SimpleVehicleDelete(void* handleSimpleVehicle);
+
+	/**
+	Control the speed and steering with discreet [-1, 0, 1] values, suitable for keyboard control (e.g. up/none/down).
+	The function also steps the vehicle model, updating its position according to motion state and timestep.
+	@param dt timesStep (s)
+	@param throttle Longitudinal control, -1: brake, 0: none, +1: accelerate
+	@param steering Lateral control, -1: left, 0: straight, 1: right
+	*/
 	SE_DLL_API void SE_SimpleVehicleControlBinary(void* handleSimpleVehicle, double dt, int throttle, int steering);  // throttle and steering [-1, 0 or 1]
+
+	/**
+	Control the speed and steering with floaing values in the range [-1, 1], suitable for driver models.
+	The function also steps the vehicle model, updating its position according to motion state and timestep.
+	@param dt timesStep (s)
+	@param throttle Longitudinal control, -1: maximum brake, 0: no acceleration, +1: maximum acceleration
+	@param steering Lateral control, -1: max left, 0: straight, 1: max right
+	*/
 	SE_DLL_API void SE_SimpleVehicleControlAnalog(void* handleSimpleVehicle, double dt, double throttle, double steering);  // throttle and steering [-1, 0 or 1]
+
+	/**
+	Set maximum vehicle speed.
+	@param speed Maximum speed (m/s)
+	*/
 	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void* handleSimpleVehicle, float speed);
+
+	/**
+	Get current state of the vehicle. Typically called after Control has been applied.
+	@param state Pointer/reference to a SE_SimpleVehicleState struct to be filled in
+	*/
 	SE_DLL_API void SE_SimpleVehicleGetState(void* handleSimpleVehicle, SE_SimpleVehicleState* state);
 	
 #ifdef __cplusplus

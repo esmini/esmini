@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-	SE_Init("../resources/xosc/cut-in.xosc", 1, 1, 0, 0);
+	SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
 
 	SE_AddObjectSensor(0, 2.0, 1.0, 0.5, 1.57, 1.0, 50.0, 1.57, MAX_HITS);
 	SE_AddObjectSensor(0, -1.0, 0.0, 0.5, 3.14, 0.5, 20.0, 1.57, MAX_HITS);
@@ -189,6 +189,107 @@ int main(int argc, char* argv[])
 }
 ```
 Note: If you want M_PI, add on top (before includes): #define _USE_MATH_DEFINES
+
+#### Driver model
+
+Using a simple vehicle model this example demonstrates how a driver model can interact with the scenario, once again using the ```ExternalController```. 
+
+Before heading into the application code we will prepare a scenario. Make a copy of ```slow-lead-vehicle.xosc``` and name it ```test-driver.xosc```.
+
+Do the following steps:
+
+- Open test-driver.xosc for edit. 
+- Assign controller to the Ego vehicle. Put the following private action code in the Init section, under Ego
+	```
+	<PrivateAction>
+	    <ControllerAction>
+	        <AssignControllerAction>
+	            <Controller name="MyController">
+	                <Properties>
+	                    <Property name="esminiController" value="ExternalController" />
+	                </Properties>
+	            </Controller>
+	        </AssignControllerAction>
+	    </ControllerAction>
+	</PrivateAction>
+	```
+- And activate the controller on both lateral and longitudinal domains. Put the following private action right after the above.
+	```
+    <PrivateAction>
+         <ActivateControllerAction longitudinal="true" lateral="true" />
+    </PrivateAction>
+	```
+
+ - For a more interesting road, change into curves_elevation:
+	```
+	<RoadNetwork>
+	   <LogicFile filepath="../xodr/curves_elevation.xodr"/>
+	   <SceneGraphFile filepath="../models/curves_elevation.osgb"/>
+	</RoadNetwork>
+	```
+
+Now let's head into the code example. 
+
+```C++
+#include "stdio.h"
+#include "math.h"
+#include "esminiLib.hpp"
+
+int main(int argc, char* argv[])
+{
+	void* vehicleHandle = 0;
+	SE_SimpleVehicleState vehicleState = {0, 0, 0, 0, 0, 0};
+	SE_ScenarioObjectState objectState;
+	SE_RoadInfo roadInfo;
+	float simTime = 0;
+	float dt = 0;
+
+	if (SE_Init("../../../../resources/xosc/test-driver.xosc", 0, 1, 0, 0) != 0)
+	{
+		printf("Failed to initialize the scenario, quit\n");
+		return -1;
+	}
+
+	// Initialize the vehicle model, fetch initial state from the scenario
+	SE_GetObjectState(0, &objectState);
+	vehicleHandle = SE_SimpleVehicleCreate(objectState.x, objectState.y, objectState.h, 4.0);
+
+	// show some road features, including road sensor 
+	SE_ViewerShowFeature(4, true);
+
+	// Run for 40 seconds or until 'Esc' button is pressed
+	while (SE_GetSimulationTime() < 40 && !(SE_GetQuitFlag() == 1))
+	{
+		SE_Step();
+		dt = SE_GetSimulationTime() - simTime;
+		simTime = SE_GetSimulationTime();
+		
+		// Get road information at a point some speed dependent distance ahead
+		SE_GetRoadInfoAtDistance(0, 5 + 0.5f * vehicleState.speed, &roadInfo, 0);
+
+		// Steer towards where the point 
+		double steerAngle = roadInfo.angle;
+
+		// Accelerate until target speed 25 is reached
+		double throttle = vehicleState.speed < 25 ? 1.0 : 0.0;
+		
+		// Slow down in curves
+		throttle /= (1 + 20 * fabs(steerAngle));
+
+		// Step vehicle model with driver input
+		SE_SimpleVehicleControlAnalog(vehicleHandle, dt, throttle, steerAngle);
+
+		// Fetch updated state and report to scenario engine
+		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+
+		SE_ReportObjectPos(0, simTime, vehicleState.x, vehicleState.y, vehicleState.z,
+			vehicleState.h, vehicleState.p, 0, vehicleState.speed);
+	}
+
+	return 0;
+}
+```
+Don't worry about the slow vehicle, you'll just drive through it. But consider it a challenge to attach a front looking sensor to detect it and have the driver to brake to avoid collision...
 
 #### Python binding
 

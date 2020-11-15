@@ -24,6 +24,7 @@ resources/xosc/lane_change_simple.xosc \
 resources/xosc/pedestrian.xosc \
 resources/xosc/pedestrian_collision.xosc \
 resources/xosc/controller_test.xosc \
+resources/xosc/slow-lead-vehicle.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -36,6 +37,7 @@ resources/xodr/jolengatan.xodr \
 resources/xodr/straight_500m.xodr \
 resources/xodr/curve_r100.xodr \
 resources/xodr/multi_intersections.xodr \
+resources/xodr/curves_elevation.xodr \
 resources/models/bus_blue.osgb \
 resources/models/car_blue.osgb \
 resources/models/car_red.osgb \
@@ -53,6 +55,7 @@ resources/models/parking_lot.osgb \
 resources/models/curve_r100.osgb \
 resources/models/walkman.osgb \
 resources/models/multi_intersections.osgb \
+resources/models/curves_elevation.osgb \
 resources/sumo_inputs/e6mini* \
 run/esmini/run_follow_ghost.* \
 run/esmini/run_ltap-od_interactive.* \
