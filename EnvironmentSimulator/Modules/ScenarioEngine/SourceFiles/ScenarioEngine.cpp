@@ -356,7 +356,10 @@ void ScenarioEngine::parseScenario()
 {
 	bool hybrid_objects = false;
 
-	scenarioReader->LoadControllers();
+	if (!disable_controllers_)
+	{
+		scenarioReader->LoadControllers();
+	}
 
 	scenarioReader->SetGateway(&scenarioGateway);
 	scenarioReader->parseGlobalParameterDeclarations();
@@ -431,10 +434,6 @@ void ScenarioEngine::parseScenario()
 				}
 			}
 		}
-	}
-	else
-	{
-		DisableAndRemoveControllers();
 	}
 
 	// Print loaded data
@@ -703,18 +702,4 @@ void ScenarioEngine::SetupGhost(Object* object)
 			}
 		}
 	}
-}
-
-void ScenarioEngine::DisableAndRemoveControllers()
-{
-	// Remove controllers
-	for (size_t e = 0; e < entities.object_.size(); e++)
-	{
-		entities.object_[e]->controller_ = 0;
-	}
-	for (size_t c = 0; c < scenarioReader->controller_.size(); c++)
-	{
-		delete(scenarioReader->controller_[c]);
-	}
-	scenarioReader->controller_.clear();
 }

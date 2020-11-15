@@ -191,6 +191,27 @@ void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 }
 
+void AssignControllerAction::Start()
+{
+	if (controller_ == 0)
+	{
+		// Detach any controller from object
+		if (object_->controller_)
+		{
+			Controller* ctrl = (Controller*)object_->controller_;
+			ctrl->Assign(0);
+			object_->SetAssignedController(0);
+		}
+	}
+	else
+	{
+		controller_->Assign(object_);
+	}
+
+	OSCAction::Start();
+}
+
+
 void LatLaneChangeAction::Start()
 {
 	OSCAction::Start();
@@ -214,7 +235,7 @@ void LatLaneChangeAction::Start()
 		if (target_lane_id_ == 0 || SIGN(target_lane_id_) != SIGN(((TargetRelative*)target_)->object_->pos_.GetLaneId()))
 		{
 			// Skip reference lane (id == 0)
-			target_lane_id_ = SIGN(target_lane_id_) * (fabs(target_lane_id_) + 1);
+			target_lane_id_ = SIGN(target_lane_id_) * (abs(target_lane_id_) + 1);
 		}
 	}
 

@@ -602,26 +602,8 @@ namespace scenarioengine
 		}
 
 		void Step(double dt, double simTime) { } 
+		void Start();
 
-		void Start()
-		{
-			if (controller_ == 0)
-			{
-				// Detach any controller from object
-				if (object_->controller_)
-				{
-					Controller* ctrl = (Controller*)object_->controller_;
-					ctrl->Assign(0);
-					object_->SetAssignedController(0);
-				}
-			}
-			else
-			{
-				controller_->Assign(object_);
-			}
-
-			OSCAction::Start();
-		}
 	};
 
 	class ActivateControllerAction : public OSCPrivateAction
