@@ -119,7 +119,7 @@
                               <LaneChangeAction>
                                  <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2" dynamicsDimension="time"/>
                                  <LaneChangeTarget>
-                                    <RelativeTargetLane entityRef="Target" value="1"/>
+                                    <RelativeTargetLane entityRef="Target" value="-1"/>
                                  </LaneChangeTarget>
                               </LaneChangeAction>
                            </LateralAction>

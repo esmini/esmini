@@ -232,10 +232,10 @@ void LatLaneChangeAction::Start()
 		// Find out target lane relative referred vehicle
 		target_lane_id_ = ((TargetRelative*)target_)->object_->pos_.GetLaneId() + target_->value_;
 		
-		if (target_lane_id_ == 0 || SIGN(target_lane_id_) != SIGN(((TargetRelative*)target_)->object_->pos_.GetLaneId()))
+		if (target_lane_id_ == 0 || SIGN(object_->pos_.GetLaneId()) != SIGN(target_lane_id_))
 		{
 			// Skip reference lane (id == 0)
-			target_lane_id_ = SIGN(target_lane_id_) * (abs(target_lane_id_) + 1);
+			target_lane_id_ = SIGN(target_lane_id_ - object_->pos_.GetLaneId()) * (abs(target_lane_id_) + 1);
 		}
 	}
 
