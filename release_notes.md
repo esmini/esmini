@@ -1,7 +1,12 @@
 ## esmini release notes
 The purpose of this document is to highlight relevant changes introducing new features or breaking backward compatibility, i.e. requiring updates to scenarios and start scripts.
 
-#### 2020-11-15 Version 2.0.5
+### 2020-11-17 Version 2.0.6
+- Fixed minor issues in Hello World tutorial
+- Set correct direction for OSI lanes
+- Fix pedestrian catalog path for demo package
+
+### 2020-11-15 Version 2.0.5
 - Added a simple vehicle and driver model example to Hello World code guide
 - Change interpretation of relative lane in LaneChangeAction. Now sign of relative lane is always according to reference line, regardless of driving direction. To our understanding better complying with OpenSCENARIO 1.0.
 - Add analog driver control to the simple vehicle model class
@@ -11,18 +16,18 @@ The purpose of this document is to highlight relevant changes introducing new fe
 - Added a small curvy road with and without elevation profile
 - Some additional minor fixes
 
-#### 2020-11-13 Version 2.0.4
+### 2020-11-13 Version 2.0.4
 - Align Hello World instructions with updated API
 - Fix OpenDRIVE poly3 issues
 - Adjust keepDistance tension proportional to MaxAcc (experimental)
 - Add position to on-screen info
 - Some additional minor fixes
 
-#### 2020-11-09 Version 2.0.3
+### 2020-11-09 Version 2.0.3
 - Fix model ID issue in replayer (caused crash when scenario involves pedestrians)
 - Adjusted syntax (XSD) for optional SynchronizeAction tolerances (OpenSCENARIO extension)
 
-#### 2020-11-09 Version 2.0.2
+### 2020-11-09 Version 2.0.2
 - Added pause and step features to replayer
 - Solved issue with ghost vehicles in replayer
 - Improved end criterias for SynchronizeAction end, detecting when destination gas been passed (increasing dsistance)
@@ -30,13 +35,13 @@ The purpose of this document is to highlight relevant changes introducing new fe
 - Corrected some paths in HelloWorld code example
 - Some additional minor fixes
 
-#### 2020-11-02 Version 2.0.1
+### 2020-11-02 Version 2.0.1
 - Fixed issue with syncronizeAction and trajectory following entities
 - Added correctly dimensioned (according to OSC entity def) bounding box. Toggle show on key ',' (comma)
 - Fixed execution order so that controllers and callback are applied AFTER default controller
 - Some additional minor fixes
 
-#### 2020-10-23 Version 2.0.0
+### 2020-10-23 Version 2.0.0
 The major functional change is the implementation of the OpenSCENARIO controller concept. A side effect is that much of the functionality such as Ghost concept, interactive driving and external control previously assiciated and hardcoded in different applications now has moved out from the application(s) core and into different controllers which can be activated on demand in a more flexible way.
 
 The actual application code gets much simpler and it makes no sense to have different applications for different use cases. As a result we decided to slim down to only two applications: 
@@ -83,41 +88,41 @@ Note:
   - These changes affects some headerfile names, which might need to be updated in custom code.
   - Scripts referring to executables need updates, e.g. change any "EgoSimulator" or "EnvironmentSimulator" to "esmini" (however EgoSimulator will be provided as a raw copy of esmini executable during a deprecation period of a few releases)
 
-#### 2020-10-09 Version 1.7.13
+### 2020-10-09 Version 1.7.13
 - Added support for lane change dynamics by rate
 
-#### 2020-10-06 Version 1.7.12
+### 2020-10-06 Version 1.7.12
 - Fix pedestrian catalog support
 
-#### 2020-10-02 Version 1.7.11
+### 2020-10-02 Version 1.7.11
 - Fix bug deleting any entity with defined controller
 - Add another OpenDriveViewer example run script
 
-#### 2020-10-02 Version 1.7.10
+### 2020-10-02 Version 1.7.10
 - Fix assumption that all controllers are SUMO config type
 - Fix parameter name bug
 - Add OpenDriveViewer to demo package
 - Some additional minor bug fixes
 
-##### 2020-10-01 Version 1.7.9
+#### 2020-10-01 Version 1.7.9
 - Improved OSI performance
 - Added pedestrian example scenario
 
-##### 2020-09-30 Version 1.7.8
+#### 2020-09-30 Version 1.7.8
 - Support correct parameter names excluding the "$" prefix (old way still supported as well)
 - TimeToCollision condition
 - Collision condition
 - Improved road and lane connectivity w.r.t. preserve direction
 - Additional bugfixes and improvements
 
-##### 2020-09-23 Version 1.7.7
+#### 2020-09-23 Version 1.7.7
 - OSI raw struct output option
 - OSI sensor view in local coordinates
 - Callback mechanism to override (part of) entity states
 - Improved WorldCoordinate(x, y, z) to RoadCoordinate(road, lane, offset) mapping
 - Many minor bugfixes and improvements (and probably a few new bugs)
 
-##### 2020-09-04 Version 1.7.6
+#### 2020-09-04 Version 1.7.6
 - Added trajectory clothoid support
 
 2020-08-31 Version 1.7.5
@@ -125,13 +130,13 @@ Note:
 - Fixed a bug preventing shared library (ScenarioEngineDLL) to run with viewer on Mac
 - Fixed crash when running with only OpenDRIVE road description (i.e. without scenegraph 3D model).
 
-##### 2020-08-26 Version 1.7.2
+#### 2020-08-26 Version 1.7.2
 - CSV logging feature
 - EndOfRoad trigger
 - Unit test framework based on Google Test
 - Cleaned irrelevant error messages
 
-##### 2020-08-21 Version 1.7.0
+#### 2020-08-21 Version 1.7.0
 - SUMO support integrated (via libsumostatic), first limited shot.
   - SUMO vehicles created by means of object controller. See example cut-in_sumo.xosc.
   - NOTE that you need to re-run cmake script in order to fetch SUMO dependency package (including headers and pre-built libraries).
@@ -139,11 +144,11 @@ Note:
 - OSI trace file not created by default, activated with argument "--osi_file on"
 - Condition/trigger timer now based on simulation time instead of system time
 
-##### 2020-07-24 Version 1.6.3
+#### 2020-07-24 Version 1.6.3
 - OSI support extended with road information (lane and road marks)
 - Bugfix: RelativeTargetLane (used in LaneChangeAction) is now calculated correctly, skipping reference lane and considering vehicle orientation so that positive lane changes will go left and negative to the right. Scenarios making use of RelativeTargetLane might need to be updated accordingly.
 
-##### 2020-06-18 Version 1.6.0
+#### 2020-06-18 Version 1.6.0
 - OSI support, initial framework established.
 - So far population of OSI global groundtruth moving objects.
 - OSI data is populated and provided to user in three ways:
@@ -152,7 +157,7 @@ Note:
 	3. API to fetch OSI data via function call (in ScenarioEngineDLL)
 - osi_receiver is a minimalistic demo-application showing how to receive OSI over UDP
 
-##### 2020-05-19 Version 1.5.0
+#### 2020-05-19 Version 1.5.0
 - Updated to support OpenSCENARIO 1.0. Note: no legacy support for 0.9.1
 - Updated demo scenarios to v1.0
 - Improved condition handling, fully supporting AND (within ConditionGroup) and OR (Multiple ConditionGroups) combinations
@@ -160,14 +165,14 @@ Note:
 - Initial Trajectory support. PolyLine only, so far and limited testing performed.
 - Added support for TraveledDistance condition
 
-##### 2020-05-05 Version 1.4.6
+#### 2020-05-05 Version 1.4.6
 - Added heading to sensors so that one entity can have multiple sensors in different directions
 - Improved position Delta functionality. It will calculate shortest path and distance between two positions more generically and correctly.
 - Added road model (multi_intersections.xodr/osgb) with multiple junctions. Useful for testing the shortest path functionality.
 - Added new camera mode: top view (press 'k' multiple times to toggle or specify "--camera_mode top" as command line argument).
 - Some bugfixes. E.g. ParamPoly3 with Normalized parameter range.
 
-##### 2020-03-25 Version 1.4
+#### 2020-03-25 Version 1.4
 - Demos (and binaries) supplied for Mac (Catalina) and Linux (Ubuntu 18.04 and Kubuntu 18.04) in addition to Windows.
 - jpeg screenshot. User can save a screen shot at any time by pressing key 'c'.
 - QuitAction. User can specify when to quit the scenario (and application) by means of OSC conditions, just as any OSC action.
@@ -175,7 +180,7 @@ Note:
 - Threads (--threads). Put scenario execution into a separate thread, decoupled from the viewer. Example of potential use case: Make it possible to pause scenario while moving camera.
 - New keyboard shortcut commands, and some moved to new key. Please see run/readme.txt for complete set.
 
-##### 2020-03-08 Version 1.3
+#### 2020-03-08 Version 1.3
 - Anti-Alias filter control
   - EgoSimulator now takes argument aa_mode <number of sub samplings>
       0 means no Anti-Alias. 4 is default.
@@ -184,7 +189,7 @@ Note:
 - Linux binaries now includes graphics (OSG) support.
 - Demo package for Linux added. Now CI builds and deploy demo for both Windows and Linux (Ubuntu 18.04).
 
-##### 2019-12-06 Version 1.2
+#### 2019-12-06 Version 1.2
 - Catalog handling updates
   - Parameter assignment implemented (enabling variants or configuration of re-used catalog items)
   - Name and structure updates:
@@ -192,7 +197,7 @@ Note:
       See synchronize.xosc for an example on how to (re-)use manuever catalog entries.
 - Trail visualization can be switched off by application argument (--trail <on/off>) and toggled by pressing key "t" in viewer window.
 
-##### 2019-11-20 Version 1.1
+#### 2019-11-20 Version 1.1
 - External control flag replaced by enumeration
     Available modes: internal, external, hybrid
     EgoSimulator and EnvironmentSimulator argument syntax changed from --ext_control <on|off> to --control <internal|external|hybrid>
