@@ -793,9 +793,11 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						}
 
 						// DRIVING DIRECTION
+						int driving_side = 1; //right, along side of s-direction
 						bool driving_direction = true;
 						if (lane_id >= 0)
 						{
+							driving_side = -1; //left,  against side of s-direction
 							driving_direction = false;
 						}
 						osi_lane->mutable_classification()->set_centerline_is_driving_direction(driving_direction);
@@ -806,28 +808,37 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						std::vector< std::pair <int,int> > globalid_ids_right;
 
 
-						if (lane_section->IsOSILaneById(lane_id-1))
+						if (lane_section->IsOSILaneById(lane_id-(1*driving_side)))
 						{
-							globalid_ids_right.push_back( std::make_pair(lane_id-1, lane_section->GetLaneGlobalIdById(lane_id-1) ) );
+							globalid_ids_right.push_back( std::make_pair(lane_id-(1*driving_side), lane_section->GetLaneGlobalIdById(lane_id-(1*driving_side)) ) );
 						}
-						else if (lane_section->IsOSILaneById(lane_id-2))
+						else if (lane_section->IsOSILaneById(lane_id-(2*driving_side)))
 						{
-							globalid_ids_right.push_back( std::make_pair(lane_id-2 , lane_section->GetLaneGlobalIdById(lane_id-2) ) );
+							globalid_ids_right.push_back( std::make_pair(lane_id-(2*driving_side) , lane_section->GetLaneGlobalIdById(lane_id-(2*driving_side)) ) );
 						}
 						
-						if (lane_section->IsOSILaneById(lane_id+1))
+						if (lane_section->IsOSILaneById(lane_id+(1*driving_side)))
 						{
-							globalid_ids_left.push_back( std::make_pair(lane_id+1 , lane_section->GetLaneGlobalIdById(lane_id+1) ) );
+							globalid_ids_left.push_back( std::make_pair(lane_id+(1*driving_side) , lane_section->GetLaneGlobalIdById(lane_id+(1*driving_side)) ) );
 						}
-						else if (lane_section->IsOSILaneById(lane_id+2))
+						else if (lane_section->IsOSILaneById(lane_id+(2*driving_side)))
 						{
-							globalid_ids_left.push_back( std::make_pair(lane_id+2 , lane_section->GetLaneGlobalIdById(lane_id+2) ) );
+							globalid_ids_left.push_back( std::make_pair(lane_id+(2*driving_side) , lane_section->GetLaneGlobalIdById(lane_id+(2*driving_side)) ) );
 						}
 
 						// order global id with local id to maintain geographical order
 						std::sort(globalid_ids_left.begin(), globalid_ids_left.end());
 						std::sort(globalid_ids_right.begin(), globalid_ids_right.end());
-						std::reverse(globalid_ids_right.begin(), globalid_ids_right.end());
+						if(driving_direction)
+						{
+							std::reverse(globalid_ids_right.begin(), globalid_ids_right.end());
+						}
+						else
+						{
+							std::reverse(globalid_ids_left.begin(), globalid_ids_left.end());
+						}
+					
+						
 
 						for (int jj = 0; jj < globalid_ids_left.size(); jj++)
 						{
@@ -901,8 +912,8 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 								{
 									if (lane_id > 0 )
 									{
-										osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-										left_lane_bound_id->set_value(line_ids[jj]);
+										osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+										right_lane_bound_id->set_value(line_ids[jj]);
 									}
 									if (lane_id < 0 )
 									{
@@ -916,8 +927,8 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 								int laneboundary_global_id = lane->GetLaneBoundaryGlobalId();
 								if (lane_id > 0 && laneboundary_global_id >= 0)
 								{
-									osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-									left_lane_bound_id->set_value(laneboundary_global_id);
+									osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+									right_lane_bound_id->set_value(laneboundary_global_id);
 								}
 								if (lane_id < 0 && laneboundary_global_id >= 0)
 								{
@@ -950,8 +961,8 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 									}
 									else if (lane_id>0)
 									{
-										osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-										right_lane_bound_id->set_value(nextlane_line_ids[jj]);
+										osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+										left_lane_bound_id->set_value(nextlane_line_ids[jj]);
 									}
 								}
 							}
@@ -965,8 +976,8 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 								}
 								if (lane_id > 0 && next_laneboundary_global_id >= 0)
 								{
-									osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-									right_lane_bound_id->set_value(next_laneboundary_global_id);
+									osi3::Identifier* left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+									left_lane_bound_id->set_value(next_laneboundary_global_id);
 								}
 							}
 						}
