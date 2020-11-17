@@ -6,7 +6,7 @@ But, of course, if you already have checked out the esmini project from GitHub a
 * Linux: libesminiLib.so
 * Mac: libesminiLib.dylib
 
-#### steps to build the "Hello World" esmini-player application
+### steps to build the "Hello World" esmini-player application
 1. Make sure you have built esminiLib (you should have library files in the esmini/bin folder).
 1. Navigate to the folder Hello-World_coding-example.
 1. From a command prompt run the following commands to create build scripts and build the provided code example:
@@ -25,7 +25,7 @@ If you have any IDE installed, e.g. Visual Studio (Win) or Xcode (Mac), cmake mi
 
 Here follows a few code examples to try out, e.g. by modifying main.cpp:
 
-#### Hello world - load and play a scenario
+### Hello world - load and play a scenario
 ```C++
 #include "esminiLib.hpp"
 
@@ -41,7 +41,9 @@ int main(int argc, char* argv[])
 	return 0;
 }
 ```
-#### Add optional argument to load any scenario
+Exercise: Change scenario to pedestrian.xosc, then compile and run the program again.
+
+### Add optional argument to load any scenario
 ```C++
 #include "esminiLib.hpp"
 
@@ -68,9 +70,9 @@ You can now specify esmini arguments according to [esmini launch commands](https
 
 Example:
 ```
-\esmini-player.exe --window 50 50 1000 500 --osc ..\resources\xosc\pedestrian.xosc
+.\esmini-player.exe --window 50 50 1000 500 --osc ..\resources\xosc\pedestrian.xosc --trails
 ```
-#### Fetch state of scenario objects
+### Fetch state of scenario objects
 ```C++
 #include "stdio.h"
 #include "esminiLib.hpp"
@@ -96,7 +98,7 @@ int main(int argc, char* argv[])
 }
 ```
 
-#### External control of Ego
+### External control of Ego
 A silly example showing how you can just take control over vehicle state via the API. The Ego car will move one meter along the Y-axis for each frame...
 
 Now we will also introduce the quit_flag, which lets you quit by pressing 'Esc' key.
@@ -119,8 +121,13 @@ int main(int argc, char* argv[])
 }
 
 ```
+Exercise: Change heading with i, e.g: 
 
-#### Control controllers
+```SE_ReportObjectPos(0, 0.0f, 8.0f, (float)i, 0.0f, 1.57f + 0.01f*i, 0.0f, 0.0f, 15.0f);```
+
+Yes, it looks crazy! But it demonstrates how an application totally can take control of a vehicle.
+
+### Control controllers
 Try to run cut-in_interactive.xosc, as below.
 ```C++
 #include "esminiLib.hpp"
@@ -139,7 +146,7 @@ int main(int argc, char* argv[])
 ```
 Control the Ego vehicle with arrow keys. 
 
-To disable controllers and hand over to default scenario behavior set first argument flag:
+To disable controllers and hand over to default scenario behavior set first argument flag (see [headerfile esminiLib.hpp](https://github.com/esmini/esmini/blob/7cf4b6307a203b2f52481d07fb09347ebf5517eb/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L94)):
 ```C++
 #include "esminiLib.hpp"
 
@@ -156,7 +163,7 @@ int main(int argc, char* argv[])
 }
 ```
 
-#### Ideal sensors
+### Ideal sensors
 ```C++
 #include "stdio.h"
 #include "esminiLib.hpp"
@@ -190,7 +197,7 @@ int main(int argc, char* argv[])
 ```
 Note: If you want M_PI, add on top (before includes): #define _USE_MATH_DEFINES
 
-#### Driver model
+### Driver model
 
 Using a simple vehicle model this example demonstrates how a driver model can interact with the scenario, once again using the ```ExternalController```. 
 
@@ -244,7 +251,7 @@ int main(int argc, char* argv[])
 	float simTime = 0;
 	float dt = 0;
 
-	if (SE_Init("../../../../resources/xosc/test-driver.xosc", 0, 1, 0, 0) != 0)
+	if (SE_Init("../resources/xosc/test-driver.xosc", 0, 1, 0, 0) != 0)
 	{
 		printf("Failed to initialize the scenario, quit\n");
 		return -1;
@@ -289,9 +296,11 @@ int main(int argc, char* argv[])
 	return 0;
 }
 ```
-Don't worry about the slow vehicle, you'll just drive through it. But consider it a challenge to attach a front looking sensor to detect it and have the driver to brake to avoid collision...
+Don't worry about the slow vehicle, you'll just drive through it. 
 
-#### Python binding
+**Challenge**: Attach a front looking sensor to detect it and have the driver to brake to avoid collision...
+
+### Python binding
 
 A Python wrapper for esmini can easily be created using "ctypes" (thanks David Kaplan for the tip!). Run the following script in a folder where the ScenarioEngineDLL library is present:
 ```Python

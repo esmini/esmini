@@ -1,7 +1,7 @@
 # This is a minimalistic example of how to create build files for an application 
 # making use of the esmini shared library.
 # 
-# Make sure that the headerfile scenarioenginedll.hpp and library ScenarioEngineDLL 
+# Make sure that the headerfile esminiLib.hpp and library esminiLib 
 # (exact filename depending on platform) is available, either in this folder or in 
 # the original location (relative this folder).
 
