@@ -252,6 +252,7 @@ namespace viewer
 	typedef struct
 	{
 		int key_;
+		int modKeyMask_;
 		bool down_;
 	} KeyEvent;
 

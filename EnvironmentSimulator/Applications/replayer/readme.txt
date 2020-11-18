@@ -37,8 +37,8 @@ Key commands
     Space: Toggle pause/play
     
     Arrow keys:
-       Left: Pause and move to previous frame
-       Right: Pause and move to next frame
+       Left: Pause and move to previous frame (+ Shift to skip 10 frames)
+       Right: Pause and move to next frame (+ Shift to skip 10 frames)
        Up: Increase timeScale (play faster)
        Down: Decrease timeScale (play slower)
 

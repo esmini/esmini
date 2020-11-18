@@ -1926,7 +1926,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	{
 		for (size_t i = 0; i < viewer_->callback_.size(); i++)
 		{
-			KeyEvent ke = { ea.getKey(), ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN ? true : false };
+			KeyEvent ke = { ea.getKey(), ea.getModKeyMask(),  ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN ? true : false };
 			viewer_->callback_[i].func(&ke, viewer_->callback_[i].data);
 		}
 	}

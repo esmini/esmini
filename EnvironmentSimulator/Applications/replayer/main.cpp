@@ -59,7 +59,8 @@ static const char* entityModelsFiles_[] =
 	"van_red.osgb",
 	"bus_blue.osgb",
 	"walkman.osgb",
-	"moose_cc0.osgb"
+	"moose_cc0.osgb",
+	"cyclist.osgb"
 };
 
 
@@ -84,12 +85,24 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 	{
 		if (keyEvent->key_ == KeyType::KEY_Right)
 		{
-			player->GoToNextFrame();
+			int steps = 1;
+			if (keyEvent->modKeyMask_ & KeyType::KEY_Shift_L || keyEvent->modKeyMask_ & KeyType::KEY_Shift_R)
+			{
+				steps = 10;
+			}
+			for (int i = 0; i < steps; i++) player->GoToNextFrame();
+
 			pause = true;  // step by step
 		}
 		else if (keyEvent->key_ == KeyType::KEY_Left)
 		{
-			player->GoToPreviousFrame();
+			int steps = 1;
+			if (keyEvent->modKeyMask_ & KeyType::KEY_Shift_L || keyEvent->modKeyMask_ & KeyType::KEY_Shift_R)
+			{
+				steps = 10;
+			}
+			for (int i=0;i<steps;i++) player->GoToPreviousFrame();
+
 			pause = true;  // step by step
 		}
 		else if (keyEvent->key_ == KeyType::KEY_Space)
@@ -325,7 +338,7 @@ int main(int argc, char** argv)
 				{
 					ScenarioEntity new_sc;
 
-					LOG("Creating car %d - got state from gateway", state->id);
+					LOG("Creating object %d - got state from gateway", state->id);
 
 					new_sc.id = state->id;
 					if (state->model_id >= sizeof(entityModelsFiles_) / sizeof(char*))
