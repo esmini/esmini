@@ -127,7 +127,7 @@ int main(int argc, char** argv)
 	double simTime = 0;
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
 	bool no_ghost = false;
-	static char info_str_buf[128];
+	static char info_str_buf[256];
 
 	// use common options parser to manage the program arguments
 	SE_Options opt;
@@ -362,8 +362,10 @@ int main(int argc, char** argv)
 				if (index == viewer->currentCarInFocus_)
 				{
 					// Update overlay info text
-					snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s %.2fkm/h timeScale: %.2f", 
-						simTime, state->id, state->name, 3.6 * state->speed, time_scale);
+					snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s %.2fkm/h (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) timeScale: %.2f ", 
+						simTime, state->id, state->name, 3.6 * state->speed, sc->pos.GetTrackId(), sc->pos.GetLaneId(), 
+						fabs(sc->pos.GetOffset()) < SMALL_NUMBER ? 0 : sc->pos.GetOffset(), sc->pos.GetS(), 
+						sc->pos.GetX(), sc->pos.GetY(), sc->pos.GetH(), time_scale);
 					viewer->SetInfoText(info_str_buf);
 				}
 			}
