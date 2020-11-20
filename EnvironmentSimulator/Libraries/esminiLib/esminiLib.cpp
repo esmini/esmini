@@ -179,20 +179,20 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 		r_data->trail_heading = r_data->road_heading;
 		r_data->speed_limit = (float)s_data.road_lane_info.speed_limit;
 
-
 		// Add visualization of forward looking road sensor probe
-		if (player->viewer_ && player->viewer_->entities_[object_id]->GetType() == viewer::EntityModel::ENTITY_TYPE_VEHICLE)
-		{
-			viewer::CarModel* model = (viewer::CarModel*)player->viewer_->entities_[object_id];
-			model->steering_sensor_->Show();
-			player->viewer_->SensorSetPivotPos(model->steering_sensor_, pos->GetX(), pos->GetY(), pos->GetZ());
-			player->viewer_->SensorSetTargetPos(model->steering_sensor_, 
-				s_data.road_lane_info.pos[0], 
-				s_data.road_lane_info.pos[1],
-				s_data.road_lane_info.pos[2]);
-			player->viewer_->UpdateSensor(model->steering_sensor_);
-		}
-
+		#ifdef _SCENARIO_VIEWER
+			if (player->viewer_ && player->viewer_->entities_[object_id]->GetType() == viewer::EntityModel::ENTITY_TYPE_VEHICLE)
+			{
+				viewer::CarModel* model = (viewer::CarModel*)player->viewer_->entities_[object_id];
+				model->steering_sensor_->Show();
+				player->viewer_->SensorSetPivotPos(model->steering_sensor_, pos->GetX(), pos->GetY(), pos->GetZ());
+				player->viewer_->SensorSetTargetPos(model->steering_sensor_, 
+					s_data.road_lane_info.pos[0], 
+					s_data.road_lane_info.pos[1],
+					s_data.road_lane_info.pos[2]);
+				player->viewer_->UpdateSensor(model->steering_sensor_);
+			}
+		#endif
 		return 0;
 	}
 }
@@ -824,13 +824,15 @@ extern "C"
 		player->RegisterObjCallback(object_id, callback, user_data);
 	}
 
-	SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
-	{
-		if (player && player->viewer_)
+	#ifdef _SCENARIO_VIEWER
+		SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
 		{
-			player->viewer_->SetNodeMaskBits(featureType, enable ? featureType : 0x0);
+			if (player && player->viewer_)
+			{
+				player->viewer_->SetNodeMaskBits(featureType, enable ? featureType : 0x0);
+			}
 		}
-	}
+	#endif
 
 	// Simple vehicle 
 	SE_DLL_API void* SE_SimpleVehicleCreate(float x, float y, float h, float length)
