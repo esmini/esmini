@@ -6649,7 +6649,7 @@ int Position::SetTrajectoryS(Trajectory* trajectory, double traj_s)
 			tot_dist += dist;
 		}
 
-		if (i == pline->vertex_.size())
+		if (i == pline->vertex_.size() - 1)
 		{
 			// passed length of trajectory, use final vertex
 			Position* vpos = &pline->vertex_.back()->pos_;
