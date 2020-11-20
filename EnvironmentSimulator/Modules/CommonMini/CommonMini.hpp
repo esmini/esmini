@@ -247,15 +247,15 @@ public:
 	void Log(char const* func, char const* file, int line, char const* format, ...);
 	void SetCallback(FuncPtr callback);
 	bool IsCallbackSet();
+	void SetTimePtr(double* timePtr) { time_ = timePtr; }
 
 private:
-	bool use_logfile_;
 	Logger();
-	Logger(bool use_logfile);
 	~Logger();
-	FuncPtr callback_;
 
+	FuncPtr callback_;
 	std::ofstream file_;
+	double* time_; // seconds
 };
 
 // Global Vehicle Data Logger

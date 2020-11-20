@@ -687,6 +687,7 @@ int ScenarioPlayer::Init()
 			return -1;
 		}
 		scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
+		Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
 	}
 	catch (std::logic_error &e)
 	{

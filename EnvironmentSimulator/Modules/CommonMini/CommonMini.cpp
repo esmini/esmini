@@ -463,15 +463,15 @@ void NormalizeVec2D(double x, double y, double &xn, double &yn)
 	yn = y / len;
 }
 
-Logger::Logger()
+Logger::Logger() : callback_(0), time_(0)
 {
+
 #ifndef SUPPRESS_LOG
 	file_.open(LOG_FILENAME);
 	if (file_.fail())
 	{
 		throw std::iostream::failure(std::string("Cannot open file: ") + LOG_FILENAME);
 	}
-#endif
 	
 	static char message[1024];
 	snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
@@ -483,8 +483,10 @@ Logger::Logger()
 	snprintf(message, 1024, "esmini BUILD VERSION: %s", esmini_build_version());
 	file_ << message << std::endl;
 	file_.flush();
+#endif
 
 	callback_ = 0;
+	time_ = 0;
 }
 
 Logger::~Logger()
@@ -499,7 +501,7 @@ Logger::~Logger()
 
 bool Logger::IsCallbackSet()
 {
-	return callback_ != 0; 
+	return callback_ != 0;
 }
 
 void Logger::Log(char const* file, char const* func, int line, char const* format, ...)
@@ -512,7 +514,14 @@ void Logger::Log(char const* file, char const* func, int line, char const* forma
 	vsnprintf(message, 1024, format, args);
 
 #ifdef DEBUG_TRACE
-	snprintf(complete_entry, 2048, "%s / %d / %s(): %s", file, line, func, message);
+	if (time_)
+	{
+		snprintf(complete_entry, 2048, "%.3f %s / %d / %s(): %s", *time_, file, line, func, message);
+	}
+	else
+	{
+		snprintf(complete_entry, 2048, "%s / %d / %s(): %s", file, line, func, message);
+	}
 #else
 	strncpy(complete_entry, message, 1024);
 #endif

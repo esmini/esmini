@@ -62,6 +62,7 @@ namespace scenarioengine
 		void SetHeadstartTime(double headstartTime) { headstart_time_ = headstartTime; }
 		double GetHeadstartTime() { return headstart_time_; }
 		void SetSimulationTime(double time) { simulationTime_ = time; }
+		double* GetSimulationTimePtr() { return &simulationTime_; }
 
 	private:
 		// OpenSCENARIO parameters
