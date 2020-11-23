@@ -81,7 +81,7 @@ namespace OpenDRIVE
 
     public static class RoadManagerLibraryCS
     {
-        private const string LIB_NAME = "RoadManagerDLL";
+        private const string LIB_NAME = "esminiRMLib";
 
         /// <summary>Initialize the OpenDRIVE utility manager</summary>
         /// <param name="odrFilename">OpenDRIVE file name</param>
@@ -193,7 +193,7 @@ namespace OpenDRIVE
         /// <param name="y">cartesian coordinate y value</param>
         /// <param name="h">rotation heading value</param>
         /// <returns>0 if successful, -1 if not</returns>
-        [DllImport("RoadManagerDLL", EntryPoint = "RM_SetWorldXYHPosition")]
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetWorldXYHPosition")]
         public static extern int SetWorldXYHPosition(int index, float x, float y, float h);
 
         /// <summary>
@@ -220,7 +220,7 @@ namespace OpenDRIVE
         /// </summary>
         /// <param name="index">Handle to the position object from which to measure</param>
         /// <returns>SpeedLimit in m/s</returns>
-        [DllImport("RoadManagerDLL", EntryPoint = "RM_GetSpeedLimit")]
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetSpeedLimit")]
         public static extern float GetSpeedLimit(int index);
         
         /// <summary>
@@ -231,7 +231,7 @@ namespace OpenDRIVE
         /// <param name="data">Struct including all result values, see RoadLaneInfo typedef</param>
         /// <param name "lookAheadMode">Measurement strategy: 0=Along lane center, 1=road center, 2=current lane offset. See roadmanager::Position::LookAheadMode enum</param>
         /// <returns>0 if successful, -1 if not</returns>
-        [DllImport("RoadManagerDLL", EntryPoint = "RM_GetLaneInfo")]
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneInfo")]
         public static extern int GetLaneInfo(int index, float lookahead_distance, ref RoadLaneInfo data, int lookAheadMode);
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace OpenDRIVE
         /// <param name="data">Struct including all result values, see RoadProbeInfo typedef</param>
         /// <param name "lookAheadMode">Measurement strategy: 0=Along lane center, 1=road center, 2=current lane offset. See roadmanager::Position::LookAheadMode enum</param>
         /// <returns>0 if successful, -1 if not</returns>
-        [DllImport("RoadManagerDLL", EntryPoint = "RM_GetProbeInfo")]
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetProbeInfo")]
         public static extern int GetProbeInfo(int index, float lookahead_distance, ref RoadProbeInfo data, int lookAheadMode);
 
         /// <summary>
@@ -252,7 +252,7 @@ namespace OpenDRIVE
         /// <param name="handleB">Handle to the position object to which the distance is measured</param>
         /// <param name="pos_diff">Struct including all result values, see PositionDiff typedef</param>
         /// <returns>true if a valid path between the road positions was found and calculations could be performed</returns>
-        [DllImport("RoadManagerDLL", EntryPoint = "RM_SubtractAFromB")]
+        [DllImport(LIB_NAME, EntryPoint = "RM_SubtractAFromB")]
         public static extern bool SubtractAFromB(int handleA, int handleB, ref PositionDiff pos_diff);
 
     }

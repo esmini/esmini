@@ -1129,7 +1129,12 @@ OSCPrivateAction::DynamicsShape ParseDynamicsShape(std::string shape)
 
 OSCPrivateAction::DynamicsDimension ParseDynamicsDimension(std::string dimension)
 {
-	if (dimension == "rate")
+	if (dimension.empty())
+	{
+		LOG("Dynamics dimension missing - fall back to TIME");
+		return OSCPrivateAction::DynamicsDimension::TIME;
+	}
+	else if (dimension == "rate")
 	{
 		return OSCPrivateAction::DynamicsDimension::RATE;
 	}

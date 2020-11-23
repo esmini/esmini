@@ -4,6 +4,6 @@
 cd /d "%~dp0"
 
 "../../bin/OdrPlot" "%~1"
-python "../../EnvironmentSimulator/OdrPlot/xodr.py" track.csv
+python "../../EnvironmentSimulator/Applications/OdrPlot/xodr.py" track.csv
 
 del track.csv
