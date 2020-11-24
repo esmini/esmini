@@ -26,8 +26,6 @@
 
 using namespace roadmanager;
 
-//#define REF_ONLY
-
 int main(int argc, char *argv[])
 {
 	if (argc < 2)
@@ -62,29 +60,21 @@ int main(int argc, char *argv[])
 			int steps = (int)((s_end - s_start) / step_length_target);
 			double step_length = steps > 0 ? (s_end - s_start) / steps : s_end - s_start;
 
-#ifdef REF_ONLY
-			Lane *lane = lane_section->GetLaneById(0);
-#else
 			for (int j = 0; j < lane_section->GetNumberOfLanes(); j++)
 			{
 				Lane *lane = lane_section->GetLaneByIdx(j);
-				if (!lane->IsDriving() && lane->GetId() != 0)
-				{
-					continue;
-				}
-#endif
 
-				file << "lane, " << road->GetId() << ", " << i << ", " << lane->GetId() << std::endl;
+				file << "lane, " << road->GetId() << ", " << i << ", " << lane->GetId() << (lane->IsDriving() ? ", driving" : ", no-driving") << std::endl;
+				double s = s_start;
 				for (int k = 0; k < steps + 1; k++)
 				{
-					pos->SetLanePos(road->GetId(), lane->GetId(), MIN(s_end, s_start + k * step_length), 0, i);
+					s += k * step_length;
+					s = MIN(s_end, s);
+					pos->SetLanePos(road->GetId(), lane->GetId(), s, SIGN(lane->GetId())*lane_section->GetWidth(s, lane->GetId())*0.5, i);
 					file << pos->GetX() << ", " << pos->GetY() << ", " << pos->GetZ() << ", " << pos->GetH() << std::endl;
 				}
-#ifndef REF_ONLY
 			}
-#endif
 		}
-		
 	}
 	file.close();
 //	od->Print();
