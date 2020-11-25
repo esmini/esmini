@@ -1193,31 +1193,25 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, s
 		osi3::Identifier Left_lane_id = obj_osi_internal.ln[idx_central]->mutable_classification()->left_adjacent_lane_id(0);
 		int left_lane_id = (int)Left_lane_id.value(); 	
 		idx_left = GetLaneIdxfromIdOSI(left_lane_id); 
-		if (IsCentralOSILane(idx_left))
-		{
-			// if it is central lane -> we look for its left one
-			if (obj_osi_internal.ln[idx_left]->mutable_classification()->left_adjacent_lane_id_size() == 0 )
-			{
-				far_right_lb_id = -1;
-			}
-			else
-			{
-				Left_lane_id = obj_osi_internal.ln[idx_left]->mutable_classification()->left_adjacent_lane_id(0);
-				left_lane_id = (int)Left_lane_id.value(); 	
-				idx_left = GetLaneIdxfromIdOSI(left_lane_id);
-			}
-		}
+		
 		// save left boundary of left lane as far left lane boundary of central lane
 		if (obj_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id_size() == 0 )
 		{
-			far_right_lb_id = -1;
+			far_left_lb_id = -1;
 		}
 		else
 		{
-			osi3::Identifier Far_left_lb_id = obj_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id(0);
-			far_left_lb_id = (int)Far_left_lb_id.value();
+			if (obj_osi_internal.ln[idx_central]->mutable_classification()->centerline_is_driving_direction() != obj_osi_internal.ln[idx_left]->mutable_classification()->centerline_is_driving_direction()) // if not same drv dir
+			{
+				osi3::Identifier Far_left_lb_id = obj_osi_internal.ln[idx_left]->mutable_classification()->right_lane_boundary_id(0);
+				far_left_lb_id = (int)Far_left_lb_id.value();
+			}
+			else
+			{
+				osi3::Identifier Far_left_lb_id = obj_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id(0);
+				far_left_lb_id = (int)Far_left_lb_id.value();
+			}
 		}
-
 	}
 
 
@@ -1231,20 +1225,7 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, s
 		osi3::Identifier Right_lane_id = obj_osi_internal.ln[idx_central]->mutable_classification()->right_adjacent_lane_id(0);
 		int right_lane_id = (int)Right_lane_id.value();   
 		idx_right = GetLaneIdxfromIdOSI(right_lane_id);
-		if (IsCentralOSILane(idx_right))
-		{
-			// if it is central lane -> we look for its right one 
-			if (obj_osi_internal.ln[idx_right]->mutable_classification()->right_adjacent_lane_id_size() == 0 )
-			{
-				far_right_lb_id = -1;
-			}
-			else
-			{
-				Right_lane_id = obj_osi_internal.ln[idx_right]->mutable_classification()->right_adjacent_lane_id(0);
-				right_lane_id = (int)Right_lane_id.value(); 	 
-				idx_right = GetLaneIdxfromIdOSI(right_lane_id); 
-			}
-		}
+		
 		// save right boundary of right lane as far right lane boundary of central lane 
 		if (obj_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id_size() == 0 )
 		{
@@ -1252,8 +1233,16 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, s
 		}
 		else
 		{
-			osi3::Identifier Far_right_lb_id = obj_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id(0);
-			far_right_lb_id = (int)Far_right_lb_id.value();
+			if (obj_osi_internal.ln[idx_central]->mutable_classification()->centerline_is_driving_direction() != obj_osi_internal.ln[idx_right]->mutable_classification()->centerline_is_driving_direction()) // if not same drv dir
+			{
+				osi3::Identifier Far_right_lb_id = obj_osi_internal.ln[idx_right]->mutable_classification()->left_lane_boundary_id(0);
+				far_right_lb_id = (int)Far_right_lb_id.value();
+			}
+			else
+			{
+				osi3::Identifier Far_right_lb_id = obj_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id(0);
+				far_right_lb_id = (int)Far_right_lb_id.value();
+			}
 		}
 
 	}
