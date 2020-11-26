@@ -92,6 +92,13 @@ extern "C"
 	// 
 	
 	/**
+	Add a search path for OpenDRIVE and 3D model files
+	@param path Path to a directory
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_AddPath(const char* path);
+
+	/**
 	Initialize the scenario engine
 	@param oscFilename Path to the OpenSCEANRIO file
 	@param disable_ctrls 1=Any controller will be disabled 0=Controllers applied according to OSC file

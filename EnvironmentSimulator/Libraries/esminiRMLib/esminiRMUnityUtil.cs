@@ -1,4 +1,5 @@
-﻿/*
+﻿
+/*
  * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
@@ -62,12 +63,18 @@ namespace OpenDRIVE
     public static class OpenDriveUtil
     {
         #region Properties
+        public enum LookAheadMode
+        {
+            LaneCenter,
+            RoadCenter,
+            CurrentLateralOffset
+        }
+
         private static OpenDrivePositionData tmpPosData = new OpenDrivePositionData();
         private static RoadLaneInfo tmpLaneInfo = new RoadLaneInfo();
         private static RoadProbeInfo tmpProbeInfo = new RoadProbeInfo();
         private const float RAD2DEG = Mathf.Rad2Deg;
         private const float DEG2RAD = Mathf.Deg2Rad;
-
 
         #endregion
 
@@ -110,12 +117,32 @@ namespace OpenDRIVE
             unityPosData.s = tmpPosData.s;
         }
 
-        public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo, int lookAheadMode)
+        //public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo)
+        //{
+        //    GetLaneInfo(openDriveIndex, lookAheadDistance, ref laneInfo, 0);
+        //}
+        //public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo, int laneId)
+        //{
+        //    RoadManagerLibraryCS.GetLaneInfo(openDriveIndex, lookAheadDistance, ref tmpLaneInfo);
+        //    laneInfo.position = GetUnityPosition(tmpLaneInfo.pos[0], tmpLaneInfo.pos[1], tmpLaneInfo.pos[2]);
+        //    laneInfo.rotation = GetUnityRotation(tmpLaneInfo.heading, tmpLaneInfo.pitch, tmpLaneInfo.roll);
+        //    if (laneId >= 0)
+        //        laneInfo.curvature = tmpLaneInfo.curvature;
+        //    else
+        //        laneInfo.curvature = -tmpLaneInfo.curvature;
+        //    laneInfo.speedLimit = tmpLaneInfo.speed_limit;
+        //    laneInfo.width = tmpLaneInfo.width;
+        //}
+
+        public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo, LookAheadMode lookAheadMode = LookAheadMode.LaneCenter, int laneId = 0)
         {
-            RoadManagerLibraryCS.GetLaneInfo(openDriveIndex, lookAheadDistance, ref tmpLaneInfo, lookAheadMode);
+            RoadManagerLibraryCS.GetLaneInfo(openDriveIndex, lookAheadDistance, ref tmpLaneInfo, (int)lookAheadMode);
             laneInfo.position = GetUnityPosition(tmpLaneInfo.pos[0], tmpLaneInfo.pos[1], tmpLaneInfo.pos[2]);
             laneInfo.rotation = GetUnityRotation(tmpLaneInfo.heading, tmpLaneInfo.pitch, tmpLaneInfo.roll);
-            laneInfo.curvature = tmpLaneInfo.curvature;
+            if (laneId >= 0)
+                laneInfo.curvature = tmpLaneInfo.curvature;
+            else
+                laneInfo.curvature = -tmpLaneInfo.curvature;
             laneInfo.speedLimit = tmpLaneInfo.speed_limit;
             laneInfo.width = tmpLaneInfo.width;
         }
@@ -147,18 +174,9 @@ namespace OpenDRIVE
             go.transform.SetPositionAndRotation(pos, rot);
         }
 
-        #endregion
-
-        #region Private Methods
-
-        private static Vector3 GetUnityPosition(float odrX, float odrY, float odrZ)
+        public static Vector3 GetUnityPosition(float odrX, float odrY, float odrZ)
         {
             return new Vector3(-odrY, odrZ, odrX);
-        }
-
-        private static Vector3 GetUnityPosition(OpenDrivePositionData openDrivePositionData)
-        {
-            return GetUnityPosition(openDrivePositionData.x, openDrivePositionData.y, openDrivePositionData.z);
         }
 
         /// <summary>
@@ -168,9 +186,18 @@ namespace OpenDRIVE
         /// <param name="pitch"></param>
         /// <param name="roll"></param>
         /// <returns></returns>
-        private static Quaternion GetUnityRotation(float heading, float pitch, float roll)
+        public static Quaternion GetUnityRotation(float heading, float pitch, float roll)
         {
             return Quaternion.Euler(pitch * RAD2DEG, -heading * RAD2DEG, roll * RAD2DEG);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private static Vector3 GetUnityPosition(OpenDrivePositionData openDrivePositionData)
+        {
+            return GetUnityPosition(openDrivePositionData.x, openDrivePositionData.y, openDrivePositionData.z);
         }
 
         /// <summary>

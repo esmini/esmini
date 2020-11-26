@@ -228,6 +228,14 @@ private:
 #endif
 };
 
+class SE_Env
+{
+public:
+	static SE_Env& Inst();
+	std::vector<std::string> paths;
+	std::vector<std::string>& GetPaths() { return paths; }
+	int AddPath(std::string path);
+};
 
 std::vector<std::string> SplitString(const std::string &s, char separator);
 std::string DirNameOf(const std::string& fname);

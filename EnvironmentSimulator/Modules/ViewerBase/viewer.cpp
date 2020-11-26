@@ -823,7 +823,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	exe_path_ = exe_path;
 
 	// add environment
-	if (modelFilename != 0 && (!FileExists(modelFilename) || (AddEnvironment(modelFilename) == -1)))
+	if (modelFilename != 0)
 	{
 		// Look relative scenario directory
 		const char* filename = 0;
@@ -836,18 +836,40 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 			filename = odrManager->GetOpenDriveFilename().c_str();
 		}
 
+		std::vector<std::string> file_name_candidates;
+		// absolute path or relative to current directory
+		file_name_candidates.push_back(modelFilename);
+
 		if (filename != 0)
 		{
-			std::string modelFilename2 = CombineDirectoryPathAndFilepath(DirNameOf(filename), modelFilename).c_str();
-			if (!FileExists(modelFilename2.c_str()) || (AddEnvironment(modelFilename2.c_str()) == -1))
+			// relative path to scenario directory
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(filename), modelFilename));
+		}
+
+		// Remove all directories from path and look in current directory
+		file_name_candidates.push_back(FileNameOf(modelFilename));
+
+		// Finally check registered paths 
+		for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+		{
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], modelFilename));
+		}
+		
+		size_t i;
+		for (i = 0; i < file_name_candidates.size(); i++)
+		{
+			if (FileExists(file_name_candidates[i].c_str()))
 			{
-				LOG("Failed to read environment model %s! Also tried %s. If file is missing, check SharePoint/SharedDocuments/models",
-					modelFilename, CombineDirectoryPathAndFilepath(getScenarioDir(), modelFilename).c_str());
+				if (AddEnvironment(file_name_candidates[i].c_str()) == 0)
+				{
+					break;
+				}
 			}
 		}
-		else
+
+		if (i == file_name_candidates.size())
 		{
-			LOG("Failed to locate environment model based on xosc or xodr locations - continue without");
+			LOG("Failed to read environment model %s!", modelFilename);
 		}
 	}
 	if (environment_ == 0)
@@ -1023,11 +1045,16 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec3 trail_c
 	osg::ref_ptr<osg::Group> group = 0;
 
 	std::vector<std::string> file_name_candidates;
-	file_name_candidates.push_back(path.c_str());
-	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(getScenarioDir(), path).c_str());
-	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(getScenarioDir(), std::string("../models/" + path)).c_str());
-	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(roadmanager::Position::GetOpenDrive()->GetOpenDriveFilename()), path).c_str());
-	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", path).c_str());
+	file_name_candidates.push_back(path);
+	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(getScenarioDir(), path));
+	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(getScenarioDir(), std::string("../models/" + path)));
+	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(roadmanager::Position::GetOpenDrive()->GetOpenDriveFilename()), path));
+	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", path));
+	// Finally check registered paths 
+	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+	{
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], path));
+	}
 	size_t i;
 	for (i = 0; i < file_name_candidates.size(); i++)
 	{

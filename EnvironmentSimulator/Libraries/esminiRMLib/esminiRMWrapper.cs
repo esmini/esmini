@@ -23,7 +23,7 @@ using System.Runtime.InteropServices;
 
 namespace OpenDRIVE
 {
-    
+
     [StructLayout(LayoutKind.Sequential)]
     public struct OpenDrivePositionData
     {
@@ -108,7 +108,7 @@ namespace OpenDRIVE
         /// <returns>0 if successful, -1 if specified position(s) could not be deleted</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_DeletePosition")]
         public static extern int DeletePosition();
-        
+
         /// <summaryGet the total number fo roads in the road network of the currently loaded OpenDRIVE file</summary>
         /// <returns>Number of roads</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetNumberOfRoads")]
@@ -222,7 +222,7 @@ namespace OpenDRIVE
         /// <returns>SpeedLimit in m/s</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetSpeedLimit")]
         public static extern float GetSpeedLimit(int index);
-        
+
         /// <summary>
         /// Retrieve lane information from the position object (at current road, s-value and lane)
         /// </summary>

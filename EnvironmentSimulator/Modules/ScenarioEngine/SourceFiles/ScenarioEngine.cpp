@@ -373,23 +373,33 @@ void ScenarioEngine::parseScenario()
 	}
 	else
 	{
-		// First assume absolute path or relative to current directory
-		std::string filename = getOdrFilename();
-		if (!FileExists(filename.c_str()) || !roadmanager::Position::LoadOpenDrive(filename.c_str()))
+		std::vector<std::string> file_name_candidates;
+		// absolute path or relative to current directory
+		file_name_candidates.push_back(getOdrFilename());  
+		// relative path to scenario directory
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename())); 
+		// Remove all directories from path and look in current directory
+		file_name_candidates.push_back(FileNameOf(getOdrFilename()));
+		// Finally check registered paths 
+		for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 		{
-			// Then try relative path to scenario directory
-			filename = CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename());
-			if (!FileExists(filename.c_str()) || !roadmanager::Position::LoadOpenDrive(filename.c_str()))
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(getOdrFilename())));
+		}
+		size_t i;
+		for (i = 0; i < file_name_candidates.size(); i++)
+		{
+			if (FileExists(file_name_candidates[i].c_str()))
 			{
-				// Finally look for the file in current directory
-				std::string path = std::string(getOdrFilename().c_str());
-				std::string base_filename = path.substr(path.find_last_of("/\\") + 1);
-				LOG("Failed to load %s - looking for file %s in current folder", getOdrFilename().c_str(), base_filename.c_str());
-				if (!roadmanager::Position::LoadOpenDrive(base_filename.c_str()))
+				if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()))
 				{
-					throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(getOdrFilename().c_str()));
+					break;
 				}
 			}
+		}
+
+		if (i == file_name_candidates.size())
+		{
+			throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(getOdrFilename().c_str()));
 		}
 	}
 

@@ -463,6 +463,21 @@ void NormalizeVec2D(double x, double y, double &xn, double &yn)
 	yn = y / len;
 }
 
+int SE_Env::AddPath(std::string path)
+{
+	// Check if path already in list
+	for (size_t i = 0; i < paths.size(); i++)
+	{
+		if (paths[i] == path)
+		{
+			return -1;
+		}
+	}
+	paths.push_back(path);
+
+	return 0;
+}
+
 Logger::Logger() : callback_(0), time_(0)
 {
 
@@ -559,6 +574,12 @@ void Logger::SetCallback(FuncPtr callback)
 Logger& Logger::Inst()
 {
 	static Logger instance_;
+	return instance_;
+}
+
+SE_Env& SE_Env::Inst()
+{
+	static SE_Env instance_;
 	return instance_;
 }
 

@@ -10,6 +10,7 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+#include "CommonMini.hpp"
 #include "playerbase.hpp"
 #include "esminiLib.hpp"
 #include "IdealSensor.hpp"
@@ -291,6 +292,12 @@ static int InitScenario()
 
 extern "C"
 {
+	SE_DLL_API int SE_AddPath(const char* path)
+	{
+		SE_Env::Inst().AddPath(path);
+		return 0;
+	}
+
 	SE_DLL_API int SE_InitWithArgs(int argc, char* argv[])
 	{
 		resetScenario();
