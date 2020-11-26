@@ -1,5 +1,15 @@
 ## esmini release notes
-The purpose of this document is to highlight relevant changes introducing new features or breaking backward compatibility, i.e. requiring updates to scenarios and start scripts.
+
+### 2020-11-26 Version 2.0.7
+- Add position to on-screen info
+- Fix end position issue in FollowTrajectory (issue appeared when connecting multiple trajectories)
+- odrplot improvements:
+  - plot lane boundary instead of lane center
+  - plot non drivable lanes in gray
+  - maximize axis to simplify panning and zooming
+- Fix LaneChange relative lane bug (when relative target lane is on other side of reference line)
+- Add search path support for OpenDRIVE and models
+- Some additional minor fixes
 
 ### 2020-11-17 Version 2.0.6
 - Fixed minor issues in Hello World tutorial
