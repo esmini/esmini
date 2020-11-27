@@ -12,12 +12,12 @@
          </BoundingBox>
          <Performance maxSpeed="69" maxDeceleration="30"/>
          <Axles>
-            <FrontAxle maxSteering="30"
+            <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
                        trackWidth="1.68"
                        positionX="2.98"
                        positionZ="0.4"/>
-            <RearAxle maxSteering="30"
+            <RearAxle maxSteering="0.523598775598"
                       wheelDiameter="0.8"
                       trackWidth="1.68"
                       positionX="0"
@@ -35,12 +35,12 @@
          </BoundingBox>
          <Performance maxSpeed="69" maxDeceleration="30"/>
          <Axles>
-            <FrontAxle maxSteering="30"
+            <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
                        trackWidth="1.68"
                        positionX="2.98"
                        positionZ="0.4"/>
-            <RearAxle maxSteering="30"
+            <RearAxle maxSteering="0.523598775598"
                       wheelDiameter="0.8"
                       trackWidth="1.68"
                       positionX="0"
@@ -58,12 +58,12 @@
          </BoundingBox>
          <Performance maxSpeed="70" maxDeceleration="30"/>
          <Axles>
-            <FrontAxle maxSteering="30"
+            <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
                        trackWidth="1.68"
                        positionX="2.98"
                        positionZ="0.4"/>
-            <RearAxle maxSteering="30"
+            <RearAxle maxSteering="0.523598775598"
                       wheelDiameter="0.8"
                       trackWidth="1.68"
                       positionX="0"
@@ -81,12 +81,12 @@
          </BoundingBox>
          <Performance maxSpeed="70" maxDeceleration="30"/>
          <Axles>
-            <FrontAxle maxSteering="30"
+            <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
                        trackWidth="1.68"
                        positionX="2.98"
                        positionZ="0.4"/>
-            <RearAxle maxSteering="30"
+            <RearAxle maxSteering="0.523598775598"
                       wheelDiameter="0.8"
                       trackWidth="1.68"
                       positionX="0"
@@ -104,12 +104,12 @@
          </BoundingBox>
          <Performance maxSpeed="70" maxDeceleration="30"/>
          <Axles>
-            <FrontAxle maxSteering="30"
+            <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
                        trackWidth="1.68"
                        positionX="2.98"
                        positionZ="0.4"/>
-            <RearAxle maxSteering="30"
+            <RearAxle maxSteering="0.523598775598"
                       wheelDiameter="0.8"
                       trackWidth="1.68"
                       positionX="0"
@@ -127,12 +127,12 @@
          </BoundingBox>
          <Performance maxSpeed="70" maxDeceleration="30"/>
          <Axles>
-            <FrontAxle maxSteering="30"
+            <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
                        trackWidth="1.68"
                        positionX="2.98"
                        positionZ="0.4"/>
-            <RearAxle maxSteering="30"
+            <RearAxle maxSteering="0.523598775598"
                       wheelDiameter="0.8"
                       trackWidth="1.68"
                       positionX="0"
@@ -150,12 +150,12 @@
          </BoundingBox>
          <Performance maxSpeed="70" maxDeceleration="30"/>
          <Axles>
-            <FrontAxle maxSteering="30"
+            <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
                        trackWidth="1.68"
                        positionX="2.98"
                        positionZ="0.4"/>
-            <RearAxle maxSteering="30"
+            <RearAxle maxSteering="0.523598775598"
                       wheelDiameter="0.8"
                       trackWidth="1.68"
                       positionX="0"
