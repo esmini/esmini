@@ -80,7 +80,7 @@ namespace ESMini
         public int far_right_lb_id;
     };
 
-    public static class esminiLib 
+    public static class ESMiniLib
     {
         private const string LIB_NAME = "esminiLib";
 
@@ -89,6 +89,10 @@ namespace ESMini
         /// <param name="path">Path to a directory</param>
         /// <returns>0 on success, -1 on failure for any reason</returns> 
         public static extern int SE_AddPath(string path);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_ClearPaths")]
+        /// <summary>Clear all search paths for OpenDRIVE and 3D model files
+        public static extern void SE_ClearPaths();
 
         [DllImport(LIB_NAME, EntryPoint = "SE_Init")]
         /// <summary>Initialize the scenario engine</summary>

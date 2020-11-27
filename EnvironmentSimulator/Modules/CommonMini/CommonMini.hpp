@@ -235,6 +235,7 @@ public:
 	std::vector<std::string> paths;
 	std::vector<std::string>& GetPaths() { return paths; }
 	int AddPath(std::string path);
+	void ClearPaths() { paths.clear(); }
 };
 
 std::vector<std::string> SplitString(const std::string &s, char separator);

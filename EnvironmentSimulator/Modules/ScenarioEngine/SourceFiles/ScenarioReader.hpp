@@ -63,6 +63,11 @@ namespace scenarioengine
 			return 0;
 		}
 
+		void Clear()
+		{
+			controller_.clear();
+		}
+
 	};
 
 
@@ -122,7 +127,8 @@ namespace scenarioengine
 		}
 		
 		void LoadControllers();
-		
+		void UnloadControllers();
+
 		std::vector<Controller*> controller_;
 
 	private:

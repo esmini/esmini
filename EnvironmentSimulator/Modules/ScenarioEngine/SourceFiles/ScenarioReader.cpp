@@ -47,6 +47,11 @@ void ScenarioReader::LoadControllers()
 	RegisterController(ControllerExternal::GetTypeNameStatic(), InstantiateControllerExternal);
 }
 
+void ScenarioReader::UnloadControllers()
+{
+	ScenarioReader::controllerPool_.Clear();
+}
+
 int ScenarioReader::loadOSCFile(const char * path)
 {
 	LOG("Loading %s", path);

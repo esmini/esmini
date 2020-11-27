@@ -298,6 +298,11 @@ extern "C"
 		return 0;
 	}
 
+	SE_DLL_API void SE_ClearPaths()
+	{
+		SE_Env::Inst().ClearPaths();
+	}
+
 	SE_DLL_API int SE_InitWithArgs(int argc, char* argv[])
 	{
 		resetScenario();

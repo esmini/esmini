@@ -60,6 +60,9 @@ void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, bool disabl
 
 ScenarioEngine::~ScenarioEngine()
 {
+	scenarioReader->UnloadControllers();
+	delete scenarioReader;
+	scenarioReader = 0;
 	LOG("Closing");
 }
 

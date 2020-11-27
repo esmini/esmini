@@ -99,6 +99,11 @@ extern "C"
 	SE_DLL_API int SE_AddPath(const char* path);
 
 	/**
+	Clear all search paths for OpenDRIVE and 3D model files
+	*/
+	SE_DLL_API void SE_ClearPaths();
+
+	/**
 	Initialize the scenario engine
 	@param oscFilename Path to the OpenSCEANRIO file
 	@param disable_ctrls 1=Any controller will be disabled 0=Controllers applied according to OSC file
