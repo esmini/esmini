@@ -1,5 +1,13 @@
 ## esmini release notes
 
+### 2020-11-27 Version 2.0.8
+- Fix multi-session issues 
+  - Add method to clear paths between scenarios. 
+  - Reset controllers between scenario runs (fixes issue with --disable_controllers
+    not having effect)
+- Fix relative position bug (which caused wrong lateral position in mapping x,y to road coordinates)
+- Fix typos in scenario files
+
 ### 2020-11-26 Version 2.0.7
 - Add position to on-screen info
 - Fix end position issue in FollowTrajectory (issue appeared when connecting multiple trajectories)
