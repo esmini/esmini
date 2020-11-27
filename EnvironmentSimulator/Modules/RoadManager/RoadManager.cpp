@@ -4763,8 +4763,8 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 
 	// Set position exact on center line
 	int retvalue = SetTrackPos(roadMin->GetId(), closestS, 0, UpdateTrackPosMode::UPDATE_XYZ);
-	double xCenterLine = GetX();
-	double yCenterLine = GetY();
+	double xCenterLine = x_;
+	double yCenterLine = y_;
 
 	// Find out actual lateral position
 	double latOffset = PointToLineDistance2DSigned(
