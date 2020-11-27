@@ -24,10 +24,10 @@
 					<Dimensions height="1.8" length="5" width="2"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<File filepath="../models/car_white.osgb"/>
 				</Properties>

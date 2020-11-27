@@ -20,10 +20,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="0"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -38,10 +38,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="1"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -56,10 +56,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="2"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -74,10 +74,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="3"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -92,10 +92,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="4"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -110,10 +110,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="5"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -128,10 +128,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="6"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -146,10 +146,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="7"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -164,10 +164,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="8"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -182,10 +182,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="9"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -200,10 +200,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="10"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -218,10 +218,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="11"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -236,10 +236,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="12"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -254,10 +254,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="13"/>
 					<File filepath="../models/car_red.osgb"/>
@@ -272,10 +272,10 @@
 					<Dimensions height="1.5" length="4.5" width="1.8"/>
 				</BoundingBox>
 				<Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
-				<Axels>
-					<Axel maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-					<Axel maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
-				</Axels>
+				<Axles>
+					<FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+					<RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+				</Axles>
 				<Properties>
 					<Property name="model_id" value="14"/>
 					<File filepath="../models/car_red.osgb"/>

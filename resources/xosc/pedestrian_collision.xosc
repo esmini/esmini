@@ -165,7 +165,7 @@
                                         <TimeReference>
                                             <None/>
                                         </TimeReference>
-                                        <TrajectoryFollowingMode name="position"/>
+                                        <TrajectoryFollowingMode followingMode="position"/>
                                     </FollowTrajectoryAction>
                                 </RoutingAction>
                             </PrivateAction>
