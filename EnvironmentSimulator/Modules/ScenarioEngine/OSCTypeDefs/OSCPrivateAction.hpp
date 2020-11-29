@@ -401,6 +401,25 @@ namespace scenarioengine
 	class SynchronizeAction : public OSCPrivateAction
 	{
 	public:
+		typedef enum
+		{
+			STEADY_STATE_NONE,
+			STEADY_STATE_POS,
+			STEADY_STATE_DIST,
+			STEADY_STATE_TIME
+		} SteadyStateType;
+
+		struct 
+		{
+			SteadyStateType type_;
+			union
+			{
+				roadmanager::Position *pos_;
+				double time_;
+				double dist_;
+			};
+		} steadyState_;
+
 		roadmanager::Position *target_position_master_;
 		roadmanager::Position *target_position_;
 		Object *master_object_;
@@ -420,6 +439,7 @@ namespace scenarioengine
 			lastMasterDist_ = LARGE_NUMBER;
 			tolerance_ = SYNCH_DISTANCE_TOLERANCE;
 			tolerance_master_ = SYNCH_DISTANCE_TOLERANCE;
+			steadyState_.type_ = SteadyStateType::STEADY_STATE_NONE;
 		}
 
 		SynchronizeAction(const SynchronizeAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE)
@@ -434,12 +454,22 @@ namespace scenarioengine
 			lastMasterDist_ = LARGE_NUMBER;
 			tolerance_ = SYNCH_DISTANCE_TOLERANCE;
 			tolerance_master_ = SYNCH_DISTANCE_TOLERANCE;
+			steadyState_ = action.steadyState_;
 		}
 
 		OSCPrivateAction* Copy()
 		{
 			SynchronizeAction *new_action = new SynchronizeAction(*this);
 			return new_action;
+		}
+
+		~SynchronizeAction()
+		{
+			if (steadyState_.pos_ != 0)
+			{
+				delete steadyState_.pos_;
+			}
+			steadyState_.pos_ = 0;
 		}
 
 		void Step(double dt, double simTime);
@@ -453,6 +483,7 @@ namespace scenarioengine
 			MODE_STOPPED,
 			MODE_STOP_IMMEDIATELY,
 			MODE_WAITING,
+			MODE_STEADY_STATE
 		} SynchMode;
 
 		typedef enum {
@@ -472,6 +503,8 @@ namespace scenarioengine
 		void PrintStatus(const char* custom_msg);
 		const char* Mode2Str(SynchMode mode);
 		const char* SubMode2Str(SynchSubmode submode);
+
+
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2)
 		{

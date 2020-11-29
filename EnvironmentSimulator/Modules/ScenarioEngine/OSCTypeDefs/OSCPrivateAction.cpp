@@ -737,15 +737,19 @@ const char* SynchronizeAction::Mode2Str(SynchMode mode)
 	}
 	else if (mode == SynchMode::MODE_STOP_IMMEDIATELY)
 	{
-	return "MODE_STOP_IMMEDIATELY";
+		return "MODE_STOP_IMMEDIATELY";
 	}
 	else if (mode == SynchMode::MODE_WAITING)
 	{
-	return "MODE_WAITING";
+		return "MODE_WAITING";
+	}
+	else if (mode == SynchMode::MODE_STEADY_STATE)
+	{
+		return "MODE_STEADY_STATE";
 	}
 	else
 	{
-	return "Unknown mode";
+		return "Unknown mode";
 	}
 }
 
@@ -777,6 +781,21 @@ void SynchronizeAction::PrintStatus(const char* custom_msg)
 
 void SynchronizeAction::Start()
 {
+	// resolve steady state -> translate into dist
+	if (steadyState_.type_ == SteadyStateType::STEADY_STATE_TIME)
+	{
+		steadyState_.dist_ = steadyState_.time_ * final_speed_->GetValue();
+		steadyState_.type_ = SteadyStateType::STEADY_STATE_DIST;
+	}
+	else if (steadyState_.type_ == SteadyStateType::STEADY_STATE_POS)
+	{
+		// Find out distance between steady state position and final destination
+		roadmanager::PositionDiff diff;
+		target_position_->Delta(*steadyState_.pos_, diff);
+		steadyState_.dist_ = diff.ds;
+		steadyState_.type_ = SteadyStateType::STEADY_STATE_DIST;
+	}
+
 	OSCAction::Start();
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
@@ -872,6 +891,30 @@ void SynchronizeAction::Step(double dt, double simTime)
 
 		if (final_speed_)
 		{
+			if (steadyState_.type_ != SteadyStateType::STEADY_STATE_NONE && mode_ != SynchMode::MODE_STEADY_STATE)
+			{
+				double time_to_ss = steadyState_.dist_ / final_speed_->GetValue();
+				
+				if (dist - steadyState_.dist_ < SMALL_NUMBER || masterTimeToDest - time_to_ss < SMALL_NUMBER)
+				{
+					mode_ = SynchMode::MODE_STEADY_STATE;
+					submode_ = SynchSubmode::SUBMODE_NONE;
+					if (time_to_ss > masterTimeToDest && (time_to_ss - masterTimeToDest) * final_speed_->GetValue() > tolerance_)
+					{
+						LOG("Entering Stead State according to criteria but not enough time to reach destination");
+					}
+					PrintStatus("SteadyState");
+				}
+				else
+				{
+					// subtract steady state distance
+					dist -= steadyState_.dist_;
+
+					// subtract steady state duration
+					masterTimeToDest -= time_to_ss;
+				}
+			}
+
 			// For more information about calculations, see 
 			// https://docs.google.com/document/d/1dEBUWlJVLUz6Rp9Ol1l90iG0LfNtcsgLyJ0kDdwgPzA/edit?usp=sharing
 			// 
@@ -931,6 +974,11 @@ void SynchronizeAction::Step(double dt, double simTime)
 			//      solve for x
 			//      a = -v1 / x
 
+			if (mode_ == SynchMode::MODE_STEADY_STATE)
+			{
+				object_->speed_ = final_speed_->GetValue();
+				return;
+			}
 			if (mode_ == SynchMode::MODE_WAITING)
 			{
 				if (masterTimeToDest >= LARGE_NUMBER)
@@ -978,7 +1026,7 @@ void SynchronizeAction::Step(double dt, double simTime)
 				object_->SetSpeed(MAX(0, CalcSpeedForLinearProfile(MAX(0, final_speed_->GetValue()), masterTimeToDest, dist)));
 				return;
 			}
-			else if (masterTimeToDest < LARGE_NUMBER) 
+			else if (mode_ == SynchMode::MODE_NON_LINEAR && masterTimeToDest < LARGE_NUMBER)
 			{
 				// Check if case 1, i.e. on a straight speed profile line
 				double v0_onLine = 2 * dist / masterTimeToDest - final_speed_->GetValue();

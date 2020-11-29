@@ -1,0 +1,39 @@
+<!-- Experimental extensions to OpenSCENARIO 1.0 support esmini -->
+<!-- All extensions are optional and hence backward compatible  -->
+
+<xsd:complexType name="SynchronizeAction">
+    <xsd:all>
+        <xsd:element name="TargetPositionMaster" type="Position"/>
+        <xsd:element name="TargetPosition" type="Position"/>
+        <xsd:element name="FinalSpeed" type="FinalSpeed" minOccurs="0"/>
+    </xsd:all>
+    <xsd:attribute name="masterEntityRef" type="String" use="required"/>
+	<xsd:attribute name="targetToleranceMaster" type="Double" use="optional"/>
+	<xsd:attribute name="targetTolerance" type="Double" use="optional"/>    
+</xsd:complexType>
+
+<xsd:complexType name="FinalSpeed">
+    <xsd:choice>
+        <xsd:element name="AbsoluteSpeed" type="AbsoluteSpeed"/>
+        <xsd:element name="RelativeSpeedToMaster" type="RelativeSpeedToMaster"/>
+    </xsd:choice>
+    <xsd:all>
+        <xsd:element name="SteadyState" type="SteadyState" minOccurs="0"/>
+    </xsd:all>
+</xsd:complexType>
+
+<xsd:complexType name="SteadyState">
+    <xsd:choice>
+        <xsd:element name="TargetPositionSteadyState" type="Position"/>
+        <xsd:element name="TargetDistanceSteadyState" type="TargetDistanceSteadyState"/>
+        <xsd:element name="TargetTimeSteadyState" type="TargetTimeSteadyState"/>
+    </xsd:choice>
+</xsd:complexType>
+
+<xsd:complexType name="TargetDistanceSteadyState">
+    <xsd:attribute name="distance" type="Double" use="required"/>
+</xsd:complexType>
+
+<xsd:complexType name="TargetTimeSteadyState">
+    <xsd:attribute name="time" type="Double" use="required"/>
+</xsd:complexType>

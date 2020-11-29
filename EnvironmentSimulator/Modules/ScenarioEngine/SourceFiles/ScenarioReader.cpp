@@ -1517,6 +1517,35 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						return 0;
 					}
 				}
+				pugi::xml_node steady_state_node = target_speed_node.child("SteadyState");
+				if (steady_state_node)
+				{
+					if (action_synch->final_speed_->GetValue() > SMALL_NUMBER)
+					{
+						pugi::xml_node target_node = steady_state_node.first_child();
+
+						if (target_node.name() == std::string("TargetPositionSteadyState"))
+						{
+							OSCPosition* pos = parseOSCPosition(target_node);
+							action_synch->steadyState_.type_ = SynchronizeAction::SteadyStateType::STEADY_STATE_POS;
+							action_synch->steadyState_.pos_ = pos->GetRMPos();
+						}
+						else if (target_node.name() == std::string("TargetDistanceSteadyState"))
+						{
+							action_synch->steadyState_.type_ = SynchronizeAction::SteadyStateType::STEADY_STATE_DIST;
+							action_synch->steadyState_.dist_ = strtod(parameters.ReadAttribute(target_node, "distance"));
+						}
+						else if (target_node.name() == std::string("TargetTimeSteadyState"))
+						{
+							action_synch->steadyState_.type_ = SynchronizeAction::SteadyStateType::STEADY_STATE_TIME;
+							action_synch->steadyState_.time_ = strtod(parameters.ReadAttribute(target_node, "time"));
+						}
+					}
+					else
+					{
+						LOG("SynchronizeAction steady state with 0 or negative final speed (%.2f) is not supported", action_synch->final_speed_->GetValue());
+					}
+				}
 			}
 			action = action_synch;
 		}

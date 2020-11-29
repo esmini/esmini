@@ -120,6 +120,9 @@
                                     </TargetPosition>    
                                     <FinalSpeed>
                                         <AbsoluteSpeed value="$PedestrianSpeed" />
+                                        <SteadyState>
+                                            <TargetDistanceSteadyState distance="5" />
+                                        </SteadyState>
                                     </FinalSpeed>
                                 </SynchronizeAction>
                              </PrivateAction>
