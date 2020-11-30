@@ -13,6 +13,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 using System;
 using System.IO;
 using UnityEngine.UI;
@@ -83,12 +84,11 @@ public class esminiUnityExample : MonoBehaviour
             InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "follow_ghost.xosc", "e6mini", 0, t_osg.isOn, false);
         });
 
-        esminiLib.SE_AddPath("c:/tmp");
     }
 
     void OnApplicationQuit()
     {
-        esminiLib.SE_Close();
+        ESMiniLib.SE_Close();
     }
 
     private Vector3 RH2Unity(Vector3 rightHandVector)
@@ -135,15 +135,26 @@ public class esminiUnityExample : MonoBehaviour
             Destroy(envModel);
         }
 
+        
+
+        ESMiniLib.SE_AddPath("c:/tmp");
+
         // Then load the requested scenario
-        if (esminiLib.SE_Init(scenarioFile, disable_controller, osg_viewer ? 1 : 0, 0, 0) != 0)
+        if (ESMiniLib.SE_Init(scenarioFile, disable_controller, osg_viewer ? 1 : 0, 0, 0) != 0)
         {
             print("failed to load " + scenarioFile);
             return;
         }
 
+        byte[] str = new byte[256];
+        if (ESMiniLib.SE_GetODRFilename(str, str.Length) == 0)
+        {
+            string converted = Encoding.UTF8.GetString(str, 0, str.Length);
+            print("OpenDRIVE file: " + converted);
+        }
+
         // Add sensors
-        if (esminiLib.SE_AddObjectSensor(0, 4, 0, 0.5f, 0.0f, 5.0f, 50.0f, (float)(50 * Math.PI / 180.0), 10) != 0)
+        if (ESMiniLib.SE_AddObjectSensor(0, 4, 0, 0.5f, 0.0f, 5.0f, 50.0f, (float)(50 * Math.PI / 180.0), 10) != 0)
         {
             print("failed to add sensor");
             return;
@@ -164,7 +175,7 @@ public class esminiUnityExample : MonoBehaviour
         print("Adding Ego");
 
 
-        if (esminiLib.SE_GetNumberOfObjects() > 0)
+        if (ESMiniLib.SE_GetNumberOfObjects() > 0)
         {
             AttachCameraToObj(0);
         }
@@ -175,7 +186,7 @@ public class esminiUnityExample : MonoBehaviour
         // Fetch the initial object positions
         UpdateObjectPositions(true);
 
-        if (esminiLib.SE_GetNumberOfObjects() > 0)
+        if (ESMiniLib.SE_GetNumberOfObjects() > 0)
         {
             // Initialize camera position to the exact target point
             _cam.transform.position = camTarget.transform.position;
@@ -201,20 +212,21 @@ public class esminiUnityExample : MonoBehaviour
             Transform c = cars[0].transform;
 
             // Report ego position
-            esminiLib.SE_ReportObjectPos(0, simTime, c.position.z, -c.position.x, c.position.y,
+            ESMiniLib.SE_ReportObjectPos(0, simTime, c.position.z, -c.position.x, c.position.y,
                 -c.eulerAngles.y * Mathf.PI / 180.0f, c.eulerAngles.x * Mathf.PI / 180.0f, -c.eulerAngles.z * Mathf.PI / 180.0f,
                 egoBody.velocity.magnitude);
         }
 
         // Check nr of objects
-        for (int i = 0; i < esminiLib.SE_GetNumberOfObjects(); i++)
+        for (int i = 0; i < ESMiniLib.SE_GetNumberOfObjects(); i++)
         {
+            print("object" + i);
             if (interactive_ && (i == 0 && !fetchEgo))
             {
                 continue;
             }
 
-            esminiLib.SE_GetObjectState(i, ref state);
+            ESMiniLib.SE_GetObjectState(i, ref state);
 
             // Instantiate objects
             if (i > 0 && cars.Count <= i)
@@ -222,21 +234,21 @@ public class esminiUnityExample : MonoBehaviour
                 // Add scenario controlled objects
                 cars.Add((GameObject)Instantiate(Resources.Load(objectNames[state.model_id])));
                 print("Adding " + objectNames[state.model_id]);
-                if (esminiLib.SE_ObjectHasGhost(i) == 1)
+                if (ESMiniLib.SE_ObjectHasGhost(i) == 1)
                 {
                     AttachCameraToObj(i);
                 }
             }
 
             GameObject car = cars[i];
-            if (esminiLib.SE_ObjectHasGhost(state.id) == 1 && esminiLib.SE_GetSimulationTime() > 0.0)
+            if (ESMiniLib.SE_ObjectHasGhost(state.id) == 1 && ESMiniLib.SE_GetSimulationTime() > 0.0)
             {
                 // Get road and ghost sensors
                 RoadInfo road_info = new RoadInfo();
                 float speed_ghost = 0;
 
-                esminiLib.SE_GetRoadInfoAtDistance(state.id, 40, ref road_info, 1);
-                esminiLib.SE_GetRoadInfoAlongGhostTrail(state.id, 10, ref road_info, ref speed_ghost);
+                ESMiniLib.SE_GetRoadInfoAtDistance(state.id, 40, ref road_info, 1);
+                ESMiniLib.SE_GetRoadInfoAlongGhostTrail(state.id, 10, ref road_info, ref speed_ghost);
 
                 Vector3 pos_delta = new Vector3(road_info.global_pos_x - state.x, road_info.global_pos_y - state.y, road_info.global_pos_z - state.z);
                 Vector3 rot_delta = new Vector3(road_info.trail_heading - state.h, road_info.road_pitch - state.p, road_info.road_roll - state.r);
@@ -249,7 +261,7 @@ public class esminiUnityExample : MonoBehaviour
                 state.r += 0.2f * (road_info.road_roll - state.r);
                 //pos.x -= 0.1f;
 
-                esminiLib.SE_ReportObjectPos(state.id, 0, state.x, state.y, state.z, state.h, state.p, state.r, 0);
+                ESMiniLib.SE_ReportObjectPos(state.id, 0, state.x, state.y, state.z, state.h, state.p, state.r, 0);
             }
             // Adapt to Unity coordinate system
             car.transform.position = RH2Unity(new Vector3(state.x, state.y, state.z));
@@ -264,16 +276,16 @@ public class esminiUnityExample : MonoBehaviour
             return;
         }
 
-        if (esminiLib.SE_GetNumberOfObjects() > 0)
+        if (ESMiniLib.SE_GetNumberOfObjects() > 0)
         {
             simTime += Time.deltaTime;
-            esminiLib.SE_StepDT(Time.deltaTime);
+            ESMiniLib.SE_StepDT(Time.deltaTime);
 
-            int nObj = esminiLib.SE_FetchSensorObjectList(0, objList);
+            int nObj = ESMiniLib.SE_FetchSensorObjectList(0, objList);
             //print("Sensor hits: " + nObj);
             for (int i = 0; i < nObj; i++)
             {
-                esminiLib.SE_GetObjectState(objList[i], ref state);
+                ESMiniLib.SE_GetObjectState(objList[i], ref state);
                 //print("state x: " + state.x + ", y: " + state.y);
             }
 

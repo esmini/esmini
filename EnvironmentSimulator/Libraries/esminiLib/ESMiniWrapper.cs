@@ -80,6 +80,14 @@ namespace ESMini
         public int far_right_lb_id;
     };
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SE_String
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string str;
+        public int len;
+    };
+
     public static class ESMiniLib
     {
         private const string LIB_NAME = "esminiLib";
@@ -112,6 +120,13 @@ namespace ESMini
 
         [DllImport(LIB_NAME, EntryPoint = "SE_Close")]
         public static extern void SE_Close();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetODRFilename")]
+        /// <summary>Get name of currently referred and loaded OpenDRIVE file</summary>
+        /// <param name="str">Allocated array of bytes - which will be filled in with filename</param>
+        /// <param name="len">Length of allocated byte array </param>
+        /// <returns>0 on success, -1 on failure for any reason</returns>
+        public static extern int SE_GetODRFilename(byte[] str, int len);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetSimulationTime")]
         public static extern float SE_GetSimulationTime();

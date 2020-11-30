@@ -152,6 +152,13 @@ extern "C"
 	SE_DLL_API int SE_GetQuitFlag();
 
 	/**
+	Get name of currently referred and loaded OpenDRIVE file 
+	@param str Allocated array of chars - which will be filled in with filename
+	@param len Length of allocated char array 
+	*/
+	SE_DLL_API int SE_GetODRFilename(char* str, int len);
+
+	/**
 	Report object position in cartesian coordinates
 	@param id Id of the object
 	@param timestamp Timestamp (not really used yet, OK to set 0)

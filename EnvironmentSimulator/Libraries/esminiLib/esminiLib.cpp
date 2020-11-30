@@ -374,6 +374,19 @@ extern "C"
 
 	}
 
+	int SE_GetODRFilename(char* str, int len)
+	{
+		if (player->scenarioEngine->getOdrFilename().size() + 1 > len)
+		{
+			LOG("OpenDRIVE filename (%s) too long for provided array (size=%d)", player->scenarioEngine->getOdrFilename().c_str(), len);
+			return -1;
+		}
+
+		strncpy(str, player->scenarioEngine->getOdrFilename().c_str(), player->scenarioEngine->getOdrFilename().size()+1);
+		
+		return 0;
+	}
+
 	SE_DLL_API void SE_Close()
 	{
 		resetScenario();
