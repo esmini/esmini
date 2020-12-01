@@ -1398,7 +1398,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						}
 						else if (laneChangeChild.name() == std::string("LaneChangeTarget"))
 						{
-							LatLaneChangeAction::Target *target;
+							LatLaneChangeAction::Target *target = 0;
 
 							for (pugi::xml_node targetChild = laneChangeChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
 							{
@@ -1421,8 +1421,16 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									target_abs->value_ = strtoi(parameters.ReadAttribute(targetChild, "value"));
 									target = target_abs;
 								}
+								else
+								{
+									LOG("Unsupported LaneChangeTarget: %s", targetChild.name());
+									throw std::runtime_error(std::string("Unsupported LaneChangeTarget: ") + targetChild.name());
+								}
 							}
-							action_lane->target_ = target;
+							if (target)
+							{
+								action_lane->target_ = target;
+							}
 						}
 					}
 					action = action_lane;

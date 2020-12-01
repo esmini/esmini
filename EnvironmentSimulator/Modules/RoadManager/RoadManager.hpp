@@ -834,7 +834,13 @@ namespace roadmanager
 		int GetNumberOfDrivingLanes(double s);
 		Lane* GetDrivingLaneByIdx(double s, int idx);
 		int GetNumberOfDrivingLanesSide(double s, int side);  // side = -1 right, 1 left
-		double GetDrivableWidth(double s, int side=0);   // side: -1=right, 1=left, 0=both
+
+		/// <summary>Get width of road</summary>
+		/// <param name="s">Longitudinal position/distance along the road</param>
+		/// <param name="side">Side of the road: -1=right, 1=left, 0=both</param>
+		/// <param name="laneTypeMask">Bitmask specifying what lane types to consider - see Lane::LaneType</param>
+		/// <returns>Width (m)</returns>
+		double GetWidth(double s, int side, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY);   // side: -1=right, 1=left, 0=both
 
 	protected:
 		int id_;

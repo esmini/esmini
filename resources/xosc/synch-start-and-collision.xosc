@@ -132,7 +132,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="SyncConditionNPC" delay="0.0" conditionEdge="none">
+                           <Condition name="SyncConditionNPC" delay="0.0" conditionEdge="rising">
                               <ByEntityCondition>
                                  <TriggeringEntities triggeringEntitiesRule="any">
                                     <EntityRef entityRef="Ego"/>
