@@ -1450,61 +1450,84 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 			{
 				roadmanager::Lane *lane = lane_section->GetLaneByIdx(j);
 
-				// osg references for osi points on the lane center
-				osg::ref_ptr<osg::Geometry> osi_geom = new osg::Geometry;
-				osg::ref_ptr<osg::Vec3Array> osi_points = new osg::Vec3Array;
-				osg::ref_ptr<osg::Vec4Array> osi_color = new osg::Vec4Array;
-				osg::ref_ptr<osg::Point> osi_point = new osg::Point();
-				
-				// osg references for drawing lines on the lane center using osi points
-				osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
-				osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
-				osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-				osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
-
-				if (!lane->IsDriving() && lane->GetId() != 0)
+				// visualize both lane center and lane boundary 
+				for (int k = 0; k < 2; k++)
 				{
-					continue;
-				}
+					// skip lane center for all non driving lanes except center lane
+					if ((k == 0 && lane->GetId() != 0 && !lane->IsDriving()) ||
+						// skip lane boundary for center lane
+						(k == 1 && lane->GetId() == 0))
+					{
+						continue;
+					}
+					// osg references for osi points on the lane center
+					osg::ref_ptr<osg::Geometry> osi_geom = new osg::Geometry;
+					osg::ref_ptr<osg::Vec3Array> osi_points = new osg::Vec3Array;
+					osg::ref_ptr<osg::Vec4Array> osi_color = new osg::Vec4Array;
+					osg::ref_ptr<osg::Point> osi_point = new osg::Point();
 
-				curr_osi = lane->GetOSIPoints();
+					// osg references for drawing lines on the lane center using osi points
+					osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+					osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
+					osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+					osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 
-				for (int m = 0; m < curr_osi->GetPoints().size(); m++)
-				{
-					roadmanager::OSIPoints::OSIPointStruct osi_point = curr_osi->GetPoint(m);
-					point.set(osi_point.x, osi_point.y, osi_point.z + z_offset);
-					osi_points->push_back(point);
-					osi_color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
-				}
-				osi_point->setSize(6.0f);
-				osi_geom->setVertexArray(osi_points.get());
-				osi_geom->setColorArray(osi_color.get());
-				osi_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-				osi_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_points->size()));
-				osi_geom->getOrCreateStateSet()->setAttributeAndModes(osi_point, osg::StateAttribute::ON);
-				osi_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+					if (k == 0)
+					{
+						curr_osi = lane->GetOSIPoints();
+					}
+					else
+					{
+						curr_osi = lane->GetLaneBoundary()->GetOSIPoints();
+					}
+
+					if (curr_osi == 0)
+					{
+						continue;
+					}
+
+					for (int m = 0; m < curr_osi->GetPoints().size(); m++)
+					{
+						roadmanager::OSIPoints::OSIPointStruct osi_point = curr_osi->GetPoint(m);
+						point.set(osi_point.x, osi_point.y, osi_point.z + z_offset);
+						osi_points->push_back(point);
+						osi_color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
+					}
+					osi_point->setSize(6.0f);
+					osi_geom->setVertexArray(osi_points.get());
+					osi_geom->setColorArray(osi_color.get());
+					osi_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+					osi_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_points->size()));
+					osi_geom->getOrCreateStateSet()->setAttributeAndModes(osi_point, osg::StateAttribute::ON);
+					osi_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 					
-				osiPoints_->addChild(osi_geom);
+					osiPoints_->addChild(osi_geom);
 
-				if (lane->GetId() == 0)
-				{
-					lineWidth->setWidth(4.0f);
-					color->push_back(osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0));
+					if (lane->GetId() == 0)
+					{
+						lineWidth->setWidth(4.0f);
+						color->push_back(osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0));
+					}
+					else if (k==0)
+					{
+						lineWidth->setWidth(1.5f);
+						color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
+					}
+					else 
+					{
+						lineWidth->setWidth(1.5f);
+						color->push_back(osg::Vec4(color_gray[0], color_gray[1], color_gray[2], 1.0));
+					}
+
+					geom->setVertexArray(osi_points.get());
+					geom->setColorArray(color.get());
+					geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+					geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_points->size()));
+					geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+					geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+					odrLines_->addChild(geom);
 				}
-				else
-				{
-					lineWidth->setWidth(1.5f);
-					color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
-				}
-
-				geom->setVertexArray(osi_points.get());
-				geom->setColorArray(color.get());
-				geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-				geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_points->size()));
-				geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
-				geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-				odrLines_->addChild(geom);
 			}
 		}
 	}

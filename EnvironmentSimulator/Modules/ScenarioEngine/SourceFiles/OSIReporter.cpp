@@ -652,13 +652,13 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 						// update id
 						osi_laneboundary->mutable_id()->set_value(boundary_id);
 
-						int n_osi_points = laneboundary->GetOSIPoints().GetNumOfOSIPoints();
+						int n_osi_points = laneboundary->GetOSIPoints()->GetNumOfOSIPoints();
 						for (int h = 0; h < n_osi_points; h++)
 						{
 							osi3::LaneBoundary_BoundaryPoint* boundary_point = osi_laneboundary->add_boundary_line();
-							boundary_point->mutable_position()->set_x(laneboundary->GetOSIPoints().GetXfromIdx(h));
-							boundary_point->mutable_position()->set_y(laneboundary->GetOSIPoints().GetYfromIdx(h));
-							boundary_point->mutable_position()->set_z(laneboundary->GetOSIPoints().GetZfromIdx(h));
+							boundary_point->mutable_position()->set_x(laneboundary->GetOSIPoints()->GetXfromIdx(h));
+							boundary_point->mutable_position()->set_y(laneboundary->GetOSIPoints()->GetYfromIdx(h));
+							boundary_point->mutable_position()->set_z(laneboundary->GetOSIPoints()->GetZfromIdx(h));
 							//boundary_point->set_width(laneboundary->GetWidth());
 							//boundary_point->set_height(laneroadmark->GetHeight());
 						}

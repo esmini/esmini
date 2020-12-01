@@ -4583,7 +4583,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				// side of road is determined by cross product of position (relative OSI point) and road heading
 				distTmp += fabs(z3 - z);
 				distTmp += weight;
-				
+				printf("disttmp %.2f roadId %d %d, %d\n", distTmp, road->GetId(), jMinLocal, jMinLocal);
 				if (distTmp < closestPointDist)
 				{
 					closestPointDist = distTmp;

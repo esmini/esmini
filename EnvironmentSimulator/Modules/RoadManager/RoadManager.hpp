@@ -314,7 +314,7 @@ namespace roadmanager
 		~LaneBoundaryOSI() {};
 		void SetGlobalId();
 		int GetGlobalId() { return global_id_; }
-		OSIPoints GetOSIPoints() {return osi_points_;}
+		OSIPoints* GetOSIPoints() {return &osi_points_;}
 		OSIPoints osi_points_;
 	private:
 		int global_id_;  // Unique ID for OSI 
