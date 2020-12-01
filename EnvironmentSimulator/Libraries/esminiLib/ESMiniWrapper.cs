@@ -80,17 +80,13 @@ namespace ESMini
         public int far_right_lb_id;
     };
 
-    [StructLayout(LayoutKind.Sequential)]
-    public struct SE_String
-    {
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string str;
-        public int len;
-    };
-
     public static class ESMiniLib
     {
+#if UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
+        private const string LIB_NAME = "libesminiLib";
+#else
         private const string LIB_NAME = "esminiLib";
+#endif
 
         [DllImport(LIB_NAME, EntryPoint = "SE_AddPath")]
         /// <summary>Add a search path for OpenDRIVE and 3D model files
