@@ -166,13 +166,14 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime
 
 	if (car->pos->MoveAlongS(ds) != 0)
 	{
-		// Start from beginning of road - not initial s-position
-		double start_s = 5;
+		// Start from beginning of lane section - not initial s-position
+		roadmanager::LaneSection* ls = odrManager->GetRoadById(car->road_id_init)->GetLaneSectionByS(car->s_init);
+		double start_s = ls->GetS() + 5;
 		if (car->lane_id_init > 0)
 		{
-			start_s = odrManager->GetRoadById(car->road_id_init)->GetLength() - 5;
+			start_s = ls->GetS() + ls->GetLength() - 5;
 		}
-		car->pos->SetLanePos(car->road_id_init, car->lane_id_init, start_s, 0, 0);
+		car->pos->SetLanePos(car->road_id_init, car->lane_id_init, start_s, 0);
 		car->pos->SetHeadingRelative(car->heading_init);
 	}
 

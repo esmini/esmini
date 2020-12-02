@@ -776,10 +776,20 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 
 			// If new lane is not of snapping type, try to move into a close valid lane
 			Lane* lane = lane_section->GetLaneById(lane_info.lane_id_);
-			if (!(laneTypeMask & lane_section->GetLaneById(lane_info.lane_id_)->GetLaneType()))
+			if (lane == 0 || !(laneTypeMask & lane_section->GetLaneById(lane_info.lane_id_)->GetLaneType()))
 			{
 				double offset = 0;
-				lane_info.lane_id_ = lane_section->GetLaneByIdx(lane_section->GetClosestLaneIdx(s, lane->GetOffsetFromRef(), offset, laneTypeMask))->GetId();
+				double t = 0;
+
+				if (lane == 0)
+				{
+					LOG("No valid connecting lane (s: %.2f lane_id %d) - looking for a valid lane from center outwards", s, lane_info.lane_id_);
+				}
+				else
+				{
+					t = lane->GetOffsetFromRef();
+				}
+				lane_info.lane_id_ = lane_section->GetLaneByIdx(lane_section->GetClosestLaneIdx(s, t, offset, laneTypeMask))->GetId();
 				if (lane_info.lane_id_ == 0)
 				{
 					LOG("Failed to find a closest snapping lane");
@@ -4583,7 +4593,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				// side of road is determined by cross product of position (relative OSI point) and road heading
 				distTmp += fabs(z3 - z);
 				distTmp += weight;
-				printf("disttmp %.2f roadId %d %d, %d\n", distTmp, road->GetId(), jMinLocal, jMinLocal);
+
 				if (distTmp < closestPointDist)
 				{
 					closestPointDist = distTmp;
