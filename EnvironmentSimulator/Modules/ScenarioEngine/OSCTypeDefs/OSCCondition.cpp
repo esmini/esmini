@@ -57,6 +57,48 @@ bool EvaluateRule(double a, double b, Rule rule)
 	return false;
 }
 
+bool EvaluateRule(int a, int b, Rule rule)
+{
+	if (rule == Rule::EQUAL_TO)
+	{
+		return a == b;
+	}
+	else if (rule == Rule::GREATER_THAN)
+	{
+		return a > b;
+	}
+	else if (rule == Rule::LESS_THAN)
+	{
+		return a < b;
+	}
+	else
+	{
+		LOG("Undefined Rule: %d", rule);
+	}
+	return false;
+}
+
+bool EvaluateRule(std::string a, std::string b, Rule rule)
+{
+	if (rule == Rule::EQUAL_TO)
+	{
+		return a == b;
+	}
+	else if (rule == Rule::GREATER_THAN)
+	{
+		return a > b;
+	}
+	else if (rule == Rule::LESS_THAN)
+	{
+		return a < b;
+	}
+	else
+	{
+		LOG("Undefined Rule: %d", rule);
+	}
+	return false;
+}
+
 bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge)
 {
 	if (edge == OSCCondition::ConditionEdge::NONE)
@@ -341,6 +383,49 @@ bool TrigBySimulationTime::CheckCondition(StoryBoard *storyBoard, double sim_tim
 	{
 		LOG("%s == %s, sim_time: %.4f %s %.2f edge: %s", name_.c_str(), result ? "true" : "false",
 			sim_time, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+	}
+
+	return result;
+}
+
+bool TrigByParameter::CheckCondition(StoryBoard* storyBoard, double sim_time, bool log)
+{
+	(void)storyBoard;
+	bool result = false;
+	std::string value = "";
+
+	OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(name_);
+	if (pe == 0)
+	{
+		if (evaluated_ == false)  // print only once
+		{
+			LOG("Parameter %s not found", name_.c_str());
+		}
+	}
+	else if (pe->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+	{
+		result = EvaluateRule(pe->value._int, strtoi(value_), rule_);
+		value = std::to_string(pe->value._int).c_str();
+	}
+	else if (pe->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
+	{
+		result = EvaluateRule(pe->value._double, strtod(value_), rule_);
+		value = std::to_string(pe->value._double).c_str();
+	}
+	else if (pe->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
+	{
+		result = EvaluateRule(pe->value._string, value_, rule_);
+		value = pe->value._string;
+	}
+	else
+	{
+		LOG("Unexpected parameter type: %d", pe->type);
+	}
+
+	if (log)
+	{
+		LOG("parameter %s %s %s %s edge: %s", name_.c_str(), value.c_str(), Rule2Str(rule_).c_str(), value_.c_str(), 
+			Edge2Str(edge_).c_str());
 	}
 
 	return result;

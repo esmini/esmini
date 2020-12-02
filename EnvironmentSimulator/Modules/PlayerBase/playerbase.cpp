@@ -837,6 +837,16 @@ void ScenarioPlayer::UpdateCSV_Log()
 	}
 }
 
+int ScenarioPlayer::SetParameterValue(const char* name, const void* value)
+{
+	return scenarioEngine->scenarioReader->parameters.setParameterValue(name, value);
+}
+
+int ScenarioPlayer::GetParameterValue(const char* name, void* value)
+{
+	return scenarioEngine->scenarioReader->parameters.getParameterValue(name, value);
+}
+
 #ifdef _SCENARIO_VIEWER
 	void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 	{

@@ -75,7 +75,9 @@ public:
 	int GetOSIFreq() { return osi_freq_; }
 	void RegisterObjCallback(int id, ObjCallbackFunc func, void *data);
 	void UpdateCSV_Log();
-		
+	int SetParameterValue(const char* name, const void* value);
+	int GetParameterValue(const char* name, void* value);
+
 	CSV_Logger *CSV_Log;
 	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;

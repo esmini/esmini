@@ -130,6 +130,7 @@ namespace scenarioengine
 		void UnloadControllers();
 
 		std::vector<Controller*> controller_;
+		Parameters parameters;
 
 	private:
 		pugi::xml_document doc_;
@@ -137,7 +138,6 @@ namespace scenarioengine
 		std::string oscFilename_;
 		Entities *entities_;
 		Catalogs *catalogs_;
-		Parameters parameters;
 		ScenarioGateway* gateway_;
 		bool disable_controllers_;
 		static ControllerPool controllerPool_;

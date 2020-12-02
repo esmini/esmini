@@ -21,6 +21,7 @@
 #include "OSCAction.hpp"
 #include "Entities.hpp"
 #include "OSCPosition.hpp"
+#include "Parameters.hpp"
 
 namespace scenarioengine
 {
@@ -289,6 +290,19 @@ namespace scenarioengine
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
 		TrigBySimulationTime() : TrigByValue(TrigByValue::Type::SIMULATION_TIME) {}
+	};
+
+	class TrigByParameter : public TrigByValue
+	{
+	public:
+		std::string name_;
+		std::string value_;
+		Rule rule_;
+		Parameters* parameters_;
+
+
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
+		TrigByParameter() : TrigByValue(TrigByValue::Type::PARAMETER) {}
 	};
 
 }

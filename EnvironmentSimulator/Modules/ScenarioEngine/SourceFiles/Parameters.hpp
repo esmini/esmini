@@ -19,22 +19,27 @@
 
 namespace scenarioengine
 {
-	// base class for controllers
 	class Parameters
 	{
 	public:
 		Parameters() : paramDeclarationsSize_(0) {}
 		int paramDeclarationsSize_;  // original size, exluding added parameters
-		std::vector<ParameterStruct> catalog_param_assignments;
+		std::vector<OSCParameterDeclarations::ParameterStruct> catalog_param_assignments;
 		OSCParameterDeclarations parameterDeclarations_;
 
 		// ParameterDeclarations
 		void parseGlobalParameterDeclarations(pugi::xml_document* doc_);
 		void parseParameterDeclarations(pugi::xml_node xml_node, OSCParameterDeclarations* pd);
 		std::string getParameter(OSCParameterDeclarations& parameterDeclarations, std::string name);
-		void addParameter(std::string name, std::string value);
+		std::string getParameter(std::string name) { getParameter(parameterDeclarations_, name); }
+		OSCParameterDeclarations::ParameterStruct* getParameterEntry(std::string name);
+		int setParameter(std::string name, std::string value);
 		void addParameterDeclarations(pugi::xml_node xml_node);
 		void RestoreParameterDeclarations();  // To what it was before addParameterDeclarations
+
+		int setParameterValue(std::string name, const void* value);
+		int setParameterValue(std::string name, std::string value);
+		int getParameterValue(std::string name, void* value);
 
 		// Use always this method when reading attributes, it will resolve any variables
 		std::string ReadAttribute(pugi::xml_node, std::string attribute, bool required = false);

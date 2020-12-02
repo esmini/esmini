@@ -665,9 +665,9 @@ Entry* ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 	// Read any parameter assignments
 	for (pugi::xml_node param_n = parameterAssignmentsNode.child("ParameterAssignment"); param_n; param_n = param_n.next_sibling("ParameterAssignment"))
 	{
-		ParameterStruct param;
+		OSCParameterDeclarations::ParameterStruct param;
 		param.name = &(param_n.attribute("parameterRef").value()[1]);  // Skip prefix character byte
-		param.value = parameters.ReadAttribute(param_n, "value");
+		param.value._string = parameters.ReadAttribute(param_n, "value");
 		parameters.catalog_param_assignments.push_back(param);
 	}
 
@@ -1178,7 +1178,30 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 
 	for (pugi::xml_node actionChild = actionNode.first_child(); actionChild; actionChild = actionChild.next_sibling())
 	{
-		LOG("Unsupported global action: %s", actionChild.name());
+		if (actionChild.name() == std::string("ParameterAction"))
+		{
+			for (pugi::xml_node paramChild = actionChild.first_child(); paramChild; paramChild = paramChild.next_sibling())
+			{
+				if (paramChild.name() == std::string("ParameterSetAction"))
+				{
+					ParameterSetAction* paramSetAction = new ParameterSetAction();
+
+					paramSetAction->name_ = parameters.ReadAttribute(actionChild, "parameterRef");
+					paramSetAction->value_ = parameters.ReadAttribute(paramChild, "value");
+					paramSetAction->parameters_ = &parameters;
+
+					action = paramSetAction;
+				}
+				else
+				{
+					LOG("ParameterAction %s not supported yet", paramChild.name());
+				}
+			}
+		}
+		else
+		{
+			LOG("Unsupported global action: %s", actionChild.name());
+		}
 	}
 
 	if (action != 0)
@@ -2272,6 +2295,15 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					trigger->rule_ = ParseRule(parameters.ReadAttribute(byValueChild, "rule"));
 					condition = trigger;
 				}
+				else if (byValueChildName == "ParameterCondition")
+				{
+					TrigByParameter* trigger = new TrigByParameter;
+					trigger->name_ = parameters.ReadAttribute(byValueChild, "parameterRef");
+					trigger->value_ = parameters.ReadAttribute(byValueChild, "value");
+					trigger->rule_ = ParseRule(parameters.ReadAttribute(byValueChild, "rule"));
+					trigger->parameters_ = &parameters;
+					condition = trigger;
+				}
 				else if (byValueChildName == "StoryboardElementStateCondition")
 				{
 					StoryBoardElement::ElementType element_type = ParseElementType(parameters.ReadAttribute(byValueChild, "storyboardElementType"));
@@ -2397,7 +2429,10 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 						{
 							LOG("Parsing global action %s", parameters.ReadAttribute(eventChild, "name").c_str());
 							OSCGlobalAction *action = parseOSCGlobalAction(actionChild);
-							event->action_.push_back((OSCAction*)action);
+							if (action != 0)
+							{ 
+								event->action_.push_back((OSCAction*)action);
+							}
 						}
 						else if (childName == "UserDefinedAction")
 						{
