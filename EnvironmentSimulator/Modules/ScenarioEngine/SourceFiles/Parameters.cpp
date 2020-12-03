@@ -250,7 +250,7 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 		}
 		else
 		{
-			LOG("Type %s is not supported yet", type_str);
+			LOG("Type %s is not supported yet", type_str.c_str());
 		}
 		pd->Parameter.insert(pd->Parameter.begin(), param);
 	}
