@@ -1,5 +1,12 @@
 ## esmini release notes
 
+### 2020-12-04 Version 2.0.9
+- Add support for named parameters. See [InnerWorkings/parameters](https://github.com/esmini/esmini/blob/master/docs/InnerWorkings.md#parameters).
+- Add experimental steady state to SynchronizeAction, see [osc-extensions.xml](https://github.com/esmini/esmini/blob/master/docs/osc-extensions.xml) and example usage in [pedestrian_traj_synch.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/pedestrian_traj_synch.xosc).
+- Visualize all lanes, including non drivable (e.g. border)
+- Support space in filenames and file paths (with --osc, enclose with "")
+- Some additional minor fixes
+
 ### 2020-11-27 Version 2.0.8
 - Fix multi-session issues 
   - Add method to clear paths between scenarios. 
