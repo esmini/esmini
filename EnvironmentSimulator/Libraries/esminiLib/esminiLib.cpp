@@ -28,6 +28,7 @@ static ScenarioPlayer *player = 0;
 static char **argv = 0;
 static int argc = 0;
 static std::vector<std::string> args_v;
+static std::string returnString;  // use this for returning strings
 
 typedef struct
 {
@@ -63,10 +64,18 @@ static void resetScenario(void)
 	}
 }
 
-static void AddArgument(const char *str)
+static void AddArgument(const char *str, bool split=true)
 {
-	// split separate argument strings
-	std::vector<std::string> args = SplitString(std::string(str), ' ');
+	std::vector<std::string> args;
+	if (split)
+	{
+		// split separate argument strings
+		args = SplitString(std::string(str), ' ');
+	}
+	else
+	{
+		args.push_back(std::string(str));
+	}
 
 	for (size_t i = 0; i < args.size(); i++)
 	{
@@ -327,17 +336,17 @@ extern "C"
 
 		AddArgument("viewer");  // name of application
 		AddArgument("--osc");
-		AddArgument(oscFilename);
+		AddArgument(oscFilename, false);
 
 		if (record)
 		{
 			AddArgument("--record");
 			std::string datFilename = FileNameWithoutExtOf(oscFilename) + ".dat";
-			AddArgument(datFilename.c_str());
+			AddArgument(datFilename.c_str(), false);
 		}
 		if (use_viewer)
 		{
-			AddArgument("--window 50 50 800 400");
+			AddArgument("--window 50 50 800 400", true);
 		}
 		else
 		{
@@ -374,17 +383,14 @@ extern "C"
 
 	}
 
-	int SE_GetODRFilename(char* str, int len)
+	SE_DLL_API const char* SE_GetODRFilename()
 	{
-		if (player && player->scenarioEngine->getOdrFilename().size() + 1 > len)
+		if (!player)
 		{
-			LOG("OpenDRIVE filename (%s) too long for provided array (size=%d)", player->scenarioEngine->getOdrFilename().c_str(), len);
-			return -1;
+			return 0;
 		}
-
-		strncpy(str, player->scenarioEngine->getOdrFilename().c_str(), player->scenarioEngine->getOdrFilename().size()+1);
-		
-		return 0;
+		returnString = player->scenarioEngine->getOdrFilename().c_str();
+		return returnString.c_str();
 	}
 
 	SE_DLL_API int SE_SetParameter(SE_Parameter parameter)

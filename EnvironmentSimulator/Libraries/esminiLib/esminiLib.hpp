@@ -158,10 +158,9 @@ extern "C"
 
 	/**
 	Get name of currently referred and loaded OpenDRIVE file 
-	@param str Allocated array of chars - which will be filled in with filename
-	@param len Length of allocated char array 
+	@return filename as string (const, since it's allocated and handled by esmini)
 	*/
-	SE_DLL_API int SE_GetODRFilename(char* str, int len);
+	SE_DLL_API const char* SE_GetODRFilename();
 
 	/**
 	Set value of named parameter

@@ -118,11 +118,10 @@ namespace ESMini
         public static extern void SE_Close();
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetODRFilename")]
+        //[return: MarshalAs(UnmanagedType.LPStr)]
         /// <summary>Get name of currently referred and loaded OpenDRIVE file</summary>
-        /// <param name="str">Allocated array of bytes - which will be filled in with filename</param>
-        /// <param name="len">Length of allocated byte array </param>
-        /// <returns>0 on success, -1 on failure for any reason</returns>
-        public static extern int SE_GetODRFilename(byte[] str, int len);
+        /// <returns>Filename as string. Use with: Marshal.PtrToStringAnsi(SE_GetODRFilename())</returns>
+        public static extern IntPtr SE_GetODRFilename();
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetSimulationTime")]
         public static extern float SE_GetSimulationTime();

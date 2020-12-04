@@ -146,12 +146,8 @@ public class esminiUnityExample : MonoBehaviour
             return;
         }
 
-        byte[] str = new byte[256];
-        if (ESMiniLib.SE_GetODRFilename(str, str.Length) == 0)
-        {
-            string converted = Encoding.UTF8.GetString(str, 0, str.Length);
-            print("OpenDRIVE file: " + converted);
-        }
+        string odr_filename = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetODRFilename());
+        Debug.Log("odr_filename: " + odr_filename);
 
         // Add sensors
         if (ESMiniLib.SE_AddObjectSensor(0, 4, 0, 0.5f, 0.0f, 5.0f, 50.0f, (float)(50 * Math.PI / 180.0), 10) != 0)
@@ -220,7 +216,6 @@ public class esminiUnityExample : MonoBehaviour
         // Check nr of objects
         for (int i = 0; i < ESMiniLib.SE_GetNumberOfObjects(); i++)
         {
-            print("object" + i);
             if (interactive_ && (i == 0 && !fetchEgo))
             {
                 continue;

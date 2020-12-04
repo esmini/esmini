@@ -611,7 +611,7 @@ int ScenarioPlayer::Init()
 	}
 
 	// use an ArgumentParser object to manage the program arguments.
-	opt.AddOption("osc", "OpenSCENARIO filename", "filename");
+	opt.AddOption("osc", "OpenSCENARIO filename - if path includes spaces, enclose with \"\" ", "filename");
 	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");

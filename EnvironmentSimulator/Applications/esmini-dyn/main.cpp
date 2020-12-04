@@ -117,6 +117,9 @@ int main(int argc, char *argv[])
 			}
 		}
 
+		// Demonstrate use of ODR query function
+		printf("odr filename: %s\n", SE_GetODRFilename());
+
 #if DEMONSTRATE_DRIVER_MODEL
 		SE_ScenarioObjectState state;
 		SE_GetObjectState(0, &state);

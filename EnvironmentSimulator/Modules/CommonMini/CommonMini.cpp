@@ -385,7 +385,7 @@ double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_t
 	return dt;
 }
 
-std::vector<std::string> SplitString(const std::string &s, char separator)
+std::vector<std::string> SplitString(const std::string& s, char separator)
 {
 	std::vector<std::string> output;
 	std::string::size_type prev_pos = 0, pos = 0;
