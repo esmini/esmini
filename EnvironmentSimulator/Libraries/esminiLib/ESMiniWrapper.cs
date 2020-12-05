@@ -83,7 +83,7 @@ namespace ESMini
     public static class ESMiniLib
     {
 #if UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
-        private const string LIB_NAME = "libesminiLib";
+        private const string LIB_NAME = "libesminiLib.so";
 #else
         private const string LIB_NAME = "esminiLib";
 #endif

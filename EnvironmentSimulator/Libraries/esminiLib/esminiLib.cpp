@@ -10,14 +10,15 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+#include <string>
+#include <clocale>
+
 #include "CommonMini.hpp"
 #include "playerbase.hpp"
 #include "esminiLib.hpp"
 #include "IdealSensor.hpp"
 #include "osi_sensordata.pb.h"
 #include "vehicle.hpp"
-
-#include <string>
 
 using namespace scenarioengine;
 
@@ -51,7 +52,6 @@ static void resetScenario(void)
 		delete player;
 		player = 0;
 	}
-	args_v.clear();
 	if (argv)
 	{
 		for (int i = 0; i < argc; i++)
@@ -62,6 +62,8 @@ static void resetScenario(void)
 		argv = 0;
 		argc = 0;
 	}
+	args_v.clear();
+	returnString = "";
 }
 
 static void AddArgument(const char *str, bool split=true)
@@ -279,6 +281,9 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 
 static int InitScenario()
 {
+	// Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
+	std::setlocale(LC_ALL, "C.UTF-8");
+
 	Logger::Inst().SetCallback(log_callback);
 
 	ConvertArguments();

@@ -81,7 +81,11 @@ namespace OpenDRIVE
 
     public static class RoadManagerLibraryCS
     {
+#if UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
+        private const string LIB_NAME = "libesminiRMLib.so";
+#else
         private const string LIB_NAME = "esminiRMLib";
+#endif
 
         /// <summary>Initialize the OpenDRIVE utility manager</summary>
         /// <param name="odrFilename">OpenDRIVE file name</param>
