@@ -10,6 +10,17 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+/* A simple example of how to run esmini within a Unity script/application
+ *
+ * Preparations:
+ * - put OpenSCENARIO files in folder Assets/StreamingAssets/xosc 
+ * - put OpenDRIVE files in folder Assets/StreamingAssets/xodr
+ * - put OSG models in folder Assets/StreamingAssets/models
+ * - put prefabs of Unity versions of road and vehicle models in folder Assets/Resources
+ * - put this script together with ESMiniWrapper.cs in folder Assets/Scripts
+ * - put esminiLib (esminiLib.DLL, libesminiLib.so...) in folder Assets/Plugins
+ */
+
 using UnityEngine;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -17,28 +28,24 @@ using System.Text;
 using System;
 using System.IO;
 using UnityEngine.UI;
+using UnityEditor;
 using ESMini;
+
 
 public class esminiUnityExample : MonoBehaviour
 {
-    private string scenarioFolder;
-    public Button btn_cutin, btn_cutin_interactive, btn_ltapod, btn_follow_ghost;
-    public Toggle toggle_osg;
-    public float tension = 10.0f;
-    public bool osg_viewer = false;
-    private Rigidbody egoBody;
-    private float simTime;
-    private int car_in_focus_ = 0;
-
-    private Camera _cam;
-    private GameObject camTarget;
-    private GameObject envModel;
-    private bool scenarioLoaded = false;
-    private float speed = 0.0f;
-    private bool interactive_ = false;
-    private int[] objList;
-    ScenarioObjectState state;
+    public string OSC_filename = "/xosc/cut-in.xosc";
+    [Tooltip("Open a separate OSG rendering window.")]
+    public bool OSG_visualization = true;
+    [Tooltip("Check to run OSG in separate thread - try pause Unity and you can still operate OSG window.")]
+    public bool threads = false;
+    [Tooltip("Disregard any controllers - esmini will apply default behaviour.")]
+    public bool disable_controllers = true;
+    
+    private GameObject cam;
+    private ScenarioObjectState state;
     private List<GameObject> cars = new List<GameObject>();
+    private GameObject envModel;
     private List<string> objectNames = new List<string>
         {
             "car1",
@@ -48,48 +55,8 @@ public class esminiUnityExample : MonoBehaviour
             "car5",
             "car6",
             "bus1",
-            "S90_dummy",
             "bus2",
         };
-
-    private void Start()
-    {
-        Time.fixedDeltaTime = 0.017f;
-
-        scenarioFolder = Application.streamingAssetsPath + "/xosc/";
-
-        GameObject original = GameObject.FindWithTag("MainCamera");
-        _cam = (Camera)Camera.Instantiate(original.GetComponent<Camera>());
-        Destroy(original);
-
-        camTarget = new GameObject("camTarget");
-
-        Button btn1 = btn_cutin.GetComponent<Button>();
-        Button btn2 = btn_cutin_interactive.GetComponent<Button>();
-        Button btn3 = btn_ltapod.GetComponent<Button>();
-        Button btn4 = btn_follow_ghost.GetComponent<Button>();
-        Toggle t_osg = toggle_osg.GetComponent<Toggle>();
-
-        //Calls the TaskOnClick/TaskWithParameters method when you click the Button
-        btn1.onClick.AddListener(delegate {
-            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "cut-in_external.xosc", "e6mini", 1, t_osg.isOn, false);
-        });
-        btn2.onClick.AddListener(delegate {
-            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "cut-in_external.xosc", "e6mini", 0, t_osg.isOn, true);
-        });
-        btn3.onClick.AddListener(delegate {
-            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "ltap-od.xosc", "fabriksg", 1, t_osg.isOn, false);
-        });
-        btn4.onClick.AddListener(delegate {
-            InitScenario(scenarioFolder + Path.DirectorySeparatorChar + "follow_ghost.xosc", "e6mini", 0, t_osg.isOn, false);
-        });
-
-    }
-
-    void OnApplicationQuit()
-    {
-        ESMiniLib.SE_Close();
-    }
 
     private Vector3 RH2Unity(Vector3 rightHandVector)
     {
@@ -111,18 +78,16 @@ public class esminiUnityExample : MonoBehaviour
         return new Vector3(-Mathf.PI * UnityXYZ.y / 180.0f, Mathf.PI * UnityXYZ.x / 180.0f, -Mathf.PI * UnityXYZ.z / 180.0f);
     }
 
-    private void InitScenario(string scenarioFile, string modelName, int disable_controller, bool osg_viewer, bool interactive)
+    private void Start()
     {
-        print("Init scenario " + scenarioFile);
-        scenarioLoaded = false;
-        speed = 0;
-        interactive_ = interactive;
-        simTime = 0;
+        state = new ScenarioObjectState();
+        cam = GameObject.FindWithTag("MainCamera");
+              
+        InitScenario();
+    }
 
-        // Detach camera from any previous parent, then init its transform
-        camTarget.transform.parent = null;
-        _cam.transform.parent = null;
-
+    private void InitScenario()
+    {
         // First release any previously loaded objects
         foreach (GameObject car in cars)
         {
@@ -135,170 +100,94 @@ public class esminiUnityExample : MonoBehaviour
             Destroy(envModel);
         }
 
-        
 
-        ESMiniLib.SE_AddPath("c:/tmp");
-
-        // Then load the requested scenario
-        if (ESMiniLib.SE_Init(scenarioFile, disable_controller, osg_viewer ? 1 : 0, 0, 0) != 0)
+        if (ESMiniLib.SE_Init( Application.streamingAssetsPath + OSC_filename, 
+            disable_controllers ? 1 : 0, 
+            OSG_visualization ? 1 : 0, 
+            threads ? 1 : 0, 
+            0) != 0)  // don't create .dat-recording for replayer
         {
-            print("failed to load " + scenarioFile);
+            print("failed to load scenario");
             return;
-        }
-
-        string odr_filename = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetODRFilename());
-        Debug.Log("odr_filename: " + odr_filename);
-
-        // Add sensors
-        if (ESMiniLib.SE_AddObjectSensor(0, 4, 0, 0.5f, 0.0f, 5.0f, 50.0f, (float)(50 * Math.PI / 180.0), 10) != 0)
-        {
-            print("failed to add sensor");
-            return;
-        }
-        objList = new int[10];
-        state = new ScenarioObjectState();
-
-        // Load Ego
-        if (interactive_)
-        {
-            cars.Add((GameObject)Instantiate(Resources.Load("S90")));
-            egoBody = cars[0].GetComponent<Rigidbody>();
-        }
-        else
-        {
-            cars.Add((GameObject)Instantiate(Resources.Load("S90_dummy")));
-        }
-        print("Adding Ego");
-
-
-        if (ESMiniLib.SE_GetNumberOfObjects() > 0)
-        {
-            AttachCameraToObj(0);
         }
 
         // Load environment 3D model
-        envModel = (GameObject)Instantiate(Resources.Load(modelName));
-
-        // Fetch the initial object positions
-        UpdateObjectPositions(true);
-
-        if (ESMiniLib.SE_GetNumberOfObjects() > 0)
-        {
-            // Initialize camera position to the exact target point
-            _cam.transform.position = camTarget.transform.position;
-        }
-
-        scenarioLoaded = true;
+        string sceneGraphFilename = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetSceneGraphFilename());
+        Debug.Log("Loading " + Path.GetFileNameWithoutExtension(sceneGraphFilename));
+        envModel = (GameObject)Instantiate(Resources.Load(Path.GetFileNameWithoutExtension(sceneGraphFilename)));
     }
 
-    private void AttachCameraToObj(int index)
+
+    void OnApplicationQuit()
     {
-        car_in_focus_ = index;
-        camTarget.transform.parent = cars[car_in_focus_].transform;
-        camTarget.transform.position = new Vector3(0.0f, 2.5f, -6.0f);
-        camTarget.transform.rotation = Quaternion.Euler(15, 0, 0);
-        _cam.transform.position = camTarget.transform.position;
-        print("Camera follows car " + index);
+        Debug.Log("Quit");
+        ESMiniLib.SE_Close();
     }
 
-    private void UpdateObjectPositions(bool fetchEgo)
+    public void Reload()
     {
-        if (interactive_ && !fetchEgo)
-        {
-            Transform c = cars[0].transform;
+        Debug.Log("Reload");
+        cam.transform.SetParent(null);
+        ESMiniLib.SE_Close();
+        InitScenario();
+    }
 
-            // Report ego position
-            ESMiniLib.SE_ReportObjectPos(0, simTime, c.position.z, -c.position.x, c.position.y,
-                -c.eulerAngles.y * Mathf.PI / 180.0f, c.eulerAngles.x * Mathf.PI / 180.0f, -c.eulerAngles.z * Mathf.PI / 180.0f,
-                egoBody.velocity.magnitude);
+    private void Update()
+    {
+        ESMiniLib.SE_StepDT(Time.deltaTime);
+ 
+        if (ESMiniLib.SE_GetQuitFlag())
+        {
+     #if UNITY_EDITOR
+            // Application.Quit() does not work in the editor so
+            // UnityEditor.EditorApplication.isPlaying need to be set to false to end the game
+            ESMiniLib.SE_Close();
+            UnityEditor.EditorApplication.isPlaying = false;
+     #else
+            Application.Quit();
+     #endif
         }
 
         // Check nr of objects
         for (int i = 0; i < ESMiniLib.SE_GetNumberOfObjects(); i++)
         {
-            if (interactive_ && (i == 0 && !fetchEgo))
-            {
-                continue;
-            }
-
             ESMiniLib.SE_GetObjectState(i, ref state);
 
             // Instantiate objects
-            if (i > 0 && cars.Count <= i)
+            if (cars.Count <= i)
             {
                 // Add scenario controlled objects
-                cars.Add((GameObject)Instantiate(Resources.Load(objectNames[state.model_id])));
-                print("Adding " + objectNames[state.model_id]);
-                if (ESMiniLib.SE_ObjectHasGhost(i) == 1)
+                int model_id = Mathf.Min(state.model_id, objectNames.Count-1);
+                cars.Add((GameObject)Instantiate(Resources.Load(objectNames[model_id])));
+                Debug.Log("Adding " + objectNames[model_id]);
+                
+                // Attach camera to first object
+                if (i==0)
                 {
-                    AttachCameraToObj(i);
+                    cam.transform.SetParent(cars[0].transform);
+                    cam.transform.position = new Vector3(0.0f, 4f, -12.0f);
+                    cam.transform.rotation = Quaternion.Euler(10, 0, 0);
                 }
             }
 
-            GameObject car = cars[i];
-            if (ESMiniLib.SE_ObjectHasGhost(state.id) == 1 && ESMiniLib.SE_GetSimulationTime() > 0.0)
-            {
-                // Get road and ghost sensors
-                RoadInfo road_info = new RoadInfo();
-                float speed_ghost = 0;
-
-                ESMiniLib.SE_GetRoadInfoAtDistance(state.id, 40, ref road_info, 1);
-                ESMiniLib.SE_GetRoadInfoAlongGhostTrail(state.id, 10, ref road_info, ref speed_ghost);
-
-                Vector3 pos_delta = new Vector3(road_info.global_pos_x - state.x, road_info.global_pos_y - state.y, road_info.global_pos_z - state.z);
-                Vector3 rot_delta = new Vector3(road_info.trail_heading - state.h, road_info.road_pitch - state.p, road_info.road_roll - state.r);
-
-                state.x += 0.05f * (road_info.global_pos_x - state.x);
-                state.y += 0.05f * (road_info.global_pos_y - state.y);
-                state.z += 0.05f * (road_info.global_pos_z - state.z);
-                state.h += 0.2f * (road_info.trail_heading - state.h);
-                state.p += 0.2f * (road_info.road_pitch - state.p);
-                state.r += 0.2f * (road_info.road_roll - state.r);
-                //pos.x -= 0.1f;
-
-                ESMiniLib.SE_ReportObjectPos(state.id, 0, state.x, state.y, state.z, state.h, state.p, state.r, 0);
-            }
             // Adapt to Unity coordinate system
-            car.transform.position = RH2Unity(new Vector3(state.x, state.y, state.z));
-            car.transform.rotation = Quaternion.Euler(RHHPR2UnityXYZ(new Vector3(state.h, state.p, state.r)));
+            cars[i].transform.position = RH2Unity(new Vector3(state.x, state.y, state.z));
+            cars[i].transform.rotation = Quaternion.Euler(RHHPR2UnityXYZ(new Vector3(state.h, state.p, state.r)));
         }
     }
+}
 
-    private void FixedUpdate()
+[CustomEditor(typeof(esminiUnityExample))]
+public class customButton : Editor
+{
+    public override void OnInspectorGUI()
     {
-        if (!scenarioLoaded)
+        DrawDefaultInspector();
+
+        esminiUnityExample myScript = (esminiUnityExample)target;
+        if (GUILayout.Button("Reload"))
         {
-            return;
-        }
-
-        if (ESMiniLib.SE_GetNumberOfObjects() > 0)
-        {
-            simTime += Time.deltaTime;
-            ESMiniLib.SE_StepDT(Time.deltaTime);
-
-            int nObj = ESMiniLib.SE_FetchSensorObjectList(0, objList);
-            //print("Sensor hits: " + nObj);
-            for (int i = 0; i < nObj; i++)
-            {
-                ESMiniLib.SE_GetObjectState(objList[i], ref state);
-                //print("state x: " + state.x + ", y: " + state.y);
-            }
-
-            UpdateObjectPositions(false);
-
-            // Let camera follow first object - assumed to be the Ego vehicle
-            _cam.transform.parent = cars[car_in_focus_].transform;
-
-            Vector3 diffVec = camTarget.transform.position - _cam.transform.position;
-            Vector3 diffUnitVec = diffVec.normalized;
-
-            float acceleration = tension * diffVec.magnitude - 2 * Mathf.Sqrt(tension) * speed;
-
-            Vector3 newPos = _cam.transform.position + (speed + acceleration * Time.deltaTime) * diffUnitVec * Time.deltaTime;
-            speed = (newPos - _cam.transform.position).magnitude / Time.deltaTime;
-
-            _cam.transform.position = newPos;
-            _cam.transform.LookAt(cars[car_in_focus_].transform);
+            myScript.Reload();
         }
     }
 }

@@ -117,11 +117,20 @@ namespace ESMini
         [DllImport(LIB_NAME, EntryPoint = "SE_Close")]
         public static extern void SE_Close();
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetQuitFlag")]
+        public static extern bool SE_GetQuitFlag();
+
         [DllImport(LIB_NAME, EntryPoint = "SE_GetODRFilename")]
         //[return: MarshalAs(UnmanagedType.LPStr)]
         /// <summary>Get name of currently referred and loaded OpenDRIVE file</summary>
         /// <returns>Filename as string. Use with: Marshal.PtrToStringAnsi(SE_GetODRFilename())</returns>
         public static extern IntPtr SE_GetODRFilename();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetSceneGraphFilename")]
+        //[return: MarshalAs(UnmanagedType.LPStr)]
+        /// <summary>Get name of currently referred and loaded SceneGraph file</summary>
+        /// <returns>Filename as string. Use with: Marshal.PtrToStringAnsi(SE_GetSceneGraphFilename())</returns>
+        public static extern IntPtr SE_GetSceneGraphFilename();
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetSimulationTime")]
         public static extern float SE_GetSimulationTime();

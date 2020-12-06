@@ -1017,6 +1017,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 
 Viewer::~Viewer()
 {
+	osgViewer_->setDone(true);
 	for (size_t i=0; i< entities_.size(); i++)
 	{
 		delete(entities_[i]);

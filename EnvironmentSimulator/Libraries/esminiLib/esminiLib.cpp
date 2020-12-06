@@ -398,6 +398,16 @@ extern "C"
 		return returnString.c_str();
 	}
 
+	SE_DLL_API const char* SE_GetSceneGraphFilename()
+	{
+		if (!player)
+		{
+			return 0;
+		}
+		returnString = player->scenarioEngine->getSceneGraphFilename().c_str();
+		return returnString.c_str();
+	}
+
 	SE_DLL_API int SE_SetParameter(SE_Parameter parameter)
 	{
 		if (player)

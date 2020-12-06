@@ -86,6 +86,7 @@ ScenarioPlayer::~ScenarioPlayer()
 		}
 	}
 #endif
+	Logger::Inst().SetTimePtr(0);
 	delete scenarioEngine; 
 
 	if (osiReporter)

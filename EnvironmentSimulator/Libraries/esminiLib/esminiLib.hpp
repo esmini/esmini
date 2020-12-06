@@ -163,6 +163,12 @@ extern "C"
 	SE_DLL_API const char* SE_GetODRFilename();
 
 	/**
+	Get name of currently referred and loaded SceneGraph file 
+	@return filename as string (const, since it's allocated and handled by esmini)
+	*/
+	SE_DLL_API const char* SE_GetSceneGraphFilename();
+
+	/**
 	Set value of named parameter
 	@param parameter Struct object including name of parameter and pointer to value, see SE_Parameter declaration
 	@return 0 if successful, -1 if not
