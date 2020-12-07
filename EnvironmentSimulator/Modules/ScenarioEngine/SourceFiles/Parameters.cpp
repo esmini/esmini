@@ -145,6 +145,34 @@ int Parameters::getParameterValue(std::string name, void* value)
 	return 0;
 }
 
+
+std::string Parameters::getParameterValueAsString(std::string name)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps)
+	{
+		return "";
+	}
+
+	if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
+	{
+		return ps->value._string;
+	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+	{
+		return std::to_string(ps->value._int);
+	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+	{
+		return std::to_string(ps->value._double);
+	}
+	else
+	{
+		return "";
+	}
+}
+
 int Parameters::setParameterValue(std::string name, std::string value)
 {
 	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);

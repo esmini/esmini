@@ -2032,6 +2032,8 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 {
 	LOG("Parsing OSCCondition %s", parameters.ReadAttribute(conditionNode, "name").c_str());
 
+	std::string condition_type;
+
 	OSCCondition *condition = 0;
 
 	for (pugi::xml_node conditionChild = conditionNode.first_child(); conditionChild; conditionChild = conditionChild.next_sibling())
@@ -2048,7 +2050,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 			{
 				for (pugi::xml_node condition_node = entity_condition.first_child(); condition_node; condition_node = condition_node.next_sibling())
 				{
-					std::string condition_type(condition_node.name());
+					condition_type = condition_node.name();
 					if (condition_type == "TimeHeadwayCondition")
 					{
 						TrigByTimeHeadway *trigger = new TrigByTimeHeadway;
@@ -2184,8 +2186,31 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						TrigByCollision* trigger = new TrigByCollision;
 
 						pugi::xml_node target = condition_node.child("EntityRef");
-
 						trigger->object_ = entities_->GetObjectByName(parameters.ReadAttribute(target, "entityRef"));
+						trigger->type_ = Object::Type::TYPE_NONE;
+
+						pugi::xml_node by_type = condition_node.child("ByType");
+						if (by_type)
+						{
+							std::string type_str = parameters.ReadAttribute(by_type, "type");
+							if (type_str == "pedestrian")
+							{
+								trigger->type_ = Object::Type::PEDESTRIAN;
+							}
+							else if (type_str == "vehicle")
+							{
+								trigger->type_ = Object::Type::VEHICLE;
+							}
+							else if (type_str == "miscellaneous")
+							{
+								trigger->type_ = Object::Type::MISC_OBJECT;
+							}
+							else 
+							{
+								LOG("Unexpected ObjectType %s in CollisionCondition", type_str);
+								throw std::runtime_error(type_str);
+							}
+						}
 
 						condition = trigger;
 					}
@@ -2287,15 +2312,15 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 		{
 			for (pugi::xml_node byValueChild = conditionChild.first_child(); byValueChild; byValueChild = byValueChild.next_sibling())
 			{
-				std::string byValueChildName(byValueChild.name());
-				if (byValueChildName == "SimulationTimeCondition")
+				condition_type = byValueChild.name();
+				if (condition_type == "SimulationTimeCondition")
 				{
 					TrigBySimulationTime *trigger = new TrigBySimulationTime;
 					trigger->value_ = strtod(parameters.ReadAttribute(byValueChild, "value"));
 					trigger->rule_ = ParseRule(parameters.ReadAttribute(byValueChild, "rule"));
 					condition = trigger;
 				}
-				else if (byValueChildName == "ParameterCondition")
+				else if (condition_type == "ParameterCondition")
 				{
 					TrigByParameter* trigger = new TrigByParameter;
 					trigger->name_ = parameters.ReadAttribute(byValueChild, "parameterRef");
@@ -2304,7 +2329,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					trigger->parameters_ = &parameters;
 					condition = trigger;
 				}
-				else if (byValueChildName == "StoryboardElementStateCondition")
+				else if (condition_type == "StoryboardElementStateCondition")
 				{
 					StoryBoardElement::ElementType element_type = ParseElementType(parameters.ReadAttribute(byValueChild, "storyboardElementType"));
 					TrigByState::CondElementState state = ParseState(parameters.ReadAttribute(byValueChild, "state"));
@@ -2316,7 +2341,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 				}
 				else
 				{
-					LOG("TrigByValue %s not implemented", byValueChildName.c_str());
+					LOG("TrigByValue %s not implemented", condition_type.c_str());
 				}
 			}
 		}
@@ -2330,8 +2355,14 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 	{
 		return 0;
 	}
-
 	condition->name_ = parameters.ReadAttribute(conditionNode, "name");
+
+	if (condition->name_.empty())
+	{
+		// No name, set a dummy name
+		condition->name_ = "no name " + condition_type;
+	}
+
 	if (conditionNode.attribute("delay") != NULL)
 	{
 		condition->delay_ = strtod(parameters.ReadAttribute(conditionNode, "delay"));
@@ -2412,7 +2443,15 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 			{
 				LOG("Invalid priority: %s", prio.c_str());
 			}
-			event->max_num_executions_ = strtoi(parameters.ReadAttribute(maneuverChild, "maximumExecutionCount"));
+
+			if (parameters.ReadAttribute(maneuverChild, "maximumExecutionCount") != "")
+			{
+				event->max_num_executions_ = strtoi(parameters.ReadAttribute(maneuverChild, "maximumExecutionCount"));
+			}
+			else
+			{
+				event->max_num_executions_ = -1;  // Infinite
+			}
 
 			for (pugi::xml_node eventChild = maneuverChild.first_child(); eventChild; eventChild = eventChild.next_sibling())
 			{
@@ -2522,7 +2561,15 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 						{
 							ManeuverGroup *mGroup = new ManeuverGroup;
 
-							mGroup->max_num_executions_ = strtoi(parameters.ReadAttribute(actChild, "maximumExecutionCount"));
+							if (parameters.ReadAttribute(actChild, "maximumExecutionCount") != "")
+							{
+								mGroup->max_num_executions_ = strtoi(parameters.ReadAttribute(actChild, "maximumExecutionCount"));
+							}
+							else
+							{
+								mGroup->max_num_executions_ = -1;  // Infinite
+							}
+
 							mGroup->name_ = parameters.ReadAttribute(actChild, "name");
 
 							pugi::xml_node actors_node = actChild.child("Actors");

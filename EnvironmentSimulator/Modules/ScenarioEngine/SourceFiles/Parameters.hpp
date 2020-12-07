@@ -40,6 +40,7 @@ namespace scenarioengine
 		int setParameterValue(std::string name, const void* value);
 		int setParameterValue(std::string name, std::string value);
 		int getParameterValue(std::string name, void* value);
+		std::string getParameterValueAsString(std::string name);
 
 		// Use always this method when reading attributes, it will resolve any variables
 		std::string ReadAttribute(pugi::xml_node, std::string attribute, bool required = false);

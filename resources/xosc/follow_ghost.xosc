@@ -73,7 +73,7 @@
                   <EntityRef entityRef="Ego"/>
                </Actors>
                <Maneuver name="Maneuver1">
-                  <Event name="SpeedEvent1" priority="overwrite">
+                  <Event name="SpeedEvent1" priority="overwrite" maximumExecutionCount="1">
                      <Action name="SpeedChange">
                         <PrivateAction>
                            <LongitudinalAction>
@@ -122,7 +122,7 @@
                         </ConditionGroup>
                      </StartTrigger>
                   </Event>
-                  <Event name="LaneChange2" priority="overwrite">
+                  <Event name="LaneChange2" priority="overwrite" maximumExecutionCount="1">
                      <Action name="LaneChangeAction2">
                         <PrivateAction>
                            <LateralAction>
@@ -145,7 +145,7 @@
                         </ConditionGroup>
                      </StartTrigger>
                   </Event>
-                  <Event name="SpeedEvent2" priority="overwrite">
+                  <Event name="SpeedEvent2" priority="overwrite" maximumExecutionCount="1">
                      <Action name="SpeedChange2">
                         <PrivateAction>
                            <LongitudinalAction>
@@ -168,7 +168,7 @@
                         </ConditionGroup>
                      </StartTrigger>
                   </Event>
-                  <Event name="StopEvent" priority="overwrite">
+                  <Event name="StopEvent" priority="overwrite" maximumExecutionCount="1">
                      <Action name="Stop">
                         <PrivateAction>
                            <LongitudinalAction>
