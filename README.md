@@ -86,6 +86,8 @@ Run:
 2. Load the scene (Assets/Scenes/esmini-scene). 
 3. Then just press play-button.
 
+Select (click on) esmini-player in Hierarchy to show up in Inspector, where you can specify scenario file and a few parameters. Note that scenario file and dependent OpenDRIVE and optional 3D scenegraph file must be present in StreamingAssets folder.
+
 Plugins can be updated, but NOTE that you need to restart Unity to (re)load shared library plugins. And, of course, scenario files and other content can be added or replaced.
 
 ## esmini controllers

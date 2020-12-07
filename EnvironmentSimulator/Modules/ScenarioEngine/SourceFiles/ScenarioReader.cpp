@@ -2230,8 +2230,8 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 							}
 							else 
 							{
-								LOG("Unexpected ObjectType %s in CollisionCondition", type_str);
-								throw std::runtime_error(type_str);
+								LOG("Unexpected ObjectType %s in CollisionCondition", type_str.c_str());
+								throw std::runtime_error(type_str.c_str());
 							}
 						}
 
