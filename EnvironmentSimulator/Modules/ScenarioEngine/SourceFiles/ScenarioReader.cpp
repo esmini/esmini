@@ -63,6 +63,19 @@ int ScenarioReader::loadOSCFile(const char * path)
 		return -1;
 	}
 
+	osc_root_ = doc_.child("OpenSCENARIO");
+	if (!osc_root_)
+	{
+		// Another try
+		osc_root_ = doc_.child("OpenScenario");
+	}
+
+	if (!osc_root_)
+	{
+		LOG("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
+		throw std::runtime_error("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
+	}
+
 	oscFilename_ = path;
 
 	return 0;
@@ -143,7 +156,17 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 	}
 
 	LOG("Loading catalog %s", name.c_str());
-	pugi::xml_node catalog_node = catalog_doc.child("OpenSCENARIO").child("Catalog");
+	pugi::xml_node osc_node_ = catalog_doc.child("OpenSCENARIO");
+	if (!osc_node_)
+	{
+		osc_node_ = catalog_doc.child("OpenScenario");
+		if (!osc_node_)
+		{
+			LOG("Couldn't find Catalog OpenSCENARIO or OpenScenario element - check XML!");
+			throw std::runtime_error("Couldn't find Catalog OpenSCENARIO or OpenScenario element - check XML!");
+		}
+	}
+	pugi::xml_node catalog_node = osc_node_.child("Catalog");
 
 	catalog = new Catalog();
 	catalog->name_ = name;
@@ -177,7 +200,7 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 {
 	LOG("Parsing RoadNetwork");
 
-	pugi::xml_node roadNetworkNode = doc_.child("OpenSCENARIO").child("RoadNetwork");
+	pugi::xml_node roadNetworkNode = osc_root_.child("RoadNetwork");
 
 	for (pugi::xml_node roadNetworkChild = roadNetworkNode.first_child(); roadNetworkChild; roadNetworkChild = roadNetworkChild.next_sibling())
 	{
@@ -553,7 +576,7 @@ void ScenarioReader::parseCatalogs()
 {
 	LOG("Parsing Catalogs");
 
-	pugi::xml_node catalogsNode = doc_.child("OpenSCENARIO").child("CatalogLocations");
+	pugi::xml_node catalogsNode = osc_root_.child("CatalogLocations");
 
 	for (pugi::xml_node catalogsChild = catalogsNode.first_child(); catalogsChild; catalogsChild = catalogsChild.next_sibling())
 	{
@@ -703,7 +726,7 @@ int ScenarioReader::parseEntities()
 {
 	LOG("Parsing Entities");
 
-	pugi::xml_node enitiesNode = doc_.child("OpenSCENARIO").child("Entities");
+	pugi::xml_node enitiesNode = osc_root_.child("Entities");
 
 	for (pugi::xml_node entitiesChild = enitiesNode.first_child(); entitiesChild; entitiesChild = entitiesChild.next_sibling())
 	{
@@ -1846,7 +1869,7 @@ void ScenarioReader::parseInit(Init &init)
 {
 	LOG("Parsing init");
 
-	pugi::xml_node actionsNode = doc_.child("OpenSCENARIO").child("Storyboard").child("Init").child("Actions");
+	pugi::xml_node actionsNode = osc_root_.child("Storyboard").child("Init").child("Actions");
 
 	for (pugi::xml_node actionsChild = actionsNode.first_child(); actionsChild; actionsChild = actionsChild.next_sibling())
 	{
@@ -2526,7 +2549,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 {
 	LOG("Parsing Story");
 
-	pugi::xml_node storyNode = doc_.child("OpenSCENARIO").child("Storyboard").child("Story");
+	pugi::xml_node storyNode = osc_root_.child("Storyboard").child("Story");
 
 	for (; storyNode; storyNode = storyNode.next_sibling())
 	{

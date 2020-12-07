@@ -21,9 +21,9 @@ void Parameters::addParameterDeclarations(pugi::xml_node xml_node)
 	parseParameterDeclarations(xml_node, &parameterDeclarations_);
 }
 
-void Parameters::parseGlobalParameterDeclarations(pugi::xml_document* doc_)
+void Parameters::parseGlobalParameterDeclarations(pugi::xml_node osc_root_)
 {
-	parseParameterDeclarations(doc_->child("OpenSCENARIO").child("ParameterDeclarations"), &parameterDeclarations_);
+	parseParameterDeclarations(osc_root_.child("ParameterDeclarations"), &parameterDeclarations_);
 	paramDeclarationsSize_ = (int)parameterDeclarations_.Parameter.size();
 }
 
