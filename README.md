@@ -73,6 +73,23 @@ Further info:
 The easiest way of integrating esmini in your custom application is to link the all inclusive shared library ScenarioEngineDLL. In spite of the name it's available also on Linux and Mac.
 See [this "Hello World" tutorial](https://github.com/esmini/esmini/blob/master/Hello-World_coding-example/README.md) on how to create a minimalistic application based on it.
 
+### Unity support
+esmini shared library works fine also in Unity (Win, Linux, Mac). A simple example can be downloaded from [here](https://www.dropbox.com/s/sj53hz0zesxa681/esmini-player.unitypackage?dl=0). The package contains everything needed to get going:
+- esmini library C# wrapper
+- a generic scenario player script 
+- a few example scenarios (OpenSCENARIO + OpenDRIVE) including 3D models 
+- plugins for all platforms (can be updated of course)
+- and finally a scene connecting the player script to a game object 
+
+Run:
+1. Import package (Import Package -> Custom Package). 
+2. Load the scene (Assets/Scenes/esmini-scene). 
+3. Then just press play-button.
+
+Select (click on) esmini-player in Hierarchy to show up in Inspector, where you can specify scenario file and a few parameters. Note that scenario file and dependent OpenDRIVE and optional 3D scenegraph file must be present in StreamingAssets folder.
+
+Plugins can be updated, but NOTE that you need to restart Unity to (re)load shared library plugins. And, of course, scenario files and other content can be added or replaced.
+
 ## esmini controllers
 
 esmini comes with a few controllers (ways of controlling individual entities in the scenario):

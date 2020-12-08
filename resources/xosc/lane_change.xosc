@@ -11,6 +11,7 @@
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="EgoStartS" parameterType="double" value="50"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="DummyParameter" parameterType="double" value="2"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -129,12 +130,30 @@
                         <ConditionGroup>
                            <Condition name="Lane change Target condition" delay="0" conditionEdge="rising">
                               <ByValueCondition>
-                                 <SimulationTimeCondition value="3" rule="greaterThan"/>
+                                 <ParameterCondition parameterRef="DummyParameter" value="10" rule="greaterThan"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
                      </StartTrigger>
                   </Event>
+                  <Event name="Dummy parameter event" priority="parallel">
+                     <Action name="Dummy parameter action">
+                        <GlobalAction>
+                           <ParameterAction parameterRef="DummyParameter">
+                               <ParameterSetAction value="11" />
+                           </ParameterAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Lane change Target condition" delay="0" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="3" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>                  
                </Maneuver>
             </ManeuverGroup>
             <StartTrigger>

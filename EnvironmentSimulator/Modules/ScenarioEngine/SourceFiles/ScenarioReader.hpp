@@ -99,7 +99,7 @@ namespace scenarioengine
 		MiscObject* parseOSCMiscObject(pugi::xml_node miscObjectNode);
 		Vehicle* createRandomOSCVehicle(std::string name);
 		Controller* parseOSCObjectController(pugi::xml_node vehicleNode);
-		void parseGlobalParameterDeclarations() { parameters.parseGlobalParameterDeclarations(&doc_); }
+		void parseGlobalParameterDeclarations() { parameters.parseGlobalParameterDeclarations(osc_root_); }
 
 		// Enitites
 		int parseEntities();
@@ -130,14 +130,15 @@ namespace scenarioengine
 		void UnloadControllers();
 
 		std::vector<Controller*> controller_;
+		Parameters parameters;
 
 	private:
 		pugi::xml_document doc_;
+		pugi::xml_node osc_root_;
 		int objectCnt_;
 		std::string oscFilename_;
 		Entities *entities_;
 		Catalogs *catalogs_;
-		Parameters parameters;
 		ScenarioGateway* gateway_;
 		bool disable_controllers_;
 		static ControllerPool controllerPool_;

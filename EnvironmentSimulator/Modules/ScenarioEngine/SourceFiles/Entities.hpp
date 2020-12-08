@@ -30,6 +30,7 @@ namespace scenarioengine
 	public:
 		typedef enum
 		{
+			TYPE_NONE,
 			VEHICLE,
 			PEDESTRIAN,
 			MISC_OBJECT

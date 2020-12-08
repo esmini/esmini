@@ -63,7 +63,7 @@ namespace scenarioengine
 			next_state_(State::STANDBY),
 			transition_(Transition::UNDEFINED_ELEMENT_TRANSITION),
 			num_executions_(0), 
-			max_num_executions_(1) {}
+			max_num_executions_(-1) {}
 
 		StoryBoardElement(ElementType type, int max_num_executions) :
 			type_(type),
@@ -124,7 +124,7 @@ namespace scenarioengine
 			if (state_ == State::RUNNING)
 			{
 				transition_ = Transition::END_TRANSITION;
-				if (type_ == ElementType::ACT || num_executions_ >= max_num_executions_)
+				if (type_ == ElementType::ACT || (max_num_executions_ != -1 && num_executions_ >= max_num_executions_))
 				{
 					LOG("%s complete after %d execution%s", name_.c_str(), num_executions_, num_executions_ > 1 ? "s" : "");
 					next_state_ = State::COMPLETE;

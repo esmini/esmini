@@ -26,6 +26,7 @@
 #include "CommonMini.hpp"
 
 #define DEMONSTRATE_SENSORS 1
+#define DEMONSTRATE_PARAMETER 0
 #define DEMONSTRATE_DRIVER_MODEL 0
 #define DEMONSTRATE_OSI 0
 #define DEMONSTRATE_ROADINFO 0
@@ -116,6 +117,9 @@ int main(int argc, char *argv[])
 			}
 		}
 
+		// Demonstrate use of ODR query function
+		printf("odr filename: %s\n", SE_GetODRFilename());
+
 #if DEMONSTRATE_DRIVER_MODEL
 		SE_ScenarioObjectState state;
 		SE_GetObjectState(0, &state);
@@ -141,8 +145,30 @@ int main(int argc, char *argv[])
 		SE_OSIFileOpen();
 #endif
 
+
 		for (int i = 0; i*TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
 		{
+#if DEMONSTRATE_PARAMETER  // try with lane_change.xosc which sets "DummyParameter"
+			double number = 0;
+			SE_Parameter param;
+			param.value = &number;
+			param.name = "DummyParameter";
+			static bool triggered = false;
+
+			if (triggered == false && SE_GetSimulationTime() > 2.5)
+			{
+				// Actions is triggered when DummyParameter > 10
+				// In scenario lane_change.xosc the trigger will happen at simtime == 3.0 s, by setting param value = 11.0
+				// Let's trig it already at 2.5 from here by setting param value = 15.0
+				number = 15.0;
+				SE_SetParameter(param);
+				triggered = true;
+			}
+
+			SE_GetParameter(&param);
+			printf("param value: %.2f\n", number);
+#endif
+
 			if (SE_Step() != 0)
 			{
 				return 0;

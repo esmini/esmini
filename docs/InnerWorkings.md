@@ -60,6 +60,47 @@ Collection of handy functions shared between modules and applications. E.g:
 - Math operations
 - Logger
 
+## Parameters
+esmini supports three parameter types: integer, double and string. A parameter is declared in the OpenSCENARIO file, in the global ParameterDeclaration. Values can be set by ParameterAction/ParameterSetAction. And it can be used in ParameterCondition to trig storyboard elements. For a simple example see use of "DummyParameter" in [lane_change.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/lane_change.xosc) and [esmini-dyn/main.cpp](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/esmini-dyn/main.cpp) (enable DEMONSTRATE_PARAMETER to test).
+
+To set and read values via esminiLib/C++ you can do as following examples:
+
+### integer
+```
+int number = 99;
+SE_Parameter param;
+param.name = "MyIntParameter";
+param.value = &number;
+SE_SetParameter(param);
+SE_GetParameter(&param);
+printf("param value: %d\n", number);
+// or by casting the value
+printf("param value: %d\n", *((int*)param.value));
+```
+### double
+```
+double number = 1.5;
+SE_Parameter param;
+param.name = "MyDoubleParameter";
+param.value = &number;
+SE_SetParameter(param);
+SE_GetParameter(&param);
+printf("param value: %.2f\n", number);
+// or by casting the value
+printf("param value: %.2f\n", *((double*)param.value));
+```
+### string
+```
+std::string myString = "Hello";
+SE_Parameter param;
+param.name = "MyStringParameter";
+param.value = &myString;
+SE_SetParameter(param);
+SE_GetParameter(&param);
+printf("param value: %s\n", myString.c_str());
+// or by casting the value
+printf("param value: %s\n", (*((std::string*)param.value)).c_str());
+```
 ## How the modules interact
 
 On high level, the sequence of events when stepping the player is:

@@ -23,23 +23,38 @@
 
 namespace scenarioengine
 {
-	struct ParameterStruct
-	{
-		std::string name;
-		std::string type; // Wrong type
-		std::string value;
-	};
-
 	class OSCParameterDeclarations
 	{
 	public:
+		typedef enum {
+			PARAM_TYPE_INTEGER,
+			PARAM_TYPE_DOUBLE,
+			PARAM_TYPE_STRING
+		} ParameterType;
+
+		typedef struct 
+		{
+			std::string name;
+			ParameterType type; 
+			struct value
+			{
+				int _int;
+				double _double;
+				std::string _string;
+			} value;
+		} ParameterStruct;
 
 		std::vector<ParameterStruct> Parameter;
 
-		void printOSCParameterDeclarations()
+		void* getValueFromStruct(ParameterStruct *p)
 		{
-			LOG("\n");
-		};
+			return (void*)&p->value._int;
+		}
+
+		void* setValueInStruct(ParameterStruct* p)
+		{
+			return (void*)&p->value._int;
+		}
 	};
 
 }

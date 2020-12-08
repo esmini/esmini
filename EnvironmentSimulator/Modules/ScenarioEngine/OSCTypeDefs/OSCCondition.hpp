@@ -21,6 +21,7 @@
 #include "OSCAction.hpp"
 #include "Entities.hpp"
 #include "OSCPosition.hpp"
+#include "Parameters.hpp"
 
 namespace scenarioengine
 {
@@ -52,15 +53,15 @@ namespace scenarioengine
 		double delay_;
 		bool evaluated_;
 		bool last_result_;  // result from last evaluation
-		bool last_trig_;    // trig value from last evaluation
 		ConditionEdge edge_;
 		SE_SimulationTimer timer_;
 
 		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false), 
-			last_result_(false), last_trig_(false), edge_(ConditionEdge::NONE) {}
+			last_result_(false), edge_(ConditionEdge::NONE) {}
 
 		bool Evaluate(StoryBoard *storyBoard, double sim_time);
-		virtual bool CheckCondition(StoryBoard *storyBoard, double sim_time, bool log = false) = 0;
+		virtual bool CheckCondition(StoryBoard *storyBoard, double sim_time) = 0;
+		virtual void Log();
 		bool CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge);
 	};
 
@@ -116,6 +117,7 @@ namespace scenarioengine
 		TriggeringEntitiesRule triggering_entity_rule_;
 		TriggeringEntities triggering_entities_;
 		EntityConditionType type_;
+		std::vector<Object*> triggered_by_entities_;
 
 		TrigByEntity(EntityConditionType type) : OSCCondition(OSCCondition::ConditionType::BY_ENTITY), type_(type) {}
 
@@ -133,9 +135,11 @@ namespace scenarioengine
 		bool freespace_;
 		bool along_route_;
 		Rule rule_;
+		double hwt_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
-		TrigByTimeHeadway() : TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByTimeHeadway() : hwt_(0), TrigByEntity(TrigByEntity::EntityConditionType::TIME_HEADWAY) {}
+		void Log();
 	};
 
 	class TrigByTimeToCollision : public TrigByEntity
@@ -147,9 +151,11 @@ namespace scenarioengine
 		bool freespace_;
 		bool along_route_;
 		Rule rule_;
+		double ttc_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
-		TrigByTimeToCollision() : object_(0), position_(0), TrigByEntity(TrigByEntity::EntityConditionType::TIME_TO_COLLISION) {}
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByTimeToCollision() : object_(0), position_(0), ttc_(0), TrigByEntity(TrigByEntity::EntityConditionType::TIME_TO_COLLISION) {}
+		void Log();
 	};
 
 	class TrigByReachPosition : public TrigByEntity
@@ -157,9 +163,11 @@ namespace scenarioengine
 	public:
 		OSCPosition *position_;
 		double tolerance_;
+		double dist_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
-		TrigByReachPosition() : TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByReachPosition() : dist_(0), TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
+		void Log();
 	};
 
 	class TrigByDistance : public TrigByEntity
@@ -170,18 +178,22 @@ namespace scenarioengine
 		bool freespace_;
 		bool along_route_;
 		Rule rule_;
+		double dist_;
 		
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
-		TrigByDistance() : TrigByEntity(TrigByEntity::EntityConditionType::DISTANCE) {}
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByDistance() : dist_(0), TrigByEntity(TrigByEntity::EntityConditionType::DISTANCE) {}
+		void Log();
 	};
 
 	class TrigByTraveledDistance : public TrigByEntity
 	{
 	public:
 		double value_;
+		double odom_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false); 
-		TrigByTraveledDistance() : value_(0), TrigByEntity(TrigByEntity::EntityConditionType::TRAVELED_DISTANCE) {}
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time); 
+		TrigByTraveledDistance() : value_(0), odom_(0), TrigByEntity(TrigByEntity::EntityConditionType::TRAVELED_DISTANCE) {}
+		void Log();
 	};
 
 	class TrigByRelativeDistance : public TrigByEntity
@@ -199,9 +211,11 @@ namespace scenarioengine
 		bool freespace_;
 		RelativeDistanceType type_;
 		Rule rule_;
+		double rel_dist_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false); 
-		TrigByRelativeDistance() : object_(0), value_(0.0), TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE) {}
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time); 
+		TrigByRelativeDistance() : object_(0), value_(0.0), rel_dist_(0), TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE) {}
+		void Log();
 	};
 
 	class TrigByCollision : public TrigByEntity
@@ -217,9 +231,18 @@ namespace scenarioengine
 		Object* object_;
 		Object::Type type_;
 		Rule rule_;
+		double dist_;
+		typedef struct
+		{
+			Object* object0;
+			Object* object1;
+		} CollisionPair;
+		std::vector<CollisionPair> collision_pair_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
-		TrigByCollision() : object_(0), TrigByEntity(TrigByEntity::EntityConditionType::COLLISION) {}
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByCollision() : object_(0), type_(Object::Type::TYPE_NONE), dist_(0),
+			TrigByEntity(TrigByEntity::EntityConditionType::COLLISION) {}
+		void Log();
 	};
 
 	class TrigByEndOfRoad : public TrigByEntity
@@ -229,9 +252,11 @@ namespace scenarioengine
 		Object* object_;
 		double duration_;
 		Rule rule_;
+		double current_duration_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
-		TrigByEndOfRoad() : TrigByEntity(TrigByEntity::EntityConditionType::END_OF_ROAD) {}
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByEndOfRoad() : current_duration_(0), TrigByEntity(TrigByEntity::EntityConditionType::END_OF_ROAD) {}
+		void Log();
 
 	private:
 		double elapsed_time_;
@@ -259,10 +284,11 @@ namespace scenarioengine
 		StoryBoardElement::ElementType element_type_;
 		std::string element_name_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false); 
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time); 
 		TrigByState(CondElementState state, StoryBoardElement::ElementType element_type, std::string element_name) :
 			OSCCondition(BY_STATE), state_(state), element_type_(element_type), element_name_(element_name) {}
 		std::string CondElementState2Str(CondElementState state);
+		void Log();
 	};
 
 	class TrigByValue : public OSCCondition
@@ -286,9 +312,26 @@ namespace scenarioengine
 	{
 	public:
 		double value_;
+		double sim_time_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time, bool log = false);
-		TrigBySimulationTime() : TrigByValue(TrigByValue::Type::SIMULATION_TIME) {}
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigBySimulationTime() : sim_time_(0), TrigByValue(TrigByValue::Type::SIMULATION_TIME) {}
+		void Log();
+	};
+
+	class TrigByParameter : public TrigByValue
+	{
+	public:
+		std::string name_;
+		std::string value_;
+		Rule rule_;
+		Parameters* parameters_;
+		std::string current_value_str_;
+
+
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByParameter() : TrigByValue(TrigByValue::Type::PARAMETER) {}
+		void Log();
 	};
 
 }

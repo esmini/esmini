@@ -86,6 +86,7 @@ ScenarioPlayer::~ScenarioPlayer()
 		}
 	}
 #endif
+	Logger::Inst().SetTimePtr(0);
 	delete scenarioEngine; 
 
 	if (osiReporter)
@@ -610,7 +611,7 @@ int ScenarioPlayer::Init()
 	}
 
 	// use an ArgumentParser object to manage the program arguments.
-	opt.AddOption("osc", "OpenSCENARIO filename", "filename");
+	opt.AddOption("osc", "OpenSCENARIO filename - if path includes spaces, enclose with \"\" ", "filename");
 	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
@@ -834,6 +835,16 @@ void ScenarioPlayer::UpdateCSV_Log()
 			pos.GetHRelative(), pos.GetHRelativeDrivingDirection(),
 			pos.GetP(), pos.GetCurvature());
 	}
+}
+
+int ScenarioPlayer::SetParameterValue(const char* name, const void* value)
+{
+	return scenarioEngine->scenarioReader->parameters.setParameterValue(name, value);
+}
+
+int ScenarioPlayer::GetParameterValue(const char* name, void* value)
+{
+	return scenarioEngine->scenarioReader->parameters.getParameterValue(name, value);
 }
 
 #ifdef _SCENARIO_VIEWER

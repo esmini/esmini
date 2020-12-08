@@ -21,9 +21,9 @@ void Parameters::addParameterDeclarations(pugi::xml_node xml_node)
 	parseParameterDeclarations(xml_node, &parameterDeclarations_);
 }
 
-void Parameters::parseGlobalParameterDeclarations(pugi::xml_document* doc_)
+void Parameters::parseGlobalParameterDeclarations(pugi::xml_node osc_root_)
 {
-	parseParameterDeclarations(doc_->child("OpenSCENARIO").child("ParameterDeclarations"), &parameterDeclarations_);
+	parseParameterDeclarations(osc_root_.child("ParameterDeclarations"), &parameterDeclarations_);
 	paramDeclarationsSize_ = (int)parameterDeclarations_.Parameter.size();
 }
 
@@ -35,17 +35,20 @@ void Parameters::RestoreParameterDeclarations()
 	catalog_param_assignments.clear();
 }
 
-void Parameters::addParameter(std::string name, std::string value)
+int Parameters::setParameter(std::string name, std::string value)
 {
-	ParameterStruct param;
+	// If string already present in parameterDeclaration
+	for (size_t i = 0; i < parameterDeclarations_.Parameter.size(); i++)
+	{
+		if (PARAMETER_PREFIX + parameterDeclarations_.Parameter[i].name == name || // parameter names should not include prefix
+			parameterDeclarations_.Parameter[i].name == name)  // But support also parameter name including prefix
+		{
+			parameterDeclarations_.Parameter[i].value._string = value;
+			return 0;
+		}
+	}
 
-	LOG("adding %s = %s", name.c_str(), value.c_str());
-
-	param.name = name;
-	param.type = "string";
-	param.value = value;
-
-	parameterDeclarations_.Parameter.insert(parameterDeclarations_.Parameter.begin(), param);
+	return -1;
 }
 
 std::string Parameters::getParameter(OSCParameterDeclarations& parameterDeclaration, std::string name)
@@ -58,12 +61,145 @@ std::string Parameters::getParameter(OSCParameterDeclarations& parameterDeclarat
 		if (PARAMETER_PREFIX + parameterDeclaration.Parameter[i].name == name || // parameter names should not include prefix
 			parameterDeclaration.Parameter[i].name == name)  // But support also parameter name including prefix
 		{
-			LOG("%s replaced with %s", name.c_str(), parameterDeclaration.Parameter[i].value.c_str());
-			return parameterDeclaration.Parameter[i].value;
+			LOG("%s replaced with %s", name.c_str(), parameterDeclaration.Parameter[i].value._string.c_str());
+			return parameterDeclaration.Parameter[i].value._string;
 		}
 	}
 	LOG("Failed to resolve parameter %s", name.c_str());
 	throw std::runtime_error("Failed to resolve parameter");
+	return 0;
+}
+
+OSCParameterDeclarations::ParameterStruct* Parameters::getParameterEntry(std::string name)
+{
+	// If string already present in parameterDeclaration
+	for (size_t i = 0; i < parameterDeclarations_.Parameter.size(); i++)
+	{
+		if (PARAMETER_PREFIX + parameterDeclarations_.Parameter[i].name == name || // parameter names should not include prefix
+			parameterDeclarations_.Parameter[i].name == name)  // But support also parameter name including prefix
+		{
+			return &parameterDeclarations_.Parameter[i];
+		}
+	}
+
+	return 0;
+}
+
+int Parameters::setParameterValue(std::string name, const void* value)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+	
+	if(!ps)
+	{ 
+		return -1;
+	}
+
+	if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+	{
+		ps->value._int = *((int*)value);
+	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
+	{
+		ps->value._double = *((double*)value);
+	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
+	{
+		ps->value._string = *((std::string*)value);
+	}
+	else
+	{
+		LOG("Unexpected type: %d", ps->type);
+		return -1;
+	}
+
+	return 0;
+}
+
+int Parameters::getParameterValue(std::string name, void* value)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps)
+	{
+		return -1;
+	}
+
+	if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+	{
+		*((int*)value) = ps->value._int;
+	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
+	{
+		*((double*)value) = ps->value._double;
+	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
+	{
+		*((std::string*)value) = ps->value._string;
+	}
+	else
+	{
+		LOG("Unexpected type: %d", ps->type);
+		return -1;
+	}
+
+	return 0;
+}
+
+
+std::string Parameters::getParameterValueAsString(std::string name)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps)
+	{
+		return "";
+	}
+
+	if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
+	{
+		return ps->value._string;
+	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+	{
+		return std::to_string(ps->value._int);
+	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+	{
+		return std::to_string(ps->value._double);
+	}
+	else
+	{
+		return "";
+	}
+}
+
+int Parameters::setParameterValue(std::string name, std::string value)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps)
+	{
+		return -1;
+	}
+
+	if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+	{
+		ps->value._int = strtoi(value);
+	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
+	{
+		ps->value._double = strtod(value);
+	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
+	{
+		ps->value._string = value;
+	}
+	else
+	{
+		LOG("Unexpected type: %d", ps->type);
+		return -1;
+	}
+
 	return 0;
 }
 
@@ -109,21 +245,41 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 
 	for (pugi::xml_node pdChild = parameterDeclarationsNode.first_child(); pdChild; pdChild = pdChild.next_sibling())
 	{
-		ParameterStruct param;
+		OSCParameterDeclarations::ParameterStruct param = { "", OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING, {0, 0, ""} };
 
 		param.name = pdChild.attribute("name").value();
 
 		// Check for catalog parameter assignements, overriding default value
-		param.value = pdChild.attribute("value").value();
+		param.value._string = pdChild.attribute("value").value();
 		for (size_t i = 0; i < catalog_param_assignments.size(); i++)
 		{
 			if (param.name == catalog_param_assignments[i].name)
 			{
-				param.value = catalog_param_assignments[i].value;
+				param.value._string = catalog_param_assignments[i].value._string;
 				break;
 			}
 		}
-		param.type = pdChild.attribute("parameterType").value();
+
+		std::string type_str = pdChild.attribute("parameterType").value();
+		
+		if (type_str == "integer")
+		{
+			param.type = OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER;
+			param.value._int = strtoi(param.value._string);
+		}
+		else if (type_str == "double")
+		{
+			param.type = OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE;
+			param.value._double = strtod(param.value._string);
+		}
+		else if (type_str == "string")
+		{
+			param.type = OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING;
+		}
+		else
+		{
+			LOG("Type %s is not supported yet", type_str.c_str());
+		}
 		pd->Parameter.insert(pd->Parameter.begin(), param);
 	}
 }

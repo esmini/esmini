@@ -10,14 +10,15 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+#include <string>
+#include <clocale>
+
 #include "CommonMini.hpp"
 #include "playerbase.hpp"
 #include "esminiLib.hpp"
 #include "IdealSensor.hpp"
 #include "osi_sensordata.pb.h"
 #include "vehicle.hpp"
-
-#include <string>
 
 using namespace scenarioengine;
 
@@ -28,6 +29,7 @@ static ScenarioPlayer *player = 0;
 static char **argv = 0;
 static int argc = 0;
 static std::vector<std::string> args_v;
+static std::string returnString;  // use this for returning strings
 
 typedef struct
 {
@@ -50,7 +52,6 @@ static void resetScenario(void)
 		delete player;
 		player = 0;
 	}
-	args_v.clear();
 	if (argv)
 	{
 		for (int i = 0; i < argc; i++)
@@ -61,12 +62,22 @@ static void resetScenario(void)
 		argv = 0;
 		argc = 0;
 	}
+	args_v.clear();
+	returnString = "";
 }
 
-static void AddArgument(const char *str)
+static void AddArgument(const char *str, bool split=true)
 {
-	// split separate argument strings
-	std::vector<std::string> args = SplitString(std::string(str), ' ');
+	std::vector<std::string> args;
+	if (split)
+	{
+		// split separate argument strings
+		args = SplitString(std::string(str), ' ');
+	}
+	else
+	{
+		args.push_back(std::string(str));
+	}
 
 	for (size_t i = 0; i < args.size(); i++)
 	{
@@ -244,6 +255,9 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 
 static int InitScenario()
 {
+	// Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
+	std::setlocale(LC_ALL, "C.UTF-8");
+
 	Logger::Inst().SetCallback(log_callback);
 
 	ConvertArguments();
@@ -301,17 +315,17 @@ extern "C"
 
 		AddArgument("viewer");  // name of application
 		AddArgument("--osc");
-		AddArgument(oscFilename);
+		AddArgument(oscFilename, false);
 
 		if (record)
 		{
 			AddArgument("--record");
 			std::string datFilename = FileNameWithoutExtOf(oscFilename) + ".dat";
-			AddArgument(datFilename.c_str());
+			AddArgument(datFilename.c_str(), false);
 		}
 		if (use_viewer)
 		{
-			AddArgument("--window 50 50 800 400");
+			AddArgument("--window 50 50 800 400", true);
 		}
 		else
 		{
@@ -348,17 +362,44 @@ extern "C"
 
 	}
 
-	int SE_GetODRFilename(char* str, int len)
+	SE_DLL_API const char* SE_GetODRFilename()
 	{
-		if (player->scenarioEngine->getOdrFilename().size() + 1 > len)
+		if (!player)
 		{
-			LOG("OpenDRIVE filename (%s) too long for provided array (size=%d)", player->scenarioEngine->getOdrFilename().c_str(), len);
-			return -1;
+			return 0;
+		}
+		returnString = player->scenarioEngine->getOdrFilename().c_str();
+		return returnString.c_str();
+	}
+
+	SE_DLL_API const char* SE_GetSceneGraphFilename()
+	{
+		if (!player)
+		{
+			return 0;
+		}
+		returnString = player->scenarioEngine->getSceneGraphFilename().c_str();
+		return returnString.c_str();
+	}
+
+	SE_DLL_API int SE_SetParameter(SE_Parameter parameter)
+	{
+		if (player)
+		{
+			return player->SetParameterValue(parameter.name, parameter.value);
 		}
 
-		strncpy(str, player->scenarioEngine->getOdrFilename().c_str(), player->scenarioEngine->getOdrFilename().size()+1);
-		
-		return 0;
+		return -1;
+	}
+
+	SE_DLL_API int SE_GetParameter(SE_Parameter* parameter)
+	{
+		if (player)
+		{
+			return player->GetParameterValue(parameter->name, parameter->value);
+		}
+
+		return -1;
 	}
 
 	SE_DLL_API void SE_Close()

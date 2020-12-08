@@ -113,7 +113,7 @@ OSCTypeDefs
             Signal                          No
             Controller                      No
         ByValue                             
-            Parameter                       No
+            Parameter                       Yes
             TimeOfDay                       No
             SimulationTime                  Yes
             StoryBoardElementState          Partly (Story, Act, Event, Action. Not all transitions supported)
@@ -201,7 +201,7 @@ OSCTypeDefs
     OSCGlobalAction                         
         SetEnvironment                      No
         Entity                              No
-        Parameter                           No
+        Parameter                           Yes
         Infrastructure                      No
         Traffic                             No
     OSCBoundingBox                          No

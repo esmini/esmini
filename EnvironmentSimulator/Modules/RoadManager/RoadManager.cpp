@@ -1025,6 +1025,11 @@ double LaneSection::GetWidth(double s, int lane_id)
 
 double LaneSection::GetOuterOffset(double s, int lane_id)
 {
+	if (lane_id == 0)
+	{
+		return 0;
+	}
+
 	double width = GetWidth(s, lane_id);
 
 	if (abs(lane_id) == 1)
@@ -1531,7 +1536,7 @@ int Road::GetNumberOfDrivingLanesSide(double s, int side)
 	return (lane_section_[i]->GetNumberOfDrivingLanesSide(side));
 }
 
-double Road::GetDrivableWidth(double s, int side)
+double Road::GetWidth(double s, int side, int laneTypeMask)
 {
 	double minOffset = 0;
 	double maxOffset = 0;
@@ -1549,7 +1554,7 @@ double Road::GetDrivableWidth(double s, int side)
 	{
 		for (size_t j = 0; j < lane_section_[i]->GetNumberOfLanes(); j++)
 		{
-			if (lane_section_[i]->GetLaneByIdx((int)j)->IsDriving())
+			if (lane_section_[i]->GetLaneByIdx((int)j)->GetLaneType() & laneTypeMask)
 			{
 				int lane_id = lane_section_[i]->GetLaneIdByIdx((int)j);
 
@@ -2203,6 +2208,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								if (!strcmp(roadMark.attribute("type").value(), "none"))
 								{
 									roadMark_type = LaneRoadMark::NONE_TYPE;
+									// None type indicates no roadmark, skip 
+									continue;
 								}
 								else  if (!strcmp(roadMark.attribute("type").value(), "solid"))
 								{
@@ -2326,7 +2333,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								{
 									LOG("unknown lane road mark lane change: %s (road id=%d)\n", roadMark.attribute("laneChange").value(), r->GetId());
 								}
-								
+
 								double roadMark_width = atof(roadMark.attribute("width").value());
 								double roadMark_height = atof(roadMark.attribute("height").value());
 								LaneRoadMark *lane_roadMark = new LaneRoadMark(s_offset, roadMark_type, roadMark_weight, roadMark_color, 
@@ -2334,13 +2341,14 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								lane->AddLaneRoadMark(lane_roadMark);
 
 								// sub_type
+								LaneRoadMarkType* lane_roadMarkType = 0;
 								for (pugi::xml_node sub_type = roadMark.child("type"); sub_type; sub_type = sub_type.next_sibling("type"))
 								{
 									if (sub_type != NULL)
 									{
 										std::string sub_type_name = sub_type.attribute("name").value();
 										double sub_type_width = atof(sub_type.attribute("width").value());
-										LaneRoadMarkType *lane_roadMarkType = new LaneRoadMarkType(sub_type_name, sub_type_width);
+										lane_roadMarkType = new LaneRoadMarkType(sub_type_name, sub_type_width);
 										lane_roadMark->AddType(lane_roadMarkType);
 
 										for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
@@ -2378,6 +2386,31 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(length, space, t_offset, s_offset, rule, width);
 											lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 										}
+									}
+								}
+								if (roadMark_type != LaneRoadMark::NONE_TYPE && lane_roadMarkType == 0)
+								{
+									if (roadMark_type == LaneRoadMark::SOLID ||
+										roadMark_type == LaneRoadMark::CURB)
+									{
+										lane_roadMarkType = new LaneRoadMarkType("stand-in", 0.15);
+										lane_roadMark->AddType(lane_roadMarkType);
+										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, 0.15);
+										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+									}
+									else if (roadMark_type == LaneRoadMark::BROKEN ||
+											 roadMark_type == LaneRoadMark::BROKEN_BROKEN)
+									{
+										lane_roadMarkType = new LaneRoadMarkType("stand-in", 0.15);
+										lane_roadMark->AddType(lane_roadMarkType);
+										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(4, 8, 0, 0, rule, 0.15);
+										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+									}
+									else
+									{
+										LOG("No road mark created for road %d lane %d. Type %d not supported. Either swich type or add a roadMark <type> element.", r->GetId(), lane_id, roadMark_type);
 									}
 								}
 							}
@@ -3833,13 +3866,13 @@ void OpenDrive::SetLaneOSIPoints()
 						{
 							// Back to last point and try smaller step forward
 							s1_prev = s1;
-							s1 = s0 + (s1 - s0) * 0.5;
+							s1 = MIN(s0 + (s1 - s0) * 0.5, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
 						}
 						else
 						{
 							s0 = s1_prev;
 							s1_prev = s1;
-							s1 = s0 + OSI_POINT_CALC_STEPSIZE;
+							s1 = MIN(s0 + OSI_POINT_CALC_STEPSIZE, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
 
 							if (counter != 1)
 							{
@@ -3917,7 +3950,7 @@ void OpenDrive::SetLaneBoundaryPoints()
 			
 			// Starting points of the each lane section for OSI calculations
 			s0 = lsec->GetS();
-			s1 = s0+OSI_POINT_CALC_STEPSIZE;
+			s1 = s0 + OSI_POINT_CALC_STEPSIZE;
 			s1_prev = s0;
 
 			// Looping through each lane
@@ -3934,6 +3967,9 @@ void OpenDrive::SetLaneBoundaryPoints()
 					while(true)
 					{
 						counter++;
+
+						// Make sure we stay within road length
+						s1 = MIN(s1, road->GetLength() - OSI_TANGENT_LINE_TOLERANCE);
 
 						// [XO, YO] = closest position with given (-) tolerance
 						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0-OSI_TANGENT_LINE_TOLERANCE, 0, j);
@@ -3984,8 +4020,8 @@ void OpenDrive::SetLaneBoundaryPoints()
 						
 						// If requirement is satisfied -> look further points
 						// If requirement is not satisfied:
-							// Assign last satisfied point as OSI point
-							// Continue searching from the last satisfied point
+						// Assign last satisfied point as OSI point
+						// Continue searching from the last satisfied point
 						if (osi_requirement)
 						{
 							s1_prev = s1;
@@ -4159,6 +4195,9 @@ void OpenDrive::SetRoadMarkOSIPoints()
 										{
 											counter++;
 
+											// Make sure we stay within road length
+											s1 = MIN(s1, road->GetLength() - OSI_TANGENT_LINE_TOLERANCE);
+
 											// [XO, YO] = closest position with given (-) tolerance
 											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s0-OSI_TANGENT_LINE_TOLERANCE, 0, j);
 											x0.push_back(pos->GetX());
@@ -4254,18 +4293,6 @@ void OpenDrive::SetRoadMarkOSIPoints()
 								}
 							}
 						}
-						else
-						{
-							// roadMark type is optional
-							// LOG("LaneRoadMarkType for LaneRoadMark %d for road %d/lane %d is not defined", m, road->GetId(), lane->GetId());
-						}	
-					}
-				}
-				else
-				{
-					if (lane->IsDriving())
-					{
-						LOG("LaneRoadMarks for driving lane %d on road %d is not defined", lane->GetId(), road->GetId());
 					}
 				}
 			}
@@ -4500,6 +4527,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 		for (int j = 0; j < road->GetNumberOfLaneSections(); j++)
 		{
 			OSIPoints* osiPoints = road->GetLaneSectionByIdx(j)->GetLaneById(0)->GetOSIPoints();
+			double sLocal = -1;
 
 			// Find closest line or point
 			for (int k = 0; k < osiPoints->GetNumOfOSIPoints(); k++)
@@ -4509,10 +4537,12 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				double z = osi_point.z;
 				bool inside = false;
 
+				// in case of multiple roads with the same reference line, also look at width of the road of relevant side
+				// side of road is determined by cross product of position (relative OSI point) and road heading
 				double cp = GetCrossProduct2D(cos(osi_point.h), sin(osi_point.h), x3 - osi_point.x, y3 - osi_point.y);
-				double width = road->GetDrivableWidth(osi_point.s, SIGN(cp));
+				double width = road->GetWidth(osi_point.s, SIGN(cp), Lane::LaneType::LANE_TYPE_ANY);
 
-				double x2, y2, z2;
+				double x2, y2, z2, sLocalTmp;
 
 				jMinLocal = j;
 				kMinLocal = k;
@@ -4545,20 +4575,14 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					ProjectPointOnVector2D(x3, y3, osi_point.x, osi_point.y, x2, y2, px, py);
 					distTmp = PointDistance2D(x3, y3, px, py);
 					
-					double sLocal;
-					inside = PointInBetweenVectorEndpoints(px, py, osi_point.x, osi_point.y, x2, y2, sLocal);
-					if (inside)
+					inside = PointInBetweenVectorEndpoints(px, py, osi_point.x, osi_point.y, x2, y2, sLocalTmp);
+					if (!inside && k > 0 && (SIGN(sLocalTmp) != SIGN(sLocal)))
 					{
-						z = (1 - sLocal) * osi_point.z + sLocal * z2;
-						// subtract width of the road
-						distTmp = distTmp - width;
-						if (distTmp < 0)
-						{
-							// On road - distance is zero, but continue search because
-							// we could be in a junction where roads are overlapping
-							distTmp = 0;
-						}
+						// In between two line segments, or more precisely in the triangle area outside a 
+						// convex vertex corner between two line segments. Consider beeing inside road segment.
+						inside = true;
 					}
+					sLocal = sLocalTmp;
 
 					// Find closest point of the two
 					if (PointSquareDistance2D(x3, y3, osi_point.x, osi_point.y) <
@@ -4572,6 +4596,19 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 						jMinLocal = j2;
 						kMinLocal = k2;
 					}
+
+					if (inside)
+					{
+						z = (1 - sLocal) * osi_point.z + sLocal * z2;
+						// subtract width of the road
+						distTmp = distTmp - width;
+						if (distTmp < 0)
+						{
+							// On road - distance is zero, but continue search because
+							// we could be in a junction where roads are overlapping
+							distTmp = 0;
+						}
+					}
 				}
 				
 				if (!inside)
@@ -4581,8 +4618,6 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 						road->GetLaneSectionByIdx(jMinLocal)->GetLaneById(0)->GetOSIPoints()->GetPoint(kMinLocal).y);
 				}
 
-				// in case of multiple roads with the same reference line, also look at width of the road of relevant side
-				// side of road is determined by cross product of position (relative OSI point) and road heading
 				distTmp += fabs(z3 - z);
 				distTmp += weight;
 
@@ -4844,8 +4879,10 @@ int Position::Track2XYZ(bool alignH)
 	// Consider lateral t position, perpendicular to track heading
 	double x_local = (t_ + road->GetLaneOffset(s_)) * cos(h_road_ + M_PI_2);
 	double y_local = (t_ + road->GetLaneOffset(s_)) * sin(h_road_ + M_PI_2);
+
 	h_road_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_;
 	h_road_ = GetAngleInInterval2PI(h_road_);
+
 	if (alignH)
 	{
 		// Update heading, taking relative heading into account
@@ -5339,7 +5376,7 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 	}
 
 	double s_stop = 0;
-	ds_signed = -SIGN(GetLaneId()) * ds; // adjust sign of ds according to lane direction - right lane is < 0 in road dir
+	ds_signed = (GetLaneId() > 0 ? -1 : 1) * ds; // adjust sign of ds according to lane direction - right lane is < 0 in road dir
 	double signed_dLaneOffset = dLaneOffset;
 	
 	// move from road to road until ds-value is within road length or maximum of connections has been crossed
@@ -5571,7 +5608,7 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 
 	if (s > road->GetLength())
 	{
-		LOG("Truncate road mark s pos (%.2f) to road length (%.2f)", s, road->GetLength());
+		// Truncate road mark point to road length
 		s = road->GetLength();
 	}
 
@@ -5639,7 +5676,7 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 	LaneRoadMark *lane_roadmark = lane->GetLaneRoadMarkByIdx(roadmark_idx_);
 	if (lane_roadmark != 0)
 	{
-		s_ = s_ + lane_roadmark->GetSOffset();
+		s_ = MIN(s_ + lane_roadmark->GetSOffset(), road->GetLength());
 	}
 	else
 	{
@@ -5663,7 +5700,7 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 		LaneRoadMarkTypeLine *lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(roadmarkline_idx_);
 		if (lane_roadmarktypeline != 0)
 		{
-			s_ = s_ + lane_roadmarktypeline->GetSOffset();
+			s_ = MIN(s_ + lane_roadmarktypeline->GetSOffset(), road->GetLength());
 		}
 		else
 		{
@@ -5677,11 +5714,6 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 		roadmarkline_idx_ = 0;
 	}
 
-	// If moved over to opposite driving direction, then turn relative heading 180 degrees
-	//if (old_lane_id != 0 && lane_id_ != 0 && SIGN(lane_id_) != SIGN(old_lane_id))
-	//{
-	//	h_relative_ = GetAngleSum(h_relative_, M_PI);
-	//}
 
 	RoadMark2Track();
 	Track2XYZ();

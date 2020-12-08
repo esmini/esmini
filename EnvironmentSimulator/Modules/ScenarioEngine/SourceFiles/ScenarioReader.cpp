@@ -63,6 +63,19 @@ int ScenarioReader::loadOSCFile(const char * path)
 		return -1;
 	}
 
+	osc_root_ = doc_.child("OpenSCENARIO");
+	if (!osc_root_)
+	{
+		// Another try
+		osc_root_ = doc_.child("OpenScenario");
+	}
+
+	if (!osc_root_)
+	{
+		LOG("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
+		throw std::runtime_error("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
+	}
+
 	oscFilename_ = path;
 
 	return 0;
@@ -143,7 +156,17 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 	}
 
 	LOG("Loading catalog %s", name.c_str());
-	pugi::xml_node catalog_node = catalog_doc.child("OpenSCENARIO").child("Catalog");
+	pugi::xml_node osc_node_ = catalog_doc.child("OpenSCENARIO");
+	if (!osc_node_)
+	{
+		osc_node_ = catalog_doc.child("OpenScenario");
+		if (!osc_node_)
+		{
+			LOG("Couldn't find Catalog OpenSCENARIO or OpenScenario element - check XML!");
+			throw std::runtime_error("Couldn't find Catalog OpenSCENARIO or OpenScenario element - check XML!");
+		}
+	}
+	pugi::xml_node catalog_node = osc_node_.child("Catalog");
 
 	catalog = new Catalog();
 	catalog->name_ = name;
@@ -177,7 +200,7 @@ void ScenarioReader::parseRoadNetwork(RoadNetwork &roadNetwork)
 {
 	LOG("Parsing RoadNetwork");
 
-	pugi::xml_node roadNetworkNode = doc_.child("OpenSCENARIO").child("RoadNetwork");
+	pugi::xml_node roadNetworkNode = osc_root_.child("RoadNetwork");
 
 	for (pugi::xml_node roadNetworkChild = roadNetworkNode.first_child(); roadNetworkChild; roadNetworkChild = roadNetworkChild.next_sibling())
 	{
@@ -553,7 +576,7 @@ void ScenarioReader::parseCatalogs()
 {
 	LOG("Parsing Catalogs");
 
-	pugi::xml_node catalogsNode = doc_.child("OpenSCENARIO").child("CatalogLocations");
+	pugi::xml_node catalogsNode = osc_root_.child("CatalogLocations");
 
 	for (pugi::xml_node catalogsChild = catalogsNode.first_child(); catalogsChild; catalogsChild = catalogsChild.next_sibling())
 	{
@@ -665,9 +688,9 @@ Entry* ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 	// Read any parameter assignments
 	for (pugi::xml_node param_n = parameterAssignmentsNode.child("ParameterAssignment"); param_n; param_n = param_n.next_sibling("ParameterAssignment"))
 	{
-		ParameterStruct param;
+		OSCParameterDeclarations::ParameterStruct param;
 		param.name = &(param_n.attribute("parameterRef").value()[1]);  // Skip prefix character byte
-		param.value = parameters.ReadAttribute(param_n, "value");
+		param.value._string = parameters.ReadAttribute(param_n, "value");
 		parameters.catalog_param_assignments.push_back(param);
 	}
 
@@ -703,7 +726,7 @@ int ScenarioReader::parseEntities()
 {
 	LOG("Parsing Entities");
 
-	pugi::xml_node enitiesNode = doc_.child("OpenSCENARIO").child("Entities");
+	pugi::xml_node enitiesNode = osc_root_.child("Entities");
 
 	for (pugi::xml_node entitiesChild = enitiesNode.first_child(); entitiesChild; entitiesChild = entitiesChild.next_sibling())
 	{
@@ -1178,7 +1201,30 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 
 	for (pugi::xml_node actionChild = actionNode.first_child(); actionChild; actionChild = actionChild.next_sibling())
 	{
-		LOG("Unsupported global action: %s", actionChild.name());
+		if (actionChild.name() == std::string("ParameterAction"))
+		{
+			for (pugi::xml_node paramChild = actionChild.first_child(); paramChild; paramChild = paramChild.next_sibling())
+			{
+				if (paramChild.name() == std::string("ParameterSetAction"))
+				{
+					ParameterSetAction* paramSetAction = new ParameterSetAction();
+
+					paramSetAction->name_ = parameters.ReadAttribute(actionChild, "parameterRef");
+					paramSetAction->value_ = parameters.ReadAttribute(paramChild, "value");
+					paramSetAction->parameters_ = &parameters;
+
+					action = paramSetAction;
+				}
+				else
+				{
+					LOG("ParameterAction %s not supported yet", paramChild.name());
+				}
+			}
+		}
+		else
+		{
+			LOG("Unsupported global action: %s", actionChild.name());
+		}
 	}
 
 	if (action != 0)
@@ -1352,7 +1398,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						}
 						else if (laneChangeChild.name() == std::string("LaneChangeTarget"))
 						{
-							LatLaneChangeAction::Target *target = nullptr;
+							LatLaneChangeAction::Target *target = 0;
 
 							for (pugi::xml_node targetChild = laneChangeChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
 							{
@@ -1375,8 +1421,16 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 									target_abs->value_ = strtoi(parameters.ReadAttribute(targetChild, "value"));
 									target = target_abs;
 								}
+								else
+								{
+									LOG("Unsupported LaneChangeTarget: %s", targetChild.name());
+									throw std::runtime_error(std::string("Unsupported LaneChangeTarget: ") + targetChild.name());
+								}
 							}
-							action_lane->target_ = target;
+							if (target)
+							{
+								action_lane->target_ = target;
+							}
 						}
 					}
 					action = action_lane;
@@ -1823,7 +1877,7 @@ void ScenarioReader::parseInit(Init &init)
 {
 	LOG("Parsing init");
 
-	pugi::xml_node actionsNode = doc_.child("OpenSCENARIO").child("Storyboard").child("Init").child("Actions");
+	pugi::xml_node actionsNode = osc_root_.child("Storyboard").child("Init").child("Actions");
 
 	for (pugi::xml_node actionsChild = actionsNode.first_child(); actionsChild; actionsChild = actionsChild.next_sibling())
 	{
@@ -2009,6 +2063,8 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 {
 	LOG("Parsing OSCCondition %s", parameters.ReadAttribute(conditionNode, "name").c_str());
 
+	std::string condition_type;
+
 	OSCCondition *condition = 0;
 
 	for (pugi::xml_node conditionChild = conditionNode.first_child(); conditionChild; conditionChild = conditionChild.next_sibling())
@@ -2025,7 +2081,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 			{
 				for (pugi::xml_node condition_node = entity_condition.first_child(); condition_node; condition_node = condition_node.next_sibling())
 				{
-					std::string condition_type(condition_node.name());
+					condition_type = condition_node.name();
 					if (condition_type == "TimeHeadwayCondition")
 					{
 						TrigByTimeHeadway *trigger = new TrigByTimeHeadway;
@@ -2161,8 +2217,31 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						TrigByCollision* trigger = new TrigByCollision;
 
 						pugi::xml_node target = condition_node.child("EntityRef");
-
 						trigger->object_ = entities_->GetObjectByName(parameters.ReadAttribute(target, "entityRef"));
+						trigger->type_ = Object::Type::TYPE_NONE;
+
+						pugi::xml_node by_type = condition_node.child("ByType");
+						if (by_type)
+						{
+							std::string type_str = parameters.ReadAttribute(by_type, "type");
+							if (type_str == "pedestrian")
+							{
+								trigger->type_ = Object::Type::PEDESTRIAN;
+							}
+							else if (type_str == "vehicle")
+							{
+								trigger->type_ = Object::Type::VEHICLE;
+							}
+							else if (type_str == "miscellaneous")
+							{
+								trigger->type_ = Object::Type::MISC_OBJECT;
+							}
+							else 
+							{
+								LOG("Unexpected ObjectType %s in CollisionCondition", type_str.c_str());
+								throw std::runtime_error(type_str.c_str());
+							}
+						}
 
 						condition = trigger;
 					}
@@ -2264,15 +2343,24 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 		{
 			for (pugi::xml_node byValueChild = conditionChild.first_child(); byValueChild; byValueChild = byValueChild.next_sibling())
 			{
-				std::string byValueChildName(byValueChild.name());
-				if (byValueChildName == "SimulationTimeCondition")
+				condition_type = byValueChild.name();
+				if (condition_type == "SimulationTimeCondition")
 				{
 					TrigBySimulationTime *trigger = new TrigBySimulationTime;
 					trigger->value_ = strtod(parameters.ReadAttribute(byValueChild, "value"));
 					trigger->rule_ = ParseRule(parameters.ReadAttribute(byValueChild, "rule"));
 					condition = trigger;
 				}
-				else if (byValueChildName == "StoryboardElementStateCondition")
+				else if (condition_type == "ParameterCondition")
+				{
+					TrigByParameter* trigger = new TrigByParameter;
+					trigger->name_ = parameters.ReadAttribute(byValueChild, "parameterRef");
+					trigger->value_ = parameters.ReadAttribute(byValueChild, "value");
+					trigger->rule_ = ParseRule(parameters.ReadAttribute(byValueChild, "rule"));
+					trigger->parameters_ = &parameters;
+					condition = trigger;
+				}
+				else if (condition_type == "StoryboardElementStateCondition")
 				{
 					StoryBoardElement::ElementType element_type = ParseElementType(parameters.ReadAttribute(byValueChild, "storyboardElementType"));
 					TrigByState::CondElementState state = ParseState(parameters.ReadAttribute(byValueChild, "state"));
@@ -2284,7 +2372,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 				}
 				else
 				{
-					LOG("TrigByValue %s not implemented", byValueChildName.c_str());
+					LOG("TrigByValue %s not implemented", condition_type.c_str());
 				}
 			}
 		}
@@ -2298,8 +2386,14 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 	{
 		return 0;
 	}
-
 	condition->name_ = parameters.ReadAttribute(conditionNode, "name");
+
+	if (condition->name_.empty())
+	{
+		// No name, set a dummy name
+		condition->name_ = "no name " + condition_type;
+	}
+
 	if (conditionNode.attribute("delay") != NULL)
 	{
 		condition->delay_ = strtod(parameters.ReadAttribute(conditionNode, "delay"));
@@ -2380,7 +2474,15 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 			{
 				LOG("Invalid priority: %s", prio.c_str());
 			}
-			event->max_num_executions_ = strtoi(parameters.ReadAttribute(maneuverChild, "maximumExecutionCount"));
+
+			if (parameters.ReadAttribute(maneuverChild, "maximumExecutionCount") != "")
+			{
+				event->max_num_executions_ = strtoi(parameters.ReadAttribute(maneuverChild, "maximumExecutionCount"));
+			}
+			else
+			{
+				event->max_num_executions_ = -1;  // Infinite
+			}
 
 			for (pugi::xml_node eventChild = maneuverChild.first_child(); eventChild; eventChild = eventChild.next_sibling())
 			{
@@ -2397,7 +2499,10 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 						{
 							LOG("Parsing global action %s", parameters.ReadAttribute(eventChild, "name").c_str());
 							OSCGlobalAction *action = parseOSCGlobalAction(actionChild);
-							event->action_.push_back((OSCAction*)action);
+							if (action != 0)
+							{ 
+								event->action_.push_back((OSCAction*)action);
+							}
 						}
 						else if (childName == "UserDefinedAction")
 						{
@@ -2452,7 +2557,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 {
 	LOG("Parsing Story");
 
-	pugi::xml_node storyNode = doc_.child("OpenSCENARIO").child("Storyboard").child("Story");
+	pugi::xml_node storyNode = osc_root_.child("Storyboard").child("Story");
 
 	for (; storyNode; storyNode = storyNode.next_sibling())
 	{
@@ -2487,7 +2592,15 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 						{
 							ManeuverGroup *mGroup = new ManeuverGroup;
 
-							mGroup->max_num_executions_ = strtoi(parameters.ReadAttribute(actChild, "maximumExecutionCount"));
+							if (parameters.ReadAttribute(actChild, "maximumExecutionCount") != "")
+							{
+								mGroup->max_num_executions_ = strtoi(parameters.ReadAttribute(actChild, "maximumExecutionCount"));
+							}
+							else
+							{
+								mGroup->max_num_executions_ = -1;  // Infinite
+							}
+
 							mGroup->name_ = parameters.ReadAttribute(actChild, "name");
 
 							pugi::xml_node actors_node = actChild.child("Actors");

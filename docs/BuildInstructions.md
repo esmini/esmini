@@ -104,3 +104,60 @@ This will build all projects and copy the binaries into a dedicated folder found
 
 # Build OSG
 Description of how to build OSG from scratch is found [here](BuildOSG.md).
+
+## osgconv
+osgconv is a great command line tool for converting 3D models from and to .osgb format.
+You can build it yourself or get a prebuilt package.
+
+### Build osg applications (including osgconv and osgviewer)
+You need [cmake](https://cmake.org/download/) (make sure to check "Add to system PATH") and compiler (e.g. Visual Studio C++ on Win10, or g++ on Linux)
+
+Clone code: 
+```
+git clone --branch OpenSceneGraph-3.6.5 https://github.com/openscenegraph/OpenSceneGraph.git
+```
+or download code from:
+https://github.com/openscenegraph/OpenSceneGraph/archive/OpenSceneGraph-3.6.5.zip
+
+Download and install AUTODESK FBX SDK:
+https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-1-1/fbx202011_fbxsdk_vs2017_win.exe
+
+Download OSG dependency package:
+https://download.osgvisual.org/3rdParty_VS2017_v141_x64_V11_full.7z
+
+Then set environment variable FBX_DIR to the root directory of FBX SDK, e.g; "C:/Program Files/Autodesk/FBX/FBX SDK/2020.1.1"
+In Bash use export: ```export FBX_DIR="C:/Program Files/Autodesk/FBX/FBX SDK/2020.1.1"```
+In Win10 Powershell use $env: ```$env:FBX_DIR="C:/Program Files/Autodesk/FBX/FBX SDK/2020.1.1"```
+
+Then configure and generate build files:
+```
+cmake -G "Visual Studio 16 2019" -A x64 -T v141  ../ -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DBUILD_OSG_EXAMPLES=true -DCMAKE_INSTALL_PREFIX=../install
+```
+Finally build:
+```
+cmake --build . --config Release --target install --clean-first  
+```
+
+### Get binary (pre-built) package
+Windows Binaries provided by OBJEXX Engineering: https://objexx.com/OpenSceneGraph.html
+
+Download package, e.g. [3.6.5 for Windows](https://objexx.com/OpenSceneGraph/OpenSceneGraph-3.6.5-VC2019-64-Release.7z)
+
+Then, in order to run the applications, you need to add search paths to PATH environment variable. 
+Windows example:
+```
+$env:PATH+="C:\eknabe1\OpenSceneGraph-3.6.5-VC2019-64-Release\bin;C:\eknabe1\OpenSceneGraph-3.6.5-VC2019-64-Release\bin\osgPlugins-3.6.5""
+```
+Bash example:
+```
+export PATH=$PATH:"C:/eknabe1/OpenSceneGraph-3.6.5-VC2019-64-Release/bin;C:/eknabe1/OpenSceneGraph-3.6.5-VC2019-64-Release/bin/osgPlugins-3.6.5"
+
+```
+Then just run, e.g:
+```
+osgconv road.fbx road.osgb
+```
+and
+```
+osgviewer road.osgb --window 50 50 1000 500
+```

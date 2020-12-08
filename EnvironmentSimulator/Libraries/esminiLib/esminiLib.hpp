@@ -18,7 +18,7 @@
 	#define SE_DLL_API  // Leave empty on Mac
 #endif
 
-#define SE_NAME_SIZE 32
+#define SE_PARAM_NAME_SIZE 32
 
 
 typedef struct
@@ -82,6 +82,11 @@ typedef struct
 	float speed;
 } SE_SimpleVehicleState;
 
+typedef struct
+{
+	const char* name;  // Name of the parameter as defined in the OpenSCENARIO file
+	void* value;  // Pointer to value which can be an integer, double or string (const char*) as defined in the OpenSCENARIO file
+} SE_Parameter;
 
 #ifdef __cplusplus
 extern "C"
@@ -153,10 +158,29 @@ extern "C"
 
 	/**
 	Get name of currently referred and loaded OpenDRIVE file 
-	@param str Allocated array of chars - which will be filled in with filename
-	@param len Length of allocated char array 
+	@return filename as string (const, since it's allocated and handled by esmini)
 	*/
-	SE_DLL_API int SE_GetODRFilename(char* str, int len);
+	SE_DLL_API const char* SE_GetODRFilename();
+
+	/**
+	Get name of currently referred and loaded SceneGraph file 
+	@return filename as string (const, since it's allocated and handled by esmini)
+	*/
+	SE_DLL_API const char* SE_GetSceneGraphFilename();
+
+	/**
+	Set value of named parameter
+	@param parameter Struct object including name of parameter and pointer to value, see SE_Parameter declaration
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetParameter(SE_Parameter parameter);
+
+	/**
+	Get value of named parameter. The value within the parameter struct will be filled in.
+	@param parameter Pointer to parameter struct object, see SE_Parameter declaration.
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_GetParameter(SE_Parameter* parameter);
 
 	/**
 	Report object position in cartesian coordinates

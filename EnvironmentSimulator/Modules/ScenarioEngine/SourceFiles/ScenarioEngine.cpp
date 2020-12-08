@@ -357,6 +357,8 @@ ScenarioGateway *ScenarioEngine::getScenarioGateway()
 
 void ScenarioEngine::parseScenario()
 {
+	SetSimulationTime(0);
+
 	if (!disable_controllers_)
 	{
 		scenarioReader->LoadControllers();
@@ -413,8 +415,6 @@ void ScenarioEngine::parseScenario()
 	scenarioReader->parseStoryBoard(storyBoard);
 	storyBoard.entities_ = &entities; 
 	
-	SetSimulationTime(0);
-
 	// Finally, now when all entities have been loaded, initialize the controllers
 	if (!disable_controllers_)
 	{

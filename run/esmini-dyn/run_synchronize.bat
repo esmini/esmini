@@ -1,1 +1,1 @@
-"../../bin/esmini-dyn" ../../resources/xosc/synchronize.xosc %*
+"../../bin/esmini-dyn" ../../resources/xosc/synchronize.xosc
