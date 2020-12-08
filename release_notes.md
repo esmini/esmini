@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2020-12-08 Version 2.0.10
+- Changed storyboard element ```maximumExecutionCount``` default value from 1 to infinite
+- Improved trigger logging, including all involved conditions and triggering entities
+- Updated Unity integration files and added example package, see [here](https://github.com/esmini/esmini#unity-support)
+- Added support for CollisionCondition ByType (previously only EntityRef supported)
+- Added brief info on OSG tools (e.g. converting 3D models .osgb <-> .fbx), see [here](https://github.com/esmini/esmini/blob/master/docs/BuildInstructions.md#osgconv)
+- Fixed an xy2road issue (finding closest road coord from arbitrary x,y position)
+- Some additional minor fixes
+
 ### 2020-12-04 Version 2.0.9
 - Add support for named parameters. See [InnerWorkings/parameters](https://github.com/esmini/esmini/blob/master/docs/InnerWorkings.md#parameters).
 - Add experimental steady state to SynchronizeAction, see [osc-extensions.xml](https://github.com/esmini/esmini/blob/master/docs/osc-extensions.xml) and example usage in [pedestrian_traj_synch.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/pedestrian_traj_synch.xosc).
