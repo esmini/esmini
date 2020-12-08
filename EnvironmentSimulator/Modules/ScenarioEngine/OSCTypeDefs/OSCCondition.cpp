@@ -405,7 +405,7 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 
 	bool result = false;
 	double rel_dist, ttc = 0, rel_speed;
-	roadmanager::Position* pos;
+	roadmanager::Position* pos = nullptr;
 	if (object_)
 	{
 		pos = &object_->pos_;

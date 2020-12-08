@@ -357,8 +357,6 @@ ScenarioGateway *ScenarioEngine::getScenarioGateway()
 
 void ScenarioEngine::parseScenario()
 {
-	bool hybrid_objects = false;
-
 	if (!disable_controllers_)
 	{
 		scenarioReader->LoadControllers();
@@ -471,7 +469,7 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 
 	if (obj->pos_.GetRoute() && !obj->CheckDirtyBits(Object::DirtyBit::LATERAL))
 	{
-		int retvalue = obj->pos_.MoveRouteDS(steplen);
+		retvalue = obj->pos_.MoveRouteDS(steplen);
 
 		if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
 		{

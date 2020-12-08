@@ -435,8 +435,6 @@ void Poly3::EvaluateDS(double ds, double *x, double *y, double *h)
 
 double Poly3::EvaluateCurvatureDS(double ds)
 {
-	double p = (ds / GetLength()) * GetUMax();
-
 	return poly3_.EvaluatePrimPrim(ds);
 }
 
@@ -1166,7 +1164,7 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s)
 	LaneRoadMarkTypeLine *lane_roadMarkTypeLine;
 	RoadMarkInfo rm_info;
 	int lsec_idx, number_of_lsec, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
-	double s_roadmark, s_roadmarkline, s_end_roadmark, s_end_roadmarkline, lsec_end;
+	double s_roadmark, s_roadmarkline, s_end_roadmark, s_end_roadmarkline = 0, lsec_end = 0;
 	if (road == 0)
 	{
 		LOG("Position::Set Error: track %d not available\n", track_id);
@@ -1188,7 +1186,7 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s)
 		number_of_lsec = road->GetNumberOfLaneSections();
 		if (lsec_idx == number_of_lsec-1)
 		{
-			lsec_end = road->GetLength();	
+			lsec_end = road->GetLength();
 		}
 		else
 		{
@@ -2811,8 +2809,6 @@ void Junction::Print()
 
 bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fromRoad)
 {
-	Road* targetRoad = targetPos_->GetOpenDrive()->GetRoadById(targetPos_->GetTrackId());
-	
 	RoadLink* nextLink = 0;
 
 	if (srcNode->link->GetElementType() == RoadLink::RoadLink::ELEMENT_TYPE_ROAD)
@@ -2939,8 +2935,6 @@ int RoadPath::Calculate(double &dist)
 
 	if (startRoad == targetRoad)
 	{
-		int direction = 0;
-
 		dist = targetPos_->GetS() - startPos_->GetS();
 
 		// Special case: On same road, distance is equal to delta s
@@ -4417,7 +4411,6 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 	double angle = 0;
 	bool search_done = false;
 	double closestS = 0;
-	int laneSectionMinIndex = -1;
 	int j2, k2, jMin=-1, kMin=-1, jMinLocal, kMinLocal;
 	double closestPointDist = INFINITY;
 
@@ -4511,10 +4504,9 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 			// Find closest line or point
 			for (int k = 0; k < osiPoints->GetNumOfOSIPoints(); k++)
 			{
-				double distTmp;
+				double distTmp = 0;
 				OSIPoints::OSIPointStruct &osi_point = osiPoints->GetPoint(k);
 				double z = osi_point.z;
-				double lateralOffset = 0;
 				bool inside = false;
 
 				double cp = GetCrossProduct2D(cos(osi_point.h), sin(osi_point.h), x3 - osi_point.x, y3 - osi_point.y);
@@ -5420,8 +5412,6 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 int Position::SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx)
 {
 	offset_ = offset;
-	int old_lane_id = lane_id_;
-	int old_track_id = track_id_;
 	int retvalue;
 	
 	if ((retvalue = SetLongitudinalTrackPos(track_id, s)) != ErrorCode::ERROR_NO_ERROR)
@@ -6551,8 +6541,6 @@ int Position::MoveTrajectoryDS(double ds)
 int Position::SetTrajectoryPosByTime(Trajectory* trajectory, double time)
 {
 	double s = 0;
-	double incr_time = 0;
-	double tot_dist = 0;
 
 	// Find out corresponding S-value
 	size_t i = 0;
@@ -6641,9 +6629,6 @@ int Position::SetTrajectoryS(Trajectory* trajectory, double traj_s)
 			{
 				// At segment, make a linear interpolation
 				double a = (traj_s - tot_dist) / dist; // a = interpolation factor
-				double x = (1 - a) * vp0->GetX() + a * vp1->GetX();
-				double y = (1 - a) * vp0->GetY() + a * vp1->GetY();
-				double z = (1 - a) * vp0->GetZ() + a * vp1->GetZ();
 
 				SetInertiaPos(
 					(1 - a) * vp0->GetX() + a * vp1->GetX(),

@@ -547,7 +547,6 @@ int ScenarioPlayer::InitViewer()
 void viewer_thread(void *args)
 {
 	ScenarioPlayer *player = (ScenarioPlayer*)args;
-	__int64 time_stamp = 0;
 
 	if (player->InitViewer() != 0)
 	{

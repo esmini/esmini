@@ -235,8 +235,6 @@ double PointToLineDistance2DSigned(double px, double py, double lx0, double ly0,
 {
 	double l0x = lx1 - lx0;
 	double l0y = ly1 - ly0;
-	double l1x = px - lx0;
-	double l1y = py - ly0;
 	double cp = GetCrossProduct2D(lx1 - lx0, ly1 - ly0, px - lx0, py - ly0);
 	double l0Length = sqrt(l0x * l0x + l0y * l0y);
 	return cp / l0Length;
@@ -364,7 +362,6 @@ double strtod(std::string s)
 double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_time_step)
 {
 	double dt;
-	double adjust = 0;
 	__int64 now = SE_getSystemTime();
 
 	dt = (now - time_stamp) * 0.001;  // step size in seconds

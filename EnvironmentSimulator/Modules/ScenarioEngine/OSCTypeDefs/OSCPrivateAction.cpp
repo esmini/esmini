@@ -132,8 +132,6 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 	time_ += timing_scale_ * dt;
 
 	// Measure length of movement for odometer
-	double x0 = object_->pos_.GetX();
-	double y0 = object_->pos_.GetY();
 
 	if (!traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->shape_->length_ - DISTANCE_TOLERANCE))
 	{
@@ -582,7 +580,7 @@ void LongDistanceAction::Step(double dt, double simTime)
 	double acc;
 	double spring_constant = 4;
 	double dc;
-	double requested_dist;
+	double requested_dist = 0;
 
 	// Just interested in the x-axis component of the distance
 	distance = x;
@@ -1152,8 +1150,8 @@ void SynchronizeAction::Step(double dt, double simTime)
 		else
 		{
 			// No final speed specified. Calculate it based on current speed and available time
-			double final_speed_ = 2 * average_speed - object_->speed_;
-			acc = (final_speed_ - object_->speed_) / masterTimeToDest;
+			double final_speed = 2 * average_speed - object_->speed_;
+			acc = (final_speed - object_->speed_) / masterTimeToDest;
 		}
 
 		object_->SetSpeed(object_->GetSpeed() + acc * dt);

@@ -121,7 +121,7 @@ namespace scenarioengine
 
 		virtual void End()
 		{
-			if (State::RUNNING)
+			if (state_ == State::RUNNING)
 			{
 				transition_ = Transition::END_TRANSITION;
 				if (type_ == ElementType::ACT || num_executions_ >= max_num_executions_)
