@@ -108,7 +108,7 @@ namespace scenarioengine
 
 		virtual void Stop()
 		{
-			if (state_ == State::STANDBY || State::RUNNING)
+			if (state_ == State::STANDBY || state_ == State::RUNNING)
 			{
 				transition_ = Transition::STOP_TRANSITION;
 				next_state_ = State::COMPLETE;
