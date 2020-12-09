@@ -596,7 +596,7 @@ namespace roadmanager
 		int GetLaneGlobalIdById(int id);
 		double GetOuterOffset(double s, int lane_id);
 		double GetWidth(double s, int lane_id);
-		int GetClosestLaneIdx(double s, double t, double &offset, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
+		int GetClosestLaneIdx(double s, double t, double &offset, bool noZeroWidth, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
 		
 		/**
 		Get lateral position of lane center, from road reference lane (lane id=0)
