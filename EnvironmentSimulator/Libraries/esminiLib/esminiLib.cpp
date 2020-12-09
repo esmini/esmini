@@ -126,32 +126,6 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 	state->height = gw_state->boundingbox.dimensions_.height_;
 }
 
-static void copyStateToScenarioGateway(ObjectStateStruct* gw_state, SE_ScenarioObjectState* state)
-{
-	gw_state->id = state->id;
-	gw_state->model_id = state->model_id;
-	gw_state->ctrl_type = state->ctrl_type;
-	//	strncpy(state->name, gw_state->name, NAME_LEN);
-	gw_state->timeStamp = state->timestamp;
-	gw_state->pos.SetX(state->x);
-	gw_state->pos.SetY(state->y);
-	gw_state->pos.SetZ(state->z);
-	gw_state->pos.SetH(state->h);
-	gw_state->pos.SetP(state->p);
-	gw_state->pos.SetR(state->r);
-	gw_state->speed = state->speed;
-	gw_state->pos.SetTrackPos(state->roadId, state->s, state->t, roadmanager::Position::UpdateTrackPosMode::UPDATE_NOT_XYZH);
-	gw_state->pos.SetLaneId(state->laneId);
-	gw_state->pos.SetS(state->s);
-	gw_state->pos.SetOffset(state->laneOffset);
-	gw_state->boundingbox.center_.x_ = state->centerOffsetX;
-	gw_state->boundingbox.center_.y_ = state->centerOffsetY;
-	gw_state->boundingbox.center_.z_ = state->centerOffsetZ;
-	gw_state->boundingbox.dimensions_.width_ = state->width;
-	gw_state->boundingbox.dimensions_.length_ = state->length;
-	gw_state->boundingbox.dimensions_.height_ = state->height;
-}
-
 static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int lookAheadMode)
 {
 	roadmanager::RoadProbeInfo s_data;

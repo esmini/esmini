@@ -83,7 +83,7 @@ void ControllerFollowGhost::Step(double timeStep)
 	// Find out a steering target along ghost vehicle trail
 	double s_out;
 	int index_out;
-	ObjectTrailState state;
+	ObjectTrailState state = {0, 0, 0, 0, 0, 0};
 
 	// Locate a point at given distance from own vehicle along the ghost trajectory
 	if (object_->GetGhost() && object_->GetGhost()->trail_.FindPointAhead(

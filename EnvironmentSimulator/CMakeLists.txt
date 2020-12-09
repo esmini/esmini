@@ -170,7 +170,7 @@ elseif(UNIX)
     SET(CMAKE_CXX_FLAGS "-march=native -O0 -std=c++14 -pthread -fPIC")  
   else()
     SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
-endif()
+  endif()
   
   set ( OSG_LIBRARIES
     optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd 
@@ -246,6 +246,10 @@ else() #not UNIX
 
   # Get rid of historical macros preventing SUMO integration
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D NOMINMAX ")
+
+  if ((MSVC) AND (MSVC_VERSION GREATER_EQUAL 1910))
+    add_compile_options(/permissive-)
+  endif ()
   
   set ( OSG_LIBRARIES 
       opengl32.lib

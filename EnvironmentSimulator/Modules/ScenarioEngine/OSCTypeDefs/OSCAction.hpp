@@ -108,7 +108,7 @@ namespace scenarioengine
 
 		virtual void Stop()
 		{
-			if (state_ == State::STANDBY || State::RUNNING)
+			if (state_ == State::STANDBY || state_ == State::RUNNING)
 			{
 				transition_ = Transition::STOP_TRANSITION;
 				next_state_ = State::COMPLETE;
@@ -121,7 +121,7 @@ namespace scenarioengine
 
 		virtual void End()
 		{
-			if (State::RUNNING)
+			if (state_ == State::RUNNING)
 			{
 				transition_ = Transition::END_TRANSITION;
 				if (type_ == ElementType::ACT || (max_num_executions_ != -1 && num_executions_ >= max_num_executions_))

@@ -162,8 +162,6 @@ void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
 
 void Vehicle::Update(double dt)
 {
-	double criticalB = 0;
-
 	// Calculate wheel rot: https://en.wikipedia.org/wiki/Arc_(geometry)
 	wheelRotation_ = fmod(wheelRotation_ + speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
 

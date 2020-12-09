@@ -1455,7 +1455,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						}
 						else if (laneOffsetChild.name() == std::string("LaneOffsetTarget"))
 						{
-							LatLaneOffsetAction::Target *target;
+							LatLaneOffsetAction::Target *target = nullptr;
 
 							for (pugi::xml_node targetChild = laneOffsetChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
 							{

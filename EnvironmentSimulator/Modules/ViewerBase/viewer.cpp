@@ -165,7 +165,6 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 
 	size_t i;
 	unsigned int idx = 0;
-	unsigned int idx2 = 0;
 	unsigned int idxC = 0;
 
 	for (i = 0; i < numSegments+1; ++i, angle += angleDelta)
@@ -1056,8 +1055,7 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec3 trail_c
 	{
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], path));
 	}
-	size_t i;
-	for (i = 0; i < file_name_candidates.size(); i++)
+	for (size_t i = 0; i < file_name_candidates.size(); i++)
 	{
 		if (FileExists(file_name_candidates[i].c_str()))
 		{
@@ -1408,7 +1406,7 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 		osg::ref_ptr<osg::Vec4Array> kp_color = new osg::Vec4Array;
 		osg::ref_ptr<osg::Point> kp_point = new osg::Point();
 
-		roadmanager::Geometry *geom;
+		roadmanager::Geometry *geom = nullptr;
 		for (int i = 0; i < road->GetNumberOfGeometries()+1; i++)
 		{
 			if (i < road->GetNumberOfGeometries())

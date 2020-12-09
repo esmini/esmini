@@ -521,7 +521,7 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 	triggered_by_entities_.clear();
 	bool result = false;
 	double rel_dist, rel_speed;
-	roadmanager::Position* pos;
+	roadmanager::Position* pos = nullptr;
 	ttc_ = 0;
 	if (object_)
 	{

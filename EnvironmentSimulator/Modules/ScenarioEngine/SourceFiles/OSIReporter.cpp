@@ -257,7 +257,6 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 {
 	obj_osi_internal.gt->clear_moving_object();
 	obj_osi_internal.gt->clear_stationary_object();
-	double time_stamp = objectState[0]->state_.timeStamp;
 
 	obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)objectState[0]->state_.timeStamp);
 	obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)(
@@ -544,7 +543,6 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 							// loop over LaneRoadMarkTypeLine
 							for (int kk = 0; kk< laneroadmarktype->GetNumberOfRoadMarkTypeLines(); kk++)
 							{
-								int num_lines = laneroadmarktype->GetNumberOfRoadMarkTypeLines();
 								roadmanager::LaneRoadMarkTypeLine* laneroadmarktypeline = laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(kk);
 
 								osi3::LaneBoundary* osi_laneboundary = 0;
@@ -578,7 +576,6 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 
 									// update classification type
 									osi3::LaneBoundary_Classification_Type classific_type;
-									roadmanager::LaneRoadMark::RoadMarkType tyype = laneroadmark->GetType();
 									osi3::LaneBoundary_Classification_Type osi_type = osi_laneboundary->mutable_classification()->type();
 									switch(laneroadmark->GetType())
 									{
@@ -742,7 +739,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 
 						// CLASSIFICATION TYPE
 						roadmanager::Lane::LaneType lanetype = lane->GetLaneType();
-						osi3::Lane_Classification_Type class_type;
+						osi3::Lane_Classification_Type class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_UNKNOWN;
 
 						if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING 		||
 							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_PARKING		||
@@ -803,7 +800,6 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						osi_lane->mutable_classification()->set_centerline_is_driving_direction(driving_direction);
 
 						// LEFT AND RIGHT LANE IDS
-						int n_lanes_in_section = lane_section->GetNumberOfLanes();
 						std::vector< std::pair <int,int> > globalid_ids_left;
 						std::vector< std::pair <int,int> > globalid_ids_right;
 
@@ -855,7 +851,6 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						// STILL TO DO: when I get a vector of predecessors and successors I need to create all possible combinations
 						roadmanager::LaneLink* lane_pre = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
 						roadmanager::LaneLink* lane_succ = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
-						bool exist_link = false;
 						if (lane_pre != 0)
 						{
 							osi3::Lane_Classification_LanePairing* lane_pair = osi_lane->mutable_classification()->add_lane_pairing();
