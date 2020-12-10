@@ -217,6 +217,17 @@ bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, d
 			inside = !(x3 > x1 || x3 < x2);
 		}
 	}
+	if (!inside)
+	{
+		if (sNorm < 0)
+		{
+			sNorm = -PointDistance2D(x3, y3, x1, y1);
+		}
+		else
+		{
+			sNorm = PointDistance2D(x3, y3, x2, y2);
+		}
+	}
 	return inside;
 }
 

@@ -4529,7 +4529,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 			double sLocal = -1;
 
 			// Find closest line or point
-			for (int k = 0; k < osiPoints->GetNumOfOSIPoints(); k++)
+			for (int k = 0; k < osiPoints->GetNumOfOSIPoints()-1; k++)
 			{
 				double distTmp = 0;
 				OSIPoints::OSIPointStruct &osi_point = osiPoints->GetPoint(k);
@@ -4546,77 +4546,67 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				jMinLocal = j;
 				kMinLocal = k;
 
-				// Measure distance to line between current and next point
-				if (j == road->GetNumberOfLaneSections() - 1 && k == osiPoints->GetNumOfOSIPoints() - 1)
+				double px, py;
+				if (k == osiPoints->GetNumOfOSIPoints() - 1)
 				{
-					// Last point on road
+					// End of lane section, look into next one
+					j2 = MIN(j + 1, road->GetNumberOfLaneSections() - 1);
+					k2 = MIN(1, road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 1);
+				}
+				else
+				{
+					k2 = k + 1;
+					j2 = j;
+				}
+				x2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).x;
+				y2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).y;
+				z2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).z;
+
+				ProjectPointOnVector2D(x3, y3, osi_point.x, osi_point.y, x2, y2, px, py);
+				distTmp = PointDistance2D(x3, y3, px, py);
+					
+				inside = PointInBetweenVectorEndpoints(px, py, osi_point.x, osi_point.y, x2, y2, sLocalTmp);
+				if (!inside && k > 0 && (SIGN(sLocalTmp) != SIGN(sLocal)))
+				{
+					// In between two line segments, or more precisely in the triangle area outside a 
+					// convex vertex corner between two line segments. Consider beeing inside road segment.
+					inside = true;
+				}
+				sLocal = sLocalTmp;
+
+				// Find closest point of the two
+				if (PointSquareDistance2D(x3, y3, osi_point.x, osi_point.y) <
+					PointSquareDistance2D(x3, y3, x2, y2))
+				{
 					jMinLocal = j;
 					kMinLocal = k;
 				}
 				else
 				{
-					double px, py;
-					if (k == osiPoints->GetNumOfOSIPoints() - 1)
-					{
-						// End of lane section, look into next one
-						j2 = MIN(j + 1, road->GetNumberOfLaneSections() - 1);
-						k2 = MIN(1, road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 1);
-					}
-					else
-					{
-						k2 = k + 1;
-						j2 = j;
-					}
-					x2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).x;
-					y2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).y;
-					z2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).z;
+					jMinLocal = j2;
+					kMinLocal = k2;
+				}
 
-					ProjectPointOnVector2D(x3, y3, osi_point.x, osi_point.y, x2, y2, px, py);
-					distTmp = PointDistance2D(x3, y3, px, py);
-					
-					inside = PointInBetweenVectorEndpoints(px, py, osi_point.x, osi_point.y, x2, y2, sLocalTmp);
-					if (!inside && k > 0 && (SIGN(sLocalTmp) != SIGN(sLocal)))
-					{
-						// In between two line segments, or more precisely in the triangle area outside a 
-						// convex vertex corner between two line segments. Consider beeing inside road segment.
-						inside = true;
-					}
-					sLocal = sLocalTmp;
+				// subtract width of the road
+				distTmp = distTmp - width;
+				if (distTmp < 0)
+				{
+					// On road - distance is zero, but continue search because
+					// we could be in a junction where roads are overlapping
+					distTmp = 0;
+				}
 
-					// Find closest point of the two
-					if (PointSquareDistance2D(x3, y3, osi_point.x, osi_point.y) <
-						PointSquareDistance2D(x3, y3, x2, y2))
-					{
-						jMinLocal = j;
-						kMinLocal = k;
-					}
-					else
-					{
-						jMinLocal = j2;
-						kMinLocal = k2;
-					}
-
-					if (inside)
-					{
-						z = (1 - sLocal) * osi_point.z + sLocal * z2;
-						// subtract width of the road
-						distTmp = distTmp - width;
-						if (distTmp < 0)
-						{
-							// On road - distance is zero, but continue search because
-							// we could be in a junction where roads are overlapping
-							distTmp = 0;
-						}
-					}
+				if (inside)
+				{
+					z = (1 - sLocal) * osi_point.z + sLocal * z2;
+				}
+				else
+				{
+					// Find combined longitudinal and lateral distance to line endpoint 
+					// sLocal represent now (outside line segment) distance to closest line segment end point
+					distTmp = sqrt(distTmp * distTmp + sLocal * sLocal);
 				}
 				
-				if (!inside)
-				{
-					distTmp = PointDistance2D(x3, y3,
-						road->GetLaneSectionByIdx(jMinLocal)->GetLaneById(0)->GetOSIPoints()->GetPoint(kMinLocal).x,
-						road->GetLaneSectionByIdx(jMinLocal)->GetLaneById(0)->GetOSIPoints()->GetPoint(kMinLocal).y);
-				}
-
 				distTmp += fabs(z3 - z);
 				distTmp += weight;
 

@@ -145,6 +145,18 @@ void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double v
 /**
   Check whether projected point is in between vector endpoints, or outside
 */
+/**
+ Check whether projected point is in between vector endpoints, or outside
+ @param x3 X-coordinate of the point to check
+ @param y3 Y-coordinate of the point to check
+ @param x1 X-coordinate of the first endpoint of the line
+ @param y1 Y-coordinate of the first endpoint of the line
+ @param x2 X-coordinate of the second endpoint of the line
+ @param y2 Y-coordinate of the second endpoint of the line
+ @param sNorm Reference parameter will contain normalized s value (0:1) in case of point inside line
+  else the distance to point projected on extended line behind (negative) or in front (positive)
+ @return true if projected point is inside line segment, else false
+*/
 bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, double x2, double y2, double &sNorm);
 
 /**

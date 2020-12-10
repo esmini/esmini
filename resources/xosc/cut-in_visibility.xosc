@@ -187,7 +187,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="VisibilityHideForSensorsCondition" delay="0.0" conditionEdge="none">
+                           <Condition name="VisibilityHideForSensorsCondition" delay="0.0" conditionEdge="rising">
                                <ByValueCondition>
                                   <SimulationTimeCondition value="4" rule="greaterThan"/>
                                </ByValueCondition>
@@ -203,7 +203,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="VisibilityHideCondition" delay="0.0" conditionEdge="none">
+                           <Condition name="VisibilityHideCondition" delay="0.0" conditionEdge="rising">
                                <ByValueCondition>
                                   <SimulationTimeCondition value="7" rule="greaterThan"/>
                                </ByValueCondition>
@@ -219,7 +219,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="VisibilityReappearCondition" delay="0.0" conditionEdge="none">
+                           <Condition name="VisibilityReappearCondition" delay="0.0" conditionEdge="rising">
                                <ByValueCondition>
                                   <SimulationTimeCondition value="10" rule="greaterThan"/>
                                </ByValueCondition>
