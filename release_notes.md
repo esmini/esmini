@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2020-12-11 Version 2.0.11
+- Allow storyboard element end transition directly from Standby to Complete state (when no run time needed)
+- Added example scenario to demonstrate SynchronizeAction with SteadyState extension
+- Fix a link issue that can appear with Visual Studio and vcpkg in Windows
+- Some code clean up and other minor fixes
+
 ### 2020-12-08 Version 2.0.10
 - Changed storyboard element ```maximumExecutionCount``` default value from 1 to infinite
 - Improved trigger logging, including all involved conditions and triggering entities
