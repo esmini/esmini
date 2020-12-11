@@ -121,7 +121,9 @@ namespace scenarioengine
 
 		virtual void End()
 		{
-			if (state_ == State::RUNNING)
+			// Allow elements to move directly from standby to complete
+			// Some actions are atomic, and don't need run time
+			if (state_ == State::RUNNING || state_ == State::STANDBY )  
 			{
 				transition_ = Transition::END_TRANSITION;
 				if (type_ == ElementType::ACT || (max_num_executions_ != -1 && num_executions_ >= max_num_executions_))

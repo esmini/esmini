@@ -2613,7 +2613,10 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 									std::string actorsChildName(actorsChild.name());
 									if (actorsChildName == "EntityRef")
 									{
-										actor->object_ = entities_->GetObjectByName(parameters.ReadAttribute(actorsChild, "entityRef"));
+										if ((actor->object_ = entities_->GetObjectByName(parameters.ReadAttribute(actorsChild, "entityRef"))) == 0)
+										{
+											throw std::runtime_error(std::string("Failed to resolve entityRef ") + parameters.ReadAttribute(actorsChild, "entityRef"));
+										}
 									}
 									else if (actorsChildName == "ByCondition")
 									{

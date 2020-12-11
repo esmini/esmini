@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrates how Synchronize Action with esmini extension SteadyState can be used to achieve a     -->
+<!-- critical situation. The Ego vehicle (white car) drives towards an intersection. A bicyclist        -->
+<!-- will approach the same intersection from left. To have the same critical situation arise for       -->
+<!-- various initial states the bicyclist will be controlled by SynchronizeAction which will make       -->
+<!-- sure that the vehicles meet in the intersection regardless of e.g. Ego speed, bicycle start        -->
+<!-- position or action trig time. Bicycle will reach specified speed 20 meter from target position     -->
+<!-- and then keep it until reaching destination. This way a critical situation is not only acheived,   -->
+<!-- also several parameters can be fixed/controlled insensitive to varying scenario initial state.     -->
+
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2020-12-11T10:00:00"
+               description="Synchronize with SteadyState provocing critical situation incl car and bike"
+               author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="HostStartS" parameterType="string" value="0"/>
+      <ParameterDeclaration name="HostSpeed" parameterType="double" value="10"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="bicycle"/>
+      <ParameterDeclaration name="TTC" parameterType="double" value="10"/>
+      <ParameterDeclaration name="TargetStartS" parameterType="double" value="60"/>
+      <ParameterDeclaration name="TargetFinalSpeed" parameterType="double" value="10"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <RouteCatalog>
+         <Directory path="../xosc/Catalogs/Routes"/>
+      </RouteCatalog>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/multi_intersections.xodr"/>
+      <SceneGraphFile filepath="../models/multi_intersections.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <RoutingAction>
+                     <AssignRouteAction>
+                        <CatalogReference catalogName="RoutesAtMultiIntersections" entryName="HostStraightRoute"/>
+                     </AssignRouteAction>
+                  </RoutingAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <RoutePosition>
+                           <RouteRef>
+                              <CatalogReference catalogName="RoutesAtMultiIntersections" entryName="HostStraightRoute"/>
+                           </RouteRef>
+                           <InRoutePosition>
+                              <FromLaneCoordinates pathS="$HostStartS" laneId="1"/>
+                           </InRoutePosition>
+                        </RoutePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="$HostSpeed"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target">
+               <PrivateAction>
+                  <RoutingAction>
+                     <AssignRouteAction>
+                        <CatalogReference catalogName="RoutesAtMultiIntersections" entryName="TargetStraightLeftToRight"/>
+                     </AssignRouteAction>
+                  </RoutingAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <RoutePosition>
+                           <RouteRef>
+                              <CatalogReference catalogName="RoutesAtMultiIntersections" entryName="TargetStraightLeftToRight"/>
+                           </RouteRef>
+                           <InRoutePosition>
+                              <FromLaneCoordinates pathS="$TargetStartS" laneId="1" offset="-1.0"/>
+                           </InRoutePosition>
+                        </RoutePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+         <ParameterDeclarations/>
+         <Act name="TargetAct">
+            <ManeuverGroup maximumExecutionCount="1" name="ManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Target"/>
+               </Actors>
+               <Maneuver name="Maneuver">
+                  <Event name="SetTargetSpeedEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="SetTargetSpeedAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="step"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$TargetFinalSpeed"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                       </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="SyncConditionTarget" delay="0.0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <!-- 8 seconds to synch position -->
+                                    <TimeToCollisionCondition value="$TTC"
+                                                         freespace="true"
+                                                         alongRoute="true"
+                                                         rule="lessThan" >
+                                        <TimeToCollisionConditionTarget >
+                                            <Position>
+                                                <LanePosition roadId="240" laneId="-1" offset="0" s="5"/>
+                                            </Position>
+                                        </TimeToCollisionConditionTarget>
+                                    </TimeToCollisionCondition>
+                                 </EntityCondition>                              
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="SyncEvent" priority="overwrite">
+                     <Action name="SyncActionTarget">
+						<PrivateAction>
+							<SynchronizeAction masterEntityRef="Ego" >
+								<TargetPositionMaster>
+									<LanePosition roadId="240" laneId="-1" offset="1.5" s="6" />
+								</TargetPositionMaster>    
+								<TargetPosition>
+									<LanePosition roadId="236" laneId="-1" offset="1.5" s="12.5" />
+								</TargetPosition>    
+								<FinalSpeed>
+									<AbsoluteSpeed value="$TargetFinalSpeed" />
+                                    <SteadyState>
+                                        <TargetDistanceSteadyState distance="20" />
+                                    </SteadyState>                                    
+								</FinalSpeed>
+							</SynchronizeAction>
+						</PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="SyncConditionTarget" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="event"
+                                                                  storyboardElementRef="SetTargetSpeedEvent"
+                                                                  state="endTransition"/>                         
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LtapActStartConditionTarget" delay="0" conditionEdge="rising">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger>
+               <ConditionGroup>
+                   <Condition name="QuitCondition" delay="0" conditionEdge="rising">
+					  <ByEntityCondition>
+						 <TriggeringEntities triggeringEntitiesRule="any">
+							<EntityRef entityRef="Ego"/>
+						 </TriggeringEntities>
+						 <EntityCondition>
+							<ReachPositionCondition tolerance="5.0">
+							   <Position>
+								  <LanePosition roadId="235" laneId="-1" s="30.0"/>
+							   </Position>
+							</ReachPositionCondition>
+						 </EntityCondition>
+					  </ByEntityCondition>		
+			      </Condition>
+               </ConditionGroup>
+			</StopTrigger>
+         </Act>
+      </Story>
+   </Storyboard>
+</OpenSCENARIO>

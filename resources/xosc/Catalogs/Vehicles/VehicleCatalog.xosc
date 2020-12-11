@@ -166,5 +166,20 @@
             <Property name="model_id" value="6"/>
          </Properties>
       </Vehicle>
+      <Vehicle name="bicycle" vehicleCategory="bicycle">
+         <BoundingBox>
+            <Center x="0" y="0" z="0.85"/>
+            <Dimensions width="0.5" length="1.8" height="1.7"/>
+         </BoundingBox>
+         <Performance maxSpeed="40" maxDeceleration="10"/>
+         <Axles>
+            <FrontAxle maxSteering="30" wheelDiameter="0.7" trackWidth="0.7" positionX="2.7" positionZ="0.35"/>
+            <RearAxle maxSteering="30" wheelDiameter="0.7" trackWidth="0.7" positionX="0" positionZ="0.35"/>         
+         </Axles>
+         <Properties>
+            <File filepath="../models/cyclist.osgb"/>
+            <Property name="model_id" value="9"/>
+         </Properties>
+      </Vehicle>
    </Catalog>
 </OpenSCENARIO>
