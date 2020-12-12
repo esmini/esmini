@@ -21,7 +21,7 @@
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="bicycle"/>
       <ParameterDeclaration name="TTC" parameterType="double" value="10"/>
       <ParameterDeclaration name="TargetStartS" parameterType="double" value="60"/>
-      <ParameterDeclaration name="TargetFinalSpeed" parameterType="double" value="10"/>
+      <ParameterDeclaration name="TargetFinalSpeed" parameterType="double" value="5"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <RouteCatalog>

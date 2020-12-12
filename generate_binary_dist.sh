@@ -54,6 +54,7 @@ resources/models/straight_500m.osgb \
 resources/models/parking_lot.osgb \
 resources/models/curve_r100.osgb \
 resources/models/walkman.osgb \
+resources/models/cyclist.osgb \
 resources/models/multi_intersections.osgb \
 resources/models/curves_elevation.osgb \
 resources/sumo_inputs/e6mini* \
@@ -75,6 +76,7 @@ run/esmini/run_parking_lot.* \
 run/esmini/run_trajectory-test.* \
 run/esmini/run_pedestrian*.* \
 run/esmini/run_controller_test*.* \
+run/esmini/run_synch_with_steady_state*.* \
 run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 docs/readme.txt \

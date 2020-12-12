@@ -1,1 +1,0 @@
-"../../bin/esmini" --window 50 50 1024 576  --osc ../../resources/xosc/synch-start-and-collision.xosc --camera_mode flex-orbit
