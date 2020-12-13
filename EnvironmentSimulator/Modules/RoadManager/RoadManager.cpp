@@ -4575,25 +4575,28 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				// at start and end
 				if ((j == 0 && k == 0) || ((j > 1 || k > 1) && (j == road->GetNumberOfLaneSections() - 1 && k == osiPoints->GetNumOfOSIPoints() - 2)))
 				{
-					double x, y, h;
+					double x, y, z, h;
+					Position pos;
 
 					if (j == 0 && k == 0)
 					{
 						// road startpoint
-						road->GetGeometry(0)->EvaluateDS(0, &x, &y, &h);
+						pos.SetLanePos(road->GetId(), 0, 0, 0);
 					}
 					else 
 					{
 						// road endpoint
-						Geometry* geom = road->GetGeometry(road->GetNumberOfGeometries() - 1);
-						geom->EvaluateDS(geom->GetLength(), &x, &y, &h);
+						pos.SetLanePos(road->GetId(), 0, road->GetLength(), 0);
 					}
+					x = pos.GetX();
+					y = pos.GetY();
+					h = pos.GetH();
+					z = pos.GetZ();
 
 					// Calculate actual normal
 					double n_actual_angle = GetAngleSum(h, M_PI_2);
 					double n_actual_x, n_actual_y;
 					RotateVec2D(1, 0, n_actual_angle, n_actual_x, n_actual_y);
-					NormalizeVec2D(n_actual_x, n_actual_y, n_actual_x, n_actual_y);
 
 					// Calculate normal of OSI line
 					double h_osi = GetAngleOfVector(x2 - osi_point.x, y2 - osi_point.y);
@@ -4604,19 +4607,33 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					// Calculate vector from road endpoint (first or last) to obj pos
 					double vx = x3 - x;
 					double vy = y3 - y;
-					NormalizeVec2D(vx, vy, vx, vy);
+					double vx_n, vy_n;
+					NormalizeVec2D(vx, vy, vx_n, vy_n);
+					
+					// make sure normals points same side as point
+					double forward_x = 1.0;
+					double forward_y = 0.0;
+					RotateVec2D(1.0, 0.0, h, forward_x, forward_y);
+					if (GetCrossProduct2D(forward_x, forward_y, vx_n, vy_n) < 0)
+					{
+						n_actual_x = -n_actual_x;
+						n_actual_y = -n_actual_y;
+						n_osi_x = -n_osi_x;
+						n_osi_y = -n_osi_y;
+					}
 
 					double cp_actual = GetCrossProduct2D(vx, vy, n_actual_x, n_actual_y);
-					double cp_osi = GetCrossProduct2D(n_osi_x, n_osi_y, vx, vy);
+					double cp_osi = GetCrossProduct2D(n_osi_x, n_osi_y, vx_n, vy_n);
 					
 					if (SIGN(cp_actual) == SIGN(cp_osi))
 					{
 						inside = true;
+						distTmp = GetLengthOfLine2D(vx, vy, 0, 0);
+						jMinLocal = j;
+						kMinLocal = k;
 					}
 
-					distTmp = GetLengthOfLine2D(vx, vy, 0, 0);
-					jMinLocal = j;
-					kMinLocal = k;
+					//printf("rid %d inside %d j %d k %d cp_actual %.2f cp_osi %.2f\n", road->GetId(), inside, j, k, cp_actual, cp_osi);
 				}
 
 				if (!inside)
