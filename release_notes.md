@@ -1,5 +1,9 @@
 ## esmini release notes
 
+### 2020-12-13 Version 2.0.12
+- Add SynchronizeAction with SteadyState example scenario to demo package
+- Improve world to road coordinate mapping (thanks brifsttar, for input & support)
+
 ### 2020-12-11 Version 2.0.11
 - Allow storyboard element end transition directly from Standby to Complete state (when no run time needed)
 - Added example scenario to demonstrate SynchronizeAction with SteadyState extension

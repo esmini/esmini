@@ -1,0 +1,1 @@
+"../../bin/esmini" --window 50 50 1024 576  --osc ../../resources/xosc/synch_with_steady_state.xosc --camera_mode flex-orbit

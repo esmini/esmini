@@ -64,7 +64,6 @@ run/esmini/run_ltap-od.* \
 run/esmini/run_highway-merge_advanced_internal.* \
 run/esmini/run_cut-in.* \
 run/esmini/run_cut-in_interactive.* \
-run/esmini/run_cut-in_external.* \
 run/esmini/run_cut-in_sumo.* \
 run/esmini/run_lane_change.* \
 run/esmini/run_lane_change_simple.* \
