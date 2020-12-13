@@ -4528,11 +4528,18 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 			OSIPoints* osiPoints = road->GetLaneSectionByIdx(j)->GetLaneById(0)->GetOSIPoints();
 			double sLocal = -1;
 
+			// on last lane section, skip last point
+			int numPoints = osiPoints->GetNumOfOSIPoints();
+			if (j == road->GetNumberOfLaneSections() - 1)
+			{
+				numPoints--;
+			}
+
 			// Find closest line or point
-			for (int k = 0; k < osiPoints->GetNumOfOSIPoints()-1; k++)
+			for (int k = 0; k < numPoints; k++)
 			{
 				double distTmp = 0;
-				OSIPoints::OSIPointStruct &osi_point = osiPoints->GetPoint(k);
+				OSIPoints::OSIPointStruct& osi_point = osiPoints->GetPoint(k);
 				double z = osi_point.z;
 				bool inside = false;
 
@@ -4547,6 +4554,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				kMinLocal = k;
 
 				double px, py;
+
 				if (k == osiPoints->GetNumOfOSIPoints() - 1)
 				{
 					// End of lane section, look into next one
@@ -4562,29 +4570,84 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				y2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).y;
 				z2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).z;
 
-				ProjectPointOnVector2D(x3, y3, osi_point.x, osi_point.y, x2, y2, px, py);
-				distTmp = PointDistance2D(x3, y3, px, py);
-					
-				inside = PointInBetweenVectorEndpoints(px, py, osi_point.x, osi_point.y, x2, y2, sLocalTmp);
-				if (!inside && k > 0 && (SIGN(sLocalTmp) != SIGN(sLocal)))
+				// OSI points is an approximation of actual geometry
+				// Check potential additional area formed by actual normal and OSI points normal
+				// at start and end
+				if ((j == 0 && k == 0) || ((j > 1 || k > 1) && (j == road->GetNumberOfLaneSections() - 1 && k == osiPoints->GetNumOfOSIPoints() - 2)))
 				{
-					// In between two line segments, or more precisely in the triangle area outside a 
-					// convex vertex corner between two line segments. Consider beeing inside road segment.
-					inside = true;
-				}
-				sLocal = sLocalTmp;
+					double x, y, h;
 
-				// Find closest point of the two
-				if (PointSquareDistance2D(x3, y3, osi_point.x, osi_point.y) <
-					PointSquareDistance2D(x3, y3, x2, y2))
-				{
+					if (j == 0 && k == 0)
+					{
+						// road startpoint
+						road->GetGeometry(0)->EvaluateDS(0, &x, &y, &h);
+					}
+					else 
+					{
+						// road endpoint
+						Geometry* geom = road->GetGeometry(road->GetNumberOfGeometries() - 1);
+						geom->EvaluateDS(geom->GetLength(), &x, &y, &h);
+					}
+
+					// Calculate actual normal
+					double n_actual_angle = GetAngleSum(h, M_PI_2);
+					double n_actual_x, n_actual_y;
+					RotateVec2D(1, 0, n_actual_angle, n_actual_x, n_actual_y);
+					NormalizeVec2D(n_actual_x, n_actual_y, n_actual_x, n_actual_y);
+
+					// Calculate normal of OSI line
+					double h_osi = GetAngleOfVector(x2 - osi_point.x, y2 - osi_point.y);
+					double n_osi_angle = GetAngleSum(h_osi, M_PI_2);
+					double n_osi_x, n_osi_y;
+					RotateVec2D(1, 0, n_osi_angle, n_osi_x, n_osi_y);
+
+					// Calculate vector from road endpoint (first or last) to obj pos
+					double vx = x3 - x;
+					double vy = y3 - y;
+					NormalizeVec2D(vx, vy, vx, vy);
+
+					double cp_actual = GetCrossProduct2D(vx, vy, n_actual_x, n_actual_y);
+					double cp_osi = GetCrossProduct2D(n_osi_x, n_osi_y, vx, vy);
+					
+					if (SIGN(cp_actual) == SIGN(cp_osi))
+					{
+						inside = true;
+					}
+
+					distTmp = GetLengthOfLine2D(vx, vy, 0, 0);
 					jMinLocal = j;
 					kMinLocal = k;
 				}
-				else
+
+				if (!inside)
 				{
-					jMinLocal = j2;
-					kMinLocal = k2;
+					// Ok, now look along the OSI lines, between the OSI points along the road centerline
+
+					ProjectPointOnVector2D(x3, y3, osi_point.x, osi_point.y, x2, y2, px, py);
+					distTmp = PointDistance2D(x3, y3, px, py);
+
+					inside = PointInBetweenVectorEndpoints(px, py, osi_point.x, osi_point.y, x2, y2, sLocalTmp);
+					if (!inside && k > 0 && (SIGN(sLocalTmp) != SIGN(sLocal)))
+					{
+						// In between two line segments, or more precisely in the triangle area outside a 
+						// convex vertex corner between two line segments. Consider beeing inside road segment.
+						inside = true;
+					}
+					sLocal = sLocalTmp;
+
+					// Find closest point of the two
+					if (PointSquareDistance2D(x3, y3, osi_point.x, osi_point.y) <
+						PointSquareDistance2D(x3, y3, x2, y2))
+					{
+						jMinLocal = j;
+						kMinLocal = k;
+					}
+					else
+					{
+						jMinLocal = j2;
+						kMinLocal = k2;
+					}
+
 				}
 
 				// subtract width of the road
