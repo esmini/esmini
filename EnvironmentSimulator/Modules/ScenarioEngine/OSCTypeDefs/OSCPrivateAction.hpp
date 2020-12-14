@@ -376,6 +376,7 @@ namespace scenarioengine
 			dynamics_.max_lateral_acc_ = 0;
 			dynamics_.duration_ = 0;
 			elapsed_ = 0;
+			target_ = 0;
 		}
 
 		LatLaneOffsetAction(const LatLaneOffsetAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET)

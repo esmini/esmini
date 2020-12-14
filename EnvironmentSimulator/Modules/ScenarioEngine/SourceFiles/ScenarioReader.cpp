@@ -1438,6 +1438,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				else if(lateralChild.name() == std::string("LaneOffsetAction"))
 				{
 					LatLaneOffsetAction *action_lane = new LatLaneOffsetAction();
+					LatLaneOffsetAction::Target* target = nullptr;
 					for (pugi::xml_node laneOffsetChild = lateralChild.first_child(); laneOffsetChild; laneOffsetChild = laneOffsetChild.next_sibling())
 					{
 						if (laneOffsetChild.name() == std::string("LaneOffsetActionDynamics"))
@@ -1455,8 +1456,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						}
 						else if (laneOffsetChild.name() == std::string("LaneOffsetTarget"))
 						{
-							LatLaneOffsetAction::Target *target = nullptr;
-
 							for (pugi::xml_node targetChild = laneOffsetChild.first_child(); targetChild; targetChild = targetChild.next_sibling())
 							{
 								if (targetChild.name() == std::string("RelativeTargetLaneOffset"))
@@ -1477,6 +1476,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							}
 							action_lane->target_ = target;
 						}
+					}
+					if (target == nullptr)
+					{
+						throw std::runtime_error("Missing LaneOffset Target");
 					}
 					// Approximate duration (not conforming to OSC 1.0), assume one lane of 5 meter
 					action_lane->dynamics_.duration_ = sqrt(5.0 / action_lane->dynamics_.max_lateral_acc_);
@@ -2296,6 +2299,51 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						condition = trigger;
 					}
+					else if (condition_type == "OffRoadCondition")
+					{
+						TrigByOffRoad* trigger = new TrigByOffRoad;
+
+						trigger->duration_ = strtod(parameters.ReadAttribute(condition_node, "duration"));
+
+						condition = trigger;
+					}
+					else if (condition_type == "StandStillCondition")
+					{
+						TrigByStandStill* trigger = new TrigByStandStill;
+
+						trigger->duration_ = strtod(parameters.ReadAttribute(condition_node, "duration"));
+
+						condition = trigger;
+					}
+					else if (condition_type == "AccelerationCondition")
+					{
+						TrigByAcceleration* trigger = new TrigByAcceleration;
+
+						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
+						trigger->rule_ = ParseRule(parameters.ReadAttribute(condition_node, "rule"));
+
+						condition = trigger;
+					}
+					else if (condition_type == "SpeedCondition")
+					{
+						TrigBySpeed* trigger = new TrigBySpeed;
+
+						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
+						trigger->rule_ = ParseRule(parameters.ReadAttribute(condition_node, "rule"));
+
+						condition = trigger;
+					}
+					else if (condition_type == "RelativeSpeedCondition")
+					{
+						TrigByRelativeSpeed* trigger = new TrigByRelativeSpeed;
+
+						pugi::xml_node target = condition_node.child("EntityRef");
+						trigger->object_ = entities_->GetObjectByName(parameters.ReadAttribute(target, "entityRef"));
+						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
+						trigger->rule_ = ParseRule(parameters.ReadAttribute(condition_node, "rule"));
+
+						condition = trigger;
+					}
 					else
 					{
 						LOG("Entity condition %s not supported", condition_type.c_str());
@@ -2338,6 +2386,10 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					}
 				}
 			}
+			else
+			{
+				throw std::runtime_error("Missing TriggeringEntities");
+			}
 		}
 		else if (conditionChildName == "ByValueCondition")
 		{
@@ -2378,7 +2430,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 		}
 		else
 		{
-			throw std::runtime_error("Unsupported condition %s\n" + conditionChildName);
+			throw std::runtime_error("Unsupported condition: " + conditionChildName);
 		}
 	}
 

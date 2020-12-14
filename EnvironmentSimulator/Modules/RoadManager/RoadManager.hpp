@@ -1452,6 +1452,8 @@ namespace roadmanager
 		void Print();
 		void PrintXY();
 
+		bool IsOffRoad();
+
 		void ReplaceObjectRefs(Position* pos1, Position* pos2)
 		{
 			if (rel_pos_ == pos1)

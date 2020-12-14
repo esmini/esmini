@@ -41,6 +41,18 @@ void Object::SetOffRoad(bool state, double time)
 	}
 }
 
+void  Object::SetStandStill(bool state, double time)
+{
+	if (state == true)
+	{
+		stand_still_timestamp_ = time;
+	}
+	else
+	{
+		stand_still_timestamp_ = 0.0;
+	}
+}
+
 int Object::GetAssignedControllerType()
 {
 	if (controller_)

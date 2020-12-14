@@ -290,7 +290,22 @@ extern "C"
 		else
 		{
 			roadmanager::Position *pos = &position[handle];
-			pos->XYZH2TrackPos(x, y, 0, h, true);
+			pos->XYZH2TrackPos(x, y, pos->GetZ(), h, true);
+		}
+
+		return 0;
+	}
+
+	RM_DLL_API int RM_SetWorldXYZHPosition(int handle, float x, float y, float z, float h)
+	{
+		if (odrManager == 0 || handle >= position.size())
+		{
+			return -1;
+		}
+		else
+		{
+			roadmanager::Position* pos = &position[handle];
+			pos->XYZH2TrackPos(x, y, z, h, true);
 		}
 
 		return 0;

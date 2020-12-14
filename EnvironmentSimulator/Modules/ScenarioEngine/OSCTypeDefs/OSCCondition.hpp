@@ -111,7 +111,11 @@ namespace scenarioengine
 			END_OF_ROAD,
 			TIME_TO_COLLISION,
 			COLLISION,
-			// not complete at all
+			OFF_ROAD,
+			ACCELERATION,
+			STAND_STILL,
+			SPEED,
+			RELATIVE_SPEED
 		} EntityConditionType;
 
 		TriggeringEntitiesRule triggering_entity_rule_;
@@ -262,6 +266,75 @@ namespace scenarioengine
 		double elapsed_time_;
 	};
 
+	class TrigByOffRoad : public TrigByEntity
+	{
+	public:
+		Object* object_;
+		double duration_;
+		Rule rule_;
+		double current_duration_;
+
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByOffRoad() : current_duration_(0), TrigByEntity(TrigByEntity::EntityConditionType::OFF_ROAD) {}
+		void Log();
+
+	private:
+		double elapsed_time_;
+	};
+
+	class TrigByAcceleration : public TrigByEntity
+	{
+	public:
+		double value_;
+		Rule rule_;
+		double current_acceleration_;
+
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByAcceleration() : value_(0), current_acceleration_(0), TrigByEntity(TrigByEntity::EntityConditionType::ACCELERATION) {}
+		void Log();
+	};
+
+	class TrigBySpeed : public TrigByEntity
+	{
+	public:
+		double value_;
+		Rule rule_;
+		double current_speed_;
+
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigBySpeed() : value_(0), current_speed_(0), TrigByEntity(TrigByEntity::EntityConditionType::SPEED) {}
+		void Log();
+	};
+
+	class TrigByRelativeSpeed : public TrigByEntity
+	{
+	public:
+		Object* object_;
+		double value_;
+		Rule rule_;
+		double current_rel_speed_;
+
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByRelativeSpeed() : value_(0), current_rel_speed_(0), TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_SPEED) {}
+		void Log();
+	};
+
+	class TrigByStandStill : public TrigByEntity
+	{
+	public:
+		Object* object_;
+		double duration_;
+		Rule rule_;
+		double current_duration_;
+
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
+		TrigByStandStill() : current_duration_(0), TrigByEntity(TrigByEntity::EntityConditionType::STAND_STILL) {}
+		void Log();
+
+	private:
+		double elapsed_time_;
+	};
+
 	class TrigByState : public OSCCondition
 	{
 	public:
@@ -322,6 +395,7 @@ namespace scenarioengine
 	class TrigByParameter : public TrigByValue
 	{
 	public:
+		Object* object_;
 		std::string name_;
 		std::string value_;
 		Rule rule_;

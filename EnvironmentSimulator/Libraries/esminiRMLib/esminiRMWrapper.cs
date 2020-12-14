@@ -201,6 +201,19 @@ namespace OpenDRIVE
         public static extern int SetWorldXYHPosition(int index, float x, float y, float h);
 
         /// <summary>
+        /// Set position from world X, Y, Z and heading coordinates; pitch and road coordinates being calculated
+        /// Setting a Z value may have effect in mapping the position to the closest road, e.g. overpass
+        /// </summary>
+        /// <param name="index">Handle to the position object</param>
+        /// <param name="x">cartesian coordinate x value</param>
+        /// <param name="y">cartesian coordinate y value</param>
+        /// <param name="z">cartesian coordinate z value</param>
+        /// <param name="h">rotation heading value</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetWorldXYZHPosition")]
+        public static extern int SetWorldXYZHPosition(int index, float x, float y, float z, float h);
+
+        /// <summary>
         /// Move position forward along the road. Choose way randomly though any junctions.
         /// </summary>
         /// <param name="index">Handle to the position object</param>

@@ -83,7 +83,7 @@
                   <EntityRef entityRef="$owner"/>
                </Actors>
                <Maneuver name="CutInManeuver">
-                  <Event name="CutInEvent" priority="overwrite">
+                  <Event name="CutInEvent" priority="overwrite" maximumExecutionCount="1" >
                      <Action name="CutInAction">
                         <PrivateAction>
                            <LateralAction>
@@ -164,10 +164,20 @@
       </Story>
       <StopTrigger>
           <ConditionGroup>
-              <Condition conditionEdge="rising" delay="0" name="simulation_end">
+              <Condition conditionEdge="none" delay="0" name="simulationEndEventDone">
                   <ByValueCondition>
-                      <SimulationTimeCondition rule="greaterThan" value="17"/>
+                      <SimulationTimeCondition rule="greaterThan" value="10"/>
                   </ByValueCondition>
+              </Condition>
+              <Condition conditionEdge="rising" delay="2" name="simulationEndDecelerationDone">
+                  <ByEntityCondition>
+                      <TriggeringEntities triggeringEntitiesRule="any">
+                          <EntityRef entityRef="OverTaker"/>
+                      </TriggeringEntities>                              
+                      <EntityCondition>
+                          <AccelerationCondition value="0.0" rule="equalTo"/>
+                      </EntityCondition>
+                  </ByEntityCondition>              
               </Condition>
           </ConditionGroup>
       </StopTrigger>      

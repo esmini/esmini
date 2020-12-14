@@ -129,7 +129,7 @@
                   <EntityRef entityRef="NPC"/>
                </Actors>
                <Maneuver name="ManeuverNPC">
-                  <Event name="SyncEvent" priority="overwrite">
+                  <Event name="SyncEvent" priority="overwrite" maximumExecutionCount="1">
                      <Action name="SyncActionNPC">
                         <PrivateAction>
                             <SynchronizeAction masterEntityRef="Ego" >
@@ -170,17 +170,20 @@
             </StartTrigger>
             <StopTrigger>
                <ConditionGroup>
-                   <Condition name="QuitCondition" delay="0" conditionEdge="rising">
+                   <Condition name="EventDoneCondition" delay="0" conditionEdge="none">
+                      <ByValueCondition>
+                         <StoryboardElementStateCondition storyboardElementType="event"
+                                                          storyboardElementRef="SyncEvent"
+                                                          state="completeState"/>
+                      </ByValueCondition>
+                   </Condition>               
+                   <Condition name="QuitCondition" delay="4" conditionEdge="rising">
 					  <ByEntityCondition>
 						 <TriggeringEntities triggeringEntitiesRule="any">
-							<EntityRef entityRef="Ego"/>
+							<EntityRef entityRef="NPC"/>
 						 </TriggeringEntities>
 						 <EntityCondition>
-							<ReachPositionCondition tolerance="5.0">
-							   <Position>
-								  <LanePosition roadId="2" laneId="1" s="270.0"/>
-							   </Position>
-							</ReachPositionCondition>
+							<SpeedCondition rule="equalTo" value="$NPCFinalSpeed" />
 						 </EntityCondition>
 					  </ByEntityCondition>		
 			      </Condition>

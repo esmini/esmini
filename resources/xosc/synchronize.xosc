@@ -20,8 +20,9 @@
       <ParameterDeclaration name="MS2Vehicle" parameterType="string" value="van_red"/>
       <ParameterDeclaration name="EgoSpeed" parameterType="double" value="20"/>
       <ParameterDeclaration name="NPC1Speed" parameterType="double" value="30"/>
-      <ParameterDeclaration name="NPC2Speed" parameterType="double" value="19"/>
+      <ParameterDeclaration name="NPC2Speed" parameterType="double" value="0"/>
       <ParameterDeclaration name="NPC3Speed" parameterType="double" value="17"/>
+      <ParameterDeclaration name="NPC4Speed" parameterType="double" value="0"/>
       <ParameterDeclaration name="EgoLaneId" parameterType="int" value="-3"/>
       <ParameterDeclaration name="NPC1LaneId" parameterType="int" value="-2"/>
       <ParameterDeclaration name="NPC2LaneId" parameterType="int" value="-3"/>
@@ -192,7 +193,7 @@
                   <ParameterAssignments>
                      <ParameterAssignment parameterRef="$EgoTargetLaneId" value="$EgoLaneId"/>
                      <ParameterAssignment parameterRef="$NPCTargetLaneId" value="$NPC2LaneId"/>
-                     <ParameterAssignment parameterRef="$NPCFreeSpeed" value="NPC2Speed"/>
+                     <ParameterAssignment parameterRef="$NPCFreeSpeed" value="$NPC2Speed"/>
                      <ParameterAssignment parameterRef="$MS1EgoS" value="$MS1EgoS"/>
                      <ParameterAssignment parameterRef="$MS2EgoS" value="$MS2EgoS"/>
                      <ParameterAssignment parameterRef="$MS1NPC" value="$MS1NPC2S"/>
@@ -207,7 +208,7 @@
                   <ParameterAssignments>
                      <ParameterAssignment parameterRef="$EgoTargetLaneId" value="$EgoLaneId"/>
                      <ParameterAssignment parameterRef="$NPCTargetLaneId" value="$NPC3LaneId"/>
-                     <ParameterAssignment parameterRef="$NPCFreeSpeed" value="NPC3Speed"/>
+                     <ParameterAssignment parameterRef="$NPCFreeSpeed" value="$NPC3Speed"/>
                      <ParameterAssignment parameterRef="$MS1EgoS" value="$MS1EgoS"/>
                      <ParameterAssignment parameterRef="$MS2EgoS" value="$MS2EgoS"/>
                      <ParameterAssignment parameterRef="$MS1NPC" value="$MS1NPC3S"/>
@@ -222,7 +223,7 @@
                   <ParameterAssignments>
                      <ParameterAssignment parameterRef="$EgoTargetLaneId" value="$EgoLaneId"/>
                      <ParameterAssignment parameterRef="$NPCTargetLaneId" value="$NPC4LaneId"/>
-                     <ParameterAssignment parameterRef="$NPCFreeSpeed" value="NPC4Speed"/>
+                     <ParameterAssignment parameterRef="$NPCFreeSpeed" value="$NPC4Speed"/>
                      <ParameterAssignment parameterRef="$MS1EgoS" value="$MS1EgoS"/>
                      <ParameterAssignment parameterRef="$MS2EgoS" value="$MS2EgoS"/>
                      <ParameterAssignment parameterRef="$MS1NPC" value="$MS1NPC4S"/>
@@ -240,11 +241,16 @@
             </StartTrigger>
             <StopTrigger>
                <ConditionGroup>
-                  <Condition name="QuitActCondition" delay="0">
-			          <ByValueCondition>
-                          <SimulationTimeCondition value="30" rule="greaterThan"/>
-                      </ByValueCondition>
-                  </Condition>
+                   <Condition name="EndCondition" delay="0">
+                       <ByEntityCondition>
+                           <TriggeringEntities triggeringEntitiesRule="any">
+                              <EntityRef entityRef="NPC4"/>
+                           </TriggeringEntities>
+                           <EntityCondition>
+                              <StandStillCondition duration="2" />
+                           </EntityCondition>
+                       </ByEntityCondition>
+                   </Condition>
                </ConditionGroup>
             </StopTrigger>
          </Act>

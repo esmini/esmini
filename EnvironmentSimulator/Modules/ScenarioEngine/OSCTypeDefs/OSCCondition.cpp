@@ -40,7 +40,7 @@ bool EvaluateRule(double a, double b, Rule rule)
 {
 	if (rule == Rule::EQUAL_TO)
 	{
-		return a == b;
+		return (a == b || (a > b - SMALL_NUMBER && a < b + SMALL_NUMBER)) ;
 	}
 	else if (rule == Rule::GREATER_THAN)
 	{
@@ -181,7 +181,7 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 	{
 		if (timer_.Expired(sim_time))
 		{
-			LOG("Timer expired at %.2f seconds", timer_.Elapsed(sim_time));
+			LOG("%s timer expired at %.2f seconds", name_.c_str(), timer_.Elapsed(sim_time));
 			timer_.Reset();
 			return true;
 		}
@@ -197,7 +197,7 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (trig && delay_ > 0)
 	{
 		timer_.Start(sim_time, delay_);
-		LOG("Timer %.2fs started", delay_);
+		LOG("%s timer %.2fs started", name_.c_str(), delay_);
 		return false;
 	}
 
@@ -234,7 +234,7 @@ bool Trigger::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (result)
 	{
 		// Log
-		LOG("Trigger start --------------------------------");
+		LOG("Trigger /------------------------------------------------");
 		for (size_t i = 0; i < conditionGroup_.size(); i++)
 		{
 			for (size_t j = 0; j < conditionGroup_[i]->condition_.size(); j++)
@@ -250,7 +250,7 @@ bool Trigger::Evaluate(StoryBoard *storyBoard, double sim_time)
 				}
 			}
 		}
-		LOG("Trigger end ----------------------------------");
+		LOG("Trigger  ------------------------------------------------/");
 	}
 
 	return result;
@@ -867,4 +867,193 @@ void TrigByEndOfRoad::Log()
 {
 	LOG("%s == %s, end_of_road duration: %.2f >= %.2f, edge: %s", name_.c_str(), last_result_ ? "true" : "false",
 		current_duration_, duration_, Edge2Str(edge_).c_str());
+}
+
+bool TrigByStandStill::CheckCondition(StoryBoard* storyBoard, double sim_time)
+{
+	(void)storyBoard;
+	(void)sim_time;
+
+	triggered_by_entities_.clear();
+	bool result = false;
+	current_duration_ = 0;
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+	{
+		if (triggering_entities_.entity_[i].object_->IsStandStill())
+		{
+			current_duration_ = sim_time - triggering_entities_.entity_[i].object_->GetStandStillTimestamp();
+		}
+
+		result = current_duration_ > duration_;
+
+		if (result == true)
+		{
+			triggered_by_entities_.push_back(triggering_entities_.entity_[i].object_);
+		}
+
+		if (EvalDone(result, triggering_entity_rule_))
+		{
+			break;
+		}
+	}
+
+	return result;
+}
+
+void TrigByStandStill::Log()
+{
+	LOG("%s == %s, stand_still duration: %.2f >= %.2f, edge: %s", name_.c_str(), last_result_ ? "true" : "false",
+		current_duration_, duration_, Edge2Str(edge_).c_str());
+}
+
+bool TrigByOffRoad::CheckCondition(StoryBoard* storyBoard, double sim_time)
+{
+	(void)storyBoard;
+	(void)sim_time;
+
+	triggered_by_entities_.clear();
+	bool result = false;
+	current_duration_ = 0;
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+	{
+		if (triggering_entities_.entity_[i].object_->IsOffRoad())
+		{
+			current_duration_ = sim_time - triggering_entities_.entity_[i].object_->GetOffRoadTimestamp();
+		}
+
+		result = current_duration_ > duration_;
+
+		if (result == true)
+		{
+			triggered_by_entities_.push_back(triggering_entities_.entity_[i].object_);
+		}
+
+		if (EvalDone(result, triggering_entity_rule_))
+		{
+			break;
+		}
+	}
+
+	return result;
+}
+
+void TrigByOffRoad::Log()
+{
+	LOG("%s == %s, off road duration: %.2f >= %.2f, edge: %s", name_.c_str(), last_result_ ? "true" : "false",
+		current_duration_, duration_, Edge2Str(edge_).c_str());
+}
+
+bool TrigByAcceleration::CheckCondition(StoryBoard* storyBoard, double sim_time)
+{
+	(void)storyBoard;
+	(void)sim_time;
+
+	triggered_by_entities_.clear();
+	bool result = false;
+	current_acceleration_ = 0;
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+	{
+		current_acceleration_ = sqrt(pow(triggering_entities_.entity_[i].object_->pos_.GetAccX(), 2) +
+			pow(triggering_entities_.entity_[i].object_->pos_.GetAccY(), 2));
+
+		result = EvaluateRule(current_acceleration_, value_, rule_);
+
+		if (result == true)
+		{
+			triggered_by_entities_.push_back(triggering_entities_.entity_[i].object_);
+		}
+
+		if (EvalDone(result, triggering_entity_rule_))
+		{
+			break;
+		}
+	}
+
+	return result;
+}
+
+void TrigByAcceleration::Log()
+{
+	LOG("%s == %s, acceleration: %.2f %s %.2f, edge: %s", name_.c_str(), last_result_ ? "true" : "false",
+		current_acceleration_, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+}
+
+bool TrigBySpeed::CheckCondition(StoryBoard* storyBoard, double sim_time)
+{
+	(void)storyBoard;
+	(void)sim_time;
+
+	triggered_by_entities_.clear();
+	bool result = false;
+	current_speed_ = 0;
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+	{
+		current_speed_ = triggering_entities_.entity_[i].object_->GetSpeed();
+
+		result = EvaluateRule(current_speed_, value_, rule_);
+
+		if (result == true)
+		{
+			triggered_by_entities_.push_back(triggering_entities_.entity_[i].object_);
+		}
+
+		if (EvalDone(result, triggering_entity_rule_))
+		{
+			break;
+		}
+	}
+
+	return result;
+}
+
+void TrigBySpeed::Log()
+{
+	LOG("%s == %s, speed: %.2f %s %.2f, edge: %s", name_.c_str(), last_result_ ? "true" : "false",
+		current_speed_, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+}
+
+bool TrigByRelativeSpeed::CheckCondition(StoryBoard* storyBoard, double sim_time)
+{
+	(void)storyBoard;
+	(void)sim_time;
+
+	triggered_by_entities_.clear();
+	bool result = false;
+	current_rel_speed_ = 0;
+
+	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
+	{
+		if (object_)
+		{
+			current_rel_speed_ = triggering_entities_.entity_[i].object_->GetSpeed() - object_->GetSpeed();
+		}
+		else
+		{
+			current_rel_speed_ = triggering_entities_.entity_[i].object_->GetSpeed();
+		}
+
+		result = EvaluateRule(current_rel_speed_, value_, rule_);
+
+		if (result == true)
+		{
+			triggered_by_entities_.push_back(triggering_entities_.entity_[i].object_);
+		}
+
+		if (EvalDone(result, triggering_entity_rule_))
+		{
+			break;
+		}
+	}
+
+	return result;
+}
+
+void TrigByRelativeSpeed::Log()
+{
+	LOG("%s == %s, relative_speed: %.2f %s %.2f, edge: %s", name_.c_str(), last_result_ ? "true" : "false",
+		current_rel_speed_, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
 }

@@ -106,6 +106,59 @@
                         </ConditionGroup>
                      </StartTrigger>
                   </Event>
+                  <Event name="EgoGoOffRoadEvent" priority="parallel">
+                     <Action name="EgoGoOffRoadAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneOffsetAction>
+                                 <LaneOffsetActionDynamics dynamicsShape="sinusoidal" maxLateralAcc="0.5" />  
+                                 <LaneOffsetTarget>
+                                    <AbsoluteTargetLaneOffset value="8"/>
+                                 </LaneOffsetTarget>
+                              </LaneOffsetAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="EgoGoOffRoadCondition" delay="1" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="event"
+                                                                  storyboardElementRef="Lane change Ego event"
+                                                                  state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>              
+                  <Event name="EgoGoOnRoadEvent" priority="overwrite">
+                     <Action name="EgoGoOnRoadAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="3" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="EgoGoOnRoadCondition" delay="0" conditionEdge="rising">
+                               <ByEntityCondition>
+                                   <TriggeringEntities triggeringEntitiesRule="any">
+                                       <EntityRef entityRef="Ego"/>
+                                   </TriggeringEntities>                              
+                                   <EntityCondition>
+                                        <OffRoadCondition duration="2.5" rule="greaterThan"/>
+                                   </EntityCondition>
+                               </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>                         
                </Maneuver>
             </ManeuverGroup>
             <ManeuverGroup maximumExecutionCount="1" name="Lane change 2">
@@ -167,10 +220,10 @@
             </StartTrigger>
             <StopTrigger>
                <ConditionGroup>
-                  <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+                  <Condition name="QuitCondition" delay="3" conditionEdge="rising">
                      <ByValueCondition>
                         <StoryboardElementStateCondition storyboardElementType="event"
-                                                         storyboardElementRef="Lane change Ego event"
+                                                         storyboardElementRef="EgoGoOnRoadEvent"
                                                          state="endTransition"/>
                      </ByValueCondition>
                   </Condition>

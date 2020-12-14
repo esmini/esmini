@@ -5938,6 +5938,21 @@ void Position::PrintXY()
 	LOG("%.2f, %.2f\n", x_, y_);
 }
 
+bool Position::IsOffRoad()
+{
+	Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	if (road)
+	{
+		// Check whether outside road width
+		if (fabs(t_) > road->GetWidth(GetS(), SIGN(t_), ~Lane::LaneType::LANE_TYPE_NONE))
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+
 double Position::getRelativeDistance(Position target_position, double &x, double &y)
 {
 	// Calculate diff vector from current to target
@@ -6827,8 +6842,7 @@ int Position::SetRouteS(Route *route, double route_s)
 				new_offset = offset_;
 			}
 
-			SetLanePos(route->waypoint_[i]->GetTrackId(), route->waypoint_[i]->GetLaneId(), local_s, new_offset);
-			return 0;
+			return (SetLanePos(route->waypoint_[i]->GetTrackId(), route->waypoint_[i]->GetLaneId(), local_s, new_offset));
 		}
 		route_length += road_length - initial_s_offset;
 		initial_s_offset = 0;  // For all following road segments, calculate length from beginning

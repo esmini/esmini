@@ -97,13 +97,13 @@ OSCTypeDefs
                 Collision                    Yes
                     EntityRef                Yes
                     ByType                   Yes
-                Offroad                      No
+                Offroad                      Yes
                 TimeHeadway                  Yes
                 TimeToCollision              Yes
-                Acceleration                 No
-                StandStill                   No
-                Speed                        No
-                RelativeSpeed                No
+                Acceleration                 Yes
+                StandStill                   Yes
+                Speed                        Yes
+                RelativeSpeed                Yes
                 TraveledDistance             Yes
                 ReachPosition                Yes
                 Distance                     Yes

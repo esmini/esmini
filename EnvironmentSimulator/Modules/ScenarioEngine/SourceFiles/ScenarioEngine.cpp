@@ -337,6 +337,38 @@ void ScenarioEngine::step(double deltaSimTime)
 		}
 	}
 
+	// Check some states
+	for (size_t i = 0; i < entities.object_.size(); i++)
+	{
+		Object* obj = entities.object_[i];
+
+		// Off road?
+		if (obj->pos_.IsOffRoad())
+		{
+			if (!obj->IsOffRoad())
+			{
+				obj->SetOffRoad(true, simulationTime_);
+			}
+		}
+		else
+		{
+			obj->SetOffRoad(false);
+		}
+
+		// Stand still?
+		if (obj->GetSpeed() > -SMALL_NUMBER && obj->GetSpeed() < SMALL_NUMBER)
+		{
+			if (!obj->IsStandStill())
+			{
+				obj->SetStandStill(true, simulationTime_);
+			}
+		}
+		else
+		{
+			obj->SetStandStill(false);
+		}
+	}
+
 	if (all_done)
 	{
 		LOG("All acts are done, quit now");

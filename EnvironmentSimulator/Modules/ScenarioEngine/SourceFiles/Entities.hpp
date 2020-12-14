@@ -82,6 +82,7 @@ namespace scenarioengine
 		OSCBoundingBox boundingbox_;
 		double end_of_road_timestamp_;
 		double off_road_timestamp_;
+		double stand_still_timestamp_;
 		double headstart_time_;
 		int visibilityMask_;
 
@@ -101,7 +102,7 @@ namespace scenarioengine
 
 		Object(Type type) : type_(type), id_(0), trail_follow_index_(0), speed_(0), wheel_angle_(0), wheel_rot_(0),
 			route_(0), model_filepath_(""), trail_follow_s_(0), odometer_(0), end_of_road_timestamp_(0.0),
-			off_road_timestamp_(0.0), dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0),
+			off_road_timestamp_(0.0), stand_still_timestamp_(0), dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0),
 			visibilityMask_(0xFF), isGhost_(false)
 		{
 			trail_closest_pos_[0] = 0.0;
@@ -125,6 +126,10 @@ namespace scenarioengine
 		void SetOffRoad(bool state, double time = 0.0);
 		bool IsOffRoad() { return off_road_timestamp_ > SMALL_NUMBER; }
 		double GetOffRoadTimestamp() { return off_road_timestamp_; }
+		void SetStandStill(bool state, double time = 0.0);
+		bool IsStandStill() { return stand_still_timestamp_ > SMALL_NUMBER; }
+		double GetStandStillTimestamp() { return stand_still_timestamp_; }
+
 		void SetSpeed(double speed) 
 		{ 
 			speed_ = speed; 

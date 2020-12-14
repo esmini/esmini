@@ -167,6 +167,17 @@ extern "C"
 	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h);
 
 	/**
+	Set position from world X, Y, Z and heading coordinates; pitch and road coordinates being calculated
+	Setting a Z value may have effect in mapping the position to the closest road, e.g. overpass
+	@param handle Handle to the position object
+	@param x cartesian coordinate x value
+	@param y cartesian coordinate y value
+	@param h rotation heading value
+	@return 0 if successful, -1 if not
+	*/
+	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h);
+
+	/**
 	Move position forward along the road. Choose way randomly though any junctions.
 	@param handle Handle to the position object
 	@param dist Distance (meter) to move
