@@ -36,7 +36,6 @@
 #include <osgShadow/ShadowedScene>
 #include <osgUtil/SmoothingVisitor>
 #include "CommonMini.hpp"
-//#include "ScenarioEngine.hpp"
 
 #define SHADOW_SCALE 1.20
 #define SHADOW_MODEL_FILEPATH "shadow_face.osgb"  

@@ -3800,8 +3800,8 @@ void OpenDrive::SetLaneOSIPoints()
 				{
 					counter++;
 
-					// Make sure we stay within road length
-					s1 = MIN(s1, road->GetLength() - OSI_TANGENT_LINE_TOLERANCE);
+					// Make sure we stay within lane section length
+					s1 = MIN(s1, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
 
 					// [XO, YO] = closest position with given (-) tolerance
 					pos->SetLanePos(road->GetId(), lane->GetId(), s0-OSI_TANGENT_LINE_TOLERANCE, 0, j);
@@ -3886,7 +3886,7 @@ void OpenDrive::SetLaneOSIPoints()
 					// If the end of the lane reached, assign end of the lane as final OSI point for current lane
 					if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end)
 					{
-						pos->SetLanePos(road->GetId(), lane->GetId(), lsec_end, 0, j);
+						pos->SetLanePos(road->GetId(), lane->GetId(), MAX(0, lsec_end-SMALL_NUMBER), 0, j);
 						OSIPoints::OSIPointStruct p = { lsec_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 						osi_point.push_back(p);
 						break;
@@ -3968,8 +3968,8 @@ void OpenDrive::SetLaneBoundaryPoints()
 					{
 						counter++;
 
-						// Make sure we stay within road length
-						s1 = MIN(s1, road->GetLength() - OSI_TANGENT_LINE_TOLERANCE);
+						// Make sure we stay within lane section length
+						s1 = MIN(s1, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
 
 						// [XO, YO] = closest position with given (-) tolerance
 						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0-OSI_TANGENT_LINE_TOLERANCE, 0, j);
@@ -4045,7 +4045,7 @@ void OpenDrive::SetLaneBoundaryPoints()
 						// If the end of the lane reached, assign end of the lane as final OSI point for current lane
 						if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end)
 						{
-							pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), lsec_end, 0, j);
+							pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), MAX(0, lsec_end - SMALL_NUMBER), 0, j);
 							OSIPoints::OSIPointStruct p = { lsec_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 							osi_point.push_back(p);
 							break;
@@ -4105,7 +4105,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 			lsec = road->GetLaneSectionByIdx(j);
 			if (j == number_of_lane_sections-1)
 			{
-				lsec_end = road->GetLength();	
+				lsec_end = road->GetLength();
 			}
 			else
 			{
@@ -4129,11 +4129,11 @@ void OpenDrive::SetRoadMarkOSIPoints()
 						s_roadmark = lsec->GetS() + lane_roadMark->GetSOffset();
 						if (m == number_of_roadmarks-1)
 						{
-							s_end_roadmark = lsec_end;
+							s_end_roadmark = MAX(0, lsec_end - SMALL_NUMBER);
 						}
 						else
 						{
-							s_end_roadmark = lane->GetLaneRoadMarkByIdx(m+1)->GetSOffset();
+							s_end_roadmark = MAX(0, lane->GetLaneRoadMarkByIdx(m+1)->GetSOffset() - SMALL_NUMBER);
 						}
 						
 						// Check the existence of "type" keyword under roadmark
@@ -5745,7 +5745,7 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 	LaneRoadMark *lane_roadmark = lane->GetLaneRoadMarkByIdx(roadmark_idx_);
 	if (lane_roadmark != 0)
 	{
-		s_ = MIN(s_ + lane_roadmark->GetSOffset(), road->GetLength());
+		s_ = MIN(s_, road->GetLength());
 	}
 	else
 	{
