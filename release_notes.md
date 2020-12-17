@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2020-12-17 Version 2.0.13
+- All EntityConditions now supported by addition of the following remaining ones (scenario demonstrating the condition in parenthesis):
+  - Offroad (lane_change.xosc)
+  - Acceleration (cut-in_simple.xosc)
+  - StandStill (synchronize.xosc)
+  - Speed (ltap-od.xosc)
+  - RelativeSpeed (slow-lead-vehicle.xosc)  
+  
+- All Position types now supported by addition of the following remaining ones:
+  - RelativeRoadPosition 
+  - RoadPosition
+
 ### 2020-12-13 Version 2.0.12
 - Add SynchronizeAction with SteadyState example scenario to demo package
 - Improve world to road coordinate mapping (thanks brifsttar, for input & support)
