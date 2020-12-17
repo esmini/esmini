@@ -66,7 +66,11 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="3.5" s="30"/>
+                        <RelativeRoadPosition entityRef="Ego" ds="-20" dt="3.1">
+                            <!-- since the position is on a lane in opposite driving direction -->
+                            <!-- we need to specify heading. Otherwise it could be left out.   -->
+                            <Orientation type="absolute" h="0"/>
+                        </RelativeRoadPosition>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -87,12 +91,12 @@
                      <Action name="CutInAction">
                         <PrivateAction>
                            <LateralAction>
-                              <LaneOffsetAction continuous="true">
-                                 <LaneOffsetActionDynamics dynamicsShape="sinusoidal" maxLateralAcc="1.0" />
-                                 <LaneOffsetTarget>
-                                    <RelativeTargetLaneOffset entityRef="Ego" value="0"/>
-                                 </LaneOffsetTarget>
-                              </LaneOffsetAction>
+                              <LaneChangeAction >
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="3" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="Ego" value="0"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
                            </LateralAction>
                         </PrivateAction>
                      </Action>

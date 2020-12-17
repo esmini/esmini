@@ -993,13 +993,57 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 
 		pos_return = (OSCPosition*)pos;
 	}
-	else if (positionChildName == "RoadPosition")
-	{
-		LOG("%s is not implemented ", positionChildName.c_str());
-	}
 	else if (positionChildName == "RelativeRoadPosition")
 	{
-		LOG("%s is not implemented ", positionChildName.c_str());
+		double ds, dt;
+
+		ds = strtod(parameters.ReadAttribute(positionChild, "ds"));
+		dt = strtod(parameters.ReadAttribute(positionChild, "dt"));
+		Object* object = entities_->GetObjectByName(parameters.ReadAttribute(positionChild, "entityRef"));
+		if (object == nullptr)
+		{
+			throw std::runtime_error("No referenced object for RelativeRoadPosition");
+		}
+
+		// Check for optional Orientation element
+		pugi::xml_node orientation_node = positionChild.child("Orientation");
+		OSCOrientation orientation;
+		if (orientation_node)
+		{
+			parseOSCOrientation(orientation, orientation_node);
+		}
+		else
+		{
+			// If no orientation specified, assume Relative is preferred
+			orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_RELATIVE;
+		}
+
+		OSCPositionRelativeRoad* pos = new OSCPositionRelativeRoad(object, ds, dt, orientation);
+
+		pos_return = (OSCPosition*)pos;
+	}
+	else if (positionChildName == "RoadPosition")
+	{
+		int road_id = strtoi(parameters.ReadAttribute(positionChild, "roadId"));
+		double s = strtod(parameters.ReadAttribute(positionChild, "s"));
+		double t = strtod(parameters.ReadAttribute(positionChild, "t"));;
+
+		// Check for optional Orientation element
+		pugi::xml_node orientation_node = positionChild.child("Orientation");
+		OSCOrientation orientation;
+		if (orientation_node)
+		{
+			parseOSCOrientation(orientation, orientation_node);
+		}
+		else
+		{
+			// If no orientation specified, assume Relative is preferred
+			orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_RELATIVE;
+		}
+
+		OSCPositionRoad* pos = new OSCPositionRoad(road_id, s, t, orientation);
+
+		pos_return = (OSCPosition*)pos;
 	}
 	else if (positionChildName == "LanePosition")
 	{

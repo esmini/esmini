@@ -49,6 +49,36 @@ OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset
 	position_.SetP(orientation.p_);
 	position_.SetR(orientation.r_);
 }
+OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation orientation) :
+	OSCPosition(PositionType::ROAD)
+{
+	position_.SetOrientationType(orientation.type_);
+
+	position_.SetTrackPos(roadId, s, t);
+
+	if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE)
+	{
+		// Adjust heading to road direction 
+		if (position_.GetLaneId() < 0)
+		{
+			position_.SetHeadingRelative(orientation.h_);
+		}
+		else
+		{
+			position_.SetHeadingRelative(GetAngleSum(M_PI, orientation.h_));
+		}
+	}
+	else if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE)
+	{
+		position_.SetHeading(orientation.h_);
+	}
+	else
+	{
+		LOG("Unexpected orientation type: %d", orientation.type_);
+	}
+	position_.SetP(orientation.p_);
+	position_.SetR(orientation.r_);
+}
 
 OSCPositionRelativeObject::OSCPositionRelativeObject(Object *object, double dx, double dy, double dz, OSCOrientation orientation) : 
 	OSCPosition(PositionType::RELATIVE_OBJECT), object_(object)
@@ -114,6 +144,33 @@ OSCPositionRelativeLane::OSCPositionRelativeLane(Object *object, int dLane, doub
 }
 
 void OSCPositionRelativeLane::Print()
+{
+	LOG("");
+	object_->pos_.Print();
+}
+
+OSCPositionRelativeRoad::OSCPositionRelativeRoad(Object* object, double ds, double dt, OSCOrientation orientation) :
+	OSCPosition(PositionType::RELATIVE_ROAD), object_(object)
+{
+	position_.SetS(ds);
+	position_.SetT(dt);
+	position_.SetOrientationType(orientation.type_);
+
+	if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE)
+	{
+		position_.SetHeadingRelative(orientation.h_);
+	}
+	else
+	{
+		position_.SetH(orientation.h_);
+	}
+	position_.SetP(orientation.p_);
+	position_.SetR(orientation.r_);
+
+	position_.SetRelativePosition(&object->pos_, roadmanager::Position::PositionType::RELATIVE_ROAD);
+}
+
+void OSCPositionRelativeRoad::Print()
 {
 	LOG("");
 	object_->pos_.Print();

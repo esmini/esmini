@@ -60,8 +60,8 @@ OSCTypeDefs
         World                                Yes
         RelativeWorld                        Yes
         RelativeObject                       Yes
-        Road                                 No
-        RelativeRoad                         No
+        Road                                 Yes
+        RelativeRoad                         Yes
         Lane                                 Yes
         RelativeLane                         Yes
         Route                                Yes

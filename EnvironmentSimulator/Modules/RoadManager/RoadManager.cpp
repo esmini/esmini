@@ -6254,7 +6254,8 @@ int Position::GetProbeInfo(Position *target_pos, RoadProbeInfo *data)
 
 int Position::GetTrackId() 
 { 
-	if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
+	if (rel_pos_ && rel_pos_ != this && 
+		(type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
 	{
 		return rel_pos_->GetTrackId();
 	}
@@ -6316,7 +6317,8 @@ int Position::GetLaneGlobalId()
 
 double Position::GetS()
 {
-	if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
+	if (rel_pos_ && rel_pos_ != this && 
+		(type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
 	{
 		return rel_pos_->GetS() + s_;
 	}
@@ -6326,7 +6328,8 @@ double Position::GetS()
 
 double Position::GetT()
 {
-	if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
+	if (rel_pos_ && rel_pos_ != this && 
+		(type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
 	{
 		return rel_pos_->GetT() + t_;
 	}
@@ -6336,7 +6339,8 @@ double Position::GetT()
 
 double Position::GetOffset()
 {
-	if (rel_pos_ && rel_pos_ != this && rel_pos_ && type_ == PositionType::RELATIVE_LANE)
+	if (rel_pos_ && rel_pos_ != this && 
+		(type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
 	{
 		return rel_pos_->GetOffset() + offset_;
 	}
@@ -6358,7 +6362,7 @@ double Position::GetX()
 	{
 		return x_ + rel_pos_->GetX();
 	}
-	else if (type_ == PositionType::RELATIVE_LANE)
+	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
 	{
 		return x_;
 	}
@@ -6384,7 +6388,7 @@ double Position::GetY()
 	{
 		return y_ + rel_pos_->GetY();
 	}
-	else if (type_ == PositionType::RELATIVE_LANE)
+	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
 	{
 		return y_;
 	}
@@ -6406,7 +6410,7 @@ double Position::GetZ()
 	{
 		return z_ + rel_pos_->GetZ();
 	}
-	else if (type_ == PositionType::RELATIVE_LANE)
+	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
 	{
 		return z_;
 	}
@@ -6435,7 +6439,7 @@ double Position::GetH()
 			return h_ + rel_pos_->GetH();
 		}
 	}
-	else if (type_ == PositionType::RELATIVE_LANE)
+	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
 	{
 		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
 		{
@@ -6471,7 +6475,7 @@ double Position::GetHRelative()
 			return GetAngleInInterval2PI(h_relative_ + rel_pos_->GetHRelative());
 		}
 	}
-	else if (type_ == PositionType::RELATIVE_LANE)
+	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
 	{
 		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
 		{
@@ -6507,7 +6511,7 @@ double Position::GetP()
 			return p_ + rel_pos_->GetP();
 		}
 	}
-	else if (type_ == PositionType::RELATIVE_LANE)
+	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
 	{
 		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
 		{
@@ -6543,7 +6547,7 @@ double Position::GetR()
 			return r_ + rel_pos_->GetR();
 		}
 	}
-	else if (type_ == PositionType::RELATIVE_LANE)
+	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
 	{
 		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
 		{
@@ -6856,7 +6860,6 @@ void Position::ReleaseRelation()
 	// Freeze position and then disconnect 
 	if (type_ == Position::PositionType::RELATIVE_LANE)
 	{
-		
 		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
 		{
 			// Save requested heading angle, since SetLanePos will modify it
@@ -6879,6 +6882,33 @@ void Position::ReleaseRelation()
 		{
 			double h = h_;
 			SetLanePos(GetTrackId(), GetLaneId(), GetS(), GetOffset());
+			SetHeading(h);
+		}
+	}
+	if (type_ == Position::PositionType::RELATIVE_ROAD)
+	{
+		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
+		{
+			// Save requested heading angle, since SetLanePos will modify it
+			double h = h_relative_;
+
+			// Resolve requested position
+			SetTrackPos(GetTrackId(), GetS(), GetT());
+
+			// Finally set requested heading
+			if (lane_id_ > 0)
+			{
+				// In lanes going opposite road direction, add 180 degrees
+				h = GetAngleSum(h, M_PI);
+			}
+			SetHeadingRelative(h);
+			SetP(GetP());
+			SetR(GetR());
+		}
+		else
+		{
+			double h = h_;
+			SetTrackPos(GetTrackId(), GetS(), GetT());
 			SetHeading(h);
 		}
 	}

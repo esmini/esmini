@@ -1068,7 +1068,8 @@ namespace roadmanager
 			ROUTE,
 			RELATIVE_OBJECT,
 			RELATIVE_WORLD,
-			RELATIVE_LANE
+			RELATIVE_LANE,
+			RELATIVE_ROAD
 		};
 
 		enum OrientationType
@@ -1411,6 +1412,7 @@ namespace roadmanager
 		void SetLaneId(int laneId) { lane_id_ = laneId; }
 		void SetS(double s) { s_ = s; }
 		void SetOffset(double offset) { offset_ = offset; }
+		void SetT(double t) { t_ = t; }
 		void SetX(double x) { x_ = x; }
 		void SetY(double y) { y_ = y; }
 		void SetZ(double z) { z_ = z; }
