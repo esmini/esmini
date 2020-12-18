@@ -2343,7 +2343,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						condition = trigger;
 					}
-					else if (condition_type == "OffRoadCondition")
+					else if (condition_type == "OffroadCondition")
 					{
 						TrigByOffRoad* trigger = new TrigByOffRoad;
 
@@ -2381,8 +2381,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					{
 						TrigByRelativeSpeed* trigger = new TrigByRelativeSpeed;
 
-						pugi::xml_node target = condition_node.child("EntityRef");
-						trigger->object_ = entities_->GetObjectByName(parameters.ReadAttribute(target, "entityRef"));
+						trigger->object_ = entities_->GetObjectByName(parameters.ReadAttribute(condition_node, "entityRef"));
 						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
 						trigger->rule_ = ParseRule(parameters.ReadAttribute(condition_node, "rule"));
 

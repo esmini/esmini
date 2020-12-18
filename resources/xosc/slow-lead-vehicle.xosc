@@ -135,9 +135,7 @@
 						 </TriggeringEntities>
 						 <EntityCondition>
                             <!-- Quit when Ego has come to a stop and Lead is moving away -->
-							<RelativeSpeedCondition rule="lessThan" value="0">
-                                <EntityRef entityRef="Lead"/>
-                            </RelativeSpeedCondition>
+							<RelativeSpeedCondition rule="lessThan" value="0" entityRef="Lead"/>
 						 </EntityCondition>
 					  </ByEntityCondition>		
 			      </Condition>
