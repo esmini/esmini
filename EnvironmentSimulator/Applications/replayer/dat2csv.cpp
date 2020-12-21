@@ -14,19 +14,33 @@
   * This application uses the Replay class to read and binary recordings and print content in ascii format to stdout
   */
 
+#include <clocale>
+
 #include "Replay.hpp"
 #include "CommonMini.hpp"
 
 using namespace scenarioengine;
 
+#define MAX_LINE_LEN 2048
 
 int main(int argc, char** argv)
 {
-	Replay *player;
+	Replay* player;
+	static char line[MAX_LINE_LEN];
+
+	std::setlocale(LC_ALL, "C.UTF-8");
 
 	if (argc < 2)
 	{
 		printf("Usage: %s <filename>\n", argv[0]);
+		return -1;
+	}
+std::string filename = FileNameWithoutExtOf(argv[1]) + ".csv";
+	std::ofstream file;
+	file.open(filename);
+	if (!file.is_open())
+	{
+		printf("Failed to create file %s\n", filename.c_str());
 		return -1;
 	}
 
@@ -42,15 +56,17 @@ int main(int argc, char** argv)
 	}
 
 	// First output header and CSV labels
-	fprintf(stdout, "OpenDRIVE: %s, 3DModel: %s\n", player->header_.odr_filename, player->header_.model_filename);
-	fprintf(stdout, "timestamp, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot\n");
+	snprintf(line, MAX_LINE_LEN, "OpenDRIVE: %s, 3DModel: %s\n", player->header_.odr_filename, player->header_.model_filename);
+	file << line;
+	snprintf(line, MAX_LINE_LEN, "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot\n");
+	file << line;
 
 	// Then output all entries with comma separated values
 	for (size_t i = 0; i < player->data_.size(); i++)
 	{
 		ObjectStateStruct *state = &player->data_[i];
 
-		fprintf(stdout, "%.3f, %d, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+		snprintf(line, MAX_LINE_LEN, "%.3f, %d, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
 			state->timeStamp,
 			state->id,
 			state->name,
@@ -63,7 +79,11 @@ int main(int argc, char** argv)
 			state->speed,
 			state->wheel_angle,
 			state->wheel_rot);
+		
+		file << line;
 	}
-
+	
+	file.close();
+	
 	delete player;
 }

@@ -434,19 +434,21 @@ std::string FileNameWithoutExtOf(const std::string& fname)
 	size_t start_pos = fname.find_last_of("\\/");
 	if (start_pos != std::string::npos)
 	{
-		size_t end_pos = fname.find_last_of(".");
-		if (end_pos != std::string::npos)
-		{
-			return (fname.substr(start_pos + 1, end_pos - start_pos - 1));
-		}
-		else
-		{
-			return (fname.substr(start_pos + 1));
-		}
+		start_pos++;
 	}
 	else
 	{
-		return fname;  // Assume filename with no separator
+		start_pos = 0;
+	}
+
+	size_t end_pos = fname.find_last_of(".");
+	if (end_pos != std::string::npos)
+	{
+		return (fname.substr(start_pos, end_pos - start_pos));
+	}
+	else
+	{
+		return (fname.substr(start_pos));
 	}
 }
 
