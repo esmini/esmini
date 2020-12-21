@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 #if DEMONSTRATE_OSI
 		osi3::GroundTruth* gt;
 		SE_OpenOSISocket("127.0.0.1");
-		SE_OSIFileOpen();
+		SE_OSIFileOpen(0);
 #endif
 
 

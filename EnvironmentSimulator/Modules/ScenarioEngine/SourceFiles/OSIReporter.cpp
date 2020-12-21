@@ -208,14 +208,16 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor*> sensor)
 	}
 }
 
-bool OSIReporter::OpenOSIFile()
+bool OSIReporter::OpenOSIFile(const char* filename)
 {
-	osi_file = std::ofstream("move_obj.osi", std::ios_base::binary);
+	const char* f = (filename == 0 || !strcmp(filename, "")) ? "move_obj.osi" : filename;
+	osi_file = std::ofstream(f, std::ios_base::binary);
 	if (!osi_file.good())
 	{
-		LOG("Failed open osi file");
+		LOG("Failed open OSI tracefile %s", f);
 		return false;
 	}
+	LOG("OSI tracefile %s opened", f);
 	return true;
 }
 

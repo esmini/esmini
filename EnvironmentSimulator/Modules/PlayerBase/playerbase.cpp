@@ -95,13 +95,13 @@ ScenarioPlayer::~ScenarioPlayer()
 	}
 }
 
-void ScenarioPlayer::SetOSIFileStatus(bool is_on)
+void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
 {
 	if (osiReporter)
 	{
 		if (is_on)
 		{
-			osiReporter->OpenOSIFile();
+			osiReporter->OpenOSIFile(filename);
 		}
 		else
 		{
@@ -707,7 +707,7 @@ int ScenarioPlayer::Init()
 
 	if (opt.GetOptionArg("osi_file") ==  "on")
 	{
-		osiReporter->OpenOSIFile();
+		osiReporter->OpenOSIFile(0);
 	}
 
 	if ((arg_str = opt.GetOptionArg("osi_freq")) != "")

@@ -32,8 +32,9 @@ public:
 
 	/**
 	Creates and opens osi file
+	@param filename Optional filename, including path. Set to 0 to use default.
 	*/
-	bool OpenOSIFile();
+	bool OpenOSIFile(const char* filename);
 	/**
 	Closes any open osi file
 	*/

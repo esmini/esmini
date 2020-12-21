@@ -324,7 +324,7 @@ extern "C"
 	/**
 	Send OSI packages over UDP to specified IP address
 	*/
-	SE_DLL_API int SE_OpenOSISocket(char *ipaddr);
+	SE_DLL_API int SE_OpenOSISocket(const char *ipaddr);
 
 	/**
 	Switch off logging to OSI file(s)
@@ -333,8 +333,9 @@ extern "C"
 
 	/**
 	Switch on logging to OSI file(s)
+	@param filename Optional filename, including path. Set to 0 or "" to use default.
 	*/
-	SE_DLL_API void SE_EnableOSIFile();
+	SE_DLL_API void SE_EnableOSIFile(const char* filename);
 
 	/**
 	The SE_UpdateOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
@@ -378,7 +379,7 @@ extern "C"
 	/**
 	Create and open osi file
 	*/
-	SE_DLL_API bool SE_OSIFileOpen();
+	SE_DLL_API bool SE_OSIFileOpen(const char* filename);
 
 	/**
 	Create and open osi file

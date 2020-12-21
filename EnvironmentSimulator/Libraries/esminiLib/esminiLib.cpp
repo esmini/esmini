@@ -407,7 +407,7 @@ extern "C"
 		resetScenario();
 	}
 
-	SE_DLL_API int SE_OpenOSISocket(char* ipaddr)
+	SE_DLL_API int SE_OpenOSISocket(const char* ipaddr)
 	{
 		player->osiReporter->OpenSocket(ipaddr);
 		return 0;
@@ -639,11 +639,11 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API bool SE_OSIFileOpen()
+	SE_DLL_API bool SE_OSIFileOpen(const char* filename)
 	{
 		if (player)
 		{
-			return player->osiReporter->OpenOSIFile();
+			return player->osiReporter->OpenOSIFile(filename);
 		}
 
 		return false;
@@ -775,11 +775,11 @@ extern "C"
 		}
 	}
 
-	SE_DLL_API void SE_EnableOSIFile()
+	SE_DLL_API void SE_EnableOSIFile(const char* filename)
 	{
 		if (player)
 		{
-			player->SetOSIFileStatus(true);
+			player->SetOSIFileStatus(true, filename);
 		}
 	}
 
