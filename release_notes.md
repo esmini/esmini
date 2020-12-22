@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2020-12-22 Version 2.0.14
+- Fix OSI output to support all OpenSCENARIO vehicle types
+- Option to specify custom OSI tracefile filename and path
+- Add plot script to demo pack
+- Some additional minor fixes
+
 ### 2020-12-17 Version 2.0.13
 - All EntityConditions now supported by addition of the following remaining ones (scenario demonstrating the condition in parenthesis):
   - Offroad (lane_change.xosc)
