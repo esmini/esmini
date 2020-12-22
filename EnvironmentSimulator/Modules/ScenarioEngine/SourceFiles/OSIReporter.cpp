@@ -438,6 +438,30 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState* objectState)
 		{
 			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_BICYCLE); 
 		} 
+		else if (objectState->state_.obj_category == static_cast<int>(Vehicle::Category::BUS))
+		{
+			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_BUS);
+		}
+		else if (objectState->state_.obj_category == static_cast<int>(Vehicle::Category::MOTORBIKE))
+		{
+			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MOTORBIKE);
+		}
+		else if (objectState->state_.obj_category == static_cast<int>(Vehicle::Category::SEMITRAILER))
+		{
+			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_SEMITRAILER);
+		}
+		else if (objectState->state_.obj_category == static_cast<int>(Vehicle::Category::TRAIN))
+		{
+			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_TRAIN);
+		}
+		else if (objectState->state_.obj_category == static_cast<int>(Vehicle::Category::TRAM))
+		{
+			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_TRAM);
+		}
+		else if (objectState->state_.obj_category == static_cast<int>(Vehicle::Category::TRUCK))
+		{
+			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_HEAVY_TRUCK);
+		}
 		else
 		{
 			obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN); 
