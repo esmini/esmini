@@ -15,8 +15,10 @@ IF NOT EXIST %target_dir%\resources\sumo_inputs ( mkdir %target_dir%\resources\s
 IF NOT EXIST %target_dir%\run ( mkdir %target_dir%\run )
 IF NOT EXIST %target_dir%\run\esmini ( mkdir %target_dir%\run\esmini )
 IF NOT EXIST %target_dir%\run\odrviewer ( mkdir %target_dir%\run\odrviewer )
+IF NOT EXIST %target_dir%\run\replayer ( mkdir %target_dir%\run\replayer )
 IF NOT EXIST %target_dir%\bin ( mkdir %target_dir%\bin )
 IF NOT EXIST %target_dir%\lib ( mkdir %target_dir%\lib )
+IF NOT EXIST %target_dir%\scripts ( mkdir %target_dir%\scripts )
 IF NOT EXIST %target_dir%\include ( mkdir %target_dir%\include )
 IF NOT EXIST %target_dir%\3rd_party_terms_and_licenses ( mkdir %target_dir%\3rd_party_terms_and_licenses )
 IF NOT EXIST %target_dir%\Hello-World_coding-example ( mkdir %target_dir%\Hello-World_coding-example )
@@ -104,6 +106,11 @@ copy run\esmini\run_synch_with_steady_state.bat %target_dir%\run\esmini /y
 copy run\odrviewer\run_e6mini.bat %target_dir%\run\odrviewer /y
 copy run\odrviewer\run_multi_intersections.bat %target_dir%\run\odrviewer /y
 
+copy run\replayer\run_and_plot_cut-in_speed.bat %target_dir%\run\replayer /y
+copy run\replayer\run_and_plot_ltap-od_pos.bat %target_dir%\run\replayer /y
+
+copy scripts\plot_csv.py %target_dir%\scripts /y
+
 copy docs\readme.txt %target_dir% /y
 copy docs\commands.txt %target_dir% /y
 
@@ -113,6 +120,8 @@ copy release_notes.md %target_dir% /y
 copy version.txt %target_dir% /y
 
 copy bin\esmini.exe %target_dir%\bin /y
+copy bin\replayer.exe %target_dir%\bin /y
+copy bin\dat2csv.exe %target_dir%\bin /y
 copy bin\esmini.exe %target_dir%\bin\EgoSimulator.exe /y
 copy bin\odrviewer.exe %target_dir%\bin /y
 copy bin\esminiLib.* %target_dir%\lib /y

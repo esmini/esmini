@@ -72,6 +72,7 @@ for:
           fi
           
           chmod -R +x ./run/*
+          chmod -R +x ./scripts/*
 
           ./generate_binary_dist.sh
 
@@ -118,6 +119,7 @@ for:
           fi
           
           chmod -R +x ./run/*
+          chmod -R +x ./scripts/*
 
           ./generate_binary_dist.sh
           

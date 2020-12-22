@@ -78,6 +78,8 @@ run/esmini/run_controller_test*.* \
 run/esmini/run_synch_with_steady_state*.* \
 run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
+run/replayer/run_and_plot_cut-in_speed*.* \
+run/replayer/run_and_plot_ltap-od_pos*.* \
 docs/readme.txt \
 docs/commands.txt \
 3rd_party_terms_and_licenses/* \
@@ -86,6 +88,9 @@ release_notes.md \
 version.txt \
 bin/esmini \
 bin/odrviewer \
+bin/replayer \
+bin/dat2csv \
+scripts/plot_csv.py \
 esmini-demo
 
 cp bin/esmini esmini-demo/bin/EgoSimulator
