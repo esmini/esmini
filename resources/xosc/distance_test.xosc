@@ -18,7 +18,7 @@
    </CatalogLocations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/straight_500m.xodr"/>
-      <SceneGraphFile filepath="../models/straight_500m.osgb"/>
+      <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">

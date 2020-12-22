@@ -192,6 +192,11 @@ void Global2LocalCoordinates(double xTargetGlobal, double yTargetGlobal,
 void NormalizeVec2D(double x, double y, double &xn, double &yn);
 
 /**
+  Find parallel line at specified offset (- means left, + right)
+*/
+void OffsetVec2D(double x0, double y0, double x1, double y1, double offset, double& xo0, double& yo0, double& xo1, double& y01);
+
+/**
   Change byte order - can be useful for IP communication with non Intel platforms
 */
 void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size);

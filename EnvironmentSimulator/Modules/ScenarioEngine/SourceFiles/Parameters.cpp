@@ -67,7 +67,6 @@ std::string Parameters::getParameter(OSCParameterDeclarations& parameterDeclarat
 	}
 	LOG("Failed to resolve parameter %s", name.c_str());
 	throw std::runtime_error("Failed to resolve parameter");
-	return 0;
 }
 
 OSCParameterDeclarations::ParameterStruct* Parameters::getParameterEntry(std::string name)

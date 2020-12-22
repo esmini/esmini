@@ -19,7 +19,7 @@
    </CatalogLocations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/curve_r100.xodr"/>
-      <SceneGraphFile filepath="../models/curve_r100.osgb"/>
+      <!-- <SceneGraphFile filepath="../models/curve_r100.osgb"/> -->
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">

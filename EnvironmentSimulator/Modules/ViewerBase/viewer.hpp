@@ -27,6 +27,7 @@
 #include "IdealSensor.hpp"
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
+#include "roadgeom.hpp"
 
 #define TRAIL_DOT_FADE_DURATION 3.0  // seconds
 #define TRAIL_DOTS_DT 0.5
@@ -301,6 +302,7 @@ namespace viewer
 		osg::ref_ptr<osg::Group> trails_;
 		roadmanager::OpenDrive *odrManager_;
 		bool showInfoText;
+		RoadGeom* roadGeom;
 
 		std::string exe_path_;
 		std::vector<KeyEventCallback> callback_;
@@ -333,7 +335,6 @@ namespace viewer
 		bool getKeyRight() { return keyRight_; }
 		void SetQuitRequest(bool value) { quit_request_ = value; }
 		bool GetQuitRequest() { return quit_request_;  }
-		std::string getScenarioDir() { return scenarioDir_; }
 		void SetInfoTextProjection(int width, int height);
 		void SetInfoText(const char* text);
 		void ShowInfoText(bool show);
@@ -350,8 +351,6 @@ namespace viewer
 		void RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data);
 
 	private:
-
-		std::string scenarioDir_;
 
 		bool CreateRoadLines(roadmanager::OpenDrive* od);
 		bool CreateRoadMarkLines(roadmanager::OpenDrive* od);

@@ -371,9 +371,9 @@ int main(int argc, char** argv)
 			}
 
 			// Visualize scenario cars
-			for (size_t i=0; i<scenarioEntity.size(); i++)
+			for (size_t j=0; j<scenarioEntity.size(); j++)
 			{
-				ScenarioEntity *c = &scenarioEntity[i];
+				ScenarioEntity *c = &scenarioEntity[j];
 				c->entityModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
 				c->entityModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
 			}

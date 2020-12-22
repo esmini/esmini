@@ -682,14 +682,17 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 
 	if(scenarioFilename != NULL)
 	{ 
-		scenarioDir_ = DirNameOf(scenarioFilename);
-		LOG("Scenario file directory, %s, is used as pivot for model relative file paths", getScenarioDir().c_str());
+		SE_Env::Inst().AddPath(DirNameOf(scenarioFilename));
 	}
-	else
+
+	if (odrManager != NULL)
 	{
-		// if scenario missing consider folder hosting the OpenDRIVE file to be the scenario directory
-		scenarioDir_ = DirNameOf(odrManager->GetOpenDriveFilename());
-		LOG("Scenario file missing, using OpenDRIVE directory, %s, as pivot for model relative file paths", getScenarioDir().c_str());
+		SE_Env::Inst().AddPath(DirNameOf(odrManager->GetOpenDriveFilename()));
+	}
+
+	if (modelFilename != NULL)
+	{
+		SE_Env::Inst().AddPath(DirNameOf(modelFilename));
 	}
 
 	lodScale_ = LOD_SCALE_DEFAULT;
@@ -703,6 +706,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
 	shadow_node_ = NULL;
 	environment_ = NULL;
+	roadGeom = NULL;
 
 	int aa_mode = DEFAULT_AA_MULTISAMPLES;  
 	if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
@@ -771,7 +775,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	// set the scene to render
 	rootnode_ = new osg::MatrixTransform;
 	
-
 #if 0
 	// Setup shadows
 	const int CastsShadowTraversalMask = 0x2;
@@ -792,6 +795,10 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 #endif
 
 	envTx_ = new osg::PositionAttitudeTransform;
+	envTx_->setPosition(osg::Vec3(0, 0, 0));
+	envTx_->setScale(osg::Vec3(1, 1, 1));
+	envTx_->setAttitude(osg::Quat(0, 0, 0, 1));
+	envTx_->setNodeMask(NodeMask::NODE_MASK_ENV_MODEL);
 	rootnode_->addChild(envTx_);
 
 	ClearNodeMaskBits(NodeMask::NODE_MASK_TRAILS); // hide trails per default
@@ -821,28 +828,12 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	exe_path_ = exe_path;
 
 	// add environment
-	if (modelFilename != 0)
+	if (modelFilename != 0 && strcmp(modelFilename, ""))
 	{
-		// Look relative scenario directory
-		const char* filename = 0;
-		if (scenarioFilename != 0)
-		{
-			filename = scenarioFilename;
-		}
-		else if (!odrManager->GetOpenDriveFilename().empty())
-		{
-			filename = odrManager->GetOpenDriveFilename().c_str();
-		}
-
 		std::vector<std::string> file_name_candidates;
+
 		// absolute path or relative to current directory
 		file_name_candidates.push_back(modelFilename);
-
-		if (filename != 0)
-		{
-			// relative path to scenario directory
-			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(filename), modelFilename));
-		}
 
 		// Remove all directories from path and look in current directory
 		file_name_candidates.push_back(FileNameOf(modelFilename));
@@ -870,12 +861,23 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 			LOG("Failed to read environment model %s!", modelFilename);
 		}
 	}
+
 	if (environment_ == 0)
 	{
-		// No environment model, i.e. visual model of the road network, loaded - 
-		// enforce visualization of OpenDRIVE features and OSI road lines
-		SetNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
-		SetNodeMaskBits(NodeMask::NODE_MASK_OSI_LINES);
+		if (odrManager->GetNumOfRoads() > 0)
+		{
+			// No visual model of the road network loaded 
+			// Generate a simplistic 3D model based on OpenDRIVE content
+			LOG("No scenegraph 3D model loaded. Generating a simplistic one...");
+
+			roadGeom = new RoadGeom(odrManager);
+			environment_ = roadGeom->root_;
+			envTx_->addChild(environment_);
+
+			// Since the generated 3D model is based on OSI features, let's hide those
+			ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
+			ClearNodeMaskBits(NodeMask::NODE_MASK_OSI_LINES);
+		}
 	}
 
 	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager))
@@ -900,7 +902,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	nodeTrackerManipulator_->setRotationMode(osgGA::NodeTrackerManipulator::ELEVATION_AZIM);
 	nodeTrackerManipulator_->setVerticalAxisFixed(true);
 
-	osg::ref_ptr<osgGA::TrackballManipulator> trackBallManipulator;
+	osg::ref_ptr<osgGA::TrackballManipulator> trackBallManipulator; 
 	trackBallManipulator = new osgGA::TrackballManipulator;
 	trackBallManipulator->setVerticalAxisFixed(true);
 
@@ -1045,14 +1047,12 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec3 trail_c
 
 	std::vector<std::string> file_name_candidates;
 	file_name_candidates.push_back(path);
-	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(getScenarioDir(), path));
-	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(getScenarioDir(), std::string("../models/" + path)));
-	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(roadmanager::Position::GetOpenDrive()->GetOpenDriveFilename()), path));
 	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", path));
 	// Finally check registered paths 
 	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 	{
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], path));
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], std::string("../models/" + path)));
 	}
 	for (size_t i = 0; i < file_name_candidates.size(); i++)
 	{
@@ -1702,11 +1702,6 @@ int Viewer::AddEnvironment(const char* filename)
 	{
 		LOG("AddEnvironment: No environment 3D model specified (%s) - go ahead without\n", filename);
 	}
-
-	envTx_->setPosition(osg::Vec3(0, 0, 0));
-	envTx_->setScale(osg::Vec3(1, 1, 1));
-	envTx_->setAttitude(osg::Quat(0, 0, 0, 1));
-	envTx_->setNodeMask(NodeMask::NODE_MASK_ENV_MODEL);
 
 	return 0;
 }

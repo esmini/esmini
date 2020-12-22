@@ -9,11 +9,13 @@ include_directories (
 
 set ( SOURCES
   viewer.cpp
+  roadgeom.cpp
   RubberbandManipulator.cpp
 )
 
 set ( INCLUDES
   viewer.hpp
+  roadgeom.hpp
   RubberbandManipulator.hpp
 )
 

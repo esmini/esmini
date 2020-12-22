@@ -159,10 +159,10 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 	return 0;
 }
 
-void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double deltaSimTime)
+void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 {
-	double speed = car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor;
-	double ds = speed * deltaSimTime; // right lane is < 0 in road dir;
+	double new_speed = car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor;
+	double ds = new_speed * dt; // right lane is < 0 in road dir;
 
 	if (car->pos->MoveAlongS(ds) != 0)
 	{

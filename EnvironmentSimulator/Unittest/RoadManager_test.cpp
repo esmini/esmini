@@ -49,7 +49,7 @@ TEST_F(PolynomialTestFixture, TestConstructorEmpty)
 
 TEST_F(PolynomialTestFixture, TestConstructorArgument)
 {
-    Polynomial polynomial = Polynomial(1,-2,3,-4);
+    polynomial = Polynomial(1,-2,3,-4);
     ASSERT_EQ(1, polynomial.GetA());
     ASSERT_EQ(-2, polynomial.GetB());
     ASSERT_EQ(3, polynomial.GetC());
@@ -59,7 +59,7 @@ TEST_F(PolynomialTestFixture, TestConstructorArgument)
 
 TEST_F(PolynomialTestFixture, TestConstructorArgumentPscale)
 {
-    Polynomial polynomial = Polynomial(1,-2,3,-4,2);
+    polynomial = Polynomial(1,-2,3,-4,2);
     ASSERT_EQ(1, polynomial.GetA());
     ASSERT_EQ(-2, polynomial.GetB());
     ASSERT_EQ(3, polynomial.GetC());

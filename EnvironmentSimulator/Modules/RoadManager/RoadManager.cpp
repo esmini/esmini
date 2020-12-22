@@ -69,6 +69,7 @@ using namespace roadmanager;
 #define OSI_LANE_CALC_REQUIREMENT 0.05 // [m]
 #define OSI_POINT_CALC_STEPSIZE 1 // [m]
 #define OSI_TANGENT_LINE_TOLERANCE 0.01 // [m]
+#define OSI_MAX_ROAD_SEGMENT_LENGTH 200 // [m]
 
 int g_Lane_id;
 int g_Laneb_id;
@@ -1167,7 +1168,7 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s)
 	LaneRoadMark *lane_roadMark;
 	LaneRoadMarkType *lane_roadMarkType;
 	LaneRoadMarkTypeLine *lane_roadMarkTypeLine;
-	RoadMarkInfo rm_info;
+	RoadMarkInfo rm_info = {-1, -1};
 	int lsec_idx, number_of_lsec, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
 	double s_roadmark, s_roadmarkline, s_end_roadmark, s_end_roadmarkline = 0, lsec_end = 0;
 	if (road == 0)
@@ -1207,12 +1208,7 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s)
 
 	number_of_roadmarks = lane->GetNumberOfRoadMarks();
 
-	if (number_of_roadmarks == 0)
-	{
-		rm_info.roadmark_idx_ = -1;
-		rm_info.roadmarkline_idx_ = -1;
-	}
-	else
+	if (number_of_roadmarks > 0)
 	{
 		for (int m=0; m<number_of_roadmarks; m++)
 		{
@@ -3856,7 +3852,7 @@ void OpenDrive::SetLaneOSIPoints()
 					// If requirement is not satisfied:
 						// Assign last unique satisfied point as OSI point
 						// Continue searching from the last satisfied point
-					if (osi_requirement)
+					if (osi_requirement && s1 - s0 < OSI_MAX_ROAD_SEGMENT_LENGTH)
 					{
 						s1_prev = s1;
 						s1 = s1 + OSI_POINT_CALC_STEPSIZE;
@@ -4024,7 +4020,7 @@ void OpenDrive::SetLaneBoundaryPoints()
 						// If requirement is not satisfied:
 						// Assign last satisfied point as OSI point
 						// Continue searching from the last satisfied point
-						if (osi_requirement)
+						if (osi_requirement && s1 - s0 < OSI_MAX_ROAD_SEGMENT_LENGTH)
 						{
 							s1_prev = s1;
 							s1 = s1 + OSI_POINT_CALC_STEPSIZE;
@@ -4244,7 +4240,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 											// If requirement is not satisfied:
 												// Assign last satisfied point as OSI point
 												// Continue searching from the last satisfied point
-											if (osi_requirement)
+											if (osi_requirement && s1 - s0 < OSI_MAX_ROAD_SEGMENT_LENGTH)
 											{
 												s1_prev = s1;
 												s1 = s1 + OSI_POINT_CALC_STEPSIZE;

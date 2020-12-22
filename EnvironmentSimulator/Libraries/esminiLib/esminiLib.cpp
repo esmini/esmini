@@ -27,8 +27,8 @@ using namespace scenarioengine;
 
 static ScenarioPlayer *player = 0;
 
-static char **argv = 0;
-static int argc = 0;
+static char **argv_ = 0;
+static int argc_ = 0;
 static std::vector<std::string> args_v;
 static std::string returnString;  // use this for returning strings
 
@@ -53,15 +53,15 @@ static void resetScenario(void)
 		delete player;
 		player = 0;
 	}
-	if (argv)
+	if (argv_)
 	{
-		for (int i = 0; i < argc; i++)
+		for (int i = 0; i < argc_; i++)
 		{
-			free(argv[i]);
+			free(argv_[i]);
 		}
-		free(argv);
-		argv = 0;
-		argc = 0;
+		free(argv_);
+		argv_ = 0;
+		argc_ = 0;
 	}
 	args_v.clear();
 	returnString = "";
@@ -88,14 +88,14 @@ static void AddArgument(const char *str, bool split=true)
 
 static void ConvertArguments()
 {
-	argc = (int)args_v.size();
-	argv = (char**)malloc(argc * sizeof(char*));
+	argc_ = (int)args_v.size();
+	argv_ = (char**)malloc(argc_ * sizeof(char*));
 	std::string argument_list;
-	for (int i = 0; i < argc; i++)
+	for (int i = 0; i < argc_; i++)
 	{
-		argv[i] = (char*)malloc((args_v[i].size() + 1) * sizeof(char));
-		strcpy(argv[i], args_v[i].c_str());
-		argument_list += std::string(" ") + argv[i];
+		argv_[i] = (char*)malloc((args_v[i].size() + 1) * sizeof(char));
+		strcpy(argv_[i], args_v[i].c_str());
+		argument_list += std::string(" ") + argv_[i];
 	}
 	LOG("Player arguments: %s", argument_list.c_str());
 }
@@ -267,7 +267,7 @@ static int InitScenario()
 	try
 	{
 		// Initialize the scenario engine and viewer
-		player = new ScenarioPlayer(argc, argv);
+		player = new ScenarioPlayer(argc_, argv_);
 	}
 	catch (const std::exception& e)
 	{
@@ -450,6 +450,7 @@ extern "C"
 		{
 			return (void*)player->GetODRManager();
 		}
+		return NULL;
 	}
 
 	SE_DLL_API void SE_Close()
@@ -613,9 +614,9 @@ extern "C"
 	{
 		if (player && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
 		{
-			SE_ScenarioObjectState state;
 			return player->scenarioGateway->getObjectStatePtrByIdx(index)->state_.name;
 		}
+		return "";
 	}
 
 	SE_DLL_API const char* SE_GetOSIGroundTruth(int* size)

@@ -20,7 +20,7 @@
    </CatalogLocations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/jolengatan.xodr"/>
-      <SceneGraphFile filepath="../models/jolengatan.osgb"/>
+      <!-- <SceneGraphFile filepath="../models/jolengatan.osgb"/> -->
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
