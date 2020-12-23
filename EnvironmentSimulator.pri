@@ -1,56 +1,57 @@
 # This file can be included in Qt projects to use the components of esmini.
 
 HEADERS += \ 
-    $$PWD/EnvironmentSimulator/CommonMini/CommonMini.hpp \
-    $$PWD/EnvironmentSimulator/RoadManager/odrSpiral.h \
-    $$PWD/EnvironmentSimulator/RoadManager/RoadManager.hpp \
+    $$PWD/EnvironmentSimulator/Modules/CommonMini/CommonMini.hpp \
+    $$PWD/EnvironmentSimulator/Modules/RoadManager/odrSpiral.h \
+    $$PWD/EnvironmentSimulator/Modules/RoadManager/RoadManager.hpp \
     $$PWD/externals/pugixml/pugiconfig.hpp \
     $$PWD/externals/pugixml/pugixml.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/Catalogs.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/Entities.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/Init.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/RoadNetwork.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/ScenarioEngine.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/ScenarioGateway.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/ScenarioReader.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/Story.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCAction.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCCommon.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCCondition.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCConditionGroup.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCDirectory.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCFile.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCGlobalAction.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCManeuver.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCParameterDeclaration.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCPrivateAction.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCProperties.hpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCPosition.hpp \
-    $$PWD/EnvironmentSimulator/Replayer/Replay.hpp
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/Catalogs.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/Entities.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/Init.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/RoadNetwork.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioEngine.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioGateway.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioReader.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/Story.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCAction.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCCommon.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCCondition.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCConditionGroup.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCDirectory.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCFile.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCGlobalAction.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCManeuver.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCParameterDeclaration.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCPrivateAction.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCProperties.hpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCPosition.hpp \
+    $$PWD/EnvironmentSimulator/Applications/replayer/Replay.hpp
 
 SOURCES += \ 
-    $$PWD/EnvironmentSimulator/CommonMini/CommonMini.cpp \
-    $$PWD/EnvironmentSimulator/RoadManager/odrSpiral.cpp \
-    $$PWD/EnvironmentSimulator/RoadManager/RoadManager.cpp \
+    $$PWD/EnvironmentSimulator/Modules/CommonMini/CommonMini.cpp \
+    $$PWD/EnvironmentSimulator/Modules/RoadManager/odrSpiral.cpp \
+    $$PWD/EnvironmentSimulator/Modules/RoadManager/RoadManager.cpp \
     $$PWD/externals/pugixml/pugixml.cpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/RoadNetwork.cpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/ScenarioEngine.cpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/ScenarioGateway.cpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/ScenarioReader.cpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles/Story.cpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCAction.cpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCCondition.cpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCManeuver.cpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCPrivateAction.cpp \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs/OSCPosition.cpp \
-    $$PWD/EnvironmentSimulator/Replayer/Replay.cpp
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/RoadNetwork.cpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioEngine.cpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioGateway.cpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioReader.cpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/Story.cpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCAction.cpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCCondition.cpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCManeuver.cpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCPrivateAction.cpp \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs/OSCPosition.cpp \
+    $$PWD/EnvironmentSimulator/Applications/replayer/Replay.cpp
 
 RESOURCES += 
 
 INCLUDEPATH += \
     $$PWD/externals/pugixml \
-    $$PWD/EnvironmentSimulator/CommonMini \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/SourceFiles \
-    $$PWD/EnvironmentSimulator/ScenarioEngine/OSCTypeDefs \
-    $$PWD/EnvironmentSimulator/RoadManager \
-    $$PWD/EnvironmentSimulator/Replayer
+    $$PWD/EnvironmentSimulator/Modules/CommonMini \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles \
+    $$PWD/EnvironmentSimulator/Modules/ScenarioEngine/OSCTypeDefs \
+    $$PWD/EnvironmentSimulator/Modules/RoadManager \
+    $$PWD/EnvironmentSimulator/Modules/Controllers \
+    $$PWD/EnvironmentSimulator/Applications/replayer
