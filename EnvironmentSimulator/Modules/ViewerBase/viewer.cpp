@@ -455,6 +455,7 @@ void TrailDot::Reset(float time, double x, double y, double z, double heading)
 
 void Trail::AddDot(float time, double x, double y, double z, double heading)
 {
+	return;
 	if (n_dots_ < TRAIL_MAX_DOTS)
 	{
 		dot_[current_] = new TrailDot(time, x, y, z, heading, viewer_, parent_, dot_node_, color_);
@@ -947,7 +948,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	// add the state manipulator
 	osgViewer_->addEventHandler(new osgGA::StateSetManipulator(osgViewer_->getCamera()->getOrCreateStateSet()));
 
-#if 1
+#if 0
 	// add the thread model handler
 	osgViewer_->addEventHandler(new osgViewer::ThreadingHandler);
 #else

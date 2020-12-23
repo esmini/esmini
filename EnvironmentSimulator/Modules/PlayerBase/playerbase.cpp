@@ -481,8 +481,8 @@ int ScenarioPlayer::InitViewer()
 		}
 
 		// Connect callback for setting transparency
-		viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(viewer_->entities_.back()->txNode_, obj, viewer_->entities_.back());
-		viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
+		//viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(viewer_->entities_.back()->txNode_, obj, viewer_->entities_.back());
+		//viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
 
 		if (viewer_->entities_.back()->GetType() == viewer::EntityModel::ENTITY_TYPE_VEHICLE)
 		{
