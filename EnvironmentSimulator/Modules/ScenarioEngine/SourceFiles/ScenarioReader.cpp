@@ -81,12 +81,28 @@ int ScenarioReader::loadOSCFile(const char * path)
 	return 0;
 }
 
-void ScenarioReader::loadOSCMem(const pugi::xml_document &xml_doc)
+int ScenarioReader::loadOSCMem(const pugi::xml_document &xml_doc)
 {
 	LOG("Loading XML document from memory");
 
 	doc_.reset(xml_doc);
+
+	osc_root_ = doc_.child("OpenSCENARIO");
+	if (!osc_root_)
+	{
+		// Another try
+		osc_root_ = doc_.child("OpenScenario");
+	}
+
+	if (!osc_root_)
+	{
+		LOG("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
+		throw std::runtime_error("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
+	}
+
 	oscFilename_ = "inline";
+
+	return 0;
 }
 
 int ScenarioReader::RegisterCatalogDirectory(pugi::xml_node catalogDirChild)

@@ -19,6 +19,7 @@
 #include "IdealSensor.hpp"
 #include "osi_sensordata.pb.h"
 #include "vehicle.hpp"
+#include "pugixml.hpp"
 
 using namespace scenarioengine;
 
@@ -303,6 +304,47 @@ extern "C"
 		return InitScenario();
 	}
 
+	SE_DLL_API int SE_InitWithString(const char* oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record)
+	{
+#ifndef _SCENARIO_VIEWER
+		if (use_viewer)
+		{
+			LOG("use_viewer flag set, but no viewer available (compiled without -D _SCENARIO_VIEWER");
+		}
+#endif
+		resetScenario();
+
+		AddArgument("viewer");  // name of application
+		AddArgument("--osc_str");
+		AddArgument(oscAsXMLString, false);
+
+		if (record)
+		{
+			AddArgument("--record");
+			AddArgument("simulation.dat", false);
+		}
+		if (use_viewer)
+		{
+			AddArgument("--window 50 50 800 400", true);
+		}
+		else
+		{
+			AddArgument("--headless");
+		}
+
+		if (threads)
+		{
+			AddArgument("--threads");
+		}
+
+		if (disable_ctrls)
+		{
+			AddArgument("--disable_controllers");
+		}
+
+		return InitScenario();		
+	}
+
 	SE_DLL_API int SE_Init(const char *oscFilename, int disable_ctrls, int use_viewer, int threads, int record)
 	{
 #ifndef _SCENARIO_VIEWER
@@ -400,6 +442,14 @@ extern "C"
 		}
 
 		return -1;
+	}
+
+	SE_DLL_API void* SE_GetODRManager()
+	{
+		if (player)
+		{
+			return (void*)player->GetODRManager();
+		}
 	}
 
 	SE_DLL_API void SE_Close()
@@ -551,12 +601,21 @@ extern "C"
 
 	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState *state)
 	{
-		if (player)
+		if (player && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
 		{
 			copyStateFromScenarioGateway(state, &player->scenarioGateway->getObjectStatePtrByIdx(index)->state_);
 		}
 
 		return 0;
+	}
+
+	SE_DLL_API const char* SE_GetObjectName(int index)
+	{
+		if (player && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
+		{
+			SE_ScenarioObjectState state;
+			return player->scenarioGateway->getObjectStatePtrByIdx(index)->state_.name;
+		}
 	}
 
 	SE_DLL_API const char* SE_GetOSIGroundTruth(int* size)

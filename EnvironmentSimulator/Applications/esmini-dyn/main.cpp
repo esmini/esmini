@@ -24,8 +24,12 @@
 #include "stdio.h"
 #include "esminiLib.hpp"
 #include "CommonMini.hpp"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 
-#define DEMONSTRATE_SENSORS 1
+#define DEMONSTRATE_SENSORS 0
 #define DEMONSTRATE_PARAMETER 0
 #define DEMONSTRATE_DRIVER_MODEL 0
 #define DEMONSTRATE_OSI 0
@@ -102,11 +106,27 @@ int main(int argc, char *argv[])
 
 		if (filename)
 		{
+#if 0
 			if (SE_Init(filename, 0, 1, DEMONSTRATE_THREAD, 0) != 0)
 			{
 				printf("Failed to load %s", filename);
 				break;
 			}
+#else
+			std::ifstream f(filename); // taking file as inputstream
+			std::string str;
+			if (f) {
+				std::ostringstream ss;
+				ss << f.rdbuf(); // reading data
+				str = ss.str();
+			}
+			std::cout << str;
+			if (SE_InitWithString(str.c_str(), 1, 1, 0, 0) != 0)
+			{
+				printf("Failed to load %s", filename);
+				break;
+			}
+#endif
 		}
 		else
 		{

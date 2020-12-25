@@ -120,14 +120,47 @@ Note that it does not seem to work with Anti-Alias filtering. Therefore make sur
 ### Scenario editor
 [RControlStation scenario editor](https://github.com/vedderb/rise_sdvp). An embryo to an OpenSCENARIO editor, part of Self-Driving Model Vehicle Platform (SDVP).
 
-Instruction:
-1. git clone https://github.com/vedderb/rise_sdvp
-1. cd rise_sdvp/Linux/RControlStation
-1. git clone https://github.com/esmini/esmini esmini
-1. Edit RControlStation.pro and uncomment the line: #DEFINES += HAS_SIM_SCEN
-1. Build the project. The editor is the last tab in RControlStation.
-
 The implementation is very limited at this point, but some things can be edited and the scenario can be executed and observed from above, as well as exported to the other tools. You have to start by importing one of the existing scenarios into the editor, as it cannot make a scenario from scratch.
+
+Instruction:
+
+* Build esmini:
+```
+git clone https://github.com/vedderb/rise_sdvp
+cd rise_sdvp/Linux/RControlStation
+git clone https://github.com/esmini/esmini
+cd esmini
+mkdir build
+cd build
+cmake ../ -DUSE_OSG=true -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config Release --target install
+cd ../../
+```
+* Edit RControlStation.pro and uncomment the line: #DEFINES += HAS_SIM_SCEN
+* Build and run RControlCenter:
+```
+./build_lin
+export LD_LIBRARY_PATH=esmini/bin
+./build/lin/RControlStation
+```
+The editor is the last tab in RControlStation.
+
+**Note:** The OpenSCENARIO XML is handed over to esmini as a string. Hence relative search path to OpenDRIVE and SceneGraph is lost. So the paths might need to be updated. Try the following pattern:
+
+Change from:
+```
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/e6mini.xodr"/>
+      <SceneGraphFile filepath="../models/e6mini.osgb"/>
+   </RoadNetwork>
+```
+To:
+```
+   <RoadNetwork>
+      <LogicFile filepath="esmini/resources/xodr/e6mini.xodr"/>
+      <SceneGraphFile filepath="esmini/resources/models/e6mini.osgb"/>
+   </RoadNetwork>
+```
 
 ### Carla Simulator
 [Carla](http://carla.org/) is an [Unreal](https://www.unrealengine.com/) based open source simulator worth to check out.

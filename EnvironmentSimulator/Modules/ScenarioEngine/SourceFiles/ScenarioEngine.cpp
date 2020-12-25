@@ -54,7 +54,12 @@ void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, bool disabl
 	disable_controllers_ = disable_controllers;
 	headstart_time_ = 0;
 	simulationTime_ = 0;
-	scenarioReader->loadOSCMem(xml_doc);
+	initialized_ = false;
+	scenarioReader = new ScenarioReader(&entities, &catalogs, disable_controllers);
+	if (scenarioReader->loadOSCMem(xml_doc) != 0)
+	{
+		throw std::invalid_argument("Failed to load OpenSCENARIO from XML string");
+	}
 	parseScenario();
 }
 

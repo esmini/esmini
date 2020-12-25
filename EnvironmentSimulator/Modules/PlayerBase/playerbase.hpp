@@ -77,6 +77,7 @@ public:
 	void UpdateCSV_Log();
 	int SetParameterValue(const char* name, const void* value);
 	int GetParameterValue(const char* name, void* value);
+	roadmanager::OpenDrive *GetODRManager() { return odr_manager; }
 
 	CSV_Logger *CSV_Log;
 	ScenarioEngine *scenarioEngine;

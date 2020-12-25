@@ -612,6 +612,7 @@ int ScenarioPlayer::Init()
 
 	// use an ArgumentParser object to manage the program arguments.
 	opt.AddOption("osc", "OpenSCENARIO filename - if path includes spaces, enclose with \"\" ", "filename");
+	opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
 	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
@@ -680,14 +681,31 @@ int ScenarioPlayer::Init()
 	// Create scenario engine
 	try
 	{
-		if ((arg_str = opt.GetOptionArg("osc")) == "")
+		if ((arg_str = opt.GetOptionArg("osc")) != "")
 		{
-			LOG("Missing OpenSCENARIO filename argument");
+			scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
+			Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
+		}
+		else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
+		{
+			// parse XML string as document
+			pugi::xml_document doc;
+			std::string xml_str(arg_str);
+			if (!doc.load_buffer(xml_str.c_str(), xml_str.length()))
+			{
+				return -1;
+			}
+			scenarioEngine = new ScenarioEngine(doc, disable_controllers_);
+			Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
+		}
+		else
+		{
+			LOG("Missing OpenSCENARIO filename argument or XML string");
 			opt.PrintUsage();
 			return -1;
 		}
-		scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
-		Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
+		
+		
 	}
 	catch (std::logic_error &e)
 	{

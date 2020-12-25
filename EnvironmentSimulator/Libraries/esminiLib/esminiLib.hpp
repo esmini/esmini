@@ -121,6 +121,17 @@ extern "C"
 
 	/**
 	Initialize the scenario engine
+	@param oscAsXMLString OpenSCENARIO XML as string
+	@param disable_ctrls 1=Any controller will be disabled 0=Controllers applied according to OSC file
+	@param use_viewer 0=no viewer, 1=use viewer
+	@param threads 0=single thread, 1=viewer in a separate thread, parallel to scenario engine
+	@param record Create recording for later playback 0=no recording 1=recording
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_InitWithString(const char* oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record);
+
+	/**
+	Initialize the scenario engine
 	@param oscFilename Path to the OpenSCEANRIO file
 	@param argc Number of arguments
 	@param argv Arguments
@@ -181,6 +192,9 @@ extern "C"
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_GetParameter(SE_Parameter* parameter);
+
+	SE_DLL_API void* SE_GetODRManager();
+
 
 	/**
 	Report object position in cartesian coordinates
@@ -248,6 +262,13 @@ extern "C"
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState* state);
+
+	/**
+	Get the name of specified object
+	@param index Index of the object. Note: not ID
+	@return Name
+	*/
+	SE_DLL_API const char* SE_GetObjectName(int index);
 
 	/**
 	Check whether an object has a ghost (special purpose lead vehicle) 

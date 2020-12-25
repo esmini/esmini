@@ -79,7 +79,7 @@ namespace scenarioengine
 			objectCnt_(0), entities_(entities), catalogs_(catalogs), disable_controllers_(disable_controllers) {}
 		~ScenarioReader();
 		int loadOSCFile(const char * path);
-		void loadOSCMem(const pugi::xml_document &xml_doch);
+		int loadOSCMem(const pugi::xml_document &xml_doch);
 		void SetGateway(ScenarioGateway* gateway) { gateway_ = gateway; }
 		int RegisterCatalogDirectory(pugi::xml_node catalogDirChild);
 
