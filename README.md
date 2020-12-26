@@ -124,9 +124,15 @@ The implementation is very limited at this point, but some things can be edited 
 
 Instruction:
 
+* Get RControlStation source code
+
+```
+git clone https://github.com/eknabevcc/rise_sdvp.git
+```
+Note: This link will be changed into https://github.com/vedderb/rise_sdvp when/if necessary pull request has been accepted 
+
 * Build esmini:
 ```
-git clone https://github.com/vedderb/rise_sdvp
 cd rise_sdvp/Linux/RControlStation
 git clone https://github.com/esmini/esmini
 cd esmini
