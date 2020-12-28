@@ -16,6 +16,8 @@ Options:
       Stop playing at timestamp (set equal to time_start for single frame)
   --repeat
       loop scenario
+  --road_features
+      Show OpenDRIVE road features
   --view_mode <view_mode>
       Entity visualization: "model"(default)/"boundingbox"/"both"
   --no_ghost
