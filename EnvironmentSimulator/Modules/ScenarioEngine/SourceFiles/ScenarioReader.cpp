@@ -141,34 +141,33 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 
 	// Not found, try to locate it in one the registered catalog directories
 	pugi::xml_document catalog_doc;
-	size_t i;
-	for (i = 0; i < catalogs_->catalog_dirs_.size(); i++)
+	pugi::xml_parse_result result;
+	std::vector<std::string> file_name_candidates;
+	for (size_t i = 0; i < catalogs_->catalog_dirs_.size() && !result; i++)
 	{
-		// First assume absolute path or relative current directory
-		std::string file_path = catalogs_->catalog_dirs_[i].dir_name_ + "/" + name + ".xosc";
-
-		// Load it
-		pugi::xml_parse_result result;
-
-		if (!FileExists(file_path.c_str()) || !(result = catalog_doc.load_file(file_path.c_str())))
+		file_name_candidates.clear();
+		// absolute path or relative to current directory
+		file_name_candidates.push_back(catalogs_->catalog_dirs_[i].dir_name_ + "/" + name + ".xosc");
+		// Then assume relative path to scenario directory - which perhaps should be the expected location
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), catalogs_->catalog_dirs_[i].dir_name_) + "/" + name + ".xosc");
+		// Check registered paths 
+		for (size_t j = 0; j < SE_Env::Inst().GetPaths().size(); j++)
 		{
-			// Then assume relative path to scenario directory - which perhaps should be the expected location
-			std::string file_path = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), catalogs_->catalog_dirs_[i].dir_name_) + "/" + name + ".xosc";
-
-			// Load it
-			result = catalog_doc.load_file(file_path.c_str());
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[j], catalogs_->catalog_dirs_[i].dir_name_ + "/" + name + ".xosc"));
 		}
-
-		if (result)
+		for (size_t j = 0; j < file_name_candidates.size() && !result; j++)
 		{
-			break;
+			if (FileExists(file_name_candidates[j].c_str()))
+			{
+				// Load it
+				result = catalog_doc.load_file(file_name_candidates[j].c_str());
+			}
 		}
 	}
-
-	if (i == catalogs_->catalog_dirs_.size())
+	if (!result)
 	{
-		LOG("Couldn't locate catalog file %s make sure it is located in one of the catalog directories listed in the scenario file", name.c_str());
-		return 0;
+		LOG("Catalog load failure: %s", result.description());
+		throw std::runtime_error(std::string("Couldn't locate catalog file: " + name + ", make sure it is located in one of the catalog directories listed in the scenario file").c_str());
 	}
 
 	LOG("Loading catalog %s", name.c_str());
