@@ -127,9 +127,8 @@ Instruction:
 * Get RControlStation source code
 
 ```
-git clone https://github.com/eknabevcc/rise_sdvp.git
+git clone https://github.com/vedderb/rise_sdvp
 ```
-Note: This link will be changed into https://github.com/vedderb/rise_sdvp when/if necessary pull request has been accepted 
 
 * Build esmini:
 ```
@@ -150,23 +149,6 @@ export LD_LIBRARY_PATH=esmini/bin
 ./build/lin/RControlStation
 ```
 The editor is the last tab in RControlStation.
-
-**Note:** The OpenSCENARIO XML is handed over to esmini as a string. Hence relative search path to OpenDRIVE and SceneGraph is lost. So the paths might need to be updated. Try the following pattern:
-
-Change from:
-```
-   <RoadNetwork>
-      <LogicFile filepath="../xodr/e6mini.xodr"/>
-      <SceneGraphFile filepath="../models/e6mini.osgb"/>
-   </RoadNetwork>
-```
-To:
-```
-   <RoadNetwork>
-      <LogicFile filepath="esmini/resources/xodr/e6mini.xodr"/>
-      <SceneGraphFile filepath="esmini/resources/models/e6mini.osgb"/>
-   </RoadNetwork>
-```
 
 ### Carla Simulator
 [Carla](http://carla.org/) is an [Unreal](https://www.unrealengine.com/) based open source simulator worth to check out.
