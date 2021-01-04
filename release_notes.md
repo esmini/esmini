@@ -1,5 +1,9 @@
 ## esmini release notes
 
+### 2021-01-04 Version 2.0.15
+- Updates to get RControlStation integration back on feet
+- Some additional minor fixes
+
 ### 2020-12-22 Version 2.0.14
 - Fix OSI output to support all OpenSCENARIO vehicle types
 - Option to specify custom OSI tracefile filename and path
