@@ -248,7 +248,9 @@ else() #not UNIX
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D NOMINMAX ")
 
   if ((MSVC) AND (MSVC_VERSION GREATER_EQUAL 1910))
-    add_compile_options(/permissive-)
+    # suppress warning 4127 (conditional expression is constant) to avoid harmless warning from Google protobuf header
+    # suppress warning 4100 (unreferenced formal parameter) to allow function headers with unreferenced parameters for increased readability
+    add_compile_options(/permissive- /W4 /wd4127 /wd4100)
   endif ()
   
   set ( OSG_LIBRARIES 

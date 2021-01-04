@@ -1140,28 +1140,28 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 			}
 			else if (routeChild.name() == std::string("InRoutePosition"))
 			{
-				for (pugi::xml_node positionChild = routeChild.first_child(); positionChild; positionChild = positionChild.next_sibling())
+				for (pugi::xml_node rPositionChild = routeChild.first_child(); rPositionChild; rPositionChild = rPositionChild.next_sibling())
 				{
-					std::string positionChildName(positionChild.name());
+					std::string rPositionChildName(rPositionChild.name());
 
-					if (positionChildName == "FromCurrentEntity")
+					if (rPositionChildName == "FromCurrentEntity")
 					{
-						LOG("%s is not implemented", positionChildName.c_str());
+						LOG("%s is not implemented", rPositionChildName.c_str());
 					}
-					else if (positionChildName == "FromRoadCoordinates")
+					else if (rPositionChildName == "FromRoadCoordinates")
 					{
-						LOG("%s is not implemented", positionChildName.c_str());
+						LOG("%s is not implemented", rPositionChildName.c_str());
 					}
-					else if (positionChildName == "FromLaneCoordinates")
+					else if (rPositionChildName == "FromLaneCoordinates")
 					{
-						double s = strtod(parameters.ReadAttribute(positionChild, "pathS"));
-						int lane_id = strtoi(parameters.ReadAttribute(positionChild, "laneId"));
+						double s = strtod(parameters.ReadAttribute(rPositionChild, "pathS"));
+						int lane_id = strtoi(parameters.ReadAttribute(rPositionChild, "laneId"));
 						double lane_offset = 0;
 
-						pugi::xml_attribute laneOffsetAttribute = positionChild.attribute("laneOffset");
+						pugi::xml_attribute laneOffsetAttribute = rPositionChild.attribute("laneOffset");
 						if (laneOffsetAttribute != NULL)
 						{
-							lane_offset = strtod(parameters.ReadAttribute(positionChild, "laneOffset"));
+							lane_offset = strtod(parameters.ReadAttribute(rPositionChild, "laneOffset"));
 						}
 						if (orientation)
 						{
@@ -1595,7 +1595,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				}
 				else
 				{
-					pugi::xml_node target_speed_element = target_speed_node.child("RelativeSpeedToMaster");
+					target_speed_element = target_speed_node.child("RelativeSpeedToMaster");
 
 					if (target_speed_element != NULL)
 					{
@@ -2603,9 +2603,9 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 				{
 					for (pugi::xml_node actionChild = eventChild.first_child(); actionChild; actionChild = actionChild.next_sibling())
 					{
-						std::string childName(actionChild.name());
+						std::string actionChildName(actionChild.name());
 
-						if (childName == "GlobalAction")
+						if (actionChildName == "GlobalAction")
 						{
 							LOG("Parsing global action %s", parameters.ReadAttribute(eventChild, "name").c_str());
 							OSCGlobalAction *action = parseOSCGlobalAction(actionChild);
@@ -2614,11 +2614,11 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 								event->action_.push_back((OSCAction*)action);
 							}
 						}
-						else if (childName == "UserDefinedAction")
+						else if (actionChildName == "UserDefinedAction")
 						{
 							LOG("%s is not implemented", childName.c_str());
 						}
-						else if (childName == "PrivateAction")
+						else if (actionChildName == "PrivateAction")
 						{
 							for (size_t i = 0; i < mGroup->actor_.size(); i++)
 							{
@@ -2696,9 +2696,9 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 					for (pugi::xml_node actChild = storyChild.first_child(); actChild; actChild = actChild.next_sibling())
 					{
 
-						std::string childName(actChild.name());
+						std::string actChildName(actChild.name());
 
-						if (childName == "ManeuverGroup")
+						if (actChildName == "ManeuverGroup")
 						{
 							ManeuverGroup *mGroup = new ManeuverGroup;
 
@@ -2774,11 +2774,11 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 
 							act->maneuverGroup_.push_back(mGroup);
 						}
-						else if (childName == "StartTrigger")
+						else if (actChildName == "StartTrigger")
 						{
 							act->start_trigger_ = parseTrigger(actChild);
 						}
-						else if (childName == "StopTrigger")
+						else if (actChildName == "StopTrigger")
 						{
 							act->stop_trigger_ = parseTrigger(actChild);
 						}

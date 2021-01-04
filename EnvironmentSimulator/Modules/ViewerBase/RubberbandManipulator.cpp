@@ -92,7 +92,7 @@ void RubberbandManipulator::calculateCameraDistance()
 	_cameraDistance = MAX((maxV.x() - minV.x() + maxV.y() - minV.y())/2, orbitCameraDistance);
 }
 
-void RubberbandManipulator::init(const GUIEventAdapter& ,GUIActionAdapter& us)
+void RubberbandManipulator::init(const GUIEventAdapter&, GUIActionAdapter& us)
 {
 	calcMovement(0, true);
 }

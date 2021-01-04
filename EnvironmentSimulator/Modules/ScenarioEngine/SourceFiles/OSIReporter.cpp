@@ -299,7 +299,7 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 		// send over udp - skip size (package size == message size)
 		int sendResult = sendto(sendSocket, (char*)osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
 
-		if (sendResult != osiGroundTruth.size)
+		if (sendResult != (int)osiGroundTruth.size)
 		{
 			LOG("Failed send osi package over UDP");
 #ifdef _WIN32
@@ -318,6 +318,7 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 
 int OSIReporter::UpdateOSIHostVehicleData(ObjectState* objectState)
 {
+	(void)objectState;  // avoid compiler warning
 	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_x(objectState->state_.pos.GetX());
 	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_y(objectState->state_.pos.GetY());
 	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_position()->set_z(objectState->state_.pos.GetZ());

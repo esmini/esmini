@@ -410,7 +410,6 @@ void TrigBySimulationTime::Log()
 
 bool TrigByParameter::CheckCondition(StoryBoard* storyBoard, double sim_time)
 {
-	(void)storyBoard;
 	bool result = false;
 	current_value_str_ = "";
 
@@ -600,7 +599,7 @@ bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time
 	triggered_by_entities_.clear();
 	bool result = false;
 	double x, y;
-	double dist_ = 0;
+	dist_ = 0;
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{

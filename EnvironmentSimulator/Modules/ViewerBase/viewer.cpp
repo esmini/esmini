@@ -328,7 +328,7 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
 
 }
 
-void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor* nv)
+void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor*)
 {
 	osg::Material* material = static_cast<osg::Material*>(sa);
 	if (material)
@@ -346,7 +346,7 @@ void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor* 
 	}
 }
 
-TrailDot::TrailDot(float time, double x, double y, double z, double heading, 
+TrailDot::TrailDot(double x, double y, double z, double heading, 
 	osgViewer::Viewer *viewer, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color)
 {
 	double dot_radius = 0.8;
@@ -440,7 +440,7 @@ static osg::ref_ptr<osg::Node> CreateDotGeometry()
 	return geode;
 }
 
-void TrailDot::Reset(float time, double x, double y, double z, double heading)
+void TrailDot::Reset(double x, double y, double z, double heading)
 {
 	dot_->setPosition(osg::Vec3(x, y, z));
 
@@ -453,16 +453,16 @@ void TrailDot::Reset(float time, double x, double y, double z, double heading)
 	fade_callback_->Reset();
 }
 
-void Trail::AddDot(float time, double x, double y, double z, double heading)
+void Trail::AddDot(double x, double y, double z, double heading)
 {
 	if (n_dots_ < TRAIL_MAX_DOTS)
 	{
-		dot_[current_] = new TrailDot(time, x, y, z, heading, viewer_, parent_, dot_node_, color_);
+		dot_[current_] = new TrailDot(x, y, z, heading, viewer_, parent_, dot_node_, color_);
 		n_dots_++;
 	}
 	else
 	{
-		dot_[current_]->Reset(time, x, y, z, heading);
+		dot_[current_]->Reset(x, y, z, heading);
 	}
 
 	if (++current_ >= TRAIL_MAX_DOTS)
@@ -1345,9 +1345,9 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 								osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 
 								// Creating points for the given roadmark
-								for (int m = 0; m < curr_osi_rm.GetPoints().size(); m++)
+								for (int s = 0; s < curr_osi_rm.GetPoints().size(); s++)
 								{
-									point.set(curr_osi_rm.GetPoint(m).x, curr_osi_rm.GetPoint(m).y, curr_osi_rm.GetPoint(m).z + z_offset);
+									point.set(curr_osi_rm.GetPoint(s).x, curr_osi_rm.GetPoint(s).y, curr_osi_rm.GetPoint(s).z + z_offset);
 									osi_rm_points->push_back(point);
 									osi_rm_color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
 								}
@@ -1465,7 +1465,7 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 					osg::ref_ptr<osg::Point> osi_point = new osg::Point();
 
 					// osg references for drawing lines on the lane center using osi points
-					osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+					osg::ref_ptr<osg::Geometry> line_geom = new osg::Geometry;
 					osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
 					osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
 					osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
@@ -1486,8 +1486,8 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 
 					for (int m = 0; m < curr_osi->GetPoints().size(); m++)
 					{
-						roadmanager::OSIPoints::OSIPointStruct osi_point = curr_osi->GetPoint(m);
-						point.set(osi_point.x, osi_point.y, osi_point.z + z_offset);
+						roadmanager::OSIPoints::OSIPointStruct osi_point_s = curr_osi->GetPoint(m);
+						point.set(osi_point_s.x, osi_point_s.y, osi_point_s.z + z_offset);
 						osi_points->push_back(point);
 						osi_color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
 					}
@@ -1517,14 +1517,14 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 						color->push_back(osg::Vec4(color_gray[0], color_gray[1], color_gray[2], 1.0));
 					}
 
-					geom->setVertexArray(osi_points.get());
-					geom->setColorArray(color.get());
-					geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-					geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_points->size()));
-					geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
-					geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+					line_geom->setVertexArray(osi_points.get());
+					line_geom->setColorArray(color.get());
+					line_geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+					line_geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_points->size()));
+					line_geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+					line_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
-					odrLines_->addChild(geom);
+					odrLines_->addChild(line_geom);
 				}
 			}
 		}

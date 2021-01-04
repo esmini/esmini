@@ -2167,15 +2167,15 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 							lane_section->AddLane(lane);
 
 							// Link
-							pugi::xml_node link = lane_node->child("link");
-							if (link != NULL)
+							pugi::xml_node lane_link = lane_node->child("link");
+							if (lane_link != NULL)
 							{
-								pugi::xml_node successor = link.child("successor");
+								pugi::xml_node successor = lane_link.child("successor");
 								if (successor != NULL)
 								{
 									lane->AddLink(new LaneLink(SUCCESSOR, atoi(successor.attribute("id").value())));
 								}
-								pugi::xml_node predecessor = link.child("predecessor");
+								pugi::xml_node predecessor = lane_link.child("predecessor");
 								if (predecessor != NULL)
 								{
 									lane->AddLink(new LaneLink(PREDECESSOR, atoi(predecessor.attribute("id").value())));
@@ -2356,7 +2356,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 											double length = atof(line.attribute("length").value());
 											double space = atof(line.attribute("space").value());
 											double t_offset = atof(line.attribute("t_offset").value());
-											double s_offset = atof(line.attribute("s_offset").value());
+											double s_offset_l = atof(line.attribute("s_offset").value());
 
 											// rule
 											LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
@@ -2383,7 +2383,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 											double width = atof(line.attribute("width").value());
 
-											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(length, space, t_offset, s_offset, rule, width);
+											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(length, space, t_offset, s_offset_l, rule, width);
 											lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 										}
 									}
@@ -2431,7 +2431,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			{
 				double s = atof(signal.attribute("s").value());
 				double t = atof(signal.attribute("t").value());
-				int id = atoi(signal.attribute("id").value());
+				int ids = atoi(signal.attribute("id").value());
 				std::string name = signal.attribute("name").value();
 				
 				// dynamic
@@ -2450,7 +2450,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}
 				else
 				{
-					LOG("unknown dynamic signal identification: %s (road id=%d)\n", signal.attribute("dynamic").value(), r->GetId());
+					LOG("unknown dynamic signal identification: %s (road ids=%d)\n", signal.attribute("dynamic").value(), r->GetId());
 				}
 
 				// orientation
@@ -2473,7 +2473,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}
 				else
 				{
-					LOG("unknown road signal orientation: %s (road id=%d)\n", signal.attribute("orientation").value(), r->GetId());
+					LOG("unknown road signal orientation: %s (road ids=%d)\n", signal.attribute("orientation").value(), r->GetId());
 				}
 
 				double  z_offset = atof(signal.attribute("zOffset").value());
@@ -2535,7 +2535,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}																
 				else
 				{
-					LOG("unknown road signal type: %s (road id=%d)\n", signal.attribute("type").value(), r->GetId());
+					LOG("unknown road signal type: %s (road ids=%d)\n", signal.attribute("type").value(), r->GetId());
 				}
 
 				// sub_type
@@ -2570,7 +2570,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}
 				else
 				{
-					LOG("unknown road signal sub-type: %s (road id=%d)\n", signal.attribute("subtype").value(), r->GetId());
+					LOG("unknown road signal sub-type: %s (road ids=%d)\n", signal.attribute("subtype").value(), r->GetId());
 				}
 
 				double value = atof(signal.attribute("value").value());
@@ -2582,7 +2582,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				double pitch = atof(signal.attribute("pitch").value());
 				double roll = atof(signal.attribute("roll").value());
 
-				Signal *sig = new Signal(s, t, id, name, dynamic, orientation, z_offset, country, type, sub_type, value, unit, height,
+				Signal *sig = new Signal(s, t, ids, name, dynamic, orientation, z_offset, country, type, sub_type, value, unit, height,
 				width, text, h_offset, pitch, roll);
 				if (sig != NULL)
 				{
@@ -2608,17 +2608,17 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 	for (pugi::xml_node junction_node = node.child("junction"); junction_node; junction_node = junction_node.next_sibling("junction"))
 	{
-		int id = atoi(junction_node.attribute("id").value());
+		int idj = atoi(junction_node.attribute("id").value());
 		std::string name = junction_node.attribute("name").value();
 
-		Junction *j = new Junction(id, name);
+		Junction *j = new Junction(idj, name);
 
 		for (pugi::xml_node connection_node = junction_node.child("connection"); connection_node; connection_node = connection_node.next_sibling("connection"))
 		{
 			if (connection_node != NULL)
 			{
-				int id = atoi(connection_node.attribute("id").value());
-				(void)id;
+				int idc = atoi(connection_node.attribute("id").value());
+				(void)idc;
 				int incoming_road_id = atoi(connection_node.attribute("incomingRoad").value());
 				int connecting_road_id = atoi(connection_node.attribute("connectingRoad").value());
 				Road *incoming_road = GetRoadById(incoming_road_id);
@@ -3055,7 +3055,7 @@ int RoadPath::Calculate(double &dist)
 			junction = odr->GetJunctionById(link->GetElementId());
 			for (size_t j = 0; j < junction->GetNoConnectionsFromRoadId(pivotRoad->GetId()); j++)
 			{
-				Road * nextRoad = odr->GetRoadById(junction->GetConnectingRoadIdFromIncomingRoadId(pivotRoad->GetId(), (int)j));
+				nextRoad = odr->GetRoadById(junction->GetConnectingRoadIdFromIncomingRoadId(pivotRoad->GetId(), (int)j));
 				if (nextRoad == 0)
 				{
 					return 0;
@@ -3181,7 +3181,8 @@ int OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double &angle)
 		
 	for (int i = 0; i < 2; i++)
 	{
-		if ((link = road1->GetLink(i == 0 ? LinkType::SUCCESSOR : LinkType::PREDECESSOR)))
+		link = road1->GetLink(i == 0 ? LinkType::SUCCESSOR : LinkType::PREDECESSOR);
+		if (link)
 		{
 			if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
 			{
@@ -3444,7 +3445,7 @@ bool OpenDrive::IsIndirectlyConnected(int road1_id, int road2_id, int* &connecti
 	return false;
 }
 
-int OpenDrive::CheckConnectedRoad(Road *road, RoadLink *link, ContactPointType expected_contact_point_type, Road *road2, RoadLink *link2)
+int OpenDrive::CheckConnectedRoad(Road *road, RoadLink *link, ContactPointType expected_contact_point_type, RoadLink *link2)
 {
 	if (link2 == 0)
 	{
@@ -3459,6 +3460,7 @@ int OpenDrive::CheckConnectedRoad(Road *road, RoadLink *link, ContactPointType e
 			{
 				LOG("Found connecting road from other end, but contact point is wrong (expected START, got %s)",
 					ContactPointType2Str(link->GetContactPointType()).c_str());
+				return -1;
 			}
 		}
 	}
@@ -3497,10 +3499,10 @@ int OpenDrive::CheckJunctionConnection(Junction *junction, Connection *connectio
 			if (link[i]->GetElementId() != connection->GetIncomingRoad()->GetId())
 			{
 				// Check connection from this outgoing road
-				Road *road = GetRoadById(link[i]->GetElementId());
+				Road *roadc = GetRoadById(link[i]->GetElementId());
 				RoadLink *link2[2];
-				link2[0] = road->GetLink(LinkType::PREDECESSOR);
-				link2[1] = road->GetLink(LinkType::SUCCESSOR);
+				link2[0] = roadc->GetLink(LinkType::PREDECESSOR);
+				link2[1] = roadc->GetLink(LinkType::SUCCESSOR);
 				for (int j = 0; j < 2; j++)
 				{
 					if (link2[j] != 0)
@@ -3511,7 +3513,7 @@ int OpenDrive::CheckJunctionConnection(Junction *junction, Connection *connectio
 							// Now finally find the reverse link 
 							for (int k = 0; k < junction->GetNumberOfConnections(); k++)
 							{
-								if (junction->GetConnectionByIdx(k)->GetIncomingRoad() == road)
+								if (junction->GetConnectionByIdx(k)->GetIncomingRoad() == roadc)
 								{
 									// Sharing same connecting road?
 									if (junction->GetConnectionByIdx(k)->GetConnectingRoad() == connection->GetConnectingRoad())
@@ -3521,7 +3523,7 @@ int OpenDrive::CheckJunctionConnection(Junction *junction, Connection *connectio
 								}
 							}
 							LOG("Warning: Missing reverse connection from road %d to %d via junction %d connecting road %d. Potential issue in the OpenDRIVE file.", 
-								connection->GetIncomingRoad()->GetId(), road->GetId(), junction->GetId(), connection->GetConnectingRoad()->GetId());
+								connection->GetIncomingRoad()->GetId(), roadc->GetId(), junction->GetId(), connection->GetConnectingRoad()->GetId());
 						}
 					}
 				}
@@ -3540,11 +3542,11 @@ int OpenDrive::CheckLink(Road *road, RoadLink *link, ContactPointType expected_c
 		Road *connecting_road = GetRoadById(link->GetElementId());
 		if (connecting_road != 0)
 		{
-			if (CheckConnectedRoad(road, link, expected_contact_point_type, connecting_road, connecting_road->GetLink(LinkType::PREDECESSOR)) == 0)
+			if (CheckConnectedRoad(road, link, expected_contact_point_type, connecting_road->GetLink(LinkType::PREDECESSOR)) == 0)
 			{
 				return 0;
 			}
-			else if (CheckConnectedRoad(road, link, expected_contact_point_type, connecting_road, connecting_road->GetLink(LinkType::SUCCESSOR)) == 0)
+			else if (CheckConnectedRoad(road, link, expected_contact_point_type, connecting_road->GetLink(LinkType::SUCCESSOR)) == 0)
 			{
 				return 0;
 			}
@@ -4575,7 +4577,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				// at start and end
 				if ((j == 0 && k == 0) || ((j > 1 || k > 1) && (j == road->GetNumberOfLaneSections() - 1 && k == osiPoints->GetNumOfOSIPoints() - 2)))
 				{
-					double x, y, z, h;
+					double x, y, h;
 					Position pos;
 
 					if (j == 0 && k == 0)
@@ -4591,7 +4593,6 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					x = pos.GetX();
 					y = pos.GetY();
 					h = pos.GetH();
-					z = pos.GetZ();
 
 					// Calculate actual normal
 					double n_actual_angle = GetAngleSum(h, M_PI_2);
@@ -6051,7 +6052,8 @@ bool Position::Delta(Position pos_b, PositionDiff &diff)
 
 	RoadPath *path = new RoadPath(this, &pos_b);
 
-	if (found = (path->Calculate(dist) == 0))
+	found = (path->Calculate(dist) == 0);
+	if (found)
 	{
 		diff.dLaneId = pos_b.GetLaneId() - GetLaneId();
 		diff.ds = dist;
@@ -7009,12 +7011,12 @@ double Route::GetLength()
 
 void Route::setName(std::string name)
 {
-	this->name = name;
+	this->name_ = name;
 }
 
 std::string Route::getName()
 {
-	return name;
+	return name_;
 }
 
 void Trajectory::Freeze()

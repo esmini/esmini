@@ -94,7 +94,7 @@ namespace scenarioengine
 			return 0;
 		};
 
-		virtual void ReplaceObjectRefs(Object* obj1, Object* obj2) {};
+		virtual void ReplaceObjectRefs(Object*, Object*) {};
 
 	};
 
@@ -635,7 +635,7 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt, double simTime) { } 
+		void Step(double, double) { } 
 		void Start();
 
 	};
@@ -687,9 +687,7 @@ namespace scenarioengine
 			OSCAction::Start();
 		}
 
-		void Step(double dt, double simTime) 
-		{
-		}  
+		void Step(double, double) {}  
 
 		void End()
 		{

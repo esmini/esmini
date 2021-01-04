@@ -67,7 +67,7 @@ namespace scenarioengine
 		static int sock;
 		struct sockaddr_in server_addr;
 		struct sockaddr_in sender_addr;
-		static int iPortIn = DEFAULT_INPORT;   // Port for incoming packages
+		static unsigned short int iPortIn = DEFAULT_INPORT;   // Port for incoming packages
 		EgoStateBuffer_t buf;
 		socklen_t sender_addr_size = sizeof(sender_addr);
 		struct timeval tv;

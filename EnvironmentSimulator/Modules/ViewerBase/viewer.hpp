@@ -117,9 +117,9 @@ namespace viewer
 		osg::ref_ptr<osg::PositionAttitudeTransform> dot_;
 		osg::ref_ptr<osg::Material> material_;
 
-		TrailDot(float time, double x, double y, double z, double heading,
+		TrailDot(double x, double y, double z, double heading,
 			osgViewer::Viewer *viewer, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color);
-		void Reset(float time, double x, double y, double z, double heading);
+		void Reset(double x, double y, double z, double heading);
 
 	private:
 		osg::ref_ptr<AlphaFadingCallback> fade_callback_;
@@ -133,7 +133,7 @@ namespace viewer
 		int current_;
 		osg::Group *parent_;
 		osg::Node *dot_node_;
-		void AddDot(float time, double x, double y, double z, double heading);
+		void AddDot(double x, double y, double z, double heading);
 
 		Trail(osg::Group *parent, osgViewer::Viewer *viewer, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 color) :
 			parent_(parent), 

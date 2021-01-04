@@ -29,7 +29,7 @@
 #include <sstream>
 #include <string>
 
-#define DEMONSTRATE_SENSORS 0
+#define DEMONSTRATE_SENSORS 1
 #define DEMONSTRATE_PARAMETER 0
 #define DEMONSTRATE_DRIVER_MODEL 0
 #define DEMONSTRATE_OSI 0
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 
 		if (filename)
 		{
-#if 0
+#if 1
 			if (SE_Init(filename, 0, 1, DEMONSTRATE_THREAD, 0) != 0)
 			{
 				printf("Failed to load %s", filename);

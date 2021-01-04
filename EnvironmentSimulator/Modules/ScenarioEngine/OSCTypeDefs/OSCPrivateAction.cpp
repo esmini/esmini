@@ -274,7 +274,7 @@ void LatLaneChangeAction::Start()
 	elapsed_ = 0;
 }
 
-void LatLaneChangeAction::Step(double dt, double simTime)
+void LatLaneChangeAction::Step(double dt, double)
 {
 	double t_old = t_;
 	double factor;
@@ -371,7 +371,7 @@ void LatLaneOffsetAction::Start()
 	start_lane_offset_ = object_->pos_.GetOffset();
 }
 
-void LatLaneOffsetAction::Step(double dt, double simTime)
+void LatLaneOffsetAction::Step(double dt, double)
 {
 	double factor, lane_offset;
 	double angle = 0;
@@ -416,7 +416,7 @@ void LatLaneOffsetAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 	if (target_->type_ == Target::Type::RELATIVE)
 	{
-		if (((TargetRelative*)target_)->object_ = obj1)
+		if (((TargetRelative*)target_)->object_ == obj1)
 		{
 			((TargetRelative*)target_)->object_ = obj2;
 		}
@@ -479,7 +479,7 @@ void LongSpeedAction::Start()
 	}
  }
 
-void LongSpeedAction::Step(double dt, double simTime)
+void LongSpeedAction::Step(double dt, double)
 {
 	double factor = 0.0;
 	double new_speed = 0;
@@ -564,7 +564,7 @@ void LongDistanceAction::Start()
 	OSCAction::Start();
 }
 
-void LongDistanceAction::Step(double dt, double simTime)
+void LongDistanceAction::Step(double dt, double)
 {
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
@@ -804,7 +804,7 @@ void SynchronizeAction::Start()
 	}
 }
 
-void SynchronizeAction::Step(double dt, double simTime)
+void SynchronizeAction::Step(double dt, double)
 {
 	(void)dt;
 	bool done = false;

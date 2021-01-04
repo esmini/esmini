@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 	static int sock;
 	struct sockaddr_in server_addr;
 	struct sockaddr_in sender_addr;
-	static int iPortIn = OSI_OUT_PORT;   // Port for incoming packages
+	static unsigned short int iPortIn = OSI_OUT_PORT;   // Port for incoming packages
 	char buf[MAX_MSG_SIZE];
 	socklen_t sender_addr_size = sizeof(sender_addr);
 	struct timeval tv;

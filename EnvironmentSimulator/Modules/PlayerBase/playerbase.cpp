@@ -312,7 +312,7 @@ void ScenarioPlayer::ViewerFrame()
 
 		if (add_dot)
 		{
-			entity->trail_->AddDot(scenarioEngine->getSimulationTime(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH());
+			entity->trail_->AddDot(pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH());
 		}
 	}
 
