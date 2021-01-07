@@ -1,5 +1,9 @@
 ## esmini release notes
 
+### 2021-01-07 Version 2.1.0
+- New feature: Generate simple road 3D model if missing.  
+- Adapt to compiler warning level 4 (Win/VisualStudio)
+
 ### 2021-01-04 Version 2.0.15
 - Updates to get RControlStation integration back on feet
 - Some additional minor fixes
