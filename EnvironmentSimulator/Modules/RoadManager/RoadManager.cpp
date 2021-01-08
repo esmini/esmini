@@ -1117,6 +1117,16 @@ void LaneSection::AddLane(Lane *lane)
 {
 	lane->SetGlobalId();
 	global_lane_counter++;
+
+	// Keep list sorted on lane ID, from - to +
+	for (size_t i = 0; i < lane_.size(); i++)
+	{
+		if (lane->GetId() > lane_[i]->GetId())
+		{
+			lane_.insert(lane_.begin() + i, lane);
+			return;
+		}
+	}
 	lane_.push_back(lane);
 }
 
@@ -2598,7 +2608,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			lane_section->AddLane(new Lane(0, Lane::LANE_TYPE_NONE));
 			r->AddLaneSection(lane_section);
 		}
-			
+
 		road_.push_back(r);
 	}
 
