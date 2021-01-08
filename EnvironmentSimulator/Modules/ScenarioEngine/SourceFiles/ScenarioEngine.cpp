@@ -698,8 +698,6 @@ void ScenarioEngine::SetupGhost(Object* object)
 		}
 	}
 
-	ReplaceObjectInTrigger(storyBoard.stop_trigger_, object, ghost, -ghost->GetHeadstartTime());
-
 	for (size_t i = 0; i < storyBoard.story_.size(); i++)
 	{
 		Story* story = storyBoard.story_[i];
