@@ -1118,16 +1118,22 @@ void LaneSection::AddLane(Lane *lane)
 	lane->SetGlobalId();
 	global_lane_counter++;
 
-	// Keep list sorted on lane ID, from - to +
-	for (size_t i = 0; i < lane_.size(); i++)
+	// Keep list sorted on lane ID, from + to -
+	if (lane_.size() > 0 && lane->GetId() > lane_.back()->GetId())
 	{
-		if (lane->GetId() > lane_[i]->GetId())
+		for (size_t i = 0; i < lane_.size(); i++)
 		{
-			lane_.insert(lane_.begin() + i, lane);
-			return;
+			if (lane->GetId() > lane_[i]->GetId())
+			{
+				lane_.insert(lane_.begin() + i, lane);
+				break;
+			}
 		}
 	}
-	lane_.push_back(lane);
+	else
+	{
+		lane_.push_back(lane);
+	}
 }
 
 int LaneSection::GetConnectingLaneId(int incoming_lane_id, LinkType link_type)
