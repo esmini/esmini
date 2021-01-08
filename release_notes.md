@@ -2,7 +2,7 @@
 
 ### 2021-01-08 Version 2.1.1
 - Add ground surface textures for road model generator  
-- Add the textures to demo pack  
+- Add the textures to demo pack 
 
 Updated complete model pack can be downloaded from [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0)
 
