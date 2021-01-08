@@ -708,7 +708,6 @@ void ScenarioEngine::SetupGhost(Object* object)
 		{
 			Act* act = story->act_[j];
 			ReplaceObjectInTrigger(act->start_trigger_, object, ghost, -ghost->GetHeadstartTime());
-			ReplaceObjectInTrigger(act->stop_trigger_, object, ghost, -ghost->GetHeadstartTime());
 			for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
 			{
 				ManeuverGroup* mg = act->maneuverGroup_[k];
