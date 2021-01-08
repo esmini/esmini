@@ -57,6 +57,8 @@ resources/models/walkman.osgb \
 resources/models/cyclist.osgb \
 resources/models/multi_intersections.osgb \
 resources/models/curves_elevation.osgb \
+resources/models/asphalt.jpg \
+resources/models/grass.jpg \
 resources/sumo_inputs/e6mini* \
 run/esmini/run_follow_ghost.* \
 run/esmini/run_ltap-od_interactive.* \

@@ -1,5 +1,16 @@
 ## esmini release notes
 
+### 2021-01-08 Version 2.1.1
+- Add ground surface textures for road model generator  
+- Add the textures to demo pack  
+
+Updated complete model pack can be downloaded from [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0)
+
+The road model generator is exercised by the following example scripts:  
+- run/esmini/run_lane_change.bat
+- run/esmini/run_dist_test.bat
+- run/odrviewer/run_e6mini.bat
+
 ### 2021-01-07 Version 2.1.0
 - New feature: Generate simple road 3D model if missing.  
 - Adapt to compiler warning level 4 (Win/VisualStudio)

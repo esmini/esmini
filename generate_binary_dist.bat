@@ -80,6 +80,8 @@ copy resources\models\walkman.osgb %target_dir%\resources\models /y
 copy resources\models\cyclist.osgb %target_dir%\resources\models /y
 copy resources\models\multi_intersections.osgb %target_dir%\resources\models /y
 copy resources\models\curves_elevation.osgb %target_dir%\resources\models /y
+copy resources\models\asphalt.jpg %target_dir%\resources\models /y
+copy resources\models\grass.jpg %target_dir%\resources\models /y
 
 copy resources\sumo_inputs\e6mini* %target_dir%\resources\sumo_inputs /y
 

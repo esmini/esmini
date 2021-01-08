@@ -23,7 +23,7 @@
 #include "CommonMini.hpp"
 
 #define GEOM_TOLERANCE 0.2  // Minimum distance between two vertices along road s-axis
-#define TEXTURE_SCALE 0.1   // Scale factor for asphalt and grass textures 1.0 means whole texture fits in 1 x 1 m square
+#define TEXTURE_SCALE 0.5   // Scale factor for asphalt and grass textures 1.0 means whole texture fits in 1 x 1 m square
 
 
 osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename)
