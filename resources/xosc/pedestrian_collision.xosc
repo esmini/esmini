@@ -240,7 +240,7 @@
                         </Action>
                         <StartTrigger>
                             <ConditionGroup>
-                                <Condition conditionEdge="rising" delay="1.0" name="ped_raise_condition">
+                                <Condition conditionEdge="rising" delay="0.9" name="ped_raise_condition">
                                     <ByValueCondition>
                                         <StoryboardElementStateCondition 
                                             storyboardElementType="action" 

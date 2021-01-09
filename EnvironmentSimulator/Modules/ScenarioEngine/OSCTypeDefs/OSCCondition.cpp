@@ -734,8 +734,6 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 	(void)sim_time;
 
 	bool result = false;
-	double x, y;
-	dist_ = 0;
 
 	triggered_by_entities_.clear();
 	collision_pair_.clear();
@@ -744,8 +742,7 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 	{
 		if (object_)
 		{
-			dist_ = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y));
-			if (dist_ < triggering_entities_.entity_[i].object_->boundingbox_.dimensions_.length_)
+			if (triggering_entities_.entity_[i].object_->Collision(object_))
 			{
 				CollisionPair p = { triggering_entities_.entity_[i].object_, object_ };
 				collision_pair_.push_back(p);
@@ -760,8 +757,7 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 				if (storyBoard->entities_->object_[j] != triggering_entities_.entity_[i].object_ &&
 					storyBoard->entities_->object_[j]->type_ == type_)
 				{
-					dist_ = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(storyBoard->entities_->object_[j]->pos_, x, y));
-					if (dist_ < triggering_entities_.entity_[i].object_->boundingbox_.dimensions_.length_)
+					if (triggering_entities_.entity_[i].object_->Collision(storyBoard->entities_->object_[j]))
 					{
 						CollisionPair p = { triggering_entities_.entity_[i].object_, storyBoard->entities_->object_[j] };
 						collision_pair_.push_back(p);

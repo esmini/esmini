@@ -1115,7 +1115,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 
 						if (entry == 0)
 						{
-							return 0;
+							throw std::runtime_error("Failed to resolve catalog reference");
 						}
 
 						if (entry->type_ == CatalogType::CATALOG_ROUTE)
@@ -1126,7 +1126,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 						else
 						{
 							LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE).c_str(), entry->GetTypeAsStr().c_str());
-							return 0;
+							throw std::runtime_error("Failed to resolve catalog reference");
 						}
 
 						parameters.RestoreParameterDeclarations();
@@ -1695,7 +1695,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
 							if (entry == 0 || entry->node_ == 0)
 							{
-								return 0;
+								throw std::runtime_error("Failed to resolve catalog reference");
 							}
 
 							if (entry->type_ == CatalogType::CATALOG_ROUTE)
@@ -1703,15 +1703,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								// Make a new instance from catalog entry
 								action_assign_route->route_ = parseOSCRoute(entry->GetNode());
 								action = action_assign_route;
+								parameters.RestoreParameterDeclarations();
 								break;
 							}
 							else
 							{
 								LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE).c_str(), entry->GetTypeAsStr().c_str());
-								return 0;
+								throw std::runtime_error("Failed to resolve catalog reference");
 							}
-
-							parameters.RestoreParameterDeclarations();
 						}
 					}
 				}
@@ -1732,22 +1731,21 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
 							if (entry == 0 || entry->node_ == 0)
 							{
-								return 0;
+								throw std::runtime_error("Failed to resolve catalog reference");
 							}
 
 							if (entry->type_ == CatalogType::CATALOG_TRAJECTORY)
 							{
 								// Make a new instance from catalog entry
 								action_follow_trajectory->traj_ = parseTrajectory(entry->GetNode());
+								parameters.RestoreParameterDeclarations();
 								break;
 							}
 							else
 							{
 								LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE).c_str(), entry->GetTypeAsStr().c_str());
-								return 0;
+								throw std::runtime_error("Failed to resolve catalog reference");
 							}
-
-							parameters.RestoreParameterDeclarations();
 						}
 						else if (followTrajetoryChild.name() == std::string("TimeReference"))
 						{
@@ -2743,7 +2741,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 
 								if (entry == 0 || entry->node_ == 0)
 								{
-									return -1;
+									throw std::runtime_error("Failed to resolve catalog reference");
 								}
 
 								if (entry->type_ == CatalogType::CATALOG_MANEUVER)
@@ -2757,6 +2755,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 								else
 								{
 									LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
+									throw std::runtime_error("Failed to resolve catalog reference");
 								}
 
 								// Remove temporary parameters used for catalog reference

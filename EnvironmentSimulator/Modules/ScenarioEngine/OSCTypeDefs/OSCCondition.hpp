@@ -235,7 +235,6 @@ namespace scenarioengine
 		Object* object_;
 		Object::Type type_;
 		Rule rule_;
-		double dist_;
 		typedef struct
 		{
 			Object* object0;
@@ -244,7 +243,7 @@ namespace scenarioengine
 		std::vector<CollisionPair> collision_pair_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByCollision() : object_(0), type_(Object::Type::TYPE_NONE), dist_(0),
+		TrigByCollision() : object_(0), type_(Object::Type::TYPE_NONE),
 			TrigByEntity(TrigByEntity::EntityConditionType::COLLISION) {}
 		void Log();
 	};

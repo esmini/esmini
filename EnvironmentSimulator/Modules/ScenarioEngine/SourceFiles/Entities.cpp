@@ -128,6 +128,98 @@ void Object::SetVisibilityMask(int mask)
 	SetDirtyBits(dirty_ | DirtyBit::VISIBILITY);
 }
 
+bool Object::Collision(Object* target)
+{
+	// Apply method Separating Axis Theorem (SAT)
+	// http://www.euclideanspace.com/threed/games/examples/cars/collisions/
+	// https://www.sevenson.com.au/actionscript/sat/
+
+	// Idea:
+	// For each side of the bounding boxes:
+	//   The normal of that edge will be the projection axis
+	//   Project all points of the two bounding boxes onto that axis
+	//   If we find ONE side wich a gap between point clusters from BB1 and BB2,
+	//   it's enough to conclude they are not overlapping/colliding
+	// 
+	// Optimization: Since the bounding boxes are boxes with parallel
+	// sides, we only need to check half of the sides
+
+	for (int i = 0; i < 2; i++)  // for each of the two BBs
+	{
+		Object* obj0 = (i == 0 ? this : target);
+		Object* obj1 = (i == 0 ? target : this);
+
+		double n0[2] = { 0.0, 0.0 };
+		for (int j = 0; j < 2; j++)  // for longitudinal and lateral sides
+		{
+			if (j == 0)
+			{
+				// Normal for longitudinal side (sides) points along lateral side
+				n0[0] = 0.0;
+				n0[1] = 1.0;
+			}
+			else
+			{
+				// Normal for lateral side (front/rear) points along lateral side
+				n0[0] = 1.0;
+				n0[1] = 0.0;
+			}
+		
+			// Rotate the normal/projection axis to align with bounding box/vehicle
+			double n1[2] = { 0.0, 0.0 };
+			RotateVec2D(n0[0], n0[1], obj0->pos_.GetH(), n1[0], n1[1]);
+
+			// Now, project each point of each BB onto the rotated normal
+			// And register min and max for point cluster of each BB
+			double min[2] = { 0.0, 0.0 }, max[2] = { 0.0, 0.0 };
+			for (int k = 0; k < 2; k++)
+			{ 
+				Object* obj = (k == 0 ? obj0 : obj1);
+
+				// Specify bounding box corner vertices, starting at first quadrant
+				double vertices[4][2] =
+				{
+					{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
+					{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
+					{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 },
+					{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 }
+				};
+
+				for (int l = 0; l < 4; l++)
+				{
+					double point_to_project[2];
+
+					// Align projection points to object heading
+					RotateVec2D(vertices[l][0], vertices[l][1], obj->pos_.GetH(), point_to_project[0], point_to_project[1]);
+
+					double dot_p = GetDotProduct2D(
+						obj->pos_.GetX() + point_to_project[0],
+						obj->pos_.GetY() + point_to_project[1],
+						n1[0], n1[1]);
+
+					if (l == 0)
+					{
+						min[k] = max[k] = dot_p;
+					}
+					else 
+					{
+						min[k] = MIN(dot_p, min[k]);
+						max[k] = MAX(dot_p, max[k]);
+					}
+				}
+			}
+
+			if (min[0] < min[1] - SMALL_NUMBER && max[0] < min[1] - SMALL_NUMBER ||
+				max[0] > max[1] + SMALL_NUMBER && min[0] > max[1] + SMALL_NUMBER)
+			{
+				// gap found
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 int Entities::addObject(Object* obj)
 {
 	obj->id_ = getNewId();

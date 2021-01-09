@@ -129,6 +129,13 @@ namespace scenarioengine
 		void SetStandStill(bool state, double time = 0.0);
 		bool IsStandStill() { return stand_still_timestamp_ > SMALL_NUMBER; }
 		double GetStandStillTimestamp() { return stand_still_timestamp_; }
+		/// <summary>
+		/// Check if object is colliding with specified target object
+		/// Definition of collision is being overlapping bounding boxes
+		/// </summary>
+		/// <param name="target">The object to check</param>
+		/// <returns>true if bounding boxes overlap else false</returns>
+		bool Collision(Object* target);
 
 		void SetSpeed(double speed) 
 		{ 
