@@ -17,6 +17,8 @@
 
 using namespace scenarioengine;
 
+#define ELEVATION_DIFF_THRESHOLD 2.5
+
 void Object::SetEndOfRoad(bool state, double time)
 {
 	if (state == true)
@@ -144,10 +146,41 @@ bool Object::Collision(Object* target)
 	// Optimization: Since the bounding boxes are boxes with parallel
 	// sides, we only need to check half of the sides
 
+	if (target == 0)
+	{
+		return false;
+	}
+
+	Object* obj0 = this;
+	Object* obj1 = target;
+
+	// First do a rough check to rule out potential overlap/collision
+	// Compare radial/euclidean distance with sum of the diagonal dimension of the bounding boxes
+	double x = 0, y = 0;
+	double dist = fabs(this->pos_.getRelativeDistance(target->pos_, x, y));
+	double max_length = this->boundingbox_.dimensions_.length_ + target->boundingbox_.dimensions_.length_;
+	double max_width = this->boundingbox_.dimensions_.width_ + target->boundingbox_.dimensions_.width_;
+	double dist_threshold = sqrt(max_length * max_length + max_width * max_width);
+
+	if (dist > dist_threshold)
+	{
+		return false;
+	}
+
+	// Also do a Z sanity check, to rule out on different road elevations
+	if (fabs(obj0->pos_.GetZ() - obj1->pos_.GetZ()) > ELEVATION_DIFF_THRESHOLD)
+	{
+		return false;
+	}
+
 	for (int i = 0; i < 2; i++)  // for each of the two BBs
 	{
-		Object* obj0 = (i == 0 ? this : target);
-		Object* obj1 = (i == 0 ? target : this);
+		if (i == 1)
+		{ 
+			// swap order, now check all edges of target object
+			obj0 = target;
+			obj1 = this;
+		}
 
 		double n0[2] = { 0.0, 0.0 };
 		for (int j = 0; j < 2; j++)  // for longitudinal and lateral sides
@@ -217,6 +250,7 @@ bool Object::Collision(Object* target)
 			}
 		}
 	}
+
 	return true;
 }
 

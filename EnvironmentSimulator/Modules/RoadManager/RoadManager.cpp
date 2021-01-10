@@ -69,7 +69,7 @@ using namespace roadmanager;
 #define OSI_LANE_CALC_REQUIREMENT 0.05 // [m]
 #define OSI_POINT_CALC_STEPSIZE 1 // [m]
 #define OSI_TANGENT_LINE_TOLERANCE 0.01 // [m]
-#define OSI_MAX_ROAD_SEGMENT_LENGTH 200 // [m]
+#define OSI_MAX_ROAD_SEGMENT_LENGTH 50 // [m]
 
 int g_Lane_id;
 int g_Laneb_id;

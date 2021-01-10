@@ -151,8 +151,6 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 							OffsetVec2D(osi_points[q].x, osi_points[q].y, osi_points[q + 1].x, osi_points[q + 1].y, -lane_roadmarktypeline->GetWidth() / 2, l1p0l[0], l1p0l[1], l1p1l[0], l1p1l[1]);
 							OffsetVec2D(osi_points[q].x, osi_points[q].y, osi_points[q + 1].x, osi_points[q + 1].y, lane_roadmarktypeline->GetWidth() / 2, l1p0r[0], l1p0r[1], l1p1r[0], l1p1r[1]);
 						}
-						printf("lane %d l1p0l (%.2f, %.2f) l1p0r (%.2f, %.2f) l1p1l (%.2f, %.2f) l1p1r (%.2f, %.2f)\n", lane->GetId(),
-							l1p0l[0], l1p0l[1], l1p0r[0], l1p0r[1], l1p1l[0], l1p1l[1], l1p1r[0], l1p1r[1]);
 
 						if (q == 0)
 						{
