@@ -24,7 +24,7 @@
                       positionZ="0.4"/>
          </Axles>
          <Properties>
-            <File filepath="../models/car_white.osgb"/>
+            <File filepath="../models/car_yellow.osgb"/>
             <Property name="model_id" value="0"/>
          </Properties>
       </Vehicle>
