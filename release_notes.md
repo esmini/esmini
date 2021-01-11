@@ -1,6 +1,6 @@
 ## esmini release notes
 
-### 2021-01-1 Version 2.1.2
+### 2021-01-11 Version 2.1.2
 
 - Improve collision detection (in CollisionCondition) now based on bounding boxes
 - Fix ghost controller bug causing premature stop trigger
