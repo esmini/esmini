@@ -28,10 +28,25 @@ using namespace roadmanager;
 
 int main(int argc, char *argv[])
 {
+	
+	std::string filename = "track.csv";
+	std::string samplingstep = "1.0";
+	double step_length_target;
+	
 	if (argc < 2)
 	{
-		printf("Usage: roadmanager <OpenDRIVE filename>\n");
+		printf("Usage: ordplot openDriveFile.xodr [Output file, default=output.csv] [samplingStep, default=1.0]\n");
+		exit(0);
+	}else {
+		if (argc > 2){
+			filename =  argv[2];
+		}
+		if (argc > 3){
+			samplingstep = argv[3];
+			step_length_target = std::stod(samplingstep);
+		}
 	}
+	
 	try
 	{
 		Position::LoadOpenDrive(argv[1]);
@@ -40,12 +55,13 @@ int main(int argc, char *argv[])
 	{ 
 		LOG("exception: %s", e.what()); 
 	}
+	
 
 	std::ofstream file;
-	file.open("track.csv");
+	file.open(filename);
 
 	Position* pos = new Position();
-	double step_length_target = 1;
+	
 	OpenDrive *od = Position::GetOpenDrive();
 
 	for (int r = 0; r < od->GetNumOfRoads(); r++)
