@@ -25,6 +25,7 @@ resources/xosc/pedestrian.xosc \
 resources/xosc/pedestrian_collision.xosc \
 resources/xosc/controller_test.xosc \
 resources/xosc/slow-lead-vehicle.xosc \
+resources/xosc/synch_with_steady_state.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -82,6 +83,7 @@ run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \
 run/replayer/run_and_plot_ltap-od_pos*.* \
+scripts/plot_csv.py \
 docs/readme.txt \
 docs/commands.txt \
 3rd_party_terms_and_licenses/* \
@@ -92,7 +94,6 @@ bin/esmini \
 bin/odrviewer \
 bin/replayer \
 bin/dat2csv \
-scripts/plot_csv.py \
 esmini-demo
 
 cp bin/esmini esmini-demo/bin/EgoSimulator

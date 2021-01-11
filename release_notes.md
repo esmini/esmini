@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2021-01-1 Version 2.1.2
+
+- Improve collision detection (in CollisionCondition) now based on bounding boxes
+- Fix ghost controller bug causing premature stop trigger
+- Some additional minor fixes
+
 ### 2021-01-08 Version 2.1.1
 - Add ground surface textures for road model generator  
 - Add the textures to demo pack 
