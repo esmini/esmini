@@ -18,9 +18,11 @@ Options:
       Show OSI road lines (toggle during simulation by press 'u')
   --osi_points
       Show OSI road points (toggle during simulation by press 'y')
+  --road_features
+      Show OpenDRIVE road features (toggle during simulation by press 'o')
   --help
       Show this help message
-      
+
 Additional options forwarded to OpenSceneGraph:
   --window <x y w h>
           Set the position (x,y) and size (w,h) of the viewer window.		

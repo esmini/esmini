@@ -144,8 +144,12 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 	else
 	{
 		// Move along trajectory
-		if (timing_domain_ == TimingDomain::NONE || 
-			object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))  
+		if (
+			// Ignore any timing info in trajectory
+			timing_domain_ == TimingDomain::NONE ||
+			// Speed is controlled elsewhere - just follow trajectory with current speed
+			(object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+			 object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL)))
 		{
 			object_->pos_.MoveTrajectoryDS(object_->speed_ * dt);
 			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);

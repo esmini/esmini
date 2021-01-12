@@ -209,6 +209,7 @@ int main(int argc, char** argv)
 	opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor");
 	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
 	opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
+	opt.AddOption("road_features", "Show OpenDRIVE road features (toggle during simulation by press 'o') ");
 	opt.AddOption("help", "Show this help message");
 
 	if (argc < 2 || opt.GetOptionSet("help"))
@@ -264,7 +265,14 @@ int main(int argc, char** argv)
 
 		viewer->SetWindowTitleFromArgs(args);
 		
-		viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+		if (opt.GetOptionSet("road_features"))
+		{
+			viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+		}
+		else
+		{
+			viewer->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+		}
 
 		if (opt.GetOptionSet("osi_lines"))
 		{
