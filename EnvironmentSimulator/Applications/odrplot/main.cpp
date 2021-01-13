@@ -26,9 +26,19 @@
 
 using namespace roadmanager;
 
+void log_callback(const char* str)
+{
+	printf("%s\n", str);
+}
+
 int main(int argc, char *argv[])
 {
-	
+	// Use logger callback
+	if (!(Logger::Inst().IsCallbackSet()))
+	{
+		Logger::Inst().SetCallback(log_callback);
+	}
+
 	std::string output_file_name = "track.csv";
 	std::ofstream file;
 	std::string sampling_step = "1.0";
@@ -36,26 +46,37 @@ int main(int argc, char *argv[])
 	
 	if (argc < 2)
 	{
-		printf("Usage: ordplot openDriveFile.xodr [Output file, default=output.csv] [Sampling_step, default=1.0]\n");
-		exit(0);
-	}else {
-		if (argc > 2){
+		LOG("Usage: ordplot openDriveFile.xodr [Output file, default=output.csv] [Sampling_step, default=1.0]\n");
+		return -1;
+	}
+	else  
+	{
+		if (argc > 2)
+		{
 			output_file_name =  argv[2];
 		}
-		if (argc > 3){
+
+		if (argc > 3)
+		{
 			sampling_step = argv[3];
-			step_length_target = std::stod(sampling_step);
 		}
 	}
-	
+
+	step_length_target = std::stod(sampling_step);
+
 	try
 	{
-		Position::LoadOpenDrive(argv[1]);
+		if (Position::LoadOpenDrive(argv[1]) == false)
+		{
+			LOG("Failed to open OpenDRIVE file %s", argv[1]);
+			return -1;
+		}
 		file.open(output_file_name);
 	}
 	catch (std::exception& e) 
 	{ 
 		LOG("exception: %s", e.what()); 
+		return -1;
 	}
 
 	Position* pos = new Position();
@@ -91,9 +112,10 @@ int main(int argc, char *argv[])
 		}
 	}
 	file.close();
-//	od->Print();
 
 	delete pos;
+
+	LOG("Created %s using stepsize %.2f", output_file_name, step_length_target);
 
 	return 0;
 }
