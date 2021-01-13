@@ -115,7 +115,8 @@ int main(int argc, char *argv[])
 
 	delete pos;
 
-	LOG("Created %s using stepsize %.2f", output_file_name, step_length_target);
+	LOG("Created %s using stepsize %.2f", output_file_name.c_str(), step_length_target);
+	LOG("To plot it, run EnvironmentSimulator/Applications/odrplot/xodr.py %s", output_file_name.c_str());
 
 	return 0;
 }
