@@ -521,7 +521,9 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 	bool result = false;
 	double rel_dist, rel_speed;
 	roadmanager::Position* pos = nullptr;
-	ttc_ = 0;
+
+	ttc_ = -1;
+
 	if (object_)
 	{
 		pos = &object_->pos_;
@@ -587,8 +589,16 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 
 void TrigByTimeToCollision::Log()
 {
-	LOG("%s == %s, TTC: %.2f %s %.2f, edge %s", name_.c_str(), last_result_ ? "true" : "false",
-		ttc_, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+	if (ttc_ < 0)
+	{
+		LOG("%s == %s, TTC: %s %s %.2f, edge %s", name_.c_str(), last_result_ ? "true" : "false",
+			"Inf", Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+	}
+	else
+	{
+		LOG("%s == %s, TTC: %.2f %s %.2f, edge %s", name_.c_str(), last_result_ ? "true" : "false",
+			ttc_, Rule2Str(rule_).c_str(), value_, Edge2Str(edge_).c_str());
+	}
 }
 
 bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time)

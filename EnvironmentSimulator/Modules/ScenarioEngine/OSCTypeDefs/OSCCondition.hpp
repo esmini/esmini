@@ -158,7 +158,7 @@ namespace scenarioengine
 		double ttc_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByTimeToCollision() : object_(0), position_(0), ttc_(0), TrigByEntity(TrigByEntity::EntityConditionType::TIME_TO_COLLISION) {}
+		TrigByTimeToCollision() : object_(0), position_(0), ttc_(-1), TrigByEntity(TrigByEntity::EntityConditionType::TIME_TO_COLLISION) {}
 		void Log();
 	};
 

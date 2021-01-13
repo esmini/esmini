@@ -504,7 +504,8 @@ void LongSpeedAction::Step(double dt, double)
 		new_speed = start_speed_ + SIGN(target_->GetValue() - start_speed_) * fabs(transition_dynamics_.target_value_) * elapsed_;
 
 		// Check if speed changed passed target value
-		if ((object_->speed_ > target_->GetValue() && new_speed < target_->GetValue()) ||
+		if (fabs(object_->speed_ - target_->GetValue()) < SMALL_NUMBER ||
+			(object_->speed_ > target_->GetValue() && new_speed < target_->GetValue()) ||
 			(object_->speed_ < target_->GetValue() && new_speed > target_->GetValue()))
 		{
 			new_speed = target_->GetValue();
