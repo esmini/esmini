@@ -1,1 +1,1 @@
-"../../bin/odrviewer" --odr ../../resources/xodr/e6mini.xodr --window 1000 50 800 400  --density 5.0
+"../../bin/odrviewer" --odr ../../resources/xodr/e6mini.xodr --window 60 60 800 400  --density 5.0

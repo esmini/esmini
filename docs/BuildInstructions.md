@@ -159,5 +159,5 @@ osgconv road.fbx road.osgb
 ```
 and
 ```
-osgviewer road.osgb --window 50 50 1000 500
+osgviewer road.osgb --window 60 60 1000 500
 ```

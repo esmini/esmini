@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 50 50 800 400 --osc ../../resources/xosc/ltap-od.xosc --trails --disable_controllers --road_features on
+"../../bin/esmini" --window 60 60 800 400 --osc ../../resources/xosc/ltap-od.xosc --trails --disable_controllers --road_features on

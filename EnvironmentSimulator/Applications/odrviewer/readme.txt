@@ -33,7 +33,7 @@ Additional options forwarded to OpenSceneGraph:
 
 Example 1 - View the ODR file and some random traffic on a 3D model, window mode 1000 x 500:
 
-   odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --window 50 50 1000 500
+   odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --window 60 60 1000 500
 
 Example 2 - just ODR, fullscreen
 
@@ -41,11 +41,11 @@ Example 2 - just ODR, fullscreen
 
 Example 3 - remove traffic
 
-   odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0 --window 50 50 1000 500
+   odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0 --window 60 60 1000 500
 
 Example 4 - sparse traffic (about 0.5 vehicle per 100 meter = 1 per 200 m)
 
-   odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0.5 --window 50 50 1000 500
+   odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0.5 --window 60 60 1000 500
 
 
 Key commands

@@ -70,7 +70,7 @@ You can now specify esmini arguments according to [esmini launch commands](https
 
 Example:
 ```
-.\esmini-player.exe --window 50 50 1000 500 --osc ..\resources\xosc\pedestrian.xosc --trails
+.\esmini-player.exe --window 60 60 1000 500 --osc ..\resources\xosc\pedestrian.xosc --trails
 ```
 ### Fetch state of scenario objects
 ```C++

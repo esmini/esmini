@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 50 50 800 400 --osc ../../resources/xosc/slow-lead-vehicle.xosc --threads
+"../../bin/esmini" --window 60 60 800 400 --osc ../../resources/xosc/slow-lead-vehicle.xosc --threads

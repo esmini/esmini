@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 50 50 1024 576  --osc ../../resources/xosc/left-hand-traffic_internal.xosc --aa_mode 0
+"../../bin/esmini" --window 60 60 1024 576  --osc ../../resources/xosc/left-hand-traffic_internal.xosc --aa_mode 0

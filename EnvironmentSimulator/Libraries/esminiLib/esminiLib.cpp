@@ -325,7 +325,7 @@ extern "C"
 		}
 		if (use_viewer)
 		{
-			AddArgument("--window 50 50 800 400", true);
+			AddArgument("--window 60 60 800 400", true);
 		}
 		else
 		{
@@ -367,7 +367,7 @@ extern "C"
 		}
 		if (use_viewer)
 		{
-			AddArgument("--window 50 50 800 400", true);
+			AddArgument("--window 60 60 800 400", true);
 		}
 		else
 		{

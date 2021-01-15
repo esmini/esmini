@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 50 50 1024 576  --osc ../../resources/xosc/follow_ghost.xosc --trails --road_features on
+"../../bin/esmini" --window 60 60 1024 576  --osc ../../resources/xosc/follow_ghost.xosc --trails --road_features on

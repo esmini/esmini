@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 50 50 1024 576  --osc ../../resources/xosc/ltap-od.xosc --camera_mode flex 
+"../../bin/esmini" --window 60 60 1024 576  --osc ../../resources/xosc/ltap-od.xosc --camera_mode flex 
