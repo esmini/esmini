@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2021-01-15 Version 2.1.3
+
+- Fix macOS Big Sur issue, avoid crash by moving window position
+- Add option for custom steplength in odrplot
+- Some additional minor fixes
+
 ### 2021-01-11 Version 2.1.2
 
 - Improve collision detection (in CollisionCondition) now based on bounding boxes
