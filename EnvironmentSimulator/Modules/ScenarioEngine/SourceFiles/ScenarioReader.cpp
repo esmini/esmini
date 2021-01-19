@@ -2251,11 +2251,13 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						}
 						else if ((type == "cartesianDistance") || (type == "CartesianDistance"))
 						{
-							trigger->type_ = TrigByRelativeDistance::RelativeDistanceType::INTERIAL;
+							trigger->type_ = TrigByRelativeDistance::RelativeDistanceType::CARTESIAN;
 						}
 						else
 						{
-							LOG("Unknown RelativeDistance condition type: %s", type.c_str());
+							std::string msg = "Unexpected relativeDistanceType: " + type;
+							LOG(msg.c_str());
+							throw std::runtime_error(msg);
 						}
 
 						std::string freespace_str = parameters.ReadAttribute(condition_node, "freespace");
@@ -2267,6 +2269,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						{
 							trigger->freespace_ = false;
 						}
+
 						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
 						trigger->rule_ = ParseRule(parameters.ReadAttribute(condition_node, "rule"));
 

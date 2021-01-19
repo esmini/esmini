@@ -207,7 +207,7 @@ namespace scenarioengine
 		{
 			LONGITUDINAL,
 			LATERAL,
-			INTERIAL
+			CARTESIAN
 		} RelativeDistanceType;
 
 		Object *object_;

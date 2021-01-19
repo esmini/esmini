@@ -707,7 +707,7 @@ bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_t
 		{
 			rel_dist_ = fabs(y);
 		}
-		else if (type_ == RelativeDistanceType::INTERIAL)
+		else if (type_ == RelativeDistanceType::CARTESIAN)
 		{
 			rel_dist_ = fabs(rel_intertial_dist);
 		}
