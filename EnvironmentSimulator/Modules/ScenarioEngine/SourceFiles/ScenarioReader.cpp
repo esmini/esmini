@@ -1208,7 +1208,9 @@ OSCPrivateAction::DynamicsShape ParseDynamicsShape(std::string shape)
 	}
 	else
 	{
-		LOG("Dynamics shape %s not implemented", shape.c_str());
+		std::string msg = "Dynamics shape " + shape + " not supported yet";
+		LOG(msg.c_str());
+		throw std::runtime_error(msg);
 	}
 
 	return OSCPrivateAction::DynamicsShape::SHAPE_UNDEFINED;

@@ -480,6 +480,18 @@ void LongSpeedAction::Start()
 	else
 	{
 		start_speed_ = object_->speed_;
+
+		// Convert distance to time
+		if (transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
+		{
+			if (transition_dynamics_.shape_ == DynamicsShape::LINEAR ||
+				transition_dynamics_.shape_ == DynamicsShape::SINUSOIDAL)  // Approximate sine with linear acceleration
+			{
+				double distance = transition_dynamics_.target_value_;
+				transition_dynamics_.target_value_ = 2 * distance / (start_speed_ + target_->GetValue());
+			}
+		}
+
 	}
  }
 
@@ -512,9 +524,19 @@ void LongSpeedAction::Step(double dt, double)
 			target_speed_reached = true;
 		}
 	}
-	else if (transition_dynamics_.dimension_ == DynamicsDimension::TIME)
+	else 
 	{
-		elapsed_ += dt;
+		if (transition_dynamics_.dimension_ == DynamicsDimension::TIME ||
+			transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
+		{
+			elapsed_ += dt;
+		}
+		else
+		{
+			std::string msg = "Unexpected dynamics dimension: " + transition_dynamics_.dimension_;
+			LOG(msg.c_str());
+			throw std::runtime_error(msg);
+		}
 		factor = elapsed_ / (transition_dynamics_.target_value_);
 
 		if(factor > 1.0)
@@ -526,12 +548,6 @@ void LongSpeedAction::Step(double dt, double)
 		{
 			new_speed = transition_dynamics_.Evaluate(factor, start_speed_, target_->GetValue());
 		}
-	}
-	else
-	{
-		LOG("Timing type %d not supported yet", transition_dynamics_.dimension_);
-		new_speed = target_->GetValue();
-		target_speed_reached = true;
 	}
 
 	if (target_speed_reached && !(target_->type_ == Target::TargetType::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))

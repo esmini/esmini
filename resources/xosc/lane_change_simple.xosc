@@ -40,7 +40,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="sinusoidal" value="4" dynamicsDimension="time" />
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="25"/>
                         </SpeedActionTarget>
