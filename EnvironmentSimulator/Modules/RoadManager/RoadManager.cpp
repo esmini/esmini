@@ -1,4 +1,4 @@
-/* 
+﻿/* 
  * esmini - Environment Simulator Minimalistic 
  * https://github.com/esmini/esmini
  *
@@ -1348,6 +1348,10 @@ Road::~Road()
 	{
 		delete(elevation_profile_[i]);
 	}
+	for (size_t i = 0; i < super_elevation_profile_.size(); i++)
+	{
+		delete(super_elevation_profile_[i]);
+	}
 	for (size_t i=0; i<link_.size(); i++)
 	{
 		delete(link_[i]);
@@ -1418,6 +1422,19 @@ void Road::AddElevation(Elevation *elevation)
 	elevation_profile_.push_back((Elevation*)elevation);
 }
 
+void Road::AddSuperElevation(Elevation *super_elevation)
+{
+	// Adjust last super elevation length
+	if (super_elevation_profile_.size() > 0)
+	{
+		Elevation *e_previous = super_elevation_profile_.back();
+		e_previous->SetLength(super_elevation->GetS() - e_previous->GetS());
+	}
+	super_elevation->SetLength(length_ - super_elevation->GetS());
+
+	super_elevation_profile_.push_back((Elevation*)super_elevation);
+}
+
 Elevation* Road::GetElevation(int idx)
 { 
 	if (idx < 0 || idx >= elevation_profile_.size())
@@ -1426,6 +1443,16 @@ Elevation* Road::GetElevation(int idx)
 	}
 	
 	return elevation_profile_[idx];
+}
+
+Elevation* Road::GetSuperElevation(int idx)
+{
+	if (idx < 0 || idx >= super_elevation_profile_.size())
+	{
+		return 0;
+	}
+
+	return super_elevation_profile_[idx];
 }
 
 void Road::AddSignal(Signal *signal)
@@ -1682,6 +1709,50 @@ bool Road::GetZAndPitchByS(double s, double *z, double *pitch, int *index)
 		}
 	}
 	*z = 0;
+	return false;
+}
+
+bool Road::UpdateZAndRollBySAndT(double s, double t, double *z, double *roll, int *index)
+{
+	if (GetNumberOfSuperElevations() > 0)
+	{
+		if (*index < 0 || *index >= GetNumberOfSuperElevations())
+		{
+			*index = 0;
+		}
+		Elevation *super_elevation = GetSuperElevation(*index);
+		if (super_elevation == NULL)
+		{
+			LOG("Superelevation error NULL, nelev: %d elev_idx: %d\n", GetNumberOfSuperElevations(), *index);
+			return false;
+		}
+
+		if (super_elevation && s > super_elevation->GetS() + super_elevation->GetLength())
+		{
+			while (s > super_elevation->GetS() + super_elevation->GetLength() && *index < GetNumberOfSuperElevations() - 1)
+			{
+				// Move to next elevation section
+				super_elevation = GetSuperElevation(++ *index);
+			}
+		}
+		else if (super_elevation && s < super_elevation->GetS())
+		{
+			while (s < super_elevation->GetS() && *index > 0)
+			{
+				// Move to previous elevation section
+				super_elevation = GetSuperElevation(-- *index);
+			}
+		}
+
+		if (super_elevation)
+		{
+			double ds = s - super_elevation->GetS();
+			*roll = super_elevation->poly3_.Evaluate(ds);
+			*z += sin(*roll) * t;
+
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -2010,6 +2081,29 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				else
 				{
 					LOG("Elevation: Major error\n");
+				}
+			}
+		}
+
+		pugi::xml_node super_elevation_profile = road_node.child("lateralProfile");
+		if (super_elevation_profile != NULL)
+		{
+			for (pugi::xml_node super_elevation = super_elevation_profile.child("superelevation"); super_elevation; super_elevation = super_elevation.next_sibling())
+			{
+				double s = atof(super_elevation.attribute("s").value());
+				double a = atof(super_elevation.attribute("a").value());
+				double b = atof(super_elevation.attribute("b").value());
+				double c = atof(super_elevation.attribute("c").value());
+				double d = atof(super_elevation.attribute("d").value());
+
+				Elevation *ep = new Elevation(s, a, b, c, d);
+				if (ep != NULL)
+				{
+					r->AddSuperElevation(ep);
+				}
+				else
+				{
+					LOG("SuperElevation: Major error\n");
 				}
 			}
 		}
@@ -3651,6 +3745,7 @@ void Position::Init()
 	h_relative_ = 0.0;
 	curvature_ = 0.0;
 	p_road_ = 0.0;
+	r_road_ = 0.0;
 	rel_pos_ = 0;
 	type_ = PositionType::NORMAL;
 	orientation_type_ = OrientationType::ORIENTATION_ABSOLUTE;
@@ -3662,6 +3757,7 @@ void Position::Init()
 	lane_section_idx_ = -1;
 	lane_idx_ = -1;
 	elevation_idx_ = -1;
+	super_elevation_idx_ = -1;
 	route_ = 0;
 	trajectory_ = 0;
 }
@@ -4904,7 +5000,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 	SetY(y3);
 	SetHeading(h3);
 
-	EvaluateRoadZPitch(alignZAndPitch);
+	EvaluateRoadZPitchRoll(alignZAndPitch);
 
 	// If on a route, calculate corresponding route position
 	if (route_)
@@ -4916,20 +5012,24 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 }
 	
 
-bool Position::EvaluateRoadZPitch(bool alignZPitch)
+bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 {
 	bool ret_value = GetRoadById(track_id_)->GetZAndPitchByS(s_, &z_road_, &p_road_, &elevation_idx_);
+	ret_value &= GetRoadById(track_id_)->UpdateZAndRollBySAndT(s_, t_, &z_road_, &r_road_, &super_elevation_idx_);
 
-	if (alignZPitch)
+	if (alignZPitchRoll)
 	{
-		z_ = z_road_;
-		p_ = p_road_;
+		SetZ(z_road_);
 
-		// Find out pitch of road in driving direction
+		// Adjust pitch and roll of road in driving direction
 		if (GetHRelative() > M_PI_2 && GetHRelative() < 3 * M_PI_2)
 		{
-			p_ *= -1;
+			p_road_ *= -1;
+			r_road_ *= -1;
 		}
+
+		SetP(p_road_);
+		SetR(r_road_);
 	}
 
 	return ret_value;
@@ -4980,7 +5080,7 @@ int Position::Track2XYZ(bool alignH)
 	y_ += y_local;
 
 	// z = Elevation 
-	EvaluateRoadZPitch(true);
+	EvaluateRoadZPitchRoll(true);
 
 	return ErrorCode::ERROR_NO_ERROR;
 }
@@ -5077,6 +5177,7 @@ int Position::SetLongitudinalTrackPos(int track_id, double s)
 		track_idx_ = GetOpenDrive()->GetTrackIdxById(track_id);
 		geometry_idx_ = 0;
 		elevation_idx_ = 0;
+		super_elevation_idx_ = 0;
 		lane_section_idx_ = 0;
 		lane_id_ = 0;
 		lane_idx_ = 0;
