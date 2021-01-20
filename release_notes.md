@@ -1,5 +1,10 @@
 ## esmini release notes
 
+### 2021-01-20 Version 2.1.4
+
+- Support for OpenDRIVE road superelevation (lateral inclination) - thanks cfschaller
+- Add a few missing modes and shapes to SpeedAction, now aligned with [osg_coverage.txt](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0)
+
 ### 2021-01-15 Version 2.1.3
 
 - Fix macOS Big Sur issue, avoid crash by moving window position
@@ -16,7 +21,7 @@
 - Add ground surface textures for road model generator  
 - Add the textures to demo pack 
 
-Updated complete model pack can be downloaded from [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0)
+Updated complete model pack can be downloaded from [here](https://github.com/esmini/esmini/blob/master/osc_coverage.txt)
 
 The road model generator is exercised by the following example scripts:  
 - run/esmini/run_lane_change.bat
