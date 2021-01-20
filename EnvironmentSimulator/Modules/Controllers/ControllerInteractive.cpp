@@ -89,7 +89,7 @@ void ControllerInteractive::Step(double timeStep)
 	else 
 	{
 		// Set road position
-		object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_, 0, 0);
+		object_->pos_.XYZH2TrackPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_, true);
 	}
 
 	// Fetch Z and Pitch from OpenDRIVE position
