@@ -1,4 +1,4 @@
-/* 
+﻿/* 
  * esmini - Environment Simulator Minimalistic 
  * https://github.com/esmini/esmini
  *
@@ -810,6 +810,7 @@ namespace roadmanager
 		double GetLaneWidthByS(double s, int lane_id);
 		double GetSpeedByS(double s);
 		bool GetZAndPitchByS(double s, double *z, double *pitch, int *index);
+		bool UpdateZAndRollBySAndT(double s, double t, double *z, double *roll, int *index);
 		int GetNumberOfLaneSections() { return (int)lane_section_.size(); }
 		std::string GetName() { return name_; }
 		void SetLength(double length) { length_ = length; }
@@ -825,12 +826,15 @@ namespace roadmanager
 		void AddPoly3(Poly3 *poly3);
 		void AddParamPoly3(ParamPoly3 *param_poly3);
 		void AddElevation(Elevation *elevation);
+		void AddSuperElevation(Elevation *super_elevation);
 		void AddLaneSection(LaneSection *lane_section);
 		void AddLaneOffset(LaneOffset *lane_offset);
 		void AddSignal(Signal *signal);
 		Elevation *GetElevation(int idx);
+		Elevation *GetSuperElevation(int idx);
 		Signal *GetSignal(int idx);
 		int GetNumberOfElevations() { return (int)elevation_profile_.size(); }
+		int GetNumberOfSuperElevations() { return (int)super_elevation_profile_.size(); }
 		double GetLaneOffset(double s);
 		double GetLaneOffsetPrim(double s);
 		int GetNumberOfLanes(double s);
@@ -854,6 +858,7 @@ namespace roadmanager
 		std::vector<RoadLink*> link_;
 		std::vector<Geometry*> geometry_;
 		std::vector<Elevation*> elevation_profile_;
+		std::vector<Elevation*> super_elevation_profile_;
 		std::vector<LaneSection*> lane_section_;
 		std::vector<LaneOffset*> lane_offset_;
 		std::vector<Signal*> signal_;
@@ -1385,6 +1390,11 @@ namespace roadmanager
 		double GetPRoad() const { return p_road_; }
 
 		/**
+		Retrieve the road roll value
+		*/
+		double GetRRoad() const { return r_road_; }
+
+		/**
 		Retrieve the road pitch value, driving direction considered
 		*/
 		double GetPRoadInDrivingDirection();
@@ -1478,7 +1488,7 @@ namespace roadmanager
 		void LaneBoundary2Track();
 		void XYZ2Track(bool alignZAndPitch = false);
 		int SetLongitudinalTrackPos(int track_id, double s);
-		bool EvaluateRoadZPitch(bool alignZPitch);
+		bool EvaluateRoadZPitchRoll(bool alignZPitchRoll);
 
 		// route reference
 		Route  *route_;			// if pointer set, the position corresponds to a point along (s) the route
@@ -1520,6 +1530,7 @@ namespace roadmanager
 		double	accZ_;
 		double	z_road_;
 		double	p_road_;
+		double	r_road_;
 
 		// keep track for fast incremental updates of the position
 		int		track_idx_;				// road index 
@@ -1530,6 +1541,7 @@ namespace roadmanager
 		int		lane_section_idx_;		// lane section
 		int		geometry_idx_;			// index of the segment within the track given by track_idx
 		int		elevation_idx_;			// index of the current elevation entry 
+		int		super_elevation_idx_;   // index of the current super elevation entry 
 	};
 
 
