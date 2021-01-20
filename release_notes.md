@@ -3,7 +3,7 @@
 ### 2021-01-20 Version 2.1.4
 
 - Support for OpenDRIVE road superelevation (lateral inclination) - thanks cfschaller
-- Add a few missing modes and shapes to SpeedAction, now aligned with [osg_coverage.txt](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0)
+- Add a few missing modes and shapes to SpeedAction, now aligned with [osg_coverage.txt](https://github.com/esmini/esmini/blob/master/osc_coverage.txt)
 
 ### 2021-01-15 Version 2.1.3
 
