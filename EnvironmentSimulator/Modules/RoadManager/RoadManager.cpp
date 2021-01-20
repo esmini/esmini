@@ -3745,7 +3745,9 @@ void Position::Init()
 	h_relative_ = 0.0;
 	curvature_ = 0.0;
 	p_road_ = 0.0;
+	p_relative_ = 0.0;
 	r_road_ = 0.0;
+	r_relative_ = 0.0;
 	rel_pos_ = 0;
 	type_ = PositionType::NORMAL;
 	orientation_type_ = OrientationType::ORIENTATION_ABSOLUTE;
@@ -4562,7 +4564,7 @@ void Position::Track2Lane()
 	lane_section_idx_ = lane_section_idx;
 }
 
-int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool alignZAndPitch)
+int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool alignZPitchRoll)
 {
 	// Overall method:
 	//   1. Iterate over all roads, looking at OSI points of each lane sections center line (lane 0)
@@ -5033,7 +5035,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 	SetY(y3);
 	SetHeading(h3);
 
-	EvaluateRoadZPitchRoll(alignZAndPitch);
+	EvaluateRoadZPitchRoll(alignZPitchRoll);
 
 	// If on a route, calculate corresponding route position
 	if (route_)
@@ -5061,8 +5063,8 @@ bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 			r_road_ *= -1;
 		}
 
-		SetP(p_road_);
-		SetR(r_road_);
+		SetPitch(p_relative_ + p_road_);
+		SetRoll(r_relative_ + r_road_);
 	}
 
 	return ret_value;
@@ -5941,12 +5943,26 @@ int Position::SetInertiaPos(double x, double y, double z, double h, double p, do
 	y_ = y;
 	z_ = z;
 	SetHeading(h);
-	p_ = p;
-	r_ = r;
+	SetPitch(p);
+	SetRoll(r);
 
 	if (updateTrackPos)
 	{
-		XYZ2Track();
+		XYZ2Track(false);
+	}
+
+	return 0;
+}
+
+int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
+{
+	x_ = x;
+	y_ = y;
+	SetHeading(h);
+
+	if (updateTrackPos)
+	{
+		XYZ2Track(true);
 	}
 
 	return 0;
@@ -5976,6 +5992,30 @@ void Position::SetHeadingRelativeRoadDirection(double heading)
 		h_relative_ = GetAngleInInterval2PI(heading);
 	}
 	h_ = GetAngleSum(h_road_, h_relative_);
+}
+
+void Position::SetRoll(double roll)
+{
+	r_ = roll;
+	r_relative_ = GetAngleInInterval2PI(GetAngleDifference(r_, r_road_));
+}
+
+void Position::SetRollRelative(double roll)
+{
+	r_relative_ = GetAngleInInterval2PI(roll);
+	r_ = GetAngleSum(r_road_, r_relative_);
+}
+
+void Position::SetPitch(double pitch)
+{
+	p_ = pitch;
+	p_relative_ = GetAngleInInterval2PI(GetAngleDifference(p_, p_road_));
+}
+
+void Position::SetPitchRelative(double pitch)
+{
+	p_relative_ = GetAngleInInterval2PI(pitch);
+	p_ = GetAngleSum(p_road_, p_relative_);
 }
 
 double Position::GetCurvature()
@@ -6270,8 +6310,8 @@ int Position::GetRoadLaneInfo(RoadLaneInfo *data)
 	data->pos[1] = GetY();
 	data->pos[2] = GetZRoad();
 	data->heading = GetHRoad();
-	data->pitch = GetP();
-	data->roll = GetR();
+	data->pitch = GetPRoad();
+	data->roll = GetRRoad();
 
 	// Then find out the width of the lane at current s-value
 	Road *road = GetRoadById(GetTrackId());
@@ -6678,6 +6718,42 @@ double Position::GetP()
 	return p_;
 }
 
+double Position::GetPRelative()
+{
+	if (!rel_pos_ || rel_pos_ == this)
+	{
+		return p_relative_;
+	}
+	else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
+	{
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return p_relative_;
+		}
+		else
+		{
+			return GetAngleInInterval2PI(p_relative_ + rel_pos_->GetPRelative());
+		}
+	}
+	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
+	{
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return p_relative_;
+		}
+		else
+		{
+			return GetAngleInInterval2PI(p_relative_ + GetPRoadInDrivingDirection());
+		}
+	}
+	else
+	{
+		LOG("Unexpected PositionType: %d", type_);
+	}
+
+	return p_relative_;
+}
+
 double Position::GetR()
 {
 	if (!rel_pos_ || rel_pos_ == this)
@@ -6712,6 +6788,42 @@ double Position::GetR()
 	}
 
 	return r_;
+}
+
+double Position::GetRRelative()
+{
+	if (!rel_pos_ || rel_pos_ == this)
+	{
+		return r_relative_;
+	}
+	else if (type_ == PositionType::RELATIVE_WORLD || type_ == PositionType::RELATIVE_OBJECT)
+	{
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return r_relative_;
+		}
+		else
+		{
+			return GetAngleInInterval2PI(r_relative_ + rel_pos_->GetRRelative());
+		}
+	}
+	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
+	{
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return r_relative_;
+		}
+		else
+		{
+			return GetAngleInInterval2PI(r_relative_ + r_road_);
+		}
+	}
+	else
+	{
+		LOG("Unexpected PositionType: %d", type_);
+	}
+
+	return r_relative_;
 }
 
 int Position::SetRoutePosition(Position *position)
@@ -7023,8 +7135,8 @@ void Position::ReleaseRelation()
 				h = GetAngleSum(h, M_PI);
 			}
 			SetHeadingRelative(h);
-			SetP(GetP());
-			SetR(GetR());
+			SetPitch(GetP());
+			SetRoll(GetR());
 		}
 		else
 		{
@@ -7050,8 +7162,8 @@ void Position::ReleaseRelation()
 				h = GetAngleSum(h, M_PI);
 			}
 			SetHeadingRelative(h);
-			SetP(GetP());
-			SetR(GetR());
+			SetPitch(GetP());
+			SetRoll(GetR());
 		}
 		else
 		{

@@ -89,12 +89,12 @@ void ControllerInteractive::Step(double timeStep)
 	else 
 	{
 		// Set road position
-		object_->pos_.XYZH2TrackPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_, true);
+		object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.heading_, true);
 	}
 
 	// Fetch Z and Pitch from OpenDRIVE position
-	vehicle_.posZ_ = object_->pos_.GetZ();
-	vehicle_.pitch_ = object_->pos_.GetP();
+	vehicle_.posZ_ = object_->pos_.GetZRoad();
+	vehicle_.pitch_ = object_->pos_.GetPRoad();
 
 	// Update wheels wrt domains
 	if (domain_ & Controller::Domain::CTRL_LONGITUDINAL)

@@ -1133,11 +1133,37 @@ namespace roadmanager
 		int SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int roadmarktype_idx, int roadmarkline_idx, double s, double offset, int lane_section_idx = -1);
+
+		/**
+		Specify position by cartesian x, y, z and heading, pitch, roll
+		@param x x
+		@param y y
+		@param z z
+		@param h heading
+		@param p pitch
+		@param r roll
+		@param updateTrackPos True: road position will be calculated False: don't update road position
+		@return Non zero return value indicates error of some kind
+		*/
 		int SetInertiaPos(double x, double y, double z, double h, double p, double r, bool updateTrackPos = true);
+
+		/**
+		Specify position by cartesian x, y and heading. z, pitch and roll will be aligned to road.
+		@param x x
+		@param y y
+		@param h heading
+		@param updateTrackPos True: road position will be calculated False: don't update road position
+		@return Non zero return value indicates error of some kind
+		*/
+		int SetInertiaPos(double x, double y, double h, bool updateTrackPos = true);
 		void SetHeading(double heading);
 		void SetHeadingRelative(double heading);
 		void SetHeadingRelativeRoadDirection(double heading);
-		
+		void SetRoll(double roll);
+		void SetRollRelative(double roll);
+		void SetPitch(double roll);
+		void SetPitchRelative(double pitch);
+
 		/**
 		Specify position by cartesian coordinate (x, y, z, h)
 		@param x X-coordinate
@@ -1390,19 +1416,30 @@ namespace roadmanager
 		double GetPRoad() const { return p_road_; }
 
 		/**
+		Retrieve the relative pitch angle (radians)
+		*/
+		double GetPRelative();
+
+		/**
+		Retrieve the world coordinate roll angle (radians)
+		*/
+		double GetR();
+
+		/**
 		Retrieve the road roll value
 		*/
 		double GetRRoad() const { return r_road_; }
+
+		/**
+		Retrieve the relative roll angle (radians)
+		*/
+		double GetRRelative();
 
 		/**
 		Retrieve the road pitch value, driving direction considered
 		*/
 		double GetPRoadInDrivingDirection();
 
-		/**
-		Retrieve the world coordinate roll angle (radians)
-		*/
-		double GetR();
 
 		/**
 		Retrieve the road curvature at current position
@@ -1508,6 +1545,8 @@ namespace roadmanager
 		double  s_route_;			// longitudinal point/distance along the route
 		double  s_trajectory_;		// longitudinal point/distance along the trajectory
 		double  curvature_;
+		double  p_relative_;		// pitch relative to the road (h_ = h_road_ + h_relative_)
+		double  r_relative_;		// roll relative to the road (h_ = h_road_ + h_relative_)
 		Position* rel_pos_;
 		PositionType type_;
 		OrientationType orientation_type_;  // Applicable for relative positions
