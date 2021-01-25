@@ -258,7 +258,7 @@ int main(int argc, char* argv[])
 	float simTime = 0;
 	float dt = 0;
 
-	if (SE_Init("../resources/xosc/test-driver_with_ghost.xosc", 0, 1, 0, 0) != 0)
+	if (SE_Init("../resources/xosc/test-driver.xosc", 0, 1, 0, 0) != 0)
 	{
 		printf("Failed to initialize the scenario, quit\n");
 		return -1;
@@ -331,6 +331,8 @@ To test this you need to make two changes to the previous example:
 2. In test-driver.xosc, change line:  
 ```<Property name="useGhost" value="false" />``` to   
 ```<Property name="useGhost" value="true" />```
+
+When running the application, press key 'j' to show dots along Ego and Ghost trails.
 
 ### Python binding
 
