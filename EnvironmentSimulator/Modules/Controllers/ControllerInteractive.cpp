@@ -86,9 +86,9 @@ void ControllerInteractive::Step(double timeStep)
 		}
 		object_->pos_.MoveAlongS(steplen);
 	}
-	else 
+	else // domain is both longitudinal and lateral
 	{
-		// Set road position
+		// Set world position
 		object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.heading_, true);
 	}
 

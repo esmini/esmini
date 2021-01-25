@@ -201,12 +201,11 @@ Note: If you want M_PI, add on top (before includes): #define _USE_MATH_DEFINES
 
 Using a simple vehicle model this example demonstrates how a driver model can interact with the scenario, once again using the ```ExternalController```. 
 
-Before heading into the application code we will prepare a scenario. Make a copy of ```slow-lead-vehicle.xosc``` and name it ```test-driver.xosc```.
+Before heading into the application code we will prepare a scenario. Download [test-drive.xosc](https://www.dropbox.com/s/h9uqj2la4sk2t2o/test-driver.xosc?dl=1) and put it in esmini/resources/xosc folder.
 
-Do the following steps:
-
-- Open test-driver.xosc for edit. 
-- Assign controller to the Ego vehicle. Put the following private action code in the Init section, under Ego
+Now let's have a look inside it to see how to activate the ExternalController, which will prevent the DefaultController to interfere with the Ego vehicle and instead hand over exclusive control to our application. You can skip this and go to the C++ code example below if you're not interested in the controller setup.
+- Open test-driver.xosc 
+- Look in the Init element. First the controller is assigned to the Ego vehicle. 
 	```
 	<PrivateAction>
 	    <ControllerAction>
@@ -220,38 +219,46 @@ Do the following steps:
 	    </ControllerAction>
 	</PrivateAction>
 	```
-- And activate the controller on both lateral and longitudinal domains. Put the following private action right after the above.
+- Then the initial position is set. This could instead be done by the application, but it's convenient to specify it in the scenario file.
+	```
+   <PrivateAction>
+        <TeleportAction>
+            <Position>
+                <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+            </Position>
+        </TeleportAction>
+   </PrivateAction>
+	```
+- And finally we need to activate the controller on both lateral and longitudinal domains. 
 	```
     <PrivateAction>
          <ActivateControllerAction longitudinal="true" lateral="true" />
     </PrivateAction>
 	```
-
- - For a more interesting road, change into curves_elevation:
-	```
-	<RoadNetwork>
-	   <LogicFile filepath="../xodr/curves_elevation.xodr"/>
-	   <SceneGraphFile filepath="../models/curves_elevation.osgb"/>
-	</RoadNetwork>
-	```
-
-Now let's head into the code example. 
+    The reason for putting it AFTER the positioning is that oterwise the position action would have no effect, since once the controller is activated all scenario actions will be ignored. The controller then having exclusive control.
+ 
+Now let's head into the code example. Copy it into your main.cpp module. Compile and run it. Then study the code and perhaps play around mainpulating some values.
 
 ```C++
 #include "stdio.h"
 #include "math.h"
 #include "esminiLib.hpp"
 
+#define TARGET_SPEED 50.0
+#define CURVE_WEIGHT 30.0
+#define THROTTLE_WEIGHT 0.01
+#define GHOST 0
+
 int main(int argc, char* argv[])
 {
 	void* vehicleHandle = 0;
-	SE_SimpleVehicleState vehicleState = {0, 0, 0, 0, 0, 0};
+	SE_SimpleVehicleState vehicleState = { 0, 0, 0, 0, 0, 0 };
 	SE_ScenarioObjectState objectState;
 	SE_RoadInfo roadInfo;
 	float simTime = 0;
 	float dt = 0;
 
-	if (SE_Init("../resources/xosc/test-driver.xosc", 0, 1, 0, 0) != 0)
+	if (SE_Init("../resources/xosc/test-driver_with_ghost.xosc", 0, 1, 0, 0) != 0)
 	{
 		printf("Failed to initialize the scenario, quit\n");
 		return -1;
@@ -264,41 +271,66 @@ int main(int argc, char* argv[])
 	// show some road features, including road sensor 
 	SE_ViewerShowFeature(4, true);
 
-	// Run for 40 seconds or until 'Esc' button is pressed
-	while (SE_GetSimulationTime() < 40 && !(SE_GetQuitFlag() == 1))
+	// Run for 60 seconds or until 'Esc' button is pressed
+	while (SE_GetSimulationTime() < 60 && !(SE_GetQuitFlag() == 1))
 	{
-		SE_Step();
-		dt = SE_GetSimulationTime() - simTime;
-		simTime = SE_GetSimulationTime();
-		
+		// Get simulation delta time since last call (first will be 0)
+		dt = SE_GetSimTimeStep();
+
 		// Get road information at a point some speed dependent distance ahead
-		SE_GetRoadInfoAtDistance(0, 5 + 0.5f * vehicleState.speed, &roadInfo, 0);
+#if !GHOST
+		SE_GetRoadInfoAtDistance(0, 5 + 0.75f * vehicleState.speed, &roadInfo, 0);
+		// Slow down when curve ahead - CURVE_WEIGHT is the tuning parameter
+		double targetSpeed = TARGET_SPEED / (1 + CURVE_WEIGHT * fabs(roadInfo.angle));
+#else
+		// ghost version
+		float ghost_speed;
+		SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed);
+		double targetSpeed = ghost_speed;
+#endif
 
 		// Steer towards where the point 
 		double steerAngle = roadInfo.angle;
 
-		// Accelerate until target speed 25 is reached
-		double throttle = vehicleState.speed < 25 ? 1.0 : 0.0;
-		
-		// Slow down in curves
-		throttle /= (1 + 20 * fabs(steerAngle));
+		// Accelerate or decelerate towards target speed - THROTTLE_WEIGHT tunes magnitude
+		double throttle = THROTTLE_WEIGHT * (targetSpeed - vehicleState.speed);
 
-		// Step vehicle model with driver input
-		SE_SimpleVehicleControlAnalog(vehicleHandle, dt, throttle, steerAngle);
+		// Step vehicle model with driver input, but wait until time > 0
+		if (SE_GetSimulationTime() > 0)
+		{
+			SE_SimpleVehicleControlAnalog(vehicleHandle, dt, throttle, steerAngle);
+		}
 
 		// Fetch updated state and report to scenario engine
 		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
 
-		SE_ReportObjectPos(0, simTime, vehicleState.x, vehicleState.y, vehicleState.z,
-			vehicleState.h, vehicleState.p, 0, vehicleState.speed);
+		// Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
+		SE_ReportObjectPosXYH(0, simTime, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+
+		// Finally, update scenario using same time step as for vehicle model
+		SE_StepDT(dt);
 	}
 
 	return 0;
 }
+
 ```
-Don't worry about the slow vehicle, you'll just drive through it. 
+Don't worry about the stationary red car on the road, you'll just drive through it. 
 
 **Challenge**: Attach a front looking sensor to detect it and have the driver to brake to avoid collision...
+
+#### Ghost concept
+The driver model so far is just capable of driving along the specified lane. It's totally detached from any scenario events. 
+
+There is a solution if you want a driver model to perform scenario actions: The ghost concept. Basically it will launch a fore-runner to perform the scenario actions. The trajectory is registered, including speed, and can then be used as reference for steering and speed target.
+
+To test this you need to make two changes to the previous example:
+1. In main.cpp, change line:  
+```#define GHOST 0``` to  
+```#define GHOST 1```
+2. In test-driver.xosc, change line:  
+```<Property name="useGhost" value="false" />``` to   
+```<Property name="useGhost" value="true" />```
 
 ### Python binding
 

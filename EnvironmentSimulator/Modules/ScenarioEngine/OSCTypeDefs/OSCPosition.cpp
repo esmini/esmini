@@ -32,10 +32,14 @@ OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset
 		if (position_.GetLaneId() < 0)
 		{
 			position_.SetHeadingRelative(orientation.h_);
+			position_.SetPitchRelative(orientation.p_);
+			position_.SetRollRelative(orientation.r_);
 		}
 		else
 		{
 			position_.SetHeadingRelative(GetAngleSum(M_PI, orientation.h_));
+			position_.SetPitchRelative(-orientation.p_);
+			position_.SetRollRelative(-orientation.r_);
 		}
 	}
 	else if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE)
@@ -46,9 +50,8 @@ OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset
 	{
 		LOG("Unexpected orientation type: %d", orientation.type_);
 	}
-	position_.SetP(orientation.p_);
-	position_.SetR(orientation.r_);
 }
+
 OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation orientation) :
 	OSCPosition(PositionType::ROAD)
 {

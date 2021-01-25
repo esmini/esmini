@@ -868,11 +868,6 @@ int ScenarioReader::parseEntities()
 
 					// SUMO controller is not assigned to any scenario vehicle
 				}
-				else if (ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
-				{
-					// Ghost controllers are assigned and activated from start, to get correct headstart 
-					ctrl->Assign(obj);
-				}
 				controller_.push_back(ctrl);
 			}
 

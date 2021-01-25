@@ -16,8 +16,8 @@
 #include "OSCProperties.hpp"
 #include "Parameters.hpp"
 
-#define CONTROLLER_ADVANCED_BASE_TYPE_NAME "ControllerClass"
-#define CONTROLLER_ADVANCED_BASE_TYPE_ID -1
+#define CONTROLLER_BASE_TYPE_NAME "ControllerClass"
+#define CONTROLLER_BASE_TYPE_ID -1
 
 namespace scenarioengine
 {
@@ -80,9 +80,9 @@ namespace scenarioengine
 		Controller() : entities_(0), gateway_(0) {}
 		Controller(InitArgs* args);
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_ADVANCED_BASE_TYPE_NAME; }
+		static const char* GetTypeNameStatic() { return CONTROLLER_BASE_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_ADVANCED_BASE_TYPE_ID; }
+		static const int GetTypeStatic() { return CONTROLLER_BASE_TYPE_ID; }
 		virtual int GetType() { return GetTypeStatic(); }
 
 		virtual void Assign(Object* object);

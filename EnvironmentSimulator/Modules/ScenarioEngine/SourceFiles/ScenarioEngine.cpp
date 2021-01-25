@@ -132,6 +132,19 @@ void ScenarioEngine::step(double deltaSimTime)
 				obj->speed_ = o.state_.speed;
 				obj->wheel_angle_ = o.state_.wheel_angle;
 				obj->wheel_rot_ = o.state_.wheel_rot;
+
+				if (obj->pos_.GetStatusBitMask() & roadmanager::Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD)
+				{
+					if (!obj->IsEndOfRoad())
+					{
+						obj->SetEndOfRoad(true, simulationTime_);
+					}
+				}
+				else
+				{
+					obj->SetEndOfRoad(false);
+				}
+
 			}
 		}
 	}
@@ -550,18 +563,18 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 			}
 
 			retvalue = obj->pos_.MoveAlongS(steplen);
-		}
-
-		if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD)
-		{
-			if (!obj->IsEndOfRoad())
+			
+			if (obj->pos_.GetStatusBitMask() & roadmanager::Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD)
 			{
-				obj->SetEndOfRoad(true, simulationTime_);
+				if (!obj->IsEndOfRoad())
+				{
+					obj->SetEndOfRoad(true, simulationTime_);
+				}
 			}
-		}
-		else
-		{
-			obj->SetEndOfRoad(false);
+			else
+			{
+				obj->SetEndOfRoad(false);
+			}
 		}
 	}
 }
@@ -609,6 +622,7 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 			{
 				obj->wheel_rot_ = fmod(obj->wheel_rot_ + obj->speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
 			}
+
 		}
 		else
 		{

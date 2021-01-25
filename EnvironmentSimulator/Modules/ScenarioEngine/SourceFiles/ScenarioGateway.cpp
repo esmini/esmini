@@ -245,6 +245,29 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 }
 
 void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
+	double timestamp, double speed, double wheel_angle, double wheel_rot,
+	double x, double y, double h)
+{
+	ObjectState* obj_state = getObjectStatePtrById(id);
+
+	if (obj_state == 0)
+	{
+		// Create state and set permanent information
+		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
+		obj_state = new ObjectState(id, name, obj_type, obj_category, model_id, ctrl_type, boundingbox, timestamp, speed, wheel_angle, wheel_rot, x, y, 0, h, 0, 0);
+
+		// Add object to collection
+		objectState_.push_back(obj_state);
+	}
+	else
+	{
+		// Update status
+		obj_state->state_.pos.SetInertiaPos(x, y, h);
+		updateObjectInfo(obj_state, timestamp, speed, wheel_angle, wheel_rot);
+	}
+}
+
+void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 	double timestamp, double speed, double wheel_angle, double wheel_rot, int roadId, int laneId, double laneOffset, double s)
 {
 	ObjectState* obj_state = getObjectStatePtrById(id);

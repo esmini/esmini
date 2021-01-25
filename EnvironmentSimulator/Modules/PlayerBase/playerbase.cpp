@@ -288,7 +288,7 @@ void ScenarioPlayer::ViewerFrame()
 			viewer::CarModel* car = (viewer::CarModel*)entity;
 			car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
 
-			if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST && obj->GetGhost())
+			if (obj->GetGhost())
 			{
 				if (car->steering_sensor_)
 				{

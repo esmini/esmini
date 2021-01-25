@@ -251,6 +251,15 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 
 	*speed_ghost = (float)state.speed_;
 
+
+	// Update object sensor position for visualization
+	if (obj->sensor_pos_)
+	{
+		obj->sensor_pos_[0] = state.x_;
+		obj->sensor_pos_[1] = state.y_;
+		obj->sensor_pos_[2] = state.z_;
+	}
+
 	return 0;
 }
 
@@ -495,6 +504,12 @@ extern "C"
 		return (float)player->scenarioEngine->getSimulationTime();
 	}
 
+	SE_DLL_API float SE_GetSimTimeStep()
+	{
+		static __int64 time_stamp = 0;
+		return (float)SE_getSimTimeStep(time_stamp, 0.001, 0.1);
+	}
+
 	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
 	{
 		if (player)
@@ -505,6 +520,22 @@ extern "C"
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_, 
 					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, x, y, z, h, p, r);
+			}
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_ReportObjectPosXYH(int id, float timestamp, float x, float y, float h, float speed)
+	{
+		if (player)
+		{
+			if (id < player->scenarioEngine->entities.object_.size())
+			{
+				// reuse some values
+				Object* obj = player->scenarioEngine->entities.object_[id];
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_,
+					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, x, y, h);
 			}
 		}
 

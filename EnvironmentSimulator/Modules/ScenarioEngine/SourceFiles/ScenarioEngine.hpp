@@ -76,7 +76,6 @@ namespace scenarioengine
 		// Simulation parameters
 		double simulationTime_;
 		double headstart_time_;
-		std::string sumofile;
 		Vehicle sumotemplate;
 		ScenarioGateway scenarioGateway;
 

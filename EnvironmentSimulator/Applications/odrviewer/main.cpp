@@ -28,7 +28,6 @@
 
 #include "viewer.hpp"
 #include "RoadManager.hpp"
-#include "vehicle.hpp"
 #include "CommonMini.hpp"
 
 

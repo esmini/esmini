@@ -3,6 +3,8 @@
 ## Main modules
 Below follows a brief introduction to the main code modules of esmini corresponding to the folders in [`esmini/EnvironmentSimulator/Modules`](https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/Modules) file tree path.
 
+[Here](https://viewer.diagrams.net/?highlight=0000ff&layers=1&nav=1&title=esmini_class_diagram.xml#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1z5TM6o-RryOGl1l-lRgiiv9ZMcrw0jBZ%26export%3Ddownload) is a high level (still quite complex) class diagram. Please note that it's not automatically generated, so there's probably some errors and stuff missing. Still it can provide some overview...
+
 ### RoadManager
 Implementation of [OpenDRIVE](https://www.asam.net/standards/detail/opendrive/) data model and interface. Coverage is not complete at all. The goal is to provide needed and most useful features for esmini. Functionality grows continuously. While being based on 1.4 version it will probably support newer features when needed, so we avoid tagging a specific version.
 

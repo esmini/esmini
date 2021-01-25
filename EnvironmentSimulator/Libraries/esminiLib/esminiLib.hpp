@@ -163,6 +163,13 @@ extern "C"
 	SE_DLL_API float SE_GetSimulationTime();  // Get simulation time in seconds
 
 	/**
+	Get simulation time step in seconds
+	The time step is calculated as difference since last call to same funtion.
+	Clamped to some reasonable values. First call returns smallest delta (typically 1 ms).
+	*/
+	SE_DLL_API float SE_GetSimTimeStep();
+
+		/**
 	Get the bool value of the end of the scenario
 	*/
 	SE_DLL_API int SE_GetQuitFlag();
@@ -210,6 +217,19 @@ extern "C"
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
+
+	/**
+	Report object position in limited set of cartesian coordinates x, y and heading,
+	the remaining z, pitch and roll will be aligned to the road surface
+	@param id Id of the object
+	@param timestamp Timestamp (not really used yet, OK to set 0)
+	@param x X coordinate
+	@param y Y coordinate
+	@param h Heading / yaw
+	@param speed Speed in forward direction of the enitity
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_ReportObjectPosXYH(int id, float timestamp, float x, float y, float h, float speed);
 
 	/**
 	Report object position in road coordinates

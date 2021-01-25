@@ -58,25 +58,20 @@ void ControllerFollowGhost::Step(double timeStep)
 	// Set steering target point at a distance ahead proportional to the speed
 	double probe_target_distance = MAX(7, 0.5 * object_->speed_);
 
-	// Update position along ghost trails
-	if (object_->GetActivatedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
-		object_->GetActivatedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
+	if (object_->GetGhost())
 	{
-		if (object_->GetGhost())
+		if (object_->GetGhost()->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
+			object_->trail_closest_pos_[0], object_->trail_closest_pos_[1],
+			object_->trail_follow_s_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
 		{
-			if (object_->GetGhost()->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
-				object_->trail_closest_pos_[0], object_->trail_closest_pos_[1],
-				object_->trail_follow_s_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
-			{
-				object_->trail_closest_pos_[2] = object_->pos_.GetZ();
-			}
-			else
-			{
-				// Failed find point along trail, copy entity position
-				object_->trail_closest_pos_[0] = object_->pos_.GetX();
-				object_->trail_closest_pos_[1] = object_->pos_.GetY();
-				object_->trail_closest_pos_[2] = object_->pos_.GetZ();
-			}
+			object_->trail_closest_pos_[2] = object_->pos_.GetZ();
+		}
+		else
+		{
+			// Failed find point along trail, copy entity position
+			object_->trail_closest_pos_[0] = object_->pos_.GetX();
+			object_->trail_closest_pos_[1] = object_->pos_.GetY();
+			object_->trail_closest_pos_[2] = object_->pos_.GetZ();
 		}
 	}
 

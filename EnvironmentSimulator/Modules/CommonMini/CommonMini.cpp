@@ -373,21 +373,29 @@ double strtod(std::string s)
 double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_time_step)
 {
 	double dt;
+
 	__int64 now = SE_getSystemTime();
 
-	dt = (now - time_stamp) * 0.001;  // step size in seconds
-
-	if (dt > max_time_step) // limit step size
+	if (time_stamp == 0)
 	{
-		dt = max_time_step;
-	}
-	else if (dt < min_time_step)  // avoid CPU rush, sleep for a while
-	{
-		SE_sleep((int)((min_time_step - dt) * 1000));
-		now = SE_getSystemTime();
+		// First call. Return minimal dt
 		dt = min_time_step;
 	}
+	else
+	{
+		dt = (now - time_stamp) * 0.001;  // step size in seconds
 
+		if (dt > max_time_step) // limit step size
+		{
+			dt = max_time_step;
+		}
+		else if (dt < min_time_step)  // avoid CPU rush, sleep for a while
+		{
+			SE_sleep((int)((min_time_step - dt) * 1000));
+			now = SE_getSystemTime();
+			dt = min_time_step;
+		}
+	}
 	time_stamp = now;
 
 	return dt;

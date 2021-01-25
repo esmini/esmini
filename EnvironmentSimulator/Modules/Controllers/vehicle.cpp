@@ -121,7 +121,7 @@ void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
 	{
 		if (handbrake_ == true)
 		{
-			if (fabs(throttle) < SMALL_NUMBER)
+			if (fabs(throttle) < SMALL_NUMBER || throttle > SMALL_NUMBER)
 			{
 				handbrake_ = false;
 			}
@@ -132,7 +132,7 @@ void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
 
 			if (oldSpeed > 0 && speed_ < 0)
 			{
-				speed_ = 0;
+				speed_ = 0.0;
 				handbrake_ = true;
 			}
 			else

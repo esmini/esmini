@@ -73,6 +73,10 @@ namespace scenarioengine
 
 		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 			double timestamp, double speed, double wheel_angle, double wheel_rot,
+			double x, double y, double h);
+
+		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
+			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			int roadId, int laneId, double laneOffset, double s);
 
 		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
@@ -96,14 +100,4 @@ namespace scenarioengine
 		std::ofstream data_file_;
 	};
 
-	class SumoController
-	{
-
-		private:
-			Entities* entities_;
-			ScenarioGateway* scenarioGateway_;
-			Vehicle* template_;
-			bool sumo_used;
-			// std::vector<SumoId> ids;
-	};
 }

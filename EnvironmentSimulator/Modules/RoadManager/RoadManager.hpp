@@ -1109,6 +1109,11 @@ namespace roadmanager
 			UPDATE_XYZH
 		};
 
+		typedef enum
+		{
+			POS_STATUS_END_OF_ROAD = (1 << 0)
+		} POSITION_STATUS_MODES;
+
 		explicit Position();
 		explicit Position(int track_id, double s, double t);
 		explicit Position(int track_id, int lane_id, double s, double offset);
@@ -1486,6 +1491,8 @@ namespace roadmanager
 		double GetHRate() { return h_rate_; }
 		double GetHAcc() { return h_acc_; }
 
+		int GetStatusBitMask() { return status_; }
+
 		void SetOrientationType(OrientationType type) { orientation_type_ = type; }
 
 		/**
@@ -1550,7 +1557,8 @@ namespace roadmanager
 		Position* rel_pos_;
 		PositionType type_;
 		OrientationType orientation_type_;  // Applicable for relative positions
-		int snapToLaneTypes_;  // Bitmask of lanes that the position will snap to
+		int snapToLaneTypes_;  // Bitmask of lane types that the position will snap to
+		int status_;           // Bitmask of various states, e.g. off_road, end_of_road
 
 		// inertial reference
 		double	x_;

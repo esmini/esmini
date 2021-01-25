@@ -3752,6 +3752,7 @@ void Position::Init()
 	type_ = PositionType::NORMAL;
 	orientation_type_ = OrientationType::ORIENTATION_ABSOLUTE;
 	snapToLaneTypes_ = Lane::LaneType::LANE_TYPE_ANY_DRIVING;
+	status_ = 0;
 
 	z_road_ = 0.0;
 	track_idx_ = -1;
@@ -4584,6 +4585,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 	double closestS = 0;
 	int j2, k2, jMin=-1, kMin=-1, jMinLocal, kMinLocal;
 	double closestPointDist = INFINITY;
+	bool closestPointInside = false;
 
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
@@ -4840,9 +4842,19 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					roadMin = road;
 					jMin = jMinLocal;
 					kMin = kMinLocal;
+					closestPointInside = inside;
 				}
 			}
 		}
+	}
+
+	if (closestPointInside)
+	{
+		status_ &= ~Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD;
+	}
+	else
+	{
+		status_ |= Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD;
 	}
 
 	// The closest OSI vertex has been identified
@@ -5246,11 +5258,21 @@ int Position::SetLongitudinalTrackPos(int track_id, double s)
 			LOG("Position::Set Warning: s (%.2f) too large, track %d only %.2f m long\n", s, track_id_, road->GetLength());
 		}
 		s_ = road->GetLength();
+		status_ |= POS_STATUS_END_OF_ROAD;
 		return ErrorCode::ERROR_END_OF_ROAD;
 	}
 	else
 	{
 		s_ = s;
+	}
+
+	if (s < SMALL_NUMBER || s > road->GetLength() - SMALL_NUMBER)
+	{
+		status_ |= POS_STATUS_END_OF_ROAD;
+	}
+	else
+	{
+		status_ &= ~POS_STATUS_END_OF_ROAD;
 	}
 
 	return 0;
@@ -5629,6 +5651,7 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 			// Failed to find a connection, stay at end of current road
 			SetLanePos(track_id_, lane_id_, s_stop, offset_);
 
+			status_ |= POS_STATUS_END_OF_ROAD;
 			return ErrorCode::ERROR_END_OF_ROAD;
 		}
 
@@ -5659,6 +5682,15 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 		int new_lane_id = road->GetLaneSectionByIdx(li.lane_section_idx_)->GetLaneByIdx(new_lane_idx)->GetId();
 		SetLanePos(track_id_, new_lane_id, GetS(), 0);
 		LOG("Lane %d on road %d is or became zero width, moved to closest available lane: %d", road->GetId(), old_lane_id, GetLaneId());
+	}
+
+	if (s_ < SMALL_NUMBER || s_ > road->GetLength() - SMALL_NUMBER)
+	{
+		status_ |= POS_STATUS_END_OF_ROAD;
+	}
+	else
+	{
+		status_ &= ~POS_STATUS_END_OF_ROAD;
 	}
 
 	return 0;
