@@ -1261,7 +1261,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 		{
 			for (pugi::xml_node paramChild = actionChild.first_child(); paramChild; paramChild = paramChild.next_sibling())
 			{
-				if (paramChild.name() == std::string("ParameterSetAction"))
+				if (paramChild.name() == std::string("SetAction"))
 				{
 					ParameterSetAction* paramSetAction = new ParameterSetAction();
 
