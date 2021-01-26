@@ -201,7 +201,7 @@ Note: If you want M_PI, add on top (before includes): #define _USE_MATH_DEFINES
 
 Using a simple vehicle model this example demonstrates how a driver model can interact with the scenario, once again using the ```ExternalController```. 
 
-Before heading into the application code we will prepare a scenario. Download [test-drive.xosc](https://www.dropbox.com/s/h9uqj2la4sk2t2o/test-driver.xosc?dl=1) and put it in esmini/resources/xosc folder.
+Before heading into the application code we will prepare a scenario. Download [test-driver.xosc](https://www.dropbox.com/s/h9uqj2la4sk2t2o/test-driver.xosc?dl=1) and put it in esmini/resources/xosc folder.
 
 Now let's have a look inside it to see how to activate the ExternalController, which will prevent the DefaultController to interfere with the Ego vehicle and instead hand over exclusive control to our application. You can skip this and go to the C++ code example below if you're not interested in the controller setup.
 - Open test-driver.xosc 

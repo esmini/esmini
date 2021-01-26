@@ -1,5 +1,12 @@
 ## esmini release notes
 
+### 2021-01-26 Version 2.1.5
+
+- Fix typo ParameterSetAction -> SetAction 
+- Fix pitch and roll initialization issue, now aligned to road as default
+- Update and extend the Driver model chapter in [Hello-World examples](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example).
+- Some additional minor fixes
+
 ### 2021-01-20 Version 2.1.4
 
 - Support for OpenDRIVE road superelevation (lateral inclination) - thanks cfschaller
