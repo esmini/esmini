@@ -205,19 +205,17 @@ Before heading into the application code we will prepare a scenario. Download [t
 
 Now let's have a look inside it to see how to activate the ExternalController, which will prevent the DefaultController to interfere with the Ego vehicle and instead hand over exclusive control to our application. You can skip this and go to the C++ code example below if you're not interested in the controller setup.
 - Open test-driver.xosc 
-- Look in the Init element. First the controller is assigned to the Ego vehicle. 
+- Look in the Entities section, under the \<ScenarioObject name="Ego"\> element. Here the controller is defined and assigned to the Ego vehicle. 
 	```
-	<PrivateAction>
-	    <ControllerAction>
-	        <AssignControllerAction>
-	            <Controller name="MyController">
-	                <Properties>
-	                    <Property name="esminiController" value="ExternalController" />
-	                </Properties>
-	            </Controller>
-	        </AssignControllerAction>
-	    </ControllerAction>
-	</PrivateAction>
+    <ObjectController>
+        <Controller name="MyExternalControllerWithGhost">
+        	<Properties>
+        	    <Property name="esminiController" value="ExternalController" />
+        	    <Property name="useGhost" value="true" />
+        	    <Property name="headstartTime" value="2" />
+        	</Properties>
+        </Controller>
+    </ObjectController>   
 	```
 - Then the initial position is set. This could instead be done by the application, but it's convenient to specify it in the scenario file.
 	```
