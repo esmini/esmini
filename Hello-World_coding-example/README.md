@@ -209,11 +209,11 @@ Now let's have a look inside it to see how to activate the ExternalController, w
 	```
     <ObjectController>
         <Controller name="MyExternalControllerWithGhost">
-        	<Properties>
+            <Properties>
         	    <Property name="esminiController" value="ExternalController" />
-        	    <Property name="useGhost" value="true" />
-        	    <Property name="headstartTime" value="2" />
-        	</Properties>
+                <Property name="useGhost" value="false" />
+                <Property name="headstartTime" value="2" />
+            </Properties>
         </Controller>
     </ObjectController>   
 	```
