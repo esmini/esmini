@@ -109,6 +109,9 @@ More information [here](https://github.com/esmini/esmini/blob/master/docs/Contro
 ### pyodrx
 [pyodrx](https://github.com/pyoscx/pyodrx) is a Python based road network creation framework. The idea is to write road networks in a high-level script format and automatically generate the OpenDRIVE (1.4 as of today) XML counterpart.
 
+### pyoscx/scenariogeneration
+[pyoscx/scenariogeneration](https://github.com/pyoscx/scenariogeneration) is a simple Python wrapper to combine pyoscx and pyodrx, providing an interface to parametrize and generate linked OpenSCENARIO and OpenDRIVE files to run multiple simulations, including parameter sweeps.
+
 ### ALKS scenarios
 [OSC-ALKS-scenarios](https://github.com/arauschert/OSC-ALKS-scenarios) is a collection of scenarios for Automated Lane Keeping System testing. "BMW has taken on the task of implementing the test scenarios from the ALKS regulation using OpenSCENARIO and OpenDRIVE resulting in a bundle of XML files executable with standard compliant simulators."
 
