@@ -39,9 +39,28 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 	simulationTime_ = 0;
 	initialized_ = false;
 	scenarioReader = new ScenarioReader(&entities, &catalogs, disable_controllers);
-	if (scenarioReader->loadOSCFile(oscFilename.c_str()) != 0)
+	
+	
+	std::vector<std::string> file_name_candidates;
+	// absolute path or relative to current directory
+	file_name_candidates.push_back(oscFilename);
+	// Remove all directories from path and look in current directory
+	file_name_candidates.push_back(FileNameOf(oscFilename));
+	// Finally check registered paths 
+	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 	{
-		throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(oscFilename)));
+	}
+	size_t i;
+	for (i = 0; i < file_name_candidates.size(); i++)
+	{
+		if (FileExists(file_name_candidates[i].c_str()))
+		{
+			if (scenarioReader->loadOSCFile(file_name_candidates[i].c_str()) != 0)
+			{
+				throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
+			}
+		}
 	}
 
 	parseScenario();

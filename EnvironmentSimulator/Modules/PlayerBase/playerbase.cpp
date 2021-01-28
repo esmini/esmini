@@ -632,6 +632,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
 	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))", "mode");
 	opt.AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
+	opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (will be concatenated with filepath)", "path");
 
 	if (argc_ < 3)
 	{
@@ -670,6 +671,12 @@ int ScenarioPlayer::Init()
 	{
 		SetFixedTimestep(atof(arg_str.c_str()));
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
+	}
+
+	if ((arg_str = opt.GetOptionArg("path")) != "")
+	{
+		SE_Env::Inst().AddPath(arg_str);
+		LOG("Added path %s", arg_str.c_str());
 	}
 
 	if (opt.GetOptionSet("disable_controllers"))
