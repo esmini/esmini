@@ -1974,5 +1974,14 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		}
 	}
 
-	return false;
+	if (ea.getKey() == osgGA::GUIEventAdapter::KEY_Space)
+	{
+		// prevent OSG "view reset" action on space key
+		return true;
+	}
+	else
+	{
+		// forward all other key events to OSG
+		return false;
+	}
 }
