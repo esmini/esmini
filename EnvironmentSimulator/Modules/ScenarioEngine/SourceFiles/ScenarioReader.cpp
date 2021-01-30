@@ -648,7 +648,7 @@ roadmanager::Trajectory* ScenarioReader::parseTrajectory(pugi::xml_node node)
 					}
 					OSCPosition* pos = parseOSCPosition(posNode);
 					double time = strtod(parameters.ReadAttribute(vertexNode, "time"));
-					pline->AddVertex(*pos->GetRMPos(), time);
+					pline->AddVertex(*pos->GetRMPos(), time, posNode.first_child().child("Orientation") ? false : true );
 				}
 				shape = pline;
 			}

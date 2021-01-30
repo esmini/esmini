@@ -6906,11 +6906,12 @@ int Position::SetRouteLanePosition(Route *route, double route_s, int laneId, dou
 	return 0;
 }
 
-void PolyLine::AddVertex(Position pos, double time)
+void PolyLine::AddVertex(Position pos, double time, bool calculateHeading)
 {
 	Vertex* v = new Vertex();
 	v->pos_ = pos;
 	v->time_ = time;
+	v->calc_heading_ = calculateHeading;
 	vertex_.push_back(v);
 	if (vertex_.size() > 1)
 	{
@@ -7327,6 +7328,15 @@ void Trajectory::Freeze()
 					pline->vertex_[i-1]->pos_.GetY(),
 					pline->vertex_[i]->pos_.GetX(),
 					pline->vertex_[i]->pos_.GetY());
+
+				// Calculate heading from last point
+				if (pline->vertex_[i-1]->calc_heading_)
+				{
+					double dx = pline->vertex_[i]->pos_.GetX() - pline->vertex_[i - 1]->pos_.GetX();
+					double dy = pline->vertex_[i]->pos_.GetY() - pline->vertex_[i - 1]->pos_.GetY();
+					pline->vertex_[i-1]->pos_.SetHeading(atan2(dy, dx));
+				}
+
 			}
 		}
 	}

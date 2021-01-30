@@ -1681,10 +1681,11 @@ namespace roadmanager
 		public:
 			Position pos_;
 			double time_;
+			bool calc_heading_;
 		};
 
 		PolyLine() : Shape(ShapeType::POLYLINE) {}
-		void AddVertex(Position pos, double time = 0);
+		void AddVertex(Position pos, double time, bool calculateHeading);
 
 		std::vector<Vertex*> vertex_;
 	};
