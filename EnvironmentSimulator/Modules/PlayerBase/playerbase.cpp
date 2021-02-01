@@ -183,11 +183,12 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	// Update OSI info
 	if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
 	{
-		osi_counter++;
 		if (osi_counter % osi_freq_ == 0)
 		{
 			osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
 		}
+		// Update counter after modulo-check since first frame should always be reported
+		osi_counter++;
 	}
 
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
