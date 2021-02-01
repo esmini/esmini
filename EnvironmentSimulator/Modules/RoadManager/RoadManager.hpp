@@ -1111,7 +1111,8 @@ namespace roadmanager
 
 		typedef enum
 		{
-			POS_STATUS_END_OF_ROAD = (1 << 0)
+			POS_STATUS_END_OF_ROAD = (1 << 0),
+			POS_STATUS_END_OF_ROUTE = (1 << 1)
 		} POSITION_STATUS_MODES;
 
 		explicit Position();

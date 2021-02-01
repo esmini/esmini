@@ -7130,13 +7130,20 @@ int Position::SetRouteS(Route *route, double route_s)
 			if (route_direction < 0)  // along waypoint road direction
 			{
 				local_s = road_length - local_s;
-				SetHeadingRelative(M_PI);
 				new_offset = -offset_;
+				if (GetHRelative() < M_PI_2 || GetHRelative() > 3 * M_PI_2)
+				{
+					SetHeadingRelative(GetAngleSum(GetHRelative(), M_PI));
+				}
 			}
 			else
 			{
-				SetHeadingRelative(0);
 				new_offset = offset_;
+				if (GetHRelative() > M_PI_2 && GetHRelative() < 3 * M_PI_2)
+				{
+					SetHeadingRelative(GetAngleSum(GetHRelative(), M_PI));
+				}
+
 			}
 
 			return (SetLanePos(route->waypoint_[i]->GetTrackId(), route->waypoint_[i]->GetLaneId(), local_s, new_offset));
@@ -7145,6 +7152,7 @@ int Position::SetRouteS(Route *route, double route_s)
 		initial_s_offset = 0;  // For all following road segments, calculate length from beginning
 	}
 
+	status_ |= POS_STATUS_END_OF_ROUTE;
 	return ErrorCode::ERROR_END_OF_ROUTE;
 }
 

@@ -536,23 +536,7 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 		steplen += steplen * curvature * offset;
 	}
 
-	if (obj->pos_.GetRoute() && !obj->CheckDirtyBits(Object::DirtyBit::LATERAL))
-	{
-		retvalue = obj->pos_.MoveRouteDS(steplen);
-
-		if (retvalue == roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
-		{
-			if (!obj->IsEndOfRoad())
-			{
-				obj->SetEndOfRoad(true, simulationTime_);
-			}
-		}
-		else
-		{
-			obj->SetEndOfRoad(false);
-		}
-	}
-	else if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL)) // No action has updated longitudinal dimension
+	if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL)) // No action has updated longitudinal dimension
 	{
 		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE || 
 			!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
@@ -581,9 +565,17 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 				steplen *= -1;
 			}
 
-			retvalue = obj->pos_.MoveAlongS(steplen);
+			if (obj->pos_.GetRoute())
+			{
+				retvalue = obj->pos_.MoveRouteDS(steplen);
+			}
+			else
+			{
+				retvalue = obj->pos_.MoveAlongS(steplen);
+			}
 			
-			if (obj->pos_.GetStatusBitMask() & roadmanager::Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD)
+			if (obj->pos_.GetStatusBitMask() & roadmanager::Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD ||
+				obj->pos_.GetStatusBitMask() & roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
 			{
 				if (!obj->IsEndOfRoad())
 				{
