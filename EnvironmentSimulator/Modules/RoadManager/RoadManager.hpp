@@ -733,10 +733,14 @@ namespace roadmanager
 		h_offset_(h_offset), pitch_(pitch), roll_(roll), length_(0) {}
 				
 		std::string GetName() { return name_; }
+		int GetId() { return id_; }
 		double GetS() { return s_; }
 		double GetT() { return t_; }
 		void SetLength(double length) { length_ = length; }
 		double GetLength() { return length_; }
+		double GetHOffset() { return h_offset_; }
+		double GetZOffset() { return z_offset_; }
+		Orientation GetOrientation() { return orientation_; }
 
 	private:
 		double s_;
@@ -758,6 +762,45 @@ namespace roadmanager
 		double pitch_;
 		double roll_;
 		double length_;
+	};
+
+	class Object
+	{
+	public:
+		enum Orientation
+		{
+			POSITIVE,
+			NEGATIVE,
+			NONE,
+		};
+
+		Object(double s, double t, int id, std::string name, Orientation orientation, double z_offset, std::string type, 
+			double length, double height, double width, double heading, double pitch, double roll) : 
+			s_(s), t_(t), id_(id), name_(name), orientation_(orientation), z_offset_(z_offset), type_(type), 
+			length_(length), height_(height), width_(width), heading_(heading), pitch_(pitch), roll_(roll) {}
+
+		std::string GetName() { return name_; }
+		double GetS() { return s_; }
+		double GetT() { return t_; }
+		double GetHOffset() { return heading_; }
+		double GetZOffset() { return z_offset_; }
+		double GetHeight() { return height_; }
+		Orientation GetOrientation() { return orientation_; }
+
+	private:
+		std::string type_;
+		std::string name_;
+		int id_;
+		double s_;
+		double t_;
+		double z_offset_;
+		Orientation orientation_;
+		double length_;
+		double height_;
+		double width_;
+		double heading_;
+		double pitch_;
+		double roll_;
 	};
 
 	class Road
@@ -830,9 +873,13 @@ namespace roadmanager
 		void AddLaneSection(LaneSection *lane_section);
 		void AddLaneOffset(LaneOffset *lane_offset);
 		void AddSignal(Signal *signal);
+		void AddObject(Object* object);
 		Elevation *GetElevation(int idx);
 		Elevation *GetSuperElevation(int idx);
-		Signal *GetSignal(int idx);
+		int GetNumberOfSignals();
+		Signal* GetSignal(int idx);
+		int GetNumberOfObjects() { return (int)object_.size(); }
+		Object* GetObject(int idx);
 		int GetNumberOfElevations() { return (int)elevation_profile_.size(); }
 		int GetNumberOfSuperElevations() { return (int)super_elevation_profile_.size(); }
 		double GetLaneOffset(double s);
@@ -862,6 +909,7 @@ namespace roadmanager
 		std::vector<LaneSection*> lane_section_;
 		std::vector<LaneOffset*> lane_offset_;
 		std::vector<Signal*> signal_;
+		std::vector<Object*> object_;
 	};
 
 	class LaneRoadLaneConnection
@@ -1026,7 +1074,6 @@ namespace roadmanager
 		int CheckJunctionConnection(Junction *junction, Connection *connection);
 		std::string ContactPointType2Str(ContactPointType type);
 		std::string ElementType2Str(RoadLink::ElementType type);
-
 
 		void Print();
 	

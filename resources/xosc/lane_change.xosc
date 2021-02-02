@@ -193,7 +193,7 @@
                      <Action name="Dummy parameter action">
                         <GlobalAction>
                            <ParameterAction parameterRef="DummyParameter">
-                               <ParameterSetAction value="11" />
+                               <SetAction value="11" />
                            </ParameterAction>
                         </GlobalAction>
                      </Action>

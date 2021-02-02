@@ -955,6 +955,58 @@ extern "C"
 		player->RegisterObjCallback(object_id, callback, user_data);
 	}
 
+	SE_DLL_API int SE_GetNumberOfRoadSigns(int road_id)
+	{
+		if (player)
+		{
+			for (int i=0; player->odr_manager->GetNumOfRoads(); i++)
+			{
+				if (player->odr_manager->GetRoadByIdx(i)->GetId() == road_id)
+				{
+					return player->odr_manager->GetRoadByIdx(i)->GetNumberOfSignals();
+				}
+			}
+		}
+		return 0;
+	}
+
+	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign* state)
+	{
+		if (player)
+		{
+			for (int i = 0; player->odr_manager->GetNumOfRoads(); i++)
+			{
+				if (player->odr_manager->GetRoadByIdx(i)->GetId() == road_id)
+				{
+					roadmanager::Signal* s = player->odr_manager->GetRoadByIdx(i)->GetSignal(index);
+					
+					if (s)
+					{
+						// Resolve global cartesian position (x, y, z, h) from the road coordinate
+						roadmanager::Position pos;
+						pos.SetTrackPos(road_id, s->GetS(), s->GetT());
+						
+						state->id = s->GetId();
+						returnString = s->GetName();
+						state->name = returnString.c_str();
+						state->x = pos.GetX();
+						state->y = pos.GetY();
+						state->z = pos.GetZ();
+						state->h = pos.GetH();
+						state->s = pos.GetS();
+						state->t = pos.GetT();
+						state->orientation = s->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? -1 : 1;
+
+						return 0;
+					}
+				}
+			}
+		}
+
+		// Couldn't find the sign
+		return -1;
+	}
+
 	#ifdef _SCENARIO_VIEWER
 		SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
 		{

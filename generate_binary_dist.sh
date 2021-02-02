@@ -36,6 +36,7 @@ resources/xodr/e6mini.xodr \
 resources/xodr/fabriksgatan.xodr \
 resources/xodr/jolengatan.xodr \
 resources/xodr/straight_500m.xodr \
+resources/xodr/straight_500m_signs.xodr \
 resources/xodr/curve_r100.xodr \
 resources/xodr/multi_intersections.xodr \
 resources/xodr/curves_elevation.xodr \
@@ -58,6 +59,8 @@ resources/models/walkman.osgb \
 resources/models/cyclist.osgb \
 resources/models/multi_intersections.osgb \
 resources/models/curves_elevation.osgb \
+resources/models/Swe*.osgb \
+resources/models/pole.osgb \
 resources/models/asphalt.jpg \
 resources/models/grass.jpg \
 resources/sumo_inputs/e6mini* \

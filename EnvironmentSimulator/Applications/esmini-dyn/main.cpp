@@ -36,6 +36,7 @@
 #define DEMONSTRATE_ROADINFO 0
 #define DEMONSTRATE_THREAD 0
 #define DEMONSTRATE_CALLBACK 0
+#define DEMONSTRATE_ROAD_SIGNS 0
 
 #define MAX_N_OBJECTS 10
 #define TIME_STEP 0.017f
@@ -139,6 +140,17 @@ int main(int argc, char *argv[])
 
 		// Demonstrate use of ODR query function
 		printf("odr filename: %s\n", SE_GetODRFilename());
+
+#if DEMONSTRATE_ROAD_SIGNS
+		SE_ScenarioObjectState state;
+		SE_GetObjectState(0, &state);
+		for (int i = 0; i < SE_GetNumberOfRoadSigns(state.roadId); i++)
+		{
+			SE_RoadSign s;
+			SE_GetRoadSign(state.roadId, i, &s);
+			printf("Road %d road sign %d name: %s pos_s: %.2f pos_t: %.2f\n", state.roadId, s.id, s.name, s.s, s.t);
+		}
+#endif
 
 #if DEMONSTRATE_DRIVER_MODEL
 		SE_ScenarioObjectState state;

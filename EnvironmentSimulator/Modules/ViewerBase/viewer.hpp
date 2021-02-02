@@ -354,6 +354,9 @@ namespace viewer
 
 		bool CreateRoadLines(roadmanager::OpenDrive* od);
 		bool CreateRoadMarkLines(roadmanager::OpenDrive* od);
+		int LoadRoadFeature(roadmanager::Road* road, std::string filename, double s, double t,
+			double z_offset, double scale_x, double scale_y, double scale_z, double heading_offset);
+		int CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
 		bool keyUp_;
 		bool keyDown_;
 		bool keyLeft_;

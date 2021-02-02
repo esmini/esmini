@@ -17,7 +17,7 @@
       </VehicleCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../xodr/straight_500m.xodr"/>
+      <LogicFile filepath="../xodr/straight_500m_signs.xodr"/>
       <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
    </RoadNetwork>
    <Entities>

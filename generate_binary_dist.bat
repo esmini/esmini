@@ -56,6 +56,7 @@ copy resources\xodr\e6mini.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\fabriksgatan.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\jolengatan.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\straight_500m.xodr %target_dir%\resources\xodr /y
+copy resources\xodr\straight_500m_signs.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\curve_r100.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\multi_intersections.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\curves_elevation.xodr %target_dir%\resources\xodr /y
@@ -79,6 +80,8 @@ copy resources\models\walkman.osgb %target_dir%\resources\models /y
 copy resources\models\cyclist.osgb %target_dir%\resources\models /y
 copy resources\models\multi_intersections.osgb %target_dir%\resources\models /y
 copy resources\models\curves_elevation.osgb %target_dir%\resources\models /y
+copy resources\models\pole.osgb %target_dir%\resources\models /y
+copy resources\models\Swe*.osgb %target_dir%\resources\models /y
 copy resources\models\asphalt.jpg %target_dir%\resources\models /y
 copy resources\models\grass.jpg %target_dir%\resources\models /y
 

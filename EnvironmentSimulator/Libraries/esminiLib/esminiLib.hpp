@@ -88,6 +88,20 @@ typedef struct
 	void* value;  // Pointer to value which can be an integer, double or string (const char*) as defined in the OpenSCENARIO file
 } SE_Parameter;
 
+typedef struct
+{
+	int id;	           // just an unique identifier of the sign
+	float x;           // global x coordinate of sign position
+	float y;           // global y coordinate of sign position
+	float z;           // global z coordinate of sign position
+	float h;           // global heading of sign orientation
+	int roadId;        // road id of sign road position
+	float s;           // longitudinal position along road
+	float t;           // lateral position from road reference line
+	const char* name;  // sign name, typically used for 3D model filename
+	int orientation;   // 1=facing traffic in road direction, -1=facing traffic opposite road direction
+} SE_RoadSign;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -358,6 +372,21 @@ extern "C"
 	*/
 	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState*, void*), void* user_data);
 
+	/**
+	Get the number of road signs along specified road 
+	@param road_id The road along which to look for signs
+	@return Number of road signs 
+	*/
+	SE_DLL_API int SE_GetNumberOfRoadSigns(int road_id);
+
+	/**
+	Get information on specifed road sign
+	@param road_id The road of which to look for the sign
+	@param index Index of the sign. Note: not ID
+	@param state Pointer/reference to a SE_RoadSign struct to be filled in
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign* state);
 
 	// OSI interface
 	// 

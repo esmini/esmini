@@ -209,6 +209,7 @@ int main(int argc, char** argv)
 	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
 	opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
 	opt.AddOption("road_features", "Show OpenDRIVE road features (toggle during simulation by press 'o') ");
+	opt.AddOption("path", "Search path prefix for assets, e.g. car and sign model files", "path");
 	opt.AddOption("help", "Show this help message");
 
 	if (argc < 2 || opt.GetOptionSet("help"))
@@ -218,6 +219,13 @@ int main(int argc, char** argv)
 	}
 
 	opt.ParseArgs(&argc, argv);
+
+	std::string arg_str;
+	if ((arg_str = opt.GetOptionArg("path")) != "")
+	{
+		SE_Env::Inst().AddPath(arg_str);
+		LOG("Added path %s", arg_str.c_str());
+	}
 
 	std::string odrFilename = opt.GetOptionArg("odr");
 	if (odrFilename.empty())

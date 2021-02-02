@@ -1465,7 +1465,13 @@ void Road::AddSignal(Signal *signal)
 	}
 	signal->SetLength(length_ - signal->GetS());
 
+	LOG("Add signal[%d]: %s", (int)signal_.size(), signal->GetName().c_str());
 	signal_.push_back((Signal*)signal);
+}
+
+int Road::GetNumberOfSignals()
+{
+	return (int)signal_.size();
 }
 
 Signal* Road::GetSignal(int idx)
@@ -1476,6 +1482,22 @@ Signal* Road::GetSignal(int idx)
 	}
 	
 	return signal_[idx];
+}
+
+void Road::AddObject(Object* object)
+{
+	LOG("Add object[%d]: %s", (int)object_.size(), object->GetName().c_str());
+	object_.push_back(object);
+}
+
+Object* Road::GetObject(int idx)
+{
+	if (idx < 0 || idx >= object_.size())
+	{
+		return 0;
+	}
+
+	return object_[idx];
 }
 
 double Road::GetLaneOffset(double s)
@@ -2697,6 +2719,62 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				else
 				{
 					LOG("Signal: Major error\n");
+				}
+			}
+		}
+
+		pugi::xml_node objects = road_node.child("objects");
+		if (objects != NULL)
+		{
+			for (pugi::xml_node object = objects.child("object"); object; object = object.next_sibling())
+			{
+				double s = atof(object.attribute("s").value());
+				double t = atof(object.attribute("t").value());
+				int ids = atoi(object.attribute("id").value());
+				std::string name = object.attribute("name").value();
+
+				// orientation
+				Object::Orientation orientation = Object::Orientation::NONE;
+				if (object.attribute("orientation") == 0 || !strcmp(object.attribute("orientation").value(), ""))
+				{
+					LOG("Road object orientation error");
+				}
+				if (!strcmp(object.attribute("orientation").value(), "none"))
+				{
+					orientation = Object::Orientation::NONE;
+				}
+				else  if (!strcmp(object.attribute("orientation").value(), "+"))
+				{
+					orientation = Object::Orientation::POSITIVE;
+				}
+				else  if (!strcmp(object.attribute("orientation").value(), "-"))
+				{
+					orientation = Object::Orientation::NEGATIVE;
+				}
+				else
+				{
+					LOG("unknown road object orientation: %s (road ids=%d)\n", object.attribute("orientation").value(), r->GetId());
+				}
+				
+				std::string type = object.attribute("type").value();
+				double  z_offset = atof(object.attribute("zOffset").value());
+				double length = atof(object.attribute("length").value());
+				double height = atof(object.attribute("height").value());
+				double width = atof(object.attribute("width").value());
+				double heading = atof(object.attribute("hdg").value());
+				double pitch = atof(object.attribute("pitch").value());
+				double roll = atof(object.attribute("roll").value());
+
+				Object* obj = new Object(s, t, ids, name, orientation, z_offset, type, length, height,
+					width, heading, pitch, roll);
+				if (obj != NULL)
+				{
+					r->AddObject(obj);
+
+				}
+				else
+				{
+					LOG("Object: Major error\n");
 				}
 			}
 		}

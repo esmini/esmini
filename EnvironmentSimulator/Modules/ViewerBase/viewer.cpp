@@ -890,6 +890,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		LOG("Viewer::Viewer Failed to create road mark lines!\n");
 	}
 
+	if (odrManager->GetNumOfRoads() > 0 && CreateRoadSignsAndObjects(odrManager) != 0)
+	{
+		LOG("Viewer::Viewer Failed to create road signs!\n");
+	}
+
 #if 0
 	osgViewer_->setSceneData(shadowedScene);
 #else
@@ -1535,6 +1540,74 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 	return true;
 }
 
+int Viewer::LoadRoadFeature(roadmanager::Road *road, std::string filename, double s, double t, 
+	double z_offset, double scale_x, double scale_y, double scale_z, double heading_offset)
+{
+	roadmanager::Position* pos = new roadmanager::Position();
+	osg::ref_ptr<osg::Node> node;
+	osg::ref_ptr<osg::PositionAttitudeTransform> xform;
+
+	// Load file, try multiple paths
+	std::vector<std::string> file_name_candidates;
+	file_name_candidates.push_back(filename);
+	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", filename));
+	// Finally check registered paths 
+	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+	{
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], std::string("../models/" + filename)));
+	}
+	for (size_t i = 0; i < file_name_candidates.size(); i++)
+	{
+		if (FileExists(file_name_candidates[i].c_str()))
+		{
+			node = osgDB::readNodeFile(file_name_candidates[i]);
+			if (!node)
+			{
+				return 0;
+			}
+			pos->SetTrackPos(road->GetId(), s, t);
+			xform = new osg::PositionAttitudeTransform;
+			xform->setPosition(osg::Vec3(pos->GetX(), pos->GetY(), z_offset + pos->GetZ()));
+			xform->setAttitude(osg::Quat(pos->GetH() + heading_offset, osg::Vec3(0, 0, 1)));
+			xform->setScale(osg::Vec3(scale_x, scale_y, scale_z));
+			xform->addChild(node);
+			rootnode_->addChild(xform);
+		}
+	}
+
+	return 0;
+}
+
+int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
+{
+	for (int r = 0; r < od->GetNumOfRoads(); r++)
+	{
+		roadmanager::Road* road = od->GetRoadByIdx(r);
+		for (size_t s = 0; s < road->GetNumberOfSignals(); s++)
+		{
+			roadmanager::Signal* signal = road->GetSignal(s);
+			double orientation = signal->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
+			if (LoadRoadFeature(road, signal->GetName() + ".osgb", signal->GetS(), signal->GetT(), signal->GetZOffset(), 1.0, 1.0, 1.0, orientation + signal->GetHOffset()) != 0)
+			{
+				return -1;
+			}
+		}
+
+		for (size_t o = 0; o < road->GetNumberOfObjects(); o++)
+		{
+			roadmanager::Object* object = road->GetObject(o);
+			double orientation = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
+			if (LoadRoadFeature(road, object->GetName() + ".osgb", object->GetS(), object->GetT(), object->GetZOffset(),
+				1.0, 1.0, object->GetHeight(), orientation + object->GetHOffset()) != 0)
+			{
+				return -1;
+			}
+		}
+	}
+
+	return 0;
+}
 
 bool Viewer::CreateRoadSensors(CarModel *vehicle_model)
 {
