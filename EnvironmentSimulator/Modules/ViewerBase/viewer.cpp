@@ -948,7 +948,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	// add the state manipulator
 	osgViewer_->addEventHandler(new osgGA::StateSetManipulator(osgViewer_->getCamera()->getOrCreateStateSet()));
 
-#if 0
+#if 1
 	// add the thread model handler
 	osgViewer_->addEventHandler(new osgViewer::ThreadingHandler);
 #else
