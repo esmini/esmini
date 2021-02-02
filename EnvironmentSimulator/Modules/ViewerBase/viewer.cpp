@@ -700,7 +700,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	keyLeft_ = false;
 	keyRight_ = false;
 	quit_request_ = false;
-	showInfoText = true;  // show info text HUD per default
+	showInfoText = false;  // show info text HUD per default
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
 	shadow_node_ = NULL;
 	environment_ = NULL;
@@ -878,7 +878,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		SetNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
 		SetNodeMaskBits(NodeMask::NODE_MASK_OSI_LINES);
 	}
-
+#if 0
 	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager))
 	{
 		LOG("Viewer::Viewer Failed to create road lines!\n");
@@ -888,7 +888,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	{
 		LOG("Viewer::Viewer Failed to create road mark lines!\n");
 	}
-
+#endif
 #if 0
 	osgViewer_->setSceneData(shadowedScene);
 #else
@@ -990,7 +990,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	osg::ref_ptr<osg::Geode> textGeode = new osg::Geode;
 	osg::Vec4 layoutColor(0.9f, 0.9f, 0.9f, 1.0f);
 	float layoutCharacterSize = 12.0f;
-
+#if 0
 	infoText = new osgText::Text;
 	infoText->setColor(layoutColor);
 	infoText->setCharacterSize(layoutCharacterSize);
@@ -1011,7 +1011,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	SetInfoTextProjection(context->getTraits()->width, context->getTraits()->height);
 
 	rootnode_->addChild(infoTextCamera);
-
+#endif
 }
 
 Viewer::~Viewer()
@@ -1178,7 +1178,7 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec3 trail_c
 			rubberbandManipulator_->getMode() == osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_TOP ? false : true);
 		nodeTrackerManipulator_->setTrackNode(entities_.back()->txNode_);
 	}
-
+#if 0
 	if (type == EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
 	{
 		CarModel* vehicle = (CarModel*)entities_.back();
@@ -1193,7 +1193,7 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec3 trail_c
 			vehicle->road_sensor_->Hide();
 		}
 	}
-
+#endif
 	return entities_.back();
 }
 
@@ -1719,6 +1719,7 @@ void Viewer::ShowInfoText(bool show)
 
 void Viewer::SetInfoText(const char* text)
 {
+#if 0
 	if (showInfoText)
 	{
 		infoText->setText(text);
@@ -1727,6 +1728,7 @@ void Viewer::SetInfoText(const char* text)
 	{
 		infoText->setText("");
 	}
+#endif
 }
 
 void Viewer::SetNodeMaskBits(int bits)
@@ -1939,11 +1941,13 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	break;
 	case(osgGA::GUIEventAdapter::KEY_I):
 	{
+#if 0
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->showInfoText = !viewer_->showInfoText;
 			viewer_->infoTextCamera->setNodeMask(viewer_->showInfoText ? 0xffffffff : 0x0);
 		}
+#endif
 	}
 	break;
 	case(osgGA::GUIEventAdapter::KEY_J):

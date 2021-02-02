@@ -320,7 +320,7 @@ void ScenarioPlayer::ViewerFrame()
 	{
 		sensorFrustum[i]->Update();
 	}
-
+#if 0
 	// Update info text
 	static char str_buf[128];
 	if (viewer_->currentCarInFocus_ >= 0 && viewer_->currentCarInFocus_ < viewer_->entities_.size())
@@ -336,6 +336,7 @@ void ScenarioPlayer::ViewerFrame()
 		snprintf(str_buf, sizeof(str_buf), "No object in focus...");
 	}
 	viewer_->SetInfoText(str_buf);
+#endif
 
 	mutex.Unlock();
 	viewer_->osgViewer_->frame();
