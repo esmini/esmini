@@ -7047,9 +7047,9 @@ int Position::SetTrajectoryS(Trajectory* trajectory, double traj_s)
 					(1 - a) * vp0->GetX() + a * vp1->GetX(),
 					(1 - a) * vp0->GetY() + a * vp1->GetY(),
 					(1 - a) * vp0->GetZ() + a * vp1->GetZ(),
-					(1 - a) * vp0->GetH() + a * vp1->GetH(),
-					(1 - a) * vp0->GetP() + a * vp1->GetP(),
-					(1 - a) * vp0->GetR() + a * vp1->GetR(),
+					GetAngleInInterval2PI(vp0->GetH() + a * GetAngleDifference(vp1->GetH(), vp0->GetH())),
+					GetAngleInInterval2PI(vp0->GetP() + a * GetAngleDifference(vp1->GetP(), vp0->GetP())),
+					GetAngleInInterval2PI(vp0->GetR() + a * GetAngleDifference(vp1->GetR(), vp0->GetR())),
 					true);
 				
 				return 0;
