@@ -1042,7 +1042,15 @@ void SynchronizeAction::Step(double dt, double)
 			
 			if (mode_ == SynchMode::MODE_LINEAR)
 			{
-				object_->SetSpeed(MAX(0, CalcSpeedForLinearProfile(MAX(0, final_speed_->GetValue()), masterTimeToDest, dist)));
+				if (masterTimeToDest > LARGE_NUMBER - 1)
+				{
+					// Master in effect standing still, do not move
+					object_->SetSpeed(0);
+				}
+				else
+				{
+					object_->SetSpeed(MAX(0, CalcSpeedForLinearProfile(MAX(0, final_speed_->GetValue()), masterTimeToDest, dist)));
+				}
 				return;
 			}
 			else if (mode_ == SynchMode::MODE_NON_LINEAR && masterTimeToDest < LARGE_NUMBER)
