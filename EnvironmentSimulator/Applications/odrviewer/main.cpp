@@ -158,6 +158,32 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 	return 0;
 }
 
+int SetupCarsSpecial(roadmanager::OpenDrive* odrManager, viewer::Viewer* viewer)
+{
+	// Setup one single vehicle in a dedicated pos
+	Car* car_ = new Car;
+	
+	car_->speed_factor = 1.0;
+	car_->road_id_init = 10;
+	car_->lane_id_init = 1;
+	car_->s_init = 40;
+	car_->pos = new roadmanager::Position(car_->road_id_init, car_->lane_id_init, car_->s_init, 0);
+	car_->pos->SetHeadingRelative(car_->lane_id_init < 0 ? 0 : M_PI);
+	car_->heading_init = car_->pos->GetHRelative();
+
+	if ((car_->model = viewer->AddEntityModel(carModelsFiles_[0], osg::Vec3(0.5, 0.5, 0.5),
+		viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, "", 0)) == 0)
+	{
+		return -1;
+	}
+	car_->id = cars.size();
+	cars.push_back(car_);
+
+	first_car_in_focus = 0;
+
+	return 0;
+}
+
 void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 {
 	double new_speed = car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor;
@@ -191,6 +217,8 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 
 int main(int argc, char** argv)
 {
+	static char str_buf[128];
+
 	// Use logger callback
 	Logger::Inst().SetCallback(log_callback);
 
@@ -331,6 +359,14 @@ int main(int argc, char** argv)
 				first_time = false;
 			}
 
+			// Set info text
+			Car* car = cars[viewer->currentCarInFocus_];
+			snprintf(str_buf, sizeof(str_buf), "entity[%d]: %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", viewer->currentCarInFocus_, 
+				3.6 * car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor, car->pos->GetTrackId(), car->pos->GetLaneId(), 
+				fabs(car->pos->GetOffset()) < SMALL_NUMBER ? 0 : car->pos->GetOffset(), car->pos->GetS(), car->pos->GetX(), car->pos->GetY(), car->pos->GetH());
+			viewer->SetInfoText(str_buf);
+
+			// Step the simulation
 			viewer->osgViewer_->frame();
 		}
 		delete viewer;
