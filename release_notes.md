@@ -1,5 +1,29 @@
 ## esmini release notes
 
+### 2021-02-04 Version 2.2.0
+
+- New feature: Support visualization of OpenDRIVE road signs and objects
+
+  The OpenDRIVE signal attribute name is used for 3D model reference. So far only Swedish speed signs are distributed with esmini. But the concept is generic and allows for customized database of many signs. The pole is separated and handled as an OpenDRIVE object, which is also supported in similar way: Name referring to 3D model. 
+
+  Updated complete model pack can be downloaded from [here](https://www.dropbox.com/s/5gk8bvgzqiaaoco/models.7z?dl=1), unpack into esmini/resources/models.
+
+  See example [straight_500m_signs.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/straight_500m_signs.xodr) which is used in updated scenarios:
+  - [distance_test.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/distance_test.xosc) ([run/esmini/run_dist_test.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_dist_test.bat))
+  - [slow-lead-vehicle.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/slow-lead-vehicle.xosc) ([run/esmini/run_slow-lead-vehicle.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_slow-lead-vehicle.bat))
+
+  How to get information on road signs via API, see example usage in [esmini-dyn/main.cpp](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/esmini-dyn/main.cpp#L144)
+
+  Please note that esmini OSI output is not yet propagating signal and object info.
+  
+- Add argument for adding search path prefix. (see [launch commands](https://github.com/esmini/esmini/blob/master/docs/commands.txt))
+- Calculate pline trajectory headings if Orientation missing
+- Add odometer to overlay info text
+- Add overlay info text to odrviewer
+- Fix pline trajectory heading interpolation bug
+- Fix lane change on route issue (not well tested)
+- Some additional minor fixes
+
 ### 2021-01-26 Version 2.1.5
 
 - Fix typo ParameterSetAction -> SetAction 
@@ -28,7 +52,7 @@
 - Add ground surface textures for road model generator  
 - Add the textures to demo pack 
 
-Updated complete model pack can be downloaded from [here](https://github.com/esmini/esmini/blob/master/osc_coverage.txt)
+Updated complete model pack can be downloaded from [here](https://www.dropbox.com/s/5gk8bvgzqiaaoco/models.7z?dl=1)
 
 The road model generator is exercised by the following example scripts:  
 - run/esmini/run_lane_change.bat
