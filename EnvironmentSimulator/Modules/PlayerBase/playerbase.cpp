@@ -327,8 +327,8 @@ void ScenarioPlayer::ViewerFrame()
 	if (viewer_->currentCarInFocus_ >= 0 && viewer_->currentCarInFocus_ < viewer_->entities_.size())
 	{
 		Object* obj = scenarioEngine->entities.object_[viewer_->currentCarInFocus_];
-		snprintf(str_buf, sizeof(str_buf), "%.2fs entity[%d]: %s %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", scenarioEngine->getSimulationTime(),
-			viewer_->currentCarInFocus_, obj->name_.c_str(), 3.6 * obj->speed_, 
+		snprintf(str_buf, sizeof(str_buf), "%.2fs entity[%d]: %s %.2fkm/h %.2fm (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", scenarioEngine->getSimulationTime(),
+			viewer_->currentCarInFocus_, obj->name_.c_str(), 3.6 * obj->speed_, obj->odometer_,
 			obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), fabs(obj->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj->pos_.GetOffset(), 
 			obj->pos_.GetS(), obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH());
 	}
