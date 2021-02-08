@@ -360,11 +360,14 @@ int main(int argc, char** argv)
 			}
 
 			// Set info text
-			Car* car = cars[viewer->currentCarInFocus_];
-			snprintf(str_buf, sizeof(str_buf), "entity[%d]: %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", viewer->currentCarInFocus_, 
-				3.6 * car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor, car->pos->GetTrackId(), car->pos->GetLaneId(), 
-				fabs(car->pos->GetOffset()) < SMALL_NUMBER ? 0 : car->pos->GetOffset(), car->pos->GetS(), car->pos->GetX(), car->pos->GetY(), car->pos->GetH());
-			viewer->SetInfoText(str_buf);
+			if (cars.size() > 0 && viewer->currentCarInFocus_ >= 0 && viewer->currentCarInFocus_ < cars.size())
+			{
+				Car* car = cars[viewer->currentCarInFocus_];
+				snprintf(str_buf, sizeof(str_buf), "entity[%d]: %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", viewer->currentCarInFocus_,
+					3.6 * car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor, car->pos->GetTrackId(), car->pos->GetLaneId(),
+					fabs(car->pos->GetOffset()) < SMALL_NUMBER ? 0 : car->pos->GetOffset(), car->pos->GetS(), car->pos->GetX(), car->pos->GetY(), car->pos->GetH());
+				viewer->SetInfoText(str_buf);
+			}
 
 			// Step the simulation
 			viewer->osgViewer_->frame();
