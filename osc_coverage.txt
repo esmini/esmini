@@ -134,7 +134,7 @@ OSCTypeDefs
                 Dynamics                     
                     shape                    
                         linear               Yes
-                        cubic                No
+                        cubic                Yes
                         sinusoidal           Yes
                         step                 Yes
                     choice                   
@@ -161,7 +161,7 @@ OSCTypeDefs
                 Dynamics                     
                     shape                    
                         linear               Yes
-                        cubic                No
+                        cubic                Yes
                         sinusoidal           Yes
                         step                 Yes
                     choice                   
@@ -180,7 +180,7 @@ OSCTypeDefs
                     duration                 Yes
                     shape                    
                         linear               Yes
-                        cubic                No
+                        cubic                Yes
                         sinusoidal           Yes
                         step                 Yes
                 Target                       

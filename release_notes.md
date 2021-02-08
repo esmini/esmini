@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2021-02-08 Version 2.3.0
+
+- Add support for cubic dynamics in Speed, LaneChange and LaneOffset
+actions.
+- Complete implementation of laneOffset and laneChange actions
+  - Obey max_lateral_acc in LaneOffset action (previously ignored)
+  - Calculate correct LaneChange duration/distance based on (lateral) rate
+- Minor fix: Set default value 250 kph for LongitudinalDistanceAction/maxSpeed
+
 ### 2021-02-04 Version 2.2.0
 
 - New feature: Support visualization of OpenDRIVE road signs and objects
