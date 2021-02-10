@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2021-02-10 Version 2.3.1
+
+- Fix SpeedAction distance dimension issue  
+- Fix ParamPoly3 arc length issue
+
+  Motion along paramPoly3 geometries has wrongly been based on the curve
+parameter which leads to wrong speed. Now the arc length is calculated
+and is used instead as basis for motion along the curve.
+- Some additional minor fixes
+
 ### 2021-02-08 Version 2.3.0
 
 - Add support for cubic dynamics in Speed, LaneChange and LaneOffset
