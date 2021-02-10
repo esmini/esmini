@@ -20,6 +20,7 @@
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
 
+#define PARAMPOLY3_STEPS 100
 
 namespace roadmanager
 {
@@ -231,6 +232,7 @@ namespace roadmanager
 		{
 			poly3U_.Set(aU, bU, cU, dU, p_range == PRangeType::P_RANGE_NORMALIZED ? 1.0/length : 1.0);
 			poly3V_.Set(aV, bV, cV, dV, p_range == PRangeType::P_RANGE_NORMALIZED ? 1.0/length : 1.0);
+			calcS2PMap(p_range);
 		}
 		~ParamPoly3() {};
 
@@ -239,7 +241,10 @@ namespace roadmanager
 		Polynomial GetPoly3V() {return poly3V_;}
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
-		
+		void calcS2PMap(PRangeType p_range);
+		double s2p_map_[PARAMPOLY3_STEPS][2];
+		double S2P(double s);
+
 		Polynomial poly3U_;
 		Polynomial poly3V_;
 	};

@@ -164,8 +164,8 @@ int SetupCarsSpecial(roadmanager::OpenDrive* odrManager, viewer::Viewer* viewer)
 	Car* car_ = new Car;
 	
 	car_->speed_factor = 1.0;
-	car_->road_id_init = 10;
-	car_->lane_id_init = 1;
+	car_->road_id_init = 1;
+	car_->lane_id_init = -1;
 	car_->s_init = 40;
 	car_->pos = new roadmanager::Position(car_->road_id_init, car_->lane_id_init, car_->s_init, 0);
 	car_->pos->SetHeadingRelative(car_->lane_id_init < 0 ? 0 : M_PI);

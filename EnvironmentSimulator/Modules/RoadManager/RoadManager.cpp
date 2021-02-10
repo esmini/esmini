@@ -75,23 +75,23 @@ int g_Lane_id;
 int g_Laneb_id;
 
 
-double Polynomial::Evaluate(double s)
+double Polynomial::Evaluate(double p)
 {
-	double p = s * p_scale_;
+	p *= p_scale_;
 
 	return (a_ + p * b_ + p * p*c_ + p * p*p*d_);
 }
 
-double Polynomial::EvaluatePrim(double s)
+double Polynomial::EvaluatePrim(double p)
 {
-	double p = s * p_scale_;
+	p *= p_scale_;
 
 	return (b_ + 2 * p*c_ + 3 * p*p*d_);
 }
 
-double Polynomial::EvaluatePrimPrim(double s)
+double Polynomial::EvaluatePrimPrim(double p)
 {
-	double p = s * p_scale_;
+	p *= p_scale_;
 
 	return (2 * c_ + 6 * p*d_);
 }
@@ -450,17 +450,56 @@ void ParamPoly3::Print()
 
 void ParamPoly3::EvaluateDS(double ds, double *x, double *y, double *h)
 {
-	double u_local = poly3U_.Evaluate(ds);
-	double v_local = poly3V_.Evaluate(ds);
+	double u_local = poly3U_.Evaluate(S2P(ds));
+	double v_local = poly3V_.Evaluate(S2P(ds));
 
 	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
 	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());
-	*h = GetHdg() + atan2(poly3V_.EvaluatePrim(ds), poly3U_.EvaluatePrim(ds));
+	*h = GetHdg() + atan2(poly3V_.EvaluatePrim(S2P(ds)), poly3U_.EvaluatePrim(S2P(ds)));
 }
 
 double ParamPoly3::EvaluateCurvatureDS(double ds)
 {
 	return poly3V_.EvaluatePrimPrim(ds) / poly3U_.EvaluatePrim(ds);
+}
+
+void ParamPoly3::calcS2PMap(PRangeType p_range)
+{
+	double len = 0;
+	double p_step_len = 1 / double(PARAMPOLY3_STEPS);
+	double p = 0; 
+
+	s2p_map_[0][0] = 0;
+	s2p_map_[0][1] = 0;
+	for (size_t i = 0; i < PARAMPOLY3_STEPS-1; i++)
+	{
+		p += p_step_len;
+
+		double pm = p - 0.5 * p_step_len; // midpoint method
+		double integrator = sqrt(
+			pow(3 * poly3U_.GetD() * pm * pm + 2 * poly3U_.GetC() * pm + poly3U_.GetB(), 2) +
+			pow(3 * poly3V_.GetD() * pm * pm + 2 * poly3V_.GetC() * pm + poly3V_.GetB(), 2));
+
+		len += p_step_len * integrator;
+
+		s2p_map_[i][0] = len;
+		s2p_map_[i][1] = p * (p_range == PRangeType::P_RANGE_NORMALIZED ? length_ : 1);
+	}
+	s2p_map_[PARAMPOLY3_STEPS-1][0] = length_;
+	s2p_map_[PARAMPOLY3_STEPS-1][1] = length_;
+}
+
+double ParamPoly3::S2P(double s)
+{
+	for (size_t i = 0; i < PARAMPOLY3_STEPS - 1; i++)
+	{
+		if (s2p_map_[i + 1][0] > s)
+		{
+			double w = (s - s2p_map_[i][0]) / (s2p_map_[i + 1][0] - s2p_map_[i][0]);
+			return s2p_map_[i][1] + w * (s2p_map_[i + 1][1] - s2p_map_[i][1]);
+		}
+	}
+	return s2p_map_[PARAMPOLY3_STEPS - 1][1];
 }
 
 void Elevation::Print()
@@ -4006,7 +4045,7 @@ void OpenDrive::SetLaneOSIPoints()
 					s1 = MIN(s1, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
 
 					// [XO, YO] = closest position with given (-) tolerance
-					pos->SetLanePos(road->GetId(), lane->GetId(), s0-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+					pos->SetLanePos(road->GetId(), lane->GetId(), MAX(0, s0-OSI_TANGENT_LINE_TOLERANCE), 0, j);
 					x0.push_back(pos->GetX());
 					y0.push_back(pos->GetY());
 
@@ -4185,7 +4224,7 @@ void OpenDrive::SetLaneBoundaryPoints()
 						s1 = MIN(s1, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
 
 						// [XO, YO] = closest position with given (-) tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0-OSI_TANGENT_LINE_TOLERANCE, 0, j);
+						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), MAX(0, s0-OSI_TANGENT_LINE_TOLERANCE), 0, j);
 						x0.push_back(pos->GetX());
 						y0.push_back(pos->GetY());
 
