@@ -542,6 +542,12 @@ void LongSpeedAction::Start()
 	else
 	{
 		start_speed_ = object_->speed_;
+
+		if (transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
+		{
+			// Convert to time
+			transition_dynamics_.target_value_ = 2 * transition_dynamics_.target_value_ / (start_speed_ + target_->GetValue());
+		}
 	}
  }
 
@@ -576,20 +582,8 @@ void LongSpeedAction::Step(double dt, double)
 	}
 	else 
 	{
-		if (transition_dynamics_.dimension_ == DynamicsDimension::TIME)
-		{
-			elapsed_ += dt;
-		}
-		else if (transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
-		{
-			elapsed_ += object_->GetSpeed() + dt;
-		}
-		else
-		{
-			std::string msg = "Unexpected dynamics dimension: " + transition_dynamics_.dimension_;
-			LOG(msg.c_str());
-			throw std::runtime_error(msg);
-		}
+		elapsed_ += dt;
+
 		factor = elapsed_ / (transition_dynamics_.target_value_);
 
 		if(factor > 1.0)
