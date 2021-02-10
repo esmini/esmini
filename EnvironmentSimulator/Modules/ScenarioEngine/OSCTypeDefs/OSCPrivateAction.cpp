@@ -43,7 +43,7 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 	}
 	else if (shape_ == DynamicsShape::CUBIC)
 	{
-		// Equation: https://www.desmos.com/calculator/axwne0wvnh
+		// Equation: https://www.desmos.com/calculator/j9h7jzcowe
 		// t(3(x/d)^2-2(x/d)^3)
 		double val = start_value + (end_value - start_value) * (3 * factor * factor - 2 * factor * factor * factor);
 		return val;
@@ -275,9 +275,9 @@ void LatLaneChangeAction::Start()
 		}
 		else if (transition_dynamics_.shape_ == DynamicsShape::CUBIC)
 		{
-			// Equations: https://www.desmos.com/calculator/axwne0wvnh
-			// special case where duration is a function of lateral acceleration
-			// Calculate corresponding distance from duration, given speed:
+			// Equations: https://www.desmos.com/calculator/j9h7jzcowe
+			// special case where duration is a function of lateral speed/rate
+			// Calculate corresponding duration:
 			// duration = 3 * lat_distance / (2 * rate) = distance / speed
 			// Finally, distance = longitudinal speed * duration
 			transition_dynamics_.target_value_ = object_->speed_ * 3 * fabs(lat_distance) / (2 * rate);
@@ -423,8 +423,11 @@ void LatLaneOffsetAction::Start()
 	}
 	else if (dynamics_.transition_.shape_ == DynamicsShape::CUBIC)
 	{
-		// based on equation: https://www.desmos.com/calculator/axwne0wvnh
-		// max acceleration at endpoints, e.g t=0 
+		// based on equation: https://www.desmos.com/calculator/j9h7jzcowe
+		// special case where duration is a function of lateral acceleration
+		// Calculate corresponding duration:
+		// duration = sqrt(6t / a)
+		// Finally, distance = longitudinal speed * duration
 		duration = sqrt(6 * fabs(target_lane_offset_ - object_->pos_.GetOffset()) / dynamics_.max_lateral_acc_);
 		dynamics_.transition_.target_value_ = object_->GetSpeed() * duration;;
 	}
