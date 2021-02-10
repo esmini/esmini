@@ -916,7 +916,7 @@ TEST_P(ParamPoly3GeomTestEvaluateDsCurv, TestParamPoly3GeomEvaluateDsArgument)
 
 INSTANTIATE_TEST_CASE_P(TestEvaluateParamPoly3DsArgumentParam, ParamPoly3GeomTestEvaluateDsCurv, testing::Values(
                                                 std::make_tuple(0.0, -2.0, 0.0, M_PI+atan2(-2.0,-2.0)),
-                                                std::make_tuple(10.0, 3718.0, 3720.0, M_PI+atan2(-2.0,-2.0))));
+                                                std::make_tuple(10.0, 214.0, 216.0, M_PI+atan2(-2.0,-2.0))));
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
