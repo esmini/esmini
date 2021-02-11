@@ -16,6 +16,7 @@
 #include "ControllerExternal.hpp"
 
 #define WHEEL_RADIUS 0.35
+#define STAND_STILL_THRESHOLD 1e-3  // meter per second
 
 using namespace scenarioengine;
 
@@ -393,7 +394,7 @@ void ScenarioEngine::step(double deltaSimTime)
 		}
 
 		// Stand still?
-		if (obj->GetSpeed() > -SMALL_NUMBER && obj->GetSpeed() < SMALL_NUMBER)
+		if (obj->GetSpeed() > -STAND_STILL_THRESHOLD && obj->GetSpeed() < STAND_STILL_THRESHOLD)
 		{
 			if (!obj->IsStandStill())
 			{
