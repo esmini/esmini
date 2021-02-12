@@ -61,7 +61,21 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 			{
 				throw std::invalid_argument(std::string("Failed to load OpenSCENARIO file ") + oscFilename);
 			}
+			else
+			{
+				break;
+			}
 		}
+	}
+
+	if (i == file_name_candidates.size())
+	{
+		throw std::invalid_argument(std::string("Couldn't locate OpenSCENARIO file ") + oscFilename);
+	}
+	
+	if (!scenarioReader->IsLoaded())
+	{
+		throw std::invalid_argument(std::string("Couldn't load OpenSCENARIO file ") + oscFilename);
 	}
 
 	parseScenario();

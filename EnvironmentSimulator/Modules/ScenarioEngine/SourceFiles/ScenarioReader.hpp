@@ -120,6 +120,7 @@ namespace scenarioengine
 		void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, ManeuverGroup *mGroup);
 
 		std::string getScenarioFilename() { return oscFilename_; }
+		bool IsLoaded() { return !osc_root_.empty(); }
 
 		static void RegisterController(std::string type_name, ControllerInstantiateFunction function)
 		{

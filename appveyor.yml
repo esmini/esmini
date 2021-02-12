@@ -82,7 +82,30 @@ for:
           else
               rm esmini-demo.zip;
           fi
-              
+
+    test_script:
+      - ps: |
+            cd build/EnvironmentSimulator/Unittest
+            $env:path += "../../../bin"
+            
+            ./OperatingSystem_test
+            if ($lastExitCode -ne 0) {
+                throw "OperatingSystem_test failed"
+            }
+            
+            ./RoadManager_test
+            if ($lastExitCode -ne 0) {
+                throw "OperatingSystem_test failed"
+            }
+            
+            ./ScenarioEngineDll_test
+            if ($lastExitCode -ne 0) {
+                throw "OperatingSystem_test failed"
+            }      
+
+            cd ../../../test
+            python3 smoke_test.py
+
     artifacts:
       - path: esmini-*_ubuntu.zip
         name: ubuntu_artifacts
@@ -130,6 +153,11 @@ for:
               rm esmini-demo.zip;
           fi
 
+    test_script:
+      - ps: |
+            cd test
+            python3 smoke_test.py
+
     artifacts:
       - path: esmini-*_mac_catalina.zip
         name: mac_catalina_artifacts
@@ -142,9 +170,9 @@ for:
     build_script:
       - echo Visual Studio 2017 x64 build script
       - cmd:
-          mkdir buildVS15_64
+          mkdir build
           
-          cd buildVS15_64
+          cd build
           
           cmake.exe -G "Visual Studio 15 Win64" -D USE_OSG=True ..
           
@@ -176,78 +204,36 @@ for:
             echo "Skip demos"
           }
 
-    artifacts:
-      - path: esmini-*_win*.zip
-        name: windows_artifacts
 
-  -
-    matrix:
-      only:
-        - image: Visual Studio 2017
-          platform: x86
-    build_script:
-      - echo Visual Studio 2017 x86 build script
-      - cmd:
-          mkdir buildVS15_32
-
-          cd buildVS15_32
-
-          cmake -G "Visual Studio 15" -D USE_OSG=True ..
-
-      - cmd:
-          msbuild /m /property:Configuration=Release /p:Platform=win32 EnvironmentSimulator.sln
-
-          cd..
-          
-    after_build:
+    test_script:
       - ps: |
-          if ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match '#skip_bins')
-          {
-            echo "Skip binary artifacts"
-          }
-          else
-          {
-            7z a esmini-bin_win_x86.zip bin/* EnvironmentSimulator/Applications/odrplot/xodr.py EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp version.txt
-          }
-          
-    artifacts:
-      - path: esmini-*_win*.zip
-        name: windows_artifacts
-          
-  -
-    matrix:
-      only:
-        - image: Visual Studio 2015
-          platform: x64
-    build_script:
-      - echo Visual Studio 2015 x64 build script
-      - cmd:
-          mkdir buildVS14_winsdk71_64
-
-          cd buildVS14_winsdk71_64
-
-          cmake -G "Visual Studio 14 2015 Win64" -T "Windows7.1SDK" -D WINSDK7_1=True -D USE_OSG=True ..
+            cd build/EnvironmentSimulator/Unittest
+            $env:path += ";../../../bin"
+            
+            ./Release/OperatingSystem_test
+            if ($lastExitCode -ne 0) {
+                throw "OperatingSystem_test failed"
+            }
+            
+            ./Release/RoadManager_test
+            if ($lastExitCode -ne 0) {
+                throw "RoadManager_test failed"
+            }
+            
+            ./Release/ScenarioEngineDll_test
+            if ($lastExitCode -ne 0) {
+                throw "ScenarioEngineDll_test failed"
+            }
 
       - cmd:
-          msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
-
-          cd..
-          
-    after_build:
-      - ps: |
-          if ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match '#skip_bins')
-          {
-            echo "Skip binary artifacts"
-          }
-          else
-          {
-            7z a esmini-bin_win_sdk7-1_x64.zip bin/* EnvironmentSimulator/Applications/odrplot/xodr.py EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp version.txt
-          }
+            cd ../../../test
+            
+            C:/Python38/python smoke_test.py
 
     artifacts:
       - path: esmini-*_win*.zip
         name: windows_artifacts
-          
+
   -
     matrix:
       exclude:
