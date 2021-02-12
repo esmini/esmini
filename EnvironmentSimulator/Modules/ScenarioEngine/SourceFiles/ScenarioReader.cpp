@@ -17,6 +17,7 @@
 #include "ControllerFollowGhost.hpp"
 #include "ControllerSumo.hpp"
 #include "ControllerExternal.hpp"
+#include "ControllerRel2Abs.hpp"
 
 #include <cstdlib>
 
@@ -45,6 +46,7 @@ void ScenarioReader::LoadControllers()
 	RegisterController(ControllerFollowGhost::GetTypeNameStatic(), InstantiateControllerFollowGhost);
 	RegisterController(ControllerSumo::GetTypeNameStatic(), InstantiateControllerSumo);
 	RegisterController(ControllerExternal::GetTypeNameStatic(), InstantiateControllerExternal);
+	RegisterController(ControllerRel2Abs::GetTypeNameStatic(), InstantiateControllerRel2Abs);
 }
 
 void ScenarioReader::UnloadControllers()

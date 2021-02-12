@@ -417,6 +417,22 @@ namespace scenarioengine
 			STEADY_STATE_TIME
 		} SteadyStateType;
 
+		typedef enum {
+			MODE_NONE,
+			MODE_LINEAR,
+			MODE_NON_LINEAR,
+			MODE_STOPPED,
+			MODE_STOP_IMMEDIATELY,
+			MODE_WAITING,
+			MODE_STEADY_STATE
+		} SynchMode;
+
+		typedef enum {
+			SUBMODE_NONE,
+			SUBMODE_CONVEX,
+			SUBMODE_CONCAVE
+		} SynchSubmode;
+
 		struct 
 		{
 			SteadyStateType type_;
@@ -428,6 +444,9 @@ namespace scenarioengine
 			};
 		} steadyState_;
 
+		SynchMode mode_;
+		SynchSubmode submode_;
+
 		roadmanager::Position *target_position_master_;
 		roadmanager::Position *target_position_;
 		Object *master_object_;
@@ -435,6 +454,10 @@ namespace scenarioengine
 		double tolerance_;
 		double tolerance_master_;
 		double sim_time_;
+
+		// Store calculated distances to use for comparison
+		double lastDist_;
+		double lastMasterDist_;
 
 		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE) 
 		{
@@ -484,33 +507,12 @@ namespace scenarioengine
 		void Step(double simTime, double dt);
 		void Start(double simTime, double dt);
 
+		const char* Mode2Str(SynchMode mode);
 	private:
-		typedef enum {
-			MODE_NONE,
-			MODE_LINEAR,
-			MODE_NON_LINEAR,
-			MODE_STOPPED,
-			MODE_STOP_IMMEDIATELY,
-			MODE_WAITING,
-			MODE_STEADY_STATE
-		} SynchMode;
-
-		typedef enum {
-			SUBMODE_NONE,
-			SUBMODE_CONVEX,
-			SUBMODE_CONCAVE
-		} SynchSubmode;
-
-		SynchMode mode_;
-		SynchSubmode submode_;
-
-		// Store calculated distances to use for comparison
-		double lastDist_;  
-		double lastMasterDist_;
 
 		double CalcSpeedForLinearProfile(double v_final, double time, double dist);
 		void PrintStatus(const char* custom_msg);
-		const char* Mode2Str(SynchMode mode);
+		//const char* Mode2Str(SynchMode mode);
 		const char* SubMode2Str(SynchSubmode submode);
 
 

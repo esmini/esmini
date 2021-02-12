@@ -12,6 +12,8 @@
 
 #include "Entities.hpp"
 #include "Controller.hpp"
+#include "OSCPrivateAction.hpp"
+#include "OSCManeuver.hpp"
 
 using namespace scenarioengine;
 using namespace roadmanager;
@@ -982,4 +984,31 @@ Object* Entities::GetObjectById(int id)
 	LOG("Failed to find object with id %d", id);
 
 	return 0;
+}
+
+void Object::removeEvent(Event* event)
+{
+	auto it = std::find(objectEvents_.begin(), objectEvents_.end(), event);
+		if (it != objectEvents_.end())
+			objectEvents_.erase(it);
+}
+
+std::vector<OSCPrivateAction*> Object::getPrivateActions() {
+	std::vector<OSCPrivateAction*> actions;
+	for (int i = 0; i < objectEvents_.size(); i++)
+	{
+		Event* event = objectEvents_[i];
+		for (size_t n = 0; n < event->action_.size(); n++)
+		{
+			OSCAction* action = event->action_[n];
+			if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+			{
+				OSCPrivateAction* pa = (OSCPrivateAction*)action;
+				if (pa->IsActive() || pa->IsTriggable()) {
+					actions.push_back(pa);
+				}
+			}
+		}
+	}
+	return actions;
 }

@@ -19,10 +19,13 @@
 #include "CommonMini.hpp"
 #include "OSCBoundingBox.hpp"
 #include "OSCProperties.hpp"//todo
+#include <algorithm>
 
 namespace scenarioengine
 {
-	class Controller; // Forward declaration
+	class Controller;  // Forward declaration
+	class OSCPrivateAction;
+	class Event;
 
 	class Object
 	{
@@ -115,8 +118,11 @@ namespace scenarioengine
 		Controller *controller_; // reference to any assigned controller object
 		bool isGhost_;
 
-		struct
-		{
+		//Rel2abs Controller addition
+		std::vector<Event*> objectEvents_;				//Events that contains privateactions applied to this object
+		std::vector<OSCPrivateAction*> initActions_;	//initActions that is being or has been applied to this object
+
+		struct {
 			double pos_x;
 			double pos_y;
 			double vel_x;
@@ -257,6 +263,14 @@ namespace scenarioengine
 		void SetAcc(double x_acc, double y_acc, double z_acc);
 		void SetAngularVel(double h_vel, double p_vel, double r_vel);
 		void SetAngularAcc(double h_acc, double p_acc, double r_acc);
+
+		//Rel2abs Controller addition
+		void addEvent(Event* event) { objectEvents_.push_back(event); }
+		void removeEvent(Event* event);
+		bool containsEvent(Event* event) { return (std::find(objectEvents_.begin(), objectEvents_.end(), event) != objectEvents_.end()); }
+		//Will not get completed actions - only running/standby
+		std::vector<OSCPrivateAction*> getPrivateActions();
+		std::vector<Event*> getEvents() { return objectEvents_; }
 
 		bool CheckDirtyBits(int bits)
 		{

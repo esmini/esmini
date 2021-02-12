@@ -14,6 +14,7 @@
 #include "CommonMini.hpp"
 #include "ControllerFollowGhost.hpp"
 #include "ControllerExternal.hpp"
+#include "ControllerRel2Abs.hpp"
 
 #define WHEEL_RADIUS 0.35
 #define STAND_STILL_THRESHOLD 1e-3  // meter per second
@@ -187,6 +188,11 @@ void ScenarioEngine::step(double deltaSimTime)
 	{
 		if (init.private_action_[i]->IsActive())
 		{
+			//Add action to object initActions vector if it doesn't contain the action
+			if (std::find(init.private_action_[i]->object_->initActions_.begin(), init.private_action_[i]->object_->initActions_.end(), init.private_action_[i]) == init.private_action_[i]->object_->initActions_.end())
+			{
+				init.private_action_[i]->object_->initActions_.push_back(init.private_action_[i]);
+			}
 			//LOG("Stepping action of type %d", init.private_action_[i]->action_[j]->type_)
 			init.private_action_[i]->Step(getSimulationTime(), deltaSimTime);
 			init.private_action_[i]->UpdateState();
@@ -269,6 +275,25 @@ void ScenarioEngine::step(double deltaSimTime)
 						{
 							Event *event = maneuver->event_[m];
 
+							//add event to objectEvents vector
+							if (event->IsTriggable() || event->IsActive())
+							{
+								for (size_t n = 0; n < event->action_.size(); n++)
+								{
+									OSCAction* action = event->action_[n];
+									if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+									{
+										OSCPrivateAction* pa = (OSCPrivateAction*)action;
+										if (!pa->object_->containsEvent(event))
+										{
+											pa->object_->addEvent(event);
+											break;
+										}
+											
+									}
+								}								
+							}
+
 							if (event->IsTriggable())
 							{
 								// Check event conditions
@@ -289,6 +314,18 @@ void ScenarioEngine::step(double deltaSimTime)
 											{
 												if (maneuver->event_[n]->IsActive())
 												{
+													//remove event from objectEvents vector
+													for (size_t o = 0; o < maneuver->event_[n]->action_.size(); o++)
+													{
+														OSCAction* action = maneuver->event_[n]->action_[o];
+														if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+														{
+															OSCPrivateAction* pa = (OSCPrivateAction*)action;
+															pa->object_->removeEvent(event);
+															break;
+														}
+													}
+
 													maneuver->event_[n]->End();
 													LOG("Event %s ended, overwritten by event %s",
 														maneuver->event_[n]->name_.c_str(), event->name_.c_str());
@@ -306,6 +343,7 @@ void ScenarioEngine::step(double deltaSimTime)
 										}
 										else
 										{
+
 											event->Start(simulationTime_, deltaSimTime);
 										}
 									}
@@ -320,6 +358,8 @@ void ScenarioEngine::step(double deltaSimTime)
 										{
 											LOG("Event(s) ongoing, %s will run in parallel", event->name_.c_str());
 										}
+
+										
 										event->Start(simulationTime_, deltaSimTime);
 									}
 									else
@@ -345,6 +385,18 @@ void ScenarioEngine::step(double deltaSimTime)
 								}
 								if (!active)
 								{
+									//remove event from objectEvents vector
+									for (size_t n = 0; n < event->action_.size(); n++)
+									{
+										OSCAction* action = event->action_[n];
+										if (action->base_type_ == OSCAction::BaseType::PRIVATE)
+										{
+											OSCPrivateAction* pa = (OSCPrivateAction*)action;
+											pa->object_->removeEvent(event);
+											break;
+										}
+									}
+
 									// Actions done -> Set event done
 									event->End();
 								}
@@ -525,6 +577,10 @@ void ScenarioEngine::parseScenario()
 		for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
 		{
 			scenarioReader->controller_[i]->Init();
+			if (scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_REL2ABS)
+			{
+				((ControllerRel2Abs*)(scenarioReader->controller_[i]))->SetScenarioEngine(this);
+			}
 		}
 
 		// find out maximum headstart time for ghosts

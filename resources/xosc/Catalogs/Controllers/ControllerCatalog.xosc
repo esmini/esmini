@@ -22,6 +22,11 @@
                 <Property name="esminiController" value="InteractiveController" />
             </Properties>
 		</Controller>
+		<Controller name="controllerRel2Abs">
+            <Properties>
+                <Property name="esminiController" value="ControllerRel2Abs" />
+            </Properties>
+		</Controller>
 		<Controller name="externalController">
             <ParameterDeclarations>
                 <ParameterDeclaration name="UseGhost" parameterType="boolean" value="false" /> 
