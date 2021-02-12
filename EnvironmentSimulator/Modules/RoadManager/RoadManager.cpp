@@ -466,12 +466,17 @@ double ParamPoly3::EvaluateCurvatureDS(double ds)
 void ParamPoly3::calcS2PMap(PRangeType p_range)
 {
 	double len = 0;
-	double p_step_len = 1 / double(PARAMPOLY3_STEPS);
+	double p_step_len = 1.0 / double(PARAMPOLY3_STEPS);
 	double p = 0; 
 
+	if (p_range == PRangeType::P_RANGE_ARC_LENGTH)
+	{
+		p_step_len = length_/(PARAMPOLY3_STEPS);
+	}
+
+	// Calculate actual arc length of the curve
 	s2p_map_[0][0] = 0;
-	s2p_map_[0][1] = 0;
-	for (size_t i = 0; i < PARAMPOLY3_STEPS-1; i++)
+	for (size_t i = 1; i < PARAMPOLY3_STEPS+1; i++)
 	{
 		p += p_step_len;
 
@@ -481,17 +486,23 @@ void ParamPoly3::calcS2PMap(PRangeType p_range)
 			pow(3 * poly3V_.GetD() * pm * pm + 2 * poly3V_.GetC() * pm + poly3V_.GetB(), 2));
 
 		len += p_step_len * integrator;
-
 		s2p_map_[i][0] = len;
-		s2p_map_[i][1] = p * (p_range == PRangeType::P_RANGE_NORMALIZED ? length_ : 1);
 	}
-	s2p_map_[PARAMPOLY3_STEPS-1][0] = length_;
-	s2p_map_[PARAMPOLY3_STEPS-1][1] = length_;
+
+	// Map length (ds) to p for each sub-segment, adjust for incorrect length attribute
+	double scale_factor;
+	scale_factor = length_ / len;
+
+	for (size_t i = 0; i < PARAMPOLY3_STEPS+1; i++)
+	{
+		s2p_map_[i][0] *= scale_factor;
+		s2p_map_[i][1] = i * length_ / PARAMPOLY3_STEPS;
+	}
 }
 
 double ParamPoly3::S2P(double s)
 {
-	for (size_t i = 0; i < PARAMPOLY3_STEPS - 1; i++)
+	for (size_t i = 0; i < PARAMPOLY3_STEPS; i++)
 	{
 		if (s2p_map_[i + 1][0] > s)
 		{
@@ -499,7 +510,7 @@ double ParamPoly3::S2P(double s)
 			return s2p_map_[i][1] + w * (s2p_map_[i + 1][1] - s2p_map_[i][1]);
 		}
 	}
-	return s2p_map_[PARAMPOLY3_STEPS - 1][1];
+	return s2p_map_[PARAMPOLY3_STEPS][1];
 }
 
 void Elevation::Print()
@@ -4095,7 +4106,7 @@ void OpenDrive::SetLaneOSIPoints()
 					// If requirement is not satisfied:
 						// Assign last unique satisfied point as OSI point
 						// Continue searching from the last satisfied point
-					if (osi_requirement && s1 - s0 < max_segment_length)
+					if ((osi_requirement && s1 - s0 < max_segment_length) || s1 - s0 < 0.1)
 					{
 						s1_prev = s1;
 						s1 = s1 + OSI_POINT_CALC_STEPSIZE;

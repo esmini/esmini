@@ -242,7 +242,7 @@ namespace roadmanager
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
 		void calcS2PMap(PRangeType p_range);
-		double s2p_map_[PARAMPOLY3_STEPS][2];
+		double s2p_map_[PARAMPOLY3_STEPS+1][2];
 		double S2P(double s);
 
 		Polynomial poly3U_;
