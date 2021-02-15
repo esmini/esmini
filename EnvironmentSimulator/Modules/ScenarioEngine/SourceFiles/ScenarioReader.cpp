@@ -348,6 +348,19 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	OSCProperties properties;
 	ParseOSCProperties(properties, vehicleNode);
 
+	if (vehicle->category_ == Vehicle::Category::BICYCLE ||
+		vehicle->category_ == Vehicle::Category::MOTORBIKE)
+	{
+		vehicle->model_id_ = 9;  // magic number for cyclist, set as default
+		vehicle->model_filepath_ = "cyclist.osgb";
+	}
+	else 
+	{
+		// magic numbers: If first vehicle make it white, else red
+		vehicle->model_id_ = entities_->object_.size() == 0 ? 0 : 2;
+		vehicle->model_filepath_ = entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb";
+	}
+
 	for(size_t i=0; i<properties.property_.size(); i++)
 	{
 		if (properties.property_[i].name_ == "model_id")
@@ -395,6 +408,17 @@ Pedestrian* ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 	// Parse Properties
 	OSCProperties properties;
 	ParseOSCProperties(properties, pedestrianNode);
+
+	if (pedestrian->category_ == Pedestrian::Category::ANIMAL)
+	{
+		pedestrian->model_id_ = 8;  // magic number for moose, set as default
+		pedestrian->model_filepath_ = "moose_cc0.osgb";
+	}
+	else
+	{
+		pedestrian->model_id_ = 7;  // magic number for pedestrian, set as default
+		pedestrian->model_filepath_ = "walkman.osgb";
+	}
 
 	for(size_t i=0; i<properties.property_.size(); i++)
 	{
