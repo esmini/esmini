@@ -591,7 +591,12 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 	}
 }
 
-void ScenarioEngine::prepareOSIGroundTruth(double dt)
+void ScenarioEngine::prepareStaticOSIGroundTruth(double dt)
+{
+	
+}
+
+void ScenarioEngine::prepareDynamicOSIGroundTruth(double dt)
 {
 
 	for (size_t i = 0; i < entities.object_.size(); i++)
