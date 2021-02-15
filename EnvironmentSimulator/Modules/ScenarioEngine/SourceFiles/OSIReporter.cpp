@@ -195,8 +195,8 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor*> sensor)
 
             // Populate sensor data
             mobj->mutable_id()->set_value(sensor[i]->hitList_[j].obj_->id_);
-			mobj->mutable_base()->mutable_position()->set_x(sensor[i]->hitList_[j].x_);
-			mobj->mutable_base()->mutable_position()->set_y(sensor[i]->hitList_[j].y_);
+			mobj->mutable_base()->mutable_position()->set_x(sensor[i]->hitList_[j].x_ + sensor[i]->hitList_[j].obj_->boundingbox_.center_.x_*cos(sensor[i]->hitList_[j].yaw_));
+			mobj->mutable_base()->mutable_position()->set_y(sensor[i]->hitList_[j].y_ + sensor[i]->hitList_[j].obj_->boundingbox_.center_.x_*sin(sensor[i]->hitList_[j].yaw_));
 			mobj->mutable_base()->mutable_position()->set_z(sensor[i]->hitList_[j].z_);
 			mobj->mutable_base()->mutable_velocity()->set_x(sensor[i]->hitList_[j].velX_);
 			mobj->mutable_base()->mutable_velocity()->set_y(sensor[i]->hitList_[j].velY_);
@@ -444,8 +444,8 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState* objectState)
 	obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(objectState->state_.boundingbox.dimensions_.length_);
 
 	// Set OSI Stationary Object Position 
-	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX());
-	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY());
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX() + objectState->state_.boundingbox.center_.x_*cos(objectState->state_.pos.GetH()));
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetX() + objectState->state_.boundingbox.center_.x_*sin(objectState->state_.pos.GetH()));
 	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ());
 
 	// Set OSI Stationary Object Orientation 
@@ -545,8 +545,8 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState* objectState)
 	obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_length(objectState->state_.boundingbox.dimensions_.length_);
 
 	// Set OSI Moving Object Position 
-	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX());
-	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY());
+	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX() + objectState->state_.boundingbox.center_.x_*cos(objectState->state_.pos.GetH()));
+	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY() + objectState->state_.boundingbox.center_.x_*sin(objectState->state_.pos.GetH()));
 	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ());
 
 	// Set OSI Moving Object Orientation
