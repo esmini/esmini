@@ -650,22 +650,43 @@ extern "C"
 		return "";
 	}
 
-	SE_DLL_API const char* SE_GetOSIGroundTruth(int* size)
+	SE_DLL_API const char* SE_GetOSIDynamicGroundTruth(int* size)
 	{
 		if (player)
 		{
-			return player->osiReporter->GetOSIGroundTruth(size);
+			return player->osiReporter->GetOSIDynamicGroundTruth(size);
 		}
 
 		*size = 0;
 		return 0;
 	}
 
-	SE_DLL_API const char* SE_GetOSIGroundTruthRaw()
+	SE_DLL_API const char* SE_GetOSIStaticGroundTruth(int* size)
 	{
 		if (player)
 		{
-			return (const char*) player->osiReporter->GetOSIGroundTruthRaw();
+			return player->osiReporter->GetOSIStaticGroundTruth(size);
+		}
+
+		*size = 0;
+		return 0;
+	}
+
+	SE_DLL_API const char* SE_GetOSIDynamicGroundTruthRaw()
+	{
+		if (player)
+		{
+			return (const char*) player->osiReporter->GetOSIDynamicGroundTruthRaw();
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API const char* SE_GetOSIStaticGroundTruthRaw()
+	{
+		if (player)
+		{
+			return (const char*) player->osiReporter->GetOSIStaticGroundTruthRaw();
 		}
 
 		return 0;
@@ -710,11 +731,21 @@ extern "C"
 		return;
 	}
 
-	SE_DLL_API int SE_UpdateOSIGroundTruth()
+	SE_DLL_API int SE_UpdateOSIDynamicGroundTruth()
 	{
 		if (player)
 		{
-			return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
+			return player->osiReporter->UpdateOSIDynamicGroundTruth(player->scenarioGateway->objectState_);
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_UpdateOSIStaticGroundTruth()
+	{
+		if (player)
+		{
+			return player->osiReporter->UpdateOSIStaticGroundTruth(player->scenarioGateway->objectState_);
 		}
 
 		return 0;
@@ -740,16 +771,32 @@ extern "C"
 		return false;
 	}
 
-	SE_DLL_API bool SE_OSIFileWrite(bool flush)
+	SE_DLL_API bool SE_OSIDynamicFileWrite(bool flush)
 	{
 		bool retval = false;
 
 		if (player)
 		{
-			retval = player->osiReporter->WriteOSIFile();
+			retval = player->osiReporter->WriteDynamicOSIFile();
 			if (flush)
 			{
-				player->osiReporter->FlushOSIFile();
+				player->osiReporter->FlushDynamicOSIFile();
+			}
+		}
+
+		return retval;
+	}
+
+	SE_DLL_API bool SE_OSIStaticFileWrite(bool flush)
+	{
+		bool retval = false;
+
+		if (player)
+		{
+			retval = player->osiReporter->WriteStaticOSIFile();
+			if (flush)
+			{
+				player->osiReporter->FlushStaticOSIFile();
 			}
 		}
 
