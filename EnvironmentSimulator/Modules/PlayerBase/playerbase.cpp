@@ -95,17 +95,17 @@ ScenarioPlayer::~ScenarioPlayer()
 	}
 }
 
-void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
+void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* dynamic_filename, const char* static_filename)
 {
 	if (osiReporter)
 	{
 		if (is_on)
 		{
-			osiReporter->OpenOSIFile(filename);
+			osiReporter->OpenOSIFiles(dynamic_filename, static_filename);
 		}
 		else
 		{
-			osiReporter->CloseOSIFile();
+			osiReporter->CloseOSIFiles();
 		}
 	}
 }
@@ -181,7 +181,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	osiReporter->ReportSensors(sensor);
 
 	// Update OSI info
-	if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
+	if (osiReporter->IsDynamicFileOpen() || osiReporter->GetSocket())
 	{
 		if (osi_counter % osi_freq_ == 0)
 		{
@@ -733,12 +733,12 @@ int ScenarioPlayer::Init()
 
 	if (opt.GetOptionArg("osi_file") ==  "on")
 	{
-		osiReporter->OpenOSIFile(0);
+		osiReporter->OpenOSIFiles(0, 0);
 	}
 
 	if ((arg_str = opt.GetOptionArg("osi_freq")) != "")
 	{
-		if (!osiReporter->IsFileOpen())
+		if (!osiReporter->IsDynamicFileOpen())
 		{
 			LOG("Specifying osi frequency without --osi_file on is not possible");
 			return -1; 

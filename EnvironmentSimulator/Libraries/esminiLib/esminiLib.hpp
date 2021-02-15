@@ -449,7 +449,7 @@ extern "C"
 	/**
 	Create and open osi file
 	*/
-	SE_DLL_API bool SE_OSIFileOpen(const char* filename);
+	SE_DLL_API bool SE_OSIFileOpen(const char* dynamic_filename, const char* static_filename);
 
 	/**
 	Create and open osi file

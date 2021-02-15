@@ -34,11 +34,11 @@ public:
 	Creates and opens osi file
 	@param filename Optional filename, including path. Set to 0 to use default.
 	*/
-	bool OpenOSIFile(const char* filename);
+	bool OpenOSIFiles(const char* dynamic_filename, const char* static_filename);
 	/**
 	Closes any open osi file
 	*/
-	void CloseOSIFile();
+	void CloseOSIFiles();
 	/**
 	Writes GroundTruth in the OSI file
 	*/
@@ -83,10 +83,12 @@ public:
 	int OpenSocket(std::string ipaddr);
 	int CloseSocket();
 	int GetSocket() { return sendSocket; }
-	bool IsFileOpen() { return osi_file.is_open(); }
+	bool IsDynamicFileOpen() { return osi_file_dynamic.is_open(); }
+	bool IsStaticFileOpen() { return osi_file_static.is_open(); }
 	void ReportSensors(std::vector<ObjectSensor*> sensor);
 
 private:
 	int sendSocket;
-	std::ofstream osi_file;
+	std::ofstream osi_file_dynamic;
+	std::ofstream osi_file_static;
 };

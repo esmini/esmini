@@ -521,7 +521,7 @@ TEST(OSIFile, writeosifile_two_step) {
 
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth(); 	
-	SE_OSIFileOpen(0); 
+	SE_OSIFileOpen(0,0); 
 	SE_OSIFileWrite(true);
 
 	std::ifstream in_file("move_obj.osi", std::ios::binary);
@@ -552,7 +552,7 @@ TEST(OSIFile, writeosifile_two_step) {
 
 TEST(OSIFile, writeosifile_no_init) {
 
-	bool open = SE_OSIFileOpen(0); 
+	bool open = SE_OSIFileOpen(0,0); 
 	bool write = SE_OSIFileWrite();
 
 	EXPECT_EQ(open, false);
