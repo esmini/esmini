@@ -40,29 +40,17 @@ public:
 	*/
 	void CloseOSIFiles();
 	/**
-	Writes Dynamic GroundTruth in the OSI file
+	Writes GroundTruth in the OSI file
 	*/
-	bool WriteDynamicOSIFile();
+	bool WriteOSIFile();
 	/**
-	Writes Static GroundTruth in the OSI file
+	Flush (force write) the OSI file
 	*/
-	bool WriteStaticOSIFile();
+	void FlushOSIFile();
 	/**
-	Flush (force write) the Dynamic OSI file
+	Fills up the osi message with GroundTruth
 	*/
-	void FlushDynamicOSIFile();
-	/**
-	Flush (force write) the Static OSI file
-	*/
-	void FlushStaticOSIFile();
-	/**
-	Fills up the dynamic osi message with GroundTruth
-	*/
-	int UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectState);
-	/**
-	Fills up the static osi message with GroundTruth
-	*/
-	int UpdateOSIStaticGroundTruth(std::vector<ObjectState*> objectState);
+	int UpdateOSIGroundTruth(std::vector<ObjectState*> objectState);
 	/**
 	Fills up the osi message with Stationary Object
 	*/
@@ -84,10 +72,8 @@ public:
 	*/
 	int UpdateOSIRoadLane(std::vector<ObjectState*> objectState);
 
-	const char* GetOSIDynamicGroundTruth(int* size);
-	const char* GetOSIStaticGroundTruth(int* size);
-	const char* GetOSIDynamicGroundTruthRaw();
-	const char* GetOSIStaticGroundTruthRaw();
+	const char* GetOSIGroundTruth(int* size);
+	const char* GetOSIGroundTruthRaw();
 	const char* GetOSIRoadLane(std::vector<ObjectState*> objectState, int* size, int object_id);
 	const char* GetOSIRoadLaneBoundary(int* size, int global_id);
 	void GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, std::vector<int>& ids, int object_id);

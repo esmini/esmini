@@ -180,27 +180,17 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 
 	osiReporter->ReportSensors(sensor);
 
-	if (timestep_s == 0.0)
+	// Update OSI info
+	if (osiReporter->IsDynamicFileOpen() || osiReporter->GetSocket())
 	{
-		if ((osiReporter->IsDynamicFileOpen() && osiReporter->IsStaticFileOpen()) || osiReporter->GetSocket())
+		if (osi_counter % osi_freq_ == 0)
 		{
-			osiReporter->UpdateOSIDynamicGroundTruth(scenarioGateway->objectState_);
-			osiReporter->UpdateOSIStaticGroundTruth(scenarioGateway->objectState_);
+			osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
 		}
+		// Update counter after modulo-check since first frame should always be reported
 		osi_counter++;
 	}
-	else
-	{
-		if (osiReporter->IsDynamicFileOpen() || osiReporter->GetSocket())
-		{
-			if (osi_counter % osi_freq_ == 0)
-			{
-				osiReporter->UpdateOSIDynamicGroundTruth(scenarioGateway->objectState_);
-			}
-			osi_counter++;
-		}
-	}
-	
+
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
 	//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
 	//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),

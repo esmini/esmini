@@ -408,36 +408,20 @@ extern "C"
 	SE_DLL_API void SE_EnableOSIFile(const char* filename);
 
 	/**
-	The SE_UpdateOSIDynamicGroundTruth function returns a char array containing the osi dynamic GroundTruth serialized to a string
+	The SE_UpdateOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
 	*/
-	SE_DLL_API int SE_UpdateOSIDynamicGroundTruth();
+	SE_DLL_API int SE_UpdateOSIGroundTruth();
 
 	/**
-	The SE_UpdateOSIStaticGroundTruth function returns a char array containing the osi static GroundTruth serialized to a string
+	The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
 	*/
-	SE_DLL_API int SE_UpdateOSIStaticGroundTruth();
+	SE_DLL_API const char* SE_GetOSIGroundTruth(int* size);
 
 	/**
-	The SE_GetOSIDynamicGroundTruth function returns a char array containing the osi dynamic GroundTruth serialized to a string
-	*/
-	SE_DLL_API const char* SE_GetOSIDynamicGroundTruth(int* size);
-
-	/**
-	The SE_GetOSIStaticGroundTruth function returns a char array containing the osi static GroundTruth serialized to a string
-	*/
-	SE_DLL_API const char* SE_GetOSIStaticGroundTruth(int* size);
-
-	/**
-	The SE_GetOSIDynamicGroundTruthRaw function returns a char array containing the OSI dynamic GroundTruth information
+	The SE_GetOSIGroundTruthRaw function returns a char array containing the OSI GroundTruth information
 	@return osi3::GroundTruth*
 	*/
-	SE_DLL_API const char* SE_GetOSIDynamicGroundTruthRaw();
-
-	/**
-	The SE_GetOSIStaticGroundTruthRaw function returns a char array containing the OSI static GroundTruth information
-	@return osi3::GroundTruth*
-	*/
-	SE_DLL_API const char* SE_GetOSIStaticGroundTruthRaw();
+	SE_DLL_API const char* SE_GetOSIGroundTruthRaw();
 
 	/**
 	The SE_GetOSIRoadLane function returns a char array containing the osi Lane information/message of the lane where the object with object_id is, serialized to a string
@@ -468,14 +452,9 @@ extern "C"
 	SE_DLL_API bool SE_OSIFileOpen(const char* dynamic_filename, const char* static_filename);
 
 	/**
-	Create and open osi file for dynamic data
+	Create and open osi file
 	*/
-	SE_DLL_API bool SE_OSIDynamicFileWrite(bool flush = false);
-
-	/**
-	Create and open osi file for static data
-	*/
-	SE_DLL_API bool SE_OSIStaticFileWrite(bool flush = false);
+	SE_DLL_API bool SE_OSIFileWrite(bool flush = false);
 
 	SE_DLL_API void SE_LogMessage(char* message);
 
