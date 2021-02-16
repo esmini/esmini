@@ -214,6 +214,9 @@ TEST(GetOSIRoadLaneTest, left_lane_id) {
 	SE_Close();
 }
 
+
+
+
 TEST(GetOSIRoadLaneTest, right_lane_id) {
 
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
@@ -507,6 +510,7 @@ INSTANTIATE_TEST_CASE_P(EsminiAPITests,GetOSILaneBoundaryTests,::testing::Values
     std::make_tuple(15, 0 ),
     std::make_tuple(-15, 0 )));
 
+
 TEST(OSIFile, writeosifile_two_step) {
 
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";  
@@ -543,6 +547,7 @@ TEST(OSIFile, writeosifile_two_step) {
 //	EXPECT_EQ(file_size2, file_sizeend);  // File might not be flushed until it's closed, unless it is done explicitly
 	EXPECT_LT(file_size1, file_size2); 
 }
+
 
 
 TEST(OSIFile, writeosifile_no_init) {

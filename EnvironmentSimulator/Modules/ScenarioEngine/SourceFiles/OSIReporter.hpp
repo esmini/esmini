@@ -78,15 +78,11 @@ public:
 	/**
 	Fills up the osi message with Lane Boundary
 	*/
-	int UpdateOSILaneBoundary();
+	int UpdateOSILaneBoundary(std::vector<ObjectState*> objectState);
 	/**
-	Fills up the osi message with Lanes for static Lanes data
+	Fills up the osi message with Lanes
 	*/
-	int UpdateOSIStaticRoadLane();
-	/**
-	Fills up the osi message with Lanes for dynamic Lanes data
-	*/
-	int UpdateOSIDynamicRoadLane(std::vector<ObjectState*> objectState);
+	int UpdateOSIRoadLane(std::vector<ObjectState*> objectState);
 
 	const char* GetOSIDynamicGroundTruth(int* size);
 	const char* GetOSIStaticGroundTruth(int* size);

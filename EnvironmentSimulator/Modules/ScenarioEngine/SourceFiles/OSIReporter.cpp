@@ -37,13 +37,12 @@ static struct {
 	osi3::SensorData *sd;
 	osi3::GroundTruth *gt;
 	osi3::MovingObject *mobj;
-	std::vector<osi3::Lane*> ln_dyn;
 } obj_dynamic_osi_internal;
 
 static struct {
 	osi3::GroundTruth *gt;
 	osi3::StationaryObject *sobj;
-	std::vector<osi3::Lane*> ln_stat;
+	std::vector<osi3::Lane*> ln;
 	std::vector<osi3::LaneBoundary*> lnb;
 } obj_static_osi_internal;
 
@@ -124,14 +123,13 @@ OSIReporter::~OSIReporter()
 		delete obj_static_osi_internal.gt;
 	}
 
-	obj_dynamic_osi_internal.ln_dyn.clear();
-	obj_static_osi_internal.ln_stat.clear();
+	obj_static_osi_internal.ln.clear();
 	obj_static_osi_internal.lnb.clear();
 
 	osiDynamicGroundTruth.size = 0;
 	osiStaticGroundTruth.size = 0;
 	osiRoadLane.size = 0;
-	osiRoadLaneBoundary.size = 0;
+	//osiRoadLaneBoundary.size = 0;
 
 	CloseSocket();
 	if (osi_file_dynamic.is_open())
@@ -281,7 +279,7 @@ bool OSIReporter::WriteDynamicOSIFile()
 	// write to file, first size of message
 	osi_file_dynamic.write((char*)&osiDynamicGroundTruth.size, sizeof(osiDynamicGroundTruth.size));
 
-	// write to file, actual message - the groundtruth object including timestamp and moving objects, and dynamic part of lane
+	// write to file, actual message - the groundtruth object including timestamp and moving objects
 	osi_file_dynamic.write(osiDynamicGroundTruth.ground_truth.c_str(), osiDynamicGroundTruth.size);
 
 	if (!osi_file_dynamic.good())
@@ -347,16 +345,11 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectSta
 		{
 			UpdateOSIMovingObject(objectState[i]);
 		}
-		else if(objectState[i]->state_.obj_type==static_cast<int>(Object::Type::MISC_OBJECT))
-		{
-			// do nothing
-		}
 		else
 		{
 			LOG("Warning: Object type %d is not supported in OSIReporter, and hence no OSI update for this object", objectState[i]->state_.obj_type);
 		}
 	}
-	UpdateOSIDynamicRoadLane(objectState);
 
 	if (GetSocket() || IsDynamicFileOpen())
 	{
@@ -401,11 +394,6 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState*> objectStat
 		{
 			UpdateOSIStationaryObject(objectState[i]);
 		}
-		else if(objectState[i]->state_.obj_type==static_cast<int>(Object::Type::VEHICLE) || 
-		objectState[i]->state_.obj_type==static_cast<int>(Object::Type::PEDESTRIAN))
-		{
-			// do nothing
-		}
 		else
 		{
 			LOG("Warning: Object type %d is not supported in OSIReporter, and hence no OSI update for this object", objectState[i]->state_.obj_type);
@@ -413,9 +401,9 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState*> objectStat
 	}
 
 	//collect all information of lanes in the lane section where obj=0 is
-	UpdateOSIStaticRoadLane();
+	UpdateOSIRoadLane(objectState);
 
-	UpdateOSILaneBoundary();
+	UpdateOSILaneBoundary(objectState);
 
 	if (GetSocket() || IsStaticFileOpen())
 	{
@@ -662,7 +650,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState* objectState)
 	return 0;
 }
 
-int OSIReporter::UpdateOSILaneBoundary()
+int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 {
 	//Retrieve opendrive class from RoadManager
 	static roadmanager::OpenDrive* opendrive = roadmanager::Position::GetOpenDrive();
@@ -832,8 +820,18 @@ int OSIReporter::UpdateOSILaneBoundary()
 	return 0;
 }
 
-int OSIReporter::UpdateOSIStaticRoadLane()
+int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 {
+	// Find ego vehicle
+	roadmanager::Position pos;
+	for (size_t i = 0; i < objectState.size(); i++)
+	{
+		if (objectState[i]->state_.ctrl_type == Controller::Type::CONTROLLER_TYPE_EXTERNAL) // external is host
+		{
+			pos = objectState[i]->state_.pos;
+		}
+	}
+
 	//Retrieve opendrive class from RoadManager
 	static roadmanager::OpenDrive* opendrive = roadmanager::Position::GetOpenDrive();
 
@@ -860,11 +858,19 @@ int OSIReporter::UpdateOSIStaticRoadLane()
 
 
 					// Check if this lane is already pushed to OSI - if yes just update
-					for (int jj=0; jj < obj_static_osi_internal.ln_stat.size(); jj++)
+					for (int jj=0; jj < obj_static_osi_internal.ln.size(); jj++)
 					{
-						if (obj_static_osi_internal.ln_stat[jj]->mutable_id()->value() == lane_global_id)
+						if (obj_static_osi_internal.ln[jj]->mutable_id()->value() == lane_global_id)
 						{
-							osi_lane = obj_static_osi_internal.ln_stat[jj];
+							osi_lane = obj_static_osi_internal.ln[jj];
+
+							// update classification is_host_vehicle_in_lane
+							bool is_ego_on_lane = false;
+							if (lane_id == pos.GetLaneId())
+							{
+								is_ego_on_lane = true;
+							}
+							osi_lane->mutable_classification()->set_is_host_vehicle_lane(is_ego_on_lane);
 							break;
 						}
 					}
@@ -1129,80 +1135,13 @@ int OSIReporter::UpdateOSIStaticRoadLane()
 						osi_lane->mutable_classification()->mutable_road_condition()->set_surface_roughness(temp);
 						osi_lane->mutable_classification()->mutable_road_condition()->set_surface_texture(temp);
 
-						obj_static_osi_internal.ln_stat.push_back(osi_lane);
+						obj_static_osi_internal.ln.push_back(osi_lane);
 					}
 				}
 			}
 		}
 	}
-	return 0;
-}
 
-int OSIReporter::UpdateOSIDynamicRoadLane(std::vector<ObjectState*> objectState)
-{
-	// Find ego vehicle
-	roadmanager::Position pos;
-	for (size_t i = 0; i < objectState.size(); i++)
-	{
-		if (objectState[i]->state_.ctrl_type == Controller::Type::CONTROLLER_TYPE_EXTERNAL) // external is host
-		{
-			pos = objectState[i]->state_.pos;
-		}
-	}
-
-	//Retrieve opendrive class from RoadManager
-	static roadmanager::OpenDrive* opendrive = roadmanager::Position::GetOpenDrive();
-
-	// Loop over all roads
-	for (int i = 0; i<opendrive->GetNumOfRoads(); i++)
-	{
-
-		roadmanager::Road* road = opendrive->GetRoadByIdx(i);
-
-		// loop over all lane sections
-		for (int j= 0; j<road->GetNumberOfLaneSections(); j++)
-		{
-			roadmanager::LaneSection* lane_section = road->GetLaneSectionByIdx(j);
-
-			// loop over all lanes
-			for (int k=0; k<lane_section->GetNumberOfLanes(); k++)
-			{
-				roadmanager::Lane* lane = lane_section->GetLaneByIdx(k);
-				if (!lane->IsCenter())
-				{
-					osi3::Lane* osi_lane = 0;
-					int lane_global_id = lane->GetGlobalId();
-					int lane_id = lane->GetId();
-
-					// Check if this lane is already pushed to OSI - if yes just update
-					for (int jj=0; jj < obj_dynamic_osi_internal.ln_dyn.size(); jj++)
-					{
-						if (obj_dynamic_osi_internal.ln_dyn[jj]->mutable_id()->value() == lane_global_id)
-						{
-							osi_lane = obj_dynamic_osi_internal.ln_dyn[jj];
-
-							// update classification is_host_vehicle_in_lane
-							bool is_ego_on_lane = false;
-							if (lane_id == pos.GetLaneId())
-							{
-								is_ego_on_lane = true;
-							}
-							osi_lane->mutable_classification()->set_is_host_vehicle_lane(is_ego_on_lane);
-							break;
-						}
-					}
-
-					if (!osi_lane)
-					{
-						// LANE ID 
-						osi_lane = obj_dynamic_osi_internal.gt->add_lane();
-						osi_lane->mutable_id()->set_value(lane_global_id);
-						obj_dynamic_osi_internal.ln_dyn.push_back(osi_lane);
-					}
-				}
-			}
-		}
-	}
 	return 0;
 }
 
@@ -1264,9 +1203,9 @@ const char* OSIReporter::GetOSIRoadLane(std::vector<ObjectState*> objectState, i
 	// find the lane in the sensor view and save its index in the sensor view
 	int lane_id_of_vehicle = pos.GetLaneGlobalId();
 	int idx = -1;
-	for (int i = 0; i<obj_static_osi_internal.ln_stat.size(); i++)
+	for (int i = 0; i<obj_static_osi_internal.ln.size(); i++)
 	{
-		osi3::Identifier identifier = obj_static_osi_internal.ln_stat[i]->id();
+		osi3::Identifier identifier = obj_static_osi_internal.ln[i]->id();
 		int found_id = (int)identifier.value();
 		if (found_id == lane_id_of_vehicle)
 		{
@@ -1280,11 +1219,12 @@ const char* OSIReporter::GetOSIRoadLane(std::vector<ObjectState*> objectState, i
 		return 0;
 	}
 	// serialize to string the single lane
-	obj_static_osi_internal.ln_stat[idx]->SerializeToString(&osiRoadLane.osi_lane_info);
-	osiRoadLane.size = (unsigned int)obj_static_osi_internal.ln_stat[idx]->ByteSizeLong();
+	obj_static_osi_internal.ln[idx]->SerializeToString(&osiRoadLane.osi_lane_info);
+	osiRoadLane.size = (unsigned int)obj_static_osi_internal.ln[idx]->ByteSizeLong();
 	*size = osiRoadLane.size;
 	return osiRoadLane.osi_lane_info.data();
 }
+
 
 const char* OSIReporter::GetOSIRoadLaneBoundary(int* size, int global_id)
 {
@@ -1316,10 +1256,10 @@ const char* OSIReporter::GetOSIRoadLaneBoundary(int* size, int global_id)
 bool OSIReporter::IsCentralOSILane(int lane_idx)
 {
 	// to check if the lane is a central lane we check if the right and left lane boundary have the same global id. 
-	osi3::Identifier Left_lb_id = obj_static_osi_internal.ln_stat[lane_idx]->mutable_classification()->left_lane_boundary_id(0);
+	osi3::Identifier Left_lb_id = obj_static_osi_internal.ln[lane_idx]->mutable_classification()->left_lane_boundary_id(0);
 	int left_lb_id = (int)Left_lb_id.value();
 
-	osi3::Identifier Right_lb_id = obj_static_osi_internal.ln_stat[lane_idx]->mutable_classification()->right_lane_boundary_id(0);
+	osi3::Identifier Right_lb_id = obj_static_osi_internal.ln[lane_idx]->mutable_classification()->right_lane_boundary_id(0);
 	int right_lb_id = (int)Right_lb_id.value();
 
 	if (left_lb_id == right_lb_id)
@@ -1335,9 +1275,9 @@ bool OSIReporter::IsCentralOSILane(int lane_idx)
 int OSIReporter::GetLaneIdxfromIdOSI(int lane_id)
 {
 	int idx = -1; 
-	for (int i = 0; i<obj_static_osi_internal.ln_stat.size(); i++)
+	for (int i = 0; i<obj_static_osi_internal.ln.size(); i++)
 	{
-		osi3::Identifier identifier = obj_static_osi_internal.ln_stat[i]->id();
+		osi3::Identifier identifier = obj_static_osi_internal.ln[i]->id();
 		int found_id = (int)identifier.value(); 
 		if (found_id == lane_id)
 		{
@@ -1378,53 +1318,53 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, s
 	idx_central = GetLaneIdxfromIdOSI(lane_id_of_vehicle); 
 	
 	// find left and right lane boundary ids of central lane	
-	if (obj_static_osi_internal.ln_stat[idx_central]->mutable_classification()->left_lane_boundary_id_size() == 0 )
+	if (obj_static_osi_internal.ln[idx_central]->mutable_classification()->left_lane_boundary_id_size() == 0 )
 	{
 		left_lb_id = -1;
 	}
 	else
 	{
-		osi3::Identifier left_lane = obj_static_osi_internal.ln_stat[idx_central]->mutable_classification()->left_lane_boundary_id(0);
+		osi3::Identifier left_lane = obj_static_osi_internal.ln[idx_central]->mutable_classification()->left_lane_boundary_id(0);
 		left_lb_id = (int)left_lane.value(); 
 	}
 
-	if (obj_static_osi_internal.ln_stat[idx_central]->mutable_classification()->right_lane_boundary_id_size() == 0 )
+	if (obj_static_osi_internal.ln[idx_central]->mutable_classification()->right_lane_boundary_id_size() == 0 )
 	{
 		right_lb_id = -1;
 	}
 	else
 	{
-		osi3::Identifier right_lane = obj_static_osi_internal.ln_stat[idx_central]->mutable_classification()->right_lane_boundary_id(0);
+		osi3::Identifier right_lane = obj_static_osi_internal.ln[idx_central]->mutable_classification()->right_lane_boundary_id(0);
 		right_lb_id = (int)right_lane.value(); 
 	}
 
 	// find first left lane
-	if (obj_static_osi_internal.ln_stat[idx_central]->mutable_classification()->left_adjacent_lane_id_size() == 0 )
+	if (obj_static_osi_internal.ln[idx_central]->mutable_classification()->left_adjacent_lane_id_size() == 0 )
 	{ 
 		far_left_lb_id = -1; 
 	}
 	else
 	{
 
-		osi3::Identifier Left_lane_id = obj_static_osi_internal.ln_stat[idx_central]->mutable_classification()->left_adjacent_lane_id(0);
+		osi3::Identifier Left_lane_id = obj_static_osi_internal.ln[idx_central]->mutable_classification()->left_adjacent_lane_id(0);
 		int left_lane_id = (int)Left_lane_id.value(); 	
 		idx_left = GetLaneIdxfromIdOSI(left_lane_id); 
 		
 		// save left boundary of left lane as far left lane boundary of central lane
-		if (obj_static_osi_internal.ln_stat[idx_left]->mutable_classification()->left_lane_boundary_id_size() == 0 )
+		if (obj_static_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id_size() == 0 )
 		{
 			far_left_lb_id = -1;
 		}
 		else
 		{
-			if (obj_static_osi_internal.ln_stat[idx_central]->mutable_classification()->centerline_is_driving_direction() != obj_static_osi_internal.ln_stat[idx_left]->mutable_classification()->centerline_is_driving_direction()) // if not same drv dir
+			if (obj_static_osi_internal.ln[idx_central]->mutable_classification()->centerline_is_driving_direction() != obj_static_osi_internal.ln[idx_left]->mutable_classification()->centerline_is_driving_direction()) // if not same drv dir
 			{
-				osi3::Identifier Far_left_lb_id = obj_static_osi_internal.ln_stat[idx_left]->mutable_classification()->right_lane_boundary_id(0);
+				osi3::Identifier Far_left_lb_id = obj_static_osi_internal.ln[idx_left]->mutable_classification()->right_lane_boundary_id(0);
 				far_left_lb_id = (int)Far_left_lb_id.value();
 			}
 			else
 			{
-				osi3::Identifier Far_left_lb_id = obj_static_osi_internal.ln_stat[idx_left]->mutable_classification()->left_lane_boundary_id(0);
+				osi3::Identifier Far_left_lb_id = obj_static_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id(0);
 				far_left_lb_id = (int)Far_left_lb_id.value();
 			}
 		}
@@ -1432,31 +1372,31 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, s
 
 
 	// now find first right lane
-	if (obj_static_osi_internal.ln_stat[idx_central]->mutable_classification()->right_adjacent_lane_id_size() == 0 )
+	if (obj_static_osi_internal.ln[idx_central]->mutable_classification()->right_adjacent_lane_id_size() == 0 )
 	{
 		far_right_lb_id = -1;
 	}
 	else
 	{
-		osi3::Identifier Right_lane_id = obj_static_osi_internal.ln_stat[idx_central]->mutable_classification()->right_adjacent_lane_id(0);
+		osi3::Identifier Right_lane_id = obj_static_osi_internal.ln[idx_central]->mutable_classification()->right_adjacent_lane_id(0);
 		int right_lane_id = (int)Right_lane_id.value();   
 		idx_right = GetLaneIdxfromIdOSI(right_lane_id);
 		
 		// save right boundary of right lane as far right lane boundary of central lane 
-		if (obj_static_osi_internal.ln_stat[idx_right]->mutable_classification()->right_lane_boundary_id_size() == 0 )
+		if (obj_static_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id_size() == 0 )
 		{
 			far_right_lb_id = -1;
 		}
 		else
 		{
-			if (obj_static_osi_internal.ln_stat[idx_central]->mutable_classification()->centerline_is_driving_direction() != obj_static_osi_internal.ln_stat[idx_right]->mutable_classification()->centerline_is_driving_direction()) // if not same drv dir
+			if (obj_static_osi_internal.ln[idx_central]->mutable_classification()->centerline_is_driving_direction() != obj_static_osi_internal.ln[idx_right]->mutable_classification()->centerline_is_driving_direction()) // if not same drv dir
 			{
-				osi3::Identifier Far_right_lb_id = obj_static_osi_internal.ln_stat[idx_right]->mutable_classification()->left_lane_boundary_id(0);
+				osi3::Identifier Far_right_lb_id = obj_static_osi_internal.ln[idx_right]->mutable_classification()->left_lane_boundary_id(0);
 				far_right_lb_id = (int)Far_right_lb_id.value();
 			}
 			else
 			{
-				osi3::Identifier Far_right_lb_id = obj_static_osi_internal.ln_stat[idx_right]->mutable_classification()->right_lane_boundary_id(0);
+				osi3::Identifier Far_right_lb_id = obj_static_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id(0);
 				far_right_lb_id = (int)Far_right_lb_id.value();
 			}
 		}
