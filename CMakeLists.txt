@@ -46,3 +46,6 @@ set(USE_OSG True CACHE BOOL "If projects that depend on OpenSceneGraph should be
 
 add_subdirectory(EnvironmentSimulator)
 
+if( NOT EXISTS "test/OSC-ALKS-scenarios/.git" )
+	execute_process(COMMAND git submodule update --init)
+endif()
