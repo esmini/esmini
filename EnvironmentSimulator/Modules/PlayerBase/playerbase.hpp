@@ -113,7 +113,8 @@ private:
 	bool launch_server;
 	bool disable_controllers_;
 	double fixed_timestep_;
-	int osi_freq_; 
+	int osi_freq_;
+	int frame_counter_;
 	std::string osi_receiver_addr;
 	int& argc_;
 	char** argv_;

@@ -106,7 +106,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids_no_obj) {
 
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";  
 	const char * Scenario_file = scenario_file.c_str();
-	SE_Init(Scenario_file, 0, 0, 0, 0);	
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth(); 
 
@@ -524,7 +524,7 @@ TEST(OSIFile, writeosifile_two_step) {
 	SE_OSIFileOpen(0); 
 	SE_OSIFileWrite(true);
 
-	std::ifstream in_file("move_obj.osi", std::ios::binary);
+	std::ifstream in_file("ground_truth.osi", std::ios::binary);
    	in_file.seekg(0, std::ios::end);
    	file_size1 = in_file.tellg();
    	std::cout <<"Size of the file at first step "<< file_size1 << " bytes" << std::endl; 
@@ -639,8 +639,6 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj) {
 	osi3::GroundTruth osi_gt;
 
 	SE_Init("../../../EnvironmentSimulator/Unittest/scenarios/miscobj_basic.xosc", 0, 0, 0, 0);
-
-	//SE_OSIFileOpen(0); 
 
 	SE_StepDT(0.001f);	
 

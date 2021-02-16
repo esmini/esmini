@@ -422,9 +422,24 @@ extern "C"
 	SE_DLL_API void SE_EnableOSIFile(const char* filename);
 
 	/**
-	The SE_UpdateOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
+	The SE_ClearOSIGroundTruth clears the certain groundtruth data
+	*/
+	SE_DLL_API int SE_ClearOSIGroundTruth();
+
+	/**
+	The SE_UpdateOSIGroundTruth function calls SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
 	*/
 	SE_DLL_API int SE_UpdateOSIGroundTruth();
+
+	/**
+	The SE_UpdateOSIStaticGroundTruth function returns a char array containing the osi static GroundTruth serialized to a string
+	*/
+	SE_DLL_API int SE_UpdateOSIStaticGroundTruth();
+
+	/**
+	The SE_UpdateDynamicOSIGroundTruth function returns a char array containing the osi dynamic GroundTruth serialized to a string
+	*/
+	SE_DLL_API int SE_UpdateDynamicOSIGroundTruth();
 
 	/**
 	The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string

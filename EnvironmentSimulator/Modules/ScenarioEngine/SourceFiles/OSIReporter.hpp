@@ -48,9 +48,21 @@ public:
 	*/
 	void FlushOSIFile();
 	/**
-	Fills up the osi message with GroundTruth
+	Clears groundtruth osi
+	*/
+	int ClearOSIGroundTruth();
+	/**
+	Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
 	*/
 	int UpdateOSIGroundTruth(std::vector<ObjectState*> objectState);
+	/**
+	Fills up the osi message with  static GroundTruth
+	*/
+	int UpdateOSIStaticGroundTruth(std::vector<ObjectState*> objectState);
+	/**
+	Fills up the osi message with dynamic GroundTruth
+	*/
+	int UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectState);
 	/**
 	Fills up the osi message with Stationary Object
 	*/
@@ -89,4 +101,5 @@ public:
 private:
 	int sendSocket;
 	std::ofstream osi_file;
+	int osi_update_counter_;
 };

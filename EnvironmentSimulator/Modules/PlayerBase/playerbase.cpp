@@ -48,6 +48,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	osiReporter = NULL;
 	viewer_ = 0;
 	disable_controllers_ = false;
+	frame_counter_ = 0;
 
 #ifdef _SCENARIO_VIEWER
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
@@ -185,6 +186,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	{
 		if (osi_counter % osi_freq_ == 0)
 		{
+			osiReporter->ClearOSIGroundTruth();
 			osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
 		}
 		// Update counter after modulo-check since first frame should always be reported
@@ -204,6 +206,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	{
 		quit_request = true;
 	}
+	frame_counter_++;
 }
 
 #ifdef _SCENARIO_VIEWER

@@ -81,12 +81,14 @@ OSIReporter::OSIReporter()
 	obj_osi_internal.gt->mutable_version()->set_version_patch(0);
 
 	obj_osi_internal.gt->mutable_timestamp()->set_seconds(0);
-	obj_osi_internal.gt->mutable_timestamp()->set_seconds(0);
+	obj_osi_internal.gt->mutable_timestamp()->set_nanos(0);
 
     // Sensor Data
     obj_osi_internal.sd = new osi3::SensorData();
-}
 
+	// Counter for OSI update
+	osi_update_counter_ = 0;
+}
 
 OSIReporter::~OSIReporter()
 {
@@ -210,7 +212,7 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor*> sensor)
 
 bool OSIReporter::OpenOSIFile(const char* filename)
 {
-	const char* f = (filename == 0 || !strcmp(filename, "")) ? "move_obj.osi" : filename;
+	const char* f = (filename == 0 || !strcmp(filename, "")) ? "ground_truth.osi" : filename;
 	osi_file = std::ofstream(f, std::ios_base::binary);
 	if (!osi_file.good())
 	{
@@ -255,38 +257,24 @@ void OSIReporter::FlushOSIFile()
 	}
 }
 
-int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
+int OSIReporter::ClearOSIGroundTruth()
 {
 	obj_osi_internal.gt->clear_moving_object();
 	obj_osi_internal.gt->clear_stationary_object();
+	obj_osi_internal.gt->clear_lane();
+	obj_osi_internal.gt->clear_lane_boundary();
 
-	obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)objectState[0]->state_.timeStamp);
-	obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)(
-		(objectState[0]->state_.timeStamp - (int64_t)objectState[0]->state_.timeStamp) * 1e9)
-	);
+	return 0;
+}
 
-	for (size_t i = 0; i < objectState.size(); i++)
+int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
+{
+	if (osi_update_counter_ == 0)
 	{
-		if(objectState[i]->state_.obj_type==static_cast<int>(Object::Type::VEHICLE) || 
-		objectState[i]->state_.obj_type==static_cast<int>(Object::Type::PEDESTRIAN))
-		{
-			UpdateOSIMovingObject(objectState[i]);
-		}
-		else if(objectState[i]->state_.obj_type==static_cast<int>(Object::Type::MISC_OBJECT))
-		{
-			UpdateOSIStationaryObject(objectState[i]);
-		}
-		else
-		{
-			LOG("Warning: Object type %d is not supported in OSIReporter, and hence no OSI update for this object", objectState[i]->state_.obj_type);
-		}
+		UpdateOSIStaticGroundTruth(objectState);
 	}
-	// UpdateOSIHostVehicleData(objectState[0]);
-
-	//collect all information of lanes in the lane section where obj=0 is
-	UpdateOSIRoadLane(objectState);
-
-	UpdateOSILaneBoundary(objectState);
+	
+	UpdateOSIDynamicGroundTruth(objectState);
 
 	if (GetSocket() || IsFileOpen())
 	{
@@ -311,6 +299,60 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 	if (IsFileOpen())
 	{
 		WriteOSIFile();
+	}
+	osi_update_counter_++;
+
+	return 0;
+}
+
+int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState*> objectState)
+{
+	for (size_t i = 0; i < objectState.size(); i++)
+	{
+		if(objectState[i]->state_.obj_type==static_cast<int>(Object::Type::VEHICLE) || 
+		objectState[i]->state_.obj_type==static_cast<int>(Object::Type::PEDESTRIAN))
+		{
+			// do nothing
+		}
+		else if(objectState[i]->state_.obj_type==static_cast<int>(Object::Type::MISC_OBJECT))
+		{
+			UpdateOSIStationaryObject(objectState[i]);
+		}
+		else
+		{
+			LOG("Warning: Object type %d is not supported in OSIReporter, and hence no OSI update for this object", objectState[i]->state_.obj_type);
+		}
+	}
+
+	UpdateOSIRoadLane(objectState);
+	UpdateOSILaneBoundary(objectState);
+
+	return 0;
+}
+
+int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectState)
+{
+	
+	obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)objectState[0]->state_.timeStamp);
+	obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)(
+		(objectState[0]->state_.timeStamp - (int64_t)objectState[0]->state_.timeStamp) * 1e9)
+	);
+
+	for (size_t i = 0; i < objectState.size(); i++)
+	{
+		if(objectState[i]->state_.obj_type==static_cast<int>(Object::Type::VEHICLE) || 
+		objectState[i]->state_.obj_type==static_cast<int>(Object::Type::PEDESTRIAN))
+		{
+			UpdateOSIMovingObject(objectState[i]);
+		}
+		else if(objectState[i]->state_.obj_type==static_cast<int>(Object::Type::MISC_OBJECT))
+		{
+			// do nothing
+		}
+		else
+		{
+			LOG("Warning: Object type %d is not supported in OSIReporter, and hence no OSI update for this object", objectState[i]->state_.obj_type);
+		}
 	}
 
 	return 0;
@@ -705,16 +747,6 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 
 int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 {
-	// Find ego vehicle
-	roadmanager::Position pos;
-	for (size_t i = 0; i < objectState.size(); i++)
-	{
-		if (objectState[i]->state_.ctrl_type == Controller::Type::CONTROLLER_TYPE_EXTERNAL) // external is host
-		{
-			pos = objectState[i]->state_.pos;
-		}
-	}
-
 	//Retrieve opendrive class from RoadManager
 	static roadmanager::OpenDrive* opendrive = roadmanager::Position::GetOpenDrive();
 
@@ -746,14 +778,6 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						if (obj_osi_internal.ln[jj]->mutable_id()->value() == lane_global_id)
 						{
 							osi_lane = obj_osi_internal.ln[jj];
-
-							// update classification is_host_vehicle_in_lane
-							bool is_ego_on_lane = false;
-							if (lane_id == pos.GetLaneId())
-							{
-								is_ego_on_lane = true;
-							}
-							osi_lane->mutable_classification()->set_is_host_vehicle_lane(is_ego_on_lane);
 							break;
 						}
 					}
