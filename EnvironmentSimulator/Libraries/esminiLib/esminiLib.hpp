@@ -172,6 +172,12 @@ extern "C"
 	SE_DLL_API void SE_Close();
 
 	/**
+	Enable or disable log to stdout/console
+	@param mode true=enable, false=disable
+	*/
+	SE_DLL_API void SE_LogToConsole(bool mode);
+
+	/**
 	Get simulation time in seconds
 	*/
 	SE_DLL_API float SE_GetSimulationTime();  // Get simulation time in seconds

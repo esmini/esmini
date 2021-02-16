@@ -31,6 +31,7 @@ static char **argv_ = 0;
 static int argc_ = 0;
 static std::vector<std::string> args_v;
 static std::string returnString;  // use this for returning strings
+static bool logToConsole = true;
 
 typedef struct
 {
@@ -43,7 +44,10 @@ static std::vector<SE_ObjCallback> objCallback;
 
 static void log_callback(const char* str)
 {
-	printf("%s\n", str);
+	if (logToConsole)
+	{
+		printf("%s\n", str);
+	}
 }
 
 static void resetScenario(void)
@@ -465,6 +469,11 @@ extern "C"
 	SE_DLL_API void SE_Close()
 	{
 		resetScenario();
+	}
+
+	SE_DLL_API void SE_LogToConsole(bool mode)
+	{
+		logToConsole = mode;
 	}
 
 	SE_DLL_API int SE_OpenOSISocket(const char* ipaddr)

@@ -694,5 +694,8 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj) {
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+
+	SE_LogToConsole(false);
+
+	return RUN_ALL_TESTS();
 }
