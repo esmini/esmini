@@ -838,16 +838,16 @@ namespace roadmanager
 		void AddCorner(OutlineCorner* outlineCorner) { corner_.push_back(outlineCorner); }
 	};
 
-	class Object : public RoadObject
+	class RMObject : public RoadObject
 	{
 	public:
 
-		Object(double s, double t, int id, std::string name, Orientation orientation, double z_offset, std::string type,
+		RMObject(double s, double t, int id, std::string name, Orientation orientation, double z_offset, std::string type,
 			double length, double height, double width, double heading, double pitch, double roll) :
 			s_(s), t_(t), id_(id), name_(name), orientation_(orientation), z_offset_(z_offset), type_(type),
 			length_(length), height_(height), width_(width), heading_(heading), pitch_(pitch), roll_(roll) {}
 
-		~Object()
+		~RMObject()
 		{
 			for (size_t i = 0; i < outlines_.size(); i++) delete(outlines_[i]);
 			outlines_.clear();
@@ -951,13 +951,13 @@ namespace roadmanager
 		void AddLaneSection(LaneSection *lane_section);
 		void AddLaneOffset(LaneOffset *lane_offset);
 		void AddSignal(Signal *signal);
-		void AddObject(Object* object);
+		void AddObject(RMObject* object);
 		Elevation *GetElevation(int idx);
 		Elevation *GetSuperElevation(int idx);
 		int GetNumberOfSignals();
 		Signal* GetSignal(int idx);
 		int GetNumberOfObjects() { return (int)object_.size(); }
-		Object* GetObject(int idx);
+		RMObject* GetObject(int idx);
 		int GetNumberOfElevations() { return (int)elevation_profile_.size(); }
 		int GetNumberOfSuperElevations() { return (int)super_elevation_profile_.size(); }
 		double GetLaneOffset(double s);
@@ -987,7 +987,7 @@ namespace roadmanager
 		std::vector<LaneSection*> lane_section_;
 		std::vector<LaneOffset*> lane_offset_;
 		std::vector<Signal*> signal_;
-		std::vector<Object*> object_;
+		std::vector<RMObject*> object_;
 	};
 
 	class LaneRoadLaneConnection
@@ -1193,11 +1193,33 @@ namespace roadmanager
 		double ds;				// delta s (longitudinal distance)
 		double dt;				// delta t (lateral distance)
 		int dLaneId;			// delta laneId (increasing left and decreasing to the right)
+		double dx;              // delta x (world coordinate system)
+		double dy;              // delta y (world coordinate system)
+		double dxLocal;         // delta x (local coordinate system)
+		double dyLocal;         // delta y (local coordinate system)
 	} PositionDiff;
+
+	typedef enum
+	{
+		CS_UNDEFINED,
+		CS_ENTITY,
+		CS_LANE,
+		CS_ROAD,
+		CS_TRAJECTORY
+	} CoordinateSystem;
+
+	typedef enum
+	{
+		REL_DIST_UNDEFINED,
+		REL_DIST_LATERAL,
+		REL_DIST_LONGITUDINAL,
+		REL_DIST_CARTESIAN,
+		REL_DIST_EUCLIDIAN
+	} RelativeDistanceType;
 
 	// Forward declarations
 	class Route;
-	class Trajectory;
+	class RMTrajectory;
 
 	class Position
 	{
@@ -1342,9 +1364,9 @@ namespace roadmanager
 		void CalcRoutePosition();
 		const roadmanager::Route* GetRoute() const { return route_; }
 		Route* GetRoute() { return route_; }
-		Trajectory* GetTrajectory() { return trajectory_; }
+		RMTrajectory* GetTrajectory() { return trajectory_; }
 
-		void SetTrajectory(Trajectory* trajectory);
+		void SetTrajectory(RMTrajectory* trajectory);
 
 		/**
 		Set the current position along the route.
@@ -1391,7 +1413,7 @@ namespace roadmanager
 
 		/**
 		Move current position to specified S-value along the trajectory
-		@param trajectory_s Distance to move, negative will move backwards
+		@param trajectory_s Distance from start of the trajectory
 		@return Non zero return value indicates error of some kind
 		*/
 		int SetTrajectoryS(double trajectory_s);
@@ -1399,10 +1421,21 @@ namespace roadmanager
 		int SetTrajectoryPosByTime(double time);
 
 		/**
-		Retrieve the S-value of the current route position. Note: This is the S along the
-		complete route, not the actual individual roads.
+		Retrieve the S-value of the current trajectory position
 		*/
 		double GetTrajectoryS() { return s_trajectory_; }
+
+		/**
+		Move current position to specified T-value along the trajectory
+		@param trajectory_t Lateral distance from trajectory at current s-value
+		@return Non zero return value indicates error of some kind
+		*/
+		int SetTrajectoryT(double trajectory_t) { t_trajectory_ = trajectory_t; }
+
+		/**
+		Retrieve the T-value of the current trajectory position
+		*/
+		double GetTrajectoryT() { return t_trajectory_; }
 
 		/**
 		Straight (not route) distance between the current position and the one specified in argument
@@ -1411,7 +1444,7 @@ namespace roadmanager
 		@param y (meter). Y component of the relative distance.
 		@return distance (meter). Negative if the specified position is behind the current one.
 		*/
-		double getRelativeDistance(Position target_position, double &x, double &y);
+		double getRelativeDistance(double targetX, double targetY, double &x, double &y);
 
 		/**
 		Find out the difference between two position objects, in effect subtracting the values 
@@ -1419,7 +1452,24 @@ namespace roadmanager
 		@param pos_b The position from which to subtract the current position (this position object)
 		@return true if position found and parameter values are valid, else false
 		*/
-		bool Delta(Position pos_b, PositionDiff &diff);
+		bool Delta(Position* pos_b, PositionDiff& diff);
+
+		/**
+		Find out the distance, on specified system and type, between two position objects
+		@param pos_b The position from which to subtract the current position (this position object)
+		@param dist Distance (output parameter)
+		@return 0 if position found and parameter values are valid, else -1
+		*/
+		int Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist);
+		
+		/**
+		Find out the distance, on specified system and type, to a world x, y position
+		@param x X coordinate of position from which to subtract the current position (this position object)
+		@param y Y coordinate of position from which to subtract the current position (this position object)
+		@param dist Distance (output parameter)
+		@return 0 if position found and parameter values are valid, else -1
+		*/
+		int Distance(double x, double y, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist);
 
 		/**
 		Is the current position ahead of the one specified in argument
@@ -1698,7 +1748,7 @@ namespace roadmanager
 		Route  *route_;			// if pointer set, the position corresponds to a point along (s) the route
 
 		// route reference
-		Trajectory* trajectory_; // if pointer set, the position corresponds to a point along (s) the trajectory
+		RMTrajectory* trajectory_; // if pointer set, the position corresponds to a point along (s) the trajectory
 
 		// track reference
 		int     track_id_;
@@ -1712,6 +1762,7 @@ namespace roadmanager
 		double  z_relative_;        // z relative to the road
 		double  s_route_;			// longitudinal point/distance along the route
 		double  s_trajectory_;		// longitudinal point/distance along the trajectory
+		double  t_trajectory_;		// longitudinal point/distance along the trajectory
 		double  curvature_;
 		double  p_relative_;		// pitch relative to the road (h_ = h_road_ + h_relative_)
 		double  r_relative_;		// roll relative to the road (h_ = h_road_ + h_relative_)
@@ -1991,16 +2042,17 @@ namespace roadmanager
 
 	};
 
-	class Trajectory
+	class RMTrajectory
 	{
 	public:
 
 		Shape* shape_;
 
-		Trajectory(Shape* shape, std::string name, bool closed) : shape_(shape), name_(name), closed_(closed) {}
-		Trajectory() : shape_(0), closed_(false) {}
+		RMTrajectory(Shape* shape, std::string name, bool closed) : shape_(shape), name_(name), closed_(closed) {}
+		RMTrajectory() : shape_(0), closed_(false) {}
 		void Freeze();
 		double GetLength() { return shape_ ? shape_->GetLength() : 0.0; }
+		double GetTimeAtS(double s);
 
 		std::string name_;
 		bool closed_;

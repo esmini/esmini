@@ -49,6 +49,14 @@
 #define LOG_FILENAME "log.txt"
 
 #define LOG(Format_, ...)  Logger::Inst().Log(false, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
+#define LOG_ONCE(Format_, ...)  { \
+	static bool firstTime = true; \
+	if (firstTime) \
+	{ \
+		Logger::Inst().Log(false, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__); \
+		firstTime = false; \
+	} \
+}
 #define LOG_AND_QUIT(Format_, ...)  Logger::Inst().Log(true, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
 
 // Time functions
@@ -275,6 +283,7 @@ private:
 std::vector<std::string> SplitString(const std::string &s, char separator);
 std::string DirNameOf(const std::string& fname);
 std::string FileNameOf(const std::string& fname);
+std::string FileNameExtOf(const std::string& fname);
 std::string FileNameWithoutExtOf(const std::string& fname);
 
 int strtoi(std::string s);

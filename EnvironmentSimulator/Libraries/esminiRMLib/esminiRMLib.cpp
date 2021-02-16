@@ -517,7 +517,7 @@ extern "C"
 		}
 
 		PositionDiff diff;
-		bool result = position[handleA].Delta(position[handleB], diff);
+		bool result = position[handleA].Delta(&position[handleB], diff);
 		if (result == true)
 		{
 			pos_diff->ds = (float)diff.ds;

@@ -23,7 +23,6 @@
 
 namespace scenarioengine
 {
-
 	class OSCOrientation
 	{
 	public:
@@ -51,6 +50,7 @@ namespace scenarioengine
 			LANE,
 			RELATIVE_LANE,
 			ROUTE,
+			TRAJECTORY,
 			UNDEFINED
 		} PositionType;
 
@@ -172,6 +172,17 @@ namespace scenarioengine
 		void SetRouteRefLaneCoord(roadmanager::Route *route, double pathS, int laneId, double laneOffset);
 		void SetRouteRelativeHeading(double h_relative) { position_.SetHeadingRelative(h_relative);  }
 		
+		void Print() { position_.Print(); }
+	};
+
+	class OSCPositionTrajectory : OSCPosition
+	{
+	public:
+		OSCPositionTrajectory() : OSCPosition(PositionType::TRAJECTORY) {}
+		OSCPositionTrajectory(roadmanager::RMTrajectory* traj, double s, double t, OSCOrientation orientation);
+
+		void SetTrajectory(roadmanager::RMTrajectory* traj) { position_.SetTrajectory(traj); }
+
 		void Print() { position_.Print(); }
 	};
 

@@ -41,6 +41,10 @@ CatalogType Entry::GetTypeByNodeName(pugi::xml_node node)
 	{
 		return CatalogType::CATALOG_CONTROLLER;
 	}
+	else if (!strcmp(node.name(), "Trajectory"))
+	{
+		return CatalogType::CATALOG_TRAJECTORY;
+	}
 	else
 	{
 		LOG("Unsupported catalog entry type: %s", node.name());
@@ -86,10 +90,13 @@ int Catalogs::RegisterCatalogDirectory(std::string type, std::string directory)
 	{
 		entry.type_ = CatalogType::CATALOG_CONTROLLER;
 	}
+	else if (type == "TrajectoryCatalog")
+	{
+		entry.type_ = CatalogType::CATALOG_TRAJECTORY;
+	}
 	else
 	{
-		LOG("Warning: %s not yet supported", type.c_str());
-		return -1;
+		entry.type_ = CatalogType::CATALOG_UNDEFINED;
 	}
 
 	catalog_dirs_.push_back(entry);

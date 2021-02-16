@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
-   <FileHeader revMajor="0"
-               revMinor="9"
+   <FileHeader revMajor="1"
+               revMinor="0"
                date="2018-11-8T17:00:00"
                author="Erik Gunnarsson"/>
    <Catalog name="VehicleCatalog">

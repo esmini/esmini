@@ -8,15 +8,15 @@ ALKS_PREFIX = './OSC-ALKS-scenarios/Scenarios/'
 
 
 class TestSuite(unittest.TestCase):
-    
+
     def test_ALKS_Scenario_4_1_1_FreeDriving(self):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_1_FreeDriving_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.1_1', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.1_1', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('0.010 .* ActivateALKSControllerAct standbyState -> startTransition -> runningState', log))
+        self.assertTrue(re.search('0.010.* ActivateALKSControllerAct standbyState -> startTransition -> runningState', log))
 
         # Check vehicle state
         csv = generate_csv()
@@ -26,10 +26,10 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_2_SwervingLeadVehicle_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.1_2', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.1_2', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('18.12. .* Started LaneOffset with max lateral acc: 0.30.*', log))
+        self.assertTrue(re.search('18.12.* Started LaneOffset with max lateral acc: 0.30.*', log))
 
         # Check vehicle state
         csv = generate_csv()
@@ -39,10 +39,10 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_3_SwervingSideVehicle_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.1_3', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.1_3', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('5.010 .* Started LaneOffset with max lateral acc: 0.30 -> duration: 4.0. <=> distance: 67\...', log))
+        self.assertTrue(re.search('5.010.* Started LaneOffset with max lateral acc: 0.30 -> duration: 4.0. <=> distance: 67\...', log))
 
         # Check vehicle state
         csv = generate_csv()
@@ -53,7 +53,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_1_FullyBlockingTarget_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.2_1', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.2_1', log))
 
         # Check vehicle state
         csv = generate_csv()
@@ -63,10 +63,10 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_2_PartiallyBlockingTarget_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.2_2', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.2_2', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('0.000 .*Init TargetBlocking TeleportAction standbyState -> startTransition -> runningState', log))
+        self.assertTrue(re.search('0.000.* Init TargetBlocking TeleportAction standbyState -> startTransition -> runningState', log))
 
         # Check vehicle state
         csv = generate_csv()
@@ -78,26 +78,21 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_3_CrossingPedestrian_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.2_3', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.2_3', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('26.1[78]. .* CrossStartCondition == true, HWT: 3.5[89] < 3.60, edge Rising', log))
+        self.assertTrue(re.search('26.1[78].* CrossStartCondition == true, HWT: 3.(59|60) < 3.60, edge Rising', log))
 
         # Check vehicle state
         csv = generate_csv()
         self.assertTrue(re.search('\n29.710, 0, Ego, 495.1., -8.00, 0.00, 0.00, 0.00, 0.00, 16.67,.*', csv))
         self.assertTrue(re.search('\n29.710, 1, TargetBlocking, 500.00, -8.0[678], 0.00, 1.57, 0.00, 0.00, 1.39,.*', csv))
 
-
-
-
-
-
     def test_ALKS_Scenario_4_2_4_MultipleBlockingTargets(self):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_4_MultipleBlockingTargets_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.2_4', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.2_4', log))
         
         # Check vehicle state
         csv = generate_csv()
@@ -109,11 +104,11 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.3_1_FollowLeadVehicleComfortable_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.3_1', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.3_1', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('10.010 .* VaryingSpeedStartCondition == true, 10.0100 > 10.00 edge: Rising', log))
-        self.assertTrue(re.search('15.010 .* VaryingSpeedEvent2Start == true, element: VaryingSpeedAction state: END_TRANSITION, edge: Rising', log))
+        self.assertTrue(re.search('10.010.* VaryingSpeedStartCondition == true, 10.0100 > 10.00 edge: Rising', log))
+        self.assertTrue(re.search('15.010.* VaryingSpeedEvent2Start == true, element: VaryingSpeedAction state: END_TRANSITION, edge: Rising', log))
 
         # Check vehicle state
         csv = generate_csv()
@@ -126,10 +121,10 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.3_2_FollowLeadVehicleEmergencyBrake_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.3_2', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.3_2', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('10.010 .* BrakeStartCondition == true, 10.0100 > 10.00 edge: Rising', log))
+        self.assertTrue(re.search('10.010.* BrakeStartCondition == true, 10.0100 > 10.00 edge: Rising', log))
 
         # Check vehicle state
         csv = generate_csv()
@@ -142,10 +137,10 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.4_1_CutInNoCollision_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.4_1', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.4_1', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('8.120 .* CutInStartCondition == true, rel_dist: 29.9[345] < 30.00, edge: Rising', log))
+        self.assertTrue(re.search('8.310.* CutInStartCondition == true, rel_dist: 29.9[89] < 30.00, edge: Rising', log))
 
         # Check vehicle state
         csv = generate_csv()
@@ -153,31 +148,31 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n8.060, 1, CutInVehicle, 169.56, -11.50, 0.00, 0.00, 0.00, 0.00, 11.1.,.*', csv))
         self.assertTrue(re.search('\n13.000, 0, Ego, 216.67, -8.00, 0.00, 0.00, 0.00, 0.00, 16.6[67],.*', csv))
         self.assertTrue(re.search('\n13.000, 1, CutInVehicle, 224.45, -8.00, 0.00, 0.00, 0.00, 0.00, 11.1.,.*', csv))
-   
+
     def test_ALKS_Scenario_4_4_2_CutInUnavoidableCollision(self):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.4_2_CutInUnavoidableCollision_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.4_2', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.4_2', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('6.320 .* CutInStartCondition == true, rel_dist: 9.9[345] < 10.00, edge: Rising', log))
+        self.assertTrue(re.search('6.510.* CutInStartCondition == true, rel_dist: 9.99 < 10.00, edge: Rising', log))
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n6.800, 1, CutInVehicle, 125.56, -10.92, 0.00, 0.20, 0.00, 0.00, 11.1.,.*', csv))
+        self.assertTrue(re.search('\n6.800, 1, CutInVehicle, 125.56, -11.27, 0.00, 0.13, 0.00, 0.00, 11.1.,.*', csv))
         self.assertTrue(re.search('\n7.000, 0, Ego, 116.67, -8.00, 0.00, 0.00, 0.00, 0.00, 16.6[67],.*', csv))
-        self.assertTrue(re.search('\n7.100, 1, CutInVehicle, 128.89, -10.13, 0.00, 0.26, 0.00, 0.00, 11.1.,.*', csv))
+        self.assertTrue(re.search('\n7.100, 1, CutInVehicle, 128.89, -10.65, 0.00, 0.23, 0.00, 0.00, 11.11,.*', csv))
         self.assertTrue(re.search('\n8.200, 0, Ego, 136.67, -8.00, 0.00, 0.00, 0.00, 0.00, 16.6[67],.*', csv))
 
     def test_ALKS_Scenario_4_5_1_CutOutFullyBlocking(self):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.5_1_CutOutFullyBlocking_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.5_1', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.5_1', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('24.780 .* CutOutStartCondition == true, rel_dist: 49.93 < 50.00, edge: Rising', log))
+        self.assertTrue(re.search('24.780.* CutOutStartCondition == true, rel_dist: 49.93 < 50.00, edge: Rising', log))
 
         # Check vehicle state
         csv = generate_csv()
@@ -191,10 +186,10 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.5_2_CutOutMultipleBlockingTargets_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.5_2', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.5_2', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('24.780 .* CutOutStartCondition == true, rel_dist: 49.93 < 50.00, edge: Rising', log))
+        self.assertTrue(re.search('24.780.* CutOutStartCondition == true, rel_dist: 49.93 < 50.00, edge: Rising', log))
 
         # Check vehicle state
         csv = generate_csv()
@@ -209,7 +204,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.6_1_ForwardDetectionRange_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.6_1', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.6_1', log))
         
         # Check vehicle state
         csv = generate_csv()
@@ -220,13 +215,13 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.6_2_LateralDetectionRange_TEMPLATE.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Init .*ALKS_Scenario_4.6_2', log))
+        self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.6_2', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('5.010 .* SwerveEventStart == true, 5.0100 > 5.00 edge: Rising', log))
-        self.assertTrue(re.search('22.670 .* SwerveEvent2Start == true, element: SwerveAction state: END_TRANSITION, edge: Rising', log))
-        self.assertTrue(re.search('31.270 .* SwerveEvent3Start == true, element: SwerveAction2 state: END_TRANSITION, edge: Rising', log))
-        self.assertTrue(re.search('36.280 .* Started LaneOffset with max lateral acc: 0.10 -> duration: 0.00 <=> distance: 0.00', log))
+        self.assertTrue(re.search('5.010.* SwerveEventStart == true, 5.0100 > 5.00 edge: Rising', log))
+        self.assertTrue(re.search('22.670.* SwerveEvent2Start == true, element: SwerveAction state: END_TRANSITION, edge: Rising', log))
+        self.assertTrue(re.search('31.270.* SwerveEvent3Start == true, element: SwerveAction2 state: END_TRANSITION, edge: Rising', log))
+        self.assertTrue(re.search('36.280.* Started LaneOffset with max lateral acc: 0.10 -> duration: 0.00 <=> distance: 0.00', log))
 
         # Check vehicle state
         csv = generate_csv()

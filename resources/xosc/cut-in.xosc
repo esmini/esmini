@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Demonstrate basic manevers and use of interactive controller -->
-<!-- In this case the user controls the white car being overtaken -->
+<!-- Demonstrate basic maneuvers and triggers -->
+<!-- A white car is driving with constant speed -->
+<!-- A red car is overtaking -->
+<!-- At specific time gap the red car changes lane -->
+<!-- and ends up in front of the white car -->
+<!-- At another, larger, time gap the red car brakes -->
+
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
-               date="2020-10-09T10:00:00"
-               description="Basic cut-in with interactive controller"
+               revMinor="1"
+               date="2021-04-09T10:00:00"
+               description="Basic cut-in"
                author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
@@ -45,7 +50,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" />
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="30"/>
                         </SpeedActionTarget>
@@ -128,7 +133,8 @@
                                     <TimeHeadwayCondition entityRef="$owner"
                                                           value="$HeadwayTime_LaneChange"
                                                           freespace="false"
-                                                          alongRoute="true"
+                                                          coordinateSystem="road"
+                                                          relativeDistanceType="longitudinal"
                                                           rule="greaterThan"/>
                                  </EntityCondition>
                               </ByEntityCondition>
@@ -159,8 +165,8 @@
                                  <EntityCondition>
                                     <TimeHeadwayCondition entityRef="$owner"
                                                           value="$HeadwayTime_Brake"
-                                                          freespace="true"
-                                                          alongRoute="true"
+                                                          coordinateSystem="entity"
+                                                          relativeDistanceType="longitudinal"
                                                           rule="greaterThan"/>
                                  </EntityCondition>
                               </ByEntityCondition>

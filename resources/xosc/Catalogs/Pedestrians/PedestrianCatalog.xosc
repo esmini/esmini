@@ -5,7 +5,7 @@
                date="2020-10-06T17:00:00"
                author="esmini"/>
    <Catalog name="PedestrianCatalog">
-      <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="PedestrianCategory.pedestrian">
+      <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="pedestrian">
          <ParameterDeclarations/>
          <BoundingBox>
             <Center x="0.06" y="0.0" z="0.923"/>
@@ -16,7 +16,7 @@
             <Property name="model_id" value="7"/>       
          </Properties>
       </Pedestrian>
-      <Pedestrian mass="70" model="EPTa" name="pedestrian_adult2" pedestrianCategory="PedestrianCategory.pedestrian">
+      <Pedestrian mass="70" model="EPTa" name="pedestrian_adult2" pedestrianCategory="pedestrian">
          <ParameterDeclarations/>
          <BoundingBox>
             <Center x="0.06" y="0.0" z="0.923"/>
@@ -27,7 +27,7 @@
             <Property name="model_id" value="7"/>                    
          </Properties>
       </Pedestrian>
-      <Pedestrian mass="80" model="moose-standard-model" name="moose" pedestrianCategory="PedestrianCategory.animal">
+      <Pedestrian mass="80" model="moose-standard-model" name="moose" pedestrianCategory="animal">
          <ParameterDeclarations/>
          <BoundingBox>
             <Center x="0.06" y="0.0" z="0.923"/>

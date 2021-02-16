@@ -14,20 +14,33 @@
 #include "Story.hpp"
 
 using namespace scenarioengine;
+using namespace roadmanager;
 
 std::string Rule2Str(Rule rule)
 {
-	if (rule == Rule::EQUAL_TO)
-	{
-		return "=";
-	}
-	else if (rule == Rule::GREATER_THAN)
+	if (rule == Rule::GREATER_THAN)
 	{
 		return ">";
+	}
+	else if (rule == Rule::GREATER_OR_EQUAL)
+	{
+		return ">=";
 	}
 	else if (rule == Rule::LESS_THAN)
 	{
 		return "<";
+	}
+	else if (rule == Rule::LESS_OR_EQUAL)
+	{
+		return "<=";
+	}
+	else if (rule == Rule::EQUAL_TO)
+	{
+		return "==";
+	}
+	else if (rule == Rule::NOT_EQUAL_TO)
+	{
+		return "!=";
 	}
 	else
 	{
@@ -38,17 +51,29 @@ std::string Rule2Str(Rule rule)
 
 bool EvaluateRule(double a, double b, Rule rule)
 {
-	if (rule == Rule::EQUAL_TO)
-	{
-		return (a == b || (a > b - SMALL_NUMBER && a < b + SMALL_NUMBER)) ;
-	}
-	else if (rule == Rule::GREATER_THAN)
+	if (rule == Rule::GREATER_THAN)
 	{
 		return a > b;
+	}
+	else if (rule == Rule::GREATER_OR_EQUAL)
+	{
+		return a >= b;
 	}
 	else if (rule == Rule::LESS_THAN)
 	{
 		return a < b;
+	}
+	else if (rule == Rule::LESS_OR_EQUAL)
+	{
+		return a <= b;
+	}
+	else if (rule == Rule::EQUAL_TO)
+	{
+		return (a == b || (a > b - SMALL_NUMBER && a < b + SMALL_NUMBER));
+	}
+	else if (rule == Rule::NOT_EQUAL_TO)
+	{
+		return !(a == b || (a > b - SMALL_NUMBER && a < b + SMALL_NUMBER));
 	}
 	else
 	{
@@ -248,10 +273,17 @@ bool Trigger::Evaluate(StoryBoard *storyBoard, double sim_time)
 {
 	bool result = false;
 
-	for (size_t i = 0; i < conditionGroup_.size(); i++)
+	if (conditionGroup_.size() == 0)
 	{
-		// OR operator, at least one must be true
-		result |= conditionGroup_[i]->Evaluate(storyBoard, sim_time);
+		result = defaultValue_;
+	}
+	else
+	{
+		for (size_t i = 0; i < conditionGroup_.size(); i++)
+		{
+			// OR operator, at least one must be true
+			result |= conditionGroup_[i]->Evaluate(storyBoard, sim_time);
+		}
 	}
 
 	if (result)
@@ -491,48 +523,30 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		if (freespace_)
+		Object* trigObj = triggering_entities_.entity_[i].object_;
+
+		if (trigObj->Distance(object_, cs_, relDistType_, freespace_, rel_dist) != 0)
 		{
-			double longDist = 0;
-			double latDist = 0;
-			triggering_entities_.entity_[i].object_->FreeSpaceDistance(object_, &latDist, &longDist);
-			
-			// use only longitudinal distance
-			rel_dist = longDist;
-		}
-		else
-		{
-			if (along_route_ == true)
-			{
-				roadmanager::PositionDiff diff;
-				triggering_entities_.entity_[i].object_->pos_.Delta(object_->pos_, diff);
-				rel_dist = diff.ds;
-			}
-			else
-			{
-				double x, y;
-				rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
-				// Only consider X-component of distance vector
-				rel_dist = x;
-			}
+			LOG("Failed to measure distance. Set to large number.");
+			rel_dist = LARGE_NUMBER;
 		}
 
 		// Headway time not defined for cases:
 		//  - when target object is behind 
 		//  - when object is still or going reverse 
-		if (rel_dist < 0 || triggering_entities_.entity_[i].object_->speed_ < SMALL_NUMBER)
+		if (rel_dist < 0 || trigObj->speed_ < SMALL_NUMBER)
 		{
 			hwt_ = -1;
 		}
 		else
 		{
-			hwt_ = fabs(rel_dist / triggering_entities_.entity_[i].object_->speed_);
+			hwt_ = fabs(rel_dist / trigObj->speed_);
 
 			result = EvaluateRule(hwt_, value_, rule_);
 
 			if (result == true)
 			{ 
-				triggered_by_entities_.push_back(triggering_entities_.entity_[i].object_);
+				triggered_by_entities_.push_back(trigObj);
 			}
 
 			if (EvalDone(result, triggering_entity_rule_))  
@@ -559,61 +573,43 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 	triggered_by_entities_.clear();
 	bool result = false;
 	double rel_dist, rel_speed;
-	roadmanager::Position* pos = nullptr;
 
 	ttc_ = -1;
 
-	if (object_)
-	{
-		pos = &object_->pos_;
-	}
-	else if (position_)
-	{
-		pos = position_->GetRMPos();
-	}
-
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		if (freespace_)
-		{
-			double longDist = 0;
-			double latDist = 0;
-			triggering_entities_.entity_[i].object_->FreeSpaceDistance(object_, &latDist, &longDist);
+		Object* trigObj = triggering_entities_.entity_[i].object_;
+		int retVal = 0;
 
-			// use only longitudinal distance
-			rel_dist = longDist;
+		if (object_ != nullptr)
+		{
+			retVal = trigObj->Distance(object_, cs_, relDistType_, freespace_, rel_dist);
 		}
 		else
 		{
-			if (along_route_ == true)
-			{
-				roadmanager::PositionDiff diff;
-				triggering_entities_.entity_[i].object_->pos_.Delta(*pos, diff);
-				rel_dist = diff.ds;
-			}
-			else
-			{
-				double x, y;
-				rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*pos, x, y);
-				// Only consider X-component of distance vector
-				rel_dist = x;
-			}
+			roadmanager::Position* pos = position_->GetRMPos();
+			retVal = trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, rel_dist);
+		}
+		if (retVal != 0)
+		{
+			LOG("Failed to measure distance. Set to large number.");
+			rel_dist = LARGE_NUMBER;
 		}
 
 		if (object_)
 		{
-			rel_speed = triggering_entities_.entity_[i].object_->speed_ - object_->speed_;
+			rel_speed = trigObj->speed_ - object_->speed_;
 		}
 		else
 		{
-			rel_speed = triggering_entities_.entity_[i].object_->speed_;
+			rel_speed = trigObj->speed_;
 		}
 
 		// TimeToCollision (TTC) not defined for cases:
 		//  - when target object is behind 
 		//  - when triggering entity speed is <=0 (still or going reverse)
 		//  - when distance is constant or increasing
-		if (rel_dist < 0 || triggering_entities_.entity_[i].object_->speed_ < SMALL_NUMBER || rel_speed <= SMALL_NUMBER)
+		if (rel_dist < 0 || trigObj->speed_ < SMALL_NUMBER || rel_speed <= SMALL_NUMBER)
 		{
 			ttc_ = -1;
 		}
@@ -625,7 +621,7 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 
 			if (result == true)
 			{
-				triggered_by_entities_.push_back(triggering_entities_.entity_[i].object_);
+				triggered_by_entities_.push_back(trigObj);
 			}
 
 			if (EvalDone(result, triggering_entity_rule_))
@@ -664,7 +660,14 @@ bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		dist_ = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y));
+		Object* trigObj = triggering_entities_.entity_[i].object_;
+		Position* pos = position_->GetRMPos();
+		if (pos == nullptr)
+		{
+			LOG_AND_QUIT("missing road manager position");
+		}
+		
+		dist_ = fabs(trigObj->pos_.getRelativeDistance(pos->GetX(), pos->GetY(), x, y));
 		if (dist_ < tolerance_)
 		{
 			result = true;
@@ -672,7 +675,7 @@ bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time
 
 		if (result == true)
 		{
-			triggered_by_entities_.push_back(triggering_entities_.entity_[i].object_);
+			triggered_by_entities_.push_back(trigObj);
 		}
 
 		if (EvalDone(result, triggering_entity_rule_))
@@ -698,30 +701,21 @@ bool TrigByDistance::CheckCondition(StoryBoard *storyBoard, double sim_time)
 	triggered_by_entities_.clear();
 	bool result = false;
 	dist_ = 0;
+	roadmanager::Position* pos = position_->GetRMPos();
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		if (freespace_)
+		Object* trigObj = triggering_entities_.entity_[i].object_;
+
+		if (trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, dist_) != 0)
 		{
-			double x = position_->GetRMPos()->GetX();
-			double y = position_->GetRMPos()->GetY();
-			double distLat = 0;
-			double distLong = 0;
-			dist_ = triggering_entities_.entity_[i].object_->FreeSpaceDistancePoint(x, y, &distLat, &distLong);
+			LOG("Failed to measure distance. Set to large number.");
+			dist_ = LARGE_NUMBER;
 		}
 		else
 		{
-			if (along_route_ == true)
-			{
-				roadmanager::PositionDiff diff;
-				triggering_entities_.entity_[i].object_->pos_.Delta(*position_->GetRMPos(), diff);
-				dist_ = fabs(diff.ds);
-			}
-			else
-			{
-				double x, y;
-				dist_ = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y));
-			}
+			// in conditions only consider absolute distances for now
+			dist_ = fabs(dist_);
 		}
 
 		result = EvaluateRule(dist_, value_, rule_);
@@ -753,36 +747,24 @@ bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_t
 
 	triggered_by_entities_.clear();
 	bool result = false;
-	double rel_intertial_dist, x, y;
 	rel_dist_ = 0;
+	roadmanager::Position* pos = &object_->pos_;
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
+		Object* trigObj = triggering_entities_.entity_[i].object_;
 
-		if (freespace_)
+		roadmanager::CoordinateSystem cs = cs_;
+
+		if (trigObj->Distance(pos->GetX(), pos->GetY(), cs, relDistType_, freespace_, rel_dist_) != 0)
 		{
-			rel_intertial_dist = triggering_entities_.entity_[i].object_->FreeSpaceDistance(object_, &y, &x);
+			LOG("Failed to measure distance. Set to large number.");
+			rel_dist_ = LARGE_NUMBER;
 		}
 		else
 		{
-			rel_intertial_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
-		}
-		
-		if (type_ == RelativeDistanceType::LONGITUDINAL)
-		{
-			rel_dist_ = fabs(x);
-		}
-		else if (type_ == RelativeDistanceType::LATERAL)
-		{
-			rel_dist_ = fabs(y);
-		}
-		else if (type_ == RelativeDistanceType::CARTESIAN)
-		{
-			rel_dist_ = fabs(rel_intertial_dist);
-		}
-		else
-		{
-			LOG("Unsupported RelativeDistance type: %d", type_);
+			// in conditions only consider absolute distances for now
+			rel_dist_ = fabs(rel_dist_);
 		}
 
 		result = EvaluateRule(rel_dist_, value_, rule_);

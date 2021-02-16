@@ -10,6 +10,9 @@ pause
 Release\RoadManager_test.exe
 pause
 
+Release\ScenarioEngine_test.exe
+pause
+
 Release\ScenarioEngineDll_test.exe
 pause
 

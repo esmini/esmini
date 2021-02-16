@@ -194,3 +194,9 @@ void OSCPositionRoute::SetRouteRefLaneCoord(roadmanager::Route *route, double pa
 {
 	position_.SetRouteLanePosition(route, pathS, laneId, laneOffset);
 }
+
+OSCPositionTrajectory::OSCPositionTrajectory(roadmanager::RMTrajectory* traj, double s, double t, OSCOrientation orientation)
+{
+	position_.SetTrajectory(traj);
+	position_.SetTrajectoryS(s);
+}

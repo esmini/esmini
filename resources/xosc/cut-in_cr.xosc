@@ -127,8 +127,8 @@
                                  <EntityCondition>
                                     <TimeHeadwayCondition entityRef="$owner"
                                                           value="$HeadwayTime_LaneChange"
-                                                          freespace="true"
-                                                          alongRoute="true"
+                                                          freespace="false"
+                                                          alongRoute="false"
                                                           rule="greaterThan"/>
                                  </EntityCondition>
                               </ByEntityCondition>

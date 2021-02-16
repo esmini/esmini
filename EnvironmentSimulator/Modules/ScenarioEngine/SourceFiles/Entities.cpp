@@ -14,6 +14,7 @@
 #include "Controller.hpp"
 
 using namespace scenarioengine;
+using namespace roadmanager;
 
 #define ELEVATION_DIFF_THRESHOLD 2.5
 
@@ -179,7 +180,7 @@ bool Object::Collision(Object* target)
 	// First do a rough check to rule out potential overlap/collision
 	// Compare radial/euclidean distance with sum of the diagonal dimension of the bounding boxes
 	double x = 0, y = 0;
-	double dist = fabs(this->pos_.getRelativeDistance(target->pos_, x, y));
+	double dist = fabs(this->pos_.getRelativeDistance(target->pos_.GetX(), target->pos_.GetY(), x, y));
 	double max_length = this->boundingbox_.dimensions_.length_ + target->boundingbox_.dimensions_.length_;
 	double max_width = this->boundingbox_.dimensions_.width_ + target->boundingbox_.dimensions_.width_;
 	double dist_threshold = sqrt(max_length * max_length + max_width * max_width);
@@ -528,6 +529,365 @@ double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, doubl
 	}
 
 	return minDist;
+}
+
+int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, double* longDist, CoordinateSystem cs)
+{
+	if (cs != CoordinateSystem::CS_LANE && cs != CoordinateSystem::CS_ROAD)
+	{
+		LOG("Unexpected coordinateSystem (%d). %d or %d expected.", CoordinateSystem::CS_LANE, CoordinateSystem::CS_ROAD);
+		return -1;
+	}
+
+	if (cs == CoordinateSystem::CS_LANE)
+	{
+		LOG("freespace LANE coordinateSystem not supported yet, falling back to freespace ROAD");
+		cs = CoordinateSystem::CS_ROAD;
+	}
+
+	// Specify bounding box corner vertices, starting at first quadrant
+	double vtmp[4][2] =
+	{
+		{ boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ + boundingbox_.dimensions_.width_ / 2.0 },
+		{ boundingbox_.center_.x_ - boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ + boundingbox_.dimensions_.width_ / 2.0 },
+		{ boundingbox_.center_.x_ - boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ - boundingbox_.dimensions_.width_ / 2.0 },
+		{ boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ - boundingbox_.dimensions_.width_ / 2.0 }
+	};
+	
+	// Align points to object heading and position
+	double vertices[4][2];
+	for (int i = 0; i < 4; i++) 
+	{
+		RotateVec2D(vtmp[i][0], vtmp[i][1], pos_.GetH(), vertices[i][0], vertices[i][1]);
+		vertices[i][0] += pos_.GetX();
+		vertices[i][1] += pos_.GetY();
+	}
+
+	// Evaluate road and lane coordinates of each point
+	Position pos[4];
+	double maxS = 0.0;
+	double minS = LARGE_NUMBER;
+	double maxT = 0.0;
+	double minT = LARGE_NUMBER;
+	for (int j = 0; j < 4; j++)
+	{
+		pos[j].SetInertiaPos(vertices[j][0], vertices[j][1], 0.0);
+
+		if (j == 0 || pos[j].GetS() < minS)
+		{
+			minS = pos[j].GetS();
+		}
+
+		if (j == 0 || pos[j].GetT() < minT)
+		{
+			minT = pos[j].GetT();
+		}
+
+		if (j == 0 || pos[j].GetS() > maxS)
+		{
+			maxS = pos[j].GetS();
+		}
+
+		if (j == 0 || pos[j].GetT() > maxT)
+		{
+			maxT = pos[j].GetT();
+		}
+	}
+
+	// Find min distance for each dimension
+	double minLatDist = LARGE_NUMBER;
+	double minLongDist = LARGE_NUMBER;
+
+	for (int k = 0; k < 4; k++)
+	{
+		if (k == 0 || fabs(pos[k].GetS() - pos_.GetS()) < fabs(minLongDist))
+		{
+			minLongDist = pos[k].GetS() - pos_.GetS();
+		}
+		
+		if (k == 0 || fabs(pos[k].GetT() - pos_.GetT()) < fabs(minLatDist))
+		{
+			minLatDist = pos[k].GetT() - pos_.GetT();
+		}
+	}
+	
+	if (pos_.GetS() > minS && pos_.GetS() < maxS)
+	{
+		*longDist = 0.0;  // Overlap, point is inside bounding box longitudinal span
+	}
+	else
+	{
+		*longDist = minLongDist;
+	}
+
+	if (pos_.GetT() > minT && pos_.GetT() < maxT)
+	{
+		*latDist = 0.0;  // Overlap, point is inside bounding box lateral span
+	}
+	else
+	{
+		*latDist = minLatDist;
+	}
+
+	// Ajust direction according to object heading
+	if (pos_.GetHRelative() > M_PI_2 && pos_.GetHRelative() < 3 * M_PI_2)
+	{
+		*latDist *= -1;
+		*longDist *= -1;
+	}
+
+	return 0;
+}
+
+int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, double* longDist, CoordinateSystem cs)
+{
+	if (cs != CoordinateSystem::CS_LANE && cs != CoordinateSystem::CS_ROAD)
+	{
+		LOG("Unexpected coordinateSystem (%d). %d or %d expected.", CoordinateSystem::CS_LANE, CoordinateSystem::CS_ROAD);
+		return -1;
+	}
+
+	if (cs == CoordinateSystem::CS_LANE)
+	{
+		LOG("freespace LANE coordinateSystem not supported yet, falling back to freespace ROAD");
+		cs = CoordinateSystem::CS_ROAD;
+	}
+
+	double vertices[2][4][2];
+
+	for (int i = 0; i < 2; i++)  // for each of the two BBs
+	{
+		Object* obj = (i == 0 ? this : target);
+
+		// Specify bounding box corner vertices, starting at first quadrant
+		double vtmp[4][2] =
+		{
+			{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
+			{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
+			{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 },
+			{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 }
+		};
+
+		for (int j = 0; j < 4; j++)  // for all vertices
+		{
+			// Align points to object heading and position
+			RotateVec2D(vtmp[j][0], vtmp[j][1], obj->pos_.GetH(), vertices[i][j][0], vertices[i][j][1]);
+			vertices[i][j][0] += obj->pos_.GetX();
+			vertices[i][j][1] += obj->pos_.GetY();
+		}
+	}
+
+	// Evaluate road and lane coordinates of each point
+	Position pos[2][4];
+	double maxS[2] = { 0.0, 0.0 };
+	double minS[2] = { LARGE_NUMBER, LARGE_NUMBER };
+	double maxT[2] = { 0.0, 0.0 };
+	double minT[2] = { LARGE_NUMBER, LARGE_NUMBER };
+	for (int k = 0; k < 2; k++)
+	{
+		for (int l = 0; l < 4; l++)
+		{ 
+			pos[k][l].SetInertiaPos(vertices[k][l][0], vertices[k][l][1], 0.0);
+
+			if (l == 0 || pos[k][l].GetS() < minS[k])
+			{
+				minS[k] = pos[k][l].GetS();
+			}
+
+			if (l == 0 || pos[k][l].GetT() < minT[k])
+			{
+				minT[k] = pos[k][l].GetT();
+			}
+
+			if (l == 0 || pos[k][l].GetS() > maxS[k])
+			{
+				maxS[k] = pos[k][l].GetS();
+			}
+
+			if (l == 0 || pos[k][l].GetT() > maxT[k])
+			{
+				maxT[k] = pos[k][l].GetT();
+			}
+		}
+	}
+
+	// Find min distance for each dimension
+	double minLatDist = LARGE_NUMBER;
+	double minLongDist = LARGE_NUMBER;
+
+	for (int k = 0; k < 4; k++)
+	{
+		for (int l = 0; l < 4; l++)
+		{
+			if (k == 0 || fabs(pos[1][k].GetS() - pos[0][l].GetS()) < fabs(minLongDist))
+			{
+				minLongDist = pos[1][k].GetS() - pos[0][l].GetS();
+			}
+
+			if (k == 0 || fabs(pos[1][k].GetT() - pos[0][l].GetT()) < fabs(minLatDist))
+			{
+				minLatDist = pos[1][k].GetT() - pos[0][l].GetT();
+			}
+		}
+	}
+
+	if (minS[0] > minS[1] && minS[0] < maxS[1] ||
+		maxS[0] > minS[1] && maxS[0] < maxS[1])
+	{
+		*longDist = 0.0;  // Overlap, point is inside bounding box longitudinal span
+	}
+	else
+	{
+		*longDist = minLongDist;
+	}
+
+	if (minT[0] > minT[1] && minT[0] < maxT[1])
+	{
+		*latDist = 0.0;  // Overlap, point is inside bounding box lateral span
+	}
+	else
+	{
+		*latDist = minLatDist;
+	}
+
+	// Ajust direction according to object heading
+	if (pos_.GetHRelative() > M_PI_2 && pos_.GetHRelative() < 3 * M_PI_2)
+	{
+		*latDist *= -1;
+		*longDist *= -1;
+	}
+
+	return 0;
+}
+
+int Object::Distance(Object* target, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace, double& dist)
+{
+	if (freeSpace)
+	{
+		double latDist, longDist;
+
+		if (cs == roadmanager::CoordinateSystem::CS_ENTITY ||
+			relDistType == RelativeDistanceType::REL_DIST_EUCLIDIAN ||
+			relDistType == RelativeDistanceType::REL_DIST_CARTESIAN)
+		{
+			// Get Cartesian/Euclidian distance
+			dist = FreeSpaceDistance(target, &latDist, &longDist);
+
+			// sign indicates target being in front (+) or behind (-) 
+			dist *= SIGN(longDist);
+
+			if (cs == roadmanager::CoordinateSystem::CS_ENTITY)
+			{
+				if (relDistType == roadmanager::RelativeDistanceType::REL_DIST_LATERAL)
+				{
+					dist = latDist;
+				}
+				else if (relDistType == roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL)
+				{
+					dist = longDist;
+				}
+			}
+		}
+		else if (cs == CoordinateSystem::CS_ROAD || cs == CoordinateSystem::CS_LANE)
+		{
+			if (FreeSpaceDistanceObjectRoadLane(target, &latDist, &longDist, cs) != 0)
+			{
+				return -1;
+			}
+			else
+			{
+				if (relDistType == RelativeDistanceType::REL_DIST_LATERAL)
+				{
+					dist = latDist;
+				}
+				else if (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
+				{
+					dist = longDist;
+				}
+				else
+				{
+					LOG("Unexpected relativeDistanceType: %d", relDistType);
+					return -1;
+				}
+			}
+		}
+		else
+		{
+			LOG("Unhandled case: cs %d reDistType %d freeSpace %d\n", cs, relDistType, freeSpace);
+			return -1;
+		}
+	}
+	else  // not freeSpace
+	{
+		return pos_.Distance(&target->pos_, cs, relDistType, dist);
+	}
+
+	return 0;
+}
+
+int Object::Distance(double x, double y, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace, double& dist)
+{
+	if (freeSpace)
+	{
+		double latDist, longDist;
+
+		if (cs == roadmanager::CoordinateSystem::CS_ENTITY || 
+			relDistType == RelativeDistanceType::REL_DIST_EUCLIDIAN || 
+			relDistType == RelativeDistanceType::REL_DIST_CARTESIAN)
+		{
+			// Get Cartesian/Euclidian distance
+			dist = FreeSpaceDistancePoint(x, y, &latDist, &longDist);
+
+			// sign indicates target being in front (+) or behind (-) 
+			dist *= SIGN(longDist);
+
+			if (cs == roadmanager::CoordinateSystem::CS_ENTITY)
+			{
+				if (relDistType == roadmanager::RelativeDistanceType::REL_DIST_LATERAL)
+				{
+					dist = latDist;
+				}
+				else if (relDistType == roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL)
+				{
+					dist = longDist;
+				}
+			}
+		}
+		else if (cs == CoordinateSystem::CS_ROAD || cs == CoordinateSystem::CS_LANE)
+		{
+			if (FreeSpaceDistancePointRoadLane(x, y, &latDist, &longDist, cs) != 0)
+			{
+				return -1;
+			}
+			else
+			{
+				if (relDistType == RelativeDistanceType::REL_DIST_LATERAL)
+				{
+					dist = latDist;
+				}
+				else if (relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
+				{
+					dist = longDist;
+				}
+				else
+				{
+					LOG("Unexpected relativeDistanceType: %d", relDistType);
+					return -1;
+				}
+			}
+		}
+		else 
+		{
+			LOG("Unhandled case: cs %d reDistType %d freeSpace %d\n", cs, relDistType, freeSpace);
+			return -1;	
+		}
+	}
+	else  // not freeSpace
+	{
+		return pos_.Distance(x, y, cs, relDistType, dist);
+	}
+	
+	return 0;
 }
 
 int Entities::addObject(Object* obj)

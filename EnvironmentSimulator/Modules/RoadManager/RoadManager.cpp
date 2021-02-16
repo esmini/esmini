@@ -1515,8 +1515,8 @@ void Road::AddSignal(Signal *signal)
 	}
 	signal->SetLength(length_ - signal->GetS());
 
-	LOG("Add signal[%d]: \"%s\" type %d subtype %d to road %d", (int)signal_.size(), signal->GetName().c_str(), 
-		signal->GetType(), signal->GetSubType(), GetId());
+	//LOG("Add signal[%d]: \"%s\" type %d subtype %d to road %d", (int)signal_.size(), signal->GetName().c_str(), 
+	//	signal->GetType(), signal->GetSubType(), GetId());
 	signal_.push_back((Signal*)signal);
 }
 
@@ -1535,13 +1535,13 @@ Signal* Road::GetSignal(int idx)
 	return signal_[idx];
 }
 
-void Road::AddObject(Object* object)
+void Road::AddObject(RMObject* object)
 {
-	LOG("Add object[%d]: %s", (int)object_.size(), object->GetName().c_str());
+	/*LOG("Add object[%d]: %s", (int)object_.size(), object->GetName().c_str());*/
 	object_.push_back(object);
 }
 
-Object* Road::GetObject(int idx)
+RMObject* Road::GetObject(int idx)
 {
 	if (idx < 0 || idx >= object_.size())
 	{
@@ -2676,170 +2676,177 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		{
 			for (pugi::xml_node signal = signals.child("signal"); signal; signal = signal.next_sibling())
 			{
-				double s = atof(signal.attribute("s").value());
-				double t = atof(signal.attribute("t").value());
-				int ids = atoi(signal.attribute("id").value());
-				std::string name = signal.attribute("name").value();
-				
-				// dynamic
-				bool dynamic = false;
-				if (!strcmp(signal.attribute("dynamic").value(), ""))
+				if (!strcmp(signal.name(), "signal"))
 				{
-					LOG("Signal dynamic check error");
-				}
-				if (!strcmp(signal.attribute("dynamic").value(), "no"))
-				{
-					dynamic = false;
-				}
-				else  if (!strcmp(signal.attribute("dynamic").value(), "yes"))
-				{
-					dynamic = true;
+					double s = atof(signal.attribute("s").value());
+					double t = atof(signal.attribute("t").value());
+					int ids = atoi(signal.attribute("id").value());
+					std::string name = signal.attribute("name").value();
+
+					// dynamic
+					bool dynamic = false;
+					if (!strcmp(signal.attribute("dynamic").value(), ""))
+					{
+						LOG("Signal dynamic check error");
+					}
+					if (!strcmp(signal.attribute("dynamic").value(), "no"))
+					{
+						dynamic = false;
+					}
+					else  if (!strcmp(signal.attribute("dynamic").value(), "yes"))
+					{
+						dynamic = true;
+					}
+					else
+					{
+						LOG("unknown dynamic signal identification: %s (road ids=%d)\n", signal.attribute("dynamic").value(), r->GetId());
+					}
+
+					// orientation
+					Signal::Orientation orientation = Signal::NONE;
+					if (signal.attribute("orientation") == 0 || !strcmp(signal.attribute("orientation").value(), ""))
+					{
+						LOG("Road signal orientation error");
+					}
+					if (!strcmp(signal.attribute("orientation").value(), "none"))
+					{
+						orientation = Signal::NONE;
+					}
+					else  if (!strcmp(signal.attribute("orientation").value(), "+"))
+					{
+						orientation = Signal::POSITIVE;
+					}
+					else  if (!strcmp(signal.attribute("orientation").value(), "-"))
+					{
+						orientation = Signal::NEGATIVE;
+					}
+					else
+					{
+						LOG("unknown road signal orientation: %s (road ids=%d)\n", signal.attribute("orientation").value(), r->GetId());
+					}
+
+					double  z_offset = atof(signal.attribute("zOffset").value());
+					std::string country = signal.attribute("country").value();
+
+					// type
+					int type = Signal::NONETYPE;
+					if (signal.attribute("type") == 0 || !strcmp(signal.attribute("type").value(), ""))
+					{
+						LOG("Road signal type error");
+					}
+					if (!strcmp(signal.attribute("type").value(), "none") || !strcmp(signal.attribute("type").value(), "-1"))
+					{
+						type = Signal::NONETYPE;
+					}
+					else  if (!strcmp(signal.attribute("type").value(), "1000001"))
+					{
+						type = Signal::T1000001;
+					}
+					else  if (!strcmp(signal.attribute("type").value(), "1000002"))
+					{
+						type = Signal::T1000002;
+					}
+					else  if (!strcmp(signal.attribute("type").value(), "1000007"))
+					{
+						type = Signal::T1000007;
+					}
+					else  if (!strcmp(signal.attribute("type").value(), "1000008"))
+					{
+						type = Signal::T1000008;
+					}
+					else  if (!strcmp(signal.attribute("type").value(), "1000009"))
+					{
+						type = Signal::T1000009;
+					}
+					else  if (!strcmp(signal.attribute("type").value(), "1000010"))
+					{
+						type = Signal::T1000010;
+					}
+					else  if (!strcmp(signal.attribute("type").value(), "1000011"))
+					{
+						type = Signal::T1000011;
+					}
+					else  if (!strcmp(signal.attribute("type").value(), "1000012"))
+					{
+						type = Signal::T1000012;
+					}
+					else  if (!strcmp(signal.attribute("type").value(), "1000013"))
+					{
+						type = Signal::T1000013;
+					}
+					else  if (!strcmp(signal.attribute("type").value(), "1000014"))
+					{
+						type = Signal::T1000014;
+					}
+					else  if (!strcmp(signal.attribute("type").value(), "1000015"))
+					{
+						type = Signal::T1000015;
+					}
+					else
+					{
+						//LOG("unknown road signal type: %s (road ids=%d)\n", signal.attribute("type").value(), r->GetId());
+						type = strtoi(signal.attribute("type").value());
+					}
+
+					// sub_type
+					int sub_type = Signal::NONESUBTYPE;
+					if (signal.attribute("subtype") == 0 || !strcmp(signal.attribute("subtype").value(), ""))
+					{
+						LOG("Road signal sub-type error");
+					}
+					if (!strcmp(signal.attribute("subtype").value(), "none") || !strcmp(signal.attribute("subtype").value(), "-1"))
+					{
+						sub_type = Signal::NONESUBTYPE;
+					}
+					else  if (!strcmp(signal.attribute("subtype").value(), "10"))
+					{
+						sub_type = Signal::SUBT10;
+					}
+					else  if (!strcmp(signal.attribute("subtype").value(), "20"))
+					{
+						sub_type = Signal::SUBT20;
+					}
+					else  if (!strcmp(signal.attribute("subtype").value(), "30"))
+					{
+						sub_type = Signal::SUBT30;
+					}
+					else  if (!strcmp(signal.attribute("subtype").value(), "40"))
+					{
+						sub_type = Signal::SUBT40;
+					}
+					else  if (!strcmp(signal.attribute("subtype").value(), "50"))
+					{
+						sub_type = Signal::SUBT50;
+					}
+					else
+					{
+						//LOG("unknown road signal sub-type: %s (road ids=%d)\n", signal.attribute("subtype").value(), r->GetId());
+						sub_type = strtoi(signal.attribute("subtype").value());
+					}
+
+					double value = atof(signal.attribute("value").value());
+					std::string unit = signal.attribute("unit").value();
+					double height = atof(signal.attribute("height").value());
+					double width = atof(signal.attribute("width").value());
+					std::string text = signal.attribute("text").value();
+					double h_offset = atof(signal.attribute("hOffset").value());
+					double pitch = atof(signal.attribute("pitch").value());
+					double roll = atof(signal.attribute("roll").value());
+
+					Signal* sig = new Signal(s, t, ids, name, dynamic, orientation, z_offset, country, type, sub_type, value, unit, height,
+						width, text, h_offset, pitch, roll);
+					if (sig != NULL)
+					{
+						r->AddSignal(sig);
+					}
+					else
+					{
+						LOG("Signal: Major error\n");
+					}
 				}
 				else
 				{
-					LOG("unknown dynamic signal identification: %s (road ids=%d)\n", signal.attribute("dynamic").value(), r->GetId());
-				}
-
-				// orientation
-				Signal::Orientation orientation = Signal::NONE;
-				if (signal.attribute("orientation") == 0 || !strcmp(signal.attribute("orientation").value(), ""))
-				{
-					LOG("Road signal orientation error");
-				}
-				if (!strcmp(signal.attribute("orientation").value(), "none"))
-				{
-					orientation = Signal::NONE;
-				}
-				else  if (!strcmp(signal.attribute("orientation").value(), "+"))
-				{
-					orientation = Signal::POSITIVE;
-				}
-				else  if (!strcmp(signal.attribute("orientation").value(), "-"))
-				{
-					orientation = Signal::NEGATIVE;
-				}
-				else
-				{
-					LOG("unknown road signal orientation: %s (road ids=%d)\n", signal.attribute("orientation").value(), r->GetId());
-				}
-
-				double  z_offset = atof(signal.attribute("zOffset").value());
-				std::string country = signal.attribute("country").value();
-
-				// type
-				int type = Signal::NONETYPE;
-				if (signal.attribute("type") == 0 || !strcmp(signal.attribute("type").value(), ""))
-				{
-					LOG("Road signal type error");
-				}
-				if (!strcmp(signal.attribute("type").value(), "none") || !strcmp(signal.attribute("type").value(), "-1"))
-				{
-					type = Signal::NONETYPE;
-				}				
-				else  if (!strcmp(signal.attribute("type").value(), "1000001"))
-				{
-					type = Signal::T1000001;
-				}
-				else  if (!strcmp(signal.attribute("type").value(), "1000002"))
-				{
-					type = Signal::T1000002;
-				}
-				else  if (!strcmp(signal.attribute("type").value(), "1000007"))
-				{
-					type = Signal::T1000007;
-				}
-				else  if (!strcmp(signal.attribute("type").value(), "1000008"))
-				{
-					type = Signal::T1000008;
-				}
-				else  if (!strcmp(signal.attribute("type").value(), "1000009"))
-				{
-					type = Signal::T1000009;
-				}
-				else  if (!strcmp(signal.attribute("type").value(), "1000010"))
-				{
-					type = Signal::T1000010;
-				}
-				else  if (!strcmp(signal.attribute("type").value(), "1000011"))
-				{
-					type = Signal::T1000011;
-				}
-				else  if (!strcmp(signal.attribute("type").value(), "1000012"))
-				{
-					type = Signal::T1000012;
-				}
-				else  if (!strcmp(signal.attribute("type").value(), "1000013"))
-				{
-					type = Signal::T1000013;
-				}
-				else  if (!strcmp(signal.attribute("type").value(), "1000014"))
-				{
-					type = Signal::T1000014;
-				}
-				else  if (!strcmp(signal.attribute("type").value(), "1000015"))
-				{
-					type = Signal::T1000015;
-				}																
-				else
-				{
-					//LOG("unknown road signal type: %s (road ids=%d)\n", signal.attribute("type").value(), r->GetId());
-					type = strtoi(signal.attribute("type").value());
-				}
-
-				// sub_type
-				int sub_type = Signal::NONESUBTYPE;
-				if (signal.attribute("subtype") == 0 || !strcmp(signal.attribute("subtype").value(), ""))
-				{
-					LOG("Road signal sub-type error");
-				}
-				if (!strcmp(signal.attribute("subtype").value(), "none") || !strcmp(signal.attribute("subtype").value(), "-1"))
-				{
-					sub_type = Signal::NONESUBTYPE;
-				}
-				else  if (!strcmp(signal.attribute("subtype").value(), "10"))
-				{
-					sub_type = Signal::SUBT10;
-				}
-				else  if (!strcmp(signal.attribute("subtype").value(), "20"))
-				{
-					sub_type = Signal::SUBT20;
-				}
-				else  if (!strcmp(signal.attribute("subtype").value(), "30"))
-				{
-					sub_type = Signal::SUBT30;
-				}
-				else  if (!strcmp(signal.attribute("subtype").value(), "40"))
-				{
-					sub_type = Signal::SUBT40;
-				}
-				else  if (!strcmp(signal.attribute("subtype").value(), "50"))
-				{
-					sub_type = Signal::SUBT50;
-				}
-				else
-				{
-					//LOG("unknown road signal sub-type: %s (road ids=%d)\n", signal.attribute("subtype").value(), r->GetId());
-					sub_type = strtoi(signal.attribute("subtype").value());
-				}
-
-				double value = atof(signal.attribute("value").value());
-				std::string unit = signal.attribute("unit").value();
-				double height = atof(signal.attribute("height").value());
-				double width = atof(signal.attribute("width").value());
-				std::string text = signal.attribute("text").value();
-				double h_offset = atof(signal.attribute("hOffset").value());
-				double pitch = atof(signal.attribute("pitch").value());
-				double roll = atof(signal.attribute("roll").value());
-
-				Signal *sig = new Signal(s, t, ids, name, dynamic, orientation, z_offset, country, type, sub_type, value, unit, height,
-				width, text, h_offset, pitch, roll);
-				if (sig != NULL)
-				{
-					r->AddSignal(sig);
-				}
-				else
-				{
-					LOG("Signal: Major error\n");
+					LOG_ONCE("INFO: signal element \"%s\" not supported yet", signal.name());
 				}
 			}
 		}
@@ -2855,22 +2862,22 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				std::string name = object.attribute("name").value();
 
 				// orientation
-				Object::Orientation orientation = Object::Orientation::NONE;
+				RMObject::Orientation orientation = RMObject::Orientation::NONE;
 				if (object.attribute("orientation") == 0 || !strcmp(object.attribute("orientation").value(), ""))
 				{
 					LOG("Road object orientation error");
 				}
 				if (!strcmp(object.attribute("orientation").value(), "none"))
 				{
-					orientation = Object::Orientation::NONE;
+					orientation = RMObject::Orientation::NONE;
 				}
 				else  if (!strcmp(object.attribute("orientation").value(), "+"))
 				{
-					orientation = Object::Orientation::POSITIVE;
+					orientation = RMObject::Orientation::POSITIVE;
 				}
 				else  if (!strcmp(object.attribute("orientation").value(), "-"))
 				{
-					orientation = Object::Orientation::NEGATIVE;
+					orientation = RMObject::Orientation::NEGATIVE;
 				}
 				else
 				{
@@ -2886,7 +2893,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				double pitch = atof(object.attribute("pitch").value());
 				double roll = atof(object.attribute("roll").value());
 
-				Object* obj = new Object(s, t, ids, name, orientation, z_offset, type, length, height,
+				RMObject* obj = new RMObject(s, t, ids, name, orientation, z_offset, type, length, height,
 					width, heading, pitch, roll);
 				if (obj != NULL)
 				{
@@ -2895,7 +2902,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}
 				else
 				{
-					LOG("Object: Major error\n");
+					LOG("RMObject: Major error\n");
 				}
 
 				pugi::xml_node outlines_node = object.child("outlines");
@@ -3393,7 +3400,7 @@ int RoadPath::Calculate(double &dist)
 		}
 		else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
 		{
-			// check all outgoing edges (connecting roads) from the link (junction)
+			// check all junction links (connecting roads) that has pivot road as incoming road
 			junction = odr->GetJunctionById(link->GetElementId());
 			for (size_t j = 0; j < junction->GetNoConnectionsFromRoadId(pivotRoad->GetId()); j++)
 			{
@@ -3457,6 +3464,11 @@ int RoadPath::Calculate(double &dist)
 		}
 	}
 
+	// Compensate for heading of the start position
+	if (startPos_->GetHRelativeDrivingDirection() > M_PI_2 && startPos_->GetHRelativeDrivingDirection() < 3 * M_PI_2)
+	{
+		direction_ *= -1;
+	}
 	dist = direction_ * tmpDist;
 
 	return found ? 0 : -1;
@@ -3970,6 +3982,7 @@ void Position::Init()
 	s_ = 0.0;
 	s_route_ = 0.0;
 	s_trajectory_ = 0.0;
+	t_trajectory_ = 0.0;
 	t_ = 0.0;
 	offset_ = 0.0;
 	x_ = 0.0;
@@ -6572,13 +6585,13 @@ bool Position::IsOffRoad()
 	return false;
 }
 
-double Position::getRelativeDistance(Position target_position, double &x, double &y)
+double Position::getRelativeDistance(double targetX, double targetY, double &x, double &y)
 {
 	// Calculate diff vector from current to target
 	double diff_x, diff_y;
 
-	diff_x = target_position.GetX() - GetX();
-	diff_y = target_position.GetY() - GetY();
+	diff_x = targetX - GetX();
+	diff_y = targetY - GetY();
 
 	// Compensate for current heading (rotate so that current heading = 0)
 	x = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
@@ -6655,7 +6668,7 @@ void Position::SetRoute(Route *route)
 	CalcRoutePosition();
 }
 
-void Position::SetTrajectory(Trajectory* trajectory)
+void Position::SetTrajectory(RMTrajectory* trajectory)
 {
 	trajectory_ = trajectory;
 
@@ -6663,19 +6676,34 @@ void Position::SetTrajectory(Trajectory* trajectory)
 	s_trajectory_ = 0;
 }
 
-bool Position::Delta(Position pos_b, PositionDiff &diff)
+bool Position::Delta(Position* pos_b, PositionDiff &diff)
 {
 	double dist = 0;
 	bool found;
 
-	RoadPath *path = new RoadPath(this, &pos_b);
-
+	RoadPath *path = new RoadPath(this, pos_b);
 	found = (path->Calculate(dist) == 0);
 	if (found)
 	{
-		diff.dLaneId = pos_b.GetLaneId() - GetLaneId();
+		int laneIdB = pos_b->GetLaneId();
+		double tB = pos_b->GetT();
+		
+		// If start and end roads are oppotite directed, inverse one side for delta calculations
+		if (path->visited_.size() > 0 && 
+			((path->visited_[0]->link->GetType() == LinkType::SUCCESSOR && 
+				path->visited_.back()->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END) ||
+			 (path->visited_[0]->link->GetType() == LinkType::PREDECESSOR &&
+				path->visited_.back()->link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)))
+		{
+			laneIdB = -laneIdB;
+			tB = -tB;
+		}
+
+		// calculate delta lane id and lateral position
+		diff.dLaneId = -SIGN(GetLaneId()) * (laneIdB - GetLaneId());
+		diff.dt = -SIGN(GetLaneId()) * (tB - GetT());
+
 		diff.ds = dist;
-		diff.dt = pos_b.GetT() - GetT();
 
 #if 0   // Change to 1 to print some info on stdout - e.g. for debugging
 		printf("Dist %.2f Path (reversed): %d", dist, pos_b.GetTrackId());
@@ -6695,16 +6723,124 @@ bool Position::Delta(Position pos_b, PositionDiff &diff)
 		printf("\n");
 #endif
 	}
-	else
+	else  // no valid route found
 	{
 		diff.dLaneId = 0;
-		diff.ds = 0;
-		diff.dt = 0;
+		diff.ds = LARGE_NUMBER;
+		diff.dt = LARGE_NUMBER;
+		getRelativeDistance(pos_b->GetX(), pos_b->GetY(), diff.dx, diff.dy);
 	}
 
 	delete path;
 
 	return found;
+}
+
+int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist)
+{
+	// Handle/convert depricated value
+	if (relDistType == RelativeDistanceType::REL_DIST_CARTESIAN)
+	{
+		relDistType = RelativeDistanceType::REL_DIST_EUCLIDIAN;
+	}
+
+	if (relDistType == RelativeDistanceType::REL_DIST_EUCLIDIAN)
+	{
+		double dx, dy;
+		dist = getRelativeDistance(pos_b->GetX(), pos_b->GetY(), dx, dy);
+	}
+	else if (relDistType == RelativeDistanceType::REL_DIST_LATERAL || relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
+	{
+		if (cs == CoordinateSystem::CS_LANE)
+		{
+			LOG_ONCE("Lane coordinateSystem not supported yet. Falling back to Road coordinate system.");
+			cs = CoordinateSystem::CS_ROAD;
+		}
+
+		if (cs == CoordinateSystem::CS_ROAD)
+		{
+			PositionDiff diff;
+			bool routeFound = Delta(pos_b, diff);
+			dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? diff.dt : diff.ds;
+			if (routeFound == false)
+			{
+				return -1;
+			}
+		}
+		else if (cs == CoordinateSystem::CS_ENTITY)
+		{
+			double dx, dy;
+			
+			getRelativeDistance(pos_b->GetX(), pos_b->GetY(), dx, dy);
+			
+			dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? dy : dx;
+		}
+		else if (cs == CoordinateSystem::CS_TRAJECTORY)
+		{
+			dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? GetTrajectoryT() : GetTrajectoryS();
+		}
+	}
+	else
+	{
+		LOG("Unhandled case: cs %d reDistType %d freeSpace false\n", cs, relDistType);
+		return -1;
+	}
+
+	return 0;
+}
+
+int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist)
+{
+	// Handle/convert depricated value
+	if (relDistType == RelativeDistanceType::REL_DIST_CARTESIAN)
+	{
+		relDistType = RelativeDistanceType::REL_DIST_EUCLIDIAN;
+	}
+
+	if (relDistType == RelativeDistanceType::REL_DIST_EUCLIDIAN)
+	{
+		double dx, dy;
+		dist = getRelativeDistance(x, y, dx, dy);
+	}
+	else if (relDistType == RelativeDistanceType::REL_DIST_LATERAL || relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
+	{
+		if (cs == CoordinateSystem::CS_LANE)
+		{
+			LOG_ONCE("Lane coordinateSystem not supported yet. Falling back to Road coordinate system.");
+			cs = CoordinateSystem::CS_ROAD;
+		}
+
+		if (cs == CoordinateSystem::CS_ROAD)
+		{
+			Position pos_b(x, y, 0, 0, 0, 0);
+			PositionDiff diff;
+			bool routeFound = Delta(&pos_b, diff);
+			dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? diff.dt : diff.ds;
+			if (routeFound == false)
+			{
+				return -1;
+			}
+		}
+		else if (cs == CoordinateSystem::CS_ENTITY)
+		{
+			double dx, dy;
+			
+			getRelativeDistance(x, y, dx, dy);
+
+			dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? dy : dx;
+		}
+		else if (cs == CoordinateSystem::CS_TRAJECTORY)
+		{
+			dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? GetTrajectoryT() : GetTrajectoryS();
+		}
+	}
+	else
+	{
+		LOG("Unhandled case: cs %d reDistType %d freeSpace false\n", cs, relDistType);
+		return -1;
+	}
+
+	return 0;
 }
 
 bool Position::IsAheadOf(Position target_position)
@@ -7612,7 +7748,7 @@ void PolyLineShape::AddVertex(Position pos, double time, bool calculateHeading)
 	Vertex* v = new Vertex();
 	v->pos_ = pos;
 	vertex_.push_back(v);
-	pline_.AddVertex({ 0, 0, 0, 0, 0, time, 0.0, 0.0, calculateHeading });
+	pline_.AddVertex({ pos.GetTrajectoryS(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), time, 0.0, 0.0, calculateHeading });
 }
 
 int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
@@ -8257,7 +8393,7 @@ std::string Route::getName()
 	return name_;
 }
 
-void Trajectory::Freeze()
+void RMTrajectory::Freeze()
 {
 	if (shape_->type_ == Shape::ShapeType::POLYLINE)
 	{
@@ -8297,4 +8433,13 @@ void Trajectory::Freeze()
 
 		nurbs->CalculatePolyLine();
 	}
+}
+
+double RMTrajectory::GetTimeAtS(double s)
+{
+	// Find out corresponding time-value using polyline representation
+	TrajVertex v;
+	shape_->pline_.Evaluate(s, v);
+
+	return v.time;
 }

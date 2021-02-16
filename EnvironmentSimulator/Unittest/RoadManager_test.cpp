@@ -1482,7 +1482,7 @@ TEST(RoadTest, RoadWidthDrivingLanes)
 TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
 {
     PolyLineBase pline;
-    TrajVertex v = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false };
+    TrajVertex v = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false };
 
     // Simple case
     pline.AddVertex(0.0, 0.0, 0.0, 0.0);
@@ -1495,7 +1495,7 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
 
     // Wrap around case 1
     pline.Reset();
-    pline.AddVertex(0.0, 0.0, 0.0, 2*M_PI - 0.01);
+    pline.AddVertex(0.0, 0.0, 0.0, 2 * M_PI - 0.01);
     pline.AddVertex(1.0, 0.0, 0.0, 0.09);
     pline.Evaluate(0.5, v);
 
@@ -1522,6 +1522,111 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
     EXPECT_NEAR(v.x, 0.0, 1e-5);
     EXPECT_NEAR(v.y, 5.0, 1e-5);
     EXPECT_NEAR(v.h, 0.958407, 1e-5);
+}
+
+TEST(DistanceTest, CalcDistanceLong)
+{
+    double dist = 0.0;
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/fabriksgatan.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 16);
+
+    Position pos0 = Position(0, 1, 10.0, 0);
+    pos0.SetHeading(1.6);
+
+    // move backwards 20 meter - road is slightly curved
+    Position pos1 = Position(0, 1, 20.0, 0);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_EUCLIDIAN, dist), 0);
+    EXPECT_NEAR(dist, -9.98797, 1e-5);
+
+    // move through junction, measure euclidian
+    pos1.SetLanePos(1, 1, 15.0, 0);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_EUCLIDIAN, dist), 0);
+    EXPECT_NEAR(dist, 28.178276, 1e-5);
+
+    // measure along road
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
+    EXPECT_NEAR(dist, 34.141086, 1e-5);
+
+    // move back 1 m and measure along road
+    pos1.SetLanePos(1, 1, 14.0, 0);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
+    EXPECT_NEAR(dist, 33.141086, 1e-5);
+
+    // facing other direction should give negative distance, indicating the target position is behind
+    pos0.SetHeading(5.0);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
+    EXPECT_NEAR(dist, -33.141086, 1e-5);
+
+    // another lane should give same result
+    pos1.SetLanePos(1, -1, 14.0, 0);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
+    EXPECT_NEAR(dist, -33.141086, 1e-5);
+
+    // however the lateral distance should be affected - road 1 is opposite directed, so lane 1 should be on other side
+    pos1.SetLanePos(1, 1, 14.0, 0);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
+    EXPECT_NEAR(dist, 3.5, 1e-5);
+
+    // moving to the other lane should give no lateral distance
+    pos1.SetLanePos(1, -1, 14.0, 0);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
+    EXPECT_NEAR(dist, 0.0, 1e-5);
+
+    // Test a few other cases
+    pos0.SetLanePos(3, -1, 5.0, -0.25);
+    pos1.SetLanePos(0, -1, 15.0, 0.15);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
+    EXPECT_NEAR(dist, 0.4, 1e-5);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
+    EXPECT_NEAR(dist, 134.051729, 1e-5);
+
+    pos0.SetLanePos(3, -1, 5.0, -0.25);
+    pos1.SetLanePos(0, 1, 15.0, 0.15);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
+    EXPECT_NEAR(dist, 3.9, 1e-5);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
+    EXPECT_NEAR(dist, 134.051729, 1e-5);
+
+    pos0.SetLanePos(3, 1, 5.0, -0.25);
+    pos1.SetLanePos(0, -1, 15.0, 0.15);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
+    EXPECT_NEAR(dist, 3.1, 1e-5);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
+    EXPECT_NEAR(dist, 134.051729, 1e-5);
+
+    // No valid route is to be found (following directed connectivity in OpenDRIVE file)
+    pos0.SetLanePos(3, -1, 5.0, -0.25);
+    pos1.SetLanePos(16, -1, 1.0, 0.15);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), -1);
+    EXPECT_NEAR(dist, LARGE_NUMBER, 1e-5);
+
+    // target position in front
+    pos0.SetLanePos(2, -1, 300.0, -0.25);
+    pos1.SetLanePos(1, -1, 1.0, 0.15);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
+    EXPECT_NEAR(dist, 9.779173, 1e-5);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
+    EXPECT_NEAR(dist, 14.135777, 1e-5);
+
+    // target position behind
+    pos0.SetLanePos(2, 1, 300.0, -0.25);
+    pos0.SetH(1.57);
+    pos1.SetLanePos(1, -1, 1.0, 0.15);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
+    EXPECT_NEAR(dist, -9.496392926, 1e-5);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
+    EXPECT_NEAR(dist, -11.953042, 1e-5);
+
+    // Target position in front, to the right
+    pos0.SetH(0.0);
+    pos1.SetLanePos(1, -1, 1.0, 0.15);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
+    EXPECT_NEAR(dist, -11.960600, 1e-5);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
+    EXPECT_NEAR(dist, 9.486871, 1e-5);
 }
 
 int main(int argc, char **argv)

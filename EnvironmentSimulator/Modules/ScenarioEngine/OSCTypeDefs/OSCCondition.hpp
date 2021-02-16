@@ -23,6 +23,8 @@
 #include "OSCPosition.hpp"
 #include "Parameters.hpp"
 
+using namespace roadmanager;
+
 namespace scenarioengine
 {
 	// Forward declaration 
@@ -77,8 +79,11 @@ namespace scenarioengine
 	{
 	public:
 		std::vector<ConditionGroup*> conditionGroup_;
-
+		
+		Trigger(bool defaultValue) : defaultValue_(defaultValue) {}
 		bool Evaluate(StoryBoard *storyBoard, double sim_time);
+	private:
+		bool defaultValue_;  // applied on empty conditions
 	};
 
 	class TrigByEntity : public OSCCondition
@@ -137,7 +142,8 @@ namespace scenarioengine
 		Object *object_;
 		double value_;
 		bool freespace_;
-		bool along_route_;
+		CoordinateSystem cs_;
+		RelativeDistanceType relDistType_;
 		Rule rule_;
 		double hwt_;
 
@@ -153,7 +159,8 @@ namespace scenarioengine
 		OSCPosition* position_;
 		double value_;
 		bool freespace_;
-		bool along_route_;
+		CoordinateSystem cs_;
+		RelativeDistanceType relDistType_;
 		Rule rule_;
 		double ttc_;
 
@@ -180,12 +187,14 @@ namespace scenarioengine
 		OSCPosition *position_;
 		double value_;
 		bool freespace_;
-		bool along_route_;
+		CoordinateSystem cs_;
+		RelativeDistanceType relDistType_;
 		Rule rule_;
 		double dist_;
 		
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByDistance() : dist_(0), TrigByEntity(TrigByEntity::EntityConditionType::DISTANCE) {}
+		TrigByDistance() : value_(0), dist_(0), cs_(CoordinateSystem::CS_UNDEFINED), freespace_(false), 
+			relDistType_(RelativeDistanceType::REL_DIST_UNDEFINED), TrigByEntity(TrigByEntity::EntityConditionType::DISTANCE) {}
 		void Log();
 	};
 
@@ -203,17 +212,12 @@ namespace scenarioengine
 	class TrigByRelativeDistance : public TrigByEntity
 	{
 	public:
-		typedef enum
-		{
-			LONGITUDINAL,
-			LATERAL,
-			CARTESIAN
-		} RelativeDistanceType;
 
 		Object *object_;
 		double value_;
 		bool freespace_;
-		RelativeDistanceType type_;
+		CoordinateSystem cs_;
+		RelativeDistanceType relDistType_;
 		Rule rule_;
 		double rel_dist_;
 

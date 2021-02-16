@@ -20,7 +20,7 @@
       <ParameterDeclaration name="HostSpeed" parameterType="double" value="10"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="bicycle"/>
       <ParameterDeclaration name="TTC" parameterType="double" value="10"/>
-      <ParameterDeclaration name="TargetStartS" parameterType="double" value="60"/>
+      <ParameterDeclaration name="TargetStartS" parameterType="double" value="50"/>
       <ParameterDeclaration name="TargetFinalSpeed" parameterType="double" value="5"/>
    </ParameterDeclarations>
    <CatalogLocations>
@@ -71,7 +71,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="$HostSpeed"/>
                         </SpeedActionTarget>
@@ -104,7 +104,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="0"/>
                         </SpeedActionTarget>
@@ -127,7 +127,7 @@
                         <PrivateAction>
                            <LongitudinalAction>
                               <SpeedAction>
-                                 <SpeedActionDynamics dynamicsShape="step"/>
+                                 <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
                                  <SpeedActionTarget>
                                     <AbsoluteTargetSpeed value="$TargetFinalSpeed"/>
                                  </SpeedActionTarget>
@@ -146,7 +146,8 @@
                                     <!-- 8 seconds to synch position -->
                                     <TimeToCollisionCondition value="$TTC"
                                                          freespace="true"
-                                                         alongRoute="true"
+                                                         coordinateSystem="entity"
+                                                         relativeDistanceType="longitudinal"
                                                          rule="lessThan" >
                                         <TimeToCollisionConditionTarget >
                                             <Position>
@@ -171,10 +172,9 @@
 									<LanePosition roadId="236" laneId="-1" offset="1.5" s="12.5" />
 								</TargetPosition>    
 								<FinalSpeed>
-									<AbsoluteSpeed value="$TargetFinalSpeed" />
-                                    <SteadyState>
-                                        <TargetDistanceSteadyState distance="20" />
-                                    </SteadyState>                                    
+									<AbsoluteSpeed value="$TargetFinalSpeed" >
+                                        <TargetDistanceSteadyState distance="10" />
+                                    </AbsoluteSpeed>
 								</FinalSpeed>
 							</SynchronizeAction>
 						</PrivateAction>

@@ -169,7 +169,7 @@
                                     <TimeHeadwayCondition entityRef="$owner"
                                                           value="$HeadwayTime_Brake"
                                                           freespace="true"
-                                                          alongRoute="true"
+                                                          alongRoute="false"
                                                           rule="greaterThan"/>
                                  </EntityCondition>
                               </ByEntityCondition>

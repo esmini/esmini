@@ -7,7 +7,8 @@
                description="Keep distance"
                author="SimS"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="Gap_dist" parameterType="double" value="12"/>
+      <ParameterDeclaration name="Gap_dist1" parameterType="double" value="10"/>
+      <ParameterDeclaration name="Gap_dist2" parameterType="double" value="4"/>
       <ParameterDeclaration name="Max_acc" parameterType="double" value="15"/>
       <ParameterDeclaration name="Max_ret" parameterType="double" value="15"/>
    </ParameterDeclarations>
@@ -52,7 +53,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="15"/>
                         </SpeedActionTarget>
@@ -71,21 +72,11 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="15.0"/>
                         </SpeedActionTarget>
                      </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <LongitudinalDistanceAction continuous="true"
-                                                 entityRef="Ego"
-                                                 distance="$Gap_dist"
-                                                 freespace="true">
-                        <DynamicConstraints maxAcceleration="$Max_acc" maxDeceleration="$Max_ret" maxSpeed="40"/>
-                     </LongitudinalDistanceAction>
                   </LongitudinalAction>
                </PrivateAction>
             </Private>
@@ -95,7 +86,75 @@
          <ParameterDeclarations>
             <ParameterDeclaration parameterType="string" name="owner" value="Dummy"/>
          </ParameterDeclarations>
-         <Act name="Act_DistTest"/>
+         <Act name="Act_DistTest">
+            <ManeuverGroup maximumExecutionCount="1" name="NonContinuousDistManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Dummy"/>
+               </Actors>
+               <Maneuver name="DistManeuver">
+                  <Event name="ContinuousDistEvent" priority="overwrite">
+                     <Action name="NonContinuousDistAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <LongitudinalDistanceAction continuous="true"
+                                                          entityRef="Ego"
+                                                          distance="$Gap_dist1"
+                                                          freespace="true">
+                                 <DynamicConstraints maxAcceleration="$Max_acc" maxDeceleration="$Max_ret" maxSpeed="40"/>
+                              </LongitudinalDistanceAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger/>
+                  </Event>                
+                  <Event name="NonContinuousDistEvent" priority="overwrite">
+                     <Action name="NonContinuousDistAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <LongitudinalDistanceAction continuous="false"
+                                                          entityRef="Ego"
+                                                          distance="$Gap_dist2"
+                                                          freespace="true">
+                                 <DynamicConstraints maxAcceleration="$Max_acc" maxDeceleration="$Max_ret" maxSpeed="40"/>
+                              </LongitudinalDistanceAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="OverTakerStartSpeedCondition"
+                                      delay="0"
+                                      conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <ReachPositionCondition tolerance="2.0">
+                                       <Position>
+                                          <LanePosition roadId="1" laneId="-1" s="250.0"/>
+                                       </Position>
+                                    </ReachPositionCondition>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>      
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>            
+             <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+                <ByValueCondition>
+                   <StoryboardElementStateCondition storyboardElementType="event"
+                                                    storyboardElementRef="NonContinuousDistEvent"
+                                                    state="endTransition"/>
+                </ByValueCondition>
+             </Condition>
+         </ConditionGroup>
+      </StopTrigger>                           
    </Storyboard>
 </OpenSCENARIO>

@@ -4,7 +4,7 @@
 <!-- trig a brake maneuver.                                                      -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="1"
                date="2020-10-02T10:00:00"
                description="Pedestrian involved in a critical situation"
                author="esmini-team"/>
@@ -30,14 +30,13 @@
            <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
        </ScenarioObject>
        <ScenarioObject name="pedestrian_adult">
-          <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="PedestrianCategory.pedestrian">
+          <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="pedestrian">
              <ParameterDeclarations/>
              <BoundingBox>
                 <Center x="0.06" y="0.0" z="0.923"/>
                 <Dimensions height="1.8" length="0.6" width="0.5"/>
              </BoundingBox>
              <Properties>
-                <Property name="control" value="internal"/>
                 <File filepath="../models/walkman.osgb"/>
              </Properties>
           </Pedestrian>
@@ -71,7 +70,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="$HostSpeed"/>
                         </SpeedActionTarget>
@@ -221,7 +220,8 @@
                                  <EntityCondition>
                                     <TimeToCollisionCondition value="1.2"
                                                          freespace="true"
-                                                         alongRoute="true"
+                                                         coordinatSystem="road"
+                                                         relativeDistanceType="longitudinal"
                                                          rule="lessThan" >
                                         <TimeToCollisionConditionTarget >
                                             <EntityRef entityRef="pedestrian_adult" />

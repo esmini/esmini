@@ -18,6 +18,7 @@
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
 #define MAX_DECELERATION -8.0
+#define LONGITUDINAL_DISTANCE_THRESHOLD 0.1
 
 using namespace scenarioengine;
 
@@ -105,6 +106,9 @@ void FollowTrajectoryAction::Start()
 
 	traj_->Freeze();
 	object_->pos_.SetTrajectory(traj_);
+
+	object_->pos_.SetTrajectoryS(initialDistanceOffset_);
+	time_ = traj_->GetTimeAtS(initialDistanceOffset_);
 
 	// We want the trajectory to be projected on road surface.
 	object_->pos_.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
@@ -668,7 +672,7 @@ void LongDistanceAction::Step(double dt, double)
 	else
 	{
 		double x, y;
-		distance = object_->pos_.getRelativeDistance(target_object_->pos_, x, y);
+		distance = object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
 
 		// Just interested in the x-axis component of the distance
 		distance = x;
@@ -691,6 +695,12 @@ void LongDistanceAction::Step(double dt, double)
 	}
 
 	double distance_diff = distance - requested_dist;
+
+	if (continuous_ == false && fabs(distance_diff) < LONGITUDINAL_DISTANCE_THRESHOLD)
+	{
+		// Reached requested distance, quit action
+		OSCAction::End();
+	}
 
 	if (dynamics_.none_ == true)
 	{
@@ -885,7 +895,7 @@ void SynchronizeAction::Start()
 	{
 		// Find out distance between steady state position and final destination
 		roadmanager::PositionDiff diff;
-		target_position_->Delta(*steadyState_.pos_, diff);
+		target_position_->Delta(steadyState_.pos_, diff);
 		steadyState_.dist_ = diff.ds;
 		steadyState_.type_ = SteadyStateType::STEADY_STATE_DIST;
 	}
@@ -916,7 +926,7 @@ void SynchronizeAction::Step(double dt, double)
 	double masterDist, dist;
 	roadmanager::PositionDiff diff;
 
-	if (master_object_->pos_.GetTrajectory() || !master_object_->pos_.Delta(*target_position_master_, diff))
+	if (master_object_->pos_.GetTrajectory() || !master_object_->pos_.Delta(target_position_master_, diff))
 	{
 		// No road network path between master vehicle and master target pos - using world coordinate distance
 		diff.ds = GetLengthOfLine2D(master_object_->pos_.GetX(), master_object_->pos_.GetY(),
@@ -924,7 +934,7 @@ void SynchronizeAction::Step(double dt, double)
 	}
 	masterDist = fabs(diff.ds);
 
-	if (object_->pos_.GetTrajectory() || !object_->pos_.Delta(*target_position_, diff))
+	if (object_->pos_.GetTrajectory() || !object_->pos_.Delta(target_position_, diff))
 	{
 		// No road network path between action vehicle and action target pos - using world coordinate distance
 		diff.ds = GetLengthOfLine2D(object_->pos_.GetX(), object_->pos_.GetY(),

@@ -76,7 +76,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="$HostSpeed"/>
                         </SpeedActionTarget>
@@ -109,7 +109,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="$NPCInitialSpeed"/>
                         </SpeedActionTarget>
@@ -137,7 +137,15 @@
                                     <LanePosition roadId="0" laneId="1" offset="0" s="$EgoSyncPoint1S" />
                                 </TargetPositionMaster>    
                                 <TargetPosition>
-                                    <LanePosition roadId="2" laneId="-1" offset="0" s="$NPCSyncPointS" />
+                                    <!-- <LanePosition roadId="2" laneId="-1" offset="0" s="$NPCSyncPointS" /> -->
+                                    <RoutePosition>
+                                       <RouteRef>
+                                          <CatalogReference catalogName="RoutesAtFabriksgatan" entryName="TargetLeftTurnRoute"/>
+                                       </RouteRef>
+                                       <InRoutePosition>
+                                          <FromLaneCoordinates pathS="203" laneId="-1"/>
+                                       </InRoutePosition>
+                                    </RoutePosition>
                                 </TargetPosition>    
                                 <FinalSpeed>
                                     <AbsoluteSpeed value="$NPCFinalSpeed" />

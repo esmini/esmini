@@ -34,7 +34,6 @@ ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, bool disable_c
 void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controllers)
 {
 	// Load and parse data
-	LOG("Init %s", oscFilename.c_str());
 	quit_flag = false;
 	disable_controllers_ = disable_controllers;
 	headstart_time_ = 0;
@@ -84,7 +83,6 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 
 void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers)
 {
-	LOG("Init %s", xml_doc.name());
 	quit_flag = false;
 	disable_controllers_ = disable_controllers;
 	headstart_time_ = 0;
@@ -450,6 +448,15 @@ void ScenarioEngine::parseScenario()
 	}
 
 	scenarioReader->SetGateway(&scenarioGateway);
+
+	scenarioReader->parseOSCHeader();
+	if (scenarioReader->GetVersionMajor() < 1)
+	{
+		LOG_AND_QUIT("OpenSCENARIO v%d.%d not supported. Please migrate scenario to v1.0 or v1.1 and try again.",
+			scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
+	}
+	LOG("Loading %s (v%d.%d)", FileNameOf(scenarioReader->getScenarioFilename()).c_str(), scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
+
 	scenarioReader->parseGlobalParameterDeclarations();
 
 	// Init road manager

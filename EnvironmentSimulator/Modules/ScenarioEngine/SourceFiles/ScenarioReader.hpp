@@ -83,16 +83,21 @@ namespace scenarioengine
 		void SetGateway(ScenarioGateway* gateway) { gateway_ = gateway; }
 		int RegisterCatalogDirectory(pugi::xml_node catalogDirChild);
 
+		int parseOSCHeader();
+
 		// RoadNetwork
 		void parseRoadNetwork(RoadNetwork &roadNetwork);
 		void parseOSCFile(OSCFile &file, pugi::xml_node fileNode);
-		roadmanager::Trajectory* parseTrajectory(pugi::xml_node node);
+		roadmanager::RMTrajectory* parseTrajectory(pugi::xml_node node);
 
 		// Catalogs
 		void parseCatalogs();
 		Catalog* LoadCatalog(std::string name);
 		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode);
+		roadmanager::RMTrajectory* parseTrajectoryRef(pugi::xml_node trajNode);
 		void ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node);
+		CoordinateSystem ParseCoordinateSystem(pugi::xml_node node, CoordinateSystem defaultValue);
+		RelativeDistanceType ParseRelativeDistanceType(pugi::xml_node node, RelativeDistanceType defaultValue);
 		void ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_node &xml_node);
 		Vehicle* parseOSCVehicle(pugi::xml_node vehicleNode);
 		Pedestrian* parseOSCPedestrian(pugi::xml_node pedestrianNode);
@@ -114,7 +119,7 @@ namespace scenarioengine
 
 		// Storyboard - Story
 		OSCCondition *parseOSCCondition(pugi::xml_node conditionNode);
-		Trigger* parseTrigger(pugi::xml_node triggerNode);
+		Trigger* parseTrigger(pugi::xml_node triggerNode, bool defaultValue);
 		//	void parseOSCConditionGroup(OSCConditionGroup *conditionGroup, pugi::xml_node conditionGroupNode);
 		int parseStoryBoard(StoryBoard &storyBoard);
 		void parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node maneuverNode, ManeuverGroup *mGroup);
@@ -130,6 +135,10 @@ namespace scenarioengine
 		void LoadControllers();
 		void UnloadControllers();
 
+		std::string GetDescription() { return description_; }
+		int GetVersionMajor() { return versionMajor_; }
+		int GetVersionMinor() { return versionMinor_; }
+
 		std::vector<Controller*> controller_;
 		Parameters parameters;
 
@@ -143,6 +152,9 @@ namespace scenarioengine
 		ScenarioGateway* gateway_;
 		bool disable_controllers_;
 		static ControllerPool controllerPool_;
+		int versionMajor_;
+		int versionMinor_;
+		std::string description_;
 
 		int ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
 		ConditionGroup* ParseConditionGroup(pugi::xml_node node);

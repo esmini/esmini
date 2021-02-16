@@ -46,7 +46,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="15"/>
                         </SpeedActionTarget>
@@ -65,7 +65,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="15"/>
                         </SpeedActionTarget>
@@ -86,7 +86,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
                         <SpeedActionTarget>
 							<RelativeTargetSpeed entityRef="Target1"
 												 value="1.3"
@@ -128,9 +128,9 @@
                                  </TriggeringEntities>
                                  <EntityCondition>
                                     <TimeHeadwayCondition entityRef="Target2"
-                                                          value="0.2"
+                                                          value="0.25"
                                                           freespace="false"
-                                                          alongRoute="true"
+                                                          alongRoute="false"
                                                           rule="greaterThan"/>
                                  </EntityCondition>
                               </ByEntityCondition>

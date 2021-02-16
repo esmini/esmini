@@ -19,7 +19,6 @@
 #include "CommonMini.hpp"
 #include "OSCBoundingBox.hpp"
 
-
 namespace scenarioengine
 {
 	class Controller;  // Forward declaration
@@ -191,6 +190,32 @@ namespace scenarioengine
 			@return distance The free-space Euclidean distance between objects (0 if collision)
 		*/
 		double FreeSpaceDistancePoint(double x, double y, double* latDist, double* longDist);
+
+		int FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, double* longDist, roadmanager::CoordinateSystem cs);
+		int FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, double* longDist, roadmanager::CoordinateSystem cs);
+
+		/**
+		Measure the distance to provided target object
+		@param target The object to check
+		@param cs CoordinateSystem, see roadmanager::CoordinateSystem 
+		@param relDistType, see roadmanager::RelativeDistanceType
+		@param freeSpace, measure free distance between bounding boxes or just refpoint to refpoint
+		@param dist Distance (output parameter)
+		@return 0 if position found and parameter values are valid, else -1
+		*/
+		int Distance(Object* target, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace, double& dist);
+
+		/**
+		Measure the distance to provided target world x, y position
+		@param x X coordinate of target world position
+		@param y Y coordinate of target world position
+		@param cs CoordinateSystem, see roadmanager::CoordinateSystem
+		@param relDistType, see roadmanager::RelativeDistanceType
+		@param freeSpace, measure free distance between bounding boxes or just refpoint to refpoint
+		@param dist Distance (output parameter)
+		@return 0 if position found and parameter values are valid, else -1
+		*/
+		int Distance(double x, double y, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace, double& dist);
 
 		void SetSpeed(double speed)
 		{ 

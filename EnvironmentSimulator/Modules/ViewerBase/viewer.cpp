@@ -510,7 +510,7 @@ Trajectory::Trajectory(osg::Group* parent, osgViewer::Viewer* viewer) :
 	pline_ = new PolyLine(parent_, new osg::Vec3Array, osg::Vec4(0.9, 0.7, 0.3, 1.0), 3.0);
 }
 
-void Trajectory::SetActiveRMTrajectory(roadmanager::Trajectory* RMTrajectory)
+void Trajectory::SetActiveRMTrajectory(roadmanager::RMTrajectory* RMTrajectory)
 {
 	// Trajectory has been activated on the entity, visualize it
 	double z_offset = 0.15;
@@ -1736,7 +1736,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
 		for (size_t o = 0; o < road->GetNumberOfObjects(); o++)
 		{
-			roadmanager::Object* object = road->GetObject(o);
+			roadmanager::RMObject* object = road->GetObject(o);
 			if (object->GetNumberOfOutlines() > 0)
 			{
 				for (size_t j = 0; j < object->GetNumberOfOutlines(); j++)

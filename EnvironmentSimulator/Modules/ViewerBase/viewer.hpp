@@ -146,12 +146,12 @@ namespace viewer
 		std::vector<TrajVertex> vertices_;
 		osg::Group* parent_;
 		osg::Node* node_;
-		roadmanager::Trajectory* activeRMTrajectory_;
+		roadmanager::RMTrajectory* activeRMTrajectory_;
 
 		Trajectory(osg::Group* parent, osgViewer::Viewer* viewer);
 		~Trajectory() {}
 
-		void SetActiveRMTrajectory(roadmanager::Trajectory* RMTrajectory);
+		void SetActiveRMTrajectory(roadmanager::RMTrajectory* RMTrajectory);
 		void Disable();
 
 	private:

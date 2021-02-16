@@ -80,9 +80,9 @@ OSCTypeDefs
     OSCPedestrian                            
     OSCVehicle                               
         ParameterDeclaration                 No
-        Performance                          No
-        BoundingBox                          No
-        Axles                                No
+        Performance                          Yes
+        BoundingBox                          Yes
+        Axles                                Yes
         category                             Yes
         Properties                           Yes
     OSCMiscObject                            No

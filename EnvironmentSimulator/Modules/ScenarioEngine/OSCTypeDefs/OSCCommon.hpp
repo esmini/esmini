@@ -18,8 +18,11 @@ namespace scenarioengine
 	typedef enum
 	{
 		GREATER_THAN,
+		GREATER_OR_EQUAL,
 		LESS_THAN,
+		LESS_OR_EQUAL,
 		EQUAL_TO,
+		NOT_EQUAL_TO,
 		UNDEFINED
 	} Rule;
 

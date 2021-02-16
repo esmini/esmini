@@ -211,6 +211,7 @@ namespace scenarioengine
 		double distance_;
 		DistType dist_type_;
 		double freespace_;
+		bool continuous_;
 
 		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE), target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0)
 		{
@@ -584,11 +585,12 @@ namespace scenarioengine
 			TIMING_ABSOLUTE
 		} TimingDomain;
 
-		roadmanager::Trajectory* traj_;
+		roadmanager::RMTrajectory* traj_;
 		TimingDomain timing_domain_;
 		double timing_scale_;
 		double timing_offset_;
 		double time_;
+		double initialDistanceOffset_;
 
 		FollowTrajectoryAction() : traj_(0), timing_domain_(TimingDomain::NONE), timing_scale_(1), 
 			timing_offset_(0), time_(0), OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY) {}

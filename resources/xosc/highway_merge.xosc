@@ -281,5 +281,23 @@
             </StartTrigger>
          </Act>
       </Story>
+      <StopTrigger>
+          <ConditionGroup>
+             <Condition name="StoryBoardStopCondition" delay="2" conditionEdge="rising">
+                <ByEntityCondition>
+                   <TriggeringEntities triggeringEntitiesRule="any">
+                      <EntityRef entityRef="Ego"/>
+                   </TriggeringEntities>
+                   <EntityCondition>
+                      <ReachPositionCondition tolerance="1.0">
+                         <Position>
+                            <LanePosition roadId="0" laneId="-2" s="150.0"/>
+                         </Position>
+                      </ReachPositionCondition>
+                   </EntityCondition>
+                </ByEntityCondition>
+             </Condition>
+          </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>
