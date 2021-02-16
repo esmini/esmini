@@ -219,8 +219,8 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor*> sensor)
 
             // Populate sensor data
             mobj->mutable_id()->set_value(sensor[i]->hitList_[j].obj_->id_);
-			mobj->mutable_base()->mutable_position()->set_x(sensor[i]->hitList_[j].x_);
-			mobj->mutable_base()->mutable_position()->set_y(sensor[i]->hitList_[j].y_);
+			mobj->mutable_base()->mutable_position()->set_x(sensor[i]->hitList_[j].x_ + sensor[i]->hitList_[j].obj_->boundingbox_.center_.x_*cos(sensor[i]->hitList_[j].yaw_));
+			mobj->mutable_base()->mutable_position()->set_y(sensor[i]->hitList_[j].y_ + sensor[i]->hitList_[j].obj_->boundingbox_.center_.x_*sin(sensor[i]->hitList_[j].yaw_));
 			mobj->mutable_base()->mutable_position()->set_z(sensor[i]->hitList_[j].z_);
 			mobj->mutable_base()->mutable_velocity()->set_x(sensor[i]->hitList_[j].velX_);
 			mobj->mutable_base()->mutable_velocity()->set_y(sensor[i]->hitList_[j].velY_);
