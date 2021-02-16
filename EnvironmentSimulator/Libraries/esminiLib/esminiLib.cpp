@@ -730,11 +730,11 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API bool SE_OSIFileOpen(const char* dynamic_filename, const char* static_filename)
+	SE_DLL_API bool SE_OSIFileOpen(const char* filename)
 	{
 		if (player)
 		{
-			return player->osiReporter->OpenOSIFiles(dynamic_filename, static_filename);
+			return player->osiReporter->OpenOSIFile(filename);
 		}
 
 		return false;

@@ -109,14 +109,9 @@ OSIReporter::~OSIReporter()
 	osiRoadLane.size=0;
 
 	CloseSocket();
-	if (osi_file_dynamic.is_open())
+	if (osi_file.is_open())
 	{
-		osi_file_dynamic.close();
-	}
-
-	if (osi_file_static.is_open())
-	{
-		osi_file_static.close();
+		osi_file.close();
 	}
 
 }
@@ -213,84 +208,50 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor*> sensor)
 	}
 }
 
-bool OSIReporter::OpenOSIFiles(const char* dynamic_filename, const char* static_filename)
+bool OSIReporter::OpenOSIFile(const char* filename)
 {
-	const char* f_dyn = (dynamic_filename == 0 || !strcmp(dynamic_filename, "")) ? "groundtruth_dynamic.osi" : dynamic_filename;
-	const char* f_stat = (static_filename == 0 || !strcmp(static_filename, "")) ? "groundtruth_static.osi" : static_filename;
-	osi_file_dynamic = std::ofstream(f_dyn, std::ios_base::binary);
-	osi_file_static = std::ofstream(f_stat, std::ios_base::binary);
-	if (!osi_file_dynamic.good())
+	const char* f = (filename == 0 || !strcmp(filename, "")) ? "move_obj.osi" : filename;
+	osi_file = std::ofstream(f, std::ios_base::binary);
+	if (!osi_file.good())
 	{
-		LOG("Failed open OSI Dynamic tracefile %s", f_dyn);
+		LOG("Failed open OSI tracefile %s", f);
 		return false;
 	}
-	else
-	{
-		LOG("OSI Dynamic tracefile %s opened", f_dyn);
-	}
-
-	if (!osi_file_static.good())
-	{
-		LOG("Failed open OSI Static tracefile %s", f_stat);
-		return false;
-	}
-	else
-	{
-		LOG("OSI Static tracefile %s opened", f_stat);
-	}
-	
+	LOG("OSI tracefile %s opened", f);
 	return true;
 }
 
-void OSIReporter::CloseOSIFiles()
+void OSIReporter::CloseOSIFile()
 {
-	osi_file_dynamic.close();
-	osi_file_static.close();
+	osi_file.close();
 }
 
 bool OSIReporter::WriteOSIFile()
 {
-	if (!osi_file_dynamic.good())
-	{
-		return false;
-	}
-
-	if (!osi_file_static.good())
+	if (!osi_file.good())
 	{
 		return false;
 	}
 
 	// write to file, first size of message
-	osi_file_dynamic.write((char*)&osiGroundTruth.size, sizeof(osiGroundTruth.size));
+	osi_file.write((char*)&osiGroundTruth.size, sizeof(osiGroundTruth.size));
 
 	// write to file, actual message - the groundtruth object including timestamp and moving objects
-	osi_file_dynamic.write(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
+	osi_file.write(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
 
-	if (!osi_file_dynamic.good())
+	if (!osi_file.good())
 	{
-		LOG("Failed write osi dynamic file");
+		LOG("Failed write osi file");
 		return false;
 	}
-
-	if (!osi_file_static.good())
-	{
-		LOG("Failed write osi static file");
-		return false;
-	}
-
 	return true;
 }
 
 void OSIReporter::FlushOSIFile()
 {
-	if (osi_file_dynamic.good())
+	if (osi_file.good())
 	{
-		osi_file_dynamic.flush();
-	}
-
-	if (osi_file_static.good())
-	{
-		osi_file_static.flush();
+		osi_file.flush();
 	}
 }
 
@@ -327,7 +288,7 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 
 	UpdateOSILaneBoundary(objectState);
 
-	if (GetSocket() || IsDynamicFileOpen())
+	if (GetSocket() || IsFileOpen())
 	{
 		obj_osi_internal.gt->SerializeToString(&osiGroundTruth.ground_truth);
 		osiGroundTruth.size = (unsigned int)obj_osi_internal.gt->ByteSizeLong();
@@ -347,7 +308,7 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 		}
 	}
 
-	if (IsDynamicFileOpen())
+	if (IsFileOpen())
 	{
 		WriteOSIFile();
 	}
@@ -1069,7 +1030,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 
 const char* OSIReporter::GetOSIGroundTruth(int* size)
 {
-	if (!(GetSocket() || IsDynamicFileOpen())) 
+	if (!(GetSocket() || IsFileOpen())) 
 	{
 		// Data has not been serialized
 		obj_osi_internal.gt->SerializeToString(&osiGroundTruth.ground_truth);

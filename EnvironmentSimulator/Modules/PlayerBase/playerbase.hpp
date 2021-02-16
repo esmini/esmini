@@ -63,7 +63,7 @@ public:
 	ScenarioPlayer(int &argc, char *argv[]);
 	~ScenarioPlayer();
 	bool IsQuitRequested() { return quit_request; }
-	void SetOSIFileStatus(bool is_on, const char* dynamic_filename = 0, const char* static_filename = 0);
+	void SetOSIFileStatus(bool is_on, const char* filename = 0);
 	void Frame();  // let player calculate actual time step
 	void Frame(double timestep_s);
 	void ScenarioFrame(double timestep_s);
