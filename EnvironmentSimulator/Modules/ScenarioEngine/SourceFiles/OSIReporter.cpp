@@ -406,7 +406,7 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState* objectState)
 
 	// Set OSI Stationary Object Position 
 	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX() + objectState->state_.boundingbox.center_.x_*cos(objectState->state_.pos.GetH()));
-	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetX() + objectState->state_.boundingbox.center_.x_*sin(objectState->state_.pos.GetH()));
+	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY() + objectState->state_.boundingbox.center_.x_*sin(objectState->state_.pos.GetH()));
 	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ());
 
 	// Set OSI Stationary Object Orientation 
