@@ -1,5 +1,13 @@
 ## esmini release notes
 
+### 2021-02-17 Version 2.3.2
+
+- Fix issue with normalized ParamPoly3 
+- Relax StandStillCondition - allow for minor "noise"
+- Moved OSI ref point to center of vehicle bounding box (instead of OSC rear axel ref. point)
+- Add smoke tests and [ALKS scenarios](https://github.com/arauschert/OSC-ALKS-scenarios) test suite as acceptance steps in the CI service
+- Some additional minor fixes
+
 ### 2021-02-10 Version 2.3.1
 
 - Fix SpeedAction distance dimension issue  
