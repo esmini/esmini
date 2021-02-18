@@ -28,7 +28,7 @@ namespace scenarioengine
 			ENTITY,          // not supported yet
 			PARAMETER_SET,
 			INFRASTRUCTURE,  // not supported yet
-			TRAFFIC,         // not supported yet
+			SWARM_TRAFFIC,       
 		} Type;
 
 		Type type_;
@@ -90,6 +90,33 @@ namespace scenarioengine
 			LOG("");
 		}
 
+	};
+
+	class SwarmTrafficAction : public OSCGlobalAction
+	{
+	public:
+		SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC), centralObject_(0) {};
+
+		SwarmTrafficAction(const SwarmTrafficAction& action) : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC)
+		{
+		}
+
+		OSCGlobalAction* Copy()
+		{
+			SwarmTrafficAction* new_action = new SwarmTrafficAction(*this);
+			return new_action;
+		}
+
+		void Start();
+
+		void Step(double dt, double simTime);
+
+		void print()
+		{
+			LOG("");
+		}
+
+		Object* centralObject_;
 	};
 }
 

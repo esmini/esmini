@@ -1618,6 +1618,18 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 				}
 			}
 		}
+		else if (actionChild.name() == std::string("TrafficAction"))
+		{
+			pugi::xml_node trafficChild = actionChild.first_child();
+			if (!strcmp(trafficChild.name(), "TrafficSwarmAction"))
+			{
+				SwarmTrafficAction* trafficSwarmAction = new SwarmTrafficAction();
+
+				pugi::xml_node centralObjectNode = trafficChild.child("CentralSwarmObject");
+				trafficSwarmAction->centralObject_ = entities_->GetObjectByName(parameters.ReadAttribute(centralObjectNode, "entityRef"));
+				action = trafficSwarmAction;
+			}
+		}
 		else
 		{
 			LOG("Unsupported global action: %s", actionChild.name());
