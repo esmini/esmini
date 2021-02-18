@@ -496,14 +496,14 @@ void OffsetVec2D(double x0, double y0, double x1, double y1, double offset, doub
 int SE_Env::AddPath(std::string path)
 {
 	// Check if path already in list
-	for (size_t i = 0; i < paths.size(); i++)
+	for (size_t i = 0; i < paths_.size(); i++)
 	{
-		if (paths[i] == path)
+		if (paths_[i] == path)
 		{
 			return -1;
 		}
 	}
-	paths.push_back(path);
+	paths_.push_back(path);
 
 	return 0;
 }

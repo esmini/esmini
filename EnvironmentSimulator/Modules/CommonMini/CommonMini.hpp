@@ -44,6 +44,8 @@
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
 #define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))
+#define OSI_MAX_LONGITUDINAL_DISTANCE 50
+#define OSI_MAX_LATERAL_DEVIATION 0.05
 
 #define LOG(Format_, ...)  Logger::Inst().Log(__FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
 
@@ -249,10 +251,17 @@ class SE_Env
 {
 public:
 	static SE_Env& Inst();
-	std::vector<std::string> paths;
-	std::vector<std::string>& GetPaths() { return paths; }
+	std::vector<std::string> paths_;
+	double osiMaxLongitudinalDistance_;
+	double osiMaxLateralDeviation_;
+	SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE), osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION) {}
+	void SetOSIMaxLongitudinalDistance(double maxLongitudinalDistance) { osiMaxLongitudinalDistance_ = maxLongitudinalDistance; }
+	void SetOSIMaxLateralDeviation(double maxLateralDeviation) { osiMaxLateralDeviation_ = maxLateralDeviation; }
+	double GetOSIMaxLongitudinalDistance() { return osiMaxLongitudinalDistance_; }
+	double GetOSIMaxLateralDeviation() { return osiMaxLateralDeviation_; }
+	std::vector<std::string>& GetPaths() { return paths_; }
 	int AddPath(std::string path);
-	void ClearPaths() { paths.clear(); }
+	void ClearPaths() { paths_.clear(); }
 };
 
 std::vector<std::string> SplitString(const std::string &s, char separator);

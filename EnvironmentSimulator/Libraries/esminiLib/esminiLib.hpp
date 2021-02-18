@@ -123,6 +123,14 @@ extern "C"
 	SE_DLL_API void SE_ClearPaths();
 
 	/**
+	Configure tolerances/resolution for OSI road features
+	@param max_longitudinal_distance Maximum distance between OSI points, even on straight road. Default=50(m)
+	@param max_lateral_deviation Control resolution w.r.t. curvature default=0.05(m)
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetOSITolerances(double maxLongitudinalDistance, double maxLateralDeviation);
+
+	/**
 	Initialize the scenario engine
 	@param oscFilename Path to the OpenSCEANRIO file
 	@param disable_ctrls 1=Any controller will be disabled 0=Controllers applied according to OSC file

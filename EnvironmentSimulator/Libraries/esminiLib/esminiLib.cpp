@@ -305,6 +305,13 @@ extern "C"
 		SE_Env::Inst().ClearPaths();
 	}
 
+	SE_DLL_API int SE_SetOSITolerances(double maxLongitudinalDistance, double maxLateralDeviation)
+	{
+		SE_Env::Inst().SetOSIMaxLongitudinalDistance(maxLongitudinalDistance);
+		SE_Env::Inst().SetOSIMaxLateralDeviation(maxLateralDeviation);
+		return 0;
+	}
+
 	SE_DLL_API int SE_InitWithArgs(int argc, char* argv[])
 	{
 		resetScenario();

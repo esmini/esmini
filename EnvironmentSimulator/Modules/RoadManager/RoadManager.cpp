@@ -66,10 +66,9 @@ using namespace roadmanager;
 
 #define CURV_ZERO 0.00001
 #define MAX_TRACK_DIST 10
-#define OSI_LANE_CALC_REQUIREMENT 0.05 // [m]
 #define OSI_POINT_CALC_STEPSIZE 1 // [m]
 #define OSI_TANGENT_LINE_TOLERANCE 0.01 // [m]
-#define OSI_MAX_ROAD_SEGMENT_LENGTH 50 // [m]
+
 
 int g_Lane_id;
 int g_Laneb_id;
@@ -3980,7 +3979,7 @@ bool OpenDrive::CheckLaneOSIRequirement(std::vector<double> x0, std::vector<doub
 	
 	// Max distance can be "nan" when the lane is perfectly straigt and hence k = 0.
 	// In this case, it satisfies OSI_LANE_CALC_REQUIREMENT since it is a perfect line
-	if (max_distance < OSI_LANE_CALC_REQUIREMENT || isnan(max_distance))
+	if (max_distance < SE_Env::Inst().GetOSIMaxLateralDeviation() || isnan(max_distance))
 	{
 		return true;
 	}
@@ -4003,7 +4002,7 @@ void OpenDrive::SetLaneOSIPoints()
 	std::vector<double> x0, y0, x1, y1;
 	double s0, s1, s1_prev;
 	bool osi_requirement;
-	double max_segment_length = OSI_MAX_ROAD_SEGMENT_LENGTH;
+	double max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
 
 	// Looping through each road 
 	for (int i=0; i<road_.size(); i++)
@@ -4013,11 +4012,11 @@ void OpenDrive::SetLaneOSIPoints()
 		if (road->GetNumberOfSuperElevations() > 0)
 		{
 			// If road has lateral profile, then increase sampling resolution
-			max_segment_length = 0.1 * OSI_MAX_ROAD_SEGMENT_LENGTH;
+			max_segment_length = 0.1 * SE_Env::Inst().GetOSIMaxLongitudinalDistance();
 		}
 		else
 		{
-			max_segment_length = OSI_MAX_ROAD_SEGMENT_LENGTH;
+			max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
 		}
 
 		// Looping through each lane section
@@ -4179,7 +4178,7 @@ void OpenDrive::SetLaneBoundaryPoints()
 	std::vector<OSIPoints::OSIPointStruct> osi_point;
 	double s0, s1, s1_prev;
 	bool osi_requirement; 
-	double max_segment_length = OSI_MAX_ROAD_SEGMENT_LENGTH;
+	double max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
 
 	// Looping through each road 
 	for (int i=0; i<road_.size(); i++)
@@ -4189,11 +4188,11 @@ void OpenDrive::SetLaneBoundaryPoints()
 		if (road->GetNumberOfSuperElevations() > 0)
 		{
 			// If road has lateral profile, then increase sampling resolution
-			max_segment_length = 0.1 * OSI_MAX_ROAD_SEGMENT_LENGTH;
+			max_segment_length = 0.1 * SE_Env::Inst().GetOSIMaxLongitudinalDistance();
 		}
 		else
 		{
-			max_segment_length = OSI_MAX_ROAD_SEGMENT_LENGTH;
+			max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
 		}
 
 		// Looping through each lane section
@@ -4354,7 +4353,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 	std::vector<double> x0, y0, x1, y1;
 	std::vector<OSIPoints::OSIPointStruct> osi_point;
 	bool osi_requirement;
-	double max_segment_length = OSI_MAX_ROAD_SEGMENT_LENGTH;
+	double max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
 
 	// Looping through each road 
 	for (int i=0; i<road_.size(); i++)
@@ -4364,11 +4363,11 @@ void OpenDrive::SetRoadMarkOSIPoints()
 		if (road->GetNumberOfSuperElevations() > 0)
 		{
 			// If road has lateral profile, then increase sampling resolution
-			max_segment_length = 0.1 * OSI_MAX_ROAD_SEGMENT_LENGTH;
+			max_segment_length = 0.1 * SE_Env::Inst().GetOSIMaxLongitudinalDistance();
 		}
 		else
 		{
-			max_segment_length = OSI_MAX_ROAD_SEGMENT_LENGTH;
+			max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
 		}
 
 		// Looping through each lane section
