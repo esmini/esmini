@@ -26,4 +26,24 @@ void ParameterSetAction::Step(double, double dt)
 	OSCAction::Stop();
 }
 
+void SwarmTrafficAction::Start()
+{
+	LOG("SwarmTrafficAction Start");
 
+	// Get handle to road network
+	roadmanager::OpenDrive* odrManager = roadmanager::Position::GetOpenDrive();
+	for (size_t i = 0; i < odrManager->GetNumOfRoads(); i++)
+	{
+		roadmanager::Road* road = odrManager->GetRoadByIdx((int)i);
+		printf("Road %d length: %.2f\n", (int)i, road->GetLength());
+	}
+
+	OSCAction::Start();
+}
+
+void SwarmTrafficAction::Step(double dt, double simTime)
+{
+	LOG("SwarmTrafficAction Step");
+	printf("Central object world pos (x, y): %.2f, %.2f\n", centralObject_->pos_.GetX(), centralObject_->pos_.GetY());
+	printf("Central object road pos (roadId, s): %d, %.2f\n", centralObject_->pos_.GetTrackId(), centralObject_->pos_.GetS());
+}
