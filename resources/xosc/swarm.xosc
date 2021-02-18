@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2020-10-04T10:00:00"
+               description="Cut-in"
+               author="SimS"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_500m.xodr"/>   
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="100" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="5"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="story">
+         <Act name="act">
+           <ManeuverGroup maximumExecutionCount="1" name="Swarm maneuver group">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="SwarmManeuver">
+                  <Event name="SwarmEvent" maximumExecutionCount="1" priority="overwrite">
+                     <Action name="SwarmAction">
+                        <GlobalAction>
+                           <TrafficAction>
+                              <TrafficSwarmAction innerRadius="100">
+								 <CentralSwarmObject entityRef="Ego" />
+                              </TrafficSwarmAction>
+                           </TrafficAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+						<ConditionGroup>
+							<Condition name="StartCondition" delay="0" conditionEdge="rising">
+								 <ByValueCondition>
+									<SimulationTimeCondition value="5" rule="greaterThan"/>
+								 </ByValueCondition>
+							</Condition>
+						</ConditionGroup>					 
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+			</ManeuverGroup>
+        </Act>
+      </Story>
+     <StopTrigger/>
+   </Storyboard>
+</OpenSCENARIO>
