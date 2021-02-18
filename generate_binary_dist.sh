@@ -26,6 +26,7 @@ resources/xosc/pedestrian_collision.xosc \
 resources/xosc/controller_test.xosc \
 resources/xosc/slow-lead-vehicle.xosc \
 resources/xosc/synch_with_steady_state.xosc \
+resources/xosc/lane_change_crest.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -40,6 +41,7 @@ resources/xodr/straight_500m_signs.xodr \
 resources/xodr/curve_r100.xodr \
 resources/xodr/multi_intersections.xodr \
 resources/xodr/curves_elevation.xodr \
+resources/xodr/crest-curve.xodr \
 resources/models/bus_blue.osgb \
 resources/models/car_blue.osgb \
 resources/models/car_red.osgb \
@@ -82,6 +84,7 @@ run/esmini/run_trajectory-test.* \
 run/esmini/run_pedestrian*.* \
 run/esmini/run_controller_test*.* \
 run/esmini/run_synch_with_steady_state*.* \
+run/esmini/run_lane_change_crest.* \
 run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \

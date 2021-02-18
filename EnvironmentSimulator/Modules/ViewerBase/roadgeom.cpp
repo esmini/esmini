@@ -16,6 +16,7 @@
 #include <osg/StateSet> 
 #include <osg/Group> 
 #include <osg/TexEnv>
+#include <osg/Material>
 #include <osgGA/StateSetManipulator>
 #include <osg/PolygonOffset>
 #include <osgDB/ReadFile>
@@ -64,8 +65,12 @@ osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename)
 
 void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::DrawElementsUInt> indices)
 {
+	osg::ref_ptr<osg::Material> materialRoadmark_ = new osg::Material;
 	osg::ref_ptr<osg::Vec4Array> color_roadmark = new osg::Vec4Array;
-	color_roadmark->push_back(osg::Vec4(0.7f, 0.8f, 0.8f, 1.0f));
+	color_roadmark->push_back(osg::Vec4(0.95f, 0.95f, 0.9f, 1.0f));
+
+	materialRoadmark_->setDiffuse(osg::Material::FRONT_AND_BACK, color_roadmark->at(0));
+	materialRoadmark_->setAmbient(osg::Material::FRONT_AND_BACK, color_roadmark->at(0));
 
 	// Finally create and add geometry
 	osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
@@ -79,7 +84,8 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_p
 	geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-1, -1));
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	geode->addChild(geom);
+	geode->addDrawable(geom);
+	geode->getOrCreateStateSet()->setAttributeAndModes(materialRoadmark_.get());
 	rm_group_->addChild(geode);
 }
 
@@ -226,8 +232,16 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 
 	osg::ref_ptr<osg::Vec4Array> color_asphalt = new osg::Vec4Array;
 	osg::ref_ptr<osg::Vec4Array> color_grass = new osg::Vec4Array;
+
 	color_asphalt->push_back(osg::Vec4(0.3f, 0.3f, 0.3f, 1.0f));
 	color_grass->push_back(osg::Vec4(0.20f, 0.55f, 0.35f, 1.0f));
+
+	osg::ref_ptr<osg::Material> materialAsphalt_ = new osg::Material;
+	osg::ref_ptr<osg::Material> materialGrass_ = new osg::Material;
+	materialAsphalt_->setDiffuse(osg::Material::FRONT_AND_BACK, color_asphalt->at(0));
+	materialAsphalt_->setAmbient(osg::Material::FRONT_AND_BACK, color_asphalt->at(0));
+	materialGrass_->setDiffuse(osg::Material::FRONT_AND_BACK, color_grass->at(0));
+	materialGrass_->setAmbient(osg::Material::FRONT_AND_BACK, color_grass->at(0));
 
 
 	for (size_t i = 0; i < odr->GetNumOfRoads(); i++)
@@ -370,6 +384,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 						{
 							tex = tex_asphalt.get();
 						}
+						geom->getOrCreateStateSet()->setAttributeAndModes(materialAsphalt_.get());
 					}
 					else
 					{
@@ -378,6 +393,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 						{
 							tex = tex_grass.get();
 						}
+						geom->getOrCreateStateSet()->setAttributeAndModes(materialGrass_.get());
 					}
 					geom->setColorBinding(osg::Geometry::BIND_OVERALL);
 					if (tex)

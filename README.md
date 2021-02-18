@@ -90,6 +90,9 @@ Select (click on) esmini-player in Hierarchy to show up in Inspector, where you 
 
 Plugins can be updated, but NOTE that you need to restart Unity to (re)load shared library plugins. And, of course, scenario files and other content can be added or replaced.
 
+### esmini & Python
+see last section in [Hello-World_coding-example](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example#python-binding).
+
 ## esmini controllers
 
 esmini comes with a few controllers (ways of controlling individual entities in the scenario):

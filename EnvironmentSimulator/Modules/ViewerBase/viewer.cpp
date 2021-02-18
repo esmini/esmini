@@ -35,6 +35,8 @@
 #include <osgShadow/ShadowMap>
 #include <osgShadow/ShadowedScene>
 #include <osgUtil/SmoothingVisitor>
+#include <osgUtil/Tessellator> // to tessellate multiple contours
+
 #include "CommonMini.hpp"
 
 #define SHADOW_SCALE 1.20
@@ -1009,7 +1011,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	infoTextCamera = new osg::Camera;
 	infoTextCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
 	infoTextCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
-	infoTextCamera->setRenderOrder(osg::Camera::POST_RENDER);
+	infoTextCamera->setRenderOrder(osg::Camera::POST_RENDER, 10);
 	infoTextCamera->setAllowEventFocus(false);
 	infoTextCamera->addChild(textGeode.get());
 	infoTextCamera->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
@@ -1540,6 +1542,78 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 	return true;
 }
 
+int Viewer::CreateOutlineObject(roadmanager::Outline *outline)
+{
+	if (outline == 0) return -1;
+	bool roof = outline->closed_ ? true : false;
+	
+	// nrPoints will be corners + 1 if the outline should be closed, reusing first corner as last
+	int nrPoints = outline->closed_ ? outline->corner_.size() + 1 : outline->corner_.size();
+
+	osg::ref_ptr<osg::Group> group = new osg::Group();
+	osg::Vec4 color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0f);
+	osg::ref_ptr<osg::Vec4Array> color_outline = new osg::Vec4Array;
+	color_outline->push_back(color);
+
+	osg::ref_ptr<osg::Vec3Array> vertices_sides = new osg::Vec3Array(nrPoints * 2);  // one set at bottom and one at top
+	osg::ref_ptr<osg::Vec3Array> vertices_top = new osg::Vec3Array(nrPoints);  // one set at bottom and one at top
+
+	// Set vertices
+	for (size_t i = 0; i < outline->corner_.size(); i++)
+	{
+		double x, y, z;
+		roadmanager::OutlineCorner* corner = outline->corner_[i];
+		corner->GetPos(x, y, z);
+		(*vertices_sides)[i * 2 + 0].set(x, y, z + corner->GetHeight());
+		(*vertices_sides)[i * 2 + 1].set(x, y, z);
+		(*vertices_top)[i].set(x, y, z + corner->GetHeight());
+	}
+
+	// Close geometry
+	if (outline->closed_)
+	{
+		(*vertices_sides)[2 * nrPoints - 2].set((*vertices_sides)[0]);
+		(*vertices_sides)[2 * nrPoints - 1].set((*vertices_sides)[1]);
+		(*vertices_top)[nrPoints-1].set((*vertices_top)[0]);
+	}
+
+	// Finally create and add geometry
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	osg::ref_ptr<osg::Geometry> geom[] = { new osg::Geometry, new osg::Geometry };
+
+	geom[0]->setVertexArray(vertices_sides.get());
+	geom[0]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, 2 * nrPoints));
+
+	if (roof)
+	{
+		geom[1]->setVertexArray(vertices_top.get());
+		geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
+		osgUtil::Tessellator tessellator;
+		tessellator.retessellatePolygons(*geom[1]);
+	}
+
+	int nrGeoms = roof ? 2 : 1;
+	for (int i = 0; i < nrGeoms; i++)
+	{
+		osgUtil::SmoothingVisitor::smooth(*geom[i], 0.5);
+		geom[i]->setColorArray(color_outline);
+		geom[i]->setColorBinding(osg::Geometry::BIND_OVERALL);
+		geom[i]->setDataVariance(osg::Object::STATIC);
+		geom[i]->setUseDisplayList(true);
+		geode->addDrawable(geom[i]);
+	}
+
+	osg::ref_ptr<osg::Material> material_ = new osg::Material;
+	material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
+	material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
+	geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+
+	group->addChild(geode);
+	envTx_->addChild(group);
+
+	return 0;
+}
+
 int Viewer::LoadRoadFeature(roadmanager::Road *road, std::string filename, double s, double t, 
 	double z_offset, double scale_x, double scale_y, double scale_z, double heading_offset)
 {
@@ -1597,11 +1671,26 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 		for (size_t o = 0; o < road->GetNumberOfObjects(); o++)
 		{
 			roadmanager::Object* object = road->GetObject(o);
-			double orientation = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
-			if (LoadRoadFeature(road, object->GetName() + ".osgb", object->GetS(), object->GetT(), object->GetZOffset(),
-				1.0, 1.0, object->GetHeight(), orientation + object->GetHOffset()) != 0)
+			if (object->GetNumberOfOutlines() > 0)
 			{
-				return -1;
+				for (size_t j = 0; j < object->GetNumberOfOutlines(); j++)
+				{
+					roadmanager::Outline* outline = object->GetOutline(j);
+					CreateOutlineObject(outline);
+				}
+				LOG("Created outline geometry for object %s.", object->GetName().c_str());
+				LOG("  if it looks strange, e.g.faces too dark or light color, ");
+				LOG("  check that corners are defined counter-clockwise (as OpenGL default).");
+			}
+			else
+			{
+				// Assume name is representing a 3D model filename
+				double orientation = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
+				if (LoadRoadFeature(road, object->GetName() + ".osgb", object->GetS(), object->GetT(), object->GetZOffset(),
+					1.0, 1.0, object->GetHeight(), orientation + object->GetHOffset()) != 0)
+				{
+					return -1;
+				}
 			}
 		}
 	}

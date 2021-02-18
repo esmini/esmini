@@ -1549,6 +1549,40 @@ Object* Road::GetObject(int idx)
 	return object_[idx];
 }
 
+OutlineCornerRoad::OutlineCornerRoad(int roadId, double s, double t, double dz, double height):
+	roadId_(roadId), s_(s), t_(t), dz_(dz), height_(height)
+{
+
+}
+
+void OutlineCornerRoad::GetPos(double& x, double& y, double& z)
+{
+	roadmanager::Position pos;
+	pos.SetTrackPos(roadId_, s_, t_);
+	x = pos.GetX();
+	y = pos.GetY();
+	z = pos.GetZ() + dz_;
+}
+
+OutlineCornerLocal::OutlineCornerLocal(int roadId, double s, double t, double u, double v, double zLocal, double height, double heading) :
+	roadId_(roadId), s_(s), t_(t), u_(u), v_(v), zLocal_(zLocal), height_(height), heading_(heading)
+{
+
+}
+
+void OutlineCornerLocal::GetPos(double& x, double& y, double& z)
+{
+	roadmanager::Position pref;
+	pref.SetTrackPos(roadId_, s_, t_);
+	double total_heading = GetAngleSum(pref.GetH(), heading_);
+	double u2, v2;
+	RotateVec2D(u_, v_, total_heading, u2, v2);
+
+	x = pref.GetX() + u2;
+	y = pref.GetY() + v2;
+	z = pref.GetZ() + zLocal_;
+}
+
 double Road::GetLaneOffset(double s)
 {
 	int i = 0;
@@ -2824,6 +2858,43 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				else
 				{
 					LOG("Object: Major error\n");
+				}
+
+				pugi::xml_node outlines_node = object.child("outlines");
+				if (outlines_node != NULL)
+				{
+					for (pugi::xml_node outline_node = outlines_node.child("outline"); outline_node; outline_node = outline_node.next_sibling())
+					{
+						int id = atoi(outline_node.attribute("id").value());
+						bool closed = !strcmp(outline_node.attribute("closed").value(), "true") ? true : false;
+						Outline* outline = new Outline(id, Outline::FillType::FILL_TYPE_UNDEFINED, closed);
+
+						for (pugi::xml_node corner_node = outline_node.first_child(); corner_node; corner_node = corner_node.next_sibling())
+						{
+							OutlineCorner* corner = 0;
+							
+							if (!strcmp(corner_node.name(), "cornerRoad"))
+							{
+								double sc = atof(corner_node.attribute("s").value());
+								double tc = atof(corner_node.attribute("t").value());
+								double dz = atof(corner_node.attribute("dz").value());
+								double heightc = atof(corner_node.attribute("height").value());
+
+								corner = (OutlineCorner*)(new OutlineCornerRoad(r->GetId(), sc, tc, dz, heightc));
+							}
+							else if (!strcmp(corner_node.name(), "cornerLocal"))
+							{
+								double u = atof(corner_node.attribute("u").value());
+								double v = atof(corner_node.attribute("v").value());
+								double zLocal = atof(corner_node.attribute("z").value());
+								double heightc = atof(corner_node.attribute("height").value());
+
+								corner = (OutlineCorner*)(new OutlineCornerLocal(r->GetId(), obj->GetS(), obj->GetT(), u, v, zLocal, heightc, heading));
+							}
+							outline->AddCorner(corner);
+						}
+						obj->AddOutline(outline);
+					}
 				}
 			}
 		}
