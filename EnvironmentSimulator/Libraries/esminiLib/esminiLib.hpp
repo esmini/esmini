@@ -437,9 +437,9 @@ extern "C"
 	SE_DLL_API int SE_UpdateOSIStaticGroundTruth();
 
 	/**
-	The SE_UpdateDynamicOSIGroundTruth function returns a char array containing the osi dynamic GroundTruth serialized to a string
+	The SE_UpdateOSIDynamicGroundTruth function returns a char array containing the osi dynamic GroundTruth serialized to a string
 	*/
-	SE_DLL_API int SE_UpdateDynamicOSIGroundTruth();
+	SE_DLL_API int SE_UpdateOSIDynamicGroundTruth();
 
 	/**
 	The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
