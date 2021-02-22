@@ -740,6 +740,7 @@ extern "C"
 	{
 		if (player)
 		{
+			player->osiReporter->ClearOSIGroundTruth();
 			return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
 		}
 
