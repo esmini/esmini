@@ -424,26 +424,31 @@ extern "C"
 	/**
 	The SE_ClearOSIGroundTruth clears the certain groundtruth data
 	* This function should only be used together with SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
+	@return 0
 	*/
 	SE_DLL_API int SE_ClearOSIGroundTruth();
 
 	/**
-	The SE_UpdateOSIGroundTruth function calls SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
+	The SE_UpdateOSIGroundTruth function calls SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth and updates OSI Groundtruth
+	@return 0
 	*/
 	SE_DLL_API int SE_UpdateOSIGroundTruth();
 
 	/**
-	The SE_UpdateOSIStaticGroundTruth function returns a char array containing the osi static GroundTruth serialized to a string
+	The SE_UpdateOSIStaticGroundTruth function updates OSI static Groundtruth
+	@return 0
 	*/
 	SE_DLL_API int SE_UpdateOSIStaticGroundTruth();
 
 	/**
-	The SE_UpdateOSIDynamicGroundTruth function returns a char array containing the osi dynamic GroundTruth serialized to a string
+	The SE_UpdateOSIDynamicGroundTruth function updates OSI dynamic Groundtruth
+	@return 0
 	*/
 	SE_DLL_API int SE_UpdateOSIDynamicGroundTruth();
 
 	/**
 	The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
+	@return osi3::GroundTruth*
 	*/
 	SE_DLL_API const char* SE_GetOSIGroundTruth(int* size);
 
