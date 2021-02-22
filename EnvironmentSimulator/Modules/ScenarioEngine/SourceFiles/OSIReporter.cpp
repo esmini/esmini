@@ -257,13 +257,17 @@ void OSIReporter::FlushOSIFile()
 	}
 }
 
-int OSIReporter::ClearOSIGroundTruth()
+int OSIReporter::ClearOSIDynamicGroundTruth()
 {
 	obj_osi_internal.gt->clear_moving_object();
+	return 0;
+}
+
+int OSIReporter::ClearOSIStaticGroundTruth()
+{
 	obj_osi_internal.gt->clear_stationary_object();
 	obj_osi_internal.gt->clear_lane();
 	obj_osi_internal.gt->clear_lane_boundary();
-
 	return 0;
 }
 

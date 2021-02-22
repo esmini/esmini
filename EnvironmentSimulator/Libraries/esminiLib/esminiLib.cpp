@@ -726,11 +726,21 @@ extern "C"
 		return;
 	}
 
-	SE_DLL_API int SE_ClearOSIGroundTruth()
+	SE_DLL_API int SE_ClearOSIStaticGroundTruth()
 	{
 		if (player)
 		{
-			return player->osiReporter->ClearOSIGroundTruth();
+			return player->osiReporter->ClearOSIStaticGroundTruth();
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_ClearOSIDynamicGroundTruth()
+	{
+		if (player)
+		{
+			return player->osiReporter->ClearOSIDynamicGroundTruth();
 		}
 
 		return 0;
