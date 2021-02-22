@@ -48,13 +48,9 @@ public:
 	*/
 	void FlushOSIFile();
 	/**
-	Clears static groundtruth osi
+	Clears groundtruth osi
 	*/
-	int ClearOSIStaticGroundTruth();
-	/**
-	Clears dynamic groundtruth osi
-	*/
-	int ClearOSIDynamicGroundTruth();
+	int ClearOSIGroundTruth();
 	/**
 	Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
 	*/

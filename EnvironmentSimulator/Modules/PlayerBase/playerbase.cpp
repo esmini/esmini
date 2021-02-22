@@ -186,8 +186,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	{
 		if (osi_counter % osi_freq_ == 0)
 		{
-			osiReporter->ClearOSIStaticGroundTruth();
-			osiReporter->ClearOSIDynamicGroundTruth();
+			osiReporter->ClearOSIGroundTruth();
 			osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
 		}
 		// Update counter after modulo-check since first frame should always be reported

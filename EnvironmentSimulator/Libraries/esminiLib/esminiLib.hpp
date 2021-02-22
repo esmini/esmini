@@ -422,14 +422,9 @@ extern "C"
 	SE_DLL_API void SE_EnableOSIFile(const char* filename);
 
 	/**
-	The SE_ClearOSIGroundTruth clears the static groundtruth data
+	The SE_ClearOSIGroundTruth clears the certain groundtruth data
 	*/
-	SE_DLL_API int SE_ClearOSIStaticGroundTruth();
-
-	/**
-	The SE_ClearOSIGroundTruth clears the dynamic groundtruth data
-	*/
-	SE_DLL_API int SE_ClearOSIDynamicGroundTruth();
+	SE_DLL_API int SE_ClearOSIGroundTruth();
 
 	/**
 	The SE_UpdateOSIGroundTruth function calls SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
