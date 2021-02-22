@@ -209,8 +209,6 @@ int main(int argc, char *argv[])
 			stuff.counter++;
 #if DEMONSTRATE_OSI  // set to 1 to demonstrate example of how to query OSI Ground Truth
 
-			int svSize = 0;
-
 			SE_UpdateOSIGroundTruth();
 			// Fetch and parse OSI message
 			gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
@@ -220,19 +218,19 @@ int main(int argc, char *argv[])
 				1E-9 * gt->mutable_timestamp()->nanos());
 
 			// Print object id, position, orientation and velocity
-			for (int i = 0; i < gt->mutable_moving_object()->size(); i++)
+			for (int j = 0; j < gt->mutable_moving_object()->size(); j++)
 			{
 				printf(" obj id %lld pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
-					gt->mutable_moving_object(i)->mutable_id()->value(),
-					gt->mutable_moving_object(i)->mutable_base()->mutable_position()->x(),
-					gt->mutable_moving_object(i)->mutable_base()->mutable_position()->y(),
-					gt->mutable_moving_object(i)->mutable_base()->mutable_position()->z(),
-					gt->mutable_moving_object(i)->mutable_base()->mutable_orientation()->yaw(),
-					gt->mutable_moving_object(i)->mutable_base()->mutable_orientation()->pitch(),
-					gt->mutable_moving_object(i)->mutable_base()->mutable_orientation()->roll(),
-					gt->mutable_moving_object(i)->mutable_base()->mutable_velocity()->x(),
-					gt->mutable_moving_object(i)->mutable_base()->mutable_velocity()->y(),
-					gt->mutable_moving_object(i)->mutable_base()->mutable_velocity()->z()
+					gt->mutable_moving_object(j)->mutable_id()->value(),
+					gt->mutable_moving_object(j)->mutable_base()->mutable_position()->x(),
+					gt->mutable_moving_object(j)->mutable_base()->mutable_position()->y(),
+					gt->mutable_moving_object(j)->mutable_base()->mutable_position()->z(),
+					gt->mutable_moving_object(j)->mutable_base()->mutable_orientation()->yaw(),
+					gt->mutable_moving_object(j)->mutable_base()->mutable_orientation()->pitch(),
+					gt->mutable_moving_object(j)->mutable_base()->mutable_orientation()->roll(),
+					gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->x(),
+					gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->y(),
+					gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->z()
 				);
 			}
 #endif		
