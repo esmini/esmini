@@ -1,5 +1,20 @@
 ## esmini release notes
 
+### 2021-02-22 Version 2.4.0
+
+- New feature: Support for OpenDRIVE road object outlines
+  - support open and closed shapes
+  - support both cornerRoad and cornerLocal specifications
+  - add a "roof" mesh on closed shapes   
+
+  see example OpenDRIVE [crest-curve.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/crest-curve.xodr) used in scenario [lane_change_crest.xosc]("https://github.com/esmini/esmini/blob/master/resources/xosc/lane_change_crest.xosc").  
+    To run it, go to esmini/run/esmini and run the script [run_lane_change_crest.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_lane_change_crest.bat).
+- Improve OSI performance
+  - Static and dynamic groundthruth data updated separately
+  - OSI API new functions: SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
+  - Old function SE_UpdateOSIGroundTruth depricated, will be removed enventually
+- Add option to tune OSI tolerances for road points (and 3D model generator)
+
 ### 2021-02-17 Version 2.3.2
 
 - Fix issue with normalized ParamPoly3 
