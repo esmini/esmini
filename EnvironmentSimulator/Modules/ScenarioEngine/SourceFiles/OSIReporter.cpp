@@ -273,7 +273,7 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 	{
 		UpdateOSIStaticGroundTruth(objectState);
 	}
-	
+	obj_osi_internal.gt->clear_moving_object();
 	UpdateOSIDynamicGroundTruth(objectState);
 
 	if (GetSocket() || IsFileOpen())

@@ -423,6 +423,7 @@ extern "C"
 
 	/**
 	The SE_ClearOSIGroundTruth clears the certain groundtruth data
+	* This function should only be used together with SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
 	*/
 	SE_DLL_API int SE_ClearOSIGroundTruth();
 
