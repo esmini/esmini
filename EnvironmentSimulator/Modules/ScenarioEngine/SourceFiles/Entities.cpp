@@ -130,6 +130,30 @@ void Object::SetVisibilityMask(int mask)
 	SetDirtyBits(dirty_ | DirtyBit::VISIBILITY);
 }
 
+void Object::SetVel(double x_vel, double y_vel, double z_vel)
+{
+	pos_.SetVel(x_vel, y_vel, z_vel);
+	SetDirtyBits(dirty_ | DirtyBit::VELOCITY);
+}
+
+void Object::SetAcc(double x_acc, double y_acc, double z_acc)
+{
+	pos_.SetAcc(x_acc, y_acc, z_acc);
+	SetDirtyBits(dirty_ | DirtyBit::ACCELERATION);
+}
+
+void Object::SetAngularVel(double h_vel, double p_vel, double r_vel)
+{
+	pos_.SetAngularVel(h_vel, p_vel, r_vel);
+	SetDirtyBits(dirty_ | DirtyBit::ANGULAR_RATE);
+}
+
+void Object::SetAngularAcc(double h_acc, double p_acc, double r_acc)
+{
+	pos_.SetAngularAcc(h_acc, p_acc, r_acc);
+	SetDirtyBits(dirty_ | DirtyBit::ANGULAR_ACC);
+}
+
 bool Object::Collision(Object* target)
 {
 	// Apply method Separating Axis Theorem (SAT)

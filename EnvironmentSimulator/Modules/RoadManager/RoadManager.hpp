@@ -1598,16 +1598,12 @@ namespace roadmanager
 		void SetY(double y) { y_ = y; }
 		void SetZ(double z) { z_ = z; }
 		void SetH(double h) { h_ = h; }
-		void SetHRate(double h_rate) { h_rate_ = h_rate; }
-		void SetHAcc(double h_acc) { h_acc_ = h_acc; }
 		void SetP(double p) { p_ = p; }
 		void SetR(double r) { r_ = r; }
-		void SetVelX(double x) { velX_ = x; }
-		void SetVelY(double y) { velY_ = y; }
-		void SetVelZ(double z) { velZ_ = z; }
-		void SetAccX(double x) { accX_ = x; }
-		void SetAccY(double y) { accY_ = y; }
-		void SetAccZ(double z) { accZ_ = z; }
+		void SetVel(double x_vel, double y_vel, double z_vel) { velX_ = x_vel, velY_ = y_vel, velZ_ = z_vel; }
+		void SetAcc(double x_acc, double y_acc, double z_acc) { accX_ = x_acc, accY_ = y_acc, accZ_ = z_acc; }
+		void SetAngularVel(double h_vel, double p_vel, double r_vel) { h_rate_ = h_vel, p_rate_ = p_vel, r_rate_ = r_vel; }
+		void SetAngularAcc(double h_acc, double p_acc, double r_acc) { h_acc_ = h_acc, p_acc_ = p_acc, r_acc_ = r_acc; }
 		double GetVelX() { return velX_; }
 		double GetVelY() { return velY_; }
 		double GetVelZ() { return velZ_; }
@@ -1615,7 +1611,11 @@ namespace roadmanager
 		double GetAccY() { return accY_; }
 		double GetAccZ() { return accZ_; }
 		double GetHRate() { return h_rate_; }
+		double GetPRate() { return p_rate_; }
+		double GetRRate() { return r_rate_; }
 		double GetHAcc() { return h_acc_; }
+		double GetPAcc() { return p_acc_; }
+		double GetRAcc() { return r_acc_; }
 
 		int GetStatusBitMask() { return status_; }
 
@@ -1691,10 +1691,14 @@ namespace roadmanager
 		double	y_;
 		double	z_;
 		double	h_;
-		double  h_rate_;
-		double  h_acc_;
 		double	p_;
 		double	r_;
+		double  h_rate_;
+		double  p_rate_;
+		double  r_rate_;
+		double  h_acc_;
+		double  p_acc_;
+		double  r_acc_;
 		double	velX_;
 		double	velY_;
 		double	velZ_;

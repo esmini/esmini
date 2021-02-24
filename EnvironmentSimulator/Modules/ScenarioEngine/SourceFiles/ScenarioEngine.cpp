@@ -140,7 +140,7 @@ void ScenarioEngine::step(double deltaSimTime)
 	}
 	else
 	{
-		// reset indicators of applied control 
+		// reset update bits and indicators of applied control 
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
 			Object* obj = entities.object_[i];
@@ -631,13 +631,30 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 
 		if (dt > SMALL_NUMBER)
 		{
-			obj->pos_.SetVelX(dx / dt);
-			obj->pos_.SetVelY(dy / dt);
-			obj->pos_.SetAccX((obj->pos_.GetVelX() - obj->state_old.vel_x) / dt);
-			obj->pos_.SetAccY((obj->pos_.GetVelY() - obj->state_old.vel_y) / dt);
+			if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
+			{
+				// If not already reported, calculate linear velocity
+				obj->SetVel(dx / dt, dy / dt, 0.0);
+			}
+
+			if (!obj->CheckDirtyBits(Object::DirtyBit::ACCELERATION))
+			{
+				// If not already reported, calculate linear acceleration 
+				obj->SetAcc((obj->pos_.GetVelX() - obj->state_old.vel_x) / dt, (obj->pos_.GetVelY() - obj->state_old.vel_y) / dt, 0.0);
+			}
+
 			double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), obj->state_old.h) / dt;
-			obj->pos_.SetHRate(heading_rate_new);
-			obj->pos_.SetHAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt);
+			if (!obj->CheckDirtyBits(Object::DirtyBit::ANGULAR_RATE))
+			{
+				// If not already reported, calculate angular velocity/rate
+				obj->SetAngularVel(heading_rate_new, 0.0, 0.0);
+			}
+
+			if (!obj->CheckDirtyBits(Object::DirtyBit::ANGULAR_ACC))
+			{
+				// If not already reported, calculate angular acceleration
+				obj->SetAngularAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt, 0.0, 0.0);
+			}
 			
 			// Update wheel rotations of internal scenario objects
 			if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
@@ -653,8 +670,11 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 		else
 		{
 			// calculate approximated velocity vector based on current heading
-			obj->pos_.SetVelX(obj->speed_ * cos(obj->pos_.GetH()));
-			obj->pos_.SetVelY(obj->speed_ * sin(obj->pos_.GetH()));
+			if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
+			{
+				// If not already reported, calculate approximated velocity vector based on current heading
+				obj->SetVel(obj->speed_ * cos(obj->pos_.GetH()), obj->speed_ * sin(obj->pos_.GetH()), 0.0);
+			}
 		}
 
 		// Report updated pos values to the gateway
@@ -675,6 +695,14 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 		}
 
 		obj->trail_.AddState((float)simulationTime_, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
+
+		// Clear dirty/update bits for any reported velocity and acceleration values
+		obj->ClearDirtyBits(
+			Object::DirtyBit::VELOCITY |
+			Object::DirtyBit::ANGULAR_RATE |
+			Object::DirtyBit::ACCELERATION |
+			Object::DirtyBit::ANGULAR_ACC
+		);
 	}
 }
 

@@ -43,7 +43,11 @@ namespace scenarioengine
 			SPEED =          (1 << 2),
 			WHEEL_ANGLE =    (1 << 3),
 			WHEEL_ROTATION = (1 << 4),
-			VISIBILITY =     (1 << 5)
+			VISIBILITY =     (1 << 5),
+			VELOCITY =       (1 << 6),
+			ANGULAR_RATE =   (1 << 7),
+			ACCELERATION =   (1 << 8),
+			ANGULAR_ACC =    (1 << 9),
 		} DirtyBit;
 
 		typedef enum {
@@ -160,6 +164,11 @@ namespace scenarioengine
 		Object* GetGhost() { return ghost_; }
 		void SetVisibilityMask(int mask);
 		bool IsGhost() { return isGhost_; }
+		void SetVel(double x_vel, double y_vel, double z_vel);
+		void SetAcc(double x_acc, double y_acc, double z_acc);
+		void SetAngularVel(double h_vel, double p_vel, double r_vel);
+		void SetAngularAcc(double h_acc, double p_acc, double r_acc);
+
 
 		bool CheckDirtyBits(int bits)
 		{

@@ -298,6 +298,50 @@ extern "C"
 	SE_DLL_API int SE_ReportObjectLateralLanePosition(int id, int laneId, float laneOffset);
 
 	/**
+	Report object position in cartesian coordinates
+	@param id Id of the object
+	@param timestamp Timestamp (not really used yet, OK to set 0)
+	@param x_vel X component of linear velocity
+	@param y_vel Y component of linear velocity
+	@param z_vel Z component of linear velocity
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_ReportObjectVel(int id, float timestamp, float x_vel, float y_vel, float z_vel);
+
+	/**
+	Report object position in cartesian coordinates
+	@param id Id of the object
+	@param timestamp Timestamp (not really used yet, OK to set 0)
+	@param h_vel Heading component of angular velocity
+	@param p_vel Pitch component of angular velocity
+	@param r_vel Roll component of angular velocity
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_ReportObjectAngularVel(int id, float timestamp,  float h_rate, float p_rate, float r_rate);
+
+	/**
+	Report object position in cartesian coordinates
+	@param id Id of the object
+	@param timestamp Timestamp (not really used yet, OK to set 0)
+	@param x_acc X component of linear acceleration
+	@param y_acc Y component of linear acceleration
+	@param z_acc Z component of linear acceleration
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_ReportObjectAcc(int id, float timestamp, float x_acc, float y_acc, float z_acc);
+
+	/**
+	Report object position in cartesian coordinates
+	@param id Id of the object
+	@param timestamp Timestamp (not really used yet, OK to set 0)
+	@param h_acc Heading component of angular acceleration
+	@param p_acc Pitch component of angular acceleration
+	@param r_acc Roll component of angular acceleration
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_ReportObjectAngularAcc(int id, float timestamp, float h_acc, float p_acc, float r_acc);
+
+	/**
 	Get the number of entities in the current scenario
 	@return Number of entities
 	*/

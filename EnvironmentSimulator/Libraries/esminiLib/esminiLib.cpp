@@ -635,6 +635,74 @@ extern "C"
 		return 0;
 	}
 
+	SE_DLL_API int SE_ReportObjectVel(int id, float timestamp, float x_vel, float y_vel, float z_vel)
+	{
+		if (player)
+		{
+			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
+			{
+				player->scenarioEngine->entities.object_[id]->SetVel(x_vel, y_vel, z_vel);
+			}
+			else
+			{
+				return -1;
+			}
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_ReportObjectAngularVel(int id, float timestamp, float h_rate, float p_rate, float r_rate)
+	{
+		if (player)
+		{
+			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
+			{
+				player->scenarioEngine->entities.object_[id]->SetAngularVel(h_rate, p_rate, r_rate);
+			}
+			else
+			{
+				return -1;
+			}
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_ReportObjectAcc(int id, float timestamp, float x_acc, float y_acc, float z_acc)
+	{
+		if (player)
+		{
+			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
+			{
+				player->scenarioEngine->entities.object_[id]->SetAcc(x_acc, y_acc, z_acc);
+			}
+			else
+			{
+				return -1;
+			}
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_ReportObjectAngularAcc(int id, float timestamp, float h_acc, float p_acc, float r_acc)
+	{
+		if (player)
+		{
+			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
+			{
+				player->scenarioEngine->entities.object_[id]->SetAngularAcc(h_acc, p_acc, r_acc);
+			}
+			else
+			{
+				return -1;
+			}
+		}
+
+		return 0;
+	}
+
 	SE_DLL_API int SE_GetNumberOfObjects()
 	{
 		if (player)
