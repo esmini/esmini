@@ -169,6 +169,11 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 		r_data->road_roll = (float)s_data.road_lane_info.roll;
 		r_data->trail_heading = r_data->road_heading;
 		r_data->speed_limit = (float)s_data.road_lane_info.speed_limit;
+		r_data->roadId = (float)s_data.road_lane_info.roadId;
+		r_data->laneId = (float)s_data.road_lane_info.laneId;
+		r_data->laneOffset = (float)s_data.road_lane_info.laneOffset;
+		r_data->s = (float)s_data.road_lane_info.s;
+		r_data->t = (float)s_data.road_lane_info.t;
 
 		// Add visualization of forward looking road sensor probe
 		#ifdef _SCENARIO_VIEWER
@@ -703,6 +708,23 @@ extern "C"
 		return 0;
 	}
 
+	SE_DLL_API int SE_SetLockOnLane(int id, bool mode)
+	{
+		if (player)
+		{
+			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
+			{
+				player->scenarioGateway->getObjectStatePtrByIdx(id)->state_.pos.SetLockOnLane(mode);
+			}
+			else
+			{
+				return -1;
+			}
+		}
+
+		return 0;
+	}
+
 	SE_DLL_API int SE_GetNumberOfObjects()
 	{
 		if (player)
@@ -1009,19 +1031,30 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo* data, int along_road_center)
+	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo* data, int lookAheadMode, bool inRoadDrivingDirection)
 	{
 		if (player == 0 || object_id >= player->scenarioGateway->getNumberOfObjects())
 		{
 			return -1;
 		}
 
-		if (GetRoadInfoAtDistance(object_id, lookahead_distance, data, along_road_center) != 0)
+		Object* obj = player->scenarioEngine->entities.object_[object_id];
+
+		double adjustedLookaheadDistance = lookahead_distance;
+
+		if (!inRoadDrivingDirection)
+		{
+			// Find out what direction to look in
+			if (fabs(obj->pos_.GetHRelativeDrivingDirection()) > M_PI_2)
+			{
+				adjustedLookaheadDistance = -lookahead_distance;
+			}
+		}
+		
+		if (GetRoadInfoAtDistance(object_id, adjustedLookaheadDistance, data, lookAheadMode) != 0)
 		{
 			return -1;
 		}
-
-		//		Set_se_steering_target_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
 
 		return 0;
 	}
@@ -1038,8 +1071,6 @@ extern "C"
 			return -1;
 		}
 
-		//		Set_se_ghost_pos(object_id, data->global_pos_x, data->global_pos_y, data->global_pos_z);
-				//LOG("id %d dist %.2f x %.2f y %.2f z %.2f", object_id, lookahead_distance, data->global_pos_x, data->global_pos_y, data->global_pos_z);
 		return 0;
 	}
 

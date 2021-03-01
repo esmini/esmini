@@ -132,13 +132,19 @@ namespace scenarioengine
 		double GetOffRoadTimestamp() { return off_road_timestamp_; }
 		void SetStandStill(bool state, double time = 0.0);
 		bool IsStandStill() { return stand_still_timestamp_ > SMALL_NUMBER; }
+
+		/**
+		    Returns the timestamp from which the entity has not moved. 
+			@return The timestamp in seconds.
+		*/
 		double GetStandStillTimestamp() { return stand_still_timestamp_; }
-		/// <summary>
-		/// Check if object is colliding with specified target object
-		/// Definition of collision is being overlapping bounding boxes
-		/// </summary>
-		/// <param name="target">The object to check</param>
-		/// <returns>true if bounding boxes overlap else false</returns>
+
+		/**
+			Check if object is colliding with specified target object
+			Definition of collision is overlapping bounding boxes
+			@param target The object to check
+			@return true if bounding boxes overlap else false
+		*/
 		bool Collision(Object* target);
 
 		void SetSpeed(double speed) 
@@ -168,7 +174,6 @@ namespace scenarioengine
 		void SetAcc(double x_acc, double y_acc, double z_acc);
 		void SetAngularVel(double h_vel, double p_vel, double r_vel);
 		void SetAngularAcc(double h_acc, double p_acc, double r_acc);
-
 
 		bool CheckDirtyBits(int bits)
 		{

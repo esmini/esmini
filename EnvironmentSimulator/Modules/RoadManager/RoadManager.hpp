@@ -1078,49 +1078,50 @@ namespace roadmanager
 		~OpenDrive();
 
 		/**
-		Load a road network, specified in the OpenDRIVE file format
-		@param filename OpenDRIVE file
-		@param replace If true any old road data will be erased, else new will be added to the old
+			Load a road network, specified in the OpenDRIVE file format
+			@param filename OpenDRIVE file
+			@param replace If true any old road data will be erased, else new will be added to the old
 		*/
 		bool LoadOpenDriveFile(const char *filename, bool replace = true);
 		
 		/**
-		Initialize the global ids for lanes
+			Initialize the global ids for lanes
 		*/ 
 		void InitGlobalLaneIds();
 
 		/**
-		Get the filename of currently loaded OpenDRIVE file
+			Get the filename of currently loaded OpenDRIVE file
 		*/
 		std::string GetOpenDriveFilename() { return odr_filename_; }
 
 		/**
-		Setting information based on the OSI standards for OpenDrive elements
+			Setting information based on the OSI standards for OpenDrive elements
 		*/
 		bool SetRoadOSI();
 		bool CheckLaneOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1);
 		void SetLaneOSIPoints();
 		void SetRoadMarkOSIPoints();
+
 		/**
-		Checks all lanes - if a lane has RoadMarks it does nothing. If a lane does not have roadmarks 
-		then it creates a LaneBoundary following the lane border (left border for left lanes, right border for right lanes)
+			Checks all lanes - if a lane has RoadMarks it does nothing. If a lane does not have roadmarks 
+			then it creates a LaneBoundary following the lane border (left border for left lanes, right border for right lanes)
 		*/
 		void SetLaneBoundaryPoints();
 		
 		/**
-		Retrieve a road segment specified by road ID 
-		@param id road ID as specified in the OpenDRIVE file
+			Retrieve a road segment specified by road ID 
+			@param id road ID as specified in the OpenDRIVE file
 		*/
 		Road* GetRoadById(int id);
 
 		/**
-		Retrieve a road segment specified by road vector element index
-		useful for iterating over all available road segments, e.g:
-		for (int i = 0; i < GetNumOfRoads(); i++)
-		{
-			int n_lanes = GetRoadyIdx(i)->GetNumberOfLanes();
-		...
-		@param idx index into the vector of roads
+			Retrieve a road segment specified by road vector element index
+			useful for iterating over all available road segments, e.g:
+			for (int i = 0; i < GetNumOfRoads(); i++)
+			{
+				int n_lanes = GetRoadyIdx(i)->GetNumberOfLanes();
+			...
+			@param idx index into the vector of roads
 		*/
 		Road* GetRoadByIdx(int idx);
 		Geometry* GetGeometryByIdx(int road_idx, int geom_idx);
@@ -1129,22 +1130,24 @@ namespace roadmanager
 		int GetNumOfRoads() { return (int)road_.size(); }
 		Junction* GetJunctionById(int id);
 		Junction* GetJunctionByIdx(int idx);
+
 		int GetNumOfJunctions() { return (int)junction_.size(); }
 		/**
-		Check if two roads are connected directly
-		@param road1_id Id of the first road
-		@param road2_id Id of the second road
-		@param angle if connected, the angle between road 2 and road 1 is returned here
-		@return 0 if not connected, -1 if road 2 is the predecessor of road 1, +1 if road 2 is the successor of road 1
+			Check if two roads are connected directly
+			@param road1_id Id of the first road
+			@param road2_id Id of the second road
+			@param angle if connected, the angle between road 2 and road 1 is returned here
+			@return 0 if not connected, -1 if road 2 is the predecessor of road 1, +1 if road 2 is the successor of road 1
 		*/
+
 		int IsDirectlyConnected(int road1_id, int road2_id, double &angle);
 		bool IsIndirectlyConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id = 0, int lane2_id = 0);
 
 		/**
-		Add any missing connections so that road connectivity is two-ways
-		Look at all road connections, and make sure they are defined both ways
-		@param idx index into the vector of roads
-		@return number of added connections
+			Add any missing connections so that road connectivity is two-ways
+			Look at all road connections, and make sure they are defined both ways
+			@param idx index into the vector of roads
+			@return number of added connections
 		*/
 		int CheckConnections();
 		int CheckLink(Road *road, RoadLink *link, ContactPointType expected_contact_point_type);
@@ -1171,6 +1174,11 @@ namespace roadmanager
 		double width;		// lane width
 		double curvature;	// road curvature at steering target point
 		double speed_limit; // speed limit given by OpenDRIVE type entry
+		int roadId;         // road ID 
+		int laneId;         // lane ID
+		double laneOffset;  // lane offset (lateral distance from lane center) 
+		double s;           // s (longitudinal distance along reference line)
+		double t;           // t (lateral distance from reference line)
 	} RoadLaneInfo;
 	
 	typedef struct
@@ -1647,6 +1655,12 @@ namespace roadmanager
 			}
 		}
 
+		/**
+			Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)
+			@parameter mode True=keep lane False=Snap to closest (default)
+		*/
+		void SetLockOnLane(bool mode) { lockOnLane_ = mode; }
+
 	protected:
 		void Track2Lane();
 		int Track2XYZ(bool alignH = true);
@@ -1659,6 +1673,9 @@ namespace roadmanager
 		void XYZ2Track(bool alignZAndPitch = false);
 		int SetLongitudinalTrackPos(int track_id, double s);
 		bool EvaluateRoadZPitchRoll(bool alignZPitchRoll);
+
+		// Control lane belonging
+		bool lockOnLane_;  // if true then keep logical lane regardless of lateral position, default false
 
 		// route reference
 		Route  *route_;			// if pointer set, the position corresponds to a point along (s) the route

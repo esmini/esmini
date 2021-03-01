@@ -3960,6 +3960,7 @@ void Position::Init()
 	orientation_type_ = OrientationType::ORIENTATION_ABSOLUTE;
 	snapToLaneTypes_ = Lane::LaneType::LANE_TYPE_ANY_DRIVING;
 	status_ = 0;
+	lockOnLane_ = false;
 
 	z_road_ = 0.0;
 	track_idx_ = -1;
@@ -5266,6 +5267,23 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 		LOG("Unexpected: No closest OSI point found!");
 	}
 
+	double fixedLaneOffset = 0;
+	int fixedLaneId = 0;
+	if (lockOnLane_)
+	{
+		// Register lateral position of previous lane
+		LaneSection* lsec = current_road->GetLaneSectionByIdx(lane_section_idx_);
+		if (lsec)
+		{
+			fixedLaneOffset = SIGN(lane_id_) * lsec->GetCenterOffset(s_, lane_id_);
+
+			// Now find cloest lane at that lateral position, at updated s value
+			double laneOffset;
+			int lane_idx = lsec->GetClosestLaneIdx(closestS, fixedLaneOffset, laneOffset, true, Lane::LaneType::LANE_TYPE_ANY_DRIVING);
+			fixedLaneId = lsec->GetLaneIdByIdx(lane_idx);
+		}
+	}
+
 	// Set position exact on center line
 	int retvalue = SetTrackPos(roadMin->GetId(), closestS, 0, UpdateTrackPosMode::UPDATE_XYZ);
 	double xCenterLine = x_;
@@ -5277,7 +5295,14 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 		xCenterLine + cos(GetHRoad()), yCenterLine + sin(GetHRoad()));
 
 	// Update lateral offsets
-	SetTrackPos(roadMin->GetId(), closestS, latOffset, UpdateTrackPosMode::UPDATE_NOT_XYZH);
+	if (lockOnLane_)
+	{
+		SetLanePos(roadMin->GetId(), fixedLaneId, closestS, latOffset - fixedLaneOffset, UpdateTrackPosMode::UPDATE_NOT_XYZH);
+	}
+	else
+	{
+		SetTrackPos(roadMin->GetId(), closestS, latOffset, UpdateTrackPosMode::UPDATE_NOT_XYZH);
+	}
 
 	static int rid = 0;
 	if (roadMin->GetId() != rid)
