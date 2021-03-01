@@ -4782,17 +4782,20 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 	//   5. The s value for projected xyz point on the line segment corresponds to the rate 
 	//      between angle from xyz point to projected point and the difference of angle normals
 
-	Road* road, * current_road = 0;
-	Road* roadMin = 0;
+	Road *road, *current_road = 0;
+	Road *roadMin = 0;
 	bool directlyConnected = false;
-	bool directlyConnectedMin = false;
 	double weight = 0; // Add some resistance to switch from current road, applying a stronger bound to current road
 	double angle = 0;
 	bool search_done = false;
 	double closestS = 0;
-	int j2, k2, jMin = -1, kMin = -1, jMinLocal, kMinLocal;
+	int j2, k2, jMin=-1, kMin=-1, jMinLocal, kMinLocal;
 	double closestPointDist = INFINITY;
 	bool closestPointInside = false;
+	bool insideCurrentRoad = false;  // current postion projects on current road
+	double headingDiffMin = INFINITY;
+	bool closestPointDirectlyConnected = false;
+
 
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
@@ -4814,7 +4817,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 		// Iterate over all roads in the road network
 		nrOfRoads = GetOpenDrive()->GetNumOfRoads();
 	}
-
+	
 	for (int i = -1; !search_done && i < (int)nrOfRoads; i++)
 	{
 		if (i == -1)
@@ -4861,20 +4864,17 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 
 		// Add resistance to leave current road or directly connected ones 
 		// actual weights are totally unscientific... up to tuning
-		if (current_road && (road == current_road || GetOpenDrive()->IsDirectlyConnected(current_road->GetId(), road->GetId(), angle)))
+		if (road != current_road)
 		{
-			weight = angle;
-			directlyConnected = true;
-		}
-		else
-		{
-			if (directlyConnectedMin) // if already found a directly connected position - add offset distance
+			if (current_road && GetOpenDrive()->IsDirectlyConnected(current_road->GetId(), road->GetId(), angle))
 			{
-				weight = 2;
+				directlyConnected = true;
 			}
-
-			weight += 3;  // For non connected roads add additional "penalty" threshold  
-			directlyConnected = false;
+			else
+			{
+				weight += 3;  // For non connected roads add additional "penalty" threshold  
+				directlyConnected = false;
+			}
 		}
 
 		for (int j = 0; j < road->GetNumberOfLaneSections(); j++)
@@ -4882,7 +4882,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 			OSIPoints* osiPoints = road->GetLaneSectionByIdx(j)->GetLaneById(0)->GetOSIPoints();
 			double sLocal = -1;
 
-			// on last lane section, skip last point
+			// skip last point on last lane section
 			int numPoints = osiPoints->GetNumOfOSIPoints();
 			if (j == road->GetNumberOfLaneSections() - 1)
 			{
@@ -4900,7 +4900,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				// in case of multiple roads with the same reference line, also look at width of the road of relevant side
 				// side of road is determined by cross product of position (relative OSI point) and road heading
 				double cp = GetCrossProduct2D(cos(osi_point.h), sin(osi_point.h), x3 - osi_point.x, y3 - osi_point.y);
-				double width = road->GetWidth(osi_point.s, SIGN(cp), Lane::LaneType::LANE_TYPE_ANY);
+				double width = road->GetWidth(osi_point.s, SIGN(cp), ~Lane::LaneType::LANE_TYPE_NONE);
 
 				double x2, y2, z2, sLocalTmp;
 
@@ -4937,7 +4937,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 						// road startpoint
 						pos.SetLanePos(road->GetId(), 0, 0, 0);
 					}
-					else
+					else 
 					{
 						// road endpoint
 						pos.SetLanePos(road->GetId(), 0, road->GetLength(), 0);
@@ -4960,14 +4960,12 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					// Calculate vector from road endpoint (first or last) to obj pos
 					double vx = x3 - x;
 					double vy = y3 - y;
-					double vx_n, vy_n;
-					NormalizeVec2D(vx, vy, vx_n, vy_n);
-
+					
 					// make sure normals points same side as point
 					double forward_x = 1.0;
 					double forward_y = 0.0;
 					RotateVec2D(1.0, 0.0, h, forward_x, forward_y);
-					if (GetCrossProduct2D(forward_x, forward_y, vx_n, vy_n) < 0)
+					if (GetCrossProduct2D(forward_x, forward_y, vx, vy) < 0)
 					{
 						n_actual_x = -n_actual_x;
 						n_actual_y = -n_actual_y;
@@ -4976,9 +4974,9 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					}
 
 					double cp_actual = GetCrossProduct2D(vx, vy, n_actual_x, n_actual_y);
-					double cp_osi = GetCrossProduct2D(n_osi_x, n_osi_y, vx_n, vy_n);
-
-					if (SIGN(cp_actual) == SIGN(cp_osi))
+					double cp_osi = GetCrossProduct2D(vx, vy, n_osi_x, n_osi_y);
+					
+					if (SIGN(cp_actual) != SIGN(cp_osi))
 					{
 						inside = true;
 						distTmp = GetLengthOfLine2D(vx, vy, 0, 0);
@@ -5039,22 +5037,60 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					// sLocal represent now (outside line segment) distance to closest line segment end point
 					distTmp = sqrt(distTmp * distTmp + sLocal * sLocal);
 				}
-
-				distTmp += fabs(z3 - z);
-				distTmp += weight;
-
-				if (distTmp < closestPointDist)
+				
+				if (fabs(z3 - z) > 2.0)
 				{
-					closestPointDist = distTmp;
-					roadMin = road;
-					jMin = jMinLocal;
-					kMin = kMinLocal;
-					closestPointInside = inside;
+					// Add threshold for considering z - to avoid noise in co-planar distance calculations
+					distTmp += fabs(z3 - z);
+				}
+
+				if (!insideCurrentRoad && road == current_road)
+				{
+					// Register whether current position is on current road
+					insideCurrentRoad = inside && distTmp < SMALL_NUMBER;
+				}
+				else if (insideCurrentRoad)
+				{
+					// Only add weight if position inside current road
+					// longitudinal (end points) and lateral (road width)
+					distTmp += weight;
+				}
+				
+				if (distTmp < closestPointDist + SMALL_NUMBER)
+				{
+					bool directlyConnectedCandidate = false;
+
+					if (directlyConnected && closestPointDirectlyConnected)
+					{
+						// For directly connected roads (junction), we might have options 
+						// among equally close ones, find the one which goes the most straight forward
+						if (fabs(distTmp - closestPointDist) < SMALL_NUMBER)
+						{
+							if (angle < headingDiffMin)
+							{ 
+								directlyConnectedCandidate = true;
+							}
+						}
+					}
+
+					if (directlyConnectedCandidate || distTmp < closestPointDist)
+					{
+						closestPointDist = distTmp;
+						roadMin = road;
+						jMin = jMinLocal;
+						kMin = kMinLocal;
+						closestPointInside = inside;
+						closestPointDirectlyConnected = directlyConnected;
+
+						if (directlyConnected)
+						{
+							headingDiffMin = angle;
+						}
+					}
 				}
 			}
 		}
 	}
-
 	if (closestPointInside)
 	{
 		status_ &= ~Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD;
@@ -5085,7 +5121,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 		double xTangent = cos(osip_closest.h);
 		double yTangent = sin(osip_closest.h);
 		double dotP = GetDotProduct2D(xTangent, yTangent, x3 - osip_closest.x, y3 - osip_closest.y);
-
+		
 		int jFirst, jSecond, kFirst, kSecond;
 
 		if (dotP > 0)
@@ -5143,7 +5179,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					if (roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() > 1)
 					{
 						// Skip last point, it's the same as first in successor lane section
-						kFirst = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 2;
+						kFirst = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 2; 
 					}
 					else
 					{
@@ -5161,7 +5197,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 			osip_first = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetPoint(kFirst);
 		}
 
-		if (jFirst == jSecond && kFirst == kSecond)
+		if (jFirst == jSecond && kFirst == kSecond)  
 		{
 			// Same point
 			closestS = osip_first.s;
@@ -5264,6 +5300,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 
 	return retvalue;
 }
+	
 
 bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 {
