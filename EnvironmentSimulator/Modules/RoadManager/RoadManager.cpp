@@ -449,12 +449,15 @@ void ParamPoly3::Print()
 
 void ParamPoly3::EvaluateDS(double ds, double *x, double *y, double *h)
 {
-	double u_local = poly3U_.Evaluate(S2P(ds));
-	double v_local = poly3V_.Evaluate(S2P(ds));
+	double p = S2P(ds);
+	double hdg = GetHdg();
 
-	*x = GetX() + u_local * cos(GetHdg()) - v_local * sin(GetHdg());
-	*y = GetY() + u_local * sin(GetHdg()) + v_local * cos(GetHdg());
-	*h = GetHdg() + atan2(poly3V_.EvaluatePrim(S2P(ds)), poly3U_.EvaluatePrim(S2P(ds)));
+	double u_local = poly3U_.Evaluate(p);
+	double v_local = poly3V_.Evaluate(p);
+
+	*x = GetX() + u_local * cos(hdg) - v_local * sin(hdg);
+	*y = GetY() + u_local * sin(hdg) + v_local * cos(hdg);
+	*h = hdg + atan2(poly3V_.EvaluatePrim(p), poly3U_.EvaluatePrim(p));
 }
 
 double ParamPoly3::EvaluateCurvatureDS(double ds)
@@ -1682,9 +1685,9 @@ int Road::GetNumberOfDrivingLanesSide(double s, int side)
 
 double Road::GetWidth(double s, int side, int laneTypeMask)
 {
-	double minOffset = 0;
-	double maxOffset = 0;
+	double offset = 0;
 	size_t i;
+	int index;
 
 	for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
 	{
@@ -1696,30 +1699,32 @@ double Road::GetWidth(double s, int side, int laneTypeMask)
 
 	if (i < GetNumberOfLaneSections())
 	{
-		for (size_t j = 0; j < lane_section_[i]->GetNumberOfLanes(); j++)
-		{
-			if (lane_section_[i]->GetLaneByIdx((int)j)->GetLaneType() & laneTypeMask)
-			{
-				int lane_id = lane_section_[i]->GetLaneIdByIdx((int)j);
+		LaneSection* lsec = lane_section_[i];
+		// Since the lanes are sorted from left to right, 
+		// side == +1 means first lane and side == -1 means last lane
 
-				if (side < 0 && lane_id > 0 || side > 0 && lane_id < 0)
-				{
-					continue;  // do not measure this side
-				}
-				double offset = SIGN(lane_id) * lane_section_[i]->GetOuterOffset(s, lane_id);
-				if (offset < minOffset)
-				{
-					minOffset = offset;
-				}
-				else if (offset > maxOffset)
-				{
-					maxOffset = offset;
-				}
-			}
+		if (side > 0)
+		{
+			index = 0;
 		}
+		else
+		{
+			index = lsec->GetNumberOfLanes() - 1;
+		}
+
+		int lane_id = lsec->GetLaneIdByIdx(index);
+		int step = side > 0 ? +1 : -1;
+		
+		// Find outmost lane matching requested lane type
+		while (lane_id != 0 && !(lsec->GetLaneByIdx(index)->GetLaneType() & laneTypeMask))
+		{
+			lane_id = lsec->GetLaneIdByIdx(index += step);
+		}
+
+		offset = fabs(lsec->GetOuterOffset(s, lane_id));
 	}
 
-	return (maxOffset - minOffset);
+	return offset;
 }
 
 void Road::AddLaneOffset(LaneOffset *lane_offset)
@@ -3500,7 +3505,7 @@ int OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double &angle)
 			{
 				Junction *junction = GetJunctionById(link->GetElementId());
 
-				for (int j = 0; j < junction->GetNumberOfConnections(); j++)
+				for (int j = 0; junction != NULL && j < junction->GetNumberOfConnections(); j++)
 				{
 					Connection *connection = junction->GetConnectionByIdx(j);
 					Position test_pos1;
@@ -4777,15 +4782,15 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 	//   5. The s value for projected xyz point on the line segment corresponds to the rate 
 	//      between angle from xyz point to projected point and the difference of angle normals
 
-	Road *road, *current_road = 0;
-	Road *roadMin = 0;
+	Road* road, * current_road = 0;
+	Road* roadMin = 0;
 	bool directlyConnected = false;
 	bool directlyConnectedMin = false;
 	double weight = 0; // Add some resistance to switch from current road, applying a stronger bound to current road
 	double angle = 0;
 	bool search_done = false;
 	double closestS = 0;
-	int j2, k2, jMin=-1, kMin=-1, jMinLocal, kMinLocal;
+	int j2, k2, jMin = -1, kMin = -1, jMinLocal, kMinLocal;
 	double closestPointDist = INFINITY;
 	bool closestPointInside = false;
 
@@ -4809,7 +4814,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 		// Iterate over all roads in the road network
 		nrOfRoads = GetOpenDrive()->GetNumOfRoads();
 	}
-	
+
 	for (int i = -1; !search_done && i < (int)nrOfRoads; i++)
 	{
 		if (i == -1)
@@ -4932,7 +4937,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 						// road startpoint
 						pos.SetLanePos(road->GetId(), 0, 0, 0);
 					}
-					else 
+					else
 					{
 						// road endpoint
 						pos.SetLanePos(road->GetId(), 0, road->GetLength(), 0);
@@ -4957,7 +4962,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					double vy = y3 - y;
 					double vx_n, vy_n;
 					NormalizeVec2D(vx, vy, vx_n, vy_n);
-					
+
 					// make sure normals points same side as point
 					double forward_x = 1.0;
 					double forward_y = 0.0;
@@ -4972,7 +4977,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 
 					double cp_actual = GetCrossProduct2D(vx, vy, n_actual_x, n_actual_y);
 					double cp_osi = GetCrossProduct2D(n_osi_x, n_osi_y, vx_n, vy_n);
-					
+
 					if (SIGN(cp_actual) == SIGN(cp_osi))
 					{
 						inside = true;
@@ -5034,7 +5039,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					// sLocal represent now (outside line segment) distance to closest line segment end point
 					distTmp = sqrt(distTmp * distTmp + sLocal * sLocal);
 				}
-				
+
 				distTmp += fabs(z3 - z);
 				distTmp += weight;
 
@@ -5080,7 +5085,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 		double xTangent = cos(osip_closest.h);
 		double yTangent = sin(osip_closest.h);
 		double dotP = GetDotProduct2D(xTangent, yTangent, x3 - osip_closest.x, y3 - osip_closest.y);
-		
+
 		int jFirst, jSecond, kFirst, kSecond;
 
 		if (dotP > 0)
@@ -5138,7 +5143,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					if (roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() > 1)
 					{
 						// Skip last point, it's the same as first in successor lane section
-						kFirst = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 2; 
+						kFirst = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 2;
 					}
 					else
 					{
@@ -5156,7 +5161,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 			osip_first = roadMin->GetLaneSectionByIdx(jFirst)->GetLaneById(0)->GetOSIPoints()->GetPoint(kFirst);
 		}
 
-		if (jFirst == jSecond && kFirst == kSecond)  
+		if (jFirst == jSecond && kFirst == kSecond)
 		{
 			// Same point
 			closestS = osip_first.s;
@@ -5259,7 +5264,6 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 
 	return retvalue;
 }
-	
 
 bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 {

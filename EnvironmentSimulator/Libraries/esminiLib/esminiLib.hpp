@@ -132,7 +132,7 @@ extern "C"
 
 	/**
 	Initialize the scenario engine
-	@param oscFilename Path to the OpenSCEANRIO file
+	@param oscFilename Path to the OpenSCENARIO file
 	@param disable_ctrls 1=Any controller will be disabled 0=Controllers applied according to OSC file
 	@param use_viewer 0=no viewer, 1=use viewer
 	@param threads 0=single thread, 1=viewer in a separate thread, parallel to scenario engine
@@ -154,7 +154,7 @@ extern "C"
 
 	/**
 	Initialize the scenario engine
-	@param oscFilename Path to the OpenSCEANRIO file
+	@param oscFilename Path to the OpenSCENARIO file
 	@param argc Number of arguments
 	@param argv Arguments
 	@return 0 if successful, -1 if not
