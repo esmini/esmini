@@ -41,8 +41,8 @@ double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 typedef struct
 {
 	int id;
-	viewer::EntityModel *entityModel;
-	roadmanager::Position pos;
+	viewer::EntityModel* entityModel;
+	struct ObjectPositionStruct pos;
 } ScenarioEntity;
 
 static std::vector<ScenarioEntity> scenarioEntity;
@@ -266,15 +266,15 @@ int main(int argc, char** argv)
 		if (!start_time_str.empty())
 		{
 			double startTime = 1E-3 * strtod(start_time_str);
-			if (startTime < player->data_[0].timeStamp)
+			if (startTime < player->data_[0].info.timeStamp)
 			{
-				printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n", startTime, player->data_[0].timeStamp);
-				startTime = player->data_[0].timeStamp;
+				printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n", startTime, player->data_[0].info.timeStamp);
+				startTime = player->data_[0].info.timeStamp;
 			}
-			else if (startTime > player->data_[player->data_.size() - 1].timeStamp)
+			else if (startTime > player->data_[player->data_.size() - 1].info.timeStamp)
 			{
-				printf("Specified start time (%.2f) > first timestamp (%.2f), adapting.\n", startTime, player->data_[0].timeStamp);
-				startTime = player->data_[player->data_.size() - 1].timeStamp;
+				printf("Specified start time (%.2f) > first timestamp (%.2f), adapting.\n", startTime, player->data_[0].info.timeStamp);
+				startTime = player->data_[player->data_.size() - 1].info.timeStamp;
 			}
 			player->SetStartTime(startTime);
 		}
@@ -283,15 +283,15 @@ int main(int argc, char** argv)
 		if (!stop_time_str.empty())
 		{
 			double stopTime = 1E-3 * strtod(stop_time_str);
-			if (stopTime > player->data_[player->data_.size()-1].timeStamp)
+			if (stopTime > player->data_[player->data_.size()-1].info.timeStamp)
 			{
-				printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->data_[0].timeStamp);
-				stopTime = player->data_[player->data_.size() - 1].timeStamp;
+				printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->data_[0].info.timeStamp);
+				stopTime = player->data_[player->data_.size() - 1].info.timeStamp;
 			}
-			else if (stopTime < player->data_[0].timeStamp)
+			else if (stopTime < player->data_[0].info.timeStamp)
 			{
-				printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n", simTime, player->data_[0].timeStamp);
-				stopTime = player->data_[0].timeStamp;
+				printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n", simTime, player->data_[0].info.timeStamp);
+				stopTime = player->data_[0].info.timeStamp;
 			}
 			player->SetStopTime(stopTime);
 		}
@@ -322,31 +322,31 @@ int main(int argc, char** argv)
 			simTime = player->GetTime();  // potentially wrapped for repeat
 
 			// Fetch states of scenario objects
-			ObjectStateStruct* state;
+			ObjectStateStructDat* state;
 			
 			for (int index = 0; (state = player->GetState(index)) != 0; index++)
 			{
-				if (no_ghost && state->ctrl_type == 100)  // control type 100 indicates ghost
+				if (no_ghost && state->info.ctrl_type == 100)  // control type 100 indicates ghost
 				{
 					continue;
 				}
 
-				ScenarioEntity *sc = getScenarioEntityById(state->id);
+				ScenarioEntity *sc = getScenarioEntityById(state->info.id);
 
 				// If not available, create it
 				if (sc == 0)
 				{
 					ScenarioEntity new_sc;
 
-					LOG("Creating object %d - got state from gateway", state->id);
+					LOG("Creating object %d - got state from gateway", state->info.id);
 
-					new_sc.id = state->id;
-					if (state->model_id >= sizeof(entityModelsFiles_) / sizeof(char*))
+					new_sc.id = state->info.id;
+					if (state->info.model_id >= sizeof(entityModelsFiles_) / sizeof(char*))
 					{
-						state->model_id = 0;
+						state->info.model_id = 0;
 					}
-					if ((new_sc.entityModel = viewer->AddEntityModel(entityModelsFiles_[state->model_id], osg::Vec3(0.5, 0.5, 0.5),
-						viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER, false, state->name, &state->boundingbox)) == 0)
+					if ((new_sc.entityModel = viewer->AddEntityModel(entityModelsFiles_[state->info.model_id], osg::Vec3(0.5, 0.5, 0.5),
+						viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER, false, state->info.name, &state->info.boundingbox)) == 0)
 					{
 						return -1;
 					}
@@ -363,9 +363,8 @@ int main(int argc, char** argv)
 				{
 					// Update overlay info text
 					snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s %.2fkm/h (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) timeScale: %.2f ", 
-						simTime, state->id, state->name, 3.6 * state->speed, sc->pos.GetTrackId(), sc->pos.GetLaneId(), 
-						fabs(sc->pos.GetOffset()) < SMALL_NUMBER ? 0 : sc->pos.GetOffset(), sc->pos.GetS(), 
-						sc->pos.GetX(), sc->pos.GetY(), sc->pos.GetH(), time_scale);
+						simTime, state->info.id, state->info.name, 3.6 * state->info.speed, sc->pos.roadId, sc->pos.laneId, 
+						fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset, sc->pos.s, sc->pos.x, sc->pos.y, sc->pos.h, time_scale);
 					viewer->SetInfoText(info_str_buf);
 				}
 			}
@@ -374,8 +373,8 @@ int main(int argc, char** argv)
 			for (size_t j=0; j<scenarioEntity.size(); j++)
 			{
 				ScenarioEntity *c = &scenarioEntity[j];
-				c->entityModel->SetPosition(c->pos.GetX(), c->pos.GetY(), c->pos.GetZ());
-				c->entityModel->SetRotation(c->pos.GetH(), c->pos.GetR(), c->pos.GetP());
+				c->entityModel->SetPosition(c->pos.x, c->pos.y, c->pos.z);
+				c->entityModel->SetRotation(c->pos.h, c->pos.p, c->pos.r);
 			}
 
 			// Update graphics

@@ -6,12 +6,26 @@ parser = argparse.ArgumentParser(description='Plot esmini log data')
 
 # Add the arguments
 parser.add_argument('--x_axis', help='x-axis parameter')
-parser.add_argument('--param', help='parameter to plot', action='append', required=True)
 parser.add_argument('--equal_axis_aspect', help='lock aspect ratio = 1:1', action='store_true')
 parser.add_argument('filename', help='csv filename')
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('--list_params', help='list available parameters in given file', action='store_true')
+group.add_argument('--param', help='parameter to plot (can be specified multiple times)', action='append')
 
 # Execute the parse_args() method
 args = parser.parse_args()
+
+file = open(args.filename, 'r')
+
+print(file.readline().strip())
+
+param_names = file.readline().strip().split(', ')
+
+print('Available parameters:', ', '.join(param_names))
+
+if args.param is None:
+    exit(0)
+
 n_parameters = len(args.param)
 parameter = []
 
@@ -23,14 +37,6 @@ y_index = []
 objs = []
 x = []
 y = []
-
-file = open(args.filename, 'r')
-
-print(file.readline().strip())
-
-param_names = file.readline().strip().split(', ')
-
-print('Available parameters:', ', '.join(param_names))
 
 if args.x_axis is None:
     x_axis = param_names[0]  # default x_axis == time

@@ -106,29 +106,29 @@ static void ConvertArguments()
 
 static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectStateStruct *gw_state)
 {
-	state->id = gw_state->id;
-	state->model_id = gw_state->model_id;
-	state->ctrl_type = gw_state->ctrl_type;
-//	strncpy(state->name, gw_state->name, NAME_LEN);
-	state->timestamp = gw_state->timeStamp;
+	state->id = gw_state->info.id;
+	state->model_id = gw_state->info.model_id;
+	state->ctrl_type = gw_state->info.ctrl_type;
+//	strncpy(state->name, gw_state->info.name, NAME_LEN);
+	state->timestamp = gw_state->info.timeStamp;
 	state->x = (float)gw_state->pos.GetX();
 	state->y = (float)gw_state->pos.GetY();
 	state->z = (float)gw_state->pos.GetZ();
 	state->h = (float)gw_state->pos.GetH();
 	state->p = (float)gw_state->pos.GetP();
 	state->r = (float)gw_state->pos.GetR();
-	state->speed = (float)gw_state->speed;
+	state->speed = (float)gw_state->info.speed;
 	state->roadId = (int)gw_state->pos.GetTrackId();
 	state->t = (float)gw_state->pos.GetT();
 	state->laneId = (int)gw_state->pos.GetLaneId();
 	state->s = (float)gw_state->pos.GetS();
 	state->laneOffset = (float)gw_state->pos.GetOffset();
-	state->centerOffsetX = gw_state->boundingbox.center_.x_;
-	state->centerOffsetY = gw_state->boundingbox.center_.y_;
-	state->centerOffsetZ = gw_state->boundingbox.center_.z_;
-	state->width = gw_state->boundingbox.dimensions_.width_;
-	state->length = gw_state->boundingbox.dimensions_.length_;
-	state->height = gw_state->boundingbox.dimensions_.height_;
+	state->centerOffsetX = gw_state->info.boundingbox.center_.x_;
+	state->centerOffsetY = gw_state->info.boundingbox.center_.y_;
+	state->centerOffsetZ = gw_state->info.boundingbox.center_.z_;
+	state->width = gw_state->info.boundingbox.dimensions_.width_;
+	state->length = gw_state->info.boundingbox.dimensions_.length_;
+	state->height = gw_state->info.boundingbox.dimensions_.height_;
 }
 
 static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int lookAheadMode)
@@ -380,7 +380,7 @@ extern "C"
 #endif
 		resetScenario();
 
-		AddArgument("esmini viewer");  // name of application
+		AddArgument("viewer");  // name of application
 		AddArgument("--osc");
 		AddArgument(oscFilename, false);
 
@@ -751,7 +751,7 @@ extern "C"
 	{
 		if (player && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
 		{
-			return player->scenarioGateway->getObjectStatePtrByIdx(index)->state_.name;
+			return player->scenarioGateway->getObjectStatePtrByIdx(index)->state_.info.name;
 		}
 		return "";
 	}
@@ -1078,7 +1078,7 @@ extern "C"
 	{
 		for (size_t i = 0; i < objCallback.size(); i++)
 		{
-			if (objCallback[i].id == state->id)
+			if (objCallback[i].id == state->info.id)
 			{
 				SE_ScenarioObjectState se_state;
 				copyStateFromScenarioGateway(&se_state, state);

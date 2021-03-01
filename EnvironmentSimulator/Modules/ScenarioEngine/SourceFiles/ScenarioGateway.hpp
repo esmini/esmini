@@ -20,7 +20,7 @@ namespace scenarioengine
 
 #define NAME_LEN 32
 
-	struct ObjectStateStruct
+	struct ObjectInfoStruct
 	{
 		int id;
 		int model_id;
@@ -29,11 +29,37 @@ namespace scenarioengine
 		int ctrl_type;  // See Controller::Type enum
 		float timeStamp;
 		char name[NAME_LEN];
-		roadmanager::Position pos;
 		float speed;
-		float wheel_angle ; // Only used for vehicle
-		float wheel_rot ; // Only used for vehicle
+		float wheel_angle; // Only used for vehicle
+		float wheel_rot; // Only used for vehicle
 		OSCBoundingBox boundingbox;
+	};
+
+	struct ObjectStateStruct
+	{
+		struct ObjectInfoStruct info;
+		roadmanager::Position pos;
+	};
+
+	struct ObjectPositionStruct
+	{
+		float x;
+		float y;
+		float z;
+		float h;
+		float p;
+		float r;
+		int roadId;
+		int laneId;
+		float offset;
+		float t;
+		float s;
+	};
+
+	struct ObjectStateStructDat
+	{
+		struct ObjectInfoStruct info;
+		struct ObjectPositionStruct pos;
 	};
 
 	class ObjectState

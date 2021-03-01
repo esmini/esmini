@@ -31,7 +31,7 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 
 	while (!file_.eof())
 	{
-		ObjectStateStruct data;
+		ObjectStateStructDat data;
 
 		file_.read((char*)&data, sizeof(data));
 
@@ -44,12 +44,12 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 	if (data_.size() > 0)
 	{
 		// Register first entry timestamp as starting time
-		time_ = data_[0].timeStamp;
+		time_ = data_[0].info.timeStamp;
 		startTime_ = time_;
 		startIndex_ = 0;
 
 		// Register last entry timestamp as stop time
-		stopTime_ = data_[data_.size() - 1].timeStamp;
+		stopTime_ = data_[data_.size() - 1].info.timeStamp;
 		stopIndex_ = FindIndexAtTimestamp(stopTime_);
 	}
 }
@@ -84,12 +84,12 @@ void Replay::GoToTime(double timestamp)
 
 void Replay::GoToNextFrame()
 {
-	double ctime = data_[index_].timeStamp;
+	double ctime = data_[index_].info.timeStamp;
 	for (size_t i = index_+1; i < data_.size(); i++)
 	{
-		if (data_[i].timeStamp > ctime)
+		if (data_[i].info.timeStamp > ctime)
 		{
-			GoToTime(data_[i].timeStamp);
+			GoToTime(data_[i].info.timeStamp);
 			break;
 		}
 	}
@@ -99,7 +99,7 @@ void Replay::GoToPreviousFrame()
 {
 	if (index_ > 0)
 	{
-		GoToTime(data_[index_ -1].timeStamp);
+		GoToTime(data_[index_ -1].info.timeStamp);
 	}
 }
 
@@ -115,7 +115,7 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
 
 	for (i = startSearchIndex; i < data_.size(); i++)
 	{
-		if (data_[i].timeStamp >= timestamp)
+		if (data_[i].info.timeStamp >= timestamp)
 		{
 			break;
 		}
@@ -124,10 +124,10 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
 	return (int)(MIN(i, data_.size()-1));
 }
 
-ObjectStateStruct* Replay::GetState(int id)
+ObjectStateStructDat* Replay::GetState(int id)
 {
 	// Read all vehicles at current timestamp
-	if (index_ + id > data_.size() - 1 || data_[index_ + id].id != id)
+	if (index_ + id > data_.size() - 1 || data_[index_ + id].info.id != id)
 	{
 		return 0;
 	}

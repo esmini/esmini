@@ -163,9 +163,9 @@ void ScenarioEngine::step(double deltaSimTime)
 			else
 			{
 				obj->pos_ = o.state_.pos;
-				obj->speed_ = o.state_.speed;
-				obj->wheel_angle_ = o.state_.wheel_angle;
-				obj->wheel_rot_ = o.state_.wheel_rot;
+				obj->speed_ = o.state_.info.speed;
+				obj->wheel_angle_ = o.state_.info.wheel_angle;
+				obj->wheel_rot_ = o.state_.info.wheel_rot;
 
 				if (obj->pos_.GetStatusBitMask() & roadmanager::Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD)
 				{
@@ -621,9 +621,9 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 		else
 		{
 			obj->pos_ = o.state_.pos;
-			obj->speed_ = o.state_.speed;
-			obj->wheel_angle_ = o.state_.wheel_angle;
-			obj->wheel_rot_ = o.state_.wheel_rot;
+			obj->speed_ = o.state_.info.speed;
+			obj->wheel_angle_ = o.state_.info.wheel_angle;
+			obj->wheel_rot_ = o.state_.info.wheel_rot;
 		}
 		// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;

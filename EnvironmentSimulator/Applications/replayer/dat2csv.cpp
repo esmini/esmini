@@ -64,21 +64,21 @@ std::string filename = FileNameWithoutExtOf(argv[1]) + ".csv";
 	// Then output all entries with comma separated values
 	for (size_t i = 0; i < player->data_.size(); i++)
 	{
-		ObjectStateStruct *state = &player->data_[i];
+		ObjectStateStructDat *state = &player->data_[i];
 
 		snprintf(line, MAX_LINE_LEN, "%.3f, %d, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
-			state->timeStamp,
-			state->id,
-			state->name,
-			state->pos.GetX(),
-			state->pos.GetY(),
-			state->pos.GetZ(),
-			state->pos.GetH(),
-			state->pos.GetP(),
-			state->pos.GetR(),
-			state->speed,
-			state->wheel_angle,
-			state->wheel_rot);
+			state->info.timeStamp,
+			state->info.id,
+			state->info.name,
+			state->pos.x,
+			state->pos.y,
+			state->pos.z,
+			state->pos.h,
+			state->pos.p,
+			state->pos.r,
+			state->info.speed,
+			state->info.wheel_angle,
+			state->info.wheel_rot);
 		
 		file << line;
 	}

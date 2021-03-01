@@ -47,14 +47,14 @@ namespace scenarioengine
 	{
 	public:
 		ReplayHeader header_;
-		std::vector<ObjectStateStruct> data_;
+		std::vector<ObjectStateStructDat> data_;
 
 		Replay(std::string filename);
 		~Replay();
 		void GoToTime(double dt);
 		void GoToNextFrame();
 		void GoToPreviousFrame();
-		ObjectStateStruct * GetState(int id);
+		ObjectStateStructDat * GetState(int id);
 		void SetStartTime(double time);
 		void SetStopTime(double time);
 		double GetStartTime() { return startTime_; }
