@@ -380,7 +380,7 @@ extern "C"
 #endif
 		resetScenario();
 
-		AddArgument("viewer");  // name of application
+		AddArgument("esmini viewer");  // name of application
 		AddArgument("--osc");
 		AddArgument(oscFilename, false);
 

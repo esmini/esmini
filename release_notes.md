@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2021-03-01 Version 2.4.1
+
+- Add API for reporting actual acceleration and velocity of external objects
+- Improve lane matching in XY2Road position mapping
+- Optimize road manager XY2Road mapping (simplify road width calculations)
+- Add options related to road lookahead functions 
+    - Lock object to current lane. Flag that will preserve lane ID regardless of
+      lateral position. Useful for driving models, where look-ahead normally should start
+      from the original lane.
+    - Option in LookAhead function to look along actual driving direction or
+      along road primary driving direction.
+    - Function returns additional info: roadId, laneId, laneOffset, s, t.
+- Update Hello World driver model example, utilizing new options in look-ahead function
+
 ### 2021-02-22 Version 2.4.0
 
 - New feature: Support for OpenDRIVE road object outlines

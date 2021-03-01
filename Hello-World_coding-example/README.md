@@ -262,6 +262,10 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	// Lock object to the original lane
+	// If setting to false, the object road position will snap to closest lane
+	SE_SetLockOnLane(0, true);
+
 	// Initialize the vehicle model, fetch initial state from the scenario
 	SE_GetObjectState(0, &objectState);
 	vehicleHandle = SE_SimpleVehicleCreate(objectState.x, objectState.y, objectState.h, 4.0);
@@ -277,7 +281,9 @@ int main(int argc, char* argv[])
 
 		// Get road information at a point some speed dependent distance ahead
 #if !GHOST
-		SE_GetRoadInfoAtDistance(0, 5 + 0.75f * vehicleState.speed, &roadInfo, 0);
+		// Look ahead along the road, to establish target info for the driver model
+		SE_GetRoadInfoAtDistance(0, 5 + 0.75f * vehicleState.speed, &roadInfo, 0, true);
+
 		// Slow down when curve ahead - CURVE_WEIGHT is the tuning parameter
 		double targetSpeed = TARGET_SPEED / (1 + CURVE_WEIGHT * fabs(roadInfo.angle));
 #else
@@ -314,6 +320,8 @@ int main(int argc, char* argv[])
 
 ```
 Don't worry about the stationary red car on the road, you'll just drive through it. 
+
+Try experimenting with the driver settings, e.g. increase lookahead distance from 0.75 to 1.75.
 
 **Challenge**: Attach a front looking sensor to detect it and have the driver to brake to avoid collision...
 

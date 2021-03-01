@@ -1945,6 +1945,10 @@ void Viewer::SetWindowTitleFromArgs(std::vector<std::string> &args)
 		if (i == 0)
 		{
 			arg = FileNameWithoutExtOf(arg);
+			if (arg != "esmini")
+			{
+				arg = "esmini " + arg;
+			}
 		}
 		else if (arg == "--osc" || arg == "--odr" || arg == "--model")
 		{
