@@ -1,5 +1,12 @@
 ## esmini release notes
 
+### 2021-03-02 Version 2.4.2
+
+- Improve dat file format
+  - Decouple dat format from Position class
+  - Reduce file size by factor 4
+  - Stabilize format: dat files can be saved and run in later versions of esmini, to greater extent than before.
+
 ### 2021-03-01 Version 2.4.1
 
 - Add API for reporting actual acceleration and velocity of external objects
