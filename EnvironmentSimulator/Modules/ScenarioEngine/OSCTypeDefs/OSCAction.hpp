@@ -126,7 +126,11 @@ namespace scenarioengine
 			if (state_ == State::RUNNING || state_ == State::STANDBY )  
 			{
 				transition_ = Transition::END_TRANSITION;
-				if (type_ == ElementType::ACT || (max_num_executions_ != -1 && num_executions_ >= max_num_executions_))
+				if (type_ == ElementType::ACT || type_ == ElementType::ACTION)
+				{
+					next_state_ = State::COMPLETE;
+				}
+				else if (max_num_executions_ != -1 && num_executions_ >= max_num_executions_)
 				{
 					LOG("%s complete after %d execution%s", name_.c_str(), num_executions_, num_executions_ > 1 ? "s" : "");
 					next_state_ = State::COMPLETE;

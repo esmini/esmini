@@ -526,8 +526,6 @@ Logger::Logger() : callback_(0), time_(0)
 	}
 	if (file_.is_open())
 	{
-		printf("Logfile created: %s\n", filename);
-
 		static char message[1024];
 		snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
 		file_ << message << std::endl;

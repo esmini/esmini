@@ -3514,6 +3514,16 @@ int OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double &angle)
 					double heading1, heading2;
 
 					// check case where road1 is incoming road
+					if (connection->GetIncomingRoad() == NULL)
+					{
+						LOG("Junction %d connection %d missing incoming road", junction->GetId(), j);
+						return -1;
+					}
+					if (connection->GetConnectingRoad() == NULL)
+					{
+						LOG("Junction %d connection %d missing connecting road", junction->GetId(), j);
+						return -1;
+					}
 					if (connection->GetIncomingRoad()->GetId() == road1_id && connection->GetConnectingRoad()->GetId() == road2_id)
 					{
 						test_pos1.SetLanePos(road2_id, 0, 0, 0);

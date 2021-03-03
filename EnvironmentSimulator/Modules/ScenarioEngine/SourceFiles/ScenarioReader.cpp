@@ -2627,7 +2627,7 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 			}
 			else
 			{
-				event->max_num_executions_ = -1;  // Infinite
+				event->max_num_executions_ = 1;  // 1 is default
 			}
 
 			for (pugi::xml_node eventChild = maneuverChild.first_child(); eventChild; eventChild = eventChild.next_sibling())
