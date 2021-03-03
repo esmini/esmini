@@ -512,22 +512,33 @@ Logger::Logger() : callback_(0), time_(0)
 {
 
 #ifndef SUPPRESS_LOG
-	file_.open(LOG_FILENAME);
+	const char* filename = LOG_FILENAME;
+	file_.open(filename);
 	if (file_.fail())
 	{
-		throw std::iostream::failure(std::string("Cannot open file: ") + LOG_FILENAME);
+		filename = std::tmpnam(NULL);
+		printf("Cannot open log file: %s in working directory. Trying system tmp-file: %s\n", LOG_FILENAME, filename);
+		file_.open(filename);
+		if (file_.fail())
+		{
+			printf("Also failed to open log file: %s. Continue without logfile, still logging to console.\n", filename);
+		}
 	}
-	
-	static char message[1024];
-	snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
-	file_ << message << std::endl;
-	snprintf(message, 1024, "esmini GIT TAG: %s", esmini_git_tag());
-	file_ << message << std::endl;
-	snprintf(message, 1024, "esmini GIT BRANCH: %s", esmini_git_branch());
-	file_ << message << std::endl;
-	snprintf(message, 1024, "esmini BUILD VERSION: %s", esmini_build_version());
-	file_ << message << std::endl;
-	file_.flush();
+	if (file_.is_open())
+	{
+		printf("Logfile created: %s\n", filename);
+
+		static char message[1024];
+		snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
+		file_ << message << std::endl;
+		snprintf(message, 1024, "esmini GIT TAG: %s", esmini_git_tag());
+		file_ << message << std::endl;
+		snprintf(message, 1024, "esmini GIT BRANCH: %s", esmini_git_branch());
+		file_ << message << std::endl;
+		snprintf(message, 1024, "esmini BUILD VERSION: %s", esmini_build_version());
+		file_ << message << std::endl;
+		file_.flush();
+	}
 #endif
 
 	callback_ = 0;
