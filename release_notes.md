@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2021-03-03 Version 2.4.3
+
+
+- Improved log file handling  
+  - If default log file can't be created for some reason, try with system provided temp filename. Last resort is to run without logfile, just logging to console. 
+  - This change makes it possible to run esmini from admin protected folder.
+- Fix Event and Action life cycle issues
+  - Default maximumExecutionCount for Event and ManeuverGroup is now 1 (instead of infinity)
+  - Finished Action will move to Complete state instead of Standby, making it
+      possible to trig on Action being completed.
+  - **Note**: This change CAN have impact on scenarios which might need to be updated, e.g. explicitly specifying maximumExecutionCount.
+
 ### 2021-03-02 Version 2.4.2
 
 - Improve dat file format
