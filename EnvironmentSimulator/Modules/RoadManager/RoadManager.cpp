@@ -5058,7 +5058,8 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				if (!insideCurrentRoad && road == current_road)
 				{
 					// Register whether current position is on current road
-					insideCurrentRoad = inside && distTmp < SMALL_NUMBER;
+					// Allow for 2 meter lateral slack outside road edges
+					insideCurrentRoad = inside && distTmp < 2;
 				}
 				else if (insideCurrentRoad)
 				{
