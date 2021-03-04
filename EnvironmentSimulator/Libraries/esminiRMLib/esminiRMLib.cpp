@@ -20,12 +20,13 @@ using namespace roadmanager;
 
 static roadmanager::OpenDrive *odrManager = 0;
 static std::vector<Position> position;
+static std::string returnString;  // use this for returning strings
 
-static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r_data, int lookAheadMode)
+static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r_data, int lookAheadMode, bool inRoadDrivingDirection)
 {
 	roadmanager::RoadProbeInfo s_data;
 
-	if (odrManager == 0)
+	if (index < 0 || odrManager == 0)
 	{
 		return -1;
 	}
@@ -36,7 +37,18 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 		return -1;
 	}
 
-	if (position[index].GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
+	double adjustedLookaheadDistance = lookahead_distance;
+
+	if (!inRoadDrivingDirection)
+	{
+		// Find out what direction to look in
+		if (fabs(position[index].GetHRelativeDrivingDirection()) > M_PI_2)
+		{
+			adjustedLookaheadDistance = -lookahead_distance;
+		}
+	}
+
+	if (position[index].GetProbeInfo(adjustedLookaheadDistance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
 	{
 		return -1;
 	}
@@ -60,11 +72,11 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 	}
 }
 
-static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo *r_data, int lookAheadMode)
+static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo *r_data, int lookAheadMode, bool inRoadDrivingDirection)
 {
 	roadmanager::RoadLaneInfo s_data;
 
-	if (odrManager == 0)
+	if (index < 0 || odrManager == 0)
 	{
 		return -1;
 	}
@@ -75,9 +87,18 @@ static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo 
 		return -1;
 	}
 
-	roadmanager::Position pos = position[index];
+	double adjustedLookaheadDistance = lookahead_distance;
 
-	pos.GetRoadLaneInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode);
+	if (!inRoadDrivingDirection)
+	{
+		// Find out what direction to look in
+		if (fabs(position[index].GetHRelativeDrivingDirection()) > M_PI_2)
+		{
+			adjustedLookaheadDistance = -lookahead_distance;
+		}
+	}
+
+	position[index].GetRoadLaneInfo(adjustedLookaheadDistance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode);
 
 	r_data->pos[0] = (float)s_data.pos[0];
 	r_data->pos[1] = (float)s_data.pos[1];
@@ -88,6 +109,11 @@ static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo 
 	r_data->width = (float)s_data.width;
 	r_data->curvature = (float)s_data.curvature;
 	r_data->speed_limit = (float)s_data.speed_limit;
+	r_data->roadId = s_data.roadId;
+	r_data->laneId = s_data.laneId;
+	r_data->laneOffset = (float)s_data.laneOffset;
+	r_data->t = (float)s_data.t;
+	r_data->s = (float)s_data.s;
 
 	return 0;
 }
@@ -134,7 +160,7 @@ extern "C"
 		position.push_back(newPosition);
 		return (int)(position.size() - 1);  // return index of newly created 
 	}
-	
+
 	RM_DLL_API int RM_GetNrOfPositions()
 	{
 		return (int)position.size();
@@ -156,6 +182,30 @@ extern "C"
 		{
 			return -1;
 		}
+
+		return 0;
+	}
+
+	RM_DLL_API int RM_CopyPosition(int handle)
+	{
+		if (handle < 0 || handle >= position.size())
+		{
+			return -1;
+		}
+
+		roadmanager::Position newPosition(position[handle]);
+		position.push_back(newPosition);
+		return (int)(position.size() - 1);  // return index of newly created 
+	}
+
+	RM_DLL_API int RM_SetLockOnLane(int handle, bool mode)
+	{
+		if (handle < 0 || handle >= position.size())
+		{
+			return -1;
+		}
+
+		position[handle].SetLockOnLane(mode);
 
 		return 0;
 	}
@@ -371,14 +421,14 @@ extern "C"
 		return 0;
 	}
 
-	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data, int lookAheadMode)
+	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data, int lookAheadMode, bool inRoadDrivingDirection)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
 			return -1;
 		}
 
-		GetRoadLaneInfo(handle, lookahead_distance, data, lookAheadMode);
+		GetRoadLaneInfo(handle, lookahead_distance, data, lookAheadMode, inRoadDrivingDirection);
 
 		return 0;
 	}
@@ -393,14 +443,14 @@ extern "C"
 		return (float)position[handle].GetSpeedLimit();
 	}
 
-	RM_DLL_API int RM_GetProbeInfo(int handle, float lookahead_distance, RM_RoadProbeInfo * data, int lookAheadMode)
+	RM_DLL_API int RM_GetProbeInfo(int handle, float lookahead_distance, RM_RoadProbeInfo * data, int lookAheadMode, bool inRoadDrivingDirection)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
 			return -1;
 		}
 
-		if (GetProbeInfo(handle, lookahead_distance, data, lookAheadMode) != 0)
+		if (GetProbeInfo(handle, lookahead_distance, data, lookAheadMode, inRoadDrivingDirection) != 0)
 		{
 			return -1;
 		}
@@ -426,4 +476,60 @@ extern "C"
 
 		return result;
 	}
+
+	RM_DLL_API int RM_GetNumberOfRoadSigns(int road_id)
+	{
+		if (odrManager == 0)
+		{
+			return false;
+		}
+
+		roadmanager::Road* road = odrManager->GetRoadById(road_id);
+		
+		if (road != NULL)
+		{
+			return road->GetNumberOfSignals();
+		}
+		
+		return 0;
+	}
+
+	RM_DLL_API int RM_GetRoadSign(int road_id, int index, RM_RoadSign* road_sign)
+	{
+		if (odrManager == 0)
+		{
+			return false;
+		}
+
+		roadmanager::Road* road = odrManager->GetRoadById(road_id);
+
+		if (road != NULL)
+		{
+			roadmanager::Signal* s = road->GetSignal(index);
+
+			if (s)
+			{
+				// Resolve global cartesian position (x, y, z, h) from the road coordinate
+				roadmanager::Position pos;
+				pos.SetTrackPos(road_id, s->GetS(), s->GetT());
+
+				road_sign->id = s->GetId();
+				returnString = s->GetName();
+				road_sign->name = returnString.c_str();
+				road_sign->x = (float)pos.GetX();
+				road_sign->y = (float)pos.GetY();
+				road_sign->z = (float)pos.GetZ();
+				road_sign->h = (float)pos.GetH();
+				road_sign->s = (float)pos.GetS();
+				road_sign->t = (float)pos.GetT();
+				road_sign->orientation = s->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? -1 : 1;
+
+				return 0;
+			}
+		}
+
+		// Couldn't find the sign
+		return -1;
+	}
+
 }

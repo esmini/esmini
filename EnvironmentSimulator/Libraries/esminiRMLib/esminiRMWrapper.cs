@@ -19,6 +19,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System;
 
 
 namespace OpenDRIVE
@@ -58,6 +59,11 @@ namespace OpenDRIVE
         public float width;            // Lane width 
         public float curvature;        // curvature (1/radius), >0 for left curves, <0 for right curves
         public float speed_limit;      // road speed limit 
+        public int roadId;             // road ID 
+        public int laneId;             // lane ID
+        public float laneOffset;       // lane offset (lateral distance from lane center) 
+        public float s;                // s (longitudinal distance along reference line)
+        public float t;                // t (lateral distance from reference line)
     };
 
     public struct RoadProbeInfo
@@ -75,6 +81,22 @@ namespace OpenDRIVE
         public float dt;                    // delta t (lateral distance)
         public int dLaneId;			        // delta laneId (increasing left and decreasing to the right)
     };
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RoadSign
+    {
+        public int id;            // just an unique identifier of the sign
+        public float x;           // global x coordinate of sign position
+        public float y;           // global y coordinate of sign position
+        public float z;           // global z coordinate of sign position
+        public float h;           // global heading of sign orientation
+        public int roadId;        // road id of sign road position
+        public float s;           // longitudinal position along road
+        public float t;           // lateral position from road reference line
+        public IntPtr name;       // sign name, typically used for 3D model filename (Use with: Marshal.PtrToStringAnsi(SE_GetODRFilename())
+        public int orientation;   // 1=facing traffic in road direction, -1=facing traffic opposite road direction
+    };
+
 
     enum JunctionStrategy { Random, Straight };  // must correlate to RoadManager::Junction::JunctionStrategyType
 
@@ -117,10 +139,23 @@ namespace OpenDRIVE
         public static extern int GetNrOfPositions(int index);
 
         /// <summary>Delete one or all position object(s)</summary>
-        /// <param name="index">Handle to the position object. Set -1 to delete all.</param>
+        /// <param name="handle">Handle to the position object. Set -1 to delete all.</param>
         /// <returns>0 if successful, -1 if specified position(s) could not be deleted</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_DeletePosition")]
-        public static extern int DeletePosition();
+        public static extern int DeletePosition(int handle);
+
+        /// <summary>Copy a position object</summary>
+        /// <param name="handle">Handle Handle to the original position object.</param>
+        /// <returns>Handle to new position object. -1 if unsuccessful.</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_DeletePosition")]
+        public static extern int CopyPosition(int handle);
+
+        /// <summary>Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)</summary>
+        /// <param name="handle">Handle Handle to the original position object.</param>
+        /// <param name="mode">True=keep lane False=Snap to closest (default)</param>
+        /// <returns>Handle to new position object. -1 if unsuccessful.</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetLockOnLane")]
+        public static extern int SetLockOnLane(int handle, bool mode);
 
         /// <summaryGet the total number fo roads in the road network of the currently loaded OpenDRIVE file</summary>
         /// <returns>Number of roads</returns>
@@ -255,10 +290,11 @@ namespace OpenDRIVE
         /// <param name="index">Handle to the position object from which to measure</param>
         /// <param name="lookahead_distance">The distance, along the road, to the point of interest</param>
         /// <param name="data">Struct including all result values, see RoadLaneInfo typedef</param>
-        /// <param name "lookAheadMode">Measurement strategy: 0=Along lane center, 1=road center, 2=current lane offset. See roadmanager::Position::LookAheadMode enum</param>
+        /// <param name="lookAheadMode">Measurement strategy: 0=Along lane center, 1=road center, 2=current lane offset. See roadmanager::Position::LookAheadMode enum</param>
+        /// <param name="inRoadDrivingDirection">If true always look along primary driving direction. If false, look in most straightforward direction according to object heading.</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneInfo")]
-        public static extern int GetLaneInfo(int index, float lookahead_distance, ref RoadLaneInfo data, int lookAheadMode);
+        public static extern int GetLaneInfo(int index, float lookahead_distance, ref RoadLaneInfo data, int lookAheadMode, bool inRoadDrivingDirection);
 
         /// <summary>
         /// As GetLaneInfo plus relative location of point of interest (probe) from current position
@@ -266,10 +302,11 @@ namespace OpenDRIVE
         /// <param name="index">Handle to the position object from which to measure</param>
         /// <param name="lookahead_distance">The distance, along the road, to the point of interest</param>
         /// <param name="data">Struct including all result values, see RoadProbeInfo typedef</param>
-        /// <param name "lookAheadMode">Measurement strategy: 0=Along lane center, 1=road center, 2=current lane offset. See roadmanager::Position::LookAheadMode enum</param>
+        /// <param name="lookAheadMode">Measurement strategy: 0=Along lane center, 1=road center, 2=current lane offset. See roadmanager::Position::LookAheadMode enum</param>
+        /// <param name="inRoadDrivingDirection">If true always look along primary driving direction. If false, look in most straightforward direction according to object heading.</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetProbeInfo")]
-        public static extern int GetProbeInfo(int index, float lookahead_distance, ref RoadProbeInfo data, int lookAheadMode);
+        public static extern int GetProbeInfo(int index, float lookahead_distance, ref RoadProbeInfo data, int lookAheadMode, bool inRoadDrivingDirection);
 
         /// <summary>
         /// Find out the difference between two position objects, i.e. delta distance (long and lat) and delta laneId
@@ -280,6 +317,24 @@ namespace OpenDRIVE
         /// <returns>true if a valid path between the road positions was found and calculations could be performed</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_SubtractAFromB")]
         public static extern bool SubtractAFromB(int handleA, int handleB, ref PositionDiff pos_diff);
+
+        /// <summary>
+        /// Get the number of road signs along specified road
+        /// </summary>
+        /// <param name="road_id">The road along which to look for signs</param>
+        /// <returns>Number of road signs</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetNumberOfRoadSigns")]
+        public static extern int GetNumberOfRoadSigns(int road_id);
+
+        /// <summary>
+        /// Get information on specifed road sign
+        /// </summary>
+        /// <param name="road_id">The road of which to look for the sign</param>
+        /// <param name="index">Index of the sign. Note: not ID</param>
+        /// <param name="road_sign">Pointer/reference to a RoadSign struct to be filled in</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetRoadSign")]
+        public static extern int GetRoadSign(int road_id, int index, ref RoadSign road_sign);
 
     }
 

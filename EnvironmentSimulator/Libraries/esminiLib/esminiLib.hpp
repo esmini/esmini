@@ -465,10 +465,10 @@ extern "C"
 		Get information on specifed road sign
 		@param road_id The road of which to look for the sign
 		@param index Index of the sign. Note: not ID
-		@param state Pointer/reference to a SE_RoadSign struct to be filled in
+		@param road_sign Pointer/reference to a SE_RoadSign struct to be filled in
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign* state);
+	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign* road_sign);
 
 	// OSI interface
 	// 

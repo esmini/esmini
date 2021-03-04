@@ -134,9 +134,9 @@ namespace OpenDRIVE
         //    laneInfo.width = tmpLaneInfo.width;
         //}
 
-        public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo, LookAheadMode lookAheadMode = LookAheadMode.LaneCenter, int laneId = 0)
+        public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo, LookAheadMode lookAheadMode = LookAheadMode.LaneCenter, int laneId = 0, bool inRoadDrivingDirection = false)
         {
-            RoadManagerLibraryCS.GetLaneInfo(openDriveIndex, lookAheadDistance, ref tmpLaneInfo, (int)lookAheadMode);
+            RoadManagerLibraryCS.GetLaneInfo(openDriveIndex, lookAheadDistance, ref tmpLaneInfo, (int)lookAheadMode, inRoadDrivingDirection);
             laneInfo.position = GetUnityPosition(tmpLaneInfo.pos[0], tmpLaneInfo.pos[1], tmpLaneInfo.pos[2]);
             laneInfo.rotation = GetUnityRotation(tmpLaneInfo.heading, tmpLaneInfo.pitch, tmpLaneInfo.roll);
             if (laneId >= 0)
@@ -147,9 +147,9 @@ namespace OpenDRIVE
             laneInfo.width = tmpLaneInfo.width;
         }
 
-        public static void GetProbeInfo(int openDriveIndex, float lookAheadDistance, ref RoadProbeInfoUnityCoordinates probeInfo, int lookAheadMode)
+        public static void GetProbeInfo(int openDriveIndex, float lookAheadDistance, ref RoadProbeInfoUnityCoordinates probeInfo, int lookAheadMode, bool inRoadDrivingDirection=false)
         {
-            RoadManagerLibraryCS.GetProbeInfo(openDriveIndex, lookAheadDistance, ref tmpProbeInfo, lookAheadMode);
+            RoadManagerLibraryCS.GetProbeInfo(openDriveIndex, lookAheadDistance, ref tmpProbeInfo, lookAheadMode, inRoadDrivingDirection);
             probeInfo.roadLaneInfo.position = GetUnityPosition(tmpProbeInfo.laneInfo.pos[0], tmpProbeInfo.laneInfo.pos[1], tmpProbeInfo.laneInfo.pos[2]);
             probeInfo.roadLaneInfo.rotation = GetUnityRotation(tmpProbeInfo.laneInfo.heading, tmpProbeInfo.laneInfo.pitch, tmpProbeInfo.laneInfo.roll);
             probeInfo.roadLaneInfo.curvature = tmpProbeInfo.laneInfo.curvature;
@@ -174,9 +174,18 @@ namespace OpenDRIVE
             go.transform.SetPositionAndRotation(pos, rot);
         }
 
-        public static Vector3 GetUnityPosition(float odrX, float odrY, float odrZ)
+        #endregion
+
+        #region Private Methods
+
+        private static Vector3 GetUnityPosition(float odrX, float odrY, float odrZ)
         {
             return new Vector3(-odrY, odrZ, odrX);
+        }
+
+        private static Vector3 GetUnityPosition(OpenDrivePositionData openDrivePositionData)
+        {
+            return GetUnityPosition(openDrivePositionData.x, openDrivePositionData.y, openDrivePositionData.z);
         }
 
         /// <summary>
@@ -189,15 +198,6 @@ namespace OpenDRIVE
         public static Quaternion GetUnityRotation(float heading, float pitch, float roll)
         {
             return Quaternion.Euler(pitch * RAD2DEG, -heading * RAD2DEG, roll * RAD2DEG);
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        private static Vector3 GetUnityPosition(OpenDrivePositionData openDrivePositionData)
-        {
-            return GetUnityPosition(openDrivePositionData.x, openDrivePositionData.y, openDrivePositionData.z);
         }
 
         /// <summary>

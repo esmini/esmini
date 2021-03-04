@@ -1111,46 +1111,42 @@ extern "C"
 	{
 		if (player)
 		{
-			for (int i=0; player->odr_manager->GetNumOfRoads(); i++)
+			roadmanager::Road* road = player->odr_manager->GetRoadById(road_id);
+			if (road != NULL)
 			{
-				if (player->odr_manager->GetRoadByIdx(i)->GetId() == road_id)
-				{
-					return player->odr_manager->GetRoadByIdx(i)->GetNumberOfSignals();
-				}
+				return road->GetNumberOfSignals();
 			}
 		}
 		return 0;
 	}
 
-	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign* state)
+	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign* road_sign)
 	{
 		if (player)
 		{
-			for (int i = 0; player->odr_manager->GetNumOfRoads(); i++)
+			roadmanager::Road* road = player->odr_manager->GetRoadById(road_id);
+			if (road != NULL)
 			{
-				if (player->odr_manager->GetRoadByIdx(i)->GetId() == road_id)
-				{
-					roadmanager::Signal* s = player->odr_manager->GetRoadByIdx(i)->GetSignal(index);
-					
-					if (s)
-					{
-						// Resolve global cartesian position (x, y, z, h) from the road coordinate
-						roadmanager::Position pos;
-						pos.SetTrackPos(road_id, s->GetS(), s->GetT());
-						
-						state->id = s->GetId();
-						returnString = s->GetName();
-						state->name = returnString.c_str();
-						state->x = pos.GetX();
-						state->y = pos.GetY();
-						state->z = pos.GetZ();
-						state->h = pos.GetH();
-						state->s = pos.GetS();
-						state->t = pos.GetT();
-						state->orientation = s->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? -1 : 1;
+				roadmanager::Signal* s = road->GetSignal(index);
 
-						return 0;
-					}
+				if (s)
+				{
+					// Resolve global cartesian position (x, y, z, h) from the road coordinate
+					roadmanager::Position pos;
+					pos.SetTrackPos(road_id, s->GetS(), s->GetT());
+
+					road_sign->id = s->GetId();
+					returnString = s->GetName();
+					road_sign->name = returnString.c_str();
+					road_sign->x = pos.GetX();
+					road_sign->y = pos.GetY();
+					road_sign->z = pos.GetZ();
+					road_sign->h = pos.GetH();
+					road_sign->s = pos.GetS();
+					road_sign->t = pos.GetT();
+					road_sign->orientation = s->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? -1 : 1;
+
+					return 0;
 				}
 			}
 		}

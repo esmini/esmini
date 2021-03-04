@@ -42,6 +42,11 @@ typedef struct
 	float width;
 	float curvature;
 	float speed_limit;
+	int roadId;             // target position, road ID 
+	int laneId;             // target position, lane ID
+	float laneOffset;       // target position, lane offset (lateral distance from lane center) 
+	float s;                // target position, s (longitudinal distance along reference line)
+	float t;                // target position, t (lateral distance from reference line)
 } RM_RoadLaneInfo;
 
 typedef struct
@@ -57,6 +62,21 @@ typedef struct
 	float dt;				// delta t (lateral distance)
 	int dLaneId;			// delta laneId (increasing left and decreasing to the right)
 } RM_PositionDiff;
+
+typedef struct
+{
+	int id;	           // just an unique identifier of the sign
+	float x;           // global x coordinate of sign position
+	float y;           // global y coordinate of sign position
+	float z;           // global z coordinate of sign position
+	float h;           // global heading of sign orientation
+	int roadId;        // road id of sign road position
+	float s;           // longitudinal position along road
+	float t;           // lateral position from road reference line
+	const char* name;  // sign name, typically used for 3D model filename
+	int orientation;   // 1=facing traffic in road direction, -1=facing traffic opposite road direction
+} RM_RoadSign;
+
 
 #ifdef __cplusplus
 extern "C"
@@ -94,6 +114,20 @@ extern "C"
 	@return 0 if succesful, -1 if specified position(s) could not be deleted
 	*/
 	RM_DLL_API int RM_DeletePosition(int handle);
+
+	/**
+	Copy a position object
+	@param handle Handle to the original position object.
+	@return handle to new position object. -1 if unsuccessful.
+	*/
+	RM_DLL_API int RM_CopyPosition(int handle);
+
+	/**
+	Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)
+	@parameter mode True=keep lane False=Snap to closest (default)
+	@return 0 if successful, -1 if not
+	*/
+	RM_DLL_API int RM_SetLockOnLane(int handle, bool mode);
 
 	/**
 	Get the total number fo roads in the road network of the currently loaded OpenDRIVE file.
@@ -216,9 +250,10 @@ extern "C"
 	@param lookahead_distance The distance, along the road, to the point of interest
 	@param data Struct including all result values, see RM_RoadLaneInfo typedef
 	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
+	@param inRoadDrivingDirection If true always look along primary driving direction. If false, look in most straightforward direction according to object heading.
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data, int lookAheadMode);
+	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data, int lookAheadMode, bool inRoadDrivingDirection);
 
 	/**
 	As RM_GetLaneInfo plus relative location of point of interest (probe) from current position
@@ -226,9 +261,10 @@ extern "C"
 	@param lookahead_distance The distance, along the road to the probe (point of interest)
 	@param data Struct including all result values, see RM_RoadProbeInfo typedef
 	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
+	@param inRoadDrivingDirection If true always look along primary driving direction. If false, look in most straightforward direction according to object heading.
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_GetProbeInfo(int handle, float lookahead_distance, RM_RoadProbeInfo *data, int lookAheadMode);
+	RM_DLL_API int RM_GetProbeInfo(int handle, float lookahead_distance, RM_RoadProbeInfo *data, int lookAheadMode, bool inRoadDrivingDirection);
 
 	/**
 	Find out the difference between two position objects, i.e. delta distance (long and lat) and delta laneId
@@ -238,6 +274,22 @@ extern "C"
 	@return true if a valid path between the road positions was found and calculations could be performed
 	*/
 	RM_DLL_API bool RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff);
+
+	/**
+	Get the number of road signs along specified road
+	@param road_id The road along which to look for signs
+	@return Number of road signs
+	*/
+	RM_DLL_API int RM_GetNumberOfRoadSigns(int road_id);
+
+	/**
+		Get information on specifed road sign
+		@param road_id The road of which to look for the sign
+		@param index Index of the sign. Note: not ID
+		@param road_sign Pointer/reference to a SE_RoadSign struct to be filled in
+		@return 0 if successful, -1 if not
+	*/
+	RM_DLL_API int RM_GetRoadSign(int road_id, int index, RM_RoadSign* road_sign);
 
 
 #ifdef __cplusplus

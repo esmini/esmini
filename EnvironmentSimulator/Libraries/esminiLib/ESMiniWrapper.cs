@@ -183,7 +183,6 @@ namespace ESMini
         [DllImport(LIB_NAME, EntryPoint = "SE_FetchSensorObjectList")]
         public static extern int SE_FetchSensorObjectList(int object_id, int[] list);
 
-
         /// <summary>Get information suitable for driver modeling of a point at a specified distance from object along the road ahead</summary>
         /// <param name="object_id">Handle to the position object from which to measure</param>
         /// <param name="lookahead_distance">The distance, along the road, to the point</param>
