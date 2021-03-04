@@ -1674,7 +1674,7 @@ int Road::GetNumberOfDrivingLanesSide(double s, int side)
 
 	for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
 	{
-		if (s < lane_section_[i]->GetS())
+		if (s < lane_section_[i+1]->GetS())
 		{
 			break;
 		}
@@ -1691,7 +1691,7 @@ double Road::GetWidth(double s, int side, int laneTypeMask)
 
 	for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
 	{
-		if (s < lane_section_[i]->GetS())
+		if (s < lane_section_[i+1]->GetS())
 		{
 			break;
 		}
