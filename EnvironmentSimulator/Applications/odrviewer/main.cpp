@@ -218,11 +218,10 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 int main(int argc, char** argv)
 {
 	static char str_buf[128];
+	SE_Options opt;
 
 	// Use logger callback
 	Logger::Inst().SetCallback(log_callback);
-
-	SE_Options opt;
 
 	mt_rand.seed((unsigned int)time(0));
 
@@ -238,6 +237,8 @@ int main(int argc, char** argv)
 	opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
 	opt.AddOption("road_features", "Show OpenDRIVE road features (toggle during simulation by press 'o') ");
 	opt.AddOption("path", "Search path prefix for assets, e.g. car and sign model files", "path");
+	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
+	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("help", "Show this help message");
 
 	if (argc < 2 || opt.GetOptionSet("help"))
@@ -249,6 +250,27 @@ int main(int argc, char** argv)
 	opt.ParseArgs(&argc, argv);
 
 	std::string arg_str;
+
+	if (opt.GetOptionSet("disable_log"))
+	{
+		SE_Env::Inst().SetLogFilePath("");
+		printf("Disable logfile\n");
+	}
+	else if (opt.IsOptionArgumentSet("logfile_path"))
+	{
+		arg_str = opt.GetOptionArg("logfile_path");
+		SE_Env::Inst().SetLogFilePath(arg_str);
+		if (arg_str.empty())
+		{
+			printf("Custom logfile path empty, disable logfile\n");
+		}
+		else
+		{
+			printf("Custom logfile path: %s\n", arg_str.c_str());
+		}
+	}
+	Logger::Inst().OpenLogfile();
+
 	if ((arg_str = opt.GetOptionArg("path")) != "")
 	{
 		SE_Env::Inst().AddPath(arg_str);

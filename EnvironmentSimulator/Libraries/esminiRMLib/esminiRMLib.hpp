@@ -68,6 +68,15 @@ extern "C"
 	RM_DLL_API int RM_Close();
 
 	/**
+	Specify logfile name, optionally including directory path
+	examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
+	Set "" to disable logfile
+	Note: Needs to be called prior to calling RM_Init()
+	@param path Logfile path
+	*/
+	RM_DLL_API void RM_SetLogFilePath(const char* logFilePath);
+
+	/**
 	Create a position object
 	@return Handle to the position object, to use for operations
 	*/

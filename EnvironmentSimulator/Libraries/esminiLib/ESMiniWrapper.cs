@@ -89,14 +89,23 @@ namespace ESMini
 #endif
 
         [DllImport(LIB_NAME, EntryPoint = "SE_AddPath")]
-        /// <summary>Add a search path for OpenDRIVE and 3D model files
+        /// <summary>Add a search path for OpenDRIVE and 3D model files </summary>
         /// <param name="path">Path to a directory</param>
         /// <returns>0 on success, -1 on failure for any reason</returns> 
         public static extern int SE_AddPath(string path);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_ClearPaths")]
-        /// <summary>Clear all search paths for OpenDRIVE and 3D model files
+        /// <summary>Clear all search paths for OpenDRIVE and 3D model files </summary>
         public static extern void SE_ClearPaths();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SetLogFilePath")]
+        /// <summary>Specify logfile name, optionally including directory path 
+        /// examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
+        /// Set "" to disable logfile
+        /// Note: Needs to be called prior to calling SE_Init() </summary>
+        /// <param name="path">Logfile path</param>
+        /// <returns>0 on success, -1 on failure for any reason</returns> 
+        public static extern int SE_SetLogFilePath(string path);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_Init")]
         /// <summary>Initialize the scenario engine</summary>

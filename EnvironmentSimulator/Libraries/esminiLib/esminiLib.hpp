@@ -117,6 +117,7 @@ extern "C"
 	
 	/**
 		Add a search path for OpenDRIVE and 3D model files
+		Needs to be called prior to SE_Init()
 		@param path Path to a directory
 		@return 0 if successful, -1 if not
 	*/
@@ -124,8 +125,18 @@ extern "C"
 
 	/**
 		Clear all search paths for OpenDRIVE and 3D model files
+		Needs to be called prior to SE_Init()
 	*/
 	SE_DLL_API void SE_ClearPaths();
+
+	/**
+		Specify logfile name, optionally including directory path
+		examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
+		Set "" to disable logfile
+		Note: Needs to be called prior to calling SE_Init()
+		@param path Logfile path
+	*/
+	SE_DLL_API void SE_SetLogFilePath(const char* logFilePath);
 
 	/**
 		Configure tolerances/resolution for OSI road features

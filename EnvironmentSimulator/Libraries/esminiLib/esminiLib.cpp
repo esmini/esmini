@@ -279,6 +279,8 @@ static int InitScenario()
 
 	Logger::Inst().SetCallback(log_callback);
 
+	Logger::Inst().OpenLogfile();
+
 	ConvertArguments();
 
 	// Create scenario engine
@@ -308,6 +310,11 @@ extern "C"
 	SE_DLL_API void SE_ClearPaths()
 	{
 		SE_Env::Inst().ClearPaths();
+	}
+
+	SE_DLL_API void SE_SetLogFilePath(const char* logFilePath)
+	{
+		SE_Env::Inst().SetLogFilePath(logFilePath);
 	}
 
 	SE_DLL_API int SE_SetOSITolerances(double maxLongitudinalDistance, double maxLateralDeviation)

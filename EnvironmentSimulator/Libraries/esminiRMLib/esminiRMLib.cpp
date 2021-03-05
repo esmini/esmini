@@ -101,6 +101,8 @@ extern "C"
 			RM_Close();
 		}
 
+		Logger::Inst().OpenLogfile();
+
 		// Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
 		std::setlocale(LC_ALL, "C.UTF-8");
 
@@ -121,6 +123,11 @@ extern "C"
 		return 0;
 	}
 	
+	RM_DLL_API void RM_SetLogFilePath(const char* logFilePath)
+	{
+		SE_Env::Inst().SetLogFilePath(logFilePath);
+	}
+
 	RM_DLL_API int RM_CreatePosition()
 	{
 		roadmanager::Position newPosition;

@@ -605,13 +605,13 @@ void ScenarioPlayer::ShowObjectSensors(bool mode)
 
 int ScenarioPlayer::Init()
 {
-	std::string arg_str;
-
 	// Use logger callback
 	if (!(Logger::Inst().IsCallbackSet()))
 	{
 		Logger::Inst().SetCallback(log_callback);
 	}
+
+	std::string arg_str;
 
 	// use an ArgumentParser object to manage the program arguments.
 	opt.AddOption("osc", "OpenSCENARIO filename - if path includes spaces, enclose with \"\" ", "filename");
@@ -636,6 +636,8 @@ int ScenarioPlayer::Init()
 	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))", "mode");
 	opt.AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
 	opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (will be concatenated with filepath)", "path");
+	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
+	opt.AddOption("disable_log", "Prevent logfile from being created");
 
 	if (argc_ < 3)
 	{
@@ -645,6 +647,26 @@ int ScenarioPlayer::Init()
 
 	exe_path_ = argv_[0];
 	opt.ParseArgs(&argc_, argv_);
+
+	if (opt.GetOptionSet("disable_log"))
+	{
+		SE_Env::Inst().SetLogFilePath("");
+		printf("Disable logfile\n");
+	}
+	else if (opt.IsOptionArgumentSet("logfile_path"))
+	{
+		arg_str = opt.GetOptionArg("logfile_path");
+		SE_Env::Inst().SetLogFilePath(arg_str);
+		if (arg_str.empty())
+		{
+			printf("Custom logfile path empty, disable logfile\n");
+		}
+		else
+		{
+			printf("Custom logfile path: %s\n", arg_str.c_str());
+		}
+	}
+	Logger::Inst().OpenLogfile();
 
 	if (opt.GetOptionSet("threads"))
 	{

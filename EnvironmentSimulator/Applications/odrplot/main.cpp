@@ -26,19 +26,8 @@
 
 using namespace roadmanager;
 
-void log_callback(const char* str)
-{
-	printf("%s\n", str);
-}
-
 int main(int argc, char *argv[])
 {
-	// Use logger callback
-	if (!(Logger::Inst().IsCallbackSet()))
-	{
-		Logger::Inst().SetCallback(log_callback);
-	}
-
 	std::string output_file_name = "track.csv";
 	std::ofstream file;
 	std::string sampling_step = "1.0";
@@ -46,7 +35,7 @@ int main(int argc, char *argv[])
 	
 	if (argc < 2)
 	{
-		LOG("Usage: ordplot openDriveFile.xodr [Output file, default=output.csv] [Sampling_step, default=1.0]\n");
+		printf("Usage: ordplot openDriveFile.xodr [Output file, default=output.csv] [Sampling_step, default=1.0]\n");
 		return -1;
 	}
 	else  
@@ -68,14 +57,14 @@ int main(int argc, char *argv[])
 	{
 		if (Position::LoadOpenDrive(argv[1]) == false)
 		{
-			LOG("Failed to open OpenDRIVE file %s", argv[1]);
+			printf("Failed to open OpenDRIVE file %s\n", argv[1]);
 			return -1;
 		}
 		file.open(output_file_name);
 	}
 	catch (std::exception& e) 
 	{ 
-		LOG("exception: %s", e.what()); 
+		printf("exception: %s\n", e.what()); 
 		return -1;
 	}
 
@@ -115,8 +104,8 @@ int main(int argc, char *argv[])
 
 	delete pos;
 
-	LOG("Created %s using stepsize %.2f", output_file_name.c_str(), step_length_target);
-	LOG("To plot it, run EnvironmentSimulator/Applications/odrplot/xodr.py %s", output_file_name.c_str());
+	printf("Created %s using stepsize %.2f\n", output_file_name.c_str(), step_length_target);
+	printf("To plot it, run EnvironmentSimulator/Applications/odrplot/xodr.py %s\n", output_file_name.c_str());
 
 	return 0;
 }

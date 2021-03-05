@@ -35,7 +35,8 @@ int main(int argc, char** argv)
 		printf("Usage: %s <filename>\n", argv[0]);
 		return -1;
 	}
-std::string filename = FileNameWithoutExtOf(argv[1]) + ".csv";
+	
+	std::string filename = FileNameWithoutExtOf(argv[1]) + ".csv";
 	std::ofstream file;
 	file.open(filename);
 	if (!file.is_open())

@@ -97,6 +97,15 @@ namespace OpenDRIVE
         [DllImport(LIB_NAME, EntryPoint = "RM_Close")]
         public static extern void Close();
 
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetLogFilePath")]
+        /// <summary>Specify logfile name, optionally including directory path 
+        /// examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
+        /// Set "" to disable logfile
+        /// Note: Needs to be called prior to calling RM_Init() </summary>
+        /// <param name="path">Logfile path</param>
+        /// <returns>0 on success, -1 on failure for any reason</returns> 
+        public static extern int SetLogFilePath(string path);
+
         /// <summary>Create a position object</summary>
         /// <returns>Index (handle) to the position object, to use for operations</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_CreatePosition")]

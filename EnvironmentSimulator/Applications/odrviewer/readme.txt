@@ -20,6 +20,12 @@ Options:
       Show OSI road points (toggle during simulation by press 'y')
   --road_features
       Show OpenDRIVE road features (toggle during simulation by press 'o')
+  --path <path>
+      Search path prefix for assets, e.g. car and sign model files
+  --logfile_path <path>
+      logfile path/filename, e.g. "../esmini.log" (default: log.txt)
+  --disable_log
+      Prevent logfile from being created
   --help
       Show this help message
 

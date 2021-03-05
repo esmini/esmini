@@ -100,6 +100,8 @@ int main(int argc, char *argv[])
 		filename = argv[1];
 	}
 
+	// Set custom logfile path (set "" to disable logfile)
+	SE_SetLogFilePath("esmini-dyn.log");
 
 	for (int a = 0; a < 1; a++)
 	{

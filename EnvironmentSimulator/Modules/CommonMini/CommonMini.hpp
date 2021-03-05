@@ -46,6 +46,7 @@
 #define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION 0.05
+#define LOG_FILENAME "log.txt"
 
 #define LOG(Format_, ...)  Logger::Inst().Log(__FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
 
@@ -254,7 +255,11 @@ public:
 	std::vector<std::string> paths_;
 	double osiMaxLongitudinalDistance_;
 	double osiMaxLateralDeviation_;
-	SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE), osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION) {}
+	std::string logFilePath_;
+
+	SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE),
+		osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION), logFilePath_(LOG_FILENAME) {}
+
 	void SetOSIMaxLongitudinalDistance(double maxLongitudinalDistance) { osiMaxLongitudinalDistance_ = maxLongitudinalDistance; }
 	void SetOSIMaxLateralDeviation(double maxLateralDeviation) { osiMaxLateralDeviation_ = maxLateralDeviation; }
 	double GetOSIMaxLongitudinalDistance() { return osiMaxLongitudinalDistance_; }
@@ -262,6 +267,15 @@ public:
 	std::vector<std::string>& GetPaths() { return paths_; }
 	int AddPath(std::string path);
 	void ClearPaths() { paths_.clear(); }
+	
+	/**
+		Specify logfile name, optionally including directory path
+		examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
+		Set "" to disable logfile
+		@param path Logfile path	 
+	*/
+	void SetLogFilePath(std::string logFilePath);
+	std::string GetLogFilePath() { return logFilePath_; }
 };
 
 std::vector<std::string> SplitString(const std::string &s, char separator);
@@ -283,6 +297,8 @@ public:
 	void SetCallback(FuncPtr callback);
 	bool IsCallbackSet();
 	void SetTimePtr(double* timePtr) { time_ = timePtr; }
+	void OpenLogfile();
+	bool IsFileOpen() { return file_.is_open(); }
 
 private:
 	Logger();
@@ -357,6 +373,7 @@ public:
 	void PrintUsage();
 	void PrintArgs(int argc, char *argv[], std::string message = "Unrecognized arguments:");
 	bool GetOptionSet(std::string opt);
+	bool IsOptionArgumentSet(std::string opt);
 	std::string GetOptionArg(std::string opt);
 	void ParseArgs(int *argc, char* argv[]);
 	std::vector<std::string>& GetOriginalArgs() { return originalArgs_; }

@@ -63,6 +63,10 @@ static const char* entityModelsFiles_[] =
 	"cyclist.osgb"
 };
 
+void log_callback(const char* str)
+{
+	printf("%s\n", str);
+}
 
 ScenarioEntity *getScenarioEntityById(int id)
 {
@@ -128,6 +132,10 @@ int main(int argc, char** argv)
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
 	bool no_ghost = false;
 	static char info_str_buf[256];
+
+	// Use logger callback for console output instead of logfile
+	Logger::Inst().SetCallback(log_callback);
+	// Logger::Inst().OpenLogfile();
 
 	// use common options parser to manage the program arguments
 	SE_Options opt;
