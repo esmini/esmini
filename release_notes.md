@@ -1,16 +1,26 @@
 ## esmini release notes
 
+### 2021-03-05 Version 2.4.4
+
+- Further log file improvements
+  - Option to disable logfile
+  - Support custom log filename
+  - These features available both from command line and API
+- Stabilize lane matching
+  - Increase tension in ZY2Road mapping, add 2m threshold before snapping to
+    another lane. Purpose is to stay in current path for driver models.
+- Fix bug in Road Manager causing XY2Road to (sometimes) match the wrong road
+- Add some recent esminiLib features to esminiRMLib as well
+
 ### 2021-03-03 Version 2.4.3
 
-
 - Improved log file handling  
-  - If default log file can't be created for some reason, try with system provided temp filename. Last resort is to run without logfile, just logging to console. 
-  - This change makes it possible to run esmini from admin protected folder.
+  - If default log file can't be created for some reason, try with system provided temp filename. Last resort is to run without logfile, just logging to console.
 - Fix Event and Action life cycle issues
   - Default maximumExecutionCount for Event and ManeuverGroup is now 1 (instead of infinity)
   - Finished Action will move to Complete state instead of Standby, making it
       possible to trig on Action being completed.
-  - **Note**: This change CAN have impact on scenarios which might need to be updated, e.g. explicitly specifying maximumExecutionCount.
+  - **Note**: This change CAN have impact on scenarios which might  need to be updated, e.g. excplicitly specifying maximumExecutionCount.
 
 ### 2021-03-02 Version 2.4.2
 
