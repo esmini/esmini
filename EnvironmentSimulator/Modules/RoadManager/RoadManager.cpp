@@ -4497,7 +4497,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 						}
 						else
 						{
-							s_end_roadmark = MAX(0, lane->GetLaneRoadMarkByIdx(m+1)->GetSOffset() - SMALL_NUMBER);
+							s_end_roadmark = MAX(0, lsec->GetS() + lane->GetLaneRoadMarkByIdx(m+1)->GetSOffset() - SMALL_NUMBER);
 						}
 						
 						// Check the existence of "type" keyword under roadmark
@@ -4520,7 +4520,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 									}
 									else
 									{
-										s_end_roadmarkline = lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n+1)->GetSOffset();
+										s_end_roadmarkline = lsec->GetS() + lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n + 1)->GetSOffset();
 									}
 
 									if (lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::BROKEN)
@@ -4538,7 +4538,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 											osi_point.push_back(p);
 
 											s_roadmarkline += lane_roadMarkTypeLine->GetLength() + lane_roadMarkTypeLine->GetSpace();
-											if (s_roadmarkline < SMALL_NUMBER || s_roadmarkline >= s_end_roadmarkline)
+											if (s_roadmarkline < SMALL_NUMBER || s_roadmarkline > s_end_roadmarkline - SMALL_NUMBER)
 											{
 												if (s_roadmarkline < SMALL_NUMBER)
 												{
@@ -4627,7 +4627,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 											}
 
 											// If the end of the road mark line reached, assign end of the road mark line as final OSI point for current road mark line
-											if (s1 >= s_end_roadmarkline)
+											if (s1 > s_end_roadmarkline - SMALL_NUMBER)
 											{
 												pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_end_roadmarkline, 0, j);
 												OSIPoints::OSIPointStruct p = { s_end_roadmarkline, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
