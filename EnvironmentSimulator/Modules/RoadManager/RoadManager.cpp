@@ -6257,9 +6257,9 @@ int Position::SetInertiaPos(double x, double y, double z, double h, double p, do
 	x_ = x;
 	y_ = y;
 	z_ = z;
-	SetHeading(h);
-	SetPitch(p);
-	SetRoll(r);
+	h_ = h;
+	p_ = p;
+	r_ = r;
 
 	if (updateTrackPos)
 	{
