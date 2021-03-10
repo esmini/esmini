@@ -230,6 +230,41 @@ bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, d
 	return inside;
 }
 
+double DistanceFromPointToEdge2D(double x3, double y3, double x1, double y1, double x2, double y2, double* x, double* y)
+{
+	double px = 0;
+	double py = 0;
+	double distance = 0;
+	double sNorm = 0;
+	
+	// First project point on edge
+	ProjectPointOnVector2D(x3, y3, x1, y1, x2, y2, px, py);
+	distance = PointDistance2D(x3, y3, px, py);
+
+	if (PointInBetweenVectorEndpoints(px, py, x1, y1, x2, y2, sNorm))
+	{
+		// Point within edge interior
+		*x = px;
+		*y = py;
+	}
+	else if (sNorm < 0)
+	{
+		// measure to first endpoint
+		distance = PointDistance2D(x3, y3, x1, y1);
+		*x = x1;
+		*y = y1;
+	}
+	else
+	{
+		// measure to other (2:nd) endpoint
+		distance = PointDistance2D(x3, y3, x2, y2);
+		*x = x2;
+		*y = y2;
+	}
+
+	return distance;
+}
+
 int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2)
 {
 	// Use cross product

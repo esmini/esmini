@@ -28,7 +28,7 @@ Entities
 Storyboard                                   
     Init                                     
         Actions                              
-            Global                           No
+            Global                           Partly (ParameterSetAction)
             UserDefined                      No
             Private                          Yes
     Story                                    
@@ -146,7 +146,7 @@ OSCTypeDefs
                     Absolute                 Yes
             Distance                         
                 object                       Yes
-                freespace                    No
+                freespace                    Yes
                 choice                       
                     distance                 Yes
                     timeGap                  Yes
@@ -193,17 +193,17 @@ OSCTypeDefs
         Visibility                           No
         Synchronize                          Yes
         ActivateController                   Yes
-        Controller                           No (only default controller supported)
+        Controller                           Yes 
         TeleportAction                       Yes
         Routing                              
             AssignRoute                      Yes
-            FollowTrajectory                 Partly (Only polyline trajectory supported so far)
+            FollowTrajectory                 Partly (Only polyline and clothoid trajectory supported so far)
             AcquirePosition                  No
     OSCUserDefinedAction                     No
     OSCGlobalAction                          
         SetEnvironment                       No
         Entity                               No
-        Parameter                            Yes
+        ParameterSetAction                   Yes
         Infrastructure                       No
         Traffic                              No
     OSCBoundingBox                           No

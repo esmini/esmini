@@ -101,7 +101,7 @@
                                  </TriggeringEntities>
                                  <EntityCondition>
                                     <TimeToCollisionCondition value="2.7"
-                                                         freespace="true"
+                                                         freespace="false"
                                                          alongRoute="true"
                                                          rule="lessThan" >
                                         <TimeToCollisionConditionTarget >

@@ -129,7 +129,7 @@
                                  <EntityCondition>
                                     <TimeHeadwayCondition entityRef="Target2"
                                                           value="0.2"
-                                                          freespace="true"
+                                                          freespace="false"
                                                           alongRoute="true"
                                                           rule="greaterThan"/>
                                  </EntityCondition>

@@ -645,16 +645,28 @@ void LongDistanceAction::Step(double dt, double)
 	}
 
 	// Find out current distance
-	double x, y;
-	double distance = object_->pos_.getRelativeDistance(target_object_->pos_, x, y);
+	double distance;
+	if (freespace_)
+	{
+		double latDist = 0;
+		double longDist = 0;
+		object_->FreeSpaceDistance(target_object_, &latDist, &longDist);
+		distance = longDist;
+	}
+	else
+	{
+		double x, y;
+		distance = object_->pos_.getRelativeDistance(target_object_->pos_, x, y);
+
+		// Just interested in the x-axis component of the distance
+		distance = x;
+	}
+
 	double speed_diff = object_->speed_ - target_object_->speed_;
 	double acc;
 	double spring_constant = 4;
 	double dc;
 	double requested_dist = 0;
-
-	// Just interested in the x-axis component of the distance
-	distance = x;
 
 	if (dist_type_ == DistType::DISTANCE)
 	{

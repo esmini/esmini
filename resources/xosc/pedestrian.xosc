@@ -219,7 +219,7 @@
                                     <EntityRef entityRef="Ego"/>
                                  </TriggeringEntities>
                                  <EntityCondition>
-                                    <TimeToCollisionCondition value="1.7"
+                                    <TimeToCollisionCondition value="1.2"
                                                          freespace="true"
                                                          alongRoute="true"
                                                          rule="lessThan" >

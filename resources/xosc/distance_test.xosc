@@ -7,7 +7,7 @@
                description="Keep distance"
                author="SimS"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="Gap_dist" parameterType="double" value="15"/>
+      <ParameterDeclaration name="Gap_dist" parameterType="double" value="12"/>
       <ParameterDeclaration name="Max_acc" parameterType="double" value="15"/>
       <ParameterDeclaration name="Max_ret" parameterType="double" value="15"/>
    </ParameterDeclarations>

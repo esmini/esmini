@@ -140,14 +140,43 @@ namespace scenarioengine
 		double GetStandStillTimestamp() { return stand_still_timestamp_; }
 
 		/**
-			Check if object is colliding with specified target object
+			Check if object is colliding/overlapping with specified target object
 			Definition of collision is overlapping bounding boxes
 			@param target The object to check
 			@return true if bounding boxes overlap else false
 		*/
 		bool Collision(Object* target);
 
-		void SetSpeed(double speed) 
+		/**
+			Check if point is colliding/overlapping with specified target object
+			@param x X coordinate of target point
+			@param y Y coordinate of target point
+			@return true if bounding boxes overlap else false
+		*/
+		double PointCollision(double x, double y);
+
+		/**
+			Measure the free-space distance to provided target object
+			based on closest distance between the bounding boxes
+			@param target The object to check
+			@param latDist Returns lateral distance to target object
+			@param longDist Returns longitudinal distance to target object
+			@return distance The free-space Euclidean distance between objects (0 if collision)
+		*/
+		double FreeSpaceDistance(Object* target, double* latDist, double* longDist);
+
+		/**
+			Measure the free-space distance to provided target 2D position
+			based on closest point on object's bounding box
+			@param x X coordinate of target point
+			@param y Y coordinate of target point
+			@param latDist Returns lateral distance
+			@param longDist Returns longitudinal distance
+			@return distance The free-space Euclidean distance between objects (0 if collision)
+		*/
+		double FreeSpaceDistancePoint(double x, double y, double* latDist, double* longDist);
+
+		void SetSpeed(double speed)
 		{ 
 			speed_ = speed; 
 			SetDirtyBits(Object::DirtyBit::SPEED);

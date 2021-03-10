@@ -464,18 +464,30 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		if (along_route_ == true)
+		if (freespace_)
 		{
-			roadmanager::PositionDiff diff;
-			triggering_entities_.entity_[i].object_->pos_.Delta(object_->pos_, diff);
-			rel_dist = diff.ds;
+			double longDist = 0;
+			double latDist = 0;
+			triggering_entities_.entity_[i].object_->FreeSpaceDistance(object_, &latDist, &longDist);
+			
+			// use only longitudinal distance
+			rel_dist = longDist;
 		}
 		else
 		{
-			double x, y;
-			rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
-			// Only consider X-component of distance vector
-			rel_dist = x;
+			if (along_route_ == true)
+			{
+				roadmanager::PositionDiff diff;
+				triggering_entities_.entity_[i].object_->pos_.Delta(object_->pos_, diff);
+				rel_dist = diff.ds;
+			}
+			else
+			{
+				double x, y;
+				rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
+				// Only consider X-component of distance vector
+				rel_dist = x;
+			}
 		}
 
 		// Headway time not defined for cases:
@@ -535,18 +547,30 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		if (along_route_ == true)
+		if (freespace_)
 		{
-			roadmanager::PositionDiff diff;
-			triggering_entities_.entity_[i].object_->pos_.Delta(*pos, diff);
-			rel_dist = diff.ds;
+			double longDist = 0;
+			double latDist = 0;
+			triggering_entities_.entity_[i].object_->FreeSpaceDistance(object_, &latDist, &longDist);
+
+			// use only longitudinal distance
+			rel_dist = longDist;
 		}
 		else
 		{
-			double x, y;
-			rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*pos, x, y);
-			// Only consider X-component of distance vector
-			rel_dist = x;
+			if (along_route_ == true)
+			{
+				roadmanager::PositionDiff diff;
+				triggering_entities_.entity_[i].object_->pos_.Delta(*pos, diff);
+				rel_dist = diff.ds;
+			}
+			else
+			{
+				double x, y;
+				rel_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*pos, x, y);
+				// Only consider X-component of distance vector
+				rel_dist = x;
+			}
 		}
 
 		if (object_)
@@ -650,16 +674,27 @@ bool TrigByDistance::CheckCondition(StoryBoard *storyBoard, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		if (along_route_ == true)
+		if (freespace_)
 		{
-			roadmanager::PositionDiff diff;
-			triggering_entities_.entity_[i].object_->pos_.Delta(*position_->GetRMPos(), diff);
-			dist_ = fabs(diff.ds);
+			double x = position_->GetRMPos()->GetX();
+			double y = position_->GetRMPos()->GetY();
+			double distLat = 0;
+			double distLong = 0;
+			dist_ = triggering_entities_.entity_[i].object_->FreeSpaceDistancePoint(x, y, &distLat, &distLong);
 		}
 		else
 		{
-			double x, y;
-			dist_ = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y));
+			if (along_route_ == true)
+			{
+				roadmanager::PositionDiff diff;
+				triggering_entities_.entity_[i].object_->pos_.Delta(*position_->GetRMPos(), diff);
+				dist_ = fabs(diff.ds);
+			}
+			else
+			{
+				double x, y;
+				dist_ = fabs(triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(*position_->GetRMPos(), x, y));
+			}
 		}
 
 		result = EvaluateRule(dist_, value_, rule_);
@@ -697,8 +732,15 @@ bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_t
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 
-		rel_intertial_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
-
+		if (freespace_)
+		{
+			rel_intertial_dist = triggering_entities_.entity_[i].object_->FreeSpaceDistance(object_, &y, &x);
+		}
+		else
+		{
+			rel_intertial_dist = triggering_entities_.entity_[i].object_->pos_.getRelativeDistance(object_->pos_, x, y);
+		}
+		
 		if (type_ == RelativeDistanceType::LONGITUDINAL)
 		{
 			rel_dist_ = fabs(x);

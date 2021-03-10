@@ -164,7 +164,7 @@ bool Object::Collision(Object* target)
 	// For each side of the bounding boxes:
 	//   The normal of that edge will be the projection axis
 	//   Project all points of the two bounding boxes onto that axis
-	//   If we find ONE side wich a gap between point clusters from BB1 and BB2,
+	//   If we find ONE side with a gap between point clusters from BB1 and BB2,
 	//   it's enough to conclude they are not overlapping/colliding
 	// 
 	// Optimization: Since the bounding boxes are boxes with parallel
@@ -200,7 +200,7 @@ bool Object::Collision(Object* target)
 	for (int i = 0; i < 2; i++)  // for each of the two BBs
 	{
 		if (i == 1)
-		{ 
+		{
 			// swap order, now check all edges of target object
 			obj0 = target;
 			obj1 = this;
@@ -211,17 +211,17 @@ bool Object::Collision(Object* target)
 		{
 			if (j == 0)
 			{
-				// Normal for longitudinal side (sides) points along lateral side
+				// Normal for longitudinal side (sides) points along lateral direction
 				n0[0] = 0.0;
 				n0[1] = 1.0;
 			}
 			else
 			{
-				// Normal for lateral side (front/rear) points along lateral side
+				// Normal for lateral side (front/rear) points along lateral direction
 				n0[0] = 1.0;
 				n0[1] = 0.0;
 			}
-		
+
 			// Rotate the normal/projection axis to align with bounding box/vehicle
 			double n1[2] = { 0.0, 0.0 };
 			RotateVec2D(n0[0], n0[1], obj0->pos_.GetH(), n1[0], n1[1]);
@@ -230,7 +230,7 @@ bool Object::Collision(Object* target)
 			// And register min and max for point cluster of each BB
 			double min[2] = { 0.0, 0.0 }, max[2] = { 0.0, 0.0 };
 			for (int k = 0; k < 2; k++)
-			{ 
+			{
 				Object* obj = (k == 0 ? obj0 : obj1);
 
 				// Specify bounding box corner vertices, starting at first quadrant
@@ -258,7 +258,7 @@ bool Object::Collision(Object* target)
 					{
 						min[k] = max[k] = dot_p;
 					}
-					else 
+					else
 					{
 						min[k] = MIN(dot_p, min[k]);
 						max[k] = MAX(dot_p, max[k]);
@@ -274,8 +274,262 @@ bool Object::Collision(Object* target)
 			}
 		}
 	}
+	
+	return true;
+}
+
+double Object::PointCollision(double x, double y)
+{
+	// Apply method Separating Axis Theorem (SAT)
+	// http://www.euclideanspace.com/threed/games/examples/cars/collisions/
+	// https://www.sevenson.com.au/actionscript/sat/
+
+	// Idea:
+	// For each side of the bounding box:
+	//   The normal of that edge will be the projection axis
+	//   Project the point and all axis of the bounding boxe onto that axis
+	//   If we find ONE side with a gap between point clusters from BB1 and BB2,
+	//   it's enough to conclude they are not overlapping/colliding
+	// 
+	// Optimization: Since the bounding boxes are boxes with parallel
+	// sides, we only need to check half of the sides
+
+	Object* obj0 = this;
+
+	double n0[2] = { 0.0, 0.0 };
+	for (int j = 0; j < 2; j++)  // for longitudinal and lateral sides
+	{
+		if (j == 0)
+		{
+			// Normal for longitudinal side (sides) points along lateral side
+			n0[0] = 0.0;
+			n0[1] = 1.0;
+		}
+		else
+		{
+			// Normal for lateral side (front/rear) points along lateral side
+			n0[0] = 1.0;
+			n0[1] = 0.0;
+		}
+
+		// Rotate the normal/projection axis to align with bounding box/vehicle
+		double n1[2] = { 0.0, 0.0 };
+		RotateVec2D(n0[0], n0[1], obj0->pos_.GetH(), n1[0], n1[1]);
+
+		// Now, project each point of each BB onto the rotated normal
+		// And register min and max for point cluster of each BB
+		double min[2] = { 0.0, 0.0 }, max[2] = { 0.0, 0.0 };
+
+		// Specify bounding box corner vertices, starting at first quadrant
+		double vertices[4][2] =
+		{
+			{ obj0->boundingbox_.center_.x_ + obj0->boundingbox_.dimensions_.length_ / 2.0, obj0->boundingbox_.center_.y_ + obj0->boundingbox_.dimensions_.width_ / 2.0 },
+			{ obj0->boundingbox_.center_.x_ - obj0->boundingbox_.dimensions_.length_ / 2.0, obj0->boundingbox_.center_.y_ + obj0->boundingbox_.dimensions_.width_ / 2.0 },
+			{ obj0->boundingbox_.center_.x_ - obj0->boundingbox_.dimensions_.length_ / 2.0, obj0->boundingbox_.center_.y_ - obj0->boundingbox_.dimensions_.width_ / 2.0 },
+			{ obj0->boundingbox_.center_.x_ + obj0->boundingbox_.dimensions_.length_ / 2.0, obj0->boundingbox_.center_.y_ - obj0->boundingbox_.dimensions_.width_ / 2.0 }
+		};
+
+		for (int l = 0; l < 4; l++)
+		{
+			double point_to_project[2];
+
+			// Align projection points to object heading
+			RotateVec2D(vertices[l][0], vertices[l][1], obj0->pos_.GetH(), point_to_project[0], point_to_project[1]);
+
+			double dot_p = GetDotProduct2D(
+				obj0->pos_.GetX() + point_to_project[0],
+				obj0->pos_.GetY() + point_to_project[1],
+				n1[0], n1[1]);
+
+			if (l == 0)
+			{
+				min[0] = max[0] = dot_p;
+			}
+			else
+			{
+				min[0] = MIN(dot_p, min[0]);
+				max[0] = MAX(dot_p, max[0]);
+			}
+		}
+
+		double dot_p = GetDotProduct2D(x, y, n1[0], n1[1]);
+
+		if (min[0] < dot_p - SMALL_NUMBER && max[0] < dot_p - SMALL_NUMBER ||
+			max[0] > dot_p + SMALL_NUMBER && min[0] > dot_p + SMALL_NUMBER)
+		{
+			// gap found - no collision
+			return false;
+		}
+	}
 
 	return true;
+}
+
+double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDist)
+{
+	double minDist = LARGE_NUMBER;
+
+	if (target == 0)
+	{
+		return minDist;
+	}
+
+	if (Collision(target))
+	{
+		return 0.0;
+	}
+
+	// OK, they are not overlapping. Now find the distance.
+	// Strategy: Brute force check all vertices of one bounding box 
+	// against all sides of the other bounding box - then switch to 
+	// check vertices of the other bounding box against the sides 
+	// of the first bounding box.
+
+	double vertices[2][4][2];
+
+
+	for (int i = 0; i < 2; i++)  // for each of the two BBs
+	{
+		Object* obj = (i == 0 ? this : target);
+
+		// Specify bounding box corner vertices, starting at first quadrant
+		double vtmp[4][2] =
+		{
+			{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
+			{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
+			{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 },
+			{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 }
+		};
+
+		for (int j = 0; j < 4; j++)  // for all vertices
+		{
+			// Align points to object heading and position
+			RotateVec2D(vtmp[j][0], vtmp[j][1], obj->pos_.GetH(), vertices[i][j][0], vertices[i][j][1]);
+			vertices[i][j][0] += obj->pos_.GetX();
+			vertices[i][j][1] += obj->pos_.GetY();
+		}
+	}
+
+	for (int i = 0; i < 2; i++)  // for each of the two BBs
+	{
+		int vindex = (i == 0 ? 0 : 1);
+
+		for (int j = 0; j < 4; j++)  // for all vertices
+		{
+			double point[2] = { vertices[vindex][j][0], vertices[vindex][j][1] };
+
+			for (int k = 0; k < 4; k++)  // for all sides/edges in the other bounding box
+			{
+				double edge[2][2];
+				edge[0][0] = vertices[(vindex + 1) % 2][k][0];
+				edge[0][1] = vertices[(vindex + 1) % 2][k][1];
+				edge[1][0] = vertices[(vindex + 1) % 2][(k + 1) % 4][0];
+				edge[1][1] = vertices[(vindex + 1) % 2][(k + 1) % 4][1];
+
+				double xComp = 0;
+				double yComp = 0;
+				double tmpDist = DistanceFromPointToEdge2D(point[0], point[1], edge[0][0], edge[0][1], edge[1][0], edge[1][1], &xComp, &yComp);
+
+				if (tmpDist < minDist)
+				{
+					minDist = tmpDist;
+					
+					// Calculate x, y components of the distance in vehicle reference system
+					double pv[2];
+					if (i == 0)
+					{
+						// From this object to the target
+						pv[0] = xComp - point[0];
+						pv[1] = yComp - point[1];
+					}
+					else
+					{
+						// From the target to this object 
+						pv[0] = point[0] - xComp;
+						pv[1] = point[1] - yComp;
+					}
+					
+					double pvr[2];
+					RotateVec2D(pv[0], pv[1], -this->pos_.GetH(), pvr[0], pvr[1]);
+					if (latDist) *latDist = pvr[1]; // y points left in vehicle ref system
+					if (longDist) *longDist = pvr[0]; // x points forward in vehicle ref system
+				}
+			}
+		}
+	}
+
+	return minDist;
+}
+
+double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, double* longDist)
+{
+	double minDist = LARGE_NUMBER;
+
+	if (PointCollision(x, y))
+	{
+		return 0.0;
+	}
+
+	// OK, they are not overlapping. Now find the distance.
+	// Strategy: Brute force check point against all sides 
+	// of the bounding box 
+
+	Object* obj = this;
+
+	double vertices[4][2];
+
+	// Specify bounding box corner vertices, starting at first quadrant
+	double vtmp[4][2] =
+	{
+		{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
+		{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0 },
+		{ obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 },
+		{ obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0, obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0 }
+	};
+
+	for (int j = 0; j < 4; j++)  // for all vertices
+	{
+		// Align points to object heading and position
+		RotateVec2D(vtmp[j][0], vtmp[j][1], obj->pos_.GetH(), vertices[j][0], vertices[j][1]);
+		vertices[j][0] += obj->pos_.GetX();
+		vertices[j][1] += obj->pos_.GetY();
+	}
+
+
+	double point[2] = { x, y };
+
+	for (int k = 0; k < 4; k++)  // for all sides/edges of the bounding box
+	{
+		double edge[2][2];
+		edge[0][0] = vertices[k][0];
+		edge[0][1] = vertices[k][1];
+		edge[1][0] = vertices[(k + 1) % 4][0];
+		edge[1][1] = vertices[(k + 1) % 4][1];
+
+		double xComp = 0;
+		double yComp = 0;
+		double tmpDist = DistanceFromPointToEdge2D(point[0], point[1], edge[0][0], edge[0][1], edge[1][0], edge[1][1], 
+			&xComp, &yComp);
+
+		if (tmpDist < minDist)
+		{
+			minDist = tmpDist;
+
+			// Calculate x, y components of the distance in vehicle reference system
+
+			double pv[2];
+			// From this object to the target point
+			pv[0] = point[0] - xComp;
+			pv[1] = point[1] - yComp;
+
+			double pvr[2];
+			RotateVec2D(pv[0], pv[1], -this->pos_.GetH(), pvr[0], pvr[1]);
+			if (latDist) *latDist = pvr[1]; // y points left in vehicle ref system
+			if (longDist) *longDist = pvr[0]; // x points forward in vehicle ref system
+		}
+	}
+
+	return minDist;
 }
 
 int Entities::addObject(Object* obj)
