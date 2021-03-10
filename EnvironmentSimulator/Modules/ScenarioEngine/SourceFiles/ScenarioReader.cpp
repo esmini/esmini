@@ -1625,8 +1625,34 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 			{
 				SwarmTrafficAction* trafficSwarmAction = new SwarmTrafficAction();
 
-				pugi::xml_node centralObjectNode = trafficChild.child("CentralSwarmObject");
-				trafficSwarmAction->centralObject_ = entities_->GetObjectByName(parameters.ReadAttribute(centralObjectNode, "entityRef"));
+				pugi::xml_node childNode = trafficChild.child("CentralSwarmObject");
+				trafficSwarmAction->SetCentralObject(entities_->GetObjectByName(parameters.ReadAttribute(childNode, "entityRef")));
+				//childNode = trafficChild.child("")
+
+				std::string radius, numberOfVehicles, velocity;
+
+				// Inner radius (Circle)
+				radius = parameters.ReadAttribute(trafficChild, "innerRadius");
+				trafficSwarmAction->SetInnerRadius(std::stod(radius));
+                
+				// Semi major axis
+				radius = parameters.ReadAttribute(trafficChild, "semiMajorAxis");
+				trafficSwarmAction->SetSemiMajorAxes(std::stod(radius));
+
+				// Semi major axis
+				radius = parameters.ReadAttribute(trafficChild, "semiMinorAxis");
+				trafficSwarmAction->SetSemiMinorAxes(std::stod(radius));
+
+				trafficSwarmAction->SetEntities(entities_);
+
+				// Number of vehicles
+				numberOfVehicles = parameters.ReadAttribute(trafficChild, "numberOfVehicles");
+				trafficSwarmAction->SetNumberOfVehicles(std::stoul(numberOfVehicles));
+
+				// Velocity
+				velocity = parameters.ReadAttribute(trafficChild, "velocity");
+				trafficSwarmAction->Setvelocity(std::stod(velocity));
+
 				action = trafficSwarmAction;
 			}
 		}
@@ -2933,7 +2959,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 							trigger->relDistType_ = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN;
 						}
 
-						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
+						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "va lue"));
 						trigger->rule_ = ParseRule(parameters.ReadAttribute(condition_node, "rule"));
 
 						condition = trigger;

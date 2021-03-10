@@ -12,12 +12,21 @@
 
 #pragma once
 #include <iostream>
+#include <random>
 #include "OSCAction.hpp"
 #include "CommonMini.hpp"
 #include "Parameters.hpp"
+#include "Entities.hpp"
+#include "OSCAABBTree.hpp"
+#include <vector>
+#include "OSCUtils.hpp"
 
 namespace scenarioengine
 {
+
+	using aabbTree::Solutions;
+	using std::vector;
+	using namespace Utils;
 
 	class OSCGlobalAction : public OSCAction
 	{
@@ -95,14 +104,34 @@ namespace scenarioengine
 	class SwarmTrafficAction : public OSCGlobalAction
 	{
 	public:
-		SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC), centralObject_(0) {};
 
-		SwarmTrafficAction(const SwarmTrafficAction& action) : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC)
-		{
+		struct SpawnInfo{
+			int vehicleID;
+			int outMidAreaCount;
+			int roadID;
+			int lane;
+			double simTime;
+		};
+
+		typedef struct {
+		    roadmanager::Position pos;
+			roadmanager::Road *road;
+		    int nLanes;
+	    } SelectInfo;
+		
+		SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC), centralObject_(0) {
+			spawnedV.clear();
+			//std::mt19937 temp(std::random_device{}());
+			//gen = temp;
+		};
+
+		SwarmTrafficAction(const SwarmTrafficAction& action) : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC) {
+		    spawnedV.clear();
+			//std::mt19937 temp(std::random_device{}());
+			//gen = temp;
 		}
 
-		OSCGlobalAction* Copy()
-		{
+		OSCGlobalAction* Copy() {
 			SwarmTrafficAction* new_action = new SwarmTrafficAction(*this);
 			return new_action;
 		}
@@ -111,12 +140,38 @@ namespace scenarioengine
 
 		void Step(double dt, double simTime);
 
-		void print()
-		{
+		void print() {
 			LOG("");
 		}
 
+		void SetCentralObject(Object* centralObj) { centralObject_ = centralObj; }
+		void SetInnerRadius(double innerRadius)   { innerRadius_   = innerRadius;}
+		void SetSemiMajorAxes(double axes)        { semiMajorAxis_ = axes;       }
+		void SetSemiMinorAxes(double axes)        { semiMinorAxis_ = axes;       }
+		void SetEntities(Entities* entities)      { entities_      = entities;   }
+		void SetNumberOfVehicles(int number)      { numberOfVehicles = number;   }
+		void Setvelocity(double velocity)         { velocity_ = velocity;        }
+
+    private:
+
+		double velocity_;
+		//std::mt19937 gen;
+		Entities *entities_;
 		Object* centralObject_;
+		aabbTree::ptTree rTree;
+		unsigned long numberOfVehicles;
+		std::vector<SpawnInfo> spawnedV;
+		roadmanager::OpenDrive* odrManager_;
+		double innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
+		
+
+		int despawn(double simTime);
+		void createRoadSegments(aabbTree::BBoxVec &vec);
+		void spawn(Solutions sols, int replace, double simTime);
+		inline bool ensureDistance(roadmanager::Position pos, int lane);
+		void createEllipseSegments(aabbTree::BBoxVec &vec, double SMjA, double SMnA);
+		inline void sampleRoads(int minN, int maxN, Solutions &sols, vector<SelectInfo> &info);
 	};
+
 }
 
