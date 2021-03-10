@@ -14,7 +14,7 @@
       </VehicleCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../xodr/straight_500m.xodr"/>   
+      <LogicFile filepath="../xodr/multi_intersections.xodr"/>   
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
@@ -28,7 +28,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="100" />
+                        <LanePosition roadId="196" laneId="-1" offset="0" s="100" />
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -47,7 +47,7 @@
       </Init>
       <Story name="story">
          <Act name="act">
-           <ManeuverGroup maximumExecutionCount="1" name="Swarm maneuver group">
+            <ManeuverGroup maximumExecutionCount="1" name="Swarm maneuver group">
                <Actors selectTriggeringEntities="false">
                   <EntityRef entityRef="Ego"/>
                </Actors>
@@ -56,25 +56,25 @@
                      <Action name="SwarmAction">
                         <GlobalAction>
                            <TrafficAction>
-                              <TrafficSwarmAction innerRadius="100">
-								 <CentralSwarmObject entityRef="Ego" />
+                              <TrafficSwarmAction innerRadius="100" semiMajorAxis="130" semiMinorAxis="105" numberOfVehicles="25" velocity="10">
+								         <CentralSwarmObject entityRef="Ego" />
                               </TrafficSwarmAction>
                            </TrafficAction>
                         </GlobalAction>
                      </Action>
                      <StartTrigger>
-						<ConditionGroup>
-							<Condition name="StartCondition" delay="0" conditionEdge="rising">
-								 <ByValueCondition>
-									<SimulationTimeCondition value="5" rule="greaterThan"/>
-								 </ByValueCondition>
-							</Condition>
-						</ConditionGroup>					 
+						      <ConditionGroup>
+							      <Condition name="StartCondition" delay="0" conditionEdge="rising">
+								      <ByValueCondition>
+									      <SimulationTimeCondition value="5" rule="greaterThan"/>
+								      </ByValueCondition>
+							      </Condition>
+						      </ConditionGroup>					 
                      </StartTrigger>
                   </Event>
                </Maneuver>
-			</ManeuverGroup>
-        </Act>
+			   </ManeuverGroup>
+         </Act>
       </Story>
      <StopTrigger/>
    </Storyboard>
