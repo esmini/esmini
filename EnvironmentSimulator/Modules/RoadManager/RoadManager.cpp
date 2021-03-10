@@ -6257,14 +6257,17 @@ int Position::SetInertiaPos(double x, double y, double z, double h, double p, do
 	x_ = x;
 	y_ = y;
 	z_ = z;
-	h_ = h;
-	p_ = p;
-	r_ = r;
 
 	if (updateTrackPos)
 	{
 		XYZ2Track(false);
 	}
+
+	// Now when road orientation is known, call functions for 
+	// updating angels both absolute and relative the road 
+	SetHeading(h);
+	SetPitch(p);
+	SetRoll(r);
 
 	return 0;
 }
@@ -6273,12 +6276,15 @@ int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
 {
 	x_ = x;
 	y_ = y;
-	SetHeading(h);
 
 	if (updateTrackPos)
 	{
 		XYZ2Track(true);
 	}
+
+	// Now when road orientation is known, call functions for 
+	// updating angels both absolute and relative the road 
+	SetHeading(h);
 
 	return 0;
 }
