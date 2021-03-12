@@ -1,5 +1,32 @@
 ## esmini release notes
 
+### 2021-03-12 Version 2.5.0
+
+- Support freespace distance measurement
+
+  Some conditions and actions offer a choice on how to measure distance:
+  - freespace = false: Distance between the reference points of objects (low fidelity)
+  - freespace = true: Distance between closest bounding box points (high fidelity)
+  
+  So far esmini has accepted freespace=true without actually implementing it, leading to no effect but the same result as for freespace=false. Now it is implemented and applied accordingly.
+  
+  Conditions with freespace option:
+  - TimeHeadwayCondition
+  - TimeToCollisionCondition
+  - DistanceCondition
+  - RelativeDistanceCondition
+    
+  Actions with freespace option:
+  - LongitudinalDistanceAction
+  - (LateralDistanceAction - not implemented in esmini yet)
+
+- Fix road mark bug ([issue #83](https://github.com/esmini/esmini/issues/83))  
+  The bug could cause visual defects on roads with multiple lane sections.
+
+- Fix relative orientation bug ([PR #85](https://github.com/esmini/esmini/pull/85))  
+  Could result in wrong vehicle heading caused by referring to road heading before known.
+
+
 ### 2021-03-05 Version 2.4.4
 
 - Further log file improvements
