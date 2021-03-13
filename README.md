@@ -123,8 +123,11 @@ More information [here](https://github.com/esmini/esmini/blob/master/docs/Contro
 
 Note that it does not seem to work with Anti-Alias filtering. Therefore make sure to run `esmini` without Anti-Alias by providing argument `--aa_mode 0`.
 
-### Scenario editor
-[RControlStation scenario editor](https://github.com/vedderb/rise_sdvp). An embryo to an OpenSCENARIO editor, part of Self-Driving Model Vehicle Platform (SDVP).
+### Scenario editors
+
+**[OpenScenarioEditor](https://github.com/ebadi/OpenScenarioEditor).** A simple ASAM OpenSCENARIO editor developed by Infotiv AB under VALU3S project. 
+
+**[RControlStation scenario editor](https://github.com/vedderb/rise_sdvp).** Another embryo to an OpenSCENARIO editor, part of Self-Driving Model Vehicle Platform (SDVP).
 
 The implementation is very limited at this point, but some things can be edited and the scenario can be executed and observed from above, as well as exported to the other tools. You have to start by importing one of the existing scenarios into the editor, as it cannot make a scenario from scratch.
 
@@ -155,6 +158,10 @@ export LD_LIBRARY_PATH=esmini/bin
 ./build/lin/RControlStation
 ```
 The editor is the last tab in RControlStation.
+
+### esmini-pybind11
+[esmini-pybind11](https://github.com/ebadi/esmini-pybind11) is an ongoing effort to establish a Python wrapper for internal esmini API (not only shared libraries esminiLib and esminiRMLib). 
+
 
 ### Carla Simulator
 [Carla](http://carla.org/) is an [Unreal](https://www.unrealengine.com/) based open source simulator worth to check out.
