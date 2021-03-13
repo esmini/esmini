@@ -374,7 +374,6 @@ namespace roadmanager
 		double GetWidth() { return width_; }
 		LaneRoadMarkTypeLine* GetLaneRoadMarkTypeLineByIdx(int idx);
 		int GetNumberOfRoadMarkTypeLines() { return (int)lane_roadMarkTypeLine_.size(); }
-		void Print();
 
 	private:
 		std::string name_;
@@ -695,7 +694,7 @@ namespace roadmanager
 		double speed_;  // m/s
 	} RoadTypeEntry;
 
-	class Signal
+	class RoadObject
 	{
 	public:
 		enum Orientation
@@ -704,6 +703,11 @@ namespace roadmanager
 			NEGATIVE,
 			NONE,
 		};
+	};
+
+	class Signal : public RoadObject
+	{
+	public:
 
 		enum Type
 		{
@@ -832,15 +836,9 @@ namespace roadmanager
 		void AddCorner(OutlineCorner* outlineCorner) { corner_.push_back(outlineCorner); }
 	};
 
-	class Object
+	class Object : public RoadObject
 	{
 	public:
-		enum Orientation
-		{
-			POSITIVE,
-			NEGATIVE,
-			NONE,
-		};
 
 		Object(double s, double t, int id, std::string name, Orientation orientation, double z_offset, std::string type,
 			double length, double height, double width, double heading, double pitch, double roll) :

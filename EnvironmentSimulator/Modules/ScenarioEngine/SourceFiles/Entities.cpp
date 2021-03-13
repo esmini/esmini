@@ -10,8 +10,6 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-#pragma once
-
 #include "Entities.hpp"
 #include "Controller.hpp"
 
