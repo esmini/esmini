@@ -72,7 +72,6 @@ int ScenarioReader::loadOSCFile(const char * path)
 
 	if (!osc_root_)
 	{
-		LOG("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
 		throw std::runtime_error("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
 	}
 
@@ -96,7 +95,6 @@ int ScenarioReader::loadOSCMem(const pugi::xml_document &xml_doc)
 
 	if (!osc_root_)
 	{
-		LOG("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
 		throw std::runtime_error("Couldn't find OpenSCENARIO or OpenScenario element - check XML!");
 	}
 
@@ -166,8 +164,7 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 	}
 	if (!result)
 	{
-		LOG("Catalog load failure: %s", result.description());
-		throw std::runtime_error(std::string("Couldn't locate catalog file: " + name + ", make sure it is located in one of the catalog directories listed in the scenario file").c_str());
+		throw std::runtime_error(std::string("Couldn't locate catalog file: " + name + ". " + result.description()));
 	}
 
 	LOG("Loading catalog %s", name.c_str());
@@ -177,7 +174,6 @@ Catalog* ScenarioReader::LoadCatalog(std::string name)
 		osc_node_ = catalog_doc.child("OpenScenario");
 		if (!osc_node_)
 		{
-			LOG("Couldn't find Catalog OpenSCENARIO or OpenScenario element - check XML!");
 			throw std::runtime_error("Couldn't find Catalog OpenSCENARIO or OpenScenario element - check XML!");
 		}
 	}
@@ -1144,8 +1140,9 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 						}
 						else
 						{
-							LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE).c_str(), entry->GetTypeAsStr().c_str());
-							throw std::runtime_error("Failed to resolve catalog reference");
+							throw std::runtime_error(std::string("Found catalog entry ") + entry->name_ \
+								+ ". But wrong type: " + entry->GetTypeAsStr() + ". Expected: " + \
+								Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE) + ".");
 						}
 
 						parameters.RestoreParameterDeclarations();
@@ -1204,8 +1201,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 
 	if (pos_return == 0)
 	{
-		LOG("Failed parse position (node %s)", positionNode.name());
-		throw std::runtime_error("Failed parse position");
+		throw std::runtime_error(std::string("Failed parse position in node ") + positionNode.name());
 	}
 
 	return pos_return;
@@ -1232,7 +1228,6 @@ OSCPrivateAction::DynamicsShape ParseDynamicsShape(std::string shape)
 	else
 	{
 		std::string msg = "Dynamics shape " + shape + " not supported yet";
-		LOG(msg.c_str());
 		throw std::runtime_error(msg);
 	}
 
@@ -1514,7 +1509,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								}
 								else
 								{
-									LOG("Unsupported LaneChangeTarget: %s", targetChild.name());
 									throw std::runtime_error(std::string("Unsupported LaneChangeTarget: ") + targetChild.name());
 								}
 							}
@@ -1743,8 +1737,9 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							}
 							else
 							{
-								LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE).c_str(), entry->GetTypeAsStr().c_str());
-								throw std::runtime_error("Failed to resolve catalog reference");
+								throw std::runtime_error(std::string("Found catalog entry ") + entry->name_ \
+									+ ". But wrong type: " + entry->GetTypeAsStr() + ". Expected: " + \
+									Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE) + ".");
 							}
 						}
 					}
@@ -1778,8 +1773,9 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							}
 							else
 							{
-								LOG("Catalog entry of type %s expected - found %s", Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE).c_str(), entry->GetTypeAsStr().c_str());
-								throw std::runtime_error("Failed to resolve catalog reference");
+								throw std::runtime_error(std::string("Found catalog entry ") + entry->name_ \
+									+ ". But wrong type: " + entry->GetTypeAsStr() + ". Expected: " + \
+									Entry::GetTypeAsStr_(CatalogType::CATALOG_ROUTE) + ".");
 							}
 						}
 						else if (followTrajetoryChild.name() == std::string("TimeReference"))
@@ -2336,8 +2332,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 							}
 							else 
 							{
-								LOG("Unexpected ObjectType %s in CollisionCondition", type_str.c_str());
-								throw std::runtime_error(type_str.c_str());
+								throw std::runtime_error(std::string("Unexpected ObjectType in CollisionCondition: ") + type_str);
 							}
 						}
 
@@ -2792,8 +2787,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 								}
 								else
 								{
-									LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
-									throw std::runtime_error("Failed to resolve catalog reference");
+									throw std::runtime_error(std::string("Unexpected catalog type: ") + entry->GetTypeAsStr());
 								}
 
 								// Remove temporary parameters used for catalog reference

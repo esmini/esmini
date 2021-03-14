@@ -1931,8 +1931,7 @@ OpenDrive::OpenDrive(const char *filename)
 {
 	if (!LoadOpenDriveFile(filename))
 	{
-		LOG("Error loading OpenDrive %s\n", filename);
-		throw std::invalid_argument("Failed to load OpenDrive file");
+		throw std::invalid_argument(std::string("Failed to load OpenDrive file: ") + filename);
 	}
 }
 
@@ -1976,14 +1975,15 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 	pugi::xml_parse_result result = doc.load_file(filename);
 	if (!result)
 	{
+		LOG("%s at offset (character position): %d", result.description(), result.offset);
 		return false;
 	}
 
 	pugi::xml_node node = doc.child("OpenDRIVE");
 	if (node == NULL)
 	{
-		cout << "Root null" << endl;
-		throw std::invalid_argument("The file does not seem to be an OpenDRIVE");
+		LOG("Invalid OpenDRIVE file, can't find OpenDRIVE element");
+		return false;
 	}
 
 	for (pugi::xml_node road_node = node.child("road"); road_node; road_node = road_node.next_sibling("road"))

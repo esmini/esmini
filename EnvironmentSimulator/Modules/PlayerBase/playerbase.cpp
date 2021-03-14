@@ -741,7 +741,7 @@ int ScenarioPlayer::Init()
 	}
 	catch (std::logic_error &e)
 	{
-		printf("%s\n", e.what());
+		LOG(std::string("Exception: ").append(e.what()).c_str());
 		return -1;
 	}
 

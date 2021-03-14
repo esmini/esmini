@@ -473,20 +473,31 @@ void ScenarioEngine::parseScenario()
 			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(getOdrFilename())));
 		}
 		size_t i;
+		bool located = false;
 		for (i = 0; i < file_name_candidates.size(); i++)
 		{
 			if (FileExists(file_name_candidates[i].c_str()))
 			{
-				if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()))
+				located = true;
+				if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()) == true)
 				{
 					break;
+				}
+				else
+				{
+					LOG("Failed to load OpenDRIVE file: %s", file_name_candidates[i].c_str());
+					if (i < file_name_candidates.size() - 1)
+					{
+						LOG("  -> trying: %s", file_name_candidates[i + 1].c_str());
+					}
 				}
 			}
 		}
 
 		if (i == file_name_candidates.size())
 		{
-			throw std::invalid_argument(std::string("Failed to load OpenDRIVE file ") + std::string(getOdrFilename().c_str()));
+			throw std::invalid_argument(std::string("Failed to ") + (located ? "load" : "find") + \
+				" OpenDRIVE file " + std::string(getOdrFilename().c_str()));
 		}
 	}
 

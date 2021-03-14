@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	}
 	catch (const std::exception& e)
 	{
-		LOG(e.what());
+		LOG(std::string("Exception: ").append(e.what()).c_str());
 		return -1;
 	}
 
