@@ -129,10 +129,13 @@ int ScenarioReader::RegisterCatalogDirectory(pugi::xml_node catalogDirChild)
 Object* ScenarioReader::ResolveObjectReference(std::string name)
 {
 	Object* object = entities_->GetObjectByName(name);
+
 	if (object == 0)
 	{
 		throw std::runtime_error(std::string("Failed to find object: ") + name);
 	}
+
+	return object;
 }
 
 
