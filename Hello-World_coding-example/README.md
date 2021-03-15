@@ -340,6 +340,79 @@ To test this you need to make two changes to the previous example:
 
 When running the application, press key 'j' to show dots along Ego and Ghost trails.
 
+### OSI groundtruth
+For accessing OSI data we first need to complement the Hello-World_coding-example/CMakeLists.cxx with OSI include and library info. Make following modifications:
+
+```
+include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../externals/OSI/v10/include)
+```
+```
+link_directories(. ../lib ../bin ../externals/OSI/v10/lib)
+```
+```
+target_link_libraries(${TARGET} esminiLib libprotobuf open_simulation_interface_pic) 
+```
+**Note:** Replace foldername "v10" with linux or mac depending on your platform.
+
+Then run ``` cmake .. ``` from the build folder to apply the changes in CMakeFiles.cxx.
+
+The following code (put in main.cpp) will update, fetch and print some OSI data each frame.
+
+```
+#include "esminiLib.hpp"
+
+#include "osi_common.pb.h"
+#include "osi_object.pb.h"
+#include "osi_groundtruth.pb.h"
+#include "osi_version.pb.h"
+
+int main(int argc, char* argv[])
+{
+	SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
+
+	osi3::GroundTruth* gt;
+
+	// Initial update of complete Ground Truth, including static things
+	SE_UpdateOSIGroundTruth();
+
+	for (int i = 0; i < 100; i++)
+	{
+		SE_StepDT(0.01f);
+
+		// Update only dynamic OSI stuff
+		SE_UpdateOSIDynamicGroundTruth();
+
+		// Fetch OSI struct
+		gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
+
+		// Print timestamp
+		printf("Frame %d timestamp: %.2f\n", i, gt->mutable_timestamp()->seconds() +
+			1E-9 * gt->mutable_timestamp()->nanos());
+
+		// Print object id, position, orientation and velocity
+		for (int j = 0; j < gt->mutable_moving_object()->size(); j++)
+		{
+			printf(" obj id %lld pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
+				gt->mutable_moving_object(j)->mutable_id()->value(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_position()->x(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_position()->y(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_position()->z(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_orientation()->yaw(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_orientation()->pitch(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_orientation()->roll(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->x(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->y(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->z()
+			);
+		}
+
+		printf("moving objects in GT %d\n", gt->moving_object_size());
+		printf("road markings in GT %d\n", gt->road_marking_size());
+	}
+	return 0;
+}
+```
+
 ### Python binding
 
 A Python wrapper for esmini can easily be created using "ctypes" (thanks David Kaplan for the tip!). Run the following script in a folder where the ScenarioEngineDLL library is present:
