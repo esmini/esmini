@@ -7247,15 +7247,286 @@ void PolyLine::AddVertex(Position pos, double time, bool calculateHeading)
 	v->pos_ = pos;
 	v->time_ = time;
 	v->calc_heading_ = calculateHeading;
+	v->s_ = length_;
 	vertex_.push_back(v);
-	if (vertex_.size() > 1)
+}
+
+int PolyLine::EvaluateSegmentByLocalS(int i, double local_s, ShapePosition& pos)
+{
+	Position* vp0 = &vertex_[i]->pos_;
+
+	if (i >= vertex_.size() - 1)
 	{
-		length_ += PointDistance2D(
-			vertex_[vertex_.size() - 2]->pos_.GetX(),
-			vertex_[vertex_.size() - 2]->pos_.GetY(),
-			vertex_[vertex_.size() - 1]->pos_.GetX(),
-			vertex_[vertex_.size() - 1]->pos_.GetY());
+		pos.x = vp0->GetX();
+		pos.y = vp0->GetY();
+		pos.z = vp0->GetZ();
+		pos.h = vp0->GetH();
 	}
+	else if (i >= 0)
+	{
+		Position* vp1 = &vertex_[i + 1]->pos_;
+
+		double length = vertex_[i + 1]->s_ - vertex_[i]->s_;
+
+		local_s = CLAMP(local_s, 0, length);
+
+		double a = local_s / length; // a = interpolation factor
+
+		pos.x = (1 - a) * vp0->GetX() + a * vp1->GetX();
+		pos.y = (1 - a) * vp0->GetY() + a * vp1->GetY();
+		pos.z = (1 - a) * vp0->GetZ() + a * vp1->GetZ();
+		pos.h = (1 - a) * vp0->GetH() + a * vp1->GetH();
+	}
+	else
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
+int PolyLine::Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos)
+{
+	double s = 0;
+	double s_local = 0;
+	int i = 0;
+
+	if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && p > vertex_.back()->s_ ||
+		ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && p > vertex_.back()->time_)
+	{
+		// end of trajectory
+		s = GetLength();
+		s_local = 0;
+		i = (int)vertex_.size() - 1;
+	}
+	else
+	{
+		for (; i < vertex_.size() - 1 && 
+			(ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && vertex_[i + 1]->s_ < p ||
+			 ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && vertex_[i + 1]->time_ < p); i++);
+
+
+		double s0 = vertex_[i]->s_;
+		if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
+		{
+			double a = (p - vertex_[i]->time_) / (vertex_[i + 1]->time_ - vertex_[i]->time_); // a = interpolation factor
+			s = vertex_[i]->s_ + a * (vertex_[i + 1]->s_ - vertex_[i]->s_);
+		}
+		else
+		{
+			s = p;
+		}
+		s_local = s - s0;
+	}
+
+	EvaluateSegmentByLocalS(i, s_local, pos);
+	pos.s = s;
+
+	return 0;
+}
+
+double Nurbs::CoxDeBoor(double x, int i, int k, const std::vector<double>& t) 
+{
+	if (k == 1)
+	{
+		if (t[i] <= x && x < t[i + 1]) 
+		{
+			return 1.0;
+		}
+		return 0.0;
+	}
+
+	double den1 = t[i + k - 1] - t[i];
+	double den2 = t[i + k] - t[i + 1];
+	double eq1 = 0.0;
+	double eq2 = 0.0;
+
+	if (den1 > 0) 
+	{
+		eq1 = ((x - t[i]) / den1) * CoxDeBoor(x, i, k-1, t);
+	}
+	
+	if (den2 > 0) 
+	{
+		eq2 = (t[i + k] - x) / den2 * CoxDeBoor(x, i + 1, k-1, t);
+	}
+	
+	return eq1 + eq2;
+}
+
+void Nurbs::calcS2PMap()
+{
+	// Calculate approximate length - to find a reasonable step length
+	length_ = 0;
+	double steplen = 1.0; // steplen in meters
+
+	for (size_t i = 0; i < ctrlPoint_.size(); i++)
+	{
+		ctrlPoint_[i].pos_.ReleaseRelation();
+
+		if (i > 0)
+		{
+			length_ += PointDistance2D(
+				ctrlPoint_[i - 1].pos_.GetX(),
+				ctrlPoint_[i - 1].pos_.GetY(),
+				ctrlPoint_[i].pos_.GetX(),
+				ctrlPoint_[i].pos_.GetY());
+		}
+	}
+
+	if (length_ == 0)
+	{
+		throw std::runtime_error("Nurbs zero length - check controlpoints");
+	}
+
+	// Calculate arc length
+	double newLength = 0.0;
+	double p_steplen = steplen * knot_.back() / length_;
+	Shape::ShapePosition pos, oldpos = { 0, 0, 0, 0 };
+	
+	int nSteps = int(knot_.back() / p_steplen) + 1;
+	if (nSteps > NURBS_MAX_STEPS - 1)
+	{
+		// Increas steplen to fit static (memory aligned) array
+		p_steplen = knot_.back() / (NURBS_MAX_STEPS - 1);
+		nSteps = NURBS_MAX_STEPS - 1;
+	}
+
+	for (int i = 0; i < nSteps; i++)
+	{
+		EvaluateInternal(i * p_steplen, pos);
+		if (i > 0)
+		{
+			newLength += PointDistance2D(pos.x, pos.y, oldpos.x, oldpos.y);
+		}
+		pos.s = newLength;
+		
+		s2p_map_[i][0] = pos.s;
+		s2p_map_[i][1] = i * p_steplen;
+		
+		if (i > 0)
+		{
+			pos.h = GetAngleOfVector(pos.x - oldpos.x, pos.y - oldpos.y);
+			s2p_map_[i][2] = pos.h;
+		}
+
+		oldpos = pos;
+	}
+
+	s2p_map_[0][2] = s2p_map_[1][2]; // copy second derivative to first position - To be improved
+
+	length_ = newLength;
+}
+
+int Nurbs::S2P(double s, double &p, double &h)
+{
+	for (size_t i = 0; i < NURBS_MAX_STEPS; i++)
+	{
+		if (s2p_map_[i + 1][0] > s)
+		{
+			double w = (s - s2p_map_[i][0]) / (s2p_map_[i + 1][0] - s2p_map_[i][0]);
+			p = s2p_map_[i][1] + w * (s2p_map_[i + 1][1] - s2p_map_[i][1]);
+			h = s2p_map_[i][2] + w * GetAngleDifference(s2p_map_[i + 1][2], s2p_map_[i][2]);
+			return 0;
+		}
+	}
+	p = s2p_map_[NURBS_MAX_STEPS][1];
+	h = s2p_map_[NURBS_MAX_STEPS][2];
+	return 0;
+}
+
+int Nurbs::EvaluateInternal(double t, ShapePosition& pos)
+{
+	pos.x = pos.y = pos.z = 0.0;
+
+	// Find knot span
+	t = CLAMP(t, knot_[0], knot_.back());
+
+	double rationalWeight = 0.0;
+
+	int k;
+	for (k = order_ - 1; knot_[k + 1] <= t && k < knot_.size() - order_ - 1; k++);
+
+	for (size_t i = 0; i < ctrlPoint_.size(); i++)
+	{
+		// calculate the effect of this point on the curve
+		d_[i] = CoxDeBoor(t, (int)i, order_, knot_);
+		rationalWeight += d_[i] * ctrlPoint_[i].weight_;
+	}
+
+	for (size_t i = 0; i < ctrlPoint_.size(); i++)
+	{
+		if (d_[i] > SMALL_NUMBER)
+		{
+			// sum effect of CV on this part of the curve
+			pos.x += d_[i] * ctrlPoint_[i].pos_.GetX() * ctrlPoint_[i].weight_ / rationalWeight;
+			pos.y += d_[i] * ctrlPoint_[i].pos_.GetY() * ctrlPoint_[i].weight_ / rationalWeight;
+		}
+	}
+
+	// Interpolate Z in the knot span
+	pos.z = ctrlPoint_[k - order_ + 1].pos_.GetZ();  // need to be improved
+
+	return 0;
+}
+
+void Nurbs::AddKnots(std::vector<double> knots)
+{
+	knot_ = knots;
+
+	if (knot_.back() < SMALL_NUMBER)
+	{
+		return;
+	}
+}
+
+int Nurbs::Evaluate(double s, TrajectoryParamType ptype, ShapePosition& pos)
+{
+	if (ctrlPoint_.size() < order_ || GetLength() < SMALL_NUMBER)
+	{
+		return -1;
+	}
+
+	// Time not supported yet. Find t by linear interpolation of s.
+	if (ptype == TRAJ_PARAM_TYPE_TIME)
+	{
+		throw std::runtime_error("Time not supported yet in nurbs control points");
+	}
+
+	double t;
+	S2P(s, t, pos.h);
+	pos.s = s;
+	EvaluateInternal(t, pos);
+
+	return 0;
+}
+
+int Clothoid::Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos)
+{
+	if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
+	{
+		if (p > t_start_ && p < t_end_)
+		{
+			double t = p - t_start_;
+			// Transform time parameter value into a s value
+			p = length_ * (t - t_start_) / (t_end_ - t_start_);
+		}
+		else
+		{
+			LOG("Requested time %.2f outside range [%.2f, %.2f]", p, t_start_, t_end_);
+			p = length_;
+		}
+	}
+
+	spiral_->EvaluateDS(p, &pos.x, &pos.y, &pos.h);
+
+	// resolve road coordinates to get elevation at point
+	pos_.SetInertiaPos(pos.x, pos.y, pos.h, true);
+
+	pos.z = pos_.GetZ();
+	pos.s = p;
+
+	return 0;
 }
 
 int Position::MoveTrajectoryDS(double ds)
@@ -7265,157 +7536,47 @@ int Position::MoveTrajectoryDS(double ds)
 		return -1;
 	}
 
-	if (trajectory_->shape_->type_ == Shape::POLYLINE)
-	{
-		PolyLine* pline = (PolyLine*)trajectory_->shape_;
-		if (pline->vertex_.size() == 0)
-		{
-			return -1;
-		}
-		SetTrajectoryS(trajectory_, s_trajectory_ + ds);
-	}
-	else if (trajectory_->shape_->type_ == Shape::CLOTHOID)
-	{
-		SetTrajectoryS(trajectory_, s_trajectory_ + ds);
-	}
-	else
-	{
-		LOG("Trajectory types Clothoid and Nurbs not supported yet");
-	}
+	Shape::ShapePosition pos;
+	trajectory_->shape_->Evaluate(s_trajectory_ + ds, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, pos);
+
+	SetInertiaPos(pos.x, pos.y, pos.z, pos.h, 0.0, 0.0, true);
+
+	s_trajectory_ = pos.s;
 
 	return 0;
 }
 
-int Position::SetTrajectoryPosByTime(Trajectory* trajectory, double time)
+int Position::SetTrajectoryPosByTime(double time)
 {
-	double s = 0;
-
-	// Find out corresponding S-value
-	size_t i = 0;
-	if (trajectory->shape_->type_ == Shape::POLYLINE)
-	{
-		PolyLine* pline = (PolyLine*)trajectory->shape_;
-
-		for (i = 0; i < pline->vertex_.size()-1; i++)
-		{
-			double t0 = pline->vertex_[i]->time_;
-			double t1 = pline->vertex_[i+1]->time_;
-			Position* vp0 = &pline->vertex_[i]->pos_;
-			Position* vp1 = &pline->vertex_[i+1]->pos_;
-
-			double dist = PointDistance2D(vp0->GetX(), vp0->GetY(), vp1->GetX(), vp1->GetY());
-
-			if (time < t1)
-			{
-				double a = (time - t0) / (t1 - t0);
-				s += a * dist;
-				break;
-			}
-			s += dist;
-		}
-	}
-	else if (trajectory->shape_->type_ == Shape::CLOTHOID)
-	{
-		Clothoid* clothoid = (Clothoid*)trajectory->shape_;
-
-		if (time > clothoid->t_start_ && time < clothoid->t_end_)
-		{
-			double t = time - clothoid->t_start_;
-			s = clothoid->length_ * (t - clothoid->t_start_) / (clothoid->t_end_ - clothoid->t_start_);
-		}
-		else
-		{
-			LOG("Requested time %.2f outside range [%.2f, %.2f]", time, clothoid->t_start_, clothoid->t_end_);
-		}
-	}
-	else
-	{
-		LOG("Trajectory types Clothoid and Nurbs not supported yet");
-	}
-	
-//	LOG("i %d t %.2f s %.2f", i, time, s);
-
-	SetTrajectoryS(trajectory_, s);
-
-	return 0;
-}
-
-int Position::SetTrajectoryS(Trajectory* trajectory, double traj_s)
-{
-	if (!trajectory)
+	if (!trajectory_)
 	{
 		return -1;
 	}
 
-	s_trajectory_ = traj_s;
-	
-	if (trajectory->shape_->type_ == Shape::POLYLINE)
+	Shape::ShapePosition pos;
+	trajectory_->shape_->Evaluate(time, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_TIME, pos);
+
+	SetInertiaPos(pos.x, pos.y, pos.z, pos.h, 0.0, 0.0, true);
+
+	s_trajectory_ = pos.s;
+
+	return 0;
+}
+
+int Position::SetTrajectoryS(double s)
+{
+	if (!trajectory_)
 	{
-		PolyLine* pline = (PolyLine*)trajectory->shape_;
-		if (pline->vertex_.size() == 0)
-		{
-			return -1;
-		}
-		else if (pline->vertex_.size() == 1)
-		{
-			// Only one vertex 
-			Position* vpos = &pline->vertex_[0]->pos_;
-			SetInertiaPos(vpos->GetX(), vpos->GetY(), vpos->GetZ(), vpos->GetH(), vpos->GetP(), vpos->GetR(), false);
-			
-			return 0;
-		}
-
-		double tot_dist = 0;
-		size_t i;
-		for (i = 0; i < pline->vertex_.size()-1; i++)
-		{
-			Position* vp0 = &pline->vertex_[i]->pos_;
-			Position* vp1 = &pline->vertex_[i+1]->pos_;
-			
-			double dist = PointDistance2D(vp0->GetX(), vp0->GetY(), vp1->GetX(), vp1->GetY());
-			if (traj_s < tot_dist + dist)
-			{
-				// At segment, make a linear interpolation
-				double a = (traj_s - tot_dist) / dist; // a = interpolation factor
-
-				SetInertiaPos(
-					(1 - a) * vp0->GetX() + a * vp1->GetX(),
-					(1 - a) * vp0->GetY() + a * vp1->GetY(),
-					(1 - a) * vp0->GetZ() + a * vp1->GetZ(),
-					GetAngleInInterval2PI(vp0->GetH() + a * GetAngleDifference(vp1->GetH(), vp0->GetH())),
-					GetAngleInInterval2PI(vp0->GetP() + a * GetAngleDifference(vp1->GetP(), vp0->GetP())),
-					GetAngleInInterval2PI(vp0->GetR() + a * GetAngleDifference(vp1->GetR(), vp0->GetR())),
-					true);
-				
-				return 0;
-			}
-			tot_dist += dist;
-		}
-
-		if (i == pline->vertex_.size() - 1)
-		{
-			// passed length of trajectory, use final vertex
-			Position* vpos = &pline->vertex_.back()->pos_;
-			SetInertiaPos(vpos->GetX(), vpos->GetY(), vpos->GetZ(), vpos->GetH(), vpos->GetP(), vpos->GetR(), false);
-
-			return 0;
-		}
-	}
-	else if (trajectory->shape_->type_ == Shape::CLOTHOID)
-	{
-		double x, y, h;
-		Clothoid* clothoid = (Clothoid*)trajectory_->shape_;
-
-		clothoid->spiral_->EvaluateDS(traj_s, &x, &y, &h);
-		SetInertiaPos(x, y, 0.0, h, 0.0, 0.0, false);
-		return 0;
-	}
-	else
-	{
-		LOG("Trajectory type Nurbs not supported yet");
+		return -1;
 	}
 
-	return -1;
+	Shape::ShapePosition pos;
+	trajectory_->shape_->Evaluate(s, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, pos);
+	SetInertiaPos(pos.x, pos.y, pos.z, pos.h, 0.0, 0.0, true);
+
+	s_trajectory_ = pos.s;
+
+	return 0;
 }
 
 int Position::SetRouteS(Route *route, double route_s)
@@ -7639,7 +7800,6 @@ int Route::GetWayPointDirection(int index)
 
 double Route::GetLength()
 {
-
 	return 0.0;
 }
 
@@ -7671,6 +7831,8 @@ void Trajectory::Freeze()
 					pline->vertex_[i-1]->pos_.GetY(),
 					pline->vertex_[i]->pos_.GetX(),
 					pline->vertex_[i]->pos_.GetY());
+				
+				pline->vertex_[i]->s_ = pline->length_;
 
 				// Calculate heading from last point
 				if (pline->vertex_[i-1]->calc_heading_)
@@ -7679,7 +7841,6 @@ void Trajectory::Freeze()
 					double dy = pline->vertex_[i]->pos_.GetY() - pline->vertex_[i - 1]->pos_.GetY();
 					pline->vertex_[i-1]->pos_.SetHeading(atan2(dy, dx));
 				}
-
 			}
 		}
 	}
@@ -7692,10 +7853,11 @@ void Trajectory::Freeze()
 		clothoid->spiral_->SetX(clothoid->pos_.GetX());
 		clothoid->spiral_->SetY(clothoid->pos_.GetY());
 		clothoid->spiral_->SetHdg(clothoid->pos_.GetH());
-
 	}
 	else
 	{
-		LOG("Nurbs trajectory type not supported yet");
+		Nurbs* nurbs = (Nurbs*)shape_;
+
+		nurbs->calcS2PMap();
 	}
 }

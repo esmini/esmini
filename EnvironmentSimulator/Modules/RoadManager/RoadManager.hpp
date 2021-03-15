@@ -21,6 +21,7 @@
 #include "CommonMini.hpp"
 
 #define PARAMPOLY3_STEPS 100
+#define NURBS_MAX_STEPS 1000
 
 namespace roadmanager
 {
@@ -1379,9 +1380,9 @@ namespace roadmanager
 		@param trajectory_s Distance to move, negative will move backwards
 		@return Non zero return value indicates error of some kind
 		*/
-		int SetTrajectoryS(Trajectory* trajectory, double trajectory_s);
+		int SetTrajectoryS(double trajectory_s);
 
-		int SetTrajectoryPosByTime(Trajectory* trajectory, double time);
+		int SetTrajectoryPosByTime(double time);
 
 		/**
 		Retrieve the S-value of the current route position. Note: This is the S along the
@@ -1812,8 +1813,25 @@ namespace roadmanager
 			SHAPE_TYPE_UNDEFINED
 		} ShapeType;
 
-		Shape(ShapeType type) : type_(type), length_(0) {}
+		typedef enum
+		{
+			TRAJ_PARAM_TYPE_S,
+			TRAJ_PARAM_TYPE_TIME
+		} TrajectoryParamType;
 
+		typedef struct
+		{
+			double s;
+			double x;
+			double y;
+			double z;
+			double h;
+		} ShapePosition;
+
+		Shape(ShapeType type) : type_(type), length_(0) {}
+		double GetLength() { return length_; }
+		virtual int Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos) { return -1; }
+		
 		ShapeType type_;
 		double length_;
 	};
@@ -1826,12 +1844,15 @@ namespace roadmanager
 		{
 		public:
 			Position pos_;
+			double s_;
 			double time_;
 			bool calc_heading_;
 		};
 
 		PolyLine() : Shape(ShapeType::POLYLINE) {}
 		void AddVertex(Position pos, double time, bool calculateHeading);
+		int Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos);
+		int EvaluateSegmentByLocalS(int i, double local_s, ShapePosition& pos);
 
 		std::vector<Vertex*> vertex_;
 	};
@@ -1849,26 +1870,70 @@ namespace roadmanager
 			t_end_ = tEnd;
 		}
 
+		int Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos);
+
 		Position pos_;
 		roadmanager::Spiral* spiral_;  // make use of the OpenDRIVE clothoid definition
 		double t_start_;
 		double t_end_;
 	};
 
+	/**
+		This nurbs implementation is strongly inspired by the "Nurbs Curve Example" at:
+		https://nccastaff.bournemouth.ac.uk/jmacey/OldWeb/RobTheBloke/www/opengl_programming.html
+	*/
 	class Nurbs : public Shape
 	{
+		class ControlPoint
+		{
+		public:
+			Position pos_;
+			double time_;
+			double weight_;
+			bool calcHeading_;
+
+			ControlPoint(Position pos, double time, double weight, bool calcHeading) : 
+				pos_(pos), time_(time), weight_(weight), calcHeading_(calcHeading) {}
+		};
+
 	public:
-		Nurbs() : Shape(ShapeType::NURBS) {}
+		Nurbs(int order) : order_(order), Shape(ShapeType::NURBS) {}
+
+		void AddControlPoint(Position pos, double time, double weight, bool calcHeading) 
+		{ 
+			ctrlPoint_.push_back(ControlPoint(pos, time, weight, calcHeading)); 
+			d_.push_back(0);
+		}
+		void AddKnots(std::vector<double> knots);
+		int Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos);
+		int EvaluateInternal(double s, ShapePosition& pos);
+
+		int order_;
+		std::vector<ControlPoint> ctrlPoint_;
+		std::vector<double> knot_;
+		std::vector<double> d_;  // used for temporary storage of CoxDeBoor weigthed control points
+
+		void calcS2PMap();
+		int S2P(double s, double &p, double &h);
+
+	private:
+
+		double s2p_map_[NURBS_MAX_STEPS + 1][3];
+
+		double CoxDeBoor(double x, int i, int p, const std::vector<double>& t);
+
 	};
 
 	class Trajectory
 	{
 	public:
+
 		Shape* shape_;
 
 		Trajectory(Shape* shape, std::string name, bool closed) : shape_(shape), name_(name), closed_(closed) {}
 		Trajectory() : shape_(0), closed_(false) {}
 		void Freeze();
+		double GetLength() { return shape_ ? shape_->GetLength() : 0.0; }
 
 		std::string name_;
 		bool closed_;

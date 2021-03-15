@@ -276,15 +276,25 @@ void ScenarioPlayer::ViewerFrame()
 			}
 		}
 	}
+
 	// Visualize entities
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
 		viewer::EntityModel *entity = viewer_->entities_[i];
-		Object *obj = scenarioEngine->entities.object_[i];
-		roadmanager::Position pos = obj->pos_;
+		Object* obj = scenarioEngine->entities.object_[i];
 
-		entity->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
-		entity->SetRotation(pos.GetH(), pos.GetP(), pos.GetR());
+		entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+		entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP(), obj->pos_.GetR());
+
+		if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
+		{
+			entity->trajectory_->SetActiveRMTrajectory(obj->pos_.GetTrajectory());
+		}
+		else if (entity->trajectory_->activeRMTrajectory_ && !obj->pos_.GetTrajectory())
+		{
+			// Trajectory has been deactivated on the entity, disable visualization
+			entity->trajectory_->Disable();
+		}
 
 		if (entity->GetType() == viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
 		{
@@ -302,20 +312,20 @@ void ScenarioPlayer::ViewerFrame()
 				if (car->trail_sensor_)
 				{
 					viewer_->SensorSetPivotPos(car->trail_sensor_, obj->trail_closest_pos_[0], obj->trail_closest_pos_[1], obj->trail_closest_pos_[2]);
-					viewer_->SensorSetTargetPos(car->trail_sensor_, pos.GetX(), pos.GetY(), pos.GetZ());
+					viewer_->SensorSetTargetPos(car->trail_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 					viewer_->UpdateSensor(car->trail_sensor_);
 				}
 			}
 
 			if (odr_manager->GetNumOfRoads() > 0 && car->road_sensor_)
 			{
-				viewer_->UpdateRoadSensors(car->road_sensor_, car->lane_sensor_, &pos);
+				viewer_->UpdateRoadSensors(car->road_sensor_, car->lane_sensor_, &obj->pos_);
 			}
 		}
 
 		if (add_dot)
 		{
-			entity->trail_->AddDot(pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH());
+			entity->trail_->AddDot(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH());
 		}
 	}
 
@@ -341,6 +351,7 @@ void ScenarioPlayer::ViewerFrame()
 	viewer_->SetInfoText(str_buf);
 
 	mutex.Unlock();
+
 	viewer_->osgViewer_->frame();
 
 	if (viewer_->osgViewer_->done())

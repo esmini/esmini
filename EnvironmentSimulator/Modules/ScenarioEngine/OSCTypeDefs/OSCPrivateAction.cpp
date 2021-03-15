@@ -115,6 +115,9 @@ void FollowTrajectoryAction::End()
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
+	{
+		return;
+	}
 
 	// Disconnect trajectory
 	object_->pos_.SetTrajectory(0);
@@ -159,14 +162,14 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 		else if (timing_domain_ == TimingDomain::TIMING_RELATIVE)
 		{
 			double s_old = object_->pos_.GetTrajectoryS();
-			object_->pos_.SetTrajectoryPosByTime(traj_, time_ + timing_offset_);
+			object_->pos_.SetTrajectoryPosByTime(time_ + timing_offset_);
 			object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
 			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
 		else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
 		{
 			double s_old = object_->pos_.GetTrajectoryS();
-			object_->pos_.SetTrajectoryPosByTime(traj_, simTime * timing_scale_ + timing_offset_);
+			object_->pos_.SetTrajectoryPosByTime(simTime * timing_scale_ + timing_offset_);
 			object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
 			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}

@@ -48,17 +48,18 @@ namespace viewer
 {
 	typedef enum
 	{
-		NODE_MASK_NONE =           (0),
-		NODE_MASK_OBJECT_SENSORS = (1 << 0),
-		NODE_MASK_TRAILS =         (1 << 1),
-		NODE_MASK_ODR_FEATURES =   (1 << 2),
-		NODE_MASK_OSI_POINTS =     (1 << 3),
-		NODE_MASK_OSI_LINES =      (1 << 4),
-		NODE_MASK_ENV_MODEL =      (1 << 5),
-		NODE_MASK_ENTITY_MODEL =   (1 << 6),
-		NODE_MASK_ENTITY_BB =      (1 << 7),
-		NODE_MASK_INFO =           (1 << 8),
-		NODE_MASK_ROAD_SENSORS =   (1 << 9),
+		NODE_MASK_NONE =             (0),
+		NODE_MASK_OBJECT_SENSORS =   (1 << 0),
+		NODE_MASK_TRAILS =           (1 << 1),
+		NODE_MASK_ODR_FEATURES =     (1 << 2),
+		NODE_MASK_OSI_POINTS =       (1 << 3),
+		NODE_MASK_OSI_LINES =        (1 << 4),
+		NODE_MASK_ENV_MODEL =        (1 << 5),
+		NODE_MASK_ENTITY_MODEL =     (1 << 6),
+		NODE_MASK_ENTITY_BB =        (1 << 7),
+		NODE_MASK_INFO =             (1 << 8),
+		NODE_MASK_ROAD_SENSORS =     (1 << 9),
+		NODE_MASK_TRAJECTORY_LINES = (1 << 10),
 	} NodeMask;
 
 	class Line
@@ -154,6 +155,37 @@ namespace viewer
 		osgViewer::Viewer *viewer_;
 	};
 
+	class Trajectory
+	{
+	public:
+		typedef struct
+		{
+			double x;
+			double y;
+			double z;
+			double h;
+		} Vertex;
+
+		std::vector<Vertex> vertices_;
+		osg::Group* parent_;
+		osg::Node* node_;
+		roadmanager::Trajectory* activeRMTrajectory_;
+
+		Trajectory(osg::Group* parent, osgViewer::Viewer* viewer);
+		~Trajectory() {}
+
+		void SetActiveRMTrajectory(roadmanager::Trajectory* RMTrajectory);
+		void Disable();
+
+	private:
+		osgViewer::Viewer* viewer_;
+		
+		// osg references for drawing lines 
+		osg::ref_ptr<osg::Vec4Array> color_;
+		osg::ref_ptr<osg::Geometry> line_geom_;
+		osg::ref_ptr<osg::Vec3Array> points_;
+	};
+
 	class PointSensor
 	{
 	public:
@@ -185,10 +217,12 @@ namespace viewer
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
 		osg::ref_ptr<osg::Group> bb_;
 		osg::Quat quat_;
+
 		double size_x;
 		double size_y;
 		double center_x;
 		double center_y;
+		Trajectory* trajectory_;
 		static const int entity_type_ = ENTITY_TYPE_OTHER;
 		virtual int GetType() { return entity_type_; }
 
@@ -198,7 +232,7 @@ namespace viewer
 		osg::ref_ptr<osg::StateSet> state_set_;
 
 		EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> 
-			trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
+			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double h, double p, double r);
 
@@ -223,7 +257,7 @@ namespace viewer
 		virtual int GetType() { return entity_type_; }
 
 		CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group>
-			trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
+			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
 		~CarModel();
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName);
 		void UpdateWheels(double wheel_angle, double wheel_rotation);
@@ -290,6 +324,7 @@ namespace viewer
 		osg::ref_ptr<osg::Group> odrLines_;
 		osg::ref_ptr<osg::Group> osiLines_;
 		osg::ref_ptr<osg::Group> osiPoints_;
+		osg::ref_ptr<osg::Group> trajectoryLines_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> envTx_;
 		osg::ref_ptr<osg::Node> environment_;
 		osg::ref_ptr<osgGA::RubberbandManipulator> rubberbandManipulator_;

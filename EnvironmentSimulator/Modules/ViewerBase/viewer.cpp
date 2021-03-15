@@ -124,8 +124,8 @@ Line::Line(double x0, double y0, double z0, double x1, double y1, double z1, dou
 void Line::SetPoints(double x0, double y0, double z0, double x1, double y1, double z1)
 {
 	line_vertex_data_->clear();
-	line_vertex_data_->push_back(osg::Vec3d(x0, y0, z0));
-	line_vertex_data_->push_back(osg::Vec3d(x1, y1, z1));
+	line_vertex_data_->push_back(osg::Vec3(x0, y0, z0));
+	line_vertex_data_->push_back(osg::Vec3(x1, y1, z1));
 	line_->dirtyGLObjects();
 	line_->dirtyBound();
 	line_vertex_data_->dirty();
@@ -481,6 +481,67 @@ Trail::~Trail()
 	}
 }
 
+Trajectory::Trajectory(osg::Group* parent, osgViewer::Viewer* viewer) : 
+	parent_(parent), viewer_(viewer), activeRMTrajectory_(0)
+{
+	// osg references for drawing lines on the lane center using osi points
+	points_ = new osg::Vec3Array;
+	line_geom_ = new osg::Geometry;
+	color_ = new osg::Vec4Array;
+	color_->push_back(osg::Vec4(0.9, 0.7, 0.3, 1.0));
+
+	line_geom_->setVertexArray(points_.get());
+	line_geom_->setColorArray(color_.get());
+	line_geom_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+	line_geom_->getOrCreateStateSet()->setAttributeAndModes(new osg::LineWidth(3.0), osg::StateAttribute::ON);
+	line_geom_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	line_geom_->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, 0));
+	parent_->addChild(line_geom_);
+}
+
+void Trajectory::SetActiveRMTrajectory(roadmanager::Trajectory* RMTrajectory)
+{
+	// Trajectory has been activated on the entity, visualize it
+	std::vector<viewer::Trajectory::Vertex> v;
+	double z_offset = 0.15;
+	double steplen = 1.0;
+
+	vertices_.clear();
+	points_->clear();
+
+	for (double s = 0; s < RMTrajectory->GetLength() - SMALL_NUMBER; s += steplen)
+	{
+		roadmanager::Shape::ShapePosition pos;
+
+		s = MIN(s, RMTrajectory->GetLength());
+		RMTrajectory->shape_->Evaluate(s, roadmanager::Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, pos);
+
+		vertices_.push_back({ pos.x, pos.y, pos.z, pos.h });
+		points_->push_back(osg::Vec3(pos.x, pos.y, pos.z + z_offset));
+	}
+
+	if (line_geom_->getNumPrimitiveSets() == 0)
+	{
+		line_geom_->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, points_->size()));
+	}
+	else
+	{
+		// Replace existing points
+		line_geom_->setPrimitiveSet(0, new osg::DrawArrays(GL_LINE_STRIP, 0, points_->size()));
+	}
+
+	activeRMTrajectory_ = RMTrajectory;
+}
+
+void Trajectory::Disable()
+{
+	activeRMTrajectory_ = 0;
+	points_->clear();
+	vertices_.clear();
+
+	line_geom_->setPrimitiveSet(0, new osg::DrawArrays(GL_LINE_STRIP, 0, 0));
+}
+
 osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName)
 {
 	osg::ref_ptr<osg::PositionAttitudeTransform> tx_node = 0;
@@ -499,7 +560,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 		tx_node->addChild(node);
 
 		// reset pivot point
-		osg::Vec3d pos = node->getMatrix().getTrans();
+		osg::Vec3 pos = node->getMatrix().getTrans();
 		tx_node->setPivotPoint(pos);
 		tx_node->setPosition(pos);
 
@@ -514,7 +575,8 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 }
 
 EntityModel::EntityModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, 
-	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color,std::string name)
+	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node, 
+	osg::Vec3 trail_color,std::string name)
 {
 	if (!group)
 	{
@@ -568,13 +630,14 @@ EntityModel::EntityModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::Group> gro
 }
 
 CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
-	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name):
-	EntityModel(viewer, group, parent, trail_parent, dot_node, trail_color, name)
+	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name):
+	EntityModel(viewer, group, parent, trail_parent, traj_parent, dot_node, trail_color, name)
 {
 	steering_sensor_ = 0;
 	road_sensor_ = 0;
 	lane_sensor_ = 0;
 	trail_sensor_ = 0;
+	trajectory_ = new Trajectory(traj_parent, viewer);
 
 	wheel_angle_ = 0;
 	wheel_rot_ = 0;
@@ -827,6 +890,9 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	osiPoints_ = new osg::Group;
 	osiPoints_->setNodeMask(NodeMask::NODE_MASK_OSI_POINTS);
 	rootnode_->addChild(osiPoints_);
+	trajectoryLines_ = new osg::Group;
+	trajectoryLines_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
+	rootnode_->addChild(trajectoryLines_);
 	exe_path_ = exe_path;
 
 	// add environment
@@ -1157,11 +1223,11 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec3 trail_c
 	EntityModel* model;
 	if (type == EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
 	{
-		model = new CarModel(osgViewer_, group, rootnode_, trails_, dot_node_, trail_color, name);
+		model = new CarModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, trail_color, name);
 	}
 	else
 	{
-		model = new EntityModel(osgViewer_, group, rootnode_, trails_, dot_node_, trail_color, name);
+		model = new EntityModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, trail_color, name);
 	}
 
 	model->state_set_ = model->lod_->getOrCreateStateSet(); // Creating material
@@ -1700,8 +1766,8 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
 bool Viewer::CreateRoadSensors(CarModel *vehicle_model)
 {
-	vehicle_model->road_sensor_ = CreateSensor(color_yellow, true, false, 0.25, 2.5);
-	vehicle_model->lane_sensor_ = CreateSensor(color_yellow, true, true, 0.25, 2.5);
+	vehicle_model->road_sensor_ = CreateSensor(color_gray, true, false, 0.25, 2.5);
+	vehicle_model->lane_sensor_ = CreateSensor(color_gray, true, true, 0.25, 2.5);
 
 	return true;
 }

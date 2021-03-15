@@ -55,6 +55,7 @@ __int64 SE_getSystemTime();
 void SE_sleep(unsigned int msec);
 double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_time_step);
 
+
 // Useful operations
 
 
@@ -262,36 +263,6 @@ private:
 #endif
 };
 
-class SE_Env
-{
-public:
-	static SE_Env& Inst();
-	std::vector<std::string> paths_;
-	double osiMaxLongitudinalDistance_;
-	double osiMaxLateralDeviation_;
-	std::string logFilePath_;
-
-	SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE),
-		osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION), logFilePath_(LOG_FILENAME) {}
-
-	void SetOSIMaxLongitudinalDistance(double maxLongitudinalDistance) { osiMaxLongitudinalDistance_ = maxLongitudinalDistance; }
-	void SetOSIMaxLateralDeviation(double maxLateralDeviation) { osiMaxLateralDeviation_ = maxLateralDeviation; }
-	double GetOSIMaxLongitudinalDistance() { return osiMaxLongitudinalDistance_; }
-	double GetOSIMaxLateralDeviation() { return osiMaxLateralDeviation_; }
-	std::vector<std::string>& GetPaths() { return paths_; }
-	int AddPath(std::string path);
-	void ClearPaths() { paths_.clear(); }
-	
-	/**
-		Specify logfile name, optionally including directory path
-		examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
-		Set "" to disable logfile
-		@param path Logfile path	 
-	*/
-	void SetLogFilePath(std::string logFilePath);
-	std::string GetLogFilePath() { return logFilePath_; }
-};
-
 std::vector<std::string> SplitString(const std::string &s, char separator);
 std::string DirNameOf(const std::string& fname);
 std::string FileNameOf(const std::string& fname);
@@ -398,6 +369,16 @@ private:
 	std::vector<std::string> originalArgs_;
 
 	SE_Option *GetOption(std::string opt);
+};
+
+class SE_SystemTime
+{
+public:
+	__int64 start_time_;
+
+	SE_SystemTime() : start_time_(SE_getSystemTime()) {}
+	void Reset() { start_time_ = SE_getSystemTime(); }
+	double GetS() { return 1E-3 * (SE_getSystemTime() - start_time_); }
 };
 
 class SE_SystemTimer
@@ -528,4 +509,36 @@ private:
 	double t_;
 	double d_;
 	bool critical_;
+};
+
+class SE_Env
+{
+public:
+	static SE_Env& Inst();
+	std::vector<std::string> paths_;
+	double osiMaxLongitudinalDistance_;
+	double osiMaxLateralDeviation_;
+	std::string logFilePath_;
+	SE_SystemTime systemTime_;
+
+	SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE),
+		osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION), logFilePath_(LOG_FILENAME) {}
+
+	void SetOSIMaxLongitudinalDistance(double maxLongitudinalDistance) { osiMaxLongitudinalDistance_ = maxLongitudinalDistance; }
+	void SetOSIMaxLateralDeviation(double maxLateralDeviation) { osiMaxLateralDeviation_ = maxLateralDeviation; }
+	double GetOSIMaxLongitudinalDistance() { return osiMaxLongitudinalDistance_; }
+	double GetOSIMaxLateralDeviation() { return osiMaxLateralDeviation_; }
+	std::vector<std::string>& GetPaths() { return paths_; }
+	int AddPath(std::string path);
+	void ClearPaths() { paths_.clear(); }
+	double GetSystemTime() { return systemTime_.GetS(); }
+
+	/**
+		Specify logfile name, optionally including directory path
+		examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
+		Set "" to disable logfile
+		@param path Logfile path
+	*/
+	void SetLogFilePath(std::string logFilePath);
+	std::string GetLogFilePath() { return logFilePath_; }
 };

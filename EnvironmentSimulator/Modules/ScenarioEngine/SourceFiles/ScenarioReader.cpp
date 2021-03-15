@@ -707,7 +707,39 @@ roadmanager::Trajectory* ScenarioReader::parseTrajectory(pugi::xml_node node)
 			}
 			else if (shapeType == "Nurbs")
 			{
-				LOG("Trajectory type Nurbs not supported yet");
+				LOG("Parsing Nurbs");
+
+				int order = strtoi(parameters.ReadAttribute(shapeNode, "order"));
+				
+				roadmanager::Nurbs* nurbs = new roadmanager::Nurbs(order);
+				std::vector<double> knots;
+				
+				// Parse control points and knots
+				for (pugi::xml_node nurbsChild = shapeNode.first_child(); nurbsChild; nurbsChild = nurbsChild.next_sibling())
+				{
+					std::string nurbsChildName(nurbsChild.name());
+
+					if (nurbsChildName == "ControlPoint")
+					{
+						pugi::xml_node posNode = nurbsChild.child("Position");
+						OSCPosition* pos = parseOSCPosition(posNode);
+						double time = strtod(parameters.ReadAttribute(nurbsChild, "time"));
+						double weight = strtod(parameters.ReadAttribute(nurbsChild, "weight"));
+						bool calcHeading = posNode.first_child().child("Orientation") ? false : true;
+						nurbs->AddControlPoint(*pos->GetRMPos(), time, weight, calcHeading);
+					}
+					else if (nurbsChildName == "Knot")
+					{
+						double value = strtod(parameters.ReadAttribute(nurbsChild, "value"));
+						knots.push_back(value);
+					}
+					else
+					{
+						throw std::runtime_error(std::string("Unsupported Nurbs child element: ") + nurbsChildName);
+					}
+				}
+				nurbs->AddKnots(knots);
+				shape = nurbs;
 			}
 			else
 			{

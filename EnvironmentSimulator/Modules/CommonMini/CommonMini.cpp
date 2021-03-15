@@ -26,6 +26,8 @@ extern const char* ESMINI_GIT_REV;
 extern const char* ESMINI_GIT_BRANCH;
 extern const char* ESMINI_BUILD_VERSION;
 
+static SE_SystemTime systemTime_;
+
 const char* esmini_git_tag(void)
 {
 	return ESMINI_GIT_TAG;
@@ -75,15 +77,21 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
 
 double GetAngleOfVector(double x, double y)
 {
+	double angle;
 	if (abs(x) < SMALL_NUMBER)
 	{
 		if (abs(y) < SMALL_NUMBER)
 		{
-			return 0; // undefined
+			return 0.0; // undefined
 		}
 		x = SIGN(x) * SMALL_NUMBER;
 	}
-	return atan2(y, x);
+	angle = atan2(y, x);
+	if (angle < 0.0)
+	{
+		angle += 2*M_PI;
+	}
+	return angle;
 }
 
 double GetAbsAngleDifference(double angle1, double angle2)
