@@ -24,6 +24,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System;
+using System.Text;
 
 namespace OpenDRIVE
 {
@@ -83,6 +84,15 @@ namespace OpenDRIVE
         /// <summary>
         /// Set position from world coordinates in the Unity coordinate system.
         /// </summary>
+        public static void SetWorldPosition(int openDriveIndex, Vector3 position)
+        {
+            Vector3 odrPos = GetOpenDrivePosition(position);
+            RoadManagerLibraryCS.SetWorldXYHPosition(openDriveIndex, odrPos.x, odrPos.y, 0);
+        }
+
+        /// <summary>
+        /// Set position and rotation from world coordinates in the Unity coordinate system.
+        /// </summary>
         public static void SetWorldPosition(int openDriveIndex, Vector3 position, Vector3 rotationEuler)
         {
             Vector3 odrPos = GetOpenDrivePosition(position);
@@ -116,23 +126,6 @@ namespace OpenDRIVE
             unityPosData.roadId = tmpPosData.roadId;
             unityPosData.s = tmpPosData.s;
         }
-
-        //public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo)
-        //{
-        //    GetLaneInfo(openDriveIndex, lookAheadDistance, ref laneInfo, 0);
-        //}
-        //public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo, int laneId)
-        //{
-        //    RoadManagerLibraryCS.GetLaneInfo(openDriveIndex, lookAheadDistance, ref tmpLaneInfo);
-        //    laneInfo.position = GetUnityPosition(tmpLaneInfo.pos[0], tmpLaneInfo.pos[1], tmpLaneInfo.pos[2]);
-        //    laneInfo.rotation = GetUnityRotation(tmpLaneInfo.heading, tmpLaneInfo.pitch, tmpLaneInfo.roll);
-        //    if (laneId >= 0)
-        //        laneInfo.curvature = tmpLaneInfo.curvature;
-        //    else
-        //        laneInfo.curvature = -tmpLaneInfo.curvature;
-        //    laneInfo.speedLimit = tmpLaneInfo.speed_limit;
-        //    laneInfo.width = tmpLaneInfo.width;
-        //}
 
         public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo, LookAheadMode lookAheadMode = LookAheadMode.LaneCenter, int laneId = 0, bool inRoadDrivingDirection = false)
         {
@@ -174,16 +167,12 @@ namespace OpenDRIVE
             go.transform.SetPositionAndRotation(pos, rot);
         }
 
-        #endregion
-
-        #region Private Methods
-
-        private static Vector3 GetUnityPosition(float odrX, float odrY, float odrZ)
+        public static Vector3 GetUnityPosition(float odrX, float odrY, float odrZ)
         {
             return new Vector3(-odrY, odrZ, odrX);
         }
 
-        private static Vector3 GetUnityPosition(OpenDrivePositionData openDrivePositionData)
+        public static Vector3 GetUnityPosition(OpenDrivePositionData openDrivePositionData)
         {
             return GetUnityPosition(openDrivePositionData.x, openDrivePositionData.y, openDrivePositionData.z);
         }
@@ -197,7 +186,7 @@ namespace OpenDRIVE
         /// <returns></returns>
         public static Quaternion GetUnityRotation(float heading, float pitch, float roll)
         {
-            return Quaternion.Euler(pitch * RAD2DEG, -heading * RAD2DEG, roll * RAD2DEG);
+            return Quaternion.Euler(pitch * RAD2DEG, -heading * RAD2DEG, -roll * RAD2DEG);
         }
 
         /// <summary>
@@ -205,7 +194,7 @@ namespace OpenDRIVE
         /// </summary>
         /// <param name="openDriveIndex"></param>
         /// <returns></returns>
-        private static Quaternion GetUnityRotation(OpenDrivePositionData openDrivePositionData)
+        public static Quaternion GetUnityRotation(OpenDrivePositionData openDrivePositionData)
         {
             return GetUnityRotation(openDrivePositionData.h, openDrivePositionData.p, openDrivePositionData.r);
         }
@@ -213,7 +202,7 @@ namespace OpenDRIVE
         /// <summary>
         /// Returns the OpenDrive world coordinates given a position in Unity's coordinate system.
         /// </summary>
-        private static Vector3 GetOpenDrivePosition(Vector3 unityPosition)
+        public static Vector3 GetOpenDrivePosition(Vector3 unityPosition)
         {
             return new Vector3(unityPosition.z, -unityPosition.x, unityPosition.y);
         }
@@ -221,7 +210,7 @@ namespace OpenDRIVE
         /// <summary>
         /// Returns the OpenDRIVE rotation given a rotation in Unity's coordinate system.
         /// </summary>
-        private static Vector3 GetOpenDriveRotation(Vector3 unityRotationEuler)
+        public static Vector3 GetOpenDriveRotation(Vector3 unityRotationEuler)
         {
             return new Vector3(-unityRotationEuler.y * DEG2RAD, unityRotationEuler.x * DEG2RAD, unityRotationEuler.z * DEG2RAD);
         }

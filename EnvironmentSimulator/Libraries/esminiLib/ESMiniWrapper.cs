@@ -69,18 +69,14 @@ namespace ESMini
         public float trail_heading;    // trail heading (only when used for trail lookups, else equals road_heading)
         public float curvature;        // road curvature at steering target point
         public float speed_limit;      // speed limit given by OpenDRIVE type entry
+        public int roadId;             // target position, road ID 
+        public int laneId;             // target position, lane ID
+        public float laneOffset;       // target position, lane offset (lateral distance from lane center) 
+        public float s;                // target position, s (longitudinal distance along reference line)
+        public float t;                // target position, t (lateral distance from reference line)
     };
 
-    [StructLayout(LayoutKind.Sequential)]
-    public struct SE_LaneInfo
-    {
-        public int far_left_lb_id;
-        public int left_lb_id;
-        public int right_lb_id;
-        public int far_right_lb_id;
-    };
-
-    public static class ESMiniLib
+public static class ESMiniLib
     {
 #if UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX
         private const string LIB_NAME = "libesminiLib.so";
@@ -107,6 +103,13 @@ namespace ESMini
         /// <returns>0 on success, -1 on failure for any reason</returns> 
         public static extern int SE_SetLogFilePath(string path);
 
+       [DllImport(LIB_NAME, EntryPoint = "SE_SetOSITolerances")]
+        /// <summary>Configure tolerances/resolution for OSI road features</summary>
+        /// <param name="max_longitudinal_distance">Maximum distance between OSI points, even on straight road. Default=50(m) </param>
+        /// <param name="max_lateral_deviation"> Control resolution w.r.t. curvature default=0.05(m)</param>
+        /// <return>0 if successful, -1 if not</return>
+        public static extern int SE_SetOSITolerances(double maxLongitudinalDistance, double maxLateralDeviation);
+
         [DllImport(LIB_NAME, EntryPoint = "SE_Init")]
         /// <summary>Initialize the scenario engine</summary>
         /// <param name="oscFilename">Path to the OpenSCEANRIO file</param>
@@ -116,6 +119,16 @@ namespace ESMini
         /// <param name="record">Create recording for later playback 0=no recording 1=recording</param>
         /// <returns>0 on success, -1 on failure for any reason</returns>
         public static extern int SE_Init(string oscFilename, int disable_ctrls = 0, int use_viewer = 0, int threads = 0, int record = 0);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_InitWithString")]
+        /// <summary>Initialize the scenario engine, privding OSC XML string instead of filename</summary>
+        /// <param name="oscAsXMLString">OpenSCENARIO XML as string</param>
+        /// <param name="disable_ctrls"> 1=Any controller will be disabled 0=Controllers applied according to OSC file</param>
+        /// <param name="use_viewer">0=no viewer, 1=use viewer</param>
+        /// <param name="threads"> 0=single thread, 1=viewer in a separate thread, parallel to scenario engine</param>
+        /// <param name="record"> Create recording for later playback 0=no recording 1=recording</param>
+        /// <return>0 if successful, -1 if not</return>
+        public static extern int SE_InitWithString(string oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_StepDT")]
         public static extern int SE_StepDT(float dt);
@@ -150,18 +163,32 @@ namespace ESMini
         [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectRoadPos")]
         public static extern int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_SetLockOnLane")]
+        /// <summary>Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)</summary>
+        /// <parameter name="mode">True=keep lane False=Snap to closest (default)</parameter>
+        /// <return>0 if successful, -1 if not</return>
+        public static extern int SE_SetLockOnLane(int id, bool mode);
+
         [DllImport(LIB_NAME, EntryPoint = "SE_GetNumberOfObjects")]
         public static extern int SE_GetNumberOfObjects();
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectState")]
         public static extern int SE_GetObjectState(int index, ref ScenarioObjectState state);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectGhostState")]
-        public static extern int SE_GetObjectGhostState(int index, ref ScenarioObjectState state);
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectName")]
+        //[return: MarshalAs(UnmanagedType.LPStr)]
+        /// <summary>Get the name of specified object</summary>
+        /// <param name="index">Index of the object. Note: not ID</param>
+        /// <return>Name</return>
+        public static extern IntPtr SE_GetObjectName(int index);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_ObjectHasGhost")]
         public static extern int SE_ObjectHasGhost(int index);
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectGhostState")]
+        public static extern int SE_GetObjectGhostState(int index, ref ScenarioObjectState state);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_AddObjectSensor")]
         /// <summary>Create an ideal object sensor and attach to specified vehicle</summary>
         /// <param name="object_id">Handle to the object to which the sensor should be attached</param>
         /// <param name="x">Position x coordinate of the sensor in vehicle local coordinates</param>
@@ -173,23 +200,24 @@ namespace ESMini
         /// <param name="rangeFar">Far value of the sensor depth range</param>
         /// <param name="maxObj"> Maximum number of objects theat the sensor can track</param>
         /// <returns>0 on success, -1 on failure for any reason</returns>
-        [DllImport(LIB_NAME, EntryPoint = "SE_AddObjectSensor")]
         public static extern int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj);
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_FetchSensorObjectList")]
         /// <summary>Fetch list of identified objects from a sensor</summary>
         /// <param name="object_id">Handle to the object to which the sensor should is attached</param>
         /// <param name="list">Array of object indices</param>
         /// <returns> Number of identified objects, i.e.length of list. -1 on failure</returns>
-        [DllImport(LIB_NAME, EntryPoint = "SE_FetchSensorObjectList")]
         public static extern int SE_FetchSensorObjectList(int object_id, int[] list);
-
+        
+		[DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAtDistance")]
         /// <summary>Get information suitable for driver modeling of a point at a specified distance from object along the road ahead</summary>
         /// <param name="object_id">Handle to the position object from which to measure</param>
         /// <param name="lookahead_distance">The distance, along the road, to the point</param>
         /// <param name="data">Struct including all result values, see typedef for details</param>
         /// <param name="along_road_center">Measure along the reference lane, i.e. at center of the road. Should be false for normal use cases</param>
+        /// <param name="lookAheadMode">Measurement strategy: Along 0=lane center, 1=road center(ref line) or 2=current lane offset.See roadmanager::Position::LookAheadMode enum</param>
+        /// <param name="inRoadDrivingDirection">If true always look along primary driving direction.If false, look in most straightforward direction according to object heading.</param>
         /// <returns>0 on success, -1 on failure for any reason</returns>
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAtDistance")]
         public static extern int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, ref RoadInfo data, int along_road_center);
 
         /// <summary>Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle</summary>
