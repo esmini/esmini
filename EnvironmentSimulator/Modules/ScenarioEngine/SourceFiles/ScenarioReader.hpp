@@ -146,6 +146,7 @@ namespace scenarioengine
 
 		int ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
 		ConditionGroup* ParseConditionGroup(pugi::xml_node node);
+		Object* ResolveObjectReference(std::string name);
 	};
 
 }

@@ -126,6 +126,16 @@ int ScenarioReader::RegisterCatalogDirectory(pugi::xml_node catalogDirChild)
 	return 0;
 }
 
+Object* ScenarioReader::ResolveObjectReference(std::string name)
+{
+	Object* object = entities_->GetObjectByName(name);
+	if (object == 0)
+	{
+		throw std::runtime_error(std::string("Failed to find object: ") + name);
+	}
+}
+
+
 Catalog* ScenarioReader::LoadCatalog(std::string name)
 {
 	Catalog *catalog;
@@ -961,7 +971,8 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 		dx = strtod(parameters.ReadAttribute(positionChild, "dx"));
 		dy = strtod(parameters.ReadAttribute(positionChild, "dy"));
 		dz = strtod(parameters.ReadAttribute(positionChild, "dz"));
-		Object* object = entities_->GetObjectByName(parameters.ReadAttribute(positionChild, "entityRef"));
+
+		Object* object = ResolveObjectReference(parameters.ReadAttribute(positionChild, "entityRef"));
 
 		// Check for optional Orientation element
 		pugi::xml_node orientation_node = positionChild.child("Orientation");
@@ -982,7 +993,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 		dx = strtod(parameters.ReadAttribute(positionChild, "dx"));
 		dy = strtod(parameters.ReadAttribute(positionChild, "dy"));
 		dz = strtod(parameters.ReadAttribute(positionChild, "dz"));
-		Object *object = entities_->GetObjectByName(parameters.ReadAttribute(positionChild, "entityRef"));
+		Object *object = ResolveObjectReference(parameters.ReadAttribute(positionChild, "entityRef"));
 
 		// Check for optional Orientation element
 		pugi::xml_node orientation_node = positionChild.child("Orientation");
@@ -1004,7 +1015,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 		dLane = strtoi(parameters.ReadAttribute(positionChild, "dLane"));
 		ds = strtod(parameters.ReadAttribute(positionChild, "ds"));
 		offset = strtod(parameters.ReadAttribute(positionChild, "offset"));
-		Object *object = entities_->GetObjectByName(parameters.ReadAttribute(positionChild, "entityRef"));
+		Object *object = ResolveObjectReference(parameters.ReadAttribute(positionChild, "entityRef"));
 
 		// Check for optional Orientation element
 		pugi::xml_node orientation_node = positionChild.child("Orientation");
@@ -1029,11 +1040,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 
 		ds = strtod(parameters.ReadAttribute(positionChild, "ds"));
 		dt = strtod(parameters.ReadAttribute(positionChild, "dt"));
-		Object* object = entities_->GetObjectByName(parameters.ReadAttribute(positionChild, "entityRef"));
-		if (object == nullptr)
-		{
-			throw std::runtime_error("No referenced object for RelativeRoadPosition");
-		}
+		Object* object = ResolveObjectReference(parameters.ReadAttribute(positionChild, "entityRef"));
 
 		// Check for optional Orientation element
 		pugi::xml_node orientation_node = positionChild.child("Orientation");
@@ -1356,7 +1363,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 										parameters.ReadAttribute(targetChild, "continuous") == "true" ||
 										parameters.ReadAttribute(targetChild, "continuous") == "1");
 
-									target_rel->object_ = entities_->GetObjectByName(parameters.ReadAttribute(targetChild, "entityRef"));
+									target_rel->object_ = ResolveObjectReference(parameters.ReadAttribute(targetChild, "entityRef"));
 
 									std::string value_type = parameters.ReadAttribute(targetChild, "speedTargetValueType");
 									if (value_type == "delta")
@@ -1430,7 +1437,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						action_dist->dynamics_.none_ = true;
 					}
 
-					action_dist->target_object_ = entities_->GetObjectByName(parameters.ReadAttribute(longitudinalChild, "entityRef"));
+					action_dist->target_object_ = ResolveObjectReference(parameters.ReadAttribute(longitudinalChild, "entityRef"));
 					if (longitudinalChild.attribute("distance"))
 					{
 						action_dist->dist_type_ = LongDistanceAction::DistType::DISTANCE;
@@ -1492,7 +1499,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								{
 									LatLaneChangeAction::TargetRelative *target_rel = new LatLaneChangeAction::TargetRelative;
 
-									if ((target_rel->object_ = entities_->GetObjectByName(parameters.ReadAttribute(targetChild, "entityRef"))) == 0)
+									if ((target_rel->object_ = ResolveObjectReference(parameters.ReadAttribute(targetChild, "entityRef"))) == 0)
 									{
 										LOG("Failed to find object %s", parameters.ReadAttribute(targetChild, "entityRef").c_str());
 										return 0;
@@ -1552,7 +1559,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								{
 									LatLaneOffsetAction::TargetRelative *target_rel = new LatLaneOffsetAction::TargetRelative;
 
-									target_rel->object_ = entities_->GetObjectByName(parameters.ReadAttribute(targetChild, "entityRef"));
+									target_rel->object_ = ResolveObjectReference(parameters.ReadAttribute(targetChild, "entityRef"));
 									target_rel->value_ = strtod(parameters.ReadAttribute(targetChild, "value"));
 									target = target_rel;
 								}
@@ -1584,7 +1591,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 			SynchronizeAction *action_synch = new SynchronizeAction;
 
 			std::string master_object_str = parameters.ReadAttribute(actionChild, "masterEntityRef");
-			action_synch->master_object_ = entities_->GetObjectByName(master_object_str);
+			action_synch->master_object_ = ResolveObjectReference(master_object_str);
 
 			pugi::xml_node target_position_master_node = actionChild.child("TargetPositionMaster");
 			if (!target_position_master_node)
@@ -1986,7 +1993,7 @@ void ScenarioReader::parseInit(Init &init)
 		{
 			Object *entityRef;
 
-			entityRef = entities_->GetObjectByName(parameters.ReadAttribute(actionsChild, "entityRef"));
+			entityRef = ResolveObjectReference(parameters.ReadAttribute(actionsChild, "entityRef"));
 			if (entityRef != NULL)
 			{
 				for (pugi::xml_node privateChild = actionsChild.first_child(); privateChild; privateChild = privateChild.next_sibling())
@@ -2176,7 +2183,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					if (condition_type == "TimeHeadwayCondition")
 					{
 						TrigByTimeHeadway *trigger = new TrigByTimeHeadway;
-						trigger->object_ = entities_->GetObjectByName(parameters.ReadAttribute(condition_node, "entityRef"));
+						trigger->object_ = ResolveObjectReference(parameters.ReadAttribute(condition_node, "entityRef"));
 
 						std::string along_route_str = parameters.ReadAttribute(condition_node, "alongRoute");
 						if ((along_route_str == "true") || (along_route_str == "1"))
@@ -2215,7 +2222,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						}
 						else if (targetChildName == "EntityRef")
 						{
-							trigger->object_ = entities_->GetObjectByName(parameters.ReadAttribute(targetChild, "entityRef"));
+							trigger->object_ = ResolveObjectReference(parameters.ReadAttribute(targetChild, "entityRef"));
 						}
 						else
 						{
@@ -2269,7 +2276,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					else if (condition_type == "RelativeDistanceCondition")
 					{
 						TrigByRelativeDistance *trigger = new TrigByRelativeDistance;
-						trigger->object_ = entities_->GetObjectByName(parameters.ReadAttribute(condition_node, "entityRef"));
+						trigger->object_ = ResolveObjectReference(parameters.ReadAttribute(condition_node, "entityRef"));
 
 						std::string type = parameters.ReadAttribute(condition_node, "relativeDistanceType");
 						if ((type == "longitudinal") || (type == "Longitudinal"))
@@ -2311,7 +2318,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 						TrigByCollision* trigger = new TrigByCollision;
 
 						pugi::xml_node target = condition_node.child("EntityRef");
-						trigger->object_ = entities_->GetObjectByName(parameters.ReadAttribute(target, "entityRef"));
+						trigger->object_ = ResolveObjectReference(parameters.ReadAttribute(target, "entityRef"));
 						trigger->type_ = Object::Type::TYPE_NONE;
 
 						pugi::xml_node by_type = condition_node.child("ByType");
@@ -2427,7 +2434,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					{
 						TrigByRelativeSpeed* trigger = new TrigByRelativeSpeed;
 
-						trigger->object_ = entities_->GetObjectByName(parameters.ReadAttribute(condition_node, "entityRef"));
+						trigger->object_ = ResolveObjectReference(parameters.ReadAttribute(condition_node, "entityRef"));
 						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
 						trigger->rule_ = ParseRule(parameters.ReadAttribute(condition_node, "rule"));
 
@@ -2466,7 +2473,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					if (triggeringEntitiesChildName == "EntityRef")
 					{
 						TrigByEntity::Entity entity;
-						entity.object_ = entities_->GetObjectByName(parameters.ReadAttribute(triggeringEntitiesChild, "entityRef"));
+						entity.object_ = ResolveObjectReference(parameters.ReadAttribute(triggeringEntitiesChild, "entityRef"));
 						if (entity.object_ == 0)
 						{
 							throw std::runtime_error("Failed to find referenced entity - see log");
@@ -2754,7 +2761,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 									std::string actorsChildName(actorsChild.name());
 									if (actorsChildName == "EntityRef")
 									{
-										if ((actor->object_ = entities_->GetObjectByName(parameters.ReadAttribute(actorsChild, "entityRef"))) == 0)
+										if ((actor->object_ = ResolveObjectReference(parameters.ReadAttribute(actorsChild, "entityRef"))) == 0)
 										{
 											throw std::runtime_error(std::string("Failed to resolve entityRef ") + parameters.ReadAttribute(actorsChild, "entityRef"));
 										}
