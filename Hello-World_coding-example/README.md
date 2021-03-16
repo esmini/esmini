@@ -352,7 +352,9 @@ link_directories(. ../lib ../bin ../externals/OSI/v10/lib)
 ```
 target_link_libraries(${TARGET} esminiLib libprotobuf open_simulation_interface_pic) 
 ```
-**Note:** Replace foldername "v10" with linux or mac depending on your platform.
+**Note:** 
+ - Replace foldername "v10" with linux or mac depending on your platform.
+ - If linking with custom applications or libraries: OSI and Google Protobuf versions needs to be consistent (at least major version nr), also with the versions used in esmini (see [here](https://github.com/esmini/esmini#osi-support)).
 
 Then run ``` cmake .. ``` from the build folder to apply the changes in CMakeFiles.cxx.
 
