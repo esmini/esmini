@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2021-03-16 Version 2.5.1
+
+- Improve error handling
+  - Always log exception messages
+  - Handle (quit with log message) invalid object references
+- Update Unity wrappers (align to current API)
+- Add OSI groundtruth [example](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example#osi-groundtruth) to Hello World tutorial
+- Add brief [info](https://github.com/esmini/esmini#OSI-support) on OSI to README, including OSI/Protobuf versions
+
 ### 2021-03-12 Version 2.5.0
 
 - Support freespace distance measurement
