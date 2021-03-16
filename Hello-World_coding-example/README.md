@@ -374,13 +374,14 @@ int main(int argc, char* argv[])
 
 	// Initial update of complete Ground Truth, including static things
 	SE_UpdateOSIGroundTruth();
+	// You could now retrieve the initial state of all objects before stepping the scenario
 
 	for (int i = 0; i < 100; i++)
 	{
 		SE_StepDT(0.01f);
 
-		// Update only dynamic OSI stuff
-		SE_UpdateOSIDynamicGroundTruth();
+		// Further updates will only affect dynamic OSI stuff
+		SE_UpdateOSIGroundTruth();
 
 		// Fetch OSI struct
 		gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();

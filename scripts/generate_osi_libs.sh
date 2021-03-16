@@ -49,7 +49,7 @@ else
 fi
 
 
-PROTOBUF_VERSION=v3.5.0
+PROTOBUF_VERSION=v3.11.4
 
 # ---------------------------------------------------------------------------------------
 # From this point no adjustments should be necessary, except fixing bugs in the script :)
@@ -101,7 +101,7 @@ if [ ! -d protobuf ]
 then
     git clone https://github.com/protocolbuffers/protobuf.git
     cd protobuf
-    git checkout v3.11.4
+    git checkout PROTOBUF_VERSION
     mkdir build-code; cd build-code
     if [ "$OSTYPE" == "linux-gnu"* ] || [ "$OSTYPE" == "darwin"* ]; then
         ZLIB_FILE_RELEASE=zlib.a

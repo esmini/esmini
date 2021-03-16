@@ -73,6 +73,17 @@ Further info:
 The easiest way of integrating esmini in your custom application is to link the all inclusive shared library ScenarioEngineDLL. In spite of the name it's available also on Linux and Mac.
 See [this "Hello World" tutorial](https://github.com/esmini/esmini/blob/master/Hello-World_coding-example/README.md) on how to create a minimalistic application based on it.
 
+### OSI support
+In addition to internal API ([example](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example#fetch-state-of-scenario-objects)) for getting information about the ongoing simulation, e.g. road width and road user position, esmini collects everything into an [OSI](https://opensimulationinterface.github.io/osi-documentation/index.html) [groundtruth structure](https://opensimulationinterface.github.io/open-simulation-interface/structosi3_1_1GroundTruth.html). This structure can be 1. stored in an OSI trace-file, 2. retrieved via UDP and/or 3. retrieved directly via API (see [esminiLib.hpp](https://github.com/esmini/esmini/blob/3af727a3f95825bfcf8b1cbd7becf68ea26cf08e/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L473)).
+    
+  **Note**: Only parts of OSI groundthruth is populated.
+
+  Hello World tutorial includes an [example of how to fetch OSI groundtruth](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example#OSI-groundtruth).
+
+  Current versions used by esmini:  
+   - OSI version: v3.2.0  
+   - Google Protobuf version: v3.11.4
+
 ### Unity support
 esmini shared library works fine also in Unity (Win, Linux, Mac). A simple example can be downloaded from [here](https://www.dropbox.com/s/sj53hz0zesxa681/esmini-player.unitypackage?dl=0). The package contains everything needed to get going:
 - esmini library C# wrapper
