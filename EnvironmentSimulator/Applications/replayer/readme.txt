@@ -41,6 +41,10 @@ Key commands
     Arrow keys:
        Left: Pause and move to previous frame (+ Shift to skip 10 frames)
        Right: Pause and move to next frame (+ Shift to skip 10 frames)
+       Shift + Left: Pause and jump 10 frames back
+       Shift + Right: Pause and jump 10 frames forward
+       Ctrl + Left: Jump to beginning
+       Ctrl + Right: Jump to end
        Up: Increase timeScale (play faster)
        Down: Decrease timeScale (play slower)
 

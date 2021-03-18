@@ -59,27 +59,46 @@ Replay::~Replay()
 	data_.clear();
 }
 
+void Replay::GoToStart()
+{
+	index_ = startIndex_;
+	time_ = startTime_;
+}
+
+void Replay::GoToEnd()
+{
+	if (repeat_)
+	{
+		index_ = startIndex_;
+		time_ = startTime_;
+	}
+	else
+	{
+		index_ = stopIndex_;
+		time_ = stopTime_;
+	}
+}
 
 void Replay::GoToTime(double timestamp)
 {
 	if (timestamp > stopTime_)
 	{
-		if (repeat_)
-		{
-			index_ = startIndex_;
-			time_ = startTime_;
-		}
-		else
-		{
-			index_ = stopIndex_;
-			time_ = stopTime_;
-		}
+		GoToEnd();
+	}
+	else if (timestamp < 0)
+	{
+		GoToStart();
 	}
 	else
 	{
 		index_ = FindIndexAtTimestamp(timestamp, index_);
 		time_ = timestamp;
 	}
+}
+
+void Replay::GoToDeltaTime(double dt)
+{
+	GoToTime(time_ + dt);
 }
 
 void Replay::GoToNextFrame()

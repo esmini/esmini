@@ -89,25 +89,44 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 	{
 		if (keyEvent->key_ == KeyType::KEY_Right)
 		{
-			int steps = 1;
-			if (keyEvent->modKeyMask_ & KeyType::KEY_Shift_L || keyEvent->modKeyMask_ & KeyType::KEY_Shift_R)
+			if (keyEvent->modKeyMask_ & ModKeyMask::MODKEY_CTRL)
 			{
-				steps = 10;
+				player->GoToEnd();
 			}
-			for (int i = 0; i < steps; i++) player->GoToNextFrame();
+			else
+			{
+				// step
 
-			pause = true;  // step by step
+				int steps = 1;
+				if (keyEvent->modKeyMask_ & ModKeyMask::MODKEY_SHIFT)
+				{
+					steps = 10;
+				}
+				for (int i = 0; i < steps; i++) player->GoToNextFrame();
+
+				pause = true;  // step by step
+			}
 		}
 		else if (keyEvent->key_ == KeyType::KEY_Left)
 		{
-			int steps = 1;
-			if (keyEvent->modKeyMask_ & KeyType::KEY_Shift_L || keyEvent->modKeyMask_ & KeyType::KEY_Shift_R)
+			if (keyEvent->modKeyMask_ & ModKeyMask::MODKEY_CTRL)
 			{
-				steps = 10;
+				// rewind to beginning
+				player->GoToTime(0);
 			}
-			for (int i=0;i<steps;i++) player->GoToPreviousFrame();
+			else
+			{
+				// step
 
-			pause = true;  // step by step
+				int steps = 1;
+				if (keyEvent->modKeyMask_ & ModKeyMask::MODKEY_SHIFT)
+				{
+					steps = 10;
+				}
+				for (int i = 0; i < steps; i++) player->GoToPreviousFrame();
+
+				pause = true;  // step by step
+			}
 		}
 		else if (keyEvent->key_ == KeyType::KEY_Space)
 		{
@@ -325,7 +344,7 @@ int main(int argc, char** argv)
 
 			if (!pause)
 			{
-				player->GoToTime(simTime + deltaSimTime);
+				player->GoToDeltaTime(deltaSimTime);
 			}
 			simTime = player->GetTime();  // potentially wrapped for repeat
 

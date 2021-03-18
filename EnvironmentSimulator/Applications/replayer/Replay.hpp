@@ -43,6 +43,16 @@ namespace scenarioengine
 		KEY_Control_R = 0xFFE4,   /* Right control */
 	} KeyType;
 
+	typedef enum
+	{
+		MODKEY_LEFT_SHIFT = 0x0001,
+		MODKEY_RIGHT_SHIFT = 0x0002,
+		MODKEY_LEFT_CTRL = 0x0004,
+		MODKEY_RIGHT_CTRL = 0x0008,
+		MODKEY_CTRL = (MODKEY_LEFT_CTRL | MODKEY_RIGHT_CTRL),
+		MODKEY_SHIFT = (MODKEY_LEFT_SHIFT | MODKEY_RIGHT_SHIFT),
+	} ModKeyMask;
+
 	class Replay
 	{
 	public:
@@ -51,7 +61,15 @@ namespace scenarioengine
 
 		Replay(std::string filename);
 		~Replay();
-		void GoToTime(double dt);
+		
+		/**
+			Go to specific time 
+			@param time timestamp (0 = beginning, -1 end)
+		*/
+		void GoToTime(double time);  
+		void GoToDeltaTime(double dt);
+		void GoToStart();
+		void GoToEnd();
 		void GoToNextFrame();
 		void GoToPreviousFrame();
 		ObjectStateStructDat * GetState(int id);
