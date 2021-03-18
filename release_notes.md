@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2021-03-18 Version 2.5.2
+
+- Add shortcut keys in replayer app for jumping to start and end of scenario
+    - Ctrl + Left (arrow): Jump to start
+    - Ctrl + Right (arrow): Jump to end
+    - see updated [readme.txt](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/replayer/readme.txt)
+- Fix lateralprofile bug  
+    - All child elements to \<lateralProfile\> was incorrectly assumed to be of
+    type \<superelevation\>. Which is wrong, and any \<shape\> element would
+    cause broken road and popcorn effect on road users. 
+    - Now any \<shape\> elements are ignored (until being supported).
+
 ### 2021-03-16 Version 2.5.1
 
 - Improve error handling
