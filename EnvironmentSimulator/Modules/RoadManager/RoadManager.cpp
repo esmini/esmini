@@ -2198,7 +2198,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		pugi::xml_node super_elevation_profile = road_node.child("lateralProfile");
 		if (super_elevation_profile != NULL)
 		{
-			for (pugi::xml_node super_elevation = super_elevation_profile.child("superelevation"); super_elevation; super_elevation = super_elevation.next_sibling())
+			for (pugi::xml_node super_elevation = super_elevation_profile.child("superelevation"); super_elevation; super_elevation = super_elevation.next_sibling("superelevation"))
 			{
 				double s = atof(super_elevation.attribute("s").value());
 				double a = atof(super_elevation.attribute("a").value());
