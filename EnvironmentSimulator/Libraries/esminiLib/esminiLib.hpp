@@ -527,6 +527,12 @@ extern "C"
 	SE_DLL_API const char* SE_GetOSIGroundTruthRaw();
 
 	/**
+		The SE_GetOSISensorDataRaw function returns a char array containing the OSI SensorData information
+		@return osi3::SensorData*
+	*/
+	SE_DLL_API const char* SE_GetOSISensorDataRaw();
+		
+	/**
 		The SE_GetOSIRoadLane function returns a char array containing the osi Lane information/message of the lane where the object with object_id is, serialized to a string
 	*/
 	SE_DLL_API const char* SE_GetOSIRoadLane(int* size, int object_id);

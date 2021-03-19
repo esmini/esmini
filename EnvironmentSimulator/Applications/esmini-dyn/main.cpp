@@ -19,6 +19,7 @@
 #include "osi_common.pb.h"
 #include "osi_object.pb.h"
 #include "osi_groundtruth.pb.h"
+#include "osi_sensordata.pb.h"
 #include "osi_version.pb.h"
 
 #include "stdio.h"
@@ -175,6 +176,7 @@ int main(int argc, char *argv[])
 
 #if DEMONSTRATE_OSI
 		osi3::GroundTruth* gt;
+		osi3::SensorData* sd;
 		SE_OpenOSISocket("127.0.0.1");
 		SE_OSIFileOpen(0);
 #endif
@@ -214,7 +216,8 @@ int main(int argc, char *argv[])
 			SE_UpdateOSIGroundTruth();
 			// Fetch and parse OSI message
 			gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
-			
+			sd = (osi3::SensorData*)SE_GetOSISensorDataRaw();
+
 			// Print timestamp
 			printf("timestamp: %.2f\n", gt->mutable_timestamp()->seconds() +
 				1E-9 * gt->mutable_timestamp()->nanos());
@@ -234,6 +237,14 @@ int main(int argc, char *argv[])
 					gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->y(),
 					gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->z()
 				);
+			}
+
+			for (int k = 0; k < sd->mutable_sensor_view()->size(); k++)
+			{
+				for (int l = 0; l < sd->mutable_sensor_view(k)->mutable_global_ground_truth()->mutable_moving_object()->size(); l++)
+				{
+					printf(" sview %d movingobj %d \n", k, (int)sd->mutable_sensor_view(k)->mutable_global_ground_truth()->mutable_moving_object(l)->mutable_id()->value());
+				}
 			}
 #endif		
 
