@@ -145,7 +145,7 @@ namespace scenarioengine
 				// Update Ego state
 				mutex.Lock();
 
-				OSCBoundingBox bbox; // dummy bariable just to feed into the function
+				OSCBoundingBox bbox = {0, 0, 0, 0, 0, 0}; // dummy bariable just to feed into the function
 
 				scenarioGateway->reportObject(0, "Ego", static_cast<int>(Object::Type::VEHICLE), static_cast<int>(Vehicle::Category::CAR),0, 1, bbox,0, buf.speed, buf.wheel_angle, wheel_rot,  buf.x, buf.y, buf.z, buf.h, buf.p, buf.r);
 

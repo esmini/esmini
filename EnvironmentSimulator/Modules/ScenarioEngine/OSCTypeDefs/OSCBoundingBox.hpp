@@ -32,14 +32,12 @@ namespace scenarioengine
   y 	double 	 	Center offset in y direction.
   z 	double 	 	Center offset in z direction.
   */
-  class Center {
-  public:
-
-    Center() : x_(0),y_(0),z_(0) {}
+  typedef struct
+  {
     float x_;
     float y_;
     float z_;
-  };
+  } Center;
 
 /*
 Class Dimension
@@ -50,15 +48,12 @@ width 	double 	Width of the entity's bounding box. Unit: m; Range: [0..inf[.
 length 	double 	Length of the entity's bounding box. Unit: m; Range: [0..inf[.
 height 	double 	Height of the entity's bounding box. Unit: m; Range: [0..inf[.
 */
-  class Dimensions {
-  public:
-    Dimensions() : width_(0),length_(0),height_() {}
-
+  typedef struct 
+  {
     float width_;
     float length_;
     float height_;
-
-  };
+  } Dimensions;
 
   /*
   Class BoundingBox
@@ -67,14 +62,10 @@ height 	double 	Height of the entity's bounding box. Unit: m; Range: [0..inf[.
   center 	Represents the geometrical center of the bounding box expressed in coordinates that refer to the coordinate system of the entity (e.g. the vehicle coordinate system).
   dimensions 	Width, length and height of the bounding box.
   */
-	class OSCBoundingBox
+	typedef struct
 	{
-	public:
-
 		Center center_;
-    Dimensions dimensions_;
-	};
-
-
+        Dimensions dimensions_;
+	} OSCBoundingBox;
 
 }
