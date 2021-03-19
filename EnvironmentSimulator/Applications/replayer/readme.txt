@@ -22,6 +22,8 @@ Options:
       Entity visualization: "model"(default)/"boundingbox"/"both"
   --no_ghost
       Remove ghost entities
+  --remove_object <id>
+      Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.
       
 Additional options forwarded to OpenSceneGraph:
   --window <x y w h>

@@ -151,6 +151,7 @@ int main(int argc, char** argv)
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
 	bool no_ghost = false;
 	static char info_str_buf[256];
+	std::vector<int> removeObjects;
 
 	// Use logger callback for console output instead of logfile
 	Logger::Inst().SetCallback(log_callback);
@@ -167,6 +168,7 @@ int main(int argc, char** argv)
 	opt.AddOption("road_features", "Show OpenDRIVE road features");
 	opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
 	opt.AddOption("no_ghost", "Remove ghost entities");
+	opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
 
 	if (argc < 2)
 	{
@@ -289,6 +291,32 @@ int main(int argc, char** argv)
 			no_ghost = true;
 		}
 
+		if (opt.GetOptionSet("remove_object"))
+		{
+			std::string ids = opt.GetOptionArg("remove_object");
+			std::string delimiter = ",";
+			size_t pivot = 0;
+			size_t pos = 0;
+			int id;
+			do
+			{
+				pos = ids.find(delimiter, pivot);
+				if (pos != std::string::npos)
+				{
+					id = strtoi(ids.substr(pivot, pos - pivot));
+				}
+				else
+				{
+					id = strtoi(ids.substr(pivot));
+				}
+
+				printf("Removing object[%d]\n", id);
+				removeObjects.push_back(id);
+				pivot = pos + delimiter.length();
+
+			} while (pos != std::string::npos);
+		}
+
 		std::string start_time_str = opt.GetOptionArg("start_time");
 		if (!start_time_str.empty())
 		{
@@ -354,6 +382,11 @@ int main(int argc, char** argv)
 			for (int index = 0; (state = player->GetState(index)) != 0; index++)
 			{
 				if (no_ghost && state->info.ctrl_type == 100)  // control type 100 indicates ghost
+				{
+					continue;
+				}
+
+				if (std::find(removeObjects.begin(), removeObjects.end(), state->info.id) != removeObjects.end())
 				{
 					continue;
 				}
