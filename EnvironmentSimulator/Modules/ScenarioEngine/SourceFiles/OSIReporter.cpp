@@ -32,6 +32,7 @@
 #endif
 
 #define OSI_OUT_PORT 48198
+#define OSI_MAX_UDP_DATA_SIZE 8200
 
 static struct {
 	osi3::SensorData *sd;
@@ -41,6 +42,14 @@ static struct {
 	std::vector<osi3::Lane*> ln;
 	std::vector<osi3::LaneBoundary*> lnb;
 } obj_osi_internal;
+
+// Large OSI messages needs to be split for UDP transmission
+// This struct must be mached on receiver side
+static struct {
+	int counter;
+	unsigned int datasize;
+	char data[OSI_MAX_UDP_DATA_SIZE];
+} osi_udp_buf;
 
 typedef struct
 {
@@ -284,15 +293,35 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 
 	if (sendSocket)
 	{
-		// send over udp - skip size (package size == message size)
-		int sendResult = sendto(sendSocket, (char*)osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
-
-		if (sendResult != (int)osiGroundTruth.size)
+		// send over udp - split large OSI messages in multiple transmissions
+		unsigned int sentDataBytes = 0;
+		
+		for (osi_udp_buf.counter = 0, osi_udp_buf.datasize = 0; sentDataBytes < osiGroundTruth.size; osi_udp_buf.counter++)
 		{
-			LOG("Failed send osi package over UDP");
+			osi_udp_buf.datasize = MIN(osiGroundTruth.size - sentDataBytes, OSI_MAX_UDP_DATA_SIZE);
+			memcpy(&osi_udp_buf.data, (char*)&osiGroundTruth.ground_truth.c_str()[sentDataBytes], osi_udp_buf.datasize);
+			int packSize = sizeof(osi_udp_buf) - (OSI_MAX_UDP_DATA_SIZE - osi_udp_buf.datasize);
+
+			if (sentDataBytes + osi_udp_buf.datasize >= osiGroundTruth.size)
+			{
+				// Last package 
+				osi_udp_buf.counter = -1;
+			}
+			int sendResult = sendto(sendSocket, (char*)&osi_udp_buf, packSize, 0, (struct sockaddr*)&recvAddr, sizeof(recvAddr));
+			
+			if (sendResult != packSize)
+			{
+				LOG("Failed send osi package over UDP");
 #ifdef _WIN32
-			wprintf(L"send failed with error: %d\n", WSAGetLastError());
+				wprintf(L"send failed with error: %d\n", WSAGetLastError());
 #endif
+				// Give up
+				sentDataBytes = osiGroundTruth.size;
+			}
+			else
+			{
+				sentDataBytes += osi_udp_buf.datasize;
+			}
 		}
 	}
 

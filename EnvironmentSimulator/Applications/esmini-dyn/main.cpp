@@ -213,7 +213,10 @@ int main(int argc, char *argv[])
 			stuff.counter++;
 #if DEMONSTRATE_OSI  // set to 1 to demonstrate example of how to query OSI Ground Truth
 
-			SE_UpdateOSIGroundTruth();
+			// OSI is automatically updated when OSI socket or file has been requested
+			// Uncomment line below if socket or file not used 
+			// SE_UpdateOSIGroundTruth(); 
+			
 			// Fetch and parse OSI message
 			gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
 			sd = (osi3::SensorData*)SE_GetOSISensorDataRaw();

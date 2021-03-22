@@ -41,8 +41,8 @@ static bool quit;
 
 #define OSI_OUT_PORT 48198
 #define ES_SERV_TIMEOUT 500
-#define MAX_MSG_SIZE 102400
-
+#define MAX_MSG_SIZE 1024000
+#define OSI_MAX_UDP_DATA_SIZE 8200
 
 void CloseGracefully(int socket)
 {
@@ -73,10 +73,17 @@ int main(int argc, char* argv[])
 	struct sockaddr_in server_addr;
 	struct sockaddr_in sender_addr;
 	static unsigned short int iPortIn = OSI_OUT_PORT;   // Port for incoming packages
-	char buf[MAX_MSG_SIZE];
+	static char large_buf[MAX_MSG_SIZE];
 	socklen_t sender_addr_size = sizeof(sender_addr);
 	struct timeval tv;
 	
+	// This struct must match the sender side
+	struct {
+		int counter;
+		unsigned int datasize;
+		char data[OSI_MAX_UDP_DATA_SIZE];
+	} buf;
+
 	quit = false;
 
 	// Setup signal handler to catch Ctrl-C
@@ -130,11 +137,27 @@ int main(int argc, char* argv[])
 	while (!quit)
 	{
 		// Fetch and parse OSI message
-		int ret = recvfrom(sock, (char*)&buf, sizeof(buf), 0, (struct sockaddr *)&sender_addr, &sender_addr_size);
-
-		if (ret > 0)
+		buf.counter = 0;
+		int retval;
+		int receivedDataBytes = 0;
+		while (buf.counter != -1) 
 		{
-			gt.ParseFromArray(buf, ret);
+			retval = recvfrom(sock, (char*)&buf, sizeof(buf), 0, (struct sockaddr*)&sender_addr, &sender_addr_size);
+			if (retval > 0)
+			{
+				if (buf.counter == 0)
+				{
+					// New message
+					receivedDataBytes = 0;
+				}
+				memcpy(&large_buf[receivedDataBytes], buf.data, buf.datasize);
+				receivedDataBytes += buf.datasize;
+			}
+		}
+
+		if (retval > 0)
+		{
+			gt.ParseFromArray(large_buf, receivedDataBytes);
 
 			// Print timestamp
 			printf("timestamp: %.2f\n", gt.mutable_timestamp()->seconds() +
