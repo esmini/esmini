@@ -234,7 +234,7 @@ namespace viewer
 		EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> 
 			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
 		void SetPosition(double x, double y, double z);
-		void SetRotation(double h, double p, double r);
+		void SetRotation(double hRoad, double pRoad, double hRelative, double r);
 
 		void SetTransparency(double factor);
 

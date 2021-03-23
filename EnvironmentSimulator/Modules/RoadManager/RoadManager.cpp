@@ -5030,8 +5030,6 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 						jMinLocal = lsec_idx;
 						kMinLocal = k;
 					}
-
-					//printf("rid %d inside %d j %d k %d cp_actual %.2f cp_osi %.2f\n", road->GetId(), inside, j, k, cp_actual, cp_osi);
 				}
 
 				if (!inside)

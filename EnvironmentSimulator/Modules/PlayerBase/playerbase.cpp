@@ -284,7 +284,7 @@ void ScenarioPlayer::ViewerFrame()
 		Object* obj = scenarioEngine->entities.object_[i];
 
 		entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-		entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP(), obj->pos_.GetR());
+		entity->SetRotation(obj->pos_.GetHRoad(), obj->pos_.GetPRoad(), obj->pos_.GetHRelative(), obj->pos_.GetR());
 
 		if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
 		{

@@ -684,13 +684,24 @@ void EntityModel::SetPosition(double x, double y, double z)
 	txNode_->setPosition(osg::Vec3(x, y, z));
 }
 
-void EntityModel::SetRotation(double h, double p, double r)
+void EntityModel::SetRotation(double hRoad, double pRoad, double hRelative, double r)
 {
+	// First align to road orientation
+	osg::Quat quatTmp(
+			0, osg::Vec3(osg::X_AXIS),      // Roll
+			pRoad, osg::Vec3(osg::Y_AXIS),  // Pitch
+			hRoad, osg::Vec3(osg::Z_AXIS)   // Heading
+		); 
+
+	// Rotation relative road
 	quat_.makeRotate(
-		r, osg::Vec3(1, 0, 0), // Roll
-		p, osg::Vec3(0, 1, 0), // Pitch
-		h, osg::Vec3(0, 0, 1)); // Heading
-	txNode_->setAttitude(quat_);
+		0, osg::Vec3(osg::X_AXIS),         // Roll
+		0, osg::Vec3(osg::Y_AXIS),         // Pitch
+		hRelative, osg::Vec3(osg::Z_AXIS)  // Heading
+	); 
+
+	// Combine
+	txNode_->setAttitude(quat_* quatTmp);
 }
 
 void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
