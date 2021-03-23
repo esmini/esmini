@@ -3979,6 +3979,7 @@ void Position::Init()
 	lane_idx_ = -1;
 	elevation_idx_ = -1;
 	super_elevation_idx_ = -1;
+	osi_point_idx_ = -1;
 	route_ = 0;
 	trajectory_ = 0;
 }
@@ -4888,20 +4889,54 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 			}
 		}
 
-		for (int j = 0; j < road->GetNumberOfLaneSections(); j++)
+		// First find distance from current position
+		double distFromCurrentPos = GetLengthOfLine2D(x3, y3, GetX(), GetY());
+		int startLaneSecIdx = 0;
+		if (road == current_road && distFromCurrentPos < 5)
 		{
-			OSIPoints* osiPoints = road->GetLaneSectionByIdx(j)->GetLaneById(0)->GetOSIPoints();
+			// If new point is close to current/old, then start look from current OSI points
+			startLaneSecIdx = -1;
+		}
+
+		for (int j = startLaneSecIdx; j < road->GetNumberOfLaneSections(); j++)
+		{
+			int lsec_idx;
+			OSIPoints* osiPoints;
+			if (j == -1)
+			{
+				// new point is close, start look at current/old lane section
+				lsec_idx = MAX(0, lane_section_idx_);
+			}
+			else
+			{
+				lsec_idx = j;
+			}
+			osiPoints = road->GetLaneSectionByIdx(lsec_idx)->GetLaneById(0)->GetOSIPoints();
 			double sLocal = -1;
 
 			// skip last point on last lane section
 			int numPoints = osiPoints->GetNumOfOSIPoints();
-			if (j == road->GetNumberOfLaneSections() - 1)
+			if (lsec_idx == road->GetNumberOfLaneSections() - 1)
 			{
 				numPoints--;
 			}
 
 			// Find closest line or point
-			for (int k = 0; k < numPoints; k++)
+			int pointIdxStart, pointIdxEnd;
+			if (j == -1)
+			{
+				// Start looking in neigborhood of current pos
+				pointIdxStart = MAX(0, osi_point_idx_ - 10);
+				pointIdxEnd = MIN(numPoints, osi_point_idx_ + 10);
+			}
+			else
+			{
+				// Then look all over
+				pointIdxStart = 0;
+				pointIdxEnd = numPoints;
+			}
+
+			for (int k = pointIdxStart; k < pointIdxEnd; k++)
 			{
 				double distTmp = 0;
 				OSIPoints::OSIPointStruct& osi_point = osiPoints->GetPoint(k);
@@ -4915,7 +4950,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 
 				double x2, y2, z2, sLocalTmp;
 
-				jMinLocal = j;
+				jMinLocal = lsec_idx;
 				kMinLocal = k;
 
 				double px, py;
@@ -4923,13 +4958,13 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				if (k == osiPoints->GetNumOfOSIPoints() - 1)
 				{
 					// End of lane section, look into next one
-					j2 = MIN(j + 1, road->GetNumberOfLaneSections() - 1);
+					j2 = MIN(lsec_idx + 1, road->GetNumberOfLaneSections() - 1);
 					k2 = MIN(1, road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetNumOfOSIPoints() - 1);
 				}
 				else
 				{
 					k2 = k + 1;
-					j2 = j;
+					j2 = lsec_idx;
 				}
 				x2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).x;
 				y2 = road->GetLaneSectionByIdx(j2)->GetLaneById(0)->GetOSIPoints()->GetPoint(k2).y;
@@ -4938,12 +4973,13 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 				// OSI points is an approximation of actual geometry
 				// Check potential additional area formed by actual normal and OSI points normal
 				// at start and end
-				if ((j == 0 && k == 0) || ((j > 1 || k > 1) && (j == road->GetNumberOfLaneSections() - 1 && k == osiPoints->GetNumOfOSIPoints() - 2)))
+				if ((lsec_idx == 0 && k == 0) || ((lsec_idx > 1 || k > 1) && 
+					(lsec_idx == road->GetNumberOfLaneSections() - 1 && k == osiPoints->GetNumOfOSIPoints() - 2)))
 				{
 					double x, y, h;
 					Position pos;
 
-					if (j == 0 && k == 0)
+					if (lsec_idx == 0 && k == 0)
 					{
 						// road startpoint
 						pos.SetLanePos(road->GetId(), 0, 0, 0);
@@ -4991,7 +5027,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					{
 						inside = true;
 						distTmp = GetLengthOfLine2D(vx, vy, 0, 0);
-						jMinLocal = j;
+						jMinLocal = lsec_idx;
 						kMinLocal = k;
 					}
 
@@ -5018,7 +5054,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					if (PointSquareDistance2D(x3, y3, osi_point.x, osi_point.y) <
 						PointSquareDistance2D(x3, y3, x2, y2))
 					{
-						jMinLocal = j;
+						jMinLocal = lsec_idx;
 						kMinLocal = k;
 					}
 					else
@@ -5093,11 +5129,20 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 						kMin = kMinLocal;
 						closestPointInside = inside;
 						closestPointDirectlyConnected = directlyConnected;
+						osi_point_idx_ = kMinLocal;
 
 						if (directlyConnected)
 						{
 							headingDiffMin = angle;
 						}
+					}
+				} 
+				else if (j == -1)
+				{
+					// distance is now increasing, indicating that we already passed the closest point
+					if (closestPointDist < SMALL_NUMBER)
+					{
+						break;
 					}
 				}
 			}
@@ -5511,6 +5556,7 @@ int Position::SetLongitudinalTrackPos(int track_id, double s)
 		lane_section_idx_ = 0;
 		lane_id_ = 0;
 		lane_idx_ = 0;
+		osi_point_idx_ = 0;
 	}
 
 

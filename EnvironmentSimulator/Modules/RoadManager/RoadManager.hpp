@@ -1734,6 +1734,7 @@ namespace roadmanager
 		int		geometry_idx_;			// index of the segment within the track given by track_idx
 		int		elevation_idx_;			// index of the current elevation entry 
 		int		super_elevation_idx_;   // index of the current super elevation entry 
+		int     osi_point_idx_;			// index of the current closest OSI road point
 	};
 
 
