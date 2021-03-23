@@ -1897,7 +1897,7 @@ namespace roadmanager
 		};
 
 	public:
-		Nurbs(int order) : order_(order), Shape(ShapeType::NURBS) {}
+		Nurbs(int order) : order_(order), Shape(ShapeType::NURBS), s2p_idx_(0), s2p_len_(0) {}
 
 		void AddControlPoint(Position pos, double time, double weight, bool calcHeading) 
 		{ 
@@ -1914,11 +1914,13 @@ namespace roadmanager
 		std::vector<double> d_;  // used for temporary storage of CoxDeBoor weigthed control points
 
 		void calcS2PMap();
-		int S2P(double s, double &p, double &h);
+		int S2P(double s, double &p, double &h, double &z);
+
+		int s2p_len_;
+		int s2p_idx_;
 
 	private:
-
-		double s2p_map_[NURBS_MAX_STEPS + 1][3];
+		double s2p_map_[NURBS_MAX_STEPS + 1][4];
 
 		double CoxDeBoor(double x, int i, int p, const std::vector<double>& t);
 

@@ -147,9 +147,6 @@ double PointSquareDistance2D(double x0, double y0, double x1, double y1);
 void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double &px, double &py);
 
 /**
-  Check whether projected point is in between vector endpoints, or outside
-*/
-/**
  Check whether projected point is in between vector endpoints, or outside
  @param x3 X-coordinate of the point to check
  @param y3 Y-coordinate of the point to check

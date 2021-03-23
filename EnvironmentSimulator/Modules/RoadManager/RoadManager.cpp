@@ -4898,7 +4898,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 			startLaneSecIdx = -1;
 		}
 
-		for (int j = startLaneSecIdx; j < road->GetNumberOfLaneSections(); j++)
+		for (int j = startLaneSecIdx; j < road->GetNumberOfLaneSections() && !search_done; j++)
 		{
 			int lsec_idx;
 			OSIPoints* osiPoints;
@@ -5042,7 +5042,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					distTmp = PointDistance2D(x3, y3, px, py);
 
 					inside = PointInBetweenVectorEndpoints(px, py, osi_point.x, osi_point.y, x2, y2, sLocalTmp);
-					if (!inside && k > 0 && (SIGN(sLocalTmp) != SIGN(sLocal)))
+					if (!inside && k > pointIdxStart && (SIGN(sLocalTmp) != SIGN(sLocal)))
 					{
 						// In between two line segments, or more precisely in the triangle area outside a 
 						// convex vertex corner between two line segments. Consider beeing inside road segment.
@@ -5103,7 +5103,6 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 					// longitudinal (end points) and lateral (road width)
 					distTmp += weight;
 				}
-				
 				if (distTmp < closestPointDist + SMALL_NUMBER)
 				{
 					bool directlyConnectedCandidate = false;
@@ -5137,17 +5136,19 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 						}
 					}
 				} 
-				else if (j == -1)
+				else if (startLaneSecIdx == -1)
 				{
 					// distance is now increasing, indicating that we already passed the closest point
-					if (closestPointDist < SMALL_NUMBER)
+					if (closestPointInside && closestPointDist < SMALL_NUMBER)
 					{
+						search_done = true;
 						break;
 					}
 				}
 			}
 		}
 	}
+
 	if (closestPointInside)
 	{
 		status_ &= ~Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD;
@@ -5373,6 +5374,13 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 
 	EvaluateRoadZPitchRoll(alignZPitchRoll);
 
+	if (!closestPointInside)
+	{
+		// if outside road endpoint boundries, ignore road pitch
+		p_road_ = 0.0;
+		SetPitch(0.0);
+	}
+
 	// If on a route, calculate corresponding route position
 	if (route_)
 	{
@@ -5382,7 +5390,6 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 	return retvalue;
 }
 	
-
 bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 {
 	if (track_id_ < 0)
@@ -5395,13 +5402,6 @@ bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 	if (alignZPitchRoll)
 	{
 		SetZ(z_road_);
-
-		// Adjust pitch and roll of road in driving direction
-		if (GetHRelative() > M_PI_2 && GetHRelative() < 3 * M_PI_2)
-		{
-			p_road_ *= -1;
-			r_road_ *= -1;
-		}
 
 		SetPitch(p_relative_ + p_road_);
 		SetRoll(r_relative_ + r_road_);
@@ -7356,6 +7356,7 @@ double Nurbs::CoxDeBoor(double x, int i, int k, const std::vector<double>& t)
 
 void Nurbs::calcS2PMap()
 {
+	Position tmpRoadPos;
 	// Calculate approximate length - to find a reasonable step length
 	length_ = 0;
 	double steplen = 1.0; // steplen in meters
@@ -7411,33 +7412,51 @@ void Nurbs::calcS2PMap()
 		}
 
 		oldpos = pos;
+
+		// Resolve Z value - from road elevation
+		tmpRoadPos.SetInertiaPos(pos.x, pos.y, pos.h);
+		pos.z = tmpRoadPos.GetZ();
+		s2p_map_[i][3] = pos.z;
 	}
 
 	s2p_map_[0][2] = s2p_map_[1][2]; // copy second derivative to first position - To be improved
 
 	length_ = newLength;
+	s2p_len_ = nSteps;
 }
 
-int Nurbs::S2P(double s, double &p, double &h)
+int Nurbs::S2P(double s, double &p, double &h, double &z)
 {
-	for (size_t i = 0; i < NURBS_MAX_STEPS; i++)
+	// start looking from current index
+	int i = s2p_idx_;
+
+	for (size_t j = 0; j < s2p_len_; j++)
 	{
-		if (s2p_map_[i + 1][0] > s)
+		if (s2p_map_[i][0] <= s && s2p_map_[i + 1][0] > s)
 		{
 			double w = (s - s2p_map_[i][0]) / (s2p_map_[i + 1][0] - s2p_map_[i][0]);
 			p = s2p_map_[i][1] + w * (s2p_map_[i + 1][1] - s2p_map_[i][1]);
 			h = s2p_map_[i][2] + w * GetAngleDifference(s2p_map_[i + 1][2], s2p_map_[i][2]);
+			z = s2p_map_[i][3] + w * (s2p_map_[i + 1][3] - s2p_map_[i][3]);
+			s2p_idx_ = i;
 			return 0;
 		}
+		
+		if (++i > s2p_len_ - 1)
+		{
+			// Reached end of buffer, continue from start
+			i = 0;
+		}
 	}
-	p = s2p_map_[NURBS_MAX_STEPS][1];
-	h = s2p_map_[NURBS_MAX_STEPS][2];
+	p = s2p_map_[s2p_len_][1];
+	h = s2p_map_[s2p_len_][2];
+	z = s2p_map_[s2p_len_][3];
 	return 0;
 }
 
 int Nurbs::EvaluateInternal(double t, ShapePosition& pos)
 {
-	pos.x = pos.y = pos.z = 0.0;
+	pos.x = pos.y = 0.0;
 
 	// Find knot span
 	t = CLAMP(t, knot_[0], knot_.back());
@@ -7463,9 +7482,6 @@ int Nurbs::EvaluateInternal(double t, ShapePosition& pos)
 			pos.y += d_[i] * ctrlPoint_[i].pos_.GetY() * ctrlPoint_[i].weight_ / rationalWeight;
 		}
 	}
-
-	// Interpolate Z in the knot span
-	pos.z = ctrlPoint_[k - order_ + 1].pos_.GetZ();  // need to be improved
 
 	return 0;
 }
@@ -7494,7 +7510,7 @@ int Nurbs::Evaluate(double s, TrajectoryParamType ptype, ShapePosition& pos)
 	}
 
 	double t;
-	S2P(s, t, pos.h);
+	S2P(s, t, pos.h, pos.z);
 	pos.s = s;
 	EvaluateInternal(t, pos);
 
@@ -7539,7 +7555,7 @@ int Position::MoveTrajectoryDS(double ds)
 	Shape::ShapePosition pos;
 	trajectory_->shape_->Evaluate(s_trajectory_ + ds, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, pos);
 
-	SetInertiaPos(pos.x, pos.y, pos.z, pos.h, 0.0, 0.0, true);
+	SetInertiaPos(pos.x, pos.y, pos.h);
 
 	s_trajectory_ = pos.s;
 
