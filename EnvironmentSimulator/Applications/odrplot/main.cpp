@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
 	std::ofstream file;
 	std::string sampling_step = "1.0";
 	double step_length_target;
+	static char strbuf[1024];
 	
 	if (argc < 2)
 	{
@@ -95,7 +96,8 @@ int main(int argc, char *argv[])
 					s += k * step_length;
 					s = MIN(s_end, s);
 					pos->SetLanePos(road->GetId(), lane->GetId(), s, SIGN(lane->GetId())*lane_section->GetWidth(s, lane->GetId())*0.5, i);
-					file << pos->GetX() << ", " << pos->GetY() << ", " << pos->GetZ() << ", " << pos->GetH() << std::endl;
+					snprintf(strbuf, sizeof(strbuf), "%f, %f, %f, %f\n", pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH());
+					file << strbuf;
 				}
 			}
 		}
