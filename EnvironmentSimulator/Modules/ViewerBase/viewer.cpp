@@ -608,6 +608,9 @@ EntityModel::EntityModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::Group> gro
 		}
 	}
 
+	// Add trajectory placeholder
+	trajectory_ = new Trajectory(traj_parent, viewer);
+
 	viewer_ = viewer;
 	state_set_ = 0;
 	blend_color_ = 0;
@@ -637,7 +640,6 @@ CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, os
 	road_sensor_ = 0;
 	lane_sensor_ = 0;
 	trail_sensor_ = 0;
-	trajectory_ = new Trajectory(traj_parent, viewer);
 
 	wheel_angle_ = 0;
 	wheel_rot_ = 0;
@@ -695,7 +697,7 @@ void EntityModel::SetRotation(double hRoad, double pRoad, double hRelative, doub
 
 	// Rotation relative road
 	quat_.makeRotate(
-		0, osg::Vec3(osg::X_AXIS),         // Roll
+		r, osg::Vec3(osg::X_AXIS),         // Roll
 		0, osg::Vec3(osg::Y_AXIS),         // Pitch
 		hRelative, osg::Vec3(osg::Z_AXIS)  // Heading
 	); 
@@ -897,6 +899,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	ClearNodeMaskBits(NodeMask::NODE_MASK_TRAILS);
 	ClearNodeMaskBits(NodeMask::NODE_MASK_ENTITY_BB);
 	SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL);
+	SetNodeMaskBits(NodeMask::NODE_MASK_TRAJECTORY_LINES);
 
 	roadSensors_ = new osg::Group;
 	roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
@@ -914,7 +917,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	osiPoints_->setNodeMask(NodeMask::NODE_MASK_OSI_POINTS);
 	rootnode_->addChild(osiPoints_);
 	trajectoryLines_ = new osg::Group;
-	trajectoryLines_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
+	trajectoryLines_->setNodeMask(NodeMask::NODE_MASK_TRAJECTORY_LINES);
 	rootnode_->addChild(trajectoryLines_);
 	exe_path_ = exe_path;
 
@@ -2104,6 +2107,14 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
 			viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+		}
+	}
+	break;
+	case(osgGA::GUIEventAdapter::KEY_N):
+	{
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAJECTORY_LINES);
 		}
 	}
 	break;

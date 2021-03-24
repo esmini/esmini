@@ -44,6 +44,7 @@ Key commands:
     r: Toggle show/hide sensor view frustums
     i: Toggle info text showing time and speed
     j: Toggle show trails after vehicles
+    n: Toggle show active trajectories
     , (comma): Switch entity view: Model only / Bounding box / Model + Bounding box / None 
     ESC: quit
 
