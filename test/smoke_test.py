@@ -37,6 +37,26 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n6.500, 0, Ego, 28.5., -7.8., 0.00, 1.[78].', csv))
         self.assertTrue(re.search('\n6.500, 1, NPC, 24.5., 0.2., 0.00, 5.[34].', csv))
 
+    def test_trajectory(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/trajectory-test.xosc'), COMMON_ARGS \
+            + '--disable_controllers')
+        
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading ../resources/xosc/trajectory-test.xosc', log))
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n8.0.*FollowTrajectoryClothoidTrigger == true, element: FollowTrajectoryPLineEvent state: END_TRANSITION', log))
+        self.assertTrue(re.search('\n22.9[23].* FollowTrajectoryNurbsAction runningState -> endTransition -> completeState', log))
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('\n4.100, 0, Ego, 115.04, 4.86, -3.01, 0.28, 0.03', csv))
+        self.assertTrue(re.search('\n4.100, 1, Target, 129.91, 14.33, -3.47, 0.50', csv))
+        self.assertTrue(re.search('\n11.100, 0, Ego, 200.70, 72.59, -2.44, 1.06, -0.02', csv))
+        self.assertTrue(re.search('\n11.100, 1, Target, 205.56, 66.34, -2.50, -3.79', csv))
+        self.assertTrue(re.search('\n17.390, 0, Ego, 216.96, 169.84, 2.15, 1.75, -0.07', csv))
+        self.assertTrue(re.search('\n17.390, 1, Target, 213.08, 208.07, 4.29, 1.76', csv))
+
 
 if __name__ == "__main__":
     # execute only if run as a script
