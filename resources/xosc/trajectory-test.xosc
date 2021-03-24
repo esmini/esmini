@@ -15,8 +15,7 @@
         </VehicleCatalog>
     </CatalogLocations>
     <RoadNetwork>
-        <LogicFile filepath="../xodr/e6mini.xodr"/>
-        <SceneGraphFile filepath="../models/e6mini.osgb"/>
+        <LogicFile filepath="../xodr/curves_elevation.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
@@ -66,7 +65,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="30"/>
+                                    <AbsoluteTargetSpeed value="16"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -74,7 +73,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition laneId="-3" offset="0" roadId="0" s="25"/>
+                                <LanePosition laneId="-1" offset="0" roadId="1" s="50"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -85,7 +84,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="40"/>
+                                    <AbsoluteTargetSpeed value="30"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -93,7 +92,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition laneId="-2" offset="0" roadId="0" s="15"/>
+                                <LanePosition laneId="-1" offset="0" roadId="1" s="10"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -110,12 +109,12 @@
                         <EntityRef entityRef="$owner"/>
                     </Actors>
                     <Maneuver name="my_maneuver">
-                        <Event maximumExecutionCount="1" name="FollowTrajectory1Event" priority="overwrite">
-                            <Action name="FollowTrajectory1Action">
+                        <Event maximumExecutionCount="1" name="FollowTrajectoryPLineEvent" priority="overwrite">
+                            <Action name="FollowTrajectoryPLineAction">
                                 <PrivateAction>
                                     <RoutingAction>
                                         <FollowTrajectoryAction>
-                                            <Trajectory closed="False" name="Trajectory1">
+                                            <Trajectory closed="False" name="TrajectoryPLine">
                                                 <ParameterDeclarations/>
                                                 <Shape>
                                                     <Polyline>
@@ -124,19 +123,19 @@
                                                                 <RelativeLanePosition dLane="0" ds="0" entityRef="Target" offset="0.0"/>
                                                             </Position>
                                                         </Vertex>
-                                                        <Vertex time="1">
-                                                            <Position>
-                                                                <RelativeLanePosition dLane="-1" ds="40" entityRef="Target" offset="1"/>
-                                                            </Position>
-                                                        </Vertex>
                                                         <Vertex time="2">
                                                             <Position>
-                                                                <RelativeLanePosition dLane="-1" ds="80" entityRef="Target" offset="-1"/>
+                                                                <RelativeLanePosition dLane="1" ds="60" entityRef="Target" offset="2"/>
                                                             </Position>
                                                         </Vertex>
-                                                        <Vertex time="3">
+                                                        <Vertex time="4">
                                                             <Position>
-                                                                <RelativeLanePosition dLane="-1" ds="120" entityRef="Target" offset="0"/>
+                                                                <RelativeLanePosition dLane="1" ds="110" entityRef="Target" offset="2"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="6">
+                                                            <Position>
+                                                                <RelativeLanePosition dLane="0" ds="165" entityRef="Target" offset="0"/>
                                                             </Position>
                                                         </Vertex>
                                                     </Polyline>
@@ -152,28 +151,28 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition conditionEdge="rising" delay="0.2" name="FollowTrajectory1Trigger">
+                                    <Condition conditionEdge="rising" delay="0.2" name="FollowTrajectoryPLineTrigger">
                                         <ByEntityCondition>
                                             <TriggeringEntities triggeringEntitiesRule="any">
-                                                <EntityRef entityRef="Ego"/>
+                                                <EntityRef entityRef="Target"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <TimeHeadwayCondition alongRoute="True" entityRef="Target" freespace="True" rule="greaterThan" value="0.4"/>
+                                                <TimeHeadwayCondition alongRoute="True" entityRef="Ego" freespace="True" rule="lessThan" value="0.5"/>
                                             </EntityCondition>
                                         </ByEntityCondition>
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                        <Event maximumExecutionCount="1" name="FollowTrajectory2Event" priority="overwrite">
-                            <Action name="FollowTrajectory2Action">
+                        <Event maximumExecutionCount="1" name="FollowTrajectoryClothoidEvent" priority="overwrite">
+                            <Action name="FollowTrajectoryClothoidAction">
                                 <PrivateAction>
                                     <RoutingAction>
                                         <FollowTrajectoryAction>
-                                            <Trajectory closed="False" name="Trajectory2">
+                                            <Trajectory closed="False" name="TrajectoryClothoid">
                                                 <ParameterDeclarations/>
                                                 <Shape>
-                                                    <Clothoid curvature="-0.1" curvatureDot="0.00035" length="70" startTime="0" stopTime="4">
+                                                    <Clothoid curvature="-0.1" curvatureDot="0.00036" length="70" startTime="0" stopTime="4">
                                                         <Position>
                                                             <RelativeLanePosition dLane="0" ds="0" entityRef="Target" offset="0.0"/>
                                                         </Position>
@@ -190,10 +189,75 @@
                             </Action>
                             <StartTrigger>
                                <ConditionGroup>
+                                  <Condition name="FollowTrajectoryClothoidTrigger" delay="0" conditionEdge="rising">
+                                     <ByValueCondition>
+                                        <StoryboardElementStateCondition storyboardElementType="event"
+                                                                         storyboardElementRef="FollowTrajectoryPLineEvent"
+                                                                         state="endTransition"/>
+                                     </ByValueCondition>
+                                  </Condition>
+                               </ConditionGroup>
+                            </StartTrigger>
+                        </Event>                        
+                        <Event maximumExecutionCount="1" name="FollowTrajectoryNurbsEvent" priority="overwrite">
+                            <Action name="FollowTrajectoryNurbsAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <Trajectory closed="False" name="TrajectoryNurbs">
+                                                <ParameterDeclarations/>
+                                                <Shape>
+                                                    <Nurbs order="3">
+                                                        <ControlPoint time="0" weight="1">
+                                                            <Position>
+                                                                <RelativeLanePosition dLane="0" ds="0" entityRef="Target" offset="0.0"/>
+                                                            </Position>
+                                                        </ControlPoint>
+                                                        <ControlPoint time="3" weight="1.2">
+                                                            <Position>
+                                                                <RelativeLanePosition dLane="0" ds="50" entityRef="Target" offset="20.0"/>
+                                                            </Position>
+                                                        </ControlPoint>
+                                                        <ControlPoint time="6" weight="0.7">
+                                                            <Position>
+                                                                <RelativeLanePosition dLane="-2" ds="100" entityRef="Target" offset="-10.0"/>
+                                                            </Position>
+                                                        </ControlPoint>
+                                                        <ControlPoint time="11" weight="1.0">
+                                                            <Position>
+                                                                <RelativeLanePosition dLane="-1" ds="180" entityRef="Target" offset="0.0"/>
+                                                            </Position>
+                                                        </ControlPoint>                                                        
+                                                        <ControlPoint time="12" weight="1.0">
+                                                            <Position>
+                                                                <RelativeLanePosition dLane="-2" ds="220" entityRef="Target" offset="0.0"/>
+                                                            </Position>
+                                                        </ControlPoint>                                                        
+                                                        <Knot value="0.0" />
+                                                        <Knot value="0.0" />
+                                                        <Knot value="0.0" />
+                                                        <Knot value="0.3333" />
+                                                        <Knot value="0.6667" />
+                                                        <Knot value="1.0" />
+                                                        <Knot value="1.0" />
+                                                        <Knot value="1.0" />
+                                                    </Nurbs>
+                                                </Shape>
+                                            </Trajectory>
+                                            <TimeReference>
+                                                <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                               <ConditionGroup>
                                   <Condition name="FollowTrajectory2Trigger" delay="0" conditionEdge="rising">
                                      <ByValueCondition>
                                         <StoryboardElementStateCondition storyboardElementType="event"
-                                                                         storyboardElementRef="FollowTrajectory1Event"
+                                                                         storyboardElementRef="FollowTrajectoryClothoidEvent"
                                                                          state="endTransition"/>
                                      </ByValueCondition>
                                   </Condition>
@@ -214,6 +278,16 @@
                 <StopTrigger/>
             </Act>
         </Story>
-        <StopTrigger/>
+        <StopTrigger>
+           <ConditionGroup>
+              <Condition name="FollowTrajectory2Trigger" delay="5" conditionEdge="rising">
+                 <ByValueCondition>
+                    <StoryboardElementStateCondition storyboardElementType="event"
+                                                     storyboardElementRef="FollowTrajectoryNurbsEvent"
+                                                     state="endTransition"/>
+                 </ByValueCondition>
+              </Condition>
+           </ConditionGroup>        
+        </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>
