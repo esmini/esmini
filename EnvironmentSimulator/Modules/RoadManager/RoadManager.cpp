@@ -7273,7 +7273,48 @@ int PolyLine::EvaluateSegmentByLocalS(int i, double local_s, ShapePosition& pos)
 		pos.x = (1 - a) * vp0->GetX() + a * vp1->GetX();
 		pos.y = (1 - a) * vp0->GetY() + a * vp1->GetY();
 		pos.z = (1 - a) * vp0->GetZ() + a * vp1->GetZ();
-		pos.h = (1 - a) * vp0->GetH() + a * vp1->GetH();
+
+		if (vertex_[i + 1]->calc_heading_)
+		{
+			// Strategy: Align to line, but interpolate at corners
+			double radius = MIN(4.0, length);
+			if (local_s < radius)
+			{
+				// passed a corner
+				a = (radius + local_s) / (2 * radius);
+				if (i > 0)
+				{
+					pos.h = a * vertex_[i]->pos_.GetH() + (1 - a) * vertex_[i - 1]->pos_.GetH();
+				}
+				else
+				{
+					// No previous value to interpolate
+					pos.h = vertex_[i]->pos_.GetH();
+				}
+			}
+			else if (local_s > length - radius)
+			{
+				a = (radius + (length - local_s)) / (2 * radius);
+				if (i > vertex_.size() - 2)
+				{
+					// Last segment, no next point to interpolate
+					pos.h = a * vertex_[i]->pos_.GetH();
+				}
+				else
+				{
+					pos.h = a * vertex_[i]->pos_.GetH() + (1 - a) * vertex_[i + 1]->pos_.GetH();
+				}
+			}
+			else
+			{
+				pos.h = vertex_[i]->pos_.GetH();
+			}
+		}
+		else
+		{
+			// Interpolate
+			pos.h = (1 - a) * vp0->GetH() + a * vp1->GetH();
+		}
 	}
 	else
 	{
@@ -7531,7 +7572,7 @@ int Nurbs::Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos)
 	}
 
 	// Time not supported yet. Find t by linear interpolation of s.
-	double t;
+	double t = 0;
 	if (ptype == TRAJ_PARAM_TYPE_TIME)
 	{
 		// Find corresponding knot span
@@ -7547,10 +7588,14 @@ int Nurbs::Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos)
 
 			P2S(t, pos.s, pos.h, pos.z);
 		}
+		else
+		{
+			t = ctrlPoint_[c].t_;
+		}
 	}
 	else
 	{
-		S2P(pos.s, t, pos.h, pos.z);
+		S2P(p, t, pos.h, pos.z);
 		pos.s = p;
 	}
 
