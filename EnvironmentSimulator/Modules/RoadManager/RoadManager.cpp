@@ -7362,7 +7362,7 @@ void Nurbs::calcS2PMap()
 	for (size_t i = 0; i < ctrlPoint_.size(); i++)
 	{
 		ctrlPoint_[i].pos_.ReleaseRelation();
-
+		ctrlPoint_[i].t_ = knot_[i + order_ - 1];
 		if (i > 0)
 		{
 			length_ += PointDistance2D(
@@ -7452,6 +7452,35 @@ int Nurbs::S2P(double s, double &p, double &h, double &z)
 	return 0;
 }
 
+int Nurbs::P2S(double p, double& s, double& h, double& z)
+{
+	// start looking from current index
+	int i = s2p_idx_;
+
+	for (size_t j = 0; j < s2p_len_; j++)
+	{
+		if (s2p_map_[i][1] <= p && s2p_map_[i + 1][1] > p)
+		{
+			double w = (p - s2p_map_[i][1]) / (s2p_map_[i + 1][1] - s2p_map_[i][1]);
+			s = s2p_map_[i][0] + w * (s2p_map_[i + 1][0] - s2p_map_[i][0]);
+			h = s2p_map_[i][2] + w * GetAngleDifference(s2p_map_[i + 1][2], s2p_map_[i][2]);
+			z = s2p_map_[i][3] + w * (s2p_map_[i + 1][3] - s2p_map_[i][3]);
+			s2p_idx_ = i;
+			return 0;
+		}
+
+		if (++i > s2p_len_ - 1)
+		{
+			// Reached end of buffer, continue from start
+			i = 0;
+		}
+	}
+	s = s2p_map_[s2p_len_][0];
+	h = s2p_map_[s2p_len_][2];
+	z = s2p_map_[s2p_len_][3];
+	return 0;
+}
+
 int Nurbs::EvaluateInternal(double t, ShapePosition& pos)
 {
 	pos.x = pos.y = 0.0;
@@ -7494,22 +7523,37 @@ void Nurbs::AddKnots(std::vector<double> knots)
 	}
 }
 
-int Nurbs::Evaluate(double s, TrajectoryParamType ptype, ShapePosition& pos)
+int Nurbs::Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos)
 {
-	if (ctrlPoint_.size() < order_ || GetLength() < SMALL_NUMBER)
+	if (order_ < 1 || ctrlPoint_.size() < order_ || GetLength() < SMALL_NUMBER)
 	{
 		return -1;
 	}
 
 	// Time not supported yet. Find t by linear interpolation of s.
+	double t;
 	if (ptype == TRAJ_PARAM_TYPE_TIME)
 	{
-		throw std::runtime_error("Time not supported yet in nurbs control points");
+		// Find corresponding knot span
+		int c;
+		for (c = 0; c < ctrlPoint_.size() - 1 && ctrlPoint_[c+1].time_ <= p; c++);
+
+		if (c < ctrlPoint_.size() - 1)
+		{
+			// Linear interpolation of t-value based on time value
+			t = ctrlPoint_[c].t_ + 
+				((p - ctrlPoint_[c].time_) / (ctrlPoint_[c + 1].time_ - ctrlPoint_[c].time_)) * 
+				(ctrlPoint_[c+1].t_ - ctrlPoint_[c].t_);
+
+			P2S(t, pos.s, pos.h, pos.z);
+		}
+	}
+	else
+	{
+		S2P(pos.s, t, pos.h, pos.z);
+		pos.s = p;
 	}
 
-	double t;
-	S2P(s, t, pos.h, pos.z);
-	pos.s = s;
 	EvaluateInternal(t, pos);
 
 	return 0;

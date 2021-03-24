@@ -235,6 +235,7 @@ namespace viewer
 			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double hRoad, double pRoad, double hRelative, double r);
+		void SetRotation(double h, double p, double r);
 
 		void SetTransparency(double factor);
 

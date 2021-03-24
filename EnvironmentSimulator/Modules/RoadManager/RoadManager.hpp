@@ -1890,6 +1890,7 @@ namespace roadmanager
 			Position pos_;
 			double time_;
 			double weight_;
+			double t_;
 			bool calcHeading_;
 
 			ControlPoint(Position pos, double time, double weight, bool calcHeading) : 
@@ -1915,6 +1916,7 @@ namespace roadmanager
 
 		void calcS2PMap();
 		int S2P(double s, double &p, double &h, double &z);
+		int P2S(double p, double& s, double& h, double& z);
 
 		int s2p_len_;
 		int s2p_idx_;
