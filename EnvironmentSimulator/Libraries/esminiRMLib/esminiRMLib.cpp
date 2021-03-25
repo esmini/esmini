@@ -198,6 +198,56 @@ extern "C"
 		return (int)(position.size() - 1);  // return index of newly created 
 	}
 
+	RM_DLL_API void RM_SetAlignMode(int handle, int mode)
+	{
+		if (handle < 0 || handle >= position.size())
+		{
+			return;
+		}
+
+		position[handle].SetAlignMode((roadmanager::Position::ALIGN_MODE)mode);
+	}
+
+	RM_DLL_API void RM_SetAlignModeH(int handle, int mode)
+	{
+		if (handle < 0 || handle >= position.size())
+		{
+			return;
+		}
+
+		position[handle].SetAlignModeH((roadmanager::Position::ALIGN_MODE)mode);
+	}
+
+	RM_DLL_API void RM_SetAlignModeP(int handle, int mode)
+	{
+		if (handle < 0 || handle >= position.size())
+		{
+			return;
+		}
+
+		position[handle].SetAlignModeP((roadmanager::Position::ALIGN_MODE)mode);
+	}
+
+	RM_DLL_API void RM_SetAlignModeR(int handle, int mode)
+	{
+		if (handle < 0 || handle >= position.size())
+		{
+			return;
+		}
+
+		position[handle].SetAlignModeR((roadmanager::Position::ALIGN_MODE)mode);
+	}
+
+	RM_DLL_API void RM_SetAlignModeZ(int handle, int mode)
+	{
+		if (handle < 0 || handle >= position.size())
+		{
+			return;
+		}
+
+		position[handle].SetAlignModeZ((roadmanager::Position::ALIGN_MODE)mode);
+	}
+
 	RM_DLL_API int RM_SetLockOnLane(int handle, bool mode)
 	{
 		if (handle < 0 || handle >= position.size())
@@ -347,7 +397,7 @@ extern "C"
 		else
 		{
 			roadmanager::Position *pos = &position[handle];
-			pos->XYZH2TrackPos(x, y, pos->GetZ(), h, true);
+			pos->XYZH2TrackPos(x, y, pos->GetZ(), h);
 		}
 
 		return 0;
@@ -362,7 +412,7 @@ extern "C"
 		else
 		{
 			roadmanager::Position* pos = &position[handle];
-			pos->XYZH2TrackPos(x, y, z, h, true);
+			pos->XYZH2TrackPos(x, y, z, h);
 		}
 
 		return 0;

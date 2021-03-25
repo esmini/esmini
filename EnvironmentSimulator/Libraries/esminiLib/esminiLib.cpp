@@ -538,6 +538,61 @@ extern "C"
 		return (float)SE_getSimTimeStep(time_stamp, 0.001, 0.1);
 	}
 
+	SE_DLL_API void RM_SetAlignMode(int id, int mode)
+	{
+		if (player)
+		{
+			if (id < player->scenarioEngine->entities.object_.size())
+			{
+				player->scenarioEngine->entities.object_[id]->pos_.SetAlignMode((roadmanager::Position::ALIGN_MODE)mode);
+			}
+		}
+	}
+
+	SE_DLL_API void RM_SetAlignModeH(int id, int mode)
+	{
+		if (player)
+		{
+			if (id < player->scenarioEngine->entities.object_.size())
+			{
+				player->scenarioEngine->entities.object_[id]->pos_.SetAlignModeH((roadmanager::Position::ALIGN_MODE)mode);
+			}
+		}
+	}
+
+	SE_DLL_API void RM_SetAlignModeP(int id, int mode)
+	{
+		if (player)
+		{
+			if (id < player->scenarioEngine->entities.object_.size())
+			{
+				player->scenarioEngine->entities.object_[id]->pos_.SetAlignModeP((roadmanager::Position::ALIGN_MODE)mode);
+			}
+		}
+	}
+
+	SE_DLL_API void RM_SetAlignModeR(int id, int mode)
+	{
+		if (player)
+		{
+			if (id < player->scenarioEngine->entities.object_.size())
+			{
+				player->scenarioEngine->entities.object_[id]->pos_.SetAlignModeR((roadmanager::Position::ALIGN_MODE)mode);
+			}
+		}
+	}
+
+	SE_DLL_API void RM_SetAlignModeZ(int id, int mode)
+	{
+		if (player)
+		{
+			if (id < player->scenarioEngine->entities.object_.size())
+			{
+				player->scenarioEngine->entities.object_[id]->pos_.SetAlignModeZ((roadmanager::Position::ALIGN_MODE)mode);
+			}
+		}
+	}
+
 	SE_DLL_API int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
 	{
 		if (player)

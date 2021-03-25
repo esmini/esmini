@@ -1247,6 +1247,13 @@ namespace roadmanager
 			POS_STATUS_END_OF_ROUTE = (1 << 1)
 		} POSITION_STATUS_MODES;
 
+		typedef enum
+		{
+			ALIGN_NONE = 0, // No alignment to road
+			ALIGN_SOFT = 1, // Align to road but add relative orientation
+			ALIGN_HARD = 2  // Completely align to road, disregard relative orientation
+		} ALIGN_MODE;
+
 		explicit Position();
 		explicit Position(int track_id, double s, double t);
 		explicit Position(int track_id, int lane_id, double s, double offset);
@@ -1263,10 +1270,10 @@ namespace roadmanager
 		Specify position by track coordinate (road_id, s, t)
 		@param track_id Id of the road (track)
 		@param s Distance to the position along and from the start of the road (track)
-		@param updateMode UPDATE_NOT_XYZH: no update of x, y, z, h UPDATE_XYZ: recalculate x, y, z UPDATE_XYZH relaculate x, y, z and align h
+		@param updateXY update world coordinates x, y... as well - or not
 		@return Non zero return value indicates error of some kind
 		*/
-		int SetTrackPos(int track_id, double s, double t, UpdateTrackPosMode updateMode = UpdateTrackPosMode::UPDATE_XYZH);
+		int SetTrackPos(int track_id, double s, double t, bool UpdateXY = true);
 		void ForceLaneId(int lane_id);
 		int SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
@@ -1301,16 +1308,22 @@ namespace roadmanager
 		void SetRollRelative(double roll);
 		void SetPitch(double roll);
 		void SetPitchRelative(double pitch);
+		void SetZ(double z);
+		void SetZRelative(double z);
+		
+		/**
+		 
+		*/
+		void EvaluateOrientation(); 
 
 		/**
 		Specify position by cartesian coordinate (x, y, z, h)
 		@param x X-coordinate
 		@param y Y-coordinate
 		@param z Z-coordinate
-		@param alignZAndPitch Align Z-coordinate to road elevation and Heading to tangent of the road 
 		@return Non zero return value indicates error of some kind
 		*/
-		int XYZH2TrackPos(double x, double y, double z, double h, bool alignZAndPitch = true);
+		int XYZH2TrackPos(double x, double y, double z, double h);
 		
 		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 		
@@ -1603,7 +1616,6 @@ namespace roadmanager
 		void SetT(double t) { t_ = t; }
 		void SetX(double x) { x_ = x; }
 		void SetY(double y) { y_ = y; }
-		void SetZ(double z) { z_ = z; }
 		void SetH(double h) { h_ = h; }
 		void SetP(double p) { p_ = p; }
 		void SetR(double r) { r_ = r; }
@@ -1627,6 +1639,11 @@ namespace roadmanager
 		int GetStatusBitMask() { return status_; }
 
 		void SetOrientationType(OrientationType type) { orientation_type_ = type; }
+		void SetAlignModeH(ALIGN_MODE mode) { align_h_ = mode; }
+		void SetAlignModeP(ALIGN_MODE mode) { align_p_ = mode; }
+		void SetAlignModeR(ALIGN_MODE mode) { align_r_ = mode; }
+		void SetAlignModeZ(ALIGN_MODE mode) { align_z_ = mode; }
+		void SetAlignMode(ALIGN_MODE mode) { align_h_ = align_p_ = align_r_ = align_z_ = mode; }
 
 		/**
 		Specify which lane types the position object snaps to (is aware of)
@@ -1662,16 +1679,16 @@ namespace roadmanager
 
 	protected:
 		void Track2Lane();
-		int Track2XYZ(bool alignH = true);
+		int Track2XYZ();
 		void Lane2Track();
 		void RoadMark2Track();
 		/**
 		Set position to the border of lane (right border for right lanes, left border for left lanes)
 		*/
 		void LaneBoundary2Track();
-		void XYZ2Track(bool alignZAndPitch = false);
+		void XYZ2Track();
 		int SetLongitudinalTrackPos(int track_id, double s);
-		bool EvaluateRoadZPitchRoll(bool alignZPitchRoll);
+		bool EvaluateRoadZPitchRoll();
 
 		// Control lane belonging
 		bool lockOnLane_;  // if true then keep logical lane regardless of lateral position, default false
@@ -1691,11 +1708,17 @@ namespace roadmanager
 		double  h_road_;			// heading of the road
 		double  h_offset_;			// local heading offset given by lane width and offset 
 		double  h_relative_;		// heading relative to the road (h_ = h_road_ + h_relative_)
+		double  z_relative_;        // z relative to the road
 		double  s_route_;			// longitudinal point/distance along the route
 		double  s_trajectory_;		// longitudinal point/distance along the trajectory
 		double  curvature_;
 		double  p_relative_;		// pitch relative to the road (h_ = h_road_ + h_relative_)
 		double  r_relative_;		// roll relative to the road (h_ = h_road_ + h_relative_)
+		ALIGN_MODE align_h_;        // Align to road: None, Soft or Hard
+		ALIGN_MODE align_p_;        // Align to road: None, Soft or Hard
+		ALIGN_MODE align_r_;        // Align to road: None, Soft or Hard
+		ALIGN_MODE align_z_;        // Align elevation (Z) to road: None, Soft or Hard
+
 		Position* rel_pos_;
 		PositionType type_;
 		OrientationType orientation_type_;  // Applicable for relative positions

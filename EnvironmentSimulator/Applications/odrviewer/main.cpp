@@ -204,14 +204,11 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 
 	if (car->model->txNode_ != 0)
 	{
-		car->model->txNode_->setPosition(osg::Vec3(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ()));
+		double h, p, r;
+		ZYZ2EulerAngles(car->pos->GetHRoad(), car->pos->GetPRoad(), car->pos->GetHRelative(), h, p, r);
 
-		car->model->quat_.makeRotate(
-			car->pos->GetR(), osg::Vec3(1, 0, 0),
-			car->pos->GetP(), osg::Vec3(0, 1, 0),
-			car->pos->GetH(), osg::Vec3(0, 0, 1));
-
-		car->model->txNode_->setAttitude(car->model->quat_);
+		car->model->SetPosition(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ());
+		car->model->SetRotation(h, p, r);
 	}
 }
 

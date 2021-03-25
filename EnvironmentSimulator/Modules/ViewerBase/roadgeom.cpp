@@ -333,6 +333,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 
 			// Then create actual vertices and triangle strips for the lane section
 			roadmanager::Position pos;
+			pos.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 			int nrOfVertices = s_list.size() * lsec->GetNumberOfLanes();
 			osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(nrOfVertices);
 			osg::ref_ptr<osg::DrawElementsUInt> indices;
@@ -354,7 +355,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 
 				for (size_t l = 0; l < s_list.size(); l++)
 				{
-					pos.SetTrackPos(road->GetId(), s_list[l], SIGN(lane->GetId()) * lsec->GetOuterOffset(s_list[l], lane->GetId()), roadmanager::Position::UpdateTrackPosMode::UPDATE_XYZ);
+					pos.SetTrackPos(road->GetId(), s_list[l], SIGN(lane->GetId()) * lsec->GetOuterOffset(s_list[l], lane->GetId()), true);
 					(*vertices)[vidx++].set(pos.GetX(), pos.GetY(), pos.GetZ());
 					double texscale = TEXTURE_SCALE;
 					texcoords->push_back(osg::Vec2(texscale * pos.GetX(), texscale* pos.GetY()));

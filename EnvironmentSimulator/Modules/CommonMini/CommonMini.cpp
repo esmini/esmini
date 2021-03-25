@@ -1,4 +1,4 @@
-/* 
+﻿/* 
  * esmini - Environment Simulator Minimalistic 
  * https://github.com/esmini/esmini
  *
@@ -165,6 +165,11 @@ double GetAngleInInterval2PI(double angle)
 	if (angle2 < 0)
 	{
 		angle2 += 2 * M_PI;
+	}
+
+	if (angle2 == -0)
+	{
+		angle2 = 0;
 	}
 
 	return angle2;
@@ -533,6 +538,82 @@ void OffsetVec2D(double x0, double y0, double x1, double y1, double offset, doub
 	yo0 = y0 + line_offset[1];
 	xo1 = x1 + line_offset[0];
 	yo1 = y1 + line_offset[1];
+}
+
+void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, double& r)
+{
+	double cx = cos(z0);
+	double cy = cos(y);
+	double cz = cos(z1);
+	double sx = sin(z0);
+	double sy = sin(y);
+	double sz = sin(z1);
+
+	// Create a rotation matrix Z0 * Y * Z1
+	double m[3][3] =
+	{
+		{cx * cy * cz - sx * sz, -cx * cy * sz - sx * cz, cx * sy} ,
+		{sx * cy * cz + cx * sz, cx * cz - sx * cy * sz, sx * sy},
+		{-sy * cz, sy * sz, cy}
+	};
+
+	// Avoid gimbal lock
+	if (fabs(m[0][0]) < SMALL_NUMBER) m[0][0] = SIGN(m[0][0]) * SMALL_NUMBER;
+	if (fabs(m[2][2]) < SMALL_NUMBER) m[2][2] = SIGN(m[2][2]) * SMALL_NUMBER;
+
+	h = atan2(m[1][0], m[0][0]);
+	p = atan2(-m[2][0], sqrt(m[2][1] * m[2][1] + m[2][2] * m[2][2]));
+	r = atan2(m[2][1], m[2][2]);
+}
+
+void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r)
+{
+	// 1. Create two rotation matrices 
+	// 2. Multiply them
+	// 3. Extract yaw. pitch , roll
+
+	double cx = cos(h0);
+	double cy = cos(p0);
+	double cz = cos(r0);
+	double sx = sin(h0);
+	double sy = sin(p0);
+	double sz = sin(r0);
+
+	double R0[3][3] =
+	{
+		{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz} ,
+		{sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
+		{-sy, cy * sz, cy * cz}
+	};
+
+	cx = cos(h1);
+	cy = cos(p1);
+	cz = cos(r1);
+	sx = sin(h1);
+	sy = sin(p1);
+	sz = sin(r1);
+
+	double R1[3][3] =
+	{
+		{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
+		{sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
+		{-sy, cy * sz, cy * cz}
+	};
+
+	// Multiply
+	double R2[3][3] = { {0, 0, 0}, {0, 0, 0}, {0, 0, 0} };
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			for (int k = 0; k < 3; k++)
+				R2[i][j] += R0[i][k] * R1[k][j];
+
+	// Avoid gimbal lock
+	if (fabs(R2[0][0]) < SMALL_NUMBER) R2[0][0] = SIGN(R2[0][0]) * SMALL_NUMBER;
+	if (fabs(R2[2][2]) < SMALL_NUMBER) R2[2][2] = SIGN(R2[2][2]) * SMALL_NUMBER;
+
+	h = GetAngleInInterval2PI(atan2(R2[1][0], R2[0][0]));
+	p = GetAngleInInterval2PI(atan2(-R2[2][0], sqrt(R2[2][1] * R2[2][1] + R2[2][2] * R2[2][2])));
+	r = GetAngleInInterval2PI(atan2(R2[2][1], R2[2][2]));
 }
 
 int SE_Env::AddPath(std::string path)

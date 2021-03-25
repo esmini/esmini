@@ -52,9 +52,9 @@ class TestSuite(unittest.TestCase):
         csv = generate_csv()
         self.assertTrue(re.search('\n4.100, 0, Ego, 115.04, 4.86, -3.01, 0.28, 0.03', csv))
         self.assertTrue(re.search('\n4.100, 1, Target, 129.91, 14.33, -3.47, 0.50', csv))
-        self.assertTrue(re.search('\n11.100, 0, Ego, 200.70, 72.59, -2.44, 1.06, -0.02', csv))
-        self.assertTrue(re.search('\n11.100, 1, Target, 205.56, 66.34, -2.50, -3.79', csv))
-        self.assertTrue(re.search('\n17.390, 0, Ego, 216.96, 169.84, 2.15, 1.75, -0.07', csv))
+        self.assertTrue(re.search('\n11.100, 0, Ego, 200.70, 72.59, -2.44, 1.06, 6.26', csv))
+        self.assertTrue(re.search('\n11.100, 1, Target, 205.56, 66.34, -2.50, 2.49', csv))
+        self.assertTrue(re.search('\n17.390, 0, Ego, 216.96, 169.84, 2.15, 1.75, 6.21', csv))
         self.assertTrue(re.search('\n17.390, 1, Target, 213.08, 208.07, 4.29, 1.76', csv))
 
 

@@ -150,6 +150,46 @@ namespace OpenDRIVE
         [DllImport(LIB_NAME, EntryPoint = "RM_DeletePosition")]
         public static extern int CopyPosition(int handle);
 
+        /// <summary>Specify if and how position object will align to the road. This version
+        /// sets same mode for all components: Heading, Pitch, Roll and Z (elevation)</summary>
+        /// <param name="mode">@param mode as defined by roadmanager::Position::ALIGN_MODE:
+        /// 0 = ALIGN_NONE // No alignment to road
+        /// 1 = ALIGN_SOFT // Align to road but add relative orientation
+        /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
+        public static extern void RM_SetAlignMode(int handle, int mode);
+
+        /// <summary>Specify if and how position object will align to the road. This version
+        /// sets same mode for only heading component.</summary>
+        /// <param name="mode">@param mode as defined by roadmanager::Position::ALIGN_MODE:
+        /// 0 = ALIGN_NONE // No alignment to road
+        /// 1 = ALIGN_SOFT // Align to road but add relative orientation
+        /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
+        public static extern void RM_SetAlignModeH(int handle, int mode);
+
+        /// <summary>Specify if and how position object will align to the road. This version
+        /// sets same mode for only pitch component.</summary>
+        /// <param name="mode">@param mode as defined by roadmanager::Position::ALIGN_MODE:
+        /// 0 = ALIGN_NONE // No alignment to road
+        /// 1 = ALIGN_SOFT // Align to road but add relative orientation
+        /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
+        public static extern void RM_SetAlignModeP(int handle, int mode);
+
+        /// <summary>Specify if and how position object will align to the road. This version
+        /// sets same mode for only roll component.</summary>
+        /// <param name="mode">@param mode as defined by roadmanager::Position::ALIGN_MODE:
+        /// 0 = ALIGN_NONE // No alignment to road
+        /// 1 = ALIGN_SOFT // Align to road but add relative orientation
+        /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
+        public static extern void RM_SetAlignModeR(int handle, int mode);
+
+        /// <summary>Specify if and how position object will align to the road. This version
+        /// sets same mode for only Z (elevation) component.</summary>
+        /// <param name="mode">@param mode as defined by roadmanager::Position::ALIGN_MODE:
+        /// 0 = ALIGN_NONE // No alignment to road
+        /// 1 = ALIGN_SOFT // Align to road but add relative orientation
+        /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
+        public static extern void RM_SetAlignModeZ(int handle, int mode);
+
         /// <summary>Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)</summary>
         /// <param name="handle">Handle Handle to the original position object.</param>
         /// <param name="mode">True=keep lane False=Snap to closest (default)</param>

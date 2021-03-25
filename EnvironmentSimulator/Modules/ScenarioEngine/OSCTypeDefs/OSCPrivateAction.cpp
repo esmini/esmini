@@ -105,7 +105,13 @@ void FollowTrajectoryAction::Start()
 
 	traj_->Freeze();
 	object_->pos_.SetTrajectory(traj_);
-	
+
+	// We want the trajectory to be projected on road surface.
+	object_->pos_.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
+
+	// But totally decouple trajectory positioning from road heading
+	object_->pos_.SetAlignModeH(roadmanager::Position::ALIGN_MODE::ALIGN_SOFT);
+
 	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 }
 
@@ -121,6 +127,9 @@ void FollowTrajectoryAction::End()
 
 	// Disconnect trajectory
 	object_->pos_.SetTrajectory(0);
+
+	// And reset align mode
+	object_->pos_.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_SOFT);
 }
 
 void FollowTrajectoryAction::Step(double dt, double simTime)
@@ -142,7 +151,7 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 	{
 		// Reached end of trajectory
 		// Calculate road coordinates from final inertia (X, Y) coordinates
-		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetH(), false);
+		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetH());
 		
 		End();
 	}
@@ -752,6 +761,7 @@ void TeleportAction::Start()
 	{
 		// Special case: Relative to itself - need to make a copy before reseting
 		tmpPos = object_->pos_;
+
 		position_->SetRelativePosition(&tmpPos, position_->GetType());
 	}
 
@@ -764,6 +774,9 @@ void TeleportAction::Start()
 	{
 		object_->pos_.CalcRoutePosition();
 	}
+
+	// Reset align mode
+//	object_->pos_.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_SOFT);
 
 	LOG("%s pos: ", object_->name_.c_str());
 	object_->pos_.Print();

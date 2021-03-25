@@ -3960,12 +3960,17 @@ void Position::Init()
 	h_offset_ = 0.0;
 	h_road_ = 0.0;
 	h_relative_ = 0.0;
+	z_relative_ = 0.0;
 	curvature_ = 0.0;
 	p_road_ = 0.0;
 	p_relative_ = 0.0;
 	r_road_ = 0.0;
 	r_relative_ = 0.0;
 	rel_pos_ = 0;
+	align_h_ = ALIGN_MODE::ALIGN_SOFT;
+	align_p_ = ALIGN_MODE::ALIGN_SOFT;
+	align_r_ = ALIGN_MODE::ALIGN_SOFT;
+	align_z_ = ALIGN_MODE::ALIGN_SOFT;
 	type_ = PositionType::NORMAL;
 	orientation_type_ = OrientationType::ORIENTATION_ABSOLUTE;
 	snapToLaneTypes_ = Lane::LaneType::LANE_TYPE_ANY_DRIVING;
@@ -4784,7 +4789,7 @@ void Position::Track2Lane()
 	lane_section_idx_ = lane_section_idx;
 }
 
-int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool alignZPitchRoll)
+int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3)
 {
 	// Overall method:
 	//   1. Iterate over all roads, looking at OSI points of each lane sections center line (lane 0)
@@ -5370,7 +5375,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 	SetY(y3);
 	SetHeading(h3);
 
-	EvaluateRoadZPitchRoll(alignZPitchRoll);
+	EvaluateRoadZPitchRoll();
 
 	if (!closestPointInside)
 	{
@@ -5388,7 +5393,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool ali
 	return retvalue;
 }
 	
-bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
+bool Position::EvaluateRoadZPitchRoll()
 {
 	if (track_id_ < 0)
 	{
@@ -5397,18 +5402,23 @@ bool Position::EvaluateRoadZPitchRoll(bool alignZPitchRoll)
 	bool ret_value = GetRoadById(track_id_)->GetZAndPitchByS(s_, &z_road_, &p_road_, &elevation_idx_);
 	ret_value &= GetRoadById(track_id_)->UpdateZAndRollBySAndT(s_, t_, &z_road_, &r_road_, &super_elevation_idx_);
 
-	if (alignZPitchRoll)
+	if (align_z_ == ALIGN_MODE::ALIGN_SOFT)
 	{
-		SetZ(z_road_);
-
-		SetPitch(p_relative_ + p_road_);
-		SetRoll(r_relative_ + r_road_);
+		z_ = z_road_ + z_relative_;
+	}
+	else if (align_z_ == ALIGN_MODE::ALIGN_HARD)
+	{
+		z_ = z_road_;
+	}
+	else
+	{
+		z_ = z_relative_;
 	}
 
 	return ret_value;
 }
 
-int Position::Track2XYZ(bool alignH)
+int Position::Track2XYZ()
 {
 	if (GetOpenDrive()->GetNumOfRoads() == 0)
 	{
@@ -5438,22 +5448,13 @@ int Position::Track2XYZ(bool alignH)
 	h_road_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_;
 	h_road_ = GetAngleInInterval2PI(h_road_);
 
-	if (alignH)
-	{
-		// Update heading, taking relative heading into account
-		h_ = GetAngleInInterval2PI(h_road_ + h_relative_);
-	}
-	else
-	{
-		// road heading might have changed - update h_relative
-		h_relative_ = GetAngleInInterval2PI(h_ - h_road_);
-	}
-
 	x_ += x_local;
 	y_ += y_local;
 
 	// z = Elevation 
-	EvaluateRoadZPitchRoll(true);
+	EvaluateRoadZPitchRoll();
+
+	EvaluateOrientation();
 
 	return ErrorCode::ERROR_NO_ERROR;
 }
@@ -5519,9 +5520,9 @@ void Position::RoadMark2Track()
 	}
 }
 
-void Position::XYZ2Track(bool alignZAndPitch)
+void Position::XYZ2Track()
 {
-	XYZH2TrackPos(x_, y_, z_, h_, alignZAndPitch);
+	XYZH2TrackPos(x_, y_, z_, h_);
 }
 
 int Position::SetLongitudinalTrackPos(int track_id, double s)
@@ -5605,19 +5606,15 @@ int Position::SetLongitudinalTrackPos(int track_id, double s)
 	return 0;
 }
 
-int Position::SetTrackPos(int track_id, double s, double t, UpdateTrackPosMode updateMode)
+int Position::SetTrackPos(int track_id, double s, double t, bool UpdateXY)
 {
 	int retvalue = SetLongitudinalTrackPos(track_id, s);
 
 	t_ = t;
 	Track2Lane();
-	if (updateMode == UpdateTrackPosMode::UPDATE_XYZ)
+	if (UpdateXY)
 	{
-		Track2XYZ(false);
-	}
-	else if (updateMode == UpdateTrackPosMode::UPDATE_XYZH)
-	{
-		Track2XYZ(true);
+		Track2XYZ();
 	}
 
 	return retvalue;
@@ -6304,7 +6301,7 @@ int Position::SetInertiaPos(double x, double y, double z, double h, double p, do
 
 	if (updateTrackPos)
 	{
-		XYZ2Track(false);
+		XYZ2Track();
 	}
 
 	// Now when road orientation is known, call functions for 
@@ -6312,6 +6309,8 @@ int Position::SetInertiaPos(double x, double y, double z, double h, double p, do
 	SetHeading(h);
 	SetPitch(p);
 	SetRoll(r);
+
+	EvaluateOrientation();
 
 	return 0;
 }
@@ -6323,12 +6322,14 @@ int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
 
 	if (updateTrackPos)
 	{
-		XYZ2Track(true);
+		XYZ2Track();
 	}
 
 	// Now when road orientation is known, call functions for 
 	// updating angles both absolute and relative the road 
 	SetHeading(h);
+
+	EvaluateOrientation();
 
 	return 0;
 }
@@ -6336,7 +6337,7 @@ int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
 void Position::SetHeading(double heading)
 {
 	h_ = heading;
-	h_relative_ = GetAngleInInterval2PI(GetAngleDifference(h_, h_road_));
+	h_relative_ = GetAngleInInterval2PI(GetAngleDifference(h_, h_road_)); // Something wrong with -angles
 }
 
 void Position::SetHeadingRelative(double heading)
@@ -6381,6 +6382,45 @@ void Position::SetPitchRelative(double pitch)
 {
 	p_relative_ = GetAngleInInterval2PI(pitch);
 	p_ = GetAngleSum(p_road_, p_relative_);
+}
+
+void Position::SetZ(double z)
+{
+	z_relative_ = z - z_road_;
+	z_ = z;
+}
+
+void Position::SetZRelative(double z)
+{
+	z_relative_ = z_;
+	z_ = z_road_ + z_relative_;
+}
+
+void Position::EvaluateOrientation()
+{
+	if (align_h_ != ALIGN_MODE::ALIGN_NONE || align_p_ != ALIGN_MODE::ALIGN_NONE || align_r_ != ALIGN_MODE::ALIGN_NONE)
+	{
+		R0R12EulerAngles(
+			align_h_ != ALIGN_MODE::ALIGN_NONE ? GetHRoad() : 0.0,
+			align_p_ != ALIGN_MODE::ALIGN_NONE ? GetPRoad() : 0.0,
+			align_r_ != ALIGN_MODE::ALIGN_NONE ? GetRRoad() : 0.0,
+			align_h_ != ALIGN_MODE::ALIGN_HARD ? GetHRelative() : 0.0,
+			align_p_ != ALIGN_MODE::ALIGN_HARD ? GetPRelative() : 0.0,
+			align_r_ != ALIGN_MODE::ALIGN_HARD ? GetRRelative() : 0.0,
+			h_,
+			p_,
+			r_
+		);
+		h_ = GetAngleInInterval2PI(h_);
+		p_ = GetAngleInInterval2PI(p_);
+		r_ = GetAngleInInterval2PI(r_);
+	}
+	else
+	{
+		h_ = GetHRelative();
+		p_ = GetPRelative();
+		r_ = GetRRelative();
+	}
 }
 
 double Position::GetCurvature()
@@ -7366,6 +7406,9 @@ int PolyLine::Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos)
 
 double Nurbs::CoxDeBoor(double x, int i, int k, const std::vector<double>& t) 
 {
+	// Inspiration: Nurbs Curve Example @ 
+	// https://nccastaff.bournemouth.ac.uk/jmacey/OldWeb/RobTheBloke/www/opengl_programming.html
+
 	if (k == 1)
 	{
 		if (t[i] <= x && x < t[i + 1]) 
@@ -7659,7 +7702,7 @@ int Position::SetTrajectoryPosByTime(double time)
 	Shape::ShapePosition pos;
 	trajectory_->shape_->Evaluate(time, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_TIME, pos);
 
-	SetInertiaPos(pos.x, pos.y, pos.z, pos.h, 0.0, 0.0, true);
+	SetInertiaPos(pos.x, pos.y, pos.h);
 
 	s_trajectory_ = pos.s;
 
@@ -7757,66 +7800,73 @@ int Position::SetRouteS(Route *route, double route_s)
 
 void Position::ReleaseRelation()
 {
-	// Freeze position and then disconnect 
-	if (type_ == Position::PositionType::RELATIVE_LANE)
-	{
-		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
-		{
-			// Save requested heading angle, since SetLanePos will modify it
-			double h = h_relative_;
+	// Fetch values and then disconnect 
+	double x = GetX();
+	double y = GetY();
+	double z = GetZ();
+	int roadId = GetTrackId();
+	int laneId = GetLaneId();
+	double s = GetS();
+	double t = GetT();
+	double offset = GetOffset();
+	double p = GetP();
+	double r = GetR();
+	double h = GetH();
+	double hAbs = h_;
+	double hRel = h_relative_;
+	PositionType type = type_;
 
-			// Resolve requested position
-			SetLanePos(GetTrackId(), GetLaneId(), GetS(), GetOffset());
-
-			// Finally set requested heading
-			if (lane_id_ > 0)
-			{
-				// In lanes going opposite road direction, add 180 degrees
-				h = GetAngleSum(h, M_PI);
-			}
-			SetHeadingRelative(h);
-			SetPitch(GetP());
-			SetRoll(GetR());
-		}
-		else
-		{
-			double h = h_;
-			SetLanePos(GetTrackId(), GetLaneId(), GetS(), GetOffset());
-			SetHeading(h);
-		}
-	}
-	if (type_ == Position::PositionType::RELATIVE_ROAD)
-	{
-		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
-		{
-			// Save requested heading angle, since SetLanePos will modify it
-			double h = h_relative_;
-
-			// Resolve requested position
-			SetTrackPos(GetTrackId(), GetS(), GetT());
-
-			// Finally set requested heading
-			if (lane_id_ > 0)
-			{
-				// In lanes going opposite road direction, add 180 degrees
-				h = GetAngleSum(h, M_PI);
-			}
-			SetHeadingRelative(h);
-			SetPitch(GetP());
-			SetRoll(GetR());
-		}
-		else
-		{
-			double h = h_;
-			SetTrackPos(GetTrackId(), GetS(), GetT());
-			SetHeading(h);
-		}
-	}
-	else if (type_ == PositionType::RELATIVE_OBJECT || type_ == PositionType::RELATIVE_WORLD)
-	{
-		SetInertiaPos(GetX(), GetY(), GetZ(), GetH(), GetP(), GetR(), true);
-	}
 	SetRelativePosition(0, PositionType::NORMAL);
+
+	if (type == Position::PositionType::RELATIVE_LANE)
+	{
+		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
+		{
+			SetLanePos(roadId, laneId, s, offset);
+
+			// Finally set requested heading
+			if (lane_id_ > 0)
+			{
+				// In lanes going opposite road direction, add 180 degrees
+				hRel = GetAngleSum(hRel, M_PI);
+			}
+			SetHeadingRelative(hRel);
+			SetPitch(p);
+			SetRoll(r);
+		}
+		else
+		{
+			SetLanePos(roadId, laneId, s, offset);
+			SetHeading(hAbs);
+		}
+	}
+	if (type == Position::PositionType::RELATIVE_ROAD)
+	{
+		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
+		{
+			// Resolve requested position
+			SetTrackPos(roadId, s, t);
+
+			// Finally set requested heading
+			if (lane_id_ > 0)
+			{
+				// In lanes going opposite road direction, add 180 degrees
+				hRel = GetAngleSum(hRel, M_PI);
+			}
+			SetHeadingRelative(hRel);
+			SetPitch(p);
+			SetRoll(r);
+		}
+		else
+		{
+			SetTrackPos(roadId, s, t);
+			SetHeading(hAbs);
+		}
+	}
+	else if (type == PositionType::RELATIVE_OBJECT || type == PositionType::RELATIVE_WORLD)
+	{
+		SetInertiaPos(x, y, z, h, p, r, true);
+	}
 }
 
 int Route::AddWaypoint(Position *position)
@@ -7942,7 +7992,7 @@ void Trajectory::Freeze()
 				{
 					double dx = pline->vertex_[i]->pos_.GetX() - pline->vertex_[i - 1]->pos_.GetX();
 					double dy = pline->vertex_[i]->pos_.GetY() - pline->vertex_[i - 1]->pos_.GetY();
-					pline->vertex_[i-1]->pos_.SetHeading(atan2(dy, dx));
+					pline->vertex_[i-1]->pos_.SetHeading(GetAngleInInterval2PI(atan2(dy, dx)));
 				}
 			}
 		}

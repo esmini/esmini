@@ -212,6 +212,17 @@ void NormalizeVec2D(double x, double y, double &xn, double &yn);
 void OffsetVec2D(double x0, double y0, double x1, double y1, double offset, double& xo0, double& yo0, double& xo1, double& y01);
 
 /**
+  Get Euler angles in local coordinates after rotation Z0 * Y * Z1 (heading, pitch, heading)
+*/
+void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, double& r);
+
+/**
+  Get Euler angles in local coordinates after rotation Z0 * Y * Z1 (heading, pitch, heading)
+*/
+void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r);
+
+
+/**
   Change byte order - can be useful for IP communication with non Intel platforms
 */
 void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size);

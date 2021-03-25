@@ -709,12 +709,11 @@ void EntityModel::SetRotation(double hRoad, double pRoad, double hRelative, doub
 void EntityModel::SetRotation(double h, double p, double r)
 {
 	quat_.makeRotate(
-		r, osg::Vec3(osg::X_AXIS), // Roll
-		p, osg::Vec3(osg::Y_AXIS), // Pitch
-		h, osg::Vec3(osg::Z_AXIS)  // Heading
+		r, osg::Vec3(osg::X_AXIS),  // Roll
+		p, osg::Vec3(osg::Y_AXIS),  // Pitch
+		h, osg::Vec3(osg::Z_AXIS)   // Heading
 	);
 
-	// Combine
 	txNode_->setAttitude(quat_);
 }
 

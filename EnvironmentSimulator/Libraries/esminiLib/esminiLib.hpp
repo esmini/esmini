@@ -246,6 +246,60 @@ extern "C"
 
 	SE_DLL_API void* SE_GetODRManager();
 
+	/**
+		Specify if and how position object will align to the road. This version
+		sets same mode for all components: Heading, Pitch, Roll and Z (elevation)
+		@id Id of the object
+		@param mode as defined by roadmanager::Position::ALIGN_MODE:
+		0 = ALIGN_NONE // No alignment to road
+		1 = ALIGN_SOFT // Align to road but add relative orientation
+		2 = ALIGN_HARD // Completely align to road, disregard relative orientation
+	*/
+	SE_DLL_API void RM_SetAlignMode(int id, int mode);
+
+	/**
+		Specify if and how position object will align to the road. This version
+		sets same mode for only heading component.
+		@id Id of the object
+		@param mode as defined by roadmanager::Position::ALIGN_MODE:
+		0 = ALIGN_NONE // No alignment to road
+		1 = ALIGN_SOFT // Align to road but add relative orientation
+		2 = ALIGN_HARD // Completely align to road, disregard relative orientation
+	*/
+	SE_DLL_API void RM_SetAlignModeH(int id, int mode);
+
+	/**
+		Specify if and how position object will align to the road. This version
+		sets same mode for only pitch component.
+		@id Id of the object
+		@param mode as defined by roadmanager::Position::ALIGN_MODE:
+		0 = ALIGN_NONE // No alignment to road
+		1 = ALIGN_SOFT // Align to road but add relative orientation
+		2 = ALIGN_HARD // Completely align to road, disregard relative orientation
+	*/
+
+	SE_DLL_API void RM_SetAlignModeP(int id, int mode);
+	/**
+		Specify if and how position object will align to the road. This version
+		sets same mode for only roll component.
+		@id Id of the object
+		@param mode as defined by roadmanager::Position::ALIGN_MODE:
+		0 = ALIGN_NONE // No alignment to road
+		1 = ALIGN_SOFT // Align to road but add relative orientation
+		2 = ALIGN_HARD // Completely align to road, disregard relative orientation
+	*/
+	SE_DLL_API void RM_SetAlignModeR(int id, int mode);
+
+	/**
+		Specify if and how position object will align to the road. This version
+		sets same mode for only Z (elevation) component.
+		@id Id of the object
+		@param mode as defined by roadmanager::Position::ALIGN_MODE:
+		0 = ALIGN_NONE // No alignment to road
+		1 = ALIGN_SOFT // Align to road but add relative orientation
+		2 = ALIGN_HARD // Completely align to road, disregard relative orientation
+	*/
+	SE_DLL_API void RM_SetAlignModeZ(int id, int mode);
 
 	/**
 		Report object position in cartesian coordinates
