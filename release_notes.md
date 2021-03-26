@@ -1,5 +1,41 @@
 ## esmini release notes
 
+### 2021-03-26 Version 2.6.0
+
+- Support nurbs trajectories
+  - Order, controlpoint Timestamp and weight taken into account
+  - Means that now all shape types are supported: polyLine, clothoid and nurbs
+  - See updated example [trajectory-test.xosc](https://github.com/esmini/esmini/blob/ec8cfbc70f3360cbf8b167b2c0eb30cb9ba65931/resources/xosc/trajectory-test.xosc#L207). (run script: [run/esmini/run_trajectory-test.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_trajectory-test.bat)) part of the [esmini demo package](https://github.com/esmini/esmini/releases/latest).
+
+- Visualization active trajectory
+  - can be toggled with 'n' key (see [docs/readme.txt](https://github.com/esmini/esmini/blob/master/docs/readme.txt) for all key-shortcuts)
+
+- Improve object heading when following polyLine trajectory
+  - Instead of interpolating heading all the way between two control points, follow the angle of the line and just interpolate a few meters before and after control point.
+
+- Fix object orientation limitations
+  - Fully separate object orientation from road pitch and bank to support correct object rotations on any road and trajectory
+  - Correct pitch and roll angles will now also be recorded into .dat files
+
+- Fix precision issue in odrplot 
+
+- Fix issue with too large OSI UDP messages
+  - Now large messages are split into smaller chunks. 
+  - Updated [Applications/replayer/osi_receiver.cpp](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/replayer/osi_receiver.cpp) shows how to deal with it on receiver side.
+
+- Add option to remove objects in replayer (see [replayer/readme.txt](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/replayer/readme.txt) for more info)
+
+- Add [dat2csv](https://github.com/esmini/esmini/blob/master/scripts/dat2csv.py) Python script (similar to C++ application [dat2csv.cpp](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/replayer/dat2csv.cpp))
+
+- Update .dat file format to simplify parsing in Python
+  - Also ensuring portablility between Windows and Linux 
+  - NOTE: This change is NOT backward compatible (old .dat file not supported in this and future esmini versions)
+  - Hopefully format will now stabilize so .dat files can be used between esmini versions
+
+- Add OSI sensorData to [example code](https://github.com/esmini/esmini/blob/ec8cfbc70f3360cbf8b167b2c0eb30cb9ba65931/EnvironmentSimulator/Applications/esmini-dyn/main.cpp#L245)
+
+- Some additional minor fixes
+
 ### 2021-03-18 Version 2.5.2
 
 - Add shortcut keys in replayer app for jumping to start and end of scenario
