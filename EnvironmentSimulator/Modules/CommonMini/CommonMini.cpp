@@ -165,9 +165,8 @@ double GetAngleInInterval2PI(double angle)
 	if (angle2 < 0)
 	{
 		angle2 += 2 * M_PI;
-	}
-
-	if (angle2 == -0)
+	} 
+	else if (angle2 == -0)
 	{
 		angle2 = 0;
 	}

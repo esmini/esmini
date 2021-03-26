@@ -1227,6 +1227,7 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec3 trail_c
 
 			osg::ref_ptr<osg::Geode> center = new osg::Geode;
 			center->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0, 0, 0), 0.2)));
+
 			center->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
 			bbGroup->addChild(center);
 		}
@@ -1237,6 +1238,7 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec3 trail_c
 			tx->setPosition(osg::Vec3(1.5, 0, 0.75));
 		}
 		tx->addChild(geode);
+		tx->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
 		tx->getOrCreateStateSet()->setAttribute(material);
 		bbGroup->setName("BoundingBox");
 		bbGroup->addChild(tx);
@@ -1805,16 +1807,15 @@ PointSensor* Viewer::CreateSensor(double color[], bool create_ball, bool create_
 	// Point
 	if (create_ball)
 	{
+		osg::ref_ptr<osg::ShapeDrawable> shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0,0,0), ball_radius));
+		shape->setColor(osg::Vec4(color[0], color[1], color[2], 1.0));
+
 		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-		geode->addDrawable(new osg::ShapeDrawable(new osg::Sphere()));
+		geode->addDrawable(shape);
+
 		sensor->ball_ = new osg::PositionAttitudeTransform;
-		sensor->ball_->setScale(osg::Vec3(ball_radius, ball_radius, ball_radius));
 		sensor->ball_->addChild(geode);
-		
-		osg::ref_ptr<osg::Material> material = new osg::Material();
-		material->setDiffuse(osg::Material::FRONT, osg::Vec4(color[0], color[1], color[2], 1.0));
-		material->setAmbient(osg::Material::FRONT, osg::Vec4(color[0], color[1], color[2], 1.0));
-		sensor->ball_->getOrCreateStateSet()->setAttribute(material);
+
 		sensor->ball_radius_ = ball_radius;
 		sensor->group_->addChild(sensor->ball_);
 	}
