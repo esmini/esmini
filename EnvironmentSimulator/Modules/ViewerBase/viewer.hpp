@@ -62,16 +62,6 @@ namespace viewer
 		NODE_MASK_TRAJECTORY_LINES = (1 << 10),
 	} NodeMask;
 
-	class Line
-	{
-	public:
-		osg::ref_ptr<osg::Geometry> line_;
-		osg::ref_ptr<osg::Vec3Array> line_vertex_data_;
-
-		Line(double x0, double y0, double z0, double x1, double y1, double z1, double r, double g, double b);
-		void SetPoints(double x0, double y0, double z0, double x1, double y1, double z1);
-	};
-
 	class PolyLine
 	{
 	public:
@@ -80,6 +70,9 @@ namespace viewer
 		osg::ref_ptr<osg::Geometry> pline_geom_;
 
 		PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width);
+		void Redraw();
+		void Update();
+		void SetPoints(osg::ref_ptr<osg::Vec3Array> points);
 	};
 
 	class SensorViewFrustum
@@ -87,7 +80,7 @@ namespace viewer
 	public:
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
 		osg::ref_ptr<osg::Group> line_group_;
-		std::vector<Line*> lines_;
+		std::vector<PolyLine*> plines_;
 		ObjectSensor *sensor_;
 
 		SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent);
@@ -189,11 +182,7 @@ namespace viewer
 
 	private:
 		osgViewer::Viewer* viewer_;
-		
-		// osg references for drawing lines 
-		osg::ref_ptr<osg::Vec4Array> color_;
-		osg::ref_ptr<osg::Geometry> line_geom_;
-		osg::ref_ptr<osg::Vec3Array> points_;
+		PolyLine* pline_;
 	};
 
 	class PointSensor
