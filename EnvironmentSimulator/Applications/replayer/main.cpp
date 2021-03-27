@@ -43,6 +43,8 @@ typedef struct
 	int id;
 	viewer::EntityModel* entityModel;
 	struct ObjectPositionStruct pos;
+	osg::ref_ptr<osg::Vec3Array> trajPoints;
+	viewer::Trajectory* trajectory;
 } ScenarioEntity;
 
 static std::vector<ScenarioEntity> scenarioEntity;
@@ -76,6 +78,87 @@ ScenarioEntity *getScenarioEntityById(int id)
 		{
 			return &scenarioEntity[i];
 		}
+	}
+
+	return 0;
+}
+
+int ParseEntities(viewer::Viewer* viewer, Replay* player)
+{
+	double minTrajPointDist = 1;
+	double z_offset = 0.2;
+	double width = 1.75;
+
+	for (int i = 0; i < player->data_.size(); i++)
+	{
+		ObjectStateStructDat* state = &player->data_[i];
+		ScenarioEntity* sc = getScenarioEntityById(state->info.id);
+
+		// If not available, create it
+		if (sc == 0)
+		{
+			ScenarioEntity new_sc;
+
+			LOG("Creating object %d - got state from gateway", state->info.id);
+
+			new_sc.id = state->info.id;
+			new_sc.trajPoints = 0;
+			if (state->info.model_id >= sizeof(entityModelsFiles_) / sizeof(char*))
+			{
+				state->info.model_id = 0;
+			}
+			if ((new_sc.entityModel = viewer->AddEntityModel(entityModelsFiles_[state->info.model_id], osg::Vec3(0.5, 0.5, 0.5),
+				viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER, false, state->info.name, &state->info.boundingbox)) == 0)
+			{
+				return -1;
+			}
+
+			// Add it to the list of scenario cars
+			scenarioEntity.push_back(new_sc);
+
+			sc = &scenarioEntity.back();
+
+		}
+
+		if (sc->trajPoints == 0)
+		{
+			sc->trajPoints = new osg::Vec3Array;
+		}
+
+		if (sc->trajPoints->size() == 0)
+		{
+			sc->trajPoints->push_back(osg::Vec3d(state->pos.x, state->pos.y, state->pos.z + z_offset));
+		}
+		else
+		{
+			if (sc->trajPoints->size() > 2 && GetLengthOfLine2D(state->pos.x, state->pos.y, 
+				(*sc->trajPoints)[sc->trajPoints->size()-2][0], (*sc->trajPoints)[sc->trajPoints->size()-2][1]) < minTrajPointDist)
+			{
+				// Replace last point until distance is above threshold
+				sc->trajPoints->back() = osg::Vec3d(state->pos.x, state->pos.y, state->pos.z + z_offset);
+			}
+			else
+			{
+				sc->trajPoints->push_back(osg::Vec3d(state->pos.x, state->pos.y, state->pos.z + z_offset));
+			}
+		}
+
+
+	}
+
+	for (int i = 0; i < scenarioEntity.size(); i++)
+	{
+		osg::Vec4 color;
+		if (scenarioEntity[i].id == 0)
+		{
+			color = osg::Vec4d(0.9, 0.8, 0.75, 1.0); 
+		}
+		else 
+		{
+			//color = osg::Vec4d(0.9, 0.3, 0.2, 1.0);
+			color = osg::Vec4d(0.9, 0.7, 0.3, 1.0);
+		}
+		viewer->AddPolyLine(viewer->trajectoryLines_, scenarioEntity[i].trajPoints, color, width);
 	}
 
 	return 0;
@@ -146,6 +229,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 int main(int argc, char** argv)
 {
 	roadmanager::OpenDrive *odrManager;
+	viewer::Viewer* viewer;
 	Replay *player;
 	double simTime = 0;
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
@@ -169,6 +253,7 @@ int main(int argc, char** argv)
 	opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
 	opt.AddOption("no_ghost", "Remove ghost entities");
 	opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
+	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 
 	if (argc < 2)
 	{
@@ -195,7 +280,6 @@ int main(int argc, char** argv)
 		LOG(std::string("Exception: ").append(e.what()).c_str());
 		return -1;
 	}
-
 	try
 	{
 
@@ -229,7 +313,7 @@ int main(int argc, char** argv)
 		
 		osg::ArgumentParser arguments(&argc, argv);
 
-		viewer::Viewer *viewer = new viewer::Viewer(
+		viewer = new viewer::Viewer(
 			odrManager, 
 			model_path.append("/models/").append(player->header_.model_filename).c_str(),
 			NULL,
@@ -245,6 +329,8 @@ int main(int argc, char** argv)
 			return -1;
 		}
 		viewer->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
+
+		ParseEntities(viewer, player);
 
 		__int64 now, lastTimeStamp = 0;
 		
@@ -315,6 +401,12 @@ int main(int argc, char** argv)
 				pivot = pos + delimiter.length();
 
 			} while (pos != std::string::npos);
+		}
+
+
+		if (opt.GetOptionSet("hide_trajectories"))
+		{
+			viewer->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAJECTORY_LINES);
 		}
 
 		std::string start_time_str = opt.GetOptionArg("start_time");
@@ -396,25 +488,7 @@ int main(int argc, char** argv)
 				// If not available, create it
 				if (sc == 0)
 				{
-					ScenarioEntity new_sc;
-
-					LOG("Creating object %d - got state from gateway", state->info.id);
-
-					new_sc.id = state->info.id;
-					if (state->info.model_id >= sizeof(entityModelsFiles_) / sizeof(char*))
-					{
-						state->info.model_id = 0;
-					}
-					if ((new_sc.entityModel = viewer->AddEntityModel(entityModelsFiles_[state->info.model_id], osg::Vec3(0.5, 0.5, 0.5),
-						viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER, false, state->info.name, &state->info.boundingbox)) == 0)
-					{
-						return -1;
-					}
-
-					// Add it to the list of scenario cars
-					scenarioEntity.push_back(new_sc);
-
-					sc = &scenarioEntity.back();
+					throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(state->info.id)));
 				}
 
 				sc->pos = state->pos;

@@ -25,3 +25,4 @@ Hello-World_coding-example/build
 .pyenv
 .vscode
 test/OSC-ALKS-scenarios
+test/__pycache__

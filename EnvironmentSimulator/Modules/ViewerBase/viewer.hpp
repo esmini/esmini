@@ -72,6 +72,16 @@ namespace viewer
 		void SetPoints(double x0, double y0, double z0, double x1, double y1, double z1);
 	};
 
+	class PolyLine
+	{
+	public:
+		osg::ref_ptr<osg::Vec3Array> pline_vertex_data_;
+		osg::ref_ptr<osg::Vec4Array> color_;
+		osg::ref_ptr<osg::Geometry> pline_geom_;
+
+		PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width);
+	};
+
 	class SensorViewFrustum
 	{
 	public:
@@ -346,6 +356,8 @@ namespace viewer
 		osg::ref_ptr<osg::Camera> infoTextCamera;
 		osg::ref_ptr<osgText::Text> infoText;
 
+		std::vector<PolyLine> polyLine_;
+
 		Viewer(roadmanager::OpenDrive *odrManager, const char* modelFilename, const char* scenarioFilename, const char* exe_path, osg::ArgumentParser arguments, SE_Options* opt = 0);
 		~Viewer();
 		void SetCameraMode(int mode);
@@ -385,6 +397,8 @@ namespace viewer
 		void SetWindowTitleFromArgs(std::vector<std::string> &arg);
 		void SetWindowTitleFromArgs(int argc, char* argv[]);
 		void RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data);
+		void AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width);
+		void AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width);
 
 	private:
 

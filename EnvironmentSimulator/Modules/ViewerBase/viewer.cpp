@@ -131,6 +131,24 @@ void Line::SetPoints(double x0, double y0, double z0, double x1, double y1, doub
 	line_vertex_data_->dirty();
 }
 
+PolyLine::PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width)
+{
+	color_ = new osg::Vec4Array;
+	color_->push_back(color);
+
+	pline_vertex_data_ = points;
+
+	pline_geom_ = new osg::Geometry;
+	pline_geom_->setVertexArray(pline_vertex_data_.get());
+	pline_geom_->setColorArray(color_.get());
+	pline_geom_->setColorBinding(osg::Geometry::BIND_OVERALL);
+	pline_geom_->getOrCreateStateSet()->setAttributeAndModes(new osg::LineWidth(width), osg::StateAttribute::ON);
+	pline_geom_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	pline_geom_->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, pline_vertex_data_->size()));
+
+	parent->addChild(pline_geom_);
+}
+
 SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 {
 	sensor_ = sensor;
@@ -2070,6 +2088,16 @@ void Viewer::SetWindowTitleFromArgs(int argc, char* argv[])
 	}
 
 	SetWindowTitleFromArgs(args);
+}
+
+void Viewer::AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width)
+{
+	polyLine_.push_back(PolyLine(rootnode_, points, color, width));
+}
+
+void Viewer::AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width)
+{
+	polyLine_.push_back(PolyLine(parent, points, color, width));
 }
 
 void Viewer::RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data)
