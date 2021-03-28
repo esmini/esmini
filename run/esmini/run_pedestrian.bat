@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 60 60 1024 576  --osc ../../resources/xosc/pedestrian.xosc --trails
+"../../bin/esmini" --window 60 60 1024 576  --osc ../../resources/xosc/pedestrian.xosc --trail_mode 2

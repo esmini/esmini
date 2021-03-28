@@ -12,8 +12,8 @@ Options:
       Log data for each vehicle in ASCII csv format
   --info_text <mode>
       Show info text HUD ("on" (default), "off") (toggle during simulation by press 'i')
-  --trails
-      Show trails (toggle during simulation by press 'j')
+  --trail_mode <mode>
+      Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both
   --road_features <mode>
       Show OpenDRIVE road features ("on", "off"  (default)) (toggle during simulation by press 'o')
   --bounding_boxes

@@ -258,7 +258,7 @@ TEST_F(OSIPointsTestFixture, TestConstructorEmpty)
 
 TEST_F(OSIPointsTestFixture, TestConstructorArgument)
 {
-    std::vector<OSIPoints::OSIPointStruct> osi_points_test_set =
+    std::vector<PointStruct> osi_points_test_set =
     {
         {0, 0, 0, 0, 0},
         {-1, -1, -1, -1, -1},
@@ -267,7 +267,7 @@ TEST_F(OSIPointsTestFixture, TestConstructorArgument)
 
     OSIPoints osi_points_test_object = OSIPoints(osi_points_test_set);
     
-    std::vector<OSIPoints::OSIPointStruct> osi_point_expected = osi_points_test_object.GetPoints();
+    std::vector<PointStruct> osi_point_expected = osi_points_test_object.GetPoints();
 
     for (size_t i = 0; i < osi_points_test_set.size(); i++)
     {
@@ -281,7 +281,7 @@ TEST_F(OSIPointsTestFixture, TestConstructorArgument)
 
 TEST_F(OSIPointsTestFixture, TestSetGet)
 {
-    std::vector<OSIPoints::OSIPointStruct> osi_points_test_set =
+    std::vector<PointStruct> osi_points_test_set =
     {
         {0, 0, 0, 0, 0},
         {-1, -1, -1, -1, -1},
@@ -290,7 +290,7 @@ TEST_F(OSIPointsTestFixture, TestSetGet)
 
     osi_points.Set(osi_points_test_set);
 
-    std::vector<OSIPoints::OSIPointStruct> osi_point_expected = osi_points.GetPoints();
+    std::vector<PointStruct> osi_point_expected = osi_points.GetPoints();
 
     for (size_t i = 0; i < osi_points_test_set.size(); i++)
     {
@@ -317,7 +317,7 @@ TEST_F(OSIPointsTestFixture, TestGetFromIdxEmpty)
 
 TEST_F(OSIPointsTestFixture, TestGetFromIdx)
 {
-    std::vector<OSIPoints::OSIPointStruct> osi_points_test_set =
+    std::vector<PointStruct> osi_points_test_set =
     {
         {0, 0, 0, 0, 0},
         {-1, -1, -1, -1, -1},
@@ -343,7 +343,7 @@ TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
 {
     ASSERT_EQ(osi_points.GetNumOfOSIPoints(), 0);
  
-    std::vector<OSIPoints::OSIPointStruct> osi_points_test_set =
+    std::vector<PointStruct> osi_points_test_set =
     {
         {0, 0, 0, 0, 0},
         {-1, -1, -1, -1, -1},
@@ -1379,7 +1379,7 @@ TEST_F(LaneTestFixture, TestLaneGetOSIPoints)
     OSIPoints *osi_points = lane.GetOSIPoints();
     ASSERT_EQ(osi_points->GetPoints().size(), 0);
 
-    std::vector<OSIPoints::OSIPointStruct> osi_points_test_set =
+    std::vector<PointStruct> osi_points_test_set =
     {
         {0, 0, 0, 0, 0},
         {-1, -1, -1, -1, -1},

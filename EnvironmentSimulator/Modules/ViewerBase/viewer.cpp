@@ -20,7 +20,6 @@
 #include <osg/BlendColor>
 #include <osg/Geode> 
 #include <osg/Group> 
-#include <osg/ShapeDrawable>
 #include <osg/CullFace>
 #include <osgGA/StateSetManipulator>
 #include <osgGA/TrackballManipulator>
@@ -46,14 +45,19 @@
 #define LOD_SCALE_DEFAULT 1.0
 #define DEFAULT_AA_MULTISAMPLES 4
 #define OSI_LINE_WIDTH 2.0f
+#define TRAIL_WIDTH 2
+#define TRAIL_DOT_SIZE 10
+#define TRAIL_DOT3D_SIZE 0.2
+#define TRAILDOT3D 1
 
 double color_green[3] = { 0.25, 0.6, 0.3 };
 double color_gray[3] = { 0.7, 0.7, 0.7 };
 double color_dark_gray[3] = { 0.5, 0.5, 0.5 };
 double color_red[3] = { 0.73, 0.26, 0.26 };
+double color_black[3] = { 0.2, 0.2, 0.2 };
 double color_blue[3] = { 0.25, 0.38, 0.7 };
 double color_yellow[3] = { 0.75, 0.7, 0.4 };
-double color_white[3] = { 0.80, 0.80, 0.79 };
+double color_white[3] = { 0.90, 0.90, 0.85 };
 
 //USE_OSGPLUGIN(fbx)
 //USE_OSGPLUGIN(obj)
@@ -100,12 +104,70 @@ protected:
 	osg::ref_ptr<osg::Group> _node;
 };
 
-PolyLine::PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width)
+osg::ref_ptr<osg::Geode> CreateDotGeometry(double size, osg::Vec4 color, int nrPoints)
+{
+	nrPoints = MAX(nrPoints, 3);
+
+	osg::ref_ptr<osg::Vec4Array> color_outline = new osg::Vec4Array;
+	color_outline->push_back(color);
+
+	osg::ref_ptr<osg::Vec3Array> vertices_sides = new osg::Vec3Array((nrPoints + 1) * 2);  // one set at bottom and one at top
+	osg::ref_ptr<osg::Vec3Array> vertices_top = new osg::Vec3Array(nrPoints);  // one set for roof
+
+	// Set vertices
+	double height = 0.5 * size;
+	for (size_t i = 0; i < nrPoints; i++)
+	{
+		double a = (double)i * 2.0 * M_PI / nrPoints;
+		double x = size * cos(a);
+		double y = size * sin(a);
+		(*vertices_sides)[i * 2 + 0].set(x, y, 0);
+		(*vertices_sides)[i * 2 + 1].set(x, y, height);
+		(*vertices_top)[i].set(x, y, height);
+	}
+
+	// Close geometry
+	(*vertices_sides)[2 * (nrPoints + 1) - 2].set((*vertices_sides)[0]);
+	(*vertices_sides)[2 * (nrPoints + 1) - 1].set((*vertices_sides)[1]);
+
+	// Finally create and add geometry
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	osg::ref_ptr<osg::Geometry> geom[] = { new osg::Geometry, new osg::Geometry };
+
+	geom[0]->setVertexArray(vertices_sides.get());
+	geom[0]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, 2 * (nrPoints+1)));
+
+	// Add roof
+	geom[1]->setVertexArray(vertices_top.get());
+	geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
+
+	for (int i = 0; i < 2; i++)
+	{
+		osgUtil::SmoothingVisitor::smooth(*geom[i], 10);
+		geom[i]->setColorArray(color_outline);
+		geom[i]->setColorBinding(osg::Geometry::BIND_OVERALL);
+		geom[i]->setDataVariance(osg::Object::STATIC);
+		geom[i]->setUseDisplayList(true);
+		geode->addDrawable(geom[i]);
+	}
+
+	return geode;
+}
+
+PolyLine::PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize, bool dots3D) :
+	dots3D_(dots3D), dots_array_(nullptr), dots_geom_(nullptr), dot3D_geode_(nullptr)
 {
 	color_ = new osg::Vec4Array;
 	color_->push_back(color);
 
-	pline_vertex_data_ = points;
+	if (points == 0)
+	{
+		pline_vertex_data_ = new osg::Vec3Array;
+	}
+	else
+	{
+		pline_vertex_data_ = points;
+	}
 
 	pline_geom_ = new osg::Geometry;
 	pline_geom_->setVertexArray(pline_vertex_data_.get());
@@ -113,38 +175,124 @@ PolyLine::PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg:
 	pline_geom_->setColorBinding(osg::Geometry::BIND_OVERALL);
 	pline_geom_->getOrCreateStateSet()->setAttributeAndModes(new osg::LineWidth(width), osg::StateAttribute::ON);
 	pline_geom_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-	pline_geom_->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, pline_vertex_data_->size()));
+	pline_array_ = new osg::DrawArrays(GL_LINE_STRIP, 0, pline_vertex_data_->size());
+	pline_geom_->addPrimitiveSet(pline_array_);
+
+	if (dotsize > SMALL_NUMBER)
+	{
+		if (dots3D)
+		{
+#if 0
+			dot3D_shape_ = new osg::ShapeDrawable(new osg::Cylinder(osg::Vec3(0.0, 0.0, 0.25 * dotsize), dotsize, 0.5 * dotsize));
+			dot3D_shape_->setColor(color);
+			dot3D_geode_ = new osg::Geode;
+			dot3D_geode_->addDrawable(dot3D_shape_.get());
+#else
+			dot3D_geode_ = CreateDotGeometry(dotsize, color, 12);
+#endif
+			dots3D_group_ = new osg::Group;
+			for (size_t i = 0; i < pline_vertex_data_->size(); i++)
+			{
+				Add3DDot((*pline_vertex_data_)[i]);
+			}
+		}
+		else
+		{
+			dots_geom_ = new osg::Geometry;
+			dots_geom_->setVertexArray(pline_vertex_data_.get());
+			dots_geom_->setColorArray(color_.get());
+			dots_geom_->setColorBinding(osg::Geometry::BIND_OVERALL);
+			dots_geom_->getOrCreateStateSet()->setAttribute(new osg::Point(dotsize));
+			dots_geom_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+			dots_array_ = new osg::DrawArrays(GL_POINTS, 0, pline_vertex_data_->size());
+			dots_geom_->addPrimitiveSet(dots_array_);
+		}
+	}
 
 	parent->addChild(pline_geom_);
+
+	if (dots3D)
+	{
+		parent->addChild(dots3D_group_);
+	}
+	else
+	{
+		parent->addChild(dots_geom_);
+	}
 }
 
 void PolyLine::Redraw()
 {
 	pline_geom_->dirtyGLObjects();
 	pline_geom_->dirtyBound();
+
+	if (!dots3D_ && dots_geom_ != nullptr)
+	{
+		dots_geom_->dirtyGLObjects();
+		dots_geom_->dirtyBound();
+	}
+	
 	pline_vertex_data_->dirty();
 }
 
 void PolyLine::Update()
 {
-	if (pline_geom_->getNumPrimitiveSets() == 0)
+	pline_array_->setCount(pline_vertex_data_->size());
+	
+	if (!dots3D_ && dots_array_ != nullptr)
 	{
-		pline_geom_->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, pline_vertex_data_->size()));
+		dots_array_->setCount(pline_vertex_data_->size());
 	}
-	else
-	{
-		// Replace existing points
-		pline_geom_->setPrimitiveSet(0, new osg::DrawArrays(GL_LINE_STRIP, 0, pline_vertex_data_->size()));
-	}
-
+	
 	Redraw();
+}
+
+void PolyLine::SetNodeMaskLines(int nodemask)
+{
+	pline_geom_->setNodeMask(nodemask);
+}
+
+void PolyLine::SetNodeMaskDots(int nodemask)
+{
+	if (dot3D_geode_) dot3D_geode_->setNodeMask(nodemask);
+	if (dots_geom_) dots_geom_->setNodeMask(nodemask);
 }
 
 void PolyLine::SetPoints(osg::ref_ptr<osg::Vec3Array> points)
 {
 	pline_vertex_data_->clear();
 	pline_vertex_data_ = points;
-	Redraw();
+	
+	if (dots3D_)
+	{
+		for (size_t i = 0; i < pline_vertex_data_->size(); i++)
+		{
+			Add3DDot((*pline_vertex_data_)[i]);
+		}
+	}
+
+	Update();
+}
+
+void PolyLine::AddPoint(osg::Vec3 point)
+{
+	pline_vertex_data_->push_back(point);
+
+	if (dots3D_)
+	{
+		Add3DDot(point);
+	}
+
+	Update();
+}
+
+void PolyLine::Add3DDot(osg::Vec3 pos)
+{
+	osg::ref_ptr<osg::Geode> geode2 = dynamic_cast<osg::Geode*>(dot3D_geode_->clone(osg::CopyOp::SHALLOW_COPY));
+	osg::ref_ptr<osg::MatrixTransform> tx = new osg::MatrixTransform;
+	tx->setMatrix(osg::Matrix::translate(pline_vertex_data_->back()));
+	tx->addChild(geode2);
+	dots3D_group_->addChild(tx);
 }
 
 SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
@@ -356,182 +504,31 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
 
 }
 
-void AlphaFadingCallback::operator()(osg::StateAttribute* sa, osg::NodeVisitor*)
-{
-	osg::Material* material = static_cast<osg::Material*>(sa);
-	if (material)
-	{
-		double age = viewer_->elapsedTime() - born_time_stamp_;
-		double dt = viewer_->elapsedTime() - time_stamp_;
-		time_stamp_ = viewer_->elapsedTime();
-		if (age > TRAIL_DOT_LIFE_SPAN)
-		{
-			_motion->update(dt);  
-		}
-		color_[3] = 1 - _motion->getValue();
-		material->setDiffuse(osg::Material::FRONT_AND_BACK, color_);
-		material->setAmbient(osg::Material::FRONT_AND_BACK, color_);
-	}
-}
-
-TrailDot::TrailDot(double x, double y, double z, double heading, 
-	osgViewer::Viewer *viewer, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color)
-{
-	double dot_radius = 0.8;
-	osg::ref_ptr<osg::Node> new_node;
-
-	dot_ = new osg::PositionAttitudeTransform;
-	dot_->setPosition(osg::Vec3(x, y, z));
-	dot_->setScale(osg::Vec3(dot_radius, dot_radius, dot_radius));
-	dot_->setAttitude(osg::Quat(heading, osg::Vec3(0, 0, 1)));
-
-	if (dot_node == 0)
-	{
-		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-		geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
-		new_node = geode;
-	}
-	else
-	{
-		// Clone into a unique object for unique material and alpha fading
-		new_node = dynamic_cast<osg::Node*>(dot_node->clone(osg::CopyOp()));
-	}
-	
-	dot_->addChild(new_node);
-
-	material_ = new osg::Material;
-	material_->setDiffuse(osg::Material::FRONT_AND_BACK, trail_color);
-	material_->setAmbient(osg::Material::FRONT_AND_BACK, trail_color);
-	fade_callback_ = new AlphaFadingCallback(viewer, trail_color);
-	material_->setUpdateCallback(fade_callback_);
-
-	new_node->getOrCreateStateSet()->setAttributeAndModes(material_.get());
-	osg::ref_ptr<osg::StateSet> stateset = new_node->getOrCreateStateSet(); // Get the StateSet of the group
-	stateset->setAttribute(material_.get()); // Set Material 
-	stateset->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-	stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
-	
-	dot_->setNodeMask(NodeMask::NODE_MASK_TRAILS);
-
-	parent->addChild(dot_);
-}
-
-static osg::ref_ptr<osg::Node> CreateDotGeometry()
-{
-	double height = 0.17;
-	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(6);
-	osg::ref_ptr<osg::DrawElementsUInt> indices1 = new osg::DrawElementsUInt(GL_QUADS, 3 * 4);
-	osg::ref_ptr<osg::DrawElementsUInt> indices2 = new osg::DrawElementsUInt(GL_TRIANGLES, 3);
-	int idx = 0;
-
-	(*vertices)[idx++].set(0.0, -0.5, 0.0);
-	(*vertices)[idx++].set(0.87, 0.0, 0.0);
-	(*vertices)[idx++].set(0.0, 0.5, 0.0);
-	(*vertices)[idx++].set(0.0, -0.5, height);
-	(*vertices)[idx++].set(0.87, 0.0, height);
-	(*vertices)[idx++].set(0.0, 0.5, height);
-
-	// sides
-	idx = 0;
-	(*indices1)[idx++] = 0;
-	(*indices1)[idx++] = 1;
-	(*indices1)[idx++] = 4;
-	(*indices1)[idx++] = 3;
-
-	(*indices1)[idx++] = 2;
-	(*indices1)[idx++] = 5;
-	(*indices1)[idx++] = 4;
-	(*indices1)[idx++] = 1;
-
-	(*indices1)[idx++] = 0;
-	(*indices1)[idx++] = 3;
-	(*indices1)[idx++] = 5;
-	(*indices1)[idx++] = 2;
-
-	// Top face
-	idx = 0;
-	(*indices2)[idx++] = 3;
-	(*indices2)[idx++] = 4;
-	(*indices2)[idx++] = 5;
-
-	osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
-	geom->setDataVariance(osg::Object::DYNAMIC);
-	geom->setUseDisplayList(false);
-	geom->setUseVertexBufferObjects(true);
-	geom->setVertexArray(vertices.get());
-	geom->addPrimitiveSet(indices1.get());
-	geom->addPrimitiveSet(indices2.get());
-	osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	geode->addDrawable(geom.release());
-
-	return geode;
-}
-
-void TrailDot::Reset(double x, double y, double z, double heading)
-{
-	dot_->setPosition(osg::Vec3(x, y, z));
-
-	dot_->setAttitude(osg::Quat(
-		0, osg::Vec3(1, 0, 0),       // Roll
-		0, osg::Vec3(0, 1, 0),       // Pitch
-		heading, osg::Vec3(0, 0, 1)) // Heading
-	); 
-
-	fade_callback_->Reset();
-}
-
-void Trail::AddDot(double x, double y, double z, double heading)
-{
-	if (n_dots_ < TRAIL_MAX_DOTS)
-	{
-		dot_[current_] = new TrailDot(x, y, z, heading, viewer_, parent_, dot_node_, color_);
-		n_dots_++;
-	}
-	else
-	{
-		dot_[current_]->Reset(x, y, z, heading);
-	}
-
-	if (++current_ >= TRAIL_MAX_DOTS)
-	{
-		current_ = 0;
-	}
-}
-
-Trail::~Trail()
-{
-	for (size_t i = 0; i < n_dots_; i++)
-	{
-		delete (dot_[i]);
-	}
-}
-
 Trajectory::Trajectory(osg::Group* parent, osgViewer::Viewer* viewer) : 
 	parent_(parent), viewer_(viewer), activeRMTrajectory_(0)
 {
-	// osg references for drawing lines on the lane center using osi points
 	pline_ = new PolyLine(parent_, new osg::Vec3Array, osg::Vec4(0.9, 0.7, 0.3, 1.0), 3.0);
 }
 
 void Trajectory::SetActiveRMTrajectory(roadmanager::Trajectory* RMTrajectory)
 {
 	// Trajectory has been activated on the entity, visualize it
-	std::vector<viewer::Trajectory::Vertex> v;
 	double z_offset = 0.15;
-	double steplen = 1.0;
 
 	vertices_.clear();
 	pline_->pline_vertex_data_->clear();
-	for (double s = 0; s < RMTrajectory->GetLength() - SMALL_NUMBER; s += steplen)
+
+	if (RMTrajectory->shape_->pline_.GetNumberOfVertices() < 1)
 	{
-		roadmanager::Shape::ShapePosition pos;
+		return;
+	}
 
-		s = MIN(s, RMTrajectory->GetLength());
-		RMTrajectory->shape_->Evaluate(s, roadmanager::Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, pos);
+	for (int i = 0; i < RMTrajectory->shape_->pline_.GetNumberOfVertices(); i++)
+	{
+		roadmanager::TrajVertex& v = RMTrajectory->shape_->pline_.vertex_[i];
 
-		vertices_.push_back({ pos.x, pos.y, pos.z, pos.h });
-		pline_->pline_vertex_data_->push_back(osg::Vec3(pos.x, pos.y, pos.z + z_offset));
+		vertices_.push_back({ v.x, v.y, v.z, v.h });
+		pline_->pline_vertex_data_->push_back(osg::Vec3(v.x, v.y, v.z + z_offset));
 	}
 
 	pline_->Update();
@@ -581,7 +578,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 
 EntityModel::EntityModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, 
 	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node, 
-	osg::Vec3 trail_color,std::string name)
+	osg::Vec4 trail_color,std::string name)
 {
 	if (!group)
 	{
@@ -634,11 +631,13 @@ EntityModel::EntityModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::Group> gro
 	center_y = (maxV.y() + minV.y()) / 2;
 	
 	// Prepare trail of dots
-	trail_ = new Trail(trail_parent, viewer, dot_node, trail_color);
+	trail_ = new PolyLine(trail_parent, 0, trail_color, TRAIL_WIDTH, TRAIL_DOT3D_SIZE, true);
+	trail_->SetNodeMaskLines(NodeMask::NODE_MASK_TRAIL_LINES);
+	trail_->SetNodeMaskDots(NodeMask::NODE_MASK_TRAIL_DOTS);
 }
 
 CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
-	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name):
+	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color, std::string name):
 	EntityModel(viewer, group, parent, trail_parent, traj_parent, dot_node, trail_color, name)
 {
 	steering_sensor_ = 0;
@@ -863,9 +862,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		free(argv);
 	}
 
-	// Create 3D geometry for trail dots
-	dot_node_ = CreateDotGeometry();
-
 	// set the scene to render
 	rootnode_ = new osg::MatrixTransform;
 	
@@ -895,12 +891,12 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	envTx_->setNodeMask(NodeMask::NODE_MASK_ENV_MODEL);
 	rootnode_->addChild(envTx_);
 
-	ClearNodeMaskBits(NodeMask::NODE_MASK_TRAILS); // hide trails per default
+	ClearNodeMaskBits(NodeMask::NODE_MASK_TRAIL_LINES); // hide trails per default
+	ClearNodeMaskBits(NodeMask::NODE_MASK_TRAIL_DOTS);
 	ClearNodeMaskBits(NodeMask::NODE_MASK_OSI_LINES);
 	ClearNodeMaskBits(NodeMask::NODE_MASK_OSI_POINTS);
 	ClearNodeMaskBits(NodeMask::NODE_MASK_OBJECT_SENSORS);
 	ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
-	ClearNodeMaskBits(NodeMask::NODE_MASK_TRAILS);
 	ClearNodeMaskBits(NodeMask::NODE_MASK_ENTITY_BB);
 	SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL);
 	SetNodeMaskBits(NodeMask::NODE_MASK_TRAJECTORY_LINES);
@@ -909,17 +905,12 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
 	rootnode_->addChild(roadSensors_);
 	trails_ = new osg::Group;
-	trails_->setNodeMask(NodeMask::NODE_MASK_TRAILS);
 	rootnode_->addChild(trails_);
 	odrLines_ = new osg::Group;
 	odrLines_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
 	rootnode_->addChild(odrLines_);
-	osiLines_ = new osg::Group;
-	osiLines_->setNodeMask(NodeMask::NODE_MASK_OSI_LINES);
-	rootnode_->addChild(osiLines_);
-	osiPoints_ = new osg::Group;
-	osiPoints_->setNodeMask(NodeMask::NODE_MASK_OSI_POINTS);
-	rootnode_->addChild(osiPoints_);
+	osiFeatures_ = new osg::Group;
+	rootnode_->addChild(osiFeatures_);
 	trajectoryLines_ = new osg::Group;
 	trajectoryLines_->setNodeMask(NodeMask::NODE_MASK_TRAJECTORY_LINES);
 	rootnode_->addChild(trajectoryLines_);
@@ -1141,7 +1132,7 @@ void Viewer::SetCameraMode(int mode)
 	rubberbandManipulator_->setMode(camMode_);
 }
 
-EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec3 trail_color, EntityModel::EntityType type, 
+EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type, 
 	bool road_sensor, std::string name, OSCBoundingBox* boundingBox)
 {
 	// Load 3D model
@@ -1387,8 +1378,8 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 							{
 								for (int q = 0; q < curr_osi_rm.GetPoints().size(); q+=2)
 								{
-									roadmanager::OSIPoints::OSIPointStruct osi_point1 = curr_osi_rm.GetPoint(q);
-									roadmanager::OSIPoints::OSIPointStruct osi_point2 = curr_osi_rm.GetPoint(q+1);
+									roadmanager::PointStruct osi_point1 = curr_osi_rm.GetPoint(q);
+									roadmanager::PointStruct osi_point2 = curr_osi_rm.GetPoint(q+1);
 
 									// osg references for road mark osi points
 									osg::ref_ptr<osg::Geometry> osi_rm_geom = new osg::Geometry;
@@ -1420,8 +1411,9 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 									osi_rm_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_rm_points->size()));
 									osi_rm_geom->getOrCreateStateSet()->setAttributeAndModes(osi_rm_point, osg::StateAttribute::ON);
 									osi_rm_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-									osiPoints_->addChild(osi_rm_geom);
+									
+									osi_rm_geom->setNodeMask(NodeMask::NODE_MASK_OSI_POINTS);
+									osiFeatures_->addChild(osi_rm_geom);
 
 									// Draw lines from the start of the roadmark to the end of the roadmark
 									lineWidth->setWidth(OSI_LINE_WIDTH);
@@ -1431,8 +1423,9 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 									geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_rm_points->size()));
 									geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
 									geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-									osiLines_->addChild(geom);
+									
+									geom->setNodeMask(NodeMask::NODE_MASK_OSI_LINES);
+									osiFeatures_->addChild(geom);
 								}
 							}
 							else if(lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID)
@@ -1465,8 +1458,9 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 								osi_rm_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_rm_points->size()));
 								osi_rm_geom->getOrCreateStateSet()->setAttributeAndModes(osi_rm_point, osg::StateAttribute::ON);
 								osi_rm_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-									
-								osiPoints_->addChild(osi_rm_geom);
+								
+								osi_rm_geom->setNodeMask(NodeMask::NODE_MASK_OSI_POINTS);
+								osiFeatures_->addChild(osi_rm_geom);
 
 								// Draw lines between each selected points
 								lineWidth->setWidth(OSI_LINE_WIDTH);
@@ -1478,9 +1472,9 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 								geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_rm_points->size()));
 								geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
 								geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-								osiLines_->addChild(geom);
-
+								
+								geom->setNodeMask(NodeMask::NODE_MASK_OSI_LINES);
+								osiFeatures_->addChild(geom);
 							}
 						}
 					}
@@ -1583,21 +1577,26 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 
 					for (int m = 0; m < curr_osi->GetPoints().size(); m++)
 					{
-						roadmanager::OSIPoints::OSIPointStruct osi_point_s = curr_osi->GetPoint(m);
+						roadmanager::PointStruct osi_point_s = curr_osi->GetPoint(m);
 						vertices->push_back(osg::Vec3(osi_point_s.x, osi_point_s.y, osi_point_s.z + z_offset));
 					}
-	
+					
+					PolyLine* pline = nullptr;
 					if (lane->GetId() == 0)
 					{
-						AddPolyLine(odrLines_, vertices, osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0), 4.0);
+						pline = AddPolyLine(odrLines_, vertices, osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0), 4.0, 3.0);
 					}
 					else if (k==0)
 					{
-						AddPolyLine(odrLines_, vertices, osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0), 1.5);
+						pline = AddPolyLine(odrLines_, vertices, osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0), 1.5, 3.0);
 					}
 					else 
 					{
-						AddPolyLine(odrLines_, vertices, osg::Vec4(color_gray[0], color_gray[1], color_gray[2], 1.0), 1.5);
+						pline = AddPolyLine(odrLines_, vertices, osg::Vec4(color_gray[0], color_gray[1], color_gray[2], 1.0), 1.5, 3.0);
+					}
+					if (pline != nullptr)
+					{
+						pline->SetNodeMaskDots(NodeMask::NODE_MASK_OSI_POINTS);
 					}
 				}
 			}
@@ -2046,14 +2045,16 @@ void Viewer::SetWindowTitleFromArgs(int argc, char* argv[])
 	SetWindowTitleFromArgs(args);
 }
 
-void Viewer::AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width)
+PolyLine* Viewer::AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize)
 {
-	polyLine_.push_back(PolyLine(rootnode_, points, color, width));
+	polyLine_.push_back(PolyLine(rootnode_, points, color, width, dotsize));
+	return &polyLine_.back();
 }
 
-void Viewer::AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width)
+PolyLine* Viewer::AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize)
 {
-	polyLine_.push_back(PolyLine(parent, points, color, width));
+	polyLine_.push_back(PolyLine(parent, points, color, width, dotsize));
+	return &polyLine_.back();
 }
 
 void Viewer::RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data)
@@ -2194,7 +2195,15 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	{
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAILS);
+			int mask = viewer_->GetNodeMaskBit(
+				viewer::NodeMask::NODE_MASK_TRAIL_LINES |
+				viewer::NodeMask::NODE_MASK_TRAIL_DOTS) / viewer::NodeMask::NODE_MASK_TRAIL_LINES;
+
+			// Toggle between modes: 0: none, 1: lines only, 2: dots only, 3. lines and dots
+			mask = ((mask + 1) % 4) * viewer::NodeMask::NODE_MASK_TRAIL_LINES;
+
+			viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAIL_LINES |
+				viewer::NodeMask::NODE_MASK_TRAIL_DOTS, mask);
 		}
 	}
 	break;

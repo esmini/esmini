@@ -55,8 +55,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n11.100, 0, Ego, 200.70, 72.59, -2.44, 1.06, 6.26', csv))
         self.assertTrue(re.search('\n11.100, 1, Target, 205.56, 66.34, -2.50, 2.49', csv))
         self.assertTrue(re.search('\n17.390, 0, Ego, 216.96, 169.84, 2.15, 1.75, 6.21', csv))
-        self.assertTrue(re.search('\n17.390, 1, Target, 213.08, 208.07, 4.29, 1.76', csv))
-
+        self.assertTrue(re.search('\n17.390, 1, Target, 213.08, 208.07, 4.29, 1.78', csv))
 
 if __name__ == "__main__":
     # execute only if run as a script

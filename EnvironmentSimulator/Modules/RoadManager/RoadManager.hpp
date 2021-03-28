@@ -21,7 +21,6 @@
 #include "CommonMini.hpp"
 
 #define PARAMPOLY3_STEPS 100
-#define NURBS_MAX_STEPS 1000
 
 namespace roadmanager
 {
@@ -52,30 +51,30 @@ namespace roadmanager
 		double p_scale_;
 	};
 
+	typedef struct
+	{
+		double s;
+		double x;
+		double y;
+		double z;
+		double h;
+	} PointStruct; 
+
 	class OSIPoints
 	{
 		public:
-			typedef struct
-			{
-				double s;
-				double x;
-				double y;
-				double z;
-				double h;
-			} OSIPointStruct;
-
 			OSIPoints() {}
-			OSIPoints(std::vector<OSIPointStruct> points) : point_(points) {}
-			void Set(std::vector<OSIPointStruct> points) { point_ = points; }
-			std::vector<OSIPointStruct>& GetPoints() {return point_;}
-			OSIPointStruct& GetPoint(int i);
+			OSIPoints(std::vector<PointStruct> points) : point_(points) {}
+			void Set(std::vector<PointStruct> points) { point_ = points; }
+			std::vector<PointStruct>& GetPoints() {return point_;}
+			PointStruct& GetPoint(int i);
 			double GetXfromIdx(int i);
 			double GetYfromIdx(int i);
 			double GetZfromIdx(int i);
 			int GetNumOfOSIPoints();
 
 		private:
-			std::vector<OSIPointStruct> point_;
+			std::vector<PointStruct> point_;
 	};
 
 	class Geometry
@@ -1825,6 +1824,68 @@ namespace roadmanager
 		bool CheckRoad(Road* checkRoad, RoadPath::PathNode* srcNode, Road* fromRoad);
 	};
 
+	typedef struct
+	{
+		double s;
+		double x;
+		double y;
+		double z;
+		double h;
+		double time;
+		double speed;
+		double p;
+		bool   calcHeading;
+	} TrajVertex;
+
+	class PolyLineBase
+	{
+	public:
+
+		PolyLineBase() : length_(0), vIndex_(0), currentPos_({0, 0, 0, 0, 0, 0, 0, false }) {}
+		TrajVertex* AddVertex(TrajVertex p);
+		TrajVertex* AddVertex(double x, double y, double z, double h);
+		TrajVertex* AddVertex(double x, double y, double z);
+
+		/**
+		* Update vertex position and recalculate dependent values, e.g. length and heading
+		* NOTE: Need to be called in order, starting from i=0
+		* @param i Index of vertex to update
+		* @param x X coordinate of new position
+		* @param y Y coordinate of new position
+		* @param z Z coordinate of new position
+		* @param h Heading 
+		*/
+		TrajVertex* UpdateVertex(int i, double x, double y, double z, double h);
+
+		/**
+		* Update vertex position and recalculate dependent values, e.g. length and heading
+		* NOTE: Need to be called in order, starting from i=0
+		* @param i Index of vertex to update
+		* @param x X coordinate of new position
+		* @param y Y coordinate of new position
+		* @param z Z coordinate of new position
+		*/
+		TrajVertex* UpdateVertex(int i, double x, double y, double z);
+
+		void reset() { length_ = 0.0; }
+		int Evaluate(double s, TrajVertex& pos, double cornerRadius, int startAtIndex);
+		int Evaluate(double s, TrajVertex& pos, double cornerRadius);
+		int Evaluate(double s, TrajVertex& pos, int startAtIndex);
+		int Evaluate(double s, TrajVertex& pos);
+		int FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex = 0);
+		int FindPointAhead(double s_start, double distance, TrajVertex& pos, int& index, int startAtIndex = 0);
+		int GetNumberOfVertices() { return (int)vertex_.size(); }
+		TrajVertex* GetVertex(int index);
+		void Reset();
+
+		std::vector<TrajVertex> vertex_;
+		TrajVertex currentPos_;
+		double length_;
+		int vIndex_;
+
+	protected:
+		int EvaluateSegmentByLocalS(int i, double local_s, double cornerRadius, TrajVertex& pos);
+	};
 
 	// Trajectory stuff
 	class Shape
@@ -1844,24 +1905,17 @@ namespace roadmanager
 			TRAJ_PARAM_TYPE_TIME
 		} TrajectoryParamType;
 
-		typedef struct
-		{
-			double s;
-			double x;
-			double y;
-			double z;
-			double h;
-		} ShapePosition;
 
-		Shape(ShapeType type) : type_(type), length_(0) {}
-		double GetLength() { return length_; }
-		virtual int Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos) { return -1; }
-		
+		Shape(ShapeType type) : type_(type) {}
+		virtual int Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos) { return -1; };
+		int FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex = 0) { return -1; };
+		virtual double GetLength() { return 0.0; }
 		ShapeType type_;
-		double length_;
+
+		PolyLineBase pline_;  // approximation of shape, used for calculations and visualization
 	};
 
-	class PolyLine : public Shape
+	class PolyLineShape : public Shape
 	{
 	public:
 
@@ -1869,34 +1923,25 @@ namespace roadmanager
 		{
 		public:
 			Position pos_;
-			double s_;
-			double time_;
-			bool calc_heading_;
 		};
 
-		PolyLine() : Shape(ShapeType::POLYLINE) {}
+		PolyLineShape() : Shape(ShapeType::POLYLINE) {}
 		void AddVertex(Position pos, double time, bool calculateHeading);
-		int Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos);
-		int EvaluateSegmentByLocalS(int i, double local_s, ShapePosition& pos);
+		int Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos);
+		double GetLength() { return pline_.length_; }
 
 		std::vector<Vertex*> vertex_;
 	};
 
-	class Clothoid : public Shape
+	class ClothoidShape : public Shape
 	{
 	public:
 
-		Clothoid(roadmanager::Position pos, double curv, double curvDot, double len, double tStart, double tEnd) : Shape(ShapeType::CLOTHOID)
-		{
-			pos_ = pos;
-			spiral_ = new roadmanager::Spiral(0, pos_.GetX(), pos_.GetY(), pos_.GetH(), len, curv, curv + curvDot * len);
-			length_ = len;
-			t_start_ = tStart;
-			t_end_ = tEnd;
-		}
+		ClothoidShape(roadmanager::Position pos, double curv, double curvDot, double len, double tStart, double tEnd);
 
-		int Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos);
-
+		int Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos);
+		void CalculatePolyLine();
+		double GetLength() { return spiral_->GetLength(); }
 		Position pos_;
 		roadmanager::Spiral* spiral_;  // make use of the OpenDRIVE clothoid definition
 		double t_start_;
@@ -1907,7 +1952,7 @@ namespace roadmanager
 		This nurbs implementation is strongly inspired by the "Nurbs Curve Example" at:
 		https://nccastaff.bournemouth.ac.uk/jmacey/OldWeb/RobTheBloke/www/opengl_programming.html
 	*/
-	class Nurbs : public Shape
+	class NurbsShape : public Shape
 	{
 		class ControlPoint
 		{
@@ -1923,33 +1968,26 @@ namespace roadmanager
 		};
 
 	public:
-		Nurbs(int order) : order_(order), Shape(ShapeType::NURBS), s2p_idx_(0), s2p_len_(0) {}
+		NurbsShape(int order) : order_(order), Shape(ShapeType::NURBS), length_(0) {}
 
-		void AddControlPoint(Position pos, double time, double weight, bool calcHeading) 
-		{ 
-			ctrlPoint_.push_back(ControlPoint(pos, time, weight, calcHeading)); 
-			d_.push_back(0);
-		}
+		void AddControlPoint(Position pos, double time, double weight, bool calcHeading);
 		void AddKnots(std::vector<double> knots);
-		int Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos);
-		int EvaluateInternal(double s, ShapePosition& pos);
+		int Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos);
+		int EvaluateInternal(double s, TrajVertex& pos);
 
 		int order_;
 		std::vector<ControlPoint> ctrlPoint_;
 		std::vector<double> knot_;
 		std::vector<double> d_;  // used for temporary storage of CoxDeBoor weigthed control points
 
-		void calcS2PMap();
+		void CalculatePolyLine();
 		int S2P(double s, double &p, double &h, double &z);
 		int P2S(double p, double& s, double& h, double& z);
-
-		int s2p_len_;
-		int s2p_idx_;
+		double GetLength() { return length_; }
 
 	private:
-		double s2p_map_[NURBS_MAX_STEPS + 1][4];
-
 		double CoxDeBoor(double x, int i, int p, const std::vector<double>& t);
+		double length_;
 
 	};
 

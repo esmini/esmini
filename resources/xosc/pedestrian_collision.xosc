@@ -190,7 +190,7 @@
                             <PrivateAction>
                                 <TeleportAction>
                                     <Position>
-                                        <RelativeObjectPosition entityRef="pedestrian_adult" dx="0" dy="0" dz="0.1" >
+                                        <RelativeObjectPosition entityRef="pedestrian_adult" dx="0.0" dy="0.0" dz="0.0" >
                                             <Orientation type="relative" r="1.57" h="0" p="0" />
                                         </RelativeObjectPosition>
                                     </Position>

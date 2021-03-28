@@ -147,7 +147,7 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 
 	// Measure length of movement for odometer
 
-	if (!traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->shape_->length_ - DISTANCE_TOLERANCE))
+	if (!traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - DISTANCE_TOLERANCE))
 	{
 		// Reached end of trajectory
 		// Calculate road coordinates from final inertia (X, Y) coordinates
@@ -193,12 +193,12 @@ void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 	}
 	if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::CLOTHOID)
 	{
-		roadmanager::Clothoid* cl = (roadmanager::Clothoid*)traj_->shape_;
+		roadmanager::ClothoidShape* cl = (roadmanager::ClothoidShape*)traj_->shape_;
 		cl->pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
 	}
 	else if (traj_->shape_->type_ == roadmanager::Shape::ShapeType::POLYLINE)
 	{
-		roadmanager::PolyLine* pl = (roadmanager::PolyLine*)traj_->shape_;
+		roadmanager::PolyLineShape* pl = (roadmanager::PolyLineShape*)traj_->shape_;
 		for (size_t i = 0; i < pl->vertex_.size(); i++)
 		{
 			pl->vertex_[i]->pos_.ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);

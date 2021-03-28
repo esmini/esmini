@@ -107,7 +107,7 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 			{
 				state->info.model_id = 0;
 			}
-			if ((new_sc.entityModel = viewer->AddEntityModel(entityModelsFiles_[state->info.model_id], osg::Vec3(0.5, 0.5, 0.5),
+			if ((new_sc.entityModel = viewer->AddEntityModel(entityModelsFiles_[state->info.model_id], osg::Vec4(0.5, 0.5, 0.5, 1.0),
 				viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER, false, state->info.name, &state->info.boundingbox)) == 0)
 			{
 				return -1;

@@ -65,17 +65,20 @@ void ControllerExternal::Step(double timeStep)
 	if (object_->ghost_)
 	{
 		if (object_->ghost_->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
+			object_->trail_closest_pos_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
+		{
+			/*if (object_->ghost_->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
 			object_->trail_closest_pos_[0], object_->trail_closest_pos_[1],
 			object_->trail_follow_s_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
-		{
-			object_->trail_closest_pos_[2] = object_->pos_.GetZ();
+		{*/
+			object_->trail_closest_pos_.z = object_->pos_.GetZ();
 		}
 		else
 		{
 			// Failed find point along trail, copy entity position
-			object_->trail_closest_pos_[0] = object_->pos_.GetX();
-			object_->trail_closest_pos_[1] = object_->pos_.GetY();
-			object_->trail_closest_pos_[2] = object_->pos_.GetZ();
+			object_->trail_closest_pos_.x = object_->pos_.GetX();
+			object_->trail_closest_pos_.y = object_->pos_.GetY();
+			object_->trail_closest_pos_.z = object_->pos_.GetZ();
 		}
 	}
 

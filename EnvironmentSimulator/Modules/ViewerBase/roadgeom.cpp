@@ -106,8 +106,8 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 				{
 					for (int q = 0; q < curr_osi_rm.GetPoints().size(); q += 2)
 					{
-						roadmanager::OSIPoints::OSIPointStruct osi_point0 = curr_osi_rm.GetPoint(q);
-						roadmanager::OSIPoints::OSIPointStruct osi_point1 = curr_osi_rm.GetPoint(q + 1);
+						roadmanager::PointStruct osi_point0 = curr_osi_rm.GetPoint(q);
+						roadmanager::PointStruct osi_point1 = curr_osi_rm.GetPoint(q + 1);
 
 						osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(4);
 						osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, 4);
@@ -137,7 +137,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 				}
 				else if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID)
 				{
-					std::vector<roadmanager::OSIPoints::OSIPointStruct> osi_points = curr_osi_rm.GetPoints();
+					std::vector<roadmanager::PointStruct> osi_points = curr_osi_rm.GetPoints();
 					if (osi_points.size() < 2)
 					{
 						// No line - skip
@@ -265,7 +265,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 				throw std::runtime_error("Missing OSI points");
 			}
 
-			std::vector<roadmanager::OSIPoints::OSIPointStruct> osiPoints = lane->GetOSIPoints()->GetPoints();
+			std::vector<roadmanager::PointStruct> osiPoints = lane->GetOSIPoints()->GetPoints();
 			s_list.clear();
 			for (size_t l = 0; l < osiPoints.size(); l++)
 			{

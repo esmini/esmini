@@ -26,6 +26,7 @@
 using namespace scenarioengine;
 
 #define GHOST_HEADSTART 2.5
+#define TRAIL_Z_OFFSET 0.02
 
 static int osi_counter = 0;
 
@@ -52,9 +53,6 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 
 #ifdef _SCENARIO_VIEWER
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
-	trail_dt = TRAIL_DOTS_DT;
-#else
-	trail_dt = 0;
 #endif
 
 	if (Init() != 0)
@@ -213,15 +211,7 @@ void ScenarioPlayer::ViewerFrame()
 {
 	static double last_dot_time = scenarioEngine->getSimulationTime();
 
-	bool add_dot = false;
-	if (scenarioEngine->getSimulationTime() - last_dot_time > trail_dt)
-	{
-		add_dot = true;
-		last_dot_time = scenarioEngine->getSimulationTime();
-	}
-
 	mutex.Lock();
-
 
 	// Add or remove cars (for sumo)
 
@@ -243,8 +233,8 @@ void ScenarioPlayer::ViewerFrame()
 				if (toadd)
 				{
 					// add car
-					osg::Vec3 trail_color;
-					trail_color.set(color_blue[0], color_blue[1], color_blue[2]);
+					osg::Vec4 trail_color;
+					trail_color.set(color_blue[0], color_blue[1], color_blue[2], 1.0);
 					viewer_->AddEntityModel(scenarioEngine->entities.object_[i]->model_filepath_, trail_color, 
 						viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, 
 						scenarioEngine->entities.object_[i]->name_, &scenarioEngine->entities.object_[i]->boundingbox_);
@@ -311,7 +301,7 @@ void ScenarioPlayer::ViewerFrame()
 				}
 				if (car->trail_sensor_)
 				{
-					viewer_->SensorSetPivotPos(car->trail_sensor_, obj->trail_closest_pos_[0], obj->trail_closest_pos_[1], obj->trail_closest_pos_[2]);
+					viewer_->SensorSetPivotPos(car->trail_sensor_, obj->trail_closest_pos_.x, obj->trail_closest_pos_.y, obj->trail_closest_pos_.z);
 					viewer_->SensorSetTargetPos(car->trail_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 					viewer_->UpdateSensor(car->trail_sensor_);
 				}
@@ -323,9 +313,9 @@ void ScenarioPlayer::ViewerFrame()
 			}
 		}
 
-		if (add_dot)
+		if (obj->trail_.GetNumberOfVertices() > entity->trail_->pline_vertex_data_->size())
 		{
-			entity->trail_->AddDot(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH());
+			entity->trail_->AddPoint(osg::Vec3(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET));
 		}
 	}
 
@@ -393,9 +383,15 @@ int ScenarioPlayer::InitViewer()
 		viewer_->ShowInfoText(false);
 	}
 
-	if (opt.GetOptionSet("trails"))
+	if ((arg_str = opt.GetOptionArg("trail_mode")) != "")
 	{
-		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAILS);
+		int mask = strtoi(arg_str);
+		if (mask < 0 || mask > 3)
+		{
+			LOG_AND_QUIT("Invalid trail_mode %d. Valid range is 0-3", mask);
+		}
+		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAIL_LINES |
+			viewer::NodeMask::NODE_MASK_TRAIL_DOTS, mask * viewer::NodeMask::NODE_MASK_TRAIL_LINES);
 	}
 
 	if (opt.GetOptionArg("road_features") == "on")
@@ -459,21 +455,25 @@ int ScenarioPlayer::InitViewer()
 	//  Create visual models
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		osg::Vec3 trail_color;
+		osg::Vec4 trail_color;
 		Object* obj = scenarioEngine->entities.object_[i];
 
 		// Create trajectory/trails for all entities
-		if (obj->IsGhost())
+		if (obj->GetId() == 0)
 		{
-			trail_color.set(color_gray[0], color_gray[1], color_gray[2]);
+			trail_color.set(color_white[0], color_white[1], color_white[2], 1.0);
+		}
+		else if (obj->IsGhost())
+		{
+			trail_color.set(color_black[0], color_black[1], color_black[2], 1.0);
 		}
 		else if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL)
 		{
-			trail_color.set(color_yellow[0], color_yellow[1], color_yellow[2]);
+			trail_color.set(color_yellow[0], color_yellow[1], color_yellow[2], 1.0);
 		}
 		else
 		{
-			trail_color.set(color_red[0], color_red[1], color_red[2]);
+			trail_color.set(color_red[0], color_red[1], color_red[2], 1.0);
 		}
 
 		//  Create vehicles for visualization
@@ -631,7 +631,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
 	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
-	opt.AddOption("trails", "Show trails (toggle during simulation by press 'j')");
+	opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
 	opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
 	opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
 	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");

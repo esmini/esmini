@@ -55,47 +55,48 @@ void ControllerFollowGhost::Init()
 
 void ControllerFollowGhost::Step(double timeStep)
 {
+	if (!object_->GetGhost())
+	{
+		// No ghost associated
+		return;
+	}
+
 	// Set steering target point at a distance ahead proportional to the speed
 	double probe_target_distance = MAX(7, 0.5 * object_->speed_);
 
-	if (object_->GetGhost())
+	if (object_->GetGhost()->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
+		object_->trail_closest_pos_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
 	{
-		if (object_->GetGhost()->trail_.FindClosestPoint(object_->pos_.GetX(), object_->pos_.GetY(),
-			object_->trail_closest_pos_[0], object_->trail_closest_pos_[1],
-			object_->trail_follow_s_, object_->trail_follow_index_, object_->trail_follow_index_) == 0)
-		{
-			object_->trail_closest_pos_[2] = object_->pos_.GetZ();
-		}
-		else
-		{
-			// Failed find point along trail, copy entity position
-			object_->trail_closest_pos_[0] = object_->pos_.GetX();
-			object_->trail_closest_pos_[1] = object_->pos_.GetY();
-			object_->trail_closest_pos_[2] = object_->pos_.GetZ();
-		}
+		object_->trail_closest_pos_.z = object_->pos_.GetZ();
+	}
+	else
+	{
+		// Failed find point along trail, copy entity position
+		object_->trail_closest_pos_.x = object_->pos_.GetX();
+		object_->trail_closest_pos_.y = object_->pos_.GetY();
+		object_->trail_closest_pos_.z = object_->pos_.GetZ();
 	}
 
 	// Find out a steering target along ghost vehicle trail
-	double s_out;
 	int index_out;
-	ObjectTrailState state = {0, 0, 0, 0, 0, 0};
+	roadmanager::TrajVertex point;
 
 	// Locate a point at given distance from own vehicle along the ghost trajectory
-	if (object_->GetGhost() && object_->GetGhost()->trail_.FindPointAhead(
-		object_->trail_follow_index_, object_->trail_follow_s_, probe_target_distance, state, index_out, s_out) != 0)
+	if (object_->GetGhost()->trail_.FindPointAhead(
+		object_->trail_closest_pos_.s, probe_target_distance, point, index_out, object_->trail_follow_index_) != 0)
 	{
-		state.x_ = (float)object_->pos_.GetX();
-		state.y_ = (float)object_->pos_.GetY();
-		state.z_ = (float)object_->pos_.GetZ();
-		state.speed_ = 0;
+		point.x = (float)object_->pos_.GetX();
+		point.y = (float)object_->pos_.GetY();
+		point.z = (float)object_->pos_.GetZ();
+		point.speed = 0;
 	}
 
 	// Update object sensor position for visualization
-	object_->sensor_pos_[0] = state.x_;
-	object_->sensor_pos_[1] = state.y_;
-	object_->sensor_pos_[2] = state.z_;
+	object_->sensor_pos_[0] = point.x;
+	object_->sensor_pos_[1] = point.y;
+	object_->sensor_pos_[2] = point.z;
 
-	double diffGlobal[2] = { state.x_ - object_->pos_.GetX(), state.y_ - object_->pos_.GetY() };
+	double diffGlobal[2] = { point.x - object_->pos_.GetX(), point.y - object_->pos_.GetY() };
 	double len = sqrt(diffGlobal[0] * diffGlobal[0] + diffGlobal[1] * diffGlobal[1]);
 	if (len > SMALL_NUMBER)
 	{
@@ -115,7 +116,7 @@ void ControllerFollowGhost::Step(double timeStep)
 	double diffH = asin(GetCrossProduct2D(egoDirGlobal[0], egoDirGlobal[1], diffGlobal[0], diffGlobal[1]));
 
 	// Update driver model target values
-	vehicle_.DrivingControlTarget(timeStep, diffH, state.speed_);
+	vehicle_.DrivingControlTarget(timeStep, diffH, point.speed);
 
 	// Register updated vehicle position 
 	object_->pos_.XYZH2TrackPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_);

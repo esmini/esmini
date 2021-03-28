@@ -17,6 +17,7 @@
 
 #define WHEEL_RADIUS 0.35
 #define STAND_STILL_THRESHOLD 1e-3  // meter per second
+#define TRAJECTORY_SAMPLE_TIME 0.2
 
 using namespace scenarioengine;
 
@@ -700,7 +701,16 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 			obj->odometer_ += abs(sqrt(dx * dx + dy * dy));  // odometer always measure all movements as positive, I guess...
 		}
 
-		obj->trail_.AddState((float)simulationTime_, (float)obj->pos_.GetX(), (float)obj->pos_.GetY(), (float)obj->pos_.GetZ(), (float)obj->speed_);
+		if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertex(-1)->time > TRAJECTORY_SAMPLE_TIME)
+		{
+			double x = obj->pos_.GetX();
+			double y = obj->pos_.GetY();
+			// Only add trail vertex when we moved a bit from last one
+			if (obj->trail_.GetNumberOfVertices() == 0 || PointDistance2D(x, y, obj->trail_.GetVertex(-1)->x, obj->trail_.GetVertex(-1)->y) > 0.1)
+			{
+				obj->trail_.AddVertex({ 0.0, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH(), simulationTime_, obj->GetSpeed(), 0.0, false });
+			}
+		}
 
 		// Clear dirty/update bits for any reported velocity and acceleration values
 		obj->ClearDirtyBits(
@@ -760,8 +770,9 @@ void ScenarioEngine::SetupGhost(Object* object)
 	ghost->SetHeadstartTime(object->headstart_time_);
 	entities.addObject(ghost);
 	object->SetHeadstartTime(0);
-
-	for (size_t i = 0; i < init.private_action_.size(); i++)
+	
+	int numberOfInitActions = (int)init.private_action_.size();
+	for (int i = 0; i < numberOfInitActions; i++)
 	{
 		OSCPrivateAction* action = init.private_action_[i];
 		if (action->object_ == object)

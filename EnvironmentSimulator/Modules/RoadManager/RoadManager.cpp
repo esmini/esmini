@@ -104,7 +104,7 @@ void Polynomial::Set(double a, double b, double c, double d, double p_scale)
 	p_scale_ = p_scale;
 }
 
-OSIPoints::OSIPointStruct& OSIPoints::GetPoint(int i)
+PointStruct& OSIPoints::GetPoint(int i)
 {
 	if (point_.size() <= i || point_.size() == 0)
 	{
@@ -4128,7 +4128,7 @@ void OpenDrive::SetLaneOSIPoints()
 	Lane *lane;
 	int number_of_lane_sections, number_of_lanes, counter;
 	double lsec_end;
-	std::vector<OSIPoints::OSIPointStruct> osi_point;
+	std::vector<PointStruct> osi_point;
 	std::vector<double> x0, y0, x1, y1;
 	double s0, s1, s1_prev;
 	bool osi_requirement;
@@ -4197,7 +4197,7 @@ void OpenDrive::SetLaneOSIPoints()
 					// Add the starting point of each lane as osi point
 					if (counter == 1)
 					{
-						OSIPoints::OSIPointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+						PointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 						osi_point.push_back(p);
 					}
 
@@ -4258,7 +4258,7 @@ void OpenDrive::SetLaneOSIPoints()
 							if (counter != 1)
 							{
 								pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
-								OSIPoints::OSIPointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+								PointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 								osi_point.push_back(p);
 							}
 						}
@@ -4268,7 +4268,7 @@ void OpenDrive::SetLaneOSIPoints()
 					if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end)
 					{
 						pos->SetLanePos(road->GetId(), lane->GetId(), MAX(0, lsec_end-SMALL_NUMBER), 0, j);
-						OSIPoints::OSIPointStruct p = { lsec_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+						PointStruct p = { lsec_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 						osi_point.push_back(p);
 						break;
 					}
@@ -4305,7 +4305,7 @@ void OpenDrive::SetLaneBoundaryPoints()
 	int number_of_lane_sections, number_of_lanes, counter;
 	double lsec_end;
 	std::vector<double> x0, y0, x1, y1;
-	std::vector<OSIPoints::OSIPointStruct> osi_point;
+	std::vector<PointStruct> osi_point;
 	double s0, s1, s1_prev;
 	bool osi_requirement; 
 	double max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
@@ -4376,7 +4376,7 @@ void OpenDrive::SetLaneBoundaryPoints()
 						// Add the starting point of each lane as osi point
 						if (counter == 1)
 						{
-							OSIPoints::OSIPointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+							PointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 							osi_point.push_back(p);
 						}
 
@@ -4429,7 +4429,7 @@ void OpenDrive::SetLaneBoundaryPoints()
 							if (counter != 1)
 							{
 								pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
-								OSIPoints::OSIPointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+								PointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 								osi_point.push_back(p);
 							}
 						}
@@ -4438,7 +4438,7 @@ void OpenDrive::SetLaneBoundaryPoints()
 						if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end)
 						{
 							pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), MAX(0, lsec_end - SMALL_NUMBER), 0, j);
-							OSIPoints::OSIPointStruct p = { lsec_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+							PointStruct p = { lsec_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 							osi_point.push_back(p);
 							break;
 						}
@@ -4481,7 +4481,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 	int number_of_lane_sections, number_of_lanes, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines, counter;
 	double s0, s1, s1_prev, lsec_end, s_roadmark, s_end_roadmark, s_roadmarkline, s_end_roadmarkline;
 	std::vector<double> x0, y0, x1, y1;
-	std::vector<OSIPoints::OSIPointStruct> osi_point;
+	std::vector<PointStruct> osi_point;
 	bool osi_requirement;
 	double max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
 
@@ -4569,7 +4569,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 										while(true)
 										{
 											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmarkline, 0, j);
-											OSIPoints::OSIPointStruct p = { s_roadmarkline, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+											PointStruct p = { s_roadmarkline, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 											osi_point.push_back(p);
 
 											pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_roadmarkline+lane_roadMarkTypeLine->GetLength(), 0, j);
@@ -4614,7 +4614,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 											// Add the starting point of each lane as osi point
 											if (counter == 1)
 											{
-												OSIPoints::OSIPointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+												PointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 												osi_point.push_back(p);
 											}
 
@@ -4660,7 +4660,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 												if (counter != 1)
 												{
 													pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s0, 0, j);
-													OSIPoints::OSIPointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+													PointStruct p = { s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 													osi_point.push_back(p);
 												}
 											}
@@ -4669,7 +4669,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 											if (s1 > s_end_roadmarkline - SMALL_NUMBER)
 											{
 												pos->SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s_end_roadmarkline, 0, j);
-												OSIPoints::OSIPointStruct p = { s_end_roadmarkline, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
+												PointStruct p = { s_end_roadmarkline, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad() };
 												osi_point.push_back(p);
 												break;
 											}
@@ -4973,7 +4973,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3)
 			for (int k = pointIdxStart; k < pointIdxEnd; k++)
 			{
 				double distTmp = 0;
-				OSIPoints::OSIPointStruct& osi_point = osiPoints->GetPoint(k);
+				PointStruct& osi_point = osiPoints->GetPoint(k);
 				double z = osi_point.z;
 				bool inside = false;
 
@@ -5205,7 +5205,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3)
 		// Find out what line the points projects to, starting or ending with closest point?
 		// Do this by comparing the angle to the position with the road normal at found point
 
-		OSIPoints::OSIPointStruct osip_closest, osip_first, osip_second;
+		PointStruct osip_closest, osip_first, osip_second;
 		osip_closest = roadMin->GetLaneSectionByIdx(jMin)->GetLaneById(0)->GetOSIPoints()->GetPoint(kMin);
 
 		double xTangent = cos(osip_closest.h);
@@ -7306,42 +7306,38 @@ int Position::SetRouteLanePosition(Route *route, double route_s, int laneId, dou
 	return 0;
 }
 
-void PolyLine::AddVertex(Position pos, double time, bool calculateHeading)
+int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRadius, TrajVertex& pos)
 {
-	Vertex* v = new Vertex();
-	v->pos_ = pos;
-	v->time_ = time;
-	v->calc_heading_ = calculateHeading;
-	v->s_ = length_;
-	vertex_.push_back(v);
-}
+	TrajVertex* vp0 = &vertex_[i];
 
-int PolyLine::EvaluateSegmentByLocalS(int i, double local_s, ShapePosition& pos)
-{
-	Position* vp0 = &vertex_[i]->pos_;
-
-	if (i >= vertex_.size() - 1)
+	if (i >= GetNumberOfVertices() - 1)
 	{
-		pos.x = vp0->GetX();
-		pos.y = vp0->GetY();
-		pos.z = vp0->GetZ();
-		pos.h = vp0->GetH();
+		pos.x = vp0->x;
+		pos.y = vp0->y;
+		pos.z = vp0->z;
+		pos.h = vp0->h;
+		pos.s = vp0->s;
+		pos.time = vp0->time;
+		pos.speed = vp0->speed;
 	}
 	else if (i >= 0)
 	{
-		Position* vp1 = &vertex_[i + 1]->pos_;
+		TrajVertex* vp1 = &vertex_[i + 1];
 
-		double length = vertex_[i + 1]->s_ - vertex_[i]->s_;
+		double length = vertex_[i + 1].s - vertex_[i].s;
 
 		local_s = CLAMP(local_s, 0, length);
 
 		double a = local_s / length; // a = interpolation factor
 
-		pos.x = (1 - a) * vp0->GetX() + a * vp1->GetX();
-		pos.y = (1 - a) * vp0->GetY() + a * vp1->GetY();
-		pos.z = (1 - a) * vp0->GetZ() + a * vp1->GetZ();
+		pos.x = (1 - a) * vp0->x + a * vp1->x;
+		pos.y = (1 - a) * vp0->y + a * vp1->y;
+		pos.z = (1 - a) * vp0->z + a * vp1->z;
+		pos.time = (1 - a) * vp0->time + a * vp1->time;
+		pos.speed = (1 - a) * vp0->speed + a * vp1->speed;
+		pos.s = (1 - a) * vp0->s + a * vp1->s;
 
-		if (vertex_[i + 1]->calc_heading_)
+		if (vertex_[i + 1].calcHeading)
 		{
 			// Strategy: Align to line, but interpolate at corners
 			double radius = MIN(4.0, length);
@@ -7351,36 +7347,36 @@ int PolyLine::EvaluateSegmentByLocalS(int i, double local_s, ShapePosition& pos)
 				a = (radius + local_s) / (2 * radius);
 				if (i > 0)
 				{
-					pos.h = a * vertex_[i]->pos_.GetH() + (1 - a) * vertex_[i - 1]->pos_.GetH();
+					pos.h = a * vertex_[i].h + (1 - a) * vertex_[i - 1].h;
 				}
 				else
 				{
 					// No previous value to interpolate
-					pos.h = vertex_[i]->pos_.GetH();
+					pos.h = vertex_[i].h;
 				}
 			}
 			else if (local_s > length - radius)
 			{
 				a = (radius + (length - local_s)) / (2 * radius);
-				if (i > vertex_.size() - 2)
+				if (i > GetNumberOfVertices() - 2)
 				{
 					// Last segment, no next point to interpolate
-					pos.h = a * vertex_[i]->pos_.GetH();
+					pos.h = a * vertex_[i].h;
 				}
 				else
 				{
-					pos.h = a * vertex_[i]->pos_.GetH() + (1 - a) * vertex_[i + 1]->pos_.GetH();
+					pos.h = a * vertex_[i].h + (1 - a) * vertex_[i + 1].h;
 				}
 			}
 			else
 			{
-				pos.h = vertex_[i]->pos_.GetH();
+				pos.h = vertex_[i].h;
 			}
 		}
 		else
 		{
 			// Interpolate
-			pos.h = (1 - a) * vp0->GetH() + a * vp1->GetH();
+			pos.h = (1 - a) * vp0->h + a * vp1->h;
 		}
 	}
 	else
@@ -7391,47 +7387,265 @@ int PolyLine::EvaluateSegmentByLocalS(int i, double local_s, ShapePosition& pos)
 	return 0;
 }
 
-int PolyLine::Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos)
+TrajVertex* PolyLineBase::AddVertex(double x, double y, double z, double h)
+{
+	TrajVertex v;
+	vertex_.push_back(v);
+	
+	return UpdateVertex(GetNumberOfVertices() - 1, x, y, z, h);
+}
+
+TrajVertex* PolyLineBase::AddVertex(double x, double y, double z)
+{
+	TrajVertex v;
+	vertex_.push_back(v);
+
+	return UpdateVertex(GetNumberOfVertices() - 1, x, y, z);
+}
+
+TrajVertex* PolyLineBase::AddVertex(TrajVertex p)
+{
+	vertex_.push_back(p);
+	
+	if (p.calcHeading)
+	{
+		return UpdateVertex(GetNumberOfVertices() - 1, p.x, p.y, p.z);
+	}
+	else
+	{
+		return UpdateVertex(GetNumberOfVertices() - 1, p.x, p.y, p.z, p.h);
+	}
+}
+
+TrajVertex* PolyLineBase::UpdateVertex(int i, double x, double y, double z)
+{
+	TrajVertex* v = &vertex_[i];
+
+	v->x = x;
+	v->y = y;
+	v->z = z;
+
+	if (i > 0)
+	{
+		TrajVertex* vp = &vertex_[i - 1];
+
+		if (v->calcHeading)
+		{
+			// Set heading temporary to same as previous vertex
+			v->h = GetAngleInInterval2PI(atan2(v->y - vp->y, v->x - vp->x));
+		}
+
+		if (vp->calcHeading)
+		{
+			// Update heading of last vertex now that outgoing line segment is known
+			vp->h = v->h;
+		}
+
+		// Update polyline length
+		double dist = PointDistance2D(x, y, vp->x, vp->y);
+		length_ += dist;
+	}
+	else if (i == 0)
+	{
+		length_ = 0;
+	}
+
+	v->s = length_;
+
+	return &vertex_[i];
+}
+
+TrajVertex* PolyLineBase::UpdateVertex(int i, double x, double y, double z, double h)
+{
+	TrajVertex* v = &vertex_[i];
+
+	v->h = h;
+
+	UpdateVertex(i, x, y, z);
+
+	return &vertex_[i];
+}
+
+int PolyLineBase::Evaluate(double s, TrajVertex& pos, double cornerRadius, int startAtIndex)
+{
+	double s_local = 0;
+	int i = startAtIndex;
+
+	if (GetNumberOfVertices() < 1)
+	{
+		return -1;
+	}
+
+	if (s > GetVertex(-1)->s)
+	{
+		// end of trajectory
+		s = length_;
+		s_local = 0;
+		i = GetNumberOfVertices() - 1;
+	}
+	else
+	{
+		for (; i < GetNumberOfVertices() - 1 && vertex_[i+1].s < s; i++);
+
+		double s0 = vertex_[i].s;
+		s_local = s - s0;
+	}
+
+	EvaluateSegmentByLocalS(i, s_local, cornerRadius, pos);
+	pos.s = s;
+
+	return i;
+}
+
+int PolyLineBase::Evaluate(double s, TrajVertex& pos, double cornerRadius)
+{
+	return Evaluate(s, pos, cornerRadius, 0);
+}
+
+int PolyLineBase::Evaluate(double s, TrajVertex& pos, int startAtIndex)
+{
+	return Evaluate(s, pos, 0.0, startAtIndex);
+}
+
+int PolyLineBase::Evaluate(double s, TrajVertex& pos)
+{
+	return Evaluate(s, pos, 0.0, 0);
+}
+
+int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex)
+{
+	// look along the line segments
+	TrajVertex tmpPos;
+	double sLocal = 0.0;
+	double sLocalMin = 0.0;
+	int iMin = startAtIndex;
+	double distMin = LARGE_NUMBER;
+
+	// Find closest line segment
+	for (size_t i = startAtIndex; i < GetNumberOfVertices() - 1; i++)
+	{
+		ProjectPointOnVector2D(xin, yin, vertex_[i].x, vertex_[i].y, vertex_[i+1].x, vertex_[i+1].y, tmpPos.x, tmpPos.y);
+		double distTmp = PointDistance2D(xin, yin, tmpPos.x, tmpPos.y);
+
+		bool inside = PointInBetweenVectorEndpoints(tmpPos.x, tmpPos.y, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, sLocal);
+		if (!inside)
+		{
+			// Find combined longitudinal and lateral distance to line endpoint 
+			// sLocal represent now (outside line segment) distance to closest line segment end point
+			distTmp = sqrt(distTmp * distTmp + sLocal * sLocal);
+			if (sLocal < 0)
+			{
+				sLocal = 0;
+			}
+			else
+			{
+				sLocal = vertex_[i + 1].s - vertex_[i].s;
+			}
+		}
+		else
+		{
+			// rescale normalized s
+			sLocal *= (vertex_[i + 1].s - vertex_[i].s);
+		}
+		
+		if (distTmp < distMin)
+		{
+			iMin = (int)i;
+			sLocalMin = sLocal;
+			distMin = distTmp;
+		}
+	}
+
+	if (distMin < LARGE_NUMBER)
+	{
+		EvaluateSegmentByLocalS(iMin, sLocalMin, 0.0, pos);
+		index = iMin;
+		return 0;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+int PolyLineBase::FindPointAhead(double s_start, double distance, TrajVertex& pos, int& index, int startAtIndex)
+{
+	index = Evaluate(s_start + distance, pos, startAtIndex);
+
+	return 0;
+}
+
+TrajVertex* PolyLineBase::GetVertex(int index)
+{
+	if (GetNumberOfVertices() < 1)
+	{
+		return nullptr;
+	}
+
+	if (index == -1)
+	{
+		return &vertex_.back();
+	}
+	else
+	{
+		return &vertex_[index];
+	}
+}
+
+void PolyLineBase::Reset()
+{
+	vertex_.clear();
+	vIndex_ = 0;
+}
+
+void PolyLineShape::AddVertex(Position pos, double time, bool calculateHeading)
+{
+	Vertex* v = new Vertex();
+	v->pos_ = pos;
+	vertex_.push_back(v);
+	pline_.AddVertex({ 0, 0, 0, 0, 0, time, 0.0, 0.0, calculateHeading });
+}
+
+int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
 {
 	double s = 0;
-	double s_local = 0;
 	int i = 0;
 
-	if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && p > vertex_.back()->s_ ||
-		ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && p > vertex_.back()->time_)
+	if (pline_.GetNumberOfVertices() < 1)
+	{
+		return -1;
+	}
+
+	if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && p > pline_.GetVertex(-1)->s ||
+		ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && p > pline_.GetVertex(-1)->time)
 	{
 		// end of trajectory
 		s = GetLength();
-		s_local = 0;
 		i = (int)vertex_.size() - 1;
 	}
 	else
 	{
 		for (; i < vertex_.size() - 1 && 
-			(ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && vertex_[i + 1]->s_ < p ||
-			 ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && vertex_[i + 1]->time_ < p); i++);
+			(ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_S && pline_.vertex_[i + 1].s < p ||
+			 ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME && pline_.vertex_[i + 1].time < p); i++);
 
-
-		double s0 = vertex_[i]->s_;
 		if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
 		{
-			double a = (p - vertex_[i]->time_) / (vertex_[i + 1]->time_ - vertex_[i]->time_); // a = interpolation factor
-			s = vertex_[i]->s_ + a * (vertex_[i + 1]->s_ - vertex_[i]->s_);
+			double a = (p - pline_.vertex_[i].time) / (pline_.vertex_[i + 1].time - pline_.vertex_[i].time); // a = interpolation factor
+			s = pline_.vertex_[i].s + a * (pline_.vertex_[i + 1].s - pline_.vertex_[i].s);
 		}
 		else
 		{
 			s = p;
 		}
-		s_local = s - s0;
 	}
 
-	EvaluateSegmentByLocalS(i, s_local, pos);
-	pos.s = s;
+	pline_.Evaluate(s, pos, i);
 
 	return 0;
 }
 
-double Nurbs::CoxDeBoor(double x, int i, int k, const std::vector<double>& t) 
+double NurbsShape::CoxDeBoor(double x, int i, int k, const std::vector<double>& t) 
 {
 	// Inspiration: Nurbs Curve Example @ 
 	// https://nccastaff.bournemouth.ac.uk/jmacey/OldWeb/RobTheBloke/www/opengl_programming.html
@@ -7463,13 +7677,14 @@ double Nurbs::CoxDeBoor(double x, int i, int k, const std::vector<double>& t)
 	return eq1 + eq2;
 }
 
-void Nurbs::calcS2PMap()
+void NurbsShape::CalculatePolyLine()
 {
 	Position tmpRoadPos;
+
 	// Calculate approximate length - to find a reasonable step length
+
 	length_ = 0;
 	double steplen = 1.0; // steplen in meters
-
 	for (size_t i = 0; i < ctrlPoint_.size(); i++)
 	{
 		ctrlPoint_[i].pos_.ReleaseRelation();
@@ -7492,16 +7707,11 @@ void Nurbs::calcS2PMap()
 	// Calculate arc length
 	double newLength = 0.0;
 	double p_steplen = steplen * knot_.back() / length_;
-	Shape::ShapePosition pos, oldpos = { 0, 0, 0, 0 };
-	
-	int nSteps = int(knot_.back() / p_steplen) + 1;
-	if (nSteps > NURBS_MAX_STEPS - 1)
-	{
-		// Increas steplen to fit static (memory aligned) array
-		p_steplen = knot_.back() / (NURBS_MAX_STEPS - 1);
-		nSteps = NURBS_MAX_STEPS - 1;
-	}
+	TrajVertex pos, oldpos = { 0, 0, 0, 0 };
 
+	int nSteps = int(knot_.back() / p_steplen) + 1;
+
+	pline_.Reset();
 	for (int i = 0; i < nSteps; i++)
 	{
 		EvaluateInternal(i * p_steplen, pos);
@@ -7510,89 +7720,96 @@ void Nurbs::calcS2PMap()
 			newLength += PointDistance2D(pos.x, pos.y, oldpos.x, oldpos.y);
 		}
 		pos.s = newLength;
-		
-		s2p_map_[i][0] = pos.s;
-		s2p_map_[i][1] = i * p_steplen;
-		
+		pline_.AddVertex(pos);
+
 		if (i > 0)
 		{
 			pos.h = GetAngleOfVector(pos.x - oldpos.x, pos.y - oldpos.y);
-			s2p_map_[i][2] = pos.h;
+			pline_.vertex_[i].h = pos.h;
 		}
+		pline_.vertex_[i].p = i * p_steplen;
 
 		oldpos = pos;
 
 		// Resolve Z value - from road elevation
 		tmpRoadPos.SetInertiaPos(pos.x, pos.y, pos.h);
 		pos.z = tmpRoadPos.GetZ();
-		s2p_map_[i][3] = pos.z;
+		pline_.vertex_[i].z = pos.z;
 	}
 
-	s2p_map_[0][2] = s2p_map_[1][2]; // copy second derivative to first position - To be improved
+	if (nSteps > 1)
+	{
+		pline_.vertex_[0].h = pline_.vertex_[1].h; // copy second derivative to first position - To be improved
+	}
 
 	length_ = newLength;
-	s2p_len_ = nSteps;
 }
 
-int Nurbs::S2P(double s, double &p, double &h, double &z)
+int NurbsShape::S2P(double s, double &p, double &h, double &z)
 {
 	// start looking from current index
-	int i = s2p_idx_;
+	int i = pline_.vIndex_;
 
-	for (size_t j = 0; j < s2p_len_; j++)
+	for (size_t j = 0; j < pline_.GetNumberOfVertices(); j++)
 	{
-		if (s2p_map_[i][0] <= s && s2p_map_[i + 1][0] > s)
+		if (pline_.vertex_[i].s <= s && pline_.vertex_[i + 1].s > s)
 		{
-			double w = (s - s2p_map_[i][0]) / (s2p_map_[i + 1][0] - s2p_map_[i][0]);
-			p = s2p_map_[i][1] + w * (s2p_map_[i + 1][1] - s2p_map_[i][1]);
-			h = s2p_map_[i][2] + w * GetAngleDifference(s2p_map_[i + 1][2], s2p_map_[i][2]);
-			z = s2p_map_[i][3] + w * (s2p_map_[i + 1][3] - s2p_map_[i][3]);
-			s2p_idx_ = i;
+			double w = (s - pline_.vertex_[i].s) / (pline_.vertex_[i + 1].s - pline_.vertex_[i].s);
+			p = pline_.vertex_[i].p + w * (pline_.vertex_[i + 1].p - pline_.vertex_[i].p);
+			h = pline_.vertex_[i].h + w * GetAngleDifference(pline_.vertex_[i + 1].h, pline_.vertex_[i].h);
+			z = pline_.vertex_[i].z + w * (pline_.vertex_[i + 1].z - pline_.vertex_[i].z);
+			pline_.vIndex_ = i;
 			return 0;
 		}
 		
-		if (++i > s2p_len_ - 1)
+		if (++i > pline_.GetNumberOfVertices() - 1)
 		{
 			// Reached end of buffer, continue from start
 			i = 0;
 		}
 	}
-	p = s2p_map_[s2p_len_][1];
-	h = s2p_map_[s2p_len_][2];
-	z = s2p_map_[s2p_len_][3];
+	
+	// s seems out of range, grab last element
+	p = pline_.GetVertex(-1)->p;
+	h = pline_.GetVertex(-1)->h;
+	z = pline_.GetVertex(-1)->z;
+	
 	return 0;
 }
 
-int Nurbs::P2S(double p, double& s, double& h, double& z)
+int NurbsShape::P2S(double p, double& s, double& h, double& z)
 {
 	// start looking from current index
-	int i = s2p_idx_;
+	int i = pline_.vIndex_;
 
-	for (size_t j = 0; j < s2p_len_; j++)
+	for (size_t j = 0; j < pline_.GetNumberOfVertices(); j++)
 	{
-		if (s2p_map_[i][1] <= p && s2p_map_[i + 1][1] > p)
+		if (pline_.vertex_[i].p <= p && pline_.vertex_[i + 1].p > p)
 		{
-			double w = (p - s2p_map_[i][1]) / (s2p_map_[i + 1][1] - s2p_map_[i][1]);
-			s = s2p_map_[i][0] + w * (s2p_map_[i + 1][0] - s2p_map_[i][0]);
-			h = s2p_map_[i][2] + w * GetAngleDifference(s2p_map_[i + 1][2], s2p_map_[i][2]);
-			z = s2p_map_[i][3] + w * (s2p_map_[i + 1][3] - s2p_map_[i][3]);
-			s2p_idx_ = i;
+			double w = (p - pline_.vertex_[i].p) / (pline_.vertex_[i + 1].p - pline_.vertex_[i].p);
+			s = pline_.vertex_[i].s + w * (pline_.vertex_[i + 1].s - pline_.vertex_[i].s);
+			h = pline_.vertex_[i].h + w * GetAngleDifference(pline_.vertex_[i + 1].h, pline_.vertex_[i].h);
+			z = pline_.vertex_[i].z + w * (pline_.vertex_[i + 1].z - pline_.vertex_[i].z);
+			pline_.vIndex_ = i;
 			return 0;
 		}
 
-		if (++i > s2p_len_ - 1)
+		if (++i > pline_.GetNumberOfVertices() - 1)
 		{
 			// Reached end of buffer, continue from start
 			i = 0;
 		}
 	}
-	s = s2p_map_[s2p_len_][0];
-	h = s2p_map_[s2p_len_][2];
-	z = s2p_map_[s2p_len_][3];
+
+	// p seems out of range, grab last element
+	s = pline_.GetVertex(-1)->s;
+	h = pline_.GetVertex(-1)->h;
+	z = pline_.GetVertex(-1)->z;
+
 	return 0;
 }
 
-int Nurbs::EvaluateInternal(double t, ShapePosition& pos)
+int NurbsShape::EvaluateInternal(double t, TrajVertex& pos)
 {
 	pos.x = pos.y = 0.0;
 
@@ -7624,7 +7841,13 @@ int Nurbs::EvaluateInternal(double t, ShapePosition& pos)
 	return 0;
 }
 
-void Nurbs::AddKnots(std::vector<double> knots)
+void NurbsShape::AddControlPoint(Position pos, double time, double weight, bool calcHeading)
+{
+	ctrlPoint_.push_back(ControlPoint(pos, time, weight, calcHeading));
+	d_.push_back(0);
+}
+
+void NurbsShape::AddKnots(std::vector<double> knots)
 {
 	knot_ = knots;
 
@@ -7634,7 +7857,7 @@ void Nurbs::AddKnots(std::vector<double> knots)
 	}
 }
 
-int Nurbs::Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos)
+int NurbsShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
 {
 	if (order_ < 1 || ctrlPoint_.size() < order_ || GetLength() < SMALL_NUMBER)
 	{
@@ -7674,7 +7897,39 @@ int Nurbs::Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos)
 	return 0;
 }
 
-int Clothoid::Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos)
+ClothoidShape::ClothoidShape(roadmanager::Position pos, double curv, double curvDot, double len, double tStart, double tEnd) : Shape(ShapeType::CLOTHOID)
+{
+	pos_ = pos;
+	spiral_ = new roadmanager::Spiral(0, pos_.GetX(), pos_.GetY(), pos_.GetH(), len, curv, curv + curvDot * len);
+	t_start_ = tStart;
+	t_end_ = tEnd;
+}
+
+void ClothoidShape::CalculatePolyLine()
+{
+	// Create polyline placeholder representation 
+	double stepLen = 1.0;
+	int steps = (int)(spiral_->GetLength() / stepLen);
+	pline_.Reset();
+	TrajVertex v;
+
+	for (size_t i = 0; i < steps + 1; i++)
+	{
+		if (i < steps)
+		{
+			Evaluate((double)i, TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
+		}
+		else
+		{
+			// Add endpoint of spiral
+			Evaluate(spiral_->GetLength(), TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
+		}
+
+		pline_.AddVertex(v);
+	}
+}
+
+int ClothoidShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
 {
 	if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
 	{
@@ -7682,12 +7937,12 @@ int Clothoid::Evaluate(double p, TrajectoryParamType ptype, ShapePosition& pos)
 		{
 			double t = p - t_start_;
 			// Transform time parameter value into a s value
-			p = length_ * (t - t_start_) / (t_end_ - t_start_);
+			p = GetLength() * (t - t_start_) / (t_end_ - t_start_);
 		}
 		else
 		{
 			LOG("Requested time %.2f outside range [%.2f, %.2f]", p, t_start_, t_end_);
-			p = length_;
+			p = GetLength();
 		}
 	}
 
@@ -7709,7 +7964,7 @@ int Position::MoveTrajectoryDS(double ds)
 		return -1;
 	}
 
-	Shape::ShapePosition pos;
+	TrajVertex pos;
 	trajectory_->shape_->Evaluate(s_trajectory_ + ds, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, pos);
 
 	SetInertiaPos(pos.x, pos.y, pos.h);
@@ -7726,7 +7981,7 @@ int Position::SetTrajectoryPosByTime(double time)
 		return -1;
 	}
 
-	Shape::ShapePosition pos;
+	TrajVertex pos;
 	trajectory_->shape_->Evaluate(time, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_TIME, pos);
 
 	SetInertiaPos(pos.x, pos.y, pos.h);
@@ -7743,7 +7998,7 @@ int Position::SetTrajectoryS(double s)
 		return -1;
 	}
 
-	Shape::ShapePosition pos;
+	TrajVertex pos;
 	trajectory_->shape_->Evaluate(s, Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, pos);
 	SetInertiaPos(pos.x, pos.y, pos.z, pos.h, 0.0, 0.0, true);
 
@@ -7997,47 +8252,40 @@ void Trajectory::Freeze()
 {
 	if (shape_->type_ == Shape::ShapeType::POLYLINE)
 	{
-		PolyLine* pline = (PolyLine*)shape_;
+		PolyLineShape* pline = (PolyLineShape*)shape_;
 		
-		pline->length_ = 0;
-
 		for (size_t i = 0; i < pline->vertex_.size(); i++)
 		{
-			pline->vertex_[i]->pos_.ReleaseRelation();
-			if (i > 0)
-			{
-				pline->length_ += PointDistance2D(
-					pline->vertex_[i-1]->pos_.GetX(),
-					pline->vertex_[i-1]->pos_.GetY(),
-					pline->vertex_[i]->pos_.GetX(),
-					pline->vertex_[i]->pos_.GetY());
-				
-				pline->vertex_[i]->s_ = pline->length_;
+			Position* pos = &pline->vertex_[i]->pos_;
+			pos->ReleaseRelation();
 
-				// Calculate heading from last point
-				if (pline->vertex_[i-1]->calc_heading_)
-				{
-					double dx = pline->vertex_[i]->pos_.GetX() - pline->vertex_[i - 1]->pos_.GetX();
-					double dy = pline->vertex_[i]->pos_.GetY() - pline->vertex_[i - 1]->pos_.GetY();
-					pline->vertex_[i-1]->pos_.SetHeading(GetAngleInInterval2PI(atan2(dy, dx)));
-				}
+			if (pline->pline_.vertex_[i].calcHeading)
+			{
+
+				pline->pline_.UpdateVertex((int)i, pos->GetX(), pos->GetY(), pos->GetZ());
+			}
+			else
+			{
+				pline->pline_.UpdateVertex((int)i, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH());
 			}
 		}
 	}
 	else if (shape_->type_ == Shape::ShapeType::CLOTHOID)
 	{
-		Clothoid* clothoid = (Clothoid*)shape_;
+		ClothoidShape* clothoid = (ClothoidShape*)shape_;
 		
 		clothoid->pos_.ReleaseRelation();
 
 		clothoid->spiral_->SetX(clothoid->pos_.GetX());
 		clothoid->spiral_->SetY(clothoid->pos_.GetY());
 		clothoid->spiral_->SetHdg(clothoid->pos_.GetH());
+
+		clothoid->CalculatePolyLine();
 	}
 	else
 	{
-		Nurbs* nurbs = (Nurbs*)shape_;
+		NurbsShape* nurbs = (NurbsShape*)shape_;
 
-		nurbs->calcS2PMap();
+		nurbs->CalculatePolyLine();
 	}
 }

@@ -21,6 +21,7 @@
 #include <osgText/Text>
 #include <osgAnimation/EaseMotion>
 #include <osg/BlendColor>
+#include <osg/ShapeDrawable>
 #include <string>
 
 #include "RubberbandManipulator.hpp"
@@ -29,11 +30,6 @@
 #include "CommonMini.hpp"
 #include "roadgeom.hpp"
 
-#define TRAIL_DOT_FADE_DURATION 3.0  // seconds
-#define TRAIL_DOTS_DT 0.5
-#define TRAIL_MAX_DOTS 50
-#define TRAIL_DOT_LIFE_SPAN (0.5 * TRAIL_MAX_DOTS * TRAIL_DOTS_DT) // Start fade when half of the dots have been launched (seconds)
-
 extern double color_green[3];
 extern double color_gray[3];
 extern double color_dark_gray[3];
@@ -41,6 +37,7 @@ extern double color_red[3];
 extern double color_blue[3];
 extern double color_yellow[3];
 extern double color_white[3];
+extern double color_black[3];
 
 using namespace scenarioengine;
 
@@ -50,16 +47,17 @@ namespace viewer
 	{
 		NODE_MASK_NONE =             (0),
 		NODE_MASK_OBJECT_SENSORS =   (1 << 0),
-		NODE_MASK_TRAILS =           (1 << 1),
-		NODE_MASK_ODR_FEATURES =     (1 << 2),
-		NODE_MASK_OSI_POINTS =       (1 << 3),
-		NODE_MASK_OSI_LINES =        (1 << 4),
-		NODE_MASK_ENV_MODEL =        (1 << 5),
-		NODE_MASK_ENTITY_MODEL =     (1 << 6),
-		NODE_MASK_ENTITY_BB =        (1 << 7),
-		NODE_MASK_INFO =             (1 << 8),
-		NODE_MASK_ROAD_SENSORS =     (1 << 9),
-		NODE_MASK_TRAJECTORY_LINES = (1 << 10),
+		NODE_MASK_TRAIL_LINES =      (1 << 1),
+		NODE_MASK_TRAIL_DOTS =       (1 << 2),
+		NODE_MASK_ODR_FEATURES =     (1 << 3),
+		NODE_MASK_OSI_POINTS =       (1 << 4),
+		NODE_MASK_OSI_LINES =        (1 << 5),
+		NODE_MASK_ENV_MODEL =        (1 << 6),
+		NODE_MASK_ENTITY_MODEL =     (1 << 7),
+		NODE_MASK_ENTITY_BB =        (1 << 8),
+		NODE_MASK_INFO =             (1 << 9),
+		NODE_MASK_ROAD_SENSORS =     (1 << 10),
+		NODE_MASK_TRAJECTORY_LINES = (1 << 11),
 	} NodeMask;
 
 	class PolyLine
@@ -68,11 +66,57 @@ namespace viewer
 		osg::ref_ptr<osg::Vec3Array> pline_vertex_data_;
 		osg::ref_ptr<osg::Vec4Array> color_;
 		osg::ref_ptr<osg::Geometry> pline_geom_;
+		osg::ref_ptr<osg::Geometry> dots_geom_;
+		osg::ref_ptr<osg::ShapeDrawable> dot3D_shape_;
+		osg::ref_ptr<osg::Geode> dot3D_geode_;
+		osg::ref_ptr<osg::Group> dots3D_group_;
 
-		PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width);
-		void Redraw();
-		void Update();
+		/**
+		* Create and visualize a set of connected line segments defined by an array of points.
+		* @param parent osg group which to add the line geometries
+		* @param points Points defining the polyline vertices
+		* @param color Red, green, blue and alpha (transparency) of the line segments and optional vertex dots range [0.0:1.0]
+		* @param widh Width of the polyline
+		* @param dotsize Size of the dots. Set to 0.0 to disable dots. Size unit is meter for 3D dots and pixels for default GL points
+		* @param dots3D If true the dots are represented by 3D shape, otherwise just a OpenGL point
+		*/
+		PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize, bool dots3D);
+
+		/**
+		* Create and visualize a set of connected line segments defined by an array of points. 
+		* Vertex points are represented by GL points with uniform screen size (same size regardless of distance).
+		* @param parent osg group which to add the line geometries
+		* @param points Points defining the polyline vertices
+		* @param color Red, green, blue and alpha (transparency) of the line segments and optional vertex dots range [0.0:1.0]
+		* @param widh Width of the polyline
+		* @param dotsize Size of the dots. Set to 0.0 to disable dots. Size unit is meter for 3D dots and pixel for default GL points
+		*/
+		PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize) :
+			PolyLine(parent, points, color, width, dotsize, false) {}
+
+		/**
+		* Create and visualize a set of connected line segments defined by an array of points. 
+		* Points are not vrepresented by GL points with uniform screen size (same size regardless of distance).
+		* Vertices are not visualized.
+		* @param parent osg group which to add the line geometries
+		* @param points Points defining the polyline vertices
+		* @param color Red, green, blue and alpha (transparency) of the line segments and optional vertex dots range [0.0:1.0]
+		* @param widh Width of the polyline
+		*/
+		PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width) :
+			PolyLine(parent, points, color, width, 0.0, false) {}
+
 		void SetPoints(osg::ref_ptr<osg::Vec3Array> points);
+		void AddPoint(osg::Vec3 point);
+		void Update();
+		void Redraw();
+		void SetNodeMaskLines(int nodemask);
+		void SetNodeMaskDots(int nodemask);
+	private:
+		bool dots3D_;
+		void Add3DDot(osg::Vec3 pos);
+		osg::ref_ptr<osg::DrawArrays> pline_array_;
+		osg::ref_ptr<osg::DrawArrays> dots_array_;
 	};
 
 	class SensorViewFrustum
@@ -88,76 +132,6 @@ namespace viewer
 		void Update();
 	};
 
-	class AlphaFadingCallback : public osg::StateAttributeCallback
-	{
-	public:
-		AlphaFadingCallback(osgViewer::Viewer *viewer, osg::Vec4 color)
-		{
-			_motion = new osgAnimation::InCubicMotion(0.0f, TRAIL_DOT_FADE_DURATION);
-			color_ = color;
-			viewer_ = viewer;
-			Reset();
-		}
-		virtual void operator()(osg::StateAttribute*, osg::NodeVisitor*);
-		void Reset() 
-		{ 
-			born_time_stamp_ = viewer_->elapsedTime();
-			time_stamp_ = born_time_stamp_;
-			_motion->reset(); 
-		}
-
-	protected:
-		osg::ref_ptr<osgAnimation::InCubicMotion> _motion;
-
-	private:
-		osg::Vec4 color_;
-		double time_stamp_;
-		double born_time_stamp_;
-		osgViewer::Viewer *viewer_;
-	};
-
-	class TrailDot
-	{
-	public:
-		osg::ref_ptr<osg::PositionAttitudeTransform> dot_;
-		osg::ref_ptr<osg::Material> material_;
-
-		TrailDot(double x, double y, double z, double heading,
-			osgViewer::Viewer *viewer, osg::Group *parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color);
-		void Reset(double x, double y, double z, double heading);
-
-	private:
-		osg::ref_ptr<AlphaFadingCallback> fade_callback_;
-	};
-
-	class Trail
-	{
-	public:
-		TrailDot* dot_[TRAIL_MAX_DOTS];
-		int n_dots_;
-		int current_;
-		osg::Group *parent_;
-		osg::Node *dot_node_;
-		void AddDot(double x, double y, double z, double heading);
-
-		Trail(osg::Group *parent, osgViewer::Viewer *viewer, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 color) :
-			parent_(parent), 
-			viewer_(viewer),
-			n_dots_(0), 
-			current_(0),
-			dot_node_(dot_node)
-		{
-			color_[0] = color[0];
-			color_[1] = color[1];
-			color_[2] = color[2];
-		}
-		~Trail();
-
-	private:
-		osg::Vec4 color_;
-		osgViewer::Viewer *viewer_;
-	};
-
 	class Trajectory
 	{
 	public:
@@ -167,9 +141,9 @@ namespace viewer
 			double y;
 			double z;
 			double h;
-		} Vertex;
+		} TrajVertex;
 
-		std::vector<Vertex> vertices_;
+		std::vector<TrajVertex> vertices_;
 		osg::Group* parent_;
 		osg::Node* node_;
 		roadmanager::Trajectory* activeRMTrajectory_;
@@ -231,7 +205,7 @@ namespace viewer
 		osg::ref_ptr<osg::StateSet> state_set_;
 
 		EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> 
-			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
+			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color, std::string name);
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double hRoad, double pRoad, double hRelative, double r);
 		void SetRotation(double h, double p, double r);
@@ -239,7 +213,7 @@ namespace viewer
 		void SetTransparency(double factor);
 
 
-		Trail* trail_;
+		PolyLine* trail_;
 		osgViewer::Viewer* viewer_;
 	};
 
@@ -257,7 +231,7 @@ namespace viewer
 		virtual int GetType() { return entity_type_; }
 
 		CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group>
-			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec3 trail_color, std::string name);
+			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color, std::string name);
 		~CarModel();
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName);
 		void UpdateWheels(double wheel_angle, double wheel_rotation);
@@ -322,8 +296,7 @@ namespace viewer
 
 		// Road debug visualization
 		osg::ref_ptr<osg::Group> odrLines_;
-		osg::ref_ptr<osg::Group> osiLines_;
-		osg::ref_ptr<osg::Group> osiPoints_;
+		osg::ref_ptr<osg::Group> osiFeatures_;
 		osg::ref_ptr<osg::Group> trajectoryLines_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> envTx_;
 		osg::ref_ptr<osg::Node> environment_;
@@ -352,7 +325,7 @@ namespace viewer
 		void SetCameraMode(int mode);
 		void SetVehicleInFocus(int idx);
 		int GetEntityInFocus() { return currentCarInFocus_; }
-		EntityModel* AddEntityModel(std::string modelFilepath, osg::Vec3 trail_color, EntityModel::EntityType type, 
+		EntityModel* AddEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type, 
 			bool road_sensor, std::string name, OSCBoundingBox *boundingBox);
 		void RemoveCar(std::string name);
 		int LoadShadowfile(std::string vehicleModelFilename);
@@ -386,8 +359,8 @@ namespace viewer
 		void SetWindowTitleFromArgs(std::vector<std::string> &arg);
 		void SetWindowTitleFromArgs(int argc, char* argv[]);
 		void RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data);
-		void AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width);
-		void AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width);
+		PolyLine* AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize=0);
+		PolyLine* AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize=0);
 
 	private:
 

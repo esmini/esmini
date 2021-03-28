@@ -633,7 +633,7 @@ roadmanager::Trajectory* ScenarioReader::parseTrajectory(pugi::xml_node node)
 			std::string shapeType = shapeNode.name();
 			if (shapeType == "Polyline")
 			{
-				roadmanager::PolyLine* pline = new roadmanager::PolyLine();
+				roadmanager::PolyLineShape* pline = new roadmanager::PolyLineShape();
 				for (pugi::xml_node vertexNode = shapeNode.first_child(); vertexNode; vertexNode = vertexNode.next_sibling())
 				{
 					pugi::xml_node posNode = vertexNode.child("Position");
@@ -661,7 +661,7 @@ roadmanager::Trajectory* ScenarioReader::parseTrajectory(pugi::xml_node node)
 				LOG("Adding clothoid(x=%.2f y=%.2f h=%.2f curv=%.2f curvDot=%.2f len=%.2f startTime=%.2f stopTime=%.2f",
 					pos->GetRMPos()->GetX(), pos->GetRMPos()->GetY(), pos->GetRMPos()->GetH(), curvature, curvatureDot, length, startTime, stopTime);
 
-				roadmanager::Clothoid* clothoid = new roadmanager::Clothoid(*pos->GetRMPos(), curvature, curvatureDot, length, startTime, stopTime);
+				roadmanager::ClothoidShape* clothoid = new roadmanager::ClothoidShape(*pos->GetRMPos(), curvature, curvatureDot, length, startTime, stopTime);
 				
 				shape = clothoid;
 			}
@@ -669,7 +669,7 @@ roadmanager::Trajectory* ScenarioReader::parseTrajectory(pugi::xml_node node)
 			{
 				int order = strtoi(parameters.ReadAttribute(shapeNode, "order"));
 				
-				roadmanager::Nurbs* nurbs = new roadmanager::Nurbs(order);
+				roadmanager::NurbsShape* nurbs = new roadmanager::NurbsShape(order);
 				std::vector<double> knots;
 				
 				// Parse control points and knots

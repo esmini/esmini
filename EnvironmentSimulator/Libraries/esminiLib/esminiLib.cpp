@@ -222,11 +222,11 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 		}
 	}
 
-	double s_out, x, y, z;
+	double x, y, z;
 	int index_out;
 
-	if (ghost->trail_.FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(), x, y,
-		obj->trail_follow_s_, obj->trail_follow_index_, obj->trail_follow_index_) == 0)
+	if (ghost->trail_.FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(), obj->trail_closest_pos_, 
+		obj->trail_follow_index_, obj->trail_follow_index_) == 0)
 	{
 		z = obj->pos_.GetZ();
 	}
@@ -238,11 +238,11 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 		z = obj->pos_.GetZ();
 	}
 
-	ObjectTrailState state;
-	state.h_ = (float)obj->pos_.GetH();  // Set default trail heading aligned with road - in case trail is less than two points (no heading)
-	ghost->trail_.FindPointAhead(obj->trail_follow_index_, obj->trail_follow_s_, lookahead_distance, state, index_out, s_out);
+	roadmanager::TrajVertex trailPos;
+	trailPos.h = (float)obj->pos_.GetH();  // Set default trail heading aligned with road - in case trail is less than two points (no heading)
+	ghost->trail_.FindPointAhead(obj->trail_closest_pos_.s, lookahead_distance, trailPos, index_out, obj->trail_follow_index_);
 
-	roadmanager::Position pos(state.x_, state.y_, 0, 0, 0, 0);
+	roadmanager::Position pos(trailPos.x, trailPos.y, 0, 0, 0, 0);
 	obj->pos_.CalcProbeTarget(&pos, &s_data);
 
 	// Copy data
@@ -255,20 +255,20 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	r_data->angle = (float)s_data.relative_h;
 	r_data->curvature = (float)s_data.road_lane_info.curvature;
 	r_data->road_heading = (float)s_data.road_lane_info.heading;
-	r_data->trail_heading = (float)state.h_;
+	r_data->trail_heading = (float)trailPos.h;
 	r_data->road_pitch = (float)s_data.road_lane_info.pitch;
 	r_data->road_roll = (float)s_data.road_lane_info.roll;
 	r_data->speed_limit = (float)s_data.road_lane_info.speed_limit;
 
-	*speed_ghost = (float)state.speed_;
+	*speed_ghost = (float)trailPos.speed;
 
 
 	// Update object sensor position for visualization
 	if (obj->sensor_pos_)
 	{
-		obj->sensor_pos_[0] = state.x_;
-		obj->sensor_pos_[1] = state.y_;
-		obj->sensor_pos_[2] = state.z_;
+		obj->sensor_pos_[0] = trailPos.x;
+		obj->sensor_pos_[1] = trailPos.y;
+		obj->sensor_pos_[2] = trailPos.z;
 	}
 
 	return 0;

@@ -17,7 +17,6 @@
 #include <vector>
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
-#include "Trail.hpp"
 #include "OSCBoundingBox.hpp"
 
 
@@ -69,9 +68,10 @@ namespace scenarioengine
 		int id_;
 
 		// Ghost following stuff
-		int trail_follow_index_;
-		double trail_follow_s_;
-		double trail_closest_pos_[3];
+		int trail_follow_index_; // Index of closest segment
+		int ghost_trail_s_;  // closest point on ghost trail
+		roadmanager::TrajVertex trail_closest_pos_;
+
 		double sensor_pos_[3];
 		Object* ghost_;
 
@@ -82,7 +82,7 @@ namespace scenarioengine
 		roadmanager::Route* route_;
 		std::string model_filepath_;
 		int model_id_;
-		ObjectTrail trail_;
+		roadmanager::PolyLineBase trail_;
 		double odometer_;
 		OSCBoundingBox boundingbox_;
 		double end_of_road_timestamp_;
@@ -105,15 +105,11 @@ namespace scenarioengine
 			double h_rate;
 		} state_old;
 
-		Object(Type type) : type_(type), id_(0), trail_follow_index_(0), speed_(0), wheel_angle_(0), wheel_rot_(0),
-			route_(0), model_filepath_(""), trail_follow_s_(0), odometer_(0), end_of_road_timestamp_(0.0),
+		Object(Type type) : type_(type), id_(0), speed_(0), wheel_angle_(0), wheel_rot_(0),
+			route_(0), model_filepath_(""), ghost_trail_s_(0), trail_follow_index_(0), odometer_(0), end_of_road_timestamp_(0.0),
 			off_road_timestamp_(0.0), stand_still_timestamp_(0), dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0),
 			visibilityMask_(0xFF), isGhost_(false)
 		{
-			trail_closest_pos_[0] = 0.0;
-			trail_closest_pos_[1] = 0.0;
-			trail_closest_pos_[2] = 0.0;
-
 			sensor_pos_[0] = 0;
 			sensor_pos_[1] = 0;
 			sensor_pos_[2] = 0;
@@ -124,7 +120,10 @@ namespace scenarioengine
 			state_old.vel_y = 0;
 			state_old.h = 0;
 			state_old.h_rate = 0;
+
+			trail_closest_pos_ = { 0, 0, 0, 0, 0, 0, false };
 		}
+		~Object() {}
 		void SetEndOfRoad(bool state, double time = 0.0);
 		bool IsEndOfRoad() { return end_of_road_timestamp_ > SMALL_NUMBER; }
 		double GetEndOfRoadTimestamp() { return end_of_road_timestamp_; }
