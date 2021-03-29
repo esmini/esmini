@@ -360,7 +360,7 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState*> objectStat
 
 int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectState)
 {
-
+	obj_osi_internal.gt->clear_moving_object();
 	obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)objectState[0]->state_.info.timeStamp);
 	obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)(
 		(objectState[0]->state_.info.timeStamp - (int64_t)objectState[0]->state_.info.timeStamp) * 1e9)
@@ -371,7 +371,6 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectSta
 		if(objectState[i]->state_.info.obj_type==static_cast<int>(Object::Type::VEHICLE) ||
 		objectState[i]->state_.info.obj_type==static_cast<int>(Object::Type::PEDESTRIAN))
 		{
-			obj_osi_internal.gt->clear_moving_object();
 			UpdateOSIMovingObject(objectState[i]);
 		}
 		else if(objectState[i]->state_.info.obj_type==static_cast<int>(Object::Type::MISC_OBJECT))
