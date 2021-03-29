@@ -282,6 +282,7 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 	{
 		UpdateOSIStaticGroundTruth(objectState);
 	}
+	obj_osi_internal.gt->clear_moving_object();
 	UpdateOSIDynamicGroundTruth(objectState);
 
 	if (GetSocket() || IsFileOpen())
@@ -360,7 +361,6 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState*> objectStat
 
 int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectState)
 {
-	obj_osi_internal.gt->clear_moving_object();
 	obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)objectState[0]->state_.info.timeStamp);
 	obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)(
 		(objectState[0]->state_.info.timeStamp - (int64_t)objectState[0]->state_.info.timeStamp) * 1e9)
