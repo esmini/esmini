@@ -100,6 +100,37 @@ protected:
 	osg::ref_ptr<osg::Group> _node;
 };
 
+Line::Line(double x0, double y0, double z0, double x1, double y1, double z1, double r, double g, double b)
+{
+	line_vertex_data_ = new osg::Vec3Array;
+	line_vertex_data_->push_back(osg::Vec3d(x0, y0, z0));
+	line_vertex_data_->push_back(osg::Vec3d(x1, y1, z1));
+
+	osg::ref_ptr<osg::Group> group = new osg::Group;
+	line_ = new osg::Geometry();
+
+	line_->setVertexArray(line_vertex_data_.get());
+	line_->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 2));
+
+	line_->getOrCreateStateSet()->setAttributeAndModes(new osg::LineWidth(2), osg::StateAttribute::ON);
+	line_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+	osg::ref_ptr<osg::Vec4Array> color_ = new osg::Vec4Array;
+	color_->push_back(osg::Vec4(r, g, b, 1.0));
+	line_->setColorArray(color_.get());
+	line_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+}
+
+void Line::SetPoints(double x0, double y0, double z0, double x1, double y1, double z1)
+{
+	line_vertex_data_->clear();
+	line_vertex_data_->push_back(osg::Vec3(x0, y0, z0));
+	line_vertex_data_->push_back(osg::Vec3(x1, y1, z1));
+	line_->dirtyGLObjects();
+	line_->dirtyBound();
+	line_vertex_data_->dirty();
+}
+
 PolyLine::PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width)
 {
 	color_ = new osg::Vec4Array;
@@ -118,35 +149,6 @@ PolyLine::PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg:
 	parent->addChild(pline_geom_);
 }
 
-void PolyLine::Redraw()
-{
-	pline_geom_->dirtyGLObjects();
-	pline_geom_->dirtyBound();
-	pline_vertex_data_->dirty();
-}
-
-void PolyLine::Update()
-{
-	if (pline_geom_->getNumPrimitiveSets() == 0)
-	{
-		pline_geom_->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, pline_vertex_data_->size()));
-	}
-	else
-	{
-		// Replace existing points
-		pline_geom_->setPrimitiveSet(0, new osg::DrawArrays(GL_LINE_STRIP, 0, pline_vertex_data_->size()));
-	}
-
-	Redraw();
-}
-
-void PolyLine::SetPoints(osg::ref_ptr<osg::Vec3Array> points)
-{
-	pline_vertex_data_->clear();
-	pline_vertex_data_ = points;
-	Redraw();
-}
-
 SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 {
 	sensor_ = sensor;
@@ -163,11 +165,9 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	line_group_ = new osg::Group;
 	for (size_t i = 0; i < sensor_->maxObj_; i++)
 	{
-		osg::ref_ptr<osg::Vec3Array> varray = new osg::Vec3Array;
-		varray->push_back(osg::Vec3(0, 0, 0));
-		varray->push_back(osg::Vec3(1, 0, 0));
-		PolyLine* pline = new PolyLine(line_group_, varray, osg::Vec4(0.8, 0.8, 0.8, 1.0), 2.0);
-		plines_.push_back(pline);
+		Line *line = new Line(0, 0, 0, 1, 0, 0, 0.8, 0.8, 0.8);
+		line_group_->addChild(line->line_);
+		lines_.push_back(line);
 	}
 
 	txNode_->addChild(line_group_);
@@ -300,11 +300,11 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 
 SensorViewFrustum::~SensorViewFrustum()
 {
-	for (size_t i = 0; i < plines_.size(); i++)
+	for (size_t i = 0; i < lines_.size(); i++)
 	{
-		delete plines_[i];
+		delete lines_[i];
 	}
-	plines_.clear();
+	lines_.clear();
 }
 
 void SensorViewFrustum::Update()
@@ -312,21 +312,13 @@ void SensorViewFrustum::Update()
 	// Visualize hits by a "line of sight"
 	for (size_t i = 0; i < sensor_->nObj_; i++)
 	{
-		(*plines_[i]->pline_vertex_data_)[1][0] = sensor_->hitList_[i].x_;
-		(*plines_[i]->pline_vertex_data_)[1][1] = sensor_->hitList_[i].y_;
-		(*plines_[i]->pline_vertex_data_)[1][2] = sensor_->hitList_[i].z_;
-
-		plines_[i]->Redraw();
+		lines_[i]->SetPoints(0, 0, 0, sensor_->hitList_[i].x_, sensor_->hitList_[i].y_, sensor_->hitList_[i].z_);
 	}
 
 	// Reset additional lines possibly previously in use
 	for (size_t i = sensor_->nObj_; i < sensor_->maxObj_; i++)
 	{
-		(*plines_[i]->pline_vertex_data_)[1][0] = 0;
-		(*plines_[i]->pline_vertex_data_)[1][1] = 0;
-		(*plines_[i]->pline_vertex_data_)[1][2] = 0;
-
-		plines_[i]->Redraw();
+		lines_[i]->SetPoints(0, 0, 0, 0, 0, 0);
 	}
 }
 
@@ -511,7 +503,18 @@ Trajectory::Trajectory(osg::Group* parent, osgViewer::Viewer* viewer) :
 	parent_(parent), viewer_(viewer), activeRMTrajectory_(0)
 {
 	// osg references for drawing lines on the lane center using osi points
-	pline_ = new PolyLine(parent_, new osg::Vec3Array, osg::Vec4(0.9, 0.7, 0.3, 1.0), 3.0);
+	points_ = new osg::Vec3Array;
+	line_geom_ = new osg::Geometry;
+	color_ = new osg::Vec4Array;
+	color_->push_back(osg::Vec4(0.9, 0.7, 0.3, 1.0));
+
+	line_geom_->setVertexArray(points_.get());
+	line_geom_->setColorArray(color_.get());
+	line_geom_->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+	line_geom_->getOrCreateStateSet()->setAttributeAndModes(new osg::LineWidth(3.0), osg::StateAttribute::ON);
+	line_geom_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	line_geom_->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, 0));
+	parent_->addChild(line_geom_);
 }
 
 void Trajectory::SetActiveRMTrajectory(roadmanager::Trajectory* RMTrajectory)
@@ -522,7 +525,8 @@ void Trajectory::SetActiveRMTrajectory(roadmanager::Trajectory* RMTrajectory)
 	double steplen = 1.0;
 
 	vertices_.clear();
-	pline_->pline_vertex_data_->clear();
+	points_->clear();
+
 	for (double s = 0; s < RMTrajectory->GetLength() - SMALL_NUMBER; s += steplen)
 	{
 		roadmanager::Shape::ShapePosition pos;
@@ -531,20 +535,29 @@ void Trajectory::SetActiveRMTrajectory(roadmanager::Trajectory* RMTrajectory)
 		RMTrajectory->shape_->Evaluate(s, roadmanager::Shape::TrajectoryParamType::TRAJ_PARAM_TYPE_S, pos);
 
 		vertices_.push_back({ pos.x, pos.y, pos.z, pos.h });
-		pline_->pline_vertex_data_->push_back(osg::Vec3(pos.x, pos.y, pos.z + z_offset));
+		points_->push_back(osg::Vec3(pos.x, pos.y, pos.z + z_offset));
 	}
 
-	pline_->Update();
+	if (line_geom_->getNumPrimitiveSets() == 0)
+	{
+		line_geom_->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, points_->size()));
+	}
+	else
+	{
+		// Replace existing points
+		line_geom_->setPrimitiveSet(0, new osg::DrawArrays(GL_LINE_STRIP, 0, points_->size()));
+	}
+
 	activeRMTrajectory_ = RMTrajectory;
 }
 
 void Trajectory::Disable()
 {
 	activeRMTrajectory_ = 0;
-	pline_->pline_vertex_data_->clear();
+	points_->clear();
 	vertices_.clear();
 
-	pline_->Update();
+	line_geom_->setPrimitiveSet(0, new osg::DrawArrays(GL_LINE_STRIP, 0, 0));
 }
 
 osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char *wheelName)
@@ -1563,9 +1576,17 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 					{
 						continue;
 					}
+					// osg references for osi points on the lane center
+					osg::ref_ptr<osg::Geometry> osi_geom = new osg::Geometry;
+					osg::ref_ptr<osg::Vec3Array> osi_points = new osg::Vec3Array;
+					osg::ref_ptr<osg::Vec4Array> osi_color = new osg::Vec4Array;
+					osg::ref_ptr<osg::Point> osi_point = new osg::Point();
 
 					// osg references for drawing lines on the lane center using osi points
-					osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
+					osg::ref_ptr<osg::Geometry> line_geom = new osg::Geometry;
+					osg::ref_ptr<osg::Vec3Array> points = new osg::Vec3Array;
+					osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+					osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 
 					if (k == 0)
 					{
@@ -1584,21 +1605,44 @@ bool Viewer::CreateRoadLines(roadmanager::OpenDrive* od)
 					for (int m = 0; m < curr_osi->GetPoints().size(); m++)
 					{
 						roadmanager::OSIPoints::OSIPointStruct osi_point_s = curr_osi->GetPoint(m);
-						vertices->push_back(osg::Vec3(osi_point_s.x, osi_point_s.y, osi_point_s.z + z_offset));
+						point.set(osi_point_s.x, osi_point_s.y, osi_point_s.z + z_offset);
+						osi_points->push_back(point);
+						osi_color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
 					}
-	
+					osi_point->setSize(6.0f);
+					osi_geom->setVertexArray(osi_points.get());
+					osi_geom->setColorArray(osi_color.get());
+					osi_geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+					osi_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_points->size()));
+					osi_geom->getOrCreateStateSet()->setAttributeAndModes(osi_point, osg::StateAttribute::ON);
+					osi_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+					
+					osiPoints_->addChild(osi_geom);
+
 					if (lane->GetId() == 0)
 					{
-						AddPolyLine(odrLines_, vertices, osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0), 4.0);
+						lineWidth->setWidth(4.0f);
+						color->push_back(osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0));
 					}
 					else if (k==0)
 					{
-						AddPolyLine(odrLines_, vertices, osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0), 1.5);
+						lineWidth->setWidth(1.5f);
+						color->push_back(osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0));
 					}
 					else 
 					{
-						AddPolyLine(odrLines_, vertices, osg::Vec4(color_gray[0], color_gray[1], color_gray[2], 1.0), 1.5);
+						lineWidth->setWidth(1.5f);
+						color->push_back(osg::Vec4(color_gray[0], color_gray[1], color_gray[2], 1.0));
 					}
+
+					line_geom->setVertexArray(osi_points.get());
+					line_geom->setColorArray(color.get());
+					line_geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+					line_geom->addPrimitiveSet(new osg::DrawArrays(GL_LINE_STRIP, 0, osi_points->size()));
+					line_geom->getOrCreateStateSet()->setAttributeAndModes(lineWidth, osg::StateAttribute::ON);
+					line_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+					odrLines_->addChild(line_geom);
 				}
 			}
 		}
