@@ -28,12 +28,13 @@ namespace scenarioengine
 	class Object
 	{
 	public:
+
 		typedef enum
 		{
-			TYPE_NONE,
-			VEHICLE,
-			PEDESTRIAN,
-			MISC_OBJECT
+			TYPE_NONE   = 0,
+			VEHICLE	    = 1,
+			PEDESTRIAN  = 2,
+			MISC_OBJECT = 3
 		} Type;
 
 		typedef enum {
@@ -63,7 +64,7 @@ namespace scenarioengine
 		};
 
 		Type type_;
-		int category_holder_; // placehoder for specific object category in vehicle, pedestrian or misobject
+		int category_; // specific object category in vehicle, pedestrian or misobject
 		std::string name_;
 		int id_;
 
@@ -225,47 +226,44 @@ namespace scenarioengine
 	public:
 		typedef enum
 		{
-			CAR,
-			VAN,
-			TRUCK,
-			SEMITRAILER,
-			BUS,
-			MOTORBIKE,
-			BICYCLE,
-			TRAIN,
-			TRAM
+			CAR = 0,
+			VAN = 1,
+			TRUCK = 2,
+			SEMITRAILER = 3,
+			BUS = 4,
+			MOTORBIKE = 5,
+			BICYCLE = 6,
+			TRAIN = 7,
+			TRAM = 8
 		} Category;
 
-		Category category_;
-
-
-		Vehicle() : Object(Object::Type::VEHICLE), category_(Category::CAR) {
-			category_holder_ = static_cast<int>(category_);
+		Vehicle() : Object(Object::Type::VEHICLE) 
+		{
+			category_ = static_cast<int>(Category::CAR);
 		}
 
 		void SetCategory(std::string category)
 		{
 			if (category == "car")
 			{
-				category_ = Vehicle::Category::CAR;
+				category_ = static_cast<int>(Vehicle::Category::CAR);
 			}
 			else if (category == "truck")
 			{
-				category_ = Vehicle::Category::TRUCK;
+				category_ = static_cast<int>(Vehicle::Category::TRUCK);
 			}
 			else if (category == "bus")
 			{
-				category_ = Vehicle::Category::BUS;
+				category_ = static_cast<int>(Vehicle::Category::BUS);
 			}
 			else if (category == "bicycle")
 			{
-				category_ = Vehicle::Category::BICYCLE;
+				category_ = static_cast<int>(Vehicle::Category::BICYCLE);
 			}
 			else
 			{
 				LOG("Vehicle category %s not supported yet", category.c_str());
 			}
-			category_holder_ = static_cast<int>(category_);
 
 			return;
 		}
@@ -276,43 +274,41 @@ namespace scenarioengine
 	public:
 		typedef enum
 		{
-			PEDESTRIAN,
-			WHEELCHAIR,
-			ANIMAL
+			PEDESTRIAN = 0,
+			WHEELCHAIR = 1,
+			ANIMAL = 2
 		} Category;
 
 		std::string model_; /**< Definition of the model of the pedestrian. */
 		double mass_; /**< The mass of a pedestrian in kg. */
 		std::string name_;
-		Category category_; /**< Category type of pedestrian. */
 		
 		// name, boundingBox and properties are included in base Object class.
 
 		Pedestrian() : Object(Object::Type::PEDESTRIAN), 
-		model_(""), mass_(0.0), name_(""), 
-		category_(Category::PEDESTRIAN) {
-			category_holder_ = static_cast<int>(category_);
+		model_(""), mass_(0.0), name_("")
+		{
+			category_ = static_cast<int>(Category::PEDESTRIAN);
 		}
 
 		void SetCategory(std::string category)
 		{
 			if (category == "pedestrian")
 			{
-				category_ = Pedestrian::Category::PEDESTRIAN;
+				category_ = static_cast<int>(Pedestrian::Category::PEDESTRIAN);
 			}
 			else if (category == "wheelchair")
 			{
-				category_ = Pedestrian::Category::WHEELCHAIR;
+				category_ = static_cast<int>(Pedestrian::Category::WHEELCHAIR);
 			}
 			else if (category == "animal")
 			{
-				category_ = Pedestrian::Category::ANIMAL;
+				category_ = static_cast<int>(Pedestrian::Category::ANIMAL);
 			}
 			else
 			{
 				LOG("Pedestrian category %s not supported yet", category.c_str());
 			}
-			category_holder_ = static_cast<int>(category_);
 
 			return;
 		}
@@ -324,110 +320,108 @@ namespace scenarioengine
 	public:
 		typedef enum
 		{
-			NONE,
-			OBSTACLE,
-			POLE,
-			TREE,
-			VEGETATION,
-			BARRIER,
-			BUILDING,
-			PARKINGSPACE,
-			PATCH,
-			RAILING,
-			TRAFFICISLAND,
-			CROSSWALK,
-			STREETLAMP,
-			GANTRY,
-			SOUNDBARRIER,
-			WIND,
-			ROADMARK
+			NONE = 0,
+			OBSTACLE = 1,
+			POLE = 2,
+			TREE = 3,
+			VEGETATION = 4,
+			BARRIER = 5,
+			BUILDING = 6,
+			PARKINGSPACE = 7,
+			PATCH = 8,
+			RAILING = 9,
+			TRAFFICISLAND = 10,
+			CROSSWALK = 11,
+			STREETLAMP = 12,
+			GANTRY = 13,
+			SOUNDBARRIER = 14,
+			WIND = 15,
+			ROADMARK = 16
 		} Category;
 
 		std::string model_; 
 		double mass_;
 		std::string name_; 
-		Category category_; 
 
-		MiscObject() : Object(Object::Type::MISC_OBJECT), model_(""), mass_(0.0), name_(""), 
-		category_(Category::NONE) {
-			category_holder_ = static_cast<int>(category_);
+		MiscObject() : Object(Object::Type::MISC_OBJECT), model_(""), mass_(0.0), name_("")
+		{
+			category_ = static_cast<int>(category_);
 		}
 
 		void SetCategory(std::string category)
 		{
 			if (category == "none")
 			{
-				category_ = MiscObject::Category::NONE;
+				category_ = static_cast<int>(MiscObject::Category::NONE);
 			}
 			else if (category == "obstacle")
 			{
-				category_ = MiscObject::Category::OBSTACLE;
+				category_ = static_cast<int>(MiscObject::Category::OBSTACLE);
 			}
 			else if (category == "pole")
 			{
-				category_ = MiscObject::Category::POLE;
+				category_ = static_cast<int>(MiscObject::Category::POLE);
 			}
 			else if (category == "tree")
 			{
-				category_ = MiscObject::Category::TREE;
+				category_ = static_cast<int>(MiscObject::Category::TREE);
 			}
 			else if (category == "vegetation")
 			{
-				category_ = MiscObject::Category::VEGETATION;
+				category_ = static_cast<int>(MiscObject::Category::VEGETATION);
 			}
 			else if (category == "barrier")
 			{
-				category_ = MiscObject::Category::BARRIER;
+				category_ = static_cast<int>(MiscObject::Category::BARRIER);
 			}
 			else if (category == "building")
 			{
-				category_ = MiscObject::Category::BUILDING;
+				category_ = static_cast<int>(MiscObject::Category::BUILDING);
 			}
 			else if (category == "parkingSpace")
 			{
-				category_ = MiscObject::Category::PARKINGSPACE;
+				category_ = static_cast<int>(MiscObject::Category::PARKINGSPACE);
 			}
 			else if (category == "patch")
 			{
-				category_ = MiscObject::Category::PATCH;
+				category_ = static_cast<int>(MiscObject::Category::PATCH);
 			}
 			else if (category == "railing")
 			{
-				category_ = MiscObject::Category::RAILING;
+				category_ = static_cast<int>(MiscObject::Category::RAILING);
 			}
 			else if (category == "trafficIsland")
 			{
-				category_ = MiscObject::Category::TRAFFICISLAND;
+				category_ = static_cast<int>(MiscObject::Category::TRAFFICISLAND);
 			}
 			else if (category == "crosswalk")
 			{
-				category_ = MiscObject::Category::CROSSWALK;
+				category_ = static_cast<int>(MiscObject::Category::CROSSWALK);
 			}
 			else if (category == "streetLamp")
 			{
-				category_ = MiscObject::Category::STREETLAMP;
+				category_ = static_cast<int>(MiscObject::Category::STREETLAMP);
 			}
 			else if (category == "gantry")
 			{
-				category_ = MiscObject::Category::GANTRY;
+				category_ = static_cast<int>(MiscObject::Category::GANTRY);
 			}
 			else if (category == "soundBarrier")
 			{
-				category_ = MiscObject::Category::SOUNDBARRIER;
+				category_ = static_cast<int>(MiscObject::Category::SOUNDBARRIER);
 			}
 			else if (category == "wind")
 			{
-				category_ = MiscObject::Category::WIND;
+				category_ = static_cast<int>(MiscObject::Category::WIND);
 			}
 			else if (category == "roadMark")
 			{
-				category_ = MiscObject::Category::ROADMARK;
+				category_ = static_cast<int>(MiscObject::Category::ROADMARK);
 			}
 			else
 			{
 				LOG("MiscObject category %s not supported yet", category.c_str());
 			}
-			category_holder_ = static_cast<int>(category_);
 
 			return;
 		}

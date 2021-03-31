@@ -45,6 +45,8 @@ typedef struct
 	float width;
 	float length;
 	float height;
+	int   objectType;		// Main type according to entities.hpp / Object / Type
+	int   objectCategory;   // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
 } SE_ScenarioObjectState;
 
 typedef struct

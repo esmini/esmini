@@ -370,7 +370,7 @@ void ScenarioEngine::step(double deltaSimTime)
 		}
 
 		// Report state to the gateway
-		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_, obj->model_id_,
+		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_, obj->model_id_,
 			obj->GetActivatedControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 	}
 
@@ -689,7 +689,7 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 		}
 
 		// Report updated pos values to the gateway
-		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_holder_, obj->model_id_,
+		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_, obj->model_id_,
 			obj->GetActivatedControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 
 		// store current values for next loop

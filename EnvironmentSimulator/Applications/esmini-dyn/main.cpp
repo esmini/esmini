@@ -35,6 +35,7 @@
 #define DEMONSTRATE_DRIVER_MODEL 0
 #define DEMONSTRATE_OSI 0
 #define DEMONSTRATE_ROADINFO 0
+#define DEMONSTRATE_OBJECT_INFO 0
 #define DEMONSTRATE_THREAD 0
 #define DEMONSTRATE_CALLBACK 0
 #define DEMONSTRATE_ROAD_SIGNS 0
@@ -276,6 +277,16 @@ int main(int argc, char *argv[])
 				}
 			}
 			printf("\n");
+#endif
+
+#if DEMONSTRATE_OBJECT_INFO
+			for (int j = 0; j < SE_GetNumberOfObjects(); j++)
+			{
+				SE_ScenarioObjectState state;
+
+				SE_GetObjectState(j, &state);
+				printf("time %.2f object[%d] type %d category %d pos (%.2f, %.2f) \n", state.timestamp, j, state.objectType, state.objectCategory, state.x, state.y);
+			}
 #endif
 
 #if DEMONSTRATE_DRIVER_MODEL

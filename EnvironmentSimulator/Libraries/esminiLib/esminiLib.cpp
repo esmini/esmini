@@ -129,6 +129,8 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 	state->width = gw_state->info.boundingbox.dimensions_.width_;
 	state->length = gw_state->info.boundingbox.dimensions_.length_;
 	state->height = gw_state->info.boundingbox.dimensions_.height_;
+	state->objectType = gw_state->info.obj_type;
+	state->objectCategory = gw_state->info.obj_category;
 }
 
 static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int lookAheadMode)
@@ -601,7 +603,7 @@ extern "C"
 			{
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
-				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_, 
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_, 
 					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, x, y, z, h, p, r);
 			}
 		}
@@ -617,7 +619,7 @@ extern "C"
 			{
 				// reuse some values
 				Object* obj = player->scenarioEngine->entities.object_[id];
-				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_,
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, x, y, h);
 			}
 		}
@@ -633,7 +635,7 @@ extern "C"
 			{
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
-				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_, 
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_, 
 					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
 			}
 		}
@@ -648,7 +650,7 @@ extern "C"
 			if (id < player->scenarioEngine->entities.object_.size())
 			{
 				Object* obj = player->scenarioEngine->entities.object_[id];
-				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_,
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 					obj->GetActivatedControllerType(), obj->boundingbox_, 0, speed, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 			}
 			else
@@ -668,7 +670,7 @@ extern "C"
 			{
 				// reuse some values
 				Object* obj = player->scenarioEngine->entities.object_[id];
-				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_,
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 					obj->GetActivatedControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_,
 					obj->wheel_rot_, obj->pos_.GetTrackId(), t, obj->pos_.GetS());
 			}
@@ -689,7 +691,7 @@ extern "C"
 			{
 				// reuse some values
 				Object* obj = player->scenarioEngine->entities.object_[id];
-				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_holder_, obj->model_id_,
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 					obj->GetActivatedControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_,
 					obj->wheel_rot_, obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), laneOffset, obj->pos_.GetS());
 			}

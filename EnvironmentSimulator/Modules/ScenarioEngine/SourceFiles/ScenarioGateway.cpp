@@ -34,8 +34,8 @@ ObjectState::ObjectState()
 }
 
 
-ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,
-	OSCBoundingBox boundingbox, double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position* pos)
+ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,	OSCBoundingBox boundingbox, 
+	double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position* pos)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
 
@@ -114,7 +114,7 @@ ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_categor
 
 void ObjectState::Print()
 {
-	LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\tctrl_type: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f\twheel_angle %.2f",
+	LOG("state: \n\tid %d\n\tname %s\n\tmodel_id: %d\n\tctrl_type: %d\n\ttime %.2f\n\tx %.2f\n\ty %.2f\n\th %.2f\n\tspeed %.2f\twheel_angle %.2f type %d category %d",
 		state_.info.id,
 		state_.info.name,
 		state_.info.model_id,
@@ -124,7 +124,9 @@ void ObjectState::Print()
 		state_.pos.GetY(),
 		state_.pos.GetZ(),
 		state_.info.speed,
-		state_.info.wheel_angle
+		state_.info.wheel_angle,
+		state_.info.obj_type,
+		state_.info.obj_category
 	);
 	LOG("state: \n\tbounding box: \ncenter: x: %.2f, y: %.2f, z: %.2f\n\tdimensions: width: %.2f, length: %.2f, height: %.2f",
     state_.info.boundingbox.center_.x_,
