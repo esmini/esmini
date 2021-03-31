@@ -84,6 +84,24 @@ OSCParameterDeclarations::ParameterStruct* Parameters::getParameterEntry(std::st
 	return 0;
 }
 
+int Parameters::GetNumberOfParameters()
+{
+	return (int)parameterDeclarations_.Parameter.size();
+}
+
+const char* Parameters::GetParameterName(int index, int* type)
+{
+	if (index < 0 || index >= parameterDeclarations_.Parameter.size())
+	{
+		LOG_AND_QUIT("index %d out of range [0:%d]", index, parameterDeclarations_.Parameter.size() - 1);
+		return 0;
+	}
+	
+	*type = parameterDeclarations_.Parameter[index].type;
+
+	return parameterDeclarations_.Parameter[index].name.c_str();
+}
+
 int Parameters::setParameterValue(std::string name, const void* value)
 {
 	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);

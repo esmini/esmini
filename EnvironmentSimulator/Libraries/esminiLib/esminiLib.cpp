@@ -458,6 +458,27 @@ extern "C"
 		return returnString.c_str();
 	}
 
+	SE_DLL_API int SE_GetNumberOfParameters()
+	{
+		if (player)
+		{
+			return player->GetNumberOfParameters();
+		}
+
+		return -1;
+	}
+
+	SE_DLL_API const char* SE_GetParameterName(int index, int* type)
+	{
+		if (player)
+		{
+			returnString = player->GetParameterName(index, type);
+			return returnString.c_str();
+		}
+
+		return 0;
+	}
+
 	SE_DLL_API int SE_SetParameter(SE_Parameter parameter)
 	{
 		if (player)

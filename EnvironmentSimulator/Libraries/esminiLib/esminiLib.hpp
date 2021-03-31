@@ -233,6 +233,20 @@ extern "C"
 	SE_DLL_API const char* SE_GetSceneGraphFilename();
 
 	/**
+		Get the number of named parameters within the current scenario
+		@return number of parameters
+	*/
+	SE_DLL_API int SE_GetNumberOfParameters();
+
+	/**
+		Get the name of a named parameter
+		@param index The index of the parameter, range [0:numberOfParameters-1]
+		@param Output parameter type 0=int, 1=double, 2=string (const char*), see OSCParameterDeclarations/ParameterType
+		@return name if found, else 0
+	*/
+	SE_DLL_API const char* SE_GetParameterName(int index, int* type);
+
+	/**
 		Set value of named parameter
 		@param parameter Struct object including name of parameter and pointer to value, see SE_Parameter declaration
 		@return 0 if successful, -1 if not

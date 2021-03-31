@@ -156,6 +156,17 @@ int main(int argc, char *argv[])
 		}
 #endif
 
+#if DEMONSTRATE_PARAMETER 
+		int numberOfParameters = SE_GetNumberOfParameters();
+		int type = 0;
+		printf("Number of parameters: %d\n", numberOfParameters);
+		for (int i = 0; i < numberOfParameters; i++)
+		{
+			const char* parameterName = SE_GetParameterName(i, &type);
+			printf("Parameter[%d]: %s (type %d, %s)\n", i, parameterName, type, type == 0 ? "int" : type == 1 ? "double" : "const char*");
+		}
+#endif
+
 #if DEMONSTRATE_DRIVER_MODEL
 		SE_ScenarioObjectState state;
 		SE_GetObjectState(0, &state);

@@ -48,7 +48,8 @@
 #define OSI_MAX_LATERAL_DEVIATION 0.05
 #define LOG_FILENAME "log.txt"
 
-#define LOG(Format_, ...)  Logger::Inst().Log(__FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
+#define LOG(Format_, ...)  Logger::Inst().Log(false, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
+#define LOG_AND_QUIT(Format_, ...)  Logger::Inst().Log(true, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
 
 // Time functions
 __int64 SE_getSystemTime();
@@ -286,7 +287,7 @@ public:
 	typedef void(*FuncPtr)(const char*);
 
 	static Logger& Inst();
-	void Log(char const* func, char const* file, int line, char const* format, ...);
+	void Log(bool quit, char const* func, char const* file, int line, char const* format, ...);
 	void SetCallback(FuncPtr callback);
 	bool IsCallbackSet();
 	void SetTimePtr(double* timePtr) { time_ = timePtr; }

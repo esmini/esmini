@@ -37,6 +37,8 @@ namespace scenarioengine
 		void addParameterDeclarations(pugi::xml_node xml_node);
 		void RestoreParameterDeclarations();  // To what it was before addParameterDeclarations
 
+		int GetNumberOfParameters();
+		const char* GetParameterName(int index, int *type);
 		int setParameterValue(std::string name, const void* value);
 		int setParameterValue(std::string name, std::string value);
 		int getParameterValue(std::string name, void* value);

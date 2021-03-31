@@ -651,7 +651,7 @@ bool Logger::IsCallbackSet()
 	return callback_ != 0;
 }
 
-void Logger::Log(char const* file, char const* func, int line, char const* format, ...)
+void Logger::Log(bool quit, char const* file, char const* func, int line, char const* format, ...)
 {
 	static char complete_entry[2048];
 	static char message[1024];
@@ -685,6 +685,11 @@ void Logger::Log(char const* file, char const* func, int line, char const* forma
 	}
 
 	va_end(args);
+
+	if (quit)
+	{
+		throw std::runtime_error(complete_entry);
+	}
 }
 
 void Logger::SetCallback(FuncPtr callback)

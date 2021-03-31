@@ -898,6 +898,16 @@ void ScenarioPlayer::UpdateCSV_Log()
 	}
 }
 
+int ScenarioPlayer::GetNumberOfParameters()
+{
+	return scenarioEngine->scenarioReader->parameters.GetNumberOfParameters();
+}
+
+const char* ScenarioPlayer::GetParameterName(int index, int* type)
+{
+	return scenarioEngine->scenarioReader->parameters.GetParameterName(index, type);
+}
+
 int ScenarioPlayer::SetParameterValue(const char* name, const void* value)
 {
 	return scenarioEngine->scenarioReader->parameters.setParameterValue(name, value);
