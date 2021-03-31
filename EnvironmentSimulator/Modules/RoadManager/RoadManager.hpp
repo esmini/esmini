@@ -24,6 +24,10 @@
 
 namespace roadmanager
 {
+	int GetNewGlobalLaneId();
+	int GetNewGlobalLaneBoundaryId();
+
+	
 	class Polynomial
 	{
 	public:
@@ -72,10 +76,16 @@ namespace roadmanager
 			double GetYfromIdx(int i);
 			double GetZfromIdx(int i);
 			int GetNumOfOSIPoints();
+			double GetLength();
 
 		private:
 			std::vector<PointStruct> point_;
 	};
+	/**
+		function that checks if two sets of osi points has the same start/end
+		@return the number of points that are within tolerance (0,1 or 2)
+	*/
+	int CheckOverlapingOSIPoints(OSIPoints* first_set, OSIPoints* second_set, double tolerance);
 
 	class Geometry
 	{
@@ -349,7 +359,7 @@ namespace roadmanager
 		double GetLength() {return length_;}
 		double GetSpace() {return space_;}
 		double GetWidth() {return width_;}
-		OSIPoints GetOSIPoints() {return osi_points_;}
+		OSIPoints* GetOSIPoints() {return &osi_points_;}
 		OSIPoints osi_points_;
 		void SetGlobalId();
 		int GetGlobalId() { return global_id_; }
@@ -573,12 +583,15 @@ namespace roadmanager
 		bool IsType(Lane::LaneType type);
 		bool IsCenter();
 		bool IsDriving();
+		bool IsOSIIntersection() {return osiintersection_;} 
+		void SetOSIIntersection(bool is_osi_intersection) { osiintersection_ = is_osi_intersection;}
 		void Print();
 		OSIPoints osi_points_;
-
+			
 	private:
 		int id_;		// center = 0, left > 0, right < 0
 		int global_id_;  // Unique ID for OSI 
+		bool osiintersection_; // flag to see if the lane is part of an osi-lane section or not
 		LaneType type_;
 		int level_;	// boolean, true = keep lane on level
 		double offset_from_ref_;
@@ -940,6 +953,8 @@ namespace roadmanager
 		int GetJunction() { return junction_; }
 		void AddLink(RoadLink *link) { link_.push_back(link); }
 		void AddRoadType(RoadTypeEntry *type) { type_.push_back(type); }
+		int GetNumberOfRoadTypes() {return (int)type_.size();}
+		RoadTypeEntry *GetRoadType(int idx) {return type_[idx];}
 		RoadLink *GetLink(LinkType type);
 		void AddLine(Line *line);
 		void AddArc(Arc *arc);
@@ -965,6 +980,7 @@ namespace roadmanager
 		int GetNumberOfLanes(double s);
 		int GetNumberOfDrivingLanes(double s);
 		Lane* GetDrivingLaneByIdx(double s, int idx);
+		Lane* GetDrivingLaneById(double s, int idx);
 		int GetNumberOfDrivingLanesSide(double s, int side);  // side = -1 right, 1 left
 
 		/// <summary>Get width of road</summary>
@@ -1063,7 +1079,7 @@ namespace roadmanager
 		Connection *GetConnectionByIdx(int idx) { return connection_[idx]; }
 		int GetConnectingRoadIdFromIncomingRoadId(int incomingRoadId, int index);
 		void Print();
-
+		bool IsOsiIntersection();
 	private:
 		std::vector<Connection*> connection_;
 		int id_;

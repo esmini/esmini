@@ -1371,15 +1371,14 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 						for (int n = 0; n < lane_roadmarktype->GetNumberOfRoadMarkTypeLines(); n++)
 						{
 							roadmanager::LaneRoadMarkTypeLine * lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(n);
-							roadmanager::OSIPoints curr_osi_rm;
-							curr_osi_rm = lane_roadmarktypeline->GetOSIPoints();
+							roadmanager::OSIPoints* curr_osi_rm = lane_roadmarktypeline->GetOSIPoints();
 
 							if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN)
 							{
-								for (int q = 0; q < curr_osi_rm.GetPoints().size(); q+=2)
+								for (int q = 0; q < curr_osi_rm->GetPoints().size(); q+=2)
 								{
-									roadmanager::PointStruct osi_point1 = curr_osi_rm.GetPoint(q);
-									roadmanager::PointStruct osi_point2 = curr_osi_rm.GetPoint(q+1);
+									roadmanager::PointStruct osi_point1 = curr_osi_rm->GetPoint(q);
+									roadmanager::PointStruct osi_point2 = curr_osi_rm->GetPoint(q+1);
 
 									// osg references for road mark osi points
 									osg::ref_ptr<osg::Geometry> osi_rm_geom = new osg::Geometry;
@@ -1443,9 +1442,9 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 								osg::ref_ptr<osg::LineWidth> lineWidth = new osg::LineWidth();
 
 								// Creating points for the given roadmark
-								for (int s = 0; s < curr_osi_rm.GetPoints().size(); s++)
+								for (int s = 0; s < curr_osi_rm->GetPoints().size(); s++)
 								{
-									point.set(curr_osi_rm.GetPoint(s).x, curr_osi_rm.GetPoint(s).y, curr_osi_rm.GetPoint(s).z + z_offset);
+									point.set(curr_osi_rm->GetPoint(s).x, curr_osi_rm->GetPoint(s).y, curr_osi_rm->GetPoint(s).z + z_offset);
 									osi_rm_points->push_back(point);
 									osi_rm_color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
 								}

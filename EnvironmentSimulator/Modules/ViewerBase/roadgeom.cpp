@@ -100,14 +100,14 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 			for (int n = 0; n < lane_roadmarktype->GetNumberOfRoadMarkTypeLines(); n++)
 			{
 				roadmanager::LaneRoadMarkTypeLine* lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(n);
-				roadmanager::OSIPoints curr_osi_rm = lane_roadmarktypeline->GetOSIPoints();
+				roadmanager::OSIPoints* curr_osi_rm = lane_roadmarktypeline->GetOSIPoints();
 
 				if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN)
 				{
-					for (int q = 0; q < curr_osi_rm.GetPoints().size(); q += 2)
+					for (int q = 0; q < curr_osi_rm->GetPoints().size(); q += 2)
 					{
-						roadmanager::PointStruct osi_point0 = curr_osi_rm.GetPoint(q);
-						roadmanager::PointStruct osi_point1 = curr_osi_rm.GetPoint(q + 1);
+						roadmanager::PointStruct osi_point0 = curr_osi_rm->GetPoint(q);
+						roadmanager::PointStruct osi_point1 = curr_osi_rm->GetPoint(q + 1);
 
 						osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(4);
 						osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, 4);
@@ -137,7 +137,8 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 				}
 				else if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID)
 				{
-					std::vector<roadmanager::PointStruct> osi_points = curr_osi_rm.GetPoints();
+					std::vector<roadmanager::PointStruct> osi_points = curr_osi_rm->GetPoints();
+
 					if (osi_points.size() < 2)
 					{
 						// No line - skip

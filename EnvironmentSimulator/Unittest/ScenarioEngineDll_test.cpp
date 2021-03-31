@@ -117,6 +117,138 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids_no_obj) {
 	SE_Close();
 }
 
+TEST(OSIintersections,threeway){
+	
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/simple_3_way_intersection_osi.xosc";  
+	const char * Scenario_file = scenario_file.c_str();
+	SE_Init(Scenario_file, 0, 0, 0, 0);	
+	SE_StepDT(0.001f);		
+	SE_UpdateOSIGroundTruth();  
+	int lanes_found = 0;
+	bool intersection_found = false;
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0; 
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	for (int i=0; i<osi_gt.lane_size();i++)
+	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->type() == osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION)
+		{
+			intersection_found = true;
+			// should not exist a centerline
+			ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->centerline_size(), 0);
+			ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),6);
+			ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->free_lane_boundary_id_size(),3);
+			
+		}
+		else
+		{
+			lanes_found++;
+		}
+	}
+	ASSERT_TRUE(intersection_found);
+	ASSERT_EQ(lanes_found,6);
+	SE_Close();
+}
+
+
+TEST(OSIintersections,fourway){
+	
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/simple_4_way_intersection_osi.xosc";  
+	const char * Scenario_file = scenario_file.c_str();
+	SE_Init(Scenario_file, 0, 0, 0, 0);	
+	SE_StepDT(0.001f);		
+	SE_UpdateOSIGroundTruth();  
+	int lanes_found = 0;
+	bool intersection_found = false;
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0; 
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	for (int i=0; i<osi_gt.lane_size();i++)
+	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->type() == osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION)
+		{
+			intersection_found = true;
+			// should not exist a centerline
+			ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->centerline_size(), 0);
+			ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),12);
+			ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->free_lane_boundary_id_size(),4);
+			
+		}
+		else
+		{
+			lanes_found++;
+		}
+	}
+	ASSERT_TRUE(intersection_found);
+	ASSERT_EQ(lanes_found,8);
+	SE_Close();
+}
+
+TEST(OSIintersections,motorway){
+	
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/simple_motorway_osi_intersection.xosc";  
+	const char * Scenario_file = scenario_file.c_str();
+	SE_Init(Scenario_file, 0, 0, 0, 0);	
+	SE_StepDT(0.001f);		
+	SE_UpdateOSIGroundTruth();  
+	int lanes_found = 0;
+	bool intersection_found = false;
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0; 
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	for (int i=0; i<osi_gt.lane_size();i++)
+	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->type() == osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION)
+		{
+			intersection_found = true;
+		}
+		else
+		{
+			lanes_found++;
+		}
+	}
+	ASSERT_FALSE(intersection_found);
+	ASSERT_EQ(lanes_found,12);
+	SE_Close();
+}
+
+TEST(OSIintersections,multilane){
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/multilane_3way_intersection_osi.xosc";  
+	const char * Scenario_file = scenario_file.c_str();
+	SE_Init(Scenario_file, 0, 0, 0, 0);	
+	SE_StepDT(0.001f);		
+	SE_UpdateOSIGroundTruth();  
+	int lanes_found = 0;
+	bool intersection_found = false;
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0; 
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	for (int i=0; i<osi_gt.lane_size();i++)
+	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->type() == osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION)
+		{
+			intersection_found = true;
+			// should not exist a centerline
+			ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->centerline_size(), 0);
+			ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),18);
+			ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->free_lane_boundary_id_size(),3);
+			
+		}
+		else
+		{
+			lanes_found++;
+		}
+	}
+	ASSERT_TRUE(intersection_found);
+	ASSERT_EQ(lanes_found,18);
+	
+	SE_Close();
+}
+
 TEST(GetOSIRoadLaneTest, lane_no_obj) {
 
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";  

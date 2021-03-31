@@ -83,6 +83,10 @@ public:
 	Fills up the osi message with Lanes
 	*/
 	int UpdateOSIRoadLane(std::vector<ObjectState*> objectState);
+	/**
+	Fills the intersection type of lanes 
+	*/
+	int UpdateOSIIntersection();
 
 	const char* GetOSIGroundTruth(int* size);
 	const char* GetOSIGroundTruthRaw();

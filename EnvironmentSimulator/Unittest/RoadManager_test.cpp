@@ -359,6 +359,54 @@ TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
     ASSERT_EQ(osi_points_second.GetNumOfOSIPoints(), 3);
 }
 
+
+
+class OSIPointsCloseCheck :public ::testing::TestWithParam<std::tuple<float,float,float,float,float,float,float,float,int>> {};
+// eight points (start and end for two lines)
+// l1_p1_x, l1_p1_y, l1_p2_x, l1_p2_y, l2_p1_x, l2_p1_y, l2_p2_x, l2_p2_y, expected amount points same
+TEST_P(OSIPointsCloseCheck, ClosenessChecker) {
+    
+    PointStruct s1;
+    s1.x = std::get<0>(GetParam());
+    s1.y = std::get<1>(GetParam());
+
+    PointStruct s2;
+    s2.x = std::get<2>(GetParam());
+    s2.y = std::get<3>(GetParam());
+
+    PointStruct s3;
+    s3.x = std::get<4>(GetParam());
+    s3.y = std::get<5>(GetParam());
+
+    PointStruct s4;
+    s4.x = std::get<6>(GetParam());
+    s4.y = std::get<7>(GetParam());
+
+    std::vector<PointStruct> vec1;
+    vec1.push_back(s1);
+    vec1.push_back(s2);
+
+    std::vector<PointStruct> vec2;
+    vec2.push_back(s3);
+    vec2.push_back(s4);
+
+    OSIPoints line1 = OSIPoints();
+    line1.Set(vec1);
+    OSIPoints line2 = OSIPoints();
+    line2.Set(vec2);
+
+    int num_intersecting_points = CheckOverlapingOSIPoints(&line1, &line2,0.001);
+    ASSERT_EQ(num_intersecting_points,std::get<8>(GetParam()));
+}
+
+INSTANTIATE_TEST_CASE_P(OSI_Points_check_test,OSIPointsCloseCheck,::testing::Values(
+    std::make_tuple(0,0,1,1,0,0,1,0,1),
+    std::make_tuple(0,0,1,1,0,0,1,1,2),
+    std::make_tuple(0,0,0,1,0,2,1,1,0),
+    std::make_tuple(0,0,0,1,0,2,0,0,1),
+    std::make_tuple(0,0,1,1,1,1,0,0,2)
+)
+);
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
