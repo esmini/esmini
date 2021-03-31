@@ -48,14 +48,13 @@ public class esminiUnityExample : MonoBehaviour
     private GameObject envModel;
     private List<string> objectNames = new List<string>
         {
-            "car1",
-            "car2",
-            "car3",
-            "car4",
-            "car5",
-            "car6",
-            "bus1",
-            "bus2",
+            "car_white",
+            "car_blue",
+            "car_red",
+            "car_yellow",
+            "truck_yellow",
+            "van_red",
+            "bus_blue"
         };
 
     private Vector3 RH2Unity(Vector3 rightHandVector)
@@ -157,7 +156,7 @@ public class esminiUnityExample : MonoBehaviour
             if (cars.Count <= i)
             {
                 // Add scenario controlled objects
-                int model_id = Mathf.Min(state.model_id, objectNames.Count-1);
+                int model_id = state.model_id % objectNames.Count;
                 cars.Add((GameObject)Instantiate(Resources.Load(objectNames[model_id])));
                 Debug.Log("Adding " + objectNames[model_id]);
                 
