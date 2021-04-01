@@ -12,8 +12,6 @@
 
 #include "Parameters.hpp"
 
-#define PARAMETER_PREFIX "$"
-
 using namespace scenarioengine;
 
 void Parameters::addParameterDeclarations(pugi::xml_node xml_node)

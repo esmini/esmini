@@ -19,6 +19,8 @@
 
 namespace scenarioengine
 {
+	#define PARAMETER_PREFIX '$'
+
 	class Parameters
 	{
 	public:

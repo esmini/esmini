@@ -773,7 +773,14 @@ Entry* ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 	for (pugi::xml_node param_n = parameterAssignmentsNode.child("ParameterAssignment"); param_n; param_n = param_n.next_sibling("ParameterAssignment"))
 	{
 		OSCParameterDeclarations::ParameterStruct param;
-		param.name = &(param_n.attribute("parameterRef").value()[1]);  // Skip prefix character byte
+		if (param_n.attribute("parameterRef").value()[0] == PARAMETER_PREFIX)
+		{
+			param.name = &(param_n.attribute("parameterRef").value()[1]);  // Skip prefix character byte
+		}
+		else
+		{
+			param.name = param_n.attribute("parameterRef").value();
+		}
 		param.value._string = parameters.ReadAttribute(param_n, "value");
 		parameters.catalog_param_assignments.push_back(param);
 	}
