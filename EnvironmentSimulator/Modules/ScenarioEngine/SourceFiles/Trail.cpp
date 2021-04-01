@@ -248,7 +248,7 @@ void ObjectTrail::GetHeadingOnSegmentBySNorm(int index, double s, double &headin
 {
 	int next_index = GetNextSegmentIndex(index);
 
-	heading = state_[index].h_ + s * (state_[next_index].h_ - state_[index].h_);
+	heading = state_[index].h_ + s * (GetAngleDifference(state_[next_index].h_, state_[index].h_));
 }
 
 void ObjectTrail::GetHeadingOnSegmentByDist(int index, double dist, double &heading)
