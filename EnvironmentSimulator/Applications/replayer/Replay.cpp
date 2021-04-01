@@ -85,7 +85,7 @@ void Replay::GoToTime(double timestamp)
 	{
 		GoToEnd();
 	}
-	else if (timestamp < 0)
+	else if (timestamp < GetStartTime())
 	{
 		GoToStart();
 	}
