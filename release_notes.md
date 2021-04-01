@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2021-04-01 Version 2.6.1
+
+- New feature: Visualize complete driving trajectories in replayer
+- Improve dat2csv.py and align to behavior of dat2csv.cpp 
+- Add object type and category to esminiLib API
+- Add funct to get all named parameter names (and type)
+- Fix replayer issue with time < 0 (ghost use cases)
+- Support parameterRef with and without prefix '$' (in ParameterAssignment)
+- Fix heading bug in ghost trail
+
 ### 2021-03-26 Version 2.6.0
 
 - Support nurbs trajectories
