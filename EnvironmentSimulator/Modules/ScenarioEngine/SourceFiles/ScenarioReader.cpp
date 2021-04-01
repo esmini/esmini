@@ -724,7 +724,11 @@ roadmanager::Trajectory* ScenarioReader::parseTrajectory(pugi::xml_node node)
 						pugi::xml_node posNode = nurbsChild.child("Position");
 						OSCPosition* pos = parseOSCPosition(posNode);
 						double time = strtod(parameters.ReadAttribute(nurbsChild, "time"));
-						double weight = strtod(parameters.ReadAttribute(nurbsChild, "weight"));
+						double weight = 1.0;
+						if (!nurbsChild.attribute("weight").empty())
+						{
+							weight = strtod(parameters.ReadAttribute(nurbsChild, "weight"));
+						}
 						bool calcHeading = posNode.first_child().child("Orientation") ? false : true;
 						nurbs->AddControlPoint(*pos->GetRMPos(), time, weight, calcHeading);
 					}
