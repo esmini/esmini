@@ -775,10 +775,7 @@ void TeleportAction::Start()
 		object_->pos_.CalcRoutePosition();
 	}
 
-	// Reset align mode
-//	object_->pos_.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_SOFT);
-
-	LOG("%s pos: ", object_->name_.c_str());
+	LOG("%s New position:", object_->name_.c_str());
 	object_->pos_.Print();
 	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 	object_->reset_ = true;
@@ -1000,7 +997,7 @@ void SynchronizeAction::Step(double dt, double)
 					{
 						LOG("Entering Stead State according to criteria but not enough time to reach destination");
 					}
-					PrintStatus("SteadyState");
+					//PrintStatus("SteadyState");
 				}
 				else
 				{
@@ -1097,7 +1094,7 @@ void SynchronizeAction::Step(double dt, double)
 				{
 					object_->SetSpeed(0);
 					mode_ = SynchMode::MODE_WAITING;  // wait for master to move
-					PrintStatus("Waiting");
+					//PrintStatus("Waiting");
 				}
 
 				return;
@@ -1108,7 +1105,7 @@ void SynchronizeAction::Step(double dt, double)
 				{
 					// Time to move again after the stop
 					mode_ = SynchMode::MODE_LINEAR;
-					PrintStatus("Restart");
+					//PrintStatus("Restart");
 				}
 				else
 				{
@@ -1138,9 +1135,8 @@ void SynchronizeAction::Step(double dt, double)
 
 				if (fabs(object_->speed_ - v0_onLine) < 0.1)
 				{
-					// Switch to linear mode (constant acc) to reach final destination and speed
+					// Passed apex. Switch to linear mode (constant acc) to reach final destination and speed
 					mode_ = SynchMode::MODE_LINEAR;
-					PrintStatus("Passed apex");
 
 					// Keep current speed for this time step
 					return;
@@ -1161,7 +1157,7 @@ void SynchronizeAction::Step(double dt, double)
 				{
 					submode_ = SynchSubmode::SUBMODE_CONCAVE;
 				}
-				PrintStatus("Non-linear");
+				//PrintStatus("Non-linear");
 			}
 
 			// Now, calculate x and vx according to default method oulined in the documentation
@@ -1214,7 +1210,7 @@ void SynchronizeAction::Step(double dt, double)
 			{
 				// Reached the apex of the speed profile, switch mode and phase
 				mode_ = SynchMode::MODE_LINEAR;
-				PrintStatus("Reached apex");
+				//PrintStatus("Reached apex");
 
 				// Keep speed for this time step
 				acc = 0;
@@ -1240,7 +1236,7 @@ void SynchronizeAction::Step(double dt, double)
 					// If more than half distance to destination needed, then stop immediatelly
 					acc = MAX_DECELERATION;
 					mode_ = SynchMode::MODE_STOP_IMMEDIATELY;
-					PrintStatus("Stop immediately");
+					//PrintStatus("Stop immediately");
 				}
 
 				if (v0 + acc * dt < 0)
@@ -1248,7 +1244,7 @@ void SynchronizeAction::Step(double dt, double)
 					// Reached to a stop
 					object_->SetSpeed(0);
 					mode_ = SynchMode::MODE_STOPPED;
-					PrintStatus("Stopped");
+					//PrintStatus("Stopped");
 
 					return;
 				}

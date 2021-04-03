@@ -27,7 +27,7 @@ namespace scenarioengine
 	{
 	public:
 
-		ControllerInteractive(InitArgs* args);
+		ControllerInteractive(InitArgs* args) : Controller(args) {}
 
 		void Init();
 		void Step(double timeStep);

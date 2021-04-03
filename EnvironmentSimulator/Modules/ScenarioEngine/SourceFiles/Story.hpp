@@ -75,7 +75,7 @@ namespace scenarioengine
 	class Story
 	{
 	public:
-		Story(std::string name);
+		Story(std::string name) {}
 
 		OSCParameterDeclarations parameter_declarations_;
 		Act* FindActByName(std::string name);

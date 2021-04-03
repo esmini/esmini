@@ -280,8 +280,8 @@ static int InitScenario()
 	std::setlocale(LC_ALL, "C.UTF-8");
 
 	Logger::Inst().SetCallback(log_callback);
-
 	Logger::Inst().OpenLogfile();
+	Logger::Inst().LogVersion();
 
 	ConvertArguments();
 

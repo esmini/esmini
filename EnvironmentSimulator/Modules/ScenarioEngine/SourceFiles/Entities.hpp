@@ -434,11 +434,6 @@ namespace scenarioengine
 
 		Entities() {};
 
-		void Print()
-		{
-			LOG("");
-		}
-
 		std::vector<Object*> object_;
 
 		// create a sumo vehicle template and a sumo controller 

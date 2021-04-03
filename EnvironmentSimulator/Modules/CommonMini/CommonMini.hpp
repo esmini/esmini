@@ -292,6 +292,7 @@ public:
 	bool IsCallbackSet();
 	void SetTimePtr(double* timePtr) { time_ = timePtr; }
 	void OpenLogfile();
+	void LogVersion();
 	bool IsFileOpen() { return file_.is_open(); }
 
 private:

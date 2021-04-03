@@ -655,11 +655,9 @@ CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, os
 	retval[1] = AddWheel(car_node, "wheel_fr");
 	retval[2] = AddWheel(car_node, "wheel_rr");
 	retval[3] = AddWheel(car_node, "wheel_rl");
-	if (!(retval[0] || retval[1] || retval[2] || retval[3]))
-	{
-		LOG("No wheel nodes in model %s. No problem, wheels will just not appear to roll or steer", car_node->getName().c_str());
-	}
-	else
+	
+	// Print message only if some wheel nodes are missing
+	if (retval[0] || retval[1] || retval[2] || retval[3])
 	{
 		if (!retval[0])
 		{
@@ -774,7 +772,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	std::string arg_str;
 	osgViewer_ = 0;
 
-	if(scenarioFilename != NULL)
+	if(scenarioFilename != NULL && strcmp(scenarioFilename, ""))
 	{ 
 		SE_Env::Inst().AddPath(DirNameOf(scenarioFilename));
 	}
@@ -784,11 +782,14 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		SE_Env::Inst().AddPath(DirNameOf(odrManager->GetOpenDriveFilename()));
 	}
 
-	if (modelFilename != NULL)
+	if (modelFilename != NULL && strcmp(modelFilename, ""))
 	{
 		SE_Env::Inst().AddPath(DirNameOf(modelFilename));
 	}
-
+	
+	// suppress OSG info messages
+	osg::setNotifyLevel(osg::NotifySeverity::WARN);
+	
 	lodScale_ = LOD_SCALE_DEFAULT;
 	currentCarInFocus_ = 0;
 	keyUp_ = false;
@@ -807,7 +808,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	{
 		aa_mode = atoi(arg_str.c_str());
 	}
-	LOG("Anti-Aliasing number of subsamples: %d", aa_mode);
 	osg::DisplaySettings::instance()->setNumMultiSamples(aa_mode);
 
 	arguments.getApplicationUsage()->addCommandLineOption("--lodScale <number>", "LOD Scale");

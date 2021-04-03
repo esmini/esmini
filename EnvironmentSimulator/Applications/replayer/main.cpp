@@ -239,7 +239,7 @@ int main(int argc, char** argv)
 
 	// Use logger callback for console output instead of logfile
 	Logger::Inst().SetCallback(log_callback);
-	// Logger::Inst().OpenLogfile();
+	Logger::Inst().LogVersion();
 
 	// use common options parser to manage the program arguments
 	SE_Options opt;

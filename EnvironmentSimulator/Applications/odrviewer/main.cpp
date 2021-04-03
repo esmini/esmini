@@ -122,7 +122,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
 				// randomly choose model
 				int carModelID = (double(sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) * mt_rand()) / (mt_rand.max)();
-				LOG("Adding car of model %d to road nr %d (road id %d s %.2f lane id %d), ", carModelID, r, road->GetId(), s, lane->GetId());
+				//LOG("Adding car of model %d to road nr %d (road id %d s %.2f lane id %d), ", carModelID, r, road->GetId(), s, lane->GetId());
 
 				Car *car_ = new Car;
 				// Higher speeds in lanes closer to reference lane
@@ -236,6 +236,7 @@ int main(int argc, char** argv)
 	opt.AddOption("path", "Search path prefix for assets, e.g. car and sign model files", "path");
 	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
+	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("help", "Show this help message");
 
 	if (argc < 2 || opt.GetOptionSet("help"))
@@ -247,6 +248,11 @@ int main(int argc, char** argv)
 	opt.ParseArgs(&argc, argv);
 
 	std::string arg_str;
+
+	if (opt.GetOptionSet("disable_stdout"))
+	{
+		Logger::Inst().SetCallback(0);
+	}
 
 	if (opt.GetOptionSet("disable_log"))
 	{
@@ -267,6 +273,7 @@ int main(int argc, char** argv)
 		}
 	}
 	Logger::Inst().OpenLogfile();
+	Logger::Inst().LogVersion();
 
 	if ((arg_str = opt.GetOptionArg("path")) != "")
 	{
@@ -288,13 +295,13 @@ int main(int argc, char** argv)
 	{
 		density = strtod(opt.GetOptionArg("density"));
 	}
-	printf("density: %.2f\n", density);
+	LOG("density: %.2f", density);
 
 	if (opt.GetOptionArg("speed_factor") != "")
 	{
 		global_speed_factor = strtod(opt.GetOptionArg("speed_factor"));
 	}
-	printf("global speed factor: %.2f\n", global_speed_factor);
+	LOG("global speed factor: %.2f", global_speed_factor);
 
 	roadmanager::Position *lane_pos = new roadmanager::Position();
 	roadmanager::Position *track_pos = new roadmanager::Position();
@@ -338,7 +345,7 @@ int main(int argc, char** argv)
 			viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_POINTS);
 		}
 
-		printf("osi_features: lines %s points %s \n",
+		LOG("osi_features: lines %s points %s",
 			viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_LINES) ? "on" : "off",
 			viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_POINTS) ? "on" : "off");
 
@@ -346,7 +353,7 @@ int main(int argc, char** argv)
 		{
 			return 4;
 		}
-		printf("%d cars added\n", (int)cars.size());
+		LOG("%d cars added", (int)cars.size());
 		viewer->SetVehicleInFocus(first_car_in_focus);
 
 		__int64 now, lastTimeStamp = 0;

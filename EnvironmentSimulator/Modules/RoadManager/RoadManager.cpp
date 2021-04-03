@@ -4672,13 +4672,9 @@ void OpenDrive::SetRoadMarkOSIPoints()
 
 bool OpenDrive::SetRoadOSI()
 {
-	LOG("Generating OSI lanes");
 	SetLaneOSIPoints();
-	LOG("Generating OSI road marks");
 	SetRoadMarkOSIPoints();
-	LOG("Generating OSI lane boundaries");
 	SetLaneBoundaryPoints();
-	LOG("OSI road features done");
 	return true;
 }
 
@@ -6519,10 +6515,8 @@ void Position::PrintInertialPos()
 
 void Position::Print()
 {
-	LOG("Position:");
-	PrintTrackPos();
-	PrintLanePos();
-	PrintInertialPos();
+	LOG("Pos(%.2f, %.2f, %.2f) Rot(%.2f, %.2f, %.2f) roadId %d laneId %d offset %.2f t %.2f",
+		GetX(), GetY(), GetZ(), GetH(), GetP(), GetR(), GetTrackId(), GetLaneId(), GetOffset(), GetT());
 }
 
 void Position::PrintXY()
@@ -7893,7 +7887,7 @@ int Route::AddWaypoint(Position *position)
 					// Adding waypoint for junction connecting road
 					Position *connected_pos = new Position(connecting_road_id, connecting_lane_id, 0, 0);
 					waypoint_.push_back(connected_pos);
-					LOG("Route::AddWaypoint Added connecting waypoint %d: %d, %d, %.2f\n",
+					LOG("Route::AddWaypoint Added connecting waypoint %d: %d, %d, %.2f",
 						(int)waypoint_.size() - 1, connecting_road_id, connecting_lane_id, 0.0);
 				}
 			}
@@ -7909,7 +7903,7 @@ int Route::AddWaypoint(Position *position)
 	}
 
 	waypoint_.push_back(position);
-	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f\n", (int)waypoint_.size()-1, position->GetTrackId(), position->GetLaneId(), position->GetS());
+	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f", (int)waypoint_.size()-1, position->GetTrackId(), position->GetLaneId(), position->GetS());
 
 	return 0;
 }

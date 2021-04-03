@@ -16,11 +16,6 @@
 using namespace scenarioengine;
 
 
-Story::Story(std::string name)
-{
-	LOG("Story: New Story %s created", name.c_str());
-}
-
 Act* Story::FindActByName(std::string name)
 {
 	for (size_t i = 0; i < act_.size(); i++)

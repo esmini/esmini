@@ -695,17 +695,6 @@ void Logger::Log(bool quit, char const* file, char const* func, int line, char c
 void Logger::SetCallback(FuncPtr callback)
 {
 	callback_ = callback;
-
-	static char message[1024];
-
-	snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
-	callback_(message);
-	snprintf(message, 1024, "esmini GIT TAG: %s", esmini_git_tag());
-	callback_(message);
-	snprintf(message, 1024, "esmini GIT BRANCH: %s", esmini_git_branch());
-	callback_(message);
-	snprintf(message, 1024, "esmini BUILD VERSION: %s", esmini_build_version());
-	callback_(message);
 }
 
 Logger& Logger::Inst()
@@ -737,21 +726,29 @@ void Logger::OpenLogfile()
 				printf("Also failed to open log file: %s. Continue without logfile, still logging to console.\n", filename);
 			}
 		}
-		if (file_.is_open())
-		{
-			static char message[1024];
-			snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
-			file_ << message << std::endl;
-			snprintf(message, 1024, "esmini GIT TAG: %s", esmini_git_tag());
-			file_ << message << std::endl;
-			snprintf(message, 1024, "esmini GIT BRANCH: %s", esmini_git_branch());
-			file_ << message << std::endl;
-			snprintf(message, 1024, "esmini BUILD VERSION: %s", esmini_build_version());
-			file_ << message << std::endl;
-			file_.flush();
-		}
 	}
 #endif
+}
+
+void Logger::LogVersion()
+{
+	static char message[1024];
+
+	snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
+	if (file_.is_open()) file_ << message << std::endl;
+	if (callback_) callback_(message);
+
+	snprintf(message, 1024, "esmini GIT TAG: %s", esmini_git_tag());
+	if (file_.is_open()) file_ << message << std::endl;
+	if (callback_) callback_(message);
+
+	snprintf(message, 1024, "esmini GIT BRANCH: %s", esmini_git_branch());
+	if (file_.is_open()) file_ << message << std::endl;
+	if (callback_) callback_(message);
+
+	snprintf(message, 1024, "esmini BUILD VERSION: %s", esmini_build_version());
+	if (file_.is_open()) file_ << message << std::endl;
+	if (callback_) callback_(message);
 }
 
 SE_Env& SE_Env::Inst()

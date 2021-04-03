@@ -649,6 +649,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (will be concatenated with filepath)", "path");
 	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
+	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 
 	if (argc_ < 3)
 	{
@@ -658,6 +659,11 @@ int ScenarioPlayer::Init()
 
 	exe_path_ = argv_[0];
 	opt.ParseArgs(&argc_, argv_);
+
+	if (opt.GetOptionSet("disable_stdout"))
+	{
+		Logger::Inst().SetCallback(0);
+	}
 
 	if (opt.GetOptionSet("disable_log"))
 	{
@@ -678,6 +684,7 @@ int ScenarioPlayer::Init()
 		}
 	}
 	Logger::Inst().OpenLogfile();
+	Logger::Inst().LogVersion();
 
 	if (opt.GetOptionSet("threads"))
 	{

@@ -206,7 +206,6 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	if (obj_state == 0)
 	{
 		// Create state and set permanent information
-		LOG("Creating new object \"%s\" (id %d, timestamp %.2f)", name.c_str(), id, timestamp);
 		obj_state = new ObjectState(id, name,obj_type,obj_category, model_id, ctrl_type, boundingbox, timestamp, speed, wheel_angle, wheel_rot, pos);
 
 		// Specify lanes relevant to the object (will snap to them)

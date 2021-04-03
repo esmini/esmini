@@ -32,11 +32,6 @@ Controller* scenarioengine::InstantiateControllerInteractive(void* args)
 	return new ControllerInteractive(initArgs);
 }
 
-ControllerInteractive::ControllerInteractive(InitArgs* args) : Controller(args)
-{
-	LOG("");
-}
-
 void ControllerInteractive::Init()
 {
 

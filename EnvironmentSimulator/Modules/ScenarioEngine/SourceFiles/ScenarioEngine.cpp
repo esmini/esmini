@@ -541,11 +541,6 @@ void ScenarioEngine::parseScenario()
 			}
 		}
 	}
-
-	// Print loaded data
-	entities.Print();
-
-	storyBoard.Print();
 }
 
 void ScenarioEngine::defaultController(Object* obj, double dt)

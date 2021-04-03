@@ -12,7 +12,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading ../resources/xosc/cut-in.xosc', log))
+        self.assertTrue(re.search('.*Init ../resources/xosc/cut-in.xosc', log))
         
         # Check some scenario events
         self.assertTrue(re.search('0.010 .* CutInActStart == true, 0.0100 > 0.00 edge: NONE', log))
@@ -25,7 +25,7 @@ class TestSuite(unittest.TestCase):
             + '--disable_controllers')
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading ../resources/xosc/ltap-od.xosc', log))
+        self.assertTrue(re.search('.*Init ../resources/xosc/ltap-od.xosc', log))
         self.assertTrue(re.search('.*Route::AddWaypoint Added connecting waypoint 1: 9, -1, 0.00', log))
 
         # Check some scenario events
@@ -42,7 +42,7 @@ class TestSuite(unittest.TestCase):
             + '--disable_controllers')
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading ../resources/xosc/trajectory-test.xosc', log))
+        self.assertTrue(re.search('.*Init ../resources/xosc/trajectory-test.xosc', log))
 
         # Check some scenario events
         self.assertTrue(re.search('\n8.0.*FollowTrajectoryClothoidTrigger == true, element: FollowTrajectoryPLineEvent state: END_TRANSITION', log))

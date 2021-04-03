@@ -26,6 +26,8 @@ Options:
       logfile path/filename, e.g. "../esmini.log" (default: log.txt)
   --disable_log
       Prevent logfile from being created
+  --disable_stdout
+      Prevent messages to stdout
   --help
       Show this help message
 

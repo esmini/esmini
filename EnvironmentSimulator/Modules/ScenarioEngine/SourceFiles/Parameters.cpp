@@ -51,15 +51,12 @@ int Parameters::setParameter(std::string name, std::string value)
 
 std::string Parameters::getParameter(OSCParameterDeclarations& parameterDeclaration, std::string name)
 {
-	LOG("Resolve parameter %s", name.c_str());
-
 	// If string already present in parameterDeclaration
 	for (size_t i = 0; i < parameterDeclaration.Parameter.size(); i++)
 	{
 		if (PARAMETER_PREFIX + parameterDeclaration.Parameter[i].name == name || // parameter names should not include prefix
 			parameterDeclaration.Parameter[i].name == name)  // But support also parameter name including prefix
 		{
-			LOG("%s replaced with %s", name.c_str(), parameterDeclaration.Parameter[i].value._string.c_str());
 			return parameterDeclaration.Parameter[i].value._string;
 		}
 	}
@@ -247,7 +244,7 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 	{
 		if (required)
 		{
-			LOG("Warning: missing required attribute: %s", attribute_name.c_str());
+			LOG("Warning: missing required attribute: %s -> %s", node.name(), attribute_name.c_str());
 		}
 	}
 
@@ -256,8 +253,6 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 
 void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarationsNode, OSCParameterDeclarations* pd)
 {
-	LOG("Parsing ParameterDeclarations");
-
 	for (pugi::xml_node pdChild = parameterDeclarationsNode.first_child(); pdChild; pdChild = pdChild.next_sibling())
 	{
 		OSCParameterDeclarations::ParameterStruct param = { "", OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING, {0, 0, ""} };
