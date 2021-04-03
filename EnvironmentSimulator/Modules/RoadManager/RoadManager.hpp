@@ -737,7 +737,7 @@ namespace roadmanager
 		};
 
 		Signal(double s, double t, int id, std::string name, bool dynamic, Orientation orientation, double z_offset, std::string country,
-		Type type, SubType sub_type, double value, std::string unit, double height, double width, std::string text, double h_offset,
+		int type, int sub_type, double value, std::string unit, double height, double width, std::string text, double h_offset,
 		double pitch, double roll) : s_(s), t_(t), id_(id), name_(name), dynamic_(dynamic), orientation_(orientation), z_offset_(z_offset), 
 		country_(country), type_(type), sub_type_(sub_type), value_(value), unit_(unit), height_(height), width_(width), text_(text),
 		h_offset_(h_offset), pitch_(pitch), roll_(roll), length_(0) {}
@@ -751,6 +751,8 @@ namespace roadmanager
 		double GetHOffset() { return h_offset_; }
 		double GetZOffset() { return z_offset_; }
 		Orientation GetOrientation() { return orientation_; }
+		int GetType() { return type_; }
+		int GetSubType() { return sub_type_; }
 
 	private:
 		double s_;
@@ -761,8 +763,8 @@ namespace roadmanager
 		Orientation orientation_;
 		double z_offset_;
 		std::string country_;
-		Type type_;
-		SubType sub_type_;
+		int type_;
+		int sub_type_;
 		double value_;
 		std::string unit_;
 		double height_;

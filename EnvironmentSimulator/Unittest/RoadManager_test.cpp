@@ -1445,6 +1445,23 @@ TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
     delete laneRoadMarktypeline_second;
 }
 
+TEST(RoadTest, RoadWidth)
+{
+    roadmanager::OpenDrive* odr = new OpenDrive("../../../resources/xodr/straight_500m.xodr");
+
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+    
+    Road* road = odr->GetRoadByIdx(0);
+    EXPECT_EQ(road->GetId(), 1);
+
+    EXPECT_DOUBLE_EQ(road->GetWidth(0, -1), 10.75);
+    EXPECT_DOUBLE_EQ(road->GetWidth(0, 1), 10.75);
+    EXPECT_DOUBLE_EQ(road->GetWidth(0, 0), 21.5);
+
+    delete odr;
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);

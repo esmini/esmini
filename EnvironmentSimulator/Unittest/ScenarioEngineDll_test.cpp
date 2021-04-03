@@ -44,22 +44,18 @@ TEST(GetNumberOfObjectsTest, number_of_objects_no_init) {
     EXPECT_EQ(n_Objects, 0);       
 }
 
-
-
 TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids) {
 
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc"; 
-	//std::string scenario_file = std::get<0>(GetParam()); 
-	const char * Scenario_file = scenario_file.c_str();
-	SE_Init(Scenario_file, 0, 0, 0, 0);
+
+	SE_Init(scenario_file.c_str(), 0, 0, 0, 0);
 
 	int n_Objects = SE_GetNumberOfObjects();
-	//std::cout << "NUMBER OBJECTS IS " << n_Objects << std::endl; 	
+	EXPECT_EQ(n_Objects, 15);
 	
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth(); 
 	
-
 	std::vector<std::vector<int>> lane_bound = {{10, 9, 8, -1}, 
 												{0, 10, 9, 8},
 												{1, 0, 10, 9},
@@ -74,7 +70,6 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids) {
 												{6, 7, 12, 13},
 												{7, 12, 13, 14},
 												{12, 13, 14, -1}};
-
 
 	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
 	for (int i=0; i<lane_bound.size(); i++)
@@ -100,8 +95,6 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids) {
 	SE_Close();
 }
 
-
-
 TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids_no_obj) {
 
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";  
@@ -122,7 +115,6 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids_no_obj) {
 	SE_Close();
 }
 
-
 TEST(GetOSIRoadLaneTest, lane_no_obj) {
 
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";  
@@ -137,10 +129,10 @@ TEST(GetOSIRoadLaneTest, lane_no_obj) {
 	const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, 15);
 
 	EXPECT_EQ(road_lane_size, 0); 
+	EXPECT_EQ(road_lane, nullptr);
 
 	SE_Close();
 }
-
 
 TEST(GetOSIRoadLaneTest, lane_id) {
 
@@ -169,8 +161,6 @@ TEST(GetOSIRoadLaneTest, lane_id) {
 	SE_Close();
 }
 
-
-
 TEST(GetOSIRoadLaneTest, left_lane_id) {
 
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
@@ -178,7 +168,8 @@ TEST(GetOSIRoadLaneTest, left_lane_id) {
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 
 	int n_Objects = SE_GetNumberOfObjects();	
-	
+	EXPECT_EQ(n_Objects, 15);
+
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth();  
 	int road_lane_size; 
@@ -214,9 +205,6 @@ TEST(GetOSIRoadLaneTest, left_lane_id) {
 	SE_Close();
 }
 
-
-
-
 TEST(GetOSIRoadLaneTest, right_lane_id) {
 
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
@@ -231,8 +219,6 @@ TEST(GetOSIRoadLaneTest, right_lane_id) {
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future 
 	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};  
 	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
-
-	
 
 	for (int i=0; i<lanes.size(); i++)
 	{
@@ -260,8 +246,6 @@ TEST(GetOSIRoadLaneTest, right_lane_id) {
 	SE_Close();
 }
 
-
-
 TEST(GetOSIRoadLaneTest, right_lane_boundary_id) {
 
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
@@ -288,8 +272,6 @@ TEST(GetOSIRoadLaneTest, right_lane_boundary_id) {
 
 	SE_Close();
 }
-
-
 
 TEST(GetOSIRoadLaneTest, left_lane_boundary_id) {
 
@@ -401,8 +383,6 @@ TEST(GetOSIRoadLaneTest, is_host_vehicle_lane) {
 	SE_Close();
 }
 
-
-
 TEST(GetOSIRoadLaneTest, lane_classification) {
 
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
@@ -445,9 +425,6 @@ TEST(GetOSIRoadLaneTest, lane_classification) {
 	SE_Close();
 }
 
-
-
-
 TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing) {
 
 	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";  
@@ -463,8 +440,6 @@ TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing) {
 	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}; 
 	std::vector<int> lane_bound = {-1, 8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14, -1};   
 
-	int obj_id = 0; 
-
 	for (int i=0; i<lane_bound.size(); i++)
 	{
 		int lb_global_id = lane_bound[i]; 
@@ -476,12 +451,10 @@ TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing) {
 		osi_lb.ParseFromArray(lb, lb_size);
 
 		EXPECT_EQ(osi_lb.id().value(), lb_global_id); 
-		
 	}
 
 	SE_Close();
 }
-
 
 
 class GetOSILaneBoundaryTests :public ::testing::TestWithParam<std::tuple<int, int>> {};
@@ -501,6 +474,7 @@ TEST_P(GetOSILaneBoundaryTests, lane_boundary_id_not_existing) {
 	const char* lb = SE_GetOSILaneBoundary(&lb_size, std::get<0>(GetParam()) );
 
 	EXPECT_EQ(lb_size, std::get<1>(GetParam()) ); 
+	EXPECT_EQ(lb, nullptr);
 
 	SE_Close();
 }
@@ -527,8 +501,7 @@ TEST(OSIFile, writeosifile_two_step) {
 	std::ifstream in_file("ground_truth.osi", std::ios::binary);
    	in_file.seekg(0, std::ios::end);
    	file_size1 = in_file.tellg();
-   	std::cout <<"Size of the file at first step "<< file_size1 << " bytes" << std::endl; 
-
+   	//std::cout <<"Size of the file at first step "<< file_size1 << " bytes" << std::endl; 
 
 	SE_StepDT(0.001f);		
 	SE_UpdateOSIGroundTruth(); 	 
@@ -536,19 +509,17 @@ TEST(OSIFile, writeosifile_two_step) {
 
 	in_file.seekg(0, std::ios::end);
    	file_size2 = in_file.tellg();
-   	std::cout <<"Size of the file at second step "<< file_size2 << " bytes" << std::endl; 
+   	//std::cout <<"Size of the file at second step "<< file_size2 << " bytes" << std::endl; 
 
 	SE_Close();
 
 	in_file.seekg(0, std::ios::end);
    	file_sizeend = in_file.tellg();
-   	std::cout <<"Size of closing step "<< file_sizeend << " bytes" << std::endl; 
+ 	//std::cout <<"Size of closing step "<< file_sizeend << " bytes" << std::endl; 
 	
 //	EXPECT_EQ(file_size2, file_sizeend);  // File might not be flushed until it's closed, unless it is done explicitly
 	EXPECT_LT(file_size1, file_size2); 
 }
-
-
 
 TEST(OSIFile, writeosifile_no_init) {
 
@@ -630,6 +601,7 @@ TEST(GetGroundTruthTests, receive_GroundTruth_no_init) {
 	const char* sv = SE_GetOSIGroundTruth(&sv_size);
 
 	EXPECT_EQ(sv_size, 0);  
+	EXPECT_EQ(sv, nullptr);
 }
 
 

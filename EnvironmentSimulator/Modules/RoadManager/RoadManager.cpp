@@ -1059,7 +1059,6 @@ double LaneSection::GetWidth(double s, int lane_id)
 	Lane *lane = GetLaneById(lane_id);
 	if (lane == 0)
 	{
-		LOG("Error (lane id %d)\n", lane_id);
 		return 0.0;
 	}
 
@@ -1104,11 +1103,11 @@ double LaneSection::GetCenterOffset(double s, int lane_id)
 		// Reference lane (0) has no width
 		return 0.0;
 	}
-	double inner_offset = GetOuterOffset(s, lane_id);
+	double outer_offset = GetOuterOffset(s, lane_id);
 	double width = GetWidth(s, lane_id);
 
 	// Center is simply mean value of inner and outer lane boundries
-	return inner_offset - width / 2;
+	return outer_offset - width / 2;
 }
 
 double LaneSection::GetOuterOffsetHeading(double s, int lane_id)
@@ -1121,7 +1120,6 @@ double LaneSection::GetOuterOffsetHeading(double s, int lane_id)
 	Lane *lane = GetLaneById(lane_id);
 	if (lane == 0)
 	{
-		LOG("LaneSection::GetOuterOffsetHeading Error (lane id %d)\n", lane_id);
 		return 0.0;
 	}
 
@@ -1517,7 +1515,8 @@ void Road::AddSignal(Signal *signal)
 	}
 	signal->SetLength(length_ - signal->GetS());
 
-	LOG("Add signal[%d]: %s", (int)signal_.size(), signal->GetName().c_str());
+	LOG("Add signal[%d]: \"%s\" type %d subtype %d to road %d", (int)signal_.size(), signal->GetName().c_str(), 
+		signal->GetType(), signal->GetSubType(), GetId());
 	signal_.push_back((Signal*)signal);
 }
 
@@ -1685,11 +1684,12 @@ int Road::GetNumberOfDrivingLanesSide(double s, int side)
 
 double Road::GetWidth(double s, int side, int laneTypeMask)
 {
-	double offset = 0;
-	size_t i;
-	int index;
+	double offset0 = 0;
+	double offset1 = 0;
+	size_t i = 0;
+	int index = 0;
 
-	for (i = 0; i < GetNumberOfLaneSections() - 1; i++)
+	for (; i < GetNumberOfLaneSections() - 1; i++)
 	{
 		if (s < lane_section_[i+1]->GetS())
 		{
@@ -1720,11 +1720,21 @@ double Road::GetWidth(double s, int side, int laneTypeMask)
 		{
 			lane_id = lsec->GetLaneIdByIdx(index += step);
 		}
+		offset0 = fabs(lsec->GetOuterOffset(s, lane_id));
 
-		offset = fabs(lsec->GetOuterOffset(s, lane_id));
+		if (side == 0)
+		{
+			// offset0 holds rightmost offset, now find outmost lane on left side of centerlane
+			index = 0;
+			while (lane_id != 0 && !(lsec->GetLaneByIdx(index)->GetLaneType() & laneTypeMask))
+			{
+				lane_id = lsec->GetLaneIdByIdx(index += 1);
+			}
+			offset1 = fabs(lsec->GetOuterOffset(s, lane_id));
+		}
 	}
 
-	return offset;
+	return offset0 + offset1;
 }
 
 void Road::AddLaneOffset(LaneOffset *lane_offset)
@@ -2373,7 +2383,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 							{
 								lane_type = Lane::LANE_TYPE_NONE;
 							}
-							
+
 							Lane *lane = new Lane(lane_id, lane_type);
 							if (lane == NULL)
 							{
@@ -2523,33 +2533,38 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								// material
 								LaneRoadMark::RoadMarkMaterial roadMark_material = LaneRoadMark::STANDARD_MATERIAL;
 
-								// laneChange
+								// optional laneChange
 								LaneRoadMark::RoadMarkLaneChange roadMark_laneChange = LaneRoadMark::NONE_LANECHANGE;
-								if (roadMark.attribute("laneChange") == 0 || !strcmp(roadMark.attribute("laneChange").value(), ""))
+								if (!roadMark.attribute("laneChange").empty())
 								{
-									LOG("Lane road mark lane change error");
+									if (!strcmp(roadMark.attribute("laneChange").value(), ""))
+									{
+										LOG("Lane roadmark lanechange error");
+									}
+									else
+									{
+										if (!strcmp(roadMark.attribute("laneChange").value(), "none"))
+										{
+											roadMark_laneChange = LaneRoadMark::NONE_LANECHANGE;
+										}
+										else  if (!strcmp(roadMark.attribute("laneChange").value(), "increase"))
+										{
+											roadMark_laneChange = LaneRoadMark::INCREASE;
+										}
+										else  if (!strcmp(roadMark.attribute("laneChange").value(), "decrease"))
+										{
+											roadMark_laneChange = LaneRoadMark::DECREASE;
+										}
+										else  if (!strcmp(roadMark.attribute("laneChange").value(), "both"))
+										{
+											roadMark_laneChange = LaneRoadMark::BOTH;
+										}
+										else
+										{
+											LOG("unknown lane road mark lane change: %s (road id=%d)\n", roadMark.attribute("laneChange").value(), r->GetId());
+										}
+									}
 								}
-								if (!strcmp(roadMark.attribute("laneChange").value(), "none"))
-								{
-									roadMark_laneChange = LaneRoadMark::NONE_LANECHANGE;
-								}
-								else  if (!strcmp(roadMark.attribute("laneChange").value(), "increase"))
-								{
-									roadMark_laneChange = LaneRoadMark::INCREASE;
-								}
-								else  if (!strcmp(roadMark.attribute("laneChange").value(), "decrease"))
-								{
-									roadMark_laneChange = LaneRoadMark::DECREASE;
-								}	
-								else  if (!strcmp(roadMark.attribute("laneChange").value(), "both"))
-								{
-									roadMark_laneChange = LaneRoadMark::BOTH;
-								}
-								else
-								{
-									LOG("unknown lane road mark lane change: %s (road id=%d)\n", roadMark.attribute("laneChange").value(), r->GetId());
-								}
-
 								double roadMark_width = atof(roadMark.attribute("width").value());
 								double roadMark_height = atof(roadMark.attribute("height").value());
 								LaneRoadMark *lane_roadMark = new LaneRoadMark(s_offset, roadMark_type, roadMark_weight, roadMark_color, 
@@ -2630,7 +2645,20 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 									}
 								}
 							}
+
 						}
+					}
+					// Check lane indices
+					int lastLaneId = 0;
+					for (int i = 0; i < lane_section->GetNumberOfLanes(); i++)
+					{
+						int laneId = lane_section->GetLaneByIdx(i)->GetId();
+						if (i > 0 && laneId != lastLaneId - 1)
+						{
+							LOG("Warning: expected laneId %d missing of roadId %d. Found laneIds %d and %d", 
+								lastLaneId - 1, r->GetId(), lastLaneId, laneId);
+						}
+						lastLaneId = laneId;
 					}
 				}
 				else
@@ -2660,7 +2688,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				{
 					dynamic = false;
 				}
-				else  if (!strcmp(signal.attribute("rule").value(), "yes"))
+				else  if (!strcmp(signal.attribute("dynamic").value(), "yes"))
 				{
 					dynamic = true;
 				}
@@ -2696,7 +2724,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				std::string country = signal.attribute("country").value();
 
 				// type
-				Signal::Type type = Signal::NONETYPE;
+				int type = Signal::NONETYPE;
 				if (signal.attribute("type") == 0 || !strcmp(signal.attribute("type").value(), ""))
 				{
 					LOG("Road signal type error");
@@ -2751,11 +2779,12 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}																
 				else
 				{
-					LOG("unknown road signal type: %s (road ids=%d)\n", signal.attribute("type").value(), r->GetId());
+					//LOG("unknown road signal type: %s (road ids=%d)\n", signal.attribute("type").value(), r->GetId());
+					type = strtoi(signal.attribute("type").value());
 				}
 
 				// sub_type
-				Signal::SubType sub_type = Signal::NONESUBTYPE;
+				int sub_type = Signal::NONESUBTYPE;
 				if (signal.attribute("subtype") == 0 || !strcmp(signal.attribute("subtype").value(), ""))
 				{
 					LOG("Road signal sub-type error");
@@ -2786,7 +2815,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}
 				else
 				{
-					LOG("unknown road signal sub-type: %s (road ids=%d)\n", signal.attribute("subtype").value(), r->GetId());
+					//LOG("unknown road signal sub-type: %s (road ids=%d)\n", signal.attribute("subtype").value(), r->GetId());
+					sub_type = strtoi(signal.attribute("subtype").value());
 				}
 
 				double value = atof(signal.attribute("value").value());
