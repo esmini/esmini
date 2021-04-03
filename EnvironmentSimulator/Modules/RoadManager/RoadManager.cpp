@@ -1828,7 +1828,8 @@ bool Road::GetZAndPitchByS(double s, double *z, double *pitch, int *index)
 			return true;
 		}
 	}
-	*z = 0;
+	*z = 0.0;
+	*pitch = 0.0;
 	return false;
 }
 
