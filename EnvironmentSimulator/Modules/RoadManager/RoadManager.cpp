@@ -1726,6 +1726,8 @@ double Road::GetWidth(double s, int side, int laneTypeMask)
 		{
 			// offset0 holds rightmost offset, now find outmost lane on left side of centerlane
 			index = 0;
+			lane_id = lsec->GetLaneIdByIdx(index);
+
 			while (lane_id != 0 && !(lsec->GetLaneByIdx(index)->GetLaneType() & laneTypeMask))
 			{
 				lane_id = lsec->GetLaneIdByIdx(index += 1);

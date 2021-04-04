@@ -1445,19 +1445,36 @@ TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
     delete laneRoadMarktypeline_second;
 }
 
-TEST(RoadTest, RoadWidth)
+TEST(RoadTest, RoadWidthAllLanes)
 {
-    roadmanager::OpenDrive* odr = new OpenDrive("../../../resources/xodr/straight_500m.xodr");
+    roadmanager::OpenDrive* odr = new OpenDrive("../../../resources/xodr/soderleden.xodr");
 
     ASSERT_NE(odr, nullptr);
-    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+    EXPECT_EQ(odr->GetNumOfRoads(), 5);
     
-    Road* road = odr->GetRoadByIdx(0);
+    Road* road = odr->GetRoadByIdx(1);
     EXPECT_EQ(road->GetId(), 1);
 
-    EXPECT_DOUBLE_EQ(road->GetWidth(0, -1), 10.75);
-    EXPECT_DOUBLE_EQ(road->GetWidth(0, 1), 10.75);
-    EXPECT_DOUBLE_EQ(road->GetWidth(0, 0), 21.5);
+    EXPECT_NEAR(road->GetWidth(0, -1), 5.8, 1e-5);
+    EXPECT_NEAR(road->GetWidth(0, 1), 2.3, 1e-5);
+    EXPECT_NEAR(road->GetWidth(0, 0), 8.1, 1e-5);
+
+    delete odr;
+}
+
+TEST(RoadTest, RoadWidthDrivingLanes)
+{
+    roadmanager::OpenDrive* odr = new OpenDrive("../../../resources/xodr/soderleden.xodr");
+
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 5);
+
+    Road* road = odr->GetRoadByIdx(1);
+    EXPECT_EQ(road->GetId(), 1);
+
+    EXPECT_DOUBLE_EQ(road->GetWidth(0, -1, Lane::LaneType::LANE_TYPE_ANY_DRIVING), 3.5);
+    EXPECT_DOUBLE_EQ(road->GetWidth(0, 1, Lane::LaneType::LANE_TYPE_ANY_DRIVING), 0.0);
+    EXPECT_DOUBLE_EQ(road->GetWidth(0, 0, Lane::LaneType::LANE_TYPE_ANY_DRIVING), 3.5);
 
     delete odr;
 }
