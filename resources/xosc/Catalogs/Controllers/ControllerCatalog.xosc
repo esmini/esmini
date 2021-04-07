@@ -24,7 +24,7 @@
 		</Controller>
 		<Controller name="externalController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="UseGhost" parameterType="bool" value="false" /> 
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="false" /> 
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" /> 
                 <ParameterDeclaration name="Mode" parameterType="string" value="override" /> 
             </ParameterDeclarations>
@@ -37,7 +37,7 @@
 		</Controller>
 		<Controller name="cspas">
             <ParameterDeclarations>
-                <ParameterDeclaration name="UseGhost" parameterType="bool" value="true" /> 
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" /> 
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" /> 
             </ParameterDeclarations>
 			<Properties>
@@ -48,7 +48,7 @@
 		</Controller>        
 		<Controller name="cspas5s">
             <ParameterDeclarations>
-                <ParameterDeclaration name="UseGhost" parameterType="bool" value="true" /> 
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" /> 
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="5" /> 
             </ParameterDeclarations>
 			<Properties>
@@ -60,7 +60,7 @@
 		<Controller name="cspas10s">
             <ParameterDeclarations>
                 <Property name="esminiController" value="ExternalController" />                   
-                <ParameterDeclaration name="UseGhost" parameterType="bool" value="true" /> 
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" /> 
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="10" /> 
             </ParameterDeclarations>
 			<Properties>

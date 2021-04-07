@@ -197,10 +197,11 @@ int main(int argc, char *argv[])
 		for (int i = 0; i*TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
 		{
 #if DEMONSTRATE_PARAMETER  // try with lane_change.xosc which sets "DummyParameter"
-			double number = 0;
-			SE_Parameter param;
-			param.value = &number;
-			param.name = "DummyParameter";
+			double value;
+			if (SE_GetParameterDouble("DummyParameter", &value) != 0)
+			{
+				LOG("Failed to receive parameter");
+			}
 			static bool triggered = false;
 
 			if (triggered == false && SE_GetSimulationTime() > 2.5)
@@ -208,13 +209,13 @@ int main(int argc, char *argv[])
 				// Actions is triggered when DummyParameter > 10
 				// In scenario lane_change.xosc the trigger will happen at simtime == 3.0 s, by setting param value = 11.0
 				// Let's trig it already at 2.5 from here by setting param value = 15.0
-				number = 15.0;
-				SE_SetParameter(param);
+				value = 15.0;
+				SE_SetParameterDouble("DummyParameter", value);
 				triggered = true;
 			}
 
-			SE_GetParameter(&param);
-			printf("param value: %.2f\n", number);
+			SE_GetParameterDouble("DummyParameter", &value);
+			printf("param value: %.2f\n", value);
 #endif
 
 			if (SE_Step() != 0)

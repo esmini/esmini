@@ -499,6 +499,86 @@ extern "C"
 		return -1;
 	}
 
+	SE_DLL_API int SE_GetParameterInt(const char* parameterName, int* value)
+	{
+		if (player)
+		{
+			return player->GetParameterValueInt(parameterName, *value);
+		}
+
+		return -1;
+	}
+
+	SE_DLL_API int SE_GetParameterDouble(const char* parameterName, double* value)
+	{
+		if (player)
+		{
+			return player->GetParameterValueDouble(parameterName, *value);
+		}
+
+		return -1;
+	}
+
+	SE_DLL_API int SE_GetParameterString(const char* parameterName, const char** value)
+	{
+		if (player)
+		{
+			return player->GetParameterValueString(parameterName, *value);
+		}
+
+		return -1;
+	}
+
+	SE_DLL_API int SE_GetParameterBool(const char* parameterName, bool* value)
+	{
+		if (player)
+		{
+			return player->GetParameterValueBool(parameterName, *value);
+		}
+
+		return -1;
+	}
+
+	SE_DLL_API int SE_SetParameterInt(const char* parameterName, int value)
+	{
+		if (player)
+		{
+			return player->SetParameterValue(parameterName, value);
+		}
+
+		return -1;
+	}
+
+	SE_DLL_API int SE_SetParameterDouble(const char* parameterName, double value)
+	{
+		if (player)
+		{
+			return player->SetParameterValue(parameterName, value);
+		}
+
+		return -1;
+	}
+
+	SE_DLL_API int SE_SetParameterString(const char* parameterName, const char* value)
+	{
+		if (player)
+		{
+			return player->SetParameterValue(parameterName, value);
+		}
+
+		return -1;
+	}
+
+	SE_DLL_API int SE_SetParameterBool(const char* parameterName, bool value)
+	{
+		if (player)
+		{
+			return player->SetParameterValue(parameterName, value);
+		}
+
+		return -1;
+	}
+
 	SE_DLL_API void* SE_GetODRManager()
 	{
 		if (player)

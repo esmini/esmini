@@ -144,6 +144,10 @@ int Parameters::getParameterValue(std::string name, void* value)
 	{
 		*((double*)value) = ps->value._double;
 	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL)
+	{
+		*((bool*)value) = ps->value._bool;
+	}
 	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
 	{
 		*((std::string*)value) = ps->value._string;
@@ -157,6 +161,61 @@ int Parameters::getParameterValue(std::string name, void* value)
 	return 0;
 }
 
+int Parameters::getParameterValueInt(std::string name, int &value)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps || ps->type != OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+	{
+		return -1;
+	}
+
+	value = ps->value._int;
+	
+	return 0;
+}
+
+int Parameters::getParameterValueDouble(std::string name, double& value)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps || ps->type != OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
+	{
+		return -1;
+	}
+
+	value = ps->value._double;
+
+	return 0;
+}
+
+int Parameters::getParameterValueString(std::string name, const char*& value)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps || ps->type != OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
+	{
+		return -1;
+	}
+
+	value = ps->value._string.c_str();
+
+	return 0;
+}
+
+int Parameters::getParameterValueBool(std::string name, bool& value)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps || ps->type != OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL)
+	{
+		return -1;
+	}
+
+	value = ps->value._bool;
+
+	return 0;
+}
 
 std::string Parameters::getParameterValueAsString(std::string name)
 {
@@ -175,9 +234,13 @@ std::string Parameters::getParameterValueAsString(std::string name)
 	{
 		return std::to_string(ps->value._int);
 	}
-	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
 	{
 		return std::to_string(ps->value._double);
+	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL)
+	{
+		return ps->value._bool ? "true" : "false";
 	}
 	else
 	{
@@ -185,7 +248,7 @@ std::string Parameters::getParameterValueAsString(std::string name)
 	}
 }
 
-int Parameters::setParameterValue(std::string name, std::string value)
+int Parameters::setParameterValueByString(std::string name, std::string value)
 {
 	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
 
@@ -202,6 +265,10 @@ int Parameters::setParameterValue(std::string name, std::string value)
 	{
 		ps->value._double = strtod(value);
 	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL)
+	{
+		ps->value._bool = (value == "true" ? true : false);
+	}
 	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
 	{
 		ps->value._string = value;
@@ -211,6 +278,62 @@ int Parameters::setParameterValue(std::string name, std::string value)
 		LOG("Unexpected type: %d", ps->type);
 		return -1;
 	}
+
+	return 0;
+}
+
+int Parameters::setParameterValue(std::string name, int value)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps || ps->type != OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER)
+	{
+		return -1;
+	}
+
+	ps->value._int = value;
+
+	return 0;
+}
+
+int Parameters::setParameterValue(std::string name, double value)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps || ps->type != OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE)
+	{
+		return -1;
+	}
+
+	ps->value._double = value;
+
+	return 0;
+}
+
+int Parameters::setParameterValue(std::string name, const char* value)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps || ps->type != OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
+	{
+		return -1;
+	}
+
+	ps->value._string = value;
+
+	return 0;
+}
+
+int Parameters::setParameterValue(std::string name, bool value)
+{
+	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
+
+	if (!ps || ps->type != OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL)
+	{
+		return -1;
+	}
+
+	ps->value._bool = value;
 
 	return 0;
 }
@@ -282,11 +405,16 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 			param.type = OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE;
 			param.value._double = strtod(param.value._string);
 		}
+		else if (type_str == "boolean")
+		{
+			param.type = OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL;
+			param.value._bool = param.value._string == "true" ? true : false;
+		}
 		else if (type_str == "string")
 		{
 			param.type = OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING;
 		}
-		else if (type_str == "unsignedInt" || type_str == "unsignedShort" || type_str == "boolean" || type_str == "dateTime")
+		else if (type_str == "unsignedInt" || type_str == "unsignedShort" || type_str == "dateTime")
 		{
 			LOG("Type %s is not supported yet", type_str.c_str());
 		}

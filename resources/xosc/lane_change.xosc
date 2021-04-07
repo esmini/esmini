@@ -12,6 +12,8 @@
       <ParameterDeclaration name="EgoStartS" parameterType="double" value="50"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
       <ParameterDeclaration name="DummyParameter" parameterType="double" value="2"/>
+      <ParameterDeclaration name="DummyParameter2" parameterType="boolean" value="true"/>
+      <ParameterDeclaration name="DummyParameter3" parameterType="string" value="lane_change_param"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>

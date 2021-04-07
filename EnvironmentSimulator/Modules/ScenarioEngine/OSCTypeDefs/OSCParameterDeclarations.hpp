@@ -29,7 +29,8 @@ namespace scenarioengine
 		typedef enum {
 			PARAM_TYPE_INTEGER,
 			PARAM_TYPE_DOUBLE,
-			PARAM_TYPE_STRING
+			PARAM_TYPE_STRING,
+			PARAM_TYPE_BOOL
 		} ParameterType;
 
 		typedef struct 
@@ -41,6 +42,7 @@ namespace scenarioengine
 				int _int;
 				double _double;
 				std::string _string;
+				bool _bool;
 			} value;
 		} ParameterStruct;
 

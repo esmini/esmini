@@ -231,6 +231,32 @@ public static class ESMiniLib
         [DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAlongGhostTrail")]
         public static extern int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, ref RoadInfo data, ref float speed_ghost);
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterInt")]
+        public static extern int SE_GetParameterInt(string parameterName, out int value);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterDouble")]
+        public static extern int SE_GetParameterDouble(string parameterName, out double value);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterString")]
+        /// <summary>Get string parameter value </summary>
+        /// <param name="value">the string value as output parameter. Use: IntPtr intPtr; string str = Marshal.PtrToStringAnsi(intPtr);</param>
+        /// <returns>>0 on success, -1 on failure for any reason</returns>
+        public static extern int SE_GetParameterString(string parameterName, out IntPtr value);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterBool")]
+        public static extern int SE_GetParameterBool(string parameterName, out bool value);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SetParameterInt")]
+        public static extern int SE_SetParameterInt(string parameterName, int value);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SetParameterDouble")]
+        public static extern int SE_SetParameterDouble(string parameterName, double value);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SetParameterString")]
+        public static extern int SE_SetParameterString(string parameterName, string value);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SetParameterBool")]
+        public static extern int SE_SetParameterBool(string parameterName, bool value);
     }
 
 }

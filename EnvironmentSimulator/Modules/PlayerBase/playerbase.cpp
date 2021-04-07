@@ -925,6 +925,46 @@ int ScenarioPlayer::GetParameterValue(const char* name, void* value)
 	return scenarioEngine->scenarioReader->parameters.getParameterValue(name, value);
 }
 
+int ScenarioPlayer::GetParameterValueInt(const char* name, int& value)
+{
+	return scenarioEngine->scenarioReader->parameters.getParameterValueInt(name, value);
+}
+
+int ScenarioPlayer::GetParameterValueDouble(const char* name, double& value)
+{
+	return scenarioEngine->scenarioReader->parameters.getParameterValueDouble(name, value);
+}
+
+int ScenarioPlayer::GetParameterValueString(const char* name, const char*& value)
+{
+	return scenarioEngine->scenarioReader->parameters.getParameterValueString(name, value);
+}
+
+int ScenarioPlayer::GetParameterValueBool(const char* name, bool& value)
+{
+	return scenarioEngine->scenarioReader->parameters.getParameterValueBool(name, value);
+}
+
+int ScenarioPlayer::SetParameterValue(const char* name, int value)
+{
+	return scenarioEngine->scenarioReader->parameters.setParameterValue(name, value);
+}
+
+int ScenarioPlayer::SetParameterValue(const char* name, double value)
+{
+	return scenarioEngine->scenarioReader->parameters.setParameterValue(name, value);
+}
+
+int ScenarioPlayer::SetParameterValue(const char* name, const char* value)
+{
+	return scenarioEngine->scenarioReader->parameters.setParameterValue(name, value);
+}
+
+int ScenarioPlayer::SetParameterValue(const char* name, bool value)
+{
+	return scenarioEngine->scenarioReader->parameters.setParameterValue(name, value);
+}
+
 #ifdef _SCENARIO_VIEWER
 	void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 	{

@@ -659,7 +659,53 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj) {
  
 }
 
+TEST(ParameterTest, GetTypedParameterValues) 
+{
+	std::string scenario_file = "../../../resources/xosc/lane_change.xosc";
+	const char* Scenario_file = scenario_file.c_str();
+	SE_Init(Scenario_file, 0, 0, 0, 0);
 
+	bool boolVar;
+	int retVal;
+	retVal = SE_GetParameterBool("DummyParameter2", &boolVar);
+	EXPECT_EQ(retVal, 0);
+	EXPECT_EQ(boolVar, true);
+
+	// Unavailable
+	retVal = SE_GetParameterBool("DoesNotExist", &boolVar);
+	EXPECT_EQ(retVal, -1);
+
+	// Set value
+	SE_SetParameterBool("DummyParameter2", false);
+	retVal = SE_GetParameterBool("DummyParameter2", &boolVar);
+	EXPECT_EQ(retVal, 0);
+	EXPECT_EQ(boolVar, false);
+
+	// Wrong name
+	retVal = SE_SetParameterBool("DummyParameter3", false);
+	EXPECT_EQ(retVal, -1);
+	
+	// Wrong type
+	retVal = SE_SetParameterInt("DummyParameter2", false);
+	EXPECT_EQ(retVal, -1);
+
+	// String
+	const char* strVar;
+	retVal = SE_GetParameterString("DummyParameter3", &strVar);
+	EXPECT_EQ(retVal, 0);
+	EXPECT_STREQ(strVar, "lane_change_param");
+
+	retVal = SE_SetParameterString("DummyParameter3", "Kalle");
+	EXPECT_EQ(retVal, 0);
+	retVal = SE_GetParameterString("DummyParameter3", &strVar);
+	EXPECT_EQ(retVal, 0);
+	EXPECT_STREQ(strVar, "Kalle");
+
+	retVal = SE_GetParameterString("DoesNotExist", &strVar);
+	EXPECT_EQ(retVal, -1);
+
+	SE_Close();
+}
 
 int main(int argc, char **argv)
 {

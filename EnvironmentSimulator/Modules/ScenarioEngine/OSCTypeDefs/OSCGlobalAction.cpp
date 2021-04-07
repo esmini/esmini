@@ -17,7 +17,7 @@ using namespace scenarioengine;
 void ParameterSetAction::Start()
 {
 	LOG("Set parameter %s = %s", name_.c_str(), value_.c_str());
-	parameters_->setParameterValue(name_, value_);
+	parameters_->setParameterValueByString(name_, value_);
 	OSCAction::Start();
 }
 

@@ -42,8 +42,16 @@ namespace scenarioengine
 		int GetNumberOfParameters();
 		const char* GetParameterName(int index, int *type);
 		int setParameterValue(std::string name, const void* value);
-		int setParameterValue(std::string name, std::string value);
+		int setParameterValueByString(std::string name, std::string value);
+		int setParameterValue(std::string name, int value);
+		int setParameterValue(std::string name, double value);
+		int setParameterValue(std::string name, const char* value);
+		int setParameterValue(std::string name, bool value);
 		int getParameterValue(std::string name, void* value);
+		int getParameterValueInt(std::string name, int& value);
+		int getParameterValueDouble(std::string name, double& value);
+		int getParameterValueString(std::string name, const char* &value);
+		int getParameterValueBool(std::string name, bool& value);
 		std::string getParameterValueAsString(std::string name);
 
 		// Use always this method when reading attributes, it will resolve any variables

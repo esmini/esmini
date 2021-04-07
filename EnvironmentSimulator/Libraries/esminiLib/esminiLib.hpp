@@ -92,7 +92,7 @@ typedef struct
 typedef struct
 {
 	const char* name;  // Name of the parameter as defined in the OpenSCENARIO file
-	void* value;  // Pointer to value which can be an integer, double or string (const char*) as defined in the OpenSCENARIO file
+	void* value;  // Pointer to value which can be an integer, double, bool or string (const char*) as defined in the OpenSCENARIO file
 } SE_Parameter;
 
 typedef struct
@@ -241,7 +241,7 @@ extern "C"
 	/**
 		Get the name of a named parameter
 		@param index The index of the parameter, range [0:numberOfParameters-1]
-		@param Output parameter type 0=int, 1=double, 2=string (const char*), see OSCParameterDeclarations/ParameterType
+		@param Output parameter type 0=int, 1=double, 2=string (const char*), 3=bool, see OSCParameterDeclarations/ParameterType
 		@return name if found, else 0
 	*/
 	SE_DLL_API const char* SE_GetParameterName(int index, int* type);
@@ -259,6 +259,66 @@ extern "C"
 		@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_GetParameter(SE_Parameter* parameter);
+
+	/**
+		Get typed value of named parameter
+		@parameterName Name of the parameter
+		@return 0 if successful, -1 if not (e.g. wrong type)
+	*/
+	SE_DLL_API int SE_GetParameterInt(const char* parameterName, int* value);
+
+	/**
+		Get typed value of named parameter
+		@parameterName Name of the parameter
+		@return 0 if successful, -1 if not (e.g. wrong type)
+	*/
+	SE_DLL_API int SE_GetParameterDouble(const char* parameterName, double* value);
+
+	/**
+	Get typed value of named parameter
+	@parameterName Name of the parameter
+	@return 0 if successful, -1 if not (e.g. wrong type)
+	*/
+	SE_DLL_API int SE_GetParameterString(const char* parameterName, const char** value);
+
+	/**
+	Get typed value of named parameter
+	@parameterName Name of the parameter
+	@return 0 if successful, -1 if not (e.g. wrong type)
+	*/
+	SE_DLL_API int SE_GetParameterBool(const char* parameterName, bool* value);
+
+	/**
+	Set typed value of named parameter
+	@parameterName Name of the parameter
+	@value Value 
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetParameterInt(const char* parameterName, int value);
+
+	/**
+	Set typed value of named parameter
+	@parameterName Name of the parameter
+	@value Value
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetParameterDouble(const char* parameterName, double value);
+	
+	/**
+	Set typed value of named parameter
+	@parameterName Name of the parameter
+	@value Value
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetParameterString(const char* parameterName, const char* value);
+
+	/**
+	Set typed value of named parameter
+	@parameterName Name of the parameter
+	@value Value
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetParameterBool(const char* parameterName, bool value);
 
 	SE_DLL_API void* SE_GetODRManager();
 

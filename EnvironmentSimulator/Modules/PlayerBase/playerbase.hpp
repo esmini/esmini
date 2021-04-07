@@ -79,6 +79,15 @@ public:
 	const char* GetParameterName(int index, int* type);
 	int SetParameterValue(const char* name, const void* value);
 	int GetParameterValue(const char* name, void* value);
+	int GetParameterValueInt(const char* name, int& value);
+	int GetParameterValueDouble(const char* name, double& value);
+	int GetParameterValueString(const char* name, const char*& value);
+	int GetParameterValueBool(const char* name, bool& value);
+	int SetParameterValue(const char* name, int value);
+	int SetParameterValue(const char* name, double value);
+	int SetParameterValue(const char* name, const char* value);
+	int SetParameterValue(const char* name, bool value);
+
 	roadmanager::OpenDrive *GetODRManager() { return odr_manager; }
 
 	CSV_Logger *CSV_Log;
