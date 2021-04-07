@@ -7390,14 +7390,18 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
 TrajVertex* PolyLineBase::AddVertex(double x, double y, double z, double h)
 {
 	TrajVertex v;
+	
+	v.calcHeading = false;
 	vertex_.push_back(v);
 	
-	return UpdateVertex(GetNumberOfVertices() - 1, x, y, z, h);
+	return UpdateVertex(GetNumberOfVertices() - 1, x, y, z, GetAngleInInterval2PI(h));
 }
 
 TrajVertex* PolyLineBase::AddVertex(double x, double y, double z)
 {
 	TrajVertex v;
+
+	v.calcHeading = true;
 	vertex_.push_back(v);
 
 	return UpdateVertex(GetNumberOfVertices() - 1, x, y, z);
@@ -7596,6 +7600,7 @@ void PolyLineBase::Reset()
 {
 	vertex_.clear();
 	vIndex_ = 0;
+	length_ = 0;
 }
 
 void PolyLineShape::AddVertex(Position pos, double time, bool calculateHeading)

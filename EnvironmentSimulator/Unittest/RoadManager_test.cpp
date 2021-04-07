@@ -1479,6 +1479,51 @@ TEST(RoadTest, RoadWidthDrivingLanes)
     delete odr;
 }
 
+TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
+{
+    PolyLineBase pline;
+    TrajVertex v = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false };
+
+    // Simple case
+    pline.AddVertex(0.0, 0.0, 0.0, 0.0);
+    pline.AddVertex(1.0, 0.0, 0.0, 1.0);
+    pline.Evaluate(0.5, v);
+
+    EXPECT_NEAR(v.x, 0.5, 1e-5);
+    EXPECT_NEAR(v.y, 0.0, 1e-5);
+    EXPECT_NEAR(v.h, 0.5, 1e-5);
+
+    // Wrap around case 1
+    pline.Reset();
+    pline.AddVertex(0.0, 0.0, 0.0, 2*M_PI - 0.01);
+    pline.AddVertex(1.0, 0.0, 0.0, 0.09);
+    pline.Evaluate(0.5, v);
+
+    EXPECT_NEAR(v.x, 0.5, 1e-5);
+    EXPECT_NEAR(v.y, 0.0, 1e-5);
+    EXPECT_NEAR(v.h, 0.04, 1e-5);
+
+    // Wrap around case 2
+    pline.Reset();
+    pline.AddVertex(10.0, 10.0, 0.0, 0.1);
+    pline.AddVertex(10.0, 0.0, 0.0, -0.5);
+    pline.Evaluate(5.0, v);
+
+    EXPECT_NEAR(v.x, 10.0, 1e-5);
+    EXPECT_NEAR(v.y, 5.0, 1e-5);
+    EXPECT_NEAR(v.h, 6.0831853, 1e-5);
+
+    // Wrap around case 3
+    pline.Reset();
+    pline.AddVertex(0.0, 0.0, 0.0, 0.1);
+    pline.AddVertex(0.0, 10.0, 0.0, 8.1);
+    pline.Evaluate(5.0, v);
+
+    EXPECT_NEAR(v.x, 0.0, 1e-5);
+    EXPECT_NEAR(v.y, 5.0, 1e-5);
+    EXPECT_NEAR(v.h, 0.958407, 1e-5);
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
