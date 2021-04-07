@@ -7347,7 +7347,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
 				a = (radius + local_s) / (2 * radius);
 				if (i > 0)
 				{
-					pos.h = a * vertex_[i].h + (1 - a) * vertex_[i - 1].h;
+					pos.h = vertex_[i-1].h + a * (GetAngleDifference(vertex_[i].h, vertex_[i-1].h));
 				}
 				else
 				{
@@ -7365,7 +7365,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
 				}
 				else
 				{
-					pos.h = a * vertex_[i].h + (1 - a) * vertex_[i + 1].h;
+					pos.h = vertex_[i].h + (1 - a) * (GetAngleDifference(vertex_[i+1].h, vertex_[i].h));
 				}
 			}
 			else
