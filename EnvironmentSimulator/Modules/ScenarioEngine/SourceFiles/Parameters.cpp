@@ -286,9 +286,13 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 		{
 			param.type = OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING;
 		}
-		else
+		else if (type_str == "unsignedInt" || type_str == "unsignedShort" || type_str == "boolean" || type_str == "dateTime")
 		{
 			LOG("Type %s is not supported yet", type_str.c_str());
+		}
+		else
+		{
+			LOG_AND_QUIT("Unexpected Type: %s", type_str.c_str());
 		}
 		pd->Parameter.insert(pd->Parameter.begin(), param);
 	}
