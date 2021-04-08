@@ -99,6 +99,29 @@ bool EvaluateRule(std::string a, std::string b, Rule rule)
 	return false;
 }
 
+bool EvaluateRule(bool a, bool b, Rule rule)
+{
+	if (rule == Rule::EQUAL_TO)
+	{
+		return a == b;
+	}
+	else if (rule == Rule::GREATER_THAN)
+	{
+		// Strange for booleans
+		return a != b;
+	}
+	else if (rule == Rule::LESS_THAN)
+	{
+		// Strange for booleans
+		return a != b;
+	}
+	else
+	{
+		LOG("Undefined Rule: %d", rule);
+	}
+	return false;
+}
+
 void OSCCondition::Log()
 {
 	LOG("%s result: %d", name_.c_str(), last_result_);
@@ -436,6 +459,10 @@ bool TrigByParameter::CheckCondition(StoryBoard* storyBoard, double sim_time)
 	else if (pe->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING)
 	{
 		result = EvaluateRule(pe->value._string, value_, rule_);
+	}
+	else if (pe->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL)
+	{
+		result = EvaluateRule(pe->value._bool, value_ == "true" ? true : false, rule_);
 	}
 	else
 	{
