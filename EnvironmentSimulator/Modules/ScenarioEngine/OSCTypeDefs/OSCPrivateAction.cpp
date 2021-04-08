@@ -1278,3 +1278,44 @@ void VisibilityAction::Step(double dt, double simTime)
 
 	OSCAction::Stop();
 }
+
+void OverrideControlAction::Start()
+{
+	
+	object_->OverrideActionList.throttle.active = active_;
+	object_->OverrideActionList.throttle.value = value_;
+	OSCAction::Start();
+}
+
+void OverrideControlAction::End()
+{
+	//object_->OverrideActionList.throttle.active = false;
+	OSCAction::End();
+}
+
+void OverrideControlAction::Step(double dt, double simTime)
+{
+	(void)dt;
+	(void)simTime;
+}
+
+void OverrideControlAction::RangeCheckAndErrorLog(const pugi::char_t* name, double& valueCheck, double upperLimit, double lowerLimit, bool ifRound)
+{
+	double temp = valueCheck;
+	if(valueCheck<=upperLimit&&valueCheck>=lowerLimit)
+	{	
+		if(!ifRound){
+			LOG("%s value %.2f is within range.",name,valueCheck);
+		}
+		else
+		{
+			valueCheck = round(temp);
+			LOG("%s value %.1f is within range and the value is rounded to %.1f.",name,temp,valueCheck);
+		}
+	}
+	else
+	{
+		valueCheck = (valueCheck>upperLimit)?upperLimit:lowerLimit;
+		LOG("%s value is not within range and is modified from %f to %.1f.", name, temp, valueCheck);
+	}
+}

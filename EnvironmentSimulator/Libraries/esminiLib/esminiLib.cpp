@@ -23,26 +23,26 @@
 
 using namespace scenarioengine;
 
-#define EGO_ID 0	// need to match appearing order in the OpenSCENARIO file
+#define EGO_ID 0 // need to match appearing order in the OpenSCENARIO file
 
 static ScenarioPlayer *player = 0;
 
 static char **argv_ = 0;
 static int argc_ = 0;
 static std::vector<std::string> args_v;
-static std::string returnString;  // use this for returning strings
+static std::string returnString; // use this for returning strings
 static bool logToConsole = true;
 
 typedef struct
 {
 	int id;
-	void (*func)(SE_ScenarioObjectState*, void*);
-	void* data;
+	void (*func)(SE_ScenarioObjectState *, void *);
+	void *data;
 } SE_ObjCallback;
 
 static std::vector<SE_ObjCallback> objCallback;
 
-static void log_callback(const char* str)
+static void log_callback(const char *str)
 {
 	if (logToConsole)
 	{
@@ -71,7 +71,7 @@ static void resetScenario(void)
 	returnString = "";
 }
 
-static void AddArgument(const char *str, bool split=true)
+static void AddArgument(const char *str, bool split = true)
 {
 	std::vector<std::string> args;
 	if (split)
@@ -93,11 +93,11 @@ static void AddArgument(const char *str, bool split=true)
 static void ConvertArguments()
 {
 	argc_ = (int)args_v.size();
-	argv_ = (char**)malloc(argc_ * sizeof(char*));
+	argv_ = (char **)malloc(argc_ * sizeof(char *));
 	std::string argument_list;
 	for (int i = 0; i < argc_; i++)
 	{
-		argv_[i] = (char*)malloc((args_v[i].size() + 1) * sizeof(char));
+		argv_[i] = (char *)malloc((args_v[i].size() + 1) * sizeof(char));
 		strcpy(argv_[i], args_v[i].c_str());
 		argument_list += std::string(" ") + argv_[i];
 	}
@@ -109,7 +109,7 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 	state->id = gw_state->info.id;
 	state->model_id = gw_state->info.model_id;
 	state->ctrl_type = gw_state->info.ctrl_type;
-//	strncpy(state->name, gw_state->info.name, NAME_LEN);
+	//	strncpy(state->name, gw_state->info.name, NAME_LEN);
 	state->timestamp = gw_state->info.timeStamp;
 	state->x = (float)gw_state->pos.GetX();
 	state->y = (float)gw_state->pos.GetY();
@@ -133,6 +133,27 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 	state->objectCategory = gw_state->info.obj_category;
 }
 
+static int copyOverrideActionListfromScenarioEngine(SE_OverrideActionList *list, Object *obj)
+{
+	if (obj == 0)
+	{
+		return -1;
+	}
+	list->throttle.active = obj->OverrideActionList.throttle.active;
+	list->throttle.value = obj->OverrideActionList.throttle.value;
+	list->brake.active = obj->OverrideActionList.brake.active;
+	list->brake.value = obj->OverrideActionList.brake.value;
+	list->clutch.active = obj->OverrideActionList.clutch.active;
+	list->clutch.value = obj->OverrideActionList.clutch.value;
+	list->parkingBrake.active = obj->OverrideActionList.parkingBrake.active;
+	list->parkingBrake.value = obj->OverrideActionList.parkingBrake.value;
+	list->steeringWheel.active = obj->OverrideActionList.steeringWheel.active;
+	list->steeringWheel.value = obj->OverrideActionList.steeringWheel.value;
+	list->gear.active = obj->OverrideActionList.gear.active;
+	list->gear.value = obj->OverrideActionList.gear.value;
+	return 0;
+}
+
 static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int lookAheadMode)
 {
 	roadmanager::RoadProbeInfo s_data;
@@ -148,7 +169,6 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 		return -1;
 	}
 
-	
 	roadmanager::Position *pos = &player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
 
 	if (pos->GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
@@ -177,20 +197,20 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 		r_data->s = (float)s_data.road_lane_info.s;
 		r_data->t = (float)s_data.road_lane_info.t;
 
-		// Add visualization of forward looking road sensor probe
-		#ifdef _SCENARIO_VIEWER
-			if (player->viewer_ && player->viewer_->entities_[object_id]->GetType() == viewer::EntityModel::ENTITY_TYPE_VEHICLE)
-			{
-				viewer::CarModel* model = (viewer::CarModel*)player->viewer_->entities_[object_id];
-				model->steering_sensor_->Show();
-				player->viewer_->SensorSetPivotPos(model->steering_sensor_, pos->GetX(), pos->GetY(), pos->GetZ());
-				player->viewer_->SensorSetTargetPos(model->steering_sensor_, 
-					s_data.road_lane_info.pos[0], 
-					s_data.road_lane_info.pos[1],
-					s_data.road_lane_info.pos[2]);
-				player->viewer_->UpdateSensor(model->steering_sensor_);
-			}
-		#endif
+// Add visualization of forward looking road sensor probe
+#ifdef _SCENARIO_VIEWER
+		if (player->viewer_ && player->viewer_->entities_[object_id]->GetType() == viewer::EntityModel::ENTITY_TYPE_VEHICLE)
+		{
+			viewer::CarModel *model = (viewer::CarModel *)player->viewer_->entities_[object_id];
+			model->steering_sensor_->Show();
+			player->viewer_->SensorSetPivotPos(model->steering_sensor_, pos->GetX(), pos->GetY(), pos->GetZ());
+			player->viewer_->SensorSetTargetPos(model->steering_sensor_,
+												s_data.road_lane_info.pos[0],
+												s_data.road_lane_info.pos[1],
+												s_data.road_lane_info.pos[2]);
+			player->viewer_->UpdateSensor(model->steering_sensor_);
+		}
+#endif
 		return 0;
 	}
 }
@@ -211,7 +231,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	}
 
 	Object *obj = player->scenarioEngine->entities.object_[object_id];
-	Object* ghost = 0;
+	Object *ghost = 0;
 	if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 	{
 		ghost = obj->GetGhost();
@@ -225,8 +245,8 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	double x, y, z;
 	int index_out;
 
-	if (ghost->trail_.FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(), obj->trail_closest_pos_, 
-		obj->trail_follow_index_, obj->trail_follow_index_) == 0)
+	if (ghost->trail_.FindClosestPoint(obj->pos_.GetX(), obj->pos_.GetY(), obj->trail_closest_pos_,
+									   obj->trail_follow_index_, obj->trail_follow_index_) == 0)
 	{
 		z = obj->pos_.GetZ();
 	}
@@ -239,7 +259,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	}
 
 	roadmanager::TrajVertex trailPos;
-	trailPos.h = (float)obj->pos_.GetH();  // Set default trail heading aligned with road - in case trail is less than two points (no heading)
+	trailPos.h = (float)obj->pos_.GetH(); // Set default trail heading aligned with road - in case trail is less than two points (no heading)
 	ghost->trail_.FindPointAhead(obj->trail_closest_pos_.s, lookahead_distance, trailPos, index_out, obj->trail_follow_index_);
 
 	roadmanager::Position pos(trailPos.x, trailPos.y, 0, 0, 0, 0);
@@ -261,7 +281,6 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	r_data->speed_limit = (float)s_data.road_lane_info.speed_limit;
 
 	*speed_ghost = (float)trailPos.speed;
-
 
 	// Update object sensor position for visualization
 	if (obj->sensor_pos_)
@@ -291,7 +310,7 @@ static int InitScenario()
 		// Initialize the scenario engine and viewer
 		player = new ScenarioPlayer(argc_, argv_);
 	}
-	catch (const std::exception& e)
+	catch (const std::exception &e)
 	{
 		LOG(e.what());
 		resetScenario();
@@ -303,7 +322,7 @@ static int InitScenario()
 
 extern "C"
 {
-	SE_DLL_API int SE_AddPath(const char* path)
+	SE_DLL_API int SE_AddPath(const char *path)
 	{
 		SE_Env::Inst().AddPath(path);
 		return 0;
@@ -314,7 +333,7 @@ extern "C"
 		SE_Env::Inst().ClearPaths();
 	}
 
-	SE_DLL_API void SE_SetLogFilePath(const char* logFilePath)
+	SE_DLL_API void SE_SetLogFilePath(const char *logFilePath)
 	{
 		SE_Env::Inst().SetLogFilePath(logFilePath);
 	}
@@ -326,7 +345,7 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_InitWithArgs(int argc, char* argv[])
+	SE_DLL_API int SE_InitWithArgs(int argc, char *argv[])
 	{
 		resetScenario();
 
@@ -338,7 +357,7 @@ extern "C"
 		return InitScenario();
 	}
 
-	SE_DLL_API int SE_InitWithString(const char* oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record)
+	SE_DLL_API int SE_InitWithString(const char *oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record)
 	{
 #ifndef _SCENARIO_VIEWER
 		if (use_viewer)
@@ -348,7 +367,7 @@ extern "C"
 #endif
 		resetScenario();
 
-		AddArgument("viewer");  // name of application
+		AddArgument("viewer"); // name of application
 		AddArgument("--osc_str");
 		AddArgument(oscAsXMLString, false);
 
@@ -376,7 +395,7 @@ extern "C"
 			AddArgument("--disable_controllers");
 		}
 
-		return InitScenario();		
+		return InitScenario();
 	}
 
 	SE_DLL_API int SE_Init(const char *oscFilename, int disable_ctrls, int use_viewer, int threads, int record)
@@ -389,7 +408,7 @@ extern "C"
 #endif
 		resetScenario();
 
-		AddArgument("viewer");  // name of application
+		AddArgument("viewer"); // name of application
 		AddArgument("--osc");
 		AddArgument(oscFilename, false);
 
@@ -424,9 +443,9 @@ extern "C"
 	SE_DLL_API int SE_GetQuitFlag()
 	{
 		int quit_flag;
-		if(player)
+		if (player)
 		{
-			if(player->IsQuitRequested())
+			if (player->IsQuitRequested())
 				quit_flag = 1;
 			else
 				quit_flag = 0;
@@ -435,10 +454,9 @@ extern "C"
 			quit_flag = 2;
 
 		return quit_flag;
-
 	}
 
-	SE_DLL_API const char* SE_GetODRFilename()
+	SE_DLL_API const char *SE_GetODRFilename()
 	{
 		if (!player)
 		{
@@ -448,7 +466,7 @@ extern "C"
 		return returnString.c_str();
 	}
 
-	SE_DLL_API const char* SE_GetSceneGraphFilename()
+	SE_DLL_API const char *SE_GetSceneGraphFilename()
 	{
 		if (!player)
 		{
@@ -468,7 +486,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API const char* SE_GetParameterName(int index, int* type)
+	SE_DLL_API const char *SE_GetParameterName(int index, int *type)
 	{
 		if (player)
 		{
@@ -489,7 +507,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_GetParameter(SE_Parameter* parameter)
+	SE_DLL_API int SE_GetParameter(SE_Parameter *parameter)
 	{
 		if (player)
 		{
@@ -583,7 +601,7 @@ extern "C"
 	{
 		if (player)
 		{
-			return (void*)player->GetODRManager();
+			return (void *)player->GetODRManager();
 		}
 		return NULL;
 	}
@@ -598,7 +616,7 @@ extern "C"
 		logToConsole = mode;
 	}
 
-	SE_DLL_API int SE_OpenOSISocket(const char* ipaddr)
+	SE_DLL_API int SE_OpenOSISocket(const char *ipaddr)
 	{
 		player->osiReporter->OpenSocket(ipaddr);
 		return 0;
@@ -704,8 +722,8 @@ extern "C"
 			{
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
-				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_, 
-					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, x, y, z, h, p, r);
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
+													  obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, x, y, z, h, p, r);
 			}
 		}
 
@@ -719,9 +737,9 @@ extern "C"
 			if (id < player->scenarioEngine->entities.object_.size())
 			{
 				// reuse some values
-				Object* obj = player->scenarioEngine->entities.object_[id];
+				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, x, y, h);
+													  obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, x, y, h);
 			}
 		}
 
@@ -736,8 +754,8 @@ extern "C"
 			{
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
-				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_, 
-					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
+				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
+													  obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
 			}
 		}
 
@@ -750,9 +768,9 @@ extern "C"
 		{
 			if (id < player->scenarioEngine->entities.object_.size())
 			{
-				Object* obj = player->scenarioEngine->entities.object_[id];
+				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-					obj->GetActivatedControllerType(), obj->boundingbox_, 0, speed, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+													  obj->GetActivatedControllerType(), obj->boundingbox_, 0, speed, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 			}
 			else
 			{
@@ -770,10 +788,10 @@ extern "C"
 			if (id < player->scenarioEngine->entities.object_.size())
 			{
 				// reuse some values
-				Object* obj = player->scenarioEngine->entities.object_[id];
+				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-					obj->GetActivatedControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_,
-					obj->wheel_rot_, obj->pos_.GetTrackId(), t, obj->pos_.GetS());
+													  obj->GetActivatedControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_,
+													  obj->wheel_rot_, obj->pos_.GetTrackId(), t, obj->pos_.GetS());
 			}
 			else
 			{
@@ -791,10 +809,10 @@ extern "C"
 			if (id < player->scenarioEngine->entities.object_.size())
 			{
 				// reuse some values
-				Object* obj = player->scenarioEngine->entities.object_[id];
+				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-					obj->GetActivatedControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_,
-					obj->wheel_rot_, obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), laneOffset, obj->pos_.GetS());
+													  obj->GetActivatedControllerType(), obj->boundingbox_, 0, obj->GetSpeed(), obj->wheel_angle_,
+													  obj->wheel_rot_, obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), laneOffset, obj->pos_.GetS());
 			}
 			else
 			{
@@ -912,7 +930,16 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API const char* SE_GetObjectName(int index)
+	SE_DLL_API int SE_GetOverrideActionStatus(int objectId, SE_OverrideActionList *list)
+	{
+		if (player)
+		{
+			return copyOverrideActionListfromScenarioEngine(list, player->scenarioEngine->entities.GetObjectById(objectId));
+		}
+		return -1;
+	}
+
+	SE_DLL_API const char *SE_GetObjectName(int index)
 	{
 		if (player && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
 		{
@@ -921,7 +948,7 @@ extern "C"
 		return "";
 	}
 
-	SE_DLL_API const char* SE_GetOSIGroundTruth(int* size)
+	SE_DLL_API const char *SE_GetOSIGroundTruth(int *size)
 	{
 		if (player)
 		{
@@ -932,17 +959,17 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API const char* SE_GetOSIGroundTruthRaw()
+	SE_DLL_API const char *SE_GetOSIGroundTruthRaw()
 	{
 		if (player)
 		{
-			return (const char*) player->osiReporter->GetOSIGroundTruthRaw();
+			return (const char *)player->osiReporter->GetOSIGroundTruthRaw();
 		}
 
 		return 0;
 	}
 
-	SE_DLL_API const char* SE_GetOSIRoadLane(int* size, int object_id)
+	SE_DLL_API const char *SE_GetOSIRoadLane(int *size, int object_id)
 	{
 		if (player)
 		{
@@ -953,7 +980,7 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API const char* SE_GetOSILaneBoundary(int* size, int global_id)
+	SE_DLL_API const char *SE_GetOSILaneBoundary(int *size, int global_id)
 	{
 		if (player)
 		{
@@ -964,7 +991,7 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId* ids)
+	SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId *ids)
 	{
 		if (player)
 		{
@@ -1021,17 +1048,17 @@ extern "C"
 		return 0;
 	}
 
-    SE_DLL_API const char* SE_GetOSISensorDataRaw()
+	SE_DLL_API const char *SE_GetOSISensorDataRaw()
 	{
 		if (player)
 		{
-			return (const char*) player->osiReporter->GetOSISensorDataRaw();
+			return (const char *)player->osiReporter->GetOSISensorDataRaw();
 		}
 
 		return 0;
 	}
 
-	SE_DLL_API bool SE_OSIFileOpen(const char* filename)
+	SE_DLL_API bool SE_OSIFileOpen(const char *filename)
 	{
 		if (player)
 		{
@@ -1057,16 +1084,15 @@ extern "C"
 		return retval;
 	}
 
-	SE_DLL_API void SE_LogMessage(char* message)
+	SE_DLL_API void SE_LogMessage(char *message)
 	{
 		LOG(message);
 	}
 
-
 	SE_DLL_API int SE_ObjectHasGhost(int index)
 	{
-		Object* ghost = 0;
-		if(player->scenarioEngine->entities.object_[index]->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
+		Object *ghost = 0;
+		if (player->scenarioEngine->entities.object_[index]->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 		{
 			ghost = player->scenarioEngine->entities.object_[index]->GetGhost();
 		}
@@ -1075,12 +1101,12 @@ extern "C"
 
 	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state)
 	{
-		Object* ghost = 0;
+		Object *ghost = 0;
 		if (player)
 		{
 			if (index < player->scenarioEngine->entities.object_.size())
 			{
-				for (size_t i = 0; i < player->scenarioEngine->entities.object_.size(); i++)  // ghost index always higher than external buddy
+				for (size_t i = 0; i < player->scenarioEngine->entities.object_.size(); i++) // ghost index always higher than external buddy
 				{
 					if (player->scenarioEngine->entities.object_[index]->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 					{
@@ -1121,23 +1147,23 @@ extern "C"
 
 	}*/
 
-	SE_DLL_API int SE_GetObjectStates(int *nObjects, SE_ScenarioObjectState* state)
+	SE_DLL_API int SE_GetObjectStates(int *nObjects, SE_ScenarioObjectState *state)
 	{
-	int i;
+		int i;
 
-	if (player)
-	{
-		for (i = 0; i < *nObjects && i < player->scenarioGateway->getNumberOfObjects(); i++)
+		if (player)
 		{
-			copyStateFromScenarioGateway(&state[i], &player->scenarioGateway->getObjectStatePtrByIdx(i)->state_);
+			for (i = 0; i < *nObjects && i < player->scenarioGateway->getNumberOfObjects(); i++)
+			{
+				copyStateFromScenarioGateway(&state[i], &player->scenarioGateway->getObjectStatePtrByIdx(i)->state_);
+			}
+			*nObjects = i;
 		}
-		*nObjects = i;
-	}
-	else
-	{
-		*nObjects = 0;
-	}
-	return 0;
+		else
+		{
+			*nObjects = 0;
+		}
+		return 0;
 	}
 
 	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj)
@@ -1167,7 +1193,7 @@ extern "C"
 		}
 	}
 
-	SE_DLL_API void SE_EnableOSIFile(const char* filename)
+	SE_DLL_API void SE_EnableOSIFile(const char *filename)
 	{
 		if (player)
 		{
@@ -1196,14 +1222,14 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo* data, int lookAheadMode, bool inRoadDrivingDirection)
+	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int lookAheadMode, bool inRoadDrivingDirection)
 	{
 		if (player == 0 || object_id >= player->scenarioGateway->getNumberOfObjects())
 		{
 			return -1;
 		}
 
-		Object* obj = player->scenarioEngine->entities.object_[object_id];
+		Object *obj = player->scenarioEngine->entities.object_[object_id];
 
 		double adjustedLookaheadDistance = lookahead_distance;
 
@@ -1215,7 +1241,7 @@ extern "C"
 				adjustedLookaheadDistance = -lookahead_distance;
 			}
 		}
-		
+
 		if (GetRoadInfoAtDistance(object_id, adjustedLookaheadDistance, data, lookAheadMode) != 0)
 		{
 			return -1;
@@ -1224,7 +1250,7 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo* data, float* speed_ghost)
+	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost)
 	{
 		if (player == 0 || object_id >= player->scenarioGateway->getNumberOfObjects())
 		{
@@ -1239,7 +1265,7 @@ extern "C"
 		return 0;
 	}
 
-	void callback(ObjectStateStruct* state, void* my_data)
+	void callback(ObjectStateStruct *state, void *my_data)
 	{
 		for (size_t i = 0; i < objCallback.size(); i++)
 		{
@@ -1252,7 +1278,7 @@ extern "C"
 		}
 	}
 
-	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState*, void*), void *user_data)
+	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState *, void *), void *user_data)
 	{
 		if (player == 0 || object_id >= player->scenarioGateway->getNumberOfObjects())
 		{
@@ -1269,7 +1295,7 @@ extern "C"
 	{
 		if (player)
 		{
-			roadmanager::Road* road = player->odr_manager->GetRoadById(road_id);
+			roadmanager::Road *road = player->odr_manager->GetRoadById(road_id);
 			if (road != NULL)
 			{
 				return road->GetNumberOfSignals();
@@ -1278,14 +1304,14 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign* road_sign)
+	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign *road_sign)
 	{
 		if (player)
 		{
-			roadmanager::Road* road = player->odr_manager->GetRoadById(road_id);
+			roadmanager::Road *road = player->odr_manager->GetRoadById(road_id);
 			if (road != NULL)
 			{
-				roadmanager::Signal* s = road->GetSignal(index);
+				roadmanager::Signal *s = road->GetSignal(index);
 
 				if (s)
 				{
@@ -1313,73 +1339,72 @@ extern "C"
 		return -1;
 	}
 
-	#ifdef _SCENARIO_VIEWER
-		SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
-		{
-			if (player && player->viewer_)
-			{
-				player->viewer_->SetNodeMaskBits(featureType, enable ? featureType : 0x0);
-			}
-		}
-	#endif
-
-	// Simple vehicle 
-	SE_DLL_API void* SE_SimpleVehicleCreate(float x, float y, float h, float length)
+#ifdef _SCENARIO_VIEWER
+	SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
 	{
-		vehicle::Vehicle* v = new vehicle::Vehicle(x, y, h, length);
-		return (void*)v;
+		if (player && player->viewer_)
+		{
+			player->viewer_->SetNodeMaskBits(featureType, enable ? featureType : 0x0);
+		}
+	}
+#endif
+
+	// Simple vehicle
+	SE_DLL_API void *SE_SimpleVehicleCreate(float x, float y, float h, float length)
+	{
+		vehicle::Vehicle *v = new vehicle::Vehicle(x, y, h, length);
+		return (void *)v;
 	}
 
-	SE_DLL_API void SE_SimpleVehicleDelete(void* handleSimpleVehicle)
+	SE_DLL_API void SE_SimpleVehicleDelete(void *handleSimpleVehicle)
 	{
 		if (handleSimpleVehicle)
 		{
-			free((vehicle::Vehicle*)handleSimpleVehicle);
+			free((vehicle::Vehicle *)handleSimpleVehicle);
 			handleSimpleVehicle = 0;
 		}
 	}
 
-	SE_DLL_API void SE_SimpleVehicleControlBinary(void* handleSimpleVehicle, double dt, int throttle, int steering)
+	SE_DLL_API void SE_SimpleVehicleControlBinary(void *handleSimpleVehicle, double dt, int throttle, int steering)
 	{
 		if (handleSimpleVehicle == 0)
 		{
 			return;
 		}
 
-		((vehicle::Vehicle*)handleSimpleVehicle)->DrivingControlBinary(dt,
-			(vehicle::THROTTLE)throttle, (vehicle::STEERING)steering);
+		((vehicle::Vehicle *)handleSimpleVehicle)->DrivingControlBinary(dt, (vehicle::THROTTLE)throttle, (vehicle::STEERING)steering);
 	}
 
-	SE_DLL_API void SE_SimpleVehicleControlAnalog(void* handleSimpleVehicle, double dt, double throttle, double steering)
+	SE_DLL_API void SE_SimpleVehicleControlAnalog(void *handleSimpleVehicle, double dt, double throttle, double steering)
 	{
 		if (handleSimpleVehicle == 0)
 		{
 			return;
 		}
 
-		((vehicle::Vehicle*)handleSimpleVehicle)->DrivingControlAnalog(dt, throttle, steering);
+		((vehicle::Vehicle *)handleSimpleVehicle)->DrivingControlAnalog(dt, throttle, steering);
 	}
 
-	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void* handleSimpleVehicle, float speed)
+	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void *handleSimpleVehicle, float speed)
 	{
 		if (handleSimpleVehicle == 0)
 		{
 			return;
 		}
-		((vehicle::Vehicle*)handleSimpleVehicle)->SetMaxSpeed(speed);
+		((vehicle::Vehicle *)handleSimpleVehicle)->SetMaxSpeed(speed);
 	}
 
-	SE_DLL_API void SE_SimpleVehicleGetState(void* handleSimpleVehicle, SE_SimpleVehicleState* state)
+	SE_DLL_API void SE_SimpleVehicleGetState(void *handleSimpleVehicle, SE_SimpleVehicleState *state)
 	{
 		if (handleSimpleVehicle == 0)
 		{
 			return;
 		}
-		state->x = ((vehicle::Vehicle*)handleSimpleVehicle)->posX_;
-		state->y = ((vehicle::Vehicle*)handleSimpleVehicle)->posY_;
-		state->z = ((vehicle::Vehicle*)handleSimpleVehicle)->posZ_;
-		state->h = ((vehicle::Vehicle*)handleSimpleVehicle)->heading_;
-		state->p = ((vehicle::Vehicle*)handleSimpleVehicle)->pitch_;
-		state->speed = ((vehicle::Vehicle*)handleSimpleVehicle)->speed_;
+		state->x = ((vehicle::Vehicle *)handleSimpleVehicle)->posX_;
+		state->y = ((vehicle::Vehicle *)handleSimpleVehicle)->posY_;
+		state->z = ((vehicle::Vehicle *)handleSimpleVehicle)->posZ_;
+		state->h = ((vehicle::Vehicle *)handleSimpleVehicle)->heading_;
+		state->p = ((vehicle::Vehicle *)handleSimpleVehicle)->pitch_;
+		state->speed = ((vehicle::Vehicle *)handleSimpleVehicle)->speed_;
 	}
 }

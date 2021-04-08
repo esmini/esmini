@@ -61,6 +61,22 @@ namespace scenarioengine
 			std::string name_;
 			std::string value_;
 		};
+		
+		typedef struct 
+		{
+			bool active;  // True: override; false: stop overriding
+			double value; // Depends on action, see SE_OverrideActionList
+		}OverrideActionStatus;
+
+		struct 
+		{
+			OverrideActionStatus throttle;	   // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the throttle pedal.
+			OverrideActionStatus brake;		   // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the brake pedal.
+			OverrideActionStatus clutch;		   // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the clutch pedal.
+			OverrideActionStatus parkingBrake;  // Value range: [0..1]. 0 represents 0%, The value 1 represent the maximum parking brake state.
+			OverrideActionStatus steeringWheel; // Steering wheel angle. Unit: rad. (0: Neutral position, positive: Left, negative: Right)
+			OverrideActionStatus gear;		   // Gear number. (-1:Reverse, 0:Neutral, 1:Gear 1, 2:Gear 2, and so on.)
+		}OverrideActionList;
 
 		Type type_;
 		int category_; // specific object category in vehicle, pedestrian or misobject

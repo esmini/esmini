@@ -97,6 +97,22 @@ typedef struct
 
 typedef struct
 {
+	bool   active;  // True: override; false: stop overriding
+	double value;   // Depends on action, see SE_OverrideActionList
+} SE_OverrideActionStatus;
+
+typedef struct
+{
+	SE_OverrideActionStatus throttle;       // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the throttle pedal.
+	SE_OverrideActionStatus brake;          // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the brake pedal.
+	SE_OverrideActionStatus clutch;         // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the clutch pedal.
+	SE_OverrideActionStatus parkingBrake;   // Value range: [0..1]. 0 represents 0%, The value 1 represent the maximum parking brake state.
+	SE_OverrideActionStatus steeringWheel;  // Steering wheel angle. Unit: rad. (0: Neutral position, positive: Left, negative: Right)
+	SE_OverrideActionStatus gear;           // Gear number. (-1:Reverse, 0:Neutral, 1:Gear 1, 2:Gear 2, and so on.)
+} SE_OverrideActionList;
+
+typedef struct
+{
 	int id;	           // just an unique identifier of the sign
 	float x;           // global x coordinate of sign position
 	float y;           // global y coordinate of sign position
@@ -451,6 +467,7 @@ extern "C"
 		@param y_vel Y component of linear velocity
 		@param z_vel Z component of linear velocity
 		@return 0 if successful, -1 if not
+
 	*/
 	SE_DLL_API int SE_ReportObjectVel(int id, float timestamp, float x_vel, float y_vel, float z_vel);
 
@@ -507,6 +524,14 @@ extern "C"
 		@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState* state);
+
+	/**
+		Get the overrideActionStatus of specified object
+		@param objectId ID of the object.
+		@param list Pointer/reference to a SE_OverrideActionList struct to be filled in
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_GetOverrideActionStatus(int objectId, SE_OverrideActionList *list);
 
 	/**
 		Get the name of specified object

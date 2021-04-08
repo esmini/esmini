@@ -25,14 +25,11 @@
 #include "ScenarioReader.hpp"
 #include "RoadNetwork.hpp"
 
-
-
 namespace scenarioengine
 {
 	class ScenarioEngine
 	{
 	public:
-
 		Entities entities;
 
 		ScenarioEngine(std::string oscFilename, bool disable_controllers = false);
@@ -45,9 +42,9 @@ namespace scenarioengine
 		void step(double deltaSimTime);
 		void printSimulationTime();
 		void prepareOSIGroundTruth(double dt);
-		void defaultController(Object* obj, double dt);
-		void ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Object* obj2, double timeOffset);
-		void SetupGhost(Object* object);
+		void defaultController(Object *obj, double dt);
+		void ReplaceObjectInTrigger(Trigger *trigger, Object *obj1, Object *obj2, double timeOffset);
+		void SetupGhost(Object *object);
 
 		std::string getScenarioFilename() { return scenarioReader->getScenarioFilename(); }
 		std::string getSceneGraphFilename() { return roadNetwork.sceneGraphFile.filepath; }
@@ -57,12 +54,12 @@ namespace scenarioengine
 		ScenarioGateway *getScenarioGateway();
 		double getSimulationTime() { return simulationTime_; }
 		bool GetQuitFlag() { return quit_flag; }
-		ScenarioReader* scenarioReader;
-		ScenarioReader* GetScenarioReader() { return scenarioReader; }
+		ScenarioReader *scenarioReader;
+		ScenarioReader *GetScenarioReader() { return scenarioReader; }
 		void SetHeadstartTime(double headstartTime) { headstart_time_ = headstartTime; }
 		double GetHeadstartTime() { return headstart_time_; }
 		void SetSimulationTime(double time) { simulationTime_ = time; }
-		double* GetSimulationTimePtr() { return &simulationTime_; }
+		double *GetSimulationTimePtr() { return &simulationTime_; }
 
 	private:
 		// OpenSCENARIO parameters
