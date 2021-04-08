@@ -38,6 +38,8 @@ else()
   message(FATAL_ERROR "Unrecognized platform therefore there isn't an installation directory. Stopping the cmake process.")
 endif()
 
+set(INSTALL_DIRECTORY_CODE_EXAMPLES "${CMAKE_HOME_DIRECTORY}/code-examples-bin")
+
 set(PUGIXML_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/pugixml")
 
 include_directories( ${PUGIXML_INCLUDE_DIR} )

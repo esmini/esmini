@@ -6744,6 +6744,10 @@ int Position::GetRoadLaneInfo(RoadLaneInfo *data)
 	data->heading = GetHRoad();
 	data->pitch = GetPRoad();
 	data->roll = GetRRoad();
+	data->laneId = GetLaneId();
+	data->laneOffset = GetOffset();
+	data->roadId = GetTrackId();
+	data->t = GetT();
 
 	// Then find out the width of the lane at current s-value
 	Road *road = GetRoadById(GetTrackId());

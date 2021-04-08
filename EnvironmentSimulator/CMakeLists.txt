@@ -328,6 +328,9 @@ add_subdirectory(Libraries/esminiLib)
 add_subdirectory(Libraries/esminiRMLib)
 add_subdirectory(Applications/esmini)
 add_subdirectory(Applications/esmini-dyn)
+add_subdirectory(code-examples/rm-basic)
+add_subdirectory(code-examples/access-odr)
+
 
 # Add unittest folder
 if(APPLE)
@@ -339,12 +342,16 @@ endif()
 set ( ModulesFolder Modules )
 set ( ApplicationsFolder Applications )  
 set ( LibrariesFolder Libraries )  
+set ( CodeExamplesFolder code-examples )  
 
 set_target_properties (RoadManager PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (CommonMini PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (ScenarioEngine PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (RoadManager PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (ScenarioEngine PROPERTIES FOLDER ${ModulesFolder} )
+
+set_target_properties (rm-basic PROPERTIES FOLDER ${CodeExamplesFolder} )
+set_target_properties (access-odr PROPERTIES FOLDER ${CodeExamplesFolder} )
 
 #
 # Download library and content binary packets
