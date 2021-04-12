@@ -97,12 +97,17 @@ for:
             
             ./RoadManager_test
             if ($lastExitCode -ne 0) {
-                throw "OperatingSystem_test failed"
+                throw "RoadManager_test failed"
             }
+            
+            ./ScenarioEngine_test
+            if ($lastExitCode -ne 0) {
+                throw "ScenarioEngine_test failed"
+            }      
             
             ./ScenarioEngineDll_test
             if ($lastExitCode -ne 0) {
-                throw "OperatingSystem_test failed"
+                throw "ScenarioEngineDll_test failed"
             }      
 
             cd ../../../test
@@ -222,6 +227,11 @@ for:
             ./Release/RoadManager_test
             if ($lastExitCode -ne 0) {
                 throw "RoadManager_test failed"
+            }
+            
+            ./Release/ScenarioEngine_test
+            if ($lastExitCode -ne 0) {
+                throw "ScenarioEngine_test failed"
             }
             
             ./Release/ScenarioEngineDll_test
