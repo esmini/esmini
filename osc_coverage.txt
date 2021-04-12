@@ -1,4 +1,27 @@
-                                             
+OpenSCENARIO 1.1 specifics (not complete)
+    TrajectoryPosition                       Yes
+    FollowTrajectoryAction
+        initialDistanceOffset                Yes
+    CoordinateSystem
+        entity                               Yes
+        lane                                 No (falling back to road)
+        road                                 Yes
+        trajectory                           Incomplete (long but not lat)
+    RelativeDistanceType
+        lateral                              Yes
+        longitudinal                         No (falling back to road)
+        cartesianDistance                    Yes
+        euclidianDistance                    Yes
+    Condition Rule
+        equalTo                              Yes (1.0)
+        greaterThan                          Yes (1.0)
+        lessThan                             Yes (1.0)
+        greaterOrEqual                       Yes (1.1)
+        lessOrEqual                          Yes (1.1)
+        notEqualTo                           Yes (1.1)
+    SynchronizeAction
+        SteadyState                          Yes
+                     
 OpenSCENARIO                                 
 ParameterDeclaration                         Yes
 Catalogs                                     
@@ -79,7 +102,7 @@ OSCTypeDefs
             StartConditions                  Yes
     OSCPedestrian                            
     OSCVehicle                               
-        ParameterDeclaration                 No
+        ParameterDeclaration                 Yes
         Performance                          Yes
         BoundingBox                          Yes
         Axles                                Yes

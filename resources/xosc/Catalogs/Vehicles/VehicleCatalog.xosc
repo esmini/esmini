@@ -6,6 +6,9 @@
                author="Erik Gunnarsson"/>
    <Catalog name="VehicleCatalog">
       <Vehicle name="car_white" vehicleCategory="car">
+         <ParameterDeclarations>
+            <ParameterDeclaration name="EgoModelId" parameterType="integer" value="0"/>
+         </ParameterDeclarations>
          <BoundingBox>
             <Center x="1.4" y="0.0" z="0.9"/>
             <Dimensions width="2.0" length="5.0" height="1.8"/>
@@ -25,7 +28,7 @@
          </Axles>
          <Properties>
             <File filepath="../models/car_white.osgb"/>
-            <Property name="model_id" value="0"/>
+            <Property name="model_id" value="$EgoModelId"/>
          </Properties>
       </Vehicle>
       <Vehicle name="car_blue" vehicleCategory="car">

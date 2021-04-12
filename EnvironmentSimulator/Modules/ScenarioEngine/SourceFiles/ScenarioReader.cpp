@@ -435,6 +435,15 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	{
 		return 0;
 	}
+
+	// First check for parameter declaration
+	pugi::xml_node paramDecl = vehicleNode.child("ParameterDeclarations");
+
+	if (!paramDecl.empty())
+	{
+		parameters.addParameterDeclarations(paramDecl);
+	}
+
 	vehicle->name_ = parameters.ReadAttribute(vehicleNode, "name");
 	vehicle->SetCategory(parameters.ReadAttribute(vehicleNode, "vehicleCategory"));
 
@@ -474,6 +483,11 @@ Vehicle* ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	OSCBoundingBox boundingbox;
 	ParseOSCBoundingBox(boundingbox, vehicleNode);
 	vehicle->boundingbox_=boundingbox;
+
+	if (!paramDecl.empty())
+	{
+		parameters.RestoreParameterDeclarations();
+	}
 
 	return vehicle;
 }
@@ -583,7 +597,7 @@ Controller* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 
 	// First check for parameter declaration
 	pugi::xml_node paramDecl = controllerNode.child("ParameterDeclarations");
-	if (paramDecl)
+	if (!paramDecl.empty())
 	{
 		parameters.addParameterDeclarations(paramDecl);
 	}
@@ -651,7 +665,7 @@ Controller* ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 		}
 	}
 
-	if (paramDecl)
+	if (!paramDecl.empty())
 	{
 		parameters.RestoreParameterDeclarations();
 	}
