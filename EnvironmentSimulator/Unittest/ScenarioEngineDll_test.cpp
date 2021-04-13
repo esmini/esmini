@@ -13,7 +13,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#if 0
 class GetNumberOfObjectsTest :public ::testing::TestWithParam<std::tuple<std::string,int>> {};
 // inp: scenario file
 // expected: number of objects in the scenario
@@ -709,7 +708,7 @@ TEST(ParameterTest, GetTypedParameterValues)
 
 	SE_Close();
 }
-#endif
+
 TEST(OverrideActionTest, TestGetAndSet)
 {
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/override_action.xosc";
