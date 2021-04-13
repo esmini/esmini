@@ -1,5 +1,34 @@
 ## esmini release notes
 
+### 2021-04-13 Version 2.7.0
+
+- Support selected parts of OpenSCENARIO v1.1  
+  for example:
+   - TrajectoryPosition
+   - FollowTrajectory with initialDistanceOffset
+   - SynchronizeAction with steady state option
+   - CoordinateSystem and RelativeDistanceType in distance operations
+
+  Most significant limitations:
+   - Logical scenarios not supported yet (e.g. ParameterValueDistribution and StochasticDistribution)
+   - Expressions not supported yet (Arithmetic calculations and logical expressions)
+
+   [OpenSCENARIO](https://www.asam.net/standards/detail/openscenario/) v1.1 examples runs (with above limitations)
+
+Other updates:
+- Support OSI intersections
+- Implement OverrideControllerValueAction
+- Add typed Get and Set functions for named parameters
+- Add Vehicle ParameterDeclaration support 
+- Add support for boolean parameter type in conditions
+- Add "--disable_stdout" option to prevent log messages being written to console
+- Remove debug trace (code module, code line...) as default setting
+- Clean up log messages 
+- Add scenarioEngine unit test module, with one initial test
+- Fix road::GetWidth both-sides bug (issue #96)
+- Fix trajectory heading interpolation issue 
+- Add a few basic [code examples](https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples), e.g. [how to use esminiRMLib](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/rm-basic/rm-basic.cpp)
+
 ### 2021-04-01 Version 2.6.1
 
 - New feature: Visualize complete driving trajectories in replayer

@@ -220,6 +220,7 @@ OSCTypeDefs
         Synchronize                          Yes
         ActivateController                   Yes
         Controller                           Yes 
+        OverrideControllerActionValue        Yes
         TeleportAction                       Yes
         Routing                              
             AssignRoute                      Yes
