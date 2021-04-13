@@ -1291,15 +1291,15 @@ void VisibilityAction::Step(double dt, double simTime)
 
 void OverrideControlAction::Start()
 {
-	
-	object_->OverrideActionList.throttle.active = active_;
-	object_->OverrideActionList.throttle.value = value_;
+	for (size_t i = 0; i < overrideActionList.size(); i++)
+	{
+		object_->overrideActionList[overrideActionList[i].type] = overrideActionList[i];
+	}
 	OSCAction::Start();
 }
 
 void OverrideControlAction::End()
 {
-	//object_->OverrideActionList.throttle.active = false;
 	OSCAction::End();
 }
 
@@ -1309,23 +1309,24 @@ void OverrideControlAction::Step(double dt, double simTime)
 	(void)simTime;
 }
 
-void OverrideControlAction::RangeCheckAndErrorLog(const pugi::char_t* name, double& valueCheck, double upperLimit, double lowerLimit, bool ifRound)
+double OverrideControlAction::RangeCheckAndErrorLog(Object::OverrideType type, double valueCheck, double lowerLimit, double upperLimit, bool ifRound)
 {
 	double temp = valueCheck;
 	if(valueCheck<=upperLimit&&valueCheck>=lowerLimit)
 	{	
 		if(!ifRound){
-			LOG("%s value %.2f is within range.",name,valueCheck);
+			LOG("%d value %.2f is within range.", type, valueCheck);
 		}
 		else
 		{
 			valueCheck = round(temp);
-			LOG("%s value %.1f is within range and the value is rounded to %.1f.",name,temp,valueCheck);
+			LOG("%d value %.1f is within range and the value is rounded to %.1f.", type, temp,valueCheck);
 		}
 	}
 	else
 	{
 		valueCheck = (valueCheck>upperLimit)?upperLimit:lowerLimit;
-		LOG("%s value is not within range and is modified from %f to %.1f.", name, temp, valueCheck);
+		LOG("%d value is not within range and is modified from %f to %.1f.", type, temp, valueCheck);
 	}
+	return valueCheck;
 }

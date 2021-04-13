@@ -11,7 +11,7 @@ using namespace scenarioengine;
 
 #define TRIG_ERR_MARGIN 0.001
 
-TEST(DistanceTest, CalcDistanceLong)
+TEST(DistanceTest, CalcDistanceVariations)
 {
     double dist = 0.0;
     Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/curve_r100.xodr");

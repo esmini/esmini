@@ -10,7 +10,10 @@
 #include <stdexcept>
 #include <fstream>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
 
+#if 0
 class GetNumberOfObjectsTest :public ::testing::TestWithParam<std::tuple<std::string,int>> {};
 // inp: scenario file
 // expected: number of objects in the scenario
@@ -705,6 +708,56 @@ TEST(ParameterTest, GetTypedParameterValues)
 	EXPECT_EQ(retVal, -1);
 
 	SE_Close();
+}
+#endif
+TEST(OverrideActionTest, TestGetAndSet)
+{
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/override_action.xosc";
+	const char* Scenario_file = scenario_file.c_str();
+	float dt = 0.1f;
+	float t = 0.0f;
+
+	SE_OverrideActionList list;
+
+	ASSERT_EQ(SE_Init(Scenario_file, 0, 0, 0, 0), 0);
+
+	EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+	EXPECT_EQ(list.throttle.active, false);
+	EXPECT_DOUBLE_EQ(list.throttle.value, 0.0);
+
+	for (; t < 2.5; t += dt)
+	{
+		SE_StepDT(dt);
+	}
+	// Should still be no changes
+	EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+	EXPECT_EQ(list.throttle.active, false);
+	EXPECT_DOUBLE_EQ(list.throttle.value, 0.0);
+
+	for (; t < 3.1; t += dt)
+	{
+		SE_StepDT(dt);
+	}
+	// Now there should be some settings done
+	EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+	EXPECT_EQ(list.throttle.active, true);
+	EXPECT_DOUBLE_EQ(list.throttle.value, 0.5);
+	EXPECT_EQ(list.clutch.active, false);
+	EXPECT_DOUBLE_EQ(list.clutch.value, 1.0);
+	EXPECT_EQ(list.steeringWheel.active, false);
+	EXPECT_DOUBLE_EQ(list.steeringWheel.value, 0.0);
+
+	for (; t < 5.1; t += dt)
+	{
+		SE_StepDT(dt);
+	}
+	EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+	EXPECT_EQ(list.throttle.active, true);
+	EXPECT_DOUBLE_EQ(list.throttle.value, 0.5);
+	EXPECT_EQ(list.clutch.active, true);
+	EXPECT_DOUBLE_EQ(list.clutch.value, 0.7);
+	EXPECT_EQ(list.steeringWheel.active, false);
+	EXPECT_NEAR(list.steeringWheel.value, 2 * M_PI, 0.01);
 }
 
 int main(int argc, char **argv)

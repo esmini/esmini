@@ -262,6 +262,30 @@ extern "C"
 	*/
 	SE_DLL_API const char* SE_GetParameterName(int index, int* type);
 
+	//TODO
+	/**
+		Get the number of vehicle properties by index
+		@param index The index of the vehicle
+		@return number of parameters
+	*/
+	SE_DLL_API int SE_GetNumberOfVehicleProperties(int index);
+	//TODO
+	/**
+		Get the number of vehicle properties by index
+		@param index The index of the vehicle
+		@param propertyIndex The index of the property
+		@return the name of the property by index
+	*/
+	SE_DLL_API const char *SE_GetvehiclePropertyName(int index, int propertyIndex);
+	//TODO
+		/**
+		Get the value of a vehicle property by name
+		@param index The index of the vehicle
+		@param vehiclePropertyName the vehicle property name
+		@return the value of a vehicle property by name
+	*/
+	SE_DLL_API const char *SE_GetVehiclePropertyValue(int index, const char *vehiclePropertyName);
+
 	/**
 		Set value of named parameter
 		@param parameter Struct object including name of parameter and pointer to value, see SE_Parameter declaration

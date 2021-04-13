@@ -139,18 +139,20 @@ static int copyOverrideActionListfromScenarioEngine(SE_OverrideActionList *list,
 	{
 		return -1;
 	}
-	list->throttle.active = obj->OverrideActionList.throttle.active;
-	list->throttle.value = obj->OverrideActionList.throttle.value;
-	list->brake.active = obj->OverrideActionList.brake.active;
-	list->brake.value = obj->OverrideActionList.brake.value;
-	list->clutch.active = obj->OverrideActionList.clutch.active;
-	list->clutch.value = obj->OverrideActionList.clutch.value;
-	list->parkingBrake.active = obj->OverrideActionList.parkingBrake.active;
-	list->parkingBrake.value = obj->OverrideActionList.parkingBrake.value;
-	list->steeringWheel.active = obj->OverrideActionList.steeringWheel.active;
-	list->steeringWheel.value = obj->OverrideActionList.steeringWheel.value;
-	list->gear.active = obj->OverrideActionList.gear.active;
-	list->gear.value = obj->OverrideActionList.gear.value;
+	
+	list->throttle.active = obj->overrideActionList[Object::OverrideType::OVERRIDE_THROTTLE].active;
+	list->throttle.value = obj->overrideActionList[Object::OverrideType::OVERRIDE_THROTTLE].value;
+	list->brake.active = obj->overrideActionList[Object::OverrideType::OVERRIDE_BRAKE].active;
+	list->brake.value = obj->overrideActionList[Object::OverrideType::OVERRIDE_BRAKE].value;
+	list->clutch.active = obj->overrideActionList[Object::OverrideType::OVERRIDE_CLUTCH].active;
+	list->clutch.value = obj->overrideActionList[Object::OverrideType::OVERRIDE_CLUTCH].value;
+	list->parkingBrake.active = obj->overrideActionList[Object::OverrideType::OVERRIDE_PARKING_BRAKE].active;
+	list->parkingBrake.value = obj->overrideActionList[Object::OverrideType::OVERRIDE_PARKING_BRAKE].value;
+	list->steeringWheel.active = obj->overrideActionList[Object::OverrideType::OVERRIDE_STEERING_WHEEL].active;
+	list->steeringWheel.value = obj->overrideActionList[Object::OverrideType::OVERRIDE_STEERING_WHEEL].value;
+	list->gear.active = obj->overrideActionList[Object::OverrideType::OVERRIDE_GEAR].active;
+	list->gear.value = obj->overrideActionList[Object::OverrideType::OVERRIDE_GEAR].value;
+
 	return 0;
 }
 
@@ -496,7 +498,24 @@ extern "C"
 
 		return 0;
 	}
+	
+	//TODO
+	SE_DLL_API int SE_GetNumberOfVehicleProperties(int index)
+	{
 
+		return 0;
+	}
+	//TODO
+	SE_DLL_API const char *SE_GetvehiclePropertyName(int index, int propertyIndex)
+	{
+		return "";
+	}
+	//TODO
+	SE_DLL_API const char *SE_GetVehiclePropertyValue(int index, const char *vehiclePropertyName)
+	{
+		return "";
+	}
+	
 	SE_DLL_API int SE_SetParameter(SE_Parameter parameter)
 	{
 		if (player)

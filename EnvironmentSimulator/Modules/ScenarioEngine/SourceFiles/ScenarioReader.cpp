@@ -2119,85 +2119,55 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				}
 				else if (controllerChild.name() == std::string("OverrideControllerValueAction"))
 				{
+					OverrideControlAction *override_action = new OverrideControlAction();
+					Object::OverrideActionStatus overrideStatus;
+
 					for (pugi::xml_node controllerDefNode = controllerChild.first_child(); controllerDefNode; controllerDefNode = controllerDefNode.next_sibling())
 					{
-						Controller *controller = 0;
-
 						double value = strtod(parameters.ReadAttribute(controllerDefNode, "value"));
-						bool active = parameters.ReadAttribute(controllerDefNode, "active") == "true" ? true : false;
-
+						// read active flag
+						overrideStatus.active = parameters.ReadAttribute(controllerDefNode, "active") == "true" ? true : false;
+						
 						if (controllerDefNode.name() == std::string("throttle"))
 						{
-							OverrideThrottleAction::RangeCheckAndErrorLog(controllerDefNode.name(), value);
-							OverrideControlAction *throttleControlAction = new OverrideThrottleAction(value, active);
-							object->OverrideActionList.throttle.active = throttleControlAction->active_;
-							object->OverrideActionList.throttle.value = throttleControlAction->value_;
-							action = throttleControlAction;
-							//action->object_->OverrideActionList.throttle.active = throttleControlAction->active_;
-							//action->object_->OverrideActionList.throttle.value = throttleControlAction->value_;
+							overrideStatus.type = Object::OverrideType::OVERRIDE_THROTTLE;
+							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
 						}
 						else if (controllerDefNode.name() == std::string("brake"))
 						{
-							OverrideBrakeAction::RangeCheckAndErrorLog(controllerDefNode.name(), value);
-							OverrideBrakeAction *brakeControlAction = new OverrideBrakeAction(value, active);
-							object->OverrideActionList.brake.active = brakeControlAction->active_;
-							object->OverrideActionList.brake.value = brakeControlAction->value_;
-							action = brakeControlAction;
-							//action->object_->OverrideActionList.brake.active = brakeControlAction->active_;
-							//action->object_->OverrideActionList.brake.value = brakeControlAction->value_;
+							overrideStatus.type = Object::OverrideType::OVERRIDE_BRAKE;
+							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
 						}
 						else if (controllerDefNode.name() == std::string("clutch"))
 						{
-							OverrideClutchAction::RangeCheckAndErrorLog(controllerDefNode.name(), value);
-							OverrideClutchAction *clutchControlAction = new OverrideClutchAction(value, active);
-							object->OverrideActionList.clutch.active = clutchControlAction->active_;
-							object->OverrideActionList.clutch.value = clutchControlAction->value_;
-							action = clutchControlAction;
-							//action->object_->OverrideActionList.brake.active = clutchControlAction->active_;
-							//action->object_->OverrideActionList.brake.value = clutchControlAction->value_;
+							overrideStatus.type = Object::OverrideType::OVERRIDE_CLUTCH;
+							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
 						}
 						else if (controllerDefNode.name() == std::string("parkingBrake"))
 						{
-							OverrideParkingBrakeAction::RangeCheckAndErrorLog(controllerDefNode.name(), value);
-							OverrideParkingBrakeAction *parkingBrakeControlAction = new OverrideParkingBrakeAction(value, active);
-							object->OverrideActionList.parkingBrake.active = parkingBrakeControlAction->active_;
-							object->OverrideActionList.parkingBrake.value = parkingBrakeControlAction->value_;
-							action = parkingBrakeControlAction;
-							//action->object_->OverrideActionList.parkingBrake.active = parkingBrakeControlAction->active_;
-							//action->object_->OverrideActionList.parkingBrake.value = parkingBrakeControlAction->value_;
+							overrideStatus.type = Object::OverrideType::OVERRIDE_PARKING_BRAKE;
+							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
 						}
 						else if (controllerDefNode.name() == std::string("steeringWheel"))
 						{
-							OverrideSteeringWheelAction::RangeCheckAndErrorLog(controllerDefNode.name(), value, 2 * M_PI, -2 * M_PI);
-							OverrideSteeringWheelAction *steeringWheelAction = new OverrideSteeringWheelAction(value, active);
-							object->OverrideActionList.steeringWheel.active = steeringWheelAction->active_;
-							object->OverrideActionList.steeringWheel.value = steeringWheelAction->value_;
-							action = steeringWheelAction;
-							//action->object_->OverrideActionList.steeringWheel.active = steeringWheelAction->active_;
-							//action->object_->OverrideActionList.steeringWheel.value = steeringWheelAction->value_;
+							overrideStatus.type = Object::OverrideType::OVERRIDE_STEERING_WHEEL;
+							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value, -2 * M_PI, 2 * M_PI);
 						}
 						else if (controllerDefNode.name() == std::string("gear"))
 						{
-							OverrideGearAction::RangeCheckAndErrorLog(controllerDefNode.name(), value, 8, -1, true);
-							OverrideGearAction *gearControlAction = new OverrideGearAction(value, active);
-							object->OverrideActionList.gear.active = gearControlAction->active_;
-							object->OverrideActionList.gear.value = gearControlAction->value_;
-							action = gearControlAction;
-							//action->object_->OverrideActionList.gear.active = gearControlAction->active_;
-							//action->object_->OverrideActionList.gear.value = gearControlAction->value_;
+							overrideStatus.type = Object::OverrideType::OVERRIDE_GEAR;
+							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value, -1, 8, true);
 						}
 						else
 						{
 							LOG("Unexpected OverrideControllerValueAction subelement: %s", controllerDefNode.name());
 							return 0;
 						}
-						if (controller)
-						{
-							controller_.push_back(controller);
-						}
-						//OverrideControlAction* overrideControlAction = new OverrideControlAction();
+
+						override_action->overrideActionList.push_back(overrideStatus);
 					}
-				}
+
+					action = override_action;				}
 				else
 				{
 					LOG("Unexpected ControllerAction subelement: %s", controllerChild.name());

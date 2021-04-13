@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2021-04-13T10:00:00"
+               description="For OverrideAction unit test"
+               author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+      <!-- <SceneGraphFile filepath="../models/curve_r100.osgb"/> -->
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-1" offset="0" s="20"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="25"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="OverrideStory">
+         <ParameterDeclarations/>
+         <Act name="OverrideAct">
+            <ManeuverGroup maximumExecutionCount="1" name="OverrideManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="OverrideManeuver">
+                  <Event name="SetOverrideEvent1" maximumExecutionCount="2" priority="overwrite">
+                     <Action name="SetOverrideAction1">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <OverrideControllerValueAction>
+                                  <throttle value="0.5" active="true"/>
+                                  <brake value="0.7" active="false"/>
+                                  <clutch value="2.0" active="false"/>
+                              </OverrideControllerValueAction>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="SetOverrideActionTrigger" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="3" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="SetOverrideEvent2" maximumExecutionCount="2" priority="overwrite">
+                     <Action name="SetOverrideAction2">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <OverrideControllerValueAction>
+                                  <clutch value="0.7" active="true"/>
+                                  <parkingBrake value="0.0" active="true"/>
+                                  <steeringWheel value="15.0" active="false"/>
+                                  <gear value="7.5" active="false"/>
+                              </OverrideControllerValueAction>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="SetOverrideActionTrigger" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="5" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="OverrideActTrigger" delay="0" conditionEdge="risingOrFalling">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+               <ByValueCondition>
+                  <StoryboardElementStateCondition storyboardElementType="event"
+                                                   storyboardElementRef="SetOverrideEvent2"
+                                                   state="completeState"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>    
+    </Storyboard>
+</OpenSCENARIO>

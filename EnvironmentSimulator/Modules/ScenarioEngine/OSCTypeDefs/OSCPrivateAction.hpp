@@ -43,6 +43,7 @@ namespace scenarioengine
 			CONTROLLER,
 			ASSIGN_CONTROLLER,
 			ACTIVATE_CONTROLLER,
+			OVERRIDE_CONTROLLER,
 			TELEPORT,
 			ASSIGN_ROUTE,
 			FOLLOW_TRAJECTORY,
@@ -730,94 +731,33 @@ namespace scenarioengine
 		void Start();
 	};
 
-		class OverrideControlAction : public OSCPrivateAction
+	class OverrideControlAction : public OSCPrivateAction
 	{
 	public:
-		typedef enum
-		{
-			THROTTLE,
-			BRAKE,
-			CLUTCH,
-			PARKINGBRAKE,
-			STEERINGWHEEL,
-			GEAR,
-			UNDEFINED
-		} OverrideControllerType;
 
-		double value_;
-		bool active_;
-		OverrideControllerType type_;
+		std::vector<Object::OverrideActionStatus> overrideActionList;
 
-		OverrideControlAction(double value, bool active, OverrideControllerType type) : OSCPrivateAction(OSCPrivateAction::ActionType::CONTROLLER),
-																						type_(type), value_(value), active_(active) {}
-		OverrideControlAction(OverrideControllerType type) : OverrideControlAction(0, false, type){}
-		OverrideControlAction() : OverrideControlAction(0, false, OverrideControllerType::UNDEFINED){}
+		Object::OverrideType type_;
+
+		OverrideControlAction(double value, bool active, Object::OverrideType type) : 
+			OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER), type_(type) {}
+		OverrideControlAction() : OverrideControlAction(0, false, Object::OverrideType::OVERRIDE_UNDEFINED) {}
 		~OverrideControlAction() {}
+		
 		void Step(double dt, double simTime);
 		void Start();
 		void End();
+		
 		OSCPrivateAction *Copy()
 		{
 			OverrideControlAction *new_action = new OverrideControlAction(*this);
 			return new_action;
 		}
+
 		// Input value range: [0..1] for Throttle, Brake, Clutch and ParkingBrake. [-2*PI..2*PI] for SteeringWheel. [-1,0,1,2,3,4,5,6,7,8] for Gear.
 		// Function will cut the value to the near limit if the value is beyond limit and round the value in Gear case.
-		static void RangeCheckAndErrorLog(const pugi::char_t *name, double &valueCheck, double upperLimit = 1.0, double lowerLimit = 0.0, bool ifRound = false);
+		double RangeCheckAndErrorLog(Object::OverrideType type, double valueCheck, double lowerLimit = 0.0, double upperLimit = 1.0, bool ifRound = false);
+
 	};
 
-	//Defines the state of the throttle of a vehicle, when overriding a throttle value in a ControllerAction.
-	//value_ Throttle pedal value. Range: [0..1].0 represents 0%, 1 represents 100% of pressing the throttle pedal.
-	//active_ True: override; false: stop overriding.
-	class OverrideThrottleAction : public OverrideControlAction
-	{
-	public:
-		OverrideThrottleAction() : OverrideControlAction(OverrideControllerType::THROTTLE) {}
-		OverrideThrottleAction(double value, bool active, OverrideControllerType type = THROTTLE) : OverrideControlAction(value, active, OverrideControllerType::THROTTLE) {}
-	};
-	//Defines the state of the brake of a vehicle, when overriding a brake value in a ControllerAction.
-	//value_ Brake pedal value. Range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the brake pedal.
-	//active_ True: override; false: stop overriding.
-	class OverrideBrakeAction : public OverrideControlAction
-	{
-	public:
-		OverrideBrakeAction() : OverrideControlAction(OverrideControllerType::BRAKE) {}
-		OverrideBrakeAction(double value, bool active, OverrideControllerType type = BRAKE) : OverrideControlAction(value, active, OverrideControllerType::BRAKE) {}
-	};
-	//Defines the state of the clutch of a vehicle, when overriding a clutch value in a ControllerAction.
-	//value_ Clutch pedal value. Range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the clutch pedal.
-	//active_ True: override; false: stop overriding.
-	class OverrideClutchAction : public OverrideControlAction
-	{
-	public:
-		OverrideClutchAction() : OverrideControlAction(OverrideControllerType::CLUTCH) {}
-		OverrideClutchAction(double value, bool active, OverrideControllerType type = CLUTCH) : OverrideControlAction(value, active, OverrideControllerType::CLUTCH) {}
-	};
-	//Defines the state of the parking brake of a vehicle, when overriding a parking brake value in a ControllerAction.
-	//value_ Parking brake value. Unit: %; Range: [0..1]. The value 1 represent the maximum parking brake state.
-	//active_ True: override; false: stop overriding.
-	class OverrideParkingBrakeAction : public OverrideControlAction
-	{
-	public:
-		OverrideParkingBrakeAction() : OverrideControlAction(OverrideControllerType::PARKINGBRAKE) {}
-		OverrideParkingBrakeAction(double value, bool active, OverrideControllerType type = PARKINGBRAKE) : OverrideControlAction(value, active, OverrideControllerType::PARKINGBRAKE) {}
-	};
-	//Defines the state of the steering wheel of a vehicle, when overriding a steering wheel angle in a ControllerAction.
-	//value_ Steering wheel angle. Unit: rad.
-	//active_ True: override; false: stop overriding.
-	class OverrideSteeringWheelAction : public OverrideControlAction
-	{
-	public:
-		OverrideSteeringWheelAction() : OverrideControlAction(OverrideControllerType::STEERINGWHEEL) {}
-		OverrideSteeringWheelAction(double value, bool active, OverrideControllerType type = STEERINGWHEEL) : OverrideControlAction(value, active, OverrideControllerType::STEERINGWHEEL) {}
-	};
-	//Defines the state of the gear of a vehicle, when overriding a gear value in a ControllerAction.
-	//value_ Gear number.
-	//active_ True: override; false: stop overriding.
-	class OverrideGearAction : public OverrideControlAction
-	{
-	public:
-		OverrideGearAction() : OverrideControlAction(OverrideControllerType::GEAR) {}
-		OverrideGearAction(double value, bool active, OverrideControllerType type = GEAR) : OverrideControlAction(value, active, OverrideControllerType::GEAR) {}
-	};
 }
