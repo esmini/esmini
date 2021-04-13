@@ -7464,7 +7464,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
 	{
 		TrajVertex* vp1 = &vertex_[i + 1];
 
-		double length = vertex_[i + 1].s - vertex_[i].s;
+		double length = MAX(vertex_[i + 1].s - vertex_[i].s, SMALL_NUMBER);
 
 		local_s = CLAMP(local_s, 0, length);
 
@@ -7629,7 +7629,7 @@ int PolyLineBase::Evaluate(double s, TrajVertex& pos, double cornerRadius, int s
 	}
 	else
 	{
-		for (; i < GetNumberOfVertices() - 1 && vertex_[i+1].s < s; i++);
+		for (; i < GetNumberOfVertices() - 1 && vertex_[i+1].s <= s; i++);
 
 		double s0 = vertex_[i].s;
 		s_local = s - s0;
