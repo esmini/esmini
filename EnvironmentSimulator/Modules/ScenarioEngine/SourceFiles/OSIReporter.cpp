@@ -626,7 +626,7 @@ int OSIReporter::UpdateOSIIntersection()
 	roadmanager::Road *outgoing_road;
 	roadmanager::Road *connecting_road;
 	roadmanager::ContactPointType contactpoint;
-	roadmanager::RoadLink *roadlink;
+	roadmanager::RoadLink *roadlink = 0;
 	LaneLengthStruct left_lane_struct;
 	LaneLengthStruct right_lane_struct;
 	// s values to know where on the road to check for the lanes
@@ -635,9 +635,9 @@ int OSIReporter::UpdateOSIIntersection()
 	double connecting_outgoing_s_value;
 	
 	// value for the linktype for the connecting road and the outgoing road
-	roadmanager::LinkType connecting_road_link_type;
+	roadmanager::LinkType connecting_road_link_type = roadmanager::LinkType::NONE;
 	// value for the linktype for the incomming road and the connecting road
-	roadmanager::LinkType incomming_road_link_type;
+	roadmanager::LinkType incomming_road_link_type = roadmanager::LinkType::NONE;
 	// some values used for fixing free lane boundary
 	double length;
 	bool new_connecting_road;
@@ -731,7 +731,8 @@ int OSIReporter::UpdateOSIIntersection()
 				}
 				else
 				{
-					LOG("WARNING: Unknow connection detected, OSI junction might get corrupted");
+					LOG("WARNING: Unknow connection detected, can't establish outgoing connection in OSI junction");
+					return -1;
 				}
 				outgoing_road = opendrive->GetRoadById(roadlink->GetElementId());
 				connected_roads.insert(incomming_road->GetId());
@@ -842,7 +843,8 @@ int OSIReporter::UpdateOSIIntersection()
 					{
 						osi3::Lane_Classification_LanePairing *laneparing = osi_lane->mutable_classification()->add_lane_pairing();
 						laneparing->mutable_antecessor_lane_id()->set_value(incomming_road->GetDrivingLaneById(incomming_s_value,junctionlanelink->from_)->GetGlobalId());				
-						laneparing->mutable_successor_lane_id()->set_value(outgoing_road->GetDrivingLaneById(outgoing_s_value,connecting_road->GetDrivingLaneById(connecting_outgoing_s_value, junctionlanelink->to_)->GetLink(connecting_road_link_type)->GetId())->GetGlobalId());
+						laneparing->mutable_successor_lane_id()->set_value(outgoing_road->GetDrivingLaneById(outgoing_s_value, 
+							connecting_road->GetDrivingLaneById(connecting_outgoing_s_value, junctionlanelink->to_)->GetLink(connecting_road_link_type)->GetId())->GetGlobalId());
 					}
 				}
 			}
