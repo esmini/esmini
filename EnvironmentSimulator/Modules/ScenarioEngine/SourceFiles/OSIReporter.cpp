@@ -662,7 +662,7 @@ int OSIReporter::UpdateOSIIntersection()
 
 			// genereric data for the junction
 			osi_lane = obj_osi_internal.gt->add_lane();
-			osi_lane->mutable_id()->set_value(roadmanager::GetNewGlobalLaneId());
+			osi_lane->mutable_id()->set_value(junction->GetGlobalId());
 			osi_lane->mutable_classification()->set_type(osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION);
 			
 

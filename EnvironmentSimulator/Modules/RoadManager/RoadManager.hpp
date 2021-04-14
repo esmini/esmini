@@ -1066,7 +1066,7 @@ namespace roadmanager
 			STRAIGHT,
 		} JunctionStrategyType;
 
-		Junction(int id, std::string name) : id_(id), name_(name) {}
+		Junction(int id, std::string name) : id_(id), name_(name) {SetGlobalId();}
 		~Junction();
 		int GetId() { return id_; }
 		std::string GetName() { return name_; }
@@ -1080,9 +1080,14 @@ namespace roadmanager
 		int GetConnectingRoadIdFromIncomingRoadId(int incomingRoadId, int index);
 		void Print();
 		bool IsOsiIntersection();
+		int GetGlobalId() { return global_id_; }
+		void SetGlobalId();
+
 	private:
+
 		std::vector<Connection*> connection_;
 		int id_;
+		int global_id_;
 		std::string name_;
 	};
 

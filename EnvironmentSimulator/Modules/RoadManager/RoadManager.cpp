@@ -3221,6 +3221,10 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, 
 //	LOG("RoadConnection not found!");
 	return lane_road_lane_connection;
 }
+void Junction::SetGlobalId()
+{
+	global_id_ = GetNewGlobalLaneId(); 
+}
 
 bool Junction::IsOsiIntersection()
 {
@@ -7151,6 +7155,11 @@ int Position::GetLaneGlobalId()
 	{
 		LOG("No road %d", track_idx_);
 		return -1;
+	}
+	
+	if (road->GetJunction() != -1)
+	{
+		return GetOpenDrive()->GetJunctionById(road->GetJunction())->GetGlobalId();
 	}
 
 	LaneSection *lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
