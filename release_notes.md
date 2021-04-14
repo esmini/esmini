@@ -1,5 +1,9 @@
 ## esmini release notes
 
+### 2021-04-14 Version 2.7.1
+
+- Fix wrong parameter type preventing synchronize example scenario to run
+
 ### 2021-04-13 Version 2.7.0
 
 - Support selected parts of OpenSCENARIO v1.1  
