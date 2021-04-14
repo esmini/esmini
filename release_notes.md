@@ -1,5 +1,9 @@
 ## esmini release notes
 
+### 2021-04-14 Version 2.7.2
+
+- Fix bug so roads without type can be used with osi intersections
+
 ### 2021-04-14 Version 2.7.1
 
 - Fix wrong parameter type preventing synchronize example scenario to run
