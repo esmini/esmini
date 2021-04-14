@@ -642,7 +642,7 @@ int OSIReporter::UpdateOSIIntersection()
 	double length;
 	bool new_connecting_road;
 	int g_id;
-	OSIPoints *osipoints;
+	roadmanager::OSIPoints *osipoints;
 
 	static roadmanager::OpenDrive* opendrive = roadmanager::Position::GetOpenDrive();
 	osi3::Lane* osi_lane;

@@ -1832,6 +1832,19 @@ double Road::GetCenterOffset(double s, int lane_id)
 	return 0.0;
 }
 
+RoadTypeEntry* Road::GetRoadType(int idx)
+{
+	if (type_.size() > 0)
+	{
+		return type_[idx];
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+
 RoadLink* Road::GetLink(LinkType type)
 {
 	for (size_t i=0; i<link_.size(); i++)
@@ -3211,15 +3224,22 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, 
 
 bool Junction::IsOsiIntersection()
 {
-	if (connection_[0]->GetIncomingRoad()->GetRoadType(0)->road_type_ == roadmanager::RoadType::ROADTYPE_MOTORWAY)
+	if (connection_[0]->GetIncomingRoad()->GetRoadType(0) != 0)
 	{
-		return false;
-	} 
+		if (connection_[0]->GetIncomingRoad()->GetRoadType(0)->road_type_ == roadmanager::RoadType::ROADTYPE_MOTORWAY)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
 	else
 	{
+		LOG_ONCE("Type of roads are missing, cannot determine for OSI intersection or not, assuming that it is an intersection.");
 		return true;
 	}
-	
 }
 
 int Junction::GetNoConnectionsFromRoadId(int incomingRoadId)

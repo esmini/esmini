@@ -954,7 +954,7 @@ namespace roadmanager
 		void AddLink(RoadLink *link) { link_.push_back(link); }
 		void AddRoadType(RoadTypeEntry *type) { type_.push_back(type); }
 		int GetNumberOfRoadTypes() {return (int)type_.size();}
-		RoadTypeEntry *GetRoadType(int idx) {return type_[idx];}
+		RoadTypeEntry *GetRoadType(int idx);
 		RoadLink *GetLink(LinkType type);
 		void AddLine(Line *line);
 		void AddArc(Arc *arc);
