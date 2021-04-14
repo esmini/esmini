@@ -52,6 +52,8 @@
          <Properties>
             <File filepath="../models/car_blue.osgb"/>
             <Property name="model_id" value="1"/>
+            <Property name="dummy" value="2"/>
+            <Property name="superdummy" value="3"/>
          </Properties>
       </Vehicle>
       <Vehicle name="car_red" vehicleCategory="car">

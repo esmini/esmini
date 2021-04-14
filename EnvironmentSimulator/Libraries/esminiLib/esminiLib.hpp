@@ -13,19 +13,18 @@
 #pragma once
 
 #ifdef WIN32
-	#define SE_DLL_API __declspec(dllexport)
+#define SE_DLL_API __declspec(dllexport)
 #else
-	#define SE_DLL_API  // Leave empty on Mac
+#define SE_DLL_API // Leave empty on Mac
 #endif
 
 #define SE_PARAM_NAME_SIZE 32
 
-
 typedef struct
 {
-	int id;					  // Automatically generated unique object id
-	int model_id;             // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
-	int ctrl_type;            // 0: DefaultController 1: External. Further values see Controller::Type enum
+	int id;		   // Automatically generated unique object id
+	int model_id;  // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
+	int ctrl_type; // 0: DefaultController 1: External. Further values see Controller::Type enum
 	float timestamp;
 	float x;
 	float y;
@@ -45,30 +44,30 @@ typedef struct
 	float width;
 	float length;
 	float height;
-	int   objectType;		// Main type according to entities.hpp / Object / Type
-	int   objectCategory;   // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
+	int objectType;		// Main type according to entities.hpp / Object / Type
+	int objectCategory; // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
 } SE_ScenarioObjectState;
 
 typedef struct
 {
-	float global_pos_x;     // target position, in global coordinate system
-	float global_pos_y;     // target position, in global coordinate system
-	float global_pos_z;     // target position, in global coordinate system
-	float local_pos_x;      // target position, relative vehicle (pivot position object) coordinate system
-	float local_pos_y;      // target position, relative vehicle (pivot position object) coordinate system
-	float local_pos_z;      // target position, relative vehicle (pivot position object) coordinate system
-	float angle;			// heading angle to target from and relatove to vehicle (pivot position)
-	float road_heading;		// road heading at steering target point
-	float road_pitch;		// road pitch (inclination) at steering target point
-	float road_roll;		// road roll (camber) at target point
-	float trail_heading;	// trail heading (only when used for trail lookups, else equals road_heading)
-	float curvature;		// road curvature at steering target point
-	float speed_limit;		// speed limit given by OpenDRIVE type entry
-	int roadId;             // target position, road ID 
-	int laneId;             // target position, lane ID
-	float laneOffset;       // target position, lane offset (lateral distance from lane center) 
-	float s;                // target position, s (longitudinal distance along reference line)
-	float t;                // target position, t (lateral distance from reference line)
+	float global_pos_x;	 // target position, in global coordinate system
+	float global_pos_y;	 // target position, in global coordinate system
+	float global_pos_z;	 // target position, in global coordinate system
+	float local_pos_x;	 // target position, relative vehicle (pivot position object) coordinate system
+	float local_pos_y;	 // target position, relative vehicle (pivot position object) coordinate system
+	float local_pos_z;	 // target position, relative vehicle (pivot position object) coordinate system
+	float angle;		 // heading angle to target from and relatove to vehicle (pivot position)
+	float road_heading;	 // road heading at steering target point
+	float road_pitch;	 // road pitch (inclination) at steering target point
+	float road_roll;	 // road roll (camber) at target point
+	float trail_heading; // trail heading (only when used for trail lookups, else equals road_heading)
+	float curvature;	 // road curvature at steering target point
+	float speed_limit;	 // speed limit given by OpenDRIVE type entry
+	int roadId;			 // target position, road ID
+	int laneId;			 // target position, lane ID
+	float laneOffset;	 // target position, lane offset (lateral distance from lane center)
+	float s;			 // target position, s (longitudinal distance along reference line)
+	float t;			 // target position, t (lateral distance from reference line)
 } SE_RoadInfo;
 
 typedef struct
@@ -91,24 +90,24 @@ typedef struct
 
 typedef struct
 {
-	const char* name;  // Name of the parameter as defined in the OpenSCENARIO file
-	void* value;  // Pointer to value which can be an integer, double, bool or string (const char*) as defined in the OpenSCENARIO file
+	const char *name; // Name of the parameter as defined in the OpenSCENARIO file
+	void *value;	  // Pointer to value which can be an integer, double, bool or string (const char*) as defined in the OpenSCENARIO file
 } SE_Parameter;
 
 typedef struct
 {
-	bool   active;  // True: override; false: stop overriding
-	double value;   // Depends on action, see SE_OverrideActionList
+	bool active;  // True: override; false: stop overriding
+	double value; // Depends on action, see SE_OverrideActionList
 } SE_OverrideActionStatus;
 
 typedef struct
 {
-	SE_OverrideActionStatus throttle;       // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the throttle pedal.
-	SE_OverrideActionStatus brake;          // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the brake pedal.
-	SE_OverrideActionStatus clutch;         // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the clutch pedal.
-	SE_OverrideActionStatus parkingBrake;   // Value range: [0..1]. 0 represents 0%, The value 1 represent the maximum parking brake state.
-	SE_OverrideActionStatus steeringWheel;  // Steering wheel angle. Unit: rad. (0: Neutral position, positive: Left, negative: Right)
-	SE_OverrideActionStatus gear;           // Gear number. (-1:Reverse, 0:Neutral, 1:Gear 1, 2:Gear 2, and so on.)
+	SE_OverrideActionStatus throttle;	   // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the throttle pedal.
+	SE_OverrideActionStatus brake;		   // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the brake pedal.
+	SE_OverrideActionStatus clutch;		   // Value range: [0..1]. 0 represents 0%, 1 represents 100% of pressing the clutch pedal.
+	SE_OverrideActionStatus parkingBrake;  // Value range: [0..1]. 0 represents 0%, The value 1 represent the maximum parking brake state.
+	SE_OverrideActionStatus steeringWheel; // Steering wheel angle. Unit: rad. (0: Neutral position, positive: Left, negative: Right)
+	SE_OverrideActionStatus gear;		   // Gear number. (-1:Reverse, 0:Neutral, 1:Gear 1, 2:Gear 2, and so on.)
 } SE_OverrideActionList;
 
 typedef struct
@@ -129,21 +128,33 @@ typedef struct
 	float width;       // width as sepcified in OpenDRIVE
 } SE_RoadSign;
 
+//TODO
+typedef struct
+{
+	//std::string name_;
+	//std::string value_;
+} SE_Property;
+//TODO
+typedef struct
+{
+	SE_Property property;
+} SE_VehicleProperties;
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 	// Basic interface
-	// 
-	
+	//
+
 	/**
 		Add a search path for OpenDRIVE and 3D model files
 		Needs to be called prior to SE_Init()
 		@param path Path to a directory
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_AddPath(const char* path);
+	SE_DLL_API int SE_AddPath(const char *path);
 
 	/**
 		Clear all search paths for OpenDRIVE and 3D model files
@@ -158,7 +169,7 @@ extern "C"
 		Note: Needs to be called prior to calling SE_Init()
 		@param path Logfile path
 	*/
-	SE_DLL_API void SE_SetLogFilePath(const char* logFilePath);
+	SE_DLL_API void SE_SetLogFilePath(const char *logFilePath);
 
 	/**
 		Configure tolerances/resolution for OSI road features
@@ -188,7 +199,7 @@ extern "C"
 		@param record Create recording for later playback 0=no recording 1=recording
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_InitWithString(const char* oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record);
+	SE_DLL_API int SE_InitWithString(const char *oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record);
 
 	/**
 		Initialize the scenario engine
@@ -197,7 +208,7 @@ extern "C"
 		@param argv Arguments
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_InitWithArgs(int argc, char* argv[]);
+	SE_DLL_API int SE_InitWithArgs(int argc, char *argv[]);
 
 	/**
 		Step the simulation forward with specified timestep
@@ -226,7 +237,7 @@ extern "C"
 	/**
 		Get simulation time in seconds
 	*/
-	SE_DLL_API float SE_GetSimulationTime();  // Get simulation time in seconds
+	SE_DLL_API float SE_GetSimulationTime(); // Get simulation time in seconds
 
 	/**
 		Get simulation time step in seconds
@@ -244,13 +255,13 @@ extern "C"
 		Get name of currently referred and loaded OpenDRIVE file 
 		@return filename as string (const, since it's allocated and handled by esmini)
 	*/
-	SE_DLL_API const char* SE_GetODRFilename();
+	SE_DLL_API const char *SE_GetODRFilename();
 
 	/**
 		Get name of currently referred and loaded SceneGraph file 
 		@return filename as string (const, since it's allocated and handled by esmini)
 	*/
-	SE_DLL_API const char* SE_GetSceneGraphFilename();
+	SE_DLL_API const char *SE_GetSceneGraphFilename();
 
 	/**
 		Get the number of named parameters within the current scenario
@@ -264,7 +275,7 @@ extern "C"
 		@param Output parameter type 0=int, 1=double, 2=string (const char*), 3=bool, see OSCParameterDeclarations/ParameterType
 		@return name if found, else 0
 	*/
-	SE_DLL_API const char* SE_GetParameterName(int index, int* type);
+	SE_DLL_API const char *SE_GetParameterName(int index, int *type);
 
 	//TODO
 	/**
@@ -272,7 +283,7 @@ extern "C"
 		@param index The index of the vehicle
 		@return number of parameters
 	*/
-	SE_DLL_API int SE_GetNumberOfVehicleProperties(int index);
+	SE_DLL_API int SE_GetNumberOfProperties(int index);
 	//TODO
 	/**
 		Get the number of vehicle properties by index
@@ -282,7 +293,7 @@ extern "C"
 	*/
 	SE_DLL_API const char *SE_GetvehiclePropertyName(int index, int propertyIndex);
 	//TODO
-		/**
+	/**
 		Get the value of a vehicle property by name
 		@param index The index of the vehicle
 		@param vehiclePropertyName the vehicle property name
@@ -302,35 +313,35 @@ extern "C"
 		@param parameter Pointer to parameter struct object, see SE_Parameter declaration.
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_GetParameter(SE_Parameter* parameter);
+	SE_DLL_API int SE_GetParameter(SE_Parameter *parameter);
 
 	/**
 		Get typed value of named parameter
 		@parameterName Name of the parameter
 		@return 0 if successful, -1 if not (e.g. wrong type)
 	*/
-	SE_DLL_API int SE_GetParameterInt(const char* parameterName, int* value);
+	SE_DLL_API int SE_GetParameterInt(const char *parameterName, int *value);
 
 	/**
 		Get typed value of named parameter
 		@parameterName Name of the parameter
 		@return 0 if successful, -1 if not (e.g. wrong type)
 	*/
-	SE_DLL_API int SE_GetParameterDouble(const char* parameterName, double* value);
+	SE_DLL_API int SE_GetParameterDouble(const char *parameterName, double *value);
 
 	/**
 	Get typed value of named parameter
 	@parameterName Name of the parameter
 	@return 0 if successful, -1 if not (e.g. wrong type)
 	*/
-	SE_DLL_API int SE_GetParameterString(const char* parameterName, const char** value);
+	SE_DLL_API int SE_GetParameterString(const char *parameterName, const char **value);
 
 	/**
 	Get typed value of named parameter
 	@parameterName Name of the parameter
 	@return 0 if successful, -1 if not (e.g. wrong type)
 	*/
-	SE_DLL_API int SE_GetParameterBool(const char* parameterName, bool* value);
+	SE_DLL_API int SE_GetParameterBool(const char *parameterName, bool *value);
 
 	/**
 	Set typed value of named parameter
@@ -338,7 +349,7 @@ extern "C"
 	@value Value 
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_SetParameterInt(const char* parameterName, int value);
+	SE_DLL_API int SE_SetParameterInt(const char *parameterName, int value);
 
 	/**
 	Set typed value of named parameter
@@ -346,15 +357,7 @@ extern "C"
 	@value Value
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_SetParameterDouble(const char* parameterName, double value);
-	
-	/**
-	Set typed value of named parameter
-	@parameterName Name of the parameter
-	@value Value
-	@return 0 if successful, -1 if not
-	*/
-	SE_DLL_API int SE_SetParameterString(const char* parameterName, const char* value);
+	SE_DLL_API int SE_SetParameterDouble(const char *parameterName, double value);
 
 	/**
 	Set typed value of named parameter
@@ -362,9 +365,17 @@ extern "C"
 	@value Value
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_SetParameterBool(const char* parameterName, bool value);
+	SE_DLL_API int SE_SetParameterString(const char *parameterName, const char *value);
 
-	SE_DLL_API void* SE_GetODRManager();
+	/**
+	Set typed value of named parameter
+	@parameterName Name of the parameter
+	@value Value
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetParameterBool(const char *parameterName, bool value);
+
+	SE_DLL_API void *SE_GetODRManager();
 
 	/**
 		Specify if and how position object will align to the road. This version
@@ -508,7 +519,7 @@ extern "C"
 		@param r_vel Roll component of angular velocity
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_ReportObjectAngularVel(int id, float timestamp,  float h_rate, float p_rate, float r_rate);
+	SE_DLL_API int SE_ReportObjectAngularVel(int id, float timestamp, float h_rate, float p_rate, float r_rate);
 
 	/**
 		Report object position in cartesian coordinates
@@ -551,7 +562,7 @@ extern "C"
 		@param state Pointer/reference to a SE_ScenarioObjectState struct to be filled in
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState* state);
+	SE_DLL_API int SE_GetObjectState(int index, SE_ScenarioObjectState *state);
 
 	/**
 		Get the overrideActionStatus of specified object
@@ -566,7 +577,7 @@ extern "C"
 		@param index Index of the object. Note: not ID
 		@return Name
 	*/
-	SE_DLL_API const char* SE_GetObjectName(int index);
+	SE_DLL_API const char *SE_GetObjectName(int index);
 
 	/**
 		Check whether an object has a ghost (special purpose lead vehicle) 
@@ -581,7 +592,7 @@ extern "C"
 		@param state Pointer/reference to a SE_ScenarioObjectState struct to be filled in
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState* state);
+	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state);
 
 	/**
 		Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
@@ -592,7 +603,7 @@ extern "C"
 		@param inRoadDrivingDirection If true always look along primary driving direction. If false, look in most straightforward direction according to object heading.
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo* data, int lookAheadMode, bool inRoadDrivingDirection);
+	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int lookAheadMode, bool inRoadDrivingDirection);
 
 	/**
 		Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle
@@ -602,7 +613,7 @@ extern "C"
 		@param speed_ghost reference to a variable returning the speed that the ghost had at this point along trail
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo* data, float* speed_ghost);
+	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost);
 
 	/**
 		Create an ideal object sensor and attach to specified vehicle
@@ -625,7 +636,7 @@ extern "C"
 		@param list Array of object indices
 		@return Number of identified objects, i.e. length of list. -1 if unsuccesful.
 	*/
-	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int* list);
+	SE_DLL_API int SE_FetchSensorObjectList(int sensor_id, int *list);
 
 	/**
 		Register a function and optional parameter (ref) to be called back from esmini after each frame (update of scenario)
@@ -635,7 +646,7 @@ extern "C"
 		@param SE_ScenarioObjectState A pointer to the function to be invoked
 		@param user_data Optional pointer to a local data object that will be passed as argument in the callback. Set 0/NULL if not needed.
 	*/
-	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState*, void*), void* user_data);
+	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState *, void *), void *user_data);
 
 	/**
 		Get the number of road signs along specified road 
@@ -651,10 +662,10 @@ extern "C"
 		@param road_sign Pointer/reference to a SE_RoadSign struct to be filled in
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign* road_sign);
+	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign *road_sign);
 
 	// OSI interface
-	// 
+	//
 
 	/**
 		Send OSI packages over UDP to specified IP address
@@ -670,7 +681,7 @@ extern "C"
 		Switch on logging to OSI file(s)
 		@param filename Optional filename, including path. Set to 0 or "" to use default.
 	*/
-	SE_DLL_API void SE_EnableOSIFile(const char* filename);
+	SE_DLL_API void SE_EnableOSIFile(const char *filename);
 
 	/**
 		The SE_ClearOSIGroundTruth clears the certain groundtruth data
@@ -701,54 +712,54 @@ extern "C"
 		The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
 		@return osi3::GroundTruth*
 	*/
-	SE_DLL_API const char* SE_GetOSIGroundTruth(int* size);
+	SE_DLL_API const char *SE_GetOSIGroundTruth(int *size);
 
 	/**
 		The SE_GetOSIGroundTruthRaw function returns a char array containing the OSI GroundTruth information
 		@return osi3::GroundTruth*
 	*/
-	SE_DLL_API const char* SE_GetOSIGroundTruthRaw();
+	SE_DLL_API const char *SE_GetOSIGroundTruthRaw();
 
 	/**
 		The SE_GetOSISensorDataRaw function returns a char array containing the OSI SensorData information
 		@return osi3::SensorData*
 	*/
-	SE_DLL_API const char* SE_GetOSISensorDataRaw();
-		
+	SE_DLL_API const char *SE_GetOSISensorDataRaw();
+
 	/**
 		The SE_GetOSIRoadLane function returns a char array containing the osi Lane information/message of the lane where the object with object_id is, serialized to a string
 	*/
-	SE_DLL_API const char* SE_GetOSIRoadLane(int* size, int object_id);
-	
+	SE_DLL_API const char *SE_GetOSIRoadLane(int *size, int object_id);
+
 	/**
 		The SE_GetOSIRoadLane function returns a char array containing the osi Lane Boundary information/message with the specified GLOBAL id
 	*/
-	SE_DLL_API const char* SE_GetOSILaneBoundary(int* size, int global_id);
-	
+	SE_DLL_API const char *SE_GetOSILaneBoundary(int *size, int global_id);
+
 	/**
 		The SE_GetOSILaneBoundaryIds function the global ids for left, far elft, right and far right lane boundaries
 		@param object_id Handle to the object to which the sensor should be attached
 		@param ids Reference to a struct which will be filled with the Ids
 	*/
-	SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId* ids);
+	SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId *ids);
 
 	/**
 		The SE_GetOSISensorDataRaw function returns a char array containing the OSI SensorData information
 		@return osi3::SensorData*
 	*/
-	SE_DLL_API const char* SE_GetOSISensorDataRaw();
+	SE_DLL_API const char *SE_GetOSISensorDataRaw();
 
 	/**
 		Create and open osi file
 	*/
-	SE_DLL_API bool SE_OSIFileOpen(const char* filename);
+	SE_DLL_API bool SE_OSIFileOpen(const char *filename);
 
 	/**
 		Create and open osi file
 	*/
 	SE_DLL_API bool SE_OSIFileWrite(bool flush = false);
 
-	SE_DLL_API void SE_LogMessage(char* message);
+	SE_DLL_API void SE_LogMessage(char *message);
 
 	// Viewer settings
 	/**
@@ -758,7 +769,7 @@ extern "C"
 	*/
 	SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable);
 
-	// Simple vehicle 
+	// Simple vehicle
 	/**
 		Create an instance of a simplistic vehicle based on a 2D bicycle kincematic model
 		@param x Initial position X world coordinate
@@ -767,12 +778,12 @@ extern "C"
 		@param length Length of the vehicle
 		@return Handle to the created object
 	*/
-	SE_DLL_API void* SE_SimpleVehicleCreate(float x, float y, float h, float length);
+	SE_DLL_API void *SE_SimpleVehicleCreate(float x, float y, float h, float length);
 
 	/**
 		Delete an instance of the simplistic vehicle model
 	*/
-	SE_DLL_API void SE_SimpleVehicleDelete(void* handleSimpleVehicle);
+	SE_DLL_API void SE_SimpleVehicleDelete(void *handleSimpleVehicle);
 
 	/**
 		Control the speed and steering with discreet [-1, 0, 1] values, suitable for keyboard control (e.g. up/none/down).
@@ -781,7 +792,7 @@ extern "C"
 		@param throttle Longitudinal control, -1: brake, 0: none, +1: accelerate
 		@param steering Lateral control, -1: left, 0: straight, 1: right
 	*/
-	SE_DLL_API void SE_SimpleVehicleControlBinary(void* handleSimpleVehicle, double dt, int throttle, int steering);  // throttle and steering [-1, 0 or 1]
+	SE_DLL_API void SE_SimpleVehicleControlBinary(void *handleSimpleVehicle, double dt, int throttle, int steering); // throttle and steering [-1, 0 or 1]
 
 	/**
 		Control the speed and steering with floaing values in the range [-1, 1], suitable for driver models.
@@ -790,20 +801,20 @@ extern "C"
 		@param throttle Longitudinal control, -1: maximum brake, 0: no acceleration, +1: maximum acceleration
 		@param steering Lateral control, -1: max left, 0: straight, 1: max right
 	*/
-	SE_DLL_API void SE_SimpleVehicleControlAnalog(void* handleSimpleVehicle, double dt, double throttle, double steering);  // throttle and steering [-1, 0 or 1]
+	SE_DLL_API void SE_SimpleVehicleControlAnalog(void *handleSimpleVehicle, double dt, double throttle, double steering); // throttle and steering [-1, 0 or 1]
 
 	/**
 		Set maximum vehicle speed.
 		@param speed Maximum speed (m/s)
 	*/
-	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void* handleSimpleVehicle, float speed);
+	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void *handleSimpleVehicle, float speed);
 
 	/**
 		Get current state of the vehicle. Typically called after Control has been applied.
 		@param state Pointer/reference to a SE_SimpleVehicleState struct to be filled in
 	*/
-	SE_DLL_API void SE_SimpleVehicleGetState(void* handleSimpleVehicle, SE_SimpleVehicleState* state);
-	
+	SE_DLL_API void SE_SimpleVehicleGetState(void *handleSimpleVehicle, SE_SimpleVehicleState *state);
+
 #ifdef __cplusplus
 }
 #endif

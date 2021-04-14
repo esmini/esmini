@@ -965,6 +965,15 @@ int ScenarioPlayer::SetParameterValue(const char* name, bool value)
 	return scenarioEngine->scenarioReader->parameters.setParameterValue(name, value);
 }
 
+
+//todo
+int ScenarioPlayer::GetNumberOfProperties(int index)
+{
+	return scenarioEngine->scenarioReader->properties.property_.size();//?
+}
+
+
+
 #ifdef _SCENARIO_VIEWER
 	void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 	{

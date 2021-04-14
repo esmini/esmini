@@ -891,6 +891,17 @@ TEST(OverrideActionTest, TestGetAndSet)
 	EXPECT_NEAR(list.steeringWheel.value, 2 * M_PI, 0.01);
 }
 
+TEST(PropertyTest, TestGetAndSet)
+{
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/VehicleProperty.xosc";
+	const char* Scenario_file = scenario_file.c_str();
+	SE_Init(Scenario_file, 0, 0, 0, 0);
+
+	SE_VehicleProperties property;
+	EXPECT_EQ(SE_GetNumberOfProperties(0), 0);
+
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);

@@ -139,7 +139,7 @@ static int copyOverrideActionListfromScenarioEngine(SE_OverrideActionList *list,
 	{
 		return -1;
 	}
-	
+
 	list->throttle.active = obj->overrideActionList[Object::OverrideType::OVERRIDE_THROTTLE].active;
 	list->throttle.value = obj->overrideActionList[Object::OverrideType::OVERRIDE_THROTTLE].value;
 	list->brake.active = obj->overrideActionList[Object::OverrideType::OVERRIDE_BRAKE].active;
@@ -498,11 +498,18 @@ extern "C"
 
 		return 0;
 	}
-	
-	//TODO
-	SE_DLL_API int SE_GetNumberOfVehicleProperties(int index)
-	{
 
+	//TODO
+	SE_DLL_API int SE_GetNumberOfProperties(int index)
+	{
+		if (player)
+		{
+			int number = player->GetNumberOfProperties(index);
+			LOG("**************************************");
+			LOG("Got %d properties.",number);
+			LOG("**************************************");
+			return number;
+		}
 		return 0;
 	}
 	//TODO
@@ -515,7 +522,7 @@ extern "C"
 	{
 		return "";
 	}
-	
+
 	SE_DLL_API int SE_SetParameter(SE_Parameter parameter)
 	{
 		if (player)
@@ -536,7 +543,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_GetParameterInt(const char* parameterName, int* value)
+	SE_DLL_API int SE_GetParameterInt(const char *parameterName, int *value)
 	{
 		if (player)
 		{
@@ -546,7 +553,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_GetParameterDouble(const char* parameterName, double* value)
+	SE_DLL_API int SE_GetParameterDouble(const char *parameterName, double *value)
 	{
 		if (player)
 		{
@@ -556,7 +563,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_GetParameterString(const char* parameterName, const char** value)
+	SE_DLL_API int SE_GetParameterString(const char *parameterName, const char **value)
 	{
 		if (player)
 		{
@@ -566,7 +573,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_GetParameterBool(const char* parameterName, bool* value)
+	SE_DLL_API int SE_GetParameterBool(const char *parameterName, bool *value)
 	{
 		if (player)
 		{
@@ -576,7 +583,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_SetParameterInt(const char* parameterName, int value)
+	SE_DLL_API int SE_SetParameterInt(const char *parameterName, int value)
 	{
 		if (player)
 		{
@@ -586,7 +593,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_SetParameterDouble(const char* parameterName, double value)
+	SE_DLL_API int SE_SetParameterDouble(const char *parameterName, double value)
 	{
 		if (player)
 		{
@@ -596,7 +603,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_SetParameterString(const char* parameterName, const char* value)
+	SE_DLL_API int SE_SetParameterString(const char *parameterName, const char *value)
 	{
 		if (player)
 		{
@@ -606,7 +613,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API int SE_SetParameterBool(const char* parameterName, bool value)
+	SE_DLL_API int SE_SetParameterBool(const char *parameterName, bool value)
 	{
 		if (player)
 		{
@@ -616,7 +623,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API void* SE_GetODRManager()
+	SE_DLL_API void *SE_GetODRManager()
 	{
 		if (player)
 		{
