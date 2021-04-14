@@ -155,7 +155,7 @@ void Object::SetAngularAcc(double h_acc, double p_acc, double r_acc)
 
 void Object::SetProperties(OSCProperties properties)
 {
-	property_ = properties;
+	properties_ = properties;
 
 	// Look for the special model_id propertry which is used for 3D model
 	for (size_t i = 0; i < properties.property_.size(); i++)

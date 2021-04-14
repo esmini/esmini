@@ -452,7 +452,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	ParseOSCProperties(properties, vehicleNode);
 
 	// get all the properties (name and value in std::string)
-	vehicle->property_ = properties;
+	//vehicle->properties_ = properties;
 
 	// get File based on Category, and set default 3D model id
 	if (vehicle->category_ == Vehicle::Category::BICYCLE ||

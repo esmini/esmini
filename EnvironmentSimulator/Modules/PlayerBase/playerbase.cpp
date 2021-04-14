@@ -969,10 +969,18 @@ int ScenarioPlayer::SetParameterValue(const char* name, bool value)
 //todo
 int ScenarioPlayer::GetNumberOfProperties(int index)
 {
-	return scenarioEngine->scenarioReader->properties.property_.size();//?
+	return scenarioEngine->entities.object_[index]->properties_.property_.size();
 }
 
+const char* ScenarioPlayer::GetPropertyName(int index,int propertyIndex)
+{
+	return scenarioEngine->entities.object_[index]->properties_.property_[propertyIndex].name_.c_str();
+}
 
+const char* ScenarioPlayer::GetPropertyValue(int index,int propertyIndex)
+{
+	return scenarioEngine->entities.object_[index]->properties_.property_[propertyIndex].value_.c_str();
+}
 
 #ifdef _SCENARIO_VIEWER
 	void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)

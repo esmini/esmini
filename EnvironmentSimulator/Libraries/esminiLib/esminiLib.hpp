@@ -128,17 +128,6 @@ typedef struct
 	float width;       // width as sepcified in OpenDRIVE
 } SE_RoadSign;
 
-//TODO
-typedef struct
-{
-	//std::string name_;
-	//std::string value_;
-} SE_Property;
-//TODO
-typedef struct
-{
-	SE_Property property;
-} SE_VehicleProperties;
 
 #ifdef __cplusplus
 extern "C"
@@ -277,11 +266,10 @@ extern "C"
 	*/
 	SE_DLL_API const char *SE_GetParameterName(int index, int *type);
 
-	//TODO
 	/**
 		Get the number of vehicle properties by index
 		@param index The index of the vehicle
-		@return number of parameters
+		@return number of parameters if found, else 0;
 	*/
 	SE_DLL_API int SE_GetNumberOfProperties(int index);
 	//TODO
@@ -289,17 +277,17 @@ extern "C"
 		Get the number of vehicle properties by index
 		@param index The index of the vehicle
 		@param propertyIndex The index of the property
-		@return the name of the property by index
+		@return the name of the property by index if found, else ""
 	*/
-	SE_DLL_API const char *SE_GetvehiclePropertyName(int index, int propertyIndex);
+	SE_DLL_API const char *SE_GetObjectPropertyName(int index, int propertyIndex);
 	//TODO
 	/**
 		Get the value of a vehicle property by name
 		@param index The index of the vehicle
 		@param vehiclePropertyName the vehicle property name
-		@return the value of a vehicle property by name
+		@return the value of a vehicle property by name if found, else ""
 	*/
-	SE_DLL_API const char *SE_GetVehiclePropertyValue(int index, const char *vehiclePropertyName);
+	SE_DLL_API const char *SE_GetObjectPropertyValue(int index, const char *objectPropertyName);
 
 	/**
 		Set value of named parameter

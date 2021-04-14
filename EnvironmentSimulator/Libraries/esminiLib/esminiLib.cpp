@@ -499,27 +499,40 @@ extern "C"
 		return 0;
 	}
 
-	//TODO
 	SE_DLL_API int SE_GetNumberOfProperties(int index)
 	{
-		if (player)
+		if (player && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
+		{
+			return player->GetNumberOfProperties(index);
+		}
+		return -1;
+	}
+
+	SE_DLL_API const char *SE_GetObjectPropertyName(int index, int propertyIndex)
+	{
+		if (player && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
 		{
 			int number = player->GetNumberOfProperties(index);
-			LOG("**************************************");
-			LOG("Got %d properties.",number);
-			LOG("**************************************");
-			return number;
+			if (number > 0 && propertyIndex < number && propertyIndex>=0)
+			{
+				return player->GetPropertyName(index, propertyIndex);
+			}
 		}
-		return 0;
-	}
-	//TODO
-	SE_DLL_API const char *SE_GetvehiclePropertyName(int index, int propertyIndex)
-	{
 		return "";
 	}
-	//TODO
-	SE_DLL_API const char *SE_GetVehiclePropertyValue(int index, const char *vehiclePropertyName)
+
+	SE_DLL_API const char *SE_GetObjectPropertyValue(int index, const char *objectPropertyName)
 	{
+		if (player && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
+		{
+			for (int i = 0; i < player->GetNumberOfProperties(index); i++)
+			{
+				if (strcmp(player->GetPropertyName(index, i), objectPropertyName) == 0)
+				{
+					return player->GetPropertyValue(index, i);
+				}
+			}
+		}
 		return "";
 	}
 

@@ -65,7 +65,7 @@ namespace scenarioengine
 		};
 
 		//todo
-		OSCProperties property_;
+		OSCProperties properties_;
 
 		typedef enum
 		{
