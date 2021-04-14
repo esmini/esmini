@@ -23,11 +23,11 @@
       <ParameterDeclaration name="NPC2Speed" parameterType="double" value="0"/>
       <ParameterDeclaration name="NPC3Speed" parameterType="double" value="17"/>
       <ParameterDeclaration name="NPC4Speed" parameterType="double" value="0"/>
-      <ParameterDeclaration name="EgoLaneId" parameterType="int" value="-3"/>
-      <ParameterDeclaration name="NPC1LaneId" parameterType="int" value="-2"/>
-      <ParameterDeclaration name="NPC2LaneId" parameterType="int" value="-3"/>
-      <ParameterDeclaration name="NPC3LaneId" parameterType="int" value="-4"/>
-      <ParameterDeclaration name="NPC4LaneId" parameterType="int" value="-3"/>
+      <ParameterDeclaration name="EgoLaneId" parameterType="integer" value="-3"/>
+      <ParameterDeclaration name="NPC1LaneId" parameterType="integer" value="-2"/>
+      <ParameterDeclaration name="NPC2LaneId" parameterType="integer" value="-3"/>
+      <ParameterDeclaration name="NPC3LaneId" parameterType="integer" value="-4"/>
+      <ParameterDeclaration name="NPC4LaneId" parameterType="integer" value="-3"/>
       <ParameterDeclaration name="EgoStartS" parameterType="double" value="100"/>
       <ParameterDeclaration name="NPC1StartS" parameterType="double" value="150"/>
       <ParameterDeclaration name="NPC2StartS" parameterType="double" value="20"/>
@@ -43,7 +43,6 @@
       <ParameterDeclaration name="BrakeRate" parameterType="double" value="-5"/>
    </ParameterDeclarations>
    <CatalogLocations>
-      <RouteCatalog/>
       <ManeuverCatalog>
          <Directory path="../xosc/Catalogs/Maneuvers"/>
       </ManeuverCatalog>
@@ -101,7 +100,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="$EgoSpeed"/>
                         </SpeedActionTarget>

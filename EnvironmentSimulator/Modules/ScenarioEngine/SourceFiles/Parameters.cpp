@@ -416,11 +416,11 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 		}
 		else if (type_str == "unsignedInt" || type_str == "unsignedShort" || type_str == "dateTime")
 		{
-			LOG("Type %s is not supported yet", type_str.c_str());
+			LOG_TRACE("Type %s is not supported yet", type_str.c_str());
 		}
 		else
 		{
-			LOG_AND_QUIT("Unexpected Type: %s", type_str.c_str());
+			LOG_TRACE_AND_QUIT("Unexpected Type: %s", type_str.c_str());
 		}
 		pd->Parameter.insert(pd->Parameter.begin(), param);
 	}
