@@ -454,7 +454,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	// get all the properties (name and value in std::string)
 	vehicle->property_ = properties;
 
-	// get File based on Category
+	// get File based on Category, and set default 3D model id
 	if (vehicle->category_ == Vehicle::Category::BICYCLE ||
 		vehicle->category_ == Vehicle::Category::MOTORBIKE)
 	{
@@ -468,24 +468,13 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 		vehicle->model_filepath_ = entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb";
 	}
 
-	//can be deleted?
-	for (size_t i = 0; i < properties.property_.size(); i++)
-	{
-		if (properties.property_[i].name_ == "model_id")
-		{
-			vehicle->model_id_ = strtoi(properties.property_[i].value_);
-		}
-
-		else
-		{
-			LOG("Unsupported property: %s", properties.property_[i].name_.c_str());
-		}
-	}
-
 	if (properties.file_.filepath_ != "")
 	{
 		vehicle->model_filepath_ = properties.file_.filepath_;
 	}
+
+	// Set and handle properties
+	vehicle->SetProperties(properties);
 
 	OSCBoundingBox boundingbox;
 	ParseOSCBoundingBox(boundingbox, vehicleNode);
@@ -522,6 +511,7 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 	OSCProperties properties;
 	ParseOSCProperties(properties, pedestrianNode);
 
+	// Set default model_id, will be overwritten if that property is defined
 	if (pedestrian->category_ == Pedestrian::Category::ANIMAL)
 	{
 		pedestrian->model_id_ = 8; // magic number for moose, set as default
@@ -533,22 +523,13 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 		pedestrian->model_filepath_ = "walkman.osgb";
 	}
 
-	for (size_t i = 0; i < properties.property_.size(); i++)
-	{
-		if (properties.property_[i].name_ == "model_id")
-		{
-			pedestrian->model_id_ = strtoi(properties.property_[i].value_);
-		}
-		else
-		{
-			LOG("Unsupported property: %s", properties.property_[i].name_.c_str());
-		}
-	}
-
 	if (properties.file_.filepath_ != "")
 	{
 		pedestrian->model_filepath_ = properties.file_.filepath_;
 	}
+
+	// Set and handle properties
+	pedestrian->SetProperties(properties);
 
 	return pedestrian;
 }
@@ -576,22 +557,13 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
 	OSCProperties properties;
 	ParseOSCProperties(properties, miscObjectNode);
 
-	for (size_t i = 0; i < properties.property_.size(); i++)
-	{
-		if (properties.property_[i].name_ == "model_id")
-		{
-			miscObject->model_id_ = strtoi(properties.property_[i].value_);
-		}
-		else
-		{
-			LOG("Unsupported property: %s", properties.property_[i].name_.c_str());
-		}
-	}
-
 	if (properties.file_.filepath_ != "")
 	{
 		miscObject->model_filepath_ = properties.file_.filepath_;
 	}
+
+	// Set and handle properties
+	miscObject->SetProperties(properties);
 
 	return miscObject;
 }

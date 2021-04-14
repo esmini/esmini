@@ -153,6 +153,20 @@ void Object::SetAngularAcc(double h_acc, double p_acc, double r_acc)
 	SetDirtyBits(dirty_ | DirtyBit::ANGULAR_ACC);
 }
 
+void Object::SetProperties(OSCProperties properties)
+{
+	property_ = properties;
+
+	// Look for the special model_id propertry which is used for 3D model
+	for (size_t i = 0; i < properties.property_.size(); i++)
+	{
+		if (properties.property_[i].name_ == "model_id")
+		{
+			model_id_ = strtoi(properties.property_[i].value_);
+		}
+	}
+}
+
 bool Object::Collision(Object* target)
 {
 	// Apply method Separating Axis Theorem (SAT)
