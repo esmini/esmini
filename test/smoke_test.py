@@ -7,7 +7,7 @@ COMMON_ARGS = '--headless --fixed_timestep 0.01 --record sim.dat '
 
 
 class TestSuite(unittest.TestCase):
-    
+    '''
     def test_cut_in(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ARGS)
         
@@ -35,7 +35,7 @@ class TestSuite(unittest.TestCase):
         csv = generate_csv()
         self.assertTrue(re.search('\n6.500, 0, Ego, 28.5., -7.8., 0.00, 1.[78].', csv))
         self.assertTrue(re.search('\n6.500, 1, NPC, 23.9., 1.0., 0.00, 5.3.', csv))
-
+    '''
     def test_trajectory(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/trajectory-test.xosc'), COMMON_ARGS \
             + '--disable_controllers')
@@ -55,7 +55,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n11.100, 1, Target, 205.56, 66.34, -2.50, 2.49', csv))
         self.assertTrue(re.search('\n17.390, 0, Ego, 216.96, 169.84, 2.15, 1.75, 6.21', csv))
         self.assertTrue(re.search('\n17.390, 1, Target, 213.08, 208.07, 4.29, 1.78', csv))
-    
+    '''
     def test_synchronize(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ARGS \
             + '--disable_controllers')
@@ -82,7 +82,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n23.500, 2, NPC2, 18.35, 533.53, -0.85, 1.51, 6.28, 0.00, 8.72', csv))
         self.assertTrue(re.search('\n23.500, 3, NPC3, 23.67, 556.88, -0.84, 1.50, 6.28, 0.00, 17.00', csv))
         self.assertTrue(re.search('\n23.500, 4, NPC4, 21.61, 578.38, -0.83, 1.49, 6.28, 0.00, 8.72', csv))
-
+    '''
 
 if __name__ == "__main__":
     # execute only if run as a script

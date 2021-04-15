@@ -448,12 +448,6 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	vehicle->name_ = parameters.ReadAttribute(vehicleNode, "name");
 	vehicle->SetCategory(parameters.ReadAttribute(vehicleNode, "vehicleCategory"));
 
-	OSCProperties properties;
-	ParseOSCProperties(properties, vehicleNode);
-
-	// get all the properties (name and value in std::string)
-	//vehicle->properties_ = properties;
-
 	// get File based on Category, and set default 3D model id
 	if (vehicle->category_ == Vehicle::Category::BICYCLE ||
 		vehicle->category_ == Vehicle::Category::MOTORBIKE)
@@ -468,13 +462,18 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 		vehicle->model_filepath_ = entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb";
 	}
 
-	if (properties.file_.filepath_ != "")
-	{
-		vehicle->model_filepath_ = properties.file_.filepath_;
-	}
+	ParseOSCProperties(vehicle->properties_, vehicleNode);
 
-	// Set and handle properties
-	vehicle->SetProperties(properties);
+	// Overwrite default values if properties set
+	if (vehicle->properties_.file_.filepath_ != "")
+	{
+		vehicle->model_filepath_ = vehicle->properties_.file_.filepath_;
+	}
+	std::string modelIdStr = vehicle->properties_.GetValueStr("model_id");
+	if (!modelIdStr.empty())
+	{
+		vehicle->model_id_ = strtoi(modelIdStr);
+	}
 
 	OSCBoundingBox boundingbox;
 	ParseOSCBoundingBox(boundingbox, vehicleNode);
@@ -507,10 +506,6 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 	ParseOSCBoundingBox(boundingbox, pedestrianNode);
 	pedestrian->boundingbox_ = boundingbox;
 
-	// Parse Properties
-	OSCProperties properties;
-	ParseOSCProperties(properties, pedestrianNode);
-
 	// Set default model_id, will be overwritten if that property is defined
 	if (pedestrian->category_ == Pedestrian::Category::ANIMAL)
 	{
@@ -523,13 +518,18 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 		pedestrian->model_filepath_ = "walkman.osgb";
 	}
 
-	if (properties.file_.filepath_ != "")
-	{
-		pedestrian->model_filepath_ = properties.file_.filepath_;
-	}
+	ParseOSCProperties(pedestrian->properties_, pedestrianNode);
 
-	// Set and handle properties
-	pedestrian->SetProperties(properties);
+	// Overwrite default values if properties set
+	if (pedestrian->properties_.file_.filepath_ != "")
+	{
+		pedestrian->model_filepath_ = pedestrian->properties_.file_.filepath_;
+	}
+	std::string modelIdStr = pedestrian->properties_.GetValueStr("model_id");
+	if (!modelIdStr.empty())
+	{
+		pedestrian->model_id_ = strtoi(modelIdStr);
+	}
 
 	return pedestrian;
 }
@@ -553,17 +553,18 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
 	ParseOSCBoundingBox(boundingbox, miscObjectNode);
 	miscObject->boundingbox_ = boundingbox;
 
-	// Parse Properties
-	OSCProperties properties;
-	ParseOSCProperties(properties, miscObjectNode);
+	ParseOSCProperties(miscObject->properties_, miscObjectNode);
 
-	if (properties.file_.filepath_ != "")
+	// Overwrite default values if properties set
+	if (miscObject->properties_.file_.filepath_ != "")
 	{
-		miscObject->model_filepath_ = properties.file_.filepath_;
+		miscObject->model_filepath_ = miscObject->properties_.file_.filepath_;
 	}
-
-	// Set and handle properties
-	miscObject->SetProperties(properties);
+	std::string modelIdStr = miscObject->properties_.GetValueStr("model_id");
+	if (!modelIdStr.empty())
+	{
+		miscObject->model_id_ = strtoi(modelIdStr);
+	}
 
 	return miscObject;
 }
