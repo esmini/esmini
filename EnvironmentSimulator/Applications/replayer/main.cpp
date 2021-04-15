@@ -25,6 +25,7 @@
 #include "RubberbandManipulator.hpp"
 #include "CommonMini.hpp"
 #include "Replay.hpp"
+#include "helpText.hpp"
 
 using namespace scenarioengine;
 
@@ -37,6 +38,7 @@ static bool pause = false;  // continuous play
 static double time_scale = 1.0;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
+
 
 typedef struct
 {
@@ -214,6 +216,10 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 		else if (keyEvent->key_ == KeyType::KEY_Space)
 		{
 			pause = !pause;
+		}
+		else if (keyEvent->key_ == 'H')
+		{
+			puts(helpText);
 		}
 		else if (keyEvent->key_ == KeyType::KEY_Up)
 		{

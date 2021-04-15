@@ -14,6 +14,7 @@ set ( SOURCES
 
 set ( INCLUDES
   playerbase.hpp
+  helpText.hpp
 )
 
 if (USE_OSG)

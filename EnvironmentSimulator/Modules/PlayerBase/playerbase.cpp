@@ -19,6 +19,7 @@
 #include "CommonMini.hpp"
 #include "Server.hpp"
 #include "playerbase.hpp"
+#include "helpText.hpp"
 #ifdef _SCENARIO_VIEWER
 	#include "viewer.hpp"
 #endif
@@ -989,6 +990,14 @@ const char* ScenarioPlayer::GetPropertyValue(int index,int propertyIndex)
 		for (size_t i = 0; i < player->scenarioEngine->GetScenarioReader()->controller_.size(); i++)
 		{
 			player->scenarioEngine->GetScenarioReader()->controller_[i]->ReportKeyEvent(keyEvent->key_, keyEvent->down_);
+		}
+
+		if (keyEvent->down_)
+		{
+			if (keyEvent->key_ == 'H')
+			{
+				puts(helpText);
+			}
 		}
 	}
 #endif

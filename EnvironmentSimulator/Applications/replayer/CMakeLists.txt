@@ -19,6 +19,7 @@ add_definitions(-DOSG_LIBRARY_STATIC)
 set ( SOURCES
 	main.cpp
 	Replay.cpp
+    helpText.hpp
 )
 link_directories( ${OSG_LIBRARIES_PATH} )
 add_executable ( ${TARGET1} ${SOURCES} ${INCLUDES} )

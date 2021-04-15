@@ -12,6 +12,7 @@ set(TARGET odrviewer)
 
 set ( SOURCES
 	main.cpp
+    helpText.hpp
 )
 
 link_directories( ${OSG_LIBRARIES_PATH} )

@@ -29,6 +29,7 @@
 #include "viewer.hpp"
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
+#include "helpText.hpp"
 
 
 #define DEFAULT_SPEED   70  // km/h
@@ -83,6 +84,17 @@ std::vector<osg::ref_ptr<osg::LOD>> carModels_;
 void log_callback(const char *str)
 {
 	printf("%s\n", str);
+}
+
+void FetchKeyEvent(viewer::KeyEvent* keyEvent, void*)
+{
+	if (keyEvent->down_)
+	{
+		if (keyEvent->key_ == 'H')
+		{
+			puts(helpText);
+		}
+	}
 }
 
 int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
@@ -325,6 +337,7 @@ int main(int argc, char** argv)
 			&opt);
 
 		viewer->SetWindowTitleFromArgs(args);
+		viewer->RegisterKeyEventCallback(FetchKeyEvent, nullptr);
 		
 		if (opt.GetOptionSet("road_features"))
 		{

@@ -56,49 +56,50 @@ Example 4 - sparse traffic (about 0.5 vehicle per 100 meter = 1 per 200 m)
    odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0.5 --window 60 60 1000 500
 
 
-Key commands
+Key shortcuts
 
-    TAB: Move camera to next vehicle
-    Shift-TAB: Move camera to previoius vehicle
+    H (shift h): This help text
+    TAB:         Move camera to next vehicle
+    Shift - TAB: Move camera to previoius vehicle
+    o:           Toggle show/hide OpenDRIVE road feature lines
+    u:           Toggle show / hide OSI road lines
+    y:           Toggle show / hide OSI road points
+    p:           Toggle show / hide environment 3D model
+    , (comma):   Toggle entity view : Model / None
+    ESC:         quit
 
-    1-9: Camera models acording to:
-        1. Custom camera model
-        2. Flight
-        3. Drive
-        4. Terrain
-        5. Orbit
-        6. FirstPerson
-        7. Spherical
-        8. NodeTracker
-        9. Trackball
+    1 - 9: Camera models acording to :
+        1: Custom camera model
+        2: Flight
+        3: Drive
+        4: Terrain
+        5: Orbit
+        6: FirstPerson
+        7: Spherical
+        8: NodeTracker
+        9: Trackball
 
-    When custom camera model (1) is activated:
+    When custom camera model(1) is activated
         k: Switch between the following sub models:
-            - Orbit      (camera facing vehicle, rotating around it)
-            - Fixed      (fix rotation, always straight behind vehicle) 
-            - Flex       (imagine the camera attached to vehicle via an elastic string)
-            - Flex-orbit (Like flex but allows for roatation around vehicle)
-            - Top        (top view, fixed rotation, always straight above vehicle) 
+           - Orbit        (camera facing vehicle, rotating around it)
+           - Fixed        (fix rotation, always straight behind vehicle)
+           - Flex         (imagine the camera attached to vehicle via an elastic string)
+           - Flex - orbit (Like flex but allows for roatation around vehicle)
+           - Top          (top view, fixed rotation, always straight above vehicle)
 
-    o: Toggle show/hide OpenDRIVE road feature lines
-    u: Toggle show/hide OSI road feature lines
-    p: Toggle show/hide environment 3D model
-    ESC: quit
-
-    Viewer options:
-      f: Toggle full screen mode
-      t: Toggle textures
-      s: Rendering statistics
-      l: Toggle light
-      w: Toggle geometry mode (shading, wireframe, dots)
-      c: Save screenshot in JPEG format - in the folder where the application was started from
-      h: Help 
+    Viewer options
+        f: Toggle full screen mode
+        t: Toggle textures
+        s: Rendering statistics
+        l: Toggle light
+        w: Toggle geometry mode(shading, wireframe, dots)
+        c: Save screenshot in JPEG format - in the folder where the application was started from
+        h: Help
 
 Mouse control
 
-	Left: Rotate
-	Right: Zoom
-	Middle: Pan
+    Left:   Rotate
+    Right:  Zoom
+    Middle: Pan
 
-	This is typical. Exact behaviour depends on active camera model.
-
+    This is typical, exact behaviour depends on active camera model.
