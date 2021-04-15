@@ -1951,6 +1951,8 @@ namespace roadmanager
 		int GetNumberOfVertices() { return (int)vertex_.size(); }
 		TrajVertex* GetVertex(int index);
 		void Reset();
+		int S2P(double s, double& p, double& h, double& z);
+		int P2S(double p, double& s, double& h, double& z);
 
 		std::vector<TrajVertex> vertex_;
 		TrajVertex currentPos_;
@@ -2014,6 +2016,7 @@ namespace roadmanager
 		ClothoidShape(roadmanager::Position pos, double curv, double curvDot, double len, double tStart, double tEnd);
 
 		int Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos);
+		int EvaluateInternal(double s, TrajVertex& pos);
 		void CalculatePolyLine();
 		double GetLength() { return spiral_->GetLength(); }
 		Position pos_;
@@ -2055,8 +2058,6 @@ namespace roadmanager
 		std::vector<double> d_;  // used for temporary storage of CoxDeBoor weigthed control points
 
 		void CalculatePolyLine();
-		int S2P(double s, double &p, double &h, double &z);
-		int P2S(double p, double& s, double& h, double& z);
 		double GetLength() { return length_; }
 
 	private:

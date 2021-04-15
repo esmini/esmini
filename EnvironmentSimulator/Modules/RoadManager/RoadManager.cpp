@@ -7944,6 +7944,10 @@ double NurbsShape::CoxDeBoor(double x, int i, int k, const std::vector<double>& 
 
 void NurbsShape::CalculatePolyLine()
 {
+	if (ctrlPoint_.size() < 1)
+	{
+		return;
+	}
 	Position tmpRoadPos;
 
 	// Calculate approximate length - to find a reasonable step length
@@ -7979,12 +7983,29 @@ void NurbsShape::CalculatePolyLine()
 	pline_.Reset();
 	for (int i = 0; i < nSteps; i++)
 	{
-		EvaluateInternal(i * p_steplen, pos);
+		double t = i * p_steplen;
+		EvaluateInternal(t, pos);
 		if (i > 0)
 		{
 			newLength += PointDistance2D(pos.x, pos.y, oldpos.x, oldpos.y);
 		}
 		pos.s = newLength;
+
+		// Find active control point
+		int k;
+		for (k = order_ - 1; knot_[k + 1] <= t && k < knot_.size() - order_ - 1; k++);
+		
+		// Interpolate time linear between control points
+		int index = k - order_ + 1;
+		if (index < ctrlPoint_.size())
+		{
+			pos.time = ctrlPoint_[index].time_ + ctrlPoint_[index + 1].time_ * (t - knot_[k]) / (knot_[k + 1] - knot_[k]);
+		}
+		else
+		{
+			pos.time = ctrlPoint_.back().time_;
+		}
+
 		pline_.AddVertex(pos);
 
 		if (i > 0)
@@ -8010,24 +8031,29 @@ void NurbsShape::CalculatePolyLine()
 	length_ = newLength;
 }
 
-int NurbsShape::S2P(double s, double &p, double &h, double &z)
+int PolyLineBase::S2P(double s, double &p, double &h, double &z)
 {
-	// start looking from current index
-	int i = pline_.vIndex_;
-
-	for (size_t j = 0; j < pline_.GetNumberOfVertices(); j++)
+	if (GetNumberOfVertices() < 1)
 	{
-		if (pline_.vertex_[i].s <= s && pline_.vertex_[i + 1].s > s)
+		return -1;
+	}
+
+	// start looking from current index
+	int i = vIndex_;
+
+	for (size_t j = 0; j < GetNumberOfVertices(); j++)
+	{
+		if (vertex_[i].s <= s && vertex_[i + 1].s > s)
 		{
-			double w = (s - pline_.vertex_[i].s) / (pline_.vertex_[i + 1].s - pline_.vertex_[i].s);
-			p = pline_.vertex_[i].p + w * (pline_.vertex_[i + 1].p - pline_.vertex_[i].p);
-			h = pline_.vertex_[i].h + w * GetAngleDifference(pline_.vertex_[i + 1].h, pline_.vertex_[i].h);
-			z = pline_.vertex_[i].z + w * (pline_.vertex_[i + 1].z - pline_.vertex_[i].z);
-			pline_.vIndex_ = i;
+			double w = (s - vertex_[i].s) / (vertex_[i + 1].s - vertex_[i].s);
+			p = vertex_[i].p + w * (vertex_[i + 1].p - vertex_[i].p);
+			h = vertex_[i].h + w * GetAngleDifference(vertex_[i + 1].h, vertex_[i].h);
+			z = vertex_[i].z + w * (vertex_[i + 1].z - vertex_[i].z);
+			vIndex_ = i;
 			return 0;
 		}
 		
-		if (++i > pline_.GetNumberOfVertices() - 1)
+		if (++i > GetNumberOfVertices() - 1)
 		{
 			// Reached end of buffer, continue from start
 			i = 0;
@@ -8035,31 +8061,36 @@ int NurbsShape::S2P(double s, double &p, double &h, double &z)
 	}
 	
 	// s seems out of range, grab last element
-	p = pline_.GetVertex(-1)->p;
-	h = pline_.GetVertex(-1)->h;
-	z = pline_.GetVertex(-1)->z;
+	p = GetVertex(-1)->p;
+	h = GetVertex(-1)->h;
+	z = GetVertex(-1)->z;
 	
 	return 0;
 }
 
-int NurbsShape::P2S(double p, double& s, double& h, double& z)
+int PolyLineBase::P2S(double p, double& s, double& h, double& z)
 {
-	// start looking from current index
-	int i = pline_.vIndex_;
-
-	for (size_t j = 0; j < pline_.GetNumberOfVertices(); j++)
+	if (GetNumberOfVertices() < 1)
 	{
-		if (pline_.vertex_[i].p <= p && pline_.vertex_[i + 1].p > p)
+		return -1;
+	}
+
+	// start looking from current index
+	int i = vIndex_;
+
+	for (size_t j = 0; j < GetNumberOfVertices(); j++)
+	{
+		if (vertex_[i].p <= p && vertex_[i + 1].p > p)
 		{
-			double w = (p - pline_.vertex_[i].p) / (pline_.vertex_[i + 1].p - pline_.vertex_[i].p);
-			s = pline_.vertex_[i].s + w * (pline_.vertex_[i + 1].s - pline_.vertex_[i].s);
-			h = pline_.vertex_[i].h + w * GetAngleDifference(pline_.vertex_[i + 1].h, pline_.vertex_[i].h);
-			z = pline_.vertex_[i].z + w * (pline_.vertex_[i + 1].z - pline_.vertex_[i].z);
-			pline_.vIndex_ = i;
+			double w = (p - vertex_[i].p) / (vertex_[i + 1].p - vertex_[i].p);
+			s = vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s);
+			h = vertex_[i].h + w * GetAngleDifference(vertex_[i + 1].h, vertex_[i].h);
+			z = vertex_[i].z + w * (vertex_[i + 1].z - vertex_[i].z);
+			vIndex_ = i;
 			return 0;
 		}
 
-		if (++i > pline_.GetNumberOfVertices() - 1)
+		if (++i > GetNumberOfVertices() - 1)
 		{
 			// Reached end of buffer, continue from start
 			i = 0;
@@ -8067,9 +8098,9 @@ int NurbsShape::P2S(double p, double& s, double& h, double& z)
 	}
 
 	// p seems out of range, grab last element
-	s = pline_.GetVertex(-1)->s;
-	h = pline_.GetVertex(-1)->h;
-	z = pline_.GetVertex(-1)->z;
+	s = GetVertex(-1)->s;
+	h = GetVertex(-1)->h;
+	z = GetVertex(-1)->z;
 
 	return 0;
 }
@@ -8082,9 +8113,6 @@ int NurbsShape::EvaluateInternal(double t, TrajVertex& pos)
 	t = CLAMP(t, knot_[0], knot_.back());
 
 	double rationalWeight = 0.0;
-
-	int k;
-	for (k = order_ - 1; knot_[k + 1] <= t && k < knot_.size() - order_ - 1; k++);
 
 	for (size_t i = 0; i < ctrlPoint_.size(); i++)
 	{
@@ -8144,7 +8172,7 @@ int NurbsShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
 				((p - ctrlPoint_[c].time_) / (ctrlPoint_[c + 1].time_ - ctrlPoint_[c].time_)) * 
 				(ctrlPoint_[c+1].t_ - ctrlPoint_[c].t_);
 
-			P2S(t, pos.s, pos.h, pos.z);
+			pline_.P2S(t, pos.s, pos.h, pos.z);
 		}
 		else
 		{
@@ -8153,7 +8181,7 @@ int NurbsShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
 	}
 	else
 	{
-		S2P(p, t, pos.h, pos.z);
+		pline_.S2P(p, t, pos.h, pos.z);
 		pos.s = p;
 	}
 
@@ -8182,16 +8210,30 @@ void ClothoidShape::CalculatePolyLine()
 	{
 		if (i < steps)
 		{
-			Evaluate((double)i, TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
+			EvaluateInternal((double)i, v);
 		}
 		else
 		{
 			// Add endpoint of spiral
-			Evaluate(spiral_->GetLength(), TrajectoryParamType::TRAJ_PARAM_TYPE_S, v);
+			EvaluateInternal(spiral_->GetLength(), v);
 		}
+
+		// resolve road coordinates to get elevation at point
+		pos_.SetInertiaPos(v.x, v.y, v.h, true);
+		v.z = pos_.GetZ();
+
+		v.p = v.s = (double)i;
+		v.time = t_start_ + (i * stepLen / spiral_->GetLength()) * t_end_;
 
 		pline_.AddVertex(v);
 	}
+}
+
+int ClothoidShape::EvaluateInternal(double s, TrajVertex& pos)
+{
+	spiral_->EvaluateDS(s, &pos.x, &pos.y, &pos.h);
+
+	return 0;
 }
 
 int ClothoidShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
@@ -8211,12 +8253,10 @@ int ClothoidShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
 		}
 	}
 
+	pline_.S2P(p, pos.p, pos.h, pos.z);
+
 	spiral_->EvaluateDS(p, &pos.x, &pos.y, &pos.h);
 
-	// resolve road coordinates to get elevation at point
-	pos_.SetInertiaPos(pos.x, pos.y, pos.h, true);
-
-	pos.z = pos_.GetZ();
 	pos.s = p;
 
 	return 0;
