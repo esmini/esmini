@@ -765,6 +765,8 @@ namespace roadmanager
 		Orientation GetOrientation() { return orientation_; }
 		int GetType() { return type_; }
 		int GetSubType() { return sub_type_; }
+		double GetHeight() { return height_; }
+		double GetWidth() { return width_; }
 
 	private:
 		double s_;

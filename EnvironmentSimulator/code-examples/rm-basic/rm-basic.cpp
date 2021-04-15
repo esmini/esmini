@@ -3,15 +3,24 @@
 
 int main(int argc, char* argv[])
 {
-	RM_Init("../resources/xodr/e6mini.xodr");
+	RM_Init("../resources/xodr/straight_500m_signs.xodr");
 
 	// Print some basic info
 	printf("nrOfRoads: %d\n", RM_GetNumberOfRoads());
 	for (int i = 0; i < RM_GetNumberOfRoads(); i++)
 	{
-		int id = RM_GetIdOfRoadFromIndex(i);
-		printf("Road[i] ID: %d\n", id);
-		printf("Road[i] nrOf(drivable)Lanes (at s=0): %d\n", RM_GetRoadNumberOfLanes(id, 0));
+		int rid = RM_GetIdOfRoadFromIndex(i);
+		printf("Road[%d] ID: %d\n", i, rid);
+		printf("Road[%d] nrOf(drivable)Lanes (at s=0): %d\n", i, RM_GetRoadNumberOfLanes(rid, 0));
+
+		// Get some road sign info
+		for (int j = 0; j < RM_GetNumberOfRoadSigns(rid); j++)
+		{
+			RM_RoadSign rs;
+			RM_GetRoadSign(rid, j, &rs);
+			printf("Road[%d] sign[%d] id %d name %s x %.2f y %.2f z %.2f heading %.2f orientation %d z_offset %.2f height: %.2f width %.2f\n",
+				i, j, rs.id, rs.name, rs.x, rs.y, rs.z, rs.h, rs.orientation, rs.z_offset, rs.height, rs.width);
+		}
 	}
 
 	// Create a position object
@@ -24,6 +33,7 @@ int main(int argc, char* argv[])
 	RM_GetLaneInfo(p0, 0.0, &laneInfo, 2, false);  // LookAheadMode = 2 looks at current lane offset
 	RM_GetPositionData(p0, &posData);
 	
+	printf("\nPosition manipulation:\n");
 	printf("current pos: s %.2f laneId %d offset %.2f x %.2f y %.2f z %.2f \n",
 		posData.s, laneInfo.laneId, laneInfo.laneOffset, posData.x, posData.y, posData.z);
 
@@ -40,6 +50,7 @@ int main(int argc, char* argv[])
 	RM_GetPositionData(p0, &posData);
 	printf("current pos: s %.2f laneId %d offset %.2f x %.2f y %.2f z %.2f \n",
 		posData.s, laneInfo.laneId, laneInfo.laneOffset, posData.x, posData.y, posData.z);
+
 
 	return 0;
 }

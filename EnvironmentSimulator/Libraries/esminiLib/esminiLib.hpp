@@ -117,12 +117,16 @@ typedef struct
 	float x;           // global x coordinate of sign position
 	float y;           // global y coordinate of sign position
 	float z;           // global z coordinate of sign position
+	float z_offset;    // z offset from road level
 	float h;           // global heading of sign orientation
 	int roadId;        // road id of sign road position
 	float s;           // longitudinal position along road
 	float t;           // lateral position from road reference line
 	const char* name;  // sign name, typically used for 3D model filename
 	int orientation;   // 1=facing traffic in road direction, -1=facing traffic opposite road direction
+	float length;      // length as sepcified in OpenDRIVE
+	float height;      // height as sepcified in OpenDRIVE
+	float width;       // width as sepcified in OpenDRIVE
 } SE_RoadSign;
 
 #ifdef __cplusplus

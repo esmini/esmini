@@ -1348,7 +1348,11 @@ extern "C"
 					road_sign->s = pos.GetS();
 					road_sign->t = pos.GetT();
 					road_sign->orientation = s->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? -1 : 1;
-
+					road_sign->z_offset = (float)s->GetZOffset();
+					road_sign->length = (float)s->GetLength();
+					road_sign->height = (float)s->GetHeight();
+					road_sign->width = (float)s->GetWidth();
+					
 					return 0;
 				}
 			}
