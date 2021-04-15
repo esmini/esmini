@@ -395,8 +395,12 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 
 		std::string type_str = pdChild.attribute("parameterType").value();
 		
-		if (type_str == "integer")
+		if (type_str == "integer" || type_str == "int")
 		{
+			if (type_str == "int")
+			{
+				LOG("INFO: int type should renamed into integer - accepting int this time.");
+			}
 			param.type = OSCParameterDeclarations::ParameterType::PARAM_TYPE_INTEGER;
 			param.value._int = strtoi(param.value._string);
 		}
@@ -405,8 +409,13 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 			param.type = OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE;
 			param.value._double = strtod(param.value._string);
 		}
-		else if (type_str == "boolean")
+		else if (type_str == "boolean" || type_str == "bool")
 		{
+			if (type_str == "bool")
+			{
+				LOG("INFO: bool type should renamed into boolean - accepting bool this time.");
+			}
+
 			param.type = OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL;
 			param.value._bool = param.value._string == "true" ? true : false;
 		}

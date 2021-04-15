@@ -141,7 +141,6 @@ namespace scenarioengine
 
 		std::vector<Controller*> controller_;
 		Parameters parameters;
-		OSCProperties properties;//todo
 
 	private:
 		pugi::xml_document doc_;

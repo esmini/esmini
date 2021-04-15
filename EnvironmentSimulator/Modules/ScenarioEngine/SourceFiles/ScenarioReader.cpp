@@ -2104,32 +2104,32 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						// read active flag
 						overrideStatus.active = parameters.ReadAttribute(controllerDefNode, "active") == "true" ? true : false;
 
-						if (controllerDefNode.name() == std::string("throttle"))
+						if (controllerDefNode.name() == std::string("OverrideThrottleAction"))
 						{
 							overrideStatus.type = Object::OverrideType::OVERRIDE_THROTTLE;
 							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
 						}
-						else if (controllerDefNode.name() == std::string("brake"))
+						else if (controllerDefNode.name() == std::string("OverrideBrakeAction"))
 						{
 							overrideStatus.type = Object::OverrideType::OVERRIDE_BRAKE;
 							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
 						}
-						else if (controllerDefNode.name() == std::string("clutch"))
+						else if (controllerDefNode.name() == std::string("OverrideClutchAction"))
 						{
 							overrideStatus.type = Object::OverrideType::OVERRIDE_CLUTCH;
 							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
 						}
-						else if (controllerDefNode.name() == std::string("parkingBrake"))
+						else if (controllerDefNode.name() == std::string("OverrideParkingBrakeAction"))
 						{
 							overrideStatus.type = Object::OverrideType::OVERRIDE_PARKING_BRAKE;
 							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value);
 						}
-						else if (controllerDefNode.name() == std::string("steeringWheel"))
+						else if (controllerDefNode.name() == std::string("OverrideSteeringWheelAction"))
 						{
 							overrideStatus.type = Object::OverrideType::OVERRIDE_STEERING_WHEEL;
 							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value, -2 * M_PI, 2 * M_PI);
 						}
-						else if (controllerDefNode.name() == std::string("gear"))
+						else if (controllerDefNode.name() == std::string("OverrideGearAction"))
 						{
 							overrideStatus.type = Object::OverrideType::OVERRIDE_GEAR;
 							overrideStatus.value = override_action->RangeCheckAndErrorLog(overrideStatus.type, value, -1, 8, true);
