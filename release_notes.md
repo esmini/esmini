@@ -1,5 +1,13 @@
 ## esmini release notes
 
+### 2021-04-16 Version 2.7.3
+
+- API to get object properties
+- Extend road sign API (more attributes, e.g. height), see example use in [rm-basic.cpp](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/rm-basic/rm-basic.cpp).
+- Fix wrong OverrideControllerValueAction type names
+- New feature: Print help text to console, trig on key 'H' (shift 'h')
+- Some additional minor fixes
+
 ### 2021-04-14 Version 2.7.2
 
 - Fix bug so roads without type can be used with osi intersections
