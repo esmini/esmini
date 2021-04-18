@@ -90,12 +90,15 @@ int main(int argc, char *argv[])
 				Lane *lane = lane_section->GetLaneByIdx(j);
 
 				file << "lane, " << road->GetId() << ", " << i << ", " << lane->GetId() << (lane->IsDriving() ? ", driving" : ", no-driving") << std::endl;
-				double s = s_start;
+
 				for (int k = 0; k < steps + 1; k++)
 				{
-					s += k * step_length;
-					s = MIN(s_end, s);
+					double s = MIN(s_end, s_start + k * step_length);
+
+					// Set lane offset to half the lane width in order to mark the outer edge of the lane (laneOffset = 0 means middle of lane)
 					pos->SetLanePos(road->GetId(), lane->GetId(), s, SIGN(lane->GetId())*lane_section->GetWidth(s, lane->GetId())*0.5, i);
+
+					// Write the point to file
 					snprintf(strbuf, sizeof(strbuf), "%f, %f, %f, %f\n", pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetH());
 					file << strbuf;
 				}
