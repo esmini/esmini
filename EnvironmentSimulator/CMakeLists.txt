@@ -328,9 +328,6 @@ add_subdirectory(Libraries/esminiLib)
 add_subdirectory(Libraries/esminiRMLib)
 add_subdirectory(Applications/esmini)
 add_subdirectory(Applications/esmini-dyn)
-add_subdirectory(code-examples/rm-basic)
-add_subdirectory(code-examples/access-odr)
-
 
 # Add unittest folder
 if(APPLE)
@@ -350,8 +347,26 @@ set_target_properties (ScenarioEngine PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (RoadManager PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (ScenarioEngine PROPERTIES FOLDER ${ModulesFolder} )
 
-set_target_properties (rm-basic PROPERTIES FOLDER ${CodeExamplesFolder} )
-set_target_properties (access-odr PROPERTIES FOLDER ${CodeExamplesFolder} )
+
+# Add all projects under code-examples folder using a macro
+MACRO(SUBDIRLIST result curdir)
+  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
+  SET(dirlist "")
+  FOREACH(child ${children})
+    IF(IS_DIRECTORY ${curdir}/${child})
+      LIST(APPEND dirlist ${child})
+    ENDIF()
+  ENDFOREACH()
+  SET(${result} ${dirlist})
+ENDMACRO()
+
+SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/code-examples)
+
+FOREACH(subdir ${SUBDIRS})
+    add_subdirectory(code-examples/${subdir})
+    set_target_properties (${subdir} PROPERTIES FOLDER ${CodeExamplesFolder} )  
+ENDFOREACH()
+
 
 #
 # Download library and content binary packets
