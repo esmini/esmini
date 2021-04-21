@@ -64,7 +64,7 @@ static const char* entityModelsFiles_[] =
 	"bus_blue.osgb",
 	"walkman.osgb",
 	"moose_cc0.osgb",
-	"cyclist.osgb"
+	"cyclist.osgb",
 };
 
 void log_callback(const char* str)
@@ -105,11 +105,14 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 
 			new_sc.id = state->info.id;
 			new_sc.trajPoints = 0;
-			if (state->info.model_id >= sizeof(entityModelsFiles_) / sizeof(char*))
+
+			const char* filename = "";
+			if (state->info.model_id >= 0 && state->info.model_id < sizeof(entityModelsFiles_) / sizeof(char*))
 			{
-				state->info.model_id = 0;
+				filename = entityModelsFiles_[state->info.model_id];
 			}
-			if ((new_sc.entityModel = viewer->AddEntityModel(entityModelsFiles_[state->info.model_id], osg::Vec4(0.5, 0.5, 0.5, 1.0),
+			
+			if ((new_sc.entityModel = viewer->AddEntityModel(filename, osg::Vec4(0.5, 0.5, 0.5, 1.0),
 				viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER, false, state->info.name, &state->info.boundingbox)) == 0)
 			{
 				return -1;
