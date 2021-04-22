@@ -747,7 +747,6 @@ namespace scenarioengine
 		
 		void Step(double dt, double simTime);
 		void Start();
-		void End();
 		
 		OSCPrivateAction *Copy()
 		{

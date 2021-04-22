@@ -59,9 +59,9 @@
                         <PrivateAction>
                            <ControllerAction>
                               <OverrideControllerValueAction>
-                                  <OverrideThrottleAction value="0.5" active="true"/>
-                                  <OverrideBrakeAction value="0.7" active="false"/>
-                                  <OverrideClutchAction value="2.0" active="false"/>
+                                  <Throttle value="0.5" active="true"/>
+                                  <Brake value="0.7" active="false"/>
+                                  <Clutch value="2.0" active="false"/>
                               </OverrideControllerValueAction>
                            </ControllerAction>
                         </PrivateAction>
@@ -81,10 +81,10 @@
                         <PrivateAction>
                            <ControllerAction>
                               <OverrideControllerValueAction>
-                                  <OverrideClutchAction value="0.7" active="true"/>
-                                  <OverrideParkingBrakeAction value="0.0" active="true"/>
-                                  <OverrideSteeringWheelAction value="15.0" active="false"/>
-                                  <OverrideGearAction value="7.5" active="false"/>
+                                  <Clutch value="0.7" active="true"/>
+                                  <ParkingBrake value="0.0" active="true"/>
+                                  <SteeringWheel value="15.0" active="false"/>
+                                  <Gear value="7.5" active="false"/>
                               </OverrideControllerValueAction>
                            </ControllerAction>
                         </PrivateAction>

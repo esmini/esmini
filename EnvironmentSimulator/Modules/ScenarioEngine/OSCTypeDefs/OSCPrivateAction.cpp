@@ -1298,15 +1298,12 @@ void OverrideControlAction::Start()
 	OSCAction::Start();
 }
 
-void OverrideControlAction::End()
-{
-	OSCAction::End();
-}
-
 void OverrideControlAction::Step(double dt, double simTime)
 {
 	(void)dt;
 	(void)simTime;
+
+	OSCAction::Stop();
 }
 
 double OverrideControlAction::RangeCheckAndErrorLog(Object::OverrideType type, double valueCheck, double lowerLimit, double upperLimit, bool ifRound)
