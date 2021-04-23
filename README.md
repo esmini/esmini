@@ -25,7 +25,9 @@ Repository: <https://github.com/esmini/esmini>
 
 Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\esmini" and run any of the example scripts. See more info below under "Binaries and demos".
 
-**Please note**: From version 1.5 esmini only supports OpenSCENARIO v1.0. All demo scenarios has been updated from 0.9.1 to 1.0. ASAM provides a transformation scheme (migration0_9_1to1_0.xslt, part of the OpenSCENARIO 1.0 release bundle) that can be used with tools for automatic migration of XML files.
+esmini supports OpenSCENARIO v1.0 (from esmini v1.5) and v1.1 (from esmini v2.7). In order to run older versions (i.e. v0.9.1)  ASAM provides a transformation scheme (migration0_9_1to1_0.xslt, part of the OpenSCENARIO 1.0 release bundle) that can be used with tools for automatic migration of XML files.
+
+Please note that the OpenSCENARIO [coverage](https://github.com/esmini/esmini/blob/master/osc_coverage.txt) is limited, which means that not all features of OpenSCENARIO are supported. The functionalty grows slow but steady, based on need and contributions.
 
 The code was initially a result from the Swedish collaborative research project [Simulation Scenarios](https://sites.google.com/view/simulationscenarios), and is now further developed based on users need and OpenSCENARIO development.
 
@@ -37,7 +39,8 @@ The purpose of this implementation was to explore and get familiar with the emer
 
 Although allowed by the license this implementation is not primarily intended for production use. The code was developed ad hoc to answer research questions connected with the ongoing project. Therefore, code quality, as expected from standard production applications, is lacking when it comes to clarity, structure, comments, error handling and coding guidelines.
 
-[OpenSCENARIO coverage](./osc_coverage.txt) is limited as it was developed on demand and defined by the research scope. Moreover, since the Simulation Scenarios project is closed, no formal support should be expected from the initial contributors.  
+Since the Simulation Scenarios project is closed, no formal support should be expected from the initial contributors.  
+
 Nevertheless, regarding the above stated limitations, it was decided to release the code as is, as a public outcome from the project. It can hopefully serve as guidance or just inspiration for those aspiring to build similar tools, or even get accustomed with the OpenSCENARIO format. And of course, all contributions to further development are welcome!
 
 ## Binaries and demos
