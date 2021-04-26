@@ -118,7 +118,14 @@ esmini comes with a few controllers (ways of controlling individual entities in 
 - SumoController. A way of integrating SUMO controlled vehicles in a scenario.
 
 More information [here](https://github.com/esmini/esmini/blob/master/docs/Controllers.md).
- 
+
+## 3D model support
+
+esmini make use of OpenSceneGraph (OSG) for visualization of the scenario. The OpenSCENARIO files can optionally refer to existing 3D models of the static environment (scene graph) and dynamic objects (entites). If the scene graph reference is missing, esmini will try to generate a basic model based on the OpenDRIVE road network description.
+
+Currently esmini only supports OSG native .osgb 3D file format. However, there are ways to convert 3D models of some other formats using the OSG tool osgconv. Please see [this issue report](https://github.com/esmini/esmini/issues/63#issuecomment-742273326) for some more info.
+
+
 ## Related work
 ### pyoscx
 [pyoscx](https://github.com/pyoscx/pyoscx) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate the OpenSCENARIO 1.0 XML counterpart.
