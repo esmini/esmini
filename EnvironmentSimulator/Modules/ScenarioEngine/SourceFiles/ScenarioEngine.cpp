@@ -824,9 +824,20 @@ void ScenarioEngine::SetupGhost(Object* object)
 								OSCPrivateAction* pa = (OSCPrivateAction*)action;
 								if (pa->object_ == object)
 								{
-									// Replace object
-									pa->ReplaceObjectRefs(object, ghost);
-									ghostIsActor = true;
+									// If at least one of the event actions is of relevant subset of action types
+									// then move the action to the ghost object instance, and also make needed 
+									// changes to the event trigger
+									if (pa->type_ == OSCPrivateAction::ActionType::LONG_SPEED ||
+										pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE || 
+										pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_OFFSET || 
+										pa->type_ == OSCPrivateAction::ActionType::SYNCHRONIZE || 
+										pa->type_ == OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY ||
+										pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
+									{
+										// Replace object
+										pa->ReplaceObjectRefs(object, ghost);
+										ghostIsActor = true;
+									}
 								}
 							}
 						}
