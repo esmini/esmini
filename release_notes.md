@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2021-04-26 Version 2.7.4
+
+- Add [func](https://github.com/esmini/esmini/blob/1340dad935c52ad955963a484e5d12b3f431a40a/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L748) to set explicit OSI timestamp
+- Fix issues in OverrideControllerValueAction
+  - Correct wrong override action element name
+  - Quit action immediately (as clarified in OSC v1.1 User Guide)
+- Improve scroll wheel handling (issue [#105](https://github.com/esmini/esmini/issues/105))
+  - inverse wheel in OSG default camera models
+  - add scroll wheel zoom to esmini camera models
+- Add ideal-sensors [code example](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/ideal-sensors/ideal-sensors.cpp)
+- Fix odrplot step-length bug (issue [#100](https://github.com/esmini/esmini/issues/100))
+- Add brief info on 3D model conversion to [readme](https://github.com/esmini/esmini#3d-model-support) (issue [#63](https://github.com/esmini/esmini/issues/63))
+- Some additional minor fixes
+
 ### 2021-04-16 Version 2.7.3
 
 - API to get object properties
