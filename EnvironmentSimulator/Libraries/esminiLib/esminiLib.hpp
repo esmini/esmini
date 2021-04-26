@@ -802,9 +802,15 @@ extern "C"
 
 	/**
 		Set maximum vehicle speed.
-		@param speed Maximum speed (m/s)
+		@param speed Maximum speed (km/h)
 	*/
 	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void *handleSimpleVehicle, float speed);
+
+	/**
+		Set maximum vehicle speed.
+		@param accScale Acceleration scale factor speed (0:10)
+	*/
+	SE_DLL_API void SE_SimpleVehicleSetAcclerationScale(void* handleSimpleVehicle, float accScale);
 
 	/**
 		Get current state of the vehicle. Typically called after Control has been applied.

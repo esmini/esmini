@@ -1445,7 +1445,16 @@ extern "C"
 		{
 			return;
 		}
-		((vehicle::Vehicle *)handleSimpleVehicle)->SetMaxSpeed(speed);
+		((vehicle::Vehicle *)handleSimpleVehicle)->SetMaxSpeed(speed/3.6);
+	}
+
+	SE_DLL_API void SE_SimpleVehicleSetAcclerationScale(void* handleSimpleVehicle, float accScale)
+	{
+		if (handleSimpleVehicle == 0)
+		{
+			return;
+		}
+		((vehicle::Vehicle*)handleSimpleVehicle)->SetAccelerationScale(accScale);
 	}
 
 	SE_DLL_API void SE_SimpleVehicleGetState(void *handleSimpleVehicle, SE_SimpleVehicleState *state)

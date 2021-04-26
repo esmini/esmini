@@ -47,8 +47,9 @@ namespace vehicle
 			posZ_ = z;
 			heading_ = h;
 		}
-		void SetMaxSpeed(double speed) { max_speed_ = speed; }
+		void SetMaxSpeed(double speed);
 		double GetMaxSpeed() { return max_speed_; }
+		void SetAccelerationScale(double accScale);
 		bool GetThrottleDisabled() { return steering_disabled_; }
 		void SetThrottleDisabled(bool value) { throttle_disabled_ = value; }
 		bool GetSteeringDisabled() { return steering_disabled_; }
@@ -77,6 +78,7 @@ namespace vehicle
 
 	private:
 		double max_speed_;
+		double acc_scale_;
 		bool throttle_disabled_;
 		bool steering_disabled_;
 	};

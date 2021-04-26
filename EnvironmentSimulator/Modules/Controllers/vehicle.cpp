@@ -25,7 +25,8 @@ using namespace vehicle;
 #define STEERING_RATE 5.0
 #define LENGTH_DEFAULT 5.0
 #define STEERING_MAX_ANGLE (60 * M_PI / 180)
-#define ACCELERATION_SCALE 40
+#define ACCELERATION_SCALE_DEFAULT 40
+#define MAX_SPEED_DEFAULT 70
 #define SPEED_DECLINE 0.001
 #define WHEEL_RADIUS 0.35
 #define TARGET_HWT 1.0
@@ -52,9 +53,20 @@ void Vehicle::SetWheelRotation(double rotation)
 	wheelRotation_ = rotation;
 }
 
+void Vehicle::SetMaxSpeed(double maxSpeed)
+{
+	max_speed_ = maxSpeed;
+}
+
+void Vehicle::SetAccelerationScale(double accScale)
+{
+	accScale = CLAMP(accScale, SMALL_NUMBER, 10);
+	acc_scale_ = accScale * ACCELERATION_SCALE_DEFAULT;
+}
+
 void Vehicle::DrivingControlTarget(double dt, double heading_to_target, double target_speed)
 {
-	double acceleration = CLAMP(ACCELERATION_SCALE * (target_speed - speed_), -30, 30);
+	double acceleration = CLAMP(acc_scale_ * (target_speed - speed_), -30, 30);
 
 	speed_ += acceleration * dt;
 	speed_ *= (1 - SPEED_DECLINE);
@@ -81,7 +93,7 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 		}
 		else
 		{
-			speed_ += ACCELERATION_SCALE * throttle * dt;
+			speed_ += acc_scale_ * throttle * dt;
 
 			if (oldSpeed > 0 && speed_ < 0)
 			{
@@ -128,7 +140,7 @@ void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
 		}
 		else
 		{
-			speed_ += ACCELERATION_SCALE * throttle * dt;
+			speed_ += acc_scale_ * throttle * dt;
 
 			if (oldSpeed > 0 && speed_ < 0)
 			{
@@ -202,5 +214,6 @@ void Vehicle::Reset()
 	headingDot_ = 0;
 	handbrake_ = false;
 	target_speed_ = 0;
-	max_speed_ = 70;
+	max_speed_ = MAX_SPEED_DEFAULT;
+	acc_scale_ = ACCELERATION_SCALE_DEFAULT;
 }
