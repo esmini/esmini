@@ -824,6 +824,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	}
 
 	osgViewer_ = new osgViewer::Viewer(arguments);
+	if (osgViewer_ == nullptr)
+	{
+		LOG("Failed to initialize OSG viewer");
+		return;
+	}
 
 	// Check if the viewer has been created correctly - window created is a indication
 	osgViewer::ViewerBase::Windows wins;
@@ -995,14 +1000,21 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	nodeTrackerManipulator_->setTrackerMode(osgGA::NodeTrackerManipulator::NODE_CENTER);
 	nodeTrackerManipulator_->setRotationMode(osgGA::NodeTrackerManipulator::ELEVATION_AZIM);
 	nodeTrackerManipulator_->setVerticalAxisFixed(true);
+	nodeTrackerManipulator_->setWheelZoomFactor(-1 * nodeTrackerManipulator_->getWheelZoomFactor());  // inverse scroll wheel 
 
 	osg::ref_ptr<osgGA::TrackballManipulator> trackBallManipulator; 
 	trackBallManipulator = new osgGA::TrackballManipulator;
 	trackBallManipulator->setVerticalAxisFixed(true);
+	trackBallManipulator->setWheelZoomFactor(-1 * trackBallManipulator->getWheelZoomFactor());  // inverse scroll wheel 
 
 	osg::ref_ptr<osgGA::OrbitManipulator> orbitManipulator;
 	orbitManipulator = new osgGA::OrbitManipulator;
 	orbitManipulator->setVerticalAxisFixed(true);
+	orbitManipulator->setWheelZoomFactor(-1 * orbitManipulator->getWheelZoomFactor());  // inverse scroll wheel 
+	
+	osg::ref_ptr<osgGA::TerrainManipulator> terrainManipulator;
+	terrainManipulator = new osgGA::TerrainManipulator();
+	terrainManipulator->setWheelZoomFactor(-1 * terrainManipulator->getWheelZoomFactor());  // inverse scroll wheel 
 
 	rubberbandManipulator_ = new osgGA::RubberbandManipulator(camMode_);
 	rubberbandManipulator_->setTrackNode(envTx_);
@@ -1014,8 +1026,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		keyswitchManipulator->addMatrixManipulator('1', "Rubberband", rubberbandManipulator_.get());
 		keyswitchManipulator->addMatrixManipulator('2', "Flight", new osgGA::FlightManipulator());
 		keyswitchManipulator->addMatrixManipulator('3', "Drive", new osgGA::DriveManipulator());
-		keyswitchManipulator->addMatrixManipulator('4', "Terrain", new osgGA::TerrainManipulator());
-		keyswitchManipulator->addMatrixManipulator('5', "Orbit", new osgGA::OrbitManipulator());
+		keyswitchManipulator->addMatrixManipulator('4', "Terrain", terrainManipulator.get());
+		keyswitchManipulator->addMatrixManipulator('5', "Orbit", orbitManipulator.get());
 		keyswitchManipulator->addMatrixManipulator('6', "FirstPerson", new osgGA::FirstPersonManipulator());
 		keyswitchManipulator->addMatrixManipulator('7', "Spherical", new osgGA::SphericalManipulator());
 		keyswitchManipulator->addMatrixManipulator('8', "NodeTracker", nodeTrackerManipulator_.get());

@@ -114,6 +114,7 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea,GUIActionAdapter& u
 	static float ry0 = 0;
 	float angleScale = 30.0;
 	float zoomScale = 1.0;
+	float scrollScale = 0.2;
 
 	if(ea.getEventType() & GUIEventAdapter::PUSH)
 	{
@@ -130,6 +131,7 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea,GUIActionAdapter& u
 			ry0 = ea.getYnormalized();
 		}
 	}
+
 	if(ea.getEventType() & GUIEventAdapter::RELEASE)
 	{
 		if (ea.getButtonMask() & GUIEventAdapter::LEFT_MOUSE_BUTTON)
@@ -173,6 +175,21 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea,GUIActionAdapter& u
 			break;
             return false;
 
+		case(GUIEventAdapter::SCROLL):
+		{
+			static int scroll = 0;
+			switch (ea.getScrollingMotion())
+			{
+			case(osgGA::GUIEventAdapter::SCROLL_DOWN):
+				scroll = -1;
+				break;
+			case(osgGA::GUIEventAdapter::SCROLL_UP):
+				scroll = 1;
+				break;
+			}
+			_cameraDistance -= scrollScale * _cameraDistance * (scroll);
+			return false;
+		}
 		case(GUIEventAdapter::FRAME):
 		{
 			static double old_frametime = 0;
