@@ -928,6 +928,49 @@ TEST(PropertyTest, TestGetAndSet)
 	EXPECT_EQ(SE_GetNumberOfProperties(-1), -1);
 }
 
+TEST(SetOSITimestampTest, TestGetAndSet)
+{
+	osi3::GroundTruth* osi_gt;
+
+	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
+
+	EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+
+	int n_Objects = SE_GetNumberOfObjects();
+	EXPECT_EQ(n_Objects, 2);
+
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+
+	osi_gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
+
+	EXPECT_EQ(osi_gt->mutable_moving_object()->size(), 2);
+
+	double seconds = osi_gt->mutable_timestamp()->seconds() + 1E-9 * osi_gt->mutable_timestamp()->nanos();
+	EXPECT_DOUBLE_EQ(seconds, 0.001);
+
+	SE_OSISetTimeStamp(1234543210);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	EXPECT_EQ(osi_gt->mutable_timestamp()->seconds(), 1);
+	EXPECT_EQ(osi_gt->mutable_timestamp()->nanos(), (unsigned int)234543210);
+
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	// Expect no change as timestamp has been set explicitly only once
+	EXPECT_EQ(osi_gt->mutable_timestamp()->seconds(), 1);
+	EXPECT_EQ(osi_gt->mutable_timestamp()->nanos(), (unsigned int)234543210);
+
+	SE_OSISetTimeStamp(5234543229);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	// Expect updated timestamp
+	EXPECT_EQ(osi_gt->mutable_timestamp()->seconds(), 5);
+	EXPECT_EQ(osi_gt->mutable_timestamp()->nanos(), (unsigned int)234543229);
+
+	SE_Close();
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);

@@ -1123,6 +1123,17 @@ extern "C"
 		return retval;
 	}
 
+	SE_DLL_API int SE_OSISetTimeStamp(unsigned long long int nanoseconds)
+	{
+		if (player)
+		{
+			player->osiReporter->SetOSITimeStampExplicit(nanoseconds);
+			return 0;
+		}
+
+		return -1;
+	}
+
 	SE_DLL_API void SE_LogMessage(char *message)
 	{
 		LOG(message);

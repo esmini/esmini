@@ -97,6 +97,8 @@ OSIReporter::OSIReporter()
 
 	// Counter for OSI update
 	osi_update_counter_ = 0;
+
+	nanosec_ = 0xffffffffffffffff; // indicate not set
 }
 
 OSIReporter::~OSIReporter()
@@ -361,10 +363,20 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState*> objectStat
 
 int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectState)
 {
-	obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)objectState[0]->state_.info.timeStamp);
-	obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)(
-		(objectState[0]->state_.info.timeStamp - (int64_t)objectState[0]->state_.info.timeStamp) * 1e9)
-	);
+	if (IsTimeStampSetExplicit())
+	{
+		// use excplicit timestamp
+		obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)(nanosec_ / 1000000000));
+		obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)(nanosec_ % 1000000000));
+	}
+	else
+	{
+		// use timstamp from object state
+		obj_osi_internal.gt->mutable_timestamp()->set_seconds((int64_t)objectState[0]->state_.info.timeStamp);
+		obj_osi_internal.gt->mutable_timestamp()->set_nanos((uint32_t)(
+			(objectState[0]->state_.info.timeStamp - (int64_t)objectState[0]->state_.info.timeStamp) * 1e9)
+		);
+	}
 
 	for (size_t i = 0; i < objectState.size(); i++)
 	{
@@ -1645,3 +1657,11 @@ const char* OSIReporter::GetOSISensorDataRaw()
 {
     return (const char*) obj_osi_internal.sd;
 }
+
+int OSIReporter::SetOSITimeStampExplicit(unsigned long long int nanoseconds)
+{
+	nanosec_ = nanoseconds;
+
+	return 0;
+}
+

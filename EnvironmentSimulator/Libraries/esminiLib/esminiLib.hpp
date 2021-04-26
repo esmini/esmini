@@ -745,6 +745,17 @@ extern "C"
 	*/
 	SE_DLL_API bool SE_OSIFileWrite(bool flush = false);
 
+	/**
+		Set explicit OSI timestap
+		Note that this timestamp does NOT affect esmini simulation time
+		Also note that setting timestamp with this function will move into explicit time mode
+		and from that point OSI timestamp is exclusively controlled by this function.
+		@param nanoseconds Nano seconds (1e-9 s) 
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_OSISetTimeStamp(unsigned long long int nanoseconds);
+
+
 	SE_DLL_API void SE_LogMessage(char *message);
 
 	// Viewer settings
