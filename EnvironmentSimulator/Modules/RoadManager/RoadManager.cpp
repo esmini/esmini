@@ -2725,7 +2725,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 									}
 									else
 									{
-										LOG("No road mark created for road %d lane %d. Type %d not supported. Either swich type or add a roadMark <type> element.", r->GetId(), lane_id, roadMark_type);
+										LOG("No road mark created for road %d lane %d. Type %d not supported. Either switch type or add a roadMark <type> element.", r->GetId(), lane_id, roadMark_type);
 									}
 								}
 							}

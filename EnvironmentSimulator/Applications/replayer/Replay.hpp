@@ -20,7 +20,7 @@
 namespace scenarioengine
 {
 
-#define REPLAY_FILENAME_SIZE 128
+#define REPLAY_FILENAME_SIZE 512
 
 	typedef struct
 	{

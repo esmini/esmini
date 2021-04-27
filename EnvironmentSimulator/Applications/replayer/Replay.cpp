@@ -27,7 +27,8 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 	}
 
 	file_.read((char*)&header_, sizeof(header_));
-	LOG("Recording %s opened. odr: %s model: %s", filename.c_str(), header_.odr_filename, header_.model_filename);
+	LOG("Recording %s opened. odr: %s model: %s", FileNameOf(filename).c_str(), 
+		FileNameOf(header_.odr_filename).c_str(), FileNameOf(header_.model_filename).c_str());
 
 	while (!file_.eof())
 	{

@@ -371,8 +371,8 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
 			return -1;
 		}
 		ReplayHeader header;
-		strncpy(header.odr_filename, FileNameOf(odr_filename).c_str(), REPLAY_FILENAME_SIZE);
-		strncpy(header.model_filename, FileNameOf(model_filename).c_str(), REPLAY_FILENAME_SIZE);
+		strncpy(header.odr_filename, odr_filename.c_str(), REPLAY_FILENAME_SIZE);
+		strncpy(header.model_filename, model_filename.c_str(), REPLAY_FILENAME_SIZE);
 
 		data_file_.write((char*)&header, sizeof(header));
 	}

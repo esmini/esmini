@@ -279,6 +279,13 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
+
+	std::string res_path = opt.GetOptionArg("res_path");
+	if (!res_path.empty())
+	{
+		SE_Env::Inst().AddPath(res_path);
+	}
+
 	// Create player
 	try
 	{
@@ -292,15 +299,31 @@ int main(int argc, char** argv)
 	try
 	{
 
+		// find and OpenDRIVE file. Test some combinations of paths and filename
 		std::vector<std::string> file_name_candidates;
-		std::string odr_path = opt.GetOptionArg("res_path").append("/xodr/").append(player->header_.odr_filename).c_str();
 
-		file_name_candidates.push_back(odr_path.c_str());
+		// just filepath as stated in .dat file
 		file_name_candidates.push_back(player->header_.odr_filename);
+
+		// Check registered paths 
+		for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+		{
+			// Including file path
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], player->header_.odr_filename));
+
+			// Excluding file path
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(player->header_.odr_filename)));
+
+			// Including file path and xodr sub folder
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i].append("/xodr/"), FileNameOf(player->header_.odr_filename)));
+
+			// Excluding file path but add xodr sub folder
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i].append("/xodr/"), player->header_.odr_filename));
+		}
+
 		size_t i;
 		for (i = 0; i < file_name_candidates.size(); i++)
 		{
-			printf("Trying to open %s\n", file_name_candidates[i].c_str());
 			if (FileExists(file_name_candidates[i].c_str()))
 			{
 				if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()))
@@ -312,19 +335,21 @@ int main(int argc, char** argv)
 
 		if (i == file_name_candidates.size())
 		{
-			printf("Failed to load OpenDRIVE file %s\n", player->header_.odr_filename);
+			printf("Failed to load OpenDRIVE file %s. Tried:\n", player->header_.odr_filename);
+			for (int j = 0; j < file_name_candidates.size(); j++)
+			{
+				printf("   %s\n", file_name_candidates[j].c_str());
+			}
 			return -1;
 		}
 
 		odrManager = roadmanager::Position::GetOpenDrive();
-
-		std::string model_path = opt.GetOptionArg("res_path");
 		
 		osg::ArgumentParser arguments(&argc, argv);
 
 		viewer = new viewer::Viewer(
 			odrManager, 
-			model_path.append("/models/").append(player->header_.model_filename).c_str(),
+			player->header_.model_filename,
 			NULL,
 			argv[0],
 			arguments, &opt);
