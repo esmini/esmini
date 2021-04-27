@@ -807,7 +807,7 @@ extern "C"
 	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void *handleSimpleVehicle, float speed);
 
 	/**
-		Set maximum vehicle speed.
+		Set acceleration scale factor
 		@param accScale Acceleration scale factor speed (0:10)
 	*/
 	SE_DLL_API void SE_SimpleVehicleSetAcclerationScale(void* handleSimpleVehicle, float accScale);
