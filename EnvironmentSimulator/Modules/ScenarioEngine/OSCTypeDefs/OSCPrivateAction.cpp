@@ -149,9 +149,7 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 
 	time_ += timing_scale_ * dt;
 
-	// Measure length of movement for odometer
-
-	if (!traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - DISTANCE_TOLERANCE))
+	if (!traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER))
 	{
 		// Reached end of trajectory
 		// Calculate road coordinates from final inertia (X, Y) coordinates
