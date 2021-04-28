@@ -8074,7 +8074,7 @@ int PolyLineBase::S2P(double s, double &p, double &h, double &z)
 			return 0;
 		}
 		
-		if (++i > GetNumberOfVertices() - 1)
+		if (++i >= GetNumberOfVertices() - 1)
 		{
 			// Reached end of buffer, continue from start
 			i = 0;
@@ -8111,7 +8111,7 @@ int PolyLineBase::P2S(double p, double& s, double& h, double& z)
 			return 0;
 		}
 
-		if (++i > GetNumberOfVertices() - 1)
+		if (++i >= GetNumberOfVertices() - 1)
 		{
 			// Reached end of buffer, continue from start
 			i = 0;
