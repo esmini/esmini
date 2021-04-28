@@ -63,7 +63,16 @@ typedef struct
 	int id;
 } Car;
 
+typedef struct
+{
+	int roadId;
+	int side;
+	int nLanes;
+	double s;
+} OpenEnd;
+
 std::vector<Car*> cars;
+std::vector<OpenEnd> openEnds;
 
 // Car models used for populating the road network
 // path should be relative the OpenDRIVE file
@@ -109,6 +118,33 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 	{
 		roadmanager::Road *road = odrManager->GetRoadByIdx(r);
 		double average_distance = 100.0 / density;
+
+		// Check for open end
+		OpenEnd openEnd;
+		RoadLink *tmpLink = road->GetLink(LinkType::PREDECESSOR);
+		if (tmpLink == nullptr)
+		{
+			openEnd.roadId = road->GetId();
+			openEnd.s = 0;
+			openEnd.side = -1;
+			openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, -1);
+			if (openEnd.nLanes > 0)
+			{
+				openEnds.push_back(openEnd);
+			}
+		}
+		tmpLink = road->GetLink(LinkType::SUCCESSOR);
+		if (tmpLink == nullptr)
+		{
+			openEnd.roadId = road->GetId();
+			openEnd.s = road->GetLength();
+			openEnd.side = 1;
+			openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, 1);
+			if (openEnd.nLanes > 0)
+			{
+				openEnds.push_back(openEnd);
+			}
+		}
 
 		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
@@ -161,7 +197,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 			}
 		}
 	}
-
+	
 	if (first_car_in_focus == -1)
 	{
 		first_car_in_focus = 0;
@@ -203,15 +239,33 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 
 	if (car->pos->MoveAlongS(ds) != 0)
 	{
-		// Start from beginning of lane section - not initial s-position
-		roadmanager::LaneSection* ls = odrManager->GetRoadById(car->road_id_init)->GetLaneSectionByS(car->s_init);
-		double start_s = ls->GetS() + 5;
-		if (car->lane_id_init > 0)
+		if (openEnds.size() == 0)
 		{
-			start_s = ls->GetS() + ls->GetLength() - 5;
+			// If no open ends, respawn based on initial position
+			// start from beginning of lane section - not initial s-position
+			roadmanager::LaneSection* ls = odrManager->GetRoadById(car->road_id_init)->GetLaneSectionByS(car->s_init);
+			double start_s = ls->GetS() + 5;
+			if (car->lane_id_init > 0)
+			{
+				start_s = ls->GetS() + ls->GetLength() - 5;
+			}
+			car->pos->SetLanePos(car->road_id_init, car->lane_id_init, start_s, 0);
+			car->pos->SetHeadingRelative(car->heading_init);
 		}
-		car->pos->SetLanePos(car->road_id_init, car->lane_id_init, start_s, 0);
-		car->pos->SetHeadingRelative(car->heading_init);
+		else
+		{
+			// Choose random open end 
+			int oeIndex = (int)(((double)openEnds.size()) * mt_rand() / mt_rand.max());
+			OpenEnd* oe = &openEnds[oeIndex];
+			// Choose random lane
+			int laneIndex = (int)(((double)oe->nLanes) * mt_rand() / mt_rand.max());
+			Road* road = odrManager->GetRoadById(oe->roadId);
+			Lane *lane = road->GetDrivingLaneSideByIdx(oe->s, oe->side, laneIndex);
+
+			car->pos->SetLanePos(road->GetId(), lane->GetId(), oe->s, 0);
+			// Ensure car is oriented along lane driving direction
+			car->pos->SetHeadingRelative(SIGN(lane->GetId()) > 0 ? M_PI : 0.0);
+		}
 	}
 
 	if (car->model->txNode_ != 0)

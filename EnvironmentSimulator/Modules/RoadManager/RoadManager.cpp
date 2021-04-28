@@ -1722,6 +1722,27 @@ Lane* Road::GetDrivingLaneByIdx(double s, int idx)
 	return 0;
 }
 
+Lane* Road::GetDrivingLaneSideByIdx(double s, int side, int idx)
+{
+	int count = 0;
+
+	LaneSection* ls = GetLaneSectionByS(s);
+
+	for (int i = 0; i < ls->GetNumberOfLanes(); i++)
+	{
+		Lane* lane = ls->GetLaneByIdx(i);
+		if (lane->IsDriving() && SIGN(lane->GetId()) == side)
+		{
+			if (count++ == idx)
+			{
+				return lane;
+			}
+		}
+	}
+
+	return 0;
+}
+
 Lane* Road::GetDrivingLaneById(double s, int id)
 {
 	LaneSection *ls = GetLaneSectionByS(s);

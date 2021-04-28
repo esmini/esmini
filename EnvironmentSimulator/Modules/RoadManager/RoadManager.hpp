@@ -982,6 +982,7 @@ namespace roadmanager
 		int GetNumberOfLanes(double s);
 		int GetNumberOfDrivingLanes(double s);
 		Lane* GetDrivingLaneByIdx(double s, int idx);
+		Lane* GetDrivingLaneSideByIdx(double s, int side, int idx);
 		Lane* GetDrivingLaneById(double s, int idx);
 		int GetNumberOfDrivingLanesSide(double s, int side);  // side = -1 right, 1 left
 
