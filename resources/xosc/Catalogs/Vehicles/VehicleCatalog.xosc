@@ -13,7 +13,7 @@
             <Center x="1.4" y="0.0" z="0.9"/>
             <Dimensions width="2.0" length="5.0" height="1.8"/>
          </BoundingBox>
-         <Performance maxSpeed="69" maxDeceleration="30"/>
+         <Performance maxSpeed="69" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
             <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
@@ -36,7 +36,7 @@
             <Center x="1.4" y="0.0" z="0.9"/>
             <Dimensions width="2.0" length="5.0" height="1.8"/>
          </BoundingBox>
-         <Performance maxSpeed="69" maxDeceleration="30"/>
+         <Performance maxSpeed="69" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
             <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
@@ -61,7 +61,7 @@
             <Center x="1.3" y="0.0" z="0.8"/>
             <Dimensions width="1.8" length="4.5" height="1.5"/>
          </BoundingBox>
-         <Performance maxSpeed="70" maxDeceleration="30"/>
+         <Performance maxSpeed="70" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
             <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
@@ -84,7 +84,7 @@
             <Center x="1.3" y="0.0" z="0.8"/>
             <Dimensions width="1.8" length="4.5" height="1.5"/>
          </BoundingBox>
-         <Performance maxSpeed="70" maxDeceleration="30"/>
+         <Performance maxSpeed="70" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
             <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
@@ -107,7 +107,7 @@
             <Center x="1.3" y="0.0" z="0.8"/>
             <Dimensions width="1.8" length="4.5" height="1.5"/>
          </BoundingBox>
-         <Performance maxSpeed="70" maxDeceleration="30"/>
+         <Performance maxSpeed="70" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
             <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
@@ -130,7 +130,7 @@
             <Center x="1.3" y="0.0" z="0.8"/>
             <Dimensions width="1.8" length="4.5" height="1.5"/>
          </BoundingBox>
-         <Performance maxSpeed="70" maxDeceleration="30"/>
+         <Performance maxSpeed="70" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
             <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
@@ -153,7 +153,7 @@
             <Center x="1.3" y="0.0" z="0.8"/>
             <Dimensions width="1.8" length="4.5" height="1.5"/>
          </BoundingBox>
-         <Performance maxSpeed="70" maxDeceleration="30"/>
+         <Performance maxSpeed="70" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
             <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"
@@ -176,7 +176,7 @@
             <Center x="0" y="0" z="0.85"/>
             <Dimensions width="0.5" length="1.8" height="1.7"/>
          </BoundingBox>
-         <Performance maxSpeed="40" maxDeceleration="10"/>
+         <Performance maxSpeed="40" maxDeceleration="10" maxAcceleration="10"/>
          <Axles>
             <FrontAxle maxSteering="30" wheelDiameter="0.7" trackWidth="0.7" positionX="2.7" positionZ="0.35"/>
             <RearAxle maxSteering="30" wheelDiameter="0.7" trackWidth="0.7" positionX="0" positionZ="0.35"/>         
