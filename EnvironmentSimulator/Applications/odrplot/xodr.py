@@ -5,7 +5,8 @@ import math
 import matplotlib.pyplot as plt
 
 H_SCALE = 10
-text_y_offset = -2
+text_x_offset = 0
+text_y_offset = 0.7
 text_size = 7
 
 with open(sys.argv[1]) as f:
@@ -58,9 +59,10 @@ for i in range(len(positions) + 1):
 
         if current_lane_section == '0':
             road_id.append(int(current_road_id))
-            mid_index = int(len(ref_x[-1])/2.0)
-            road_id_x.append(ref_x[-1][mid_index] - text_y_offset * math.sin(ref_h[-1][mid_index]))
-            road_id_y.append(ref_y[-1][mid_index] + text_y_offset * math.cos(ref_h[-1][mid_index]))
+            index = int(len(ref_x[-1])/3.0)
+            h = ref_h[-1][index]
+            road_id_x.append(ref_x[-1][index] + (text_x_offset * math.cos(h) - text_y_offset * math.sin(h)))
+            road_id_y.append(ref_y[-1][index] + (text_x_offset * math.sin(h) + text_y_offset * math.cos(h)))
             road_start_dots_x.append(ref_x[-1][0])
             road_start_dots_y.append(ref_y[-1][0])
             if len(ref_x) > 0:
@@ -143,7 +145,7 @@ for i in range(len(road_start_dots_x)):
 
 # plot road id numbers
 for i in range(len(road_id)):
-    plt.text(road_id_x[i], road_id_y[i], road_id[i], size=text_size, va='center', color='#222222')
+    plt.text(road_id_x[i], road_id_y[i], road_id[i], size=text_size, ha='center', va='center', color='#222222')
 
 
 plt.gca().set_aspect('equal', 'datalim')
