@@ -1,5 +1,18 @@
 ## esmini release notes
 
+### 2021-04-29 Version 2.8.0
+
+- New feature in odrplot: Indicate road ID and direction
+- odrviewer update: Respawn vehicles at open road ends (if any)
+- Bugfix: Remove 0.5m trajectory end tolerance causing wrong end position
+- Add [API](https://github.com/esmini/esmini/blob/f8a0cd739528a1811ab2d595ff47709bdc077377/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L803) for simple vehicle performance
+- Improve replayer file path handling for odr and osgb
+  - Expand filename container and store complete file paths in .dat file   
+  NOTE: This change affects .dat file format - old recordings files will not play
+  - If absolute path not found, test combinations using res_path argument
+- Added mandatory field maxAcceleration to the vehicle catalog
+
+
 ### 2021-04-26 Version 2.7.4
 
 - Add [func](https://github.com/esmini/esmini/blob/1340dad935c52ad955963a484e5d12b3f431a40a/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L748) to set explicit OSI timestamp
