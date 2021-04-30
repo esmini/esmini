@@ -3,7 +3,7 @@ import ctypes
 import os
 
 
-REPLAY_FILENAME_SIZE = 128
+REPLAY_FILENAME_SIZE = 512
 NAME_LEN = 32
 
 
