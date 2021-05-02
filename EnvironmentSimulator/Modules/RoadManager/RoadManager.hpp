@@ -2056,6 +2056,8 @@ namespace roadmanager
 		std::vector<ControlPoint> ctrlPoint_;
 		std::vector<double> knot_;
 		std::vector<double> d_;  // used for temporary storage of CoxDeBoor weigthed control points
+		std::vector<double> dPeakT_;  // used for storage of at what t value the corresponding ctrlPoint contribution peaks
+		std::vector<double> dPeakValue_;  // used for storage of at what t value the corresponding ctrlPoint contribution peaks
 
 		void CalculatePolyLine();
 		double GetLength() { return length_; }

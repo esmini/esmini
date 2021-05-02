@@ -45,7 +45,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('\n8.0.*FollowTrajectoryClothoidTrigger == true, element: FollowTrajectoryPLineEvent state: END_TRANSITION', log))
-        self.assertTrue(re.search('\n22.99.* FollowTrajectoryNurbsAction runningState -> endTransition -> completeState', log))
+        self.assertTrue(re.search('\n24.22.* FollowTrajectoryNurbsAction runningState -> endTransition -> completeState', log))
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -53,8 +53,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n4.100, 1, Target, 129.91, 14.33, -3.47, 0.50', csv))
         self.assertTrue(re.search('\n11.100, 0, Ego, 200.70, 72.59, -2.44, 1.06, 6.26', csv))
         self.assertTrue(re.search('\n11.100, 1, Target, 205.90, 66.44, -2.50, 2.51', csv))
-        self.assertTrue(re.search('\n17.390, 0, Ego, 216.96, 169.84, 2.15, 1.75, 6.21', csv))
-        self.assertTrue(re.search('\n17.390, 1, Target, 213.18, 207.84, 4.29, 1.77, 6.25', csv))
+        self.assertTrue(re.search('\n17.250, 0, Ego, 217.35, 167.64, 1.99, 1.74, 6.21', csv))
+        self.assertTrue(re.search('\n17.250, 1, Target, 210.68, 157.76, 1.31, 1.23, 6.22', csv))
 
     def test_synchronize(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ARGS \

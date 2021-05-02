@@ -8046,19 +8046,14 @@ void NurbsShape::CalculatePolyLine()
 		}
 		pos.s = newLength;
 
-		// Find active control point
-		int k;
-		for (k = order_ - 1; knot_[k + 1] <= t && k < knot_.size() - order_ - 1; k++);
-
-		// Interpolate time linear between control points
-		int index = k - order_ + 1;
-		if (index < ctrlPoint_.size())
+		// Find max contributing controlpoint for time interpolation
+		for (int j = 0; j < ctrlPoint_.size(); j++)
 		{
-			pos.time = ctrlPoint_[index].time_ + ctrlPoint_[index + 1].time_ * (t - knot_[k]) / (knot_[k + 1] - knot_[k]);
-		}
-		else
-		{
-			pos.time = ctrlPoint_.back().time_;
+			if (d_[j] > dPeakValue_[j])
+			{
+					dPeakValue_[j] = d_[j];
+					dPeakT_[j] = t;
+			}
 		}
 
 		pline_.AddVertex(pos);
@@ -8081,6 +8076,18 @@ void NurbsShape::CalculatePolyLine()
 	if (nSteps > 1)
 	{
 		pline_.vertex_[0].h = pline_.vertex_[1].h; // copy second derivative to first position - To be improved
+	}
+
+	// Calculate time interpolations
+	int currentCtrlPoint = 0;
+	for (int i = 0; i < pline_.vertex_.size(); i++)
+	{
+		if (pline_.vertex_[i].p >= dPeakT_[currentCtrlPoint + 1])
+		{
+			currentCtrlPoint = MIN(currentCtrlPoint + 1, (int)(ctrlPoint_.size()) - 2);
+		}
+		double w = (pline_.vertex_[i].p - dPeakT_[currentCtrlPoint]) / (dPeakT_[currentCtrlPoint + 1] - dPeakT_[currentCtrlPoint]);
+		pline_.vertex_[i].time = ctrlPoint_[currentCtrlPoint].time_ + w * (ctrlPoint_[currentCtrlPoint + 1].time_ - ctrlPoint_[currentCtrlPoint].time_);
 	}
 
 	length_ = newLength;
@@ -8119,6 +8126,8 @@ void NurbsShape::AddControlPoint(Position pos, double time, double weight, bool 
 {
 	ctrlPoint_.push_back(ControlPoint(pos, time, weight, calcHeading));
 	d_.push_back(0);
+	dPeakT_.push_back(0);
+	dPeakValue_.push_back(0);
 }
 
 void NurbsShape::AddKnots(std::vector<double> knots)

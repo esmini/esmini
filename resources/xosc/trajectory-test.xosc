@@ -217,17 +217,17 @@
                                                                 <RelativeLanePosition dLane="0" ds="50" entityRef="Target" offset="20.0"/>
                                                             </Position>
                                                         </ControlPoint>
-                                                        <ControlPoint time="6" weight="0.7">
+                                                        <ControlPoint time="6.7" weight="0.7">
                                                             <Position>
                                                                 <RelativeLanePosition dLane="-2" ds="100" entityRef="Target" offset="-10.0"/>
                                                             </Position>
                                                         </ControlPoint>
-                                                        <ControlPoint time="11" weight="1.0">
+                                                        <ControlPoint time="9.7" weight="1.0">
                                                             <Position>
                                                                 <RelativeLanePosition dLane="-1" ds="180" entityRef="Target" offset="0.0"/>
                                                             </Position>
                                                         </ControlPoint>                                                        
-                                                        <ControlPoint time="12" weight="1.0">
+                                                        <ControlPoint time="12.2" weight="1.0">
                                                             <Position>
                                                                 <RelativeLanePosition dLane="-2" ds="220" entityRef="Target" offset="0.0"/>
                                                             </Position>
