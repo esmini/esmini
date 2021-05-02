@@ -7598,6 +7598,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
 		pos.z = vp0->z;
 		pos.h = vp0->h;
 		pos.s = vp0->s;
+		pos.p = vp0->p;
 		pos.time = vp0->time;
 		pos.speed = vp0->speed;
 	}
@@ -7617,6 +7618,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
 		pos.time = (1 - a) * vp0->time + a * vp1->time;
 		pos.speed = (1 - a) * vp0->speed + a * vp1->speed;
 		pos.s = (1 - a) * vp0->s + a * vp1->s;
+		pos.p = (1 - a) * vp0->p + a * vp1->p;
 
 		if (vertex_[i + 1].calcHeading)
 		{
@@ -7795,6 +7797,39 @@ int PolyLineBase::Evaluate(double s, TrajVertex& pos, int startAtIndex)
 int PolyLineBase::Evaluate(double s, TrajVertex& pos)
 {
 	return Evaluate(s, pos, 0.0, 0);
+}
+
+int PolyLineBase::Time2S(double time, double& s)
+{
+	if (GetNumberOfVertices() < 1)
+	{
+		return -1;
+	}
+
+	// start looking from current index
+	int i = vIndex_;
+
+	for (size_t j = 0; j < GetNumberOfVertices(); j++)
+	{
+		if (vertex_[i].time <= time && vertex_[i + 1].time > time)
+		{
+			double w = (time - vertex_[i].time) / (vertex_[i + 1].time - vertex_[i].time);
+			s = vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s);
+			vIndex_ = i;
+			return 0;
+		}
+
+		if (++i >= GetNumberOfVertices() - 1)
+		{
+			// Reached end of buffer, continue from start
+			i = 0;
+		}
+	}
+
+	// s seems out of range, grab last element
+	s = GetVertex(-1)->s;
+
+	return 0;
 }
 
 int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex)
@@ -7996,13 +8031,12 @@ void NurbsShape::CalculatePolyLine()
 
 	// Calculate arc length
 	double newLength = 0.0;
-	double p_steplen = steplen * knot_.back() / length_;
+	int nSteps = (int)(1 + length_ / steplen);
+	double p_steplen = knot_.back() / nSteps;
 	TrajVertex pos, oldpos = { 0, 0, 0, 0 };
 
-	int nSteps = int(knot_.back() / p_steplen) + 1;
-
 	pline_.Reset();
-	for (int i = 0; i < nSteps; i++)
+	for (int i = 0; i < nSteps + 1; i++)
 	{
 		double t = i * p_steplen;
 		EvaluateInternal(t, pos);
@@ -8015,7 +8049,7 @@ void NurbsShape::CalculatePolyLine()
 		// Find active control point
 		int k;
 		for (k = order_ - 1; knot_[k + 1] <= t && k < knot_.size() - order_ - 1; k++);
-		
+
 		// Interpolate time linear between control points
 		int index = k - order_ + 1;
 		if (index < ctrlPoint_.size())
@@ -8052,86 +8086,12 @@ void NurbsShape::CalculatePolyLine()
 	length_ = newLength;
 }
 
-int PolyLineBase::S2P(double s, double &p, double &h, double &z)
-{
-	if (GetNumberOfVertices() < 1)
-	{
-		return -1;
-	}
-
-	// start looking from current index
-	int i = vIndex_;
-
-	for (size_t j = 0; j < GetNumberOfVertices(); j++)
-	{
-		if (vertex_[i].s <= s && vertex_[i + 1].s > s)
-		{
-			double w = (s - vertex_[i].s) / (vertex_[i + 1].s - vertex_[i].s);
-			p = vertex_[i].p + w * (vertex_[i + 1].p - vertex_[i].p);
-			h = vertex_[i].h + w * GetAngleDifference(vertex_[i + 1].h, vertex_[i].h);
-			z = vertex_[i].z + w * (vertex_[i + 1].z - vertex_[i].z);
-			vIndex_ = i;
-			return 0;
-		}
-		
-		if (++i >= GetNumberOfVertices() - 1)
-		{
-			// Reached end of buffer, continue from start
-			i = 0;
-		}
-	}
-	
-	// s seems out of range, grab last element
-	p = GetVertex(-1)->p;
-	h = GetVertex(-1)->h;
-	z = GetVertex(-1)->z;
-	
-	return 0;
-}
-
-int PolyLineBase::P2S(double p, double& s, double& h, double& z)
-{
-	if (GetNumberOfVertices() < 1)
-	{
-		return -1;
-	}
-
-	// start looking from current index
-	int i = vIndex_;
-
-	for (size_t j = 0; j < GetNumberOfVertices(); j++)
-	{
-		if (vertex_[i].p <= p && vertex_[i + 1].p > p)
-		{
-			double w = (p - vertex_[i].p) / (vertex_[i + 1].p - vertex_[i].p);
-			s = vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s);
-			h = vertex_[i].h + w * GetAngleDifference(vertex_[i + 1].h, vertex_[i].h);
-			z = vertex_[i].z + w * (vertex_[i + 1].z - vertex_[i].z);
-			vIndex_ = i;
-			return 0;
-		}
-
-		if (++i >= GetNumberOfVertices() - 1)
-		{
-			// Reached end of buffer, continue from start
-			i = 0;
-		}
-	}
-
-	// p seems out of range, grab last element
-	s = GetVertex(-1)->s;
-	h = GetVertex(-1)->h;
-	z = GetVertex(-1)->z;
-
-	return 0;
-}
-
 int NurbsShape::EvaluateInternal(double t, TrajVertex& pos)
 {
 	pos.x = pos.y = 0.0;
 
 	// Find knot span
-	t = CLAMP(t, knot_[0], knot_.back());
+	t = CLAMP(t, knot_[0], knot_.back() - SMALL_NUMBER);
 
 	double rationalWeight = 0.0;
 
@@ -8178,35 +8138,16 @@ int NurbsShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
 		return -1;
 	}
 
-	// Time not supported yet. Find t by linear interpolation of s.
-	double t = 0;
+	double s = p;
+
 	if (ptype == TRAJ_PARAM_TYPE_TIME)
 	{
-		// Find corresponding knot span
-		int c;
-		for (c = 0; c < ctrlPoint_.size() - 1 && ctrlPoint_[c+1].time_ <= p; c++);
-
-		if (c < ctrlPoint_.size() - 1)
-		{
-			// Linear interpolation of t-value based on time value
-			t = ctrlPoint_[c].t_ + 
-				((p - ctrlPoint_[c].time_) / (ctrlPoint_[c + 1].time_ - ctrlPoint_[c].time_)) * 
-				(ctrlPoint_[c+1].t_ - ctrlPoint_[c].t_);
-
-			pline_.P2S(t, pos.s, pos.h, pos.z);
-		}
-		else
-		{
-			t = ctrlPoint_[c].t_;
-		}
+		pline_.Time2S(p, s);
 	}
-	else
-	{
-		pline_.S2P(p, t, pos.h, pos.z);
-		pos.s = p;
-	}
+	
+	pline_.Evaluate(s, pos, pline_.vIndex_);
 
-	EvaluateInternal(t, pos);
+	EvaluateInternal(pos.p, pos);
 
 	return 0;
 }
@@ -8274,7 +8215,7 @@ int ClothoidShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
 		}
 	}
 
-	pline_.S2P(p, pos.p, pos.h, pos.z);
+	pline_.Evaluate(p, pos);
 
 	spiral_->EvaluateDS(p, &pos.x, &pos.y, &pos.h);
 
@@ -8623,4 +8564,9 @@ double RMTrajectory::GetTimeAtS(double s)
 	shape_->pline_.Evaluate(s, v);
 
 	return v.time;
+}
+
+double RMTrajectory::GetDuration()
+{
+	return shape_->pline_.GetVertex(-1)->time;
 }

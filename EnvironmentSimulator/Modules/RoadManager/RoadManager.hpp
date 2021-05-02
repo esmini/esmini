@@ -1952,8 +1952,7 @@ namespace roadmanager
 		int GetNumberOfVertices() { return (int)vertex_.size(); }
 		TrajVertex* GetVertex(int index);
 		void Reset();
-		int S2P(double s, double& p, double& h, double& z);
-		int P2S(double p, double& s, double& h, double& z);
+		int Time2S(double time, double& s);
 
 		std::vector<TrajVertex> vertex_;
 		TrajVertex currentPos_;
@@ -2078,6 +2077,7 @@ namespace roadmanager
 		void Freeze();
 		double GetLength() { return shape_ ? shape_->GetLength() : 0.0; }
 		double GetTimeAtS(double s);
+		double GetDuration();
 
 		std::string name_;
 		bool closed_;

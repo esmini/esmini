@@ -174,7 +174,12 @@ void FollowTrajectoryAction::Step(double dt, double simTime)
 		{
 			double s_old = object_->pos_.GetTrajectoryS();
 			object_->pos_.SetTrajectoryPosByTime(time_ + timing_offset_);
-			object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
+			if (time_ <= traj_->GetDuration())
+			{
+				// don't calculate and update actual speed when reached end of trajectory, 
+				// since the movement is based on remaining length of trajectory, not speed
+				object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
+			}
 			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
 		else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
