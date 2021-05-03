@@ -25,9 +25,17 @@
 using namespace osg;
 using namespace osgGA;
 
+#define NODE_CENTER_OFFSET_X 0.0
+#define NODE_CENTER_OFFSET_Y 0.0
+#define NODE_CENTER_OFFSET_Z 1.0
+
+#define DRIVER_CENTER_OFFSET_X 1.32
+#define DRIVER_CENTER_OFFSET_Y 0.0
+#define DRIVER_CENTER_OFFSET_Z 1.42
+
 const float springFC = 16.0f;
 const float orbitCameraDistance = 25.0f;
-const float topCameraDistance = 70.0f;
+const float topCameraDistance = 2300;
 const float orbitCameraAngle = 13.0f;
 const float orbitCameraRotation = -14.0f;
 
@@ -47,10 +55,12 @@ RubberbandManipulator::~RubberbandManipulator()
 
 void RubberbandManipulator::setMode(unsigned int mode)
 {
-	// If leaving top view, then reset elevation angle
-	if (_mode == RB_MODE_TOP)
+	// If leaving top view, then reset camera rotations
+	if (_mode == RB_MODE_TOP || _mode == RB_MODE_DRIVER)
 	{
 		_cameraAngle = orbitCameraAngle;
+		_cameraRotation = orbitCameraRotation;
+		_cameraDistance = orbitCameraDistance;
 	}
 	
 	_mode = mode;
@@ -222,7 +232,6 @@ void RubberbandManipulator::computeNodeCenterAndRotation(osg::Vec3d& nodeCenter,
 {
 	osg::PositionAttitudeTransform* pat = dynamic_cast<osg::PositionAttitudeTransform*> (_trackNode);
 	nodeCenter = pat->getPosition();
-	nodeCenter[2]+=1;
 	nodeRotation = pat->getAttitude();
 }
 
@@ -266,6 +275,9 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 	float x, y, z;
 
 	computeNodeCenterAndRotation(nodeCenter, nodeRotation);
+	osg::Matrix nodeRot;
+	nodeRot.makeRotate(nodeRotation);
+	osg::Vec3 nodeFocusPoint = nodeRot * osg::Vec3(NODE_CENTER_OFFSET_X, NODE_CENTER_OFFSET_Y, NODE_CENTER_OFFSET_Z) + nodeCenter;
 
 	if (_mode == RB_MODE_TOP)
 	{
@@ -278,6 +290,12 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 	else if(_mode == RB_MODE_RUBBER_BAND)
 	{
 		cameraOffset.set(-_cameraDistance, 0.0, _cameraDistance * atan(_cameraAngle*0.0174533));
+	}
+	else if (_mode == RB_MODE_DRIVER)
+	{
+		_cameraRotation = 0;
+		_cameraAngle = 0;
+		cameraOffset.set(1.0, 0.0, 0.0);
 	}
 	else
 	{
@@ -299,7 +317,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 
 	if(reset)
 	{
-		_eye = nodeCenter + cameraTargetPosition;
+		_eye = nodeFocusPoint + cameraTargetPosition;
 		cameraVel.set(0,0,0);
 		cameraAcc.set(0,0,0);
 	}
@@ -315,16 +333,16 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 		}
 
 		// Find the vector between target position and actual camera position
-		cameraToTarget = (nodeCenter + cameraTargetPosition) - _eye;
+		cameraToTarget = (nodeFocusPoint + cameraTargetPosition) - _eye;
 
 		// Update camera state
 		springDC = 2 * sqrt(springFC);
 		cameraAcc = cameraToTarget * springFC - cameraVel * springDC;
 		cameraVel += cameraAcc * dt;
 
-		if (_mode == RB_MODE_FIXED || _mode == RB_MODE_ORBIT || _mode == RB_MODE_TOP)
+		if (_mode == RB_MODE_FIXED || _mode == RB_MODE_ORBIT || _mode == RB_MODE_TOP  || _mode == RB_MODE_DRIVER)
 		{
-			_eye = nodeCenter + cameraTargetPosition;
+			_eye = nodeFocusPoint + cameraTargetPosition;
 		}
 		else
 		{
@@ -333,13 +351,32 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 	}
 
 	// Create the view matrix
-	if (_mode == RB_MODE_TOP)
+	if (_mode == RB_MODE_DRIVER)
 	{
-		_matrix.makeLookAt(_eye, nodeCenter, osg::Vec3(nodeRotation*osg::Vec3(0, -1, 0)));
+		// Create a view matrix for driver position, or center Front Looking Camrera (FLC)
+		osg::Matrix localTx (
+				0.0, 0.0, -1.0, 0.0,
+				-1.0, 0.0, 0.0, 0.0,
+				0.0, 1.0, 0.0, 0.0,
+				DRIVER_CENTER_OFFSET_Y, -DRIVER_CENTER_OFFSET_Z, DRIVER_CENTER_OFFSET_X, 1.0  
+			);
+	
+		// Camera transform is the inverse of focus object rotation and position
+		_matrix.makeRotate(nodeRotation.inverse());
+		osg::Matrix trans;
+		trans.makeTranslate(-nodeCenter);
+		_matrix.preMult(trans);
+
+		// Combine driver and camera transform
+		_matrix = _matrix * localTx;
 	}
-	else
+	else if (_mode == RB_MODE_TOP)
 	{
-		_matrix.makeLookAt(_eye, nodeCenter, up);
+		_matrix.makeLookAt(_eye, nodeFocusPoint, osg::Vec3(nodeRotation*osg::Vec3(0, -1, 0)));
+	}
+	else 
+	{
+		_matrix.makeLookAt(_eye, nodeFocusPoint, up);
 	}
 
     return true;

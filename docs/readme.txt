@@ -45,6 +45,7 @@ Key shortcuts
            - Flex         (imagine the camera attached to vehicle via an elastic string)
            - Flex - orbit (Like flex but allows for roatation around vehicle)
            - Top          (top view, fixed rotation, always straight above vehicle)
+           - Driver       ("driver" view, fixed at center of vehicle)
 
     Viewer options
         f: Toggle full screen mode

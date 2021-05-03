@@ -109,6 +109,7 @@ copy run\esmini\run_pedestrian_collision.bat %target_dir%\run\esmini /y
 copy run\esmini\run_controller_test.bat %target_dir%\run\esmini /y
 copy run\esmini\run_synch_with_steady_state.bat %target_dir%\run\esmini /y
 copy run\esmini\run_lane_change_crest.bat %target_dir%\run\esmini /y
+copy run\esmini\run_lane_change_crest_driver-view.bat %target_dir%\run\esmini /y
 
 copy run\odrviewer\run_e6mini.bat %target_dir%\run\odrviewer /y
 copy run\odrviewer\run_multi_intersections.bat %target_dir%\run\odrviewer /y

@@ -25,7 +25,7 @@ Options:
   --sensors
       Show sensor frustums (toggle during simulation by press 'r')
   --camera_mode <mode>
-      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top") (toggle during simulation by press 'k')
+      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver") (toggle during simulation by press 'k')
   --aa_mode <mode>
       Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)
   --threads
@@ -50,6 +50,8 @@ Options:
       Prevent logfile from being created
   --disable_stdout
       Prevent messages to stdout
+  --save_generated_model
+      Save generated 3D model (n/a when a scenegraph is loaded)
 
 The graphics engine (OpenSceneGraph) provides some additional options, here are a few useful ones: 
  

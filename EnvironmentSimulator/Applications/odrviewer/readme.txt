@@ -30,7 +30,9 @@ Options:
       Prevent messages to stdout
   --help
       Show this help message
-
+  --save_generated_model
+      Save generated 3D model (n/a when a scenegraph is loaded)
+      
 Additional options forwarded to OpenSceneGraph:
   --window <x y w h>
           Set the position (x,y) and size (w,h) of the viewer window.		
@@ -86,6 +88,7 @@ Key shortcuts
            - Flex         (imagine the camera attached to vehicle via an elastic string)
            - Flex - orbit (Like flex but allows for roatation around vehicle)
            - Top          (top view, fixed rotation, always straight above vehicle)
+           - Driver       ("driver" view, fixed at center of vehicle)
 
     Viewer options
         f: Toggle full screen mode

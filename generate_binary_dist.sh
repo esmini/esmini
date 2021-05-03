@@ -85,6 +85,7 @@ run/esmini/run_pedestrian*.* \
 run/esmini/run_controller_test*.* \
 run/esmini/run_synch_with_steady_state*.* \
 run/esmini/run_lane_change_crest.* \
+run/esmini/run_lane_change_crest_driver-view.* \
 run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \

@@ -323,6 +323,7 @@ namespace viewer
 		Viewer(roadmanager::OpenDrive *odrManager, const char* modelFilename, const char* scenarioFilename, const char* exe_path, osg::ArgumentParser arguments, SE_Options* opt = 0);
 		~Viewer();
 		void SetCameraMode(int mode);
+		void UpdateCameraFOV();
 		void SetVehicleInFocus(int idx);
 		int GetEntityInFocus() { return currentCarInFocus_; }
 		EntityModel* AddEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type, 
@@ -347,7 +348,6 @@ namespace viewer
 		bool GetQuitRequest() { return quit_request_;  }
 		void SetInfoTextProjection(int width, int height);
 		void SetInfoText(const char* text);
-		void ShowInfoText(bool show);
 		void SetNodeMaskBits(int bits);
 		void SetNodeMaskBits(int mask, int bits);
 		void ClearNodeMaskBits(int bits);

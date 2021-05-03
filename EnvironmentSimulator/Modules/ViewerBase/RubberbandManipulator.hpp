@@ -32,6 +32,7 @@ class RubberbandManipulator : public osgGA::CameraManipulator
 			RB_MODE_RUBBER_BAND,
 			RB_MODE_RUBBER_BAND_ORBIT,
 			RB_MODE_TOP,
+            RB_MODE_DRIVER,
 			RB_NUM_MODES
 		};
 

@@ -20,6 +20,7 @@
 #include <osgGA/StateSetManipulator>
 #include <osg/PolygonOffset>
 #include <osgDB/ReadFile>
+#include <osgUtil/SmoothingVisitor>
 
 #include "CommonMini.hpp"
 
@@ -67,10 +68,11 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_p
 {
 	osg::ref_ptr<osg::Material> materialRoadmark_ = new osg::Material;
 	osg::ref_ptr<osg::Vec4Array> color_roadmark = new osg::Vec4Array;
-	color_roadmark->push_back(osg::Vec4(0.95f, 0.95f, 0.9f, 1.0f));
+	color_roadmark->push_back(osg::Vec4(0.95f, 0.95f, 0.92f, 1.0f));
 
 	materialRoadmark_->setDiffuse(osg::Material::FRONT_AND_BACK, color_roadmark->at(0));
 	materialRoadmark_->setAmbient(osg::Material::FRONT_AND_BACK, color_roadmark->at(0));
+//	materialRoadmark_->setShininess(osg::Material::FRONT_AND_BACK, 0);
 
 	// Finally create and add geometry
 	osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
@@ -81,7 +83,8 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_p
 	geom->setColorBinding(osg::Geometry::BIND_OVERALL);
 
 	// Use PolygonOffset feature to avoid z-fighting with road surface
-	geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-1, -1));
+	geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-2.0, -1.0));
+	osgUtil::SmoothingVisitor::smooth(*geom, 0.0);
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 	geode->addDrawable(geom);
@@ -226,6 +229,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 	std::vector<double> s_list;
 	root_ = new osg::Group;
 	rm_group_ = new osg::Group;
+
 	root_->addChild(rm_group_);
 
 	osg::ref_ptr<osg::Texture2D> tex_asphalt = ReadTexture("asphalt.jpg");
@@ -234,15 +238,32 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 	osg::ref_ptr<osg::Vec4Array> color_asphalt = new osg::Vec4Array;
 	osg::ref_ptr<osg::Vec4Array> color_grass = new osg::Vec4Array;
 
-	color_asphalt->push_back(osg::Vec4(0.3f, 0.3f, 0.3f, 1.0f));
-	color_grass->push_back(osg::Vec4(0.20f, 0.55f, 0.35f, 1.0f));
+	if (tex_asphalt)
+	{
+		color_asphalt->push_back(osg::Vec4(1.f, 1.f, 1.f, 1.0f));
+	}
+	else
+	{
+		color_asphalt->push_back(osg::Vec4(0.3f, 0.3f, 0.3f, 1.0f));
+	}
+
+	if (color_grass)
+	{
+		color_grass->push_back(osg::Vec4(1.f, 1.f, 1.f, 1.0f));
+	}
+	else
+	{
+		color_grass->push_back(osg::Vec4(0.20f, 0.55f, 0.35f, 1.0f));
+	}
 
 	osg::ref_ptr<osg::Material> materialAsphalt_ = new osg::Material;
 	osg::ref_ptr<osg::Material> materialGrass_ = new osg::Material;
 	materialAsphalt_->setDiffuse(osg::Material::FRONT_AND_BACK, color_asphalt->at(0));
 	materialAsphalt_->setAmbient(osg::Material::FRONT_AND_BACK, color_asphalt->at(0));
+//	materialAsphalt_->setShininess(osg::Material::FRONT_AND_BACK, 0);
 	materialGrass_->setDiffuse(osg::Material::FRONT_AND_BACK, color_grass->at(0));
 	materialGrass_->setAmbient(osg::Material::FRONT_AND_BACK, color_grass->at(0));
+//	materialGrass_->setShininess(osg::Material::FRONT_AND_BACK, 0);
 
 
 	for (size_t i = 0; i < odr->GetNumOfRoads(); i++)
@@ -342,37 +363,45 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 			// Then create actual vertices and triangle strips for the lane section
 			roadmanager::Position pos;
 			pos.SetAlignMode(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
-			int nrOfVertices = s_list.size() * lsec->GetNumberOfLanes();
-			osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(nrOfVertices);
-			osg::ref_ptr<osg::DrawElementsUInt> indices;
-			int vidx = 0;
-			int iidx = 0;
-
-			osg::ref_ptr<osg::Vec2Array> texcoords = new osg::Vec2Array;
+			int nrOfVerticesTotal = s_list.size() * lsec->GetNumberOfLanes();
+			osg::ref_ptr<osg::Vec3Array> verticesAll = new osg::Vec3Array(nrOfVerticesTotal);
+			osg::ref_ptr<osg::Vec2Array> texcoordsAll = new osg::Vec2Array;
+			int vidxAll = 0;
 
 			// Potential optimization: Swap loops, creating all vertices for same s-value for each step
 			for (size_t k = 0; k < lsec->GetNumberOfLanes(); k++)
 			{
+				osg::ref_ptr<osg::Vec3Array> verticesLocal;
+				osg::ref_ptr<osg::Vec2Array> texcoordsLocal;
+				osg::ref_ptr<osg::DrawElementsUInt> indices;
+				int vidxLocal = 0;
 				lane = lsec->GetLaneByIdx(k);
 
 				if (k > 0)
 				{
+					verticesLocal = new osg::Vec3Array(s_list.size() * 2);
 					indices = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, s_list.size() * 2);
-					iidx = 0;
+					texcoordsLocal = new osg::Vec2Array(s_list.size() * 2);
 				}
 
 				for (size_t l = 0; l < s_list.size(); l++)
 				{
 					pos.SetTrackPos(road->GetId(), s_list[l], SIGN(lane->GetId()) * lsec->GetOuterOffset(s_list[l], lane->GetId()), true);
-					(*vertices)[vidx++].set(pos.GetX(), pos.GetY(), pos.GetZ());
+					(*verticesAll)[vidxAll++].set(pos.GetX(), pos.GetY(), pos.GetZ());
 					double texscale = TEXTURE_SCALE;
-					texcoords->push_back(osg::Vec2(texscale * pos.GetX(), texscale* pos.GetY()));
+					texcoordsAll->push_back(osg::Vec2(texscale * pos.GetX(), texscale* pos.GetY()));
 
 					// Create indices for the lane strip, referring to the vertex list
 					if (k > 0)
 					{
-						(*indices)[iidx++] = s_list.size() * (k-1) + l;  // vertex of left lane border
-						(*indices)[iidx++] = s_list.size() * k + l;  // vertex of right lane border
+						// vertex of left lane border
+						(*verticesLocal)[vidxLocal] = (*verticesAll)[(k - 1) * s_list.size() + l];  
+						(*texcoordsLocal)[vidxLocal] = (*texcoordsAll)[(k - 1) * s_list.size() + l]; 
+						(*indices)[vidxLocal] = vidxLocal++;
+						// vertex of right
+						(*verticesLocal)[vidxLocal] = (*verticesAll)[k * s_list.size() + l];
+						(*texcoordsLocal)[vidxLocal] = (*texcoordsAll)[k * s_list.size() + l]; 
+						(*indices)[vidxLocal] = vidxLocal++; 
 					}
 				}
 
@@ -381,9 +410,11 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 					// Create geometry for the strip made of this and previous lane
 					osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
 					geom->setUseDisplayList(true);
-					geom->setVertexArray(vertices.get());
+					geom->setVertexArray(verticesLocal.get());
 					geom->addPrimitiveSet(indices.get());
-					geom->setTexCoordArray(0, texcoords.get());
+					geom->setTexCoordArray(0, texcoordsLocal.get());
+					osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
+
 					osg::ref_ptr<osg::Texture2D> tex = 0;
 
 					if (lsec->GetLaneByIdx(lane->GetId() < 0 ? k : k-1)->IsType(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD))
@@ -405,16 +436,21 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 						geom->getOrCreateStateSet()->setAttributeAndModes(materialGrass_.get());
 					}
 					geom->setColorBinding(osg::Geometry::BIND_OVERALL);
+
 					if (tex)
 					{
 						geom->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex.get());
 						osg::ref_ptr<osg::TexEnv> texEnv = new osg::TexEnv;
-						texEnv->setMode(osg::TexEnv::REPLACE);
+						texEnv->setMode(osg::TexEnv::MODULATE);
 						geom->getOrCreateStateSet()->setTextureAttribute(0, texEnv.get(), osg::StateAttribute::ON);
 					}
 
 					osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-					geode->addDrawable(geom.release());
+					geode->addDrawable(geom.get());
+
+					//osgUtil::Optimizer optimizer;
+					//optimizer.optimize(geode);
+
 					root_->addChild(geode);
 				}
 				AddRoadMarks(lane, root_);

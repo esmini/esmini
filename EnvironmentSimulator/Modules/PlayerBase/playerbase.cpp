@@ -381,7 +381,7 @@ int ScenarioPlayer::InitViewer()
 
 	if (opt.GetOptionArg("info_text") == "off")
 	{
-		viewer_->ShowInfoText(false);
+		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO);
 	}
 
 	if ((arg_str = opt.GetOptionArg("trail_mode")) != "")
@@ -440,6 +440,10 @@ int ScenarioPlayer::InitViewer()
 		else if (arg_str == "top")
 		{
 			viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_TOP);
+		}
+		else if (arg_str == "driver")
+		{
+			viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_DRIVER);
 		}
 		else
 		{
@@ -638,7 +642,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
 	opt.AddOption("osi_points", "Show OSI road pointss (toggle during simulation by press 'y') ");
 	opt.AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
-	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'k') ", "mode");
+	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
 	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
 	opt.AddOption("headless", "Run without viewer");
@@ -651,6 +655,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
+	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
 
 	if (argc_ < 3)
 	{

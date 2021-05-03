@@ -304,6 +304,7 @@ int main(int argc, char** argv)
 	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("help", "Show this help message");
+	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
 
 	if (argc < 2 || opt.GetOptionSet("help"))
 	{

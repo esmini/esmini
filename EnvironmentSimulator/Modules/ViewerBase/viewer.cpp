@@ -30,6 +30,7 @@
 #include <osgGA/SphericalManipulator>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgDB/Registry>
+#include <osgDB/WriteFile>
 #include <osgShadow/StandardShadowMap>
 #include <osgShadow/ShadowMap>
 #include <osgShadow/ShadowedScene>
@@ -49,6 +50,8 @@
 #define TRAIL_DOT_SIZE 10
 #define TRAIL_DOT3D_SIZE 0.2
 #define TRAILDOT3D 1
+#define PERSP_FOV 30.0
+#define ORTHO_FOV 1.0
 
 double color_green[3] = { 0.25, 0.6, 0.3 };
 double color_gray[3] = { 0.7, 0.7, 0.7 };
@@ -413,6 +416,7 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	geom2->setColorBinding(osg::Geometry::BIND_OVERALL);
 
 	osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
+	osgUtil::SmoothingVisitor::smooth(*geom2, 0.0);
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 	geode->addDrawable(geom.release());
 	osg::ref_ptr<osg::Material> material = new osg::Material;
@@ -796,7 +800,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	keyLeft_ = false;
 	keyRight_ = false;
 	quit_request_ = false;
-	showInfoText = true;  // show info text HUD per default
 	camMode_ = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
 	shadow_node_ = NULL;
 	environment_ = NULL;
@@ -904,6 +907,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
 	ClearNodeMaskBits(NodeMask::NODE_MASK_ENTITY_BB);
 	SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL);
+	SetNodeMaskBits(NodeMask::NODE_MASK_INFO);
 	SetNodeMaskBits(NodeMask::NODE_MASK_TRAJECTORY_LINES);
 
 	roadSensors_ = new osg::Group;
@@ -972,12 +976,19 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 			environment_ = roadGeom->root_;
 			envTx_->addChild(environment_);
 
+			if (opt && (opt->GetOptionSet("save_generated_model")))
+			{
+				osgDB::writeNodeFile(*roadGeom->root_, "generated_road.osgb");
+			}
+
 			// Since the generated 3D model is based on OSI features, let's hide those
 			ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
 			ClearNodeMaskBits(NodeMask::NODE_MASK_OSI_LINES);
 		}
 	}
 
+	//const osg::BoundingSphere bs = environment_->getBound();
+	//printf("bs radius %.2f\n", bs.radius());
 	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager))
 	{
 		LOG("Viewer::Viewer Failed to create road lines!\n");
@@ -1044,6 +1055,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 
 	osgViewer_->getCamera()->setLODScale(lodScale_);
 	osgViewer_->getCamera()->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
+
 	if (!clear_color)
 	{
 		// Default background color
@@ -1087,10 +1099,10 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	osgViewer_->setReleaseContextAtEndOfFrameHint(false);
 
 	// Light
-	osgViewer_->setLightingMode(osg::View::SKY_LIGHT);
+	osgViewer_->setLightingMode(osg::View::LightingMode::SKY_LIGHT);
 	osg::Light *light = osgViewer_->getLight();
-	light->setPosition(osg::Vec4(50000, -50000, 70000, 1));
-	light->setDirection(osg::Vec3(-1, 1, -1));
+	light->setPosition(osg::Vec4(-7500., 5000., 10000., 1.0));
+	light->setDirection(osg::Vec3(7.5, -5., -10.));
 	float ambient = 0.4;
 	light->setAmbient(osg::Vec4(ambient, ambient, 0.9*ambient, 1));
 	light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
@@ -1108,6 +1120,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	infoText->setAxisAlignment(osgText::Text::SCREEN);
 	infoText->setPosition(osg::Vec3(10, 10, 0));
 	infoText->setDataVariance(osg::Object::DYNAMIC);
+	infoText->setNodeMask(NodeMask::NODE_MASK_INFO);
 
 	textGeode->addDrawable(infoText);
 
@@ -1146,9 +1159,31 @@ void Viewer::SetCameraMode(int mode)
 
 	camMode_ = mode;
 	rubberbandManipulator_->setMode(camMode_);
+	UpdateCameraFOV();
 }
 
-EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type, 
+void Viewer::UpdateCameraFOV()
+{
+	double fov;
+
+	if (camMode_ == osgGA::RubberbandManipulator::RB_MODE_TOP)
+	{
+		fov = ORTHO_FOV;
+	}
+	else
+	{
+		fov = PERSP_FOV;
+	}
+
+	osg::ref_ptr<osg::GraphicsContext> gc = osgViewer_->getCamera()->getGraphicsContext();
+	osg::ref_ptr<osg::GraphicsContext::Traits> traits = const_cast<osg::GraphicsContext::Traits*>(osgViewer_->getCamera()->getGraphicsContext()->getTraits());
+
+	osgViewer_->getCamera()->setProjectionMatrixAsPerspective(fov, (double)traits->width / traits->height, 1.0*PERSP_FOV/fov,  1E5 * PERSP_FOV / fov);
+
+	osgViewer_->getCamera()->setLODScale(fov/PERSP_FOV);
+}
+
+EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type,
 	bool road_sensor, std::string name, OSCBoundingBox* boundingBox)
 {
 	// Load 3D model
@@ -1632,7 +1667,7 @@ int Viewer::CreateOutlineObject(roadmanager::Outline *outline)
 	int nrPoints = outline->closed_ ? outline->corner_.size() + 1 : outline->corner_.size();
 
 	osg::ref_ptr<osg::Group> group = new osg::Group();
-	osg::Vec4 color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0f);
+	osg::Vec4 color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0f);  // outline objects will be gray
 	osg::ref_ptr<osg::Vec4Array> color_outline = new osg::Vec4Array;
 	color_outline->push_back(color);
 
@@ -1948,14 +1983,9 @@ int Viewer::AddEnvironment(const char* filename)
 	return 0;
 }
 
-void Viewer::ShowInfoText(bool show)
-{
-	showInfoText = show;
-}
-
 void Viewer::SetInfoText(const char* text)
 {
-	if (showInfoText)
+	if (GetNodeMaskBit(NodeMask::NODE_MASK_INFO))
 	{
 		infoText->setText(text);
 	}
@@ -2094,12 +2124,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	case(osgGA::GUIEventAdapter::KEY_K):
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			viewer_->camMode_ += 1;
-			if (viewer_->camMode_ >= osgGA::RubberbandManipulator::RB_NUM_MODES)
-			{
-				viewer_->camMode_ = 0;
-			}
-			viewer_->rubberbandManipulator_->setMode(viewer_->camMode_);
+			viewer_->SetCameraMode((viewer_->camMode_ + 1) % osgGA::RubberbandManipulator::RB_NUM_MODES);
 		}
 		break;
 	case(osgGA::GUIEventAdapter::KEY_O):
@@ -2201,8 +2226,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	{
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			viewer_->showInfoText = !viewer_->showInfoText;
-			viewer_->infoTextCamera->setNodeMask(viewer_->showInfoText ? 0xffffffff : 0x0);
+			viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO);
 		}
 	}
 	break;
