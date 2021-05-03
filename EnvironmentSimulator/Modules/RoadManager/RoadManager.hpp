@@ -869,11 +869,17 @@ namespace roadmanager
 		}
 
 		std::string GetName() { return name_; }
+		std::string GetType() { return type_; }
+		int GetId() { return id_; }
 		double GetS() { return s_; }
 		double GetT() { return t_; }
 		double GetHOffset() { return heading_; }
+		double GetPitch() { return pitch_; }
+		double GetRoll() { return roll_; }
 		double GetZOffset() { return z_offset_; }
 		double GetHeight() { return height_; }
+		double GetLength() { return length_; }
+		double GetWidth() { return width_; }
 		Orientation GetOrientation() { return orientation_; }
 		void AddOutline(Outline* outline) { outlines_.push_back(outline); }
 		int GetNumberOfOutlines() { return (int)outlines_.size(); }
