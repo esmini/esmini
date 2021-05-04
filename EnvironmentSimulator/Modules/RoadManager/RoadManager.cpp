@@ -8211,7 +8211,7 @@ int ClothoidShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
 {
 	if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
 	{
-		if (p > t_start_ && p < t_end_)
+		if (p >= t_start_ && p <= t_end_)
 		{
 			double t = p - t_start_;
 			// Transform time parameter value into a s value

@@ -14,14 +14,14 @@
 
 using namespace scenarioengine;
 
-void ParameterSetAction::Start()
+void ParameterSetAction::Start(double simTime, double dt)
 {
 	LOG("Set parameter %s = %s", name_.c_str(), value_.c_str());
 	parameters_->setParameterValueByString(name_, value_);
-	OSCAction::Start();
+	OSCAction::Start(simTime, dt);
 }
 
-void ParameterSetAction::Step(double dt, double simTime)
+void ParameterSetAction::Step(double, double dt)
 {
 	OSCAction::Stop();
 }

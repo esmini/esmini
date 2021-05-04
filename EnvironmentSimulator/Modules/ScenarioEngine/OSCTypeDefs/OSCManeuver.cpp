@@ -14,15 +14,15 @@
 
 using namespace scenarioengine;
 
-void Event::Start()
+void Event::Start(double simTime, double dt)
 {
 	for (size_t i = 0; i < action_.size(); i++)
 	{
 		// Restart actions
 		action_[i]->Reset();
-		action_[i]->Start();
+		action_[i]->Start(simTime, dt);
 	}
-	StoryBoardElement::Start();
+	StoryBoardElement::Start(simTime, dt);
 }
 
 void Event::End()

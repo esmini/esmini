@@ -52,7 +52,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n4.100, 0, Ego, 115.04, 4.86, -3.01, 0.28, 0.03', csv))
         self.assertTrue(re.search('\n4.100, 1, Target, 129.91, 14.33, -3.47, 0.50', csv))
         self.assertTrue(re.search('\n11.100, 0, Ego, 200.70, 72.59, -2.44, 1.06, 6.26', csv))
-        self.assertTrue(re.search('\n11.100, 1, Target, 205.90, 66.44, -2.50, 2.51', csv))
+        self.assertTrue(re.search('\n11.100, 1, Target, 205.90, 66.44, -2.50, 2.51, 6.28', csv))
         self.assertTrue(re.search('\n17.250, 0, Ego, 217.35, 167.64, 1.99, 1.74, 6.21', csv))
         self.assertTrue(re.search('\n17.250, 1, Target, 210.68, 157.76, 1.31, 1.23, 6.22', csv))
 
@@ -78,10 +78,10 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n10.000, 3, NPC3, 13.85, 296.9., -0.52, 1.56, 0.00, 0.00, 20.00', csv))
         self.assertTrue(re.search('\n10.000, 4, NPC4, 10.70, 329.9., -0.59, 1.55, 0.00, 0.00, 20.00', csv))
         self.assertTrue(re.search('\n10.000, 0, Ego, 10.20, 299.9., -0.53, 1.56, 0.00, 0.00, 20.00', csv))
-        self.assertTrue(re.search('\n23.500, 1, NPC1, 19.45, 595.65, -0.83, 1.49, 6.28, 0.00, 30.00', csv))
-        self.assertTrue(re.search('\n23.500, 2, NPC2, 18.35, 533.53, -0.85, 1.51, 6.28, 0.00, 8.72', csv))
-        self.assertTrue(re.search('\n23.500, 3, NPC3, 23.67, 556.88, -0.84, 1.50, 6.28, 0.00, 17.00', csv))
-        self.assertTrue(re.search('\n23.500, 4, NPC4, 21.61, 578.38, -0.83, 1.49, 6.28, 0.00, 8.72', csv))
+        self.assertTrue(re.search('\n23.500, 1, NPC1, 19.44, 595.55, -0.83, 1.49, 6.28, 0.00, 30.00', csv))
+        self.assertTrue(re.search('\n23.500, 2, NPC2, 18.35, 533.65, -0.85, 1.51, 6.28, 0.00, 8.75', csv))
+        self.assertTrue(re.search('\n23.500, 3, NPC3, 23.68, 556.91, -0.84, 1.50, 6.28, 0.00, 17.00', csv))
+        self.assertTrue(re.search('\n23.500, 4, NPC4, 21.62, 578.49, -0.83, 1.49, 6.28, 0.00, 8.75', csv))
 
 
 if __name__ == "__main__":

@@ -45,7 +45,7 @@ namespace scenarioengine
 
 		Event() : start_trigger_(0), StoryBoardElement(StoryBoardElement::ElementType::EVENT) {}
 
-		void Start();
+		void Start(double simTime, double dt);
 		void End();
 		void Stop();
 

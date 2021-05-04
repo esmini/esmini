@@ -92,7 +92,7 @@ namespace scenarioengine
 			return state_ == State::STANDBY;
 		}
 
-		virtual void Start()
+		virtual void Start(double simTime, double dt)
 		{
 			if (state_ == State::STANDBY || next_state_ == State::STANDBY)
 			{
@@ -190,7 +190,7 @@ namespace scenarioengine
 
 		std::string basetype2str(BaseType type);
 
-		virtual void Step(double dt, double simTime) = 0;
+		virtual void Step(double simTime, double dt) = 0;
 	};
 
 }

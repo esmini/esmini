@@ -132,7 +132,7 @@ void ScenarioEngine::step(double deltaSimTime)
 		// kick off init actions
 		for (size_t i = 0; i < init.private_action_.size(); i++)
 		{
-			init.private_action_[i]->Start();
+			init.private_action_[i]->Start(simulationTime_, deltaSimTime);
 			init.private_action_[i]->UpdateState();
 		}
 		initialized_ = true;
@@ -188,7 +188,7 @@ void ScenarioEngine::step(double deltaSimTime)
 		if (init.private_action_[i]->IsActive())
 		{
 			//LOG("Stepping action of type %d", init.private_action_[i]->action_[j]->type_)
-			init.private_action_[i]->Step(deltaSimTime, getSimulationTime());
+			init.private_action_[i]->Step(getSimulationTime(), deltaSimTime);
 			init.private_action_[i]->UpdateState();
 		}
 	}
@@ -217,11 +217,11 @@ void ScenarioEngine::step(double deltaSimTime)
 				if (!act->start_trigger_)
 				{
 					// Start act even if there's no trigger
-					act->Start();
+					act->Start(simulationTime_, deltaSimTime);
 				}
 				else if (act->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
 				{
-					act->Start();
+					act->Start(simulationTime_, deltaSimTime);
 				}
 			}
 
@@ -295,7 +295,7 @@ void ScenarioEngine::step(double deltaSimTime)
 												}
 											}
 
-											event->Start();
+											event->Start(simulationTime_, deltaSimTime);
 										}
 									}
 									else if (event->priority_ == Event::Priority::SKIP)
@@ -306,7 +306,7 @@ void ScenarioEngine::step(double deltaSimTime)
 										}
 										else
 										{
-											event->Start();
+											event->Start(simulationTime_, deltaSimTime);
 										}
 									}
 									else if (event->priority_ == Event::Priority::PARALLEL)
@@ -320,7 +320,7 @@ void ScenarioEngine::step(double deltaSimTime)
 										{
 											LOG("Event(s) ongoing, %s will run in parallel", event->name_.c_str());
 										}
-										event->Start();
+										event->Start(simulationTime_, deltaSimTime);
 									}
 									else
 									{
@@ -338,7 +338,7 @@ void ScenarioEngine::step(double deltaSimTime)
 								{
 									if (event->action_[n]->IsActive())
 									{
-										event->action_[n]->Step(deltaSimTime, getSimulationTime());
+										event->action_[n]->Step(simulationTime_, deltaSimTime);
 
 										active = active || (event->action_[n]->IsActive());
 									}

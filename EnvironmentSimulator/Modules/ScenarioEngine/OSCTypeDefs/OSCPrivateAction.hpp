@@ -158,11 +158,9 @@ namespace scenarioengine
 		Target* target_;
 		double start_speed_;
 		double elapsed_;
+		double sim_time_;
 
-		LongSpeedAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED), target_(0), start_speed_(0)
-		{
-			elapsed_ = 0;
-		}
+		LongSpeedAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED), target_(0), start_speed_(0), sim_time_(0), elapsed_(0) {}
 
 		LongSpeedAction(const LongSpeedAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED)
 		{
@@ -170,6 +168,7 @@ namespace scenarioengine
 			transition_dynamics_ = action.transition_dynamics_;
 			elapsed_ = action.elapsed_;
 			start_speed_ = action.start_speed_;
+			sim_time_ = action.sim_time_;
 		}
 
 		OSCPrivateAction* Copy()
@@ -178,9 +177,8 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Start();
-
-		void Step(double dt, double simTime);
+		void Start(double simTime, double dt);
+		void Step(double simTime, double dt);
 
 		void print()
 		{
@@ -213,13 +211,15 @@ namespace scenarioengine
 		DistType dist_type_;
 		double freespace_;
 		bool continuous_;
+		double sim_time_;
 
-		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE), target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0)
+		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE), 
+			target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0), sim_time_(0)
 		{
             dynamics_.max_acceleration_ = 0;
             dynamics_.max_deceleration_ = 0;
             dynamics_.max_speed_ = 0;
-            dynamics_.none_ = true;            
+            dynamics_.none_ = true;
 		}
 
 		LongDistanceAction(const LongDistanceAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE)
@@ -230,6 +230,7 @@ namespace scenarioengine
 			dist_type_ = action.dist_type_;
 			freespace_ = action.freespace_;
 			acceleration_ = action.acceleration_;
+			sim_time_ = action.sim_time_;
 		}
 
 		OSCPrivateAction* Copy()
@@ -238,9 +239,8 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Start();
-
-		void Step(double dt, double simTime);
+		void Start(double simTime, double dt);
+		void Step(double simTime, double dt);
 
 		void print()
 		{
@@ -294,6 +294,7 @@ namespace scenarioengine
 		int target_lane_id_;
 		double elapsed_;
 		double t_;
+		double sim_time_;
 
 		LatLaneChangeAction(LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
 		{
@@ -301,6 +302,7 @@ namespace scenarioengine
 			elapsed_ = 0;
 			target_t_ = 0;
 			t_ = 0;
+			sim_time_ = 0;
 		}
 
 		LatLaneChangeAction(const LatLaneChangeAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
@@ -313,6 +315,7 @@ namespace scenarioengine
 			target_lane_id_ = action.target_lane_id_;
 			elapsed_ = action.elapsed_;
 			t_ = action.t_;
+			sim_time_ = action.sim_time_;
 		}
 
 		OSCPrivateAction* Copy()
@@ -321,9 +324,8 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt, double simTime);
-
-		void Start();
+		void Step(double simTime, double dt);
+		void Start(double simTime, double dt);
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};
@@ -370,6 +372,7 @@ namespace scenarioengine
 		double elapsed_;
 		double start_lane_offset_;
 		double target_lane_offset_;
+		double sim_time_;
 
 		LatLaneOffsetAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET)
 		{
@@ -378,6 +381,7 @@ namespace scenarioengine
 			elapsed_ = 0;
 			target_ = 0;
 			target_lane_offset_ = 0;
+			sim_time_ = 0;
 		}
 
 		LatLaneOffsetAction(const LatLaneOffsetAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET)
@@ -387,6 +391,7 @@ namespace scenarioengine
 			start_lane_offset_ = action.start_lane_offset_;
 			target_lane_offset_ = action.target_lane_offset_;
 			dynamics_ = action.dynamics_;
+			sim_time_ = action.sim_time_;
 		}
 
 		OSCPrivateAction* Copy()
@@ -395,8 +400,8 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Start();
-		void Step(double dt, double simTime);
+		void Start(double simTime, double dt);
+		void Step(double simTime, double dt);
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};
@@ -429,6 +434,7 @@ namespace scenarioengine
 		LongSpeedAction::Target *final_speed_;
 		double tolerance_;
 		double tolerance_master_;
+		double sim_time_;
 
 		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE) 
 		{
@@ -475,8 +481,8 @@ namespace scenarioengine
 			steadyState_.pos_ = 0;
 		}
 
-		void Step(double dt, double simTime);
-		void Start();
+		void Step(double simTime, double dt);
+		void Start(double simTime, double dt);
 
 	private:
 		typedef enum {
@@ -541,8 +547,8 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt, double simTime);
-		void Start();
+		void Step(double simTime, double dt);
+		void Start(double simTime, double dt);
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};
@@ -565,13 +571,12 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt, double simTime)
+		void Step(double simTime, double dt)
 		{
-			(void)dt;
 			(void)simTime;
 		}
 
-		void Start();
+		void Start(double simTime, double dt);
 		void End();
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
@@ -612,9 +617,8 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt, double simTime);
-
-		void Start();
+		void Step(double simTime, double dt);
+		void Start(double simTime, double dt);
 		void End();
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
@@ -639,8 +643,8 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double, double) { } 
-		void Start();
+		void Step(double, double) { }
+		void Start(double simTime, double dt);
 
 	};
 
@@ -675,7 +679,7 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Start()
+		void Start(double simTime, double dt)
 		{
 			if (object_->GetAssignedControllerType() != 0)
 			{
@@ -688,10 +692,10 @@ namespace scenarioengine
 			{
 				LOG("No controller assigned!");
 			}
-			OSCAction::Start();
+			OSCAction::Start(simTime, dt);
 		}
 
-		void Step(double, double) {}  
+		void Step(double, double) {}
 
 		void End()
 		{
@@ -728,8 +732,8 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double dt, double simTime);
-		void Start();
+		void Step(double simTime, double dt);
+		void Start(double simTime, double dt);
 	};
 
 	class OverrideControlAction : public OSCPrivateAction
@@ -745,8 +749,8 @@ namespace scenarioengine
 		OverrideControlAction() : OverrideControlAction(0, false, Object::OverrideType::OVERRIDE_UNDEFINED) {}
 		~OverrideControlAction() {}
 		
-		void Step(double dt, double simTime);
-		void Start();
+		void Step(double simTime, double dt);
+		void Start(double simTime, double dt);
 		
 		OSCPrivateAction *Copy()
 		{
