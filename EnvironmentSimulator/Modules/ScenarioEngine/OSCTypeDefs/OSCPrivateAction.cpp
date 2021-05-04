@@ -315,6 +315,14 @@ void LatLaneChangeAction::Step(double dt, double)
 	double factor;
 	double angle = 0;
 
+	// Detect whether t switched sign due to end-to-end/start-to-start succession of roads
+	if (SIGN(object_->pos_.GetT()) != SIGN(t_old) && fabs(t_old + object_->pos_.GetT()) < SMALL_NUMBER)
+	{
+		start_t_ *= -1;
+		target_t_ *= -1;
+		t_old *= -1;
+	}
+
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
 	{
