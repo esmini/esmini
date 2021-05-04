@@ -313,7 +313,7 @@ void LatLaneChangeAction::Step(double dt, double)
 	double angle = 0;
 
 	// Detect whether t switched sign due to end-to-end/start-to-start succession of roads
-	if (fabs(t_old + object_->pos_.GetT()) < SMALL_NUMBER && fabs(t_old) > SMALL_NUMBER)
+	if (SIGN(object_->pos_.GetT()) != SIGN(t_old) && fabs(t_old + object_->pos_.GetT()) < SMALL_NUMBER)
 	{
 		start_t_ *= -1;
 		target_t_ *= -1;
