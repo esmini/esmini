@@ -84,7 +84,7 @@ def dat2csv(datfile):
             break
 
         data = ObjectStateStructDat.from_buffer_copy(buffer)
-        fcsv.write('{:.3f}, {}, {}, {:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f}\n'.format(
+        fcsv.write('{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}\n'.format(
             data.timestamp,
             data.id,
             data.name.decode('utf-8'),

@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 	{
 		ObjectStateStructDat *state = &player->data_[i];
 
-		snprintf(line, MAX_LINE_LEN, "%.3f, %d, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f\n",
+		snprintf(line, MAX_LINE_LEN, "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
 			state->info.timeStamp,
 			state->info.id,
 			state->info.name,
