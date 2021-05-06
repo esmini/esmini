@@ -971,6 +971,42 @@ TEST(SetOSITimestampTest, TestGetAndSet)
 	SE_Close();
 }
 
+TEST(ReportObjectAcc, TestGetAndSet)
+{
+	osi3::GroundTruth* osi_gt;
+
+	std::string scenario_file = "../../../resources/xosc/cut-in_simple.xosc";
+
+	EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+
+	int n_Objects = SE_GetNumberOfObjects();
+	EXPECT_EQ(n_Objects, 2);
+
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+
+	osi_gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
+
+	EXPECT_EQ(osi_gt->mutable_moving_object()->size(), 2);
+
+	double seconds = osi_gt->mutable_timestamp()->seconds() + 1E-9 * osi_gt->mutable_timestamp()->nanos();
+	EXPECT_DOUBLE_EQ(seconds, 0.001);
+
+	SE_ReportObjectAcc(0, 0, 1, 2, 3);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	EXPECT_EQ(osi_gt->mutable_moving_object(0)->mutable_base()->mutable_acceleration()->x(), 1.0);
+
+	SE_ReportObjectAcc(0, 0, 4, 1, 8);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	EXPECT_EQ(osi_gt->mutable_moving_object(0)->mutable_base()->mutable_acceleration()->x(), 4.0);
+	EXPECT_EQ(osi_gt->mutable_moving_object(0)->mutable_base()->mutable_acceleration()->y(), 1.0);
+	EXPECT_EQ(osi_gt->mutable_moving_object(0)->mutable_base()->mutable_acceleration()->z(), 8.0);
+
+	SE_Close();
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);

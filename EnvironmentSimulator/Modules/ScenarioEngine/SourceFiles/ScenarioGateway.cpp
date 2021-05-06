@@ -312,6 +312,19 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	}
 }
 
+void ScenarioGateway::reportObjectAcc(int id, double x_acc, double y_acc, double z_acc)
+{
+	ObjectState* obj_state = getObjectStatePtrById(id);
+
+	if (obj_state == nullptr)
+	{
+		LOG_ONCE("Can't set acceleration for object %d yet. Please register object using reportObject() first.");
+		return;
+	}
+
+	obj_state->state_.pos.SetAcc(x_acc, y_acc, z_acc);
+}
+
 void ScenarioGateway::removeObject(int id)
 {
 	for (size_t i = 0; i < objectState_.size(); i++) 

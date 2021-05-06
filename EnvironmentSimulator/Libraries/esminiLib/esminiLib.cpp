@@ -902,6 +902,8 @@ extern "C"
 		{
 			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
 			{
+				player->scenarioGateway->reportObjectAcc(id, x_acc, y_acc, z_acc);
+				// Also update accelerations directly in scenario object, in case we're in a callback
 				player->scenarioEngine->entities.object_[id]->SetAcc(x_acc, y_acc, z_acc);
 			}
 			else
