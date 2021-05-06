@@ -2965,27 +2965,25 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 				// orientation
 				RMObject::Orientation orientation = RMObject::Orientation::NONE;
-				if (object.attribute("orientation") == 0 || !strcmp(object.attribute("orientation").value(), ""))
+				if (object.attribute("orientation") != 0 && strcmp(object.attribute("orientation").value(), ""))
 				{
-					LOG("Road object orientation error");
+					if (!strcmp(object.attribute("orientation").value(), "none"))
+					{
+						orientation = RMObject::Orientation::NONE;
+					}
+					else  if (!strcmp(object.attribute("orientation").value(), "+"))
+					{
+						orientation = RMObject::Orientation::POSITIVE;
+					}
+					else  if (!strcmp(object.attribute("orientation").value(), "-"))
+					{
+						orientation = RMObject::Orientation::NEGATIVE;
+					}
+					else
+					{
+						LOG("unknown road object orientation: %s (road ids=%d)\n", object.attribute("orientation").value(), r->GetId());
+					}
 				}
-				if (!strcmp(object.attribute("orientation").value(), "none"))
-				{
-					orientation = RMObject::Orientation::NONE;
-				}
-				else  if (!strcmp(object.attribute("orientation").value(), "+"))
-				{
-					orientation = RMObject::Orientation::POSITIVE;
-				}
-				else  if (!strcmp(object.attribute("orientation").value(), "-"))
-				{
-					orientation = RMObject::Orientation::NEGATIVE;
-				}
-				else
-				{
-					LOG("unknown road object orientation: %s (road ids=%d)\n", object.attribute("orientation").value(), r->GetId());
-				}
-				
 				std::string type = object.attribute("type").value();
 				double  z_offset = atof(object.attribute("zOffset").value());
 				double length = atof(object.attribute("length").value());
