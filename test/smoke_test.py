@@ -33,8 +33,8 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('\n6.500, 0, Ego, 28.5., -7.8., 0.00, 1.[78].', csv))
-        self.assertTrue(re.search('\n6.500, 1, NPC, 23.9., 1.0., 0.00, 5.3.', csv))
+        self.assertTrue(re.search('\n6.500.*, 0, Ego, 28.5.*, -7.8.*, 0.00.*, 1.[78]*.', csv))
+        self.assertTrue(re.search('\n6.500.*, 1, NPC, 23.9.*., 1.0.*, 0.00.*, 5.3.*', csv))
 
     def test_trajectory(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/trajectory-test.xosc'), COMMON_ARGS \
@@ -49,12 +49,12 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('\n4.100, 0, Ego, 115.04, 4.86, -3.01, 0.28, 0.03', csv))
-        self.assertTrue(re.search('\n4.100, 1, Target, 129.91, 14.33, -3.47, 0.50', csv))
-        self.assertTrue(re.search('\n11.100, 0, Ego, 200.70, 72.59, -2.44, 1.06, 6.26', csv))
-        self.assertTrue(re.search('\n11.100, 1, Target, 205.90, 66.44, -2.50, 2.51, 6.28', csv))
-        self.assertTrue(re.search('\n17.250, 0, Ego, 217.35, 167.64, 1.99, 1.74, 6.21', csv))
-        self.assertTrue(re.search('\n17.250, 1, Target, 210.68, 157.76, 1.31, 1.23, 6.22', csv))
+        self.assertTrue(re.search('\n4.100.*, 0, Ego, 115.039, 4.86*., -3.0.*, 0.28.*, 0.03.*', csv))
+        self.assertTrue(re.search('\n4.100.*, 1, Target, 129.91.*, 14.32.*, -3.46.*, 0.499.*', csv))
+        self.assertTrue(re.search('\n11.100.*, 0, Ego, 200.70.*, 72.58.*, -2.44., 1.05.*, 6.26.*', csv))
+        self.assertTrue(re.search('\n11.100.*, 1, Target, 205.90.*, 66.44.*, -2.49.*, 2.5.*, 6.28.*', csv))
+        self.assertTrue(re.search('\n17.250.*, 0, Ego, 217.35.*, 167.63.*, 1.98.*, 1.73.*, 6.20.*', csv))
+        self.assertTrue(re.search('\n17.250.*, 1, Target, 210.68.*, 157.76.*, 1.31.*, 1.22.*, 6.21.*', csv))
 
     def test_synchronize(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ARGS \
@@ -72,16 +72,19 @@ class TestSuite(unittest.TestCase):
         
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('\n10.000, 0, Ego, 10.20, 299.9., -0.53, 1.56, 0.00, 0.00, 20.00', csv))
-        self.assertTrue(re.search('\n10.000, 1, NPC1, 6.70, 305.0., -0.54, 1.56, 0.00, 0.00, 20.00', csv))
-        self.assertTrue(re.search('\n10.000, 2, NPC2, 9.98, 284.9., -0.50, 1.56, 0.00, 0.00, 20.00', csv))
-        self.assertTrue(re.search('\n10.000, 3, NPC3, 13.85, 296.9., -0.52, 1.56, 0.00, 0.00, 20.00', csv))
-        self.assertTrue(re.search('\n10.000, 4, NPC4, 10.70, 329.9., -0.59, 1.55, 0.00, 0.00, 20.00', csv))
-        self.assertTrue(re.search('\n10.000, 0, Ego, 10.20, 299.9., -0.53, 1.56, 0.00, 0.00, 20.00', csv))
-        self.assertTrue(re.search('\n23.500, 1, NPC1, 19.44, 595.55, -0.83, 1.49, 6.28, 0.00, 30.00', csv))
-        self.assertTrue(re.search('\n23.500, 2, NPC2, 18.35, 533.65, -0.85, 1.51, 6.28, 0.00, 8.75', csv))
-        self.assertTrue(re.search('\n23.500, 3, NPC3, 23.68, 556.91, -0.84, 1.50, 6.28, 0.00, 17.00', csv))
-        self.assertTrue(re.search('\n23.500, 4, NPC4, 21.62, 578.49, -0.83, 1.49, 6.28, 0.00, 8.75', csv))
+
+        self.assertTrue(re.search('\n10.000.*, 0, Ego, 10.20.*, 299.95.*, -0.52.*, 1.55.*, 0.00.*, 0.00.*, 20.00.*', csv))
+        self.assertTrue(re.search('\n10.000.*, 1, NPC1, 6.70.*, 305.00.*, -0.53.*, 1.55.*, 0.00.*, 0.00.*, 20.00.*', csv))
+        self.assertTrue(re.search('\n10.000.*, 2, NPC2, 9.98.*, 284.96.*, -0.49.*, 1.55.*, 0.00.*, 0.00.*, 20.00.*', csv))
+        self.assertTrue(re.search('\n10.000.*, 3, NPC3, 13.85.*, 296.90.*, -0.52.*, 1.55.*, 0.00.*, 0.00.*, 20.00.*', csv))
+        self.assertTrue(re.search('\n10.000.*, 4, NPC4, 10.70.*, 329.92.*, -0.58.*, 1.55.*, 0.00.*, 0.00.*, 20.00.*', csv))
+        self.assertTrue(re.search('\n10.000.*, 5, MS1, 17.27.*, 299.76.*, -0.52.*, 1.55.*, 0.00.*, 0.00.*, 0.00.*', csv))
+        self.assertTrue(re.search('\n10.000.*, 6, MS2, 23.37.*, 499.07.*, -0.84.*, 1.51.*, 0.00.*, 0.00.*, 0.00.*', csv))
+
+        self.assertTrue(re.search('\n23.500.*, 1, NPC1, 19.44.*, 595.54.*, -0.82.*, 1.48.*, 6.28.*, 0.00.*, 30.00.*', csv))
+        self.assertTrue(re.search('\n23.500.*, 2, NPC2, 18.35.*, 533.64.*, -0.84.*, 1.50.*, 6.28.*, 0.00.*, 8.75.*', csv))
+        self.assertTrue(re.search('\n23.500.*, 3, NPC3, 23.67.*, 556.91.*, -0.84.*, 1.49.*, 6.28.*, 0.00.*, 17.00.*', csv))
+        self.assertTrue(re.search('\n23.500.*, 4, NPC4, 21.61.*, 578.49.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 8.75.*', csv))
 
 
 if __name__ == "__main__":
