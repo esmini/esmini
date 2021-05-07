@@ -270,8 +270,15 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 			s_list.clear();
 			for (size_t l = 0; l < osiPoints.size(); l++)
 			{
-				// Locate position in list of s-values
+				// Fetch s-value of all osi points
 				s_list.push_back(osiPoints[l].s);
+			}
+			
+			// If last point on intermediate lanesection, 
+			// add a point sligthly behind in case number of lanes changes
+			if (j < road->GetNumberOfLaneSections() - 1)
+			{
+				s_list.insert(s_list.begin() + s_list.size() - 1, s_list.back() - SMALL_NUMBER);
 			}
 
 			// Then fill in from other lanes
@@ -295,7 +302,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 				for (size_t l=0; l<osiPoints.size(); l++)
 				{
 					// Locate position in list of s-values
-					while (osiPoints[l].s > s_list[s_index+1])
+					while (s_index < s_list.size() - 1 && osiPoints[l].s > s_list[s_index+1])
 					{
 						if (s_index < s_list.size() - 1)
 						{
