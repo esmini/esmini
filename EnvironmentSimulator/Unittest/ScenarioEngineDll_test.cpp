@@ -1004,6 +1004,56 @@ TEST(ReportObjectAcc, TestGetAndSet)
 	EXPECT_EQ(osi_gt->mutable_moving_object(0)->mutable_base()->mutable_acceleration()->y(), 1.0);
 	EXPECT_EQ(osi_gt->mutable_moving_object(0)->mutable_base()->mutable_acceleration()->z(), 8.0);
 
+	SE_ReportObjectAngularAcc(1, 0, 5, 4, 3);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	EXPECT_EQ(osi_gt->mutable_moving_object(1)->mutable_base()->mutable_orientation_acceleration()->yaw(), 5.0);
+	EXPECT_EQ(osi_gt->mutable_moving_object(1)->mutable_base()->mutable_orientation_acceleration()->pitch(), 4.0);
+	EXPECT_EQ(osi_gt->mutable_moving_object(1)->mutable_base()->mutable_orientation_acceleration()->roll(), 3.0);
+
+	SE_Close();
+}
+
+TEST(ReportObjectVel, TestGetAndSet)
+{
+	osi3::GroundTruth* osi_gt;
+
+	std::string scenario_file = "../../../resources/xosc/cut-in_simple.xosc";
+
+	EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+
+	int n_Objects = SE_GetNumberOfObjects();
+	EXPECT_EQ(n_Objects, 2);
+
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+
+	osi_gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
+
+	EXPECT_EQ(osi_gt->mutable_moving_object()->size(), 2);
+
+	double seconds = osi_gt->mutable_timestamp()->seconds() + 1E-9 * osi_gt->mutable_timestamp()->nanos();
+	EXPECT_DOUBLE_EQ(seconds, 0.001);
+
+	SE_ReportObjectVel(0, 0, 11, 12, 13);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	EXPECT_EQ(osi_gt->mutable_moving_object(0)->mutable_base()->mutable_velocity()->x(), 11.0);
+
+	SE_ReportObjectVel(0, 0, 21, 22, 23);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	EXPECT_EQ(osi_gt->mutable_moving_object(0)->mutable_base()->mutable_velocity()->x(), 21.0);
+	EXPECT_EQ(osi_gt->mutable_moving_object(0)->mutable_base()->mutable_velocity()->y(), 22.0);
+	EXPECT_EQ(osi_gt->mutable_moving_object(0)->mutable_base()->mutable_velocity()->z(), 23.0);
+
+	SE_ReportObjectAngularVel(1, 0, 25, 24, 23);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	EXPECT_EQ(osi_gt->mutable_moving_object(1)->mutable_base()->mutable_orientation_rate()->yaw(), 25.0);
+	EXPECT_EQ(osi_gt->mutable_moving_object(1)->mutable_base()->mutable_orientation_rate()->pitch(), 24.0);
+	EXPECT_EQ(osi_gt->mutable_moving_object(1)->mutable_base()->mutable_orientation_rate()->roll(), 23.0);
+
 	SE_Close();
 }
 

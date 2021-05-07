@@ -599,7 +599,11 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState* objectState)
 	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_pitch(objectState->state_.pos.GetP());
 	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_yaw(objectState->state_.pos.GetH());
 	obj_osi_internal.mobj->mutable_base()->mutable_orientation_rate()->set_yaw(objectState->state_.pos.GetHRate());
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation_rate()->set_pitch(objectState->state_.pos.GetPRate());
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation_rate()->set_roll(objectState->state_.pos.GetRRate());
 	obj_osi_internal.mobj->mutable_base()->mutable_orientation_acceleration()->set_yaw(objectState->state_.pos.GetHAcc());
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation_acceleration()->set_pitch(objectState->state_.pos.GetPAcc());
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation_acceleration()->set_roll(objectState->state_.pos.GetRAcc());
 
 	// Set OSI Moving Object Velocity
 	obj_osi_internal.mobj->mutable_base()->mutable_velocity()->set_x(objectState->state_.pos.GetVelX());
