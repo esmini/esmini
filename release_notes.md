@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2021-05-07 Version 2.8.1
+
+- Add some accessors to RMObject, e.g. GetType(), GetLength()... (issue #109)
+- Increase precision in csv files (created by dat2csv and dat2csv.py)
+- Bugfixes:
+  - Fix LaneChange issue over end-to-end/start-to-start road succession (PR #110)
+  - Update filename container size in dat2csv.py
+  - Fix wrong nurbs trajectory time interpolation
+  - Improve action timings (push interpolations one time step)
+  - Fix SE_ReportObject\* functions, prevent values getting overwritten
+- Some additional minor fixes
+
 ### 2021-04-29 Version 2.8.0
 
 - New feature in odrplot: Indicate road ID and direction
@@ -11,7 +23,6 @@
   NOTE: This change affects .dat file format - old recordings files will not play
   - If absolute path not found, test combinations using res_path argument
 - Added mandatory field maxAcceleration to the vehicle catalog
-
 
 ### 2021-04-26 Version 2.7.4
 
