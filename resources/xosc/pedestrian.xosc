@@ -202,7 +202,7 @@
                         <PrivateAction>
                            <LongitudinalAction>
                               <SpeedAction>
-                                 <SpeedActionDynamics dynamicsShape="linear" value="-5" dynamicsDimension="rate"/>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="-5.1" dynamicsDimension="rate"/>
                                  <SpeedActionTarget>
                                     <AbsoluteTargetSpeed value="0"/>
                                  </SpeedActionTarget>
