@@ -21,6 +21,12 @@ OpenSCENARIO 1.1 specifics (not complete)
         notEqualTo                           Yes (1.1)
     SynchronizeAction
         SteadyState                          Yes
+    Logical scenarios
+        ParameterValueDistribution           No
+        StochasticDistribution               No
+    Expressions                   
+        Arithmetic calculations              No
+        Logical expressions                  No
                      
 OpenSCENARIO                                 
 ParameterDeclaration                         Yes

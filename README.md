@@ -25,7 +25,7 @@ Repository: <https://github.com/esmini/esmini>
 
 Pre-built demo packages are available [here](https://github.com/esmini/esmini/releases/latest). Unzip, navigate to "esmini\run\esmini" and run any of the example scripts. See more info below under "Binaries and demos".
 
-esmini supports OpenSCENARIO v1.0 (from esmini v1.5) and v1.1 (from esmini v2.7). In order to run older versions (i.e. v0.9.1)  ASAM provides a transformation scheme (migration0_9_1to1_0.xslt, part of the OpenSCENARIO 1.0 release bundle) that can be used with tools for automatic migration of XML files.
+esmini supports OpenSCENARIO v1.1 (from esmini v2.7) and v1.0 (from esmini v1.5). In order to run older versions (i.e. v0.9.1) ASAM provides a transformation scheme (migration0_9_1to1_0.xslt, part of the OpenSCENARIO release bundle) that can be used with tools for automatic migration of XML files.
 
 Please note that the OpenSCENARIO [coverage](https://github.com/esmini/esmini/blob/master/osc_coverage.txt) is limited, which means that not all features of OpenSCENARIO are supported. The functionalty grows slow but steady, based on need and contributions.
 
@@ -64,13 +64,35 @@ If you get the "damaged file" message, please open a terminal in the folder wher
 If you want to build yourself, please find some instructions [here](https://github.com/esmini/esmini/blob/master/docs/BuildInstructions.md).
 
 ## Run esmini
-Either get the demo or build yourself. To run demos:
+Either get the demo or build yourself. To run demo scenarios:
 1. Navigate to run/esmini
 2. Run any of the provided batch-script examples (double click on or run from command line)
 
+Or launch esmini from command prompt. There are many options but a few typical examples, assuming current directory is esmini root folder:  
+
+* Just run a scenario:  
+```./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc```
+
+* Execute and record a scenario with fixed timesteps and no viewer:  
+```./bin/esmini --headless --fixed_timestep 0.01 --record sim.dat --osc ./resources/xosc/cut-in.xosc```
+
+* Replay a recorded scenario:  
+```./bin/replayer --window 60 60 800 400 --res_path ./resources --file sim.dat```
+
 Further info:
-* [Launch commands](https://github.com/esmini/esmini/blob/master/docs/commands.txt)
-* [Runtime control](https://github.com/esmini/esmini/blob/master/docs/readme.txt)
+* [esmini launch commands](https://github.com/esmini/esmini/blob/master/docs/commands.txt)
+* [esmini runtime control](https://github.com/esmini/esmini/blob/master/docs/readme.txt)
+* [replayer launch and key shortcut commands](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/replayer/readme.txt)
+
+## Run ASAM OpenSCENARIO examples
+
+With some limitations (see details [here](https://github.com/esmini/esmini/blob/master/osc_coverage.txt)) esmini can play the example scenarios provided with the ASAM OpenSCENARIO v1.1 release bundle.
+* Download the standard from ASAM [here](https://www.asam.net/standards/detail/openscenario/) (register and download is free of charge).
+* Extract to any folder.
+* Run the examples from command line in esmini root folder, for example:  
+```./bin/esmini --window 60 60 800 400 --osc ../../openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc```  
+  or with absolute path:  
+```./bin/esmini --window 60 60 800 400 --osc c:/stuff/openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc```
 
 ## esmini shared library
 The easiest way of integrating esmini in your custom application is to link the all inclusive shared library ScenarioEngineDLL. In spite of the name it's available also on Linux and Mac.
