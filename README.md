@@ -87,12 +87,14 @@ Further info:
 ## Run ASAM OpenSCENARIO examples
 
 With some limitations (see details [here](https://github.com/esmini/esmini/blob/master/osc_coverage.txt)) esmini can play the example scenarios provided with the ASAM OpenSCENARIO v1.1 release bundle.
+* If you don't have esmini already, download latest demo package for your platform from [here](https://github.com/esmini/esmini/releases/latest).
 * Download the standard from ASAM [here](https://www.asam.net/standards/detail/openscenario/) (register and download is free of charge).
 * Extract to any folder.
 * Run the examples from command line in esmini root folder, for example:  
 ```./bin/esmini --window 60 60 800 400 --osc ../../openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc```  
   or with absolute path:  
 ```./bin/esmini --window 60 60 800 400 --osc c:/stuff/openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc```
+
 
 ## esmini shared library
 The easiest way of integrating esmini in your custom application is to link the all inclusive shared library ScenarioEngineDLL. In spite of the name it's available also on Linux and Mac.
