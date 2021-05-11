@@ -126,22 +126,24 @@ namespace scenarioengine
 		void SetSemiMinorAxes(double axes)        { semiMinorAxis_ = axes;       }
 		void SetEntities(Entities* entities)      { entities_      = entities;   }
 		void SetNumberOfVehicles(int number)      { numberOfVehicles = number;   }
+		void Setvelocity(double velocity)         { velocity_ = velocity;        }
 
     private:
 
+        double velocity_;
 		Entities *entities_;
 		Object* centralObject_;
 		aabbTree::ptTree rTree;
-		//curveInfo circle_, ellipse_;
+		unsigned long numberOfVehicles;
 		std::vector<SpawnInfo> spawnedV;
 		roadmanager::OpenDrive* odrManager_;
 		double innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
-		int numberOfVehicles;
+		
 
 		void createRoadSegments(aabbTree::BBoxVec &vec);
 		void createEllipseSegments(aabbTree::BBoxVec &vec, double SMjA, double SMnA);
 		void spawn(Solutions sols, int replace, double simTime);
-		bool ensureDistance(roadmanager::Position pos, int lane);
+		inline bool ensureDistance(roadmanager::Position pos, int lane);
 		int despawn(double simTime);
 	};
 }

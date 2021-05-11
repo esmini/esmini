@@ -262,7 +262,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             if (!ensureDistance(pos, lane)) continue;
 
             Vehicle* vehicle;
-            vehicle = createVehicle(pos, (lane < 0 ? 0 : 1), lane, centralObject_->GetSpeed(), NULL, centralObject_->model_filepath_);
+            vehicle = createVehicle(pos, (lane < 0 ? 0 : 1), lane, velocity_, NULL, centralObject_->model_filepath_);
             int id          = entities_->addObject(vehicle);
             vehicle->name_  = std::to_string(id); 
             SpawnInfo sInfo = {
