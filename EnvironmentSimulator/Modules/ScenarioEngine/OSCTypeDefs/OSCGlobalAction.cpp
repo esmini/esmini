@@ -22,8 +22,10 @@ using namespace STGeometry;
 using aabbTree::BBoxVec;
 using aabbTree::ptTriangle;
 using aabbTree::ptBBox;
-using std::make_shared;
 using aabbTree::BBox;
+using aabbTree::makeTriangleAndBbx;
+using aabbTree::curve2triangles;
+using std::make_shared;
 using std::vector;
 
 #define USELESS_THRESHOLD 5 // Max check count before deleting uneffective vehicles
@@ -107,6 +109,7 @@ void SwarmTrafficAction::Start()
 {
     LOG("SwarmTrafficAction Start");
     printf("IR: %f, SMjA: %f, SMnA: %f, maxV: %i\n", innerRadius_, semiMajorAxis_, semiMinorAxis_, numberOfVehicles);
+    printf("Velocity: %f\n", velocity_);
     double x0, y0, x1, y1;
 
     midSMjA = (semiMajorAxis_ + innerRadius_) / 2.0;
@@ -223,27 +226,14 @@ void SwarmTrafficAction::createEllipseSegments(aabbTree::BBoxVec &vec, double SM
         paramEllipse(alpha , pos.GetX(), pos.GetY(), SMjA, SMnA, pos.GetH(), x0, y0);
         paramEllipse(da, pos.GetX(), pos.GetY(), SMjA, SMnA, pos.GetH(), x1, y1);
 
-        double dPx, dPy, theta0, theta1, r0x, r0y, r1x, r1y, s;
-        dPx = x1 - x0;
-        dPy = y1 - y0;
+        double theta0, theta1;
         theta0 = angleTangentEllipse(SMjA, SMnA, alpha, pos.GetH());
         theta1 = angleTangentEllipse(SMjA, SMnA, da, pos.GetH());
         
-        r0x = cos(theta0);
-        r0y = sin(theta0);
-        r1x = cos(theta1);
-        r1y = sin(theta1);
+        tangentIntersection(x0, y0, alpha, theta0, x1, y1, da, theta1, x2, y2);
 
-        s = (dPy * r1x - dPx * r1y) / (r1x * r0y - r0x * r1y);
-
-        x2 = x0 + s * r0x;
-        y2 = y0 + s * r0y;
-
-        ptTriangle triangle = make_shared<Triangle>();
-        triangle->a = Point(x0, y0);
-        triangle->b = Point(x1, y1);
-        triangle->c = Point(x2, y2);
-        vec.push_back(make_shared<BBox>(triangle));
+        ptBBox bbx = makeTriangleAndBbx(x0, y0, x1, y1, x2, y2);
+        vec.push_back(bbx);
         
         alpha = da;
     }
@@ -287,7 +277,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
     }
 }
 
-bool SwarmTrafficAction::ensureDistance(roadmanager::Position pos, int lane) 
+inline bool SwarmTrafficAction::ensureDistance(roadmanager::Position pos, int lane) 
 {
     for (SpawnInfo info: spawnedV) {
         if (info.lane == lane && info.roadID == pos.GetTrackId()) {
