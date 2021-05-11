@@ -199,16 +199,8 @@ void SwarmTrafficAction::createRoadSegments(BBoxVec &vec)
                     }
                     break;
                 }
-                case gm->GEOMETRY_TYPE_ARC: {
-                    break;
-                }
-                case gm->GEOMETRY_TYPE_SPIRAL: {
-                    break;
-                }
-                case gm->GEOMETRY_TYPE_POLY3: {
-                    break;
-                }
-                case gm->GEOMETRY_TYPE_PARAM_POLY3: {
+                default: {
+                    curve2triangles(gm, minSize_, M_PI/36, vec);
                     break;
                 }
             }

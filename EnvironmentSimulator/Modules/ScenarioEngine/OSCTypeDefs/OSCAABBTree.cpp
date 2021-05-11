@@ -318,31 +318,37 @@ void aabbTree::findPoints(vector<ptTriangle> const &triangles, EllipseInfo &eInf
     for (auto const tr : triangles) {
         if (tr->geometry()) {
             auto gm = tr->geometry();
-            /*switch (gm->GetType()) {
-                case gm->GEOMETRY_TYPE_UNKNOWN: {
-                    break;
-                }
-			    case gm->GEOMETRY_TYPE_LINE: {
-                    lineIntersect(*tr, eInfo, points);
-                    break;
-                }
-			    case gm->GEOMETRY_TYPE_ARC: {
-                    break;
-                }
-			    case gm->GEOMETRY_TYPE_SPIRAL: {
-                    clothoidIntersect(*tr, eInfo, points);
-                    break;
-                }
-			    case gm->GEOMETRY_TYPE_POLY3: {
-                    break;
-                }
-			    case gm->GEOMETRY_TYPE_PARAM_POLY3: {
-                    break;
-                }
-            }*/
             geometryIntersect(*tr, eInfo, points);
         } else 
             LOG("Warning: triangle without a geometry found");
+    }
+}
+
+void aabbTree::curve2triangles(Geometry *geometry, double segmSize, double maxAngle, BBoxVec &vec) {
+    double s0 = 0;
+    double length = geometry->GetLength();
+    double ds = min(segmSize, length);
+    while (s0 < length) {
+        double x0, y0, t0, x1, y1, t1, x2, y2;
+        int count = 0;
+        geometry->EvaluateDS(s0, &x0, &y0, &t0);
+
+        double s1 = min(s0 + ds, length);
+
+        s_1:
+        geometry->EvaluateDS(s1, &x1, &y1, &t1);
+        if (abs(t1 - t0) > maxAngle && count < 4) {
+            double dt = abs(t1 - t0) / (s1 - s0);
+            s1 = s0 + maxAngle / dt;
+            count++;
+            goto s_1;
+        }
+        
+        tangentIntersection(x0, y0, s0, t0, x1, y1, s1, t1, x2, y2);
+ 
+        ptBBox bbx = makeTriangleAndBbx(x0, y0, x1, y1, x2, y2, geometry, s0, s1);
+        vec.push_back(bbx);
+        s0 = s1;
     }
 }
 

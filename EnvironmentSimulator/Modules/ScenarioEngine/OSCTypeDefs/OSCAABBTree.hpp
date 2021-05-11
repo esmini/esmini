@@ -121,4 +121,6 @@ namespace aabbTree {
 
     void processCandidates(Candidates const &candidates, vector<ptTriangle> &solutions);
     void findPoints(vector<ptTriangle> const &triangles, EllipseInfo &eInfo, Solutions &points);
+    void curve2triangles(Geometry *geometry, double segmSize, double maxAngle, BBoxVec &vec);
+    ptBBox makeTriangleAndBbx(double x0, double y0, double x1, double y1, double x2, double y2, Geometry *gm = nullptr, double s0 = 0, double s1 = 0);
 }
