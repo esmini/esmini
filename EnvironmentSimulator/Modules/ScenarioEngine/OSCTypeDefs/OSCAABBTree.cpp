@@ -282,6 +282,25 @@ void Tree::intersect(Tree const &tree, Candidates &candidates) const {
     } 
 }
 
+
+/***********************
+ *  _   _ _   _ _      *
+ * | | | | |_(_) |___  *
+ * | | | | __| | / __| *
+ * | |_| | |_| | \__ \ *
+ *  \___/ \__|_|_|___/ *
+ ***********************/
+
+aabbTree::ptBBox aabbTree::makeTriangleAndBbx(double x0, double y0, double x1, double y1, double x2, double y2, Geometry *gm, double s0, double s1) {
+    ptTriangle triangle = make_shared<Triangle>(gm);
+    triangle->a = Point(x0, y0);
+    triangle->b = Point(x1, y1);
+    triangle->c = Point(x2, y2);
+    triangle->sI = s0;
+    triangle->sF = s1;
+    return make_shared<BBox>(triangle);
+}
+
 void aabbTree::processCandidates(Candidates const &candidates, vector<ptTriangle> &solutions) {
     for (auto const candidate : candidates) {
         ptTriangle const tr1 = candidate.bbox1->triangle();
