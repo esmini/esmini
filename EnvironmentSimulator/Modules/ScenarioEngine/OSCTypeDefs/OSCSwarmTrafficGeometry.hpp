@@ -29,6 +29,24 @@ namespace STGeometry {
 
     typedef std::function<double(double)> DDProc;
 
+    /**
+     * @brief It computer the left hand side in (x, y) of the ellipse equation in the form:
+     *
+     *   [(x - h)cos(A) + (y - k)sin(A)]²     [(x  - h)sin(A) - (y - k)cos(A)]²
+     *  ---------------------------------- + ---------------------------------- - 1 = 0
+     *                  a²                                   b²
+     * Ideally, it returns n = 0 when (x,y) is on the curve, n > 0 if teh point is outside
+     * the ellipse, n < 0 if the point is inside the ellipse.
+     * 
+     * @param h x coordinate of the center
+     * @param k y coordinate of the center
+     * @param A Angle of rotation of the ellipse
+     * @param SMjA Semi major axes
+     * @param SMnA Semi minor axes
+     * @param x
+     * @param y
+     * @returns double
+     */
     double inline ellipse(
         double h,
         double k,
@@ -44,6 +62,20 @@ namespace STGeometry {
         return pow(e1, 2) + pow(e2, 2) - 1;
     }
 
+    /**
+     * @brief It calculates the points of a parametrized ellipse in the form:
+     *   x = a cos(alpha) cos(theta) - b sin(alpha) sin(theta) + h
+     *   y = a cos(alpha) sin(theta) - b sin(alpha) cos(theta) + k
+     * 
+     * @param alpha Angle of parametrization [0;2pi]
+     * @param h Center of the ellipse
+     * @param k 
+     * @param SMjA Semi major axes
+     * @param SMnA Semi minor axes
+     * @param hdg rotation angle of the ellipse
+     * @param sx x-coordinate where the solution will be stored
+     * @param sy y-coordinate where the solution will be stored
+     */
     static inline void paramEllipse(
         double alpha, 
         double h, 
@@ -62,6 +94,16 @@ namespace STGeometry {
         sy = SMjA * cosAlpha * sinHdg + SMnA * sinAlpha * cosHdg + k;
     }
 
+
+    /**
+     * @brief It computes the angle of the tangent in the point of parametrization alpha
+     * 
+     * @param SMjA Semi major axes
+     * @param SMnA Semi minor axes
+     * @param alpha Angle of parametrization [0;2pi]
+     * @param hdg Angle of rotation of the ellipse
+     * @return double 
+     */
     static inline double angleTangentEllipse(double SMjA, double SMnA, double alpha, double hdg) {
         double cosAlpha = cos(alpha);
         double sinAlpha = sin(alpha);
@@ -69,6 +111,45 @@ namespace STGeometry {
         double sinHdg   = sin(hdg);
         return atan2((SMjA * sinAlpha * sinHdg - SMnA * cosAlpha * cosHdg),
                 (SMjA * sinAlpha * cosHdg + SMnA * cosAlpha * sinHdg));
+    }
+
+    /**
+     * @brief It computes the intersection point between two tangents. Used
+     * to construct the triangles for the AABB Tree algorithm
+     * 
+     * @param x0 
+     * @param y0 
+     * @param s0 
+     * @param t0 
+     * @param x1 
+     * @param y1 
+     * @param s1 
+     * @param t1 
+     * @param x2 
+     * @param y2 
+     */
+    static inline void 
+    tangentIntersection(
+        double x0, double y0, double s0, double t0, 
+        double x1, double y1, double s1, double t1, 
+        double &x2, double &y2
+    ) {
+        double dPx, dPy, r0x, r0y, r1x, r1y, s;
+        double oneDegree = M_PI / 180; 
+        
+        r0x = cos(t0);
+        r0y = sin(t0);
+        if (abs(t1 - t0) > oneDegree) {
+            r1x = cos(t1);
+            r1y = sin(t1);
+            dPx = x1 - x0;
+            dPy = y1 - y0;
+            s = (dPy * r1x - dPx * r1y) / (r1x * r0y - r0x * r1y);
+        } else 
+            s = s1 - s0;
+
+        x2 = x0 + s * r0x;
+        y2 = y0 + s * r0y;
     }
 
     /*
@@ -180,6 +261,9 @@ namespace STGeometry {
         return solsN;
     }
 
+    /*
+     * Checks whether the intersection points found belong to the segment of road
+     */
     static void checkRange(aabbTree::Triangle &triangle, Solutions &sols, size_t pos) {
         double xmin, ymin, xmax, ymax;
         xmin = triangle.a.x; 
@@ -284,10 +368,11 @@ namespace STGeometry {
         return sol.size() > last;
     }
 
-    /*
-     * Finds the zeros of a function 'f' given the guess 
+    /**
+     * @brief Finds the zeros of a function 'f' given the guess 
      * interval (a, b) and a tollerance 'delta'. The result
      * is saved in 'res' and the function returns true if a solution is found 
+     * 
      */
     static bool brent_zeros(double a, double b, double &res, double delta, DDProc f) {
         double fa, fb, fc, fs, c, d, s;
@@ -337,7 +422,16 @@ namespace STGeometry {
         return false;
     }
 
-    // Any check to see if the spiral is a line or a curve must be performed outside this routine
+    /**
+     * @brief It computes the intersection between a road geometry and the ellipse
+     * using numerical methods.
+     * 
+     * @param triangle Triangle containing the geometry info and segment
+     * @param eInfo Struct containing the info of the ellipse
+     * @param sol Vector on which the solutions will be stored
+     * @return true if a solution is found
+     * @return false if no solutions have been found
+     */
     static bool geometryIntersect(Triangle &triangle, EllipseInfo &eInfo, Solutions &sol) {
         double res;
         double h, k, A, SMjA, SMnA;
