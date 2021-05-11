@@ -453,7 +453,7 @@ namespace STGeometry {
         auto pos = sol.size();
         sol.push_back(aabbTree::Point(x,y, hdg));
         checkRange(triangle, sol, pos); // Maybe useless call
-        return !sol.empty();
+        return (sol.size() - pos) > 0;
     }
 
 }
