@@ -6738,11 +6738,11 @@ double Position::getRelativeDistance(double targetX, double targetY, double &x, 
 	return sign * sqrt((x * x) + (y * y));
 }
 
-void Position::CalcRoutePosition()
+int Position::CalcRoutePosition()
 {
 	if (route_ == 0)
 	{
-		return;
+		return -1;
 	}
 
 	// Loop over waypoints - look for current track ID and sum the distance (route s) up to current position
@@ -6753,7 +6753,7 @@ void Position::CalcRoutePosition()
 		if (direction == 0)
 		{
 			LOG("Unexpected lack of connection in route at waypoint %d", i);
-			return;
+			return -1;
 		}
 
 		if (i == 0)
@@ -6789,17 +6789,20 @@ void Position::CalcRoutePosition()
 				dist -= GetS();
 			}
 			s_route_ = dist;
-			break;
+			return 0;
 		}
 	}
+
+	// Failed to map current position to the current route
+	return -1;
 }
 
-void Position::SetRoute(Route *route)
+int Position::SetRoute(Route *route)
 {
 	route_ = route; 
 
 	// Also find out current position in terms of route position
-	CalcRoutePosition();
+	return CalcRoutePosition();
 }
 
 void Position::SetTrajectory(RMTrajectory* trajectory)

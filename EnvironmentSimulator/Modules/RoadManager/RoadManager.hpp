@@ -1390,8 +1390,8 @@ namespace roadmanager
 
 		void ReleaseRelation();
 
-		void SetRoute(Route *route);
-		void CalcRoutePosition();
+		int SetRoute(Route *route);
+		int CalcRoutePosition();
 		const roadmanager::Route* GetRoute() const { return route_; }
 		Route* GetRoute() { return route_; }
 		RMTrajectory* GetTrajectory() { return trajectory_; }
@@ -1409,7 +1409,7 @@ namespace roadmanager
 		Retrieve the S-value of the current route position. Note: This is the S along the
 		complete route, not the actual individual roads.
 		*/
-		double GetRouteS() { return s_; }
+		double GetRouteS() { return s_route_; }
 
 		/**
 		Move current position forward, or backwards, ds meters along the route
