@@ -32,6 +32,8 @@ Options:
       Show this help message
   --save_generated_model
       Save generated 3D model (n/a when a scenegraph is loaded)
+  --left_hand_traffic
+      Apply left hand traffic
       
 Additional options forwarded to OpenSceneGraph:
   --window <x y w h>

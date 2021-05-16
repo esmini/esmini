@@ -643,19 +643,18 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE || 
 			!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
 		{
-			// Adjustment movement to heading and road direction
-			if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)
-			{
-				// If pointing in other direction
-				steplen *= -1;
-			}
-
 			if (obj->pos_.GetRoute())
 			{
 				retvalue = obj->pos_.MoveRouteDS(steplen);
 			}
 			else
 			{
+				// Adjustment movement to heading and road direction
+				if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)
+				{
+					// If pointing in other direction
+					steplen *= -1;
+				}
 				retvalue = obj->pos_.MoveAlongS(steplen);
 			}
 			

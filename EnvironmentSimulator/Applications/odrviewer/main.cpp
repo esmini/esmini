@@ -48,6 +48,7 @@ static double density = DEFAULT_DENSITY;
 static double speed = DEFAULT_SPEED;
 static double global_speed_factor = 1.0;
 static int first_car_in_focus = -1;
+static bool left_hand_traffic = false;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
@@ -126,7 +127,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		{
 			openEnd.roadId = road->GetId();
 			openEnd.s = 0;
-			openEnd.side = -1;
+			openEnd.side = left_hand_traffic ? 1 : -1;
 			openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, -1);
 			if (openEnd.nLanes > 0)
 			{
@@ -138,7 +139,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		{
 			openEnd.roadId = road->GetId();
 			openEnd.s = road->GetLength();
-			openEnd.side = 1;
+			openEnd.side = left_hand_traffic ? -1 : 1;
 			openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, 1);
 			if (openEnd.nLanes > 0)
 			{
@@ -179,7 +180,14 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				car_->lane_id_init = lane->GetId();
 				car_->s_init = s;
 				car_->pos = new roadmanager::Position(odrManager->GetRoadByIdx(r)->GetId(), lane->GetId(), s, 0);
-				car_->pos->SetHeadingRelative(lane->GetId() < 0 ? 0 : M_PI);
+				if (left_hand_traffic)
+				{
+					car_->pos->SetHeadingRelative(lane->GetId() < 0 ? M_PI : 0);
+				}
+				else
+				{
+					car_->pos->SetHeadingRelative(lane->GetId() < 0 ? 0 : M_PI);
+				}
 				car_->heading_init = car_->pos->GetHRelative();
 
 				if ((car_->model = viewer->AddEntityModel(carModelsFiles_[carModelID], osg::Vec4(0.5, 0.5, 0.5, 1.0), 
@@ -237,6 +245,11 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 	double new_speed = car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor;
 	double ds = new_speed * dt; // right lane is < 0 in road dir;
 
+	if (left_hand_traffic)
+	{
+		ds *= -1;
+	}
+
 	if (car->pos->MoveAlongS(ds) != 0)
 	{
 		if (openEnds.size() == 0)
@@ -263,8 +276,16 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 			Lane *lane = road->GetDrivingLaneSideByIdx(oe->s, oe->side, laneIndex);
 
 			car->pos->SetLanePos(road->GetId(), lane->GetId(), oe->s, 0);
+
 			// Ensure car is oriented along lane driving direction
-			car->pos->SetHeadingRelative(SIGN(lane->GetId()) > 0 ? M_PI : 0.0);
+			if (left_hand_traffic)
+			{
+				car->pos->SetHeadingRelative(SIGN(lane->GetId()) > 0 ? 0.0 : M_PI);
+			}
+			else
+			{
+				car->pos->SetHeadingRelative(SIGN(lane->GetId()) > 0 ? M_PI : 0.0);
+			}
 		}
 	}
 
@@ -305,6 +326,7 @@ int main(int argc, char** argv)
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("help", "Show this help message");
 	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
+	opt.AddOption("left_hand_traffic", "Apply left hand traffic");
 
 	if (argc < 2 || opt.GetOptionSet("help"))
 	{
@@ -369,6 +391,12 @@ int main(int argc, char** argv)
 		global_speed_factor = strtod(opt.GetOptionArg("speed_factor"));
 	}
 	LOG("global speed factor: %.2f", global_speed_factor);
+
+	if (opt.GetOptionSet("left_hand_traffic"))
+	{
+		left_hand_traffic = true;
+		LOG("Left hand traffic");
+	}
 
 	roadmanager::Position *lane_pos = new roadmanager::Position();
 	roadmanager::Position *track_pos = new roadmanager::Position();

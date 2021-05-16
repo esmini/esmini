@@ -1645,9 +1645,15 @@ TEST(DistanceTest, CalcDistanceLong)
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
     EXPECT_NEAR(dist, 134.051729, 1e-5);
 
-    // No valid route is to be found (following directed connectivity in OpenDRIVE file)
+    // Route is found, but two lanes delta = 3.6 m
     pos0.SetLanePos(3, -1, 5.0, -0.25);
-    pos1.SetLanePos(16, -1, 1.0, 0.15);
+    pos1.SetLanePos(2, -1, 1.0, 0.15);
+    ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
+    EXPECT_NEAR(dist, 3.6, 1e-5);
+
+    // No valid route is to be found between connecting roads (following directed connectivity in OpenDRIVE file) 
+    pos0.SetLanePos(16, -1, 5.0, -0.25);
+    pos1.SetLanePos(8, -1, 1.0, 0.15);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), -1);
     EXPECT_NEAR(dist, LARGE_NUMBER, 1e-5);
 
