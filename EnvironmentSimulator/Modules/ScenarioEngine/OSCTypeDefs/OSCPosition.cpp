@@ -16,23 +16,23 @@ using namespace scenarioengine;
 
 OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, double p, double r) : OSCPosition(PositionType::WORLD)
 {
-	if (!isnan(z) || !isnan(p) || !isnan(r))
+	if (!std::isnan(z) || !std::isnan(p) || !std::isnan(r))
 	{
-		if (isnan(z) || isnan(p) || isnan(r))
+		if (std::isnan(z) || std::isnan(p) || std::isnan(r))
 		{
 			LOG("At least one of z, pitch (p) and roll (r) is set. Remaining will be set to zero.");
 		}
 
-		if (isnan(z)) z = 0.0;
-		if (isnan(p)) p = 0.0;
-		if (isnan(r)) r = 0.0;
-		if (isnan(h)) h = 0.0;
+		if (std::isnan(z)) z = 0.0;
+		if (std::isnan(p)) p = 0.0;
+		if (std::isnan(r)) r = 0.0;
+		if (std::isnan(h)) h = 0.0;
 
 		position_.SetInertiaPos(x, y, z, h, p, r);
 	}
 	else
 	{
-		if (isnan(h))
+		if (std::isnan(h))
 		{
 			h = 0.0;
 		}

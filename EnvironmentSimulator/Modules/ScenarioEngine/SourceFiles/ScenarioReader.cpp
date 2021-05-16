@@ -1127,7 +1127,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 			r = strtod(parameters.ReadAttribute(positionChild, "r", true));
 		}
 
-		if (isnan(x) || isnan(y))
+		if (std::isnan(x) || std::isnan(y))
 		{
 			LOG_AND_QUIT("Missing x or y attributes!\n");
 		}

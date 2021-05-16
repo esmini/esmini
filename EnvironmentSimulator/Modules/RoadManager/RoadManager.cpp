@@ -4246,7 +4246,7 @@ bool OpenDrive::CheckLaneOSIRequirement(std::vector<double> x0, std::vector<doub
 	
 	// Max distance can be "nan" when the lane is perfectly straigt and hence k = 0.
 	// In this case, it satisfies OSI_LANE_CALC_REQUIREMENT since it is a perfect line
-	if (max_distance < SE_Env::Inst().GetOSIMaxLateralDeviation() || isnan(max_distance))
+	if (max_distance < SE_Env::Inst().GetOSIMaxLateralDeviation() || std::isnan(max_distance))
 	{
 		return true;
 	}
