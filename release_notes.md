@@ -1,5 +1,16 @@
 ## esmini release notes
 
+### 2021-05-17 Version 2.8.2
+
+- Add first person "driver" view
+  - Activate by toggle view on 'k' (press a few times to reach driver view), or
+  - launch argument: ```--camera_mode driver```
+  - example script: [run/esmini/run_lane_change_crest_driver-view.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_lane_change_crest_driver-view.bat)
+- Add reverse junction links for left hand traffic (related issue [#114](https://github.com/esmini/esmini/issues/114))
+- Fix nan compile error (issue [#115](https://github.com/esmini/esmini/issues/115))
+- Add experimental Abs2Rel Controller
+- Some additional minor fixes
+
 ### 2021-05-07 Version 2.8.1
 
 - Add some accessors to RMObject, e.g. GetType(), GetLength()... (issue #109)
