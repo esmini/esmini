@@ -35,13 +35,21 @@ Controller* scenarioengine::InstantiateControllerRel2Abs(void* args)
 	return new ControllerRel2Abs(initArgs);
 }
 
-ControllerRel2Abs::ControllerRel2Abs(InitArgs* args) : ego_obj(-1), Controller(args)
+ControllerRel2Abs::ControllerRel2Abs(InitArgs* args) : pred_horizon(1), switching_threshold(1.8), Controller(args)
 {
 	// ControllerRel2Abs forced into additive mode - will only react on scenario actions
 	if (mode_ != Mode::MODE_ADDITIVE)
 	{
 		LOG("ControllerRel2Abs mode \"%s\" not applicable. Using additive mode instead.", Mode2Str(mode_).c_str());
 		mode_ = Controller::Mode::MODE_ADDITIVE;
+	}
+	if (args->properties->ValueExists("horizon"))
+	{
+		pred_horizon = strtod(args->properties->GetValueStr("horizon"));
+	}
+	if (args->properties->ValueExists("threshold"))
+	{
+		switching_threshold = strtod(args->properties->GetValueStr("threshold"));
 	}
 }
 
@@ -186,15 +194,31 @@ void ControllerRel2Abs::Step(double timeStep)
 
 				// Default controller - i.e. point mass model w. constant speed.
 				double v = object->GetSpeed();
+				double steplen = v * pred_timestep;
+				// Add or subtract stepsize according to curvature and offset, in order to keep constant speed
+				double curvature = object->pos_.GetCurvature();
+				double offset = object->pos_.GetT();
+				if (abs(curvature) > SMALL_NUMBER)
+				{
+					// Approximate delta length by sampling curvature in current position
+					steplen += steplen * curvature * offset;
+				}
+
 				if (!object->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))
 				{
 					if (object->pos_.GetRoute())
 					{
-						object->pos_.MoveRouteDS(v * pred_timestep);
+						object->pos_.MoveRouteDS(steplen);
 					}
 					else
 					{
-						object->pos_.MoveAlongS(v * pred_timestep);
+						// Adjustment movement to heading and road direction
+						if (GetAbsAngleDifference(object->pos_.GetH(), object->pos_.GetDrivingDirection()) > M_PI_2)
+						{
+							// If pointing in other direction
+							steplen *= -1;
+						}
+						object->pos_.MoveAlongS(steplen);
 					}
 				}
 
@@ -574,6 +598,9 @@ void ControllerRel2Abs::Activate(int domainMask)
 	prev_target_speed = 0;
 	switchNow = false;
 	csv_iter = 0;
+
+	pred_timestep = 0.1;
+	pred_nbr_timesteps = pred_horizon / pred_timestep;
 	Controller::Activate(domainMask);
 }
 
@@ -587,7 +614,7 @@ void ControllerRel2Abs::CopyPosition(Object* object, position_copy* obj_copy)
 {
 	roadmanager::Position* saved_pos = new roadmanager::Position();
 
-	*saved_pos = object->pos_;
+	*saved_pos = object->pos_;	//Copy object->pos_ into newly alloced mem. pointed at by saved_pos
 
 	double saved_speed = object->speed_;
 

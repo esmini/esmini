@@ -23,8 +23,14 @@
             </Properties>
 		</Controller>
 		<Controller name="controllerRel2Abs">
+			<ParameterDeclarations>
+                <ParameterDeclaration name="Horizon" parameterType="double" value="1.0" /> 
+				<ParameterDeclaration name="Threshold" parameterType="double" value="1.8" /> 
+            </ParameterDeclarations>  
             <Properties>
                 <Property name="esminiController" value="ControllerRel2Abs" />
+				<Property name="horizon" value="$Horizon" />
+				<Property name="threshold" value="$Threshold" />
             </Properties>
 		</Controller>
 		<Controller name="externalController">
