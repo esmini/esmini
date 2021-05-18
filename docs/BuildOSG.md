@@ -58,6 +58,11 @@ Solution found [here](https://github.com/openscenegraph/OpenSceneGraph/issues/92
 ## Build configuration
 To build OSG libraries for static linking in esmini, see following examples. All examples assumes you first have created a directory "build" directly under OSG root and moved into it.
 
+- Visual Studio default version (whatever is installed on your system)  
+`cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DCMAKE_INSTALL_PREFIX=../install -DACTUAL_3RDPARTY_DIR=../3rdParty_x64/x64`
+
+    If you have multiple Visual Studio SDK versions installed you can select with -G:
+
 - Visual Studio 15 (2017) / win64  
 `cmake -G "Visual Studio 15 Win64" ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DCMAKE_INSTALL_PREFIX=../install -DACTUAL_3RDPARTY_DIR=../3rdParty_x64/x64`
 
@@ -76,16 +81,20 @@ For debug info, add -DCMAKE_BUILD_TYPE=Debug
 > PIC (Position Independent Code) is needed for static linking
 
 ### Compile
+All examples assumes you're located in the "build" directory.
+
+Generic way using cmake:  
+`cmake --build . --target install --config Release`
+
+Specific ways using compiler toolkit:
 - Windows: `msbuild /m /property:Configuration=Release OpenSceneGraph.sln` followed by `msbuild INSTALL.vcxproj`
-- Linux/macOS: `make -j4` followed by `make install`
+- Linux/macOS: `make -j4 install`
 
-To build the complete set of OSG applications (e.g. osgview and osgconv) you need to build OSG libraries for dynamic linking. cmake examples for Windows:
+To build the complete set of OSG applications (e.g. osgview and osgconv) you need to build OSG libraries for dynamic linking. cmake examples for Visual Studio on Windows:
 
-- #### Visual Studio 16 (2019)
-`cmake -G "Visual Studio 16 2019" -A x64 ../ -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DBUILD_OSG_EXAMPLES=true`
-
-- #### Visual Studio 15 (2017)
-`cmake -G "Visual Studio 15 Win64" ../ -DCMAKE_INSTALL_PREFIX=../../install-dynamic -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DBUILD_OSG_EXAMPLES=true`
+`cmake ../ -DCMAKE_INSTALL_PREFIX=../install -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DBUILD_OSG_EXAMPLES=true`  
+and  
+`cmake --build . --target install --config Release`
 
 ## Make available to esmini
 - Copy (or move) the install folder (should be available in the build folder after previous step) into _esmini/externals/OpenSceneGraph_ and rename it to _v10_, _win32_, _winsdk71_, _mac_ or _linux_ respectively.
