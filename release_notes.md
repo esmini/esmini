@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2021-05-19 Version 2.8.3
+
+- Bugfix: Fix road model generator issue
+  - tesselation error could cause application crash or dark model
+  - the bug was introduced in 2.8.2, so avoid that release.
+ 
 ### 2021-05-17 Version 2.8.2
 
 - Add first person "driver" view
