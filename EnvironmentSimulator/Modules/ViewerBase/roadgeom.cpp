@@ -397,11 +397,13 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 						// vertex of left lane border
 						(*verticesLocal)[vidxLocal] = (*verticesAll)[(k - 1) * s_list.size() + l];  
 						(*texcoordsLocal)[vidxLocal] = (*texcoordsAll)[(k - 1) * s_list.size() + l]; 
-						(*indices)[vidxLocal] = vidxLocal++;
+						(*indices)[vidxLocal] = vidxLocal;
+						vidxLocal++;
 						// vertex of right
 						(*verticesLocal)[vidxLocal] = (*verticesAll)[k * s_list.size() + l];
 						(*texcoordsLocal)[vidxLocal] = (*texcoordsAll)[k * s_list.size() + l]; 
-						(*indices)[vidxLocal] = vidxLocal++; 
+						(*indices)[vidxLocal] = vidxLocal;
+						vidxLocal++;
 					}
 				}
 
