@@ -573,13 +573,8 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Step(double simTime, double dt)
-		{
-			(void)simTime;
-		}
-
 		void Start(double simTime, double dt);
-		void End();
+		void Step(double simTime, double dt);
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};

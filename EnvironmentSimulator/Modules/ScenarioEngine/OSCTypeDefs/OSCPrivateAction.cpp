@@ -71,11 +71,8 @@ void AssignRouteAction::Start(double simTime, double dt)
 	}
 }
 
-void AssignRouteAction::End()
+void AssignRouteAction::Step(double, double)
 {
-	// Disconnect route
-	object_->pos_.SetRoute(0);
-
 	OSCAction::End();
 }
 
@@ -829,7 +826,7 @@ void TeleportAction::Start(double simTime, double dt)
 
 void TeleportAction::Step(double, double)
 {
-	OSCAction::Stop();
+	OSCAction::End();
 }
 
 void TeleportAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
@@ -1320,7 +1317,7 @@ void VisibilityAction::Start(double simTime, double dt)
 
 void VisibilityAction::Step(double, double)
 {
-	OSCAction::Stop();
+	OSCAction::End();
 }
 
 void OverrideControlAction::Start(double simTime, double dt)
@@ -1334,7 +1331,7 @@ void OverrideControlAction::Start(double simTime, double dt)
 
 void OverrideControlAction::Step(double simTime, double dt)
 {
-	OSCAction::Stop();
+	OSCAction::End();
 }
 
 double OverrideControlAction::RangeCheckAndErrorLog(Object::OverrideType type, double valueCheck, double lowerLimit, double upperLimit, bool ifRound)
