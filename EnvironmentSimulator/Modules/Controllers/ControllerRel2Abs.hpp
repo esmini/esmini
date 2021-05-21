@@ -55,11 +55,12 @@ namespace scenarioengine
 		double timestamp;
 
 		// Presim parameters
-		double pred_horizon; // = 1; // 1 second 
-		double pred_timestep; // = 0.1; // (milliseconds) Midpoint between min and max, maybe change later
-		double pred_nbr_timesteps; // = pred_horizon / pred_timestep;
+		double pred_horizon;
+		double pred_timestep;
+		double pred_nbr_timesteps;
 		int action_whitelist[7] = { 0, 1, 2, 3, 4, 11, 12 };
-		double switching_threshold; // = 1.8; //1.5 m 
+		double switching_threshold_dist;
+		double switching_threshold_speed;
 
 		//CSV loggning
 		std::ofstream logData;

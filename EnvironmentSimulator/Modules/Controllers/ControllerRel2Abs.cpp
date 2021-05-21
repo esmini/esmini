@@ -35,7 +35,7 @@ Controller* scenarioengine::InstantiateControllerRel2Abs(void* args)
 	return new ControllerRel2Abs(initArgs);
 }
 
-ControllerRel2Abs::ControllerRel2Abs(InitArgs* args) : pred_horizon(1), switching_threshold(1.8), Controller(args)
+ControllerRel2Abs::ControllerRel2Abs(InitArgs* args) : pred_horizon(1), switching_threshold_dist(1.5), switching_threshold_speed(1.5), Controller(args)
 {
 	// ControllerRel2Abs forced into additive mode - will only react on scenario actions
 	if (mode_ != Mode::MODE_ADDITIVE)
@@ -47,9 +47,13 @@ ControllerRel2Abs::ControllerRel2Abs(InitArgs* args) : pred_horizon(1), switchin
 	{
 		pred_horizon = strtod(args->properties->GetValueStr("horizon"));
 	}
-	if (args->properties->ValueExists("threshold"))
+	if (args->properties->ValueExists("thresholdSpeed"))
 	{
-		switching_threshold = strtod(args->properties->GetValueStr("threshold"));
+		switching_threshold_speed = strtod(args->properties->GetValueStr("thresholdSpeed"));
+	}
+	if (args->properties->ValueExists("thresholdDist"))
+	{
+		switching_threshold_dist = strtod(args->properties->GetValueStr("thresholdDist"));
 	}
 }
 
@@ -105,251 +109,253 @@ void ControllerRel2Abs::Step(double timeStep)
 
 	// ----------------------- prediction & switching algorithm - start -----------------------
 
-	double currentSpeed_ = object_->GetSpeed();
+	if (!switchNow) {
+		double currentSpeed_ = object_->GetSpeed();
 
-	double currentTime = scenarioEngine_->getSimulationTime();
+		double currentTime = scenarioEngine_->getSimulationTime();
 
-	if (currentTime - timestamp > pred_horizon)
-	{
-		timestamp = currentTime;
-		csv_iter = 0;
-
-		// Clear data struct from previous data
-		data.time.clear();
-		data.posX.clear();
-		data.posY.clear();
-		data.speeds.clear();
-
-		actualData.time.clear();
-		actualData.posX.clear();
-		actualData.posY.clear();
-		actualData.speeds.clear();
-
-		std::vector<ControllerRel2Abs::position_copy*> positionsCopied;
-		// Copy positions, i.e. save original position and speed, keep object reference.
-		for (int i = 0; i < entities_->object_.size(); i++)
+		if (currentTime - timestamp > pred_horizon)
 		{
-			position_copy* obj_copy = new position_copy();
-			CopyPosition(entities_->object_[i],obj_copy);
-			positionsCopied.push_back(obj_copy);	//Add copy dirty bits?
-		}
+			timestamp = currentTime;
+			csv_iter = 0;
 
-		data.time.push_back(currentTime);
-		data.posX.push_back(object_->pos_.GetX());
-		data.posY.push_back(object_->pos_.GetY());
-		data.speeds.push_back(object_->GetSpeed());
+			// Clear data struct from previous data
+			data.time.clear();
+			data.posX.clear();
+			data.posY.clear();
+			data.speeds.clear();
 
-		//Vector of copies of all active private actions in scenario. Will in reality only contain private actions
-		std::vector<OSCAction*> activeActionsCopies;
-		for (int i = 0; i < entities_->object_.size(); i++)
-		{
-			std::vector<OSCPrivateAction*> actions = entities_->object_[i]->getPrivateActions();		//getActions creates the vector => it's not updated by SE (only event vector is)
-			std::vector<OSCPrivateAction*> activeActions;
+			actualData.time.clear();
+			actualData.posX.clear();
+			actualData.posY.clear();
+			actualData.speeds.clear();
 
-			//Add init actions as well
-			for (size_t j = 0; j < entities_->object_[i]->initActions_.size(); j++)
+			std::vector<ControllerRel2Abs::position_copy*> positionsCopied;
+			// Copy positions, i.e. save original position and speed, keep object reference.
+			for (int i = 0; i < entities_->object_.size(); i++)
 			{
-				actions.push_back(entities_->object_[i]->initActions_[j]);
+				position_copy* obj_copy = new position_copy();
+				CopyPosition(entities_->object_[i], obj_copy);
+				positionsCopied.push_back(obj_copy);	//Add copy dirty bits?
 			}
 
-			for (size_t j = 0; j < actions.size(); j++)
-			{
-				//OBS IsActive will return true if next state is running as well
-				if (actions[j]->IsActive())
-				{
-					activeActions.push_back(actions[j]);
-				}
-			}
-
-			for (int j = 0; j < activeActions.size(); j++)
-			{
-				OSCPrivateAction* action_copy = activeActions[j]->Copy();
-				action_copy->object_ = entities_->object_[i];
-				activeActionsCopies.push_back((OSCAction*)action_copy);
-			}
-		}
-
-		//Start all copied actions
-		for (int i = 0; i < activeActionsCopies.size(); i++) {
-			activeActionsCopies[i]->Start(currentTime, pred_timestep);
-		}
-
-		//Simulation loop
-		for (int i = 0; i < pred_nbr_timesteps; i++)
-		{
-			currentTime += pred_timestep;
 			data.time.push_back(currentTime);
+			data.posX.push_back(object_->pos_.GetX());
+			data.posY.push_back(object_->pos_.GetY());
+			data.speeds.push_back(object_->GetSpeed());
 
-			for (int j = 0; j < entities_->object_.size(); j++)
+			//Vector of copies of all active private actions in scenario. Will in reality only contain private actions
+			std::vector<OSCAction*> activeActionsCopies;
+			for (int i = 0; i < entities_->object_.size(); i++)
 			{
-				Object* object = entities_->object_[j];
-				for (int k = 0; k < activeActionsCopies.size(); k++)
+				std::vector<OSCPrivateAction*> actions = entities_->object_[i]->getPrivateActions();		//getActions creates the vector => it's not updated by SE (only event vector is)
+				std::vector<OSCPrivateAction*> activeActions;
+
+				//Add init actions as well
+				for (size_t j = 0; j < entities_->object_[i]->initActions_.size(); j++)
 				{
-					OSCPrivateAction* pa = (OSCPrivateAction*)activeActionsCopies[k];
-					if (pa->object_ == object)
+					actions.push_back(entities_->object_[i]->initActions_[j]);
+				}
+
+				for (size_t j = 0; j < actions.size(); j++)
+				{
+					//OBS IsActive will return true if next state is running as well
+					if (actions[j]->IsActive())
 					{
-						activeActionsCopies[k]->Step(currentTime, pred_timestep);
+						activeActions.push_back(actions[j]);
 					}
 				}
 
-				// Default controller - i.e. point mass model w. constant speed.
-				double v = object->GetSpeed();
-				double steplen = v * pred_timestep;
-				// Add or subtract stepsize according to curvature and offset, in order to keep constant speed
-				double curvature = object->pos_.GetCurvature();
-				double offset = object->pos_.GetT();
-				if (abs(curvature) > SMALL_NUMBER)
+				for (int j = 0; j < activeActions.size(); j++)
 				{
-					// Approximate delta length by sampling curvature in current position
-					steplen += steplen * curvature * offset;
-				}
-
-				if (!object->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))
-				{
-					if (object->pos_.GetRoute())
-					{
-						object->pos_.MoveRouteDS(steplen);
+					OSCPrivateAction* action_copy = activeActions[j]->Copy();
+					action_copy->object_ = entities_->object_[i];
+					if (std::find(std::begin(action_whitelist), std::end(action_whitelist), activeActions[j]->type_) != std::end(action_whitelist)) {
+						activeActionsCopies.push_back((OSCAction*)action_copy);
 					}
-					else
+				}
+			}
+
+			//Start all copied actions
+			for (int i = 0; i < activeActionsCopies.size(); i++) {
+				activeActionsCopies[i]->Start(currentTime, pred_timestep);
+			}
+
+			//Simulation loop
+			for (int i = 0; i < pred_nbr_timesteps; i++)
+			{
+				currentTime += pred_timestep;
+				data.time.push_back(currentTime);
+
+				for (int j = 0; j < entities_->object_.size(); j++)
+				{
+					Object* object = entities_->object_[j];
+					for (int k = 0; k < activeActionsCopies.size(); k++)
 					{
-						// Adjustment movement to heading and road direction
-						if (GetAbsAngleDifference(object->pos_.GetH(), object->pos_.GetDrivingDirection()) > M_PI_2)
+						OSCPrivateAction* pa = (OSCPrivateAction*)activeActionsCopies[k];
+						if (pa->object_ == object)
 						{
-							// If pointing in other direction
-							steplen *= -1;
+							activeActionsCopies[k]->Step(currentTime, pred_timestep);
 						}
-						object->pos_.MoveAlongS(steplen);
+					}
+
+					// Default controller - i.e. point mass model w. constant speed.
+					double v = object->GetSpeed();
+					double steplen = v * pred_timestep;
+					// Add or subtract stepsize according to curvature and offset, in order to keep constant speed
+					double curvature = object->pos_.GetCurvature();
+					double offset = object->pos_.GetT();
+					if (abs(curvature) > SMALL_NUMBER)
+					{
+						// Approximate delta length by sampling curvature in current position
+						steplen += steplen * curvature * offset;
+					}
+
+					if (!object->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))
+					{
+						if (object->pos_.GetRoute())
+						{
+							object->pos_.MoveRouteDS(steplen);
+						}
+						else
+						{
+							// Adjustment movement to heading and road direction
+							if (GetAbsAngleDifference(object->pos_.GetH(), object->pos_.GetDrivingDirection()) > M_PI_2)
+							{
+								// If pointing in other direction
+								steplen *= -1;
+							}
+							object->pos_.MoveAlongS(steplen);
+						}
+					}
+
+					//LOG("Object[%d] speed = %lf, y: %lf", object->id_, object->GetSpeed(), object->pos_.GetY());
+
+					object->ClearDirtyBits(
+						Object::DirtyBit::LATERAL |
+						Object::DirtyBit::LONGITUDINAL |
+						Object::DirtyBit::SPEED |
+						Object::DirtyBit::WHEEL_ANGLE |
+						Object::DirtyBit::WHEEL_ROTATION
+					);
+
+					if (object == object_)
+					{
+						double newX = object->pos_.GetX();
+						double newY = object->pos_.GetY();
+						// We leave out caculating the new heading for now 
+						data.posX.push_back(newX);
+						data.posY.push_back(newY);
+						data.speeds.push_back(v);
 					}
 				}
+			}
 
-				//LOG("Object[%d] speed = %lf, y: %lf", object->id_, object->GetSpeed(), object->pos_.GetY());
+			for (int i = 0; i < positionsCopied.size(); i++)
+			{
+				position_copy* cpy = positionsCopied[i];
+				cpy->object->pos_ = *cpy->pos;
+				cpy->object->speed_ = cpy->speed;
+				cpy->object->dirty_ = cpy->dirtyBits;
+				delete(positionsCopied[i]);
+			}
 
-				object->ClearDirtyBits(
-					Object::DirtyBit::LATERAL |
-					Object::DirtyBit::LONGITUDINAL |
-					Object::DirtyBit::SPEED |
-					Object::DirtyBit::WHEEL_ANGLE |
-					Object::DirtyBit::WHEEL_ROTATION
-				);
+			// Free memory allocated through Action.copy()
+			for (int i = 0; i < activeActionsCopies.size(); i++)
+			{
+				delete(activeActionsCopies[i]);
+			}
+		}
 
-				if (object == object_)
+		currentTime = scenarioEngine_->getSimulationTime();
+		actualData.time.push_back(currentTime);
+		actualData.posX.push_back(object_->pos_.GetX());
+		actualData.posY.push_back(object_->pos_.GetY());
+		actualData.speeds.push_back(currentSpeed_);
+
+		double x_act = actualData.posX.back();
+		double y_act = actualData.posY.back();
+		double v_act = actualData.speeds.back();
+		double t = actualData.time.back();
+
+		double t0;
+		double x_est;
+		double y_est;
+		double errorDist = 0;
+		double errorSpeed = 0;
+		double v_est = 0;
+
+		// Loop through data and find time closest to t (ideally do linear interpolation)
+		for (int i = 0; i < data.time.size(); i++)
+		{
+			double t1 = data.time.at(i);
+			if (t1 == t)
+			{
+				x_est = data.posX.at(i);
+				y_est = data.posY.at(i);
+				v_est = data.speeds.at(i);
+				errorDist = sqrt(pow((x_act - x_est), 2) + pow((y_act - y_est), 2));
+				errorSpeed = fabs(v_act - v_est);
+
+				if (errorDist > switching_threshold_dist || errorSpeed > switching_threshold_speed)
 				{
-					double newX = object->pos_.GetX();
-					double newY = object->pos_.GetY();
-					// We leave out caculating the new heading for now 
-					data.posX.push_back(newX);
-					data.posY.push_back(newY);
-					data.speeds.push_back(v);
+					switchNow = true;
+					LOG("Switch now, pos error = %lf, speed error = %lf", errorDist, errorSpeed);
 				}
+				break;
 			}
-		}
-
-		for (int i = 0; i < positionsCopied.size(); i++)
-		{
-			position_copy* cpy = positionsCopied[i];
-			cpy->object->pos_ = *cpy->pos;
-			cpy->object->speed_ = cpy->speed;
-			cpy->object->dirty_ = cpy->dirtyBits;
-			delete(positionsCopied[i]);
-		}
-
-		// Free memory allocated through Action.copy()
-		for (int i = 0; i < activeActionsCopies.size(); i++)
-		{
-			delete(activeActionsCopies[i]);
-		}
-	}
-
-	currentTime = scenarioEngine_->getSimulationTime();
-	actualData.time.push_back(currentTime);
-	actualData.posX.push_back(object_->pos_.GetX());
-	actualData.posY.push_back(object_->pos_.GetY());
-	actualData.speeds.push_back(currentSpeed_);
-
-	double x_act = actualData.posX.back();
-	double y_act = actualData.posY.back();
-	double v_act = actualData.speeds.back();
-	double t = actualData.time.back();
-
-	double t0;
-	double x_est;
-	double y_est;
-	double error = 0;
-	double errorSpeed = 0;
-	double v_est = 0;
-
-	// Loop through data and find time closest to t (ideally do linear interpolation)
-	for (int i = 0; i < data.time.size(); i++)
-	{
-		double t1 = data.time.at(i);
-		if (t1 == t)
-		{
-			x_est = data.posX.at(i);
-			y_est = data.posY.at(i);
-			v_est = data.speeds.at(i);
-			error = sqrt(pow((x_act - x_est), 2) + pow((y_act - y_est), 2));
-			errorSpeed = fabs(v_act - v_est);
-
-			if (error > switching_threshold || errorSpeed > 0.5)
+			else if (t1 > t)
 			{
+				t0 = data.time.at(i - 1);
+				x_est = ((data.posX.at(i) - data.posX.at(i - 1)) / (t1 - t0)) * (t - t0) + data.posX.at(i - 1);
+				y_est = ((data.posY.at(i) - data.posY.at(i - 1)) / (t1 - t0)) * (t - t0) + data.posY.at(i - 1);
+				v_est = ((data.speeds.at(i) - data.speeds.at(i - 1)) / (t1 - t0)) * (t - t0) + data.speeds.at(i - 1);
+				errorDist = sqrt(pow((x_act - x_est), 2) + pow((y_act - y_est), 2));
+				errorSpeed = fabs(v_act - v_est);
 
-				switchNow = true;
-
-				LOG("Switch now, pos error = %lf, speed error = %lf",error,errorSpeed);
+				if (errorDist > switching_threshold_dist || errorSpeed > switching_threshold_speed)
+				{
+					switchNow = true;
+					LOG("Switch now, pos error = %lf, speed error = %lf", errorDist, errorSpeed);
+				}
+				break;
 			}
-			break;
 		}
-		else if (t1 > t)
-		{
-			t0 = data.time.at(i - 1);
-			x_est = ((data.posX.at(i) - data.posX.at(i - 1)) / (t1 - t0)) * (t - t0) + data.posX.at(i - 1);
-			y_est = ((data.posY.at(i) - data.posY.at(i - 1)) / (t1 - t0)) * (t - t0) + data.posY.at(i - 1);
-			v_est = ((data.speeds.at(i) - data.speeds.at(i - 1)) / (t1 - t0)) * (t - t0) + data.speeds.at(i - 1);
-			error = sqrt(pow((x_act - x_est), 2) + pow((y_act - y_est), 2));
-			errorSpeed = fabs(v_act - v_est);
-
-			if (error > switching_threshold || errorSpeed > switching_threshold)
-			{
-				switchNow = true; 
-				LOG("Switch now, pos error = %lf, speed error = %lf", error, errorSpeed);
-			}
-			break;
-		}
-	}
 
 #ifdef CONTROLLER_REL2ABS_DEBUG
-	if (data.time.size() > 0) {
-		logData << currentTime << "," << error << "," << actualData.posX.back() << "," << data.time.at(csv_iter) << "," << data.posX.at(csv_iter) << "," << currentSpeed_ << "," << data.speeds.at(csv_iter) << "," << errorSpeed << ",\n";
-	}
-
-	csv_iter++;
-	if (csv_iter > data.time.size() - 1)
-	{
-		csv_iter = data.time.size() - 1;
-	}
-#endif
-	// ----------------------- prediction & switching algorithm - end -----------------------
-
-	std::vector<OSCPrivateAction*> actions = object_->getPrivateActions();		//getActions creates the vector => it's not updated by SE (only event vector is)
-	std::vector<OSCPrivateAction*> activeActions;
-
-	//Add init actions as well
-	for (size_t i = 0; i < object_->initActions_.size(); i++)
-	{
-		actions.push_back(object_->initActions_[i]);
-	}
-
-	for (size_t i = 0; i < actions.size(); i++)
-	{
-		//OBS IsActive will return true if next state is running as well
-		if (actions[i]->IsActive())
-		{
-			activeActions.push_back(actions[i]);
+		if (data.time.size() > 0) {
+			logData << currentTime << "," << errorDist << "," << actualData.posX.back() << "," << data.time.at(csv_iter) << "," << data.posX.at(csv_iter) << "," << currentSpeed_ << "," << data.speeds.at(csv_iter) << "," << errorSpeed << ",\n";
 		}
+
+		csv_iter++;
+		if (csv_iter > data.time.size() - 1)
+		{
+			csv_iter = data.time.size() - 1;
+		}
+#endif
 	}
+	// ----------------------- prediction & switching algorithm - end -----------------------
 
 	if (switchNow && mode_ != Controller::Mode::MODE_OVERRIDE)
 	{
+		std::vector<OSCPrivateAction*> actions = object_->getPrivateActions();		//getActions creates the vector => it's not updated by SE (only event vector is)
+		std::vector<OSCPrivateAction*> activeActions;
+
+		//Add init actions as well
+		for (size_t i = 0; i < object_->initActions_.size(); i++)
+		{
+			actions.push_back(object_->initActions_[i]);
+		}
+
+		for (size_t i = 0; i < actions.size(); i++)
+		{
+			//OBS IsActive will return true if next state is running as well
+			if (actions[i]->IsActive())
+			{
+				activeActions.push_back(actions[i]);
+			}
+		}
+
 		for (int i = 0; i < activeActions.size(); i++)
 		{
 			if (activeActions[i]->type_ == OSCPrivateAction::ActionType::LONG_SPEED)

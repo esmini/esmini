@@ -25,12 +25,14 @@
 		<Controller name="controllerRel2Abs">
 			<ParameterDeclarations>
                 <ParameterDeclaration name="Horizon" parameterType="double" value="1.0" /> 
-				<ParameterDeclaration name="Threshold" parameterType="double" value="1.8" /> 
+				<ParameterDeclaration name="ThresholdDist" parameterType="double" value="1.5" /> 
+				<ParameterDeclaration name="ThresholdSpeed" parameterType="double" value="1.5" /> 
             </ParameterDeclarations>  
             <Properties>
                 <Property name="esminiController" value="ControllerRel2Abs" />
 				<Property name="horizon" value="$Horizon" />
-				<Property name="threshold" value="$Threshold" />
+				<Property name="thresholdDist" value="$ThresholdDist" />
+				<Property name="thresholdSpeed" value="$ThresholdSpeed" />
             </Properties>
 		</Controller>
 		<Controller name="externalController">
