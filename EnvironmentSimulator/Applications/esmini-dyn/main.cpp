@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 		printf("Usage variant 1: %s <osc filename>\n", FileNameOf(argv[0]).c_str());
 		printf("Usage variant 2: %s --osc <filename> [additional arguments - see esmini documentation]\n", FileNameOf(argv[0]).c_str());
 	}
-	else if (argc == 2)
+	else if (argc == 2 && strncmp(argv[1], "--", 2))  // if single argument and not an option (starting with "--")
 	{
 		// Single argument assumed to be osc filename
 		filename = argv[1];

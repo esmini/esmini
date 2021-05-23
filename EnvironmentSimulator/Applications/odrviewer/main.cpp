@@ -313,7 +313,7 @@ int main(int argc, char** argv)
 	for (int i = 0; i < argc; i++) args.push_back(argv[i]);
 
 	// use an ArgumentParser object to manage the program arguments.
-	opt.AddOption("odr", "OpenDRIVE filename", "odr_filename");
+	opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
 	opt.AddOption("model", "3D Model filename", "model_filename");
 	opt.AddOption("density", "density (cars / 100 m)", "density");
 	opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor");
@@ -328,13 +328,14 @@ int main(int argc, char** argv)
 	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
 	opt.AddOption("left_hand_traffic", "Apply left hand traffic");
 
-	if (argc < 2 || opt.GetOptionSet("help"))
+	opt.ParseArgs(&argc, argv);
+
+	if (opt.GetOptionSet("help"))
 	{
 		opt.PrintUsage();
-		return -1;
+		viewer::Viewer::PrintUsage();
+		return 0;
 	}
-
-	opt.ParseArgs(&argc, argv);
 
 	std::string arg_str;
 
@@ -375,6 +376,7 @@ int main(int argc, char** argv)
 	{
 		printf("Missing required argument --odr\n");
 		opt.PrintUsage();
+		viewer::Viewer::PrintUsage();
 		return -1;
 	}
 

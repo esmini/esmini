@@ -1028,7 +1028,7 @@ void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::strin
 
 void SE_Options::PrintUsage()
 {
-	printf("\nUsage %s: [options]\n", app_name_.c_str());
+	printf("\nUsage: %s [options]\n", app_name_.c_str());
 	printf("Options: \n");
 	for (size_t i = 0; i < option_.size(); i++)
 	{
@@ -1093,7 +1093,7 @@ static void ShiftArgs(int *argc, char** argv, int start_i)
 
 void SE_Options::ParseArgs(int *argc, char* argv[])
 {
-	std::string app_name = argv[0];
+	app_name_ = FileNameWithoutExtOf(argv[0]);
 
 	for (size_t i = 0; i < *argc; i++)
 	{

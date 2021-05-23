@@ -56,9 +56,14 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
 #endif
 
-	if (Init() != 0)
+	int retval = Init();
+	if (retval == -1)
 	{
 		throw std::invalid_argument("Failed to initialize scenario player");
+	}
+	else if (retval == -2)
+	{
+		throw std::invalid_argument("Skipped initialize scenario player");
 	}
 }
 
@@ -630,41 +635,43 @@ int ScenarioPlayer::Init()
 	std::string arg_str;
 
 	// use an ArgumentParser object to manage the program arguments.
-	opt.AddOption("osc", "OpenSCENARIO filename - if path includes spaces, enclose with \"\" ", "filename");
-	opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
-	opt.AddOption("disable_controllers", "Disable controllers");
-	opt.AddOption("record", "Record position data into a file for later replay", "filename");
-	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
-	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
-	opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
-	opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
-	opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
-	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
-	opt.AddOption("osi_points", "Show OSI road pointss (toggle during simulation by press 'y') ");
-	opt.AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
-	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
+	opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
-	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
-	opt.AddOption("headless", "Run without viewer");
-	opt.AddOption("server", "Launch server to receive state of external Ego simulator");
-	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
-	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
-	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))", "mode");
-	opt.AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
-	opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (will be concatenated with filepath)", "path");
-	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
+	opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
+	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'k') ", "mode");
+	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
+	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
+	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
+	opt.AddOption("headless", "Run without viewer");
+	opt.AddOption("help", "Show this help message");
+	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
+	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
+	opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
+	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))", "mode");
+	opt.AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
+	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
+	opt.AddOption("osi_points", "Show OSI road pointss (toggle during simulation by press 'y') ");
+	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
+	opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (will be concatenated with filepath)", "path");
+	opt.AddOption("record", "Record position data into a file for later replay", "filename");
+	opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
 	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
-
-	if (argc_ < 3)
-	{
-		opt.PrintUsage();
-		return -1;
-	}
-
+	opt.AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
+	opt.AddOption("server", "Launch server to receive state of external Ego simulator");
+	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
+	opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
+	
 	exe_path_ = argv_[0];
 	opt.ParseArgs(&argc_, argv_);
+
+	if (opt.GetOptionSet("help"))
+	{
+		opt.PrintUsage();
+		viewer::Viewer::PrintUsage();
+		return -2;
+	}
 
 	if (opt.GetOptionSet("disable_stdout"))
 	{
@@ -756,12 +763,12 @@ int ScenarioPlayer::Init()
 		}
 		else
 		{
-			LOG("Missing OpenSCENARIO filename argument or XML string");
+			LOG("Error: Missing required OpenSCENARIO filename argument or XML string");
 			opt.PrintUsage();
+			viewer::Viewer::PrintUsage();
+
 			return -1;
 		}
-		
-		
 	}
 	catch (std::logic_error &e)
 	{

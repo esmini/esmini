@@ -1,65 +1,62 @@
-Usage : [options]
+Usage: esmini [options]
 Options:
   --osc <filename>
-      OpenSCENARIO filename - if path includes spaces, enclose with ""
-  --osc_str <string>
-      OpenSCENARIO XML string
-  --disable_controllers
-      Disable controllers
-  --record <filename>
-      Record position data into a file for later replay
-  --csv_logger <csv_filename>
-      Log data for each vehicle in ASCII csv format
-  --info_text <mode>
-      Show info text HUD ("on" (default), "off") (toggle during simulation by press 'i')
-  --trail_mode <mode>
-      Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both
-  --road_features <mode>
-      Show OpenDRIVE road features ("on", "off"  (default)) (toggle during simulation by press 'o')
-  --bounding_boxes
-      Show entities as bounding boxes (toggle modes on key ',')
-  --osi_lines
-      Show OSI road lines (toggle during simulation by press 'u')
-  --osi_points
-      Show OSI road pointss (toggle during simulation by press 'y')
-  --sensors
-      Show sensor frustums (toggle during simulation by press 'r')
-  --camera_mode <mode>
-      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver") (toggle during simulation by press 'k')
+      OpenSCENARIO filename (required) - if path includes spaces, enclose with ""
   --aa_mode <mode>
       Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)
-  --threads
-      Run viewer in a separate thread, parallel to scenario engine
-  --headless
-      Run without viewer
-  --server
-      Launch server to receive state of external Ego simulator
-  --fixed_timestep <timestep>
-      Run simulation decoupled from realtime, with specified timesteps
-  --osi_receiver_ip <IP address>
-      IP address where to send OSI UDP packages
-  --osi_file <mode>
-      save osi messages in file ("on", "off" (default))
-  --osi_freq <frequence>
-      relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps
-  --path <path>
-      Search path prefix for assets, e.g. OpenDRIVE files (will be concatenated with filepath)
-  --logfile_path <path>
-      logfile path/filename, e.g. "../esmini.log" (default: log.txt)
+  --bounding_boxes
+      Show entities as bounding boxes (toggle modes on key ',')
+  --camera_mode <mode>
+      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top") (toggle during simulation by press 'k')
+  --csv_logger <csv_filename>
+      Log data for each vehicle in ASCII csv format
+  --disable_controllers
+      Disable controllers
   --disable_log
       Prevent logfile from being created
   --disable_stdout
       Prevent messages to stdout
+  --fixed_timestep <timestep>
+      Run simulation decoupled from realtime, with specified timesteps
+  --headless
+      Run without viewer
+  --help
+      Show this help message
+  --info_text <mode>
+      Show info text HUD ("on" (default), "off") (toggle during simulation by press 'i')
+  --logfile_path <path>
+      logfile path/filename, e.g. "../esmini.log" (default: log.txt)
+  --osc_str <string>
+      OpenSCENARIO XML string
+  --osi_file <mode>
+      save osi messages in file ("on", "off" (default))
+  --osi_freq <frequence>
+      relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps
+  --osi_lines
+      Show OSI road lines (toggle during simulation by press 'u')
+  --osi_points
+      Show OSI road pointss (toggle during simulation by press 'y')
+  --osi_receiver_ip <IP address>
+      IP address where to send OSI UDP packages
+  --path <path>
+      Search path prefix for assets, e.g. OpenDRIVE files (will be concatenated with filepath)
+  --record <filename>
+      Record position data into a file for later replay
+  --road_features <mode>
+      Show OpenDRIVE road features ("on", "off"  (default)) (toggle during simulation by press 'o')
   --save_generated_model
       Save generated 3D model (n/a when a scenegraph is loaded)
+  --sensors
+      Show sensor frustums (toggle during simulation by press 'r')
+  --server
+      Launch server to receive state of external Ego simulator
+  --threads
+      Run viewer in a separate thread, parallel to scenario engine
+  --trail_mode <mode>
+      Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both
 
-The graphics engine (OpenSceneGraph) provides some additional options, here are a few useful ones: 
- 
-  --window <x y w h>
-      Set the position (x,y) and size (w,h) of the viewer window.
-  --screen <num>    
-      Set the screen to use when multiple screens are present.
-  --clear-color <color>
-      Set the background color of the viewer in the form
-  --borderless-window <x y w h>
-      Set the position (x,y) and size (w,h) of a borderless viewer window.
+Additional OSG graphics options:
+  --clear-color <color>         Set the background color of the viewer in the form "r,g,b[,a]"
+  --screen <num>                Set the screen to use when multiple screens are present
+  --window <x y w h>            Set the position (x,y) and size (w,h) of the viewer window
+  --borderless-window <x y w h> Set the position(x, y) and size(w, h) of a borderless viewer window

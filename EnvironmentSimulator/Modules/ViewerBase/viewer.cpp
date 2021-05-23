@@ -1150,6 +1150,17 @@ Viewer::~Viewer()
 	osgViewer_ = 0;
 }
 
+void Viewer::PrintUsage()
+{
+	// Inform about a few OSG options
+	printf("Additional OSG graphics options:\n");
+	printf("  --clear-color <color>         Set the background color of the viewer in the form \"r,g,b[,a]\"\n");
+	printf("  --screen <num>                Set the screen to use when multiple screens are present\n");
+	printf("  --window <x y w h>            Set the position (x,y) and size (w,h) of the viewer window\n");
+	printf("  --borderless-window <x y w h>	Set the position(x, y) and size(w, h) of a borderless viewer window\n");
+	printf("\n");
+}
+
 void Viewer::SetCameraMode(int mode)
 {
 	if (mode < 0 || mode >= osgGA::RubberbandManipulator::RB_NUM_MODES)

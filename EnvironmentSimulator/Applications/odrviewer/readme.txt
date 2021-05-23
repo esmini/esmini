@@ -4,10 +4,10 @@ Optionally it can populate the road lanes with randomized dummy vehicles, which 
 
 Application is launched from command line (or batch file). 
 
-Usage : [options]
+Usage: odrviewer [options]
 Options:
   --odr <odr_filename>
-      OpenDRIVE filename
+      OpenDRIVE filename (required)
   --model <model_filename>
       3D Model filename
   --density <density>
@@ -34,14 +34,12 @@ Options:
       Save generated 3D model (n/a when a scenegraph is loaded)
   --left_hand_traffic
       Apply left hand traffic
-      
-Additional options forwarded to OpenSceneGraph:
-  --window <x y w h>
-          Set the position (x,y) and size (w,h) of the viewer window.		
-  --screen <num>
-          Set the screen to use when multiple screens are present.
-  --clear-color <color>
-          Set the background color of the viewer in the form "r,g,b[,a]".		  
+
+Additional OSG graphics options:
+  --clear-color <color>         Set the background color of the viewer in the form "r,g,b[,a]"
+  --screen <num>                Set the screen to use when multiple screens are present
+  --window <x y w h>            Set the position (x,y) and size (w,h) of the viewer window
+  --borderless-window <x y w h> Set the position(x, y) and size(w, h) of a borderless viewer window
 
 Example 1 - View the ODR file and some random traffic on a 3D model, window mode 1000 x 500:
 
