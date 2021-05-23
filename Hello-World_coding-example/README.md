@@ -113,8 +113,8 @@ int main(int argc, char* argv[])
 
 	for (int i = 0; i < 500 && !(SE_GetQuitFlag() == 1); i++)
 	{
-		SE_Step();
 		SE_ReportObjectPos(0, 0.0f, 8.0f, (float)i, 0.0f, 1.57f, 0.0f, 0.0f, 15.0f);
+		SE_Step();
 	}
 
 	return 0;
