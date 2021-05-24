@@ -1,5 +1,3 @@
-# init:
-#   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 image:
 - Visual Studio 2017
@@ -170,6 +168,10 @@ for:
     artifacts:
       - path: esmini-*_mac_catalina.zip
         name: mac_catalina_artifacts
+        
+    # on_finish:
+      # - sh: export APPVEYOR_VNC_BLOCK=true
+      # - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-vnc.sh' | bash -e -        
 
   -
     matrix:
@@ -213,6 +215,8 @@ for:
             echo "Skip demos"
           }
 
+    # on_finish:
+    #   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
     test_script:
       - ps: |
@@ -262,5 +266,3 @@ for:
         - image: Visual Studio 2015
           platform: x86
 
-# on_finish:
-#   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
