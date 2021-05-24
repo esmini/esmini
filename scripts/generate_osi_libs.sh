@@ -15,12 +15,12 @@
 #
 # Usage: 
 # - put this script in an empty folder
-# - open Git Bash in that folder 
+# - open bash (e.g. Git Bash) in that folder 
 # - review and adjust system dependent parameters in section below
 # - run the script: ./generate_osi_libs.sh
 # - wait (the build process will take approx. 15 minutes depending on...)
 # 
-# The folder osi-visualizer/build/Release (or Debug) will contain everything needed
+# The osi_*.7z will contain both headers and needed libraries. (* depends on platform)
 # 
 #
 
@@ -40,7 +40,7 @@ if [ "$OSTYPE" == "msys" ]; then
 	# Visual Studio 2017 - default toolkit
 	# GENERATOR=("Visual Studio 15 2017 Win64")
 	# GENERATOR_ARGUMENTS="-T ${GENERATOR_TOOLSET}"
-elif [ "$OSTYPE" == "darwin"* ] || [ "$OSTYPE" == "linux-gnu"* ]; then
+elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
 	# Unix Makefiles (for Ubuntu and other Linux systems)
 	GENERATOR=("Unix Makefiles")
 	GENERATOR_ARGUMENTS=""
@@ -49,7 +49,8 @@ else
 fi
 
 
-PROTOBUF_VERSION=v3.11.4
+PROTOBUF_VERSION=v3.15.2
+OSI_VERSION=v3.3.1
 
 # ---------------------------------------------------------------------------------------
 # From this point no adjustments should be necessary, except fixing bugs in the script :)
@@ -57,6 +58,7 @@ PROTOBUF_VERSION=v3.11.4
 
 
 osi_root_dir=$(pwd)
+
 
 echo ------------------------ Installing zlib ------------------------------------
 cd $osi_root_dir
@@ -73,15 +75,15 @@ then
     cd build
 
 
-	if [ "$OSTYPE" == "linux-gnu"* ]; then
+	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 		cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug .. -DCMAKE_C_FLAGS="-fPIC" 
 		cmake --build . --target install
-		mv ../install/lib/zlib.a ../install/lib/zlibd.a
+		mv ../install/lib/libz.a ../install/lib/libzd.a
 
 		rm CMakeCache.txt
 		cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" 
 		cmake --build . --target install
-	elif [ "$OSTYPE" == "darwin"* ]; then
+	elif [[ "$OSTYPE" == "darwin"* ]]; then
 		cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" 
 		cmake --build . --target install
 	else
@@ -101,19 +103,18 @@ if [ ! -d protobuf ]
 then
     git clone https://github.com/protocolbuffers/protobuf.git
     cd protobuf
-    git checkout PROTOBUF_VERSION
+    git checkout $PROTOBUF_VERSION
     mkdir build-code; cd build-code
-    if [ "$OSTYPE" == "linux-gnu"* ] || [ "$OSTYPE" == "darwin"* ]; then
-        ZLIB_FILE_RELEASE=zlib.a
-		ZLIB_FILE_DEBUG=zlibd.a
-    elif [[ "$OSTYPE" == "msys" ]]; then
+    if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
+        ZLIB_FILE_RELEASE=libz.a
+		ZLIB_FILE_DEBUG=libzd.a
+    elif [ "$OSTYPE" == "msys" ]; then
         ZLIB_FILE_RELEASE=zlib.lib
 		ZLIB_FILE_DEBUG=zlibd.lib
     fi
 
-    if [ "$OSTYPE" != "darwin"* ]; then
+    if [[ "$OSTYPE" != "darwin"* ]]; then
         if [ "$OSTYPE" == "msys" ]; then
-            echo Kalle
             cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib-1.2.11/install/lib/$ZLIB_FILE_DEBUG -DZLIB_INCLUDE_DIR=../../zlib-1.2.11/install/include -DCMAKE_INSTALL_PREFIX=../protobuf-install -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Debug 
         else
             cmake ../cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DZLIB_LIBRARY=../../zlib-1.2.11/install/lib/$ZLIB_FILE_DEBUG -DZLIB_INCLUDE_DIR=../../zlib-1.2.11/install/include -DCMAKE_INSTALL_PREFIX=../protobuf-install -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fPIC" 
@@ -154,6 +155,7 @@ if [ ! -d open-simulation-interface ]
 then
     git clone https://github.com/OpenSimulationInterface/open-simulation-interface.git
     cd open-simulation-interface
+    git checkout $OSI_VERSION
     sh ./convert-to-proto3.sh
     mkdir build
     cd build
@@ -167,20 +169,18 @@ then
 
     export PATH=$PATH:../../graphviz/release/bin:../../protobuf/protobuf-install/bin
 
-    if [ "$OSTYPE" != "darwin"* ]; then
-        echo stop
+    if [[ "$OSTYPE" != "darwin"* ]]; then
         cmake .. -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_INCLUDE_PATH=../protobuf/protobuf-install/include -DFILTER_PROTO2CPP_PY_PATH=../../proto2cpp -DINSTALL_LIB_DIR=$INSTALL_OSI_LIB_DIR/lib -DINSTALL_INCLUDE_DIR=$INSTALL_OSI_LIB_DIR/include -DCMAKE_INSTALL_PREFIX=$INSTALL_OSI_LIB_DIR -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_LIBRARY_PATH=../protobuf/protobuf-install/lib .. 
 
         # First bild OSI submodule separately since we need to rename the library before linking with the application
         cmake --build . --config Debug --target install
 
-       if [ "$OSTYPE" == "linux-gnu"* ]; then
+       if [[ "$OSTYPE" == "linux-gnu"* ]]; then
    	    cp $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface.so $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interfaced.so
 	    mv $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_pic.a $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_picd.a
 	    mv $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_static.a $INSTALL_OSI_LIB_DIR/lib/osi3/libopen_simulation_interface_staticd.a
 	    touch $INSTALL_OSI_LIB_DIR/lib/osi3/kalle.txt
        elif [ "$OSTYPE" == "msys" ]; then 
-            echo stop2
             mv $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface.dll $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interfaced.dll 
     	    mv $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_pic.lib $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_picd.lib 
             mv $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_static.lib $INSTALL_OSI_LIB_DIR/lib/osi3/open_simulation_interface_staticd.lib
@@ -193,11 +193,41 @@ then
 
     cmake --build . --config Release --target install --clean-first
 
+    cd $osi_root_dir
+
 else
     echo open-simulation-interface folder already exists, continue with next step...
 fi
 
+echo ------------------------ Pack ------------------------------------
+
+if [ "$OSTYPE" == "msys" ]; then
+    target_dir="v10"
+    zfilename="osi_v10.7z"
+    z_exe="/c/Program Files/7-Zip/7z.exe"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    target_dir="linux"
+    zfilename="osi_linux.7z"
+    z_exe=7z
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    target_dir="mac"
+    zfilename="osi_mac.7z"
+    z_exe=7z
+else
+	echo Unknown OSTYPE: $OSTYPE
+fi
+
+mkdir $target_dir
+mkdir $target_dir/include
+mkdir $target_dir/lib
+cp open-simulation-interface/install/osi-lib/include/osi3/* $target_dir/include
+cp open-simulation-interface/install/osi-lib/lib/osi3/*open_simulation_interface_pic*.* $target_dir/lib
+cp -r protobuf/protobuf-install/include/google $target_dir/include
+cp protobuf/protobuf-install/lib/libprotobuf*.* $target_dir/lib
+rm $target_dir/lib/libprotobuf-lite*
+
+"$z_exe" a -r $zfilename -m0=LZMA -bb1 -spf $target_dir/*
+# unpack with: 7z x <filename>
+
 echo ------------------------ Done ------------------------------------
 cd $osi_root_dir
-
-

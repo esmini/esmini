@@ -21,7 +21,7 @@
 # - run the script: ./generate_sumo_libs.sh
 # - wait (the build process will take approx. 15 minutes depending on...)
 # 
-# The folder osi-visualizer/build/Release (or Debug) will contain everything needed
+# The folder esmini/externals/sumo will contain everything needed
 #
 # More info at: https://sumo.dlr.de/docs/Installing/Windows_Build.html
 # 
