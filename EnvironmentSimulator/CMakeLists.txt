@@ -100,8 +100,6 @@ link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} ${GTEST_LIBRARIES_P
 if(APPLE)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
 
-  SET( "-framework OpenGL -framework Cocoa")
-  
   set ( OSG_LIBRARIES
 	
     osgdb_serializers_osgsim
@@ -161,6 +159,7 @@ if(APPLE)
     optimized microsim_cfmodels debug microsim_cfmodelsd
     optimized zlibstatic debug zlibstaticd
     optimized xerces-c_3 debug xerces-c_3D
+    "-framework CoreServices"
   )
 
 elseif(UNIX)

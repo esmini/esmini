@@ -11,7 +11,10 @@ platform:
 - x64
 
 cache:
+#- externals/googletest
 #- externals/OpenSceneGraph
+#- externals/OSI
+#- externals/SUMO
 #- resources/models
     
 skip_commits:
@@ -50,19 +53,44 @@ for:
           
     build_script:
       - sh: >-
-          ./create_ubuntu_gcc_project.sh
-          
+          # Normal (Release config with OSG)
+
+          mkdir build
+
           cd build
-          
-          make -j4 install
-          
-          cd ../build-debug
-          
-          make -j4
-          
+
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+
+          cmake --build . -j --config Release --target install
+
+          cd ..
+
+          # No OSG
+
+          mkdir build-no-osg
+
+          cd build-no-osg
+
+          cmake .. -D USE_OSG=false -DCMAKE_BUILD_TYPE=Release
+
+          cmake --build . -j --config Release
+
+          cd ..
+
+          # Debug
+
+          mkdir build-debug
+
+          cd build-debug
+
+          cmake .. -D USE_OSG=true -DCMAKE_BUILD_TYPE=Debug
+
+          cmake --build . -j --config Debug
+
+          cd ..
+
     after_build:
       - sh: >-
-          cd ..
           
           if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#skip_bins* ]]; 
           then 
@@ -124,6 +152,8 @@ for:
     build_script:
       - echo MacOS Catalina build script
       - sh: >-
+          # Normal build for release
+
           chmod +x create_xcode_project.sh
           
           ./create_xcode_project.sh
@@ -132,8 +162,25 @@ for:
           
           xcodebuild -scheme install -configuration Release build
 
+          cd ..
+
+      - sh: >-
+          # Also verify build Without OSG
+
+          mkdir build-no-osg
+
+          cd build-no-osg
+
+          cmake .. -D USE_OSG=false
+
+          cmake --build . -j --config Release
+
+          cd ..
+
     after_build:
       - sh: >-
+          cd build    
+
           lipo -create EnvironmentSimulator/Libraries/esminiRMLib/Release/libesminiRMLib.dylib -output ../bin/esminiRMLib.bundle
           
           lipo -create EnvironmentSimulator/Libraries/esminiLib/Release/libesminiLib.dylib -output ../bin/esminiLib.bundle
@@ -148,6 +195,7 @@ for:
           fi
           
           chmod -R +x ./run/*
+
           chmod -R +x ./scripts/*
 
           ./generate_binary_dist.sh
@@ -185,15 +233,25 @@ for:
           
           cd build
           
-          cmake.exe -G "Visual Studio 15 Win64" -D USE_OSG=True ..
+          cmake -G "Visual Studio 15 Win64" -D USE_OSG=true ..
           
-      - cmd: 
-
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
 
           cd..
 
           generate_binary_dist.bat
+
+          echo Also verify build without OSG
+
+          mkdir build-no-osg
+
+          cd build-no-osg
+
+          cmake -G "Visual Studio 15 Win64" -D USE_OSG=false .. 
+
+          cmake --build . -j --config Release 
+
+          cd..
 
     after_build:
       - ps: |
