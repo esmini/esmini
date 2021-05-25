@@ -108,8 +108,10 @@ In addition to internal API ([example](https://github.com/esmini/esmini/tree/mas
   Hello World tutorial includes an [example of how to fetch OSI groundtruth](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example#OSI-groundtruth).
 
   Current versions used by esmini:  
-   - OSI version: v3.2.0  
-   - Google Protobuf version: v3.11.4
+   - OSI version: v3.3.1 
+   - Google Protobuf version: v3.15.2
+ 
+  Script that compiles OSI for Win/Linux/Mac available [here](https://github.com/esmini/esmini/blob/master/scripts/generate_osi_libs.sh). Run in bash, also on Windows, e.g. GIT bash.
 
 ### Unity support
 esmini shared library works fine also in Unity (Win, Linux, Mac). A simple example can be downloaded from [here](https://www.dropbox.com/s/sj53hz0zesxa681/esmini-player.unitypackage?dl=0). The package contains everything needed to get going:
