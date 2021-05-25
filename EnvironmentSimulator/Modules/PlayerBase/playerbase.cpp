@@ -669,7 +669,9 @@ int ScenarioPlayer::Init()
 	if (opt.GetOptionSet("help"))
 	{
 		opt.PrintUsage();
+#ifdef _SCENARIO_VIEWER
 		viewer::Viewer::PrintUsage();
+#endif
 		return -2;
 	}
 
@@ -765,8 +767,9 @@ int ScenarioPlayer::Init()
 		{
 			LOG("Error: Missing required OpenSCENARIO filename argument or XML string");
 			opt.PrintUsage();
+#ifdef _SCENARIO_VIEWER
 			viewer::Viewer::PrintUsage();
-
+#endif
 			return -1;
 		}
 	}
