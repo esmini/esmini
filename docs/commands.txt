@@ -60,3 +60,6 @@ Additional OSG graphics options:
   --screen <num>                Set the screen to use when multiple screens are present
   --window <x y w h>            Set the position (x,y) and size (w,h) of the viewer window
   --borderless-window <x y w h> Set the position(x, y) and size(w, h) of a borderless viewer window
+
+For a complete list of OSG options and environment variables, see here:
+https://github.com/esmini/esmini/blob/master/docs/osg_options_and_env_variables.txt

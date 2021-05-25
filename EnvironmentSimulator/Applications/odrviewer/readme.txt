@@ -40,21 +40,22 @@ Additional OSG graphics options:
   --screen <num>                Set the screen to use when multiple screens are present
   --window <x y w h>            Set the position (x,y) and size (w,h) of the viewer window
   --borderless-window <x y w h> Set the position(x, y) and size(w, h) of a borderless viewer window
+  
+For a complete list of OSG options and environment variables, see here:
+https://github.com/esmini/esmini/blob/master/docs/osg_options_and_env_variables.txt  
 
-Example 1 - View the ODR file and some random traffic on a 3D model, window mode 1000 x 500:
+Examples:
 
+1. View the ODR file and some random traffic on a 3D model, window mode 1000 x 500:
    odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --window 60 60 1000 500
 
-Example 2 - just ODR, fullscreen
-
+2. Just ODR, fullscreen
    odrviewer --odr xodr\e6mini.xodr
 
-Example 3 - remove traffic
-
+3. Remove traffic
    odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0 --window 60 60 1000 500
 
-Example 4 - sparse traffic (about 0.5 vehicle per 100 meter = 1 per 200 m)
-
+4. Sparse traffic (about 0.5 vehicle per 100 meter = 1 per 200 m)
    odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0.5 --window 60 60 1000 500
 
 
