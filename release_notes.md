@@ -1,5 +1,12 @@
 ## esmini release notes
 
+### 2021-05-26 Version 2.8.4
+
+- Updated OSI and Protobuf versions (v3.3.1 / v3.15.2)
+- End AssignRouteAction immediately according to standard
+- Add useful OSG options to [help](https://github.com/esmini/esmini/blob/master/docs/commands.txt) (issue [#119](https://github.com/esmini/esmini/issues/119))
+- Some additional minor fixes
+
 ### 2021-05-19 Version 2.8.3
 
 - Bugfix: Fix road model generator issue
