@@ -619,10 +619,12 @@ void LongSpeedAction::Step(double simTime, double)
 		// Assume user want to reach target speed, ignore sign of rate
 		new_speed = start_speed_ + SIGN(target_->GetValue() - start_speed_) * fabs(transition_dynamics_.target_value_) * elapsed_;
 
-		// Check if speed changed passed target value
-		if (fabs(object_->speed_ - target_->GetValue()) < SMALL_NUMBER ||
-			(object_->speed_ > target_->GetValue() && new_speed < target_->GetValue()) ||
-			(object_->speed_ < target_->GetValue() && new_speed > target_->GetValue()))
+		// Check if target value reached
+		if (fabs(object_->speed_ - target_->GetValue()) < SMALL_NUMBER || // Speed is very close to target value
+			// Are we getting passed the target value?
+			(SIGN(object_->speed_ - target_->GetValue()) != SIGN(new_speed - target_->GetValue())) ||
+			// Already passed target value (perhaps due to strange initial conditions)?
+			(SIGN(target_->GetValue() - start_speed_) != SIGN(target_->GetValue() - object_->speed_)))
 		{
 			new_speed = target_->GetValue();
 			target_speed_reached = true;
