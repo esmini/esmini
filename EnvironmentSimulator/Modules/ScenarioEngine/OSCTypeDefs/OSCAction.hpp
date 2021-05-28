@@ -187,6 +187,7 @@ namespace scenarioengine
 		BaseType base_type_;
 
 		OSCAction(BaseType type) : base_type_(type), StoryBoardElement(StoryBoardElement::ElementType::ACTION) {}
+		virtual ~OSCAction() {}
 
 		std::string basetype2str(BaseType type);
 

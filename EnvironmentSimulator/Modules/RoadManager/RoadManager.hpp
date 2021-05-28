@@ -795,6 +795,7 @@ namespace roadmanager
 	public:
 		virtual void GetPos(double& x, double& y, double& z) = 0;
 		virtual double GetHeight() = 0;
+		virtual ~OutlineCorner() {}
 	};
 
 	class OutlineCornerRoad : public OutlineCorner

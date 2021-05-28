@@ -118,6 +118,7 @@ namespace scenarioengine
 			double value_;
 
 			Target(TargetType type) : type_(type), value_(0) {}
+			virtual ~Target() {}
 			virtual double GetValue() = 0;
 		};
 
