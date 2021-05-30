@@ -15,7 +15,8 @@ resources/xosc/lane_change.xosc \
 resources/xosc/highway_merge.xosc \
 resources/xosc/highway_merge_advanced.xosc \
 resources/xosc/distance_test.xosc \
-resources/xosc/left-hand-traffic_internal.xosc \
+resources/xosc/left-hand-traffic_by_heading.xosc \
+resources/xosc/left-hand-traffic_using_road_rule.xosc \
 resources/xosc/ltap-od.xosc \
 resources/xosc/synchronize.xosc \
 resources/xosc/parking_lot.xosc \
@@ -34,6 +35,7 @@ resources/xosc/Catalogs/Controllers/*.* \
 resources/xosc/Catalogs/Pedestrians/*.* \
 resources/xodr/soderleden.xodr \
 resources/xodr/e6mini.xodr \
+resources/xodr/e6mini-lht.xodr \
 resources/xodr/fabriksgatan.xodr \
 resources/xodr/jolengatan.xodr \
 resources/xodr/straight_500m.xodr \
@@ -75,7 +77,7 @@ run/esmini/run_cut-in_interactive.* \
 run/esmini/run_cut-in_sumo.* \
 run/esmini/run_lane_change.* \
 run/esmini/run_lane_change_simple.* \
-run/esmini/run_left-hand-traffic_internal.* \
+run/esmini/run_left-hand-traffic.* \
 run/esmini/run_dist_test.* \
 run/esmini/run_synchronize.* \
 run/esmini/run_synchronize_interactive.* \

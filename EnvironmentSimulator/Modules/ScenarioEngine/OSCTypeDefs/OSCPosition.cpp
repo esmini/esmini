@@ -50,18 +50,18 @@ OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset
 
 	if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE)
 	{
-		// Adjust heading to road direction 
-		if (position_.GetLaneId() < 0)
-		{
-			position_.SetHeadingRelative(orientation.h_);
-			position_.SetPitchRelative(orientation.p_);
-			position_.SetRollRelative(orientation.r_);
-		}
-		else
+		// Adjust heading to road direction also considering traffic rule (left/right hand traffic)
+		if (position_.GetDrivingDirectionRelativeRoad() < 0)
 		{
 			position_.SetHeadingRelative(GetAngleSum(M_PI, orientation.h_));
 			position_.SetPitchRelative(-orientation.p_);
 			position_.SetRollRelative(-orientation.r_);
+		}
+		else
+		{
+			position_.SetHeadingRelative(orientation.h_);
+			position_.SetPitchRelative(orientation.p_);
+			position_.SetRollRelative(orientation.r_);
 		}
 	}
 	else if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE)
@@ -77,6 +77,11 @@ OSCPositionLane::OSCPositionLane(int roadId, int laneId, double s, double offset
 OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation orientation) :
 	OSCPosition(PositionType::ROAD)
 {
+	if (position_.GetRoadById(roadId) == nullptr)
+	{
+		LOG_AND_QUIT("Reffered road ID %d not available in road network", roadId);
+	}
+
 	position_.SetOrientationType(orientation.type_);
 
 	position_.SetTrackPos(roadId, s, t);
@@ -84,7 +89,7 @@ OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation 
 	if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE)
 	{
 		// Adjust heading to road direction 
-		if (position_.GetLaneId() < 0)
+		if (position_.GetLaneId() < 0 || position_.GetRoadById(roadId)->GetRule() == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC)
 		{
 			position_.SetHeadingRelative(orientation.h_);
 		}

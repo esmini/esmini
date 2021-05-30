@@ -86,6 +86,51 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n23.500.*, 3, NPC3, 23.67.*, 556.91.*, -0.84.*, 1.49.*, 6.28.*, 0.00.*, 17.00.*', csv))
         self.assertTrue(re.search('\n23.500.*, 4, NPC4, 21.61.*, 578.49.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 8.75.*', csv))
 
+    def test_left_hand_by_heading(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/left-hand-traffic_by_heading.xosc'), COMMON_ARGS \
+            + '--disable_controllers')
+        
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading left-hand-traffic_by_heading.xosc', log))
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n3.67.* Lane change == true, rel_dist: 10.03 > 10.00, edge: Rising', log))
+        self.assertTrue(re.search('\n5.67.* Lane change complete after 1 execution', log))
+        self.assertTrue(re.search('\n9.69.* QuitCondition timer expired at 4.01 seconds', log))
+        self.assertTrue(re.search('\n9.69.* All acts are done, quit now', log))
+        
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        self.assertTrue(re.search('\n2.500.*, 0, Ego, -7.54.*, 115.02.*, -0.17.*, 1.56.*, 0.002.*, 0.00.*, 30.00.*', csv))
+        self.assertTrue(re.search('\n2.500.*, 1, OverTaker, -3.97.*, 115.01.*, -0.17.*, 1.56.*, 0.002.*, 0.00.*, 42.00.*', csv))
+        self.assertTrue(re.search('\n4.380.*, 0, Ego, -7.19.*, 171.42.*, -0.29.*, 1.56.*, 0.002.*, 0.00.*, 30.00.*', csv))
+        self.assertTrue(re.search('\n4.380.*, 1, OverTaker, -4.44.*, 193.98.*, -0.33.*, 1.62.*, 0.001.*, 0.00.*, 42.00.*', csv))
+        self.assertTrue(re.search('\n9.000.*, 0, Ego, -5.64.*, 310.01.*, -0.54.*, 1.55.*, 0.002.*, 0.00.*, 30.00.*', csv))
+        self.assertTrue(re.search('\n9.000.*, 1, OverTaker, -4.0(19|20).*, 388.02.*, -0.69.*, 1.54.*, 0.001.*, 0.00.*, 42.00.*', csv))
+
+    def test_left_hand_using_road_rule(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/left-hand-traffic_using_road_rule.xosc'), COMMON_ARGS \
+            + '--disable_controllers')
+        
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading left-hand-traffic_using_road_rule.xosc', log))
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n3.67.* Lane change == true, rel_dist: 10.03 > 10.00, edge: Rising', log))
+        self.assertTrue(re.search('\n5.67.* Lane change complete after 1 execution', log))
+        self.assertTrue(re.search('\n9.69.* QuitCondition timer expired at 4.01 seconds', log))
+        self.assertTrue(re.search('\n9.69.* All acts are done, quit now', log))
+        
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        self.assertTrue(re.search('\n2.500.*, 0, Ego, -7.54.*, 115.02.*, -0.17.*, 1.56.*, 0.002.*, 0.00.*, 30.00.*', csv))
+        self.assertTrue(re.search('\n2.500.*, 1, OverTaker, -3.97.*, 115.01.*, -0.17.*, 1.56.*, 0.002.*, 0.00.*, 42.00.*', csv))
+        self.assertTrue(re.search('\n4.380.*, 0, Ego, -7.19.*, 171.42.*, -0.29.*, 1.56.*, 0.002.*, 0.00.*, 30.00.*', csv))
+        self.assertTrue(re.search('\n4.380.*, 1, OverTaker, -4.44.*, 193.98.*, -0.33.*, 1.62.*, 0.001.*, 0.00.*, 42.00.*', csv))
+        self.assertTrue(re.search('\n9.000.*, 0, Ego, -5.64.*, 310.01.*, -0.54.*, 1.55.*, 0.002.*, 0.00.*, 30.00.*', csv))
+        self.assertTrue(re.search('\n9.000.*, 1, OverTaker, -4.0(19|20).*, 388.02.*, -0.69.*, 1.54.*, 0.001.*, 0.00.*, 42.00.*', csv))
 
 if __name__ == "__main__":
     # execute only if run as a script

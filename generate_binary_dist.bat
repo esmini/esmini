@@ -33,7 +33,8 @@ copy resources\xosc\lane_change.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\highway_merge.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\highway_merge_advanced.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\distance_test.xosc %target_dir%\resources\xosc /y
-copy resources\xosc\left-hand-traffic_internal.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\left-hand-traffic_by_heading.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\left-hand-traffic_using_road_rule.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\ltap-od.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\synchronize.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\parking_lot.xosc %target_dir%\resources\xosc /y
@@ -54,6 +55,7 @@ copy resources\xosc\Catalogs\Pedestrians\*.* %target_dir%\resources\xosc\Catalog
 
 copy resources\xodr\soderleden.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\e6mini.xodr %target_dir%\resources\xodr /y
+copy resources\xodr\e6mini-lht.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\fabriksgatan.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\jolengatan.xodr %target_dir%\resources\xodr /y
 copy resources\xodr\straight_500m.xodr %target_dir%\resources\xodr /y
@@ -98,7 +100,7 @@ copy run\esmini\run_cut-in_interactive.bat %target_dir%\run\esmini /y
 copy run\esmini\run_cut-in_sumo.bat %target_dir%\run\esmini /y
 copy run\esmini\run_lane_change.bat %target_dir%\run\esmini /y
 copy run\esmini\run_lane_change_simple.bat %target_dir%\run\esmini /y
-copy run\esmini\run_left-hand-traffic_internal.bat %target_dir%\run\esmini /y
+copy run\esmini\run_left-hand-traffic.bat %target_dir%\run\esmini /y
 copy run\esmini\run_dist_test.bat %target_dir%\run\esmini /y
 copy run\esmini\run_synchronize.bat %target_dir%\run\esmini /y
 copy run\esmini\run_synchronize_interactive.bat %target_dir%\run\esmini /y

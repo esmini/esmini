@@ -48,7 +48,7 @@ static double density = DEFAULT_DENSITY;
 static double speed = DEFAULT_SPEED;
 static double global_speed_factor = 1.0;
 static int first_car_in_focus = -1;
-static bool left_hand_traffic = false;
+Road::RoadRule rule = Road::RoadRule::ROAD_RULE_UNDEFINED;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
@@ -120,6 +120,13 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		roadmanager::Road *road = odrManager->GetRoadByIdx(r);
 		double average_distance = 100.0 / density;
 
+		Road::RoadRule rrule = road->GetRule();
+		if (rule != Road::RoadRule::ROAD_RULE_UNDEFINED)
+		{
+			// Enforce specified rule
+			rrule = rule;
+		}
+
 		// Check for open end
 		OpenEnd openEnd;
 		RoadLink *tmpLink = road->GetLink(LinkType::PREDECESSOR);
@@ -127,7 +134,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		{
 			openEnd.roadId = road->GetId();
 			openEnd.s = 0;
-			openEnd.side = left_hand_traffic ? 1 : -1;
+			openEnd.side = rrule == Road::RoadRule::LEFT_HAND_TRAFFIC ? 1 : -1;
 			openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, -1);
 			if (openEnd.nLanes > 0)
 			{
@@ -139,7 +146,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		{
 			openEnd.roadId = road->GetId();
 			openEnd.s = road->GetLength();
-			openEnd.side = left_hand_traffic ? -1 : 1;
+			openEnd.side = rrule == Road::RoadRule::LEFT_HAND_TRAFFIC ? -1 : 1;
 			openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, 1);
 			if (openEnd.nLanes > 0)
 			{
@@ -180,7 +187,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				car_->lane_id_init = lane->GetId();
 				car_->s_init = s;
 				car_->pos = new roadmanager::Position(odrManager->GetRoadByIdx(r)->GetId(), lane->GetId(), s, 0);
-				if (left_hand_traffic)
+				if (rrule == Road::RoadRule::LEFT_HAND_TRAFFIC)
 				{
 					car_->pos->SetHeadingRelative(lane->GetId() < 0 ? M_PI : 0);
 				}
@@ -245,7 +252,14 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 	double new_speed = car->pos->GetSpeedLimit() * car->speed_factor * global_speed_factor;
 	double ds = new_speed * dt; // right lane is < 0 in road dir;
 
-	if (left_hand_traffic)
+	Road::RoadRule rrule = odrManager->GetRoadById(car->pos->GetTrackId())->GetRule();
+	if (rule != Road::RoadRule::ROAD_RULE_UNDEFINED)
+	{
+		// Enforce specified rule
+		rrule = rule;
+	}
+
+	if (rrule == Road::RoadRule::LEFT_HAND_TRAFFIC)
 	{
 		ds *= -1;
 	}
@@ -278,7 +292,13 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 			car->pos->SetLanePos(road->GetId(), lane->GetId(), oe->s, 0);
 
 			// Ensure car is oriented along lane driving direction
-			if (left_hand_traffic)
+			rrule = road->GetRule();
+			if (rule != Road::RoadRule::ROAD_RULE_UNDEFINED)
+			{
+				// Enforce specified rule
+				rrule = rule;
+			}
+			if (rrule == Road::RoadRule::LEFT_HAND_TRAFFIC)
 			{
 				car->pos->SetHeadingRelative(SIGN(lane->GetId()) > 0 ? 0.0 : M_PI);
 			}
@@ -326,7 +346,7 @@ int main(int argc, char** argv)
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("help", "Show this help message");
 	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
-	opt.AddOption("left_hand_traffic", "Apply left hand traffic");
+	opt.AddOption("traffic_rule", "Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)", "rule (right/left)");
 
 	opt.ParseArgs(&argc, argv);
 
@@ -394,10 +414,18 @@ int main(int argc, char** argv)
 	}
 	LOG("global speed factor: %.2f", global_speed_factor);
 
-	if (opt.GetOptionSet("left_hand_traffic"))
+	if (opt.GetOptionArg("traffic_rule") != "")
 	{
-		left_hand_traffic = true;
-		LOG("Left hand traffic");
+		if (opt.GetOptionArg("traffic_rule") == "left")
+		{
+			rule = Road::RoadRule::LEFT_HAND_TRAFFIC;
+			LOG("Enforce left hand traffic");
+		}
+		else if (opt.GetOptionArg("traffic_rule") == "right")
+		{
+			rule = Road::RoadRule::RIGHT_HAND_TRAFFIC;
+			LOG("Enforce right hand traffic");
+		}
 	}
 
 	roadmanager::Position *lane_pos = new roadmanager::Position();

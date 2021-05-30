@@ -2103,9 +2103,24 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 	for (pugi::xml_node road_node = node.child("road"); road_node; road_node = road_node.next_sibling("road"))
 	{
-		Road *r = new Road(atoi(road_node.attribute("id").value()), road_node.attribute("name").value());
-		r->SetLength(atof(road_node.attribute("length").value()));
-		r->SetJunction(atoi(road_node.attribute("junction").value()));
+		int rid = atoi(road_node.attribute("id").value());
+		std::string rname = road_node.attribute("name").value();
+		double rlength = atof(road_node.attribute("length").value());
+		int junction_id = atoi(road_node.attribute("junction").value());
+		Road::RoadRule rrule = Road::RoadRule::RIGHT_HAND_TRAFFIC;  // right hand traffic is default
+
+		if (!road_node.attribute("rule").empty())
+		{
+			std::string rule_str = road_node.attribute("rule").value();
+			if (rule_str == "LHT" || rule_str == "lht")
+			{
+				rrule = Road::RoadRule::LEFT_HAND_TRAFFIC;
+			}
+		}
+
+		Road* r = new Road(rid, rname, rrule);
+		r->SetLength(rlength);
+		r->SetJunction(junction_id);
 
 		for (pugi::xml_node type_node = road_node.child("type"); type_node; type_node = type_node.next_sibling("type"))
 		{
@@ -2218,7 +2233,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				double x = atof(geometry.attribute("x").value());
 				double y = atof(geometry.attribute("y").value());
 				double hdg = atof(geometry.attribute("hdg").value());
-				double length = atof(geometry.attribute("length").value());
+				double glength = atof(geometry.attribute("length").value());
 
 				pugi::xml_node type = geometry.last_child();
 				if (type != NULL)
@@ -2226,18 +2241,18 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					// Find out the type of geometry
 					if (!strcmp(type.name(), "line"))
 					{
-						r->AddLine(new Line(s, x, y, hdg, length));
+						r->AddLine(new Line(s, x, y, hdg, glength));
 					}
 					else if (!strcmp(type.name(), "arc"))
 					{
 						double curvature = atof(type.attribute("curvature").value());
-						r->AddArc(new Arc(s, x, y, hdg, length, curvature));
+						r->AddArc(new Arc(s, x, y, hdg, glength, curvature));
 					}
 					else if (!strcmp(type.name(), "spiral"))
 					{
 						double curv_start = atof(type.attribute("curvStart").value());
 						double curv_end = atof(type.attribute("curvEnd").value());
-						r->AddSpiral(new Spiral(s, x, y, hdg, length, curv_start, curv_end));
+						r->AddSpiral(new Spiral(s, x, y, hdg, glength, curv_start, curv_end));
 					}
 					else if (!strcmp(type.name(), "poly3"))
 					{
@@ -2245,7 +2260,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 						double b = atof(type.attribute("b").value());
 						double c = atof(type.attribute("c").value());
 						double d = atof(type.attribute("d").value());
-						r->AddPoly3(new Poly3(s, x, y, hdg, length, a, b, c, d));
+						r->AddPoly3(new Poly3(s, x, y, hdg, glength, a, b, c, d));
 					}
 					else if (!strcmp(type.name(), "paramPoly3"))
 					{
@@ -2265,7 +2280,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 							p_range = ParamPoly3::P_RANGE_ARC_LENGTH;
 						}
 
-						ParamPoly3 *pp3 = new ParamPoly3(s, x, y, hdg, length, aU, bU, cU, dU, aV, bV, cV, dV, p_range);
+						ParamPoly3 *pp3 = new ParamPoly3(s, x, y, hdg, glength, aU, bU, cU, dU, aV, bV, cV, dV, p_range);
 						if (pp3 != NULL)
 						{
 							r->AddParamPoly3(pp3);
@@ -2689,7 +2704,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 										for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
 										{
-											double length = atof(line.attribute("length").value());
+											double llength = atof(line.attribute("length").value());
 											double space = atof(line.attribute("space").value());
 											double t_offset = atof(line.attribute("t_offset").value());
 											double s_offset_l = atof(line.attribute("s_offset").value());
@@ -2719,7 +2734,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 											double width = atof(line.attribute("width").value());
 
-											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(length, space, t_offset, s_offset_l, rule, width);
+											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(llength, space, t_offset, s_offset_l, rule, width);
 											lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 										}
 									}
@@ -6645,14 +6660,35 @@ double Position::GetCurvature()
 	}
 }
 
+int Position::GetDrivingDirectionRelativeRoad()
+{
+	if (GetTrackId() >= 0 && GetRoadById(GetTrackId()) != nullptr)
+	{
+		// Consider road rule (left hand or right hand traffic)
+		if (GetLaneId() < 0 && GetRoadById(GetTrackId())->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC ||
+			GetLaneId() > 0 && GetRoadById(GetTrackId())->GetRule() == Road::RoadRule::RIGHT_HAND_TRAFFIC)
+		{
+			return -1;
+		}
+		else
+		{
+			return 1;
+		}
+	}
+	else
+	{
+		return GetLaneId() > 0 ? -1 : 1;
+	}
+}
+
 double Position::GetHRoadInDrivingDirection()
 {
-	return h_road_ + (lane_id_ > 0 ? M_PI : 0);
+	return GetAngleSum(GetHRoad(), GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0);
 }
 
 double Position::GetPRoadInDrivingDirection()
 {
-	return p_road_ * (lane_id_ > 0 ? -1 : 1);
+	return GetPRoad() * GetDrivingDirectionRelativeRoad();
 }
 
 double Position::GetHRelativeDrivingDirection()
@@ -7442,7 +7478,7 @@ double Position::GetP()
 		}
 		else
 		{
-			return p_ + rel_pos_->GetP();
+			return GetAngleSum(p_, rel_pos_->GetP());
 		}
 	}
 	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
@@ -7453,7 +7489,7 @@ double Position::GetP()
 		}
 		else
 		{
-			return p_ + GetPRoadInDrivingDirection();
+			return GetAngleSum(p_, GetPRoadInDrivingDirection());
 		}
 	}
 	else
@@ -7514,7 +7550,7 @@ double Position::GetR()
 		}
 		else
 		{
-			return r_ + rel_pos_->GetR();
+			return GetAngleSum(r_, rel_pos_->GetR());
 		}
 	}
 	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
@@ -8424,12 +8460,8 @@ void Position::ReleaseRelation()
 		{
 			SetLanePos(roadId, laneId, s, offset);
 
-			// Finally set requested heading
-			if (lane_id_ > 0)
-			{
-				// In lanes going opposite road direction, add 180 degrees
-				hRel = GetAngleSum(hRel, M_PI);
-			}
+			hRel = GetAngleSum(hRel, GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0);
+
 			SetHeadingRelative(hRel);
 			SetPitch(p);
 			SetRoll(r);
@@ -8447,12 +8479,9 @@ void Position::ReleaseRelation()
 			// Resolve requested position
 			SetTrackPos(roadId, s, t);
 
-			// Finally set requested heading
-			if (lane_id_ > 0)
-			{
-				// In lanes going opposite road direction, add 180 degrees
-				hRel = GetAngleSum(hRel, M_PI);
-			}
+			// Finally set requested heading considering lane ID and traffic rule
+			hRel = GetAngleSum(hRel, GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0);
+
 			SetHeadingRelative(hRel);
 			SetPitch(p);
 			SetRoll(r);

@@ -148,14 +148,7 @@ bool IsAngleStraight(double teta)
 
 double GetAngleSum(double angle1, double angle2)
 {
-	double sum = fmod(angle1 + angle2, 2 * M_PI);
-
-	if (sum < 0)
-	{
-		sum += 2 * M_PI;
-	}
-
-	return sum;
+	return GetAngleInInterval2PI(angle1 + angle2);
 }
 
 double GetAngleInInterval2PI(double angle)

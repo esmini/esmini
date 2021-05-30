@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A left-hand cut-in scenario. Purpose is to validate that esmini -->
+<!-- lane change functionality works also for left-hand traffic.     -->
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2018-06-09T10:00:00"
+               description="Cut-in"
+               author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="EgoStartS" parameterType="double" value="40"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <RouteCatalog/>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../xosc/Catalogs/DriverCatalog"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/e6mini-lht.xodr"/>
+      <SceneGraphFile filepath="../models/e6mini.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="OverTaker">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="30"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="3" offset="0" s="$EgoStartS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="OverTaker">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionTarget>
+                           <RelativeTargetSpeed entityRef="Ego"
+                                                value="1.4"
+                                                speedTargetValueType="factor"
+                                                continuous="true"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <RelativeLanePosition entityRef="Ego" dLane="-1" ds="-30"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="StoryPlaceholder">
+         <Act name="Lane change">
+            <ManeuverGroup maximumExecutionCount="1" name="Lane change">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="OverTaker"/>
+               </Actors>
+               <Maneuver name="Lane change">
+                  <Event name="Lane change" priority="overwrite">
+                     <Action name="Lane change">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="OverTaker" value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Lane change" delay="0" conditionEdge="rising">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <RelativeDistanceCondition entityRef="OverTaker"
+                                                               relativeDistanceType="longitudinal"
+                                                               value="10"
+                                                               freespace="true"
+                                                               rule="greaterThan"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="CutInActStart" delay="0" conditionEdge="risingOrFalling">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger>
+               <ConditionGroup>
+                  <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+                     <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event"
+                                                         storyboardElementRef="Lane change"
+                                                         state="endTransition"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StopTrigger>
+         </Act>
+      </Story>
+   </Storyboard>
+</OpenSCENARIO>

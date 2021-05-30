@@ -32,8 +32,8 @@ Options:
       Show this help message
   --save_generated_model
       Save generated 3D model (n/a when a scenegraph is loaded)
-  --left_hand_traffic
-      Apply left hand traffic
+  --traffic_rule <rule (right/left)>
+      Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)
 
 Additional OSG graphics options:
   --clear-color <color>         Set the background color of the viewer in the form "r,g,b[,a]"

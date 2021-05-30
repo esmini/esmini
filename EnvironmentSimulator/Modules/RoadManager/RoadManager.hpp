@@ -907,12 +907,20 @@ namespace roadmanager
 	{
 	public:
 
-		Road(int id, std::string name) : id_(id), name_(name), length_(0), junction_(0) {}
+		typedef enum 
+		{
+			RIGHT_HAND_TRAFFIC,
+			LEFT_HAND_TRAFFIC,
+			ROAD_RULE_UNDEFINED
+		} RoadRule;
+
+		Road(int id, std::string name, RoadRule rule = RIGHT_HAND_TRAFFIC) : id_(id), name_(name), length_(0), junction_(0), rule_(rule) {}
 		~Road();
 
 		void Print();
 		void SetId(int id) { id_ = id; }
 		int GetId() { return id_; }
+		RoadRule GetRule() { return rule_; }
 		void SetName(std::string name) { name_ = name; }
 		Geometry *GetGeometry(int idx);
 		int GetNumberOfGeometries() { return (int)geometry_.size(); }
@@ -1005,6 +1013,8 @@ namespace roadmanager
 		std::string name_;
 		double length_;
 		int junction_;
+		RoadRule rule_;
+
 		std::vector<RoadTypeEntry*> type_;
 		std::vector<RoadLink*> link_;
 		std::vector<Geometry*> geometry_;
@@ -1623,6 +1633,12 @@ namespace roadmanager
 		*/
 		double GetHRoad() const { return h_road_; }
 
+		/**
+		Retrieve the driving direction considering lane ID and rult (lef or right hand traffic)
+		Will be either 1 (road direction) or -1 (opposite road direction)
+		*/
+		int GetDrivingDirectionRelativeRoad();
+		
 		/**
 		Retrieve the road heading angle (radians) relative driving direction (lane sign considered)
 		*/
