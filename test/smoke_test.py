@@ -141,12 +141,12 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 7 roadId 260 laneId -1', log))
         self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 11 roadId 220 laneId -1', log))
         self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 12: 222, -1, 20.00', log))
-        self.assertTrue(re.search('\n25.53.* Route::AddWaypoint Added intermediate waypoint 3 roadId 280 laneId -1', log))
+        self.assertTrue(re.search('\n25.51.* Route::AddWaypoint Added intermediate waypoint 3 roadId 280 laneId -1', log))
 
         # Check some scenario events
-        self.assertTrue(re.search('\n25.53.* AquirePosition condition == true, distance 0.9. < tolerance \(1.00\), edge: Rising', log))
-        self.assertTrue(re.search('\n25.53.: AquirePosition event complete after 1 execution', log))
-        self.assertTrue(re.search('\n38.91.* Stop condition == true, distance 0.7. < tolerance \(1.00\), edge: Rising', log))
+        self.assertTrue(re.search('\n25.51.* AquirePosition condition == true, distance 1.9. < tolerance \(2.00\), edge: Rising', log))
+        self.assertTrue(re.search('\n25.51.: AquirePosition event complete after 1 execution', log))
+        self.assertTrue(re.search('\n38.91.* Stop condition == true, distance 1.7. < tolerance \(2.00\), edge: Rising', log))
         self.assertTrue(re.search('\n46.28.* QuitCondition timer expired at 4.0. seconds', log))
 
         # Check vehicle key positions

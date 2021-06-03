@@ -115,30 +115,39 @@ for:
       - ps: |
             cd build/EnvironmentSimulator/Unittest
             $env:path += "../../../bin"
-            
+
             ./OperatingSystem_test
             if ($lastExitCode -ne 0) {
                 throw "OperatingSystem_test failed"
             }
-            
+
             ./RoadManager_test
             if ($lastExitCode -ne 0) {
                 throw "RoadManager_test failed"
             }
-            
+
             ./ScenarioEngine_test
             if ($lastExitCode -ne 0) {
                 throw "ScenarioEngine_test failed"
-            }      
-            
+            }
+
             ./ScenarioEngineDll_test
             if ($lastExitCode -ne 0) {
                 throw "ScenarioEngineDll_test failed"
-            }      
+            }
 
             cd ../../../test
+
             python3 smoke_test.py
+            $r0 = $LASTEXITCODE
+
             python3 alks_suite.py
+            $r1 = $LASTEXITCODE
+
+            if (($r0 -ne 0) -or ($r1 -ne 0))
+            {
+              throw "Test NOK"
+            }
 
     artifacts:
       - path: esmini-*_ubuntu.zip
@@ -210,8 +219,17 @@ for:
     test_script:
       - ps: |
             cd test
+
             python3 smoke_test.py
+            $r0 = $LASTEXITCODE
+
             python3 alks_suite.py
+            $r1 = $LASTEXITCODE
+
+            if (($r0 -ne 0) -or ($r1 -ne 0))
+            {
+              throw "Test NOK"
+            }
 
     artifacts:
       - path: esmini-*_mac_catalina.zip
@@ -263,7 +281,7 @@ for:
           {
             echo "Skip binary artifacts"
           }
-          
+
           if ($Env:APPVEYOR_REPO_TAG -eq $true)
           {
             7z a esmini-demo_win.zip esmini-demo/*
@@ -280,22 +298,22 @@ for:
       - ps: |
             cd build/EnvironmentSimulator/Unittest
             $env:path += ";../../../bin"
-            
+
             ./Release/OperatingSystem_test
             if ($lastExitCode -ne 0) {
                 throw "OperatingSystem_test failed"
             }
-            
+
             ./Release/RoadManager_test
             if ($lastExitCode -ne 0) {
                 throw "RoadManager_test failed"
             }
-            
+
             ./Release/ScenarioEngine_test
             if ($lastExitCode -ne 0) {
                 throw "ScenarioEngine_test failed"
             }
-            
+
             ./Release/ScenarioEngineDll_test
             if ($lastExitCode -ne 0) {
                 throw "ScenarioEngineDll_test failed"
@@ -303,7 +321,7 @@ for:
 
       - cmd:
             cd ../../../test
-            
+
             C:/Python38/python smoke_test.py
 
             C:/Python38/python alks_suite.py
