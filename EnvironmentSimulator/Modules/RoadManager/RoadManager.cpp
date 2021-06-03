@@ -999,8 +999,6 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectin
 		}
 	}
 
-	LOG("Failed to find connecting lane (from road %d, lane %d to road %d)", GetId(), lane->GetId(), connectingRoadId);
-
 	return 0;
 }
 
@@ -3505,7 +3503,7 @@ bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fro
 	return true;
 }
 
-int RoadPath::Calculate(double &dist)
+int RoadPath::Calculate(double &dist, bool bothDirections)
 {
 	OpenDrive* odr = startPos_->GetOpenDrive();
 	RoadLink *link = 0;
@@ -3530,29 +3528,48 @@ int RoadPath::Calculate(double &dist)
 		return -1;
 	}
 
-	// Look only in forward direction, w.r.t. entity heading
-	if (startPos_->GetHRelative() < M_PI_2 || startPos_->GetHRelative() > 3 * M_PI_2)
+	for (i = 0; i < (bothDirections ? 2 : 1); i++)
 	{
-		// Along road direction
-		tmpDist = pivotRoad->GetLength() - startPos_->GetS();  // distance to end of road
-		link = pivotRoad->GetLink(LinkType::SUCCESSOR);  // Find link to previous road or junction
-	}
-	else
-	{
-		// Opposite road direction
-		tmpDist = startPos_->GetS();  // distance to first road link is distance to start of road
-		link = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
-	}
+		if (bothDirections)
+		{
+			if (i == 0)
+			{
+				tmpDist = startPos_->GetS();  // distance to first road link is distance to start of road
+				link = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
+			}
+			else
+			{
+				tmpDist = pivotRoad->GetLength() - startPos_->GetS();  // distance to end of road
+				link = pivotRoad->GetLink(LinkType::SUCCESSOR);  // Find link to previous road or junction
+			}
+		}
+		else
+		{
+			// Look only in forward direction, w.r.t. entity heading
+			if (startPos_->GetHRelative() < M_PI_2 || startPos_->GetHRelative() > 3 * M_PI_2)
+			{
+				// Along road direction
+				tmpDist = pivotRoad->GetLength() - startPos_->GetS();  // distance to end of road
+				link = pivotRoad->GetLink(LinkType::SUCCESSOR);  // Find link to previous road or junction
+			}
+			else
+			{
+				// Opposite road direction
+				tmpDist = startPos_->GetS();  // distance to first road link is distance to start of road
+				link = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
+			}
+		}
 
-	if (link)
-	{
-		PathNode* pNode = new PathNode;
-		pNode->dist = tmpDist;
-		pNode->link = link;
-		pNode->fromRoad = pivotRoad;
-		pNode->fromLaneId = pivotLaneId;
-		pNode->previous = 0;
-		unvisited_.push_back(pNode);
+		if (link)
+		{
+			PathNode* pNode = new PathNode;
+			pNode->dist = tmpDist;
+			pNode->link = link;
+			pNode->fromRoad = pivotRoad;
+			pNode->fromLaneId = pivotLaneId;
+			pNode->previous = 0;
+			unvisited_.push_back(pNode);
+		}
 	}
 
 	if (startRoad == targetRoad)
@@ -8583,8 +8600,7 @@ int Route::AddWaypoint(Position* position)
 		RoadPath* path = new RoadPath(&waypoint_.back(), position);
 		double dist = 0;
 		
-		bool found = (path->Calculate(dist) == 0);
-		if (found)
+		if (path->Calculate(dist, false) == 0)
 		{
 			// Path is found by tracing previous nodes
 			RoadPath::PathNode* previous = path->visited_.back()->previous;

@@ -230,8 +230,8 @@ OSCTypeDefs
         TeleportAction                       Yes
         Routing                              
             AssignRoute                      Yes
-            FollowTrajectory                 Partly (Only polyline and clothoid trajectory supported so far)
-            AcquirePosition                  No
+            FollowTrajectory                 Yes
+            AcquirePosition                  Yes
     OSCUserDefinedAction                     No
     OSCGlobalAction                          
         SetEnvironment                       No

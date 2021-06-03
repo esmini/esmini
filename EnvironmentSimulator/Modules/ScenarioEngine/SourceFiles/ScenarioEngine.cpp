@@ -728,7 +728,8 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 			// Update wheel rotations of internal scenario objects
 			if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
 			{
-				obj->wheel_angle_ = SIGN(obj->GetSpeed()) * heading_rate_new / 2;
+				// An improvised calculation of a steering angle based on yaw rate and enitity speed
+				obj->wheel_angle_ = SIGN(obj->GetSpeed()) * M_PI * heading_rate_new / MAX(fabs(obj->GetSpeed()), SMALL_NUMBER);
 			}
 			if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
 			{

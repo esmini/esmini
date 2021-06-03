@@ -69,16 +69,16 @@
                   <EntityRef entityRef="Ego"/>
                </Actors>
                <Maneuver name="AquirePosition maneuver">
-                  <Event name="AquirePosition event" maximumExecutionCount="2" priority="overwrite">
+                  <Event name="AquirePosition event" maximumExecutionCount="1" priority="overwrite">
                      <Action name="AquirePosition action">
                         <PrivateAction>
-                           <LateralAction>
-                              <AquirePositionAction>
+                           <RoutingAction>
+                              <AcquirePositionAction>
                                   <Position>
                                       <LanePosition roadId="242" laneId="-1" offset="0" s="40"/>
                                   </Position>
-                              </AquirePositionAction>
-                           </LateralAction>
+                              </AcquirePositionAction>
+                           </RoutingAction>
                         </PrivateAction>
                      </Action>
                      <StartTrigger>
@@ -100,6 +100,38 @@
                         </ConditionGroup>
                      </StartTrigger>
                   </Event>
+                  <Event name="Stop event" maximumExecutionCount="1" priority="overwrite">
+                     <Action name="Stop action">
+                        <PrivateAction>
+                          <LongitudinalAction>
+                             <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="linear" value="-15.0" dynamicsDimension="rate" />
+                                <SpeedActionTarget>
+                                   <AbsoluteTargetSpeed value="0.0"/>
+                                </SpeedActionTarget>
+                             </SpeedAction>
+                          </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Stop condition" delay="0" conditionEdge="rising">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <ReachPositionCondition tolerance="2.0">
+                                       <Position>
+                                          <LanePosition roadId="242" laneId="-1" offset="0" s="1"/>
+                                       </Position>
+                                    </ReachPositionCondition>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>                  
                </Maneuver>
             </ManeuverGroup>
             <StartTrigger>
@@ -116,7 +148,7 @@
                   <Condition name="QuitCondition" delay="4" conditionEdge="rising">
                      <ByValueCondition>
                         <StoryboardElementStateCondition storyboardElementType="event"
-                                                         storyboardElementRef="AquirePosition event"
+                                                         storyboardElementRef="Stop event"
                                                          state="completeState"/>
                      </ByValueCondition>
                   </Condition>

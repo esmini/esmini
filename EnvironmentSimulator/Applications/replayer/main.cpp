@@ -47,6 +47,8 @@ typedef struct
 	struct ObjectPositionStruct pos;
 	osg::ref_ptr<osg::Vec3Array> trajPoints;
 	viewer::Trajectory* trajectory;
+	float wheel_angle;
+	float wheel_rotation;
 } ScenarioEntity;
 
 static std::vector<ScenarioEntity> scenarioEntity;
@@ -113,7 +115,7 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 			}
 			
 			if ((new_sc.entityModel = viewer->AddEntityModel(filename, osg::Vec4(0.5, 0.5, 0.5, 1.0),
-				viewer::EntityModel::EntityType::ENTITY_TYPE_OTHER, false, state->info.name, &state->info.boundingbox)) == 0)
+				viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, state->info.name, &state->info.boundingbox)) == 0)
 			{
 				return -1;
 			}
@@ -254,6 +256,7 @@ int main(int argc, char** argv)
 	SE_Options opt;
 	opt.AddOption("file", "Simulation recording data file", "filename");
 	opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
+	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
 	opt.AddOption("start_time", "Start playing at timestamp", "ms");
 	opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
@@ -353,6 +356,39 @@ int main(int argc, char** argv)
 			NULL,
 			argv[0],
 			arguments, &opt);
+
+		std::string arg_str;
+		if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
+		{
+			if (arg_str == "orbit")
+			{
+				viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_ORBIT);
+			}
+			else if (arg_str == "fixed")
+			{
+				viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_FIXED);
+			}
+			else if (arg_str == "flex")
+			{
+				viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND);
+			}
+			else if (arg_str == "flex-orbit")
+			{
+				viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND_ORBIT);
+			}
+			else if (arg_str == "top")
+			{
+				viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_TOP);
+			}
+			else if (arg_str == "driver")
+			{
+				viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_DRIVER);
+			}
+			else
+			{
+				LOG("Unsupported camera mode: %s - using default (orbit)", arg_str.c_str());
+			}
+		}
 
 		viewer->RegisterKeyEventCallback(ReportKeyEvent, player);
 
@@ -503,7 +539,7 @@ int main(int argc, char** argv)
 			simTime = player->GetTime();  // potentially wrapped for repeat
 
 			// Fetch states of scenario objects
-			ObjectStateStructDat* state;
+			ObjectStateStructDat* state = 0;
 			
 			for (int index = 0; (state = player->GetState(index)) != 0; index++)
 			{
@@ -526,6 +562,8 @@ int main(int argc, char** argv)
 				}
 
 				sc->pos = state->pos;
+				sc->wheel_angle = state->info.wheel_angle;
+				sc->wheel_rotation = state->info.wheel_rot;
 
 				if (index == viewer->currentCarInFocus_)
 				{
@@ -543,6 +581,11 @@ int main(int argc, char** argv)
 				ScenarioEntity *c = &scenarioEntity[j];
 				c->entityModel->SetPosition(c->pos.x, c->pos.y, c->pos.z);
 				c->entityModel->SetRotation(c->pos.h, c->pos.p, c->pos.r);
+
+				if (c->entityModel->GetType() == viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
+				{
+					((viewer::CarModel*)c->entityModel)->UpdateWheels(c->wheel_angle, c->wheel_rotation);
+				}
 			}
 
 			// Update graphics

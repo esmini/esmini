@@ -117,7 +117,7 @@ TEST_P(PolynomialTestEvaluateEmptyParametrized, TestEvaluateEmptyConstructor)
     ASSERT_EQ(polynomial_empty.Evaluate(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluateParamEmpty, PolynomialTestEvaluateEmptyParametrized, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluateParamEmpty, PolynomialTestEvaluateEmptyParametrized, testing::Values(
                                                 std::make_tuple(2,-23),
                                                 std::make_tuple(0, 1)));
 
@@ -135,7 +135,7 @@ TEST_P(PolynomialTestEvaluateArgumentParametrized, TestEvaluateArgumentConstruct
     ASSERT_EQ(polynomial_argument.Evaluate(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluateParamArgument, PolynomialTestEvaluateArgumentParametrized, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluateParamArgument, PolynomialTestEvaluateArgumentParametrized, testing::Values(
                                                 std::make_tuple(2,-215),
                                                 std::make_tuple(0, 1)));
 
@@ -158,7 +158,7 @@ TEST_P(PolynomialTestEvaluatePrimEmptyParametrized, TestEvaluatePrimEmptyConstru
     ASSERT_EQ(polynomial_empty.EvaluatePrim(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluatePrimParamEmpty, PolynomialTestEvaluatePrimEmptyParametrized, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluatePrimParamEmpty, PolynomialTestEvaluatePrimEmptyParametrized, testing::Values(
                                                 std::make_tuple(2,-38),
                                                 std::make_tuple(0, -2)));
 
@@ -176,7 +176,7 @@ TEST_P(PolynomialTestEvaluatePrimArgumentParametrized, TestEvaluatePrimArgumentC
     ASSERT_EQ(polynomial_argument.EvaluatePrim(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluatePrimParamArgument, PolynomialTestEvaluatePrimArgumentParametrized, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluatePrimParamArgument, PolynomialTestEvaluatePrimArgumentParametrized, testing::Values(
                                                 std::make_tuple(2,-170),
                                                 std::make_tuple(0, -2)));
 
@@ -198,7 +198,7 @@ TEST_P(PolynomialTestEvaluatePrimPrimEmptyParametrized, TestEvaluatePrimPrimEmpt
     ASSERT_EQ(polynomial_empty.EvaluatePrimPrim(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluatePrimPrimParamEmpty, PolynomialTestEvaluatePrimPrimEmptyParametrized, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluatePrimPrimParamEmpty, PolynomialTestEvaluatePrimPrimEmptyParametrized, testing::Values(
                                                 std::make_tuple(2,-42),
                                                 std::make_tuple(0, 6)));
 
@@ -216,7 +216,7 @@ TEST_P(PolynomialTestEvaluatePrimPrimArgumentParametrized, TestEvaluatePrimPrimA
     ASSERT_EQ(polynomial_argument.EvaluatePrimPrim(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluatePrimPrimParamArgument, PolynomialTestEvaluatePrimPrimArgumentParametrized, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluatePrimPrimParamArgument, PolynomialTestEvaluatePrimPrimArgumentParametrized, testing::Values(
                                                 std::make_tuple(2,-90),
                                                 std::make_tuple(0, 6)));
 
@@ -399,7 +399,7 @@ TEST_P(OSIPointsCloseCheck, ClosenessChecker) {
     ASSERT_EQ(num_intersecting_points,std::get<8>(GetParam()));
 }
 
-INSTANTIATE_TEST_CASE_P(OSI_Points_check_test,OSIPointsCloseCheck,::testing::Values(
+INSTANTIATE_TEST_SUITE_P(OSI_Points_check_test,OSIPointsCloseCheck,::testing::Values(
     std::make_tuple(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1),
     std::make_tuple(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 2),
     std::make_tuple(0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 1.0f, 1.0f, 0),
@@ -497,7 +497,7 @@ TEST_P(LineGeomTestEvaluateDsEmptyConstructor, TestLineGeomEvaluateDsEmpty)
     ASSERT_EQ(*h, std::get<3>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluateDsEmptyParam, LineGeomTestEvaluateDsEmptyConstructor, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluateDsEmptyParam, LineGeomTestEvaluateDsEmptyConstructor, testing::Values(
                                                 std::make_tuple(0, 0, 0, 0),
                                                 std::make_tuple(1, 1, 0, 0),
                                                 std::make_tuple(100, 100, 0, 0)));
@@ -526,7 +526,7 @@ TEST_P(LineGeomTestEvaluateDsArgumentConstructor, TestLineGeomEvaluateDsArgument
     ASSERT_EQ(*h, std::get<3>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluateLineDsArgumentParam, LineGeomTestEvaluateDsArgumentConstructor, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluateLineDsArgumentParam, LineGeomTestEvaluateDsArgumentConstructor, testing::Values(
                                                 std::make_tuple(0.0, -1.0, 1.0, M_PI),
                                                 std::make_tuple(1.0, -2.0, 1.0+sin(M_PI), M_PI),
                                                 std::make_tuple(100.0, -101.0, 1.0+100*sin(M_PI), M_PI)));
@@ -620,7 +620,7 @@ TEST_P(ArcGeomTestEvaluateDsCurvPositive, TestArcGeomEvaluateDsArgument)
     ASSERT_EQ(*h, std::get<3>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluateArcDsArgumentParam, ArcGeomTestEvaluateDsCurvPositive, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluateArcDsArgumentParam, ArcGeomTestEvaluateDsCurvPositive, testing::Values(
                                                 std::make_tuple(0.0, -1.0, 1.0, M_PI),
                                                 std::make_tuple(M_PI/2, -2.0, 0.0, M_PI+M_PI/2),
                                                 std::make_tuple(M_PI, -1.0, -1.0, 2*M_PI)));
@@ -649,7 +649,7 @@ TEST_P(ArcGeomTestEvaluateDsCurvNegative, TestArcGeomEvaluateDsArgument)
     ASSERT_EQ(*h, std::get<3>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluateArcDsArgumentParam, ArcGeomTestEvaluateDsCurvNegative, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluateArcDsArgumentParam, ArcGeomTestEvaluateDsCurvNegative, testing::Values(
                                                 std::make_tuple(0.0, -1.0, 1.0, M_PI),
                                                 std::make_tuple(M_PI/2, -2.0, 2.0, M_PI-M_PI/2),
                                                 std::make_tuple(M_PI, -1.0, 3.0, 0)));                                    
@@ -827,7 +827,7 @@ TEST_P(Poly3GeomTestEvaluateDsCurvUmaxZero, TestPoly3GeomEvaluateDsArgument)
     ASSERT_THAT(*h, testing::AllOf(testing::Gt(std::get<3>(tuple) - TRIG_ERR_MARGIN), testing::Lt(std::get<3>(tuple) + TRIG_ERR_MARGIN)));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluatePoly3DsArgumentParam, Poly3GeomTestEvaluateDsCurvUmaxZero, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluatePoly3DsArgumentParam, Poly3GeomTestEvaluateDsCurvUmaxZero, testing::Values(
                                                 std::make_tuple(0.1, 0.1, 0.008, 0.139),
                                                 std::make_tuple(0.2, 0.199, 0.024, 0.159),
                                                 std::make_tuple(0.8, 0.721, -0.230, -1.033),
@@ -858,7 +858,7 @@ TEST_P(Poly3GeomTestEvaluateDsCurvUmaxNonZero, TestPoly3GeomEvaluateDsArgument)
     ASSERT_THAT(*h, testing::AllOf(testing::Gt(std::get<3>(tuple) - TRIG_ERR_MARGIN), testing::Lt(std::get<3>(tuple) + TRIG_ERR_MARGIN)));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluatePoly3DsArgumentParam, Poly3GeomTestEvaluateDsCurvUmaxNonZero, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluatePoly3DsArgumentParam, Poly3GeomTestEvaluateDsCurvUmaxNonZero, testing::Values(
                                                 std::make_tuple(0.0, 0.0, 0.0, 0.0),
                                                 std::make_tuple(2.0, 1.0, -1.0, -1.326)));
 
@@ -962,7 +962,7 @@ TEST_P(ParamPoly3GeomTestEvaluateDsCurv, TestParamPoly3GeomEvaluateDsArgument)
     ASSERT_EQ(*h, std::get<3>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestEvaluateParamPoly3DsArgumentParam, ParamPoly3GeomTestEvaluateDsCurv, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestEvaluateParamPoly3DsArgumentParam, ParamPoly3GeomTestEvaluateDsCurv, testing::Values(
                                                 std::make_tuple(0.0, -2.0, 0.0, M_PI+atan2(-2.0,-2.0)),
                                                 std::make_tuple(10.0, 214.0, 216.0, M_PI+atan2(-2.0,-2.0))));
 
@@ -1088,7 +1088,7 @@ TEST_P(LaneRoadMarkTypeLineTest, DefaultConstructor) {
     //EXPECT_EQ(lane_roadmarking.GetGlobalId(), 0);
 }
 
-INSTANTIATE_TEST_CASE_P(LaneRoadMarkTypeLineTests,LaneRoadMarkTypeLineTest,::testing::Values(
+INSTANTIATE_TEST_SUITE_P(LaneRoadMarkTypeLineTests,LaneRoadMarkTypeLineTest,::testing::Values(
     std::make_tuple(100,100,0,0,LaneRoadMarkTypeLine::NO_PASSING,2),
     std::make_tuple(10,10,-1,1,LaneRoadMarkTypeLine::CAUTION,6)));
 
@@ -1156,7 +1156,7 @@ TEST_P(LaneRoadMarkTest, DefaultConstructor) {
     EXPECT_EQ(lane_test_0.GetLaneRoadMarkTypeByIdx(0)->GetName(),type_test_0->GetName());
 }
 
-INSTANTIATE_TEST_CASE_P(LaneRoadMarkTests,LaneRoadMarkTest,::testing::Values(
+INSTANTIATE_TEST_SUITE_P(LaneRoadMarkTests,LaneRoadMarkTest,::testing::Values(
     std::make_tuple(0,LaneRoadMark::NONE_TYPE,
         LaneRoadMark::STANDARD,
         LaneRoadMark::STANDARD_COLOR,
@@ -1231,7 +1231,7 @@ TEST_P(LaneOffsetGetLaneOffsetTest, TestGetLaneOffset)
     ASSERT_EQ(laneoffset.GetLaneOffset(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestGetLaneOffsetParam, LaneOffsetGetLaneOffsetTest, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestGetLaneOffsetParam, LaneOffsetGetLaneOffsetTest, testing::Values(
                                                 std::make_tuple(0.0, 49.0),
                                                 std::make_tuple(10.0, -1871.0)));
                                             
@@ -1249,7 +1249,7 @@ TEST_P(LaneOffsetGetLaneOffsetPrimTest, TestGetLaneOffsetPrim)
     ASSERT_EQ(laneoffset.GetLaneOffsetPrim(std::get<0>(tuple)), std::get<1>(tuple));
 }
 
-INSTANTIATE_TEST_CASE_P(TestGetLaneOffsetPrimParam, LaneOffsetGetLaneOffsetPrimTest, testing::Values(
+INSTANTIATE_TEST_SUITE_P(TestGetLaneOffsetPrimParam, LaneOffsetGetLaneOffsetPrimTest, testing::Values(
                                                 std::make_tuple(0.0, -62),
                                                 std::make_tuple(10.0, -722.0)));
 
@@ -1638,12 +1638,13 @@ TEST(DistanceTest, CalcDistanceLong)
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
     EXPECT_NEAR(dist, 134.051729, 1e-5);
 
+    // starting from left lane will take another lane in intersection, increasing the total distance
     pos0.SetLanePos(3, 1, 5.0, -0.25);
     pos1.SetLanePos(0, -1, 15.0, 0.15);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
     EXPECT_NEAR(dist, 3.1, 1e-5);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
-    EXPECT_NEAR(dist, 134.051729, 1e-5);
+    EXPECT_NEAR(dist, 139.317791, 1e-5);
 
     // Route is found, but two lanes delta = 3.6 m
     pos0.SetLanePos(3, -1, 5.0, -0.25);

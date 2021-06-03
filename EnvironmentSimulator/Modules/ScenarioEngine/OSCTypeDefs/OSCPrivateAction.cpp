@@ -211,6 +211,40 @@ void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 }
 
+void AcquirePositionAction::Start(double simTime, double dt)
+{
+	// Resolve route
+	route_ = new roadmanager::Route;
+	route_->setName("AcquirePositionRoute");
+
+	route_->AddWaypoint(&object_->pos_);
+	route_->AddWaypoint(target_position_);
+
+	object_->pos_.SetRoute(route_);
+
+	OSCAction::Start(simTime, dt);
+
+	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
+		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
+	{
+		// lateral motion controlled elsewhere
+		return;
+	}
+}
+
+void AcquirePositionAction::Step(double, double)
+{
+	OSCAction::End();
+}
+
+void AcquirePositionAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+	if (object_ == obj1)
+	{
+		object_ = obj2;
+	}
+}
+
 void AssignControllerAction::Start(double simTime, double dt)
 {
 	if (controller_ == 0)

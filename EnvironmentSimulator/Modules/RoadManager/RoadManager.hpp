@@ -1918,7 +1918,7 @@ namespace roadmanager
 		@param dist A reference parameter into which the calculated path distance is stored
 		@return 0 on success, -1 on failure e.g. path not found
 		*/
-		int Calculate(double &dist);
+		int Calculate(double &dist, bool bothDirections = true);
 	
 	private:
 		bool CheckRoad(Road* checkRoad, RoadPath::PathNode* srcNode, Road* fromRoad, int fromLaneId);

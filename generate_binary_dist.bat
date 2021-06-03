@@ -46,6 +46,7 @@ copy resources\xosc\controller_test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\slow-lead-vehicle.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\synch_with_steady_state.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\lane_change_crest.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\routing-test.xosc %target_dir%\resources\xosc /y
 
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
@@ -112,6 +113,7 @@ copy run\esmini\run_controller_test.bat %target_dir%\run\esmini /y
 copy run\esmini\run_synch_with_steady_state.bat %target_dir%\run\esmini /y
 copy run\esmini\run_lane_change_crest.bat %target_dir%\run\esmini /y
 copy run\esmini\run_lane_change_crest_driver-view.bat %target_dir%\run\esmini /y
+copy run\esmini\run_routing-test.bat %target_dir%\run\esmini /y
 
 copy run\odrviewer\run_e6mini.bat %target_dir%\run\odrviewer /y
 copy run\odrviewer\run_multi_intersections.bat %target_dir%\run\odrviewer /y

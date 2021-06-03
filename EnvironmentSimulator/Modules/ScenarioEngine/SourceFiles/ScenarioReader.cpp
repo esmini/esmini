@@ -2053,6 +2053,13 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					}
 					action = action_follow_trajectory;
 				}
+				else if (routingChild.name() == std::string("AcquirePositionAction"))
+				{
+					AcquirePositionAction* acqPosAction = new AcquirePositionAction;
+					OSCPosition* pos = parseOSCPosition(routingChild.first_child());
+					acqPosAction->target_position_ = pos->GetRMPos();
+					action = acqPosAction;
+				}
 				else
 				{
 					throw std::runtime_error("Action is not supported: " + std::string(routingChild.name()));

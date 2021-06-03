@@ -2,12 +2,14 @@ replayer is a simple application for re-playing .dat files recorded by esmini.
 
 Application is launched from command line (or batch file). 
 
-Usage : [options]
+Usage:  [options]
 Options:
   --file <filename>
       Simulation recording data file
   --res_path <path>
       Path to resources root folder - relative or absolut
+  --camera_mode <mode>
+      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top") (toggle during simulation by press 'k')
   --time_scale <factor>
       Playback speed scale factor (1.0 == normal)
   --start_time <ms>
@@ -24,6 +26,8 @@ Options:
       Remove ghost entities
   --remove_object <id>
       Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.
+  --hide_trajectories
+      Hide trajectories from start (toggle with key 'n')
       
 Additional options forwarded to OpenSceneGraph:
   --window <x y w h>

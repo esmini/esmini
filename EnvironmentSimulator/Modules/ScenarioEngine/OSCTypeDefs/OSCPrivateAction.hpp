@@ -47,6 +47,7 @@ namespace scenarioengine
 			TELEPORT,
 			ASSIGN_ROUTE,
 			FOLLOW_TRAJECTORY,
+			Acquire_POSITION,
 			SYNCHRONIZE
 		} ActionType;
 
@@ -561,7 +562,7 @@ namespace scenarioengine
 	public:
 		roadmanager::Route *route_;
 
-		AssignRouteAction() : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE) {}
+		AssignRouteAction() : route_(0), OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE) {}
 
 		AssignRouteAction(const AssignRouteAction&action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE)
 		{
@@ -618,6 +619,32 @@ namespace scenarioengine
 		void Step(double simTime, double dt);
 		void Start(double simTime, double dt);
 		void End();
+
+		void ReplaceObjectRefs(Object* obj1, Object* obj2);
+	};
+
+	class AcquirePositionAction : public OSCPrivateAction
+	{
+	public:
+		roadmanager::Position* target_position_;
+		roadmanager::Route* route_;
+
+		AcquirePositionAction() : route_(0), target_position_(0), OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION) {}
+
+		AcquirePositionAction(const AcquirePositionAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION)
+		{
+			target_position_ = action.target_position_;
+			route_ = action.route_;
+		}
+
+		OSCPrivateAction* Copy()
+		{
+			AcquirePositionAction* new_action = new AcquirePositionAction(*this);
+			return new_action;
+		}
+
+		void Start(double simTime, double dt);
+		void Step(double simTime, double dt);
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};

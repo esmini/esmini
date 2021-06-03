@@ -25,7 +25,7 @@ class TestSuite(unittest.TestCase):
         
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading ltap-od.xosc', log))
-        self.assertTrue(re.search('.*Route::AddWaypoint Added connecting waypoint 1: 9, -1, 0.00', log))
+        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 1 roadId 15 laneId -1', log))
 
         # Check some scenario events
         self.assertTrue(re.search('\n5.5.*Synchronize dist \(0.95\) < tolerance \(1.00\)', log))
@@ -131,6 +131,31 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n4.380.*, 1, OverTaker, -4.44.*, 193.98.*, -0.33.*, 1.62.*, 0.001.*, 0.00.*, 42.00.*', csv))
         self.assertTrue(re.search('\n9.000.*, 0, Ego, -5.64.*, 310.01.*, -0.54.*, 1.55.*, 0.002.*, 0.00.*, 30.00.*', csv))
         self.assertTrue(re.search('\n9.000.*, 1, OverTaker, -4.0(19|20).*, 388.02.*, -0.69.*, 1.54.*, 0.001.*, 0.00.*, 42.00.*', csv))
+
+    def test_routing(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/routing-test.xosc'), COMMON_ARGS)
+        
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading routing-test.xosc', log))
+        self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 6: 261, 1, 50.00', log))
+        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 7 roadId 260 laneId -1', log))
+        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 11 roadId 220 laneId -1', log))
+        self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 12: 222, -1, 20.00', log))
+        self.assertTrue(re.search('\n25.53.* Route::AddWaypoint Added intermediate waypoint 3 roadId 280 laneId -1', log))
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n25.53.* AquirePosition condition == true, distance 0.9. < tolerance \(1.00\), edge: Rising', log))
+        self.assertTrue(re.search('\n25.53.: AquirePosition event complete after 1 execution', log))
+        self.assertTrue(re.search('\n38.91.* Stop condition == true, distance 0.7. < tolerance \(1.00\), edge: Rising', log))
+        self.assertTrue(re.search('\n46.28.* QuitCondition timer expired at 4.0. seconds', log))
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('\n7.00.*, 0, Ego, 291.87.*, 25.78.*, 0.00.*, 1.57.*, 0.00.*, 0.00.*, 50.00.*', csv))
+        self.assertTrue(re.search('\n23.90.*, 0, Ego, 230.91.*, -3.34.*, 0.00.*, 6.06.*, 0.00.*, 0.00.*, 50.00.*', csv))
+        self.assertTrue(re.search('\n42.24.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.05.*', csv))
+        self.assertTrue(re.search('\n42.24.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.05.*', csv))
+        self.assertTrue(re.search('\n42.25.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.00.*', csv))
 
 if __name__ == "__main__":
     # execute only if run as a script
