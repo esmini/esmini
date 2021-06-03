@@ -1,0 +1,128 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2020-12-11T10:00:00"
+               description="Synchronize with SteadyState provocing critical situation incl car and bike"
+               author="esmini-team"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <RouteCatalog>
+         <Directory path="../xosc/Catalogs/Routes"/>
+      </RouteCatalog>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/multi_intersections.xodr"/>
+      <SceneGraphFile filepath="../models/multi_intersections.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <RoutingAction>
+                     <AssignRouteAction>
+                        <CatalogReference catalogName="RoutesAtMultiIntersections" entryName="ComplexRoute"/>
+                     </AssignRouteAction>
+                  </RoutingAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <RoutePosition>
+                           <RouteRef>
+                              <CatalogReference catalogName="RoutesAtMultiIntersections" entryName="ComplexRoute"/>
+                           </RouteRef>
+                           <InRoutePosition>
+                              <FromLaneCoordinates pathS="20" laneId="1"/>
+                           </InRoutePosition>
+                        </RoutePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="50"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+        <ParameterDeclarations/>
+        <Act name="AquirePosition act">
+            <ManeuverGroup maximumExecutionCount="1" name="AquirePosition maneuver group">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="AquirePosition maneuver">
+                  <Event name="AquirePosition event" maximumExecutionCount="2" priority="overwrite">
+                     <Action name="AquirePosition action">
+                        <PrivateAction>
+                           <LateralAction>
+                              <AquirePositionAction>
+                                  <Position>
+                                      <LanePosition roadId="242" laneId="-1" offset="0" s="40"/>
+                                  </Position>
+                              </AquirePositionAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="AquirePosition condition" delay="0" conditionEdge="rising">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <ReachPositionCondition tolerance="2.0">
+                                       <Position>
+                                          <LanePosition roadId="197" laneId="-1" offset="0" s="20"/>
+                                       </Position>
+                                    </ReachPositionCondition>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="AquirePosition act start condition" delay="0" conditionEdge="risingOrFalling">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger>
+               <ConditionGroup>
+                  <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+                     <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event"
+                                                         storyboardElementRef="AquirePosition event"
+                                                         state="completeState"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StopTrigger>       
+        </Act>
+      </Story>
+   </Storyboard>
+</OpenSCENARIO>

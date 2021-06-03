@@ -84,7 +84,7 @@ void AssignRouteAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 	}
 	for (size_t i = 0; i < route_->waypoint_.size(); i++)
 	{
-		route_->waypoint_[i]->ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
+		route_->waypoint_[i].ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
 	}
 }
 

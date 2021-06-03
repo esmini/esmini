@@ -73,6 +73,31 @@ using namespace roadmanager;
 static int g_Lane_id;
 static int g_Laneb_id;
 
+static std::string LinkType2Str(LinkType type)
+{
+	if (type == LinkType::PREDECESSOR)
+	{
+		return "PREDECESSOR";
+	}
+	else if (type == LinkType::SUCCESSOR)
+	{
+		return "SUCCESSOR";
+	}
+	else if (type == LinkType::NONE)
+	{
+		return "NONE";
+	}
+	else if (type == LinkType::UNKNOWN)
+	{
+		return "UNKNOWN";
+	}
+	else
+	{
+		return "UNDEFINED";
+	}
+}
+
+
 int roadmanager::GetNewGlobalLaneId()
 {
 	int returnvalue = g_Lane_id;
@@ -905,6 +930,78 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 	}
 
 	return lane_info;
+}
+
+int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectingRoadId)
+{
+	Lane* lane;
+
+	if (road_link->GetElementId() == -1)
+	{
+		LOG("No connecting road or junction at rid %d link_type %s", GetId(), LinkType2Str(road_link->GetType()).c_str());
+		return -1;
+	}
+
+	if (road_link->GetType() == LinkType::SUCCESSOR)
+	{
+		lane = lane_section_.back()->GetLaneById(fromLaneId);
+	}
+	else
+	{
+		lane = lane_section_[0]->GetLaneById(fromLaneId);
+	}
+
+	if (lane == nullptr)
+	{
+		LOG("Failed to get connecting lane %d %d %d", GetId(), fromLaneId, connectingRoadId);
+		return 0;
+	}
+
+	if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD)
+	{
+		if (road_link->GetElementId() != connectingRoadId)
+		{
+			LOG("Wrong connectingRoadId %d (expected %d)", road_link->GetElementId(), connectingRoadId);
+			return 0;
+		}
+
+		LaneLink* lane_link = lane->GetLink(road_link->GetType());
+		if (lane_link != 0)
+		{
+			return lane->GetLink(road_link->GetType())->GetId();
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION)
+	{
+		Junction* junction = Position::GetOpenDrive()->GetJunctionById(road_link->GetElementId());
+
+		if (junction == 0)
+		{
+			LOG("Error: junction %d not existing\n", road_link->GetElementType());
+			return -1;
+		}
+
+		int n_connections = junction->GetNumberOfRoadConnections(GetId(), lane->GetId());
+
+		for (int i = 0; i < n_connections; i++)
+		{
+			LaneRoadLaneConnection lane_road_lane_connection =
+				junction->GetRoadConnectionByIdx(GetId(), lane->GetId(), i);
+
+			if (lane_road_lane_connection.GetConnectingRoadId() == connectingRoadId)
+			{
+				return lane_road_lane_connection.GetConnectinglaneId();
+			}
+		}
+	}
+
+	LOG("Failed to find connecting lane (from road %d, lane %d to road %d)", GetId(), lane->GetId(), connectingRoadId);
+
+	return 0;
 }
 
 double Road::GetLaneWidthByS(double s, int lane_id)
@@ -3328,7 +3425,7 @@ void Junction::Print()
 	}
 }
 
-bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fromRoad)
+bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fromRoad, int fromLaneId)
 {
 	RoadLink* nextLink = 0;
 
@@ -3363,6 +3460,12 @@ bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fro
 		return false;
 	}
 
+	int nextLaneId = fromRoad->GetConnectingLaneId(srcNode->link, fromLaneId, checkRoad->GetId());
+	if (nextLaneId == 0)
+	{
+		return false;
+	}
+
 	// Check if next node is already visited
 	for (size_t i = 0; i < visited_.size(); i++)
 	{
@@ -3394,6 +3497,7 @@ bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fro
 		pNode->dist = srcNode->dist + checkRoad->GetLength();
 		pNode->link = nextLink;
 		pNode->fromRoad = checkRoad;
+		pNode->fromLaneId = nextLaneId;
 		pNode->previous = srcNode;
 		unvisited_.push_back(pNode);
 	}
@@ -3409,6 +3513,7 @@ int RoadPath::Calculate(double &dist)
 	Road* startRoad = odr->GetRoadById(startPos_->GetTrackId());
 	Road* targetRoad = odr->GetRoadById(targetPos_->GetTrackId());
 	Road* pivotRoad = startRoad;
+	int pivotLaneId = startPos_->GetLaneId();
 	Road* nextRoad = startRoad;
 	bool found = false;
 	double tmpDist = 0;
@@ -3425,33 +3530,29 @@ int RoadPath::Calculate(double &dist)
 		return -1;
 	}
 
-	// Look both forward and backwards from start position
-	for (i = 0; i < 2; i++)
+	// Look only in forward direction, w.r.t. entity heading
+	if (startPos_->GetHRelative() < M_PI_2 || startPos_->GetHRelative() > 3 * M_PI_2)
 	{
-		if (i == 0)
-		{
-			tmpDist = startPos_->GetS();  // distance to first road link is distance to start of road
-			link = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
-		}
-		else
-		{
-			tmpDist = pivotRoad->GetLength() - startPos_->GetS();  // distance to end of road
-			link = pivotRoad->GetLink(LinkType::SUCCESSOR);  // Find link to previous road or junction
-		}
+		// Along road direction
+		tmpDist = pivotRoad->GetLength() - startPos_->GetS();  // distance to end of road
+		link = pivotRoad->GetLink(LinkType::SUCCESSOR);  // Find link to previous road or junction
+	}
+	else
+	{
+		// Opposite road direction
+		tmpDist = startPos_->GetS();  // distance to first road link is distance to start of road
+		link = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
+	}
 
-		// If only forward direction would be of interest, add something like:
-		// if (abs(startPos_->GetHRelative()) > M_PI_2 && abs(startPos_->GetHRelative()) < 3 * M_PI / 2)
-		// then choose predecessor, else successor 
-
-		if (link)
-		{
-			PathNode* pNode = new PathNode;
-			pNode->dist = tmpDist;
-			pNode->link = link;
-			pNode->fromRoad = pivotRoad;
-			pNode->previous = 0;
-			unvisited_.push_back(pNode);
-		}
+	if (link)
+	{
+		PathNode* pNode = new PathNode;
+		pNode->dist = tmpDist;
+		pNode->link = link;
+		pNode->fromRoad = pivotRoad;
+		pNode->fromLaneId = pivotLaneId;
+		pNode->previous = 0;
+		unvisited_.push_back(pNode);
 	}
 
 	if (startRoad == targetRoad)
@@ -3508,6 +3609,7 @@ int RoadPath::Calculate(double &dist)
 		link = unvisited_[minIndex]->link;
 		tmpDist = unvisited_[minIndex]->dist;
 		pivotRoad = unvisited_[minIndex]->fromRoad;
+		pivotLaneId = unvisited_[minIndex]->fromLaneId;
 
 		// - Inspect all unvisited neighbor nodes (links), measure edge (road) distance to that link
 		// - Note the total distance 
@@ -3534,7 +3636,7 @@ int RoadPath::Calculate(double &dist)
 			}
 			else
 			{
-				CheckRoad(nextRoad, unvisited_[minIndex], pivotRoad);
+				CheckRoad(nextRoad, unvisited_[minIndex], pivotRoad, pivotLaneId);
 			}
 		}
 		else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
@@ -3564,7 +3666,7 @@ int RoadPath::Calculate(double &dist)
 				}
 				else
 				{ 
-					CheckRoad(nextRoad, unvisited_[minIndex], pivotRoad);
+					CheckRoad(nextRoad, unvisited_[minIndex], pivotRoad, pivotLaneId);
 				}
 			}
 		}
@@ -3664,7 +3766,7 @@ int OpenDrive::GetTrackIdByIdx(int idx)
 	return 0;
 }
 
-int OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double &angle)
+int OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double& angle)
 {
 	Road *road1 = GetRoadById(road1_id);
 	Road *road2 = GetRoadById(road2_id);
@@ -4055,9 +4157,6 @@ int OpenDrive::CheckJunctionConnection(Junction *junction, Connection *connectio
 									junction->AddConnection(newConnection);
 								}
 							}
-
-							LOG("Added reverse connection from road %d to %d via junction %d connecting road %d.", 
-								connection->GetIncomingRoad()->GetId(), roadc->GetId(), junction->GetId(), connection->GetConnectingRoad()->GetId());
 						}
 					}
 				}
@@ -5082,7 +5181,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3)
 			{
 				if (route_)
 				{
-					road = GetOpenDrive()->GetRoadById(route_->waypoint_[i]->GetTrackId());
+					road = GetOpenDrive()->GetRoadById(route_->waypoint_[i].GetTrackId());
 				}
 				else
 				{
@@ -5856,30 +5955,6 @@ void Position::ForceLaneId(int lane_id)
 
 	lane_id_ = lane_id;
 	offset_ -= lat_dist;
-}
-
-static std::string LinkType2Str(LinkType type)
-{
-	if (type == LinkType::PREDECESSOR)
-	{
-		return "PREDECESSOR";
-	}
-	else if (type == LinkType::SUCCESSOR)
-	{
-		return "SUCCESSOR";
-	}
-	else if (type == LinkType::NONE)
-	{
-		return "NONE";
-	}
-	else if (type == LinkType::UNKNOWN)
-	{
-		return "UNKNOWN";
-	}
-	else
-	{
-		return "UNDEFINED";
-	}
 }
 
 std::string OpenDrive::ContactPointType2Str(ContactPointType type)
@@ -6826,30 +6901,30 @@ int Position::CalcRoutePosition()
 		}
 
 		// Add length of intermediate waypoint road
-		dist += GetRoadById(route_->waypoint_[i]->GetTrackId())->GetLength();
+		dist += GetRoadById(route_->waypoint_[i].GetTrackId())->GetLength();
 
 		if (i == 0)
 		{
 			// Subtract initial s-value for the first waypoint
 			if (route_direction > 0)  // route in waypoint road direction
 			{
-				dist -= route_->waypoint_[i]->s_;
+				dist -= route_->waypoint_[i].s_;
 				dist = MAX(dist, 0.0);
 			}
 			else
 			{
 				// route in opposite road direction - remaining distance equals waypoint s-value
-				dist = route_->waypoint_[i]->s_;
+				dist = route_->waypoint_[i].s_;
 			}
 		}
 
-		if (GetTrackId() == route_->waypoint_[i]->GetTrackId())
+		if (GetTrackId() == route_->waypoint_[i].GetTrackId())
 		{
 			// current position is at the road of this waypoint - i.e. along the route
 			// remove remaming s from road
 			if (route_direction > 0)
 			{
-				dist -= (GetRoadById(route_->waypoint_[i]->GetTrackId())->GetLength() - GetS());
+				dist -= (GetRoadById(route_->waypoint_[i].GetTrackId())->GetLength() - GetS());
 			}
 			else
 			{
@@ -7618,7 +7693,7 @@ int Position::SetRoutePosition(Position *position)
 	// Is it a valid position, i.e. is it along the route
 	for (size_t i=0; i<route_->waypoint_.size(); i++)
 	{
-		if (route_->waypoint_[i]->GetTrackId() == position->GetTrackId()) // Same road
+		if (route_->waypoint_[i].GetTrackId() == position->GetTrackId()) // Same road
 		{
 			// Update current position 
 			Route *tmp = route_;  // save route pointer, copy the 
@@ -8367,17 +8442,17 @@ int Position::SetRouteS(Route *route, double route_s)
 		driving_direction = -1;
 	}
 
-	OpenDrive *od = route->waypoint_[0]->GetOpenDrive();
+	OpenDrive *od = route->waypoint_[0].GetOpenDrive();
 
 	double initial_s_offset = 0;
 
 	if (route->GetWayPointDirection(0) > 0)
 	{
-		initial_s_offset = route->waypoint_[0]->GetS();
+		initial_s_offset = route->waypoint_[0].GetS();
 	}
 	else
 	{
-		initial_s_offset = od->GetRoadById(route->waypoint_[0]->GetTrackId())->GetLength() - route->waypoint_[0]->GetS();
+		initial_s_offset = od->GetRoadById(route->waypoint_[0].GetTrackId())->GetLength() - route->waypoint_[0].GetS();
 	}
 
 	double route_length = 0;
@@ -8387,7 +8462,7 @@ int Position::SetRouteS(Route *route, double route_s)
 	// Find out what road and local s value
 	for (size_t i = 0; i < route->waypoint_.size(); i++)
 	{
-		double road_length = GetRoadById(route->waypoint_[i]->GetTrackId())->GetLength();
+		double road_length = GetRoadById(route->waypoint_[i].GetTrackId())->GetLength();
 
 		if (s_route_ < route_length + road_length - initial_s_offset)
 		{
@@ -8415,7 +8490,7 @@ int Position::SetRouteS(Route *route, double route_s)
 				new_offset = offset_;
 			}
 
-			if (SIGN(route->waypoint_[i]->GetLaneId()) < 0)
+			if (SIGN(route->waypoint_[i].GetLaneId()) < 0)
 			{
 				SetHeadingRelative(driving_direction < 0 ? M_PI : 0.0);
 			}
@@ -8424,12 +8499,14 @@ int Position::SetRouteS(Route *route, double route_s)
 				SetHeadingRelative(driving_direction < 0 ? 0.0 : M_PI);
 			}
 
-			return (SetLanePos(route->waypoint_[i]->GetTrackId(), route->waypoint_[i]->GetLaneId(), local_s, new_offset));
+			return (SetLanePos(route->waypoint_[i].GetTrackId(), route->waypoint_[i].GetLaneId(), local_s, new_offset));
 		}
 		route_length += road_length - initial_s_offset;
 		initial_s_offset = 0;  // For all following road segments, calculate length from beginning
 	}
 
+	LOG("Reached end of route, reset and continue");
+	SetRoute(nullptr);
 	status_ |= POS_STATUS_END_OF_ROUTE;
 	return ErrorCode::ERROR_END_OF_ROUTE;
 }
@@ -8498,47 +8575,44 @@ void Position::ReleaseRelation()
 	}
 }
 
-int Route::AddWaypoint(Position *position)
+int Route::AddWaypoint(Position* position)
 {
-	// Validate waypoint: Is it on the previous road or a connecting one?
 	if (waypoint_.size() > 0)
 	{
-		bool connected = false;
-		Position *prev_pos = waypoint_.back();
-
-		int connecting_road_id = 0;
-		int *connecting_road_id_ptr = &connecting_road_id;
-		int connecting_lane_id = 0;
-		int *connecting_lane_id_ptr = &connecting_lane_id;
-
-		if (prev_pos->GetTrackId() != position->GetTrackId())
+		// Check that there is a valid path from previous waypoint 
+		RoadPath* path = new RoadPath(&waypoint_.back(), position);
+		double dist = 0;
+		
+		bool found = (path->Calculate(dist) == 0);
+		if (found)
 		{
-			if (position->GetOpenDrive()->IsIndirectlyConnected(prev_pos->GetTrackId(), position->GetTrackId(), 
-				connecting_road_id_ptr, connecting_lane_id_ptr, prev_pos->GetLaneId(), position->GetLaneId()))
+			// Path is found by tracing previous nodes
+			RoadPath::PathNode* previous = path->visited_.back()->previous;
+			std::vector<RoadPath::PathNode*> nodes;
+			nodes.push_back(path->visited_.back());
+			while (previous != nullptr)
 			{
-				connected = true;
-				if (connecting_road_id != 0)
+				nodes.push_back(previous);
+				previous = previous->previous;
+			}
+
+			if (nodes.size() > 1)
+			{
+				// Add internal waypoints, one for each road along the path
+				for (int i = (int)nodes.size() - 1; i >= 1; i--)
 				{
-					// Adding waypoint for junction connecting road
-					Position *connected_pos = new Position(connecting_road_id, connecting_lane_id, 0, 0);
+					// Find out lane ID of the connecting road
+					Position connected_pos = Position(nodes[i - 1]->fromRoad->GetId(), nodes[i - 1]->fromLaneId, 0, 0);
 					waypoint_.push_back(connected_pos);
-					LOG("Route::AddWaypoint Added connecting waypoint %d: %d, %d, %.2f",
-						(int)waypoint_.size() - 1, connecting_road_id, connecting_lane_id, 0.0);
+					LOG("Route::AddWaypoint Added intermediate waypoint %d roadId %d laneId %d",
+						(int)waypoint_.size() - 1, connected_pos.GetTrackId(), nodes[i - 1]->fromLaneId);
 				}
 			}
 		}
-
-		if (!connected)
-		{
-			LOG("Error: waypoint (%d, %d) is not connected to the previous one (%d, %d)\n",
-				position->GetTrackId(), position->GetLaneId(), prev_pos->GetTrackId(), prev_pos->GetLaneId());
-
-			return -1;
-		}
 	}
 
-	waypoint_.push_back(position);
-	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f", (int)waypoint_.size()-1, position->GetTrackId(), position->GetLaneId(), position->GetS());
+	waypoint_.push_back(*position);
+	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f", (int)waypoint_.size() - 1, position->GetTrackId(), position->GetLaneId(), position->GetS());
 
 	return 0;
 }
@@ -8557,22 +8631,22 @@ int Route::GetWayPointDirection(int index)
 		return 0;
 	}
 
-	OpenDrive *od = waypoint_[index]->GetOpenDrive();
-	Road *road = od->GetRoadById(waypoint_[index]->GetTrackId());
+	OpenDrive *od = waypoint_[index].GetOpenDrive();
+	Road *road = od->GetRoadById(waypoint_[index].GetTrackId());
 	int connected = 0;
 	double angle;
 
 	if (index == waypoint_.size() - 1)
 	{
 		// Find connection point to previous waypoint road
-		Road *prev_road = od->GetRoadById(waypoint_[index-1]->GetTrackId());
+		Road *prev_road = od->GetRoadById(waypoint_[index-1].GetTrackId());
 
 		connected = -od->IsDirectlyConnected(road->GetId(), prev_road->GetId(), angle);
 	} 
 	else
 	{
 		// Find connection point to next waypoint road
-		Road *next_road = od->GetRoadById(waypoint_[index+1]->GetTrackId());
+		Road *next_road = od->GetRoadById(waypoint_[index+1].GetTrackId());
 		
 		connected = od->IsDirectlyConnected(road->GetId(), next_road->GetId(), angle);
 	}

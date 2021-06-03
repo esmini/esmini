@@ -29,5 +29,27 @@
             </Position>
          </Waypoint>
       </Route>
+      <Route name="ComplexRoute" closed="false">
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="242" laneId="1" offset="0" s="100"/>
+            </Position>
+         </Waypoint>
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="261" laneId="1" offset="0" s="50"/>
+            </Position>
+         </Waypoint>
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="222" laneId="-1" offset="0" s="20"/>
+            </Position>
+         </Waypoint>
+         <Waypoint routeStrategy="shortest">
+            <Position>
+               <LanePosition roadId="197" laneId="-1" offset="0" s="20"/>
+            </Position>
+         </Waypoint>
+      </Route>      
    </Catalog>
 </OpenSCENARIO>

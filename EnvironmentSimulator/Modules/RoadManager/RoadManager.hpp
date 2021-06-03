@@ -958,6 +958,7 @@ namespace roadmanager
 		double GetCenterOffset(double s, int lane_id);
 
 		LaneInfo GetLaneInfoByS(double s, int start_lane_link_idx, int start_lane_id, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
+		int GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectingRoadId);
 		double GetLaneWidthByS(double s, int lane_id);
 		double GetSpeedByS(double s);
 		bool GetZAndPitchByS(double s, double *z, double *pitch, int *index);
@@ -1180,8 +1181,8 @@ namespace roadmanager
 			@param angle if connected, the angle between road 2 and road 1 is returned here
 			@return 0 if not connected, -1 if road 2 is the predecessor of road 1, +1 if road 2 is the successor of road 1
 		*/
+		int IsDirectlyConnected(int road1_id, int road2_id, double& angle);
 
-		int IsDirectlyConnected(int road1_id, int road2_id, double &angle);
 		bool IsIndirectlyConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id = 0, int lane2_id = 0);
 
 		/**
@@ -1879,7 +1880,7 @@ namespace roadmanager
 		std::string getName();
 		double GetLength();
 
-		std::vector<Position*> waypoint_;
+		std::vector<Position> waypoint_;
 		std::string name_;
 	};
 
@@ -1895,6 +1896,7 @@ namespace roadmanager
 			RoadLink *link;
 			double dist;
 			Road* fromRoad;
+			int fromLaneId;
 			PathNode* previous;
 		} PathNode;
 
@@ -1919,7 +1921,7 @@ namespace roadmanager
 		int Calculate(double &dist);
 	
 	private:
-		bool CheckRoad(Road* checkRoad, RoadPath::PathNode* srcNode, Road* fromRoad);
+		bool CheckRoad(Road* checkRoad, RoadPath::PathNode* srcNode, Road* fromRoad, int fromLaneId);
 	};
 
 	typedef struct
