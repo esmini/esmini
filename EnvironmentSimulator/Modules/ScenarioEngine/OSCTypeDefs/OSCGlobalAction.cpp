@@ -251,26 +251,113 @@ createVehicle(roadmanager::Position pos, char hdg_offset, int lane, double speed
     return vehicle;
 }
 
-void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime) 
-{   
-    for (Point &pt : sols) {
-        for (int lane : {1, -1}) {
-            if (spawnedV.size() >= numberOfVehicles) return;
+inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols, vector<SelectInfo> &info)
+{
+printf("Entered road selection\n");
+printf("Min: %d, Max: %d\n", minN, maxN);
+    std::uniform_int_distribution<int> dist(minN, maxN);
+    std::random_device dev;
+	std::mt19937 gen(dev());
+    // Sample the number of cars to spawn
+    if (maxN < minN) LOG("Unstable behavior detected (maxN < minN)");
+    int nCarsToSpawn = dist(gen);
 
+    info.reserve(nCarsToSpawn);
+    info.clear();
+    if (nCarsToSpawn < sols.size() && nCarsToSpawn > 0) {
+        // Shuffle and randomly select the points
+        //Solutions selected(nCarsToSpawn);
+        Point selected[nCarsToSpawn];
+        std::random_shuffle(sols.begin(), sols.end());
+        sample(sols.begin(), sols.end(), selected, nCarsToSpawn, gen);
+
+        for (Point pt : selected) {
+            // Find road
             roadmanager::Position pos;
             pos.XYZH2TrackPos(pt.x, pt.y, 0, pt.h);
-            if (!ensureDistance(pos, lane)) continue;
+            // Peek road
+            roadmanager::Road* road = odrManager_->GetRoadById(pos.GetTrackId());
+            if (road->GetNumberOfDrivingLanes(pos.GetS()) == 0) continue;
+            // Since the number of points is equal to the number of vehicles to spaw, 
+            // only one lane is selected
+            SelectInfo sInfo = {
+                pos,
+                road,
+                1
+            };
+            info.push_back(sInfo);
+        }
+    } else {
+        int lanesLeft = nCarsToSpawn - sols.size();
+        for (Point pt : sols) {
+            roadmanager::Position pos;
+            pos.XYZH2TrackPos(pt.x, pt.y, 0, pt.h);
+
+            roadmanager::Road* road = odrManager_->GetRoadById(pos.GetTrackId());
+            int nDrivingLanes       = road->GetNumberOfDrivingLanes(pos.GetS());
+            if (nDrivingLanes == 0) {
+                lanesLeft++;
+                continue;
+            }
+            
+            int lanesN;
+            if (lanesLeft > 0) {
+                std::uniform_int_distribution<int> laneDist(0, std::min(lanesLeft, nDrivingLanes));
+                lanesN = laneDist(gen);
+                lanesN = (lanesN == 0 ? 0 : lanesN - 1);
+            } else
+                lanesN = 0;
+            SelectInfo sInfo = {
+                pos,
+                road,
+                1 + lanesN
+            };
+            info.push_back(sInfo);
+            lanesLeft -= 1 + lanesN;
+        }
+    }
+}
+
+void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime) 
+{   
+    printf("spawnedV: %d\n", spawnedV.size());
+    int maxCars = numberOfVehicles - spawnedV.size();
+    if (maxCars <= 0) return;
+
+    std::random_device dev;
+	std::mt19937 gen(dev());
+
+    vector<SelectInfo> info;
+    sampleRoads(replace, maxCars, sols, info);
+
+    for (SelectInfo inf : info) {
+        int lanesNo = inf.road->GetNumberOfDrivingLanes(inf.pos.GetS());
+        int elements[lanesNo];
+        std::iota(elements, elements + lanesNo, 0);
+
+        int lanes[inf.nLanes];
+        sample(elements, elements + lanesNo, lanes, inf.nLanes, gen);
+        for (int laneIdx : lanes) {
+            auto Lane = inf.road->GetDrivingLaneByIdx(inf.pos.GetS(), laneIdx);
+            int laneID;
+
+            if (!Lane) {
+                LOG("Warning: invalid lane index");
+                continue;
+            } else
+                laneID = Lane->GetId();
+            if (!ensureDistance(inf.pos, laneID)) continue;
 
             Vehicle* vehicle;
-            vehicle = createVehicle(pos, (lane < 0 ? 0 : 1), lane, velocity_, NULL, centralObject_->model_filepath_);
+            vehicle = createVehicle(inf.pos, (laneID < 0 ? 0 : 1), laneID, velocity_, NULL, centralObject_->model_filepath_);
             int id          = entities_->addObject(vehicle);
             vehicle->name_  = std::to_string(id); 
             SpawnInfo sInfo = {
-                id,                // Vehicle ID
-                0,                 // Useless detection counter
-                pos.GetTrackId(),  // Road ID
-                lane,              // Lane
-                simTime            // Simulation time
+                id,                    // Vehicle ID
+                0,                     // Useless detection counter
+                inf.pos.GetTrackId(),  // Road ID
+                laneID,                // Lane
+                simTime                // Simulation time
             };
             spawnedV.push_back(sInfo);
         }
