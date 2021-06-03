@@ -12,16 +12,21 @@
 
 #pragma once
 #include <iostream>
+#include <random>
 #include "OSCAction.hpp"
 #include "CommonMini.hpp"
 #include "Parameters.hpp"
 #include "Entities.hpp"
 #include "OSCAABBTree.hpp"
+#include <vector>
+#include "OSCUtils.hpp"
 
 namespace scenarioengine
 {
 
 	using aabbTree::Solutions;
+	using std::vector;
+	using namespace Utils;
 
 	class OSCGlobalAction : public OSCAction
 	{
@@ -98,13 +103,23 @@ namespace scenarioengine
 			int lane;
 			double simTime;
 		};
+
+		typedef struct {
+		    roadmanager::Position pos;
+			roadmanager::Road *road;
+		    int nLanes;
+	    } SelectInfo;
 		
 		SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC), centralObject_(0) {
 			spawnedV.clear();
+			//std::mt19937 temp(std::random_device{}());
+			//gen = temp;
 		};
 
 		SwarmTrafficAction(const SwarmTrafficAction& action) : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC) {
 		    spawnedV.clear();
+			//std::mt19937 temp(std::random_device{}());
+			//gen = temp;
 		}
 
 		OSCGlobalAction* Copy() {
@@ -130,7 +145,8 @@ namespace scenarioengine
 
     private:
 
-        double velocity_;
+		double velocity_;
+		//std::mt19937 gen;
 		Entities *entities_;
 		Object* centralObject_;
 		aabbTree::ptTree rTree;
@@ -140,11 +156,13 @@ namespace scenarioengine
 		double innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
 		
 
+		int despawn(double simTime);
 		void createRoadSegments(aabbTree::BBoxVec &vec);
-		void createEllipseSegments(aabbTree::BBoxVec &vec, double SMjA, double SMnA);
 		void spawn(Solutions sols, int replace, double simTime);
 		inline bool ensureDistance(roadmanager::Position pos, int lane);
-		int despawn(double simTime);
+		void createEllipseSegments(aabbTree::BBoxVec &vec, double SMjA, double SMnA);
+		inline void sampleRoads(int minN, int maxN, Solutions &sols, vector<SelectInfo> &info);
 	};
+
 }
 

@@ -16,6 +16,9 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <random>
+#include <algorithm>
+#include <numeric>
 
 using namespace scenarioengine;
 using namespace STGeometry;
@@ -383,7 +386,7 @@ int SwarmTrafficAction::despawn(double simTime)
     bool deleteVehicle         = false;
     int count                  = 0;
     roadmanager::Position cPos = centralObject_->pos_;
-
+printf("Before despawn: %d\n", spawnedV.size());
     while (infoPtr < spawnedV.end()) {
         Object *vehicle = entities_->GetObjectById(infoPtr->vehicleID);
         roadmanager::Position vPos = vehicle->pos_;
@@ -411,5 +414,6 @@ int SwarmTrafficAction::despawn(double simTime)
         if (increase) ++infoPtr;
         increase = true;
     }
+    printf("After despawn: %d\n", spawnedV.size());
     return count;
 }
