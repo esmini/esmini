@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2021-06-04 Version 2.9.0
+
+- Support simpler route definitions
+  - Resolve, if possible, any number intermediate waypoints
+  - Only start and end is needed, shortest route will be resolved
+  - User can specify additional intermediate waypoints for desired explicit routing
+  - Shortest path will only be searched for in forward (vehicle heading) direction
+- Add AcquirePositionAction
+  - Also add example scenario [routing-test.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/routing-test.xosc) (and launch script [run_routing-test.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_routing-test.bat)) demonstrating improved routing and AcquirePositionAction.  
+- Support OpenDRIVE road "rule" attribute
+  - When heading is not explicitly specified, entities will be aligned in the road direction according to the traffic rule (RHT=right-hand traffic, LHT=left-hand traffic).
+  - Example [e6mini-lht.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/e6mini-lht.xodr) and [left-hand-traffic_using_road_rule.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/left-hand-traffic_using_road_rule.xosc)
+- Fix bug that could cause SpeedAction to not terminate
+
 ### 2021-05-26 Version 2.8.4
 
 - Updated OSI and Protobuf versions (v3.3.1 / v3.15.2)
