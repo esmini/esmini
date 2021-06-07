@@ -173,11 +173,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 
 	roadmanager::Position *pos = &player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
 
-	if (pos->GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
-	{
-		return -1;
-	}
-	else
+	if (pos->GetProbeInfo(lookahead_distance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != -1)
 	{
 		// Copy data
 		r_data->local_pos_x = (float)s_data.relative_pos[0];
@@ -213,8 +209,19 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 			player->viewer_->UpdateSensor(model->steering_sensor_);
 		}
 #endif
-		return 0;
+
+		if (pos->GetStatusBitMask() & roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD ||
+			pos->GetStatusBitMask() & roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
+		{
+			return -2;  // Indicate end of road
+		}
+		else
+		{
+			return 0;  // OK
+		}
 	}
+
+	return -1;  // Error
 }
 
 static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *r_data, float *speed_ghost)

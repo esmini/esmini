@@ -48,11 +48,7 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 		}
 	}
 
-	if (position[index].GetProbeInfo(adjustedLookaheadDistance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != 0)
-	{
-		return -1;
-	}
-	else
+	if (position[index].GetProbeInfo(adjustedLookaheadDistance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != -1)
 	{
 		// Copy data
 		r_data->road_lane_info.pos[0] = (float)s_data.road_lane_info.pos[0];
@@ -68,8 +64,18 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 		r_data->relative_pos[2] = (float)s_data.relative_pos[2];
 		r_data->relative_h = (float)s_data.relative_h;
 
-		return 0;
+		if (position[index].GetStatusBitMask() & roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD ||
+			position[index].GetStatusBitMask() & roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
+		{
+			return -2;  // Indicate end of road
+		}
+		else
+		{
+			return 0;  // OK
+		}
 	}
+
+	return -1;  // Error
 }
 
 static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo *r_data, int lookAheadMode, bool inRoadDrivingDirection)
@@ -501,12 +507,7 @@ extern "C"
 			return -1;
 		}
 
-		if (GetProbeInfo(handle, lookahead_distance, data, lookAheadMode, inRoadDrivingDirection) != 0)
-		{
-			return -1;
-		}
-
-		return 0;
+		return GetProbeInfo(handle, lookahead_distance, data, lookAheadMode, inRoadDrivingDirection);
 	}
 
 	RM_DLL_API bool RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff)

@@ -1684,7 +1684,7 @@ TEST(DistanceTest, CalcDistanceLong)
     EXPECT_NEAR(dist, 9.486871, 1e-5);
 }
 
-TEST(TestNurbsPosition, NurbsTest)
+TEST(NurbsTest, TestNurbsPosition)
 {
     NurbsShape n(4);
 
@@ -1717,7 +1717,7 @@ TEST(TestNurbsPosition, NurbsTest)
     EXPECT_NEAR(v.p, 0.360046, 1e-5);
 }
 
-TEST(TestAssignRoute, Route)
+TEST(Route, TestAssignRoute)
 {
     Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/fabriksgatan.xodr");
     OpenDrive* odr = Position::GetOpenDrive();
@@ -1747,6 +1747,97 @@ TEST(TestAssignRoute, Route)
     // Set a position in intersection, at a lane not part of the route 
     pos0.SetLanePos(16, -1, 1.0, 0.0);
     EXPECT_EQ(pos0.SetRoute(&route), -1);  // pos not along the route
+}
+
+TEST(ProbeTest, TestProbeSimpleRoad)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/curve_r100.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    roadmanager::RoadProbeInfo probe_data;
+    Position pos_pivot = Position(0, -1, 5.0, 0.0);
+
+    pos_pivot.GetProbeInfo(5.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
+    EXPECT_EQ(probe_data.road_lane_info.roadId, 0);
+    EXPECT_EQ(probe_data.road_lane_info.laneId, -1);
+    EXPECT_DOUBLE_EQ(probe_data.road_lane_info.heading, 0.0);
+
+    pos_pivot.GetProbeInfo(695.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
+    EXPECT_EQ(probe_data.road_lane_info.roadId, 0);
+    EXPECT_EQ(probe_data.road_lane_info.laneId, -1);
+    EXPECT_DOUBLE_EQ(probe_data.road_lane_info.s, 700.0);
+    EXPECT_NEAR(probe_data.relative_h, 0.23758, 1E-5);
+    EXPECT_NEAR(probe_data.relative_pos[0], 596.53500, 1E-5);
+    EXPECT_NEAR(probe_data.relative_pos[1], 144.45537, 1E-5);
+
+    pos_pivot.GetProbeInfo(695.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_ROAD_CENTER);
+    EXPECT_EQ(probe_data.road_lane_info.roadId, 0);
+    EXPECT_EQ(probe_data.road_lane_info.laneId, -1);
+    EXPECT_NEAR(probe_data.relative_h, 0.2381740, 1E-5);
+    EXPECT_NEAR(probe_data.relative_pos[0], 595.00000, 1E-5);
+    EXPECT_NEAR(probe_data.relative_pos[1], 144.45537, 1E-5);
+
+    // Turn around - position on right side 
+    pos_pivot.SetLanePos(0, 1, 5.0, 0.0);
+    pos_pivot.SetHeadingRelative(M_PI);
+    pos_pivot.GetProbeInfo(4.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_CURRENT_LATERAL_OFFSET);
+    EXPECT_EQ(probe_data.road_lane_info.roadId, 0);
+    EXPECT_EQ(probe_data.road_lane_info.laneId, 1);
+    EXPECT_DOUBLE_EQ(probe_data.road_lane_info.s, 1.0);
+    EXPECT_DOUBLE_EQ(probe_data.road_lane_info.heading, 0.0);
+    EXPECT_NEAR(probe_data.relative_h, 0.0, 1E-5);
+    EXPECT_NEAR(probe_data.relative_pos[0], 4.0, 1E-5);
+    EXPECT_NEAR(probe_data.relative_pos[1], 0.0, 1E-5);
+
+    // Exact at start of road
+    pos_pivot.GetProbeInfo(5.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_CURRENT_LATERAL_OFFSET);
+    EXPECT_EQ(probe_data.road_lane_info.roadId, 0);
+    EXPECT_EQ(probe_data.road_lane_info.laneId, 1);
+    EXPECT_DOUBLE_EQ(probe_data.road_lane_info.s, 0.0);
+    EXPECT_DOUBLE_EQ(probe_data.road_lane_info.heading, 0.0);
+    EXPECT_NEAR(probe_data.relative_h, 0.0, 1E-5);
+    EXPECT_NEAR(probe_data.relative_pos[0], 5.0, 1E-5);
+    EXPECT_NEAR(probe_data.relative_pos[1], 0.0, 1E-5);
+
+    // Go beyond start of road
+    pos_pivot.GetProbeInfo(6.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_CURRENT_LATERAL_OFFSET);
+    EXPECT_EQ(probe_data.road_lane_info.roadId, 0);
+    EXPECT_EQ(probe_data.road_lane_info.laneId, 1);
+    EXPECT_DOUBLE_EQ(probe_data.road_lane_info.s, 0.0);
+    EXPECT_NEAR(probe_data.relative_h, 0.0, 1E-5);
+    EXPECT_NEAR(probe_data.relative_pos[0], 5.0, 1E-5);
+    EXPECT_NEAR(probe_data.relative_pos[1], 0.0, 1E-5);
+}
+
+TEST(ProbeTest, TestProbeComplexRoad)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/fabriksgatan.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 16);
+
+    roadmanager::RoadProbeInfo probe_data;
+
+    // Position on left side, looking beyond road start point.
+    Position pos_pivot = Position(3, 1, 5.0, 0.0);
+    pos_pivot.SetHeadingRelative(M_PI);
+
+    EXPECT_EQ(pos_pivot.GetProbeInfo(20.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER), -2);
+    EXPECT_EQ(probe_data.road_lane_info.roadId, 3);
+    EXPECT_EQ(probe_data.road_lane_info.laneId, 1);
+    EXPECT_NEAR(probe_data.road_lane_info.heading, GetAngleSum(pos_pivot.GetH(), M_PI), 1E-5);
+    EXPECT_DOUBLE_EQ(probe_data.road_lane_info.s, 0.0);
+
+    // Position on right side, looking through the intersection
+    pos_pivot.SetLanePos(3, -1, 5.0, 0.0);
+    pos_pivot.SetHeadingRelative(0.0);
+    EXPECT_EQ(pos_pivot.GetProbeInfo(130.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER), 0);
+    EXPECT_EQ(probe_data.road_lane_info.roadId, 1);
+    EXPECT_EQ(probe_data.road_lane_info.laneId, -1);
+    EXPECT_NEAR(probe_data.road_lane_info.heading, 0.192980, 1E-5);
+    EXPECT_NEAR(probe_data.road_lane_info.s, 5.23650, 1E-5);
 }
 
 int main(int argc, char **argv)

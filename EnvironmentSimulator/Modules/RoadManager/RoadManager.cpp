@@ -7181,6 +7181,7 @@ int Position::GetRoadLaneInfo(RoadLaneInfo *data)
 	data->laneOffset = GetOffset();
 	data->roadId = GetTrackId();
 	data->t = GetT();
+	data->s = GetS();
 
 	// Then find out the width of the lane at current s-value
 	Road *road = GetRoadById(GetTrackId());
@@ -7278,10 +7279,11 @@ int Position::GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookA
 		// Look along current lane center requested, move pivot position accordingly 
 		target.SetLanePos(target.GetTrackId(), target.GetLaneId(), target.GetS(), 0);
 	}
-
+	
+	int retval = 0;
 	if (fabs(lookahead_distance) > SMALL_NUMBER)
 	{
-		int retval;
+
 		if (target.route_)
 		{
 			retval = target.MoveRouteDS(lookahead_distance);
@@ -7290,16 +7292,14 @@ int Position::GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookA
 		{
 			retval = target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT);
 		}
-
-		if (retval != 0)
-		{
-			return retval;
-		}
 	}
 
-	CalcProbeTarget(&target, data);
+	if (retval != -1)
+	{
+		CalcProbeTarget(&target, data);
+	}
 
-	return 0;
+	return retval;
 }
 
 int Position::GetProbeInfo(Position *target_pos, RoadProbeInfo *data)
