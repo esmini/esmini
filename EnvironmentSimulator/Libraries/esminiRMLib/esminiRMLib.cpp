@@ -60,9 +60,9 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 		r_data->road_lane_info.width = (float)s_data.road_lane_info.width;
 		r_data->road_lane_info.curvature = (float)s_data.road_lane_info.curvature;
 		r_data->road_lane_info.speed_limit = (float)s_data.road_lane_info.speed_limit;
-		r_data->road_lane_info.roadId = (float)s_data.road_lane_info.roadId;
-		r_data->road_lane_info.laneId = (float)s_data.road_lane_info.laneId;
-		r_data->road_lane_info.laneId = (float)s_data.road_lane_info.laneOffset;
+		r_data->road_lane_info.roadId = (int)s_data.road_lane_info.roadId;
+		r_data->road_lane_info.laneId = (int)s_data.road_lane_info.laneId;
+		r_data->road_lane_info.laneOffset = (float)s_data.road_lane_info.laneOffset;
 		r_data->road_lane_info.s = (float)s_data.road_lane_info.s;
 		r_data->road_lane_info.t = (float)s_data.road_lane_info.t;
 		r_data->relative_pos[0] = (float)s_data.relative_pos[0];
