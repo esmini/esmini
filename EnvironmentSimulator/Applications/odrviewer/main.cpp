@@ -336,6 +336,7 @@ int main(int argc, char** argv)
 	opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
 	opt.AddOption("model", "3D Model filename", "model_filename");
 	opt.AddOption("density", "density (cars / 100 m)", "density");
+	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
 	opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor");
 	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
 	opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
@@ -469,6 +470,12 @@ int main(int argc, char** argv)
 		if (opt.GetOptionSet("osi_points"))
 		{
 			viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_POINTS);
+		}
+
+		if (argc > 1)
+		{
+			opt.PrintArgs(argc, argv, "Unrecognized arguments:");
+			opt.PrintUsage();
 		}
 
 		LOG("osi_features: lines %s points %s",

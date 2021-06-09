@@ -12,6 +12,8 @@ Options:
       3D Model filename
   --density <density>
       density (cars / 100 m)
+  --generate_no_road_objects
+      Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
   --speed_factor <speed_factor>
       speed_factor <number>
   --osi_lines

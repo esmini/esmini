@@ -36,6 +36,7 @@
 #include <osgShadow/ShadowedScene>
 #include <osgUtil/SmoothingVisitor>
 #include <osgUtil/Tessellator> // to tessellate multiple contours
+#include <osgUtil/Optimizer>   // to flatten transform nodes
 
 #include "CommonMini.hpp"
 
@@ -43,6 +44,7 @@
 #define SHADOW_MODEL_FILEPATH "shadow_face.osgb"  
 #define ARROW_MODEL_FILEPATH "arrow.osgb"
 #define LOD_DIST 3000
+#define LOD_DIST_ROAD_FEATURES 500
 #define LOD_SCALE_DEFAULT 1.0
 #define DEFAULT_AA_MULTISAMPLES 4
 #define OSI_LINE_WIDTH 2.0f
@@ -976,11 +978,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 			environment_ = roadGeom->root_;
 			envTx_->addChild(environment_);
 
-			if (opt && (opt->GetOptionSet("save_generated_model")))
-			{
-				osgDB::writeNodeFile(*roadGeom->root_, "generated_road.osgb");
-			}
-
 			// Since the generated 3D model is based on OSI features, let's hide those
 			ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
 			ClearNodeMaskBits(NodeMask::NODE_MASK_OSI_LINES);
@@ -999,9 +996,25 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		LOG("Viewer::Viewer Failed to create road mark lines!\n");
 	}
 
-	if (odrManager->GetNumOfRoads() > 0 && CreateRoadSignsAndObjects(odrManager) != 0)
+	if (!(opt && opt->GetOptionSet("generate_no_road_objects")))
 	{
-		LOG("Viewer::Viewer Failed to create road signs!\n");
+		if (odrManager->GetNumOfRoads() > 0 && CreateRoadSignsAndObjects(odrManager) != 0)
+		{
+			LOG("Viewer::Viewer Failed to create road signs and objects!\n");
+		}
+	}
+
+	if (roadGeom && opt && (opt->GetOptionSet("save_generated_model")))
+	{
+		// If road model was generated AND user want to save it
+		if (osgDB::writeNodeFile(*envTx_, "generated_road.osgb"))
+		{
+			LOG("Saved generated 3D model in \"generated_road.osgb\"");
+		}
+		else
+		{
+			LOG("Failed to save generated 3D model");
+		}
 	}
 
 #if 0
@@ -1741,12 +1754,10 @@ int Viewer::CreateOutlineObject(roadmanager::Outline *outline)
 	return 0;
 }
 
-int Viewer::LoadRoadFeature(roadmanager::Road *road, std::string filename, double s, double t, 
-	double z_offset, double scale_x, double scale_y, double scale_z, double heading_offset)
+osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(roadmanager::Road *road, std::string filename)
 {
-	roadmanager::Position* pos = new roadmanager::Position();
 	osg::ref_ptr<osg::Node> node;
-	osg::ref_ptr<osg::PositionAttitudeTransform> xform;
+	osg::ref_ptr<osg::PositionAttitudeTransform> xform = 0;
 
 	// Load file, try multiple paths
 	std::vector<std::string> file_name_candidates;
@@ -1767,21 +1778,22 @@ int Viewer::LoadRoadFeature(roadmanager::Road *road, std::string filename, doubl
 			{
 				return 0;
 			}
-			pos->SetTrackPos(road->GetId(), s, t);
+
 			xform = new osg::PositionAttitudeTransform;
-			xform->setPosition(osg::Vec3(pos->GetX(), pos->GetY(), z_offset + pos->GetZ()));
-			xform->setAttitude(osg::Quat(pos->GetH() + heading_offset, osg::Vec3(0, 0, 1)));
-			xform->setScale(osg::Vec3(scale_x, scale_y, scale_z));
 			xform->addChild(node);
-			rootnode_->addChild(xform);
 		}
 	}
 
-	return 0;
+	return xform;
 }
 
 int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 {
+	osg::ref_ptr<osg::Group> objGroup = new osg::Group;
+	osg::ref_ptr<osg::PositionAttitudeTransform> tx = 0;
+
+	roadmanager::Position pos;
+
 	for (int r = 0; r < od->GetNumOfRoads(); r++)
 	{
 		roadmanager::Road* road = od->GetRoadByIdx(r);
@@ -1789,15 +1801,27 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 		{
 			roadmanager::Signal* signal = road->GetSignal(s);
 			double orientation = signal->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
-			if (LoadRoadFeature(road, signal->GetName() + ".osgb", signal->GetS(), signal->GetT(), signal->GetZOffset(), 1.0, 1.0, 1.0, orientation + signal->GetHOffset()) != 0)
+			
+			tx = LoadRoadFeature(road, signal->GetName() + ".osgb");
+
+			pos.SetTrackPos(road->GetId(), signal->GetS(), signal->GetT());
+			tx->setPosition(osg::Vec3(pos.GetX(), pos.GetY(), signal->GetZOffset() + pos.GetZ()));
+			tx->setAttitude(osg::Quat(pos.GetH() + orientation + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
+
+			if (tx == nullptr)
 			{
 				return -1;
+			}
+			else
+			{
+				objGroup->addChild(tx);
 			}
 		}
 
 		for (size_t o = 0; o < road->GetNumberOfObjects(); o++)
 		{
 			roadmanager::RMObject* object = road->GetObject(o);
+			
 			if (object->GetNumberOfOutlines() > 0)
 			{
 				for (size_t j = 0; j < object->GetNumberOfOutlines(); j++)
@@ -1813,14 +1837,140 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 			{
 				// Assume name is representing a 3D model filename
 				double orientation = object->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? M_PI : 0.0;
-				if (LoadRoadFeature(road, object->GetName() + ".osgb", object->GetS(), object->GetT(), object->GetZOffset(),
-					1.0, 1.0, object->GetHeight(), orientation + object->GetHOffset()) != 0)
+
+				std::vector<std::string> file_name_candidates;
+
+				// absolute path or relative to current directory
+				std::string filename = object->GetName();
+				if (FileNameExtOf(filename) == "")
 				{
+					filename += ".osgb";  // add missing extension 
+				}
+
+				tx = LoadRoadFeature(road, filename);
+
+				if (tx == 0)
+				{
+					LOG_AND_QUIT("Failed to load road object model file: %s (%s)", filename.c_str(), object->GetName().c_str());
 					return -1;
+				}
+
+				Repeat* rep = object->GetRepeat();
+				int nCopies = 1;
+				if (rep && rep->GetDistance() > SMALL_NUMBER)
+				{
+					nCopies = rep->length_ / rep->distance_;
+				}
+
+				osg::ComputeBoundsVisitor cbv;
+				tx->accept(cbv);
+				osg::BoundingBox boundingBox = cbv.getBoundingBox();
+
+				double dim_x = boundingBox._max.x() - boundingBox._min.x();
+				double dim_y = boundingBox._max.y() - boundingBox._min.y();
+				double dim_z = boundingBox._max.z() - boundingBox._min.z();
+
+				double lastLODs = 0.0;  // used for putting object copies in LOD groups
+				osg::ref_ptr<osg::Group> LODGroup = 0;
+				osg::ref_ptr<osg::PositionAttitudeTransform> clone = 0;
+
+				for (size_t i = 0; i < nCopies; i++)
+				{
+					double factor, t, s, zOffset;
+					double scale_x = 1.0;
+					double scale_y = 1.0;
+					double scale_z = 1.0;
+
+					clone = dynamic_cast<osg::PositionAttitudeTransform*>(tx->clone(osg::CopyOp::SHALLOW_COPY));
+					
+					if (rep == nullptr)
+					{
+						factor = 1.0;
+						t = object->GetT();
+						s = object->GetS();
+						zOffset = object->GetZOffset();
+
+						if (object->GetLength() > SMALL_NUMBER)
+						{
+							scale_x = object->GetLength() / dim_x;
+						}
+						if (object->GetWidth() > SMALL_NUMBER)
+						{
+							scale_y = object->GetWidth() / dim_y;
+						}
+						if (object->GetHeight() > SMALL_NUMBER)
+						{
+							scale_z = object->GetHeight() / dim_z;
+						}
+
+						pos.SetTrackPos(road->GetId(), object->GetS(), object->GetT());
+
+						clone->setScale(osg::Vec3(scale_x, scale_y, scale_z));
+						clone->setPosition(osg::Vec3(pos.GetX(), pos.GetY(), object->GetZOffset() + pos.GetZ()));
+
+						// First align to road orientation
+						osg::Quat quatRoad(osg::Quat(pos.GetR(), osg::X_AXIS, pos.GetP(), osg::Y_AXIS, pos.GetH(), osg::Z_AXIS));
+						// Specified local rotation
+						osg::Quat quatLocal(orientation + object->GetHOffset(), osg::Vec3(osg::Z_AXIS));  // Heading
+						// Combine
+						clone->setAttitude(quatLocal* quatRoad);
+					}
+					else
+					{
+						factor = (double)i / nCopies;
+						t = rep->GetTStart() + factor * (rep->GetTEnd() - rep->GetTStart());
+						s = rep->GetS() + i * rep->GetDistance();
+						zOffset = rep->GetZOffsetStart() + factor * (rep->GetZOffsetEnd() - rep->GetZOffsetStart());
+
+						if (rep->GetLengthStart() > SMALL_NUMBER || rep->GetLengthEnd() > SMALL_NUMBER)
+						{
+							scale_x = (rep->GetLengthStart() + factor * (rep->GetLengthEnd() - rep->GetLengthStart())) / dim_x;
+						}
+						if (rep->GetWidthStart() > SMALL_NUMBER || rep->GetWidthEnd() > SMALL_NUMBER)
+						{
+							scale_y = (rep->GetWidthStart() + factor * (rep->GetWidthEnd() - rep->GetWidthStart())) / dim_y;
+						}
+						if (rep->GetHeightStart() > SMALL_NUMBER || rep->GetHeightEnd() > SMALL_NUMBER)
+						{
+							scale_z = (rep->GetHeightStart() + factor * (rep->GetHeightEnd() - rep->GetHeightStart())) / dim_z;
+						}
+
+						pos.SetTrackPos(road->GetId(), s, t);
+
+						clone->setScale(osg::Vec3(scale_x, scale_y, scale_z));
+						clone->setPosition(osg::Vec3(pos.GetX(), pos.GetY(), pos.GetZ() + zOffset));
+
+						// First align to road orientation
+						osg::Quat quatRoad(osg::Quat(pos.GetR(), osg::X_AXIS, pos.GetP(), osg::Y_AXIS, pos.GetH(), osg::Z_AXIS));
+						// Specified local rotation
+						osg::Quat quatLocal(object->GetHOffset(), osg::Vec3(osg::Z_AXIS));  // Heading
+						// Combine
+						clone->setAttitude(quatLocal * quatRoad);
+					}
+
+					clone->setDataVariance(osg::Object::STATIC);
+
+					if (LODGroup == 0 || s - lastLODs > 0.5 * LOD_DIST_ROAD_FEATURES)
+					{
+						// add current LOD and create a new one
+						osg::ref_ptr<osg::LOD> lod = new osg::LOD();
+						LODGroup = new osg::Group();
+						lod->addChild(LODGroup);
+						lod->setRange(0, 0, LOD_DIST_ROAD_FEATURES);
+						objGroup->addChild(lod);
+						lastLODs = s;
+					}
+
+					LODGroup->addChild(clone);
 				}
 			}
 		}
 	}
+
+	osgUtil::Optimizer optimizer;
+	optimizer.optimize(objGroup, osgUtil::Optimizer::FLATTEN_STATIC_TRANSFORMS);
+	
+	envTx_->addChild(objGroup);
 
 	return 0;
 }

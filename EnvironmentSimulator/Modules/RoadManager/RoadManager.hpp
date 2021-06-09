@@ -854,6 +854,64 @@ namespace roadmanager
 		void AddCorner(OutlineCorner* outlineCorner) { corner_.push_back(outlineCorner); }
 	};
 
+	class Repeat
+	{
+	public:
+		double s_;
+		double length_;
+		double distance_;
+		double tStart_;
+		double tEnd_;
+		double heightStart_;
+		double heightEnd_;
+		double zOffsetStart_;
+		double zOffsetEnd_;
+		double widthStart_;
+		double widthEnd_;
+		double lengthStart_;
+		double lengthEnd_;
+		double radiusStart_;
+		double radiusEnd_;
+
+		Repeat(
+			double s,
+			double length,
+			double distance,
+			double tStart,
+			double tEnd,
+			double heightStart,
+			double heightEnd,
+			double zOffsetStart,
+			double zOffsetEnd
+		) : s_(s), length_(length), distance_(distance),
+			tStart_(tStart), tEnd_(tEnd), heightStart_(heightStart),
+			heightEnd_(heightEnd), zOffsetStart_(zOffsetStart), zOffsetEnd_(zOffsetEnd),
+			widthStart_(0.0), widthEnd_(0.0), lengthStart_(0.0), lengthEnd_(0.0), radiusStart_(0.0), radiusEnd_(0.0) {}
+
+		void SetWidthStart(double widthStart) { widthStart_ = widthStart; }
+		void SetWidthEnd(double widthEnd) { widthEnd_ = widthEnd; }
+		void SetLengthStart(double lengthStart) { lengthStart_ = lengthStart; }
+		void SetLengthEnd(double lengthEnd) { lengthStart_ = lengthEnd; }
+		void SetHeightStart(double heightStart) { heightStart_ = heightStart; }
+		void SeHeightEnd(double heightStart) { heightStart_ = heightStart; }
+		double GetS() { return s_; }
+		double GetLength() { return length_; }
+		double GetDistance() { return distance_; }
+		double GetTStart() { return tStart_; }
+		double GetTEnd() { return tEnd_; }
+		double GetHeightStart() { return heightStart_; }
+		double GetHeightEnd() { return heightEnd_; }
+		double GetZOffsetStart() { return zOffsetStart_; }
+		double GetZOffsetEnd() { return zOffsetEnd_; }
+		double GetWidthStart() { return widthStart_; }
+		double GetWidthEnd() { return widthEnd_; }
+		double GetLengthStart() { return lengthStart_; }
+		double GetLengthEnd() { return lengthEnd_; }
+		double GetRadiusStart() { return radiusStart_; }
+		double GetRadiusEnd() { return radiusEnd_; }
+
+	};
+
 	class RMObject : public RoadObject
 	{
 	public:
@@ -861,7 +919,7 @@ namespace roadmanager
 		RMObject(double s, double t, int id, std::string name, Orientation orientation, double z_offset, std::string type,
 			double length, double height, double width, double heading, double pitch, double roll) :
 			s_(s), t_(t), id_(id), name_(name), orientation_(orientation), z_offset_(z_offset), type_(type),
-			length_(length), height_(height), width_(width), heading_(heading), pitch_(pitch), roll_(roll) {}
+			length_(length), height_(height), width_(width), heading_(heading), pitch_(pitch), roll_(roll), repeat_(0) {}
 
 		~RMObject()
 		{
@@ -883,6 +941,8 @@ namespace roadmanager
 		double GetWidth() { return width_; }
 		Orientation GetOrientation() { return orientation_; }
 		void AddOutline(Outline* outline) { outlines_.push_back(outline); }
+		void SetRepeat(Repeat* repeat);
+		Repeat* GetRepeat() { return repeat_; }
 		int GetNumberOfOutlines() { return (int)outlines_.size(); }
 		Outline* GetOutline(int i) { return (0 <= i && i < outlines_.size()) ? outlines_[i] : 0; }
 
@@ -901,6 +961,7 @@ namespace roadmanager
 		double pitch_;
 		double roll_;
 		std::vector<Outline*> outlines_;
+		Repeat* repeat_;
 	};
 
 	class Road

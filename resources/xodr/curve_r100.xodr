@@ -91,6 +91,12 @@
             </laneSection>
         </lanes>
         <objects>
+            <object type="guide-post" name="../models/guide-post.osgb" id="0" s="0" t="-3.7" zOffset="-0.2" orientation="none" height="1.25" hdg="0.0" pitch="0.0" roll="0.0">
+                <repeat s="0.0" length="7.5707963267948969e+02" distance="50.0" tStart="-3.7" tEnd="-3.7" heightStart="1.25" heightEnd="1.25" zOffsetStart="-0.2" zOffsetEnd="-0.2" />
+            </object>                
+            <object type="guide-post" name="../models/guide-post.osgb" id="1" s="0" t="3.7" zOffset="-0.2" orientation="none" height="1.25" hdg="3.14159" pitch="0.0" roll="0.0">
+                <repeat s="0.0" length="7.5707963267948969e+02" distance="50.0" tStart="3.7" tEnd="3.7" heightStart="1.25" heightEnd="1.25" zOffsetStart="-0.2" zOffsetEnd="-0.2" />
+            </object>            
         </objects>
         <signals>
         </signals>

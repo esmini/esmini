@@ -2151,6 +2151,34 @@ void OpenDrive::InitGlobalLaneIds()
 	g_Laneb_id = 0;
 }
 
+std::string ReadAttribute(pugi::xml_node node, std::string attribute_name, bool required)
+{
+	if (!strcmp(attribute_name.c_str(), ""))
+	{
+		if (required)
+		{
+			LOG("Warning: Required but empty attribute");
+		}
+		return "";
+	}
+
+	pugi::xml_attribute attr;
+
+	if ((attr = node.attribute(attribute_name.c_str())))
+	{
+		return attr.value();
+	}
+	else
+	{
+		if (required)
+		{
+			LOG("Warning: missing required attribute: %s -> %s", node.name(), attribute_name.c_str());
+		}
+	}
+
+	return "";
+}
+
 bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 {
 	mt_rand.seed((unsigned int)time(0));
@@ -2200,7 +2228,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 	{
 		int rid = atoi(road_node.attribute("id").value());
 		std::string rname = road_node.attribute("name").value();
-		double rlength = atof(road_node.attribute("length").value());
+		double roadlength = atof(road_node.attribute("length").value());
 		int junction_id = atoi(road_node.attribute("junction").value());
 		Road::RoadRule rrule = Road::RoadRule::RIGHT_HAND_TRAFFIC;  // right hand traffic is default
 
@@ -2214,7 +2242,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		}
 
 		Road* r = new Road(rid, rname, rrule);
-		r->SetLength(rlength);
+		r->SetLength(roadlength);
 		r->SetJunction(junction_id);
 
 		for (pugi::xml_node type_node = road_node.child("type"); type_node; type_node = type_node.next_sibling("type"))
@@ -3066,9 +3094,51 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		pugi::xml_node objects = road_node.child("objects");
 		if (objects != NULL)
 		{
-			for (pugi::xml_node object = objects.child("object"); object; object = object.next_sibling())
+			for (pugi::xml_node object = objects.child("object"); object; object = object.next_sibling("object"))
 			{
-				double s = atof(object.attribute("s").value());
+				// Read any repeat element first, since its s-value overrides the one in the object element
+				pugi::xml_node repeat_node = object.child("repeat");
+				Repeat* repeat = 0;
+				if (repeat_node != NULL)
+				{
+					std::string rattr;
+					double rs = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stof(rattr);
+					double rlength = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stof(rattr);
+					double rdistance = (rattr = ReadAttribute(repeat_node, "distance", true)) == "" ? 0.0 : std::stof(rattr);
+					double rtStart = (rattr = ReadAttribute(repeat_node, "tStart", true)) == "" ? 0.0 : std::stof(rattr);
+					double rtEnd = (rattr = ReadAttribute(repeat_node, "tEnd", true)) == "" ? 0.0 : std::stof(rattr);
+					double rheightStart = (rattr = ReadAttribute(repeat_node, "heightStart", true)) == "" ? 0.0 : std::stof(rattr);
+					double rheightEnd = (rattr = ReadAttribute(repeat_node, "heightEnd", true)) == "" ? 0.0 : std::stof(rattr);
+					double rzOffsetStart = (rattr = ReadAttribute(repeat_node, "zOffsetStart", true)) == "" ? 0.0 : std::stof(rattr);
+					double rzOffsetEnd = (rattr = ReadAttribute(repeat_node, "zOffsetEnd", true)) == "" ? 0.0 : std::stof(rattr);
+
+					double rwidthStart = (rattr = ReadAttribute(repeat_node, "widthStart", false)) == "" ? 0.0 : std::stof(rattr);
+					double rwidthEnd = (rattr = ReadAttribute(repeat_node, "widthEnd", false)) == "" ? 0.0 : std::stof(rattr);
+					double rlengthStart = (rattr = ReadAttribute(repeat_node, "lengthStart", false)) == "" ? 0.0 : std::stof(rattr);
+					double rlengthEnd = (rattr = ReadAttribute(repeat_node, "lengthEnd", false)) == "" ? 0.0 : std::stof(rattr);
+					double rradiusStart = (rattr = ReadAttribute(repeat_node, "radiusStart", false)) == "" ? 0.0 : std::stof(rattr);
+					double rradiusEnd = (rattr = ReadAttribute(repeat_node, "radiusEnd", false)) == "" ? 0.0 : std::stof(rattr);
+
+					repeat = new Repeat(rs, rlength, rdistance, rtStart, rtEnd, rheightStart, rheightEnd, rzOffsetStart, rzOffsetEnd);
+
+					if (fabs(rwidthStart) > SMALL_NUMBER) repeat->SetWidthStart(rwidthStart);
+					if (fabs(rwidthEnd) > SMALL_NUMBER) repeat->SetWidthEnd(rwidthEnd);
+					if (fabs(rlengthStart) > SMALL_NUMBER) repeat->SetLengthStart(rlengthStart);
+					if (fabs(rlengthEnd) > SMALL_NUMBER) repeat->SetLengthEnd(rlengthEnd);
+
+					if (fabs(rradiusStart) > SMALL_NUMBER) printf("Attribute object/repeat/radiusStart not supported yet\n");
+					if (fabs(rradiusEnd) > SMALL_NUMBER) printf("Attribute object/repeat/radiusEnd not supported yet\n");
+				}
+
+				double s;
+				if (repeat)
+				{
+					s = repeat->GetS();
+				}
+				else
+				{
+					s = atof(object.attribute("s").value());
+				}
 				double t = atof(object.attribute("t").value());
 				int ids = atoi(object.attribute("id").value());
 				std::string name = object.attribute("name").value();
@@ -3095,7 +3165,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					}
 				}
 				std::string type = object.attribute("type").value();
-				double  z_offset = atof(object.attribute("zOffset").value());
+				double z_offset = atof(object.attribute("zOffset").value());
 				double length = atof(object.attribute("length").value());
 				double height = atof(object.attribute("height").value());
 				double width = atof(object.attribute("width").value());
@@ -3105,14 +3175,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 				RMObject* obj = new RMObject(s, t, ids, name, orientation, z_offset, type, length, height,
 					width, heading, pitch, roll);
-				if (obj != NULL)
-				{
-					r->AddObject(obj);
 
-				}
-				else
+				if (repeat)
 				{
-					LOG("RMObject: Major error\n");
+					obj->SetRepeat(repeat);
 				}
 
 				pugi::xml_node outlines_node = object.child("outlines");
@@ -3150,6 +3216,15 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 						}
 						obj->AddOutline(outline);
 					}
+				}
+
+				if (obj != NULL)
+				{
+					r->AddObject(obj);
+				}
+				else
+				{
+					LOG("RMObject: Major error\n");
 				}
 			}
 		}
@@ -3227,6 +3302,11 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 	}
 
 	return true;
+}
+
+void RMObject::SetRepeat(Repeat* repeat)
+{
+	repeat_ = repeat;
 }
 
 Connection::Connection(Road* incoming_road, Road *connecting_road, ContactPointType contact_point)

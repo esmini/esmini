@@ -1840,6 +1840,45 @@ TEST(ProbeTest, TestProbeComplexRoad)
     EXPECT_NEAR(probe_data.road_lane_info.s, 5.23650, 1E-5);
 }
 
+TEST(DeltaTest, TestDelta)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/fabriksgatan.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 16);
+
+    roadmanager::PositionDiff pos_diff;
+
+    // Position on right side of road 0, looking through intersection into road 2
+    Position pos_pivot = Position(0, 1, 5.0, 0.0);
+    pos_pivot.SetHeadingRelative(M_PI);
+    Position pos_target = Position(2, 1, 250.0, 0.0);
+    pos_target.SetHeadingRelative(M_PI);
+    EXPECT_EQ(pos_pivot.Delta(&pos_target, pos_diff), true);
+    EXPECT_NEAR(pos_diff.ds, 74.56580, 1E-5);
+    EXPECT_EQ(pos_diff.dLaneId, 0);
+
+    pos_target.SetLanePos(2, -1, 250.0, 0.0);
+    pos_target.SetHeadingRelative(M_PI);
+    EXPECT_EQ(pos_pivot.Delta(&pos_target, pos_diff), true);
+    EXPECT_NEAR(pos_diff.ds, 74.56580, 1E-5);
+    EXPECT_EQ(pos_diff.dLaneId, 2);
+
+    pos_target.SetLanePos(3, -1, 100.0, 0.0);
+    pos_target.SetHeadingRelative(0.0);
+    EXPECT_EQ(pos_pivot.Delta(&pos_target, pos_diff), true);
+    EXPECT_NEAR(pos_diff.ds, 34.31779, 1E-5);
+    EXPECT_NEAR(pos_diff.dt, 3.5, 1E-5);
+    EXPECT_EQ(pos_diff.dLaneId, 2);
+
+    // Now try diff two positions that are not connected
+    pos_pivot.SetLanePos(11, -1, 1.0, 0.0);
+    pos_pivot.SetHeadingRelative(0.0);
+    pos_target.SetLanePos(6, -1, 1.0, 0.0);
+    pos_target.SetHeadingRelative(0.0);
+    EXPECT_EQ(pos_pivot.Delta(&pos_target, pos_diff), false);
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);

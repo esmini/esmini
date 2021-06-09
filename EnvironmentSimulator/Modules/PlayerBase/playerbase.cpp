@@ -644,6 +644,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
+	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
 	opt.AddOption("headless", "Run without viewer");
 	opt.AddOption("help", "Show this help message");
 	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");

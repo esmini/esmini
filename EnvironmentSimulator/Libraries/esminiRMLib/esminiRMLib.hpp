@@ -330,9 +330,9 @@ extern "C"
 	@param handleA Handle to the position object from which to measure
 	@param handleB Handle to the position object to which the distance is measured
 	@param pos_diff Struct including all result values, see PositionDiff typedef
-	@return true if a valid path between the road positions was found and calculations could be performed
+	@return 0 if successful, -2 if route between positions can't be found, -1 if some other error 
 	*/
-	RM_DLL_API bool RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff);
+	RM_DLL_API int RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff);
 
 	/**
 	Get the number of road signs along specified road

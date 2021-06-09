@@ -516,23 +516,26 @@ extern "C"
 		return GetProbeInfo(handle, lookahead_distance, data, lookAheadMode, inRoadDrivingDirection);
 	}
 
-	RM_DLL_API bool RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff)
+	RM_DLL_API int RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff)
 	{
 		if (odrManager == 0 || handleA >= position.size() || handleB >= position.size())
 		{
-			return false;
+			return -1;
 		}
 
 		PositionDiff diff;
-		bool result = position[handleA].Delta(&position[handleB], diff);
-		if (result == true)
+		if (position[handleA].Delta(&position[handleB], diff) == true)
 		{
 			pos_diff->ds = (float)diff.ds;
 			pos_diff->dt = (float)diff.dt;
 			pos_diff->dLaneId = diff.dLaneId;
-		}
 
-		return result;
+			return 0;
+		}
+		else
+		{
+			return -2;
+		}
 	}
 
 	RM_DLL_API int RM_GetNumberOfRoadSigns(int road_id)
