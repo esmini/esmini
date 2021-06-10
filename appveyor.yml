@@ -16,6 +16,7 @@ cache:
 - externals/OSI -> appveyor.yml
 - externals/SUMO -> appveyor.yml
 - resources/models -> appveyor.yml
+
     
 skip_commits:
   message: /#skip_build/
