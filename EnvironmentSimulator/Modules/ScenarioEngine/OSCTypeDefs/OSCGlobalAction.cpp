@@ -262,14 +262,19 @@ printf("Min: %d, Max: %d\n", minN, maxN);
     std::random_device dev;
 	std::mt19937 gen(dev());
     // Sample the number of cars to spawn
-    if (maxN < minN) LOG("Unstable behavior detected (maxN < minN)");
+    if (maxN < minN) { 
+        LOG("Unstable behavior detected (maxN < minN)"); 
+        return; 
+    }
     int nCarsToSpawn = dist(gen);
 
     info.reserve(nCarsToSpawn);
     info.clear();
-    if (nCarsToSpawn < sols.size() && nCarsToSpawn > 0) {
+    // We have more points than number of vehicles to spawn.
+    // We sample the selected number and each point will be assigned a lane
+    if (nCarsToSpawn <= sols.size() && nCarsToSpawn > 0) {
         // Shuffle and randomly select the points
-        //Solutions selected(nCarsToSpawn);
+        // Solutions selected(nCarsToSpawn);
         Point selected[nCarsToSpawn];
         std::random_shuffle(sols.begin(), sols.end());
         sample(sols.begin(), sols.end(), selected, nCarsToSpawn, gen);
@@ -290,7 +295,10 @@ printf("Min: %d, Max: %d\n", minN, maxN);
             };
             info.push_back(sInfo);
         }
-    } else {
+    } else { // Less points than vehicles to spawn
+        // We use all the spawnable points and we ensure that each obtains
+        // a lane at least. The remaining ones will be randomly distributed.
+        // The algorithms does not ensure to saturate the selected number of vehicles.  
         int lanesLeft = nCarsToSpawn - sols.size();
         for (Point pt : sols) {
             roadmanager::Position pos;
@@ -316,7 +324,7 @@ printf("Min: %d, Max: %d\n", minN, maxN);
                 1 + lanesN
             };
             info.push_back(sInfo);
-            lanesLeft -= 1 + lanesN;
+            lanesLeft -= lanesN;
         }
     }
 }
@@ -352,7 +360,8 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             if (!ensureDistance(inf.pos, laneID)) continue;
 
             Vehicle* vehicle;
-            vehicle = createVehicle(inf.pos, (laneID < 0 ? 0 : 1), laneID, velocity_, NULL, centralObject_->model_filepath_);
+            //vehicle = createVehicle(inf.pos, (laneID < 0 ? 0 : 1), laneID, velocity_, NULL, centralObject_->model_filepath_);
+            vehicle = createVehicle(inf.pos, (laneID < 0 ? 0 : 1), laneID, velocity_, NULL, "car_red.osgb");
             int id          = entities_->addObject(vehicle);
             vehicle->name_  = std::to_string(id); 
             SpawnInfo sInfo = {
