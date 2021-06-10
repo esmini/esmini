@@ -1,5 +1,23 @@
 ## esmini release notes
 
+### 2021-06-10 Version 2.10.0
+
+- Support repeat road object
+  - Primary use case is to populate copies of imported .osgb files along the road, e.g. guard-rails or guide-posts
+  - Dimensions (len, width, height) can be adjusted (even change linearly along the stretch)
+  - Add examples in [e6mini.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/e6mini.xodr) (rails and guide-posts) and
+  [curve_r100.xodr](https://github.com/esmini/esmini/blob/master/resources/xodr/curve_r100.xodr) (guide-posts). These roads are used in e.g:
+    - [run/odrviewer/run_e6mini.bat](https://github.com/esmini/esmini/blob/master/run/odrviewer/run_e6mini.bat)
+    - [run/esmini/run_cut-in.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_cut-in.bat)
+    - [run/esmini/run_lane_change_simple.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_lane_change_simple.bat)
+    - [run/esmini/run_controller_test.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_controller_test.bat)
+- Add railing and guide-post 3D models to the model package.
+  - Models are included in the demo package. The complete updated package is found [here](https://www.dropbox.com/s/5gk8bvgzqiaaoco/models.7z?dl=1).
+- Add option to NOT include/generate road object models
+  (--generate_no_road_objects). Useful IF the objects are already populated in a referred scenegraph file.
+- Add return codes to esminiRMLib functions [RM_GetProbeInfo()](https://github.com/esmini/esmini/blob/5f30391896c05e8b9efdcbea1b2c181589067b40/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp#L326) and [RM_SubtractAFromB()](https://github.com/esmini/esmini/blob/5f30391896c05e8b9efdcbea1b2c181589067b40/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp#L335)
+- Some additional minor fixes
+
 ### 2021-06-04 Version 2.9.0
 
 - Support simpler route definitions

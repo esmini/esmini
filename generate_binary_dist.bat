@@ -89,6 +89,9 @@ copy resources\models\pole.osgb %target_dir%\resources\models /y
 copy resources\models\Swe*.osgb %target_dir%\resources\models /y
 copy resources\models\asphalt.jpg %target_dir%\resources\models /y
 copy resources\models\grass.jpg %target_dir%\resources\models /y
+copy resources\models\railing.osgb %target_dir%\resources\models /y
+copy resources\models\railing-pole.osgb %target_dir%\resources\models /y
+copy resources\models\guide-post.osgb %target_dir%\resources\models /y
 
 copy resources\sumo_inputs\e6mini* %target_dir%\resources\sumo_inputs /y
 

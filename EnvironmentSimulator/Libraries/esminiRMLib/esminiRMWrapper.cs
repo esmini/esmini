@@ -344,7 +344,7 @@ namespace OpenDRIVE
         /// <param name="data">Struct including all result values, see RoadProbeInfo typedef</param>
         /// <param name="lookAheadMode">Measurement strategy: 0=Along lane center, 1=road center, 2=current lane offset. See roadmanager::Position::LookAheadMode enum</param>
         /// <param name="inRoadDrivingDirection">If true always look along primary driving direction. If false, look in most straightforward direction according to object heading.</param>
-        /// <returns>0 if successful, -1 if not</returns>
+        /// <returns>0 if successful, -2 if probe reached end of road, -1 if some error</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetProbeInfo")]
         public static extern int GetProbeInfo(int index, float lookahead_distance, ref RoadProbeInfo data, int lookAheadMode, bool inRoadDrivingDirection);
 
@@ -354,9 +354,9 @@ namespace OpenDRIVE
         /// <param name="handleA">Handle to the position object from which to measure</param>
         /// <param name="handleB">Handle to the position object to which the distance is measured</param>
         /// <param name="pos_diff">Struct including all result values, see PositionDiff typedef</param>
-        /// <returns>true if a valid path between the road positions was found and calculations could be performed</returns>
+        /// <returns>0 if successful, -2 if route between positions can't be found, -1 if some other error </returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_SubtractAFromB")]
-        public static extern bool SubtractAFromB(int handleA, int handleB, ref PositionDiff pos_diff);
+        public static extern int SubtractAFromB(int handleA, int handleB, ref PositionDiff pos_diff);
 
         /// <summary>
         /// Get the number of road signs along specified road

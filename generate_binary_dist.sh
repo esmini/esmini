@@ -68,6 +68,9 @@ resources/models/Swe*.osgb \
 resources/models/pole.osgb \
 resources/models/asphalt.jpg \
 resources/models/grass.jpg \
+resources/models/railing.osgb \
+resources/models/railing-pole.osgb \
+resources/models/guide-post.osgb \
 resources/sumo_inputs/e6mini* \
 run/esmini/run_follow_ghost.* \
 run/esmini/run_ltap-od_interactive.* \
