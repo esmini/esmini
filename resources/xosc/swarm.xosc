@@ -14,7 +14,7 @@
       </VehicleCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../xodr/straight_500m.xodr"/>   
+      <LogicFile filepath="../xodr/multi_intersections.xodr"/>   
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
@@ -28,7 +28,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="100" />
+                        <LanePosition roadId="196" laneId="-1" offset="0" s="100" />
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -56,7 +56,7 @@
                      <Action name="SwarmAction">
                         <GlobalAction>
                            <TrafficAction>
-                              <TrafficSwarmAction innerRadius="100" semiMajorAxis="130" semiMinorAxis="105" numberOfVehicles="10">
+                              <TrafficSwarmAction innerRadius="100" semiMajorAxis="130" semiMinorAxis="105" numberOfVehicles="25" velocity="10">
 								         <CentralSwarmObject entityRef="Ego" />
                               </TrafficSwarmAction>
                            </TrafficAction>
