@@ -19,6 +19,7 @@
 #include <memory>
 #include <functional>
 #include <iostream>
+#include <algorithm>
 
 using namespace aabbTree;
 using std::min;
@@ -153,7 +154,7 @@ bool Tree::empty() {
  */
 void Tree::__build(BBoxVec::iterator const start, BBoxVec::iterator const end) {
     vector<StackRecord> stack;
-    stack.reserve(log(end - start) * 2);
+    stack.reserve((int)(log(end - start) * 2));
     stack.clear();
 
     BBoxVec::iterator cut;
@@ -195,7 +196,7 @@ void Tree::__build(BBoxVec::iterator const start, BBoxVec::iterator const end) {
                 currentTree_ = pos;
                 last = cut;
             } else {
-                cut = first + (last - first) / 2.0;
+                cut = first + (last - first) / 2;
                 goto kids;
             }   
         }
@@ -207,14 +208,14 @@ void Tree::__build(BBoxVec::iterator const start, BBoxVec::iterator const end) {
  * line of the current bounding box.
  * It returns a pointer to the first element of the right side of the partition
  */
-BBoxVec::iterator Tree::divide(BBoxVec::iterator const start, BBoxVec::iterator const end, ptBBox bbox) {
+BBoxVec::iterator Tree::divide(BBoxVec::iterator const start, BBoxVec::iterator const end, ptBBox bboxTmp) {
     if (end - start == 0) return start;
     if (end - start == 1) return end;
 
     std::function<bool(ptBBox)> compare;
     double mid;
-    Point blhc = bbox->blhCorner();
-    Point urhc = bbox->urhCorner();
+    Point blhc = bboxTmp->blhCorner();
+    Point urhc = bboxTmp->urhCorner();
 
     if (urhc.x - blhc.x > urhc.y - blhc.y) {
         mid = (urhc.x + blhc.x) / 2.0;
@@ -317,7 +318,7 @@ void aabbTree::processCandidates(Candidates const &candidates, vector<ptTriangle
 void aabbTree::findPoints(vector<ptTriangle> const &triangles, EllipseInfo &eInfo, Solutions &points) {
     for (auto const tr : triangles) {
         if (tr->geometry()) {
-            auto gm = tr->geometry();
+            // auto gm = tr->geometry();  // Not used?
             geometryIntersect(*tr, eInfo, points);
         } else 
             LOG("Warning: triangle without a geometry found");
