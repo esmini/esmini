@@ -119,16 +119,12 @@ namespace scenarioengine
 		    int nLanes;
 	    } SelectInfo;
 		
-		SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC), centralObject_(0) {
-			spawnedV.clear();
-			//std::mt19937 temp(std::random_device{}());
-			//gen = temp;
-		};
+		SwarmTrafficAction();
 
 		SwarmTrafficAction(const SwarmTrafficAction& action) : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC) {
 		    spawnedV.clear();
-			//std::mt19937 temp(std::random_device{}());
-			//gen = temp;
+			centralObject_ = action.centralObject_;
+			gen_ = action.gen_;
 		}
 
 		OSCGlobalAction* Copy() {
@@ -155,7 +151,7 @@ namespace scenarioengine
     private:
 
 		double velocity_;
-		//std::mt19937 gen;
+		std::mt19937 gen_;
 		Entities *entities_;
 		Object* centralObject_;
 		aabbTree::ptTree rTree;

@@ -56,24 +56,24 @@
                      <Action name="SwarmAction">
                         <GlobalAction>
                            <TrafficAction>
-                              <TrafficSwarmAction innerRadius="100" semiMajorAxis="130" semiMinorAxis="105" numberOfVehicles="25" velocity="10">
-								         <CentralSwarmObject entityRef="Ego" />
+                              <TrafficSwarmAction innerRadius="100" semiMajorAxis="130" semiMinorAxis="105" numberOfVehicles="5" velocity="10">
+								  <CentralSwarmObject entityRef="Ego" />
                               </TrafficSwarmAction>
                            </TrafficAction>
                         </GlobalAction>
                      </Action>
                      <StartTrigger>
-						      <ConditionGroup>
-							      <Condition name="StartCondition" delay="0" conditionEdge="rising">
-								      <ByValueCondition>
-									      <SimulationTimeCondition value="5" rule="greaterThan"/>
-								      </ByValueCondition>
-							      </Condition>
-						      </ConditionGroup>					 
+					     <ConditionGroup>
+					        <Condition name="StartCondition" delay="0" conditionEdge="rising">
+					  	       <ByValueCondition>
+					  		      <SimulationTimeCondition value="1" rule="greaterThan"/>
+					  	       </ByValueCondition>
+					        </Condition>
+					     </ConditionGroup>					 
                      </StartTrigger>
                   </Event>
                </Maneuver>
-			   </ManeuverGroup>
+			</ManeuverGroup>
          </Act>
       </Story>
      <StopTrigger/>
