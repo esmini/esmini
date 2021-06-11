@@ -1,0 +1,133 @@
+COVERAGE OPEN DRIVE 1.5: 
+
+
+OpenDRIVE                           YES
+|-header                            NO    
+| |-geoReference                    NO
+| |-offset                          NO
+|-road                              YES
+| |-link                            YES    
+| | |-predecessor                   YES    
+| | |-successor                     YES
+| | |-neighbor                      NO
+| |-type                            YES
+| | |-speed                         YES
+| |-planView                        YES
+| | |-geometry                      YES
+| | | |-line                        YES
+| | | |-spiral                      YES
+| | | |-arc                         YES
+| | | |-poly3                       YES
+| | | |-paramPoly3                  YES
+| |-elevationProfile                YES
+| | |-elevation                     YES
+| |-lateralProfile                  YES       
+| | |-superelevation                YES
+| | |-crossfall                     NO
+| | |-shape                         NO
+| |-lanes                           YES
+| | |-laneOffset                    YES
+| | |-laneSection                   YES
+| | | |-left                        YES
+| | | | |-lane                      YES
+| | | | | |-link                    YES
+| | | | | | |-predecessor           YES
+| | | | | | |-successor             YES
+| | | | | |-width                   YES
+| | | | | |-border                  NO
+| | | | | |-roadMark                YES
+| | | | | | | -sway                 NO
+| | | | | | | -type                 YES
+| | | | | | | | -line               YES
+| | | | | | | -explicit             NO
+| | | | | | | | -line               NO
+| | | | | |-material                NO
+| | | | | |-visibility              NO
+| | | | | |-speed                   NO
+| | | | | |-access                  NO
+| | | | | |-height                  NO
+| | | | | |-rule                    NO
+| | | |-center                      YES
+| | | | |-lane                      YES
+| | | | | |-link                    YES
+| | | | | | |-predecessor           YES
+| | | | | | |-successor             YES
+| | | | | |-roadMark                YES
+| | | | | | | -sway                 NO
+| | | | | | | -type                 YES        
+| | | | | | | | -line               YES
+| | | | | | | -explicit             NO
+| | | | | | | | -line               NO
+| | | |-right                       YES
+| | | | |-lane                      YES
+| | | | | |-link                    YES
+| | | | | | |-predecessor           YES
+| | | | | | |-successor             YES
+| | | | | |-width                   YES
+| | | | | |-border                  NO
+| | | | | |-roadMark                YES
+| | | | | | | -sway                 NO
+| | | | | | | -type                 YES
+| | | | | | | | -line               YES
+| | | | | | | -explicit             NO
+| | | | | | | | -line               NO
+| | | | | |-material                NO
+| | | | | |-visibility              NO
+| | | | | |-speed                   NO
+| | | | | |-access                  NO
+| | | | | |-height                  NO
+| | | | | |-rule                    NO
+| |-objects                         YES
+| | |-object                        YES
+| | | |-repeat                      YES  
+| | | |-outlines                    YES
+| | | | |-outline                   YES
+| | | | | |-cornerRoad              YES    
+| | | | | |-cornerLocal             YES
+| | | |-material                    NO
+| | | |-validity                    NO
+| | | |-parkingSpace                NO
+| | | |-markings                    NO
+| | | | |-marking                   NO
+| | | | | |-cornerReference         NO    
+| | | |-borders                     NO
+| | | | |-border                    NO
+| | | | | |-cornerReference         NO
+| | |-objectReference               NO
+| | | |-validity                    NO
+| | |-tunnel                        NO
+| | | |-validity                    NO
+| | |-bridge                        NO
+| | | |-validity                    NO
+| |-signals                         YES
+| | |-signal                        YES
+| | | |-validity                    NO
+| | | |-dependency                  NO
+| | | |-reference                   NO
+| | | |-positionRoad                NO
+| | | |-positionInertial            NO    
+| | |-signalReference               NO
+| | | |-validity                    NO
+| |-surface                         NO
+| | |-CRG                           NO
+| |-railroad                        NO
+| | |-switch                        NO
+| | | |-mainTrack                   NO
+| | | |-sideTrack                   NO
+| | | |-partner                     NO
+|-controller                        NO
+| |-control                         NO
+|-junction                          YES    
+| |-connection                      YES
+| | |-predecessor                   NO
+| | |-successor                     NO
+| | |-laneLink                      YES
+| |-priority                        NO
+| |-controller                      NO
+| |-surface                         NO
+| | |-CRG                           NO
+|-junctionGroup                     NO                 
+| |-junctionReference               NO
+|-station                           NO
+| |-platform                        NO
+| | |-segment                       NO 
