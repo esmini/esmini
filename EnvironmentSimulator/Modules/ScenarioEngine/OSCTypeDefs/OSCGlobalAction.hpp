@@ -132,9 +132,9 @@ namespace scenarioengine
 			return new_action;
 		}
 
-		void Start();
+		void Start(double simTime, double dt);
 
-		void Step(double dt, double simTime);
+		void Step(double simTime, double dt);
 
 		void print() {
 			LOG("");
