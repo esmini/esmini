@@ -154,7 +154,7 @@ void SwarmTrafficAction::Step(double dt, double simTime)
 {
     // Executes the step at each TIME_INTERVAL
     if (lastTime < 0 || abs(simTime - lastTime) > TIME_INTERVAL) {
-        LOG("SwarmTrafficAction Step");
+        //LOG("SwarmTrafficAction Step");
 
         double SMjA = midSMjA;
         double SMnA = midSMnA;
@@ -177,7 +177,7 @@ void SwarmTrafficAction::Step(double dt, double simTime)
         rTree->intersect(eTree, candidates);
         aabbTree::processCandidates(candidates, triangle);
         aabbTree::findPoints(triangle, info, sols);
-        printf("N points found: %d\n", static_cast<int>(sols.size()));
+        //printf("N points found: %d\n", static_cast<int>(sols.size()));
     
         spawn(sols, despawn(simTime), simTime);
         lastTime = simTime;
@@ -270,8 +270,8 @@ createVehicle(roadmanager::Position pos, char hdg_offset, int lane, double speed
 
 inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols, vector<SelectInfo> &info)
 {
-printf("Entered road selection\n");
-printf("Min: %d, Max: %d\n", minN, maxN);
+    //printf("Entered road selection\n");
+    //printf("Min: %d, Max: %d\n", minN, maxN);
     std::uniform_int_distribution<int> dist(minN, maxN);
 
     // Sample the number of cars to spawn
@@ -349,7 +349,7 @@ printf("Min: %d, Max: %d\n", minN, maxN);
 
 void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime) 
 {   
-    printf("spawnedV: %d\n", static_cast<int>(spawnedV.size()));
+    //printf("spawnedV: %d\n", static_cast<int>(spawnedV.size()));
     int maxCars = MIN(MAX_CARS, numberOfVehicles - (int)spawnedV.size());  // Remove MIN check when/if found a solution for dynamic array
     if (maxCars <= 0) return;
 
@@ -370,9 +370,15 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             if (!Lane) {
                 LOG("Warning: invalid lane index");
                 continue;
-            } else
+            }
+            else 
+            {
                 laneID = Lane->GetId();
+            }
+            
             if (!ensureDistance(inf.pos, laneID)) continue;
+
+            printf("road %d lane %d rel heading %.2f\n", inf.pos.GetTrackId(), laneID, inf.pos.GetHRelative());
 
             Vehicle* vehicle;
             //vehicle = createVehicle(inf.pos, (laneID < 0 ? 0 : 1), laneID, velocity_, NULL, centralObject_->model_filepath_);
@@ -410,7 +416,7 @@ int SwarmTrafficAction::despawn(double simTime)
     bool deleteVehicle         = false;
     int count                  = 0;
     roadmanager::Position cPos = centralObject_->pos_;
-    printf("Before despawn: %d\n", (int)spawnedV.size());
+    //printf("Before despawn: %d\n", (int)spawnedV.size());
     while (infoPtr < spawnedV.end()) {
         Object *vehicle = entities_->GetObjectById(infoPtr->vehicleID);
         roadmanager::Position vPos = vehicle->pos_;
@@ -438,6 +444,6 @@ int SwarmTrafficAction::despawn(double simTime)
         if (increase) ++infoPtr;
         increase = true;
     }
-    printf("After despawn: %d\n", (int)spawnedV.size());
+    //printf("After despawn: %d\n", (int)spawnedV.size());
     return count;
 }
