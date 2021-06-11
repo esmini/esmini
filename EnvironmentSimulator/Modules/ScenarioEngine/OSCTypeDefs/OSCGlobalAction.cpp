@@ -260,8 +260,15 @@ inline Vehicle*
 createVehicle(roadmanager::Position pos, char hdg_offset, int lane, double speed, scenarioengine::Controller *controller, std::string model_filepath) 
 {
     Vehicle* vehicle = new Vehicle();
-    vehicle->pos_.SetInertiaPos(pos.GetX(), pos.GetY(), pos.GetH() + hdg_offset * M_PI, true);
-    vehicle->pos_.SetLanePos(vehicle->pos_.GetTrackId(), lane, vehicle->pos_.GetS(), 0);
+//    vehicle->pos_.SetInertiaPos(pos.GetX(), pos.GetY(), pos.GetH() + hdg_offset * M_PI, true);
+//    vehicle->pos_.SetLanePos(vehicle->pos_.GetTrackId(), lane, vehicle->pos_.GetS(), 0);
+
+    vehicle->pos_.SetLanePos(pos.GetTrackId(), lane, pos.GetS(), 0.0);
+    
+    //vehicle->pos_ = pos;
+    //vehicle->pos_.SetLanePos(pos.GetTrackId(), lane, pos.GetS(), 0.0);
+    
+    vehicle->pos_.SetHeadingRelativeRoadDirection(lane < 0 ? 0.0 : M_PI);
     vehicle->SetSpeed(speed);
     vehicle->controller_     = controller;
     vehicle->model_filepath_ = model_filepath;
@@ -297,10 +304,10 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
         sample(sols.begin(), sols.end(), selected, nCarsToSpawn, gen_);
 
         for (int i = 0; i < nCarsToSpawn; i++) {
-            Point *pt = &selected[i];
+            Point &pt = selected[i];
             // Find road
-            roadmanager::Position pos;
-            pos.XYZH2TrackPos(pt->x, pt->y, 0, pt->h);
+            roadmanager::Position pos(pt.x, pt.y, 0.0, pt.h, 0.0, 0.0);
+            // pos.XYZH2TrackPos(pt.x, pt.y, 0, pt.h);
             // Peek road
             roadmanager::Road* road = odrManager_->GetRoadById(pos.GetTrackId());
             if (road->GetNumberOfDrivingLanes(pos.GetS()) == 0) continue;
@@ -319,8 +326,8 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
         // The algorithms does not ensure to saturate the selected number of vehicles.  
         int lanesLeft = nCarsToSpawn - static_cast<int>(sols.size());
         for (Point pt : sols) {
-            roadmanager::Position pos;
-            pos.XYZH2TrackPos(pt.x, pt.y, 0, pt.h);
+            roadmanager::Position pos(pt.x, pt.y, 0.0, pt.h, 0.0, 0.0);
+            //pos.XYZH2TrackPos(pt.x, pt.y, 0, pt.h);
 
             roadmanager::Road* road = odrManager_->GetRoadById(pos.GetTrackId());
             int nDrivingLanes       = road->GetNumberOfDrivingLanes(pos.GetS());
@@ -400,10 +407,15 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 inline bool SwarmTrafficAction::ensureDistance(roadmanager::Position pos, int lane) 
 {
     for (SpawnInfo info: spawnedV) {
-        if (info.lane == lane && info.roadID == pos.GetTrackId()) {
-            Object *vehicle = entities_->GetObjectById(info.vehicleID);
-            if (abs(vehicle->pos_.GetS() - pos.GetS()) <= VHEICLE_DISTANCE)
+        Object *vehicle = entities_->GetObjectById(info.vehicleID);
+        
+        roadmanager::PositionDiff posDiff;
+        if (pos.Delta(vehicle->pos_, posDiff))  // potentially expensive since trying to resolve path between vehicles...
+        {
+            if (fabs(posDiff.ds) < VHEICLE_DISTANCE)
+            {
                 return false;
+            }
         }
     }   
     return true;
