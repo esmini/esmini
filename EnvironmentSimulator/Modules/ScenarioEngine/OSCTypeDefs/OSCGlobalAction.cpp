@@ -36,6 +36,7 @@ using std::vector;
 #define TIME_INTERVAL 0.1   // Sleep time between two excution of a step
 #define MAX_CARS 1000
 #define MAX_LANES 32
+
 // #define RANDOM_SEED 0  // comment out to generate new seed each run
 
 void ParameterSetAction::Start()
@@ -110,6 +111,16 @@ void printTree(aabbTree::Tree &tree, char filename[]) {
 
     file.close();
 }
+
+#ifdef RANDOM_SEED
+SwarmTrafficAction::SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC), centralObject_(0), gen_(RANDOM_SEED) 
+#else
+SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC), centralObject_(0), gen_((std::random_device())())
+#endif
+{
+    spawnedV.clear();
+};
+
 
 void SwarmTrafficAction::Start()
 {
@@ -262,18 +273,17 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
 printf("Entered road selection\n");
 printf("Min: %d, Max: %d\n", minN, maxN);
     std::uniform_int_distribution<int> dist(minN, maxN);
-    std::random_device dev;
-#ifdef RANDOM_SEED
-    std::mt19937 gen(RANDOM_SEED);
-#else
-    std::mt19937 gen(dev());
-#endif
+
     // Sample the number of cars to spawn
     if (maxN < minN) { 
         LOG("Unstable behavior detected (maxN < minN)"); 
         return; 
     }
-    int nCarsToSpawn = dist(gen);
+    int nCarsToSpawn = dist(gen_);
+    if (nCarsToSpawn <= 0)
+    {
+        return;
+    }
 
     info.reserve(nCarsToSpawn);
     info.clear();
@@ -284,7 +294,7 @@ printf("Min: %d, Max: %d\n", minN, maxN);
         // Solutions selected(nCarsToSpawn);
         Point selected[MAX_CARS];
         std::random_shuffle(sols.begin(), sols.end());
-        sample(sols.begin(), sols.end(), selected, nCarsToSpawn, gen);
+        sample(sols.begin(), sols.end(), selected, nCarsToSpawn, gen_);
 
         for (int i = 0; i < nCarsToSpawn; i++) {
             Point *pt = &selected[i];
@@ -322,7 +332,7 @@ printf("Min: %d, Max: %d\n", minN, maxN);
             int lanesN;
             if (lanesLeft > 0) {
                 std::uniform_int_distribution<int> laneDist(0, std::min(lanesLeft, nDrivingLanes));
-                lanesN = laneDist(gen);
+                lanesN = laneDist(gen_);
                 lanesN = (lanesN == 0 ? 0 : lanesN - 1);
             } else
                 lanesN = 0;
@@ -343,13 +353,6 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
     int maxCars = MIN(MAX_CARS, numberOfVehicles - (int)spawnedV.size());
     if (maxCars <= 0) return;
 
-    std::random_device dev;
-#ifdef RANDOM_SEED
-    std::mt19937 gen(RANDOM_SEED);
-#else
-    std::mt19937 gen(dev());
-#endif
-
     vector<SelectInfo> info;
     sampleRoads(replace, maxCars, sols, info);
 
@@ -359,7 +362,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
         std::iota(elements, elements + lanesNo, 0);
 
         int lanes[MAX_LANES];
-        sample(elements, elements + lanesNo, lanes, MIN(MAX_LANES, inf.nLanes), gen);
+        sample(elements, elements + lanesNo, lanes, MIN(MAX_LANES, inf.nLanes), gen_);
         for (int laneIdx = 0; laneIdx < MIN(MAX_LANES, inf.nLanes); laneIdx++) {
             auto Lane = inf.road->GetDrivingLaneByIdx(inf.pos.GetS(), laneIdx);
             int laneID;
