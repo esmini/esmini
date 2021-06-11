@@ -36,7 +36,7 @@ using std::vector;
 #define TIME_INTERVAL 0.1   // Sleep time between two excution of a step
 #define MAX_CARS 1000
 #define MAX_LANES 32
-#define SAME_RANDOM_SEED false
+// #define RANDOM_SEED 0  // comment out to generate new seed each run
 
 void ParameterSetAction::Start()
 {
@@ -180,10 +180,10 @@ void SwarmTrafficAction::createRoadSegments(BBoxVec &vec)
         for (int j = 0; j < road->GetNumberOfGeometries(); j++) {
             roadmanager::Geometry *gm = road->GetGeometry(j);
             switch (gm->GetType()) {
-                case gm->GEOMETRY_TYPE_UNKNOWN: {
+                case roadmanager::Geometry::GeometryType::GEOMETRY_TYPE_UNKNOWN: {
                     break;
                 }
-                case gm->GEOMETRY_TYPE_LINE: {
+                case roadmanager::Geometry::GeometryType::GEOMETRY_TYPE_LINE: {
                     auto const length = gm->GetLength();
                     for (double dist = gm->GetS(); dist < length;) {
                         double ds = dist + minSize_;
@@ -263,8 +263,8 @@ printf("Entered road selection\n");
 printf("Min: %d, Max: %d\n", minN, maxN);
     std::uniform_int_distribution<int> dist(minN, maxN);
     std::random_device dev;
-#if SAME_RANDOM_SEED
-    std::mt19937 gen(0);
+#ifdef RANDOM_SEED
+    std::mt19937 gen(RANDOM_SEED);
 #else
     std::mt19937 gen(dev());
 #endif
@@ -344,8 +344,8 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
     if (maxCars <= 0) return;
 
     std::random_device dev;
-#if SAME_RANDOM_SEED
-    std::mt19937 gen(0);
+#ifdef RANDOM_SEED
+    std::mt19937 gen(RANDOM_SEED);
 #else
     std::mt19937 gen(dev());
 #endif
