@@ -77,23 +77,22 @@ namespace STGeometry {
      * @param sy y-coordinate where the solution will be stored
      */
     static inline void paramEllipse(
-        double alpha, 
-        double h, 
-        double k, 
-        double SMjA, 
-        double SMnA, 
+        double alpha,
+        double h,
+        double k,
+        double SMjA,
+        double SMnA,
         double hdg,
-        double &sx,
-        double &sy
+        double& sx,
+        double& sy
     ) {
         double cosAlpha = cos(alpha);
         double sinAlpha = sin(alpha);
-        double cosHdg   = cos(hdg);
-        double sinHdg   = sin(hdg);
+        double cosHdg = cos(hdg);
+        double sinHdg = sin(hdg);
         sx = SMjA * cosAlpha * cosHdg - SMnA * sinAlpha * sinHdg + h;
         sy = SMjA * cosAlpha * sinHdg + SMnA * sinAlpha * cosHdg + k;
     }
-
 
     /**
      * @brief It computes the angle of the tangent in the point of parametrization alpha
@@ -225,6 +224,7 @@ namespace STGeometry {
         return f1 + f2 -1;
     }
 
+#if 0  // Not used?
     /*
      * Checks whether the intersection points found belong to the segment of road
      */
@@ -260,6 +260,7 @@ namespace STGeometry {
         }
         return solsN;
     }
+#endif
 
     /*
      * Checks whether the intersection points found belong to the segment of road
@@ -286,6 +287,7 @@ namespace STGeometry {
         }   
     }
 
+#if 0  // Not used?
     /* 
      * Finds the intersection points between an ellipses and a stright piece of the road
      * The equation to find the x points of intersection is assumed to be in the form
@@ -367,6 +369,7 @@ namespace STGeometry {
         checkRange(triangle, sol, last);
         return sol.size() > last;
     }
+#endif 
 
     /**
      * @brief Finds the zeros of a function 'f' given the guess 
@@ -375,7 +378,7 @@ namespace STGeometry {
      * 
      */
     static bool brent_zeros(double a, double b, double &res, double delta, DDProc f) {
-        double fa, fb, fc, fs, c, d, s;
+        double fa, fb, fc, fs, c, d=0, s;  // init d to avoid compiler warnings (d refer before set is protected by flag)
         bool flag;
         fa = f(a);
         fb = f(b);
@@ -443,7 +446,7 @@ namespace STGeometry {
         SMnA = eInfo.SMnA;
 
         DDProc ellipseP = [h, k, A, SMjA, SMnA, geometry](double s) {
-            double x, y, hdg, e;
+            double x, y, hdg;
             geometry->EvaluateDS(s, &x, &y, &hdg);
             return ellipse(h, k, A, SMjA, SMnA, x, y);
         };
