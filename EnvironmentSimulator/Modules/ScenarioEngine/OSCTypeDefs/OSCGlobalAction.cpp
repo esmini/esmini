@@ -115,7 +115,7 @@ void printTree(aabbTree::Tree &tree, char filename[]) {
 #ifdef RANDOM_SEED
 SwarmTrafficAction::SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC), centralObject_(0), gen_(RANDOM_SEED) 
 #else
-SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC), centralObject_(0), gen_((std::random_device())())
+SwarmTrafficAction::SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC), centralObject_(0), gen_((std::random_device())())
 #endif
 {
     spawnedV.clear();
@@ -177,7 +177,7 @@ void SwarmTrafficAction::Step(double dt, double simTime)
         rTree->intersect(eTree, candidates);
         aabbTree::processCandidates(candidates, triangle);
         aabbTree::findPoints(triangle, info, sols);
-        printf("N points found: %d\n", (int)sols.size());
+        printf("N points found: %d\n", static_cast<int>(sols.size()));
     
         spawn(sols, despawn(simTime), simTime);
         lastTime = simTime;
@@ -292,7 +292,7 @@ printf("Min: %d, Max: %d\n", minN, maxN);
     if (nCarsToSpawn <= sols.size() && nCarsToSpawn > 0) {
         // Shuffle and randomly select the points
         // Solutions selected(nCarsToSpawn);
-        Point selected[MAX_CARS];
+        static Point selected[MAX_CARS];  // Remove macro when/if found a solution for dynamic array
         std::random_shuffle(sols.begin(), sols.end());
         sample(sols.begin(), sols.end(), selected, nCarsToSpawn, gen_);
 
@@ -317,7 +317,7 @@ printf("Min: %d, Max: %d\n", minN, maxN);
         // We use all the spawnable points and we ensure that each obtains
         // a lane at least. The remaining ones will be randomly distributed.
         // The algorithms does not ensure to saturate the selected number of vehicles.  
-        int lanesLeft = nCarsToSpawn - (int)sols.size();
+        int lanesLeft = nCarsToSpawn - static_cast<int>(sols.size());
         for (Point pt : sols) {
             roadmanager::Position pos;
             pos.XYZH2TrackPos(pt.x, pt.y, 0, pt.h);
@@ -349,8 +349,8 @@ printf("Min: %d, Max: %d\n", minN, maxN);
 
 void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime) 
 {   
-    printf("spawnedV: %d\n", (int)spawnedV.size());
-    int maxCars = MIN(MAX_CARS, numberOfVehicles - (int)spawnedV.size());
+    printf("spawnedV: %d\n", static_cast<int>(spawnedV.size()));
+    int maxCars = MIN(MAX_CARS, numberOfVehicles - (int)spawnedV.size());  // Remove MIN check when/if found a solution for dynamic array
     if (maxCars <= 0) return;
 
     vector<SelectInfo> info;
@@ -358,10 +358,10 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
     for (SelectInfo inf : info) {
         int lanesNo = MIN(MAX_LANES, inf.road->GetNumberOfDrivingLanes(inf.pos.GetS()));
-        int elements[MAX_LANES];
+        static int elements[MAX_LANES];
         std::iota(elements, elements + lanesNo, 0);
 
-        int lanes[MAX_LANES];
+        static int lanes[MAX_LANES];
         sample(elements, elements + lanesNo, lanes, MIN(MAX_LANES, inf.nLanes), gen_);
         for (int laneIdx = 0; laneIdx < MIN(MAX_LANES, inf.nLanes); laneIdx++) {
             auto Lane = inf.road->GetDrivingLaneByIdx(inf.pos.GetS(), laneIdx);

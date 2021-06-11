@@ -154,7 +154,7 @@ bool Tree::empty() {
  */
 void Tree::__build(BBoxVec::iterator const start, BBoxVec::iterator const end) {
     vector<StackRecord> stack;
-    stack.reserve((int)(log(end - start) * 2));
+    stack.reserve(int(log(end - start) * 2));
     stack.clear();
 
     BBoxVec::iterator cut;
@@ -318,7 +318,6 @@ void aabbTree::processCandidates(Candidates const &candidates, vector<ptTriangle
 void aabbTree::findPoints(vector<ptTriangle> const &triangles, EllipseInfo &eInfo, Solutions &points) {
     for (auto const tr : triangles) {
         if (tr->geometry()) {
-            // auto gm = tr->geometry();  // Not used?
             geometryIntersect(*tr, eInfo, points);
         } else 
             LOG("Warning: triangle without a geometry found");
