@@ -3,16 +3,20 @@ include_directories (
   ${ROADMANAGER_INCLUDE_DIR}
   ${SCENARIOENGINE_INCLUDE_DIRS}
   ${VIEWER_BASE_INCLUDE_DIR}
+if (USE_OSG)  
   ${OSG_INCLUDE_DIR}
+endif (USE_OSG)  
   ${COMMON_MINI_INCLUDE_DIR}
   ${OSI_INCLUDE_DIR}
   ${CONTROLLERS_INCLUDE_DIR}
 )
 
+
 set ( INCLUDES
 	Replay.hpp
 )
 
+if (USE_OSG)
 # Replayer target
 set (TARGET1 replayer)
 add_definitions(-DOSG_LIBRARY_STATIC)
@@ -32,6 +36,7 @@ target_link_libraries (
 	${OSG_LIBRARIES}
 	${TIME_LIB}	
 )
+endif (USE_OSG)
 
 # dat2csv target
 set (TARGET2 dat2csv)
