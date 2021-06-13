@@ -45,6 +45,25 @@ set(PUGIXML_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/pugixml")
 include_directories( ${PUGIXML_INCLUDE_DIR} )
 
 set(USE_OSG True CACHE BOOL "If projects that depend on OpenSceneGraph should be compiled.")
+set(USE_OSI True CACHE BOOL "If code that depend on OSI should be compiled.")
+set(USE_SUMO True CACHE BOOL "If code that depend on SUMO should be compiled.")
+set(USE_GTEST True CACHE BOOL "If unit test suites based on googletest should be compiled.")
+
+if (USE_OSG)
+  add_definitions(-D_USE_OSG)
+endif (USE_OSG)
+
+if (USE_OSI)
+  add_definitions(-D_USE_OSI)
+endif (USE_OSI)
+
+if (USE_SUMO)
+  add_definitions(-D_USE_SUMO)
+endif (USE_SUMO)
+
+if (USE_GTEST)
+  add_definitions(-D_USE_GTEST)
+endif (USE_GTEST)
 
 add_subdirectory(EnvironmentSimulator)
 

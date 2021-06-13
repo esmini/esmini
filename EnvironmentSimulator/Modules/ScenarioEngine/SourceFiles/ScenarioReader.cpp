@@ -44,7 +44,9 @@ void ScenarioReader::LoadControllers()
 	RegisterController(ControllerSloppyDriver::GetTypeNameStatic(), InstantiateControllerSloppyDriver);
 	RegisterController(ControllerInteractive::GetTypeNameStatic(), InstantiateControllerInteractive);
 	RegisterController(ControllerFollowGhost::GetTypeNameStatic(), InstantiateControllerFollowGhost);
+#ifdef _USE_SUMO
 	RegisterController(ControllerSumo::GetTypeNameStatic(), InstantiateControllerSumo);
+#endif
 	RegisterController(ControllerExternal::GetTypeNameStatic(), InstantiateControllerExternal);
 	RegisterController(ControllerRel2Abs::GetTypeNameStatic(), InstantiateControllerRel2Abs);
 }
@@ -1031,6 +1033,7 @@ int ScenarioReader::parseEntities()
 
 			if (ctrl)
 			{
+#ifdef _USE_SUMO
 				if (ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_SUMO)
 				{
 					// Set template vehicle to be used for all vehicles spawned from SUMO
@@ -1042,6 +1045,7 @@ int ScenarioReader::parseEntities()
 
 					// SUMO controller is not assigned to any scenario vehicle
 				}
+#endif // USE_SUMO
 				controller_.push_back(ctrl);
 			}
 		}

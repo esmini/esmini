@@ -18,6 +18,7 @@
 #include "Parameters.hpp"
 #include "vehicle.hpp"
 
+
 #define CONTROLLER_INTERACTIVE_TYPE_NAME "InteractiveController"
 
 namespace scenarioengine
@@ -43,9 +44,6 @@ namespace scenarioengine
 		vehicle::Vehicle vehicle_;
 		vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
 		vehicle::STEERING steer = vehicle::STEERING_NONE;
-#ifdef _SCENARIO_VIEWER
-		viewer::CarModel* gfx_model;
-#endif
 
 	};
 

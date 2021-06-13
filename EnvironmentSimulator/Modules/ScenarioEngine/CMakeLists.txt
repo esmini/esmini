@@ -15,6 +15,11 @@ include_directories (
 file(GLOB SRC_OSCTYPEDEFS "${CMAKE_CURRENT_LIST_DIR}/OSCTypeDefs/*.[hc]pp")
 file(GLOB SRC_SOURCEFILES "${CMAKE_CURRENT_LIST_DIR}/SourceFiles/*.[hc]pp")
 
+if (NOT USE_OSI)
+    list(FILTER SRC_SOURCEFILES EXCLUDE REGEX ".*/OSIReporter.[hc]pp")
+endif (NOT USE_OSI)
+
+
 set ( SRC_ADDITIONAL ../../../externals/pugixml/pugixml.cpp)
 
 SOURCE_GROUP(OSCTypeDefs FILES ${SRC_OSCTYPEDEFS})

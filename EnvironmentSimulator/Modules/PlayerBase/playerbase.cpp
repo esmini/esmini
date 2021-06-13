@@ -20,7 +20,7 @@
 #include "Server.hpp"
 #include "playerbase.hpp"
 #include "helpText.hpp"
-#ifdef _SCENARIO_VIEWER
+#ifdef _USE_OSG
 	#include "viewer.hpp"
 #endif
 
@@ -52,7 +52,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 	disable_controllers_ = false;
 	frame_counter_ = 0;
 
-#ifdef _SCENARIO_VIEWER
+#ifdef _USE_OSG
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
 #endif
 
@@ -74,7 +74,7 @@ ScenarioPlayer::~ScenarioPlayer()
 		StopServer();
 	}
 
-#if _SCENARIO_VIEWER
+#ifdef _USE_OSG
 	if (!headless)
 	{
 		if (viewer_)
@@ -102,6 +102,7 @@ ScenarioPlayer::~ScenarioPlayer()
 
 void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
 {
+#ifdef _USE_OSI
 	if (osiReporter)
 	{
 		if (is_on)
@@ -113,6 +114,7 @@ void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
 			osiReporter->CloseOSIFile();
 		}
 	}
+#endif // USE_OSI
 }
 
 void ScenarioPlayer::Frame(double timestep_s)
@@ -123,7 +125,7 @@ void ScenarioPlayer::Frame(double timestep_s)
 	
 	if (!headless && viewer_)
 	{
-#if _SCENARIO_VIEWER
+#ifdef _USE_OSG
 		if (!threads)
 		{
 			ViewerFrame();
@@ -182,7 +184,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	{
 		sensor[i]->Update();
 	}
-
+#ifdef _USE_OSI
 	osiReporter->ReportSensors(sensor);
 
 	// Update OSI info
@@ -195,6 +197,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 		// Update counter after modulo-check since first frame should always be reported
 		osi_counter++;
 	}
+#endif  // USE_OSI
 
 	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
 	//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
@@ -212,7 +215,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	frame_counter_++;
 }
 
-#ifdef _SCENARIO_VIEWER
+#ifdef _USE_OSG
 void ScenarioPlayer::ViewerFrame()
 {
 	static double last_dot_time = scenarioEngine->getSimulationTime();
@@ -593,7 +596,7 @@ void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, doubl
 	sensor.push_back(new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_index], x, y, z, h, near, far, fovH, maxObj));
  	if (!headless)
 	{
-#if _SCENARIO_VIEWER
+#ifdef _USE_OSG
 		if (viewer_)
 		{
 			mutex.Lock();
@@ -607,7 +610,7 @@ void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, doubl
 void ScenarioPlayer::ShowObjectSensors(bool mode)
 {
 	// Switch on sensor visualization as defult when sensors are added
-#if _SCENARIO_VIEWER
+#ifdef _USE_OSG
 	if (viewer_)
 	{
 		mutex.Lock();
@@ -670,7 +673,7 @@ int ScenarioPlayer::Init()
 	if (opt.GetOptionSet("help"))
 	{
 		opt.PrintUsage();
-#ifdef _SCENARIO_VIEWER
+#ifdef _USE_OSG
 		viewer::Viewer::PrintUsage();
 #endif
 		return -2;
@@ -768,7 +771,7 @@ int ScenarioPlayer::Init()
 		{
 			LOG("Error: Missing required OpenSCENARIO filename argument or XML string");
 			opt.PrintUsage();
-#ifdef _SCENARIO_VIEWER
+#ifdef _USE_OSG
 			viewer::Viewer::PrintUsage();
 #endif
 			return -1;
@@ -783,6 +786,8 @@ int ScenarioPlayer::Init()
 	// Fetch scenario gateway and OpenDRIVE manager objects
 	scenarioGateway = scenarioEngine->getScenarioGateway();
 	odr_manager = scenarioEngine->getRoadManager();
+
+#ifdef _USE_OSI
 	osiReporter = new OSIReporter();
 
 	if (opt.GetOptionSet("osi_receiver_ip"))
@@ -805,6 +810,7 @@ int ScenarioPlayer::Init()
 		osi_freq_ = atoi(arg_str.c_str());
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
 	}
+#endif  // USE_OSI
 
 	// Initialize CSV logger for recording vehicle data
 	if (opt.GetOptionSet("csv_logger"))
@@ -827,7 +833,7 @@ int ScenarioPlayer::Init()
 	if (!headless)
 	{
 
-#ifdef _SCENARIO_VIEWER
+#ifdef _USE_OSG
 
 		if (threads)
 		{
@@ -986,7 +992,7 @@ int ScenarioPlayer::SetParameterValue(const char* name, bool value)
 //todo
 int ScenarioPlayer::GetNumberOfProperties(int index)
 {
-	return scenarioEngine->entities.object_[index]->properties_.property_.size();
+	return (int)scenarioEngine->entities.object_[index]->properties_.property_.size();
 }
 
 const char* ScenarioPlayer::GetPropertyName(int index,int propertyIndex)
@@ -999,7 +1005,7 @@ const char* ScenarioPlayer::GetPropertyValue(int index,int propertyIndex)
 	return scenarioEngine->entities.object_[index]->properties_.property_[propertyIndex].value_.c_str();
 }
 
-#ifdef _SCENARIO_VIEWER
+#ifdef _USE_OSG
 	void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 	{
 		ScenarioPlayer* player = (ScenarioPlayer*)data;

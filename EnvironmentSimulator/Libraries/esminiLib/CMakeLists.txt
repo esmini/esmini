@@ -21,9 +21,17 @@ add_library ( ${TARGET} SHARED ${SOURCES} ${INCLUDES} )
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 if (USE_OSG)
-  add_definitions(-DOSG_LIBRARY_STATIC -D_SCENARIO_VIEWER)
+  add_definitions(-DOSG_LIBRARY_STATIC)
   set (viewer_libs 	PRIVATE ViewerBase PRIVATE ${OSG_LIBRARIES})
 endif (USE_OSG)
+
+if (USE_SUMO)
+  set (sumo_libs ${SUMO_LIBRARIES})
+endif (USE_SUMO)
+
+if (USE_OSI)
+  set (osi_libs ${OSI_LIBRARIES})
+endif (USE_OSI)
 
 target_link_libraries ( 
 	${TARGET}
@@ -32,8 +40,8 @@ target_link_libraries (
 	PRIVATE RoadManager
 	PRIVATE CommonMini
     PRIVATE Controllers
-    PRIVATE ${OSI_LIBRARIES}
-    PRIVATE ${SUMO_LIBRARIES}
+    PRIVATE ${osi_libs}
+    PRIVATE ${sumo_libs}
 	PRIVATE ${TIME_LIB}	
     PRIVATE ${SOCK_LIB}
     ${viewer_libs}

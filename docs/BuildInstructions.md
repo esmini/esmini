@@ -66,6 +66,24 @@ Also, g++ version >= 5 is needed for c++14 code support.
 
 Windows and Mac: Install the [cmake](https://cmake.org/) application
 
+## Slim esmini - customize configration
+
+The external dependencies OSG, OSI and SUMO are optional. Also the unit test suite is optional, in effect making the dependecy to googletest framework optional as well. All these options are simply controlled by the following cmake options:
+- USE_OSG
+- USE_OSI
+- USE_SUMO
+- USE_GTEST
+
+So, for example, to cut dependency to OSG and SUMO, run:  
+```cmake .. -D USE_OSG=False -D USE_SUMO=False```  
+
+To disable OSG, SUMO, OSI and googletest, run:  
+```cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False```  
+
+All options are enabled/True as default.
+
+**Note:** Disabling an external dependency will disable corresponding functionality. So, for example, disabling OSI means that no OSI data can be created by esmini. Disabling OSG means that esmini can't visualize the scenario. However it can still run the scenario and create a .dat file, which can be played and visualized later in another esmini build in which OSG is enabled (even on another platform).
+
 ## Build project
 First generate build configuration (see above)
 

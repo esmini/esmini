@@ -66,13 +66,13 @@ for:
 
           cd ..
 
-          # No OSG
+          # No OSG, OSI and SUMO
 
           mkdir build-no-osg
 
           cd build-no-osg
 
-          cmake .. -D USE_OSG=false -DCMAKE_BUILD_TYPE=Release
+          cmake .. -DCMAKE_BUILD_TYPE=Release -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False
 
           cmake --build . -j --config Release
 
@@ -84,7 +84,7 @@ for:
 
           cd build-debug
 
-          cmake .. -D USE_OSG=true -DCMAKE_BUILD_TYPE=Debug
+          cmake .. -DCMAKE_BUILD_TYPE=Debug
 
           cmake --build . -j --config Debug
 
@@ -175,13 +175,13 @@ for:
           cd ..
 
       - sh: >-
-          # Also verify build Without OSG
+          # Also verify build Without OSG, OSI and SUMO
 
           mkdir build-no-osg
 
           cd build-no-osg
 
-          cmake .. -D USE_OSG=false
+          cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False
 
           cmake --build . -j --config Release
 
@@ -252,7 +252,7 @@ for:
           
           cd build
           
-          cmake -G "Visual Studio 15 Win64" -D USE_OSG=true ..
+          cmake -G "Visual Studio 15 Win64" ..
           
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
 
@@ -260,13 +260,13 @@ for:
 
           generate_binary_dist.bat
 
-          echo Also verify build without OSG
+          echo Also verify build without OSG, OSI and SUMO
 
           mkdir build-no-osg
 
           cd build-no-osg
 
-          cmake -G "Visual Studio 15 Win64" -D USE_OSG=false .. 
+          cmake .. -G "Visual Studio 15 Win64" -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False
 
           cmake --build . -j --config Release 
 

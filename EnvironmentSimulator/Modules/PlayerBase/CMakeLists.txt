@@ -18,7 +18,7 @@ set ( INCLUDES
 )
 
 if (USE_OSG)
-  add_definitions(-DOSG_LIBRARY_STATIC -D_SCENARIO_VIEWER)
+  add_definitions(-DOSG_LIBRARY_STATIC)
 endif (USE_OSG)
 
 add_library ( PlayerBase STATIC ${SOURCES} ${INCLUDES} )

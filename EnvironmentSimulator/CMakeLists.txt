@@ -329,9 +329,9 @@ add_subdirectory(Applications/esmini)
 add_subdirectory(Applications/esmini-dyn)
 
 # Add unittest folder
-if(APPLE)
+if (APPLE)
   message ("Not available yet")
-else()
+elseif (USE_GTEST)
   add_subdirectory(Unittest)
 endif()
     

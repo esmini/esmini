@@ -196,7 +196,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 		r_data->t = (float)s_data.road_lane_info.t;
 
 // Add visualization of forward looking road sensor probe
-#ifdef _SCENARIO_VIEWER
+#ifdef _USE_OSG
 		if (player->viewer_ && player->viewer_->entities_[object_id]->GetType() == viewer::EntityModel::ENTITY_TYPE_VEHICLE)
 		{
 			viewer::CarModel *model = (viewer::CarModel *)player->viewer_->entities_[object_id];
@@ -368,10 +368,10 @@ extern "C"
 
 	SE_DLL_API int SE_InitWithString(const char *oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record)
 	{
-#ifndef _SCENARIO_VIEWER
+#ifndef _USE_OSG
 		if (use_viewer)
 		{
-			LOG("use_viewer flag set, but no viewer available (compiled without -D _SCENARIO_VIEWER");
+			LOG("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
 		}
 #endif
 		resetScenario();
@@ -409,10 +409,10 @@ extern "C"
 
 	SE_DLL_API int SE_Init(const char *oscFilename, int disable_ctrls, int use_viewer, int threads, int record)
 	{
-#ifndef _SCENARIO_VIEWER
+#ifndef _USE_OSG
 		if (use_viewer)
 		{
-			LOG("use_viewer flag set, but no viewer available (compiled without -D _SCENARIO_VIEWER");
+			LOG("use_viewer flag set, but no viewer available (compiled without -D _USE_OSG");
 		}
 #endif
 		resetScenario();
@@ -664,7 +664,9 @@ extern "C"
 
 	SE_DLL_API int SE_OpenOSISocket(const char *ipaddr)
 	{
+#ifdef _USE_OSI
 		player->osiReporter->OpenSocket(ipaddr);
+#endif  // USE_OSI
 		return 0;
 	}
 
@@ -1006,7 +1008,9 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			return player->osiReporter->GetOSIGroundTruth(size);
+#endif  // USE_OSI
 		}
 
 		*size = 0;
@@ -1017,7 +1021,9 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			return (const char *)player->osiReporter->GetOSIGroundTruthRaw();
+#endif  // USE_OSI
 		}
 
 		return 0;
@@ -1027,7 +1033,9 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			return player->osiReporter->GetOSIRoadLane(player->scenarioGateway->objectState_, size, object_id);
+#endif  // USE_OSI		
 		}
 
 		*size = 0;
@@ -1038,7 +1046,9 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			return player->osiReporter->GetOSIRoadLaneBoundary(size, global_id);
+#endif  // USE_OSI
 		}
 
 		*size = 0;
@@ -1049,6 +1059,7 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			std::vector<int> ids_vector;
 			player->osiReporter->GetOSILaneBoundaryIds(player->scenarioGateway->objectState_, ids_vector, object_id);
 			if (!ids_vector.empty())
@@ -1058,6 +1069,7 @@ extern "C"
 				ids->right_lb_id = ids_vector[2];
 				ids->far_right_lb_id = ids_vector[3];
 			}
+#endif  // USE_OSI
 		}
 		return;
 	}
@@ -1066,7 +1078,9 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			return player->osiReporter->ClearOSIGroundTruth();
+#endif  // USE_OSI
 		}
 
 		return 0;
@@ -1076,7 +1090,9 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
+#endif  // USE_OSI
 		}
 
 		return 0;
@@ -1086,7 +1102,9 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			return player->osiReporter->UpdateOSIStaticGroundTruth(player->scenarioGateway->objectState_);
+#endif  // USE_OSI
 		}
 
 		return 0;
@@ -1096,7 +1114,9 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			return player->osiReporter->UpdateOSIDynamicGroundTruth(player->scenarioGateway->objectState_);
+#endif  // USE_OSI
 		}
 
 		return 0;
@@ -1106,7 +1126,9 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			return (const char *)player->osiReporter->GetOSISensorDataRaw();
+#endif  // USE_OSI
 		}
 
 		return 0;
@@ -1116,7 +1138,9 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			return player->osiReporter->OpenOSIFile(filename);
+#endif  // USE_OSI
 		}
 
 		return false;
@@ -1128,11 +1152,13 @@ extern "C"
 
 		if (player)
 		{
+#ifdef _USE_OSI
 			retval = player->osiReporter->WriteOSIFile();
 			if (flush)
 			{
 				player->osiReporter->FlushOSIFile();
 			}
+#endif  // USE_OSI
 		}
 
 		return retval;
@@ -1142,8 +1168,10 @@ extern "C"
 	{
 		if (player)
 		{
+#ifdef _USE_OSI
 			player->osiReporter->SetOSITimeStampExplicit(nanoseconds);
 			return 0;
+#endif  // USE_OSI
 		}
 
 		return -1;
@@ -1296,7 +1324,7 @@ extern "C"
 
 		Object *obj = player->scenarioEngine->entities.object_[object_id];
 
-		double adjustedLookaheadDistance = lookahead_distance;
+		float adjustedLookaheadDistance = lookahead_distance;
 
 		if (!inRoadDrivingDirection)
 		{
@@ -1387,12 +1415,12 @@ extern "C"
 					road_sign->id = s->GetId();
 					returnString = s->GetName();
 					road_sign->name = returnString.c_str();
-					road_sign->x = pos.GetX();
-					road_sign->y = pos.GetY();
-					road_sign->z = pos.GetZ();
-					road_sign->h = pos.GetH();
-					road_sign->s = pos.GetS();
-					road_sign->t = pos.GetT();
+					road_sign->x = (float)pos.GetX();
+					road_sign->y = (float)pos.GetY();
+					road_sign->z = (float)pos.GetZ();
+					road_sign->h = (float)pos.GetH();
+					road_sign->s = (float)pos.GetS();
+					road_sign->t = (float)pos.GetT();
 					road_sign->orientation = s->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? -1 : 1;
 					road_sign->z_offset = (float)s->GetZOffset();
 					road_sign->length = (float)s->GetLength();
@@ -1408,7 +1436,7 @@ extern "C"
 		return -1;
 	}
 
-#ifdef _SCENARIO_VIEWER
+#ifdef _USE_OSG
 	SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
 	{
 		if (player && player->viewer_)
@@ -1478,11 +1506,11 @@ extern "C"
 		{
 			return;
 		}
-		state->x = ((vehicle::Vehicle *)handleSimpleVehicle)->posX_;
-		state->y = ((vehicle::Vehicle *)handleSimpleVehicle)->posY_;
-		state->z = ((vehicle::Vehicle *)handleSimpleVehicle)->posZ_;
-		state->h = ((vehicle::Vehicle *)handleSimpleVehicle)->heading_;
-		state->p = ((vehicle::Vehicle *)handleSimpleVehicle)->pitch_;
-		state->speed = ((vehicle::Vehicle *)handleSimpleVehicle)->speed_;
+		state->x = (float)((vehicle::Vehicle *)handleSimpleVehicle)->posX_;
+		state->y = (float)((vehicle::Vehicle *)handleSimpleVehicle)->posY_;
+		state->z = (float)((vehicle::Vehicle *)handleSimpleVehicle)->posZ_;
+		state->h = (float)((vehicle::Vehicle *)handleSimpleVehicle)->heading_;
+		state->p = (float)((vehicle::Vehicle *)handleSimpleVehicle)->pitch_;
+		state->speed = (float)((vehicle::Vehicle *)handleSimpleVehicle)->speed_;
 	}
 }

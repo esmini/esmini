@@ -15,4 +15,9 @@ file(GLOB CONTROLLERS_INCLUDES
     "*.hpp"
 )
 
+if (NOT USE_SUMO)
+    list(FILTER CONTROLLERS_SOURCES EXCLUDE REGEX ".*/ControllerSumo.cpp")
+    list(FILTER CONTROLLERS_INCLUDES EXCLUDE REGEX ".*/ControllerSumo.hpp")
+endif (NOT USE_SUMO)
+
 add_library ( Controllers STATIC ${CONTROLLERS_SOURCES} ${CONTROLLERS_INCLUDES} )

@@ -19,14 +19,16 @@
 #include "CommonMini.hpp"
 #include "Server.hpp"
 #include "IdealSensor.hpp"
+#ifdef _USE_OSI
 #include "OSIReporter.hpp"
-#ifdef _SCENARIO_VIEWER
+#endif  // USE_OSI
+#ifdef _USE_OSG
 #include "viewer.hpp"
 #endif
 
 using namespace scenarioengine;
 
-#ifdef _SCENARIO_VIEWER
+#ifdef _USE_OSG
 void ReportKeyEvent(viewer::KeyEvent *keyEvent, void *data);
 #endif
 
@@ -96,8 +98,13 @@ public:
 	CSV_Logger *CSV_Log;
 	ScenarioEngine *scenarioEngine;
 	ScenarioGateway *scenarioGateway;
+#ifdef _USE_OSI 
 	OSIReporter *osiReporter;
-#ifdef _SCENARIO_VIEWER
+#else
+	void* osiReporter;
+#endif  // USE_OSI
+
+#ifdef _USE_OSG
 	viewer::Viewer *viewer_;
 	std::vector<viewer::SensorViewFrustum *> sensorFrustum;
 	ViewerState viewerState_;

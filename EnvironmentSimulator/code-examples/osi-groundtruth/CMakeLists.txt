@@ -18,10 +18,6 @@ link_directories( ${OSI_DIR}/lib )
 
 add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
-if (USE_OSG)
-  add_definitions(-D_SCENARIO_VIEWER)
-endif (USE_OSG)
-
 target_link_libraries ( 
 	${TARGET}
 	esminiLib

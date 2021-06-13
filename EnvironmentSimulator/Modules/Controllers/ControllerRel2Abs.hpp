@@ -91,9 +91,6 @@ namespace scenarioengine
 		//alters ego_obj to correct entities index for ego
 		void findEgo();
 
-#ifdef _SCENARIO_VIEWER
-		viewer::CarModel* gfx_model;
-#endif
 		ScenarioEngine* scenarioEngine_;
 	};
 

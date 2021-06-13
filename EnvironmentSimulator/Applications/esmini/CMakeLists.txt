@@ -19,9 +19,17 @@ set ( SOURCES
 add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
 if (USE_OSG)
-  add_definitions(-DOSG_LIBRARY_STATIC -D_SCENARIO_VIEWER)
+  add_definitions(-DOSG_LIBRARY_STATIC)
   set (viewer_libs ViewerBase ${OSG_LIBRARIES})
 endif (USE_OSG)
+
+if (USE_SUMO)
+  set (sumo_libs ${SUMO_LIBRARIES})
+endif (USE_SUMO)
+
+if (USE_OSI)
+  set (osi_libs ${OSI_LIBRARIES})
+endif (USE_OSI)
 
 target_link_libraries ( 
 	${TARGET}
@@ -31,8 +39,8 @@ target_link_libraries (
 	RoadManager
 	CommonMini
     ${viewer_libs}
-	${OSI_LIBRARIES}
-	${SUMO_LIBRARIES}
+	${osi_libs}
+	${sumo_libs}
 	${TIME_LIB}	
     ${SOCK_LIB}
 )
