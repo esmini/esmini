@@ -7,7 +7,7 @@ Options:
   --bounding_boxes
       Show entities as bounding boxes (toggle modes on key ',')
   --camera_mode <mode>
-      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top") (toggle during simulation by press 'k')
+      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver") (toggle during simulation by press 'k')
   --csv_logger <csv_filename>
       Log data for each vehicle in ASCII csv format
   --disable_controllers

@@ -256,7 +256,7 @@ int main(int argc, char** argv)
 	SE_Options opt;
 	opt.AddOption("file", "Simulation recording data file", "filename");
 	opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
-	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\") (toggle during simulation by press 'k') ", "mode");
+	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
 	opt.AddOption("start_time", "Start playing at timestamp", "ms");
 	opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
@@ -270,6 +270,9 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		opt.PrintUsage();
+#ifdef _USE_OSG
+		viewer::Viewer::PrintUsage();
+#endif
 		return -1;
 	}
 
@@ -279,6 +282,9 @@ int main(int argc, char** argv)
 	{
 		printf("Missing file argument\n");
 		opt.PrintUsage();
+#ifdef _USE_OSG
+		viewer::Viewer::PrintUsage();
+#endif
 		return -1;
 	}
 
@@ -396,6 +402,9 @@ int main(int argc, char** argv)
 		{
 			opt.PrintArgs(argc, argv, "Unrecognized arguments:");
 			opt.PrintUsage();
+#ifdef _USE_OSG
+			viewer::Viewer::PrintUsage();
+#endif
 			return -1;
 		}
 		viewer->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));

@@ -9,7 +9,7 @@ Options:
   --res_path <path>
       Path to resources root folder - relative or absolut
   --camera_mode <mode>
-      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top") (toggle during simulation by press 'k')
+      Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver") (toggle during simulation by press 'k')
   --time_scale <factor>
       Playback speed scale factor (1.0 == normal)
   --start_time <ms>
@@ -28,14 +28,12 @@ Options:
       Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
-      
-Additional options forwarded to OpenSceneGraph:
-  --window <x y w h>
-          Set the position (x,y) and size (w,h) of the viewer window.		
-  --screen <num>
-          Set the screen to use when multiple screens are present.
-  --clear-color <color>
-          Set the background color of the viewer in the form "r,g,b[,a]".		  
+
+Additional OSG graphics options:
+  --clear-color <color>         Set the background color of the viewer in the form "r,g,b[,a]"
+  --screen <num>                Set the screen to use when multiple screens are present
+  --window <x y w h>            Set the position (x,y) and size (w,h) of the viewer window
+  --borderless-window <x y w h> Set the position(x, y) and size(w, h) of a borderless viewer window  
 
 Key shortcuts
 
