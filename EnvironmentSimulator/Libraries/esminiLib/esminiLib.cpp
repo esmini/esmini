@@ -189,8 +189,8 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 		r_data->road_roll = (float)s_data.road_lane_info.roll;
 		r_data->trail_heading = r_data->road_heading;
 		r_data->speed_limit = (float)s_data.road_lane_info.speed_limit;
-		r_data->roadId = (float)s_data.road_lane_info.roadId;
-		r_data->laneId = (float)s_data.road_lane_info.laneId;
+		r_data->roadId = (int)s_data.road_lane_info.roadId;
+		r_data->laneId = (int)s_data.road_lane_info.laneId;
 		r_data->laneOffset = (float)s_data.road_lane_info.laneOffset;
 		r_data->s = (float)s_data.road_lane_info.s;
 		r_data->t = (float)s_data.road_lane_info.t;
