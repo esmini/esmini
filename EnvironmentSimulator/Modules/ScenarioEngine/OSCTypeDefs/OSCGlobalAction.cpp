@@ -260,14 +260,8 @@ inline Vehicle*
 createVehicle(roadmanager::Position pos, char hdg_offset, int lane, double speed, scenarioengine::Controller *controller, std::string model_filepath) 
 {
     Vehicle* vehicle = new Vehicle();
-//    vehicle->pos_.SetInertiaPos(pos.GetX(), pos.GetY(), pos.GetH() + hdg_offset * M_PI, true);
-//    vehicle->pos_.SetLanePos(vehicle->pos_.GetTrackId(), lane, vehicle->pos_.GetS(), 0);
 
     vehicle->pos_.SetLanePos(pos.GetTrackId(), lane, pos.GetS(), 0.0);
-    
-    //vehicle->pos_ = pos;
-    //vehicle->pos_.SetLanePos(pos.GetTrackId(), lane, pos.GetS(), 0.0);
-    
     vehicle->pos_.SetHeadingRelativeRoadDirection(lane < 0 ? 0.0 : M_PI);
     vehicle->SetSpeed(speed);
     vehicle->controller_     = controller;
@@ -385,7 +379,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             
             if (!ensureDistance(inf.pos, laneID)) continue;
 
-            printf("road %d lane %d rel heading %.2f\n", inf.pos.GetTrackId(), laneID, inf.pos.GetHRelative());
+            // printf("road %d lane %d rel heading %.2f\n", inf.pos.GetTrackId(), laneID, inf.pos.GetHRelative());
 
             Vehicle* vehicle;
             //vehicle = createVehicle(inf.pos, (laneID < 0 ? 0 : 1), laneID, velocity_, NULL, centralObject_->model_filepath_);
