@@ -10,7 +10,7 @@ However, it should be possible to configure custom variants using cmake. For exa
 ```
 mkdir build
 cd build
-cmake .. -G "Visual Studio 16 2019"
+cmake -G "Visual Studio 16 2019" ..
 cmake --build . --config Release --target install
 ```
 
@@ -18,14 +18,14 @@ This will first generate Visual Studio solution and then compile esmini using MS
 
 If you want to compile with MSVC 2017 toolset just add directive to the generator as follows:
 ```
-cmake .. -G "Visual Studio 16 2019" -T v141
+cmake -G "Visual Studio 16 2019" -T v141 .. 
 ```
 
 A complete list of supported toolsets are available [here](https://cmake.org/cmake/help/v3.17/variable/MSVC_TOOLSET_VERSION.html)
 
 If you want to specify architecture you simply add -A x64 or -A Win32. So for example, if you want to compile with MSVC 2015 toolset and for win32 use the following generator command:
 ```
-cmake .. -G "Visual Studio 16 2019" -T v140 -A Win32
+cmake -G "Visual Studio 16 2019" -T v140 -A Win32 .. 
 ```
 Of course, building with a specific toolset requires it to be installed. Use [Visual Studio Installer](https://docs.microsoft.com/en-us/visualstudio/install/install-visual-studio?view=vs-2019). Steps:
 * choose "Modify"
@@ -75,10 +75,10 @@ The external dependencies OSG, OSI and SUMO are optional. Also the unit test sui
 - USE_GTEST
 
 So, for example, to cut dependency to OSG and SUMO, run:  
-```cmake .. -D USE_OSG=False -D USE_SUMO=False```  
+```cmake -D USE_OSG=False -D USE_SUMO=False ..```
 
 To disable OSG, SUMO, OSI and googletest, run:  
-```cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False```  
+```cmake -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False ..```  
 
 All options are enabled/True as default.
 
@@ -149,7 +149,7 @@ In Win10 Powershell use $env: ```$env:FBX_DIR="C:/Program Files/Autodesk/FBX/FBX
 
 Then configure and generate build files:
 ```
-cmake -G "Visual Studio 16 2019" -A x64 -T v141  ../ -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DBUILD_OSG_EXAMPLES=true -DCMAKE_INSTALL_PREFIX=../install
+cmake -G "Visual Studio 16 2019" -A x64 -T v141 -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DBUILD_OSG_EXAMPLES=true -DCMAKE_INSTALL_PREFIX=../install ..
 ```
 Finally build:
 ```
