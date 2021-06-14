@@ -5,7 +5,7 @@ if(WIN32)
   # for cmake generator VisualStudio 2017 support
   cmake_minimum_required (VERSION 3.7.0 FATAL_ERROR)
 else()
-  cmake_minimum_required (VERSION 3.5.0 FATAL_ERROR)
+  cmake_minimum_required (VERSION 3.6.3 FATAL_ERROR)
 endif()
 
 project (EnvironmentSimulator)
