@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2021-06-14 Version 2.10.2
+
+- Fix condition delay issue  
+  Previous behavior was to return true only once after timer expired. Then, if condition still true, restart the timer.  
+  Now the behavior is:
+  - Timer is started when condition is evaluated to true. No more evaluations will be done from this point.
+  - When timer has expired the condition will always return true
+- Set correct required cmake version for FILTER feature
+- Some additional minor fixes
+
 ### 2021-06-14 Version 2.10.1
 
 - Bugfixes:
