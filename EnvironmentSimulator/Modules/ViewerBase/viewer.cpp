@@ -1804,16 +1804,16 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 			
 			tx = LoadRoadFeature(road, signal->GetName() + ".osgb");
 
-			pos.SetTrackPos(road->GetId(), signal->GetS(), signal->GetT());
-			tx->setPosition(osg::Vec3(pos.GetX(), pos.GetY(), signal->GetZOffset() + pos.GetZ()));
-			tx->setAttitude(osg::Quat(pos.GetH() + orientation + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
-
 			if (tx == nullptr)
 			{
 				return -1;
 			}
 			else
 			{
+				pos.SetTrackPos(road->GetId(), signal->GetS(), signal->GetT());
+				tx->setPosition(osg::Vec3(pos.GetX(), pos.GetY(), signal->GetZOffset() + pos.GetZ()));
+				tx->setAttitude(osg::Quat(pos.GetH() + orientation + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
+
 				objGroup->addChild(tx);
 			}
 		}
