@@ -229,11 +229,17 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 	{
 		if (timer_.Expired(sim_time))
 		{
-			LOG("%s timer expired at %.2f seconds", name_.c_str(), timer_.Elapsed(sim_time));
-			timer_.Reset();
-			return true;
+			if (last_result_ == false)
+			{
+				LOG("%s timer expired at %.2f seconds", name_.c_str(), timer_.Elapsed(sim_time));
+			}
+			last_result_ = true;
 		}
-		return false;
+		else
+		{
+			last_result_ = false;
+		}
+		return last_result_;
 	}
 
 	bool result = CheckCondition(storyBoard, sim_time);
@@ -246,7 +252,8 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 	{
 		timer_.Start(sim_time, delay_);
 		LOG("%s timer %.2fs started", name_.c_str(), delay_);
-		return false;
+		last_result_ = false;
+		return last_result_;
 	}
 
 	return trig;
