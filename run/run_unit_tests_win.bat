@@ -1,6 +1,6 @@
 @rem Run unit tests on Windows
 
-cd ..\build\EnvironmentSimulator\Unittest
+cd ..\buildVS2019_64_v141\EnvironmentSimulator\Unittest
 
 set PATH=%PATH%;..\Libraries\esminiLib\Release
 
