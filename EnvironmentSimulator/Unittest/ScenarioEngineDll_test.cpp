@@ -122,7 +122,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids_no_obj)
 TEST(OSIintersections, threeway)
 {
 
-	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/simple_3_way_intersection_osi.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_3_way_intersection_osi.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -156,7 +156,7 @@ TEST(OSIintersections, threeway)
 TEST(OSIintersections, fourway)
 {
 
-	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/simple_4_way_intersection_osi.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_4_way_intersection_osi.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -190,7 +190,7 @@ TEST(OSIintersections, fourway)
 TEST(OSIintersections, motorway)
 {
 
-	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/simple_motorway_osi_intersection.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_motorway_osi_intersection.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -219,7 +219,7 @@ TEST(OSIintersections, motorway)
 
 TEST(OSIintersections, multilane)
 {
-	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/multilane_3way_intersection_osi.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/multilane_3way_intersection_osi.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
@@ -746,7 +746,7 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 	int sv_size = 0;
 	osi3::GroundTruth osi_gt;
 
-	SE_Init("../../../EnvironmentSimulator/Unittest/scenarios/miscobj_basic.xosc", 0, 0, 0, 0);
+	SE_Init("../../../EnvironmentSimulator/Unittest/xosc/miscobj_basic.xosc", 0, 0, 0, 0);
 
 	SE_StepDT(0.001f);
 
@@ -971,7 +971,7 @@ TEST(ParameterTest, GetTypedParameterValues)
 
 TEST(OverrideActionTest, TestGetAndSet)
 {
-	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/override_action.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/override_action.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 	float dt = 0.1f;
 	float t = 0.0f;
@@ -1021,7 +1021,7 @@ TEST(OverrideActionTest, TestGetAndSet)
 
 TEST(PropertyTest, TestGetAndSet)
 {
-	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/scenarios/VehiclePropertyTest.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/VehiclePropertyTest.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 

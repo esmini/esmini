@@ -10,7 +10,7 @@
         </VehicleCatalog>
     </CatalogLocations>
     <RoadNetwork>
-        <LogicFile filepath="../roads/multi_lane_3way_intersection.xodr"/>
+        <LogicFile filepath="../xodr/simple_3way_motorway.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
