@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2021-06-14 Version 2.10.1
+
+- Bugfixes:
+  - Fix typecast bug in esminiLib GetRoadInfoAtDistance/SE_RoadInfo (roadId and laneId)
+  - Avoid crash on road object load failure, e.g. when road sign .osgb file is not found
+- Support slimmed esmini by making OSG, OSI, SUMO and googletest optional
+  - see more info [here](https://github.com/esmini/esmini/blob/master/docs/BuildInstructions.md#slim-esmini---customize-configration)
+- Add relevant modules to non OSG build
+  - E.g. odrplot (not OSG dependent) and dat2csv
+- Add missing "driver" option to --camera_mode usage help text ([esmini](https://github.com/esmini/esmini/blob/master/docs/commands.txt) and [replayer](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/replayer/readme.txt))
+- Add [xodr coverage file](https://github.com/esmini/esmini/blob/master/odr_coverage.txt)
+
 ### 2021-06-10 Version 2.10.0
 
 - Support repeat road object
