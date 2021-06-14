@@ -122,7 +122,7 @@ SwarmTrafficAction::SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type
 };
 
 
-void SwarmTrafficAction::Start()
+void SwarmTrafficAction::Start(double simTime, double dt)
 {
     LOG("SwarmTrafficAction Start");
     printf("IR: %f, SMjA: %f, SMnA: %f, maxV: %i\n", innerRadius_, semiMajorAxis_, semiMinorAxis_, numberOfVehicles);
@@ -147,10 +147,10 @@ void SwarmTrafficAction::Start()
 
     tree->build(vec);
     rTree = tree;
-    OSCAction::Start();
+    OSCAction::Start(simTime, dt);
 }
 
-void SwarmTrafficAction::Step(double dt, double simTime) 
+void SwarmTrafficAction::Step(double simTime, double dt)
 {
     // Executes the step at each TIME_INTERVAL
     if (lastTime < 0 || abs(simTime - lastTime) > TIME_INTERVAL) {
@@ -410,7 +410,7 @@ inline bool SwarmTrafficAction::ensureDistance(roadmanager::Position pos, int la
         Object *vehicle = entities_->GetObjectById(info.vehicleID);
         
         roadmanager::PositionDiff posDiff;
-        if (pos.Delta(vehicle->pos_, posDiff))  // potentially expensive since trying to resolve path between vehicles...
+        if (pos.Delta(&vehicle->pos_, posDiff))  // potentially expensive since trying to resolve path between vehicles...
         {
             if (fabs(posDiff.ds) < VHEICLE_DISTANCE)
             {
