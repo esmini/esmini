@@ -1851,7 +1851,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
 				if (tx == 0)
 				{
-					LOG_AND_QUIT("Failed to load road object model file: %s (%s)", filename.c_str(), object->GetName().c_str());
+					LOG("Failed to load road object model file: %s (%s)", filename.c_str(), object->GetName().c_str());
 					return -1;
 				}
 
