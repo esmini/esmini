@@ -1099,6 +1099,336 @@ TEST(RoadSign, TestValidityRecord)
 	EXPECT_EQ(validityRec.toLane, 3);
 }
 
+TEST(OSILaneParing, multi_roads)
+{
+
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/consecutive_roads.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
+	ASSERT_EQ(i_init, 0);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+
+	bool intersection_found = false;
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	// order: lane, predecessor, successor
+	std::vector<std::vector<int>> lane_pairs = {{0, -1, 3},
+											{2, -1, 5},
+											{3, 0, 6},
+											{5, 2, 8},
+											{6, 3, 9},
+											{8, 5, 11},
+											{9, 6, -1},
+											{11, 8, -1}};
+	int successor;
+	int predecessor;
+	for (int i = 0; i < osi_gt.lane_size(); i++)
+	{
+
+		std::cout << i << std::endl;
+		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
+		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size();j++ )
+		{
+			predecessor = -1;
+			successor = -1;
+			for (int k = 0; k < lane_pairs.size(); k++)
+			{
+				if (osi_gt.mutable_lane(i)->id().value() == lane_pairs[k][0])
+				{
+					predecessor = lane_pairs[k][1];
+					successor = lane_pairs[k][2];
+				}
+			}
+
+			if (successor == -1 && predecessor == -1)
+			{
+				ASSERT_EQ(true,false);
+			}
+			if (successor >= 0)
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(i)->successor_lane_id().value(),successor);
+			}
+			if (predecessor >=0)
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(i)->antecessor_lane_id().value(),predecessor);
+			}
+
+		}
+	}
+
+	SE_Close();
+}
+
+
+
+TEST(OSILaneParing, multi_lanesections)
+{
+
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/multi_lanesections.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
+	ASSERT_EQ(i_init, 0);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+
+	bool intersection_found = false;
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	// order: lane, predecessor, successor
+	std::vector<std::vector<int>> lane_pairs = {{0, -1, 3},
+											{2, -1, 6},
+											{4, -1, 8},
+											{3, 0, 7},
+											{6, 2, 10},
+											{8, 4, 12},
+											{7, 3, 11},
+											{10, 6, 14},
+											{12, 8, 17},
+											{11, 7, 16},
+											{14, 10, 19},
+											{15, -1, 20},
+											{17, 12, -1},
+											{16, 11, -1},
+											{19, 14, -1},
+											{20, 15, -1}};
+	int successor;
+	int predecessor;
+	for (int i = 0; i < osi_gt.lane_size(); i++)
+	{
+
+		std::cout << i << std::endl;
+		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
+		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size();j++ )
+		{
+			predecessor = -1;
+			successor = -1;
+			for (int k = 0; k < lane_pairs.size(); k++)
+			{
+				if (osi_gt.mutable_lane(i)->id().value() == lane_pairs[k][0])
+				{
+					predecessor = lane_pairs[k][1];
+					successor = lane_pairs[k][2];
+				}
+			}
+
+			if (successor == -1 && predecessor == -1)
+			{
+				ASSERT_EQ(true,false);
+			}
+			if (successor >= 0)
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(i)->successor_lane_id().value(),successor);
+			}
+			if (predecessor >=0)
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(i)->antecessor_lane_id().value(),predecessor);
+			}
+
+		}
+	}
+
+	SE_Close();
+
+}
+
+
+TEST(OSILaneParing, highway_split)
+{
+
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/highway_split.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
+	ASSERT_EQ(i_init, 0);
+
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	int lanes_found = 0;
+	bool intersection_found = false;
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	// order: lane, predecessor, successor
+	std::vector<std::vector<int>> lane_pairs = {{1, -1, 8},
+											{2, -1, 10},
+											{8, 1, 4},
+											{10, 2, 6},
+											{4, 8, -1},
+											{6, 10, -1}};
+	int successor;
+	int predecessor;
+	for (int i = 0; i < osi_gt.lane_size(); i++)
+	{
+
+		std::cout << i << std::endl;
+		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
+		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size();j++ )
+		{
+			predecessor = -1;
+			successor = -1;
+			for (int k = 0; k < lane_pairs.size(); k++)
+			{
+				if (osi_gt.mutable_lane(i)->id().value() == lane_pairs[k][0])
+				{
+					predecessor = lane_pairs[k][1];
+					successor = lane_pairs[k][2];
+				}
+			}
+
+			if (successor == -1 && predecessor == -1)
+			{
+				ASSERT_EQ(true,false);
+			}
+			if (successor >= 0)
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(i)->successor_lane_id().value(),successor);
+			}
+			if (predecessor >=0)
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(i)->antecessor_lane_id().value(),predecessor);
+			}
+
+		}
+	}
+	SE_Close();
+}
+
+
+TEST(OSILaneParing, highway_merge)
+{
+
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/highway_merge.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
+	ASSERT_EQ(i_init, 0);
+
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	int lanes_found = 0;
+	bool intersection_found = false;
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	// order: lane, predecessor, successor
+	std::vector<std::vector<int>> lane_pairs = {{0, -1, 11},
+											{2, -1, 13},
+											{3, -1, 14},
+											{5, -1, 15},
+											{11, 0, 6},
+											{13, 2, 8},
+											{14, 3, 9},
+											{16, 5, 10},
+											{6, 11, -1},
+											{8, 13, -1},
+											{9, 14, -1},
+											{10, 16, -1}};
+	int successor;
+	int predecessor;
+	for (int i = 0; i < osi_gt.lane_size(); i++)
+	{
+
+		std::cout << i << std::endl;
+		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
+		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size();j++ )
+		{
+			predecessor = -1;
+			successor = -1;
+			for (int k = 0; k < lane_pairs.size(); k++)
+			{
+				if (osi_gt.mutable_lane(i)->id().value() == lane_pairs[k][0])
+				{
+					predecessor = lane_pairs[k][1];
+					successor = lane_pairs[k][2];
+				}
+			}
+
+			if (successor == -1 && predecessor == -1)
+			{
+				ASSERT_EQ(true,false);
+			}
+			if (successor >= 0)
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(i)->successor_lane_id().value(),successor);
+			}
+			if (predecessor >=0)
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(i)->antecessor_lane_id().value(),predecessor);
+			}
+
+		}
+	}
+	SE_Close();
+}
+
+TEST(OSILaneParing, circular_road)
+{
+
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/circular_road.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
+	ASSERT_EQ(i_init, 0);
+
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	int lanes_found = 0;
+	bool intersection_found = false;
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	// order: lane, predecessor, successor
+	std::vector<std::vector<int>> lane_pairs = {{0, -1, 3},
+											{2, -1, 5},
+											{3, 0, 6},
+											{5, 2, 8},
+											{6, 3, 9},
+											{8, 5, 11},
+											{9, 6, -1},
+											{11, 8, -1}};
+	int successor;
+	int predecessor;
+	for (int i = 0; i < osi_gt.lane_size(); i++)
+	{
+
+		std::cout << i << std::endl;
+		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
+		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size();j++ )
+		{
+			predecessor = -1;
+			successor = -1;
+			for (int k = 0; k < lane_pairs.size(); k++)
+			{
+				if (osi_gt.mutable_lane(i)->id().value() == lane_pairs[k][0])
+				{
+					predecessor = lane_pairs[k][1];
+					successor = lane_pairs[k][2];
+				}
+			}
+
+			if (successor == -1 && predecessor == -1)
+			{
+				ASSERT_EQ(true,false);
+			}
+			if (successor >= 0)
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(i)->successor_lane_id().value(),successor);
+			}
+			if (predecessor >=0)
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(i)->antecessor_lane_id().value(),predecessor);
+			}
+
+		}
+	}
+	SE_Close();
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
