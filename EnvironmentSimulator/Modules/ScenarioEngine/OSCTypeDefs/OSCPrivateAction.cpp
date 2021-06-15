@@ -403,7 +403,7 @@ void LatLaneChangeAction::Step(double simTime, double)
 	}
 		
 
-	if (factor > 1.0 || abs(t_ - target_t_) < SMALL_NUMBER || elapsed_ > 0 && SIGN(t_ - start_t_) != SIGN(target_t_ - start_t_))
+	if (factor > 1.0 || fabs(t_ - target_t_) < SMALL_NUMBER || elapsed_ > 0 && SIGN(t_ - start_t_) != SIGN(target_t_ - start_t_))
 	{
 		OSCAction::End();
 		object_->pos_.SetHeadingRelativeRoadDirection(0);
