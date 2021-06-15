@@ -90,14 +90,16 @@ ScenarioPlayer::~ScenarioPlayer()
 			}
 		}
 	}
-#endif
+#endif  // _USE_OSG
 	Logger::Inst().SetTimePtr(0);
 	delete scenarioEngine; 
 
+#ifdef _USE_OSI
 	if (osiReporter)
 	{
 		delete osiReporter;
 	}
+#endif  // _USE_OSI
 }
 
 void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
