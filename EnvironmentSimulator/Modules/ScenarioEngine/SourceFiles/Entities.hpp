@@ -156,6 +156,8 @@ namespace scenarioengine
 				overrideActionList[i].value = 0.0;
 				overrideActionList[i].active = false;
 			}
+
+			boundingbox_ = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 		}
 		~Object() {}
 		void SetEndOfRoad(bool state, double time = 0.0);

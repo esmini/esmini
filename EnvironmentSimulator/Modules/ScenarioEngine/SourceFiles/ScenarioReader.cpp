@@ -309,7 +309,7 @@ Vehicle *ScenarioReader::createRandomOSCVehicle(std::string name)
 	vehicle->model_filepath_ = "";
 
 	// Set some default bounding box just to avoid division-by-zero-problems
-	vehicle->boundingbox_ = OSCBoundingBox();
+	vehicle->boundingbox_ = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 	vehicle->boundingbox_.dimensions_.length_ = 4.0f;
 	vehicle->boundingbox_.dimensions_.width_ = 2.0f;
 	vehicle->boundingbox_.dimensions_.height_ = 1.2f;
@@ -481,7 +481,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 		vehicle->model_id_ = strtoi(modelIdStr);
 	}
 
-	OSCBoundingBox boundingbox;
+	OSCBoundingBox boundingbox = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 	ParseOSCBoundingBox(boundingbox, vehicleNode);
 	vehicle->boundingbox_ = boundingbox;
 
@@ -508,7 +508,7 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 	pedestrian->mass_ = strtod(parameters.ReadAttribute(pedestrianNode, "mass"));
 
 	// Parse BoundingBox
-	OSCBoundingBox boundingbox;
+	OSCBoundingBox boundingbox = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 	ParseOSCBoundingBox(boundingbox, pedestrianNode);
 	pedestrian->boundingbox_ = boundingbox;
 
@@ -555,7 +555,7 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
 	miscObject->mass_ = strtod(parameters.ReadAttribute(miscObjectNode, "mass"));
 
 	// Parse BoundingBox
-	OSCBoundingBox boundingbox;
+	OSCBoundingBox boundingbox = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 	ParseOSCBoundingBox(boundingbox, miscObjectNode);
 	miscObject->boundingbox_ = boundingbox;
 
