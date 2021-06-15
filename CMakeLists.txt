@@ -5,7 +5,7 @@ if(WIN32)
   # for cmake generator VisualStudio 2017 support
   cmake_minimum_required (VERSION 3.7.0 FATAL_ERROR)
 else()
-  cmake_minimum_required (VERSION 3.6.3 FATAL_ERROR)
+  cmake_minimum_required (VERSION 2.8.12 FATAL_ERROR)
 endif()
 
 project (EnvironmentSimulator)
@@ -68,5 +68,6 @@ endif (USE_GTEST)
 add_subdirectory(EnvironmentSimulator)
 
 if( NOT EXISTS "test/OSC-ALKS-scenarios/.git" )
-	execute_process(COMMAND git submodule update --init)
+  execute_process(COMMAND git submodule update --init WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
+

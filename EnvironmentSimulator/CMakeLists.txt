@@ -163,12 +163,28 @@ if(APPLE)
   )
 
 elseif(UNIX)
-  if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
-  elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    SET(CMAKE_CXX_FLAGS "-march=native -O0 -std=c++14 -pthread -fPIC")  
+
+include(CheckCXXCompilerFlag)
+
+  # Check for standard to use
+  check_cxx_compiler_flag(-std=c++14 HAVE_FLAG_STD_CXX14)
+  if(HAVE_FLAG_STD_CXX14)
+      SET(CXX_STD_FLAG "-std=c++14")
   else()
-    SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -fPIC -Wl,-strip-all")
+     check_cxx_compiler_flag(-std=c++1y HAVE_FLAG_STD_CXX1Y)
+     if(HAVE_FLAG_STD_CXX1Y)
+	SET(CXX_STD_FLAG "-std=c++1y")
+     else()
+	message ("Need compiler support for c++14 \(or 1y as the beta was called\)")
+     endif()
+  endif()
+
+  if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -pthread -fPIC -Wl,-strip-all")
+  elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -march=native -O0 -pthread -fPIC")  
+  else()
+    SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -pthread -fPIC -Wl,-strip-all")
   endif()
   
   set ( OSG_LIBRARIES
@@ -356,6 +372,11 @@ MACRO(SUBDIRLIST result curdir)
       LIST(APPEND dirlist ${child})
     ENDIF()
   ENDFOREACH()
+  
+  if (NOT USE_OSI)
+    LIST(REMOVE_ITEM dirlist "osi-groundtruth")
+  endif ()
+
   SET(${result} ${dirlist})
 ENDMACRO()
 
@@ -425,7 +446,9 @@ if (USE_OSG)
   add_subdirectory(Modules/ViewerBase)
 endif (USE_OSG)
 
+if (USE_OSI)
   set_target_properties (osireceiver PROPERTIES FOLDER ${ApplicationsFolder} )    
+endif ()
   set_target_properties (PlayerBase PROPERTIES FOLDER ${ModulesFolder} )
   set_target_properties (Controllers PROPERTIES FOLDER ${ModulesFolder} )
   set_target_properties (esminiLib PROPERTIES FOLDER ${LibrariesFolder} )

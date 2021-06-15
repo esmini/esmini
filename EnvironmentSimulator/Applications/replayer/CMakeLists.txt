@@ -45,10 +45,11 @@ target_link_libraries ( ${TARGET2} RoadManager CommonMini ${TIME_LIB} )
 
 
 # osi_receiver target
-set (TARGET3 osireceiver)
-add_executable ( ${TARGET3} osi_receiver.cpp )
-target_link_libraries ( ${TARGET3} ${OSI_LIBRARIES} ${TIME_LIB} ${SOCK_LIB})
-
+if (USE_OSI)
+  set (TARGET3 osireceiver)
+  add_executable ( ${TARGET3} osi_receiver.cpp )
+  target_link_libraries ( ${TARGET3} ${OSI_LIBRARIES} ${TIME_LIB} ${SOCK_LIB})
+endif ()
 # Install directives
 
 if (UNIX)
