@@ -15,7 +15,9 @@
 #include "ControllerSloppyDriver.hpp"
 #include "ControllerInteractive.hpp"
 #include "ControllerFollowGhost.hpp"
+#ifdef _USE_SUMO
 #include "ControllerSumo.hpp"
+#endif  // _USE_SUMO
 #include "ControllerExternal.hpp"
 #include "ControllerRel2Abs.hpp"
 
