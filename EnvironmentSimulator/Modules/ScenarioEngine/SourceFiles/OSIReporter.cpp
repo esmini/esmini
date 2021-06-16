@@ -1315,18 +1315,22 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						//Get the predecessor and successor lanes
 						roadmanager::Lane* predecessorLane = nullptr;
 						roadmanager::Lane* successorLane = nullptr;
-						//printf("Lane ID: ((%i,%i) - %i)\n", road->GetId(), lane->GetId(), lane->GetGlobalId());
+						
 						if(predecessorRoad && lane->GetLink(LinkType::PREDECESSOR))
 						{
 							predecessorLane = predecessorRoad->GetDrivingLaneById(k, lane->GetLink(LinkType::PREDECESSOR)->GetId());
-							osi_lane->mutable_classification()->add_lane_pairing()->mutable_antecessor_lane_id()->set_value(predecessorLane->GetGlobalId());
-							//printf("Predecessor Lane ID: ((%i,%i) - %i)\n", predecessorRoad->GetId(), predecessorLane->GetId(), predecessorLane->GetGlobalId());
+							if(predecessorLane)
+							{
+								osi_lane->mutable_classification()->add_lane_pairing()->mutable_antecessor_lane_id()->set_value(predecessorLane->GetGlobalId());
+							}
 						}
 						if(successorRoad && lane->GetLink(LinkType::SUCCESSOR))
 						{
 							successorLane = successorRoad->GetDrivingLaneById(k, lane->GetLink(LinkType::SUCCESSOR)->GetId());
-							osi_lane->mutable_classification()->add_lane_pairing()->mutable_successor_lane_id()->set_value(successorLane->GetGlobalId());
-							//printf("Successor Lane ID: ((%i,%i) - %i)\n", successorRoad->GetId(), successorLane->GetId(), successorLane->GetGlobalId());
+							if(successorLane)
+							{
+								osi_lane->mutable_classification()->add_lane_pairing()->mutable_successor_lane_id()->set_value(successorLane->GetGlobalId());
+							}
 						}
 
 						// CENTERLINE POINTS
