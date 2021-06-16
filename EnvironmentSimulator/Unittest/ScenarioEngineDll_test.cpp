@@ -1127,7 +1127,6 @@ TEST(OSILaneParing, multi_roads)
 	int predecessor;
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
-
 		// std::cout << i << std::endl;
 		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size();j++ )
@@ -1147,10 +1146,8 @@ TEST(OSILaneParing, multi_roads)
 			{
 				ASSERT_EQ(true,false);
 			}
-
 			if (successor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
 			{
-
 				ASSERT_EQ(osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value(),successor);
 			}
 			if (predecessor >=0 && osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
@@ -1200,7 +1197,6 @@ TEST(OSILaneParing, multi_lanesections)
 	int predecessor;
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
-
 		// std::cout << i << std::endl;
 		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size();j++ )
@@ -1220,7 +1216,6 @@ TEST(OSILaneParing, multi_lanesections)
 			{
 				ASSERT_EQ(true,false);
 			}
-
 			if (successor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
 			{
 				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(j)->successor_lane_id().value(),successor);
@@ -1379,7 +1374,6 @@ TEST(OSILaneParing, circular_road)
 	const char *gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
 	// order: lane, predecessor, successor
-
 	std::vector<std::vector<int>> lane_pairs = {{0, 5, 11},
 											{2, 3, 9},
 											{3, 2, 6},
