@@ -145,6 +145,8 @@ if [ ! -d OpenSceneGraph/build ]; then
     mkdir build
     cd build
     git checkout $OSG_VERSION
+    # Apply fix for comment format not accepted by all platforms
+    git checkout 63bb537132bab1f8b077838f7550e26405e5fa35 CMakeModules/FindFontconfig.cmake
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_LIBRARY_RELEASE=../../jpeg-8d/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=../../jpeg-8d -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install
