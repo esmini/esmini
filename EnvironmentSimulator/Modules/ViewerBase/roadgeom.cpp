@@ -247,13 +247,13 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 		color_asphalt->push_back(osg::Vec4(0.3f, 0.3f, 0.3f, 1.0f));
 	}
 
-	if (color_grass)
+	if (tex_grass)
 	{
 		color_grass->push_back(osg::Vec4(1.f, 1.f, 1.f, 1.0f));
 	}
 	else
 	{
-		color_grass->push_back(osg::Vec4(0.20f, 0.55f, 0.35f, 1.0f));
+		color_grass->push_back(osg::Vec4(0.25f, 0.5f, 0.35f, 1.0f));
 	}
 
 	osg::ref_ptr<osg::Material> materialAsphalt_ = new osg::Material;
