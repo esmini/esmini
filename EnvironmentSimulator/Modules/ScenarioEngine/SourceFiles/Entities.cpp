@@ -509,7 +509,7 @@ double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, doubl
 
 		double xComp = 0;
 		double yComp = 0;
-		double tmpDist = DistanceFromPointToEdge2D(point[0], point[1], edge[0][0], edge[0][1], edge[1][0], edge[1][1], 
+		double tmpDist = DistanceFromPointToEdge2D(point[0], point[1], edge[0][0], edge[0][1], edge[1][0], edge[1][1],
 			&xComp, &yComp);
 
 		if (tmpDist < minDist)
@@ -555,87 +555,78 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 		{ boundingbox_.center_.x_ - boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ - boundingbox_.dimensions_.width_ / 2.0 },
 		{ boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ - boundingbox_.dimensions_.width_ / 2.0 }
 	};
-	
+
 	// Align points to object heading and position
 	double vertices[4][2];
-	for (int i = 0; i < 4; i++) 
+	for (int i = 0; i < 4; i++)
 	{
 		RotateVec2D(vtmp[i][0], vtmp[i][1], pos_.GetH(), vertices[i][0], vertices[i][1]);
 		vertices[i][0] += pos_.GetX();
 		vertices[i][1] += pos_.GetY();
 	}
 
-	// Evaluate road and lane coordinates of each point
+	// Map XY point to road coordinates, but consider only roads reachable from point
+	Position pointPos = pos_;
+	if (pointPos.XYZH2TrackPos(x, y, 0, 0, true) != 0)
+	{
+		return -1;
+	}
+
+	// Find long and lat max values
 	Position pos[4];
-	double maxS = 0.0;
-	double minS = LARGE_NUMBER;
-	double maxT = 0.0;
-	double minT = LARGE_NUMBER;
+	double maxDS = 0.0;
+	double minDS = LARGE_NUMBER;
+	double maxDT = 0.0;
+	double minDT = LARGE_NUMBER;
+	PositionDiff posDiff;
 	for (int j = 0; j < 4; j++)
 	{
-		pos[j].SetInertiaPos(vertices[j][0], vertices[j][1], 0.0);
-
-		if (j == 0 || pos[j].GetS() < minS)
+		pos[j] = pos_;
+		// Map bounding box points to road coordinates, consider only roads reachable from current position
+		if (pos[j].XYZH2TrackPos(vertices[j][0], vertices[j][1], 0, 0, true) != 0)
 		{
-			minS = pos[j].GetS();
+			return -1;
 		}
 
-		if (j == 0 || pos[j].GetT() < minT)
+		if (pos[j].Delta(&pointPos, posDiff) == false)
 		{
-			minT = pos[j].GetT();
+			return -1;
 		}
 
-		if (j == 0 || pos[j].GetS() > maxS)
+		if (j == 0 || fabs(posDiff.ds) < fabs(minDS))
 		{
-			maxS = pos[j].GetS();
+			minDS = posDiff.ds;
 		}
 
-		if (j == 0 || pos[j].GetT() > maxT)
+		if (j == 0 || fabs(posDiff.dt) < fabs(minDT))
 		{
-			maxT = pos[j].GetT();
+			minDT = posDiff.dt;
 		}
-	}
 
-	// Find min distance for each dimension
-	double minLatDist = LARGE_NUMBER;
-	double minLongDist = LARGE_NUMBER;
-
-	for (int k = 0; k < 4; k++)
-	{
-		if (k == 0 || fabs(pos[k].GetS() - pos_.GetS()) < fabs(minLongDist))
+		if (j == 0 || fabs(posDiff.ds) > fabs(maxDS))
 		{
-			minLongDist = pos[k].GetS() - pos_.GetS();
+			maxDS = posDiff.ds;
 		}
-		
-		if (k == 0 || fabs(pos[k].GetT() - pos_.GetT()) < fabs(minLatDist))
+
+		if (j == 0 || fabs(posDiff.dt) > fabs(maxDT))
 		{
-			minLatDist = pos[k].GetT() - pos_.GetT();
+			maxDT = posDiff.dt;
 		}
 	}
+
+	*longDist = minDS;
+	*latDist = minDT;
 	
-	if (pos_.GetS() > minS && pos_.GetS() < maxS)
+	// Check for overlap
+	if (SIGN(minDS) != SIGN(maxDS))
 	{
-		*longDist = 0.0;  // Overlap, point is inside bounding box longitudinal span
+		// Overlap
+		*longDist = 0.0;
 	}
-	else
+	if (SIGN(minDT) != SIGN(maxDT))
 	{
-		*longDist = minLongDist;
-	}
-
-	if (pos_.GetT() > minT && pos_.GetT() < maxT)
-	{
-		*latDist = 0.0;  // Overlap, point is inside bounding box lateral span
-	}
-	else
-	{
-		*latDist = minLatDist;
-	}
-
-	// Ajust direction according to object heading
-	if (pos_.GetHRelative() > M_PI_2 && pos_.GetHRelative() < 3 * M_PI_2)
-	{
-		*latDist *= -1;
-		*longDist *= -1;
+		// Overlap
+		*latDist = 0.0;
 	}
 
 	return 0;
@@ -643,6 +634,12 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 
 int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, double* longDist, CoordinateSystem cs)
 {
+	// First some checks
+	if (target == 0)
+	{
+		return -1;
+	}
+
 	if (cs != CoordinateSystem::CS_LANE && cs != CoordinateSystem::CS_ROAD)
 	{
 		LOG("Unexpected coordinateSystem (%d). %d or %d expected.", CoordinateSystem::CS_LANE, CoordinateSystem::CS_ROAD);
@@ -655,7 +652,22 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 		cs = CoordinateSystem::CS_ROAD;
 	}
 
+	if (Collision(target))
+	{
+		*longDist = 0.0;
+		*latDist = 0.0;
+		return 0;
+	}
+
+
+	// OK, they are not overlapping (colliding). Now find the distance.
+	// Strategy: Brute force check all vertices of one bounding box 
+	// against all sides of the other bounding box - then switch to 
+	// check vertices of the other bounding box against the sides 
+	// of the first bounding box.
+
 	double vertices[2][4][2];
+	Position pos[2][4];
 
 	for (int i = 0; i < 2; i++)  // for each of the two BBs
 	{
@@ -676,87 +688,75 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 			RotateVec2D(vtmp[j][0], vtmp[j][1], obj->pos_.GetH(), vertices[i][j][0], vertices[i][j][1]);
 			vertices[i][j][0] += obj->pos_.GetX();
 			vertices[i][j][1] += obj->pos_.GetY();
-		}
-	}
 
-	// Evaluate road and lane coordinates of each point
-	Position pos[2][4];
-	double maxS[2] = { 0.0, 0.0 };
-	double minS[2] = { LARGE_NUMBER, LARGE_NUMBER };
-	double maxT[2] = { 0.0, 0.0 };
-	double minT[2] = { LARGE_NUMBER, LARGE_NUMBER };
-	for (int k = 0; k < 2; k++)
-	{
-		for (int l = 0; l < 4; l++)
-		{ 
-			pos[k][l].SetInertiaPos(vertices[k][l][0], vertices[k][l][1], 0.0);
-
-			if (l == 0 || pos[k][l].GetS() < minS[k])
+			// Map XY points to road coordinates, but consider only roads reachable from point
+			pos[i][j] = pos_;
+			if (pos[i][j].XYZH2TrackPos(vertices[i][j][0], vertices[i][j][1], 0, 0, true) != 0)
 			{
-				minS[k] = pos[k][l].GetS();
-			}
-
-			if (l == 0 || pos[k][l].GetT() < minT[k])
-			{
-				minT[k] = pos[k][l].GetT();
-			}
-
-			if (l == 0 || pos[k][l].GetS() > maxS[k])
-			{
-				maxS[k] = pos[k][l].GetS();
-			}
-
-			if (l == 0 || pos[k][l].GetT() > maxT[k])
-			{
-				maxT[k] = pos[k][l].GetT();
+				return -1;
 			}
 		}
 	}
 
-	// Find min distance for each dimension
-	double minLatDist = LARGE_NUMBER;
-	double minLongDist = LARGE_NUMBER;
+	// Find long and lat max values
+	double maxDS = 0.0;
+	double minDS = LARGE_NUMBER;
+	double maxDT = 0.0;
+	double minDT = LARGE_NUMBER;
+	PositionDiff posDiff;
 
-	for (int k = 0; k < 4; k++)
+	double ds[4][4];  // delta s between every vertex on first bb to every vertex on second bb
+	double dt[4][4];  // delta t between every vertex on first bb to every vertex on second bb
+
+	for (int i = 0; i < 4; i++)  // for each vertex of first BBs
 	{
-		for (int l = 0; l < 4; l++)
+		for (int j = 0; j < 4; j++)  // for each vertex of second BBs
 		{
-			if (k == 0 || fabs(pos[1][k].GetS() - pos[0][l].GetS()) < fabs(minLongDist))
+			if (pos[0][i].Delta(&pos[1][j], posDiff) == false)
 			{
-				minLongDist = pos[1][k].GetS() - pos[0][l].GetS();
+				return -1;
+			}
+			ds[i][j] = posDiff.ds;
+			dt[i][j] = posDiff.dt;
+
+			if (i == 0 && j == 0 || fabs(posDiff.ds) < fabs(minDS))
+			{
+				minDS = posDiff.ds;
 			}
 
-			if (k == 0 || fabs(pos[1][k].GetT() - pos[0][l].GetT()) < fabs(minLatDist))
+			if (i == 0 && j == 0 || fabs(posDiff.dt) < fabs(minDT))
 			{
-				minLatDist = pos[1][k].GetT() - pos[0][l].GetT();
+				minDT = posDiff.dt;
+			}
+
+			if (i == 0 && j == 0 || fabs(posDiff.ds) > fabs(maxDS))
+			{
+				maxDS = posDiff.ds;
+			}
+
+			if (i == 0 && j == 0 || fabs(posDiff.dt) > fabs(maxDT))
+			{
+				maxDT = posDiff.dt;
 			}
 		}
 	}
 
-	if (minS[0] > minS[1] && minS[0] < maxS[1] ||
-		maxS[0] > minS[1] && maxS[0] < maxS[1])
-	{
-		*longDist = 0.0;  // Overlap, point is inside bounding box longitudinal span
-	}
-	else
-	{
-		*longDist = minLongDist;
-	}
+	*longDist = minDS;
+	*latDist = minDT;
 
-	if (minT[0] > minT[1] && minT[0] < maxT[1])
+	// Check for overlap
+	for (int i = 0; i < 4; i++)  // for each ds
 	{
-		*latDist = 0.0;  // Overlap, point is inside bounding box lateral span
-	}
-	else
-	{
-		*latDist = minLatDist;
-	}
-
-	// Ajust direction according to object heading
-	if (pos_.GetHRelative() > M_PI_2 && pos_.GetHRelative() < 3 * M_PI_2)
-	{
-		*latDist *= -1;
-		*longDist *= -1;
+		if (!((SIGN(ds[i][0]) == SIGN(ds[i][1])) && (SIGN(ds[i][0]) == SIGN(ds[i][2])) && (SIGN(ds[i][0]) == SIGN(ds[i][3]))))
+		{
+			// Overlap
+			*longDist = 0.0;
+		}
+		if (!((SIGN(dt[i][0]) == SIGN(dt[i][1])) && (SIGN(dt[i][0]) == SIGN(dt[i][2])) && (SIGN(dt[i][0]) == SIGN(dt[i][3]))))
+		{
+			// Overlap
+			*latDist = 0.0;
+		}
 	}
 
 	return 0;

@@ -755,7 +755,6 @@ bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_t
 	triggered_by_entities_.clear();
 	bool result = false;
 	rel_dist_ = 0;
-	roadmanager::Position* pos = &object_->pos_;
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
@@ -763,7 +762,7 @@ bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_t
 
 		roadmanager::CoordinateSystem cs = cs_;
 
-		if (trigObj->Distance(pos->GetX(), pos->GetY(), cs, relDistType_, freespace_, rel_dist_) != 0)
+		if (trigObj->Distance(object_, cs, relDistType_, freespace_, rel_dist_) != 0)
 		{
 			LOG("Failed to measure distance. Set to large number.");
 			rel_dist_ = LARGE_NUMBER;

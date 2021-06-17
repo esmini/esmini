@@ -50,19 +50,19 @@ TEST(DistanceTest, CalcDistanceVariations)
 
     // Move object to curve
     obj0.pos_.SetLanePos(0, -1, 510.0, 0.0);
-    obj1.pos_.SetLanePos(0, -1, 550.0, 1.0);
+    obj1.pos_.SetLanePos(0, -1, 550.0, 2.5);
     
     // ref point to ref point (no freespace)
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist), 0);
     EXPECT_NEAR(dist, 40.0, 1e-5);
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, false, dist), 0);
-    EXPECT_NEAR(dist, 1.0, 1e-5);
+    EXPECT_NEAR(dist, 2.5, 1e-5);
     
     // freespace
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, true, dist), 0);
-    EXPECT_NEAR(dist, 38.5033425, 1e-5);
+    EXPECT_NEAR(dist, 38.510726, 1e-5);
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, true, dist), 0);
-    EXPECT_NEAR(dist, 0.969227, 1e-5);
+    EXPECT_NEAR(dist, 0.468766, 1e-5);
 
     // freespace with overlap
     obj0.pos_.SetAlignMode(Position::ALIGN_MODE::ALIGN_HARD);
@@ -114,6 +114,78 @@ TEST(DistanceTest, CalcDistanceVariations)
     EXPECT_NEAR(dist, -1.0, 1e-5);
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, true, dist), 0);
     EXPECT_NEAR(dist, 0.0, 1e-5);
+}
+
+TEST(DistanceTest, CalcDistancePoint)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/curve_r100.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    Position pos0 = Position(0, -1, 400.0, 0);
+    pos0.SetHeading(0.0);
+
+    Object obj0(Object::Type::VEHICLE);
+    obj0.boundingbox_.center_ = { 1.0, 0.0, 0.0 };
+    obj0.boundingbox_.dimensions_ = { 2.0, 2.0, 2.0 };
+    obj0.pos_ = pos0;
+
+    // Measure from X, Y point to object in road coordinates 
+    double latDist = 0.0;
+    double longDist = 0.0;
+            
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos0.GetX() + 20.0, pos0.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    EXPECT_NEAR(longDist, 18.0, 1e-5);
+
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos0.GetX() - 20.0, pos0.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    EXPECT_NEAR(longDist, -20.0, 1e-5);
+
+    obj0.boundingbox_.dimensions_ = { 2.0, 5.0, 2.0 };
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos0.GetX() - 20.0, pos0.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    EXPECT_NEAR(longDist, -18.5, 1e-5);
+
+    obj0.boundingbox_.center_ = { 2.0, 4.0, 0.0 };
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos0.GetX() - 20.0, pos0.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    EXPECT_NEAR(longDist, -19.5, 1e-5);
+
+    obj0.boundingbox_.center_ = { 2.0, 4.0, 0.0 };
+    Position tmpPos(0, 600, obj0.pos_.GetT());
+    EXPECT_NEAR(tmpPos.GetX(), 585.438756, 1e-5);
+    EXPECT_NEAR(tmpPos.GetY(), 45.140405, 1e-5);
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(tmpPos.GetX(), tmpPos.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    EXPECT_NEAR(longDist, 195.5, 1e-5);
+    EXPECT_NEAR(latDist, 3.0, 1e-5);
+}
+
+TEST(DistanceTest, CalcDistancePointAcrossIntersection)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/fabriksgatan.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 16);
+
+    Position pos0 = Position(0, 1, 10.0, 0);
+    pos0.SetHeading(0.0);
+
+    Object obj0(Object::Type::VEHICLE);
+    obj0.boundingbox_.center_ = { 1.0, 0.0, 0.0 };
+    obj0.boundingbox_.dimensions_ = { 2.0, 2.0, 2.0 };
+    obj0.pos_ = pos0;
+
+    // another point some meters ahead, still on the same straight segment
+    Position pos1 = Position(2, 1, 290.0, 0);
+
+    // Measure from X, Y point to object in road coordinates 
+    double latDist = 0.0;
+    double longDist = 0.0;
+
+    ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos1.GetX(), pos1.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
+    EXPECT_NEAR(longDist, -38.587016, 1e-5);
+    EXPECT_NEAR(latDist, 0.221272, 1e-5);
+
 }
 
 int main(int argc, char **argv)

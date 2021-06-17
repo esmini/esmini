@@ -5208,7 +5208,7 @@ void Position::Track2Lane()
 	lane_section_idx_ = lane_section_idx;
 }
 
-int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3)
+int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3, bool connectedOnly, int roadId)
 {
 	// Overall method:
 	//   1. Iterate over all roads, looking at OSI points of each lane sections center line (lane 0)
@@ -5238,8 +5238,6 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3)
 		return ErrorCode::ERROR_GENERIC;
 	}
 
-	current_road = GetOpenDrive()->GetRoadByIdx(track_idx_);
-
 	// First step is to identify closest road and OSI line segment
 
 	size_t nrOfRoads;
@@ -5253,7 +5251,19 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3)
 		// Iterate over all roads in the road network
 		nrOfRoads = GetOpenDrive()->GetNumOfRoads();
 	}
-	
+
+
+	if (roadId == -1)
+	{
+		current_road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	}
+	else
+	{
+		// Look only at specified road
+		current_road = GetOpenDrive()->GetRoadByIdx(roadId);
+		nrOfRoads = 0;  
+	}
+
 	for (int i = -1; !search_done && i < (int)nrOfRoads; i++)
 	{
 		if (i == -1)
@@ -5283,6 +5293,16 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3)
 				else
 				{
 					road = GetOpenDrive()->GetRoadByIdx(i);
+				}
+				if (connectedOnly)
+				{
+					// Check whether the road is reachble from current position
+					Position tmpPos(road->GetId(), 0.0, 0.0);
+					PositionDiff posDiff;
+					if (Delta(&tmpPos, posDiff) == false)
+					{
+						continue;  // skip unreachable road
+					}
 				}
 			}
 		}
@@ -5690,7 +5710,7 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3)
 			double sNorm = 0;
 
 			// Check for straight line
-			if (fabs(osip_first.h - osip_second.h) < SMALL_NUMBER)
+			if (fabs(osip_first.h - osip_second.h) < 1e-5)  // Select threshold to avoid precision issues in calculations
 			{
 				double px, py;
 				ProjectPointOnVector2D(x3, y3, osip_first.x, osip_first.y, osip_second.x, osip_second.y, px, py);
@@ -5728,10 +5748,17 @@ int Position::XYZH2TrackPos(double x3, double y3, double z3, double h3)
 				double lx = normalIntersectionX - x3;
 				double ly = normalIntersectionY - y3;
 				double lLength = sqrt(lx * lx + ly * ly);
-				angleToPosition = acos(GetDotProduct2D(-xn0, -yn0, lx / lLength, ly / lLength));
+				angleToPosition = acos(CLAMP(GetDotProduct2D(-xn0, -yn0, lx / lLength, ly / lLength), -1.0, 1.0));
 
 				// Finally calculate interpolation factor 
-				sNorm = angleToPosition / angleBetweenNormals;
+				if (fabs(angleBetweenNormals) < SMALL_NUMBER)
+				{
+					sNorm = 0.0;
+				}
+				else
+				{
+					sNorm = angleToPosition / angleBetweenNormals;
+				}
 
 				//printf("road_id %d jMin %d kMin %d lx %.2f ly %.2f angle0 %.2f angle1 %.2f normalIntersectionX %.2f normalIntersectionY %.2f sNorm %.2f\n",
 				//	roadMin->GetId(), jMin, kMin, lx, ly, angleToPosition, angleBetweenNormals, normalIntersectionX, normalIntersectionY, sNorm);

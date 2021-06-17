@@ -1447,9 +1447,12 @@ namespace roadmanager
 		@param x X-coordinate
 		@param y Y-coordinate
 		@param z Z-coordinate
+		@param h Heading
+		@param conenctedOnly If true only roads that can be reached from current position will be considered, if false all roads will be considered
+		@param roadId If != -1 only this road will be considered else all roads will be searched
 		@return Non zero return value indicates error of some kind
 		*/
-		int XYZH2TrackPos(double x, double y, double z, double h);
+		int XYZH2TrackPos(double x, double y, double z, double h, bool connectedOnly = false, int roadId = -1);
 		
 		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
 		
