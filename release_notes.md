@@ -11,7 +11,7 @@
     - To have an entity facing 90 deg left, set relative heading slightly less than PI/2 ~ 1.57. I.e NOT > PI/2 because then it will got the other way.
   - This behaviour allows for flexible control of the orientation more independent of driving direction, see new scenario example [drop-bike.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/drop-bike.xosc) / [run_drop-bike.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_drop-bike.bat)
 - Fix some [SUMO](https://www.eclipse.org/sumo/) integration issues
-  - add another demo scenario with 100 cars: [test-sumo.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/test-sumo.xosc) / [run_test-sumo.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_test-sumo.bat)
+  - add another demo scenario with 100 cars: [sumo-test.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/sumo-test.xosc) / [run_sumo-test.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_sumo-test.bat)
 - Fix and improve relative distance calculations in road coordinates
 cars.
 - Fix grass color when texture not available (from white to green)
