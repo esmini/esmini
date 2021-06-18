@@ -70,7 +70,11 @@
                        <PrivateAction>
                           <ControllerAction>
                             <AssignControllerAction>
-                                <CatalogReference catalogName="ControllerCatalog" entryName="sloppyDriver" />
+                                <CatalogReference catalogName="ControllerCatalog" entryName="sloppyDriver">
+                                    <ParameterAssignments>
+                                        <ParameterAssignment parameterRef="$Sloppiness" value="0.7" />
+                                    </ParameterAssignments>
+                                </CatalogReference>
                             </AssignControllerAction>
                           </ControllerAction>
                        </PrivateAction>
@@ -147,7 +151,7 @@
                             <AssignControllerAction>
                                 <CatalogReference catalogName="ControllerCatalog" entryName="sloppyDriver" >
                                     <ParameterAssignments>
-                                        <ParameterAssignment parameterRef="$Sloppiness" value="0.9" />
+                                        <ParameterAssignment parameterRef="$Sloppiness" value="0.4" />
                                     </ParameterAssignments>
                                 </CatalogReference>
                             </AssignControllerAction>

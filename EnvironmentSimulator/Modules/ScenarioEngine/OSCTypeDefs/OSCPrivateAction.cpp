@@ -151,6 +151,8 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 		// Reached end of trajectory
 		// Calculate road coordinates from final inertia (X, Y) coordinates
 		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetH());
+		// and align heading with road driving direction
+		object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
 		
 		End();
 	}
@@ -776,8 +778,6 @@ void LongDistanceAction::Step(double simTime, double)
 		// Set position according to distance and copy speed of target vehicle
 		object_->pos_.MoveAlongS(distance_diff);
 		object_->SetSpeed(target_object_->speed_);
-
-		object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
 	}
 	else
 	{
@@ -806,8 +806,6 @@ void LongDistanceAction::Step(double simTime, double)
 			object_->SetSpeed(-dynamics_.max_speed_);
 		}
 	}
-
-	//	LOG("Dist %.2f diff %.2f acc %.2f speed %.2f", distance, distance_diff, acc, object_->speed_);
 }
 
 void LongDistanceAction::ReplaceObjectRefs(Object* obj1, Object* obj2)

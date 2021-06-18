@@ -28,6 +28,7 @@ using namespace scenarioengine;
 static std::mt19937 mt_rand;
 
 #define WHEEL_RADIUS 0.35
+#define SLOPPY_SCALE 5.0  // Magic scale factor to achieve reasonable sloppiness in range 0..1
 
 double SinusoidalTransition::GetValue()
 {
@@ -136,7 +137,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 		{
 			// max lateral displacement is about half lane width (7/2) 
 			tFuzz0 = tFuzzTarget;
-			tFuzzTarget = 2 * sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * mt_rand() / mt_rand.max() - 0.5);
+			tFuzzTarget = 5.0 * sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * mt_rand() / mt_rand.max() - 0.5);
 
 			// restart timer - 50% variation
 			double timerValue = lateralTimerAverage_ * (1.0 + (1.0 * mt_rand() / mt_rand.max() - 0.5));
@@ -170,11 +171,12 @@ void ControllerSloppyDriver::Step(double timeStep)
 			object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), object_->pos_.GetT() + dt);
 			if (mode_ == Mode::MODE_OVERRIDE)
 			{
-				object_->pos_.SetHeadingRelative(currentH_ + dh);
+				object_->pos_.SetHeading(currentH_ + dh);
 			}
 			else
 			{
-				object_->pos_.SetHeadingRelative(object_->pos_.GetHRelative() + currentH_ + dh);
+				// Respect heading set by default controller, add sloppy contribution to relative heading
+				object_->pos_.SetHeadingRelative(object_->pos_.GetHRelative() + dh);
 			}
 			currentT_ += dt;
 			currentH_ += dh;

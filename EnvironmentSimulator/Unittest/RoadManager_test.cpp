@@ -1662,26 +1662,26 @@ TEST(DistanceTest, CalcDistanceLong)
     pos0.SetLanePos(2, -1, 300.0, -0.25);
     pos1.SetLanePos(1, -1, 1.0, 0.15);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
-    EXPECT_NEAR(dist, 9.779173, 1e-5);
+    EXPECT_NEAR(dist, 10.663675, 1e-5);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
-    EXPECT_NEAR(dist, 14.135777, 1e-5);
+    EXPECT_NEAR(dist, 13.481041, 1e-5);
 
     // target position behind
     pos0.SetLanePos(2, 1, 300.0, -0.25);
-    pos0.SetH(1.57);
+    pos0.SetHeading(1.57);
     pos1.SetLanePos(1, -1, 1.0, 0.15);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
-    EXPECT_NEAR(dist, -9.496392926, 1e-5);
+    EXPECT_NEAR(dist, -7.163675, 1e-5);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
-    EXPECT_NEAR(dist, -11.953042, 1e-5);
+    EXPECT_NEAR(dist, -13.481041, 1e-5);
 
-    // Target position in front, to the right
-    pos0.SetH(0.0);
+    // Target position in front, to the left
+    pos0.SetHeading(0.0);
     pos1.SetLanePos(1, -1, 1.0, 0.15);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
-    EXPECT_NEAR(dist, -11.960600, 1e-5);
+    EXPECT_NEAR(dist, 7.163675, 1e-5);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
-    EXPECT_NEAR(dist, 9.486871, 1e-5);
+    EXPECT_NEAR(dist, 13.481041, 1e-5);
 }
 
 TEST(NurbsTest, TestNurbsPosition)

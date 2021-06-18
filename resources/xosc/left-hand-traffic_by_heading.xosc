@@ -75,7 +75,7 @@
                   <TeleportAction>
                      <Position>
                         <RelativeLanePosition entityRef="Ego" dLane="-1" ds="-30">
-                           <Orientation type="relative" h="3.14"/>
+                           <Orientation type="relative" h="3.14159265359"/>
                         </RelativeLanePosition>
                      </Position>
                   </TeleportAction>

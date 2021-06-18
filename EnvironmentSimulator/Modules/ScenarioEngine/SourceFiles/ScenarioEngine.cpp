@@ -624,23 +624,6 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 	if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL)) // No action has updated longitudinal dimension
 	{
 		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE || 
-			!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
-		{
-			if (!obj->CheckDirtyBits(Object::DirtyBit::LATERAL))  // No action has updated lateral dimension
-			{
-				// make sure entity is aligned to the road 
-				if (obj->pos_.GetHRelative() > M_PI_2 && obj->pos_.GetHRelative() < 3 * M_PI_2)
-				{
-					obj->pos_.SetHeadingRelative(M_PI);
-				}
-				else
-				{
-					obj->pos_.SetHeadingRelative(0);
-				}
-			}
-		}
-		
-		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE || 
 			!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
 		{
 			if (obj->pos_.GetRoute())

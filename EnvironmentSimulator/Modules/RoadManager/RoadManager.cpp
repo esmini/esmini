@@ -6994,9 +6994,15 @@ double Position::getRelativeDistance(double targetX, double targetY, double &x, 
 	diff_x = targetX - GetX();
 	diff_y = targetY - GetY();
 
-	// Compensate for current heading (rotate so that current heading = 0)
-	x = diff_x * cos(-GetH()) - diff_y * sin(-GetH());
-	y = diff_x * sin(-GetH()) + diff_y * cos(-GetH());
+	// Align with closest road driving direction
+	double hAlign = 0.0;
+	if (GetHRelative() > M_PI_2 && GetHRelative() < 3 * M_PI_2)
+	{
+		hAlign = M_PI;
+	}
+	hAlign = -GetAngleSum(GetHRoad(), hAlign);
+	x = diff_x * cos(hAlign) - diff_y * sin(hAlign);
+	y = diff_x * sin(hAlign) + diff_y * cos(hAlign);
 
 	// Now just check whether diff vector X-component is less than 0 (behind current)
 	int sign = x > 0 ? 1 : -1;
