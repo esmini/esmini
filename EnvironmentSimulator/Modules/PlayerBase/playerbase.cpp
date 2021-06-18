@@ -258,7 +258,7 @@ void ScenarioPlayer::ViewerFrame()
 		// remove obsolete cars
 		for (size_t j = 0; j < viewer_->entities_.size(); j++)
 		{
-			if (viewer_->entities_[j]->entity_type_ == viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
+			if (viewer_->entities_[j]->GetType() == viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
 			{
 				bool toremove = true;
 				for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
@@ -267,7 +267,6 @@ void ScenarioPlayer::ViewerFrame()
 					{
 						toremove = false;
 					}
-
 				}
 				if (toremove)
 				{

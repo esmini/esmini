@@ -96,10 +96,11 @@ void ControllerSumo::Init()
 	{
 		if (!(entities_->object_[i]->IsGhost()))
 		{
-			libsumo::Vehicle::add(entities_->object_[i]->name_, "");
-			libsumo::Vehicle::moveToXY(entities_->object_[i]->name_, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,
+			std::string id = entities_->object_[i]->name_;
+			libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
+			libsumo::Vehicle::moveToXY(id, "random", 0, entities_->object_[i]->pos_.GetX() + sumo_x_offset_,
 				entities_->object_[i]->pos_.GetY() + sumo_y_offset_, entities_->object_[i]->pos_.GetH(), 0);
-			libsumo::Vehicle::setSpeed(entities_->object_[i]->name_, entities_->object_[i]->speed_);
+			libsumo::Vehicle::setSpeed(id, entities_->object_[i]->speed_);
 		}
 	}
 }

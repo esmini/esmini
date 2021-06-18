@@ -592,6 +592,7 @@ EntityModel::EntityModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::Group> gro
 	}
 	name_ = name;
 	group_ = group;
+	parent_ = parent;
 
 	// Add LevelOfDetail node
 	lod_ = new osg::LOD();
@@ -603,7 +604,7 @@ EntityModel::EntityModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::Group> gro
 	txNode_ = new osg::PositionAttitudeTransform();
 	txNode_->addChild(lod_);
 	txNode_->setName(name);
-	parent->addChild(txNode_);
+	parent_->addChild(txNode_);
 
 	// Find boundingbox
 	bb_ = 0;
@@ -641,6 +642,12 @@ EntityModel::EntityModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::Group> gro
 	trail_->SetNodeMaskLines(NodeMask::NODE_MASK_TRAIL_LINES);
 	trail_->SetNodeMaskDots(NodeMask::NODE_MASK_TRAIL_DOTS);
 }
+
+EntityModel::~EntityModel()
+{
+	parent_->removeChild(txNode_);
+}
+
 
 CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
 	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color, std::string name):
@@ -1373,7 +1380,32 @@ void Viewer::RemoveCar(std::string name)
 	{
 		if (entities_[i]->name_ == name)
 		{
+			if (entities_[i] != nullptr)
+			{
+				delete (entities_[i]);
+			}
 			entities_.erase(entities_.begin() + i);
+			
+			if (currentCarInFocus_ > i)
+			{
+				// Shift with reduces list
+				currentCarInFocus_--;
+			}
+			else if (currentCarInFocus_ == i)
+			{
+				if (entities_.size() > 0)
+				{
+					SetVehicleInFocus((currentCarInFocus_) % entities_.size());
+				}
+				else
+				{
+					// No more objects to follow, switch camera model
+					currentCarInFocus_ = -1;
+					((osgGA::KeySwitchMatrixManipulator*)osgViewer_->getCameraManipulator())->selectMatrixManipulator(5);
+				}
+			}
+			
+			break;
 		}
 	}
 }

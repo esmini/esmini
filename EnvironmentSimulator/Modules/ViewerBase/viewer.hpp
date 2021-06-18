@@ -190,6 +190,7 @@ namespace viewer
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
 		osg::ref_ptr<osg::Group> bb_;
 		osg::Quat quat_;
+		osg::ref_ptr<osg::Group> parent_;
 
 		double size_x;
 		double size_y;
@@ -206,6 +207,7 @@ namespace viewer
 
 		EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> 
 			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color, std::string name);
+		~EntityModel();
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double hRoad, double pRoad, double hRelative, double r);
 		void SetRotation(double h, double p, double r);
