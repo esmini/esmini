@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
+
+    <input>
+        <net-file value=".\multi_intersections.net.xml"/>
+        <route-files value=".\multi_intersections.rou.xml"/>
+    </input>
+
+    <time>
+        <begin value="0"/>
+        <end value="1000"/>
+        <step-length value="0.01" />
+    </time>
+    
+    <time-to-teleport value="-1"/>
+
+    <!-- <lateral-resolution value="0.5"/> -->
+</configuration>

@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<!-- Demonstrate a way of integrating SUMO vehicles in esmini simulations -->
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceShemaLocation="OpenSccenario.xsd">
+	<FileHeader author="Mandolin" date="2020-08-14 08:57:00.756371" decription="adaptspeed_example" revMajor="1" revMinor="0"/>
+	<ParameterDeclarations/>
+	<CatalogLocations>
+		<VehicleCatalog>
+			<Directory path="../xosc/Catalogs/Vehicles"/>
+		</VehicleCatalog>
+		<ControllerCatalog>
+			<Directory path="../xosc/Catalogs/Controllers"/>
+		</ControllerCatalog>
+	</CatalogLocations>
+	<RoadNetwork>
+		<LogicFile filepath="../xodr/multi_intersections.xodr"/>
+		<SceneGraphFile filepath="../models/multi_intersections.osgb"/>
+	</RoadNetwork>
+	<Entities>
+        <ScenarioObject name="Ego">
+           <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+           <ObjectController>
+              <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+           </ObjectController>           
+        </ScenarioObject>
+		<ScenarioObject name="SumoVehicles">
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
+			<ObjectController>
+                <Controller name="SumoTraffic">
+                    <Properties>
+                        <Property name="esminiController" value="SumoController" />
+                        <File filepath="../sumo_inputs/multi_intersections.sumocfg"/>
+                    </Properties>
+                </Controller>
+			</ObjectController>
+		</ScenarioObject>
+	</Entities>
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private entityRef="Ego">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="1" offset="0" roadId="242" s="30"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+                    <PrivateAction>
+                        <!-- <ActivateControllerAction longitudinal="true" lateral="true" /> -->
+                    </PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="1"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="20"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+			</Actions>
+		</Init>
+		<Story name="mystory">
+			<ParameterDeclarations/>
+			<Act/>
+		</Story>
+		<StopTrigger>
+			<ConditionGroup>
+				<Condition conditionEdge="rising" delay="0" name="stop_simulation">
+					<ByValueCondition>
+						<SimulationTimeCondition rule="greaterThan" value="600"/>
+					</ByValueCondition>
+				</Condition>
+			</ConditionGroup>
+		</StopTrigger>
+	</Storyboard>
+</OpenSCENARIO>
