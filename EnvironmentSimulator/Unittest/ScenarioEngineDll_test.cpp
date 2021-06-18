@@ -1419,6 +1419,80 @@ TEST(OSILaneParing, circular_road)
 	SE_Close();
 }
 
+TEST(OSILaneParing, simple_3way_intersection)
+{
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_3_way_intersection_osi.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
+	ASSERT_EQ(i_init, 0);
+
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	int lanes_found = 0;
+	bool intersection_found = false;
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	// order: lane, predecessor, successor
+	std::vector<std::vector<int>> lane_pairs = {{0, 18, -1},
+											{2, -1, 18},
+											{3, -1, 18},
+											{5, 18, -1},
+											{6, -1, 18},
+											{8, 18, -1},
+											{18, 3, 0},
+											{18, 2, 5},
+											{18, 6, 0},
+											{18, 2, 8},
+											{18, 6, 5},
+											{18, 3, 8}
+											};
+	int successor;
+	int predecessor;
+	static int counter = 0;
+	static int prev_id;
+	for (int i = 0; i < osi_gt.lane_size(); i++)
+	{
+		// std::cout << i << std::endl;
+		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
+		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size();j++ )
+		{	
+			predecessor = -1;
+			successor = -1;
+
+			for (int k = 0; k < lane_pairs.size(); k++)
+			{
+				if (osi_gt.mutable_lane(i)->id().value() == lane_pairs[k][0])
+				{
+					prev_id = lane_pairs[k][0];
+					predecessor = lane_pairs[k][1];
+					successor = lane_pairs[k][2];
+					if(prev_id == lane_pairs[k][0] && k == counter)
+					{
+						break;
+					}
+				}
+			}
+			
+			if (successor == -1 && predecessor == -1)
+			{
+				ASSERT_EQ(true,false);
+			}
+			if (successor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(j)->successor_lane_id().value(),successor);
+			}
+			if (predecessor >=0 && osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
+			{
+				ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->mutable_lane_pairing(j)->antecessor_lane_id().value(),predecessor);
+			}
+			++counter;
+		}
+	}
+	SE_Close();
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);

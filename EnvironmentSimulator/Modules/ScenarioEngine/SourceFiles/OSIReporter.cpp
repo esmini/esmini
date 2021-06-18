@@ -1057,55 +1057,57 @@ int OSIReporter::UpdateOSIIntersection()
 		}
 	}
 
-	// //Lets Update the antecessor and successor lanes of the lanes that are not intersections
-	// //Get all the intersection lanes, this lanes have the predecessor and successor lanes information
-	// std::vector<osi3::Lane*> IntersectionLanes;
-	// for(int i = 0; i < obj_osi_internal.gt->lane_size(); ++i)
-	// {
-	// 	if(obj_osi_internal.gt->lane(i).classification().type() == osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION)
-	// 	{
-	// 		IntersectionLanes.push_back(obj_osi_internal.gt->mutable_lane(i));
-	// 	}
-	// }
+	//Lets Update the antecessor and successor lanes of the lanes that are not intersections
+	//Get all the intersection lanes, this lanes have the predecessor and successor lanes information
+	std::vector<osi3::Lane*> IntersectionLanes;
+	for(int i = 0; i < obj_osi_internal.gt->lane_size(); ++i)
+	{
+		if(obj_osi_internal.gt->lane(i).classification().type() == osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION)
+		{
+			IntersectionLanes.push_back(obj_osi_internal.gt->mutable_lane(i));
+		}
+	}
 
-	// //For each lane in OSI groundTruth
-	// for(int i = 0; i < obj_osi_internal.gt->lane_size(); ++i)
-	// {
-	// 	//Check if the lane is in the intersection
-	// 	for(int j = 0; j < IntersectionLanes.size(); ++j)
-	// 	{
-	// 		for(int k = 0; k < IntersectionLanes[j]->classification().lane_pairing_size(); ++k)
-	// 		{
-	// 			//Check predecessors
-	// 			if(IntersectionLanes[j]->classification().lane_pairing()[k].has_antecessor_lane_id())
-	// 			{
-	// 				//It lane is in predecesor of the intersection
-	// 				if(obj_osi_internal.gt->lane(i).id().value() == IntersectionLanes[j]->classification().lane_pairing()[k].antecessor_lane_id().value())
-	// 				{
-	// 					//then we add the intersection ID to the successor of the lane
-	// 					if(obj_osi_internal.gt->mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
-	// 					{
-	// 						obj_osi_internal.gt->mutable_lane(i)->mutable_classification()->add_lane_pairing()->mutable_successor_lane_id()->set_value(IntersectionLanes[j]->id().value());
-	// 					}
-	// 				}
-	// 			}
+	//For each lane in OSI groundTruth
+	for(int i = 0; i < obj_osi_internal.gt->lane_size(); ++i)
+	{
+		//Check if the lane is in the intersection
+		for(int j = 0; j < IntersectionLanes.size(); ++j)
+		{
+			for(int k = 0; k < IntersectionLanes[j]->classification().lane_pairing_size(); ++k)
+			{
+				//Check predecessors
+				if(IntersectionLanes[j]->classification().lane_pairing()[k].has_antecessor_lane_id())
+				{
+					//It lane is in predecesor of the intersection
+					if(obj_osi_internal.gt->lane(i).id().value() == IntersectionLanes[j]->classification().lane_pairing()[k].antecessor_lane_id().value())
+					{
+						//then we add the intersection ID to the successor of the lane
+						if(obj_osi_internal.gt->mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+						{
+							obj_osi_internal.gt->mutable_lane(i)->mutable_classification()->add_lane_pairing()->mutable_successor_lane_id()->set_value(IntersectionLanes[j]->id().value());
+						}
+					}
+				}
 
-	// 			//Check successors
-	// 			if(IntersectionLanes[j]->classification().lane_pairing()[k].has_successor_lane_id())
-	// 			{
-	// 				//It lane is in successor of the intersection
-	// 				if(obj_osi_internal.gt->lane(i).id().value() == IntersectionLanes[j]->classification().lane_pairing()[k].successor_lane_id().value())
-	// 				{
-	// 					//then we add the intersection ID to the predecessor of the lane
-	// 					if(obj_osi_internal.gt->mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
-	// 					{
-	// 						obj_osi_internal.gt->mutable_lane(i)->mutable_classification()->add_lane_pairing()->mutable_antecessor_lane_id()->set_value(IntersectionLanes[j]->id().value());
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
+				//Check successors
+				if(IntersectionLanes[j]->classification().lane_pairing()[k].has_successor_lane_id())
+				{
+					//It lane is in successor of the intersection
+					if(obj_osi_internal.gt->lane(i).id().value() == IntersectionLanes[j]->classification().lane_pairing()[k].successor_lane_id().value())
+					{
+						//then we add the intersection ID to the predecessor of the lane
+						if(obj_osi_internal.gt->mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+						{
+							obj_osi_internal.gt->mutable_lane(i)->mutable_classification()->add_lane_pairing()->mutable_antecessor_lane_id()->set_value(IntersectionLanes[j]->id().value());
+						}
+					}
+				}
+			}
+		}
+
+	}
+
 	return 0;
 }
 
