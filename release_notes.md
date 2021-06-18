@@ -1,5 +1,23 @@
 ## esmini release notes
 
+### 2021-06-18 Version 2.11.0
+
+- Update behavior of the Default Controller
+  - Entities will still be aligned to the road direction, but the relative heading will be respected. 
+    - To have a vehicle heading in driving direction (as defined by lane Id and road rule) simply set relative heading=0, or omit it since 0 is default.
+    - To have a vehicle heading in opposite driving direction, set relative heading = 3.14159 (PI/180 deg)
+    - To have an entity facing 90 deg left, set relative heading = 1.57 (PI/2)
+    - The entity will be moved in the road direction closest to its heading, so
+    - To have an entity facing 90 deg left, set relative heading slightly less than PI/2 ~ 1.57. I.e NOT > PI/2 because then it will got the other way.
+  - This behaviour allows for flexible control of the orientation more independent of driving direction, see new scenario example [drop-bike.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/drop-bike.xosc) / [run_drop-bike.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_drop-bike.bat)
+- Fix some [SUMO](https://www.eclipse.org/sumo/) integration issues
+  - add another demo scenario with 100 cars: [test-sumo.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/test-sumo.xosc) / [run_test-sumo.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_test-sumo.bat)
+- Fix and improve relative distance calculations in road coordinates
+cars.
+- Fix grass color when texture not available (from white to green)
+- Update ALKS tests, confirming esmini still works with latest [ALKS](https://github.com/asam-oss/OSC-ALKS-scenarios) version.
+- Some additional minor fixes
+
 ### 2021-06-14 Version 2.10.2
 
 - Fix condition delay issue  
