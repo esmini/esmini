@@ -3,8 +3,8 @@
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
 
     <input>
-        <net-file value=".\multi_intersections.net.xml"/>
-        <route-files value=".\multi_intersections.rou.xml"/>
+        <net-file value="multi_intersections.net.xml"/>
+        <route-files value="multi_intersections.rou.xml"/>
     </input>
 
     <time>
