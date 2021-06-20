@@ -1,5 +1,10 @@
 ## esmini release notes
 
+### 2021-06-21 Version 2.11.1
+
+- Fix file path issue in sumo-test config
+  - Bug prevented [sumo-test.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/sumo-test.xosc) to load on Linux
+
 ### 2021-06-18 Version 2.11.0
 
 - Update behavior of the Default Controller
