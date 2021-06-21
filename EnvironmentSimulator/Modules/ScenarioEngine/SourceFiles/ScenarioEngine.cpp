@@ -749,10 +749,8 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 
 		if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertex(-1)->time > TRAJECTORY_SAMPLE_TIME)
 		{
-			double x = obj->pos_.GetX();
-			double y = obj->pos_.GetY();
-			// Only add trail vertex when we moved a bit from last one
-			if (obj->trail_.GetNumberOfVertices() == 0 || PointDistance2D(x, y, obj->trail_.GetVertex(-1)->x, obj->trail_.GetVertex(-1)->y) > 0.1)
+			// Only add trail vertex when speed is not stable at 0 
+			if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertex(-1)->speed) > SMALL_NUMBER || fabs(obj->GetSpeed() > SMALL_NUMBER))
 			{
 				obj->trail_.AddVertex({ 0.0, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH(), simulationTime_, obj->GetSpeed(), 0.0, false });
 			}
