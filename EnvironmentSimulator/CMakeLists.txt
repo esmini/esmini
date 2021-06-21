@@ -114,6 +114,7 @@ if(APPLE)
     osgDB
     osgGA
     osg
+    osgShadow
     OpenThreads
     jpeg
 
@@ -200,6 +201,7 @@ include(CheckCXXCompilerFlag)
     optimized osgDB debug osgDBd
     optimized osgGA debug osgGAd
     optimized osg debug osgd
+    optimized osgShadow debug osgShadowd
     optimized OpenThreads debug OpenThreadsd
     optimized jpeg debug jpegd
 
@@ -280,6 +282,7 @@ else() #not UNIX
       optimized ${OSG_VERSION}-osgText.lib debug ${OSG_VERSION}-osgTextd.lib
       optimized ${OSG_VERSION}-osgUtil.lib debug ${OSG_VERSION}-osgUtild.lib
       optimized ${OSG_VERSION}-osgSim.lib debug ${OSG_VERSION}-osgSimd.lib
+      optimized ${OSG_VERSION}-osgShadow.lib debug ${OSG_VERSION}-osgShadowd.lib
       optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
       optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
       optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib

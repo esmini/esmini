@@ -22,6 +22,7 @@
 #include <osgAnimation/EaseMotion>
 #include <osg/BlendColor>
 #include <osg/ShapeDrawable>
+#include <osgShadow/ShadowedScene>
 #include <string>
 
 #include "RubberbandManipulator.hpp"
@@ -58,6 +59,8 @@ namespace viewer
 		NODE_MASK_INFO =             (1 << 9),
 		NODE_MASK_ROAD_SENSORS =     (1 << 10),
 		NODE_MASK_TRAJECTORY_LINES = (1 << 11),
+		NODE_MASK_CAST_SHADOWS     = (1 << 12),
+		NODE_MASK_RECEIVE_SHADOWS =  (1 << 13),
 	} NodeMask;
 
 	class PolyLine
@@ -308,6 +311,7 @@ namespace viewer
 		float lodScale_;
 		osgViewer::Viewer *osgViewer_;
 		osg::MatrixTransform* rootnode_;
+		osg::ref_ptr<osgShadow::ShadowedScene> shadowedScene_;
 		osg::ref_ptr<osg::Group> roadSensors_;
 		osg::ref_ptr<osg::Group> trails_;
 		roadmanager::OpenDrive *odrManager_;

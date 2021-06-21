@@ -33,7 +33,6 @@
 #include <osgDB/WriteFile>
 #include <osgShadow/StandardShadowMap>
 #include <osgShadow/ShadowMap>
-#include <osgShadow/ShadowedScene>
 #include <osgUtil/SmoothingVisitor>
 #include <osgUtil/Tessellator> // to tessellate multiple contours
 #include <osgUtil/Optimizer>   // to flatten transform nodes
@@ -74,8 +73,6 @@ USE_COMPRESSOR_WRAPPER(ZLibCompressor)
 USE_GRAPHICSWINDOW()
 
 using namespace viewer;
-
-static osg::ref_ptr<osgShadow::ShadowedScene> shadowedScene;
 
 // Derive a class from NodeVisitor to find a node with a  specific name.
 class FindNamedNode : public osg::NodeVisitor
@@ -882,22 +879,39 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	// set the scene to render
 	rootnode_ = new osg::MatrixTransform;
 	
-#if 0
+#if 1
 	// Setup shadows
-	const int CastsShadowTraversalMask = 0x2;
-	LOG("1");
-	shadowedScene = new osgShadow::ShadowedScene;
-	osgShadow::ShadowSettings* settings = shadowedScene->getShadowSettings();
-	LOG("2");
-	settings->setReceivesShadowTraversalMask(CastsShadowTraversalMask);
-//	shadowedScene->setCastsShadowTraversalMask(CastsShadowTraversalMask);
-	osg::ref_ptr<osgShadow::ShadowMap> st = new osgShadow::ShadowMap;
-//	osg::ref_ptr<osgShadow::StandardShadowMap> st = new osgShadow::StandardShadowMap;
+	shadowedScene_ = new osgShadow::ShadowedScene;
+	osgShadow::ShadowSettings* settings = shadowedScene_->getShadowSettings();
+	settings->setReceivesShadowTraversalMask(NodeMask::NODE_MASK_RECEIVE_SHADOWS);
+	settings->setCastsShadowTraversalMask(NodeMask::NODE_MASK_CAST_SHADOWS);
+	settings->setComputeNearFarModeOverride(osg::CullSettings::COMPUTE_NEAR_USING_PRIMITIVES);
+	settings->setMaximumShadowMapDistance(500);
+
+	shadowedScene_->setReceivesShadowTraversalMask(NodeMask::NODE_MASK_RECEIVE_SHADOWS);
+	shadowedScene_->setCastsShadowTraversalMask(NodeMask::NODE_MASK_CAST_SHADOWS);
+	
+	osg::ref_ptr<osgShadow::ShadowMap> sm = new osgShadow::ShadowMap;
+	shadowedScene_->setShadowTechnique(sm.get());
+
 	int mapres = 1024;
-	LOG("3");
-	st->setTextureSize(osg::Vec2s(mapres, mapres));
-	shadowedScene->setShadowTechnique(st.get());
-	shadowedScene->addChild(rootnode_);
+	sm->setTextureSize(osg::Vec2s(mapres, mapres));
+
+	// Light
+	osgViewer_->setLightingMode(osg::View::LightingMode::SKY_LIGHT);
+	osg::Light* light = osgViewer_->getLight();
+	light->setPosition(osg::Vec4(-750., 500., 1000., 1.0));
+	light->setDirection(osg::Vec3(7.5, -5., -10.));
+	float ambient = 0.4;
+	light->setAmbient(osg::Vec4(ambient, ambient, 0.9 * ambient, 1));
+	light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
+	sm->setLight(light);
+
+//	shadowedScene_->setNodeMask(rootnode_->getNodeMask() | (NodeMask::NODE_MASK_RECEIVE_SHADOWS | NodeMask::NODE_MASK_CAST_SHADOWS));
+
+//	osg::ref_ptr<osgShadow::StandardShadowMap> st = new osgShadow::StandardShadowMap;
+
+	rootnode_->addChild(shadowedScene_);
 	LOG("4");
 #endif
 
@@ -906,7 +920,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	envTx_->setScale(osg::Vec3(1, 1, 1));
 	envTx_->setAttitude(osg::Quat(0, 0, 0, 1));
 	envTx_->setNodeMask(NodeMask::NODE_MASK_ENV_MODEL);
-	rootnode_->addChild(envTx_);
+	shadowedScene_->addChild(envTx_);
 
 	ClearNodeMaskBits(NodeMask::NODE_MASK_TRAIL_LINES); // hide trails per default
 	ClearNodeMaskBits(NodeMask::NODE_MASK_TRAIL_DOTS);
@@ -1024,10 +1038,10 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		}
 	}
 
-#if 0
-	osgViewer_->setSceneData(shadowedScene);
-#else
+#if 1
 	osgViewer_->setSceneData(rootnode_);
+#else
+	osgViewer_->setSceneData(shadowedScene_);
 #endif
 
 	// Setup the camera models
@@ -1117,15 +1131,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	osgViewer_->addEventHandler(new osgViewer::ScreenCaptureHandler);
 
 	osgViewer_->setReleaseContextAtEndOfFrameHint(false);
-
-	// Light
-	osgViewer_->setLightingMode(osg::View::LightingMode::SKY_LIGHT);
-	osg::Light *light = osgViewer_->getLight();
-	light->setPosition(osg::Vec4(-7500., 5000., 10000., 1.0));
-	light->setDirection(osg::Vec3(7.5, -5., -10.));
-	float ambient = 0.4;
-	light->setAmbient(osg::Vec4(ambient, ambient, 0.9*ambient, 1));
-	light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
 
 	osgViewer_->realize();
 
@@ -1328,11 +1333,11 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_c
 	EntityModel* model;
 	if (type == EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
 	{
-		model = new CarModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, trail_color, name);
+		model = new CarModel(osgViewer_, group, shadowedScene_, trails_, trajectoryLines_, dot_node_, trail_color, name);
 	}
 	else
 	{
-		model = new EntityModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, trail_color, name);
+		model = new EntityModel(osgViewer_, group, shadowedScene_, trails_, trajectoryLines_, dot_node_, trail_color, name);
 	}
 
 	model->state_set_ = model->lod_->getOrCreateStateSet(); // Creating material
