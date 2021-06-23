@@ -5114,6 +5114,13 @@ int LaneSection::GetClosestLaneIdx(double s, double t, double &offset, bool noZe
 		// Only consider lanes with matching lane type
 		if (laneTypeMask & GetLaneById(lane_id)->GetLaneType() && (!noZeroWidth || GetWidth(s, lane_id) > SMALL_NUMBER))
 		{
+			// If position is within a lane, we can return it without further checks
+			if (fabs(t - laneCenterOffset) < (GetWidth(s, lane_id) / 2.))
+			{
+				min_offset = t - laneCenterOffset;
+				candidate_lane_idx = i;
+				break;
+			}
 			if (candidate_lane_idx == -1 || fabs(t - laneCenterOffset) < fabs(min_offset))
 			{
 				min_offset = t - laneCenterOffset;
