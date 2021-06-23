@@ -8,7 +8,7 @@ LOG_FILENAME = 'log.txt'
 DAT_FILENAME = 'sim.dat'
 CSV_FILENAME = 'sim.csv'
 STDOUT_FILENAME = 'stdout.txt'
-TIMEOUT = 10
+TIMEOUT = 40
 ESMINI_PATH = '../'
 
 
