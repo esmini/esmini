@@ -130,8 +130,10 @@ class TestSuite(unittest.TestCase):
         csv = generate_csv()
         self.assertTrue(re.search('\n9.900.*, 0, Ego, 170.00.*, -8.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
         self.assertTrue(re.search('\n9.900.*, 1, LeadVehicle, 203.33.*, -8.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
+        self.assertTrue(re.search('\n11.000.*, 0, Ego, 188.33.*, -8.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
+        self.assertTrue(re.search('\n11.000.*, 1, LeadVehicle, 216.81.*, -8.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*,.*', csv))
         self.assertTrue(re.search('\n13.000.*, 0, Ego, 221.66.*, -8.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
-        self.assertTrue(re.search('\n13.000.*, 1, LeadVehicle, 228.23.*, -8.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*,.*', csv))
+        self.assertTrue(re.search('\n13.000.*, 1, LeadVehicle, 219.24.*, -8.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*,.*', csv))
 
     def test_ALKS_Scenario_4_4_1_CutInNoCollision(self):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.4_1_CutInNoCollision_TEMPLATE.xosc'), COMMON_ARGS)
