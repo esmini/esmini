@@ -1,5 +1,12 @@
 ## esmini release notes
 
+### 2021-06-24 Version 2.11.2
+
+- Fix issue in LaneSection::GetClosestLaneIdx() sometimes returning wrong lane (PR [#131](https://github.com/esmini/esmini/pull/131))
+- Update [ALKS scenarios](https://github.com/asam-oss/OSC-ALKS-scenarios) to [b03cc8a](https://github.com/asam-oss/OSC-ALKS-scenarios/commit/b03cc8a20882a4acffa96b83ae16769834bf0861)
+- Fix bug missing ghost coming to a stop
+- Some additional minor fixes
+
 ### 2021-06-21 Version 2.11.1
 
 - Fix file path issue in sumo-test config
