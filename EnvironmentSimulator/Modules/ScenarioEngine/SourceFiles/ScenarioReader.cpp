@@ -1537,6 +1537,26 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 	return action;
 }
 
+ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xml_node node)
+{
+	bool domain_longitudinal = parameters.ReadAttribute(node, "longitudinal") == "true";
+	bool domain_lateral = parameters.ReadAttribute(node, "lateral") == "true";
+
+	int domainMask = 0;
+	if (domain_longitudinal)
+	{
+		domainMask |= Controller::Domain::CTRL_LONGITUDINAL;
+	}
+	if (domain_lateral)
+	{
+		domainMask |= Controller::Domain::CTRL_LATERAL;
+	}
+
+	ActivateControllerAction* activateControllerAction = new ActivateControllerAction(domainMask);
+
+	return activateControllerAction;
+}
+
 // ------------------------------------------------------
 OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNode, Object *object)
 {
@@ -2074,20 +2094,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		}
 		else if (actionChild.name() == std::string("ActivateControllerAction"))
 		{
-			bool domain_longitudinal = parameters.ReadAttribute(actionChild, "longitudinal") == "true";
-			bool domain_lateral = parameters.ReadAttribute(actionChild, "lateral") == "true";
-
-			int domainMask = 0;
-			if (domain_longitudinal)
+			if (GetVersionMajor() == 1 && GetVersionMinor() == 1)
 			{
-				domainMask |= Controller::Domain::CTRL_LONGITUDINAL;
-			}
-			if (domain_lateral)
-			{
-				domainMask |= Controller::Domain::CTRL_LATERAL;
+				LOG("In OSC 1.1 ActivateControllerAction should be placed under ControllerAction. Accepting anyway.");
 			}
 
-			ActivateControllerAction *activateControllerAction = new ActivateControllerAction(domainMask);
+			ActivateControllerAction* activateControllerAction = parseActivateControllerAction(actionChild);
 
 			action = activateControllerAction;
 		}
@@ -2189,6 +2201,16 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					}
 
 					action = override_action;
+				}
+				else if (controllerChild.name() == std::string("ActivateControllerAction"))
+				{
+					if (GetVersionMajor() == 1 && GetVersionMinor() == 0)
+					{
+						LOG("In OSC 1.0 ActivateControllerAction should be placed under PrivateAction. Accepting anyway.");
+					}
+					ActivateControllerAction* activateControllerAction = parseActivateControllerAction(actionChild);
+
+					action = activateControllerAction;
 				}
 				else
 				{
