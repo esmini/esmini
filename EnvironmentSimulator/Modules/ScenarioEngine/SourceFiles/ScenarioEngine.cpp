@@ -105,13 +105,13 @@ ScenarioEngine::~ScenarioEngine()
 	LOG("Closing");
 }
 
-void ScenarioEngine::step(double deltaSimTime)
+int ScenarioEngine::step(double deltaSimTime)
 {
 	simulationTime_ += deltaSimTime;
 
 	if (entities.object_.size() == 0)
 	{
-		return;
+		return -1;
 	}
 
 	if (!initialized_)
@@ -204,7 +204,7 @@ void ScenarioEngine::step(double deltaSimTime)
 	if (storyBoard.stop_trigger_ && storyBoard.stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
 	{
 		quit_flag = true;
-		return;
+		return -1;
 	}
 
 	// Then evaluate all stories
@@ -478,6 +478,7 @@ void ScenarioEngine::step(double deltaSimTime)
 		quit_flag = true;
 	}
 
+	return 0;
 }
 
 void ScenarioEngine::printSimulationTime()

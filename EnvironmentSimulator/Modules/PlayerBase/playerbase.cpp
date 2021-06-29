@@ -162,59 +162,64 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 {
 	mutex.Lock();
 
-	scenarioEngine->step(timestep_s);
-
-	// Check for any callbacks to be made
-	for (size_t i = 0; i < callback.size(); i++)
+	if (scenarioEngine->step(timestep_s) == 0)
 	{
-		ObjectState *os = scenarioGateway->getObjectStatePtrById(callback[i].id);
-		if (os)
+		// Check for any callbacks to be made
+		for (size_t i = 0; i < callback.size(); i++)
 		{
-			ObjectStateStruct state;
-			state = os->getStruct();
-			callback[i].func(&state, callback[i].data);
+			ObjectState* os = scenarioGateway->getObjectStatePtrById(callback[i].id);
+			if (os)
+			{
+				ObjectStateStruct state;
+				state = os->getStruct();
+				callback[i].func(&state, callback[i].data);
+			}
 		}
-	}
 
-	scenarioEngine->prepareOSIGroundTruth(timestep_s);
+		scenarioEngine->prepareOSIGroundTruth(timestep_s);
 
-	scenarioGateway->WriteStatesToFile();
+		scenarioGateway->WriteStatesToFile();
 
-	mutex.Unlock();
+		mutex.Unlock();
 
-	for (size_t i = 0; i < sensor.size(); i++)
-	{
-		sensor[i]->Update();
-	}
+		for (size_t i = 0; i < sensor.size(); i++)
+		{
+			sensor[i]->Update();
+		}
 #ifdef _USE_OSI
-	osiReporter->ReportSensors(sensor);
+		osiReporter->ReportSensors(sensor);
 
-	// Update OSI info
-	if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
-	{
-		if (osi_counter % osi_freq_ == 0)
+		// Update OSI info
+		if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
 		{
-			osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
+			if (osi_counter % osi_freq_ == 0)
+			{
+				osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
+			}
+			// Update counter after modulo-check since first frame should always be reported
+			osi_counter++;
 		}
-		// Update counter after modulo-check since first frame should always be reported
-		osi_counter++;
-	}
 #endif  // USE_OSI
 
-	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
-	//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
-	//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
-	//    scenarioEngine->entities.object_[0]->pos_.GetS(),
-	//    scenarioEngine->entities.object_[0]->pos_.GetH(),
-	//    scenarioEngine->entities.object_[0]->pos_.GetHRoad(),
-	//    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
+		//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
+		//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
+		//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
+		//    scenarioEngine->entities.object_[0]->pos_.GetS(),
+		//    scenarioEngine->entities.object_[0]->pos_.GetH(),
+		//    scenarioEngine->entities.object_[0]->pos_.GetHRoad(),
+		//    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
 
+		frame_counter_++;
+	}
+	else
+	{
+		mutex.Unlock();
+	}
 
 	if (scenarioEngine->GetQuitFlag())
 	{
 		quit_request = true;
 	}
-	frame_counter_++;
 }
 
 #ifdef _USE_OSG

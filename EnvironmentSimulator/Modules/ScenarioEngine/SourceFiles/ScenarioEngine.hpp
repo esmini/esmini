@@ -39,7 +39,7 @@ namespace scenarioengine
 		void InitScenario(std::string oscFilename, bool disable_controllers = false);
 		void InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers = false);
 
-		void step(double deltaSimTime);
+		int step(double deltaSimTime);
 		void printSimulationTime();
 		void prepareOSIGroundTruth(double dt);
 		void defaultController(Object *obj, double dt);
