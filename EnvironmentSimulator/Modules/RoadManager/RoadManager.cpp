@@ -2829,8 +2829,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 										{
 											double llength = atof(line.attribute("length").value());
 											double space = atof(line.attribute("space").value());
-											double t_offset = atof(line.attribute("t_offset").value());
-											double s_offset_l = atof(line.attribute("s_offset").value());
+											double t_offset = atof(line.attribute("tOffset").value());
+											double s_offset_l = atof(line.attribute("sOffset").value());
 
 											// rule
 											LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
@@ -4943,14 +4943,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 								s_roadmarkline = s_roadmark + lane_roadMarkTypeLine->GetSOffset();
 								if (lane_roadMarkTypeLine != 0)
 								{
-									if (n == number_of_roadmarklines-1)
-									{
-										s_end_roadmarkline = s_end_roadmark;
-									}
-									else
-									{
-										s_end_roadmarkline = lsec->GetS() + lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n + 1)->GetSOffset();
-									}
+									s_end_roadmarkline = s_end_roadmark;
 
 									if (lane_roadMark->GetType() == LaneRoadMark::RoadMarkType::BROKEN)
 									{
@@ -6703,7 +6696,7 @@ void Position::SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int r
 		LaneRoadMarkTypeLine *lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(roadmarkline_idx_);
 		if (lane_roadmarktypeline != 0)
 		{
-			s_ = MIN(s_ + lane_roadmarktypeline->GetSOffset(), road->GetLength());
+			s_ = MIN(s_, road->GetLength());
 		}
 		else
 		{
