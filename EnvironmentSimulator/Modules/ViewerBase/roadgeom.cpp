@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -13,8 +13,8 @@
 #include "roadgeom.hpp"
 #include "RoadManager.hpp"
 
-#include <osg/StateSet> 
-#include <osg/Group> 
+#include <osg/StateSet>
+#include <osg/Group>
 #include <osg/TexEnv>
 #include <osg/Material>
 #include <osgGA/StateSetManipulator>
@@ -36,7 +36,7 @@ osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename)
 	std::vector<std::string> file_name_candidates;
 	file_name_candidates.push_back(filename);
 
-	// Check registered paths 
+	// Check registered paths
 	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 	{
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
@@ -105,7 +105,19 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 				roadmanager::LaneRoadMarkTypeLine* lane_roadmarktypeline = lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(n);
 				roadmanager::OSIPoints* curr_osi_rm = lane_roadmarktypeline->GetOSIPoints();
 
-				if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN)
+				bool broken = false;
+				if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_SOLID ||
+					lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID_BROKEN)
+				{
+					if (lane_roadmarktypeline->GetSpace() > 0.0)
+					{
+						broken = true;
+					}
+				}
+
+				if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN ||
+					lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_BROKEN ||
+					broken)
 				{
 					for (int q = 0; q < curr_osi_rm->GetPoints().size(); q += 2)
 					{
@@ -138,7 +150,9 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 						AddRoadMarkGeom(vertices, indices);
 					}
 				}
-				else if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID)
+				else if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID ||
+				lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID_SOLID ||
+				!broken)
 				{
 					std::vector<roadmanager::PointStruct> osi_points = curr_osi_rm->GetPoints();
 
@@ -180,7 +194,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 							double isect[2];
 
 							if (GetIntersectionOfTwoLineSegments(l0p0l[0], l0p0l[1], l0p1l[0], l0p1l[1], l1p0l[0], l1p0l[1], l1p1l[0], l1p1l[1], isect[0], isect[1]) == 0)
-							{ 
+							{
 								(*vertices)[q * 2 + 0].set(isect[0], isect[1], osi_points[q].z);
 							}
 							else
@@ -188,7 +202,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 								// lines parallel, no adjustment needed
 								(*vertices)[q * 2 + 0].set(l1p0l[0], l1p0l[1], osi_points[q].z);
 							}
-							
+
 							if (GetIntersectionOfTwoLineSegments(l0p0r[0], l0p0r[1], l0p1r[0], l0p1r[1], l1p0r[0], l1p0r[1], l1p1r[0], l1p1r[1], isect[0], isect[1]) == 0)
 							{
 								(*vertices)[q * 2 + 1].set(isect[0], isect[1], osi_points[q].z);
@@ -213,7 +227,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 						(*indices)[q * 2 + 0] = q * 2 + 0;
 						(*indices)[q * 2 + 1] = q * 2 + 1;
 					}
-					
+
 					// Finally create and add OSG geometries
 					AddRoadMarkGeom(vertices, indices);
 				}
@@ -294,8 +308,8 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 				// Fetch s-value of all osi points
 				s_list.push_back(osiPoints[l].s);
 			}
-			
-			// If last point on intermediate lanesection, 
+
+			// If last point on intermediate lanesection,
 			// add a point sligthly behind in case number of lanes changes
 			if (j < road->GetNumberOfLaneSections() - 1)
 			{
@@ -345,7 +359,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 					}
 					else if (s_index < s_list.size() - 1)
 					{
-						// Insert 
+						// Insert
 						if (osiPoints[l].s - s_list[s_index] > GEOM_TOLERANCE &&
 							s_list[s_index+1] - osiPoints[l].s > GEOM_TOLERANCE)
 						{
@@ -395,13 +409,13 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 					if (k > 0)
 					{
 						// vertex of left lane border
-						(*verticesLocal)[vidxLocal] = (*verticesAll)[(k - 1) * s_list.size() + l];  
-						(*texcoordsLocal)[vidxLocal] = (*texcoordsAll)[(k - 1) * s_list.size() + l]; 
+						(*verticesLocal)[vidxLocal] = (*verticesAll)[(k - 1) * s_list.size() + l];
+						(*texcoordsLocal)[vidxLocal] = (*texcoordsAll)[(k - 1) * s_list.size() + l];
 						(*indices)[vidxLocal] = vidxLocal;
 						vidxLocal++;
 						// vertex of right
 						(*verticesLocal)[vidxLocal] = (*verticesAll)[k * s_list.size() + l];
-						(*texcoordsLocal)[vidxLocal] = (*texcoordsAll)[k * s_list.size() + l]; 
+						(*texcoordsLocal)[vidxLocal] = (*texcoordsAll)[k * s_list.size() + l];
 						(*indices)[vidxLocal] = vidxLocal;
 						vidxLocal++;
 					}
