@@ -266,7 +266,7 @@ TEST_F(OSIPointsTestFixture, TestConstructorArgument)
     };
 
     OSIPoints osi_points_test_object = OSIPoints(osi_points_test_set);
-    
+
     std::vector<PointStruct> osi_point_expected = osi_points_test_object.GetPoints();
 
     for (size_t i = 0; i < osi_points_test_set.size(); i++)
@@ -342,13 +342,13 @@ TEST_F(OSIPointsTestFixture, TestGetFromIdx)
 TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
 {
     ASSERT_EQ(osi_points.GetNumOfOSIPoints(), 0);
- 
+
     std::vector<PointStruct> osi_points_test_set =
     {
         {0, 0, 0, 0, 0},
         {-1, -1, -1, -1, -1},
         {2, 2, 2, 2, 2}
-    }; 
+    };
     std::vector<double> s {0, -1, 2};
     std::vector<double> x {0, -1, 2};
     std::vector<double> y {0, -1, 2};
@@ -365,7 +365,7 @@ class OSIPointsCloseCheck :public ::testing::TestWithParam<std::tuple<float,floa
 // eight points (start and end for two lines)
 // l1_p1_x, l1_p1_y, l1_p2_x, l1_p2_y, l2_p1_x, l2_p1_y, l2_p2_x, l2_p2_y, expected amount points same
 TEST_P(OSIPointsCloseCheck, ClosenessChecker) {
-    
+
     PointStruct s1;
     s1.x = std::get<0>(GetParam());
     s1.y = std::get<1>(GetParam());
@@ -652,7 +652,7 @@ TEST_P(ArcGeomTestEvaluateDsCurvNegative, TestArcGeomEvaluateDsArgument)
 INSTANTIATE_TEST_SUITE_P(TestEvaluateArcDsArgumentParam, ArcGeomTestEvaluateDsCurvNegative, testing::Values(
                                                 std::make_tuple(0.0, -1.0, 1.0, M_PI),
                                                 std::make_tuple(M_PI/2, -2.0, 2.0, M_PI-M_PI/2),
-                                                std::make_tuple(M_PI, -1.0, 3.0, 0)));                                    
+                                                std::make_tuple(M_PI, -1.0, 3.0, 0)));
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -715,7 +715,7 @@ TEST_F(SpiralGeomTestFixture, TestGetSet)
     spiral.SetH0(15);
     spiral.SetS0(-20);
     spiral.SetCDot(0);
-    
+
     ASSERT_EQ(5.0, spiral.GetX0());
     ASSERT_EQ(-10.0, spiral.GetY0());
     ASSERT_EQ(15.0, spiral.GetH0());
@@ -875,7 +875,7 @@ class ParamPoly3GeomTestFixture: public testing::Test
 {
     public:
         ParamPoly3GeomTestFixture();
-        ParamPoly3GeomTestFixture(double s, double x, double y, double hdg, double length, 
+        ParamPoly3GeomTestFixture(double s, double x, double y, double hdg, double length,
         double aU, double bU, double cU, double dU, double aV, double bV, double cV, double dV, ParamPoly3::PRangeType p_range);
         virtual ~ParamPoly3GeomTestFixture();
     protected:
@@ -886,7 +886,7 @@ ParamPoly3GeomTestFixture::ParamPoly3GeomTestFixture()
 {
 }
 
-ParamPoly3GeomTestFixture::ParamPoly3GeomTestFixture(double s, double x, double y, double hdg, double length, 
+ParamPoly3GeomTestFixture::ParamPoly3GeomTestFixture(double s, double x, double y, double hdg, double length,
         double aU, double bU, double cU, double dU, double aV, double bV, double cV, double dV, ParamPoly3::PRangeType p_range)
 {
 }
@@ -979,7 +979,7 @@ class ElevationTestFixture: public testing::Test
 {
     public:
         ElevationTestFixture();
-        ElevationTestFixture(double s, double a, double b, double c, double d); 
+        ElevationTestFixture(double s, double a, double b, double c, double d);
         virtual ~ElevationTestFixture();
     protected:
         Elevation elevation;
@@ -1181,7 +1181,7 @@ class LaneOffsetTestFixture: public testing::Test
 {
     public:
         LaneOffsetTestFixture();
-        LaneOffsetTestFixture(double s, double a, double b, double c, double d); 
+        LaneOffsetTestFixture(double s, double a, double b, double c, double d);
         virtual ~LaneOffsetTestFixture();
     protected:
         LaneOffset laneoffset;
@@ -1234,7 +1234,7 @@ TEST_P(LaneOffsetGetLaneOffsetTest, TestGetLaneOffset)
 INSTANTIATE_TEST_SUITE_P(TestGetLaneOffsetParam, LaneOffsetGetLaneOffsetTest, testing::Values(
                                                 std::make_tuple(0.0, 49.0),
                                                 std::make_tuple(10.0, -1871.0)));
-                                            
+
 
 class LaneOffsetGetLaneOffsetPrimTest: public testing::TestWithParam<std::tuple<double, double>>
 {
@@ -1266,7 +1266,7 @@ class LaneTestFixture: public testing::Test
 {
     public:
         LaneTestFixture();
-        LaneTestFixture(double s, double a, double b, double c, double d); 
+        LaneTestFixture(double s, double a, double b, double c, double d);
         virtual ~LaneTestFixture();
     protected:
         Lane lane;
@@ -1332,7 +1332,7 @@ TEST_F(LaneTestFixture, TestLaneGetLink)
     LaneLink *mylanelink_second = lane.GetLink(LinkType::SUCCESSOR);
     ASSERT_EQ(mylanelink_second->GetType(), LinkType::SUCCESSOR);
     ASSERT_EQ(mylanelink_second->GetId(), 3);
-    
+
     delete lanelink;
 }
 
@@ -1418,6 +1418,54 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark)
     delete laneroadmark;
 }
 
+TEST_F(LaneTestFixture, TestLaneGetRoadMark2)
+{
+    LaneRoadMark *laneroadmark = new LaneRoadMark(2.0, LaneRoadMark::RoadMarkType::BROKEN_BROKEN, LaneRoadMark::RoadMarkWeight::STANDARD,
+    LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
+    lane.AddLaneRoadMark(laneroadmark);
+
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(-1), std::runtime_error);
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(1), std::runtime_error);
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(2), std::runtime_error);
+
+    LaneRoadMark *mylaneroadmark = lane.GetLaneRoadMarkByIdx(0);
+    ASSERT_EQ(mylaneroadmark->GetType(), LaneRoadMark::RoadMarkType::BROKEN_BROKEN);
+
+    delete laneroadmark;
+}
+
+TEST_F(LaneTestFixture, TestLaneGetRoadMark3)
+{
+    LaneRoadMark *laneroadmark = new LaneRoadMark(2.0, LaneRoadMark::RoadMarkType::SOLID_SOLID, LaneRoadMark::RoadMarkWeight::STANDARD,
+    LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
+    lane.AddLaneRoadMark(laneroadmark);
+
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(-1), std::runtime_error);
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(1), std::runtime_error);
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(2), std::runtime_error);
+
+    LaneRoadMark *mylaneroadmark = lane.GetLaneRoadMarkByIdx(0);
+    ASSERT_EQ(mylaneroadmark->GetType(), LaneRoadMark::RoadMarkType::SOLID_SOLID);
+
+    delete laneroadmark;
+}
+
+TEST_F(LaneTestFixture, TestLaneGetRoadMark4)
+{
+    LaneRoadMark *laneroadmark = new LaneRoadMark(2.0, LaneRoadMark::RoadMarkType::BROKEN_SOLID, LaneRoadMark::RoadMarkWeight::STANDARD,
+    LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
+    lane.AddLaneRoadMark(laneroadmark);
+
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(-1), std::runtime_error);
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(1), std::runtime_error);
+    ASSERT_THROW(lane.GetLaneRoadMarkByIdx(2), std::runtime_error);
+
+    LaneRoadMark *mylaneroadmark = lane.GetLaneRoadMarkByIdx(0);
+    ASSERT_EQ(mylaneroadmark->GetType(), LaneRoadMark::RoadMarkType::BROKEN_SOLID);
+
+    delete laneroadmark;
+}
+
 /*
 TODO: The test for Lane::GetRoadMarkInfoByS.
 */
@@ -1456,7 +1504,7 @@ TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
 
     LaneRoadMarkType *laneroadmarktype = new LaneRoadMarkType("type1", 1.0);
     LaneRoadMarkType *laneroadmarktype_second = new LaneRoadMarkType("type2", 1.0);
-    
+
     LaneRoadMarkTypeLine *laneRoadMarktypeline = new LaneRoadMarkTypeLine(3.0, 1.0, 0.5, 0.0, LaneRoadMarkTypeLine::RoadMarkTypeLineRule::CAUTION, 1.0);
     LaneRoadMarkTypeLine *laneRoadMarktypeline_second = new LaneRoadMarkTypeLine(3.0, 1.0, 0.5, 50.0, LaneRoadMarkTypeLine::RoadMarkTypeLineRule::CAUTION, 1.0);
 
@@ -1499,7 +1547,7 @@ TEST(RoadTest, RoadWidthAllLanes)
 
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 5);
-    
+
     Road* road = odr->GetRoadByIdx(1);
     EXPECT_EQ(road->GetId(), 1);
 
@@ -1652,7 +1700,7 @@ TEST(DistanceTest, CalcDistanceLong)
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
     EXPECT_NEAR(dist, 3.6, 1e-5);
 
-    // No valid route is to be found between connecting roads (following directed connectivity in OpenDRIVE file) 
+    // No valid route is to be found between connecting roads (following directed connectivity in OpenDRIVE file)
     pos0.SetLanePos(16, -1, 5.0, -0.25);
     pos1.SetLanePos(8, -1, 1.0, 0.15);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), -1);
@@ -1739,12 +1787,12 @@ TEST(Route, TestAssignRoute)
     pos0.SetRoute(&route);
     EXPECT_DOUBLE_EQ(pos0.GetRouteS(), 1.0);
 
-    // Set a position in intersection, near route 
+    // Set a position in intersection, near route
     pos0.SetLanePos(8, -1, 1.5, -0.5);
     EXPECT_EQ(pos0.SetRoute(&route), 0);
     EXPECT_DOUBLE_EQ(pos0.GetRouteS(), 11.5);
 
-    // Set a position in intersection, at a lane not part of the route 
+    // Set a position in intersection, at a lane not part of the route
     pos0.SetLanePos(16, -1, 1.0, 0.0);
     EXPECT_EQ(pos0.SetRoute(&route), -1);  // pos not along the route
 }
@@ -1779,7 +1827,7 @@ TEST(ProbeTest, TestProbeSimpleRoad)
     EXPECT_NEAR(probe_data.relative_pos[0], 595.00000, 1E-5);
     EXPECT_NEAR(probe_data.relative_pos[1], 144.45537, 1E-5);
 
-    // Turn around - position on right side 
+    // Turn around - position on right side
     pos_pivot.SetLanePos(0, 1, 5.0, 0.0);
     pos_pivot.SetHeadingRelative(M_PI);
     pos_pivot.GetProbeInfo(4.0, &probe_data, roadmanager::Position::LookAheadMode::LOOKAHEADMODE_AT_CURRENT_LATERAL_OFFSET);
