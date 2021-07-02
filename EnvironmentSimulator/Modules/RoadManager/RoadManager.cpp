@@ -1018,6 +1018,11 @@ double Road::GetLaneWidthByS(double s, int lane_id)
 		{
 			return lsec->GetWidth(s, lane_id);
 		}
+		else if (i == GetNumberOfLaneSections() - 1)
+		{
+			// Passed end of road - pick width at road endpoint
+			return lsec->GetWidth(s, lane_id);
+		}
 	}
 
 	return 0.0;
@@ -1205,6 +1210,9 @@ double LaneSection::GetWidth(double s, int lane_id)
 	{
 		return 0.0;  // reference lane has no width
 	}
+
+	// Enforce s to range [0:lengthOfSegment]
+	s = CLAMP(s, 0, GetLength());
 
 	Lane *lane = GetLaneById(lane_id);
 	if (lane == 0)
