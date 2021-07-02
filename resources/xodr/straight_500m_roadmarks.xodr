@@ -78,7 +78,7 @@
                             </type>
                         </roadMark>
                         <roadMark sOffset="300.0000000000000000e+00" type="solid" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
-                            <type name="broken" width="1.2000000000000000e-01" >
+                            <type name="solid" width="1.2000000000000000e-01" >
                                 <line length="4.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
                             </type>
                         </roadMark>
