@@ -91,7 +91,7 @@ const char* Parameters::GetParameterName(int index, int* type)
 		LOG_AND_QUIT("index %d out of range [0:%d]", index, parameterDeclarations_.Parameter.size() - 1);
 		return 0;
 	}
-	
+
 	*type = parameterDeclarations_.Parameter[index].type;
 
 	return parameterDeclarations_.Parameter[index].name.c_str();
@@ -100,9 +100,9 @@ const char* Parameters::GetParameterName(int index, int* type)
 int Parameters::setParameterValue(std::string name, const void* value)
 {
 	OSCParameterDeclarations::ParameterStruct* ps = getParameterEntry(name);
-	
+
 	if(!ps)
-	{ 
+	{
 		return -1;
 	}
 
@@ -171,7 +171,7 @@ int Parameters::getParameterValueInt(std::string name, int &value)
 	}
 
 	value = ps->value._int;
-	
+
 	return 0;
 }
 
@@ -394,7 +394,7 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 		}
 
 		std::string type_str = pdChild.attribute("parameterType").value();
-		
+
 		if (type_str == "integer" || type_str == "int")
 		{
 			if (type_str == "int")

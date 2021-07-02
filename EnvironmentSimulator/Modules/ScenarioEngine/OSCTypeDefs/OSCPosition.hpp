@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -31,7 +31,7 @@ namespace scenarioengine
 		OSCOrientation(roadmanager::Position::OrientationType type, double h, double p, double r) : type_(type), h_(h), p_(p), r_(r) {}
 
 		roadmanager::Position::OrientationType type_;
-		double h_; 
+		double h_;
 		double p_;
 		double r_;
 	};
@@ -109,8 +109,8 @@ namespace scenarioengine
 
 		void Print();
 
-		roadmanager::Position *GetRMPos() 
-		{ 
+		roadmanager::Position *GetRMPos()
+		{
 			return &position_;
 		}
 	};
@@ -171,7 +171,7 @@ namespace scenarioengine
 		void SetRouteRefLaneCoord(roadmanager::Route *route, double pathS, int laneId, double laneOffset, OSCOrientation *orientation);
 		void SetRouteRefLaneCoord(roadmanager::Route *route, double pathS, int laneId, double laneOffset);
 		void SetRouteRelativeHeading(double h_relative) { position_.SetHeadingRelative(h_relative);  }
-		
+
 		void Print() { position_.Print(); }
 	};
 

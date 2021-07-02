@@ -241,13 +241,13 @@ extern "C"
 	SE_DLL_API int SE_GetQuitFlag();
 
 	/**
-		Get name of currently referred and loaded OpenDRIVE file 
+		Get name of currently referred and loaded OpenDRIVE file
 		@return filename as string (const, since it's allocated and handled by esmini)
 	*/
 	SE_DLL_API const char *SE_GetODRFilename();
 
 	/**
-		Get name of currently referred and loaded SceneGraph file 
+		Get name of currently referred and loaded SceneGraph file
 		@return filename as string (const, since it's allocated and handled by esmini)
 	*/
 	SE_DLL_API const char *SE_GetSceneGraphFilename();
@@ -332,7 +332,7 @@ extern "C"
 	/**
 	Set typed value of named parameter
 	@parameterName Name of the parameter
-	@value Value 
+	@value Value
 	@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_SetParameterInt(const char *parameterName, int value);
@@ -450,8 +450,8 @@ extern "C"
 		Report object position in road coordinates
 		@param id Id of the object
 		@param timestamp Timestamp (not really used yet, OK to set 0)
-		@param roadId Id of the road 
-		@param laneId Id of the lane 
+		@param roadId Id of the road
+		@param laneId Id of the lane
 		@param laneOffset Lateral offset from center of specified lane
 		@param s Longitudinal distance of the position along the specified road
 		@param speed Speed in forward direction (s axis) of the enitity
@@ -566,7 +566,7 @@ extern "C"
 	SE_DLL_API const char *SE_GetObjectName(int index);
 
 	/**
-		Check whether an object has a ghost (special purpose lead vehicle) 
+		Check whether an object has a ghost (special purpose lead vehicle)
 		@param index Index of the object. Note: not ID
 		@return 1 if ghost, 0 if not
 	*/
@@ -635,9 +635,9 @@ extern "C"
 	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState *, void *), void *user_data);
 
 	/**
-		Get the number of road signs along specified road 
+		Get the number of road signs along specified road
 		@param road_id The road along which to look for signs
-		@return Number of road signs 
+		@return Number of road signs
 	*/
 	SE_DLL_API int SE_GetNumberOfRoadSigns(int road_id);
 
@@ -750,7 +750,7 @@ extern "C"
 		Note that this timestamp does NOT affect esmini simulation time
 		Also note that setting timestamp with this function will move into explicit time mode
 		and from that point OSI timestamp is exclusively controlled by this function.
-		@param nanoseconds Nano seconds (1e-9 s) 
+		@param nanoseconds Nano seconds (1e-9 s)
 		@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_OSISetTimeStamp(unsigned long long int nanoseconds);

@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -53,7 +53,7 @@ double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double star
 	{
 		LOG("Invalid Dynamics shape: %d", shape_);
 	}
-	
+
 	return end_value;
 }
 
@@ -96,7 +96,7 @@ void FollowTrajectoryAction::Start(double simTime, double dt)
 		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
 	{
 		// lateral motion controlled elsewhere
-		// other action or controller already updated lateral dimension of object 
+		// other action or controller already updated lateral dimension of object
 		// potentially longitudinal dimension could be updated separatelly - but skip that for now
 		return;
 	}
@@ -139,7 +139,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 		object_->IsControllerActiveOnDomains(Controller::Domain::CTRL_LATERAL))
 	{
 		// lateral motion controlled elsewhere
-		// other action or controller already updated lateral dimension of object 
+		// other action or controller already updated lateral dimension of object
 		// potentially longitudinal dimension could be updated separatelly - but skip that for now
 		return;
 	}
@@ -153,7 +153,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetH());
 		// and align heading with road driving direction
 		object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
-		
+
 		End();
 	}
 	else
@@ -175,7 +175,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 			object_->pos_.SetTrajectoryPosByTime(time_ + timing_offset_);
 			if (time_ <= traj_->GetDuration())
 			{
-				// don't calculate and update actual speed when reached end of trajectory, 
+				// don't calculate and update actual speed when reached end of trajectory,
 				// since the movement is based on remaining length of trajectory, not speed
 				object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
 			}
@@ -309,7 +309,7 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 
 		if (transition_dynamics_.shape_ == DynamicsShape::LINEAR)
 		{
-			// longitudinal distance = long_speed * time = long_speed * lat_dist / lat_speed 
+			// longitudinal distance = long_speed * time = long_speed * lat_dist / lat_speed
 			if (fabs(rate) > SMALL_NUMBER)
 			{
 				transition_dynamics_.target_value_ = fabs(object_->speed_ * lat_distance / rate);
@@ -403,7 +403,7 @@ void LatLaneChangeAction::Step(double simTime, double)
 	{
 		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t_);
 	}
-		
+
 
 	if (factor > 1.0 || fabs(t_ - target_t_) < SMALL_NUMBER || elapsed_ > 0 && SIGN(t_ - start_t_) != SIGN(target_t_ - start_t_))
 	{
@@ -578,7 +578,7 @@ double LongSpeedAction::TargetRelative::GetValue()
 			consumed_ = true;
 		}
 	}
-	else 
+	else
 	{
 		object_speed_ = object_->speed_;
 	}
@@ -651,7 +651,7 @@ void LongSpeedAction::Step(double simTime, double)
 	if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
 	{
 		elapsed_ += dt;
-		
+
 		// Assume user want to reach target speed, ignore sign of rate
 		new_speed = start_speed_ + SIGN(target_->GetValue() - start_speed_) * fabs(transition_dynamics_.target_value_) * elapsed_;
 
@@ -666,7 +666,7 @@ void LongSpeedAction::Step(double simTime, double)
 			target_speed_reached = true;
 		}
 	}
-	else 
+	else
 	{
 		elapsed_ += dt;
 
@@ -781,7 +781,7 @@ void LongDistanceAction::Step(double simTime, double)
 	}
 	else
 	{
-		// Apply damped spring model with critical/optimal damping factor		
+		// Apply damped spring model with critical/optimal damping factor
 		// Adjust tension in spring in proportion to max acceleration. Experimental, may be removed.
 		double spring_constant_adjusted = 0.1 * dynamics_.max_acceleration_ * spring_constant;
 		dc = 2 * sqrt(spring_constant_adjusted);
@@ -1066,7 +1066,7 @@ void SynchronizeAction::Step(double simTime, double)
 			if (steadyState_.type_ != SteadyStateType::STEADY_STATE_NONE && mode_ != SynchMode::MODE_STEADY_STATE)
 			{
 				double time_to_ss = steadyState_.dist_ / final_speed_->GetValue();
-				
+
 				if (dist - steadyState_.dist_ < SMALL_NUMBER || masterTimeToDest - time_to_ss < SMALL_NUMBER)
 				{
 					mode_ = SynchMode::MODE_STEADY_STATE;
@@ -1087,15 +1087,15 @@ void SynchronizeAction::Step(double simTime, double)
 				}
 			}
 
-			// For more information about calculations, see 
+			// For more information about calculations, see
 			// https://docs.google.com/document/d/1dEBUWlJVLUz6Rp9Ol1l90iG0LfNtcsgLyJ0kDdwgPzA/edit?usp=sharing
-			// 
+			//
 			// Interactive Python script plotting calculation result based on various input values
 			// https://drive.google.com/file/d/1z902gRYogkLhUAV1pZLc9gcgwnak7TBH/view?usp=sharing
 			// (the method described below is "Spedified final speed - alt 1")
 			//
 			// Here follow a brief description:
-			// 
+			//
 			// Calculate acceleration needed to reach the destination in due time
 			// Four cases
 			//   1  Linear. Reach final speed with constant acceleration
@@ -1105,44 +1105,44 @@ void SynchronizeAction::Step(double simTime, double)
 			//
 			//   Case 2-3 involves two (case 2a, 2b) or three (case 3) phases with constant acceleration/deceleration
 			//   Last phase in case 2-3 is actually case 1 - a linear change to final speed
-			// 
+			//
 			// Symbols
 			//   given:
 			//     s = distance to destination
 			//     t = master object time to destination
 			//     v0 = current speed
 			//     v1 = final speed
-			//     va = Average speed needed to reach destination 
+			//     va = Average speed needed to reach destination
 			//   variables:
-			//     s1 = distance first phase 
+			//     s1 = distance first phase
 			//     s2 = distance second phase
 			//     x = end time for first phase
 			//     y = end time for second (last) phase
 			//     vx = speed at x
-			// 
+			//
 			// Equations
 			//   case 1
 			//     v1 = 2 * s / t - v2
 			//     a = (v2 - v1) / t
 			//
 			//   case 2 (a & b)
-			//      system: 
+			//      system:
 			//        s1 = v1 * x + (vx - v1) * x / 2
 			//        s2 = v2 * y + (vx - v2) * y / 2
 			//        t = x + y
 			//        s = s1 + s2
 			// 		  (vx - v1) / x = (vx - v2) / y
 			//
-			//      solve for x and vx   
+			//      solve for x and vx
 			//      a = (vx - v1) / x
-			// 
-			//   case 3 
-			//      system: 
+			//
+			//   case 3
+			//      system:
 			//        s1 = x * v1 / 2
 			//        s2 = y * v2 / 2
 			//        s = s1 + s2
 			//        v1 / v2 = x / y
-			//      
+			//
 			//      solve for x
 			//      a = -v1 / x
 
@@ -1192,7 +1192,7 @@ void SynchronizeAction::Step(double simTime, double)
 					return;
 				}
 			}
-			
+
 			if (mode_ == SynchMode::MODE_LINEAR)
 			{
 				if (masterTimeToDest > LARGE_NUMBER - 1)
@@ -1220,7 +1220,7 @@ void SynchronizeAction::Step(double simTime, double)
 					return;
 				}
 			}
-			
+
 			if (mode_ == SynchMode::MODE_NONE)
 			{
 				// Since not linear mode, go into non-linear mode
@@ -1277,7 +1277,7 @@ void SynchronizeAction::Step(double simTime, double)
 				}
 				else
 				{
-					// No solution 
+					// No solution
 					acc = 0;
 				}
 			}
@@ -1372,7 +1372,7 @@ double OverrideControlAction::RangeCheckAndErrorLog(Object::OverrideType type, d
 {
 	double temp = valueCheck;
 	if(valueCheck<=upperLimit&&valueCheck>=lowerLimit)
-	{	
+	{
 		if(!ifRound){
 			LOG("%d value %.2f is within range.", type, valueCheck);
 		}

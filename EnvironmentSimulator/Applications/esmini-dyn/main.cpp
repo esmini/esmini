@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -67,7 +67,7 @@ void objectCallback(SE_ScenarioObjectState* state, void *my_data)
 	static double latOffset0;
 
 	Stuff* stuff = (Stuff*)my_data;
-	
+
 	printf("mydata.counter: %d\n", stuff->counter);
 
 	if (SE_GetSimulationTime() > startTrigTime && SE_GetSimulationTime() < startTrigTime + duration)
@@ -77,7 +77,7 @@ void objectCallback(SE_ScenarioObjectState* state, void *my_data)
 			latOffset0 = state->laneOffset;
 			firstTime = false;
 		}
-		else 
+		else
 		{
 			float latOffset = (float)(latOffset0 + latDist * (SE_GetSimulationTime() - startTrigTime)/duration);
 			SE_ReportObjectRoadPos(state->id, state->timestamp, state->roadId, state->laneId, latOffset, state->s, state->speed);
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 		}
 #endif
 
-#if DEMONSTRATE_PARAMETER 
+#if DEMONSTRATE_PARAMETER
 		int numberOfParameters = SE_GetNumberOfParameters();
 		int type = 0;
 		printf("Number of parameters: %d\n", numberOfParameters);
@@ -227,9 +227,9 @@ int main(int argc, char *argv[])
 #if DEMONSTRATE_OSI  // set to 1 to demonstrate example of how to query OSI Ground Truth
 
 			// OSI is automatically updated when OSI socket or file has been requested
-			// Uncomment line below if socket or file not used 
-			// SE_UpdateOSIGroundTruth(); 
-			
+			// Uncomment line below if socket or file not used
+			// SE_UpdateOSIGroundTruth();
+
 			// Fetch and parse OSI message
 			gt = (osi3::GroundTruth*)SE_GetOSIGroundTruthRaw();
 			sd = (osi3::SensorData*)SE_GetOSISensorDataRaw();
@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
 					printf(" sview %d movingobj %d \n", k, (int)sd->mutable_sensor_view(k)->mutable_global_ground_truth()->mutable_moving_object(l)->mutable_id()->value());
 				}
 			}
-#endif		
+#endif
 
 #if DEMONSTRATE_ROADINFO  // set to 1 to demonstrate example of how to query road information
 			SE_RoadInfo data;
@@ -272,11 +272,11 @@ int main(int argc, char *argv[])
 			SE_GetRoadInfoAtDistance(id, look_ahead_distance, &data, 0);
 
 			printf("Road info at %.2f meter from Vehicle %d: pos (%.2f, %.2f, %.2f) curvature %.5f (r %.2f) heading %.2f pitch %.2f\n",
-				look_ahead_distance, id, data.global_pos_x, data.global_pos_y, data.global_pos_z, data.curvature, 1.0 / data.curvature,  
+				look_ahead_distance, id, data.global_pos_x, data.global_pos_y, data.global_pos_z, data.curvature, 1.0 / data.curvature,
 				data.road_heading, data.road_pitch);
 #endif
 
-#if DEMONSTRATE_SENSORS  
+#if DEMONSTRATE_SENSORS
 
 			printf("Detections [sensor ID, Object ids]:");
 			int objList[MAX_DETECTIONS];  // make room for max nr vehicles, as specified when added sensor
@@ -307,7 +307,7 @@ int main(int argc, char *argv[])
 
 			double steering = 0;
 			if (fabs(roadInfo.angle) > 0.01)
-			{ 
+			{
 				// Steer towards target point -1 or 1
 				steering = roadInfo.angle;
 			}
@@ -315,8 +315,8 @@ int main(int argc, char *argv[])
 			speedTarget /= (1 + 20*fabs(steering));
 			SE_SimpleVehicleControlAnalog(vehicle.handle, TIME_STEP, speedTarget, roadInfo.angle);
 			SE_SimpleVehicleGetState(vehicle.handle, &vehicle.state);
-			
-			SE_ReportObjectPos(0, i * TIME_STEP, vehicle.state.x, vehicle.state.y, vehicle.state.z, 
+
+			SE_ReportObjectPos(0, i * TIME_STEP, vehicle.state.x, vehicle.state.y, vehicle.state.z,
 				vehicle.state.h, vehicle.state.p, 0, vehicle.state.speed);
 #endif
 

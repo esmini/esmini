@@ -11,7 +11,7 @@
  */
 
 /*
- * This controller simulates a bad or dizzy driver by manipulating 
+ * This controller simulates a bad or dizzy driver by manipulating
  * the speed and lateral offset in a random way.
  * The purpose is purely to demonstrate how to implement a controller.
  */
@@ -40,7 +40,7 @@ void ControllerInteractive::Init()
 
 void ControllerInteractive::Step(double timeStep)
 {
-	double speed_limit = object_->pos_.GetSpeedLimit(); 
+	double speed_limit = object_->pos_.GetSpeedLimit();
 
 	if (speed_limit < SMALL_NUMBER)
 	{

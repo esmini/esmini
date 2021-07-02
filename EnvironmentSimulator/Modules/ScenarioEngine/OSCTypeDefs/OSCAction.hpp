@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -62,7 +62,7 @@ namespace scenarioengine
 			state_(State::STANDBY),
 			next_state_(State::STANDBY),
 			transition_(Transition::UNDEFINED_ELEMENT_TRANSITION),
-			num_executions_(0), 
+			num_executions_(0),
 			max_num_executions_(-1) {}
 
 		StoryBoardElement(ElementType type, int max_num_executions) :
@@ -123,7 +123,7 @@ namespace scenarioengine
 		{
 			// Allow elements to move directly from standby to complete
 			// Some actions are atomic, and don't need run time
-			if (state_ == State::RUNNING || state_ == State::STANDBY )  
+			if (state_ == State::RUNNING || state_ == State::STANDBY )
 			{
 				transition_ = Transition::END_TRANSITION;
 				if (type_ == ElementType::ACT || type_ == ElementType::ACTION)

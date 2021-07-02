@@ -50,8 +50,8 @@ int main(int argc, char* argv[])
 
 		// Moving objects
 		printf("moving objects: %d\n", gt->moving_object_size());
-		
-#if 1  // change to 1 in order to print some moving object state info 
+
+#if 1  // change to 1 in order to print some moving object state info
 		// Print object id, position, orientation and velocity
 		for (int j = 0; j < gt->mutable_moving_object()->size(); j++)
 		{

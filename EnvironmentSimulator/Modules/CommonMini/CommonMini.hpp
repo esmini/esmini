@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -142,7 +142,7 @@ int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double 
 double PointDistance2D(double x0, double y0, double x1, double y1);
 
 /**
- Calculate (shortest) distance between a point to a line, in 2D 
+ Calculate (shortest) distance between a point to a line, in 2D
  Inspiration: https://www.geeksforgeeks.org/shortest-distance-between-a-line-and-a-point-in-a-3-d-plane/
  But modified so that negtive distance means point is on right side of the line and vice versa
  @param px X-coordinate of the point
@@ -161,7 +161,7 @@ double PointToLineDistance2DSigned(double px, double py, double lx0, double ly0,
 double PointSquareDistance2D(double x0, double y0, double x1, double y1);
 
 /**
-  Project a 2D point on a 2D vector 
+  Project a 2D point on a 2D vector
 */
 void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double &px, double &py);
 
@@ -194,7 +194,7 @@ bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, d
 double DistanceFromPointToEdge2D(double x3, double y3, double x1, double y1, double x2, double y2, double* x, double* y);
 
 /**
-  Find out whether the point is left or right to a vector 
+  Find out whether the point is left or right to a vector
 */
 int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2);
 
@@ -209,15 +209,15 @@ double GetLengthOfLine2D(double x1, double y1, double x2, double y2);
 double GetLengthOfVector3D(double x, double y, double z);
 
 /**
-  Rotate a 2D vector 
+  Rotate a 2D vector
 */
 void RotateVec2D(double x, double y, double angle, double &xr, double &yr);
 
 /**
-  Convert target (x,y) coordinates to coordinate system of the host 
+  Convert target (x,y) coordinates to coordinate system of the host
 */
-void Global2LocalCoordinates(double xTargetGlobal, double yTargetGlobal, 
-							 double xHostGlobal, double yHostGlobal, double angleHost, 
+void Global2LocalCoordinates(double xTargetGlobal, double yTargetGlobal,
+							 double xHostGlobal, double yHostGlobal, double angleHost,
 							 double &targetXforHost, double &targetYforHost);
 
 /**
@@ -334,7 +334,7 @@ public:
 		int numvehicles, std::string csv_filename);
 
 	//Logging function called by VehicleLogger object using pass by value
-	void LogVehicleData(bool isendline, double timestamp, 
+	void LogVehicleData(bool isendline, double timestamp,
 		char const* name_, int id_, double speed_, double wheel_angle_,
 		double wheel_rot_, double posX_, double posY_, double posZ_,
 		double distance_road_, double distance_lanem_, double heading_,
@@ -361,7 +361,7 @@ private:
 };
 
 
-// Argument parser 
+// Argument parser
 
 class SE_Option
 {
@@ -431,8 +431,8 @@ public:
 	bool Started() { return start_time_ > 0 ? true : false; }
 	void SetDuration(double duration) { duration_ = duration; }
 	double Elapsed() { return 1E-3 * (SE_getSystemTime() - start_time_); }
-	double Remaining() 
-	{ 
+	double Remaining()
+	{
 		if (Expired())
 		{
 			return 0;
@@ -511,26 +511,26 @@ public:
 	double GetTargetValue() { return x0_; }
 
 	void SetTension(double tension)
-	{ 
-		t_ = tension; 
+	{
+		t_ = tension;
 		if (critical_)
 		{
 			d_ = 2 * sqrt(t_);
 		}
 	}
 
-	void SetDamping(double damping) 
-	{ 
-		d_ = damping; 
+	void SetDamping(double damping)
+	{
+		d_ = damping;
 		critical_ = false;
 	}
 
-	void SetOptimalDamping() 
-	{ 
-		d_ = 2 * sqrt(t_); 
+	void SetOptimalDamping()
+	{
+		d_ = 2 * sqrt(t_);
 		critical_ = true;
 	}
-	
+
 private:
 	double x0_;
 	double x_;

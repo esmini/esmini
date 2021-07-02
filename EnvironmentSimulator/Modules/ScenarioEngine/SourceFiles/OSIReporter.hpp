@@ -84,7 +84,7 @@ public:
 	*/
 	int UpdateOSIRoadLane(std::vector<ObjectState*> objectState);
 	/**
-	Fills the intersection type of lanes 
+	Fills the intersection type of lanes
 	*/
 	int UpdateOSIIntersection();
 

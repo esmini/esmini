@@ -41,14 +41,14 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 	simulationTime_ = 0;
 	initialized_ = false;
 	scenarioReader = new ScenarioReader(&entities, &catalogs, disable_controllers);
-	
-	
+
+
 	std::vector<std::string> file_name_candidates;
 	// absolute path or relative to current directory
 	file_name_candidates.push_back(oscFilename);
 	// Remove all directories from path and look in current directory
 	file_name_candidates.push_back(FileNameOf(oscFilename));
-	// Finally check registered paths 
+	// Finally check registered paths
 	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 	{
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(oscFilename)));
@@ -73,7 +73,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 	{
 		throw std::invalid_argument(std::string("Couldn't locate OpenSCENARIO file ") + oscFilename);
 	}
-	
+
 	if (!scenarioReader->IsLoaded())
 	{
 		throw std::invalid_argument(std::string("Couldn't load OpenSCENARIO file ") + oscFilename);
@@ -140,14 +140,14 @@ int ScenarioEngine::step(double deltaSimTime)
 	}
 	else
 	{
-		// reset update bits and indicators of applied control 
+		// reset update bits and indicators of applied control
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
 			Object* obj = entities.object_[i];
 			ObjectState o;
 
 			obj->ClearDirtyBits(
-				Object::DirtyBit::LATERAL | 
+				Object::DirtyBit::LATERAL |
 				Object::DirtyBit::LONGITUDINAL |
 				Object::DirtyBit::SPEED |
 				Object::DirtyBit::WHEEL_ANGLE |
@@ -289,9 +289,9 @@ int ScenarioEngine::step(double deltaSimTime)
 											pa->object_->addEvent(event);
 											break;
 										}
-											
+
 									}
-								}								
+								}
 							}
 
 							if (event->IsTriggable())
@@ -359,7 +359,7 @@ int ScenarioEngine::step(double deltaSimTime)
 											LOG("Event(s) ongoing, %s will run in parallel", event->name_.c_str());
 										}
 
-										
+
 										event->Start(simulationTime_, deltaSimTime);
 									}
 									else
@@ -411,7 +411,7 @@ int ScenarioEngine::step(double deltaSimTime)
 	for (size_t i = 0; i < entities.object_.size(); i++)
 	{
 		Object* obj = entities.object_[i];
-		// Do not move objects when speed is zero, 
+		// Do not move objects when speed is zero,
 		// and only ghosts allowed to execute before time == 0
 		if (!(obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
 			fabs(obj->speed_) > SMALL_NUMBER &&
@@ -523,12 +523,12 @@ void ScenarioEngine::parseScenario()
 	{
 		std::vector<std::string> file_name_candidates;
 		// absolute path or relative to current directory
-		file_name_candidates.push_back(getOdrFilename());  
+		file_name_candidates.push_back(getOdrFilename());
 		// relative path to scenario directory
-		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename())); 
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename()));
 		// Remove all directories from path and look in current directory
 		file_name_candidates.push_back(FileNameOf(getOdrFilename()));
-		// Finally check registered paths 
+		// Finally check registered paths
 		for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 		{
 			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(getOdrFilename())));
@@ -569,8 +569,8 @@ void ScenarioEngine::parseScenario()
 
 	scenarioReader->parseInit(init);
 	scenarioReader->parseStoryBoard(storyBoard);
-	storyBoard.entities_ = &entities; 
-	
+	storyBoard.entities_ = &entities;
+
 	// Finally, now when all entities have been loaded, initialize the controllers
 	if (!disable_controllers_)
 	{
@@ -624,7 +624,7 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 
 	if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL)) // No action has updated longitudinal dimension
 	{
-		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE || 
+		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE ||
 			!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
 		{
 			if (obj->pos_.GetRoute())
@@ -641,7 +641,7 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 				}
 				retvalue = obj->pos_.MoveAlongS(steplen);
 			}
-			
+
 			if (obj->pos_.GetStatusBitMask() & roadmanager::Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD ||
 				obj->pos_.GetStatusBitMask() & roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
 			{
@@ -692,7 +692,7 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 
 			if (!obj->CheckDirtyBits(Object::DirtyBit::ACCELERATION))
 			{
-				// If not already reported, calculate linear acceleration 
+				// If not already reported, calculate linear acceleration
 				obj->SetAcc((obj->pos_.GetVelX() - obj->state_old.vel_x) / dt, (obj->pos_.GetVelY() - obj->state_old.vel_y) / dt, 0.0);
 			}
 
@@ -708,7 +708,7 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 				// If not already reported, calculate angular acceleration
 				obj->SetAngularAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt, 0.0, 0.0);
 			}
-			
+
 			// Update wheel rotations of internal scenario objects
 			if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
 			{
@@ -750,7 +750,7 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 
 		if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertex(-1)->time > TRAJECTORY_SAMPLE_TIME)
 		{
-			// Only add trail vertex when speed is not stable at 0 
+			// Only add trail vertex when speed is not stable at 0
 			if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertex(-1)->speed) > SMALL_NUMBER || fabs(obj->GetSpeed()) > SMALL_NUMBER)
 			{
 				obj->trail_.AddVertex({ 0.0, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH(), simulationTime_, obj->GetSpeed(), 0.0, false });
@@ -815,7 +815,7 @@ void ScenarioEngine::SetupGhost(Object* object)
 	ghost->SetHeadstartTime(object->headstart_time_);
 	entities.addObject(ghost);
 	object->SetHeadstartTime(0);
-	
+
 	int numberOfInitActions = (int)init.private_action_.size();
 	for (int i = 0; i < numberOfInitActions; i++)
 	{
@@ -863,12 +863,12 @@ void ScenarioEngine::SetupGhost(Object* object)
 								if (pa->object_ == object)
 								{
 									// If at least one of the event actions is of relevant subset of action types
-									// then move the action to the ghost object instance, and also make needed 
+									// then move the action to the ghost object instance, and also make needed
 									// changes to the event trigger
 									if (pa->type_ == OSCPrivateAction::ActionType::LONG_SPEED ||
-										pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE || 
-										pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_OFFSET || 
-										pa->type_ == OSCPrivateAction::ActionType::SYNCHRONIZE || 
+										pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE ||
+										pa->type_ == OSCPrivateAction::ActionType::LAT_LANE_OFFSET ||
+										pa->type_ == OSCPrivateAction::ActionType::SYNCHRONIZE ||
 										pa->type_ == OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY ||
 										pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
 									{

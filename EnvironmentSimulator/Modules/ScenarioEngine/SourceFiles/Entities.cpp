@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -83,7 +83,7 @@ int Object::GetActivatedControllerType()
 			return Controller::Type::GHOST_RESERVED_TYPE;
 		}
 		else
-		{ 
+		{
 			return 0;
 		}
 	}
@@ -167,7 +167,7 @@ bool Object::Collision(Object* target)
 	//   Project all points of the two bounding boxes onto that axis
 	//   If we find ONE side with a gap between point clusters from BB1 and BB2,
 	//   it's enough to conclude they are not overlapping/colliding
-	// 
+	//
 	// Optimization: Since the bounding boxes are boxes with parallel
 	// sides, we only need to check half of the sides
 
@@ -275,7 +275,7 @@ bool Object::Collision(Object* target)
 			}
 		}
 	}
-	
+
 	return true;
 }
 
@@ -291,7 +291,7 @@ double Object::PointCollision(double x, double y)
 	//   Project the point and all axis of the bounding boxe onto that axis
 	//   If we find ONE side with a gap between point clusters from BB1 and BB2,
 	//   it's enough to conclude they are not overlapping/colliding
-	// 
+	//
 	// Optimization: Since the bounding boxes are boxes with parallel
 	// sides, we only need to check half of the sides
 
@@ -381,9 +381,9 @@ double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDi
 	}
 
 	// OK, they are not overlapping. Now find the distance.
-	// Strategy: Brute force check all vertices of one bounding box 
-	// against all sides of the other bounding box - then switch to 
-	// check vertices of the other bounding box against the sides 
+	// Strategy: Brute force check all vertices of one bounding box
+	// against all sides of the other bounding box - then switch to
+	// check vertices of the other bounding box against the sides
 	// of the first bounding box.
 
 	double vertices[2][4][2];
@@ -434,7 +434,7 @@ double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDi
 				if (tmpDist < minDist)
 				{
 					minDist = tmpDist;
-					
+
 					// Calculate x, y components of the distance in vehicle reference system
 					double pv[2];
 					if (i == 0)
@@ -445,11 +445,11 @@ double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDi
 					}
 					else
 					{
-						// From the target to this object 
+						// From the target to this object
 						pv[0] = point[0] - xComp;
 						pv[1] = point[1] - yComp;
 					}
-					
+
 					double pvr[2];
 					RotateVec2D(pv[0], pv[1], -this->pos_.GetH(), pvr[0], pvr[1]);
 					if (latDist) *latDist = pvr[1]; // y points left in vehicle ref system
@@ -472,8 +472,8 @@ double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, doubl
 	}
 
 	// OK, they are not overlapping. Now find the distance.
-	// Strategy: Brute force check point against all sides 
-	// of the bounding box 
+	// Strategy: Brute force check point against all sides
+	// of the bounding box
 
 	Object* obj = this;
 
@@ -616,7 +616,7 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 
 	*longDist = minDS;
 	*latDist = minDT;
-	
+
 	// Check for overlap
 	if (SIGN(minDS) != SIGN(maxDS))
 	{
@@ -661,9 +661,9 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 
 
 	// OK, they are not overlapping (colliding). Now find the distance.
-	// Strategy: Brute force check all vertices of one bounding box 
-	// against all sides of the other bounding box - then switch to 
-	// check vertices of the other bounding box against the sides 
+	// Strategy: Brute force check all vertices of one bounding box
+	// against all sides of the other bounding box - then switch to
+	// check vertices of the other bounding box against the sides
 	// of the first bounding box.
 
 	double vertices[2][4][2];
@@ -775,7 +775,7 @@ int Object::Distance(Object* target, roadmanager::CoordinateSystem cs, roadmanag
 			// Get Cartesian/Euclidian distance
 			dist = FreeSpaceDistance(target, &latDist, &longDist);
 
-			// sign indicates target being in front (+) or behind (-) 
+			// sign indicates target being in front (+) or behind (-)
 			dist *= SIGN(longDist);
 
 			if (cs == roadmanager::CoordinateSystem::CS_ENTITY)
@@ -833,14 +833,14 @@ int Object::Distance(double x, double y, roadmanager::CoordinateSystem cs, roadm
 	{
 		double latDist, longDist;
 
-		if (cs == roadmanager::CoordinateSystem::CS_ENTITY || 
-			relDistType == RelativeDistanceType::REL_DIST_EUCLIDIAN || 
+		if (cs == roadmanager::CoordinateSystem::CS_ENTITY ||
+			relDistType == RelativeDistanceType::REL_DIST_EUCLIDIAN ||
 			relDistType == RelativeDistanceType::REL_DIST_CARTESIAN)
 		{
 			// Get Cartesian/Euclidian distance
 			dist = FreeSpaceDistancePoint(x, y, &latDist, &longDist);
 
-			// sign indicates target being in front (+) or behind (-) 
+			// sign indicates target being in front (+) or behind (-)
 			dist *= SIGN(longDist);
 
 			if (cs == roadmanager::CoordinateSystem::CS_ENTITY)
@@ -878,17 +878,17 @@ int Object::Distance(double x, double y, roadmanager::CoordinateSystem cs, roadm
 				}
 			}
 		}
-		else 
+		else
 		{
 			LOG("Unhandled case: cs %d reDistType %d freeSpace %d\n", cs, relDistType, freeSpace);
-			return -1;	
+			return -1;
 		}
 	}
 	else  // not freeSpace
 	{
 		return pos_.Distance(x, y, cs, relDistType, dist);
 	}
-	
+
 	return 0;
 }
 
@@ -899,11 +899,11 @@ int Entities::addObject(Object* obj)
 	return obj->id_;
 }
 
-void Entities::removeObject(int id) 
+void Entities::removeObject(int id)
 {
-	for (size_t i = 0; i < object_.size(); i++) 
+	for (size_t i = 0; i < object_.size(); i++)
 	{
-		if (object_[i]->id_ == id) 
+		if (object_[i]->id_ == id)
 		{
 			object_.erase(object_.begin() + i);
 		}
@@ -912,9 +912,9 @@ void Entities::removeObject(int id)
 
 void Entities::removeObject(std::string name)
 {
-	for (size_t i = 0; i < object_.size(); i++) 
+	for (size_t i = 0; i < object_.size(); i++)
 	{
-		if (object_[i]->name_ == name) 
+		if (object_[i]->name_ == name)
 		{
 			object_.erase(object_.begin() + i);
 		}
@@ -923,9 +923,9 @@ void Entities::removeObject(std::string name)
 
 bool Entities::nameExists(std::string name)
 {
-	for (size_t i = 0; i < object_.size(); i++) 
+	for (size_t i = 0; i < object_.size(); i++)
 	{
-		if (object_[i]->name_ == name) 
+		if (object_[i]->name_ == name)
 		{
 			return true;
 		}
@@ -933,11 +933,11 @@ bool Entities::nameExists(std::string name)
 	return false;
 }
 
-bool Entities::indexExists(int id) 
+bool Entities::indexExists(int id)
 {
-	for (size_t i = 0; i < object_.size(); i++) 
+	for (size_t i = 0; i < object_.size(); i++)
 	{
-		if (object_[i]->id_ == id) 
+		if (object_[i]->id_ == id)
 		{
 			return false;
 		}
@@ -967,7 +967,7 @@ Object* Entities::GetObjectByName(std::string name)
 	}
 
 	LOG("Failed to find object %s", name.c_str());
-	
+
 	return 0;
 }
 

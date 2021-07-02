@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -13,7 +13,7 @@
  /*
   * This application produces a raw data file to be used in Python for plotting the road network as simple graphs.
   *
-  * This module reads an OpenDRIVE file and subsamples all roads within the road network. 
+  * This module reads an OpenDRIVE file and subsamples all roads within the road network.
   * The resulting points are saved into a data file.
   * Use separate Python program xodr.py to plot the result.
   */
@@ -33,13 +33,13 @@ int main(int argc, char *argv[])
 	std::string sampling_step = "1.0";
 	double step_length_target;
 	static char strbuf[1024];
-	
+
 	if (argc < 2)
 	{
 		printf("Usage: ordplot openDriveFile.xodr [Output file, default=output.csv] [Sampling_step, default=1.0]\n");
 		return -1;
 	}
-	else  
+	else
 	{
 		if (argc > 2)
 		{
@@ -63,14 +63,14 @@ int main(int argc, char *argv[])
 		}
 		file.open(output_file_name);
 	}
-	catch (std::exception& e) 
-	{ 
-		printf("exception: %s\n", e.what()); 
+	catch (std::exception& e)
+	{
+		printf("exception: %s\n", e.what());
 		return -1;
 	}
 
 	Position* pos = new Position();
-	
+
 	OpenDrive *od = Position::GetOpenDrive();
 
 	for (int r = 0; r < od->GetNumOfRoads(); r++)

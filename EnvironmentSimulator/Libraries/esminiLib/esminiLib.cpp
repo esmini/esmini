@@ -1035,7 +1035,7 @@ extern "C"
 		{
 #ifdef _USE_OSI
 			return player->osiReporter->GetOSIRoadLane(player->scenarioGateway->objectState_, size, object_id);
-#endif  // USE_OSI		
+#endif  // USE_OSI
 		}
 
 		*size = 0;
@@ -1426,7 +1426,7 @@ extern "C"
 					road_sign->length = (float)s->GetLength();
 					road_sign->height = (float)s->GetHeight();
 					road_sign->width = (float)s->GetWidth();
-					
+
 					return 0;
 				}
 			}

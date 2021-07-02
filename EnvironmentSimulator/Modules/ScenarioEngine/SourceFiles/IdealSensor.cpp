@@ -115,9 +115,9 @@ void ObjectSensor::Update()
 			// Calculate hit object velocity in sensor local coordinates
 			double xVelTarget = obj->pos_.GetVelX();
 			double yVelTarget = obj->pos_.GetVelY();
-			double xVelHost = host_->pos_.GetVelX(); 
-			double yVelHost = host_->pos_.GetVelY(); 
-			double angleHost = -GetAngleSum(host_->pos_.GetH(), pos_.h); 
+			double xVelHost = host_->pos_.GetVelX();
+			double yVelHost = host_->pos_.GetVelY();
+			double angleHost = -GetAngleSum(host_->pos_.GetH(), pos_.h);
 			double targetVelXforHost, targetVelYforHost;
 			Global2LocalCoordinates(xVelTarget, yVelTarget,
 									xVelHost, yVelHost, angleHost,
@@ -128,8 +128,8 @@ void ObjectSensor::Update()
 			// Calculate hit object acceleration in sensor local coordinates
 			double xAccTarget = obj->pos_.GetAccX();
 			double yAccTarget = obj->pos_.GetAccY();
-			double xAccHost = host_->pos_.GetAccX(); 
-			double yAccHost = host_->pos_.GetAccY(); 
+			double xAccHost = host_->pos_.GetAccX();
+			double yAccHost = host_->pos_.GetAccY();
 			double targetAccXforHost, targetAccYforHost;
 			Global2LocalCoordinates(xAccTarget, yAccTarget,
 									xAccHost, yAccHost, angleHost,

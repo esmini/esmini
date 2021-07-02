@@ -36,15 +36,15 @@ typedef struct
 typedef struct
 {
 	float pos[3];			// position, in global coordinate system
-	float heading;			// road heading 
-	float pitch;			// road pitch 
+	float heading;			// road heading
+	float pitch;			// road pitch
 	float roll;				// road roll
 	float width;
 	float curvature;
 	float speed_limit;
-	int roadId;             // target position, road ID 
+	int roadId;             // target position, road ID
 	int laneId;             // target position, lane ID
-	float laneOffset;       // target position, lane offset (lateral distance from lane center) 
+	float laneOffset;       // target position, lane offset (lateral distance from lane center)
 	float s;                // target position, s (longitudinal distance along reference line)
 	float t;                // target position, t (lateral distance from reference line)
 } RM_RoadLaneInfo;
@@ -203,7 +203,7 @@ extern "C"
 
 	/**
 	Get the lenght of road with specified ID
-	@param id The road ID 
+	@param id The road ID
 	@return The length of the road if ID exists, else 0.0
 	*/
 	RM_DLL_API float RM_GetRoadLength(int id);
@@ -219,7 +219,7 @@ extern "C"
 	/**
 	Get the ID of the lane given by index
 	@param roadId The road ID
-	@param laneIndex The index of the lane 
+	@param laneIndex The index of the lane
 	@param s The distance along the road at what point to look up the lane ID
 	@return The lane ID
 	*/
@@ -321,7 +321,7 @@ extern "C"
 	@param data Struct including all result values, see RM_RoadProbeInfo typedef
 	@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
 	@param inRoadDrivingDirection If true always look along primary driving direction. If false, look in most straightforward direction according to object heading.
-	@return 0 if successful, -2 if probe reached end of road, -1 if some error 
+	@return 0 if successful, -2 if probe reached end of road, -1 if some error
 	*/
 	RM_DLL_API int RM_GetProbeInfo(int handle, float lookahead_distance, RM_RoadProbeInfo *data, int lookAheadMode, bool inRoadDrivingDirection);
 
@@ -330,7 +330,7 @@ extern "C"
 	@param handleA Handle to the position object from which to measure
 	@param handleB Handle to the position object to which the distance is measured
 	@param pos_diff Struct including all result values, see PositionDiff typedef
-	@return 0 if successful, -2 if route between positions can't be found, -1 if some other error 
+	@return 0 if successful, -2 if route between positions can't be found, -1 if some other error
 	*/
 	RM_DLL_API int RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff);
 

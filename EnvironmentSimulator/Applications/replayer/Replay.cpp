@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -27,7 +27,7 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 	}
 
 	file_.read((char*)&header_, sizeof(header_));
-	LOG("Recording %s opened. odr: %s model: %s", FileNameOf(filename).c_str(), 
+	LOG("Recording %s opened. odr: %s model: %s", FileNameOf(filename).c_str(),
 		FileNameOf(header_.odr_filename).c_str(), FileNameOf(header_.model_filename).c_str());
 
 	while (!file_.eof())
@@ -155,7 +155,7 @@ ObjectStateStructDat* Replay::GetState(int id)
 }
 
 void Replay::SetStartTime(double time)
-{ 
+{
 	startTime_ = time;
 	if (time_ < startTime_)
 	{
@@ -165,9 +165,9 @@ void Replay::SetStartTime(double time)
 	startIndex_ = FindIndexAtTimestamp(startTime_);
 }
 
-void Replay::SetStopTime(double time) 
-{ 
-	stopTime_ = time; 
+void Replay::SetStopTime(double time)
+{
+	stopTime_ = time;
 	if (time_ > stopTime_)
 	{
 		time_ = stopTime_;

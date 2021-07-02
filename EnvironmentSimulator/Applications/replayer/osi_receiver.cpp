@@ -60,7 +60,7 @@ void CloseGracefully(int socket)
 #endif
 }
 
-static void signal_handler(int s) 
+static void signal_handler(int s)
 {
 	printf("Caught signal %d - quit\n", s);
 
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 	static char large_buf[MAX_MSG_SIZE];
 	socklen_t sender_addr_size = sizeof(sender_addr);
 	struct timeval tv;
-	
+
 	// This struct must match the sender side
 	struct {
 		int counter;
@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
 		buf.counter = 0;
 		int retval;
 		int receivedDataBytes = 0;
-		while (buf.counter != -1) 
+		while (buf.counter != -1)
 		{
 			retval = recvfrom(sock, (char*)&buf, sizeof(buf), 0, (struct sockaddr*)&sender_addr, &sender_addr_size);
 			if (retval > 0)

@@ -80,7 +80,7 @@ namespace scenarioengine
 		Object *host_;        // Entity to which the sensor is attached
 		int nObj_;            // Size of object list, i.e. number of identified objects
 
-		ObjectSensor(Entities *entities, Object *refobj, double pos_x, double pos_y, double pos_z, double heading, 
+		ObjectSensor(Entities *entities, Object *refobj, double pos_x, double pos_y, double pos_z, double heading,
 			double nearClip, double farClip, double fovH, int maxObj);
 		~ObjectSensor();
 		void Update();

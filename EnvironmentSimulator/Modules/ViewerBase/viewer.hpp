@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -83,7 +83,7 @@ namespace viewer
 		PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize, bool dots3D);
 
 		/**
-		* Create and visualize a set of connected line segments defined by an array of points. 
+		* Create and visualize a set of connected line segments defined by an array of points.
 		* Vertex points are represented by GL points with uniform screen size (same size regardless of distance).
 		* @param parent osg group which to add the line geometries
 		* @param points Points defining the polyline vertices
@@ -95,7 +95,7 @@ namespace viewer
 			PolyLine(parent, points, color, width, dotsize, false) {}
 
 		/**
-		* Create and visualize a set of connected line segments defined by an array of points. 
+		* Create and visualize a set of connected line segments defined by an array of points.
 		* Points are not vrepresented by GL points with uniform screen size (same size regardless of distance).
 		* Vertices are not visualized.
 		* @param parent osg group which to add the line geometries
@@ -205,7 +205,7 @@ namespace viewer
 		osg::ref_ptr<osg::BlendColor> blend_color_;
 		osg::ref_ptr<osg::StateSet> state_set_;
 
-		EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group> 
+		EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group>
 			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color, std::string name);
 		~EntityModel();
 		void SetPosition(double x, double y, double z);
@@ -329,7 +329,7 @@ namespace viewer
 		void UpdateCameraFOV();
 		void SetVehicleInFocus(int idx);
 		int GetEntityInFocus() { return currentCarInFocus_; }
-		EntityModel* AddEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type, 
+		EntityModel* AddEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type,
 			bool road_sensor, std::string name, OSCBoundingBox *boundingBox);
 		void RemoveCar(std::string name);
 		int LoadShadowfile(std::string vehicleModelFilename);

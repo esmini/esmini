@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -215,7 +215,7 @@ namespace scenarioengine
 		bool continuous_;
 		double sim_time_;
 
-		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE), 
+		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE),
 			target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0), sim_time_(0)
 		{
             dynamics_.max_acceleration_ = 0;
@@ -435,7 +435,7 @@ namespace scenarioengine
 			SUBMODE_CONCAVE
 		} SynchSubmode;
 
-		struct 
+		struct
 		{
 			SteadyStateType type_;
 			union
@@ -461,7 +461,7 @@ namespace scenarioengine
 		double lastDist_;
 		double lastMasterDist_;
 
-		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE) 
+		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE)
 		{
 			master_object_ = 0;
 			final_speed_ = 0;
@@ -539,8 +539,8 @@ namespace scenarioengine
 		roadmanager::Position *position_;
 
 		TeleportAction() : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT) {}
-		
-		TeleportAction(const TeleportAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT) 
+
+		TeleportAction(const TeleportAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT)
 		{
 			position_ = action.position_;
 		}
@@ -597,7 +597,7 @@ namespace scenarioengine
 		double time_;
 		double initialDistanceOffset_;
 
-		FollowTrajectoryAction() : traj_(0), timing_domain_(TimingDomain::NONE), timing_scale_(1), 
+		FollowTrajectoryAction() : traj_(0), timing_domain_(TimingDomain::NONE), timing_scale_(1),
 			timing_offset_(0), time_(0), initialDistanceOffset_(0), OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY) {}
 
 		FollowTrajectoryAction(const FollowTrajectoryAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY)
@@ -657,7 +657,7 @@ namespace scenarioengine
 		AssignControllerAction(Controller *controller): controller_(controller),
 			OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER) {}
 
-		AssignControllerAction(const AssignControllerAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER) 
+		AssignControllerAction(const AssignControllerAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER)
 		{
 			controller_ = action.controller_;
 		};
@@ -682,17 +682,17 @@ namespace scenarioengine
 		Default constructor assuming both domains (lat/long) activated
 		@param domainMask bitmask according to Controller::Domain type
 		*/
-		ActivateControllerAction() : domainMask_(Controller::Domain::CTRL_BOTH), 
+		ActivateControllerAction() : domainMask_(Controller::Domain::CTRL_BOTH),
 			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
 
 		/**
 		Constructor with domain specification
 		@param domainMask bitmask according to Controller::Domain type
 		*/
-		ActivateControllerAction(int domainMask) : domainMask_(domainMask), 
+		ActivateControllerAction(int domainMask) : domainMask_(domainMask),
 			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
 
-		ActivateControllerAction(const ActivateControllerAction& action) : 
+		ActivateControllerAction(const ActivateControllerAction& action) :
 			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
 		{
 			domainMask_ = action.domainMask_;
@@ -771,14 +771,14 @@ namespace scenarioengine
 
 		Object::OverrideType type_;
 
-		OverrideControlAction(double value, bool active, Object::OverrideType type) : 
+		OverrideControlAction(double value, bool active, Object::OverrideType type) :
 			OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER), type_(type) {}
 		OverrideControlAction() : OverrideControlAction(0, false, Object::OverrideType::OVERRIDE_UNDEFINED) {}
 		~OverrideControlAction() {}
-		
+
 		void Step(double simTime, double dt);
 		void Start(double simTime, double dt);
-		
+
 		OSCPrivateAction *Copy()
 		{
 			OverrideControlAction *new_action = new OverrideControlAction(*this);

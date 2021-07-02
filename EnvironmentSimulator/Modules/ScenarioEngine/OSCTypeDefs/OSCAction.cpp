@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -90,9 +90,9 @@ void StoryBoardElement::SetState(StoryBoardElement:: State state)
 	if (state != state_)
 	{
 		LOG("%s %s -> %s -> %s", name_
-			.c_str(), 
-			state2str(state_).c_str(), 
-			transition2str(transition_).c_str(), 
+			.c_str(),
+			state2str(state_).c_str(),
+			transition2str(transition_).c_str(),
 			state2str(state).c_str());
 	}
 	state_ = state;

@@ -92,7 +92,7 @@ ScenarioPlayer::~ScenarioPlayer()
 	}
 #endif  // _USE_OSG
 	Logger::Inst().SetTimePtr(0);
-	delete scenarioEngine; 
+	delete scenarioEngine;
 
 #ifdef _USE_OSI
 	if (osiReporter)
@@ -124,7 +124,7 @@ void ScenarioPlayer::Frame(double timestep_s)
 	static bool messageShown = false;
 
 	ScenarioFrame(timestep_s);
-	
+
 	if (!headless && viewer_)
 	{
 #ifdef _USE_OSG
@@ -251,8 +251,8 @@ void ScenarioPlayer::ViewerFrame()
 					// add car
 					osg::Vec4 trail_color;
 					trail_color.set(color_blue[0], color_blue[1], color_blue[2], 1.0);
-					viewer_->AddEntityModel(scenarioEngine->entities.object_[i]->model_filepath_, trail_color, 
-						viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, 
+					viewer_->AddEntityModel(scenarioEngine->entities.object_[i]->model_filepath_, trail_color,
+						viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false,
 						scenarioEngine->entities.object_[i]->name_, &scenarioEngine->entities.object_[i]->boundingbox_);
 				}
 			}
@@ -346,7 +346,7 @@ void ScenarioPlayer::ViewerFrame()
 		Object* obj = scenarioEngine->entities.object_[viewer_->currentCarInFocus_];
 		snprintf(str_buf, sizeof(str_buf), "%.2fs entity[%d]: %s %.2fkm/h %.2fm (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", scenarioEngine->getSimulationTime(),
 			viewer_->currentCarInFocus_, obj->name_.c_str(), 3.6 * obj->speed_, obj->odometer_,
-			obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), fabs(obj->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj->pos_.GetOffset(), 
+			obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), fabs(obj->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj->pos_.GetOffset(),
 			obj->pos_.GetS(), obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetH());
 	}
 	else
@@ -557,7 +557,7 @@ int ScenarioPlayer::InitViewer()
 	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
 		Object* obj = scenarioEngine->entities.object_[i];
-		
+
 		if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_INTERACTIVE ||
 			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
 			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST)
@@ -672,7 +672,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("server", "Launch server to receive state of external Ego simulator");
 	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
 	opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
-	
+
 	exe_path_ = argv_[0];
 	opt.ParseArgs(&argc_, argv_);
 
@@ -811,7 +811,7 @@ int ScenarioPlayer::Init()
 		if (!osiReporter->IsFileOpen())
 		{
 			LOG("Specifying osi frequency without --osi_file on is not possible");
-			return -1; 
+			return -1;
 		}
 		osi_freq_ = atoi(arg_str.c_str());
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
@@ -835,7 +835,7 @@ int ScenarioPlayer::Init()
 
 	// Step scenario engine - zero time - just to reach and report init state of all vehicles
 	ScenarioFrame(0.0);
-	
+
 	if (!headless)
 	{
 

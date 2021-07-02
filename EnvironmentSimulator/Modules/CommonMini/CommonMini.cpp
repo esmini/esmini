@@ -1,16 +1,16 @@
-﻿/* 
- * esmini - Environment Simulator Minimalistic 
+﻿/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
 
-#include <stdarg.h> 
+#include <stdarg.h>
 #include <stdio.h>
 #include <iostream>
 
@@ -158,7 +158,7 @@ double GetAngleInInterval2PI(double angle)
 	if (angle2 < 0)
 	{
 		angle2 += 2 * M_PI;
-	} 
+	}
 	else if (angle2 == -0)
 	{
 		angle2 = 0;
@@ -172,7 +172,7 @@ int GetIntersectionOfTwoLineSegments(double ax1, double ay1, double ax2, double 
 	// Inspiration: https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
 
 	double t_demonitator = (ax1 - ax2) * (by1 - by2) - (ay1 - ay2) * (bx1 - bx2);
-	
+
 	if(fabs(t_demonitator) < SMALL_NUMBER)
 	{
 		return -1;
@@ -192,7 +192,7 @@ bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, d
 
 	if (fabs(y2 - y1) < SMALL_NUMBER && fabs(x2 - x1) < SMALL_NUMBER)
 	{
-		// Point - not really a line 
+		// Point - not really a line
 		// Not sure if true of false should be returned
 		sNorm = 0;
 		inside = true;
@@ -241,7 +241,7 @@ double DistanceFromPointToEdge2D(double x3, double y3, double x1, double y1, dou
 	double py = 0;
 	double distance = 0;
 	double sNorm = 0;
-	
+
 	// First project point on edge
 	ProjectPointOnVector2D(x3, y3, x1, y1, x2, y2, px, py);
 	distance = PointDistance2D(x3, y3, px, py);
@@ -333,8 +333,8 @@ void RotateVec2D(double x, double y, double angle, double &xr, double &yr)
 	yr = x * sin(angle) + y * cos(angle);
 }
 
-void Global2LocalCoordinates(double xTargetGlobal, double yTargetGlobal, 
-							 double xHostGlobal, double yHostGlobal, double angleHost, 
+void Global2LocalCoordinates(double xTargetGlobal, double yTargetGlobal,
+							 double xHostGlobal, double yHostGlobal, double angleHost,
 							 double &targetXforHost, double &targetYforHost)
 {
 	double relativeX = xTargetGlobal - xHostGlobal;
@@ -366,12 +366,12 @@ void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size)
 	}
 }
 
-int strtoi(std::string s) 
+int strtoi(std::string s)
 {
 	return atoi(s.c_str());
 }
 
-double strtod(std::string s) 
+double strtod(std::string s)
 {
 	return atof(s.c_str());
 }
@@ -548,7 +548,7 @@ void OffsetVec2D(double x0, double y0, double x1, double y1, double offset, doub
 	double angle_line = atan2(y1 - y0, x1 - x0);
 	double angle_offset = angle_line + (offset < 0 ? M_PI_2 : -M_PI_2);  // perpendicular to line
 	double line_offset[2] = { fabs(offset) * cos(angle_offset), fabs(offset) * sin(angle_offset) };
-	
+
 	xo0 = x0 + line_offset[0];
 	yo0 = y0 + line_offset[1];
 	xo1 = x1 + line_offset[0];
@@ -583,7 +583,7 @@ void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, doubl
 
 void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r)
 {
-	// 1. Create two rotation matrices 
+	// 1. Create two rotation matrices
 	// 2. Multiply them
 	// 3. Extract yaw. pitch , roll
 
@@ -677,7 +677,7 @@ void Logger::Log(bool quit, bool trace, char const* file, char const* func, int 
 	vsnprintf(message, 1024, format, args);
 
 #ifdef DEBUG_TRACE
-	// enforce trace 
+	// enforce trace
 	trace = true;
 #endif
 	if (time_)
@@ -688,14 +688,14 @@ void Logger::Log(bool quit, bool trace, char const* file, char const* func, int 
 		}
 		else
 		{
-			snprintf(complete_entry, 2048, "%.3f: %s", *time_, message); 
+			snprintf(complete_entry, 2048, "%.3f: %s", *time_, message);
 		}
 	}
 	else
 	{
 		if (trace)
 		{
-			snprintf(complete_entry, 2048, "%s / %d / %s(): %s", file, line, func, message); 
+			snprintf(complete_entry, 2048, "%s / %d / %s(): %s", file, line, func, message);
 		}
 		else
 		{
@@ -799,7 +799,7 @@ void SE_Env::SetLogFilePath(std::string logFilePath)
 
 /*
  * Logger for all vehicles contained in the Entities vector.
- * 
+ *
  * Builds a header based on the number of vehicles then prints data
  * in columnar format, with time running from top to bottom and
  * vehicles running from left to right, starting with the Ego vehicle
@@ -830,8 +830,8 @@ CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::stri
 	snprintf(message, 1024, "Number of Vehicles: %d", numvehicles);
 	file_ << message << std::endl;
 
-	//Ego vehicle is always present, at least one set of vehicle data values should be stored 
-	//Index and TimeStamp are included in this first set of columns 
+	//Ego vehicle is always present, at least one set of vehicle data values should be stored
+	//Index and TimeStamp are included in this first set of columns
 	const char* egoHeader = "Index [-] , TimeStamp [sec] , #1 Entitity_Name [-] , "
 		"#1 Entitity_ID [-] , #1 Current_Speed [m/sec] , #1 Wheel_Angle [deg] , "
 		"#1 Wheel_Rotation [-] , #1 World_Position_X [-] , #1 World_Position_Y [-] , "
@@ -874,8 +874,8 @@ CSV_Logger::~CSV_Logger()
 
 void CSV_Logger::LogVehicleData(bool isendline, double timestamp,
 	char const* name_, int id_, double speed_, double wheel_angle_, double wheel_rot_,
-	double posX_, double posY_, double posZ_, double distance_road_, double distance_lanem_, 
-	double heading_, double heading_angle_, double heading_angle_driving_direction_, 
+	double posX_, double posY_, double posZ_, double distance_road_, double distance_lanem_,
+	double heading_, double heading_angle_, double heading_angle_driving_direction_,
 	double pitch_, double curvature_, ...)
 {
 	static char data_entry[2048];
@@ -886,7 +886,7 @@ void CSV_Logger::LogVehicleData(bool isendline, double timestamp,
 		snprintf(data_entry, 2048,
 			"%d , %f , %s , %d , %f , %f , %f , %f , %f , %f , %f , %f, %f, %f, %f, %f , %f ,",
 			data_index_, timestamp, name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_,
-			posZ_, distance_road_, distance_lanem_, heading_, heading_angle_, 
+			posZ_, distance_road_, distance_lanem_, heading_, heading_angle_,
 			heading_angle_driving_direction_, pitch_, curvature_);
 	else
 		snprintf(data_entry, 2048,
@@ -905,11 +905,11 @@ void CSV_Logger::LogVehicleData(bool isendline, double timestamp,
 
 		file_ << data_entry << std::endl;
 		file_.flush();
-		
+
 		data_index_++;
 	}
 
-	
+
 
 	if (callback_)
 	{

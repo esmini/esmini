@@ -34,7 +34,7 @@ ObjectState::ObjectState()
 }
 
 
-ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,	OSCBoundingBox boundingbox, 
+ObjectState::ObjectState(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type,	OSCBoundingBox boundingbox,
 	double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position* pos)
 {
 	memset(&state_, 0, sizeof(ObjectStateStruct));
@@ -366,9 +366,9 @@ void ScenarioGateway::reportObjectAngularAcc(int id, double h_acc, double p_acc,
 
 void ScenarioGateway::removeObject(int id)
 {
-	for (size_t i = 0; i < objectState_.size(); i++) 
+	for (size_t i = 0; i < objectState_.size(); i++)
 	{
-		if (objectState_[i]->state_.info.id == id) 
+		if (objectState_[i]->state_.info.id == id)
 		{
 			objectState_.erase(objectState_.begin() + i);
 		}
@@ -377,9 +377,9 @@ void ScenarioGateway::removeObject(int id)
 
 void ScenarioGateway::removeObject(std::string name)
 {
-	for (size_t i = 0; i < objectState_.size(); i++) 
+	for (size_t i = 0; i < objectState_.size(); i++)
 	{
-		if (objectState_[i]->state_.info.name == name) 
+		if (objectState_[i]->state_.info.name == name)
 		{
 			objectState_.erase(objectState_.begin() + i);
 		}

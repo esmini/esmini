@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -33,10 +33,10 @@ namespace scenarioengine
 			PARAM_TYPE_BOOL
 		} ParameterType;
 
-		typedef struct 
+		typedef struct
 		{
 			std::string name;
-			ParameterType type; 
+			ParameterType type;
 			struct value
 			{
 				int _int;

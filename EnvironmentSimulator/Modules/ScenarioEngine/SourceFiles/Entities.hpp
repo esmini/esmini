@@ -170,7 +170,7 @@ namespace scenarioengine
 		bool IsStandStill() { return stand_still_timestamp_ > SMALL_NUMBER; }
 
 		/**
-		    Returns the timestamp from which the entity has not moved. 
+		    Returns the timestamp from which the entity has not moved.
 			@return The timestamp in seconds.
 		*/
 		double GetStandStillTimestamp() { return stand_still_timestamp_; }
@@ -218,7 +218,7 @@ namespace scenarioengine
 		/**
 		Measure the distance to provided target object
 		@param target The object to check
-		@param cs CoordinateSystem, see roadmanager::CoordinateSystem 
+		@param cs CoordinateSystem, see roadmanager::CoordinateSystem
 		@param relDistType, see roadmanager::RelativeDistanceType
 		@param freeSpace, measure free distance between bounding boxes or just refpoint to refpoint
 		@param dist Distance (output parameter)

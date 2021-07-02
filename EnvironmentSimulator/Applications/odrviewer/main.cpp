@@ -1,24 +1,24 @@
-	/* 
- * esmini - Environment Simulator Minimalistic 
+	/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
 
  /*
   * The purpose of this application is to support development of the RoadManager by visualizing the road network and moving objects on top.
-  * Bascially it loads an OpenDRIVE file, and optionally a corresponding 3D model, and then populate vehicles at specified density. The 
+  * Bascially it loads an OpenDRIVE file, and optionally a corresponding 3D model, and then populate vehicles at specified density. The
   * vehicles will simply follow it's lane until a potential junction where the choice of route is randomized.
   *
   * The application can be used both to debug the RoadManager and to check OpenDRIVE files, e.g. w.r.t. gemoetry, lanes and connectivity.
   *
   * New road/track segments is indicated by a yellow large dot. Geometry segments within a road are indicated by red dots.
-  * Red line is the reference lane, blue lines shows drivable lanes. Non-drivable lanes are currently not indicated. 
+  * Red line is the reference lane, blue lines shows drivable lanes. Non-drivable lanes are currently not indicated.
   */
 
 #include <random>
@@ -197,7 +197,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				}
 				car_->heading_init = car_->pos->GetHRelative();
 
-				if ((car_->model = viewer->AddEntityModel(carModelsFiles_[carModelID], osg::Vec4(0.5, 0.5, 0.5, 1.0), 
+				if ((car_->model = viewer->AddEntityModel(carModelsFiles_[carModelID], osg::Vec4(0.5, 0.5, 0.5, 1.0),
 					viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, "", 0)) == 0)
 				{
 					return -1;
@@ -212,7 +212,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 			}
 		}
 	}
-	
+
 	if (first_car_in_focus == -1)
 	{
 		first_car_in_focus = 0;
@@ -225,7 +225,7 @@ int SetupCarsSpecial(roadmanager::OpenDrive* odrManager, viewer::Viewer* viewer)
 {
 	// Setup one single vehicle in a dedicated pos
 	Car* car_ = new Car;
-	
+
 	car_->speed_factor = 1.0;
 	car_->road_id_init = 1;
 	car_->lane_id_init = -1;
@@ -281,7 +281,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 		}
 		else
 		{
-			// Choose random open end 
+			// Choose random open end
 			int oeIndex = (int)(((double)openEnds.size()) * mt_rand() / mt_rand.max());
 			OpenEnd* oe = &openEnds[oeIndex];
 			// Choose random lane
@@ -402,7 +402,7 @@ int main(int argc, char** argv)
 	}
 
 	std::string modelFilename = opt.GetOptionArg("model");
-	
+
 	if (opt.GetOptionArg("density") != "")
 	{
 		density = strtod(opt.GetOptionArg("density"));
@@ -452,7 +452,7 @@ int main(int argc, char** argv)
 
 		viewer->SetWindowTitleFromArgs(args);
 		viewer->RegisterKeyEventCallback(FetchKeyEvent, nullptr);
-		
+
 		if (opt.GetOptionSet("road_features"))
 		{
 			viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);

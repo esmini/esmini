@@ -107,7 +107,7 @@ void ControllerSumo::Init()
 
 void ControllerSumo::Step(double timeStep)
 {
-	// stepping funciton for sumo, adds/removes vehicles (based on sumo), 
+	// stepping funciton for sumo, adds/removes vehicles (based on sumo),
 	// updates all positions of vehicles in the simulation that are controlled by sumo
 	// do sumo timestep
 	time_ += timeStep;
@@ -120,7 +120,7 @@ void ControllerSumo::Step(double timeStep)
 		{
 			if (!entities_->nameExists(deplist[i]))
 			{
-				Vehicle* vehicle = new Vehicle(); 
+				Vehicle* vehicle = new Vehicle();
 				// copy the default vehicle stuff here (add bounding box and so on)
 				LOG("Adding new vehicle: %s", deplist[i].c_str());
 				vehicle->name_ = deplist[i];

@@ -11,7 +11,7 @@
  */
 
 /*
- * This controller simulates a bad or dizzy driver by manipulating 
+ * This controller simulates a bad or dizzy driver by manipulating
  * the speed and lateral offset in a random way.
  * The purpose is purely to demonstrate how to implement a controller.
  */
@@ -47,7 +47,7 @@ Controller* scenarioengine::InstantiateControllerSloppyDriver(void* args)
 	return new ControllerSloppyDriver(initArgs);
 }
 
-ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : sloppiness_(0.5), time_(0), 
+ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : sloppiness_(0.5), time_(0),
 	Controller(args)
 {
 	if (args->properties->ValueExists("sloppiness"))
@@ -88,13 +88,13 @@ void ControllerSloppyDriver::Step(double timeStep)
 			double timerValue = speedTimerAverage_ * (1.0 + (1.0 * mt_rand() / mt_rand.max() - 0.5));
 			speedTimer_.Start(time_, timerValue);
 
-			// target speed +/- 35%	
+			// target speed +/- 35%
 			initSpeed_ = referenceSpeed_ * targetFactor_;
 			targetFactor_ = 1 + 0.7*sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * mt_rand() / mt_rand.max() - 0.5);
 		}
 
 		double steplen = 0;
-		double weight = speedTimer_.Elapsed(time_) / speedTimer_.GetDuration();		
+		double weight = speedTimer_.Elapsed(time_) / speedTimer_.GetDuration();
 
 		currentSpeed_ = initSpeed_ * (1-weight) + targetFactor_ * referenceSpeed_ * weight;
 		currentSpeed_ = MAX(currentSpeed_, 0);
@@ -124,7 +124,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 			// If pointing in other direction
 			steplen *= -1;
 		}
-		
+
 		if (fabs(object_->GetSpeed()) > SMALL_NUMBER)
 		{
 			object_->pos_.MoveAlongS(steplen, 0);
@@ -135,7 +135,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 	{
 		if (lateralTimer_.Expired(time_))
 		{
-			// max lateral displacement is about half lane width (7/2) 
+			// max lateral displacement is about half lane width (7/2)
 			tFuzz0 = tFuzzTarget;
 			tFuzzTarget = 5.0 * sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * mt_rand() / mt_rand.max() - 0.5);
 
@@ -152,13 +152,13 @@ void ControllerSloppyDriver::Step(double timeStep)
 		{
 			h_error = currentH_;
 		}
-		
+
 		// Normalize h_error to [-PI, PI]
 		h_error = h_error > M_PI ? h_error -= 2 * M_PI : h_error;
 
 		double tFuzz = tFuzz0 + (tFuzzTarget - tFuzz0) * lateralTimer_.Elapsed(time_) / lateralTimer_.duration_;
 		double lat_error = lat_error = currentT_ + tFuzz;
-		
+
 		// Adjust lane offset for driving direction and tweak these to tune performance
 		double lat_constant = -0.02;
 		double h_constant = -0.05;

@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -182,7 +182,7 @@ void Vehicle::Update(double dt)
 
 	velAngleRelVehicleLongAxis_ = atan(0.15 * tan(wheelAngle_));  // Origo is between rear wheel axles on ground level, estimated 15% along X axis
 	velAngle_ = velAngleRelVehicleLongAxis_ + heading_;
-	headingDot_ = speed_ * sin(velAngleRelVehicleLongAxis_) / (length_ * 0.15); 
+	headingDot_ = speed_ * sin(velAngleRelVehicleLongAxis_) / (length_ * 0.15);
 
 	velX_ = speed_ * cos(velAngle_);
 	velY_ = speed_ * sin(velAngle_);
@@ -191,7 +191,7 @@ void Vehicle::Update(double dt)
 	{
 		heading_ += 2 * M_PI;
 	}
-	
+
 	posX_ += dt * velX_;
 	posY_ += dt * velY_;
 }

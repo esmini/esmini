@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -13,15 +13,15 @@
 #pragma once
 
 namespace vehicle
-{ 
-	typedef enum 
+{
+	typedef enum
 	{
 		THROTTLE_BRAKE = -1,
 		THROTTLE_NONE = 0,
 		THROTTLE_ACCELERATE = 1,
 	} THROTTLE;
 
-	typedef enum 
+	typedef enum
 	{
 		STEERING_RIGHT = -1,
 		STEERING_NONE = 0,

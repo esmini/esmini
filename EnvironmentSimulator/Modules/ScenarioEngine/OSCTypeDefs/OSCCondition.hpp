@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -27,9 +27,9 @@ using namespace roadmanager;
 
 namespace scenarioengine
 {
-	// Forward declaration 
+	// Forward declaration
 	class StoryBoard;
-	
+
 	class OSCCondition
 	{
 	public:
@@ -58,7 +58,7 @@ namespace scenarioengine
 		ConditionEdge edge_;
 		SE_SimulationTimer timer_;
 
-		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false), 
+		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false),
 			last_result_(false), edge_(ConditionEdge::NONE) {}
 
 		bool Evaluate(StoryBoard *storyBoard, double sim_time);
@@ -79,7 +79,7 @@ namespace scenarioengine
 	{
 	public:
 		std::vector<ConditionGroup*> conditionGroup_;
-		
+
 		Trigger(bool defaultValue) : defaultValue_(defaultValue) {}
 		bool Evaluate(StoryBoard *storyBoard, double sim_time);
 	private:
@@ -191,9 +191,9 @@ namespace scenarioengine
 		RelativeDistanceType relDistType_;
 		Rule rule_;
 		double dist_;
-		
+
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByDistance() : value_(0), dist_(0), cs_(CoordinateSystem::CS_UNDEFINED), freespace_(false), 
+		TrigByDistance() : value_(0), dist_(0), cs_(CoordinateSystem::CS_UNDEFINED), freespace_(false),
 			relDistType_(RelativeDistanceType::REL_DIST_UNDEFINED), TrigByEntity(TrigByEntity::EntityConditionType::DISTANCE) {}
 		void Log();
 	};
@@ -204,7 +204,7 @@ namespace scenarioengine
 		double value_;
 		double odom_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time); 
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
 		TrigByTraveledDistance() : value_(0), odom_(0), TrigByEntity(TrigByEntity::EntityConditionType::TRAVELED_DISTANCE) {}
 		void Log();
 	};
@@ -221,7 +221,7 @@ namespace scenarioengine
 		Rule rule_;
 		double rel_dist_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time); 
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
 		TrigByRelativeDistance() : object_(0), value_(0.0), rel_dist_(0), TrigByEntity(TrigByEntity::EntityConditionType::RELATIVE_DISTANCE) {}
 		void Log();
 	};
@@ -348,7 +348,7 @@ namespace scenarioengine
 			RUNNING,
 			COMPLETE,
 			UNDEFINED_ELEMENT_STATE,
-			START_TRANSITION,  
+			START_TRANSITION,
 			END_TRANSITION,
 			STOP_TRANSITION,
 			SKIP_TRANSITION,
@@ -360,7 +360,7 @@ namespace scenarioengine
 		StoryBoardElement::ElementType element_type_;
 		std::string element_name_;
 
-		bool CheckCondition(StoryBoard* storyBoard, double sim_time); 
+		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
 		TrigByState(CondElementState state, StoryBoardElement::ElementType element_type, std::string element_name) :
 			OSCCondition(BY_STATE), state_(state), element_type_(element_type), element_name_(element_name) {}
 		std::string CondElementState2Str(CondElementState state);

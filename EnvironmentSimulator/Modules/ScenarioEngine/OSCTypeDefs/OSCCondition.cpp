@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -451,7 +451,7 @@ std::string TrigByState::CondElementState2Str(CondElementState state)
 	{
 		LOG("Unknown state: %d", state);
 	}
-	
+
 	return "Unknown state";
 }
 
@@ -539,8 +539,8 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 		}
 
 		// Headway time not defined for cases:
-		//  - when target object is behind 
-		//  - when object is still or going reverse 
+		//  - when target object is behind
+		//  - when object is still or going reverse
 		if (rel_dist < 0 || trigObj->speed_ < SMALL_NUMBER)
 		{
 			hwt_ = -1;
@@ -552,11 +552,11 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 			result = EvaluateRule(hwt_, value_, rule_);
 
 			if (result == true)
-			{ 
+			{
 				triggered_by_entities_.push_back(trigObj);
 			}
 
-			if (EvalDone(result, triggering_entity_rule_))  
+			if (EvalDone(result, triggering_entity_rule_))
 			{
 				break;
 			}
@@ -613,7 +613,7 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 		}
 
 		// TimeToCollision (TTC) not defined for cases:
-		//  - when target object is behind 
+		//  - when target object is behind
 		//  - when triggering entity speed is <=0 (still or going reverse)
 		//  - when distance is constant or increasing
 		if (rel_dist < 0 || trigObj->speed_ < SMALL_NUMBER || rel_speed <= SMALL_NUMBER)
@@ -673,7 +673,7 @@ bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time
 		{
 			LOG_AND_QUIT("missing road manager position");
 		}
-		
+
 		dist_ = fabs(trigObj->pos_.getRelativeDistance(pos->GetX(), pos->GetY(), x, y));
 		if (dist_ < tolerance_)
 		{
@@ -833,9 +833,9 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 				}
 			}
 		}
-		
+
 		if (result == true)
-		{ 
+		{
 			triggered_by_entities_.push_back(triggering_entities_.entity_[i].object_);
 		}
 
@@ -908,7 +908,7 @@ bool TrigByEndOfRoad::CheckCondition(StoryBoard* storyBoard, double sim_time)
 		{
 			current_duration_ = sim_time - triggering_entities_.entity_[i].object_->GetEndOfRoadTimestamp();
 		}
-		
+
 		result = current_duration_ > duration_;
 
 		if (result == true)

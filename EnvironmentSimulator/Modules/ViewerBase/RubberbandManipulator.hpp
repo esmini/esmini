@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -70,7 +70,7 @@ class RubberbandManipulator : public osgGA::CameraManipulator
 		int getMode() { return _mode; }
 
 		void computeNodeCenterAndRotation(osg::Vec3d& nodeCenter, osg::Quat& nodeRotation) const;
-		
+
 		void calculateCameraDistance();
 
     protected:
@@ -81,18 +81,18 @@ class RubberbandManipulator : public osgGA::CameraManipulator
         void flushEventStack();
         /** Add the current mouse GUIEvent to internal stack.*/
         void addEvent(const GUIEventAdapter& ea);
-        
+
 		// Internal event stack comprising last two events.
         osg::ref_ptr<const GUIEventAdapter> _ga_t1;
         osg::ref_ptr<const GUIEventAdapter> _ga_t0;
-        
+
         /** For the give mouse movement calculate the movement of the camera.
             Return true is camera has moved and a redraw is required.*/
         bool calcMovement(double dt, bool reset);
 
         osg::ref_ptr<osg::Node> _node;
 		osg::PositionAttitudeTransform *_trackNode;
-        
+
         osg::Vec3d				_eye;
 		osg::Matrix				_matrix;
 		osg::Vec3 cameraAcc;

@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 		printf("Usage: %s <filename>\n", argv[0]);
 		return -1;
 	}
-	
+
 	std::string filename = FileNameWithoutExtOf(argv[1]) + ".csv";
 	std::ofstream file;
 	file.open(filename);
@@ -80,11 +80,11 @@ int main(int argc, char** argv)
 			state->info.speed,
 			state->info.wheel_angle,
 			state->info.wheel_rot);
-		
+
 		file << line;
 	}
-	
+
 	file.close();
-	
+
 	delete player;
 }

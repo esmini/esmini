@@ -48,7 +48,7 @@ width 	double 	Width of the entity's bounding box. Unit: m; Range: [0..inf[.
 length 	double 	Length of the entity's bounding box. Unit: m; Range: [0..inf[.
 height 	double 	Height of the entity's bounding box. Unit: m; Range: [0..inf[.
 */
-  typedef struct 
+  typedef struct
   {
     float width_;
     float length_;

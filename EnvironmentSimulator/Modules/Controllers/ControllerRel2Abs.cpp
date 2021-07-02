@@ -243,7 +243,7 @@ void ControllerRel2Abs::Step(double timeStep)
 					{
 						double newX = object->pos_.GetX();
 						double newY = object->pos_.GetY();
-						// We leave out caculating the new heading for now 
+						// We leave out caculating the new heading for now
 						data.posX.push_back(newX);
 						data.posY.push_back(newY);
 						data.speeds.push_back(v);
@@ -584,7 +584,7 @@ void ControllerRel2Abs::Step(double timeStep)
 
 	prev_ego_speed = egoSpeed;
 	prev_target_speed = object_->GetSpeed();
-	
+
 	gateway_->reportObject(object_->id_, object_->name_, static_cast<int>(object_->type_), object_->category_, object_->model_id_,
 		object_->GetActivatedControllerType(), object_->boundingbox_, 0, object_->speed_, object_->wheel_angle_, object_->wheel_rot_, &object_->pos_);
 

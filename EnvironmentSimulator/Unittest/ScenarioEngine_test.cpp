@@ -29,7 +29,7 @@ TEST(DistanceTest, CalcDistanceVariations)
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
     EXPECT_NEAR(dist, 10.0, 1e-5);
 
-    // same point but measure now in road coordinates 
+    // same point but measure now in road coordinates
     Object obj0(Object::Type::VEHICLE);
     obj0.boundingbox_.center_ = { 1.0, 0.0, 0.0 };
     obj0.boundingbox_.dimensions_ = { 2.0, 2.0, 2.0 };
@@ -51,13 +51,13 @@ TEST(DistanceTest, CalcDistanceVariations)
     // Move object to curve
     obj0.pos_.SetLanePos(0, -1, 510.0, 0.0);
     obj1.pos_.SetLanePos(0, -1, 550.0, 2.5);
-    
+
     // ref point to ref point (no freespace)
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, false, dist), 0);
     EXPECT_NEAR(dist, 40.0, 1e-5);
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, false, dist), 0);
     EXPECT_NEAR(dist, 2.5, 1e-5);
-    
+
     // freespace
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LONGITUDINAL, true, dist), 0);
     EXPECT_NEAR(dist, 38.510726, 1e-5);
@@ -74,7 +74,7 @@ TEST(DistanceTest, CalcDistanceVariations)
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, true, dist), 0);
     EXPECT_NEAR(dist, 0.0, 1e-5);
 
-    // Create a lateral gap 
+    // Create a lateral gap
     obj1.pos_.SetLanePos(0, -1, 550.0, 2.5);
     ASSERT_EQ(obj0.Distance(&obj1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, false, dist), 0);
     EXPECT_NEAR(dist, 2.5, 1e-5);
@@ -132,10 +132,10 @@ TEST(DistanceTest, CalcDistancePoint)
     obj0.boundingbox_.dimensions_ = { 2.0, 2.0, 2.0 };
     obj0.pos_ = pos0;
 
-    // Measure from X, Y point to object in road coordinates 
+    // Measure from X, Y point to object in road coordinates
     double latDist = 0.0;
     double longDist = 0.0;
-            
+
     ASSERT_EQ(obj0.FreeSpaceDistancePointRoadLane(pos0.GetX() + 20.0, pos0.GetY(), &latDist, &longDist, CoordinateSystem::CS_ROAD), 0);
     EXPECT_NEAR(longDist, 18.0, 1e-5);
 
@@ -178,7 +178,7 @@ TEST(DistanceTest, CalcDistancePointAcrossIntersection)
     // another point some meters ahead, still on the same straight segment
     Position pos1 = Position(2, 1, 290.0, 0);
 
-    // Measure from X, Y point to object in road coordinates 
+    // Measure from X, Y point to object in road coordinates
     double latDist = 0.0;
     double longDist = 0.0;
 

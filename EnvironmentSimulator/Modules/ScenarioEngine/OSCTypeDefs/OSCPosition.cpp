@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -88,7 +88,7 @@ OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation 
 
 	if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE)
 	{
-		// Adjust heading to road direction 
+		// Adjust heading to road direction
 		if (position_.GetLaneId() < 0 || position_.GetRoadById(roadId)->GetRule() == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC)
 		{
 			position_.SetHeadingRelative(orientation.h_);
@@ -110,7 +110,7 @@ OSCPositionRoad::OSCPositionRoad(int roadId, double s, double t, OSCOrientation 
 	position_.SetR(orientation.r_);
 }
 
-OSCPositionRelativeObject::OSCPositionRelativeObject(Object *object, double dx, double dy, double dz, OSCOrientation orientation) : 
+OSCPositionRelativeObject::OSCPositionRelativeObject(Object *object, double dx, double dy, double dz, OSCOrientation orientation) :
 	OSCPosition(PositionType::RELATIVE_OBJECT), object_(object)
 {
 	position_.SetX(dx);
@@ -131,7 +131,7 @@ void OSCPositionRelativeObject::Print()
 }
 
 
-OSCPositionRelativeWorld::OSCPositionRelativeWorld(Object* object, double dx, double dy, double dz, OSCOrientation orientation) : 
+OSCPositionRelativeWorld::OSCPositionRelativeWorld(Object* object, double dx, double dy, double dz, OSCOrientation orientation) :
 	OSCPosition(PositionType::RELATIVE_WORLD), object_(object)
 {
 	position_.SetX(dx);
@@ -151,7 +151,7 @@ void OSCPositionRelativeWorld::Print()
 	object_->pos_.Print();
 }
 
-OSCPositionRelativeLane::OSCPositionRelativeLane(Object *object, int dLane, double ds, double offset, OSCOrientation orientation) : 
+OSCPositionRelativeLane::OSCPositionRelativeLane(Object *object, int dLane, double ds, double offset, OSCOrientation orientation) :
 	OSCPosition(PositionType::RELATIVE_LANE), object_(object)
 {
 	position_.SetLaneId(dLane);

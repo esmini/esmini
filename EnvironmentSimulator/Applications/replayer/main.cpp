@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -113,7 +113,7 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 			{
 				filename = entityModelsFiles_[state->info.model_id];
 			}
-			
+
 			if ((new_sc.entityModel = viewer->AddEntityModel(filename, osg::Vec4(0.5, 0.5, 0.5, 1.0),
 				viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, state->info.name, &state->info.boundingbox)) == 0)
 			{
@@ -138,7 +138,7 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 		}
 		else
 		{
-			if (sc->trajPoints->size() > 2 && GetLengthOfLine2D(state->pos.x, state->pos.y, 
+			if (sc->trajPoints->size() > 2 && GetLengthOfLine2D(state->pos.x, state->pos.y,
 				(*sc->trajPoints)[sc->trajPoints->size()-2][0], (*sc->trajPoints)[sc->trajPoints->size()-2][1]) < minTrajPointDist)
 			{
 				// Replace last point until distance is above threshold
@@ -158,9 +158,9 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 		osg::Vec4 color;
 		if (scenarioEntity[i].id == 0)
 		{
-			color = osg::Vec4d(0.9, 0.8, 0.75, 1.0); 
+			color = osg::Vec4d(0.9, 0.8, 0.75, 1.0);
 		}
-		else 
+		else
 		{
 			//color = osg::Vec4d(0.9, 0.3, 0.2, 1.0);
 			color = osg::Vec4d(0.9, 0.7, 0.3, 1.0);
@@ -314,7 +314,7 @@ int main(int argc, char** argv)
 		// just filepath as stated in .dat file
 		file_name_candidates.push_back(player->header_.odr_filename);
 
-		// Check registered paths 
+		// Check registered paths
 		for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 		{
 			// Including file path
@@ -353,11 +353,11 @@ int main(int argc, char** argv)
 		}
 
 		odrManager = roadmanager::Position::GetOpenDrive();
-		
+
 		osg::ArgumentParser arguments(&argc, argv);
 
 		viewer = new viewer::Viewer(
-			odrManager, 
+			odrManager,
 			player->header_.model_filename,
 			NULL,
 			argv[0],
@@ -412,7 +412,7 @@ int main(int argc, char** argv)
 		ParseEntities(viewer, player);
 
 		__int64 now, lastTimeStamp = 0;
-		
+
 		if (opt.GetOptionSet("time_scale"))
 		{
 			time_scale = atof(opt.GetOptionArg("time_scale").c_str());
@@ -447,8 +447,8 @@ int main(int argc, char** argv)
 			view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB;
 		}
 		viewer->SetNodeMaskBits(
-			viewer::NodeMask::NODE_MASK_ENTITY_MODEL | 
-			viewer::NodeMask::NODE_MASK_ENTITY_BB, 
+			viewer::NodeMask::NODE_MASK_ENTITY_MODEL |
+			viewer::NodeMask::NODE_MASK_ENTITY_BB,
 			view_mode);
 
 		if (opt.GetOptionSet("no_ghost"))
@@ -549,7 +549,7 @@ int main(int argc, char** argv)
 
 			// Fetch states of scenario objects
 			ObjectStateStructDat* state = 0;
-			
+
 			for (int index = 0; (state = player->GetState(index)) != 0; index++)
 			{
 				if (no_ghost && state->info.ctrl_type == 100)  // control type 100 indicates ghost
@@ -577,8 +577,8 @@ int main(int argc, char** argv)
 				if (index == viewer->currentCarInFocus_)
 				{
 					// Update overlay info text
-					snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s %.2fkm/h (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) timeScale: %.2f ", 
-						simTime, state->info.id, state->info.name, 3.6 * state->info.speed, sc->pos.roadId, sc->pos.laneId, 
+					snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s %.2fkm/h (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) timeScale: %.2f ",
+						simTime, state->info.id, state->info.name, 3.6 * state->info.speed, sc->pos.roadId, sc->pos.laneId,
 						fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset, sc->pos.s, sc->pos.x, sc->pos.y, sc->pos.h, time_scale);
 					viewer->SetInfoText(info_str_buf);
 				}

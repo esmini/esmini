@@ -75,7 +75,7 @@ namespace scenarioengine
 	{
 	public:
 
-		ScenarioReader(Entities *entities, Catalogs *catalogs, bool disable_controllers = false) : 
+		ScenarioReader(Entities *entities, Catalogs *catalogs, bool disable_controllers = false) :
 			objectCnt_(0), entities_(entities), catalogs_(catalogs), disable_controllers_(disable_controllers) {}
 		~ScenarioReader();
 		int loadOSCFile(const char * path);
@@ -132,7 +132,7 @@ namespace scenarioengine
 		{
 			ScenarioReader::controllerPool_.AddController(type_name, function);
 		}
-		
+
 		void LoadControllers();
 		void UnloadControllers();
 

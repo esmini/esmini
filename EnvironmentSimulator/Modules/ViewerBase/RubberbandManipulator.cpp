@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -62,7 +62,7 @@ void RubberbandManipulator::setMode(unsigned int mode)
 		_cameraRotation = orbitCameraRotation;
 		_cameraDistance = orbitCameraDistance;
 	}
-	
+
 	_mode = mode;
 
 	if (mode == RB_MODE_RUBBER_BAND)
@@ -307,7 +307,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 		y = -_cameraDistance * (sinf(_cameraRotation*0.0174533) * cosf(_cameraAngle*0.0174533));
 		z = _cameraDistance * sinf(_cameraAngle*0.0174533);
 
-		cameraOffset.set(x, y, z); 
+		cameraOffset.set(x, y, z);
 	}
 
 	// Transform the camera target offset position
@@ -358,9 +358,9 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 				0.0, 0.0, -1.0, 0.0,
 				-1.0, 0.0, 0.0, 0.0,
 				0.0, 1.0, 0.0, 0.0,
-				DRIVER_CENTER_OFFSET_Y, -DRIVER_CENTER_OFFSET_Z, DRIVER_CENTER_OFFSET_X, 1.0  
+				DRIVER_CENTER_OFFSET_Y, -DRIVER_CENTER_OFFSET_Z, DRIVER_CENTER_OFFSET_X, 1.0
 			);
-	
+
 		// Camera transform is the inverse of focus object rotation and position
 		_matrix.makeRotate(nodeRotation.inverse());
 		osg::Matrix trans;
@@ -374,7 +374,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 	{
 		_matrix.makeLookAt(_eye, nodeFocusPoint, osg::Vec3(nodeRotation*osg::Vec3(0, -1, 0)));
 	}
-	else 
+	else
 	{
 		_matrix.makeLookAt(_eye, nodeFocusPoint, up);
 	}

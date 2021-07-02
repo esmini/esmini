@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -109,7 +109,7 @@ namespace scenarioengine
 		Entities* entities_;
 		ScenarioGateway* gateway_;
 		Object* object_;  // The object to which the controller is attached and hence controls
-		int mode_; // add to scenario actions or replace 
+		int mode_; // add to scenario actions or replace
 	};
 
 	typedef Controller* (*ControllerInstantiateFunction) (void* args);

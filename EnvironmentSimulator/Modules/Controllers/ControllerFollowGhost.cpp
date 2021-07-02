@@ -11,7 +11,7 @@
  */
 
 /*
- * This controller simulates a bad or dizzy driver by manipulating 
+ * This controller simulates a bad or dizzy driver by manipulating
  * the speed and lateral offset in a random way.
  * The purpose is purely to demonstrate how to implement a controller.
  */
@@ -49,7 +49,7 @@ ControllerFollowGhost::ControllerFollowGhost(InitArgs* args) : Controller(args)
 void ControllerFollowGhost::Init()
 {
 	object_->SetHeadstartTime(headstart_time_);
-	
+
 	Controller::Init();
 }
 
@@ -118,7 +118,7 @@ void ControllerFollowGhost::Step(double timeStep)
 	// Update driver model target values
 	vehicle_.DrivingControlTarget(timeStep, diffH, point.speed);
 
-	// Register updated vehicle position 
+	// Register updated vehicle position
 	object_->pos_.XYZH2TrackPos(vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_);
 
 	object_->SetSpeed(vehicle_.speed_);
@@ -126,7 +126,7 @@ void ControllerFollowGhost::Step(double timeStep)
 	// Fetch Z and Pitch from road position
 	vehicle_.posZ_ = object_->pos_.GetZ();
 	vehicle_.pitch_ = object_->pos_.GetP();
-	
+
 	// Update wheels wrt domains
 	if (domain_ & Controller::Domain::CTRL_LONGITUDINAL)
 	{
@@ -154,7 +154,7 @@ void ControllerFollowGhost::Activate(int domainMask)
 		vehicle_.SetPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), object_->pos_.GetH());
 		vehicle_.SetLength(object_->boundingbox_.dimensions_.length_);
 		vehicle_.speed_ = object_->GetSpeed();
-		vehicle_.SetMaxSpeed(100);  // just set a random high value 
+		vehicle_.SetMaxSpeed(100);  // just set a random high value
 
 		object_->sensor_pos_[0] = object_->pos_.GetX();
 		object_->sensor_pos_[1] = object_->pos_.GetY();

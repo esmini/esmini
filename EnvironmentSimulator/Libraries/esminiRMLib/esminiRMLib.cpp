@@ -161,7 +161,7 @@ extern "C"
 
 		return 0;
 	}
-	
+
 	RM_DLL_API void RM_SetLogFilePath(const char* logFilePath)
 	{
 		SE_Env::Inst().SetLogFilePath(logFilePath);
@@ -171,7 +171,7 @@ extern "C"
 	{
 		roadmanager::Position newPosition;
 		position.push_back(newPosition);
-		return (int)(position.size() - 1);  // return index of newly created 
+		return (int)(position.size() - 1);  // return index of newly created
 	}
 
 	RM_DLL_API int RM_GetNrOfPositions()
@@ -208,7 +208,7 @@ extern "C"
 
 		roadmanager::Position newPosition(position[handle]);
 		position.push_back(newPosition);
-		return (int)(position.size() - 1);  // return index of newly created 
+		return (int)(position.size() - 1);  // return index of newly created
 	}
 
 	RM_DLL_API void RM_SetAlignMode(int handle, int mode)
@@ -358,7 +358,7 @@ extern "C"
 		}
 		return 0;
 	}
-		
+
 	RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, float laneOffset, float s, bool align)
 	{
 		if (odrManager == 0 || handle >= position.size())
@@ -455,7 +455,7 @@ extern "C"
 		else
 		{
 			roadmanager::Position *pos = &position[handle];
-			
+
 			return(pos->MoveAlongS(dist, 0.0, (Junction::JunctionStrategyType)strategy));
 		}
 	}
@@ -546,12 +546,12 @@ extern "C"
 		}
 
 		roadmanager::Road* road = odrManager->GetRoadById(road_id);
-		
+
 		if (road != NULL)
 		{
 			return road->GetNumberOfSignals();
 		}
-		
+
 		return 0;
 	}
 
