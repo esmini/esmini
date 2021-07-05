@@ -2208,7 +2208,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					{
 						LOG("In OSC 1.0 ActivateControllerAction should be placed under PrivateAction. Accepting anyway.");
 					}
-					ActivateControllerAction* activateControllerAction = parseActivateControllerAction(actionChild);
+					ActivateControllerAction* activateControllerAction = parseActivateControllerAction(controllerChild);
 
 					action = activateControllerAction;
 				}
