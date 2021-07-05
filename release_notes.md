@@ -1,5 +1,16 @@
 ## esmini release notes
 
+### 2021-07-05 Version 2.11.3
+
+- Add support for solid/broken roadmark combinations
+- Fix issue with multiple waypoints per road
+    - Remove any additional waypoints on same road
+    - Keep only first on first road, and last on following roads
+- Bugfixes:
+    - Fix expected location of ActivateControllerAction in OSC 1.1 (issue [#133](https://github.com/esmini/esmini/issues/133))
+    - Fix issue with final double entry in .dat files
+    - Bugfix causing zero lanewidth reported at edge cases where s > length of road
+
 ### 2021-06-24 Version 2.11.2
 
 - Fix issue in LaneSection::GetClosestLaneIdx() sometimes returning wrong lane (PR [#131](https://github.com/esmini/esmini/pull/131))
