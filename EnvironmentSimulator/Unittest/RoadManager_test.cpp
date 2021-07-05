@@ -1772,16 +1772,27 @@ TEST(Route, TestAssignRoute)
     ASSERT_NE(odr, nullptr);
     EXPECT_EQ(odr->GetNumOfRoads(), 16);
 
-    const int nrWaypoints = 3;
+    const int nrWaypoints = 6;
     Route route;
     Position routepos[nrWaypoints];
     routepos[0].SetLanePos(0, 1, 10.0, 0);
-    routepos[1].SetLanePos(8, -1, 2.0, 0);
-    routepos[2].SetLanePos(1, -1, 2.0, 0);
+    routepos[1].SetLanePos(0, 1, 7.0, 0);   // Add extra waypoint on first road - should be removed
+    routepos[2].SetLanePos(8, -1, 2.0, 0);
+    routepos[3].SetLanePos(8, -1, 4.0, 0);  // Add extra waypoint on same road - previous should be ignored
+    routepos[4].SetLanePos(1, -1, 2.0, 0);
+    routepos[5].SetLanePos(1, -1, 1.0, 0);  // Add extra waypoint on same road - previous should be ignored
     for (int i = 0; i < nrWaypoints; i++)
     {
         route.AddWaypoint(&routepos[i]);
     }
+
+    EXPECT_EQ(route.waypoint_.size(), 3);
+    EXPECT_DOUBLE_EQ(route.waypoint_[0].GetTrackId(), 0);
+    EXPECT_DOUBLE_EQ(route.waypoint_[0].GetS(), 10.0);
+    EXPECT_DOUBLE_EQ(route.waypoint_[1].GetTrackId(), 8);
+    EXPECT_DOUBLE_EQ(route.waypoint_[1].GetS(), 4.0);
+    EXPECT_DOUBLE_EQ(route.waypoint_[2].GetTrackId(), 1);
+    EXPECT_DOUBLE_EQ(route.waypoint_[2].GetS(), 1.0);
 
     Position pos0 = Position(0, 1, 9.0, 0.5);
     pos0.SetRoute(&route);

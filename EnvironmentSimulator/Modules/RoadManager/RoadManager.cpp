@@ -3877,6 +3877,12 @@ int OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double& angle)
 	Road *road2 = GetRoadById(road2_id);
 	RoadLink *link;
 
+	if (road1 == road2)
+	{
+		// Same road, return 1
+		return 1;
+	}
+
 	// Look from road 1, both ends, for road 2
 
 	for (int i = 0; i < 2; i++)
@@ -8726,6 +8732,27 @@ int Route::AddWaypoint(Position* position)
 {
 	if (waypoint_.size() > 0)
 	{
+		// Keep only one consecutive waypoint per road
+		// Keep first specified waypoint for first road
+		// then, for following roads, keep the last waypoint.
+		if (position->GetTrackId() == waypoint_.back().GetTrackId())
+		{
+			if (waypoint_.size() == 1)
+			{
+				// Ignore
+				LOG("Ignoring additional waypoint for road %d (s %.2f)\n",
+					position->GetTrackId(), position->GetS());
+				return -1;
+			}
+			else  // at least two road-unique waypoints
+			{
+				// Keep this, remove previous
+				LOG("Removing previous waypoint for same road %d (at s %.2f)\n",
+					waypoint_.back().GetTrackId(), waypoint_.back().GetS());
+				waypoint_.pop_back();
+			}
+		}
+
 		// Check that there is a valid path from previous waypoint
 		RoadPath* path = new RoadPath(&waypoint_.back(), position);
 		double dist = 0;
@@ -8733,13 +8760,18 @@ int Route::AddWaypoint(Position* position)
 		if (path->Calculate(dist, false) == 0)
 		{
 			// Path is found by tracing previous nodes
-			RoadPath::PathNode* previous = path->visited_.back()->previous;
+			RoadPath::PathNode* previous = 0;
 			std::vector<RoadPath::PathNode*> nodes;
-			nodes.push_back(path->visited_.back());
-			while (previous != nullptr)
+
+			if (path->visited_.size() > 0)
 			{
-				nodes.push_back(previous);
-				previous = previous->previous;
+				previous = path->visited_.back()->previous;
+				nodes.push_back(path->visited_.back());
+				while (previous != nullptr)
+				{
+					nodes.push_back(previous);
+					previous = previous->previous;
+				}
 			}
 
 			if (nodes.size() > 1)
@@ -8787,12 +8819,36 @@ int Route::GetWayPointDirection(int index)
 		// Find connection point to previous waypoint road
 		Road *prev_road = od->GetRoadById(waypoint_[index-1].GetTrackId());
 
+		if (prev_road == road)
+		{
+			if (waypoint_[index].GetS() > waypoint_[index - 1].GetS())
+			{
+				return 1;
+			}
+			else
+			{
+				return -1;
+			}
+		}
+
 		connected = -od->IsDirectlyConnected(road->GetId(), prev_road->GetId(), angle);
 	}
 	else
 	{
 		// Find connection point to next waypoint road
 		Road *next_road = od->GetRoadById(waypoint_[index+1].GetTrackId());
+
+		if (next_road == road)
+		{
+			if (waypoint_[index+1].GetS() > waypoint_[index].GetS())
+			{
+				return 1;
+			}
+			else
+			{
+				return -1;
+			}
+		}
 
 		connected = od->IsDirectlyConnected(road->GetId(), next_road->GetId(), angle);
 	}
