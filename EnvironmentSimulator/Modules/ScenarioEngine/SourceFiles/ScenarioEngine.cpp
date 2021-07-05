@@ -822,9 +822,13 @@ void ScenarioEngine::SetupGhost(Object* object)
 		OSCPrivateAction* action = init.private_action_[i];
 		if (action->object_ == object)
 		{
-			OSCPrivateAction* newAction = action->Copy();
-			newAction->object_ = ghost;
-			init.private_action_.push_back(newAction);
+			// Copy all actions except ActivateController
+			if (action->type_ != OSCPrivateAction::ACTIVATE_CONTROLLER)
+			{
+				OSCPrivateAction* newAction = action->Copy();
+				newAction->object_ = ghost;
+				init.private_action_.push_back(newAction);
+			}
 		}
 	}
 
