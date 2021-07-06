@@ -1451,7 +1451,6 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						osi_lane->mutable_classification()->mutable_road_condition()->set_surface_texture(temp);
 
 						obj_osi_internal.ln.push_back(osi_lane);
-						//obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
 					}
 				}
 			}
