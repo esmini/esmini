@@ -43,6 +43,11 @@ static struct {
 	std::vector<osi3::LaneBoundary*> lnb;
 } obj_osi_internal;
 
+static struct {
+	osi3::GroundTruth *gt;
+} obj_osi_external;
+
+
 // Large OSI messages needs to be split for UDP transmission
 // This struct must be mached on receiver side
 static struct {
@@ -84,6 +89,7 @@ OSIReporter::OSIReporter()
 	sendSocket = 0;
 
 	obj_osi_internal.gt = new osi3::GroundTruth();
+	obj_osi_external.gt = new osi3::GroundTruth();
 
 	obj_osi_internal.gt->mutable_version()->set_version_major(3);
 	obj_osi_internal.gt->mutable_version()->set_version_minor(0);
@@ -107,6 +113,12 @@ OSIReporter::~OSIReporter()
 	{
 		obj_osi_internal.gt->Clear();
 		delete obj_osi_internal.gt;
+	}
+
+	if (obj_osi_external.gt)
+	{
+		obj_osi_external.gt->Clear();
+		delete obj_osi_external.gt;
 	}
 
 	if (obj_osi_internal.sd)
@@ -272,10 +284,10 @@ void OSIReporter::FlushOSIFile()
 
 int OSIReporter::ClearOSIGroundTruth()
 {
-	obj_osi_internal.gt->clear_moving_object();
-	obj_osi_internal.gt->clear_stationary_object();
-	obj_osi_internal.gt->clear_lane();
-	obj_osi_internal.gt->clear_lane_boundary();
+	obj_osi_external.gt->clear_moving_object();
+	obj_osi_external.gt->clear_stationary_object();
+	obj_osi_external.gt->clear_lane();
+	obj_osi_external.gt->clear_lane_boundary();
 
 	return 0;
 }
@@ -286,7 +298,6 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState*> objectState)
 	{
 		UpdateOSIStaticGroundTruth(objectState);
 	}
-	obj_osi_internal.gt->clear_moving_object();
 	UpdateOSIDynamicGroundTruth(objectState);
 
 	if (GetSocket() || IsFileOpen())
@@ -360,11 +371,19 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState*> objectStat
 	UpdateOSIRoadLane(objectState);
 	UpdateOSILaneBoundary(objectState);
 	UpdateOSIIntersection();
+
+	obj_osi_external.gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
+	obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
+	obj_osi_external.gt->mutable_lane_boundary()->CopyFrom(*obj_osi_internal.gt->mutable_lane_boundary());
+
 	return 0;
 }
 
 int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectState)
 {
+	obj_osi_internal.gt->clear_moving_object();
+	obj_osi_internal.gt->clear_timestamp();
+
 	if (IsTimeStampSetExplicit())
 	{
 		// use excplicit timestamp
@@ -396,6 +415,9 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectSta
 			LOG("Warning: Object type %d is not supported in OSIReporter, and hence no OSI update for this object", objectState[i]->state_.info.obj_type);
 		}
 	}
+
+	obj_osi_external.gt->mutable_timestamp()->CopyFrom(*obj_osi_internal.gt->mutable_timestamp());
+	obj_osi_external.gt->mutable_moving_object()->CopyFrom(*obj_osi_internal.gt->mutable_moving_object());
 
 	return 0;
 }
@@ -1422,8 +1444,6 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 							}
 						}
 
-
-						// STILL TO DO:
 						double temp = 0;
 						osi_lane->mutable_classification()->mutable_road_condition()->set_surface_temperature(temp);
 						osi_lane->mutable_classification()->mutable_road_condition()->set_surface_water_film(temp);
@@ -1433,6 +1453,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 						osi_lane->mutable_classification()->mutable_road_condition()->set_surface_texture(temp);
 
 						obj_osi_internal.ln.push_back(osi_lane);
+						//obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
 					}
 				}
 			}
@@ -1447,8 +1468,8 @@ const char* OSIReporter::GetOSIGroundTruth(int* size)
 	if (!(GetSocket() || IsFileOpen()))
 	{
 		// Data has not been serialized
-		obj_osi_internal.gt->SerializeToString(&osiGroundTruth.ground_truth);
-		osiGroundTruth.size = (unsigned int)obj_osi_internal.gt->ByteSizeLong();
+		obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+		osiGroundTruth.size = (unsigned int)obj_osi_external.gt->ByteSizeLong();
 	}
 	*size = osiGroundTruth.size;
 	return osiGroundTruth.ground_truth.data();
@@ -1456,7 +1477,7 @@ const char* OSIReporter::GetOSIGroundTruth(int* size)
 
 const char* OSIReporter::GetOSIGroundTruthRaw()
 {
-	return (const char*) obj_osi_internal.gt;
+	return (const char*) obj_osi_external.gt;
 }
 
 const char* OSIReporter::GetOSIRoadLane(std::vector<ObjectState*> objectState, int* size, int object_id)
