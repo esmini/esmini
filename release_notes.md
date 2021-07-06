@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2021-07-06 Version 2.11.4
+
+- Fix bug preventing OSC 1.1 controller activation
+- Warn for cond edges at simTime 0 (might be missed since edge can not be defined)
+- Some additional minor fixes
+
 ### 2021-07-05 Version 2.11.3
 
 - Add support for solid/broken roadmark combinations
