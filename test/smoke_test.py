@@ -15,8 +15,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading cut-in.xosc', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('0.010.* CutInActStart == true, 0.0100 > 0.00 edge: NONE', log))
-        self.assertTrue(re.search('\n[789].* BrakeCondition == true, HWT: 0.70 > 0.70, edge Rising', log))
+        self.assertTrue(re.search('0.010.* CutInActStart == true, 0.0100 > 0.00 edge: none', log))
+        self.assertTrue(re.search('\n[789].* BrakeCondition == true, HWT: 0.70 > 0.70, edge rising', log))
         self.assertTrue(re.search('\n21.[678].* ActStopCondition timer expired at 5.00 seconds', log))
 
     def test_ltap_od(self):
@@ -66,7 +66,7 @@ class TestSuite(unittest.TestCase):
         # Check some scenario events
         self.assertTrue(re.search('\n9.9.* Synchronize dist \(0.92\) < tolerance \(1.00\)', log))
         self.assertTrue(re.search('\n9.9.* Synchronize_NPC_Event complete after 1 execution', log))
-        self.assertTrue(re.search('\n19.75.* Free_Speed_Condition_NPC == true, distance 4.81 < tolerance \(5.00\), edge: Rising', log))
+        self.assertTrue(re.search('\n19.75.* Free_Speed_Condition_NPC == true, distance 4.81 < tolerance \(5.00\), edge: rising', log))
         self.assertTrue(re.search('\n19.75.* Triggering entity 0: Ego', log))
         self.assertTrue(re.search('\n28.4.* All acts are done, quit now', log))
         
@@ -94,7 +94,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading left-hand-traffic_by_heading.xosc', log))
 
         # Check some scenario events
-        self.assertTrue(re.search('\n3.75.* Lane change == true, rel_dist: 10.04 > 10.00, edge: Rising', log))
+        self.assertTrue(re.search('\n3.75.* Lane change == true, rel_dist: 10.04 > 10.00, edge: rising', log))
         self.assertTrue(re.search('\n5.75.* Lane change complete after 1 execution', log))
         self.assertTrue(re.search('\n9.77.* QuitCondition timer expired at 4.01 seconds', log))
         self.assertTrue(re.search('\n9.77.* All acts are done, quit now', log))
@@ -117,7 +117,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading left-hand-traffic_using_road_rule.xosc', log))
 
         # Check some scenario events
-        self.assertTrue(re.search('\n3.75.* Lane change == true, rel_dist: 10.04 > 10.00, edge: Rising', log))
+        self.assertTrue(re.search('\n3.75.* Lane change == true, rel_dist: 10.04 > 10.00, edge: rising', log))
         self.assertTrue(re.search('\n5.75.* Lane change complete after 1 execution', log))
         self.assertTrue(re.search('\n9.77.* QuitCondition timer expired at 4.01 seconds', log))
         self.assertTrue(re.search('\n9.77.* All acts are done, quit now', log))
@@ -144,9 +144,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n25.51.* Route::AddWaypoint Added intermediate waypoint 3 roadId 280 laneId -1', log))
 
         # Check some scenario events
-        self.assertTrue(re.search('\n25.51.* AquirePosition condition == true, distance 1.9. < tolerance \(2.00\), edge: Rising', log))
+        self.assertTrue(re.search('\n25.51.* AquirePosition condition == true, distance 1.9. < tolerance \(2.00\), edge: rising', log))
         self.assertTrue(re.search('\n25.51.: AquirePosition event complete after 1 execution', log))
-        self.assertTrue(re.search('\n38.91.* Stop condition == true, distance 1.7. < tolerance \(2.00\), edge: Rising', log))
+        self.assertTrue(re.search('\n38.91.* Stop condition == true, distance 1.7. < tolerance \(2.00\), edge: rising', log))
         self.assertTrue(re.search('\n46.28.* QuitCondition timer expired at 4.0. seconds', log))
 
         # Check vehicle key positions

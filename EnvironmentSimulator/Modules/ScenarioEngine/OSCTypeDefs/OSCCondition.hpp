@@ -65,6 +65,7 @@ namespace scenarioengine
 		virtual bool CheckCondition(StoryBoard *storyBoard, double sim_time) = 0;
 		virtual void Log();
 		bool CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge);
+		std::string Edge2Str();
 	};
 
 	class ConditionGroup

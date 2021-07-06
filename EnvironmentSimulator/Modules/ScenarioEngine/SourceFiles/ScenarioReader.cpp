@@ -3058,6 +3058,25 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 				else if (childName == "StartTrigger")
 				{
 					event->start_trigger_ = parseTrigger(eventChild, true);
+
+					// Check and warn for start trigger with rising edge in combination with simulationTime == 0
+					for (size_t i = 0; i < event->start_trigger_->conditionGroup_.size(); i++)
+					{
+						for (size_t j = 0; j < event->start_trigger_->conditionGroup_[i]->condition_.size(); j++)
+						{
+							OSCCondition* cond = event->start_trigger_->conditionGroup_[i]->condition_[j];
+							if (cond->base_type_ == OSCCondition::ConditionType::BY_VALUE)
+							{
+								TrigByValue* trig = (TrigByValue*)cond;
+								if (trig->type_ == TrigByValue::Type::SIMULATION_TIME &&
+									trig->edge_ != OSCCondition::NONE &&
+									fabs(((TrigBySimulationTime*)(trig))->value_) < SMALL_NUMBER)
+								{
+									LOG("Warning: simulationTime = 0 condition used with edge \"%s\" which could be missed. Edge \"none\" is recommended.", trig->Edge2Str().c_str());
+								}
+							}
+						}
+					}
 				}
 				else
 				{
