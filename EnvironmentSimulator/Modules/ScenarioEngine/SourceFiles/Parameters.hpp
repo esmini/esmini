@@ -56,6 +56,8 @@ namespace scenarioengine
 		int getParameterValueBool(std::string name, bool& value);
 		std::string getParameterValueAsString(std::string name);
 
+		std::string ResolveParametersInString(std::string str);
+
 		// Use always this method when reading attributes, it will resolve any variables
 		std::string ReadAttribute(pugi::xml_node, std::string attribute, bool required = false);
 	};

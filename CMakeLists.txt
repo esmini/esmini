@@ -41,8 +41,9 @@ endif()
 set(INSTALL_DIRECTORY_CODE_EXAMPLES "${CMAKE_HOME_DIRECTORY}/code-examples-bin")
 
 set(PUGIXML_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/pugixml")
+set(EXPR_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/expr")
 
-include_directories( ${PUGIXML_INCLUDE_DIR} )
+include_directories( ${PUGIXML_INCLUDE_DIR} ${EXPR_INCLUDE_DIR})
 
 set(USE_OSG True CACHE BOOL "If projects that depend on OpenSceneGraph should be compiled.")
 set(USE_OSI True CACHE BOOL "If code that depend on OSI should be compiled.")

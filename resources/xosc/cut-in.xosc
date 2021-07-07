@@ -18,6 +18,7 @@
       <ParameterDeclaration name="EgoStartS" parameterType="double" value="50"/>
       <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
       <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="0.7"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="108"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -52,7 +53,7 @@
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="30"/>
+                           <AbsoluteTargetSpeed value="${$EgoSpeed / 3.6}"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>

@@ -6,7 +6,7 @@
 <!-- suddently brakes to a stop.                                                         -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="1"
                date="2020-03-01T10:00:00"
                description="Enforce box-in situation using Synchronize action"
                author="Emil Knabe"/>
@@ -19,9 +19,9 @@
       <ParameterDeclaration name="MS1Vehicle" parameterType="string" value="car_yellow"/>
       <ParameterDeclaration name="MS2Vehicle" parameterType="string" value="van_red"/>
       <ParameterDeclaration name="EgoSpeed" parameterType="double" value="20"/>
-      <ParameterDeclaration name="NPC1Speed" parameterType="double" value="30"/>
+      <ParameterDeclaration name="NPC1Speed" parameterType="double" value="${$EgoSpeed + 10}"/>
       <ParameterDeclaration name="NPC2Speed" parameterType="double" value="0"/>
-      <ParameterDeclaration name="NPC3Speed" parameterType="double" value="17"/>
+      <ParameterDeclaration name="NPC3Speed" parameterType="double" value="${$EgoSpeed - 3}"/>
       <ParameterDeclaration name="NPC4Speed" parameterType="double" value="0"/>
       <ParameterDeclaration name="EgoLaneId" parameterType="integer" value="-3"/>
       <ParameterDeclaration name="NPC1LaneId" parameterType="integer" value="-2"/>
@@ -29,15 +29,15 @@
       <ParameterDeclaration name="NPC3LaneId" parameterType="integer" value="-4"/>
       <ParameterDeclaration name="NPC4LaneId" parameterType="integer" value="-3"/>
       <ParameterDeclaration name="EgoStartS" parameterType="double" value="100"/>
-      <ParameterDeclaration name="NPC1StartS" parameterType="double" value="150"/>
-      <ParameterDeclaration name="NPC2StartS" parameterType="double" value="20"/>
-      <ParameterDeclaration name="NPC3StartS" parameterType="double" value="70"/>
-      <ParameterDeclaration name="NPC4StartS" parameterType="double" value="170"/>
+      <ParameterDeclaration name="NPC1StartS" parameterType="double" value="${$EgoStartS + 50}"/>
+      <ParameterDeclaration name="NPC2StartS" parameterType="double" value="${$EgoStartS - 80}"/>
+      <ParameterDeclaration name="NPC3StartS" parameterType="double" value="${$EgoStartS - 30}"/>
+      <ParameterDeclaration name="NPC4StartS" parameterType="double" value="${$EgoStartS + 70}"/>
       <ParameterDeclaration name="MS1EgoS" parameterType="double" value="300"/>
-      <ParameterDeclaration name="MS1NPC1S" parameterType="double" value="305"/>
-      <ParameterDeclaration name="MS1NPC2S" parameterType="double" value="285"/>
-      <ParameterDeclaration name="MS1NPC3S" parameterType="double" value="297"/>
-      <ParameterDeclaration name="MS1NPC4S" parameterType="double" value="330"/>
+      <ParameterDeclaration name="MS1NPC1S" parameterType="double" value="${$MS1EgoS + 5}"/>
+      <ParameterDeclaration name="MS1NPC2S" parameterType="double" value="${$MS1EgoS - 15}"/>
+      <ParameterDeclaration name="MS1NPC3S" parameterType="double" value="${$MS1EgoS - 3}"/>
+      <ParameterDeclaration name="MS1NPC4S" parameterType="double" value="${$MS1EgoS + 30}"/>
       <ParameterDeclaration name="MS2EgoS" parameterType="double" value="500"/>
       <ParameterDeclaration name="AccRate" parameterType="double" value="3"/>
       <ParameterDeclaration name="BrakeRate" parameterType="double" value="-5"/>
@@ -95,7 +95,9 @@
                   </TeleportAction>
                </PrivateAction>
                <PrivateAction>
-                    <ActivateControllerAction longitudinal="true" lateral="true" />
+					<ControllerAction>
+						<ActivateControllerAction longitudinal="true" lateral="true" />
+					</ControllerAction>
                </PrivateAction>               
                <PrivateAction>
                   <LongitudinalAction>

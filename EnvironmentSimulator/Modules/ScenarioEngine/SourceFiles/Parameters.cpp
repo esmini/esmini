@@ -11,6 +11,8 @@
  */
 
 #include "Parameters.hpp"
+#include "simple_expr.h"
+#include <regex>
 
 using namespace scenarioengine;
 
@@ -355,6 +357,20 @@ int Parameters::setParameterValue(std::string name, bool value)
 	return 0;
 }
 
+std::string Parameters::ResolveParametersInString(std::string str)
+{
+	std::regex exp("\\$(\\S*)");  // Look for any "$NonWhiteSpaceCharacters" pattern
+	std::string outstr = str;
+	std::smatch res;
+	while (regex_search(str, res, exp, std::regex_constants::match_any))
+	{
+		outstr = regex_replace(outstr, std::regex("\\$" + res[1].str()), getParameter(parameterDeclarations_, res[0].str()));
+		str = res.suffix().str();
+	}
+
+	return outstr;
+}
+
 std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute_name, bool required)
 {
 	if (!strcmp(attribute_name.c_str(), ""))
@@ -370,10 +386,35 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 
 	if ((attr = node.attribute(attribute_name.c_str())))
 	{
-		if (attr.value()[0] == '$')
+		if (attr.value()[0] == '$' && strlen(attr.value()) > 1)
 		{
-			// Resolve variable
-			return getParameter(parameterDeclarations_, attr.value());
+			if (attr.value()[1] == '{' && strlen(attr.value()) > 2)
+			{
+				// Resolve expression
+				std::string expr = attr.value();
+				std::size_t found = expr.find('}', 2);
+				if (found != std::string::npos)
+				{
+					expr = expr.substr(2, found - 2);  // trim to bare expression, exclude '{' and '}'
+					expr = ResolveParametersInString(expr);  // replace parameters by their values
+					expr = std::regex_replace(expr, std::regex("not\\s+"), "!");  // replace "not" with "!" and attach it to following word
+					expr = std::regex_replace(expr, std::regex("and"), "&&");  // replace "and" with "&&"
+					expr = std::regex_replace(expr, std::regex("or"), "||");  // replace "or" with "||"
+
+					float retval = eval_expr(expr.c_str());
+					LOG("Expr %s = %s = %f", attr.value(), expr.c_str(), retval);
+					return std::to_string(retval);
+				}
+				else
+				{
+					LOG_AND_QUIT("Expression syntax error: %s, missing end '}'", attr.value());
+				}
+			}
+			else
+			{
+				// Resolve variable
+				return getParameter(parameterDeclarations_, attr.value());
+			}
 		}
 		else
 		{
@@ -397,10 +438,10 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 	{
 		OSCParameterDeclarations::ParameterStruct param = { "", OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING, {0, 0, ""} };
 
-		param.name = pdChild.attribute("name").value();
+		param.name = ReadAttribute(pdChild, "name");
 
 		// Check for catalog parameter assignements, overriding default value
-		param.value._string = pdChild.attribute("value").value();
+		param.value._string = ReadAttribute(pdChild, "value");
 		for (size_t i = 0; i < catalog_param_assignments.size(); i++)
 		{
 			if (param.name == catalog_param_assignments[i].name)

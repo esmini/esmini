@@ -90,12 +90,10 @@ set ( OSI_LIBRARIES_PATH "${OSI_DIR}/lib" )
 set ( SUMO_INCLUDE_DIR "${SUMO_DIR}/include" )
 set ( SUMO_LIBRARIES_PATH "${SUMO_DIR}/lib" )
 
-link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} ${SUMO_LIBRARIES_PATH})
-
 set ( GTEST_INCLUDE_DIR "${GTEST_DIR}/include" )
 set ( GTEST_LIBRARIES_PATH "${GTEST_DIR}/lib" )
 
-link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} ${GTEST_LIBRARIES_PATH})
+link_directories(${OSG_LIBRARIES_PATH} ${OSI_LIBRARIES_PATH} ${SUMO_LIBRARIES_PATH} ${GTEST_LIBRARIES_PATH} )
 
 if(APPLE)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
@@ -330,7 +328,6 @@ else() #not UNIX
     optimized gtest.lib debug gtestd.lib
     optimized gtest_main.lib debug gtest_maind.lib
   )
-#
 
 endif() #Endif UNIX
 
