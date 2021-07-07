@@ -1010,18 +1010,51 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 						{
 							roadmanager::LaneRoadMarkType* laneroadmarktype = laneroadmark->GetLaneRoadMarkTypeByIdx(jj);
 
+							int inner_index = -1;
+							if (laneroadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_SOLID ||
+								laneroadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID_BROKEN)
+							{
+								if (laneroadmarktype->GetNumberOfRoadMarkTypeLines() < 2)
+								{
+									break;
+									std::runtime_error("You need to specify at least 2 line for broken solid or solid broken roadmark type");
+								}
+								std::vector<double> sort_solidbroken_brokensolid;
+								for (int q=0; q<laneroadmarktype->GetNumberOfRoadMarkTypeLines(); q++)
+								{
+									sort_solidbroken_brokensolid.push_back(laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(q)->GetTOffset());
+								}
+
+								if (lane->GetId() < 0)
+								{
+									inner_index = std::max_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin();
+								}
+								else
+								{
+									inner_index = std::min_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin();
+								}
+							}
+
 							// loop over LaneRoadMarkTypeLine
 							for (int kk = 0; kk< laneroadmarktype->GetNumberOfRoadMarkTypeLines(); kk++)
 							{
 								roadmanager::LaneRoadMarkTypeLine* laneroadmarktypeline = laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(kk);
 
 								bool broken = false;
-								if (laneroadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_SOLID ||
-									laneroadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID_BROKEN)
+								if (laneroadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_SOLID)
 								{
-									if (laneroadmarktypeline->GetSpace() > 0.0)
+									if (inner_index == kk)
 									{
 										broken = true;
+									}
+								}
+
+								if (laneroadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID_BROKEN)
+								{
+									broken = true;
+									if (inner_index == kk)
+									{
+										broken = false;
 									}
 								}
 
