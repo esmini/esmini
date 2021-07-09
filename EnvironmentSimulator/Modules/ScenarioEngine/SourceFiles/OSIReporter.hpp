@@ -111,7 +111,6 @@ public:
 	int SetOSITimeStampExplicit(unsigned long long int nanoseconds);
 	bool IsTimeStampSetExplicit() { return nanosec_ != 0xffffffffffffffff; }
 
-
 private:
 	int sendSocket;
 	unsigned long long int nanosec_;
