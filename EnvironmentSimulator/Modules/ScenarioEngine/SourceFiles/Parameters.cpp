@@ -16,21 +16,38 @@ using namespace scenarioengine;
 
 void Parameters::addParameterDeclarations(pugi::xml_node xml_node)
 {
+	paramDeclarationsSize_.push((int)parameterDeclarations_.Parameter.size());
 	parseParameterDeclarations(xml_node, &parameterDeclarations_);
 }
 
 void Parameters::parseGlobalParameterDeclarations(pugi::xml_node osc_root_)
 {
+	if (parameterDeclarations_.Parameter.size() != 0)
+	{
+		LOG("Unexpected non empty parameterDeclarations_ when about to parse global declarations");
+	}
 	parseParameterDeclarations(osc_root_.child("ParameterDeclarations"), &parameterDeclarations_);
-	paramDeclarationsSize_ = (int)parameterDeclarations_.Parameter.size();
+}
+
+void Parameters::CreateRestorePoint()
+{
+	paramDeclarationsSize_.push((int)parameterDeclarations_.Parameter.size());
 }
 
 void Parameters::RestoreParameterDeclarations()
 {
-	parameterDeclarations_.Parameter.erase(
-		parameterDeclarations_.Parameter.begin(),
-		parameterDeclarations_.Parameter.begin() + parameterDeclarations_.Parameter.size() - paramDeclarationsSize_);
-	catalog_param_assignments.clear();
+	if (!paramDeclarationsSize_.empty())
+	{
+		parameterDeclarations_.Parameter.erase(
+			parameterDeclarations_.Parameter.begin(),
+			parameterDeclarations_.Parameter.begin() + parameterDeclarations_.Parameter.size() - paramDeclarationsSize_.top());
+		paramDeclarationsSize_.pop();
+		catalog_param_assignments.clear();
+	}
+	else
+	{
+		LOG("Unexpected empty parameterdeclaration counter, can't clear local declarations");
+	}
 }
 
 int Parameters::setParameter(std::string name, std::string value)

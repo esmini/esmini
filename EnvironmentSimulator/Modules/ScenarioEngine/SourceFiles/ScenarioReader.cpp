@@ -446,10 +446,8 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	// First check for parameter declaration
 	pugi::xml_node paramDecl = vehicleNode.child("ParameterDeclarations");
 
-	if (!paramDecl.empty())
-	{
-		parameters.addParameterDeclarations(paramDecl);
-	}
+	parameters.CreateRestorePoint();
+	parameters.addParameterDeclarations(paramDecl);
 
 	vehicle->name_ = parameters.ReadAttribute(vehicleNode, "name");
 	vehicle->SetCategory(parameters.ReadAttribute(vehicleNode, "vehicleCategory"));
@@ -485,10 +483,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	ParseOSCBoundingBox(boundingbox, vehicleNode);
 	vehicle->boundingbox_ = boundingbox;
 
-	if (!paramDecl.empty())
-	{
-		parameters.RestoreParameterDeclarations();
-	}
+	parameters.RestoreParameterDeclarations();
 
 	return vehicle;
 }
@@ -583,10 +578,9 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 
 	// First check for parameter declaration
 	pugi::xml_node paramDecl = controllerNode.child("ParameterDeclarations");
-	if (!paramDecl.empty())
-	{
-		parameters.addParameterDeclarations(paramDecl);
-	}
+
+	parameters.CreateRestorePoint();
+	parameters.addParameterDeclarations(paramDecl);
 
 	// Then read any properties
 	ParseOSCProperties(properties, controllerNode);
@@ -651,10 +645,7 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 		}
 	}
 
-	if (!paramDecl.empty())
-	{
-		parameters.RestoreParameterDeclarations();
-	}
+	parameters.RestoreParameterDeclarations();
 
 	return controller;
 }
@@ -664,6 +655,8 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
 	roadmanager::Route *route = new roadmanager::Route;
 
 	route->setName(parameters.ReadAttribute(routeNode, "name"));
+
+	parameters.CreateRestorePoint();
 
 	// Closed attribute not supported by roadmanager yet
 	std::string closed_str = parameters.ReadAttribute(routeNode, "closed");
@@ -696,6 +689,8 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
 		}
 	}
 
+	parameters.RestoreParameterDeclarations();
+
 	return route;
 }
 
@@ -724,7 +719,6 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectoryRef(pugi::xml_node tra
 		{
 			// Make a new instance from catalog entry
 			traj = parseTrajectory(entry->GetNode());
-			parameters.RestoreParameterDeclarations();
 		}
 		else
 		{
@@ -760,7 +754,8 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 {
 	roadmanager::RMTrajectory *traj = new roadmanager::RMTrajectory;
 	roadmanager::Shape *shape = 0;
-	bool params = false;
+
+	parameters.CreateRestorePoint();
 
 	traj->name_ = parameters.ReadAttribute(node, "name");
 	traj->closed_ = parameters.ReadAttribute(node, "closed") == "true" ? true : false;
@@ -771,7 +766,6 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 
 		if (childNodeName == "ParameterDeclarations")
 		{
-			params = true;
 			parameters.addParameterDeclarations(childNode);
 		}
 		else if (childNodeName == "Shape")
@@ -867,8 +861,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 		}
 	}
 
-	if (params)
-		parameters.RestoreParameterDeclarations();
+	parameters.RestoreParameterDeclarations();
 
 	return traj;
 }
@@ -937,6 +930,7 @@ int ScenarioReader::parseEntities()
 
 				if (objectChildName == "CatalogReference")
 				{
+					parameters.CreateRestorePoint();
 					Entry *entry = ResolveCatalogReference(objectChild);
 
 					if (entry == 0)
@@ -1312,6 +1306,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 					else if (routeRefChildName == "CatalogReference")
 					{
 						// Find route in catalog
+						parameters.CreateRestorePoint();
 						Entry *entry = ResolveCatalogReference(routeRefChild);
 
 						if (entry == 0)
@@ -1973,7 +1968,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 								// Make a new instance from catalog entry
 								action_assign_route->route_ = parseOSCRoute(entry->GetNode());
 								action = action_assign_route;
-								parameters.RestoreParameterDeclarations();
 								break;
 							}
 							else
@@ -2021,7 +2015,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							{
 								// Make a new instance from catalog entry
 								action_follow_trajectory->traj_ = parseTrajectory(entry->GetNode());
-								parameters.RestoreParameterDeclarations();
 							}
 							else
 							{
@@ -3114,6 +3107,8 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 			std::string name = parameters.ReadAttribute(storyNode, "name", true);
 			Story *story = new Story(name);
 
+			parameters.CreateRestorePoint();
+
 			if (!strcmp(storyNode.first_child().name(), "ParameterDeclarations"))
 			{
 				parameters.addParameterDeclarations(storyNode.first_child());
@@ -3175,6 +3170,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 							for (pugi::xml_node catalog_n = actChild.child("CatalogReference"); catalog_n; catalog_n = catalog_n.next_sibling("CatalogReference"))
 							{
 								// Maneuver catalog reference. The catalog entry is simply the maneuver XML node
+								parameters.CreateRestorePoint();
 								Entry *entry = ResolveCatalogReference(catalog_n);
 
 								if (entry == 0 || entry->node_ == 0)

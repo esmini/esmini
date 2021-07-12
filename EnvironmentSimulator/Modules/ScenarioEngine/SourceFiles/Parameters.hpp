@@ -16,6 +16,7 @@
 #include "pugixml.hpp"
 #include "OSCParameterDeclarations.hpp"
 #include <vector>
+#include <stack>
 
 namespace scenarioengine
 {
@@ -24,8 +25,8 @@ namespace scenarioengine
 	class Parameters
 	{
 	public:
-		Parameters() : paramDeclarationsSize_(0) {}
-		int paramDeclarationsSize_;  // original size, exluding added parameters
+		Parameters() {}
+		std::stack<int> paramDeclarationsSize_;  // original size first, then additional layered parameter declarations
 		std::vector<OSCParameterDeclarations::ParameterStruct> catalog_param_assignments;
 		OSCParameterDeclarations parameterDeclarations_;
 
@@ -37,6 +38,7 @@ namespace scenarioengine
 		OSCParameterDeclarations::ParameterStruct* getParameterEntry(std::string name);
 		int setParameter(std::string name, std::string value);
 		void addParameterDeclarations(pugi::xml_node xml_node);
+		void CreateRestorePoint();
 		void RestoreParameterDeclarations();  // To what it was before addParameterDeclarations
 
 		int GetNumberOfParameters();
