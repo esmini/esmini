@@ -263,18 +263,18 @@
                                </ConditionGroup>
                             </StartTrigger>
                         </Event>
-						<Event maximumExecutionCount="1" name="AlignHeadingEvent" priority="overwrite">
-							<Action>
-								<PrivateAction>
-									<TeleportAction>
-										<Position>
-											<RelativeLanePosition entityRef="$owner" >
-												<Orientation type="relative" h="0.0" />
-											</RelativeLanePosition>
-										</Position>
-									</TeleportAction>
-								</PrivateAction>						
-							</Action>
+                        <Event maximumExecutionCount="1" name="AlignHeadingEvent" priority="overwrite">
+                            <Action>
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="$owner" >
+                                                <Orientation type="relative" h="0.0" />
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
                             <StartTrigger>
                                <ConditionGroup>
                                   <Condition name="AlignHeadingTrigger" delay="0" conditionEdge="rising">
@@ -285,8 +285,8 @@
                                      </ByValueCondition>
                                   </Condition>
                                </ConditionGroup>
-                            </StartTrigger>							
-						</Event>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <StartTrigger>
