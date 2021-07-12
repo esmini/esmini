@@ -151,8 +151,6 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 		// Reached end of trajectory
 		// Calculate road coordinates from final inertia (X, Y) coordinates
 		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), 0, object_->pos_.GetH());
-		// and align heading with road driving direction
-		object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
 
 		End();
 	}
