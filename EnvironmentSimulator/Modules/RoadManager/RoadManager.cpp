@@ -4967,11 +4967,11 @@ void OpenDrive::SetRoadMarkOSIPoints()
 
 								if (lane->GetId() < 0)
 								{
-									inner_index = std::max_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin();
+									inner_index = (int)(std::max_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin());
 								}
 								else
 								{
-									inner_index = std::min_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin();
+									inner_index = (int)(std::min_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin());
 								}
 
 							}

@@ -1016,8 +1016,8 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 							{
 								if (laneroadmarktype->GetNumberOfRoadMarkTypeLines() < 2)
 								{
+									LOG_AND_QUIT("You need to specify at least 2 line for broken solid or solid broken roadmark type");
 									break;
-									std::runtime_error("You need to specify at least 2 line for broken solid or solid broken roadmark type");
 								}
 								std::vector<double> sort_solidbroken_brokensolid;
 								for (int q=0; q<laneroadmarktype->GetNumberOfRoadMarkTypeLines(); q++)
@@ -1027,11 +1027,11 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState*> objectState)
 
 								if (lane->GetId() < 0)
 								{
-									inner_index = std::max_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin();
+									inner_index = (int)(std::max_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin());
 								}
 								else
 								{
-									inner_index = std::min_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin();
+									inner_index = (int)(std::min_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin());
 								}
 							}
 
