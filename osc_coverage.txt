@@ -25,8 +25,8 @@ OpenSCENARIO 1.1 specifics (not complete)
         ParameterValueDistribution           No
         StochasticDistribution               No
     Expressions                   
-        Arithmetic calculations              No
-        Logical expressions                  No
+        Arithmetic calculations              Yes
+        Logical expressions                  Yes (untested)
                      
 OpenSCENARIO                                 
 ParameterDeclaration                         Yes

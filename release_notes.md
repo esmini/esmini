@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2021-07-13 Version 2.12.0
+
+- Support OpenSCENARIO 1.1 expressions
+  - e.g. `<AbsoluteTargetSpeed value="${$EgoSpeed / 3.6}"/>`
+- Fix nested parameter declarations issue, ensure limited scope
+- Do not reset heading at end of trajectory
+  - If alignment is desired, add explicit TeleportAction/RelativeLanePosition with relative h = 0. See example [here](https://github.com/esmini/esmini/blob/f87c354a2f1841e63b02a9f35c1737270b302bfd/resources/xosc/trajectory-test.xosc#L269c).
+- Some OSI refactorization and optimization, static data only sent first time
+
 ### 2021-07-06 Version 2.11.4
 
 - Fix bug preventing OSC 1.1 controller activation
