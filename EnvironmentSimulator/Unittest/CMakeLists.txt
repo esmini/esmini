@@ -31,5 +31,7 @@ package_add_test_with_libraries(ScenarioEngine_test ScenarioEngine_test.cpp
 	RoadManager
 	CommonMini
     ${viewer_libs}
+	${SUMO_LIBRARIES}
+	${SOCK_LIB}
 )
 package_add_test_with_libraries(ScenarioEngineDll_test ScenarioEngineDll_test.cpp esminiLib ${OSI_LIBRARIES})

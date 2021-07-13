@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "ScenarioEngine.hpp"
+#include "simple_expr.h"
 
 using namespace roadmanager;
 using namespace scenarioengine;
@@ -186,6 +187,59 @@ TEST(DistanceTest, CalcDistancePointAcrossIntersection)
     EXPECT_NEAR(longDist, -38.587016, 1e-5);
     EXPECT_NEAR(latDist, 0.221272, 1e-5);
 
+}
+
+TEST(TrajectoryTest, EnsureContinuation)
+{
+    double dt = 0.01;
+    ScenarioEngine *se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/trajectory-continuity.xosc");
+    ASSERT_NE(se, nullptr);
+
+    for (int i = 0; i < (int)(1.0/dt); i++)
+    {
+        se->step(dt);
+        se->prepareOSIGroundTruth(dt);
+    }
+    ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 4.95, 1e-5);
+    ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), -1.535, 1e-5);
+
+    for (int i = 0; i < (int)(2.0 / dt); i++)
+    {
+        se->step(dt);
+        se->prepareOSIGroundTruth(dt);
+    }
+    ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 14.92759, 1e-5);
+    ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), -1.18333, 1e-5);
+
+    for (int i = 0; i < (int)(1.5 / dt); i++)
+    {
+        se->step(dt);
+        se->prepareOSIGroundTruth(dt);
+    }
+    ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 21.31489, 1e-5);
+    ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), 2.56606, 1e-5);
+}
+
+TEST(ExpressionTest, EnsureResult)
+{
+    ASSERT_FLOAT_EQ(eval_expr("1 + 1"), 2.0f);
+    ASSERT_FLOAT_EQ(eval_expr("5 * 10 + 1"), 51.0f);
+    ASSERT_FLOAT_EQ(eval_expr("5 * (10 + 1)"), 55.0f);
+    ASSERT_FLOAT_EQ(eval_expr("15/3.5"), 15.0f/3.5f);
+    ASSERT_FLOAT_EQ(eval_expr("15 % 6"), 3.0f);
+    ASSERT_FLOAT_EQ(eval_expr("-15 % 6"), -3.0f);
+    ASSERT_FLOAT_EQ(eval_expr("1 == 1"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("1 == 2"), 0.0f);
+    ASSERT_FLOAT_EQ(eval_expr("(4 == 4) && (10 == 10)"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("4 == 4 && 10 == 10"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("4 == 4 && 9 < 10"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("ceil(11.1) == 12"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("round(11.1) == 11"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("floor(11.9) == 11"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("ceil(-11.1) == -11"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("round(-11.1) == -11"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("floor(-11.9) == -12"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("pow(2,3)"), 8.0f);
 }
 
 int main(int argc, char **argv)
