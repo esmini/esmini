@@ -1,5 +1,10 @@
 ## esmini release notes
 
+### 2021-07-13 Version 2.12.1
+
+- Restore support for "$" prefix in parameter names
+- Catch and log expression errors
+
 ### 2021-07-13 Version 2.12.0
 
 - Support OpenSCENARIO 1.1 expressions
