@@ -60,7 +60,13 @@ float eval_expr(const char* str)
 {
     struct expr_var_list vars = { 0 };
     struct expr* e = expr_create(str, strlen(str), &vars, user_funcs);
+    if (e == 0)
+    {
+        return NAN;
+    }
+
     float retval = expr_eval(e);
+
     expr_destroy(e, 0);
 
     return retval;
@@ -69,6 +75,3 @@ float eval_expr(const char* str)
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
-
-
-

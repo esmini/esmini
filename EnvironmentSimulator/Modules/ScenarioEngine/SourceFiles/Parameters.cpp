@@ -401,9 +401,14 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 					expr = std::regex_replace(expr, std::regex("and"), "&&");  // replace "and" with "&&"
 					expr = std::regex_replace(expr, std::regex("or"), "||");  // replace "or" with "||"
 
-					float retval = eval_expr(expr.c_str());
-					LOG("Expr %s = %s = %f", attr.value(), expr.c_str(), retval);
-					return std::to_string(retval);
+					float value = eval_expr(expr.c_str());
+					if (isnan(value))
+					{
+						LOG_AND_QUIT("Failed to evaluate the expression : % s\n", attr.value());
+					}
+
+					LOG("Expr %s = %s = %f", attr.value(), expr.c_str(), value);
+					return std::to_string(value);
 				}
 				else
 				{
@@ -438,7 +443,7 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 	{
 		OSCParameterDeclarations::ParameterStruct param = { "", OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING, {0, 0, ""} };
 
-		param.name = ReadAttribute(pdChild, "name");
+		param.name = pdChild.attribute("name").value();
 
 		// Check for catalog parameter assignements, overriding default value
 		param.value._string = ReadAttribute(pdChild, "value");

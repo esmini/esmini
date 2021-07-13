@@ -225,7 +225,7 @@ TEST(ExpressionTest, EnsureResult)
     ASSERT_FLOAT_EQ(eval_expr("1 + 1"), 2.0f);
     ASSERT_FLOAT_EQ(eval_expr("5 * 10 + 1"), 51.0f);
     ASSERT_FLOAT_EQ(eval_expr("5 * (10 + 1)"), 55.0f);
-    ASSERT_FLOAT_EQ(eval_expr("15/3.5"), 15.0f/3.5f);
+    ASSERT_FLOAT_EQ(eval_expr("15/3.5"), 15.0f / 3.5f);
     ASSERT_FLOAT_EQ(eval_expr("15 % 6"), 3.0f);
     ASSERT_FLOAT_EQ(eval_expr("-15 % 6"), -3.0f);
     ASSERT_FLOAT_EQ(eval_expr("1 == 1"), 1.0f);
