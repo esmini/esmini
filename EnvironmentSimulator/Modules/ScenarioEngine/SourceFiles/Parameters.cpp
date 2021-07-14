@@ -397,7 +397,8 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 				{
 					expr = expr.substr(2, found - 2);  // trim to bare expression, exclude '{' and '}'
 					expr = ResolveParametersInString(expr);  // replace parameters by their values
-					expr = std::regex_replace(expr, std::regex("not\\s+"), "!");  // replace "not" with "!" and attach it to following word
+					expr = std::regex_replace(expr, std::regex("not\\s+"), "!");  // replace "not" followed by spaces with "!"
+					expr = std::regex_replace(expr, std::regex("not\\("), "!(");  // replace "not(" with "!(" and attach it to following word
 					expr = std::regex_replace(expr, std::regex("and"), "&&");  // replace "and" with "&&"
 					expr = std::regex_replace(expr, std::regex("or"), "||");  // replace "or" with "||"
 

@@ -240,6 +240,7 @@ TEST(ExpressionTest, EnsureResult)
     ASSERT_FLOAT_EQ(eval_expr("round(-11.1) == -11"), 1.0f);
     ASSERT_FLOAT_EQ(eval_expr("floor(-11.9) == -12"), 1.0f);
     ASSERT_FLOAT_EQ(eval_expr("pow(2,3)"), 8.0f);
+    ASSERT_FLOAT_EQ(eval_expr("2**3"), 8.0f);
 }
 
 int main(int argc, char **argv)
