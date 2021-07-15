@@ -1009,6 +1009,10 @@ void SE_Mutex::Unlock()
 void SE_Option::Usage()
 {
 	printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? std::string('<'+ opt_arg_ +'>').c_str() : "");
+	if (!default_value_.empty())
+	{
+		printf("  (default = %s)", default_value_.c_str());
+	}
 	printf("\n      %s\n", opt_desc_.c_str());
 }
 
@@ -1016,6 +1020,12 @@ void SE_Option::Usage()
 void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg)
 {
 	SE_Option opt(opt_str, opt_desc, opt_arg);
+	option_.push_back(opt);
+};
+
+void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value)
+{
+	SE_Option opt(opt_str, opt_desc, opt_arg, default_value);
 	option_.push_back(opt);
 };
 
@@ -1062,9 +1072,13 @@ std::string SE_Options::GetOptionArg(std::string opt)
 {
 	SE_Option *option = GetOption(opt);
 
-	if (option && option->opt_arg_ != "")
+	if (option && !(option->opt_arg_.empty()))
 	{
 		return option->arg_value_;
+	}
+	else if (option && !(option->default_value_.empty()))
+	{
+		return option->default_value_;
 	}
 	else
 	{
@@ -1110,15 +1124,19 @@ void SE_Options::ParseArgs(int *argc, char* argv[])
 			option->set_ = true;
 			if (option->opt_arg_ != "")
 			{
-				if (i < *argc - 1)
+				if (i < *argc - 1 && strncmp(argv[i + 1], "--", 2))
 				{
 					option->arg_value_ = argv[i+1];
 					ShiftArgs(argc, argv, (int)i);
 				}
+				else if (!option->default_value_.empty())
+				{
+					option->arg_value_ = option->default_value_;
+				}
 				else
 				{
 					LOG("Argument parser error: Missing option %s argument", option->opt_str_.c_str());
-					i++;
+					option->set_ = false;
 				}
 			}
 			ShiftArgs(argc, argv, (int)i);

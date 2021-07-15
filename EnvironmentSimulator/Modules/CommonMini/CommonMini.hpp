@@ -371,9 +371,13 @@ public:
 	std::string opt_arg_;
 	bool set_;
 	std::string arg_value_;
+	std::string default_value_;
 
 	SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "") :
 		opt_str_(opt_str), opt_desc_(opt_desc), opt_arg_(opt_arg), set_(false), arg_value_("") {}
+
+	SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value) :
+		opt_str_(opt_str), opt_desc_(opt_desc), opt_arg_(opt_arg), set_(false), arg_value_(""), default_value_(default_value) {}
 
 	void Usage();
 };
@@ -384,6 +388,8 @@ class SE_Options
 
 public:
 	void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg = "");
+	void AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string opt_arg_default_value);
+
 	void PrintUsage();
 	void PrintArgs(int argc, char *argv[], std::string message = "Unrecognized arguments:");
 	bool GetOptionSet(std::string opt);

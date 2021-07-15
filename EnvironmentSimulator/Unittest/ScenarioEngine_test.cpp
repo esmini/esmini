@@ -243,6 +243,63 @@ TEST(ExpressionTest, EnsureResult)
     ASSERT_FLOAT_EQ(eval_expr("2**3"), 8.0f);
 }
 
+TEST(OptionsTest, TestOptionHandling)
+{
+    SE_Options opt;
+
+    // define arguments
+    opt.AddOption("osc_file", "Scenario file", "filename");
+    opt.AddOption("odr_file", "Roadnetwork file", "filename", "default_road.xodr");
+    opt.AddOption("option2", "Some value", "value");
+    opt.AddOption("option3", "Some rate", "rate", "55");
+    opt.AddOption("option4", "Some temp", "temp");
+    opt.AddOption("option5", "Some speed", "speed");
+    opt.AddOption("window", "Visualize the scenario");
+    // opt.PrintUsage();
+
+    // set arguments
+    const char* args[] = {
+        "my_app",
+        "--osc_file",
+        "my_scenario.xosc",
+        "--odr_file",
+        "my_road.xodr",
+        "--window",
+        "--option2",
+        "--option3",
+        "--option4"
+    };
+    int argc = sizeof(args) / sizeof(char*);
+    char** argv;
+    argv = (char**)malloc(argc * sizeof(char*));
+    for (int i = 0; i < argc; i++)
+    {
+        argv[i] = (char*)malloc(strlen(args[i]) + 1);
+        strncpy_s(argv[i], strlen(args[i]) + 1, args[i], strlen(args[i]) + 1);
+    }
+
+    opt.ParseArgs(&argc, argv);
+
+    ASSERT_EQ(opt.GetOptionSet("no_arg"), false);
+    ASSERT_EQ(opt.GetOptionSet("osc_file"), true);
+    ASSERT_EQ(opt.GetOptionSet("window"), true);
+    ASSERT_EQ(opt.GetOptionSet("option2"), false);
+    ASSERT_EQ(opt.GetOptionSet("option3"), true);
+    ASSERT_EQ(opt.GetOptionSet("option4"), false);
+    ASSERT_EQ(opt.GetOptionSet("option5"), false);
+    ASSERT_EQ(opt.GetOptionArg("window"), "");
+    ASSERT_EQ(opt.GetOptionArg("osc_file"), "my_scenario.xosc");
+    ASSERT_EQ(opt.GetOptionArg("odr_file"), "my_road.xodr");
+    ASSERT_EQ(opt.GetOptionArg("option3"), "55");
+
+    // Clean up
+    for (int i = 0; i < argc; i++)
+    {
+        delete argv[i];
+    }
+    delete argv;
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);
