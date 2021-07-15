@@ -659,11 +659,13 @@ int ScenarioPlayer::Init()
 	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
 	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
 	opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
-	opt.AddOption("osi_file", "save osi messages in file (\"on\", \"off\" (default))", "mode");
+#ifdef _USE_OSI
+	opt.AddOption("osi_file", "save osi trace file", "filename", DEFAULT_OSI_TRACE_FILENAME);
 	opt.AddOption("osi_freq", "relative frequence for writing the .osi file e.g. --osi_freq=2 -> we write every two simulation steps", "frequence");
 	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
 	opt.AddOption("osi_points", "Show OSI road pointss (toggle during simulation by press 'y') ");
 	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
+#endif
 	opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (will be concatenated with filepath)", "path");
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
 	opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
@@ -801,9 +803,9 @@ int ScenarioPlayer::Init()
 		osiReporter->OpenSocket(opt.GetOptionArg("osi_receiver_ip"));
 	}
 
-	if (opt.GetOptionArg("osi_file") ==  "on")
+	if (opt.GetOptionSet("osi_file"))
 	{
-		osiReporter->OpenOSIFile(0);
+		osiReporter->OpenOSIFile(opt.GetOptionArg("osi_file").c_str());
 	}
 
 	if ((arg_str = opt.GetOptionArg("osi_freq")) != "")

@@ -20,6 +20,7 @@
 #include <vector>
 #include <math.h>
 
+#define DEFAULT_OSI_TRACE_FILENAME "ground_truth.osi"
 
 using namespace scenarioengine;
 

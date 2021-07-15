@@ -275,7 +275,7 @@ TEST(OptionsTest, TestOptionHandling)
     for (int i = 0; i < argc; i++)
     {
         argv[i] = (char*)malloc(strlen(args[i]) + 1);
-        strncpy_s(argv[i], strlen(args[i]) + 1, args[i], strlen(args[i]) + 1);
+        strncpy(argv[i], args[i], strlen(args[i]) + 1);
     }
 
     opt.ParseArgs(&argc, argv);
