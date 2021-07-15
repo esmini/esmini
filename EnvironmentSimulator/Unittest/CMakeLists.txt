@@ -10,6 +10,8 @@ include_directories (
   ${OSI_INCLUDE_DIR}
 )
 
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
 macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES)
     add_executable(${TESTNAME} ${FILES} ${SRC})
 
