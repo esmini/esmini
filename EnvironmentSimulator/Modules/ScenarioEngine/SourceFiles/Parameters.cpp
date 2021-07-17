@@ -12,7 +12,6 @@
 
 #include "Parameters.hpp"
 #include "simple_expr.h"
-#include <regex>
 
 using namespace scenarioengine;
 
@@ -359,16 +358,29 @@ int Parameters::setParameterValue(std::string name, bool value)
 
 std::string Parameters::ResolveParametersInString(std::string str)
 {
-	std::regex exp("\\$(\\S*)");  // Look for any "$NonWhiteSpaceCharacters" pattern
-	std::string outstr = str;
-	std::smatch res;
-	while (regex_search(str, res, exp, std::regex_constants::match_any))
+	size_t found;
+	while ((found = str.find("$")) != std::string::npos)
 	{
-		outstr = regex_replace(outstr, std::regex("\\$" + res[1].str()), getParameter(parameterDeclarations_, res[0].str()));
-		str = res.suffix().str();
+		size_t found_space = str.find_first_of(" ({)}-+*/%^!|&<>=,", found);
+		if (found_space != std::string::npos)
+		{
+			str.replace(found, found_space-found, getParameter(parameterDeclarations_, str.substr(found, found_space - found)));
+		}
+		else
+		{
+			str.replace(found, std::string::npos, getParameter(parameterDeclarations_, str.substr(found)));
+		}
 	}
 
-	return outstr;
+	return str;
+}
+
+void ReplaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace) {
+	size_t pos = 0;
+	while ((pos = subject.find(search, pos)) != std::string::npos) {
+		subject.replace(pos, search.length(), replace);
+		pos += replace.length();
+	}
 }
 
 std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute_name, bool required)
@@ -397,10 +409,14 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 				{
 					expr = expr.substr(2, found - 2);  // trim to bare expression, exclude '{' and '}'
 					expr = ResolveParametersInString(expr);  // replace parameters by their values
-					expr = std::regex_replace(expr, std::regex("not\\s+"), "!");  // replace "not" followed by spaces with "!"
-					expr = std::regex_replace(expr, std::regex("not\\("), "!(");  // replace "not(" with "!(" and attach it to following word
-					expr = std::regex_replace(expr, std::regex("and"), "&&");  // replace "and" with "&&"
-					expr = std::regex_replace(expr, std::regex("or"), "||");  // replace "or" with "||"
+
+					// Convert from OpenSCENARIO 1.1 operator names to expr op names
+					ReplaceStringInPlace(expr, "not ", "!");
+					ReplaceStringInPlace(expr, "not(", "!(");
+					ReplaceStringInPlace(expr, "and ", "&& ");
+					ReplaceStringInPlace(expr, "or ", "|| ");
+					ReplaceStringInPlace(expr, "true ", "1 ");
+					ReplaceStringInPlace(expr, "false ", "0 ");
 
 					float value = eval_expr(expr.c_str());
 					if (isnan(value))
@@ -442,7 +458,7 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 {
 	for (pugi::xml_node pdChild = parameterDeclarationsNode.first_child(); pdChild; pdChild = pdChild.next_sibling())
 	{
-		OSCParameterDeclarations::ParameterStruct param = { "", OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING, {0, 0, ""} };
+		OSCParameterDeclarations::ParameterStruct param = { "", OSCParameterDeclarations::ParameterType::PARAM_TYPE_STRING, {0, 0, "", false} };
 
 		param.name = pdChild.attribute("name").value();
 

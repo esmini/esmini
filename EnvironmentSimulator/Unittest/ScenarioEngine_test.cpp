@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include "ScenarioEngine.hpp"
+#include "pugixml.hpp"
 #include "simple_expr.h"
 
 using namespace roadmanager;
@@ -233,6 +234,8 @@ TEST(ExpressionTest, EnsureResult)
     ASSERT_FLOAT_EQ(eval_expr("(4 == 4) && (10 == 10)"), 1.0f);
     ASSERT_FLOAT_EQ(eval_expr("4 == 4 && 10 == 10"), 1.0f);
     ASSERT_FLOAT_EQ(eval_expr("4 == 4 && 9 < 10"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("4 == 4 || 11 == 10"), 1.0f);
+    ASSERT_FLOAT_EQ(eval_expr("4 == 3 || 9 < 8"), 0.0f);
     ASSERT_FLOAT_EQ(eval_expr("ceil(11.1) == 12"), 1.0f);
     ASSERT_FLOAT_EQ(eval_expr("round(11.1) == 11"), 1.0f);
     ASSERT_FLOAT_EQ(eval_expr("floor(11.9) == 11"), 1.0f);
@@ -298,6 +301,67 @@ TEST(OptionsTest, TestOptionHandling)
         delete argv[i];
     }
     delete argv;
+}
+
+TEST(ParameterTest, ResolveParameterTest)
+{
+    Parameters params;
+
+    params.parameterDeclarations_.Parameter.push_back( { "speed", OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE, {0, 5.0, "5.0", false} });
+    params.parameterDeclarations_.Parameter.push_back({ "acc", OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE, {0, 3.0, "3.0", false} });
+    params.parameterDeclarations_.Parameter.push_back({ "turnsignal", OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE, {0, 0.0, "true", true} });
+
+    ASSERT_EQ(params.ResolveParametersInString("$speed + 1.0"), "5.0 + 1.0");
+    ASSERT_EQ(params.ResolveParametersInString("$speed $acc"), "5.0 3.0");
+    ASSERT_EQ(params.ResolveParametersInString("$speed $acc "), "5.0 3.0 ");
+    ASSERT_EQ(params.ResolveParametersInString(" $speed $acc "), " 5.0 3.0 ");
+    ASSERT_EQ(params.ResolveParametersInString(" speed $acc "), " speed 3.0 ");
+    ASSERT_EQ(params.ResolveParametersInString(" $turnsignal "), " true ");
+}
+
+TEST(ParameterTest, ParseParameterTest)
+{
+    // Create parameter declarations
+    pugi::xml_document xml_doc;
+    pugi::xml_node paramDeclsNode = xml_doc.append_child("paramDeclsNode");
+
+    pugi::xml_node paramDeclNode0 = paramDeclsNode.append_child("paramDeclNode0");
+    paramDeclNode0.append_attribute("name") = "param0";
+    paramDeclNode0.append_attribute("parameterType") = "double";
+    paramDeclNode0.append_attribute("value") = "17.0";
+
+    pugi::xml_node paramDeclNode1 = paramDeclsNode.append_child("paramDeclNode1");
+    paramDeclNode1.append_attribute("name") = "param1";
+    paramDeclNode1.append_attribute("parameterType") = "boolean";
+    paramDeclNode1.append_attribute("value") = "true";
+
+    Parameters params;
+    params.addParameterDeclarations(paramDeclsNode);
+
+    // Create an XML element with attributes referring to parameters
+    pugi::xml_node someNode0 = xml_doc.append_child("someNode0");
+    someNode0.append_attribute("speed") = "5.1";
+    someNode0.append_attribute("acc") = "$param0";
+    someNode0.append_attribute("attr2") = "${$param0 + 0.5}";
+    someNode0.append_attribute("attr3") = "${$param1 && (1==1)}";
+    someNode0.append_attribute("attr4") = "${$param1 || (0==1)}";
+    someNode0.append_attribute("attr5") = "${$param1 and (0==1)}";
+    someNode0.append_attribute("attr6") = "${$param1 and not(0==1)}";
+    someNode0.append_attribute("attr7") = "${$param1 and not (0==1)}";
+    someNode0.append_attribute("attr8") = "${$param1 and (26 == $param0 + 9)}";
+    someNode0.append_attribute("attr9") = "${(2 + ($param0- 9)/2)/3}";
+
+    // verify correct parameter lookup
+    ASSERT_EQ(params.ReadAttribute(someNode0, "speed", false), "5.1");
+    ASSERT_EQ(params.ReadAttribute(someNode0, "acc", false), "17.0");
+    ASSERT_EQ(params.ReadAttribute(someNode0, "attr2", false), "17.500000");
+    ASSERT_EQ(params.ReadAttribute(someNode0, "attr3", false), "1.000000");
+    ASSERT_EQ(params.ReadAttribute(someNode0, "attr4", false), "1.000000");
+    ASSERT_EQ(params.ReadAttribute(someNode0, "attr5", false), "0.000000");
+    ASSERT_EQ(params.ReadAttribute(someNode0, "attr6", false), "1.000000");
+    ASSERT_EQ(params.ReadAttribute(someNode0, "attr7", false), "1.000000");
+    ASSERT_EQ(params.ReadAttribute(someNode0, "attr8", false), "1.000000");
+    ASSERT_EQ(params.ReadAttribute(someNode0, "attr9", false), "2.000000");
 }
 
 int main(int argc, char **argv)
