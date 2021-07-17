@@ -76,12 +76,12 @@ elseif (WIN32)
 endif (APPLE)
 
 set ( OSG_INCLUDE_DIR 
-	"${OSG_DIR}/build/include"
-	"${OSG_DIR}/include"
+    "${OSG_DIR}/build/include"
+    "${OSG_DIR}/include"
 )
 set ( OSG_LIBRARIES_PATH 
-	"${OSG_DIR}/lib" 
-	"${OSG_DIR}/lib/osgPlugins-3.6.5"
+    "${OSG_DIR}/lib" 
+    "${OSG_DIR}/lib/osgPlugins-3.6.5"
 )
 
 set ( OSI_INCLUDE_DIR "${OSI_DIR}/include" )
@@ -99,7 +99,6 @@ if(APPLE)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -pthread -flto -Wl,-dead_strip")
 
   set ( OSG_LIBRARIES
-	
     osgdb_serializers_osgsim
     osgdb_serializers_osg
     osgdb_osg
@@ -123,8 +122,8 @@ if(APPLE)
   )
 
   set ( OSI_LIBRARIES 
-	open_simulation_interface_pic
-	protobuf
+    open_simulation_interface_pic
+    protobuf
   )
 
   set ( SUMO_LIBRARIES 
@@ -171,11 +170,13 @@ include(CheckCXXCompilerFlag)
   else()
      check_cxx_compiler_flag(-std=c++1y HAVE_FLAG_STD_CXX1Y)
      if(HAVE_FLAG_STD_CXX1Y)
-	SET(CXX_STD_FLAG "-std=c++1y")
+       SET(CXX_STD_FLAG "-std=c++1y")
      else()
-	message ("Need compiler support for c++14 \(or 1y as the beta was called\)")
+       message ("Need compiler support for c++14 \(or 1y as the beta was called\)")
      endif()
   endif()
+
+  set (CMAKE_C_FLAGS "-std=c11 ${CMAKE_C_FLAGS}")
 
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -pthread -fPIC -Wl,-strip-all")
@@ -184,7 +185,7 @@ include(CheckCXXCompilerFlag)
   else()
     SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -pthread -fPIC -Wl,-strip-all")
   endif()
-  
+
   set ( OSG_LIBRARIES
     optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd 
     optimized osgdb_serializers_osg debug osgdb_serializers_osgd
@@ -210,12 +211,12 @@ include(CheckCXXCompilerFlag)
     fontconfig
     #db_fbx
   )
-  
+
   set ( OSI_LIBRARIES 
-	optimized open_simulation_interface_pic debug open_simulation_interface_picd
-	optimized protobuf debug protobufd
+    optimized open_simulation_interface_pic debug open_simulation_interface_picd
+    optimized protobuf debug protobufd
   )
-  
+
   set ( SUMO_LIBRARIES 
     optimized libsumostatic debug libsumostaticd
     optimized netload debug netloadd
@@ -265,7 +266,7 @@ else() #not UNIX
     # suppress warning 4100 (unreferenced formal parameter) to allow function headers with unreferenced parameters for increased readability
     add_compile_options(/permissive- /W4 /wd4127 /wd4100)
   endif ()
-  
+
   set ( OSG_LIBRARIES 
       opengl32.lib
       optimized zlibstatic.lib debug zlibstaticd.lib 
@@ -281,14 +282,14 @@ else() #not UNIX
       optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
       optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
       optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
-      optimized osgdb_osg.lib debug osgdb_osgd.lib 	
-      optimized osgdb_fbx.lib debug osgdb_fbxd.lib 	
+      optimized osgdb_osg.lib debug osgdb_osgd.lib  
+      optimized osgdb_fbx.lib debug osgdb_fbxd.lib  
       optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
   )
 
   set ( OSI_LIBRARIES 
-	optimized libprotobuf.lib debug libprotobufd.lib
-	optimized open_simulation_interface_pic.lib debug open_simulation_interface_picd.lib
+    optimized libprotobuf.lib debug libprotobufd.lib
+    optimized open_simulation_interface_pic.lib debug open_simulation_interface_picd.lib
   )
 
   set ( SUMO_LIBRARIES 
@@ -389,24 +390,24 @@ ENDFOREACH()
 # Download library and content binary packets
 #
 function (download_and_extract url target_folder target_filename)
-	message (STATUS "downloading ${target_filename} ...")
-	file (DOWNLOAD ${url} ${target_folder}/${target_filename})
-	
-	message (STATUS "extracting ${target_filename} ... ")
-	execute_process (COMMAND ${CMAKE_COMMAND} -E tar xfz ${target_filename} WORKING_DIRECTORY ${target_folder})
-	file (REMOVE ${target_folder}/${target_filename})
+    message (STATUS "downloading ${target_filename} ...")
+    file (DOWNLOAD ${url} ${target_folder}/${target_filename})
+    
+    message (STATUS "extracting ${target_filename} ... ")
+    execute_process (COMMAND ${CMAKE_COMMAND} -E tar xfz ${target_filename} WORKING_DIRECTORY ${target_folder})
+    file (REMOVE ${target_folder}/${target_filename})
 endfunction (download_and_extract)
 
 # download OpenSceneGraph 
 set ( OSG_PACKAGE_FILENAME "osg.7z" )
 if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSG_DIR} )
-	download_and_extract( ${OSG_PACKAGE_URL} ${OSG_BASE_DIR} ${OSG_PACKAGE_FILENAME} )
+    download_and_extract( ${OSG_PACKAGE_URL} ${OSG_BASE_DIR} ${OSG_PACKAGE_FILENAME} )
 endif()
 
 # download OSI
 set ( OSI_PACKAGE_FILENAME "osi.7z" )
 if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSI_DIR} )
-	download_and_extract( ${OSI_PACKAGE_URL} ${OSI_BASE_DIR} ${OSI_PACKAGE_FILENAME} )
+    download_and_extract( ${OSI_PACKAGE_URL} ${OSI_BASE_DIR} ${OSI_PACKAGE_FILENAME} )
 endif()
 
 # download SUMO
@@ -422,7 +423,7 @@ if(APPLE)
 else()
   set ( GTEST_PACKAGE_FILENAME "googletest.7z" )
   if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${GTEST_DIR} )
-	  download_and_extract( ${GTEST_PACKAGE_URL} ${GTEST_BASE_DIR} ${GTEST_PACKAGE_FILENAME} )
+      download_and_extract( ${GTEST_PACKAGE_URL} ${GTEST_BASE_DIR} ${GTEST_PACKAGE_FILENAME} )
   endif()
 endif()
 
@@ -432,7 +433,7 @@ set ( MODELS_PACKAGE_FILENAME models.7z)
 set ( MODELS_PACKAGE_URL https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=0 )
 
 if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${MODELS_DIR} )
-	download_and_extract(${MODELS_PACKAGE_URL} ${MODELS_BASE_DIR} ${MODELS_PACKAGE_FILENAME})
+    download_and_extract(${MODELS_PACKAGE_URL} ${MODELS_BASE_DIR} ${MODELS_PACKAGE_FILENAME})
 endif()
 
 
