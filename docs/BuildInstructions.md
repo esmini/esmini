@@ -113,6 +113,50 @@ make -j4 install
 ```
 This will build all projects and copy the binaries into a dedicated folder found by the demo batch scripts.
 
+### CentOS 7 (Linux)
+
+CentOS 7 has some limitations, e.g. old versions of C/C++ compiler toolkits and runtimes. So it's not possible to link with provided 3rd party binary libraries targeting Ubuntu 18++.
+However, by disabling some featuers in esmini, e.g. OSI and SUMO, it can still be used for previewing scenarios.
+
+VirtualBox image for Windows host here:
+https://www.linuxvmimages.com/images/centos-7/
+
+
+Follow steps below to build and run esmini on CentOS 7.
+
+```
+sudo yum install git
+sudo yum install cmake
+sudo yum install gcc-c++
+
+sudo yum install freeglut-devel
+sudo yum install fontconfig-devel
+sudo yum install libXrandr-devel
+sudo yum install libXinerama-devel
+
+sudo yum install epel-release
+sudo yum install p7zip
+
+git clone https://github.com/esmini/esmini
+
+cd esmini
+
+cd externals
+mkdir OpenSceneGraph
+cd OpenSceneGraph
+curl -L "https://www.dropbox.com/s/mxztf6zbgojyntp/osg_centos.7z?dl=1" -o osg_centos.7z
+7za x osg_centos.7z
+rm osg_centos.7z
+
+cd ../..
+mkdir build
+cd build
+cmake -D USE_OSG=True -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False ..
+cmake --build . --target install --config Release
+cd ..
+./bin/esmini.exe --headless --fixed_timestep 0.01 --record sim.dat --osc ./resources/xosc/cut-in.xosc
+```
+
 ## Run demo applications
 - Navigate to the esmini/run folder
 - There is a subfolder for each application including a few example batch- or script files
