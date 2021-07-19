@@ -727,6 +727,8 @@ namespace roadmanager
 			NONETYPE,
 			T1000001, // traditional red-yellow-green light
 			T1000002, // 2 subtypes: pedestrian light (red or green & only red)
+			T1000003, // Pedestrian Crossing
+			T1000004, // Bicycle Crossing
 			T1000007, // 4 subtypes: pedestrian + cyclists light (red or green & only red & only yellow & only green)
 			T1000008, // 3 subtypes: yellow light (no arrow & left arrow & right arrow)
 			T1000009, // 2 subtypes: red-yellow light & solid yellow or green light
@@ -735,7 +737,12 @@ namespace roadmanager
 			T1000012, // 2 subtypes: green light (left arrow & right arrow)
 			T1000013, // red-green cyclist light
 			T1000014, // yellow tram light
-			T1000015  // yellow pedestrian light
+			T1000015, // yellow pedestrian light
+			T1000016, // yellow bicycle light
+			T1000017, // yellow bus light
+			T1000018, // yellow horse light
+			T1000019, // yellow pedestrian/bicycle light
+			T1000020  // red light (no arrow & left arrow & right arrow)
 		};
 
 		enum SubType
@@ -745,7 +752,12 @@ namespace roadmanager
 			SUBT20,
 			SUBT30,
 			SUBT40,
-			SUBT50
+			SUBT50,
+			SUBT60,
+			SUBT70,
+			SUBT80,
+			SUBT90,
+			SUBT100
 		};
 
 		Signal(double s, double t, int id, std::string name, bool dynamic, Orientation orientation, double z_offset, std::string country,
@@ -767,6 +779,12 @@ namespace roadmanager
 		int GetSubType() { return sub_type_; }
 		double GetHeight() { return height_; }
 		double GetWidth() { return width_; }
+		bool IsDynamic() { return dynamic_; }
+		double GetPitch() { return pitch_; }
+		double GetRoll() { return roll_; }
+		double GetValue() { return value_; }
+		std::string GetUnit() { return unit_; }
+		std::string GetText() { return text_; }
 
 	private:
 		double s_;

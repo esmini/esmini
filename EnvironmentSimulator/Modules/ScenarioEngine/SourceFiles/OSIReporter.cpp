@@ -38,6 +38,7 @@ static struct {
 	osi3::SensorData *sd;
 	osi3::GroundTruth *gt;
 	osi3::StationaryObject *sobj;
+	osi3::TrafficSign *ts;
 	osi3::MovingObject *mobj;
 	std::vector<osi3::Lane*> ln;
 	std::vector<osi3::LaneBoundary*> lnb;
@@ -288,6 +289,9 @@ int OSIReporter::ClearOSIGroundTruth()
 	obj_osi_external.gt->clear_stationary_object();
 	obj_osi_external.gt->clear_lane();
 	obj_osi_external.gt->clear_lane_boundary();
+	obj_osi_external.gt->clear_traffic_light();
+	obj_osi_external.gt->clear_traffic_sign();
+	obj_osi_external.gt->clear_road_marking();
 
 	return 0;
 }
@@ -371,10 +375,14 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState*> objectStat
 	UpdateOSIRoadLane(objectState);
 	UpdateOSILaneBoundary(objectState);
 	UpdateOSIIntersection();
+	UpdateTrafficSignals();
 
 	obj_osi_external.gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
 	obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
 	obj_osi_external.gt->mutable_lane_boundary()->CopyFrom(*obj_osi_internal.gt->mutable_lane_boundary());
+	obj_osi_external.gt->mutable_traffic_sign()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_sign());
+	obj_osi_external.gt->mutable_traffic_light()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_light());
+	obj_osi_external.gt->mutable_road_marking()->CopyFrom(*obj_osi_internal.gt->mutable_road_marking());
 
 	return 0;
 }
@@ -1493,6 +1501,120 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState*> objectState)
 		}
 	}
 
+	return 0;
+}
+
+int OSIReporter::UpdateTrafficSignals()
+{
+	// Create OSI Stationary Object
+	//obj_osi_internal.ts = obj_osi_internal.gt->add_traffic_sign();
+
+	//Retrieve opendrive class from RoadManager
+	static roadmanager::OpenDrive* opendrive = roadmanager::Position::GetOpenDrive();
+
+	// Loop over all roads
+	for (int i = 0; i<opendrive->GetNumOfRoads(); i++)
+	{
+		roadmanager::Road* road = opendrive->GetRoadByIdx(i);
+		for(int j = 0; j < road->GetNumberOfSignals(); ++j)
+		{
+			roadmanager::Signal* signal = road->GetSignal(j);
+			
+			if(signal)
+			{
+				//Is Traffic Light
+				if(signal->IsDynamic())
+				{
+					osi3::TrafficLight * trafficLight = obj_osi_internal.gt->add_traffic_light();
+					trafficLight->mutable_id()->set_value(signal->GetId());
+					trafficLight->mutable_base()->mutable_orientation()->set_pitch(signal->GetPitch());
+					trafficLight->mutable_base()->mutable_orientation()->set_roll(signal->GetRoll());
+					trafficLight->mutable_base()->mutable_dimension()->set_height(signal->GetHeight());
+					trafficLight->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
+
+					roadmanager::Position pos;
+					pos.SetTrackPos(road->GetId(), signal->GetS(), signal->GetT());
+
+					trafficLight->mutable_base()->mutable_position()->set_x(pos.GetX());
+					trafficLight->mutable_base()->mutable_position()->set_y(pos.GetY());
+					trafficLight->mutable_base()->mutable_position()->set_z(pos.GetZ() + signal->GetZOffset());
+				}
+				else
+				{
+					//Traffic Sign
+					osi3::TrafficSign * trafficSign = obj_osi_internal.gt->add_traffic_sign();
+					//Set ID, Value, Text
+					trafficSign->mutable_id()->set_value(signal->GetId());
+					trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value(signal->GetValue());
+					trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_text(signal->GetText());
+					
+					//Set Unit
+					if(std::strcmp(signal->GetUnit().c_str(), ""))
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_NO_UNIT);
+					}
+					else if(std::strcmp(signal->GetUnit().c_str(), "m"))
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_METER);
+					}
+					else if(std::strcmp(signal->GetUnit().c_str(), "km"))
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_KILOMETER);
+					}
+					else if(std::strcmp(signal->GetUnit().c_str(), "ft"))
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_FEET);
+					}
+					else if(std::strcmp(signal->GetUnit().c_str(), "mile"))
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_MILE);
+					}
+					else if(std::strcmp(signal->GetUnit().c_str(), "m/s"))
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_OTHER);
+					}
+					else if(std::strcmp(signal->GetUnit().c_str(), "mph"))
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_MILE_PER_HOUR);
+					}
+					else if(std::strcmp(signal->GetUnit().c_str(), "km/h"))
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_KILOMETER_PER_HOUR);
+					}
+					else if(std::strcmp(signal->GetUnit().c_str(), "kg"))
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_UNKNOWN);
+					}
+					else if(std::strcmp(signal->GetUnit().c_str(), "t"))
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_METRIC_TON);
+					}
+					else if(std::strcmp(signal->GetUnit().c_str(), "%"))
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_PERCENTAGE);
+					}
+					else
+					{
+						trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_UNKNOWN);
+					}
+
+					//Set Pithc, Roll, Height, Width
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_pitch(signal->GetPitch());
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_roll(signal->GetRoll());
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_dimension()->set_height(signal->GetHeight());
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
+
+					roadmanager::Position pos;
+					pos.SetTrackPos(road->GetId(), signal->GetS(), signal->GetT());
+
+					//Set X, Y, Z based on s, t, and zOffset
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_x(pos.GetX());
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_y(pos.GetY());
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_z(pos.GetZ() + signal->GetZOffset());
+				}
+			}
+		}
+	}
 	return 0;
 }
 

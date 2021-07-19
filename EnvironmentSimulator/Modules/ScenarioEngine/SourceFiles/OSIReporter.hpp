@@ -88,6 +88,10 @@ public:
 	Fills the intersection type of lanes
 	*/
 	int UpdateOSIIntersection();
+	/**
+	Fills the Traffic Signals
+	*/
+	int UpdateTrafficSignals();
 
 	const char* GetOSIGroundTruth(int* size);
 	const char* GetOSIGroundTruthRaw();
