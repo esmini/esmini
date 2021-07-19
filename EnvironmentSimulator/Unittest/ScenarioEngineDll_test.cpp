@@ -6,6 +6,7 @@
 #include "osi_sensorview.pb.h"
 #include "osi_version.pb.h"
 #include "esminiLib.hpp"
+#include "RoadManager.hpp"
 #include <vector>
 #include <stdexcept>
 #include <fstream>
@@ -1096,6 +1097,8 @@ TEST(RoadSign, TestValidityRecord)
 	EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 9, 2, &validityRec), 0);
 	EXPECT_EQ(validityRec.fromLane, 3);
 	EXPECT_EQ(validityRec.toLane, 3);
+
+	SE_Close();
 }
 
 TEST(OSILaneParing, multi_roads)
@@ -1107,11 +1110,11 @@ TEST(OSILaneParing, multi_roads)
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
-	bool intersection_found = false;
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
 	const char *gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
+
 	// order: lane, predecessor, successor
 	std::vector<std::vector<int>> lane_pairs = {{0, 3, -1},
 												{2, -1, 5},
@@ -1148,7 +1151,7 @@ TEST(OSILaneParing, multi_roads)
 			}
 			if (successor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
 			{
-				gt_successor = osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
+				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
 			}
 			else
 			{
@@ -1156,7 +1159,7 @@ TEST(OSILaneParing, multi_roads)
 			}
 			if (predecessor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
 			{
-				gt_predecessor = osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
+				gt_predecessor = (int)osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
 			}
 			else
 			{
@@ -1179,7 +1182,6 @@ TEST(OSILaneParing, multi_lanesections)
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
-	bool intersection_found = false;
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
 	const char *gt = SE_GetOSIGroundTruth(&sv_size);
@@ -1228,7 +1230,7 @@ TEST(OSILaneParing, multi_lanesections)
 			}
 			if (successor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
 			{
-				gt_successor = osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
+				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
 			}
 			else
 			{
@@ -1236,7 +1238,7 @@ TEST(OSILaneParing, multi_lanesections)
 			}
 			if (predecessor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
 			{
-				gt_predecessor = osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
+				gt_predecessor = (int)osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
 			}
 			else
 			{
@@ -1258,8 +1260,6 @@ TEST(OSILaneParing, highway_split)
 
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
-	int lanes_found = 0;
-	bool intersection_found = false;
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
 	const char *gt = SE_GetOSIGroundTruth(&sv_size);
@@ -1299,7 +1299,7 @@ TEST(OSILaneParing, highway_split)
 			}
 			if (successor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
 			{
-				gt_successor = osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
+				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
 			}
 			else
 			{
@@ -1307,7 +1307,7 @@ TEST(OSILaneParing, highway_split)
 			}
 			if (predecessor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
 			{
-				gt_predecessor = osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
+				gt_predecessor = (int)osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
 			}
 			else
 			{
@@ -1329,8 +1329,6 @@ TEST(OSILaneParing, highway_merge)
 
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
-	int lanes_found = 0;
-	bool intersection_found = false;
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
 	const char *gt = SE_GetOSIGroundTruth(&sv_size);
@@ -1375,7 +1373,7 @@ TEST(OSILaneParing, highway_merge)
 			}
 			if (successor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
 			{
-				gt_successor = osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
+				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
 			}
 			else
 			{
@@ -1383,7 +1381,7 @@ TEST(OSILaneParing, highway_merge)
 			}
 			if (predecessor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
 			{
-				gt_predecessor = osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
+				gt_predecessor = (int)osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
 			}
 			else
 			{
@@ -1405,8 +1403,6 @@ TEST(OSILaneParing, circular_road)
 
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
-	int lanes_found = 0;
-	bool intersection_found = false;
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
 	const char *gt = SE_GetOSIGroundTruth(&sv_size);
@@ -1447,7 +1443,7 @@ TEST(OSILaneParing, circular_road)
 			}
 			if (successor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
 			{
-				gt_successor = osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
+				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
 			}
 			else
 			{
@@ -1455,7 +1451,7 @@ TEST(OSILaneParing, circular_road)
 			}
 			if (predecessor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
 			{
-				gt_predecessor = osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
+				gt_predecessor = (int)osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
 			}
 			else
 			{
@@ -1477,8 +1473,6 @@ TEST(OSILaneParing, simple_3way_intersection)
 
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
-	int lanes_found = 0;
-	bool intersection_found = false;
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
 	const char *gt = SE_GetOSIGroundTruth(&sv_size);
@@ -1512,7 +1506,7 @@ TEST(OSILaneParing, simple_3way_intersection)
 
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
-		int current_lane_pair_length = gt_lane_pairs.size();
+		int current_lane_pair_length = (int)gt_lane_pairs.size();
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			predecessor = -1;
@@ -1533,7 +1527,7 @@ TEST(OSILaneParing, simple_3way_intersection)
 			}
 			if (osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
 			{
-				gt_successor = osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
+				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
 			}
 			else
 			{
@@ -1541,7 +1535,7 @@ TEST(OSILaneParing, simple_3way_intersection)
 			}
 			if (osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
 			{
-				gt_predecessor = osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
+				gt_predecessor = (int)osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
 			}
 			else
 			{
@@ -1578,7 +1572,6 @@ TEST(OSILaneParing, simple_4way_intersection)
 
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
-	bool intersection_found = false;
 	osi3::GroundTruth osi_gt;
 	int sv_size = 0;
 	const char *gt = SE_GetOSIGroundTruth(&sv_size);
@@ -1619,7 +1612,7 @@ TEST(OSILaneParing, simple_4way_intersection)
 
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
-		int current_lane_pair_length = gt_lane_pairs.size();
+		int current_lane_pair_length = (int)gt_lane_pairs.size();
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			predecessor = -1;
@@ -1640,7 +1633,7 @@ TEST(OSILaneParing, simple_4way_intersection)
 			}
 			if (osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
 			{
-				gt_successor = osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
+				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
 			}
 			else
 			{
@@ -1648,7 +1641,7 @@ TEST(OSILaneParing, simple_4way_intersection)
 			}
 			if (osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
 			{
-				gt_predecessor = osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
+				gt_predecessor = (int)osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
 			}
 			else
 			{
@@ -1673,6 +1666,70 @@ TEST(OSILaneParing, simple_4way_intersection)
 		ASSERT_EQ(gt_lane_pairs[i][2], lane_pairs[i][2]);
 	}
 
+	SE_Close();
+}
+
+TEST(OSILaneParing, Signs)
+{
+	std::string scenario_file = "../../../resources/xosc/distance_test.xosc";
+	const char* Scenario_file = scenario_file.c_str();
+	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
+	ASSERT_EQ(i_init, 0);
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char* gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	// order: id, value, text, pitch, roll, height, s, t, zOffset
+	std::vector<std::tuple<int, double, std::string, double, double, double, double, double, double>> signs = { std::make_tuple(0, -1, "", 0.0, 0.0, 0.61, 0.0, 3.57, 1.7),
+																											   std::make_tuple(1, -1, "", 0.0, 0.0, 0.61, 0.0, 3.57, 1.7),
+																											   std::make_tuple(2, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+																											   std::make_tuple(3, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+																											   std::make_tuple(4, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+																											   std::make_tuple(5, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+																											   std::make_tuple(6, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+																											   std::make_tuple(7, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+																											   std::make_tuple(8, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+																											   std::make_tuple(9, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+																											   std::make_tuple(10, -1, "", 0.0, 0.0, 0.61, 500.0, 3.57, 1.7),
+																											   std::make_tuple(11, -1, "", 0.0, 0.0, 0.61, 500.0, 3.57, 1.7) };
+
+	int sign_id = 0;
+	double value = 0;
+	std::string text = "";
+	double pitch = 0;
+	double roll = 0;
+	double s = 0;
+	double t = 0;
+	double height = 0;
+	double zOffset = 0;
+
+	for (auto traffic_sign : osi_gt.traffic_sign())
+	{
+		for (auto sign : signs)
+		{
+			if (traffic_sign.id().value() == std::get<0>(sign))
+			{
+				sign_id = std::get<0>(sign);
+				value = std::get<1>(sign);
+				text = std::get<2>(sign);
+				pitch = std::get<3>(sign);
+				roll = std::get<4>(sign);
+				height = std::get<5>(sign);
+				s = std::get<6>(sign);
+				t = std::get<7>(sign);
+				zOffset = std::get<8>(sign);
+			}
+		}
+		ASSERT_EQ(traffic_sign.id().value(), sign_id);
+		ASSERT_DOUBLE_EQ(traffic_sign.main_sign().classification().value().value(), value);
+		ASSERT_STREQ(traffic_sign.main_sign().classification().value().text().c_str(), text.c_str());
+		ASSERT_DOUBLE_EQ(traffic_sign.main_sign().base().orientation().pitch(), pitch);
+		ASSERT_DOUBLE_EQ(traffic_sign.main_sign().base().orientation().roll(), roll);
+		ASSERT_DOUBLE_EQ(traffic_sign.main_sign().base().dimension().height(), height);
+	}
 	SE_Close();
 }
 
