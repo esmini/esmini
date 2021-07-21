@@ -1490,7 +1490,7 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 								sort_solidbroken_brokensolid.push_back(lane_roadmarktype->GetLaneRoadMarkTypeLineByIdx(q)->GetTOffset());
 							}
 
-							if (lane->GetId() < 0)
+							if (lane->GetId() < 0 || lane->GetId() == 0)
 							{
 								inner_index = std::max_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin();
 							}

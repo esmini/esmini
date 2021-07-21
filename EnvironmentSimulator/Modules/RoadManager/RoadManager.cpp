@@ -4965,7 +4965,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 									sort_solidbroken_brokensolid.push_back(lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(q)->GetTOffset());
 								}
 
-								if (lane->GetId() < 0)
+								if (lane->GetId() < 0 || lane->GetId() == 0)
 								{
 									inner_index = (int)(std::max_element(sort_solidbroken_brokensolid.begin(), sort_solidbroken_brokensolid.end()) - sort_solidbroken_brokensolid.begin());
 								}
