@@ -208,15 +208,25 @@ namespace scenarioengine
 			TIME_GAP,
 		} DistType;
 
+		typedef enum
+		{
+			NONE,
+			TRAILING,
+			LEADING,
+			ANY
+		} DisplacementType;
+
 		Object *target_object_;
 		double distance_;
 		DistType dist_type_;
 		double freespace_;
 		bool continuous_;
 		double sim_time_;
+		DisplacementType displacement_;
 
 		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE),
-			target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0), sim_time_(0)
+			target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0), sim_time_(0),
+			displacement_(DisplacementType::NONE)
 		{
             dynamics_.max_acceleration_ = 0;
             dynamics_.max_deceleration_ = 0;
@@ -233,6 +243,7 @@ namespace scenarioengine
 			freespace_ = action.freespace_;
 			acceleration_ = action.acceleration_;
 			sim_time_ = action.sim_time_;
+			displacement_ = action.displacement_;
 		}
 
 		OSCPrivateAction* Copy()
@@ -378,7 +389,6 @@ namespace scenarioengine
 
 		LatLaneOffsetAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET)
 		{
-			LOG("");
 			dynamics_.max_lateral_acc_ = 0;
 			elapsed_ = 0;
 			target_ = 0;

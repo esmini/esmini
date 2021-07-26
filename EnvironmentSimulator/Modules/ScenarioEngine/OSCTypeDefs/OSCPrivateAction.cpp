@@ -714,6 +714,37 @@ void LongDistanceAction::Start(double simTime, double dt)
 		return;
 	}
 
+	// Resolve displacement
+	if (displacement_ == DisplacementType::ANY)
+	{
+		// Find out current displacement, and apply it
+		double distance;
+		if (freespace_)
+		{
+			double latDist = 0;
+			double longDist = 0;
+			object_->FreeSpaceDistance(target_object_, &latDist, &longDist);
+			distance = longDist;
+		}
+		else
+		{
+			double x, y;
+			distance = object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
+
+			// Just interested in the x-axis component of the distance
+			distance = x;
+		}
+
+		if (distance < 0.0)
+		{
+			displacement_ = DisplacementType::LEADING;
+		}
+		else
+		{
+			displacement_ = DisplacementType::TRAILING;
+		}
+	}
+
 	OSCAction::Start(simTime, dt);
 }
 
@@ -761,6 +792,15 @@ void LongDistanceAction::Step(double simTime, double)
 	{
 		// Convert requested time gap (seconds) to distance (m)
 		requested_dist = object_->speed_ * distance_;
+	}
+
+	if (displacement_ == DisplacementType::TRAILING)
+	{
+		requested_dist = abs(object_->speed_ * distance_);
+	}
+	else if (displacement_ == DisplacementType::LEADING)
+	{
+		requested_dist = -abs(object_->speed_ * distance_);
 	}
 
 	double distance_diff = distance - requested_dist;
