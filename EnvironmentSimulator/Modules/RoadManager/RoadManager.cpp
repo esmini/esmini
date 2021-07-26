@@ -4956,8 +4956,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
 							{
 								if (number_of_roadmarklines < 2)
 								{
-									break;
-									std::runtime_error("You need to specify at least 2 line for broken solid or solid broken roadmark type");
+									LOG_AND_QUIT("You need to specify at least 2 line for broken solid or solid broken roadmark type");
 								}
 								std::vector<double> sort_solidbroken_brokensolid;
 								for (int q=0; q<number_of_roadmarklines; q++)
