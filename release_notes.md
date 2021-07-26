@@ -1,5 +1,13 @@
 ## esmini release notes
 
+### 2021-07-26 Version 2.12.2
+
+- Support OpenSCENARIO 1.1 LongitudinalDistanceAction / displacement attribute
+- Improve expression support (e.g. handle "not()" )
+- Custom OSI trace filename (see [docs/commands.txt](https://github.com/esmini/esmini/blob/master/docs/commands.txt))
+- Center lane logic for broken solid and solid broken
+- Some additional minor fixes
+
 ### 2021-07-13 Version 2.12.1
 
 - Restore support for "$" prefix in parameter names

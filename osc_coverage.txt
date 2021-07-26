@@ -21,6 +21,8 @@ OpenSCENARIO 1.1 specifics (not complete)
         notEqualTo                           Yes (1.1)
     SynchronizeAction
         SteadyState                          Yes
+    LongitudinalDistanceAction
+        displacement                         Yes
     Logical scenarios
         ParameterValueDistribution           No
         StochasticDistribution               No
