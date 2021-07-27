@@ -166,6 +166,7 @@
                                  <EntityCondition>
                                     <TimeHeadwayCondition entityRef="$owner"
                                                           value="$HeadwayTime_Brake"
+                                                          freespace="false"
                                                           coordinateSystem="entity"
                                                           relativeDistanceType="longitudinal"
                                                           rule="greaterThan"/>
@@ -179,7 +180,7 @@
             </ManeuverGroup>
             <StartTrigger>
                <ConditionGroup>
-                  <Condition name="CutInActStart" delay="0">
+                  <Condition name="CutInActStart" delay="0" conditionEdge="none">
                      <ByValueCondition>
                         <SimulationTimeCondition value="0" rule="greaterThan"/>
                      </ByValueCondition>
@@ -199,5 +200,6 @@
             </StopTrigger>
          </Act>
       </Story>
+      <StopTrigger/>
    </Storyboard>
 </OpenSCENARIO>

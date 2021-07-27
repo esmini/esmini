@@ -791,16 +791,16 @@ void LongDistanceAction::Step(double simTime, double)
 	if (dist_type_ == DistType::TIME_GAP)
 	{
 		// Convert requested time gap (seconds) to distance (m)
-		requested_dist = object_->speed_ * distance_;
+		requested_dist = abs(target_object_->speed_) * distance_;
 	}
 
 	if (displacement_ == DisplacementType::TRAILING)
 	{
-		requested_dist = abs(object_->speed_ * distance_);
+		requested_dist = abs(requested_dist);
 	}
 	else if (displacement_ == DisplacementType::LEADING)
 	{
-		requested_dist = -abs(object_->speed_ * distance_);
+		requested_dist = -abs(requested_dist);
 	}
 
 	double distance_diff = distance - requested_dist;

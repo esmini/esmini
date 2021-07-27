@@ -1688,7 +1688,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					std::string displacement = parameters.ReadAttribute(longitudinalChild, "displacement");
 					if (GetVersionMajor() <= 1 && GetVersionMinor() >= 1)
 					{
-						if (displacement == "any")
+						if (displacement.empty())
+						{
+							LOG("displacement attribute missing, setting default trailingReferencedEntity");
+							action_dist->displacement_ = LongDistanceAction::DisplacementType::TRAILING;
+						}
+						else if (displacement == "any")
 						{
 							action_dist->displacement_ = LongDistanceAction::DisplacementType::ANY;
 						}
@@ -1708,7 +1713,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						if (action_dist->distance_ < 0.0)
 						{
 							// action_dist->displacement_ != LongDistanceAction::DisplacementType::NONE &&
-							LOG("Negative distance or timeGap not supported in OSC version > 1.1. Using absolute value. Use displacement to specify leading or trailing behavior.");
+							LOG("Negative distance or timeGap not supported in OSC version >= 1.1. Using absolute value. Use displacement to specify leading or trailing behavior.");
 							action_dist->distance_ = abs(action_dist->distance_);
 						}
 					}

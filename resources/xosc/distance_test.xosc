@@ -2,10 +2,10 @@
 <!-- This scenario demonstrates the keep distance action -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
-               date="2017-11-27T10:00:00"
+               revMinor="1"
+               date="2021-07-27T10:00:00"
                description="Keep distance"
-               author="SimS"/>
+               author="esmini team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="Gap_dist1" parameterType="double" value="10"/>
       <ParameterDeclaration name="Gap_dist2" parameterType="double" value="4"/>
@@ -25,11 +25,11 @@
       <ScenarioObject name="Ego">
          <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
          <ObjectController>
-             <Controller name="InteractiveController" >
-                <Properties>
-                    <Property name="esminiController" value="InteractiveController" />
-                </Properties>
-             </Controller>
+            <Controller name="InteractiveController">
+               <Properties>
+                  <Property name="esminiController" value="InteractiveController"/>
+               </Properties>
+            </Controller>
          </ObjectController>
       </ScenarioObject>
       <ScenarioObject name="Dummy">
@@ -48,7 +48,9 @@
                   </TeleportAction>
                </PrivateAction>
                <PrivateAction>
-                    <ActivateControllerAction longitudinal="true" lateral="true" />
+                  <ControllerAction>
+                     <ActivateControllerAction longitudinal="true" lateral="true"/>
+                  </ControllerAction>
                </PrivateAction>
                <PrivateAction>
                   <LongitudinalAction>
@@ -106,7 +108,7 @@
                         </PrivateAction>
                      </Action>
                      <StartTrigger/>
-                  </Event>                
+                  </Event>
                   <Event name="NonContinuousDistEvent" priority="overwrite">
                      <Action name="NonContinuousDistAction">
                         <PrivateAction>
@@ -114,7 +116,8 @@
                               <LongitudinalDistanceAction continuous="false"
                                                           entityRef="Ego"
                                                           distance="$Gap_dist2"
-                                                          freespace="true">
+                                                          freespace="true"
+                                                          displacement="trailingReferencedEntity" >
                                  <DynamicConstraints maxAcceleration="$Max_acc" maxDeceleration="$Max_ret" maxSpeed="40"/>
                               </LongitudinalDistanceAction>
                            </LongitudinalAction>
@@ -140,21 +143,22 @@
                            </Condition>
                         </ConditionGroup>
                      </StartTrigger>
-                  </Event>      
+                  </Event>
                </Maneuver>
             </ManeuverGroup>
+            <StartTrigger/>
          </Act>
       </Story>
       <StopTrigger>
-         <ConditionGroup>            
-             <Condition name="QuitCondition" delay="4" conditionEdge="rising">
-                <ByValueCondition>
-                   <StoryboardElementStateCondition storyboardElementType="event"
-                                                    storyboardElementRef="NonContinuousDistEvent"
-                                                    state="endTransition"/>
-                </ByValueCondition>
-             </Condition>
+         <ConditionGroup>
+            <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+               <ByValueCondition>
+                  <StoryboardElementStateCondition storyboardElementType="event"
+                                                   storyboardElementRef="NonContinuousDistEvent"
+                                                   state="endTransition"/>
+               </ByValueCondition>
+            </Condition>
          </ConditionGroup>
-      </StopTrigger>                           
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>
