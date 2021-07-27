@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2021-07-27 Version 2.12.3
+
+- Fix LongitudinalDistanceAction bugs
+  - Use correct distance mode
+  - Time gap based on referenced enity's speed instead of own speed
+
 ### 2021-07-26 Version 2.12.2
 
 - Support OpenSCENARIO 1.1 LongitudinalDistanceAction / displacement attribute
