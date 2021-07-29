@@ -180,6 +180,11 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 
 		scenarioGateway->WriteStatesToFile();
 
+		if (CSV_Log)
+		{
+			UpdateCSV_Log();
+		}
+
 		mutex.Unlock();
 
 		for (size_t i = 0; i < sensor.size(); i++)

@@ -46,11 +46,6 @@ int main(int argc, char *argv[])
 		}
 
 		player->Frame(dt);
-
-		if (player->CSV_Log)
-		{
-			player->UpdateCSV_Log();
-		}
 	}
 
 	delete player;
