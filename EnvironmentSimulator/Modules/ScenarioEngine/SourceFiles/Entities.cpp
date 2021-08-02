@@ -557,12 +557,13 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 	};
 
 	// Align points to object heading and position
-	double vertices[4][2];
+	double vertices[4][3];
 	for (int i = 0; i < 4; i++)
 	{
 		RotateVec2D(vtmp[i][0], vtmp[i][1], pos_.GetH(), vertices[i][0], vertices[i][1]);
 		vertices[i][0] += pos_.GetX();
 		vertices[i][1] += pos_.GetY();
+		vertices[i][2] = pos_.GetH();
 	}
 
 	// Map XY point to road coordinates, but consider only roads reachable from point
@@ -583,7 +584,7 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 	{
 		pos[j] = pos_;
 		// Map bounding box points to road coordinates, consider only roads reachable from current position
-		if (pos[j].XYZH2TrackPos(vertices[j][0], vertices[j][1], 0, 0, true) != 0)
+		if (pos[j].XYZH2TrackPos(vertices[j][0], vertices[j][1], 0, vertices[j][2], true) != 0)
 		{
 			return -1;
 		}
@@ -666,7 +667,7 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 	// check vertices of the other bounding box against the sides
 	// of the first bounding box.
 
-	double vertices[2][4][2];
+	double vertices[2][4][3];
 	Position pos[2][4];
 
 	for (int i = 0; i < 2; i++)  // for each of the two BBs
@@ -688,10 +689,11 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 			RotateVec2D(vtmp[j][0], vtmp[j][1], obj->pos_.GetH(), vertices[i][j][0], vertices[i][j][1]);
 			vertices[i][j][0] += obj->pos_.GetX();
 			vertices[i][j][1] += obj->pos_.GetY();
+			vertices[i][j][2] = obj->pos_.GetH();
 
 			// Map XY points to road coordinates, but consider only roads reachable from point
 			pos[i][j] = pos_;
-			if (pos[i][j].XYZH2TrackPos(vertices[i][j][0], vertices[i][j][1], 0, 0, true) != 0)
+			if (pos[i][j].XYZH2TrackPos(vertices[i][j][0], vertices[i][j][1], 0, vertices[i][j][2], true) != 0)
 			{
 				return -1;
 			}
