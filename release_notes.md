@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2021-08-03 Version 2.12.4
+
+- Fix csv-logger missing first entry (issue [#137](https://github.com/esmini/esmini/issues/137))
+- Fix relative distance issue ([#139](https://github.com/esmini/esmini/issues/139))
+  - Consider heading when determine entities inter-displacement
+
 ### 2021-07-27 Version 2.12.3
 
 - Fix LongitudinalDistanceAction bugs
