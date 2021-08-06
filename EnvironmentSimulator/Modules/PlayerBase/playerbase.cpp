@@ -679,9 +679,16 @@ int ScenarioPlayer::Init()
 	opt.AddOption("server", "Launch server to receive state of external Ego simulator");
 	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
 	opt.AddOption("trail_mode", "Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both", "mode");
+	opt.AddOption("version", "Show version and quit");
 
 	exe_path_ = argv_[0];
 	opt.ParseArgs(&argc_, argv_);
+
+	if (opt.GetOptionSet("version"))
+	{
+		Logger::Inst().LogVersion();
+		return -2;
+	}
 
 	if (opt.GetOptionSet("help"))
 	{

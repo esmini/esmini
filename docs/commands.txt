@@ -56,6 +56,8 @@ Options:
       Run viewer in a separate thread, parallel to scenario engine
   --trail_mode <mode>
       Show trail lines and/or dots (toggle key 'j') mode 0=None 1=lines 2=dots 3=both
+  --version
+      Show version and quit
 
 Additional OSG graphics options:
   --clear-color <color>         Set the background color of the viewer in the form "r,g,b[,a]"

@@ -348,8 +348,15 @@ int main(int argc, char** argv)
 	opt.AddOption("help", "Show this help message");
 	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
 	opt.AddOption("traffic_rule", "Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)", "rule (right/left)");
+	opt.AddOption("version", "Show version and quit");
 
 	opt.ParseArgs(&argc, argv);
+
+	if (opt.GetOptionSet("version"))
+	{
+		Logger::Inst().LogVersion();
+		return 0;
+	}
 
 	if (opt.GetOptionSet("help"))
 	{
