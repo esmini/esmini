@@ -6914,7 +6914,7 @@ double Position::GetCurvature()
 	}
 }
 
-int Position::GetDrivingDirectionRelativeRoad()
+int Position::GetDrivingDirectionRelativeRoad() const
 {
 	if (GetTrackId() >= 0 && GetRoadById(GetTrackId()) != nullptr)
 	{
@@ -6935,7 +6935,7 @@ int Position::GetDrivingDirectionRelativeRoad()
 	}
 }
 
-double Position::GetHRoadInDrivingDirection()
+double Position::GetHRoadInDrivingDirection() const
 {
 	return GetAngleSum(GetHRoad(), GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0);
 }
@@ -6945,7 +6945,7 @@ double Position::GetPRoadInDrivingDirection()
 	return GetPRoad() * GetDrivingDirectionRelativeRoad();
 }
 
-double Position::GetHRelativeDrivingDirection()
+double Position::GetHRelativeDrivingDirection() const
 {
 	return GetAngleDifference(h_, GetDrivingDirection());
 }
@@ -6969,7 +6969,7 @@ double Position::GetSpeedLimit()
 	return speed_limit;
 }
 
-double Position::GetDrivingDirection()
+double Position::GetDrivingDirection() const
 {
 	double x, y, h;
 	Geometry *geom = GetOpenDrive()->GetGeometryByIdx(track_idx_, geometry_idx_);
@@ -7041,7 +7041,7 @@ bool Position::IsOffRoad()
 	return false;
 }
 
-double Position::getRelativeDistance(double targetX, double targetY, double &x, double &y)
+double Position::getRelativeDistance(double targetX, double targetY, double &x, double &y) const
 {
 	// Calculate diff vector from current to target
 	double diff_x, diff_y;
@@ -7141,7 +7141,7 @@ void Position::SetTrajectory(RMTrajectory* trajectory)
 	s_trajectory_ = 0;
 }
 
-bool Position::Delta(Position* pos_b, PositionDiff &diff)
+bool Position::Delta(Position* pos_b, PositionDiff &diff) const
 {
 	double dist = 0;
 	bool found;
@@ -7477,7 +7477,7 @@ int Position::GetProbeInfo(Position *target_pos, RoadProbeInfo *data)
 	return 0;
 }
 
-int Position::GetTrackId()
+int Position::GetTrackId() const
 {
 	if (rel_pos_ && rel_pos_ != this &&
 		(type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
@@ -7488,7 +7488,7 @@ int Position::GetTrackId()
 	return track_id_;
 }
 
-int Position::GetLaneId()
+int Position::GetLaneId() const
 {
 	if (rel_pos_ && rel_pos_ != this && type_ == PositionType::RELATIVE_LANE)
 	{
@@ -7545,7 +7545,7 @@ int Position::GetLaneGlobalId()
 	return lane_section->GetLaneGlobalIdByIdx(lane_idx);
 }
 
-double Position::GetS()
+double Position::GetS() const
 {
 	if (rel_pos_ && rel_pos_ != this &&
 		(type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
@@ -7556,7 +7556,7 @@ double Position::GetS()
 	return s_;
 }
 
-double Position::GetT()
+double Position::GetT() const
 {
 	if (rel_pos_ && rel_pos_ != this &&
 		(type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
@@ -7578,7 +7578,7 @@ double Position::GetOffset()
 	return offset_;
 }
 
-double Position::GetX()
+double Position::GetX() const
 {
 	if (!rel_pos_ || rel_pos_ == this)
 	{
@@ -7604,7 +7604,7 @@ double Position::GetX()
 	return x_;
 }
 
-double Position::GetY()
+double Position::GetY() const
 {
 	if (!rel_pos_ || rel_pos_ == this)
 	{
@@ -7630,7 +7630,7 @@ double Position::GetY()
 	return y_;
 }
 
-double Position::GetZ()
+double Position::GetZ() const
 {
 	if (!rel_pos_ || rel_pos_ == this)
 	{
@@ -7652,7 +7652,7 @@ double Position::GetZ()
 	return z_;
 }
 
-double Position::GetH()
+double Position::GetH() const
 {
 	if (!rel_pos_ || rel_pos_ == this)
 	{
@@ -7688,7 +7688,7 @@ double Position::GetH()
 	return h_;
 }
 
-double Position::GetHRelative()
+double Position::GetHRelative() const
 {
 	if (!rel_pos_ || rel_pos_ == this)
 	{
