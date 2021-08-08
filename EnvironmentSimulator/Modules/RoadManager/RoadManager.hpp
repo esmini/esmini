@@ -1027,12 +1027,12 @@ namespace roadmanager
 		int GetNumberOfLaneSections() { return (int)lane_section_.size(); }
 		std::string GetName() { return name_; }
 		void SetLength(double length) { length_ = length; }
-		double GetLength() { return length_; }
+		double GetLength() const { return length_; }
 		void SetJunction(int junction) { junction_ = junction; }
-		int GetJunction() { return junction_; }
+		int GetJunction() const { return junction_; }
 		void AddLink(RoadLink *link) { link_.push_back(link); }
 		void AddRoadType(RoadTypeEntry *type) { type_.push_back(type); }
-		int GetNumberOfRoadTypes() {return (int)type_.size();}
+		int GetNumberOfRoadTypes() const {return (int)type_.size();}
 		RoadTypeEntry *GetRoadType(int idx);
 		RoadLink *GetLink(LinkType type);
 		void AddLine(Line *line);
@@ -1550,7 +1550,7 @@ namespace roadmanager
 		@param y (meter). Y component of the relative distance.
 		@return distance (meter). Negative if the specified position is behind the current one.
 		*/
-		double getRelativeDistance(double targetX, double targetY, double &x, double &y);
+		double getRelativeDistance(double targetX, double targetY, double &x, double &y) const;
 
 		/**
 		Find out the difference between two position objects, in effect subtracting the values
@@ -1558,7 +1558,7 @@ namespace roadmanager
 		@param pos_b The position from which to subtract the current position (this position object)
 		@return true if position found and parameter values are valid, else false
 		*/
-		bool Delta(Position* pos_b, PositionDiff& diff);
+		bool Delta(Position* pos_b, PositionDiff& diff) const;
 
 		/**
 		Find out the distance, on specified system and type, between two position objects
@@ -1634,13 +1634,13 @@ namespace roadmanager
 		Retrieve the track/road ID from the position object
 		@return track/road ID
 		*/
-		int GetTrackId();
+		int GetTrackId() const;
 
 		/**
 		Retrieve the lane ID from the position object
 		@return lane ID
 		*/
-		int GetLaneId();
+		int GetLaneId() const;
 		/**
 		Retrieve the global lane ID from the position object
 		@return lane ID
@@ -1651,17 +1651,17 @@ namespace roadmanager
 		Retrieve a road segment specified by road ID
 		@param id road ID as specified in the OpenDRIVE file
 		*/
-		Road *GetRoadById(int id) { return GetOpenDrive()->GetRoadById(id);	}
+		Road *GetRoadById(int id) const { return GetOpenDrive()->GetRoadById(id);	}
 
 		/**
 		Retrieve the s value (distance along the road segment)
 		*/
-		double GetS();
+		double GetS() const;
 
 		/**
 		Retrieve the t value (lateral distance from reference lanem (id=0))
 		*/
-		double GetT();
+		double GetT() const;
 
 		/**
 		Retrieve the offset from current lane
@@ -1671,17 +1671,17 @@ namespace roadmanager
 		/**
 		Retrieve the world coordinate X-value
 		*/
-		double GetX();
+		double GetX() const;
 
 		/**
 		Retrieve the world coordinate Y-value
 		*/
-		double GetY();
+		double GetY() const;
 
 		/**
 		Retrieve the world coordinate Z-value
 		*/
-		double GetZ();
+		double GetZ() const;
 
 		/**
 		Retrieve the road Z-value
@@ -1691,7 +1691,7 @@ namespace roadmanager
 		/**
 		Retrieve the world coordinate heading angle (radians)
 		*/
-		double GetH();
+		double GetH() const;
 
 		/**
 		Retrieve the road heading angle (radians)
@@ -1702,22 +1702,22 @@ namespace roadmanager
 		Retrieve the driving direction considering lane ID and rult (lef or right hand traffic)
 		Will be either 1 (road direction) or -1 (opposite road direction)
 		*/
-		int GetDrivingDirectionRelativeRoad();
+		int GetDrivingDirectionRelativeRoad() const;
 
 		/**
 		Retrieve the road heading angle (radians) relative driving direction (lane sign considered)
 		*/
-		double GetHRoadInDrivingDirection();
+		double GetHRoadInDrivingDirection() const;
 
 		/**
 		Retrieve the heading angle (radians) relative driving direction (lane sign considered)
 		*/
-		double GetHRelativeDrivingDirection();
+		double GetHRelativeDrivingDirection() const;
 
 		/**
 		Retrieve the relative heading angle (radians)
 		*/
-		double GetHRelative();
+		double GetHRelative() const;
 
 		/**
 		Retrieve the world coordinate pitch angle (radians)
@@ -1768,7 +1768,7 @@ namespace roadmanager
 		/**
 		Retrieve the road heading/direction at current position, and in the direction given by current lane
 		*/
-		double GetDrivingDirection();
+		double GetDrivingDirection() const;
 
 		PositionType GetType() { return type_; }
 
@@ -1966,11 +1966,11 @@ namespace roadmanager
 
 		std::vector<PathNode*> visited_;
 		std::vector<PathNode*> unvisited_;
-		Position *startPos_;
-		Position *targetPos_;
+		const Position *startPos_;
+		const Position *targetPos_;
 		int direction_;  // direction of path from starting pos. 0==not set, 1==forward, 2==backward
 
-		RoadPath(Position* startPos, Position* targetPos) : startPos_(startPos), targetPos_(targetPos) {};
+		RoadPath(const Position* startPos, const Position* targetPos) : startPos_(startPos), targetPos_(targetPos) {};
 		~RoadPath();
 
 		/**
