@@ -1063,6 +1063,41 @@ TEST(PropertyTest, TestGetAndSet)
 	EXPECT_EQ(SE_GetNumberOfProperties(-1), -1);
 }
 
+TEST(RoadSign, TestValidityRecord)
+{
+	std::string scenario_file = "../../../resources/xosc/distance_test.xosc";
+	EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+
+	int n_Objects = SE_GetNumberOfObjects();
+	EXPECT_EQ(n_Objects, 2);
+
+	EXPECT_EQ(SE_GetNumberOfRoadSigns(1), 12);
+	EXPECT_EQ(SE_GetNumberOfRoadSignValidityRecords(1, 0), 2);
+
+	SE_RoadObjValidity validityRec;
+
+	EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 0, 0, &validityRec), 0);
+	EXPECT_EQ(validityRec.fromLane, -3);
+	EXPECT_EQ(validityRec.toLane, -1);
+
+	EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 0, 1, &validityRec), 0);
+	EXPECT_EQ(validityRec.fromLane, 1);
+	EXPECT_EQ(validityRec.toLane, 3);
+
+	EXPECT_EQ(SE_GetNumberOfRoadSignValidityRecords(1, 9), 3);
+
+	EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 9, 0, &validityRec), 0);
+	EXPECT_EQ(validityRec.fromLane, -3);
+	EXPECT_EQ(validityRec.toLane, -2);
+
+	EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 9, 1, &validityRec), 0);
+	EXPECT_EQ(validityRec.fromLane, 1);
+	EXPECT_EQ(validityRec.toLane, 2);
+
+	EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 9, 2, &validityRec), 0);
+	EXPECT_EQ(validityRec.fromLane, 3);
+	EXPECT_EQ(validityRec.toLane, 3);
+}
 
 int main(int argc, char **argv)
 {

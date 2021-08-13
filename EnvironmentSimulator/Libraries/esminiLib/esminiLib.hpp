@@ -128,6 +128,11 @@ typedef struct
 	float width;       // width as sepcified in OpenDRIVE
 } SE_RoadSign;
 
+typedef struct
+{
+	int fromLane;
+	int toLane;
+} SE_RoadObjValidity;
 
 #ifdef __cplusplus
 extern "C"
@@ -649,6 +654,24 @@ extern "C"
 		@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign *road_sign);
+
+	/**
+		Get the number of lane validity records of specified road object/sign
+		@param road_id The road of which to look for the sign
+		@param index Index of the sign. Note: not ID
+		@return Number of validity records of specified road sign
+	*/
+	SE_DLL_API int SE_GetNumberOfRoadSignValidityRecords(int road_id, int index);
+
+	/**
+		Get specified validity record of specifed road sign
+		@param road_id The road of which to look for the sign
+		@param signIndex Index of the sign. Note: not ID
+		@param validityIndex Index of the validity record
+		@param road_sign Pointer/reference to a SE_RoadObjValidity struct to be filled in
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, SE_RoadObjValidity* validity);
 
 	// OSI interface
 	//

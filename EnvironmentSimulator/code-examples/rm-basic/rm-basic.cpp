@@ -20,6 +20,16 @@ int main(int argc, char* argv[])
 			RM_GetRoadSign(rid, j, &rs);
 			printf("Road[%d] sign[%d] id %d name %s x %.2f y %.2f z %.2f heading %.2f orientation %d z_offset %.2f height: %.2f width %.2f\n",
 				i, j, rs.id, rs.name, rs.x, rs.y, rs.z, rs.h, rs.orientation, rs.z_offset, rs.height, rs.width);
+
+			int nValidityRecords = RM_GetNumberOfRoadSignValidityRecords(rid, j);
+			for (int k = 0; k < nValidityRecords; k++)
+			{
+				RM_RoadObjValidity validityRecord;
+				if (RM_GetRoadSignValidityRecord(rid, j, k, &validityRecord) == 0)
+				{
+					printf("   Validity rec[%d]: fromLane %d toLane %d\n", k, validityRecord.fromLane, validityRecord.toLane);
+				}
+			}
 		}
 	}
 

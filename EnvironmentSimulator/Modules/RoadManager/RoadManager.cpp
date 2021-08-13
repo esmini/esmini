@@ -3091,6 +3091,14 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					{
 						LOG("Signal: Major error\n");
 					}
+
+					for (pugi::xml_node validity_node = signal.child("validity"); validity_node; validity_node = validity_node.next_sibling("validity"))
+					{
+						ValidityRecord validity;
+						validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
+						validity.toLane_ = atoi(validity_node.attribute("toLane").value());
+						sig->validity_.push_back(validity);
+					}
 				}
 				else
 				{
@@ -3224,6 +3232,14 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 						}
 						obj->AddOutline(outline);
 					}
+				}
+
+				for (pugi::xml_node validity_node = object.child("validity"); validity_node; validity_node = validity_node.next_sibling("validity"))
+				{
+					ValidityRecord validity;
+					validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
+					validity.toLane_ = atoi(validity_node.attribute("toLane").value());
+					obj->validity_.push_back(validity);
 				}
 
 				if (obj != NULL)

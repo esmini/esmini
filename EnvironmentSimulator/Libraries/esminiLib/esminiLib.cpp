@@ -1436,6 +1436,41 @@ extern "C"
 		return -1;
 	}
 
+	SE_DLL_API int SE_GetNumberOfRoadSignValidityRecords(int road_id, int index)
+	{
+		if (player)
+		{
+			roadmanager::Road* road = player->odr_manager->GetRoadById(road_id);
+			if (road != NULL)
+			{
+				roadmanager::Signal* s = road->GetSignal(index);
+				return (int)s->validity_.size();
+			}
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, SE_RoadObjValidity* validity)
+	{
+		if (player)
+		{
+			roadmanager::Road* road = player->odr_manager->GetRoadById(road_id);
+			if (road != NULL)
+			{
+				roadmanager::Signal* s = road->GetSignal(signIndex);
+				if (validityIndex >= 0 && validityIndex < s->validity_.size())
+				{
+					validity->fromLane = s->validity_[validityIndex].fromLane_;
+					validity->toLane = s->validity_[validityIndex].toLane_;
+					return 0;
+				}
+			}
+		}
+
+		return -1;
+	}
+
 #ifdef _USE_OSG
 	SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
 	{

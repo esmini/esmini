@@ -597,4 +597,39 @@ extern "C"
 		return -1;
 	}
 
+	RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(int road_id, int index)
+	{
+		if (odrManager)
+		{
+			roadmanager::Road* road = odrManager->GetRoadById(road_id);
+			if (road != NULL)
+			{
+				roadmanager::Signal* s = road->GetSignal(index);
+				return (int)s->validity_.size();
+			}
+		}
+
+		return 0;
+	}
+
+	RM_DLL_API int RM_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, RM_RoadObjValidity* validity)
+	{
+		if (odrManager)
+		{
+			roadmanager::Road* road = odrManager->GetRoadById(road_id);
+			if (road != NULL)
+			{
+				roadmanager::Signal* s = road->GetSignal(signIndex);
+				if (validityIndex >= 0 && validityIndex < s->validity_.size())
+				{
+					validity->fromLane = s->validity_[validityIndex].fromLane_;
+					validity->toLane = s->validity_[validityIndex].toLane_;
+					return 0;
+				}
+			}
+		}
+
+		return -1;
+	}
+
 }

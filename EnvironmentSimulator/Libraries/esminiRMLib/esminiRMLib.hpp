@@ -81,6 +81,11 @@ typedef struct
 	float width;       // width as sepcified in OpenDRIVE
 } RM_RoadSign;
 
+typedef struct
+{
+	int fromLane;
+	int toLane;
+} RM_RoadObjValidity;
 
 #ifdef __cplusplus
 extern "C"
@@ -350,6 +355,23 @@ extern "C"
 	*/
 	RM_DLL_API int RM_GetRoadSign(int road_id, int index, RM_RoadSign* road_sign);
 
+	/**
+		Get the number of lane validity records of specified road object/sign
+		@param road_id The road of which to look for the sign
+		@param index Index of the sign. Note: not ID
+		@return Number of validity records of specified road sign
+	*/
+	RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(int road_id, int index);
+
+	/**
+		Get specified validity record of specifed road sign
+		@param road_id The road of which to look for the sign
+		@param signIndex Index of the sign. Note: not ID
+		@param validityIndex Index of the validity record
+		@param road_sign Pointer/reference to a SE_RoadObjValidity struct to be filled in
+		@return 0 if successful, -1 if not
+	*/
+	RM_DLL_API int RM_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, RM_RoadObjValidity* validity);
 
 #ifdef __cplusplus
 }

@@ -707,6 +707,12 @@ namespace roadmanager
 		double speed_;  // m/s
 	} RoadTypeEntry;
 
+	typedef struct
+	{
+		int fromLane_;
+		int toLane_;
+	} ValidityRecord;
+
 	class RoadObject
 	{
 	public:
@@ -716,6 +722,8 @@ namespace roadmanager
 			NEGATIVE,
 			NONE,
 		};
+
+		std::vector<ValidityRecord> validity_;
 	};
 
 	class Signal : public RoadObject
