@@ -1,5 +1,13 @@
 ## esmini release notes
 
+### 2021-08-13 Version 2.12.5
+
+- Fix nurbs heading issues ([#144](https://github.com/esmini/esmini/issues/144))
+  - Interpolate heading from polyline approximation
+  - Fix bug reusing heading of second vertex to first one
+- Add road object lane validity support (issue [#143](https://github.com/esmini/esmini/issues/143))
+- Add show version option (--version)
+
 ### 2021-08-03 Version 2.12.4
 
 - Fix csv-logger missing first entry (issue [#137](https://github.com/esmini/esmini/issues/137))
