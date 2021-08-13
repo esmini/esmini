@@ -307,49 +307,51 @@ int main(int argc, char** argv)
 	}
 	try
 	{
-
-		// find and OpenDRIVE file. Test some combinations of paths and filename
-		std::vector<std::string> file_name_candidates;
-
-		// just filepath as stated in .dat file
-		file_name_candidates.push_back(player->header_.odr_filename);
-
-		// Check registered paths
-		for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+		if (strcmp(player->header_.odr_filename, ""))
 		{
-			// Including file path
-			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], player->header_.odr_filename));
+			// find and OpenDRIVE file. Test some combinations of paths and filename
+			std::vector<std::string> file_name_candidates;
 
-			// Excluding file path
-			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(player->header_.odr_filename)));
+			// just filepath as stated in .dat file
+			file_name_candidates.push_back(player->header_.odr_filename);
 
-			// Including file path and xodr sub folder
-			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i].append("/xodr/"), FileNameOf(player->header_.odr_filename)));
-
-			// Excluding file path but add xodr sub folder
-			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i].append("/xodr/"), player->header_.odr_filename));
-		}
-
-		size_t i;
-		for (i = 0; i < file_name_candidates.size(); i++)
-		{
-			if (FileExists(file_name_candidates[i].c_str()))
+			// Check registered paths
+			for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 			{
-				if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()))
+				// Including file path
+				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], player->header_.odr_filename));
+
+				// Excluding file path
+				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(player->header_.odr_filename)));
+
+				// Including file path and xodr sub folder
+				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i].append("/xodr/"), FileNameOf(player->header_.odr_filename)));
+
+				// Excluding file path but add xodr sub folder
+				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i].append("/xodr/"), player->header_.odr_filename));
+			}
+
+			size_t i;
+			for (i = 0; i < file_name_candidates.size(); i++)
+			{
+				if (FileExists(file_name_candidates[i].c_str()))
 				{
-					break;
+					if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()))
+					{
+						break;
+					}
 				}
 			}
-		}
 
-		if (i == file_name_candidates.size())
-		{
-			printf("Failed to load OpenDRIVE file %s. Tried:\n", player->header_.odr_filename);
-			for (int j = 0; j < file_name_candidates.size(); j++)
+			if (i == file_name_candidates.size())
 			{
-				printf("   %s\n", file_name_candidates[j].c_str());
+				printf("Failed to load OpenDRIVE file %s. Tried:\n", player->header_.odr_filename);
+				for (int j = 0; j < file_name_candidates.size(); j++)
+				{
+					printf("   %s\n", file_name_candidates[j].c_str());
+				}
+				return -1;
 			}
-			return -1;
 		}
 
 		odrManager = roadmanager::Position::GetOpenDrive();

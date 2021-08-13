@@ -2005,7 +2005,7 @@ namespace roadmanager
 	{
 	public:
 
-		PolyLineBase() : length_(0), vIndex_(0), currentPos_({0, 0, 0, 0, 0, 0, 0, false }) {}
+		PolyLineBase() : length_(0), vIndex_(0), currentPos_({0, 0, 0, 0, 0, 0, 0, 0, false }), interpolateHeading_(false) {}
 		TrajVertex* AddVertex(TrajVertex p);
 		TrajVertex* AddVertex(double x, double y, double z, double h);
 		TrajVertex* AddVertex(double x, double y, double z);
@@ -2047,6 +2047,7 @@ namespace roadmanager
 		TrajVertex currentPos_;
 		double length_;
 		int vIndex_;
+		bool interpolateHeading_;
 
 	protected:
 		int EvaluateSegmentByLocalS(int i, double local_s, double cornerRadius, TrajVertex& pos);
@@ -2134,7 +2135,10 @@ namespace roadmanager
 		};
 
 	public:
-		NurbsShape(int order) : order_(order), Shape(ShapeType::NURBS), length_(0) {}
+		NurbsShape(int order) : order_(order), Shape(ShapeType::NURBS), length_(0)
+		{
+			pline_.interpolateHeading_ = true;
+		}
 
 		void AddControlPoint(Position pos, double time, double weight, bool calcHeading);
 		void AddKnots(std::vector<double> knots);

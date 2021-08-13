@@ -7949,7 +7949,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(int i, double local_s, double cornerRa
 		pos.s = (1 - a) * vp0->s + a * vp1->s;
 		pos.p = (1 - a) * vp0->p + a * vp1->p;
 
-		if (vertex_[i + 1].calcHeading)
+		if (vertex_[i + 1].calcHeading && !interpolateHeading_)
 		{
 			// Strategy: Align to line, but interpolate at corners
 			double radius = MIN(4.0, length);
@@ -8047,13 +8047,13 @@ TrajVertex* PolyLineBase::UpdateVertex(int i, double x, double y, double z)
 
 		if (v->calcHeading)
 		{
-			// Set heading temporary to same as previous vertex
+			// Calulate heading from line segment between this and previous vertices
 			v->h = GetAngleInInterval2PI(atan2(v->y - vp->y, v->x - vp->x));
 		}
 
 		if (vp->calcHeading)
 		{
-			// Update heading of last vertex now that outgoing line segment is known
+			// Update heading of previous vertex now that outgoing line segment is known
 			vp->h = v->h;
 		}
 
@@ -8362,7 +8362,9 @@ void NurbsShape::CalculatePolyLine()
 	double newLength = 0.0;
 	int nSteps = (int)(1 + length_ / steplen);
 	double p_steplen = knot_.back() / nSteps;
-	TrajVertex pos, oldpos = { 0, 0, 0, 0 };
+	TrajVertex pos = { 0, 0, 0, 0, 0, 0, 0, 0, true };
+	TrajVertex oldpos = { 0, 0, 0, 0, 0, 0, 0, 0, true };
+
 
 	pline_.Reset();
 	for (int i = 0; i < nSteps + 1; i++)
@@ -8386,25 +8388,12 @@ void NurbsShape::CalculatePolyLine()
 		}
 
 		pline_.AddVertex(pos);
-
-		if (i > 0)
-		{
-			pos.h = GetAngleOfVector(pos.x - oldpos.x, pos.y - oldpos.y);
-			pline_.vertex_[i].h = pos.h;
-		}
 		pline_.vertex_[i].p = i * p_steplen;
-
 		oldpos = pos;
-
 		// Resolve Z value - from road elevation
 		tmpRoadPos.SetInertiaPos(pos.x, pos.y, pos.h);
 		pos.z = tmpRoadPos.GetZ();
 		pline_.vertex_[i].z = pos.z;
-	}
-
-	if (nSteps > 1)
-	{
-		pline_.vertex_[0].h = pline_.vertex_[1].h; // copy second derivative to first position - To be improved
 	}
 
 	// Calculate time interpolations
@@ -8453,6 +8442,10 @@ int NurbsShape::EvaluateInternal(double t, TrajVertex& pos)
 
 void NurbsShape::AddControlPoint(Position pos, double time, double weight, bool calcHeading)
 {
+	if (calcHeading == false)
+	{
+		LOG_ONCE("Info: Explicit orientation in Nurbs trajectory control points not supported yet");
+	}
 	ctrlPoint_.push_back(ControlPoint(pos, time, weight, calcHeading));
 	d_.push_back(0);
 	dPeakT_.push_back(0);

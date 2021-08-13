@@ -54,7 +54,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n11.100.*, 0, Ego, 200.70.*, 72.58.*, -2.44., 1.05.*, 6.26.*', csv))
         self.assertTrue(re.search('\n11.100.*, 1, Target, 205.90.*, 66.44.*, -2.49.*, 2.5.*, 6.28.*', csv))
         self.assertTrue(re.search('\n17.250.*, 0, Ego, 217.35.*, 167.63.*, 1.98.*, 1.73.*, 6.20.*', csv))
-        self.assertTrue(re.search('\n17.250.*, 1, Target, 210.68.*, 157.76.*, 1.31.*, 1.22.*, 6.21.*', csv))
+        self.assertTrue(re.search('\n17.250.*, 1, Target, 210.68.*, 157.76.*, 1.31.*, 1.23.*, 6.21.*', csv))
 
     def test_synchronize(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ARGS \
@@ -89,7 +89,7 @@ class TestSuite(unittest.TestCase):
     def test_left_hand_by_heading(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/left-hand-traffic_by_heading.xosc'), COMMON_ARGS \
             + '--disable_controllers')
-        
+
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading left-hand-traffic_by_heading.xosc', log))
 
@@ -98,7 +98,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n5.75.* Lane change complete after 1 execution', log))
         self.assertTrue(re.search('\n9.77.* QuitCondition timer expired at 4.01 seconds', log))
         self.assertTrue(re.search('\n9.77.* All acts are done, quit now', log))
-        
+
         # Check vehicle key positions
         csv = generate_csv()
 
@@ -112,7 +112,7 @@ class TestSuite(unittest.TestCase):
     def test_left_hand_using_road_rule(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/left-hand-traffic_using_road_rule.xosc'), COMMON_ARGS \
             + '--disable_controllers')
-        
+
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading left-hand-traffic_using_road_rule.xosc', log))
 
