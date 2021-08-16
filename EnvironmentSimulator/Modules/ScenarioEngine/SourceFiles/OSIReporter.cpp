@@ -646,6 +646,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 	// loop over the lanes
 	obj_osi_internal.mobj->add_assigned_lane_id()->set_value(objectState->state_.pos.GetLaneGlobalId());
 	auto current_lane_id = obj_osi_internal.mobj->assigned_lane_id(0).value();
+	bool circular_road_checker = false;
 	for(auto lane : obj_osi_internal.gt->lane())
 	{
 		if(lane.id().value() == current_lane_id)
@@ -1557,21 +1558,21 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 						//Update lanes that connect with junctions that are not intersections
 						if (road->GetNumberOfRoadTypes() > 0 && road->GetRoadType(0)->road_type_ == roadmanager::RoadType::ROADTYPE_MOTORWAY && road->GetJunction() > 0)
 						{
-							for (int k = 0; k < obj_osi_internal.gt->lane_size(); ++k)
+							for (int l = 0; l < obj_osi_internal.gt->lane_size(); ++l)
 							{
-								osi3::Lane_Classification_LanePairing *lane_pairing = nullptr;
+								lane_pairing = nullptr;
 
 								if (predecessorRoad && predecessor_lane_section &&
-									predecessorRoad->GetDrivingLaneById(predecessor_lane_section->GetS(), lane->GetLink(LinkType::PREDECESSOR)->GetId())->GetGlobalId() == obj_osi_internal.gt->lane(k).id().value())
+									predecessorRoad->GetDrivingLaneById(predecessor_lane_section->GetS(), lane->GetLink(LinkType::PREDECESSOR)->GetId())->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
 								{
 									if (!lane_pairing)
 									{
-										lane_pairing = obj_osi_internal.gt->mutable_lane(k)->mutable_classification()->add_lane_pairing();
+										lane_pairing = obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->add_lane_pairing();
 									}
 
 									if ((road->GetLink(roadmanager::LinkType::PREDECESSOR) != 0))
 									{
-										if (obj_osi_internal.gt->mutable_lane(k)->mutable_classification()->centerline_is_driving_direction())
+										if (obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->centerline_is_driving_direction())
 										{
 											lane_pairing->mutable_successor_lane_id()->set_value(lane_global_id);
 										}
@@ -1583,16 +1584,16 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 								}
 
 								if (successorRoad && successor_lane_section &&
-									successorRoad->GetDrivingLaneById(successor_lane_section->GetS(), lane->GetLink(LinkType::SUCCESSOR)->GetId())->GetGlobalId() == obj_osi_internal.gt->lane(k).id().value())
+									successorRoad->GetDrivingLaneById(successor_lane_section->GetS(), lane->GetLink(LinkType::SUCCESSOR)->GetId())->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
 								{
 									if (!lane_pairing)
 									{
-										lane_pairing = obj_osi_internal.gt->mutable_lane(k)->mutable_classification()->add_lane_pairing();
+										lane_pairing = obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->add_lane_pairing();
 									}
 
 									if ((road->GetLink(roadmanager::LinkType::SUCCESSOR) != 0))
 									{
-										if (obj_osi_internal.gt->mutable_lane(k)->mutable_classification()->centerline_is_driving_direction())
+										if (obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->centerline_is_driving_direction())
 										{
 											lane_pairing->mutable_antecessor_lane_id()->set_value(lane_global_id);
 										}
