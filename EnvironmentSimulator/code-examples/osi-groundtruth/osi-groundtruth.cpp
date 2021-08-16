@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 	SE_UpdateOSIGroundTruth();
 	// You could now retrieve the initial state of all objects before stepping the scenario
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 1500; i++)
 	{
 		SE_StepDT(0.01f);
 
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 		// Print object id, position, orientation and velocity
 		for (int j = 0; j < gt->mutable_moving_object()->size(); j++)
 		{
-			printf("  obj id %lld pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
+			printf("  obj id %lld pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) vel (%.2f, %.2f, %.2f) acc (%.2f, %.2f, %.2f)\n",
 				gt->mutable_moving_object(j)->mutable_id()->value(),
 				gt->mutable_moving_object(j)->mutable_base()->mutable_position()->x(),
 				gt->mutable_moving_object(j)->mutable_base()->mutable_position()->y(),
@@ -65,7 +65,10 @@ int main(int argc, char* argv[])
 				gt->mutable_moving_object(j)->mutable_base()->mutable_orientation()->roll(),
 				gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->x(),
 				gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->y(),
-				gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->z()
+				gt->mutable_moving_object(j)->mutable_base()->mutable_velocity()->z(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_acceleration()->x(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_acceleration()->y(),
+				gt->mutable_moving_object(j)->mutable_base()->mutable_acceleration()->z()
 			);
 		}
 #endif
