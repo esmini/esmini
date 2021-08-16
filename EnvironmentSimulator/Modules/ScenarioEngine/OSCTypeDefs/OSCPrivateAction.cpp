@@ -146,7 +146,14 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 
 	time_ += timing_scale_ * dt;
 
-	if (!traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER))
+	// Check end conditions:
+	// Trajectories with no time stamps:
+	//     closed trajectories have no end
+	//     open trajectories simply ends when s >= length of trajectory
+	// Trajectories with time stamps:
+	//     always ends when time >= trajectory duration (last timestamp)
+	if (((timing_domain_ == TimingDomain::NONE && !traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER)) ||
+		 (timing_domain_ != TimingDomain::NONE && time_ >= traj_->GetDuration())))
 	{
 		// Reached end of trajectory
 		// Calculate road coordinates from final inertia (X, Y) coordinates
