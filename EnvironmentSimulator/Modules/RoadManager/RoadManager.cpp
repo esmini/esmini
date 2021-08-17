@@ -1211,8 +1211,8 @@ double LaneSection::GetWidth(double s, int lane_id)
 		return 0.0;  // reference lane has no width
 	}
 
-	// Enforce s to range [0:lengthOfSegment]
-	s = CLAMP(s, 0, GetLength());
+	// Enforce s within range of section
+	s = CLAMP(s, s_, s_ + GetLength());
 
 	Lane *lane = GetLaneById(lane_id);
 	if (lane == 0)
