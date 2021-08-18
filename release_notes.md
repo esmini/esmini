@@ -1,5 +1,18 @@
 ## esmini release notes
 
+### 2021-08-18 Version 2.12.6
+
+- [Fix](https://github.com/esmini/esmini/commit/d74552a462e4449f04bff8606e86f857ae9ec5ab) major bug causing lane width issue for roads with more than one laneSection
+  - The bug was introduced 2021-07-02 in commit [4e95a09](https://github.com/esmini/esmini/commit/4e95a09e2aca83fb1fec104f340bf2fbdb262c8d) and release v2.11.3.
+- Improve nurbs heading ([#144](https://github.com/esmini/esmini/issues/144))
+  - Calculate heading from actual nurbs instead of polyline approximation
+- Traffic sign added to OSI ground truth
+- Add OSI lane pairing
+- Fix condition timer restart issue
+  - Old behavior prevents timer from restarting. This commit fix so that timer restarts if condition becomes true again from being false.
+- Support halt/pause at end of trajectory 
+  - When trajectory control points includes time stamps, end of trajectory should be based on time instead of actually reaching full length.
+
 ### 2021-08-13 Version 2.12.5
 
 - Fix nurbs heading issues ([#144](https://github.com/esmini/esmini/issues/144))
