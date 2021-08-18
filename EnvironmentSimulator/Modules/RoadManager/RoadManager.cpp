@@ -8386,15 +8386,43 @@ void NurbsShape::CalculatePolyLine()
 	double newLength = 0.0;
 	int nSteps = (int)(1 + length_ / steplen);
 	double p_steplen = knot_.back() / nSteps;
-	TrajVertex pos = { 0, 0, 0, 0, 0, 0, 0, 0, true };
-	TrajVertex oldpos = { 0, 0, 0, 0, 0, 0, 0, 0, true };
-
+	TrajVertex pos = { 0, 0, 0, 0, 0, 0, 0, 0, false };
+	TrajVertex oldpos = { 0, 0, 0, 0, 0, 0, 0, 0, false };
+	TrajVertex tmppos = { 0, 0, 0, 0, 0, 0, 0, 0, false };
 
 	pline_.Reset();
 	for (int i = 0; i < nSteps + 1; i++)
 	{
 		double t = i * p_steplen;
 		EvaluateInternal(t, pos);
+
+		// Calulate heading from line segment between this and previous vertices
+		if (i < nSteps)
+		{
+			EvaluateInternal(t + 0.01 * p_steplen, tmppos);
+		}
+		else
+		{
+			EvaluateInternal(t - 0.01 * p_steplen, tmppos);
+		}
+
+		if (PointDistance2D(tmppos.x, tmppos.y, pos.x, pos.y) < SMALL_NUMBER)
+		{
+			// If points conside, use heading from polyline
+			pos.calcHeading = false;
+		}
+		else
+		{
+			if (i < nSteps)
+			{
+				pos.h = GetAngleInInterval2PI(atan2(tmppos.y - pos.y, tmppos.x - pos.x));
+			}
+			else
+			{
+				pos.h = GetAngleInInterval2PI(atan2(pos.y - tmppos.y, pos.x - tmppos.x));
+			}
+		}
+
 		if (i > 0)
 		{
 			newLength += PointDistance2D(pos.x, pos.y, oldpos.x, oldpos.y);
@@ -8470,7 +8498,7 @@ void NurbsShape::AddControlPoint(Position pos, double time, double weight, bool 
 	{
 		LOG_ONCE("Info: Explicit orientation in Nurbs trajectory control points not supported yet");
 	}
-	ctrlPoint_.push_back(ControlPoint(pos, time, weight, calcHeading));
+	ctrlPoint_.push_back(ControlPoint(pos, time, weight, true));
 	d_.push_back(0);
 	dPeakT_.push_back(0);
 	dPeakValue_.push_back(0);
@@ -8513,6 +8541,7 @@ ClothoidShape::ClothoidShape(roadmanager::Position pos, double curv, double curv
 	spiral_ = new roadmanager::Spiral(0, pos_.GetX(), pos_.GetY(), pos_.GetH(), len, curv, curv + curvDot * len);
 	t_start_ = tStart;
 	t_end_ = tEnd;
+	pline_.interpolateHeading_ = true;
 }
 
 void ClothoidShape::CalculatePolyLine()
@@ -8729,6 +8758,10 @@ void Position::ReleaseRelation()
 	double h = GetH();
 	double hAbs = h_;
 	double hRel = h_relative_;
+	double pAbs = p_;
+	double pRel = p_relative_;
+	double rAbs = r_;
+	double rRel = r_relative_;
 	PositionType type = type_;
 
 	SetRelativePosition(0, PositionType::NORMAL);
@@ -8742,13 +8775,15 @@ void Position::ReleaseRelation()
 			hRel = GetAngleSum(hRel, GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0);
 
 			SetHeadingRelative(hRel);
-			SetPitch(p);
-			SetRoll(r);
+			SetPitchRelative(pRel);
+			SetRollRelative(rRel);
 		}
 		else
 		{
 			SetLanePos(roadId, laneId, s, offset);
 			SetHeading(hAbs);
+			SetPitch(pAbs);
+			SetRoll(rAbs);
 		}
 	}
 	if (type == Position::PositionType::RELATIVE_ROAD)
@@ -8762,13 +8797,15 @@ void Position::ReleaseRelation()
 			hRel = GetAngleSum(hRel, GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0);
 
 			SetHeadingRelative(hRel);
-			SetPitch(p);
-			SetRoll(r);
+			SetPitchRelative(pRel);
+			SetRollRelative(rRel);
 		}
 		else
 		{
 			SetTrackPos(roadId, s, t);
 			SetHeading(hAbs);
+			SetPitch(pAbs);
+			SetRoll(rAbs);
 		}
 	}
 	else if (type == PositionType::RELATIVE_OBJECT || type == PositionType::RELATIVE_WORLD)

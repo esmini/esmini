@@ -55,6 +55,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n11.100.*, 1, Target, 205.90.*, 66.44.*, -2.49.*, 2.5.*, 6.28.*', csv))
         self.assertTrue(re.search('\n17.250.*, 0, Ego, 217.35.*, 167.63.*, 1.98.*, 1.73.*, 6.20.*', csv))
         self.assertTrue(re.search('\n17.250.*, 1, Target, 210.68.*, 157.76.*, 1.31.*, 1.23.*, 6.21.*', csv))
+        self.assertTrue(re.search('\n25.000.*, 0, Ego, 206.06.*, 288.46.*, 5.43.*, 1.18.*, 6.23.*', csv))
+        self.assertTrue(re.search('\n25.000.*, 1, Target, 216.18.*, 307.60.*, 6.70.*, 0.96.*, 6.21.*', csv))
 
     def test_synchronize(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ARGS \
@@ -105,9 +107,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n2.500.*, 0, Ego, -7.54.*, 115.02.*, -0.17.*, 1.56.*, 0.002.*, 6.28.*, 30.00.*', csv))
         self.assertTrue(re.search('\n2.500.*, 1, OverTaker, -3.97.*, 115.01.*, -0.17.*, 1.56.*, 0.002.*, 0.00.*, 42.00.*', csv))
         self.assertTrue(re.search('\n4.380.*, 0, Ego, -7.19.*, 171.42.*, -0.29.*, 1.56.*, 0.002.*, 6.28.*, 30.00.*', csv))
-        self.assertTrue(re.search('\n4.380.*, 1, OverTaker, -4.25.*, 193.97.*, -0.33.*, 1.61.*, 0.001.*, 0.00.*, 42.00.*', csv))
+        self.assertTrue(re.search('\n4.380.*, 1, OverTaker, -4.25.*, 193.97.*, -0.33.*, 1.61.*, 0.002.*, 0.00.*, 42.00.*', csv))
         self.assertTrue(re.search('\n9.000.*, 0, Ego, -5.64.*, 310.01.*, -0.54.*, 1.55.*, 0.002.*, 6.28.*, 30.00.*', csv))
-        self.assertTrue(re.search('\n9.000.*, 1, OverTaker, -4.0(19|20).*, 388.02.*, -0.69.*, 1.54.*, 0.001.*, 0.00.*, 42.00.*', csv))
+        self.assertTrue(re.search('\n9.000.*, 1, OverTaker, -4.0(19|20).*, 388.02.*, -0.69.*, 1.54.*, 0.002.*, 0.00.*, 42.00.*', csv))
 
     def test_left_hand_using_road_rule(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/left-hand-traffic_using_road_rule.xosc'), COMMON_ARGS \
@@ -128,9 +130,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n2.500.*, 0, Ego, -7.54.*, 115.02.*, -0.17.*, 1.56.*, 0.002.*, 0.00.*, 30.00.*', csv))
         self.assertTrue(re.search('\n2.500.*, 1, OverTaker, -3.97.*, 115.01.*, -0.17.*, 1.56.*, 0.002.*, 0.00.*, 42.00.*', csv))
         self.assertTrue(re.search('\n4.380.*, 0, Ego, -7.19.*, 171.42.*, -0.29.*, 1.56.*, 0.002.*, 0.00.*, 30.00.*', csv))
-        self.assertTrue(re.search('\n4.380.*, 1, OverTaker, -4.25.*, 193.97.*, -0.33.*, 1.61.*, 0.001.*, 0.00.*, 42.00.*', csv))
+        self.assertTrue(re.search('\n4.380.*, 1, OverTaker, -4.25.*, 193.97.*, -0.33.*, 1.61.*, 0.002.*, 0.00.*, 42.00.*', csv))
         self.assertTrue(re.search('\n9.000.*, 0, Ego, -5.64.*, 310.01.*, -0.54.*, 1.55.*, 0.002.*, 0.00.*, 30.00.*', csv))
-        self.assertTrue(re.search('\n9.000.*, 1, OverTaker, -4.0(19|20).*, 388.02.*, -0.69.*, 1.54.*, 0.001.*, 0.00.*, 42.00.*', csv))
+        self.assertTrue(re.search('\n9.000.*, 1, OverTaker, -4.0(19|20).*, 388.02.*, -0.69.*, 1.54.*, 0.002.*, 0.00.*, 42.00.*', csv))
 
     def test_routing(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/routing-test.xosc'), COMMON_ARGS)

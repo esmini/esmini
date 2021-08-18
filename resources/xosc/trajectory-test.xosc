@@ -263,13 +263,13 @@
                                </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                        <Event maximumExecutionCount="1" name="AlignHeadingEvent" priority="overwrite">
+                        <Event maximumExecutionCount="1" name="AlignEvent" priority="overwrite">
                             <Action>
                                 <PrivateAction>
                                     <TeleportAction>
                                         <Position>
                                             <RelativeLanePosition entityRef="$owner" >
-                                                <Orientation type="relative" h="0.0" />
+                                                <Orientation type="relative" h="0.0" p="0.0" r="0.0" />
                                             </RelativeLanePosition>
                                         </Position>
                                     </TeleportAction>
