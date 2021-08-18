@@ -835,8 +835,9 @@ CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::stri
 	const char* egoHeader = "Index [-] , TimeStamp [sec] , #1 Entitity_Name [-] , "
 		"#1 Entitity_ID [-] , #1 Current_Speed [m/sec] , #1 Wheel_Angle [deg] , "
 		"#1 Wheel_Rotation [-] , #1 World_Position_X [-] , #1 World_Position_Y [-] , "
-		"#1 World_Position_Z [-] , #1 Distance_Travelled_Along_Road_Segment [m] , "
-		"#1 Lateral_Distance_Lanem [m] , #1 World_Heading_Angle [rad] , "
+		"#1 World_Position_Z [-] , #1 Acc_X [-] , #1 Acc_Y [-] , "
+		"#1 Acc_Z [-] , #1 Distance_Travelled_Along_Road_Segment [m] , "
+		"#1 Lateral_Distance_Lanem [m] , #1 World_Heading_Angle [rad] , #1 Heading_Angle_Rate [rad/s] , "
 		"#1 Relative_Heading_Angle [rad] , #1 Relative_Heading_Angle_Drive_Direction [rad] , "
 		"#1 World_Pitch_Angle [rad] , #1 Road_Curvature [1/m] , ";
 	snprintf(message, 1024, egoHeader);
@@ -846,13 +847,14 @@ CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::stri
 	const char* npcHeader = "#%d Entitity_Name [-] , #%d Entitity_ID [-] , "
 		"#%d Current_Speed [m/sec] , #%d Wheel_Angle [deg] , #%d Wheel_Rotation [-] , "
 		"#%d World_Position_X [-] , #%d World_Position_Y [-] , #%d World_Position_Z [-] , "
+		"#%d Acc_X[-] , #%d Acc_Y[-] , #%d Acc_Z [-] , "
 		"#%d Distance_Travelled_Along_Road_Segment [m] , #%d Lateral_Distance_Lanem [m] , "
-		"#%d World_Heading_Angle [rad] , #%d Relative_Heading_Angle [rad] , "
+		"#%d World_Heading_Angle [rad] , #%d Heading_Angle_Rate [rad/s] , #%d Relative_Heading_Angle [rad] , "
 		"#%d Relative_Heading_Angle_Drive_Direction [rad] , #%d World_Pitch_Angle [rad] , "
 		"#%d Road_Curvature [1/m] , ";
 	for (int i = 2; i <= numvehicles; i++)
 	{
-		snprintf(message, 1024, npcHeader, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+		snprintf(message, 1024, npcHeader, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i);
 		file_ << message;
 	}
 	file_ << std::endl;
@@ -872,11 +874,10 @@ CSV_Logger::~CSV_Logger()
 	callback_ = 0;
 }
 
-void CSV_Logger::LogVehicleData(bool isendline, double timestamp,
-	char const* name_, int id_, double speed_, double wheel_angle_, double wheel_rot_,
-	double posX_, double posY_, double posZ_, double distance_road_, double distance_lanem_,
-	double heading_, double heading_angle_, double heading_angle_driving_direction_,
-	double pitch_, double curvature_, ...)
+void CSV_Logger::LogVehicleData(bool isendline, double timestamp, char const* name_, int id_, double speed_,
+	double wheel_angle_, double wheel_rot_, double posX_, double posY_, double posZ_, double accX_, double accY_,
+	double accZ_, double distance_road_, double distance_lanem_, double heading_, double heading_rate_,
+	double heading_angle_, double heading_angle_driving_direction_, double pitch_, double curvature_, ...)
 {
 	static char data_entry[2048];
 
@@ -884,15 +885,15 @@ void CSV_Logger::LogVehicleData(bool isendline, double timestamp,
 	//Otherwise use the second format
 	if (id_ == 0)
 		snprintf(data_entry, 2048,
-			"%d , %f , %s , %d , %f , %f , %f , %f , %f , %f , %f , %f, %f, %f, %f, %f , %f ,",
-			data_index_, timestamp, name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_,
-			posZ_, distance_road_, distance_lanem_, heading_, heading_angle_,
+			"%d, %f, %s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, ",
+			data_index_, timestamp, name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_, posZ_, accX_,
+			accY_, accZ_, distance_road_, distance_lanem_, heading_, heading_rate_, heading_angle_,
 			heading_angle_driving_direction_, pitch_, curvature_);
 	else
 		snprintf(data_entry, 2048,
-			"%s , %d , %f , %f , %f , %f , %f , %f , %f , %f, %f, %f, %f, %f , %f,",
-			name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_, posZ_, distance_road_,
-			distance_lanem_, heading_, heading_angle_, heading_angle_driving_direction_, pitch_,
+			"%s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+			name_, id_, speed_, wheel_angle_, wheel_rot_, posX_, posY_, posZ_, accX_, accY_, accZ_, distance_road_,
+			distance_lanem_, heading_, heading_rate_, heading_angle_, heading_angle_driving_direction_, pitch_,
 			curvature_);
 
 	//Add lines horizontally until the endline is reached
