@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="1"
+               date="2021-08-19T10:00:00"
+               description=""
+               author="esmini team"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/fabriksgatan.xodr"/>
+      <SceneGraphFile filepath="../../../resources/models/fabriksgatan.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Car">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Car">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="1" offset="0" s="20"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${50.0/3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+         <ParameterDeclarations/>
+         <Act name="Act">
+            <ManeuverGroup maximumExecutionCount="1" name="Maneuver">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Car"/>
+               </Actors>
+               <Maneuver name="RestartManeuver">
+                  <Event name="RestartEvent" priority="overwrite" maximumExecutionCount="5">
+                     <Action name="TeleportAction">
+                        <PrivateAction>
+                            <TeleportAction>
+                                <Position>
+                                    <LanePosition roadId="0" laneId="1" offset="0" s="20"/>
+                                </Position>
+                            </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="ReachPointCondition1" delay="0.0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Car"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <ReachPositionCondition tolerance="5.0">
+                                       <Position>
+                                          <LanePosition roadId="1" laneId="0" s="15.0"/>
+                                       </Position>
+                                    </ReachPositionCondition>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                        <ConditionGroup>
+                           <Condition name="ReachPointCondition2" delay="0.0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Car"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <ReachPositionCondition tolerance="5.0">
+                                       <Position>
+                                          <LanePosition roadId="2" laneId="0" s="290.0"/>
+                                       </Position>
+                                    </ReachPositionCondition>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                        <ConditionGroup>
+                           <Condition name="ReachPointCondition3" delay="0.0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Car"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <ReachPositionCondition tolerance="5.0">
+                                       <Position>
+                                          <LanePosition roadId="3" laneId="0" s="100.0"/>
+                                       </Position>
+                                    </ReachPositionCondition>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LtapActStartConditionNPC" delay="0" conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterOrEqual"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger>
+               <ConditionGroup>
+                   <Condition name="EventDoneCondition" delay="0" conditionEdge="none">
+                      <ByValueCondition>
+                         <StoryboardElementStateCondition storyboardElementType="event"
+                                                          storyboardElementRef="RestartEvent"
+                                                          state="completeState"/>
+                      </ByValueCondition>
+                   </Condition>               
+               </ConditionGroup>
+			</StopTrigger>
+         </Act>
+      </Story>
+   </Storyboard>
+</OpenSCENARIO>

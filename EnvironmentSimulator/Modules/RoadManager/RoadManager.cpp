@@ -6196,7 +6196,7 @@ std::string OpenDrive::ElementType2Str(RoadLink::ElementType type)
 	}
 }
 
-int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, Junction::JunctionStrategyType strategy)
+int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, double junctionSelectorAngle)
 {
 	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
 	Road *next_road = 0;
@@ -6275,7 +6275,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 		else
 		{
 			// find valid connecting road, if multiple choices choose either most straight one OR by random
-			if (strategy == Junction::JunctionStrategyType::STRAIGHT)
+			if (junctionSelectorAngle >= 0.0)
 			{
 				// Find the straighest link
 				int best_road_index = 0;
@@ -6286,29 +6286,27 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 						junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), i, snapToLaneTypes_);
 					next_road = GetOpenDrive()->GetRoadById(lane_road_lane_connection.GetConnectingRoadId());
 
+					// Get a position at end of the connecting road
 					Position test_pos;
+					double outHeading = 0.0;
 					if (lane_road_lane_connection.contact_point_ == CONTACT_POINT_START)
 					{
-						// Inspect heading at the connecting road
 						test_pos.SetLanePos(next_road->GetId(), new_lane_id, next_road->GetLength(), 0);
+						outHeading = test_pos.GetHRoad();
 					}
 					else if (lane_road_lane_connection.contact_point_ == CONTACT_POINT_END)
 					{
 						test_pos.SetLanePos(next_road->GetId(), new_lane_id, 0, 0);
+						outHeading = GetAngleSum(test_pos.GetHRoad(), M_PI);
 					}
 					else
 					{
 						LOG("Unexpected contact point type: %d", road_link->GetContactPointType());
 					}
 
-					// Transform angle into a comparable format
-
-					double heading_diff = GetAbsAngleDifference(test_pos.GetHRoad(), GetHRoad());
-					if (heading_diff > M_PI / 2)
-					{
-						heading_diff = fabs(heading_diff - M_PI);  // don't care of driving direction here
-					}
-
+					// Compare heading angle difference, find smallest
+					double deltaHeading = GetAngleInInterval2PI(GetAngleDifference(outHeading, GetHRoadInDrivingDirection()));
+					double heading_diff = GetAbsAngleDifference(deltaHeading, junctionSelectorAngle);
 					if (heading_diff < min_heading_diff)
 					{
 						min_heading_diff = heading_diff;
@@ -6317,7 +6315,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 				}
 				connection_idx = best_road_index;
 			}
-			else if (strategy == Junction::JunctionStrategyType::RANDOM)
+			else  // randomize
 			{
 				connection_idx = (int)(n_connections * (double)mt_rand() / mt_rand.max());
 			}
@@ -6398,7 +6396,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 	return 0;
 }
 
-int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrategyType strategy)
+int Position::MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle)
 {
 	RoadLink *link;
 	double ds_signed = ds;
@@ -6463,7 +6461,7 @@ int Position::MoveAlongS(double ds, double dLaneOffset, Junction::JunctionStrate
 		}
 
 		// If link is OK then move to the start- or endpoint of the connected road, depending on contact point
-		if (!link || link->GetElementId() == -1 || MoveToConnectingRoad(link, contact_point_type, strategy) != 0)
+		if (!link || link->GetElementId() == -1 || MoveToConnectingRoad(link, contact_point_type, junctionSelectorAngle) != 0)
 		{
 			// Failed to find a connection, stay at end of current road
 			SetLanePos(track_id_, lane_id_, s_stop, offset_);
@@ -7057,6 +7055,17 @@ bool Position::IsOffRoad()
 	return false;
 }
 
+bool Position::IsInJunction()
+{
+	Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	if (road)
+	{
+		return road->GetJunction() != -1;
+	}
+
+	return false;
+}
+
 double Position::getRelativeDistance(double targetX, double targetY, double &x, double &y) const
 {
 	// Calculate diff vector from current to target
@@ -7396,7 +7405,7 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, Loo
 
 	if (fabs(lookahead_distance) > SMALL_NUMBER)
 	{
-		int retval = target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT);
+		int retval = target.MoveAlongS(lookahead_distance, 0.0, 0.0);
 
 		if (retval != 0)
 		{
@@ -7474,7 +7483,7 @@ int Position::GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookA
 		}
 		else
 		{
-			retval = target.MoveAlongS(lookahead_distance, 0, Junction::STRAIGHT);
+			retval = target.MoveAlongS(lookahead_distance, 0.0, 0.0);
 		}
 	}
 

@@ -127,7 +127,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 
 		if (fabs(object_->GetSpeed()) > SMALL_NUMBER)
 		{
-			object_->pos_.MoveAlongS(steplen, 0);
+			object_->pos_.MoveAlongS(steplen);
 		}
 	}
 

@@ -288,10 +288,10 @@ extern "C"
 	Move position forward along the road. Choose way randomly though any junctions.
 	@param handle Handle to the position object
 	@param dist Distance (meter) to move
-	@param strategy How to move in a junction where multiple route options appear, see Junction::JunctionStrategyType
+	@param junctionSelectorAngle Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_PositionMoveForward(int handle, float dist, int strategy);
+	RM_DLL_API int RM_PositionMoveForward(int handle, float dist, float junctionSelectorAngle);
 
 	/**
 	Get the fields of the position of specified index

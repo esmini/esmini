@@ -639,7 +639,20 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 					// If pointing in other direction
 					steplen *= -1;
 				}
-				retvalue = obj->pos_.MoveAlongS(steplen);
+				retvalue = obj->pos_.MoveAlongS(steplen, 0.0, obj->GetJunctionSelectorAngle());
+
+				if (obj->GetJunctionSelectorStrategy() == Junction::JunctionStrategyType::RANDOM &&
+					obj->pos_.IsInJunction() && obj->GetJunctionSelectorAngle() >= 0)
+				{
+					// Set junction selector angle as undefined during junction
+					obj->SetJunctionSelectorAngle(std::nan(""));
+				}
+				else if (obj->GetJunctionSelectorStrategy() == Junction::JunctionStrategyType::RANDOM &&
+					!obj->pos_.IsInJunction() && isnan(obj->GetJunctionSelectorAngle()))
+				{
+					// Set new random junction selector after coming out of junction
+					obj->SetJunctionSelectorAngleRandom();
+				}
 			}
 
 			if (obj->pos_.GetStatusBitMask() & roadmanager::Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD ||

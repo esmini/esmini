@@ -10,6 +10,7 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+#include <random>
 #include "Entities.hpp"
 #include "Controller.hpp"
 #include "OSCPrivateAction.hpp"
@@ -19,6 +20,44 @@ using namespace scenarioengine;
 using namespace roadmanager;
 
 #define ELEVATION_DIFF_THRESHOLD 2.5
+
+static std::mt19937 mt_rand;
+
+Object::Object(Type type) : type_(type), id_(0), speed_(0), wheel_angle_(0), wheel_rot_(0),
+route_(0), model_filepath_(""), ghost_trail_s_(0), trail_follow_index_(0), odometer_(0), end_of_road_timestamp_(0.0),
+off_road_timestamp_(0.0), stand_still_timestamp_(0), dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0),
+visibilityMask_(0xFF), isGhost_(false), junctionSelectorStrategy_(Junction::JunctionStrategyType::RANDOM), nextJunctionSelectorAngle_(0.0)
+{
+	sensor_pos_[0] = 0;
+	sensor_pos_[1] = 0;
+	sensor_pos_[2] = 0;
+
+	state_old.pos_x = 0;
+	state_old.pos_y = 0;
+	state_old.vel_x = 0;
+	state_old.vel_y = 0;
+	state_old.h = 0;
+	state_old.h_rate = 0;
+
+	trail_closest_pos_ = { 0, 0, 0, 0, 0, 0, false };
+
+	// initialize override vector
+	for (int i = 0; i < OVERRIDE_NR_TYPES; i++)
+	{
+		overrideActionList[i].type = (OverrideType)i;
+		overrideActionList[i].value = 0.0;
+		overrideActionList[i].active = false;
+	}
+
+	boundingbox_ = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
+	mt_rand.seed((unsigned int)time(0));
+
+	if (junctionSelectorStrategy_ == Junction::JunctionStrategyType::RANDOM)
+	{
+		SetJunctionSelectorAngleRandom();
+	}
+}
 
 void Object::SetEndOfRoad(bool state, double time)
 {
@@ -153,6 +192,23 @@ void Object::SetAngularAcc(double h_acc, double p_acc, double r_acc)
 {
 	pos_.SetAngularAcc(h_acc, p_acc, r_acc);
 	SetDirtyBits(dirty_ | DirtyBit::ANGULAR_ACC);
+}
+
+void Object::SetJunctionSelectorAngle(double angle)
+{
+	if (isnan(angle))
+	{
+		nextJunctionSelectorAngle_ = angle;
+	}
+	else
+	{
+		nextJunctionSelectorAngle_ = GetAngleInInterval2PI(angle);
+	}
+}
+
+void Object::SetJunctionSelectorAngleRandom()
+{
+	nextJunctionSelectorAngle_ = 2 * M_PI * ((double)mt_rand()) / (mt_rand.max)();
 }
 
 bool Object::Collision(Object* target)

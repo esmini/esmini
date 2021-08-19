@@ -112,6 +112,7 @@ namespace scenarioengine
 			double timestamp, double speed, double wheel_angle, double wheel_rot,
 			int roadId, double lateralOffset, double s);
 
+		void reportObjectSpeed(int id, double speed);
 		void reportObjectVel(int id, double x_vel, double y_vel, double z_vel);
 		void reportObjectAcc(int id, double x_acc, double y_acc, double z_acc);
 		void reportObjectAngularVel(int id, double h_rate, double p_rate, double r_rate);

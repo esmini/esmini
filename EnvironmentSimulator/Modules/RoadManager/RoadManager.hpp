@@ -1171,7 +1171,7 @@ namespace roadmanager
 		typedef enum
 		{
 			RANDOM,
-			STRAIGHT,
+			SELECTOR_ANGLE,  // choose road which heading (relative incoming road) is closest to specified angle
 		} JunctionStrategyType;
 
 		Junction(int id, std::string name) : id_(id), name_(name) {SetGlobalId();}
@@ -1480,7 +1480,7 @@ namespace roadmanager
 		*/
 		int XYZH2TrackPos(double x, double y, double z, double h, bool connectedOnly = false, int roadId = -1);
 
-		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, Junction::JunctionStrategyType strategy = Junction::RANDOM);
+		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, double junctionSelectorAngle = -1.0);
 
 		void SetRelativePosition(Position* rel_pos, PositionType type)
 		{
@@ -1651,10 +1651,20 @@ namespace roadmanager
 		/**
 		Move position along the road network, forward or backward, from the current position
 		It will automatically follow connecting lanes between connected roads
+		If reaching a junction, choose way according to specified junctionSelectorAngle
+		@param ds distance to move from current position
+		@param dLaneOffset delta lane offset (adding to current position lane offset)
+		@param junctionSelectorAngle Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize
+		*/
+		int MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle);
+
+		/**
+		Move position along the road network, forward or backward, from the current position
+		It will automatically follow connecting lanes between connected roads
 		If multiple options (only possible in junctions) it will choose randomly
 		@param ds distance to move from current position
 		*/
-		int MoveAlongS(double ds, double dLaneOffset = 0, Junction::JunctionStrategyType strategy = Junction::JunctionStrategyType::RANDOM);
+		int MoveAlongS(double ds) { return MoveAlongS(ds, 0.0, -1.0); }
 
 		/**
 		Retrieve the track/road ID from the position object
@@ -1851,6 +1861,7 @@ namespace roadmanager
 		void PrintXY();
 
 		bool IsOffRoad();
+		bool IsInJunction();
 
 		void ReplaceObjectRefs(Position* pos1, Position* pos2)
 		{

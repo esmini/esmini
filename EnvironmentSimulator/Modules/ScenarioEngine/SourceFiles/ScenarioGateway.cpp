@@ -312,6 +312,19 @@ void ScenarioGateway::reportObject(int id, std::string name, int obj_type, int o
 	}
 }
 
+void ScenarioGateway::reportObjectSpeed(int id, double speed)
+{
+	ObjectState* obj_state = getObjectStatePtrById(id);
+
+	if (obj_state == nullptr)
+	{
+		LOG_ONCE("Can't set speed for object %d yet. Please register object using reportObject() first.");
+		return;
+	}
+
+	obj_state->state_.info.speed = speed;
+}
+
 void ScenarioGateway::reportObjectVel(int id, double x_vel, double y_vel, double z_vel)
 {
 	ObjectState* obj_state = getObjectStatePtrById(id);

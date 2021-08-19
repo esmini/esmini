@@ -364,6 +364,32 @@ TEST(ParameterTest, ParseParameterTest)
     ASSERT_EQ(params.ReadAttribute(someNode0, "attr9", false), "2.000000");
 }
 
+TEST(JunctionTest, JunctionSelectorTest)
+{
+    double dt = 0.01;
+
+    double angles[] = { 3 * M_PI_2, -M_PI_2, 0.0, M_PI_2 };
+    int roadIds[] = { 1, 1, 2, 3 };
+    double durations[] = { 2.5, 2.5, 2.6, 2.8 };  // Make sure car gets gets out of the intersection
+
+    Logger::Inst().OpenLogfile();
+    for (int i = 0; i < sizeof(angles) / sizeof(double); i++)
+    {
+        ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/junction-selector.xosc");
+        ASSERT_NE(se, nullptr);
+
+        // Turn always right
+        se->entities.object_[0]->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
+        se->entities.object_[0]->SetJunctionSelectorAngle(angles[i]);
+        while (se->getSimulationTime() < durations[i] && se->GetQuitFlag() != true)
+        {
+            se->step(dt);
+        }
+        ASSERT_EQ(se->entities.object_[0]->pos_.GetTrackId(), roadIds[i]);
+        delete se;
+    }
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);

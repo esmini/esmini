@@ -446,7 +446,7 @@ extern "C"
 		return 0;
 	}
 
-	RM_DLL_API int RM_PositionMoveForward(int handle, float dist, int strategy)
+	RM_DLL_API int RM_PositionMoveForward(int handle, float dist, float junctionSelectorAngle)
 	{
 		if (odrManager == 0 || handle >= position.size())
 		{
@@ -456,7 +456,7 @@ extern "C"
 		{
 			roadmanager::Position *pos = &position[handle];
 
-			return(pos->MoveAlongS(dist, 0.0, (Junction::JunctionStrategyType)strategy));
+			return(pos->MoveAlongS(dist, 0.0, junctionSelectorAngle));
 		}
 	}
 

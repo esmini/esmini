@@ -21,6 +21,7 @@
 #include "OSCProperties.hpp"//todo
 #include <algorithm>
 
+
 namespace scenarioengine
 {
 	class Controller;  // Forward declaration
@@ -112,6 +113,8 @@ namespace scenarioengine
 		double stand_still_timestamp_;
 		double headstart_time_;
 		int visibilityMask_;
+		roadmanager::Junction::JunctionStrategyType junctionSelectorStrategy_;
+		double nextJunctionSelectorAngle_;  // number between 0:2pi (circle). E.g. if 1.57 choose the leftmost road
 
 		int dirty_;
 		bool reset_;			 // indicate discreet movement, teleporting, no odometer update
@@ -131,34 +134,7 @@ namespace scenarioengine
 			double h_rate;
 		} state_old;
 
-		Object(Type type) : type_(type), id_(0), speed_(0), wheel_angle_(0), wheel_rot_(0),
-							route_(0), model_filepath_(""), ghost_trail_s_(0), trail_follow_index_(0), odometer_(0), end_of_road_timestamp_(0.0),
-							off_road_timestamp_(0.0), stand_still_timestamp_(0), dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0),
-							visibilityMask_(0xFF), isGhost_(false)
-		{
-			sensor_pos_[0] = 0;
-			sensor_pos_[1] = 0;
-			sensor_pos_[2] = 0;
-
-			state_old.pos_x = 0;
-			state_old.pos_y = 0;
-			state_old.vel_x = 0;
-			state_old.vel_y = 0;
-			state_old.h = 0;
-			state_old.h_rate = 0;
-
-			trail_closest_pos_ = {0, 0, 0, 0, 0, 0, false};
-
-			// initialize override vector
-			for (int i = 0; i < OVERRIDE_NR_TYPES; i++)
-			{
-				overrideActionList[i].type = (OverrideType)i;
-				overrideActionList[i].value = 0.0;
-				overrideActionList[i].active = false;
-			}
-
-			boundingbox_ = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-		}
+		Object(Type type);
 		~Object() {}
 		void SetEndOfRoad(bool state, double time = 0.0);
 		bool IsEndOfRoad() { return end_of_road_timestamp_ > SMALL_NUMBER; }
@@ -265,6 +241,31 @@ namespace scenarioengine
 		void SetAcc(double x_acc, double y_acc, double z_acc);
 		void SetAngularVel(double h_vel, double p_vel, double r_vel);
 		void SetAngularAcc(double h_acc, double p_acc, double r_acc);
+
+		/**
+		Specify strategy how to choose way in next junction
+		@param type Use specified angle (SetJunctionSelectorAngle*) or randomize. See roadmanager::Junction::JunctionStrategyType.
+		*/
+		void SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType type) { junctionSelectorStrategy_ = type; }
+
+		/**
+		Get current strategy how to choose way in next junction
+		@return JunctionStrategyType: Use specified angle (SetJunctionSelectorAngle*) or randomize. See roadmanager::Junction::JunctionStrategyType.
+		*/
+		roadmanager::Junction::JunctionStrategyType GetJunctionSelectorStrategy() { return junctionSelectorStrategy_; }
+
+		/**
+		Specify how to choose way in next junction
+		@param angle Specify desired direction [0:2pi] from incoming road direction (angle = 0)
+		*/
+		void SetJunctionSelectorAngle(double angle);
+
+		/**
+		Choose a random angle for junction selector, in effect random choice in next junction
+		*/
+		void SetJunctionSelectorAngleRandom();
+
+		double GetJunctionSelectorAngle() { return nextJunctionSelectorAngle_; }
 
 		//Rel2abs Controller addition
 		void addEvent(Event* event) { objectEvents_.push_back(event); }

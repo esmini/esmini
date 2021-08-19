@@ -99,5 +99,15 @@
 				<File filepath="$CfgFile"/>
 			</Properties>
 		</Controller>
+		<Controller name="accController">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" /> 
+            </ParameterDeclarations>			
+            <Properties>
+				<Property name="esminiController" value="ACCController" />
+                <Property name="mode" value="$Mode" />                    
+                <Property name="setSpeed"  value="$SetSpeed" />
+			</Properties>
+		</Controller>
 	</Catalog>
 </OpenSCENARIO>
