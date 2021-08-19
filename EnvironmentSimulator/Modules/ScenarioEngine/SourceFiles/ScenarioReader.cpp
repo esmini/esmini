@@ -616,33 +616,26 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
 	std::string ctrlType = properties.GetValueStr("esminiController");
 	if (ctrlType.empty())
 	{
-		LOG("Missing esminiController property in %s, fall back to DefaultController", name.c_str());
-		ctrlType = "DefaultController";
+		LOG("Missing esminiController property, using controller name: %s", name.c_str());
+		ctrlType = name;
 	}
 
-	if (ctrlType == "DefaultController")
+	ControllerPool::ControllerEntry *ctrl_entry = ScenarioReader::controllerPool_.GetControllerByType(ctrlType);
+	if (ctrl_entry)
 	{
-		// Fall back to esmini default operation - no controller involved
-		controller = 0;
+		Controller::InitArgs args;
+		args.name = name;
+		args.type = ctrlType;
+		args.entities = entities_;
+		args.gateway = gateway_;
+		args.parameters = &parameters;
+		args.properties = &properties;
+		controller = (Controller *)ctrl_entry->instantiateFunction(&args);
 	}
 	else
 	{
-		ControllerPool::ControllerEntry *ctrl_entry = ScenarioReader::controllerPool_.GetControllerByType(ctrlType);
-		if (ctrl_entry)
-		{
-			Controller::InitArgs args;
-			args.name = name;
-			args.type = ctrlType;
-			args.entities = entities_;
-			args.gateway = gateway_;
-			args.parameters = &parameters;
-			args.properties = &properties;
-			controller = (Controller *)ctrl_entry->instantiateFunction(&args);
-		}
-		else
-		{
-			LOG("Unsupported controller type: %s", ctrlType.c_str());
-		}
+		LOG("Unsupported controller type: %s. Falling back to default controller", ctrlType.c_str());
+		controller = 0;
 	}
 
 	parameters.RestoreParameterDeclarations();
