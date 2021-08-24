@@ -3114,6 +3114,11 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 					LOG("%s not supported", childName.c_str());
 				}
 			}
+			if (event->start_trigger_ == 0)
+			{
+				// Add a default (empty) trigger
+				event->start_trigger_ = new Trigger(true);
+			}
 			maneuver->event_.push_back(event);
 		}
 	}
