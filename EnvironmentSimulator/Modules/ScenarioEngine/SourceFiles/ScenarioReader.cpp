@@ -955,6 +955,12 @@ int ScenarioReader::parseEntities()
 							Pedestrian *pedestrian = parseOSCPedestrian(entry->GetNode());
 							obj = pedestrian;
 						}
+						else if (entry->type_ == CatalogType::CATALOG_MISC_OBJECT)
+						{
+							// Make a new instance from catalog entry
+							MiscObject* miscobj = parseOSCMiscObject(entry->GetNode());
+							obj = miscobj;
+						}
 						else
 						{
 							LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
