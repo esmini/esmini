@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2021-08-24 Version 2.13.0
+
+- Add a simple ACC-Controller
+  - and example scenario [acc-test.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/acc-test.xosc) / [run_acc-test.bat](https://github.com/esmini/esmini/blob/master/run/esmini/run_acc-test.bat)
+- Extend CSV logger with acc and yaw rate (issue [#145](https://github.com/esmini/esmini/issues/145))
+- Add support for MiscObject catalogs (not tested yet, issue [#146](https://github.com/esmini/esmini/issues/146))
+- Use controller's name for missing esminiController property
+  - E.g. by naming the controller "ExternalController", the line:  
+    `<Property name="esminiController" value="ExternalController" />`  
+    can be omitted.
+- Update roadmanager junction strategy using angle instead of limited discreet choices
+  - Road with closest heading direction will be selected (can be randomized as well)
+- Add event default trigger if missing (issue [#147](https://github.com/esmini/esmini/issues/147))
+  
 ### 2021-08-18 Version 2.12.6
 
 - [Fix](https://github.com/esmini/esmini/commit/d74552a462e4449f04bff8606e86f857ae9ec5ab) major bug causing lane width issue for roads with more than one laneSection

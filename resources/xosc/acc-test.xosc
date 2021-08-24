@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Demonstrate basic maneuvers and triggers -->
-<!-- A white car is driving with constant speed -->
-<!-- A red car is overtaking -->
-<!-- At specific time gap the red car changes lane -->
-<!-- and ends up in front of the white car -->
-<!-- At another, larger, time gap the red car brakes -->
+<!-- Demonstrate and test ACC controller -->
+<!-- A white car is driving with constant speed, set by init event -->
+<!-- The white car approaches a red leading car -->
+<!-- The red leading car will perform some maneuvers to exercise the ACC function -->
 
 <OpenSCENARIO>
    <FileHeader revMajor="1"
                revMinor="1"
-               date="2021-04-09T10:00:00"
-               description="Basic cut-in"
+               date="2021-08-24T10:00:00"
+               description="Demonstrate ACC controller"
                author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
