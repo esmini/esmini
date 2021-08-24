@@ -42,6 +42,10 @@ namespace scenarioengine
 	private:
 		vehicle::Vehicle vehicle_;
 		double timeGap_;  // target headway time
+		bool active_;
+		double setSpeed_;
+		double currentSpeed_;
+		DampedSpring regulator_;
 	};
 
 	Controller* InstantiateControllerACC(void* args);

@@ -3607,7 +3607,7 @@ bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fro
 	return true;
 }
 
-int RoadPath::Calculate(double &dist, bool bothDirections)
+int RoadPath::Calculate(double &dist, bool bothDirections, double maxDist)
 {
 	OpenDrive* odr = startPos_->GetOpenDrive();
 	RoadLink *link = 0;
@@ -3711,7 +3711,7 @@ int RoadPath::Calculate(double &dist, bool bothDirections)
 		return -1;
 	}
 
-	for (i = 0; i < 100 && !found && unvisited_.size() > 0; i++)
+	for (i = 0; i < 100 && !found && unvisited_.size() > 0 && tmpDist < maxDist; i++)
 	{
 		found = false;
 
@@ -7166,13 +7166,13 @@ void Position::SetTrajectory(RMTrajectory* trajectory)
 	s_trajectory_ = 0;
 }
 
-bool Position::Delta(Position* pos_b, PositionDiff &diff) const
+bool Position::Delta(Position* pos_b, PositionDiff &diff, double maxDist) const
 {
 	double dist = 0;
 	bool found;
 
 	RoadPath *path = new RoadPath(this, pos_b);
-	found = (path->Calculate(dist) == 0);
+	found = (path->Calculate(dist, maxDist) == 0);
 	if (found)
 	{
 		int laneIdB = pos_b->GetLaneId();
@@ -7226,7 +7226,7 @@ bool Position::Delta(Position* pos_b, PositionDiff &diff) const
 	return found;
 }
 
-int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist)
+int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist, double maxDist)
 {
 	// Handle/convert depricated value
 	if (relDistType == RelativeDistanceType::REL_DIST_CARTESIAN)
@@ -7279,7 +7279,7 @@ int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceTyp
 	return 0;
 }
 
-int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist)
+int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist, double maxDist)
 {
 	// Handle/convert depricated value
 	if (relDistType == RelativeDistanceType::REL_DIST_CARTESIAN)
@@ -7304,7 +7304,7 @@ int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistance
 		{
 			Position pos_b(x, y, 0, 0, 0, 0);
 			PositionDiff diff;
-			bool routeFound = Delta(&pos_b, diff);
+			bool routeFound = Delta(&pos_b, diff, maxDist);
 			dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? diff.dt : diff.ds;
 			if (routeFound == false)
 			{

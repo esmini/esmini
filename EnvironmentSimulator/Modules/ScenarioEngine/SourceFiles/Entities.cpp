@@ -820,7 +820,8 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 	return 0;
 }
 
-int Object::Distance(Object* target, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace, double& dist)
+int Object::Distance(Object* target, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace,
+	double& dist, double maxDist)
 {
 	if (freeSpace)
 	{
@@ -885,7 +886,8 @@ int Object::Distance(Object* target, roadmanager::CoordinateSystem cs, roadmanag
 	return 0;
 }
 
-int Object::Distance(double x, double y, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace, double& dist)
+int Object::Distance(double x, double y, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace,
+	double& dist, double maxDist)
 {
 	if (freeSpace)
 	{
@@ -944,7 +946,7 @@ int Object::Distance(double x, double y, roadmanager::CoordinateSystem cs, roadm
 	}
 	else  // not freeSpace
 	{
-		return pos_.Distance(x, y, cs, relDistType, dist);
+		return pos_.Distance(x, y, cs, relDistType, dist, maxDist);
 	}
 
 	return 0;

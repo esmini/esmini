@@ -491,7 +491,7 @@ class DampedSpring
 {
 public:
 	// Custom damping factor, set 0 for no damping
-	DampedSpring() : x_(0), x0_(0), t_(0), d_(0), v_(0), critical_(false) {};
+	DampedSpring() : x_(0), x0_(0), t_(0), d_(0), v_(0), a_(0), critical_(false) {};
 
 	// Custom damping factor, set 0 for no damping
 	DampedSpring(double startValue, double targetValue, double tension, double damping) :
@@ -503,13 +503,15 @@ public:
 
 	void Update(double timeStep)
 	{
-		v_ = v_ + (-t_ * (x_ - x0_) - d_ * v_) * timeStep;
+		a_ = -t_ * (x_ - x0_) - d_ * v_;
+		v_ = v_ + a_ * timeStep;
 		x_ = x_ + v_ * timeStep;
 	};
 
 	void SetValue(double value) { x_ = value; }
 	double GetValue() { return x_; }
 	double GetV() { return v_; }
+	double GetA() { return a_; }
 	void SetV(double value) { v_ = value; }
 	void SetTargetValue(double targetValue) { x0_ = targetValue; }
 	double GetTargetValue() { return x0_; }
@@ -539,6 +541,7 @@ private:
 	double x0_;
 	double x_;
 	double v_;
+	double a_;
 	double t_;
 	double d_;
 	bool critical_;

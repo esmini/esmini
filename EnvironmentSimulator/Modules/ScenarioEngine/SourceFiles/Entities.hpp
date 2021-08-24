@@ -200,7 +200,7 @@ namespace scenarioengine
 		@param dist Distance (output parameter)
 		@return 0 if position found and parameter values are valid, else -1
 		*/
-		int Distance(Object *target, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace, double &dist);
+		int Distance(Object *target, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace, double &dist, double maxDist = LARGE_NUMBER);
 
 		/**
 		Measure the distance to provided target world x, y position
@@ -212,7 +212,7 @@ namespace scenarioengine
 		@param dist Distance (output parameter)
 		@return 0 if position found and parameter values are valid, else -1
 		*/
-		int Distance(double x, double y, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace, double &dist);
+		int Distance(double x, double y, roadmanager::CoordinateSystem cs, roadmanager::RelativeDistanceType relDistType, bool freeSpace, double &dist, double maxDist = LARGE_NUMBER);
 
 		void SetSpeed(double speed)
 		{

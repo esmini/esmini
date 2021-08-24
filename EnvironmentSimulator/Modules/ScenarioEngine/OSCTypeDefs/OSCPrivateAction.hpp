@@ -721,6 +721,12 @@ namespace scenarioengine
 				if (!object_->controller_->Active())
 				{
 					object_->controller_->Activate(domainMask_);
+					LOG("Controller %s activated, domain mask=0x%X", object_->controller_->GetName().c_str(),  domainMask_);
+				}
+				else
+				{
+					LOG("Controller %s already active (domainmask 0x%X), deactivate first in order to activate on different domain(s)",
+						object_->controller_->GetName().c_str(), domainMask_);
 				}
 			}
 			else

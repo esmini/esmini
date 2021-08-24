@@ -322,7 +322,7 @@ void ScenarioGateway::reportObjectSpeed(int id, double speed)
 		return;
 	}
 
-	obj_state->state_.info.speed = speed;
+	obj_state->state_.info.speed = (float)speed;
 }
 
 void ScenarioGateway::reportObjectVel(int id, double x_vel, double y_vel, double z_vel)

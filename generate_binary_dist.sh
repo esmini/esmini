@@ -31,6 +31,7 @@ resources/xosc/lane_change_crest.xosc \
 resources/xosc/routing-test.xosc \
 resources/xosc/drop-bike.xosc \
 resources/xosc/sumo-test.xosc \
+resources/xosc/acc-test.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -98,6 +99,7 @@ run/esmini/run_lane_change_crest_driver-view.* \
 run/esmini/run_routing-test.* \
 run/esmini/run_drop-bike.* \
 run/esmini/run_sumo-test.* \
+run/esmini/run_acc-test.* \
 run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \

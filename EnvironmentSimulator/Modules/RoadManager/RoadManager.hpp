@@ -1584,7 +1584,7 @@ namespace roadmanager
 		@param pos_b The position from which to subtract the current position (this position object)
 		@return true if position found and parameter values are valid, else false
 		*/
-		bool Delta(Position* pos_b, PositionDiff& diff) const;
+		bool Delta(Position* pos_b, PositionDiff& diff, double maxDist = LARGE_NUMBER) const;
 
 		/**
 		Find out the distance, on specified system and type, between two position objects
@@ -1592,7 +1592,7 @@ namespace roadmanager
 		@param dist Distance (output parameter)
 		@return 0 if position found and parameter values are valid, else -1
 		*/
-		int Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist);
+		int Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist, double maxDist = LARGE_NUMBER);
 
 		/**
 		Find out the distance, on specified system and type, to a world x, y position
@@ -1601,7 +1601,7 @@ namespace roadmanager
 		@param dist Distance (output parameter)
 		@return 0 if position found and parameter values are valid, else -1
 		*/
-		int Distance(double x, double y, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist);
+		int Distance(double x, double y, CoordinateSystem cs, RelativeDistanceType relDistType, double& dist, double maxDist = LARGE_NUMBER);
 
 		/**
 		Is the current position ahead of the one specified in argument
@@ -2017,9 +2017,11 @@ namespace roadmanager
 		positive distance means that the shortest path was found in forward direction
 		negative distance means that the shortest path goes in opposite direction from the heading of the starting position
 		@param dist A reference parameter into which the calculated path distance is stored
+		@param bothDirections Set to true in order to search also backwards from object
+		@param maxDist If set the search along each path branch will terminate after reaching this distance
 		@return 0 on success, -1 on failure e.g. path not found
 		*/
-		int Calculate(double &dist, bool bothDirections = true);
+		int Calculate(double &dist, bool bothDirections = true, double maxDist = LARGE_NUMBER);
 
 	private:
 		bool CheckRoad(Road* checkRoad, RoadPath::PathNode* srcNode, Road* fromRoad, int fromLaneId);

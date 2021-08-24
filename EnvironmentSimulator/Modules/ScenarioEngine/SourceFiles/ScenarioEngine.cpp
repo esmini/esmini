@@ -432,7 +432,7 @@ int ScenarioEngine::step(double deltaSimTime)
 		{
 			if (scenarioReader->controller_[i]->Active())
 			{
-				if (simulationTime_ > 0)
+				if (simulationTime_ >= 0)
 				{
 					scenarioReader->controller_[i]->Step(deltaSimTime);
 				}

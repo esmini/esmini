@@ -49,6 +49,7 @@ copy resources\xosc\lane_change_crest.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\routing-test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\drop-bike.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\sumo-test.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\acc-test.xosc %target_dir%\resources\xosc /y
 
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
@@ -122,6 +123,7 @@ copy run\esmini\run_lane_change_crest_driver-view.bat %target_dir%\run\esmini /y
 copy run\esmini\run_routing-test.bat %target_dir%\run\esmini /y
 copy run\esmini\run_drop-bike.bat %target_dir%\run\esmini /y
 copy run\esmini\run_sumo-test.bat %target_dir%\run\esmini /y
+copy run\esmini\run_acc-test.bat %target_dir%\run\esmini /y
 
 copy run\odrviewer\run_e6mini.bat %target_dir%\run\odrviewer /y
 copy run\odrviewer\run_multi_intersections.bat %target_dir%\run\odrviewer /y
