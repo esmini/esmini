@@ -1,5 +1,9 @@
 ## esmini release notes
 
+### 2021-08-26 Version 2.13.1
+
+- Fix collision condition parsing bug causing crash for the ByType option (issue [#149](https://github.com/esmini/esmini/issues/149))
+
 ### 2021-08-24 Version 2.13.0
 
 - Add a simple ACC-Controller
