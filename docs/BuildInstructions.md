@@ -1,10 +1,26 @@
 # Build and Run Instructions
 
+## In brief
+
+Make sure you have a C++ compiler and [CMake](https://cmake.org/) installed. 
+From esmini root folder:
+```
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release --target install
+```
+
+Binary files will be copied into esmini/bin folder. Run from command line:
+
+```./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc```
+
+The above is supported on (some versions of) Windows, Linux and Mac.
+
 ## Build configurations
 [CMake](https://cmake.org/) tool is used to create standard make configurations. A few example "create..." batch scripts are supplied as examples how to generate desired build setup.
 - VisualStudio / win64 / Windows SDK v10 / Release and Debug
-- Ubuntu and Kubuntu (tested on 18.04) / gcc / Release
-- macOS (Catalina) / Xcode / Release
+- Ubuntu and Kubuntu (tested on 18.04) / gcc / Release and Debug
 
 However, it should be possible to configure custom variants using cmake. For example to use Visual Studio 2019 run the following commands from command prompt (CMD or PowerShell), assuming starting point is esmini root folder:
 ```
@@ -65,6 +81,22 @@ sudo apt install build-essential git pkg-config libgl1-mesa-dev libpthread-stubs
 Also, g++ version >= 5 is needed for c++14 code support.
 
 Windows and Mac: Install the [cmake](https://cmake.org/) application
+
+## Dynamic protobuf linking
+When linking esmini with software already dependent on Google protobuf there might be need for dynamic linking of shared protobuf library. This can be achieved by defining cmake symbol DYN_PROTOBUF as following example:
+
+```cmake -D DYN_PROTOBUF=True ..```
+
+Then build as usual. It will link with protobuf shared library instead of linking with a static library.
+
+When running esmini protobuf shared library need to be available. Set LD_LIBRARY_PATH to point to the folder where the library is, example:
+
+```export LD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn```
+
+**Note:** The dynamic versions of protobuf were added Aug 31 2021. So you might need to update the OSI library package. Get the latest from following links:
+ - [OSI Windows](https://dl.dropboxusercontent.com/s/an58ckp2qfx5069/osi_v10.7z?dl=0)
+ - [OSI Linux](https://dl.dropboxusercontent.com/s/kwtdg0c1c8pawa1/osi_linux.7z?dl=0)
+ - [OSI Mac](https://dl.dropboxusercontent.com/s/m62v19gp0m73dte/osi_mac.7z?dl=0)
 
 ## Slim esmini - customize configration
 

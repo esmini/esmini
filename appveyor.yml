@@ -164,13 +164,13 @@ for:
       - sh: >-
           # Normal build for release
 
-          chmod +x create_xcode_project.sh
-          
-          ./create_xcode_project.sh
-          
+          mkdir build
+
           cd build
-          
-          xcodebuild -scheme install -configuration Release build
+
+          cmake ..
+
+          cmake --build . -j --config Release --target install
 
           cd ..
 

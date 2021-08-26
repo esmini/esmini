@@ -3,11 +3,13 @@ include_directories (
   ${ROADMANAGER_INCLUDE_DIR}
   ${SCENARIOENGINE_INCLUDE_DIRS}
   ${VIEWER_BASE_INCLUDE_DIR}
-if (USE_OSG)  
+if (USE_OSG)
   ${OSG_INCLUDE_DIR}
-endif (USE_OSG)  
+endif (USE_OSG)
   ${COMMON_MINI_INCLUDE_DIR}
+if (USE_OSI)
   ${OSI_INCLUDE_DIR}
+endif (USE_OSI)
   ${CONTROLLERS_INCLUDE_DIR}
 )
 
@@ -27,14 +29,14 @@ set ( SOURCES
 )
 link_directories( ${OSG_LIBRARIES_PATH} )
 add_executable ( ${TARGET1} ${SOURCES} ${INCLUDES} )
-target_link_libraries ( 
+target_link_libraries (
 	${TARGET1}
 	RoadManager
 	ScenarioEngine
 	ViewerBase
 	CommonMini
 	${OSG_LIBRARIES}
-	${TIME_LIB}	
+	${TIME_LIB}
 )
 endif (USE_OSG)
 
@@ -46,6 +48,7 @@ target_link_libraries ( ${TARGET2} RoadManager CommonMini ${TIME_LIB} )
 
 # osi_receiver target
 if (USE_OSI)
+  link_directories( ${OSI_LIBRARIES_PATH} )
   set (TARGET3 osireceiver)
   add_executable ( ${TARGET3} osi_receiver.cpp )
   target_link_libraries ( ${TARGET3} ${OSI_LIBRARIES} ${TIME_LIB} ${SOCK_LIB})

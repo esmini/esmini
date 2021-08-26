@@ -49,6 +49,8 @@ set(USE_OSG True CACHE BOOL "If projects that depend on OpenSceneGraph should be
 set(USE_OSI True CACHE BOOL "If code that depend on OSI should be compiled.")
 set(USE_SUMO True CACHE BOOL "If code that depend on SUMO should be compiled.")
 set(USE_GTEST True CACHE BOOL "If unit test suites based on googletest should be compiled.")
+set(DYN_PROTOBUF False CACHE BOOL "Set for dynamic linking of protobuf library (.so/.dll)")
+
 
 if (USE_OSG)
   add_definitions(-D_USE_OSG)
@@ -65,6 +67,11 @@ endif (USE_SUMO)
 if (USE_GTEST)
   add_definitions(-D_USE_GTEST)
 endif (USE_GTEST)
+
+if (DYN_PROTOBUF)
+  add_definitions(-D_DYN_PROTOBUF)
+  add_definitions(-DPROTOBUF_USE_DLLS)
+endif (DYN_PROTOBUF)
 
 add_subdirectory(EnvironmentSimulator)
 

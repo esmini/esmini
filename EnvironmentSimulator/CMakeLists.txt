@@ -28,7 +28,7 @@ set ( GTEST_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../externals/googletest" )
 set( CMAKE_VERBOSE_MAKEFILE true )
 
 if (APPLE)
-  set ( TIME_LIB "" ) 
+  set ( TIME_LIB "" )
   set ( OSG_PACKAGE_URL https://dl.dropboxusercontent.com/s/d0czj6b89p9jyvv/OpenSceneGraph_mac.7z?dl=0 )
   set ( OSG_DIR "${OSG_BASE_DIR}/mac" )
   set ( OSI_PACKAGE_URL https://dl.dropboxusercontent.com/s/m62v19gp0m73dte/osi_mac.7z?dl=0 )
@@ -75,17 +75,21 @@ elseif (WIN32)
   endif ()
 endif (APPLE)
 
-set ( OSG_INCLUDE_DIR 
+set ( OSG_INCLUDE_DIR
     "${OSG_DIR}/build/include"
     "${OSG_DIR}/include"
 )
-set ( OSG_LIBRARIES_PATH 
-    "${OSG_DIR}/lib" 
+set ( OSG_LIBRARIES_PATH
+    "${OSG_DIR}/lib"
     "${OSG_DIR}/lib/osgPlugins-3.6.5"
 )
 
 set ( OSI_INCLUDE_DIR "${OSI_DIR}/include" )
-set ( OSI_LIBRARIES_PATH "${OSI_DIR}/lib" )
+if (DYN_PROTOBUF)
+  set ( OSI_LIBRARIES_PATH "${OSI_DIR}/lib-dyn" )
+else ()
+  set ( OSI_LIBRARIES_PATH "${OSI_DIR}/lib" )
+endif (DYN_PROTOBUF)
 
 set ( SUMO_INCLUDE_DIR "${SUMO_DIR}/include" )
 set ( SUMO_LIBRARIES_PATH "${SUMO_DIR}/lib" )
@@ -121,12 +125,20 @@ if(APPLE)
     #db_fbx
   )
 
-  set ( OSI_LIBRARIES 
-    open_simulation_interface_pic
-    protobuf
-  )
+  if (DYN_PROTOBUF)
+    set ( OSI_LIBRARIES
+      open_simulation_interface
+      protobuf
+    )
+  else ()
+    set ( OSI_LIBRARIES
+      open_simulation_interface_pic
+      protobuf
+    )
+  endif (DYN_PROTOBUF)
 
-  set ( SUMO_LIBRARIES 
+
+  set ( SUMO_LIBRARIES
     optimized libsumostatic debug libsumostaticd
     optimized netload debug netloadd
     optimized traciserver debug traciserverd
@@ -181,15 +193,15 @@ include(CheckCXXCompilerFlag)
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -pthread -fPIC -Wl,-strip-all")
   elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -march=native -O0 -pthread -fPIC")  
+    SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -march=native -O0 -pthread -fPIC")
   else()
     SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -pthread -fPIC -Wl,-strip-all")
   endif()
 
   set ( OSG_LIBRARIES
-    optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd 
+    optimized osgdb_serializers_osgsim debug osgdb_serializers_osgsimd
     optimized osgdb_serializers_osg debug osgdb_serializers_osgd
-    optimized osgdb_osg debug osgdb_osgd 
+    optimized osgdb_osg debug osgdb_osgd
     optimized osgdb_jpeg debug osgdb_jpegd
     optimized osgAnimation debug osgAnimationd
     optimized osgText debug osgTextd
@@ -212,12 +224,19 @@ include(CheckCXXCompilerFlag)
     #db_fbx
   )
 
-  set ( OSI_LIBRARIES 
-    optimized open_simulation_interface_pic debug open_simulation_interface_picd
-    optimized protobuf debug protobufd
-  )
+  if (DYN_PROTOBUF)
+    set ( OSI_LIBRARIES
+      optimized open_simulation_interface debug open_simulation_interfaced
+      optimized protobuf debug protobufd
+    )
+  else ()
+    set ( OSI_LIBRARIES
+      optimized open_simulation_interface_pic debug open_simulation_interface_picd
+      optimized protobuf debug protobufd
+    )
+  endif (DYN_PROTOBUF)
 
-  set ( SUMO_LIBRARIES 
+  set ( SUMO_LIBRARIES
     optimized libsumostatic debug libsumostaticd
     optimized netload debug netloadd
     optimized traciserver debug traciserverd
@@ -267,10 +286,10 @@ else() #not UNIX
     add_compile_options(/permissive- /W4 /wd4127 /wd4100)
   endif ()
 
-  set ( OSG_LIBRARIES 
+  set ( OSG_LIBRARIES
       opengl32.lib
-      optimized zlibstatic.lib debug zlibstaticd.lib 
-      optimized jpeg.lib debug jpegd.lib 
+      optimized zlibstatic.lib debug zlibstaticd.lib
+      optimized jpeg.lib debug jpegd.lib
       optimized ${OSG_VERSION}-osg.lib debug ${OSG_VERSION}-osgd.lib
       optimized ${OSG_VERSION}-osgAnimation.lib debug ${OSG_VERSION}-osgAnimationd.lib
       optimized ${OSG_VERSION}-osgDB.lib debug ${OSG_VERSION}-osgDBd.lib
@@ -282,17 +301,17 @@ else() #not UNIX
       optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
       optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
       optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
-      optimized osgdb_osg.lib debug osgdb_osgd.lib  
-      optimized osgdb_fbx.lib debug osgdb_fbxd.lib  
+      optimized osgdb_osg.lib debug osgdb_osgd.lib
+      optimized osgdb_fbx.lib debug osgdb_fbxd.lib
       optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
   )
 
-  set ( OSI_LIBRARIES 
-    optimized libprotobuf.lib debug libprotobufd.lib
-    optimized open_simulation_interface_pic.lib debug open_simulation_interface_picd.lib
+  set ( OSI_LIBRARIES
+    optimized libprotobuf debug libprotobufd
+    optimized open_simulation_interface_pic debug open_simulation_interface_picd
   )
 
-  set ( SUMO_LIBRARIES 
+  set ( SUMO_LIBRARIES
     optimized foreign_phemlight.lib debug foreign_phemlightd.lib
     optimized foreign_tcpip.lib debug foreign_tcpipd.lib
     optimized libsumostatic.lib debug libsumostaticd.lib
@@ -321,7 +340,7 @@ else() #not UNIX
     optimized utils_xml.lib debug utils_xmld.lib
     optimized xerces-c_3.lib debug xerces-c_3D.lib
     optimized zlibstatic.lib debug zlibstaticd.lib
-  )  
+  )
 
   set (GTEST_LIBRARIES
     optimized gmock.lib debug gmockd.lib
@@ -348,11 +367,11 @@ if (APPLE)
 elseif (USE_GTEST)
   add_subdirectory(Unittest)
 endif()
-    
+
 set ( ModulesFolder Modules )
-set ( ApplicationsFolder Applications )  
-set ( LibrariesFolder Libraries )  
-set ( CodeExamplesFolder code-examples )  
+set ( ApplicationsFolder Applications )
+set ( LibrariesFolder Libraries )
+set ( CodeExamplesFolder code-examples )
 
 set_target_properties (RoadManager PROPERTIES FOLDER ${ModulesFolder} )
 set_target_properties (CommonMini PROPERTIES FOLDER ${ModulesFolder} )
@@ -370,9 +389,10 @@ MACRO(SUBDIRLIST result curdir)
       LIST(APPEND dirlist ${child})
     ENDIF()
   ENDFOREACH()
-  
+
   if (NOT USE_OSI)
     LIST(REMOVE_ITEM dirlist "osi-groundtruth")
+    LIST(REMOVE_ITEM dirlist "osi-groundtruth-dyn")
   endif ()
 
   SET(${result} ${dirlist})
@@ -382,7 +402,7 @@ SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/code-examples)
 
 FOREACH(subdir ${SUBDIRS})
     add_subdirectory(code-examples/${subdir})
-    set_target_properties (${subdir} PROPERTIES FOLDER ${CodeExamplesFolder} )  
+    set_target_properties (${subdir} PROPERTIES FOLDER ${CodeExamplesFolder} )
 ENDFOREACH()
 
 
@@ -392,13 +412,13 @@ ENDFOREACH()
 function (download_and_extract url target_folder target_filename)
     message (STATUS "downloading ${target_filename} ...")
     file (DOWNLOAD ${url} ${target_folder}/${target_filename})
-    
+
     message (STATUS "extracting ${target_filename} ... ")
     execute_process (COMMAND ${CMAKE_COMMAND} -E tar xfz ${target_filename} WORKING_DIRECTORY ${target_folder})
     file (REMOVE ${target_folder}/${target_filename})
 endfunction (download_and_extract)
 
-# download OpenSceneGraph 
+# download OpenSceneGraph
 set ( OSG_PACKAGE_FILENAME "osg.7z" )
 if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSG_DIR} )
     download_and_extract( ${OSG_PACKAGE_URL} ${OSG_BASE_DIR} ${OSG_PACKAGE_FILENAME} )
@@ -445,7 +465,7 @@ if (USE_OSG)
 endif (USE_OSG)
 
 if (USE_OSI)
-  set_target_properties (osireceiver PROPERTIES FOLDER ${ApplicationsFolder} )    
+  set_target_properties (osireceiver PROPERTIES FOLDER ${ApplicationsFolder} )
 endif ()
   set_target_properties (PlayerBase PROPERTIES FOLDER ${ModulesFolder} )
   set_target_properties (Controllers PROPERTIES FOLDER ${ModulesFolder} )
@@ -453,7 +473,7 @@ endif ()
   set_target_properties (esminiRMLib PROPERTIES FOLDER ${LibrariesFolder} )
   set_target_properties (esmini PROPERTIES FOLDER ${ApplicationsFolder} )
   set_target_properties (esmini-dyn PROPERTIES FOLDER ${ApplicationsFolder} )
-  set_target_properties (dat2csv PROPERTIES FOLDER ${ApplicationsFolder} )    
+  set_target_properties (dat2csv PROPERTIES FOLDER ${ApplicationsFolder} )
   set_target_properties (odrplot PROPERTIES FOLDER ${ApplicationsFolder} )
 if (USE_OSG)
   set_target_properties (replayer PROPERTIES FOLDER ${ApplicationsFolder} )
