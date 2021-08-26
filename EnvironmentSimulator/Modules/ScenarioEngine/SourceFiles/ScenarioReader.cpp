@@ -2713,10 +2713,6 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					{
 						TrigByCollision *trigger = new TrigByCollision;
 
-						pugi::xml_node target = condition_node.child("EntityRef");
-						trigger->object_ = ResolveObjectReference(parameters.ReadAttribute(target, "entityRef"));
-						trigger->type_ = Object::Type::TYPE_NONE;
-
 						pugi::xml_node by_type = condition_node.child("ByType");
 						if (by_type)
 						{
@@ -2737,6 +2733,12 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 							{
 								throw std::runtime_error(std::string("Unexpected ObjectType in CollisionCondition: ") + type_str);
 							}
+						}
+						else  // Assume EntityRef
+						{
+							pugi::xml_node target = condition_node.child("EntityRef");
+							trigger->object_ = ResolveObjectReference(parameters.ReadAttribute(target, "entityRef"));
+							trigger->type_ = Object::Type::TYPE_NONE;
 						}
 
 						condition = trigger;

@@ -372,7 +372,6 @@ TEST(JunctionTest, JunctionSelectorTest)
     int roadIds[] = { 1, 1, 2, 3 };
     double durations[] = { 2.5, 2.5, 2.6, 2.8 };  // Make sure car gets gets out of the intersection
 
-    Logger::Inst().OpenLogfile();
     for (int i = 0; i < sizeof(angles) / sizeof(double); i++)
     {
         ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/junction-selector.xosc");
@@ -388,6 +387,61 @@ TEST(JunctionTest, JunctionSelectorTest)
         ASSERT_EQ(se->entities.object_[0]->pos_.GetTrackId(), roadIds[i]);
         delete se;
     }
+}
+
+TEST(ConditionTest, CollisionTest)
+{
+    double dt = 0.01;
+
+    double timestamps[] = { 5.42, 5.43, 6.28, 6.29, 7.02, 8.67 };
+
+    // Initialize the scenario and disable interactive controller
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc", true);
+    ASSERT_NE(se, nullptr);
+
+    while (se->getSimulationTime() < timestamps[0] && se->GetQuitFlag() != true)
+    {
+        se->step(dt);
+    }
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), false);
+
+    while (se->getSimulationTime() < timestamps[1] && se->GetQuitFlag() != true)
+    {
+        se->step(dt);
+    }
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), true);
+
+    while (se->getSimulationTime() < timestamps[2] && se->GetQuitFlag() != true)
+    {
+        se->step(dt);
+    }
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), true);
+
+    while (se->getSimulationTime() < timestamps[3] && se->GetQuitFlag() != true)
+    {
+        se->step(dt);
+    }
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), true);
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), true);
+
+    while (se->getSimulationTime() < timestamps[4] && se->GetQuitFlag() != true)
+    {
+        se->step(dt);
+    }
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), true);
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), false);
+
+    while (se->getSimulationTime() < timestamps[5] && se->GetQuitFlag() != true)
+    {
+        se->step(dt);
+    }
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
+    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), false);
+
+    delete se;
 }
 
 int main(int argc, char **argv)
