@@ -36,6 +36,7 @@ namespace OpenDRIVE
         public float r;
         public float hRelative;
         public int roadId;
+        public int junctionId;         // -1 if not in a junction
         public int laneId;
         public float laneOffset;
         public float s;
@@ -53,15 +54,16 @@ namespace OpenDRIVE
     {
         [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 3)]
         public float[] pos;            // position, in global coordinate system
-        public float heading;          // road heading 
-        public float pitch;            // road pitch 
+        public float heading;          // road heading
+        public float pitch;            // road pitch
         public float roll;			   // road roll
-        public float width;            // Lane width 
+        public float width;            // Lane width
         public float curvature;        // curvature (1/radius), >0 for left curves, <0 for right curves
-        public float speed_limit;      // road speed limit 
-        public int roadId;             // road ID 
+        public float speed_limit;      // road speed limit
+        public int roadId;             // road ID
+        public int junctionId;         // junction ID. -1 if not in a junction.
         public int laneId;             // lane ID
-        public float laneOffset;       // lane offset (lateral distance from lane center) 
+        public float laneOffset;       // lane offset (lateral distance from lane center)
         public float s;                // s (longitudinal distance along reference line)
         public float t;                // t (lateral distance from reference line)
     };
@@ -120,12 +122,12 @@ namespace OpenDRIVE
         public static extern void Close();
 
         [DllImport(LIB_NAME, EntryPoint = "RM_SetLogFilePath")]
-        /// <summary>Specify logfile name, optionally including directory path 
+        /// <summary>Specify logfile name, optionally including directory path
         /// examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
         /// Set "" to disable logfile
         /// Note: Needs to be called prior to calling RM_Init() </summary>
         /// <param name="path">Logfile path</param>
-        /// <returns>0 on success, -1 on failure for any reason</returns> 
+        /// <returns>0 on success, -1 on failure for any reason</returns>
         public static extern int SetLogFilePath(string path);
 
         /// <summary>Create a position object</summary>

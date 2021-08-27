@@ -40,6 +40,7 @@ namespace ESMini
         public float p;
         public float r;
         public int roadId;
+        public int junctionId;
         public float t;
         public int laneId;
         public float laneOffset;
@@ -72,6 +73,7 @@ namespace ESMini
         public float curvature;        // road curvature at steering target point
         public float speed_limit;      // speed limit given by OpenDRIVE type entry
         public int roadId;             // target position, road ID 
+        public int junctionId;         // target position, junction ID (-1 if not in a junction)
         public int laneId;             // target position, lane ID
         public float laneOffset;       // target position, lane offset (lateral distance from lane center) 
         public float s;                // target position, s (longitudinal distance along reference line)

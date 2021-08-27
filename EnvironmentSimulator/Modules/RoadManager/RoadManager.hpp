@@ -1002,7 +1002,7 @@ namespace roadmanager
 			ROAD_RULE_UNDEFINED
 		} RoadRule;
 
-		Road(int id, std::string name, RoadRule rule = RIGHT_HAND_TRAFFIC) : id_(id), name_(name), length_(0), junction_(0), rule_(rule) {}
+		Road(int id, std::string name, RoadRule rule = RIGHT_HAND_TRAFFIC) : id_(id), name_(name), length_(0), junction_(-1), rule_(rule) {}
 		~Road();
 
 		void Print();
@@ -1305,6 +1305,7 @@ namespace roadmanager
 		double curvature;	// road curvature at steering target point
 		double speed_limit; // speed limit given by OpenDRIVE type entry
 		int roadId;         // road ID
+		int junctionId;     // junction ID (-1 if not in a junction)
 		int laneId;         // lane ID
 		double laneOffset;  // lane offset (lateral distance from lane center)
 		double s;           // s (longitudinal distance along reference line)
@@ -1672,6 +1673,12 @@ namespace roadmanager
 		@return track/road ID
 		*/
 		int GetTrackId() const;
+
+		/**
+		Retrieve the junction ID from the position object
+		@return junction ID, -1 if not in a junction
+		*/
+		int GetJunctionId() const;
 
 		/**
 		Retrieve the lane ID from the position object

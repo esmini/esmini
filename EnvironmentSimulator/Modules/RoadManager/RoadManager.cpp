@@ -4543,7 +4543,7 @@ void OpenDrive::SetLaneOSIPoints()
 	double s0, s1, s1_prev;
 	bool osi_requirement;
 	double max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
-	int osiintersection; 
+	int osiintersection;
 	// Looping through each road
 	for (int i=0; i<road_.size(); i++)
 	{
@@ -7379,6 +7379,7 @@ int Position::GetRoadLaneInfo(RoadLaneInfo *data)
 	data->laneId = GetLaneId();
 	data->laneOffset = GetOffset();
 	data->roadId = GetTrackId();
+	data->junctionId = GetJunctionId();
 	data->t = GetT();
 	data->s = GetS();
 
@@ -7517,6 +7518,23 @@ int Position::GetTrackId() const
 	}
 
 	return track_id_;
+}
+
+int Position::GetJunctionId() const
+{
+	if (rel_pos_ && rel_pos_ != this &&
+		(type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD))
+	{
+		return rel_pos_->GetJunctionId();
+	}
+
+	Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	if (road)
+	{
+		return road->GetJunction();
+	}
+
+	return -1;
 }
 
 int Position::GetLaneId() const

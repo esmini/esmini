@@ -62,5 +62,19 @@ int main(int argc, char* argv[])
 		posData.s, laneInfo.laneId, laneInfo.laneOffset, posData.x, posData.y, posData.z);
 
 
+	// Re-initialize road manager with another road to demonstrate junction ID
+	RM_Init("../resources/xodr/fabriksgatan.xodr");
+	p0 = RM_CreatePosition();
+
+	// A position NOT in junction - junction expected to be -1
+	RM_SetLanePosition(p0, 0, -1, 0.0f, 1.0f, false);
+	RM_GetPositionData(p0, &posData);
+	printf("Junction Id: %d\n", posData.junctionId);
+
+	// A position in junction - junction expected to be 4
+	RM_SetLanePosition(p0, 9, -1, 0.0f, 1.0f, false);
+	RM_GetPositionData(p0, &posData);
+	printf("Junction Id: %d\n", posData.junctionId);
+
 	return 0;
 }

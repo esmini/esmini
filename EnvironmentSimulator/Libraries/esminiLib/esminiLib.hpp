@@ -33,6 +33,7 @@ typedef struct
 	float p;
 	float r;
 	int roadId;
+	int junctionId;
 	float t;
 	int laneId;
 	float laneOffset;
@@ -64,6 +65,7 @@ typedef struct
 	float curvature;	 // road curvature at steering target point
 	float speed_limit;	 // speed limit given by OpenDRIVE type entry
 	int roadId;			 // target position, road ID
+	int junctionId;      // target position, junction ID (-1 if not in a junction)
 	int laneId;			 // target position, lane ID
 	float laneOffset;	 // target position, lane offset (lateral distance from lane center)
 	float s;			 // target position, s (longitudinal distance along reference line)

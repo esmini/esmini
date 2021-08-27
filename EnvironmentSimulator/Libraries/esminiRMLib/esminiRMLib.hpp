@@ -27,8 +27,9 @@ typedef struct
 	float p;
 	float r;
 	float hRelative;
-	int   roadId;
-	int   laneId;
+	int roadId;
+	int junctionId;         // -1 if not in a junction
+	int laneId;
 	float laneOffset;
 	float s;
 } RM_PositionData;
@@ -43,6 +44,7 @@ typedef struct
 	float curvature;
 	float speed_limit;
 	int roadId;             // target position, road ID
+	int junctionId;         // target position, junction ID. -1 if not in a junction.
 	int laneId;             // target position, lane ID
 	float laneOffset;       // target position, lane offset (lateral distance from lane center)
 	float s;                // target position, s (longitudinal distance along reference line)

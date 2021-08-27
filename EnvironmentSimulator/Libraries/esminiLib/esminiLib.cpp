@@ -119,6 +119,7 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 	state->r = (float)gw_state->pos.GetR();
 	state->speed = (float)gw_state->info.speed;
 	state->roadId = (int)gw_state->pos.GetTrackId();
+	state->junctionId = (int)gw_state->pos.GetJunctionId();
 	state->t = (float)gw_state->pos.GetT();
 	state->laneId = (int)gw_state->pos.GetLaneId();
 	state->s = (float)gw_state->pos.GetS();
@@ -190,6 +191,7 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
 		r_data->trail_heading = r_data->road_heading;
 		r_data->speed_limit = (float)s_data.road_lane_info.speed_limit;
 		r_data->roadId = (int)s_data.road_lane_info.roadId;
+		r_data->junctionId = (int)s_data.road_lane_info.junctionId;
 		r_data->laneId = (int)s_data.road_lane_info.laneId;
 		r_data->laneOffset = (float)s_data.road_lane_info.laneOffset;
 		r_data->s = (float)s_data.road_lane_info.s;

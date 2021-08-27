@@ -1938,6 +1938,44 @@ TEST(DeltaTest, TestDelta)
     EXPECT_EQ(pos_pivot.Delta(&pos_target, pos_diff), false);
 }
 
+TEST(PositionTest, TestJunctionId)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/fabriksgatan.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 16);
+
+    Position pos;
+
+    // Test some non junction locations - junction ID expected to be -1
+    pos.SetLanePos(0, 1, 5.0, 0.0);
+    EXPECT_EQ(pos.GetJunctionId(), -1);
+    EXPECT_EQ(pos.IsInJunction(), false);
+    pos.SetLanePos(1, -1, 5.0, 0.0);
+    EXPECT_EQ(pos.GetJunctionId(), -1);
+    EXPECT_EQ(pos.IsInJunction(), false);
+    pos.SetLanePos(2, -1, 5.0, 0.0);
+    EXPECT_EQ(pos.GetJunctionId(), -1);
+    EXPECT_EQ(pos.IsInJunction(), false);
+    pos.SetLanePos(3, 1, 5.0, 0.0);
+    EXPECT_EQ(pos.GetJunctionId(), -1);
+    EXPECT_EQ(pos.IsInJunction(), false);
+
+    // Test some connecting road locations - junction ID expected to be 4
+    pos.SetLanePos(6, -1, 1.0, 0.0);
+    EXPECT_EQ(pos.GetJunctionId(), 4);
+    EXPECT_EQ(pos.IsInJunction(), true);
+    pos.SetLanePos(9, -1, 1.0, 0.0);
+    EXPECT_EQ(pos.GetJunctionId(), 4);
+    EXPECT_EQ(pos.IsInJunction(), true);
+    pos.SetLanePos(13, -1, 1.0, 0.0);
+    EXPECT_EQ(pos.GetJunctionId(), 4);
+    EXPECT_EQ(pos.IsInJunction(), true);
+    pos.SetLanePos(16, -1, 1.0, 0.0);
+    EXPECT_EQ(pos.GetJunctionId(), 4);
+    EXPECT_EQ(pos.IsInJunction(), true);
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);

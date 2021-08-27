@@ -61,6 +61,7 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 		r_data->road_lane_info.curvature = (float)s_data.road_lane_info.curvature;
 		r_data->road_lane_info.speed_limit = (float)s_data.road_lane_info.speed_limit;
 		r_data->road_lane_info.roadId = (int)s_data.road_lane_info.roadId;
+		r_data->road_lane_info.junctionId = (int)s_data.road_lane_info.junctionId;
 		r_data->road_lane_info.laneId = (int)s_data.road_lane_info.laneId;
 		r_data->road_lane_info.laneOffset = (float)s_data.road_lane_info.laneOffset;
 		r_data->road_lane_info.s = (float)s_data.road_lane_info.s;
@@ -122,6 +123,7 @@ static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo 
 	r_data->curvature = (float)s_data.curvature;
 	r_data->speed_limit = (float)s_data.speed_limit;
 	r_data->roadId = s_data.roadId;
+	r_data->junctionId = s_data.junctionId;
 	r_data->laneId = s_data.laneId;
 	r_data->laneOffset = (float)s_data.laneOffset;
 	r_data->t = (float)s_data.t;
@@ -476,6 +478,7 @@ extern "C"
 			data->r = (float)position[handle].GetR();
 			data->hRelative = (float)position[handle].GetHRelative();
 			data->roadId = position[handle].GetTrackId();
+			data->junctionId = position[handle].GetJunctionId();
 			data->laneId = position[handle].GetLaneId();
 			data->laneOffset = (float)position[handle].GetOffset();
 			data->s = (float)position[handle].GetS();
