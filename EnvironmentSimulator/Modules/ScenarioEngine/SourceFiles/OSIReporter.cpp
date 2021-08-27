@@ -1532,13 +1532,24 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 								{
 									lane_pairing = osi_lane->mutable_classification()->add_lane_pairing();
 								}
-								if (driving_direction)
+								// check if next lane belongs to an intersection
+								int lane_paring_id;
+								if (predecessorLane->IsOSIIntersection())
 								{
-									lane_pairing->mutable_antecessor_lane_id()->set_value(predecessorLane->GetGlobalId());
+									lane_paring_id = predecessorLane->GetOSIIntersectionId();
 								}
 								else
 								{
-									lane_pairing->mutable_successor_lane_id()->set_value(predecessorLane->GetGlobalId());
+									lane_paring_id = predecessorLane->GetGlobalId();
+								}
+								if (driving_direction)
+								{
+
+									lane_pairing->mutable_antecessor_lane_id()->set_value(lane_paring_id);
+								}
+								else
+								{
+									lane_pairing->mutable_successor_lane_id()->set_value(lane_paring_id);
 								}
 							}
 						}
@@ -1552,13 +1563,23 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 								{
 									lane_pairing = osi_lane->mutable_classification()->add_lane_pairing();
 								}
-								if (driving_direction)
+								int lane_paring_id;
+								if (successorLane->IsOSIIntersection())
 								{
-									lane_pairing->mutable_successor_lane_id()->set_value(successorLane->GetGlobalId());
+									lane_paring_id = successorLane->GetOSIIntersectionId();
 								}
 								else
 								{
-									lane_pairing->mutable_antecessor_lane_id()->set_value(successorLane->GetGlobalId());
+									lane_paring_id = successorLane->GetGlobalId();
+								}
+
+								if (driving_direction)
+								{
+									lane_pairing->mutable_successor_lane_id()->set_value(lane_paring_id);
+								}
+								else
+								{
+									lane_pairing->mutable_antecessor_lane_id()->set_value(lane_paring_id);
 								}
 							}
 						}

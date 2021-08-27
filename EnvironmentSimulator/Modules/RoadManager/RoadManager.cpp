@@ -4543,7 +4543,7 @@ void OpenDrive::SetLaneOSIPoints()
 	double s0, s1, s1_prev;
 	bool osi_requirement;
 	double max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
-	bool isosiintersection;
+	int osiintersection; 
 	// Looping through each road
 	for (int i=0; i<road_.size(); i++)
 	{
@@ -4551,13 +4551,19 @@ void OpenDrive::SetLaneOSIPoints()
 
 		if (road->GetJunction() == -1)
 		{
-			isosiintersection = false;
+			osiintersection = -1;
 		}
 		else
 		{
-			isosiintersection = GetJunctionById(road->GetJunction())->IsOsiIntersection();
+			if (GetJunctionById(road->GetJunction())->IsOsiIntersection())
+			{
+				osiintersection = GetJunctionById(road->GetJunction())->GetGlobalId();
+			}
+			else
+			{
+				osiintersection = -1;
+			}
 		}
-
 		if (road->GetNumberOfSuperElevations() > 0)
 		{
 			// If road has lateral profile, then increase sampling resolution
@@ -4701,7 +4707,7 @@ void OpenDrive::SetLaneOSIPoints()
 
 				// Set all collected osi points for the current lane
 				lane->osi_points_.Set(osi_point);
-				lane->SetOSIIntersection(isosiintersection);
+				lane->SetOSIIntersection(osiintersection);
 
 				// Clear osi collectors for next iteration
 				osi_point.clear();
