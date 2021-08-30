@@ -1388,13 +1388,13 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 		//Get predecessor and successor roads if exists
 		roadmanager::Road *predecessorRoad = nullptr;
 		roadmanager::Road *successorRoad = nullptr;
-		if (road->GetLink(LinkType::PREDECESSOR))
+		if (road->GetLink(roadmanager::LinkType::PREDECESSOR))
 		{
-			predecessorRoad = opendrive->GetRoadByIdx(road->GetLink(LinkType::PREDECESSOR)->GetElementId());
+			predecessorRoad = opendrive->GetRoadByIdx(road->GetLink(roadmanager::LinkType::PREDECESSOR)->GetElementId());
 		}
-		if (road->GetLink(LinkType::SUCCESSOR))
+		if (road->GetLink(roadmanager::LinkType::SUCCESSOR))
 		{
-			successorRoad = opendrive->GetRoadByIdx(road->GetLink(LinkType::SUCCESSOR)->GetElementId());
+			successorRoad = opendrive->GetRoadByIdx(road->GetLink(roadmanager::LinkType::SUCCESSOR)->GetElementId());
 		}
 
 		// loop over all lane sections
@@ -1523,9 +1523,9 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 						roadmanager::Lane *successorLane = nullptr;
 
 						osi3::Lane_Classification_LanePairing *lane_pairing = nullptr;
-						if (predecessor_lane_section && lane->GetLink(LinkType::PREDECESSOR))
+						if (predecessor_lane_section && lane->GetLink(roadmanager::LinkType::PREDECESSOR))
 						{
-							predecessorLane = predecessor_lane_section->GetLaneById(lane->GetLink(LinkType::PREDECESSOR)->GetId());
+							predecessorLane = predecessor_lane_section->GetLaneById(lane->GetLink(roadmanager::LinkType::PREDECESSOR)->GetId());
 							if (predecessorLane)
 							{
 								if (!lane_pairing)
@@ -1554,9 +1554,9 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 							}
 						}
 
-						if (successor_lane_section && lane->GetLink(LinkType::SUCCESSOR))
+						if (successor_lane_section && lane->GetLink(roadmanager::LinkType::SUCCESSOR))
 						{
-							successorLane = successor_lane_section->GetLaneById(lane->GetLink(LinkType::SUCCESSOR)->GetId());
+							successorLane = successor_lane_section->GetLaneById(lane->GetLink(roadmanager::LinkType::SUCCESSOR)->GetId());
 							if (successorLane)
 							{
 								if (!lane_pairing)
@@ -1592,7 +1592,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 								lane_pairing = nullptr;
 
 								if (predecessorRoad && predecessor_lane_section &&
-									predecessorRoad->GetDrivingLaneById(predecessor_lane_section->GetS(), lane->GetLink(LinkType::PREDECESSOR)->GetId())->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
+									predecessorRoad->GetDrivingLaneById(predecessor_lane_section->GetS(), lane->GetLink(roadmanager::LinkType::PREDECESSOR)->GetId())->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
 								{
 									if (!lane_pairing)
 									{
@@ -1613,7 +1613,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 								}
 
 								if (successorRoad && successor_lane_section &&
-									successorRoad->GetDrivingLaneById(successor_lane_section->GetS(), lane->GetLink(LinkType::SUCCESSOR)->GetId())->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
+									successorRoad->GetDrivingLaneById(successor_lane_section->GetS(), lane->GetLink(roadmanager::LinkType::SUCCESSOR)->GetId())->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
 								{
 									if (!lane_pairing)
 									{

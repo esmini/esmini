@@ -1976,6 +1976,49 @@ TEST(PositionTest, TestJunctionId)
     EXPECT_EQ(pos.IsInJunction(), true);
 }
 
+TEST(ControllerTest, TestControllers)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/multi_intersections.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 63);
+
+    EXPECT_EQ(odr->GetNumberOfControllers(), 23);
+
+    // check a few samples
+    roadmanager::Controller* controller;
+
+    controller = odr->GetControllerByIdx(0);
+    EXPECT_EQ(controller->GetName(), "ctrl001");
+    int signalIds1[] = { 294, 295, 287, 288 };
+    for (int i = 0; i < controller->GetNumberOfControls(); i++)
+    {
+        EXPECT_EQ(controller->GetControl(i)->signalId_, signalIds1[i]);
+    }
+
+    controller = odr->GetControllerByIdx(22);
+    EXPECT_EQ(controller->GetName(), "ctrl027");
+    int signalIds2[] = { 33617, 33618 };
+    for (int i = 0; i < controller->GetNumberOfControls(); i++)
+    {
+        EXPECT_EQ(controller->GetControl(i)->signalId_, signalIds2[i]);
+    }
+
+    JunctionController* jcontroller;
+    Junction* junction =odr->GetJunctionByIdx(1);
+    EXPECT_EQ(junction->GetNumberOfControllers(), 5);
+    int controllerIds[] = { 7, 9, 10, 8, 6 };
+    for (int i = 0; i < (int)junction->GetNumberOfControllers(); i++)
+    {
+        jcontroller = junction->GetJunctionControllerByIdx(i);
+        EXPECT_EQ(jcontroller->id_, controllerIds[i]);
+    }
+
+    EXPECT_EQ(junction->GetJunctionControllerByIdx(2)->id_, 10);
+    EXPECT_EQ(odr->GetControllerById(junction->GetJunctionControllerByIdx(2)->id_)->GetName(), "ctrl010");
+    EXPECT_EQ(odr->GetControllerById(junction->GetJunctionControllerByIdx(2)->id_)->GetControl(1)->signalId_, 3318);
+}
+
 int main(int argc, char **argv)
 {
     testing::InitGoogleTest(&argc, argv);

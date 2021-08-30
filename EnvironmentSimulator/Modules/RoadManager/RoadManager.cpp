@@ -2159,6 +2159,30 @@ void OpenDrive::InitGlobalLaneIds()
 	g_Laneb_id = 0;
 }
 
+Controller* OpenDrive::GetControllerByIdx(int index)
+{
+	if (index >= 0 && index < controller_.size())
+	{
+		return &controller_[index];
+	}
+
+	return 0;
+}
+
+Controller* OpenDrive::GetControllerById(int id)
+{
+	// look for this controller in global list
+	for (int i = 0; i < GetNumberOfControllers(); i++)
+	{
+		if (id == GetControllerByIdx(i)->GetId())
+		{
+			return GetControllerByIdx(i);
+		}
+	}
+
+	return nullptr;
+}
+
 std::string ReadAttribute(pugi::xml_node node, std::string attribute_name, bool required)
 {
 	if (!strcmp(attribute_name.c_str(), ""))
@@ -3264,6 +3288,25 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		road_.push_back(r);
 	}
 
+	for (pugi::xml_node controller_node = node.child("controller"); controller_node; controller_node = controller_node.next_sibling("controller"))
+	{
+		int id = atoi(controller_node.attribute("id").value());
+		std::string name = controller_node.attribute("name").value();
+		int sequence = atoi(controller_node.attribute("sequence").value());
+		Controller controller(id, name, sequence);
+
+		for (pugi::xml_node control_node = controller_node.child("control"); control_node; control_node = control_node.next_sibling("control"))
+		{
+			Control control;
+
+			control.signalId_ = atoi(control_node.attribute("signalId").value());
+			control.type_ = control_node.attribute("type").value();
+			controller.AddControl(control);
+		}
+
+		AddController(controller);
+	}
+
 	for (pugi::xml_node junction_node = node.child("junction"); junction_node; junction_node = junction_node.next_sibling("junction"))
 	{
 		int idj = atoi(junction_node.attribute("id").value());
@@ -3315,6 +3358,16 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				j->AddConnection(connection);
 			}
 		}
+
+		for (pugi::xml_node controller_node = junction_node.child("controller"); controller_node; controller_node = controller_node.next_sibling("controller"))
+		{
+			JunctionController controller;
+			controller.id_ = atoi(controller_node.attribute("id").value());
+			controller.type_ = controller_node.attribute("type").value();
+			controller.sequence_ = atoi(controller_node.attribute("sequence").value());
+			j->AddController(controller);
+		}
+
 		junction_.push_back(j);
 	}
 
@@ -3525,6 +3578,16 @@ void Junction::Print()
 	{
 		connection_[i]->Print();
 	}
+}
+
+JunctionController* Junction::GetJunctionControllerByIdx(int index)
+{
+	if (index >= 0 && index < controller_.size())
+	{
+		return &controller_[index];
+	}
+
+	return 0;
 }
 
 bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fromRoad, int fromLaneId)

@@ -1166,6 +1166,40 @@ namespace roadmanager
 		std::vector<JunctionLaneLink*> lane_link_;
 	};
 
+	typedef struct
+	{
+		int signalId_;
+		std::string type_;
+	} Control;
+
+	class Controller
+	{
+	public:
+		Controller() : id_(0), name_(""), sequence_(0) {}
+		Controller(int id, std::string name, int sequence = 0) : id_(id), name_(name), sequence_(sequence) {}
+
+		void AddControl(Control ctrl) { control_.push_back(ctrl); }
+		int GetNumberOfControls() { return (int)control_.size(); }
+		Control* GetControl(int index) { return ((index >= 0 && index < control_.size()) ? &control_[index] : nullptr); }
+
+		int GetId() { return id_; }
+		std::string GetName() { return name_; }
+		int GetSequence() { return sequence_; }
+
+	private:
+		int id_;
+		std::string name_;
+		int sequence_;
+		std::vector<Control> control_;
+	};
+
+	typedef struct
+	{
+		int id_;
+		std::string type_;
+		int sequence_;
+	} JunctionController;
+
 	class Junction
 	{
 	public:
@@ -1191,10 +1225,14 @@ namespace roadmanager
 		bool IsOsiIntersection();
 		int GetGlobalId() { return global_id_; }
 		void SetGlobalId();
+		int GetNumberOfControllers() { return (int)controller_.size(); }
+		JunctionController *GetJunctionControllerByIdx(int index);
+		void AddController(JunctionController controller) { controller_.push_back(controller); }
 
 	private:
 
 		std::vector<Connection*> connection_;
+		std::vector<JunctionController> controller_;
 		int id_;
 		int global_id_;
 		std::string name_;
@@ -1286,12 +1324,18 @@ namespace roadmanager
 		std::string ContactPointType2Str(ContactPointType type);
 		std::string ElementType2Str(RoadLink::ElementType type);
 
+		int GetNumberOfControllers() { return (int)controller_.size(); }
+		Controller* GetControllerByIdx(int index);
+		Controller* GetControllerById(int id);
+		void AddController(Controller controller) { controller_.push_back(controller); }
+
 		void Print();
 
 	private:
 		pugi::xml_node root_node_;
 		std::vector<Road*> road_;
 		std::vector<Junction*> junction_;
+		std::vector<Controller> controller_;
 		std::string odr_filename_;
 	};
 

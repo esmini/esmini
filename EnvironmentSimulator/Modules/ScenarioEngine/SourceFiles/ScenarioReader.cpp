@@ -319,9 +319,9 @@ Vehicle *ScenarioReader::createRandomOSCVehicle(std::string name)
 	return vehicle;
 }
 
-CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_node node, roadmanager::CoordinateSystem defaultValue)
+roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_node node, roadmanager::CoordinateSystem defaultValue)
 {
-	CoordinateSystem cs = defaultValue;
+	roadmanager::CoordinateSystem cs = defaultValue;
 
 	std::string str = parameters.ReadAttribute(node, "coordinateSystem");
 	if (!str.empty())
@@ -333,19 +333,19 @@ CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_node node, road
 
 		if (str == "entity")
 		{
-			cs = CoordinateSystem::CS_ENTITY;
+			cs = roadmanager::CoordinateSystem::CS_ENTITY;
 		}
 		else if (str == "lane")
 		{
-			cs = CoordinateSystem::CS_LANE;
+			cs = roadmanager::CoordinateSystem::CS_LANE;
 		}
 		else if (str == "road")
 		{
-			cs = CoordinateSystem::CS_ROAD;
+			cs = roadmanager::CoordinateSystem::CS_ROAD;
 		}
 		else if (str == "trajectory")
 		{
-			cs = CoordinateSystem::CS_ROAD;
+			cs = roadmanager::CoordinateSystem::CS_ROAD;
 		}
 		else
 		{
@@ -356,20 +356,20 @@ CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_node node, road
 	return cs;
 }
 
-RelativeDistanceType ScenarioReader::ParseRelativeDistanceType(pugi::xml_node node, RelativeDistanceType defaultValue)
+roadmanager::RelativeDistanceType ScenarioReader::ParseRelativeDistanceType(pugi::xml_node node, roadmanager::RelativeDistanceType defaultValue)
 {
-	RelativeDistanceType rdt = defaultValue;
+	roadmanager::RelativeDistanceType rdt = defaultValue;
 
 	std::string str = parameters.ReadAttribute(node, "relativeDistanceType");
 	if (!str.empty())
 	{
 		if (str == "lateral")
 		{
-			rdt = RelativeDistanceType::REL_DIST_LATERAL;
+			rdt = roadmanager::RelativeDistanceType::REL_DIST_LATERAL;
 		}
 		else if (str == "longitudinal")
 		{
-			rdt = RelativeDistanceType::REL_DIST_LONGITUDINAL;
+			rdt = roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL;
 		}
 		else if (str == "cartesianDistance")
 		{
@@ -378,7 +378,7 @@ RelativeDistanceType ScenarioReader::ParseRelativeDistanceType(pugi::xml_node no
 				LOG("relativeDistanceType::cartesianDistance depricated in v1.1. Reading it anyway.");
 			}
 
-			rdt = RelativeDistanceType::REL_DIST_CARTESIAN;
+			rdt = roadmanager::RelativeDistanceType::REL_DIST_CARTESIAN;
 		}
 		else if (str == "euclidianDistance")
 		{
@@ -387,7 +387,7 @@ RelativeDistanceType ScenarioReader::ParseRelativeDistanceType(pugi::xml_node no
 				LOG("relativeDistanceType::euclidianDistance introduced in v1.1. Reading it anyway.");
 			}
 
-			rdt = RelativeDistanceType::REL_DIST_EUCLIDIAN;
+			rdt = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN;
 		}
 		else
 		{
@@ -2539,10 +2539,10 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 							trigger->freespace_ = false;
 						}
 
-						trigger->cs_ = ParseCoordinateSystem(condition_node, CoordinateSystem::CS_UNDEFINED);
-						trigger->relDistType_ = ParseRelativeDistanceType(condition_node, RelativeDistanceType::REL_DIST_UNDEFINED);
+						trigger->cs_ = ParseCoordinateSystem(condition_node, roadmanager::CoordinateSystem::CS_UNDEFINED);
+						trigger->relDistType_ = ParseRelativeDistanceType(condition_node, roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED);
 
-						if (trigger->cs_ == CoordinateSystem::CS_UNDEFINED && trigger->relDistType_ == RelativeDistanceType::REL_DIST_UNDEFINED)
+						if (trigger->cs_ == roadmanager::CoordinateSystem::CS_UNDEFINED && trigger->relDistType_ == roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED)
 						{
 							// look for v1.0 attribute alongroute
 							std::string along_route_str = parameters.ReadAttribute(condition_node, "alongRoute");
@@ -2554,21 +2554,21 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 								}
 								if ((along_route_str == "true") || (along_route_str == "1"))
 								{
-									trigger->cs_ = CoordinateSystem::CS_ROAD;
+									trigger->cs_ = roadmanager::CoordinateSystem::CS_ROAD;
 								}
 							}
 						}
 
-						if (trigger->cs_ == CoordinateSystem::CS_UNDEFINED)
+						if (trigger->cs_ == roadmanager::CoordinateSystem::CS_UNDEFINED)
 						{
 							// Set default value
-							trigger->cs_ = CoordinateSystem::CS_ENTITY;
+							trigger->cs_ = roadmanager::CoordinateSystem::CS_ENTITY;
 						}
 
-						if (trigger->relDistType_ == RelativeDistanceType::REL_DIST_UNDEFINED)
+						if (trigger->relDistType_ == roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED)
 						{
 							// Set default value
-							trigger->relDistType_ = RelativeDistanceType::REL_DIST_EUCLIDIAN;
+							trigger->relDistType_ = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN;
 						}
 
 						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
@@ -2607,10 +2607,10 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 							trigger->freespace_ = false;
 						}
 
-						trigger->cs_ = ParseCoordinateSystem(condition_node, CoordinateSystem::CS_UNDEFINED);
-						trigger->relDistType_ = ParseRelativeDistanceType(condition_node, RelativeDistanceType::REL_DIST_UNDEFINED);
+						trigger->cs_ = ParseCoordinateSystem(condition_node, roadmanager::CoordinateSystem::CS_UNDEFINED);
+						trigger->relDistType_ = ParseRelativeDistanceType(condition_node, roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED);
 
-						if (trigger->cs_ == CoordinateSystem::CS_UNDEFINED && trigger->relDistType_ == RelativeDistanceType::REL_DIST_UNDEFINED)
+						if (trigger->cs_ == roadmanager::CoordinateSystem::CS_UNDEFINED && trigger->relDistType_ == roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED)
 						{
 							// look for v1.0 attribute alongroute
 							std::string along_route_str = parameters.ReadAttribute(condition_node, "alongRoute");
@@ -2622,21 +2622,21 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 								}
 								if ((along_route_str == "true") || (along_route_str == "1"))
 								{
-									trigger->cs_ = CoordinateSystem::CS_ROAD;
+									trigger->cs_ = roadmanager::CoordinateSystem::CS_ROAD;
 								}
 							}
 						}
 
-						if (trigger->cs_ == CoordinateSystem::CS_UNDEFINED)
+						if (trigger->cs_ == roadmanager::CoordinateSystem::CS_UNDEFINED)
 						{
 							// Set default value
-							trigger->cs_ = CoordinateSystem::CS_ENTITY;
+							trigger->cs_ = roadmanager::CoordinateSystem::CS_ENTITY;
 						}
 
-						if (trigger->relDistType_ == RelativeDistanceType::REL_DIST_UNDEFINED)
+						if (trigger->relDistType_ == roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED)
 						{
 							// Set default value
-							trigger->relDistType_ = RelativeDistanceType::REL_DIST_EUCLIDIAN;
+							trigger->relDistType_ = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN;
 						}
 
 						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
@@ -2686,15 +2686,15 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 							std::string type = parameters.ReadAttribute(condition_node, "relativeDistanceType");
 							if ((type == "longitudinal") || (type == "Longitudinal"))
 							{
-								trigger->relDistType_ = RelativeDistanceType::REL_DIST_LONGITUDINAL;
+								trigger->relDistType_ = roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL;
 							}
 							else if ((type == "lateral") || (type == "Lateral"))
 							{
-								trigger->relDistType_ = RelativeDistanceType::REL_DIST_LATERAL;
+								trigger->relDistType_ = roadmanager::RelativeDistanceType::REL_DIST_LATERAL;
 							}
 							else if ((type == "cartesianDistance") || (type == "CartesianDistance"))
 							{
-								trigger->relDistType_ = RelativeDistanceType::REL_DIST_EUCLIDIAN;
+								trigger->relDistType_ = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN;
 							}
 							else
 							{
@@ -2762,10 +2762,10 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 							trigger->freespace_ = false;
 						}
 
-						trigger->cs_ = ParseCoordinateSystem(condition_node, CoordinateSystem::CS_UNDEFINED);
-						trigger->relDistType_ = ParseRelativeDistanceType(condition_node, RelativeDistanceType::REL_DIST_UNDEFINED);
+						trigger->cs_ = ParseCoordinateSystem(condition_node, roadmanager::CoordinateSystem::CS_UNDEFINED);
+						trigger->relDistType_ = ParseRelativeDistanceType(condition_node, roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED);
 
-						if (trigger->cs_ == CoordinateSystem::CS_UNDEFINED && trigger->relDistType_ == RelativeDistanceType::REL_DIST_UNDEFINED)
+						if (trigger->cs_ == roadmanager::CoordinateSystem::CS_UNDEFINED && trigger->relDistType_ == roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED)
 						{
 							// look for v1.0 attribute alongroute
 							std::string along_route_str = parameters.ReadAttribute(condition_node, "alongRoute");
@@ -2777,21 +2777,21 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 								}
 								if ((along_route_str == "true") || (along_route_str == "1"))
 								{
-									trigger->cs_ = CoordinateSystem::CS_ROAD;
+									trigger->cs_ = roadmanager::CoordinateSystem::CS_ROAD;
 								}
 							}
 						}
 
-						if (trigger->cs_ == CoordinateSystem::CS_UNDEFINED)
+						if (trigger->cs_ == roadmanager::CoordinateSystem::CS_UNDEFINED)
 						{
 							// Set default value
-							trigger->cs_ = CoordinateSystem::CS_ENTITY;
+							trigger->cs_ = roadmanager::CoordinateSystem::CS_ENTITY;
 						}
 
-						if (trigger->relDistType_ == RelativeDistanceType::REL_DIST_UNDEFINED)
+						if (trigger->relDistType_ == roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED)
 						{
 							// Set default value
-							trigger->relDistType_ = RelativeDistanceType::REL_DIST_EUCLIDIAN;
+							trigger->relDistType_ = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN;
 						}
 
 						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));

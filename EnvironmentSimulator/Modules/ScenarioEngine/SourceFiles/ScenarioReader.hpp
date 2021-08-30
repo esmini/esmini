@@ -96,8 +96,8 @@ namespace scenarioengine
 		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode);
 		roadmanager::RMTrajectory* parseTrajectoryRef(pugi::xml_node trajNode);
 		void ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node);
-		CoordinateSystem ParseCoordinateSystem(pugi::xml_node node, CoordinateSystem defaultValue);
-		RelativeDistanceType ParseRelativeDistanceType(pugi::xml_node node, RelativeDistanceType defaultValue);
+		roadmanager::CoordinateSystem ParseCoordinateSystem(pugi::xml_node node, roadmanager::CoordinateSystem defaultValue);
+		roadmanager::RelativeDistanceType ParseRelativeDistanceType(pugi::xml_node node, roadmanager::RelativeDistanceType defaultValue);
 		void ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_node &xml_node);
 		Vehicle* parseOSCVehicle(pugi::xml_node vehicleNode);
 		Pedestrian* parseOSCPedestrian(pugi::xml_node pedestrianNode);

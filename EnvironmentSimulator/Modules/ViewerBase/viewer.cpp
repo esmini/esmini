@@ -1934,7 +1934,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 					return -1;
 				}
 
-				Repeat* rep = object->GetRepeat();
+				roadmanager::Repeat* rep = object->GetRepeat();
 				int nCopies = 1;
 				if (rep && rep->GetDistance() > SMALL_NUMBER)
 				{

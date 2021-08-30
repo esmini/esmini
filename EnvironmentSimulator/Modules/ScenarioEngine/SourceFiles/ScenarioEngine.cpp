@@ -641,13 +641,13 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 				}
 				retvalue = obj->pos_.MoveAlongS(steplen, 0.0, obj->GetJunctionSelectorAngle());
 
-				if (obj->GetJunctionSelectorStrategy() == Junction::JunctionStrategyType::RANDOM &&
+				if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
 					obj->pos_.IsInJunction() && obj->GetJunctionSelectorAngle() >= 0)
 				{
 					// Set junction selector angle as undefined during junction
 					obj->SetJunctionSelectorAngle(std::nan(""));
 				}
-				else if (obj->GetJunctionSelectorStrategy() == Junction::JunctionStrategyType::RANDOM &&
+				else if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
 					!obj->pos_.IsInJunction() && isnan(obj->GetJunctionSelectorAngle()))
 				{
 					// Set new random junction selector after coming out of junction
