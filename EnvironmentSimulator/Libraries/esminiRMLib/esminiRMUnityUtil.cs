@@ -43,6 +43,7 @@ namespace OpenDRIVE
         public int laneId;
         public float laneOffset;
         public float s;
+        public int junctionId; // junction id is -1 if the position is not in a junction
     };
 
     public struct RoadLaneInfoUnityCoordinates
@@ -51,7 +52,13 @@ namespace OpenDRIVE
         public Quaternion rotation;
         public float width;            // Lane width 
         public float curvature;        // curvature (1/radius), >0 for left curves, <0 for right curves
-        public float speedLimit;      // road speed limit 
+        public float speedLimit;       // road speed limit 
+        public int roadId;             // road ID 
+        public int laneId;             // lane ID
+        public float laneOffset;       // lane offset (lateral distance from lane center) 
+        public float s;                // s (longitudinal distance along reference line)
+        public float t;                // t (lateral distance from reference line)
+        public int junctionId;         // junction id is -1 if the position is not in a junction
     };
 
     public struct RoadProbeInfoUnityCoordinates
@@ -88,6 +95,8 @@ namespace OpenDRIVE
         {
             Vector3 odrPos = GetOpenDrivePosition(position);
             RoadManagerLibraryCS.SetWorldXYHPosition(openDriveIndex, odrPos.x, odrPos.y, 0);
+            RoadManagerLibraryCS.GetPositionData(openDriveIndex, ref tmpPosData);
+            RoadManagerLibraryCS.SetLanePosition(openDriveIndex, tmpPosData.roadId, tmpPosData.laneId, tmpPosData.laneOffset, tmpPosData.s, true);
         }
 
         /// <summary>
@@ -125,6 +134,7 @@ namespace OpenDRIVE
             unityPosData.laneOffset = tmpPosData.laneOffset;
             unityPosData.roadId = tmpPosData.roadId;
             unityPosData.s = tmpPosData.s;
+            unityPosData.junctionId = tmpPosData.junctionId;
         }
 
         public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo, LookAheadMode lookAheadMode = LookAheadMode.LaneCenter, int laneId = 0, bool inRoadDrivingDirection = false)
@@ -138,9 +148,15 @@ namespace OpenDRIVE
                 laneInfo.curvature = -tmpLaneInfo.curvature;
             laneInfo.speedLimit = tmpLaneInfo.speed_limit;
             laneInfo.width = tmpLaneInfo.width;
+            laneInfo.roadId = tmpLaneInfo.roadId;
+            laneInfo.laneId = tmpLaneInfo.laneId;
+            laneInfo.laneOffset = tmpLaneInfo.laneOffset;
+            laneInfo.s = tmpLaneInfo.s;
+            laneInfo.t = tmpLaneInfo.t;
+            laneInfo.junctionId = tmpLaneInfo.junctionId;
         }
 
-        public static void GetProbeInfo(int openDriveIndex, float lookAheadDistance, ref RoadProbeInfoUnityCoordinates probeInfo, int lookAheadMode, bool inRoadDrivingDirection=false)
+        public static void GetProbeInfo(int openDriveIndex, float lookAheadDistance, ref RoadProbeInfoUnityCoordinates probeInfo, int lookAheadMode, bool inRoadDrivingDirection = false)
         {
             RoadManagerLibraryCS.GetProbeInfo(openDriveIndex, lookAheadDistance, ref tmpProbeInfo, lookAheadMode, inRoadDrivingDirection);
             probeInfo.roadLaneInfo.position = GetUnityPosition(tmpProbeInfo.laneInfo.pos[0], tmpProbeInfo.laneInfo.pos[1], tmpProbeInfo.laneInfo.pos[2]);
@@ -148,8 +164,21 @@ namespace OpenDRIVE
             probeInfo.roadLaneInfo.curvature = tmpProbeInfo.laneInfo.curvature;
             probeInfo.roadLaneInfo.speedLimit = tmpProbeInfo.laneInfo.speed_limit;
             probeInfo.roadLaneInfo.width = tmpProbeInfo.laneInfo.width;
+            probeInfo.roadLaneInfo.roadId = tmpProbeInfo.laneInfo.roadId;
+            probeInfo.roadLaneInfo.laneId = tmpProbeInfo.laneInfo.laneId;
+            probeInfo.roadLaneInfo.laneOffset = tmpProbeInfo.laneInfo.laneOffset;
+            probeInfo.roadLaneInfo.s = tmpProbeInfo.laneInfo.s;
+            probeInfo.roadLaneInfo.t = tmpProbeInfo.laneInfo.t;
+            probeInfo.roadLaneInfo.junctionId = tmpProbeInfo.laneInfo.junctionId;
             probeInfo.relativePosition = GetUnityPosition(tmpProbeInfo.relativePos[0], tmpProbeInfo.relativePos[1], tmpProbeInfo.relativePos[2]);
             probeInfo.relativeHeading = tmpProbeInfo.relativeHeading;
+        }
+
+
+        public static string GetRoadReferencedByLoadedScenario()
+        {
+            byte[] str = new byte[256];
+            return Marshal.PtrToStringAnsi(ESMini.ESMiniLib.SE_GetODRFilename());
         }
 
         /// <summary>
@@ -169,7 +198,7 @@ namespace OpenDRIVE
 
         public static Vector3 GetUnityPosition(float odrX, float odrY, float odrZ)
         {
-            return new Vector3(-odrY, odrZ, odrX);
+            return new Vector3(-odrX, odrZ, -odrY); 
         }
 
         public static Vector3 GetUnityPosition(OpenDrivePositionData openDrivePositionData)
@@ -186,7 +215,7 @@ namespace OpenDRIVE
         /// <returns></returns>
         public static Quaternion GetUnityRotation(float heading, float pitch, float roll)
         {
-            return Quaternion.Euler(pitch * RAD2DEG, -heading * RAD2DEG, -roll * RAD2DEG);
+            return Quaternion.Euler(pitch * RAD2DEG, 270 - heading * RAD2DEG, -roll * RAD2DEG);
         }
 
         /// <summary>
@@ -204,7 +233,7 @@ namespace OpenDRIVE
         /// </summary>
         public static Vector3 GetOpenDrivePosition(Vector3 unityPosition)
         {
-            return new Vector3(unityPosition.z, -unityPosition.x, unityPosition.y);
+            return new Vector3(-unityPosition.x, -unityPosition.z, unityPosition.y);
         }
 
         /// <summary>
@@ -212,7 +241,8 @@ namespace OpenDRIVE
         /// </summary>
         public static Vector3 GetOpenDriveRotation(Vector3 unityRotationEuler)
         {
-            return new Vector3(-unityRotationEuler.y * DEG2RAD, unityRotationEuler.x * DEG2RAD, unityRotationEuler.z * DEG2RAD);
+            //return new Vector3(-unityRotationEuler.y * DEG2RAD, unityRotationEuler.x * DEG2RAD, unityRotationEuler.z * DEG2RAD);
+            return new Vector3( (270-unityRotationEuler.y) * DEG2RAD, unityRotationEuler.x * DEG2RAD, -unityRotationEuler.z * DEG2RAD);
         }
 
         #endregion
