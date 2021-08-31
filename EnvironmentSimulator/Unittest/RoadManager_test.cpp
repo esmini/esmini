@@ -2005,7 +2005,7 @@ TEST(ControllerTest, TestControllers)
     }
 
     JunctionController* jcontroller;
-    Junction* junction =odr->GetJunctionByIdx(1);
+    Junction* junction = odr->GetJunctionByIdx(1);
     EXPECT_EQ(junction->GetNumberOfControllers(), 5);
     int controllerIds[] = { 7, 9, 10, 8, 6 };
     for (int i = 0; i < (int)junction->GetNumberOfControllers(); i++)
@@ -2017,6 +2017,43 @@ TEST(ControllerTest, TestControllers)
     EXPECT_EQ(junction->GetJunctionControllerByIdx(2)->id_, 10);
     EXPECT_EQ(odr->GetControllerById(junction->GetJunctionControllerByIdx(2)->id_)->GetName(), "ctrl010");
     EXPECT_EQ(odr->GetControllerById(junction->GetJunctionControllerByIdx(2)->id_)->GetControl(1)->signalId_, 3318);
+}
+
+TEST(EdgeCaseTest, TestSTruncation)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/fabriksgatan.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 16);
+
+    Road* road = odr->GetRoadById(1);
+    EXPECT_NE(road, nullptr);
+
+    Position pos;
+    double s = 16.0;
+    LaneSection* laneSection = nullptr;
+
+    // inside road length
+    EXPECT_EQ(road->GetLaneSectionIdxByS(s), 0);
+    laneSection = road->GetLaneSectionByS(s);
+    EXPECT_NE(laneSection, nullptr);
+    EXPECT_EQ(laneSection->GetLaneByIdx(0)->GetId(), 3);
+    pos.SetLanePos(1, -1, s, 0.0);
+    EXPECT_NEAR(pos.GetS(), s, 1e-4);
+    EXPECT_NEAR(pos.GetX(), 49.17789, 1e-4);
+    EXPECT_NEAR(pos.GetY(), 0.100734, 1e-4);
+
+    s = 17.0;
+    // outside road length
+    EXPECT_EQ(road->GetLaneSectionIdxByS(s), 0);
+    laneSection = road->GetLaneSectionByS(s);
+    EXPECT_NE(laneSection, nullptr);
+    EXPECT_EQ(laneSection->GetLaneByIdx(0)->GetId(), 3);
+    pos.SetLanePos(1, -1, s, 0.0);
+    EXPECT_NEAR(pos.GetS(), 16.90918, 1e-4);  // truncated
+    EXPECT_NEAR(pos.GetS(), road->GetLength(), 1e-4);
+    EXPECT_NEAR(pos.GetX(), 50.0702, 1e-4);
+    EXPECT_NEAR(pos.GetY(), 0.2751, 1e-4);
 }
 
 int main(int argc, char **argv)

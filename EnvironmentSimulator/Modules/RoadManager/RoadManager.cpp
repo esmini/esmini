@@ -6585,7 +6585,7 @@ int Position::SetLanePos(int track_id, int lane_id, double s, double offset, int
 	offset_ = offset;
 	int retvalue;
 
-	if ((retvalue = SetLongitudinalTrackPos(track_id, s)) != ErrorCode::ERROR_NO_ERROR)
+	if ((retvalue = SetLongitudinalTrackPos(track_id, s)) == ErrorCode::ERROR_GENERIC)
 	{
 		lane_id_ = lane_id;
 		offset_ = offset;
