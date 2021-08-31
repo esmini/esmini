@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2021-08-31 Version 2.13.3
+
+- Add build option for dynamic protobuf linking (see more info [here](https://github.com/esmini/esmini/blob/master/docs/BuildInstructions.md#dynamic-protobuf-linking))
+- Add junction ID to position object
+    - can be used to determine whether in a junction or not (-1 => not in junction)
+    - see code example [here](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/rm-basic/rm-basic.cpp#L65)
+- Parse OpenDRIVE controllers. See code example in test case [TestControllers](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/RoadManager_test.cpp#L1979).
+- Fix odrplot bug with roads < 1m
+
 ### 2021-08-27 Version 2.13.2
 
 - Bugfix for osi intersections
