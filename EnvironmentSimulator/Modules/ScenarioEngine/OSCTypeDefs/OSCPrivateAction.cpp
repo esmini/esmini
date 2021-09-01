@@ -153,7 +153,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 	// Trajectories with time stamps:
 	//     always ends when time >= trajectory duration (last timestamp)
 	if (((timing_domain_ == TimingDomain::NONE && !traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER)) ||
-		 (timing_domain_ != TimingDomain::NONE && time_ >= traj_->GetDuration())))
+		 (timing_domain_ != TimingDomain::NONE && time_ >= traj_->GetStartTime() + traj_->GetDuration())))
 	{
 		// Reached end of trajectory
 		// Calculate road coordinates from final inertia (X, Y) coordinates
@@ -178,7 +178,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 		{
 			double s_old = object_->pos_.GetTrajectoryS();
 			object_->pos_.SetTrajectoryPosByTime(time_ + timing_offset_);
-			if (time_ <= traj_->GetDuration())
+			if (time_ <= traj_->GetStartTime() + traj_->GetDuration())
 			{
 				// don't calculate and update actual speed when reached end of trajectory,
 				// since the movement is based on remaining length of trajectory, not speed

@@ -8415,6 +8415,26 @@ int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
 	return 0;
 }
 
+double PolyLineShape::GetStartTime()
+{
+	if (vertex_.size() == 0)
+	{
+		return 0.0;
+	}
+
+	return pline_.vertex_[0].time;
+}
+
+double PolyLineShape::GetDuration()
+{
+	if (vertex_.size() == 0)
+	{
+		return 0.0;
+	}
+
+	return pline_.vertex_.back().time - pline_.vertex_[0].time;
+}
+
 double NurbsShape::CoxDeBoor(double x, int i, int k, const std::vector<double>& t)
 {
 	// Inspiration: Nurbs Curve Example @
@@ -8631,6 +8651,26 @@ int NurbsShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
 	return 0;
 }
 
+double NurbsShape::GetStartTime()
+{
+	if (ctrlPoint_.size() == 0)
+	{
+		return 0.0;
+	}
+
+	return ctrlPoint_[0].time_;
+}
+
+double NurbsShape::GetDuration()
+{
+	if (ctrlPoint_.size() == 0)
+	{
+		return 0.0;
+	}
+
+	return ctrlPoint_.back().time_ - ctrlPoint_[0].time_;
+}
+
 ClothoidShape::ClothoidShape(roadmanager::Position pos, double curv, double curvDot, double len, double tStart, double tEnd) : Shape(ShapeType::CLOTHOID)
 {
 	pos_ = pos;
@@ -8702,6 +8742,16 @@ int ClothoidShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
 	pos.s = p;
 
 	return 0;
+}
+
+double ClothoidShape::GetStartTime()
+{
+	return t_start_;
+}
+
+double ClothoidShape::GetDuration()
+{
+	return t_end_ - t_start_;
 }
 
 int Position::MoveTrajectoryDS(double ds)
@@ -9104,7 +9154,12 @@ double RMTrajectory::GetTimeAtS(double s)
 	return v.time;
 }
 
+double RMTrajectory::GetStartTime()
+{
+	return shape_->GetStartTime();
+}
+
 double RMTrajectory::GetDuration()
 {
-	return shape_->pline_.GetVertex(-1)->time;
+	return shape_->GetDuration();
 }

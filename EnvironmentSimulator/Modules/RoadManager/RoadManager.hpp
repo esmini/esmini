@@ -2167,6 +2167,8 @@ namespace roadmanager
 		virtual int Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos) { return -1; };
 		int FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex = 0) { return -1; };
 		virtual double GetLength() { return 0.0; }
+		virtual double GetStartTime() { return 0.0; }
+		virtual double GetDuration() { return 0.0; }
 		ShapeType type_;
 
 		PolyLineBase pline_;  // approximation of shape, used for calculations and visualization
@@ -2186,6 +2188,8 @@ namespace roadmanager
 		void AddVertex(Position pos, double time, bool calculateHeading);
 		int Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos);
 		double GetLength() { return pline_.length_; }
+		double GetStartTime();
+		double GetDuration();
 
 		std::vector<Vertex*> vertex_;
 	};
@@ -2200,6 +2204,9 @@ namespace roadmanager
 		int EvaluateInternal(double s, TrajVertex& pos);
 		void CalculatePolyLine();
 		double GetLength() { return spiral_->GetLength(); }
+		double GetStartTime();
+		double GetDuration();
+
 		Position pos_;
 		roadmanager::Spiral* spiral_;  // make use of the OpenDRIVE clothoid definition
 		double t_start_;
@@ -2245,6 +2252,8 @@ namespace roadmanager
 
 		void CalculatePolyLine();
 		double GetLength() { return length_; }
+		double GetStartTime();
+		double GetDuration();
 
 	private:
 		double CoxDeBoor(double x, int i, int p, const std::vector<double>& t);
@@ -2263,6 +2272,7 @@ namespace roadmanager
 		void Freeze();
 		double GetLength() { return shape_ ? shape_->GetLength() : 0.0; }
 		double GetTimeAtS(double s);
+		double GetStartTime();
 		double GetDuration();
 
 		std::string name_;

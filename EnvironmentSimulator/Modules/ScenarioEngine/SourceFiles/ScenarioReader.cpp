@@ -2088,7 +2088,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							}
 							else
 							{
-								LOG("Unexpected TimeReference element: %s", timingNode.name());
+								LOG("Unexpected TimeReference element: %s, fallback to NONE", timingNode.name());
+								action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::NONE;
 							}
 						}
 						else if (followTrajectoryChild.name() == std::string("TrajectoryFollowingMode"))
@@ -2107,6 +2108,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						{
 							throw std::runtime_error("Unexpected element: " + std::string(followTrajectoryChild.name()));
 						}
+					}
+					// Check that trajectory has time duration
+					if (action_follow_trajectory->timing_domain_ != FollowTrajectoryAction::TimingDomain::NONE &&
+						action_follow_trajectory->traj_->GetDuration() < SMALL_NUMBER)
+					{
+						LOG("Warning: FollowTrajectoryAction timeref is != NONE but trajectory duration is 0. Applying timeref=NONE.",
+							action_follow_trajectory->name_.c_str());
+						action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::NONE;
 					}
 					action = action_follow_trajectory;
 				}
