@@ -32,7 +32,7 @@ Controller* scenarioengine::InstantiateControllerACC(void* args)
 
 ControllerACC::ControllerACC(InitArgs* args) : active_(false), timeGap_(2.0), setSpeed_(0), currentSpeed_(0), Controller(args)
 {
-	if (args->properties->ValueExists("timeGap"))
+	if (args->properties && args->properties->ValueExists("timeGap"))
 	{
 		timeGap_ = strtod(args->properties->GetValueStr("timeGap"));
 	}
@@ -53,12 +53,12 @@ void ControllerACC::Step(double timeStep)
 	double followDist = 0.0;
 	double maxDeceleration = -10.0;
 	double normalAcceleration = 3.0;
+	double minLateralDist = 5.0;
 
 	// Lookahead distance is at least 50m or twice the distance required to stop
 	// https://www.symbolab.com/solver/equation-calculator/s%5Cleft(t%5Cright)%3D2%5Cleft(m%2Bvt%2B%5Cfrac%7B1%7D%7B2%7Dat%5E%7B2%7D%5Cright)%2C%20t%3D%5Cfrac%7B-v%7D%7Ba%7D
 	double lookaheadDist = MAX(50.0, minDist - pow(object_->GetSpeed(), 2) / maxDeceleration);  // (m)
 
-	// Find any vehicle within 3 x timeGap seconds headway
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
 		if (entities_->object_[i] == object_)
@@ -68,14 +68,29 @@ void ControllerACC::Step(double timeStep)
 
 		// Measure longitudinal distance to all vehicles, don't utilize costly freespace option, instead measure ref point to ref point
 		roadmanager::PositionDiff diff;
-		if (object_->pos_.Delta(&entities_->object_[i]->pos_, diff, lookaheadDist) == true)   // look only double timeGap ahead
+		if (object_->pos_.Delta(&entities_->object_[i]->pos_, diff, false, lookaheadDist) == true)   // look only double timeGap ahead
 		{
 			// path exists between position objects
-			if (diff.dLaneId == 0 && diff.ds > 0 && diff.ds < minGapLength)  // dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
+			if (diff.dLaneId == 0 && diff.ds > 0 && diff.ds < minGapLength && abs(diff.dt) < minLateralDist)  // dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
 			{
 				minGapLength = diff.ds;
 				minSpeedDiff = object_->GetSpeed() - entities_->object_[i]->GetSpeed();
 				minObjIndex = (int)i;
+			}
+		}
+
+		// Also check for really close entities in front
+		if (minObjIndex != i)
+		{
+			double x_local, y_local;
+			object_->FreeSpaceDistance(entities_->object_[i], &y_local, &x_local);
+//			object_->pos_.getRelativeDistance(entities_->object_[i]->pos_.GetX(), entities_->object_[i]->pos_.GetY(), x_local, y_local);
+			if (x_local > 0 && x_local < 15 && abs(y_local) < 1.0)
+			{
+				minGapLength = x_local;
+				minSpeedDiff = object_->GetSpeed() - entities_->object_[i]->GetSpeed();
+				minObjIndex = (int)i;
+				printf("collision warning x %.2f y %.2f\n", x_local, y_local);
 			}
 		}
 	}
@@ -89,15 +104,29 @@ void ControllerACC::Step(double timeStep)
 	double acc = 0.0;
 	if (minObjIndex > -1)
 	{
-		// Follow distance = minimum distance + timeGap_ seconds
-		followDist = minDist + timeGap_ * entities_->object_[minObjIndex]->GetSpeed();  // (m)
+		if (minGapLength < 5)
+		{
+			currentSpeed_ = 0.0;
+		}
+		else
+		{
+			// Follow distance = minimum distance + timeGap_ seconds
+			followDist = minDist + timeGap_ * entities_->object_[minObjIndex]->GetSpeed();  // (m)
 
-		double dv = object_->GetSpeed() - entities_->object_[minObjIndex]->GetSpeed();
-		regulator_.SetV(dv);
-		regulator_.SetValue(followDist - minGapLength);
-		regulator_.Update(timeStep);
-		acc = CLAMP(regulator_.GetA(), -100, normalAcceleration);
-		currentSpeed_ = MIN(object_->GetSpeed() + acc * timeStep, setSpeed_);
+			double dv = object_->GetSpeed() - entities_->object_[minObjIndex]->GetSpeed();
+			regulator_.SetV(dv);
+			regulator_.SetValue(followDist - minGapLength);
+			regulator_.Update(timeStep);
+			if (object_->GetSpeed() < 0)
+			{
+				acc = CLAMP(regulator_.GetA(), -normalAcceleration, 100.0);
+			}
+			else
+			{
+				acc = CLAMP(regulator_.GetA(), -100.0, normalAcceleration);
+			}
+			currentSpeed_ = MIN(object_->GetSpeed() + acc * timeStep, setSpeed_);
+		}
 	}
 	else
 	{

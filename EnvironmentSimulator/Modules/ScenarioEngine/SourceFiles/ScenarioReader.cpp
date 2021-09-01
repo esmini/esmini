@@ -60,6 +60,20 @@ void ScenarioReader::UnloadControllers()
 	ScenarioReader::controllerPool_.Clear();
 }
 
+int ScenarioReader::RemoveController(Controller* controller)
+{
+	for (size_t i = 0; i < controller_.size(); i++)
+	{
+		if (controller_[i] == controller)
+		{
+			controller_.erase(controller_.begin() + i);
+			return 0;
+		}
+	}
+
+	return -1;
+}
+
 int ScenarioReader::loadOSCFile(const char *path)
 {
 	pugi::xml_parse_result result = doc_.load_file(path);
@@ -1634,7 +1648,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 				// Inner radius (Circle)
 				radius = parameters.ReadAttribute(trafficChild, "innerRadius");
 				trafficSwarmAction->SetInnerRadius(std::stod(radius));
-                
+
 				// Semi major axis
 				radius = parameters.ReadAttribute(trafficChild, "semiMajorAxis");
 				trafficSwarmAction->SetSemiMajorAxes(std::stod(radius));
@@ -1644,6 +1658,8 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 				trafficSwarmAction->SetSemiMinorAxes(std::stod(radius));
 
 				trafficSwarmAction->SetEntities(entities_);
+				trafficSwarmAction->SetGateway(gateway_);
+				trafficSwarmAction->SetReader(this);
 
 				// Number of vehicles
 				numberOfVehicles = parameters.ReadAttribute(trafficChild, "numberOfVehicles");

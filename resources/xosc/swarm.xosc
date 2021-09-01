@@ -12,6 +12,9 @@
       <VehicleCatalog>
          <Directory path="../xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../xosc/Catalogs/Controllers" />
+      </ControllerCatalog>
    </CatalogLocations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/multi_intersections.xodr"/>   
@@ -19,6 +22,9 @@
    <Entities>
       <ScenarioObject name="Ego">
          <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+         <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+         </ObjectController>
       </ScenarioObject>
    </Entities>
    <Storyboard>
@@ -28,16 +34,21 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="196" laneId="-1" offset="0" s="100" />
+                        <LanePosition roadId="242" laneId="1" offset="0" s="10" >
+                            <Orientation type="relative" h="3.14" />
+                        </LanePosition>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>               
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0" />
                         <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="5"/>
+                           <AbsoluteTargetSpeed value="35"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
@@ -56,7 +67,7 @@
                      <Action name="SwarmAction">
                         <GlobalAction>
                            <TrafficAction>
-                              <TrafficSwarmAction innerRadius="100" semiMajorAxis="130" semiMinorAxis="105" numberOfVehicles="20" velocity="10">
+                              <TrafficSwarmAction innerRadius="110" semiMajorAxis="170" semiMinorAxis="120" numberOfVehicles="1" velocity="30">
 								  <CentralSwarmObject entityRef="Ego" />
                               </TrafficSwarmAction>
                            </TrafficAction>

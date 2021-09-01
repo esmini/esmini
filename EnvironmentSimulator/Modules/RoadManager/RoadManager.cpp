@@ -7254,13 +7254,13 @@ void Position::SetTrajectory(RMTrajectory* trajectory)
 	s_trajectory_ = 0;
 }
 
-bool Position::Delta(Position* pos_b, PositionDiff &diff, double maxDist) const
+bool Position::Delta(Position* pos_b, PositionDiff &diff, bool bothDirections, double maxDist) const
 {
 	double dist = 0;
 	bool found;
 
 	RoadPath *path = new RoadPath(this, pos_b);
-	found = (path->Calculate(dist, maxDist) == 0);
+	found = (path->Calculate(dist, bothDirections, maxDist) == 0);
 	if (found)
 	{
 		int laneIdB = pos_b->GetLaneId();
@@ -7338,7 +7338,7 @@ int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceTyp
 		if (cs == CoordinateSystem::CS_ROAD)
 		{
 			PositionDiff diff;
-			bool routeFound = Delta(pos_b, diff);
+			bool routeFound = Delta(pos_b, diff, true, maxDist);
 			dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? diff.dt : diff.ds;
 			if (routeFound == false)
 			{
@@ -7392,7 +7392,7 @@ int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistance
 		{
 			Position pos_b(x, y, 0, 0, 0, 0);
 			PositionDiff diff;
-			bool routeFound = Delta(&pos_b, diff, maxDist);
+			bool routeFound = Delta(&pos_b, diff, true, maxDist);
 			dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? diff.dt : diff.ds;
 			if (routeFound == false)
 			{

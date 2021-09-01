@@ -17,6 +17,8 @@
 #include "CommonMini.hpp"
 #include "Parameters.hpp"
 #include "Entities.hpp"
+#include "ScenarioGateway.hpp"
+//#include "ScenarioReader.hpp"
 #include "OSCAABBTree.hpp"
 #include <vector>
 #include "OSCUtils.hpp"
@@ -37,7 +39,7 @@ namespace scenarioengine
 			ENTITY,          // not supported yet
 			PARAMETER_SET,
 			INFRASTRUCTURE,  // not supported yet
-			SWARM_TRAFFIC,       
+			SWARM_TRAFFIC,
 		} Type;
 
 		Type type_;
@@ -101,6 +103,8 @@ namespace scenarioengine
 
 	};
 
+	class ScenarioReader;
+
 	class SwarmTrafficAction : public OSCGlobalAction
 	{
 	public:
@@ -118,7 +122,7 @@ namespace scenarioengine
 			roadmanager::Road *road;
 		    int nLanes;
 	    } SelectInfo;
-		
+
 		SwarmTrafficAction();
 
 		SwarmTrafficAction(const SwarmTrafficAction& action) : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC) {
@@ -145,6 +149,8 @@ namespace scenarioengine
 		void SetSemiMajorAxes(double axes)        { semiMajorAxis_ = axes;       }
 		void SetSemiMinorAxes(double axes)        { semiMinorAxis_ = axes;       }
 		void SetEntities(Entities* entities)      { entities_      = entities;   }
+		void SetGateway(ScenarioGateway* gateway) { gateway_ = gateway; }
+		void SetReader(ScenarioReader* reader)    { reader_ = reader; }
 		void SetNumberOfVehicles(int number)      { numberOfVehicles = number;   }
 		void Setvelocity(double velocity)         { velocity_ = velocity;        }
 
@@ -153,13 +159,15 @@ namespace scenarioengine
 		double velocity_;
 		std::mt19937 gen_;
 		Entities *entities_;
+		ScenarioGateway* gateway_;
+		ScenarioReader* reader_;
 		Object* centralObject_;
 		aabbTree::ptTree rTree;
 		unsigned long numberOfVehicles;
 		std::vector<SpawnInfo> spawnedV;
 		roadmanager::OpenDrive* odrManager_;
 		double innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
-		
+
 
 		int despawn(double simTime);
 		void createRoadSegments(aabbTree::BBoxVec &vec);

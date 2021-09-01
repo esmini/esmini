@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -37,7 +37,7 @@ namespace STGeometry {
      *                  a²                                   b²
      * Ideally, it returns n = 0 when (x,y) is on the curve, n > 0 if teh point is outside
      * the ellipse, n < 0 if the point is inside the ellipse.
-     * 
+     *
      * @param h x coordinate of the center
      * @param k y coordinate of the center
      * @param A Angle of rotation of the ellipse
@@ -66,10 +66,10 @@ namespace STGeometry {
      * @brief It calculates the points of a parametrized ellipse in the form:
      *   x = a cos(alpha) cos(theta) - b sin(alpha) sin(theta) + h
      *   y = a cos(alpha) sin(theta) - b sin(alpha) cos(theta) + k
-     * 
+     *
      * @param alpha Angle of parametrization [0;2pi]
      * @param h Center of the ellipse
-     * @param k 
+     * @param k
      * @param SMjA Semi major axes
      * @param SMnA Semi minor axes
      * @param hdg rotation angle of the ellipse
@@ -96,12 +96,12 @@ namespace STGeometry {
 
     /**
      * @brief It computes the angle of the tangent in the point of parametrization alpha
-     * 
+     *
      * @param SMjA Semi major axes
      * @param SMnA Semi minor axes
      * @param alpha Angle of parametrization [0;2pi]
      * @param hdg Angle of rotation of the ellipse
-     * @return double 
+     * @return double
      */
     static inline double angleTangentEllipse(double SMjA, double SMnA, double alpha, double hdg) {
         double cosAlpha = cos(alpha);
@@ -115,27 +115,27 @@ namespace STGeometry {
     /**
      * @brief It computes the intersection point between two tangents. Used
      * to construct the triangles for the AABB Tree algorithm
-     * 
-     * @param x0 
-     * @param y0 
-     * @param s0 
-     * @param t0 
-     * @param x1 
-     * @param y1 
-     * @param s1 
-     * @param t1 
-     * @param x2 
-     * @param y2 
+     *
+     * @param x0
+     * @param y0
+     * @param s0
+     * @param t0
+     * @param x1
+     * @param y1
+     * @param s1
+     * @param t1
+     * @param x2
+     * @param y2
      */
-    static inline void 
+    static inline void
     tangentIntersection(
-        double x0, double y0, double s0, double t0, 
-        double x1, double y1, double s1, double t1, 
+        double x0, double y0, double s0, double t0,
+        double x1, double y1, double s1, double t1,
         double &x2, double &y2
     ) {
         double dPx, dPy, r0x, r0y, r1x, r1y, s;
-        double oneDegree = M_PI / 180; 
-        
+        double oneDegree = M_PI / 180;
+
         r0x = cos(t0);
         r0y = sin(t0);
         if (abs(t1 - t0) > oneDegree) {
@@ -144,7 +144,7 @@ namespace STGeometry {
             dPx = x1 - x0;
             dPy = y1 - y0;
             s = (dPy * r1x - dPx * r1y) / (r1x * r0y - r0x * r1y);
-        } else 
+        } else
             s = s1 - s0;
 
         x2 = x0 + s * r0x;
@@ -167,7 +167,7 @@ namespace STGeometry {
         f2 = pow((-m * cos_ + sin_) / SMnA, 2);
         return f1 + f2;
     }
-    
+
     /*
      * Line considered in the form y = mx + q, where m = tan(theta)
      * @m: angular coefficient of the line
@@ -253,7 +253,7 @@ namespace STGeometry {
                 if (!(xmin <= *x1 && *x1 <= xmax && ymin <= *y1 && *y1 <= ymax)) {
                     *x1 = *y1 = 0;
                     return 0;
-                } else 
+                } else
                     break;
             default:
                 break;
@@ -267,13 +267,13 @@ namespace STGeometry {
      */
     static void checkRange(aabbTree::Triangle &triangle, Solutions &sols, size_t pos) {
         double xmin, ymin, xmax, ymax;
-        xmin = triangle.a.x; 
+        xmin = triangle.a.x;
         ymin = triangle.a.y;
         xmax = triangle.b.x;
-        ymax = triangle.b.y; 
+        ymax = triangle.b.y;
 
         if (xmin > xmax) std::swap(xmin, xmax);
-        if (ymin > ymax) std::swap(ymin, ymax); 
+        if (ymin > ymax) std::swap(ymin, ymax);
 
         Solutions::const_iterator solsIter = sols.begin() + pos;
         while (solsIter < sols.end()) {
@@ -282,19 +282,19 @@ namespace STGeometry {
             y = solsIter->y;
             if (!(xmin <= x && x <= xmax && ymin <= y && y <= ymax))
                 solsIter = sols.erase(solsIter);
-            else 
+            else
                 solsIter++;
-        }   
+        }
     }
 
 #if 0  // Not used?
-    /* 
+    /*
      * Finds the intersection points between an ellipses and a stright piece of the road
      * The equation to find the x points of intersection is assumed to be in the form
      *   A x² + Bx² + C = 0
      * while to find the y points the line equation is used:
      *   y = m*x + q
-     * 
+     *
      * The ellipse is considered to have the form:
      *   [(x - h)cos(A) + (y - k)sin(A)]²     [(x  - h)sin(A) - (y - k)cos(A)]²
      *  ---------------------------------- + ---------------------------------- = 1
@@ -303,7 +303,7 @@ namespace STGeometry {
      *   * x, y: coordinates of a point of the ellipse
      *   * h, k: coordinates of the center of the ellipses
      *   * A: orientation angle
-     *   * a, b: semi-major axes and semi-minor axes    
+     *   * a, b: semi-major axes and semi-minor axes
      */
     static bool lineIntersect(Triangle &triangle, EllipseInfo const &eInfo, Solutions &sol) {
         double _A, _B, _C, delta, x0, y0, hdg, sqrt_delta, m, q, h, k, SMjA, SMnA;
@@ -313,7 +313,7 @@ namespace STGeometry {
         auto last = sol.size();
 
         p1.x = p1.y = p2.x = p2.y;
-        
+
         SMjA = eInfo.SMjA;
         SMnA = eInfo.SMnA;
         x0   = line->GetX();
@@ -325,7 +325,7 @@ namespace STGeometry {
         if (!(cos(hdg) <= SMALL_NUMBER)) {
             m   = M(hdg);
             q   = Q(x0, y0, hdg);
-        
+
             hdg = pos.GetH();
             _A = A(m, hdg, SMjA, SMnA);
             _B = B(m, q, h, k, hdg, SMjA, SMnA);
@@ -369,13 +369,13 @@ namespace STGeometry {
         checkRange(triangle, sol, last);
         return sol.size() > last;
     }
-#endif 
+#endif
 
     /**
-     * @brief Finds the zeros of a function 'f' given the guess 
+     * @brief Finds the zeros of a function 'f' given the guess
      * interval (a, b) and a tollerance 'delta'. The result
-     * is saved in 'res' and the function returns true if a solution is found 
-     * 
+     * is saved in 'res' and the function returns true if a solution is found
+     *
      */
     static bool brent_zeros(double a, double b, double &res, double delta, DDProc f) {
         double fa, fb, fc, fs, c, d=0, s;  // init d to avoid compiler warnings (d refer before set is protected by flag)
@@ -388,7 +388,7 @@ namespace STGeometry {
         fc = f(c);
         flag = true;
         while (true) {
-            if (fa  != fc && fb != fc) 
+            if (fa  != fc && fb != fc)
                 s = (a * fb * fc) / ((fa - fb) * (fa - fc)) +
                     (b * fa * fc) / ((fb - fa) * (fb - fc)) +
                     (c * fa * fb) / ((fc - fa) * (fc - fb));
@@ -403,7 +403,7 @@ namespace STGeometry {
             {
                 s = (a + b) / 2;
                 flag = true;
-            } else 
+            } else
                 flag = false;
             fs = f(s);
             d = c;
@@ -413,7 +413,7 @@ namespace STGeometry {
             else
                 a = s;
             if (fabs(f(a)) < fabs(f(b))) std::swap(a, b);
-            
+
             if (f(s) == 0 || fabs(b - a) <= SMALL_NUMBER) {
                 res = s;
                 return true;
@@ -428,7 +428,7 @@ namespace STGeometry {
     /**
      * @brief It computes the intersection between a road geometry and the ellipse
      * using numerical methods.
-     * 
+     *
      * @param triangle Triangle containing the geometry info and segment
      * @param eInfo Struct containing the info of the ellipse
      * @param sol Vector on which the solutions will be stored

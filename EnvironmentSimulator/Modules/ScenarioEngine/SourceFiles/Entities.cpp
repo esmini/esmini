@@ -438,6 +438,8 @@ double Object::PointCollision(double x, double y)
 double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDist)
 {
 	double minDist = LARGE_NUMBER;
+	*latDist = LARGE_NUMBER;
+	*longDist = LARGE_NUMBER;
 
 	if (target == 0)
 	{
@@ -446,6 +448,8 @@ double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDi
 
 	if (Collision(target))
 	{
+		*latDist = 0.0;
+		*longDist = 0.0;
 		return 0.0;
 	}
 
@@ -534,9 +538,13 @@ double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDi
 double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, double* longDist)
 {
 	double minDist = LARGE_NUMBER;
+	*latDist = LARGE_NUMBER;
+	*longDist = LARGE_NUMBER;
 
 	if (PointCollision(x, y))
 	{
+		*latDist = 0.0;
+		*longDist = 0.0;
 		return 0.0;
 	}
 
@@ -604,6 +612,9 @@ double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, doubl
 
 int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, double* longDist, CoordinateSystem cs)
 {
+	*latDist = LARGE_NUMBER;
+	*longDist = LARGE_NUMBER;
+
 	if (cs != CoordinateSystem::CS_LANE && cs != CoordinateSystem::CS_ROAD)
 	{
 		LOG("Unexpected coordinateSystem (%d). %d or %d expected.", CoordinateSystem::CS_LANE, CoordinateSystem::CS_ROAD);
@@ -704,6 +715,9 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 
 int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, double* longDist, CoordinateSystem cs)
 {
+	*latDist = LARGE_NUMBER;
+	*longDist = LARGE_NUMBER;
+
 	// First some checks
 	if (target == 0)
 	{

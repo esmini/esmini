@@ -140,6 +140,9 @@ namespace scenarioengine
 		int GetVersionMajor() { return versionMajor_; }
 		int GetVersionMinor() { return versionMinor_; }
 
+		int RemoveController(Controller* controller);
+		void AddController(Controller* controller) { controller_.push_back(controller); }
+
 		std::vector<Controller*> controller_;
 		Parameters parameters;
 

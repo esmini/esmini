@@ -1628,9 +1628,11 @@ namespace roadmanager
 		Find out the difference between two position objects, in effect subtracting the values
 		It can be used to calculate the distance from current position to another one (pos_b)
 		@param pos_b The position from which to subtract the current position (this position object)
+		@param bothDirections Set to true in order to search also backwards from object
+		@param maxDist Don't look further than this
 		@return true if position found and parameter values are valid, else false
 		*/
-		bool Delta(Position* pos_b, PositionDiff& diff, double maxDist = LARGE_NUMBER) const;
+		bool Delta(Position* pos_b, PositionDiff& diff, bool bothDirections = true, double maxDist = LARGE_NUMBER) const;
 
 		/**
 		Find out the distance, on specified system and type, between two position objects

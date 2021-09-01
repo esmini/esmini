@@ -329,6 +329,11 @@ double PointSquareDistance2D(double x0, double y0, double x1, double y1)
 	return (x1 - x0)*(x1 - x0) + (y1 - y0) * (y1 - y0);
 }
 
+double PointHeadingDistance2D(double x0, double y0, double h, double x1, double y1)
+{
+	return (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
+}
+
 void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double &px, double &py)
 {
 	// Project the given point on the straight line between geometry end points
