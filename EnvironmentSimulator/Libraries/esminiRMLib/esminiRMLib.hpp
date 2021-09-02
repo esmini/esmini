@@ -284,7 +284,7 @@ extern "C"
 	@param h rotation heading value
 	@return 0 if successful, -1 if not
 	*/
-	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h);
+	RM_DLL_API int RM_SetWorldXYZHPosition(int handle, float x, float y, float z, float h);
 
 	/**
 	Move position forward along the road. Choose way randomly though any junctions.

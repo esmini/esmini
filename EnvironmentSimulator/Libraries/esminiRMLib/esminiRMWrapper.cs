@@ -91,12 +91,16 @@ namespace OpenDRIVE
         public float x;           // global x coordinate of sign position
         public float y;           // global y coordinate of sign position
         public float z;           // global z coordinate of sign position
+        public float z_offset;    // z offset from road level
         public float h;           // global heading of sign orientation
         public int roadId;        // road id of sign road position
         public float s;           // longitudinal position along road
         public float t;           // lateral position from road reference line
         public IntPtr name;       // sign name, typically used for 3D model filename (Use with: Marshal.PtrToStringAnsi(SE_GetODRFilename())
         public int orientation;   // 1=facing traffic in road direction, -1=facing traffic opposite road direction
+        public float length;      // length as sepcified in OpenDRIVE
+        public float height;      // height as sepcified in OpenDRIVE
+        public float width;       // width as sepcified in OpenDRIVE
     };
 
 
@@ -121,13 +125,13 @@ namespace OpenDRIVE
         [DllImport(LIB_NAME, EntryPoint = "RM_Close")]
         public static extern void Close();
 
-        [DllImport(LIB_NAME, EntryPoint = "RM_SetLogFilePath")]
         /// <summary>Specify logfile name, optionally including directory path
         /// examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
         /// Set "" to disable logfile
         /// Note: Needs to be called prior to calling RM_Init() </summary>
         /// <param name="path">Logfile path</param>
         /// <returns>0 on success, -1 on failure for any reason</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetLogFilePath")]
         public static extern int SetLogFilePath(string path);
 
         /// <summary>Create a position object</summary>
@@ -158,6 +162,7 @@ namespace OpenDRIVE
         /// 0 = ALIGN_NONE // No alignment to road
         /// 1 = ALIGN_SOFT // Align to road but add relative orientation
         /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetAlignMode")]
         public static extern void RM_SetAlignMode(int handle, int mode);
 
         /// <summary>Specify if and how position object will align to the road. This version
@@ -166,6 +171,7 @@ namespace OpenDRIVE
         /// 0 = ALIGN_NONE // No alignment to road
         /// 1 = ALIGN_SOFT // Align to road but add relative orientation
         /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetAlignModeH")]
         public static extern void RM_SetAlignModeH(int handle, int mode);
 
         /// <summary>Specify if and how position object will align to the road. This version
@@ -174,6 +180,7 @@ namespace OpenDRIVE
         /// 0 = ALIGN_NONE // No alignment to road
         /// 1 = ALIGN_SOFT // Align to road but add relative orientation
         /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetAlignModeP")]
         public static extern void RM_SetAlignModeP(int handle, int mode);
 
         /// <summary>Specify if and how position object will align to the road. This version
@@ -182,6 +189,7 @@ namespace OpenDRIVE
         /// 0 = ALIGN_NONE // No alignment to road
         /// 1 = ALIGN_SOFT // Align to road but add relative orientation
         /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetAlignModeR")]
         public static extern void RM_SetAlignModeR(int handle, int mode);
 
         /// <summary>Specify if and how position object will align to the road. This version
@@ -190,6 +198,7 @@ namespace OpenDRIVE
         /// 0 = ALIGN_NONE // No alignment to road
         /// 1 = ALIGN_SOFT // Align to road but add relative orientation
         /// 2 = ALIGN_HARD // Completely align to road, disregard relative orientation </param>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetAlignModeZ")]
         public static extern void RM_SetAlignModeZ(int handle, int mode);
 
         /// <summary>Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)</summary>

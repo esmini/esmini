@@ -50,12 +50,12 @@ namespace OpenDRIVE
     {
         public Vector3 position;
         public Quaternion rotation;
-        public float width;            // Lane width 
+        public float width;            // Lane width
         public float curvature;        // curvature (1/radius), >0 for left curves, <0 for right curves
-        public float speedLimit;       // road speed limit 
-        public int roadId;             // road ID 
+        public float speedLimit;       // road speed limit
+        public int roadId;             // road ID
         public int laneId;             // lane ID
-        public float laneOffset;       // lane offset (lateral distance from lane center) 
+        public float laneOffset;       // lane offset (lateral distance from lane center)
         public float s;                // s (longitudinal distance along reference line)
         public float t;                // t (lateral distance from reference line)
         public int junctionId;         // junction id is -1 if the position is not in a junction
@@ -174,12 +174,13 @@ namespace OpenDRIVE
             probeInfo.relativeHeading = tmpProbeInfo.relativeHeading;
         }
 
-
+#if ESMini
         public static string GetRoadReferencedByLoadedScenario()
         {
             byte[] str = new byte[256];
             return Marshal.PtrToStringAnsi(ESMini.ESMiniLib.SE_GetODRFilename());
         }
+#endif
 
         /// <summary>
         /// Sets the given transform to match the position and rotation of the road user with handle index.
@@ -198,7 +199,7 @@ namespace OpenDRIVE
 
         public static Vector3 GetUnityPosition(float odrX, float odrY, float odrZ)
         {
-            return new Vector3(-odrX, odrZ, -odrY); 
+            return new Vector3(-odrX, odrZ, -odrY);
         }
 
         public static Vector3 GetUnityPosition(OpenDrivePositionData openDrivePositionData)
@@ -245,7 +246,7 @@ namespace OpenDRIVE
             return new Vector3( (270-unityRotationEuler.y) * DEG2RAD, unityRotationEuler.x * DEG2RAD, -unityRotationEuler.z * DEG2RAD);
         }
 
-        #endregion
+#endregion
 
     }
 
