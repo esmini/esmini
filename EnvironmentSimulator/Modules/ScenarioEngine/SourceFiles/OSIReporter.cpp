@@ -1511,7 +1511,8 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 						// DRIVING DIRECTION
 						int driving_side = 1; //right, along side of s-direction
 						bool driving_direction = true;
-						if (lane_id >= 0)
+						if (lane_id >= 0 && road->GetRule() == roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC ||
+							lane_id < 0 && road->GetRule() == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC)
 						{
 							driving_side = -1; //left,  against side of s-direction
 							driving_direction = false;
