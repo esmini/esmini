@@ -43,8 +43,10 @@ namespace scenarioengine
 		void printSimulationTime();
 		void prepareGroundTruth(double dt);
 		int defaultController(Object *obj, double dt);
-		void ReplaceObjectInTrigger(Trigger *trigger, Object *obj1, Object *obj2, double timeOffset);
+
+		void ReplaceObjectInTrigger(Trigger *trigger, Object *obj1, Object *obj2, double timeOffset, Event* event = 0);
 		void SetupGhost(Object *object);
+		void ResetEvents();
 
 		std::string getScenarioFilename() { return scenarioReader->getScenarioFilename(); }
 		std::string getSceneGraphFilename() { return roadNetwork.sceneGraphFile.filepath; }
@@ -60,6 +62,15 @@ namespace scenarioengine
 		double GetHeadstartTime() { return headstart_time_; }
 		void SetSimulationTime(double time) { simulationTime_ = time; }
 		double *GetSimulationTimePtr() { return &simulationTime_; }
+
+		void SetTrueTime(double time) { trueTime_ = time; }
+		double GetTrueTime() { return trueTime_; }
+		double* GetTrueTimePtr() { return &trueTime_;  }
+
+		//static void TimeSetBack();
+
+		double trueTime_;
+		bool doOnce = true;
 
 	private:
 		// OpenSCENARIO parameters

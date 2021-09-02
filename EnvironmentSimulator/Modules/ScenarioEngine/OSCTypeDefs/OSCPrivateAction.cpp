@@ -14,6 +14,7 @@
 #include <math.h>
 
 #include "OSCPrivateAction.hpp"
+#include "ScenarioEngine.hpp"
 
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
@@ -405,6 +406,8 @@ void LatLaneChangeAction::Step(double simTime, double)
 	{
 		LOG("Unexpected timing type: %d", transition_dynamics_.dimension_);
 	}
+	
+	//LOG("Elapsed time %f", elapsed_);
 
 	factor = elapsed_ / transition_dynamics_.target_value_;
 	t_ = transition_dynamics_.Evaluate(factor, start_t_, target_t_);
@@ -883,6 +886,24 @@ void LongDistanceAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 void TeleportAction::Start(double simTime, double dt)
 {
 	OSCAction::Start(simTime, dt);
+	LOG("Starting teleport Action");
+	//ScenarioEngine myEngine = new ScenarioEngine();
+	//LOG("Teleport time for %s :", object_->name_.c_str());
+	if (object_->IsGhost() && scenarioEngine_->getSimulationTime() > 0)
+	{
+		//printf("Time: %.2f \n", scenarioEngine_->getSimulationTime());
+		scenarioEngine_->SetSimulationTime(scenarioEngine_->getSimulationTime() - scenarioEngine_->GetHeadstartTime());
+		//printf("Trail: %d \n", object_->trail_.GetNumberOfVertices());
+		object_->trail_.Reset();
+
+		if (object_->ghost_Ego_ != 0)
+		{
+			object_->SetSpeed(object_->ghost_Ego_->GetSpeed());
+		}
+
+		//printf("Trail: %d \n", object_->trail_.GetNumberOfVertices());
+		scenarioEngine_->ResetEvents(); // Ghost-project. Reset events finished by ghost.
+	}
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActive())
@@ -911,6 +932,7 @@ void TeleportAction::Start(double simTime, double dt)
 		object_->pos_.CalcRoutePosition();
 	}
 
+	
 	LOG("%s New position:", object_->name_.c_str());
 	object_->pos_.Print();
 	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);

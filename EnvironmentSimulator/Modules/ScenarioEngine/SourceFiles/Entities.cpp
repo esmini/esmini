@@ -23,7 +23,7 @@ using namespace roadmanager;
 
 Object::Object(Type type) : type_(type), id_(0), speed_(0), wheel_angle_(0), wheel_rot_(0),
 route_(0), model3d_(""), ghost_trail_s_(0), trail_follow_index_(0), odometer_(0), end_of_road_timestamp_(0.0),
-off_road_timestamp_(0.0), stand_still_timestamp_(0), dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0),
+off_road_timestamp_(0.0), stand_still_timestamp_(0), dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0), ghost_Ego_(0),
 visibilityMask_(0xFF), isGhost_(false), junctionSelectorStrategy_(Junction::JunctionStrategyType::RANDOM),
 nextJunctionSelectorAngle_(0.0), scaleMode_(EntityScaleMode::NONE)
 {
