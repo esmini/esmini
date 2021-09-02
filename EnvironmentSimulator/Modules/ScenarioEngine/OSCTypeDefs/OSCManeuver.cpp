@@ -21,6 +21,16 @@ void Event::Start(double simTime, double dt)
 		// Restart actions
 		action_[i]->Reset();
 		action_[i]->Start(simTime, dt);
+
+		// When using a TeleportAction for the Ghost-vehicle, we need to set back the starting simTime for other Actions in the same Event.
+		// This is an easy solution. A nicer one could be to access ScenarioEngines getSimulationTime() when calling action Start.
+		OSCAction* action = action_[i];
+		OSCPrivateAction* pa = (OSCPrivateAction*)action;
+		if (pa->object_->IsGhost() && pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
+		{
+			simTime -= pa->object_->GetHeadstartTime();
+		}
+
 	}
 	StoryBoardElement::Start(simTime, dt);
 }

@@ -96,7 +96,8 @@ namespace scenarioengine
 		roadmanager::TrajVertex trail_closest_pos_;
 
 		double sensor_pos_[3];
-		Object *ghost_;
+		Object* ghost_;
+		Object* ghost_Ego_;
 
 		double speed_;
 		double wheel_angle_;

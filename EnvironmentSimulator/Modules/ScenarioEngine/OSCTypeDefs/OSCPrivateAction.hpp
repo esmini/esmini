@@ -28,7 +28,7 @@ namespace scenarioengine
 	#define DISTANCE_TOLERANCE (0.5)  // meter
 	#define SYNCH_DISTANCE_TOLERANCE (1.0)  // meter
 	#define IS_ZERO(x) (x < SMALL_NUMBER && x > -SMALL_NUMBER)
-
+	class ScenarioEngine;
 	class OSCPrivateAction : public OSCAction
 	{
 	public:
@@ -82,8 +82,9 @@ namespace scenarioengine
 
 		ActionType type_;
 		Object *object_;
+		ScenarioEngine* scenarioEngine_;
 
-		OSCPrivateAction(OSCPrivateAction::ActionType type) : OSCAction(OSCAction::BaseType::PRIVATE), type_(type), object_(0) {}
+		OSCPrivateAction(OSCPrivateAction::ActionType type) : OSCAction(OSCAction::BaseType::PRIVATE), type_(type), object_(0), scenarioEngine_(0) {}
 
 		virtual void print()
 		{

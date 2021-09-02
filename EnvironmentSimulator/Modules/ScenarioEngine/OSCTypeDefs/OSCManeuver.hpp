@@ -24,7 +24,6 @@
 
 namespace scenarioengine
 {
-
 	class Event: public StoryBoardElement
 	{
 	public:
@@ -65,5 +64,4 @@ namespace scenarioengine
 			LOG("\tname = %s", name_.c_str());
 		};
 	};
-
 }
