@@ -412,7 +412,10 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState *> objectSt
 		if (objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE) ||
 			objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
 		{
-			UpdateOSIMovingObject(objectState[i]);
+			if(objectState[i]->state_.info.ctrl_type != Controller::Type::GHOST_RESERVED_TYPE)
+			{
+				UpdateOSIMovingObject(objectState[i]);
+			}	
 		}
 		else if (objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
 		{
