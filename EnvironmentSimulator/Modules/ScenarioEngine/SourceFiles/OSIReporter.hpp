@@ -86,7 +86,7 @@ public:
 	/**
 	Fills up the osi message with dynamic GroundTruth
 	*/
-	int UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectState);
+	int UpdateOSIDynamicGroundTruth(std::vector<ObjectState*> objectState, bool reportGhost = true);
 	/**
 	Fills up the osi message with Stationary Object
 	*/

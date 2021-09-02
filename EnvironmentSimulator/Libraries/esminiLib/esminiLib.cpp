@@ -1212,12 +1212,12 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_UpdateOSIDynamicGroundTruth()
+	SE_DLL_API int SE_UpdateOSIDynamicGroundTruth(bool reportGhost)
 	{
 		if (player != nullptr)
 		{
 #ifdef _USE_OSI
-			return player->osiReporter->UpdateOSIDynamicGroundTruth(player->scenarioGateway->objectState_);
+			return player->osiReporter->UpdateOSIDynamicGroundTruth(player->scenarioGateway->objectState_, reportGhost);
 #endif  // USE_OSI
 		}
 

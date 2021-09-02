@@ -724,9 +724,10 @@ extern "C"
 
 	/**
 		The SE_UpdateOSIDynamicGroundTruth function updates OSI dynamic Groundtruth
+		@param reportGhost Optional flag, if we should include ghost vehicle info in the osi messages
 		@return 0
 	*/
-	SE_DLL_API int SE_UpdateOSIDynamicGroundTruth();
+	SE_DLL_API int SE_UpdateOSIDynamicGroundTruth(bool reportGhost = true);
 
 	/**
 		The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
