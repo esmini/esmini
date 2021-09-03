@@ -46,9 +46,6 @@ int main(int argc, char *argv[])
 		}
 
 		player->Frame(dt);
-		double dist, x, y;
-		dist = player->scenarioEngine->entities.object_[0]->FreeSpaceDistance(player->scenarioEngine->entities.object_[1], &y, &x);
-		printf("dist %.2f x %.2f y %.2f\n", dist, x, y);
 	}
 
 	delete player;

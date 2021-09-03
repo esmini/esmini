@@ -217,6 +217,20 @@ bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, d
 double DistanceFromPointToEdge2D(double x3, double y3, double x1, double y1, double x2, double y2, double* x, double* y);
 
 /**
+ Measure distance from point to line. Strategy: Find and measure distance to closest/perpendicular point on line
+ @param x3 X-coordinate of the point to check
+ @param y3 Y-coordinate of the point to check
+ @param x1 X-coordinate of the first point on line
+ @param y1 Y-coordinate of the first point on line
+ @param x2 X-coordinate of the second first point on line
+ @param y2 Y-coordinate of the second first point on line
+ @param x Return the X-coordinate of closest point on line
+ @param y Return the Y-coordinate of closest point on line
+ @return the distance
+*/
+double DistanceFromPointToLine2D(double x3, double y3, double x1, double y1, double x2, double y2, double* x, double* y);
+
+/**
   Find out whether the point is left or right to a vector
 */
 int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2);

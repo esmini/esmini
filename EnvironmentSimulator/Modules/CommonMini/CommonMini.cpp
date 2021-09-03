@@ -304,6 +304,17 @@ double DistanceFromPointToEdge2D(double x3, double y3, double x1, double y1, dou
 	return distance;
 }
 
+double DistanceFromPointToLine2D(double x3, double y3, double x1, double y1, double x2, double y2, double* x, double* y)
+{
+	double distance = 0;
+
+	// project point on edge, and measure distance to that point
+	ProjectPointOnVector2D(x3, y3, x1, y1, x2, y2, *x, *y);
+	distance = PointDistance2D(x3, y3, *x, *y);
+
+	return distance;
+}
+
 int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2)
 {
 	// Use cross product

@@ -190,6 +190,80 @@ TEST(DistanceTest, CalcDistancePointAcrossIntersection)
 
 }
 
+TEST(DistanceTest, CalcEntityDistanceFreespace)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/straight_500m.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    Object obj0(Object::Type::VEHICLE);
+    obj0.boundingbox_.center_ = { 1.5, 0.0, 0.0 };
+    obj0.boundingbox_.dimensions_ = { 2.0, 5.0, 2.0 };
+    obj0.pos_.SetLanePos(1, -1, 20.0, 0);
+    obj0.pos_.SetHeading(0.0);
+
+    Object obj1(Object::Type::VEHICLE);
+    obj1.boundingbox_.center_ = { 1.5, 0.0, 0.0 };
+    obj1.boundingbox_.dimensions_ = { 2.0, 5.0, 2.0 };
+    obj1.pos_.SetLanePos(1, -1, 30.0, 0);
+    obj1.pos_.SetHeading(0.0);
+
+    // Measure from X, Y point to object in cartesian coordinates
+    double latDist = 0.0;
+    double longDist = 0.0;
+    double dist = 0.0;
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), false);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 0.0, 1e-5);
+    EXPECT_NEAR(longDist, 5.0, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 5.0, 1e-3);
+
+    obj1.pos_.SetLanePos(1, -1, 15.1, 1.9);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), true);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), true);
+    EXPECT_NEAR(latDist, 0.0, 1e-5);
+    EXPECT_NEAR(longDist, 0.0, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 0.0, 1e-3);
+
+    obj1.pos_.SetLanePos(1, -1, 15.1, 2.9);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), false);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 0.9, 1e-5);
+    EXPECT_NEAR(longDist, 0.0, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 0.9, 1e-3);
+
+    obj1.pos_.SetLanePos(1, -1, 10.0, 0.0);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), false);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 0.0, 1e-5);
+    EXPECT_NEAR(longDist, -5.0, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 5.0, 1e-3);
+
+    obj1.pos_.SetLanePos(1, -1, 10.0, 0.0);
+    obj1.pos_.SetHeadingRelative(M_PI);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), false);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 0.0, 1e-5);
+    EXPECT_NEAR(longDist, -8.0, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 8.0, 1e-3);
+
+    obj1.pos_.SetLanePos(1, -1, 30.0, 5.0);
+    obj1.pos_.SetHeadingRelative(0.5);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), false);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 2.64299, 1e-5);
+    EXPECT_NEAR(longDist, 4.64299, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 6.183198, 1e-3);
+
+    obj1.pos_.SetHeadingRelative(-0.5);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 1.204715, 1e-5);
+    EXPECT_NEAR(longDist, 4.64299, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 5.876278, 1e-3);
+}
+
 TEST(TrajectoryTest, EnsureContinuation)
 {
     double dt = 0.01;

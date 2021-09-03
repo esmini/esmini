@@ -158,7 +158,9 @@ namespace scenarioengine
 			@param target The object to check
 			@return true if bounding boxes overlap else false
 		*/
-		bool Collision(Object *target);
+		bool CollisionAndRelativeDistLatLong(Object* target, double* distLat, double* distLong);
+
+		bool Collision(Object* target) { return CollisionAndRelativeDistLatLong(target, nullptr, nullptr); }
 
 		/**
 			Check if point is colliding/overlapping with specified target object
