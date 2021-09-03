@@ -26,7 +26,7 @@ namespace scenarioengine
 	{
 		int id;
 		int model_id;
-		int obj_type; // 0=Vehicle, 1=Pedestrian, 2=MiscObj
+		int obj_type; // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
 		int obj_category; // sub type for vehicle, pedestrian and miscobj
 		int ctrl_type;  // See Controller::Type enum
 		float timeStamp;

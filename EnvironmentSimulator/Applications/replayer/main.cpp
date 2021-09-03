@@ -115,11 +115,18 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 				filename = entityModelsFiles_[state->info.model_id];
 			}
 
-			if ((new_sc.entityModel = viewer->AddEntityModel(filename, osg::Vec4(0.5, 0.5, 0.5, 1.0),
+			if ((new_sc.entityModel = viewer->CreateEntityModel(filename, osg::Vec4(0.5, 0.5, 0.5, 1.0),
 				viewer::EntityModel::EntityType::VEHICLE, false, state->info.name, &state->info.boundingbox,
 				static_cast<EntityScaleMode>(state->info.scaleMode))) == 0)
 			{
 				return -1;
+			}
+			else
+			{
+				if (viewer->AddEntityModel(new_sc.entityModel) != 0)
+				{
+					return -1;
+				}
 			}
 
 			// Add it to the list of scenario cars

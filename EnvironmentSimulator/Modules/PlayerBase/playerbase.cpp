@@ -235,56 +235,41 @@ void ScenarioPlayer::ViewerFrame()
 
 	mutex.Lock();
 
-	// Add or remove cars (for sumo)
-
-	if (scenarioEngine->entities.object_.size() > viewer_->entities_.size())
+	// add cars missing
+	osg::Vec4 trail_color;
+	trail_color.set(color_blue[0], color_blue[1], color_blue[2], 1.0);
+	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
 	{
-		// add cars missing
-		for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+		Object* obj = scenarioEngine->entities.object_[i];
+
+		if (i >= viewer_->entities_.size())
 		{
-			Object* obj = scenarioEngine->entities.object_[i];
-			bool toadd = true;
-			if (obj->type_ == Object::Type::VEHICLE)
-			{
-				for (size_t j = 0; j < viewer_->entities_.size(); j++)
-				{
-					if (scenarioEngine->entities.object_[i]->name_ == viewer_->entities_[j]->name_)
-					{
-						toadd = false;
-					}
-				}
-				if (toadd)
-				{
-					// add car
-					osg::Vec4 trail_color;
-					trail_color.set(color_blue[0], color_blue[1], color_blue[2], 1.0);
-					viewer_->AddEntityModel(obj->model3d_, trail_color, viewer::EntityModel::EntityType::VEHICLE,
-						false, obj->name_, &obj->boundingbox_, obj->scaleMode_);
-				}
-			}
+			// add model
+			viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
+				viewer::EntityModel::EntityType::VEHICLE, false,
+				obj->name_, &obj->boundingbox_, obj->scaleMode_));
+		}
+		else if (scenarioEngine->entities.object_[i]->name_ != viewer_->entities_[i]->name_)
+		{
+			// entity has probably been removed or replaced, replace model
+			viewer_->entities_[i]->parent_->removeChild(viewer_->entities_[i]->txNode_);
+			delete (viewer_->entities_[i]);
+
+			viewer_->entities_[i] = viewer_->CreateEntityModel(obj->model3d_, trail_color,
+					viewer::EntityModel::EntityType::VEHICLE, false,
+					obj->name_, &obj->boundingbox_);
 		}
 	}
-	else if (scenarioEngine->entities.object_.size() < viewer_->entities_.size())
+
+	if (viewer_->entities_.size() > scenarioEngine->entities.object_.size())
 	{
 		// remove obsolete cars
-		for (size_t j = 0; j < viewer_->entities_.size(); j++)
+		while (viewer_->entities_.size() > scenarioEngine->entities.object_.size())
 		{
-			if (viewer_->entities_[j]->GetType() == viewer::EntityModel::EntityType::VEHICLE)
-			{
-				bool toremove = true;
-				for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
-				{
-					if (scenarioEngine->entities.object_[i]->name_ == viewer_->entities_[j]->name_)
-					{
-						toremove = false;
-					}
-				}
-				if (toremove)
-				{
-					// remove car
-					viewer_->RemoveCar(viewer_->entities_[j]->name_);
-				}
-			}
+			// remove car
+			viewer_->entities_.back()->parent_->removeChild(viewer_->entities_.back()->txNode_);
+			delete (viewer_->entities_.back());
+			viewer_->entities_.pop_back();
 		}
 	}
 
@@ -510,9 +495,9 @@ int ScenarioPlayer::InitViewer()
 			road_sensor = true;
 		}
 
-		if (viewer_->AddEntityModel(obj->model3d_, trail_color,
+		if (viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
 			obj->type_ == Object::Type::VEHICLE ? viewer::EntityModel::EntityType::VEHICLE : viewer::EntityModel::EntityType::OTHER,
-			road_sensor, obj->name_, &obj->boundingbox_, obj->scaleMode_) == 0)
+			road_sensor, obj->name_, &obj->boundingbox_, obj->scaleMode_)) != 0)
 		{
 			delete viewer_;
 			viewer_ = 0;

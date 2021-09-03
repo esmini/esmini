@@ -85,7 +85,7 @@ void ControllerACC::Step(double timeStep)
 			double x_local, y_local;
 			object_->FreeSpaceDistance(entities_->object_[i], &y_local, &x_local);
 
-			if (x_local > 0 && x_local < 5 + 0.5 * (object_->GetSpeed() - entities_->object_[i]->GetSpeed()) && abs(y_local) < 1.0)
+			if (x_local > 0 && x_local < 10 + 0.5 * (object_->GetSpeed() - entities_->object_[i]->GetSpeed()) && abs(y_local) < 1.0)
 			{
 				minGapLength = x_local;
 				minSpeedDiff = object_->GetSpeed() - entities_->object_[i]->GetSpeed();

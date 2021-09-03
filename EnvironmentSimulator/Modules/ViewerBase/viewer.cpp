@@ -1503,7 +1503,7 @@ void Viewer::UpdateCameraFOV()
 	osgViewer_->getCamera()->setLODScale(fov/PERSP_FOV);
 }
 
-EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type,
+EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type,
 	bool road_sensor, std::string name, OSCBoundingBox* boundingBox, EntityScaleMode scaleMode)
 {
 	// Load 3D model
@@ -1513,8 +1513,18 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_c
 	osg::BoundingBox modelBB;
 	std::vector<std::string> file_name_candidates;
 
+	// Check if model already loaded
+	for (size_t i = 0; i < entities_.size(); i++)
+	{
+		if (entities_[i]->filename_ == modelFilepath)
+		{
+			modelgroup = dynamic_cast<osg::Group*>(entities_[i]->group_->clone(osg::CopyOp::SHALLOW_COPY));
+			break;
+		}
+	}
+
 	// First try to load 3d model
-	if (!modelFilepath.empty())
+	if (modelgroup == nullptr && !modelFilepath.empty())
 	{
 		file_name_candidates.push_back(modelFilepath);
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", modelFilepath));
@@ -1675,6 +1685,7 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_c
 	{
 		emodel = new EntityModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, trail_color, name);
 	}
+	emodel->filename_ = modelFilepath;
 
 	emodel->state_set_ = emodel->lod_->getOrCreateStateSet(); // Creating material
 	emodel->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
@@ -1686,20 +1697,9 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_c
 	emodel->state_set_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 	emodel->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 
-	entities_.push_back(emodel);
-
-	// Focus on first added car
-	if (entities_.size() == 1)
-	{
-		currentCarInFocus_ = 0;
-		rubberbandManipulator_->setTrackNode(entities_.back()->txNode_,
-			rubberbandManipulator_->getMode() == osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_TOP ? false : true);
-		nodeTrackerManipulator_->setTrackNode(entities_.back()->txNode_);
-	}
-
 	if (type == EntityModel::EntityType::VEHICLE)
 	{
-		CarModel* vehicle = (CarModel*)entities_.back();
+		CarModel* vehicle = (CarModel*)emodel;
 		CreateRoadSensors(vehicle);
 
 		if (road_sensor)
@@ -1712,8 +1712,54 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_c
 		}
 	}
 
-	return entities_.back();
+	return emodel;
 }
+
+int Viewer::AddEntityModel(EntityModel* model)
+{
+	entities_.push_back(model);
+
+	// Focus on first added car
+	if (entities_.size() == 1)
+	{
+		currentCarInFocus_ = 0;
+		rubberbandManipulator_->setTrackNode(entities_.back()->txNode_,
+			rubberbandManipulator_->getMode() == osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_TOP ? false : true);
+		nodeTrackerManipulator_->setTrackNode(entities_.back()->txNode_);
+	}
+
+	return 0;
+}
+
+void Viewer::RemoveCar(int index)
+{
+	if (entities_[index] != nullptr)
+	{
+		entities_[index]->parent_->removeChild(entities_[index]->txNode_);
+		delete (entities_[index]);
+	}
+	entities_.erase(entities_.begin() + index);
+
+	if (currentCarInFocus_ > index)
+	{
+		// Shift with reduces list
+		currentCarInFocus_--;
+	}
+	else if (currentCarInFocus_ == index)
+	{
+		if (entities_.size() > 0)
+		{
+			SetVehicleInFocus((currentCarInFocus_) % entities_.size());
+		}
+		else
+		{
+			// No more objects to follow, switch camera model
+			currentCarInFocus_ = -1;
+			((osgGA::KeySwitchMatrixManipulator*)osgViewer_->getCameraManipulator())->selectMatrixManipulator(5);
+		}
+	}
+}
+
 
 void Viewer::RemoveCar(std::string name)
 {
@@ -1723,30 +1769,9 @@ void Viewer::RemoveCar(std::string name)
 		{
 			if (entities_[i] != nullptr)
 			{
-				delete (entities_[i]);
+				RemoveCar(i);
+				return;
 			}
-			entities_.erase(entities_.begin() + i);
-
-			if (currentCarInFocus_ > i)
-			{
-				// Shift with reduces list
-				currentCarInFocus_--;
-			}
-			else if (currentCarInFocus_ == i)
-			{
-				if (entities_.size() > 0)
-				{
-					SetVehicleInFocus((currentCarInFocus_) % entities_.size());
-				}
-				else
-				{
-					// No more objects to follow, switch camera model
-					currentCarInFocus_ = -1;
-					((osgGA::KeySwitchMatrixManipulator*)osgViewer_->getCameraManipulator())->selectMatrixManipulator(5);
-				}
-			}
-
-			break;
 		}
 	}
 }

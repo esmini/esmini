@@ -93,6 +93,7 @@ namespace scenarioengine
 		// Catalogs
 		void parseCatalogs();
 		Catalog* LoadCatalog(std::string name);
+		Catalogs* GetCatalogs() { return catalogs_; }
 		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode);
 		roadmanager::RMTrajectory* parseTrajectoryRef(pugi::xml_node trajNode);
 		void ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node);
