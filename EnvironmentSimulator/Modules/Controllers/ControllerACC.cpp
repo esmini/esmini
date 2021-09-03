@@ -84,13 +84,12 @@ void ControllerACC::Step(double timeStep)
 		{
 			double x_local, y_local;
 			object_->FreeSpaceDistance(entities_->object_[i], &y_local, &x_local);
-//			object_->pos_.getRelativeDistance(entities_->object_[i]->pos_.GetX(), entities_->object_[i]->pos_.GetY(), x_local, y_local);
-			if (x_local > 0 && x_local < 15 && abs(y_local) < 1.0)
+
+			if (x_local > 0 && x_local < 5 + 0.5 * (object_->GetSpeed() - entities_->object_[i]->GetSpeed()) && abs(y_local) < 1.0)
 			{
 				minGapLength = x_local;
 				minSpeedDiff = object_->GetSpeed() - entities_->object_[i]->GetSpeed();
 				minObjIndex = (int)i;
-				printf("collision warning x %.2f y %.2f\n", x_local, y_local);
 			}
 		}
 	}
