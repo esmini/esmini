@@ -176,7 +176,7 @@ int ScenarioEngine::step(double deltaSimTime)
 				obj->wheel_angle_ = o.state_.info.wheel_angle;
 				obj->wheel_rot_ = o.state_.info.wheel_rot;
 
-				if (obj->pos_.GetStatusBitMask() & roadmanager::Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD)
+				if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
 				{
 					if (!obj->IsEndOfRoad())
 					{
@@ -650,9 +650,9 @@ void ScenarioEngine::parseScenario()
 	}
 }
 
-void ScenarioEngine::defaultController(Object* obj, double dt)
+int ScenarioEngine::defaultController(Object* obj, double dt)
 {
-	int retvalue = 0;
+	int retval = 0;
 	double steplen = obj->speed_ * dt;
 
 	// Add or subtract stepsize according to curvature and offset, in order to keep constant speed
@@ -671,7 +671,7 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 		{
 			if (obj->pos_.GetRoute())
 			{
-				retvalue = obj->pos_.MoveRouteDS(steplen);
+				retval = static_cast<int>(obj->pos_.MoveRouteDS(steplen));
 			}
 			else
 			{
@@ -681,7 +681,7 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 					// If pointing in other direction
 					steplen *= -1;
 				}
-				retvalue = obj->pos_.MoveAlongS(steplen, 0.0, obj->GetJunctionSelectorAngle());
+				retval = static_cast<int>(obj->pos_.MoveAlongS(steplen, 0.0, obj->GetJunctionSelectorAngle()));
 
 				if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
 					obj->pos_.IsInJunction() && obj->GetJunctionSelectorAngle() >= 0)
@@ -697,8 +697,8 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 				}
 			}
 
-			if (obj->pos_.GetStatusBitMask() & roadmanager::Position::POSITION_STATUS_MODES::POS_STATUS_END_OF_ROAD ||
-				obj->pos_.GetStatusBitMask() & roadmanager::Position::ErrorCode::ERROR_END_OF_ROUTE)
+			if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD) ||
+				obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
 			{
 				if (!obj->IsEndOfRoad())
 				{
@@ -710,6 +710,15 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 				obj->SetEndOfRoad(false);
 			}
 		}
+	}
+
+	if (retval == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		return -1;
 	}
 }
 

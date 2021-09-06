@@ -90,7 +90,7 @@ namespace roadmanager
 	class Geometry
 	{
 	public:
-		enum GeometryType
+		typedef enum
 		{
 			GEOMETRY_TYPE_UNKNOWN,
 			GEOMETRY_TYPE_LINE,
@@ -98,7 +98,7 @@ namespace roadmanager
 			GEOMETRY_TYPE_SPIRAL,
 			GEOMETRY_TYPE_POLY3,
 			GEOMETRY_TYPE_PARAM_POLY3,
-		};
+		} GeometryType;
 
 		Geometry() : s_(0.0), x_(0.0), y_(0), hdg_(0), length_(0), type_(GeometryType::GEOMETRY_TYPE_UNKNOWN) {}
 		Geometry(double s, double x, double y, double hdg, double length, GeometryType type) :
@@ -690,24 +690,6 @@ namespace roadmanager
 		int lane_id_;
 	};
 
-	enum RoadType
-	{
-		ROADTYPE_UNKNOWN,
-		ROADTYPE_RURAL,
-		ROADTYPE_MOTORWAY,
-		ROADTYPE_TOWN,
-		ROADTYPE_LOWSPEED,
-		ROADTYPE_PEDESTRIAN,
-		ROADTYPE_BICYCLE
-	};
-
-	typedef struct
-	{
-		double s_;
-		RoadType road_type_;
-		double speed_;  // m/s
-	} RoadTypeEntry;
-
 	typedef struct
 	{
 		int fromLane_;
@@ -995,14 +977,32 @@ namespace roadmanager
 	{
 	public:
 
-		typedef enum
+		enum class RoadType
+		{
+			ROADTYPE_UNKNOWN,
+			ROADTYPE_RURAL,
+			ROADTYPE_MOTORWAY,
+			ROADTYPE_TOWN,
+			ROADTYPE_LOWSPEED,
+			ROADTYPE_PEDESTRIAN,
+			ROADTYPE_BICYCLE
+		};
+
+		typedef struct
+		{
+			double s_;
+			RoadType road_type_;
+			double speed_;  // m/s
+		} RoadTypeEntry;
+
+		enum class RoadRule
 		{
 			RIGHT_HAND_TRAFFIC,
 			LEFT_HAND_TRAFFIC,
 			ROAD_RULE_UNDEFINED
-		} RoadRule;
+		};
 
-		Road(int id, std::string name, RoadRule rule = RIGHT_HAND_TRAFFIC) : id_(id), name_(name), length_(0), junction_(-1), rule_(rule) {}
+		Road(int id, std::string name, RoadRule rule = RoadRule::RIGHT_HAND_TRAFFIC) : id_(id), name_(name), length_(0), junction_(-1), rule_(rule) {}
 		~Road();
 
 		void Print();
@@ -1374,23 +1374,23 @@ namespace roadmanager
 		double dyLocal;         // delta y (local coordinate system)
 	} PositionDiff;
 
-	typedef enum
+	enum class CoordinateSystem
 	{
 		CS_UNDEFINED,
 		CS_ENTITY,
 		CS_LANE,
 		CS_ROAD,
 		CS_TRAJECTORY
-	} CoordinateSystem;
+	};
 
-	typedef enum
+	enum class RelativeDistanceType
 	{
 		REL_DIST_UNDEFINED,
 		REL_DIST_LATERAL,
 		REL_DIST_LONGITUDINAL,
 		REL_DIST_CARTESIAN,
 		REL_DIST_EUCLIDIAN
-	} RelativeDistanceType;
+	};
 
 	// Forward declarations
 	class Route;
@@ -1400,7 +1400,7 @@ namespace roadmanager
 	{
 	public:
 
-		enum PositionType
+		enum class PositionType
 		{
 			NORMAL,
 			ROUTE,
@@ -1410,20 +1410,20 @@ namespace roadmanager
 			RELATIVE_ROAD
 		};
 
-		enum OrientationType
+		enum class OrientationType
 		{
 			ORIENTATION_RELATIVE,
 			ORIENTATION_ABSOLUTE
 		};
 
-		enum LookAheadMode
+		enum class LookAheadMode
 		{
 			LOOKAHEADMODE_AT_LANE_CENTER,
 			LOOKAHEADMODE_AT_ROAD_CENTER,
 			LOOKAHEADMODE_AT_CURRENT_LATERAL_OFFSET,
 		};
 
-		enum ErrorCode
+		enum class ErrorCode
 		{
 			ERROR_NO_ERROR = 0,
 			ERROR_GENERIC = -1,
@@ -1432,18 +1432,18 @@ namespace roadmanager
 			ERROR_OFF_ROAD = -4,
 		};
 
-		enum UpdateTrackPosMode
+		enum class UpdateTrackPosMode
 		{
 			UPDATE_NOT_XYZH,
 			UPDATE_XYZ,
 			UPDATE_XYZH
 		};
 
-		typedef enum
+		enum class PositionStatusMode
 		{
 			POS_STATUS_END_OF_ROAD = (1 << 0),
 			POS_STATUS_END_OF_ROUTE = (1 << 1)
-		} POSITION_STATUS_MODES;
+		};
 
 		typedef enum
 		{
@@ -1471,9 +1471,9 @@ namespace roadmanager
 		@param updateXY update world coordinates x, y... as well - or not
 		@return Non zero return value indicates error of some kind
 		*/
-		int SetTrackPos(int track_id, double s, double t, bool UpdateXY = true);
+		ErrorCode SetTrackPos(int track_id, double s, double t, bool UpdateXY = true);
 		void ForceLaneId(int lane_id);
-		int SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
+		ErrorCode SetLanePos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetLaneBoundaryPos(int track_id, int lane_id, double s, double offset, int lane_section_idx = -1);
 		void SetRoadMarkPos(int track_id, int lane_id, int roadmark_idx, int roadmarktype_idx, int roadmarkline_idx, double s, double offset, int lane_section_idx = -1);
 
@@ -1524,7 +1524,7 @@ namespace roadmanager
 		@param roadId If != -1 only this road will be considered else all roads will be searched
 		@return Non zero return value indicates error of some kind
 		*/
-		int XYZH2TrackPos(double x, double y, double z, double h, bool connectedOnly = false, int roadId = -1);
+		ErrorCode XYZH2TrackPos(double x, double y, double z, double h, bool connectedOnly = false, int roadId = -1);
 
 		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, double junctionSelectorAngle = -1.0);
 
@@ -1564,7 +1564,7 @@ namespace roadmanager
 		@param ds Distance to move, negative will move backwards
 		@return Non zero return value indicates error of some kind, most likely End Of Route
 		*/
-		int MoveRouteDS(double ds);
+		ErrorCode MoveRouteDS(double ds);
 
 		/**
 		Move current position to specified S-value along the route
@@ -1580,7 +1580,7 @@ namespace roadmanager
 		@param route_s Distance to move, negative will move backwards
 		@return Non zero return value indicates error of some kind, most likely End Of Route
 		*/
-		int SetRouteS(Route* route, double route_s);
+		ErrorCode SetRouteS(Route* route, double route_s);
 
 		/**
 		Move current position forward, or backwards, ds meters along the trajectory
@@ -1662,17 +1662,17 @@ namespace roadmanager
 		@param lookahead_distance The distance, along the road, to the point
 		@param data Struct to fill in calculated values, see typdef for details
 		@param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
-		@return 0 if successful, -1 if not
+		@return 0 if successful, other codes see Position::ErrorCode
 		*/
-		int GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode);
+		ErrorCode GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode);
 
 		/**
 		Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
 		@param target_pos The target position
 		@param data Struct to fill in calculated values, see typdef for details
-		@return 0 if successful, -1 if not
+		@return 0 if successful, other codes see Position::ErrorCode
 		*/
-		int GetProbeInfo(Position *target_pos, RoadProbeInfo *data);
+		ErrorCode GetProbeInfo(Position *target_pos, RoadProbeInfo *data);
 
 		/**
 		Get information of current lane at a specified distance from object along the road ahead
@@ -1690,9 +1690,7 @@ namespace roadmanager
 		@param data Struct to fill in calculated values, see typdef for details
 		@return 0 if successful, -1 if not
 		*/
-//		int GetTrailInfo(double lookahead_distance, RoadLaneInfo *data);
-
-		void CalcProbeTarget(Position *target, RoadProbeInfo *data);
+		int CalcProbeTarget(Position *target, RoadProbeInfo *data);
 
 		/**
 		Move position along the road network, forward or backward, from the current position
@@ -1701,16 +1699,18 @@ namespace roadmanager
 		@param ds distance to move from current position
 		@param dLaneOffset delta lane offset (adding to current position lane offset)
 		@param junctionSelectorAngle Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize
+		@return 0 if successful, other codes see Position::ErrorCode
 		*/
-		int MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle);
+		ErrorCode MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle);
 
 		/**
 		Move position along the road network, forward or backward, from the current position
 		It will automatically follow connecting lanes between connected roads
 		If multiple options (only possible in junctions) it will choose randomly
 		@param ds distance to move from current position
+		@return 0 if successful, other codes see Position::ErrorCode
 		*/
-		int MoveAlongS(double ds) { return MoveAlongS(ds, 0.0, -1.0); }
+		ErrorCode MoveAlongS(double ds) { return MoveAlongS(ds, 0.0, -1.0); }
 
 		/**
 		Retrieve the track/road ID from the position object
@@ -1931,7 +1931,7 @@ namespace roadmanager
 
 	protected:
 		void Track2Lane();
-		int Track2XYZ();
+		ErrorCode Track2XYZ();
 		void Lane2Track();
 		void RoadMark2Track();
 		/**
@@ -1939,7 +1939,7 @@ namespace roadmanager
 		*/
 		void LaneBoundary2Track();
 		void XYZ2Track();
-		int SetLongitudinalTrackPos(int track_id, double s);
+		ErrorCode SetLongitudinalTrackPos(int track_id, double s);
 		bool EvaluateRoadZPitchRoll();
 
 		// Control lane belonging

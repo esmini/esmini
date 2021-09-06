@@ -264,7 +264,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 		ds *= -1;
 	}
 
-	if (car->pos->MoveAlongS(ds) != 0)
+	if (car->pos->MoveAlongS(ds) != roadmanager::Position::ErrorCode::ERROR_NO_ERROR)
 	{
 		if (openEnds.size() == 0)
 		{
