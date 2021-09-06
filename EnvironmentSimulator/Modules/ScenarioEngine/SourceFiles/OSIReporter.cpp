@@ -1586,7 +1586,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 						}
 
 						//Update lanes that connect with junctions that are not intersections
-						if (road->GetNumberOfRoadTypes() > 0 && road->GetRoadType(0)->road_type_ == roadmanager::RoadType::ROADTYPE_MOTORWAY && road->GetJunction() > 0)
+						if (road->GetNumberOfRoadTypes() > 0 && road->GetRoadType(0)->road_type_ == roadmanager::Road::RoadType::ROADTYPE_MOTORWAY && road->GetJunction() > 0)
 						{
 							for (int l = 0; l < obj_osi_internal.gt->lane_size(); ++l)
 							{
@@ -1971,7 +1971,7 @@ void OSIReporter::CreateMovingObjectFromSensorData(osi3::SensorData &sd, int obj
 void OSIReporter::CreateLaneBoundaryFromSensordata(osi3::SensorData &sd, int lane_boundary_nr)
 {
   osi3::DetectedLaneBoundary lane_boundary = sd.lane_boundary(lane_boundary_nr);
-  double x, y, z, id;
+  double x, y, z;
   osi3::LaneBoundary *new_lane_boundary = obj_osi_external.sv->mutable_global_ground_truth()->add_lane_boundary();
 
   for (int i = 0; i < sd.lane_boundary(lane_boundary_nr).boundary_line_size(); i++)

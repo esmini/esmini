@@ -427,7 +427,7 @@ public:
 	__int64 start_time_;
 	double duration_;
 
-	SE_SystemTimer() : start_time_(0) {}
+	SE_SystemTimer() : start_time_(0), duration_(0) {}
 	void Start()
 	{
 		start_time_ = SE_getSystemTime();
@@ -502,11 +502,11 @@ public:
 
 	// Custom damping factor, set 0 for no damping
 	DampedSpring(double startValue, double targetValue, double tension, double damping) :
-		x_(startValue), x0_(targetValue), t_(tension), d_(damping), v_(0), critical_(false) {};
+		x_(startValue), x0_(targetValue), t_(tension), d_(damping), v_(0), a_(0), critical_(false) {};
 
 	// Critically damped (optimal)
 	DampedSpring(double startValue, double targetValue, double tension) :
-		x_(startValue), x0_(targetValue), t_(tension), d_(2 * sqrt(tension)), v_(0), critical_(true) {};
+		x_(startValue), x0_(targetValue), t_(tension), d_(2 * sqrt(tension)), v_(0), a_(0), critical_(true) {};
 
 	void Update(double timeStep)
 	{
