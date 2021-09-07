@@ -419,7 +419,7 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 					ReplaceStringInPlace(expr, "false ", "0 ");
 
 					float value = eval_expr(expr.c_str());
-					if (std::isnan(value))
+					if (isnan(value))
 					{
 						LOG_AND_QUIT("Failed to evaluate the expression : % s\n", attr.value());
 					}
