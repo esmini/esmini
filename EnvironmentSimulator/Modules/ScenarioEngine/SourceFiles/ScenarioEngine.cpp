@@ -690,7 +690,7 @@ void ScenarioEngine::defaultController(Object* obj, double dt)
 					obj->SetJunctionSelectorAngle(std::nan(""));
 				}
 				else if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
-					!obj->pos_.IsInJunction() && isnan(obj->GetJunctionSelectorAngle()))
+					!obj->pos_.IsInJunction() && std::isnan(obj->GetJunctionSelectorAngle()))
 				{
 					// Set new random junction selector after coming out of junction
 					obj->SetJunctionSelectorAngleRandom();

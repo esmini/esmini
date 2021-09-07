@@ -196,7 +196,7 @@ void Object::SetAngularAcc(double h_acc, double p_acc, double r_acc)
 
 void Object::SetJunctionSelectorAngle(double angle)
 {
-	if (isnan(angle))
+	if (std::isnan(angle))
 	{
 		nextJunctionSelectorAngle_ = angle;
 	}
