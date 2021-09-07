@@ -126,19 +126,33 @@ cmake --build . --config Release --target install
 
 Or you can go with platform specific ways of building:
 
-Windows/Visual Studio
+**Windows/Visual Studio**
 1. Open generated solution, build*/EnvironmentSimulator.sln
 1. Select configuration, Debug or Release
 1. Build CMakePredefinedTargets/INSTALL (right-click and select build)
 
-macOS
+**macOS**
+To generate a Xcode project file, run the initial cmake command as follows:
 ```
-cd build
+cmake -G Xcode ..
+```
+Then build as usual:
+```
+cmake --build . --config Release --target install
+```
+or using Xcode directly:
+```
 xcodebuild -scheme install -configuration Release build
 ```
-- or open generated project in Xcode, and build from there
+or open the generated project file in Xcode, and build from there.
 
-Linux
+To create bundles (shared library container), do from esmini root folder:
+```
+lipo -create bin/libesminiRMLib.dylib -output bin/esminiRMLib.bundle
+lipo -create bin/libesminiLib.dylib -output bin/esminiLib.bundle
+```
+
+**Linux**
 ```
 cd build
 make -j4 install
