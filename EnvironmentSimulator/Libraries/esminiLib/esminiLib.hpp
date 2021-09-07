@@ -732,6 +732,12 @@ extern "C"
 	SE_DLL_API const char *SE_GetOSIGroundTruthRaw();
 
 	/**
+		The SE_SetOSISensorDataRaw function returns a char array containing the OSI GroundTruth information
+		@return 0
+	*/
+	SE_DLL_API int *SE_SetOSISensorDataRaw(const char* sensordata);
+
+	/**
 		The SE_GetOSISensorDataRaw function returns a char array containing the OSI SensorData information
 		@return osi3::SensorData*
 	*/

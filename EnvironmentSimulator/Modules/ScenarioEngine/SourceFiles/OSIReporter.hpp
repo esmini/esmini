@@ -14,6 +14,7 @@
 
 #include "IdealSensor.hpp"
 #include "ScenarioGateway.hpp"
+#include "osi_sensordata.pb.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -92,6 +93,10 @@ public:
 	Fills the Traffic Signals
 	*/
 	int UpdateTrafficSignals();
+  /**
+  Creates a SensorView from SensorData for plotting
+  */
+  int CreateSensorViewFromSensorData(osi3::SensorData &sd);
 
 	const char* GetOSIGroundTruth(int* size);
 	const char* GetOSIGroundTruthRaw();
@@ -120,4 +125,6 @@ private:
 	unsigned long long int nanosec_;
 	std::ofstream osi_file;
 	int osi_update_counter_;
+  void CreateMovingObjectFromSensorData(osi3::SensorData &sd, int obj_nr);
+  void CreateLaneBoundaryFromSensordata(osi3::SensorData &sd, int lane_boundary_nr);
 };

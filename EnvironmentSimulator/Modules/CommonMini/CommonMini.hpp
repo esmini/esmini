@@ -221,6 +221,13 @@ void Global2LocalCoordinates(double xTargetGlobal, double yTargetGlobal,
 							 double &targetXforHost, double &targetYforHost);
 
 /**
+  Convert target (x,y) coordinates to the global coordinate system
+*/
+void Local2GlobalCoordinates(double &xTargetGlobal, double &yTargetGlobal,
+							 double xHostGlobal, double yHostGlobal, double thetaGlobal,
+							 double targetXforHost, double targetYforHost);
+
+/**
   Normalize a 2D vector
 */
 void NormalizeVec2D(double x, double y, double &xn, double &yn);
