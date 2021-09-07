@@ -8,6 +8,7 @@ include_directories (
   ${OSG_INCLUDE_DIR}
   ${SUMO_INCLUDE_DIR}
   ${COMMON_MINI_INCLUDE_DIR}
+  ${OSI_INCLUDE_DIR}
 )
 
 set(TARGET esmini)
@@ -31,9 +32,9 @@ if (USE_OSI)
   set (osi_libs ${OSI_LIBRARIES})
 endif (USE_OSI)
 
-target_link_libraries ( 
+target_link_libraries (
 	${TARGET}
-	PlayerBase    
+	PlayerBase
 	ScenarioEngine
     Controllers
 	RoadManager
@@ -41,7 +42,7 @@ target_link_libraries (
     ${viewer_libs}
 	${osi_libs}
 	${sumo_libs}
-	${TIME_LIB}	
+	${TIME_LIB}
     ${SOCK_LIB}
 )
 

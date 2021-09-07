@@ -1031,6 +1031,13 @@ extern "C"
 		return 0;
 	}
 
+	SE_DLL_API int *SE_SetOSISensorDataRaw(const char* sensordata)
+	{
+		const osi3::SensorData *sd = reinterpret_cast<const osi3::SensorData *>(sensordata);
+		// player
+		return 0;
+	}
+
 	SE_DLL_API const char *SE_GetOSIRoadLane(int *size, int object_id)
 	{
 		if (player)

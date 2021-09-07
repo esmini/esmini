@@ -343,6 +343,17 @@ void Global2LocalCoordinates(double xTargetGlobal, double yTargetGlobal,
 	targetYforHost = relativeX * sin(angleHost) + relativeY * cos(angleHost);
 }
 
+void Local2GlobalCoordinates(double &xTargetGlobal, double &yTargetGlobal,
+							 double xHostGlobal, double yHostGlobal, double thetaGlobal,
+							 double targetXforHost, double targetYforHost)
+{
+  xTargetGlobal = targetXforHost * cos(-thetaGlobal) + targetYforHost *
+    sin(-thetaGlobal) + xHostGlobal;
+
+  yTargetGlobal = targetYforHost * cos(-thetaGlobal) - targetXforHost *
+    sin(-thetaGlobal) + yHostGlobal;
+}
+
 void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size)
 {
 	unsigned char *ptr = buf;

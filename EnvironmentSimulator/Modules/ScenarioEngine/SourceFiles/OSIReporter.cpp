@@ -15,7 +15,6 @@
 #include "osi_common.pb.h"
 #include "osi_object.pb.h"
 #include "osi_groundtruth.pb.h"
-#include "osi_sensordata.pb.h"
 #include "osi_version.pb.h"
 #include "osi_common.pb.h"
 #include <cmath>
@@ -48,6 +47,7 @@ static struct
 static struct
 {
 	osi3::GroundTruth *gt;
+	osi3::SensorView *sv;
 } obj_osi_external;
 
 // Large OSI messages needs to be split for UDP transmission
@@ -1903,8 +1903,7 @@ int OSIReporter::UpdateTrafficSignals()
 					}
 
 					//Set Pithc, Roll, Height, Width
-					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_pitch(signal->GetPitch());
-					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_roll(signal->GetRoll());
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_pitch(signal->GetPitch()); trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_roll(signal->GetRoll());
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_dimension()->set_height(signal->GetHeight());
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
 
@@ -1920,6 +1919,84 @@ int OSIReporter::UpdateTrafficSignals()
 		}
 	}
 	return 0;
+}
+
+int OSIReporter::CreateSensorViewFromSensorData(osi3::SensorData &sd)
+{
+  obj_osi_external.sv->Clear();
+  for (int i = 0; i < sd.moving_object_size(); i++)
+  {
+    CreateMovingObjectFromSensorData(sd, i);
+  }
+
+  for (int i = 0; i < sd.lane_boundary_size(); i++)
+  {
+    CreateLaneBoundaryFromSensordata(sd, i);
+  }
+
+  return 0;
+}
+
+void OSIReporter::CreateMovingObjectFromSensorData(osi3::SensorData &sd, int obj_nr)
+{
+  osi3::DetectedMovingObject object = sd.moving_object(obj_nr);
+  double x = object.base().position().x();
+  double y = object.base().position().y();
+  double z = object.base().position().z();
+  double yaw = object.base().orientation().yaw();
+
+  Local2GlobalCoordinates(x, y,
+      sd.mutable_mounting_position()->mutable_position()->x(),
+      sd.mutable_mounting_position()->mutable_position()->y(),
+      sd.mutable_mounting_position()->mutable_orientation()->yaw(), x,y);
+
+  Local2GlobalCoordinates(x, y,
+      sd.mutable_host_vehicle_location()->mutable_position()->x(),
+      sd.mutable_host_vehicle_location()->mutable_position()->y(),
+      sd.mutable_host_vehicle_location()->mutable_orientation()->yaw(), x,y);
+
+  osi3::MovingObject *obj =
+    obj_osi_external.sv->mutable_global_ground_truth()->add_moving_object();
+
+  obj->mutable_base()->mutable_position()->set_x(x);
+  obj->mutable_base()->mutable_position()->set_y(y);
+  obj->mutable_base()->mutable_position()->set_z(z);
+  obj->mutable_base()->mutable_orientation()->set_yaw(yaw);
+
+  obj->mutable_base()->mutable_dimension()->set_height(obj->base().dimension().height());
+  obj->mutable_base()->mutable_dimension()->set_length(obj->base().dimension().length());
+  obj->mutable_base()->mutable_dimension()->set_width(obj->base().dimension().width());
+}
+
+void OSIReporter::CreateLaneBoundaryFromSensordata(osi3::SensorData &sd, int lane_boundary_nr)
+{
+  osi3::DetectedLaneBoundary lane_boundary = sd.lane_boundary(lane_boundary_nr);
+  double x, y, z, id;
+  osi3::LaneBoundary *new_lane_boundary = obj_osi_external.sv->mutable_global_ground_truth()->add_lane_boundary();
+
+  for (int i = 0; i < sd.lane_boundary(lane_boundary_nr).boundary_line_size(); i++)
+  {
+    x = lane_boundary.boundary_line(i).position().x();
+    y = lane_boundary.boundary_line(i).position().y();
+    z = lane_boundary.boundary_line(i).position().z();
+
+    Local2GlobalCoordinates(x, y,
+        sd.mutable_mounting_position()->mutable_position()->x(),
+        sd.mutable_mounting_position()->mutable_position()->y(),
+        sd.mutable_mounting_position()->mutable_orientation()->yaw(), x,y);
+
+    Local2GlobalCoordinates(x, y,
+        sd.mutable_host_vehicle_location()->mutable_position()->x(),
+        sd.mutable_host_vehicle_location()->mutable_position()->y(),
+        sd.mutable_host_vehicle_location()->mutable_orientation()->yaw(), x,y);
+
+    osi3::LaneBoundary_BoundaryPoint * boundary_point =
+      new_lane_boundary->add_boundary_line();
+
+    boundary_point->mutable_position()->set_x(x);
+    boundary_point->mutable_position()->set_y(y);
+    boundary_point->mutable_position()->set_z(z);
+  }
 }
 
 const char* OSIReporter::GetOSIGroundTruth(int* size)
