@@ -398,6 +398,11 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 
 	osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
 	osg::ref_ptr<osg::Geometry> geom2 = new osg::Geometry;
+	osg::ref_ptr<osg::Geometry> geom3 = new osg::Geometry;
+	osg::ref_ptr<osg::Point> mount_point = new osg::Point();
+	osg::ref_ptr<osg::Vec4Array> mount_pos_color = new osg::Vec4Array();
+	osg::ref_ptr<osg::Vec3Array> mount_point_array = new osg::Vec3Array;
+
 	geom->setDataVariance(osg::Object::STATIC);
 	geom->setUseDisplayList(true);
 	geom->setUseVertexBufferObjects(true);
@@ -416,6 +421,14 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	geom2->addPrimitiveSet(indicesC5.get());
 	geom2->setColorArray(colors.get());
 	geom2->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+	mount_pos_color->push_back(osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0));
+	mount_point->setSize(8.0f);
+	mount_point_array->push_back(osg::Vec3(0,0,0));
+	geom3->setVertexArray(mount_point_array.get());
+	geom3->setColorArray(mount_pos_color.get());
+	geom3->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+	geom3->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, mount_point_array->size()));
 
 	osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
 	osgUtil::SmoothingVisitor::smooth(*geom2, 0.0);
@@ -445,6 +458,10 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	geom2->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 	geode2->addDrawable(geom2.release());
 
+	osg::ref_ptr<osg::Geode> geode3 = new osg::Geode;
+	geom3->getOrCreateStateSet()->setAttributeAndModes(mount_point, osg::StateAttribute::ON);
+	geom3->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	line_group_->addChild(geom3);
 
 	txNode_->addChild(geode);
 	txNode_->addChild(geode2);
