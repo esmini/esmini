@@ -1946,10 +1946,14 @@ void OSIReporter::CreateMovingObjectFromSensorData(osi3::SensorData &sd, int obj
   double z = object.base().position().z();
   double yaw = object.base().orientation().yaw();
 
+  yaw = sd.mutable_mounting_position()->mutable_orientation()->yaw() + yaw;
+  yaw = sd.mutable_host_vehicle_location()->mutable_orientation()->yaw() + yaw;
+
   Local2GlobalCoordinates(x, y,
       sd.mutable_mounting_position()->mutable_position()->x(),
       sd.mutable_mounting_position()->mutable_position()->y(),
       sd.mutable_mounting_position()->mutable_orientation()->yaw(), x,y);
+
 
   Local2GlobalCoordinates(x, y,
       sd.mutable_host_vehicle_location()->mutable_position()->x(),
