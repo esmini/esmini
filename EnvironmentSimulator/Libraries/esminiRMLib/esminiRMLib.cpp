@@ -18,7 +18,7 @@
 
 using namespace roadmanager;
 
-static roadmanager::OpenDrive *odrManager = 0;
+static roadmanager::OpenDrive *odrManager = nullptr;
 static std::vector<Position> position;
 static std::string returnString;  // use this for returning strings
 
@@ -181,6 +181,11 @@ extern "C"
 
 	RM_DLL_API int RM_CreatePosition()
 	{
+		if (odrManager == nullptr)
+		{
+			return -1;
+		}
+
 		roadmanager::Position newPosition;
 		position.push_back(newPosition);
 		return (int)(position.size() - 1);  // return index of newly created
@@ -188,11 +193,21 @@ extern "C"
 
 	RM_DLL_API int RM_GetNrOfPositions()
 	{
+		if (odrManager == nullptr)
+		{
+			return -1;
+		}
+
 		return (int)position.size();
 	}
 
 	RM_DLL_API int RM_DeletePosition(int handle)
 	{
+		if (odrManager == nullptr)
+		{
+			return -1;
+		}
+
 		if (handle == -1)
 		{
 			// Delete all items
@@ -213,7 +228,7 @@ extern "C"
 
 	RM_DLL_API int RM_CopyPosition(int handle)
 	{
-		if (handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= position.size())
 		{
 			return -1;
 		}
@@ -225,7 +240,7 @@ extern "C"
 
 	RM_DLL_API void RM_SetAlignMode(int handle, int mode)
 	{
-		if (handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= position.size())
 		{
 			return;
 		}
@@ -235,7 +250,7 @@ extern "C"
 
 	RM_DLL_API void RM_SetAlignModeH(int handle, int mode)
 	{
-		if (handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= position.size())
 		{
 			return;
 		}
@@ -245,7 +260,7 @@ extern "C"
 
 	RM_DLL_API void RM_SetAlignModeP(int handle, int mode)
 	{
-		if (handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= position.size())
 		{
 			return;
 		}
@@ -255,7 +270,7 @@ extern "C"
 
 	RM_DLL_API void RM_SetAlignModeR(int handle, int mode)
 	{
-		if (handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= position.size())
 		{
 			return;
 		}
@@ -265,7 +280,7 @@ extern "C"
 
 	RM_DLL_API void RM_SetAlignModeZ(int handle, int mode)
 	{
-		if (handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= position.size())
 		{
 			return;
 		}
@@ -275,7 +290,7 @@ extern "C"
 
 	RM_DLL_API int RM_SetLockOnLane(int handle, bool mode)
 	{
-		if (handle < 0 || handle >= position.size())
+		if (odrManager == nullptr || handle < 0 || handle >= position.size())
 		{
 			return -1;
 		}
@@ -287,19 +302,19 @@ extern "C"
 
 	RM_DLL_API int RM_GetNumberOfRoads()
 	{
-		if (odrManager)
+		if (odrManager != nullptr)
 		{
 			return odrManager->GetNumOfRoads();
 		}
 		else
 		{
-			return 0;
+			return -1;
 		}
 	}
 
 	RM_DLL_API int RM_GetIdOfRoadFromIndex(int index)
 	{
-		if (odrManager)
+		if (odrManager != nullptr)
 		{
 			return odrManager->GetRoadByIdx(index)->GetId();
 		}
@@ -311,7 +326,7 @@ extern "C"
 
 	RM_DLL_API float RM_GetRoadLength(int id)
 	{
-		if (odrManager)
+		if (odrManager != nullptr)
 		{
 			return (float)(odrManager->GetRoadById(id)->GetLength());
 		}
@@ -325,7 +340,11 @@ extern "C"
 	{
 		int numberOfDrivableLanes = 0;
 
-		if (odrManager)
+		if (odrManager == nullptr)
+		{
+			return -1;
+		}
+		else
 		{
 			roadmanager::Road *road = odrManager->GetRoadById(roadId);
 
@@ -347,7 +366,11 @@ extern "C"
 	{
 		int numberOfDrivableLanes = 0;
 
-		if (odrManager)
+		if (odrManager == nullptr)
+		{
+			return -1;
+		}
+		else
 		{
 			roadmanager::Road *road = odrManager->GetRoadById(roadId);
 
@@ -373,7 +396,7 @@ extern "C"
 
 	RM_DLL_API int RM_SetLanePosition(int handle, int roadId, int laneId, float laneOffset, float s, bool align)
 	{
-		if (odrManager == 0 || handle >= position.size())
+		if (odrManager == nullptr || handle >= position.size())
 		{
 			return -1;
 		}
@@ -400,7 +423,7 @@ extern "C"
 
 	RM_DLL_API int RM_SetWorldPosition(int handle, float x, float y, float z, float h, float p, float r)
 	{
-		if (odrManager == 0 || handle >= position.size())
+		if (odrManager == nullptr || handle >= position.size())
 		{
 			return -1;
 		}
@@ -415,7 +438,7 @@ extern "C"
 
 	RM_DLL_API int RM_SetWorldXYHPosition(int handle, float x, float y, float h)
 	{
-		if (odrManager == 0 || handle >= position.size())
+		if (odrManager == nullptr || handle >= position.size())
 		{
 			return -1;
 		}
@@ -430,7 +453,7 @@ extern "C"
 
 	RM_DLL_API int RM_SetWorldXYZHPosition(int handle, float x, float y, float z, float h)
 	{
-		if (odrManager == 0 || handle >= position.size())
+		if (odrManager == nullptr || handle >= position.size())
 		{
 			return -1;
 		}
@@ -445,7 +468,7 @@ extern "C"
 
 	RM_DLL_API int RM_SetS(int handle, float s)
 	{
-		if (odrManager == 0 || handle >= position.size())
+		if (odrManager == nullptr || handle >= position.size())
 		{
 			return -1;
 		}
@@ -460,7 +483,7 @@ extern "C"
 
 	RM_DLL_API int RM_PositionMoveForward(int handle, float dist, float junctionSelectorAngle)
 	{
-		if (odrManager == 0 || handle >= position.size())
+		if (odrManager == nullptr || handle >= position.size())
 		{
 			return -1;
 		}
@@ -474,7 +497,7 @@ extern "C"
 
 	RM_DLL_API int RM_GetPositionData(int handle, RM_PositionData *data)
 	{
-		if (odrManager == 0 || handle >= position.size())
+		if (odrManager == nullptr || handle >= position.size())
 		{
 			return -1;
 		}
@@ -499,7 +522,7 @@ extern "C"
 
 	RM_DLL_API int RM_GetLaneInfo(int handle, float lookahead_distance, RM_RoadLaneInfo *data, int lookAheadMode, bool inRoadDrivingDirection)
 	{
-		if (odrManager == 0 || handle >= position.size())
+		if (odrManager == nullptr || handle >= position.size())
 		{
 			return -1;
 		}
@@ -511,7 +534,7 @@ extern "C"
 
 	RM_DLL_API float RM_GetSpeedLimit(int handle)
 	{
-		if (odrManager == 0 || handle >= position.size())
+		if (odrManager == nullptr || handle >= position.size())
 		{
 			return -1;
 		}
@@ -521,7 +544,7 @@ extern "C"
 
 	RM_DLL_API int RM_GetProbeInfo(int handle, float lookahead_distance, RM_RoadProbeInfo * data, int lookAheadMode, bool inRoadDrivingDirection)
 	{
-		if (odrManager == 0 || handle >= position.size())
+		if (odrManager == nullptr || handle >= position.size())
 		{
 			return -1;
 		}
@@ -531,7 +554,7 @@ extern "C"
 
 	RM_DLL_API int RM_SubtractAFromB(int handleA, int handleB, RM_PositionDiff *pos_diff)
 	{
-		if (odrManager == 0 || handleA >= position.size() || handleB >= position.size())
+		if (odrManager == nullptr || handleA >= position.size() || handleB >= position.size())
 		{
 			return -1;
 		}
@@ -553,7 +576,7 @@ extern "C"
 
 	RM_DLL_API int RM_GetNumberOfRoadSigns(int road_id)
 	{
-		if (odrManager == 0)
+		if (odrManager == nullptr)
 		{
 			return false;
 		}
@@ -570,7 +593,7 @@ extern "C"
 
 	RM_DLL_API int RM_GetRoadSign(int road_id, int index, RM_RoadSign* road_sign)
 	{
-		if (odrManager == 0)
+		if (odrManager == nullptr)
 		{
 			return false;
 		}
@@ -612,7 +635,11 @@ extern "C"
 
 	RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(int road_id, int index)
 	{
-		if (odrManager)
+		if (odrManager == nullptr)
+		{
+			return -1;
+		}
+		else
 		{
 			roadmanager::Road* road = odrManager->GetRoadById(road_id);
 			if (road != NULL)
@@ -627,7 +654,7 @@ extern "C"
 
 	RM_DLL_API int RM_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, RM_RoadObjValidity* validity)
 	{
-		if (odrManager)
+		if (odrManager != nullptr)
 		{
 			roadmanager::Road* road = odrManager->GetRoadById(road_id);
 			if (road != NULL)
@@ -644,5 +671,4 @@ extern "C"
 
 		return -1;
 	}
-
 }

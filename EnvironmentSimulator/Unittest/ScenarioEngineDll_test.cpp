@@ -22,7 +22,6 @@ class GetNumberOfObjectsTest : public ::testing::TestWithParam<std::tuple<std::s
 
 TEST_P(GetNumberOfObjectsTest, number_of_objects)
 {
-
 	std::string scenario_file = std::get<0>(GetParam());
 	//std::string scenario_file = "../../esmini/resources/xosc/cut-in.xosc";
 
@@ -40,10 +39,9 @@ INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetNumberOfObjectsTest, ::testing::Valu
 
 TEST(GetNumberOfObjectsTest, number_of_objects_no_init)
 {
-
 	int n_Objects = SE_GetNumberOfObjects();
 
-	EXPECT_EQ(n_Objects, 0);
+	EXPECT_EQ(n_Objects, -1);
 }
 
 // OSI tests
