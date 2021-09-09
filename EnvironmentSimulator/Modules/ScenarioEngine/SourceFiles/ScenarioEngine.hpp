@@ -42,13 +42,8 @@ namespace scenarioengine
 		int step(double deltaSimTime);
 		void printSimulationTime();
 		void prepareOSIGroundTruth(double dt);
-<<<<<<< HEAD
 		void defaultController(Object *obj, double dt);
 		void ReplaceObjectInTrigger(Trigger *trigger, Object *obj1, Object *obj2, double timeOffset, Event* event = 0);
-=======
-		int defaultController(Object *obj, double dt);
-		void ReplaceObjectInTrigger(Trigger *trigger, Object *obj1, Object *obj2, double timeOffset);
->>>>>>> f50c403f (Use enum class for better type checking)
 		void SetupGhost(Object *object);
 		void ResetEvents();
 

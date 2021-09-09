@@ -8320,7 +8320,6 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int&
 	if (startAtIndex > GetNumberOfVertices() - 1)
 	{
 		startAtIndex = 0;
-		index = 0;
 	}
 
 	// Find closest line segment
