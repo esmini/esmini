@@ -504,7 +504,7 @@ extern "C"
 	{
 		if (player)
 		{
-			returnString = player->GetParameterName(index, type);
+			returnString = player->GetParameterName(index, (OSCParameterDeclarations::ParameterType*)type);
 			return returnString.c_str();
 		}
 

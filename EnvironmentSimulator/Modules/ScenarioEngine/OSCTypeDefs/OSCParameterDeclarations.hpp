@@ -26,12 +26,12 @@ namespace scenarioengine
 	class OSCParameterDeclarations
 	{
 	public:
-		typedef enum {
+		enum class ParameterType {
 			PARAM_TYPE_INTEGER,
 			PARAM_TYPE_DOUBLE,
 			PARAM_TYPE_STRING,
 			PARAM_TYPE_BOOL
-		} ParameterType;
+		};
 
 		typedef struct
 		{

@@ -102,7 +102,7 @@ int Parameters::GetNumberOfParameters()
 	return (int)parameterDeclarations_.Parameter.size();
 }
 
-const char* Parameters::GetParameterName(int index, int* type)
+const char* Parameters::GetParameterName(int index, OSCParameterDeclarations::ParameterType* type)
 {
 	if (index < 0 || index >= parameterDeclarations_.Parameter.size())
 	{
@@ -473,7 +473,15 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 			}
 		}
 
-		std::string type_str = pdChild.attribute("parameterType").value();
+		std::string type_str;
+		if (pdChild.attribute("parameterType"))
+		{
+			type_str = pdChild.attribute("parameterType").value();
+		}
+		else
+		{
+			LOG_TRACE_AND_QUIT("Missing parameter type (or wrongly spelled attribute) for %s", param.name.c_str());
+		}
 
 		if (type_str == "integer" || type_str == "int")
 		{
