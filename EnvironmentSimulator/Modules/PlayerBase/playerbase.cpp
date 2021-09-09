@@ -969,7 +969,7 @@ int ScenarioPlayer::GetNumberOfParameters()
 	return scenarioEngine->scenarioReader->parameters.GetNumberOfParameters();
 }
 
-const char* ScenarioPlayer::GetParameterName(int index, int* type)
+const char* ScenarioPlayer::GetParameterName(int index, OSCParameterDeclarations::ParameterType* type)
 {
 	return scenarioEngine->scenarioReader->parameters.GetParameterName(index, type);
 }

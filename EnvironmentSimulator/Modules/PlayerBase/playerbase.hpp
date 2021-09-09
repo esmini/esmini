@@ -76,7 +76,7 @@ public:
 	void RegisterObjCallback(int id, ObjCallbackFunc func, void *data);
 	void UpdateCSV_Log();
 	int GetNumberOfParameters();
-	const char *GetParameterName(int index, int *type);
+	const char *GetParameterName(int index, OSCParameterDeclarations::ParameterType *type);
 	int SetParameterValue(const char *name, const void *value);
 	int GetParameterValue(const char *name, void *value);
 	int GetParameterValueInt(const char *name, int &value);

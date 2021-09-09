@@ -42,7 +42,7 @@ namespace scenarioengine
 		void RestoreParameterDeclarations();  // To what it was before addParameterDeclarations
 
 		int GetNumberOfParameters();
-		const char* GetParameterName(int index, int *type);
+		const char* GetParameterName(int index, OSCParameterDeclarations::ParameterType* type);
 		int setParameterValue(std::string name, const void* value);
 		int setParameterValueByString(std::string name, std::string value);
 		int setParameterValue(std::string name, int value);
