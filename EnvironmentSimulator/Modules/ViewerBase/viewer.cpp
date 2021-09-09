@@ -316,7 +316,6 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	double fovV_rate = 0.2;
 
 	line_group_ = new osg::Group;
-	line_group2_ = new osg::Group;
 	for (size_t i = 0; i < sensor_->maxObj_; i++)
 	{
 		osg::ref_ptr<osg::Vec3Array> varray = new osg::Vec3Array;
