@@ -12,11 +12,6 @@
 
 #include "CommonMini.hpp"
 #include "OSIReporter.hpp"
-#include "osi_common.pb.h"
-#include "osi_object.pb.h"
-#include "osi_groundtruth.pb.h"
-#include "osi_version.pb.h"
-#include "osi_common.pb.h"
 #include <cmath>
 
 #ifdef _WIN32
@@ -32,23 +27,6 @@
 
 #define OSI_OUT_PORT 48198
 #define OSI_MAX_UDP_DATA_SIZE 8200
-
-static struct
-{
-	osi3::SensorData *sd;
-	osi3::GroundTruth *gt;
-	osi3::StationaryObject *sobj;
-	osi3::TrafficSign *ts;
-	osi3::MovingObject *mobj;
-	std::vector<osi3::Lane *> ln;
-	std::vector<osi3::LaneBoundary *> lnb;
-} obj_osi_internal;
-
-static struct
-{
-	osi3::GroundTruth *gt;
-	osi3::SensorView *sv;
-} obj_osi_external;
 
 // Large OSI messages needs to be split for UDP transmission
 // This struct must be mached on receiver side

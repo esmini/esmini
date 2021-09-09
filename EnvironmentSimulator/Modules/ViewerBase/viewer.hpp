@@ -29,6 +29,7 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "roadgeom.hpp"
+#include "OSIReporter.hpp"
 
 extern double color_green[3];
 extern double color_gray[3];

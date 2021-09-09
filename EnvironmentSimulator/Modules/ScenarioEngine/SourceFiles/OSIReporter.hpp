@@ -15,6 +15,11 @@
 #include "IdealSensor.hpp"
 #include "ScenarioGateway.hpp"
 #include "osi_sensordata.pb.h"
+#include "osi_object.pb.h"
+#include "osi_groundtruth.pb.h"
+#include "osi_sensorview.pb.h"
+#include "osi_version.pb.h"
+#include "osi_common.pb.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -24,6 +29,23 @@
 #define DEFAULT_OSI_TRACE_FILENAME "ground_truth.osi"
 
 using namespace scenarioengine;
+
+static struct
+{
+	osi3::SensorData *sd;
+	osi3::GroundTruth *gt;
+	osi3::StationaryObject *sobj;
+	osi3::TrafficSign *ts;
+	osi3::MovingObject *mobj;
+	std::vector<osi3::Lane *> ln;
+	std::vector<osi3::LaneBoundary *> lnb;
+} obj_osi_internal;
+
+static struct
+{
+	osi3::GroundTruth *gt;
+	osi3::SensorView *sv;
+} obj_osi_external;
 
 class OSIReporter
 {
