@@ -197,7 +197,7 @@ extern "C"
 
 	/**
 	Get the total number fo roads in the road network of the currently loaded OpenDRIVE file.
-	@return Number of roads
+	@return Number of roads, -1 indicates error e.g. no roadnetwork loaded
 	*/
 	RM_DLL_API int RM_GetNumberOfRoads();
 
@@ -219,7 +219,7 @@ extern "C"
 	Get the number of drivable lanes of specified road
 	@param roadId The road ID
 	@param s The distance along the road at what point to check number of lanes (which can vary along the road)
-	@return The number of drivable lanes
+	@return The number of drivable lanes, -1 indicates error e.g. no roadnetwork loaded
 	*/
 	RM_DLL_API int RM_GetRoadNumberOfLanes(int roadId, float s);
 
@@ -228,7 +228,7 @@ extern "C"
 	@param roadId The road ID
 	@param laneIndex The index of the lane
 	@param s The distance along the road at what point to look up the lane ID
-	@return The lane ID
+	@return The lane ID, -1 indicates error e.g. no roadnetwork loaded
 	*/
 	RM_DLL_API int RM_GetLaneIdByIndex(int roadId, int laneIndex, float s);
 

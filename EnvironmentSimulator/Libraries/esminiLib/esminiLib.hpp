@@ -243,7 +243,8 @@ extern "C"
 	SE_DLL_API float SE_GetSimTimeStep();
 
 	/**
-		Get the bool value of the end of the scenario
+		Is esmini about to quit?
+		@return 0 if not, 1 if yes, -1 if some error e.g. scenario not loaded
 	*/
 	SE_DLL_API int SE_GetQuitFlag();
 
@@ -276,7 +277,7 @@ extern "C"
 	/**
 		Get the number of vehicle properties by index
 		@param index The index of the vehicle
-		@return number of parameters if found, else 0;
+		@return number of parameters if found, -1 indicating some error
 	*/
 	SE_DLL_API int SE_GetNumberOfProperties(int index);
 	/**
@@ -545,7 +546,7 @@ extern "C"
 
 	/**
 		Get the number of entities in the current scenario
-		@return Number of entities
+		@return Number of entities, -1 on error e.g. scenario not initialized
 	*/
 	SE_DLL_API int SE_GetNumberOfObjects();
 
@@ -685,6 +686,7 @@ extern "C"
 
 	/**
 		Switch off logging to OSI file(s)
+		@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API void SE_DisableOSIFile();
 
