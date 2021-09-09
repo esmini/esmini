@@ -169,6 +169,7 @@ extern "C"
 
 	RM_DLL_API int RM_Close()
 	{
+		odrManager = nullptr;
 		position.clear();
 
 		return 0;
