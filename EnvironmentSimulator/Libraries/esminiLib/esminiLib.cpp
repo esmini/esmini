@@ -1391,6 +1391,8 @@ extern "C"
 	{
 		if (player)
 		{
+			return -1;
+		}
 
 			if (object_id < 0 || object_id >= player->scenarioEngine->entities.object_.size())
 			{
