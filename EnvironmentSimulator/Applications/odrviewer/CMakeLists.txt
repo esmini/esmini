@@ -11,6 +11,10 @@ include_directories (
 
 set(TARGET odrviewer)
 
+if (USE_OSI)
+  set (osi_libs ${OSI_LIBRARIES})
+endif (USE_OSI)
+
 set ( SOURCES
 	main.cpp
     helpText.hpp
@@ -29,6 +33,7 @@ target_link_libraries (
 	CommonMini
 	${OSG_LIBRARIES}
 	${TIME_LIB}
+  ${osi_libs}
 )
 
 if (UNIX)

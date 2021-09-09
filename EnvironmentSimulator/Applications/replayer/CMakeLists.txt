@@ -13,6 +13,9 @@ endif (USE_OSI)
   ${CONTROLLERS_INCLUDE_DIR}
 )
 
+if (USE_OSI)
+  set (osi_libs ${OSI_LIBRARIES})
+endif (USE_OSI)
 
 set ( INCLUDES
 	Replay.hpp
@@ -37,6 +40,7 @@ target_link_libraries (
 	CommonMini
 	${OSG_LIBRARIES}
 	${TIME_LIB}
+  ${osi_libs}
 )
 endif (USE_OSG)
 
