@@ -8622,6 +8622,13 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int&
 	int iMin = startAtIndex;
 	double distMin = LARGE_NUMBER;
 
+	// If a teleportation is made by the Ghost, a reset of trajectory has benn made. Hence, we can't look from the usual point ad has to set startAtIndex = 0
+
+	if (startAtIndex > GetNumberOfVertices() - 1)
+	{
+		startAtIndex = 0;
+	}
+
 	// Find closest line segment
 	for (int i = startAtIndex; i < GetNumberOfVertices() - 1; i++)
 	{
