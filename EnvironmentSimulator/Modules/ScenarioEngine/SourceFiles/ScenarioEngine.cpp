@@ -1005,6 +1005,7 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 
 void ScenarioEngine::SetupGhost(Object* object)
 {
+	//Hej
 	// FollowGhostController special treatment:
 	// Create a new (ghost) vehicle and copy all actions from base object
 
