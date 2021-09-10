@@ -1,5 +1,21 @@
 ## esmini release notes
 
+### 2021-09-10 Version 2.13.4
+
+- Fix SetLanePos s truncation bug
+  - reaching end of road or route not handled as error
+- Fix trajectory time handling and add timref check
+  - Don't assume first timestamp to be 0.0
+  - If trajectory duration (from timestamps) is 0, set timeref=NONE
+- Fix and sync C# wrappers
+- OSI driving side fixed for Right and Left hand traffic
+- Separate logfile for roadmanager lib (esminiRM_log.txt)
+- Fix trajectory findClosestPoint bug
+- Explicitly specify Xcode generator for cmake on macOS
+- Some code improvements:
+  - Some improved type checking for enum types
+  - Some added safeguarding of uninitialized scenario and road objects
+
 ### 2021-08-31 Version 2.13.3
 
 - Add build option for dynamic protobuf linking (see more info [here](https://github.com/esmini/esmini/blob/master/docs/BuildInstructions.md#dynamic-protobuf-linking))
