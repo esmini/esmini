@@ -135,12 +135,12 @@ namespace OpenDRIVE
         public static extern int SetLogFilePath(string path);
 
         /// <summary>Create a position object</summary>
-        /// <returns>Index (handle) to the position object, to use for operations</returns>
+        /// <returns>Handle >= 0 to the position object to use for operations or -1 on error</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_CreatePosition")]
         public static extern int CreatePosition();
 
         /// <summary>Get the number of created position objects</summary>
-        /// <returns>The number of created position objects</returns>
+        /// <returns>Number of created position objects or -1 on error</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetNrOfPositions")]
         public static extern int GetNrOfPositions(int index);
 
@@ -209,7 +209,7 @@ namespace OpenDRIVE
         public static extern int SetLockOnLane(int handle, bool mode);
 
         /// <summaryGet the total number fo roads in the road network of the currently loaded OpenDRIVE file</summary>
-        /// <returns>Number of roads</returns>
+        /// <returns>Number of roads, -1 indicates error e.g. no roadnetwork loaded</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetNumberOfRoads")]
         public static extern int GetNumberOfRoads();
 
@@ -234,7 +234,7 @@ namespace OpenDRIVE
         /// </summary>
         /// <param name="roadId">The OpenDRIVE road ID</param>
         /// <param name="s">The distance along the road at what point to check number of lanes (which can vary along the road)</param>
-        /// <returns>The number of drivable lanes</returns>
+        /// <returns>The number of drivable lanes, -1 indicates error e.g. no roadnetwork loaded</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetRoadNumberOfLanes")]
         public static extern int GetRoadNumberOfLanes(int roadId, float s);
 
@@ -244,7 +244,7 @@ namespace OpenDRIVE
         /// <param name="roadId">The OpenDRIVE road ID</param>
         /// <param name="laneIndex">The index of the lane </param>
         /// <param name="s">The distance along the road at what point to look up the lane ID</param>
-        /// <returns>The lane ID - as specified in the OpenDRIVE description</returns>
+        /// <returns>The lane ID - as specified in the OpenDRIVE description, -1 on error</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneIdByIndex")]
         public static extern int GetLaneIdByIndex(int roadId, int laneIndex, float s);
 
@@ -355,7 +355,7 @@ namespace OpenDRIVE
         /// <param name="data">Struct including all result values, see RoadProbeInfo typedef</param>
         /// <param name="lookAheadMode">Measurement strategy: 0=Along lane center, 1=road center, 2=current lane offset. See roadmanager::Position::LookAheadMode enum</param>
         /// <param name="inRoadDrivingDirection">If true always look along primary driving direction. If false, look in most straightforward direction according to object heading.</param>
-        /// <returns>0 if successful, -2 if probe reached end of road, -1 if some error</returns>
+        /// <returns>0 if successful, 1 if probe reached end of road, 2 if end ouf route, -1 if some error</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetProbeInfo")]
         public static extern int GetProbeInfo(int index, float lookahead_distance, ref RoadProbeInfo data, int lookAheadMode, bool inRoadDrivingDirection);
 
@@ -373,7 +373,7 @@ namespace OpenDRIVE
         /// Get the number of road signs along specified road
         /// </summary>
         /// <param name="road_id">The road along which to look for signs</param>
-        /// <returns>Number of road signs</returns>
+        /// <returns>Number of road signs, -1 on error</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetNumberOfRoadSigns")]
         public static extern int GetNumberOfRoadSigns(int road_id);
 

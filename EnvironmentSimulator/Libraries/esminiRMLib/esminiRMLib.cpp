@@ -579,7 +579,7 @@ extern "C"
 	{
 		if (odrManager == nullptr)
 		{
-			return false;
+			return -1;
 		}
 
 		roadmanager::Road* road = odrManager->GetRoadById(road_id);
@@ -596,7 +596,7 @@ extern "C"
 	{
 		if (odrManager == nullptr)
 		{
-			return false;
+			return -1;
 		}
 
 		roadmanager::Road* road = odrManager->GetRoadById(road_id);
