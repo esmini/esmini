@@ -16,7 +16,7 @@ cache:
 - externals/OSI -> appveyor.yml
 - externals/SUMO -> appveyor.yml
 - resources/models -> appveyor.yml
-    
+
 skip_commits:
   message: /#skip_build/
 
@@ -38,7 +38,7 @@ deploy:
       secure: 'Zsjm85fzs4eTdDJg1VB+Y8Lk+5bEJRBkeaEtYtnbtv2IUg1sanoQTub/55QYNBsY'
     on:
        APPVEYOR_REPO_TAG: true       # deploy on tag push only
-    
+
 for:
   -
     matrix:
@@ -50,7 +50,7 @@ for:
           sudo apt-get update
 
           sudo apt-get install -y libgl1-mesa-dev libxrandr-dev libxinerama-dev
-          
+
     build_script:
       - sh: >-
           # Normal (Release config with OSG)
@@ -59,7 +59,7 @@ for:
 
           cd build
 
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          cmake -DCMAKE_BUILD_TYPE=Release ..
 
           cmake --build . -j --config Release --target install
 
@@ -71,7 +71,7 @@ for:
 
           cd build-no-osg
 
-          cmake .. -DCMAKE_BUILD_TYPE=Release -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False
+          cmake -DCMAKE_BUILD_TYPE=Release -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False ..
 
           cmake --build . -j --config Release
 
@@ -83,7 +83,7 @@ for:
 
           cd build-debug
 
-          cmake .. -DCMAKE_BUILD_TYPE=Debug
+          cmake -DCMAKE_BUILD_TYPE=Debug ..
 
           cmake --build . -j --config Debug
 
@@ -91,21 +91,21 @@ for:
 
     after_build:
       - sh: >-
-          
-          if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#store_bins* ]] || [ "$APPVEYOR_REPO_TAG" == "true" ]; 
-          then 
+
+          if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#store_bins* ]] || [ "$APPVEYOR_REPO_TAG" == "true" ];
+          then
             zip -r esmini-bin_ubuntu.zip bin EnvironmentSimulator/Applications/odrplot/xodr.py EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs version.txt
           else
             echo "Skip binary artifacts";
           fi
-          
+
           chmod -R +x ./run/*
           chmod -R +x ./scripts/*
 
           ./generate_binary_dist.sh
 
-          if [ "$APPVEYOR_REPO_TAG" == "true" ]; 
-          then     
+          if [ "$APPVEYOR_REPO_TAG" == "true" ];
+          then
               mv esmini-demo.zip esmini-demo_ubuntu.zip;
           else
               rm esmini-demo.zip;
@@ -167,7 +167,7 @@ for:
 
           cd build
 
-          cmake ..
+          cmake -G Xcode ..
 
           cmake --build . -j --config Release --target install
 
@@ -180,7 +180,7 @@ for:
 
           cd build-no-osg
 
-          cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False
+          cmake -G Xcode -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False ..
 
           cmake --build . -j --config Release
 
@@ -188,26 +188,26 @@ for:
 
     after_build:
       - sh: >-
-      
+
           lipo -create bin/libesminiRMLib.dylib -output bin/esminiRMLib.bundle
 
           lipo -create bin/libesminiLib.dylib -output bin/esminiLib.bundle
 
           if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#store_bins* ]] || [ "$APPVEYOR_REPO_TAG" == "true" ];
-          then 
+          then
             zip -r esmini-bin_mac_catalina.zip bin EnvironmentSimulator/Applications/odrplot/xodr.py EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs version.txt
           else
             echo "Skip binary artifacts";
           fi
-          
+
           chmod -R +x ./run/*
 
           chmod -R +x ./scripts/*
 
           ./generate_binary_dist.sh
-          
-          if [ "$APPVEYOR_REPO_TAG" == "true" ]; 
-          then     
+
+          if [ "$APPVEYOR_REPO_TAG" == "true" ];
+          then
               mv esmini-demo.zip esmini-demo_mac_catalina.zip;
           else
               rm esmini-demo.zip;
@@ -231,10 +231,10 @@ for:
     artifacts:
       - path: esmini-*_mac_catalina.zip
         name: mac_catalina_artifacts
-        
+
     # on_finish:
       # - sh: export APPVEYOR_VNC_BLOCK=true
-      # - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-vnc.sh' | bash -e -        
+      # - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-vnc.sh' | bash -e -
 
   -
     matrix:
@@ -245,11 +245,11 @@ for:
       - echo Visual Studio 2017 x64 build script
       - cmd:
           mkdir build
-          
+
           cd build
-          
+
           cmake -G "Visual Studio 15 Win64" ..
-          
+
           msbuild /m /property:Configuration=Release EnvironmentSimulator.sln
 
           cd..
@@ -262,9 +262,9 @@ for:
 
           cd build-no-osg
 
-          cmake .. -G "Visual Studio 15 Win64" -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False
+          cmake -G "Visual Studio 15 Win64" -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False ..
 
-          cmake --build . -j --config Release 
+          cmake --build . -j --config Release
 
           cd..
 

@@ -1,10 +1,13 @@
+// This is a nonsense dummy application for pure test purposes
+// exercising usage of roadmanager library in parallel with scenario library
+
 #include <stdio.h>
 #include "esminiLib.hpp"
 #include "esminiRMLib.hpp"
 
 int main(int argc, char* argv[])
 {
-	for (int l = 0; l < 5; l++)
+	for (int l = 0; l < 1; l++)
 	{
 		RM_Init("../resources/xodr/straight_500m_signs.xodr");
 		SE_Init("../resources/xosc/slow-lead-vehicle.xosc", 0, 1, 0, 0);
@@ -16,7 +19,7 @@ int main(int argc, char* argv[])
 		// Get some info
 		RM_RoadLaneInfo laneInfo;
 		RM_PositionData posData;
-		RM_GetLaneInfo(p0, 0.0, &laneInfo, 2, false);  // LookAheadMode = 2 looks at current lane offset
+		RM_GetLaneInfo(p0, 0.0, &laneInfo, 2, false);
 		RM_GetPositionData(p0, &posData);
 
 		printf("current pos1: s %.2f laneId %d offset %.2f x %.2f y %.2f z %.2f \n",
