@@ -396,6 +396,7 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	(*indicesC5)[2] = (*indices)[idx++] = (i - 1) * 4 + 2;
 	(*indicesC5)[3] = (*indices)[idx++] = (i - 1) * 4 + 3;
 
+	// Drawing the lines from sensor mounting position to the near plane to indicate the near blind spot of the sensor
 	(*indicesC6)[0] = 4 * (numSegments+1);
 	(*indicesC6)[1] = 0;
 	(*indicesC6)[2] = 4 * (numSegments+1);
@@ -405,42 +406,36 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	(*indicesC6)[6] = 4 * (numSegments+1);
 	(*indicesC6)[7] = 4* numSegments+1;
 
-	const osg::Vec4 normalColor(0.8f, 0.7f, 0.6f, 1.0f);
-	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array(1);
-	(*colors)[0] = normalColor;
+	// Geometry -> Drawing transparent segments in FOV (between near plane and far plane)
+	osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+	geom->setDataVariance(osg::Object::STATIC);
+	geom->setUseDisplayList(true);
+	geom->setUseVertexBufferObjects(true);
+	geom->setVertexArray(vertices.get());
+	geom->addPrimitiveSet(indices.get());
+	osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	geode->addDrawable(geom.release());
+	osg::ref_ptr<osg::Material> material = new osg::Material;
+	material->setDiffuse(osg::Material::FRONT, osg::Vec4(1.0, 1.0, 1.0, 0.2));
+	material->setAmbient(osg::Material::FRONT, osg::Vec4(1.0, 1.0, 1.0, 0.2));
+	osg::ref_ptr<osg::StateSet> stateset = geode->getOrCreateStateSet(); // Get the StateSet of the group
+	stateset->setAttribute(material.get()); // Set Material
+	stateset->setMode(GL_BLEND, osg::StateAttribute::ON);
+	stateset->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+	stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
+	cull->setMode(osg::CullFace::BACK);
+	stateset->setAttributeAndModes(cull, osg::StateAttribute::ON);
+	osg::ref_ptr<osg::PolygonMode> polygonMode = new osg::PolygonMode;
+	polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+	stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+	txNode_->addChild(geode);
 
-	// Geometry -> Drawing transparent segments within the FOV
-	// osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
-	// geom->setDataVariance(osg::Object::STATIC);
-	// geom->setUseDisplayList(true);
-	// geom->setUseVertexBufferObjects(true);
-	// geom->setVertexArray(vertices.get());
-	// geom->addPrimitiveSet(indices.get());
-	// osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
-	// osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	// geode->addDrawable(geom.release());
-	// osg::ref_ptr<osg::Material> material = new osg::Material;
-	// material->setDiffuse(osg::Material::FRONT, osg::Vec4(1.0, 1.0, 1.0, 0.2));
-	// material->setAmbient(osg::Material::FRONT, osg::Vec4(1.0, 1.0, 1.0, 0.2));
-	// osg::ref_ptr<osg::StateSet> stateset = geode->getOrCreateStateSet(); // Get the StateSet of the group
-	// stateset->setAttribute(material.get()); // Set Material
-	// stateset->setMode(GL_BLEND, osg::StateAttribute::ON);
-	// stateset->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-	// stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
-	// osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
-	// cull->setMode(osg::CullFace::BACK);
-	// stateset->setAttributeAndModes(cull, osg::StateAttribute::ON);
-	// osg::ref_ptr<osg::PolygonMode> polygonMode = new osg::PolygonMode;
-	// polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-	// stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-	// txNode_->addChild(geode);
-
-	// Geometry2 -> Drawing solid lines between near FOV to far FOV
-	//          -> Drawing solid lines from one near FOV boundary point to other near FOV boundary point based on the desired number of segments
-	//          -> Drawing solid lines from one far FOV boundary point to other far FOV boundary point based on the desired number of segments
-	//          -> Drawing solid perpendicular lines from each near FOV boundary point to the road
-	//          -> Drawing solid perpendicular lines from each far FOV boundary point to the road
+	// Geometry2 -> Drawing solid lines representing the boundary of each volume of FOV
 	osg::ref_ptr<osg::Geometry> geom2 = new osg::Geometry;
+	osg::ref_ptr<osg::Vec4Array> FOV_color = new osg::Vec4Array(1);
+	(*FOV_color)[0].set(color_green[0], color_green[1], color_green[2], 1.0);
 	geom2->setUseDisplayList(true);
 	geom2->setUseVertexBufferObjects(true);
 	geom2->setVertexArray(vertices.get());
@@ -450,36 +445,52 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	geom2->addPrimitiveSet(indicesC3.get());
 	geom2->addPrimitiveSet(indicesC4.get());
 	geom2->addPrimitiveSet(indicesC5.get());
-	geom2->addPrimitiveSet(indicesC6.get());
-	geom2->setColorArray(colors.get());
+	geom2->setColorArray(FOV_color.get());
 	geom2->setColorBinding(osg::Geometry::BIND_OVERALL);
 	osgUtil::SmoothingVisitor::smooth(*geom2, 0.0);
 	osg::ref_ptr<osg::Geode> geode2 = new osg::Geode;
-	geom2->getOrCreateStateSet()->setAttribute(new osg::LineWidth(1.0f));
+	geom2->getOrCreateStateSet()->setAttribute(new osg::LineWidth(2.0f));
 	geom2->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 	geode2->addDrawable(geom2.release());
 	txNode_->addChild(geode2);
 
-	// Geometry3 -> Drawing a point on desired sensor mounting position
+	// Geometry3 -> Drawing solid lines representing the boundary of blind spot area between sensor mounting position and near FOV plane
 	osg::ref_ptr<osg::Geometry> geom3 = new osg::Geometry;
+	osg::ref_ptr<osg::Vec4Array> blind_spot_color = new osg::Vec4Array(1);
+	(*blind_spot_color)[0].set(color_red[0], color_red[1], color_red[2], 1.0);
+	geom3->setUseDisplayList(true);
+	geom3->setUseVertexBufferObjects(true);
+	geom3->setVertexArray(vertices.get());
+	geom3->addPrimitiveSet(indicesC6.get());
+	geom3->setColorArray(blind_spot_color.get());
+	geom3->setColorBinding(osg::Geometry::BIND_OVERALL);
+	osgUtil::SmoothingVisitor::smooth(*geom3, 0.0);
+	osg::ref_ptr<osg::Geode> geode3 = new osg::Geode;
+	geom3->getOrCreateStateSet()->setAttribute(new osg::LineWidth(2.0f));
+	geom3->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	geode3->addDrawable(geom3.release());
+	txNode_->addChild(geode3);
+
+	// Geometry4 -> Drawing a point on desired sensor mounting position
+	osg::ref_ptr<osg::Geometry> geom4 = new osg::Geometry;
 	osg::ref_ptr<osg::Vec3Array> mounting_vertice = new osg::Vec3Array(1);
 	osg::ref_ptr<osg::Vec4Array> mounting_color = new osg::Vec4Array(1);
 	osg::ref_ptr<osg::Point> mount_point = new osg::Point();
 	mount_point->setSize(8.0f);
 	(*mounting_color)[0].set(color_red[0], color_red[1], color_red[2], 1.0);
 	(*mounting_vertice)[0].set(0,0,0);
-	geom3->setUseDisplayList(true);
-	geom3->setUseVertexBufferObjects(true);
-	geom3->setVertexArray(mounting_vertice.get());
+	geom4->setUseDisplayList(true);
+	geom4->setUseVertexBufferObjects(true);
+	geom4->setVertexArray(mounting_vertice.get());
 	osg::ref_ptr<osg::DrawElementsUInt> point_element = new osg::DrawElementsUInt(GL_POINTS, 1);
-	geom3->addPrimitiveSet(point_element.get());
-	geom3->setColorArray(mounting_color.get());
-	geom3->setColorBinding(osg::Geometry::BIND_OVERALL);
-	osgUtil::SmoothingVisitor::smooth(*geom3, 0.0);
-	osg::ref_ptr<osg::Geode> geode3 = new osg::Geode;
-	geom3->getOrCreateStateSet()->setAttribute(mount_point);
-	geom3->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-	txNode_->addChild(geom3);
+	geom4->addPrimitiveSet(point_element.get());
+	geom4->setColorArray(mounting_color.get());
+	geom4->setColorBinding(osg::Geometry::BIND_OVERALL);
+	osgUtil::SmoothingVisitor::smooth(*geom4, 0.0);
+	osg::ref_ptr<osg::Geode> geode4 = new osg::Geode;
+	geom4->getOrCreateStateSet()->setAttribute(mount_point);
+	geom4->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	txNode_->addChild(geom4);
 }
 
 SensorViewFrustum::~SensorViewFrustum()
