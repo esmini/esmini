@@ -71,6 +71,7 @@ OSIReporter::OSIReporter()
 
 	obj_osi_internal.gt = new osi3::GroundTruth();
 	obj_osi_external.gt = new osi3::GroundTruth();
+	obj_osi_external.sv = new osi3::SensorView();
 
 	obj_osi_internal.gt->mutable_version()->set_version_major(3);
 	obj_osi_internal.gt->mutable_version()->set_version_minor(0);
