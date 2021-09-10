@@ -8295,10 +8295,11 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int&
 	if (startAtIndex > GetNumberOfVertices() - 1)
 	{
 		startAtIndex = 0;
+		index = 0;
 	}
 
 	// Find closest line segment
-	for (size_t i = startAtIndex; i < GetNumberOfVertices() - 1; i++)
+	for (int i = startAtIndex; i < GetNumberOfVertices() - 1; i++)
 	{
 		ProjectPointOnVector2D(xin, yin, vertex_[i].x, vertex_[i].y, vertex_[i+1].x, vertex_[i+1].y, tmpPos.x, tmpPos.y);
 		double distTmp = PointDistance2D(xin, yin, tmpPos.x, tmpPos.y);
