@@ -29,7 +29,7 @@ namespace ESMini
     [StructLayout(LayoutKind.Sequential)]
     public struct ScenarioObjectState
     {
-        public int id;          // Automatically generated unique object id 
+        public int id;          // Automatically generated unique object id
         public int model_id;    // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
         public int ctrl_type;     // 0: DefaultController 1: External. Further values see esmini/EnvironmentSimulator/Controllers/Controller::Type enum
         public float timestamp;
@@ -72,10 +72,10 @@ namespace ESMini
         public float trail_heading;    // trail heading (only when used for trail lookups, else equals road_heading)
         public float curvature;        // road curvature at steering target point
         public float speed_limit;      // speed limit given by OpenDRIVE type entry
-        public int roadId;             // target position, road ID 
+        public int roadId;             // target position, road ID
         public int junctionId;         // target position, junction ID (-1 if not in a junction)
         public int laneId;             // target position, lane ID
-        public float laneOffset;       // target position, lane offset (lateral distance from lane center) 
+        public float laneOffset;       // target position, lane offset (lateral distance from lane center)
         public float s;                // target position, s (longitudinal distance along reference line)
         public float t;                // target position, t (lateral distance from reference line)
     };
@@ -91,7 +91,7 @@ public static class ESMiniLib
         [DllImport(LIB_NAME, EntryPoint = "SE_AddPath")]
         /// <summary>Add a search path for OpenDRIVE and 3D model files </summary>
         /// <param name="path">Path to a directory</param>
-        /// <returns>0 on success, -1 on failure for any reason</returns> 
+        /// <returns>0 on success, -1 on failure for any reason</returns>
         public static extern int SE_AddPath(string path);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_ClearPaths")]
@@ -99,12 +99,12 @@ public static class ESMiniLib
         public static extern void SE_ClearPaths();
 
         [DllImport(LIB_NAME, EntryPoint = "SE_SetLogFilePath")]
-        /// <summary>Specify logfile name, optionally including directory path 
+        /// <summary>Specify logfile name, optionally including directory path
         /// examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
         /// Set "" to disable logfile
         /// Note: Needs to be called prior to calling SE_Init() </summary>
         /// <param name="path">Logfile path</param>
-        /// <returns>0 on success, -1 on failure for any reason</returns> 
+        /// <returns>0 on success, -1 on failure for any reason</returns>
         public static extern int SE_SetLogFilePath(string path);
 
        [DllImport(LIB_NAME, EntryPoint = "SE_SetOSITolerances")]
@@ -144,7 +144,9 @@ public static class ESMiniLib
         public static extern void SE_Close();
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetQuitFlag")]
-        public static extern bool SE_GetQuitFlag();
+        /// <summary>Is esmini about to quit?</summary>
+        /// <return>0 if not, 1 if yes, -1 if some error e.g. scenario not loaded</return>
+        public static extern int SE_GetQuitFlag();
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetODRFilename")]
         //[return: MarshalAs(UnmanagedType.LPStr)]
@@ -174,9 +176,15 @@ public static class ESMiniLib
         public static extern int SE_SetLockOnLane(int id, bool mode);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetNumberOfObjects")]
+        /// <summary>Get the number of entities in the current scenario</summary>
+        /// <return>Number of entities, -1 on error e.g. scenario not initialized</return>
         public static extern int SE_GetNumberOfObjects();
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectState")]
+        /// <summary>Get the state of specified object</summary>
+        /// <param name="index">Index of the object. Note: not ID</param>
+        /// <param name="state">Reference to a ScenarioObjectState struct to be filled in</param>
+        /// <return>0 if successful, -1 if not</return>
         public static extern int SE_GetObjectState(int index, ref ScenarioObjectState state);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectName")]
@@ -187,7 +195,10 @@ public static class ESMiniLib
         public static extern IntPtr SE_GetObjectName(int index);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_ObjectHasGhost")]
-        public static extern int SE_ObjectHasGhost(int index);
+        /// <summary>Check whether an object has a ghost (special purpose lead vehicle)</summary>
+        /// <param name="object_id">Handle to the object</param>
+        /// <return>1 if ghost, 0 if not, -1 indicates error e.g. scenario not loaded</return>
+        public static extern int SE_ObjectHasGhost(int object_id);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectGhostState")]
         public static extern int SE_GetObjectGhostState(int index, ref ScenarioObjectState state);
@@ -212,7 +223,7 @@ public static class ESMiniLib
         /// <param name="list">Array of object indices</param>
         /// <returns> Number of identified objects, i.e.length of list. -1 on failure</returns>
         public static extern int SE_FetchSensorObjectList(int object_id, int[] list);
-        
+
 		[DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAtDistance")]
         /// <summary>Get information suitable for driver modeling of a point at a specified distance from object along the road ahead</summary>
         /// <param name="object_id">Handle to the position object from which to measure</param>
@@ -221,7 +232,7 @@ public static class ESMiniLib
         /// <param name="along_road_center">Measure along the reference lane, i.e. at center of the road. Should be false for normal use cases</param>
         /// <param name="lookAheadMode">Measurement strategy: Along 0=lane center, 1=road center(ref line) or 2=current lane offset.See roadmanager::Position::LookAheadMode enum</param>
         /// <param name="inRoadDrivingDirection">If true always look along primary driving direction.If false, look in most straightforward direction according to object heading.</param>
-        /// <returns>0 on success, -1 on failure for any reason</returns>
+        /// <returns>0 if successful, 1 if probe reached end of road, 2 if end ouf route, -1 if some error</returns>
         public static extern int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, ref RoadInfo data, int along_road_center);
 
         /// <summary>Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle</summary>

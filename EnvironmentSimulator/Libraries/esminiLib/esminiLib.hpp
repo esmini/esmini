@@ -576,7 +576,7 @@ extern "C"
 	/**
 		Check whether an object has a ghost (special purpose lead vehicle)
 		@param index Index of the object. Note: not ID
-		@return 1 if ghost, 0 if not
+		@return 1 if ghost, 0 if not, -1 indicates error e.g. scenario not loaded
 	*/
 	SE_DLL_API int SE_ObjectHasGhost(int index);
 

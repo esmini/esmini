@@ -109,13 +109,13 @@ extern "C"
 
 	/**
 	Create a position object
-	@return Handle to the position object, to use for operations
+	@return Handle >= 0 to the position object to use for operations or -1 on error
 	*/
 	RM_DLL_API int RM_CreatePosition();
 
 	/**
 	Get the number of created position objects
-	@return Number of created position objects
+	@return Number of created position objects or -1 on error
 	*/
 	RM_DLL_API int RM_GetNrOfPositions();
 
@@ -204,7 +204,7 @@ extern "C"
 	/**
 	Get the Road ID of the road with specified index. E.g. if there are 4 roads, index 3 means the last one.
 	@param index The index of the road
-	@return The ID of the road
+	@return The ID of the road, -1 on error
 	*/
 	RM_DLL_API int RM_GetIdOfRoadFromIndex(int index);
 
@@ -344,7 +344,7 @@ extern "C"
 	/**
 	Get the number of road signs along specified road
 	@param road_id The road along which to look for signs
-	@return Number of road signs
+	@return Number of road signs, -1 on error
 	*/
 	RM_DLL_API int RM_GetNumberOfRoadSigns(int road_id);
 
@@ -361,7 +361,7 @@ extern "C"
 		Get the number of lane validity records of specified road object/sign
 		@param road_id The road of which to look for the sign
 		@param index Index of the sign. Note: not ID
-		@return Number of validity records of specified road sign
+		@return Number of validity records of specified road sign, -1 if not
 	*/
 	RM_DLL_API int RM_GetNumberOfRoadSignValidityRecords(int road_id, int index);
 
