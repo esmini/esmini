@@ -128,13 +128,13 @@ void ControllerFollowGhost::Step(double timeStep)
 	vehicle_.pitch_ = object_->pos_.GetP();
 
 	// Update wheels wrt domains
-	if (domain_ & Controller::Domain::CTRL_LONGITUDINAL)
+	if (IsActiveOnDomains(ControlDomains::DOMAIN_LONG))
 	{
 		object_->wheel_rot_ = vehicle_.wheelRotation_;
 		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
 	}
 
-	if (domain_ & Controller::Domain::CTRL_LATERAL)
+	if (IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
 	{
 		object_->wheel_angle_ = vehicle_.wheelAngle_;
 		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
@@ -146,7 +146,7 @@ void ControllerFollowGhost::Step(double timeStep)
 	Controller::Step(timeStep);
 }
 
-void ControllerFollowGhost::Activate(int domainMask)
+void ControllerFollowGhost::Activate(ControlDomains domainMask)
 {
 	if (object_)
 	{

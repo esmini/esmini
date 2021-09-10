@@ -1038,7 +1038,7 @@ int ScenarioReader::parseEntities()
 					obj->id_ = -1;
 
 					// SUMO controller is special in the sense that it is always active
-					ctrl->Activate(Controller::Domain::CTRL_BOTH);
+					ctrl->Activate(ControlDomains::DOMAIN_BOTH);
 
 					// SUMO controller is not assigned to any scenario vehicle
 				}
@@ -1541,14 +1541,14 @@ ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xm
 	int domainMask = 0;
 	if (domain_longitudinal)
 	{
-		domainMask |= Controller::Domain::CTRL_LONGITUDINAL;
+		domainMask |= static_cast<int>(ControlDomains::DOMAIN_LONG);
 	}
 	if (domain_lateral)
 	{
-		domainMask |= Controller::Domain::CTRL_LATERAL;
+		domainMask |= static_cast<int>(ControlDomains::DOMAIN_LAT);
 	}
 
-	ActivateControllerAction* activateControllerAction = new ActivateControllerAction(domainMask);
+	ActivateControllerAction* activateControllerAction = new ActivateControllerAction(static_cast<ControlDomains>(domainMask));
 
 	return activateControllerAction;
 }

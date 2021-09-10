@@ -34,7 +34,7 @@ namespace scenarioengine
 
 		void Init();
 		void Step(double time);
-		void Activate(int domainMask);
+		void Activate(ControlDomains domainMask);
 
 		void SetSumoVehicle(Object* object);
 

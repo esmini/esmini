@@ -120,7 +120,7 @@ void ControllerACC::Step(double timeStep)
 	Controller::Step(timeStep);
 }
 
-void ControllerACC::Activate(int domainMask)
+void ControllerACC::Activate(ControlDomains domainMask)
 {
 	setSpeed_ = object_->GetSpeed();
 	Controller::Activate(domainMask);

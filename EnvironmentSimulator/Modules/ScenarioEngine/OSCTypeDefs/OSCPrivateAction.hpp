@@ -81,10 +81,12 @@ namespace scenarioengine
 		};
 
 		ActionType type_;
+		ControlDomains domain_;
 		Object *object_;
 		ScenarioEngine* scenarioEngine_;
 
-		OSCPrivateAction(OSCPrivateAction::ActionType type) : OSCAction(OSCAction::BaseType::PRIVATE), type_(type), object_(0), scenarioEngine_(0) {}
+		OSCPrivateAction(OSCPrivateAction::ActionType type, ControlDomains domain) :
+			OSCAction(OSCAction::BaseType::PRIVATE), type_(type), domain_(domain), object_(0) {}
 
 		virtual void print()
 		{
@@ -96,6 +98,13 @@ namespace scenarioengine
 			LOG("Virtual, should be overridden");
 			return 0;
 		};
+
+		std::string Type2Str()
+		{
+			return "OSCPrivateAction base class";
+		};
+
+		ControlDomains GetDomain() { return domain_; }
 
 		virtual void ReplaceObjectRefs(Object*, Object*) {};
 
@@ -163,9 +172,10 @@ namespace scenarioengine
 		double elapsed_;
 		double sim_time_;
 
-		LongSpeedAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED), target_(0), start_speed_(0), sim_time_(0), elapsed_(0) {}
+		LongSpeedAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED, ControlDomains::DOMAIN_LONG),
+			target_(0), start_speed_(0), sim_time_(0), elapsed_(0) {}
 
-		LongSpeedAction(const LongSpeedAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED)
+		LongSpeedAction(const LongSpeedAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED, ControlDomains::DOMAIN_LONG)
 		{
 			target_ = action.target_;
 			transition_dynamics_ = action.transition_dynamics_;
@@ -179,6 +189,11 @@ namespace scenarioengine
 			LongSpeedAction* new_action = new LongSpeedAction(*this);
 			return new_action;
 		}
+
+		std::string Type2Str()
+		{
+			return "SpeedAction";
+		};
 
 		void Start(double simTime, double dt);
 		void Step(double simTime, double dt);
@@ -225,7 +240,7 @@ namespace scenarioengine
 		double sim_time_;
 		DisplacementType displacement_;
 
-		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE),
+		LongDistanceAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, ControlDomains::DOMAIN_LONG),
 			target_object_(0), distance_(0), dist_type_(DistType::DISTANCE), freespace_(0), acceleration_(0), sim_time_(0),
 			displacement_(DisplacementType::NONE)
 		{
@@ -235,7 +250,7 @@ namespace scenarioengine
             dynamics_.none_ = true;
 		}
 
-		LongDistanceAction(const LongDistanceAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE)
+		LongDistanceAction(const LongDistanceAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, ControlDomains::DOMAIN_LONG)
 		{
 			target_object_ = action.target_object_;
 			dynamics_ = action.dynamics_;
@@ -252,6 +267,11 @@ namespace scenarioengine
 			LongDistanceAction *new_action = new LongDistanceAction(*this);
 			return new_action;
 		}
+
+		std::string Type2Str()
+		{
+			return "LongitudinalDistanceAction";
+		};
 
 		void Start(double simTime, double dt);
 		void Step(double simTime, double dt);
@@ -310,7 +330,8 @@ namespace scenarioengine
 		double t_;
 		double sim_time_;
 
-		LatLaneChangeAction(LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
+		LatLaneChangeAction(LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME) :
+			OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT)
 		{
 			transition_dynamics_.dimension_ = timing_type;
 			elapsed_ = 0;
@@ -319,7 +340,7 @@ namespace scenarioengine
 			sim_time_ = 0;
 		}
 
-		LatLaneChangeAction(const LatLaneChangeAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE)
+		LatLaneChangeAction(const LatLaneChangeAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT)
 		{
 			transition_dynamics_ = action.transition_dynamics_;
 			target_ = action.target_;
@@ -337,6 +358,11 @@ namespace scenarioengine
 			LatLaneChangeAction* new_action = new LatLaneChangeAction(*this);
 			return new_action;
 		}
+
+		std::string Type2Str()
+		{
+			return "LaneChangeAction";
+		};
 
 		void Step(double simTime, double dt);
 		void Start(double simTime, double dt);
@@ -388,7 +414,7 @@ namespace scenarioengine
 		double target_lane_offset_;
 		double sim_time_;
 
-		LatLaneOffsetAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET)
+		LatLaneOffsetAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET, ControlDomains::DOMAIN_LAT)
 		{
 			dynamics_.max_lateral_acc_ = 0;
 			elapsed_ = 0;
@@ -397,7 +423,7 @@ namespace scenarioengine
 			sim_time_ = 0;
 		}
 
-		LatLaneOffsetAction(const LatLaneOffsetAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET)
+		LatLaneOffsetAction(const LatLaneOffsetAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET, ControlDomains::DOMAIN_LAT)
 		{
 			target_ = action.target_;
 			elapsed_ = action.elapsed_;
@@ -412,6 +438,11 @@ namespace scenarioengine
 			LatLaneOffsetAction *new_action = new LatLaneOffsetAction(*this);
 			return new_action;
 		}
+
+		std::string Type2Str()
+		{
+			return "LaneOffsetAction";
+		};
 
 		void Start(double simTime, double dt);
 		void Step(double simTime, double dt);
@@ -472,7 +503,7 @@ namespace scenarioengine
 		double lastDist_;
 		double lastMasterDist_;
 
-		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE)
+		SynchronizeAction() : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE, ControlDomains::DOMAIN_LONG)
 		{
 			master_object_ = 0;
 			final_speed_ = 0;
@@ -487,7 +518,7 @@ namespace scenarioengine
 			steadyState_.type_ = SteadyStateType::STEADY_STATE_NONE;
 		}
 
-		SynchronizeAction(const SynchronizeAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE)
+		SynchronizeAction(const SynchronizeAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE, ControlDomains::DOMAIN_LONG)
 		{
 			master_object_ = action.master_object_;
 			final_speed_ = action.final_speed_;
@@ -507,6 +538,11 @@ namespace scenarioengine
 			SynchronizeAction *new_action = new SynchronizeAction(*this);
 			return new_action;
 		}
+
+		std::string Type2Str()
+		{
+			return "SynchronizeAction";
+		};
 
 		~SynchronizeAction()
 		{
@@ -549,9 +585,9 @@ namespace scenarioengine
 	public:
 		roadmanager::Position *position_;
 
-		TeleportAction() : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT) {}
+		TeleportAction() : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, ControlDomains::DOMAIN_BOTH) {}
 
-		TeleportAction(const TeleportAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT)
+		TeleportAction(const TeleportAction &action) : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, ControlDomains::DOMAIN_BOTH)
 		{
 			position_ = action.position_;
 		}
@@ -561,6 +597,11 @@ namespace scenarioengine
 			TeleportAction *new_action = new TeleportAction(*this);
 			return new_action;
 		}
+
+		std::string Type2Str()
+		{
+			return "TeleportAction";
+		};
 
 		void Step(double simTime, double dt);
 		void Start(double simTime, double dt);
@@ -573,9 +614,9 @@ namespace scenarioengine
 	public:
 		roadmanager::Route *route_;
 
-		AssignRouteAction() : route_(0), OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE) {}
+		AssignRouteAction() : route_(0), OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE) {}
 
-		AssignRouteAction(const AssignRouteAction&action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE)
+		AssignRouteAction(const AssignRouteAction&action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, ControlDomains::DOMAIN_NONE)
 		{
 			route_ = action.route_;
 		}
@@ -585,6 +626,11 @@ namespace scenarioengine
 			AssignRouteAction* new_action = new AssignRouteAction(*this);
 			return new_action;
 		}
+
+		std::string Type2Str()
+		{
+			return "AssignRouteAction";
+		};
 
 		void Start(double simTime, double dt);
 		void Step(double simTime, double dt);
@@ -609,9 +655,9 @@ namespace scenarioengine
 		double initialDistanceOffset_;
 
 		FollowTrajectoryAction() : traj_(0), timing_domain_(TimingDomain::NONE), timing_scale_(1),
-			timing_offset_(0), time_(0), initialDistanceOffset_(0), OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY) {}
+			timing_offset_(0), time_(0), initialDistanceOffset_(0), OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH) {}
 
-		FollowTrajectoryAction(const FollowTrajectoryAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY)
+		FollowTrajectoryAction(const FollowTrajectoryAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY, ControlDomains::DOMAIN_BOTH)
 		{
 			traj_ = action.traj_;
 			timing_domain_ = action.timing_domain_;
@@ -627,6 +673,11 @@ namespace scenarioengine
 			return new_action;
 		}
 
+		std::string Type2Str()
+		{
+			return "FollowTrajectoryAction";
+		};
+
 		void Step(double simTime, double dt);
 		void Start(double simTime, double dt);
 		void End();
@@ -640,9 +691,9 @@ namespace scenarioengine
 		roadmanager::Position* target_position_;
 		roadmanager::Route* route_;
 
-		AcquirePositionAction() : route_(0), target_position_(0), OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION) {}
+		AcquirePositionAction() : route_(0), target_position_(0), OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, ControlDomains::DOMAIN_LONG) {}
 
-		AcquirePositionAction(const AcquirePositionAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION)
+		AcquirePositionAction(const AcquirePositionAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::Acquire_POSITION, ControlDomains::DOMAIN_LONG)
 		{
 			target_position_ = action.target_position_;
 			route_ = action.route_;
@@ -653,6 +704,11 @@ namespace scenarioengine
 			AcquirePositionAction* new_action = new AcquirePositionAction(*this);
 			return new_action;
 		}
+
+		std::string Type2Str()
+		{
+			return "AcquirePositionAction";
+		};
 
 		void Start(double simTime, double dt);
 		void Step(double simTime, double dt);
@@ -666,9 +722,11 @@ namespace scenarioengine
 		Controller* controller_;
 
 		AssignControllerAction(Controller *controller): controller_(controller),
-			OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER) {}
+			OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
+				controller != nullptr ? controller->GetDomain() : ControlDomains::DOMAIN_NONE) {}
 
-		AssignControllerAction(const AssignControllerAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER)
+		AssignControllerAction(const AssignControllerAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
+			action.controller_ != nullptr ? action.controller_->GetDomain() : ControlDomains::DOMAIN_NONE)
 		{
 			controller_ = action.controller_;
 		};
@@ -679,6 +737,11 @@ namespace scenarioengine
 			return new_action;
 		}
 
+		std::string Type2Str()
+		{
+			return "AssignControllerAction";
+		};
+
 		void Step(double, double) { }
 		void Start(double simTime, double dt);
 
@@ -687,24 +750,24 @@ namespace scenarioengine
 	class ActivateControllerAction : public OSCPrivateAction
 	{
 	public:
-		int domainMask_;
+		ControlDomains domainMask_;
 
 		/**
 		Default constructor assuming both domains (lat/long) activated
 		@param domainMask bitmask according to Controller::Domain type
 		*/
-		ActivateControllerAction() : domainMask_(Controller::Domain::CTRL_BOTH),
-			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
+		ActivateControllerAction() : domainMask_(ControlDomains::DOMAIN_BOTH),
+			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, domainMask_) {}
 
 		/**
 		Constructor with domain specification
 		@param domainMask bitmask according to Controller::Domain type
 		*/
-		ActivateControllerAction(int domainMask) : domainMask_(domainMask),
-			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER) {}
+		ActivateControllerAction(ControlDomains domainMask) : domainMask_(domainMask),
+			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, domainMask) {}
 
 		ActivateControllerAction(const ActivateControllerAction& action) :
-			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
+			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, action.domain_)
 		{
 			domainMask_ = action.domainMask_;
 		}
@@ -737,17 +800,22 @@ namespace scenarioengine
 			OSCAction::Start(simTime, dt);
 		}
 
+		std::string Type2Str()
+		{
+			return "ActivateControllerAction";
+		};
+
 		void Step(double, double) {}
 
 		void End()
 		{
-			if (object_->GetActivatedControllerType() != 0)
+			if (object_->GetActivatedControllerType() != 0 && object_->controller_ != nullptr)
 			{
 				object_->controller_->Deactivate();
-				// Make sure heading is aligned with road driving direction
-				object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
-				OSCAction::End();
 			}
+			// Make sure heading is aligned with road driving direction
+			object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
+			OSCAction::End();
 		}
 	};
 
@@ -760,10 +828,10 @@ namespace scenarioengine
 		bool sensors_;
 
 		VisibilityAction() : graphics_(true), traffic_(true), sensors_(true),
-			OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY) {}
+			OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, ControlDomains::DOMAIN_NONE) {}
 
 		VisibilityAction(const VisibilityAction& action) : graphics_(true), traffic_(true), sensors_(true),
-			OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY)
+			OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, ControlDomains::DOMAIN_NONE)
 		{
 			graphics_ = action.graphics_;
 			traffic_ = action.traffic_;
@@ -775,6 +843,11 @@ namespace scenarioengine
 			VisibilityAction* new_action = new VisibilityAction(*this);
 			return new_action;
 		}
+
+		std::string Type2Str()
+		{
+			return "VisibilityAction";
+		};
 
 		void Step(double simTime, double dt);
 		void Start(double simTime, double dt);
@@ -788,8 +861,9 @@ namespace scenarioengine
 
 		Object::OverrideType type_;
 
+		// assume both domains
 		OverrideControlAction(double value, bool active, Object::OverrideType type) :
-			OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER), type_(type) {}
+			OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, ControlDomains::DOMAIN_BOTH), type_(type) {}
 		OverrideControlAction() : OverrideControlAction(0, false, Object::OverrideType::OVERRIDE_UNDEFINED) {}
 		~OverrideControlAction() {}
 
@@ -801,6 +875,11 @@ namespace scenarioengine
 			OverrideControlAction *new_action = new OverrideControlAction(*this);
 			return new_action;
 		}
+
+		std::string Type2Str()
+		{
+			return "OverrideControlAction";
+		};
 
 		// Input value range: [0..1] for Throttle, Brake, Clutch and ParkingBrake. [-2*PI..2*PI] for SteeringWheel. [-1,0,1,2,3,4,5,6,7,8] for Gear.
 		// Function will cut the value to the near limit if the value is beyond limit and round the value in Gear case.

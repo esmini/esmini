@@ -25,7 +25,7 @@ Controller* scenarioengine::InstantiateController(void* args)
 }
 
 Controller::Controller(InitArgs* args) : name_(args->name), type_name_(args->type), entities_(args->entities),
-	gateway_(args->gateway), domain_(0), mode_(Controller::Mode::MODE_OVERRIDE), object_(0)
+	gateway_(args->gateway), domain_(ControlDomains::DOMAIN_NONE), mode_(Controller::Mode::MODE_OVERRIDE), object_(0)
 {
 	if (args->properties->ValueExists("mode"))
 	{
@@ -52,12 +52,12 @@ void Controller::Step(double timeStep)
 	{
 		if (mode_ == Mode::MODE_OVERRIDE)
 		{
-			if (domain_ & Domain::CTRL_LATERAL)
+			if (IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
 			{
 				object_->SetDirtyBits(Object::DirtyBit::LATERAL);
 			}
 
-			if (domain_ & Domain::CTRL_LONGITUDINAL)
+			if (IsActiveOnDomains(ControlDomains::DOMAIN_LONG))
 			{
 				object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
 
@@ -114,4 +114,19 @@ std::string Controller::Mode2Str(int mode)
 		LOG("Unexpected mode \"%d\"", mode);
 		return "invalid mode";
 	}
+}
+
+bool Controller::IsActiveOnDomains(ControlDomains domainMask)
+{
+	return (static_cast<int>(GetDomain()) & static_cast<int>(domainMask)) == static_cast<int>(domainMask);
+}
+
+bool Controller::IsActiveOnAnyOfDomains(ControlDomains domainMask)
+{
+	return (static_cast<int>(GetDomain()) & static_cast<int>(domainMask)) != 0;
+}
+
+bool Controller::IsActive()
+{
+	return GetDomain() != ControlDomains::DOMAIN_NONE;
 }

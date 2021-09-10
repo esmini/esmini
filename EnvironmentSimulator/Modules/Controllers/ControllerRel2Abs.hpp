@@ -70,7 +70,7 @@ namespace scenarioengine
 
 		void Init();
 		void Step(double timeStep);
-		void Activate(int domainMask);
+		void Activate(ControlDomains domainMask);
 		void ReportKeyEvent(int key, bool down);
 		void SetScenarioEngine(ScenarioEngine* scenarioEngine) { scenarioEngine_ = scenarioEngine; };
 		void CopyPosition(Object* object, position_copy* obj_copy);

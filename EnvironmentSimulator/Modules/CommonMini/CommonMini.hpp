@@ -74,6 +74,17 @@ __int64 SE_getSystemTime();
 void SE_sleep(unsigned int msec);
 double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_time_step);
 
+// Useful types
+
+enum class ControlDomains
+{
+	DOMAIN_NONE = 0,
+	DOMAIN_LONG = 1,
+	DOMAIN_LAT = 2,
+	DOMAIN_BOTH = 3  // can also be interpreted as bitwise OR: DIM_LONG | DIM_LAT
+};
+
+std::string ControlDomain2Str(ControlDomains domains);
 
 // Useful operations
 

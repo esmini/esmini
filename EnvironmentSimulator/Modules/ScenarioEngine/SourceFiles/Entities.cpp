@@ -110,7 +110,7 @@ int Object::GetAssignedControllerType()
 
 int Object::GetActivatedControllerType()
 {
-	if (controller_ && controller_->GetDomain())
+	if (controller_ && (controller_->GetDomain() != ControlDomains::DOMAIN_NONE))
 	{
 		return controller_->GetType();
 	}
@@ -128,11 +128,11 @@ int Object::GetActivatedControllerType()
 	}
 }
 
-bool Object::IsControllerActiveOnDomains(int domainMask)
+bool Object::IsControllerActiveOnDomains(ControlDomains domainMask)
 {
 	if (controller_)
 	{
-		return (controller_->GetDomain() & domainMask) == domainMask;
+		return controller_->IsActiveOnDomains(domainMask);
 	}
 	else
 	{
@@ -140,11 +140,23 @@ bool Object::IsControllerActiveOnDomains(int domainMask)
 	}
 }
 
-bool Object::IsControllerActiveOnAnyOfDomains(int domainMask)
+bool Object::IsControllerActiveOnAnyOfDomains(ControlDomains domainMask)
 {
 	if (controller_)
 	{
-		return controller_->GetDomain() & domainMask;
+		return controller_->IsActiveOnAnyOfDomains(domainMask);
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Object::IsControllerActive()
+{
+	if (controller_)
+	{
+		return controller_->IsActive();
 	}
 	else
 	{

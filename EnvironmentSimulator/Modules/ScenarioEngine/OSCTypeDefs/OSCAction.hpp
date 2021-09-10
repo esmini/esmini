@@ -189,7 +189,8 @@ namespace scenarioengine
 		OSCAction(BaseType type) : base_type_(type), StoryBoardElement(StoryBoardElement::ElementType::ACTION) {}
 		virtual ~OSCAction() {}
 
-		std::string basetype2str(BaseType type);
+		std::string BaseType2Str();
+		virtual std::string Type2Str() { return BaseType2Str(); }
 
 		virtual void Step(double simTime, double dt) = 0;
 	};

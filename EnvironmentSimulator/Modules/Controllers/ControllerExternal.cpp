@@ -85,7 +85,7 @@ void ControllerExternal::Step(double timeStep)
 	Controller::Step(timeStep);
 }
 
-void ControllerExternal::Activate(int domainMask)
+void ControllerExternal::Activate(ControlDomains domainMask)
 {
 	Controller::Activate(domainMask);
 }
