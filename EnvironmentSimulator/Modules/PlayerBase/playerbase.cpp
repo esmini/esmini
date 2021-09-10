@@ -165,6 +165,22 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 
 	if (scenarioEngine->step(timestep_s) == 0)
 	{
+		while( (scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime() ) && scenarioEngine->getSimulationTime() > 0 )
+		{
+	
+			scenarioEngine->step(timestep_s);
+
+			for (size_t i = 0; i < callback.size(); i++)
+			{
+				ObjectState* os = scenarioGateway->getObjectStatePtrById(callback[i].id);
+				if (os)
+				{
+					ObjectStateStruct state;
+					state = os->getStruct();
+					callback[i].func(&state, callback[i].data);
+				}
+			}
+		}
 		// Check for any callbacks to be made
 		for (size_t i = 0; i < callback.size(); i++)
 		{
