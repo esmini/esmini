@@ -873,6 +873,7 @@ namespace scenarioengine
 
 		Object::OverrideType type_;
 
+		// assume both domains
 		OverrideControlAction(double value, bool active, Object::OverrideType type) :
 			OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, ControlDomains::DOMAIN_NONE), type_(type) {}
 

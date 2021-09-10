@@ -254,6 +254,36 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^40.00.*, 93, swarm93, 25.484, 796.907, -1.143, 4.580, 0.001, 0.000, 31.875', csv, re.MULTILINE))
 
 
+    def test_conflicting_domains(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ARGS)
+        
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading conflicting-domains.xosc', log))
+        self.assertTrue(re.search('^0.00.*Ego New position:.*$\n^.*Pos\(20.00, -1.53, 0.00\) Rot\(0.00, 0.00, 0.00\) roadId 0 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
+        self.assertTrue(re.search('^0.00.*Init Ego TeleportAction standbyState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^0.00.*Init Ego LongitudinalAction standbyState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^0.00.*TeleportAction runningState -> endTransition -> completeState', log, re.MULTILINE))
+
+        # Check some scenario events
+        self.assertTrue(re.search('^2.00.*: Stopping Init Ego LongitudinalAction on conflicting longitudinal domain\(s\)', log, re.MULTILINE))
+        self.assertTrue(re.search('^2.01.*: Speed action 2 standbyState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^2.01.*: Lane offset action 1 standbyState -> startTransition -> runningState', log, re.MULTILINE))
+
+        self.assertTrue(re.search('^4.01.*: Stopping object Ego Lane offset action 1 on conflicting lateral domain\(s\)', log, re.MULTILINE))
+        self.assertTrue(re.search('^4.02.*: Lane offset action 1 runningState -> endTransition -> completeState', log, re.MULTILINE))
+        self.assertTrue(re.search('^4.02.*: Lane offset action 2 standbyState -> startTransition -> runningState', log, re.MULTILINE))
+
+        self.assertTrue(re.search('^5.13.*: Lane offset action 2 runningState -> endTransition -> completeState', log, re.MULTILINE))
+        self.assertTrue(re.search('^9.02.*: Speed action 2 runningState -> endTransition -> completeState', log, re.MULTILINE))
+        self.assertTrue(re.search('^13.02.*: Stop condition timer expired at 4.01 seconds', log, re.MULTILINE))
+        self.assertTrue(re.search('^13.02.*: Stop condition == true, speed: 20.00 >= 20.00, edge: none', log, re.MULTILINE))
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('^4.00.*, 0, Ego, 35.88.*, -0.83.*, 0.00.*, 0.10.*, 0.00.*, 0.00.*, 7.97.*', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.03.*, 0, Ego, 36.13.*, -0.82.*, 0.00.*, 6.27.*, 0.00.*, 0.00.*, 8.05.*', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.13.*, 0, Ego, 46.74.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 11.31.*', csv, re.MULTILINE))
+
 if __name__ == "__main__":
     # execute only if run as a script
 
