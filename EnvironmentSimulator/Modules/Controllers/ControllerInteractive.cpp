@@ -57,18 +57,18 @@ void ControllerInteractive::Step(double timeStep)
 	}
 	vehicle_.SetMaxSpeed(speed_limit);
 
-	if (!(domain_ & Controller::Domain::CTRL_LONGITUDINAL))
+	if (!(IsActiveOnDomains(ControlDomains::DOMAIN_LONG)))
 	{
 		// Fetch speed from Default Controller
 		vehicle_.speed_ = object_->GetSpeed();
 	}
 
 	// Update vehicle motion
-	vehicle_.SetThrottleDisabled(domain_ & Controller::Domain::CTRL_LONGITUDINAL ? false : true);
-	vehicle_.SetSteeringDisabled(domain_ & Controller::Domain::CTRL_LATERAL ? false : true);
+	vehicle_.SetThrottleDisabled(!IsActiveOnDomains(ControlDomains::DOMAIN_LONG));
+	vehicle_.SetSteeringDisabled(!IsActiveOnDomains(ControlDomains::DOMAIN_LAT));
 	vehicle_.DrivingControlBinary(timeStep, accelerate, steer);
 
-	if (domain_ == Controller::Domain::CTRL_LONGITUDINAL)
+	if (domain_ == ControlDomains::DOMAIN_LONG)
 	{
 		// Only longitudinal control, move along road
 		double steplen = vehicle_.speed_* timeStep;
@@ -92,13 +92,13 @@ void ControllerInteractive::Step(double timeStep)
 	vehicle_.pitch_ = object_->pos_.GetPRoad();
 
 	// Update wheels wrt domains
-	if (domain_ & Controller::Domain::CTRL_LONGITUDINAL)
+	if (IsActiveOnDomains(ControlDomains::DOMAIN_LONG))
 	{
 		object_->wheel_rot_ = vehicle_.wheelRotation_;
 		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
 	}
 
-	if (domain_ & Controller::Domain::CTRL_LATERAL)
+	if (IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
 	{
 		object_->wheel_angle_ = vehicle_.wheelAngle_;
 		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
@@ -110,7 +110,7 @@ void ControllerInteractive::Step(double timeStep)
 	Controller::Step(timeStep);
 }
 
-void ControllerInteractive::Activate(int domainMask)
+void ControllerInteractive::Activate(ControlDomains domainMask)
 {
 	if (object_)
 	{

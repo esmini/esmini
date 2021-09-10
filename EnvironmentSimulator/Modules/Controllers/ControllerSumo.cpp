@@ -178,16 +178,16 @@ void ControllerSumo::Step(double timeStep)
 	Controller::Step(timeStep);
 }
 
-void ControllerSumo::Activate(int domainMask)
+void ControllerSumo::Activate(ControlDomains domainMask)
 {
 	// Reset time
 	time_ = 0;
 
 	// SUMO controller forced into both domains
-	if (domainMask != Domain::CTRL_BOTH)
+	if (domainMask != ControlDomains::DOMAIN_BOTH)
 	{
 		LOG("SUMO controller forced into operation of both domains (lat/long)");
-		domainMask = Domain::CTRL_BOTH;
+		domainMask = ControlDomains::DOMAIN_BOTH;
 	}
 
 	Controller::Activate(domainMask);

@@ -32,7 +32,7 @@ namespace scenarioengine
 
 		void Init();
 		void Step(double timeStep);
-		void Activate(int domainMask);
+		void Activate(ControlDomains domainMask);
 		void ReportKeyEvent(int key, bool down);
 
 		static const char* GetTypeNameStatic() { return CONTROLLER_INTERACTIVE_TYPE_NAME; }

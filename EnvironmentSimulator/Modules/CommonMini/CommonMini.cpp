@@ -48,6 +48,24 @@ const char* esmini_build_version(void)
 	return ESMINI_BUILD_VERSION;
 }
 
+std::string ControlDomain2Str(ControlDomains domains)
+{
+	if (domains == ControlDomains::DOMAIN_BOTH)
+	{
+		return "lateral and longitudinal";
+	}
+	else if (domains == ControlDomains::DOMAIN_LAT)
+	{
+		return "lateral";
+	}
+	else if (domains == ControlDomains::DOMAIN_LONG)
+	{
+		return "longitudinal";
+	}
+
+	return "none";
+}
+
 bool FileExists(const char* fileName)
 {
 	std::ifstream infile(fileName);

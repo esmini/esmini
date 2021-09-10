@@ -591,7 +591,7 @@ void ControllerRel2Abs::Step(double timeStep)
 	Controller::Step(timeStep);
 }
 
-void ControllerRel2Abs::Activate(int domainMask)
+void ControllerRel2Abs::Activate(ControlDomains domainMask)
 {
 #ifdef CONTROLLER_REL2ABS_DEBUG
 	logData.open("LogData.csv");

@@ -49,6 +49,11 @@ namespace scenarioengine
 			return 0;
 		};
 
+		virtual std::string Type2Str()
+		{
+			return "OSCGlobalAction base class";
+		};
+
 	};
 
 	class ParameterSetAction : public OSCGlobalAction
@@ -71,6 +76,11 @@ namespace scenarioengine
 			ParameterSetAction* new_action = new ParameterSetAction(*this);
 			return new_action;
 		}
+
+		std::string Type2Str()
+		{
+			return "ParameterSetAction";
+		};
 
 		void Start(double simTime, double dt);
 		void Step(double simTime, double dt);

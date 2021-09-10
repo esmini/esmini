@@ -80,7 +80,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 	currentSpeed_ = object_->GetSpeed();
 
 	// Do modification to a local position object and then report to gateway
-	if (object_ && domain_ & Controller::Domain::CTRL_LONGITUDINAL)
+	if (object_ && IsActiveOnDomains(ControlDomains::DOMAIN_LONG))
 	{
 		if (speedTimer_.Expired(time_))
 		{
@@ -131,7 +131,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 		}
 	}
 
-	if (object_ && domain_ & Controller::Domain::CTRL_LATERAL)
+	if (object_ && IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
 	{
 		if (lateralTimer_.Expired(time_))
 		{
@@ -189,7 +189,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 	Controller::Step(timeStep);
 }
 
-void ControllerSloppyDriver::Activate(int domainMask)
+void ControllerSloppyDriver::Activate(ControlDomains domainMask)
 {
 	if (object_)
 	{

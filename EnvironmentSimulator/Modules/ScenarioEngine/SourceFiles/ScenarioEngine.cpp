@@ -299,6 +299,8 @@ int ScenarioEngine::step(double deltaSimTime)
 								// Check event conditions
 								if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
 								{
+									bool startEvent = false;
+
 									// Check priority
 									if (event->priority_ == Event::Priority::OVERWRITE)
 									{
@@ -322,6 +324,7 @@ int ScenarioEngine::step(double deltaSimTime)
 														{
 															OSCPrivateAction* pa = (OSCPrivateAction*)action;
 															pa->object_->removeEvent(event);
+
 															break;
 														}
 													}
@@ -332,7 +335,7 @@ int ScenarioEngine::step(double deltaSimTime)
 												}
 											}
 
-											event->Start(simulationTime_, deltaSimTime);
+											startEvent = true;
 										}
 									}
 									else if (event->priority_ == Event::Priority::SKIP)
@@ -343,8 +346,7 @@ int ScenarioEngine::step(double deltaSimTime)
 										}
 										else
 										{
-
-											event->Start(simulationTime_, deltaSimTime);
+											startEvent = true;
 										}
 									}
 									else if (event->priority_ == Event::Priority::PARALLEL)
@@ -359,12 +361,16 @@ int ScenarioEngine::step(double deltaSimTime)
 											LOG("Event(s) ongoing, %s will run in parallel", event->name_.c_str());
 										}
 
-
-										event->Start(simulationTime_, deltaSimTime);
+										startEvent = true;
 									}
 									else
 									{
 										LOG("Unknown event priority: %d", event->priority_);
+									}
+
+									if (startEvent)
+									{
+										event->Start(simulationTime_, deltaSimTime);
 									}
 								}
 							}
@@ -413,7 +419,7 @@ int ScenarioEngine::step(double deltaSimTime)
 		Object* obj = entities.object_[i];
 		// Do not move objects when speed is zero,
 		// and only ghosts allowed to execute before time == 0
-		if (!(obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
+		if (!(obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
 			fabs(obj->speed_) > SMALL_NUMBER &&
 			(simulationTime_ > 0 || obj->IsGhost()))
 		{
@@ -625,7 +631,7 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 	if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL)) // No action has updated longitudinal dimension
 	{
 		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE ||
-			!obj->IsControllerActiveOnDomains(Controller::Domain::CTRL_LONGITUDINAL))
+			!obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
 		{
 			if (obj->pos_.GetRoute())
 			{

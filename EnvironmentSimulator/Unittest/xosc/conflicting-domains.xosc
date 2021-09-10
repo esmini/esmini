@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="0" date="2017-06-09T10:00:00" description="Lane offset" author="" />
+   <ParameterDeclarations>
+      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white" />
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles" />
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/curve_r100.xodr" />
+      <!-- <SceneGraphFile filepath="../models/curve_r100.osgb"/> -->
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle" />
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+                <PrivateAction>
+                   <TeleportAction>
+                      <Position>
+                         <LanePosition roadId="0" laneId="-1" offset="0" s="20" />
+                      </Position>
+                   </TeleportAction>
+                </PrivateAction>
+                <PrivateAction>
+                   <LongitudinalAction>
+                      <SpeedAction>
+                         <SpeedActionDynamics dynamicsShape="cubic" value="4" dynamicsDimension="time" />
+                         <SpeedActionTarget>
+                            <AbsoluteTargetSpeed value="10" />
+                         </SpeedActionTarget>
+                      </SpeedAction>
+                   </LongitudinalAction>
+                </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Lane offset story">
+         <ParameterDeclarations>
+            <ParameterDeclaration parameterType="string" name="owner" value="Ego" />
+         </ParameterDeclarations>
+         <Act name="Lane offset act">
+            <ManeuverGroup maximumExecutionCount="1" name="Lane offset maneuver group">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="$owner" />
+               </Actors>
+               <Maneuver name="Maneuver 1">
+                  <Event name="Event 1" maximumExecutionCount="1" priority="overwrite">
+                     <Action name="Speed action 2">
+                        <PrivateAction>
+                          <LongitudinalAction>
+                             <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="cubic" value="7" dynamicsDimension="time" />
+                                <SpeedActionTarget>
+                                   <AbsoluteTargetSpeed value="20" />
+                                </SpeedActionTarget>
+                             </SpeedAction>
+                          </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="Lane offset action 1">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneOffsetAction continuous="true">
+                                 <LaneOffsetTarget>
+                                    <AbsoluteTargetLaneOffset value="5.0" />
+                                 </LaneOffsetTarget>
+                                 <LaneOffsetActionDynamics maxLateralAcc="0.25" dynamicsShape="sinusoidal" />
+                              </LaneOffsetAction>
+                           </LateralAction>
+                        </PrivateAction>               
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Maneuver1Start" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="2" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="Maneuver 2">
+                  <Event name="Event 2" maximumExecutionCount="1" priority="overwrite">
+                     <Action name="Lane offset action 2">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneOffsetAction continuous="true">
+                                 <LaneOffsetTarget>
+                                    <AbsoluteTargetLaneOffset value="0.0" />
+                                 </LaneOffsetTarget>
+                                 <LaneOffsetActionDynamics maxLateralAcc="2.0" dynamicsShape="sinusoidal" />
+                              </LaneOffsetAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Maneuver2Start" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="4.0" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="ActStart" delay="0" conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="Stop condition" delay="4" conditionEdge="none">
+                <ByEntityCondition>
+                   <TriggeringEntities triggeringEntitiesRule="any">
+                      <EntityRef entityRef="Ego" />
+                   </TriggeringEntities>
+                   <EntityCondition>
+                      <SpeedCondition value="20.0" rule="greaterOrEqual" />
+                   </EntityCondition>
+                </ByEntityCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

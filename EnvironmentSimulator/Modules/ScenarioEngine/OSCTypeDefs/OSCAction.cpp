@@ -63,23 +63,23 @@ std::string StoryBoardElement::transition2str(StoryBoardElement::Transition tran
 }
 
 
-std::string OSCAction::basetype2str(BaseType type)
+std::string OSCAction::BaseType2Str()
 {
-	if (type == BaseType::GLOBAL)
+	if (base_type_ == BaseType::GLOBAL)
 	{
 		return "Global";
 	}
-	else if(type == BaseType::PRIVATE)
+	else if(base_type_ == BaseType::PRIVATE)
 	{
 		return "Private";
 	}
-	else if (type == BaseType::USER_DEFINED)
+	else if (base_type_ == BaseType::USER_DEFINED)
 	{
 		return "User defined";
 	}
 	else
 	{
-		LOG("Undefined Base Type: %d", type);
+		LOG("Undefined Base Type: %d", base_type_);
 	}
 
 	return "Undefined";

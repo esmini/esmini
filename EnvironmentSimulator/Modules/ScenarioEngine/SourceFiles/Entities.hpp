@@ -226,9 +226,9 @@ namespace scenarioengine
 		}
 		int GetAssignedControllerType();
 		int GetActivatedControllerType();
-		bool IsControllerActiveOnDomains(int domainMask);
-		bool IsControllerActiveOnAnyOfDomains(int domainMask);
-		bool IsControllerActive() { return IsControllerActiveOnAnyOfDomains(0xff); }
+		bool IsControllerActiveOnDomains(ControlDomains domainMask);
+		bool IsControllerActiveOnAnyOfDomains(ControlDomains domainMask);
+		bool IsControllerActive();
 		int GetControllerMode();
 		int GetId() { return id_; }
 		void SetHeadstartTime(double headstartTime) { headstart_time_ = headstartTime; }

@@ -29,12 +29,12 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.1_2', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('19.98.* Started LaneOffset with max lateral acc: 0.30.*', log))
+        self.assertTrue(re.search('19.99.* SwerveAction2 standbyState -> startTransition -> runningState.*', log))
 
         # Check vehicle state
         csv = generate_csv()
         self.assertTrue(re.search('\n22.17., 1, LeadVehicle, 412.83.*, -7.11.*, 0.00.*, 6.25.*, .*', csv))
-
+    
     def test_ALKS_Scenario_4_1_3_SideVehicle(self):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_3_SideVehicle_TEMPLATE.xosc'), COMMON_ARGS)
         
@@ -223,8 +223,10 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.6_2', log))
         
         # Check some scenario events
-        self.assertTrue(re.search('10.010.* SwerveEventStart == true, 10.0100 >= 10.00 edge: rising', log))
-        self.assertTrue(re.search('10.010: Started LaneOffset with max lateral acc: 0.10 -> duration: 14.9.* <=> distance: 248.3.*', log))
+        self.assertTrue(re.search('10.01.* SwerveEventStart == true, 10.0100 >= 10.00 edge: rising', log))
+        self.assertTrue(re.search('10.02.*: SwerveAction standbyState -> startTransition -> runningState', log))
+        self.assertTrue(re.search('24.93.*: SwerveEvent runningState -> endTransition -> completeState', log))
+
 
         # Check vehicle state
         csv = generate_csv()
