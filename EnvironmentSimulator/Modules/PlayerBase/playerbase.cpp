@@ -942,7 +942,7 @@ void ScenarioPlayer::UpdateCSV_Log()
 		//Log the extracted data of ego vehicle and additonal scenario vehicles
 		CSV_Log->LogVehicleData(isendline, scenarioEngine->getSimulationTime(), name_,
 			obj->id_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_,
-			pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetAccX(), pos.GetAccY(), pos.GetAccZ(),
+			pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetVelX(), pos.GetVelY(), pos.GetVelZ(), pos.GetAccX(), pos.GetAccY(), pos.GetAccZ(),
 			pos.GetS(), pos.GetT(), pos.GetH(), pos.GetHRate(), pos.GetHRelative(), pos.GetHRelativeDrivingDirection(),
 			pos.GetP(), pos.GetCurvature());
 	}
