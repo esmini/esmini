@@ -352,10 +352,10 @@ public:
 		int numvehicles, std::string csv_filename);
 
 	//Logging function called by VehicleLogger object using pass by value
-	void LogVehicleData(bool isendline, double timestamp, char const* name_, int id_, double speed_,
-		double wheel_angle_, double wheel_rot_, double posX_, double posY_, double posZ_, double accX_, double accY_,
-		double accZ_, double distance_road_, double distance_lanem_, double heading_, double heading_rate_,
-		double heading_angle_, double heading_angle_driving_direction_, double pitch_, double curvature_, ...);
+	void LogVehicleData(bool isendline, double timestamp, char const* name, int id, double speed,
+		double wheel_angle, double wheel_rot, double posX, double posY, double posZ, double velX, double velY,
+		double velZ, double accX, double accY, double accZ, double distance_road, double distance_lanem, double heading,
+		double heading_rate, double heading_angle, double heading_angle_driving_direction, double pitch, double curvature, ...);
 
 	void SetCallback(FuncPtr callback);
 
