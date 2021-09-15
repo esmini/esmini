@@ -1,5 +1,10 @@
 ## esmini release notes
 
+### 2021-09-15 Version 2.13.5
+
+- Stop conflicting actions when starting new ones (issues [#155](https://github.com/esmini/esmini/issues/155) and [#157](https://github.com/esmini/esmini/issues/157))
+- Add velocity to CSV log (issue [#156](https://github.com/esmini/esmini/issues/156))
+
 ### 2021-09-10 Version 2.13.4
 
 - Fix SetLanePos s truncation bug
