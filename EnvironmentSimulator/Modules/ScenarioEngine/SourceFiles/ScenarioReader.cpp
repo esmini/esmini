@@ -2117,6 +2117,18 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							action_follow_trajectory->name_.c_str());
 						action_follow_trajectory->timing_domain_ = FollowTrajectoryAction::TimingDomain::NONE;
 					}
+
+					// If trajectory contains timestamps and time reference it affects both lateral and longitudinal domains
+					// otherwise only lateral
+					if (action_follow_trajectory->timing_domain_ == FollowTrajectoryAction::TimingDomain::NONE)
+					{
+						action_follow_trajectory->domain_ = ControlDomains::DOMAIN_LAT;
+					}
+					else
+					{
+						action_follow_trajectory->domain_ = ControlDomains::DOMAIN_BOTH;
+					}
+
 					action = action_follow_trajectory;
 				}
 				else if (routingChild.name() == std::string("AcquirePositionAction"))
