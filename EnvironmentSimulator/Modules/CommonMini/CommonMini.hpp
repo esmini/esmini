@@ -120,6 +120,11 @@ double GetAngleSum(double angle1, double angle2);
 double GetAngleInInterval2PI(double angle);
 
 /**
+  Retrieve the angle in the interval [-PI, PI]
+*/
+double GetAngleInIntervalMinusPIPlusPI(double angle);
+
+/**
   Retrieve difference between two angles
 */
 double GetAngleDifference(double angle1, double angle2);

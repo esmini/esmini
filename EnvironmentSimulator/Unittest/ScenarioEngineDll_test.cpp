@@ -784,9 +784,10 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 	EXPECT_EQ(miscobj_y, 10);
 	EXPECT_EQ(miscobj_z, 0.0); // adjusted to the road z
 
-	EXPECT_EQ(miscobj_roll, 5.0);  // Aligned to the road (so if road roll is 1.0 total roll will be 6.0)
-	EXPECT_EQ(miscobj_pitch, 5.0); // Aligned to the road (so if road pitch is 1.0 total pitch will be 6.0)
-	EXPECT_EQ(miscobj_yaw, 5.0);
+	// Angles in OSI should be in range [-PI, PI]
+	EXPECT_EQ(miscobj_roll, 5.0 - 2 * M_PI);  // Aligned to the road (so if road roll is 1.0 total roll will be 6.0)
+	EXPECT_EQ(miscobj_pitch, 5.0 - 2 * M_PI); // Aligned to the road (so if road pitch is 1.0 total pitch will be 6.0)
+	EXPECT_EQ(miscobj_yaw, 5.0 - 2 * M_PI);
 }
 
 TEST(SetOSITimestampTest, TestGetAndSet)

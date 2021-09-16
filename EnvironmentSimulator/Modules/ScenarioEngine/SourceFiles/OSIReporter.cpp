@@ -442,7 +442,7 @@ int OSIReporter::UpdateOSIHostVehicleData(ObjectState *objectState)
 	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_x(objectState->state_.pos.GetAccX());
 	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_y(objectState->state_.pos.GetAccY());
 	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_acceleration()->set_z(objectState->state_.pos.GetAccZ());
-	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation()->set_yaw(objectState->state_.pos.GetH());
+	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetH()));
 	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation_rate()->set_yaw(objectState->state_.pos.GetHRate());
 	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_orientation_acceleration()->set_yaw(objectState->state_.pos.GetHAcc());
 	// obj_osi_internal.sv->mutable_host_vehicle_data()->mutable_location()->mutable_dimension()->set_height(objectState->state_.boundingbox.dimensions_.height_);
@@ -524,9 +524,9 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
 	obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ());
 
 	// Set OSI Stationary Object Orientation
-	obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(objectState->state_.pos.GetR());
-	obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(objectState->state_.pos.GetP());
-	obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(objectState->state_.pos.GetH());
+	obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetR()));
+	obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetP()));
+	obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetH()));
 
 	return 0;
 }
@@ -625,9 +625,9 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 	obj_osi_internal.mobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ());
 
 	// Set OSI Moving Object Orientation
-	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_roll(objectState->state_.pos.GetR());
-	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_pitch(objectState->state_.pos.GetP());
-	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_yaw(objectState->state_.pos.GetH());
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetR()));
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetP()));
+	obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetH()));
 	obj_osi_internal.mobj->mutable_base()->mutable_orientation_rate()->set_yaw(objectState->state_.pos.GetHRate());
 	obj_osi_internal.mobj->mutable_base()->mutable_orientation_rate()->set_pitch(objectState->state_.pos.GetPRate());
 	obj_osi_internal.mobj->mutable_base()->mutable_orientation_rate()->set_roll(objectState->state_.pos.GetRRate());
@@ -1831,8 +1831,8 @@ int OSIReporter::UpdateTrafficSignals()
 				{
 					osi3::TrafficLight * trafficLight = obj_osi_internal.gt->add_traffic_light();
 					trafficLight->mutable_id()->set_value(signal->GetId());
-					trafficLight->mutable_base()->mutable_orientation()->set_pitch(signal->GetPitch());
-					trafficLight->mutable_base()->mutable_orientation()->set_roll(signal->GetRoll());
+					trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
+					trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
 					trafficLight->mutable_base()->mutable_dimension()->set_height(signal->GetHeight());
 					trafficLight->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
 
@@ -1903,7 +1903,8 @@ int OSIReporter::UpdateTrafficSignals()
 					}
 
 					//Set Pithc, Roll, Height, Width
-					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_pitch(signal->GetPitch()); trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_roll(signal->GetRoll());
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
+					trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_dimension()->set_height(signal->GetHeight());
 					trafficSign->mutable_main_sign()->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
 
