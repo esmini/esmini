@@ -1,5 +1,10 @@
 ## esmini release notes
 
+### 2021-09-17 Version 2.13.6
+
+- Fix OSI angle ranges to [-pi, pi]
+  - current range [0, 2pi] is not aligned with OSI standard
+ 
 ### 2021-09-15 Version 2.13.5
 
 - Stop conflicting actions when starting new ones (issues [#155](https://github.com/esmini/esmini/issues/155) and [#157](https://github.com/esmini/esmini/issues/157))
