@@ -115,7 +115,7 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 			}
 
 			if ((new_sc.entityModel = viewer->AddEntityModel(filename, osg::Vec4(0.5, 0.5, 0.5, 1.0),
-				viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, state->info.name, &state->info.boundingbox)) == 0)
+				viewer::EntityModel::EntityType::VEHICLE, false, state->info.name, &state->info.boundingbox, EntityScaleMode::BB_TO_MODEL)) == 0)
 			{
 				return -1;
 			}
@@ -593,7 +593,7 @@ int main(int argc, char** argv)
 				c->entityModel->SetPosition(c->pos.x, c->pos.y, c->pos.z);
 				c->entityModel->SetRotation(c->pos.h, c->pos.p, c->pos.r);
 
-				if (c->entityModel->GetType() == viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
+				if (c->entityModel->GetType() == viewer::EntityModel::EntityType::VEHICLE)
 				{
 					((viewer::CarModel*)c->entityModel)->UpdateWheels(c->wheel_angle, c->wheel_rotation);
 				}

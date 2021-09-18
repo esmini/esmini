@@ -308,7 +308,7 @@ Vehicle *ScenarioReader::createRandomOSCVehicle(std::string name)
 	vehicle->name_ = name;
 	vehicle->category_ = Vehicle::Category::CAR;
 	vehicle->model_id_ = -1;
-	vehicle->model_filepath_ = "";
+	vehicle->model3d_ = "";
 
 	// Set some default bounding box just to avoid division-by-zero-problems
 	vehicle->boundingbox_ = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
@@ -426,7 +426,7 @@ void ScenarioReader::ParseOSCBoundingBox(OSCBoundingBox &boundingbox, pugi::xml_
 	}
 	else
 	{
-		// Fill empy values to indicate missing bounding box
+		// Fill empty values to indicate missing bounding box
 		boundingbox.center_.x_ = 0;
 		boundingbox.center_.y_ = 0;
 		boundingbox.center_.z_ = 0;
@@ -459,22 +459,27 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 		vehicle->category_ == Vehicle::Category::MOTORBIKE)
 	{
 		vehicle->model_id_ = 9; // magic number for cyclist, set as default
-		vehicle->model_filepath_ = "cyclist.osgb";
+		vehicle->model3d_ = "cyclist.osgb";
 	}
 	else
 	{
 		// magic numbers: If first vehicle make it white, else red
 		vehicle->model_id_ = entities_->object_.size() == 0 ? 0 : 2;
-		vehicle->model_filepath_ = entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb";
+		vehicle->model3d_ = entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb";
 	}
 
 	ParseOSCProperties(vehicle->properties_, vehicleNode);
 
-	// Overwrite default values if properties set
-	if (vehicle->properties_.file_.filepath_ != "")
+	// Overwrite default values if 3D model specified
+	if (!vehicleNode.attribute("model3d").empty())
 	{
-		vehicle->model_filepath_ = vehicle->properties_.file_.filepath_;
+		vehicle->model3d_ = parameters.ReadAttribute(vehicleNode, "model3d");
 	}
+	else if (vehicle->properties_.file_.filepath_ != "")
+	{
+		vehicle->model3d_ = vehicle->properties_.file_.filepath_;
+	}
+
 	std::string modelIdStr = vehicle->properties_.GetValueStr("model_id");
 	if (!modelIdStr.empty())
 	{
@@ -484,6 +489,27 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	OSCBoundingBox boundingbox = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 	ParseOSCBoundingBox(boundingbox, vehicleNode);
 	vehicle->boundingbox_ = boundingbox;
+
+	std::string scaleModeStr = vehicle->properties_.GetValueStr("scaleMode");
+	if (!scaleModeStr.empty())
+	{
+		if (scaleModeStr == "BBToModel")
+		{
+			vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
+		}
+		else if (scaleModeStr == "ModelToBB")
+		{
+			vehicle->scaleMode_ = EntityScaleMode::MODEL_TO_BB;
+		}
+		else if (scaleModeStr == "None")
+		{
+			vehicle->scaleMode_ = EntityScaleMode::NONE;
+		}
+		else
+		{
+			LOG_AND_QUIT("Unrecognized entity scale mode: %s", scaleModeStr.c_str());
+		}
+	}
 
 	parameters.RestoreParameterDeclarations();
 
@@ -499,6 +525,12 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 		return 0;
 	}
 
+	// First check for parameter declaration
+	pugi::xml_node paramDecl = pedestrianNode.child("ParameterDeclarations");
+
+	parameters.CreateRestorePoint();
+	parameters.addParameterDeclarations(paramDecl);
+
 	pedestrian->name_ = parameters.ReadAttribute(pedestrianNode, "name");
 	pedestrian->SetCategory(parameters.ReadAttribute(pedestrianNode, "pedestrianCategory"));
 	pedestrian->model_ = parameters.ReadAttribute(pedestrianNode, "pedestrianCategory");
@@ -513,26 +545,54 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 	if (pedestrian->category_ == Pedestrian::Category::ANIMAL)
 	{
 		pedestrian->model_id_ = 8; // magic number for moose, set as default
-		pedestrian->model_filepath_ = "moose_cc0.osgb";
+		pedestrian->model3d_ = "moose_cc0.osgb";
 	}
 	else
 	{
 		pedestrian->model_id_ = 7; // magic number for pedestrian, set as default
-		pedestrian->model_filepath_ = "walkman.osgb";
+		pedestrian->model3d_ = "walkman.osgb";
 	}
 
 	ParseOSCProperties(pedestrian->properties_, pedestrianNode);
 
-	// Overwrite default values if properties set
-	if (pedestrian->properties_.file_.filepath_ != "")
+	// Overwrite default values if 3D model specified
+	if (!pedestrianNode.attribute("model3d").empty())
 	{
-		pedestrian->model_filepath_ = pedestrian->properties_.file_.filepath_;
+		pedestrian->model3d_ = parameters.ReadAttribute(pedestrianNode, "model3d");
 	}
+	else if (pedestrian->properties_.file_.filepath_ != "")
+	{
+		pedestrian->model3d_ = pedestrian->properties_.file_.filepath_;
+	}
+
 	std::string modelIdStr = pedestrian->properties_.GetValueStr("model_id");
 	if (!modelIdStr.empty())
 	{
 		pedestrian->model_id_ = strtoi(modelIdStr);
 	}
+
+	std::string scaleModeStr = pedestrian->properties_.GetValueStr("scaleMode");
+	if (!scaleModeStr.empty())
+	{
+		if (scaleModeStr == "BBToModel")
+		{
+			pedestrian->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
+		}
+		else if (scaleModeStr == "ModelToBB")
+		{
+			pedestrian->scaleMode_ = EntityScaleMode::MODEL_TO_BB;
+		}
+		else if (scaleModeStr == "None")
+		{
+			pedestrian->scaleMode_ = EntityScaleMode::NONE;
+		}
+		else
+		{
+			LOG_AND_QUIT("Unrecognized entity scale mode: %s", scaleModeStr.c_str());
+		}
+	}
+
+	parameters.RestoreParameterDeclarations();
 
 	return pedestrian;
 }
@@ -546,6 +606,12 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
 		return 0;
 	}
 
+	// First check for parameter declaration
+	pugi::xml_node paramDecl = miscObjectNode.child("ParameterDeclarations");
+
+	parameters.CreateRestorePoint();
+	parameters.addParameterDeclarations(paramDecl);
+
 	miscObject->name_ = parameters.ReadAttribute(miscObjectNode, "name");
 	miscObject->SetCategory(parameters.ReadAttribute(miscObjectNode, "MiscObjectCategory"));
 	miscObject->model_ = parameters.ReadAttribute(miscObjectNode, "MiscObjectCategory");
@@ -558,16 +624,44 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
 
 	ParseOSCProperties(miscObject->properties_, miscObjectNode);
 
-	// Overwrite default values if properties set
-	if (miscObject->properties_.file_.filepath_ != "")
+	// Overwrite default values if 3D model specified
+	if (!miscObjectNode.attribute("model3d").empty())
 	{
-		miscObject->model_filepath_ = miscObject->properties_.file_.filepath_;
+		miscObject->model3d_ = parameters.ReadAttribute(miscObjectNode, "model3d");
 	}
+	else if (miscObject->properties_.file_.filepath_ != "")
+	{
+		miscObject->model3d_ = miscObject->properties_.file_.filepath_;
+	}
+
 	std::string modelIdStr = miscObject->properties_.GetValueStr("model_id");
 	if (!modelIdStr.empty())
 	{
 		miscObject->model_id_ = strtoi(modelIdStr);
 	}
+
+	std::string scaleModeStr = miscObject->properties_.GetValueStr("scaleMode");
+	if (!scaleModeStr.empty())
+	{
+		if (scaleModeStr == "BBToModel")
+		{
+			miscObject->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
+		}
+		else if (scaleModeStr == "ModelToBB")
+		{
+			miscObject->scaleMode_ = EntityScaleMode::MODEL_TO_BB;
+		}
+		else if (scaleModeStr == "None")
+		{
+			miscObject->scaleMode_ = EntityScaleMode::NONE;
+		}
+		else
+		{
+			LOG_AND_QUIT("Unrecognized entity scale mode: %s", scaleModeStr.c_str());
+		}
+	}
+
+	parameters.RestoreParameterDeclarations();
 
 	return miscObject;
 }

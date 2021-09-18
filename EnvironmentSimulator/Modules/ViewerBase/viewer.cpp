@@ -584,7 +584,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 
 EntityModel::EntityModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
 	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node,
-	osg::Vec4 trail_color,std::string name)
+	osg::Vec4 trail_color, std::string name)
 {
 	if (!group)
 	{
@@ -606,36 +606,12 @@ EntityModel::EntityModel(osgViewer::Viewer *viewer, osg::ref_ptr<osg::Group> gro
 	txNode_->setName(name);
 	parent_->addChild(txNode_);
 
-	// Find boundingbox
-	bb_ = 0;
-	for (int i = 0; i < (int)group->getNumChildren(); i++)
-	{
-		if (group->getChild(i)->getName() == "BoundingBox")
-		{
-			bb_ = (osg::Group*)group->getChild(i);
-			break;
-		}
-	}
-
 	// Add trajectory placeholder
 	trajectory_ = new Trajectory(traj_parent, viewer);
 
 	viewer_ = viewer;
 	state_set_ = 0;
 	blend_color_ = 0;
-
-	// Extract boundingbox of car to calculate size and center
-	osg::ComputeBoundsVisitor cbv;
-	txNode_->accept(cbv);
-	osg::BoundingBox boundingBox = cbv.getBoundingBox();
-	const osg::MatrixList& m = txNode_->getWorldMatrices();
-	osg::Vec3 minV = boundingBox._min * m.front();
-	osg::Vec3 maxV = boundingBox._max * m.front();
-
-	size_x = maxV.x() - minV.x();
-	size_y = maxV.y() - minV.y();
-	center_x = (maxV.x() + minV.x()) / 2;
-	center_y = (maxV.y() + minV.y()) / 2;
 
 	// Prepare trail of dots
 	trail_ = new PolyLine(trail_parent, 0, trail_color, TRAIL_WIDTH, TRAIL_DOT3D_SIZE, true);
@@ -650,7 +626,8 @@ EntityModel::~EntityModel()
 
 
 CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
-	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color, std::string name):
+	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node,
+	osg::Vec4 trail_color, std::string name):
 	EntityModel(viewer, group, parent, trail_parent, traj_parent, dot_node, trail_color, name)
 {
 	steering_sensor_ = 0;
@@ -1215,43 +1192,98 @@ void Viewer::UpdateCameraFOV()
 }
 
 EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type,
-	bool road_sensor, std::string name, OSCBoundingBox* boundingBox)
+	bool road_sensor, std::string name, OSCBoundingBox* boundingBox, EntityScaleMode scaleMode)
 {
 	// Load 3D model
-	std::string path = modelFilepath;
-	osg::ref_ptr<osg::Group> group = 0;
-
+	osg::ref_ptr<osg::Group> group = new osg::Group;
+	osg::ref_ptr<osg::Group> modelgroup = nullptr;
+	osg::ref_ptr<osg::Group> bbGroup = nullptr;
+	osg::BoundingBox modelBB;
 	std::vector<std::string> file_name_candidates;
-	file_name_candidates.push_back(path);
-	file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", path));
-	// Finally check registered paths
-	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+
+	// First try to load 3d model
+	if (!modelFilepath.empty())
 	{
-		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], path));
-		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], std::string("../models/" + path)));
-	}
-	for (size_t i = 0; i < file_name_candidates.size(); i++)
-	{
-		if (FileExists(file_name_candidates[i].c_str()))
+		file_name_candidates.push_back(modelFilepath);
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path_) + "/../resources/models", modelFilepath));
+		// Finally check registered paths
+		for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 		{
-			if (group = LoadEntityModel(file_name_candidates[i].c_str()))
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], modelFilepath));
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], std::string("../models/" + modelFilepath)));
+		}
+		for (size_t i = 0; i < file_name_candidates.size(); i++)
+		{
+			if (FileExists(file_name_candidates[i].c_str()))
 			{
-				break;
+				if (modelgroup = LoadEntityModel(file_name_candidates[i].c_str(), modelBB))
+				{
+					break;
+				}
 			}
 		}
 	}
 
-	if (boundingBox || group == 0)
-	{
-		// Create a bounding box visual representation
+	// Then create a bounding box visual representation
+	bbGroup = new osg::Group;
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 
-		if (path == "")
+	// Set color of vehicle based on its index
+	double* color;
+	double b = 1.5;  // brighness
+	int index = entities_.size() % 4;
+
+	if (index == 0) color = color_white;
+	else if (index == 1) color = color_red;
+	else if (index == 2) color = color_blue;
+	else color = color_yellow;
+
+	osg::Material* material = new osg::Material();
+	material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+	material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+
+	if (scaleMode == EntityScaleMode::NONE || scaleMode == EntityScaleMode::MODEL_TO_BB)
+	{
+		if (boundingBox != nullptr &&
+			!(boundingBox->dimensions_.length_ < SMALL_NUMBER &&
+			 boundingBox->dimensions_.width_ < SMALL_NUMBER &&
+			 boundingBox->dimensions_.height_ < SMALL_NUMBER))
+		{
+			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(
+				boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
+				boundingBox->dimensions_.length_,
+				boundingBox->dimensions_.width_,
+				boundingBox->dimensions_.height_)));
+		}
+		else if (scaleMode == EntityScaleMode::NONE)
+		{
+			// No bounding box specified. Create a bounding box of typical car dimension.
+			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(1.5, 0.0, 0.75), 4.5, 1.8, 1.5)));
+		}
+		else
+		{
+			LOG_AND_QUIT("Request to scale model (%s / %s) to non existing or 0 size bounding box",
+				name.c_str(), modelFilepath.c_str());
+		}
+	}
+
+	if (modelgroup == nullptr)
+	{
+		if (scaleMode == EntityScaleMode::BB_TO_MODEL)
+		{
+			LOG_AND_QUIT("Request to scale bounding box to non existing model (%s / %s)",
+				name.c_str(), modelFilepath.c_str());
+		}
+
+		// Create a dummy cuboid
+		if (modelFilepath.empty())
 		{
 			LOG("No filename specified for model! - creating a dummy model");
 		}
-		else if (group == 0)
+		else
 		{
-			LOG("Failed to load visual model %s. %s", path.c_str(), file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
+			LOG("Failed to load visual model %s. %s", modelFilepath.c_str(),
+				file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
 			for (size_t i = 1; i < file_name_candidates.size(); i++)
 			{
 				LOG("    %s", file_name_candidates[i].c_str());
@@ -1259,93 +1291,90 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_c
 			LOG("Creating a dummy model instead");
 		}
 
-		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-		geode->addDrawable(new osg::ShapeDrawable(new osg::Box()));
-
-		osg::ref_ptr<osg::Group> bbGroup = new osg::Group;
-		osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
-
-		osg::Material* material = new osg::Material();
-
-		// Set color of vehicle based on its index
-		double* color;
-		double b = 1.5;  // brighness
-		int index = entities_.size() % 4;
-
-		if (index == 0) color = color_white;
-		else if (index == 1) color = color_red;
-		else if (index == 2) color = color_blue;
-		else color = color_yellow;
-
-		material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
-		material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
-
-		if (group == 0)
-		{
-			// If no model loaded, make a shaded copy of bounding box as model
-			osg::ref_ptr<osg::Geode> geodeCopy = dynamic_cast<osg::Geode*>(geode->clone(osg::CopyOp::DEEP_COPY_ALL));
-			group = new osg::Group;
-			tx->addChild(geodeCopy);
-			geodeCopy->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
-		}
-
-		// Set dimensions of the entity "box"
-		if (boundingBox)
-		{
-			tx->setScale(osg::Vec3(boundingBox->dimensions_.length_, boundingBox->dimensions_.width_, boundingBox->dimensions_.height_));
-			tx->setPosition(osg::Vec3(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_));
-
-			// Draw only wireframe
-			osg::PolygonMode* polygonMode = new osg::PolygonMode;
-			polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-			osg::ref_ptr<osg::StateSet> stateset = geode->getOrCreateStateSet(); // Get the StateSet of the group
-			stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-			stateset->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-			geode->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
-
-			osg::ref_ptr<osg::Geode> center = new osg::Geode;
-			center->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0, 0, 0), 0.2)));
-
-			center->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
-			bbGroup->addChild(center);
-		}
-		else
-		{
-			// Scale to something car-ish
-			tx->setScale(osg::Vec3(4.5, 1.8, 1.5));
-			tx->setPosition(osg::Vec3(1.5, 0, 0.75));
-		}
-		tx->addChild(geode);
-		tx->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
-		tx->getOrCreateStateSet()->setAttribute(material);
-		bbGroup->setName("BoundingBox");
-		bbGroup->addChild(tx);
-
-		group->addChild(bbGroup);
-		group->setName(name);
+		// If no model loaded, make a shaded copy of bounding box as model
+		osg::ref_ptr<osg::Geode> geodeCopy = dynamic_cast<osg::Geode*>(geode->clone(osg::CopyOp::DEEP_COPY_ALL));
+		geodeCopy->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
+		modelgroup = new osg::Group;
+		modelgroup->addChild(geodeCopy);
+		modelgroup->getOrCreateStateSet()->setAttribute(material);
 	}
 
-	EntityModel* model;
-	if (type == EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
+	if (scaleMode == EntityScaleMode::BB_TO_MODEL)
 	{
-		model = new CarModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, trail_color, name);
+		if (modelgroup != nullptr)
+		{
+			// case 1
+			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(modelBB.center(),
+				modelBB._max.x() - modelBB._min.x(),
+				modelBB._max.y() - modelBB._min.y(),
+				modelBB._max.z() - modelBB._min.z())));
+		}
+	}
+	else if (scaleMode == EntityScaleMode::MODEL_TO_BB)
+	{
+		if (modelgroup != nullptr)
+		{
+			// Scale loaded 3d model
+			osg::ref_ptr<osg::PositionAttitudeTransform> modeltx = new osg::PositionAttitudeTransform;
+			modeltx->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
+
+			double sx = boundingBox->dimensions_.length_ / (modelBB._max.x() - modelBB._min.x());
+			double sy = boundingBox->dimensions_.width_ / (modelBB._max.y() - modelBB._min.y());
+			double sz = boundingBox->dimensions_.height_ / (modelBB._max.z() - modelBB._min.z());
+
+			modeltx->setPosition(osg::Vec3(
+				boundingBox->center_.x_ - sx * modelBB.center().x(),
+				boundingBox->center_.y_ - sy * modelBB.center().y(),
+				boundingBox->center_.z_ - sz * modelBB.center().z()));
+			modeltx->setScale(osg::Vec3(sx, sy, sz));
+
+			// Put transform node under modelgroup
+			modeltx->addChild(modelgroup);
+			modelgroup = (osg::Group*)modeltx;
+		}
+	}
+
+	// Draw only wireframe
+	osg::PolygonMode* polygonMode = new osg::PolygonMode;
+	polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+	osg::ref_ptr<osg::StateSet> stateset = geode->getOrCreateStateSet(); // Get the StateSet of the group
+	stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+	stateset->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	geode->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
+
+	osg::ref_ptr<osg::Geode> center = new osg::Geode;
+	center->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0, 0, 0), 0.2)));
+	center->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
+
+	bbGroup->addChild(geode);
+	bbGroup->addChild(center);
+	bbGroup->setName("BoundingBox");
+
+	group->addChild(bbGroup);
+	group->setName(name);
+	group->addChild(modelgroup);
+
+	EntityModel* emodel;
+	if (type == EntityModel::EntityType::VEHICLE)
+	{
+		emodel = new CarModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, trail_color, name);
 	}
 	else
 	{
-		model = new EntityModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, trail_color, name);
+		emodel = new EntityModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, trail_color, name);
 	}
 
-	model->state_set_ = model->lod_->getOrCreateStateSet(); // Creating material
-	model->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
-	model->state_set_->setAttributeAndModes(model->blend_color_);
-	model->blend_color_->setDataVariance(osg::Object::DYNAMIC);
+	emodel->state_set_ = emodel->lod_->getOrCreateStateSet(); // Creating material
+	emodel->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
+	emodel->state_set_->setAttributeAndModes(emodel->blend_color_);
+	emodel->blend_color_->setDataVariance(osg::Object::DYNAMIC);
 
 	osg::BlendFunc* bf = new osg::BlendFunc(osg::BlendFunc::CONSTANT_ALPHA, osg::BlendFunc::ONE_MINUS_CONSTANT_ALPHA);
-	model->state_set_->setAttributeAndModes(bf);
-	model->state_set_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
-	model->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+	emodel->state_set_->setAttributeAndModes(bf);
+	emodel->state_set_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+	emodel->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 
-	entities_.push_back(model);
+	entities_.push_back(emodel);
 
 	// Focus on first added car
 	if (entities_.size() == 1)
@@ -1356,7 +1385,7 @@ EntityModel* Viewer::AddEntityModel(std::string modelFilepath, osg::Vec4 trail_c
 		nodeTrackerManipulator_->setTrackNode(entities_.back()->txNode_);
 	}
 
-	if (type == EntityModel::EntityType::ENTITY_TYPE_VEHICLE)
+	if (type == EntityModel::EntityType::VEHICLE)
 	{
 		CarModel* vehicle = (CarModel*)entities_.back();
 		CreateRoadSensors(vehicle);
@@ -1410,7 +1439,7 @@ void Viewer::RemoveCar(std::string name)
 	}
 }
 
-osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char *filename)
+osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char *filename, osg::BoundingBox &bb)
 {
 	osg::ref_ptr<osg::PositionAttitudeTransform> shadow_tx = 0;
 	osg::ref_ptr<osg::Node> node;
@@ -1424,13 +1453,13 @@ osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char *filename)
 
 	osg::ComputeBoundsVisitor cbv;
 	node->accept(cbv);
-	osg::BoundingBox boundingBox = cbv.getBoundingBox();
+	bb = cbv.getBoundingBox();
 
 	double xc, yc, dx, dy;
-	dx = boundingBox._max.x() - boundingBox._min.x();
-	dy = boundingBox._max.y() - boundingBox._min.y();
-	xc = (boundingBox._max.x() + boundingBox._min.x()) / 2;
-	yc = (boundingBox._max.y() + boundingBox._min.y()) / 2;
+	dx = bb._max.x() - bb._min.x();
+	dy = bb._max.y() - bb._min.y();
+	xc = (bb._max.x() + bb._min.x()) / 2;
+	yc = (bb._max.y() + bb._min.y()) / 2;
 
 	if (!shadow_node_)
 	{

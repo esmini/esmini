@@ -180,25 +180,22 @@ namespace viewer
 	{
 	public:
 
-		typedef enum {
-			ENTITY_TYPE_VEHICLE,
-			ENTITY_TYPE_OTHER
-		} EntityType;
+		enum class EntityType
+		{
+			VEHICLE,
+			OTHER
+		};
 
 		osg::ref_ptr<osg::Group> group_;
+		osg::ref_ptr<osg::Group> model_;
 		osg::ref_ptr<osg::LOD> lod_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
-		osg::ref_ptr<osg::Group> bb_;
 		osg::Quat quat_;
 		osg::ref_ptr<osg::Group> parent_;
 
-		double size_x;
-		double size_y;
-		double center_x;
-		double center_y;
 		Trajectory* trajectory_;
-		static const int entity_type_ = ENTITY_TYPE_OTHER;
-		virtual int GetType() { return entity_type_; }
+		static const EntityType entity_type_ = EntityType::OTHER;
+		virtual EntityType GetType() { return entity_type_; }
 
 		std::string name_;
 		std::string filename_;
@@ -229,8 +226,8 @@ namespace viewer
 		PointSensor* lane_sensor_;
 		PointSensor* trail_sensor_;
 		PointSensor* steering_sensor_;
-		static const int entity_type_ = ENTITY_TYPE_VEHICLE;
-		virtual int GetType() { return entity_type_; }
+		static const EntityType entity_type_ = EntityType::VEHICLE;
+		virtual EntityType GetType() { return entity_type_; }
 
 		CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group>
 			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color, std::string name);
@@ -330,11 +327,11 @@ namespace viewer
 		void SetVehicleInFocus(int idx);
 		int GetEntityInFocus() { return currentCarInFocus_; }
 		EntityModel* AddEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type,
-			bool road_sensor, std::string name, OSCBoundingBox *boundingBox);
+			bool road_sensor, std::string name, OSCBoundingBox *boundingBox, EntityScaleMode scaleMode = EntityScaleMode::NONE);
 		void RemoveCar(std::string name);
 		int LoadShadowfile(std::string vehicleModelFilename);
 		int AddEnvironment(const char* filename);
-		osg::ref_ptr<osg::Group> LoadEntityModel(const char *filename);
+		osg::ref_ptr<osg::Group> LoadEntityModel(const char *filename, osg::BoundingBox& bb);
 		void UpdateSensor(PointSensor *sensor);
 		void SensorSetPivotPos(PointSensor *sensor, double x, double y, double z);
 		void SensorSetTargetPos(PointSensor *sensor, double x, double y, double z);

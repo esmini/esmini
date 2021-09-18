@@ -724,7 +724,7 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth)
 	EXPECT_EQ(ego_zoffset, std::get<3>(GetParam()).centerOffsetZ);
 }
 
-INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetGroundTruthTests, ::testing::Values(std::make_tuple("../../../resources/xosc/cut-in.xosc", 14, 2, bounding_box{5.0f, 2.0f, 1.8f, 1.4f, 0.0f, 0.9f}), std::make_tuple("../../../resources/xosc/straight_500m.xosc", 6, 2, bounding_box{5.0f, 2.0f, 1.8f, 1.4f, 0.0f, 0.9f}), std::make_tuple("../../../resources/xosc/highway_merge.xosc", 33, 6, bounding_box{5.0f, 2.0f, 1.8f, 1.4f, 0.0f, 0.9f})));
+INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetGroundTruthTests, ::testing::Values(std::make_tuple("../../../resources/xosc/cut-in.xosc", 14, 2, bounding_box{5.04f, 2.0f, 1.5f, 1.4f, 0.0f, 0.75f}), std::make_tuple("../../../resources/xosc/straight_500m.xosc", 6, 2, bounding_box{5.0f, 2.0f, 1.8f, 1.4f, 0.0f, 0.9f}), std::make_tuple("../../../resources/xosc/highway_merge.xosc", 33, 6, bounding_box{5.04f, 2.0f, 1.5f, 1.4f, 0.0f, 0.75f})));
 // scenario_file_name, number_of_lanes, number_of_objects, ego_bounding_box
 
 TEST(GetGroundTruthTests, receive_GroundTruth_no_init)

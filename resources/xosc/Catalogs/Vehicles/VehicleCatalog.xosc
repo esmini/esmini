@@ -5,13 +5,13 @@
                date="2018-11-8T17:00:00"
                author="Erik Gunnarsson"/>
    <Catalog name="VehicleCatalog">
-      <Vehicle name="car_white" vehicleCategory="car">
+      <Vehicle name="car_white" vehicleCategory="car" model3d="../models/car_white.osgb">
          <ParameterDeclarations>
             <ParameterDeclaration name="EgoModelId" parameterType="integer" value="0"/>
          </ParameterDeclarations>
          <BoundingBox>
-            <Center x="1.4" y="0.0" z="0.9"/>
-            <Dimensions width="2.0" length="5.0" height="1.8"/>
+            <Center x="1.4" y="0.0" z="0.75"/>
+            <Dimensions width="2.0" length="5.04" height="1.5"/>
          </BoundingBox>
          <Performance maxSpeed="69" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
@@ -27,14 +27,15 @@
                       positionZ="0.4"/>
          </Axles>
          <Properties>
-            <File filepath="../models/car_white.osgb"/>
             <Property name="model_id" value="$EgoModelId"/>
+            <!-- Scale modes: None, BBToModel, ModelToBB -->
+            <Property name="scaleMode" value="BBToModel"/>
          </Properties>
       </Vehicle>
-      <Vehicle name="car_blue" vehicleCategory="car">
+      <Vehicle name="car_blue" vehicleCategory="car" model3d="../models/car_blue.osgb">
          <BoundingBox>
-            <Center x="1.4" y="0.0" z="0.9"/>
-            <Dimensions width="2.0" length="5.0" height="1.8"/>
+            <Center x="1.3" y="0.0" z="0.75"/>
+            <Dimensions width="1.8" length="4.5" height="1.5"/>
          </BoundingBox>
          <Performance maxSpeed="69" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
@@ -52,14 +53,16 @@
          <Properties>
             <File filepath="../models/car_blue.osgb"/>
             <Property name="model_id" value="1"/>
+            <!-- Scale modes: None, BBToModel, ModelToBB -->
+            <Property name="scaleMode" value="ModelToBB"/>  
             <Property name="dummy" value="2"/>
             <Property name="superdummy" value="3"/>
          </Properties>
       </Vehicle>
-      <Vehicle name="car_red" vehicleCategory="car">
+      <Vehicle name="car_red" vehicleCategory="car" model3d="../models/car_red.osgb">
          <BoundingBox>
-            <Center x="1.3" y="0.0" z="0.8"/>
-            <Dimensions width="1.8" length="4.5" height="1.5"/>
+            <Center x="1.45" y="0.0" z="0.75"/>
+            <Dimensions width="2.0" length="5.04" height="1.5"/>
          </BoundingBox>
          <Performance maxSpeed="70" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
@@ -75,14 +78,15 @@
                       positionZ="0.4"/>
          </Axles>
          <Properties>
-            <File filepath="../models/car_red.osgb"/>
             <Property name="model_id" value="2"/>
+            <!-- Scale modes: None, BBToModel, ModelToBB -->
+            <Property name="scaleMode" value="BBToModel"/>                
          </Properties>
       </Vehicle>
       <Vehicle name="car_yellow" vehicleCategory="car">
          <BoundingBox>
-            <Center x="1.3" y="0.0" z="0.8"/>
-            <Dimensions width="1.8" length="4.5" height="1.5"/>
+            <Center x="1.6" y="0.0" z="0.75"/>
+            <Dimensions width="2.5" length="6.04" height="1.5"/>
          </BoundingBox>
          <Performance maxSpeed="70" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
@@ -99,13 +103,15 @@
          </Axles>
          <Properties>
             <File filepath="../models/car_yellow.osgb"/>
+            <!-- Scale modes: None, BBToModel, ModelToBB -->
+            <Property name="scaleMode" value="ModelToBB"/>       
             <Property name="model_id" value="3"/>
          </Properties>
       </Vehicle>
-      <Vehicle name="truck_yellow" vehicleCategory="truck">
+      <Vehicle name="truck_yellow" vehicleCategory="truck" model3d="../models/truck_yellow.osgb">
          <BoundingBox>
             <Center x="1.3" y="0.0" z="0.8"/>
-            <Dimensions width="1.8" length="4.5" height="1.5"/>
+            <Dimensions width="1.7" length="4.0" height="1.5"/>
          </BoundingBox>
          <Performance maxSpeed="70" maxDeceleration="30" maxAcceleration="10"/>
          <Axles>
@@ -121,11 +127,12 @@
                       positionZ="0.4"/>
          </Axles>
          <Properties>
-            <File filepath="../models/truck_yellow.osgb"/>
+            <!-- Scale modes: None, BBToModel, ModelToBB -->
+            <Property name="scaleMode" value="BBToModel"/>              
             <Property name="model_id" value="4"/>
          </Properties>
       </Vehicle>
-      <Vehicle name="van_red" vehicleCategory="truck">
+      <Vehicle name="van_red" vehicleCategory="truck" model3d="../models/van_red.osgb">
          <BoundingBox>
             <Center x="1.3" y="0.0" z="0.8"/>
             <Dimensions width="1.8" length="4.5" height="1.5"/>
@@ -144,11 +151,12 @@
                       positionZ="0.4"/>
          </Axles>
          <Properties>
-            <File filepath="../models/van_red.osgb"/>
+            <!-- Scale modes: None, BBToModel, ModelToBB -->
+            <Property name="scaleMode" value="BBToModel"/>  
             <Property name="model_id" value="5"/>
          </Properties>
       </Vehicle>
-      <Vehicle name="bus_blue" vehicleCategory="bus">
+      <Vehicle name="bus_blue" vehicleCategory="bus" model3d="../models/bus_blue.osgb">
          <BoundingBox>
             <Center x="1.3" y="0.0" z="0.8"/>
             <Dimensions width="1.8" length="4.5" height="1.5"/>
@@ -167,11 +175,12 @@
                       positionZ="0.4"/>
          </Axles>
          <Properties>
-            <File filepath="../models/bus_blue.osgb"/>
+            <!-- Scale modes: None, BBToModel, ModelToBB -->
+            <Property name="scaleMode" value="BBToModel"/>           
             <Property name="model_id" value="6"/>
          </Properties>
       </Vehicle>
-      <Vehicle name="bicycle" vehicleCategory="bicycle">
+      <Vehicle name="bicycle" vehicleCategory="bicycle" model3d="../models/cyclist.osgb">
          <BoundingBox>
             <Center x="0" y="0" z="0.85"/>
             <Dimensions width="0.5" length="1.8" height="1.7"/>
@@ -182,8 +191,9 @@
             <RearAxle maxSteering="30" wheelDiameter="0.7" trackWidth="0.7" positionX="0" positionZ="0.35"/>         
          </Axles>
          <Properties>
-            <File filepath="../models/cyclist.osgb"/>
             <Property name="model_id" value="9"/>
+            <!-- Scale modes: None, BBToModel, ModelToBB -->
+            <Property name="scaleMode" value="BBToModel"/>                   
          </Properties>
       </Vehicle>
    </Catalog>
