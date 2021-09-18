@@ -198,7 +198,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				car_->heading_init = car_->pos->GetHRelative();
 
 				if ((car_->model = viewer->AddEntityModel(carModelsFiles_[carModelID], osg::Vec4(0.5, 0.5, 0.5, 1.0),
-					viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, "", 0)) == 0)
+					viewer::EntityModel::EntityType::VEHICLE, false, "", 0, EntityScaleMode::BB_TO_MODEL)) == 0)
 				{
 					return -1;
 				}
@@ -235,7 +235,7 @@ int SetupCarsSpecial(roadmanager::OpenDrive* odrManager, viewer::Viewer* viewer)
 	car_->heading_init = car_->pos->GetHRelative();
 
 	if ((car_->model = viewer->AddEntityModel(carModelsFiles_[0], osg::Vec4(0.5, 0.5, 0.5, 1.0),
-		viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, "", 0)) == 0)
+		viewer::EntityModel::EntityType::VEHICLE, false, "", 0)) == 0)
 	{
 		return -1;
 	}

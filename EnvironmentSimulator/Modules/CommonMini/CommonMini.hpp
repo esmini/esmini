@@ -84,6 +84,13 @@ enum class ControlDomains
 	DOMAIN_BOTH = 3  // can also be interpreted as bitwise OR: DIM_LONG | DIM_LAT
 };
 
+enum class EntityScaleMode
+{
+	NONE,
+	BB_TO_MODEL,  // Scale bounding box to 3D model
+	MODEL_TO_BB,  // Scale 3D model to specified or generated bounding box
+};
+
 std::string ControlDomain2Str(ControlDomains domains);
 
 // Useful operations

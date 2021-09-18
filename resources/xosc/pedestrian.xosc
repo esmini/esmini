@@ -30,14 +30,16 @@
            <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
        </ScenarioObject>
        <ScenarioObject name="pedestrian_adult">
-          <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="pedestrian">
+           <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+          <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="pedestrian" model3d="../models/walkman.osgb">
              <ParameterDeclarations/>
              <BoundingBox>
                 <Center x="0.06" y="0.0" z="0.923"/>
                 <Dimensions height="1.8" length="0.6" width="0.5"/>
              </BoundingBox>
              <Properties>
-                <File filepath="../models/walkman.osgb"/>
+                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                <Property name="scaleMode" value="BBToModel"/>  
              </Properties>
           </Pedestrian>
        </ScenarioObject>

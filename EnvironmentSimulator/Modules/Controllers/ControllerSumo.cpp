@@ -125,7 +125,7 @@ void ControllerSumo::Step(double timeStep)
 				LOG("Adding new vehicle: %s", deplist[i].c_str());
 				vehicle->name_ = deplist[i];
 				vehicle->controller_ = this;
-				vehicle->model_filepath_ = template_vehicle_->model_filepath_;
+				vehicle->model3d_ = template_vehicle_->model3d_;
 				entities_->addObject(vehicle);
 			}
 		}

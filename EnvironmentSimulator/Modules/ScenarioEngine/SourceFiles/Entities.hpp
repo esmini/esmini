@@ -88,7 +88,9 @@ namespace scenarioengine
 		Type type_;
 		int category_; // specific object category in vehicle, pedestrian or misobject
 		std::string name_;
+		std::string model3d_;
 		int id_;
+		EntityScaleMode scaleMode_;
 
 		// Ghost following stuff
 		int trail_follow_index_; // Index of closest segment
@@ -104,7 +106,6 @@ namespace scenarioengine
 		double wheel_rot_;
 		roadmanager::Position pos_;
 		roadmanager::Route *route_;
-		std::string model_filepath_;
 		int model_id_;
 		roadmanager::PolyLineBase trail_;
 		double odometer_;

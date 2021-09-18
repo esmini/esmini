@@ -20,7 +20,7 @@
    </CatalogLocations>
    <Entities>
       <ScenarioObject name="Ego">
-         <Vehicle name="car_white" vehicleCategory="car">
+         <Vehicle name="car_white" vehicleCategory="car" model3d="../models/car_white.osgb">
             <BoundingBox>
                <Center x="1.4" y="0.0" z="0.9"/>
                <Dimensions width="2.0" length="5.0" height="1.8"/>
@@ -39,9 +39,10 @@
                          positionZ="0.4"/>
             </Axles>
             <Properties>
-               <File filepath="../models/car_white.osgb"/>
-               <Property name="model_id" value="0"/>
-               <Property name="control" value="hybrid"/>
+                <Property name="model_id" value="0"/>
+                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                <Property name="scaleMode" value="ModelToBB"/>  
+                <Property name="control" value="hybrid"/>
             </Properties>
          </Vehicle>
       </ScenarioObject>

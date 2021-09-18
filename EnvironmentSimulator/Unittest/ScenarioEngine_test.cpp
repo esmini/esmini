@@ -393,7 +393,7 @@ TEST(ConditionTest, CollisionTest)
 {
     double dt = 0.01;
 
-    double timestamps[] = { 5.42, 5.43, 6.28, 6.29, 7.02, 8.67 };
+    double timestamps[] = { 5.24, 5.25, 6.24, 6.26, 7.10, 8.78 };
 
     // Initialize the scenario and disable interactive controller
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc", true);
