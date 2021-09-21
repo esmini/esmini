@@ -27,8 +27,14 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 	}
 
 	file_.read((char*)&header_, sizeof(header_));
-	LOG("Recording %s opened. odr: %s model: %s", FileNameOf(filename).c_str(),
+	LOG("Recording %s opened. dat version: %d odr: %s model: %s", FileNameOf(filename).c_str(), header_.version,
 		FileNameOf(header_.odr_filename).c_str(), FileNameOf(header_.model_filename).c_str());
+
+	if (header_.version != DAT_FILE_FORMAT_VERSION)
+	{
+		LOG_AND_QUIT("Version mismatch. %s is version %d while supported version is %d. Please re-create dat file.",
+			filename.c_str(), header_.version, DAT_FILE_FORMAT_VERSION);
+	}
 
 	while (!file_.eof())
 	{
