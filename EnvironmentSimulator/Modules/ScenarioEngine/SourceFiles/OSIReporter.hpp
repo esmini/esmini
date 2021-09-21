@@ -45,6 +45,7 @@ static struct
 {
 	osi3::GroundTruth *gt;
 	osi3::SensorView *sv;
+	osi3::SensorData *sd;
 } obj_osi_external;
 
 class OSIReporter
@@ -115,10 +116,11 @@ public:
 	Fills the Traffic Signals
 	*/
 	int UpdateTrafficSignals();
-  /**
-  Creates a SensorView from SensorData for plotting
-  */
-  int CreateSensorViewFromSensorData(osi3::SensorData &sd);
+
+	/**
+	 Creates a SensorView from SensorData for plotting
+	*/
+	int CreateSensorViewFromSensorData();
 
 	const char* GetOSIGroundTruth(int* size);
 	const char* GetOSIGroundTruthRaw();
@@ -126,6 +128,8 @@ public:
 	const char* GetOSIRoadLaneBoundary(int* size, int global_id);
 	void GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, std::vector<int>& ids, int object_id);
     const char* GetOSISensorDataRaw();
+	osi3::SensorView *GetSensorView();
+	int SetSensorViewData(osi3::SensorData *sd);
 	bool IsCentralOSILane(int lane_idx);
 	int GetLaneIdxfromIdOSI(int lane_id);
 	int OpenSocket(std::string ipaddr);
@@ -147,6 +151,6 @@ private:
 	unsigned long long int nanosec_;
 	std::ofstream osi_file;
 	int osi_update_counter_;
-  void CreateMovingObjectFromSensorData(osi3::SensorData &sd, int obj_nr);
-  void CreateLaneBoundaryFromSensordata(osi3::SensorData &sd, int lane_boundary_nr);
+  void CreateMovingObjectFromSensorData(int obj_nr);
+  void CreateLaneBoundaryFromSensordata(int lane_boundary_nr);
 };

@@ -1104,11 +1104,28 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int *SE_SetOSISensorDataRaw(const char* sensordata)
+	SE_DLL_API int SE_SetOSISensorDataRaw(char* sensordata)
 	{
-		// Work In Progress
-		// const osi3::SensorData *sd = reinterpret_cast<const osi3::SensorData *>(sensordata);
-		// player
+		if (player != nullptr)
+		{
+#ifdef _USE_OSG
+			if (player->viewer_)
+			{
+	#ifdef _USE_OSI
+				osi3::SensorData* sd = reinterpret_cast<osi3::SensorData*>(sensordata);
+				player->osiReporter->SetSensorViewData(sd);
+				player->osiReporter->CreateSensorViewFromSensorData();
+				if(player->osiReporter->GetSensorView())
+				{
+					if(player->OSISensorDetection)
+					{
+						player->OSISensorDetection->Update(player->osiReporter->GetSensorView());
+					}
+				}
+	#endif  // USE_OSI
+			}
+#endif
+		}
 		return 0;
 	}
 
@@ -1367,6 +1384,26 @@ extern "C"
 		player->ShowObjectSensors(true);
 
 		return 0;
+	}
+
+	SE_DLL_API int SE_ViewSensorData(int object_id)
+	{
+		if (player)
+		{
+
+			if (object_id < 0 || object_id >= player->scenarioEngine->entities.object_.size())
+			{
+				LOG("Invalid object_id (%d/%d)", object_id, player->scenarioEngine->entities.object_.size());
+				return -1;
+			}
+
+			player->AddOSIDetection(object_id);
+			player->ShowObjectSensors(true);
+
+			return 0;
+		}
+
+		return -1;
 	}
 
 	SE_DLL_API void SE_DisableOSIFile()

@@ -193,7 +193,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 		}
 #ifdef _USE_OSI
 		osiReporter->ReportSensors(sensor);
-
+		
 		// Update OSI info
 		if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
 		{
@@ -343,7 +343,7 @@ void ScenarioPlayer::ViewerFrame()
 	{
 		sensorFrustum[i]->Update();
 	}
-
+	
 	// Update info text
 	static char str_buf[128];
 	if (viewer_->currentCarInFocus_ >= 0 && viewer_->currentCarInFocus_ < viewer_->entities_.size())
@@ -613,6 +613,24 @@ void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, doubl
 			mutex.Lock();
 			sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->entities_[object_index]->txNode_));
 			mutex.Unlock();
+		}
+#endif
+	}
+}
+
+void ScenarioPlayer::AddOSIDetection(int object_index)
+{
+	if (!headless)
+	{
+#ifdef _USE_OSG
+		if (viewer_)
+		{
+			if(!OSISensorDetection)
+			{
+				mutex.Lock();
+				OSISensorDetection = new viewer::OSISensorDetection(viewer_->entities_[object_index]->txNode_);
+				mutex.Unlock();
+			}
 		}
 #endif
 	}

@@ -625,6 +625,13 @@ extern "C"
 	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj);
 
 	/**
+		Allow to view detected sensor data.
+		@param object_id Handle to the object to which the sensor should be attached
+		@return Sensor ID (Global index of sensor), -1 if unsucessful
+	*/
+	SE_DLL_API int SE_ViewSensorData(int object_id);
+
+	/**
 		Fetch list of identified objects from a sensor
 		@param sensor_id Handle (index) to the sensor
 		@param list Array of object indices
@@ -737,7 +744,7 @@ extern "C"
 		The SE_SetOSISensorDataRaw function returns a char array containing the OSI GroundTruth information
 		@return 0
 	*/
-	SE_DLL_API int *SE_SetOSISensorDataRaw(const char* sensordata);
+	SE_DLL_API int SE_SetOSISensorDataRaw(char* sensordata);
 
 	/**
 		The SE_GetOSISensorDataRaw function returns a char array containing the OSI SensorData information
