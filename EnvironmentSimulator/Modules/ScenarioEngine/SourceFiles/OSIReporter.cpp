@@ -1910,14 +1910,14 @@ int OSIReporter::UpdateTrafficSignals()
 int OSIReporter::CreateSensorViewFromSensorData(const osi3::SensorData &sd)
 {
   obj_osi_external.sv->Clear();
-  for (int i = 0; i < sd.moving_object_size(); i++)
+  for (int i = 0; i < obj_osi_external.sd->moving_object_size(); i++)
   {
-    CreateMovingObjectFromSensorData(sd, i);
+    CreateMovingObjectFromSensorData(i);
   }
 
-  for (int i = 0; i < sd.lane_boundary_size(); i++)
+  for (int i = 0; i < obj_osi_external.sd->lane_boundary_size(); i++)
   {
-    CreateLaneBoundaryFromSensordata(sd, i);
+    CreateLaneBoundaryFromSensordata(i);
   }
 
   return 0;
@@ -2250,6 +2250,15 @@ osi3::SensorView *OSIReporter::GetSensorView()
 	return obj_osi_external.sv;
 }
 
+<<<<<<< HEAD
+=======
+int OSIReporter::SetSensorViewData(osi3::SensorData *sd)
+{
+	obj_osi_external.sd = sd;
+	return 0;
+}
+
+>>>>>>> f1895d1 (sensor view visualization on esmini)
 int OSIReporter::SetOSITimeStampExplicit(unsigned long long int nanoseconds)
 {
 	nanosec_ = nanoseconds;
