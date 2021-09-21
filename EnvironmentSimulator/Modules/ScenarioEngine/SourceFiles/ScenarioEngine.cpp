@@ -468,7 +468,7 @@ int ScenarioEngine::step(double deltaSimTime)
 
 		// Report state to the gateway
 		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_, obj->model_id_,
-			obj->GetActivatedControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+			obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 	}
 
 	// Apply controllers
@@ -803,7 +803,7 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 
 		// Report updated pos values to the gateway
 		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_, obj->model_id_,
-			obj->GetActivatedControllerType(), obj->boundingbox_, simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+			obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 
 		// store current values for next loop
 		obj->state_old.pos_x = obj->pos_.GetX();

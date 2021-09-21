@@ -24,6 +24,7 @@ namespace scenarioengine
 
 	typedef struct
 	{
+		int version;
 		char odr_filename[REPLAY_FILENAME_SIZE];
 		char model_filename[REPLAY_FILENAME_SIZE];
 	} ReplayHeader;

@@ -115,7 +115,8 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 			}
 
 			if ((new_sc.entityModel = viewer->AddEntityModel(filename, osg::Vec4(0.5, 0.5, 0.5, 1.0),
-				viewer::EntityModel::EntityType::VEHICLE, false, state->info.name, &state->info.boundingbox, EntityScaleMode::BB_TO_MODEL)) == 0)
+				viewer::EntityModel::EntityType::VEHICLE, false, state->info.name, &state->info.boundingbox,
+				static_cast<EntityScaleMode>(state->info.scaleMode))) == 0)
 			{
 				return -1;
 			}
