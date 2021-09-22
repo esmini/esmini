@@ -8696,10 +8696,10 @@ double NurbsShape::GetDuration()
 	return ctrlPoint_.back().time_ - ctrlPoint_[0].time_;
 }
 
-ClothoidShape::ClothoidShape(roadmanager::Position pos, double curv, double curvDot, double len, double tStart, double tEnd) : Shape(ShapeType::CLOTHOID)
+ClothoidShape::ClothoidShape(roadmanager::Position pos, double curv, double curvPrime, double len, double tStart, double tEnd) : Shape(ShapeType::CLOTHOID)
 {
 	pos_ = pos;
-	spiral_ = new roadmanager::Spiral(0, pos_.GetX(), pos_.GetY(), pos_.GetH(), len, curv, curv + curvDot * len);
+	spiral_ = new roadmanager::Spiral(0, pos_.GetX(), pos_.GetY(), pos_.GetH(), len, curv, curv + curvPrime * len);
 	t_start_ = tStart;
 	t_end_ = tEnd;
 	pline_.interpolateHeading_ = true;
