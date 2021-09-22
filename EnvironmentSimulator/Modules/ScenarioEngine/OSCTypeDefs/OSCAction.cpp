@@ -89,8 +89,7 @@ void StoryBoardElement::SetState(StoryBoardElement:: State state)
 {
 	if (state != state_)
 	{
-		LOG("%s %s -> %s -> %s", name_
-			.c_str(),
+		LOG("%s %s -> %s -> %s", name_.c_str(),
 			state2str(state_).c_str(),
 			transition2str(transition_).c_str(),
 			state2str(state).c_str());
