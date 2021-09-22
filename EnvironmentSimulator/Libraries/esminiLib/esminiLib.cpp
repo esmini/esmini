@@ -1104,7 +1104,7 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int SE_SetOSISensorDataRaw(char* sensordata)
+	SE_DLL_API int SE_SetOSISensorDataRaw(const char* sensordata)
 	{
 		if (player != nullptr)
 		{
@@ -1112,9 +1112,8 @@ extern "C"
 			if (player->viewer_)
 			{
 	#ifdef _USE_OSI
-				osi3::SensorData* sd = reinterpret_cast<osi3::SensorData*>(sensordata);
-				player->osiReporter->SetSensorViewData(sd);
-				player->osiReporter->CreateSensorViewFromSensorData();
+				const osi3::SensorData *sd = reinterpret_cast<const osi3::SensorData *>(sensordata);
+				player->osiReporter->CreateSensorViewFromSensorData(*sd);
 				if(player->osiReporter->GetSensorView())
 				{
 					if(player->OSISensorDetection)

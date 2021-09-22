@@ -54,6 +54,7 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 
 #ifdef _USE_OSG
 	viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
+	OSISensorDetection = nullptr;
 #endif
 
 	int retval = Init();
