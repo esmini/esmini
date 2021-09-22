@@ -204,8 +204,8 @@ int ScenarioEngine::step(double deltaSimTime)
 			}
 			//LOG("Stepping action of type %d", init.private_action_[i]->action_[j]->type_)
 			init.private_action_[i]->Step(getSimulationTime(), deltaSimTime);
-			init.private_action_[i]->UpdateState();
 		}
+		init.private_action_[i]->UpdateState();
 	}
 
 	// Story
@@ -956,6 +956,7 @@ void ScenarioEngine::SetupGhost(Object* object)
 			if (action->type_ != OSCPrivateAction::ACTIVATE_CONTROLLER)
 			{
 				OSCPrivateAction* newAction = action->Copy();
+				action->name_ += "_ghost-copy";
 				newAction->object_ = ghost;
 				newAction->scenarioEngine_ = this;
 				init.private_action_.push_back(newAction);
