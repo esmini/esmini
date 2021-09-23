@@ -1,5 +1,23 @@
 ## esmini release notes
 
+### 2021-09-23 Version 2.14.0
+
+- Add entity 3D model and bounding box scale options
+  - optional property "scaleMode" for scenario objects. Values:
+    - None (default) = Don't scale 3D model or bounding box
+    - BBToModel = Scale bounding box to fit loaded 3D model
+    - ModelToBB = Scale model to fit specified bounding box  
+  see examples in [VehicleCatalog](https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Vehicles/VehicleCatalog.xosc)
+  - scaleMode added to .dat files as well for scenario replay  
+  **Note:** .dat file format has been updated, dat files created in previous versions of esmini will not play.
+- dat fileformat version control
+  - replayer and dat2csv now checking for supported version instead of crashing  
+- Support ScenarioObject attribute "model3d", added in OpenSCENARIO v1.1
+  - "File filepath" property still supported as well (if model3d missing)
+- Support Clothoid attribute curvaturePrime (renamed from curvatureDot in OSC v1.1)
+  - curvatureDot attribute still supported as well (if curvaturePrime missing)
+- Fix bug that in rare cases prevented init actions from reaching complete state
+
 ### 2021-09-17 Version 2.13.6
 
 - Fix OSI angle ranges to [-pi, pi]
