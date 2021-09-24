@@ -21,6 +21,7 @@
 #include "ControllerExternal.hpp"
 #include "ControllerRel2Abs.hpp"
 #include "ControllerACC.hpp"
+#include "ControllerECE_ALKS_DRIVER.hpp"
 
 #include <cstdlib>
 
@@ -53,6 +54,7 @@ void ScenarioReader::LoadControllers()
 	RegisterController(ControllerExternal::GetTypeNameStatic(), InstantiateControllerExternal);
 	RegisterController(ControllerRel2Abs::GetTypeNameStatic(), InstantiateControllerRel2Abs);
 	RegisterController(ControllerACC::GetTypeNameStatic(), InstantiateControllerACC);
+	RegisterController(ControllerECE_ALKS_DRIVER::GetTypeNameStatic(), InstantiateControllerECE_ALKS_DRIVER);
 }
 
 void ScenarioReader::UnloadControllers()
