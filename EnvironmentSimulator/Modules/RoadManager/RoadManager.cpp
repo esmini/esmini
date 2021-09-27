@@ -7092,6 +7092,30 @@ double Position::GetDrivingDirection() const
 	return(h);
 }
 
+double Position::GetVelLat()
+{
+	// Extract the lateral component of velocity vector
+	double vx = GetVelX();
+	double vy = GetVelY();
+	double vlat = 0.0;
+	double vlong = 0.0;
+	RotateVec2D(vx, vy, GetH(), vlong, vlat);
+
+	return vlat;
+}
+
+double Position::GetVelLong()
+{
+	// Extract the longitudinal component of velocity vector
+	double vx = GetVelX();
+	double vy = GetVelY();
+	double vlat = 0.0;
+	double vlong = 0.0;
+	RotateVec2D(vx, vy, GetH(), vlong, vlat);
+
+	return vlong;
+}
+
 void Position::CopyRMPos(Position *from)
 {
 	// Preserve route field

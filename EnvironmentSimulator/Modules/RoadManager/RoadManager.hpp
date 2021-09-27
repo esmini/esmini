@@ -1877,6 +1877,8 @@ namespace roadmanager
 		double GetVelX() { return velX_; }
 		double GetVelY() { return velY_; }
 		double GetVelZ() { return velZ_; }
+		double GetVelLat();
+		double GetVelLong();
 		double GetAccX() { return accX_; }
 		double GetAccY() { return accY_; }
 		double GetAccZ() { return accZ_; }
