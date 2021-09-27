@@ -1380,7 +1380,7 @@ extern "C"
 		}
 
 		player->AddObjectSensor(object_id, x, y, z, h, rangeNear, rangeFar, fovH, maxObj);
-		player->ShowObjectSensors(true);
+		player->ShowObjectSensors(false);
 
 		return 0;
 	}
@@ -1397,7 +1397,7 @@ extern "C"
 			}
 
 			player->AddOSIDetection(object_id);
-			player->ShowObjectSensors(true);
+			player->ShowObjectSensors(false);
 
 			return 0;
 		}
