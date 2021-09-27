@@ -773,10 +773,10 @@ namespace scenarioengine
 		@param domainMask bitmask according to Controller::Domain type
 		*/
 		ActivateControllerAction(ControlDomains domainMask) : domainMask_(domainMask),
-			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, domainMask) {}
+			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_NONE) {}
 
 		ActivateControllerAction(const ActivateControllerAction& action) :
-			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, action.domain_)
+			OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, ControlDomains::DOMAIN_NONE)
 		{
 			name_ = action.name_;
 			domainMask_ = action.domainMask_;
