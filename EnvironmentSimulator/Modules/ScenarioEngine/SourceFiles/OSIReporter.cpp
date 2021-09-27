@@ -1909,86 +1909,85 @@ int OSIReporter::UpdateTrafficSignals()
 
 int OSIReporter::CreateSensorViewFromSensorData(const osi3::SensorData &sd)
 {
-  obj_osi_external.sv->Clear();
-  for (int i = 0; i < obj_osi_external.sd->moving_object_size(); i++)
-  {
-    CreateMovingObjectFromSensorData(i);
-  }
+	obj_osi_external.sv->Clear();
+	for (int i = 0; i < sd.moving_object_size(); i++)
+	{
+		CreateMovingObjectFromSensorData(sd, i);
+	}
 
-  for (int i = 0; i < obj_osi_external.sd->lane_boundary_size(); i++)
-  {
-    CreateLaneBoundaryFromSensordata(i);
-  }
-
-  return 0;
+	for (int i = 0; i < sd.lane_boundary_size(); i++)
+	{
+		CreateLaneBoundaryFromSensordata(sd, i);
+	}
+	return 0;
 }
 
 void OSIReporter::CreateMovingObjectFromSensorData(const osi3::SensorData &sd, int obj_nr)
 {
-  osi3::DetectedMovingObject object = sd.moving_object(obj_nr);
-  double x = object.base().position().x() + sd.mounting_position().position().x();
-  double y = object.base().position().y() + sd.mounting_position().position().y();
-  double z = object.base().position().z();
-  double yaw = object.base().orientation().yaw();
+	osi3::DetectedMovingObject object = sd.moving_object(obj_nr);
+	double x = object.base().position().x() + sd.mounting_position().position().x();
+	double y = object.base().position().y() + sd.mounting_position().position().y();
+	double z = object.base().position().z();
+	double yaw = object.base().orientation().yaw();
 
-  yaw = sd.mounting_position().orientation().yaw() + yaw;
-  yaw = sd.host_vehicle_location().orientation().yaw() + yaw;
+	yaw = sd.mounting_position().orientation().yaw() + yaw;
+	yaw = sd.host_vehicle_location().orientation().yaw() + yaw;
 
-  //Local2GlobalCoordinates(x, y,
-  //    sd.mounting_position().position().x(),
-  //    sd.mounting_position().position().y(),
-  //    sd.mounting_position().orientation().yaw(), x,y);
-//
-//
-  //Local2GlobalCoordinates(x, y,
-  //    sd.host_vehicle_location().position().x(),
-  //    sd.host_vehicle_location().position().y(),
-  //    sd.host_vehicle_location().orientation().yaw(), x,y);
+	//Local2GlobalCoordinates(x, y,
+	//    sd.mounting_position().position().x(),
+	//    sd.mounting_position().position().y(),
+	//    sd.mounting_position().orientation().yaw(), x,y);
+	//
+	//
+	//Local2GlobalCoordinates(x, y,
+	//    sd.host_vehicle_location().position().x(),
+	//    sd.host_vehicle_location().position().y(),
+	//    sd.host_vehicle_location().orientation().yaw(), x,y);
 
-  osi3::MovingObject *obj =
-    obj_osi_external.sv->mutable_global_ground_truth()->add_moving_object();
+	osi3::MovingObject *obj =
+		obj_osi_external.sv->mutable_global_ground_truth()->add_moving_object();
 
-  obj->mutable_id()->set_value(object.header().tracking_id().value());
-  obj->mutable_base()->mutable_position()->set_x(x);
-  obj->mutable_base()->mutable_position()->set_y(y);
-  obj->mutable_base()->mutable_position()->set_z(z);
-  obj->mutable_base()->mutable_orientation()->set_yaw(yaw);
+	obj->mutable_id()->set_value(object.header().tracking_id().value());
+	obj->mutable_base()->mutable_position()->set_x(x);
+	obj->mutable_base()->mutable_position()->set_y(y);
+	obj->mutable_base()->mutable_position()->set_z(z);
+	obj->mutable_base()->mutable_orientation()->set_yaw(yaw);
 
-  obj->mutable_base()->mutable_dimension()->set_height(object.base().dimension().height());
-  obj->mutable_base()->mutable_dimension()->set_length(object.base().dimension().length());
-  obj->mutable_base()->mutable_dimension()->set_width(object.base().dimension().width());
+	obj->mutable_base()->mutable_dimension()->set_height(object.base().dimension().height());
+	obj->mutable_base()->mutable_dimension()->set_length(object.base().dimension().length());
+	obj->mutable_base()->mutable_dimension()->set_width(object.base().dimension().width());
 }
 
 void OSIReporter::CreateLaneBoundaryFromSensordata(const osi3::SensorData &sd, int lane_boundary_nr)
 {
-  osi3::DetectedLaneBoundary lane_boundary = sd.lane_boundary(lane_boundary_nr);
-  double x, y, z;
-  osi3::LaneBoundary *new_lane_boundary = obj_osi_external.sv->mutable_global_ground_truth()->add_lane_boundary();
+	osi3::DetectedLaneBoundary lane_boundary = sd.lane_boundary(lane_boundary_nr);
+	double x, y, z;
+	osi3::LaneBoundary *new_lane_boundary = obj_osi_external.sv->mutable_global_ground_truth()->add_lane_boundary();
 
-  for (int i = 0; i < sd.lane_boundary(lane_boundary_nr).boundary_line_size(); i++)
-  {
-    x = lane_boundary.boundary_line(i).position().x() + sd.mounting_position().position().x();
-    y = lane_boundary.boundary_line(i).position().y() + sd.mounting_position().position().y();
-    z = lane_boundary.boundary_line(i).position().z();
+	for (int i = 0; i < sd.lane_boundary(lane_boundary_nr).boundary_line_size(); i++)
+	{
+		x = lane_boundary.boundary_line(i).position().x() + sd.mounting_position().position().x();
+		y = lane_boundary.boundary_line(i).position().y() + sd.mounting_position().position().y();
+		z = lane_boundary.boundary_line(i).position().z();
 
-    //Local2GlobalCoordinates(x, y,
-    //    sd.mounting_position().position().x(),
-    //    sd.mounting_position().position().y(),
-    //    sd.mounting_position().orientation().yaw(), x, y);
-//
-    //Local2GlobalCoordinates(x, y,
-    //    sd.host_vehicle_location().position().x(),
-    //    sd.host_vehicle_location().position().y(),
-    //    sd.host_vehicle_location().orientation().yaw(), x,y);
+		//Local2GlobalCoordinates(x, y,
+		//    sd.mounting_position().position().x(),
+		//    sd.mounting_position().position().y(),
+		//    sd.mounting_position().orientation().yaw(), x, y);
+	//
+		//Local2GlobalCoordinates(x, y,
+		//    sd.host_vehicle_location().position().x(),
+		//    sd.host_vehicle_location().position().y(),
+		//    sd.host_vehicle_location().orientation().yaw(), x,y);
 
-	new_lane_boundary->mutable_id()->set_value(lane_boundary.header().ground_truth_id().at(0).value());
-    osi3::LaneBoundary_BoundaryPoint * boundary_point =
-      new_lane_boundary->add_boundary_line();
+		new_lane_boundary->mutable_id()->set_value(lane_boundary.header().ground_truth_id().at(0).value());
+		osi3::LaneBoundary_BoundaryPoint * boundary_point =
+		new_lane_boundary->add_boundary_line();
 
-    boundary_point->mutable_position()->set_x(x);
-    boundary_point->mutable_position()->set_y(y);
-    boundary_point->mutable_position()->set_z(z);
-  }
+		boundary_point->mutable_position()->set_x(x);
+		boundary_point->mutable_position()->set_y(y);
+		boundary_point->mutable_position()->set_z(z);
+	}
 }
 
 const char* OSIReporter::GetOSIGroundTruth(int* size)
@@ -2250,15 +2249,6 @@ osi3::SensorView *OSIReporter::GetSensorView()
 	return obj_osi_external.sv;
 }
 
-<<<<<<< HEAD
-=======
-int OSIReporter::SetSensorViewData(osi3::SensorData *sd)
-{
-	obj_osi_external.sd = sd;
-	return 0;
-}
-
->>>>>>> f1895d1 (sensor view visualization on esmini)
 int OSIReporter::SetOSITimeStampExplicit(unsigned long long int nanoseconds)
 {
 	nanosec_ = nanoseconds;

@@ -149,6 +149,6 @@ private:
 	unsigned long long int nanosec_;
 	std::ofstream osi_file;
 	int osi_update_counter_;
-  void CreateMovingObjectFromSensorData(const osi3::SensorData &sd, int obj_nr);
-  void CreateLaneBoundaryFromSensordata(const osi3::SensorData &sd, int lane_boundary_nr);
+  	void CreateMovingObjectFromSensorData(const osi3::SensorData &sd, int obj_nr);
+  	void CreateLaneBoundaryFromSensordata(const osi3::SensorData &sd, int lane_boundary_nr);
 };

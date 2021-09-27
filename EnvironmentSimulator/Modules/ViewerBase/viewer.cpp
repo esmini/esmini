@@ -530,8 +530,10 @@ OSISensorDetection::OSISensorDetection(osg::ref_ptr<osg::Group> parent)
 	parent_ = parent;
 	
 	detected_points_group_ = new osg::Group;
+	detected_points_group_->setDataVariance(osg::Object::DYNAMIC);
 	parent->addChild(detected_points_group_);
 	detected_bb_group_ = new osg::Group;
+	detected_bb_group_->setDataVariance(osg::Object::DYNAMIC);
 	parent->addChild(detected_bb_group_);
 }
 		
@@ -688,6 +690,7 @@ OSIDetectedPoint::OSIDetectedPoint(const osg::Vec3 point, osg::ref_ptr<osg::Grou
 	osi_detection_point->setSize(8.0f);
 	osi_detection_geom_->getOrCreateStateSet()->setAttributeAndModes(osi_detection_point, osg::StateAttribute::ON);
 	osi_detection_geom_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	osi_detection_geom_->getOrCreateStateSet()->setDataVariance(osg::Object::DYNAMIC);
 
 	osi_detection_geom_->setVertexArray(osi_detection_points_.get());
 	osi_detection_geom_->setColorArray(osi_detection_color_.get());
@@ -721,6 +724,7 @@ OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double
 	car_ = new osg::Group;
 	osi_detection_geode_box_ = new osg::Geode;
 	osi_detection_geode_box_->addDrawable(new osg::ShapeDrawable(new osg::Box()));
+	osi_detection_geode_box_->getDrawable(0)->setDataVariance(osg::Object::DataVariance::DYNAMIC);
 
 	osi_detection_tx_ = new osg::PositionAttitudeTransform;
 
@@ -735,7 +739,7 @@ OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double
 
 	// Set dimensions of the entity "box"
 	osi_detection_tx_->setScale(bb_dimensions_);
-	osi_detection_tx_->setPosition(osg::Vec3d(point.x(), point.y(), point.z() + h));
+	osi_detection_tx_->setPosition(osg::Vec3d(point.x(), point.y(), point.z()));
 
 	// Draw only wireframe
 	osg::PolygonMode* polygonMode = new osg::PolygonMode;
@@ -743,10 +747,12 @@ OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double
 	osg::ref_ptr<osg::StateSet> stateset = osi_detection_geode_box_->getOrCreateStateSet(); // Get the StateSet of the group
 	stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
 	stateset->setMode(GL_COLOR_MATERIAL, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	stateset->setDataVariance(osg::Object::DYNAMIC);
 	osi_detection_geode_box_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
 
 	osi_detection_geode_center_ = new osg::Geode;
 	osi_detection_geode_center_->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0, 0, 0), 0.2)));
+	osi_detection_geode_center_->getDrawable(0)->setDataVariance(osg::Object::DYNAMIC);
 
 	osi_detection_geode_center_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
 	car_->addChild(osi_detection_geode_center_);
@@ -754,6 +760,7 @@ OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double
 	osi_detection_tx_->addChild(osi_detection_geode_box_);
 	osi_detection_tx_->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
 	osi_detection_tx_->getOrCreateStateSet()->setAttribute(material);
+	osi_detection_tx_->getOrCreateStateSet()->setDataVariance(osg::Object::DYNAMIC);
 	car_->setName("BoundingBox");
 	car_->addChild(osi_detection_tx_);
 

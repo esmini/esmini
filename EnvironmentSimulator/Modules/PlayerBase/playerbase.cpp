@@ -362,7 +362,7 @@ void ScenarioPlayer::ViewerFrame()
 	viewer_->SetInfoText(str_buf);
 
 	mutex.Unlock();
-
+	
 	viewer_->osgViewer_->frame();
 
 	if (viewer_->osgViewer_->done())
