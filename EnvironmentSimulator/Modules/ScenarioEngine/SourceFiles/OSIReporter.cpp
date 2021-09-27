@@ -2014,7 +2014,7 @@ const char* OSIReporter::GetOSIGroundTruth(int* size)
 
 const char *OSIReporter::GetOSIGroundTruthRaw()
 {
-	return (const char *)obj_osi_internal.gt;
+	return (const char *)obj_osi_external.gt;
 }
 
 const char *OSIReporter::GetOSIRoadLane(std::vector<ObjectState *> objectState, int *size, int object_id)
