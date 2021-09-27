@@ -7099,7 +7099,7 @@ double Position::GetVelLat()
 	double vy = GetVelY();
 	double vlat = 0.0;
 	double vlong = 0.0;
-	RotateVec2D(vx, vy, GetH(), vlong, vlat);
+	RotateVec2D(vx, vy, -GetH(), vlong, vlat);
 
 	return vlat;
 }
@@ -7111,7 +7111,7 @@ double Position::GetVelLong()
 	double vy = GetVelY();
 	double vlat = 0.0;
 	double vlong = 0.0;
-	RotateVec2D(vx, vy, GetH(), vlong, vlat);
+	RotateVec2D(vx, vy, -GetH(), vlong, vlat);
 
 	return vlong;
 }
