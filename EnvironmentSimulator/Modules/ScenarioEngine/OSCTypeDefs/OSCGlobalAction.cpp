@@ -281,7 +281,7 @@ void SwarmTrafficAction::createEllipseSegments(aabbTree::BBoxVec &vec, double SM
 }
 
 inline Vehicle*
-createVehicle(roadmanager::Position pos, char hdg_offset, int lane, double speed, scenarioengine::Controller *controller, std::string model_filepath)
+createVehicle(roadmanager::Position pos, int lane, double speed, scenarioengine::Controller *controller, std::string model_filepath)
 {
     Vehicle* vehicle = new Vehicle();
 
@@ -414,9 +414,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
                 laneID = Lane->GetId();
             }
 
-            if (!ensureDistance(inf.pos, laneID)) continue;
-
-            // printf("road %d lane %d rel heading %.2f\n", inf.pos.GetTrackId(), laneID, inf.pos.GetHRelative());
+            if (!ensureDistance(inf.pos, laneID, MIN(velocity_ * 2, 0.7*semiMajorAxis_))) continue;  // distance = speed * 2 seconds
 
             Controller::InitArgs args;
             args.name = "Swarm ACC controller";
@@ -434,7 +432,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             std::string modelFilename = modelFilenames_[dist(gen_)];
 
-            Vehicle* vehicle = createVehicle(inf.pos, (laneID < 0 ? 0 : 1), laneID, velocity_, acc, modelFilename);
+            Vehicle* vehicle = createVehicle(inf.pos, laneID, velocity_, acc, modelFilename);
 
             int id          = entities_->addObject(vehicle);
             vehicle->name_  = std::to_string(id);
@@ -455,15 +453,16 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
     }
 }
 
-inline bool SwarmTrafficAction::ensureDistance(roadmanager::Position pos, int lane)
+inline bool SwarmTrafficAction::ensureDistance(roadmanager::Position pos, int lane, double dist)
 {
     for (SpawnInfo info: spawnedV) {
         Object *vehicle = entities_->GetObjectById(info.vehicleID);
 
         roadmanager::PositionDiff posDiff;
-        if (pos.Delta(&vehicle->pos_, posDiff, true, 40.0))  // potentially expensive since trying to resolve path between vehicles...
+        if (pos.Delta(&vehicle->pos_, posDiff, true, 100.0))  // potentially expensive since trying to resolve path between vehicles...
         {
-            if (fabs(posDiff.ds) < VEHICLE_DISTANCE)
+            // If close and in same lane -> NOK
+            if (fabs(posDiff.ds) < dist && lane == vehicle->pos_.GetLaneId())
             {
                 return false;
             }

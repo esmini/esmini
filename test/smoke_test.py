@@ -158,7 +158,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n42.24.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.05.*', csv))
         self.assertTrue(re.search('\n42.24.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.05.*', csv))
         self.assertTrue(re.search('\n42.25.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.00.*', csv))
-    
+
     def test_acc(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/acc-test.xosc'), COMMON_ARGS)
         
@@ -183,7 +183,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n3.84.*, 1, Target, 132.00.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.33.*', csv))
         self.assertTrue(re.search('\n5.64.*, 0, Ego, 123.66.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.33.*', csv))
         self.assertTrue(re.search('\n5.64.*, 1, Target, 147.00.*, -0.38.*, 0.00.*, 0.35.*, 0.00.*, 0.00.*, 8.33.*', csv))
-        self.assertTrue(re.search('\n7.71.*, 0, Ego, 146.59.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 14.18.*', csv))
+        self.assertTrue(re.search('\n7.71.*, 0, Ego, 146.53.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 12.58.*', csv))
         self.assertTrue(re.search('\n7.71.*, 1, Target, 164.25.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.33.*', csv))
         self.assertTrue(re.search('\n16.71.*, 0, Ego, 185.38.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*', csv))
         self.assertTrue(re.search('\n16.71.*, 1, Target, 200.38.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*', csv))

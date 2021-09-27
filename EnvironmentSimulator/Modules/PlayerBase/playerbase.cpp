@@ -249,15 +249,24 @@ void ScenarioPlayer::ViewerFrame()
 				viewer::EntityModel::EntityType::VEHICLE, false,
 				obj->name_, &obj->boundingbox_, obj->scaleMode_));
 		}
-		else if (scenarioEngine->entities.object_[i]->name_ != viewer_->entities_[i]->name_)
+		else if (scenarioEngine->entities.object_[i]->name_ != viewer_->entities_[i]->name_ ||
+			scenarioEngine->entities.object_[i]->model3d_ != viewer_->entities_[i]->filename_)
 		{
-			// entity has probably been removed or replaced, replace model
-			viewer_->entities_[i]->parent_->removeChild(viewer_->entities_[i]->txNode_);
-			delete (viewer_->entities_[i]);
+			if (scenarioEngine->entities.object_[i]->model3d_ == viewer_->entities_[i]->filename_)
+			{
+				// new entity has same model, just update name
+				viewer_->entities_[i]->name_ = scenarioEngine->entities.object_[i]->name_;
+			}
+			else
+			{
+				// replace model
+				viewer_->entities_[i]->parent_->removeChild(viewer_->entities_[i]->txNode_);
+				delete (viewer_->entities_[i]);
 
-			viewer_->entities_[i] = viewer_->CreateEntityModel(obj->model3d_, trail_color,
+				viewer_->entities_[i] = viewer_->CreateEntityModel(obj->model3d_, trail_color,
 					viewer::EntityModel::EntityType::VEHICLE, false,
 					obj->name_, &obj->boundingbox_);
+			}
 		}
 	}
 

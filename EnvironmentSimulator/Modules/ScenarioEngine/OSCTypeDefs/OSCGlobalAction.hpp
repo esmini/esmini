@@ -172,7 +172,7 @@ namespace scenarioengine
 		int despawn(double simTime);
 		void createRoadSegments(aabbTree::BBoxVec &vec);
 		void spawn(Solutions sols, int replace, double simTime);
-		inline bool ensureDistance(roadmanager::Position pos, int lane);
+		inline bool ensureDistance(roadmanager::Position pos, int lane, double dist);
 		void createEllipseSegments(aabbTree::BBoxVec &vec, double SMjA, double SMnA);
 		inline void sampleRoads(int minN, int maxN, Solutions &sols, vector<SelectInfo> &info);
 	};

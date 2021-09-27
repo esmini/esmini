@@ -241,13 +241,8 @@ int SetupCarsSpecial(roadmanager::OpenDrive* odrManager, viewer::Viewer* viewer)
 	car_->pos->SetHeadingRelative(car_->lane_id_init < 0 ? 0 : M_PI);
 	car_->heading_init = car_->pos->GetHRelative();
 
-<<<<<<< HEAD
-	if ((car_->model = viewer->AddEntityModel(carModelsFiles_[0], osg::Vec4(0.5, 0.5, 0.5, 1.0),
-		viewer::EntityModel::EntityType::VEHICLE, false, "", 0, EntityScaleMode::BB_TO_MODEL)) == 0)
-=======
 	if ((car_->model = viewer->CreateEntityModel(carModelsFiles_[0], osg::Vec4(0.5, 0.5, 0.5, 1.0),
-		viewer::EntityModel::EntityType::ENTITY_TYPE_VEHICLE, false, "", 0)) == 0)
->>>>>>> d473e337... Work in progress
+		viewer::EntityModel::EntityType::VEHICLE, false, "", 0, EntityScaleMode::BB_TO_MODEL)) == 0)
 	{
 		return -1;
 	}

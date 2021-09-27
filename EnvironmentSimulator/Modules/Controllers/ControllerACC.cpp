@@ -110,7 +110,7 @@ void ControllerACC::Step(double timeStep)
 		else
 		{
 			// Follow distance = minimum distance + timeGap_ seconds
-			followDist = minDist + timeGap_ * entities_->object_[minObjIndex]->GetSpeed();  // (m)
+			followDist = minDist + timeGap_ * fabs(entities_->object_[minObjIndex]->GetSpeed());  // (m)
 
 			double dv = object_->GetSpeed() - entities_->object_[minObjIndex]->GetSpeed();
 			regulator_.SetV(dv);
@@ -125,6 +125,7 @@ void ControllerACC::Step(double timeStep)
 				acc = CLAMP(regulator_.GetA(), -100.0, normalAcceleration);
 			}
 			currentSpeed_ = MIN(object_->GetSpeed() + acc * timeStep, setSpeed_);
+			currentSpeed_ = MAX(0.0, currentSpeed_);
 		}
 	}
 	else
