@@ -1397,6 +1397,42 @@ void VisibilityAction::Step(double, double)
 	OSCAction::End();
 }
 
+int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status)
+{
+	overrideActionList.push_back(status);
+	if (status.type < Object::OverrideType::OVERRIDE_NR_TYPES)
+	{
+		if (status.type == Object::OverrideType::OVERRIDE_STEERING_WHEEL)
+		{
+			if (status.active)
+			{
+				domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) | static_cast<int>(ControlDomains::DOMAIN_LAT));
+			}
+			else
+			{
+				domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) & ~static_cast<int>(ControlDomains::DOMAIN_LAT));
+			}
+		}
+		else
+		{
+			if (status.active)
+			{
+				domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) | static_cast<int>(ControlDomains::DOMAIN_LONG));
+			}
+			else
+			{
+				domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) & ~static_cast<int>(ControlDomains::DOMAIN_LONG));
+			}
+		}
+	}
+	else
+	{
+		LOG_AND_QUIT("Unexpected override type: %d", status.type);
+	}
+
+	return 0;
+}
+
 void OverrideControlAction::Start(double simTime, double dt)
 {
 	for (size_t i = 0; i < overrideActionList.size(); i++)

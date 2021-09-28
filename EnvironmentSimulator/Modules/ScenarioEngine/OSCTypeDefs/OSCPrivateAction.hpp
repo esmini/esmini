@@ -868,17 +868,15 @@ namespace scenarioengine
 	{
 	public:
 
-		std::vector<Object::OverrideActionStatus> overrideActionList;
-
 		Object::OverrideType type_;
 
-		// assume both domains
 		OverrideControlAction(double value, bool active, Object::OverrideType type) :
-			OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, ControlDomains::DOMAIN_BOTH), type_(type) {}
+			OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, ControlDomains::DOMAIN_NONE), type_(type) {}
+
 		OverrideControlAction() : OverrideControlAction(0, false, Object::OverrideType::OVERRIDE_UNDEFINED) {}
 
 		OverrideControlAction(const OverrideControlAction& action) :
-			OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, ControlDomains::DOMAIN_NONE)
+			OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, ControlDomains::DOMAIN_NONE)
 		{
 			name_ = action.name_;
 			type_ = action.type_;
@@ -901,9 +899,14 @@ namespace scenarioengine
 			return "OverrideControlAction";
 		};
 
+		int AddOverrideStatus(Object::OverrideActionStatus status);
+
 		// Input value range: [0..1] for Throttle, Brake, Clutch and ParkingBrake. [-2*PI..2*PI] for SteeringWheel. [-1,0,1,2,3,4,5,6,7,8] for Gear.
 		// Function will cut the value to the near limit if the value is beyond limit and round the value in Gear case.
 		double RangeCheckAndErrorLog(Object::OverrideType type, double valueCheck, double lowerLimit = 0.0, double upperLimit = 1.0, bool ifRound = false);
+
+	private:
+		std::vector<Object::OverrideActionStatus> overrideActionList;
 
 	};
 

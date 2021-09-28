@@ -2355,7 +2355,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							return 0;
 						}
 
-						override_action->overrideActionList.push_back(overrideStatus);
+						override_action->AddOverrideStatus(overrideStatus);
 					}
 
 					action = override_action;
