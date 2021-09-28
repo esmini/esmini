@@ -7094,7 +7094,6 @@ double Position::GetDrivingDirection() const
 
 double Position::GetVelLat()
 {
-	// Extract the lateral component of velocity vector
 	double vx = GetVelX();
 	double vy = GetVelY();
 	double vlat = 0.0;
@@ -7106,7 +7105,6 @@ double Position::GetVelLat()
 
 double Position::GetVelLong()
 {
-	// Extract the longitudinal component of velocity vector
 	double vx = GetVelX();
 	double vy = GetVelY();
 	double vlat = 0.0;
@@ -7114,6 +7112,100 @@ double Position::GetVelLong()
 	RotateVec2D(vx, vy, -GetH(), vlong, vlat);
 
 	return vlong;
+}
+
+void Position::GetVelLatLong(double &vlat, double &vlong)
+{
+	double vx = GetVelX();
+	double vy = GetVelY();
+	RotateVec2D(vx, vy, -GetH(), vlong, vlat);
+}
+
+double Position::GetAccLat()
+{
+	double ax = GetAccX();
+	double ay = GetAccY();
+	double alat = 0.0;
+	double along = 0.0;
+	RotateVec2D(ax, ay, -GetH(), along, alat);
+
+	return alat;
+}
+
+double Position::GetAccLong()
+{
+	double ax = GetAccX();
+	double ay = GetAccY();
+	double alat = 0.0;
+	double along = 0.0;
+	RotateVec2D(ax, ay, -GetH(), along, alat);
+
+	return along;
+}
+
+void Position::GetAccLatLong(double& alat, double& along)
+{
+	double ax = GetVelX();
+	double ay = GetVelY();
+	RotateVec2D(ax, ay, -GetH(), along, alat);
+}
+
+double Position::GetVelT()
+{
+	double vx = GetVelX();
+	double vy = GetVelY();
+	double vt = 0.0;
+	double vs = 0.0;
+	RotateVec2D(vx, vy, -GetHRoad(), vs, vt);
+
+	return vt;
+}
+
+double Position::GetVelS()
+{
+	double vx = GetVelX();
+	double vy = GetVelY();
+	double vt = 0.0;
+	double vs = 0.0;
+	RotateVec2D(vx, vy, -GetHRoad(), vs, vt);
+
+	return vs;
+}
+
+void Position::GetVelTS(double& vt, double& vs)
+{
+	double vx = GetVelX();
+	double vy = GetVelY();
+	RotateVec2D(vx, vy, -GetHRoad(), vs, vt);
+}
+
+double Position::GetAccT()
+{
+	double ax = GetAccX();
+	double ay = GetAccY();
+	double at = 0.0;
+	double as = 0.0;
+	RotateVec2D(ax, ay, -GetHRoad(), as, at);
+
+	return at;
+}
+
+double Position::GetAccS()
+{
+	double ax = GetAccX();
+	double ay = GetAccY();
+	double at = 0.0;
+	double as = 0.0;
+	RotateVec2D(ax, ay, -GetHRoad(), as, at);
+
+	return as;
+}
+
+void Position::GetAccTS(double& at, double& as)
+{
+	double ax = GetAccX();
+	double ay = GetAccY();
+	RotateVec2D(ax, ay, -GetHRoad(), as, at);
 }
 
 void Position::CopyRMPos(Position *from)

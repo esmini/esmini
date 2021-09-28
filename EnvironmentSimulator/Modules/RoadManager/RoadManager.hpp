@@ -1877,8 +1877,83 @@ namespace roadmanager
 		double GetVelX() { return velX_; }
 		double GetVelY() { return velY_; }
 		double GetVelZ() { return velZ_; }
+
+		/**
+		Get lateral component of velocity in vehicle local coordinate system
+		*/
 		double GetVelLat();
+
+		/**
+		Get longitudinal component of velocity in vehicle local coordinate system
+		*/
 		double GetVelLong();
+
+		/**
+		Get lateral and longitudinal component of velocity in vehicle local coordinate system
+		This is slightly more effecient than calling GetVelLat and GetVelLong separately
+		@param vlat reference parameter returning lateral velocity
+		@param vlong reference parameter returning longitudinal velocity
+		@return -
+		*/
+		void GetVelLatLong(double& vlat, double& vlong);
+
+		/**
+		Get lateral component of acceleration in vehicle local coordinate system
+		*/
+		double GetAccLat();
+
+		/**
+		Get longitudinal component of acceleration in vehicle local coordinate system
+		*/
+		double GetAccLong();
+
+		/**
+		Get lateral and longitudinal component of acceleration in vehicle local coordinate system
+		This is slightly more effecient than calling GetAccLat and GetAccLong separately
+		@param alat reference parameter returning lateral acceleration
+		@param along reference parameter returning longitudinal acceleration
+		@return -
+		*/
+		void GetAccLatLong(double& alat, double& along);
+
+		/**
+		Get lateral component of velocity in road coordinate system
+		*/
+		double GetVelT();
+
+		/**
+		Get longitudinal component of velocity in road coordinate system
+		*/
+		double GetVelS();
+
+		/**
+		Get lateral and longitudinal component of velocity in road coordinate system
+		This is slightly more effecient than calling GetVelT and GetVelS separately
+		@param vt reference parameter returning lateral velocity
+		@param vs reference parameter returning longitudinal velocity
+		@return -
+		*/
+		void GetVelTS(double& vt, double& vs);
+
+		/**
+		Get lateral component of acceleration in road coordinate system
+		*/
+		double GetAccT();
+
+		/**
+		Get longitudinal component of acceleration in road coordinate system
+		*/
+		double GetAccS();
+
+		/**
+		Get lateral and longitudinal component of acceleration in road coordinate system
+		This is slightly more effecient than calling GetAccT and GetAccS separately
+		@param at reference parameter returning lateral acceleration
+		@param as reference parameter returning longitudinal acceleration
+		@return -
+		*/
+		void GetAccTS(double& at, double& as);
+
 		double GetAccX() { return accX_; }
 		double GetAccY() { return accY_; }
 		double GetAccZ() { return accZ_; }
