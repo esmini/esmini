@@ -37,17 +37,12 @@ namespace scenarioengine
 		void Init();
 		void Step(double timeStep);
 		void Activate(ControlDomains domainMask);
-		void Reset();
 		void ReportKeyEvent(int key, bool down);
 
 	private:
 		vehicle::Vehicle vehicle_;
-		double timeGap_;  // target headway time
 		bool active_;
 		double setSpeed_;
-		double waitTime_;  // wait time of ego driver (reaction/perception time)
-		bool driverFullBrake_;  // if ego driver will execute a full braking
-		bool aebFullBrake_;  // if AEB will execute a full braking
 		double currentSpeed_;
 		DampedSpring regulator_;
 	};

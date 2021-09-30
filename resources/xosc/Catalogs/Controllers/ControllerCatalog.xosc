@@ -109,5 +109,15 @@
                 <Property name="setSpeed"  value="$SetSpeed" />
 			</Properties>
 		</Controller>
+		<Controller name="ece_driver_controller">
+			<ParameterDeclarations>
+				<ParameterDeclaration name="SetSpeed" parameterType="double" value="50" /> 
+			</ParameterDeclarations>			
+			<Properties>
+				<Property name="esminiController" value="ECE_ALKS_DRIVER_Controller" />
+				<Property name="mode" value="$Mode" />                    
+				<Property name="setSpeed"  value="$SetSpeed" />
+			</Properties>
+		</Controller>
 	</Catalog>
 </OpenSCENARIO>
