@@ -84,6 +84,11 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 		{
 			continue;
 		}
+		if (aebBraking)
+		{
+			// AEB brakes harder than driver, no need to continue checking for scenario if aeb is already braking
+			break;
+		}
 		targetL = entities_->object_[i]->boundingbox_.dimensions_.length_;
 		targetW = entities_->object_[i]->boundingbox_.dimensions_.width_;
 		targetCx = entities_->object_[i]->boundingbox_.center_.x_;
@@ -185,7 +190,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 					// There was a cut-out detected of another vehicle between this vehicle and ego
 					// TTC between ego and object in front of cut-out object <= 2sec
 					// Thus this vehicle (in front of cut-out vehicle) is in the red zone in the plot of regulation
-					if (!driverBraking && !aebBraking && dtFreeCutOut > -LARGE_NUMBER && dsFree >= 0 && dsFree / fabs(egoV - targetV) <= 2)
+					if (!driverBraking && dtFreeCutOut > -LARGE_NUMBER && dsFree >= 0 && dsFree / fabs(egoV - targetV) <= 2)
 					{
 						waitTime = 1.15;  // 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
 						LOG("ECE ALKS driver -> cut-out and next vehicle in front detected (TTC: %.2f) -> "
