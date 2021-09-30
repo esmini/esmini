@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2021-09-30 Version 2.14.2
+
+- Fix some action failures in repeated events (maximumExecutionCount > 1)
+  - Root cause: Internal timer not reset between runs
+- Fix ACC controller issue for scenarios with multiple vehicles
+
 ### 2021-09-29 Version 2.14.1
 
 - Add visualization of externally reported OSI sensorView
