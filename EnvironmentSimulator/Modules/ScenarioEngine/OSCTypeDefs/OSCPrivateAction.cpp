@@ -277,6 +277,7 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 {
 	OSCAction::Start(simTime, dt);
 	sim_time_ = simTime;
+	elapsed_ = 0.0;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
@@ -344,8 +345,6 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 	}
 
 	t_ = start_t_ = object_->pos_.GetT();
-
-	elapsed_ = 0;
 }
 
 void LatLaneChangeAction::Step(double simTime, double)
@@ -447,6 +446,7 @@ void LatLaneOffsetAction::Start(double simTime, double dt)
 {
 	OSCAction::Start(simTime, dt);
 	sim_time_ = simTime;
+	elapsed_ = 0.0;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
@@ -606,6 +606,7 @@ void LongSpeedAction::Start(double simTime, double dt)
 {
 	OSCAction::Start(simTime, dt);
 	sim_time_ = simTime;
+	elapsed_ = 0.0;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))

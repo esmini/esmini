@@ -335,10 +335,10 @@ namespace scenarioengine
 			OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT)
 		{
 			transition_dynamics_.dimension_ = timing_type;
-			elapsed_ = 0;
-			target_t_ = 0;
-			t_ = 0;
-			sim_time_ = 0;
+			elapsed_ = 0.0;
+			target_t_ = 0.0;
+			t_ = 0.0;
+			sim_time_ = 0.0;
 		}
 
 		LatLaneChangeAction(const LatLaneChangeAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT)
