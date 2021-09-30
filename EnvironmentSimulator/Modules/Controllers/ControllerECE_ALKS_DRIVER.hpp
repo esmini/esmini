@@ -37,6 +37,7 @@ namespace scenarioengine
 		void Init();
 		void Step(double timeStep);
 		void Activate(ControlDomains domainMask);
+		void Reset();
 		void ReportKeyEvent(int key, bool down);
 
 	private:

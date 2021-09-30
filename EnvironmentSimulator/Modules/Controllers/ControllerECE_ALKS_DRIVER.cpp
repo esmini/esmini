@@ -24,7 +24,7 @@
 
 using namespace scenarioengine;
 
-#define ALKS_LOG(...) {if (logging_) { LOG(__VA_ARGS__); } else { __noop(); }}
+#define ALKS_LOG(...) {if (logging_) { LOG(__VA_ARGS__); } else { (void)0; }}
 
 Controller* scenarioengine::InstantiateControllerECE_ALKS_DRIVER(void* args)
 {
@@ -172,7 +172,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 					// But by this definition the driver braking delay and perception time will play no role
 					// But in total one must not find here the exact definition because from regulation one knows that the driver always avoids a collision.
 					// Thus one can directly brake with AEB
-					if (!aebBraking_ && fabs(diff.dt) < SMALL_NUMBER)
+					if (fabs(diff.dt) < SMALL_NUMBER)
 					{
 						ALKS_LOG("ECE ALKS AEB -> full wrap of ego and target (TTC: %.2f) -> start braking", TTC);
 						aebBraking_ = true;
@@ -184,7 +184,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 				{
 					// There exist a full wrap of ego with the next object in front and TTC <= 2sec and if there was a cut-out before,
 					// then the cut-out vehicle has already left ego's driving path (lateral deviations omitted)
-					if (!aebBraking_ && fabs(diff.dt) < SMALL_NUMBER && (dtFreeCutOut_ >= 0 || dtFreeCutOut_ == -LARGE_NUMBER) &&
+					if (fabs(diff.dt) < SMALL_NUMBER && (dtFreeCutOut_ >= 0 || dtFreeCutOut_ == -LARGE_NUMBER) &&
 						targetV < egoV && dsFree >= 0 && TTC <= 2)
 					{
 						ALKS_LOG("ECE ALKS AEB -> full wrap of ego and target (TTC: %.2f) -> start braking", TTC);
@@ -265,11 +265,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 	if (currentSpeed_ == 0.0)
 	{
 		// after standstill by AEB or driver hold the velocity zero until a new velocity is set by a new controller
-		setSpeed_ = 0.0;
-		waitTime_ = -1.0;
-		timeSinceBraking_ = 0.0;
-		driverBraking_ = false;
-		aebBraking_ = false;
+		Reset();
 	}
 
 	Controller::Step(timeStep);
@@ -277,14 +273,18 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 
 void ControllerECE_ALKS_DRIVER::Activate(ControlDomains domainMask)
 {
+	Reset();
+	Controller::Activate(domainMask);
+}
+
+void ControllerECE_ALKS_DRIVER::Reset()
+{
 	setSpeed_ = object_->GetSpeed();
 	dtFreeCutOut_ = -LARGE_NUMBER;
 	waitTime_ = -1.0;
 	driverBraking_ = false;
 	aebBraking_ = false;
 	timeSinceBraking_ = 0.0;
-
-	Controller::Activate(domainMask);
 }
 
 void ControllerECE_ALKS_DRIVER::ReportKeyEvent(int key, bool down)
