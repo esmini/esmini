@@ -106,17 +106,18 @@
             <Properties>
 				<Property name="esminiController" value="ACCController" />
                 <Property name="mode" value="$Mode" />                    
-                <Property name="setSpeed"  value="$SetSpeed" />
+                <Property name="setSpeed" value="$SetSpeed" />
 			</Properties>
 		</Controller>
 		<Controller name="ece_driver_controller">
 			<ParameterDeclarations>
 				<ParameterDeclaration name="SetSpeed" parameterType="double" value="50" /> 
+				<ParameterDeclaration name="Logging" parameterType="bool" value="false" /> 
 			</ParameterDeclarations>			
 			<Properties>
 				<Property name="esminiController" value="ECE_ALKS_DRIVER_Controller" />
-				<Property name="mode" value="$Mode" />                    
-				<Property name="setSpeed"  value="$SetSpeed" />
+				<Property name="setSpeed" value="$SetSpeed" />
+				<Property name="logging" value="$Logging" />
 			</Properties>
 		</Controller>
 	</Catalog>

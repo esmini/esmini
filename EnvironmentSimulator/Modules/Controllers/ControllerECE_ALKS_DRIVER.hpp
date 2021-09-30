@@ -44,7 +44,13 @@ namespace scenarioengine
 		bool active_;
 		double setSpeed_;
 		double currentSpeed_;
-		DampedSpring regulator_;
+		bool logging_;
+
+		double dtFreeCutOut_;
+		double waitTime_;
+		bool driverBraking_;
+		bool aebBraking_;
+		double timeSinceBraking_;
 	};
 
 	Controller* InstantiateControllerECE_ALKS_DRIVER(void* args);

@@ -24,6 +24,8 @@
 
 using namespace scenarioengine;
 
+#define ALKS_LOG(...) {if (logging_) { LOG(__VA_ARGS__); } else { __noop(); }}
+
 Controller* scenarioengine::InstantiateControllerECE_ALKS_DRIVER(void* args)
 {
 	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
@@ -31,9 +33,18 @@ Controller* scenarioengine::InstantiateControllerECE_ALKS_DRIVER(void* args)
 	return new ControllerECE_ALKS_DRIVER(initArgs);
 }
 
-ControllerECE_ALKS_DRIVER::ControllerECE_ALKS_DRIVER(InitArgs* args) : active_(false), setSpeed_(0), currentSpeed_(0), Controller(args)
+ControllerECE_ALKS_DRIVER::ControllerECE_ALKS_DRIVER(InitArgs* args) : active_(false), setSpeed_(0), currentSpeed_(0),
+	logging_(false), Controller(args)
 {
 	mode_ = Mode::MODE_ADDITIVE;
+
+	if (args->properties->ValueExists("logging"))
+	{
+		if (args->properties->GetValueStr("logging") == "true")
+		{
+			logging_ = true;
+		}
+	}
 }
 
 void ControllerECE_ALKS_DRIVER::Init()
@@ -47,12 +58,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 	double minDist = 15.0;  // minimum distance to keep to lead vehicle
 	double maxDeceleration = -10.0;
 	double normalAcceleration = 3.0;
-	static double dtFreeCutOut = -LARGE_NUMBER;
-	static double waitTime = -1.0;
-	static bool driverBraking = false;
-	static bool aebBraking = false;
-	static double timeSinceBraking = 0.0;
-	
+
 	double egoL = object_->boundingbox_.dimensions_.length_;
 	double egoW = object_->boundingbox_.dimensions_.width_;
 	double egoCx = object_->boundingbox_.center_.x_;
@@ -84,7 +90,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 		{
 			continue;
 		}
-		if (aebBraking)
+		if (aebBraking_)
 		{
 			// AEB brakes harder than driver, no need to continue checking for scenario if aeb is already braking
 			break;
@@ -104,7 +110,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 			// path exists between position objects
 
 			// object on adjacent lane, slower than ego and with a deviation of more than 0.375m in direction of ego from its lane center
-			if (!driverBraking && fabs(targetVT) > SMALL_NUMBER && targetV < egoV + SMALL_NUMBER &&
+			if (!driverBraking_ && fabs(targetVT) > SMALL_NUMBER && targetV < egoV + SMALL_NUMBER &&
 				fabs(diff.dLaneId) == 1 && ((diff.dLaneId == -1 && targetVT > 0 && targetO > 0.375) ||
 				(diff.dLaneId == 1 && targetVT < 0 && targetO < -0.375)))
 			{
@@ -118,24 +124,24 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 				{
 					// cut-in would be in the red zone in front of ego vehicle after lane change
 					// TTC (<= 2sec) + offset (> 0.375) + perception time (0.4sec, see plot of regulation)
-					waitTime = 1.15;  // 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
-					LOG("ECE ALKS driver -> cut-in detected (TTC: %.2f) -> start braking after %.2f sec (braking delay + risk perception time)",
-						TTC, waitTime);
-					driverBraking = true;
+					waitTime_ = 1.15;  // 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
+					ALKS_LOG("ECE ALKS driver -> cut-in detected (TTC: %.2f) -> start braking after %.2f sec (braking delay + risk perception time)",
+						TTC, waitTime_);
+					driverBraking_ = true;
 				}
 			}
 			// object in front on same lane
 			else if (diff.dLaneId == 0 && diff.ds > 0)  // dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
 			{
 				// cut-out with object on same lane, but with a distance of more than 0.375m from lane center and lateral velocity into opposite direction of ego
-				if (dtFreeCutOut < 0 && ((targetO > 0.375 && targetVT > 0) || (targetO < -0.375 && targetVT < 0)))
+				if (dtFreeCutOut_ < 0 && ((targetO > 0.375 && targetVT > 0) || (targetO < -0.375 && targetVT < 0)))
 				{
 					// relative heading angles are playing no role for reference driver
-					if (dtFreeCutOut == -LARGE_NUMBER)
+					if (dtFreeCutOut_ == -LARGE_NUMBER)
 					{
-						LOG("ECE ALKS driver -> cut-out detected");
+						ALKS_LOG("ECE ALKS driver -> cut-out detected");
 					}
-					dtFreeCutOut = fabs(diff.dt) - 0.5 * (egoW + targetW);
+					dtFreeCutOut_ = fabs(diff.dt) - 0.5 * (egoW + targetW);
 				}
 
 				// relative heading angles are playing no role for reference driver
@@ -144,21 +150,21 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 				// deceleration
 				if (targetAS < 0 && dsFree >= 0 && TTC <= 2) // TTC of object in front <= 2sec
 				{
-					if (!driverBraking)
+					if (!driverBraking_)
 					{
-						waitTime = 0.75;  // 0.75sec braking delay
+						waitTime_ = 0.75;  // 0.75sec braking delay
 						if (targetAS < -5)
 						{
-							waitTime += 0.4;  // + 0.4sec risk perception time which begins when leading vehicle exceeds a deceleration of 5m/s2
-							LOG("ECE ALKS driver -> deceleration detected (as: %.2f, TTC: %.2f) -> start braking after %.2f sec (braking delay + risk perception time)",
-								fabs(targetAS), TTC, waitTime);
+							waitTime_ += 0.4;  // + 0.4sec risk perception time which begins when leading vehicle exceeds a deceleration of 5m/s2
+							ALKS_LOG("ECE ALKS driver -> deceleration detected (as: %.2f, TTC: %.2f) -> start braking after %.2f sec (braking delay + risk perception time)",
+								fabs(targetAS), TTC, waitTime_);
 						}
 						else
 						{
 							LOG("ECE ALKS driver -> deceleration detected (as: %.2f, TTC: %.2f) -> start braking after %.2f sec (braking delay, no risk perception time)",
-								fabs(targetAS), TTC, waitTime);
+								fabs(targetAS), TTC, waitTime_);
 						}
-						driverBraking = true;
+						driverBraking_ = true;
 					}
 
 					// from cut-in and cut-out one can conclude for deceleration scenario, that AEB is only braking in case of full wrap, right decision???
@@ -166,10 +172,10 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 					// But by this definition the driver braking delay and perception time will play no role
 					// But in total one must not find here the exact definition because from regulation one knows that the driver always avoids a collision.
 					// Thus one can directly brake with AEB
-					if (!aebBraking && fabs(diff.dt) < SMALL_NUMBER)
+					if (!aebBraking_ && fabs(diff.dt) < SMALL_NUMBER)
 					{
-						LOG("ECE ALKS AEB -> full wrap of ego and target (TTC: %.2f) -> start braking", TTC);
-						aebBraking = true;
+						ALKS_LOG("ECE ALKS AEB -> full wrap of ego and target (TTC: %.2f) -> start braking", TTC);
+						aebBraking_ = true;
 						// AEB brakes harder than driver, no need to continue checking for scenario if aeb is already braking
 						break;
 					}
@@ -178,11 +184,11 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 				{
 					// There exist a full wrap of ego with the next object in front and TTC <= 2sec and if there was a cut-out before,
 					// then the cut-out vehicle has already left ego's driving path (lateral deviations omitted)
-					if (!aebBraking && fabs(diff.dt) < SMALL_NUMBER && (dtFreeCutOut >= 0 || dtFreeCutOut == -LARGE_NUMBER) &&
+					if (!aebBraking_ && fabs(diff.dt) < SMALL_NUMBER && (dtFreeCutOut_ >= 0 || dtFreeCutOut_ == -LARGE_NUMBER) &&
 						targetV < egoV && dsFree >= 0 && TTC <= 2)
 					{
-						LOG("ECE ALKS AEB -> full wrap of ego and target (TTC: %.2f) -> start braking", TTC);
-						aebBraking = true;
+						ALKS_LOG("ECE ALKS AEB -> full wrap of ego and target (TTC: %.2f) -> start braking", TTC);
+						aebBraking_ = true;
 						// AEB brakes harder than driver, no need to continue checking for scenario if aeb is already braking
 						break;
 					}
@@ -190,12 +196,12 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 					// There was a cut-out detected of another vehicle between this vehicle and ego
 					// TTC between ego and object in front of cut-out object <= 2sec
 					// Thus this vehicle (in front of cut-out vehicle) is in the red zone in the plot of regulation
-					if (!driverBraking && dtFreeCutOut > -LARGE_NUMBER && dsFree >= 0 && dsFree / fabs(egoV - targetV) <= 2)
+					if (!driverBraking_ && dtFreeCutOut_ > -LARGE_NUMBER && dsFree >= 0 && dsFree / fabs(egoV - targetV) <= 2)
 					{
-						waitTime = 1.15;  // 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
-						LOG("ECE ALKS driver -> cut-out and next vehicle in front detected (TTC: %.2f) -> "
-							"start braking after %.2f sec (braking delay + risk perception time)", TTC, waitTime);
-						driverBraking = true;
+						waitTime_ = 1.15;  // 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
+						ALKS_LOG("ECE ALKS driver -> cut-out and next vehicle in front detected (TTC: %.2f) -> "
+							"start braking after %.2f sec (braking delay + risk perception time)", TTC, waitTime_);
+						driverBraking_ = true;
 					}
 				}
 			}
@@ -212,33 +218,33 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 	if (egoV > 0)
 	{
 		// the AEB has no reaction time, thus the AEB is directly braking with a jerk of 0.85G during 0.6sec
-		if (aebBraking)
+		if (aebBraking_)
 		{
-			timeSinceBraking = MIN(timeSinceBraking + timeStep, 0.6);
+			timeSinceBraking_ = MIN(timeSinceBraking_ + timeStep, 0.6);
 			// jerk time of 0.6sec to decelerate with 0.85G
 			// MAX comparing to 0, because it makes no sense to drive backwards
-			acc = timeSinceBraking / 0.6 * 0.85;
+			acc = timeSinceBraking_ / 0.6 * 0.85;
 			currentSpeed_ = MAX(0, egoV - acc * 9.81 * timeStep);
-			LOG("ECE ALKS AEB -> braking from %.2f to %.2f (acc: %.3fG)", egoV, currentSpeed_, MIN(acc, egoV / timeStep / 9.81));
+			ALKS_LOG("ECE ALKS AEB -> braking from %.2f to %.2f (acc: %.3fG)", egoV, currentSpeed_, MIN(acc, egoV / timeStep / 9.81));
 		}
 		// now the reference driver would brake
-		else if (driverBraking)
+		else if (driverBraking_)
 		{
 			// the ego driver starts to react when the full wait time left and is braking with a jerk of 0.744G during 0.6sec
-			if (waitTime == 0.0)
+			if (waitTime_ == 0.0)
 			{
-				timeSinceBraking = MIN(timeSinceBraking + timeStep, 0.6);
+				timeSinceBraking_ = MIN(timeSinceBraking_ + timeStep, 0.6);
 				// jerk within time range of 0.6sec to decelerate with 0.774G
 				// MAX comparing to 0, because it makes no sense to drive backwards
-				acc = timeSinceBraking / 0.6 * 0.774;
+				acc = timeSinceBraking_ / 0.6 * 0.774;
 				currentSpeed_ = MAX(0, egoV - acc * 9.81 * timeStep);
-				LOG("ECE ALKS driver -> wait time passed -> braking from %.2f to %.2f (acc: %.3fG)", egoV, currentSpeed_, MIN(acc, egoV / timeStep / 9.81));
+				ALKS_LOG("ECE ALKS driver -> wait time passed -> braking from %.2f to %.2f (acc: %.3fG)", egoV, currentSpeed_, MIN(acc, egoV / timeStep / 9.81));
 			}
-			waitTime = MAX(0.0, waitTime - timeStep);  // reduce waitTime by current timeStep each time this if branch is called
+			waitTime_ = MAX(0.0, waitTime_ - timeStep);  // reduce waitTime by current timeStep each time this if branch is called
 		}
 	}
-	
-	if (!driverBraking && !aebBraking)
+
+	if (!driverBraking_ && !aebBraking_)
 	{
 		// no lead vehicle to adapt to, adjust according to setSpeed
 		double tmpSpeed = egoV + SIGN(setSpeed_ - currentSpeed_) * normalAcceleration * timeStep;
@@ -260,10 +266,10 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 	{
 		// after standstill by AEB or driver hold the velocity zero until a new velocity is set by a new controller
 		setSpeed_ = 0.0;
-		waitTime = -1.0;
-		timeSinceBraking = 0.0;
-		driverBraking = false;
-		aebBraking = false;
+		waitTime_ = -1.0;
+		timeSinceBraking_ = 0.0;
+		driverBraking_ = false;
+		aebBraking_ = false;
 	}
 
 	Controller::Step(timeStep);
@@ -272,9 +278,13 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 void ControllerECE_ALKS_DRIVER::Activate(ControlDomains domainMask)
 {
 	setSpeed_ = object_->GetSpeed();
+	dtFreeCutOut_ = -LARGE_NUMBER;
+	waitTime_ = -1.0;
+	driverBraking_ = false;
+	aebBraking_ = false;
+	timeSinceBraking_ = 0.0;
+
 	Controller::Activate(domainMask);
-	regulator_.SetTension(5);
-	regulator_.SetOptimalDamping();
 }
 
 void ControllerECE_ALKS_DRIVER::ReportKeyEvent(int key, bool down)
