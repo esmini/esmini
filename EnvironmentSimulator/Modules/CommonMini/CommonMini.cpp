@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <iostream>
+#include <random>
 
 #include "CommonMini.hpp"
 
@@ -690,6 +691,12 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
 	h = GetAngleInInterval2PI(atan2(R2[1][0], R2[0][0]));
 	p = GetAngleInInterval2PI(atan2(-R2[2][0], sqrt(R2[2][1] * R2[2][1] + R2[2][2] * R2[2][2])));
 	r = GetAngleInInterval2PI(atan2(R2[2][1], R2[2][2]));
+}
+
+SE_Env::SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE), osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION), logFilePath_(LOG_FILENAME)
+{
+	seed_ = (std::random_device())();
+	gen_.seed(seed_);
 }
 
 int SE_Env::AddPath(std::string path)

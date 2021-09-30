@@ -21,8 +21,6 @@ using namespace roadmanager;
 
 #define ELEVATION_DIFF_THRESHOLD 2.5
 
-static std::mt19937 mt_rand;
-
 Object::Object(Type type) : type_(type), id_(0), speed_(0), wheel_angle_(0), wheel_rot_(0),
 route_(0), model3d_(""), ghost_trail_s_(0), trail_follow_index_(0), odometer_(0), end_of_road_timestamp_(0.0),
 off_road_timestamp_(0.0), stand_still_timestamp_(0), dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0),
@@ -51,8 +49,6 @@ nextJunctionSelectorAngle_(0.0), scaleMode_(EntityScaleMode::NONE)
 	}
 
 	boundingbox_ = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-
-	mt_rand.seed((unsigned int)time(0));
 
 	if (junctionSelectorStrategy_ == Junction::JunctionStrategyType::RANDOM)
 	{
@@ -221,7 +217,7 @@ void Object::SetJunctionSelectorAngle(double angle)
 
 void Object::SetJunctionSelectorAngleRandom()
 {
-	nextJunctionSelectorAngle_ = 2 * M_PI * ((double)mt_rand()) / (mt_rand.max)();
+	nextJunctionSelectorAngle_ = 2 * M_PI * ((double)(SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max();
 }
 
 bool Object::CollisionAndRelativeDistLatLong(Object* target, double *distLat, double *distLong)

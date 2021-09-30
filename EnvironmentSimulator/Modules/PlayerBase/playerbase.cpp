@@ -688,6 +688,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
 	opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
 	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
+	opt.AddOption("seed", "Specify seed number for random generator", "number");
 	opt.AddOption("sensors", "Show sensor frustums (toggle during simulation by press 'r') ");
 	opt.AddOption("server", "Launch server to receive state of external Ego simulator");
 	opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
@@ -778,6 +779,18 @@ int ScenarioPlayer::Init()
 	{
 		disable_controllers_ = true;
 		LOG("Disable entity controllers");
+	}
+
+	// Use specific seed for repeatable scenarios?
+	if ((arg_str = opt.GetOptionArg("seed")) != "")
+	{
+		unsigned int seed = static_cast<unsigned int>(std::stoul(arg_str));
+		LOG("Using specified seed %u", seed);
+		SE_Env::Inst().SetSeed(seed);
+	}
+	else
+	{
+		LOG("Generated seed %u", SE_Env::Inst().GetSeed());
 	}
 
 	// Create scenario engine

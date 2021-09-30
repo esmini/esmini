@@ -67,7 +67,7 @@ static const char* entityModelsFiles_[] =
 	"walkman.osgb",
 	"moose_cc0.osgb",
 	"cyclist.osgb",
-	"mc.osgb",
+	"mc.osgb"
 };
 
 void log_callback(const char* str)

@@ -85,7 +85,9 @@ void ControllerACC::Step(double timeStep)
 			double x_local, y_local;
 			object_->FreeSpaceDistance(entities_->object_[i], &y_local, &x_local);
 
-			if (x_local > 0 && x_local < 10 + 0.5 * (object_->GetSpeed() - entities_->object_[i]->GetSpeed()) && abs(y_local) < 1.0)
+			if (x_local > 0 && x_local < 1.0 + entities_->object_[i]->boundingbox_.dimensions_.length_ +
+				0.5 * MAX(0.0, object_->GetSpeed() - entities_->object_[i]->GetSpeed())
+				&& y_local < 0.2 && y_local > -1) // yield some more for right hand traffic
 			{
 				minGapLength = x_local;
 				minSpeedDiff = object_->GetSpeed() - entities_->object_[i]->GetSpeed();

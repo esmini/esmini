@@ -43,7 +43,6 @@ static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static const bool freerun = true;
-static std::mt19937 mt_rand;
 static double density = DEFAULT_DENSITY;
 static double speed = DEFAULT_SPEED;
 static double global_speed_factor = 1.0;
@@ -157,10 +156,10 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 		if (road->GetLength() > ROAD_MIN_LENGTH)
 		{
 			// Populate road lanes with vehicles at some random distances
-			for (double s = 10; s < road->GetLength() - average_distance; s += average_distance + 0.2 * average_distance * mt_rand() / mt_rand.max())
+			for (double s = 10; s < road->GetLength() - average_distance; s += average_distance + 0.2 * average_distance * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max())
 			{
 				// Pick lane by random
-				int lane_idx = ((double)road->GetNumberOfDrivingLanes(s) * mt_rand()) / (mt_rand.max)();
+				int lane_idx = ((double)road->GetNumberOfDrivingLanes(s) * (SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max();
 				roadmanager::Lane *lane = road->GetDrivingLaneByIdx(s, lane_idx);
 				if (lane == 0)
 				{
@@ -177,7 +176,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 				}
 
 				// randomly choose model
-				int carModelID = (double(sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) * mt_rand()) / (mt_rand.max)();
+				int carModelID = (double(sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) * (SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max();
 				//LOG("Adding car of model %d to road nr %d (road id %d s %.2f lane id %d), ", carModelID, r, road->GetId(), s, lane->GetId());
 
 				Car *car_ = new Car;
@@ -297,10 +296,10 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 		else
 		{
 			// Choose random open end
-			int oeIndex = (int)(((double)openEnds.size()) * mt_rand() / mt_rand.max());
+			int oeIndex = (int)(((double)openEnds.size()) * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max());
 			OpenEnd* oe = &openEnds[oeIndex];
 			// Choose random lane
-			int laneIndex = (int)(((double)oe->nLanes) * mt_rand() / mt_rand.max());
+			int laneIndex = (int)(((double)oe->nLanes) * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max());
 			roadmanager::Road* road = odrManager->GetRoadById(oe->roadId);
 			roadmanager::Lane *lane = road->GetDrivingLaneSideByIdx(oe->s, oe->side, laneIndex);
 
@@ -342,26 +341,25 @@ int main(int argc, char** argv)
 	// Use logger callback
 	Logger::Inst().SetCallback(log_callback);
 
-	mt_rand.seed((unsigned int)time(0));
-
 	std::vector<std::string> args;
 	for (int i = 0; i < argc; i++) args.push_back(argv[i]);
 
 	// use an ArgumentParser object to manage the program arguments.
+	opt.AddOption("help", "Show this help message");
 	opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
-	opt.AddOption("model", "3D Model filename", "model_filename");
 	opt.AddOption("density", "density (cars / 100 m)", "density");
-	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
-	opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor");
-	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
-	opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
-	opt.AddOption("road_features", "Show OpenDRIVE road features (toggle during simulation by press 'o') ");
-	opt.AddOption("path", "Search path prefix for assets, e.g. car and sign model files", "path");
-	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
-	opt.AddOption("help", "Show this help message");
+	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
+	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
+	opt.AddOption("model", "3D Model filename", "model_filename");
+	opt.AddOption("osi_lines", "Show OSI road lines (toggle during simulation by press 'u') ");
+	opt.AddOption("osi_points", "Show OSI road points (toggle during simulation by press 'y') ");
+	opt.AddOption("path", "Search path prefix for assets, e.g. car and sign model files", "path");
+	opt.AddOption("road_features", "Show OpenDRIVE road features (toggle during simulation by press 'o') ");
 	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
+	opt.AddOption("seed", "Specify seed number for random generator", "number");
+	opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor");
 	opt.AddOption("traffic_rule", "Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)", "rule (right/left)");
 	opt.AddOption("version", "Show version and quit");
 
@@ -412,6 +410,18 @@ int main(int argc, char** argv)
 	{
 		SE_Env::Inst().AddPath(arg_str);
 		LOG("Added path %s", arg_str.c_str());
+	}
+
+	// Use specific seed for repeatable scenarios?
+	if ((arg_str = opt.GetOptionArg("seed")) != "")
+	{
+		unsigned int seed = static_cast<unsigned int>(std::stoul(arg_str));
+		LOG("Using specified seed %u", seed);
+		SE_Env::Inst().SetSeed(seed);
+	}
+	else
+	{
+		LOG("Generated seed %u", SE_Env::Inst().GetSeed());
 	}
 
 	std::string odrFilename = opt.GetOptionArg("odr");

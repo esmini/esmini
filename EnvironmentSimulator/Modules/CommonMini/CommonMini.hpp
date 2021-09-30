@@ -14,6 +14,7 @@
 
 
 #include <vector>
+#include <random>
 #include <fstream>
 #include <string>
 #define _USE_MATH_DEFINES
@@ -600,9 +601,10 @@ public:
 	double osiMaxLateralDeviation_;
 	std::string logFilePath_;
 	SE_SystemTime systemTime_;
+	unsigned int seed_;
+	std::mt19937 gen_;
 
-	SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE),
-		osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION), logFilePath_(LOG_FILENAME) {}
+	SE_Env();
 
 	void SetOSIMaxLongitudinalDistance(double maxLongitudinalDistance) { osiMaxLongitudinalDistance_ = maxLongitudinalDistance; }
 	void SetOSIMaxLateralDeviation(double maxLateralDeviation) { osiMaxLateralDeviation_ = maxLateralDeviation; }
@@ -612,6 +614,13 @@ public:
 	int AddPath(std::string path);
 	void ClearPaths() { paths_.clear(); }
 	double GetSystemTime() { return systemTime_.GetS(); }
+	void SetSeed(unsigned int seed)
+	{
+		seed_ = seed;
+		gen_.seed(seed_);
+	}
+	unsigned int GetSeed() { return seed_; }
+	std::mt19937& GetGenerator() { return gen_; }
 
 	/**
 		Specify logfile name, optionally including directory path

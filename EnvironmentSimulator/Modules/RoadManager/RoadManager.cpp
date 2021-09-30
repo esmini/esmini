@@ -56,7 +56,6 @@
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
 
-static std::mt19937 mt_rand;
 static unsigned int global_lane_counter;
 
 
@@ -2213,8 +2212,6 @@ std::string ReadAttribute(pugi::xml_node node, std::string attribute_name, bool 
 
 bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 {
-	mt_rand.seed((unsigned int)time(0));
-
 	if (replace)
 	{
 		InitGlobalLaneIds();
@@ -6405,7 +6402,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 			}
 			else  // randomize
 			{
-				connection_idx = (int)(n_connections * (double)mt_rand() / mt_rand.max());
+				connection_idx = (int)(n_connections * (double)(SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max();
 			}
 		}
 

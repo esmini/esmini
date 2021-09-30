@@ -37,8 +37,8 @@
                   <TeleportAction>
                      <Position>
                         <!-- <LanePosition roadId="1" laneId="-1" offset="0" s="100" > -->
-                        <LanePosition roadId="0" laneId="-3" offset="0" s="100" >
-                        <!-- <LanePosition roadId="242" laneId="1" offset="0" s="10" > -->
+                        <LanePosition roadId="0" laneId="-3" offset="0" s="300" >
+                        <!-- <LanePosition roadId="283" laneId="-1" offset="0" s="10" > -->
                             <Orientation type="relative" h="0" />
                         </LanePosition>
                      </Position>
@@ -52,7 +52,7 @@
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0" />
                         <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="35"/>
+                           <AbsoluteTargetSpeed value="10"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
@@ -71,7 +71,7 @@
                      <Action name="SwarmAction">
                         <GlobalAction>
                            <TrafficAction>
-                              <TrafficSwarmAction innerRadius="50" semiMajorAxis="150" semiMinorAxis="70" numberOfVehicles="100" velocity="30">
+                              <TrafficSwarmAction innerRadius="200" semiMajorAxis="300" semiMinorAxis="500" numberOfVehicles="75" velocity="30">
 								  <CentralSwarmObject entityRef="Ego" />
                               </TrafficSwarmAction>
                            </TrafficAction>

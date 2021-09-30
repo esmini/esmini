@@ -44,10 +44,7 @@ namespace scenarioengine
 
 		Type type_;
 
-		OSCGlobalAction(OSCGlobalAction::Type type) : OSCAction(OSCAction::BaseType::GLOBAL), type_(type)
-		{
-			LOG("");
-		}
+		OSCGlobalAction(OSCGlobalAction::Type type) : OSCAction(OSCAction::BaseType::GLOBAL), type_(type) {}
 
 		virtual void print()
 		{
@@ -128,7 +125,6 @@ namespace scenarioengine
 		SwarmTrafficAction(const SwarmTrafficAction& action) : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC) {
 		    spawnedV.clear();
 			centralObject_ = action.centralObject_;
-			gen_ = action.gen_;
 		}
 
 		OSCGlobalAction* Copy() {
@@ -157,7 +153,6 @@ namespace scenarioengine
     private:
 
 		double velocity_;
-		std::mt19937 gen_;
 		Entities *entities_;
 		ScenarioGateway* gateway_;
 		ScenarioReader* reader_;
