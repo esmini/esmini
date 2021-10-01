@@ -35,7 +35,8 @@ using std::vector;
 
 #define USELESS_THRESHOLD 5 // Max check count before deleting uneffective vehicles
 #define VEHICLE_DISTANCE 12 // Min distance between two spawned vehicles
-#define TIME_INTERVAL 0.1   // Sleep time between two excution of a step
+#define SWARM_TIME_INTERVAL 0.1  // Sleep time between update steps
+#define SWARM_SPAWN_FREQUENCY 1.1  // Sleep time between spawns
 #define MAX_CARS 1000
 #define MAX_LANES 32
 
@@ -169,9 +170,8 @@ void SwarmTrafficAction::Start(double simTime, double dt)
 void SwarmTrafficAction::Step(double simTime, double dt)
 {
     // Executes the step at each TIME_INTERVAL
-    if (lastTime < 0 || abs(simTime - lastTime) > TIME_INTERVAL) {
-        //LOG("SwarmTrafficAction Step");
-
+    if (lastTime < 0 || abs(simTime - lastTime) > SWARM_TIME_INTERVAL)
+    {
         double SMjA = midSMjA;
         double SMnA = midSMnA;
 
@@ -193,7 +193,6 @@ void SwarmTrafficAction::Step(double simTime, double dt)
         rTree->intersect(eTree, candidates);
         aabbTree::processCandidates(candidates, triangle);
         aabbTree::findPoints(triangle, info, sols);
-        //printf("N points found: %d\n", static_cast<int>(sols.size()));
 
         spawn(sols, despawn(simTime), simTime);
         lastTime = simTime;
@@ -202,17 +201,25 @@ void SwarmTrafficAction::Step(double simTime, double dt)
 
 void SwarmTrafficAction::createRoadSegments(BBoxVec &vec)
 {
-    for (int i = 0; i < odrManager_->GetNumOfRoads(); i++) {
+    for (int i = 0; i < odrManager_->GetNumOfRoads(); i++)
+    {
         roadmanager::Road* road = odrManager_->GetRoadByIdx(i);
-        for (int j = 0; j < road->GetNumberOfGeometries(); j++) {
+
+        for (int j = 0; j < road->GetNumberOfGeometries(); j++)
+        {
             roadmanager::Geometry *gm = road->GetGeometry(j);
-            switch (gm->GetType()) {
-                case roadmanager::Geometry::GeometryType::GEOMETRY_TYPE_UNKNOWN: {
+
+            switch (gm->GetType())
+            {
+                case roadmanager::Geometry::GeometryType::GEOMETRY_TYPE_UNKNOWN:
+                {
                     break;
                 }
-                case roadmanager::Geometry::GeometryType::GEOMETRY_TYPE_LINE: {
+                case roadmanager::Geometry::GeometryType::GEOMETRY_TYPE_LINE:
+                {
                     auto const length = gm->GetLength();
-                    for (double dist = gm->GetS(); dist < length;) {
+                    for (double dist = gm->GetS(); dist < length;)
+                    {
                         double ds = dist + minSize_;
                         if (ds > length)
                             ds = length;
@@ -235,7 +242,8 @@ void SwarmTrafficAction::createRoadSegments(BBoxVec &vec)
                     }
                     break;
                 }
-                default: {
+                default:
+                {
                     curve2triangles(gm, minSize_, M_PI/36, vec);
                     break;
                 }
@@ -250,11 +258,14 @@ void SwarmTrafficAction::createEllipseSegments(aabbTree::BBoxVec &vec, double SM
     double dAlpha = M_PI / 36.0;
     auto pos = centralObject_->pos_;
     double x0, y0, x1, y1, x2, y2;
-    while (alpha < (2 * M_PI - M_PI / 72.0)) {
 
+    while (alpha < (2 * M_PI - M_PI / 72.0))
+    {
         double da = alpha + dAlpha;
         if (da > 2 * M_PI - M_PI / 72.0)
+        {
             da = 2 * M_PI - M_PI / 72.0;
+        }
 
         paramEllipse(alpha , pos.GetX(), pos.GetY(), SMjA, SMnA, pos.GetH(), x0, y0);
         paramEllipse(da, pos.GetX(), pos.GetY(), SMjA, SMnA, pos.GetH(), x1, y1);
@@ -291,7 +302,8 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
     std::uniform_int_distribution<int> dist(minN, maxN);
 
     // Sample the number of cars to spawn
-    if (maxN < minN) {
+    if (maxN < minN)
+    {
         LOG("Unstable behavior detected (maxN < minN)");
         return;
     }
@@ -306,14 +318,16 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
     info.clear();
     // We have more points than number of vehicles to spawn.
     // We sample the selected number and each point will be assigned a lane
-    if (nCarsToSpawn <= sols.size() && nCarsToSpawn > 0) {
+    if (nCarsToSpawn <= sols.size() && nCarsToSpawn > 0)
+    {
         // Shuffle and randomly select the points
         // Solutions selected(nCarsToSpawn);
         static Point selected[MAX_CARS];  // Remove macro when/if found a solution for dynamic array
         std::random_shuffle(sols.begin(), sols.end());
         sample(sols.begin(), sols.end(), selected, nCarsToSpawn, SE_Env::Inst().GetGenerator());
 
-        for (int i = 0; i < nCarsToSpawn; i++) {
+        for (int i = 0; i < nCarsToSpawn; i++)
+        {
             Point &pt = selected[i];
             // Find road
             roadmanager::Position pos(pt.x, pt.y, 0.0, pt.h, 0.0, 0.0);
@@ -327,7 +341,8 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
             if (road->GetNumberOfDrivingLanes(pos.GetS()) == 0) continue;
             // Since the number of points is equal to the number of vehicles to spaw,
             // only one lane is selected
-            SelectInfo sInfo = {
+            SelectInfo sInfo =
+            {
                 pos,
                 road,
                 1
@@ -348,24 +363,25 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols,
 
             roadmanager::Road* road = odrManager_->GetRoadById(pos.GetTrackId());
             int nDrivingLanes = road->GetNumberOfDrivingLanes(pos.GetS());
-            if (nDrivingLanes == 0) {
+            if (nDrivingLanes == 0)
+            {
                 lanesLeft++;
                 continue;
             }
 
             int lanesN;
-            if (lanesLeft > 0) {
+            if (lanesLeft > 0)
+            {
                 std::uniform_int_distribution<int> laneDist(0, std::min(lanesLeft, nDrivingLanes));
                 lanesN = laneDist(SE_Env::Inst().GetGenerator());
                 lanesN = (lanesN == 0 ? 0 : lanesN - 1);
             }
             else
-                lanesN = 0;
-            SelectInfo sInfo = {
-                pos,
-                road,
-                1 + lanesN
-            };
+            {
+            lanesN = 0;
+            }
+
+            SelectInfo sInfo = { pos, road, 1 + lanesN };
             info.push_back(sInfo);
             lanesLeft -= lanesN;
         }
@@ -407,7 +423,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
                 laneID = Lane->GetId();
             }
 
-            if (!ensureDistance(inf.pos, laneID, MIN(MAX(40.0, velocity_ * 2.0), 0.7*semiMajorAxis_))) continue;  // distance = speed * 2 seconds
+            if (!ensureDistance(inf.pos, laneID, MIN(MAX(40.0, velocity_ * 2.0), 0.7 * semiMajorAxis_))) continue;  // distance = speed * 2 seconds
 
             Controller::InitArgs args;
             args.name = "Swarm ACC controller";
@@ -421,14 +437,14 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             reader_->AddController(acc);
 
             // Pick random model from vehicle catalog
-            std::uniform_int_distribution<int> dist(0, (int)(modelFilenames_.size()-1));
+            std::uniform_int_distribution<int> dist(0, (int)(modelFilenames_.size() - 1));
 
             std::string modelFilename = modelFilenames_[dist(SE_Env::Inst().GetGenerator())];
 
             Vehicle* vehicle = createVehicle(inf.pos, laneID, velocity_, acc, modelFilename);
 
-            int id          = entities_->addObject(vehicle);
-            vehicle->name_  = std::to_string(id);
+            int id = entities_->addObject(vehicle);
+            vehicle->name_ = std::to_string(id);
             vehicle->boundingbox_ = centralObject_->boundingbox_;
 
             acc->Assign(entities_->object_.back());
@@ -448,20 +464,27 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
 inline bool SwarmTrafficAction::ensureDistance(roadmanager::Position pos, int lane, double dist)
 {
-    for (SpawnInfo info: spawnedV) {
-        Object *vehicle = entities_->GetObjectById(info.vehicleID);
+    for (SpawnInfo info : spawnedV) {
+        Object* vehicle = entities_->GetObjectById(info.vehicleID);
 
-        roadmanager::PositionDiff posDiff;
+        // First apply minimal radius filter to avoid vehicles appear too close, e.g. next to each other in neighbor lanes
+        if (PointDistance2D(pos.GetX(), pos.GetY(), vehicle->pos_.GetX(), vehicle->pos_.GetY()) < 20)
+        {
+            return false;
+        }
+
         pos.SetLaneId(lane);
+        roadmanager::PositionDiff posDiff;
         if (pos.Delta(&vehicle->pos_, posDiff, true, 100.0))  // potentially expensive since trying to resolve path between vehicles...
         {
             // If close and in same lane -> NOK
-            if (fabs(posDiff.ds) < dist && posDiff.dLaneId == 0)
+            if (posDiff.dLaneId == 0 && fabs(posDiff.ds) < dist)
             {
                 return false;
             }
         }
     }
+
     return true;
 }
 
