@@ -1620,40 +1620,32 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 								}
 							}
 						}
-
+						
 						// LEFT AND RIGHT LANE IDS
 						std::vector<std::pair<int, int>> globalid_ids_left;
 						std::vector<std::pair<int, int>> globalid_ids_right;
 
-						if (lane_section->IsOSILaneById(lane_id - (1 * driving_side)))
+						if (lane_section->IsOSILaneById(lane_id + (1)))
 						{
-							globalid_ids_right.push_back(std::make_pair(lane_id - (1 * driving_side), lane_section->GetLaneGlobalIdById(lane_id - (1 * driving_side))));
+							globalid_ids_left.push_back(std::make_pair(lane_id - (1), lane_section->GetLaneGlobalIdById(lane_id + (1))));
 						}
-						else if (lane_section->IsOSILaneById(lane_id - (2 * driving_side)))
+						else if (lane_section->IsOSILaneById(lane_id + (2)))
 						{
-							globalid_ids_right.push_back(std::make_pair(lane_id - (2 * driving_side), lane_section->GetLaneGlobalIdById(lane_id - (2 * driving_side))));
+							globalid_ids_left.push_back(std::make_pair(lane_id - (2), lane_section->GetLaneGlobalIdById(lane_id + (2))));
 						}
 
-						if (lane_section->IsOSILaneById(lane_id + (1 * driving_side)))
+						if (lane_section->IsOSILaneById(lane_id - (1)))
 						{
-							globalid_ids_left.push_back(std::make_pair(lane_id + (1 * driving_side), lane_section->GetLaneGlobalIdById(lane_id + (1 * driving_side))));
+							globalid_ids_right.push_back(std::make_pair(lane_id - (1), lane_section->GetLaneGlobalIdById(lane_id - (1))));
 						}
-						else if (lane_section->IsOSILaneById(lane_id + (2 * driving_side)))
+						else if (lane_section->IsOSILaneById(lane_id - (2)))
 						{
-							globalid_ids_left.push_back(std::make_pair(lane_id + (2 * driving_side), lane_section->GetLaneGlobalIdById(lane_id + (2 * driving_side))));
+							globalid_ids_right.push_back(std::make_pair(lane_id - (2), lane_section->GetLaneGlobalIdById(lane_id - (2))));
 						}
 
 						// order global id with local id to maintain geographical order
 						std::sort(globalid_ids_left.begin(), globalid_ids_left.end());
 						std::sort(globalid_ids_right.begin(), globalid_ids_right.end());
-						if (driving_direction)
-						{
-							std::reverse(globalid_ids_right.begin(), globalid_ids_right.end());
-						}
-						else
-						{
-							std::reverse(globalid_ids_left.begin(), globalid_ids_left.end());
-						}
 
 						for (int jj = 0; jj < globalid_ids_left.size(); jj++)
 						{
@@ -1701,30 +1693,30 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 							{
 								for (int jj = 0; jj < line_ids.size(); jj++)
 								{
-									if (lane_id > 0)
-									{
-										osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-										right_lane_bound_id->set_value(line_ids[jj]);
-									}
 									if (lane_id < 0)
 									{
-										osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-										right_lane_bound_id->set_value(line_ids[jj]);
+										osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+										left_lane_bound_id->set_value(line_ids[jj]);
+									}
+									else if (lane_id > 0)
+									{
+										osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+										left_lane_bound_id->set_value(line_ids[jj]);
 									}
 								}
 							}
 							else
 							{
 								int laneboundary_global_id = lane->GetLaneBoundaryGlobalId();
-								if (lane_id > 0 && laneboundary_global_id >= 0)
-								{
-									osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-									right_lane_bound_id->set_value(laneboundary_global_id);
-								}
 								if (lane_id < 0 && laneboundary_global_id >= 0)
 								{
-									osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-									right_lane_bound_id->set_value(laneboundary_global_id);
+									osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+									left_lane_bound_id->set_value(laneboundary_global_id);
+								}
+								else if (lane_id > 0 && laneboundary_global_id >= 0)
+								{
+									osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+									left_lane_bound_id->set_value(laneboundary_global_id);
 								}
 							}
 
@@ -1747,13 +1739,13 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 								{
 									if (lane_id < 0)
 									{
-										osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-										left_lane_bound_id->set_value(nextlane_line_ids[jj]);
+										osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+										right_lane_bound_id->set_value(nextlane_line_ids[jj]);
 									}
 									else if (lane_id > 0)
 									{
-										osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-										left_lane_bound_id->set_value(nextlane_line_ids[jj]);
+										osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+										right_lane_bound_id->set_value(nextlane_line_ids[jj]);
 									}
 								}
 							}
@@ -1762,13 +1754,13 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 								int next_laneboundary_global_id = next_lane->GetLaneBoundaryGlobalId();
 								if (lane_id < 0 && next_laneboundary_global_id >= 0)
 								{
-									osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-									left_lane_bound_id->set_value(next_laneboundary_global_id);
+									osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+									right_lane_bound_id->set_value(next_laneboundary_global_id);
 								}
-								if (lane_id > 0 && next_laneboundary_global_id >= 0)
+								else if (lane_id > 0 && next_laneboundary_global_id >= 0)
 								{
-									osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-									left_lane_bound_id->set_value(next_laneboundary_global_id);
+									osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+									right_lane_bound_id->set_value(next_laneboundary_global_id);
 								}
 							}
 						}
@@ -2184,16 +2176,8 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState *> objectState, 
 		}
 		else
 		{
-			if (obj_osi_internal.ln[idx_central]->mutable_classification()->centerline_is_driving_direction() != obj_osi_internal.ln[idx_left]->mutable_classification()->centerline_is_driving_direction()) // if not same drv dir
-			{
-				osi3::Identifier Far_left_lb_id = obj_osi_internal.ln[idx_left]->mutable_classification()->right_lane_boundary_id(0);
-				far_left_lb_id = (int)Far_left_lb_id.value();
-			}
-			else
-			{
-				osi3::Identifier Far_left_lb_id = obj_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id(0);
-				far_left_lb_id = (int)Far_left_lb_id.value();
-			}
+			osi3::Identifier Far_left_lb_id = obj_osi_internal.ln[idx_left]->mutable_classification()->left_lane_boundary_id(0);
+			far_left_lb_id = (int)Far_left_lb_id.value();
 		}
 	}
 
@@ -2215,16 +2199,8 @@ void OSIReporter::GetOSILaneBoundaryIds(std::vector<ObjectState *> objectState, 
 		}
 		else
 		{
-			if (obj_osi_internal.ln[idx_central]->mutable_classification()->centerline_is_driving_direction() != obj_osi_internal.ln[idx_right]->mutable_classification()->centerline_is_driving_direction()) // if not same drv dir
-			{
-				osi3::Identifier Far_right_lb_id = obj_osi_internal.ln[idx_right]->mutable_classification()->left_lane_boundary_id(0);
-				far_right_lb_id = (int)Far_right_lb_id.value();
-			}
-			else
-			{
-				osi3::Identifier Far_right_lb_id = obj_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id(0);
-				far_right_lb_id = (int)Far_right_lb_id.value();
-			}
+			osi3::Identifier Far_right_lb_id = obj_osi_internal.ln[idx_right]->mutable_classification()->right_lane_boundary_id(0);
+			far_right_lb_id = (int)Far_right_lb_id.value();
 		}
 	}
 
