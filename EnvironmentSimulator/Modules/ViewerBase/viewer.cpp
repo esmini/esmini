@@ -528,7 +528,7 @@ void SensorViewFrustum::Update()
 OSISensorDetection::OSISensorDetection(osg::ref_ptr<osg::Group> parent)
 {
 	parent_ = parent;
-	
+
 	detected_points_group_ = new osg::Group;
 	detected_points_group_->setDataVariance(osg::Object::DYNAMIC);
 	parent->addChild(detected_points_group_);
@@ -536,7 +536,7 @@ OSISensorDetection::OSISensorDetection(osg::ref_ptr<osg::Group> parent)
 	detected_bb_group_->setDataVariance(osg::Object::DYNAMIC);
 	parent->addChild(detected_bb_group_);
 }
-		
+
 OSISensorDetection::~OSISensorDetection()
 {
 	for(auto point : detected_points_)
@@ -631,10 +631,10 @@ void OSISensorDetection::Update(osi3::SensorView *sv)
 				//Get moving object position and dimension
 				const osi3::Vector3d moving_object_position = sv->global_ground_truth().moving_object()[i].base().position();
 				const osi3::Dimension3d moving_object_dimension = sv->global_ground_truth().moving_object()[i].base().dimension();
-				
+
 				//Get moving object id
 				uint64_t id = sv->global_ground_truth().moving_object()[i].id().value();
-				
+
 				// If the moving object ID isn't in the cars map then we create one and added to the map
 				if(detected_cars_.count(id) == 0)
 				{
@@ -655,10 +655,10 @@ void OSISensorDetection::Update(osi3::SensorView *sv)
 					//Get line boundary id
 					std::string str_id = std::to_string(sv->global_ground_truth().lane_boundary()[i].id().value()) + std::to_string(j);
 					uint64_t id = std::stoul(str_id);
-					
+
 					//Get line boundary position
 					const osi3::Vector3d boundary_line_position = sv->global_ground_truth().lane_boundary()[i].boundary_line()[j].position();
-					
+
 					// If the lane boundary ID isn't in the points map then we create one and added to the map
 					if(detected_points_.count(id) == 0)
 					{
@@ -780,20 +780,20 @@ void OSIDetectedCar::Update(const osg::Vec3 point)
 	osi_detection_geode_box_->dirtyBound();
 }
 
-void OSIDetectedCar::Show() 
-{ 
+void OSIDetectedCar::Show()
+{
 	car_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
 	osi_detection_geode_box_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
 	osi_detection_geode_center_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
 	showing_ = true;
 };
-		
-void OSIDetectedCar::Hide() 
+
+void OSIDetectedCar::Hide()
 {
 	car_->setNodeMask(0x0);
 	osi_detection_geode_box_->setNodeMask(0x0);
 	osi_detection_geode_center_->setNodeMask(0x0);
-	showing_ = false; 
+	showing_ = false;
 };
 
 void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)

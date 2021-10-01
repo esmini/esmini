@@ -1383,7 +1383,6 @@ extern "C"
 		}
 
 		player->AddObjectSensor(object_id, x, y, z, h, rangeNear, rangeFar, fovH, maxObj);
-		player->ShowObjectSensors(false);
 
 		return 0;
 	}
