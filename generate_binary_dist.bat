@@ -50,6 +50,7 @@ copy resources\xosc\routing-test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\drop-bike.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\sumo-test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\acc-test.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\swarm.xosc %target_dir%\resources\xosc /y
 
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
 copy resources\xosc\Catalogs\Routes\*.* %target_dir%\resources\xosc\Catalogs\Routes /y
@@ -86,6 +87,8 @@ copy resources\models\parking_lot.osgb %target_dir%\resources\models /y
 copy resources\models\curve_r100.osgb %target_dir%\resources\models /y
 copy resources\models\walkman.osgb %target_dir%\resources\models /y
 copy resources\models\cyclist.osgb %target_dir%\resources\models /y
+copy resources\models\mc.osgb %target_dir%\resources\models /y
+copy resources\models\moose_cc0.osgb %target_dir%\resources\models /y
 copy resources\models\multi_intersections.osgb %target_dir%\resources\models /y
 copy resources\models\curves_elevation.osgb %target_dir%\resources\models /y
 copy resources\models\pole.osgb %target_dir%\resources\models /y
@@ -124,6 +127,7 @@ copy run\esmini\run_routing-test.bat %target_dir%\run\esmini /y
 copy run\esmini\run_drop-bike.bat %target_dir%\run\esmini /y
 copy run\esmini\run_sumo-test.bat %target_dir%\run\esmini /y
 copy run\esmini\run_acc-test.bat %target_dir%\run\esmini /y
+copy run\esmini\run_swarm.bat %target_dir%\run\esmini /y
 
 copy run\odrviewer\run_e6mini.bat %target_dir%\run\odrviewer /y
 copy run\odrviewer\run_multi_intersections.bat %target_dir%\run\odrviewer /y
