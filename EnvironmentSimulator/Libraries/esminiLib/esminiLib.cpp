@@ -804,7 +804,8 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), timestamp, speed, 0, 0, x, y, z, h, p, r);
+					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), timestamp, speed,
+					obj->wheel_angle_, obj->wheel_rot_, x, y, z, h, p, r);
 			}
 		}
 
@@ -824,7 +825,8 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), timestamp, speed, 0, 0, x, y, h);
+					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), timestamp, speed,
+					obj->wheel_angle_, obj->wheel_rot_, x, y, h);
 			}
 		}
 
@@ -844,7 +846,8 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-													  obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
+					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed,
+					obj->wheel_angle_, obj->wheel_rot_, roadId, laneId, laneOffset, s);
 			}
 		}
 
