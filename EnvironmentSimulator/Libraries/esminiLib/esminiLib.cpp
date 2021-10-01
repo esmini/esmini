@@ -846,7 +846,7 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed,
+					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), timestamp, speed,
 					obj->wheel_angle_, obj->wheel_rot_, roadId, laneId, laneOffset, s);
 			}
 		}
@@ -1602,15 +1602,15 @@ extern "C"
 		return -1;
 	}
 
-#ifdef _USE_OSG
 	SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
 	{
+#ifdef _USE_OSG
 		if (player != nullptr && player->viewer_)
 		{
 			player->viewer_->SetNodeMaskBits(featureType, enable ? featureType : 0x0);
 		}
-	}
 #endif
+	}
 
 	// Simple vehicle
 	SE_DLL_API void *SE_SimpleVehicleCreate(float x, float y, float h, float length)

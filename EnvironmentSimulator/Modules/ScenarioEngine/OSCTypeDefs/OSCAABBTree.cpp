@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -17,7 +17,6 @@
 #include <cmath>
 #include <vector>
 #include <memory>
-#include <functional>
 #include <iostream>
 #include <algorithm>
 
@@ -170,7 +169,7 @@ void Tree::__build(BBoxVec::iterator const start, BBoxVec::iterator const end) {
 
     while (last > first) {
         if (last - first == 1) {
-            currentTree().bbox = *first; 
+            currentTree().bbox = *first;
             leafCount_++;
             if (!stack.empty()) {
                 auto record = stack.back();
@@ -198,13 +197,13 @@ void Tree::__build(BBoxVec::iterator const start, BBoxVec::iterator const end) {
             } else {
                 cut = first + (last - first) / 2;
                 goto kids;
-            }   
+            }
         }
     }
 }
 
 /*
- * It separates the array in two parts according to a partition 
+ * It separates the array in two parts according to a partition
  * line of the current bounding box.
  * It returns a pointer to the first element of the right side of the partition
  */
@@ -248,10 +247,10 @@ BBoxVec::iterator Tree::divide(BBoxVec::iterator const start, BBoxVec::iterator 
  * It Intersects two trees and puts the possible candidate bounding boxes in
  * a vector. This function has been adapted from:
  *   https://github.com/ebertolazzi/Clothoids/blob/master/src/AABBtree.cc
- * 
+ *
  */
 void Tree::intersect(Tree const &tree, Candidates &candidates) const {
-    
+
     if (!bbox || !tree.BBox() || !tree.BBox()->collide(bbox)) return;
 
     int case_ = (this->childeren.empty() ? 0 : 1) + (tree.Children().empty() ? 0 : 2);
@@ -280,7 +279,7 @@ void Tree::intersect(Tree const &tree, Candidates &candidates) const {
             }
             break;
         }
-    } 
+    }
 }
 
 
@@ -309,17 +308,17 @@ void aabbTree::processCandidates(Candidates const &candidates, vector<ptTriangle
         if (tr1->collide(tr2)) {
             if (tr2->geometry())
                 solutions.push_back(tr2);
-            else 
+            else
                 solutions.push_back(tr1);
         }
-    } 
+    }
 }
 
 void aabbTree::findPoints(vector<ptTriangle> const &triangles, EllipseInfo &eInfo, Solutions &points) {
     for (auto const tr : triangles) {
         if (tr->geometry()) {
             geometryIntersect(*tr, eInfo, points);
-        } else 
+        } else
             LOG("Warning: triangle without a geometry found");
     }
 }
@@ -343,9 +342,9 @@ void aabbTree::curve2triangles(Geometry *geometry, double segmSize, double maxAn
             count++;
             goto s_1;
         }
-        
+
         tangentIntersection(x0, y0, s0, t0, x1, y1, s1, t1, x2, y2);
- 
+
         ptBBox bbx = makeTriangleAndBbx(x0, y0, x1, y1, x2, y2, geometry, s0, s1);
         vec.push_back(bbx);
         s0 = s1;

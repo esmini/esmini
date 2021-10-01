@@ -12,6 +12,7 @@
 
 #pragma once
 #include "OSCAABBTree.hpp"
+#include <functional>
 
 namespace STGeometry {
 

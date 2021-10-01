@@ -1,11 +1,11 @@
-/* 
- * esmini - Environment Simulator Minimalistic 
+/*
+ * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- * 
+ *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
  */
@@ -29,7 +29,7 @@ namespace aabbTree {
     typedef shared_ptr<Triangle> ptTriangle;
     typedef shared_ptr<BBox> ptBBox;
     typedef shared_ptr<Tree> ptTree;
-    
+
     typedef vector<ptBBox> BBoxVec;
     typedef vector<Point> Solutions;
 
