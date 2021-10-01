@@ -126,7 +126,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 					// TTC (<= 2sec) + offset (> 0.375) + perception time (0.4sec, see plot of regulation)
 					waitTime_ = 1.15;  // 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
 					ALKS_LOG("ECE ALKS driver -> cut-in detected of '%s' (TTC: %.2f) -> driver starts braking after %.2f sec (braking delay + risk perception time)",
-						entities_->object_[i]->name_, TTC, waitTime_);
+						entities_->object_[i]->name_.c_str(), TTC, waitTime_);
 					driverBraking_ = true;
 				}
 			}
@@ -139,12 +139,12 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 					// relative heading angles are playing no role for reference driver
 					if (dtFreeCutOut_ == -LARGE_NUMBER)
 					{
-						ALKS_LOG("ECE ALKS driver -> cut-out detected of '%s'", entities_->object_[i]->name_);
+						ALKS_LOG("ECE ALKS driver -> cut-out detected of '%s'", entities_->object_[i]->name_.c_str());
 						if (!driverBrakeCandidateName.empty())
 						{
 							waitTime_ = 1.15;  // 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
 							ALKS_LOG("ECE ALKS driver -> cut-out '%s' and next vehicle in front '%s' detected (TTC: %.2f) -> "
-								"start braking after %.2f sec (braking delay + risk perception time)", entities_->object_[i]->name_,
+								"start braking after %.2f sec (braking delay + risk perception time)", entities_->object_[i]->name_.c_str(),
 								driverBrakeCandidateName, TTC, waitTime_);
 							driverBraking_ = true;
 						}
@@ -153,7 +153,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 					dtFreeCutOut_ = fabs(diff.dt) - 0.5 * (egoW + targetW);
 					if (!aebBrakeCandidateName.empty() && dtFreeCutOut_ >= 0)
 					{
-						ALKS_LOG("ECE ALKS AEB -> full wrap of '%s' and '%s' (TTC: %.2f) -> AEB starts braking", object_->name_, aebBrakeCandidateName,
+						ALKS_LOG("ECE ALKS AEB -> full wrap of '%s' and '%s' (TTC: %.2f) -> AEB starts braking", object_->name_.c_str(), aebBrakeCandidateName,
 							aebBrakeCandidateTTC);
 						// AEB brakes harder than driver, no need to continue checking for scenario if aeb is already braking
 						aebBraking_ = true;
@@ -174,12 +174,12 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 						{
 							waitTime_ += 0.4;  // + 0.4sec risk perception time which begins when leading vehicle exceeds a deceleration of 5m/s2
 							ALKS_LOG("ECE ALKS driver -> deceleration detected of '%s' (as: %.2f, TTC: %.2f) -> driver starts braking after %.2f sec "
-								"(braking delay + risk perception time)", entities_->object_[i]->name_, fabs(targetAS), TTC, waitTime_);
+								"(braking delay + risk perception time)", entities_->object_[i]->name_.c_str(), fabs(targetAS), TTC, waitTime_);
 						}
 						else
 						{
 							LOG("ECE ALKS driver -> deceleration detected of '%s' (as: %.2f, TTC: %.2f) -> driver starts braking after %.2f sec "
-								"(braking delay, no risk perception time)", entities_->object_[i]->name_, fabs(targetAS), TTC, waitTime_);
+								"(braking delay, no risk perception time)", entities_->object_[i]->name_.c_str(), fabs(targetAS), TTC, waitTime_);
 						}
 						driverBraking_ = true;
 					}
@@ -191,7 +191,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 					// Thus one can directly brake with AEB
 					if (fabs(diff.dt) < SMALL_NUMBER)
 					{
-						ALKS_LOG("ECE ALKS AEB -> full wrap of '%s' and '%s' (TTC: %.2f) -> AEB starts braking", object_->name_, entities_->object_[i]->name_, TTC);
+						ALKS_LOG("ECE ALKS AEB -> full wrap of '%s' and '%s' (TTC: %.2f) -> AEB starts braking", object_->name_.c_str(), entities_->object_[i]->name_.c_str(), TTC);
 						aebBraking_ = true;
 						// AEB brakes harder than driver, no need to continue checking for scenario if aeb is already braking
 						break;
@@ -207,7 +207,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 						// cut-out scenario or cut-in scenario have already been detected before
 						if (dtFreeCutOut_ >= 0 || driverBraking_)
 						{
-							ALKS_LOG("ECE ALKS AEB -> full wrap of '%s' and '%s' (TTC: %.2f) -> AEB starts braking", object_->name_, entities_->object_[i]->name_, TTC);
+							ALKS_LOG("ECE ALKS AEB -> full wrap of '%s' and '%s' (TTC: %.2f) -> AEB starts braking", object_->name_.c_str(), entities_->object_[i]->name_.c_str(), TTC);
 							// AEB brakes harder than driver, no need to continue checking for scenario if aeb is already braking
 							aebBraking_ = true;
 							break;
@@ -230,7 +230,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 						{
 							waitTime_ = 1.15;  // 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
 							ALKS_LOG("ECE ALKS driver -> cut-out '%s' and next vehicle in front '%s' detected (TTC: %.2f) -> "
-								"driver starts braking after %.2f sec (braking delay + risk perception time)", driverBrakeCandidateName, entities_->object_[i]->name_,
+								"driver starts braking after %.2f sec (braking delay + risk perception time)", driverBrakeCandidateName, entities_->object_[i]->name_.c_str(),
 								TTC, waitTime_);
 							driverBraking_ = true;
 						}
@@ -261,7 +261,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 			// MAX comparing to 0, because it makes no sense to drive backwards
 			acc = timeSinceBraking_ / 0.6 * 0.85;
 			currentSpeed_ = MAX(0, egoV - acc * 9.81 * timeStep);
-			ALKS_LOG("ECE ALKS AEB -> '%s' braking from %.2f to %.2f (acc: %.3fG)", object_->name_, egoV, currentSpeed_, MIN(acc, egoV / timeStep / 9.81));
+			ALKS_LOG("ECE ALKS AEB -> '%s' braking from %.2f to %.2f (acc: %.3fG)", object_->name_.c_str(), egoV, currentSpeed_, MIN(acc, egoV / timeStep / 9.81));
 		}
 		// now the reference driver would brake
 		else if (driverBraking_)
@@ -274,7 +274,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 				// MAX comparing to 0, because it makes no sense to drive backwards
 				acc = timeSinceBraking_ / 0.6 * 0.774;
 				currentSpeed_ = MAX(0, egoV - acc * 9.81 * timeStep);
-				ALKS_LOG("ECE ALKS driver -> wait time passed -> '%s' braking from %.2f to %.2f (acc: %.3fG)", object_->name_, egoV,
+				ALKS_LOG("ECE ALKS driver -> wait time passed -> '%s' braking from %.2f to %.2f (acc: %.3fG)", object_->name_.c_str(), egoV,
 					currentSpeed_, MIN(acc, egoV / timeStep / 9.81));
 			}
 			waitTime_ = MAX(0.0, waitTime_ - timeStep);  // reduce waitTime by current timeStep each time this if branch is called
