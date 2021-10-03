@@ -1740,12 +1740,39 @@ void Viewer::RemoveCar(int index)
 	}
 	entities_.erase(entities_.begin() + index);
 
-	if (currentCarInFocus_ > index)
+	if (currentCarInFocus_ > index && currentCarInFocus_ > 0)
 	{
 		// Shift with reduces list
 		currentCarInFocus_--;
+		SetVehicleInFocus((currentCarInFocus_) % entities_.size());
 	}
 	else if (currentCarInFocus_ == index)
+	{
+		if (entities_.size() > 0)
+		{
+			// Reset camera focus
+			SetVehicleInFocus((currentCarInFocus_) % entities_.size());
+		}
+	}
+
+	if (entities_.size() == 0)
+	{
+		// No more objects to follow, switch camera model
+		currentCarInFocus_ = -1;
+		((osgGA::KeySwitchMatrixManipulator*)osgViewer_->getCameraManipulator())->selectMatrixManipulator(5);
+	}
+}
+
+void Viewer::ReplaceCar(int index, EntityModel *model)
+{
+	if (entities_[index] != nullptr)
+	{
+		entities_[index]->parent_->removeChild(entities_[index]->txNode_);
+		delete (entities_[index]);
+		entities_[index] = model;
+	}
+
+	if (currentCarInFocus_ == index)
 	{
 		if (entities_.size() > 0)
 		{
@@ -1759,7 +1786,6 @@ void Viewer::RemoveCar(int index)
 		}
 	}
 }
-
 
 void Viewer::RemoveCar(std::string name)
 {

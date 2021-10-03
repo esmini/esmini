@@ -381,6 +381,7 @@ namespace viewer
 		int AddEntityModel(EntityModel* model);
 		void RemoveCar(int index);
 		void RemoveCar(std::string name);
+		void ReplaceCar(int index, EntityModel* model);
 		int LoadShadowfile(std::string vehicleModelFilename);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::Group> LoadEntityModel(const char *filename, osg::BoundingBox& bb);

@@ -194,7 +194,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 		}
 #ifdef _USE_OSI
 		osiReporter->ReportSensors(sensor);
-		
+
 		// Update OSI info
 		if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
 		{
@@ -235,51 +235,33 @@ void ScenarioPlayer::ViewerFrame()
 
 	mutex.Lock();
 
-	// add cars missing
+	// remove deleted cars
 	osg::Vec4 trail_color;
 	trail_color.set(color_blue[0], color_blue[1], color_blue[2], 1.0);
-	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	for (size_t i = 0; i < viewer_->entities_.size() && i < scenarioEngine->entities.object_.size(); i++)
 	{
-		Object* obj = scenarioEngine->entities.object_[i];
-
-		if (i >= viewer_->entities_.size())
-		{
-			// add model
-			viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
-				viewer::EntityModel::EntityType::VEHICLE, false,
-				obj->name_, &obj->boundingbox_, obj->scaleMode_));
-		}
-		else if (scenarioEngine->entities.object_[i]->name_ != viewer_->entities_[i]->name_ ||
+		if (scenarioEngine->entities.object_[i]->name_ != viewer_->entities_[i]->name_ ||
 			scenarioEngine->entities.object_[i]->model3d_ != viewer_->entities_[i]->filename_)
 		{
-			if (scenarioEngine->entities.object_[i]->model3d_ == viewer_->entities_[i]->filename_)
-			{
-				// new entity has same model, just update name
-				viewer_->entities_[i]->name_ = scenarioEngine->entities.object_[i]->name_;
-			}
-			else
-			{
-				// replace model
-				viewer_->entities_[i]->parent_->removeChild(viewer_->entities_[i]->txNode_);
-				delete (viewer_->entities_[i]);
-
-				viewer_->entities_[i] = viewer_->CreateEntityModel(obj->model3d_, trail_color,
-					viewer::EntityModel::EntityType::VEHICLE, false,
-					obj->name_, &obj->boundingbox_);
-			}
+			// Object has most probably been deleted from the entity list
+			viewer_->RemoveCar(i);
+			i--;  // test same object again against next in viewer list
 		}
 	}
 
-	if (viewer_->entities_.size() > scenarioEngine->entities.object_.size())
+	// Add missing cars
+	while (viewer_->entities_.size() < scenarioEngine->entities.object_.size())
 	{
-		// remove obsolete cars
-		while (viewer_->entities_.size() > scenarioEngine->entities.object_.size())
-		{
-			// remove car
-			viewer_->entities_.back()->parent_->removeChild(viewer_->entities_.back()->txNode_);
-			delete (viewer_->entities_.back());
-			viewer_->entities_.pop_back();
-		}
+		Object* obj = scenarioEngine->entities.object_[viewer_->entities_.size()];
+		viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
+			viewer::EntityModel::EntityType::VEHICLE, false,
+			obj->name_, &obj->boundingbox_, obj->scaleMode_));
+	}
+
+	// remove obsolete cars
+	while (viewer_->entities_.size() > scenarioEngine->entities.object_.size())
+	{
+		viewer_->RemoveCar(viewer_->entities_.size() - 1);
 	}
 
 	// Visualize entities
@@ -338,7 +320,7 @@ void ScenarioPlayer::ViewerFrame()
 	{
 		sensorFrustum[i]->Update();
 	}
-	
+
 	// Update info text
 	static char str_buf[128];
 	if (viewer_->currentCarInFocus_ >= 0 && viewer_->currentCarInFocus_ < viewer_->entities_.size())
@@ -356,7 +338,7 @@ void ScenarioPlayer::ViewerFrame()
 	viewer_->SetInfoText(str_buf);
 
 	mutex.Unlock();
-	
+
 	viewer_->osgViewer_->frame();
 
 	if (viewer_->osgViewer_->done())

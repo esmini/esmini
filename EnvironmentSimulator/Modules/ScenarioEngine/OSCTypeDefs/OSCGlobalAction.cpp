@@ -533,6 +533,7 @@ int SwarmTrafficAction::despawn(double simTime)
         {
             reader_->RemoveController(vehicle->controller_);
             entities_->removeObject(vehicle->name_);
+            gateway_->removeObject(vehicle->name_);
             delete vehicle;
             infoPtr = spawnedV.erase(infoPtr);
             increase = deleteVehicle = false;
