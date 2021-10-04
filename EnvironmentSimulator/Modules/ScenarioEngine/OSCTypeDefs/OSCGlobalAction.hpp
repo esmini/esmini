@@ -163,6 +163,7 @@ namespace scenarioengine
 		roadmanager::OpenDrive* odrManager_;
 		double innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
 		std::vector<std::string> modelFilenames_;
+		std::vector<int> modelIds_;
 
 		int despawn(double simTime);
 		void createRoadSegments(aabbTree::BBoxVec &vec);

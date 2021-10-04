@@ -367,7 +367,7 @@ namespace viewer
 		osg::ref_ptr<osg::Camera> infoTextCamera;
 		osg::ref_ptr<osgText::Text> infoText;
 
-		std::vector<PolyLine> polyLine_;
+		std::vector<PolyLine*> polyLine_;
 
 		Viewer(roadmanager::OpenDrive *odrManager, const char* modelFilename, const char* scenarioFilename, const char* exe_path, osg::ArgumentParser arguments, SE_Options* opt = 0);
 		~Viewer();

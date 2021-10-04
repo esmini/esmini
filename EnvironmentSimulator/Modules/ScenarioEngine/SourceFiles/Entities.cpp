@@ -1039,14 +1039,8 @@ bool Entities::indexExists(int id)
 
 int Entities::getNewId()
 {
-	int retint = 0;
-	while (!indexExists(retint))
-	{
-		retint += 1;
-	}
-	return retint;
+	return nextId_++;
 }
-
 
 Object* Entities::GetObjectByName(std::string name)
 {

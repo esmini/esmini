@@ -216,11 +216,11 @@ PolyLine::PolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg:
 
 	parent->addChild(pline_geom_);
 
-	if (dots3D)
+	if (dots3D && dots3D_group_ != nullptr)
 	{
 		parent->addChild(dots3D_group_);
 	}
-	else
+	else if (dots_geom_ != nullptr)
 	{
 		parent->addChild(dots_geom_);
 	}
@@ -1027,17 +1027,17 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
 	wheel_angle_ = wheel_angle;
 	wheel_rot_ = wheel_rotation;
 
-	osg::Quat quat;
-	quat.makeRotate(
-		0, osg::Vec3(1, 0, 0), // Roll
-		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
-		wheel_angle, osg::Vec3(0, 0, 1)); // Heading
-
 	if (wheel_.size() < 4)
 	{
 		// Wheels not available
 		return;
 	}
+
+	osg::Quat quat;
+	quat.makeRotate(
+		0, osg::Vec3(1, 0, 0), // Roll
+		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
+		wheel_angle, osg::Vec3(0, 0, 1)); // Heading
 
 	wheel_[0]->setAttitude(quat);
 	wheel_[1]->setAttitude(quat);
@@ -1454,6 +1454,12 @@ Viewer::~Viewer()
 	{
 		delete(entities_[i]);
 	}
+
+	for (size_t i = 0; i < polyLine_.size(); i++)
+	{
+		delete(polyLine_[i]);
+	}
+
 	entities_.clear();
 	delete osgViewer_;
 	osgViewer_ = 0;
@@ -1518,7 +1524,7 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	{
 		if (entities_[i]->filename_ == modelFilepath)
 		{
-			modelgroup = dynamic_cast<osg::Group*>(entities_[i]->group_->clone(osg::CopyOp::SHALLOW_COPY));
+			modelgroup = dynamic_cast<osg::Group*>(entities_[i]->group_->clone(osg::CopyOp::DEEP_COPY_NODES));
 			break;
 		}
 	}
@@ -2724,14 +2730,16 @@ void Viewer::SetWindowTitleFromArgs(int argc, char* argv[])
 
 PolyLine* Viewer::AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize)
 {
-	polyLine_.push_back(PolyLine(rootnode_, points, color, width, dotsize));
-	return &polyLine_.back();
+	PolyLine* pline = new PolyLine(rootnode_, points, color, width, dotsize);
+	polyLine_.push_back(pline);
+	return polyLine_.back();
 }
 
 PolyLine* Viewer::AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize)
 {
-	polyLine_.push_back(PolyLine(parent, points, color, width, dotsize));
-	return &polyLine_.back();
+	PolyLine* pline = new PolyLine(parent, points, color, width, dotsize);
+	polyLine_.push_back(pline);
+	return pline;
 }
 
 void Viewer::RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data)

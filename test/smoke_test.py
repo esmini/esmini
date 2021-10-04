@@ -222,6 +222,28 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^4.03.*, 0, Ego, 36.13.*, -0.82.*, 0.00.*, 6.27.*, 0.00.*, 0.00.*, 8.05.*', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.13.*, 0, Ego, 46.74.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 11.31.*', csv, re.MULTILINE))
 
+    def test_swarm(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ARGS + '--seed 5')
+        
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading swarm.xosc', log))
+        self.assertTrue(re.search('Using specified seed 5', log))
+        self.assertTrue(re.search('^0.00.*Ego New position:.*$\n^.*Pos\(10.20, 299.87, -0.53\) Rot\(1.56, 0.00, 0.00\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
+        self.assertTrue(re.search('^0.00.*Init Ego TeleportAction standbyState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^0.00.*Init Ego LongitudinalAction standbyState -> endTransition -> completeState', log, re.MULTILINE))
+
+        # Check some scenario events
+        self.assertTrue(re.search('^1.00.*: Swarm IR: 200.00, SMjA: 300.00, SMnA: 500.00, maxV: 75 vel: 30.00', log, re.MULTILINE))
+        self.assertTrue(re.search('^60.01.*: SwarmStopTrigger == true, 60.0100 > 60.00 edge: none', log, re.MULTILINE))
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.20.*, 576.85.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))    
+        self.assertTrue(re.search('^40.00.*, 0, Ego, 33.31.*, 699.01.*, -0.95.*, 1.45.*, 0.00.*, 0.00.*, 10.00.*', csv, re.MULTILINE))
+        self.assertTrue(re.search('^40.00.*, 3, swarm3, 29.55.*, 664.28.*, -0.86.*, 1.46.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))
+        self.assertTrue(re.search('^40.00.*, 81, swarm81, 26.89.*, 673.13.*, -0.88.*, 1.46.*, 0.00.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
+        self.assertTrue(re.search('^40.00.*, 83, swarm83, 6.72.*, 545.94.*, -0.84.*, 4.64.*, 0.00.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
+
 if __name__ == "__main__":
     # execute only if run as a script
 

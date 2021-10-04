@@ -333,6 +333,10 @@ namespace scenarioengine
 			{
 				category_ = static_cast<int>(Vehicle::Category::BICYCLE);
 			}
+			else if (category == "motorbike")
+			{
+				category_ = static_cast<int>(Vehicle::Category::MOTORBIKE);
+			}
 			else
 			{
 				LOG("Vehicle category %s not supported yet", category.c_str());
@@ -502,7 +506,7 @@ namespace scenarioengine
 	class Entities
 	{
 	public:
-		Entities(){};
+		Entities() : nextId_(0) {}
 
 		std::vector<Object *> object_;
 
@@ -515,6 +519,9 @@ namespace scenarioengine
 		bool nameExists(std::string name);
 		Object *GetObjectByName(std::string name);
 		Object *GetObjectById(int id);
+
+	private:
+		int nextId_;  // Is incremented for each new object created
 	};
 
 }

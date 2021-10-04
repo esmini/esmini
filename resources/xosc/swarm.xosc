@@ -44,7 +44,7 @@
                </PrivateAction>
                <!-- <PrivateAction> -->
                     <!-- <ActivateControllerAction longitudinal="true" lateral="true" /> -->
-               <!-- </PrivateAction>                -->
+               <!-- </PrivateAction> -->
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
@@ -89,6 +89,14 @@
 			</ManeuverGroup>
          </Act>
       </Story>
-     <StopTrigger/>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="SwarmStopTrigger" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="60" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

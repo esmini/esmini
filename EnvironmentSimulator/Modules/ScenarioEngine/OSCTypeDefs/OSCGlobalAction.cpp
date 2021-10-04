@@ -154,6 +154,7 @@ void SwarmTrafficAction::Start(double simTime, double dt)
             {
                 Vehicle* vehicle = reader_->parseOSCVehicle(catalogs->catalog_[i]->entry_[j]->GetNode());
                 modelFilenames_.push_back(vehicle->model3d_);
+                modelIds_.push_back(vehicle->model_id_);
                 delete vehicle;
             }
         }
@@ -162,6 +163,7 @@ void SwarmTrafficAction::Start(double simTime, double dt)
     if (modelFilenames_.size() == 0)
     {
         modelFilenames_.push_back(centralObject_->model3d_);
+        modelIds_.push_back(centralObject_->model_id_);
     }
 
     OSCAction::Start(simTime, dt);
@@ -438,14 +440,15 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             // Pick random model from vehicle catalog
             std::uniform_int_distribution<int> dist(0, (int)(modelFilenames_.size() - 1));
-
-            std::string modelFilename = modelFilenames_[dist(SE_Env::Inst().GetGenerator())];
+            int number = dist(SE_Env::Inst().GetGenerator());
+            std::string modelFilename = modelFilenames_[number];
 
             Vehicle* vehicle = createVehicle(inf.pos, laneID, velocity_, acc, modelFilename);
 
             int id = entities_->addObject(vehicle);
-            vehicle->name_ = std::to_string(id);
+            vehicle->name_ = "swarm" + std::to_string(id);
             vehicle->boundingbox_ = centralObject_->boundingbox_;
+            vehicle->model_id_ = modelIds_[number];
 
             acc->Assign(entities_->object_.back());
             acc->Activate(ControlDomains::DOMAIN_LONG);
