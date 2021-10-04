@@ -1,4 +1,5 @@
 import re
+from sys import platform
 from test_common import *
 import unittest
 
@@ -238,11 +239,28 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.20.*, 576.85.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))    
+
         self.assertTrue(re.search('^40.00.*, 0, Ego, 33.31.*, 699.01.*, -0.95.*, 1.45.*, 0.00.*, 0.00.*, 10.00.*', csv, re.MULTILINE))
-        self.assertTrue(re.search('^40.00.*, 3, swarm3, 29.55.*, 664.28.*, -0.86.*, 1.46.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))
-        self.assertTrue(re.search('^40.00.*, 81, swarm81, 26.89.*, 673.13.*, -0.88.*, 1.46.*, 0.00.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
-        self.assertTrue(re.search('^40.00.*, 83, swarm83, 6.72.*, 545.94.*, -0.84.*, 4.64.*, 0.00.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
+        # Random generators differ on platforms => random traffic will be repeatable only per platform
+        if platform == "win32":
+            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.20.*, 576.85.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))    
+            self.assertTrue(re.search('^40.00.*, 3, swarm3, 29.55.*, 664.28.*, -0.86.*, 1.46.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 81, swarm81, 26.89.*, 673.13.*, -0.88.*, 1.46.*, 0.00.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
+            self.assertTrue(re.search('^40.00.*, 83, swarm83, 6.72.*, 545.94.*, -0.84.*, 4.64.*, 0.00.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
+        elif platform == "linux" or platform == "linux2":
+            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.20.*, 576.85.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))    
+            self.assertTrue(re.search('^40.00.*, 5, swarm5, 29.55.*, 664.28.*, -0.86.*, 1.46.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 48, swarm48, 66.32.*, 913.33.*, -0.00.*, 1.40.*, 6.26.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
+            self.assertTrue(re.search('^40.00.*, 62, swarm62, 17.81.*, 525.16.*, -0.84.*, 1.50.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))        
+        elif platform == "darwin":
+            self.assertTrue(re.search('^1.59.*, 2, swarm2, 21.51.*, 577.12.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))    
+            self.assertTrue(re.search('^40.00.*, 13, swarm13, 26.09.*, 629.53.*, -0.83.*, 1.47.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 54, swarm54, 54.00.*, 832.72.*, -1.03.*, 1.43.*, 6.27.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
+            self.assertTrue(re.search('^40.00.*, 74, swarm74, 15.83.*, 490.32.*, -0.83.*, 1.52.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))        
+
+
+
+
 
 if __name__ == "__main__":
     # execute only if run as a script
