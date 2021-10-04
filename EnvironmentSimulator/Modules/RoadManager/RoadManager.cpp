@@ -8847,8 +8847,9 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 	OpenDrive *od = route->waypoint_[0].GetOpenDrive();
 
 	double initial_s_offset = 0;
+	double initial_route_direction = route->GetWayPointDirection(0);
 
-	if (route->GetWayPointDirection(0) > 0)
+	if (initial_route_direction > 0)
 	{
 		initial_s_offset = route->waypoint_[0].GetS();
 	}
@@ -8884,12 +8885,16 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 			if (route_direction < 0)  // along waypoint road direction
 			{
 				local_s = road_length - local_s;
-				new_offset = -offset_;
+			}
 
+			// offset handling
+			if (route_direction == initial_route_direction)
+			{
+				new_offset = route->initialOffset_;
 			}
 			else
 			{
-				new_offset = offset_;
+				new_offset = -route->initialOffset_;
 			}
 
 			if (SIGN(route->waypoint_[i].GetLaneId()) < 0)
@@ -9044,6 +9049,10 @@ int Route::AddWaypoint(Position* position)
 				}
 			}
 		}
+	}
+	else
+	{
+		initialOffset_ = position->GetOffset();
 	}
 
 	waypoint_.push_back(*position);
