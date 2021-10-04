@@ -2355,7 +2355,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							return 0;
 						}
 
-						override_action->overrideActionList.push_back(overrideStatus);
+						override_action->AddOverrideStatus(overrideStatus);
 					}
 
 					action = override_action;
@@ -3066,7 +3066,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 				}
 				else
 				{
-					LOG("TrigByValue %s not implemented", condition_type.c_str());
+					LOG("WARNING: ByValueCondition %s not supported yet. Ignoring.", condition_type.c_str());
 				}
 			}
 		}
@@ -3121,7 +3121,10 @@ Trigger *ScenarioReader::parseTrigger(pugi::xml_node triggerNode, bool defaultVa
 		for (pugi::xml_node cNode = cgNode.first_child(); cNode; cNode = cNode.next_sibling())
 		{
 			OSCCondition *condition = parseOSCCondition(cNode);
-			condition_group->condition_.push_back(condition);
+			if (condition != nullptr)
+			{
+				condition_group->condition_.push_back(condition);
+			}
 		}
 
 		trigger->conditionGroup_.push_back(condition_group);
@@ -3251,19 +3254,6 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 			maneuver->event_.push_back(event);
 		}
 	}
-}
-
-ConditionGroup *ScenarioReader::ParseConditionGroup(pugi::xml_node node)
-{
-	ConditionGroup *cg = new ConditionGroup();
-
-	for (pugi::xml_node conditionNode = node.first_child(); conditionNode; conditionNode = conditionNode.next_sibling())
-	{
-		OSCCondition *condition = parseOSCCondition(conditionNode);
-		cg->condition_.push_back(condition);
-	}
-
-	return cg;
 }
 
 int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)

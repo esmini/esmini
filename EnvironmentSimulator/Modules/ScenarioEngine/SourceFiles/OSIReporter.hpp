@@ -15,6 +15,11 @@
 #include "IdealSensor.hpp"
 #include "ScenarioGateway.hpp"
 #include "osi_sensordata.pb.h"
+#include "osi_object.pb.h"
+#include "osi_groundtruth.pb.h"
+#include "osi_sensorview.pb.h"
+#include "osi_version.pb.h"
+#include "osi_common.pb.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -24,6 +29,23 @@
 #define DEFAULT_OSI_TRACE_FILENAME "ground_truth.osi"
 
 using namespace scenarioengine;
+
+static struct
+{
+	osi3::SensorData *sd;
+	osi3::GroundTruth *gt;
+	osi3::StationaryObject *sobj;
+	osi3::TrafficSign *ts;
+	osi3::MovingObject *mobj;
+	std::vector<osi3::Lane *> ln;
+	std::vector<osi3::LaneBoundary *> lnb;
+} obj_osi_internal;
+
+static struct
+{
+	osi3::GroundTruth *gt;
+	osi3::SensorView *sv;
+} obj_osi_external;
 
 class OSIReporter
 {
@@ -98,12 +120,18 @@ public:
   */
   int CreateSensorViewFromSensorData(osi3::SensorData &sd);
 
+	/**
+	 Creates a SensorView from SensorData for plotting
+	*/
+	int CreateSensorViewFromSensorData(const osi3::SensorData &sd);
+
 	const char* GetOSIGroundTruth(int* size);
 	const char* GetOSIGroundTruthRaw();
 	const char* GetOSIRoadLane(std::vector<ObjectState*> objectState, int* size, int object_id);
 	const char* GetOSIRoadLaneBoundary(int* size, int global_id);
 	void GetOSILaneBoundaryIds(std::vector<ObjectState*> objectState, std::vector<int>& ids, int object_id);
     const char* GetOSISensorDataRaw();
+	osi3::SensorView *GetSensorView();
 	bool IsCentralOSILane(int lane_idx);
 	int GetLaneIdxfromIdOSI(int lane_id);
 	int OpenSocket(std::string ipaddr);
@@ -125,6 +153,6 @@ private:
 	unsigned long long int nanosec_;
 	std::ofstream osi_file;
 	int osi_update_counter_;
-  void CreateMovingObjectFromSensorData(osi3::SensorData &sd, int obj_nr);
-  void CreateLaneBoundaryFromSensordata(osi3::SensorData &sd, int lane_boundary_nr);
+  	void CreateMovingObjectFromSensorData(const osi3::SensorData &sd, int obj_nr);
+  	void CreateLaneBoundaryFromSensordata(const osi3::SensorData &sd, int lane_boundary_nr);
 };

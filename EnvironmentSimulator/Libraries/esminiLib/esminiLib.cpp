@@ -804,7 +804,8 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), timestamp, speed, 0, 0, x, y, z, h, p, r);
+					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), timestamp, speed,
+					obj->wheel_angle_, obj->wheel_rot_, x, y, z, h, p, r);
 			}
 		}
 
@@ -824,7 +825,8 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), timestamp, speed, 0, 0, x, y, h);
+					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), timestamp, speed,
+					obj->wheel_angle_, obj->wheel_rot_, x, y, h);
 			}
 		}
 
@@ -844,7 +846,8 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-													  obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed, 0, 0, roadId, laneId, laneOffset, s);
+					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed,
+					obj->wheel_angle_, obj->wheel_rot_, roadId, laneId, laneOffset, s);
 			}
 		}
 
@@ -1104,11 +1107,27 @@ extern "C"
 		return 0;
 	}
 
-	SE_DLL_API int *SE_SetOSISensorDataRaw(const char* sensordata)
+	SE_DLL_API int SE_SetOSISensorDataRaw(const char* sensordata)
 	{
-		// Work In Progress
-		// const osi3::SensorData *sd = reinterpret_cast<const osi3::SensorData *>(sensordata);
-		// player
+		if (player != nullptr)
+		{
+#ifdef _USE_OSG
+			if (player->viewer_)
+			{
+	#ifdef _USE_OSI
+				const osi3::SensorData *sd = reinterpret_cast<const osi3::SensorData *>(sensordata);
+				player->osiReporter->CreateSensorViewFromSensorData(*sd);
+				if(player->osiReporter->GetSensorView())
+				{
+					if(player->OSISensorDetection)
+					{
+						player->OSISensorDetection->Update(player->osiReporter->GetSensorView());
+					}
+				}
+	#endif  // USE_OSI
+			}
+#endif
+		}
 		return 0;
 	}
 
@@ -1364,9 +1383,31 @@ extern "C"
 		}
 
 		player->AddObjectSensor(object_id, x, y, z, h, rangeNear, rangeFar, fovH, maxObj);
-		player->ShowObjectSensors(true);
+		player->ShowObjectSensors(false);
 
 		return 0;
+	}
+
+	SE_DLL_API int SE_ViewSensorData(int object_id)
+	{
+		if (player)
+		{
+			return -1;
+		}
+
+			if (object_id < 0 || object_id >= player->scenarioEngine->entities.object_.size())
+			{
+				LOG("Invalid object_id (%d/%d)", object_id, player->scenarioEngine->entities.object_.size());
+				return -1;
+			}
+
+			player->AddOSIDetection(object_id);
+			player->ShowObjectSensors(false);
+
+			return 0;
+		}
+
+		return -1;
 	}
 
 	SE_DLL_API void SE_DisableOSIFile()

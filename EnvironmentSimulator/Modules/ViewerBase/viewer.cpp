@@ -305,6 +305,8 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	sensor_ = sensor;
 	txNode_ = new osg::PositionAttitudeTransform;
 	txNode_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
+	txNode_->setPosition(osg::Vec3(sensor_->pos_.x, sensor_->pos_.y, sensor_->pos_.z));
+	txNode_->setAttitude(osg::Quat(sensor_->pos_.h, osg::Vec3(0, 0, 1)));
 	parent->addChild(txNode_);
 
 	// Create geometry
@@ -325,7 +327,7 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 
 	txNode_->addChild(line_group_);
 
-	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(4 * (numSegments+1));
+	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(4 * (numSegments+1)+1);
 	osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(GL_QUADS, 2 * 4 + 4 * 4 * numSegments);
 
 	osg::ref_ptr<osg::DrawElementsUInt> indicesC0 = new osg::DrawElementsUInt(GL_LINE_STRIP, numSegments+1);
@@ -334,6 +336,7 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	osg::ref_ptr<osg::DrawElementsUInt> indicesC3 = new osg::DrawElementsUInt(GL_LINE_STRIP, numSegments+1);
 	osg::ref_ptr<osg::DrawElementsUInt> indicesC4 = new osg::DrawElementsUInt(GL_LINE_LOOP, 4);
 	osg::ref_ptr<osg::DrawElementsUInt> indicesC5 = new osg::DrawElementsUInt(GL_LINE_LOOP, 4);
+	osg::ref_ptr<osg::DrawElementsUInt> indicesC6 = new osg::DrawElementsUInt(GL_LINES, 8);
 
 	size_t i;
 	unsigned int idx = 0;
@@ -344,10 +347,10 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 		float x = cosf(angle);
 		float y = sinf(angle);
 
-		(*vertices)[i * 4 + 0].set(sensor_->near_ * x, sensor_->near_ * y, -sensor_->near_ * fovV_rate);
-		(*vertices)[i * 4 + 3].set(sensor_->far_ * x, sensor_->far_ * y, -sensor_->far_ * fovV_rate);
-		(*vertices)[i * 4 + 2].set(sensor_->far_ * x, sensor_->far_ * y, sensor_->far_ * fovV_rate);
-		(*vertices)[i * 4 + 1].set(sensor_->near_ * x, sensor_->near_ * y, sensor_->near_ * fovV_rate);
+		(*vertices)[i * 4 + 0].set(sensor_->near_ * x, sensor_->near_ * y, -sensor_->near_ * fovV_rate); // near bottom
+		(*vertices)[i * 4 + 3].set(sensor_->far_ * x, sensor_->far_ * y, -sensor_->far_ * fovV_rate); // far bottom
+		(*vertices)[i * 4 + 2].set(sensor_->far_ * x, sensor_->far_ * y, sensor_->far_ * fovV_rate); // far upper
+		(*vertices)[i * 4 + 1].set(sensor_->near_ * x, sensor_->near_ * y, sensor_->near_ * fovV_rate); // near upper
 
 		if (i > 0)
 		{
@@ -381,6 +384,7 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 		(*indicesC2)[idxC] = i * 4 + 2;
 		(*indicesC3)[idxC++] = i * 4 + 3;
 	}
+	(*vertices)[4 * (numSegments+1)].set(0,0,0);
 
 	(*indicesC4)[0] = (*indices)[idx++] = 0;
 	(*indicesC4)[1] = (*indices)[idx++] = 3;
@@ -392,64 +396,101 @@ SensorViewFrustum::SensorViewFrustum(ObjectSensor *sensor, osg::Group *parent)
 	(*indicesC5)[2] = (*indices)[idx++] = (i - 1) * 4 + 2;
 	(*indicesC5)[3] = (*indices)[idx++] = (i - 1) * 4 + 3;
 
-	const osg::Vec4 normalColor(0.8f, 0.7f, 0.6f, 1.0f);
-	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array(1);
-	(*colors)[0] = normalColor;
+	// Drawing the lines from sensor mounting position to the near plane to indicate the near blind spot of the sensor
+	(*indicesC6)[0] = 4 * (numSegments+1);
+	(*indicesC6)[1] = 0;
+	(*indicesC6)[2] = 4 * (numSegments+1);
+	(*indicesC6)[3] = 1;
+	(*indicesC6)[4] = 4 * (numSegments+1);
+	(*indicesC6)[5] = 4* numSegments;
+	(*indicesC6)[6] = 4 * (numSegments+1);
+	(*indicesC6)[7] = 4* numSegments+1;
 
+	// Geometry -> Drawing transparent segments in FOV (between near plane and far plane)
 	osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
-	osg::ref_ptr<osg::Geometry> geom2 = new osg::Geometry;
 	geom->setDataVariance(osg::Object::STATIC);
 	geom->setUseDisplayList(true);
 	geom->setUseVertexBufferObjects(true);
 	geom->setVertexArray(vertices.get());
-
-	geom2->setUseDisplayList(true);
-	geom2->setUseVertexBufferObjects(true);
-	geom2->setVertexArray(vertices.get());
-
 	geom->addPrimitiveSet(indices.get());
-	geom2->addPrimitiveSet(indicesC0.get());
-	geom2->addPrimitiveSet(indicesC1.get());
-	geom2->addPrimitiveSet(indicesC2.get());
-	geom2->addPrimitiveSet(indicesC3.get());
-	geom2->addPrimitiveSet(indicesC4.get());
-	geom2->addPrimitiveSet(indicesC5.get());
-	geom2->setColorArray(colors.get());
-	geom2->setColorBinding(osg::Geometry::BIND_OVERALL);
-
 	osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
-	osgUtil::SmoothingVisitor::smooth(*geom2, 0.0);
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 	geode->addDrawable(geom.release());
 	osg::ref_ptr<osg::Material> material = new osg::Material;
 	material->setDiffuse(osg::Material::FRONT, osg::Vec4(1.0, 1.0, 1.0, 0.2));
 	material->setAmbient(osg::Material::FRONT, osg::Vec4(1.0, 1.0, 1.0, 0.2));
-
 	osg::ref_ptr<osg::StateSet> stateset = geode->getOrCreateStateSet(); // Get the StateSet of the group
 	stateset->setAttribute(material.get()); // Set Material
-
 	stateset->setMode(GL_BLEND, osg::StateAttribute::ON);
 	stateset->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 	stateset->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
 	cull->setMode(osg::CullFace::BACK);
 	stateset->setAttributeAndModes(cull, osg::StateAttribute::ON);
-
-	// Draw only wireframe to
 	osg::ref_ptr<osg::PolygonMode> polygonMode = new osg::PolygonMode;
 	polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
 	stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+	txNode_->addChild(geode);
 
+	// Geometry2 -> Drawing solid lines representing the boundary of each volume of FOV
+	osg::ref_ptr<osg::Geometry> geom2 = new osg::Geometry;
+	osg::ref_ptr<osg::Vec4Array> FOV_color = new osg::Vec4Array(1);
+	(*FOV_color)[0].set(color_green[0], color_green[1], color_green[2], 1.0);
+	geom2->setUseDisplayList(true);
+	geom2->setUseVertexBufferObjects(true);
+	geom2->setVertexArray(vertices.get());
+	geom2->addPrimitiveSet(indicesC0.get());
+	geom2->addPrimitiveSet(indicesC1.get());
+	geom2->addPrimitiveSet(indicesC2.get());
+	geom2->addPrimitiveSet(indicesC3.get());
+	geom2->addPrimitiveSet(indicesC4.get());
+	geom2->addPrimitiveSet(indicesC5.get());
+	geom2->setColorArray(FOV_color.get());
+	geom2->setColorBinding(osg::Geometry::BIND_OVERALL);
+	osgUtil::SmoothingVisitor::smooth(*geom2, 0.0);
 	osg::ref_ptr<osg::Geode> geode2 = new osg::Geode;
-	geom2->getOrCreateStateSet()->setAttribute(new osg::LineWidth(1.0f));
+	geom2->getOrCreateStateSet()->setAttribute(new osg::LineWidth(2.0f));
 	geom2->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 	geode2->addDrawable(geom2.release());
-
-
-	txNode_->addChild(geode);
 	txNode_->addChild(geode2);
-	txNode_->setPosition(osg::Vec3(sensor_->pos_.x, sensor_->pos_.y, sensor_->pos_.z));
-	txNode_->setAttitude(osg::Quat(sensor_->pos_.h, osg::Vec3(0, 0, 1)));
+
+	// Geometry3 -> Drawing solid lines representing the boundary of blind spot area between sensor mounting position and near FOV plane
+	osg::ref_ptr<osg::Geometry> geom3 = new osg::Geometry;
+	osg::ref_ptr<osg::Vec4Array> blind_spot_color = new osg::Vec4Array(1);
+	(*blind_spot_color)[0].set(color_red[0], color_red[1], color_red[2], 1.0);
+	geom3->setUseDisplayList(true);
+	geom3->setUseVertexBufferObjects(true);
+	geom3->setVertexArray(vertices.get());
+	geom3->addPrimitiveSet(indicesC6.get());
+	geom3->setColorArray(blind_spot_color.get());
+	geom3->setColorBinding(osg::Geometry::BIND_OVERALL);
+	osgUtil::SmoothingVisitor::smooth(*geom3, 0.0);
+	osg::ref_ptr<osg::Geode> geode3 = new osg::Geode;
+	geom3->getOrCreateStateSet()->setAttribute(new osg::LineWidth(2.0f));
+	geom3->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	geode3->addDrawable(geom3.release());
+	txNode_->addChild(geode3);
+
+	// Geometry4 -> Drawing a point on desired sensor mounting position
+	osg::ref_ptr<osg::Geometry> geom4 = new osg::Geometry;
+	osg::ref_ptr<osg::Vec3Array> mounting_vertice = new osg::Vec3Array(1);
+	osg::ref_ptr<osg::Vec4Array> mounting_color = new osg::Vec4Array(1);
+	osg::ref_ptr<osg::Point> mount_point = new osg::Point();
+	mount_point->setSize(8.0f);
+	(*mounting_color)[0].set(color_red[0], color_red[1], color_red[2], 1.0);
+	(*mounting_vertice)[0].set(0,0,0);
+	geom4->setUseDisplayList(true);
+	geom4->setUseVertexBufferObjects(true);
+	geom4->setVertexArray(mounting_vertice.get());
+	osg::ref_ptr<osg::DrawElementsUInt> point_element = new osg::DrawElementsUInt(GL_POINTS, 1);
+	geom4->addPrimitiveSet(point_element.get());
+	geom4->setColorArray(mounting_color.get());
+	geom4->setColorBinding(osg::Geometry::BIND_OVERALL);
+	osgUtil::SmoothingVisitor::smooth(*geom4, 0.0);
+	osg::ref_ptr<osg::Geode> geode4 = new osg::Geode;
+	geom4->getOrCreateStateSet()->setAttribute(mount_point);
+	geom4->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	txNode_->addChild(geom4);
 }
 
 SensorViewFrustum::~SensorViewFrustum()
@@ -483,6 +524,277 @@ void SensorViewFrustum::Update()
 		plines_[i]->Redraw();
 	}
 }
+
+OSISensorDetection::OSISensorDetection(osg::ref_ptr<osg::Group> parent)
+{
+	parent_ = parent;
+	
+	detected_points_group_ = new osg::Group;
+	detected_points_group_->setDataVariance(osg::Object::DYNAMIC);
+	parent->addChild(detected_points_group_);
+	detected_bb_group_ = new osg::Group;
+	detected_bb_group_->setDataVariance(osg::Object::DYNAMIC);
+	parent->addChild(detected_bb_group_);
+}
+		
+OSISensorDetection::~OSISensorDetection()
+{
+	for(auto point : detected_points_)
+	{
+		delete point.second;
+	}
+	detected_points_.clear();
+
+	for(auto car : detected_cars_)
+	{
+		delete car.second;
+	}
+	detected_cars_.clear();
+
+	parent_->removeChild(detected_points_group_);
+	parent_->removeChild(detected_bb_group_);
+}
+
+void OSISensorDetection::Update(osi3::SensorView *sv)
+{
+	//lets find the detected objects that are still under the radar FOV
+	if(sv)
+	{
+		bool found = false;
+		for(auto point : detected_points_)
+		{
+			for (size_t i = 0; i < sv->global_ground_truth().lane_boundary_size(); ++i)
+			{
+				for(size_t j = 0; j < sv->global_ground_truth().lane_boundary()[i].boundary_line_size(); ++j)
+				{
+					//lets see the lane boundary ID and check if detected points map are in the sensor view
+					std::string str_id = std::to_string(sv->global_ground_truth().lane_boundary()[i].id().value()) + std::to_string(j);
+					uint64_t id = std::stoul(str_id);
+					if(point.first == id)
+					{
+						found = true;
+						break;
+					}
+					if(found)
+					{
+						break;
+					}
+				}
+			}
+
+			//If the point isn't in the sensor view then we hide it
+			if(!found)
+			{
+				point.second->Hide();
+			}
+			// If the point was detected before, we show it again
+			else if(found && !point.second->showing_)
+			{
+				point.second->Show();
+			}
+			found = false;
+		}
+
+		found = false;
+		for(auto car : detected_cars_)
+		{
+			for (size_t i = 0; i < sv->global_ground_truth().moving_object_size(); i++)
+			{
+				//lets see the moving object ID and check if detected cars map are in the sensor view
+				uint64_t id = sv->global_ground_truth().moving_object()[i].id().value();
+				if(car.first == id)
+				{
+					found = true;
+					break;
+				}
+			}
+
+			//If the moving object isn't in the sensor view then we hide it
+			if(!found)
+			{
+				car.second->Hide();
+			}
+			// If the moving object was detected before, we show it again
+			else if(found && !car.second->showing_)
+			{
+				car.second->Show();
+			}
+			found = false;
+		}
+
+		// Lets check if it is needed to create new points and moving objects visuals
+		double z_offset = 0.10;
+		if (sv->has_global_ground_truth())
+		{
+			for (size_t i = 0; i < sv->global_ground_truth().moving_object_size(); i++)
+			{
+				//Get moving object position and dimension
+				const osi3::Vector3d moving_object_position = sv->global_ground_truth().moving_object()[i].base().position();
+				const osi3::Dimension3d moving_object_dimension = sv->global_ground_truth().moving_object()[i].base().dimension();
+				
+				//Get moving object id
+				uint64_t id = sv->global_ground_truth().moving_object()[i].id().value();
+				
+				// If the moving object ID isn't in the cars map then we create one and added to the map
+				if(detected_cars_.count(id) == 0)
+				{
+					detected_cars_.emplace(id, new OSIDetectedCar(osg::Vec3(moving_object_position.x(), moving_object_position.y(), moving_object_position.z() + z_offset), moving_object_dimension.height() + 1.0, moving_object_dimension.width() + 1.0, moving_object_dimension.length() + 1.0, detected_bb_group_));
+				}
+				else
+				{
+					//Otherwise update the visual object
+					osg::Vec3 bb_dimension = detected_cars_.find(id)->second->bb_dimensions_;
+					detected_cars_.find(id)->second->Update(osg::Vec3(moving_object_position.x(), moving_object_position.y(), moving_object_position.z() + bb_dimension.z() + z_offset));
+				}
+			}
+
+			for (size_t i = 0; i < sv->global_ground_truth().lane_boundary_size(); ++i)
+			{
+				for(size_t j = 0; j < sv->global_ground_truth().lane_boundary()[i].boundary_line_size(); ++j)
+				{
+					//Get line boundary id
+					std::string str_id = std::to_string(sv->global_ground_truth().lane_boundary()[i].id().value()) + std::to_string(j);
+					uint64_t id = std::stoul(str_id);
+					
+					//Get line boundary position
+					const osi3::Vector3d boundary_line_position = sv->global_ground_truth().lane_boundary()[i].boundary_line()[j].position();
+					
+					// If the lane boundary ID isn't in the points map then we create one and added to the map
+					if(detected_points_.count(id) == 0)
+					{
+						detected_points_.emplace(id, new OSIDetectedPoint(osg::Vec3(boundary_line_position.x(), boundary_line_position.y(), boundary_line_position.z() + z_offset), detected_points_group_));
+					}
+					else
+					{
+						//Otherwise update the visual object
+						detected_points_.find(id)->second->Update(osg::Vec3(boundary_line_position.x(), boundary_line_position.y(), boundary_line_position.z() + z_offset));
+					}
+				}
+			}
+		}
+	}
+}
+
+OSIDetectedPoint::OSIDetectedPoint(const osg::Vec3 point, osg::ref_ptr<osg::Group> parent)
+{
+	parent_ = parent;
+	osi_detection_geom_ = new osg::Geometry;
+ 	osi_detection_points_ = new osg::Vec3Array;
+ 	osi_detection_color_ = new osg::Vec4Array;
+	osg::ref_ptr<osg::Point> osi_detection_point = new osg::Point();
+
+	// start point of each road mark
+	osi_detection_points_->push_back(point);
+	osi_detection_color_->push_back(osg::Vec4(color_green[0], color_green[1], color_green[2], 1.0));
+
+	osi_detection_point->setSize(8.0f);
+	osi_detection_geom_->getOrCreateStateSet()->setAttributeAndModes(osi_detection_point, osg::StateAttribute::ON);
+	osi_detection_geom_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	osi_detection_geom_->getOrCreateStateSet()->setDataVariance(osg::Object::DYNAMIC);
+
+	osi_detection_geom_->setVertexArray(osi_detection_points_.get());
+	osi_detection_geom_->setColorArray(osi_detection_color_.get());
+	osi_detection_geom_->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+	osi_detection_geom_->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, osi_detection_points_->size()));
+	osi_detection_geom_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
+	showing_ = true;
+
+	parent_->addChild(osi_detection_geom_);
+}
+
+void OSIDetectedPoint::Update(const osg::Vec3 point)
+{
+	osi_detection_points_->clear();
+	osi_detection_points_->push_back(point);
+	osi_detection_points_->dirty();
+	osi_detection_geom_->dirtyGLObjects();
+	osi_detection_geom_->dirtyBound();
+}
+
+OSIDetectedPoint::~OSIDetectedPoint()
+{
+	parent_->removeChild(osi_detection_geom_);
+}
+
+OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double l, osg::ref_ptr<osg::Group> parent)
+{
+	parent_ = parent;
+	bb_dimensions_.set(l, w, h);
+
+	car_ = new osg::Group;
+	osi_detection_geode_box_ = new osg::Geode;
+	osi_detection_geode_box_->addDrawable(new osg::ShapeDrawable(new osg::Box()));
+	osi_detection_geode_box_->getDrawable(0)->setDataVariance(osg::Object::DataVariance::DYNAMIC);
+
+	osi_detection_tx_ = new osg::PositionAttitudeTransform;
+
+	osg::Material* material = new osg::Material();
+
+	// Set color of vehicle based on its index
+	double* color = color_green;
+	double b = 1.5;  // brighness
+
+	material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+	material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+
+	// Set dimensions of the entity "box"
+	osi_detection_tx_->setScale(bb_dimensions_);
+	osi_detection_tx_->setPosition(osg::Vec3d(point.x(), point.y(), point.z()));
+
+	// Draw only wireframe
+	osg::PolygonMode* polygonMode = new osg::PolygonMode;
+	polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+	osg::ref_ptr<osg::StateSet> stateset = osi_detection_geode_box_->getOrCreateStateSet(); // Get the StateSet of the group
+	stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+	stateset->setMode(GL_COLOR_MATERIAL, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	stateset->setDataVariance(osg::Object::DYNAMIC);
+	osi_detection_geode_box_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
+
+	osi_detection_geode_center_ = new osg::Geode;
+	osi_detection_geode_center_->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0, 0, 0), 0.2)));
+	osi_detection_geode_center_->getDrawable(0)->setDataVariance(osg::Object::DYNAMIC);
+
+	osi_detection_geode_center_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
+	car_->addChild(osi_detection_geode_center_);
+
+	osi_detection_tx_->addChild(osi_detection_geode_box_);
+	osi_detection_tx_->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
+	osi_detection_tx_->getOrCreateStateSet()->setAttribute(material);
+	osi_detection_tx_->getOrCreateStateSet()->setDataVariance(osg::Object::DYNAMIC);
+	car_->setName("BoundingBox");
+	car_->addChild(osi_detection_tx_);
+
+	parent_->addChild(car_);
+}
+
+OSIDetectedCar::~OSIDetectedCar()
+{
+	parent_->removeChild(car_);
+}
+
+void OSIDetectedCar::Update(const osg::Vec3 point)
+{
+	osi_detection_tx_->setPosition(point);
+	osi_detection_tx_->dirtyBound();
+	osi_detection_geode_center_->dirtyBound();
+	osi_detection_geode_box_->dirtyBound();
+}
+
+void OSIDetectedCar::Show() 
+{ 
+	car_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
+	osi_detection_geode_box_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
+	osi_detection_geode_center_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
+	showing_ = true;
+};
+		
+void OSIDetectedCar::Hide() 
+{
+	car_->setNodeMask(0x0);
+	osi_detection_geode_box_->setNodeMask(0x0);
+	osi_detection_geode_center_->setNodeMask(0x0);
+	showing_ = false; 
+};
 
 void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
 {

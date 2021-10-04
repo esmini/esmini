@@ -61,13 +61,13 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
-	std::vector<std::vector<int>> lane_bound = {{10, 9, 8, -1},
-												{0, 10, 9, 8},
-												{1, 0, 10, 9},
-												{2, 1, 0, 10},
-												{3, 2, 1, 0},
-												{11, 3, 2, 1},
-												{4, 11, 3, 2},
+	std::vector<std::vector<int>> lane_bound = {{-1, 8, 9, 10},
+												{8, 9, 10, 0},
+												{9, 10, 0, 1},
+												{10, 0, 1, 2},
+												{0, 1, 2, 3},
+												{1, 2, 3, 11},
+												{2, 3, 11, 4},
 												{3, 11, 4, 5}, //right side start
 												{11, 4, 5, 6},
 												{4, 5, 6, 7},
@@ -321,13 +321,13 @@ TEST(GetOSIRoadLaneTest, left_lane_id)
 	{
 		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
-		if (lanes[i] < 6)
+		if (lanes[i] == 0)
 		{
-			EXPECT_EQ(osi_lane.classification().left_adjacent_lane_id(0).value(), lanes[i + 1]);
+			EXPECT_EQ(osi_lane.classification().left_adjacent_lane_id_size(), 0);
 		}
-		else if (lanes[i] == 6)
+		else if (lanes[i] <= 6)
 		{
-			EXPECT_EQ(osi_lane.classification().left_adjacent_lane_id(0).value(), 8);
+			EXPECT_EQ(osi_lane.classification().left_adjacent_lane_id(0).value(), lanes[i - 1]);
 		}
 		else if (lanes[i] == 8)
 		{
@@ -363,17 +363,17 @@ TEST(GetOSIRoadLaneTest, right_lane_id)
 		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
 
-		if (lanes[i] == 0)
+		if (lanes[i] == 14)
 		{
 			EXPECT_EQ(osi_lane.classification().right_adjacent_lane_id_size(), 0);
 		}
-		else if (lanes[i] == 14)
+		else if (lanes[i] < 6)
 		{
-			EXPECT_EQ(osi_lane.classification().right_adjacent_lane_id_size(), 0);
+			EXPECT_EQ(osi_lane.classification().right_adjacent_lane_id(0).value(), lanes[i + 1]);
 		}
-		else if (lanes[i] < 7)
+		else if (lanes[i] == 6)
 		{
-			EXPECT_EQ(osi_lane.classification().right_adjacent_lane_id(0).value(), lanes[i - 1]);
+			EXPECT_EQ(osi_lane.classification().right_adjacent_lane_id(0).value(), 8);
 		}
 		else
 		{
@@ -397,15 +397,15 @@ TEST(GetOSIRoadLaneTest, right_lane_boundary_id)
 	osi3::Lane osi_lane;
 
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-	std::vector<int> lane_bound = {8, 9, 10, 0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14};
+	std::vector<int> lane_bound = {8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14};
 	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
 
-	for (int i = 0; i < lane_bound.size(); i++)
+	for (int i = 0; i < lane_bound.size() - 1; i++)
 	{
 		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
-
-		EXPECT_EQ(osi_lane.classification().right_lane_boundary_id(0).value(), lane_bound[i]);
+		
+		EXPECT_EQ(osi_lane.classification().right_lane_boundary_id(0).value(), lane_bound[i + 1]);
 	}
 
 	SE_Close();
@@ -424,26 +424,15 @@ TEST(GetOSIRoadLaneTest, left_lane_boundary_id)
 	osi3::Lane osi_lane;
 
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-	std::vector<int> lane_bound = {8, 9, 10, 0, 1, 2, 3, 4, 5, 6, 7, 12, 13, 14};
+	std::vector<int> lane_bound = {8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14};
 	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
 
 	for (int i = 0; i < veh_id.size(); i++)
 	{
 		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
-
-		if (veh_id[i] == 6 || veh_id[i] == 8)
-		{
-			EXPECT_EQ(osi_lane.classification().left_lane_boundary_id(0).value(), 11);
-		}
-		else if (veh_id[i] > 7)
-		{
-			EXPECT_EQ(osi_lane.classification().left_lane_boundary_id(0).value(), lane_bound[i + 1]);
-		}
-		else
-		{
-			EXPECT_EQ(osi_lane.classification().left_lane_boundary_id(0).value(), lane_bound[i - 1]);
-		}
+		
+		EXPECT_EQ(osi_lane.classification().left_lane_boundary_id(0).value(), lane_bound[i]);
 	}
 
 	SE_Close();

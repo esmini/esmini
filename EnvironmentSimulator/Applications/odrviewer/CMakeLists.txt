@@ -6,9 +6,14 @@ include_directories (
   ${OSG_INCLUDE_DIR}
   ${COMMON_MINI_INCLUDE_DIR}
   ${CONTROLLERS_INCLUDE_DIR}
+  ${OSI_INCLUDE_DIR}
 )
 
 set(TARGET odrviewer)
+
+if (USE_OSI)
+  set (osi_libs ${OSI_LIBRARIES})
+endif (USE_OSI)
 
 set ( SOURCES
 	main.cpp
@@ -21,13 +26,14 @@ add_executable ( ${TARGET} ${SOURCES} )
 
 add_definitions(-DOSG_LIBRARY_STATIC)
 
-target_link_libraries ( 
+target_link_libraries (
 	${TARGET}
 	RoadManager
 	ViewerBase
 	CommonMini
 	${OSG_LIBRARIES}
-	${TIME_LIB}	
+	${TIME_LIB}
+  ${osi_libs}
 )
 
 if (UNIX)

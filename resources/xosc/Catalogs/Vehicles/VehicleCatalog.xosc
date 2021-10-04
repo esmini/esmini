@@ -182,7 +182,7 @@
       </Vehicle>
       <Vehicle name="bicycle" vehicleCategory="bicycle" model3d="../models/cyclist.osgb">
          <BoundingBox>
-            <Center x="0" y="0" z="0.85"/>
+            <Center x="0.5" y="0" z="0.85"/>
             <Dimensions width="0.5" length="1.8" height="1.7"/>
          </BoundingBox>
          <Performance maxSpeed="40" maxDeceleration="10" maxAcceleration="10"/>
@@ -194,6 +194,22 @@
             <Property name="model_id" value="9"/>
             <!-- Scale modes: None, BBToModel, ModelToBB -->
             <Property name="scaleMode" value="BBToModel"/>                   
+         </Properties>
+      </Vehicle>
+      <Vehicle name="motorbike" vehicleCategory="motorbike" model3d="../models/mc.osgb">
+         <BoundingBox>
+            <Center x="1" y="0" z="0.85"/>
+            <Dimensions width="0.5" length="2.5" height="1.7"/>
+         </BoundingBox>
+         <Performance maxSpeed="100" maxDeceleration="10" maxAcceleration="10"/>
+         <Axles>
+            <FrontAxle maxSteering="30" wheelDiameter="0.7" trackWidth="0.7" positionX="2.7" positionZ="0.35"/>
+            <RearAxle maxSteering="30" wheelDiameter="0.7" trackWidth="0.7" positionX="0" positionZ="0.35"/>
+         </Axles>
+         <Properties>
+            <Property name="model_id" value="10"/>
+            <!-- Scale modes: None, BBToModel, ModelToBB -->
+            <Property name="scaleMode" value="BBToModel"/>
          </Properties>
       </Vehicle>
    </Catalog>

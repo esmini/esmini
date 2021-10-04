@@ -21,9 +21,6 @@
 
 namespace scenarioengine
 {
-	class ScenarioPlayer;
-
-	// base class for controllers
 	class ControllerACC: public Controller
 	{
 	public:

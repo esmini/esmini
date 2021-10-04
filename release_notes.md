@@ -1,5 +1,26 @@
 ## esmini release notes
 
+<<<<<<< HEAD
+=======
+### 2021-09-30 Version 2.14.2
+
+- Fix some action failures in repeated events (maximumExecutionCount > 1)
+  - Root cause: Internal timer not reset between runs
+- Fix ACC controller issue for scenarios with multiple vehicles
+
+### 2021-09-29 Version 2.14.1
+
+- Add visualization of externally reported OSI sensorView
+  - Add argument `--sensors` or just press 'r' to view
+- Add support for motorbike modelId=10 in replayer
+- mc.osgb added to model pack [models.7z](https://www.dropbox.com/s/5gk8bvgzqiaaoco/models.7z?dl=1)
+  - cyclist.osgb updated wrt reference point (rear axle projected on ground)
+- Fix OverrideControllerValueAction domain handling
+  - Assigned control strategy depends on type of controller value (e.g. steering is lateral, throttle is longitudinal)
+- Fix issue with controllers being aborted by conflicting actions
+  - ActivateControllerAction itself does not assign any control strategy
+  
+>>>>>>> master
 ### 2021-09-23 Version 2.14.0
 
 - Add entity 3D model and bounding box scale options

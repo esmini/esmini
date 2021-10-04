@@ -278,6 +278,7 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 {
 	OSCAction::Start(simTime, dt);
 	sim_time_ = simTime;
+	elapsed_ = 0.0;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
@@ -345,8 +346,6 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 	}
 
 	t_ = start_t_ = object_->pos_.GetT();
-
-	elapsed_ = 0;
 }
 
 void LatLaneChangeAction::Step(double simTime, double)
@@ -450,6 +449,7 @@ void LatLaneOffsetAction::Start(double simTime, double dt)
 {
 	OSCAction::Start(simTime, dt);
 	sim_time_ = simTime;
+	elapsed_ = 0.0;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
@@ -609,6 +609,7 @@ void LongSpeedAction::Start(double simTime, double dt)
 {
 	OSCAction::Start(simTime, dt);
 	sim_time_ = simTime;
+	elapsed_ = 0.0;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
@@ -1417,6 +1418,42 @@ void VisibilityAction::Start(double simTime, double dt)
 void VisibilityAction::Step(double, double)
 {
 	OSCAction::End();
+}
+
+int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status)
+{
+	overrideActionList.push_back(status);
+	if (status.type < Object::OverrideType::OVERRIDE_NR_TYPES)
+	{
+		if (status.type == Object::OverrideType::OVERRIDE_STEERING_WHEEL)
+		{
+			if (status.active)
+			{
+				domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) | static_cast<int>(ControlDomains::DOMAIN_LAT));
+			}
+			else
+			{
+				domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) & ~static_cast<int>(ControlDomains::DOMAIN_LAT));
+			}
+		}
+		else
+		{
+			if (status.active)
+			{
+				domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) | static_cast<int>(ControlDomains::DOMAIN_LONG));
+			}
+			else
+			{
+				domain_ = static_cast<ControlDomains>(static_cast<int>(domain_) & ~static_cast<int>(ControlDomains::DOMAIN_LONG));
+			}
+		}
+	}
+	else
+	{
+		LOG_AND_QUIT("Unexpected override type: %d", status.type);
+	}
+
+	return 0;
 }
 
 void OverrideControlAction::Start(double simTime, double dt)

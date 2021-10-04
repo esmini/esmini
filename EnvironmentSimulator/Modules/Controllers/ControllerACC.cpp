@@ -71,7 +71,7 @@ void ControllerACC::Step(double timeStep)
 		if (object_->pos_.Delta(&entities_->object_[i]->pos_, diff, lookaheadDist) == true)   // look only double timeGap ahead
 		{
 			// path exists between position objects
-			if (diff.dLaneId == 0 && diff.ds > 0)  // dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
+			if (diff.dLaneId == 0 && diff.ds > 0 && diff.ds < minGapLength)  // dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
 			{
 				minGapLength = diff.ds;
 				minSpeedDiff = object_->GetSpeed() - entities_->object_[i]->GetSpeed();

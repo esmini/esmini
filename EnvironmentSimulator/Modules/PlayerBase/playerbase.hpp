@@ -70,6 +70,7 @@ public:
 	void ShowObjectSensors(bool mode);
 	void AddObjectSensor(int object_index, double pos_x, double pos_y, double pos_z, double heading,
 						 double near, double far, double fovH, int maxObj);
+	void AddOSIDetection(int object_index);
 	void SetFixedTimestep(double timestep) { fixed_timestep_ = timestep; }
 	double GetFixedTimestep() { return fixed_timestep_; }
 	int GetOSIFreq() { return osi_freq_; }
@@ -107,6 +108,7 @@ public:
 #ifdef _USE_OSG
 	viewer::Viewer *viewer_;
 	std::vector<viewer::SensorViewFrustum *> sensorFrustum;
+	viewer::OSISensorDetection* OSISensorDetection;
 	ViewerState viewerState_;
 	int InitViewer();
 	void CloseViewer();
