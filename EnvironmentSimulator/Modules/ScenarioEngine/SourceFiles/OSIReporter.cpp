@@ -533,6 +533,14 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
 
 int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 {
+	// If the object is the Ghost vehicle (ctrl_type = 100), no info will be written to the OSI
+	if (objectState->state_.info.ctrl_type == Controller::Type::GHOST_RESERVED_TYPE)
+	{
+		//printf("Ghost! \n");
+		//printf("%d \n", objectState->state_.info.id);
+		return 0;
+	}
+
 	// Create OSI Moving object
 	obj_osi_internal.mobj = obj_osi_internal.gt->add_moving_object();
 
