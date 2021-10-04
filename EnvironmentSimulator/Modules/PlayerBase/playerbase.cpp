@@ -164,22 +164,27 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 
 	if (scenarioEngine->step(timestep_s) == 0)
 	{
-		while( (scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime() ) && scenarioEngine->getSimulationTime() > 0 )
-		{
-	
-			scenarioEngine->step(timestep_s);
+		
+		// This while loop is still being tested if it is necessary or not, and if it is, what should be in it
 
-			for (size_t i = 0; i < callback.size(); i++)
-			{
-				ObjectState* os = scenarioGateway->getObjectStatePtrById(callback[i].id);
-				if (os)
-				{
-					ObjectStateStruct state;
-					state = os->getStruct();
-					callback[i].func(&state, callback[i].data);
-				}
-			}
-		}
+		// while( (scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime()) && scenarioEngine->getSimulationTime() >= 0 )
+		// {
+		// 	scenarioEngine->step(timestep_s);
+
+		// 	for (size_t i = 0; i < callback.size(); i++)
+		// 	{
+		// 		ObjectState* os = scenarioGateway->getObjectStatePtrById(callback[i].id);
+		// 		if (os)
+		// 		{
+		// 			ObjectStateStruct state;
+		// 			state = os->getStruct();
+		// 			callback[i].func(&state, callback[i].data);
+		// 		}
+		// 	}
+		// 	scenarioEngine->prepareOSIGroundTruth(timestep_s);
+		// 	scenarioGateway->WriteStatesToFile();
+		// }
+
 		// Check for any callbacks to be made
 		for (size_t i = 0; i < callback.size(); i++)
 		{
@@ -208,17 +213,20 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 			sensor[i]->Update();
 		}
 #ifdef _USE_OSI
-		osiReporter->ReportSensors(sensor);
-
-		// Update OSI info
-		if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
+		if (scenarioEngine->getSimulationTime() == scenarioEngine->GetTrueTime())
 		{
-			if (osi_counter % osi_freq_ == 0)
+			osiReporter->ReportSensors(sensor);
+
+			// Update OSI info
+			if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
 			{
-				osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
+				if (osi_counter % osi_freq_ == 0)
+				{
+					osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
+				}
+				// Update counter after modulo-check since first frame should always be reported
+				osi_counter++;
 			}
-			// Update counter after modulo-check since first frame should always be reported
-			osi_counter++;
 		}
 #endif  // USE_OSI
 
@@ -790,6 +798,7 @@ int ScenarioPlayer::Init()
 		{
 			scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
 			Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
+			//Logger::Inst().SetTimePtr(scenarioEngine->GetTrueTimePtr());
 		}
 		else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
 		{
@@ -802,6 +811,7 @@ int ScenarioPlayer::Init()
 			}
 			scenarioEngine = new ScenarioEngine(doc, disable_controllers_);
 			Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
+			//Logger::Inst().SetTimePtr(scenarioEngine->GetTrueTimePtr());
 		}
 		else
 		{

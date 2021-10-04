@@ -109,12 +109,43 @@ ScenarioEngine::~ScenarioEngine()
 
 int ScenarioEngine::step(double deltaSimTime)
 {
-	simulationTime_ += deltaSimTime;
-	if (simulationTime_ >= trueTime_)
+
+	// This timestep calculation is due to the Ghost vehicle
+	// If both times are equal, it is a normal scenario, or no Ghost teleportation is ongoing -> Step as usual
+	// Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
+	// Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from there
+
+	if ( simulationTime_ == trueTime_)
 	{
+		simulationTime_ += deltaSimTime;
 		trueTime_ = simulationTime_;
-		//printf("Truetime: %.2f \n", trueTime_);
+
+	} else if ( simulationTime_ + deltaSimTime < trueTime_)
+	{
+		simulationTime_ += deltaSimTime;
+
+	} else
+	{
+		simulationTime_ = trueTime_;
 	}
+
+	//simulationTime_ += deltaSimTime;
+
+	//if (simulationTime_ > trueTime_) // - trueTime_ >= -deltaSimTime/2)
+	//if ( simulationTime_ >= trueTime_ )
+	//{
+		// if (simulationTime_ < 0)
+		// {
+		// 	simulationTime_ = 0;
+		// }
+		// simulationTime_ = trueTime_;
+
+		// simulationTime_ += deltaSimTime;
+
+		// trueTime_ = simulationTime_;
+		//trueTime_ = simulationTime_;
+		//printf("Truetime: %.2f \n", trueTime_);
+	//}
 	//LOG("Ghost Sim Time %f", simulationTime_);
 	//LOG("True Sim Time %f", trueTime_);
 
@@ -461,7 +492,7 @@ int ScenarioEngine::step(double deltaSimTime)
 		// and only ghosts allowed to execute before time == 0
 		if (!(obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
 			fabs(obj->speed_) > SMALL_NUMBER &&
-			(trueTime_ <= simulationTime_ || obj->IsGhost()))
+			(abs(trueTime_ - simulationTime_) <= deltaSimTime || obj->IsGhost()))
 		{
 			defaultController(obj, deltaSimTime);
 		}
@@ -1026,10 +1057,9 @@ void ScenarioEngine::SetupGhost(Object* object)
 		}
 	}
 }
-// Reset events finished by ghost
+// Reset events ongoing or finished by ghost
 void ScenarioEngine::ResetEvents()
 {
-	printf("Trying to reset event \n");
 	for (size_t i = 0; i < storyBoard.story_.size(); i++)
 	{
 		Story* story = storyBoard.story_[i];
