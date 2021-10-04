@@ -1,5 +1,25 @@
 ## esmini release notes
 
+### 2021-10-04 Version 2.15.0
+
+- Add limited support for TrafficSwarmAction
+  - TrafficDefinition not supported yet
+  - Vehicle models picked randomly from specified catalogs
+  - Simplified driver model only based on ACC-Controller, not traffic rules
+  - Experimental implementation, expect bugs and shortcomings
+  - Example scenario [swarm.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/swarm.xosc)
+- Added option `--seed <number>` to specify random seed from a previous runs 
+  - seed is always printed to console/log file, so it can be grabbed from there
+  - seed reuse only per platform (e.g. Windows seed gives different result on Linux)
+  - see [docs/commands.txt](https://github.com/esmini/esmini/blob/master/docs/commands.txt) for all launch options
+- Support temporary objects in replayer
+  - Show only active objects at given time frame
+  - Show only active trajectories at given time frame
+- Fix some issues in entity freespace distance calculations
+- ACC adjustments slightly reducing intersection deadlocks
+- Fix crash due to unsupported OpenSCENARIO condition
+- Fix wheel rotations in esminiLib 
+
 ### 2021-09-30 Version 2.14.2
 
 - Fix some action failures in repeated events (maximumExecutionCount > 1)

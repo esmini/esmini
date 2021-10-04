@@ -6,34 +6,36 @@ Application is launched from command line (or batch file).
 
 Usage: odrviewer [options]
 Options:
+  --help
+      Show this help message
   --odr <odr_filename>
       OpenDRIVE filename (required)
-  --model <model_filename>
-      3D Model filename
   --density <density>
       density (cars / 100 m)
-  --generate_no_road_objects
-      Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
-  --speed_factor <speed_factor>
-      speed_factor <number>
-  --osi_lines
-      Show OSI road lines (toggle during simulation by press 'u')
-  --osi_points
-      Show OSI road points (toggle during simulation by press 'y')
-  --road_features
-      Show OpenDRIVE road features (toggle during simulation by press 'o')
-  --path <path>
-      Search path prefix for assets, e.g. car and sign model files
-  --logfile_path <path>
-      logfile path/filename, e.g. "../esmini.log" (default: log.txt)
   --disable_log
       Prevent logfile from being created
   --disable_stdout
       Prevent messages to stdout
-  --help
-      Show this help message
+  --generate_no_road_objects
+      Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
+  --logfile_path <path>
+      logfile path/filename, e.g. "../esmini.log" (default: log.txt)
+  --model <model_filename>
+      3D Model filename
+  --osi_lines
+      Show OSI road lines (toggle during simulation by press 'u')
+  --osi_points
+      Show OSI road points (toggle during simulation by press 'y')
+  --path <path>
+      Search path prefix for assets, e.g. car and sign model files
+  --road_features
+      Show OpenDRIVE road features (toggle during simulation by press 'o')
   --save_generated_model
       Save generated 3D model (n/a when a scenegraph is loaded)
+  --seed <number>
+      Specify seed number for random generator
+  --speed_factor <speed_factor>
+      speed_factor <number>
   --traffic_rule <rule (right/left)>
       Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)
   --version

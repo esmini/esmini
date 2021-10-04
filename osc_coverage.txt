@@ -240,7 +240,12 @@ OSCTypeDefs
         Entity                               No
         ParameterSetAction                   Yes
         Infrastructure                       No
-        Traffic                              No
+        Traffic                              
+           	TrafficSourceAction              No
+            TrafficSinkAction                No
+            TrafficSwarmAction               Yes (limited)
+                TrafficDefinition            No
+            TrafficStopAction                No
     OSCBoundingBox                           No
     OSCFileHeader                            No
     OSCDirectory                             No
