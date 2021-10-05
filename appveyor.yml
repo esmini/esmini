@@ -4,7 +4,6 @@ image:
 - Ubuntu1804
 - macos
 
-
 configuration: Release
 
 platform:
