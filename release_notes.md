@@ -1,5 +1,9 @@
 ## esmini release notes
 
+### 2021-10-05 Version 2.15.1
+
+- Add missing motorbike 3D model
+
 ### 2021-10-04 Version 2.15.0
 
 - Add limited support for TrafficSwarmAction
