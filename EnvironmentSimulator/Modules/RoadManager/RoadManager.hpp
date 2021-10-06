@@ -2035,7 +2035,6 @@ namespace roadmanager
 
 		std::vector<Position> waypoint_;
 		std::string name_;
-		double initialOffset_;
 	};
 
 	// A Road Path is a linked list of road links (road connections or junctions)
