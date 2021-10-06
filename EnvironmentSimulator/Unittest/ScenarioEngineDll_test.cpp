@@ -404,7 +404,7 @@ TEST(GetOSIRoadLaneTest, right_lane_boundary_id)
 	{
 		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
-		
+
 		EXPECT_EQ(osi_lane.classification().right_lane_boundary_id(0).value(), lane_bound[i + 1]);
 	}
 
@@ -431,7 +431,7 @@ TEST(GetOSIRoadLaneTest, left_lane_boundary_id)
 	{
 		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
-		
+
 		EXPECT_EQ(osi_lane.classification().left_lane_boundary_id(0).value(), lane_bound[i]);
 	}
 
@@ -921,6 +921,16 @@ TEST(ParameterTest, GetTypedParameterValues)
 	retVal = SE_GetParameterBool("DummyParameter2", &boolVar);
 	EXPECT_EQ(retVal, 0);
 	EXPECT_EQ(boolVar, true);
+
+	// Use common SE_Parameter class
+	SE_Parameter param;
+	param.name = "DummyParameter2";
+	bool value = false;
+	param.value = (void*)&value;
+	retVal = SE_GetParameter(&param);
+	EXPECT_EQ(retVal, 0);
+	value = *(bool*)(param.value);
+	EXPECT_EQ(value, true);
 
 	// Unavailable
 	retVal = SE_GetParameterBool("DoesNotExist", &boolVar);
