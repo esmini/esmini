@@ -8860,7 +8860,7 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 
 	double route_length = 0;
 	s_route_ = route_s;
-	double new_offset = offset_;
+	double offset_dir_neutral = offset_ * SIGN(GetLaneId());
 
 	// Find out what road and local s value
 	for (size_t i = 0; i < route->waypoint_.size(); i++)
@@ -8887,16 +8887,6 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 				local_s = road_length - local_s;
 			}
 
-			// offset handling
-			if (route_direction == initial_route_direction)
-			{
-				new_offset = route->initialOffset_;
-			}
-			else
-			{
-				new_offset = -route->initialOffset_;
-			}
-
 			if (SIGN(route->waypoint_[i].GetLaneId()) < 0)
 			{
 				SetHeadingRelative(driving_direction < 0 ? M_PI : 0.0);
@@ -8906,7 +8896,7 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 				SetHeadingRelative(driving_direction < 0 ? 0.0 : M_PI);
 			}
 
-			return (SetLanePos(route->waypoint_[i].GetTrackId(), route->waypoint_[i].GetLaneId(), local_s, new_offset));
+			return (SetLanePos(route->waypoint_[i].GetTrackId(), route->waypoint_[i].GetLaneId(), local_s, SIGN(route->waypoint_[i].GetLaneId()) * offset_dir_neutral));
 		}
 		route_length += road_length - initial_s_offset;
 		initial_s_offset = 0;  // For all following road segments, calculate length from beginning
