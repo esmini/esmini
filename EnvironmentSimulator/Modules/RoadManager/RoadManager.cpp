@@ -9040,10 +9040,6 @@ int Route::AddWaypoint(Position* position)
 			}
 		}
 	}
-	else
-	{
-		initialOffset_ = position->GetOffset();
-	}
 
 	waypoint_.push_back(*position);
 	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f", (int)waypoint_.size() - 1, position->GetTrackId(), position->GetLaneId(), position->GetS());
