@@ -1238,6 +1238,30 @@ namespace roadmanager
 		std::string name_;
 	};
 
+	typedef struct
+	{
+		double a_;
+		double axis_;
+		double b_;
+		std::string ellps_;
+		double k_;
+		double k_0_;
+		double lat_0_;
+		double lon_0_;
+		double lon_wrap_;
+		double over_;
+		std::string pm_;
+		std::string proj_;
+		std::string units_;
+		std::string vunits_;
+		double x_0_;
+		double y_0_;
+		std::string datum_;
+		std::string geo_id_grids_;
+		double zone_;
+		int towgs84_;
+	} GeoReference;
+
 	class OpenDrive
 	{
 	public:
@@ -1329,6 +1353,10 @@ namespace roadmanager
 		Controller* GetControllerById(int id);
 		void AddController(Controller controller) { controller_.push_back(controller); }
 
+
+		GeoReference* GetGeoReference();
+		std::string GetGeoReferenceAsString();
+
 		void Print();
 
 	private:
@@ -1336,6 +1364,7 @@ namespace roadmanager
 		std::vector<Road*> road_;
 		std::vector<Junction*> junction_;
 		std::vector<Controller> controller_;
+		GeoReference geo_ref_;
 		std::string odr_filename_;
 	};
 
