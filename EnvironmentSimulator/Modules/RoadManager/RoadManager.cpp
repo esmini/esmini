@@ -2395,13 +2395,13 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			}
 			else
 			{
-				LOG("Unsupported geo reference attr: %s", attr.first);
+				LOG("Unsupported geo reference attr: %s", attr.first.c_str());
 			}
 		}
 
-		if (std::isnan(geo_ref_.lat_0_) || std::isnan(geo_ref_.lon_0_)) 
+		if (std::isnan(geo_ref_.lat_0_) || std::isnan(geo_ref_.lon_0_))
 		{
-			LOG("cannot parse georeference: '%s'. Using default values.", geo_ref_str);
+			LOG("cannot parse georeference: '%s'. Using default values.", geo_ref_str.c_str());
 			geo_ref_.lat_0_ = 0.0;
 			geo_ref_.lon_0_ = 0.0;
 		}
