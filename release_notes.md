@@ -1,5 +1,10 @@
 ## esmini release notes
 
+### 2021-10-05 Version 2.15.2
+
+- Fix alternating lane offset issue in routes, e.g. AcquirePosition (PR #[167](https://github.com/esmini/esmini/pull/167))
+- Fix random way selector issue resulting in always same choice in intersections
+
 ### 2021-10-05 Version 2.15.1
 
 - Add missing motorbike 3D model
