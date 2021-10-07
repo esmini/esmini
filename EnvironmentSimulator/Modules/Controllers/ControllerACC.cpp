@@ -30,11 +30,15 @@ Controller* scenarioengine::InstantiateControllerACC(void* args)
 	return new ControllerACC(initArgs);
 }
 
-ControllerACC::ControllerACC(InitArgs* args) : active_(false), timeGap_(2.0), setSpeed_(0), currentSpeed_(0), Controller(args)
+ControllerACC::ControllerACC(InitArgs* args) : active_(false), timeGap_(1.5), setSpeed_(0), currentSpeed_(0), Controller(args)
 {
 	if (args->properties && args->properties->ValueExists("timeGap"))
 	{
 		timeGap_ = strtod(args->properties->GetValueStr("timeGap"));
+	}
+	if (args->properties && args->properties->ValueExists("setSpeed"))
+	{
+		setSpeed_ = strtod(args->properties->GetValueStr("setSpeed"));
 	}
 	mode_ = Mode::MODE_ADDITIVE;
 }
@@ -48,17 +52,15 @@ void ControllerACC::Step(double timeStep)
 {
 	double minGapLength = LARGE_NUMBER;
 	double minSpeedDiff = 0.0;
-	double minDist = 15.0;  // minimum distance to keep to lead vehicle
 	int minObjIndex = -1;
+	const double minDist = 2.0;  // minimum distance to keep to lead vehicle
 	double followDist = 0.0;
-	double maxDeceleration = -10.0;
-	double normalAcceleration = 3.0;
-	double minLateralDist = 5.0;
+	const double minLateralDist = 5.0;
+	const double accelerationFactor = 0.7;
 
 	// Lookahead distance is at least 50m or twice the distance required to stop
 	// https://www.symbolab.com/solver/equation-calculator/s%5Cleft(t%5Cright)%3D2%5Cleft(m%2Bvt%2B%5Cfrac%7B1%7D%7B2%7Dat%5E%7B2%7D%5Cright)%2C%20t%3D%5Cfrac%7B-v%7D%7Ba%7D
-	double lookaheadDist = MAX(50.0, minDist - pow(object_->GetSpeed(), 2) / maxDeceleration);  // (m)
-
+	double lookaheadDist = MAX(50.0, 2 * minDist - pow(object_->GetSpeed(), 2) / -object_->GetMaxDeceleration());  // (m)
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
 		if (entities_->object_[i] == object_)
@@ -71,9 +73,25 @@ void ControllerACC::Step(double timeStep)
 		if (object_->pos_.Delta(&entities_->object_[i]->pos_, diff, false, lookaheadDist) == true)   // look only double timeGap ahead
 		{
 			// path exists between position objects
-			if (diff.dLaneId == 0 && diff.ds > 0 && diff.ds < minGapLength && abs(diff.dt) < minLateralDist)  // dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
+
+			// adjust longitudinal dist wrt bounding boxes
+			double adjustedGapLength = diff.ds;
+			if (diff.ds > 0)  // object_ is behind pivot object
 			{
-				minGapLength = diff.ds;
+				adjustedGapLength -=
+					(object_->boundingbox_.dimensions_.length_ / 2.0 + object_->boundingbox_.center_.x_) +
+					(entities_->object_[i]->boundingbox_.dimensions_.length_ / 2.0 - entities_->object_[i]->boundingbox_.center_.x_);
+			}
+			else   // object_ is ahead
+			{
+				adjustedGapLength -=
+					(object_->boundingbox_.dimensions_.length_ / 2.0 - object_->boundingbox_.center_.x_) +
+					(entities_->object_[i]->boundingbox_.dimensions_.length_ / 2.0 + entities_->object_[i]->boundingbox_.center_.x_);
+			}
+
+			if (diff.dLaneId == 0 && diff.ds > 0 && adjustedGapLength < minGapLength && abs(diff.dt) < minLateralDist)  // dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
+			{
+				minGapLength = adjustedGapLength;
 				minSpeedDiff = object_->GetSpeed() - entities_->object_[i]->GetSpeed();
 				minObjIndex = (int)i;
 			}
@@ -105,7 +123,7 @@ void ControllerACC::Step(double timeStep)
 	double acc = 0.0;
 	if (minObjIndex > -1)
 	{
-		if (minGapLength < 5)
+		if (minGapLength < 1)
 		{
 			currentSpeed_ = 0.0;
 		}
@@ -118,14 +136,8 @@ void ControllerACC::Step(double timeStep)
 			regulator_.SetV(dv);
 			regulator_.SetValue(followDist - minGapLength);
 			regulator_.Update(timeStep);
-			if (object_->GetSpeed() < 0)
-			{
-				acc = CLAMP(regulator_.GetA(), -normalAcceleration, 100.0);
-			}
-			else
-			{
-				acc = CLAMP(regulator_.GetA(), -100.0, normalAcceleration);
-			}
+
+			acc = CLAMP(regulator_.GetA(), -object_->GetMaxDeceleration(), object_->GetMaxAcceleration());
 			currentSpeed_ = MIN(object_->GetSpeed() + acc * timeStep, setSpeed_);
 			currentSpeed_ = MAX(0.0, currentSpeed_);
 		}
@@ -133,7 +145,7 @@ void ControllerACC::Step(double timeStep)
 	else
 	{
 		// no lead vehicle to adapt to, adjust according to setSpeed
-		double tmpSpeed = object_->GetSpeed() + SIGN(setSpeed_ - currentSpeed_) * normalAcceleration * timeStep;
+		double tmpSpeed = object_->GetSpeed() + SIGN(setSpeed_ - currentSpeed_) * accelerationFactor * object_->GetMaxAcceleration() * timeStep;
 		if (SIGN(setSpeed_ - tmpSpeed) != SIGN(setSpeed_ - currentSpeed_))
 		{
 			// passed target speed
@@ -155,7 +167,7 @@ void ControllerACC::Activate(ControlDomains domainMask)
 {
 	setSpeed_ = object_->GetSpeed();
 	Controller::Activate(domainMask);
-	regulator_.SetTension(5);
+	regulator_.SetTension(2);
 	regulator_.SetOptimalDamping();
 }
 
