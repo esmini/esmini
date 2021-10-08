@@ -48,6 +48,7 @@ namespace scenarioengine
 		bool logging_;
 
 		double dtFreeCutOut_;
+		bool cutInDetected_;
 		double waitTime_;
 		bool driverBraking_;
 		bool aebBraking_;
