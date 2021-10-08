@@ -2861,30 +2861,6 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
 						trigger->cs_ = ParseCoordinateSystem(condition_node, roadmanager::CoordinateSystem::CS_ENTITY);
 						trigger->relDistType_ = ParseRelativeDistanceType(condition_node, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN);
-
-						if (!condition_node.attribute("relativeDistanceType").empty())
-						{
-							std::string type = parameters.ReadAttribute(condition_node, "relativeDistanceType");
-							if ((type == "longitudinal") || (type == "Longitudinal"))
-							{
-								trigger->relDistType_ = roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL;
-							}
-							else if ((type == "lateral") || (type == "Lateral"))
-							{
-								trigger->relDistType_ = roadmanager::RelativeDistanceType::REL_DIST_LATERAL;
-							}
-							else if ((type == "cartesianDistance") || (type == "CartesianDistance"))
-							{
-								trigger->relDistType_ = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN;
-							}
-							else
-							{
-								std::string msg = "Unexpected relativeDistanceType: " + type;
-								LOG(msg.c_str());
-								throw std::runtime_error(msg);
-							}
-						}
-
 						trigger->value_ = strtod(parameters.ReadAttribute(condition_node, "value"));
 						trigger->rule_ = ParseRule(parameters.ReadAttribute(condition_node, "rule"));
 
