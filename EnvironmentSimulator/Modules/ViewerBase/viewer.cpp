@@ -1628,11 +1628,19 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	{
 		if (modelgroup != nullptr)
 		{
-			// case 1
+			// Create visual model of object bounding box, copy values from model bounding box
 			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(modelBB.center(),
 				modelBB._max.x() - modelBB._min.x(),
 				modelBB._max.y() - modelBB._min.y(),
 				modelBB._max.z() - modelBB._min.z())));
+
+			// Also update OSC boundingbox
+			boundingBox->center_.x_ = modelBB.center().x();
+			boundingBox->center_.y_ = modelBB.center().y();
+			boundingBox->center_.z_ = modelBB.center().z();
+			boundingBox->dimensions_.length_ = modelBB._max.x() - modelBB._min.x();
+			boundingBox->dimensions_.width_ = modelBB._max.y() - modelBB._min.y();
+			boundingBox->dimensions_.height_ = modelBB._max.z() - modelBB._min.z();
 		}
 	}
 	else if (scaleMode == EntityScaleMode::MODEL_TO_BB)
