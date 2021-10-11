@@ -526,6 +526,24 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 		}
 	}
 
+	// Parse Performance element
+	pugi::xml_node performance_node = vehicleNode.child("Performance");
+	if (performance_node != NULL)
+	{
+		if (!(performance_node.attribute("maxAcceleration").empty()))
+		{
+			vehicle->SetMaxAcceleration(strtod(parameters.ReadAttribute(performance_node, "maxAcceleration")));
+		}
+		if (!(performance_node.attribute("maxAcceleration").empty()))
+		{
+			vehicle->SetMaxDeceleration(strtod(parameters.ReadAttribute(performance_node, "maxDeceleration")));
+		}
+		if (!(performance_node.attribute("maxSpeed").empty()))
+		{
+			vehicle->SetMaxSpeed(strtod(parameters.ReadAttribute(performance_node, "maxSpeed")));
+		}
+	}
+
 	parameters.RestoreParameterDeclarations();
 
 	return vehicle;
