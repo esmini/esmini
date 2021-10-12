@@ -136,6 +136,10 @@ int Parameters::setParameterValue(std::string name, const void* value)
 	{
 		ps->value._string = *((std::string*)value);
 	}
+	else if (ps->type == OSCParameterDeclarations::ParameterType::PARAM_TYPE_BOOL)
+	{
+		ps->value._bool = *((bool*)value);
+	}
 	else
 	{
 		LOG("Unexpected type: %d", ps->type);
