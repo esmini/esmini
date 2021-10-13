@@ -213,6 +213,7 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
 		for (size_t j = 0; j < SE_Env::Inst().GetPaths().size(); j++)
 		{
 			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[j], catalogs_->catalog_dirs_[i].dir_name_ + "/" + name + ".xosc"));
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[j], name + ".xosc"));
 		}
 		for (size_t j = 0; j < file_name_candidates.size() && !result; j++)
 		{
