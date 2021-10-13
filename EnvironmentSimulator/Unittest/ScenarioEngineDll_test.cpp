@@ -932,6 +932,16 @@ TEST(ParameterTest, GetTypedParameterValues)
 	value = *(bool*)(param.value);
 	EXPECT_EQ(value, true);
 
+	value = false;
+	retVal = SE_SetParameter(param);
+	EXPECT_EQ(retVal, 0);
+
+	value = true;
+	retVal = SE_GetParameter(&param);
+	EXPECT_EQ(retVal, 0);
+	value = *(bool*)(param.value);
+	EXPECT_EQ(value, false);
+
 	// Unavailable
 	retVal = SE_GetParameterBool("DoesNotExist", &boolVar);
 	EXPECT_EQ(retVal, -1);
