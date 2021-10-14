@@ -2255,6 +2255,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		return false;
 	}
 
+	//Initialize GeoRef structure
 	geo_ref_ = {
 		std::numeric_limits<double>::quiet_NaN(),
 		std::numeric_limits<double>::quiet_NaN(),
@@ -2283,128 +2284,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 	{
 		//Get the string to parse, geoReference tag is just a string with the data separated by spaces and each attribute start with a + character
 		std::string geo_ref_str = header_node.child_value("geoReference");
-		std::map<std::string, std::string> attributes;
-		char space_char = ' ';
-		char asignment_char = '=';
-
-		std::stringstream sstream(geo_ref_str);
-		std::string attribute = "";
-		//Get each attribute of geoReference
-		while (std::getline(sstream, attribute, space_char))
-		{
-			std::stringstream sstream(attribute);
-			std::string key_value = "";
-			std::string attribute_key = "";
-			std::string attribute_value = "";
-			//Get key and value of each attribute
-			while (std::getline(sstream, key_value, asignment_char))
-			{
-				//Keys starts with a + character
-				if(key_value.rfind('+', 0) == 0)
-				{
-					attribute_key = key_value;
-				}else
-				{
-					attribute_value = key_value;
-				}
-			}
-			attributes.emplace(attribute_key, attribute_value);
-		}
-
-		for(const auto& attr : attributes)
-		{
-			if(attr.first == "+a")
-			{
-				geo_ref_.a_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+axis")
-			{
-				geo_ref_.axis_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+b")
-			{
-				geo_ref_.b_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+ellps")
-			{
-				geo_ref_.ellps_ = attr.second;
-			}
-			else if (attr.first == "+k")
-			{
-				geo_ref_.k_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+k_0")
-			{
-				geo_ref_.k_0_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+lat_0")
-			{
-				geo_ref_.lat_0_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+lon_0")
-			{
-				geo_ref_.lon_0_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+lon_wrap")
-			{
-				geo_ref_.lon_wrap_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+over")
-			{
-				geo_ref_.over_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+pm")
-			{
-				geo_ref_.pm_ = attr.second;
-			}
-			else if (attr.first == "+proj")
-			{
-				geo_ref_.proj_ = attr.second;
-			}
-			else if (attr.first == "+units")
-			{
-				geo_ref_.units_ = attr.second;
-			}
-			else if (attr.first == "+vunits")
-			{
-				geo_ref_.vunits_ = attr.second;
-			}
-			else if (attr.first == "+x_0")
-			{
-				geo_ref_.x_0_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+y_0")
-			{
-				geo_ref_.y_0_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+datum")
-			{
-				geo_ref_.datum_ = attr.second;
-			}
-			else if (attr.first == "+geoidgrids")
-			{
-				geo_ref_.geo_id_grids_ = attr.second;
-			}
-			else if (attr.first == "+zone")
-			{
-				geo_ref_.zone_ = std::stod(attr.second);
-			}
-			else if (attr.first == "+towgs84")
-			{
-				geo_ref_.towgs84_ = std::stoi(attr.second);
-			}
-			else
-			{
-				LOG("Unsupported geo reference attr: %s", attr.first.c_str());
-			}
-		}
-
-		if (std::isnan(geo_ref_.lat_0_) || std::isnan(geo_ref_.lon_0_))
-		{
-			LOG("cannot parse georeference: '%s'. Using default values.", geo_ref_str.c_str());
-			geo_ref_.lat_0_ = 0.0;
-			geo_ref_.lon_0_ = 0.0;
-		}
+		ParseGeoLocalization(geo_ref_str);
 	}
 
 	for (pugi::xml_node road_node = node.child("road"); road_node; road_node = road_node.next_sibling("road"))
@@ -4603,6 +4483,132 @@ std::string OpenDrive::GetGeoReferenceAsString()
     out.precision(13);
     out << "+lat_0=" << std::fixed << geo_ref_.lat_0_ << " +lon_0=" << std::fixed << geo_ref_.lon_0_;
     return out.str();
+}
+
+void OpenDrive::ParseGeoLocalization(const std::string& geoLocalization)
+{
+	std::map<std::string, std::string> attributes;
+	char space_char = ' ';
+	char asignment_char = '=';
+
+	std::stringstream sstream(geoLocalization);
+	std::string attribute = "";
+	//Get each attribute of geoReference
+	while (std::getline(sstream, attribute, space_char))
+	{
+		std::stringstream sstream(attribute);
+		std::string key_value = "";
+		std::string attribute_key = "";
+		std::string attribute_value = "";
+		//Get key and value of each attribute
+		while (std::getline(sstream, key_value, asignment_char))
+		{
+			//Keys starts with a + character
+			if(key_value.rfind('+', 0) == 0)
+			{
+				attribute_key = key_value;
+			}else
+			{
+				attribute_value = key_value;
+			}
+		}
+		attributes.emplace(attribute_key, attribute_value);
+	}
+
+	for(const auto& attr : attributes)
+	{
+		if(attr.first == "+a")
+		{
+			geo_ref_.a_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+axis")
+		{
+			geo_ref_.axis_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+b")
+		{
+			geo_ref_.b_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+ellps")
+		{
+			geo_ref_.ellps_ = attr.second;
+		}
+		else if (attr.first == "+k")
+		{
+			geo_ref_.k_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+k_0")
+		{
+			geo_ref_.k_0_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+lat_0")
+		{
+			geo_ref_.lat_0_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+lon_0")
+		{
+			geo_ref_.lon_0_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+lon_wrap")
+		{
+			geo_ref_.lon_wrap_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+over")
+		{
+			geo_ref_.over_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+pm")
+		{
+			geo_ref_.pm_ = attr.second;
+		}
+		else if (attr.first == "+proj")
+		{
+			geo_ref_.proj_ = attr.second;
+		}
+		else if (attr.first == "+units")
+		{
+			geo_ref_.units_ = attr.second;
+		}
+		else if (attr.first == "+vunits")
+		{
+			geo_ref_.vunits_ = attr.second;
+		}
+		else if (attr.first == "+x_0")
+		{
+			geo_ref_.x_0_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+y_0")
+		{
+			geo_ref_.y_0_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+datum")
+		{
+			geo_ref_.datum_ = attr.second;
+		}
+		else if (attr.first == "+geoidgrids")
+		{
+			geo_ref_.geo_id_grids_ = attr.second;
+		}
+		else if (attr.first == "+zone")
+		{
+			geo_ref_.zone_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+towgs84")
+		{
+			geo_ref_.towgs84_ = std::stoi(attr.second);
+		}
+		else
+		{
+			LOG("Unsupported geo reference attr: %s", attr.first.c_str());
+		}
+	}
+
+	if (std::isnan(geo_ref_.lat_0_) || std::isnan(geo_ref_.lon_0_))
+	{
+		LOG("cannot parse georeference: '%s'. Using default values.", geoLocalization.c_str());
+		geo_ref_.lat_0_ = 0.0;
+		geo_ref_.lon_0_ = 0.0;
+	}
 }
 
 void Position::Init()

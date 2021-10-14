@@ -1356,6 +1356,7 @@ namespace roadmanager
 
 		GeoReference* GetGeoReference();
 		std::string GetGeoReferenceAsString();
+		void ParseGeoLocalization(const std::string& geoLocalization);
 
 		void Print();
 
