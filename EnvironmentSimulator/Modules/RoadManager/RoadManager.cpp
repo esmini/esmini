@@ -4381,6 +4381,12 @@ int OpenDrive::CheckLink(Road *road, RoadLink *link, ContactPointType expected_c
 		Junction *junction = GetJunctionById(link->GetElementId());
 
 		// Check all outgoing connections
+		if (junction == nullptr)
+		{
+			LOG("Info: Junction id %d, referred to by road %d, does not exist", link->GetElementId(), road->GetId());
+			return -1;
+		}
+
 		int nrConnections = junction->GetNumberOfConnections();
 		for (int i = 0; i < nrConnections; i++)
 		{
