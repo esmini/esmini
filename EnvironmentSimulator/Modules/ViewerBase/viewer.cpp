@@ -1525,6 +1525,7 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 		if (entities_[i]->filename_ == modelFilepath)
 		{
 			modelgroup = dynamic_cast<osg::Group*>(entities_[i]->group_->clone(osg::CopyOp::DEEP_COPY_NODES));
+			modelBB = entities_[i]->modelBB_;
 			break;
 		}
 	}
@@ -1571,7 +1572,7 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
 	material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
 
-	if (scaleMode == EntityScaleMode::NONE || scaleMode == EntityScaleMode::MODEL_TO_BB)
+	if (scaleMode == EntityScaleMode::NONE || scaleMode == EntityScaleMode::MODEL_TO_BB || modelgroup == nullptr)
 	{
 		if (boundingBox != nullptr &&
 			!(boundingBox->dimensions_.length_ < SMALL_NUMBER &&
@@ -1584,26 +1585,21 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 				boundingBox->dimensions_.width_,
 				boundingBox->dimensions_.height_)));
 		}
-		else if (scaleMode == EntityScaleMode::NONE)
+		else
 		{
 			// No bounding box specified. Create a bounding box of typical car dimension.
 			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(1.5, 0.0, 0.75), 4.5, 1.8, 1.5)));
-		}
-		else
-		{
-			LOG_AND_QUIT("Request to scale model (%s / %s) to non existing or 0 size bounding box",
-				name.c_str(), modelFilepath.c_str());
+
+			if (scaleMode == EntityScaleMode::MODEL_TO_BB)
+			{
+				LOG("Request to scale model (%s / %s) to non existing or 0 size bounding box. Created a dummy BB of typical car dimension.",
+					name.c_str(), modelFilepath.c_str());
+			}
 		}
 	}
 
 	if (modelgroup == nullptr)
 	{
-		if (scaleMode == EntityScaleMode::BB_TO_MODEL)
-		{
-			LOG_AND_QUIT("Request to scale bounding box to non existing model (%s / %s)",
-				name.c_str(), modelFilepath.c_str());
-		}
-
 		// Create a dummy cuboid
 		if (modelFilepath.empty())
 		{
@@ -1703,6 +1699,7 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	emodel->state_set_->setAttributeAndModes(bf);
 	emodel->state_set_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 	emodel->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+	emodel->modelBB_ = modelBB;
 
 	if (type == EntityModel::EntityType::VEHICLE)
 	{

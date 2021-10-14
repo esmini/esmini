@@ -242,6 +242,7 @@ namespace viewer
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
 		osg::Quat quat_;
 		osg::ref_ptr<osg::Group> parent_;
+		osg::BoundingBox modelBB_;
 
 		Trajectory* trajectory_;
 		static const EntityType entity_type_ = EntityType::OTHER;
