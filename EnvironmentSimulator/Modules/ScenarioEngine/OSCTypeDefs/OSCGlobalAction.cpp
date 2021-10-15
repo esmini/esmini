@@ -120,7 +120,7 @@ SwarmTrafficAction::SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type
 
 void SwarmTrafficAction::Start(double simTime, double dt)
 {
-    LOG("Swarm IR: %.2f, SMjA: %.2f, SMnA: %.2f, maxV: %i vel: %.2f\n", innerRadius_, semiMajorAxis_, semiMinorAxis_, numberOfVehicles, velocity_);
+    LOG("Swarm IR: %.2f, SMjA: %.2f, SMnA: %.2f, maxV: %i vel: %.2f", innerRadius_, semiMajorAxis_, semiMinorAxis_, numberOfVehicles, velocity_);
     double x0, y0, x1, y1;
 
     midSMjA = (semiMajorAxis_ + innerRadius_) / 2.0;
@@ -292,7 +292,7 @@ createVehicle(roadmanager::Position pos, int lane, double speed, scenarioengine:
     vehicle->pos_.SetLanePos(pos.GetTrackId(), lane, pos.GetS(), 0.0);
     vehicle->pos_.SetHeadingRelativeRoadDirection(lane < 0 ? 0.0 : M_PI);
     vehicle->SetSpeed(speed);
-    vehicle->controller_     = controller;
+    vehicle->controller_ = controller;
     vehicle->model3d_ = model_filepath;
     return vehicle;
 }
@@ -447,7 +447,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             int id = entities_->addObject(vehicle);
             vehicle->name_ = "swarm" + std::to_string(id);
-            vehicle->boundingbox_ = centralObject_->boundingbox_;
+            vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
             vehicle->model_id_ = modelIds_[number];
 
             acc->Assign(entities_->object_.back());

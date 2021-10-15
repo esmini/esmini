@@ -19,13 +19,14 @@
    <RoadNetwork>
       <LogicFile filepath="../xodr/e6mini.xodr"/>
       <!-- <LogicFile filepath="../xodr/multi_intersections.xodr"/> -->
+      <!-- <LogicFile filepath="../xodr/straight_500m.xodr"/> -->
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
          <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
-         <ObjectController>
-            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
-         </ObjectController>
+         <!-- <ObjectController> -->
+            <!-- <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" /> -->
+         <!-- </ObjectController> -->
       </ScenarioObject>
    </Entities>
    <Storyboard>
@@ -37,14 +38,15 @@
                      <Position>
                         <LanePosition roadId="0" laneId="-3" offset="0" s="300" >
                         <!-- <LanePosition roadId="283" laneId="-1" offset="0" s="10" > -->
+                        <!-- <LanePosition roadId="1" laneId="-1" offset="0" s="300" > -->
                             <Orientation type="relative" h="0" />
                         </LanePosition>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
-               <!-- <PrivateAction> -->
-                    <!-- <ActivateControllerAction longitudinal="true" lateral="true" /> -->
-               <!-- </PrivateAction> -->
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>

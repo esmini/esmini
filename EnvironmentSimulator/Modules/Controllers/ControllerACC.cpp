@@ -30,17 +30,18 @@ Controller* scenarioengine::InstantiateControllerACC(void* args)
 	return new ControllerACC(initArgs);
 }
 
-ControllerACC::ControllerACC(InitArgs* args) : active_(false), timeGap_(1.5), setSpeed_(0), currentSpeed_(0), Controller(args)
+ControllerACC::ControllerACC(InitArgs* args) : active_(false), timeGap_(1.5), setSpeed_(0), currentSpeed_(0),
+	Controller(args)
 {
-	if (args->properties && args->properties->ValueExists("timeGap"))
+	if (args && args->properties && args->properties->ValueExists("timeGap"))
 	{
 		timeGap_ = strtod(args->properties->GetValueStr("timeGap"));
 	}
-	if (args->properties && args->properties->ValueExists("setSpeed"))
+	if (args && args->properties && args->properties->ValueExists("setSpeed"))
 	{
 		setSpeed_ = strtod(args->properties->GetValueStr("setSpeed"));
 	}
-	mode_ = Mode::MODE_ADDITIVE;
+	mode_= Mode::MODE_ADDITIVE;
 }
 
 void ControllerACC::Init()
@@ -53,8 +54,7 @@ void ControllerACC::Step(double timeStep)
 	double minGapLength = LARGE_NUMBER;
 	double minSpeedDiff = 0.0;
 	int minObjIndex = -1;
-	const double minDist = 2.0;  // minimum distance to keep to lead vehicle
-	double followDist = 0.0;
+	const double minDist = 3.0;  // minimum distance to keep to lead vehicle
 	const double minLateralDist = 5.0;
 	const double accelerationFactor = 0.7;
 
@@ -63,36 +63,39 @@ void ControllerACC::Step(double timeStep)
 	double lookaheadDist = MAX(50.0, 2 * minDist - pow(object_->GetSpeed(), 2) / -object_->GetMaxDeceleration());  // (m)
 	for (size_t i = 0; i < entities_->object_.size(); i++)
 	{
-		if (entities_->object_[i] == object_)
+		Object* pivot_obj = entities_->object_[i];
+		if (pivot_obj == nullptr || pivot_obj == object_)
 		{
 			continue;
 		}
 
 		// Measure longitudinal distance to all vehicles, don't utilize costly freespace option, instead measure ref point to ref point
 		roadmanager::PositionDiff diff;
-		if (object_->pos_.Delta(&entities_->object_[i]->pos_, diff, false, lookaheadDist) == true)   // look only double timeGap ahead
+		if (object_->pos_.Delta(&pivot_obj->pos_, diff, false, lookaheadDist) == true)   // look only double timeGap ahead
 		{
 			// path exists between position objects
 
 			// adjust longitudinal dist wrt bounding boxes
 			double adjustedGapLength = diff.ds;
-			if (diff.ds > 0)  // object_ is behind pivot object
+			double dHeading = GetAbsAngleDifference(object_->pos_.GetH(), pivot_obj->pos_.GetH());
+			if (dHeading < M_PI_2)   // objects are pointing roughly in the same direction
 			{
 				adjustedGapLength -=
 					(object_->boundingbox_.dimensions_.length_ / 2.0 + object_->boundingbox_.center_.x_) +
-					(entities_->object_[i]->boundingbox_.dimensions_.length_ / 2.0 - entities_->object_[i]->boundingbox_.center_.x_);
+					(pivot_obj->boundingbox_.dimensions_.length_ / 2.0 - pivot_obj->boundingbox_.center_.x_);
 			}
-			else   // object_ is ahead
+			else   // objects are pointing roughly in the opposite direction
 			{
 				adjustedGapLength -=
-					(object_->boundingbox_.dimensions_.length_ / 2.0 - object_->boundingbox_.center_.x_) +
-					(entities_->object_[i]->boundingbox_.dimensions_.length_ / 2.0 + entities_->object_[i]->boundingbox_.center_.x_);
+					(object_->boundingbox_.dimensions_.length_ / 2.0 + object_->boundingbox_.center_.x_) +
+					(pivot_obj->boundingbox_.dimensions_.length_ / 2.0 + pivot_obj->boundingbox_.center_.x_);
 			}
 
-			if (diff.dLaneId == 0 && diff.ds > 0 && adjustedGapLength < minGapLength && abs(diff.dt) < minLateralDist)  // dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
+			// dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
+			if (diff.dLaneId == 0 && adjustedGapLength > 0 && adjustedGapLength < minGapLength && abs(diff.dt) < minLateralDist)
 			{
 				minGapLength = adjustedGapLength;
-				minSpeedDiff = object_->GetSpeed() - entities_->object_[i]->GetSpeed();
+				minSpeedDiff = object_->GetSpeed() - pivot_obj->GetSpeed();
 				minObjIndex = (int)i;
 			}
 		}
@@ -101,14 +104,14 @@ void ControllerACC::Step(double timeStep)
 		if (minObjIndex != i)
 		{
 			double x_local, y_local;
-			object_->FreeSpaceDistance(entities_->object_[i], &y_local, &x_local);
+			object_->FreeSpaceDistance(pivot_obj, &y_local, &x_local);
 
-			if (x_local > 0 && x_local < 1.0 + entities_->object_[i]->boundingbox_.dimensions_.length_ +
-				0.5 * MAX(0.0, object_->GetSpeed() - entities_->object_[i]->GetSpeed())
+			if (x_local > 0 && x_local < 1.0 + pivot_obj->boundingbox_.dimensions_.length_ +
+				0.5 * MAX(0.0, object_->GetSpeed() - pivot_obj->GetSpeed())
 				&& y_local < 0.2 && y_local > -1) // yield some more for right hand traffic
 			{
 				minGapLength = x_local;
-				minSpeedDiff = object_->GetSpeed() - entities_->object_[i]->GetSpeed();
+				minSpeedDiff = object_->GetSpeed() - pivot_obj->GetSpeed();
 				minObjIndex = (int)i;
 			}
 		}
@@ -120,7 +123,6 @@ void ControllerACC::Step(double timeStep)
 		setSpeed_ = object_->GetSpeed();
 	}
 
-	double acc = 0.0;
 	if (minObjIndex > -1)
 	{
 		if (minGapLength < 1)
@@ -130,14 +132,15 @@ void ControllerACC::Step(double timeStep)
 		else
 		{
 			// Follow distance = minimum distance + timeGap_ seconds
-			followDist = minDist + timeGap_ * fabs(entities_->object_[minObjIndex]->GetSpeed());  // (m)
-
+			double speedForTimeGap = MAX(object_->GetSpeed(), entities_->object_[minObjIndex]->GetSpeed());
+			double followDist = minDist + timeGap_ * fabs(speedForTimeGap);  // (m)
+			double dist = minGapLength - followDist;
 			double dv = object_->GetSpeed() - entities_->object_[minObjIndex]->GetSpeed();
-			regulator_.SetV(dv);
-			regulator_.SetValue(followDist - minGapLength);
-			regulator_.Update(timeStep);
 
-			acc = CLAMP(regulator_.GetA(), -object_->GetMaxDeceleration(), object_->GetMaxAcceleration());
+			double acc = 0.5 * dist - 0.5 * dv;   // weighted combination of relative distance and speed
+
+			acc = CLAMP(acc, -object_->GetMaxDeceleration(), object_->GetMaxAcceleration());
+
 			currentSpeed_ = MIN(object_->GetSpeed() + acc * timeStep, setSpeed_);
 			currentSpeed_ = MAX(0.0, currentSpeed_);
 		}
@@ -167,8 +170,6 @@ void ControllerACC::Activate(ControlDomains domainMask)
 {
 	setSpeed_ = object_->GetSpeed();
 	Controller::Activate(domainMask);
-	regulator_.SetTension(2);
-	regulator_.SetOptimalDamping();
 }
 
 void ControllerACC::ReportKeyEvent(int key, bool down)

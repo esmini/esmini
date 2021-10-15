@@ -42,7 +42,6 @@ namespace scenarioengine
 		bool active_;
 		double setSpeed_;
 		double currentSpeed_;
-		DampedSpring regulator_;
 	};
 
 	Controller* InstantiateControllerACC(void* args);

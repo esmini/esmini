@@ -174,24 +174,24 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^11.010: BrakeCondition == true, 11.0100 > 11.00 edge: rising', log, re.MULTILINE))
         self.assertTrue(re.search('^17.010: BrakeCondition == true, 17.0100 > 17.00 edge: rising', log, re.MULTILINE))
         self.assertTrue(re.search('^20.000: Brake2Condition == true, 20.0000 > 20.00 edge: rising', log, re.MULTILINE))
-        self.assertTrue(re.search('^30.130: ActStopCondition == true, element: TargetBrake2Event state: END_TRANSITION, edge: rising', log, re.MULTILINE))
+        self.assertTrue(re.search('^35.130: ActStopCondition == true, element: TargetBrake2Event state: END_TRANSITION, edge: rising', log, re.MULTILINE))
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('\n0.37.*, 0, Ego, 39.52.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 52.77.*', csv))
-        self.assertTrue(re.search('\n0.37.*, 1, Target, 103.08.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.33.*', csv))
-        self.assertTrue(re.search('\n3.84.*, 0, Ego, 108.56.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.52.*', csv))
-        self.assertTrue(re.search('\n3.84.*, 1, Target, 132.00.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.33.*', csv))
-        self.assertTrue(re.search('\n5.64.*, 0, Ego, 123.66.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.33.*', csv))
-        self.assertTrue(re.search('\n5.64.*, 1, Target, 147.00.*, -0.38.*, 0.00.*, 0.35.*, 0.00.*, 0.00.*, 8.33.*', csv))
-        self.assertTrue(re.search('\n7.71.*, 0, Ego, 146.59.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 14.18.*', csv))
+        self.assertTrue(re.search('\n0.37.*, 0, Ego, 32.333, -1.535, 0.000, 0.000, 0.000, 0.000, 33.333', csv))
+        self.assertTrue(re.search('\n0.37.*, 1, Target, 103.083, -1.535, 0.000, 0.000, 0.000, 0.000, 8.333', csv))
+        self.assertTrue(re.search('\n4.89.*, 0, Ego, 127.590, -1.535, 0.000, 0.000, 0.000, 0.000, 9.066', csv))
+        self.assertTrue(re.search('\n4.89.*, 1, Target, 140.750, -1.535, 0.000, 0.000, 0.000, 0.000, 8.333', csv))
+        self.assertTrue(re.search('\n5.09.*, 0, Ego, 129.361, -1.535, 0.000, 0.000, 0.000, 0.000, 8.639', csv))
+        self.assertTrue(re.search('\n5.09.*, 1, Target, 142.417, -1.514, 0.000, 0.060, 0.000, 0.000, 8.333.*', csv))
+        self.assertTrue(re.search('\n7.71.*, 0, Ego, 155.070, -1.535, 0.000, 0.000, 0.000, 0.000, 9.674, 0.000', csv))
         self.assertTrue(re.search('\n7.71.*, 1, Target, 164.25.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.33.*', csv))
-        self.assertTrue(re.search('\n16.71.*, 0, Ego, 185.38.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*', csv))
+        self.assertTrue(re.search('\n16.71.*, 0, Ego, 193.577, -1.535, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n16.71.*, 1, Target, 200.38.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*', csv))
-        self.assertTrue(re.search('\n25.11.*, 0, Ego, 274.17.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 22.80.*', csv))
+        self.assertTrue(re.search('\n25.11.*, 0, Ego, 291.161, -1.535, 0.000, 0.000, 0.000, 0.000, 12.894, 0.000*', csv))
         self.assertTrue(re.search('\n25.11.*, 1, Target, 309.41.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 5.00.*', csv))
-        self.assertTrue(re.search('\n30.00.*, 0, Ego, 313.86.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 5.00.*', csv))
-        self.assertTrue(re.search('\n30.00.*, 1, Target, 333.86.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 5.00.*', csv))
+        self.assertTrue(re.search('\n34.11.*, 0, Ego, 341.004, -1.535, 0.000, 0.000, 0.000, 0.000, 5.231', csv))
+        self.assertTrue(re.search('\n34.11.*, 1, Target, 354.415, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000', csv))
 
     def test_conflicting_domains(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ARGS)
@@ -244,22 +244,14 @@ class TestSuite(unittest.TestCase):
         # Random generators differ on platforms => random traffic will be repeatable only per platform
         if platform == "win32":
             self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.20.*, 576.85.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))    
-            self.assertTrue(re.search('^40.00.*, 3, swarm3, 29.55.*, 664.28.*, -0.86.*, 1.46.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 81, swarm81, 26.89.*, 673.13.*, -0.88.*, 1.46.*, 0.00.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
-            self.assertTrue(re.search('^40.00.*, 83, swarm83, 6.72.*, 545.94.*, -0.84.*, 4.64.*, 0.00.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
+            self.assertTrue(re.search('^40.00.*, 3, swarm3, 31.225, 680.043, -0.901, 1.463, 0.002, 0.000, 9.999', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 81, swarm81, 34.509, 675.962, -0.893, 1.464, 0.002, 0.000, 30.000', csv, re.MULTILINE))        
+            self.assertTrue(re.search('^40.00.*, 90, swarm90, 10.373, 670.255, -0.876, 4.608, 6.281, 0.000, 30.000', csv, re.MULTILINE))        
         elif platform == "linux" or platform == "linux2":
-            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.20.*, 576.85.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))    
-            self.assertTrue(re.search('^40.00.*, 5, swarm5, 29.55.*, 664.28.*, -0.86.*, 1.46.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 48, swarm48, 66.32.*, 913.33.*, -0.00.*, 1.40.*, 6.26.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
-            self.assertTrue(re.search('^40.00.*, 62, swarm62, 17.81.*, 525.16.*, -0.84.*, 1.50.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))        
-        elif platform == "darwin":
-            self.assertTrue(re.search('^1.59.*, 2, swarm2, 21.51.*, 577.12.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))    
-            self.assertTrue(re.search('^40.00.*, 13, swarm13, 26.09.*, 629.53.*, -0.83.*, 1.47.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 54, swarm54, 54.00.*, 832.72.*, -1.03.*, 1.43.*, 6.27.*, 0.00.*, 30.00.*', csv, re.MULTILINE))        
-            self.assertTrue(re.search('^40.00.*, 74, swarm74, 15.83.*, 490.32.*, -0.83.*, 1.52.*, 0.00.*, 0.00.*, 9.99.*', csv, re.MULTILINE))        
-
-
-
+            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.20.*, 576.85.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 5, swarm5, 31.225, 680.043, -0.901, 1.463, 0.002, 0.000, 10.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 69, swarm69, 45.740, 771.296, -1.136, 1.443, 0.001, 0.000, 30.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 85, swarm85, 5.000, 571.267, -0.837, 4.635, 0.000, 0.000, 30.000, 0.001, 2.331', csv, re.MULTILINE))
 
 
 if __name__ == "__main__":

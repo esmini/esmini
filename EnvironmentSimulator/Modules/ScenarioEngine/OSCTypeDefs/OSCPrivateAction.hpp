@@ -806,7 +806,7 @@ namespace scenarioengine
 			}
 			else
 			{
-				LOG("No controller assigned!");
+				LOG("No controller assigned to object %s!", object_->name_.c_str());
 			}
 		}
 
