@@ -172,26 +172,26 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 			 object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG)))
 		{
 			object_->pos_.MoveTrajectoryDS(object_->speed_ * dt);
-			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
 		else if (timing_domain_ == TimingDomain::TIMING_RELATIVE)
 		{
-			double s_old = object_->pos_.GetTrajectoryS();
-			object_->pos_.SetTrajectoryPosByTime(time_ + timing_offset_);
-			if (time_ <= traj_->GetStartTime() + traj_->GetDuration())
-			{
-				// don't calculate and update actual speed when reached end of trajectory,
-				// since the movement is based on remaining length of trajectory, not speed
-				object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
-			}
-			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+		double s_old = object_->pos_.GetTrajectoryS();
+		object_->pos_.SetTrajectoryPosByTime(time_ + timing_offset_);
+		if (time_ <= traj_->GetStartTime() + traj_->GetDuration())
+		{
+			// don't calculate and update actual speed when reached end of trajectory,
+			// since the movement is based on remaining length of trajectory, not speed
+			object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
+		}
+		object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
 		else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
 		{
-			double s_old = object_->pos_.GetTrajectoryS();
-			object_->pos_.SetTrajectoryPosByTime(simTime * timing_scale_ + timing_offset_);
-			object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
-			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+		double s_old = object_->pos_.GetTrajectoryS();
+		object_->pos_.SetTrajectoryPosByTime(simTime * timing_scale_ + timing_offset_);
+		object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
+		object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
 	}
 }
@@ -269,9 +269,22 @@ void AssignControllerAction::Start(double simTime, double dt)
 		controller_->Assign(object_);
 	}
 
+	if (!object_->controller_->Active())
+	{
+		if (domainMask_ != ControlDomains::DOMAIN_NONE)
+		{
+			object_->controller_->Activate(domainMask_);
+			LOG("Controller %s activated, domain mask=0x%X", object_->controller_->GetName().c_str(), domainMask_);
+		}
+	}
+	else
+	{
+		LOG("Controller %s already active (domainmask 0x%X), should not happen when just assigned!",
+			object_->controller_->GetName().c_str(), domainMask_);
+	}
+
 	OSCAction::Start(simTime, dt);
 }
-
 
 void LatLaneChangeAction::Start(double simTime, double dt)
 {

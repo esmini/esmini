@@ -728,8 +728,9 @@ namespace scenarioengine
 	{
 	public:
 		Controller* controller_;
+		ControlDomains domainMask_;
 
-		AssignControllerAction(Controller *controller): controller_(controller),
+		AssignControllerAction(Controller* controller) : controller_(controller), domainMask_(ControlDomains::DOMAIN_NONE),
 			OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
 				controller != nullptr ? controller->GetDomain() : ControlDomains::DOMAIN_NONE) {}
 

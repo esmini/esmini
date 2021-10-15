@@ -24,9 +24,6 @@
    <Entities>
       <ScenarioObject name="Ego">
          <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
-         <!-- <ObjectController> -->
-            <!-- <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" /> -->
-         <!-- </ObjectController> -->
       </ScenarioObject>
    </Entities>
    <Storyboard>
@@ -44,9 +41,13 @@
                      </Position>
                   </TeleportAction>
                </PrivateAction>
-               <PrivateAction>
-                    <ActivateControllerAction longitudinal="true" lateral="true" />
-               </PrivateAction>
+               <!-- <PrivateAction> -->
+                    <!-- <ControllerAction> -->
+                        <!-- <AssignControllerAction> -->
+                            <!-- <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" activateLateral="true" activateLongitudinal="true" /> -->
+                        <!-- </AssignControllerAction> -->
+                    <!-- </ControllerAction> -->
+               <!-- </PrivateAction> -->
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>

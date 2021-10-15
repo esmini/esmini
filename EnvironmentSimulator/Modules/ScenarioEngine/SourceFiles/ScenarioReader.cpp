@@ -2327,6 +2327,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		}
 		else if (actionChild.name() == std::string("ActivateControllerAction"))
 		{
+			if (disable_controllers_)
+			{
+				continue;
+			}
 			if (GetVersionMajor() == 1 && GetVersionMinor() == 1)
 			{
 				LOG("In OSC 1.1 ActivateControllerAction should be placed under ControllerAction. Accepting anyway.");
@@ -2338,6 +2342,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 		}
 		else if (actionChild.name() == std::string("ControllerAction"))
 		{
+			if (disable_controllers_)
+			{
+				continue;
+			}
+
 			for (pugi::xml_node controllerChild = actionChild.first_child(); controllerChild; controllerChild = controllerChild.next_sibling())
 			{
 				if (controllerChild.name() == std::string("AssignControllerAction"))
@@ -2380,6 +2389,22 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 							controller_.push_back(controller);
 						}
 						AssignControllerAction *assignControllerAction = new AssignControllerAction(controller);
+
+						bool domain_lateral = parameters.ReadAttribute(controllerDefNode, "activateLateral") == "true";
+						bool domain_longitudinal = parameters.ReadAttribute(controllerDefNode, "activateLongitudinal") == "true";
+
+						int domainMask = 0;
+						if (domain_lateral)
+						{
+							domainMask |= static_cast<int>(ControlDomains::DOMAIN_LAT);
+						}
+						if (domain_longitudinal)
+						{
+							domainMask |= static_cast<int>(ControlDomains::DOMAIN_LONG);
+						}
+
+						assignControllerAction->domainMask_ = static_cast<ControlDomains>(domainMask);
+
 						action = assignControllerAction;
 					}
 				}
