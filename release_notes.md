@@ -1,9 +1,35 @@
 ## esmini release notes
 
+### 2021-10-15 Version 2.15.3
+
+- Parse vehicle Performance element
+  - so far applied only in the ACC controller
+- Improve and simplify ACC controller
+  - Respect vehicle max acceleration and deceleration Performance properties
+  - Simplistic long control based on relative distance and speed
+- Add ALKS controller
+  - initial dummy implementation inheriting the ACC controller
+  - longitudinal domain handled in the same way as the ACC controller
+  - lateral domain handled by the default controller (follow lane at current offset)
+- Extend use of path(s) for locating files
+  - Now both filename with and without any leading relative or absolute
+  path will be concatenated with the path entries and tested
+- Rework disable controllers strategy
+  - Only controllers activated explicitly by the scenario affected
+  - Implicit controllers used by e.g. TrafficSwarmAction not affected
+- Support OSC 1.1 AssignController activate attributes
+  - controllers can be activated when assigned
+- Fix missing euclidianDistance support in RelativeDistanceCondition
+- Bugfix: Add missing boolean support in setParameterValue()
+- Fix missing dummy boundingbox when model failed to load
+  - the bug was introduced in v2.14.0
+- Catch missing junction error and continue anyway (issue [#174](https://github.com/esmini/esmini/issues/174))
+
 ### 2021-10-07 Version 2.15.2
 
 - Fix alternating lane offset issue in routes, e.g. AcquirePosition (PR #[167](https://github.com/esmini/esmini/pull/167))
 - Fix random way selector issue resulting in always same choice in intersections
+- Add missing bounding box 
 
 ### 2021-10-05 Version 2.15.1
 
