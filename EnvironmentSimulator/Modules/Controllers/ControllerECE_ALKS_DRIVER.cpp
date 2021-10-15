@@ -74,7 +74,6 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 	double targetVT = 0.0;
 	double targetAS = 0.0;
 
-	double tCutIn = 0.0;
 	double dsFree = 0.0;
 	double acc = 0.0;
 	double TTC = 0.0;
@@ -90,9 +89,9 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 		{
 			continue;
 		}
-		if (aebBraking_)
+		if (aebBraking_ || egoV == 0)
 		{
-			// AEB brakes harder than driver, no need to continue checking for scenario if aeb is already braking
+			// ego already stopped or AEB is already braking. AEB brakes harder than driver, no more need to continue checking for scenario
 			break;
 		}
 		targetL = entities_->object_[i]->boundingbox_.dimensions_.length_;
@@ -116,24 +115,30 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 				// object with a deviation of more than 0.375m in direction of ego from its lane center
 				if (!driverBraking_ && ((diff.dLaneId == -1 && targetVT > 0 && targetO > 0.375) || (diff.dLaneId == 1 && targetVT < 0 && targetO < -0.375)))
 				{
-					tCutIn = 0.4;  // see risk perception time, this means after this time the cut-in was detected
-	
 					// relative heading angles are playing no role for reference driver
-					dsFree = diff.ds - (0.5 * egoL + egoCx) - (0.5 * targetL - targetCx) - (egoV - targetV) * tCutIn;
+					dsFree = diff.ds - (0.5 * egoL + egoCx) - (0.5 * targetL - targetCx) - (egoV - targetV) * 0.4;  // see risk perception time = 0.4sec
 					// check if the cut-in vehicle would be in front of ego after cut-in and within a TTC <=2sec, otherwise it can be ignored
 					TTC = dsFree / fabs(egoV - targetV);
-					if (dsFree >= 0 && targetV < egoV && TTC < 2 - SMALL_NUMBER)
+					if (TTC >= 0 && targetV < egoV)
 					{
-						// cut-in would be in the red zone in front of ego vehicle after lane change
-						// TTC (< 2sec) + offset (> 0.375) + perception time (0.4sec, see plot of regulation)
-						// 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
-						waitTime_ = 1.15;
-						ALKS_LOG("ECE ALKS driver -> cut-in detected of '%s' (offset: %.3f, TTC: %.2f) in front of '%s' -> driver starts braking after %.2f sec "
-							"(braking delay + risk perception time)", entities_->object_[i]->name_.c_str(), fabs(targetO), TTC, object_->name_.c_str(), waitTime_);
-						driverBraking_ = true;
-						cutInDetected_ = true;
+						if (TTC >= 2)
+						{
+							dsFree -= (egoV - targetV) * 0.75;
+							TTC = MIN(2 - SMALL_NUMBER, dsFree / fabs(egoV - targetV));
+						}
+						if (TTC < 2)
+						{
+							// cut-in would be in the red zone in front of ego vehicle after lane change (at leaster after 0.4sec risk perception time or after 1.15sec including braking delay)
+							// TTC (< 2sec) + offset (> 0.375)
+							// 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
+							waitTime_ = 1.15;
+							ALKS_LOG("ECE ALKS driver -> cut-in detected of '%s' (offset: %.3f, TTC: %.2f) in front of '%s' -> driver starts braking after %.2f sec "
+								"(braking delay + risk perception time)", entities_->object_[i]->name_.c_str(), fabs(targetO), TTC, object_->name_.c_str(), waitTime_);
+							driverBraking_ = true;
+							cutInDetected_ = true;
+						}
 					}
-					else if (!cutInDetected_)
+					if (!cutInDetected_)
 					{
 						ALKS_LOG("ECE ALKS driver -> cut-in detected of '%s' (offset: %.3f, TTC: %.2f) in front of '%s'", entities_->object_[i]->name_.c_str(),
 							fabs(targetO), TTC, object_->name_.c_str());
@@ -180,7 +185,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 					}
 				}
 				// deceleration
-				if (targetAS < 0 && dsFree >= 0 && TTC < 2 - SMALL_NUMBER) // TTC of object in front < 2sec
+				if (targetAS < 0 && dsFree >= 0 && TTC < 2) // TTC of object in front < 2sec
 				{
 					// from cut-in and cut-out one can conclude for deceleration scenario, that AEB is only braking in case of full wrap, right decision here???
 					// AEB has here no delay, would directly brake as long as TTC <= TTC AEB (which is estimated to be the same as for driver 2sec)
@@ -218,7 +223,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 					// There is a slower object in front at TTC < 2sec and if there was a cut-out before,
 					// then the cut-out vehicle has already left ego's driving path (lateral deviations omitted)
 					if ((dtFreeCutOut_ >= 0 || dtFreeCutOut_ == -LARGE_NUMBER) &&
-						targetV < egoV && dsFree >= 0 && TTC < 2 - SMALL_NUMBER)
+						targetV < egoV && dsFree >= 0 && TTC < 2)
 					{
 						// There is a full wrap with this object in front
 						// AEB only braking if there is a full wrap, right decision???
@@ -244,7 +249,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 					}
 
 					// TTC between ego and object in front < 2sec
-					if (!driverBraking_ && dsFree >= 0 && TTC < 2 - SMALL_NUMBER)
+					if (!driverBraking_ && dsFree >= 0 && TTC < 2)
 					{
 						// There was a cut-out vehicle in between with a deviation from its lane center larger than 0.375m (no swearving vehicle)
 						if (dtFreeCutOut_ > -LARGE_NUMBER)
@@ -269,13 +274,13 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 	// especially important for cut-in and cut-out maeneuvers completed at TTC >= 2sec
 	if (egoV > 0 && !aebBraking_)
 	{
-		if (!aebBrakeCandidateName.empty() && (dtFreeCutOut_ >= 0 || dtFreeCutOut_ == -LARGE_NUMBER) && candidateTTC < 2 - SMALL_NUMBER)
+		if (!aebBrakeCandidateName.empty() && (dtFreeCutOut_ >= 0 || dtFreeCutOut_ == -LARGE_NUMBER) && candidateTTC < 2)
 		{
 			ALKS_LOG("ECE ALKS AEB -> full wrap of '%s' and '%s' (TTC: %.2f) -> AEB starts braking", object_->name_.c_str(), aebBrakeCandidateName.c_str(), candidateTTC);
 			// AEB brakes harder than driver, no need to continue checking for scenario if aeb is already braking
 			aebBraking_ = true;
 		}
-		else if (!driverBraking_ && !driverBrakeCandidateName.empty() && candidateTTC < 2 - SMALL_NUMBER)
+		else if (!driverBraking_ && !driverBrakeCandidateName.empty() && candidateTTC < 2)
 		{
 			// 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
 			waitTime_ = 1.15;
