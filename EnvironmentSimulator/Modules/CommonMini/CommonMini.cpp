@@ -1145,17 +1145,18 @@ bool SE_Options::IsOptionArgumentSet(std::string opt)
 	return GetOption(opt)->set_;
 }
 
-std::string SE_Options::GetOptionArg(std::string opt)
+std::string SE_Options::GetOptionArg(std::string opt, int index)
 {
 	SE_Option *option = GetOption(opt);
 
-	if (option && !(option->opt_arg_.empty()))
+	if (option == nullptr)
 	{
-		return option->arg_value_;
+		return "";
 	}
-	else if (option && !(option->default_value_.empty()))
+
+	if (!(option->opt_arg_.empty()) && index < option->arg_value_.size())
 	{
-		return option->default_value_;
+		return option->arg_value_[index];
 	}
 	else
 	{
@@ -1175,9 +1176,10 @@ static void ShiftArgs(int *argc, char** argv, int start_i)
 	}
 }
 
-void SE_Options::ParseArgs(int *argc, char* argv[])
+int SE_Options::ParseArgs(int *argc, char* argv[])
 {
 	app_name_ = FileNameWithoutExtOf(argv[0]);
+	int returnVal = 0;
 
 	for (size_t i = 0; i < *argc; i++)
 	{
@@ -1203,17 +1205,18 @@ void SE_Options::ParseArgs(int *argc, char* argv[])
 			{
 				if (i < *argc - 1 && strncmp(argv[i + 1], "--", 2))
 				{
-					option->arg_value_ = argv[i+1];
+					option->arg_value_.push_back(argv[i+1]);
 					ShiftArgs(argc, argv, (int)i);
 				}
 				else if (!option->default_value_.empty())
 				{
-					option->arg_value_ = option->default_value_;
+					option->arg_value_.push_back(option->default_value_);
 				}
 				else
 				{
 					LOG("Argument parser error: Missing option %s argument", option->opt_str_.c_str());
 					option->set_ = false;
+					returnVal = -1;
 				}
 			}
 			ShiftArgs(argc, argv, (int)i);
@@ -1223,6 +1226,8 @@ void SE_Options::ParseArgs(int *argc, char* argv[])
 			i++;
 		}
 	}
+
+	return returnVal;
 }
 
 SE_Option* SE_Options::GetOption(std::string opt)

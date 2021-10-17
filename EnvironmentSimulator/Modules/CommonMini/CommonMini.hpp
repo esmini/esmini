@@ -413,14 +413,14 @@ public:
 	std::string opt_desc_;
 	std::string opt_arg_;
 	bool set_;
-	std::string arg_value_;
+	std::vector<std::string> arg_value_;
 	std::string default_value_;
 
 	SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "") :
-		opt_str_(opt_str), opt_desc_(opt_desc), opt_arg_(opt_arg), set_(false), arg_value_("") {}
+		opt_str_(opt_str), opt_desc_(opt_desc), opt_arg_(opt_arg), set_(false) {}
 
 	SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value) :
-		opt_str_(opt_str), opt_desc_(opt_desc), opt_arg_(opt_arg), set_(false), arg_value_(""), default_value_(default_value) {}
+		opt_str_(opt_str), opt_desc_(opt_desc), opt_arg_(opt_arg), set_(false), default_value_(default_value) {}
 
 	void Usage();
 };
@@ -437,8 +437,8 @@ public:
 	void PrintArgs(int argc, char *argv[], std::string message = "Unrecognized arguments:");
 	bool GetOptionSet(std::string opt);
 	bool IsOptionArgumentSet(std::string opt);
-	std::string GetOptionArg(std::string opt);
-	void ParseArgs(int *argc, char* argv[]);
+	std::string GetOptionArg(std::string opt, int index = 0);
+	int ParseArgs(int *argc, char* argv[]);
 	std::vector<std::string>& GetOriginalArgs() { return originalArgs_; }
 
 private:
