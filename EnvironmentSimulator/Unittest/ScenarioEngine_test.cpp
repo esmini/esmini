@@ -343,6 +343,9 @@ TEST(OptionsTest, TestOptionHandling)
         "my_road.xodr",
         "--window",
         "--option2",
+        "option2Value",
+        "--option2",
+        "option2Value2",
         "--option3",
         "--option4"
     };
@@ -355,19 +358,25 @@ TEST(OptionsTest, TestOptionHandling)
         strncpy(argv[i], args[i], strlen(args[i]) + 1);
     }
 
-    opt.ParseArgs(&argc, argv);
+    ASSERT_EQ(opt.ParseArgs(&argc, argv), -1);
 
     ASSERT_EQ(opt.GetOptionSet("no_arg"), false);
     ASSERT_EQ(opt.GetOptionSet("osc_file"), true);
     ASSERT_EQ(opt.GetOptionSet("window"), true);
-    ASSERT_EQ(opt.GetOptionSet("option2"), false);
+    ASSERT_EQ(opt.GetOptionSet("option2"), true);
     ASSERT_EQ(opt.GetOptionSet("option3"), true);
     ASSERT_EQ(opt.GetOptionSet("option4"), false);
     ASSERT_EQ(opt.GetOptionSet("option5"), false);
     ASSERT_EQ(opt.GetOptionArg("window"), "");
     ASSERT_EQ(opt.GetOptionArg("osc_file"), "my_scenario.xosc");
     ASSERT_EQ(opt.GetOptionArg("odr_file"), "my_road.xodr");
+    ASSERT_EQ(opt.GetOptionArg("option2"), "option2Value");
+    ASSERT_EQ(opt.GetOptionArg("option2", 1), "option2Value2");
     ASSERT_EQ(opt.GetOptionArg("option3"), "55");
+
+    // test without last argument, should return OK
+    argc = sizeof(args-1) / sizeof(char*);
+    ASSERT_EQ(opt.ParseArgs(&argc, argv), 0);
 
     // Clean up
     for (int i = 0; i < argc; i++)

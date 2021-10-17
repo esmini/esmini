@@ -373,6 +373,7 @@ namespace viewer
 		Viewer(roadmanager::OpenDrive *odrManager, const char* modelFilename, const char* scenarioFilename, const char* exe_path, osg::ArgumentParser arguments, SE_Options* opt = 0);
 		~Viewer();
 		static void PrintUsage();
+		void AddCustomCamera(double x, double y, double z, double h, double p);
 		void SetCameraMode(int mode);
 		void UpdateCameraFOV();
 		void SetVehicleInFocus(int idx);

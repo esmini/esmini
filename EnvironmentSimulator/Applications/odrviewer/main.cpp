@@ -32,9 +32,7 @@
 #include "helpText.hpp"
 
 
-#define DEFAULT_SPEED   70  // km/h
-#define DEFAULT_DENSITY 1   // Cars per 100 m
-#define ROAD_MIN_LENGTH 30
+#define ROAD_MIN_LENGTH 30.0
 #define SIGN(X) ((X<0)?-1:1)
 
 
@@ -43,8 +41,7 @@ static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
 static const double minStepSize = 0.01;
 static const bool freerun = true;
-static double density = DEFAULT_DENSITY;
-static double speed = DEFAULT_SPEED;
+static double density = 1.0;  // Cars per 100 m
 static double global_speed_factor = 1.0;
 static int first_car_in_focus = -1;
 roadmanager::Road::RoadRule rule = roadmanager::Road::RoadRule::ROAD_RULE_UNDEFINED;
@@ -347,7 +344,7 @@ int main(int argc, char** argv)
 	// use an ArgumentParser object to manage the program arguments.
 	opt.AddOption("help", "Show this help message");
 	opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
-	opt.AddOption("density", "density (cars / 100 m)", "density");
+	opt.AddOption("density", "density (cars / 100 m)", "density", std::to_string(density));
 	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
@@ -359,11 +356,15 @@ int main(int argc, char** argv)
 	opt.AddOption("road_features", "Show OpenDRIVE road features (toggle during simulation by press 'o') ");
 	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
 	opt.AddOption("seed", "Specify seed number for random generator", "number");
-	opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor");
+	opt.AddOption("speed_factor", "speed_factor <number>", "speed_factor", std::to_string(global_speed_factor));
 	opt.AddOption("traffic_rule", "Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)", "rule (right/left)");
 	opt.AddOption("version", "Show version and quit");
 
-	opt.ParseArgs(&argc, argv);
+	if (opt.ParseArgs(&argc, argv) != 0)
+	{
+		opt.PrintUsage();
+		return -1;
+	}
 
 	if (opt.GetOptionSet("version"))
 	{

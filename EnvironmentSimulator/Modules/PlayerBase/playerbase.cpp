@@ -415,6 +415,35 @@ int ScenarioPlayer::InitViewer()
 		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OBJECT_SENSORS);
 	}
 
+	if (opt.GetOptionSet("custom_camera") == true)
+	{
+		int counter = 0;
+
+		while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
+		{
+			size_t pos = 0;
+			double v[5];
+			for (int i = 0; i < 5; i++)
+			{
+				pos = arg_str.find(",");
+				if (i < 4 && pos == std::string::npos)
+				{
+					LOG_AND_QUIT("Expected custom_camera <x,y,z,h,p>, got only %d values", i+1);
+				}
+				v[i] = strtod(arg_str.substr(0, pos));
+				arg_str.erase(0, pos == std::string::npos ? pos : pos + 1);
+			}
+			if (!arg_str.empty())
+			{
+				LOG_AND_QUIT("Expected custom_camera <x,y,z,h,p>, got too many values. Make sure only five values is specified");
+			}
+
+			viewer_->AddCustomCamera(v[0], v[1], v[2], v[3], v[4]);
+			LOG("Created custom camera %d (%.2f, %.2f, %.2f, %.2f, %.2f)", counter, v[0], v[1], v[2], v[3], v[4]);
+			counter++;
+		}
+	}
+
 	if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
 	{
 		if (arg_str == "orbit")
@@ -440,6 +469,10 @@ int ScenarioPlayer::InitViewer()
 		else if (arg_str == "driver")
 		{
 			viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_DRIVER);
+		}
+		else if (arg_str == "custom")
+		{
+			viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_CUSTOM);
 		}
 		else
 		{
@@ -647,7 +680,8 @@ int ScenarioPlayer::Init()
 	opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
 	opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
-	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
+	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\") (swith with key 'k') ", "mode");
+	opt.AddOption("custom_camera", "Additional custom camera position <x,y,z,h,p,r> (multiple occurrences supported)", "position");
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
 	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
@@ -666,7 +700,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("osi_points", "Show OSI road pointss (toggle during simulation by press 'y') ");
 	opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address");
 #endif
-	opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (will be concatenated with filepath)", "path");
+	opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)", "path");
 	opt.AddOption("record", "Record position data into a file for later replay", "filename");
 	opt.AddOption("road_features", "Show OpenDRIVE road features (\"on\", \"off\"  (default)) (toggle during simulation by press 'o') ", "mode");
 	opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
@@ -678,7 +712,11 @@ int ScenarioPlayer::Init()
 	opt.AddOption("version", "Show version and quit");
 
 	exe_path_ = argv_[0];
-	opt.ParseArgs(&argc_, argv_);
+	if (opt.ParseArgs(&argc_, argv_) != 0)
+	{
+		opt.PrintUsage();
+		return -2;
+	}
 
 	if (opt.GetOptionSet("version"))
 	{
@@ -751,10 +789,15 @@ int ScenarioPlayer::Init()
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());
 	}
 
-	if ((arg_str = opt.GetOptionArg("path")) != "")
+	if (opt.GetOptionArg("path") != "")
 	{
-		SE_Env::Inst().AddPath(arg_str);
-		LOG("Added path %s", arg_str.c_str());
+		int counter = 0;
+		while ((arg_str = opt.GetOptionArg("path", counter)) != "")
+		{
+			SE_Env::Inst().AddPath(arg_str);
+			LOG("Added path %s", arg_str.c_str());
+			counter++;
+		}
 	}
 
 	if (opt.GetOptionSet("disable_controllers"))

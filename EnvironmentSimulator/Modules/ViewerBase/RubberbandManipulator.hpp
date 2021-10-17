@@ -33,8 +33,18 @@ class RubberbandManipulator : public osgGA::CameraManipulator
 			RB_MODE_RUBBER_BAND_ORBIT,
 			RB_MODE_TOP,
             RB_MODE_DRIVER,
-			RB_NUM_MODES
+            RB_MODE_CUSTOM,
+            RB_NUM_MODES
 		};
+
+        typedef struct
+        {
+            double x;
+            double y;
+            double z;
+            double h;
+            double p;
+        } CustomCameraPos;
 
 		RubberbandManipulator(unsigned int mode = RB_MODE_RUBBER_BAND_ORBIT);
 
@@ -73,6 +83,10 @@ class RubberbandManipulator : public osgGA::CameraManipulator
 
 		void calculateCameraDistance();
 
+        void AddCustomCamera(CustomCameraPos customCameraPos) { customCamera_.push_back(customCameraPos); }
+
+        unsigned int GetNumberOfCameraModes() { return CAMERA_MODE::RB_NUM_MODES + customCamera_.size() - 1; }
+
     protected:
 
         virtual ~RubberbandManipulator();
@@ -103,6 +117,8 @@ class RubberbandManipulator : public osgGA::CameraManipulator
 		float _cameraRotation;
 
 		unsigned int _mode;
+
+        std::vector<CustomCameraPos> customCamera_;
 };
 
 }

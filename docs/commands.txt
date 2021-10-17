@@ -8,6 +8,8 @@ Options:
       Show entities as bounding boxes (toggle modes on key ',')
   --camera_mode <mode>
       Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver") (toggle during simulation by press 'k')
+  --custom_camera <position>
+      Additional custom camera position <x,y,z,h,p,r> (multiple occurrences supported)
   --csv_logger <csv_filename>
       Log data for each vehicle in ASCII csv format
   --disable_controllers
@@ -41,7 +43,7 @@ Options:
   --osi_receiver_ip <IP address>
       IP address where to send OSI UDP packages
   --path <path>
-      Search path prefix for assets, e.g. OpenDRIVE files (will be concatenated with filepath)
+      Search path prefix for assets, e.g. OpenDRIVE files (multiple occurrences supported)
   --record <filename>
       Record position data into a file for later replay
   --road_features <mode>

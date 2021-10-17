@@ -10,7 +10,7 @@ Options:
       Show this help message
   --odr <odr_filename>
       OpenDRIVE filename (required)
-  --density <density>
+  --density [density]  (default = 1.000000)
       density (cars / 100 m)
   --disable_log
       Prevent logfile from being created
@@ -34,7 +34,7 @@ Options:
       Save generated 3D model (n/a when a scenegraph is loaded)
   --seed <number>
       Specify seed number for random generator
-  --speed_factor <speed_factor>
+  --speed_factor [speed_factor]  (default = 1.000000)
       speed_factor <number>
   --traffic_rule <rule (right/left)>
       Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)
