@@ -58,6 +58,7 @@
 double color_green[3] = { 0.25, 0.6, 0.3 };
 double color_gray[3] = { 0.7, 0.7, 0.7 };
 double color_dark_gray[3] = { 0.5, 0.5, 0.5 };
+double color_light_gray[3] = { 0.7, 0.7, 0.7 };
 double color_red[3] = { 0.73, 0.26, 0.26 };
 double color_black[3] = { 0.2, 0.2, 0.2 };
 double color_blue[3] = { 0.25, 0.38, 0.7 };
@@ -1476,9 +1477,15 @@ void Viewer::PrintUsage()
 	printf("\n");
 }
 
+void Viewer::AddCustomCamera(double x, double y, double z, double h, double p)
+{
+	rubberbandManipulator_->AddCustomCamera(osgGA::RubberbandManipulator::CustomCameraPos({x,y,z,h,p}));
+	UpdateCameraFOV();
+}
+
 void Viewer::SetCameraMode(int mode)
 {
-	if (mode < 0 || mode >= osgGA::RubberbandManipulator::RB_NUM_MODES)
+	if (mode < 0 || mode >= (int)rubberbandManipulator_->GetNumberOfCameraModes())
 	{
 		return;
 	}
@@ -1518,6 +1525,8 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	osg::ref_ptr<osg::Group> bbGroup = nullptr;
 	osg::BoundingBox modelBB;
 	std::vector<std::string> file_name_candidates;
+	double carStdDim[] = { 4.5, 1.8, 1.5 };
+	double carStdOrig[] = { 1.5, 0.0, 0.75 };
 
 	// Check if model already loaded
 	for (size_t i = 0; i < entities_.size(); i++)
@@ -1554,16 +1563,13 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 		}
 	}
 
-	// Then create a bounding box visual representation
-	bbGroup = new osg::Group;
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-
+	// Make sure we have a 3D model
 	// Set color of vehicle based on its index
 	double* color;
 	double b = 1.5;  // brighness
 	int index = entities_.size() % 4;
 
-	if (index == 0) color = color_white;
+	if (index == 0) color = color_light_gray;
 	else if (index == 1) color = color_red;
 	else if (index == 2) color = color_blue;
 	else color = color_yellow;
@@ -1571,36 +1577,8 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	osg::Material* material = new osg::Material();
 	material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
 	material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
-
-	if (scaleMode == EntityScaleMode::NONE || scaleMode == EntityScaleMode::MODEL_TO_BB || modelgroup == nullptr)
-	{
-		if (boundingBox != nullptr &&
-			!(boundingBox->dimensions_.length_ < SMALL_NUMBER &&
-			 boundingBox->dimensions_.width_ < SMALL_NUMBER &&
-			 boundingBox->dimensions_.height_ < SMALL_NUMBER))
-		{
-			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(
-				boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
-				boundingBox->dimensions_.length_,
-				boundingBox->dimensions_.width_,
-				boundingBox->dimensions_.height_)));
-		}
-		else
-		{
-			// No bounding box specified. Create a bounding box of typical car dimension.
-			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(1.5, 0.0, 0.75), 4.5, 1.8, 1.5)));
-
-			if (scaleMode == EntityScaleMode::MODEL_TO_BB)
-			{
-				LOG("Request to scale model (%s / %s) to non existing or 0 size bounding box. Created a dummy BB of typical car dimension.",
-					name.c_str(), modelFilepath.c_str());
-			}
-		}
-	}
-
 	if (modelgroup == nullptr)
 	{
-		// Create a dummy cuboid
 		if (modelFilepath.empty())
 		{
 			LOG("No filename specified for model! - creating a dummy model");
@@ -1616,25 +1594,95 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 			LOG("Creating a dummy model instead");
 		}
 
-		// If no model loaded, make a shaded copy of bounding box as model
-		osg::ref_ptr<osg::Geode> geodeCopy = dynamic_cast<osg::Geode*>(geode->clone(osg::CopyOp::DEEP_COPY_ALL));
-		geodeCopy->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
+		// Create a dummy cuboid
+		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+		if (boundingBox != nullptr &&
+			!(boundingBox->dimensions_.length_ < SMALL_NUMBER &&
+				boundingBox->dimensions_.width_ < SMALL_NUMBER &&
+				boundingBox->dimensions_.height_ < SMALL_NUMBER))
+		{
+			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(
+				osg::Vec3(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
+				boundingBox->dimensions_.length_,
+				boundingBox->dimensions_.width_,
+				boundingBox->dimensions_.height_)));
+		}
+		else
+		{
+			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(
+				osg::Vec3(carStdOrig[0], carStdOrig[1], carStdOrig[2]),
+				carStdDim[0], carStdDim[1], carStdDim[2])));
+		}
+		geode->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
 		modelgroup = new osg::Group;
-		modelgroup->addChild(geodeCopy);
+		modelgroup->addChild(geode);
 		modelgroup->getOrCreateStateSet()->setAttribute(material);
+
+		// and extract the OSG bounding box
+		osg::ComputeBoundsVisitor cbv;
+		geode->accept(cbv);
+		modelBB = cbv.getBoundingBox();
+	}
+
+	// Then create a bounding box visual representation
+	bbGroup = new osg::Group;
+	osg::ref_ptr<osg::Geode> bbGeode = new osg::Geode;
+
+	if (scaleMode == EntityScaleMode::NONE || scaleMode == EntityScaleMode::MODEL_TO_BB)
+	{
+		// Bounding box should not scale, create one from OSC description if available
+		if (boundingBox != nullptr &&
+			!(boundingBox->dimensions_.length_ < SMALL_NUMBER &&
+			 boundingBox->dimensions_.width_ < SMALL_NUMBER &&
+			 boundingBox->dimensions_.height_ < SMALL_NUMBER))
+		{
+			bbGeode->addDrawable(new osg::ShapeDrawable(new osg::Box(
+				osg::Vec3(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
+				boundingBox->dimensions_.length_,
+				boundingBox->dimensions_.width_,
+				boundingBox->dimensions_.height_)));
+		}
+		else
+		{
+			if (scaleMode == EntityScaleMode::MODEL_TO_BB)
+			{
+				LOG("Request to scale model (%s / %s) to non existing or 0 size bounding box. Created a dummy BB of typical car dimension.",
+					name.c_str(), modelFilepath.c_str());
+			}
+			else   // scaleMode == EntityScaleMode::NONE
+			{
+				LOG("Non existing or 0 size bounding box. Created a dummy BB of typical car dimension.");
+			}
+
+			// No bounding box specified. Create a bounding box of typical car dimension.
+			bbGeode->addDrawable(new osg::ShapeDrawable(new osg::Box(
+				osg::Vec3(carStdOrig[0], carStdOrig[1], carStdOrig[2]),
+				carStdDim[0], carStdDim[1], carStdDim[2])));
+
+			if (boundingBox != nullptr)
+			{
+				// Update OSC boundingbox
+				boundingBox->center_.x_ = carStdOrig[0];
+				boundingBox->center_.y_ = carStdOrig[1];
+				boundingBox->center_.z_ = carStdOrig[2];
+				boundingBox->dimensions_.length_ = carStdDim[0];
+				boundingBox->dimensions_.width_ = carStdDim[1];
+				boundingBox->dimensions_.height_ = carStdDim[2];
+			}
+		}
 	}
 
 	if (scaleMode == EntityScaleMode::BB_TO_MODEL)
 	{
-		if (modelgroup != nullptr)
-		{
-			// Create visual model of object bounding box, copy values from model bounding box
-			geode->addDrawable(new osg::ShapeDrawable(new osg::Box(modelBB.center(),
-				modelBB._max.x() - modelBB._min.x(),
-				modelBB._max.y() - modelBB._min.y(),
-				modelBB._max.z() - modelBB._min.z())));
+		// Create visual model of object bounding box, copy values from model bounding box
+		bbGeode->addDrawable(new osg::ShapeDrawable(new osg::Box(modelBB.center(),
+			modelBB._max.x() - modelBB._min.x(),
+			modelBB._max.y() - modelBB._min.y(),
+			modelBB._max.z() - modelBB._min.z())));
 
-			// Also update OSC boundingbox
+		// Also update OSC boundingbox
+		if (boundingBox != nullptr)
+		{
 			boundingBox->center_.x_ = modelBB.center().x();
 			boundingBox->center_.y_ = modelBB.center().y();
 			boundingBox->center_.z_ = modelBB.center().z();
@@ -1645,41 +1693,38 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	}
 	else if (scaleMode == EntityScaleMode::MODEL_TO_BB)
 	{
-		if (modelgroup != nullptr)
-		{
-			// Scale loaded 3d model
-			osg::ref_ptr<osg::PositionAttitudeTransform> modeltx = new osg::PositionAttitudeTransform;
-			modeltx->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
+		// Scale loaded 3d model
+		osg::ref_ptr<osg::PositionAttitudeTransform> modeltx = new osg::PositionAttitudeTransform;
+		modeltx->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
 
-			double sx = boundingBox->dimensions_.length_ / (modelBB._max.x() - modelBB._min.x());
-			double sy = boundingBox->dimensions_.width_ / (modelBB._max.y() - modelBB._min.y());
-			double sz = boundingBox->dimensions_.height_ / (modelBB._max.z() - modelBB._min.z());
+		double sx = boundingBox->dimensions_.length_ / (modelBB._max.x() - modelBB._min.x());
+		double sy = boundingBox->dimensions_.width_ / (modelBB._max.y() - modelBB._min.y());
+		double sz = boundingBox->dimensions_.height_ / (modelBB._max.z() - modelBB._min.z());
 
-			modeltx->setPosition(osg::Vec3(
-				boundingBox->center_.x_ - sx * modelBB.center().x(),
-				boundingBox->center_.y_ - sy * modelBB.center().y(),
-				boundingBox->center_.z_ - sz * modelBB.center().z()));
-			modeltx->setScale(osg::Vec3(sx, sy, sz));
+		modeltx->setPosition(osg::Vec3(
+			boundingBox->center_.x_ - sx * modelBB.center().x(),
+			boundingBox->center_.y_ - sy * modelBB.center().y(),
+			boundingBox->center_.z_ - sz * modelBB.center().z()));
+		modeltx->setScale(osg::Vec3(sx, sy, sz));
 
-			// Put transform node under modelgroup
-			modeltx->addChild(modelgroup);
-			modelgroup = (osg::Group*)modeltx;
-		}
+		// Put transform node under modelgroup
+		modeltx->addChild(modelgroup);
+		modelgroup = (osg::Group*)modeltx;
 	}
 
 	// Draw only wireframe
 	osg::PolygonMode* polygonMode = new osg::PolygonMode;
 	polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-	osg::ref_ptr<osg::StateSet> stateset = geode->getOrCreateStateSet(); // Get the StateSet of the group
+	osg::ref_ptr<osg::StateSet> stateset = bbGeode->getOrCreateStateSet(); // Get the StateSet of the group
 	stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
 	stateset->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-	geode->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
+	bbGeode->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
 
 	osg::ref_ptr<osg::Geode> center = new osg::Geode;
 	center->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0, 0, 0), 0.2)));
 	center->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
 
-	bbGroup->addChild(geode);
+	bbGroup->addChild(bbGeode);
 	bbGroup->addChild(center);
 	bbGroup->setName("BoundingBox");
 
@@ -2771,7 +2816,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	case(osgGA::GUIEventAdapter::KEY_K):
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			viewer_->SetCameraMode((viewer_->camMode_ + 1) % osgGA::RubberbandManipulator::RB_NUM_MODES);
+			viewer_->SetCameraMode((viewer_->camMode_ + 1) % viewer_->rubberbandManipulator_->GetNumberOfCameraModes());
 		}
 		break;
 	case(osgGA::GUIEventAdapter::KEY_O):
