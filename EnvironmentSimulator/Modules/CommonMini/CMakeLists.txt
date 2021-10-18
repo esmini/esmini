@@ -1,12 +1,14 @@
 
 set ( SOURCES
   CommonMini.cpp
+  UDP.cpp
   version.cpp
   buildnr.cpp
 )
 
 set ( INCLUDES
   CommonMini.hpp
+  UDP.hpp
 )
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)

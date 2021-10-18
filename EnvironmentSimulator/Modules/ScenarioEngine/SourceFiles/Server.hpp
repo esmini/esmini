@@ -20,7 +20,7 @@
 
 #include "ScenarioEngine.hpp"
 
-#define DEFAULT_INPORT 48199
+#define ESMINI_DEFAULT_INPORT 48199
 
 
 typedef struct
