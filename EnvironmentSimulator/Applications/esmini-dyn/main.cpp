@@ -39,6 +39,8 @@
 #define DEMONSTRATE_THREAD 0
 #define DEMONSTRATE_CALLBACK 0
 #define DEMONSTRATE_ROAD_SIGNS 0
+#define DEMONSTRATE_SINGLE_SCREEN_CAPTURE 0
+#define DEMONSTRATE_CONTINUOUS_SCREEN_CAPTURE 1
 
 #define MAX_N_OBJECTS 10
 #define TIME_STEP 0.017f
@@ -145,6 +147,10 @@ int main(int argc, char *argv[])
 		// Demonstrate use of ODR query function
 		printf("odr filename: %s\n", SE_GetODRFilename());
 
+#if DEMONSTRATE_CONTINUOUS_SCREEN_CAPTURE
+		SE_CaptureContinuously(true);
+#endif
+
 #if DEMONSTRATE_ROAD_SIGNS
 		SE_ScenarioObjectState state;
 		SE_GetObjectState(0, &state);
@@ -196,7 +202,7 @@ int main(int argc, char *argv[])
 #endif
 
 
-		for (int i = 0; i*TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
+		for (int i = 0; i * TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
 		{
 #if DEMONSTRATE_PARAMETER  // try with lane_change.xosc which sets "DummyParameter"
 			double value;
@@ -220,6 +226,19 @@ int main(int argc, char *argv[])
 			printf("param value: %.2f\n", value);
 #endif
 
+#if DEMONSTRATE_SINGLE_SCREEN_CAPTURE
+			if (i == 0)
+			{
+				SE_CaptureNextFrame();
+			}
+#endif
+
+#if DEMONSTRATE_CONTINUOUS_SCREEN_CAPTURE
+			if (i == 50)
+			{
+				SE_CaptureContinuously(false);
+			}
+#endif
 			if (SE_Step() != 0)
 			{
 				return 0;

@@ -54,6 +54,7 @@ Key shortcuts
         l: Toggle light
         w: Toggle geometry mode(shading, wireframe, dots)
         c: Save screenshot in JPEG format - in the folder where the application was started from
+        C: Toggle continuous screenshot capture
         h: Help
 
 Mouse control

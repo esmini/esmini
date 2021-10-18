@@ -15,6 +15,7 @@
 
 #include <osg/PositionAttitudeTransform>
 #include <osgViewer/Viewer>
+#include <osgViewer/ViewerEventHandlers>
 #include <osgGA/NodeTrackerManipulator>
 #include <osg/MatrixTransform>
 #include <osg/Material>
@@ -416,6 +417,8 @@ namespace viewer
 		void RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data);
 		PolyLine* AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize=0);
 		PolyLine* AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize=0);
+		void CaptureNextFrame();
+		void CaptureContinuously(bool state);
 
 	private:
 
@@ -429,6 +432,7 @@ namespace viewer
 		bool keyLeft_;
 		bool keyRight_;
 		bool quit_request_;
+		osg::ref_ptr<osgViewer::ScreenCaptureHandler> screenCaptureHandler_;
 	};
 
 	class ViewerEventHandler : public osgGA::GUIEventHandler

@@ -1679,4 +1679,40 @@ extern "C"
 		state->p = (float)((vehicle::Vehicle *)handleSimpleVehicle)->pitch_;
 		state->speed = (float)((vehicle::Vehicle *)handleSimpleVehicle)->speed_;
 	}
+
+	SE_DLL_API int SE_CaptureNextFrame()
+	{
+#ifdef _USE_OSG
+		if (player)
+		{
+			player->CaptureNextFrame();
+		}
+		else
+		{
+			return -1;
+		}
+
+		return 0;
+#else
+		return -1;
+#endif
+	}
+
+	SE_DLL_API int SE_CaptureContinuously(bool state)
+	{
+#ifdef _USE_OSG
+		if (player)
+		{
+			player->CaptureContinuously(state);
+		}
+		else
+		{
+			return -1;
+		}
+
+		return 0;
+#else
+		return -1;
+#endif
+	}
 }

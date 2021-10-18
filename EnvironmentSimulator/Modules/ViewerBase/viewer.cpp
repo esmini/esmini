@@ -28,7 +28,6 @@
 #include <osgGA/DriveManipulator>
 #include <osgGA/TerrainManipulator>
 #include <osgGA/SphericalManipulator>
-#include <osgViewer/ViewerEventHandlers>
 #include <osgDB/Registry>
 #include <osgDB/WriteFile>
 #include <osgShadow/StandardShadowMap>
@@ -1404,7 +1403,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	osgViewer_->addEventHandler(new osgViewer::LODScaleHandler);
 
 	// add the screen capture handler
-	osgViewer_->addEventHandler(new osgViewer::ScreenCaptureHandler);
+	screenCaptureHandler_ = new osgViewer::ScreenCaptureHandler;
+	osgViewer_->addEventHandler(screenCaptureHandler_);
 
 	osgViewer_->setReleaseContextAtEndOfFrameHint(false);
 
@@ -1649,7 +1649,7 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 				LOG("Request to scale model (%s / %s) to non existing or 0 size bounding box. Created a dummy BB of typical car dimension.",
 					name.c_str(), modelFilepath.c_str());
 			}
-			else   // scaleMode == EntityScaleMode::NONE
+			else if (scaleMode == EntityScaleMode::NONE)
 			{
 				LOG("Non existing or 0 size bounding box. Created a dummy BB of typical car dimension.");
 			}
@@ -2800,6 +2800,24 @@ void Viewer::RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data)
 	cb.func = func;
 	cb.data = data;
 	callback_.push_back(cb);
+}
+
+void Viewer::CaptureNextFrame()
+{
+	screenCaptureHandler_->captureNextFrame(*osgViewer_);
+}
+
+void Viewer::CaptureContinuously(bool state)
+{
+	if (state == true)
+	{
+		screenCaptureHandler_->startCapture();
+		screenCaptureHandler_->setFramesToCapture(0);
+	}
+	else
+	{
+		screenCaptureHandler_->stopCapture();
+	}
 }
 
 bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)

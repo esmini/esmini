@@ -113,6 +113,8 @@ public:
 	int InitViewer();
 	void CloseViewer();
 	void ViewerFrame();
+	void CaptureNextFrame();
+	void CaptureContinuously(bool state);
 #else
 	void *viewer_;
 #endif

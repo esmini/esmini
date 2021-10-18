@@ -858,6 +858,19 @@ extern "C"
 	*/
 	SE_DLL_API void SE_SimpleVehicleGetState(void *handleSimpleVehicle, SE_SimpleVehicleState *state);
 
+	/**
+		Capture screen of next frame and save as jpeg file
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_CaptureNextFrame();
+
+	/**
+		Activate or deactivate continuous screen capture
+		@param state true=activate, false=deactivate
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_CaptureContinuously(bool state);
+
 #ifdef __cplusplus
 }
 #endif

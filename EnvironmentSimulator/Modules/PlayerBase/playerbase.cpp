@@ -350,6 +350,22 @@ void ScenarioPlayer::ViewerFrame()
 
 }
 
+void ScenarioPlayer::CaptureNextFrame()
+{
+	if (viewer_)
+	{
+		viewer_->CaptureNextFrame();
+	}
+}
+
+void ScenarioPlayer::CaptureContinuously(bool state)
+{
+	if (viewer_)
+	{
+		viewer_->CaptureContinuously(state);
+	}
+}
+
 void ScenarioPlayer::CloseViewer()
 {
 	delete viewer_;
@@ -378,6 +394,12 @@ int ScenarioPlayer::InitViewer()
 	if (opt.GetOptionArg("info_text") == "off")
 	{
 		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO);
+	}
+
+	if (opt.GetOptionSet("capture_screen"))
+	{
+		LOG("Activate continuous screen capture");
+		viewer_->CaptureContinuously(true);
 	}
 
 	if ((arg_str = opt.GetOptionArg("trail_mode")) != "")
@@ -680,6 +702,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename");
 	opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off, 4=default)", "mode");
 	opt.AddOption("bounding_boxes", "Show entities as bounding boxes (toggle modes on key ',') ");
+	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\") (swith with key 'k') ", "mode");
 	opt.AddOption("custom_camera", "Additional custom camera position <x,y,z,h,p,r> (multiple occurrences supported)", "position");
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
