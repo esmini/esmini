@@ -1715,4 +1715,22 @@ extern "C"
 		return -1;
 #endif
 	}
+
+	SE_DLL_API int SE_AddCustomCamera(double x, double y, double z, double h, double p)
+	{
+#ifdef _USE_OSG
+		if (player)
+		{
+			player->AddCustomCamera(x, y, z, h, p);
+		}
+		else
+		{
+			return -1;
+		}
+
+		return 0;
+#else
+		return -1;
+#endif
+	}
 }

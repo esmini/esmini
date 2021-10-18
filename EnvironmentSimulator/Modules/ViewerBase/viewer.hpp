@@ -375,7 +375,13 @@ namespace viewer
 		~Viewer();
 		static void PrintUsage();
 		void AddCustomCamera(double x, double y, double z, double h, double p);
+
+		/**
+		* Set mode of the esmini camera model
+		* @param mode According to the RubberbandManipulator::CAMERA_MODE enum, plus any number of custom cameras. Set -1 to select the last.
+		*/
 		void SetCameraMode(int mode);
+		int GetNumberOfCameraModes();
 		void UpdateCameraFOV();
 		void SetVehicleInFocus(int idx);
 		int GetEntityInFocus() { return currentCarInFocus_; }

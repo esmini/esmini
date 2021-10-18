@@ -115,6 +115,7 @@ public:
 	void ViewerFrame();
 	void CaptureNextFrame();
 	void CaptureContinuously(bool state);
+	void AddCustomCamera(double x, double y, double z, double h, double p);
 #else
 	void *viewer_;
 #endif

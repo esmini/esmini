@@ -366,6 +366,15 @@ void ScenarioPlayer::CaptureContinuously(bool state)
 	}
 }
 
+void ScenarioPlayer::AddCustomCamera(double x, double y, double z, double h, double p)
+{
+	if (viewer_)
+	{
+		viewer_->AddCustomCamera(x, y, z, h, p);
+		viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
+	}
+}
+
 void ScenarioPlayer::CloseViewer()
 {
 	delete viewer_;

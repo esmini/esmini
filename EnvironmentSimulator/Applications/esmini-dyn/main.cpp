@@ -40,7 +40,8 @@
 #define DEMONSTRATE_CALLBACK 0
 #define DEMONSTRATE_ROAD_SIGNS 0
 #define DEMONSTRATE_SINGLE_SCREEN_CAPTURE 0
-#define DEMONSTRATE_CONTINUOUS_SCREEN_CAPTURE 1
+#define DEMONSTRATE_CONTINUOUS_SCREEN_CAPTURE 0
+#define DEMONSTRATE_CUSTOM_CAMERA 1
 
 #define MAX_N_OBJECTS 10
 #define TIME_STEP 0.017f
@@ -224,6 +225,17 @@ int main(int argc, char *argv[])
 
 			SE_GetParameterDouble("DummyParameter", &value);
 			printf("param value: %.2f\n", value);
+#endif
+
+#if DEMONSTRATE_CUSTOM_CAMERA
+			if (i == 300)
+			{
+				SE_AddCustomCamera(4.0, 0.0, 0.5, 0.0, 0.0);
+			}
+			else if (i == 500)
+			{
+				SE_AddCustomCamera(-1.1, 0.0, 0.5, 3.14, 0.0);
+			}
 #endif
 
 #if DEMONSTRATE_SINGLE_SCREEN_CAPTURE

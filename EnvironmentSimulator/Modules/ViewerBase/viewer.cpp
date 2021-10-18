@@ -1485,14 +1485,20 @@ void Viewer::AddCustomCamera(double x, double y, double z, double h, double p)
 
 void Viewer::SetCameraMode(int mode)
 {
-	if (mode < 0 || mode >= (int)rubberbandManipulator_->GetNumberOfCameraModes())
+	if (mode < 0 || mode >= GetNumberOfCameraModes())
 	{
-		return;
+		// set to last camera mode
+		mode = (int)(rubberbandManipulator_->GetNumberOfCameraModes() - 1);
 	}
 
 	camMode_ = mode;
 	rubberbandManipulator_->setMode(camMode_);
 	UpdateCameraFOV();
+}
+
+int Viewer::GetNumberOfCameraModes()
+{
+	return (int)rubberbandManipulator_->GetNumberOfCameraModes();
 }
 
 void Viewer::UpdateCameraFOV()
