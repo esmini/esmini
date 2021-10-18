@@ -1,7 +1,18 @@
 ## esmini release notes
 
-### 2021-10-15 Version 2.15.3
+### 2021-10-18 Version 2.15.3
 
+- Extend screen capture functionality
+  - Support continuous screen capture (individual images though)
+  - Add continuous screen capture argument (see [docs/commands.txt](https://github.com/esmini/esmini/blob/master/docs/commands.txt))
+  - Add screen capture API to esminiLib
+- Support multiple option occurrences
+  - e.g. multiple paths can be set by adding several `--path <path to directory>`
+- Add support for custom camera positions (partly issue #173)
+  - New command line option `--custom_camera <x,y,z,h,p,r>`
+  - Multiple custom cameras supported, add any number of custom_camera arguments
+  - Make first custom camera default by argument `--camera_mode custom`
+  - Switch camera during simulation with key "k"
 - Parse vehicle Performance element
   - so far applied only in the ACC controller
 - Improve and simplify ACC controller
