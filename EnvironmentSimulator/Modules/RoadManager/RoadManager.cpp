@@ -2282,9 +2282,12 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 	pugi::xml_node header_node = node.child("header");
 	if (node != NULL)
 	{
-		//Get the string to parse, geoReference tag is just a string with the data separated by spaces and each attribute start with a + character
-		std::string geo_ref_str = header_node.child_value("geoReference");
-		ParseGeoLocalization(geo_ref_str);
+		if(header_node.child("geoReference") != NULL)
+		{
+			//Get the string to parse, geoReference tag is just a string with the data separated by spaces and each attribute start with a + character
+			std::string geo_ref_str = header_node.child_value("geoReference");
+			ParseGeoLocalization(geo_ref_str);
+		}
 	}
 
 	for (pugi::xml_node road_node = node.child("road"); road_node; road_node = road_node.next_sibling("road"))
@@ -4480,8 +4483,11 @@ GeoReference* OpenDrive::GetGeoReference()
 std::string OpenDrive::GetGeoReferenceAsString()
 {
 	std::ostringstream out;
-    out.precision(13);
-    out << "+lat_0=" << std::fixed << geo_ref_.lat_0_ << " +lon_0=" << std::fixed << geo_ref_.lon_0_;
+    if(!std::isnan(geo_ref_.lat_0_) && !std::isnan(geo_ref_.lon_0_))
+	{
+		out.precision(13);
+		out << "+lat_0=" << std::fixed << geo_ref_.lat_0_ << " +lon_0=" << std::fixed << geo_ref_.lon_0_;
+	}
     return out.str();
 }
 

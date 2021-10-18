@@ -1808,7 +1808,32 @@ TEST(Route, TestAssignRoute)
     EXPECT_EQ(pos0.SetRoute(&route), -1);  // pos not along the route
 }
 
-TEST(GeoReferenceTest, TestGeReferenceSimpleRoad)
+TEST(GeoReferenceTest, TestNoGeoReferenceSimpleRoad)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/straight_500m_signs.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    GeoReference* geo_ref = odr->GetGeoReference();
+    EXPECT_EQ(std::isnan(geo_ref->lat_0_), true);
+    EXPECT_EQ(std::isnan(geo_ref->lon_0_), true);
+    EXPECT_EQ(geo_ref->proj_, "");
+    EXPECT_EQ(std::isnan(geo_ref->k_0_), true);
+    EXPECT_EQ(std::isnan(geo_ref->x_0_), true);
+    EXPECT_EQ(std::isnan(geo_ref->y_0_), true);
+    EXPECT_EQ(geo_ref->datum_, "");
+    EXPECT_EQ(geo_ref->geo_id_grids_, "");
+    EXPECT_EQ(geo_ref->vunits_, "");
+    EXPECT_EQ(geo_ref->units_, "");
+    EXPECT_EQ(geo_ref->ellps_, "");
+    EXPECT_EQ(std::isnan(geo_ref->zone_), true);
+
+    std::string geo_ref_str = odr->GetGeoReferenceAsString();
+    EXPECT_EQ(geo_ref_str, "");
+}
+
+TEST(GeoReferenceTest, TestGeoReferenceSimpleRoad)
 {
     Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/curve_r100.xodr");
     OpenDrive* odr = Position::GetOpenDrive();
