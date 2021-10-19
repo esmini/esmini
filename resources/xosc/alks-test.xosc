@@ -39,11 +39,7 @@
       <ScenarioObject name="Ego">
         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
          <ObjectController>
-            <Controller name="ECE_ALKS_DRIVER_Controller">
-                <Properties>
-                    <Property name="timeGap" value="1.0" />
-                </Properties>
-            </Controller>            
+            <Controller name="ECE_ALKS_DRIVER_Controller" />
          </ObjectController>         
       </ScenarioObject>
       <ScenarioObject name="Target">
