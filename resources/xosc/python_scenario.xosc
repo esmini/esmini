@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
-    <FileHeader description="curvature test" author="Mandolin" revMajor="1" revMinor="1" date="2021-10-04T12:54:04.068595"/>
+    <FileHeader description="speedtest v_i: 10, v_f: 40" author="Mandolin" revMajor="1" revMinor="1" date="2021-10-19T14:56:10.390100"/>
     <ParameterDeclarations/>
     <CatalogLocations>
         <VehicleCatalog>
@@ -11,22 +11,15 @@
         </ControllerCatalog>
     </CatalogLocations>
     <RoadNetwork>
-        <LogicFile filepath="../xodr/e6mini.xodr"/>
-        <SceneGraphFile filepath="../models/e6mini.osgb"/>
+        <LogicFile filepath="../xodr/straight_500m.xodr"/>
+        <SceneGraphFile filepath="../models/straight_500m.osgb"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
-            <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+            <CatalogReference catalogName="VolvoVehicleCatalog" entryName="P319"/>
             <ObjectController>
-                <CatalogReference catalogName="ControllerCatalog" entryName="followGhost">
-                    <ParameterAssignments>
-                        <ParameterAssignment parameterRef="HeadStartTime" value="3"/>
-                    </ParameterAssignments>
-                </CatalogReference>
+                <CatalogReference catalogName="ControllerCatalog" entryName="cspas"/>
             </ObjectController>
-        </ScenarioObject>
-        <ScenarioObject name="Target1">
-            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
         </ScenarioObject>
     </Entities>
     <Storyboard>
@@ -36,9 +29,9 @@
                     <PrivateAction>
                         <LongitudinalAction>
                             <SpeedAction>
-                                <SpeedActionDynamics dynamicsShape="step" value="1" dynamicsDimension="time"/>
+                                <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="13.88888888888889"/>
+                                    <AbsoluteTargetSpeed value="2.7777777777777777"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -46,7 +39,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="0" laneId="-3" s="50" offset="0"/>
+                                <LanePosition roadId="1" laneId="-1" s="25" offset="0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -56,43 +49,24 @@
                         </ControllerAction>
                     </PrivateAction>
                 </Private>
-                <Private entityRef="Target1">
-                    <PrivateAction>
-                        <LongitudinalAction>
-                            <SpeedAction>
-                                <SpeedActionDynamics dynamicsShape="step" value="1" dynamicsDimension="time"/>
-                                <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="13.88888888888889"/>
-                                </SpeedActionTarget>
-                            </SpeedAction>
-                        </LongitudinalAction>
-                    </PrivateAction>
-                    <PrivateAction>
-                        <TeleportAction>
-                            <Position>
-                                <LanePosition roadId="0" laneId="-3" s="50" offset="0"/>
-                            </Position>
-                        </TeleportAction>
-                    </PrivateAction>
-                </Private>
             </Actions>
         </Init>
-        <Story name="story_act_maneuvuergroup_ManeuverLaneChange">
+        <Story name="story_act_maneuvuergroup_ego man">
             <ParameterDeclarations/>
-            <Act name="act_maneuvuergroup_ManeuverLaneChange">
-                <ManeuverGroup name="maneuvuergroup_ManeuverLaneChange" maximumExecutionCount="1">
+            <Act name="act_maneuvuergroup_ego man">
+                <ManeuverGroup name="maneuvuergroup_ego man" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Ego"/>
                     </Actors>
-                    <Maneuver name="ManeuverLaneChange">
-                        <Event name="lanechangeEvent1" priority="overwrite" maximumExecutionCount="1">
-                            <Action name="brake">
+                    <Maneuver name="ego man">
+                        <Event name="egospeedchange_acc" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="accspeed">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" value="3" dynamicsDimension="time"/>
+                                            <SpeedActionDynamics dynamicsShape="linear" value="4.166666666666667" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="0"/>
+                                                <AbsoluteTargetSpeed value="11.11111111111111"/>
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -100,7 +74,7 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="time Trigger" delay="0" conditionEdge="rising">
+                                    <Condition name="starttrigger" delay="0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="3" rule="greaterThan"/>
                                         </ByValueCondition>
@@ -108,36 +82,14 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <StartTrigger>
-                    <ConditionGroup>
-                        <Condition name="act_start" delay="0" conditionEdge="rising">
-                            <ByValueCondition>
-                                <SimulationTimeCondition value="0" rule="greaterThan"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StartTrigger>
-                <StopTrigger/>
-            </Act>
-        </Story>
-        <Story name="story_act_maneuvuergroup_ManeuverLaneChange">
-            <ParameterDeclarations/>
-            <Act name="act_maneuvuergroup_ManeuverLaneChange">
-                <ManeuverGroup name="maneuvuergroup_ManeuverLaneChange" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false">
-                        <EntityRef entityRef="Target1"/>
-                    </Actors>
-                    <Maneuver name="ManeuverLaneChange">
-                        <Event name="lanechangeEvent1" priority="overwrite" maximumExecutionCount="1">
-                            <Action name="brake">
+                        <Event name="egospeedchange_brake" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="brakespeed">
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" value="3" dynamicsDimension="time"/>
+                                            <SpeedActionDynamics dynamicsShape="linear" value="4.166666666666667" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
-                                                <AbsoluteTargetSpeed value="0"/>
+                                                <AbsoluteTargetSpeed value="2.7777777777777777"/>
                                             </SpeedActionTarget>
                                         </SpeedAction>
                                     </LongitudinalAction>
@@ -145,9 +97,9 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="time Trigger" delay="0" conditionEdge="rising">
+                                    <Condition name="starttrigger" delay="0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="3" rule="greaterThan"/>
+                                            <SimulationTimeCondition value="13.166666666666668" rule="greaterThan"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -171,7 +123,7 @@
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0" conditionEdge="rising">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="10" rule="greaterThan"/>
+                        <SimulationTimeCondition value="25.333333333333336" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

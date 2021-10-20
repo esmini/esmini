@@ -163,6 +163,16 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 {
 	mutex.Lock();
 
+	// This makes the Ghost jump directly to the left... :)
+	while( (scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime() ) && scenarioEngine->getSimulationTime() > 0 )
+	{
+	scenarioEngine->step(timestep_s); // only jumps in esmini, but not in cspas
+
+	// These two makes it jump directly to the left in cspas as well
+	scenarioEngine->prepareOSIGroundTruth(timestep_s);
+	scenarioGateway->WriteStatesToFile();
+	}
+
 	if (scenarioEngine->step(timestep_s) == 0)
 	{
 		
