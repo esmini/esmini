@@ -511,7 +511,7 @@ int ScenarioEngine::step(double deltaSimTime)
 		// and only ghosts allowed to execute before time == 0
 		if (!(obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
 			fabs(obj->speed_) > SMALL_NUMBER &&
-			(abs(trueTime_ - simulationTime_) <= deltaSimTime || obj->IsGhost()))
+			(trueTime_ <= simulationTime_ || obj->IsGhost()))
 		{
 			defaultController(obj, deltaSimTime);
 		}
@@ -1168,16 +1168,16 @@ void ScenarioEngine::ResetEvents()
 								OSCAction* action = event->action_[n];
 								OSCPrivateAction* pa = (OSCPrivateAction*)action;
 
-								if (NoTele && pa->object_->IsGhost())
+								if (NoTele && pa->object_->IsGhost() && event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == false)
 								{
 									printf("Reset event %s: \n", event->name_.c_str());
 									event->Reset();
 								}
-								if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
-								{
-									printf("End event %s: \n", event->name_.c_str());
-									event->End();
-								}
+								// if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
+								// {
+								// 	printf("End event %s: \n", event->name_.c_str());
+								// 	event->End();
+								// }
 							}
 						}
 					}
