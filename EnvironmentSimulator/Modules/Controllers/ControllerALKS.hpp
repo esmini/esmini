@@ -13,36 +13,26 @@
 #pragma once
 
 #include <string>
-#include "Controller.hpp"
+#include "ControllerACC.hpp"
 #include "Entities.hpp"
 #include "vehicle.hpp"
 
-#define CONTROLLER_ACC_TYPE_NAME "ACCController"
+#define CONTROLLER_ALKS_TYPE_NAME "ALKSController"
+
+// As a starting point the ALKS controller inherit all functionality of the ACC controller
 
 namespace scenarioengine
 {
-	class ControllerACC: public Controller
+	class ControllerALKS: public ControllerACC
 	{
 	public:
-		ControllerACC(InitArgs *args);
+		ControllerALKS(InitArgs *args) : ControllerACC(args) {}
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_ACC_TYPE_NAME; }
+		static const char* GetTypeNameStatic() { return CONTROLLER_ALKS_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
-		static const int GetTypeStatic() { return CONTROLLER_TYPE_ACC; }
+		static const int GetTypeStatic() { return CONTROLLER_TYPE_ALKS; }
 		virtual int GetType() { return GetTypeStatic(); }
-
-		void Init();
-		void Step(double timeStep);
-		void Activate(ControlDomains domainMask);
-		void ReportKeyEvent(int key, bool down);
-
-	private:
-		vehicle::Vehicle vehicle_;
-		double timeGap_;  // target headway time
-		bool active_;
-		double setSpeed_;
-		double currentSpeed_;
 	};
 
-	Controller* InstantiateControllerACC(void* args);
+	Controller* InstantiateControllerALKS(void* args);
 }

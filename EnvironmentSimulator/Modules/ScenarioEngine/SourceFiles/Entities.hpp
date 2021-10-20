@@ -82,6 +82,14 @@ namespace scenarioengine
 			double value; // Depends on action, see SE_OverrideActionList
 		} OverrideActionStatus;
 
+
+		typedef struct
+		{
+			double maxAcceleration;
+			double maxDeceleration;
+			double maxSpeed;
+		} Performance;
+
 		// Allocate vector for all possible override status
 		OverrideActionStatus overrideActionList[OVERRIDE_NR_TYPES];
 
@@ -117,6 +125,7 @@ namespace scenarioengine
 		int visibilityMask_;
 		roadmanager::Junction::JunctionStrategyType junctionSelectorStrategy_;
 		double nextJunctionSelectorAngle_;  // number between 0:2pi (circle). E.g. if 1.57 choose the leftmost road
+		Performance performance_;
 
 		int dirty_;
 		bool reset_;			 // indicate discreet movement, teleporting, no odometer update
@@ -159,7 +168,9 @@ namespace scenarioengine
 			@param target The object to check
 			@return true if bounding boxes overlap else false
 		*/
-		bool Collision(Object *target);
+		bool CollisionAndRelativeDistLatLong(Object* target, double* distLat, double* distLong);
+
+		bool Collision(Object* target) { return CollisionAndRelativeDistLatLong(target, nullptr, nullptr); }
 
 		/**
 			Check if point is colliding/overlapping with specified target object
@@ -244,6 +255,13 @@ namespace scenarioengine
 		void SetAngularVel(double h_vel, double p_vel, double r_vel);
 		void SetAngularAcc(double h_acc, double p_acc, double r_acc);
 
+		void SetMaxAcceleration(double maxAcceleration) { performance_.maxAcceleration = maxAcceleration; }
+		double GetMaxAcceleration() { return performance_.maxAcceleration; }
+		void SetMaxDeceleration(double maxDeceleration) { performance_.maxDeceleration = maxDeceleration; }
+		double GetMaxDeceleration() { return performance_.maxDeceleration; }
+		void SetMaxSpeed(double maxSpeed) { performance_.maxSpeed = maxSpeed; }
+		double GetMaxSpeed() { return performance_.maxSpeed; }
+
 		/**
 		Specify strategy how to choose way in next junction
 		@param type Use specified angle (SetJunctionSelectorAngle*) or randomize. See roadmanager::Junction::JunctionStrategyType.
@@ -312,6 +330,9 @@ namespace scenarioengine
 		Vehicle() : Object(Object::Type::VEHICLE)
 		{
 			category_ = static_cast<int>(Category::CAR);
+			performance_.maxAcceleration = 10.0;
+			performance_.maxDeceleration= 10.0;
+			performance_.maxSpeed = 100.0;
 		}
 
 		void SetCategory(std::string category)
@@ -331,6 +352,10 @@ namespace scenarioengine
 			else if (category == "bicycle")
 			{
 				category_ = static_cast<int>(Vehicle::Category::BICYCLE);
+			}
+			else if (category == "motorbike")
+			{
+				category_ = static_cast<int>(Vehicle::Category::MOTORBIKE);
 			}
 			else
 			{
@@ -361,6 +386,9 @@ namespace scenarioengine
 					   model_(""), mass_(0.0), name_("")
 		{
 			category_ = static_cast<int>(Category::PEDESTRIAN);
+			performance_.maxAcceleration = 10.0;
+			performance_.maxDeceleration = 10.0;
+			performance_.maxSpeed = 10.0;
 		}
 
 		void SetCategory(std::string category)
@@ -417,6 +445,9 @@ namespace scenarioengine
 		MiscObject() : Object(Object::Type::MISC_OBJECT), model_(""), mass_(0.0), name_("")
 		{
 			category_ = static_cast<int>(category_);
+			performance_.maxAcceleration = 0.0;
+			performance_.maxDeceleration = 0.0;
+			performance_.maxSpeed = 0.0;
 		}
 
 		void SetCategory(std::string category)
@@ -501,7 +532,7 @@ namespace scenarioengine
 	class Entities
 	{
 	public:
-		Entities(){};
+		Entities() : nextId_(0) {}
 
 		std::vector<Object *> object_;
 
@@ -514,6 +545,9 @@ namespace scenarioengine
 		bool nameExists(std::string name);
 		Object *GetObjectByName(std::string name);
 		Object *GetObjectById(int id);
+
+	private:
+		int nextId_;  // Is incremented for each new object created
 	};
 
 }

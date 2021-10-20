@@ -14,6 +14,7 @@
 
 
 #include <vector>
+#include <random>
 #include <fstream>
 #include <string>
 #define _USE_MATH_DEFINES
@@ -217,6 +218,20 @@ bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, d
 double DistanceFromPointToEdge2D(double x3, double y3, double x1, double y1, double x2, double y2, double* x, double* y);
 
 /**
+ Measure distance from point to line. Strategy: Find and measure distance to closest/perpendicular point on line
+ @param x3 X-coordinate of the point to check
+ @param y3 Y-coordinate of the point to check
+ @param x1 X-coordinate of the first point on line
+ @param y1 Y-coordinate of the first point on line
+ @param x2 X-coordinate of the second first point on line
+ @param y2 Y-coordinate of the second first point on line
+ @param x Return the X-coordinate of closest point on line
+ @param y Return the Y-coordinate of closest point on line
+ @return the distance
+*/
+double DistanceFromPointToLine2D(double x3, double y3, double x1, double y1, double x2, double y2, double* x, double* y);
+
+/**
   Find out whether the point is left or right to a vector
 */
 int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2);
@@ -398,14 +413,14 @@ public:
 	std::string opt_desc_;
 	std::string opt_arg_;
 	bool set_;
-	std::string arg_value_;
+	std::vector<std::string> arg_value_;
 	std::string default_value_;
 
 	SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "") :
-		opt_str_(opt_str), opt_desc_(opt_desc), opt_arg_(opt_arg), set_(false), arg_value_("") {}
+		opt_str_(opt_str), opt_desc_(opt_desc), opt_arg_(opt_arg), set_(false) {}
 
 	SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value) :
-		opt_str_(opt_str), opt_desc_(opt_desc), opt_arg_(opt_arg), set_(false), arg_value_(""), default_value_(default_value) {}
+		opt_str_(opt_str), opt_desc_(opt_desc), opt_arg_(opt_arg), set_(false), default_value_(default_value) {}
 
 	void Usage();
 };
@@ -422,8 +437,8 @@ public:
 	void PrintArgs(int argc, char *argv[], std::string message = "Unrecognized arguments:");
 	bool GetOptionSet(std::string opt);
 	bool IsOptionArgumentSet(std::string opt);
-	std::string GetOptionArg(std::string opt);
-	void ParseArgs(int *argc, char* argv[]);
+	std::string GetOptionArg(std::string opt, int index = 0);
+	int ParseArgs(int *argc, char* argv[]);
 	std::vector<std::string>& GetOriginalArgs() { return originalArgs_; }
 
 private:
@@ -586,9 +601,10 @@ public:
 	double osiMaxLateralDeviation_;
 	std::string logFilePath_;
 	SE_SystemTime systemTime_;
+	unsigned int seed_;
+	std::mt19937 gen_;
 
-	SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE),
-		osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION), logFilePath_(LOG_FILENAME) {}
+	SE_Env();
 
 	void SetOSIMaxLongitudinalDistance(double maxLongitudinalDistance) { osiMaxLongitudinalDistance_ = maxLongitudinalDistance; }
 	void SetOSIMaxLateralDeviation(double maxLateralDeviation) { osiMaxLateralDeviation_ = maxLateralDeviation; }
@@ -598,6 +614,13 @@ public:
 	int AddPath(std::string path);
 	void ClearPaths() { paths_.clear(); }
 	double GetSystemTime() { return systemTime_.GetS(); }
+	void SetSeed(unsigned int seed)
+	{
+		seed_ = seed;
+		gen_.seed(seed_);
+	}
+	unsigned int GetSeed() { return seed_; }
+	std::mt19937& GetGenerator() { return gen_; }
 
 	/**
 		Specify logfile name, optionally including directory path

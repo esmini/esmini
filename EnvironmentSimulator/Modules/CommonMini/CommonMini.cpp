@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <iostream>
+#include <random>
 
 #include "CommonMini.hpp"
 
@@ -304,6 +305,17 @@ double DistanceFromPointToEdge2D(double x3, double y3, double x1, double y1, dou
 	return distance;
 }
 
+double DistanceFromPointToLine2D(double x3, double y3, double x1, double y1, double x2, double y2, double* x, double* y)
+{
+	double distance = 0;
+
+	// project point on edge, and measure distance to that point
+	ProjectPointOnVector2D(x3, y3, x1, y1, x2, y2, *x, *y);
+	distance = PointDistance2D(x3, y3, *x, *y);
+
+	return distance;
+}
+
 int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2)
 {
 	// Use cross product
@@ -327,6 +339,11 @@ double PointToLineDistance2DSigned(double px, double py, double lx0, double ly0,
 double PointSquareDistance2D(double x0, double y0, double x1, double y1)
 {
 	return (x1 - x0)*(x1 - x0) + (y1 - y0) * (y1 - y0);
+}
+
+double PointHeadingDistance2D(double x0, double y0, double h, double x1, double y1)
+{
+	return (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
 }
 
 void ProjectPointOnVector2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double &px, double &py)
@@ -674,6 +691,12 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
 	h = GetAngleInInterval2PI(atan2(R2[1][0], R2[0][0]));
 	p = GetAngleInInterval2PI(atan2(-R2[2][0], sqrt(R2[2][1] * R2[2][1] + R2[2][2] * R2[2][2])));
 	r = GetAngleInInterval2PI(atan2(R2[2][1], R2[2][2]));
+}
+
+SE_Env::SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE), osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION), logFilePath_(LOG_FILENAME)
+{
+	seed_ = (std::random_device())();
+	gen_.seed(seed_);
 }
 
 int SE_Env::AddPath(std::string path)
@@ -1122,17 +1145,18 @@ bool SE_Options::IsOptionArgumentSet(std::string opt)
 	return GetOption(opt)->set_;
 }
 
-std::string SE_Options::GetOptionArg(std::string opt)
+std::string SE_Options::GetOptionArg(std::string opt, int index)
 {
 	SE_Option *option = GetOption(opt);
 
-	if (option && !(option->opt_arg_.empty()))
+	if (option == nullptr)
 	{
-		return option->arg_value_;
+		return "";
 	}
-	else if (option && !(option->default_value_.empty()))
+
+	if (!(option->opt_arg_.empty()) && index < option->arg_value_.size())
 	{
-		return option->default_value_;
+		return option->arg_value_[index];
 	}
 	else
 	{
@@ -1152,9 +1176,10 @@ static void ShiftArgs(int *argc, char** argv, int start_i)
 	}
 }
 
-void SE_Options::ParseArgs(int *argc, char* argv[])
+int SE_Options::ParseArgs(int *argc, char* argv[])
 {
 	app_name_ = FileNameWithoutExtOf(argv[0]);
+	int returnVal = 0;
 
 	for (size_t i = 0; i < *argc; i++)
 	{
@@ -1180,17 +1205,18 @@ void SE_Options::ParseArgs(int *argc, char* argv[])
 			{
 				if (i < *argc - 1 && strncmp(argv[i + 1], "--", 2))
 				{
-					option->arg_value_ = argv[i+1];
+					option->arg_value_.push_back(argv[i+1]);
 					ShiftArgs(argc, argv, (int)i);
 				}
 				else if (!option->default_value_.empty())
 				{
-					option->arg_value_ = option->default_value_;
+					option->arg_value_.push_back(option->default_value_);
 				}
 				else
 				{
 					LOG("Argument parser error: Missing option %s argument", option->opt_str_.c_str());
 					option->set_ = false;
+					returnVal = -1;
 				}
 			}
 			ShiftArgs(argc, argv, (int)i);
@@ -1200,6 +1226,8 @@ void SE_Options::ParseArgs(int *argc, char* argv[])
 			i++;
 		}
 	}
+
+	return returnVal;
 }
 
 SE_Option* SE_Options::GetOption(std::string opt)

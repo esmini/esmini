@@ -93,6 +93,7 @@ namespace scenarioengine
 		// Catalogs
 		void parseCatalogs();
 		Catalog* LoadCatalog(std::string name);
+		Catalogs* GetCatalogs() { return catalogs_; }
 		roadmanager::Route* parseOSCRoute(pugi::xml_node routeNode);
 		roadmanager::RMTrajectory* parseTrajectoryRef(pugi::xml_node trajNode);
 		void ParseOSCProperties(OSCProperties &properties, pugi::xml_node &xml_node);
@@ -139,6 +140,9 @@ namespace scenarioengine
 		std::string GetDescription() { return description_; }
 		int GetVersionMajor() { return versionMajor_; }
 		int GetVersionMinor() { return versionMinor_; }
+
+		int RemoveController(Controller* controller);
+		void AddController(Controller* controller) { controller_.push_back(controller); }
 
 		std::vector<Controller*> controller_;
 		Parameters parameters;

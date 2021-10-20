@@ -364,6 +364,10 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState *> objectSta
 	UpdateOSIIntersection();
 	UpdateTrafficSignals();
 
+	//Set GeoReference in OSI as map_reference
+	static roadmanager::OpenDrive* opendrive = roadmanager::Position::GetOpenDrive();
+	obj_osi_external.gt->set_map_reference(opendrive->GetGeoReferenceAsString());
+	
 	obj_osi_external.gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
 	obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
 	obj_osi_external.gt->mutable_lane_boundary()->CopyFrom(*obj_osi_internal.gt->mutable_lane_boundary());

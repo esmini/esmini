@@ -25,8 +25,6 @@
 
 using namespace scenarioengine;
 
-static std::mt19937 mt_rand;
-
 #define WHEEL_RADIUS 0.35
 #define SLOPPY_SCALE 5.0  // Magic scale factor to achieve reasonable sloppiness in range 0..1
 
@@ -58,8 +56,6 @@ ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : sloppiness_(0.5
 
 void ControllerSloppyDriver::Init()
 {
-	mt_rand.seed((unsigned int)time(0));
-
 	Controller::Init();
 }
 
@@ -85,12 +81,12 @@ void ControllerSloppyDriver::Step(double timeStep)
 		if (speedTimer_.Expired(time_))
 		{
 			// restart timer - 50% variation
-			double timerValue = speedTimerAverage_ * (1.0 + (1.0 * mt_rand() / mt_rand.max() - 0.5));
+			double timerValue = speedTimerAverage_ * (1.0 + (1.0 * (SE_Env::Inst().GetGenerator())()) / ((SE_Env::Inst().GetGenerator()).max() - 0.5));
 			speedTimer_.Start(time_, timerValue);
 
 			// target speed +/- 35%
 			initSpeed_ = referenceSpeed_ * targetFactor_;
-			targetFactor_ = 1 + 0.7*sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * mt_rand() / mt_rand.max() - 0.5);
+			targetFactor_ = 1 + 0.7*sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max() - 0.5);
 		}
 
 		double steplen = 0;
@@ -137,10 +133,10 @@ void ControllerSloppyDriver::Step(double timeStep)
 		{
 			// max lateral displacement is about half lane width (7/2)
 			tFuzz0 = tFuzzTarget;
-			tFuzzTarget = 5.0 * sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * mt_rand() / mt_rand.max() - 0.5);
+			tFuzzTarget = 5.0 * sloppiness_ * MIN(sloppiness_, 1.0) * (1.0 * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max() - 0.5);
 
 			// restart timer - 50% variation
-			double timerValue = lateralTimerAverage_ * (1.0 + (1.0 * mt_rand() / mt_rand.max() - 0.5));
+			double timerValue = lateralTimerAverage_ * (1.0 + (1.0 * (SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max() - 0.5));
 			lateralTimer_.Start(time_, timerValue);
 		}
 		double h_error;

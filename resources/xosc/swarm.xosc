@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2020-10-04T10:00:00"
+               description="Cut-in"
+               author="SimS"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../xosc/Catalogs/Controllers" />
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/e6mini.xodr"/>
+      <!-- <LogicFile filepath="../xodr/multi_intersections.xodr"/> -->
+      <!-- <LogicFile filepath="../xodr/straight_500m.xodr"/> -->
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-3" offset="0" s="300" >
+                        <!-- <LanePosition roadId="283" laneId="-1" offset="0" s="10" > -->
+                        <!-- <LanePosition roadId="1" laneId="-1" offset="0" s="300" > -->
+                            <Orientation type="relative" h="0" />
+                        </LanePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <!-- <PrivateAction> -->
+                    <!-- <ControllerAction> -->
+                        <!-- <AssignControllerAction> -->
+                            <!-- <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" activateLateral="true" activateLongitudinal="true" /> -->
+                        <!-- </AssignControllerAction> -->
+                    <!-- </ControllerAction> -->
+               <!-- </PrivateAction> -->
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="10"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="story">
+         <Act name="act">
+            <ManeuverGroup maximumExecutionCount="1" name="Swarm maneuver group">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="SwarmManeuver">
+                  <Event name="SwarmEvent" maximumExecutionCount="1" priority="overwrite">
+                     <Action name="SwarmAction">
+                        <GlobalAction>
+                           <TrafficAction>
+                              <TrafficSwarmAction innerRadius="200" semiMajorAxis="300" semiMinorAxis="500" numberOfVehicles="75" velocity="30">
+								  <CentralSwarmObject entityRef="Ego" />
+                              </TrafficSwarmAction>
+                           </TrafficAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+					     <ConditionGroup>
+					        <Condition name="StartCondition" delay="0" conditionEdge="rising">
+					  	       <ByValueCondition>
+					  		      <SimulationTimeCondition value="1" rule="greaterThan"/>
+					  	       </ByValueCondition>
+					        </Condition>
+					     </ConditionGroup>					 
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+			</ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="SwarmStopTrigger" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="60" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

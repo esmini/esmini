@@ -15,6 +15,7 @@
 
 #include <osg/PositionAttitudeTransform>
 #include <osgViewer/Viewer>
+#include <osgViewer/ViewerEventHandlers>
 #include <osgGA/NodeTrackerManipulator>
 #include <osg/MatrixTransform>
 #include <osg/Material>
@@ -242,6 +243,7 @@ namespace viewer
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
 		osg::Quat quat_;
 		osg::ref_ptr<osg::Group> parent_;
+		osg::BoundingBox modelBB_;
 
 		Trajectory* trajectory_;
 		static const EntityType entity_type_ = EntityType::OTHER;
@@ -367,18 +369,28 @@ namespace viewer
 		osg::ref_ptr<osg::Camera> infoTextCamera;
 		osg::ref_ptr<osgText::Text> infoText;
 
-		std::vector<PolyLine> polyLine_;
+		std::vector<PolyLine*> polyLine_;
 
 		Viewer(roadmanager::OpenDrive *odrManager, const char* modelFilename, const char* scenarioFilename, const char* exe_path, osg::ArgumentParser arguments, SE_Options* opt = 0);
 		~Viewer();
 		static void PrintUsage();
+		void AddCustomCamera(double x, double y, double z, double h, double p);
+
+		/**
+		* Set mode of the esmini camera model
+		* @param mode According to the RubberbandManipulator::CAMERA_MODE enum, plus any number of custom cameras. Set -1 to select the last.
+		*/
 		void SetCameraMode(int mode);
+		int GetNumberOfCameraModes();
 		void UpdateCameraFOV();
 		void SetVehicleInFocus(int idx);
 		int GetEntityInFocus() { return currentCarInFocus_; }
-		EntityModel* AddEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type,
+		EntityModel* CreateEntityModel(std::string modelFilepath, osg::Vec4 trail_color, EntityModel::EntityType type,
 			bool road_sensor, std::string name, OSCBoundingBox *boundingBox, EntityScaleMode scaleMode = EntityScaleMode::NONE);
+		int AddEntityModel(EntityModel* model);
+		void RemoveCar(int index);
 		void RemoveCar(std::string name);
+		void ReplaceCar(int index, EntityModel* model);
 		int LoadShadowfile(std::string vehicleModelFilename);
 		int AddEnvironment(const char* filename);
 		osg::ref_ptr<osg::Group> LoadEntityModel(const char *filename, osg::BoundingBox& bb);
@@ -411,6 +423,8 @@ namespace viewer
 		void RegisterKeyEventCallback(KeyEventCallbackFunc func, void* data);
 		PolyLine* AddPolyLine(osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize=0);
 		PolyLine* AddPolyLine(osg::Group* parent, osg::ref_ptr<osg::Vec3Array> points, osg::Vec4 color, double width, double dotsize=0);
+		void CaptureNextFrame();
+		void CaptureContinuously(bool state);
 
 	private:
 
@@ -424,6 +438,7 @@ namespace viewer
 		bool keyLeft_;
 		bool keyRight_;
 		bool quit_request_;
+		osg::ref_ptr<osgViewer::ScreenCaptureHandler> screenCaptureHandler_;
 	};
 
 	class ViewerEventHandler : public osgGA::GUIEventHandler

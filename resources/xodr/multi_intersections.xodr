@@ -6815,6 +6815,7 @@
     <road name="" length="2.1424777960737720e+02" id="284" junction="-1">
         <link>
             <successor elementType="road" elementId="256" contactPoint="end" />
+            <predecessor elementType="road" elementId="229" contactPoint="end" />
         </link>
         <planView>
             <geometry s="0.0000000000000000e+00" x="5.2999999999846648e+02" y="1.2000000000213595e+02" hdg="1.5707963267948966e+00" length="5.9999999999818584e+01">
@@ -6838,6 +6839,7 @@
                     <lane id="4" type="none" level= "false">
                         <link>
                             <successor id="-4"/>
+                            <predecessor id="4"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <userData code="viStyleDef">
@@ -6848,6 +6850,7 @@
                     <lane id="3" type="sidewalk" level= "false">
                         <link>
                             <successor id="-3"/>
+                            <predecessor id="3"/>                            
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
@@ -6862,6 +6865,7 @@
                     <lane id="2" type="border" level= "false">
                         <link>
                             <successor id="-2"/>
+                            <predecessor id="2"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="none" weight="standard" color="standard"  laneChange="both" height="1.9999999552965164e-02">
@@ -6877,6 +6881,7 @@
                     <lane id="1" type="driving" level= "false">
                         <link>
                             <successor id="-1"/>
+                            <predecessor id="1"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
@@ -6914,6 +6919,7 @@
                     <lane id="-1" type="driving" level= "false">
                         <link>
                             <successor id="1"/>
+                            <predecessor id="-1"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.7500000000000000e+00" b="-0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="0.0000000000000000e+00" laneChange="none" height="1.9999999552965164e-02">
@@ -6929,6 +6935,7 @@
                     <lane id="-2" type="border" level= "false">
                         <link>
                             <successor id="2"/>
+                            <predecessor id="-2"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.4999999999999998e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <userData code="viStyleDef">
@@ -6939,6 +6946,7 @@
                     <lane id="-3" type="sidewalk" level= "false">
                         <link>
                             <successor id="3"/>
+                            <predecessor id="-3"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <width sOffset="1.0000000000000000e+00" a="1.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
@@ -6958,6 +6966,7 @@
                     <lane id="-4" type="none" level= "false">
                         <link>
                             <successor id="4"/>
+                            <predecessor id="-4"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <userData code="viStyleDef">

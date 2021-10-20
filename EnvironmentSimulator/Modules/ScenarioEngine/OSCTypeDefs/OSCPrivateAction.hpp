@@ -729,8 +729,9 @@ namespace scenarioengine
 	{
 	public:
 		Controller* controller_;
+		ControlDomains domainMask_;
 
-		AssignControllerAction(Controller *controller): controller_(controller),
+		AssignControllerAction(Controller* controller) : controller_(controller), domainMask_(ControlDomains::DOMAIN_NONE),
 			OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
 				controller != nullptr ? controller->GetDomain() : ControlDomains::DOMAIN_NONE) {}
 
@@ -807,7 +808,7 @@ namespace scenarioengine
 			}
 			else
 			{
-				LOG("No controller assigned!");
+				LOG("No controller assigned to object %s!", object_->name_.c_str());
 			}
 		}
 

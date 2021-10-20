@@ -153,11 +153,18 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
 ObjectStateStructDat* Replay::GetState(int id)
 {
 	// Read all vehicles at current timestamp
-	if (index_ + id > data_.size() - 1 || data_[index_ + id].info.id != id)
+	float timestamp = data_[index_].info.timeStamp;
+	int i = 0;
+	while (index_ + i < data_.size() && !(data_[index_ + i].info.timeStamp > timestamp))
 	{
-		return 0;
+		if (data_[index_ + i].info.id == id)
+		{
+			return &data_[index_ + i];
+		}
+		i++;
 	}
-	return &data_[index_ + id];
+
+	return nullptr;
 }
 
 void Replay::SetStartTime(double time)

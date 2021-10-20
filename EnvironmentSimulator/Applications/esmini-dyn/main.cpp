@@ -39,6 +39,9 @@
 #define DEMONSTRATE_THREAD 0
 #define DEMONSTRATE_CALLBACK 0
 #define DEMONSTRATE_ROAD_SIGNS 0
+#define DEMONSTRATE_SINGLE_SCREEN_CAPTURE 0
+#define DEMONSTRATE_CONTINUOUS_SCREEN_CAPTURE 0
+#define DEMONSTRATE_CUSTOM_CAMERA 1
 
 #define MAX_N_OBJECTS 10
 #define TIME_STEP 0.017f
@@ -145,6 +148,10 @@ int main(int argc, char *argv[])
 		// Demonstrate use of ODR query function
 		printf("odr filename: %s\n", SE_GetODRFilename());
 
+#if DEMONSTRATE_CONTINUOUS_SCREEN_CAPTURE
+		SE_CaptureContinuously(true);
+#endif
+
 #if DEMONSTRATE_ROAD_SIGNS
 		SE_ScenarioObjectState state;
 		SE_GetObjectState(0, &state);
@@ -181,9 +188,11 @@ int main(int argc, char *argv[])
 #if DEMONSTRATE_SENSORS
 		// Add four sensors around the vehicle
 		SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 0.0f, 6.0f, 50.0f, (float)(50.0 * M_PI / 180.0), MAX_DETECTIONS);
-		SE_AddObjectSensor(0, 2.0f, 1.0f, 0.5f, 1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), MAX_DETECTIONS);
-		SE_AddObjectSensor(0, 2.0f, -1.0f, 0.5f, -1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), MAX_DETECTIONS);
-		SE_AddObjectSensor(0, -1.0f, 0.0f, 0.5f, 3.14f, 5.0f, 30.0f, (float)(50.0 * M_PI / 180.0), MAX_DETECTIONS);
+		SE_AddObjectSensor(0, 2.0f, 1.05f, 0.5f, 1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), MAX_DETECTIONS);
+		SE_AddObjectSensor(0, 2.0f, -1.05f, 0.5f, -1.5f, 1.0f, 20.0f, (float)(120.0 * M_PI / 180.0), MAX_DETECTIONS);
+		SE_AddObjectSensor(0, -1.1f, 0.0f, 0.5f, 3.14f, 5.0f, 30.0f, (float)(50.0 * M_PI / 180.0), MAX_DETECTIONS);
+
+		SE_ViewerShowFeature(1, true);  // show sensor frustoms (see NodeMask in viewer.hpp)
 #endif
 
 #if DEMONSTRATE_OSI
@@ -194,7 +203,7 @@ int main(int argc, char *argv[])
 #endif
 
 
-		for (int i = 0; i*TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
+		for (int i = 0; i * TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
 		{
 #if DEMONSTRATE_PARAMETER  // try with lane_change.xosc which sets "DummyParameter"
 			double value;
@@ -218,6 +227,30 @@ int main(int argc, char *argv[])
 			printf("param value: %.2f\n", value);
 #endif
 
+#if DEMONSTRATE_CUSTOM_CAMERA
+			if (i == 300)
+			{
+				SE_AddCustomCamera(4.0, 0.0, 0.5, 0.0, 0.0);
+			}
+			else if (i == 500)
+			{
+				SE_AddCustomCamera(-1.1, 0.0, 0.5, 3.14, 0.0);
+			}
+#endif
+
+#if DEMONSTRATE_SINGLE_SCREEN_CAPTURE
+			if (i == 0)
+			{
+				SE_CaptureNextFrame();
+			}
+#endif
+
+#if DEMONSTRATE_CONTINUOUS_SCREEN_CAPTURE
+			if (i == 50)
+			{
+				SE_CaptureContinuously(false);
+			}
+#endif
 			if (SE_Step() != 0)
 			{
 				return 0;

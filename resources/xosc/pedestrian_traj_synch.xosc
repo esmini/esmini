@@ -32,6 +32,9 @@
       <VehicleCatalog>
          <Directory path="../xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
+      <ControllerCatalog>
+	     <Directory path="../xosc/Catalogs/Controllers"/>
+	  </ControllerCatalog>      
    </CatalogLocations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/fabriksgatan.xodr"/>
@@ -40,9 +43,12 @@
    <Entities>
        <ScenarioObject name="Ego">
            <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+        <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+        </ObjectController>
        </ScenarioObject>
        <ScenarioObject name="pedestrian_adult">
-          <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="PedestrianCategory.pedestrian">
+          <Pedestrian mass="80" model="EPTa" name="pedestrian_adult" pedestrianCategory="pedestrian">
              <ParameterDeclarations/>
              <BoundingBox>
                 <Center x="0.06" y="0.0" z="0.923"/>
@@ -62,14 +68,17 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <WorldPosition x="$EX0" y="$EY0" h="3.14" />
+                        <WorldPosition x="$EX0" y="$EY0" h="1.8" />
                      </Position>
                   </TeleportAction>
                </PrivateAction>
+               <!-- <PrivateAction> -->
+                    <!-- <ActivateControllerAction longitudinal="true" lateral="true" /> -->
+               <!-- </PrivateAction> -->
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0" />
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="$HostSpeed"/>
                         </SpeedActionTarget>
@@ -88,9 +97,9 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0" />
                         <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="$PedestrianSpeed"/>
+                           <AbsoluteTargetSpeed value="0"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
@@ -127,23 +136,9 @@
                                 </SynchronizeAction>
                              </PrivateAction>
                          </Action>                        
-                         <StartTrigger>
-                            <ConditionGroup>
-                                <Condition conditionEdge="rising" delay="0" name="ped_synch_condition">
-                                    <ByEntityCondition>
-                                        <TriggeringEntities triggeringEntitiesRule="any">
-                                            <EntityRef entityRef="Ego"/>
-                                        </TriggeringEntities>
-                                        <EntityCondition>
-                                            <TraveledDistanceCondition value="1"/>
-                                        </EntityCondition>
-                                    </ByEntityCondition>
-                                </Condition>
-                            </ConditionGroup>
-                        </StartTrigger>
                     </Event>
-                    <Event maximumExecutionCount="1" name="ped_follow_trajectory" priority="overwrite">
-                         <Action name="walk_route">
+                    <Event maximumExecutionCount="1" name="ped_follow_trajectory" priority="parallel">
+                         <Action name="walk_trajectory">
                             <PrivateAction>
                                 <RoutingAction>
                                     <FollowTrajectoryAction>
@@ -175,7 +170,31 @@
                                     </FollowTrajectoryAction>
                                 </RoutingAction>
                             </PrivateAction>
-                         </Action>           
+                         </Action>
+                         <!-- <Action name="walk_route"> -->
+                            <!-- <PrivateAction> -->
+                                <!-- <RoutingAction> -->
+                                    <!-- <AssignRouteAction> -->
+                                       <!-- <Route name="PedestrianRoute" closed="false"> -->
+                                          <!-- <Waypoint routeStrategy="shortest"> -->
+                                             <!-- <Position> -->
+                                                <!-- <LanePosition roadId="1" laneId="-1" s="16.9" > -->
+                                                    <!-- <Orientation type="relative" h="3.14" /> -->
+                                                <!-- </LanePosition> -->
+                                             <!-- </Position> -->
+                                          <!-- </Waypoint> -->
+                                          <!-- <Waypoint routeStrategy="shortest"> -->
+                                             <!-- <Position> -->
+                                                <!-- <LanePosition roadId="3" laneId="-1" s="0" > -->
+                                                    <!-- <Orientation type="relative" h="3.14" /> -->
+                                                <!-- </LanePosition> -->
+                                             <!-- </Position> -->
+                                          <!-- </Waypoint> -->
+                                       <!-- </Route> -->
+                                    <!-- </AssignRouteAction> -->
+                                <!-- </RoutingAction> -->
+                            <!-- </PrivateAction> -->
+                         <!-- </Action> -->
                          <StartTrigger>
                             <ConditionGroup>
                                <Condition name="ped_follow_trajectory_condition" delay="0" conditionEdge="none">

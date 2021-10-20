@@ -1,4 +1,5 @@
 import re
+from sys import platform
 from test_common import *
 import unittest
 
@@ -158,7 +159,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n42.24.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.05.*', csv))
         self.assertTrue(re.search('\n42.24.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.05.*', csv))
         self.assertTrue(re.search('\n42.25.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.00.*', csv))
-    
+
     def test_acc(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/acc-test.xosc'), COMMON_ARGS)
         
@@ -173,24 +174,24 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^11.010: BrakeCondition == true, 11.0100 > 11.00 edge: rising', log, re.MULTILINE))
         self.assertTrue(re.search('^17.010: BrakeCondition == true, 17.0100 > 17.00 edge: rising', log, re.MULTILINE))
         self.assertTrue(re.search('^20.000: Brake2Condition == true, 20.0000 > 20.00 edge: rising', log, re.MULTILINE))
-        self.assertTrue(re.search('^30.130: ActStopCondition == true, element: TargetBrake2Event state: END_TRANSITION, edge: rising', log, re.MULTILINE))
+        self.assertTrue(re.search('^35.130: ActStopCondition == true, element: TargetBrake2Event state: END_TRANSITION, edge: rising', log, re.MULTILINE))
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('\n0.37.*, 0, Ego, 39.52.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 52.77.*', csv))
-        self.assertTrue(re.search('\n0.37.*, 1, Target, 103.08.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.33.*', csv))
-        self.assertTrue(re.search('\n3.84.*, 0, Ego, 108.56.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.52.*', csv))
-        self.assertTrue(re.search('\n3.84.*, 1, Target, 132.00.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.33.*', csv))
-        self.assertTrue(re.search('\n5.64.*, 0, Ego, 123.66.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.33.*', csv))
-        self.assertTrue(re.search('\n5.64.*, 1, Target, 147.00.*, -0.38.*, 0.00.*, 0.35.*, 0.00.*, 0.00.*, 8.33.*', csv))
-        self.assertTrue(re.search('\n7.71.*, 0, Ego, 146.59.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 14.18.*', csv))
+        self.assertTrue(re.search('\n0.37.*, 0, Ego, 32.333, -1.535, 0.000, 0.000, 0.000, 0.000, 33.333', csv))
+        self.assertTrue(re.search('\n0.37.*, 1, Target, 103.083, -1.535, 0.000, 0.000, 0.000, 0.000, 8.333', csv))
+        self.assertTrue(re.search('\n4.89.*, 0, Ego, 127.590, -1.535, 0.000, 0.000, 0.000, 0.000, 9.066', csv))
+        self.assertTrue(re.search('\n4.89.*, 1, Target, 140.750, -1.535, 0.000, 0.000, 0.000, 0.000, 8.333', csv))
+        self.assertTrue(re.search('\n5.09.*, 0, Ego, 129.361, -1.535, 0.000, 0.000, 0.000, 0.000, 8.639', csv))
+        self.assertTrue(re.search('\n5.09.*, 1, Target, 142.417, -1.514, 0.000, 0.060, 0.000, 0.000, 8.333.*', csv))
+        self.assertTrue(re.search('\n7.71.*, 0, Ego, 155.070, -1.535, 0.000, 0.000, 0.000, 0.000, 9.674, 0.000', csv))
         self.assertTrue(re.search('\n7.71.*, 1, Target, 164.25.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 8.33.*', csv))
-        self.assertTrue(re.search('\n16.71.*, 0, Ego, 185.38.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*', csv))
+        self.assertTrue(re.search('\n16.71.*, 0, Ego, 193.577, -1.535, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n16.71.*, 1, Target, 200.38.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*', csv))
-        self.assertTrue(re.search('\n25.11.*, 0, Ego, 274.17.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 22.80.*', csv))
+        self.assertTrue(re.search('\n25.11.*, 0, Ego, 291.161, -1.535, 0.000, 0.000, 0.000, 0.000, 12.894, 0.000*', csv))
         self.assertTrue(re.search('\n25.11.*, 1, Target, 309.41.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 5.00.*', csv))
-        self.assertTrue(re.search('\n30.00.*, 0, Ego, 313.86.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 5.00.*', csv))
-        self.assertTrue(re.search('\n30.00.*, 1, Target, 333.86.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 5.00.*', csv))
+        self.assertTrue(re.search('\n34.11.*, 0, Ego, 341.004, -1.535, 0.000, 0.000, 0.000, 0.000, 5.231', csv))
+        self.assertTrue(re.search('\n34.11.*, 1, Target, 354.415, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000', csv))
 
     def test_conflicting_domains(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ARGS)
@@ -221,6 +222,37 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^4.00.*, 0, Ego, 35.88.*, -0.83.*, 0.00.*, 0.10.*, 0.00.*, 0.00.*, 7.97.*', csv, re.MULTILINE))
         self.assertTrue(re.search('^4.03.*, 0, Ego, 36.13.*, -0.82.*, 0.00.*, 6.27.*, 0.00.*, 0.00.*, 8.05.*', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.13.*, 0, Ego, 46.74.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 11.31.*', csv, re.MULTILINE))
+
+    def test_swarm(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ARGS + '--seed 5')
+        
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading swarm.xosc', log))
+        self.assertTrue(re.search('Using specified seed 5', log))
+        self.assertTrue(re.search('^0.00.*Ego New position:.*$\n^.*Pos\(10.20, 299.87, -0.53\) Rot\(1.56, 0.00, 0.00\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
+        self.assertTrue(re.search('^0.00.*Init Ego TeleportAction standbyState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^0.00.*Init Ego LongitudinalAction standbyState -> endTransition -> completeState', log, re.MULTILINE))
+
+        # Check some scenario events
+        self.assertTrue(re.search('^1.00.*: Swarm IR: 200.00, SMjA: 300.00, SMnA: 500.00, maxV: 75 vel: 30.00', log, re.MULTILINE))
+        self.assertTrue(re.search('^60.01.*: SwarmStopTrigger == true, 60.0100 > 60.00 edge: none', log, re.MULTILINE))
+
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        self.assertTrue(re.search('^40.00.*, 0, Ego, 33.31.*, 699.01.*, -0.95.*, 1.45.*, 0.00.*, 0.00.*, 10.00.*', csv, re.MULTILINE))
+        # Random generators differ on platforms => random traffic will be repeatable only per platform
+        if platform == "win32":
+            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.20.*, 576.85.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))    
+            self.assertTrue(re.search('^40.00.*, 3, swarm3, 31.225, 680.043, -0.901, 1.463, 0.002, 0.000, 9.999', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 81, swarm81, 34.509, 675.962, -0.893, 1.464, 0.002, 0.000, 30.000', csv, re.MULTILINE))        
+            self.assertTrue(re.search('^40.00.*, 90, swarm90, 10.373, 670.255, -0.876, 4.608, 6.281, 0.000, 30.000', csv, re.MULTILINE))        
+        elif platform == "linux" or platform == "linux2":
+            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.20.*, 576.85.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 5, swarm5, 31.225, 680.043, -0.901, 1.463, 0.002, 0.000, 10.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 69, swarm69, 45.740, 771.296, -1.136, 1.443, 0.001, 0.000, 30.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 85, swarm85, 5.000, 571.267, -0.837, 4.635, 0.000, 0.000, 30.000, 0.001, 2.331', csv, re.MULTILINE))
+
 
 if __name__ == "__main__":
     # execute only if run as a script

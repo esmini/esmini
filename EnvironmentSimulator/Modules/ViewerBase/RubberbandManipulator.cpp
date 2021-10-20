@@ -55,8 +55,13 @@ RubberbandManipulator::~RubberbandManipulator()
 
 void RubberbandManipulator::setMode(unsigned int mode)
 {
-	// If leaving top view, then reset camera rotations
-	if (_mode == RB_MODE_TOP || _mode == RB_MODE_DRIVER)
+	if (mode > GetNumberOfCameraModes())
+	{
+		mode = GetNumberOfCameraModes() - 1;
+	}
+
+	// If leaving locked views, then reset camera rotations
+	if (_mode == RB_MODE_TOP || _mode == RB_MODE_DRIVER || _mode >= RB_MODE_CUSTOM)
 	{
 		_cameraAngle = orbitCameraAngle;
 		_cameraRotation = orbitCameraRotation;
@@ -73,6 +78,10 @@ void RubberbandManipulator::setMode(unsigned int mode)
 	else if (mode == RB_MODE_TOP)
 	{
 		_cameraDistance = topCameraDistance;
+	}
+	else if (mode >= CAMERA_MODE::RB_MODE_CUSTOM)
+	{
+
 	}
 }
 
@@ -297,6 +306,12 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 		_cameraAngle = 0;
 		cameraOffset.set(1.0, 0.0, 0.0);
 	}
+	else if (_mode >= RB_MODE_CUSTOM)
+	{
+		_cameraRotation = 0.0;
+		_cameraAngle = 0;
+		cameraOffset.set(0.0, 0.0, 0.0);
+	}
 	else
 	{
 		if(_mode == RB_MODE_FIXED)
@@ -340,7 +355,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 		cameraAcc = cameraToTarget * springFC - cameraVel * springDC;
 		cameraVel += cameraAcc * dt;
 
-		if (_mode == RB_MODE_FIXED || _mode == RB_MODE_ORBIT || _mode == RB_MODE_TOP  || _mode == RB_MODE_DRIVER)
+		if (_mode == RB_MODE_FIXED || _mode == RB_MODE_ORBIT || _mode == RB_MODE_TOP  || _mode == RB_MODE_DRIVER || _mode >= RB_MODE_CUSTOM)
 		{
 			_eye = nodeFocusPoint + cameraTargetPosition;
 		}
@@ -351,7 +366,39 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
 	}
 
 	// Create the view matrix
-	if (_mode == RB_MODE_DRIVER)
+	if (_mode >= RB_MODE_CUSTOM)
+	{
+		int index = _mode - RB_MODE_CUSTOM;
+		if (index > customCamera_.size())
+		{
+			index = customCamera_.size() - 1;
+		}
+		CustomCameraPos* camPos = &customCamera_[index];
+
+		// Create a view matrix for custom position, or center Front Looking Camrera (FLC)
+		osg::Quat rot;
+		rot.makeRotate(
+			-M_PI_2, osg::Vec3(osg::X_AXIS), // rotate so that Z axis points up
+			M_PI_2 - camPos->h, osg::Vec3(osg::Y_AXIS),  // rotate so that X is forward and apply heading
+			camPos->p, osg::Vec3(osg::X_AXIS)  // apply pitch
+		);
+		osg::Matrix localRotation;
+		localRotation.setRotate(rot);
+
+		osg::Matrix localTranslate;
+		localTranslate.makeIdentity();  // make sure no rotation
+		localTranslate.setTrans(-camPos->x, -camPos->y, -camPos->z);
+
+		// Camera transform is the inverse of focus object rotation and position
+		_matrix.makeRotate(nodeRotation.inverse());
+		osg::Matrix trans;
+		trans.makeTranslate(-nodeCenter);
+		_matrix.preMult(trans);
+
+		// Combine driver and camera transform
+		_matrix = _matrix * localTranslate * localRotation;
+	}
+	else if (_mode == RB_MODE_DRIVER)
 	{
 		// Create a view matrix for driver position, or center Front Looking Camrera (FLC)
 		osg::Matrix localTx (

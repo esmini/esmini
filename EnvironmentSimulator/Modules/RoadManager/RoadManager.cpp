@@ -50,13 +50,14 @@
 #include <time.h>
 #include <limits>
 #include <algorithm>
+#include <map>
+#include <sstream>
 
 #include "RoadManager.hpp"
 #include "odrSpiral.h"
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
 
-static std::mt19937 mt_rand;
 static unsigned int global_lane_counter;
 
 
@@ -2213,8 +2214,6 @@ std::string ReadAttribute(pugi::xml_node node, std::string attribute_name, bool 
 
 bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 {
-	mt_rand.seed((unsigned int)time(0));
-
 	if (replace)
 	{
 		InitGlobalLaneIds();
@@ -2254,6 +2253,41 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 	{
 		LOG("Invalid OpenDRIVE file, can't find OpenDRIVE element");
 		return false;
+	}
+
+	//Initialize GeoRef structure
+	geo_ref_ = {
+		std::numeric_limits<double>::quiet_NaN(),
+		std::numeric_limits<double>::quiet_NaN(),
+		std::numeric_limits<double>::quiet_NaN(),
+		"",
+		std::numeric_limits<double>::quiet_NaN(),
+		std::numeric_limits<double>::quiet_NaN(),
+		std::numeric_limits<double>::quiet_NaN(),
+		std::numeric_limits<double>::quiet_NaN(),
+		std::numeric_limits<double>::quiet_NaN(),
+		std::numeric_limits<double>::quiet_NaN(),
+		"",
+		"",
+		"",
+		"",
+		std::numeric_limits<double>::quiet_NaN(),
+		std::numeric_limits<double>::quiet_NaN(),
+		"",
+		"",
+		std::numeric_limits<double>::quiet_NaN(),
+		std::numeric_limits<int>::quiet_NaN()
+	};
+
+	pugi::xml_node header_node = node.child("header");
+	if (node != NULL)
+	{
+		if(header_node.child("geoReference") != NULL)
+		{
+			//Get the string to parse, geoReference tag is just a string with the data separated by spaces and each attribute start with a + character
+			std::string geo_ref_str = header_node.child_value("geoReference");
+			ParseGeoLocalization(geo_ref_str);
+		}
 	}
 
 	for (pugi::xml_node road_node = node.child("road"); road_node; road_node = road_node.next_sibling("road"))
@@ -4384,6 +4418,12 @@ int OpenDrive::CheckLink(Road *road, RoadLink *link, ContactPointType expected_c
 		Junction *junction = GetJunctionById(link->GetElementId());
 
 		// Check all outgoing connections
+		if (junction == nullptr)
+		{
+			LOG("Info: Junction id %d, referred to by road %d, does not exist", link->GetElementId(), road->GetId());
+			return -1;
+		}
+
 		int nrConnections = junction->GetNumberOfConnections();
 		for (int i = 0; i < nrConnections; i++)
 		{
@@ -4432,6 +4472,148 @@ void OpenDrive::Print()
 	for (size_t i=0; i<junction_.size(); i++)
 	{
 		junction_[i]->Print();
+	}
+}
+
+GeoReference* OpenDrive::GetGeoReference()
+{
+	return &geo_ref_;
+}
+
+std::string OpenDrive::GetGeoReferenceAsString()
+{
+	std::ostringstream out;
+    if(!std::isnan(geo_ref_.lat_0_) && !std::isnan(geo_ref_.lon_0_))
+	{
+		out.precision(13);
+		out << "+lat_0=" << std::fixed << geo_ref_.lat_0_ << " +lon_0=" << std::fixed << geo_ref_.lon_0_;
+	}
+    return out.str();
+}
+
+void OpenDrive::ParseGeoLocalization(const std::string& geoLocalization)
+{
+	std::map<std::string, std::string> attributes;
+	char space_char = ' ';
+	char asignment_char = '=';
+
+	std::stringstream sstream(geoLocalization);
+	std::string attribute = "";
+	//Get each attribute of geoReference
+	while (std::getline(sstream, attribute, space_char))
+	{
+		std::stringstream sstream(attribute);
+		std::string key_value = "";
+		std::string attribute_key = "";
+		std::string attribute_value = "";
+		//Get key and value of each attribute
+		while (std::getline(sstream, key_value, asignment_char))
+		{
+			//Keys starts with a + character
+			if(key_value.rfind('+', 0) == 0)
+			{
+				attribute_key = key_value;
+			}else
+			{
+				attribute_value = key_value;
+			}
+		}
+		attributes.emplace(attribute_key, attribute_value);
+	}
+
+	for(const auto& attr : attributes)
+	{
+		if(attr.first == "+a")
+		{
+			geo_ref_.a_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+axis")
+		{
+			geo_ref_.axis_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+b")
+		{
+			geo_ref_.b_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+ellps")
+		{
+			geo_ref_.ellps_ = attr.second;
+		}
+		else if (attr.first == "+k")
+		{
+			geo_ref_.k_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+k_0")
+		{
+			geo_ref_.k_0_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+lat_0")
+		{
+			geo_ref_.lat_0_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+lon_0")
+		{
+			geo_ref_.lon_0_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+lon_wrap")
+		{
+			geo_ref_.lon_wrap_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+over")
+		{
+			geo_ref_.over_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+pm")
+		{
+			geo_ref_.pm_ = attr.second;
+		}
+		else if (attr.first == "+proj")
+		{
+			geo_ref_.proj_ = attr.second;
+		}
+		else if (attr.first == "+units")
+		{
+			geo_ref_.units_ = attr.second;
+		}
+		else if (attr.first == "+vunits")
+		{
+			geo_ref_.vunits_ = attr.second;
+		}
+		else if (attr.first == "+x_0")
+		{
+			geo_ref_.x_0_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+y_0")
+		{
+			geo_ref_.y_0_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+datum")
+		{
+			geo_ref_.datum_ = attr.second;
+		}
+		else if (attr.first == "+geoidgrids")
+		{
+			geo_ref_.geo_id_grids_ = attr.second;
+		}
+		else if (attr.first == "+zone")
+		{
+			geo_ref_.zone_ = std::stod(attr.second);
+		}
+		else if (attr.first == "+towgs84")
+		{
+			geo_ref_.towgs84_ = std::stoi(attr.second);
+		}
+		else
+		{
+			LOG("Unsupported geo reference attr: %s", attr.first.c_str());
+		}
+	}
+
+	if (std::isnan(geo_ref_.lat_0_) || std::isnan(geo_ref_.lon_0_))
+	{
+		LOG("cannot parse georeference: '%s'. Using default values.", geoLocalization.c_str());
+		geo_ref_.lat_0_ = 0.0;
+		geo_ref_.lon_0_ = 0.0;
 	}
 }
 
@@ -6405,7 +6587,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 			}
 			else  // randomize
 			{
-				connection_idx = (int)(n_connections * (double)mt_rand() / mt_rand.max());
+				connection_idx = (int)(n_connections * (double)(SE_Env::Inst().GetGenerator())() / (SE_Env::Inst().GetGenerator()).max());
 			}
 		}
 
@@ -7254,13 +7436,13 @@ void Position::SetTrajectory(RMTrajectory* trajectory)
 	s_trajectory_ = 0;
 }
 
-bool Position::Delta(Position* pos_b, PositionDiff &diff, double maxDist) const
+bool Position::Delta(Position* pos_b, PositionDiff &diff, bool bothDirections, double maxDist) const
 {
 	double dist = 0;
 	bool found;
 
 	RoadPath *path = new RoadPath(this, pos_b);
-	found = (path->Calculate(dist, maxDist) == 0);
+	found = (path->Calculate(dist, bothDirections, maxDist) == 0);
 	if (found)
 	{
 		int laneIdB = pos_b->GetLaneId();
@@ -7338,7 +7520,7 @@ int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceTyp
 		if (cs == CoordinateSystem::CS_ROAD)
 		{
 			PositionDiff diff;
-			bool routeFound = Delta(pos_b, diff);
+			bool routeFound = Delta(pos_b, diff, true, maxDist);
 			dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? diff.dt : diff.ds;
 			if (routeFound == false)
 			{
@@ -7392,7 +7574,7 @@ int Position::Distance(double x, double y, CoordinateSystem cs, RelativeDistance
 		{
 			Position pos_b(x, y, 0, 0, 0, 0);
 			PositionDiff diff;
-			bool routeFound = Delta(&pos_b, diff, maxDist);
+			bool routeFound = Delta(&pos_b, diff, true, maxDist);
 			dist = relDistType == RelativeDistanceType::REL_DIST_LATERAL ? diff.dt : diff.ds;
 			if (routeFound == false)
 			{
@@ -8855,8 +9037,9 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 	OpenDrive *od = route->waypoint_[0].GetOpenDrive();
 
 	double initial_s_offset = 0;
+	double initial_route_direction = route->GetWayPointDirection(0);
 
-	if (route->GetWayPointDirection(0) > 0)
+	if (initial_route_direction > 0)
 	{
 		initial_s_offset = route->waypoint_[0].GetS();
 	}
@@ -8867,7 +9050,7 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 
 	double route_length = 0;
 	s_route_ = route_s;
-	double new_offset = offset_;
+	double offset_dir_neutral = offset_ * SIGN(GetLaneId());
 
 	// Find out what road and local s value
 	for (size_t i = 0; i < route->waypoint_.size(); i++)
@@ -8892,12 +9075,6 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 			if (route_direction < 0)  // along waypoint road direction
 			{
 				local_s = road_length - local_s;
-				new_offset = -offset_;
-
-			}
-			else
-			{
-				new_offset = offset_;
 			}
 
 			if (SIGN(route->waypoint_[i].GetLaneId()) < 0)
@@ -8909,7 +9086,7 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 				SetHeadingRelative(driving_direction < 0 ? 0.0 : M_PI);
 			}
 
-			return (SetLanePos(route->waypoint_[i].GetTrackId(), route->waypoint_[i].GetLaneId(), local_s, new_offset));
+			return (SetLanePos(route->waypoint_[i].GetTrackId(), route->waypoint_[i].GetLaneId(), local_s, SIGN(route->waypoint_[i].GetLaneId()) * offset_dir_neutral));
 		}
 		route_length += road_length - initial_s_offset;
 		initial_s_offset = 0;  // For all following road segments, calculate length from beginning

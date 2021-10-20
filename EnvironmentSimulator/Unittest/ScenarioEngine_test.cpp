@@ -190,6 +190,80 @@ TEST(DistanceTest, CalcDistancePointAcrossIntersection)
 
 }
 
+TEST(DistanceTest, CalcEntityDistanceFreespace)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/straight_500m.xodr");
+    OpenDrive* odr = Position::GetOpenDrive();
+
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    Object obj0(Object::Type::VEHICLE);
+    obj0.boundingbox_.center_ = { 1.5, 0.0, 0.0 };
+    obj0.boundingbox_.dimensions_ = { 2.0, 5.0, 2.0 };
+    obj0.pos_.SetLanePos(1, -1, 20.0, 0);
+    obj0.pos_.SetHeading(0.0);
+
+    Object obj1(Object::Type::VEHICLE);
+    obj1.boundingbox_.center_ = { 1.5, 0.0, 0.0 };
+    obj1.boundingbox_.dimensions_ = { 2.0, 5.0, 2.0 };
+    obj1.pos_.SetLanePos(1, -1, 30.0, 0);
+    obj1.pos_.SetHeading(0.0);
+
+    // Measure from X, Y point to object in cartesian coordinates
+    double latDist = 0.0;
+    double longDist = 0.0;
+    double dist = 0.0;
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), false);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 0.0, 1e-5);
+    EXPECT_NEAR(longDist, 5.0, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 5.0, 1e-3);
+
+    obj1.pos_.SetLanePos(1, -1, 15.1, 1.9);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), true);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), true);
+    EXPECT_NEAR(latDist, 0.0, 1e-5);
+    EXPECT_NEAR(longDist, 0.0, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 0.0, 1e-3);
+
+    obj1.pos_.SetLanePos(1, -1, 15.1, 2.9);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), false);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 0.9, 1e-5);
+    EXPECT_NEAR(longDist, 0.0, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 0.9, 1e-3);
+
+    obj1.pos_.SetLanePos(1, -1, 10.0, 0.0);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), false);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 0.0, 1e-5);
+    EXPECT_NEAR(longDist, -5.0, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 5.0, 1e-3);
+
+    obj1.pos_.SetLanePos(1, -1, 10.0, 0.0);
+    obj1.pos_.SetHeadingRelative(M_PI);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), false);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 0.0, 1e-5);
+    EXPECT_NEAR(longDist, -8.0, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 8.0, 1e-3);
+
+    obj1.pos_.SetLanePos(1, -1, 30.0, 5.0);
+    obj1.pos_.SetHeadingRelative(0.5);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, 0, 0), false);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 2.64299, 1e-5);
+    EXPECT_NEAR(longDist, 4.64299, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 6.183198, 1e-3);
+
+    obj1.pos_.SetHeadingRelative(-0.5);
+    EXPECT_EQ(obj0.CollisionAndRelativeDistLatLong(&obj1, &latDist, &longDist), false);
+    EXPECT_NEAR(latDist, 1.204715, 1e-5);
+    EXPECT_NEAR(longDist, 4.64299, 1e-5);
+    EXPECT_NEAR(dist = obj0.FreeSpaceDistance(&obj1, &latDist, &longDist), 5.876278, 1e-3);
+}
+
 TEST(TrajectoryTest, EnsureContinuation)
 {
     double dt = 0.01;
@@ -269,6 +343,9 @@ TEST(OptionsTest, TestOptionHandling)
         "my_road.xodr",
         "--window",
         "--option2",
+        "option2Value",
+        "--option2",
+        "option2Value2",
         "--option3",
         "--option4"
     };
@@ -281,19 +358,25 @@ TEST(OptionsTest, TestOptionHandling)
         strncpy(argv[i], args[i], strlen(args[i]) + 1);
     }
 
-    opt.ParseArgs(&argc, argv);
+    ASSERT_EQ(opt.ParseArgs(&argc, argv), -1);
 
     ASSERT_EQ(opt.GetOptionSet("no_arg"), false);
     ASSERT_EQ(opt.GetOptionSet("osc_file"), true);
     ASSERT_EQ(opt.GetOptionSet("window"), true);
-    ASSERT_EQ(opt.GetOptionSet("option2"), false);
+    ASSERT_EQ(opt.GetOptionSet("option2"), true);
     ASSERT_EQ(opt.GetOptionSet("option3"), true);
     ASSERT_EQ(opt.GetOptionSet("option4"), false);
     ASSERT_EQ(opt.GetOptionSet("option5"), false);
     ASSERT_EQ(opt.GetOptionArg("window"), "");
     ASSERT_EQ(opt.GetOptionArg("osc_file"), "my_scenario.xosc");
     ASSERT_EQ(opt.GetOptionArg("odr_file"), "my_road.xodr");
+    ASSERT_EQ(opt.GetOptionArg("option2"), "option2Value");
+    ASSERT_EQ(opt.GetOptionArg("option2", 1), "option2Value2");
     ASSERT_EQ(opt.GetOptionArg("option3"), "55");
+
+    // test without last argument, should return OK
+    argc = sizeof(args-1) / sizeof(char*);
+    ASSERT_EQ(opt.ParseArgs(&argc, argv), 0);
 
     // Clean up
     for (int i = 0; i < argc; i++)

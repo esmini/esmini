@@ -21,8 +21,6 @@ using namespace roadmanager;
 
 #define ELEVATION_DIFF_THRESHOLD 2.5
 
-static std::mt19937 mt_rand;
-
 Object::Object(Type type) : type_(type), id_(0), speed_(0), wheel_angle_(0), wheel_rot_(0),
 route_(0), model3d_(""), ghost_trail_s_(0), trail_follow_index_(0), odometer_(0), end_of_road_timestamp_(0.0),
 off_road_timestamp_(0.0), stand_still_timestamp_(0), dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0),
@@ -51,8 +49,6 @@ nextJunctionSelectorAngle_(0.0), scaleMode_(EntityScaleMode::NONE)
 	}
 
 	boundingbox_ = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-
-	mt_rand.seed((unsigned int)time(0));
 
 	if (junctionSelectorStrategy_ == Junction::JunctionStrategyType::RANDOM)
 	{
@@ -221,10 +217,10 @@ void Object::SetJunctionSelectorAngle(double angle)
 
 void Object::SetJunctionSelectorAngleRandom()
 {
-	nextJunctionSelectorAngle_ = 2 * M_PI * ((double)mt_rand()) / (mt_rand.max)();
+	nextJunctionSelectorAngle_ = 2 * M_PI * ((double)(SE_Env::Inst().GetGenerator())()) / (SE_Env::Inst().GetGenerator()).max();
 }
 
-bool Object::Collision(Object* target)
+bool Object::CollisionAndRelativeDistLatLong(Object* target, double *distLat, double *distLong)
 {
 	// Apply method Separating Axis Theorem (SAT)
 	// http://www.euclideanspace.com/threed/games/examples/cars/collisions/
@@ -247,6 +243,9 @@ bool Object::Collision(Object* target)
 
 	Object* obj0 = this;
 	Object* obj1 = target;
+	bool gap = false;
+	if (distLong) *distLong = 0.0;
+	if (distLat) *distLat = 0.0;
 
 	// First do a rough check to rule out potential overlap/collision
 	// Compare radial/euclidean distance with sum of the diagonal dimension of the bounding boxes
@@ -256,13 +255,13 @@ bool Object::Collision(Object* target)
 	double max_width = this->boundingbox_.dimensions_.width_ + target->boundingbox_.dimensions_.width_;
 	double dist_threshold = sqrt(max_length * max_length + max_width * max_width);
 
-	if (dist > dist_threshold)
+	if (dist > dist_threshold && distLong == nullptr && distLat == nullptr)
 	{
 		return false;
 	}
 
 	// Also do a Z sanity check, to rule out on different road elevations
-	if (fabs(obj0->pos_.GetZ() - obj1->pos_.GetZ()) > ELEVATION_DIFF_THRESHOLD)
+	if (fabs(obj0->pos_.GetZ() - obj1->pos_.GetZ()) > ELEVATION_DIFF_THRESHOLD && distLong == nullptr && distLat == nullptr)
 	{
 		return false;
 	}
@@ -340,12 +339,45 @@ bool Object::Collision(Object* target)
 				max[0] > max[1] + SMALL_NUMBER && min[0] > max[1] + SMALL_NUMBER)
 			{
 				// gap found
-				return false;
+				gap = true;
+				if (distLong == nullptr && distLat == nullptr)
+				{
+					return !gap;
+				}
+				else
+				{
+					// measure gap relative pivot vehicle
+					if (i == 0)
+					{
+						if (min[0] < min[1] - SMALL_NUMBER && max[0] < min[1] - SMALL_NUMBER)
+						{
+							if (j == 0)
+							{
+								if (distLat) *distLat = min[1] - max[0];
+							}
+							else
+							{
+								if (distLong) *distLong = min[1] - max[0];
+							}
+						}
+						else
+						{
+							if (j == 0)
+							{
+								if (distLat) *distLat = -(min[0] - max[1]);
+							}
+							else
+							{
+								if (distLong) *distLong = -(min[0] - max[1]);
+							}
+						}
+					}
+				}
 			}
 		}
 	}
 
-	return true;
+	return !gap;
 }
 
 double Object::PointCollision(double x, double y)
@@ -438,13 +470,15 @@ double Object::PointCollision(double x, double y)
 double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDist)
 {
 	double minDist = LARGE_NUMBER;
+	*latDist = LARGE_NUMBER;
+	*longDist = LARGE_NUMBER;
 
 	if (target == 0)
 	{
 		return minDist;
 	}
 
-	if (Collision(target))
+	if (CollisionAndRelativeDistLatLong(target, latDist, longDist))
 	{
 		return 0.0;
 	}
@@ -496,33 +530,13 @@ double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDi
 				edge[1][0] = vertices[(vindex + 1) % 2][(k + 1) % 4][0];
 				edge[1][1] = vertices[(vindex + 1) % 2][(k + 1) % 4][1];
 
-				double xComp = 0;
-				double yComp = 0;
-				double tmpDist = DistanceFromPointToEdge2D(point[0], point[1], edge[0][0], edge[0][1], edge[1][0], edge[1][1], &xComp, &yComp);
+				double xProj = 0;
+				double yProj = 0;
+				double tmpDist = DistanceFromPointToEdge2D(point[0], point[1], edge[0][0], edge[0][1], edge[1][0], edge[1][1], &xProj, &yProj);
 
 				if (tmpDist < minDist)
 				{
 					minDist = tmpDist;
-
-					// Calculate x, y components of the distance in vehicle reference system
-					double pv[2];
-					if (i == 0)
-					{
-						// From this object to the target
-						pv[0] = xComp - point[0];
-						pv[1] = yComp - point[1];
-					}
-					else
-					{
-						// From the target to this object
-						pv[0] = point[0] - xComp;
-						pv[1] = point[1] - yComp;
-					}
-
-					double pvr[2];
-					RotateVec2D(pv[0], pv[1], -this->pos_.GetH(), pvr[0], pvr[1]);
-					if (latDist) *latDist = pvr[1]; // y points left in vehicle ref system
-					if (longDist) *longDist = pvr[0]; // x points forward in vehicle ref system
 				}
 			}
 		}
@@ -534,9 +548,13 @@ double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDi
 double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, double* longDist)
 {
 	double minDist = LARGE_NUMBER;
+	*latDist = LARGE_NUMBER;
+	*longDist = LARGE_NUMBER;
 
 	if (PointCollision(x, y))
 	{
+		*latDist = 0.0;
+		*longDist = 0.0;
 		return 0.0;
 	}
 
@@ -576,26 +594,21 @@ double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, doubl
 		edge[1][0] = vertices[(k + 1) % 4][0];
 		edge[1][1] = vertices[(k + 1) % 4][1];
 
-		double xComp = 0;
-		double yComp = 0;
-		double tmpDist = DistanceFromPointToEdge2D(point[0], point[1], edge[0][0], edge[0][1], edge[1][0], edge[1][1],
-			&xComp, &yComp);
+		double xProj = 0;
+		double yProj = 0;
+		double tmpDist = DistanceFromPointToLine2D(point[0], point[1], edge[0][0], edge[0][1], edge[1][0], edge[1][1],
+			&xProj, &yProj);
 
 		if (tmpDist < minDist)
 		{
 			minDist = tmpDist;
 
-			// Calculate x, y components of the distance in vehicle reference system
-
-			double pv[2];
-			// From this object to the target point
-			pv[0] = point[0] - xComp;
-			pv[1] = point[1] - yComp;
-
-			double pvr[2];
-			RotateVec2D(pv[0], pv[1], -this->pos_.GetH(), pvr[0], pvr[1]);
-			if (latDist) *latDist = pvr[1]; // y points left in vehicle ref system
-			if (longDist) *longDist = pvr[0]; // x points forward in vehicle ref system
+			if (latDist && longDist)
+			{
+				// Calculate x, y components of the distance in vehicle reference system
+				// y points left in vehicle ref system, x forward
+				RotateVec2D(point[0] - xProj, point[1] - yProj, -this->pos_.GetH(), *longDist, *latDist);
+			}
 		}
 	}
 
@@ -604,6 +617,9 @@ double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, doubl
 
 int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, double* longDist, CoordinateSystem cs)
 {
+	*latDist = LARGE_NUMBER;
+	*longDist = LARGE_NUMBER;
+
 	if (cs != CoordinateSystem::CS_LANE && cs != CoordinateSystem::CS_ROAD)
 	{
 		LOG("Unexpected coordinateSystem (%d). %d or %d expected.", CoordinateSystem::CS_LANE, CoordinateSystem::CS_ROAD);
@@ -704,6 +720,9 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
 
 int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, double* longDist, CoordinateSystem cs)
 {
+	*latDist = LARGE_NUMBER;
+	*longDist = LARGE_NUMBER;
+
 	// First some checks
 	if (target == 0)
 	{
@@ -1020,14 +1039,8 @@ bool Entities::indexExists(int id)
 
 int Entities::getNewId()
 {
-	int retint = 0;
-	while (!indexExists(retint))
-	{
-		retint += 1;
-	}
-	return retint;
+	return nextId_++;
 }
-
 
 Object* Entities::GetObjectByName(std::string name)
 {

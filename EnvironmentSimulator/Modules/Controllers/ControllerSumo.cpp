@@ -126,6 +126,7 @@ void ControllerSumo::Step(double timeStep)
 				vehicle->name_ = deplist[i];
 				vehicle->controller_ = this;
 				vehicle->model3d_ = template_vehicle_->model3d_;
+				vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
 				entities_->addObject(vehicle);
 			}
 		}

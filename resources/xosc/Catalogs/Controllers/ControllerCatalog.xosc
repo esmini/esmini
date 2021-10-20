@@ -5,8 +5,8 @@
                date="2020-10-204T10:00:00"
                description="Controller catalog"
                author="esmini-team"/>
-	<Catalog name="ControllerCatalog">
-		<Controller name="sloppyDriver">
+    <Catalog name="ControllerCatalog">
+        <Controller name="sloppyDriver">
             <ParameterDeclarations>
                 <ParameterDeclaration name="Sloppiness" parameterType="double" value="0.5" /> 
                 <ParameterDeclaration name="Mode" parameterType="string" value="additive" /> 
@@ -16,98 +16,109 @@
                 <Property name="sloppiness" value="$Sloppiness" />
                 <Property name="mode" value="$Mode" />
             </Properties>
-		</Controller>    
-		<Controller name="interactiveDriver">
+        </Controller>
+        <Controller name="interactiveDriver">
             <Properties>
                 <Property name="esminiController" value="InteractiveController" />
             </Properties>
-		</Controller>
-		<Controller name="controllerRel2Abs">
-			<ParameterDeclarations>
+        </Controller>
+        <Controller name="controllerRel2Abs">
+            <ParameterDeclarations>
                 <ParameterDeclaration name="Horizon" parameterType="double" value="1.0" /> 
-				<ParameterDeclaration name="ThresholdDist" parameterType="double" value="1.5" /> 
-				<ParameterDeclaration name="ThresholdSpeed" parameterType="double" value="1.5" /> 
+                <ParameterDeclaration name="ThresholdDist" parameterType="double" value="1.5" /> 
+                <ParameterDeclaration name="ThresholdSpeed" parameterType="double" value="1.5" /> 
             </ParameterDeclarations>  
             <Properties>
                 <Property name="esminiController" value="ControllerRel2Abs" />
-				<Property name="horizon" value="$Horizon" />
-				<Property name="thresholdDist" value="$ThresholdDist" />
-				<Property name="thresholdSpeed" value="$ThresholdSpeed" />
+                <Property name="horizon" value="$Horizon" />
+                <Property name="thresholdDist" value="$ThresholdDist" />
+                <Property name="thresholdSpeed" value="$ThresholdSpeed" />
             </Properties>
-		</Controller>
-		<Controller name="externalController">
+        </Controller>
+        <Controller name="externalController">
             <ParameterDeclarations>
                 <ParameterDeclaration name="UseGhost" parameterType="boolean" value="false" /> 
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" /> 
                 <ParameterDeclaration name="Mode" parameterType="string" value="override" /> 
             </ParameterDeclarations>
-			<Properties>
-				<Property name="esminiController" value="ExternalController" />
+            <Properties>
+                <Property name="esminiController" value="ExternalController" />
                 <Property name="useGhost" value="$UseGhost" />
                 <Property name="headstartTime" value="$HeadStartTime" />
                 <Property name="mode" value="$Mode" />                
-			</Properties>
-		</Controller>
-		<Controller name="cspas">
+            </Properties>
+        </Controller>
+        <Controller name="cspas">
             <ParameterDeclarations>
                 <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" /> 
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" /> 
             </ParameterDeclarations>
-			<Properties>
+            <Properties>
                 <Property name="esminiController" value="ExternalController" />            
-				<Property name="useGhost" value="$UseGhost" />
-				<Property name="headstartTime" value="$HeadStartTime" />
-			</Properties>
-		</Controller>        
-		<Controller name="cspas5s">
+                <Property name="useGhost" value="$UseGhost" />
+                <Property name="headstartTime" value="$HeadStartTime" />
+            </Properties>
+        </Controller>        
+        <Controller name="cspas5s">
             <ParameterDeclarations>
                 <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" /> 
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="5" /> 
             </ParameterDeclarations>
-			<Properties>
+            <Properties>
                 <Property name="esminiController" value="ExternalController" />                   
-				<Property name="useGhost" value="$UseGhost" />
-				<Property name="headstartTime" value="$HeadStartTime" />
-			</Properties>
-		</Controller>
-		<Controller name="cspas10s">
+                <Property name="useGhost" value="$UseGhost" />
+                <Property name="headstartTime" value="$HeadStartTime" />
+            </Properties>
+        </Controller>
+        <Controller name="cspas10s">
             <ParameterDeclarations>
                 <Property name="esminiController" value="ExternalController" />                   
                 <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" /> 
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="10" /> 
             </ParameterDeclarations>
-			<Properties>
-				<Property name="useGhost" value="$UseGhost" />
-				<Property name="headstartTime" value="$HeadStartTime" />
-			</Properties>
-		</Controller>        
-		<Controller name="followGhost">
+            <Properties>
+                <Property name="useGhost" value="$UseGhost" />
+                <Property name="headstartTime" value="$HeadStartTime" />
+            </Properties>
+        </Controller>        
+        <Controller name="followGhost">
             <ParameterDeclarations>
                 <ParameterDeclaration name="HeadStartTime" parameterType="double" value="6" /> 
             </ParameterDeclarations>
-			<Properties>
-				<Property name="esminiController" value="FollowGhostController" />
+            <Properties>
+                <Property name="esminiController" value="FollowGhostController" />
                 <Property name="headstartTime"  value="$HeadStartTime" />
-			</Properties>
-		</Controller>
-		<Controller name="sumoController">
+            </Properties>
+        </Controller>
+        <Controller name="sumoController">
             <ParameterDeclarations>
                 <ParameterDeclaration name="CfgFile" parameterType="string" value="../sumo_inputs/e6mini.sumocfg" /> 
-            </ParameterDeclarations>			
+            </ParameterDeclarations>            
             <Properties>
-				<Property name="esminiController" value="SumoController" />
-				<File filepath="$CfgFile"/>
-			</Properties>
-		</Controller>
-		<Controller name="accController">
+                <Property name="esminiController" value="SumoController" />
+                <File filepath="$CfgFile"/>
+            </Properties>
+        </Controller>
+        <Controller name="ACCController">
             <ParameterDeclarations>
                 <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" /> 
-            </ParameterDeclarations>			
+                <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5" /> 
+            </ParameterDeclarations>            
             <Properties>
-				<Property name="esminiController" value="ACCController" />
-                <Property name="mode" value="$Mode" />                    
+                <Property name="esminiController" value="ACCController" />
                 <Property name="setSpeed"  value="$SetSpeed" />
-			</Properties>
-		</Controller>
-	</Catalog>
+                <Property name="timeGap"  value="$TimeGap" />
+            </Properties>
+        </Controller>
+        <Controller name="ALKSController">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" /> 
+                <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5" /> 
+            </ParameterDeclarations>            
+            <Properties>
+                <Property name="setSpeed"  value="$SetSpeed" />
+                <Property name="timeGap"  value="$TimeGap" />
+            </Properties>
+        </Controller>
+    </Catalog>
 </OpenSCENARIO>

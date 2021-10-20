@@ -52,6 +52,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 	// Finally check registered paths
 	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 	{
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], oscFilename));
 		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(oscFilename)));
 	}
 	size_t i;
@@ -502,12 +503,11 @@ int ScenarioEngine::step(double deltaSimTime)
 			obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
 	}
 
-	// Apply controllers
-	if (!disable_controllers_)
+	for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
 	{
-		for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
+		if (scenarioReader->controller_[i]->Active())
 		{
-			if (scenarioReader->controller_[i]->Active())
+			if (simulationTime_ >= 0)
 			{
 				if (trueTime_ <= simulationTime_)
 				{
@@ -573,10 +573,7 @@ void ScenarioEngine::parseScenario()
 	SetSimulationTime(0);
 	SetTrueTime(0);
 
-	if (!disable_controllers_)
-	{
-		scenarioReader->LoadControllers();
-	}
+	scenarioReader->LoadControllers();
 
 	scenarioReader->SetGateway(&scenarioGateway);
 
@@ -609,6 +606,7 @@ void ScenarioEngine::parseScenario()
 		// Finally check registered paths
 		for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
 		{
+			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], getOdrFilename()));
 			file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(getOdrFilename())));
 		}
 		size_t i;
@@ -650,30 +648,29 @@ void ScenarioEngine::parseScenario()
 	storyBoard.entities_ = &entities;
 
 	// Finally, now when all entities have been loaded, initialize the controllers
-	if (!disable_controllers_)
+	for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
 	{
-		// Initialize controllers
-		for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
+		scenarioReader->controller_[i]->Init();
+		if (scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_REL2ABS)
 		{
-			scenarioReader->controller_[i]->Init();
-			if (scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_REL2ABS)
-			{
-				((ControllerRel2Abs*)(scenarioReader->controller_[i]))->SetScenarioEngine(this);
-			}
+			((ControllerRel2Abs*)(scenarioReader->controller_[i]))->SetScenarioEngine(this);
 		}
+	}
 
-		// find out maximum headstart time for ghosts
-		for (size_t i = 0; i < entities.object_.size(); i++)
+	// find out maximum headstart time for ghosts
+	for (size_t i = 0; i < entities.object_.size(); i++)
+	{
+		Object* obj = entities.object_[i];
+
+		if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST ||
+			(obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL &&
+				((ControllerExternal*)(obj->controller_))->UseGhost()))
 		{
-			Object* obj = entities.object_[i];
+			SetupGhost(obj);
 
-			if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST ||
-				(obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL &&
-					((ControllerExternal*)(obj->controller_))->UseGhost()))
+			if (obj->ghost_)
 			{
-				SetupGhost(obj);
-
-				if (obj->ghost_)
+				if (obj->ghost_->GetHeadstartTime() > GetHeadstartTime())
 				{
 					if (obj->ghost_->GetHeadstartTime() > GetHeadstartTime())
 					{

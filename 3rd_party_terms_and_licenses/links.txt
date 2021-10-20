@@ -29,3 +29,6 @@ https://github.com/eclipse/sumo
 
 expr
 https://github.com/zserge/expr
+
+Clothoids - G1 and G2 fitting with clothoids, spline of clothoids, circle arc and biarc
+https://ebertolazzi.github.io/Clothoids/

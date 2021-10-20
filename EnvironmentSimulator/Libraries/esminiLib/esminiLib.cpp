@@ -846,7 +846,7 @@ extern "C"
 				// reuse some values
 				Object *obj = player->scenarioEngine->entities.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
-					obj->GetActivatedControllerType(), obj->boundingbox_, timestamp, speed,
+					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), timestamp, speed,
 					obj->wheel_angle_, obj->wheel_rot_, roadId, laneId, laneOffset, s);
 			}
 		}
@@ -1383,7 +1383,6 @@ extern "C"
 		}
 
 		player->AddObjectSensor(object_id, x, y, z, h, rangeNear, rangeFar, fovH, maxObj);
-		player->ShowObjectSensors(false);
 
 		return 0;
 	}
@@ -1603,15 +1602,15 @@ extern "C"
 		return -1;
 	}
 
-#ifdef _USE_OSG
 	SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable)
 	{
+#ifdef _USE_OSG
 		if (player != nullptr && player->viewer_)
 		{
 			player->viewer_->SetNodeMaskBits(featureType, enable ? featureType : 0x0);
 		}
-	}
 #endif
+	}
 
 	// Simple vehicle
 	SE_DLL_API void *SE_SimpleVehicleCreate(float x, float y, float h, float length)
@@ -1679,5 +1678,59 @@ extern "C"
 		state->h = (float)((vehicle::Vehicle *)handleSimpleVehicle)->heading_;
 		state->p = (float)((vehicle::Vehicle *)handleSimpleVehicle)->pitch_;
 		state->speed = (float)((vehicle::Vehicle *)handleSimpleVehicle)->speed_;
+	}
+
+	SE_DLL_API int SE_CaptureNextFrame()
+	{
+#ifdef _USE_OSG
+		if (player)
+		{
+			player->CaptureNextFrame();
+		}
+		else
+		{
+			return -1;
+		}
+
+		return 0;
+#else
+		return -1;
+#endif
+	}
+
+	SE_DLL_API int SE_CaptureContinuously(bool state)
+	{
+#ifdef _USE_OSG
+		if (player)
+		{
+			player->CaptureContinuously(state);
+		}
+		else
+		{
+			return -1;
+		}
+
+		return 0;
+#else
+		return -1;
+#endif
+	}
+
+	SE_DLL_API int SE_AddCustomCamera(double x, double y, double z, double h, double p)
+	{
+#ifdef _USE_OSG
+		if (player)
+		{
+			player->AddCustomCamera(x, y, z, h, p);
+		}
+		else
+		{
+			return -1;
+		}
+
+		return 0;
+#else
+		return -1;
+#endif
 	}
 }

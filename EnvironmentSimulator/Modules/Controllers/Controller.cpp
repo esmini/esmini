@@ -27,7 +27,7 @@ Controller* scenarioengine::InstantiateController(void* args)
 Controller::Controller(InitArgs* args) : name_(args->name), type_name_(args->type), entities_(args->entities),
 	gateway_(args->gateway), domain_(ControlDomains::DOMAIN_NONE), mode_(Controller::Mode::MODE_OVERRIDE), object_(0)
 {
-	if (args->properties->ValueExists("mode"))
+	if (args->properties && args->properties->ValueExists("mode"))
 	{
 		std::string mode = args->properties->GetValueStr("mode");
 		if (mode == "override")
@@ -43,6 +43,10 @@ Controller::Controller(InitArgs* args) : name_(args->name), type_name_(args->typ
 			LOG("Unexpected mode \"%s\", falling back to default \"override\"", mode.c_str());
 			mode_ = Mode::MODE_OVERRIDE;
 		}
+	}
+	else
+	{
+		mode_ = Mode::MODE_OVERRIDE;
 	}
 }
 

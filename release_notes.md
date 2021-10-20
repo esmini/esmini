@@ -1,7 +1,71 @@
 ## esmini release notes
 
-<<<<<<< HEAD
-=======
+### 2021-10-18 Version 2.15.3
+
+- Extend screen capture functionality
+  - Support continuous screen capture (individual images though)
+  - Add continuous screen capture argument (see [docs/commands.txt](https://github.com/esmini/esmini/blob/master/docs/commands.txt))
+  - Add screen capture API to esminiLib
+- Support multiple option occurrences
+  - e.g. multiple paths can be set by adding several `--path <path to directory>`
+- Add support for custom camera positions (partly issue #173)
+  - New command line option `--custom_camera <x,y,z,h,p,r>`
+  - Multiple custom cameras supported, add any number of custom_camera arguments
+  - Make first custom camera default by argument `--camera_mode custom`
+  - Switch camera during simulation with key "k"
+- Parse vehicle Performance element
+  - so far applied only in the ACC controller
+- Improve and simplify ACC controller
+  - Respect vehicle max acceleration and deceleration Performance properties
+  - Simplistic long control based on relative distance and speed
+- Add ALKS controller
+  - initial dummy implementation inheriting the ACC controller
+  - longitudinal domain handled in the same way as the ACC controller
+  - lateral domain handled by the default controller (follow lane at current offset)
+- Extend use of path(s) for locating files
+  - Now both filename with and without any leading relative or absolute
+  path will be concatenated with the path entries and tested
+- Rework disable controllers strategy
+  - Only controllers activated explicitly by the scenario affected
+  - Implicit controllers used by e.g. TrafficSwarmAction not affected
+- Support OSC 1.1 AssignController activate attributes
+  - controllers can be activated when assigned
+- Fix missing euclidianDistance support in RelativeDistanceCondition
+- Bugfix: Add missing boolean support in setParameterValue()
+- Fix missing dummy boundingbox when model failed to load
+  - the bug was introduced in v2.14.0
+- Catch missing junction error and continue anyway (issue [#174](https://github.com/esmini/esmini/issues/174))
+
+### 2021-10-07 Version 2.15.2
+
+- Fix alternating lane offset issue in routes, e.g. AcquirePosition (PR #[167](https://github.com/esmini/esmini/pull/167))
+- Fix random way selector issue resulting in always same choice in intersections
+- Add missing bounding box 
+
+### 2021-10-05 Version 2.15.1
+
+- Add missing motorbike 3D model
+
+### 2021-10-04 Version 2.15.0
+
+- Add limited support for TrafficSwarmAction
+  - TrafficDefinition not supported yet
+  - Vehicle models picked randomly from specified catalogs
+  - Simplified driver model only based on ACC-Controller, not traffic rules
+  - Experimental implementation, expect bugs and shortcomings
+  - Example scenario [swarm.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/swarm.xosc)
+- Added option `--seed <number>` to specify random seed from a previous runs 
+  - seed is always printed to console/log file, so it can be grabbed from there
+  - seed reuse only per platform (e.g. Windows seed gives different result on Linux)
+  - see [docs/commands.txt](https://github.com/esmini/esmini/blob/master/docs/commands.txt) for all launch options
+- Support temporary objects in replayer
+  - Show only active objects at given time frame
+  - Show only active trajectories at given time frame
+- Fix some issues in entity freespace distance calculations
+- ACC adjustments slightly reducing intersection deadlocks
+- Fix crash due to unsupported OpenSCENARIO condition
+- Fix wheel rotations in esminiLib 
+
 ### 2021-09-30 Version 2.14.2
 
 - Fix some action failures in repeated events (maximumExecutionCount > 1)
@@ -20,7 +84,6 @@
 - Fix issue with controllers being aborted by conflicting actions
   - ActivateControllerAction itself does not assign any control strategy
   
->>>>>>> master
 ### 2021-09-23 Version 2.14.0
 
 - Add entity 3D model and bounding box scale options

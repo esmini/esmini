@@ -858,6 +858,30 @@ extern "C"
 	*/
 	SE_DLL_API void SE_SimpleVehicleGetState(void *handleSimpleVehicle, SE_SimpleVehicleState *state);
 
+	/**
+		Capture screen of next frame and save as jpeg file
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_CaptureNextFrame();
+
+	/**
+		Activate or deactivate continuous screen capture
+		@param state true=activate, false=deactivate
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_CaptureContinuously(bool state);
+
+	/**
+	Add a camera mode with custom position and orientation (heading and pitch)
+	@param x X coordinate relative vehicle curerntly in focus
+	@param y Y coordinate relative vehicle curerntly in focus
+	@param z Z coordinate relative vehicle curerntly in focus
+	@param h H Heading (yaw) relative vehicle curerntly in focus
+	@param p P Pitch relative vehicle curerntly in focus
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_AddCustomCamera(double x, double y, double z, double h, double p);
+
 #ifdef __cplusplus
 }
 #endif

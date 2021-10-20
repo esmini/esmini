@@ -13,7 +13,7 @@
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="190"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="120"/>
       <ParameterDeclaration name="TargetSpeed" parameterType="double" value="30"/>
       <ParameterDeclaration name="EgoS" parameterType="double" value="20"/>
       <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
@@ -240,7 +240,7 @@
             </StartTrigger>
             <StopTrigger>
                 <ConditionGroup>
-                   <Condition name="ActStopCondition" delay="7" conditionEdge="rising">
+                   <Condition name="ActStopCondition" delay="12" conditionEdge="rising">
                       <ByValueCondition>
                          <StoryboardElementStateCondition storyboardElementType="event"
                                                           storyboardElementRef="TargetBrake2Event"
