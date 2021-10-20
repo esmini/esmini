@@ -35,6 +35,7 @@ namespace scenarioengine
 		void Step(double timeStep);
 		void Activate(ControlDomains domainMask);
 		void ReportKeyEvent(int key, bool down);
+		void SetSetSpeed(double setSpeed) { setSpeed_ = setSpeed; }
 
 	private:
 		vehicle::Vehicle vehicle_;
