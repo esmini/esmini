@@ -355,7 +355,7 @@ int main(int argc, char *argv[])
 
 			if (DEMONSTRATE_THREAD)
 			{
-				if (i == (int)(0.5 * DURATION / TIME_STEP))
+				if (i == (int)(0.2 * DURATION / TIME_STEP))
 				{
 					// Halfway through, pause the simulation for a few seconds
 					// to demonstrate how camera can still move independently

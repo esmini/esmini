@@ -435,7 +435,18 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             args.parameters = 0;
             args.properties = 0;
 
+#if 0   // This is one way of setting the ACC setSpeed property
+            args.properties = new OSCProperties();
+            OSCProperties::Property property;
+            property.name_ = "setSpeed";
+            property.value_ = std::to_string(velocity_);
+            args.properties->property_.push_back(property);
+#endif
             Controller* acc = InstantiateControllerACC(&args);
+
+#if 1   // This is another way of setting the ACC setSpeed property
+            ((ControllerACC*)acc)->SetSetSpeed(velocity_);
+#endif
             reader_->AddController(acc);
 
             // Pick random model from vehicle catalog

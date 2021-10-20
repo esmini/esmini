@@ -81,8 +81,10 @@ namespace scenarioengine
 		ObjectStateStruct getStruct() { return state_; }
 
 		void Print();
+		void clearDirtyBits() { dirty_ = 0; }
 
 		ObjectStateStruct state_;
+		unsigned int dirty_;
 
 	private:
 
@@ -115,11 +117,18 @@ namespace scenarioengine
 			int scaleMode, double timestamp, double speed, double wheel_angle, double wheel_rot,
 			int roadId, double lateralOffset, double s);
 
-		void reportObjectSpeed(int id, double speed);
-		void reportObjectVel(int id, double x_vel, double y_vel, double z_vel);
-		void reportObjectAcc(int id, double x_acc, double y_acc, double z_acc);
-		void reportObjectAngularVel(int id, double h_rate, double p_rate, double r_rate);
-		void reportObjectAngularAcc(int id, double h_acc, double p_acc, double r_acc);
+		void updateObjectPos(int id, double timestamp, roadmanager::Position* pos);
+		void updateObjectRoadPos(int id, double timestamp, int roadId, double lateralOffset, double s);
+		void updateObjectLanePos(int id, double timestamp, int roadId, int laneId, double offset, double s);
+		void updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
+		void updateObjectWorldPosXYZH(int id, double timestamp, double x, double y, double z, double h);
+		void updateObjectSpeed(int id, double timestamp, double speed);
+		void updateObjectVel(int id, double timestamp, double x_vel, double y_vel, double z_vel);
+		void updateObjectAcc(int id, double timestamp, double x_acc, double y_acc, double z_acc);
+		void updateObjectAngularVel(int id, double timestamp, double h_rate, double p_rate, double r_rate);
+		void updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc);
+		void updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
+		void updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
 
 		void removeObject(int id);
 		void removeObject(std::string name);

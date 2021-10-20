@@ -1743,6 +1743,32 @@ TEST(OSILaneParing, Signs)
 	SE_Close();
 }
 
+void objectCallback(SE_ScenarioObjectState* state, void* my_data)
+{
+	SE_ReportObjectRoadPos(state->id, state->timestamp, state->roadId, 5, -2.3f, state->s, state->speed);
+}
+
+TEST(GatewayTest, TestReportToGatewayInCallback)
+{
+	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
+
+	EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+
+	int n_Objects = SE_GetNumberOfObjects();
+	EXPECT_EQ(n_Objects, 2);
+
+	SE_RegisterObjectCallback(0, objectCallback, 0);
+
+	SE_ScenarioObjectState state;
+	SE_GetObjectState(0, &state);
+	ASSERT_EQ(state.laneId, -3);
+
+	SE_StepDT(0.01f);
+	SE_GetObjectState(0, &state);
+	ASSERT_EQ(state.laneId, 5);
+	ASSERT_FLOAT_EQ(state.laneOffset, -2.3f);
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);

@@ -938,7 +938,7 @@ extern "C"
 		{
 			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
 			{
-				player->scenarioGateway->reportObjectVel(id, x_vel, y_vel, z_vel);
+				player->scenarioGateway->updateObjectVel(id, 0.0, x_vel, y_vel, z_vel);
 				// Also update accelerations directly in scenario object, in case we're in a callback
 				player->scenarioEngine->entities.object_[id]->SetVel(x_vel, y_vel, z_vel);
 			}
@@ -961,7 +961,7 @@ extern "C"
 		{
 			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
 			{
-				player->scenarioGateway->reportObjectAngularVel(id, h_rate, p_rate, r_rate);
+				player->scenarioGateway->updateObjectAngularVel(id, 0.0, h_rate, p_rate, r_rate);
 				// Also update accelerations directly in scenario object, in case we're in a callback
 				player->scenarioEngine->entities.object_[id]->SetAngularVel(h_rate, p_rate, r_rate);
 			}
@@ -984,7 +984,7 @@ extern "C"
 		{
 			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
 			{
-				player->scenarioGateway->reportObjectAcc(id, x_acc, y_acc, z_acc);
+				player->scenarioGateway->updateObjectAcc(id, 0.0, x_acc, y_acc, z_acc);
 				// Also update accelerations directly in scenario object, in case we're in a callback
 				player->scenarioEngine->entities.object_[id]->SetAcc(x_acc, y_acc, z_acc);
 			}
@@ -1007,7 +1007,7 @@ extern "C"
 		{
 			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
 			{
-				player->scenarioGateway->reportObjectAngularAcc(id, h_acc, p_acc, r_acc);
+				player->scenarioGateway->updateObjectAngularAcc(id, 0.0, h_acc, p_acc, r_acc);
 				// Also update accelerations directly in scenario object, in case we're in a callback
 				player->scenarioEngine->entities.object_[id]->SetAngularAcc(h_acc, p_acc, r_acc);
 			}

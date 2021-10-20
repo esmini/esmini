@@ -92,6 +92,28 @@ void  Object::SetStandStill(bool state, double time)
 	}
 }
 
+int Object::MoveAlongS(double ds)
+{
+	int retval = 0;
+
+	if (pos_.GetRoute())
+	{
+		retval = static_cast<int>(pos_.MoveRouteDS(ds));
+	}
+	else
+	{
+		// Adjustment movement to heading and road direction
+		if (GetAbsAngleDifference(pos_.GetH(), pos_.GetDrivingDirection()) > M_PI_2)
+		{
+			// If pointing in other direction
+			ds *= -1;
+		}
+		retval = static_cast<int>(pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle()));
+	}
+
+	return retval;
+}
+
 int Object::GetAssignedControllerType()
 {
 	if (controller_)

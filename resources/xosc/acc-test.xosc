@@ -42,15 +42,17 @@
             <Controller name="ACCController">
                 <Properties>
                     <Property name="timeGap" value="1.0" />
+                    <Property name="mode" value="override" />
+                    <Property name="setSpeed" value="${$EgoSpeed / 3.6}" />
                 </Properties>
             </Controller>            
          </ObjectController>         
       </ScenarioObject>
       <ScenarioObject name="Target">
          <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
-        <!-- <ObjectController> -->
+         <!-- <ObjectController> -->
             <!-- <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" /> -->
-        <!-- </ObjectController>          -->
+         <!-- </ObjectController> -->
       </ScenarioObject>
    </Entities>
    <Storyboard>
@@ -65,9 +67,6 @@
                   </TeleportAction>
                </PrivateAction>
                <PrivateAction>
-                    <ActivateControllerAction longitudinal="true" lateral="false" />
-               </PrivateAction>
-               <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
@@ -76,6 +75,9 @@
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="false" />
                </PrivateAction>
             </Private>
             <Private entityRef="Target">
@@ -222,6 +224,59 @@
                            <Condition name="Brake2Condition" delay="0" conditionEdge="rising">
                              <ByValueCondition>
                                 <SimulationTimeCondition value="$Brake2Time" rule="greaterThan"/>
+                             </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="EgoSpeedChange">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="EgoSpeedManeuver">
+                  <Event name="EgoSpeedEvent" priority="overwrite">
+                     <Action name="EgoSpeedAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="1"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="EgoSpeedCondition" delay="0" conditionEdge="rising">
+                             <ByValueCondition>
+                                <SimulationTimeCondition value="2" rule="greaterThan"/>
+                             </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="EgoSpeedEvent" priority="overwrite">
+                     <Action name="EgoSpeedAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${0.25 * $EgoSpeed / 3.6}"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="EgoSpeedCondition" delay="0" conditionEdge="rising">
+                             <ByValueCondition>
+                                <SimulationTimeCondition value="10" rule="greaterThan"/>
                              </ByValueCondition>
                            </Condition>
                         </ConditionGroup>

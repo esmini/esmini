@@ -163,10 +163,27 @@ int ScenarioEngine::step(double deltaSimTime)
 			}
 			else
 			{
-				obj->pos_ = o.state_.pos;
-				obj->speed_ = o.state_.info.speed;
-				obj->wheel_angle_ = o.state_.info.wheel_angle;
-				obj->wheel_rot_ = o.state_.info.wheel_rot;
+				if (o.dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LATERAL))
+				{
+					obj->pos_ = o.state_.pos;
+					obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LATERAL);
+				}
+				if (o.dirty_ & Object::DirtyBit::SPEED)
+				{
+					obj->speed_ = o.state_.info.speed;
+					obj->SetDirtyBits(Object::DirtyBit::SPEED);
+				}
+				if (o.dirty_ & Object::DirtyBit::WHEEL_ANGLE)
+				{
+					obj->wheel_angle_ = o.state_.info.wheel_angle;
+					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
+				}
+				if (o.dirty_ & Object::DirtyBit::WHEEL_ROTATION)
+				{
+					obj->wheel_rot_ = o.state_.info.wheel_rot;
+					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+				}
+				o.clearDirtyBits();
 
 				if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
 				{
@@ -627,47 +644,37 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE ||
 			!obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
 		{
-			if (obj->pos_.GetRoute())
-			{
-				retval = static_cast<int>(obj->pos_.MoveRouteDS(steplen));
-			}
-			else
-			{
-				// Adjustment movement to heading and road direction
-				if (GetAbsAngleDifference(obj->pos_.GetH(), obj->pos_.GetDrivingDirection()) > M_PI_2)
-				{
-					// If pointing in other direction
-					steplen *= -1;
-				}
-				retval = static_cast<int>(obj->pos_.MoveAlongS(steplen, 0.0, obj->GetJunctionSelectorAngle()));
-
-				if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
-					obj->pos_.IsInJunction() && obj->GetJunctionSelectorAngle() >= 0)
-				{
-					// Set junction selector angle as undefined during junction
-					obj->SetJunctionSelectorAngle(std::nan(""));
-				}
-				else if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
-					!obj->pos_.IsInJunction() && std::isnan(obj->GetJunctionSelectorAngle()))
-				{
-					// Set new random junction selector after coming out of junction
-					obj->SetJunctionSelectorAngleRandom();
-				}
-			}
-
-			if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD) ||
-				obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
-			{
-				if (!obj->IsEndOfRoad())
-				{
-					obj->SetEndOfRoad(true, simulationTime_);
-				}
-			}
-			else
-			{
-				obj->SetEndOfRoad(false);
-			}
+			obj->MoveAlongS(steplen);
 		}
+	}
+
+	if (!obj->pos_.GetRoute())
+	{
+		if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
+			obj->pos_.IsInJunction() && obj->GetJunctionSelectorAngle() >= 0)
+		{
+			// Set junction selector angle as undefined during junction
+			obj->SetJunctionSelectorAngle(std::nan(""));
+		}
+		else if (obj->GetJunctionSelectorStrategy() == roadmanager::Junction::JunctionStrategyType::RANDOM &&
+			!obj->pos_.IsInJunction() && std::isnan(obj->GetJunctionSelectorAngle()))
+		{
+			// Set new random junction selector after coming out of junction
+			obj->SetJunctionSelectorAngleRandom();
+		}
+	}
+
+	if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD) ||
+		obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
+	{
+		if (!obj->IsEndOfRoad())
+		{
+			obj->SetEndOfRoad(true, simulationTime_);
+		}
+	}
+	else
+	{
+		obj->SetEndOfRoad(false);
 	}
 
 	if (retval == 0)
@@ -695,10 +702,27 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 		}
 		else
 		{
-			obj->pos_ = o.state_.pos;
-			obj->speed_ = o.state_.info.speed;
-			obj->wheel_angle_ = o.state_.info.wheel_angle;
-			obj->wheel_rot_ = o.state_.info.wheel_rot;
+			if (o.dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LATERAL))
+			{
+				obj->pos_ = o.state_.pos;
+				obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LATERAL);
+			}
+			if (o.dirty_ & Object::DirtyBit::SPEED)
+			{
+				obj->speed_ = o.state_.info.speed;
+				obj->SetDirtyBits(Object::DirtyBit::SPEED);
+			}
+			if (o.dirty_ & Object::DirtyBit::WHEEL_ANGLE)
+			{
+				obj->wheel_angle_ = o.state_.info.wheel_angle;
+				obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
+			}
+			if (o.dirty_ & Object::DirtyBit::WHEEL_ROTATION)
+			{
+				obj->wheel_rot_ = o.state_.info.wheel_rot;
+				obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+			}
+			o.clearDirtyBits();
 		}
 		// Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;

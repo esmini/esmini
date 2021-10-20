@@ -154,6 +154,7 @@ namespace scenarioengine
 		double GetOffRoadTimestamp() { return off_road_timestamp_; }
 		void SetStandStill(bool state, double time = 0.0);
 		bool IsStandStill() { return stand_still_timestamp_ > SMALL_NUMBER; }
+		int MoveAlongS(double ds);
 
 		/**
 		    Returns the timestamp from which the entity has not moved.
