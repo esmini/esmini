@@ -29,8 +29,7 @@ UDPServer::UDPServer(unsigned short int port) : port_(port), timeoutMs_(500)
 	}
 #endif
 
-	sock_ = (int)socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sock_ < 0)
+	if ((sock_ = (int)socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
 	{
 		printf("socket failed\n");
 		return;
@@ -41,9 +40,9 @@ UDPServer::UDPServer(unsigned short int port) : port_(port), timeoutMs_(500)
 	tv.tv_usec = timeoutMs_;
 #ifdef _WIN32
 	int timeout_msec = 1000 * tv.tv_sec + tv.tv_usec;
-	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_msec, sizeof(timeout_msec)) == 0)
+	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_msec, sizeof(timeout_msec)) != 0)
 #else
-	if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&tv, sizeof(tv)) == 0)
+	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&tv, sizeof(tv)) == 0)
 #endif
 	{
 		printf("socket SO_RCVTIMEO (receive timeout) not supported on this platform\n");
@@ -66,7 +65,7 @@ void UDPServer::CloseGracefully()
 #ifdef _WIN32
 	if (closesocket(sock_) == SOCKET_ERROR)
 #else
-	if (close(socket) < 0)
+	if (close(sock_) < 0)
 #endif
 	{
 		printf("Failed closing socket");

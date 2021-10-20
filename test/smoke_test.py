@@ -8,7 +8,7 @@ COMMON_ARGS = '--headless --fixed_timestep 0.01 --record sim.dat '
 
 
 class TestSuite(unittest.TestCase):
-    '''
+
     def test_cut_in(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ARGS)
         
@@ -222,7 +222,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^4.00.*, 0, Ego, 35.88.*, -0.83.*, 0.00.*, 0.10.*, 0.00.*, 0.00.*, 7.97.*', csv, re.MULTILINE))
         self.assertTrue(re.search('^4.03.*, 0, Ego, 36.13.*, -0.82.*, 0.00.*, 6.27.*, 0.00.*, 0.00.*, 8.05.*', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.13.*, 0, Ego, 46.74.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 11.31.*', csv, re.MULTILINE))
-    '''
+
     def test_swarm(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ARGS + '--seed 5')
         
@@ -248,10 +248,10 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^40.00.*, 66, swarm66, 45.240, 822.574, -1.085, 1.433, 6.280, 0.000, 31.504', csv, re.MULTILINE))
             self.assertTrue(re.search('^40.00.*, 88, swarm88, 22.771, 776.148, -1.138, 4.585, 6.282, 0.000, 30.000', csv, re.MULTILINE))
         elif platform == "linux" or platform == "linux2":
-            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.20.*, 576.85.*, -0.83.*, 1.49.*, 6.28.*, 0.00.*, 30.00.*', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 5, swarm5, 31.225, 680.043, -0.901, 1.463, 0.002, 0.000, 10.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 69, swarm69, 45.740, 771.296, -1.136, 1.443, 0.001, 0.000, 30.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 85, swarm85, 5.000, 571.267, -0.837, 4.635, 0.000, 0.000, 30.000, 0.001, 2.331', csv, re.MULTILINE))
+            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.194, 576.785, -0.834, 1.491, 6.283, 0.000, 30.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 5, swarm5, 31.231, 680.099, -0.901, 1.463, 0.002, 0.000, 10.019', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 55, swarm55, 52.069, 869.873, -0.758, 1.422, 6.272, 0.000, 30.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 93, swarm93, 25.484, 796.907, -1.143, 4.580, 0.001, 0.000, 31.875', csv, re.MULTILINE))
 
 
 if __name__ == "__main__":
