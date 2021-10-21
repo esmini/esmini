@@ -13,24 +13,24 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading cut-in.xosc', log))
+        self.assertTrue(re.search('.*Loading cut-in.xosc', log)  is not None)
         
         # Check some scenario events
-        self.assertTrue(re.search('0.010.* CutInActStart == true, 0.0100 > 0.00 edge: none', log))
-        self.assertTrue(re.search('\n[789].* BrakeCondition == true, HWT: 0.70 > 0.70, edge rising', log))
-        self.assertTrue(re.search('\n21.[678].* ActStopCondition timer expired at 5.00 seconds', log))
+        self.assertTrue(re.search('0.010.* CutInActStart == true, 0.0100 > 0.00 edge: none', log)  is not None)
+        self.assertTrue(re.search('\n[789].* BrakeCondition == true, HWT: 0.70 > 0.70, edge rising', log)  is not None)
+        self.assertTrue(re.search('\n21.[678].* ActStopCondition timer expired at 5.00 seconds', log)  is not None)
 
     def test_ltap_od(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/ltap-od.xosc'), COMMON_ARGS \
             + '--disable_controllers')
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading ltap-od.xosc', log))
-        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 1 roadId 15 laneId -1', log))
+        self.assertTrue(re.search('.*Loading ltap-od.xosc', log)  is not None)
+        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 1 roadId 15 laneId -1', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n5.5.*Synchronize dist \(0.95\) < tolerance \(1.00\)', log))
-        self.assertTrue(re.search('\n9.5.* QuitCondition timer expired at 4.0. seconds', log))
+        self.assertTrue(re.search('\n5.5.*Synchronize dist \(0.95\) < tolerance \(1.00\)', log)  is not None)
+        self.assertTrue(re.search('\n9.5.* QuitCondition timer expired at 4.0. seconds', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -42,11 +42,11 @@ class TestSuite(unittest.TestCase):
             + '--disable_controllers')
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading trajectory-test.xosc', log))
+        self.assertTrue(re.search('.*Loading trajectory-test.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n8.0.*FollowTrajectoryClothoidTrigger == true, element: FollowTrajectoryPLineEvent state: END_TRANSITION', log))
-        self.assertTrue(re.search('\n24.22.* FollowTrajectoryNurbsAction runningState -> endTransition -> completeState', log))
+        self.assertTrue(re.search('\n8.0.*FollowTrajectoryClothoidTrigger == true, element: FollowTrajectoryPLineEvent state: END_TRANSITION', log)  is not None)
+        self.assertTrue(re.search('\n24.22.* FollowTrajectoryNurbsAction runningState -> endTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -64,14 +64,14 @@ class TestSuite(unittest.TestCase):
             + '--disable_controllers')
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading synchronize.xosc', log))
+        self.assertTrue(re.search('.*Loading synchronize.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n9.9.* Synchronize dist \(0.92\) < tolerance \(1.00\)', log))
-        self.assertTrue(re.search('\n9.9.* Synchronize_NPC_Event complete after 1 execution', log))
-        self.assertTrue(re.search('\n19.75.* Free_Speed_Condition_NPC == true, distance 4.81 < tolerance \(5.00\), edge: rising', log))
-        self.assertTrue(re.search('\n19.75.* Triggering entity 0: Ego', log))
-        self.assertTrue(re.search('\n28.4.* All acts are done, quit now', log))
+        self.assertTrue(re.search('\n9.9.* Synchronize dist \(0.92\) < tolerance \(1.00\)', log)  is not None)
+        self.assertTrue(re.search('\n9.9.* Synchronize_NPC_Event complete after 1 execution', log)  is not None)
+        self.assertTrue(re.search('\n19.75.* Free_Speed_Condition_NPC == true, distance 4.81 < tolerance \(5.00\), edge: rising', log)  is not None)
+        self.assertTrue(re.search('\n19.75.* Triggering entity 0: Ego', log)  is not None)
+        self.assertTrue(re.search('\n28.4.* All acts are done, quit now', log)  is not None)
         
         # Check vehicle key positions
         csv = generate_csv()
@@ -94,13 +94,13 @@ class TestSuite(unittest.TestCase):
             + '--disable_controllers')
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading left-hand-traffic_by_heading.xosc', log))
+        self.assertTrue(re.search('.*Loading left-hand-traffic_by_heading.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n3.76.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log))
-        self.assertTrue(re.search('\n5.76.* Lane change complete after 1 execution', log))
-        self.assertTrue(re.search('\n9.78.* QuitCondition timer expired at 4.01 seconds', log))
-        self.assertTrue(re.search('\n9.78.* All acts are done, quit now', log))
+        self.assertTrue(re.search('\n3.76.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('\n5.76.* Lane change complete after 1 execution', log)  is not None)
+        self.assertTrue(re.search('\n9.78.* QuitCondition timer expired at 4.01 seconds', log)  is not None)
+        self.assertTrue(re.search('\n9.78.* All acts are done, quit now', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -117,13 +117,13 @@ class TestSuite(unittest.TestCase):
             + '--disable_controllers')
 
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading left-hand-traffic_using_road_rule.xosc', log))
+        self.assertTrue(re.search('.*Loading left-hand-traffic_using_road_rule.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n3.76.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log))
-        self.assertTrue(re.search('\n5.76.* Lane change complete after 1 execution', log))
-        self.assertTrue(re.search('\n9.78.* QuitCondition timer expired at 4.01 seconds', log))
-        self.assertTrue(re.search('\n9.78.* All acts are done, quit now', log))
+        self.assertTrue(re.search('\n3.76.* Lane change == true, rel_dist: 10.02 > 10.00, edge: rising', log)  is not None)
+        self.assertTrue(re.search('\n5.76.* Lane change complete after 1 execution', log)  is not None)
+        self.assertTrue(re.search('\n9.78.* QuitCondition timer expired at 4.01 seconds', log)  is not None)
+        self.assertTrue(re.search('\n9.78.* All acts are done, quit now', log)  is not None)
         
         # Check vehicle key positions
         csv = generate_csv()
@@ -139,18 +139,18 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/routing-test.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading routing-test.xosc', log))
-        self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 6: 261, 1, 50.00', log))
-        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 7 roadId 260 laneId -1', log))
-        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 11 roadId 220 laneId -1', log))
-        self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 12: 222, -1, 20.00', log))
-        self.assertTrue(re.search('\n25.51.* Route::AddWaypoint Added intermediate waypoint 3 roadId 280 laneId -1', log))
+        self.assertTrue(re.search('.*Loading routing-test.xosc', log)  is not None)
+        self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 6: 261, 1, 50.00', log)  is not None)
+        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 7 roadId 260 laneId -1', log)  is not None)
+        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 11 roadId 220 laneId -1', log)  is not None)
+        self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 12: 222, -1, 20.00', log)  is not None)
+        self.assertTrue(re.search('\n25.51.* Route::AddWaypoint Added intermediate waypoint 3 roadId 280 laneId -1', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n25.51.* AquirePosition condition == true, distance 1.9. < tolerance \(2.00\), edge: rising', log))
-        self.assertTrue(re.search('\n25.51.: AquirePosition event complete after 1 execution', log))
-        self.assertTrue(re.search('\n38.91.* Stop condition == true, distance 1.7. < tolerance \(2.00\), edge: rising', log))
-        self.assertTrue(re.search('\n46.28.* QuitCondition timer expired at 4.0. seconds', log))
+        self.assertTrue(re.search('\n25.51.* AquirePosition condition == true, distance 1.9. < tolerance \(2.00\), edge: rising', log)  is not None)
+        self.assertTrue(re.search('\n25.51.: AquirePosition event complete after 1 execution', log)  is not None)
+        self.assertTrue(re.search('\n38.91.* Stop condition == true, distance 1.7. < tolerance \(2.00\), edge: rising', log)  is not None)
+        self.assertTrue(re.search('\n46.28.* QuitCondition timer expired at 4.0. seconds', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -164,7 +164,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/acc-test.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading acc-test.xosc', log))
+        self.assertTrue(re.search('.*Loading acc-test.xosc', log)  is not None)
         self.assertTrue(re.search('.*Ego New position:.*$\n^.*Pos\(20.00, -1.53, 0.00\) Rot\(0.00, 0.00, 0.00\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
         self.assertTrue(re.search('.*Target New position:.*$\n^.*Pos\(100.00, -1.53, 0.00\) Rot\(0.00, 0.00, 0.00\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
 
@@ -197,7 +197,7 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ARGS)
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading conflicting-domains.xosc', log))
+        self.assertTrue(re.search('.*Loading conflicting-domains.xosc', log)  is not None)
         self.assertTrue(re.search('^0.00.*Ego New position:.*$\n^.*Pos\(20.00, -1.53, 0.00\) Rot\(0.00, 0.00, 0.00\) roadId 0 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
         self.assertTrue(re.search('^0.00.*Init Ego TeleportAction standbyState -> startTransition -> runningState', log, re.MULTILINE))
         self.assertTrue(re.search('^0.00.*Init Ego LongitudinalAction standbyState -> startTransition -> runningState', log, re.MULTILINE))
@@ -227,8 +227,8 @@ class TestSuite(unittest.TestCase):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ARGS + '--seed 5')
         
         # Check some initialization steps
-        self.assertTrue(re.search('.*Loading swarm.xosc', log))
-        self.assertTrue(re.search('Using specified seed 5', log))
+        self.assertTrue(re.search('.*Loading swarm.xosc', log)  is not None)
+        self.assertTrue(re.search('Using specified seed 5', log)  is not None)
         self.assertTrue(re.search('^0.00.*Ego New position:.*$\n^.*Pos\(10.20, 299.87, -0.53\) Rot\(1.56, 0.00, 0.00\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
         self.assertTrue(re.search('^0.00.*Init Ego TeleportAction standbyState -> startTransition -> runningState', log, re.MULTILINE))
         self.assertTrue(re.search('^0.00.*Init Ego LongitudinalAction standbyState -> endTransition -> completeState', log, re.MULTILINE))
