@@ -7283,6 +7283,122 @@ double Position::GetDrivingDirection() const
 	return(h);
 }
 
+double Position::GetVelLat()
+{
+	double vx = GetVelX();
+	double vy = GetVelY();
+	double vlat = 0.0;
+	double vlong = 0.0;
+	RotateVec2D(vx, vy, -GetH(), vlong, vlat);
+
+	return vlat;
+}
+
+double Position::GetVelLong()
+{
+	double vx = GetVelX();
+	double vy = GetVelY();
+	double vlat = 0.0;
+	double vlong = 0.0;
+	RotateVec2D(vx, vy, -GetH(), vlong, vlat);
+
+	return vlong;
+}
+
+void Position::GetVelLatLong(double &vlat, double &vlong)
+{
+	double vx = GetVelX();
+	double vy = GetVelY();
+	RotateVec2D(vx, vy, -GetH(), vlong, vlat);
+}
+
+double Position::GetAccLat()
+{
+	double ax = GetAccX();
+	double ay = GetAccY();
+	double alat = 0.0;
+	double along = 0.0;
+	RotateVec2D(ax, ay, -GetH(), along, alat);
+
+	return alat;
+}
+
+double Position::GetAccLong()
+{
+	double ax = GetAccX();
+	double ay = GetAccY();
+	double alat = 0.0;
+	double along = 0.0;
+	RotateVec2D(ax, ay, -GetH(), along, alat);
+
+	return along;
+}
+
+void Position::GetAccLatLong(double& alat, double& along)
+{
+	double ax = GetVelX();
+	double ay = GetVelY();
+	RotateVec2D(ax, ay, -GetH(), along, alat);
+}
+
+double Position::GetVelT()
+{
+	double vx = GetVelX();
+	double vy = GetVelY();
+	double vt = 0.0;
+	double vs = 0.0;
+	RotateVec2D(vx, vy, -GetHRoad(), vs, vt);
+
+	return vt;
+}
+
+double Position::GetVelS()
+{
+	double vx = GetVelX();
+	double vy = GetVelY();
+	double vt = 0.0;
+	double vs = 0.0;
+	RotateVec2D(vx, vy, -GetHRoad(), vs, vt);
+
+	return vs;
+}
+
+void Position::GetVelTS(double& vt, double& vs)
+{
+	double vx = GetVelX();
+	double vy = GetVelY();
+	RotateVec2D(vx, vy, -GetHRoad(), vs, vt);
+}
+
+double Position::GetAccT()
+{
+	double ax = GetAccX();
+	double ay = GetAccY();
+	double at = 0.0;
+	double as = 0.0;
+	RotateVec2D(ax, ay, -GetHRoad(), as, at);
+
+	return at;
+}
+
+double Position::GetAccS()
+{
+	double ax = GetAccX();
+	double ay = GetAccY();
+	double at = 0.0;
+	double as = 0.0;
+	RotateVec2D(ax, ay, -GetHRoad(), as, at);
+
+	return as;
+}
+
+void Position::GetAccTS(double& at, double& as)
+{
+	double ax = GetAccX();
+	double ay = GetAccY();
+	RotateVec2D(ax, ay, -GetHRoad(), as, at);
+}
+
 void Position::CopyRMPos(Position *from)
 {
 	// Preserve route field
