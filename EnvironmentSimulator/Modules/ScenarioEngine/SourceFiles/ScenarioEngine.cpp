@@ -573,32 +573,35 @@ void ScenarioEngine::parseScenario()
 	storyBoard.entities_ = &entities;
 
 	// Finally, now when all entities have been loaded, initialize the controllers
-	for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
+	if (!disable_controllers_)
 	{
-		scenarioReader->controller_[i]->Init();
-		if (scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_REL2ABS)
+		for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
 		{
-			((ControllerRel2Abs*)(scenarioReader->controller_[i]))->SetScenarioEngine(this);
-		}
-	}
-
-	// find out maximum headstart time for ghosts
-	for (size_t i = 0; i < entities.object_.size(); i++)
-	{
-		Object* obj = entities.object_[i];
-
-		if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST ||
-			(obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL &&
-				((ControllerExternal*)(obj->controller_))->UseGhost()))
-		{
-			SetupGhost(obj);
-
-			if (obj->ghost_)
+			scenarioReader->controller_[i]->Init();
+			if (scenarioReader->controller_[i]->GetType() == Controller::Type::CONTROLLER_TYPE_REL2ABS)
 			{
-				if (obj->ghost_->GetHeadstartTime() > GetHeadstartTime())
+				((ControllerRel2Abs*)(scenarioReader->controller_[i]))->SetScenarioEngine(this);
+			}
+		}
+
+		// find out maximum headstart time for ghosts
+		for (size_t i = 0; i < entities.object_.size(); i++)
+		{
+			Object* obj = entities.object_[i];
+
+			if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST ||
+				(obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL &&
+					((ControllerExternal*)(obj->controller_))->UseGhost()))
+			{
+				SetupGhost(obj);
+
+				if (obj->ghost_)
 				{
-					SetHeadstartTime(obj->ghost_->GetHeadstartTime());
-					SetSimulationTime(-obj->ghost_->GetHeadstartTime());
+					if (obj->ghost_->GetHeadstartTime() > GetHeadstartTime())
+					{
+						SetHeadstartTime(obj->ghost_->GetHeadstartTime());
+						SetSimulationTime(-obj->ghost_->GetHeadstartTime());
+					}
 				}
 			}
 		}
