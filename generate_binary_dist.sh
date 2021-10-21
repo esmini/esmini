@@ -32,6 +32,7 @@ resources/xosc/routing-test.xosc \
 resources/xosc/drop-bike.xosc \
 resources/xosc/sumo-test.xosc \
 resources/xosc/acc-test.xosc \
+resources/xosc/alks-test.xosc \
 resources/xosc/swarm.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \

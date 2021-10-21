@@ -50,6 +50,7 @@ copy resources\xosc\routing-test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\drop-bike.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\sumo-test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\acc-test.xosc %target_dir%\resources\xosc /y
+copy resources\xosc\alks-test.xosc %target_dir%\resources\xosc /y
 copy resources\xosc\swarm.xosc %target_dir%\resources\xosc /y
 
 copy resources\xosc\Catalogs\Maneuvers\*.* %target_dir%\resources\xosc\Catalogs\Maneuvers /y
