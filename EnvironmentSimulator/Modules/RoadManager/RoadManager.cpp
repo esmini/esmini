@@ -7092,6 +7092,15 @@ int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
 
 	EvaluateOrientation();
 
+	if (align_z_ == ALIGN_MODE::ALIGN_SOFT)
+	{
+		SetZRelative(z_relative_);
+	}
+	else if (align_z_ == ALIGN_MODE::ALIGN_HARD)
+	{
+		SetZ(z_road_);
+	}
+
 	return 0;
 }
 

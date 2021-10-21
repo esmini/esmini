@@ -40,6 +40,8 @@ namespace scenarioengine
 		state = SERV_NOT_STARTED;
 		UDPServer *udpServer = new UDPServer(ESMINI_DEFAULT_INPORT);
 
+		LOG("Server listening on port %d", ESMINI_DEFAULT_INPORT);
+
 		state = SERV_RUNNING;
 		double x_old = 0.0;
 		double y_old = 0.0;

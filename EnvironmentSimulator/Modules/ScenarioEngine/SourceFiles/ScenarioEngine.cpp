@@ -145,7 +145,7 @@ int ScenarioEngine::step(double deltaSimTime)
 		for (size_t i = 0; i < entities.object_.size(); i++)
 		{
 			Object* obj = entities.object_[i];
-			ObjectState o;
+			ObjectState *o;
 
 			obj->ClearDirtyBits(
 				Object::DirtyBit::LATERAL |
@@ -157,33 +157,33 @@ int ScenarioEngine::step(double deltaSimTime)
 			obj->reset_ = false;
 
 			// Fetch states from gateway, in case external reports
-			if (scenarioGateway.getObjectStateById(obj->id_, o) != 0)
+			if ((o = scenarioGateway.getObjectStatePtrById(obj->id_)) == nullptr)
 			{
 				LOG("Gateway did not provide state for external car %d", obj->id_);
 			}
 			else
 			{
-				if (o.dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LATERAL))
+				if ( o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LATERAL))
 				{
-					obj->pos_ = o.state_.pos;
+					obj->pos_ =  o->state_.pos;
 					obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LATERAL);
 				}
-				if (o.dirty_ & Object::DirtyBit::SPEED)
+				if ( o->dirty_ & Object::DirtyBit::SPEED)
 				{
-					obj->speed_ = o.state_.info.speed;
+					obj->speed_ =  o->state_.info.speed;
 					obj->SetDirtyBits(Object::DirtyBit::SPEED);
 				}
-				if (o.dirty_ & Object::DirtyBit::WHEEL_ANGLE)
+				if ( o->dirty_ & Object::DirtyBit::WHEEL_ANGLE)
 				{
-					obj->wheel_angle_ = o.state_.info.wheel_angle;
+					obj->wheel_angle_ =  o->state_.info.wheel_angle;
 					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
 				}
-				if (o.dirty_ & Object::DirtyBit::WHEEL_ROTATION)
+				if ( o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
 				{
-					obj->wheel_rot_ = o.state_.info.wheel_rot;
+					obj->wheel_rot_ =  o->state_.info.wheel_rot;
 					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
 				}
-				o.clearDirtyBits();
+				 o->clearDirtyBits();
 
 				if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
 				{
@@ -444,9 +444,13 @@ int ScenarioEngine::step(double deltaSimTime)
 			defaultController(obj, deltaSimTime);
 		}
 
-		// Report state to the gateway
-		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_, obj->model_id_,
-			obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+		// Report updated state to the gateway
+		if (scenarioGateway.updateObjectPos(obj->id_, simulationTime_, &obj->pos_) != 0)
+		{
+			// Object not reported yet, do that
+			scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_, obj->model_id_,
+				obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+		}
 	}
 
 	for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
@@ -760,10 +764,21 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 			{
 				// An improvised calculation of a steering angle based on yaw rate and enitity speed
 				obj->wheel_angle_ = SIGN(obj->GetSpeed()) * M_PI * heading_rate_new / MAX(fabs(obj->GetSpeed()), SMALL_NUMBER);
+				obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
 			}
+			else
+			{
+				obj->ClearDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
+			}
+
 			if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
 			{
 				obj->wheel_rot_ = fmod(obj->wheel_rot_ + obj->speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
+				obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+			}
+			else
+			{
+				obj->ClearDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
 			}
 
 		}
@@ -778,8 +793,18 @@ void ScenarioEngine::prepareOSIGroundTruth(double dt)
 		}
 
 		// Report updated pos values to the gateway
-		scenarioGateway.reportObject(obj->id_, obj->name_, static_cast<int>(obj->type_), obj->category_, obj->model_id_,
-			obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), simulationTime_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
+		scenarioGateway.updateObjectPos(obj->id_, simulationTime_, &obj->pos_);
+
+		if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
+		{
+			scenarioGateway.updateObjectWheelAngle(obj->id_, simulationTime_, obj->wheel_angle_);
+		}
+
+		if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
+		{
+			scenarioGateway.updateObjectWheelRotation(obj->id_, simulationTime_, obj->wheel_rot_);
+		}
+
 
 		// store current values for next loop
 		obj->state_old.pos_x = obj->pos_.GetX();
@@ -869,7 +894,7 @@ void ScenarioEngine::SetupGhost(Object* object)
 		if (action->object_ == object)
 		{
 			// Copy all actions except ActivateController
-			if (action->type_ != OSCPrivateAction::ACTIVATE_CONTROLLER)
+			if (action->type_ != OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
 			{
 				OSCPrivateAction* newAction = action->Copy();
 				action->name_ += "_ghost-copy";

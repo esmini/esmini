@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This scenario contains two vehicles on a large open space.         -->
+<!-- They both have UDPDriverModel controllers attached. The purpose is -->
+<!-- to show how and that the controller works with multiple entities.  -->
+<!-- See scripts/udp-driver-model/testUDPDriverModel.py how to run.     -->
+
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2021-10-22T10:00:00"
+               description="Two cars controlled by UDPDriverModel"
+               author="esmini-team"/>
+   <ParameterDeclarations />
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>      
+   </CatalogLocations>
+   <RoadNetwork>
+      <SceneGraphFile filepath="../../resources/models/parking_lot.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Car0">
+          <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+          <ObjectController>
+              <CatalogReference catalogName="ControllerCatalog" entryName="UDPDriverModelController">
+                 <ParameterAssignments>
+                     <ParameterAssignment parameterRef="InputMode" value="vehicleStateXYZHPR" />
+                     <ParameterAssignment parameterRef="Port" value="0" />
+                 </ParameterAssignments>
+              </CatalogReference>
+          </ObjectController>
+      </ScenarioObject>
+      <ScenarioObject name="Car1">
+          <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+          <ObjectController>
+              <CatalogReference catalogName="ControllerCatalog" entryName="UDPDriverModelController" >
+                 <ParameterAssignments>
+                     <ParameterAssignment parameterRef="InputMode" value="vehicleStateXYZHPR" />
+                     <ParameterAssignment parameterRef="Port" value="0" />
+                 </ParameterAssignments>
+              </CatalogReference>
+          </ObjectController>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Car0">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="1.8" y="-358" z="0" h="1.57" p="0" r="0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                   <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Car1">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="10.8" y="-358" z="0" h="1.57" p="0" r="0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                   <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+	  <Story>
+         <Act name="DummyAct">
+         </Act>	  
+      </Story>
+   </Storyboard>
+</OpenSCENARIO>

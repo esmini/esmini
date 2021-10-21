@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <string>
+
  // UDP network includes
 #ifdef _WIN32
 #include <winsock2.h>
@@ -24,21 +26,46 @@
 #include <unistd.h> /* Needed for close() */
 #endif
 
+#define ESMINI_DEFAULT_INPORT 48199
 
-class UDPServer
+class UDPBase
 {
 public:
-	UDPServer(unsigned short int port);
-	~UDPServer() { CloseGracefully(); }
-	int Receive(char* buf, unsigned int size);
+	UDPBase(unsigned short int port);
+	~UDPBase() { CloseGracefully(); }
+	int Bind(struct sockaddr_in &addr);
+	void CloseGracefully();
 
-private:
+protected:
 	unsigned short int port_;
-	unsigned int timeoutMs_;
 	int sock_;
 	struct sockaddr_in server_addr_;
 	struct sockaddr_in sender_addr_;
 	socklen_t sender_addr_size_;
+};
 
-	void CloseGracefully();
+class UDPServer : private UDPBase
+{
+public:
+	UDPServer(unsigned short int port, unsigned int timeoutMs = 500);
+	~UDPServer() {}
+	int Receive(char* buf, unsigned int size);
+	unsigned short GetPort() { return port_; }
+	unsigned int GetTimeout() { return timeoutMs_; }
+
+private:
+	unsigned int timeoutMs_;
+};
+
+class UDPClient : private UDPBase
+{
+public:
+	UDPClient(unsigned short int port, std::string ipAddress);
+	~UDPClient() {}
+	int Send(char* buf, unsigned int size);
+	unsigned short GetPort() { return port_; }
+	std::string GetIPAddress() { return ipAddress_; }
+
+private:
+	std::string ipAddress_;
 };

@@ -47,6 +47,8 @@ namespace vehicle
 			posZ_ = z;
 			heading_ = h;
 		}
+		void SetZ(double z) { posZ_ = z; }
+		void SetPitch(double pitch) { pitch_ = pitch; }
 		void SetMaxSpeed(double speed);
 		double GetMaxSpeed() { return max_speed_; }
 		void SetAccelerationScale(double accScale);

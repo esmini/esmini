@@ -98,37 +98,37 @@ namespace scenarioengine
 		ScenarioGateway();
 		~ScenarioGateway();
 
-		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
+		int reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 			int scaleMode, double timestamp, double speed, double wheel_angle, double wheel_rot, roadmanager::Position *pos);
 
-		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
+		int reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 			int scaleMode, double timestamp, double speed, double wheel_angle, double wheel_rot,
 			double x, double y, double z, double h, double p, double r);
 
-		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
+		int reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 			int scaleMode, double timestamp, double speed, double wheel_angle, double wheel_rot,
 			double x, double y, double h);
 
-		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
+		int reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 			int scaleMode, double timestamp, double speed, double wheel_angle, double wheel_rot,
 			int roadId, int laneId, double laneOffset, double s);
 
-		void reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
+		int reportObject(int id, std::string name, int obj_type, int obj_category, int model_id, int ctrl_type, OSCBoundingBox boundingbox,
 			int scaleMode, double timestamp, double speed, double wheel_angle, double wheel_rot,
 			int roadId, double lateralOffset, double s);
 
-		void updateObjectPos(int id, double timestamp, roadmanager::Position* pos);
-		void updateObjectRoadPos(int id, double timestamp, int roadId, double lateralOffset, double s);
-		void updateObjectLanePos(int id, double timestamp, int roadId, int laneId, double offset, double s);
-		void updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
-		void updateObjectWorldPosXYZH(int id, double timestamp, double x, double y, double z, double h);
-		void updateObjectSpeed(int id, double timestamp, double speed);
-		void updateObjectVel(int id, double timestamp, double x_vel, double y_vel, double z_vel);
-		void updateObjectAcc(int id, double timestamp, double x_acc, double y_acc, double z_acc);
-		void updateObjectAngularVel(int id, double timestamp, double h_rate, double p_rate, double r_rate);
-		void updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc);
-		void updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
-		void updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
+		int updateObjectPos(int id, double timestamp, roadmanager::Position* pos);
+		int updateObjectRoadPos(int id, double timestamp, int roadId, double lateralOffset, double s);
+		int updateObjectLanePos(int id, double timestamp, int roadId, int laneId, double offset, double s);
+		int updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
+		int updateObjectWorldPosXYH(int id, double timestamp, double x, double y, double h);
+		int updateObjectSpeed(int id, double timestamp, double speed);
+		int updateObjectVel(int id, double timestamp, double x_vel, double y_vel, double z_vel);
+		int updateObjectAcc(int id, double timestamp, double x_acc, double y_acc, double z_acc);
+		int updateObjectAngularVel(int id, double timestamp, double h_rate, double p_rate, double r_rate);
+		int updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc);
+		int updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
+		int updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
 
 		void removeObject(int id);
 		void removeObject(std::string name);
@@ -143,7 +143,7 @@ namespace scenarioengine
 		std::vector<ObjectState*> objectState_;
 
 	private:
-		void updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot);
+		int updateObjectInfo(ObjectState* obj_state, double timestamp, double speed, double wheel_angle, double wheel_rot);
 		std::ofstream data_file_;
 	};
 

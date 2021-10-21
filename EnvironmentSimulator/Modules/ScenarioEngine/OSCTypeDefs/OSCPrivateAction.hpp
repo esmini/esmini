@@ -32,7 +32,7 @@ namespace scenarioengine
 	class OSCPrivateAction : public OSCAction
 	{
 	public:
-		typedef enum
+		enum class ActionType
 		{
 			LONG_SPEED,
 			LONG_DISTANCE,
@@ -49,24 +49,24 @@ namespace scenarioengine
 			FOLLOW_TRAJECTORY,
 			Acquire_POSITION,
 			SYNCHRONIZE
-		} ActionType;
+		};
 
-		typedef enum
+		enum class DynamicsDimension
 		{
 			RATE,
 			TIME,
 			DISTANCE,
 			DIMENSION_UNDEFINED
-		} DynamicsDimension;
+		};
 
-		typedef enum
+		enum class DynamicsShape
 		{
 			LINEAR,
 			CUBIC,
 			SINUSOIDAL,
 			STEP,
 			SHAPE_UNDEFINED
-		} DynamicsShape;
+		};
 
 		class TransitionDynamics
 		{
@@ -118,11 +118,11 @@ namespace scenarioengine
 		class Target
 		{
 		public:
-			typedef enum
+			enum class TargetType
 			{
-				ABSOLUTE,
-				RELATIVE
-			} TargetType;
+				ABSOLUTE_SPEED,
+				RELATIVE_SPEED
+			};
 
 			TargetType type_;
 			double value_;
@@ -135,7 +135,7 @@ namespace scenarioengine
 		class TargetAbsolute : public Target
 		{
 		public:
-			TargetAbsolute() : Target(TargetType::ABSOLUTE) {}
+			TargetAbsolute() : Target(TargetType::ABSOLUTE_SPEED) {}
 
 			double GetValue()
 			{
@@ -157,7 +157,7 @@ namespace scenarioengine
 			ValueType value_type_;
 			bool continuous_;
 
-			TargetRelative() : Target(TargetType::RELATIVE), continuous_(false), consumed_(false), object_speed_(0) {}
+			TargetRelative() : Target(TargetType::RELATIVE_SPEED), continuous_(false), consumed_(false), object_speed_(0) {}
 
 			double GetValue();
 
@@ -296,11 +296,11 @@ namespace scenarioengine
 		class Target
 		{
 		public:
-			typedef enum
+			enum class Type
 			{
-				ABSOLUTE,
-				RELATIVE
-			} Type;
+				ABSOLUTE_LANE,
+				RELATIVE_LANE
+			};
 
 			Type type_;
 			int value_;
@@ -311,7 +311,7 @@ namespace scenarioengine
 		class TargetAbsolute : public Target
 		{
 		public:
-			TargetAbsolute() : Target(Target::Type::ABSOLUTE) {}
+			TargetAbsolute() : Target(Target::Type::ABSOLUTE_LANE) {}
 		};
 
 		class TargetRelative : public Target
@@ -319,7 +319,7 @@ namespace scenarioengine
 		public:
 			Object* object_;
 
-			TargetRelative() : Target(Target::Type::RELATIVE), object_(0) {}
+			TargetRelative() : Target(Target::Type::RELATIVE_LANE), object_(0) {}
 		};
 
 		Target* target_;
@@ -384,11 +384,11 @@ namespace scenarioengine
 		class Target
 		{
 		public:
-			typedef enum
+			enum class Type
 			{
-				ABSOLUTE,
-				RELATIVE
-			} Type;
+				ABSOLUTE_OFFSET,
+				RELATIVE_OFFSET
+			};
 
 			Type type_;
 			double value_;
@@ -399,7 +399,7 @@ namespace scenarioengine
 		class TargetAbsolute : public Target
 		{
 		public:
-			TargetAbsolute() : Target(Target::Type::ABSOLUTE) {}
+			TargetAbsolute() : Target(Target::Type::ABSOLUTE_OFFSET) {}
 		};
 
 		class TargetRelative : public Target
@@ -407,7 +407,7 @@ namespace scenarioengine
 		public:
 			Object *object_;
 
-			TargetRelative() : Target(Target::Type::RELATIVE) {}
+			TargetRelative() : Target(Target::Type::RELATIVE_OFFSET) {}
 		};
 
 		Target *target_;
@@ -647,11 +647,12 @@ namespace scenarioengine
 	class FollowTrajectoryAction : public OSCPrivateAction
 	{
 	public:
-		typedef enum {
+		enum class TimingDomain
+		{
 			NONE,
 			TIMING_RELATIVE,
 			TIMING_ABSOLUTE
-		} TimingDomain;
+		};
 
 		roadmanager::RMTrajectory* traj_;
 		TimingDomain timing_domain_;

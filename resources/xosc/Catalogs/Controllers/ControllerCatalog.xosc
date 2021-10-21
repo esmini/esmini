@@ -120,5 +120,17 @@
                 <Property name="timeGap"  value="$TimeGap" />
             </Properties>
         </Controller>
+        <Controller name="UDPDriverModelController">
+            <ParameterDeclarations>
+                <!-- intputModes: vehicleStateXYH/vehicleStateXYZHPR/driverInput -->
+                <ParameterDeclaration name="InputMode" parameterType="string" value="vehicleStateXYZHPR" />
+                <!-- port: port number > 0 OR 0 to pick automatically starting at 49950 -->
+                <ParameterDeclaration name="Port" parameterType="integer" value="49950" />
+            </ParameterDeclarations>
+            <Properties>
+                <Property name="inputMode" value="$InputMode" />
+                <Property name="port" value="$Port" />
+            </Properties>
+        </Controller>
     </Catalog>
 </OpenSCENARIO>

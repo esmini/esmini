@@ -17,10 +17,7 @@
 #include <errno.h>
 #include <string.h>
 
-
 #include "ScenarioEngine.hpp"
-
-#define ESMINI_DEFAULT_INPORT 48199
 
 
 typedef struct

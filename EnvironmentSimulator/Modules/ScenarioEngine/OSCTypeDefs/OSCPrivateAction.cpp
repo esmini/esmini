@@ -299,11 +299,11 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 		return;
 	}
 
-	if (target_->type_ == Target::Type::ABSOLUTE)
+	if (target_->type_ == Target::Type::ABSOLUTE_LANE)
 	{
 		target_lane_id_ = target_->value_;
 	}
-	else if (target_->type_ == Target::Type::RELATIVE)
+	else if (target_->type_ == Target::Type::RELATIVE_LANE)
 	{
 		// Find out target lane relative referred vehicle
 		target_lane_id_ = ((TargetRelative*)target_)->object_->pos_.GetLaneId() + target_->value_;
@@ -446,7 +446,7 @@ void LatLaneChangeAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 		object_ = obj2;
 	}
 
-	if (target_->type_ == Target::Type::RELATIVE)
+	if (target_->type_ == Target::Type::RELATIVE_LANE)
 	{
 		if (((TargetRelative*)target_)->object_ == obj1)
 		{
@@ -470,11 +470,11 @@ void LatLaneOffsetAction::Start(double simTime, double dt)
 
 	start_lane_offset_ = object_->pos_.GetOffset();
 
-	if (target_->type_ == Target::Type::ABSOLUTE)
+	if (target_->type_ == Target::Type::ABSOLUTE_OFFSET)
 	{
 		target_lane_offset_ = target_->value_;
 	}
-	else if (target_->type_ == Target::Type::RELATIVE)
+	else if (target_->type_ == Target::Type::RELATIVE_OFFSET)
 	{
 		// Register what lane action object belongs to
 		int lane_id = object_->pos_.GetLaneId();
@@ -517,7 +517,7 @@ void LatLaneOffsetAction::Start(double simTime, double dt)
 	}
 	else
 	{
-		throw std::runtime_error("Unexpected shape type: " + dynamics_.transition_.shape_);
+		throw std::runtime_error("Unexpected shape type: " + static_cast<int>(dynamics_.transition_.shape_));
 	}
 }
 
@@ -575,7 +575,7 @@ void LatLaneOffsetAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 		object_ = obj2;
 	}
 
-	if (target_->type_ == Target::Type::RELATIVE)
+	if (target_->type_ == Target::Type::RELATIVE_OFFSET)
 	{
 		if (((TargetRelative*)target_)->object_ == obj1)
 		{
@@ -631,7 +631,7 @@ void LongSpeedAction::Start(double simTime, double dt)
 	if (transition_dynamics_.shape_ == DynamicsShape::STEP)
 	{
 		object_->SetSpeed(target_->GetValue());
-		if (!(target_->type_ == Target::TargetType::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
+		if (!(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_)->continuous_ == true))
 		{
 			OSCAction::End();
 		}
@@ -702,7 +702,7 @@ void LongSpeedAction::Step(double simTime, double)
 
 	object_->SetSpeed(new_speed);
 
-	if (target_speed_reached && !(target_->type_ == Target::TargetType::RELATIVE && ((TargetRelative*)target_)->continuous_ == true))
+	if (target_speed_reached && !(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_)->continuous_ == true))
 	{
 		OSCAction::End();
 	}
@@ -715,7 +715,7 @@ void LongSpeedAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 		object_ = obj2;
 	}
 
-	if (target_->type_ == Target::TargetType::RELATIVE)
+	if (target_->type_ == Target::TargetType::RELATIVE_SPEED)
 	{
 		if (((TargetRelative*)target_)->object_ == obj1)
 		{

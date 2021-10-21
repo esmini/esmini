@@ -216,4 +216,6 @@ void Vehicle::Reset()
 	target_speed_ = 0;
 	max_speed_ = MAX_SPEED_DEFAULT;
 	acc_scale_ = ACCELERATION_SCALE_DEFAULT;
+	throttle_disabled_ = false;
+	steering_disabled_ = false;
 }

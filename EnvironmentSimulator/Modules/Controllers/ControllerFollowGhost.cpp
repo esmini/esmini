@@ -125,7 +125,7 @@ void ControllerFollowGhost::Step(double timeStep)
 	vehicle_.pitch_ = object_->pos_.GetP();
 
 	// Register updated vehicle position
-	gateway_->updateObjectWorldPosXYZH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.posZ_, vehicle_.heading_);
+	gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
 	gateway_->updateObjectSpeed(object_->id_, 0.0, vehicle_.speed_);
 
 	// Update wheels wrt domains

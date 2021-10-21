@@ -361,7 +361,7 @@ void ControllerRel2Abs::Step(double timeStep)
 			if (activeActions[i]->type_ == OSCPrivateAction::ActionType::LONG_SPEED)
 			{
 				LongSpeedAction* lsa = (LongSpeedAction*)activeActions[i];
-				if (lsa->target_->type_ == LongSpeedAction::Target::RELATIVE)
+				if (lsa->target_->type_ == LongSpeedAction::Target::TargetType::RELATIVE_SPEED)
 				{
 					LongSpeedAction::TargetRelative* target = (LongSpeedAction::TargetRelative*)lsa->target_;
 					if (target->object_ == ego)

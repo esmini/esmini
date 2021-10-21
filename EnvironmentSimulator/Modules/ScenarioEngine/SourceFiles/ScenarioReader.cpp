@@ -22,6 +22,7 @@
 #include "ControllerRel2Abs.hpp"
 #include "ControllerACC.hpp"
 #include "ControllerALKS.hpp"
+#include "ControllerUDPDriverModel.hpp"
 
 #include <cstdlib>
 
@@ -55,6 +56,7 @@ void ScenarioReader::LoadControllers()
 	RegisterController(ControllerRel2Abs::GetTypeNameStatic(), InstantiateControllerRel2Abs);
 	RegisterController(ControllerACC::GetTypeNameStatic(), InstantiateControllerACC);
 	RegisterController(ControllerALKS::GetTypeNameStatic(), InstantiateControllerALKS);
+	RegisterController(ControllerUDPDriverModel::GetTypeNameStatic(), InstantiateControllerUDPDriverModel);
 }
 
 void ScenarioReader::UnloadControllers()
@@ -2118,7 +2120,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					{
 						LOG("SynchronizeAction::SteadyState introduced in v1.1. Reading anyway.");
 					}
-					if (action_synch->final_speed_->type_ == LongSpeedAction::Target::TargetType::ABSOLUTE &&
+					if (action_synch->final_speed_->type_ == scenarioengine::LongSpeedAction::Target::TargetType::ABSOLUTE_SPEED &&
 						action_synch->final_speed_->GetValue() < SMALL_NUMBER)
 					{
 						LOG("SynchronizeAction steady state with 0 or negative final speed (%.2f) is not supported", action_synch->final_speed_->GetValue());
