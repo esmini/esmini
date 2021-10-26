@@ -5,6 +5,8 @@
 #include <stdexcept>
 
 #include "ScenarioEngine.hpp"
+#include "ScenarioReader.hpp"
+#include "ControllerUDPDriverModel.hpp"
 #include "pugixml.hpp"
 #include "simple_expr.h"
 
@@ -12,6 +14,7 @@ using namespace roadmanager;
 using namespace scenarioengine;
 
 #define TRIG_ERR_MARGIN 0.001
+#define LOG_TO_CONSOLE 0
 
 TEST(DistanceTest, CalcDistanceVariations)
 {
@@ -273,7 +276,7 @@ TEST(TrajectoryTest, EnsureContinuation)
     for (int i = 0; i < (int)(1.0/dt); i++)
     {
         se->step(dt);
-        se->prepareOSIGroundTruth(dt);
+        se->prepareGroundTruth(dt);
     }
     ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 4.95, 1e-5);
     ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), -1.535, 1e-5);
@@ -281,7 +284,7 @@ TEST(TrajectoryTest, EnsureContinuation)
     for (int i = 0; i < (int)(2.0 / dt); i++)
     {
         se->step(dt);
-        se->prepareOSIGroundTruth(dt);
+        se->prepareGroundTruth(dt);
     }
     ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 14.92759, 1e-5);
     ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), -1.18333, 1e-5);
@@ -289,7 +292,7 @@ TEST(TrajectoryTest, EnsureContinuation)
     for (int i = 0; i < (int)(1.5 / dt); i++)
     {
         se->step(dt);
-        se->prepareOSIGroundTruth(dt);
+        se->prepareGroundTruth(dt);
     }
     ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 21.31489, 1e-5);
     ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), 2.56606, 1e-5);
@@ -458,6 +461,8 @@ TEST(JunctionTest, JunctionSelectorTest)
     for (int i = 0; i < sizeof(angles) / sizeof(double); i++)
     {
         ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/junction-selector.xosc");
+        se->step(0.0);
+        se->prepareGroundTruth(0.0);
         ASSERT_NE(se, nullptr);
 
         // Turn always right
@@ -466,6 +471,7 @@ TEST(JunctionTest, JunctionSelectorTest)
         while (se->getSimulationTime() < durations[i] && se->GetQuitFlag() != true)
         {
             se->step(dt);
+            se->prepareGroundTruth(dt);
         }
         ASSERT_EQ(se->entities.object_[0]->pos_.GetTrackId(), roadIds[i]);
         delete se;
@@ -476,15 +482,18 @@ TEST(ConditionTest, CollisionTest)
 {
     double dt = 0.01;
 
-    double timestamps[] = { 5.24, 5.25, 6.24, 6.26, 7.10, 8.78 };
+    double timestamps[] = { 5.23, 5.24, 6.23, 6.25, 7.09, 8.77 };
 
     // Initialize the scenario and disable interactive controller
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc", true);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
     ASSERT_NE(se, nullptr);
 
     while (se->getSimulationTime() < timestamps[0] && se->GetQuitFlag() != true)
     {
         se->step(dt);
+        se->prepareGroundTruth(dt);
     }
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), false);
@@ -492,6 +501,7 @@ TEST(ConditionTest, CollisionTest)
     while (se->getSimulationTime() < timestamps[1] && se->GetQuitFlag() != true)
     {
         se->step(dt);
+        se->prepareGroundTruth(dt);
     }
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), true);
@@ -499,6 +509,7 @@ TEST(ConditionTest, CollisionTest)
     while (se->getSimulationTime() < timestamps[2] && se->GetQuitFlag() != true)
     {
         se->step(dt);
+        se->prepareGroundTruth(dt);
     }
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), true);
@@ -506,6 +517,7 @@ TEST(ConditionTest, CollisionTest)
     while (se->getSimulationTime() < timestamps[3] && se->GetQuitFlag() != true)
     {
         se->step(dt);
+        se->prepareGroundTruth(dt);
     }
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), true);
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), true);
@@ -513,6 +525,7 @@ TEST(ConditionTest, CollisionTest)
     while (se->getSimulationTime() < timestamps[4] && se->GetQuitFlag() != true)
     {
         se->step(dt);
+        se->prepareGroundTruth(dt);
     }
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), true);
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), false);
@@ -520,6 +533,7 @@ TEST(ConditionTest, CollisionTest)
     while (se->getSimulationTime() < timestamps[5] && se->GetQuitFlag() != true)
     {
         se->step(dt);
+        se->prepareGroundTruth(dt);
     }
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), false);
@@ -527,8 +541,208 @@ TEST(ConditionTest, CollisionTest)
     delete se;
 }
 
+TEST(ControllerTest, UDPDriverModelTestAsynchronous)
+{
+    double dt = 0.01;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../scripts/udp-driver-model/two_cars_in_open_space.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities.object_.size(), 2);
+
+    // Replace controllers
+    for (int i = 0; i < 2; i++)
+    {
+        scenarioengine::Controller::InitArgs args;
+        args.name = "UDPDriverModel Controller";
+        args.type = ControllerUDPDriverModel::GetTypeNameStatic();
+        args.parameters = 0;
+        args.gateway = se->getScenarioGateway();
+        args.properties = new OSCProperties();
+        OSCProperties::Property property;
+        property.name_ = "port";
+        property.value_ = std::to_string(0);
+        args.properties->property_.push_back(property);
+        property.name_ = "basePort";
+        property.value_ = std::to_string(61900);
+        args.properties->property_.push_back(property);
+        property.name_ = "inputMode";
+        property.value_ = "vehicleStateXYZHPR";
+        args.properties->property_.push_back(property);
+        ControllerUDPDriverModel* controller = (ControllerUDPDriverModel*)InstantiateControllerUDPDriverModel(&args);
+
+        delete se->entities.object_[i]->controller_;
+        delete args.properties;
+
+        controller->Assign(se->entities.object_[i]);
+        se->scenarioReader->controller_[i] = controller;
+        se->entities.object_[i]->controller_ = controller;
+    }
+
+    // assign controllers
+    se->step(dt);
+
+    // stimulate driver input
+    UDPClient* udpClient= new UDPClient(61900, "127.0.0.1");
+
+    ControllerUDPDriverModel::DMMessage msg;
+
+    msg.header.frameNumber = 0;
+    msg.header.version = 1;
+    msg.header.objectId = 0;
+    msg.header.inputMode = static_cast<int>(ControllerUDPDriverModel::InputMode::VEHICLE_STATE_XYH);
+
+    msg.message.stateXYZHPR.h = 0.3;
+    msg.message.stateXYZHPR.x = 20.0;
+    msg.message.stateXYZHPR.y = 30.0;
+
+    udpClient->Send((char*)&msg, sizeof(msg));
+
+    // Make sure last message is applied
+    msg.message.stateXYZHPR.y = 40;
+    udpClient->Send((char*)&msg, sizeof(msg));
+
+    // read messages and report updated states
+    se->step(dt);
+    // another step for scenarioengine to fetch and apply updated states
+    se->step(dt);
+
+    EXPECT_DOUBLE_EQ(se->entities.object_[0]->pos_.GetY(), 40.0);
+
+    delete se;
+    delete udpClient;
+}
+
+TEST(ControllerTest, UDPDriverModelTestSynchronous)
+{
+    double dt = 0.01;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../scripts/udp-driver-model/two_cars_in_open_space.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities.object_.size(), 2);
+
+    // Replace controllers
+    for (int i = 0; i < 2; i++)
+    {
+        scenarioengine::Controller::InitArgs args;
+        args.name = "UDPDriverModel Controller";
+        args.type = ControllerUDPDriverModel::GetTypeNameStatic();
+        args.parameters = 0;
+        args.gateway = se->getScenarioGateway();
+        args.properties = new OSCProperties();
+        OSCProperties::Property property;
+        property.name_ = "execMode";
+        property.value_ = "synchronous";
+        args.properties->property_.push_back(property);
+        property.name_ = "port";
+        property.value_ = std::to_string(0);
+        args.properties->property_.push_back(property);
+        property.name_ = "basePort";
+        property.value_ = std::to_string(61910);
+        args.properties->property_.push_back(property);
+        property.name_ = "inputMode";
+        property.value_ = "vehicleStateXYZHPR";
+        args.properties->property_.push_back(property);
+        property.name_ = "timoutMs";
+        property.value_ = std::to_string(500);
+        args.properties->property_.push_back(property);
+        ControllerUDPDriverModel* controller = (ControllerUDPDriverModel*)InstantiateControllerUDPDriverModel(&args);
+
+        delete se->entities.object_[i]->controller_;
+        delete args.properties;
+
+        controller->Assign(se->entities.object_[i]);
+        se->scenarioReader->controller_[i] = controller;
+        se->entities.object_[i]->controller_ = controller;
+    }
+
+    // assign controllers
+    se->step(dt);
+
+    // stimulate driver input
+    UDPClient* udpClient = new UDPClient(61910, "127.0.0.1");
+
+    ControllerUDPDriverModel::DMMessage msg;
+
+    msg.header.frameNumber = 0;
+    msg.header.version = 1;
+    msg.header.objectId = 0;
+    msg.header.inputMode = static_cast<int>(ControllerUDPDriverModel::InputMode::VEHICLE_STATE_XYZHPR);
+
+    msg.message.stateXYZHPR.h = 0.3;
+    msg.message.stateXYZHPR.x = 20.0;
+    msg.message.stateXYZHPR.y = 30.0;
+
+    udpClient->Send((char*)&msg, sizeof(msg));
+
+    // Put another message on queue of first vehicle
+    msg.header.frameNumber++;
+    msg.message.stateXYZHPR.y = 40;
+    udpClient->Send((char*)&msg, sizeof(msg));
+
+    // read messages and report updated states
+    se->step(dt);
+
+    // another step for scenarioengine to fetch and apply updated states
+    se->step(dt);
+
+    // In synchronous mode one message is consumed each time step
+    // Expect the first message to be applied, the second has not
+    // yet been processed
+    EXPECT_DOUBLE_EQ(se->entities.object_[0]->pos_.GetY(), 30.0);
+
+    // another step for scenarioengine to fetch and apply the second message
+    se->step(dt);
+    EXPECT_DOUBLE_EQ(se->entities.object_[0]->pos_.GetY(), 40.0);
+
+    // second vehicle has not been updated (no message sent)
+    se->step(dt);
+    EXPECT_DOUBLE_EQ(se->entities.object_[1]->pos_.GetY(), -358.0);
+
+    // Create a sender for second vehicle as well
+    UDPClient* udpClient2 = new UDPClient(61911, "127.0.0.1");
+
+    msg.header.frameNumber = 0;
+    msg.header.version = 1;
+    msg.header.objectId = 1;
+    msg.header.inputMode = static_cast<int>(ControllerUDPDriverModel::InputMode::VEHICLE_STATE_XYZHPR);
+
+    msg.message.stateXYZHPR.h = 0.3;
+    msg.message.stateXYZHPR.x = 90.0;
+    msg.message.stateXYZHPR.y = -10.0;
+
+    udpClient2->Send((char*)&msg, sizeof(msg));
+
+    msg.header.frameNumber = 2;
+    msg.header.objectId = 0;
+    msg.message.stateXYZHPR.x = 150.0;
+    udpClient->Send((char*)&msg, sizeof(msg));
+
+    se->step(dt);
+    se->step(dt);
+    EXPECT_DOUBLE_EQ(se->entities.object_[0]->pos_.GetX(), 150.0);
+    EXPECT_DOUBLE_EQ(se->entities.object_[1]->pos_.GetX(), 90.0);
+    EXPECT_DOUBLE_EQ(se->entities.object_[1]->pos_.GetY(), -10.0);
+
+    delete se;
+    delete udpClient;
+}
+
+#if LOG_TO_CONSOLE
+static void log_callback(const char* str)
+{
+    printf("%s\n", str);
+}
+#endif
+
 int main(int argc, char **argv)
 {
+#if LOG_TO_CONSOLE
+    if (!(Logger::Inst().IsCallbackSet()))
+    {
+        Logger::Inst().SetCallback(log_callback);
+    }
+#endif
+
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

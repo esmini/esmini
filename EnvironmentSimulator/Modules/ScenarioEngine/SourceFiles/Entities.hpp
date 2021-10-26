@@ -309,6 +309,11 @@ namespace scenarioengine
 		{
 			dirty_ &= ~bits;
 		}
+
+		void ClearDirtyBits()
+		{
+			dirty_ = 0;
+		}
 	};
 
 	class Vehicle : public Object

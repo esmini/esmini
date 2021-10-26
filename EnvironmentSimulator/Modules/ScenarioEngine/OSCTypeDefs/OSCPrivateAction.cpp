@@ -625,6 +625,7 @@ void LongSpeedAction::Start(double simTime, double dt)
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
 	{
 		// longitudinal motion controlled elsewhere
+		OSCAction::End();
 		return;
 	}
 
@@ -662,6 +663,7 @@ void LongSpeedAction::Step(double simTime, double)
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
 	{
 		// longitudinal motion controlled elsewhere
+		OSCAction::End();
 		return;
 	}
 

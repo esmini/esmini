@@ -79,34 +79,29 @@ void ControllerInteractive::Step(double timeStep)
 			// If pointing in other direction
 			steplen *= -1;
 		}
-		object_->pos_.MoveAlongS(steplen);
+		object_->MoveAlongS(steplen);
+
+		// Fetch updated position
+		vehicle_.posX_ = object_->pos_.GetX();
+		vehicle_.posY_ = object_->pos_.GetY();
+		vehicle_.heading_ = object_->pos_.GetH();
 	}
-	else // domain is both longitudinal and lateral
-	{
-		// Set world position
-		object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.heading_, true);
-	}
+
+	gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
 
 	// Fetch Z and Pitch from OpenDRIVE position
 	vehicle_.posZ_ = object_->pos_.GetZRoad();
 	vehicle_.pitch_ = object_->pos_.GetPRoad();
 
-	// Update wheels wrt domains
 	if (IsActiveOnDomains(ControlDomains::DOMAIN_LONG))
 	{
-		object_->wheel_rot_ = vehicle_.wheelRotation_;
-		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+		gateway_->updateObjectSpeed(object_->id_, 0.0, vehicle_.speed_);
 	}
 
 	if (IsActiveOnDomains(ControlDomains::DOMAIN_LAT))
 	{
-		object_->wheel_angle_ = vehicle_.wheelAngle_;
-		object_->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
+		gateway_->updateObjectWheelAngle(object_->id_, 0.0, vehicle_.wheelAngle_);
 	}
-
-	gateway_->reportObject(object_->id_, object_->name_, static_cast<int>(object_->type_), object_->category_, object_->model_id_,
-		object_->GetActivatedControllerType(), object_->boundingbox_, static_cast<int>(object_->scaleMode_), 0.0, vehicle_.speed_,
-		object_->wheel_angle_, object_->wheel_rot_, &object_->pos_);
 
 	Controller::Step(timeStep);
 }
@@ -123,6 +118,9 @@ void ControllerInteractive::Activate(ControlDomains domainMask)
 
 	steer = vehicle::STEERING_NONE;
 	accelerate = vehicle::THROTTLE_NONE;
+
+	object_->pos_.SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
+	object_->pos_.SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 
 	Controller::Activate(domainMask);
 }

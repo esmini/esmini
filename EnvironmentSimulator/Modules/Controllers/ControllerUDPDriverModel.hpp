@@ -21,8 +21,9 @@
 
 #define CONTROLLER_UDP_DRIVER_TYPE_NAME "UDPDriverModelController"
 
-#define DRIVER_MODEL_MESSAGE_VERSION 1
+#define UDP_DRIVER_MODEL_MESSAGE_VERSION 1
 #define DEFAULT_DRIVER_MODEL_PORT 61900
+#define UDP_SYNCHRONOUS_MODE_TIMEOUT_MS 500
 
 namespace scenarioengine
 {
@@ -36,6 +37,12 @@ namespace scenarioengine
 			DRIVER_INPUT = 0,
 			VEHICLE_STATE_XYZHPR = 1,
 			VEHICLE_STATE_XYH = 2
+		};
+
+		enum class ExecMode
+		{
+			EXEC_MODE_ASYNCHRONOUS = 0,
+			EXEC_MODE_SYNCHRONOUS = 1,
 		};
 
 		typedef struct
@@ -88,6 +95,7 @@ namespace scenarioengine
 		ControllerUDPDriverModel(InitArgs* args);
 		~ControllerUDPDriverModel();
 		std::string InputMode2Str(InputMode inputMode);
+		std::string ExecMode2Str(ExecMode execMode);
 
 		void Init();
 		void Step(double timeStep);
@@ -106,6 +114,8 @@ namespace scenarioengine
 		InputMode inputMode_;
 		UDPServer *udpServer_;
 		int port_;
+		static int basePort_;
+		ExecMode execMode_;
 	};
 
 	Controller* InstantiateControllerUDPDriverModel(void* args);

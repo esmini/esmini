@@ -41,7 +41,7 @@ namespace scenarioengine
 
 		int step(double deltaSimTime);
 		void printSimulationTime();
-		void prepareOSIGroundTruth(double dt);
+		void prepareGroundTruth(double dt);
 		int defaultController(Object *obj, double dt);
 		void ReplaceObjectInTrigger(Trigger *trigger, Object *obj1, Object *obj2, double timeOffset);
 		void SetupGhost(Object *object);

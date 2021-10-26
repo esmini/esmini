@@ -513,8 +513,7 @@ int ScenarioGateway::updateObjectSpeed(int id, double timestamp, double speed)
 	}
 
 	obj_state->state_.info.speed = (float)speed;
-	obj_state->dirty_ |=
-		Object::DirtyBit::LONGITUDINAL;
+	obj_state->dirty_ |= Object::DirtyBit::SPEED;
 
 	return 0;
 }
@@ -530,8 +529,7 @@ int ScenarioGateway::updateObjectVel(int id, double timestamp, double x_vel, dou
 	}
 
 	obj_state->state_.pos.SetVel(x_vel, y_vel, z_vel);
-	obj_state->dirty_ |=
-		Object::DirtyBit::VELOCITY;
+	obj_state->dirty_ |= Object::DirtyBit::VELOCITY;
 
 	return 0;
 }
@@ -547,8 +545,7 @@ int ScenarioGateway::updateObjectAcc(int id, double timestamp, double x_acc, dou
 	}
 
 	obj_state->state_.pos.SetAcc(x_acc, y_acc, z_acc);
-	obj_state->dirty_ |=
-		Object::DirtyBit::ACCELERATION;
+	obj_state->dirty_ |= Object::DirtyBit::ACCELERATION;
 
 	return 0;
 }
@@ -564,8 +561,7 @@ int ScenarioGateway::updateObjectAngularVel(int id, double timestamp, double h_r
 	}
 
 	obj_state->state_.pos.SetAngularVel(h_rate, p_rate, r_rate);
-	obj_state->dirty_ |=
-		Object::DirtyBit::ANGULAR_RATE;
+	obj_state->dirty_ |= Object::DirtyBit::ANGULAR_RATE;
 
 	return 0;
 }
@@ -581,8 +577,7 @@ int ScenarioGateway::updateObjectAngularAcc(int id, double timestamp, double h_a
 	}
 
 	obj_state->state_.pos.SetAngularAcc(h_acc, p_acc, r_acc);
-	obj_state->dirty_ |=
-		Object::DirtyBit::ANGULAR_ACC;
+	obj_state->dirty_ |= Object::DirtyBit::ANGULAR_ACC;
 
 	return 0;
 }
@@ -598,8 +593,7 @@ int ScenarioGateway::updateObjectWheelAngle(int id, double timestamp, double whe
 	}
 
 	obj_state->state_.info.wheel_angle = (float)wheelAngle;
-	obj_state->dirty_ |=
-		Object::DirtyBit::WHEEL_ANGLE;
+	obj_state->dirty_ |= Object::DirtyBit::WHEEL_ANGLE;
 
 	return 0;
 }
@@ -615,10 +609,22 @@ int ScenarioGateway::updateObjectWheelRotation(int id, double timestamp, double 
 	}
 
 	obj_state->state_.info.wheel_rot = (float)wheelRotation;
-	obj_state->dirty_ |=
-		Object::DirtyBit::WHEEL_ROTATION;
+	obj_state->dirty_ |= Object::DirtyBit::WHEEL_ROTATION;
 
 	return 0;
+}
+
+bool ScenarioGateway::isObjectReported(int id)
+{
+	return getObjectStatePtrById(id) != nullptr;
+}
+
+void ScenarioGateway::clearDirtyBits()
+{
+	for (size_t i = 0; i < objectState_.size(); i++)
+	{
+		objectState_[i]->clearDirtyBits();
+	}
 }
 
 void ScenarioGateway::removeObject(int id)

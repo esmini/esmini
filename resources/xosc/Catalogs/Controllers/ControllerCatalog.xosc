@@ -122,14 +122,24 @@
         </Controller>
         <Controller name="UDPDriverModelController">
             <ParameterDeclarations>
-                <!-- intputModes: vehicleStateXYH/vehicleStateXYZHPR/driverInput -->
+                <!-- inputMode: vehicleStateXYH/vehicleStateXYZHPR/driverInput -->
                 <ParameterDeclaration name="InputMode" parameterType="string" value="vehicleStateXYZHPR" />
-                <!-- port: port number > 0 OR 0 to pick automatically starting at 49950 -->
+                <!-- port: port number [1, 65535] OR 0 to pick automatically starting at basePort (see below) -->
+                <!-- Default = 49950 -->
                 <ParameterDeclaration name="Port" parameterType="integer" value="49950" />
+                <!-- ipAddress: IP address IPV4 4-number format. Default = "127.0.0.1" -->
+                <ParameterDeclaration name="BasePort" parameterType="integer" value="49950" />
+                <!-- execModeasynchronus blocking: true = run as separate port number [1, 65535] port number of first instance, additional instances -->
+                <!-- execMode: synchronous/asynchronous Default = asynchronous 
+                <!-- synchronous: wait for and read only one (oldest) message each timestep. Blocking with timeout 500 ms -->
+                <!-- asynchronous: consume all received messages and ignore all but the latest. Non blocking (don't wait) -->
+                <ParameterDeclaration name="ExecMode" parameterType="string" value="asynchronous" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="inputMode" value="$InputMode" />
                 <Property name="port" value="$Port" />
+                <Property name="basePort" value="$BasePort" />
+                <Property name="execMode" value="$ExecMode" />
             </Properties>
         </Controller>
     </Catalog>

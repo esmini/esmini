@@ -25,6 +25,8 @@
 
 using namespace scenarioengine;
 
+int ControllerUDPDriverModel::basePort_ = DEFAULT_DRIVER_MODEL_PORT;
+
 Controller* scenarioengine::InstantiateControllerUDPDriverModel(void* args)
 {
 	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
@@ -33,7 +35,7 @@ Controller* scenarioengine::InstantiateControllerUDPDriverModel(void* args)
 }
 
 ControllerUDPDriverModel::ControllerUDPDriverModel(InitArgs* args) :
-	inputMode_(InputMode::DRIVER_INPUT), udpServer_(nullptr), port_(0), Controller(args)
+	inputMode_(InputMode::DRIVER_INPUT), udpServer_(nullptr), port_(0), execMode_(ExecMode::EXEC_MODE_ASYNCHRONOUS), Controller(args)
 {
 	if (args && args->properties && args->properties->ValueExists("inputMode"))
 	{
@@ -55,9 +57,49 @@ ControllerUDPDriverModel::ControllerUDPDriverModel(InitArgs* args) :
 				args->properties->GetValueStr("inputMode").c_str());
 		}
 	}
+
 	if (args && args->properties && args->properties->ValueExists("port"))
 	{
-		port_ = strtoi(args->properties->GetValueStr("port"));
+		int portTmp = strtoi(args->properties->GetValueStr("port"));
+		if (portTmp < 0 || portTmp > 65535)
+		{
+			LOG_AND_QUIT("Invlaid driver model port: %d (valid range is [0, 65535]", portTmp);
+		}
+		else
+		{
+			port_ = (unsigned short)portTmp;
+		}
+	}
+
+	if (args && args->properties && args->properties->ValueExists("basePort"))
+	{
+		int basePortTmp = strtoi(args->properties->GetValueStr("basePort"));
+		if (basePortTmp < 0 || basePortTmp > 65535)
+		{
+			LOG_AND_QUIT("Invlaid driver model basePort: %d (valid range is [0, 65535]", basePortTmp);
+		}
+		else if (basePortTmp != basePort_)
+		{
+			LOG("Changing base port to %d (from %d)", basePortTmp, basePort_);
+			basePort_ = basePortTmp;
+		}
+	}
+
+	if (args && args->properties && args->properties->ValueExists("execMode"))
+	{
+		if (args->properties->GetValueStr("execMode") == "asynchronous")
+		{
+			execMode_ = ExecMode::EXEC_MODE_ASYNCHRONOUS;
+		}
+		else if (args->properties->GetValueStr("execMode") == "synchronous")
+		{
+			execMode_ = ExecMode::EXEC_MODE_SYNCHRONOUS;
+		}
+		else
+		{
+			LOG_AND_QUIT("ControllerExternalDriverModel unexpected arg execMode %s",
+				args->properties->GetValueStr("execMode").c_str());
+		}
 	}
 
 	// currently only supporting override mode
@@ -99,18 +141,60 @@ std::string ControllerUDPDriverModel::InputMode2Str(InputMode inputMode)
 	}
 }
 
+std::string ControllerUDPDriverModel::ExecMode2Str(ExecMode execMode)
+{
+	if (execMode == ExecMode::EXEC_MODE_ASYNCHRONOUS)
+	{
+		return "Asynchronous";
+	}
+	else if (execMode == ExecMode::EXEC_MODE_SYNCHRONOUS)
+	{
+		return "Synchronous";
+	}
+	else
+	{
+		return "Unknown";
+	}
+}
+
 void ControllerUDPDriverModel::Init()
 {
+	if (basePort_ == -1)
+	{
+		basePort_ = DEFAULT_DRIVER_MODEL_PORT;
+		LOG("ControllerUDPDriverModel: using default baseport %d", basePort_);
+	}
 	Controller::Init();
 }
 
 void ControllerUDPDriverModel::Step(double timeStep)
 {
 	DMMessage msg;
+	int retval = 0;
+	int receivedNrOfBytes = 0;
 
-	int retval = udpServer_->Receive((char*)&msg, sizeof(msg));
+	if (execMode_ == ExecMode::EXEC_MODE_ASYNCHRONOUS)
+	{
+		// Pick all queued messages - store only the last/latest
+		while (retval >= 0)
+		{
+			retval = udpServer_->Receive((char*)&msg, sizeof(msg));
+			if (retval > 0)
+			{
+				receivedNrOfBytes = retval;
+			}
+		}
+	}
+	else
+	{
+		retval = udpServer_->Receive((char*)&msg, sizeof(msg));
+		if (retval >= 0)
+		{
+			receivedNrOfBytes = retval;
+		}
+	}
 
-	if (retval == -1)
+	if (receivedNrOfBytes < 1)
 	{
 		return;
 	}
@@ -121,6 +205,12 @@ void ControllerUDPDriverModel::Step(double timeStep)
 	//	msg.header.frameNumber,
 	//	msg.header.inputMode,
 	//	InputMode2Str(static_cast<InputMode>(msg.header.inputMode)).c_str());
+
+	if (msg.header.version != UDP_DRIVER_MODEL_MESSAGE_VERSION)
+	{
+		LOG_ONCE("ControllerUDPDriverModel: Got unsupported msg version %d (only accepting version %d)",
+			msg.header.version, UDP_DRIVER_MODEL_MESSAGE_VERSION);
+	}
 
 	if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR))
 	{
@@ -186,7 +276,7 @@ void ControllerUDPDriverModel::Activate(ControlDomains domainMask)
 	{
 		if (port_ == 0)   // port not specified, assign default
 		{
-			port_ = DEFAULT_DRIVER_MODEL_PORT + object_->GetId();
+			port_ = basePort_ + object_->GetId();
 		}
 
 		if (udpServer_ == nullptr ||  // not created yet
@@ -197,8 +287,15 @@ void ControllerUDPDriverModel::Activate(ControlDomains domainMask)
 			{
 				delete udpServer_;
 			}
-			udpServer_ = new UDPServer((unsigned short)port_);
-			LOG("ExternalDriverModel server listening on port %d", port_);
+			if (execMode_ == ExecMode::EXEC_MODE_ASYNCHRONOUS)
+			{
+				udpServer_ = new UDPServer((unsigned short)port_, 1);
+			}
+			else
+			{
+				udpServer_ = new UDPServer((unsigned short)port_, UDP_SYNCHRONOUS_MODE_TIMEOUT_MS);
+			}
+			LOG("ExternalDriverModel server listening on port %d execMode: %s", port_, ExecMode2Str(execMode_).c_str());
 		}
 
 		vehicle_.Reset();

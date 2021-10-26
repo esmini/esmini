@@ -177,7 +177,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 			}
 		}
 
-		scenarioEngine->prepareOSIGroundTruth(timestep_s);
+		scenarioEngine->prepareGroundTruth(timestep_s);
 
 		scenarioGateway->WriteStatesToFile();
 

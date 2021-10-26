@@ -129,6 +129,8 @@ namespace scenarioengine
 		int updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc);
 		int updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
 		int updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
+		bool isObjectReported(int id);
+		void clearDirtyBits();
 
 		void removeObject(int id);
 		void removeObject(std::string name);

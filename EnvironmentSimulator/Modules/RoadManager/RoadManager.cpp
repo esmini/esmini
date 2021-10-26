@@ -7162,7 +7162,7 @@ void Position::SetZ(double z)
 
 void Position::SetZRelative(double z)
 {
-	z_relative_ = z_;
+	z_relative_ = z;
 	z_ = z_road_ + z_relative_;
 }
 

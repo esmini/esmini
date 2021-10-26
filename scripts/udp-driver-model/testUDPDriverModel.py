@@ -23,7 +23,7 @@ from tkinter import *
 import tkinter.ttk as ttk
 
 
-DEFAULT_PORT = 61900
+DEFAULT_PORT = 49950
 
 class UdpSender():
     def __init__(self, id=0, ip='127.0.0.1', port=DEFAULT_PORT):
@@ -66,7 +66,7 @@ class Object():
         self.udpSender = UdpSender(id, ip_address, base_port + id)
 
     def delete(self):
-        self.sock.close()
+        self.udpSender.sock.close()
 
     def inputMode2Text(self):
         if (self.inputMode == 0):
@@ -168,7 +168,7 @@ class Application(Frame):
         else:
             self.ip_address = args.ip
 
-        self.fps = 30
+        self.fps = 60
 
         self.object = []
 

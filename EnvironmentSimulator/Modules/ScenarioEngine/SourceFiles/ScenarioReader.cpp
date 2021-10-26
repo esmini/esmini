@@ -1122,7 +1122,7 @@ int ScenarioReader::parseEntities()
 					MiscObject *miscObject = parseOSCMiscObject(objectChild);
 					obj = miscObject;
 				}
-				else if (objectChildName == "ObjectController")
+				else if (objectChildName == "ObjectController" && !disable_controllers_)
 				{
 					// get the sub child under ObjectController (should only be one)
 					pugi::xml_node objectSubChild = objectChild.first_child();
