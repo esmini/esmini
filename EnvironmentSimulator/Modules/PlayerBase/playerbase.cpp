@@ -124,6 +124,20 @@ void ScenarioPlayer::Frame(double timestep_s)
 {
 	static bool messageShown = false;
 
+	while ( (scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime() ) && scenarioEngine->getSimulationTime() > 0 )
+	{
+		ScenarioFramePart(timestep_s);
+		if (!headless && viewer_)
+		{
+			#ifdef _USE_OSG
+					if (!threads)
+					{
+						ViewerFrame();
+					}
+			#endif
+		}
+	}
+
 	ScenarioFrame(timestep_s);
 
 	if (!headless && viewer_)
@@ -159,42 +173,22 @@ void ScenarioPlayer::Frame()
 	}
 }
 
+void ScenarioPlayer::ScenarioFramePart(double timestep_s)
+{
+	mutex.Lock();
+	scenarioEngine->step(timestep_s);
+
+	scenarioEngine->prepareOSIGroundTruth(timestep_s);
+	scenarioGateway->WriteStatesToFile();
+	mutex.Unlock();
+}
+
 void ScenarioPlayer::ScenarioFrame(double timestep_s)
 {
 	mutex.Lock();
 
-	// This makes the Ghost jump directly to the left... :)
-	while( (scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime() ) && scenarioEngine->getSimulationTime() > 0 )
-	{
-	scenarioEngine->step(timestep_s); // only jumps in esmini, but not in cspas
-
-	// These two makes it jump directly to the left in cspas as well
-	scenarioEngine->prepareOSIGroundTruth(timestep_s);
-	scenarioGateway->WriteStatesToFile();
-	}
-
 	if (scenarioEngine->step(timestep_s) == 0)
 	{
-		
-		// This while loop is still being tested if it is necessary or not, and if it is, what should be in it
-
-		// while( (scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime()) && scenarioEngine->getSimulationTime() >= 0 )
-		// {
-		// 	scenarioEngine->step(timestep_s);
-
-		// 	for (size_t i = 0; i < callback.size(); i++)
-		// 	{
-		// 		ObjectState* os = scenarioGateway->getObjectStatePtrById(callback[i].id);
-		// 		if (os)
-		// 		{
-		// 			ObjectStateStruct state;
-		// 			state = os->getStruct();
-		// 			callback[i].func(&state, callback[i].data);
-		// 		}
-		// 	}
-		// 	scenarioEngine->prepareOSIGroundTruth(timestep_s);
-		// 	scenarioGateway->WriteStatesToFile();
-		// }
 
 		// Check for any callbacks to be made
 		for (size_t i = 0; i < callback.size(); i++)

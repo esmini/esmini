@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
-    <FileHeader description="speedtest v_i: 10, v_f: 40" author="Mandolin" revMajor="1" revMinor="1" date="2021-10-19T14:56:10.390100"/>
+    <FileHeader description="speedtest v_i: 2.7777777777777777, v_f: 11.11111111111111" author="Mandolin" revMajor="1" revMinor="1" date="2021-10-25T11:04:19.948170"/>
     <ParameterDeclarations/>
     <CatalogLocations>
         <VehicleCatalog>
@@ -64,7 +64,7 @@
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" value="4.166666666666667" dynamicsDimension="time"/>
+                                            <SpeedActionDynamics dynamicsShape="linear" value="8.333333333333332" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
                                                 <AbsoluteTargetSpeed value="11.11111111111111"/>
                                             </SpeedActionTarget>
@@ -87,7 +87,7 @@
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="linear" value="4.166666666666667" dynamicsDimension="time"/>
+                                            <SpeedActionDynamics dynamicsShape="linear" value="8.333333333333332" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
                                                 <AbsoluteTargetSpeed value="2.7777777777777777"/>
                                             </SpeedActionTarget>
@@ -99,7 +99,7 @@
                                 <ConditionGroup>
                                     <Condition name="starttrigger" delay="0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="13.166666666666668" rule="greaterThan"/>
+                                            <SimulationTimeCondition value="17.333333333333332" rule="greaterThan"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -123,7 +123,7 @@
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0" conditionEdge="rising">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="25.333333333333336" rule="greaterThan"/>
+                        <SimulationTimeCondition value="33.666666666666664" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>
