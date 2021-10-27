@@ -22,7 +22,7 @@
 #define CONTROLLER_UDP_DRIVER_TYPE_NAME "UDPDriverModelController"
 
 #define UDP_DRIVER_MODEL_MESSAGE_VERSION 1
-#define DEFAULT_DRIVER_MODEL_PORT 61900
+#define DEFAULT_DRIVER_MODEL_PORT 49950
 #define UDP_SYNCHRONOUS_MODE_TIMEOUT_MS 500
 
 namespace scenarioengine
@@ -34,9 +34,10 @@ namespace scenarioengine
 
 		enum class InputMode
 		{
-			DRIVER_INPUT = 0,
-			VEHICLE_STATE_XYZHPR = 1,
-			VEHICLE_STATE_XYH = 2
+			NO_INPUT = 0,
+			DRIVER_INPUT = 1,
+			VEHICLE_STATE_XYZHPR = 2,
+			VEHICLE_STATE_XYH = 3
 		};
 
 		enum class ExecMode
@@ -116,6 +117,8 @@ namespace scenarioengine
 		int port_;
 		static int basePort_;
 		ExecMode execMode_;
+		DMMessage msg;
+		DMMessage lastMsg;
 	};
 
 	Controller* InstantiateControllerUDPDriverModel(void* args);

@@ -89,7 +89,7 @@ UDPServer::UDPServer(unsigned short int port, unsigned int timeoutMs) :
 	int timeout_msec = 1000 * tv.tv_sec + tv.tv_usec;
 	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_msec, sizeof(timeout_msec)) != 0)
 #else
-	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&tv, sizeof(tv)) == 0)
+	if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, (struct timeval*)&tv, sizeof(tv)) < 0)
 #endif
 	{
 		printf("socket SO_RCVTIMEO (receive timeout) not supported on this platform\n");

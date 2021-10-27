@@ -696,7 +696,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
 
     // second vehicle has not been updated (no message sent)
     se->step(dt);
-    EXPECT_DOUBLE_EQ(se->entities.object_[1]->pos_.GetY(), -358.0);
+    EXPECT_DOUBLE_EQ(se->entities.object_[1]->pos_.GetY(), 6.5);
 
     // Create a sender for second vehicle as well
     UDPClient* udpClient2 = new UDPClient(61911, "127.0.0.1");

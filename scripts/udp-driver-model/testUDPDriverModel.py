@@ -11,6 +11,19 @@
    1. Open two terminals
    2. From terminal 1, run: ./bin/esmini --window 60 60 800 400 --osc ./scripts/udp-driver-model/two_cars_in_open_space.xosc
    3. From terminal 2, run: ./scripts/udp-driver-model/testUDPDriverModel.py --id 0 --id 1
+        or python ./scripts/udp-driver-model/testUDPDriverModel.py --id 0 --id 1
+        or python3 ./scripts/udp-driver-model/testUDPDriverModel.py --id 0 --id 1
+        depending on platform and file type associations
+
+   If esmini is running on another host, add argument --ip <ip address of host running esmini>, e.g. --ip 216.58.211.14
+   You might need to open ports in firewall. E.g. in Windows add a Inbound Rule for UDP messages on port range 49950-49999.
+
+   Running controllers and esmini on different hosts works as long as they have the same endianess/byte-order, so e.g.
+   Mac, Linux and Mac on Intel or the new Mac M1 chip should all work (since they are little-endian). 
+   
+   For other endianess, e.g. dSPACE runtime platform, you would need to swap byteorder on sender or receiver side.
+
+   For complete message definitions, see esmini/EnvironmentSimulator/Modules/Controllers/ControllerUDPDriverModel.hpp
 '''
 
 
@@ -22,6 +35,11 @@ import struct
 from tkinter import *
 import tkinter.ttk as ttk
 
+input_modes = {
+  'driverInput': 1,
+  'stateXYZHPR': 2,
+  'stateXYH': 3,
+}
 
 DEFAULT_PORT = 49950
 
@@ -46,7 +64,7 @@ class Object():
 
         self.id = id
         self.version = 1
-        self.inputMode = 1  # vehicle stateXYZHPR
+        self.inputMode = input_modes['driverInput']
         self.inputModeText = StringVar()
         self.inputMode2Text()
         self.objectId = self.id
@@ -69,21 +87,22 @@ class Object():
         self.udpSender.sock.close()
 
     def inputMode2Text(self):
-        if (self.inputMode == 0):
+        if (self.inputMode == input_modes['driverInput']):
             self.inputModeText.set('driverInput')
-        elif (self.inputMode == 1):
+        elif (self.inputMode == input_modes['stateXYH']):
             self.inputModeText.set('stateXYH')
-        elif (self.inputMode == 2):
+        elif (self.inputMode == input_modes['stateXYZHPR']):
             self.inputModeText.set('stateXYZHPR')
+        elif (self.inputMode == 0):
+            self.inputModeText.set('-')
         else:
             print('Unknown mode:', self.inputMode)
 
     def sendMessage(self):
 
         # print('sending obj {} inputmode {} frame {} on port {}'.format(self.id, self.inputMode, self.frameNumber, self.udpSender.port))
-
-        if (self.inputMode == 1):
-            self.message = struct.pack('iiiidddddddd', 
+        if (self.inputMode == input_modes['stateXYZHPR']):
+            message = struct.pack('iiiidddddddd', 
                 self.version, 
                 self.inputMode,
                 self.objectId, 
@@ -96,8 +115,8 @@ class Object():
                 self.r.get(),
                 self.speed.get(),
                 -self.wheel_angle.get())
-        elif (self.inputMode == 2):
-            self.message = struct.pack('iiiiddddd', 
+        elif (self.inputMode == input_modes['stateXYH']):
+            message = struct.pack('iiiiddddd', 
                 self.version, 
                 self.inputMode,
                 self.objectId, 
@@ -107,8 +126,8 @@ class Object():
                 self.h.get(),
                 self.speed.get(),
                 -self.wheel_angle.get())
-        elif (self.inputMode == 0):
-            self.message = struct.pack('iiiiddd', 
+        elif (self.inputMode == input_modes['driverInput']):
+            message = struct.pack('iiiiddd', 
                 self.version, 
                 self.inputMode,
                 self.objectId, 
@@ -116,21 +135,24 @@ class Object():
                 self.throttle.get(),
                 self.brake.get(),
                 -self.wheel_angle.get())
-
-        self.udpSender.send(self.message)
-        self.frameNumber += 1
+        
+        if (message is not None):
+            self.udpSender.send(message)
+            self.frameNumber += 1
+        else:
+            print('none')
 
     def updateStateXYZHPR(self, value):
-        self.setInputMode(1)
+        self.setInputMode(input_modes['stateXYZHPR'])
 
     def updateStateXYH(self, value):
-        self.setInputMode(2)
+        self.setInputMode(input_modes['stateXYH'])
 
     def updateDriverInput(self, value):
-        self.setInputMode(0)            
+        self.setInputMode(input_modes['driverInput'])
 
     def setInputMode(self, mode):
-        if (mode < 0 or mode > 2):
+        if (mode < 1 or mode > 3):
             print('Unknown mode:', mode)
         else:
             self.inputMode = mode
@@ -275,7 +297,7 @@ class Application(Frame):
 if __name__ == "__main__":
 
     root = Tk()
-    root.geometry("400x930+60+30")
+    root.geometry("400x955+60+30")
     root.title(os.path.splitext(os.path.basename(sys.argv[0]))[0] + ' ' + ' '.join(sys.argv[1:]))
     app = Application(master=root)
     app.mainloop()
