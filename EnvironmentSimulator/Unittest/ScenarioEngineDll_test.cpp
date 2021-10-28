@@ -1126,13 +1126,13 @@ TEST(OSILaneParing, multi_roads)
 	osi_gt.ParseFromArray(gt, sv_size);
 
 	// order: lane, predecessor, successor
-	std::vector<std::vector<int>> lane_pairs = {{0, 3, -1},
+	std::vector<std::vector<int>> lane_pairs = {{0, -1, 3},
 												{2, -1, 5},
-												{3, 6, 0},
+												{3, 0, 6},
 												{5, 2, 8},
-												{6, 9, 3},
+												{6, 3, 9},
 												{8, 5, 11},
-												{9, -1, 6},
+												{9, 6, -1},
 												{11, 8, -1}};
 	int successor;
 	int predecessor;
@@ -1197,20 +1197,20 @@ TEST(OSILaneParing, multi_lanesections)
 	const char *gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
 	// order: lane, predecessor, successor
-	std::vector<std::vector<int>> lane_pairs = {{0, 3, -1},
+	std::vector<std::vector<int>> lane_pairs = {{0, -1, 3},
 												{2, -1, 6},
-												{4, 8, -1},
-												{3, 7, 0},
+												{4, -1, 8},
+												{3, 0, 7},
 												{6, 2, 10},
-												{8, 12, 4},
-												{7, 11, 3},
+												{8, 4, 12},
+												{7, 3, 11},
 												{10, 6, 14},
-												{12, 17, 8},
-												{11, 16, 7},
+												{12, 8, 17},
+												{11, 7, 16},
 												{14, 10, 19},
 												{15, -1, 20},
-												{17, -1, 12},
-												{16, -1, 11},
+												{17, 12, -1},
+												{16, 11, -1},
 												{19, 14, -1},
 												{20, 15, -1}};
 	int successor;
@@ -1219,8 +1219,6 @@ TEST(OSILaneParing, multi_lanesections)
 	int gt_predecessor;
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
-		// std::cout << i << std::endl;
-		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			predecessor = -1;
@@ -1281,6 +1279,7 @@ TEST(OSILaneParing, highway_split)
 												{10, 2, 6},
 												{4, 8, -1},
 												{6, 10, -1}};
+
 	int successor;
 	int predecessor;
 	int gt_successor;
@@ -1288,8 +1287,6 @@ TEST(OSILaneParing, highway_split)
 
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
-		// std::cout << i << std::endl;
-		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			predecessor = -1;
@@ -1323,8 +1320,77 @@ TEST(OSILaneParing, highway_split)
 			{
 				gt_predecessor = -1;
 			}
-			ASSERT_EQ(gt_successor, successor);
-			ASSERT_EQ(gt_predecessor, predecessor);
+			EXPECT_EQ(gt_successor, successor);
+			EXPECT_EQ(gt_predecessor, predecessor);
+		}
+	}
+	SE_Close();
+}
+
+//rht split is a merge with lht
+TEST(OSILaneParing, highway_merge_lht)
+{
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/highway_split_lht.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
+	ASSERT_EQ(i_init, 0);
+
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	// order: lane, predecessor, successor
+	std::vector<std::vector<int>> lane_pairs = {{1, -1, 8},
+												{2, -1, 10},
+												{8, 1, 4},
+												{10, 2, 6},
+												{4, 8, -1},
+												{6, 10, -1}};
+
+	int successor;
+	int predecessor;
+	int gt_successor;
+	int gt_predecessor;
+
+	for (int i = 0; i < osi_gt.lane_size(); i++)
+	{
+		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
+		{
+			predecessor = -1;
+			successor = -1;
+			for (int k = 0; k < lane_pairs.size(); k++)
+			{
+				if (osi_gt.mutable_lane(i)->id().value() == lane_pairs[k][0])
+				{
+					predecessor = lane_pairs[k][1];
+					successor = lane_pairs[k][2];
+				}
+			}
+
+			if (successor == -1 && predecessor == -1)
+			{
+				ASSERT_EQ(true, false);
+			}
+			if (successor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
+			{
+				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
+			}
+			else
+			{
+				gt_successor = -1;
+			}
+			if (predecessor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
+			{
+				gt_predecessor = (int)osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
+			}
+			else
+			{
+				gt_predecessor = -1;
+			}
+			EXPECT_EQ(gt_successor, successor);
+			EXPECT_EQ(gt_predecessor, predecessor);
 		}
 	}
 	SE_Close();
@@ -1344,15 +1410,15 @@ TEST(OSILaneParing, highway_merge)
 	const char *gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
 	// order: lane, predecessor, successor
-	std::vector<std::vector<int>> lane_pairs = {{0, 11, -1},
+	std::vector<std::vector<int>> lane_pairs = {{0, -1, 11},
 												{2, -1, 13},
 												{3, -1, 14},
 												{5, -1, 16},
-												{6, -1, 11},
+												{6, 11, -1},
 												{8, 13, -1},
 												{9, 14, -1},
 												{10, 16, -1},
-												{11, 6, 0},
+												{11, 0, 6},
 												{13, 2, 8},
 												{14, 3, 9},
 												{16, 5, 10}};
@@ -1362,8 +1428,6 @@ TEST(OSILaneParing, highway_merge)
 	int gt_predecessor;
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
-		// std::cout << i << std::endl;
-		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			predecessor = -1;
@@ -1418,13 +1482,13 @@ TEST(OSILaneParing, circular_road)
 	const char *gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
 	// order: lane, predecessor, successor
-	std::vector<std::vector<int>> lane_pairs = {{0, 11, 5},
+	std::vector<std::vector<int>> lane_pairs = {{0, 5, 11},
 												{2, 3, 9},
-												{3, 6, 2},
+												{3, 2, 6},
 												{5, 0, 8},
-												{6, 9, 3},
+												{6, 3, 9},
 												{8, 5, 11},
-												{9, 2, 6},
+												{9, 6, 2},
 												{11, 8, 0}};
 	int successor;
 	int predecessor;
@@ -1432,8 +1496,6 @@ TEST(OSILaneParing, circular_road)
 	int gt_predecessor;
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
-		// std::cout << i << std::endl;
-		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			predecessor = -1;
@@ -1489,18 +1551,18 @@ TEST(OSILaneParing, simple_3way_intersection)
 	osi_gt.ParseFromArray(gt, sv_size);
 	// order: lane, predecessor, successor
 	std::vector<std::vector<int>> lane_pairs = {
-		{0, 18, -1},
+		{0, -1, 18},
 		{2, -1, 18},
-		{3, -1, 18},
+		{3, 18, -1},
 		{5, 18, -1},
-		{6, -1, 18},
+		{6, 18, -1},
 		{8, 18, -1},
 		{18, 3, 0},
+		{18, 3, 8},
 		{18, 2, 5},
-		{18, 6, 0},
 		{18, 2, 8},
 		{18, 6, 5},
-		{18, 3, 8}
+		{18, 6, 0}
 	};
 
 	std::sort(lane_pairs.begin(), lane_pairs.end());
@@ -1519,22 +1581,6 @@ TEST(OSILaneParing, simple_3way_intersection)
 		int current_lane_pair_length = (int)gt_lane_pairs.size();
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
-			predecessor = -1;
-			successor = -1;
-
-			for (int k = 0; k < lane_pairs.size(); k++)
-			{
-				if (osi_gt.mutable_lane(i)->id().value() == lane_pairs[k][0])
-				{
-					prev_id = lane_pairs[k][0];
-					predecessor = lane_pairs[k][1];
-					successor = lane_pairs[k][2];
-					if (prev_id == lane_pairs[k][0] && k == counter)
-					{
-						break;
-					}
-				}
-			}
 			if (osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
 			{
 				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
@@ -1551,12 +1597,87 @@ TEST(OSILaneParing, simple_3way_intersection)
 			{
 				gt_predecessor = -1;
 			}
-			++counter;
 
 			gt_lane_pairs.push_back({(int)osi_gt.lane(i).id().value(), gt_predecessor, gt_successor});
 		}
-		if(current_lane_pair_length==gt_lane_pairs.size()){
-			gt_lane_pairs.push_back({(int)osi_gt.lane(i).id().value(), -1, -1});
+
+	}
+	std::sort(gt_lane_pairs.begin(), gt_lane_pairs.end());
+
+	ASSERT_EQ(gt_lane_pairs.size(), lane_pairs.size());
+	for (int i = 0; i < lane_pairs.size(); i++)
+	{
+		ASSERT_EQ(gt_lane_pairs[i][0], lane_pairs[i][0]);
+		ASSERT_EQ(gt_lane_pairs[i][1], lane_pairs[i][1]);
+		ASSERT_EQ(gt_lane_pairs[i][2], lane_pairs[i][2]);
+	}
+
+	SE_Close();
+}
+
+TEST(OSILaneParing, simple_3way_intersection_lht)
+{
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/simple_3_way_intersection_osi_lht.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
+	ASSERT_EQ(i_init, 0);
+
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	// order: lane, predecessor, successor
+	std::vector<std::vector<int>> lane_pairs = {
+		{0, -1, 18},
+		{2, -1, 18},
+		{3, 18, -1},
+		{5, 18, -1},
+		{6, 18, -1},
+		{8, 18, -1},
+		{18, 0, 3},
+		{18, 0, 6},
+		{18, 5, 2},
+		{18, 5, 6},
+		{18, 8, 2},
+		{18, 8, 3}
+	};
+
+	std::sort(lane_pairs.begin(), lane_pairs.end());
+
+	int successor;
+	int predecessor;
+	int gt_successor;
+	int gt_predecessor;
+	static int counter = 0;
+	static int prev_id;
+
+	std::vector<std::vector<int>> gt_lane_pairs;
+
+	for (int i = 0; i < osi_gt.lane_size(); i++)
+	{
+		int current_lane_pair_length = (int)gt_lane_pairs.size();
+		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
+		{
+			if (osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
+			{
+				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
+			}
+			else
+			{
+				gt_successor = -1;
+			}
+			if (osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
+			{
+				gt_predecessor = (int)osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
+			}
+			else
+			{
+				gt_predecessor = -1;
+			}
+
+			gt_lane_pairs.push_back({(int)osi_gt.lane(i).id().value(), gt_predecessor, gt_successor});
 		}
 
 	}
@@ -1588,26 +1709,26 @@ TEST(OSILaneParing, simple_4way_intersection)
 	osi_gt.ParseFromArray(gt, sv_size);
 	// order: lane, predecessor, successor
 	std::vector<std::vector<int>> lane_pairs = {
-		{0, 30, -1},
+		{0, -1, 30},
 		{2, -1, 30},
-		{3, -1, 30},
+		{3, 30, -1},
 		{5, 30, -1},
-		{6, -1, 30},
+		{6, 30, -1},
 		{8, 30, -1},
-		{9, -1, 30},
+		{9, 30, -1},
 		{11, 30, -1},
-		{30, 3, 0},
 		{30, 2, 5},
-		{30, 6, 0},
 		{30, 2, 8},
-		{30, 9, 0},
 		{30, 2, 11},
-		{30, 6, 5},
+		{30, 3, 0},
 		{30, 3, 8},
-		{30, 9, 5},
 		{30, 3, 11},
-		{30, 9, 8},
-		{30, 6, 11}
+		{30, 6, 0},
+		{30, 6, 5},
+		{30, 6, 11},
+		{30, 9, 0},
+		{30, 9, 5},
+		{30, 9, 8}
 	};
 	std::sort(lane_pairs.begin(), lane_pairs.end());
 
@@ -1625,22 +1746,6 @@ TEST(OSILaneParing, simple_4way_intersection)
 		int current_lane_pair_length = (int)gt_lane_pairs.size();
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
-			predecessor = -1;
-			successor = -1;
-
-			for (int k = 0; k < lane_pairs.size(); k++)
-			{
-				if (osi_gt.mutable_lane(i)->id().value() == lane_pairs[k][0])
-				{
-					prev_id = lane_pairs[k][0];
-					predecessor = lane_pairs[k][1];
-					successor = lane_pairs[k][2];
-					if (prev_id == lane_pairs[k][0] && k == counter)
-					{
-						break;
-					}
-				}
-			}
 			if (osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
 			{
 				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
@@ -1657,12 +1762,8 @@ TEST(OSILaneParing, simple_4way_intersection)
 			{
 				gt_predecessor = -1;
 			}
-			++counter;
 
 			gt_lane_pairs.push_back({(int)osi_gt.lane(i).id().value(), gt_predecessor, gt_successor});
-		}
-		if(current_lane_pair_length==gt_lane_pairs.size()){
-			gt_lane_pairs.push_back({(int)osi_gt.lane(i).id().value(), -1, -1});
 		}
 
 	}
