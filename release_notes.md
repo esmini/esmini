@@ -1,5 +1,24 @@
 ## esmini release notes
 
+### 2021-10-28 Version 2.16.0
+
+- Add UDPDriverController
+  - Provide an UDP interface to control entities, e.g. for external driver models.
+  - Either by explicit position (variants of x,y,z,h,p,r) or driver input (throttle, steering...)
+  - Synchronous (blocking) or asynchronous (non-blocking) mode
+  - Works both on same or different host (than esmini running on)
+  - For more info, see example python scripts in [scripts\udp-driver](https://github.com/esmini/esmini/blob/master/scripts/udp-driver).
+- Initial implementation of geo reference
+- Add lib API for custom camera positions
+- Support additive mode for ACCController
+  - In override mode setSpeed is explicitly stated as a property
+  - In additive mode setSpeed will adapt to external modifications to speed, e.g. SpeedAction
+- Option to remove ghost vehicle info from OSI groundtruth dynamic
+- Fix disable_controllers ghost bug
+- Fix OSI lane left/right, predecessor/successor and some other OSI related bugs
+
+**Note**: To support the external driver controller some changes to gateway was needed (e.g. extended dirty bit strategy to keep track of what parts of entity states has been updated or not). These changes might affect behavior of existing integrations with esmini, e.g. how and when esmini will align entities to road elevation and/or pitch. Please report any new (undesired) behavior.
+
 ### 2021-10-18 Version 2.15.3
 
 - Extend screen capture functionality
