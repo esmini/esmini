@@ -22,7 +22,7 @@
 #include "ControllerRel2Abs.hpp"
 #include "ControllerACC.hpp"
 #include "ControllerALKS.hpp"
-#include "ControllerUDPDriverModel.hpp"
+#include "ControllerUDPDriver.hpp"
 
 #include <cstdlib>
 
@@ -56,7 +56,7 @@ void ScenarioReader::LoadControllers()
 	RegisterController(ControllerRel2Abs::GetTypeNameStatic(), InstantiateControllerRel2Abs);
 	RegisterController(ControllerACC::GetTypeNameStatic(), InstantiateControllerACC);
 	RegisterController(ControllerALKS::GetTypeNameStatic(), InstantiateControllerALKS);
-	RegisterController(ControllerUDPDriverModel::GetTypeNameStatic(), InstantiateControllerUDPDriverModel);
+	RegisterController(ControllerUDPDriver::GetTypeNameStatic(), InstantiateControllerUDPDriver);
 }
 
 void ScenarioReader::UnloadControllers()

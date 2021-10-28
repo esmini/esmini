@@ -120,7 +120,7 @@
                 <Property name="timeGap"  value="$TimeGap" />
             </Properties>
         </Controller>
-        <Controller name="UDPDriverModelController">
+        <Controller name="UDPDriverController">
             <ParameterDeclarations>
                 <!-- port: port number [1, 65535] OR 0 to pick automatically starting at basePort (see below) -->
                 <!-- Default = 49950 -->

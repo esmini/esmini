@@ -109,7 +109,7 @@ run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \
 run/replayer/run_and_plot_ltap-od_pos*.* \
 scripts/plot_csv.py \
-scripts/udp-driver-model/*.* \
+scripts/udp-driver/*.* \
 docs/readme.txt \
 docs/commands.txt \
 3rd_party_terms_and_licenses/* \

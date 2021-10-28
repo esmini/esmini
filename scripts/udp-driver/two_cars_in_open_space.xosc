@@ -26,7 +26,7 @@
       <ScenarioObject name="Car0">
           <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
           <ObjectController>
-              <CatalogReference catalogName="ControllerCatalog" entryName="UDPDriverModelController">
+              <CatalogReference catalogName="ControllerCatalog" entryName="UDPDriverController">
                  <ParameterAssignments>
                      <ParameterAssignment parameterRef="Port" value="0" />
                      <ParameterAssignment parameterRef="ExecMode" value="asynchronous" />
@@ -37,7 +37,7 @@
       <ScenarioObject name="Car1">
           <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
           <ObjectController>
-              <CatalogReference catalogName="ControllerCatalog" entryName="UDPDriverModelController" >
+              <CatalogReference catalogName="ControllerCatalog" entryName="UDPDriverController" >
                  <ParameterAssignments>
                      <ParameterAssignment parameterRef="Port" value="0" />
                      <ParameterAssignment parameterRef="ExecMode" value="asynchronous" />

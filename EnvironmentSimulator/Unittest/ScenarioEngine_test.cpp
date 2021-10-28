@@ -6,7 +6,7 @@
 
 #include "ScenarioEngine.hpp"
 #include "ScenarioReader.hpp"
-#include "ControllerUDPDriverModel.hpp"
+#include "ControllerUDPDriver.hpp"
 #include "pugixml.hpp"
 #include "simple_expr.h"
 
@@ -554,7 +554,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     {
         scenarioengine::Controller::InitArgs args;
         args.name = "UDPDriverModel Controller";
-        args.type = ControllerUDPDriverModel::GetTypeNameStatic();
+        args.type = ControllerUDPDriver::GetTypeNameStatic();
         args.parameters = 0;
         args.gateway = se->getScenarioGateway();
         args.properties = new OSCProperties();
@@ -568,7 +568,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
         property.name_ = "inputMode";
         property.value_ = "vehicleStateXYZHPR";
         args.properties->property_.push_back(property);
-        ControllerUDPDriverModel* controller = (ControllerUDPDriverModel*)InstantiateControllerUDPDriverModel(&args);
+        ControllerUDPDriver* controller = (ControllerUDPDriver*)InstantiateControllerUDPDriver(&args);
 
         delete se->entities.object_[i]->controller_;
         delete args.properties;
@@ -584,12 +584,12 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     // stimulate driver input
     UDPClient* udpClient= new UDPClient(61900, "127.0.0.1");
 
-    ControllerUDPDriverModel::DMMessage msg;
+    ControllerUDPDriver::DMMessage msg;
 
     msg.header.frameNumber = 0;
     msg.header.version = 1;
     msg.header.objectId = 0;
-    msg.header.inputMode = static_cast<int>(ControllerUDPDriverModel::InputMode::VEHICLE_STATE_XYH);
+    msg.header.inputMode = static_cast<int>(ControllerUDPDriver::InputMode::VEHICLE_STATE_XYH);
 
     msg.message.stateXYZHPR.h = 0.3;
     msg.message.stateXYZHPR.x = 20.0;
@@ -625,7 +625,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     {
         scenarioengine::Controller::InitArgs args;
         args.name = "UDPDriverModel Controller";
-        args.type = ControllerUDPDriverModel::GetTypeNameStatic();
+        args.type = ControllerUDPDriver::GetTypeNameStatic();
         args.parameters = 0;
         args.gateway = se->getScenarioGateway();
         args.properties = new OSCProperties();
@@ -645,7 +645,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
         property.name_ = "timoutMs";
         property.value_ = std::to_string(500);
         args.properties->property_.push_back(property);
-        ControllerUDPDriverModel* controller = (ControllerUDPDriverModel*)InstantiateControllerUDPDriverModel(&args);
+        ControllerUDPDriver* controller = (ControllerUDPDriver*)InstantiateControllerUDPDriver(&args);
 
         delete se->entities.object_[i]->controller_;
         delete args.properties;
@@ -661,12 +661,12 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     // stimulate driver input
     UDPClient* udpClient = new UDPClient(61910, "127.0.0.1");
 
-    ControllerUDPDriverModel::DMMessage msg;
+    ControllerUDPDriver::DMMessage msg;
 
     msg.header.frameNumber = 0;
     msg.header.version = 1;
     msg.header.objectId = 0;
-    msg.header.inputMode = static_cast<int>(ControllerUDPDriverModel::InputMode::VEHICLE_STATE_XYZHPR);
+    msg.header.inputMode = static_cast<int>(ControllerUDPDriver::InputMode::VEHICLE_STATE_XYZHPR);
 
     msg.message.stateXYZHPR.h = 0.3;
     msg.message.stateXYZHPR.x = 20.0;
@@ -704,7 +704,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     msg.header.frameNumber = 0;
     msg.header.version = 1;
     msg.header.objectId = 1;
-    msg.header.inputMode = static_cast<int>(ControllerUDPDriverModel::InputMode::VEHICLE_STATE_XYZHPR);
+    msg.header.inputMode = static_cast<int>(ControllerUDPDriver::InputMode::VEHICLE_STATE_XYZHPR);
 
     msg.message.stateXYZHPR.h = 0.3;
     msg.message.stateXYZHPR.x = 90.0;

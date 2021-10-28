@@ -1,5 +1,5 @@
 '''
-   This script shows how to use the esmini UDPDriverModel
+   This script shows how to use the esmini UDPDriverController
    it offers three modes of input:
       0. driverInput in terms of throttle, brake and SteeringWheelAngle
       1. state in terms of X, Y, Z, Head, Pitch, Roll, Speed, SteeringWheelAngle
@@ -9,10 +9,10 @@
 
    To run it:
    1. Open two terminals
-   2. From terminal 1, run: ./bin/esmini --window 60 60 800 400 --osc ./scripts/udp-driver-model/two_cars_in_open_space.xosc
-   3. From terminal 2, run: ./scripts/udp-driver-model/testUDPDriverModel.py --id 0 --id 1
-        or python ./scripts/udp-driver-model/testUDPDriverModel.py --id 0 --id 1
-        or python3 ./scripts/udp-driver-model/testUDPDriverModel.py --id 0 --id 1
+   2. From terminal 1, run: ./bin/esmini --window 60 60 800 400 --osc ./scripts/udp-driver/two_cars_in_open_space.xosc
+   3. From terminal 2, run: ./scripts/udp-driver-model/testUDPDriver.py --id 0 --id 1
+        or python ./scripts/udp-driver/testUDPDriver.py --id 0 --id 1
+        or python3 ./scripts/udp-driver/testUDPDriver.py --id 0 --id 1
         depending on platform and file type associations
 
    If esmini is running on another host, add argument --ip <ip address of host running esmini>, e.g. --ip 216.58.211.14
@@ -23,7 +23,7 @@
    
    For other endianess, e.g. dSPACE runtime platform, you would need to swap byteorder on sender or receiver side.
 
-   For complete message definitions, see esmini/EnvironmentSimulator/Modules/Controllers/ControllerUDPDriverModel.hpp
+   For complete message definitions, see esmini/EnvironmentSimulator/Modules/Controllers/ControllerUDPDriver.hpp
 '''
 
 
