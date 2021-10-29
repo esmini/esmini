@@ -17,7 +17,7 @@
  * https://unece.org/sites/default/files/2021-03/R157e.pdf, pages 43-45
  */
 
-#include "ControllerECE_ALKS_DRIVER.hpp"
+#include "ControllerECE_ALKS_RefDriver.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
@@ -26,14 +26,14 @@ using namespace scenarioengine;
 
 #define ALKS_LOG(...) {if (logging_) { LOG(__VA_ARGS__); } else { (void)0; }}
 
-Controller* scenarioengine::InstantiateControllerECE_ALKS_DRIVER(void* args)
+Controller* scenarioengine::InstantiateControllerECE_ALKS_REF_DRIVER(void* args)
 {
 	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
 
-	return new ControllerECE_ALKS_DRIVER(initArgs);
+	return new ControllerECE_ALKS_REF_DRIVER(initArgs);
 }
 
-ControllerECE_ALKS_DRIVER::ControllerECE_ALKS_DRIVER(InitArgs* args) : active_(false), setSpeed_(0), currentSpeed_(0), logging_(false), Controller(args)
+ControllerECE_ALKS_REF_DRIVER::ControllerECE_ALKS_REF_DRIVER(InitArgs* args) : active_(false), setSpeed_(0), currentSpeed_(0), logging_(false), Controller(args)
 {
 	mode_ = Mode::MODE_ADDITIVE;
 
@@ -46,12 +46,12 @@ ControllerECE_ALKS_DRIVER::ControllerECE_ALKS_DRIVER(InitArgs* args) : active_(f
 	}
 }
 
-void ControllerECE_ALKS_DRIVER::Init()
+void ControllerECE_ALKS_REF_DRIVER::Init()
 {
 	Controller::Init();
 }
 
-void ControllerECE_ALKS_DRIVER::Step(double timeStep)
+void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
 {
 //	double minGapLength = LARGE_NUMBER;
 	double minDist = 15.0;  // minimum distance to keep to lead vehicle
@@ -343,7 +343,7 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 	}
 
 	object_->SetSpeed(currentSpeed_);
-	gateway_->reportObjectSpeed(object_->GetId(), object_->GetSpeed());
+	gateway_->updateObjectSpeed(object_->GetId(), 0.0, object_->GetSpeed());
 
 	if (currentSpeed_ == 0.0)
 	{
@@ -354,13 +354,13 @@ void ControllerECE_ALKS_DRIVER::Step(double timeStep)
 	Controller::Step(timeStep);
 }
 
-void ControllerECE_ALKS_DRIVER::Activate(ControlDomains domainMask)
+void ControllerECE_ALKS_REF_DRIVER::Activate(ControlDomains domainMask)
 {
 	Reset();
 	Controller::Activate(domainMask);
 }
 
-void ControllerECE_ALKS_DRIVER::Reset()
+void ControllerECE_ALKS_REF_DRIVER::Reset()
 {
 	setSpeed_ = object_->GetSpeed();
 	dtFreeCutOut_ = -LARGE_NUMBER;
@@ -371,6 +371,6 @@ void ControllerECE_ALKS_DRIVER::Reset()
 	timeSinceBraking_ = 0.0;
 }
 
-void ControllerECE_ALKS_DRIVER::ReportKeyEvent(int key, bool down)
+void ControllerECE_ALKS_REF_DRIVER::ReportKeyEvent(int key, bool down)
 {
 }

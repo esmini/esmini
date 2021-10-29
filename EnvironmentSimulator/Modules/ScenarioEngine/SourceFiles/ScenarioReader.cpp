@@ -23,7 +23,7 @@
 #include "ControllerACC.hpp"
 #include "ControllerALKS.hpp"
 #include "ControllerUDPDriver.hpp"
-#include "ControllerECE_ALKS_DRIVER.hpp"
+#include "ControllerECE_ALKS_RefDriver.hpp"
 
 #include <cstdlib>
 
@@ -58,7 +58,7 @@ void ScenarioReader::LoadControllers()
 	RegisterController(ControllerACC::GetTypeNameStatic(), InstantiateControllerACC);
 	RegisterController(ControllerALKS::GetTypeNameStatic(), InstantiateControllerALKS);
 	RegisterController(ControllerUDPDriver::GetTypeNameStatic(), InstantiateControllerUDPDriver);
-	RegisterController(ControllerECE_ALKS_DRIVER::GetTypeNameStatic(), InstantiateControllerECE_ALKS_DRIVER);
+	RegisterController(ControllerECE_ALKS_REF_DRIVER::GetTypeNameStatic(), InstantiateControllerECE_ALKS_REF_DRIVER);
 }
 
 void ScenarioReader::UnloadControllers()

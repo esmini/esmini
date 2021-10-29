@@ -17,19 +17,19 @@
 #include "Entities.hpp"
 #include "vehicle.hpp"
 
-#define CONTROLLER_ECE_ALKS_DRIVER_TYPE_NAME "ECE_ALKS_DRIVER_Controller"
+#define CONTROLLER_ECE_ALKS_REF_DRIVER_TYPE_NAME "ECE_ALKS_RefDriverController"
 
 namespace scenarioengine
 {
 	class ScenarioPlayer;
 
 	// base class for controllers
-	class ControllerECE_ALKS_DRIVER: public Controller
+	class ControllerECE_ALKS_REF_DRIVER: public Controller
 	{
 	public:
-		ControllerECE_ALKS_DRIVER(InitArgs *args);
+		ControllerECE_ALKS_REF_DRIVER(InitArgs *args);
 
-		static const char* GetTypeNameStatic() { return CONTROLLER_ECE_ALKS_DRIVER_TYPE_NAME; }
+		static const char* GetTypeNameStatic() { return CONTROLLER_ECE_ALKS_REF_DRIVER_TYPE_NAME; }
 		virtual const char* GetTypeName() { return GetTypeNameStatic(); }
 		static const int GetTypeStatic() { return CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER; }
 		virtual int GetType() { return GetTypeStatic(); }
@@ -55,5 +55,5 @@ namespace scenarioengine
 		double timeSinceBraking_;
 	};
 
-	Controller* InstantiateControllerECE_ALKS_DRIVER(void* args);
+	Controller* InstantiateControllerECE_ALKS_REF_DRIVER(void* args);
 }

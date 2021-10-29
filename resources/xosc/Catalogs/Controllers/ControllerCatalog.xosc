@@ -110,7 +110,7 @@
                 <Property name="timeGap"  value="$TimeGap" />
             </Properties>
         </Controller>
-        <Controller name="ALKSController">
+        <Controller name="ECE_ALKS_RefDriverController">
             <ParameterDeclarations>
                 <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" /> 
                 <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5" /> 
