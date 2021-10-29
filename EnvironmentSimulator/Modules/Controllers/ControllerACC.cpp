@@ -42,7 +42,7 @@ ControllerACC::ControllerACC(InitArgs* args) : active_(false), timeGap_(1.5), se
 		setSpeed_ = strtod(args->properties->GetValueStr("setSpeed"));
 		setSpeedSet_ = true;
 	}
-	if (!args->properties->ValueExists("mode"))
+	if (args && args->properties && !args->properties->ValueExists("mode"))
 	{
 		// Default mode for this controller is additive
 		// which will use speed set by other actions as setSpeed
