@@ -13,7 +13,7 @@
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="190"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="120"/>
       <ParameterDeclaration name="TargetSpeed" parameterType="double" value="30"/>
       <ParameterDeclaration name="EgoS" parameterType="double" value="20"/>
       <ParameterDeclaration name="TargetS" parameterType="double" value="100"/>
@@ -39,14 +39,15 @@
       <ScenarioObject name="Ego">
         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
          <ObjectController>
-            <Controller name="ECE_ALKS_DRIVER_Controller" />
-         </ObjectController>         
+            <Controller name="ALKSController" />
+            <!-- <Controller name="ECE_ALKS_RefDriverController" /> -->
+	     </ObjectController>         
       </ScenarioObject>
       <ScenarioObject name="Target">
          <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
         <!-- <ObjectController> -->
             <!-- <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" /> -->
-        <!-- </ObjectController>          -->
+        <!-- </ObjectController> -->
       </ScenarioObject>
    </Entities>
    <Storyboard>
@@ -61,9 +62,6 @@
                   </TeleportAction>
                </PrivateAction>
                <PrivateAction>
-                    <ActivateControllerAction longitudinal="true" lateral="false" />
-               </PrivateAction>
-               <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
@@ -72,6 +70,9 @@
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="true" lateral="false" />
                </PrivateAction>
             </Private>
             <Private entityRef="Target">

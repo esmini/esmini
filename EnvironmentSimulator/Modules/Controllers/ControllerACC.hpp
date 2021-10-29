@@ -41,6 +41,7 @@ namespace scenarioengine
 		vehicle::Vehicle vehicle_;
 		double timeGap_;  // target headway time
 		bool active_;
+		bool setSpeedSet_;
 		double setSpeed_;
 		double currentSpeed_;
 	};

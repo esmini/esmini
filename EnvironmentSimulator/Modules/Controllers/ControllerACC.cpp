@@ -30,8 +30,8 @@ Controller* scenarioengine::InstantiateControllerACC(void* args)
 	return new ControllerACC(initArgs);
 }
 
-ControllerACC::ControllerACC(InitArgs* args) : active_(false), timeGap_(1.5), setSpeed_(0), currentSpeed_(0),
-	Controller(args)
+ControllerACC::ControllerACC(InitArgs* args) : active_(false), timeGap_(1.5), setSpeed_(0),
+	currentSpeed_(0), setSpeedSet_(false), Controller(args)
 {
 	if (args && args->properties && args->properties->ValueExists("timeGap"))
 	{
@@ -40,6 +40,16 @@ ControllerACC::ControllerACC(InitArgs* args) : active_(false), timeGap_(1.5), se
 	if (args && args->properties && args->properties->ValueExists("setSpeed"))
 	{
 		setSpeed_ = strtod(args->properties->GetValueStr("setSpeed"));
+		setSpeedSet_ = true;
+	}
+	if (!args->properties->ValueExists("mode"))
+	{
+		// Default mode for this controller is additive
+		// which will use speed set by other actions as setSpeed
+		// in override mode setSpeed is set explicitly (if missing
+		// the current speed when controller is activated will be
+		// used as setSpeed)
+		mode_ = Controller::Mode::MODE_ADDITIVE;
 	}
 }
 
@@ -177,7 +187,7 @@ void ControllerACC::Step(double timeStep)
 void ControllerACC::Activate(ControlDomains domainMask)
 {
 	currentSpeed_ = object_->GetSpeed();
-	if (mode_ == Mode::MODE_ADDITIVE)
+	if (mode_ == Mode::MODE_ADDITIVE || setSpeedSet_ == false)
 	{
 		setSpeed_ = object_->GetSpeed();
 	}

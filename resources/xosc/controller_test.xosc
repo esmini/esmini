@@ -143,7 +143,7 @@
                           </Condition>
                        </ConditionGroup>
                     </StartTrigger>
-                  </Event>                        
+                  </Event>
                   <Event name="BetterSloppyDriverEvent" maximumExecutionCount="1" priority="overwrite">
                      <Action name="AssignBetterSloppyDriverControllerAction">
                        <PrivateAction>
@@ -201,7 +201,7 @@
                           </Condition>
                        </ConditionGroup>
                     </StartTrigger>
-                  </Event>                  
+                  </Event>
                </Maneuver>
             </ManeuverGroup>
             <StartTrigger>
@@ -212,7 +212,7 @@
                      </ByValueCondition>
                   </Condition>
                </ConditionGroup>
-            </StartTrigger>                 
+            </StartTrigger>
             <StopTrigger>
                 <ConditionGroup>
                    <Condition name="EgoLaneChangeCondition" delay="0.0" conditionEdge="none">
@@ -235,6 +235,4 @@
       </Story>
    </Storyboard>
 </OpenSCENARIO>
-
-
 

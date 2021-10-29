@@ -93,7 +93,7 @@
         <Controller name="sumoController">
             <ParameterDeclarations>
                 <ParameterDeclaration name="CfgFile" parameterType="string" value="../sumo_inputs/e6mini.sumocfg" /> 
-            </ParameterDeclarations>            
+            </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="SumoController" />
                 <File filepath="$CfgFile"/>
@@ -101,11 +101,25 @@
         </Controller>
         <Controller name="ACCController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" /> 
-                <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5" /> 
-            </ParameterDeclarations>            
+                <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" />
+                <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5" />
+                <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
+            </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="ACCController" />
+                <Property name="mode" value="$Mode" />
+                <Property name="setSpeed"  value="$SetSpeed" />
+                <Property name="timeGap"  value="$TimeGap" />
+            </Properties>
+        </Controller>
+        <Controller name="ALKSController">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" />
+                <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5" />
+                <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
+            </ParameterDeclarations>
+            <Properties>
+                <Property name="mode" value="$Mode" />
                 <Property name="setSpeed"  value="$SetSpeed" />
                 <Property name="timeGap"  value="$TimeGap" />
             </Properties>
