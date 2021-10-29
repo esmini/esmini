@@ -284,6 +284,8 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 	osg::ref_ptr<osg::Texture2D> tex_grass = ReadTexture("grass.jpg");
 
 	osg::ref_ptr<osg::Vec4Array> color_asphalt = new osg::Vec4Array;
+	osg::ref_ptr<osg::Vec4Array> color_concrete = new osg::Vec4Array;
+	osg::ref_ptr<osg::Vec4Array> color_border_inner = new osg::Vec4Array;
 	osg::ref_ptr<osg::Vec4Array> color_grass = new osg::Vec4Array;
 
 	if (tex_asphalt)
@@ -304,15 +306,21 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 		color_grass->push_back(osg::Vec4(0.25f, 0.5f, 0.35f, 1.0f));
 	}
 
+	color_concrete->push_back(osg::Vec4(0.61f, 0.61f, 0.61f, 1.0f));
+	color_border_inner->push_back(osg::Vec4(0.45f, 0.45f, 0.45f, 1.0f));
+
 	osg::ref_ptr<osg::Material> materialAsphalt_ = new osg::Material;
 	osg::ref_ptr<osg::Material> materialGrass_ = new osg::Material;
+	osg::ref_ptr<osg::Material> materialConcrete_ = new osg::Material;
+	osg::ref_ptr<osg::Material> materialBorderInner_ = new osg::Material;
 	materialAsphalt_->setDiffuse(osg::Material::FRONT_AND_BACK, color_asphalt->at(0));
 	materialAsphalt_->setAmbient(osg::Material::FRONT_AND_BACK, color_asphalt->at(0));
-//	materialAsphalt_->setShininess(osg::Material::FRONT_AND_BACK, 0);
 	materialGrass_->setDiffuse(osg::Material::FRONT_AND_BACK, color_grass->at(0));
 	materialGrass_->setAmbient(osg::Material::FRONT_AND_BACK, color_grass->at(0));
-//	materialGrass_->setShininess(osg::Material::FRONT_AND_BACK, 0);
-
+	materialConcrete_->setDiffuse(osg::Material::FRONT_AND_BACK, color_concrete->at(0));
+	materialConcrete_->setAmbient(osg::Material::FRONT_AND_BACK, color_concrete->at(0));
+	materialBorderInner_->setDiffuse(osg::Material::FRONT_AND_BACK, color_border_inner->at(0));
+	materialBorderInner_->setAmbient(osg::Material::FRONT_AND_BACK, color_border_inner->at(0));
 
 	for (size_t i = 0; i < odr->GetNumOfRoads(); i++)
 	{
@@ -465,9 +473,11 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 					geom->setTexCoordArray(0, texcoordsLocal.get());
 					osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
 
-					osg::ref_ptr<osg::Texture2D> tex = 0;
+					osg::ref_ptr<osg::Texture2D> tex = nullptr;
 
-					if (lsec->GetLaneByIdx(lane->GetId() < 0 ? k : k-1)->IsType(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD))
+					roadmanager::Lane* laneForMaterial = lsec->GetLaneByIdx(lane->GetId() < 0 ? k : k - 1);
+
+					if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD))
 					{
 						geom->setColorArray(color_asphalt.get());
 						if (tex_asphalt)
@@ -475,6 +485,18 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 							tex = tex_asphalt.get();
 						}
 						geom->getOrCreateStateSet()->setAttributeAndModes(materialAsphalt_.get());
+					}
+					else if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BIKING) ||
+						laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK))
+					{
+						geom->setColorArray(color_concrete.get());
+						geom->getOrCreateStateSet()->setAttributeAndModes(materialConcrete_.get());
+					}
+					else if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BORDER) &&
+						k != 1 && k != lsec->GetNumberOfLanes() - 1)
+					{
+						geom->setColorArray(color_border_inner.get());
+						geom->getOrCreateStateSet()->setAttributeAndModes(materialBorderInner_.get());
 					}
 					else
 					{
@@ -487,7 +509,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive *odr)
 					}
 					geom->setColorBinding(osg::Geometry::BIND_OVERALL);
 
-					if (tex)
+					if (tex != nullptr)
 					{
 						geom->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex.get());
 						osg::ref_ptr<osg::TexEnv> texEnv = new osg::TexEnv;
