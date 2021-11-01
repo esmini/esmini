@@ -16,9 +16,10 @@ using namespace scenarioengine;
 
 void Event::Start(double simTime, double dt)
 {
+	double adjustedTime = simTime;
+
 	for (size_t i = 0; i < action_.size(); i++)
 	{
-
 		// Terminate any ongoing action on same object and domain
 		if (action_[i]->base_type_ == OSCAction::BaseType::PRIVATE)
 		{
@@ -66,19 +67,22 @@ void Event::Start(double simTime, double dt)
 		}
 		// Restart actions
 		action_[i]->Reset();
-		action_[i]->Start(simTime, dt);
+		action_[i]->Start(adjustedTime, dt);
 
-		// When using a TeleportAction for the Ghost-vehicle, we need to set back the starting simTime for other Actions in the same Event.
-		// This is an easy solution. A nicer one could be to access ScenarioEngines getSimulationTime() when calling action Start.
-		OSCAction* action = action_[i];
-		OSCPrivateAction* pa = (OSCPrivateAction*)action;
-		if (pa->object_->IsGhost() && pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
+		if (action_[i]->base_type_ == OSCAction::BaseType::PRIVATE)
 		{
-			simTime -= pa->object_->GetHeadstartTime();
+			// When using a TeleportAction for the Ghost-vehicle, we need to set back the starting simTime for other Actions in the same Event.
+			// This is an easy solution. A nicer one could be to access ScenarioEngines getSimulationTime() when calling action Start.
+			OSCAction* action = action_[i];
+			OSCPrivateAction* pa = (OSCPrivateAction*)action;
+			if (pa->object_->IsGhost() && pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
+			{
+				adjustedTime = simTime - pa->object_->GetHeadstartTime();
+			}
 		}
-
 	}
-	StoryBoardElement::Start(simTime, dt);
+
+	StoryBoardElement::Start(adjustedTime, dt);
 }
 
 void Event::End()

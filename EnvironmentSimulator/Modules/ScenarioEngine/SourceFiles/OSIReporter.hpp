@@ -115,10 +115,6 @@ public:
 	Fills the Traffic Signals
 	*/
 	int UpdateTrafficSignals();
-  /**
-  Creates a SensorView from SensorData for plotting
-  */
-  int CreateSensorViewFromSensorData(osi3::SensorData &sd);
 
 	/**
 	 Creates a SensorView from SensorData for plotting

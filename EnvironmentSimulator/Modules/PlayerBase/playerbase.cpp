@@ -169,7 +169,7 @@ void ScenarioPlayer::ScenarioFramePart(double timestep_s)
 	mutex.Lock();
 	scenarioEngine->step(timestep_s);
 
-	scenarioEngine->prepareOSIGroundTruth(timestep_s);
+	scenarioEngine->prepareGroundTruth(timestep_s);
 	scenarioGateway->WriteStatesToFile();
 	mutex.Unlock();
 }
@@ -177,8 +177,6 @@ void ScenarioPlayer::ScenarioFramePart(double timestep_s)
 void ScenarioPlayer::ScenarioFrame(double timestep_s)
 {
 	mutex.Lock();
-
-	
 
 	if (scenarioEngine->step(timestep_s) == 0)
 	{

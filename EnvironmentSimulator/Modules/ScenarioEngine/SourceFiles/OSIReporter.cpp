@@ -367,7 +367,7 @@ int OSIReporter::UpdateOSIStaticGroundTruth(std::vector<ObjectState *> objectSta
 	//Set GeoReference in OSI as map_reference
 	static roadmanager::OpenDrive* opendrive = roadmanager::Position::GetOpenDrive();
 	obj_osi_external.gt->set_map_reference(opendrive->GetGeoReferenceAsString());
-	
+
 	obj_osi_external.gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
 	obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
 	obj_osi_external.gt->mutable_lane_boundary()->CopyFrom(*obj_osi_internal.gt->mutable_lane_boundary());
@@ -412,7 +412,7 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(std::vector<ObjectState *> objectSt
 					UpdateOSIMovingObject(objectState[i]);
 				}
 			}
-				
+
 		}
 		else if (objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
 		{
@@ -533,14 +533,6 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
 
 int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 {
-	// If the object is the Ghost vehicle (ctrl_type = 100), no info will be written to the OSI
-	if (objectState->state_.info.ctrl_type == Controller::Type::GHOST_RESERVED_TYPE)
-	{
-		//printf("Ghost! \n");
-		//printf("%d \n", objectState->state_.info.id);
-		return 0;
-	}
-
 	// Create OSI Moving object
 	obj_osi_internal.mobj = obj_osi_internal.gt->add_moving_object();
 
@@ -1316,7 +1308,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 			{
 				predecessorJunction = opendrive->GetJunctionById(roadLink->GetElementId());
 			}
-			
+
 		}
 
 		roadLink = road->GetLink(roadmanager::LinkType::SUCCESSOR);
@@ -1365,14 +1357,14 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 						if (predecessorRoad->GetLink(roadmanager::LinkType::SUCCESSOR)->GetElementId() == road->GetId())
 						{
 							predecessor_lane_section = predecessorRoad->GetLaneSectionByIdx(predecessorRoad->GetNumberOfLaneSections() - 1);
-						}				
+						}
 					}
 				}
 				else if (predecessorJunction && predecessorJunction->IsOsiIntersection())
 				{
 					global_predecessor_junction_id = predecessorJunction->GetGlobalId();
 				}
-					
+
 			}
 
 			//If it is the lane section before to the last one we use the last lane section as successor
@@ -1580,7 +1572,7 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 								}
 							}
 						}
-						
+
 						// LEFT AND RIGHT LANE IDS
 						std::vector<std::pair<int, int>> globalid_ids_left;
 						std::vector<std::pair<int, int>> globalid_ids_right;
