@@ -127,15 +127,6 @@ void ScenarioPlayer::Frame(double timestep_s)
 	while ( (scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime() ) && scenarioEngine->getSimulationTime() > 0 )
 	{
 		ScenarioFramePart(timestep_s);
-		if (!headless && viewer_)
-		{
-			#ifdef _USE_OSG
-					if (!threads)
-					{
-						ViewerFrame();
-					}
-			#endif
-		}
 	}
 
 	ScenarioFrame(timestep_s);
@@ -186,6 +177,8 @@ void ScenarioPlayer::ScenarioFramePart(double timestep_s)
 void ScenarioPlayer::ScenarioFrame(double timestep_s)
 {
 	mutex.Lock();
+
+	
 
 	if (scenarioEngine->step(timestep_s) == 0)
 	{
