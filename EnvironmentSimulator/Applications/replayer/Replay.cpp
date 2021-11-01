@@ -48,6 +48,16 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 		}
 	}
 
+	// Ensure increasing timestamps. Remove any other entries.
+	for (int i = 0; i < data_.size() - 1; i++)
+	{
+		if (data_[i + 1].info.timeStamp < data_[i].info.timeStamp)
+		{
+			data_.erase(data_.begin() + i + 1);
+			i--;   // compensate for removed entry
+		}
+	}
+
 	if (data_.size() > 0)
 	{
 		// Register first entry timestamp as starting time
