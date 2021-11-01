@@ -645,11 +645,8 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 	obj_osi_internal.mobj->mutable_base()->mutable_acceleration()->set_y(objectState->state_.pos.GetAccY());
 	obj_osi_internal.mobj->mutable_base()->mutable_acceleration()->set_z(objectState->state_.pos.GetAccZ());
 
-	//todo
-	// Set OSI Moving Object Lane ID based on lane pairing
-
-	// find the current lane by objectState->state_.pos.GetLaneGlobalId()
-	//printf("Debug in OSIReporter::UpdateOSIMovingObject: current lane global ID: %d.\n", objectState->state_.pos.GetLaneGlobalId());
+	// Set ego lane
+	obj_osi_internal.mobj->add_assigned_lane_id()->set_value(objectState->state_.pos.GetLaneGlobalId());
 
 	return 0;
 }
