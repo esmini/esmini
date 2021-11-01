@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2021-11-01 Version 2.16.1
+
+- Add ECE ALKS reference driver controller (PR [#181](https://github.com/esmini/esmini/pull/181))
+- Separate material for border, sidewalk and biking lane types
+  - inner border lanes: dark gray
+  - if outmost lane is border: grass
+  - sidewalk and biking lanes: light gray
+- Fix default mode and init speed issue for ACC/ALKS controllers
+- Delete duplicate timestamps in dat files
+
 ### 2021-10-28 Version 2.16.0
 
 - Add UDPDriverController
