@@ -1855,7 +1855,7 @@ TEST(GeoReferenceTest, TestGeoReferenceSimpleRoad)
     EXPECT_EQ(geo_ref->zone_, 32);
 
     std::string geo_ref_str = odr->GetGeoReferenceAsString();
-    EXPECT_EQ(geo_ref_str, "+lat_0=37.3542934123933 +lon_0=-122.0859797650754");
+    EXPECT_EQ(geo_ref_str, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754");
 }
 
 TEST(ProbeTest, TestProbeSimpleRoad)

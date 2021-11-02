@@ -4486,7 +4486,7 @@ std::string OpenDrive::GetGeoReferenceAsString()
     if(!std::isnan(geo_ref_.lat_0_) && !std::isnan(geo_ref_.lon_0_))
 	{
 		out.precision(13);
-		out << "+lat_0=" << std::fixed << geo_ref_.lat_0_ << " +lon_0=" << std::fixed << geo_ref_.lon_0_;
+		out << "+proj=" << geo_ref_.proj_ << " +lat_0=" << std::fixed << geo_ref_.lat_0_ << " +lon_0=" << std::fixed << geo_ref_.lon_0_;
 	}
     return out.str();
 }
