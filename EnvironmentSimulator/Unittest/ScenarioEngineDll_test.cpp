@@ -715,7 +715,7 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth)
 	EXPECT_EQ(map_reference, std::get<4>(GetParam()));
 }
 
-INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetGroundTruthTests, ::testing::Values(std::make_tuple("../../../resources/xosc/cut-in.xosc", 14, 2, bounding_box{5.04f, 2.0f, 1.5f, 1.4f, 0.0f, 0.75f}, "+lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/straight_500m.xosc", 6, 2, bounding_box{5.0f, 2.0f, 1.8f, 1.4f, 0.0f, 0.9f}, "+lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/highway_merge.xosc", 33, 6, bounding_box{5.04f, 2.0f, 1.5f, 1.4f, 0.0f, 0.75f}, "+lat_0=37.3542934123933 +lon_0=-122.0859797650754")));
+INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetGroundTruthTests, ::testing::Values(std::make_tuple("../../../resources/xosc/cut-in.xosc", 14, 2, bounding_box{5.04f, 2.0f, 1.5f, 1.4f, 0.0f, 0.75f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/straight_500m.xosc", 6, 2, bounding_box{5.0f, 2.0f, 1.8f, 1.4f, 0.0f, 0.9f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754"), std::make_tuple("../../../resources/xosc/highway_merge.xosc", 33, 6, bounding_box{5.04f, 2.0f, 1.5f, 1.4f, 0.0f, 0.75f}, "+proj=utm +lat_0=37.3542934123933 +lon_0=-122.0859797650754")));
 // scenario_file_name, number_of_lanes, number_of_objects, ego_bounding_box
 
 TEST(GetGroundTruthTests, receive_GroundTruth_no_init)
