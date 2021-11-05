@@ -370,7 +370,7 @@ roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_no
 		}
 		else
 		{
-			LOG_AND_QUIT("Unexcpected coordinateSytem: %s", str.c_str());
+			LOG_AND_QUIT("Unexpected coordinateSytem: %s", str.c_str());
 		}
 	}
 
@@ -3072,7 +3072,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					}
 					else
 					{
-						LOG("Entity condition %s not supported", condition_type.c_str());
+						LOG_AND_QUIT("Entity condition %s not supported", condition_type.c_str());
 					}
 				}
 			}
