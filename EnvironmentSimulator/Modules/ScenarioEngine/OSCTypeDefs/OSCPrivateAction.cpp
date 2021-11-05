@@ -406,7 +406,7 @@ void LatLaneChangeAction::Step(double simTime, double)
 	{
 		LOG("Unexpected timing type: %d", transition_dynamics_.dimension_);
 	}
-	
+
 	//LOG("Elapsed time %f", elapsed_);
 
 	factor = elapsed_ / transition_dynamics_.target_value_;
@@ -487,7 +487,8 @@ void LatLaneOffsetAction::Start(double simTime, double dt)
 		refpos.SetTrackPos(refpos.GetTrackId(), refpos.GetS(), refpos.GetT() + target_->value_);
 		refpos.ForceLaneId(lane_id);
 
-		target_lane_offset_ = refpos.GetT() + target_->value_;
+		// Target lane offset = t value of requested lane + offset relative t value of current lane without offset
+		target_lane_offset_ = refpos.GetT() - (object_->pos_.GetT() - object_->pos_.GetOffset());
 	}
 
 	double duration = 0;
@@ -551,7 +552,7 @@ void LatLaneOffsetAction::Step(double simTime, double)
 		factor = elapsed_ / dynamics_.transition_.target_value_;
 	}
 
-	lane_offset = dynamics_.transition_.Evaluate(factor, start_lane_offset_, target_->value_);
+	lane_offset = dynamics_.transition_.Evaluate(factor, start_lane_offset_, target_lane_offset_);
 
 	object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), lane_offset);
 
@@ -932,7 +933,7 @@ void TeleportAction::Start(double simTime, double dt)
 		object_->pos_.CalcRoutePosition();
 	}
 
-	
+
 	LOG("%s New position:", object_->name_.c_str());
 	object_->pos_.Print();
 	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);

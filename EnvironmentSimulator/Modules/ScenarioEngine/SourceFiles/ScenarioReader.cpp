@@ -476,11 +476,15 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	vehicle->SetCategory(parameters.ReadAttribute(vehicleNode, "vehicleCategory"));
 
 	// get File based on Category, and set default 3D model id
-	if (vehicle->category_ == Vehicle::Category::BICYCLE ||
-		vehicle->category_ == Vehicle::Category::MOTORBIKE)
+	if (vehicle->category_ == Vehicle::Category::BICYCLE)
 	{
 		vehicle->model_id_ = 9; // magic number for cyclist, set as default
 		vehicle->model3d_ = "cyclist.osgb";
+	}
+	else if (vehicle->category_ == Vehicle::Category::MOTORBIKE)
+	{
+		vehicle->model_id_ = 10; // magic number for motorcyclist, set as default
+		vehicle->model3d_ = "mc.osgb";
 	}
 	else
 	{

@@ -225,7 +225,7 @@ class TestSuite(unittest.TestCase):
         # Check some scenario events
         self.assertTrue(re.search('10.01.* SwerveEventStart == true, 10.0100 >= 10.00 edge: rising', log)  is not None)
         self.assertTrue(re.search('10.02.*: SwerveAction standbyState -> startTransition -> runningState', log)  is not None)
-        self.assertTrue(re.search('24.93.*: SwerveEvent runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('26.12.*: SwerveEvent runningState -> endTransition -> completeState', log)  is not None)
 
 
         # Check vehicle state
@@ -233,9 +233,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n4.900.*, 0, Ego, 86.66.*, -8.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
         self.assertTrue(re.search('\n4.900.*, 1, SideVehicle, 86.66.*, -15.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
         self.assertTrue(re.search('\n15.000.*, 0, Ego, 255.00.*, -8.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
-        self.assertTrue(re.search('\n15.000.*, 1, SideVehicle, 255.00.*, -13.67.*, 0.00.*, 0.02.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
+        self.assertTrue(re.search('\n15.000.*, 1, SideVehicle, 255.000, -13.850, 0.000, 0.025, 0.000, 0.000, 16.667', csv))
         self.assertTrue(re.search('\n22.000.*, 0, Ego, 371.66.*, -8.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
-        self.assertTrue(re.search('\n22.000.*, 1, SideVehicle, 371.66.*, -10.22.*, 0.00.*, 0.019.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
+        self.assertTrue(re.search('\n22.000.*, 1, SideVehicle, 371.667, -10.549, 0.000, 0.022, 0.000, 0.000, 16.667', csv))
         self.assertTrue(re.search('\n32.000.*, 0, Ego, 538.33.*, -8.00.*.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
         self.assertTrue(re.search('\n32.000.*, 1, SideVehicle, 538.33.*, -9.75.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
 
