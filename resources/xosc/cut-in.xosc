@@ -19,6 +19,7 @@
       <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
       <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="0.7"/>
       <ParameterDeclaration name="EgoSpeed" parameterType="double" value="108"/>
+      <ParameterDeclaration name="TargetSpeedFactor" parameterType="double" value="1.2"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -88,7 +89,7 @@
                                  <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
                                  <SpeedActionTarget>
                                     <RelativeTargetSpeed entityRef="Ego"
-                                                         value="1.2"
+                                                         value="$TargetSpeedFactor"
                                                          speedTargetValueType="factor"
                                                          continuous="true"/>
                                  </SpeedActionTarget>

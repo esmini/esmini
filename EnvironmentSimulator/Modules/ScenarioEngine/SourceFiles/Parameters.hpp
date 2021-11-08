@@ -60,5 +60,8 @@ namespace scenarioengine
 
 		// Use always this method when reading attributes, it will resolve any variables
 		std::string ReadAttribute(pugi::xml_node, std::string attribute, bool required = false);
+
+		// Will clear all parameter declarations and assignements
+		void Clear();
 	};
 }

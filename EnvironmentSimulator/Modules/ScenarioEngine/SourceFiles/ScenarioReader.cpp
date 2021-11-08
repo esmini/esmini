@@ -33,6 +33,14 @@ namespace scenarioengine
 {
 	static ControllerPool controllerPoolStatic;
 	ControllerPool ScenarioReader::controllerPool_ = controllerPoolStatic;
+
+	Parameters ScenarioReader::parameters;
+}
+
+ScenarioReader::ScenarioReader(Entities* entities, Catalogs* catalogs, bool disable_controllers) :
+	objectCnt_(0), entities_(entities), catalogs_(catalogs), disable_controllers_(disable_controllers)
+{
+	parameters.Clear();
 }
 
 ScenarioReader::~ScenarioReader()

@@ -3,8 +3,8 @@
 
 TEST(UnixSuite, CheckUnix)
 {
-    std::cout << "Check Operating System -> Unix \n";
-    #ifdef __WIN32
+    //std::cout << "Check Operating System -> Unix \n";
+    #ifdef _WIN32
     FAIL();
     #else
     SUCCEED();
@@ -13,8 +13,8 @@ TEST(UnixSuite, CheckUnix)
 
 TEST(WindowsSuite, CheckWindows)
 {
-    std::cout << "Check Operating System - Windows \n";
-    #ifdef __WIN32
+    //std::cout << "Check Operating System - Windows \n";
+    #ifdef _WIN32
     SUCCEED();
     #else
     FAIL();
@@ -23,7 +23,7 @@ TEST(WindowsSuite, CheckWindows)
 
 int main(int argc, char **argv)
 {
-    #ifdef __WIN32
+    #ifdef _WIN32
         ::testing::GTEST_FLAG(filter) = "WindowsSuite.*";
     #else
         ::testing::GTEST_FLAG(filter) = "UnixSuite.*";

@@ -412,7 +412,12 @@ extern "C"
 		return InitScenario();
 	}
 
-	SE_DLL_API int SE_Init(const char *oscFilename, int disable_ctrls, int use_viewer, int threads, int record)
+	SE_DLL_API void SE_RegisterParameterDeclarationCallback(void (*fnPtr)(void*), void* user_data)
+	{
+		RegisterParameterDeclarationCallback(fnPtr, user_data);
+	}
+
+	SE_DLL_API int SE_Init(const char* oscFilename, int disable_ctrls, int use_viewer, int threads, int record)
 	{
 #ifndef _USE_OSG
 		if (use_viewer)
@@ -557,102 +562,52 @@ extern "C"
 
 	SE_DLL_API int SE_SetParameter(SE_Parameter parameter)
 	{
-		if (player != nullptr)
-		{
-			return player->SetParameterValue(parameter.name, parameter.value);
-		}
-
-		return -1;
+		return ScenarioReader::parameters.setParameterValue(parameter.name, parameter.value);
 	}
 
 	SE_DLL_API int SE_GetParameter(SE_Parameter *parameter)
 	{
-		if (player != nullptr)
-		{
-			return player->GetParameterValue(parameter->name, parameter->value);
-		}
-
-		return -1;
+		return ScenarioReader::parameters.getParameterValue(parameter->name, parameter->value);
 	}
 
 	SE_DLL_API int SE_GetParameterInt(const char *parameterName, int *value)
 	{
-		if (player != nullptr)
-		{
-			return player->GetParameterValueInt(parameterName, *value);
-		}
-
-		return -1;
+		return ScenarioReader::parameters.getParameterValueInt(parameterName, *value);
 	}
 
 	SE_DLL_API int SE_GetParameterDouble(const char *parameterName, double *value)
 	{
-		if (player != nullptr)
-		{
-			return player->GetParameterValueDouble(parameterName, *value);
-		}
-
-		return -1;
+		return ScenarioReader::parameters.getParameterValueDouble(parameterName, *value);
 	}
 
 	SE_DLL_API int SE_GetParameterString(const char *parameterName, const char **value)
 	{
-		if (player != nullptr)
-		{
-			return player->GetParameterValueString(parameterName, *value);
-		}
-
-		return -1;
+		return ScenarioReader::parameters.getParameterValueString(parameterName, *value);
 	}
 
 	SE_DLL_API int SE_GetParameterBool(const char *parameterName, bool *value)
 	{
-		if (player != nullptr)
-		{
-			return player->GetParameterValueBool(parameterName, *value);
-		}
-
-		return -1;
+		return ScenarioReader::parameters.getParameterValueBool(parameterName, *value);
 	}
 
 	SE_DLL_API int SE_SetParameterInt(const char *parameterName, int value)
 	{
-		if (player != nullptr)
-		{
-			return player->SetParameterValue(parameterName, value);
-		}
-
-		return -1;
+		return ScenarioReader::parameters.setParameterValue(parameterName, value);
 	}
 
 	SE_DLL_API int SE_SetParameterDouble(const char *parameterName, double value)
 	{
-		if (player != nullptr)
-		{
-			return player->SetParameterValue(parameterName, value);
-		}
-
-		return -1;
+		return ScenarioReader::parameters.setParameterValue(parameterName, value);
 	}
 
 	SE_DLL_API int SE_SetParameterString(const char *parameterName, const char *value)
 	{
-		if (player != nullptr)
-		{
-			return player->SetParameterValue(parameterName, value);
-		}
-
-		return -1;
+		return ScenarioReader::parameters.setParameterValue(parameterName, value);
 	}
 
 	SE_DLL_API int SE_SetParameterBool(const char *parameterName, bool value)
 	{
-		if (player != nullptr)
-		{
-			return player->SetParameterValue(parameterName, value);
-		}
-
-		return -1;
+		return ScenarioReader::parameters.setParameterValue(parameterName, value);
 	}
 
 	SE_DLL_API void *SE_GetODRManager()
@@ -1489,7 +1444,7 @@ extern "C"
 		return 0;
 	}
 
-	void callback(ObjectStateStruct *state, void *my_data)
+	void objCallbackFn(ObjectStateStruct *state, void *my_data)
 	{
 		for (size_t i = 0; i < objCallback.size(); i++)
 		{
@@ -1512,7 +1467,7 @@ extern "C"
 		cb.id = object_id;
 		cb.func = fnPtr;
 		objCallback.push_back(cb);
-		player->RegisterObjCallback(object_id, callback, user_data);
+		player->RegisterObjCallback(object_id, objCallbackFn, user_data);
 	}
 
 	SE_DLL_API int SE_GetNumberOfRoadSigns(int road_id)

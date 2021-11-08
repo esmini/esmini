@@ -915,8 +915,7 @@ TEST(ReportObjectVel, TestGetAndSet)
 TEST(ParameterTest, GetTypedParameterValues)
 {
 	std::string scenario_file = "../../../resources/xosc/lane_change.xosc";
-	const char *Scenario_file = scenario_file.c_str();
-	SE_Init(Scenario_file, 0, 0, 0, 0);
+	SE_Init(scenario_file.c_str(), 0, 0, 0, 0);
 
 	bool boolVar;
 	int retVal;
@@ -978,6 +977,51 @@ TEST(ParameterTest, GetTypedParameterValues)
 	EXPECT_EQ(retVal, -1);
 
 	SE_Close();
+}
+
+static void paramDeclCallback(void*)
+{
+	static int counter = 0;
+	double value[2] = { 1.1, 1.5 };
+
+	if (counter < 2)
+	{
+		SE_SetParameterDouble("TargetSpeedFactor", value[counter]);
+	}
+
+	counter++;
+}
+
+TEST(ParameterTest, SetParameterValuesBeforeInit)
+{
+	double positions[3][2] = {
+		{5.370596, 189.982056},  // TargetSpeedFactor = 1.1
+		{9.115726, 243.110992},  // TargetSpeedFactor = 1.5
+		{5.499247, 204.9814758}  // TargetSpeedFactor = Default = 1.2
+	};
+	SE_ScenarioObjectState state;
+
+	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
+
+	SE_RegisterParameterDeclarationCallback(paramDeclCallback, 0);
+
+	for (int i = 0; i < 3 && SE_GetQuitFlag() != 1; i++)
+	{
+		ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+		ASSERT_EQ(SE_GetNumberOfObjects(), 2);
+
+		while (SE_GetSimulationTime() < 5.0 && SE_GetQuitFlag() != 1)
+		{
+			SE_StepDT(0.1f);
+		}
+
+		// Check position of second vehicle
+		SE_GetObjectState(1, &state);
+		EXPECT_NEAR(state.x, positions[i][0], 1e-5);
+		EXPECT_NEAR(state.y, positions[i][1], 1e-5);
+
+		SE_Close();
+	}
 }
 
 TEST(OverrideActionTest, TestGetAndSet)
@@ -1549,7 +1593,7 @@ TEST(OSILaneParing, highway_merge_w_split)
 				{
 					predecessor = lane_pairs[k][1];
 					successor = lane_pairs[k][2];
-					std::cout << "lane: " << lane_pairs[k][0] << std::endl;
+					//std::cout << "lane: " << lane_pairs[k][0] << std::endl;
 				}
 			}
 
@@ -1573,8 +1617,8 @@ TEST(OSILaneParing, highway_merge_w_split)
 			{
 				gt_predecessor = -1;
 			}
-			std::cout << "successor (gt, wanted): " << gt_successor << ", " << successor << std::endl;
-			std::cout << "predecessor (gt, wanted): " << gt_predecessor << ", " << predecessor << std::endl;
+			//std::cout << "successor (gt, wanted): " << gt_successor << ", " << successor << std::endl;
+			//std::cout << "predecessor (gt, wanted): " << gt_predecessor << ", " << predecessor << std::endl;
 			EXPECT_EQ(gt_successor, successor);
 			EXPECT_EQ(gt_predecessor, predecessor);
 		}
@@ -1685,8 +1729,6 @@ TEST(OSILaneParing, simple_3way_intersection)
 
 	std::sort(lane_pairs.begin(), lane_pairs.end());
 
-	int successor;
-	int predecessor;
 	int gt_successor;
 	int gt_predecessor;
 	static int counter = 0;
@@ -1700,7 +1742,6 @@ TEST(OSILaneParing, simple_3way_intersection)
 		{
 			ASSERT_TRUE(false);
 		}
-		int current_lane_pair_length = (int)gt_lane_pairs.size();
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			if (osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
@@ -1768,8 +1809,6 @@ TEST(OSILaneParing, simple_3way_intersection_lht)
 
 	std::sort(lane_pairs.begin(), lane_pairs.end());
 
-	int successor;
-	int predecessor;
 	int gt_successor;
 	int gt_predecessor;
 	static int counter = 0;
@@ -1783,7 +1822,6 @@ TEST(OSILaneParing, simple_3way_intersection_lht)
 		{
 			ASSERT_TRUE(false);
 		}
-		int current_lane_pair_length = (int)gt_lane_pairs.size();
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			if (osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
@@ -1858,8 +1896,6 @@ TEST(OSILaneParing, simple_4way_intersection)
 	};
 	std::sort(lane_pairs.begin(), lane_pairs.end());
 
-	int successor;
-	int predecessor;
 	int gt_successor;
 	int gt_predecessor;
 	static int counter = 0;
@@ -1873,7 +1909,6 @@ TEST(OSILaneParing, simple_4way_intersection)
 		{
 			ASSERT_TRUE(false);
 		}
-		int current_lane_pair_length = (int)gt_lane_pairs.size();
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			if (osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
@@ -2003,6 +2038,7 @@ TEST(GatewayTest, TestReportToGatewayInCallback)
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
+	//testing::GTEST_FLAG(filter) = "ParameterTest*:SetParameterValuesBeforeInit";
 
 	SE_LogToConsole(false);
 

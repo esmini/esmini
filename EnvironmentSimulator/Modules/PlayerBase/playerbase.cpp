@@ -182,14 +182,14 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 	{
 
 		// Check for any callbacks to be made
-		for (size_t i = 0; i < callback.size(); i++)
+		for (size_t i = 0; i < objCallback.size(); i++)
 		{
-			ObjectState* os = scenarioGateway->getObjectStatePtrById(callback[i].id);
+			ObjectState* os = scenarioGateway->getObjectStatePtrById(objCallback[i].id);
 			if (os)
 			{
 				ObjectStateStruct state;
 				state = os->getStruct();
-				callback[i].func(&state, callback[i].data);
+				objCallback[i].func(&state, objCallback[i].data);
 			}
 		}
 
@@ -1018,7 +1018,7 @@ void ScenarioPlayer::RegisterObjCallback(int id, ObjCallbackFunc func, void *dat
 	cb.id = id;
 	cb.func = func;
 	cb.data = data;
-	callback.push_back(cb);
+	objCallback.push_back(cb);
 }
 
 void ScenarioPlayer::UpdateCSV_Log()

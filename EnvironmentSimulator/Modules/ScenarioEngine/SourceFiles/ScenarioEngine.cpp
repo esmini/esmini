@@ -22,6 +22,15 @@
 
 using namespace scenarioengine;
 
+namespace scenarioengine
+{
+	void RegisterParameterDeclarationCallback(ParamDeclCallbackFunc func, void* data)
+	{
+		paramDeclCallback.func = func;
+		paramDeclCallback.data = data;
+	}
+}
+
 ScenarioEngine::ScenarioEngine(std::string oscFilename, bool disable_controllers)
 {
 	InitScenario(oscFilename, disable_controllers);
@@ -42,7 +51,6 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 	trueTime_ = 0;
 	initialized_ = false;
 	scenarioReader = new ScenarioReader(&entities, &catalogs, disable_controllers);
-
 
 	std::vector<std::string> file_name_candidates;
 	// absolute path or relative to current directory
@@ -631,6 +639,12 @@ void ScenarioEngine::parseScenario()
 
 	scenarioReader->parseGlobalParameterDeclarations();
 
+	// Now that parameter declaration has been parsed, call any registered callbacks before applying the parameters
+	if (paramDeclCallback.func != nullptr)
+	{
+		paramDeclCallback.func(paramDeclCallback.data);
+	}
+
 	// Init road manager
 	scenarioReader->parseRoadNetwork(roadNetwork);
 
@@ -1000,7 +1014,7 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 					pos->SetOrientationType(roadmanager::Position::OrientationType::ORIENTATION_RELATIVE);
 					pos->SetInertiaPos(0, 0, 0);
 					pos->SetRelativePosition(&obj1->pos_, roadmanager::Position::PositionType::RELATIVE_OBJECT);
-					
+
 					myNewAction->position_ = pos;
 					myNewAction->type_ = OSCPrivateAction::ActionType::TELEPORT;
 					myNewAction->object_ = obj2;

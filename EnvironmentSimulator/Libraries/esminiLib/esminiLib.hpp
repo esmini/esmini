@@ -168,6 +168,18 @@ extern "C"
 	SE_DLL_API void SE_SetLogFilePath(const char *logFilePath);
 
 	/**
+		Register a function and optional argument (ref) to be called back from esmini after ParameterDeclarations has been parsed,
+		but before the scenario is initialized, i.e. before applying the actions in the Init block. One use-case is to
+		set parameter values for initial entity states, e.g. s value in lane position. So this callback will happen just
+		after parameters has been parsed, but before they are applied, providing an opportunity to control the initial
+		states via API.
+		Registered init callbacks are be cleared between SE_Init calls, i.e. needs to be registered
+		@param fnPtr A pointer to the function to be invoked
+		@param user_data Optional pointer to a local data object that will be passed as argument in the callback. Set 0/NULL if not needed.
+	*/
+	SE_DLL_API void SE_RegisterParameterDeclarationCallback(void (*fnPtr)(void*), void* user_data);
+
+	/**
 		Configure tolerances/resolution for OSI road features
 		@param max_longitudinal_distance Maximum distance between OSI points, even on straight road. Default=50(m)
 		@param max_lateral_deviation Control resolution w.r.t. curvature default=0.05(m)
@@ -643,8 +655,9 @@ extern "C"
 		Register a function and optional parameter (ref) to be called back from esmini after each frame (update of scenario)
 		The current state of specified entity will be returned.
 		Complete or part of the state can then be overridden by calling the SE_ReportObjectPos/SE_ReportObjectRoadPos functions.
+		Registered callbacks will be cleared between SE_Init calls.
 		@param object_id Handle to the position object (entity)
-		@param SE_ScenarioObjectState A pointer to the function to be invoked
+		@param fnPtr A pointer to the function to be invoked
 		@param user_data Optional pointer to a local data object that will be passed as argument in the callback. Set 0/NULL if not needed.
 	*/
 	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState *, void *), void *user_data);
