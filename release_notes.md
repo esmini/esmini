@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2021-11-08 Version 2.16.2
+
+- Ghost vehicle concept updated to handle greater variation of triggers
+  - Relative triggers handled using a combination with the teleportAction
+  - ResetEvent added to make sure events don't go missing in a teleportation
+  - Time handling added to handle the difference between ghost and ego
+- Add projection to the geo reference string
+- Fix LaneOffsetAction relative target bug (issue [#183](https://github.com/esmini/esmini/issues/183))
+- Bugfix: Raise exception on invalid condition instead of crash
+
 ### 2021-11-01 Version 2.16.1
 
 - Add ECE ALKS reference driver controller (PR [#181](https://github.com/esmini/esmini/pull/181))
