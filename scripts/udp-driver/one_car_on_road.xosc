@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This scenario contains two vehicles on a large open space.         -->
-<!-- They both have UDPDriver controllers attached. The purpose is      -->
-<!-- to show how and that the controller works with multiple entities.  -->
-<!-- See scripts/udp-driver-model/testUDPDriverModel.py how to run.     -->
+<!-- This scenario puts one vehicles on a curvy and elevated road.      -->
+<!-- It has a UDPDriver controller attached.                            -->
 
 <OpenSCENARIO>
    <FileHeader revMajor="1"
                revMinor="0"
-               date="2021-10-22T10:00:00"
-               description="Two cars controlled by UDPDriver"
+               date="2021-11-09T10:00:00"
+               description="One car controlled by UDPDriver"
                author="esmini-team"/>
    <ParameterDeclarations />
    <CatalogLocations>
@@ -20,7 +18,7 @@
       </ControllerCatalog>      
    </CatalogLocations>
    <RoadNetwork>
-      <SceneGraphFile filepath="../../resources/models/parking_lot.osgb"/>
+      <LogicFile filepath="../../resources/xodr/curves_elevation.xodr"/>
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Car0">
@@ -28,18 +26,6 @@
           <ObjectController>
               <CatalogReference catalogName="ControllerCatalog" entryName="UDPDriverController">
                  <ParameterAssignments>
-                     <ParameterAssignment parameterRef="Port" value="0" />
-                     <ParameterAssignment parameterRef="ExecMode" value="asynchronous" />
-                 </ParameterAssignments>
-              </CatalogReference>
-          </ObjectController>
-      </ScenarioObject>
-      <ScenarioObject name="Car1">
-          <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
-          <ObjectController>
-              <CatalogReference catalogName="ControllerCatalog" entryName="UDPDriverController" >
-                 <ParameterAssignments>
-                     <ParameterAssignment parameterRef="Port" value="0" />
                      <ParameterAssignment parameterRef="BasePort" value="53995" />
                      <ParameterAssignment parameterRef="ExecMode" value="asynchronous" />
                  </ParameterAssignments>
@@ -54,19 +40,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <WorldPosition x="1.8" y="6.5" z="0" h="1.57" p="0" r="0"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                   <ActivateControllerAction longitudinal="true" lateral="true" />
-               </PrivateAction>
-            </Private>
-            <Private entityRef="Car1">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <WorldPosition x="8.7" y="6.5" z="0" h="1.57" p="0" r="0"/>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>

@@ -26,7 +26,7 @@
 #endif
 
 #define OSI_OUT_PORT 48198
-#define OSI_MAX_UDP_DATA_SIZE 8200
+#define OSI_MAX_UDP_DATA_SIZE 8192
 
 // Large OSI messages needs to be split for UDP transmission
 // This struct must be mached on receiver side
@@ -302,17 +302,18 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState *> objectState)
 		// send over udp - split large OSI messages in multiple transmissions
 		unsigned int sentDataBytes = 0;
 
-		for (osi_udp_buf.counter = 0, osi_udp_buf.datasize = 0; sentDataBytes < osiGroundTruth.size; osi_udp_buf.counter++)
+		for (osi_udp_buf.counter = 1; sentDataBytes < osiGroundTruth.size; osi_udp_buf.counter++)
 		{
 			osi_udp_buf.datasize = MIN(osiGroundTruth.size - sentDataBytes, OSI_MAX_UDP_DATA_SIZE);
-			memcpy(&osi_udp_buf.data, (char *)&osiGroundTruth.ground_truth.c_str()[sentDataBytes], osi_udp_buf.datasize);
+			memcpy(osi_udp_buf.data, (char *)&osiGroundTruth.ground_truth.c_str()[sentDataBytes], osi_udp_buf.datasize);
 			int packSize = sizeof(osi_udp_buf) - (OSI_MAX_UDP_DATA_SIZE - osi_udp_buf.datasize);
 
 			if (sentDataBytes + osi_udp_buf.datasize >= osiGroundTruth.size)
 			{
-				// Last package
-				osi_udp_buf.counter = -1;
+				// Last package indicated by negative counter number
+				osi_udp_buf.counter = -osi_udp_buf.counter;
 			}
+
 			int sendResult = sendto(sendSocket, (char *)&osi_udp_buf, packSize, 0, (struct sockaddr *)&recvAddr, sizeof(recvAddr));
 
 			if (sendResult != packSize)

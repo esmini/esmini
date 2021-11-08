@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This scenario puts one vehicles on a curvy and elevated road.      -->
+<!-- It has a UDPDriver controller attached. The purpose is to show     -->
+<!-- how an external driver model can make use of OSI data to navigate  -->
+<!-- using road lane and markings information.                          -->
+
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="0"
+               date="2021-11-09T10:00:00"
+               description="One car controlled by UDPDriver"
+               author="esmini-team"/>
+   <ParameterDeclarations />
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>      
+   </CatalogLocations>
+   <RoadNetwork>
+      <SceneGraphFile filepath="../../resources/models/parking_lot.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Car0">
+          <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+          <ObjectController>
+              <CatalogReference catalogName="ControllerCatalog" entryName="UDPDriverController">
+                 <ParameterAssignments>
+                     <ParameterAssignment parameterRef="BasePort" value="53995" />
+                     <ParameterAssignment parameterRef="ExecMode" value="synchronous" />
+                 </ParameterAssignments>
+              </CatalogReference>
+          </ObjectController>
+      </ScenarioObject>
+      <ScenarioObject name="Car1">
+          <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>      
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Car0">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="5.0" y="0.0" h="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                   <ActivateControllerAction longitudinal="true" lateral="true" />
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Car1">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="0.0" y="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>            
+         </Actions>
+      </Init>
+	  <Story name="FollowTrajectoryStory">
+         <Act name="FollowTrajectoryAct">
+            <ManeuverGroup maximumExecutionCount="1" name="FollowTrajectoryManeuvergroup">
+                <Actors selectTriggeringEntities="False">
+                    <EntityRef entityRef="Car1"/>
+                </Actors>
+                <Maneuver name="FollowTrajectoryManeuver">
+                    <Event maximumExecutionCount="1" name="FollowTrajectoryEvent" priority="overwrite">
+                        <Action name="FollowTrajectoryAction">
+                            <PrivateAction>
+                                <RoutingAction>
+                                    <FollowTrajectoryAction>
+                                        <Trajectory closed="False" name="TrajectoryPLine">
+                                            <ParameterDeclarations/>
+                                            <Shape>
+                                                <Polyline>
+                                                    <Vertex>
+                                                        <Position>
+                                                            <WorldPosition x="0.0" y="0.0"/>
+                                                        </Position>
+                                                    </Vertex>
+                                                    <Vertex>
+                                                        <Position>
+                                                            <WorldPosition x="100.0" y="100.0"/>
+                                                        </Position>
+                                                    </Vertex>
+                                                    <Vertex>
+                                                        <Position>
+                                                            <WorldPosition x="200.0" y="0.0"/>
+                                                        </Position>
+                                                    </Vertex>
+                                                    <Vertex>
+                                                        <Position>
+                                                            <WorldPosition x="300.0" y="100.0"/>
+                                                        </Position>
+                                                    </Vertex>
+                                                    <Vertex>
+                                                        <Position>
+                                                            <WorldPosition x="400.0" y="0.0"/>
+                                                        </Position>
+                                                    </Vertex>
+                                                </Polyline>
+                                            </Shape>
+                                        </Trajectory>
+                                        <TimeReference>
+                                            <None/>
+                                        </TimeReference>
+                                        <TrajectoryFollowingMode followingMode="position"/>
+                                    </FollowTrajectoryAction>
+                                </RoutingAction>
+                            </PrivateAction>
+                        </Action>
+                        <StartTrigger/>
+                    </Event>
+                </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+                <ConditionGroup>
+                    <Condition conditionEdge="rising" delay="0" name="starttrigger">
+                        <ByValueCondition>
+                            <SimulationTimeCondition rule="greaterThan" value="0"/>
+                        </ByValueCondition>
+                    </Condition>
+                </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger/>         
+         </Act>	  
+      </Story>
+   </Storyboard>
+</OpenSCENARIO>

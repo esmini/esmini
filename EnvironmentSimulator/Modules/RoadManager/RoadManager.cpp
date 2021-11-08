@@ -7947,7 +7947,7 @@ int Position::GetLaneGlobalId()
 	Road *road = GetRoadById(GetTrackId());
 	if (road == 0)
 	{
-		LOG("No road %d", track_idx_);
+		// No road
 		return -1;
 	}
 
@@ -7961,7 +7961,7 @@ int Position::GetLaneGlobalId()
 	if (lane_section == 0)
 	{
 		LOG("No lane section for idx %d - keeping current lane setting\n", lane_section_idx_);
-		return -1;
+		return -2;
 	}
 
 	double offset;
@@ -7970,7 +7970,7 @@ int Position::GetLaneGlobalId()
 	if (lane_idx == -1)
 	{
 		LOG("Failed to find a valid drivable lane");
-		return -1;
+		return -3;
 	}
 
 	// Check if it is not a center lane

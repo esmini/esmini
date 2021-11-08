@@ -30,34 +30,11 @@
 import sys
 import os
 import argparse
-from socket import *
-import struct
 from tkinter import *
 import tkinter.ttk as ttk
+from udp_osi_common import *
 
-input_modes = {
-  'driverInput': 1,
-  'stateXYZHPR': 2,
-  'stateXYH': 3,
-}
-
-DEFAULT_PORT = 49950
-
-class UdpSender():
-    def __init__(self, id=0, ip='127.0.0.1', port=DEFAULT_PORT):
-        self.id = id
-        self.ip_address = ip
-        self.port = port
-        
-        # Create a UDP socket
-        self.sock = socket(AF_INET, SOCK_DGRAM)
-
-        # Set a timeout value of 1 second
-        self.sock.settimeout(1)
-        self.addr = (self.ip_address, self.port)
-
-    def send(self, msg):
-        self.sock.sendto(msg, self.addr)
+DEFAULT_PORT = 53995
 
 class Object():
     def __init__(self, id, ip_address, base_port):
@@ -81,7 +58,7 @@ class Object():
         self.throttle = DoubleVar(value = 0.0)
         self.brake = DoubleVar(value = 0.0)
 
-        self.udpSender = UdpSender(id, ip_address, base_port + id)
+        self.udpSender = UdpSender(ip_address, base_port + id)
 
     def delete(self):
         self.udpSender.sock.close()

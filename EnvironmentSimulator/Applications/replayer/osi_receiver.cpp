@@ -137,15 +137,15 @@ int main(int argc, char* argv[])
 	while (!quit)
 	{
 		// Fetch and parse OSI message
-		buf.counter = 0;
+		buf.counter = 1;
 		int retval;
 		int receivedDataBytes = 0;
-		while (buf.counter != -1)
+		while (buf.counter > 0)
 		{
 			retval = recvfrom(sock, (char*)&buf, sizeof(buf), 0, (struct sockaddr*)&sender_addr, &sender_addr_size);
 			if (retval > 0)
 			{
-				if (buf.counter == 0)
+				if (buf.counter == 1)
 				{
 					// New message
 					receivedDataBytes = 0;
