@@ -1140,6 +1140,10 @@ TEST(OSILaneParing, multi_roads)
 	int gt_predecessor = -1;
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+		{
+			ASSERT_TRUE(false);
+		}
 		// std::cout << i << std::endl;
 		// ASSERT_EQ(osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(),1);
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
@@ -1219,6 +1223,10 @@ TEST(OSILaneParing, multi_lanesections)
 	int gt_predecessor;
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+		{
+			ASSERT_TRUE(false);
+		}
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			predecessor = -1;
@@ -1287,6 +1295,10 @@ TEST(OSILaneParing, highway_split)
 
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+		{
+			ASSERT_TRUE(false);
+		}
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			predecessor = -1;
@@ -1356,6 +1368,10 @@ TEST(OSILaneParing, highway_merge_lht)
 
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+		{
+			ASSERT_TRUE(false);
+		}
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			predecessor = -1;
@@ -1428,6 +1444,10 @@ TEST(OSILaneParing, highway_merge)
 	int gt_predecessor;
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+		{
+			ASSERT_TRUE(false);
+		}
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			predecessor = -1;
@@ -1468,6 +1488,100 @@ TEST(OSILaneParing, highway_merge)
 	SE_Close();
 }
 
+
+
+
+TEST(OSILaneParing, highway_merge_w_split)
+{
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/highway_intersection_test0.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
+	ASSERT_EQ(i_init, 0);
+
+	SE_StepDT(0.001f);
+	SE_UpdateOSIGroundTruth();
+	osi3::GroundTruth osi_gt;
+	int sv_size = 0;
+	const char *gt = SE_GetOSIGroundTruth(&sv_size);
+	osi_gt.ParseFromArray(gt, sv_size);
+	// order: lane, predecessor, successor
+	std::vector<std::vector<int>> lane_pairs = {{0, -1, 5},
+												{1, -1, 6},
+												{3, -1, 8},
+												{4, -1, 9},
+												{5, 0, 11},
+												{6, 1, 12},
+												{8, 3, 14},
+												{9, 4, 15},
+												{10, -1, 16},
+												{11, 5, 24},
+												{12, 6, 25},
+												{14, 8, 27},
+												{15, 9, 28},
+												{16, 10, 30},
+												{24, 11, 17},
+												{25, 12, 18},
+												{27, 14, 20},
+												{28, 15, 21},
+												{30, 16, 23},
+												{17, 24, -1},
+												{18, 25, -1},
+												{20, 27, -1},
+												{21, 28, -1},
+												{23, 30, -1}};
+	int successor;
+	int predecessor;
+	int gt_successor;
+	int gt_predecessor;
+	for (int i = 0; i < osi_gt.lane_size(); i++)
+	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+		{
+			ASSERT_TRUE(false);
+		}
+		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
+		{
+			predecessor = -1;
+			successor = -1;
+			for (int k = 0; k < lane_pairs.size(); k++)
+			{
+				if (osi_gt.mutable_lane(i)->id().value() == lane_pairs[k][0])
+				{
+					predecessor = lane_pairs[k][1];
+					successor = lane_pairs[k][2];
+					std::cout << "lane: " << lane_pairs[k][0] << std::endl;
+				}
+			}
+
+			if (successor == -1 && predecessor == -1)
+			{
+				ASSERT_EQ(true, false);
+			}
+			if (successor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_successor_lane_id())
+			{
+				gt_successor = (int)osi_gt.lane(i).classification().lane_pairing(j).successor_lane_id().value();
+			}
+			else
+			{
+				gt_successor = -1;
+			}
+			if (predecessor >= 0 && osi_gt.lane(i).classification().lane_pairing(j).has_antecessor_lane_id())
+			{
+				gt_predecessor = (int)osi_gt.lane(i).classification().lane_pairing(j).antecessor_lane_id().value();
+			}
+			else
+			{
+				gt_predecessor = -1;
+			}
+			std::cout << "successor (gt, wanted): " << gt_successor << ", " << successor << std::endl;
+			std::cout << "predecessor (gt, wanted): " << gt_predecessor << ", " << predecessor << std::endl;
+			EXPECT_EQ(gt_successor, successor);
+			EXPECT_EQ(gt_predecessor, predecessor);
+		}
+	}
+	SE_Close();
+}
+
 TEST(OSILaneParing, circular_road)
 {
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/circular_road.xosc";
@@ -1496,6 +1610,10 @@ TEST(OSILaneParing, circular_road)
 	int gt_predecessor;
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+		{
+			ASSERT_TRUE(false);
+		}
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
 			predecessor = -1;
@@ -1578,6 +1696,10 @@ TEST(OSILaneParing, simple_3way_intersection)
 
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+		{
+			ASSERT_TRUE(false);
+		}
 		int current_lane_pair_length = (int)gt_lane_pairs.size();
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
@@ -1657,6 +1779,10 @@ TEST(OSILaneParing, simple_3way_intersection_lht)
 
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+		{
+			ASSERT_TRUE(false);
+		}
 		int current_lane_pair_length = (int)gt_lane_pairs.size();
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
@@ -1743,6 +1869,10 @@ TEST(OSILaneParing, simple_4way_intersection)
 
 	for (int i = 0; i < osi_gt.lane_size(); i++)
 	{
+		if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+		{
+			ASSERT_TRUE(false);
+		}
 		int current_lane_pair_length = (int)gt_lane_pairs.size();
 		for (int j = 0; j < osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size(); j++)
 		{
