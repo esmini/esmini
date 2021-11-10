@@ -105,25 +105,25 @@
 			<object type="pole" name="pole" id="7" s="500.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 		</objects>
 		<signals>
-			<signal s="0.0" t="3.57" id="0" name="Swe_Round_600_c31-5" dynamic="no" orientation="+" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61">
+			<signal s="0.0" t="3.57" id="0" name="Swe_Round_600_c31-5" dynamic="no" orientation="+" zOffset="1.7" type="101" country="germany" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61">
                 <validity fromLane="-3" toLane="-1" />
                 <validity fromLane="1" toLane="3" />
             </signal>
-			<signal s="0.0" t="-3.57" id="1" name="Swe_Round_600_c31-5" dynamic="no" orientation="+" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="100.0" t="3.57" id="2" name="Swe_Round_600_c31-3" dynamic="no" orientation="+" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="100.0" t="-3.57" id="3" name="Swe_Round_600_c31-3" dynamic="no" orientation="+" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="100.0" t="3.57" id="4" name="Swe_Round_600_c31-5" dynamic="no" orientation="-" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="100.0" t="-3.57" id="5" name="Swe_Round_600_c31-5" dynamic="no" orientation="-" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="200.0" t="3.57" id="6" name="Swe_Round_600_c31-5" dynamic="no" orientation="+" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="200.0" t="-3.57" id="7" name="Swe_Round_600_c31-5" dynamic="no" orientation="+" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="200.0" t="3.57" id="8" name="Swe_Round_600_c31-3" dynamic="no" orientation="-" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="200.0" t="-3.57" id="9" name="Swe_Round_600_c31-3" dynamic="no" orientation="-" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61">
+			<signal s="0.0" t="-3.57" id="1" name="Swe_Round_600_c31-5" dynamic="no" orientation="+" zOffset="1.7" type="101" country="germany" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="100.0" t="3.57" id="2" name="Swe_Round_600_c31-3" dynamic="no" orientation="+" zOffset="1.7" type="101" country="germany" subtype="11" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="100.0" t="-3.57" id="3" name="Swe_Round_600_c31-3" dynamic="no" orientation="+" zOffset="1.7" type="" country="germany" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="100.0" t="3.57" id="4" name="Swe_Round_600_c31-5" dynamic="no" orientation="-" zOffset="1.7" type="110" country="germany" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="100.0" t="-3.57" id="5" name="Swe_Round_600_c31-5" dynamic="no" orientation="-" zOffset="1.7" type="105" country="germany" subtype="10" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="200.0" t="3.57" id="6" name="Swe_Round_600_c31-5" dynamic="no" orientation="+" zOffset="1.7" type="105" country="germany" subtype="20" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="200.0" t="-3.57" id="7" name="Swe_Round_600_c31-5" dynamic="no" orientation="+" zOffset="1.7" type="-1" country="germany" subtype="" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="200.0" t="3.57" id="8" name="Swe_Round_600_c31-3" dynamic="no" orientation="-" zOffset="1.7" type="-1" country="sweden" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="200.0" t="-3.57" id="9" name="Swe_Round_600_c31-3" dynamic="no" orientation="-" zOffset="1.7" type="-1" country="germany" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61">
                 <validity fromLane="-3" toLane="-2" />
                 <validity fromLane="1" toLane="2" />
                 <validity fromLane="3" toLane="3" />
             </signal>
-			<signal s="500.0" t="3.57" id="10" name="Swe_Round_600_c31-5" dynamic="no" orientation="-" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
-			<signal s="500.0" t="-3.57" id="11" name="Swe_Round_600_c31-5" dynamic="no" orientation="-" zOffset="1.7" type="-1" country="OpenDRIVE" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="500.0" t="3.57" id="10" name="Swe_Round_600_c31-5" dynamic="no" orientation="-" zOffset="1.7" type="none" country="germany" subtype="-1" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="500.0" t="-3.57" id="11" name="Swe_Round_600_c31-5" dynamic="no" orientation="-" zOffset="1.7" type="-1" country="germany" subtype="none" value="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
 		</signals>
 		<surface/>
 		<type s="0.0" type="rural">

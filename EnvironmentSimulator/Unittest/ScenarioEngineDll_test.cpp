@@ -1593,7 +1593,6 @@ TEST(OSILaneParing, highway_merge_w_split)
 				{
 					predecessor = lane_pairs[k][1];
 					successor = lane_pairs[k][2];
-					//std::cout << "lane: " << lane_pairs[k][0] << std::endl;
 				}
 			}
 
@@ -1617,8 +1616,6 @@ TEST(OSILaneParing, highway_merge_w_split)
 			{
 				gt_predecessor = -1;
 			}
-			//std::cout << "successor (gt, wanted): " << gt_successor << ", " << successor << std::endl;
-			//std::cout << "predecessor (gt, wanted): " << gt_predecessor << ", " << predecessor << std::endl;
 			EXPECT_EQ(gt_successor, successor);
 			EXPECT_EQ(gt_predecessor, predecessor);
 		}
@@ -1958,21 +1955,22 @@ TEST(OSILaneParing, Signs)
 	int sv_size = 0;
 	const char* gt = SE_GetOSIGroundTruth(&sv_size);
 	osi_gt.ParseFromArray(gt, sv_size);
-	// order: id, value, text, pitch, roll, height, s, t, zOffset
-	std::vector<std::tuple<int, double, std::string, double, double, double, double, double, double>> signs = { std::make_tuple(0, -1, "", 0.0, 0.0, 0.61, 0.0, 3.57, 1.7),
-																											   std::make_tuple(1, -1, "", 0.0, 0.0, 0.61, 0.0, 3.57, 1.7),
-																											   std::make_tuple(2, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
-																											   std::make_tuple(3, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
-																											   std::make_tuple(4, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
-																											   std::make_tuple(5, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
-																											   std::make_tuple(6, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
-																											   std::make_tuple(7, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
-																											   std::make_tuple(8, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
-																											   std::make_tuple(9, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
-																											   std::make_tuple(10, -1, "", 0.0, 0.0, 0.61, 500.0, 3.57, 1.7),
-																											   std::make_tuple(11, -1, "", 0.0, 0.0, 0.61, 500.0, 3.57, 1.7) };
+	// order: id, type, country, subtypevalue, text, pitch, roll, height, s, t, zOffset
+	std::vector<std::tuple<int, osi3::TrafficSign_MainSign_Classification_Type, double, std::string, double, double, double, double, double, double>> signs = { std::make_tuple(0, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DANGER_SPOT, -1, "", 0.0, 0.0, 0.61, 0.0, 3.57, 1.7),
+																																					std::make_tuple(1, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DANGER_SPOT, -1, "", 0.0, 0.0, 0.61, 0.0, 3.57, 1.7),
+																																					std::make_tuple(2, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_ZEBRA_CROSSING, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+																																					std::make_tuple(3, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+																																					std::make_tuple(4, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_HILL_UPWARDS, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+																																					std::make_tuple(5, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DOUBLE_TURN_LEFT, -1, "", 0.0, 0.0, 0.61, 100.0, 3.57, 1.7),
+																																					std::make_tuple(6, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DOUBLE_TURN_RIGHT, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+																																					std::make_tuple(7, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+																																					std::make_tuple(8, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+																																					std::make_tuple(9, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 200.0, 3.57, 1.7),
+																																					std::make_tuple(10, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 500.0, 3.57, 1.7),
+																																					std::make_tuple(11, osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN, -1, "", 0.0, 0.0, 0.61, 500.0, 3.57, 1.7) };
 
 	int sign_id = 0;
+	osi3::TrafficSign_MainSign_Classification_Type type = osi3::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN;
 	double value = 0;
 	std::string text = "";
 	double pitch = 0;
@@ -1989,17 +1987,19 @@ TEST(OSILaneParing, Signs)
 			if (traffic_sign.id().value() == std::get<0>(sign))
 			{
 				sign_id = std::get<0>(sign);
-				value = std::get<1>(sign);
-				text = std::get<2>(sign);
-				pitch = std::get<3>(sign);
-				roll = std::get<4>(sign);
-				height = std::get<5>(sign);
-				s = std::get<6>(sign);
-				t = std::get<7>(sign);
-				zOffset = std::get<8>(sign);
+				type = std::get<1>(sign);
+				value = std::get<2>(sign);
+				text = std::get<3>(sign);
+				pitch = std::get<4>(sign);
+				roll = std::get<5>(sign);
+				height = std::get<6>(sign);
+				s = std::get<7>(sign);
+				t = std::get<8>(sign);
+				zOffset = std::get<9>(sign);
 			}
 		}
 		ASSERT_EQ(traffic_sign.id().value(), sign_id);
+		ASSERT_EQ(static_cast<int>(traffic_sign.main_sign().classification().type()), static_cast<int>(type));
 		ASSERT_DOUBLE_EQ(traffic_sign.main_sign().classification().value().value(), value);
 		ASSERT_STREQ(traffic_sign.main_sign().classification().value().text().c_str(), text.c_str());
 		ASSERT_DOUBLE_EQ(traffic_sign.main_sign().base().orientation().pitch(), pitch);

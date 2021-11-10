@@ -1792,6 +1792,7 @@ int OSIReporter::UpdateTrafficSignals()
 					trafficSign->mutable_id()->set_value(signal->GetId());
 					trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value(signal->GetValue());
 					trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_text(signal->GetText());
+					trafficSign->mutable_main_sign()->mutable_classification()->set_type(static_cast<osi3::TrafficSign_MainSign_Classification_Type>(signal->GetType()));
 
 					//Set Unit
 					if(std::strcmp(signal->GetUnit().c_str(), ""))

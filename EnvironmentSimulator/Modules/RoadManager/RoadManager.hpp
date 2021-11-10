@@ -15,6 +15,7 @@
 
 #include <cmath>
 #include <string>
+#include <map>
 #include <vector>
 #include <list>
 #include "pugixml.hpp"
@@ -713,48 +714,256 @@ namespace roadmanager
 	{
 	public:
 
-		enum Type
-		{
-			NONETYPE,
-			T1000001, // traditional red-yellow-green light
-			T1000002, // 2 subtypes: pedestrian light (red or green & only red)
-			T1000003, // Pedestrian Crossing
-			T1000004, // Bicycle Crossing
-			T1000007, // 4 subtypes: pedestrian + cyclists light (red or green & only red & only yellow & only green)
-			T1000008, // 3 subtypes: yellow light (no arrow & left arrow & right arrow)
-			T1000009, // 2 subtypes: red-yellow light & solid yellow or green light
-			T1000010, // 2 subtypes: yellow-green light (only left arrows & only right arrows)
-			T1000011, // 5 subtypes: red-yellow-green light (only left arrows & only right arrows & only straight arrows & straight+left arrows & straight+right arrows)
-			T1000012, // 2 subtypes: green light (left arrow & right arrow)
-			T1000013, // red-green cyclist light
-			T1000014, // yellow tram light
-			T1000015, // yellow pedestrian light
-			T1000016, // yellow bicycle light
-			T1000017, // yellow bus light
-			T1000018, // yellow horse light
-			T1000019, // yellow pedestrian/bicycle light
-			T1000020  // red light (no arrow & left arrow & right arrow)
-		};
-
-		enum SubType
-		{
-			NONESUBTYPE,
-			SUBT10,
-			SUBT20,
-			SUBT30,
-			SUBT40,
-			SUBT50,
-			SUBT60,
-			SUBT70,
-			SUBT80,
-			SUBT90,
-			SUBT100
+		enum Type : int {
+			TYPE_UNKNOWN = 0,
+			TYPE_OTHER = 1,
+			TYPE_DANGER_SPOT = 2,
+			TYPE_ZEBRA_CROSSING = 87,
+			TYPE_FLIGHT = 110,
+			TYPE_CATTLE = 200,
+			TYPE_HORSE_RIDERS = 197,
+			TYPE_AMPHIBIANS = 188,
+			TYPE_FALLING_ROCKS = 96,
+			TYPE_SNOW_OR_ICE = 94,
+			TYPE_LOOSE_GRAVEL = 97,
+			TYPE_WATERSIDE = 102,
+			TYPE_CLEARANCE = 210,
+			TYPE_MOVABLE_BRIDGE = 101,
+			TYPE_RIGHT_BEFORE_LEFT_NEXT_INTERSECTION = 3,
+			TYPE_TURN_LEFT = 4,
+			TYPE_TURN_RIGHT = 5,
+			TYPE_DOUBLE_TURN_LEFT = 6,
+			TYPE_DOUBLE_TURN_RIGHT = 7,
+			TYPE_HILL_DOWNWARDS = 8,
+			TYPE_HILL_UPWARDS = 9,
+			TYPE_UNEVEN_ROAD = 93,
+			TYPE_ROAD_SLIPPERY_WET_OR_DIRTY = 95,
+			TYPE_SIDE_WINDS = 98,
+			TYPE_ROAD_NARROWING = 10,
+			TYPE_ROAD_NARROWING_RIGHT = 12,
+			TYPE_ROAD_NARROWING_LEFT = 11,
+			TYPE_ROAD_WORKS = 13,
+			TYPE_TRAFFIC_QUEUES = 100,
+			TYPE_TWO_WAY_TRAFFIC = 14,
+			TYPE_ATTENTION_TRAFFIC_LIGHT = 15,
+			TYPE_PEDESTRIANS = 103,
+			TYPE_CHILDREN_CROSSING = 106,
+			TYPE_CYCLE_ROUTE = 107,
+			TYPE_DEER_CROSSING = 109,
+			TYPE_UNGATED_LEVEL_CROSSING = 144,
+			TYPE_LEVEL_CROSSING_MARKER = 112,
+			TYPE_RAILWAY_TRAFFIC_PRIORITY = 135,
+			TYPE_GIVE_WAY = 16,
+			TYPE_STOP = 17,
+			TYPE_PRIORITY_TO_OPPOSITE_DIRECTION = 18,
+			TYPE_PRIORITY_TO_OPPOSITE_DIRECTION_UPSIDE_DOWN = 19,
+			TYPE_PRESCRIBED_LEFT_TURN = 20,
+			TYPE_PRESCRIBED_RIGHT_TURN = 21,
+			TYPE_PRESCRIBED_STRAIGHT = 22,
+			TYPE_PRESCRIBED_RIGHT_WAY = 24,
+			TYPE_PRESCRIBED_LEFT_WAY = 23,
+			TYPE_PRESCRIBED_RIGHT_TURN_AND_STRAIGHT = 26,
+			TYPE_PRESCRIBED_LEFT_TURN_AND_STRAIGHT = 25,
+			TYPE_PRESCRIBED_LEFT_TURN_AND_RIGHT_TURN = 27,
+			TYPE_PRESCRIBED_LEFT_TURN_RIGHT_TURN_AND_STRAIGHT = 28,
+			TYPE_ROUNDABOUT = 29,
+			TYPE_ONEWAY_LEFT = 30,
+			TYPE_ONEWAY_RIGHT = 31,
+			TYPE_PASS_LEFT = 32,
+			TYPE_PASS_RIGHT = 33,
+			TYPE_SIDE_LANE_OPEN_FOR_TRAFFIC = 128,
+			TYPE_SIDE_LANE_CLOSED_FOR_TRAFFIC = 129,
+			TYPE_SIDE_LANE_CLOSING_FOR_TRAFFIC = 130,
+			TYPE_BUS_STOP = 137,
+			TYPE_TAXI_STAND = 138,
+			TYPE_BICYCLES_ONLY = 145,
+			TYPE_HORSE_RIDERS_ONLY = 146,
+			TYPE_PEDESTRIANS_ONLY = 147,
+			TYPE_BICYCLES_PEDESTRIANS_SHARED_ONLY = 148,
+			TYPE_BICYCLES_PEDESTRIANS_SEPARATED_LEFT_ONLY = 149,
+			TYPE_BICYCLES_PEDESTRIANS_SEPARATED_RIGHT_ONLY = 150,
+			TYPE_PEDESTRIAN_ZONE_BEGIN = 151,
+			TYPE_PEDESTRIAN_ZONE_END = 152,
+			TYPE_BICYCLE_ROAD_BEGIN = 153,
+			TYPE_BICYCLE_ROAD_END = 154,
+			TYPE_BUS_LANE = 34,
+			TYPE_BUS_LANE_BEGIN = 35,
+			TYPE_BUS_LANE_END = 36,
+			TYPE_ALL_PROHIBITED = 37,
+			TYPE_MOTORIZED_MULTITRACK_PROHIBITED = 38,
+			TYPE_TRUCKS_PROHIBITED = 39,
+			TYPE_BICYCLES_PROHIBITED = 40,
+			TYPE_MOTORCYCLES_PROHIBITED = 41,
+			TYPE_MOPEDS_PROHIBITED = 155,
+			TYPE_HORSE_RIDERS_PROHIBITED = 156,
+			TYPE_HORSE_CARRIAGES_PROHIBITED = 157,
+			TYPE_CATTLE_PROHIBITED = 158,
+			TYPE_BUSES_PROHIBITED = 159,
+			TYPE_CARS_PROHIBITED = 160,
+			TYPE_CARS_TRAILERS_PROHIBITED = 161,
+			TYPE_TRUCKS_TRAILERS_PROHIBITED = 162,
+			TYPE_TRACTORS_PROHIBITED = 163,
+			TYPE_PEDESTRIANS_PROHIBITED = 42,
+			TYPE_MOTOR_VEHICLES_PROHIBITED = 43,
+			TYPE_HAZARDOUS_GOODS_VEHICLES_PROHIBITED = 164,
+			TYPE_OVER_WEIGHT_VEHICLES_PROHIBITED = 165,
+			TYPE_VEHICLES_AXLE_OVER_WEIGHT_PROHIBITED = 166,
+			TYPE_VEHICLES_EXCESS_WIDTH_PROHIBITED = 167,
+			TYPE_VEHICLES_EXCESS_HEIGHT_PROHIBITED = 168,
+			TYPE_VEHICLES_EXCESS_LENGTH_PROHIBITED = 169,
+			TYPE_DO_NOT_ENTER = 44,
+			TYPE_SNOW_CHAINS_REQUIRED = 170,
+			TYPE_WATER_POLLUTANT_VEHICLES_PROHIBITED = 171,
+			TYPE_ENVIRONMENTAL_ZONE_BEGIN = 45,
+			TYPE_ENVIRONMENTAL_ZONE_END = 46,
+			TYPE_NO_U_TURN_LEFT = 47,
+			TYPE_NO_U_TURN_RIGHT = 48,
+			TYPE_PRESCRIBED_U_TURN_LEFT = 49,
+			TYPE_PRESCRIBED_U_TURN_RIGHT = 50,
+			TYPE_MINIMUM_DISTANCE_FOR_TRUCKS = 51,
+			TYPE_SPEED_LIMIT_BEGIN = 52,
+			TYPE_SPEED_LIMIT_ZONE_BEGIN = 53,
+			TYPE_SPEED_LIMIT_ZONE_END = 54,
+			TYPE_MINIMUM_SPEED_BEGIN = 55,
+			TYPE_OVERTAKING_BAN_BEGIN = 56,
+			TYPE_OVERTAKING_BAN_FOR_TRUCKS_BEGIN = 57,
+			TYPE_SPEED_LIMIT_END = 58,
+			TYPE_MINIMUM_SPEED_END = 59,
+			TYPE_OVERTAKING_BAN_END = 60,
+			TYPE_OVERTAKING_BAN_FOR_TRUCKS_END = 61,
+			TYPE_ALL_RESTRICTIONS_END = 62,
+			TYPE_NO_STOPPING = 63,
+			TYPE_NO_PARKING = 64,
+			TYPE_NO_PARKING_ZONE_BEGIN = 65,
+			TYPE_NO_PARKING_ZONE_END = 66,
+			TYPE_RIGHT_OF_WAY_NEXT_INTERSECTION = 67,
+			TYPE_RIGHT_OF_WAY_BEGIN = 68,
+			TYPE_RIGHT_OF_WAY_END = 69,
+			TYPE_PRIORITY_OVER_OPPOSITE_DIRECTION = 70,
+			TYPE_PRIORITY_OVER_OPPOSITE_DIRECTION_UPSIDE_DOWN = 71,
+			TYPE_TOWN_BEGIN = 72,
+			TYPE_TOWN_END = 73,
+			TYPE_CAR_PARKING = 74,
+			TYPE_CAR_PARKING_ZONE_BEGIN = 75,
+			TYPE_CAR_PARKING_ZONE_END = 76,
+			TYPE_SIDEWALK_HALF_PARKING_LEFT = 172,
+			TYPE_SIDEWALK_HALF_PARKING_RIGHT = 173,
+			TYPE_SIDEWALK_PARKING_LEFT = 174,
+			TYPE_SIDEWALK_PARKING_RIGHT = 175,
+			TYPE_SIDEWALK_PERPENDICULAR_HALF_PARKING_LEFT = 176,
+			TYPE_SIDEWALK_PERPENDICULAR_HALF_PARKING_RIGHT = 177,
+			TYPE_SIDEWALK_PERPENDICULAR_PARKING_LEFT = 178,
+			TYPE_SIDEWALK_PERPENDICULAR_PARKING_RIGHT = 179,
+			TYPE_LIVING_STREET_BEGIN = 77,
+			TYPE_LIVING_STREET_END = 78,
+			TYPE_TUNNEL = 79,
+			TYPE_EMERGENCY_STOPPING_LEFT = 80,
+			TYPE_EMERGENCY_STOPPING_RIGHT = 81,
+			TYPE_HIGHWAY_BEGIN = 82,
+			TYPE_HIGHWAY_END = 83,
+			TYPE_EXPRESSWAY_BEGIN = 84,
+			TYPE_EXPRESSWAY_END = 85,
+			TYPE_NAMED_HIGHWAY_EXIT = 183,
+			TYPE_NAMED_EXPRESSWAY_EXIT = 184,
+			TYPE_NAMED_ROAD_EXIT = 185,
+			TYPE_HIGHWAY_EXIT = 86,
+			TYPE_EXPRESSWAY_EXIT = 186,
+			TYPE_ONEWAY_STREET = 187,
+			TYPE_CROSSING_GUARDS = 189,
+			TYPE_DEADEND = 190,
+			TYPE_DEADEND_EXCLUDING_DESIGNATED_ACTORS = 191,
+			TYPE_FIRST_AID_STATION = 194,
+			TYPE_POLICE_STATION = 195,
+			TYPE_TELEPHONE = 196,
+			TYPE_FILLING_STATION = 198,
+			TYPE_HOTEL = 201,
+			TYPE_INN = 202,
+			TYPE_KIOSK = 203,
+			TYPE_TOILET = 204,
+			TYPE_CHAPEL = 205,
+			TYPE_TOURIST_INFO = 206,
+			TYPE_REPAIR_SERVICE = 207,
+			TYPE_PEDESTRIAN_UNDERPASS = 208,
+			TYPE_PEDESTRIAN_BRIDGE = 209,
+			TYPE_CAMPER_PLACE = 213,
+			TYPE_ADVISORY_SPEED_LIMIT_BEGIN = 214,
+			TYPE_ADVISORY_SPEED_LIMIT_END = 215,
+			TYPE_PLACE_NAME = 216,
+			TYPE_TOURIST_ATTRACTION = 217,
+			TYPE_TOURIST_ROUTE = 218,
+			TYPE_TOURIST_AREA = 219,
+			TYPE_SHOULDER_NOT_PASSABLE_MOTOR_VEHICLES = 220,
+			TYPE_SHOULDER_UNSAFE_TRUCKS_TRACTORS = 221,
+			TYPE_TOLL_BEGIN = 222,
+			TYPE_TOLL_END = 223,
+			TYPE_TOLL_ROAD = 224,
+			TYPE_CUSTOMS = 225,
+			TYPE_INTERNATIONAL_BORDER_INFO = 226,
+			TYPE_STREETLIGHT_RED_BAND = 227,
+			TYPE_FEDERAL_HIGHWAY_ROUTE_NUMBER = 228,
+			TYPE_HIGHWAY_ROUTE_NUMBER = 229,
+			TYPE_HIGHWAY_INTERCHANGE_NUMBER = 230,
+			TYPE_EUROPEAN_ROUTE_NUMBER = 231,
+			TYPE_FEDERAL_HIGHWAY_DIRECTION_LEFT = 232,
+			TYPE_FEDERAL_HIGHWAY_DIRECTION_RIGHT = 233,
+			TYPE_PRIMARY_ROAD_DIRECTION_LEFT = 234,
+			TYPE_PRIMARY_ROAD_DIRECTION_RIGHT = 235,
+			TYPE_SECONDARY_ROAD_DIRECTION_LEFT = 236,
+			TYPE_SECONDARY_ROAD_DIRECTION_RIGHT = 237,
+			TYPE_DIRECTION_DESIGNATED_ACTORS_LEFT = 238,
+			TYPE_DIRECTION_DESIGNATED_ACTORS_RIGHT = 239,
+			TYPE_ROUTING_DESIGNATED_ACTORS = 240,
+			TYPE_DIRECTION_TO_HIGHWAY_LEFT = 143,
+			TYPE_DIRECTION_TO_HIGHWAY_RIGHT = 108,
+			TYPE_DIRECTION_TO_LOCAL_DESTINATION_LEFT = 127,
+			TYPE_DIRECTION_TO_LOCAL_DESTINATION_RIGHT = 136,
+			TYPE_CONSOLIDATED_DIRECTIONS = 118,
+			TYPE_STREET_NAME = 119,
+			TYPE_DIRECTION_PREANNOUNCEMENT = 120,
+			TYPE_DIRECTION_PREANNOUNCEMENT_LANE_CONFIG = 121,
+			TYPE_DIRECTION_PREANNOUNCEMENT_HIGHWAY_ENTRIES = 122,
+			TYPE_HIGHWAY_ANNOUNCEMENT = 123,
+			TYPE_OTHER_ROAD_ANNOUNCEMENT = 124,
+			TYPE_HIGHWAY_ANNOUNCEMENT_TRUCK_STOP = 125,
+			TYPE_HIGHWAY_PREANNOUNCEMENT_DIRECTIONS = 126,
+			TYPE_POLE_EXIT = 88,
+			TYPE_HIGHWAY_DISTANCE_BOARD = 180,
+			TYPE_DETOUR_LEFT = 181,
+			TYPE_DETOUR_RIGHT = 182,
+			TYPE_NUMBERED_DETOUR = 131,
+			TYPE_DETOUR_BEGIN = 132,
+			TYPE_DETOUR_END = 133,
+			TYPE_DETOUR_ROUTING_BOARD = 134,
+			TYPE_OPTIONAL_DETOUR = 111,
+			TYPE_OPTIONAL_DETOUR_ROUTING = 199,
+			TYPE_ROUTE_RECOMMENDATION = 211,
+			TYPE_ROUTE_RECOMMENDATION_END = 212,
+			TYPE_ANNOUNCE_LANE_TRANSITION_LEFT = 192,
+			TYPE_ANNOUNCE_LANE_TRANSITION_RIGHT = 193,
+			TYPE_ANNOUNCE_RIGHT_LANE_END = 90,
+			TYPE_ANNOUNCE_LEFT_LANE_END = 89,
+			TYPE_ANNOUNCE_RIGHT_LANE_BEGIN = 115,
+			TYPE_ANNOUNCE_LEFT_LANE_BEGIN = 116,
+			TYPE_ANNOUNCE_LANE_CONSOLIDATION = 117,
+			TYPE_DETOUR_CITY_BLOCK = 142,
+			TYPE_GATE = 141,
+			TYPE_POLE_WARNING = 91,
+			TYPE_TRAFFIC_CONE = 140,
+			TYPE_MOBILE_LANE_CLOSURE = 139,
+			TYPE_REFLECTOR_POST = 114,
+			TYPE_DIRECTIONAL_BOARD_WARNING = 113,
+			TYPE_GUIDING_PLATE = 104,
+			TYPE_GUIDING_PLATE_WEDGES = 105,
+			TYPE_PARKING_HAZARD = 99,
+			TYPE_TRAFFIC_LIGHT_GREEN_ARROW = 92,
+			TrafficSign_MainSign_Classification_Type_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+			TrafficSign_MainSign_Classification_Type_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
 		};
 
 		Signal(double s, double t, int id, std::string name, bool dynamic, Orientation orientation, double z_offset, std::string country,
-		int type, int sub_type, double value, std::string unit, double height, double width, std::string text, double h_offset,
+		int type, double value, std::string unit, double height, double width, std::string text, double h_offset,
 		double pitch, double roll) : s_(s), t_(t), id_(id), name_(name), dynamic_(dynamic), orientation_(orientation), z_offset_(z_offset),
-		country_(country), type_(type), sub_type_(sub_type), value_(value), unit_(unit), height_(height), width_(width), text_(text),
+		country_(country), type_(type), value_(value), unit_(unit), height_(height), width_(width), text_(text),
 		h_offset_(h_offset), pitch_(pitch), roll_(roll), length_(0) {}
 
 		std::string GetName() { return name_; }
@@ -767,7 +976,6 @@ namespace roadmanager
 		double GetZOffset() { return z_offset_; }
 		Orientation GetOrientation() { return orientation_; }
 		int GetType() { return type_; }
-		int GetSubType() { return sub_type_; }
 		double GetHeight() { return height_; }
 		double GetWidth() { return width_; }
 		bool IsDynamic() { return dynamic_; }
@@ -776,6 +984,7 @@ namespace roadmanager
 		double GetValue() { return value_; }
 		std::string GetUnit() { return unit_; }
 		std::string GetText() { return text_; }
+		static Type GetTypeFromString(const std::string& type);
 
 	private:
 		double s_;
@@ -787,7 +996,6 @@ namespace roadmanager
 		double z_offset_;
 		std::string country_;
 		int type_;
-		int sub_type_;
 		double value_;
 		std::string unit_;
 		double height_;
@@ -797,6 +1005,7 @@ namespace roadmanager
 		double pitch_;
 		double roll_;
 		double length_;
+		static const std::map<std::string, Type> types_mapping_;
 	};
 
 	class OutlineCorner
@@ -1353,10 +1562,11 @@ namespace roadmanager
 		Controller* GetControllerById(int id);
 		void AddController(Controller controller) { controller_.push_back(controller); }
 
-
 		GeoReference* GetGeoReference();
 		std::string GetGeoReferenceAsString();
 		void ParseGeoLocalization(const std::string& geoLocalization);
+
+		bool LoadSignalsByCountry(const std::string& country);
 
 		void Print();
 
@@ -1367,6 +1577,7 @@ namespace roadmanager
 		std::vector<Controller> controller_;
 		GeoReference geo_ref_;
 		std::string odr_filename_;
+		std::map<std::string, std::string> signals_types_;
 	};
 
 	typedef struct

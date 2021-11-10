@@ -24,6 +24,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <map>
 #include <math.h>
 
 #define DEFAULT_OSI_TRACE_FILENAME "ground_truth.osi"
