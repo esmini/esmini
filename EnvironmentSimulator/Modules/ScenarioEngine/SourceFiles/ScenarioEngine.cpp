@@ -977,7 +977,8 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 					}
 				}*/
 				if (trig->type_ == TrigByEntity::EntityConditionType::COLLISION ||
-					trig->type_ == TrigByEntity::EntityConditionType::REACH_POSITION)
+					trig->type_ == TrigByEntity::EntityConditionType::REACH_POSITION ||
+					trig->type_ == TrigByEntity::EntityConditionType::TRAVELED_DISTANCE)
 				{
 					LOG("Handing over trigger to Ghost-------------------------------------");
 
