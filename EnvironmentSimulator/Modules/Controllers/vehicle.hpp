@@ -32,9 +32,9 @@ namespace vehicle
 	{
 	public:
 		Vehicle() { Reset(); }
-		Vehicle(double x, double y, double h, double length);
+		Vehicle(double x, double y, double h, double length, double speed = 0.0);
 		void Update(double dt);
-		void DrivingControlTarget(double dt, double heading_to_target, double target_speed);
+		void DrivingControlTarget(double dt, double target_speed, double heading_to_target);
 		void DrivingControlBinary(double dt, THROTTLE throttle, STEERING steering);
 		void DrivingControlAnalog(double dt, double throttle, double steering);
 		void SetWheelAngle(double angle);

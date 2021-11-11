@@ -1568,9 +1568,9 @@ extern "C"
 	}
 
 	// Simple vehicle
-	SE_DLL_API void *SE_SimpleVehicleCreate(float x, float y, float h, float length)
+	SE_DLL_API void *SE_SimpleVehicleCreate(float x, float y, float h, float length, float speed)
 	{
-		vehicle::Vehicle *v = new vehicle::Vehicle(x, y, h, length);
+		vehicle::Vehicle *v = new vehicle::Vehicle(x, y, h, length, speed);
 		return (void *)v;
 	}
 
@@ -1601,6 +1601,16 @@ extern "C"
 		}
 
 		((vehicle::Vehicle *)handleSimpleVehicle)->DrivingControlAnalog(dt, throttle, steering);
+	}
+
+	SE_DLL_API void SE_SimpleVehicleControlTarget(void* handleSimpleVehicle, double dt, double target_speed, double heading_to_target)
+	{
+		if (handleSimpleVehicle == 0)
+		{
+			return;
+		}
+
+		((vehicle::Vehicle*)handleSimpleVehicle)->DrivingControlTarget(dt, target_speed, heading_to_target);
 	}
 
 	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void *handleSimpleVehicle, float speed)

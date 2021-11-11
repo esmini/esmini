@@ -827,9 +827,10 @@ extern "C"
 		@param y Initial position Y world coordinate
 		@param h Initial heading
 		@param length Length of the vehicle
+		@param speed Initial speed
 		@return Handle to the created object
 	*/
-	SE_DLL_API void *SE_SimpleVehicleCreate(float x, float y, float h, float length);
+	SE_DLL_API void *SE_SimpleVehicleCreate(float x, float y, float h, float length, float speed);
 
 	/**
 		Delete an instance of the simplistic vehicle model
@@ -846,13 +847,22 @@ extern "C"
 	SE_DLL_API void SE_SimpleVehicleControlBinary(void *handleSimpleVehicle, double dt, int throttle, int steering); // throttle and steering [-1, 0 or 1]
 
 	/**
-		Control the speed and steering with floaing values in the range [-1, 1], suitable for driver models.
+		Control the speed and steering with floating values in the range [-1, 1], suitable for driver models.
 		The function also steps the vehicle model, updating its position according to motion state and timestep.
 		@param dt timesStep (s)
 		@param throttle Longitudinal control, -1: maximum brake, 0: no acceleration, +1: maximum acceleration
 		@param steering Lateral control, -1: max left, 0: straight, 1: max right
 	*/
 	SE_DLL_API void SE_SimpleVehicleControlAnalog(void *handleSimpleVehicle, double dt, double throttle, double steering); // throttle and steering [-1, 0 or 1]
+
+	/**
+		Control the speed and steering by providing steering and speed targets
+		The function also steps the vehicle model, updating its position according to motion state and timestep.
+		@param dt timesStep (s)
+		@param target_speed Requested speed
+		@param heading_to_target Heading angle to a target position
+	*/
+	SE_DLL_API void SE_SimpleVehicleControlTarget(void* handleSimpleVehicle, double dt, double target_speed, double heading_to_target);
 
 	/**
 		Set maximum vehicle speed.

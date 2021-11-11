@@ -31,7 +31,7 @@ using namespace vehicle;
 #define WHEEL_RADIUS 0.35
 #define TARGET_HWT 1.0
 
-Vehicle::Vehicle(double x, double y, double h, double length)
+Vehicle::Vehicle(double x, double y, double h, double length, double speed)
 {
 	Reset();
 	posX_ = x;
@@ -40,6 +40,7 @@ Vehicle::Vehicle(double x, double y, double h, double length)
 	length_ = length;
 	throttle_disabled_ = false;
 	steering_disabled_ = false;
+	speed_ = speed;
 }
 #define MAX_WHEEL_ANGLE (60 * M_PI / 180)
 
@@ -71,9 +72,9 @@ void Vehicle::DrivingControlTarget(double dt, double heading_to_target, double t
 	speed_ += acceleration * dt;
 	speed_ *= (1 - SPEED_DECLINE);
 
-	double steering_scale = 1.0 / (1 + 0.015 * speed_ * speed_);
+	double steering_scale = 1.0 / (1 + 0.005 * speed_ * speed_);
 	wheelAngle_ = heading_to_target;
-	wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
+	wheelAngle_ = CLAMP(steering_scale * wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
 
 	Update(dt);
 }

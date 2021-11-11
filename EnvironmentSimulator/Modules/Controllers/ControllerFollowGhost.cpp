@@ -116,7 +116,7 @@ void ControllerFollowGhost::Step(double timeStep)
 	double diffH = asin(GetCrossProduct2D(egoDirGlobal[0], egoDirGlobal[1], diffGlobal[0], diffGlobal[1]));
 
 	// Update driver model target values
-	vehicle_.DrivingControlTarget(timeStep, diffH, point.speed);
+	vehicle_.DrivingControlTarget(timeStep, point.speed, diffH);
 
 	// Register updated vehicle position
 
