@@ -205,9 +205,9 @@ Note: If you want M_PI, add on top (before includes): #define _USE_MATH_DEFINES
 
 ### Driver model
 
-Using a simple vehicle model this example demonstrates how a driver model can interact with the scenario, once again using the ```ExternalController```. 
+Using a simple vehicle model this example demonstrates how a driver model can interact with the scenario, once again using the ```ExternalController```. This example is a slightly simplified version of the [test-driver](https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/test-driver) code example.
 
-Before heading into the application code we will prepare a scenario. Download [test-driver.xosc](https://www.dropbox.com/s/h9uqj2la4sk2t2o/test-driver.xosc?dl=1) and put it in esmini/resources/xosc folder.
+Before heading into the application code we will look into the scenario file ([test-driver.xosc](https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/test-driver/test-driver.xosc)).
 
 Now let's have a look inside it to see how to activate the ExternalController, which will prevent the DefaultController to interfere with the Ego vehicle and instead hand over exclusive control to our application. You can skip this and go to the C++ code example below if you're not interested in the controller setup.
 - Open test-driver.xosc 
@@ -217,12 +217,13 @@ Now let's have a look inside it to see how to activate the ExternalController, w
         <Controller name="MyExternalControllerWithGhost">
             <Properties>
         	    <Property name="esminiController" value="ExternalController" />
-                <Property name="useGhost" value="false" />
+                <Property name="useGhost" value="$GhostMode" />
                 <Property name="headstartTime" value="2" />
             </Properties>
         </Controller>
     </ObjectController>   
 	```
+  Note: The GhostMode parameter is set to true or false in the ParameterDeclarations section in the top of the scenario file. 
 - Then the initial position is set. This could instead be done by the application, but it's convenient to specify it in the scenario file.
 	```
    <PrivateAction>
@@ -262,7 +263,7 @@ int main(int argc, char* argv[])
 	float simTime = 0;
 	float dt = 0;
 
-	if (SE_Init("../resources/xosc/test-driver.xosc", 0, 1, 0, 0) != 0)
+	if (SE_Init("../EnvironmentSimulator/code-examples/test-driver/test-driver.xosc", 0, 1, 0, 0) != 0)
 	{
 		printf("Failed to initialize the scenario, quit\n");
 		return -1;
@@ -341,8 +342,8 @@ To test this you need to make two changes to the previous example:
 ```#define GHOST 0``` to  
 ```#define GHOST 1```
 2. In test-driver.xosc, change line:  
-```<Property name="useGhost" value="false" />``` to   
-```<Property name="useGhost" value="true" />```
+```<ParameterDeclaration name="GhostMode" parameterType="bool" value="false"/>``` to   
+```<ParameterDeclaration name="GhostMode" parameterType="bool" value="true"/>```
 
 When running the application, press key 'j' to show dots along Ego and Ghost trails.
 
