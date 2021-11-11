@@ -65,14 +65,14 @@ void Vehicle::SetAccelerationScale(double accScale)
 	acc_scale_ = accScale * ACCELERATION_SCALE_DEFAULT;
 }
 
-void Vehicle::DrivingControlTarget(double dt, double heading_to_target, double target_speed)
+void Vehicle::DrivingControlTarget(double dt, double target_speed, double heading_to_target)
 {
 	double acceleration = CLAMP(acc_scale_ * (target_speed - speed_), -30, 30);
 
 	speed_ += acceleration * dt;
 	speed_ *= (1 - SPEED_DECLINE);
 
-	double steering_scale = 1.0 / (1 + 0.005 * speed_ * speed_);
+	double steering_scale = 1.0 / (1 + 0.0015 * speed_ * speed_);
 	wheelAngle_ = heading_to_target;
 	wheelAngle_ = CLAMP(steering_scale * wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
 
