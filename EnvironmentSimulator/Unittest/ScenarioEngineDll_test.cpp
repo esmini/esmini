@@ -2158,15 +2158,31 @@ TEST(ExternalController, TestExternalDriver)
 			// Finally, update scenario using same time step as for vehicle model
 			SE_StepDT(dt);
 		}
+		SE_Close();
 	}
+}
+
+TEST(SeedTest, TestGetAndSetSeed)
+{
+	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
+
+	SE_SetSeed(12345);
+	EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+	ASSERT_EQ(SE_GetNumberOfObjects(), 2);
+	ASSERT_EQ(SE_GetSeed(), (unsigned int)12345);
+
+	SE_Close();
 }
 
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
-	//testing::GTEST_FLAG(filter) = "ExternalController*:TestExternalDriver";
 
+#if 1   // set to 1 and modify filter to run one single test
+	testing::GTEST_FLAG(filter) = "SeedTest*:TestGetAndSetSeed";
+#else
 	SE_LogToConsole(false);
+#endif
 
 	return RUN_ALL_TESTS();
 }

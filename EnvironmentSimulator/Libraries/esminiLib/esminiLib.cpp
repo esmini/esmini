@@ -352,6 +352,16 @@ extern "C"
 		SE_Env::Inst().SetLogFilePath(logFilePath);
 	}
 
+	SE_DLL_API unsigned int SE_GetSeed()
+	{
+		return SE_Env::Inst().GetSeed();
+	}
+
+	SE_DLL_API void SE_SetSeed(unsigned int seed)
+	{
+		SE_Env::Inst().SetSeed(seed);
+	}
+
 	SE_DLL_API int SE_SetOSITolerances(double maxLongitudinalDistance, double maxLateralDeviation)
 	{
 		SE_Env::Inst().SetOSIMaxLongitudinalDistance(maxLongitudinalDistance);

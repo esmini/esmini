@@ -168,6 +168,23 @@ extern "C"
 	SE_DLL_API void SE_SetLogFilePath(const char *logFilePath);
 
 	/**
+	Get seed that esmini uses for current session. It can then be re-used
+	in order to achieve repeatable results (for actions that involes some
+	degree of randomness, e.g. TrafficSwarmAction).
+	@return seed number
+	*/
+	SE_DLL_API unsigned int SE_GetSeed();
+
+	/**
+		Set seed that will be used by esmini random number generator.
+		Using same seed will ensure same result.
+		Note: Also timesteps has to be equal. Make sure to use SE_StepDT()
+		with fixed timestep, or at least same sequence of dt each run.
+		@param seed number
+	*/
+	SE_DLL_API void SE_SetSeed(unsigned int seed);
+
+	/**
 		Register a function and optional argument (ref) to be called back from esmini after ParameterDeclarations has been parsed,
 		but before the scenario is initialized, i.e. before applying the actions in the Init block. One use-case is to
 		set parameter values for initial entity states, e.g. s value in lane position. So this callback will happen just

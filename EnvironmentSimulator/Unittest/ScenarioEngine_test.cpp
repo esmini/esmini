@@ -742,6 +742,7 @@ int main(int argc, char **argv)
         Logger::Inst().SetCallback(log_callback);
     }
 #endif
+    //testing::GTEST_FLAG(filter) = "suite*:test";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
