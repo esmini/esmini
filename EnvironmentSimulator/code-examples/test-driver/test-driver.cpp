@@ -5,7 +5,7 @@
 #define TARGET_SPEED 50.0
 #define CURVE_WEIGHT 30.0
 #define THROTTLE_WEIGHT 0.01
-#define DURATION 60
+#define DURATION 30
 
 void paramDeclCB(void* user_arg)
 {
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
 		// show some road features, including road sensor
 		SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
 
-		// Run for 60 seconds or until 'Esc' button is pressed
+		// Run for specified duration or until 'Esc' button is pressed
 		while (SE_GetSimulationTime() < DURATION && SE_GetQuitFlag() != 1)
 		{
 			// Get simulation delta time since last call (first will be 0)

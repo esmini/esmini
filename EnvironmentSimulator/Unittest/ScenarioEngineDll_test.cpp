@@ -2035,10 +2035,136 @@ TEST(GatewayTest, TestReportToGatewayInCallback)
 	ASSERT_FLOAT_EQ(state.laneOffset, -2.3f);
 }
 
+static void ghostParamDeclCB(void* user_arg)
+{
+	bool ghostMode = *((bool*)user_arg);
+
+	printf("Running with ghostMode = %s\n", ghostMode == true ? "true" : "false");
+	SE_SetParameterBool("GhostMode", ghostMode);
+}
+
+TEST(ExternalController, TestExternalDriver)
+{
+	void* vehicleHandle = 0;
+	SE_SimpleVehicleState vehicleState = { 0, 0, 0, 0, 0, 0 };
+	SE_ScenarioObjectState objectState;
+	SE_RoadInfo roadInfo;
+	double defaultTargetSpeed = 50.0;
+	double curveWeight = 30.0;
+	double throttleWeight = 0.01;
+	bool ghostMode[2] = { false, true };
+	float dt = 0.05f;
+
+	SE_AddPath("../../../resources/xodr");
+	SE_AddPath("../../../resources/xosc/Catalogs/Vehicles");
+
+	for (int i = 0; i < 2; i++)
+	{
+
+		SE_RegisterParameterDeclarationCallback(ghostParamDeclCB, &ghostMode[i]);
+
+		ASSERT_EQ(SE_Init("../../../EnvironmentSimulator/code-examples/test-driver/test-driver.xosc", 0, 0, 0, 1), 0);
+
+		// Lock object to the original lane
+		// If setting to false, the object road position will snap to closest lane
+		SE_SetLockOnLane(0, true);
+
+		// Initialize the vehicle model, fetch initial state from the scenario
+		SE_GetObjectState(0, &objectState);
+		vehicleHandle = SE_SimpleVehicleCreate(objectState.x, objectState.y, objectState.h, 4.0, 0.0);
+
+		// show some road features, including road sensor
+		SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
+
+		// Run for 30 seconds or until 'Esc' button is pressed
+		while (SE_GetSimulationTime() < 30 && SE_GetQuitFlag() != 1)
+		{
+			// Get road information at a point some speed dependent distance ahead
+			double targetSpeed;
+			if (ghostMode[i] == true)
+			{
+				// ghost version
+				float ghost_speed;
+				SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed);
+				targetSpeed = ghost_speed;
+
+			}
+			else
+			{
+				// Look ahead along the road, to establish target info for the driver model
+				SE_GetRoadInfoAtDistance(0, 5 + 0.75f * vehicleState.speed, &roadInfo, 0, true);
+
+				// Slow down when curve ahead - CURVE_WEIGHT is the tuning parameter
+				targetSpeed = defaultTargetSpeed / (1 + curveWeight * fabs(roadInfo.angle));
+			}
+
+			// Steer towards where the point
+			double steerAngle = roadInfo.angle;
+
+			// Accelerate or decelerate towards target speed - THROTTLE_WEIGHT tunes magnitude
+			double throttle = throttleWeight * (targetSpeed - vehicleState.speed);
+
+			// Step vehicle model with driver input, but wait until time > 0
+			if (SE_GetSimulationTime() > 0)
+			{
+				SE_SimpleVehicleControlAnalog(vehicleHandle, dt, throttle, steerAngle);
+			}
+
+			// Fetch updated state and report to scenario engine
+			SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+
+			if (i == 0)
+			{
+				if (abs(SE_GetSimulationTime() - 10.0f) < SMALL_NUMBER)
+				{
+					SE_GetObjectState(0, &objectState);
+					EXPECT_NEAR(objectState.x, 216.659, 1e-3);
+					EXPECT_NEAR(objectState.y, 125.052, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.441, 1e-3);
+					EXPECT_NEAR(objectState.p, 6.235, 1e-3);
+				}
+				else if (abs(SE_GetSimulationTime() - 16.5f) < SMALL_NUMBER)
+				{
+					SE_GetObjectState(0, &objectState);
+					EXPECT_NEAR(objectState.x, 210.848, 1e-3);
+					EXPECT_NEAR(objectState.y, 294.607, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.106, 1e-3);
+					EXPECT_NEAR(objectState.p, 6.229, 1e-3);
+				}
+			}
+			else if (i==1)
+			{
+				if (abs(SE_GetSimulationTime() - 10.0f) < SMALL_NUMBER)
+				{
+					SE_GetObjectState(0, &objectState);
+					EXPECT_NEAR(objectState.x, 192.608, 1e-3);
+					EXPECT_NEAR(objectState.y, 65.494, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.066, 1e-3);
+					EXPECT_NEAR(objectState.p, 6.262, 1e-3);
+				}
+				else if (abs(SE_GetSimulationTime() - 20.0f) < SMALL_NUMBER)
+				{
+					SE_GetObjectState(0, &objectState);
+					EXPECT_NEAR(objectState.x, 204.746, 1e-3);
+					EXPECT_NEAR(objectState.y, 215.313, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.807, 1e-3);
+					EXPECT_NEAR(objectState.p, 6.266, 1e-3);
+				}
+			}
+
+			// Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
+			SE_ReportObjectPosXYH(0, 0, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+
+			// Finally, update scenario using same time step as for vehicle model
+			SE_StepDT(dt);
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
-	//testing::GTEST_FLAG(filter) = "ParameterTest*:SetParameterValuesBeforeInit";
+	//testing::GTEST_FLAG(filter) = "ExternalController*:TestExternalDriver";
 
 	SE_LogToConsole(false);
 
