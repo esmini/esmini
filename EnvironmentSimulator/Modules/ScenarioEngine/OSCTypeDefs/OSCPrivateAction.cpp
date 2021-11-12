@@ -147,6 +147,9 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 
 	time_ += timing_scale_ * dt;
 
+	// Adjust time for any ghost headstart
+	double timeOffset = object_->IsGhost() ? object_->GetHeadstartTime() : 0.0;
+
 	// Check end conditions:
 	// Trajectories with no time stamps:
 	//     closed trajectories have no end
@@ -154,7 +157,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 	// Trajectories with time stamps:
 	//     always ends when time >= trajectory duration (last timestamp)
 	if (((timing_domain_ == TimingDomain::NONE && !traj_->closed_ && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER)) ||
-		 (timing_domain_ != TimingDomain::NONE && time_ >= traj_->GetStartTime() + traj_->GetDuration())))
+		 (timing_domain_ != TimingDomain::NONE && time_ + timeOffset >= traj_->GetStartTime() + traj_->GetDuration())))
 	{
 		// Reached end of trajectory
 		// Calculate road coordinates from final inertia (X, Y) coordinates
@@ -173,26 +176,26 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 			 object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG)))
 		{
 			object_->pos_.MoveTrajectoryDS(object_->speed_ * dt);
-object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
 		else if (timing_domain_ == TimingDomain::TIMING_RELATIVE)
 		{
-		double s_old = object_->pos_.GetTrajectoryS();
-		object_->pos_.SetTrajectoryPosByTime(time_ + timing_offset_);
-		if (time_ <= traj_->GetStartTime() + traj_->GetDuration())
-		{
-			// don't calculate and update actual speed when reached end of trajectory,
-			// since the movement is based on remaining length of trajectory, not speed
-			object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
-		}
-		object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+			double s_old = object_->pos_.GetTrajectoryS();
+			object_->pos_.SetTrajectoryPosByTime(time_ + timeOffset + timing_offset_);
+			if (time_ + timeOffset <= traj_->GetStartTime() + traj_->GetDuration())
+			{
+				// don't calculate and update actual speed when reached end of trajectory,
+				// since the movement is based on remaining length of trajectory, not speed
+				object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
+			}
+			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
 		else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
 		{
-		double s_old = object_->pos_.GetTrajectoryS();
-		object_->pos_.SetTrajectoryPosByTime(simTime * timing_scale_ + timing_offset_);
-		object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
-		object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+			double s_old = object_->pos_.GetTrajectoryS();
+			object_->pos_.SetTrajectoryPosByTime(simTime * timing_scale_ + timeOffset + timing_offset_);
+			object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
+			object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 		}
 	}
 }
