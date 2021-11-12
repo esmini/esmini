@@ -1,5 +1,26 @@
 ## esmini release notes
 
+### 2021-11-12 Version 2.17.0
+
+- Support modify parameters during initialization
+  - Callback mechanism to change parameter values after
+  ParameterDeclaration has been parsed, but before the Init section of
+  the scenario.
+  - See code example [parametric-init](https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/parametric-init).
+- Add OSI reading to UDPDriverController examples
+  - See [testUDPDriver-minimalistic-example-osi.py](https://github.com/esmini/esmini/blob/master/scripts/udp-driver/testUDPDriver-minimalistic-example-osi.py) and [testUDPDriver-follow-trajectory.py](https://github.com/esmini/esmini/blob/master/scripts/udp-driver/testUDPDriver-follow-trajectory.py).
+- Extend SimpleVehicle API in esminiLib
+  - Add initial speed to constructor
+  - Add SE_SimpleVehicleControlTarget function
+  - NOTE: [Vehicle::DrivingControlTarget](https://github.com/esmini/esmini/blob/598b82787c275b5dedd30e1789fa25eb53eb856f/EnvironmentSimulator/Modules/Controllers/vehicle.hpp#L37) arguments changed order
+  to harmonize with other SE_SimpleVehicleControl functions.
+- Add external controller code example [test-driver](https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/test-driver).
+
+Bugfixes
+- Fix highway type of junctions to have the correct lane-pairing
+- Don't reset ghost on traveledDistance trigger
+- Fix steering calculation in Vehicle::DrivingControlTarget
+
 ### 2021-11-08 Version 2.16.2
 
 - Ghost vehicle concept updated to handle greater variation of triggers
