@@ -1,5 +1,9 @@
 ## esmini release notes
 
+### 2021-11-15 Version 2.17.2
+
+- Add missing OSI files to demo packages
+
 ### 2021-11-15 Version 2.17.1
 
 - Add API for get and set seed
