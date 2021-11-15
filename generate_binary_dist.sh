@@ -111,6 +111,7 @@ run/replayer/run_and_plot_cut-in_speed*.* \
 run/replayer/run_and_plot_ltap-od_pos*.* \
 scripts/plot_csv.py \
 scripts/udp-driver/*.* \
+scripts/udp-driver/osi3/*.* \
 docs/readme.txt \
 docs/commands.txt \
 3rd_party_terms_and_licenses/* \

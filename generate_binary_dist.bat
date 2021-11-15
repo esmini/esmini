@@ -20,6 +20,7 @@ IF NOT EXIST %target_dir%\bin ( mkdir %target_dir%\bin )
 IF NOT EXIST %target_dir%\lib ( mkdir %target_dir%\lib )
 IF NOT EXIST %target_dir%\scripts ( mkdir %target_dir%\scripts )
 IF NOT EXIST %target_dir%\scripts\udp-driver ( mkdir %target_dir%\scripts\udp-driver )
+IF NOT EXIST %target_dir%\scripts\udp-driver\osi3 ( mkdir %target_dir%\scripts\udp-driver\osi3 )
 IF NOT EXIST %target_dir%\include ( mkdir %target_dir%\include )
 IF NOT EXIST %target_dir%\3rd_party_terms_and_licenses ( mkdir %target_dir%\3rd_party_terms_and_licenses )
 IF NOT EXIST %target_dir%\Hello-World_coding-example ( mkdir %target_dir%\Hello-World_coding-example )
@@ -139,6 +140,7 @@ copy run\replayer\run_and_plot_ltap-od_pos.bat %target_dir%\run\replayer /y
 
 copy scripts\plot_csv.py %target_dir%\scripts /y
 copy scripts\udp-driver\* %target_dir%\scripts\udp-driver /y
+copy scripts\udp-driver\osi3\* %target_dir%\scripts\udp-driver\osi3 /y
 
 copy docs\readme.txt %target_dir% /y
 copy docs\commands.txt %target_dir% /y
