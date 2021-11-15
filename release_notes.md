@@ -1,5 +1,12 @@
 ## esmini release notes
 
+### 2021-11-15 Version 2.17.1
+
+- Add API for get and set seed
+- Fix ghost on trajectory timing issue
+- Fix ECE_ALKS_RefDriverController catalog parameters ([issue #182](https://github.com/esmini/esmini/issues/182))
+- Add dependent osi files for UDPDriverController examples
+
 ### 2021-11-12 Version 2.17.0
 
 - Support modify parameters during initialization
