@@ -58,7 +58,7 @@ if [ "$OSTYPE" == "msys" ]; then
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     target_dir="linux"
     zfilename="osi_linux.7z"
-    z_exe=7z
+    z_exe=7za
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     target_dir="mac"
     zfilename="osi_mac.7z"
@@ -273,8 +273,8 @@ function build {
         else
             cp -P open-simulation-interface$folder_postfix/install/osi-lib/lib/osi3/libopen_simulation_interface.so* $target_dir/$target_lib_dir
             cp -P open-simulation-interface$folder_postfix/install/osi-lib/lib/osi3/libopen_simulation_interfaced.so* $target_dir/$target_lib_dir
-            cp -P protobuf$folder_postfix/protobuf-install/lib/libprotobuf.so* $target_dir/$target_lib_dir
-            cp -P protobuf$folder_postfix/protobuf-install/lib/libprotobufd.so* $target_dir/$target_lib_dir
+            cp -P protobuf$folder_postfix/protobuf-install/lib*/libprotobuf.so* $target_dir/$target_lib_dir
+            cp -P protobuf$folder_postfix/protobuf-install/lib*/libprotobufd.so* $target_dir/$target_lib_dir
         fi
     else
         target_lib_dir="lib"
@@ -284,7 +284,7 @@ function build {
             cp protobuf$folder_postfix/protobuf-install/lib/libprotobuf*.lib $target_dir/$target_lib_dir
         else
             cp open-simulation-interface$folder_postfix/install/osi-lib/lib/osi3/*open_simulation_interface_pic*.a $target_dir/$target_lib_dir
-            cp protobuf$folder_postfix/protobuf-install/lib/libprotobuf*.a $target_dir/$target_lib_dir
+            cp protobuf$folder_postfix/protobuf-install/lib*/libprotobuf*.a $target_dir/$target_lib_dir
         fi
     fi
     
