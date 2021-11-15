@@ -1,5 +1,5 @@
 # Enforce text files to use CRLF line endings - needed for AppVeyor releases
-*.txt text eol=crlf
+*.txt text eol=auto
 
 # Misc
 *.zip filter=lfs diff=lfs merge=lfs -text
