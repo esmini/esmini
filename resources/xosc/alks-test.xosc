@@ -40,7 +40,11 @@
         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
          <ObjectController>
             <Controller name="ALKSController" />
-            <!-- <Controller name="ECE_ALKS_RefDriverController" /> -->
+            <!-- <CatalogReference catalogName="ControllerCatalog" entryName="ECE_ALKS_RefDriverController"> -->
+               <!-- <ParameterAssignments> -->
+                   <!-- <ParameterAssignment parameterRef="Logging" value="false" /> -->
+               <!-- </ParameterAssignments> -->
+            <!-- </CatalogReference> -->
 	     </ObjectController>         
       </ScenarioObject>
       <ScenarioObject name="Target">

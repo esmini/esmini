@@ -126,12 +126,10 @@
         </Controller>
         <Controller name="ECE_ALKS_RefDriverController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="SetSpeed" parameterType="double" value="50" /> 
-                <ParameterDeclaration name="TimeGap" parameterType="double" value="1.5" /> 
+                <ParameterDeclaration name="Logging" parameterType="bool" value="false" /> 
             </ParameterDeclarations>            
             <Properties>
-                <Property name="setSpeed"  value="$SetSpeed" />
-                <Property name="timeGap"  value="$TimeGap" />
+                <Property name="logging" value="$Logging" />
             </Properties>
         </Controller>
         <Controller name="UDPDriverController">
