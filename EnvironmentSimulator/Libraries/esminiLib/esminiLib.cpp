@@ -1632,13 +1632,49 @@ extern "C"
 		((vehicle::Vehicle *)handleSimpleVehicle)->SetMaxSpeed(speed/3.6);
 	}
 
-	SE_DLL_API void SE_SimpleVehicleSetAcclerationScale(void* handleSimpleVehicle, float accScale)
+	SE_DLL_API void SE_SimpleVehicleSetMaxAcceleration(void* handleSimpleVehicle, float maxAcceleration)
 	{
 		if (handleSimpleVehicle == 0)
 		{
 			return;
 		}
-		((vehicle::Vehicle*)handleSimpleVehicle)->SetAccelerationScale(accScale);
+		((vehicle::Vehicle*)handleSimpleVehicle)->SetMaxAcc(maxAcceleration);
+	}
+
+	SE_DLL_API void SE_SimpleVehicleSetEngineBrakeFactor(void* handleSimpleVehicle, float engineBrakeFactor)
+	{
+		if (handleSimpleVehicle == 0)
+		{
+			return;
+		}
+		((vehicle::Vehicle*)handleSimpleVehicle)->SetEngineBrakeFactor(engineBrakeFactor);
+	}
+
+	SE_DLL_API void SE_SimpleVehicleSteeringScale(void* handleSimpleVehicle, float steeringScale)
+	{
+		if (handleSimpleVehicle == 0)
+		{
+			return;
+		}
+		((vehicle::Vehicle*)handleSimpleVehicle)->SetSteeringScale(steeringScale);
+	}
+
+	SE_DLL_API void SE_SimpleVehicleSteeringReturnFactor(void* handleSimpleVehicle, float steeringReturnFactor)
+	{
+		if (handleSimpleVehicle == 0)
+		{
+			return;
+		}
+		((vehicle::Vehicle*)handleSimpleVehicle)->SetSteeringReturnFactor(steeringReturnFactor);
+	}
+
+	SE_DLL_API void SE_SimpleVehicleSteeringRate(void* handleSimpleVehicle, float steeringRate)
+	{
+		if (handleSimpleVehicle == 0)
+		{
+			return;
+		}
+		((vehicle::Vehicle*)handleSimpleVehicle)->SetSteeringRate(steeringRate);
 	}
 
 	SE_DLL_API void SE_SimpleVehicleGetState(void *handleSimpleVehicle, SE_SimpleVehicleState *state)

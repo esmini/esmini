@@ -888,10 +888,40 @@ extern "C"
 	SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void *handleSimpleVehicle, float speed);
 
 	/**
-		Set acceleration scale factor
-		@param accScale Acceleration scale factor speed (0:10)
+		Set maximum vehicle acceleration.
+		@param speed Maximum acceleration (m/s^2)
 	*/
-	SE_DLL_API void SE_SimpleVehicleSetAcclerationScale(void* handleSimpleVehicle, float accScale);
+	SE_DLL_API void SE_SimpleVehicleSetMaxAcceleration(void* handleSimpleVehicle, float maxAcceleration);
+
+	/**
+		Set engine brake factor, applied when no throttle is applied
+		@param engineBrakeFactor recommended range = [0.0, 0.01], default = 0.001
+	*/
+	SE_DLL_API void SE_SimpleVehicleSetEngineBrakeFactor(void* handleSimpleVehicle, float engineBrakeFactor);
+
+	/**
+		Set steering scale factor, which will limit the steering range as speed increases
+		@param steeringScale recommended range = [0.0, 0.1], default = 0.018
+	*/
+	SE_DLL_API void SE_SimpleVehicleSteeringScale(void* handleSimpleVehicle, float steeringScale);
+
+	/**
+		Set steering return factor, which will make the steering wheel strive to neutral position (0 angle)
+		@param steeringScale recommended range = [0.0, 0.5], default = 0.1
+	*/
+	SE_DLL_API void SE_SimpleVehicleSteeringReturnFactor(void* handleSimpleVehicle, float steeringReturnFactor);
+
+	/**
+		Set steering rate, which will affect the angular speed of which the steering wheel will turn
+		@param steeringRate recommended range = [0.0, 50.0], default = 8.0
+	*/
+	SE_DLL_API void SE_SimpleVehicleSteeringRate(void* handleSimpleVehicle, float steeringRate);
+
+	/**
+		Set engine brake factor, applied when no throttle is applied
+		@param engineBrakeFactor recommended range = [0.0, 0.01], default = 0.001
+	*/
+	SE_DLL_API void SE_SimpleVehicleSetEngineBrakeFactor(void* handleSimpleVehicle, float engineBrakeFactor);
 
 	/**
 		Get current state of the vehicle. Typically called after Control has been applied.

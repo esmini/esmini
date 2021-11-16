@@ -22,12 +22,14 @@
 
 using namespace vehicle;
 
-#define STEERING_RATE 5.0
+#define STEERING_RATE_DEFAULT 8.0
+#define STEERING_SCALE_DEFAULT 0.018
+#define STEERING_RETURN_FACTOR_DEFAULT 4.0
 #define LENGTH_DEFAULT 5.0
 #define STEERING_MAX_ANGLE (60 * M_PI / 180)
-#define ACCELERATION_SCALE_DEFAULT 40
 #define MAX_SPEED_DEFAULT 70
-#define SPEED_DECLINE 0.001
+#define MAX_ACC_DEFAULT 20.0
+#define ENGINE_BRAKE_FACTOR_DEFAULT 0.001
 #define WHEEL_RADIUS 0.35
 #define TARGET_HWT 1.0
 
@@ -59,22 +61,15 @@ void Vehicle::SetMaxSpeed(double maxSpeed)
 	max_speed_ = maxSpeed;
 }
 
-void Vehicle::SetAccelerationScale(double accScale)
-{
-	accScale = CLAMP(accScale, SMALL_NUMBER, 10);
-	acc_scale_ = accScale * ACCELERATION_SCALE_DEFAULT;
-}
-
 void Vehicle::DrivingControlTarget(double dt, double target_speed, double heading_to_target)
 {
-	double acceleration = CLAMP(acc_scale_ * (target_speed - speed_), -30, 30);
+	double acceleration = CLAMP(max_acc_ * (target_speed - speed_), -max_acc_, max_acc_);
 
 	speed_ += acceleration * dt;
-	speed_ *= (1 - SPEED_DECLINE);
 
-	double steering_scale = 1.0 / (1 + 0.0015 * speed_ * speed_);
+	double steering_scale = 1.0 / (1 + steering_scale_ * speed_ * speed_);
 	wheelAngle_ = heading_to_target;
-	wheelAngle_ = CLAMP(steering_scale * wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
+	wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
 
 	Update(dt);
 }
@@ -94,7 +89,7 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 		}
 		else
 		{
-			speed_ += acc_scale_ * throttle * dt;
+			speed_ += max_acc_ * throttle * dt;
 
 			if (oldSpeed > 0 && speed_ < 0)
 			{
@@ -103,7 +98,11 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 			}
 			else
 			{
-				speed_ *= (1 - SPEED_DECLINE);
+				if (throttle == THROTTLE::THROTTLE_NONE)
+				{
+					// Apply drag
+					speed_ *= (1 - engine_brake_factor_);
+				}
 				speed_ = CLAMP(speed_, -1.2 * max_speed_, 1.2 * max_speed_);
 			}
 		}
@@ -113,11 +112,11 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 	if (!steering_disabled_)
 	{
 		// Make steering wheel speed dependent
-		double steering_scale = 1.0 / (1 + 0.02 * speed_ * speed_);
-		wheelAngle_ = wheelAngle_ + steering_scale * STEERING_RATE * steering * dt;
+		double steering_scale = 1.0 / (1 + steering_scale_ * speed_ * speed_);
+		wheelAngle_ = wheelAngle_ + steering_scale * steering_rate_ * steering * dt;
 
 		// Self-aligning
-		wheelAngle_ *= 0.92;
+		wheelAngle_ *= (1.0 - steering_return_factor_ * dt);
 
 		// Limit wheel angle
 		wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
@@ -141,7 +140,7 @@ void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
 		}
 		else
 		{
-			speed_ += acc_scale_ * throttle * dt;
+			speed_ += max_acc_ * throttle * dt;
 
 			if (oldSpeed > 0 && speed_ < 0)
 			{
@@ -150,7 +149,11 @@ void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
 			}
 			else
 			{
-				speed_ *= (1 - SPEED_DECLINE);
+				if (abs(throttle) < SMALL_NUMBER)
+				{
+					// Apply drag
+					speed_ *= (1 - engine_brake_factor_);
+				}
 				speed_ = CLAMP(speed_, -1.2 * max_speed_, 1.2 * max_speed_);
 			}
 		}
@@ -161,10 +164,10 @@ void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
 	{
 		// Make steering slightly wheel speed dependent
 		double steering_scale = 1.0 / (1 + 0.005 * speed_ * speed_);
-		wheelAngle_ = wheelAngle_ + steering_scale * STEERING_RATE * steering * dt;
+		wheelAngle_ = wheelAngle_ + steering_scale * steering_rate_ * steering * dt;
 
 		// Self-aligning
-		wheelAngle_ *= 0.95;
+		wheelAngle_ *= (1.0 - steering_return_factor_ * dt);
 
 		// Limit wheel angle
 		wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);
@@ -216,7 +219,11 @@ void Vehicle::Reset()
 	handbrake_ = false;
 	target_speed_ = 0;
 	max_speed_ = MAX_SPEED_DEFAULT;
-	acc_scale_ = ACCELERATION_SCALE_DEFAULT;
+	steering_rate_ = STEERING_RATE_DEFAULT;
+	steering_return_factor_ = STEERING_RETURN_FACTOR_DEFAULT;
+	steering_scale_ = STEERING_SCALE_DEFAULT;
+	max_acc_ = MAX_ACC_DEFAULT;
+	engine_brake_factor_ = ENGINE_BRAKE_FACTOR_DEFAULT;
 	throttle_disabled_ = false;
 	steering_disabled_ = false;
 }

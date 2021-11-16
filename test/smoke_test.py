@@ -284,7 +284,30 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^4.03.*, 0, Ego, 36.13.*, -0.82.*, 0.00.*, 6.27.*, 0.00.*, 0.00.*, 8.05.*', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.13.*, 0, Ego, 46.74.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 11.31.*', csv, re.MULTILINE))
 
+    def test_follow_ghost(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/follow_ghost.xosc'), COMMON_ARGS)
+        
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading follow_ghost.xosc', log)  is not None)
+        
+        # Check some scenario events
+        self.assertTrue(re.search('^0.030.* SpeedEvent1 complete after 1 execution', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^4.010.* LaneChangeCondition == true, 4.0100 > 4.00 edge: rising', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^20.040.* EventStopCondition == true, element: StopEvent state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
+        
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('^-1.00.*, 1, Ego_ghost, 8.219, 62.098, -0.060, 1.567, 0.002.*', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.50.*, 1, Ego_ghost, 8.606, 374.258, -0.672, 1.587, 0.002.*', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.50.*, 0, Ego, 10.056, 313.191, -0.553, 1.580, 0.002, 0.000.*', csv, re.MULTILINE))
+        self.assertTrue(re.search('^9.20.*, 1, Ego_ghost, 20.109, 558.866, -0.841, 1.497, 6.283, 0.000.*', csv, re.MULTILINE))
+        self.assertTrue(re.search('^9.50.*, 0, Ego, 11.408, 463.122, -0.811, 1.502, 0.001, 6.283.*', csv, re.MULTILINE))
+
+
 if __name__ == "__main__":
     # execute only if run as a script
 
+    # Uncomment next line to run only one test
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_follow_ghost'])
+    
     unittest.main(verbosity=2)

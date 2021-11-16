@@ -308,8 +308,8 @@ void ControllerUDPDriver::Activate(ControlDomains domainMask)
 		vehicle_.SetPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), object_->pos_.GetH());
 		vehicle_.SetLength(object_->boundingbox_.dimensions_.length_);
 		vehicle_.speed_ = object_->GetSpeed();
-		vehicle_.SetAccelerationScale(0.5);
-		vehicle_.SetMaxSpeed(30);
+		vehicle_.SetMaxAcc(20.0);
+		vehicle_.SetMaxSpeed(30.0);
 	}
 
 	steer = vehicle::STEERING_NONE;

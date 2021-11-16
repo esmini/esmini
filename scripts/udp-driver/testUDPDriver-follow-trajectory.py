@@ -38,11 +38,13 @@ class Driver():
 
     def step(self, speed, x, y, h):
 
-        # Lateral position relative the trajectory
-        y_target = self.trajectory_function(x+20)  # look ahead 20 m
+        lookahead = max(5.0, 1.2 * speed)  # look ahead some distance proportional to speed
+        print(lookahead)
+        # Lateral position on the trajectory
+        y_target = self.trajectory_function(x+lookahead)  # look ahead 10 m
 
         # Calculate angle to target point from current location
-        angle = math.atan((y_target - y) / ((x+20) - x))
+        angle = math.atan((y_target - y) / ((x+lookahead) - x))
         # Subtract current heading/yaw of the vehicle and apply some scaling factor
         self.steering = 0.5 * (angle - h)
 

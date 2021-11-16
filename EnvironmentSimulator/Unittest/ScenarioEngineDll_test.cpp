@@ -2063,7 +2063,7 @@ TEST(ExternalController, TestExternalDriver)
 
 		SE_RegisterParameterDeclarationCallback(ghostParamDeclCB, &ghostMode[i]);
 
-		ASSERT_EQ(SE_Init("../../../EnvironmentSimulator/code-examples/test-driver/test-driver.xosc", 0, 0, 0, 1), 0);
+		ASSERT_EQ(SE_Init("../../../EnvironmentSimulator/code-examples/test-driver/test-driver.xosc", 0, 0, 0, 0), 0);
 
 		// Lock object to the original lane
 		// If setting to false, the object road position will snap to closest lane
@@ -2076,8 +2076,8 @@ TEST(ExternalController, TestExternalDriver)
 		// show some road features, including road sensor
 		SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
 
-		// Run for 30 seconds or until 'Esc' button is pressed
-		while (SE_GetSimulationTime() < 30 && SE_GetQuitFlag() != 1)
+		// Run for 40 seconds or until 'Esc' button is pressed
+		while (SE_GetSimulationTime() < 40 && SE_GetQuitFlag() != 1)
 		{
 			// Get road information at a point some speed dependent distance ahead
 			double targetSpeed;
@@ -2115,40 +2115,40 @@ TEST(ExternalController, TestExternalDriver)
 
 			if (i == 0)
 			{
-				if (abs(SE_GetSimulationTime() - 10.0f) < SMALL_NUMBER)
+				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 216.659, 1e-3);
-					EXPECT_NEAR(objectState.y, 125.052, 1e-3);
-					EXPECT_NEAR(objectState.h, 1.441, 1e-3);
-					EXPECT_NEAR(objectState.p, 6.235, 1e-3);
+					EXPECT_NEAR(objectState.x, 203.382, 1e-3);
+					EXPECT_NEAR(objectState.y, 78.384, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.100, 1e-3);
+					EXPECT_NEAR(objectState.p, 6.263, 1e-3);
 				}
-				else if (abs(SE_GetSimulationTime() - 16.5f) < SMALL_NUMBER)
+				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 210.848, 1e-3);
-					EXPECT_NEAR(objectState.y, 294.607, 1e-3);
-					EXPECT_NEAR(objectState.h, 1.106, 1e-3);
-					EXPECT_NEAR(objectState.p, 6.229, 1e-3);
+					EXPECT_NEAR(objectState.x, 336.087, 1e-3);
+					EXPECT_NEAR(objectState.y, 341.748, 1e-3);
+					EXPECT_NEAR(objectState.h, 5.879, 1e-3);
+					EXPECT_NEAR(objectState.p, 0.034, 1e-3);
 				}
 			}
 			else if (i==1)
 			{
-				if (abs(SE_GetSimulationTime() - 10.0f) < SMALL_NUMBER)
+				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 192.608, 1e-3);
-					EXPECT_NEAR(objectState.y, 65.494, 1e-3);
-					EXPECT_NEAR(objectState.h, 1.066, 1e-3);
-					EXPECT_NEAR(objectState.p, 6.262, 1e-3);
+					EXPECT_NEAR(objectState.x, 188.748, 1e-3);
+					EXPECT_NEAR(objectState.y, 56.978, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.017, 1e-3);
+					EXPECT_NEAR(objectState.p, 6.261, 1e-3);
 				}
-				else if (abs(SE_GetSimulationTime() - 20.0f) < SMALL_NUMBER)
+				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 204.746, 1e-3);
-					EXPECT_NEAR(objectState.y, 215.313, 1e-3);
-					EXPECT_NEAR(objectState.h, 1.807, 1e-3);
-					EXPECT_NEAR(objectState.p, 6.266, 1e-3);
+					EXPECT_NEAR(objectState.x, 320.666, 1e-3);
+					EXPECT_NEAR(objectState.y, 346.980, 1e-3);
+					EXPECT_NEAR(objectState.h, 6.044, 1e-3);
+					EXPECT_NEAR(objectState.p, 0.011, 1e-3);
 				}
 			}
 
@@ -2174,12 +2174,113 @@ TEST(SeedTest, TestGetAndSetSeed)
 	SE_Close();
 }
 
+TEST(SimpleVehicleTest, TestControl)
+{
+	float dt = 0.01f;
+
+	std::string scenario_file = "../../../resources/xosc/parking_lot.xosc";
+	SE_SimpleVehicleState vehicleState = { 0, 0, 0, 0, 0, 0 };
+	SE_ScenarioObjectState objectState;
+	void* vehicleHandle = 0;
+
+	EXPECT_EQ(SE_Init(scenario_file.c_str(), 1, 0, 0, 0), 0);
+	ASSERT_EQ(SE_GetNumberOfObjects(), 1);
+
+	ASSERT_EQ(SE_GetObjectState(0, &objectState), 0);
+	EXPECT_NEAR(objectState.x, 1.800, 1e-3);
+	EXPECT_NEAR(objectState.y, -358.000, 1e-3);
+	EXPECT_NEAR(objectState.h, 1.570, 1e-3);
+
+	vehicleHandle = SE_SimpleVehicleCreate(objectState.x, objectState.y, objectState.h, 4.0, 0.0);
+
+	for (int i = 0; i < 200; i++)
+	{
+		SE_SimpleVehicleControlTarget(vehicleHandle, dt, 30.0, 0.2);
+		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+
+		SE_StepDT(dt);
+	}
+
+	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+	EXPECT_NEAR(vehicleState.x, -19.518, 1e-3);
+	EXPECT_NEAR(vehicleState.y, -328.420, 1e-3);
+	EXPECT_NEAR(vehicleState.h, 2.534, 1e-3);
+
+	for (int i = 0; i < 200; i++)
+	{
+		SE_SimpleVehicleControlTarget(vehicleHandle, dt, 60.0, -0.2);
+		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+
+		SE_StepDT(dt);
+	}
+
+	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+	EXPECT_NEAR(vehicleState.x, -72.906, 1e-3);
+	EXPECT_NEAR(vehicleState.y, -248.184, 1e-3);
+	EXPECT_NEAR(vehicleState.h, 1.927, 1e-3);
+	EXPECT_NEAR(vehicleState.speed, 60.000, 1e-3);
+
+	SE_SimpleVehicleSetEngineBrakeFactor(vehicleHandle, 0.001f);
+	for (int i = 0; i < 200; i++)
+	{
+		SE_SimpleVehicleControlTarget(vehicleHandle, dt, 80.0, 0.0);
+		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+
+		SE_StepDT(dt);
+	}
+
+	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+	EXPECT_NEAR(vehicleState.x, -125.288, 1e-3);
+	EXPECT_NEAR(vehicleState.y, -107.542, 1e-3);
+	EXPECT_NEAR(vehicleState.h, 1.927, 1e-3);
+	EXPECT_NEAR(vehicleState.speed, 80.0, 1e-3);
+
+	// no drag factor
+	SE_SimpleVehicleSetEngineBrakeFactor(vehicleHandle, 0.0f);  // no engine brake
+	for (int i = 0; i < 200; i++)
+	{
+		SE_SimpleVehicleControlBinary(vehicleHandle, dt, 0, 0);
+		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+
+		SE_StepDT(dt);
+	}
+
+	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+	EXPECT_NEAR(vehicleState.x, -181.133, 1e-3);
+	EXPECT_NEAR(vehicleState.y, 42.396, 1e-3);
+	EXPECT_NEAR(vehicleState.h, 1.927, 1e-3);
+	EXPECT_NEAR(vehicleState.speed, 80.0, 1e-3);
+
+	// Strong drag factor
+	SE_SimpleVehicleSetEngineBrakeFactor(vehicleHandle, 0.005f);
+	for (int i = 0; i < 600; i++)
+	{
+		SE_SimpleVehicleControlAnalog(vehicleHandle, dt, 0, 0);   // no throttle -> engine brake applied
+		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+		SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+
+		SE_StepDT(dt);
+	}
+
+	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+	EXPECT_NEAR(vehicleState.x, -233.952, 1e-3);
+	EXPECT_NEAR(vehicleState.y, 184.213, 1e-3);
+	EXPECT_NEAR(vehicleState.h, 1.927, 1e-3);
+	EXPECT_NEAR(vehicleState.speed, 3.953, 1e-3);
+
+	SE_Close();
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
 
-#if 1   // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "SeedTest*:TestGetAndSetSeed";
+#if 0   // set to 1 and modify filter to run one single test
+	testing::GTEST_FLAG(filter) = "*TestControl*";
 #else
 	SE_LogToConsole(false);
 #endif
