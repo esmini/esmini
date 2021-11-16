@@ -1,5 +1,12 @@
 ## esmini release notes
 
+### 2021-11-16 Version 2.17.3
+
+- Add more tuneable parameters to SimpleVehicle and expose in API
+  - Max speed and acceleration, steering behavior, engine brake
+  - See function headers in [esminiLib/esminiLib.hpp](https://github.com/esmini/esmini/blob/4177ac5139db11f899f84b2e9e535eaa5c02ef34/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L888)
+- Add framework for country typed traffic signs (from OpenDRIVE to OSI)
+
 ### 2021-11-15 Version 2.17.2
 
 - Add missing OSI files to demo packages
