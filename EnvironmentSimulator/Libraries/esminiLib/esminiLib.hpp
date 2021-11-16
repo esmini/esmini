@@ -827,7 +827,7 @@ extern "C"
 	SE_DLL_API int SE_OSISetTimeStamp(unsigned long long int nanoseconds);
 
 
-	SE_DLL_API void SE_LogMessage(char *message);
+	SE_DLL_API void SE_LogMessage(const char *message);
 
 	// Viewer settings
 	/**
@@ -907,7 +907,7 @@ extern "C"
 
 	/**
 		Set steering return factor, which will make the steering wheel strive to neutral position (0 angle)
-		@param steeringScale recommended range = [0.0, 0.5], default = 0.1
+		@param steeringScale recommended range = [0.0, 10], default = 4.0
 	*/
 	SE_DLL_API void SE_SimpleVehicleSteeringReturnFactor(void* handleSimpleVehicle, float steeringReturnFactor);
 

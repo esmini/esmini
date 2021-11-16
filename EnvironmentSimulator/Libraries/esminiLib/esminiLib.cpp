@@ -1244,7 +1244,7 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API void SE_LogMessage(char *message)
+	SE_DLL_API void SE_LogMessage(const char *message)
 	{
 		LOG(message);
 	}

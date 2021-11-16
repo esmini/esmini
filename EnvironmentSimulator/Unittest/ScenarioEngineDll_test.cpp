@@ -2039,7 +2039,6 @@ static void ghostParamDeclCB(void* user_arg)
 {
 	bool ghostMode = *((bool*)user_arg);
 
-	printf("Running with ghostMode = %s\n", ghostMode == true ? "true" : "false");
 	SE_SetParameterBool("GhostMode", ghostMode);
 }
 
@@ -2233,10 +2232,10 @@ TEST(SimpleVehicleTest, TestControl)
 	}
 
 	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-	EXPECT_NEAR(vehicleState.x, -125.288, 1e-3);
-	EXPECT_NEAR(vehicleState.y, -107.542, 1e-3);
+	EXPECT_NEAR(vehicleState.x, -120.915, 1e-3);
+	EXPECT_NEAR(vehicleState.y, -119.284, 1e-3);
 	EXPECT_NEAR(vehicleState.h, 1.927, 1e-3);
-	EXPECT_NEAR(vehicleState.speed, 80.0, 1e-3);
+	EXPECT_NEAR(vehicleState.speed, 70.0, 1e-3);  // Limited by the default speed 70 km/h
 
 	// no drag factor
 	SE_SimpleVehicleSetEngineBrakeFactor(vehicleHandle, 0.0f);  // no engine brake
@@ -2250,10 +2249,10 @@ TEST(SimpleVehicleTest, TestControl)
 	}
 
 	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-	EXPECT_NEAR(vehicleState.x, -181.133, 1e-3);
-	EXPECT_NEAR(vehicleState.y, 42.396, 1e-3);
+	EXPECT_NEAR(vehicleState.x, -169.779, 1e-3);
+	EXPECT_NEAR(vehicleState.y, 11.912, 1e-3);
 	EXPECT_NEAR(vehicleState.h, 1.927, 1e-3);
-	EXPECT_NEAR(vehicleState.speed, 80.0, 1e-3);
+	EXPECT_NEAR(vehicleState.speed, 70.0, 1e-3);
 
 	// Strong drag factor
 	SE_SimpleVehicleSetEngineBrakeFactor(vehicleHandle, 0.005f);
@@ -2267,10 +2266,10 @@ TEST(SimpleVehicleTest, TestControl)
 	}
 
 	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-	EXPECT_NEAR(vehicleState.x, -233.952, 1e-3);
-	EXPECT_NEAR(vehicleState.y, 184.213, 1e-3);
+	EXPECT_NEAR(vehicleState.x, -215.996, 1e-3);
+	EXPECT_NEAR(vehicleState.y, 136.001, 1e-3);
 	EXPECT_NEAR(vehicleState.h, 1.927, 1e-3);
-	EXPECT_NEAR(vehicleState.speed, 3.953, 1e-3);
+	EXPECT_NEAR(vehicleState.speed, 3.459, 1e-3);
 
 	SE_Close();
 }

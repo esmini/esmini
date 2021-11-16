@@ -66,6 +66,7 @@ void Vehicle::DrivingControlTarget(double dt, double target_speed, double headin
 	double acceleration = CLAMP(max_acc_ * (target_speed - speed_), -max_acc_, max_acc_);
 
 	speed_ += acceleration * dt;
+	speed_ = CLAMP(speed_, -max_speed_, max_speed_);
 
 	double steering_scale = 1.0 / (1 + steering_scale_ * speed_ * speed_);
 	wheelAngle_ = heading_to_target;
@@ -103,7 +104,7 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 					// Apply drag
 					speed_ *= (1 - engine_brake_factor_);
 				}
-				speed_ = CLAMP(speed_, -1.2 * max_speed_, 1.2 * max_speed_);
+				speed_ = CLAMP(speed_, -max_speed_, max_speed_);
 			}
 		}
 	}
@@ -154,7 +155,7 @@ void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
 					// Apply drag
 					speed_ *= (1 - engine_brake_factor_);
 				}
-				speed_ = CLAMP(speed_, -1.2 * max_speed_, 1.2 * max_speed_);
+				speed_ = CLAMP(speed_, -max_speed_, max_speed_);
 			}
 		}
 	}

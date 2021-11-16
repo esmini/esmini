@@ -1,5 +1,6 @@
 #include "stdio.h"
 #include "math.h"
+#include <string>
 #include "esminiLib.hpp"
 
 #define TARGET_SPEED 50.0
@@ -11,7 +12,7 @@ void paramDeclCB(void* user_arg)
 {
 	bool ghostMode = *((bool*)user_arg);
 
-	printf("Running with ghostMode = %s\n", ghostMode == true ? "true" : "false");
+	SE_LogMessage((std::string("Running with ghostMode = ").append(ghostMode == true ? "true" : "false")).c_str());
 	SE_SetParameterBool("GhostMode", ghostMode);
 }
 
@@ -32,7 +33,7 @@ int main(int argc, char* argv[])
 
 		if (SE_Init("../EnvironmentSimulator/code-examples/test-driver/test-driver.xosc", 0, 1, 0, 0) != 0)
 		{
-			printf("Failed to initialize the scenario, quit\n");
+			SE_LogMessage("Failed to initialize the scenario, quit\n");
 			return -1;
 		}
 
