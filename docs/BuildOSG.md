@@ -55,6 +55,45 @@ add the line
 `[_view setWantsBestResolutionOpenGLSurface: NO];`  
 Solution found [here](https://github.com/openscenegraph/OpenSceneGraph/issues/926#issuecomment-600080664)
 
+### Build jpeg lib for Windows
+If you need to rebuild the jpeg library. The following is tested with VS 2019 and platform toolset VS 2017.
+
+Pick jpeg-9d from here: https://ijg.org/files/
+
+- Edit makefile.vc and comment out the following line: ```!include <win32.mak>```  
+  (It’s for the old Win 7.1 SDK and seems not needed for Win10/VS2017-2019)
+- Open Visual Studio (v10/2019) x64 Native Tools command prompt and run:
+```
+cd jpeg-9d
+nmake /f makefile.vc setup-v16
+```
+
+Now, jpeg.sln should be generated (or actually renamed). Normally you can simply build from Visual Studio IDE or 
+command line: ```msbuild /m /property:Configuration=Release jpeg.sln```
+
+But for esmini we need to do some settings:
+- Open jpeg.sln in Visual Studio and do following settings (Solution Exporer->jpeg(right-click)->Properties)
+- First, at top row in dialog window, make sure Platform is x64
+- General:
+  - Platform Toolset: Visual Studio 2017 (v141)
+  - Windows SDK version: 10.0.19041.0  
+- C/C++:
+  - Optimizations, set “Whole Program Optimization” to false
+- Press OK
+- Make sure selected configuration is Release / x64 (usually it starts on win32, change it)
+- Now build and find lib in Release\x64
+
+To create a debug version, open Configuration Manager:
+
+- Create a new Configuration named “debug”, with “Copy settings from” Release 
+- Go to settings -> C/C++->Code Generation 
+  - set Runtime Library = Multi-threaded Debug DLL (/MDd)
+- Add a “d” to target name, like: Settings->General->Target Name = $(ProjectName)d
+- Press OK
+- Make sure selected configuration is Debug / x64 
+- Now build and find lib in Debug\x64
+
+
 ## Build configuration
 To build OSG libraries for static linking in esmini, see following examples. All examples assumes you first have created a directory "build" directly under OSG root and moved into it.
 
