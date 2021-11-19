@@ -1904,7 +1904,42 @@ ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xm
 	return activateControllerAction;
 }
 
-// ------------------------------------------------------
+int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, DynamicConstraints& dc)
+{
+	struct value {
+		double* variable;
+		double default_value;
+		std::string label;
+	};
+
+	value values[] = {
+		{ &dc.max_acceleration_, 5.0, "maxAcceleration" },
+		{ &dc.max_acceleration_rate_, 2.0, "maxAccelerationRate" },
+		{ &dc.max_deceleration_, 10.0, "maxDeceleration" },
+		{ &dc.max_deceleration_rate_, 2.0, "maxDecelerationRate" },
+		{ &dc.max_speed_, 250.0/3.6, "maxSpeed" },
+	};
+
+	for (int i = 0; i < sizeof(values) / sizeof(value); i++)
+	{
+		if (dynamics_node.attribute(values[i].label.c_str()).empty())
+		{
+			*values[i].variable = LARGE_NUMBER;  // Default
+		}
+		else
+		{
+			*values[i].variable = strtod(parameters.ReadAttribute(dynamics_node, values[i].label.c_str()));
+			if (*values[i].variable < SMALL_NUMBER)
+			{
+				LOG("Unexpected small %s value: %.5, replacing with %.2f", values[i].label.c_str(), *values[i].variable, values[i].default_value);
+				*values[i].variable = values[i].default_value;
+			}
+		}
+	}
+
+	return 0;
+}
+
 OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNode, Object *object)
 {
 	OSCPrivateAction *action = 0;
@@ -1976,6 +2011,72 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					}
 					action = action_speed;
 				}
+				else if (longitudinalChild.name() == std::string("SpeedProfileAction"))   // v1.2
+				{
+					LongSpeedProfileAction* action_speed_profile = new LongSpeedProfileAction();
+
+					if (longitudinalChild.attribute("followingMode").empty())
+					{
+						LOG("Missing mandatory SpeedProfileAction attribute followingMode, set to position");
+						action_speed_profile->following_mode_ = FollowingMode::POSITION;   // set as default
+					}
+					else
+					{
+						std::string str = parameters.ReadAttribute(longitudinalChild, "followingMode");
+						if (str == "position")
+						{
+							action_speed_profile->following_mode_ = FollowingMode::POSITION;
+						}
+						else if (str == "follow")
+						{
+							action_speed_profile->following_mode_ = FollowingMode::FOLLOW;
+						}
+						else
+						{
+							LOG("Unsupported SpeedProfileAction followingMode value: %, set to position", str.c_str());
+							action_speed_profile->following_mode_ = FollowingMode::POSITION;   // set as default
+						}
+					}
+
+					for (pugi::xml_node child = longitudinalChild.first_child(); child; child = child.next_sibling())
+					{
+						if (!strcmp(child.name(), "DynamicConstraints"))
+						{
+							parseDynamicConstraints(child, action_speed_profile->dynamics_);
+						}
+						else if (!strcmp(child.name(), "EntityRef"))
+						{
+							action_speed_profile->entity_ref_ = ResolveObjectReference(parameters.ReadAttribute(child, "entityRef"));
+						}
+						else if (!strcmp(child.name(), "SpeedProfileEntry"))
+						{
+							LongSpeedProfileAction::Entry entry;
+
+							if (child.attribute("speed").empty())
+							{
+								LOG("Missing mandatory SpeedProfileAction Entry attribute speed, set to 0");
+								entry.speed_ = 0.0;   // set as default
+							}
+							else
+							{
+								entry.speed_ = strtod(parameters.ReadAttribute(child, "speed"));
+							}
+
+							if (child.attribute("time").empty())
+							{
+								entry.time_ = -1.0;   // indicate not specified
+							}
+							else
+							{
+								entry.time_ = strtod(parameters.ReadAttribute(child, "time"));
+							}
+
+							action_speed_profile->entry_.push_back(entry);
+						}
+					}
+
+					action = action_speed_profile;
+				}
 				else if (longitudinalChild.name() == std::string("LongitudinalDistanceAction"))
 				{
 					LongDistanceAction *action_dist = new LongDistanceAction();
@@ -1983,33 +2084,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					pugi::xml_node dynamics_node = longitudinalChild.child("DynamicConstraints");
 					if (dynamics_node != NULL)
 					{
-						action_dist->dynamics_.max_acceleration_ = strtod(parameters.ReadAttribute(dynamics_node, "maxAcceleration"));
-						if (action_dist->dynamics_.max_acceleration_ < SMALL_NUMBER)
-						{
-							LOG("Unexpected small maxAcceleration value: %.2, replacing with %.2f", action_dist->dynamics_.max_acceleration_, 10);
-							action_dist->dynamics_.max_acceleration_ = 10.0;
-						}
-
-						action_dist->dynamics_.max_deceleration_ = strtod(parameters.ReadAttribute(dynamics_node, "maxDeceleration"));
-						if (action_dist->dynamics_.max_deceleration_ < SMALL_NUMBER)
-						{
-							LOG("Unexpected small maxDeceleration value: %.2, replacing with %.2f", action_dist->dynamics_.max_deceleration_, 10);
-							action_dist->dynamics_.max_deceleration_ = 10.0;
-						}
-
-						if (!dynamics_node.attribute("maxSpeed"))
-						{
-							action_dist->dynamics_.max_speed_ = 250 / 3.6; // Use default 250 kph if attribute is missing
-						}
-						else
-						{
-							action_dist->dynamics_.max_speed_ = strtod(parameters.ReadAttribute(dynamics_node, "maxSpeed"));
-						}
-						action_dist->dynamics_.none_ = false;
-					}
-					else
-					{
-						action_dist->dynamics_.none_ = true;
+						parseDynamicConstraints(dynamics_node, action_dist->dynamics_);
 					}
 
 					action_dist->target_object_ = ResolveObjectReference(parameters.ReadAttribute(longitudinalChild, "entityRef"));

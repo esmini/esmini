@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1+" date="2021-11-18T10:00:00" description="Demonstrate OSC 1.2 speedProfileAction" author="esmini-team"/>
+    <ParameterDeclarations>
+          <ParameterDeclaration name="StartTime" parameterType="double" value="2.0"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/straight_500m.xodr"/>
+        <SceneGraphFile filepath="../models/straight_500m.osgb"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Car1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Car2">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Car1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" offset="0" s="10"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Car2">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" offset="3.07" s="10"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="SpeedProfileStory">
+            <ParameterDeclarations/>
+            <Act name="SpeedProfileAct">
+                <ManeuverGroup maximumExecutionCount="1" name="SpeedProfileManeuverGroup1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Car1"/>
+                    </Actors>
+                    <Maneuver name="SpeedProfileManeuver1">
+                        <Event name="SpeedProfileEvent1" priority="overwrite">
+                            <Action name="SpeedProfileAction1">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedProfileAction followingMode="follow">
+                                            <DynamicConstraints
+                                                maxAcceleration = "5.0"
+                                                maxDeceleration = "10.0"
+                                                maxAccelerationRate = "4.0"
+                                                maxDecelerationRate = "3.0"
+                                                maxSpeed = "50"
+                                            />
+                                            <SpeedProfileEntry time="0.0" speed="0.0"/>
+                                            <SpeedProfileEntry time="4.0" speed="10.0"/>
+                                            <SpeedProfileEntry time="4.0" speed="4.0"/>
+                                            <SpeedProfileEntry time="2.0" speed="8.0"/>
+                                        </SpeedProfileAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="EventTrigger1" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="$StartTime" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="SpeedProfileManeuverGroup2">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Car2"/>
+                    </Actors>
+                    <Maneuver name="SpeedProfileManeuver2">
+                        <Event name="SpeedProfileEvent" priority="overwrite">
+                            <Action name="SpeedProfileAction2">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedProfileAction followingMode="position">
+                                            <DynamicConstraints
+                                                maxAcceleration = "5.0"
+                                                maxDeceleration = "10.0"
+                                                maxAccelerationRate = "4.0"
+                                                maxDecelerationRate = "3.0"
+                                                maxSpeed = "50"
+                                            />
+                                            <SpeedProfileEntry time="0.0" speed="0.0"/>
+                                            <SpeedProfileEntry time="4.0" speed="10.0"/>
+                                            <SpeedProfileEntry time="4.0" speed="4.0"/>
+                                            <SpeedProfileEntry time="2.0" speed="8.0"/>
+                                        </SpeedProfileAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="EventTrigger2" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="$StartTime" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger/>
+                <StopTrigger>
+                    <ConditionGroup>
+                        <Condition name="StopSimulationCondition" delay="0" conditionEdge="rising">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="14" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StopTrigger>
+            </Act>
+        </Story>
+        <StopTrigger/>
+    </Storyboard>
+</OpenSCENARIO>

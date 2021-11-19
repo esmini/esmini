@@ -915,6 +915,275 @@ void LongSpeedAction::Step(double simTime, double dt)
 	}
 }
 
+void LongSpeedProfileAction::Start(double simTime, double timestep)
+{
+	OSCAction::Start(simTime, timestep);
+
+	if (entry_.size() == 0)
+	{
+		return;
+	}
+
+	double speed_offset = entity_ref_ != nullptr ? entity_ref_->GetSpeed() : 0.0;
+
+	std::vector<EntryVertex> vertex;
+	int index = 0;
+
+	// Check need for initial entry with current speed
+	if (entry_[0].time_ > SMALL_NUMBER)
+	{
+		// insert initial entry at time = 0 with initial/current speed
+		vertex.push_back(EntryVertex(simTime, object_->GetSpeed()));
+	}
+	else if (entry_[0].time_ > -SMALL_NUMBER)
+	{
+		if (following_mode_ == FollowingMode::FOLLOW)
+		{
+			// replace first entry at time = 0.0 with current speed
+			vertex.push_back(EntryVertex(simTime, object_->GetSpeed()));
+			index = 1;  // Skip first entry
+		}
+		else
+		{
+			// in linear mode use specified initial speed
+			vertex.push_back(EntryVertex(simTime, entry_[0].speed_));
+		}
+	}
+	else  // negative time indicating time attribute omitted
+	{
+		// Create a first entry at current time and speed
+		vertex.push_back(EntryVertex(simTime, object_->GetSpeed()));
+	}
+
+	// First filter out any obsolete middle points on straight acceleration lines
+	double delta_k, j = 0.0, time = simTime;
+	for (; index < entry_.size(); index++)
+	{
+		if (entry_[index].time_ < -SMALL_NUMBER)
+		{
+			if (abs(entry_[index].speed_ + speed_offset - vertex.back().v_) < SMALL_NUMBER)
+			{
+				// same speed as previous vertex, skip entry
+				continue;
+			}
+			// negative time is interpreted as missing time stamp
+			double acc = MAX(SMALL_NUMBER, dynamics_.max_acceleration_);
+			vertex.back().t_ = time;
+			time += (entry_[index].speed_ + speed_offset - vertex.back().v_) / acc;
+		}
+		else
+		{
+			time += entry_[index].time_;
+		}
+
+		double dt = time - vertex.back().t_;
+
+		if (index < entry_.size() - 1)
+		{
+			if (dt < SMALL_NUMBER)
+			{
+				// replace previous entry
+				vertex.back() = EntryVertex(time, entry_[index].speed_ + speed_offset);
+				continue;  // skip entry
+			}
+		}
+
+		vertex.back().SetK((entry_[index].speed_ + speed_offset - (vertex.back().v_)) / dt);
+
+
+		if (index > 1)
+		{
+			delta_k = vertex.back().k_ - (vertex.rbegin()+1)->k_;
+		}
+		else
+		{
+			delta_k = vertex.back().k_;  // slope is zero at start - no delta
+		}
+
+		if (abs(delta_k) < SMALL_NUMBER && index > 1)
+		{
+			// replace previous entry
+			double new_k = (entry_[index].speed_ + speed_offset - (vertex.rbegin() + 1)->v_) / (time - (vertex.rbegin() + 1)->t_);
+			vertex.back() = EntryVertex(time, entry_[index].speed_ + speed_offset, new_k);
+			continue;  // skip entry
+		}
+
+		if (index == entry_.size() - 1)
+		{
+			// Final entry, set k = 0
+			vertex.push_back(EntryVertex(time, entry_[index].speed_ + speed_offset, 0.0));
+		}
+		else
+		{
+			vertex.push_back(EntryVertex(time, entry_[index].speed_ + speed_offset));
+		}
+	}
+
+	// set first segment
+	EntryVertex vtx = vertex[0];
+	double t0, t1, t3 = vtx.t_, v0, v3 = 0.0, m0, m1 = 0.0, k1 = 0.0;
+
+	segment_.clear();
+
+	if (following_mode_ == FollowingMode::FOLLOW)
+	{
+		if (abs(vtx.k_) > SMALL_NUMBER)
+		{
+			j = vertex[0].k_ < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
+			segment_.push_back({ vtx.t_, vtx.v_, 0.0, j });
+
+			t3 = vtx.t_ + (abs(j) > SMALL_NUMBER ? vtx.k_ / j : 0.0);  // duration of first jerk t = a / j
+		}
+
+		v3 = vtx.v_ + 0.5 * j * pow((t3-simTime), 2);  // speed after initial jerk
+		k1 = vtx.k_;  // slope of first linear segment
+		m1 = v3 - k1 * t3;  // eq constant for second acceleration line
+
+		// add first linear segment
+		AddSpeedSegment(t3, v3, k1, 0.0);
+	}
+
+	for (index = 0; index < vertex.size(); index++)
+	{
+		if (following_mode_ == FollowingMode::POSITION)
+		{
+			vtx = vertex[index];
+			AddSpeedSegment(vtx.t_, vtx.v_, vtx.k_, 0.0);
+		}
+		else if (index < vertex.size() - 1)
+		{
+			double k0 = k1;
+			vtx = vertex[index + 1];
+			t0 = t3;
+			v0 = v3;
+			m0 = m1;
+			k1 = vtx.k_;
+			m1 = vtx.m_;
+
+			if (index < vertex.size() - 1)
+			{
+				j = vtx.k_ - k0 < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
+			}
+
+			if (abs(k0 - k1) < SMALL_NUMBER)
+			{
+				// no change in acceleration, skip jerk segment
+				t3 = t0;
+				v3 = v0;
+			}
+			else
+			{
+				// find time for next jerk
+				// https://www.wolframalpha.com/input?i=solve+b%3Dk*g%2Bn%2Cd%3Dl*j%2Bo%2Cd%3Db%2Bk*%28j-g%29%2Bm*%28j-g%29%5E2%2F2%2Cl%3Dk%2Bm*%28j-g%29+for+b%2Cd%2Cg%2Cj
+				// solve b = k * g + n, d = l * j + o, d = b + k * (j - g) + m * (j - g) ^ 2 / 2, l = k + m * (j - g) for b, d, g, j
+				// substitutions: a = v0, b = v1, c = v2, d = v3, f = t0, g = t1, h = t2, j = t3, k = k0, l = k1, m = j, n = m0, o = m1
+				// g = (k ^ 2 - 2 k l + l ^ 2 - 2 m(n - o)) / (2 m(k - l))
+				t1 = (pow(k0, 2) - 2 * k0 * k1 + pow(k1, 2) - 2 * j * (m0 - m1)) / (2 * j * (k0 - k1));
+
+				if (t1 < t0)
+				{
+					LOG("LongSpeedProfileAction failed at point %d (time=%.2f). Falling back to linear (Position) mode.", index, vertex[index].t_);
+					following_mode_ = FollowingMode::POSITION;
+					continue;
+				}
+
+				double v1 = v0 + k0 * (t1 - t0);
+				t3 = t1 + (vtx.k_ - k0) / j;
+				v3 = v1 + k0 * (t3 - t1) + 0.5 * j * pow(t3 - t1, 2);
+
+				// add jerk segment
+				AddSpeedSegment(t1, v1, k0, j);
+			}
+
+			// add linear segment
+			AddSpeedSegment(t3, v3, vtx.k_, 0.0);
+		}
+	}
+	cur_index_ = 0;
+	speed_ = object_->GetSpeed();
+}
+
+void LongSpeedProfileAction::Step(double simTime, double dt)
+{
+	if (simTime < segment_.back().t + 10 && !(simTime > segment_.back().t and abs(speed_ - segment_.back().v) < SMALL_NUMBER))
+	{
+		while (cur_index_ < segment_.size() - 1 && simTime > segment_[cur_index_ + 1].t - SMALL_NUMBER)
+		{
+			cur_index_++;
+		}
+
+		SpeedSegment* s = &segment_[cur_index_];
+
+		speed_ = s->v + s->k * (simTime - s->t) + 0.5 * s->j * pow(simTime - s->t, 2);
+	}
+
+	elapsed_ = MAX(0.0, simTime + dt - segment_[0].t);
+
+	if (cur_index_ > entry_.size() - 1 && fabs(speed_ - entry_.back().speed_) < SMALL_NUMBER)
+	{
+		speed_ = entry_.back().speed_;
+		OSCAction::End(simTime);
+	}
+
+	object_->SetSpeed(speed_);
+}
+
+void LongSpeedProfileAction::CheckAcceleration(double acc)
+{
+	if (following_mode_ == FollowingMode::POSITION)
+	{
+		return;
+	}
+
+	if (acc > dynamics_.max_acceleration_ + SMALL_NUMBER || acc < -dynamics_.max_deceleration_ - SMALL_NUMBER)
+	{
+		LOG("Acceleration %.2f not within constrained span [%.2f:%.2f], revert to linear mode",
+			acc, dynamics_.max_acceleration_, -dynamics_.max_deceleration_);
+
+		following_mode_ = FollowingMode::POSITION;
+	}
+}
+
+void LongSpeedProfileAction::CheckAccelerationRate(double acc_rate)
+{
+	if (following_mode_ == FollowingMode::POSITION)
+	{
+		return;
+	}
+
+	if (acc_rate > dynamics_.max_acceleration_rate_ + SMALL_NUMBER || acc_rate < -dynamics_.max_deceleration_rate_ - SMALL_NUMBER)
+	{
+		LOG("Acceleration rate %.2f not within constrained span [%.2f:%.2f], revert to linear mode",
+			acc_rate, dynamics_.max_acceleration_rate_, -dynamics_.max_deceleration_rate_);
+
+		following_mode_ = FollowingMode::POSITION;
+	}
+}
+
+void LongSpeedProfileAction::CheckSpeed(double speed)
+{
+	if (following_mode_ == FollowingMode::POSITION)
+	{
+		return;
+	}
+
+	if (speed > dynamics_.max_speed_ + SMALL_NUMBER || speed < -dynamics_.max_speed_ - SMALL_NUMBER)
+	{
+		LOG("Speed %.2f not within constrained span [%.2f:%.2f], revert to linear mode",
+			speed, dynamics_.max_speed_, -dynamics_.max_speed_);
+
+		following_mode_ = FollowingMode::POSITION;
+	}
+}
+
+void LongSpeedProfileAction::AddSpeedSegment(double t, double v, double k, double j)
+{
+	CheckSpeed(v);
+	CheckAcceleration(k);
+	CheckAccelerationRate(j);
+	segment_.push_back({ t, v, k, j });
+}
+
 void LongSpeedAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 {
 	if (object_ == obj1)
@@ -1037,7 +1306,7 @@ void LongDistanceAction::Step(double simTime, double)
 		OSCAction::End(simTime);
 	}
 
-	if (dynamics_.none_ == true)
+	if (dynamics_.max_acceleration_ >= LARGE_NUMBER || dynamics_.max_deceleration_ >= LARGE_NUMBER)
 	{
 		// Set position according to distance and copy speed of target vehicle
 		object_->pos_.MoveAlongS(distance_diff);

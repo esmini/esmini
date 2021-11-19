@@ -1093,6 +1093,261 @@ TEST(OrientationTest, TestRelativeRoadHeading)
     ASSERT_NEAR(se->entities_.object_[3]->pos_.GetH(), 4.713, 1e-3);
 }
 
+TEST(SpeedProfileTest, TestSpeedProfileFirstEntryOffset)
+{
+    LongSpeedProfileAction sp_action;
+    DynamicConstraints dynamics; // initalized with default values
+    LongSpeedProfileAction::Entry entry;
+
+    Object obj(Object::Type::VEHICLE);
+    obj.SetSpeed(10.0);
+    double sim_time = 0.0, dt = 0.0;
+
+    sp_action.following_mode_ = FollowingMode::POSITION;
+    sp_action.dynamics_ = dynamics;
+    sp_action.object_ = &obj;
+
+    ASSERT_EQ(sp_action.entity_ref_, nullptr);
+    ASSERT_EQ(sp_action.segment_.size(), 0);
+
+    // Add entries
+    entry.speed_ = 4.0;
+    entry.time_ = 2.0;
+    sp_action.AddEntry(entry);
+
+    sp_action.Start(0.0, 0.1);
+
+    // Evaluate at a time before first entry time, speed should interpolate towards first entry
+    sp_action.Step(1.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 7.0, 1E-5);
+    sim_time += dt;
+}
+
+TEST(SpeedProfileTest, TestSpeedProfileLinear)
+{
+    LongSpeedProfileAction sp_action;
+    DynamicConstraints dynamics; // initalized with default values
+    LongSpeedProfileAction::Entry entry;
+
+    Object obj(Object::Type::VEHICLE);
+    obj.SetSpeed(10.0);
+    double sim_time = 5.0;
+
+    sp_action.following_mode_ = FollowingMode::POSITION;
+    sp_action.dynamics_ = dynamics;
+    sp_action.object_ = &obj;
+
+    ASSERT_EQ(sp_action.entity_ref_, nullptr);
+    ASSERT_EQ(sp_action.entry_.size(), 0);
+
+    // One entry at time = 10
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(10, 0.0));
+    sp_action.Start(sim_time);
+    EXPECT_NEAR(sp_action.GetSpeed(), 10.0, 1E-5);
+    sp_action.Step(sim_time);
+    EXPECT_NEAR(sp_action.GetSpeed(), 10.0, 1E-5);
+    sp_action.Step(8.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 7.0, 1E-5);
+    sp_action.Step(14.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 1.0, 1E-5);
+    sp_action.Step(17.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 0.0, 1E-5);
+
+    // Add another entry
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(5, 30.0));
+    sp_action.Start(5.0);
+    sp_action.Step(17.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 12.0, 1E-5);
+    sp_action.Step(20.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 30.0, 1E-5);
+    sp_action.Step(25.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 30.0, 1E-5);
+
+    // Duplicate entry time
+    sp_action.object_->SetSpeed(10);
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(0, 40.0));  // 15, 40
+    sp_action.Start(0.0);
+    sp_action.Step(14.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 24.0, 1E-5);
+    sp_action.Step(15.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 40.0, 1E-5);
+    sp_action.Step(16.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 40.0, 1E-5);
+}
+
+TEST(SpeedProfileTest, TestSpeedProfileConstraints)
+{
+    LongSpeedProfileAction sp_action;
+    LongSpeedProfileAction::Entry entry;
+    DynamicConstraints dynamics;
+
+    dynamics.max_acceleration_ = 4.0;
+    dynamics.max_acceleration_rate_ = 1.0;
+    dynamics.max_deceleration_ =5.0;
+    dynamics.max_deceleration_rate_ = 2.0;
+    dynamics.max_speed_ = 30.0;
+
+    Object obj(Object::Type::VEHICLE);
+    obj.SetSpeed(10.0);
+
+    sp_action.following_mode_ = FollowingMode::POSITION;
+    sp_action.dynamics_ = dynamics;
+    sp_action.object_ = &obj;
+
+    ASSERT_EQ(sp_action.entity_ref_, nullptr);
+    ASSERT_EQ(sp_action.entry_.size(), 0);
+
+    // Add some entries
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(0.0, 0.0));
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(10.0, 10.0));
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(10.0, 5.0));
+    sp_action.Start(0.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 10.0, 1E-5);
+    sp_action.Step(0.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 0.0, 1E-5);
+    sp_action.Step(1.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 1.0, 1E-5);
+    sp_action.Step(11.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 9.5, 1E-5);
+
+    obj.SetSpeed(10.0);
+    sp_action.following_mode_ = FollowingMode::FOLLOW;
+    sp_action.Start(0.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 10.0, 1E-5);
+    sp_action.Step(0.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 10.0, 1E-5);
+    sp_action.Step(9.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 10.0, 1E-5);
+    sp_action.Step(11.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 9.5, 1E-5);
+}
+
+TEST(SpeedProfileTest, TestSpeedProfileSingleEntry)
+{
+    LongSpeedProfileAction sp_action;
+    LongSpeedProfileAction::Entry entry;
+    DynamicConstraints dynamics;
+
+    dynamics.max_acceleration_ = 4.0;
+    dynamics.max_acceleration_rate_ = 1.0;
+    dynamics.max_deceleration_ = 5.0;
+    dynamics.max_deceleration_rate_ = 2.0;
+    dynamics.max_speed_ = 30.0;
+
+    Object obj(Object::Type::VEHICLE);
+    obj.SetSpeed(1.0);
+
+    sp_action.following_mode_ = FollowingMode::FOLLOW;
+    sp_action.dynamics_ = dynamics;
+    sp_action.object_ = &obj;
+
+    ASSERT_EQ(sp_action.entity_ref_, nullptr);
+    ASSERT_EQ(sp_action.entry_.size(), 0);
+
+    // Add some entries
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(10.0, 20.0));
+    sp_action.Start(0.0);
+    sp_action.Step(0.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 1.0, 1E-5);
+    sp_action.Step(9.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 16.2950, 1E-5);
+    sp_action.Step(12.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 20.00, 1E-5);
+}
+
+TEST(SpeedProfileTest, TestSpeedProfileNoTime)
+{
+    LongSpeedProfileAction sp_action;
+    LongSpeedProfileAction::Entry entry;
+
+    Object obj(Object::Type::VEHICLE);
+
+    sp_action.object_ = &obj;
+    ASSERT_EQ(sp_action.entity_ref_, nullptr);
+    ASSERT_EQ(sp_action.entry_.size(), 0);
+    sp_action.dynamics_.max_acceleration_ = 5.0;
+    sp_action.dynamics_.max_deceleration_ = 10.0;
+    sp_action.dynamics_.max_acceleration_rate_ = 5.0;
+    sp_action.dynamics_.max_deceleration_rate_ = 5.0;
+    sp_action.dynamics_.max_speed_ = 30.0;
+
+    // Add only one entry
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(-1.0, 10.0));
+
+    sp_action.following_mode_ = FollowingMode::POSITION;
+    obj.SetSpeed(0.0);
+    sp_action.Start(0.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 0.0, 1E-5);
+    sp_action.Step(2.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 10.0, 1E-5);
+
+    sp_action.following_mode_ = FollowingMode::FOLLOW;
+    obj.SetSpeed(0.0);
+    sp_action.Start(0.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 0.0, 1E-5);
+    sp_action.Step(2.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 7.5, 1E-5);
+
+    // Two entries
+    sp_action.entry_.clear();
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(0.0, 0.0));
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(-1.0, 10.0));
+
+    obj.SetSpeed(0.0);
+    sp_action.following_mode_ = FollowingMode::FOLLOW;
+    sp_action.Start(0.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 0.0, 1E-5);
+    sp_action.Step(2.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 7.5, 1E-5);
+    sp_action.Step(4.0);
+    EXPECT_NEAR(sp_action.GetSpeed(), 10.0, 1E-5);
+}
+
+TEST(SpeedProfileTest, TestSpeedProfileFromNonZeroTime)
+{
+    LongSpeedProfileAction sp_action;
+    LongSpeedProfileAction::Entry entry;
+
+    Object obj(Object::Type::VEHICLE);
+
+    sp_action.object_ = &obj;
+    ASSERT_EQ(sp_action.entity_ref_, nullptr);
+    ASSERT_EQ(sp_action.entry_.size(), 0);
+    sp_action.dynamics_.max_acceleration_ = 4.0;
+    sp_action.dynamics_.max_deceleration_ = 10.0;
+    sp_action.dynamics_.max_acceleration_rate_ = 5.0;
+    sp_action.dynamics_.max_deceleration_rate_ = 4.0;
+    sp_action.dynamics_.max_speed_ = 30.0;
+
+    // Add some entries
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(0.0, 0.0));
+    sp_action.AddEntry(LongSpeedProfileAction::Entry(4.0, 6.0));
+
+    for (int i = 0; i < 2; i++)
+    {
+        if (i == 0)
+        {
+            sp_action.following_mode_ = FollowingMode::POSITION;
+        }
+        else
+        {
+            sp_action.following_mode_ = FollowingMode::FOLLOW;
+        }
+
+        obj.SetSpeed(0.0);
+
+        sp_action.Start(3.0);
+        EXPECT_NEAR(sp_action.GetSpeed(), 0.0, 1E-5);
+        sp_action.Step(3.2);
+        EXPECT_NEAR(sp_action.GetSpeed(), i == 0 ? 0.3 : 0.1, 1E-5);
+        sp_action.Step(4.0);
+        EXPECT_NEAR(sp_action.GetSpeed(), i == 0 ? 1.5 : 1.275, 1E-5);
+        sp_action.Step(6.0);
+        EXPECT_NEAR(sp_action.GetSpeed(), i == 0 ? 4.5 : 4.275, 1E-5);
+        sp_action.Step(8.0);
+        EXPECT_NEAR(sp_action.GetSpeed(), 6.0, 1E-5);
+    }
+}
 
 // Uncomment to print log output to console
 //#define LOG_TO_CONSOLE
@@ -1113,7 +1368,7 @@ int main(int argc, char** argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestRelativeRoadHeading*";
+    //testing::GTEST_FLAG(filter) = "*TestSpeedProfileNoTime*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -113,6 +113,7 @@ namespace scenarioengine
 		// Storyboard - Init
 		void parseInit(Init &init);
 		ActivateControllerAction *parseActivateControllerAction(pugi::xml_node actionNode);
+		int parseDynamicConstraints(pugi::xml_node dynamics_node, DynamicConstraints& dc);
 		OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode, Object *object);
 		OSCGlobalAction *parseOSCGlobalAction(pugi::xml_node actionNode);
 		void parseOSCOrientation(OSCOrientation &orientation, pugi::xml_node orientationNode);
