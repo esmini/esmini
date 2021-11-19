@@ -672,4 +672,45 @@ extern "C"
 
 		return -1;
 	}
+
+	RM_DLL_API int RM_GetOpenDriveGeoReference(RM_GeoReference* rmGeoReference)
+	{
+		if (odrManager != nullptr)
+		{
+			roadmanager::GeoReference* geoReference = odrManager->GetGeoReference();
+			if (geoReference == nullptr)
+			{
+				return -1;
+			}
+			else {
+				rmGeoReference->a_ = (float)(geoReference->a_);
+				rmGeoReference->axis_ = (float)(geoReference->axis_);
+				rmGeoReference->b_ = (float)(geoReference->b_);
+				rmGeoReference->ellps_ = geoReference->ellps_.c_str();
+				rmGeoReference->k_ = (float)(geoReference->k_);
+				rmGeoReference->k_0_ = (float)(geoReference->k_0_);
+				rmGeoReference->lat_0_ = (float)(geoReference->lat_0_);
+				rmGeoReference->lon_0_ = (float)(geoReference->lon_0_);
+				rmGeoReference->lon_wrap_ = (float)(geoReference->lon_wrap_);
+				rmGeoReference->over_ = (float)(geoReference->over_);
+				rmGeoReference->pm_ = geoReference->pm_.c_str();
+				rmGeoReference->proj_ = geoReference->proj_.c_str();
+				rmGeoReference->units_ = geoReference->units_.c_str();
+				rmGeoReference->vunits_ = geoReference->vunits_.c_str();
+				rmGeoReference->x_0_ = (float)(geoReference->x_0_);
+				rmGeoReference->y_0_ = (float)(geoReference->y_0_);
+				rmGeoReference->datum_ = geoReference->datum_.c_str();
+				rmGeoReference->geo_id_grids_ = geoReference->geo_id_grids_.c_str();
+				rmGeoReference->zone_ = (float)(geoReference->zone_);
+				rmGeoReference->towgs84_ = geoReference->towgs84_;
+
+				return 0;
+
+			}
+		}
+
+		return -1;
+
+	}
+
 }

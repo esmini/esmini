@@ -89,6 +89,30 @@ typedef struct
 	int toLane;
 } RM_RoadObjValidity;
 
+typedef struct
+{
+	float a_;
+	float axis_;
+	float b_;
+	const char* ellps_;
+	float k_;
+	float k_0_;
+	float lat_0_;
+	float lon_0_;
+	float lon_wrap_;
+	float over_;
+	const char* pm_;
+	const char* proj_;
+	const char* units_;
+	const char* vunits_;
+	float x_0_;
+	float y_0_;
+	const char* datum_;
+	const char* geo_id_grids_;
+	float zone_;
+	int towgs84_;
+} RM_GeoReference;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -374,6 +398,11 @@ extern "C"
 		@return 0 if successful, -1 if not
 	*/
 	RM_DLL_API int RM_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, RM_RoadObjValidity* validity);
+
+	/**
+		Get the xodr road file georeference 
+	*/
+    RM_DLL_API int RM_GetOpenDriveGeoReference(RM_GeoReference* rmGeoReference);
 
 #ifdef __cplusplus
 }

@@ -103,6 +103,34 @@ namespace OpenDRIVE
         public float width;       // width as sepcified in OpenDRIVE
     };
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct GeoReference
+    {
+        // doc reference: https://proj.org/usage/projections.html
+        public float a;         // Semimajor radius of the ellipsoid axis
+        public float axis;      // Axis orientation
+        public float b;         // Semiminor radius of the ellipsoid axis
+        public IntPtr ellps;    // Ellipsoid name
+        public float k;         // Scaling factor (deprecated)
+        public float k_0;       // Scaling factor
+        public float lat_0;     // Latitude of origin
+        public float lon_0;     // Central meridian
+        public float lon_wrap;  // Center longitude to use for wrapping
+        public float over;      // Allow longitude output outside -180 to 180 range, disables wrapping (see below)
+        public IntPtr pm;       // Alternate prime meridian (typically a city name, see below)
+        public IntPtr proj;     // Projection name
+        public IntPtr units;    // meters, US survey feet, etc.
+        public IntPtr vunits;   // vertical units.
+        public float x_0;       // False easting
+        public float y_0;       // False northing
+
+        public IntPtr datum;
+        public IntPtr geo_id_grids;
+        public float zone;
+        public int towgs84;
+
+    }
+
 
     enum JunctionStrategy { Random, Straight };  // must correlate to RoadManager::Junction::JunctionStrategyType
 
@@ -386,6 +414,16 @@ namespace OpenDRIVE
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetRoadSign")]
         public static extern int GetRoadSign(int road_id, int index, ref RoadSign road_sign);
+
+        /// <summary>
+        /// Get georeference for opendrive file
+        /// </summary>
+        /// <param name="geo_reference">Pointer/reference to a RoadSign struct to be filled in</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetOpenDriveGeoReference")]
+        public static extern int GetRoadSign(ref GeoReference geo_reference);
+
+
 
     }
 
