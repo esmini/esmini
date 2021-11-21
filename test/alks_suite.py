@@ -20,7 +20,7 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n70.00.*, 0, Ego, 928.57.*, 434.51.*, 0.00.*, 0.7.*, 0.00.*,.*', csv))
+        self.assertTrue(re.search('\n70.00.*, 0, Ego, 928.851, 434.773, 0.000, 0.737, 0.000, 0.000, 16.667', csv))
 
     def test_ALKS_Scenario_4_1_2_SwervingLeadVehicle(self):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_2_SwervingLeadVehicle_TEMPLATE.xosc'), COMMON_ARGS)
@@ -241,5 +241,8 @@ class TestSuite(unittest.TestCase):
 
 if __name__ == "__main__":
     # execute only if run as a script
+
+    # Uncomment next line to run only one test
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_ALKS_Scenario_4_1_1_FreeDriving'])
 
     unittest.main(verbosity=2)

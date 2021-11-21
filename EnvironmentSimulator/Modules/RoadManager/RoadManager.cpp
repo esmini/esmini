@@ -319,7 +319,7 @@ const std::map<std::string, Signal::Type> Signal::types_mapping_ = {
 };
 
 Signal::Type Signal::GetTypeFromString(const std::string& type)
-{ 
+{
 	if(types_mapping_.count(type) != 0)
 	{
 		return types_mapping_.find(type)->second;
@@ -4866,12 +4866,12 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
 				}
 
 				fs.close();
-				
+
 				break;
 			}
 		}
 	}
-	
+
 	return true;
 }
 
@@ -6937,7 +6937,7 @@ Position::ErrorCode Position::MoveAlongS(double ds, double dLaneOffset, double j
 		Position pos = *this->rel_pos_;
 
 		// First move position along s
-		pos.MoveAlongS(this->s_);
+		pos.MoveAlongS(this->s_);  // Todo: check if this should be pos.MoveAlongS(ds); ?
 
 		// Then move laterally
 		pos.SetLanePos(pos.track_id_, pos.lane_id_ + this->lane_id_, pos.s_, pos.offset_ + this->offset_);

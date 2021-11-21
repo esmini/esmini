@@ -155,7 +155,14 @@ namespace scenarioengine
 		double GetOffRoadTimestamp() { return off_road_timestamp_; }
 		void SetStandStill(bool state, double time = 0.0);
 		bool IsStandStill() { return stand_still_timestamp_ > SMALL_NUMBER; }
-		int MoveAlongS(double ds);
+
+		/**
+			Move current position along the road or route (if assigned)
+			@param ds Distance to move, negative will move backwards
+			@param actualDistance if true ds will adjusted for curvature and lat offset
+			@return Non zero return value indicates error of some kind
+		*/
+		int MoveAlongS(double ds, bool actualDistance = true);
 
 		/**
 		    Returns the timestamp from which the entity has not moved.

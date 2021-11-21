@@ -1808,10 +1808,8 @@ namespace roadmanager
 		ErrorCode MoveRouteDS(double ds);
 
 		/**
-		Move current position to specified S-value along the route
-		@param route_s Distance to move, negative will move backwards
-		@param laneId Explicit (not delta/offset) lane ID
-		@param laneOffset Explicit (not delta/offset) lane offset value
+		Move current position along the route
+		@param ds Distance to move, negative will move backwards
 		@return Non zero return value indicates error of some kind
 		*/
 		int SetRouteLanePosition(Route* route, double route_s, int laneId, double  laneOffset);
@@ -1953,7 +1951,10 @@ namespace roadmanager
 		@param ds distance to move from current position
 		@return 0 if successful, other codes see Position::ErrorCode
 		*/
-		ErrorCode MoveAlongS(double ds) { return MoveAlongS(ds, 0.0, -1.0); }
+		ErrorCode MoveAlongS(double ds)
+		{
+			return MoveAlongS(ds, 0.0, -1.0);
+		}
 
 		/**
 		Retrieve the track/road ID from the position object

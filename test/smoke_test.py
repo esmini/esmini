@@ -34,8 +34,8 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('\n6.500.*, 0, Ego, 28.5.*, -7.8.*, 0.00.*, 1.[78]*.', csv))
-        self.assertTrue(re.search('\n6.500.*, 1, NPC, 23.9.*., 1.0.*, 0.00.*, 5.3.*', csv))
+        self.assertTrue(re.search('\n6.500.*, 0, Ego, 28.542, -7.876, 0.000, 1.779, 0.000, 0.000, 10.000', csv))
+        self.assertTrue(re.search('\n6.500.*, 1, NPC, 24.456, 0.305, 0.000, 5.394, 0.000, 0.000, 7.000', csv))
 
     def test_trajectory(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/trajectory-test.xosc'), COMMON_ARGS \
@@ -50,13 +50,13 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('\n4.100.*, 0, Ego, 115.039, 4.86*., -3.0.*, 0.28.*, 0.03.*', csv))
+        self.assertTrue(re.search('\n4.100.*, 0, Ego, 115.042, 4.864, -3.006, 0.281, 0.032, 0.000, 16.000', csv))
         self.assertTrue(re.search('\n4.100.*, 1, Target, 129.91.*, 14.32.*, -3.46.*, 0.499.*', csv))
-        self.assertTrue(re.search('\n11.100.*, 0, Ego, 200.70.*, 72.58.*, -2.44., 1.05.*, 6.26.*', csv))
+        self.assertTrue(re.search('\n11.100.*, 0, Ego, 200.713, 72.600, -2.443, 1.057, 6.263, 0.000, 16.000', csv))
         self.assertTrue(re.search('\n11.100.*, 1, Target, 205.90.*, 66.44.*, -2.49.*, 2.5.*, 6.28.*', csv))
-        self.assertTrue(re.search('\n17.250.*, 0, Ego, 217.35.*, 167.63.*, 1.98.*, 1.73.*, 6.20.*', csv))
+        self.assertTrue(re.search('\n17.250.*, 0, Ego, 217.345, 167.663, 1.989, 1.738, 6.209, 0.000, 16.000', csv))
         self.assertTrue(re.search('\n17.250.*, 1, Target, 210.68.*, 157.76.*, 1.31.*, 1.23.*, 6.21.*', csv))
-        self.assertTrue(re.search('\n25.000.*, 0, Ego, 206.06.*, 288.46.*, 5.43.*, 1.18.*, 6.23.*', csv))
+        self.assertTrue(re.search('\n25.000.*, 0, Ego, 206.081, 288.506, 5.436, 1.188, 6.238, 0.000, 16.000', csv))
         self.assertTrue(re.search('\n25.000.*, 1, Target, 216.18.*, 307.60.*, 6.70.*, 0.96.*, 6.21.*', csv))
 
     def test_synchronize(self):
@@ -144,21 +144,20 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 7 roadId 260 laneId -1', log)  is not None)
         self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 11 roadId 220 laneId -1', log)  is not None)
         self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 12: 222, -1, 20.00', log)  is not None)
-        self.assertTrue(re.search('\n25.51.* Route::AddWaypoint Added intermediate waypoint 3 roadId 280 laneId -1', log)  is not None)
+        self.assertTrue(re.search('\n25.47.* Route::AddWaypoint Added intermediate waypoint 3 roadId 280 laneId -1', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('\n25.51.* AquirePosition condition == true, distance 1.9. < tolerance \(2.00\), edge: rising', log)  is not None)
-        self.assertTrue(re.search('\n25.51.: AquirePosition event complete after 1 execution', log)  is not None)
-        self.assertTrue(re.search('\n38.91.* Stop condition == true, distance 1.7. < tolerance \(2.00\), edge: rising', log)  is not None)
-        self.assertTrue(re.search('\n46.28.* QuitCondition timer expired at 4.0. seconds', log)  is not None)
+        self.assertTrue(re.search('\n25.47.* AquirePosition condition == true, distance 1.5. < tolerance \(2.00\), edge: rising', log)  is not None)
+        self.assertTrue(re.search('\n25.47.: AquirePosition event complete after 1 execution', log)  is not None)
+        self.assertTrue(re.search('\n38.84.* Stop condition == true, distance 1.6. < tolerance \(2.00\), edge: rising', log)  is not None)
+        self.assertTrue(re.search('\n46.21.* QuitCondition timer expired at 4.0. seconds', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('\n7.00.*, 0, Ego, 291.87.*, 25.78.*, 0.00.*, 1.57.*, 0.00.*, 0.00.*, 50.00.*', csv))
-        self.assertTrue(re.search('\n23.90.*, 0, Ego, 230.91.*, -3.34.*, 0.00.*, 6.06.*, 0.00.*, 0.00.*, 50.00.*', csv))
-        self.assertTrue(re.search('\n42.24.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.05.*', csv))
-        self.assertTrue(re.search('\n42.24.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.05.*', csv))
-        self.assertTrue(re.search('\n42.25.*, 0, Ego, 623.81.*, -1.87.*, 0.00.*, 0.00.* 0.00.* 0.00.*, 0.00.*', csv))
+        self.assertTrue(re.search('\n7.00.*, 0, Ego, 291.875, 26.250, 0.000, 1.571, 0.00.*, 0.00.*, 50.00.*', csv))
+        self.assertTrue(re.search('\n23.900, 0, Ego, 232.765, -3.753, 0.000, 6.063, 0.000, 0.000, 50.000.*', csv))
+        self.assertTrue(re.search('\n42.170, 0, Ego, 623.968, -1.875, 0.000, 0.000, 0.000, 0.000, 0.050', csv))
+        self.assertTrue(re.search('\n42.250, 0, Ego, 623.968, -1.875, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 
     def test_acc(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/acc-test.xosc'), COMMON_ARGS)
@@ -243,16 +242,15 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^40.00.*, 0, Ego, 33.31.*, 699.01.*, -0.95.*, 1.45.*, 0.00.*, 0.00.*, 10.00.*', csv, re.MULTILINE))
         # Random generators differ on platforms => random traffic will be repeatable only per platform
         if platform == "win32":
-            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.194, 576.785, -0.834, 1.491, 6.283, 0.000, 30.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 3, swarm3, 31.231, 680.099, -0.901, 1.463, 0.002, 0.000, 10.019', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 66, swarm66, 45.240, 822.574, -1.085, 1.433, 6.280, 0.000, 31.504', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 88, swarm88, 22.771, 776.148, -1.138, 4.585, 6.282, 0.000, 30.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.200, 576.852, -0.834, 1.491, 6.283, 0.000, 30.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 3, swarm3, 31.236, 680.144, -0.901, 1.463, 0.002, 0.000, 10.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 75, swarm75, 44.989, 765.411, -1.128, 1.444, 0.002, 0.000, 31.935', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 89, swarm89, 19.911, 690.914, -0.924, 4.603, 6.281, 0.000, 30.706', csv, re.MULTILINE))
         elif platform == "linux" or platform == "linux2":
-            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.194, 576.785, -0.834, 1.491, 6.283, 0.000, 30.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 5, swarm5, 31.231, 680.099, -0.901, 1.463, 0.002, 0.000, 10.019', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 55, swarm55, 52.069, 869.873, -0.758, 1.422, 6.272, 0.000, 30.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 93, swarm93, 25.484, 796.907, -1.143, 4.580, 0.001, 0.000, 31.875', csv, re.MULTILINE))
-
+            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.200, 576.852, -0.834, 1.491, 6.283, 0.000, 30.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 5, swarm5, 31.236, 680.144, -0.901, 1.463, 0.002, 0.000, 10.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 74, swarm74, 39.653, 721.787, -1.020, 1.454, 0.003, 0.000, 32.500', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 85, swarm85, 11.096, 640.678, -0.836, 4.615, 6.282, 0.000, 32.498', csv, re.MULTILINE))
 
     def test_conflicting_domains(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ARGS)
@@ -308,6 +306,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Uncomment next line to run only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_follow_ghost'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_swarm'])
     
     unittest.main(verbosity=2)
