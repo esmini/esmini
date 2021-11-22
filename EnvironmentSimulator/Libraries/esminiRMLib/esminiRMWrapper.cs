@@ -421,7 +421,7 @@ namespace OpenDRIVE
         /// <param name="geo_reference">Pointer/reference to a RoadSign struct to be filled in</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetOpenDriveGeoReference")]
-        public static extern int GetRoadSign(ref GeoReference geo_reference);
+        public static extern int GetOpenDriveGeoReference(ref GeoReference geo_reference);
 
 
 
