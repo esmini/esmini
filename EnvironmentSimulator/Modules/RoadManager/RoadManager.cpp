@@ -6937,7 +6937,7 @@ Position::ErrorCode Position::MoveAlongS(double ds, double dLaneOffset, double j
 		Position pos = *this->rel_pos_;
 
 		// First move position along s
-		pos.MoveAlongS(this->s_);  // Todo: check if this should be pos.MoveAlongS(ds); ?
+		pos.MoveAlongS(ds);
 
 		// Then move laterally
 		pos.SetLanePos(pos.track_id_, pos.lane_id_ + this->lane_id_, pos.s_, pos.offset_ + this->offset_);
