@@ -219,6 +219,11 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 				if (osi_counter % osi_freq_ == 0)
 				{
 					osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
+					if (osi_counter == 0)
+					{
+						// Clear the static data now when it has been reported once
+						osiReporter->ClearOSIGroundTruth();
+					}
 				}
 				// Update counter after modulo-check since first frame should always be reported
 				osi_counter++;

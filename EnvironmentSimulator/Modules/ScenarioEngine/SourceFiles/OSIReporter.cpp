@@ -293,8 +293,8 @@ int OSIReporter::UpdateOSIGroundTruth(std::vector<ObjectState *> objectState)
 
 	if (GetSocket() || IsFileOpen())
 	{
-		obj_osi_internal.gt->SerializeToString(&osiGroundTruth.ground_truth);
-		osiGroundTruth.size = (unsigned int)obj_osi_internal.gt->ByteSizeLong();
+		obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+		osiGroundTruth.size = (unsigned int)obj_osi_external.gt->ByteSizeLong();
 	}
 
 	if (sendSocket)
