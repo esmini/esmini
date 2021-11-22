@@ -13,7 +13,7 @@
 /* A simple example of how to run esmini within a Unity script/application
  *
  * Preparations:
- * - put OpenSCENARIO files in folder Assets/StreamingAssets/xosc 
+ * - put OpenSCENARIO files in folder Assets/StreamingAssets/xosc
  * - put OpenDRIVE files in folder Assets/StreamingAssets/xodr
  * - put OSG models in folder Assets/StreamingAssets/models
  * - put prefabs of Unity versions of road and vehicle models in folder Assets/Resources
@@ -41,7 +41,7 @@ public class esminiUnityExample : MonoBehaviour
     public bool threads = false;
     [Tooltip("Disregard any controllers - esmini will apply default behaviour.")]
     public bool disable_controllers = true;
-    
+
     private GameObject cam;
     private ScenarioObjectState state;
     private List<GameObject> cars = new List<GameObject>();
@@ -56,6 +56,26 @@ public class esminiUnityExample : MonoBehaviour
             "van_red",
             "bus_blue"
         };
+
+    public struct UserData
+    {
+        public UserData(String message, double speedFactor)
+        {
+            message_ = message;
+            speedFactor_ = speedFactor;
+        }
+        public String message_;
+        public double speedFactor_;
+    }
+
+    private IntPtr user_data_ptr;
+
+    static void ParamDeclarationCallback(IntPtr user_data_ptr)
+    {
+        UserData user_data = (UserData)Marshal.PtrToStructure(user_data_ptr, typeof(UserData));
+        Debug.Log(user_data.message_ + ": Set TargetSpeedFactor = " + user_data.speedFactor_);
+        ESMiniLib.SE_SetParameterDouble("TargetSpeedFactor", user_data.speedFactor_);
+    }
 
     private Vector3 RH2Unity(Vector3 rightHandVector)
     {
@@ -81,7 +101,17 @@ public class esminiUnityExample : MonoBehaviour
     {
         state = new ScenarioObjectState();
         cam = GameObject.FindWithTag("MainCamera");
-              
+
+        // Prepare and register callback for initializing scneario parameters
+        // The user_data is typically not needed, but included here just to show
+        // how to pass any kind of structure to the callback.
+        UserData user_data = new UserData("This is a message", 1.6);
+        user_data_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(user_data));
+        Marshal.StructureToPtr(user_data, user_data_ptr, false);
+
+        // This call must be made BEFORE SE_Init(), and is only needed once.
+        ESMiniLib.SE_RegisterParameterDeclarationCallback(ParamDeclarationCallback, user_data_ptr);
+
         InitScenario();
     }
 
@@ -100,10 +130,10 @@ public class esminiUnityExample : MonoBehaviour
         }
 
 
-        if (ESMiniLib.SE_Init( Application.streamingAssetsPath + OSC_filename, 
-            disable_controllers ? 1 : 0, 
-            OSG_visualization ? 1 : 0, 
-            threads ? 1 : 0, 
+        if (ESMiniLib.SE_Init( Application.streamingAssetsPath + OSC_filename,
+            disable_controllers ? 1 : 0,
+            OSG_visualization ? 1 : 0,
+            threads ? 1 : 0,
             0) != 0)  // don't create .dat-recording for replayer
         {
             print("failed to load scenario");
@@ -121,6 +151,7 @@ public class esminiUnityExample : MonoBehaviour
     {
         Debug.Log("Quit");
         ESMiniLib.SE_Close();
+        Marshal.FreeHGlobal(user_data_ptr);
     }
 
     public void Reload()
@@ -134,8 +165,8 @@ public class esminiUnityExample : MonoBehaviour
     private void Update()
     {
         ESMiniLib.SE_StepDT(Time.deltaTime);
- 
-        if (ESMiniLib.SE_GetQuitFlag())
+
+        if (ESMiniLib.SE_GetQuitFlag() == 1)
         {
      #if UNITY_EDITOR
             // Application.Quit() does not work in the editor so
@@ -159,7 +190,7 @@ public class esminiUnityExample : MonoBehaviour
                 int model_id = state.model_id % objectNames.Count;
                 cars.Add((GameObject)Instantiate(Resources.Load(objectNames[model_id])));
                 Debug.Log("Adding " + objectNames[model_id]);
-                
+
                 // Attach camera to first object
                 if (i==0)
                 {

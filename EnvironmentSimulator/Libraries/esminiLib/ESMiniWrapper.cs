@@ -107,12 +107,26 @@ public static class ESMiniLib
         /// <returns>0 on success, -1 on failure for any reason</returns>
         public static extern int SE_SetLogFilePath(string path);
 
-       [DllImport(LIB_NAME, EntryPoint = "SE_SetOSITolerances")]
+        [DllImport(LIB_NAME, EntryPoint = "SE_SetOSITolerances")]
         /// <summary>Configure tolerances/resolution for OSI road features</summary>
         /// <param name="max_longitudinal_distance">Maximum distance between OSI points, even on straight road. Default=50(m) </param>
         /// <param name="max_lateral_deviation"> Control resolution w.r.t. curvature default=0.05(m)</param>
         /// <return>0 if successful, -1 if not</return>
         public static extern int SE_SetOSITolerances(double maxLongitudinalDistance, double maxLateralDeviation);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_RegisterParameterDeclarationCallback")]
+        /// <summary>
+        /// Register a function and optional argument (ref) to be called back from esmini after ParameterDeclarations has been parsed,
+        /// but before the scenario is initialized, i.e.before applying the actions in the Init block.One use-case is to
+        /// set parameter values for initial entity states, e.g.s value in lane position. So this callback will happen just
+        /// after parameters has been parsed, but before they are applied, providing an opportunity to control the initial
+        /// states via API.
+        /// Registered init callbacks are be cleared between SE_Init calls, i.e.needs to be registered
+        /// </summary>
+        /// <param name="func">Reference to the callback function to be invoked</param>
+        /// <param name="user_data">Optional pointer to a local data object that will be passed as argument in the callback.
+        /// Set 0/NULL if not needed.</param>
+        public static extern void SE_RegisterParameterDeclarationCallback(Action<IntPtr> callback, IntPtr user_data);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_Init")]
         /// <summary>Initialize the scenario engine</summary>
