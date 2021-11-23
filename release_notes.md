@@ -1,5 +1,13 @@
 ## esmini release notes
 
+### 2021-11-23 Version 2.17.4
+
+- Expose GeoReference data to esminiRM (RoadManager) API
+- Add ParameterDeclarationCallback API to C# wrapper ([issue #190](https://github.com/esmini/esmini/issues/190))
+  - See [esminiLib/esminiUnityExample.cs](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/esminiUnityExample.cs) for example usage
+- Reduce OSI log size by storing static data only once
+- Consider lane offset (and curvature) for steplen calculation ([issue #187](https://github.com/esmini/esmini/issues/187))
+
 ### 2021-11-16 Version 2.17.3
 
 - Add more tuneable parameters to SimpleVehicle and expose in API
