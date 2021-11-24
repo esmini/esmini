@@ -153,17 +153,14 @@ Currently esmini only supports OSG native .osgb 3D file format. However, there a
 
 
 ## Related work
-### pyoscx
-[pyoscx](https://github.com/pyoscx/pyoscx) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate the OpenSCENARIO 1.0 XML counterpart.
-
-### pyodrx
-[pyodrx](https://github.com/pyoscx/pyodrx) is a Python based road network creation framework. The idea is to write road networks in a high-level script format and automatically generate the OpenDRIVE (1.4 as of today) XML counterpart.
-
-### pyoscx/scenariogeneration
-[pyoscx/scenariogeneration](https://github.com/pyoscx/scenariogeneration) is a simple Python wrapper to combine pyoscx and pyodrx, providing an interface to parametrize and generate linked OpenSCENARIO and OpenDRIVE files to run multiple simulations, including parameter sweeps.
+### scenariogeneration
+[scenariogeneration](https://github.com/pyoscx/scenariogeneration) is a Python based scenario creation framework. The idea is to write scenarios in a high-level script format and automatically generate and run linked OpenDRIVE and OpenSCENARIO XML counterparts. It supports parameter sweeps to create multiple variants of a parameterized scenario.
 
 ### ALKS scenarios
 [OSC-ALKS-scenarios](https://github.com/arauschert/OSC-ALKS-scenarios) is a collection of scenarios for Automated Lane Keeping System testing. "BMW has taken on the task of implementing the test scenarios from the ALKS regulation using OpenSCENARIO and OpenDRIVE resulting in a bundle of XML files executable with standard compliant simulators."
+
+### OpenDRIVE plugin for Unreal Engine
+[brifsttar/OpenDRIVE](https://github.com/brifsttar/OpenDRIVE) plugin allows you to manipulate OpenDRIVE road networks in Unreal Engine. It's based on esmini RoadManager (esminiRMLib).
 
 ### Scenario video clip generator
 [esmini-visualizer](https://github.com/matthewcoyle-cpc/esmini-visualiser) is a tool to automatically generate video visualizations of scenarios.
