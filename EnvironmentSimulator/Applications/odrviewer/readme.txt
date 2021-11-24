@@ -16,6 +16,8 @@ Options:
       Prevent logfile from being created
   --disable_stdout
       Prevent messages to stdout
+  --fixed_timestep <timestep>
+      Run simulation decoupled from realtime, with specified timesteps
   --generate_no_road_objects
       Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
   --logfile_path <path>

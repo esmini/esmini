@@ -44,6 +44,7 @@ static const bool freerun = true;
 static double density = 1.0;  // Cars per 100 m
 static double global_speed_factor = 1.0;
 static int first_car_in_focus = -1;
+static double fixed_timestep = -1.0;
 roadmanager::Road::RoadRule rule = roadmanager::Road::RoadRule::ROAD_RULE_UNDEFINED;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
@@ -347,6 +348,7 @@ int main(int argc, char** argv)
 	opt.AddOption("density", "density (cars / 100 m)", "density", std::to_string(density));
 	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
+	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
 	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
 	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
 	opt.AddOption("model", "3D Model filename", "model_filename");
@@ -380,6 +382,12 @@ int main(int argc, char** argv)
 	}
 
 	std::string arg_str;
+
+	if ((arg_str = opt.GetOptionArg("fixed_timestep")) != "")
+	{
+		fixed_timestep = atof(arg_str.c_str());
+		printf("Run simulation decoupled from realtime, with fixed timestep: %.2f", fixed_timestep);
+	}
 
 	if (opt.GetOptionSet("disable_stdout"))
 	{
@@ -528,19 +536,27 @@ int main(int argc, char** argv)
 
 		while (!viewer->osgViewer_->done())
 		{
-			// Get milliseconds since Jan 1 1970
-			now = SE_getSystemTime();
-			deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
-			lastTimeStamp = now;
-			if (deltaSimTime > maxStepSize) // limit step size
+			if (fixed_timestep > 0)
 			{
-				deltaSimTime = maxStepSize;
+				deltaSimTime = fixed_timestep;
 			}
-			else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
+			else
 			{
-				SE_sleep(now - lastTimeStamp);
-				deltaSimTime = minStepSize;
+				// Get milliseconds since Jan 1 1970
+				now = SE_getSystemTime();
+				deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
+				lastTimeStamp = now;
+				if (deltaSimTime > maxStepSize) // limit step size
+				{
+					deltaSimTime = maxStepSize;
+				}
+				else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
+				{
+					SE_sleep(now - lastTimeStamp);
+					deltaSimTime = minStepSize;
+				}
 			}
+
 
 			if (!(run_only_once && !first_time))
 			{
