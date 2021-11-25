@@ -84,17 +84,29 @@ bool EvaluateRule(double a, double b, Rule rule)
 
 bool EvaluateRule(int a, int b, Rule rule)
 {
-	if (rule == Rule::EQUAL_TO)
-	{
-		return a == b;
-	}
-	else if (rule == Rule::GREATER_THAN)
+	if (rule == Rule::GREATER_THAN)
 	{
 		return a > b;
+	}
+	else if (rule == Rule::GREATER_OR_EQUAL)
+	{
+		return a >= b;
 	}
 	else if (rule == Rule::LESS_THAN)
 	{
 		return a < b;
+	}
+	else if (rule == Rule::LESS_OR_EQUAL)
+	{
+		return a <= b;
+	}
+	else if (rule == Rule::EQUAL_TO)
+	{
+		return (a == b);
+	}
+	else if (rule == Rule::NOT_EQUAL_TO)
+	{
+		return !(a == b);
 	}
 	else
 	{
@@ -105,17 +117,29 @@ bool EvaluateRule(int a, int b, Rule rule)
 
 bool EvaluateRule(std::string a, std::string b, Rule rule)
 {
-	if (rule == Rule::EQUAL_TO)
-	{
-		return a == b;
-	}
-	else if (rule == Rule::GREATER_THAN)
+	if (rule == Rule::GREATER_THAN)
 	{
 		return a > b;
+	}
+	else if (rule == Rule::GREATER_OR_EQUAL)
+	{
+		return a >= b;
 	}
 	else if (rule == Rule::LESS_THAN)
 	{
 		return a < b;
+	}
+	else if (rule == Rule::LESS_OR_EQUAL)
+	{
+		return a <= b;
+	}
+	else if (rule == Rule::EQUAL_TO)
+	{
+		return (a == b);
+	}
+	else if (rule == Rule::NOT_EQUAL_TO)
+	{
+		return !(a == b);
 	}
 	else
 	{
@@ -126,19 +150,29 @@ bool EvaluateRule(std::string a, std::string b, Rule rule)
 
 bool EvaluateRule(bool a, bool b, Rule rule)
 {
-	if (rule == Rule::EQUAL_TO)
+	if (rule == Rule::GREATER_THAN)
 	{
-		return a == b;
+		return a == true && b == false;
 	}
-	else if (rule == Rule::GREATER_THAN)
+	else if (rule == Rule::GREATER_OR_EQUAL)
 	{
-		// Strange for booleans
-		return a != b;
+		return a == b || (a == true && b == false);
 	}
 	else if (rule == Rule::LESS_THAN)
 	{
-		// Strange for booleans
-		return a != b;
+		return a == false && b == true;
+	}
+	else if (rule == Rule::LESS_OR_EQUAL)
+	{
+		return a == b || (a == false && b == true);
+	}
+	else if (rule == Rule::EQUAL_TO)
+	{
+		return (a == b);
+	}
+	else if (rule == Rule::NOT_EQUAL_TO)
+	{
+		return !(a == b);
 	}
 	else
 	{
