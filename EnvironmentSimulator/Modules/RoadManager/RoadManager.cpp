@@ -3373,22 +3373,22 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				if (repeat_node != NULL)
 				{
 					std::string rattr;
-					double rs = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stof(rattr);
-					double rlength = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stof(rattr);
-					double rdistance = (rattr = ReadAttribute(repeat_node, "distance", true)) == "" ? 0.0 : std::stof(rattr);
-					double rtStart = (rattr = ReadAttribute(repeat_node, "tStart", true)) == "" ? 0.0 : std::stof(rattr);
-					double rtEnd = (rattr = ReadAttribute(repeat_node, "tEnd", true)) == "" ? 0.0 : std::stof(rattr);
-					double rheightStart = (rattr = ReadAttribute(repeat_node, "heightStart", true)) == "" ? 0.0 : std::stof(rattr);
-					double rheightEnd = (rattr = ReadAttribute(repeat_node, "heightEnd", true)) == "" ? 0.0 : std::stof(rattr);
-					double rzOffsetStart = (rattr = ReadAttribute(repeat_node, "zOffsetStart", true)) == "" ? 0.0 : std::stof(rattr);
-					double rzOffsetEnd = (rattr = ReadAttribute(repeat_node, "zOffsetEnd", true)) == "" ? 0.0 : std::stof(rattr);
+					double rs = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stod(rattr);
+					double rlength = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stod(rattr);
+					double rdistance = (rattr = ReadAttribute(repeat_node, "distance", true)) == "" ? 0.0 : std::stod(rattr);
+					double rtStart = (rattr = ReadAttribute(repeat_node, "tStart", true)) == "" ? 0.0 : std::stod(rattr);
+					double rtEnd = (rattr = ReadAttribute(repeat_node, "tEnd", true)) == "" ? 0.0 : std::stod(rattr);
+					double rheightStart = (rattr = ReadAttribute(repeat_node, "heightStart", true)) == "" ? 0.0 : std::stod(rattr);
+					double rheightEnd = (rattr = ReadAttribute(repeat_node, "heightEnd", true)) == "" ? 0.0 : std::stod(rattr);
+					double rzOffsetStart = (rattr = ReadAttribute(repeat_node, "zOffsetStart", true)) == "" ? 0.0 : std::stod(rattr);
+					double rzOffsetEnd = (rattr = ReadAttribute(repeat_node, "zOffsetEnd", true)) == "" ? 0.0 : std::stod(rattr);
 
-					double rwidthStart = (rattr = ReadAttribute(repeat_node, "widthStart", false)) == "" ? 0.0 : std::stof(rattr);
-					double rwidthEnd = (rattr = ReadAttribute(repeat_node, "widthEnd", false)) == "" ? 0.0 : std::stof(rattr);
-					double rlengthStart = (rattr = ReadAttribute(repeat_node, "lengthStart", false)) == "" ? 0.0 : std::stof(rattr);
-					double rlengthEnd = (rattr = ReadAttribute(repeat_node, "lengthEnd", false)) == "" ? 0.0 : std::stof(rattr);
-					double rradiusStart = (rattr = ReadAttribute(repeat_node, "radiusStart", false)) == "" ? 0.0 : std::stof(rattr);
-					double rradiusEnd = (rattr = ReadAttribute(repeat_node, "radiusEnd", false)) == "" ? 0.0 : std::stof(rattr);
+					double rwidthStart = (rattr = ReadAttribute(repeat_node, "widthStart", false)) == "" ? 0.0 : std::stod(rattr);
+					double rwidthEnd = (rattr = ReadAttribute(repeat_node, "widthEnd", false)) == "" ? 0.0 : std::stod(rattr);
+					double rlengthStart = (rattr = ReadAttribute(repeat_node, "lengthStart", false)) == "" ? 0.0 : std::stod(rattr);
+					double rlengthEnd = (rattr = ReadAttribute(repeat_node, "lengthEnd", false)) == "" ? 0.0 : std::stod(rattr);
+					double rradiusStart = (rattr = ReadAttribute(repeat_node, "radiusStart", false)) == "" ? 0.0 : std::stod(rattr);
+					double rradiusEnd = (rattr = ReadAttribute(repeat_node, "radiusEnd", false)) == "" ? 0.0 : std::stod(rattr);
 
 					repeat = new Repeat(rs, rlength, rdistance, rtStart, rtEnd, rheightStart, rheightEnd, rzOffsetStart, rzOffsetEnd);
 
