@@ -294,8 +294,8 @@ TEST(TrajectoryTest, EnsureContinuation)
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 21.31489, 1e-5);
-    ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), 2.56606, 1e-5);
+    ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 21.35235, 1e-5);
+    ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), 2.59918, 1e-5);
 }
 
 TEST(ExpressionTest, EnsureResult)
@@ -742,7 +742,7 @@ int main(int argc, char **argv)
         Logger::Inst().SetCallback(log_callback);
     }
 #endif
-    //testing::GTEST_FLAG(filter) = "suite*:test";
+    //testing::GTEST_FLAG(filter) = "suite*:*EnsureContinuation*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
