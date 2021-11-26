@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2021-11-26 Version 2.17.5
+
+- Add fixed timestep option to odrviewer (all options see [odrviewer/readme.txt](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/odrviewer/readme.txt))
+- Add missing comparison operators (issue [#191](https://github.com/esmini/esmini/issues/191))
+- Bugfix: Fix string converted to low precision type (issue [#192](https://github.com/esmini/esmini/issues/192))
+
 ### 2021-11-23 Version 2.17.4
 
 - Expose GeoReference data to esminiRM (RoadManager) API
