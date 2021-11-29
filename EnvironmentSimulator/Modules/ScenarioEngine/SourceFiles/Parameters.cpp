@@ -398,7 +398,7 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 	{
 		if (required)
 		{
-			LOG("Warning: Empty attribute");
+			LOG_AND_QUIT("Warning: Request to read empty attribute name in XML node %s", node.name());
 		}
 		return "";
 	}
@@ -456,7 +456,7 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 	{
 		if (required)
 		{
-			LOG("Warning: missing required attribute: %s -> %s", node.name(), attribute_name.c_str());
+			LOG_AND_QUIT("Error: missing required attribute: %s -> %s", node.name(), attribute_name.c_str());
 		}
 	}
 
