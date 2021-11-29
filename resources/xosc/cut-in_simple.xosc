@@ -37,7 +37,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="20"/>
                         </SpeedActionTarget>
@@ -56,7 +56,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step"/>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="25"/>
                         </SpeedActionTarget>

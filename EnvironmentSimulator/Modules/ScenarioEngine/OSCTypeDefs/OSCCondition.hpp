@@ -174,9 +174,12 @@ namespace scenarioengine
 		OSCPosition *position_;
 		double tolerance_;
 		double dist_;
+		double angularTolerance_;
+		bool checkOrientation_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
-		TrigByReachPosition() : dist_(0), TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
+		TrigByReachPosition() : dist_(0), tolerance_(1.0), angularTolerance_(0.05), checkOrientation_(false) ,
+			TrigByEntity(TrigByEntity::EntityConditionType::REACH_POSITION) {}
 		void Log();
 	};
 

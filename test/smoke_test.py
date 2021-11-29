@@ -301,11 +301,26 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^9.20.*, 1, Ego_ghost, 20.109, 558.866, -0.841, 1.497, 6.283, 0.000.*', csv, re.MULTILINE))
         self.assertTrue(re.search('^9.50.*, 0, Ego, 11.408, 463.122, -0.811, 1.502, 0.001, 6.283.*', csv, re.MULTILINE))
 
+    def test_heading_trig(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc'), COMMON_ARGS)
+        
+        # Check some initialization steps
+        self.assertTrue(re.search('.*traj-heading-trig.xosc', log)  is not None)
+        
+        # Check some scenario events
+        self.assertTrue(re.search('^0.020: MyLaneChangeEvent standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^1.300: MyAlignOrientationStartCondition == true, distance 0.00 < tolerance \(1.00\), rel orientation \[0.05, 0.00, 0.00\] \(tolerance 0.05\), edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^12.700: MyActStopCondition == true, distance 0.00 < tolerance \(1.00\), abs orientation \[0.95, 0.00, 0.00\] \(tolerance 0.05\), edge: none', log, re.MULTILINE)  is not None)
+        
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('^1.000, 0, Car0, 433.889, -1.247, 0.000, 0.040, 0.000, 0.000, 13.889', csv, re.MULTILINE))
+        self.assertTrue(re.search('^12.690, 0, Car0, 582.264, 41.303, 0.000, 0.951, 0.000, 0.000, 13.889, 0.000, 0.917', csv, re.MULTILINE))
 
 if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_trajectory'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_heading_trig'])
     
     unittest.main(verbosity=2)

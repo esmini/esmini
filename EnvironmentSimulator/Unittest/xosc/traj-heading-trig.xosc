@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1"
+               revMinor="1"
+               date="2021-04-09T10:00:00"
+               description="Basic cut-in"
+               author="esmini-team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="Car0Speed" parameterType="double" value="50.0"/>
+    </ParameterDeclarations>
+    <CatalogLocations/>
+    <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/curve_r100.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Car0">
+            <Vehicle name="car_white" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="2.0" y="0" z="0.9"/>
+                    <Dimensions height="1.8" length="5" width="2"/>
+                </BoundingBox>
+                <Performance maxAcceleration="10" maxDeceleration="10" maxSpeed="69"/>
+                <Axles>
+                    <FrontAxle maxSteering="30" positionX="2.98" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                    <RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
+                </Axles>
+                <Properties>
+                    <Property name="model_id" value="0"/>
+                    <File filepath="../models/car_white.osgb"/>
+                </Properties>
+            </Vehicle>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Car0">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" offset="0" s="420"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${$Car0Speed / 3.6}"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="MyStory">
+            <ParameterDeclarations/>
+            <Act name="MyLaneChangeAct">
+                <ManeuverGroup maximumExecutionCount="1" name="MyLaneChangeManueverGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Car0"/>
+                    </Actors>
+                    <Maneuver name="MyLaneChangeManeuver">
+                        <Event name="MyLaneChangeEvent" priority="overwrite">
+                            <Action name="MyLaneChangeAction">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="5" dynamicsDimension="time"/>
+                                            <LaneChangeTarget>
+                                                <AbsoluteTargetLane value="1"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeStartCondition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="0" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="MyAlignOrientationEvent" priority="overwrite">
+                            <Action name="AlignOrientation">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeLanePosition entityRef="Car0" >
+                                                <Orientation type="relative" h="0.0" p="0.0" r="0.0" />
+                                            </RelativeLanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="MyAlignOrientationStartCondition" delay="0" conditionEdge="none">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Car0"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <ReachPositionCondition tolerance="1.0">
+                                                    <Position>
+                                                        <RelativeLanePosition entityRef="Car0">
+                                                            <Orientation type="relative" h="0.1"/>
+                                                        </RelativeLanePosition>
+                                                    </Position>
+                                                </ReachPositionCondition>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="MyActStart" delay="0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="MyActStopCondition" delay="0" conditionEdge="none">
+                    <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Car0"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                            <ReachPositionCondition tolerance="1.0">
+                                <Position>
+                                    <RelativeLanePosition entityRef="Car0">
+                                        <Orientation type="absolute" h="1.0"/>
+                                    </RelativeLanePosition>
+                                </Position>
+                            </ReachPositionCondition>
+                        </EntityCondition>
+                    </ByEntityCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

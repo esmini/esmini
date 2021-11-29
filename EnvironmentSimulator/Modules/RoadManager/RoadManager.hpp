@@ -2211,6 +2211,7 @@ namespace roadmanager
 		int GetStatusBitMask() { return status_; }
 
 		void SetOrientationType(OrientationType type) { orientation_type_ = type; }
+		OrientationType GetOrientationType() { return orientation_type_; }
 		void SetAlignModeH(ALIGN_MODE mode) { align_h_ = mode; }
 		void SetAlignModeP(ALIGN_MODE mode) { align_p_ = mode; }
 		void SetAlignModeR(ALIGN_MODE mode) { align_r_ = mode; }

@@ -1342,10 +1342,19 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 		int dLane;
 		double ds, offset;
 
+		if (positionChild.attribute("dsLane").empty())
+		{
+			ds = strtod(parameters.ReadAttribute(positionChild, "ds"));
+		}
+		else
+		{
+			LOG("RelativeLanePosition:dsLane not supported yet, using it as ds");
+			ds = strtod(parameters.ReadAttribute(positionChild, "dsLane"));
+		}
+
 		dLane = strtoi(parameters.ReadAttribute(positionChild, "dLane"));
-		ds = strtod(parameters.ReadAttribute(positionChild, "ds"));
 		offset = strtod(parameters.ReadAttribute(positionChild, "offset"));
-		Object *object = ResolveObjectReference(parameters.ReadAttribute(positionChild, "entityRef"));
+		Object *object = ResolveObjectReference(parameters.ReadAttribute(positionChild, "entityRef", true));
 
 		// Check for optional Orientation element
 		pugi::xml_node orientation_node = positionChild.child("Orientation");
@@ -1632,8 +1641,18 @@ OSCPrivateAction::DynamicsDimension ParseDynamicsDimension(std::string dimension
 int ScenarioReader::ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics &td)
 {
 	td.shape_ = ParseDynamicsShape(parameters.ReadAttribute(node, "dynamicsShape", true));
-	td.dimension_ = ParseDynamicsDimension(parameters.ReadAttribute(node, "dynamicsDimension", true));
-	td.target_value_ = strtod(parameters.ReadAttribute(node, "value", true));
+
+	if (td.shape_ == OSCPrivateAction::DynamicsShape::STEP)
+	{
+		// dimension and value not used in this case - relax attribute requirement
+		td.dimension_ = ParseDynamicsDimension(parameters.ReadAttribute(node, "dynamicsDimension", false));
+		td.target_value_ = strtod(parameters.ReadAttribute(node, "value", false));
+	}
+	else
+	{
+		td.dimension_ = ParseDynamicsDimension(parameters.ReadAttribute(node, "dynamicsDimension", true));
+		td.target_value_ = strtod(parameters.ReadAttribute(node, "value", true));
+	}
 
 	return 0;
 }
@@ -2891,18 +2910,15 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 					{
 						TrigByReachPosition *trigger = new TrigByReachPosition;
 
-						if (!condition_node.attribute("tolerance"))
-						{
-							LOG("tolerance is required");
-						}
-						else
-						{
-							trigger->tolerance_ = strtod(parameters.ReadAttribute(condition_node, "tolerance"));
-						}
+						trigger->tolerance_ = strtod(parameters.ReadAttribute(condition_node, "tolerance", true));
 
 						// Read position
 						pugi::xml_node pos_node = condition_node.child("Position");
 						trigger->position_ = parseOSCPosition(pos_node);
+						if (trigger->position_ && !pos_node.first_child().child("Orientation").empty())
+						{
+							trigger->checkOrientation_ = true;
+						}
 
 						condition = trigger;
 					}
@@ -3358,7 +3374,7 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
 
 		if (storyNodeName == "Story")
 		{
-			std::string name = parameters.ReadAttribute(storyNode, "name", true);
+			std::string name = parameters.ReadAttribute(storyNode, "name", false);
 			Story *story = new Story(name);
 
 			parameters.CreateRestorePoint();

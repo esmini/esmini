@@ -8296,7 +8296,16 @@ double Position::GetX() const
 	}
 	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
 	{
-		return x_;
+		// Create a temporary position to evaluate in relative lane coordinates
+		Position pos = *this->rel_pos_;
+
+		// If valid road ID, then move laterally
+		if (pos.GetTrackId() != -1)
+		{
+			pos.SetLanePos(pos.GetTrackId(), pos.GetLaneId() + lane_id_, pos.GetS() + s_, pos.GetOffset() + offset_);
+		}
+
+		return pos.GetX();
 	}
 	else
 	{
@@ -8322,7 +8331,16 @@ double Position::GetY() const
 	}
 	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
 	{
-		return y_;
+		// Create a temporary position to evaluate in relative lane coordinates
+		Position pos = *this->rel_pos_;
+
+		// If valid road ID, then move laterally
+		if (pos.GetTrackId() != -1)
+		{
+			pos.SetLanePos(pos.GetTrackId(), pos.GetLaneId() + lane_id_, pos.GetS() + s_, pos.GetOffset() + offset_);
+		}
+
+		return pos.GetY();
 	}
 	else
 	{
@@ -8344,7 +8362,16 @@ double Position::GetZ() const
 	}
 	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
 	{
-		return z_;
+		// Create a temporary position to evaluate in relative lane coordinates
+		Position pos = *this->rel_pos_;
+
+		// If valid road ID, then move laterally
+		if (pos.GetTrackId() != -1)
+		{
+			pos.SetLanePos(pos.GetTrackId(), pos.GetLaneId() + lane_id_, pos.GetS() + s_, pos.GetOffset() + offset_);
+		}
+
+		return pos.GetZ();
 	}
 	else
 	{

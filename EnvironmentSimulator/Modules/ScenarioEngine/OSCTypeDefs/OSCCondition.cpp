@@ -712,7 +712,24 @@ bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time
 		dist_ = fabs(trigObj->pos_.getRelativeDistance(pos->GetX(), pos->GetY(), x, y));
 		if (dist_ < tolerance_)
 		{
-			result = true;
+			// Check for any orientation condition
+			if (checkOrientation_)
+			{
+				if (abs(trigObj->pos_.GetH() - pos->GetH()) < angularTolerance_ &&
+					abs(trigObj->pos_.GetP() - pos->GetP()) < angularTolerance_ &&
+					abs(trigObj->pos_.GetR() - pos->GetR()) < angularTolerance_)
+				{
+					result = true;
+				}
+				else
+				{
+					result = false;
+				}
+			}
+			else
+			{
+				result = true;
+			}
 		}
 
 		if (result == true)
@@ -731,8 +748,28 @@ bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time
 
 void TrigByReachPosition::Log()
 {
-	LOG("%s == %s, distance %.2f < tolerance (%.2f), edge: %s", name_.c_str(), last_result_ ? "true" : "false",
-		dist_, tolerance_, Edge2Str().c_str());
+	if (checkOrientation_)
+	{
+		if (position_->GetRMPos()->GetOrientationType() == Position::OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			LOG("%s == %s, distance %.2f < tolerance (%.2f), abs orientation [%.2f, %.2f, %.2f] (tolerance %.2f), edge: % s",
+				name_.c_str(), last_result_ ? "true" : "false", dist_, tolerance_,
+				triggered_by_entities_[0]->pos_.GetH(), triggered_by_entities_[0]->pos_.GetP(), triggered_by_entities_[0]->pos_.GetR(),
+				angularTolerance_, Edge2Str().c_str());
+		}
+		else
+		{
+			LOG("%s == %s, distance %.2f < tolerance (%.2f), rel orientation [%.2f, %.2f, %.2f] (tolerance %.2f), edge: % s",
+				name_.c_str(), last_result_ ? "true" : "false", dist_, tolerance_,
+				triggered_by_entities_[0]->pos_.GetHRelative(), triggered_by_entities_[0]->pos_.GetPRelative(), triggered_by_entities_[0]->pos_.GetRRelative(),
+				angularTolerance_, Edge2Str().c_str());
+		}
+	}
+	else
+	{
+		LOG("%s == %s, distance %.2f < tolerance (%.2f), edge: %s", name_.c_str(), last_result_ ? "true" : "false",
+			dist_, tolerance_, Edge2Str().c_str());
+	}
 }
 
 bool TrigByDistance::CheckCondition(StoryBoard *storyBoard, double sim_time)
