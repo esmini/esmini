@@ -36,6 +36,8 @@ static const double maxStepSize = 0.1;
 static const double minStepSize = 0.001;
 static bool pause = false;  // continuous play
 static double time_scale = 1.0;
+static bool no_ghost = false;
+static std::vector<int> removeObjects;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
@@ -115,8 +117,18 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 	for (int i = 0; i < player->data_.size(); i++)
 	{
 		ObjectStateStructDat* state = &player->data_[i];
-		ScenarioEntity* sc = getScenarioEntityById(state->info.id);
 
+		if (no_ghost && state->info.ctrl_type == 100)  // control type 100 indicates ghost
+		{
+			continue;
+		}
+
+		if (std::find(removeObjects.begin(), removeObjects.end(), state->info.id) != removeObjects.end())
+		{
+			continue;
+		}
+
+		ScenarioEntity* sc = getScenarioEntityById(state->info.id);
 		// If not available, create it
 		if (sc == 0)
 		{
@@ -273,9 +285,7 @@ int main(int argc, char** argv)
 	Replay *player;
 	double simTime = 0;
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
-	bool no_ghost = false;
 	static char info_str_buf[256];
-	std::vector<int> removeObjects;
 
 	// Use logger callback for console output instead of logfile
 	Logger::Inst().SetCallback(log_callback);
@@ -440,8 +450,6 @@ int main(int argc, char** argv)
 		}
 		viewer->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
 
-		ParseEntities(viewer, player);
-
 		__int64 now, lastTimeStamp = 0;
 
 		if (opt.GetOptionSet("time_scale"))
@@ -513,6 +521,7 @@ int main(int argc, char** argv)
 			} while (pos != std::string::npos);
 		}
 
+		ParseEntities(viewer, player);
 
 		if (opt.GetOptionSet("hide_trajectories"))
 		{
@@ -583,18 +592,9 @@ int main(int argc, char** argv)
 
 			for (int index = 0; index < scenarioEntity.size(); index++)
 			{
-				if (no_ghost && state->info.ctrl_type == 100)  // control type 100 indicates ghost
-				{
-					continue;
-				}
-
-				if (std::find(removeObjects.begin(), removeObjects.end(), state->info.id) != removeObjects.end())
-				{
-					continue;
-				}
-
 				ScenarioEntity* sc = &scenarioEntity[index];
-				state = player->GetState(index);
+
+				state = player->GetState(sc->id);
 				if (state == nullptr)  // no state for given object (index) at this timeframe
 				{
 					setEntityVisibility(index, false);
@@ -608,6 +608,7 @@ int main(int argc, char** argv)
 					}
 					continue;
 				}
+
 				setEntityVisibility(index, true);
 
 				// If not available, create it
