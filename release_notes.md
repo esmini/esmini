@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2021-11-29 Version 2.17.6
+
+- Add optional angular check to ReachPositionCondition
+  - If Orientation element is added, then it is checked in addition to position
+  - For now using hardcoded tolerance of 0.05 radians (~3 degrees)
+  - See examples in scenario [Unittest/xosc/traj-heading-trig.xosc](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc).
+- Updated behavior: Raise exception/quit on missing required attribute
+- Move remaining full step after reaching end of trajectory, avoiding velocity spikes
+- Fix replayer bug causing sporadic crash
+
 ### 2021-11-26 Version 2.17.5
 
 - Add fixed timestep option to odrviewer (all options see [odrviewer/readme.txt](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/odrviewer/readme.txt))
