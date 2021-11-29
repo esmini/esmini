@@ -1736,6 +1736,61 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
+TEST(EnvironmentTest, Basic)
+{
+    OSCEnvironment environment;
+    OSCEnvironment new_environment;
+
+    new_environment.SetAtmosphericPressure(100000);
+    environment.UpdateEnvironment(&new_environment);
+    EXPECT_EQ(new_environment.GetAtmosphericPressure(),100000);
+    EXPECT_EQ(new_environment.GetAtmosphericPressure(),environment.GetAtmosphericPressure());
+
+    new_environment.SetTemperature(293);
+    environment.UpdateEnvironment(&new_environment);
+    EXPECT_EQ(new_environment.GetTemperature(),293);
+    EXPECT_EQ(new_environment.GetTemperature(),environment.GetTemperature());
+    
+    new_environment.SetCloudState(scenarioengine::CloudState::HEAVILY_CLOUDY);
+    environment.UpdateEnvironment(&new_environment);
+    EXPECT_EQ(new_environment.GetCloudState(),scenarioengine::CloudState::HEAVILY_CLOUDY);
+    EXPECT_EQ(new_environment.GetCloudState(),environment.GetCloudState());
+
+    new_environment.SetFog(1000);
+    environment.UpdateEnvironment(&new_environment);
+    EXPECT_EQ(new_environment.GetFog()->visibility_range,1000);
+    EXPECT_EQ(new_environment.GetFog()->visibility_range,environment.GetFog()->visibility_range);
+
+    new_environment.SetPrecipitation(0.1,scenarioengine::PrecipitationType::SNOW);
+    environment.UpdateEnvironment(&new_environment);
+    EXPECT_EQ(new_environment.GetPrecipitation()->precipitationintensity,0.1);
+    EXPECT_EQ(new_environment.GetPrecipitation()->precipitationtype,scenarioengine::PrecipitationType::SNOW);
+    EXPECT_EQ(new_environment.GetPrecipitation()->precipitationintensity,environment.GetPrecipitation()->precipitationintensity);
+    EXPECT_EQ(new_environment.GetPrecipitation()->precipitationtype,environment.GetPrecipitation()->precipitationtype);
+
+    new_environment.SetSun(2,1,10000);
+    environment.UpdateEnvironment(&new_environment);
+    EXPECT_EQ(new_environment.GetSun()->azimuth,2);
+    EXPECT_EQ(new_environment.GetSun()->elevation,1);
+    EXPECT_EQ(new_environment.GetSun()->intensity,10000);
+    EXPECT_EQ(new_environment.GetSun()->azimuth,environment.GetSun()->azimuth);
+    EXPECT_EQ(new_environment.GetSun()->intensity,environment.GetSun()->intensity);
+    EXPECT_EQ(new_environment.GetSun()->elevation,environment.GetSun()->elevation);
+
+    new_environment.SetWind(2,10);
+    environment.UpdateEnvironment(&new_environment);
+    EXPECT_EQ(new_environment.GetWind()->direction,2);
+    EXPECT_EQ(new_environment.GetWind()->speed,10);
+    EXPECT_EQ(new_environment.GetWind()->direction,environment.GetWind()->direction);
+    EXPECT_EQ(new_environment.GetWind()->speed,environment.GetWind()->speed);
+
+    new_environment.SetRoadCondition(1);
+    environment.UpdateEnvironment(&new_environment);
+    EXPECT_EQ(new_environment.GetRoadCondition()->frictionscalefactor,1);
+    EXPECT_EQ(new_environment.GetRoadCondition()->frictionscalefactor,environment.GetRoadCondition()->frictionscalefactor);
+
+}
+
 TEST(RoadOrientationTest, TestElevationPitchRoll)
 {
     double dt = 0.1;

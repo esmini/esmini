@@ -56,9 +56,10 @@ typedef struct
 
 static std::vector<StoryBoardElementTriggerInfo> storyboard_element_triggers;
 
-ScenarioReader::ScenarioReader(Entities *entities, Catalogs *catalogs, bool disable_controllers)
+ScenarioReader::ScenarioReader(Entities *entities, Catalogs *catalogs, OSCEnvironment* environment, bool disable_controllers)
     : entities_(entities),
       catalogs_(catalogs),
+      environment_(environment),
       gateway_(nullptr),
       scenarioEngine_(nullptr),
       disable_controllers_(disable_controllers),

@@ -42,9 +42,20 @@ using std::vector;
 #define MAX_CARS              1000
 #define MAX_LANES             32
 
-int SwarmTrafficAction::counter_ = 0;
+void EnvironmentAction::Start(double simTime)
+{
+	// LOG("Set parameter %s = %s", name_.c_str(), value_.c_str());
+	environment_->UpdateEnvironment(new_environment_);
+	OSCAction::Start(simTime);
+}
 
-void ParameterSetAction::Start(double simTime)
+void EnvironmentAction::Step(double, double dt)
+{
+    OSCAction::Stop();
+}
+
+
+void ParameterSetAction::Start(double simTime, double dt)
 {
     LOG_INFO("Set parameter {} = {}", name_, value_);
     parameters_->setParameterValueByString(name_, value_);

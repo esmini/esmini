@@ -70,7 +70,7 @@ namespace scenarioengine
     class ScenarioReader
     {
     public:
-        ScenarioReader(Entities* entities, Catalogs* catalogs, bool disable_controllers = false);
+		ScenarioReader(Entities* entities, Catalogs* catalogs, OSCEnvironment* environment, bool disable_controllers = false);
         ~ScenarioReader();
         int  loadOSCFile(const char* path);
         int  loadOSCMem(const pugi::xml_document& xml_doc);
@@ -190,6 +190,7 @@ namespace scenarioengine
         pugi::xml_node        osc_root_;
         std::string           oscFilename_;
         Entities*             entities_;
+		OSCEnvironment *environment_;
         Catalogs*             catalogs_;
         ScenarioGateway*      gateway_;
         ScenarioEngine*       scenarioEngine_;
@@ -204,5 +205,4 @@ namespace scenarioengine
         ConditionGroup* ParseConditionGroup(pugi::xml_node node);
         Object*         ResolveObjectReference(std::string name);
     };
-
-}  // namespace scenarioengine
+}
