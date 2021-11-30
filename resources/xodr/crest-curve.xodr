@@ -95,6 +95,7 @@
 				  </outline>
 				</outlines>
             </object>				
+            <object type="" name="cone-100" id="3" s="165" t="-4"/>
         </objects>        
         <signals/>
         <surface/>
