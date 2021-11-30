@@ -50,9 +50,34 @@
 #define ORTHO_FOV                          1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
-// cppcheck-suppress unknownMacro
-// The following macros are defined by the framework or plugin system and are correctly expanded during compilation.
-// Cppcheck cannot resolve them during static analysis, so this warning is false positive.
+#define SHADOW_SCALE 1.20
+#define SHADOW_MODEL_FILEPATH "shadow_face.osgb"
+#define ARROW_MODEL_FILEPATH "arrow.osgb"
+#define LOD_DIST 3000
+#define LOD_DIST_ROAD_FEATURES 500
+#define LOD_SCALE_DEFAULT 1.0
+#define DEFAULT_AA_MULTISAMPLES 4
+#define OSI_LINE_WIDTH 2.0f
+#define TRAIL_WIDTH 2
+#define TRAIL_DOT_SIZE 10
+#define TRAIL_DOT3D_SIZE 0.2
+#define TRAILDOT3D 1
+#define PERSP_FOV 30.0
+#define ORTHO_FOV 1.0
+
+double color_green[3] = { 0.25, 0.6, 0.3 };
+double color_gray[3] = { 0.7, 0.7, 0.7 };
+double color_dark_gray[3] = { 0.5, 0.5, 0.5 };
+double color_light_gray[3] = { 0.7, 0.7, 0.7 };
+double color_red[3] = { 0.73, 0.26, 0.26 };
+double color_black[3] = { 0.2, 0.2, 0.2 };
+double color_blue[3] = { 0.25, 0.38, 0.7 };
+double color_yellow[3] = { 0.75, 0.7, 0.4 };
+double color_white[3] = { 0.90, 0.90, 0.85 };
+double color_background[3] = { 0.5f, 0.75f, 1.0f };
+
+//USE_OSGPLUGIN(fbx)
+//USE_OSGPLUGIN(obj)
 USE_OSGPLUGIN(osg2)
 USE_OSGPLUGIN(jpeg)
 USE_SERIALIZER_WRAPPER_LIBRARY(osg)
@@ -1471,6 +1496,12 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     SetNodeMaskBits(NodeMask::NODE_MASK_TRAJECTORY_LINES);
     SetNodeMaskBits(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
 
+	if (!clear_color)
+	{
+		// Default background color
+		osgViewer_->getCamera()->setClearColor(osg::Vec4(color_background[0], color_background[1], color_background[2], 0.0f));
+	}
+
     roadSensors_ = new osg::Group;
     roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
     root_origin2odr_->addChild(roadSensors_);
@@ -1671,6 +1702,14 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
             LOG_WARN("Invalid clear color \"{}\" - setting some default", colorStr);
         }
     }
+	// Light
+	osgViewer_->setLightingMode(osg::View::LightingMode::SKY_LIGHT);
+	light_ = osgViewer_->getLight();
+	light_->setPosition(osg::Vec4(-7500., 5000., 10000., 1.0));
+	light_->setDirection(osg::Vec3(7.5, -5., -10.));
+	float ambient = 0.4;
+	light_->setAmbient(osg::Vec4(ambient, ambient, 0.9*ambient, 1));
+	light_->setDiffuse(osg::Vec4(0.2, 0.8, 0.7, 1));
 
     if (!clearColorSet)
     {
@@ -2723,6 +2762,18 @@ int Viewer::CreateFogBoundingBox(osg::PositionAttitudeTransform* parent)
 	stateset->setDataVariance(osg::Object::DYNAMIC);
 
 	parent->addChild(fogBoundingBox_.get());
+
+	return 0;
+}
+
+int Viewer::UpdateTimeOfDay(double intensity)
+{
+	osgViewer_->getCamera()->setClearColor(osg::Vec4(intensity * color_background[0], intensity * color_background[1], intensity * color_background[2], 0.0f));
+
+	light_->setAmbient(osg::Vec4(0.4, 0.4, 0.9 * 0.4, 1));
+	light_->setDiffuse(osg::Vec4(0.2, 0.8, 0.7, 1));
+
+	osgViewer_->getCamera()->setClearColor(osg::Vec4(0.5f, 0.1f, 1.0f, 0.0f));
 
 	return 0;
 }

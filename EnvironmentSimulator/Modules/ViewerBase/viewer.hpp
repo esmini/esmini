@@ -425,6 +425,7 @@ namespace viewer
 		// Weather stuff
 		osg::ref_ptr<osg::PositionAttitudeTransform> weatherGroup_;  // parent for all OSC Environment related stuff
 		osg::ref_ptr<osg::PositionAttitudeTransform> fogBoundingBox_;
+		osg::Light* light_;
 
 		std::string exe_path_;
 		std::vector<KeyEventCallback> callback_;
@@ -471,6 +472,7 @@ namespace viewer
 		int CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
 		int CreateFogBoundingBox(osg::PositionAttitudeTransform* parent);
 		int CreateWeatherGroup();
+		int UpdateTimeOfDay(double intensity);
 		osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename);
 		int CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
 		bool keyUp_;
