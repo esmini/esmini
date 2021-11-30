@@ -340,7 +340,15 @@ void ScenarioPlayer::ViewerFrame(bool init)
         return;
     }
 
+<<<<<<< HEAD
     mutex.Lock();
+=======
+	// Ask Environment for fog pos and dim
+	// Tell viewer to move and scale fog bounding box
+	// viewer_->UpdateFog(scenarioEngine->environment_->GetFogCenter...)
+
+	mutex.Lock();
+>>>>>>> 74bf4621 (Initial embryo for fog)
 
     // remove deleted cars
     osg::Vec4 trail_color;
