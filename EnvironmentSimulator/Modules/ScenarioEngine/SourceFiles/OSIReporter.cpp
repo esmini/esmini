@@ -13,6 +13,7 @@
 #include "CommonMini.hpp"
 #include "OSIReporter.hpp"
 #include "OSITrafficCommand.hpp"
+#include "OSCEnvironment.hpp"
 #include <cmath>
 #include <string>
 #include <utility>
@@ -2476,6 +2477,143 @@ int OSIReporter::UpdateOSIRoadLane()
     }
     return 0;
 }
+
+int OSIReporter::UpdateEnvironment(OSCEnvironment* environment)
+{
+	if (environment->IsEnvironment())
+	{
+		obj_osi_external.gt->clear_environmental_conditions();
+		if (environment->IsAtmosphericPressure())
+		{
+			obj_osi_external.gt->mutable_environmental_conditions()->set_atmospheric_pressure(environment->IsAtmosphericPressure());
+		}
+		if (environment->IsTemperature())
+		{
+			obj_osi_external.gt->mutable_environmental_conditions()->set_temperature(environment->GetTemperature());
+		}
+		if (environment->IsSun())
+		{
+			Sun* sun = environment->GetSun();
+			if (sun->intensity > 10000)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL9);
+			}
+			else if (sun->intensity > 1000)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL8);
+			}
+			else if (sun->intensity > 400)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL7);
+			}
+			else if (sun->intensity > 20)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL6);
+			}
+			else if (sun->intensity > 10)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL5);
+			}
+			else if (sun->intensity > 3)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL4);
+			}
+			else if (sun->intensity > 1)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL3);
+			}
+			else if (sun->intensity > 0.01)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL2);
+			}
+			else if (sun->intensity > 0)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL1);
+			}
+			else 
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_OTHER);
+			}
+		}
+		if (environment->IsFog())
+		{
+			Fog* fog = environment->GetFog();
+			if (fog->visibility_range >40000)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_EXCELLENT_VISIBILITY);
+			}
+			else if (fog->visibility_range >10000)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_GOOD_VISIBILITY);
+			}
+			else if (fog->visibility_range >4000)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_MODERATE_VISIBILITY);
+			}
+			else if (fog->visibility_range >2000)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_POOR_VISIBILITY);
+			}
+			else if (fog->visibility_range >1000)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_MIST);
+			}
+			else if (fog->visibility_range >200)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_LIGHT);
+			}
+			else if (fog->visibility_range >50)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_THICK);
+			}
+			else if (fog->visibility_range >0)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_DENSE);
+			}
+			else
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_OTHER);
+			}
+		}
+		if (environment->IsPrecipitation())
+		{
+			Precipitation* precipitation = environment->GetPrecipitation();
+			if (precipitation->precipitationintensity > 149)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_EXTREME);
+			}
+			else if (precipitation->precipitationintensity > 34)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_VERY_HEAVY);
+			}
+			else if (precipitation->precipitationintensity > 8.1)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_HEAVY);
+			}
+			else if (precipitation->precipitationintensity > 1.9)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_MODERATE);
+			}
+			else if (precipitation->precipitationintensity > 0.5)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_LIGHT);
+			}
+			else if (precipitation->precipitationintensity > 0.1)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_VERY_LIGHT);
+			}
+			else if (precipitation->precipitationintensity > 0)
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_NONE);
+			}
+			else
+			{
+				obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_OTHER);
+			}
+		}
+	}
+}
+
 
 int OSIReporter::UpdateTrafficSignals()
 {

@@ -188,4 +188,15 @@ void OSCEnvironment::UpdateEnvironment(OSCEnvironment* new_environment)
     }
 
 }
-
+bool OSCEnvironment::IsEnvironment()
+{
+    return pressureset_ ||
+    temperatureset_ ||
+    cloudstateset_ ||
+    fogset_ ||
+    windset_ ||
+    precipitationset_ ||
+    sunset_ ||
+    roadconditionset_ ||
+    timeofdayset_;
+}

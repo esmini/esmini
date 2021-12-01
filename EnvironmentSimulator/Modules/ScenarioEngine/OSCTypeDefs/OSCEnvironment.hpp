@@ -187,7 +187,7 @@ namespace scenarioengine
             RoadCondition *GetRoadCondition();
 
             void UpdateEnvironment(OSCEnvironment *new_environment);
-
+            bool IsEnvironment();
             
         private:
             double atmosphericpressure_;
