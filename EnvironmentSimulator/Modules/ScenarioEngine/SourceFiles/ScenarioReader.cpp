@@ -923,13 +923,21 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 				for (pugi::xml_node vertexNode = shapeNode.first_child(); vertexNode; vertexNode = vertexNode.next_sibling())
 				{
 					pugi::xml_node posNode = vertexNode.child("Position");
+
 					if (!posNode)
 					{
 						throw std::runtime_error("Missing Trajectory/Polyline/Vertex/Position node");
 					}
 					OSCPosition *pos = parseOSCPosition(posNode);
 					double time = strtod(parameters.ReadAttribute(vertexNode, "time"));
-					pline->AddVertex(*pos->GetRMPos(), time, posNode.first_child().child("Orientation") ? false : true);
+
+					bool calculateHeading = true;
+					if (pos->type_ == OSCPosition::PositionType::WORLD && pos->GetH() != std::nan("") ||
+						posNode.first_child().child("Orientation"))
+					{
+						calculateHeading = false;
+					}
+					pline->AddVertex(*pos->GetRMPos(), time, calculateHeading);
 				}
 				shape = pline;
 			}
