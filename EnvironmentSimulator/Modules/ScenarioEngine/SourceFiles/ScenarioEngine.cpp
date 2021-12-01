@@ -1163,28 +1163,34 @@ void ScenarioEngine::ResetEvents()
 							for (size_t n = 0; n < event->action_.size(); n++)
 							{
 								OSCAction* action = event->action_[n];
-								OSCPrivateAction* pa = (OSCPrivateAction*)action;
-								if (pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
+								if (action->base_type_ == OSCAction::BaseType::PRIVATE)
 								{
-									NoTele = false;
+									OSCPrivateAction* pa = (OSCPrivateAction*)action;
+									if (pa->type_ == OSCPrivateAction::ActionType::TELEPORT)
+									{
+										NoTele = false;
+									}
 								}
 							}
 							for (size_t n = 0; n < event->action_.size(); n++)
 							{
 								OSCAction* action = event->action_[n];
-								OSCPrivateAction* pa = (OSCPrivateAction*)action;
-
-								// If the event doesnt contain a teleport action, and the trigger is not triggable, we reser it, making it able to tigger again
-								if (NoTele && pa->object_->IsGhost() && event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == false)
+								if (action->base_type_ == OSCAction::BaseType::PRIVATE)
 								{
-									printf("Reset event %s: \n", event->name_.c_str());
-									event->Reset();
+									OSCPrivateAction* pa = (OSCPrivateAction*)action;
+
+									// If the event doesnt contain a teleport action, and the trigger is not triggable, we reser it, making it able to tigger again
+									if (NoTele && pa->object_->IsGhost() && event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == false)
+									{
+										printf("Reset event %s: \n", event->name_.c_str());
+										event->Reset();
+									}
+									// if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
+									// {
+									// 	printf("End event %s: \n", event->name_.c_str());
+									// 	event->End();
+									// }
 								}
-								// if (event->start_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
-								// {
-								// 	printf("End event %s: \n", event->name_.c_str());
-								// 	event->End();
-								// }
 							}
 						}
 					}
