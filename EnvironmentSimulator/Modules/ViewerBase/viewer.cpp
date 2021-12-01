@@ -28,8 +28,10 @@
 #include <osgDB/Registry>
 #include <osgDB/WriteFile>
 #include <osgUtil/SmoothingVisitor>
-#include <osgUtil/Tessellator>  // to tessellate multiple contours
-#include <osgUtil/Optimizer>    // to flatten transform nodes
+#include <osgUtil/Tessellator> // to tessellate multiple contours
+#include <osgUtil/Optimizer>   // to flatten transform nodes
+#include <osg/Fog>
+#include "OSCEnvironment.hpp"
 
 #define SHADOW_SCALE                       1.20
 #define SHADOW_MODEL_FILEPATH              "shadow_face.osgb"
@@ -1409,7 +1411,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     InitTraits(traits, winDim_.x, winDim_.y, winDim_.w, winDim_.h, aa_mode, decoration, screenNum, opt->GetOptionSet("headless"));
 
     osg::ref_ptr<osg::GraphicsContext> gc = osg::GraphicsContext::createGraphicsContext(traits.get());
-	CreateWeatherGroup();
 
     if (!gc.valid())
     {
@@ -2737,6 +2738,18 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
 
     return true;
 }
+int Viewer::CreateFog(double range)
+{
+	osg::ref_ptr<osg::Fog> fog = new osg::Fog;
+	fog->setMode(osg::Fog::EXP);
+	fog->setDensity(0.03);
+	fog->setStart(-range);
+	fog->setEnd(range);
+	fog->setColor(osg::Vec4(0.6f, 0.6f, 0.6f, 1.0f));
+	rootnode_->getOrCreateStateSet()->setAttributeAndModes(fog.get());
+
+	return 0;
+}
 
 int Viewer::CreateFogBoundingBox(osg::PositionAttitudeTransform* parent)
 {
@@ -2778,10 +2791,15 @@ int Viewer::UpdateTimeOfDay(double intensity)
 	return 0;
 }
 
-int Viewer::CreateWeatherGroup()
+int Viewer::CreateWeatherGroup(scenarioengine::OSCEnvironment* environment)
 {
 	weatherGroup_ = new osg::PositionAttitudeTransform;
-	CreateFogBoundingBox(weatherGroup_);
+	// CreateFogBoundingBox(weatherGroup_);
+	if(environment->IsFog())
+	{
+		scenarioengine::Fog * fog = environment->GetFog();
+		CreateFog(fog->visibility_range);
+	}
 
 	rootnode_->addChild(weatherGroup_);
 

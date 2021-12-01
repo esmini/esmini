@@ -471,7 +471,7 @@ namespace viewer
 		bool CreateRoadMarkLines(roadmanager::OpenDrive* od);
 		int CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
 		int CreateFogBoundingBox(osg::PositionAttitudeTransform* parent);
-		int CreateWeatherGroup();
+		int CreateFog(double range);
 		int UpdateTimeOfDay(double intensity);
 		osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename);
 		int CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
