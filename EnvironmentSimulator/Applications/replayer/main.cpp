@@ -294,17 +294,17 @@ int main(int argc, char** argv)
 	// use common options parser to manage the program arguments
 	SE_Options opt;
 	opt.AddOption("file", "Simulation recording data file", "filename");
-	opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
-	opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
-	opt.AddOption("start_time", "Start playing at timestamp", "ms");
-	opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
-	opt.AddOption("repeat", "loop scenario");
-	opt.AddOption("road_features", "Show OpenDRIVE road features");
-	opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
+	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("no_ghost", "Remove ghost entities");
 	opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
-	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
+	opt.AddOption("repeat", "loop scenario");
+	opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
+	opt.AddOption("road_features", "Show OpenDRIVE road features");
+	opt.AddOption("start_time", "Start playing at timestamp", "ms");
+	opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
+	opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
+	opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
 
 	if (argc < 2)
 	{

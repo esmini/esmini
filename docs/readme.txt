@@ -10,6 +10,7 @@ Key shortcuts
 
     H (shift h): This help text
     TAB:         Move camera to next vehicle
+    Shift - TAB: Move camera to previoius vehicle
     o:           Toggle show/hide OpenDRIVE road feature lines
     u:           Toggle show / hide OSI road lines
     y:           Toggle show / hide OSI road points
@@ -23,9 +24,9 @@ Key shortcuts
 
     Arrow keys is used to drive externally controlled Ego vehicle:
         Up:    Accelerate
-        Down : Brake
-        Left : Steer left
-        Right : Steer right
+        Down:  Brake
+        Left:  Steer left
+        Right: Steer right
 
     1 - 9: Camera models acording to :
         1: Custom camera model
@@ -54,7 +55,7 @@ Key shortcuts
         l: Toggle light
         w: Toggle geometry mode(shading, wireframe, dots)
         c: Save screenshot in JPEG format - in the folder where the application was started from
-        C: Toggle continuous screenshot capture
+        C: Toggle continuous screen capture (e.g for video creation)
         h: Help
 
 Mouse control

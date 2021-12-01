@@ -446,6 +446,12 @@ int ScenarioPlayer::InitViewer()
 			viewer::NodeMask::NODE_MASK_TRAIL_DOTS, mask * viewer::NodeMask::NODE_MASK_TRAIL_LINES);
 	}
 
+	if (opt.GetOptionSet("hide_trajectories"))
+	{
+		LOG("Hide trajectories");
+		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAJECTORY_LINES);
+	}
+
 	if (opt.GetOptionArg("road_features") == "on")
 	{
 		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
@@ -746,6 +752,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
 	opt.AddOption("headless", "Run without viewer");
 	opt.AddOption("help", "Show this help message");
+	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
 	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
 	opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
