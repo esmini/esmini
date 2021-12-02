@@ -191,23 +191,23 @@ namespace scenarioengine
             
         private:
             double atmosphericpressure_;
-            bool pressureset_;
+            bool pressureset_= false;
             double temperature_;
-            bool temperatureset_;
+            bool temperatureset_= false;
             CloudState cloudstate_;
-            bool cloudstateset_;
+            bool cloudstateset_= false;
             Fog fog_;
-            bool fogset_;
+            bool fogset_= false;
             Wind wind_;
-            bool windset_;
+            bool windset_= false;
             Precipitation precipitation_;
-            bool precipitationset_;
+            bool precipitationset_= false;
             Sun sun_;
-            bool sunset_;
+            bool sunset_= false;
             RoadCondition roadcondition_;
-            bool roadconditionset_;
+            bool roadconditionset_= false;
             TimeOfDay timeofday_;
-            bool timeofdayset_;
+            bool timeofdayset_= false;
 
     };
     

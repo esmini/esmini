@@ -14,24 +14,13 @@
 
 using namespace scenarioengine;
 
-OSCEnvironment::OSCEnvironment()
-{
-    bool pressureset_ = false;
-    bool temperatureset_ = false;
-    bool cloudstateset_ = false;
-    bool fogset_ = false;
-    bool windset_ = false;
-    bool precipitationset_ = false;
-    bool sunset_ = false;
-    bool roadconditionset_ = false;
-    bool timeofdayset_ = false;
-}
+OSCEnvironment::OSCEnvironment() {}
 OSCEnvironment::~OSCEnvironment(){}
 
 
 double OSCEnvironment::GetAtmosphericPressure()
 {
-    if (pressureset_)
+    if (precipitationset_)
     {
         return atmosphericpressure_;
     }
