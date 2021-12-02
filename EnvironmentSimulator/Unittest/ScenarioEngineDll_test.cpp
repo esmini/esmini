@@ -2202,9 +2202,9 @@ TEST(SimpleVehicleTest, TestControl)
 	}
 
 	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-	EXPECT_NEAR(vehicleState.x, -19.518, 1e-3);
-	EXPECT_NEAR(vehicleState.y, -328.420, 1e-3);
-	EXPECT_NEAR(vehicleState.h, 2.534, 1e-3);
+	EXPECT_NEAR(vehicleState.x, -18.639, 1e-3);
+	EXPECT_NEAR(vehicleState.y, -327.593, 1e-3);
+	EXPECT_NEAR(vehicleState.h, 2.471, 1e-3);
 
 	for (int i = 0; i < 200; i++)
 	{
@@ -2216,9 +2216,9 @@ TEST(SimpleVehicleTest, TestControl)
 	}
 
 	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-	EXPECT_NEAR(vehicleState.x, -72.906, 1e-3);
-	EXPECT_NEAR(vehicleState.y, -248.184, 1e-3);
-	EXPECT_NEAR(vehicleState.h, 1.927, 1e-3);
+	EXPECT_NEAR(vehicleState.x, -70.041, 1e-3);
+	EXPECT_NEAR(vehicleState.y, -245.796, 1e-3);
+	EXPECT_NEAR(vehicleState.h, 1.924, 1e-3);
 	EXPECT_NEAR(vehicleState.speed, 60.000, 1e-3);
 
 	SE_SimpleVehicleSetEngineBrakeFactor(vehicleHandle, 0.001f);
@@ -2232,9 +2232,9 @@ TEST(SimpleVehicleTest, TestControl)
 	}
 
 	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-	EXPECT_NEAR(vehicleState.x, -120.915, 1e-3);
-	EXPECT_NEAR(vehicleState.y, -119.284, 1e-3);
-	EXPECT_NEAR(vehicleState.h, 1.927, 1e-3);
+	EXPECT_NEAR(vehicleState.x, -117.600342, 1e-3);
+	EXPECT_NEAR(vehicleState.y, -116.729, 1e-3);
+	EXPECT_NEAR(vehicleState.h, 1.924, 1e-3);
 	EXPECT_NEAR(vehicleState.speed, 70.0, 1e-3);  // Limited by the default speed 70 km/h
 
 	// no drag factor
@@ -2249,9 +2249,9 @@ TEST(SimpleVehicleTest, TestControl)
 	}
 
 	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-	EXPECT_NEAR(vehicleState.x, -169.779, 1e-3);
-	EXPECT_NEAR(vehicleState.y, 11.912, 1e-3);
-	EXPECT_NEAR(vehicleState.h, 1.927, 1e-3);
+	EXPECT_NEAR(vehicleState.x, -166.007, 1e-3);
+	EXPECT_NEAR(vehicleState.y, 14.636, 1e-3);
+	EXPECT_NEAR(vehicleState.h, 1.924, 1e-3);
 	EXPECT_NEAR(vehicleState.speed, 70.0, 1e-3);
 
 	// Strong drag factor
@@ -2266,9 +2266,9 @@ TEST(SimpleVehicleTest, TestControl)
 	}
 
 	SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-	EXPECT_NEAR(vehicleState.x, -215.996, 1e-3);
-	EXPECT_NEAR(vehicleState.y, 136.001, 1e-3);
-	EXPECT_NEAR(vehicleState.h, 1.927, 1e-3);
+	EXPECT_NEAR(vehicleState.x, -211.792, 1e-3);
+	EXPECT_NEAR(vehicleState.y, 138.885, 1e-3);
+	EXPECT_NEAR(vehicleState.h, 1.924, 1e-3);
 	EXPECT_NEAR(vehicleState.speed, 3.459, 1e-3);
 
 	SE_Close();
@@ -2279,7 +2279,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0   // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestExternalDriver*";
+	testing::GTEST_FLAG(filter) = "*TestControl*";
 #else
 	SE_LogToConsole(false);
 #endif
