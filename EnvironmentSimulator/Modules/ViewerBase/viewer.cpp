@@ -2742,9 +2742,9 @@ int Viewer::CreateFog(double range)
 {
 	osg::ref_ptr<osg::Fog> fog = new osg::Fog;
 	fog->setMode(osg::Fog::EXP);
-	fog->setDensity(0.03);
-	fog->setStart(-range);
-	fog->setEnd(range);
+	fog->setDensity(1/range);
+	fog->setStart(static_cast<float>(-range));
+	fog->setEnd(static_cast<float>(range));
 	fog->setColor(osg::Vec4(0.6f, 0.6f, 0.6f, 1.0f));
 	rootnode_->getOrCreateStateSet()->setAttributeAndModes(fog.get());
 

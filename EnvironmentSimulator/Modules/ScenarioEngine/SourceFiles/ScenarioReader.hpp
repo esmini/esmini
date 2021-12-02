@@ -208,4 +208,5 @@ namespace scenarioengine
         ConditionGroup* ParseConditionGroup(pugi::xml_node node);
         Object*         ResolveObjectReference(std::string name);
     };
+
 }

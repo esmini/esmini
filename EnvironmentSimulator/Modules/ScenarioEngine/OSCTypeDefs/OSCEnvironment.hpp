@@ -34,7 +34,7 @@ namespace scenarioengine
     typedef enum
     {
         CLOUDLESS, // osc <=1.1 free
-        SUNNE,
+        SUNNY,
         SERENE,
         SLIGHTLY_CLOUDY,
         LIGHT_CLOUDY, // osc <=1.1 cloudy
@@ -143,31 +143,31 @@ namespace scenarioengine
             ~OSCEnvironment();
 
             void SetAtmosphericPressure(double atmosphericpressure) {atmosphericpressure_ = atmosphericpressure; pressureset_ = true;}
-            bool IsAtmosphericPressure() {return pressureset_;}
+            bool IsAtmosphericPressure() {return pressureset_; pressureset_ = true;}
             double GetAtmosphericPressure();
             
             void SetTemperature(double temperature) {temperature_ = temperature; temperatureset_ = true;}
-            bool IsTemperature() {return temperatureset_;}
+            bool IsTemperature() {return temperatureset_; temperatureset_ = true;}
             double GetTemperature();
 
             void SetCloudState(CloudState cloudstate) {cloudstate_ = cloudstate; cloudstateset_ = true;}
-            void SetCloudState(CloudState* new_cloudstate) {cloudstate_ = *new_cloudstate;}
+            void SetCloudState(CloudState* new_cloudstate) {cloudstate_ = *new_cloudstate; cloudstateset_ = true;}
             bool IsCloudState() {return cloudstateset_;}
             CloudState GetCloudState();
 
             void SetFog(double visualrange) {fog_.visibility_range = visualrange; fogset_ = true;}
             void SetFog(double visualrange, OSCBoundingBox bb) {fog_.visibility_range = visualrange; fog_.boundingbox = bb; fogset_ = true;}
-            void SetFog(Fog* new_fog) {fog_ = *new_fog;}
+            void SetFog(Fog* new_fog) {fog_ = *new_fog; fogset_ = true;}
             bool IsFog() {return fogset_;}
             Fog *GetFog();
 
             void SetWind(double direction, double speed) {wind_.direction = direction; wind_.speed = speed; windset_ = true; }
-            void SetWind(Wind* new_wind) {wind_ = *new_wind;}
+            void SetWind(Wind* new_wind) {wind_ = *new_wind; windset_ = true;}
             bool IsWind() {return windset_;}
             Wind *GetWind();
 
             void SetPrecipitation(double intensity, PrecipitationType type) {precipitation_.precipitationintensity = intensity; precipitation_.precipitationtype = type; precipitationset_ = true;}
-            void SetPrecipitation(Precipitation *new_precipitation) {precipitation_ = *new_precipitation;}
+            void SetPrecipitation(Precipitation *new_precipitation) {precipitation_ = *new_precipitation; precipitationset_ = true;}
             bool IsPrecipitation() {return precipitationset_;}
             Precipitation *GetPrecipitation();
 
@@ -183,7 +183,7 @@ namespace scenarioengine
 
             void SetRoadCondition(double friction) {roadcondition_.frictionscalefactor = friction; roadconditionset_ = true;}
             void SetRoadCondition(RoadCondition *new_roadcondition) {roadcondition_ = *new_roadcondition; roadconditionset_ = true;}
-            bool IsRoadCondition() {return roadconditionset_;}
+            bool IsRoadCondition() {return roadconditionset_; roadconditionset_ = true;}
             RoadCondition *GetRoadCondition();
 
             void UpdateEnvironment(OSCEnvironment *new_environment);
