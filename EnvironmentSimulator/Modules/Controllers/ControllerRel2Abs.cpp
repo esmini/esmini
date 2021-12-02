@@ -586,8 +586,8 @@ void ControllerRel2Abs::Step(double timeStep)
 	prev_target_speed = object_->GetSpeed();
 
 	gateway_->reportObject(object_->id_, object_->name_, static_cast<int>(object_->type_), object_->category_, object_->model_id_,
-		object_->GetActivatedControllerType(), object_->boundingbox_, static_cast<int>(object_->scaleMode_), 0.0,
-		object_->speed_, object_->wheel_angle_, object_->wheel_rot_, &object_->pos_);
+		object_->GetActivatedControllerType(), object_->boundingbox_, static_cast<int>(object_->scaleMode_), object_->visibilityMask_,
+		0.0, object_->speed_, object_->wheel_angle_, object_->wheel_rot_, &object_->pos_);
 
 	Controller::Step(timeStep);
 }
