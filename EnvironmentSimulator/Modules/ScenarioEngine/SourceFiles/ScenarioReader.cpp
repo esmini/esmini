@@ -4918,7 +4918,7 @@ OSCEnvironment* ScenarioReader::ParseOSCEnvironment(const pugi::xml_node &xml_no
 			for (pugi::xml_node weatherChild : envChild.children())
 			{
 				std::string weatherChildName(weatherChild.name());
-				if(weatherChildName == "sun")
+				if(weatherChildName == "Sun")
 				{
 					std::string azimuth = parameters.ReadAttribute(weatherChild, "azimuth");
 					std::string elevation = parameters.ReadAttribute(weatherChild, "elevation");
@@ -4940,7 +4940,7 @@ OSCEnvironment* ScenarioReader::ParseOSCEnvironment(const pugi::xml_node &xml_no
 						env->SetFog(std::stof(visualRange));
 					}
 				}
-				else if (weatherChildName == "precipitation")
+				else if (weatherChildName == "Precipitation")
 				{
 					std::string precipIntensity = parameters.ReadAttribute(weatherChild, "precipitationIntensity");
 					std::string precipTypeStr = parameters.ReadAttribute(weatherChild, "precipitationType");
@@ -4959,7 +4959,7 @@ OSCEnvironment* ScenarioReader::ParseOSCEnvironment(const pugi::xml_node &xml_no
 					}
 					env->SetPrecipitation(std::stof(precipIntensity), precipType);
 				}
-				else if (weatherChildName == "wind")
+				else if (weatherChildName == "Wind")
 				{
 					std::string direction = parameters.ReadAttribute(weatherChild, "direction");
 					std::string speed = parameters.ReadAttribute(weatherChild, "speed");
