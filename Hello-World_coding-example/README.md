@@ -99,7 +99,12 @@ int main(int argc, char* argv[])
 ```
 
 ### External control of Ego
-A silly example showing how you can just take control over vehicle state via the API. The Ego car will move one meter along the Y-axis for each frame...
+A silly example showing how you can just take control over vehicle state via the API. The Ego car will move one meter along the Y-axis for each frame while rotating...
+
+First step is to modify the cut-in_interactive.xosc scenario. Make a copy named "cut-in_external.xosc". In that file, replace "interactiveDriver" controller with "externalController" by changing the line:  
+`<CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />`  
+to:  
+`<CatalogReference catalogName="ControllerCatalog" entryName="externalController" />`
 
 Now we will also introduce the quit_flag, which lets you quit by pressing 'Esc' key.
 ```C++
@@ -113,7 +118,7 @@ int main(int argc, char* argv[])
 
 	for (int i = 0; i < 500 && !(SE_GetQuitFlag() == 1); i++)
 	{
-		SE_ReportObjectPos(0, 0.0f, 8.0f, (float)i, 0.0f, 1.57f, 0.0f, 0.0f, 15.0f);
+		SE_ReportObjectPos(0, 0.0f, 8.0f, (float)i, 0.0f, 1.57 + 0.01*i, 0.0f, 0.0f, 15.0f);
 		SE_Step();
 	}
 
@@ -176,6 +181,9 @@ int main(int argc, char* argv[])
 
 	SE_AddObjectSensor(0, 2.0, 1.0, 0.5, 1.57, 1.0, 50.0, 1.57, MAX_HITS);
 	SE_AddObjectSensor(0, -1.0, 0.0, 0.5, 3.14, 0.5, 20.0, 1.57, MAX_HITS);
+
+	// Turn on visualization of object sensors, toggle key 'r'
+	SE_ViewerShowFeature(1, true);
 
 	for (int i = 0; i < 2000 && !(SE_GetQuitFlag() == 1); i++)
 	{

@@ -831,7 +831,7 @@ extern "C"
 
 	// Viewer settings
 	/**
-		The SE_GetOSILaneBoundaryIds function the global ids for left, far elft, right and far right lane boundaries
+		Switch on/off visualization of specified features
 		@param featureType Type of the features, see viewer::NodeMask typedef
 		@param enable Set true to show features, false to hide
 	*/
