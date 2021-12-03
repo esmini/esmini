@@ -2485,7 +2485,7 @@ int OSIReporter::UpdateEnvironment(OSCEnvironment* environment)
 		obj_osi_external.gt->clear_environmental_conditions();
 		if (environment->IsAtmosphericPressure())
 		{
-			obj_osi_external.gt->mutable_environmental_conditions()->set_atmospheric_pressure(environment->IsAtmosphericPressure());
+			obj_osi_external.gt->mutable_environmental_conditions()->set_atmospheric_pressure(environment->GetAtmosphericPressure());
 		}
 		if (environment->IsTemperature())
 		{

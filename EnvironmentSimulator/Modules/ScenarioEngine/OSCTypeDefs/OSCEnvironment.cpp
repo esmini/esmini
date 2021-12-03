@@ -20,7 +20,7 @@ OSCEnvironment::~OSCEnvironment(){}
 
 double OSCEnvironment::GetAtmosphericPressure()
 {
-    if (precipitationset_)
+    if (pressureset_)
     {
         return atmosphericpressure_;
     }
