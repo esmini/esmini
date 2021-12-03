@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2021-12-03 Version 2.18.0
+
+- Support global actions in the Init section of the scenario
+  - see example in updated [xosc/swarm.xosc](https://github.com/esmini/esmini/blob/master/resources/xosc/swarm.xosc)
+- Bump dat file format v1->2. Support object visibility.
+- Do not calculate polyline trajectory heading when specified explicitly
+- Add cone models cone-45.osgb and cone-100.osgb
+  - see example usage in [xodr/crest-curve.xodr](https://github.com/esmini/esmini/blob/8d5e486ccb2ac5d4af2bcdccaa96e53440079260/resources/xodr/crest-curve.xodr#L98)
+  - Updated model pack [here](https://drive.google.com/u/1/uc?id=1c3cqRzwY41gWXbg0rmugQkL5I_5L6DH_&export=download)
+- Add `--hide_trajectories` launch flag to esmini (already available in replayer)
+- Reduce default steering sensitivity of simple vehicle model
+
 ### 2021-11-29 Version 2.17.6
 
 - Add optional angular check to ReachPositionCondition
