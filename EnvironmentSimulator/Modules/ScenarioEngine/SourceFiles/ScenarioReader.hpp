@@ -203,10 +203,10 @@ namespace scenarioengine
         StoryBoard*           story_board_;
 
 		// Environment
-		OSCEnvironment* ParseOSCEnvironment(const pugi::xml_node &xml_node);
         int             ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
         ConditionGroup* ParseConditionGroup(pugi::xml_node node);
         Object*         ResolveObjectReference(std::string name);
-    };
+		void ParseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvironment* new_env);
+	};
 
 }
