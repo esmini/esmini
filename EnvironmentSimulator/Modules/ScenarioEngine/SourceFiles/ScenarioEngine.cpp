@@ -185,6 +185,11 @@ int ScenarioEngine::step(double deltaSimTime)
 			init.private_action_[i]->Start(simulationTime_, deltaSimTime);
 			init.private_action_[i]->UpdateState();
 		}
+		for (size_t i = 0; i < init.global_action_.size(); i++)
+		{
+			init.global_action_[i]->Start(simulationTime_, deltaSimTime);
+			init.global_action_[i]->UpdateState();
+		}
 		initialized_ = true;
 	}
 	else
@@ -264,6 +269,15 @@ int ScenarioEngine::step(double deltaSimTime)
 			init.private_action_[i]->Step(getSimulationTime(), deltaSimTime);
 		}
 		init.private_action_[i]->UpdateState();
+	}
+
+	for (size_t i = 0; i < init.global_action_.size(); i++)
+	{
+		if (init.global_action_[i]->IsActive())
+		{
+			init.global_action_[i]->Step(getSimulationTime(), deltaSimTime);
+		}
+		init.global_action_[i]->UpdateState();
 	}
 
 	// Story

@@ -2583,11 +2583,12 @@ void ScenarioReader::parseInit(Init &init)
 
 		if (actionsChildName == "GlobalAction")
 		{
-			LOG("Parsing global action %s", parameters.ReadAttribute(actionsChild, "name").c_str());
+			LOG("Parsing global action %s", actionsChild.first_child().name());
 			OSCGlobalAction *action = parseOSCGlobalAction(actionsChild);
 			if (action != 0)
 			{
-				action->name_ = "Init " + parameters.ReadAttribute(actionsChild, "name");
+				action->name_ = "Init " + std::string(actionsChild.first_child().name());
+				init.global_action_.push_back(action);
 			}
 		}
 		else if (actionsChildName == "UserDefined")

@@ -59,38 +59,17 @@
                   </LongitudinalAction>
                </PrivateAction>
             </Private>
+            <GlobalAction>
+               <TrafficAction>
+                  <TrafficSwarmAction innerRadius="200" semiMajorAxis="300" semiMinorAxis="500" numberOfVehicles="75" velocity="30">
+                      <CentralSwarmObject entityRef="Ego" />
+                  </TrafficSwarmAction>
+               </TrafficAction>
+            </GlobalAction>               
          </Actions>
       </Init>
       <Story name="story">
-         <Act name="act">
-            <ManeuverGroup maximumExecutionCount="1" name="Swarm maneuver group">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="Ego"/>
-               </Actors>
-               <Maneuver name="SwarmManeuver">
-                  <Event name="SwarmEvent" maximumExecutionCount="1" priority="overwrite">
-                     <Action name="SwarmAction">
-                        <GlobalAction>
-                           <TrafficAction>
-                              <TrafficSwarmAction innerRadius="200" semiMajorAxis="300" semiMinorAxis="500" numberOfVehicles="75" velocity="30">
-								  <CentralSwarmObject entityRef="Ego" />
-                              </TrafficSwarmAction>
-                           </TrafficAction>
-                        </GlobalAction>
-                     </Action>
-                     <StartTrigger>
-					     <ConditionGroup>
-					        <Condition name="StartCondition" delay="0" conditionEdge="rising">
-					  	       <ByValueCondition>
-					  		      <SimulationTimeCondition value="1" rule="greaterThan"/>
-					  	       </ByValueCondition>
-					        </Condition>
-					     </ConditionGroup>					 
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-			</ManeuverGroup>
-         </Act>
+         <Act name="act" />
       </Story>
       <StopTrigger>
          <ConditionGroup>

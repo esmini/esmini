@@ -233,7 +233,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^0.00.*Init Ego LongitudinalAction standbyState -> endTransition -> completeState', log, re.MULTILINE))
 
         # Check some scenario events
-        self.assertTrue(re.search('^1.00.*: Swarm IR: 200.00, SMjA: 300.00, SMnA: 500.00, maxV: 75 vel: 30.00', log, re.MULTILINE))
+        self.assertTrue(re.search('^0.00.*: Swarm IR: 200.00, SMjA: 300.00, SMnA: 500.00, maxV: 75 vel: 30.00', log, re.MULTILINE))
         self.assertTrue(re.search('^60.01.*: SwarmStopTrigger == true, 60.0100 > 60.00 edge: none', log, re.MULTILINE))
 
         # Check vehicle key positions
@@ -242,15 +242,15 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^40.00.*, 0, Ego, 33.31.*, 699.01.*, -0.95.*, 1.45.*, 0.00.*, 0.00.*, 10.00.*', csv, re.MULTILINE))
         # Random generators differ on platforms => random traffic will be repeatable only per platform
         if platform == "win32":
-            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.200, 576.852, -0.834, 1.491, 6.283, 0.000, 30.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 3, swarm3, 31.236, 680.144, -0.901, 1.463, 0.002, 0.000, 10.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 75, swarm75, 44.989, 765.411, -1.128, 1.444, 0.002, 0.000, 31.935', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 89, swarm89, 19.911, 690.914, -0.924, 4.603, 6.281, 0.000, 30.706', csv, re.MULTILINE))
+            self.assertTrue(re.search('^1.00.*, swarm4, -0.647, 544.745, -0.845, 4.644, 0.000, 0.000, 30.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 17, swarm17, 31.236, 680.144, -0.901, 1.463, 0.002, 0.000, 10.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 64, swarm64, 48.883, 848.282, -0.950, 1.427, 6.276, 0.000, 30.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 83, swarm83, 30.766, 708.295, -0.976, 1.457, 0.003, 0.000, 32.500', csv, re.MULTILINE))
         elif platform == "linux" or platform == "linux2":
-            self.assertTrue(re.search('^1.59.*, 2, swarm2, 25.200, 576.852, -0.834, 1.491, 6.283, 0.000, 30.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^1.00.*, 3, swarm3, -7.863, 40.065, -0.027, 4.709, 6.282, 0.000, 30.000', csv, re.MULTILINE))
             self.assertTrue(re.search('^40.00.*, 5, swarm5, 31.236, 680.144, -0.901, 1.463, 0.002, 0.000, 10.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 74, swarm74, 39.653, 721.787, -1.020, 1.454, 0.003, 0.000, 32.500', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.00.*, 85, swarm85, 11.096, 640.678, -0.836, 4.615, 6.282, 0.000, 32.498', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 78, swarm78, -6.173, 437.648, -0.778, 4.676, 6.282, 0.000, 30.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.00.*, 84, swarm84, 26.827, 672.530, -0.884, 1.465, 0.002, 0.000, 32.500', csv, re.MULTILINE))
 
     def test_conflicting_domains(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ARGS)
@@ -321,6 +321,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_heading_trig'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_swarm'])
     
     unittest.main(verbosity=2)
