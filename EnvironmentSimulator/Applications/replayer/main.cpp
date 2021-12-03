@@ -595,7 +595,7 @@ int main(int argc, char** argv)
 				ScenarioEntity* sc = &scenarioEntity[index];
 
 				state = player->GetState(sc->id);
-				if ((state->info.visibilityMask & 0x01) == 0 || state == nullptr)  // no state for given object (index) at this timeframe
+				if (state == nullptr || (state->info.visibilityMask & 0x01) == 0)  // no state for given object (index) at this timeframe
 				{
 					setEntityVisibility(index, false);
 
