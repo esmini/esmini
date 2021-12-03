@@ -4881,7 +4881,7 @@ OSCEnvironment* ScenarioReader::ParseOSCEnvironment(const pugi::xml_node &xml_no
 		std::string envChildName(envChild.name());
 		if (envChildName == "TimeOfDay")
 		{	
-			double animation = std::stof(parameters.ReadAttribute(envChild, "animation"));
+			bool animation = (parameters.ReadAttribute(envChild, "animation") == "True") ? true : false;
 			std::string tod = parameters.ReadAttribute(envChild, "dateTime");
 			env->SetTimeOfDay(animation, tod);
 		}

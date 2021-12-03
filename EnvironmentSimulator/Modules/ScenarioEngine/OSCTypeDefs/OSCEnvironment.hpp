@@ -176,7 +176,7 @@ namespace scenarioengine
             bool IsSun() {return sunset_;}
             Sun *GetSun();
     
-            void SetTimeOfDay(double animation, std::string tod) {timeofday_.animation = animation; timeofday_.datetime = tod; timeofdayset_ = true;}
+            void SetTimeOfDay(bool animation, std::string tod) {timeofday_.animation = animation; timeofday_.datetime = tod; timeofdayset_ = true;}
             void SetTimeOfDay(TimeOfDay *new_timeofday) {timeofday_ = *new_timeofday;timeofdayset_ = true;}
             bool IsTimeOfDay() {return timeofdayset_;}
             TimeOfDay *GetTimeOfDay();
