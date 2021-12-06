@@ -294,6 +294,7 @@ int main(int argc, char** argv)
 	// use common options parser to manage the program arguments
 	SE_Options opt;
 	opt.AddOption("file", "Simulation recording data file", "filename");
+	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("no_ghost", "Remove ghost entities");
@@ -464,6 +465,12 @@ int main(int argc, char** argv)
 		if (opt.GetOptionSet("repeat"))
 		{
 			player->SetRepeat(true);
+		}
+
+		if (opt.GetOptionSet("capture_screen"))
+		{
+			LOG("Activate continuous screen capture");
+			viewer->CaptureContinuously(true);
 		}
 
 		if (opt.GetOptionSet("road_features"))

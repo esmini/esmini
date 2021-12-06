@@ -2,10 +2,12 @@ replayer is a simple application for re-playing .dat files recorded by esmini.
 
 Application is launched from command line (or batch file). 
 
-Usage:  [options]
+Usage: replayer [options]
 Options:
   --file <filename>
       Simulation recording data file
+  --capture_screen
+      Continuous screen capture. Warning: Many jpeg files will be created
   --camera_mode <mode>
       Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver") (toggle during simulation by press 'k')
   --hide_trajectories
