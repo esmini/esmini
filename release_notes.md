@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2021-12-06 Version 2.18.1
+
+- Improve laneChangeAction behavior with junctions
+  - Handle road split case, e.g. highway exit
+- Add missing cone model to demo packages
+- Add API functions to get object type and 3D model filename ([issue #193](https://github.com/esmini/esmini/issues/193))
+- Add launch flag for continuous screen capture in replayer (`--capture_screen`)
+- Update dat2csv.py script for current dat version (v2)
+- Fix bug causing crash when reset to defaultController
+
 ### 2021-12-03 Version 2.18.0
 
 - Support global actions in the Init section of the scenario
