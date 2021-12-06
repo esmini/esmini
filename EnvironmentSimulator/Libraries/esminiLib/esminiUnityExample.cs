@@ -144,6 +144,14 @@ public class esminiUnityExample : MonoBehaviour
         string sceneGraphFilename = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetSceneGraphFilename());
         Debug.Log("Loading " + Path.GetFileNameWithoutExtension(sceneGraphFilename));
         envModel = (GameObject)Instantiate(Resources.Load(Path.GetFileNameWithoutExtension(sceneGraphFilename)));
+
+        // Fetch names of entities within the scenario
+        int nObjects = ESMiniLib.SE_GetNumberOfObjects();
+        for (int i=0;i<nObjects;i++)
+        {
+            string objectName = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetObjectName(i));
+            Debug.Log("Object[" + i + "]: " + objectName);
+        }
     }
 
 
