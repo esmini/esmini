@@ -2,7 +2,7 @@ import argparse
 import ctypes
 import os
 
-VERSION = 1
+VERSION = 2
 REPLAY_FILENAME_SIZE = 512
 NAME_LEN = 32
 
@@ -28,6 +28,7 @@ class ObjectStateStructDat(ctypes.Structure):
         ("length", ctypes.c_float),
         ("height", ctypes.c_float),
         ("scaleMode", ctypes.c_int),
+        ("visibilityMask", ctypes.c_int),
 
         # ObjectPositionStruct
         ("x", ctypes.c_float),
@@ -77,7 +78,7 @@ def dat2csv(datfile):
 
     if (h.version != VERSION):
         print('Version mismatch. {} is version {} while supported version is: {}'.format(
-            csvfile, h.version, VERSION)
+            datfile, h.version, VERSION)
         )
         exit(-1)
 
