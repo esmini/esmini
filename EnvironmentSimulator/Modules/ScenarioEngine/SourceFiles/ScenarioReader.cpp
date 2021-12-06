@@ -480,7 +480,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 	parameters.CreateRestorePoint();
 	parameters.addParameterDeclarations(paramDecl);
 
-	vehicle->name_ = parameters.ReadAttribute(vehicleNode, "name");
+	vehicle->typeName_ = parameters.ReadAttribute(vehicleNode, "name");
 	vehicle->SetCategory(parameters.ReadAttribute(vehicleNode, "vehicleCategory"));
 
 	// get File based on Category, and set default 3D model id
@@ -582,9 +582,8 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 	parameters.CreateRestorePoint();
 	parameters.addParameterDeclarations(paramDecl);
 
-	pedestrian->name_ = parameters.ReadAttribute(pedestrianNode, "name");
+	pedestrian->typeName_ = parameters.ReadAttribute(pedestrianNode, "name");
 	pedestrian->SetCategory(parameters.ReadAttribute(pedestrianNode, "pedestrianCategory"));
-	pedestrian->model_ = parameters.ReadAttribute(pedestrianNode, "pedestrianCategory");
 	pedestrian->mass_ = strtod(parameters.ReadAttribute(pedestrianNode, "mass"));
 
 	// Parse BoundingBox
@@ -663,9 +662,8 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
 	parameters.CreateRestorePoint();
 	parameters.addParameterDeclarations(paramDecl);
 
-	miscObject->name_ = parameters.ReadAttribute(miscObjectNode, "name");
+	miscObject->typeName_ = parameters.ReadAttribute(miscObjectNode, "name");
 	miscObject->SetCategory(parameters.ReadAttribute(miscObjectNode, "MiscObjectCategory"));
-	miscObject->model_ = parameters.ReadAttribute(miscObjectNode, "MiscObjectCategory");
 	miscObject->mass_ = strtod(parameters.ReadAttribute(miscObjectNode, "mass"));
 
 	// Parse BoundingBox
@@ -1188,7 +1186,14 @@ int ScenarioReader::parseEntities()
 			if (obj != 0 && !(ctrl && ctrl->GetType() == Controller::Type::CONTROLLER_TYPE_SUMO))
 			{
 				// Add all vehicles to the entity collection, except SUMO template vehicles
-				obj->name_ = parameters.ReadAttribute(entitiesChild, "name");
+				if (entitiesChild.attribute("name").empty())
+				{
+					obj->name_ = obj->typeName_;
+				}
+				else
+				{
+					obj->name_ = parameters.ReadAttribute(entitiesChild, "name");
+				}
 				entities_->addObject(obj);
 				objectCnt_++;
 			}

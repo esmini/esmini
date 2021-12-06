@@ -596,11 +596,25 @@ extern "C"
 	SE_DLL_API int SE_GetOverrideActionStatus(int objectId, SE_OverrideActionList *list);
 
 	/**
+		Get the type name of the specifed vehicle-, pedestrian- or misc object
+		@param index Index of the object. Note: not ID
+		@return Name
+	*/
+	SE_DLL_API const char* SE_GetObjectTypeName(int index);
+
+	/**
 		Get the name of specified object
 		@param index Index of the object. Note: not ID
 		@return Name
 	*/
 	SE_DLL_API const char *SE_GetObjectName(int index);
+
+	/**
+		Get the 3D model filename of the specifed object
+		@param index Index of the object. Note: not ID
+		@return Name
+	*/
+	SE_DLL_API const char* SE_GetObjectModelFileName(int index);
 
 	/**
 		Check whether an object has a ghost (special purpose lead vehicle)

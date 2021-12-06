@@ -149,8 +149,10 @@ public class esminiUnityExample : MonoBehaviour
         int nObjects = ESMiniLib.SE_GetNumberOfObjects();
         for (int i=0;i<nObjects;i++)
         {
+            string typeName = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetObjectTypeName(i));
             string objectName = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetObjectName(i));
-            Debug.Log("Object[" + i + "]: " + objectName);
+            string modelFileName = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetObjectModelFileName(i));
+            Debug.Log("Object[" + i + "]: " + objectName + " (type: " + typeName + ", model: " + modelFileName + ")");
         }
     }
 

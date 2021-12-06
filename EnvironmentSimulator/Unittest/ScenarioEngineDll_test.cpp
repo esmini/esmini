@@ -2274,12 +2274,30 @@ TEST(SimpleVehicleTest, TestControl)
 	SE_Close();
 }
 
+TEST(APITest, TestGetNames)
+{
+	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
+
+	EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+	ASSERT_EQ(SE_GetNumberOfObjects(), 2);
+
+	EXPECT_STREQ(SE_GetObjectName(0), "Ego");
+	EXPECT_STREQ(SE_GetObjectTypeName(0), "car_white");
+	EXPECT_STREQ(SE_GetObjectModelFileName(0), "car_white.osgb");
+
+	EXPECT_STREQ(SE_GetObjectName(1), "OverTaker");
+	EXPECT_STREQ(SE_GetObjectTypeName(1), "car_red");
+	EXPECT_STREQ(SE_GetObjectModelFileName(1), "car_red.osgb");
+
+	SE_Close();
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0   // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestControl*";
+	testing::GTEST_FLAG(filter) = "*TestGetNames*";
 #else
 	SE_LogToConsole(false);
 #endif

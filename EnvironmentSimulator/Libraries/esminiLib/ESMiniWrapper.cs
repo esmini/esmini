@@ -201,12 +201,26 @@ public static class ESMiniLib
         /// <return>0 if successful, -1 if not</return>
         public static extern int SE_GetObjectState(int index, ref ScenarioObjectState state);
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectTypeName")]
+        //[return: MarshalAs(UnmanagedType.LPStr)]
+        /// <summary>Get the type name of the specifed vehicle-, pedestrian- or misc object</summary>
+        /// <param name="index">Index of the object. Note: not ID</param>
+        /// <return>Name</return>
+        public static extern IntPtr SE_GetObjectTypeName(int index);
+
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectName")]
         //[return: MarshalAs(UnmanagedType.LPStr)]
         /// <summary>Get the name of specified object</summary>
         /// <param name="index">Index of the object. Note: not ID</param>
         /// <return>Name</return>
         public static extern IntPtr SE_GetObjectName(int index);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectModelFileName")]
+        //[return: MarshalAs(UnmanagedType.LPStr)]
+        /// <summary>Get the 3D model filename of the specifed object</summary>
+        /// <param name="index">Index of the object. Note: not ID</param>
+        /// <return>Name</return>
+        public static extern IntPtr SE_GetObjectModelFileName(int index);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_ObjectHasGhost")]
         /// <summary>Check whether an object has a ghost (special purpose lead vehicle)</summary>

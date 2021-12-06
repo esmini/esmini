@@ -95,6 +95,7 @@ namespace scenarioengine
 
 		Type type_;
 		int category_; // specific object category in vehicle, pedestrian or misobject
+		std::string typeName_;  // Name of the vehicle-, pedestrian- or misc object type
 		std::string name_;
 		std::string model3d_;
 		int id_;
@@ -269,6 +270,10 @@ namespace scenarioengine
 		double GetMaxDeceleration() { return performance_.maxDeceleration; }
 		void SetMaxSpeed(double maxSpeed) { performance_.maxSpeed = maxSpeed; }
 		double GetMaxSpeed() { return performance_.maxSpeed; }
+		std::string GetName() { return name_; }
+		std::string GetTypeName() { return typeName_; }
+		std::string GetModelFileName() { return FileNameOf(model3d_); }
+		std::string GetModelFilePath() { return model3d_; }
 
 		/**
 		Specify strategy how to choose way in next junction
@@ -389,14 +394,9 @@ namespace scenarioengine
 			ANIMAL = 2
 		} Category;
 
-		std::string model_; /**< Definition of the model of the pedestrian. */
 		double mass_;		/**< The mass of a pedestrian in kg. */
-		std::string name_;
 
-		// name, boundingBox and properties are included in base Object class.
-
-		Pedestrian() : Object(Object::Type::PEDESTRIAN),
-					   model_(""), mass_(0.0), name_("")
+		Pedestrian() : Object(Object::Type::PEDESTRIAN), mass_(0.0)
 		{
 			category_ = static_cast<int>(Category::PEDESTRIAN);
 			performance_.maxAcceleration = 10.0;
@@ -451,11 +451,10 @@ namespace scenarioengine
 			ROADMARK = 16
 		} Category;
 
-		std::string model_;
 		double mass_;
 		std::string name_;
 
-		MiscObject() : Object(Object::Type::MISC_OBJECT), model_(""), mass_(0.0), name_("")
+		MiscObject() : Object(Object::Type::MISC_OBJECT), mass_(0.0), name_("")
 		{
 			category_ = static_cast<int>(category_);
 			performance_.maxAcceleration = 0.0;
@@ -547,17 +546,17 @@ namespace scenarioengine
 	public:
 		Entities() : nextId_(0) {}
 
-		std::vector<Object *> object_;
+		std::vector<Object*> object_;
 
 		// create a sumo vehicle template and a sumo controller
-		int addObject(Object *obj);
+		int addObject(Object* obj);
 		void removeObject(int id);
 		void removeObject(std::string name);
 		int getNewId();
 		bool indexExists(int id);
 		bool nameExists(std::string name);
-		Object *GetObjectByName(std::string name);
-		Object *GetObjectById(int id);
+		Object* GetObjectByName(std::string name);
+		Object* GetObjectById(int id);
 
 	private:
 		int nextId_;  // Is incremented for each new object created

@@ -30,7 +30,6 @@ static ScenarioPlayer *player = 0;
 static char **argv_ = 0;
 static int argc_ = 0;
 static std::vector<std::string> args_v;
-static std::string returnString; // use this for returning strings
 static bool logToConsole = true;
 
 typedef struct
@@ -68,7 +67,6 @@ static void resetScenario(void)
 		argc_ = 0;
 	}
 	args_v.clear();
-	returnString = "";
 }
 
 static void AddArgument(const char *str, bool split = true)
@@ -490,6 +488,7 @@ extern "C"
 
 	SE_DLL_API const char *SE_GetODRFilename()
 	{
+		static std::string returnString;
 		if (player == nullptr)
 		{
 			return 0;
@@ -500,10 +499,13 @@ extern "C"
 
 	SE_DLL_API const char *SE_GetSceneGraphFilename()
 	{
+		static std::string returnString;
+
 		if (player == nullptr)
 		{
 			return 0;
 		}
+
 		returnString = player->scenarioEngine->getSceneGraphFilename().c_str();
 		return returnString.c_str();
 	}
@@ -520,6 +522,8 @@ extern "C"
 
 	SE_DLL_API const char *SE_GetParameterName(int index, int *type)
 	{
+		static std::string returnString;
+
 		if (player == nullptr)
 		{
 			return 0;
@@ -1038,14 +1042,40 @@ extern "C"
 		return -1;
 	}
 
-	SE_DLL_API const char *SE_GetObjectName(int index)
+	SE_DLL_API const char* SE_GetObjectTypeName(int index)
 	{
+		static std::string returnString;
 		if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
 		{
-			return player->scenarioGateway->getObjectStatePtrByIdx(index)->state_.info.name;
+			returnString = player->scenarioEngine->entities.object_[index]->GetTypeName();
+			return returnString.c_str();
 		}
 
-		return "";
+		return 0;
+	}
+
+	SE_DLL_API const char *SE_GetObjectName(int index)
+	{
+		static std::string returnString;
+		if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
+		{
+			returnString = player->scenarioGateway->getObjectStatePtrByIdx(index)->state_.info.name;
+			return returnString.c_str();
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API const char* SE_GetObjectModelFileName(int index)
+	{
+		static std::string returnString;
+		if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
+		{
+			returnString = player->scenarioEngine->entities.object_[index]->GetModelFileName();
+			return returnString.c_str();
+		}
+
+		return 0;
 	}
 
 	SE_DLL_API const char *SE_GetOSIGroundTruth(int *size)
@@ -1496,6 +1526,8 @@ extern "C"
 
 	SE_DLL_API int SE_GetRoadSign(int road_id, int index, SE_RoadSign *road_sign)
 	{
+		static std::string returnString;
+
 		if (player != nullptr)
 		{
 			roadmanager::Road *road = player->odr_manager->GetRoadById(road_id);

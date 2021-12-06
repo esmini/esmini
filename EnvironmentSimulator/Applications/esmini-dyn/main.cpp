@@ -145,6 +145,13 @@ int main(int argc, char *argv[])
 			}
 		}
 
+#if DEMONSTRATE_OBJECT_INFO
+		for (int i = 0; i < SE_GetNumberOfObjects(); i++)
+		{
+			printf("Object[%d]: %s (type: %s, model: %s)\n", i, SE_GetObjectName(i), SE_GetObjectTypeName(i), SE_GetObjectModelFileName(i));
+		}
+#endif
+
 		// Demonstrate use of ODR query function
 		printf("odr filename: %s\n", SE_GetODRFilename());
 
