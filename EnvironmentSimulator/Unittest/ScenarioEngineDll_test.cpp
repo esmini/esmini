@@ -996,7 +996,7 @@ TEST(ParameterTest, SetParameterValuesBeforeInit)
 {
 	double positions[3][2] = {
 		{5.37060, 189.98206},  // TargetSpeedFactor = 1.1
-		{9.11573, 243.11101},  // TargetSpeedFactor = 1.5
+		{9.09839, 241.55124},  // TargetSpeedFactor = 1.5
 		{5.49925, 204.98148}  // TargetSpeedFactor = Default = 1.2
 	};
 	SE_ScenarioObjectState state;
@@ -2117,17 +2117,17 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 203.382, 1e-3);
-					EXPECT_NEAR(objectState.y, 78.384, 1e-3);
+					EXPECT_NEAR(objectState.x, 203.401, 1e-3);
+					EXPECT_NEAR(objectState.y, 78.381, 1e-3);
 					EXPECT_NEAR(objectState.h, 1.100, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.263, 1e-3);
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 336.087, 1e-3);
-					EXPECT_NEAR(objectState.y, 341.748, 1e-3);
-					EXPECT_NEAR(objectState.h, 5.879, 1e-3);
+					EXPECT_NEAR(objectState.x, 336.029, 1e-3);
+					EXPECT_NEAR(objectState.y, 341.738, 1e-3);
+					EXPECT_NEAR(objectState.h, 5.880, 1e-3);
 					EXPECT_NEAR(objectState.p, 0.034, 1e-3);
 				}
 			}
@@ -2297,7 +2297,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0   // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestGetNames*";
+	testing::GTEST_FLAG(filter) = "*TestExternalDriver*";
 #else
 	SE_LogToConsole(false);
 #endif

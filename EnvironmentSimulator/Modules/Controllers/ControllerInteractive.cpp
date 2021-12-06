@@ -73,12 +73,6 @@ void ControllerInteractive::Step(double timeStep)
 		// Only longitudinal control, move along road
 		double steplen = vehicle_.speed_* timeStep;
 
-		// Adjustment movement to heading and road direction
-		if (GetAbsAngleDifference(object_->pos_.GetH(), object_->pos_.GetDrivingDirection()) > M_PI_2)
-		{
-			// If pointing in other direction
-			steplen *= -1;
-		}
 		object_->MoveAlongS(steplen);
 
 		// Fetch updated position

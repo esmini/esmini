@@ -1803,9 +1803,10 @@ namespace roadmanager
 		/**
 		Move current position forward, or backwards, ds meters along the route
 		@param ds Distance to move, negative will move backwards
+		@param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
 		@return Non zero return value indicates error of some kind, most likely End Of Route
 		*/
-		ErrorCode MoveRouteDS(double ds);
+		ErrorCode MoveRouteDS(double ds, bool actualDistance = true);
 
 		/**
 		Move current position along the route
@@ -1933,6 +1934,8 @@ namespace roadmanager
 		*/
 		int CalcProbeTarget(Position *target, RoadProbeInfo *data);
 
+		double DsToDistance(double ds);
+
 		/**
 		Move position along the road network, forward or backward, from the current position
 		It will automatically follow connecting lanes between connected roads
@@ -1940,9 +1943,10 @@ namespace roadmanager
 		@param ds distance to move from current position
 		@param dLaneOffset delta lane offset (adding to current position lane offset)
 		@param junctionSelectorAngle Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize
+		@param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
 		@return 0 if successful, other codes see Position::ErrorCode
 		*/
-		ErrorCode MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle);
+		ErrorCode MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle, bool actualDistance = true);
 
 		/**
 		Move position along the road network, forward or backward, from the current position
@@ -1951,9 +1955,9 @@ namespace roadmanager
 		@param ds distance to move from current position
 		@return 0 if successful, other codes see Position::ErrorCode
 		*/
-		ErrorCode MoveAlongS(double ds)
+		ErrorCode MoveAlongS(double ds, bool actualDistance = true)
 		{
-			return MoveAlongS(ds, 0.0, -1.0);
+			return MoveAlongS(ds, 0.0, -1.0, actualDistance);
 		}
 
 		/**

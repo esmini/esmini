@@ -6924,12 +6924,51 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 	return 0;
 }
 
-Position::ErrorCode Position::MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle)
+double Position::DsToDistance(double ds)
+{
+	// Add or subtract stepsize according to curvature and offset, in order to keep constant speed
+	double curvature = GetCurvature();
+	double offset = GetT();
+
+	// Also compensate for any lane offset at current road position (if available)
+	if (GetOpenDrive())
+	{
+		roadmanager::Road* road = GetOpenDrive()->GetRoadById(GetTrackId());
+		if (road != nullptr)
+		{
+			offset += road->GetLaneOffset(GetS());
+		}
+	}
+
+	if (abs(curvature) > SMALL_NUMBER)
+	{
+		// Approximate delta length by sampling curvature in current position
+		if (curvature * offset > 1.0 - SMALL_NUMBER)
+		{
+			// Radius not large enough for offset, probably being closer to another road segment
+			XYZH2TrackPos(GetX(), GetY(), GetY(), GetH(), true);
+			SetHeadingRelative(GetHRelative());
+			curvature = GetCurvature();
+			offset = GetT();
+		}
+		double stepScaleFactor = 1 / (1 - curvature * offset);
+		ds *= stepScaleFactor;
+	}
+
+	return ds;
+}
+
+Position::ErrorCode Position::MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle, bool actualDistance)
 {
 	RoadLink *link;
 	double ds_signed = ds;
 	int max_links = 8;  // limit lookahead through junctions/links
 	ContactPointType contact_point_type;
+
+	if (actualDistance)
+	{
+		ds = DsToDistance(ds);
+	}
 
 	if (type_ == PositionType::RELATIVE_LANE)
 	{
@@ -8136,11 +8175,13 @@ Position::ErrorCode Position::GetProbeInfo(double lookahead_distance, RoadProbeI
 
 		if (target.route_)
 		{
-			retval = target.MoveRouteDS(lookahead_distance);
+			retval = target.MoveRouteDS(lookahead_distance,
+				lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
 		}
 		else
 		{
-			retval = target.MoveAlongS(lookahead_distance, 0.0, 0.0);
+			retval = target.MoveAlongS(lookahead_distance, 0.0, 0.0,
+				lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
 		}
 	}
 
@@ -8620,7 +8661,7 @@ int Position::SetRoutePosition(Position *position)
 	return -1;
 }
 
-Position::ErrorCode Position::MoveRouteDS(double ds)
+Position::ErrorCode Position::MoveRouteDS(double ds, bool actualDistance)
 {
 	if (!route_)
 	{
@@ -8630,6 +8671,11 @@ Position::ErrorCode Position::MoveRouteDS(double ds)
 	if (route_->waypoint_.size() == 0)
 	{
 		return ErrorCode::ERROR_GENERIC;
+	}
+
+	if (actualDistance)
+	{
+		ds = DsToDistance(ds);
 	}
 
 	return SetRouteS(route_, s_route_ + ds);

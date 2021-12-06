@@ -96,53 +96,19 @@ int Object::MoveAlongS(double ds, bool actualDistance)
 {
 	int retval = 0;
 
-	if (actualDistance == true)
+	if (GetAbsAngleDifference(pos_.GetH(), pos_.GetDrivingDirection()) > M_PI_2)
 	{
-		// Add or subtract stepsize according to curvature and offset, in order to keep constant speed
-		double curvature = pos_.GetCurvature();
-		double offset = pos_.GetT();
-
-		// Also compensate for any lane offset at current road position (if available)
-		if (pos_.GetOpenDrive())
-		{
-			roadmanager::Road* road = pos_.GetOpenDrive()->GetRoadById(pos_.GetTrackId());
-			if (road != nullptr)
-			{
-				offset += road->GetLaneOffset(pos_.GetS());
-			}
-		}
-
-		if (abs(curvature) > SMALL_NUMBER)
-		{
-			// Approximate delta length by sampling curvature in current position
-			if (curvature * offset > 1.0 - SMALL_NUMBER)
-			{
-				// Radius not large enough for offset, probably being closer to another road segment
-				roadmanager::Position pos = pos_;
-				pos.XYZH2TrackPos(pos_.GetX(), pos_.GetY(), pos_.GetY(), pos_.GetH(), true);
-				pos.SetHeadingRelative(pos_.GetHRelative());
-				pos_ = pos;
-				curvature = pos_.GetCurvature();
-				offset = pos_.GetT();
-			}
-			double stepScaleFactor = 1 / (1 - curvature * offset);
-			ds *= stepScaleFactor;
-		}
+		// If pointing in other direction
+		ds *= -1;
 	}
 
 	if (pos_.GetRoute())
 	{
-		retval = static_cast<int>(pos_.MoveRouteDS(ds));
+		retval = static_cast<int>(pos_.MoveRouteDS(ds, actualDistance));
 	}
 	else
 	{
-		// Adjustment movement to heading and road direction
-		if (GetAbsAngleDifference(pos_.GetH(), pos_.GetDrivingDirection()) > M_PI_2)
-		{
-			// If pointing in other direction
-			ds *= -1;
-		}
-		retval = static_cast<int>(pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle()));
+		retval = static_cast<int>(pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance));
 	}
 
 	return retval;

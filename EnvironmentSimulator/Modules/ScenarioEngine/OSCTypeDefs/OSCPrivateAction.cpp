@@ -289,20 +289,23 @@ void AssignControllerAction::Start(double simTime, double dt)
 	else
 	{
 		controller_->Assign(object_);
-	}
 
-	if (!object_->controller_->Active())
-	{
-		if (domainMask_ != ControlDomains::DOMAIN_NONE)
+		if (object_->controller_)
 		{
-			object_->controller_->Activate(domainMask_);
-			LOG("Controller %s activated, domain mask=0x%X", object_->controller_->GetName().c_str(), domainMask_);
+			if (!object_->controller_->Active())
+			{
+				if (domainMask_ != ControlDomains::DOMAIN_NONE)
+				{
+					object_->controller_->Activate(domainMask_);
+					LOG("Controller %s activated, domain mask=0x%X", object_->controller_->GetName().c_str(), domainMask_);
+				}
+			}
+			else
+			{
+				LOG("Controller %s already active (domainmask 0x%X), should not happen when just assigned!",
+					object_->controller_->GetName().c_str(), domainMask_);
+			}
 		}
-	}
-	else
-	{
-		LOG("Controller %s already active (domainmask 0x%X), should not happen when just assigned!",
-			object_->controller_->GetName().c_str(), domainMask_);
 	}
 
 	OSCAction::Start(simTime, dt);
@@ -337,15 +340,14 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 		}
 	}
 
-	target_t_ =
-		SIGN(target_lane_id_) *
-		object_->pos_.GetOpenDrive()->GetRoadById(object_->pos_.GetTrackId())->GetCenterOffset(object_->pos_.GetS(), target_lane_id_) +
-		target_lane_offset_;
+	// Switch internal position to the target lane
+	internal_position_ = object_->pos_;
+	internal_position_.ForceLaneId(target_lane_id_);
 
 	// if dynamics dimension is rate, transform into distance
 	if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
 	{
-		double lat_distance = object_->pos_.GetT() - target_t_;
+		double lat_distance = internal_position_.GetOffset() - target_lane_offset_;
 		double rate = fabs(transition_dynamics_.target_value_);
 
 		if (transition_dynamics_.shape_ == DynamicsShape::LINEAR)
@@ -379,21 +381,22 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 		}
 	}
 
-	t_ = start_t_ = object_->pos_.GetT();
+	start_offset_ = internal_position_.GetOffset();
 }
 
-void LatLaneChangeAction::Step(double simTime, double)
+void LatLaneChangeAction::Step(double simTime, double dt)
 {
-	double t_old = t_;
+	double offset_old = internal_position_.GetOffset();
 	double factor;
 	double angle = 0;
+	double offset;
 
-	// Detect whether t switched sign due to end-to-end/start-to-start succession of roads
-	if (SIGN(object_->pos_.GetT()) != SIGN(t_old) && fabs(t_old + object_->pos_.GetT()) < SMALL_NUMBER)
+	// Detect whether road direction (t) switched sign due to end-to-end/start-to-start succession of roads
+	if (SIGN(internal_position_.GetOffset()) != SIGN(offset_old) && fabs(offset_old + internal_position_.GetOffset()) < SMALL_NUMBER)
 	{
-		start_t_ *= -1;
-		target_t_ *= -1;
-		t_old *= -1;
+		start_offset_ *= -1;
+		target_lane_offset_ *= -1;
+		offset_old *= -1;
 	}
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
@@ -404,24 +407,24 @@ void LatLaneChangeAction::Step(double simTime, double)
 	}
 
 	// calculate dt according to action elapsed time
-	double dt = simTime - sim_time_;
+	double action_dt = simTime - sim_time_;
 	sim_time_ = simTime;
 
 	if (transition_dynamics_.dimension_ == DynamicsDimension::TIME)
 	{
-		double dt_adjusted = dt;
+		double dt_adjusted = action_dt;
 
 		// Set a limit for lateral speed not to exceed longitudinal speed
-		if (transition_dynamics_.target_value_ * object_->speed_ < fabs(target_t_ - start_t_))
+		if (transition_dynamics_.target_value_ * object_->speed_ < fabs(target_lane_offset_ - start_offset_))
 		{
-			dt_adjusted = dt * object_->speed_ * transition_dynamics_.target_value_ / fabs(target_t_ - start_t_);
+			dt_adjusted = action_dt * object_->speed_ * transition_dynamics_.target_value_ / fabs(target_lane_offset_ - start_offset_);
 		}
 		elapsed_ += dt_adjusted;
 	}
 	else if (transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE ||
 			transition_dynamics_.dimension_ == DynamicsDimension::RATE)
 	{
-		elapsed_ += object_->speed_ * dt;
+		elapsed_ += object_->speed_ * action_dt;
 	}
 	else
 	{
@@ -431,22 +434,37 @@ void LatLaneChangeAction::Step(double simTime, double)
 	//LOG("Elapsed time %f", elapsed_);
 
 	factor = elapsed_ / transition_dynamics_.target_value_;
-	t_ = transition_dynamics_.Evaluate(factor, start_t_, target_t_);
+	offset = transition_dynamics_.Evaluate(factor, start_offset_, target_lane_offset_);
+
+	// Update internal position with new offset
+	internal_position_.SetLanePos(internal_position_.GetTrackId(), internal_position_.GetLaneId(), internal_position_.GetS(), offset);
+	// Update longitudinal position
+	double ds = object_->speed_ * dt;
+	if (GetAbsAngleDifference(internal_position_.GetH(), internal_position_.GetDrivingDirection()) > M_PI_2)
+	{
+		// If pointing in other direction
+		ds *= -1;
+	}
+	internal_position_.MoveAlongS(ds, 0.0, -1.0);
+
+	// Assign updated position to object and attach to closest road position
+	object_->pos_ = internal_position_;
+	// Attach object position to closest road and lane, look up via inertial coordinates
+	object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), object_->pos_.GetH());
 
 	if (object_->pos_.GetRoute())
 	{
-		// If on a route, stay in original lane
-		int lane_id = object_->pos_.GetLaneId();
-		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t_);
-		object_->pos_.ForceLaneId(lane_id);
-	}
-	else
-	{
-		object_->pos_.SetTrackPos(object_->pos_.GetTrackId(), object_->pos_.GetS(), t_);
+		// Check whether updated position still is on the route, i.e. same road ID, or not
+		if (object_->pos_.GetTrackId() != internal_position_.GetTrackId())
+		{
+			LOG("Warning/Info: LaneChangeAction moved away from route (track id %d -> track id %d), disabling route",
+				object_->pos_.GetTrackId(), internal_position_.GetTrackId());
+			object_->pos_.SetRoute(nullptr);
+		}
 	}
 
-
-	if (factor > 1.0 || fabs(t_ - target_t_) < SMALL_NUMBER || elapsed_ > 0 && SIGN(t_ - start_t_) != SIGN(target_t_ - start_t_))
+	if (factor > 1.0 || fabs(offset - target_lane_offset_) < SMALL_NUMBER ||
+		elapsed_ > 0 && SIGN(offset - start_offset_) != SIGN(target_lane_offset_ - start_offset_))
 	{
 		OSCAction::End();
 		object_->pos_.SetHeadingRelativeRoadDirection(0);
@@ -455,12 +473,12 @@ void LatLaneChangeAction::Step(double simTime, double)
 	{
 		if (object_->speed_ * dt > SMALL_NUMBER)
 		{
-			angle = atan((t_ - t_old) / (object_->speed_ * dt));
+			angle = atan((offset - offset_old) / (object_->speed_ * dt));
 			object_->pos_.SetHeadingRelativeRoadDirection(angle);
 		}
 	}
 
-	object_->SetDirtyBits(Object::DirtyBit::LATERAL);
+	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 }
 
 void LatLaneChangeAction::ReplaceObjectRefs(Object* obj1, Object* obj2)

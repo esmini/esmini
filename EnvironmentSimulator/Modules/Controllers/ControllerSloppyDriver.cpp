@@ -114,16 +114,9 @@ void ControllerSloppyDriver::Step(double timeStep)
 			}
 		}
 
-		// Adjustment movement to heading and road direction
-		if (GetAbsAngleDifference(object_->pos_.GetH(), object_->pos_.GetDrivingDirection()) > M_PI_2)
-		{
-			// If pointing in other direction
-			steplen *= -1;
-		}
-
 		if (fabs(object_->GetSpeed()) > SMALL_NUMBER)
 		{
-			object_->pos_.MoveAlongS(steplen);
+			object_->MoveAlongS(steplen);
 		}
 	}
 
