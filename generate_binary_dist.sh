@@ -78,6 +78,7 @@ resources/models/grass.jpg \
 resources/models/railing.osgb \
 resources/models/railing-pole.osgb \
 resources/models/guide-post.osgb \
+resources/models/cone-100.osgb \
 resources/sumo_inputs/e6mini* \
 resources/sumo_inputs/multi_intersections* \
 run/esmini/run_follow_ghost.* \

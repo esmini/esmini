@@ -101,6 +101,7 @@ copy resources\models\grass.jpg %target_dir%\resources\models /y
 copy resources\models\railing.osgb %target_dir%\resources\models /y
 copy resources\models\railing-pole.osgb %target_dir%\resources\models /y
 copy resources\models\guide-post.osgb %target_dir%\resources\models /y
+copy resources\models\cone-100.osgb %target_dir%\resources\models /y
 
 copy resources\sumo_inputs\e6mini* %target_dir%\resources\sumo_inputs /y
 copy resources\sumo_inputs\multi_intersections* %target_dir%\resources\sumo_inputs /y
