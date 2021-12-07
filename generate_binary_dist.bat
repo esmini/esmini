@@ -139,7 +139,7 @@ copy run\odrviewer\run_multi_intersections.bat %target_dir%\run\odrviewer /y
 copy run\replayer\run_and_plot_cut-in_speed.bat %target_dir%\run\replayer /y
 copy run\replayer\run_and_plot_ltap-od_pos.bat %target_dir%\run\replayer /y
 
-copy scripts\plot_csv.py %target_dir%\scripts /y
+copy scripts\plot_dat.py %target_dir%\scripts /y
 copy scripts\udp-driver\* %target_dir%\scripts\udp-driver /y
 copy scripts\udp-driver\osi3\* %target_dir%\scripts\udp-driver\osi3 /y
 

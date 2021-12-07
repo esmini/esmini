@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 	}
 
 	// First output header and CSV labels
-	snprintf(line, MAX_LINE_LEN, "OpenDRIVE: %s, 3DModel: %s\n", player->header_.odr_filename, player->header_.model_filename);
+	snprintf(line, MAX_LINE_LEN, "Version: %d, OpenDRIVE: %s, 3DModel: %s\n", player->header_.version, player->header_.odr_filename, player->header_.model_filename);
 	file << line;
 	snprintf(line, MAX_LINE_LEN, "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot\n");
 	file << line;

@@ -110,7 +110,7 @@ run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \
 run/replayer/run_and_plot_ltap-od_pos*.* \
-scripts/plot_csv.py \
+scripts/plot_dat.py \
 scripts/udp-driver/*.* \
 scripts/udp-driver/osi3/*.* \
 docs/readme.txt \
