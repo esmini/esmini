@@ -2530,7 +2530,7 @@ int OSIReporter::UpdateEnvironment(OSCEnvironment* environment)
 			{
 				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL1);
 			}
-			else 
+			else
 			{
 				obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_OTHER);
 			}
@@ -2612,6 +2612,8 @@ int OSIReporter::UpdateEnvironment(OSCEnvironment* environment)
 			}
 		}
 	}
+
+	return 0;
 }
 
 

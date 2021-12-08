@@ -66,22 +66,22 @@ namespace scenarioengine
     elevation     	double 	 	elevation angle, 0 to PI/2
     intensity       double      Illuminance of the sun (daylight about 100,00 lux)
     */
-    typedef struct 
+    typedef struct
     {
         double azimuth;
         double elevation;
         double intensity;
     } Sun;
-    
+
     /*
     Class Precipitation
     Represents the state of rain/snow
 
     precipitationintensity 	    double 	 	        intensity of precipitation
     precipitationtype     	    PrecipitationType   type of precipitation
-    
+
     */
-    typedef struct 
+    typedef struct
     {
         double precipitationintensity;
         PrecipitationType precipitationtype;
@@ -93,9 +93,9 @@ namespace scenarioengine
 
     direction 	    double      direction of the wind in the x/y plane
     speed           double     	speed of the wind
-    
+
     */
-    typedef struct 
+    typedef struct
     {
         double direction;
         double speed;
@@ -107,9 +107,9 @@ namespace scenarioengine
 
     animation 	    double      if an animation should be used
     speed           dateTime  	NOT IMPLEMENTED YET
-    
+
     */
-    typedef struct 
+    typedef struct
     {
         bool animation;
         std::string datetime;
@@ -122,9 +122,9 @@ namespace scenarioengine
 
     frictionscalefactor 	    double      the friction scale factor
     properties                  Properties  additional properties of the RoadCondition
-    
+
     */
-    typedef struct 
+    typedef struct
     {
         double frictionscalefactor;
         OSCProperties properties;
@@ -134,7 +134,7 @@ namespace scenarioengine
     /*
     Class OSCEnvironment
     Defines the full environment of OpenSCENARIO
-    
+
     */
     class OSCEnvironment
     {
@@ -143,11 +143,11 @@ namespace scenarioengine
             ~OSCEnvironment();
 
             void SetAtmosphericPressure(double atmosphericpressure) {atmosphericpressure_ = atmosphericpressure; pressureset_ = true;}
-            bool IsAtmosphericPressure() {return pressureset_; pressureset_ = true;}
+            bool IsAtmosphericPressure() {return pressureset_;}
             double GetAtmosphericPressure();
-            
+
             void SetTemperature(double temperature) {temperature_ = temperature; temperatureset_ = true;}
-            bool IsTemperature() {return temperatureset_; temperatureset_ = true;}
+            bool IsTemperature() {return temperatureset_;}
             double GetTemperature();
 
             void SetCloudState(CloudState cloudstate) {cloudstate_ = cloudstate; cloudstateset_ = true;}
@@ -155,8 +155,8 @@ namespace scenarioengine
             bool IsCloudState() {return cloudstateset_;}
             CloudState GetCloudState();
 
-            void SetFog(double visualrange) {fog_.visibility_range = visualrange; fogset_ = true;}
-            void SetFog(double visualrange, OSCBoundingBox bb) {fog_.visibility_range = visualrange; fog_.boundingbox = bb; fogset_ = true;}
+            void SetFog(double visualrange) {fog_.visibility_range = (float)visualrange; fogset_ = true;}
+            void SetFog(double visualrange, OSCBoundingBox bb) {fog_.visibility_range = (float)visualrange; fog_.boundingbox = bb; fogset_ = true;}
             void SetFog(Fog* new_fog) {fog_ = *new_fog; fogset_ = true;}
             bool IsFog() {return fogset_;}
             Fog *GetFog();
@@ -175,7 +175,7 @@ namespace scenarioengine
             void SetSun(Sun *new_sun) {sun_ = *new_sun; sunset_ = true;}
             bool IsSun() {return sunset_;}
             Sun *GetSun();
-    
+
             void SetTimeOfDay(bool animation, std::string tod) {timeofday_.animation = animation; timeofday_.datetime = tod; timeofdayset_ = true;}
             void SetTimeOfDay(TimeOfDay *new_timeofday) {timeofday_ = *new_timeofday;timeofdayset_ = true;}
             bool IsTimeOfDay() {return timeofdayset_;}
@@ -183,12 +183,12 @@ namespace scenarioengine
 
             void SetRoadCondition(double friction) {roadcondition_.frictionscalefactor = friction; roadconditionset_ = true;}
             void SetRoadCondition(RoadCondition *new_roadcondition) {roadcondition_ = *new_roadcondition; roadconditionset_ = true;}
-            bool IsRoadCondition() {return roadconditionset_; roadconditionset_ = true;}
+            bool IsRoadCondition() {return roadconditionset_;}
             RoadCondition *GetRoadCondition();
 
             void UpdateEnvironment(OSCEnvironment *new_environment);
             bool IsEnvironment();
-            
+
         private:
             double atmosphericpressure_;
             bool pressureset_= false;
@@ -210,5 +210,5 @@ namespace scenarioengine
             bool timeofdayset_= false;
 
     };
-    
+
 };
