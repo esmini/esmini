@@ -79,3 +79,6 @@ if( NOT EXISTS "test/OSC-ALKS-scenarios/.git" )
   execute_process(COMMAND git submodule update --init WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
+# Add variables to global scope, e.g. when esmini is used as submodule
+set(PUGIXML_INCLUDE_DIR ${PUGIXML_INCLUDE_DIR} CACHE INTERNAL "")
+set(EXPR_INCLUDE_DIR ${EXPR_INCLUDE_DIR} CACHE INTERNAL "")
