@@ -7,10 +7,10 @@
 
    To run it:
    1. Open two terminals
-   2. From terminal 1, run: ./bin/esmini --window 60 60 800 400 --osc ./scripts/udp-driver/two_cars_in_open_space.xosc
-   3. From terminal 2, run: ./scripts/udp-driver/testUDPDriver-minimalistic-example.py --id 0 --id 1
-        or python ./scripts/udp-driver/testUDPDriver-minimalistic-example.py --id 0 --id 1
-        or python3 ./scripts/udp-driver/testUDPDriver-minimalistic-example.py --id 0 --id 1
+   2. From terminal 1, run: ./bin/esmini --window 60 60 800 400 --osc ./scripts/udp_driver/two_cars_in_open_space.xosc
+   3. From terminal 2, run: ./scripts/udp_driver/testUDPDriver-minimalistic-example.py --id 0 --id 1
+        or python ./scripts/udp_driver/testUDPDriver-minimalistic-example.py --id 0 --id 1
+        or python3 ./scripts/udp_driver/testUDPDriver-minimalistic-example.py --id 0 --id 1
         depending on platform and file type associations
 
    For complete message definitions, see esmini/EnvironmentSimulator/Modules/Controllers/ControllerUDPDriver.hpp

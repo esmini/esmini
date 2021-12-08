@@ -545,7 +545,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
 {
     double dt = 0.01;
 
-    ScenarioEngine* se = new ScenarioEngine("../../../scripts/udp-driver/two_cars_in_open_space.xosc");
+    ScenarioEngine* se = new ScenarioEngine("../../../scripts/udp_driver/two_cars_in_open_space.xosc");
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities.object_.size(), 2);
 
@@ -616,7 +616,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
 {
     double dt = 0.01;
 
-    ScenarioEngine* se = new ScenarioEngine("../../../scripts/udp-driver/two_cars_in_open_space.xosc");
+    ScenarioEngine* se = new ScenarioEngine("../../../scripts/udp_driver/two_cars_in_open_space.xosc");
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities.object_.size(), 2);
 

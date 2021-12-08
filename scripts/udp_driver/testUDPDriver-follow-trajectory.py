@@ -8,10 +8,10 @@
 
    To run it:
    1. Open two terminals
-   2. From terminal 1, run: ./bin/esmini --window 60 60 800 400 --osc ./scripts/udp-driver/follow_trajectory.xosc --osi_receiver_ip 127.0.0.1
-   3. From terminal 2, run: ./scripts/udp-driver/testUDPDriver-follow-trajectory.py
-        or python ./scripts/udp-driver/testUDPDriver-follow-trajectory.py
-        or python3 ./scripts/udp-driver/testUDPDriver-follow-trajectory.py
+   2. From terminal 1, run: ./bin/esmini --window 60 60 800 400 --osc ./scripts/udp_driver/follow_trajectory.xosc --osi_receiver_ip 127.0.0.1
+   3. From terminal 2, run: ./scripts/udp_driver/testUDPDriver-follow-trajectory.py
+        or python ./scripts/udp_driver/testUDPDriver-follow-trajectory.py
+        or python3 ./scripts/udp_driver/testUDPDriver-follow-trajectory.py
         depending on platform and file type associations
 '''
 

@@ -6,10 +6,10 @@
 
    To run it:
    1. Open two terminals
-   2. From terminal 1, run: ./bin/esmini --window 60 60 800 400 --osc ./scripts/udp-driver/one_car_on_road.xosc --osi_receiver_ip 127.0.0.1
-   3. From terminal 2, run: ./scripts/udp-driver/testUDPDriver-print-osi-info.py
-        or python ./scripts/udp-driver/testUDPDriver-print-osi-info.py
-        or python3 ./scripts/udp-driver/testUDPDriver-print-osi-info.py
+   2. From terminal 1, run: ./bin/esmini --window 60 60 800 400 --osc ./scripts/udp_driver/one_car_on_road.xosc --osi_receiver_ip 127.0.0.1
+   3. From terminal 2, run: ./scripts/udp_driver/testUDPDriver-print-osi-info.py
+        or python ./scripts/udp_driver/testUDPDriver-print-osi-info.py
+        or python3 ./scripts/udp_driver/testUDPDriver-print-osi-info.py
         depending on platform and file type associations
 
    For complete driver control definitions, see esmini/EnvironmentSimulator/Modules/Controllers/ControllerUDPDriver.hpp
