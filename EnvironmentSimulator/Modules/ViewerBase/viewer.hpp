@@ -475,6 +475,7 @@ namespace viewer
 		int UpdateTimeOfDay(double intensity);
 		osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename);
 		int CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
+		void SetSunLight(float sunIntensity);
 		bool keyUp_;
 		bool keyDown_;
 		bool keyLeft_;
