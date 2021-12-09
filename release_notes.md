@@ -1,5 +1,16 @@
 ## esmini release notes
 
+### 2021-12-09 Version 2.18.2
+
+- Replace plot_csv.py with plot_dat.py
+  - No need to create intermediate csv file 
+  - Increased precision (since not limited by csv file)
+- Extend trajectory to complete final step
+  - When reaching the end of a trajectory, move the remaning step in the extended line from trajectory end-point and heading.
+  - The purpose is to avoid discontinuous velocity (and acceleration spikes)
+- Add example scenario ([lane-change_clothoid_based_trajectory.xosc](https://github.com/esmini/esmini/blob/extend_trajectory/resources/xosc/lane-change_clothoid_based_trajectory.xosc)) for clothoid based trajectory
+- Rename udp-driver subfolder to udp_driver to support Python sub module import
+
 ### 2021-12-06 Version 2.18.1
 
 - Improve laneChangeAction behavior with junctions

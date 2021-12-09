@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Demonstrate use of clothoids for arc and line based trajectories -->
+<!-- Demonstrate the use of clothoids for arc and line based trajectories        -->
+<!-- Car will perform a left lane change composed of the following trajectories: -->
+<!--   left arc radius=100, length=15                                            -->
+<!--   line length=5                                                             -->
+<!--   right arc radius=100, length=15                                           -->
 
 <OpenSCENARIO>
     <FileHeader revMajor="1"
