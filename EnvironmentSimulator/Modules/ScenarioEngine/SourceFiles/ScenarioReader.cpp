@@ -962,7 +962,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 				double startTime = strtod(parameters.ReadAttribute(shapeNode, "startTime"));
 				double stopTime = strtod(parameters.ReadAttribute(shapeNode, "stopTime"));
 
-				LOG("Adding clothoid(x=%.2f y=%.2f h=%.2f curv=%.2f curvDot=%.2f len=%.2f startTime=%.2f stopTime=%.2f",
+				LOG("Adding clothoid(x=%.2f y=%.2f h=%.2f curv=%.2f curvDot=%.2f len=%.2f startTime=%.2f stopTime=%.2f)",
 					pos->GetRMPos()->GetX(), pos->GetRMPos()->GetY(), pos->GetRMPos()->GetH(), curvature, curvaturePrime, length, startTime, stopTime);
 
 				roadmanager::ClothoidShape *clothoid = new roadmanager::ClothoidShape(*pos->GetRMPos(), curvature, curvaturePrime, length, startTime, stopTime);
@@ -3302,7 +3302,6 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 
 			for (pugi::xml_node eventChild = maneuverChild.first_child(); eventChild; eventChild = eventChild.next_sibling())
 			{
-
 				std::string childName(eventChild.name());
 
 				if (childName == "Action")
@@ -3321,10 +3320,16 @@ void ScenarioReader::parseOSCManeuver(OSCManeuver *maneuver, pugi::xml_node mane
 						}
 						else if (actionChildName == "UserDefinedAction")
 						{
-							LOG("%s is not implemented", childName.c_str());
+							LOG("%s is not implemented", actionChildName.c_str());
 						}
 						else if (actionChildName == "PrivateAction")
 						{
+							if (mGroup->actor_.size() == 0)
+							{
+								LOG_AND_QUIT("PrivateAction %s missing actor(s). SelectTriggeringEntities feature not supported yet. Add actor(s) to ManeuverGroup.",
+									parameters.ReadAttribute(eventChild, "name").c_str());
+							}
+
 							for (size_t i = 0; i < mGroup->actor_.size(); i++)
 							{
 								OSCPrivateAction *action = parseOSCPrivateAction(actionChild, mGroup->actor_[i]->object_);

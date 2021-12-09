@@ -341,11 +341,33 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^11.500, 0, Ego, 412.500, -4.500, 0.000, 0.000, 0.000, 0.000, 35.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^11.500, 1, Target, 400.422, -30.802, 0.000, 5.933, 0.000, 0.000, 31.182', csv, re.MULTILINE))
 
+    def test_lane_change_clothoid(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/lane-change_clothoid_based_trajectory.xosc'), COMMON_ARGS)
+
+        # Check some initialization steps
+        self.assertTrue(re.search('.*lane-change_clothoid_based_trajectory.xosc', log)  is not None)
+        self.assertTrue(re.search('^Adding clothoid\(x=0.00 y=0.00 h=0.00 curv=0.01 curvDot=0.00 len=15.00 startTime=0.00 stopTime=0.00\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^Adding clothoid\(x=0.00 y=0.00 h=0.00 curv=0.00 curvDot=0.00 len=5.00 startTime=0.00 stopTime=0.00\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^Adding clothoid\(x=0.00 y=0.00 h=0.00 curv=-0.01 curvDot=0.00 len=15.00 startTime=0.00 stopTime=0.00\)', log, re.MULTILINE)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('^3.080: LaneChangeCondition2 == true, element: LaneChangeEvent1 state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^3.440: LaneChangeCondition3 == true, element: LaneChangeEvent2 state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^4.520: LaneChangeEvent3 runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('^1.980, 0, Car, 77.500, -1.535, 0.000, 0.000, 0.000, 0.000, 13.889', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.010, 0, Car, 77.917, -1.535, 0.000, 0.003, 0.000, 0.000, 13.889', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.200, 0, Car, 94.368, -0.142, 0.000, 0.150, 0.000, 0.000, 13.889', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.150, 0, Car, 107.472, 1.333, 0.000, 0.050, 0.000, 0.000, 13.889', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.520, 0, Car, 112.609, 1.458, 0.000, 0.000, 0.000, 0.000, 13.889', csv, re.MULTILINE))
+
 
 if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_trajectory'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_lane_change_clothoid'])
     
     unittest.main(verbosity=2)

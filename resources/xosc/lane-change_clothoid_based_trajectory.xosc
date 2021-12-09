@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate the use of clothoids for arc and line based trajectories        -->
+<!-- Car will perform a left lane change composed of the following trajectories: -->
+<!--   left arc radius=100, length=15                                            -->
+<!--   line length=5                                                             -->
+<!--   right arc radius=100, length=15                                           -->
+
+<OpenSCENARIO>
+    <FileHeader revMajor="1"
+                revMinor="1"
+                date="2021-12-09T10:00:00"
+                description="Lane change with clothoid trajectories"
+                author="esmini-team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="CarVehicle" parameterType="string" value="car_white"/>
+        <ParameterDeclaration name="ArcRadius" parameterType="double" value="100"/>
+        <ParameterDeclaration name="ArcLength" parameterType="double" value="15"/>
+        <ParameterDeclaration name="LineLength" parameterType="double" value="5"/>
+        <ParameterDeclaration name="Speed" parameterType="double" value="50"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/straight_500m.xodr"/>
+        <!-- <SceneGraphFile filepath="../models/straight_500m.osgb"/> -->
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Car">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$CarVehicle"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Car">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${$Speed / 3.6}"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="LaneChangeStory">
+            <ParameterDeclarations>
+                <ParameterDeclaration parameterType="string" name="owner" value="Car"/>
+            </ParameterDeclarations>
+            <Act name="LaneChangeAct">
+                <ManeuverGroup maximumExecutionCount="1" name="LaneChangeManeuverGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="$owner"/>
+                    </Actors>
+                    <Maneuver name="LaneChangeManeuver">
+                        <Event name="LaneChangeEvent1" priority="overwrite">
+                            <Action name="LaneChangeAction1">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="LaneChangePart1" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Clothoid curvature="${1.0/$ArcRadius}" curvaturePrime="0.0" length="$ArcLength">
+                                                            <Position>
+                                                                <RelativeObjectPosition entityRef="Car"/>
+                                                            </Position>
+                                                        </Clothoid>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeCondition1" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="2" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="LaneChangeEvent2" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="LaneChangeAction2">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="LaneChangePart2" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Clothoid curvature="0.0" curvaturePrime="0.0" length="$LineLength">
+                                                            <Position>
+                                                                <RelativeObjectPosition entityRef="Car">
+                                                                    <Orientation type="relative" h="0.0"/>
+                                                                </RelativeObjectPosition>
+                                                            </Position>
+                                                        </Clothoid>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeCondition2" delay="0" conditionEdge="none">
+                                         <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event"
+                                                                             storyboardElementRef="LaneChangeEvent1"
+                                                                             state="completeState"/>
+                                         </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="LaneChangeEvent3" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="LaneChangeAction3">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TrajectoryRef>
+                                                <Trajectory name="LaneChangePart3" closed="false">
+                                                    <ParameterDeclarations/>
+                                                    <Shape>
+                                                        <Clothoid curvature="${-1.0/$ArcRadius}" curvaturePrime="0.0" length="$ArcLength">
+                                                            <Position>
+                                                                <RelativeObjectPosition entityRef="Car">
+                                                                    <Orientation type="relative" h="0.0"/>
+                                                                </RelativeObjectPosition>
+                                                            </Position>
+                                                        </Clothoid>
+                                                    </Shape>
+                                                </Trajectory>
+                                            </TrajectoryRef>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeCondition3" delay="0" conditionEdge="none">
+                                         <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event"
+                                                                             storyboardElementRef="LaneChangeEvent2"
+                                                                             state="completeState"/>
+                                         </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>           
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="CutInActStart" delay="0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+                <StopTrigger>
+                    <ConditionGroup>
+                        <Condition name="StopCondition" delay="0" conditionEdge="rising">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="8" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StopTrigger>
+            </Act>
+        </Story>
+        <StopTrigger/>
+    </Storyboard>
+</OpenSCENARIO>

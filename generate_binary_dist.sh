@@ -34,6 +34,7 @@ resources/xosc/sumo-test.xosc \
 resources/xosc/acc-test.xosc \
 resources/xosc/alks-test.xosc \
 resources/xosc/swarm.xosc \
+resources/xosc/lane-change_clothoid_based_trajectory.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -110,9 +111,13 @@ run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \
 run/replayer/run_and_plot_ltap-od_pos*.* \
+run/replayer/run_and_replay_lane-change_clothoid*.* \
+scripts/dat.py \
 scripts/plot_dat.py \
-scripts/udp-driver/*.* \
-scripts/udp-driver/osi3/*.* \
+scripts/dat2csv.py \
+scripts/osi2csv.py \
+scripts/udp_driver/*.* \
+scripts/udp_driver/osi3/*.* \
 docs/readme.txt \
 docs/commands.txt \
 3rd_party_terms_and_licenses/* \
