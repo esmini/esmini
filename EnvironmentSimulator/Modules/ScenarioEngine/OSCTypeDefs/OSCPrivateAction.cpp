@@ -212,7 +212,13 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 			double remaningTime = time_ + timeOffset - (traj_->GetStartTime() + traj_->GetDuration());
 			remaningDistance = remaningTime * object_->speed_;
 		}
-		object_->pos_.MoveAlongS(remaningDistance);
+
+		// Move the remainder of distance along the current heading
+		double dx = remaningDistance * cos(object_->pos_.GetH());
+		double dy = remaningDistance * sin(object_->pos_.GetH());
+
+		object_->pos_.SetInertiaPos(object_->pos_.GetX() + dx, object_->pos_.GetY() + dy, object_->pos_.GetH());
+		object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 
 		End();
 	}

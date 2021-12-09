@@ -53,11 +53,11 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n4.100.*, 0, Ego, 115.042, 4.864, -3.006, 0.281, 0.032, 0.000, 16.000', csv))
         self.assertTrue(re.search('\n4.100.*, 1, Target, 129.91.*, 14.32.*, -3.46.*, 0.499.*', csv))
         self.assertTrue(re.search('\n11.100.*, 0, Ego, 200.713, 72.600, -2.443, 1.057, 6.263, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\n11.100.*, 1, Target, 206.048, 66.690, -2.491, 2.510, 6.281, 6.263, 17.500', csv))
+        self.assertTrue(re.search('\n11.100.*, 1, Target, 206.106, 66.652, -2.491, 2.509, 6.281, 6.263, 17.500', csv))
         self.assertTrue(re.search('\n17.250.*, 0, Ego, 217.345, 167.663, 1.989, 1.738, 6.209, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\n17.250.*, 1, Target, 210.676, 157.848, 1.321, 1.230, 6.216, 0.032, 14.873', csv))
+        self.assertTrue(re.search('\n17.250.*, 1, Target, 210.687, 158.174, 1.346, 1.232, 6.216, 0.032, 14.881', csv))
         self.assertTrue(re.search('\n25.000.*, 0, Ego, 206.081, 288.506, 5.436, 1.188, 6.238, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\n25.000.*, 1, Target, 216.356, 307.855, 6.728, 0.965, 6.214, 0.000, 21.133', csv))
+        self.assertTrue(re.search('\n25.000.*, 1, Target, 216.548, 308.124, 6.751, 0.962, 6.214, 0.000, 21.125', csv))
 
     def test_synchronize(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ARGS \

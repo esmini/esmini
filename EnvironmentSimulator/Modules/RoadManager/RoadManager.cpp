@@ -9405,6 +9405,10 @@ int ClothoidShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
 			p = GetLength();
 		}
 	}
+	else if (p > GetLength())
+	{
+		p = GetLength();
+	}
 
 	pline_.Evaluate(p, pos);
 

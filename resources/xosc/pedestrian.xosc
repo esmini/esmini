@@ -161,7 +161,7 @@
                                                     </Vertex>
                                                     <Vertex>
                                                         <Position>
-                                                            <LanePosition laneId="-3" offset="-0.5" roadId="0" s="0" >
+                                                            <LanePosition laneId="-3" offset="-0.5" roadId="0" s="7.5" >
                                                                 <Orientation type="relative" h="3.14" p="0" r="0" />
                                                             </LanePosition>
                                                         </Position>
