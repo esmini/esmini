@@ -9689,6 +9689,10 @@ int Route::AddWaypoint(Position* position)
 				}
 			}
 		}
+		else
+		{
+			LOG("Warning: Waypoint not connected to previous one, adding it anyway");
+		}
 	}
 
 	waypoint_.push_back(*position);
