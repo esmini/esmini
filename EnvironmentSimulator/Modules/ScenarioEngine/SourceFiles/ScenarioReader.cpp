@@ -962,7 +962,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 				double startTime = strtod(parameters.ReadAttribute(shapeNode, "startTime"));
 				double stopTime = strtod(parameters.ReadAttribute(shapeNode, "stopTime"));
 
-				LOG("Adding clothoid(x=%.2f y=%.2f h=%.2f curv=%.2f curvDot=%.2f len=%.2f startTime=%.2f stopTime=%.2f",
+				LOG("Adding clothoid(x=%.2f y=%.2f h=%.2f curv=%.2f curvDot=%.2f len=%.2f startTime=%.2f stopTime=%.2f)",
 					pos->GetRMPos()->GetX(), pos->GetRMPos()->GetY(), pos->GetRMPos()->GetH(), curvature, curvaturePrime, length, startTime, stopTime);
 
 				roadmanager::ClothoidShape *clothoid = new roadmanager::ClothoidShape(*pos->GetRMPos(), curvature, curvaturePrime, length, startTime, stopTime);
