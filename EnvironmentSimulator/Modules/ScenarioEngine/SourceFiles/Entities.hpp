@@ -114,7 +114,6 @@ namespace scenarioengine
 		double wheel_angle_;
 		double wheel_rot_;
 		roadmanager::Position pos_;
-		roadmanager::Route *route_;
 		int model_id_;
 		roadmanager::PolyLineBase trail_;
 		double odometer_;
