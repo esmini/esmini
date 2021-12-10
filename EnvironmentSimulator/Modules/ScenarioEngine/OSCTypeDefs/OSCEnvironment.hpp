@@ -139,8 +139,19 @@ namespace scenarioengine
     class OSCEnvironment
     {
         public:
-            OSCEnvironment();
-            ~OSCEnvironment();
+            OSCEnvironment() :
+                pressureset_(false),
+                temperatureset_(false),
+                cloudstateset_(false),
+                fogset_(false),
+                windset_(false),
+                precipitationset_(false),
+                sunset_(false),
+                roadconditionset_(false),
+                timeofdayset_(false)
+            {}
+
+            ~OSCEnvironment() {}
 
             void SetAtmosphericPressure(double atmosphericpressure) {atmosphericpressure_ = atmosphericpressure; pressureset_ = true;}
             bool IsAtmosphericPressure() {return pressureset_;}
@@ -191,23 +202,23 @@ namespace scenarioengine
 
         private:
             double atmosphericpressure_;
-            bool pressureset_= false;
+            bool pressureset_;
             double temperature_;
-            bool temperatureset_= false;
+            bool temperatureset_;
             CloudState cloudstate_;
-            bool cloudstateset_= false;
+            bool cloudstateset_;
             Fog fog_;
-            bool fogset_= false;
+            bool fogset_;
             Wind wind_;
-            bool windset_= false;
+            bool windset_;
             Precipitation precipitation_;
-            bool precipitationset_= false;
+            bool precipitationset_;
             Sun sun_;
-            bool sunset_= false;
+            bool sunset_;
             RoadCondition roadcondition_;
-            bool roadconditionset_= false;
+            bool roadconditionset_;
             TimeOfDay timeofday_;
-            bool timeofdayset_= false;
+            bool timeofdayset_;
 
     };
 

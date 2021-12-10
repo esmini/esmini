@@ -155,9 +155,7 @@ namespace scenarioengine
 
 	};
 
-
-
-	class ScenarioReader;
+	class ScenarioReader;  // Forward declaration
 
         void Start(double simTime);
         void Step(double simTime, double dt);

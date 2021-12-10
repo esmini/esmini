@@ -14,9 +14,6 @@
 
 using namespace scenarioengine;
 
-OSCEnvironment::OSCEnvironment() {}
-OSCEnvironment::~OSCEnvironment(){}
-
 
 double OSCEnvironment::GetAtmosphericPressure()
 {
@@ -62,7 +59,7 @@ Fog *OSCEnvironment::GetFog()
     if (fogset_)
     {
         return &fog_;
-    } 
+    }
     else
     {
         return nullptr;
@@ -88,7 +85,7 @@ Precipitation *OSCEnvironment::GetPrecipitation()
     if (precipitationset_)
     {
         return &precipitation_;
-    } 
+    }
     else
     {
         return nullptr;
@@ -100,13 +97,13 @@ Sun *OSCEnvironment::GetSun()
     if (sunset_)
     {
         return &sun_;
-    } 
+    }
     else
     {
         return nullptr;
     }
 }
-        
+
 
 
 TimeOfDay *OSCEnvironment::GetTimeOfDay()
@@ -114,7 +111,7 @@ TimeOfDay *OSCEnvironment::GetTimeOfDay()
     if (timeofdayset_)
     {
         return &timeofday_;
-    } 
+    }
     else
     {
         return nullptr;
@@ -126,7 +123,7 @@ RoadCondition *OSCEnvironment::GetRoadCondition()
     if (roadconditionset_)
     {
         return &roadcondition_;
-    } 
+    }
     else
     {
         return nullptr;
