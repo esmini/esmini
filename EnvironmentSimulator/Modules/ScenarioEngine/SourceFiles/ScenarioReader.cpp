@@ -826,6 +826,7 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
 			}
 		}
 	}
+	route->CheckValid();
 
 	parameters.RestoreParameterDeclarations();
 

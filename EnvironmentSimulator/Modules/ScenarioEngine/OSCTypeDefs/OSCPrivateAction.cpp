@@ -63,7 +63,7 @@ void AssignRouteAction::Start(double simTime, double dt)
 	object_->pos_.SetRoute(route_);
 
 	OSCAction::Start(simTime, dt);
-
+	
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
 	{
@@ -83,9 +83,9 @@ void AssignRouteAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 	{
 		object_ = obj2;
 	}
-	for (size_t i = 0; i < route_->waypoint_.size(); i++)
+	for (size_t i = 0; i < route_->minimal_waypoints_.size(); i++)
 	{
-		route_->waypoint_[i].ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
+		route_->minimal_waypoints_[i].ReplaceObjectRefs(&obj1->pos_, &obj2->pos_);
 	}
 }
 

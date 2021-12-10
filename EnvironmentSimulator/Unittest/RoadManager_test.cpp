@@ -1786,13 +1786,13 @@ TEST(Route, TestAssignRoute)
         route.AddWaypoint(&routepos[i]);
     }
 
-    EXPECT_EQ(route.waypoint_.size(), 3);
-    EXPECT_DOUBLE_EQ(route.waypoint_[0].GetTrackId(), 0);
-    EXPECT_DOUBLE_EQ(route.waypoint_[0].GetS(), 10.0);
-    EXPECT_DOUBLE_EQ(route.waypoint_[1].GetTrackId(), 8);
-    EXPECT_DOUBLE_EQ(route.waypoint_[1].GetS(), 4.0);
-    EXPECT_DOUBLE_EQ(route.waypoint_[2].GetTrackId(), 1);
-    EXPECT_DOUBLE_EQ(route.waypoint_[2].GetS(), 1.0);
+    EXPECT_EQ(route.minimal_waypoints_.size(), 3);
+    EXPECT_DOUBLE_EQ(route.minimal_waypoints_[0].GetTrackId(), 0);
+    EXPECT_DOUBLE_EQ(route.minimal_waypoints_[0].GetS(), 10.0);
+    EXPECT_DOUBLE_EQ(route.minimal_waypoints_[1].GetTrackId(), 8);
+    EXPECT_DOUBLE_EQ(route.minimal_waypoints_[1].GetS(), 4.0);
+    EXPECT_DOUBLE_EQ(route.minimal_waypoints_[2].GetTrackId(), 1);
+    EXPECT_DOUBLE_EQ(route.minimal_waypoints_[2].GetS(), 1.0);
 
     Position pos0 = Position(0, 1, 9.0, 0.5);
     pos0.SetRoute(&route);

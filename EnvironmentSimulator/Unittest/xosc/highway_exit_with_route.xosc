@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader description="Mandolin" author="my scenario" revMajor="1" revMinor="1" date="2021-12-09T13:36:14.134087"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/highway_exit.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" s="10.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="35"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AssignRouteAction>
+                                <Route name="my route" closed="false">
+                                    <ParameterDeclarations/>
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="0" laneId="-1" s="15.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="0" laneId="-2" s="150.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="0" laneId="-3" s="250.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="2" laneId="-1" s="50.0" offset="0.0"/>
+                                        </Position>
+                                    </Waypoint>
+                                </Route>
+                            </AssignRouteAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="story_act_empty">
+            <ParameterDeclarations/>
+            <Act name="act_empty">
+                <ManeuverGroup name="empty" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false"/>
+                </ManeuverGroup>
+                <StartTrigger/>
+                <StopTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="start_trigger " delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="12" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

@@ -74,6 +74,19 @@ typedef struct
 
 typedef struct
 {
+	float x; 			// Route point in the global coordinate system
+	float y;			// Route point in the global coordinate system
+	float z;			// Route point in the global coordinate system
+	int roadId;			// Route point, road ID
+	int junctionId;		// Route point, junction ID (-1 if not in a junction)
+	int laneId;			// Route point, lane ID
+	float laneOffset;	// Route point, lane offset (lateral distance from lane center)
+	float s;			// Route point, s (longitudinal distance along reference line)
+	float t;			// Route point, t (lateral distance from reference line)
+} SE_RouteInfo;
+
+typedef struct
+{
 	int far_left_lb_id;
 	int left_lb_id;
 	int right_lb_id;
@@ -965,8 +978,22 @@ extern "C"
 	@param p P Pitch relative vehicle curerntly in focus
 	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_AddCustomCamera(double x, double y, double z, double h, double p);
 
+	SE_DLL_API int SE_AddCustomCamera(double x, double y, double z, double h, double p);
+	/**
+		Get the number Route points assigned for a specific vehicle
+		@param object_id The index of the vehicle
+		@return number of Route points (0 means no route assigned)
+	*/
+	SE_DLL_API int SE_GetNumberOfRoutePoints(int object_id);
+
+	/**
+		Get a specific route point for a certain vehicle
+		@param object_id The index of the vehicle
+		@param route_index The index of Route point
+		@return 0 if successful, -1 if not (e.g. wrong type)
+	*/
+	SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *routeinfo);
 #ifdef __cplusplus
 }
 #endif

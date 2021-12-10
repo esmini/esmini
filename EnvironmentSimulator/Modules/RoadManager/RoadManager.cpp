@@ -5825,7 +5825,7 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 	if (route_)
 	{
 		// Route assigned. Iterate over all roads in the route. I.e. check all waypoints road ID.
-		nrOfRoads = route_->waypoint_.size();
+		nrOfRoads = route_->minimal_waypoints_.size();
 	}
 	else
 	{
@@ -5869,7 +5869,7 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 			{
 				if (route_)
 				{
-					road = GetOpenDrive()->GetRoadById(route_->waypoint_[i].GetTrackId());
+					road = GetOpenDrive()->GetRoadById(route_->minimal_waypoints_[i].GetTrackId());
 				}
 				else
 				{
@@ -7792,7 +7792,7 @@ int Position::CalcRoutePosition()
 
 	// Loop over waypoints - look for current track ID and sum the distance (route s) up to current position
 	double dist = 0;
-	for (size_t i = 0; i < route_->waypoint_.size(); i++)
+	for (size_t i = 0; i < route_->minimal_waypoints_.size(); i++)
 	{
 		int route_direction = route_->GetWayPointDirection((int)i);
 
@@ -7803,30 +7803,30 @@ int Position::CalcRoutePosition()
 		}
 
 		// Add length of intermediate waypoint road
-		dist += GetRoadById(route_->waypoint_[i].GetTrackId())->GetLength();
+		dist += GetRoadById(route_->minimal_waypoints_[i].GetTrackId())->GetLength();
 
 		if (i == 0)
 		{
 			// Subtract initial s-value for the first waypoint
 			if (route_direction > 0)  // route in waypoint road direction
 			{
-				dist -= route_->waypoint_[i].s_;
+				dist -= route_->minimal_waypoints_[i].s_;
 				dist = MAX(dist, 0.0);
 			}
 			else
 			{
 				// route in opposite road direction - remaining distance equals waypoint s-value
-				dist = route_->waypoint_[i].s_;
+				dist = route_->minimal_waypoints_[i].s_;
 			}
 		}
 
-		if (GetTrackId() == route_->waypoint_[i].GetTrackId())
+		if (GetTrackId() == route_->minimal_waypoints_[i].GetTrackId())
 		{
 			// current position is at the road of this waypoint - i.e. along the route
 			// remove remaming s from road
 			if (route_direction > 0)
 			{
-				dist -= (GetRoadById(route_->waypoint_[i].GetTrackId())->GetLength() - GetS());
+				dist -= (GetRoadById(route_->minimal_waypoints_[i].GetTrackId())->GetLength() - GetS());
 			}
 			else
 			{
@@ -8646,9 +8646,9 @@ int Position::SetRoutePosition(Position *position)
 	}
 
 	// Is it a valid position, i.e. is it along the route
-	for (size_t i=0; i<route_->waypoint_.size(); i++)
+	for (size_t i=0; i<route_->minimal_waypoints_.size(); i++)
 	{
-		if (route_->waypoint_[i].GetTrackId() == position->GetTrackId()) // Same road
+		if (route_->minimal_waypoints_[i].GetTrackId() == position->GetTrackId()) // Same road
 		{
 			// Update current position
 			Route *tmp = route_;  // save route pointer, copy the
@@ -8668,7 +8668,7 @@ Position::ErrorCode Position::MoveRouteDS(double ds, bool actualDistance)
 		return ErrorCode::ERROR_GENERIC;
 	}
 
-	if (route_->waypoint_.size() == 0)
+	if (route_->minimal_waypoints_.size() == 0)
 	{
 		return ErrorCode::ERROR_GENERIC;
 	}
@@ -9481,7 +9481,7 @@ int Position::SetTrajectoryS(double s)
 
 Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 {
-	if (route->waypoint_.size() == 0)
+	if (route->minimal_waypoints_.size() == 0)
 	{
 		LOG("SetOffset No waypoints!");
 		return ErrorCode::ERROR_GENERIC;
@@ -9494,18 +9494,18 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 		driving_direction = -1;
 	}
 
-	OpenDrive *od = route->waypoint_[0].GetOpenDrive();
+	OpenDrive *od = route->minimal_waypoints_[0].GetOpenDrive();
 
 	double initial_s_offset = 0;
 	double initial_route_direction = route->GetWayPointDirection(0);
 
 	if (initial_route_direction > 0)
 	{
-		initial_s_offset = route->waypoint_[0].GetS();
+		initial_s_offset = route->minimal_waypoints_[0].GetS();
 	}
 	else
 	{
-		initial_s_offset = od->GetRoadById(route->waypoint_[0].GetTrackId())->GetLength() - route->waypoint_[0].GetS();
+		initial_s_offset = od->GetRoadById(route->minimal_waypoints_[0].GetTrackId())->GetLength() - route->minimal_waypoints_[0].GetS();
 	}
 
 	double route_length = 0;
@@ -9513,9 +9513,9 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 	double offset_dir_neutral = offset_ * SIGN(GetLaneId());
 
 	// Find out what road and local s value
-	for (size_t i = 0; i < route->waypoint_.size(); i++)
+	for (size_t i = 0; i < route->minimal_waypoints_.size(); i++)
 	{
-		double road_length = GetRoadById(route->waypoint_[i].GetTrackId())->GetLength();
+		double road_length = GetRoadById(route->minimal_waypoints_[i].GetTrackId())->GetLength();
 
 		if (s_route_ < route_length + road_length - initial_s_offset)
 		{
@@ -9537,7 +9537,7 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 				local_s = road_length - local_s;
 			}
 
-			if (SIGN(route->waypoint_[i].GetLaneId()) < 0)
+			if (SIGN(route->minimal_waypoints_[i].GetLaneId()) < 0)
 			{
 				SetHeadingRelative(driving_direction < 0 ? M_PI : 0.0);
 			}
@@ -9546,7 +9546,7 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 				SetHeadingRelative(driving_direction < 0 ? 0.0 : M_PI);
 			}
 
-			return (SetLanePos(route->waypoint_[i].GetTrackId(), route->waypoint_[i].GetLaneId(), local_s, SIGN(route->waypoint_[i].GetLaneId()) * offset_dir_neutral));
+			return (SetLanePos(route->minimal_waypoints_[i].GetTrackId(), route->minimal_waypoints_[i].GetLaneId(), local_s, SIGN(route->minimal_waypoints_[i].GetLaneId()) * offset_dir_neutral));
 		}
 		route_length += road_length - initial_s_offset;
 		initial_s_offset = 0;  // For all following road segments, calculate length from beginning
@@ -9632,31 +9632,33 @@ void Position::ReleaseRelation()
 
 int Route::AddWaypoint(Position* position)
 {
-	if (waypoint_.size() > 0)
+	if (minimal_waypoints_.size() > 0)
 	{
 		// Keep only one consecutive waypoint per road
 		// Keep first specified waypoint for first road
 		// then, for following roads, keep the last waypoint.
-		if (position->GetTrackId() == waypoint_.back().GetTrackId())
+		
+		if (position->GetTrackId() == minimal_waypoints_.back().GetTrackId())
 		{
-			if (waypoint_.size() == 1)
+			if (minimal_waypoints_.size() == 1)
 			{
 				// Ignore
-				LOG("Ignoring additional waypoint for road %d (s %.2f)\n",
+				LOG("Ignoring additional waypoint for road %d (s %.2f)",
 					position->GetTrackId(), position->GetS());
+				all_waypoints_.push_back(*position);
 				return -1;
 			}
 			else  // at least two road-unique waypoints
 			{
 				// Keep this, remove previous
-				LOG("Removing previous waypoint for same road %d (at s %.2f)\n",
-					waypoint_.back().GetTrackId(), waypoint_.back().GetS());
-				waypoint_.pop_back();
+				LOG("Removing previous waypoint for same road %d (at s %.2f)",
+					minimal_waypoints_.back().GetTrackId(), minimal_waypoints_.back().GetS());
+				minimal_waypoints_.pop_back();
 			}
 		}
 
 		// Check that there is a valid path from previous waypoint
-		RoadPath* path = new RoadPath(&waypoint_.back(), position);
+		RoadPath* path = new RoadPath(&minimal_waypoints_.back(), position);
 		double dist = 0;
 
 		if (path->Calculate(dist, false) == 0)
@@ -9683,51 +9685,61 @@ int Route::AddWaypoint(Position* position)
 				{
 					// Find out lane ID of the connecting road
 					Position connected_pos = Position(nodes[i - 1]->fromRoad->GetId(), nodes[i - 1]->fromLaneId, 0, 0);
-					waypoint_.push_back(connected_pos);
+					minimal_waypoints_.push_back(connected_pos);
 					LOG("Route::AddWaypoint Added intermediate waypoint %d roadId %d laneId %d",
-						(int)waypoint_.size() - 1, connected_pos.GetTrackId(), nodes[i - 1]->fromLaneId);
+						(int)minimal_waypoints_.size() - 1, connected_pos.GetTrackId(), nodes[i - 1]->fromLaneId);
 				}
 			}
+			
 		}
 		else
 		{
-			LOG("Warning: Waypoint not connected to previous one, adding it anyway");
+			invalid_route_ = true;
 		}
 	}
-
-	waypoint_.push_back(*position);
-	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f", (int)waypoint_.size() - 1, position->GetTrackId(), position->GetLaneId(), position->GetS());
-
+	all_waypoints_.push_back(*position);
+	minimal_waypoints_.push_back(*position);
+	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f", (int)minimal_waypoints_.size() - 1, position->GetTrackId(), position->GetLaneId(), position->GetS());
+	
 	return 0;
+}
+
+void Route::CheckValid()
+{
+	if (invalid_route_)
+	{
+		LOG("Warning: Route %s is not valid, will be ignored for the default controller.", getName().c_str());
+		minimal_waypoints_.clear();
+	}
 }
 
 int Route::GetWayPointDirection(int index)
 {
-	if (waypoint_.size() == 0 || index < 0 || index >= waypoint_.size())
+	if (minimal_waypoints_.size() == 0 || index < 0 || index >= minimal_waypoints_.size())
 	{
-		LOG("Waypoint index %d out of range (%d)", index, waypoint_.size());
+		LOG("Waypoint index %d out of range (%d)", index, minimal_waypoints_.size());
 		return 0;
 	}
 
-	if (waypoint_.size() == 1)
+	if (minimal_waypoints_.size() == 1)
 	{
 		LOG("Only one waypoint, no direction");
 		return 0;
 	}
 
-	OpenDrive *od = waypoint_[index].GetOpenDrive();
-	Road *road = od->GetRoadById(waypoint_[index].GetTrackId());
+	OpenDrive *od = minimal_waypoints_[index].GetOpenDrive();
+	Road *road = od->GetRoadById(minimal_waypoints_[index].GetTrackId());
 	int connected = 0;
 	double angle;
 
-	if (index == waypoint_.size() - 1)
+	if (index == minimal_waypoints_.size() - 1)
 	{
 		// Find connection point to previous waypoint road
-		Road *prev_road = od->GetRoadById(waypoint_[index-1].GetTrackId());
+		Road *prev_road = od->GetRoadById(minimal_waypoints_[index-1].GetTrackId());
 
 		if (prev_road == road)
 		{
-			if (waypoint_[index].GetS() > waypoint_[index - 1].GetS())
+			if (minimal_waypoints_[index].GetS() > minimal_waypoints_[index - 1].GetS())
 			{
 				return 1;
 			}
@@ -9742,11 +9754,11 @@ int Route::GetWayPointDirection(int index)
 	else
 	{
 		// Find connection point to next waypoint road
-		Road *next_road = od->GetRoadById(waypoint_[index+1].GetTrackId());
+		Road *next_road = od->GetRoadById(minimal_waypoints_[index+1].GetTrackId());
 
 		if (next_road == road)
 		{
-			if (waypoint_[index+1].GetS() > waypoint_[index].GetS())
+			if (minimal_waypoints_[index+1].GetS() > minimal_waypoints_[index].GetS())
 			{
 				return 1;
 			}
