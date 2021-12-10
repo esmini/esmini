@@ -1814,7 +1814,15 @@ SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *ro
 		LOG("Object %d not available, only %d registered", object_id, player->scenarioGateway->getNumberOfObjects());
 		return -1;
 	}
-	Object *obj = player->scenarioEngine->entities.object_[object_id];
+
+	Object* obj = player->scenarioEngine->entities.object_[object_id];
+
+	if (route_index >= obj->pos_.GetRoute()->all_waypoints_.size())
+	{
+		LOG("Requested waypoint index %d invalid, only %d registered", route_index, obj->pos_.GetRoute()->all_waypoints_.size());
+		return -1;
+	}
+
 	routeinfo->x = obj->pos_.GetRoute()->all_waypoints_[route_index].GetX();
 	routeinfo->y = obj->pos_.GetRoute()->all_waypoints_[route_index].GetY();
 	routeinfo->z = obj->pos_.GetRoute()->all_waypoints_[route_index].GetZ();
@@ -1824,5 +1832,7 @@ SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *ro
 	routeinfo->laneOffset = obj->pos_.GetRoute()->all_waypoints_[route_index].GetOffset();
 	routeinfo->s = obj->pos_.GetRoute()->all_waypoints_[route_index].GetS();
 	routeinfo->t = obj->pos_.GetRoute()->all_waypoints_[route_index].GetT();
+
+	return 0;
 }
 }

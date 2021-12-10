@@ -2301,7 +2301,7 @@ TEST(APITest, TestGetRoute)
 
 	int num_of_points = SE_GetNumberOfRoutePoints(0);
 	EXPECT_EQ(num_of_points,4);
-	
+
 	SE_RouteInfo route_info;
 	SE_GetRoutePoint(0,0,&route_info);
 	EXPECT_EQ(route_info.t,-1.5);
@@ -2313,8 +2313,6 @@ TEST(APITest, TestGetRoute)
 	EXPECT_EQ(route_info.s,150);
 	EXPECT_EQ(route_info.x,150);
 	EXPECT_EQ(route_info.y,-4.5);
-	
-
 
 	SE_Close();
 }

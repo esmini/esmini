@@ -2342,10 +2342,10 @@ namespace roadmanager
 
 
 	// A route is a sequence of positions, at least one per road along the route
-	class Route 
+	class Route
 	{
 	public:
-		Route(): invalid_route_(true) {}
+		Route(): invalid_route_(false) {}
 
 		/**
 		Adds a waypoint to the route. One waypoint per road. At most one junction between waypoints.
@@ -2359,7 +2359,7 @@ namespace roadmanager
 		std::string getName();
 		double GetLength();
 		void CheckValid();
-		
+
 		std::vector<Position> minimal_waypoints_; // used only for the default controllers
 		std::vector<Position> all_waypoints_; // used for user-defined controllers
 		std::string name_;

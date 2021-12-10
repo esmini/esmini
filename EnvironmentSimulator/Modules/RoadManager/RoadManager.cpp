@@ -9637,7 +9637,7 @@ int Route::AddWaypoint(Position* position)
 		// Keep only one consecutive waypoint per road
 		// Keep first specified waypoint for first road
 		// then, for following roads, keep the last waypoint.
-		
+
 		if (position->GetTrackId() == minimal_waypoints_.back().GetTrackId())
 		{
 			if (minimal_waypoints_.size() == 1)
@@ -9690,7 +9690,7 @@ int Route::AddWaypoint(Position* position)
 						(int)minimal_waypoints_.size() - 1, connected_pos.GetTrackId(), nodes[i - 1]->fromLaneId);
 				}
 			}
-			
+
 		}
 		else
 		{
@@ -9700,7 +9700,7 @@ int Route::AddWaypoint(Position* position)
 	all_waypoints_.push_back(*position);
 	minimal_waypoints_.push_back(*position);
 	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f", (int)minimal_waypoints_.size() - 1, position->GetTrackId(), position->GetLaneId(), position->GetS());
-	
+
 	return 0;
 }
 
