@@ -498,7 +498,7 @@ int main(int argc, char** argv)
 		if (opt.GetOptionSet("capture_screen"))
 		{
 			LOG("Activate continuous screen capture");
-			viewer->CaptureContinuously(true);
+			viewer->SaveImagesToFile(-1);
 		}
 
 		if (opt.GetOptionSet("road_features"))

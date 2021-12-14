@@ -88,11 +88,11 @@ void objectCallback(SE_ScenarioObjectState* state, void *my_data)
 	}
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	Stuff stuff;
 	SimpleVehicle vehicle = { 0, {0, 0, 0, 0, 0, 0} };
-	char* filename = 0;
+	const char* filename = 0;
 
 	if (!filename == 0 && argc < 2)
 	{

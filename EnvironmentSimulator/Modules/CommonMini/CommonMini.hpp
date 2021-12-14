@@ -19,6 +19,7 @@
 #include <string>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <condition_variable>
 
 #ifdef _WIN32
 	#include <sdkddkver.h>
@@ -98,6 +99,22 @@ enum class EntityScaleMode
 };
 
 std::string ControlDomain2Str(ControlDomains domains);
+
+enum class PixelFormat
+{
+	UNSPECIFIED = 0,
+	RGB = 0x1907,   // GL_RGB
+	BGR = 0x80E0    // GL_BGR
+};
+
+struct OffScreenImage
+{
+	int width;
+	int height;
+	int pixelSize;
+	int pixelFormat;  // According to enum class PixelFormat
+	unsigned char* data;
+};
 
 // Useful operations
 
@@ -340,6 +357,45 @@ private:
 #endif
 };
 
+
+// Semaphore implementation based on this "thread":
+// https://stackoverflow.com/questions/4792449/c0x-has-no-semaphores-how-to-synchronize-threads/4793662#4793662
+// But adapted for use cases where a thread should wait until a series, not necessarily overlapping, tasks from
+// potentially various threads has been finished, e.g:
+// 1. Raise flag from main thread when main application thread initiates rendering of scenario image
+// 2. Lower flag from render thread when image has been created and copied into RAM
+// 3. Meanwhile, main thread waits for the flag to fall and then can fetch the image
+//
+class SE_Semaphore
+{
+public:
+	SE_Semaphore() : flag(0) {}
+
+	inline void Set()
+	{
+		std::unique_lock<std::mutex> lock(mtx);
+		flag = true;
+	}
+
+	inline void Release()
+	{
+		std::unique_lock<std::mutex> lock(mtx);
+		flag = false;
+		cv.notify_one();  // notify the waiting thread
+	}
+
+	inline void Wait()
+	{
+		std::unique_lock<std::mutex> lock(mtx);
+		cv.wait(lock);  // wait on the mutex until notify is called
+	}
+
+private:
+	std::mutex mtx;
+	std::condition_variable cv;
+	bool flag;
+};
+
 std::vector<std::string> SplitString(const std::string &s, char separator);
 std::string DirNameOf(const std::string& fname);
 std::string FileNameOf(const std::string& fname);
@@ -368,6 +424,7 @@ private:
 	Logger();
 	~Logger();
 
+	SE_Mutex mutex_;
 	FuncPtr callback_;
 	std::ofstream file_;
 	double* time_; // seconds
@@ -445,6 +502,7 @@ public:
 	std::string GetOptionArg(std::string opt, int index = 0);
 	int ParseArgs(int *argc, char* argv[]);
 	std::vector<std::string>& GetOriginalArgs() { return originalArgs_; }
+	bool IsInOriginalArgs(std::string opt);
 
 private:
 	std::vector<SE_Option> option_;
@@ -600,16 +658,9 @@ private:
 class SE_Env
 {
 public:
-	static SE_Env& Inst();
-	std::vector<std::string> paths_;
-	double osiMaxLongitudinalDistance_;
-	double osiMaxLateralDeviation_;
-	std::string logFilePath_;
-	SE_SystemTime systemTime_;
-	unsigned int seed_;
-	std::mt19937 gen_;
-
 	SE_Env();
+
+	static SE_Env& Inst();
 
 	void SetOSIMaxLongitudinalDistance(double maxLongitudinalDistance) { osiMaxLongitudinalDistance_ = maxLongitudinalDistance; }
 	void SetOSIMaxLateralDeviation(double maxLateralDeviation) { osiMaxLateralDeviation_ = maxLateralDeviation; }
@@ -635,4 +686,44 @@ public:
 	*/
 	void SetLogFilePath(std::string logFilePath);
 	std::string GetLogFilePath() { return logFilePath_; }
+
+private:
+	std::vector<std::string> paths_;
+	double osiMaxLongitudinalDistance_;
+	double osiMaxLateralDeviation_;
+	std::string logFilePath_;
+	SE_SystemTime systemTime_;
+	unsigned int seed_;
+	std::mt19937 gen_;
+	bool saveImagesToRAM_;
+	int saveImagesToFile_;
 };
+
+/**
+ Store RGB (3*8 bits color values) image data as a PPM image file
+ PPM info: http://paulbourke.net/dataformats/ppm/
+ @param filename File name including extension which should be ".ppm", e.g. "img0.ppm"
+ @param width Width
+ @param height Height
+ @param rgbData Array of color values
+ @param pixelSize 3 for RGB/BGR
+ @param pixelFormat 0=Unspecified, 0x1907=RGB (GL_RGB), 0x80E0=BGR (GL_BGR)
+ @param upsidedown false=lines stored from top to bottom, true=lines stored from bottom to top
+ @return 0 if OK, -1 if failed to open file, -2 if unexpected pixelSize
+*/
+int SE_WritePPM(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown);
+
+/**
+ Store RGB or BGR (3*8 bits color values) image data as a TGA image file
+ TGA spec: https://www.dca.fee.unicamp.br/~martino/disciplinas/ea978/tgaffs.pdf
+ TGA brief: http://paulbourke.net/dataformats/tga/
+ @param filename File name including extension which should be ".tga", e.g. "img0.tga"
+ @param width Width
+ @param height Height
+ @param rgbData Array of color values
+ @param pixelSize 3 (RGB) or 4 (RGBA)
+ @param pixelFormat 0=Unspecified, 0x1907=RGB (GL_RGB), 0x80E0=BGR (GL_BGR)
+ @param upsidedown false=lines stored from top to bottom, true=lines stored from bottom to top
+ @return 0 if OK, -1 if failed to open file, -2 if unexpected pixelSize
+*/
+int SE_WriteTGA(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown);

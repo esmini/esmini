@@ -31,6 +31,14 @@ using namespace scenarioengine;
 
 static int osi_counter = 0;
 
+#ifdef _USE_OSG
+void RegisterImageCallback(viewer::ImageCallbackFunc func, void* data)
+{
+	imageCallback.func = func;
+	imageCallback.data = data;
+}
+#endif
+
 static void log_callback(const char *str)
 {
 	printf("%s\n", str);
@@ -41,7 +49,6 @@ ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
 {
 	quit_request = false;
 	threads = false;
-	headless = false;
 	launch_server = false;
 	fixed_timestep_ = -1.0;
 	osi_receiver_addr = "";
@@ -76,19 +83,16 @@ ScenarioPlayer::~ScenarioPlayer()
 	}
 
 #ifdef _USE_OSG
-	if (!headless)
+	if (viewer_)
 	{
-		if (viewer_)
+		if (threads)
 		{
-			if (threads)
-			{
-				viewer_->SetQuitRequest(true);
-				thread.Wait();
-			}
-			else
-			{
-				CloseViewer();
-			}
+			viewer_->SetQuitRequest(true);
+			thread.Wait();
+		}
+		else
+		{
+			CloseViewer();
 		}
 	}
 #endif  // _USE_OSG
@@ -131,7 +135,7 @@ void ScenarioPlayer::Frame(double timestep_s)
 
 	ScenarioFrame(timestep_s);
 
-	if (!headless && viewer_)
+	if (viewer_)
 	{
 #ifdef _USE_OSG
 		if (!threads)
@@ -364,7 +368,7 @@ void ScenarioPlayer::ViewerFrame()
 
 	mutex.Unlock();
 
-	viewer_->osgViewer_->frame();
+	viewer_->Frame();
 
 	if (viewer_->osgViewer_->done())
 	{
@@ -375,20 +379,79 @@ void ScenarioPlayer::ViewerFrame()
 
 }
 
-void ScenarioPlayer::CaptureNextFrame()
+int ScenarioPlayer::SaveImagesToRAM(bool state)
 {
 	if (viewer_)
 	{
-		viewer_->CaptureNextFrame();
+		viewer_->imageMutex.Lock();
+		viewer_->SaveImagesToRAM(state);
+		viewer_->imageMutex.Unlock();
+		return 0;
 	}
+
+	return -1;
 }
 
-void ScenarioPlayer::CaptureContinuously(bool state)
+int ScenarioPlayer::SaveImagesToFile(int nrOfFrames)
 {
 	if (viewer_)
 	{
-		viewer_->CaptureContinuously(state);
+		viewer_->imageMutex.Lock();
+		viewer_->SaveImagesToFile(nrOfFrames);
+		viewer_->imageMutex.Unlock();
+		return 0;
 	}
+
+	return -1;
+}
+
+OffScreenImage* ScenarioPlayer::FetchCapturedImagePtr()
+{
+	static OffScreenImage img;
+
+	if (viewer_)
+	{
+		if (viewer_->GetSaveImagesToRAM() == false)
+		{
+			LOG("FetchCapturedImagePtr Error: Activate save images to RAM (SaveImagesToRAM(true)) in order to fetch images\n");
+			return nullptr;
+		}
+		viewer_->renderSemaphore.Wait();  // Wait until rendering is done
+
+		viewer_->imageMutex.Lock();
+
+		OffScreenImage* tmpImg = &viewer_->capturedImage_;
+
+		if (tmpImg != nullptr)
+		{
+			// Check whether image data has to be allocated due to first time or changed window size
+			if (img.height * img.width != tmpImg->height * tmpImg->width)
+			{
+				if (img.data != nullptr)
+				{
+					free(img.data);
+				}
+				if (tmpImg->height * tmpImg->width > 0)
+				{
+					img.data = (unsigned char*)malloc(tmpImg->pixelSize * tmpImg->height * tmpImg->width * sizeof(unsigned char));
+				}
+			}
+			if (img.data != nullptr)
+			{
+				img.height = tmpImg->height;
+				img.width = tmpImg->width;
+				img.pixelSize = tmpImg->pixelSize;
+				img.pixelFormat = tmpImg->pixelFormat;
+				memcpy(img.data, tmpImg->data, tmpImg->pixelSize * tmpImg->height * tmpImg->width * sizeof(unsigned char));
+			}
+		}
+
+		viewer_->imageMutex.Unlock();
+
+		return &img;
+	}
+
+	return nullptr;
 }
 
 void ScenarioPlayer::AddCustomCamera(double x, double y, double z, double h, double p)
@@ -430,10 +493,12 @@ int ScenarioPlayer::InitViewer()
 		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO);
 	}
 
+	viewer_->RegisterImageCallback(imageCallback.func, imageCallback.data);
+
 	if (opt.GetOptionSet("capture_screen"))
 	{
 		LOG("Activate continuous screen capture");
-		viewer_->CaptureContinuously(true);
+		viewer_->SaveImagesToFile(-1);
 	}
 
 	if ((arg_str = opt.GetOptionArg("trail_mode")) != "")
@@ -677,35 +742,30 @@ void viewer_thread(void *args)
 void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, double z, double h, double near, double far, double fovH, int maxObj)
 {
 	sensor.push_back(new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_index], x, y, z, h, near, far, fovH, maxObj));
- 	if (!headless)
-	{
+
 #ifdef _USE_OSG
-		if (viewer_)
-		{
-			mutex.Lock();
-			sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->entities_[object_index]->txNode_));
-			mutex.Unlock();
-		}
-#endif
+	if (viewer_)
+	{
+		mutex.Lock();
+		sensorFrustum.push_back(new viewer::SensorViewFrustum(sensor.back(), viewer_->entities_[object_index]->txNode_));
+		mutex.Unlock();
 	}
+#endif
 }
 
 void ScenarioPlayer::AddOSIDetection(int object_index)
 {
-	if (!headless)
-	{
 #ifdef _USE_OSG
-		if (viewer_)
+	if (viewer_)
+	{
+		if(!OSISensorDetection)
 		{
-			if(!OSISensorDetection)
-			{
-				mutex.Lock();
-				OSISensorDetection = new viewer::OSISensorDetection(viewer_->entities_[object_index]->txNode_);
-				mutex.Unlock();
-			}
+			mutex.Lock();
+			OSISensorDetection = new viewer::OSISensorDetection(viewer_->entities_[object_index]->txNode_);
+			mutex.Unlock();
 		}
-#endif
 	}
+#endif
 }
 
 void ScenarioPlayer::ShowObjectSensors(bool mode)
@@ -725,6 +785,14 @@ void ScenarioPlayer::ShowObjectSensors(bool mode)
 		}
 		mutex.Unlock();
 	}
+#endif
+}
+
+void ScenarioPlayer::PrintUsage()
+{
+	opt.PrintUsage();
+#ifdef _USE_OSG
+	viewer::Viewer::PrintUsage();
 #endif
 }
 
@@ -751,10 +819,10 @@ int ScenarioPlayer::Init()
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
 	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
-	opt.AddOption("headless", "Run without viewer");
+	opt.AddOption("headless", "Run without viewer window");
 	opt.AddOption("help", "Show this help message");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
-	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\") (toggle during simulation by press 'i') ", "mode");
+	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\")", "mode");
 	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
 	opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
 #ifdef _USE_OSI
@@ -778,7 +846,7 @@ int ScenarioPlayer::Init()
 	exe_path_ = argv_[0];
 	if (opt.ParseArgs(&argc_, argv_) != 0)
 	{
-		opt.PrintUsage();
+		PrintUsage();
 		return -2;
 	}
 
@@ -790,10 +858,7 @@ int ScenarioPlayer::Init()
 
 	if (opt.GetOptionSet("help"))
 	{
-		opt.PrintUsage();
-#ifdef _USE_OSG
-		viewer::Viewer::PrintUsage();
-#endif
+		PrintUsage();
 		return -2;
 	}
 
@@ -833,12 +898,6 @@ int ScenarioPlayer::Init()
 		threads = true;
 		LOG("Run viewer in separate thread");
 #endif
-	}
-
-	if (opt.GetOptionSet("headless"))
-	{
-		headless = true;
-		LOG("Run without viewer");
 	}
 
 	if (opt.GetOptionSet("server"))
@@ -907,10 +966,8 @@ int ScenarioPlayer::Init()
 		else
 		{
 			LOG("Error: Missing required OpenSCENARIO filename argument or XML string");
-			opt.PrintUsage();
-#ifdef _USE_OSG
-			viewer::Viewer::PrintUsage();
-#endif
+			PrintUsage();
+
 			return -1;
 		}
 	}
@@ -967,9 +1024,8 @@ int ScenarioPlayer::Init()
 	// Step scenario engine - zero time - just to reach and report init state of all vehicles
 	ScenarioFrame(0.0);
 
-	if (!headless)
+	if (opt.IsInOriginalArgs("--window") || opt.IsInOriginalArgs("--borderless-window"))
 	{
-
 #ifdef _USE_OSG
 
 		if (threads)
@@ -1000,20 +1056,31 @@ int ScenarioPlayer::Init()
 		}
 		else
 		{
-			InitViewer();
+			if (InitViewer() != 0)
+			{
+				LOG("Viewer initialization failed");
+				return -1;
+			}
 		}
 
 		// Decorate window border with application name and arguments
 		viewer_->SetWindowTitleFromArgs(opt.GetOriginalArgs());
 
 		viewer_->RegisterKeyEventCallback(ReportKeyEvent, this);
+#else
+		LOG("window requested, but esmini compiled without OSG capabilities");
 #endif
+	}
+	else if (opt.GetOptionSet("capture_screen"))
+	{
+		PrintUsage();
+		LOG_AND_QUIT("Capture screen requires a window to be specified!");
 	}
 
 	if (argc_ > 1)
 	{
 		opt.PrintArgs(argc_, argv_, "Unrecognized arguments:");
-		opt.PrintUsage();
+		PrintUsage();
 	}
 
 	if (launch_server)

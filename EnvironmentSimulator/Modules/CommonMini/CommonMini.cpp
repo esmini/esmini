@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <random>
+#include <algorithm>
 
 // UDP network includes
 #ifdef _WIN32
@@ -738,6 +739,8 @@ void Logger::Log(bool quit, bool trace, char const* file, char const* func, int 
 	static char complete_entry[2048];
 	static char message[1024];
 
+	mutex_.Lock();  // Protect from simultanous use from different threads
+
 	va_list args;
 	va_start(args, format);
 	vsnprintf(message, 1024, format, args);
@@ -781,6 +784,8 @@ void Logger::Log(bool quit, bool trace, char const* file, char const* func, int 
 	}
 
 	va_end(args);
+
+	mutex_.Unlock();
 
 	if (quit)
 	{
@@ -1237,5 +1242,154 @@ SE_Option* SE_Options::GetOption(std::string opt)
 			return &option_[i];
 		}
 	}
+	return 0;
+}
+
+bool SE_Options::IsInOriginalArgs(std::string opt)
+{
+	if (std::find(originalArgs_.begin(), originalArgs_.end(), opt) != originalArgs_.end())
+	{
+		return true;
+	}
+
+	return false;
+}
+
+int SE_WritePPM(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown)
+{
+	FILE* file;
+
+	if ((file = fopen(filename, "wb")) == nullptr)
+	{
+		return -1;
+	}
+
+	if (pixelSize != 3)
+	{
+		LOG("PPM PixelSize %d not supported yet, only 3", pixelSize);
+		return -2;
+	}
+
+	if (pixelFormat != static_cast<int>(PixelFormat::BGR) && pixelFormat != static_cast<int>(PixelFormat::RGB))
+	{
+		LOG("PPM PixelFormat %d not supported yet, only 0x%x (RGB) and 0x%x (BGR)", PixelFormat::RGB, PixelFormat::BGR);
+		return -3;
+	}
+
+	/* Write PPM Header */
+	fprintf(file, "P6 %d %d %d\n", width, height, 255); /* width, height, max color value */
+
+	/* Write Image Data */
+	if (pixelFormat == static_cast<int>(PixelFormat::RGB))
+	{
+		if (upsidedown)
+		{
+			for (int i = 0; i < height; i++)
+			{
+				for (int j = 0; j < width; j++)
+				{
+					// write one line at a time, starting from bottom
+					fwrite(&data[pixelSize * ((height - i - 1) * width + j)], 3, 1, file);
+				}
+			}
+		}
+		else
+		{
+			// Write all RBG pixel values as a whole chunk
+			fwrite(data, 3, width * height, file);
+		}
+	}
+	else
+	{
+		if (upsidedown)
+		{
+			for (int i = 0; i < height; i++)
+			{
+				for (int j = 0; j < width; j++)
+				{
+					// write one line at a time, starting from bottom
+					const unsigned char* ptr = &data[pixelSize * ((height - i - 1) * width + j)];
+					unsigned char bytes[3] = { (ptr[2]), ptr[1], ptr[0] };
+					fwrite(bytes, 3, 1, file);
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < width * height; i++)
+			{
+				const unsigned char* ptr = &data[i * pixelSize];
+				unsigned char bytes[3] = { (ptr[2]), ptr[1], ptr[0] };
+				fwrite(bytes, 3, 1, file);
+			}
+		}
+	}
+
+	fclose(file);
+
+	return 0;
+}
+
+int SE_WriteTGA(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown)
+{
+	FILE* file;
+
+	if ((file = fopen(filename, "wb")) == nullptr)
+	{
+		return -1;
+	}
+
+	if (pixelSize != 3)
+	{
+		LOG("TGA PixelSize %d not supported yet, only 3", pixelSize);
+		return -2;
+	}
+
+	if (pixelFormat != static_cast<int>(PixelFormat::BGR) && pixelFormat != static_cast<int>(PixelFormat::RGB))
+	{
+		LOG("TGA PixelFormat 0x%x not supported yet, only 0x%x (RGB) and 0x%x (BGR)", pixelFormat, PixelFormat::RGB, PixelFormat::BGR);
+		return -3;
+	}
+
+	/* Write TGA Header */
+	uint8_t header[18] = {
+		0,
+		0,
+		2,						  // uncompressed RGB
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		0,
+		(uint8_t)(width & 0x00FF),
+		(uint8_t)((width & 0xFF00) >> 8),
+		(uint8_t)(height & 0x00FF),
+		(uint8_t)((height & 0xFF00) >> 8),
+		(uint8_t)(pixelSize * 8),  // 24 (BGR)
+		(uint8_t)(upsidedown ? 0 : (1<<5))    // bit 5 (6:th) controls vertical direction
+	};
+	fwrite(&header, 18, 1, file);
+
+	/* Write Image Data */
+	if (pixelFormat == static_cast<int>(PixelFormat::RGB))
+	{
+		for (int i = 0; i < width * height; i++)
+		{
+			const unsigned char* ptr = &data[i * pixelSize];
+			unsigned char bytes[3] = { (ptr[2]), ptr[1], ptr[0] };
+			fwrite(bytes, 3, 1, file);
+		}
+	}
+	else
+	{
+		fwrite(data, width * height * pixelSize, 1, file);
+	}
+
+	fclose(file);
+
 	return 0;
 }

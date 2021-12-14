@@ -149,6 +149,16 @@ typedef struct
 	int toLane;
 } SE_RoadObjValidity;
 
+typedef struct
+{
+	int width;
+	int height;
+	int pixelSize;   // 3 for RGB/BGR
+	int pixelFormat; // 0x1907=RGB (GL_RGB), 0x80E0=BGR (GL_BGR)
+	unsigned char* data;
+} SE_Image;  // Should be synked with CommonMini/OffScreenImage
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -198,6 +208,15 @@ extern "C"
 	SE_DLL_API void SE_SetSeed(unsigned int seed);
 
 	/**
+	Set window position and size. Must be called prior to SE_Init.
+	@param x Screen coordinate in pixels for left side of window
+	@param y Screen coordinate in pixels for top of window
+	@param w Width in pixels
+	@param h Height in pixels
+	*/
+	SE_DLL_API void SE_SetWindowPosAndSize(int x, int y, int w, int h);
+
+	/**
 		Register a function and optional argument (ref) to be called back from esmini after ParameterDeclarations has been parsed,
 		but before the scenario is initialized, i.e. before applying the actions in the Init block. One use-case is to
 		set parameter values for initial entity states, e.g. s value in lane position. So this callback will happen just
@@ -219,23 +238,39 @@ extern "C"
 
 	/**
 		Initialize the scenario engine
+
 		@param oscFilename Path to the OpenSCENARIO file
 		@param disable_ctrls 1=Any controller will be disabled 0=Controllers applied according to OSC file
-		@param use_viewer 0=no viewer, 1=use viewer
+		@param use_viewer Bitmask: 1=viewer on/off, 2=off-screen only, 4=capture-to-file, 8=disable info-text. Ex1: 0=>No viewer, ex2: 1+2=3=>Off-screen
 		@param threads 0=single thread, 1=viewer in a separate thread, parallel to scenario engine
 		@param record Create recording for later playback 0=no recording 1=recording
 		@return 0 if successful, -1 if not
+
+		\use_viewer bitmask examples:
+				0: No viewer instantiated. Improved performance, use when viewer not needed.
+				1: Viewer instantiated with a window on screen (default viewer usage)
+				3 (1+2): Off-screen rendering only (no window on screen)
+				7 (1+2+4): Off-screen + save screenshots to file
+			   11 (1+2+8): Off-screen + disable info-text for better remote/virtual desktop support
 	*/
 	SE_DLL_API int SE_Init(const char *oscFilename, int disable_ctrls, int use_viewer, int threads, int record);
 
 	/**
 		Initialize the scenario engine
+
 		@param oscAsXMLString OpenSCENARIO XML as string
 		@param disable_ctrls 1=Any controller will be disabled 0=Controllers applied according to OSC file
-		@param use_viewer 0=no viewer, 1=use viewer
+		@param use_viewer Bitmask: 1=viewer on/off, 2=off-screen only, 4=capture-to-file, 8=disable info-text. Ex1: 0=>No viewer, ex2: 1+2=3=>Off-screen
 		@param threads 0=single thread, 1=viewer in a separate thread, parallel to scenario engine
 		@param record Create recording for later playback 0=no recording 1=recording
 		@return 0 if successful, -1 if not
+
+		\use_viewer bitmask examples:
+				0: No viewer instantiated. Improved performance, use when viewer not needed.
+				1: Viewer instantiated with a window on screen (default viewer usage)
+				3 (1+2): Off-screen rendering only (no window on screen)
+				7 (1+2+4): Off-screen + save screenshots to file
+			   11 (1+2+8): Off-screen + disable info-text for better remote/virtual desktop support
 	*/
 	SE_DLL_API int SE_InitWithString(const char *oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record);
 
@@ -246,7 +281,7 @@ extern "C"
 		@param argv Arguments
 		@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_InitWithArgs(int argc, char *argv[]);
+	SE_DLL_API int SE_InitWithArgs(int argc, const char *argv[]);
 
 	/**
 		Step the simulation forward with specified timestep
@@ -956,18 +991,65 @@ extern "C"
 	*/
 	SE_DLL_API void SE_SimpleVehicleGetState(void *handleSimpleVehicle, SE_SimpleVehicleState *state);
 
-	/**
-		Capture screen of next frame and save as jpeg file
-		@return 0 if successful, -1 if not
-	*/
-	SE_DLL_API int SE_CaptureNextFrame();
 
 	/**
-		Activate or deactivate continuous screen capture
-		@param state true=activate, false=deactivate
-		@return 0 if successful, -1 if not
+	Capture rendered image to RAM for possible fetch via API, e.g. SE_FetchImage()
+	@param state true=capture images (default), false=don't capture (might improve performance on some systems)
+	@return 0 if successful, -1 if not
 	*/
-	SE_DLL_API int SE_CaptureContinuously(bool state);
+	SE_DLL_API int SE_SaveImagesToRAM(bool state);
+
+	/**
+	Capture rendered image to file
+	@param nrOfFrames -1=continuously, 0=stop, >0=number of frames, e.g. 1=next frame only
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SaveImagesToFile(int nrOfFrames);
+
+	/**
+	Fetch captured image from RAM (internal memory)
+	@param image Pointer/reference to a SE_Image which will be filled in, even image data pointer
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_FetchImage(SE_Image *image);
+
+	/**
+	Register a function and optional parameter (ref) to be called back from esmini after each frame (update of scenario)
+	The current state of specified entity will be returned.
+	Complete or part of the state can then be overridden by calling the SE_ReportObjectPos/SE_ReportObjectRoadPos functions.
+	Registered callbacks will be cleared between SE_Init calls.
+	@param object_id Handle to the position object (entity)
+	@param fnPtr A pointer to the function to be invoked
+	@param user_data Optional pointer to a local data object that will be passed as argument in the callback. Set 0/NULL if not needed.
+	*/
+	SE_DLL_API void SE_RegisterImageCallback(void (*fnPtr)(SE_Image*, void*), void* user_data);
+
+	/**
+	 Store RGB (3*8 bits color values) image data as a PPM image file
+	 PPM info: http://paulbourke.net/dataformats/ppm/
+	 @param filename File name including extension which should be ".ppm", e.g. "img0.ppm"
+	 @param width Width
+	 @param height Height
+	 @param rgbData Array of color values
+	 @param pixelSize Should be 3 (RGB/BGR)
+	 @param upsidedown false=lines stored from top to bottom, true=lines stored from bottom to top
+	 @return 0 if OK, -1 if failed to open file, -2 if unexpected pixelSize
+	*/
+	SE_DLL_API int SE_WritePPMImage(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown);
+
+	/**
+	Store RGB or BGR (3*8 bits color values) image data as a TGA image file
+	TGA spec: https://www.dca.fee.unicamp.br/~martino/disciplinas/ea978/tgaffs.pdf
+	TGA brief: http://paulbourke.net/dataformats/tga/
+	@param filename File name including extension which should be ".ppm", e.g. "img0.ppm"
+	@param width Width
+	@param height Height
+	@param rgbData Array of color values
+	@param pixelSize Should be 3 (RGB/BGR)
+	@param upsidedown false=lines stored from top to bottom, true=lines stored from bottom to top
+	@return 0 if OK, -1 if failed to open file, -2 if unexpected pixelSize
+	*/
+	SE_DLL_API int SE_WriteTGAImage(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown);
 
 	/**
 	Add a camera mode with custom position and orientation (heading and pitch)

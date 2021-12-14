@@ -36,5 +36,5 @@ package_add_test_with_libraries(ScenarioEngine_test ScenarioEngine_test.cpp
 	${SUMO_LIBRARIES}
 	${SOCK_LIB}
 )
-package_add_test_with_libraries(ScenarioEngineDll_test ScenarioEngineDll_test.cpp esminiLib ${OSI_LIBRARIES})
+package_add_test_with_libraries(ScenarioEngineDll_test ScenarioEngineDll_test.cpp esminiLib CommonMini ${OSI_LIBRARIES})
 package_add_test_with_libraries(CommonMini_test CommonMini_test.cpp CommonMini)

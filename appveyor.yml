@@ -112,6 +112,7 @@ for:
           fi
 
     test_script:
+      - sh: Xvfb :99 -screen 0 1920x1080x24+32 & export DISPLAY=:99
       - ps: |
             cd build/EnvironmentSimulator/Unittest
             $env:path += "../../../bin"
@@ -135,6 +136,8 @@ for:
             if ($lastExitCode -ne 0) {
                 throw "ScenarioEngineDll_test failed"
             }
+
+            dir *.tga, *.ppm
 
             cd ../../../test
 
@@ -288,6 +291,19 @@ for:
             echo "Skip demos"
           }
 
+      - cmd:
+          cd ..
+
+          curl -L "https://downloads.fdossena.com/geth.php?r=mesa64-latest" -o mesa_win64.7z
+
+          7z x mesa_win64.7z -omesa
+
+          cp mesa/opengl32.dll esmini/bin
+
+          cp mesa/opengl32.dll esmini/build/EnvironmentSimulator/Unittest/Release
+
+          cd esmini
+
     # on_finish:
     #   - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
@@ -315,6 +331,8 @@ for:
             if ($lastExitCode -ne 0) {
                 throw "ScenarioEngineDll_test failed"
             }
+
+            dir *.tga, *.ppm
 
       - cmd:
             cd ../../../test
