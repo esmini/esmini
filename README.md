@@ -203,9 +203,8 @@ export LD_LIBRARY_PATH=esmini/bin
 ```
 The editor is the last tab in RControlStation.
 
-### esmini-pybind11
-[esmini-pybind11](https://github.com/ebadi/esmini-pybind11) is an ongoing effort to establish a Python wrapper for internal esmini API (not only shared libraries esminiLib and esminiRMLib). 
-
+### python-esmini
+[python-esmini](https://github.com/ebadi/python-esmini) is a Python wrapper for esmini internal API (not limited by the interfaces of esminiLib and esminiRMLib). Most of the important modules are supported. Currently available for Linux only.
 
 ### Carla Simulator
 [Carla](http://carla.org/) is an [Unreal](https://www.unrealengine.com/) based open source simulator worth to check out.
