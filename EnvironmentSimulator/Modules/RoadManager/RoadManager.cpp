@@ -69,6 +69,7 @@ using namespace roadmanager;
 #define MAX_TRACK_DIST 10
 #define OSI_POINT_CALC_STEPSIZE 1 // [m]
 #define OSI_TANGENT_LINE_TOLERANCE 0.01 // [m]
+#define OSI_POINT_DIST_SCALE 0.025
 
 
 static int g_Lane_id;
@@ -2248,7 +2249,7 @@ void Road::AddLaneSection(LaneSection *lane_section)
 	lane_section_.push_back((LaneSection*)lane_section);
 }
 
-bool Road::GetZAndPitchByS(double s, double *z, double *z_primPrim, double *pitch, int *index)
+bool Road::GetZAndPitchByS(double s, double *z, double* z_prim, double *z_primPrim, double *pitch, int *index)
 {
 	if (GetNumberOfElevations() > 0)
 	{
@@ -2284,6 +2285,7 @@ bool Road::GetZAndPitchByS(double s, double *z, double *z_primPrim, double *pitc
 		{
 			double p = s - elevation->GetS();
 			*z = elevation->poly3_.Evaluate(p);
+			*z_prim = elevation->poly3_.EvaluatePrim(p);
 			*z_primPrim = elevation->poly3_.EvaluatePrimPrim(p);
 			*pitch = -atan(elevation->poly3_.EvaluatePrim(p));
 			return true;
@@ -4914,6 +4916,9 @@ void Position::Init()
 	p_relative_ = 0.0;
 	r_road_ = 0.0;
 	r_relative_ = 0.0;
+	roadSuperElevationPrim_ = 0.0;
+	z_roadPrimPrim_ = 0.0;
+	z_roadPrim_ = 0.0;
 	rel_pos_ = 0;
 	align_h_ = ALIGN_MODE::ALIGN_SOFT;
 	align_p_ = ALIGN_MODE::ALIGN_SOFT;
@@ -5034,6 +5039,28 @@ bool OpenDrive::CheckLaneOSIRequirement(std::vector<double> x0, std::vector<doub
 	}
 }
 
+static double GetMaxSegmentLen(Position* pos, double min, double max, double pitchResScale, double rollResScale)
+{
+	double max_segment_length;
+
+	// Consider rate of change of pitch and roll for segment length to influence
+	// the tesselation (triangulation) of road surface model
+
+	double zRoadPrimPrim = pos->GetZRoadPrimPrim();
+	double roadSuperElevationPrim = pos->GetRoadSuperElevationPrim();
+	double max_segment_length_candidate1 = pitchResScale / MAX(SMALL_NUMBER, abs(zRoadPrimPrim));
+	double max_segment_length_candidate2 = rollResScale / MAX(SMALL_NUMBER, abs(roadSuperElevationPrim));
+
+	max_segment_length = MIN(max_segment_length_candidate1, max_segment_length_candidate2);
+
+	// Adjust for slope
+	max_segment_length = max_segment_length / sqrt(pow(pos->GetZRoadPrim(), 2) + 1);
+
+	max_segment_length = MAX(min, MIN(max, max_segment_length));
+
+	return max_segment_length;
+}
+
 void OpenDrive::SetLaneOSIPoints()
 {
 	// Initialization
@@ -5070,8 +5097,6 @@ void OpenDrive::SetLaneOSIPoints()
 				osiintersection = -1;
 			}
 		}
-
-		max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
 
 		// Looping through each lane section
 		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
@@ -5160,16 +5185,9 @@ void OpenDrive::SetLaneOSIPoints()
 					//    Assign last unique satisfied point as OSI point
 					//    Continue searching from the last satisfied point
 
-					// Consider rate of change of pitch and roll for segment length to influence
-					// the tesselation (triangulation) of road surface model
-					const double pitchResScale = 0.05;
-					const double rollResScale = 0.05;
-					double zRoadPrimPrim = pos->GetZRoadPrimPrim();
-					double roadSuperElevationPrim = pos->GetRoadSuperElevationPrim();
-					double max_segment_length_candidate1 = pitchResScale / MAX(SMALL_NUMBER, abs(zRoadPrimPrim));
-					double max_segment_length_candidate2 = rollResScale / MAX(SMALL_NUMBER, abs(roadSuperElevationPrim));
-
-					max_segment_length = MIN(SE_Env::Inst().GetOSIMaxLongitudinalDistance(), MIN(max_segment_length_candidate1, max_segment_length_candidate2));
+					// Make sure max segment length is longer than stepsize
+					max_segment_length = GetMaxSegmentLen(pos, 1.1 * OSI_POINT_CALC_STEPSIZE, SE_Env::Inst().GetOSIMaxLongitudinalDistance(),
+						OSI_POINT_DIST_SCALE, OSI_POINT_DIST_SCALE);
 
 					if ((osi_requirement && s1 - s0 < max_segment_length) || s1 - s0 < 0.1)
 					{
@@ -5251,16 +5269,6 @@ void OpenDrive::SetLaneBoundaryPoints()
 	for (int i=0; i<road_.size(); i++)
 	{
 		road = road_[i];
-
-		if (road->GetNumberOfSuperElevations() > 0)
-		{
-			// If road has lateral profile, then increase sampling resolution
-			max_segment_length = 0.1 * SE_Env::Inst().GetOSIMaxLongitudinalDistance();
-		}
-		else
-		{
-			max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
-		}
 
 		// Looping through each lane section
 		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
@@ -5347,6 +5355,10 @@ void OpenDrive::SetLaneBoundaryPoints()
 							osi_requirement = true;
 						}
 
+						// Make sure max segment length is longer than stepsize
+						max_segment_length = GetMaxSegmentLen(pos, 1.1 * OSI_POINT_CALC_STEPSIZE, SE_Env::Inst().GetOSIMaxLongitudinalDistance(),
+							OSI_POINT_DIST_SCALE, OSI_POINT_DIST_SCALE);
+
 						// If requirement is satisfied -> look further points
 						// If requirement is not satisfied:
 						// Assign last satisfied point as OSI point
@@ -5426,16 +5438,6 @@ void OpenDrive::SetRoadMarkOSIPoints()
 	for (int i=0; i<road_.size(); i++)
 	{
 		road = road_[i];
-
-		if (road->GetNumberOfSuperElevations() > 0)
-		{
-			// If road has lateral profile, then increase sampling resolution
-			max_segment_length = 0.1 * SE_Env::Inst().GetOSIMaxLongitudinalDistance();
-		}
-		else
-		{
-			max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
-		}
 
 		// Looping through each lane section
 		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
@@ -5611,6 +5613,10 @@ void OpenDrive::SetRoadMarkOSIPoints()
 
 											// Check OSI Requirement between current given points
 											osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
+
+											// Make sure max segment length is longer than stepsize
+											max_segment_length = GetMaxSegmentLen(pos, 1.1 * OSI_POINT_CALC_STEPSIZE, SE_Env::Inst().GetOSIMaxLongitudinalDistance(),
+												OSI_POINT_DIST_SCALE, OSI_POINT_DIST_SCALE);
 
 											// If requirement is satisfied -> look further points
 											// If requirement is not satisfied:
@@ -6440,7 +6446,7 @@ bool Position::EvaluateRoadZPitchRoll()
 	Road* road = GetRoadById(track_id_);
 	if (road != nullptr)
 	{
-		ret_value = road->GetZAndPitchByS(s_, &z_road_, &z_roadPrimPrim_, &p_road_, &elevation_idx_);
+		ret_value = road->GetZAndPitchByS(s_, &z_road_, &z_roadPrim_, &z_roadPrimPrim_, &p_road_, &elevation_idx_);
 		ret_value &= road->UpdateZAndRollBySAndT(s_, t_, &z_road_, &roadSuperElevationPrim_, &r_road_, &super_elevation_idx_);
 	}
 	else

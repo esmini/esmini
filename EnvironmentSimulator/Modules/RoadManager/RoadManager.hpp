@@ -1258,7 +1258,7 @@ namespace roadmanager
 		int GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectingRoadId);
 		double GetLaneWidthByS(double s, int lane_id);
 		double GetSpeedByS(double s);
-		bool GetZAndPitchByS(double s, double *z, double *z_primPrim, double *pitch, int *index);
+		bool GetZAndPitchByS(double s, double *z, double* z_prim, double *z_primPrim, double *pitch, int *index);
 		bool UpdateZAndRollBySAndT(double s, double t, double *z, double* roadSuperElevationPrim, double *roll, int *index);
 		int GetNumberOfLaneSections() { return (int)lane_section_.size(); }
 		std::string GetName() { return name_; }
@@ -2025,6 +2025,11 @@ namespace roadmanager
 		double GetZRoad() const { return z_road_; }
 
 		/**
+		Retrieve the road slope (vertical inclination)
+		*/
+		double GetZRoadPrim() const { return z_roadPrim_; }
+
+		/**
 		Retrieve the road slope rate of change (vertical bend)
 		*/
 		double GetZRoadPrimPrim() const { return z_roadPrimPrim_; }
@@ -2336,6 +2341,7 @@ namespace roadmanager
 		double	z_road_;
 		double	p_road_;
 		double	r_road_;
+		double  z_roadPrim_;  // the road vertical slope (dz/ds)
 		double  z_roadPrimPrim_;  // rate of change of the road slope, like the vertical curvature
 		double  roadSuperElevationPrim_;  // rate of change of the road superelevation/lateral inclination
 
