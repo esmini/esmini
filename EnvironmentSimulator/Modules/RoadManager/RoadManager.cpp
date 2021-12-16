@@ -2284,7 +2284,7 @@ bool Road::GetZAndPitchByS(double s, double *z, double *pitch, int *index)
 		{
 			double p = s - elevation->GetS();
 			*z = elevation->poly3_.Evaluate(p);
-			*pitch = -elevation->poly3_.EvaluatePrim(p);
+			*pitch = -atan(elevation->poly3_.EvaluatePrim(p));
 
 			return true;
 		}
