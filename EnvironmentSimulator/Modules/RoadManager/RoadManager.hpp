@@ -1258,8 +1258,8 @@ namespace roadmanager
 		int GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectingRoadId);
 		double GetLaneWidthByS(double s, int lane_id);
 		double GetSpeedByS(double s);
-		bool GetZAndPitchByS(double s, double *z, double *pitch, int *index);
-		bool UpdateZAndRollBySAndT(double s, double t, double *z, double *roll, int *index);
+		bool GetZAndPitchByS(double s, double *z, double *z_primPrim, double *pitch, int *index);
+		bool UpdateZAndRollBySAndT(double s, double t, double *z, double* roadSuperElevationPrim, double *roll, int *index);
 		int GetNumberOfLaneSections() { return (int)lane_section_.size(); }
 		std::string GetName() { return name_; }
 		void SetLength(double length) { length_ = length; }
@@ -2025,6 +2025,16 @@ namespace roadmanager
 		double GetZRoad() const { return z_road_; }
 
 		/**
+		Retrieve the road slope rate of change (vertical bend)
+		*/
+		double GetZRoadPrimPrim() const { return z_roadPrimPrim_; }
+
+		/**
+		Retrieve the road rate of change of the road lateral inclination
+		*/
+		double GetRoadSuperElevationPrim() const { return roadSuperElevationPrim_; }
+
+		/**
 		Retrieve the world coordinate heading angle (radians)
 		*/
 		double GetH() const;
@@ -2326,6 +2336,8 @@ namespace roadmanager
 		double	z_road_;
 		double	p_road_;
 		double	r_road_;
+		double  z_roadPrimPrim_;  // rate of change of the road slope, like the vertical curvature
+		double  roadSuperElevationPrim_;  // rate of change of the road superelevation/lateral inclination
 
 		// keep track for fast incremental updates of the position
 		int		track_idx_;				// road index

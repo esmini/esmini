@@ -727,6 +727,42 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     delete udpClient;
 }
 
+TEST(RoadOrientationTest, TesElevationPitchRoll)
+{
+    double dt = 0.1;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/elevations.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities.object_.size(), 4);
+
+    // Fast forward
+    while (se->getSimulationTime() < (5.0 - SMALL_NUMBER))
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    // Check vehicle orientation
+    EXPECT_NEAR(se->entities.object_[0]->pos_.GetZ(), -0.568177, 1e-5);
+    EXPECT_NEAR(se->entities.object_[0]->pos_.GetP(), 0.0, 1e-5);
+    EXPECT_NEAR(se->entities.object_[0]->pos_.GetR(), 0.37917, 1e-5);
+
+    // Fast forward
+    while (se->getSimulationTime() < (6.0 - SMALL_NUMBER))
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    EXPECT_NEAR(se->entities.object_[1]->pos_.GetZ(), 0.47815, 1e-5);
+    EXPECT_NEAR(se->entities.object_[1]->pos_.GetP(), 0.0, 1e-5);
+    EXPECT_NEAR(se->entities.object_[1]->pos_.GetR(), 5.96641, 1e-5);
+
+    EXPECT_NEAR(se->entities.object_[2]->pos_.GetZ(), 13.24676, 1e-5);
+    EXPECT_NEAR(se->entities.object_[2]->pos_.GetP(), 0.27808, 1e-5);
+    EXPECT_NEAR(se->entities.object_[2]->pos_.GetR(), 0, 1e-5);
+}
+
 #if LOG_TO_CONSOLE
 static void log_callback(const char* str)
 {
@@ -743,7 +779,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    // testing::GTEST_FLAG(filter) = "*EnsureContinuation*";
+    // testing::GTEST_FLAG(filter) = "*TesElevationPitchRoll*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

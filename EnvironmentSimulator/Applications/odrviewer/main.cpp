@@ -324,7 +324,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 	if (car->model->txNode_ != 0)
 	{
 		double h, p, r;
-		ZYZ2EulerAngles(car->pos->GetHRoad(), car->pos->GetPRoad(), car->pos->GetHRelative(), h, p, r);
+		R0R12EulerAngles(car->pos->GetHRoad(), car->pos->GetPRoad(), car->pos->GetRRoad(), car->pos->GetHRelative(), 0.0, 0.0, h, p, r);
 
 		car->model->SetPosition(car->pos->GetX(), car->pos->GetY(), car->pos->GetZ());
 		car->model->SetRotation(h, p, r);
@@ -345,6 +345,7 @@ int main(int argc, char** argv)
 	// use an ArgumentParser object to manage the program arguments.
 	opt.AddOption("help", "Show this help message");
 	opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
+	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many .tga files will be created");
 	opt.AddOption("density", "density (cars / 100 m)", "density", std::to_string(density));
 	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
@@ -493,6 +494,12 @@ int main(int argc, char** argv)
 
 		viewer->SetWindowTitleFromArgs(args);
 		viewer->RegisterKeyEventCallback(FetchKeyEvent, nullptr);
+
+		if (opt.GetOptionSet("capture_screen"))
+		{
+			LOG("Activate continuous screen capture");
+			viewer->CaptureContinuously(true);
+		}
 
 		if (opt.GetOptionSet("road_features"))
 		{
