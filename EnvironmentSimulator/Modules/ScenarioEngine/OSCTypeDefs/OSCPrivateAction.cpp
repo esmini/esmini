@@ -63,7 +63,7 @@ void AssignRouteAction::Start(double simTime, double dt)
 	object_->pos_.SetRoute(route_);
 
 	OSCAction::Start(simTime, dt);
-	
+
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
 	{
@@ -933,13 +933,10 @@ void TeleportAction::Start(double simTime, double dt)
 {
 	OSCAction::Start(simTime, dt);
 	LOG("Starting teleport Action");
-	//ScenarioEngine myEngine = new ScenarioEngine();
-	//LOG("Teleport time for %s :", object_->name_.c_str());
+
 	if (object_->IsGhost() && scenarioEngine_->getSimulationTime() > 0)
 	{
-		//printf("Time: %.2f \n", scenarioEngine_->getSimulationTime());
 		scenarioEngine_->SetSimulationTime(scenarioEngine_->getSimulationTime() - scenarioEngine_->GetHeadstartTime());
-		//printf("Trail: %d \n", object_->trail_.GetNumberOfVertices());
 		object_->trail_.Reset();
 
 		if (object_->ghost_Ego_ != 0)
@@ -947,7 +944,6 @@ void TeleportAction::Start(double simTime, double dt)
 			object_->SetSpeed(object_->ghost_Ego_->GetSpeed());
 		}
 
-		//printf("Trail: %d \n", object_->trail_.GetNumberOfVertices());
 		scenarioEngine_->ResetEvents(); // Ghost-project. Reset events finished by ghost.
 	}
 
@@ -973,11 +969,10 @@ void TeleportAction::Start(double simTime, double dt)
 	// Resolve any relative positions
 	object_->pos_.ReleaseRelation();
 
-	if (object_->pos_.GetType() == roadmanager::Position::PositionType::ROUTE)
+	if (object_->pos_.GetRoute())   // on a route
 	{
 		object_->pos_.CalcRoutePosition();
 	}
-
 
 	LOG("%s New position:", object_->name_.c_str());
 	object_->pos_.Print();
