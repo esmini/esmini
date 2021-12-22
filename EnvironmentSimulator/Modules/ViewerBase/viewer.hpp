@@ -275,6 +275,7 @@ namespace viewer
 		double wheel_angle_;
 		double wheel_rot_;
 		PointSensor* road_sensor_;
+		PointSensor* route_sensor_;
 		PointSensor* lane_sensor_;
 		PointSensor* trail_sensor_;
 		PointSensor* steering_sensor_;
@@ -397,7 +398,7 @@ namespace viewer
 		void UpdateSensor(PointSensor *sensor);
 		void SensorSetPivotPos(PointSensor *sensor, double x, double y, double z);
 		void SensorSetTargetPos(PointSensor *sensor, double x, double y, double z);
-		void UpdateRoadSensors(PointSensor *road_sensor, PointSensor *lane_sensor, roadmanager::Position *pos);
+		void UpdateRoadSensors(PointSensor *road_sensor, PointSensor* route_sensor, PointSensor *lane_sensor, roadmanager::Position *pos);
 		void setKeyUp(bool pressed) { keyUp_ = pressed; }
 		void setKeyDown(bool pressed) { keyDown_ = pressed; }
 		void setKeyLeft(bool pressed) { keyLeft_ = pressed; }

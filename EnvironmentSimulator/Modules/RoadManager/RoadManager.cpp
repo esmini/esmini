@@ -1796,6 +1796,17 @@ RoadLink::RoadLink(LinkType type, pugi::xml_node node) : contact_point_type_(Con
 	}
 }
 
+bool RoadLink::operator==(RoadLink& rhs)
+{
+	return
+		(
+			rhs.type_ == type_ &&
+			rhs.element_type_ == element_id_ &&
+			rhs.element_id_ == element_id_ &&
+			rhs.contact_point_type_ == contact_point_type_
+		);
+}
+
 void RoadLink::Print()
 {
 	cout << "RoadLink type: " << type_ << " id: " << element_id_ << " element type: " << element_type_ << " contact point type: " << contact_point_type_ << endl;
@@ -3825,6 +3836,37 @@ JunctionController* Junction::GetJunctionControllerByIdx(int index)
 	return 0;
 }
 
+Road* Junction::GetRoadAtOtherEndOfConnectingRoad(Road* connecting_road, Road* incoming_road)
+{
+	if (connecting_road->GetJunction() == 0)
+	{
+		LOG("Unexpected: Road %d not a connecting road", connecting_road->GetId());
+		return 0;
+	}
+
+	// Check both ends
+	LinkType link_type[2] = { LinkType::PREDECESSOR, LinkType::SUCCESSOR };
+	for (int i = 0; i < 2; i++)
+	{
+		RoadLink* link = connecting_road->GetLink(link_type[i]);
+		if (link && link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
+		{
+			if (link->GetElementId() == incoming_road->GetId())
+			{
+				// Get road at other end
+				RoadLink* link2 = connecting_road->GetLink(link_type[(i + 1) % 2]);
+				if (link2 && link2->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
+				{
+					return Position::GetOpenDrive()->GetRoadById(link2->GetElementId());
+				}
+			}
+		}
+	}
+
+	LOG("Failed to find road at other end of the connecting road %d from road %d", connecting_road->GetId(), incoming_road->GetId());
+	return nullptr;
+}
+
 bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fromRoad, int fromLaneId)
 {
 	RoadLink* nextLink = 0;
@@ -4884,7 +4926,6 @@ void Position::Init()
 	track_id_ = -1;
 	lane_id_ = 0;
 	s_ = 0.0;
-	s_route_ = 0.0;
 	s_trajectory_ = 0.0;
 	t_trajectory_ = 0.0;
 	t_ = 0.0;
@@ -6816,7 +6857,29 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 		else
 		{
 			// find valid connecting road, if multiple choices choose either most straight one OR by random
-			if (junctionSelectorAngle >= 0.0)
+			if (GetRoute())
+			{
+				// Choose direction of the route
+				Route* r = GetRoute();
+
+				// Find next road in route
+				Road* outgoing_road_target = r->GetRoadAtOtherEndOfConnectingRoad(road);
+				for (int i = 0; i < n_connections; i++)
+				{
+					LaneRoadLaneConnection lane_road_lane_connection =
+						junction->GetRoadConnectionByIdx(road->GetId(), lane->GetId(), i, snapToLaneTypes_);
+					Road* connecting_road = GetOpenDrive()->GetRoadById(lane_road_lane_connection.GetConnectingRoadId());
+					if (connecting_road)
+					{
+						Road* outgoing_road = junction->GetRoadAtOtherEndOfConnectingRoad(connecting_road, road);
+						if (outgoing_road == outgoing_road_target)
+						{
+							connection_idx = i;
+						}
+					}
+				}
+			}
+			else if (junctionSelectorAngle >= 0.0)
 			{
 				// Find the straighest link
 				int best_road_index = 0;
@@ -6937,7 +7000,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 	return 0;
 }
 
-double Position::DsToDistance(double ds)
+double Position::DistanceToDS(double ds)
 {
 	// Add or subtract stepsize according to curvature and offset, in order to keep constant speed
 	double curvature = GetCurvature();
@@ -6974,13 +7037,12 @@ double Position::DsToDistance(double ds)
 Position::ErrorCode Position::MoveAlongS(double ds, double dLaneOffset, double junctionSelectorAngle, bool actualDistance)
 {
 	RoadLink *link;
-	double ds_signed = ds;
 	int max_links = 8;  // limit lookahead through junctions/links
 	ContactPointType contact_point_type;
 
 	if (actualDistance)
 	{
-		ds = DsToDistance(ds);
+		ds = DistanceToDS(ds);
 	}
 
 	if (type_ == PositionType::RELATIVE_LANE)
@@ -7011,7 +7073,7 @@ Position::ErrorCode Position::MoveAlongS(double ds, double dLaneOffset, double j
 	}
 
 	double s_stop = 0;
-	ds_signed = (GetLaneId() > 0 ? -1 : 1) * ds; // adjust sign of ds according to lane direction - right lane is < 0 in road dir
+	double ds_signed = ds * (IsAngleForward(GetHRelative()) ? 1 : -1);
 	double signed_dLaneOffset = dLaneOffset;
 
 	// move from road to road until ds-value is within road length or maximum of connections has been crossed
@@ -7803,56 +7865,14 @@ int Position::CalcRoutePosition()
 		return -1;
 	}
 
-	// Loop over waypoints - look for current track ID and sum the distance (route s) up to current position
-	double dist = 0;
-	for (size_t i = 0; i < route_->minimal_waypoints_.size(); i++)
+	if (route_->SetTrackS(GetTrackId(), GetS()) == ErrorCode::ERROR_NO_ERROR)
 	{
-		int route_direction = route_->GetWayPointDirection((int)i);
-
-		if (route_direction == 0)
-		{
-			LOG("Unexpected lack of connection in route at waypoint %d", i);
-			return -1;
-		}
-
-		// Add length of intermediate waypoint road
-		dist += GetRoadById(route_->minimal_waypoints_[i].GetTrackId())->GetLength();
-
-		if (i == 0)
-		{
-			// Subtract initial s-value for the first waypoint
-			if (route_direction > 0)  // route in waypoint road direction
-			{
-				dist -= route_->minimal_waypoints_[i].s_;
-				dist = MAX(dist, 0.0);
-			}
-			else
-			{
-				// route in opposite road direction - remaining distance equals waypoint s-value
-				dist = route_->minimal_waypoints_[i].s_;
-			}
-		}
-
-		if (GetTrackId() == route_->minimal_waypoints_[i].GetTrackId())
-		{
-			// current position is at the road of this waypoint - i.e. along the route
-			// remove remaming s from road
-			if (route_direction > 0)
-			{
-				dist -= (GetRoadById(route_->minimal_waypoints_[i].GetTrackId())->GetLength() - GetS());
-			}
-			else
-			{
-				dist -= GetS();
-			}
-			s_route_ = MAX(dist, 0.0);
-
-			return 0;
-		}
+		return 0;
 	}
-
-	// Failed to map current position to the current route
-	return -1;
+	else
+	{
+		return -1;
+	}
 }
 
 int Position::SetRoute(Route *route)
@@ -8674,32 +8694,106 @@ int Position::SetRoutePosition(Position *position)
 	return -1;
 }
 
+double Position::GetRouteS()
+{
+	if (!route_)
+	{
+		return 0.0;
+	}
+
+	return route_->GetPathS();
+}
+
 Position::ErrorCode Position::MoveRouteDS(double ds, bool actualDistance)
 {
+	Position::ErrorCode retval = ErrorCode::ERROR_NO_ERROR;
+
 	if (!route_)
 	{
 		return ErrorCode::ERROR_GENERIC;
 	}
 
-	if (route_->minimal_waypoints_.size() == 0)
-	{
-		return ErrorCode::ERROR_GENERIC;
-	}
+	// Idea:
+	// Calculate adjusted ds for entity actual distance
+	// if already in junction:
+	//   Move entity first
+	//   Move route pos to same % along connecting road as entity
+	// else:
+	//   Move route position object first
+	//   Move entity position object
+	//   if both entered junction:
+	// 	   Move route pos to same % along connecting road as entity
+	//   else if only one entered junction:
+	// 	   Sync both to end of incoming road
 
 	if (actualDistance)
 	{
-		ds = DsToDistance(ds);
+		ds = DistanceToDS(ds);
 	}
 
-	return SetRouteS(route_, s_route_ + ds);
+	Road* entity_road = Position::GetOpenDrive()->GetRoadById(GetTrackId());
+	double s_route = route_->GetTrackS();
+	double s_entity = GetS();
+	double t_entity = GetT();
+
+	if (entity_road->GetJunction() > -1)
+	{
+		MoveAlongS(ds, false);  // actual distance = false since ds is already adjusted
+
+		if (Position::GetOpenDrive()->GetRoadById(GetTrackId())->GetJunction() > -1)
+		{
+			if (route_->CopySFractionOfLength(this) != ErrorCode::ERROR_NO_ERROR)
+			{
+				route_->SetTrackS(GetTrackId(), GetS());
+			}
+		}
+		else
+		{
+			// If out of junction, sync positions again
+			route_->SetTrackS(GetTrackId(), GetS());
+		}
+	}
+	else
+	{
+		retval = route_->MovePathDS(ds * (IsAngleForward(GetHRelative()) ? 1 : -1));
+		MoveAlongS(ds, false);  // actual distance = false since ds is already adjusted
+
+		Road* route_road2 = Position::GetOpenDrive()->GetRoadById(route_->GetTrackId());
+		Road* entity_road2 = Position::GetOpenDrive()->GetRoadById(GetTrackId());
+
+		if (entity_road2->GetJunction() > -1 && route_road2->GetJunction() > -1)
+		{
+			if (route_->CopySFractionOfLength(this) != ErrorCode::ERROR_NO_ERROR)
+			{
+				route_->SetTrackS(GetTrackId(), GetS());
+			}
+		}
+		else if (entity_road2->GetJunction() > -1 || route_road2->GetJunction() > -1)
+		{
+			if (entity_road2->GetJunction() > -1)
+			{
+				SetTrackPos(route_->GetTrackId(), s_route + ds, t_entity);
+			}
+			else
+			{
+				retval = route_->SetTrackS(route_->GetTrackId(), s_entity + ds);
+			}
+		}
+	}
+
+	if (retval == ErrorCode::ERROR_END_OF_ROUTE)
+	{
+		SetRoute(nullptr);
+	}
+
+	return retval;
 }
 
-int Position::SetRouteLanePosition(Route *route, double route_s, int laneId, double  laneOffset)
+int Position::SetRouteLanePosition(Route* route, double path_s, int lane_id, double lane_offset)
 {
-	SetRouteS(route, route_s);
+	route->SetPathS(path_s);
 
-	// Override lane data
-	SetLanePos(track_id_, laneId, s_, laneOffset);
+	SetLanePos(route->GetTrackId(), lane_id, route->GetTrackS(), lane_offset);
 
 	return 0;
 }
@@ -9492,12 +9586,19 @@ int Position::SetTrajectoryS(double s)
 	return 0;
 }
 
-Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
+Position::ErrorCode Position::SetRouteS(double route_s)
 {
-	if (route->minimal_waypoints_.size() == 0)
+	Position::ErrorCode retval = Position::ErrorCode::ERROR_NO_ERROR;
+
+	if (!GetRoute())
 	{
-		LOG("SetOffset No waypoints!");
 		return ErrorCode::ERROR_GENERIC;
+	}
+
+	retval = route_->SetPathS(route_s);
+	if (retval != ErrorCode::ERROR_NO_ERROR && retval != ErrorCode::ERROR_END_OF_ROUTE)
+	{
+		return retval;
 	}
 
 	// Register current driving direction
@@ -9507,68 +9608,18 @@ Position::ErrorCode Position::SetRouteS(Route *route, double route_s)
 		driving_direction = -1;
 	}
 
-	OpenDrive *od = route->minimal_waypoints_[0].GetOpenDrive();
-
-	double initial_s_offset = 0;
-	double initial_route_direction = route->GetWayPointDirection(0);
-
-	if (initial_route_direction > 0)
-	{
-		initial_s_offset = route->minimal_waypoints_[0].GetS();
-	}
-	else
-	{
-		initial_s_offset = od->GetRoadById(route->minimal_waypoints_[0].GetTrackId())->GetLength() - route->minimal_waypoints_[0].GetS();
-	}
-
-	double route_length = 0;
-	s_route_ = route_s;
 	double offset_dir_neutral = offset_ * SIGN(GetLaneId());
+	SetLanePos(route_->GetTrackId(), route_->GetLaneId(), route_->GetTrackS(), offset_dir_neutral);
 
-	// Find out what road and local s value
-	for (size_t i = 0; i < route->minimal_waypoints_.size(); i++)
+	if (retval == ErrorCode::ERROR_END_OF_ROUTE)
 	{
-		double road_length = GetRoadById(route->minimal_waypoints_[i].GetTrackId())->GetLength();
-
-		if (s_route_ < route_length + road_length - initial_s_offset)
-		{
-			// Found road segment
-			double local_s = 0;
-
-			int route_direction = route->GetWayPointDirection((int)i);
-
-			if (route_direction == 0)
-			{
-				LOG("Unexpected lack of connection within route at waypoint %d", i);
-				return ErrorCode::ERROR_GENERIC;
-			}
-
-			local_s = s_route_ - route_length + initial_s_offset;
-
-			if (route_direction < 0)  // along waypoint road direction
-			{
-				local_s = road_length - local_s;
-			}
-
-			if (SIGN(route->minimal_waypoints_[i].GetLaneId()) < 0)
-			{
-				SetHeadingRelative(driving_direction < 0 ? M_PI : 0.0);
-			}
-			else
-			{
-				SetHeadingRelative(driving_direction < 0 ? 0.0 : M_PI);
-			}
-
-			return (SetLanePos(route->minimal_waypoints_[i].GetTrackId(), route->minimal_waypoints_[i].GetLaneId(), local_s, SIGN(route->minimal_waypoints_[i].GetLaneId()) * offset_dir_neutral));
-		}
-		route_length += road_length - initial_s_offset;
-		initial_s_offset = 0;  // For all following road segments, calculate length from beginning
+		LOG("Reached end of route, reset and continue");
+		SetRoute(nullptr);
+		status_ |= static_cast<int>(PositionStatusMode::POS_STATUS_END_OF_ROUTE);
+		return ErrorCode::ERROR_END_OF_ROUTE;
 	}
 
-	LOG("Reached end of route, reset and continue");
-	SetRoute(nullptr);
-	status_ |= static_cast<int>(PositionStatusMode::POS_STATUS_END_OF_ROUTE);
-	return ErrorCode::ERROR_END_OF_ROUTE;
+	return ErrorCode::ERROR_NO_ERROR;
 }
 
 void Position::ReleaseRelation()
@@ -9698,17 +9749,24 @@ int Route::AddWaypoint(Position* position)
 				{
 					// Find out lane ID of the connecting road
 					Position connected_pos = Position(nodes[i - 1]->fromRoad->GetId(), nodes[i - 1]->fromLaneId, 0, 0);
+					all_waypoints_.push_back(*position);
 					minimal_waypoints_.push_back(connected_pos);
 					LOG("Route::AddWaypoint Added intermediate waypoint %d roadId %d laneId %d",
 						(int)minimal_waypoints_.size() - 1, connected_pos.GetTrackId(), nodes[i - 1]->fromLaneId);
 				}
 			}
 
+			length_ += dist;
 		}
 		else
 		{
 			invalid_route_ = true;
 		}
+	}
+	else
+	{
+		// First waypoint, make it the current position
+		currentPos_ = *position;
 	}
 	all_waypoints_.push_back(*position);
 	minimal_waypoints_.push_back(*position);
@@ -9724,6 +9782,293 @@ void Route::CheckValid()
 		LOG("Warning: Route %s is not valid, will be ignored for the default controller.", getName().c_str());
 		minimal_waypoints_.clear();
 	}
+}
+
+Position::ErrorCode Route::CopySFractionOfLength(Position* pos)
+{
+	Road* road0 = Position::GetOpenDrive()->GetRoadById(pos->GetTrackId());
+	Road* road1 = Position::GetOpenDrive()->GetRoadById(GetTrackId());
+
+	Position::ErrorCode retval = Position::ErrorCode::ERROR_NO_ERROR;
+
+	if (road0 == nullptr || road1 == nullptr)
+	{
+		return Position::ErrorCode::ERROR_GENERIC;
+	}
+
+	// Check direction, same of not
+	int direction = 0;
+	if (road0 == road1)
+	{
+		direction = 1;
+	}
+	else if (road0->GetJunction() == road1->GetJunction())
+	{
+		// connecting roads in same junction
+		RoadLink* link0_pre = road0->GetLink(LinkType::PREDECESSOR);
+		RoadLink* link1_pre = road1->GetLink(LinkType::PREDECESSOR);
+		RoadLink* link0_suc = road0->GetLink(LinkType::SUCCESSOR);
+		RoadLink* link1_suc = road1->GetLink(LinkType::SUCCESSOR);
+
+		if (link0_pre && link1_pre && *link0_pre == *link1_pre)
+		{
+			direction = 1;
+		}
+		else if (link0_suc && link1_suc && *link0_suc == *link1_suc)
+		{
+			direction = 1;
+		}
+		else if (link0_pre && link1_suc)
+		{
+			if ((link0_pre->GetType() == LinkType::PREDECESSOR && link1_suc->GetType() == LinkType::SUCCESSOR) ||
+				(link0_pre->GetType() == LinkType::SUCCESSOR && link1_suc->GetType() == LinkType::PREDECESSOR) &&
+				link0_pre->GetElementType() == link1_suc->GetElementType() &&
+				link0_pre->GetElementId() == link1_suc->GetElementId() &&
+				link0_pre->GetContactPointType() == link1_suc->GetContactPointType())
+			direction = -1;
+		}
+		else if (link0_suc && link1_pre)
+		{
+			if ((link0_suc->GetType() == LinkType::PREDECESSOR && link1_pre->GetType() == LinkType::SUCCESSOR) ||
+				(link0_suc->GetType() == LinkType::SUCCESSOR && link1_pre->GetType() == LinkType::PREDECESSOR) &&
+				link0_suc->GetElementType() == link1_pre->GetElementType() &&
+				link0_suc->GetElementId() == link1_pre->GetElementId() &&
+				link0_suc->GetContactPointType() == link1_pre->GetContactPointType())
+			direction = -1;
+		}
+		else
+		{
+			retval = Position::ErrorCode::ERROR_GENERIC;
+		}
+	}
+
+	if (direction != 0)
+	{
+		double fraction = CLAMP(pos->GetS() / MAX(SMALL_NUMBER, road0->GetLength()), 0.0, 1.0);
+		if (direction < 0)
+		{
+			fraction = 1 - fraction;
+		}
+		currentPos_.SetLanePos(GetTrackId(), GetLaneId(), fraction * road1->GetLength(), 0.0);
+	}
+
+	return retval;
+}
+
+Position::ErrorCode Route::SetTrackS(int trackId, double s)
+{
+	// Loop over waypoints - look for current track ID and sum the distance (route s) up to current position
+	double dist = 0;
+	double local_s;
+
+	if (s < 0 || minimal_waypoints_.size() == 0)
+	{
+		path_s_ = 0.0;
+		waypoint_idx_ = 0;
+		currentPos_.SetTrackPos(GetWaypoint(waypoint_idx_)->GetTrackId(), 0.0, 0.0);
+		return Position::ErrorCode::ERROR_NO_ERROR;
+	}
+
+	for (size_t i = 0; i < minimal_waypoints_.size(); i++)
+	{
+		int route_direction = GetWayPointDirection((int)i);
+
+		if (route_direction == 0)
+		{
+			LOG("Unexpected lack of connection in route at waypoint %d", i);
+			return Position::ErrorCode::ERROR_GENERIC;
+		}
+
+		// Add length of intermediate waypoint road
+		dist += Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength();
+
+		if (i == 0)
+		{
+			// Subtract initial s-value for the first waypoint
+			if (route_direction > 0)  // route in waypoint road direction
+			{
+				dist -= minimal_waypoints_[0].GetS();
+				dist = MAX(dist, 0.0);
+			}
+			else
+			{
+				// route in opposite road direction - remaining distance equals waypoint s-value
+				dist = minimal_waypoints_[0].GetS();
+			}
+		}
+
+		if (trackId == minimal_waypoints_[i].GetTrackId())
+		{
+			// current position is at the road of this waypoint - i.e. along the route
+			// remove remaming s from road
+			if (route_direction > 0)
+			{
+				dist -= (Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength() - s);
+			}
+			else
+			{
+				dist -= s;
+			}
+
+			path_s_ = MAX(dist, 0.0);
+			local_s = s;
+			waypoint_idx_ = (int)i;
+			currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
+
+			return Position::ErrorCode::ERROR_NO_ERROR;
+		}
+	}
+
+	// Failed to map current position to the current route
+	return Position::ErrorCode::ERROR_GENERIC;
+}
+
+Position::ErrorCode Route::MovePathDS(double ds)
+{
+	if (minimal_waypoints_.size() == 0)
+	{
+		return Position::ErrorCode::ERROR_GENERIC;
+	}
+
+	// Consider route direction
+	ds *= GetDirectionRelativeRoad();
+
+	return SetPathS(GetPathS() + ds);
+}
+
+Position::ErrorCode Route::SetPathS(double s)
+{
+	// Loop over waypoints - until reaching s meters
+	double dist = 0;
+	double local_s = 0.0;
+
+	if (s < 0 || minimal_waypoints_.size() == 0)
+	{
+		path_s_ = 0.0;
+		waypoint_idx_ = 0;
+		currentPos_.SetTrackPos(GetWaypoint(waypoint_idx_)->GetTrackId(), 0.0, 0.0);
+		return Position::ErrorCode::ERROR_NO_ERROR;
+	}
+
+	for (size_t i = 0; i < minimal_waypoints_.size(); i++)
+	{
+		int route_direction = GetWayPointDirection((int)i);
+
+		if (route_direction == 0)
+		{
+			LOG("Unexpected lack of connection in route at waypoint %d", i);
+			return Position::ErrorCode::ERROR_GENERIC;
+		}
+
+		// Add length of intermediate waypoint road
+		dist += Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength();
+
+		if (i == 0)
+		{
+			// Subtract initial s-value for the first waypoint
+			if (route_direction > 0)  // route in waypoint road direction
+			{
+				dist -= minimal_waypoints_[0].GetS();
+				dist = MAX(dist, 0.0);
+			}
+			else
+			{
+				// route in opposite road direction - remaining distance equals waypoint s-value
+				dist = minimal_waypoints_[0].GetS();
+			}
+		}
+
+		if (s < dist)
+		{
+			// current position is at the road of this waypoint - i.e. along the route
+			// remove remaming s from road
+			if (route_direction > 0)
+			{
+				local_s = s - (dist - Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength());
+			}
+			else
+			{
+				local_s = dist - s;
+			}
+
+			path_s_ = s;
+			waypoint_idx_ = (int)i;
+			currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
+
+			return Position::ErrorCode::ERROR_NO_ERROR;
+		}
+		else if (i == minimal_waypoints_.size() - 1)
+		{
+			// Past end of route
+			if (route_direction > 0)
+			{
+				local_s = Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength();
+			}
+			else
+			{
+				local_s = 0.0;
+			}
+			waypoint_idx_ = (int)i;
+			currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
+		}
+	}
+
+	// Failed to map current position, past the end of route
+	path_s_ = GetLength();
+	return Position::ErrorCode::ERROR_END_OF_ROUTE;
+}
+
+Position* Route::GetWaypoint(int index)
+{
+	if (index == -1)  // Get current
+	{
+		index = waypoint_idx_;
+	}
+
+	if (minimal_waypoints_.size() == 0 || index < 0 || index >= minimal_waypoints_.size())
+	{
+		LOG("Waypoint index %d out of range (%d)", index, minimal_waypoints_.size());
+		return 0;
+	}
+
+	return &minimal_waypoints_[index];
+}
+
+Road* Route::GetRoadAtOtherEndOfConnectingRoad(Road* incoming_road)
+{
+	Road* connecting_road = Position::GetOpenDrive()->GetRoadById(GetTrackId());
+	Junction* junction = Position::GetOpenDrive()->GetJunctionById(connecting_road->GetJunction());
+
+	if (junction == 0)
+	{
+		LOG("Unexpected: Road %d not a connecting road", connecting_road->GetId());
+		return 0;
+	}
+
+	return junction->GetRoadAtOtherEndOfConnectingRoad(connecting_road, incoming_road);
+}
+
+int Route::GetDirectionRelativeRoad()
+{
+	double angle = 0.0;
+	int direction = 0;
+	Position* pos2 = nullptr;
+
+	// Find out direction of route in relation to the current waypoint road
+	if (waypoint_idx_ < minimal_waypoints_.size() - 1)
+	{
+		// Look forward
+		pos2 = GetWaypoint(waypoint_idx_ + 1);
+		direction = Position::GetOpenDrive()->IsDirectlyConnected(GetTrackId(), pos2->GetTrackId(), angle);
+	}
+	else if (waypoint_idx_ > 0)
+	{
+		// Look backwards
+		pos2 = GetWaypoint(waypoint_idx_ - 1);
+		direction = -Position::GetOpenDrive()->IsDirectlyConnected(GetTrackId(), pos2->GetTrackId(), angle);
+	}
+
+	return direction;
 }
 
 int Route::GetWayPointDirection(int index)
@@ -9785,11 +10130,6 @@ int Route::GetWayPointDirection(int index)
 	}
 
 	return connected;
-}
-
-double Route::GetLength()
-{
-	return 0.0;
 }
 
 void Route::setName(std::string name)

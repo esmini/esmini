@@ -96,11 +96,6 @@ int Object::MoveAlongS(double ds, bool actualDistance)
 {
 	int retval = 0;
 
-	if (GetAbsAngleDifference(pos_.GetH(), pos_.GetDrivingDirection()) > M_PI_2)
-	{
-		// If pointing in other direction
-		ds *= -1;
-	}
 
 	if (pos_.GetRoute() && !pos_.GetRoute()->invalid_route_)
 	{

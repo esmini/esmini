@@ -944,6 +944,7 @@ CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, os
 {
 	steering_sensor_ = 0;
 	road_sensor_ = 0;
+	route_sensor_ = 0;
 	lane_sensor_ = 0;
 	trail_sensor_ = 0;
 
@@ -2513,6 +2514,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 bool Viewer::CreateRoadSensors(CarModel *vehicle_model)
 {
 	vehicle_model->road_sensor_ = CreateSensor(color_gray, true, false, 0.25, 2.5);
+	vehicle_model->route_sensor_ = CreateSensor(color_blue, true, true, 0.45, 2.5);
 	vehicle_model->lane_sensor_ = CreateSensor(color_gray, true, true, 0.25, 2.5);
 
 	return true;
@@ -2573,9 +2575,9 @@ PointSensor* Viewer::CreateSensor(double color[], bool create_ball, bool create_
 	return sensor;
 }
 
-void Viewer::UpdateRoadSensors(PointSensor *road_sensor, PointSensor *lane_sensor, roadmanager::Position *pos)
+void Viewer::UpdateRoadSensors(PointSensor *road_sensor, PointSensor* route_sensor, PointSensor *lane_sensor, roadmanager::Position *pos)
 {
-	if (road_sensor == 0 || lane_sensor == 0)
+	if (road_sensor == 0 || route_sensor == 0 || lane_sensor == 0)
 	{
 		return;
 	}
@@ -2586,6 +2588,17 @@ void Viewer::UpdateRoadSensors(PointSensor *road_sensor, PointSensor *lane_senso
 	SensorSetPivotPos(road_sensor, pos->GetX(), pos->GetY(), pos->GetZ());
 	SensorSetTargetPos(road_sensor, track_pos.GetX(), track_pos.GetY(), track_pos.GetZ());
 	UpdateSensor(road_sensor);
+
+	roadmanager::Position route_pos(*pos);
+	roadmanager::Route* r = pos->GetRoute();
+	if (r)
+	{
+		route_pos.SetLanePos(r->GetTrackId(), r->GetLaneId(), r->GetTrackS(), 0.0);
+	}
+
+	SensorSetPivotPos(route_sensor, pos->GetX(), pos->GetY(), pos->GetZ());
+	SensorSetTargetPos(route_sensor, route_pos.GetX(), route_pos.GetY(), route_pos.GetZ());
+	UpdateSensor(route_sensor);
 
 	roadmanager::Position lane_pos(*pos);
 	lane_pos.SetLanePos(pos->GetTrackId(), pos->GetLaneId(), pos->GetS(), 0);

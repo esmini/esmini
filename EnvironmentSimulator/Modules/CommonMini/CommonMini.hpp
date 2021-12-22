@@ -138,9 +138,9 @@ double GetAngleInIntervalMinusPIPlusPI(double angle);
 double GetAngleDifference(double angle1, double angle2);
 
 /**
-  This function checks if the angle is in the interval of [-pi/2, +pi/2]
+  This function checks if the angle is in quad 1 or 4, i.e. not in range [pi/2, 3pi/3]
 */
-bool IsAngleStraight(double teta);
+bool IsAngleForward(double teta);
 
 /**
   Retrieve the cross product of two vectors where z=0

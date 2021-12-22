@@ -1467,8 +1467,8 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 	}
 	else if (positionChildName == "RoutePosition")
 	{
-		roadmanager::Route *route = 0;
-		OSCPositionRoute *pos = new OSCPositionRoute();
+		roadmanager::Route *route = nullptr;
+		OSCPositionRoute *pos = new OSCPositionRoute;
 		OSCOrientation *orientation = 0;
 
 		for (pugi::xml_node routeChild = positionChild.first_child(); routeChild; routeChild = routeChild.next_sibling())
@@ -1483,6 +1483,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 					{
 						// Parse inline route
 						route = parseOSCRoute(routeRefChild);
+						if (route == nullptr) LOG_AND_QUIT("Failed to resolve inline route");
 					}
 					else if (routeRefChildName == "CatalogReference")
 					{
@@ -1507,6 +1508,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 						}
 
 						parameters.RestoreParameterDeclarations();
+						if (route == nullptr) LOG_AND_QUIT("Failed to resolve route");
 					}
 				}
 			}
@@ -1964,14 +1966,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				if (lateralChild.name() == std::string("LaneChangeAction"))
 				{
 					LatLaneChangeAction *action_lane = new LatLaneChangeAction();
-
+					double target_lane_offset = 0.0;
 					if (parameters.ReadAttribute(lateralChild, "targetLaneOffset") != "")
 					{
-						action_lane->target_lane_offset_ = strtod(parameters.ReadAttribute(lateralChild, "targetLaneOffset"));
-					}
-					else
-					{
-						action_lane->target_lane_offset_ = 0;
+						target_lane_offset = strtod(parameters.ReadAttribute(lateralChild, "targetLaneOffset"));
 					}
 
 					for (pugi::xml_node laneChangeChild = lateralChild.first_child(); laneChangeChild; laneChangeChild = laneChangeChild.next_sibling())

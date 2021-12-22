@@ -158,23 +158,9 @@ double GetAngleDifference(double angle1, double angle2)
 	return diff;
 }
 
-bool IsAngleStraight(double teta)
+bool IsAngleForward(double teta)
 {
-	teta = fmod(teta + M_PI, 2 * M_PI);
-
-	if (teta < 0)
-		teta += 2 * M_PI;
-
-	teta = teta - M_PI;
-
-	if (teta >= -(M_PI / 2) && teta <= (M_PI / 2))
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	return !(teta > M_PI_2 && teta < 3 * M_PI_2);
 }
 
 double GetAngleSum(double angle1, double angle2)

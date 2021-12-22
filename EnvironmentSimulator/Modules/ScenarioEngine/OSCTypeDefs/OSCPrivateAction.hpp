@@ -76,7 +76,7 @@ namespace scenarioengine
 			double target_value_;
 
 			double Evaluate(double factor, double start_value, double end_value);  // 0 = start_value, 1 = end_value
-
+			double EvaluatePrim(double factor, double start_value, double end_value);
 			TransitionDynamics() : shape_(DynamicsShape::STEP), dimension_(DynamicsDimension::TIME), target_value_(0) {}
 		};
 
@@ -292,7 +292,6 @@ namespace scenarioengine
 	class LatLaneChangeAction : public OSCPrivateAction
 	{
 	public:
-		TransitionDynamics transition_dynamics_;
 
 		class Target
 		{
@@ -324,32 +323,24 @@ namespace scenarioengine
 		};
 
 		Target* target_;
-		roadmanager::Position internal_position_;  // Internal position representation
-		double start_offset_;
+		TransitionDynamics transition_dynamics_;
 		double target_lane_offset_;
-		int target_lane_id_;
-		double elapsed_;
-		double sim_time_;
 
 		LatLaneChangeAction(LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME) :
+			start_offset_(0.0), target_lane_offset_(0.0),
+			target_lane_id_(0), interp_param_(0.0),
 			OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT)
 		{
 			transition_dynamics_.dimension_ = timing_type;
-			start_offset_ = 0.0;
-			target_lane_offset_ = 0.0;
-			target_lane_id_ = 0;
-			elapsed_ = 0.0;
 		}
 
-		LatLaneChangeAction(const LatLaneChangeAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT)
+		LatLaneChangeAction(const LatLaneChangeAction& action) :
+			transition_dynamics_(action.transition_dynamics_), target_(action.target_),
+			start_offset_(action.start_offset_), target_lane_offset_(action.target_lane_offset_),
+			target_lane_id_(action.target_lane_id_), interp_param_(action.interp_param_),
+			OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, ControlDomains::DOMAIN_LAT)
 		{
 			name_ = action.name_;
-			transition_dynamics_ = action.transition_dynamics_;
-			target_ = action.target_;
-			start_offset_ = action.start_offset_;
-			target_lane_offset_ = action.target_lane_offset_;
-			target_lane_id_ = action.target_lane_id_;
-			elapsed_ = action.elapsed_;
 		}
 
 		OSCPrivateAction* Copy()
@@ -367,6 +358,15 @@ namespace scenarioengine
 		void Start(double simTime, double dt);
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
+
+	private:
+		int target_lane_id_;
+		double start_offset_;
+		roadmanager::Position internal_pos_;  // Internal position representation
+		double sim_time_;
+		double target_offset_agnostic_;
+		double start_offset_agnostic_;
+		double interp_param_;
 	};
 
 	class LatLaneOffsetAction : public OSCPrivateAction

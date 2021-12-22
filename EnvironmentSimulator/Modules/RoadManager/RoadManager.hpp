@@ -670,6 +670,7 @@ namespace roadmanager
 		RoadLink(LinkType type, ElementType element_type, int element_id, ContactPointType contact_point_type) :
 			type_(type), element_id_(element_id), element_type_(element_type),  contact_point_type_(contact_point_type) {}
 		RoadLink(LinkType type, pugi::xml_node node);
+		bool operator== (RoadLink& rhs);
 
 		int GetElementId() { return element_id_; }
 		LinkType GetType() { return type_; }
@@ -1437,6 +1438,7 @@ namespace roadmanager
 		int GetNumberOfControllers() { return (int)controller_.size(); }
 		JunctionController *GetJunctionControllerByIdx(int index);
 		void AddController(JunctionController controller) { controller_.push_back(controller); }
+		Road* GetRoadAtOtherEndOfConnectingRoad(Road* connecting_road, Road* incoming_road);
 
 	private:
 
@@ -1792,14 +1794,13 @@ namespace roadmanager
 		@param position A regular position created with road, lane or world coordinates
 		@return Non zero return value indicates error of some kind
 		*/
-		int SetRoutePosition(Position *position);
+		int SetRoutePosition(Position* position);
 
 		/**
 		Retrieve the S-value of the current route position. Note: This is the S along the
 		complete route, not the actual individual roads.
 		*/
-		double GetRouteS() { return s_route_; }
-
+		double GetRouteS();
 		/**
 		Move current position forward, or backwards, ds meters along the route
 		@param ds Distance to move, negative will move backwards
@@ -1809,18 +1810,18 @@ namespace roadmanager
 		ErrorCode MoveRouteDS(double ds, bool actualDistance = true);
 
 		/**
-		Move current position along the route
-		@param ds Distance to move, negative will move backwards
-		@return Non zero return value indicates error of some kind
-		*/
-		int SetRouteLanePosition(Route* route, double route_s, int laneId, double  laneOffset);
-
-		/**
 		Move current position to specified S-value along the route
 		@param route_s Distance to move, negative will move backwards
 		@return Non zero return value indicates error of some kind, most likely End Of Route
 		*/
-		ErrorCode SetRouteS(Route* route, double route_s);
+		ErrorCode SetRouteS(double route_s);
+
+		/**
+		Move current position along the route
+		@param ds Distance to move, negative will move backwards
+		@return Non zero return value indicates error of some kind
+		*/
+		int SetRouteLanePosition(Route* route, double path_s, int lane_id, double lane_offset);
 
 		/**
 		Move current position forward, or backwards, ds meters along the trajectory
@@ -1934,7 +1935,7 @@ namespace roadmanager
 		*/
 		int CalcProbeTarget(Position *target, RoadProbeInfo *data);
 
-		double DsToDistance(double ds);
+		double DistanceToDS(double ds);
 
 		/**
 		Move position along the road network, forward or backward, from the current position
@@ -2302,7 +2303,6 @@ namespace roadmanager
 		double  h_offset_;			// local heading offset given by lane width and offset
 		double  h_relative_;		// heading relative to the road (h_ = h_road_ + h_relative_)
 		double  z_relative_;        // z relative to the road
-		double  s_route_;			// longitudinal point/distance along the route
 		double  s_trajectory_;		// longitudinal point/distance along the trajectory
 		double  t_trajectory_;		// longitudinal point/distance along the trajectory
 		double  curvature_;
@@ -2363,25 +2363,63 @@ namespace roadmanager
 	class Route
 	{
 	public:
-		Route(): invalid_route_(false) {}
+		Route() : invalid_route_(false), waypoint_idx_(-1), path_s_(0), length_(0) {}
 
 		/**
 		Adds a waypoint to the route. One waypoint per road. At most one junction between waypoints.
 		@param position A regular position created with road, lane or world coordinates
 		@return Non zero return value indicates error of some kind
 		*/
-		int AddWaypoint(Position *position);
+		int AddWaypoint(Position* position);
 		int GetWayPointDirection(int index);
 
 		void setName(std::string name);
 		std::string getName();
-		double GetLength();
+		double GetLength() { return length_; }
 		void CheckValid();
+
+		// Current route position data
+		// Actual object position might differ, e.g. laneId or even trackId in junctions
+		double GetTrackS() { return currentPos_.GetS(); }
+		double GetPathS() { return path_s_; }
+		int GetLaneId() { return currentPos_.GetLaneId(); }
+		int GetTrackId() { return currentPos_.GetTrackId(); }
+		Position* GetWaypoint(int index = -1);  // -1 means current
+		Road* GetRoadAtOtherEndOfConnectingRoad(Road* incoming_road);
+		int GetDirectionRelativeRoad();
+		Position* GetCurrentPosition() { return &currentPos_; }
+
+		/**
+		Specify route position in terms of a track ID and track S value
+		@return Non zero return value indicates error of some kind
+		*/
+		Position::ErrorCode SetTrackS(int trackId, double s);
+
+		/**
+		Move current position forward, or backwards, ds meters along the route
+		@param ds Distance to move, negative will move backwards
+		@param actualDistance Distance considering lateral offset and curvature (true/default) or along centerline (false)
+		@return Non zero return value indicates error of some kind, most likely End Of Route
+		*/
+		Position::ErrorCode MovePathDS(double ds);
+
+		/**
+		Move current position to specified S-value along the route
+		@param route_s Distance to move, negative will move backwards
+		@return Non zero return value indicates error of some kind, most likely End Of Route
+		*/
+		Position::ErrorCode SetPathS(double s);
+
+		Position::ErrorCode CopySFractionOfLength(Position* pos);
 
 		std::vector<Position> minimal_waypoints_; // used only for the default controllers
 		std::vector<Position> all_waypoints_; // used for user-defined controllers
 		std::string name_;
 		bool invalid_route_;
+		double path_s_;
+		Position currentPos_;
+		double length_;
+		int waypoint_idx_;
 	};
 
 	// A Road Path is a linked list of road links (road connections or junctions)
