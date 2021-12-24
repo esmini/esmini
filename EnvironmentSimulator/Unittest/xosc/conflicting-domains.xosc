@@ -72,7 +72,7 @@
                                  <LaneOffsetTarget>
                                     <AbsoluteTargetLaneOffset value="5.0" />
                                  </LaneOffsetTarget>
-                                 <LaneOffsetActionDynamics maxLateralAcc="0.25" dynamicsShape="sinusoidal" />
+                                 <LaneOffsetActionDynamics maxLateralAcc="0.5" dynamicsShape="sinusoidal" />
                               </LaneOffsetAction>
                            </LateralAction>
                         </PrivateAction>               

@@ -6732,6 +6732,9 @@ void Position::ForceLaneId(int lane_id)
 
 	lane_id_ = lane_id;
 	offset_ -= lat_dist;
+
+	// Update track position (t) as well
+	Lane2Track();
 }
 
 std::string OpenDrive::ContactPointType2Str(ContactPointType type)
@@ -7493,7 +7496,7 @@ void Position::SetHeadingRelativeRoadDirection(double heading)
 	if (h_relative_ > M_PI_2 && h_relative_ < 3 * M_PI_2)
 	{
 		// Driving towards road direction
-		h_relative_ = GetAngleInInterval2PI(-heading + M_PI);
+		h_relative_ = GetAngleInInterval2PI(heading + M_PI);
 	}
 	else
 	{
@@ -9865,7 +9868,14 @@ Position::ErrorCode Route::SetTrackS(int trackId, double s)
 	{
 		path_s_ = 0.0;
 		waypoint_idx_ = 0;
-		currentPos_.SetTrackPos(GetWaypoint(waypoint_idx_)->GetTrackId(), 0.0, 0.0);
+		if (minimal_waypoints_.size() > 0)
+		{
+			currentPos_.SetTrackPos(GetWaypoint(waypoint_idx_)->GetTrackId(), 0.0, 0.0);
+		}
+		else
+		{
+			currentPos_.SetTrackPos(-1, 0.0, 0.0);
+		}
 		return Position::ErrorCode::ERROR_NO_ERROR;
 	}
 

@@ -16,79 +16,262 @@
 #include "OSCPrivateAction.hpp"
 #include "ScenarioEngine.hpp"
 
-#define MAX(x, y) (y > x ? y : x)
-#define MIN(x, y) (y < x ? y : x)
 #define MAX_DECELERATION -8.0
 #define LONGITUDINAL_DISTANCE_THRESHOLD 0.1
 
 using namespace scenarioengine;
 
-double OSCPrivateAction::TransitionDynamics::EvaluatePrim(double factor, double start_value, double end_value)
+// Equations used in TransitionDynamics
+// ------------------------------------
+// Step: Trivial
+// Linear: Trivial
+// Sinusoidal:
+//		f(x) = a-b*(cos(pi*x/c)-1)/2
+//		f'(x) = pi*b*sin(pi*x/c)/(2*c)
+//		Slope peaks midway, at x=c/2 =>
+//		f'peak = pi*b/(2*c)
+//		f''(x): b*pi^2*cos(pi*x/c)/(2c^2)
+//		Acceleration peaks at endpoints (x=0, x=c)
+//      f''peak: f''(0) = pi^2*b/(2c^2), f''(c) = -b*pi^2/(2c^2)
+//      plot: "https://www.desmos.com/calculator/ikrmaen0mm"
+//		f': "https://www.wolframalpha.com/input/?i=d/dx(a-b*(cos(pi*x/c)-1)/2)"
+//		f'peak: "https://www.wolframalpha.com/input/?i=d/dx(a-b*(cos(pi*x/c)-1)/2),x=c/2"
+//		f'': "https://www.wolframalpha.com/input/?i=d/dx(pi*b*sin(pi*x/c)/(2*c))"
+// Cubic:
+//		f(x) = a+3b(x/c)^2-2b(x/c)^3
+//		f'(x) = 6bx(c-x)/c^3
+//		Slope (rate) peaks midway, at x=c/2 =>
+//      f'peak = f'(c/2) = 3*b/(2*c)
+//      f''(x) = 6b(c-2x)/c^3
+//		Acceleration peaks at endpoints (x=0, x=c)
+//      f''peak: f''(0) = 6b/c^2, f''(c) = -6b/c^2
+//		plot: "https://www.desmos.com/calculator/uz5tmlfedf"
+//		f': "https://www.wolframalpha.com/input/?i=d/dx(a%2B3b(x/c)^2-2b(x/c)^3)"
+//		f'peak: "https://www.wolframalpha.com/input/?i=d/dx(a%2B3b(x/c)^2-2b(x/c)^3),x=c/2"
+//      f'': Trivial
+
+double OSCPrivateAction::TransitionDynamics::EvaluatePrimPeak()
 {
-	if (factor > 1.0)
+	if (dimension_ == DynamicsDimension::RATE)
 	{
-		factor = 1.0;
-	}
-	if (shape_ == DynamicsShape::STEP)
-	{
-		return end_value;
-	}
-	else if (shape_ == DynamicsShape::LINEAR)
-	{
-		return start_value + factor * (end_value - start_value);
-	}
-	else if (shape_ == DynamicsShape::SINUSOIDAL)
-	{
-		// f'(x) = 1/2*pi*A*sin(pi*x)
-		return 0.5 * M_PI * (end_value - start_value) * sin(M_PI * factor);
-	}
-	else if (shape_ == DynamicsShape::CUBIC)
-	{
-		// Equation: https://www.desmos.com/calculator/j9h7jzcowe
-		// t(3(x/d)^2-2(x/d)^3)
-		double val = start_value + (end_value - start_value) * (3 * factor * factor - 2 * factor * factor * factor);
-		return val;
+		return GetRate();
 	}
 	else
 	{
-		LOG("Invalid Dynamics shape: %d", shape_);
+		if (shape_ == DynamicsShape::STEP)
+		{
+			return LARGE_NUMBER * SIGN(GetTargetVal() - GetStartVal());
+		}
+		else if (shape_ == DynamicsShape::LINEAR)
+		{
+			return (GetTargetVal() - GetStartVal()) / AVOID_ZERO(GetParamTargetVal());
+		}
+		else if (shape_ == DynamicsShape::SINUSOIDAL)
+		{
+			return M_PI * (GetTargetVal() - GetStartVal()) / (2 * AVOID_ZERO(GetParamTargetVal()));
+		}
+		else if (shape_ == DynamicsShape::CUBIC)
+		{
+			return 1.5 * (GetTargetVal() - GetStartVal()) / AVOID_ZERO(GetParamTargetVal());
+		}
+		else
+		{
+			LOG("Invalid Dynamics shape: %d", shape_);
+		}
 	}
 
-	return end_value;
+	return 0;
 }
 
-double OSCPrivateAction::TransitionDynamics::Evaluate(double factor, double start_value, double end_value)
+double OSCPrivateAction::TransitionDynamics::GetTargetParamValByPrimPeak(double prim_peak)
 {
-	if (factor > 1.0)
-	{
-		factor = 1.0;
-	}
 	if (shape_ == DynamicsShape::STEP)
 	{
-		return end_value;
+		return 0.0;
 	}
 	else if (shape_ == DynamicsShape::LINEAR)
 	{
-		return start_value + factor * (end_value - start_value);
+		return (GetTargetVal() - GetStartVal()) / prim_peak;
 	}
 	else if (shape_ == DynamicsShape::SINUSOIDAL)
 	{
-		// f(x) = -1/2 A (cos(pi*x) - 1)
-		return start_value - 0.5 * (end_value - start_value) * (cos(M_PI * factor) - 1);
+		return M_PI * (GetTargetVal() - GetStartVal()) / (2 * prim_peak);
 	}
 	else if (shape_ == DynamicsShape::CUBIC)
 	{
-		// Equation: https://www.desmos.com/calculator/j9h7jzcowe
-		// t(3(x/d)^2-2(x/d)^3)
-		double val = start_value + (end_value - start_value) * (3 * factor * factor - 2 * factor * factor * factor);
-		return val;
+		return 1.5 * (GetTargetVal() - GetStartVal()) / prim_peak;
 	}
 	else
 	{
 		LOG("Invalid Dynamics shape: %d", shape_);
 	}
 
-	return end_value;
+	return 0.0;
+}
+
+double OSCPrivateAction::TransitionDynamics::GetTargetParamValByPrimPrimPeak(double prim_prim_peak)
+{
+	if (shape_ == DynamicsShape::STEP)
+	{
+		return 0.0;
+	}
+	else if (shape_ == DynamicsShape::LINEAR)
+	{
+		// Acceleration is infinite at start and end, anything else should result in flat line
+		// Just to have something reasonable, re-use acc equation from CUBIC case
+		return sqrt(6 * abs(GetTargetVal() - GetStartVal()) / prim_prim_peak);
+	}
+	else if (shape_ == DynamicsShape::SINUSOIDAL)
+	{
+		// pi*sqrt(abs(b)/(2*prim_prim_peak))
+		return M_PI * sqrt(abs(GetTargetVal() - GetStartVal()) / (2 * prim_prim_peak));
+	}
+	else if (shape_ == DynamicsShape::CUBIC)
+	{
+		// sqrt(6*abs(b)/y)
+		return sqrt(6 * abs(GetTargetVal() - GetStartVal()) / prim_prim_peak);
+	}
+	else
+	{
+		LOG("Invalid Dynamics shape: %d", shape_);
+	}
+
+	return 0.0;
+}
+
+double OSCPrivateAction::TransitionDynamics::EvaluatePrim()
+{
+	if (shape_ == DynamicsShape::STEP)
+	{
+		return LARGE_NUMBER * SIGN(GetTargetVal() - GetStartVal());
+	}
+	else if (shape_ == DynamicsShape::LINEAR)
+	{
+		return (GetTargetVal() - GetStartVal()) / AVOID_ZERO(GetParamTargetVal());
+	}
+	else if (shape_ == DynamicsShape::SINUSOIDAL)
+	{
+		return M_PI * (GetTargetVal() - GetStartVal()) * sin(M_PI * param_val_ / GetParamTargetVal()) /
+			(2 * AVOID_ZERO(GetParamTargetVal()));
+	}
+	else if (shape_ == DynamicsShape::CUBIC)
+	{
+		return 6 * (GetTargetVal() - GetStartVal()) * (GetParamTargetVal() - param_val_) * param_val_ /
+			pow(AVOID_ZERO(GetParamTargetVal()), 3);
+	}
+	else
+	{
+		LOG("Invalid Dynamics shape: %d", shape_);
+	}
+
+	return 0;
+}
+
+double OSCPrivateAction::TransitionDynamics::EvaluateScaledPrim()
+{
+	return EvaluatePrim() / AVOID_ZERO(scale_factor_);
+}
+
+double OSCPrivateAction::TransitionDynamics::Evaluate()
+{
+	if (shape_ == DynamicsShape::STEP)
+	{
+		return GetTargetVal();
+	}
+	else if (shape_ == DynamicsShape::LINEAR)
+	{
+		return GetStartVal() + GetParamVal() * (GetTargetVal() - GetStartVal()) / (AVOID_ZERO(GetParamTargetVal()));
+	}
+	else if (shape_ == DynamicsShape::SINUSOIDAL)
+	{
+		return GetStartVal() - (GetTargetVal() - GetStartVal()) * (cos(M_PI * GetParamVal() / AVOID_ZERO(GetParamTargetVal())) - 1) / 2;
+	}
+	else if (shape_ == DynamicsShape::CUBIC)
+	{
+		return GetStartVal() + (GetTargetVal() - GetStartVal()) * pow(GetParamVal() / AVOID_ZERO(GetParamTargetVal()), 2) *
+			(3 - 2 * GetParamVal() / AVOID_ZERO(GetParamTargetVal()));
+	}
+	else
+	{
+		LOG("Invalid Dynamics shape: %d", shape_);
+	}
+
+	return GetTargetVal();
+}
+
+void OSCPrivateAction::TransitionDynamics::Reset()
+{
+	scale_factor_ = 1.0;
+	param_val_ = 0.0;
+	start_val_ = 0.0;
+	target_val_ = 0.0;
+}
+
+int OSCPrivateAction::TransitionDynamics::Step(double delta_param_val)
+{
+	param_val_ += delta_param_val / scale_factor_;
+
+	return 0;
+}
+
+void OSCPrivateAction::TransitionDynamics::SetStartVal(double start_val)
+{
+	start_val_ = start_val;
+	UpdateRate();
+}
+
+void OSCPrivateAction::TransitionDynamics::SetTargetVal(double target_val)
+{
+	target_val_ = target_val;
+	UpdateRate();
+}
+
+void OSCPrivateAction::TransitionDynamics::SetParamTargetVal(double target_value)
+{
+	if (dimension_ != DynamicsDimension::RATE)
+	{
+		param_target_val_ = AVOID_ZERO(target_value);
+	}
+	else
+	{
+		// Interpret the target parameter value as rate
+		SetRate(target_value);
+	}
+}
+
+void OSCPrivateAction::TransitionDynamics::SetMaxRate(double max_rate)
+{
+	// Check max rate
+	double peak_rate = EvaluatePrimPeak();
+
+	if (abs(peak_rate) > abs(max_rate))
+	{
+		scale_factor_ = abs(peak_rate) / abs(AVOID_ZERO(max_rate));
+	}
+	else
+	{
+		scale_factor_ = 1.0;
+	}
+}
+
+void OSCPrivateAction::TransitionDynamics::SetRate(double rate)
+{
+	// Adapt sign
+	rate_ = rate;
+
+	UpdateRate();
+}
+
+void OSCPrivateAction::TransitionDynamics::UpdateRate()
+{
+	// Adapt sign
+	rate_ = SIGN(GetTargetVal() - GetStartVal()) * abs(rate_);
+
+	if (dimension_ == DynamicsDimension::RATE)
+	{
+		// Find out parameter range from rate
+		param_target_val_ = AVOID_ZERO(GetTargetParamValByPrimPeak(rate_));
+	}
 }
 
 void AssignRouteAction::Start(double simTime, double dt)
@@ -353,7 +536,9 @@ void AssignControllerAction::Start(double simTime, double dt)
 void LatLaneChangeAction::Start(double simTime, double dt)
 {
 	OSCAction::Start(simTime, dt);
-	sim_time_ = simTime;
+	int target_lane_id_ = 0;
+
+	transition_.Reset();
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
@@ -382,58 +567,18 @@ void LatLaneChangeAction::Start(double simTime, double dt)
 	internal_pos_ = object_->pos_;
 	internal_pos_.ForceLaneId(target_lane_id_);
 
-	// if dynamics dimension is rate, transform into distance
-#if 0
-	if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
-	{
-		double lat_distance = internal_pos_.GetOffset() - target_lane_offset_;
-		double rate = fabs(transition_dynamics_.target_value_);
-
-		if (transition_dynamics_.shape_ == DynamicsShape::LINEAR)
-		{
-			// longitudinal distance = long_speed * time = long_speed * lat_dist / lat_speed
-			if (fabs(rate) > SMALL_NUMBER)
-			{
-				transition_dynamics_.target_value_ = fabs(object_->speed_ * lat_distance / rate);
-			}
-			else
-			{
-				// rate close to zero. Choose a random large distance.
-				transition_dynamics_.target_value_ = 500;
-			}
-		}
-		else if (transition_dynamics_.shape_ == DynamicsShape::SINUSOIDAL)
-		{
-			// distance = longitudinal speed * duration
-			// duration based on equation: https://www.desmos.com/calculator/kuq26iz0aw
-			transition_dynamics_.target_value_ = object_->GetSpeed() * M_PI * fabs(lat_distance / (2 * rate));
-		}
-		else if (transition_dynamics_.shape_ == DynamicsShape::CUBIC)
-		{
-			// Equations: https://www.desmos.com/calculator/j9h7jzcowe
-			// special case where duration is a function of lateral speed/rate
-			// Calculate corresponding duration:
-			// duration = 3 * lat_distance / (2 * rate) = distance / speed
-			// Finally, distance = longitudinal speed * duration
-			transition_dynamics_.target_value_ = object_->speed_ * 3 * fabs(lat_distance) / (2 * rate);
-			LOG("Cubic shape with rate translated into distance=%.2f m", transition_dynamics_.target_value_);
-		}
-	}
-#endif
-
 	// Make offsets agnostic to lane sign
-	target_offset_agnostic_ = SIGN(target_lane_id_) * target_lane_offset_;
-	start_offset_agnostic_ = SIGN(internal_pos_.GetLaneId()) * internal_pos_.GetOffset();
-	interp_param_ = 0.0;
+	transition_.SetStartVal(SIGN(internal_pos_.GetLaneId()) * internal_pos_.GetOffset());
+	transition_.SetTargetVal(SIGN(target_lane_id_) * target_lane_offset_);
 
-	// avoid division by zero
-	transition_dynamics_.target_value_ = MAX(SMALL_NUMBER, transition_dynamics_.target_value_);
+	// Set initial state
+	internal_pos_.SetLanePos(internal_pos_.GetTrackId(), internal_pos_.GetLaneId(), internal_pos_.GetS(),
+		SIGN(internal_pos_.GetLaneId()) * transition_.Evaluate());
 }
 
 void LatLaneChangeAction::Step(double simTime, double dt)
 {
-	double offset_old_agnostic = internal_pos_.GetOffset() * internal_pos_.GetLaneId();
-	double offset_agnostic;
+	double offset_agnostic = internal_pos_.GetOffset() * internal_pos_.GetLaneId();
 	double angle = 0;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
@@ -443,36 +588,15 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 		return;
 	}
 
-	// calculate dt according to action elapsed time
-	double action_dt = simTime - sim_time_;
-	sim_time_ = simTime;
-
-	if (transition_dynamics_.dimension_ == DynamicsDimension::TIME)
+	if (abs(object_->GetSpeed()) < SMALL_NUMBER)
 	{
-		double dt_adjusted = action_dt;
-
-		// Set a limit for lateral speed not to exceed longitudinal speed
-		if (transition_dynamics_.target_value_ * object_->speed_ < fabs(target_offset_agnostic_ - start_offset_agnostic_))
-		{
-			dt_adjusted = action_dt * object_->speed_ * transition_dynamics_.target_value_ / fabs(target_offset_agnostic_ - start_offset_agnostic_);
-		}
-
-		interp_param_ += dt_adjusted;
+		return;
 	}
-#if 0
-	else if (transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE ||
-			transition_dynamics_.dimension_ == DynamicsDimension::RATE)
-	{
-		elapsed_ += object_->speed_ * action_dt;
-	}
-	else
-	{
-		LOG("Unexpected timing type: %d", transition_dynamics_.dimension_);
-	}
-#endif
 
-	// LOG("Elapsed time %f", elapsed_);
-	offset_agnostic = transition_dynamics_.Evaluate(interp_param_ / transition_dynamics_.target_value_, start_offset_agnostic_, target_offset_agnostic_);
+	// Add a constraint that lateral speed may not exceed longitudinal
+	transition_.SetMaxRate(object_->GetSpeed());
+	offset_agnostic = transition_.Evaluate();
+	double rate = transition_.EvaluateScaledPrim();
 
 	// Update internal position with new offset
 	internal_pos_.SetRoute(object_->pos_.GetRoute());
@@ -480,20 +604,20 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 
 	// Update longitudinal position
 	double ds = object_->pos_.DistanceToDS(object_->speed_ * dt);
+	roadmanager::Position::ErrorCode retval = roadmanager::Position::ErrorCode::ERROR_NO_ERROR;
 	if (internal_pos_.GetRoute() && !internal_pos_.GetRoute()->invalid_route_)
 	{
-		internal_pos_.MoveRouteDS(ds, false);
+		retval = internal_pos_.MoveRouteDS(ds, false);
 		object_->pos_ = internal_pos_;
 	}
 	else
 	{
-		internal_pos_.MoveAlongS(ds, 0.0, -1.0);
+		retval = internal_pos_.MoveAlongS(ds, 0.0, -1.0);
 		object_->pos_ = internal_pos_;
 
 		// Attach object position to closest road and lane, look up via inertial coordinates
 		object_->pos_.XYZH2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), object_->pos_.GetH());
 	}
-
 
 	if (object_->pos_.GetRoute())
 	{
@@ -506,21 +630,41 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 		}
 	}
 
-	if (interp_param_ / transition_dynamics_.target_value_ > 1.0 || fabs(offset_agnostic - target_offset_agnostic_) < SMALL_NUMBER ||
-		interp_param_ > 0 && SIGN(offset_agnostic - start_offset_agnostic_) != SIGN(target_offset_agnostic_ - start_offset_agnostic_))
+	if (transition_.GetParamVal() > transition_.GetParamTargetVal() - SMALL_NUMBER ||
+		// Close enough?
+		fabs(offset_agnostic - transition_.GetTargetVal()) < SMALL_NUMBER ||
+		// Passed target value?
+		transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()))
 	{
 		OSCAction::End();
 		object_->pos_.SetHeadingRelativeRoadDirection(0);
 	}
 	else
 	{
-		if (object_->speed_ * dt > SMALL_NUMBER)
+		if (transition_.dimension_ == DynamicsDimension::DISTANCE)
 		{
-			// angle = atan(SIGN(internal_pos_.GetLaneId()) * (offset_agnostic - offset_old_agnostic) / (object_->speed_ * dt));
-			double slope = transition_dynamics_.EvaluatePrim(interp_param_ / transition_dynamics_.target_value_, start_offset_agnostic_, target_offset_agnostic_);
-			angle = atan(slope);
-			object_->pos_.SetHeadingRelativeRoadDirection(angle);
+			angle = atan(rate);
 		}
+		else
+		{
+			// Convert rate (lateral-movment/time) to lateral-movement/long-movement
+			angle = atan(rate / AVOID_ZERO(object_->GetSpeed()));
+		}
+		object_->pos_.SetHeadingRelativeRoadDirection((IsAngleForward(internal_pos_.GetHRelative()) ? 1 : -1) * SIGN(internal_pos_.GetLaneId()) * angle);
+	}
+
+	if (transition_.dimension_ == DynamicsDimension::DISTANCE)
+	{
+		transition_.Step(dt * object_->GetSpeed());
+	}
+	else
+	{
+		transition_.Step(dt);
+	}
+
+	if (retval == roadmanager::Position::ErrorCode::ERROR_END_OF_ROAD)
+	{
+		object_->SetSpeed(0.0);
 	}
 
 	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
@@ -545,8 +689,7 @@ void LatLaneChangeAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 void LatLaneOffsetAction::Start(double simTime, double dt)
 {
 	OSCAction::Start(simTime, dt);
-	sim_time_ = simTime;
-	elapsed_ = 0.0;
+	transition_.Reset();
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
@@ -555,11 +698,9 @@ void LatLaneOffsetAction::Start(double simTime, double dt)
 		return;
 	}
 
-	start_lane_offset_ = object_->pos_.GetOffset();
-
 	if (target_->type_ == Target::Type::ABSOLUTE_OFFSET)
 	{
-		target_lane_offset_ = target_->value_;
+		transition_.SetTargetVal(SIGN(object_->pos_.GetLaneId()) * target_->value_);
 	}
 	else if (target_->type_ == Target::Type::RELATIVE_OFFSET)
 	{
@@ -572,47 +713,16 @@ void LatLaneOffsetAction::Start(double simTime, double dt)
 		refpos.ForceLaneId(lane_id);
 
 		// Target lane offset = t value of requested lane + offset relative t value of current lane without offset
-		target_lane_offset_ = refpos.GetT() - (object_->pos_.GetT() - object_->pos_.GetOffset());
+		transition_.SetTargetVal(SIGN(object_->pos_.GetLaneId()) * (refpos.GetT() - (object_->pos_.GetT() - object_->pos_.GetOffset())));
 	}
 
-	double duration = 0;
-	// Convert max lateral acceleration to distance for given shape
-	if (dynamics_.transition_.shape_ == DynamicsShape::STEP)
-	{
-		dynamics_.transition_.target_value_ = 0.0;
-	}
-	else if (dynamics_.transition_.shape_ == DynamicsShape::LINEAR ||
-		dynamics_.transition_.shape_ == DynamicsShape::SINUSOIDAL)
-	{
-		if (dynamics_.transition_.shape_ == DynamicsShape::LINEAR)
-		{
-			// linear transition means infinite acc at t=0. Instead, use acceleration profile from sinusoidal
-			LOG("Use sinusoidal shape for calculating linear laneOffset action duration based on max lateral acceleration");
-		}
-		// Equation for duration: https://www.desmos.com/calculator/peck6bzibp
-		duration = sqrt(M_PI * M_PI * (fabs(target_lane_offset_ - object_->pos_.GetOffset())) / (dynamics_.max_lateral_acc_ * 2));
-		dynamics_.transition_.target_value_ = object_->GetSpeed() * duration;
-	}
-	else if (dynamics_.transition_.shape_ == DynamicsShape::CUBIC)
-	{
-		// based on equation: https://www.desmos.com/calculator/j9h7jzcowe
-		// special case where duration is a function of lateral acceleration
-		// Calculate corresponding duration:
-		// duration = sqrt(6t / a)
-		// Finally, distance = longitudinal speed * duration
-		duration = sqrt(6 * fabs(target_lane_offset_ - object_->pos_.GetOffset()) / dynamics_.max_lateral_acc_);
-		dynamics_.transition_.target_value_ = object_->GetSpeed() * duration;;
-	}
-	else
-	{
-		throw std::runtime_error("Unexpected shape type: " + static_cast<int>(dynamics_.transition_.shape_));
-	}
+	transition_.SetStartVal(SIGN(object_->pos_.GetLaneId()) * object_->pos_.GetOffset());
+	transition_.SetParamTargetVal(transition_.GetTargetParamValByPrimPrimPeak(max_lateral_acc_));
 }
 
-void LatLaneOffsetAction::Step(double simTime, double)
+void LatLaneOffsetAction::Step(double simTime, double dt)
 {
-	double factor, lane_offset;
-	double old_lane_offset = object_->pos_.GetOffset();
+	double offset_agnostic;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
@@ -621,39 +731,29 @@ void LatLaneOffsetAction::Step(double simTime, double)
 		return;
 	}
 
-	// calculate dt according to action elapsed time
-	double dt = simTime - sim_time_;
-	sim_time_ = simTime;
+	offset_agnostic = transition_.Evaluate();
 
-	elapsed_ += object_->speed_ * dt;
+	object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), SIGN(object_->pos_.GetLaneId()) * offset_agnostic);
 
-	if (dynamics_.transition_.target_value_ < SMALL_NUMBER)
-	{
-		factor = 1.0;
-	}
-	else
-	{
-		factor = elapsed_ / dynamics_.transition_.target_value_;
-	}
-
-	lane_offset = dynamics_.transition_.Evaluate(factor, start_lane_offset_, target_lane_offset_);
-
-	object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), lane_offset);
-
-	if (dt > SMALL_NUMBER && object_->speed_ > SMALL_NUMBER)
-	{
-		double angle = atan((lane_offset - old_lane_offset) / (object_->speed_ * dt));
-		object_->pos_.SetHeadingRelativeRoadDirection(angle);
-	}
-
-	if (factor >= 1.0)
+	if (transition_.GetParamVal() > transition_.GetParamTargetVal() - SMALL_NUMBER ||
+		// Close enough?
+		fabs(offset_agnostic - transition_.GetTargetVal()) < SMALL_NUMBER ||
+		// Passed target value?
+		transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()))
 	{
 		OSCAction::End();
 		object_->pos_.SetHeadingRelativeRoadDirection(0);
 	}
-
+	else
+	{
+		// Convert rate (lateral-movment/time) to lateral-movement/long-movement
+		double angle = atan(transition_.EvaluatePrim() / AVOID_ZERO(object_->GetSpeed()));
+		object_->pos_.SetHeadingRelativeRoadDirection((IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1) * SIGN(object_->pos_.GetLaneId()) * angle);
+	}
 
 	object_->SetDirtyBits(Object::DirtyBit::LATERAL);
+
+	transition_.Step(dt);
 }
 
 void LatLaneOffsetAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
@@ -706,8 +806,7 @@ double LongSpeedAction::TargetRelative::GetValue()
 void LongSpeedAction::Start(double simTime, double dt)
 {
 	OSCAction::Start(simTime, dt);
-	sim_time_ = simTime;
-	elapsed_ = 0.0;
+	transition_.Reset();
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
@@ -717,35 +816,17 @@ void LongSpeedAction::Start(double simTime, double dt)
 		return;
 	}
 
-	if (transition_dynamics_.shape_ == DynamicsShape::STEP)
-	{
-		object_->SetSpeed(target_->GetValue());
-		if (!(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_)->continuous_ == true))
-		{
-			OSCAction::End();
-		}
-	}
-	else
-	{
-		start_speed_ = object_->speed_;
+	transition_.SetStartVal(object_->GetSpeed());
+	transition_.SetTargetVal(target_->GetValue());
 
-		if (transition_dynamics_.dimension_ == DynamicsDimension::DISTANCE)
-		{
-			// Convert to time
-			transition_dynamics_.target_value_ = 2 * transition_dynamics_.target_value_ / (start_speed_ + target_->GetValue());
-		}
-	}
- }
+	// Set initial state
+	object_->SetSpeed(transition_.Evaluate());
+}
 
-void LongSpeedAction::Step(double simTime, double)
+void LongSpeedAction::Step(double simTime, double dt)
 {
-	double factor = 0.0;
 	double new_speed = 0;
-	bool target_speed_reached = false;
-
-	// calculate dt according to action elapsed time
-	double dt = simTime - sim_time_;
-	sim_time_ = simTime;
+	bool done = false;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
@@ -755,47 +836,36 @@ void LongSpeedAction::Step(double simTime, double)
 		return;
 	}
 
-	if (transition_dynamics_.dimension_ == DynamicsDimension::RATE)
+	// Get target speed, which might be dynamic (relative other entitity)
+	transition_.SetTargetVal(target_->GetValue());
+
+	// Make sure sign of rate is correct
+	if (transition_.dimension_ == DynamicsDimension::RATE)
 	{
-		elapsed_ += dt;
-
-		// Assume user want to reach target speed, ignore sign of rate
-		new_speed = start_speed_ + SIGN(target_->GetValue() - start_speed_) * fabs(transition_dynamics_.target_value_) * elapsed_;
-
-		// Check if target value reached
-		if (fabs(object_->speed_ - target_->GetValue()) < SMALL_NUMBER || // Speed is very close to target value
-			// Are we getting passed the target value?
-			(SIGN(object_->speed_ - target_->GetValue()) != SIGN(new_speed - target_->GetValue())) ||
-			// Already passed target value (perhaps due to strange initial conditions)?
-			(SIGN(target_->GetValue() - start_speed_) != SIGN(target_->GetValue() - object_->speed_)))
-		{
-			new_speed = target_->GetValue();
-			target_speed_reached = true;
-		}
+		transition_.SetRate(SIGN(transition_.GetTargetVal() - transition_.GetStartVal()) * abs(transition_.GetRate()));
 	}
-	else
+
+	new_speed = transition_.Evaluate();
+
+	if (!(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_)->continuous_ == true) &&
+		 (transition_.GetParamVal() > transition_.GetParamTargetVal() - SMALL_NUMBER ||
+		  // Close enough?
+		  abs(new_speed - transition_.GetTargetVal()) < SMALL_NUMBER ||
+		  // Already passed target value (perhaps due to strange initial conditions)?
+		  SIGN(target_->GetValue() - transition_.GetStartVal()) != SIGN(target_->GetValue() - object_->GetSpeed())))
 	{
-		elapsed_ += dt;
-
-		factor = elapsed_ / (transition_dynamics_.target_value_);
-
-		if(factor > 1.0)
-		{
-			new_speed = target_->GetValue();
-			target_speed_reached = true;
-		}
-		else
-		{
-			new_speed = transition_dynamics_.Evaluate(factor, start_speed_, target_->GetValue());
-		}
+		done = true;
+		new_speed = target_->GetValue();
 	}
 
 	object_->SetSpeed(new_speed);
 
-	if (target_speed_reached && !(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_)->continuous_ == true))
+	if (done)
 	{
 		OSCAction::End();
 	}
+
+	transition_.Step(dt);
 }
 
 void LongSpeedAction::ReplaceObjectRefs(Object* obj1, Object* obj2)

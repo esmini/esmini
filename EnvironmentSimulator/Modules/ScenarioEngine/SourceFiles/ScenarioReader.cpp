@@ -1662,12 +1662,12 @@ int ScenarioReader::ParseTransitionDynamics(pugi::xml_node node, OSCPrivateActio
 	{
 		// dimension and value not used in this case - relax attribute requirement
 		td.dimension_ = ParseDynamicsDimension(parameters.ReadAttribute(node, "dynamicsDimension", false));
-		td.target_value_ = strtod(parameters.ReadAttribute(node, "value", false));
+		td.SetParamTargetVal(strtod(parameters.ReadAttribute(node, "value", false)));
 	}
 	else
 	{
 		td.dimension_ = ParseDynamicsDimension(parameters.ReadAttribute(node, "dynamicsDimension", true));
-		td.target_value_ = strtod(parameters.ReadAttribute(node, "value", true));
+		td.SetParamTargetVal(strtod(parameters.ReadAttribute(node, "value", true)));
 	}
 
 	return 0;
@@ -1804,7 +1804,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 					{
 						if (speedChild.name() == std::string("SpeedActionDynamics"))
 						{
-							ParseTransitionDynamics(speedChild, action_speed->transition_dynamics_);
+							ParseTransitionDynamics(speedChild, action_speed->transition_);
 						}
 						else if (speedChild.name() == std::string("SpeedActionTarget"))
 						{
@@ -1966,17 +1966,17 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 				if (lateralChild.name() == std::string("LaneChangeAction"))
 				{
 					LatLaneChangeAction *action_lane = new LatLaneChangeAction();
-					double target_lane_offset = 0.0;
-					if (parameters.ReadAttribute(lateralChild, "targetLaneOffset") != "")
+
+					if (!lateralChild.attribute("targetLaneOffset").empty())
 					{
-						target_lane_offset = strtod(parameters.ReadAttribute(lateralChild, "targetLaneOffset"));
+						action_lane->target_lane_offset_ = strtod(parameters.ReadAttribute(lateralChild, "targetLaneOffset"));
 					}
 
 					for (pugi::xml_node laneChangeChild = lateralChild.first_child(); laneChangeChild; laneChangeChild = laneChangeChild.next_sibling())
 					{
 						if (laneChangeChild.name() == std::string("LaneChangeActionDynamics"))
 						{
-							ParseTransitionDynamics(laneChangeChild, action_lane->transition_dynamics_);
+							ParseTransitionDynamics(laneChangeChild, action_lane->transition_);
 						}
 						else if (laneChangeChild.name() == std::string("LaneChangeTarget"))
 						{
@@ -2026,19 +2026,19 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 						{
 							if (parameters.ReadAttribute(laneOffsetChild, "maxLateralAcc") != "")
 							{
-								action_lane->dynamics_.max_lateral_acc_ = strtod(parameters.ReadAttribute(laneOffsetChild, "maxLateralAcc"));
-								if (action_lane->dynamics_.max_lateral_acc_ < SMALL_NUMBER)
+								action_lane->max_lateral_acc_ = strtod(parameters.ReadAttribute(laneOffsetChild, "maxLateralAcc"));
+								if (action_lane->max_lateral_acc_ < SMALL_NUMBER)
 								{
-									action_lane->dynamics_.max_lateral_acc_ = SMALL_NUMBER;
+									action_lane->max_lateral_acc_ = SMALL_NUMBER;
 								}
 							}
 							else
 							{
-								action_lane->dynamics_.max_lateral_acc_ = 0.5; // Just set some reasonable default value
-								LOG("Missing optional LaneOffsetAction maxLateralAcc attribute. Using default: %.2f", action_lane->dynamics_.max_lateral_acc_);
+								action_lane->max_lateral_acc_ = 0.5; // Just set some reasonable default value
+								LOG("Missing optional LaneOffsetAction maxLateralAcc attribute. Using default: %.2f", action_lane->max_lateral_acc_);
 							}
 
-							action_lane->dynamics_.transition_.shape_ = ParseDynamicsShape(parameters.ReadAttribute(laneOffsetChild, "dynamicsShape"));
+							action_lane->transition_.shape_ = ParseDynamicsShape(parameters.ReadAttribute(laneOffsetChild, "dynamicsShape"));
 						}
 						else if (laneOffsetChild.name() == std::string("LaneOffsetTarget"))
 						{

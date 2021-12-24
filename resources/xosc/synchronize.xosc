@@ -40,7 +40,6 @@
       <ParameterDeclaration name="MS1NPC4S" parameterType="double" value="${$MS1EgoS + 30}"/>
       <ParameterDeclaration name="MS2EgoS" parameterType="double" value="500"/>
       <ParameterDeclaration name="AccRate" parameterType="double" value="3"/>
-      <ParameterDeclaration name="BrakeRate" parameterType="double" value="-5"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <ManeuverCatalog>

@@ -727,7 +727,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     delete udpClient;
 }
 
-TEST(RoadOrientationTest, TesElevationPitchRoll)
+TEST(RoadOrientationTest, TestElevationPitchRoll)
 {
     double dt = 0.1;
 
@@ -763,6 +763,268 @@ TEST(RoadOrientationTest, TesElevationPitchRoll)
     EXPECT_NEAR(se->entities.object_[2]->pos_.GetR(), 0, 1e-5);
 }
 
+TEST(ActionDynamicsTest, TestDynamicsTimeDimension)
+{
+    OSCPrivateAction::TransitionDynamics td;
+    double p_target = 0.0;
+    double v_start = 0.0;
+    double v_target = 0.0;
+
+    td.dimension_ = OSCPrivateAction::DynamicsDimension::TIME;
+    td.shape_ = OSCPrivateAction::DynamicsShape::LINEAR;
+
+    p_target = 10.0;
+    v_start = 0.0;
+    v_target = 100.0;
+    td.SetParamTargetVal(p_target);
+    td.SetStartVal(v_start);
+    td.SetTargetVal(v_target);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(1.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (1.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(4.0);  // to 5.0s
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (5.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(5.0);  // to 10.0s
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (10.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+
+    p_target = 5.0;
+    v_start = 10.0;
+    v_target = 50.0;
+    td.Reset();
+    td.SetParamTargetVal(p_target);
+    td.SetStartVal(v_start);
+    td.SetTargetVal(v_target);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(1.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (1.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(2.0);  // to 3.0s
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (3.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(2.0);  // to 5.0s
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (5.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+
+    p_target = 8.0;
+    v_start = 10.0;
+    v_target = -50.0;
+    td.Reset();
+    td.SetParamTargetVal(p_target);
+    td.SetStartVal(v_start);
+    td.SetTargetVal(v_target);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(1.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (1.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(4.0);  // to 5.0s
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (5.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(3.0);  // to 8.0s
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (8.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+
+    td.dimension_ = OSCPrivateAction::DynamicsDimension::TIME;
+    td.shape_ = OSCPrivateAction::DynamicsShape::SINUSOIDAL;
+    td.Reset();
+    p_target = 10.0;
+    v_start = 0.0;
+    v_target = 100.0;
+    td.SetParamTargetVal(p_target);
+    td.SetStartVal(v_start);
+    td.SetTargetVal(v_target);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(1.0);
+    EXPECT_NEAR(td.Evaluate(), 2.44717, 1e-5);
+    td.Step(4.0);  // to 5.0s
+    EXPECT_NEAR(td.Evaluate(), 50.00000, 1e-5);
+    td.Step(2.0);  // to 7.0s
+    EXPECT_NEAR(td.Evaluate(), 79.38926, 1e-5);
+    td.Step(3.0);  // to 10.0s
+    EXPECT_NEAR(td.Evaluate(), 100.00000, 1e-5);
+
+    td.dimension_ = OSCPrivateAction::DynamicsDimension::TIME;
+    td.shape_ = OSCPrivateAction::DynamicsShape::CUBIC;
+    td.Reset();
+    p_target = 10.0;
+    v_start = 110.0;
+    v_target = 10.0;
+    td.SetParamTargetVal(p_target);
+    td.SetStartVal(v_start);
+    td.SetTargetVal(v_target);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(1.0);
+    EXPECT_NEAR(td.Evaluate(), 107.20000, 1e-5);
+    td.Step(4.0);  // to 5.0s
+    EXPECT_NEAR(td.Evaluate(), 60.00000, 1e-5);
+    td.Step(2.0);  // to 7.0s
+    EXPECT_NEAR(td.Evaluate(), 31.60000, 1e-5);
+    td.Step(3.0);  // to 10.0s
+    EXPECT_NEAR(td.Evaluate(), 10.00000, 1e-5);
+}
+
+TEST(ActionDynamicsTest, TestDynamicsDistanceDimension)
+{
+    OSCPrivateAction::TransitionDynamics td;
+    double p_target = 0.0;
+    double v_start = 0.0;
+    double v_target = 0.0;
+
+    td.dimension_ = OSCPrivateAction::DynamicsDimension::DISTANCE;
+    td.shape_ = OSCPrivateAction::DynamicsShape::LINEAR;
+
+    p_target = 100.0;
+    v_start = 0.0;
+    v_target = 100.0;
+    td.SetParamTargetVal(p_target);
+    td.SetStartVal(v_start);
+    td.SetTargetVal(v_target);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(10.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (10.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(40.0);  // to 50.0m
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (50.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(50.0);  // to 100.0m
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (100.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+
+    p_target = 50.0;
+    v_start = 10.0;
+    v_target = 50.0;
+    td.Reset();
+    td.SetParamTargetVal(p_target);
+    td.SetStartVal(v_start);
+    td.SetTargetVal(v_target);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(10.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (10.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(20.0);  // to 30.0m
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (30.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(20.0);  // to 50.0m
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (50.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+
+    p_target = 80.0;
+    v_start = 10.0;
+    v_target = -50.0;
+    td.Reset();
+    td.SetParamTargetVal(p_target);
+    td.SetStartVal(v_start);
+    td.SetTargetVal(v_target);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(10.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (10.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(40.0);  // to 5.0m
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (50.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+    td.Step(30.0);  // to 8.0m
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal() + (80.0 / td.GetParamTargetVal()) * (td.GetTargetVal() - td.GetStartVal()));
+
+    td.dimension_ = OSCPrivateAction::DynamicsDimension::DISTANCE;
+    td.shape_ = OSCPrivateAction::DynamicsShape::SINUSOIDAL;
+    td.Reset();
+    td.SetParamTargetVal(100.0);
+    td.SetStartVal(0.0);
+    td.SetTargetVal(100.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(10.0);
+    EXPECT_NEAR(td.Evaluate(), 2.44717, 1e-5);
+    td.Step(40.0);  // to 50.0
+    EXPECT_NEAR(td.Evaluate(), 50.00000, 1e-5);
+    td.Step(20.0);  // to 70.0m
+    EXPECT_NEAR(td.Evaluate(), 79.38926, 1e-5);
+    td.Step(30.0);  // to 100.0m
+    EXPECT_NEAR(td.Evaluate(), 100.00000, 1e-5);
+
+    td.dimension_ = OSCPrivateAction::DynamicsDimension::DISTANCE;
+    td.shape_ = OSCPrivateAction::DynamicsShape::CUBIC;
+    td.Reset();
+    td.SetParamTargetVal(100.0);
+    td.SetStartVal(110.0);
+    td.SetTargetVal(10.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(10.0);
+    EXPECT_NEAR(td.Evaluate(), 107.20000, 1e-5);
+    td.Step(40.0);  // to 50.0m
+    EXPECT_NEAR(td.Evaluate(), 60.00000, 1e-5);
+    td.Step(20.0);  // to 70.0m
+    EXPECT_NEAR(td.Evaluate(), 31.60000, 1e-5);
+    td.Step(30.0);  // to 100.0m
+    EXPECT_NEAR(td.Evaluate(), 10.00000, 1e-5);
+}
+
+TEST(ActionDynamicsTest, TestDynamicsRateDimension)
+{
+    OSCPrivateAction::TransitionDynamics td;
+    td.dimension_ = OSCPrivateAction::DynamicsDimension::RATE;
+    td.shape_ = OSCPrivateAction::DynamicsShape::LINEAR;
+
+    td.SetParamTargetVal(10.0);
+    td.SetStartVal(0.0);
+    td.SetTargetVal(100.0);
+    td.SetRate(2.0);
+    EXPECT_DOUBLE_EQ(50.0, td.GetParamTargetVal());  // param target is overriden by SetRate()
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(1.0);
+    EXPECT_NEAR(td.Evaluate(), 2.00000, 1e-5);
+    td.Step(4.0);  // to 5.0s
+    EXPECT_NEAR(td.Evaluate(), 10.00000, 1e-5);
+    td.Step(5.0);  // to 10.0s
+    EXPECT_NEAR(td.Evaluate(), 20.00000, 1e-5);
+
+    td.Reset();
+    td.SetStartVal(10.0);
+    td.SetTargetVal(50.0);
+    td.SetRate(2.0);
+    EXPECT_DOUBLE_EQ(td.GetStartVal(), 10.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), 10.0);
+    td.Step(1.0);
+    EXPECT_NEAR(td.Evaluate(), 12.00000, 1e-5);
+    td.Step(2.0);  // to 3.0s
+    EXPECT_NEAR(td.Evaluate(), 16.00000, 1e-5);
+    td.Step(2.0);  // to 5.0s
+    EXPECT_NEAR(td.Evaluate(), 20.00000, 1e-5);
+
+    td.Reset();
+    td.SetStartVal(10.0);
+    td.SetTargetVal(50.0);
+    EXPECT_DOUBLE_EQ(td.GetStartVal(), 10.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), 10.0);
+    td.SetRate(-2.0);  // sign of rate should not matter
+    td.Step(1.0);
+    EXPECT_NEAR(td.Evaluate(), 12.00000, 1e-5);
+    td.Step(2.0);  // to 3.0s
+    EXPECT_NEAR(td.Evaluate(), 16.00000, 1e-5);
+    td.Step(2.0);  // to 5.0s
+    EXPECT_NEAR(td.Evaluate(), 20.00000, 1e-5);
+
+    td.Reset();
+    td.SetStartVal(10.0);
+    td.SetTargetVal(-50.0);
+    td.SetRate(5.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(10.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), -40.0);
+    td.Step(40.0);  // to 50.0s
+    EXPECT_DOUBLE_EQ(td.Evaluate(), -240.0);
+    td.Step(30.0);  // to 80.0s
+    EXPECT_DOUBLE_EQ(td.Evaluate(), -390.0);
+
+    td.dimension_ = OSCPrivateAction::DynamicsDimension::RATE;
+    td.shape_ = OSCPrivateAction::DynamicsShape::SINUSOIDAL;
+    td.Reset();
+    td.SetStartVal(0.0);
+    td.SetTargetVal(100.0);
+    td.SetRate(5.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(5.0);
+    EXPECT_NEAR(td.Evaluate(), 6.12087, 1e-5);
+    td.Step(10.0);
+    EXPECT_NEAR(td.Evaluate(), 46.46314, 1e-5);
+
+    td.dimension_ = OSCPrivateAction::DynamicsDimension::RATE;
+    td.shape_ = OSCPrivateAction::DynamicsShape::CUBIC;
+    td.Reset();
+    td.SetStartVal(0.0);
+    td.SetTargetVal(100.0);
+    td.SetRate(5.0);
+    EXPECT_DOUBLE_EQ(td.Evaluate(), td.GetStartVal());
+    td.Step(5.0);
+    EXPECT_NEAR(td.Evaluate(), 7.40741, 1e-5);
+    td.Step(10.0);
+    EXPECT_NEAR(td.Evaluate(), 50.0000, 1e-5);
+}
+
 #if LOG_TO_CONSOLE
 static void log_callback(const char* str)
 {
@@ -779,7 +1041,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    // testing::GTEST_FLAG(filter) = "*TesElevationPitchRoll*";
+    //testing::GTEST_FLAG(filter) = "*TestDynamicsRateDimension*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

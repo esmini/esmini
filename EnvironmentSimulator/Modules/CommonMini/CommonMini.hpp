@@ -44,7 +44,10 @@
 #define SIGN(X) ((X<0)?-1:1)
 #define MAX(x, y) (y > x ? y : x)
 #define MIN(x, y) (y < x ? y : x)
+#define ABS_LIMIT(x, y) (abs(x) > abs(y) ? (SIGN(x) * abs(y)) : x)  // limit abs value but keep sign
+#define ABS_FLOOR(x, y) (abs(x) < abs(y) ? (SIGN(x) * abs(y)) : x)  // limit abs value but keep sign
 #define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))
+#define AVOID_ZERO(x) (SIGN(x)*MAX(SMALL_NUMBER, fabs(x)))
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION 0.05
 #define LOG_FILENAME "log.txt"

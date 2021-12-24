@@ -996,7 +996,7 @@ TEST(ParameterTest, SetParameterValuesBeforeInit)
 {
 	double positions[3][2] = {
 		{5.37060, 189.98206},  // TargetSpeedFactor = 1.1
-		{9.09839, 241.55124},  // TargetSpeedFactor = 1.5
+		{9.09872, 241.58063},  // TargetSpeedFactor = 1.5
 		{5.49925, 204.98148}  // TargetSpeedFactor = Default = 1.2
 	};
 	SE_ScenarioObjectState state;
@@ -2136,18 +2136,18 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 188.556, 1e-3);
-					EXPECT_NEAR(objectState.y, 56.787, 1e-3);
+					EXPECT_NEAR(objectState.x, 188.541, 1e-3);
+					EXPECT_NEAR(objectState.y, 56.789, 1e-3);
 					EXPECT_NEAR(objectState.h, 1.017, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.261, 1e-3);
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 319.988, 1e-3);
-					EXPECT_NEAR(objectState.y, 347.143, 1e-3);
-					EXPECT_NEAR(objectState.h, 6.051, 1e-3);
-					EXPECT_NEAR(objectState.p, 0.010, 1e-3);
+					EXPECT_NEAR(objectState.x, 319.924, 1e-3);
+					EXPECT_NEAR(objectState.y, 347.158, 1e-3);
+					EXPECT_NEAR(objectState.h, 6.052, 1e-3);
+					EXPECT_NEAR(objectState.p, 0.009, 1e-3);
 				}
 			}
 
