@@ -2514,7 +2514,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 bool Viewer::CreateRoadSensors(CarModel *vehicle_model)
 {
 	vehicle_model->road_sensor_ = CreateSensor(color_gray, true, false, 0.25, 2.5);
-	vehicle_model->route_sensor_ = CreateSensor(color_blue, true, true, 0.45, 2.5);
+	vehicle_model->route_sensor_ = CreateSensor(color_blue, true, true, 0.35, 2.5);
 	vehicle_model->lane_sensor_ = CreateSensor(color_gray, true, true, 0.25, 2.5);
 
 	return true;

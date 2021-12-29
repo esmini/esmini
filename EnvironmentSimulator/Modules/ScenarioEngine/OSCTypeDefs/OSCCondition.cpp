@@ -57,7 +57,7 @@ bool EvaluateRule(double a, double b, Rule rule)
 	}
 	else if (rule == Rule::GREATER_OR_EQUAL)
 	{
-		return a >= b;
+		return a >= b - SMALL_NUMBER;
 	}
 	else if (rule == Rule::LESS_THAN)
 	{
@@ -65,7 +65,7 @@ bool EvaluateRule(double a, double b, Rule rule)
 	}
 	else if (rule == Rule::LESS_OR_EQUAL)
 	{
-		return a <= b;
+		return a <= b + SMALL_NUMBER;
 	}
 	else if (rule == Rule::EQUAL_TO)
 	{
