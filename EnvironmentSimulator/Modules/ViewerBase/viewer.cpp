@@ -1057,6 +1057,18 @@ void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta
 	UpdateWheels(wheel_angle, wheel_rot_ + wheel_rotation_delta);
 }
 
+void CarModel::ShowRouteSensor(bool mode)
+{
+	if (mode == true)
+	{
+		route_sensor_->group_->setNodeMask(lane_sensor_->group_->getNodeMask());
+	}
+	else
+	{
+		route_sensor_->group_->setNodeMask(0x0);
+	}
+}
+
 void EntityModel::SetTransparency(double factor)
 {
 	if (factor < 0 || factor > 1)
@@ -2513,8 +2525,8 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
 bool Viewer::CreateRoadSensors(CarModel *vehicle_model)
 {
-	vehicle_model->road_sensor_ = CreateSensor(color_gray, true, false, 0.25, 2.5);
-	vehicle_model->route_sensor_ = CreateSensor(color_blue, true, true, 0.35, 2.5);
+	vehicle_model->road_sensor_ = CreateSensor(color_gray, true, false, 0.35, 2.5);
+	vehicle_model->route_sensor_ = CreateSensor(color_blue, true, false, 0.30, 2.5);
 	vehicle_model->lane_sensor_ = CreateSensor(color_gray, true, true, 0.25, 2.5);
 
 	return true;
@@ -2589,7 +2601,7 @@ void Viewer::UpdateRoadSensors(PointSensor *road_sensor, PointSensor* route_sens
 	SensorSetTargetPos(road_sensor, track_pos.GetX(), track_pos.GetY(), track_pos.GetZ());
 	UpdateSensor(road_sensor);
 
-	roadmanager::Position route_pos(*pos);
+	roadmanager::Position route_pos(track_pos);
 	roadmanager::Route* r = pos->GetRoute();
 	if (r)
 	{

@@ -288,6 +288,7 @@ namespace viewer
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName);
 		void UpdateWheels(double wheel_angle, double wheel_rotation);
 		void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
+		void ShowRouteSensor(bool mode);
 	};
 
 	class VisibilityCallback : public osg::NodeCallback
