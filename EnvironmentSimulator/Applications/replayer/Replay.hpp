@@ -77,6 +77,7 @@ namespace scenarioengine
 		void SetStartTime(double time);
 		void SetStopTime(double time);
 		double GetStartTime() { return startTime_; }
+		double GetEndTime() { return stopTime_; }
 		double GetTime() { return time_; }
 		int GetIndex() { return index_; }
 		void SetRepeat(bool repeat) { repeat_ = repeat; }

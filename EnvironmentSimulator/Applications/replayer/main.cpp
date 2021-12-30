@@ -298,6 +298,7 @@ int main(int argc, char** argv)
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("no_ghost", "Remove ghost entities");
+	opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
 	opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
 	opt.AddOption("repeat", "loop scenario");
 	opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
@@ -451,7 +452,8 @@ int main(int argc, char** argv)
 		}
 		viewer->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
 
-		__int64 now, lastTimeStamp = 0;
+		__int64 now = 0;
+		__int64 lastTimeStamp = 0;
 
 		if (opt.GetOptionSet("time_scale"))
 		{
@@ -571,7 +573,7 @@ int main(int argc, char** argv)
 
 		simTime = player->GetStartTime();
 
-		while (!viewer->osgViewer_->done())
+		while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetEndTime()-SMALL_NUMBER))))
 		{
 			// Get milliseconds since Jan 1 1970
 			now = SE_getSystemTime();

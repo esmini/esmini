@@ -2,7 +2,7 @@ replayer is a simple application for re-playing .dat files recorded by esmini.
 
 Application is launched from command line (or batch file). 
 
-Usage: replayer [options]
+Usage:  [options]
 Options:
   --file <filename>
       Simulation recording data file
@@ -14,6 +14,8 @@ Options:
       Hide trajectories from start (toggle with key 'n')
   --no_ghost
       Remove ghost entities
+  --quit_at_end
+      Quit application when reaching end of scenario
   --remove_object <id>
       Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.
   --repeat
