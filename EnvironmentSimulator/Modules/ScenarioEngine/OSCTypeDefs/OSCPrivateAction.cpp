@@ -45,7 +45,7 @@ using namespace scenarioengine;
 //      f''(x) = 6b(c-2x)/c^3
 //		Acceleration peaks at endpoints (x=0, x=c)
 //      f''peak: f''(0) = 6b/c^2, f''(c) = -6b/c^2
-//		plot: "https://www.desmos.com/calculator/uz5tmlfedf"
+//		plot: "https://www.desmos.com/calculator/6t6wbeeos8"
 //		f': "https://www.wolframalpha.com/input/?i=d/dx(a%2B3b(x/c)^2-2b(x/c)^3)"
 //		f'peak: "https://www.wolframalpha.com/input/?i=d/dx(a%2B3b(x/c)^2-2b(x/c)^3),x=c/2"
 //      f'': Trivial
@@ -837,7 +837,17 @@ void LongSpeedAction::Step(double simTime, double dt)
 	}
 
 	// Get target speed, which might be dynamic (relative other entitity)
-	transition_.SetTargetVal(target_->GetValue());
+	transition_.SetTargetVal(ABS_LIMIT(target_->GetValue(), object_->performance_.maxSpeed));
+	if (transition_.GetTargetVal() > transition_.GetStartVal())
+	{
+		// Acceleration
+		transition_.SetMaxRate(object_->performance_.maxAcceleration);
+	}
+	else
+	{
+		// Deceleration
+		transition_.SetMaxRate(object_->performance_.maxDeceleration);
+	}
 
 	// Make sure sign of rate is correct
 	if (transition_.dimension_ == DynamicsDimension::RATE)
@@ -845,6 +855,7 @@ void LongSpeedAction::Step(double simTime, double dt)
 		transition_.SetRate(SIGN(transition_.GetTargetVal() - transition_.GetStartVal()) * abs(transition_.GetRate()));
 	}
 
+	transition_.Step(dt);
 	new_speed = transition_.Evaluate();
 
 	if (!(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_)->continuous_ == true) &&
@@ -855,7 +866,7 @@ void LongSpeedAction::Step(double simTime, double dt)
 		  SIGN(target_->GetValue() - transition_.GetStartVal()) != SIGN(target_->GetValue() - object_->GetSpeed())))
 	{
 		done = true;
-		new_speed = target_->GetValue();
+		new_speed = ABS_LIMIT(target_->GetValue(), object_->performance_.maxSpeed);
 	}
 
 	object_->SetSpeed(new_speed);
@@ -864,8 +875,6 @@ void LongSpeedAction::Step(double simTime, double dt)
 	{
 		OSCAction::End();
 	}
-
-	transition_.Step(dt);
 }
 
 void LongSpeedAction::ReplaceObjectRefs(Object* obj1, Object* obj2)

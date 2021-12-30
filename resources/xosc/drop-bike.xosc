@@ -68,11 +68,16 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="1" laneId="-1" s="74" offset="0">
+                                <RelativeObjectPosition entityRef="Target" dy="-0.6" dz="0.2">
                                     <Orientation type="relative" h="1.57"/>
-                                </LanePosition>
+                                </RelativeObjectPosition>
                             </Position>
                         </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <LongitudinalDistanceAction entityRef="Target" freespace="false" continuous="true" distance="1.2"/>
+                        </LongitudinalAction>
                     </PrivateAction>
                 </Private>
             </Actions>
@@ -85,30 +90,12 @@
                         <EntityRef entityRef="bike"/>
                     </Actors>
                     <Maneuver name="drop maneuver">
-                        <Event name="hang on" priority="overwrite" maximumExecutionCount="1">
-                            <Action name="hang on action">
-                                <PrivateAction>
-                                    <LongitudinalAction>
-                                        <LongitudinalDistanceAction entityRef="Target" freespace="false" continuous="true" distance="1.2"/>
-                                    </LongitudinalAction>
-                                </PrivateAction>
-                            </Action>
-                            <StartTrigger>
-                                <ConditionGroup>
-                                    <Condition name="drop trigger" delay="0" conditionEdge="none">
-                                        <ByValueCondition>
-                                            <SimulationTimeCondition value="0.1" rule="greaterThan"/>
-                                        </ByValueCondition>
-                                    </Condition>
-                                </ConditionGroup>
-                            </StartTrigger>
-                        </Event>
                         <Event name="drop of bike" priority="overwrite" maximumExecutionCount="1">
                             <Action name="drop action">
                                 <PrivateAction>
                                     <TeleportAction>
                                         <Position>
-                                            <RelativeObjectPosition entityRef="bike" dx="0" dy="0" dz="0">
+                                            <RelativeObjectPosition entityRef="bike" dx="0" dy="0" dz="0.1">
                                                 <Orientation type="relative" r="1.57"/>
                                             </RelativeObjectPosition>
                                         </Position>
@@ -119,7 +106,7 @@
                                 <PrivateAction>
                                     <LongitudinalAction>
                                         <SpeedAction>
-                                            <SpeedActionDynamics dynamicsShape="sinusoidal" value="0.4" dynamicsDimension="time"/>
+                                            <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
                                             <SpeedActionTarget>
                                                 <AbsoluteTargetSpeed value="0"/>
                                             </SpeedActionTarget>

@@ -30,7 +30,7 @@
             <ObjectController>
                 <CatalogReference catalogName="ControllerCatalog" entryName="followGhost" >
                     <ParameterAssignments>
-                        <ParameterAssignment parameterRef="$HeadStartTime" value="2" />
+                        <ParameterAssignment parameterRef="$HeadStartTime" value="3" />
                     </ParameterAssignments>
                 </CatalogReference>
             </ObjectController>
@@ -80,7 +80,7 @@
                               <SpeedAction>
                                  <SpeedActionDynamics dynamicsShape="linear" value="2" dynamicsDimension="time"/>
                                  <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="50"/>
+                                    <AbsoluteTargetSpeed value="${100/3.6}"/>
                                  </SpeedActionTarget>
                               </SpeedAction>
                            </LongitudinalAction>
@@ -114,7 +114,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="LaneChangeCondition" delay="0" conditionEdge="rising">
+                           <Condition name="LaneChangeCondition1" delay="0" conditionEdge="rising">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="6" rule="greaterThan"/>
                               </ByValueCondition>
@@ -137,7 +137,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="LaneChangeCondition" delay="0" conditionEdge="rising">
+                           <Condition name="LaneChangeCondition2" delay="0" conditionEdge="rising">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="9" rule="greaterThan"/>
                               </ByValueCondition>

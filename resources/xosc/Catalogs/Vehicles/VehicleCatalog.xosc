@@ -13,7 +13,7 @@
             <Center x="1.4" y="0.0" z="0.75"/>
             <Dimensions width="2.0" length="5.04" height="1.5"/>
          </BoundingBox>
-         <Performance maxSpeed="69" maxDeceleration="10" maxAcceleration="5"/>
+         <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
          <Axles>
             <FrontAxle maxSteering="0.523598775598"
                        wheelDiameter="0.8"

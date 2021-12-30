@@ -995,9 +995,9 @@ static void paramDeclCallback(void*)
 TEST(ParameterTest, SetParameterValuesBeforeInit)
 {
 	double positions[3][2] = {
-		{5.37060, 189.98206},  // TargetSpeedFactor = 1.1
-		{9.09872, 241.58063},  // TargetSpeedFactor = 1.5
-		{5.49925, 204.98148}  // TargetSpeedFactor = Default = 1.2
+		{5.34382, 186.68216},  // TargetSpeedFactor = 1.1
+		{8.67096, 238.63957},  // TargetSpeedFactor = 1.5
+		{5.46731, 201.38162}  // TargetSpeedFactor = Default = 1.2
 	};
 	SE_ScenarioObjectState state;
 
@@ -2136,18 +2136,18 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 188.541, 1e-3);
-					EXPECT_NEAR(objectState.y, 56.789, 1e-3);
-					EXPECT_NEAR(objectState.h, 1.017, 1e-3);
+					EXPECT_NEAR(objectState.x, 188.377, 1e-3);
+					EXPECT_NEAR(objectState.y, 56.540, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.016, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.261, 1e-3);
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 319.924, 1e-3);
-					EXPECT_NEAR(objectState.y, 347.158, 1e-3);
-					EXPECT_NEAR(objectState.h, 6.052, 1e-3);
-					EXPECT_NEAR(objectState.p, 0.009, 1e-3);
+					EXPECT_NEAR(objectState.x, 319.197, 1e-3);
+					EXPECT_NEAR(objectState.y, 347.327, 1e-3);
+					EXPECT_NEAR(objectState.h, 6.059, 1e-3);
+					EXPECT_NEAR(objectState.p, 0.008, 1e-3);
 				}
 			}
 
@@ -2322,7 +2322,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0   // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestGetRoute*";
+	testing::GTEST_FLAG(filter) = "*TestExternalDriver*";
 #else
 	SE_LogToConsole(false);
 #endif
