@@ -118,46 +118,6 @@ ScenarioEngine::~ScenarioEngine()
 
 int ScenarioEngine::step(double deltaSimTime)
 {
-
-	// This timestep calculation is due to the Ghost vehicle
-	// If both times are equal, it is a normal scenario, or no Ghost teleportation is ongoing -> Step as usual
-	// Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
-	// Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from there
-
-	if ( simulationTime_ == trueTime_)
-	{
-		simulationTime_ += deltaSimTime;
-		trueTime_ = simulationTime_;
-
-	} else if ( simulationTime_ + deltaSimTime < trueTime_)
-	{
-		simulationTime_ += deltaSimTime;
-
-	} else
-	{
-		simulationTime_ = trueTime_;
-	}
-
-	//simulationTime_ += deltaSimTime;
-
-	//if (simulationTime_ > trueTime_) // - trueTime_ >= -deltaSimTime/2)
-	//if ( simulationTime_ >= trueTime_ )
-	//{
-		// if (simulationTime_ < 0)
-		// {
-		// 	simulationTime_ = 0;
-		// }
-		// simulationTime_ = trueTime_;
-
-		// simulationTime_ += deltaSimTime;
-
-		// trueTime_ = simulationTime_;
-		//trueTime_ = simulationTime_;
-		//printf("Truetime: %.2f \n", trueTime_);
-	//}
-	//LOG("Ghost Sim Time %f", simulationTime_);
-	//LOG("True Sim Time %f", trueTime_);
-
 	if (entities.object_.size() == 0)
 	{
 		return -1;
@@ -524,6 +484,27 @@ int ScenarioEngine::step(double deltaSimTime)
 				}
 			}
 		}
+	}
+
+	// This timestep calculation is due to the Ghost vehicle
+	// If both times are equal, it is a normal scenario, or no Ghost teleportation is ongoing -> Step as usual
+	// Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
+	// Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from there
+
+	if (simulationTime_ == trueTime_)
+	{
+		simulationTime_ += deltaSimTime;
+		trueTime_ = simulationTime_;
+
+	}
+	else if (simulationTime_ + deltaSimTime < trueTime_)
+	{
+		simulationTime_ += deltaSimTime;
+
+	}
+	else
+	{
+		simulationTime_ = trueTime_;
 	}
 
 	for (size_t i = 0; i < entities.object_.size(); i++)
