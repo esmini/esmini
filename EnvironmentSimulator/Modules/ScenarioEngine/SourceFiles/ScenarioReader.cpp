@@ -1621,7 +1621,7 @@ OSCPrivateAction::DynamicsShape ParseDynamicsShape(std::string shape)
 	}
 	else
 	{
-		std::string msg = "Dynamics shape " + shape + " not supported yet";
+		std::string msg = "Dynamics shape " + shape + " unexpected. Supported: linear, sinusoidal, cubic";
 		throw std::runtime_error(msg);
 	}
 

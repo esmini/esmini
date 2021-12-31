@@ -48,6 +48,8 @@
 #define ABS_FLOOR(x, y) (abs(x) < abs(y) ? (SIGN(x) * abs(y)) : x)  // limit abs value but keep sign
 #define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))
 #define AVOID_ZERO(x) (SIGN(x)*MAX(SMALL_NUMBER, fabs(x)))
+#define NEAR_ZERO(x) (abs(x) < SMALL_NUMBER)
+#define NEAR_NUMBERS(x, y) (abs(x - y) < SMALL_NUMBER)
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION 0.05
 #define LOG_FILENAME "log.txt"

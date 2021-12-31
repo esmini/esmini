@@ -98,8 +98,7 @@ namespace scenarioengine
 			void SetRate(double rate);
 			void UpdateRate();
 			double GetRate() { return rate_; }
-			//double GetScaledParamTargetVal() { return scale_factor_ * param_target_val_; }
-			//double GetScaledParamVal() { return scale_factor_ * target_val_; }
+			double GetScaleFactor() { return scale_factor_; }
 
 		private:
 			double start_val_;

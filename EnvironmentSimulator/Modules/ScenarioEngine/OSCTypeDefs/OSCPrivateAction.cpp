@@ -817,6 +817,14 @@ void LongSpeedAction::Start(double simTime, double dt)
 	}
 
 	transition_.SetStartVal(object_->GetSpeed());
+
+	if (transition_.dimension_ == DynamicsDimension::DISTANCE)
+	{
+		// Convert to time, since speed shape is expected over time, not distance (as in lane change case)
+		// integrated distance = time(v_init + v_delta/2) = time(v_init + v_end)/2 => time = 2*distance/(v_init + v_end)
+		transition_.SetParamTargetVal(2 * transition_.GetParamTargetVal() / (transition_.GetStartVal() + target_->GetValue()));
+	}
+
 	transition_.SetTargetVal(target_->GetValue());
 
 	// Set initial state
