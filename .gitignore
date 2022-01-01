@@ -26,4 +26,4 @@ Hello-World_coding-example/build
 .vscode
 test/OSC-ALKS-scenarios
 test/stdout.txt
-test/__pycache__
+__pycache__
