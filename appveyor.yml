@@ -94,7 +94,7 @@ for:
 
           if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#store_bins* ]] || [ "$APPVEYOR_REPO_TAG" == "true" ];
           then
-            zip -r esmini-bin_ubuntu.zip bin EnvironmentSimulator/Applications/odrplot/xodr.py EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs version.txt
+            cd ../;zip -r esmini/esmini-bin_ubuntu.zip esmini/bin esmini/EnvironmentSimulator/Applications/odrplot/xodr.py esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs esmini/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs esmini/version.txt;cd -
           else
             echo "Skip binary artifacts";
           fi
@@ -195,7 +195,7 @@ for:
 
           if [[ $APPVEYOR_REPO_COMMIT_MESSAGE = *#store_bins* ]] || [ "$APPVEYOR_REPO_TAG" == "true" ];
           then
-            zip -r esmini-bin_mac_catalina.zip bin EnvironmentSimulator/Applications/odrplot/xodr.py EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs version.txt
+            cd ../;zip -r esmini/esmini-bin_mac_catalina.zip esmini/bin esmini/EnvironmentSimulator/Applications/odrplot/xodr.py esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs esmini/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs esmini/version.txt;cd -
           else
             echo "Skip binary artifacts";
           fi
@@ -272,7 +272,7 @@ for:
       - ps: |
           if ($Env:APPVEYOR_REPO_COMMIT_MESSAGE -match '#store_bins' -Or $Env:APPVEYOR_REPO_TAG -eq $true)
           {
-            7z a esmini-bin_win_x64.zip bin/* EnvironmentSimulator/Applications/odrplot/xodr.py EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs version.txt
+            cd ..;7z a esmini/esmini-bin_win_x64.zip esmini/bin/* esmini/EnvironmentSimulator/Applications/odrplot/xodr.py esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs esmini/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMUnityUtil.cs esmini/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp esmini/EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs esmini/version.txt;cd esmini
           }
           else
           {
