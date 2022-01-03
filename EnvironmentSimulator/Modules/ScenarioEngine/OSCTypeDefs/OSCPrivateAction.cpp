@@ -598,8 +598,13 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 	offset_agnostic = transition_.Evaluate();
 	double rate = transition_.EvaluateScaledPrim();
 
-	// Update internal position with new offset
+	// Fetch any assigned route and/or trajectory
+	internal_pos_.SetTrajectory(object_->pos_.GetTrajectory());
+	internal_pos_.SetTrajectoryS(object_->pos_.GetTrajectoryS());
+	internal_pos_.SetTrajectoryT(object_->pos_.GetTrajectoryT());
 	internal_pos_.SetRoute(object_->pos_.GetRoute());
+
+	// Update internal position with new offset
 	internal_pos_.SetLanePos(internal_pos_.GetTrackId(), internal_pos_.GetLaneId(), internal_pos_.GetS(), offset_agnostic * SIGN(internal_pos_.GetLaneId()));
 
 	// Update longitudinal position

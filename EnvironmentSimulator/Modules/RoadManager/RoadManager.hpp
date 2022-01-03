@@ -1849,7 +1849,7 @@ namespace roadmanager
 		@param trajectory_t Lateral distance from trajectory at current s-value
 		@return Non zero return value indicates error of some kind
 		*/
-		int SetTrajectoryT(double trajectory_t) { t_trajectory_ = trajectory_t; }
+		void SetTrajectoryT(double trajectory_t) { t_trajectory_ = trajectory_t; }
 
 		/**
 		Retrieve the T-value of the current trajectory position
