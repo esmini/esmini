@@ -26,6 +26,7 @@
 #include "CommonMini.hpp"
 #include "Replay.hpp"
 #include "helpText.hpp"
+#include "collision.hpp"
 
 using namespace scenarioengine;
 
@@ -40,20 +41,6 @@ static bool no_ghost = false;
 static std::vector<int> removeObjects;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
-
-
-typedef struct
-{
-	int id;
-	std::string name;
-	viewer::EntityModel* entityModel;
-	struct ObjectPositionStruct pos;
-	osg::ref_ptr<osg::Vec3Array> trajPoints;
-	viewer::PolyLine* trajectory;
-	float wheel_angle;
-	float wheel_rotation;
-	bool visible;
-} ScenarioEntity;
 
 static std::vector<ScenarioEntity> scenarioEntity;
 
@@ -113,11 +100,10 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 	double minTrajPointDist = 1;
 	double z_offset = 0.2;
 	double width = 1.75;
-
 	for (int i = 0; i < player->data_.size(); i++)
 	{
 		ObjectStateStructDat* state = &player->data_[i];
-
+		
 		if (no_ghost && state->info.ctrl_type == 100)  // control type 100 indicates ghost
 		{
 			continue;
@@ -129,6 +115,7 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 		}
 
 		ScenarioEntity* sc = getScenarioEntityById(state->info.id);
+
 		// If not available, create it
 		if (sc == 0)
 		{
@@ -142,7 +129,6 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 			new_sc.wheel_rotation = 0.0f;
 			new_sc.name = state->info.name;
 			new_sc.visible = true;
-
 			const char* filename = "";
 			if (state->info.model_id >= 0 && state->info.model_id < sizeof(entityModelsFiles_) / sizeof(char*))
 			{
@@ -278,13 +264,15 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 	}
 }
 
+
 int main(int argc, char** argv)
 {
 	roadmanager::OpenDrive *odrManager;
 	viewer::Viewer* viewer;
-	Replay *player;
+	Replay* player;
 	double simTime = 0;
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
+	bool crashed = false;
 	static char info_str_buf[256];
 
 	// Use logger callback for console output instead of logfile
@@ -294,8 +282,9 @@ int main(int argc, char** argv)
 	// use common options parser to manage the program arguments
 	SE_Options opt;
 	opt.AddOption("file", "Simulation recording data file", "filename");
-	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
+	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
+	opt.AddOption("collision", "Pauses the replay if the ego collides with another entity", "0 or 1");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("no_ghost", "Remove ghost entities");
 	opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
@@ -571,6 +560,24 @@ int main(int argc, char** argv)
 			player->SetStopTime(stopTime);
 		}
 
+		bool col_analysis = false;	
+		std::string collision_arg;
+		if ((collision_arg = opt.GetOptionArg("collision")) != "")
+		{
+			if (collision_arg == "0")
+			{
+				col_analysis = false;
+			}
+			else if (collision_arg == "1")
+			{
+				col_analysis = true;
+			}
+			else
+			{
+				LOG("Unsupported collision argument: %s - using default (false)", collision_arg.c_str());
+			}
+		}
+
 		simTime = player->GetStartTime();
 
 		while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetEndTime()-SMALL_NUMBER))))
@@ -598,7 +605,6 @@ int main(int argc, char** argv)
 
 			// Fetch states of scenario objects
 			ObjectStateStructDat* state = 0;
-
 			for (int index = 0; index < scenarioEntity.size(); index++)
 			{
 				ScenarioEntity* sc = &scenarioEntity[index];
@@ -617,7 +623,6 @@ int main(int argc, char** argv)
 					}
 					continue;
 				}
-
 				setEntityVisibility(index, true);
 
 				// If not available, create it
@@ -640,6 +645,31 @@ int main(int argc, char** argv)
 				}
 			}
 
+			if (col_analysis)
+			{
+				for (size_t i = 0; i < scenarioEntity.size(); i++)
+				{
+					updateCorners(scenarioEntity[i]);
+				}
+				for (size_t i = 1; i < scenarioEntity.size(); i++)
+				{
+					if (scenarioEntity[i].name.find("_ghost") == std::string::npos) // Ignore ghost
+					{
+						if (separating_axis_intersect(scenarioEntity[0], scenarioEntity[i]))
+						{
+							if (!crashed)
+							{
+								pause = true;
+								crashed = true;
+							}
+						}
+						else if (crashed)
+						{
+							crashed = false;
+						}
+					}
+				}
+			}
 			// Visualize scenario cars
 			for (size_t j=0; j<scenarioEntity.size(); j++)
 			{
