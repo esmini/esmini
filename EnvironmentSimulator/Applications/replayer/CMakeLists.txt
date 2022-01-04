@@ -29,6 +29,7 @@ set ( SOURCES
 	main.cpp
 	Replay.cpp
     helpText.hpp
+    collision.hpp
 )
 link_directories( ${OSG_LIBRARIES_PATH} )
 add_executable ( ${TARGET1} ${SOURCES} ${INCLUDES} )

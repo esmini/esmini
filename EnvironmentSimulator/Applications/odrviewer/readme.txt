@@ -10,6 +10,8 @@ Options:
       Show this help message
   --odr <odr_filename>
       OpenDRIVE filename (required)
+  --capture_screen
+      Continuous screen capture. Warning: Many .tga files will be created
   --density [density]  (default = 1.000000)
       density (cars / 100 m)
   --disable_log
@@ -44,10 +46,11 @@ Options:
       Show version and quit
 
 Additional OSG graphics options:
-  --clear-color <color>         Set the background color of the viewer in the form "r,g,b[,a]"
-  --screen <num>                Set the screen to use when multiple screens are present
-  --window <x y w h>            Set the position (x,y) and size (w,h) of the viewer window
-  --borderless-window <x y w h> Set the position(x, y) and size(w, h) of a borderless viewer window
+  --clear-color <color>                      Set the background color of the viewer in the form "r,g,b[,a]"
+  --screen <num>                             Set the screen to use when multiple screens are present
+  --window <x y w h>                         Set the position x, y and size w, h of the viewer window. -1 -1 -1 -1 for fullscreen.
+  --borderless-window <x y w h>              Set the position x, y and size w, h of a borderless viewer window. -1 -1 -1 -1 for fullscreen.
+  --SingleThreaded                           Run application and all graphics tasks in one single thread.
   
 For a complete list of OSG options and environment variables, see here:
 https://github.com/esmini/esmini/blob/master/docs/osg_options_and_env_variables.txt  

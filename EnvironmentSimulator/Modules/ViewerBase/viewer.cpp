@@ -1596,8 +1596,9 @@ Viewer::~Viewer()
 	renderSemaphore.Wait();  //  wait for any ongoing rendering
 	osgViewer_->setDone(true);  // flag OSG to tear down
 
-	while (!osgViewer_->done() && osgViewer_->areThreadsRunning())
+	while (!osgViewer_->done() || osgViewer_->areThreadsRunning())
 	{
+		osgViewer_->stopThreading();
 		SE_sleep(100);  // In case viewer still not closed
 	}
 

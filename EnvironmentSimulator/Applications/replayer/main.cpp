@@ -103,7 +103,7 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 	for (int i = 0; i < player->data_.size(); i++)
 	{
 		ObjectStateStructDat* state = &player->data_[i];
-		
+
 		if (no_ghost && state->info.ctrl_type == 100)  // control type 100 indicates ghost
 		{
 			continue;
@@ -148,6 +148,8 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 					return -1;
 				}
 			}
+
+			new_sc.bounding_box = state->info.boundingbox;
 
 			// Add it to the list of scenario cars
 			scenarioEntity.push_back(new_sc);
@@ -272,7 +274,7 @@ int main(int argc, char** argv)
 	Replay* player;
 	double simTime = 0;
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
-	bool crashed = false;
+	bool overlap = false;
 	static char info_str_buf[256];
 
 	// Use logger callback for console output instead of logfile
@@ -284,7 +286,7 @@ int main(int argc, char** argv)
 	opt.AddOption("file", "Simulation recording data file", "filename");
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
-	opt.AddOption("collision", "Pauses the replay if the ego collides with another entity", "0 or 1");
+	opt.AddOption("collision", "Pauses the replay if the ego collides with another entity");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("no_ghost", "Remove ghost entities");
 	opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
@@ -560,116 +562,130 @@ int main(int argc, char** argv)
 			player->SetStopTime(stopTime);
 		}
 
-		bool col_analysis = false;	
-		std::string collision_arg;
-		if ((collision_arg = opt.GetOptionArg("collision")) != "")
+		bool col_analysis = false;
+		if (opt.GetOptionSet("collision"))
 		{
-			if (collision_arg == "0")
-			{
-				col_analysis = false;
-			}
-			else if (collision_arg == "1")
-			{
-				col_analysis = true;
-			}
-			else
-			{
-				LOG("Unsupported collision argument: %s - using default (false)", collision_arg.c_str());
-			}
+			col_analysis = true;
 		}
 
-		simTime = player->GetStartTime();
 
-		while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetEndTime()-SMALL_NUMBER))))
+		while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetEndTime() - SMALL_NUMBER))))
 		{
-			// Get milliseconds since Jan 1 1970
-			now = SE_getSystemTime();
-			deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
-			lastTimeStamp = now;
-			if (deltaSimTime > maxStepSize) // limit step size
-			{
-				deltaSimTime = maxStepSize;
-			}
-			else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
-			{
-				SE_sleep(minStepSize - deltaSimTime);
-				deltaSimTime = minStepSize;
-			}
-			deltaSimTime *= time_scale;
+			simTime = player->GetTime();  // potentially wrapped for repeat
+			double targetSimTime = simTime;
 
 			if (!pause)
 			{
-				player->GoToDeltaTime(deltaSimTime);
-			}
-			simTime = player->GetTime();  // potentially wrapped for repeat
-
-			// Fetch states of scenario objects
-			ObjectStateStructDat* state = 0;
-			for (int index = 0; index < scenarioEntity.size(); index++)
-			{
-				ScenarioEntity* sc = &scenarioEntity[index];
-
-				state = player->GetState(sc->id);
-				if (state == nullptr || (state->info.visibilityMask & 0x01) == 0)  // no state for given object (index) at this timeframe
+				// Get milliseconds since Jan 1 1970
+				now = SE_getSystemTime();
+				deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
+				lastTimeStamp = now;
+				if (deltaSimTime > maxStepSize) // limit step size
 				{
-					setEntityVisibility(index, false);
+					deltaSimTime = maxStepSize;
+				}
+				else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
+				{
+					SE_sleep(minStepSize - deltaSimTime);
+					deltaSimTime = minStepSize;
+				}
+				deltaSimTime *= time_scale;
+				targetSimTime = simTime + deltaSimTime;
+			}
+
+			do
+			{
+				if (!pause)
+				{
+					if (deltaSimTime < 0)
+					{
+						player->GoToPreviousFrame();
+					}
+					else
+					{
+						player->GoToNextFrame();
+					}
+					simTime = player->GetTime();  // potentially wrapped for repeat
+				}
+
+				// Fetch states of scenario objects
+				ObjectStateStructDat* state = 0;
+				for (int index = 0; index < scenarioEntity.size(); index++)
+				{
+					ScenarioEntity* sc = &scenarioEntity[index];
+
+					state = player->GetState(sc->id);
+					if (state == nullptr || (state->info.visibilityMask & 0x01) == 0)  // no state for given object (index) at this timeframe
+					{
+						setEntityVisibility(index, false);
+
+						if (index == viewer->currentCarInFocus_)
+						{
+							// Update overlay info text
+							snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) NO INFO",
+								simTime, viewer->currentCarInFocus_, sc->name.c_str(), sc->id);
+							viewer->SetInfoText(info_str_buf);
+						}
+						continue;
+					}
+					setEntityVisibility(index, true);
+
+					// If not available, create it
+					if (sc == 0)
+					{
+						throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(state->info.id)));
+					}
+
+					sc->pos = state->pos;
+					sc->wheel_angle = state->info.wheel_angle;
+					sc->wheel_rotation = state->info.wheel_rot;
 
 					if (index == viewer->currentCarInFocus_)
 					{
 						// Update overlay info text
-						snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) NO INFO",
-							simTime, viewer->currentCarInFocus_, sc->name.c_str(), sc->id);
+						snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) %.2fkm/h (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) timeScale: %.2f ",
+							simTime, viewer->currentCarInFocus_, state->info.name, state->info.id, 3.6 * state->info.speed, sc->pos.roadId, sc->pos.laneId,
+							fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset, sc->pos.s, sc->pos.x, sc->pos.y, sc->pos.h, time_scale);
 						viewer->SetInfoText(info_str_buf);
 					}
-					continue;
-				}
-				setEntityVisibility(index, true);
-
-				// If not available, create it
-				if (sc == 0)
-				{
-					throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(state->info.id)));
 				}
 
-				sc->pos = state->pos;
-				sc->wheel_angle = state->info.wheel_angle;
-				sc->wheel_rotation = state->info.wheel_rot;
-
-				if (index == viewer->currentCarInFocus_)
+				if (col_analysis)
 				{
-					// Update overlay info text
-					snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) %.2fkm/h (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) timeScale: %.2f ",
-						simTime, viewer->currentCarInFocus_, state->info.name, state->info.id, 3.6 * state->info.speed, sc->pos.roadId, sc->pos.laneId,
-						fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset, sc->pos.s, sc->pos.x, sc->pos.y, sc->pos.h, time_scale);
-					viewer->SetInfoText(info_str_buf);
-				}
-			}
-
-			if (col_analysis)
-			{
-				for (size_t i = 0; i < scenarioEntity.size(); i++)
-				{
-					updateCorners(scenarioEntity[i]);
-				}
-				for (size_t i = 1; i < scenarioEntity.size(); i++)
-				{
-					if (scenarioEntity[i].name.find("_ghost") == std::string::npos) // Ignore ghost
+					for (size_t i = 0; i < scenarioEntity.size(); i++)
 					{
-						if (separating_axis_intersect(scenarioEntity[0], scenarioEntity[i]))
+						updateCorners(scenarioEntity[i]);
+					}
+
+					bool overlap_now = false;
+					for (size_t i = 1; i < scenarioEntity.size(); i++)
+					{
+						if (scenarioEntity[i].name.find("_ghost") == std::string::npos) // Ignore ghost
 						{
-							if (!crashed)
+							if (separating_axis_intersect(scenarioEntity[0], scenarioEntity[i]))
 							{
-								pause = true;
-								crashed = true;
+								overlap_now = true;
+								if (!overlap)
+								{
+									overlap = true;
+									pause = true;
+									LOG("Collision between %d and %d at time %.2f", 0, i, simTime);
+								}
 							}
 						}
-						else if (crashed)
-						{
-							crashed = false;
-						}
+					}
+					if (!overlap_now)
+					{
+						overlap = false;
 					}
 				}
-			}
+
+			} while (!pause &&
+				simTime < player->GetEndTime() - SMALL_NUMBER &&  // As long as time is < end
+				simTime > SMALL_NUMBER &&  // As long as time is > 0 (start)
+				(deltaSimTime < 0 ? (player->GetTime() > targetSimTime) : (player->GetTime() < targetSimTime)));  // until reached target timestep
+
+
 			// Visualize scenario cars
 			for (size_t j=0; j<scenarioEntity.size(); j++)
 			{

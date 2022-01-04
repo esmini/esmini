@@ -1,13 +1,47 @@
 #ifndef COLLISION_HPP
 #define COLLISION_HPP
 
-struct Point
+class Point
 {
-	float x;
-	float y;
+public:
+    Point() : x_(0), y_(0) {}
+    Point(double x, double y) : x_(x), y_(y) {}
+
+    Point operator + (Point const& p) const {
+        Point res;
+        res.x_ = x_ + p.x_;
+        res.y_ = y_ + p.y_;
+        return res;
+    }
+
+    Point operator - (Point const& p) const {
+        Point res;
+        res.x_ = x_ - p.x_;
+        res.y_ = y_ - p.y_;
+        return res;
+    }
+
+    Point Rotate(double angle) {
+        Point res;
+        res.x_ = x_ * cos(angle) - y_ * sin(angle);
+        res.y_ = x_ * sin(angle) + y_ * cos(angle);
+        return res;
+    }
+
+    double Dot(const Point& corner) const {
+        return x_ * corner.x_ + y_ * corner.y_;
+    }
+
+    double x() const { return x_; }
+    double y() const { return y_; }
+
+private:
+    float x_;
+	float y_;
 };
 
-typedef struct 
+
+typedef struct
 {
 	int id;
 	std::string name;
@@ -18,57 +52,29 @@ typedef struct
 	float wheel_angle;
 	float wheel_rotation;
 	bool visible;
+    OSCBoundingBox bounding_box;
 	std::vector<Point> corners;
 } ScenarioEntity;
 
 void updateCorners(ScenarioEntity& entity)
 {
-    entity.corners.clear();
+    Point bb_center(entity.bounding_box.center_.x_, entity.bounding_box.center_.y_);
+    Point bb_dim(entity.bounding_box.dimensions_.length_, entity.bounding_box.dimensions_.width_);
 
-    Point front_right;
-    Point front_left;
-    Point rear_left;
-    Point rear_right;
-
-	auto p_front_right_x = entity.pos.x + entity.entityModel->modelBB_.xMax();
-	auto p_front_right_y = entity.pos.y + entity.entityModel->modelBB_.yMin();
-	front_right.x = entity.pos.x + (p_front_right_x - entity.pos.x) * cos(entity.pos.h) - (p_front_right_y - entity.pos.y) * sin(entity.pos.h);
-	front_right.y = entity.pos.y + (p_front_right_x - entity.pos.x) * sin(entity.pos.h) + (p_front_right_y - entity.pos.y) * cos(entity.pos.h);
-
-	auto p_front_left_x = entity.pos.x + entity.entityModel->modelBB_.xMax();
-	auto p_front_left_y = entity.pos.y + entity.entityModel->modelBB_.yMax();
-	front_left.x = entity.pos.x + (p_front_left_x - entity.pos.x) * cos(entity.pos.h) - (p_front_left_y - entity.pos.y) * sin(entity.pos.h);
-	front_left.y = entity.pos.y + (p_front_left_x - entity.pos.x) * sin(entity.pos.h) + (p_front_left_y - entity.pos.y) * cos(entity.pos.h);
-	
-	auto p_rear_left_x = entity.pos.x + entity.entityModel->modelBB_.xMin();
-	auto p_rear_left_y = entity.pos.y + entity.entityModel->modelBB_.yMax();
-	rear_left.x = entity.pos.x + (p_rear_left_x - entity.pos.x) * cos(entity.pos.h) - (p_rear_left_y - entity.pos.y) * sin(entity.pos.h);
-	rear_left.y = entity.pos.y + (p_rear_left_x - entity.pos.x) * sin(entity.pos.h) + (p_rear_left_y - entity.pos.y) * cos(entity.pos.h);
-	
-	auto p_rear_right_x  = entity.pos.x + entity.entityModel->modelBB_.xMin();
-	auto p_rear_right_y = entity.pos.y + entity.entityModel->modelBB_.yMin();
-	rear_right.x = entity.pos.x + (p_rear_right_x - entity.pos.x) * cos(entity.pos.h) - (p_rear_right_y - entity.pos.y) * sin(entity.pos.h);
-	rear_right.y = entity.pos.y + (p_rear_right_x - entity.pos.x) * sin(entity.pos.h) + (p_rear_right_y - entity.pos.y) * cos(entity.pos.h);
+    Point front_right = Point(entity.pos.x, entity.pos.y) + Point(bb_center.x() + bb_dim.x() / 2.0f, bb_center.y() - bb_dim.y() / 2.0f).Rotate(entity.pos.h);
+    Point front_left = Point(entity.pos.x, entity.pos.y) + Point(bb_center.x() + bb_dim.x() / 2.0f, bb_center.y() + bb_dim.y() / 2.0f).Rotate(entity.pos.h);
+    Point rear_left = Point(entity.pos.x, entity.pos.y) + Point(bb_center.x() - bb_dim.x() / 2.0f, bb_center.y() + bb_dim.y() / 2.0f).Rotate(entity.pos.h);
+    Point rear_right = Point(entity.pos.x, entity.pos.y) + Point(bb_center.x() - bb_dim.x() / 2.0f, bb_center.y() - bb_dim.y() / 2.0f).Rotate(entity.pos.h);
 
     entity.corners = {front_right, front_left, rear_left, rear_right};
 }
 
-double dot(const Point& axis_normalized, const Point& corner)
-{
-    return axis_normalized.x * corner.x + axis_normalized.y * corner.y;
-}
-
 Point calculate_normalized_axis_projection(const Point& current_point, const Point& next_point)
 {
-    const double axis_x = -(next_point.y - current_point.y);
-    const double axis_y =   next_point.x - current_point.x;
-    const double magnitude = hypot(axis_x, axis_y);
+    const Point axis(next_point - current_point);
+    const double magnitude = hypot(-axis.y(), axis.x());
 
-    Point axis_normalised;
-    axis_normalised.x = axis_x / magnitude;
-    axis_normalised.y = axis_y / magnitude;
-
-    return axis_normalised;
+    return Point(axis.x() / magnitude, axis.y() / magnitude);
 }
 
 void compute_projections(const std::vector<Point>& ego_corners, const std::vector<Point>& target_corners, const Point& axis_normalized, std::vector<double>& projections_a, std::vector<double>& projections_b)
@@ -78,8 +84,8 @@ void compute_projections(const std::vector<Point>& ego_corners, const std::vecto
 
     for (size_t i = 0; i < ego_corners.size(); i++)
     {
-        const double projection_a = dot(axis_normalized, ego_corners[i]);
-        const double projection_b = dot(axis_normalized, target_corners[i]);
+        const double projection_a = axis_normalized.Dot(ego_corners[i]);
+        const double projection_b = axis_normalized.Dot(target_corners[i]);
 
         projections_a.push_back(projection_a);
         projections_b.push_back(projection_b);
@@ -95,7 +101,7 @@ bool is_overlapping(const std::vector<double>& projections_a, const std::vector<
     const double min_projection_b = *std::min_element(projections_b.begin(), projections_b.end());
 
     // Does not intersect
-    if (max_projection_a < min_projection_b || max_projection_b < min_projection_a) 
+    if (max_projection_a < min_projection_b || max_projection_b < min_projection_a)
     {
         return false;
     }
@@ -108,13 +114,8 @@ bool separating_axis_intersect(const ScenarioEntity& ego, const ScenarioEntity& 
 {
     for (size_t i = 0; i < ego.corners.size(); i++)
     {
-        Point current_point;
-        current_point.x = ego.corners[i].x;
-        current_point.y = ego.corners[i].y;
-
-        Point next_point;
-        next_point.x = ego.corners[(i + 1) % ego.corners.size()].x; 
-        next_point.y = ego.corners[(i + 1) % ego.corners.size()].y; 
+        Point current_point = ego.corners[i];
+        Point next_point(ego.corners[(i + 1) % ego.corners.size()].x(), ego.corners[(i + 1) % ego.corners.size()].y());
 
         Point axis_normalized = calculate_normalized_axis_projection(current_point, next_point);
 
@@ -131,13 +132,8 @@ bool separating_axis_intersect(const ScenarioEntity& ego, const ScenarioEntity& 
 
     for (size_t i = 0; i < target.corners.size(); i++)
     {
-        Point current_point;
-        current_point.x = target.corners[i].x;
-        current_point.y = target.corners[i].y;
-
-        Point next_point;
-        next_point.x = target.corners[(i + 1) % target.corners.size()].x; 
-        next_point.y = target.corners[(i + 1) % target.corners.size()].y; 
+        Point current_point(target.corners[i]);
+        Point next_point(target.corners[(i + 1) % target.corners.size()].x(), target.corners[(i + 1) % target.corners.size()].y());
 
         Point axis_normalized = calculate_normalized_axis_projection(current_point, next_point);
 

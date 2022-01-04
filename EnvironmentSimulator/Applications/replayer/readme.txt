@@ -6,10 +6,12 @@ Usage:  [options]
 Options:
   --file <filename>
       Simulation recording data file
-  --capture_screen
-      Continuous screen capture. Warning: Many jpeg files will be created
   --camera_mode <mode>
       Initial camera mode ("orbit" (default), "fixed", "flex", "flex-orbit", "top", "driver") (toggle during simulation by press 'k')
+  --capture_screen
+      Continuous screen capture. Warning: Many jpeg files will be created
+  --collision
+      Pauses the replay if the ego collides with another entity
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
   --no_ghost
@@ -34,10 +36,11 @@ Options:
       Entity visualization: "model"(default)/"boundingbox"/"both"
 
 Additional OSG graphics options:
-  --clear-color <color>         Set the background color of the viewer in the form "r,g,b[,a]"
-  --screen <num>                Set the screen to use when multiple screens are present
-  --window <x y w h>            Set the position (x,y) and size (w,h) of the viewer window
-  --borderless-window <x y w h> Set the position(x, y) and size(w, h) of a borderless viewer window
+  --clear-color <color>                      Set the background color of the viewer in the form "r,g,b[,a]"
+  --screen <num>                             Set the screen to use when multiple screens are present
+  --window <x y w h>                         Set the position x, y and size w, h of the viewer window. -1 -1 -1 -1 for fullscreen.
+  --borderless-window <x y w h>              Set the position x, y and size w, h of a borderless viewer window. -1 -1 -1 -1 for fullscreen.
+  --SingleThreaded                           Run application and all graphics tasks in one single thread.
 
 Key shortcuts
 
