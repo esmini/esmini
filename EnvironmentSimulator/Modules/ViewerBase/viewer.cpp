@@ -1278,7 +1278,14 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		return;
 	}
 
-	osg::ref_ptr<osg::Camera> camera = new osg::Camera;
+	osgViewer_ = new osgViewer::Viewer;
+	if (osgViewer_ == nullptr)
+	{
+		LOG("Failed to initialize OSG viewer");
+		return;
+	}
+
+	osg::ref_ptr<osg::Camera> camera = osgViewer_->getCamera();
 
 	camera->setGraphicsContext(gc);
 	camera->setClearMask(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -1295,13 +1302,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	camera->setViewport(new osg::Viewport(0, 0, traits->width, traits->height));
 	camera->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 	camera->setLODScale(lodScale_);
-
-	osgViewer_ = new osgViewer::Viewer;
-	if (osgViewer_ == nullptr)
-	{
-		LOG("Failed to initialize OSG viewer");
-		return;
-	}
 
 	osgViewer_->setCamera(camera.get());
 
@@ -1581,7 +1581,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	infoTextCamera->addChild(textGeode.get());
 	infoTextCamera->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 
-	SetInfoTextProjection(winDim_.w, winDim_.h);
+	SetInfoTextProjection(traits->width, traits->height);
 
 	rootnode_->addChild(infoTextCamera);
 
