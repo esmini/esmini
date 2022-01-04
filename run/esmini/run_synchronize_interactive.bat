@@ -1,1 +1,1 @@
-"../../bin/esmini" --screen 0 --osc ../../resources/xosc/synchronize.xosc 
+"../../bin/esmini" --borderless-window 0 0 -1 -1 --screen 0 --osc ../../resources/xosc/synchronize.xosc 
