@@ -1,5 +1,47 @@
 ## esmini release notes
 
+### 2022-01-05 Version 2.19.0
+
+- New feature: Off-screen rendering
+  - Fetch rendered images via esminiLib API (synchronous or via callback) ([issue #173](https://github.com/esmini/esmini/issues/173))
+  - Example code: [image-capture.cpp](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/image-capture/image-capture.cpp)
+  - Off-screen rendering without GFX system (e.g. headless Ubuntu):
+    - Windows using Mesa3D: Put [opengl32.dll](https://downloads.fdossena.com/geth.php?r=mesa64-latest) in same folder as esmini exec.
+    - Linux using xvfb: `Xvfb :99 -screen 0 1920x1080x24+32 & export DISPLAY=:99` then run esmini as ususal.
+  - Disable feature with [launch flag](https://github.com/esmini/esmini/blob/master/docs/commands.txt) `--disable_off_screen` (potentially gaining performance)
+- Lossless screen-capture in TGA format instead of JPG
+  - Disadvantage: larger files
+  - Advantage: Videoclips created from uncompressed files better quality/size ratio
+  - Anyway it's easy to convert TGA to JPG in a post process step
+  - Reminder: Add launch flag `--capture_screen` for continuous capture
+- Extended screen-capture control 
+  - Specify exact number of frames to capture, or continuous mode (-1)
+  - Note that esminiLib API for screen-capture has changed, examples (old => new):
+    - SE_CaptureContinuously(true) => SE_SaveImagesToFile(-1)
+    - SE_CaptureContinuously(false) => SE_SaveImagesToFile(0)
+    - SE_CaptureNextFrame() => SE_SaveImagesToFile(1)
+- New replayer features:
+  - Collision detection. Log events and pause player. Activate with launch flag `--collision`
+  - Quit at end of scenario. Activate with launch flag `--quit_at_end`
+- Add route [API](https://github.com/esmini/esmini/blob/0c18eaad53eb92bb1859e27ded3c6ddb5a1f11d4/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1070) to esminiLib.
+- Reworked action dynamics. Hopefully more correct math and behavior.
+  - e.g. Lane change trajectory affected by (long) speed if and only if Dimension = time
+  - LaneOffset maxLateralAcc respected ([issue #201](https://github.com/esmini/esmini/issues/201))
+  - Note that behavior might differ from previous versions
+  - Changed behavior is either intentional or not, so please report suspected bugs.
+  - Respect vehicle performance specification (max speed, acc, dec)
+- Improved LaneChangeAction: Handle lane split cases, e.g. highway exit.
+- Improved route handling: Relax lane requirement, e.g. maintain route during and after lane changes, when possible.
+- Fix lost trajectory during laneChange ([issue #203](https://github.com/esmini/esmini/issues/203))
+- Add esmini root folder to binary release packages ([issue #204](https://github.com/esmini/esmini/issues/204))
+- Update [ALKS scenarios](https://github.com/asam-oss/OSC-ALKS-scenarios) to [v0.4.1](https://github.com/asam-oss/OSC-ALKS-scenarios/releases/tag/v0.4.1).
+- Fix wrong pitch calculation (issue [#197](https://github.com/esmini/esmini/issues/197))
+- Improve tesselation wrt elevation and roll rates (issue [#197](https://github.com/esmini/esmini/issues/197))
+- Add rounding tolerance to condition rules greaterOrEqual and lessOrEqual
+- Updated behavior: Update simulation time after storyboard evalulation (not before)
+- Fix typo messing up DistanceCondition ([issue #200](https://github.com/esmini/esmini/issues/200))
+- Some additional minor fixes
+
 ### 2021-12-09 Version 2.18.2
 
 - Replace plot_csv.py with plot_dat.py
