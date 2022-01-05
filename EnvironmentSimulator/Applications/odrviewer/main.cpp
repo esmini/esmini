@@ -348,6 +348,7 @@ int main(int argc, char** argv)
 	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many .tga files will be created");
 	opt.AddOption("density", "density (cars / 100 m)", "density", std::to_string(density));
 	opt.AddOption("disable_log", "Prevent logfile from being created");
+	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
 	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
@@ -469,6 +470,11 @@ int main(int argc, char** argv)
 			rule = roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC;
 			LOG("Enforce right hand traffic");
 		}
+	}
+
+	if (opt.GetOptionSet("disable_off_screen"))
+	{
+		SE_Env::Inst().SetDisableOffScreen(true);
 	}
 
 	roadmanager::Position *lane_pos = new roadmanager::Position();

@@ -409,13 +409,14 @@ OffScreenImage* ScenarioPlayer::FetchCapturedImagePtr()
 {
 	static OffScreenImage img;
 
-	if (viewer_)
+	if (viewer_ && !viewer_->GetDisableOffScreen())
 	{
 		if (viewer_->GetSaveImagesToRAM() == false)
 		{
 			LOG("FetchCapturedImagePtr Error: Activate save images to RAM (SaveImagesToRAM(true)) in order to fetch images\n");
 			return nullptr;
 		}
+
 		viewer_->renderSemaphore.Wait();  // Wait until rendering is done
 
 		viewer_->imageMutex.Lock();
@@ -817,6 +818,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
 	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
+	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
 	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
@@ -940,6 +942,11 @@ int ScenarioPlayer::Init()
 	else
 	{
 		LOG("Generated seed %u", SE_Env::Inst().GetSeed());
+	}
+
+	if (opt.GetOptionSet("disable_off_screen"))
+	{
+		SE_Env::Inst().SetDisableOffScreen(true);
 	}
 
 	// Create scenario engine

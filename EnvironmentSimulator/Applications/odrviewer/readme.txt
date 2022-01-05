@@ -16,6 +16,8 @@ Options:
       density (cars / 100 m)
   --disable_log
       Prevent logfile from being created
+  --disable_off_screen
+      Disable off-screen rendering, potentially gaining performance
   --disable_stdout
       Prevent messages to stdout
   --fixed_timestep <timestep>

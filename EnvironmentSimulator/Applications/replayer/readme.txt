@@ -12,6 +12,8 @@ Options:
       Continuous screen capture. Warning: Many jpeg files will be created
   --collision
       Pauses the replay if the ego collides with another entity
+  --disable_off_screen
+      Disable off-screen rendering, potentially gaining performance
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
   --no_ghost

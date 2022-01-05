@@ -287,6 +287,7 @@ int main(int argc, char** argv)
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
 	opt.AddOption("collision", "Pauses the replay if the ego collides with another entity");
+	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("no_ghost", "Remove ghost entities");
 	opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
@@ -320,11 +321,15 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-
 	std::string res_path = opt.GetOptionArg("res_path");
 	if (!res_path.empty())
 	{
 		SE_Env::Inst().AddPath(res_path);
+	}
+
+	if (opt.GetOptionSet("disable_off_screen"))
+	{
+		SE_Env::Inst().SetDisableOffScreen(true);
 	}
 
 	// Create player

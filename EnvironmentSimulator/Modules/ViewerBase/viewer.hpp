@@ -437,6 +437,7 @@ namespace viewer
 
 		void SaveImagesToFile(int nrOfFrames);
 		int GetSaveImagesToFile() { return saveImagesToFile_; }
+		bool GetDisableOffScreen() { return disable_off_screen_; }
 
 		void SaveImagesToRAM(bool state) { saveImagesToRAM_ = state; };
 		bool GetSaveImagesToRAM() { return saveImagesToRAM_; }
@@ -458,7 +459,7 @@ namespace viewer
 		bool quit_request_;
 		bool saveImagesToRAM_;
 		int saveImagesToFile_;
-		osg::ref_ptr<osgViewer::ScreenCaptureHandler> screenCaptureHandler_;
+		bool disable_off_screen_;
 		osgViewer::ViewerBase::ThreadingModel initialThreadingModel_;
 
 		struct {

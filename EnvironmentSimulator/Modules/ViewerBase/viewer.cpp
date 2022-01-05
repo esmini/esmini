@@ -1086,6 +1086,7 @@ struct FetchImage : public osg::Camera::DrawCallback
 	virtual void operator() (osg::RenderInfo& renderInfo) const
 	{
 		if (viewer_ != nullptr &&
+			!viewer_->GetDisableOffScreen() &&
 			!viewer_->GetQuitRequest() &&
 			(viewer_->GetSaveImagesToRAM() ||
 				viewer_->GetSaveImagesToFile() != 0 ||
@@ -1225,6 +1226,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	winDim_ = { -1, -1, -1, -1 };
 	bool decoration = true;
 	int screenNum = -1;
+	disable_off_screen_ = SE_Env::Inst().GetDisableOffScreen();
 
 	int aa_mode = DEFAULT_AA_MULTISAMPLES;
 	if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
@@ -1459,11 +1461,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	// add the LOD Scale handler
 	osgViewer_->addEventHandler(new osgViewer::LODScaleHandler);
 
-	// add the screen capture handler
-#if 0  // Replaced by esmini custom image handling
-	screenCaptureHandler_ = new osgViewer::ScreenCaptureHandler;
-	osgViewer_->addEventHandler(screenCaptureHandler_);
-#endif
 	osgViewer_->setReleaseContextAtEndOfFrameHint(false);
 
 	// Handle arguments
@@ -1585,7 +1582,16 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	rootnode_->addChild(infoTextCamera);
 
 	// Register callback for fetch rendered image into RAM buffer
-	osgViewer_->getCamera()->setFinalDrawCallback(new FetchImage(this));
+	if (!GetDisableOffScreen())
+	{
+		osgViewer_->getCamera()->setFinalDrawCallback(new FetchImage(this));
+	}
+	else
+	{
+		// add OSG default screen capture handler
+		osgViewer_->addEventHandler(new osgViewer::ScreenCaptureHandler);
+	}
+
 	initialThreadingModel_ = osgViewer_->getThreadingModel();
 
 	osgViewer_->realize();
@@ -2984,7 +2990,10 @@ void Viewer::SaveImagesToFile(int nrOfFrames)
 
 void Viewer::Frame()
 {
-	renderSemaphore.Set();  // Raise semaphore to flag rendering ongoing
+	if (!GetDisableOffScreen())
+	{
+		renderSemaphore.Set();  // Raise semaphore to flag rendering ongoing
+	}
 	osgViewer_->frame();
 }
 

@@ -669,6 +669,8 @@ public:
 	void SetOSIMaxLateralDeviation(double maxLateralDeviation) { osiMaxLateralDeviation_ = maxLateralDeviation; }
 	double GetOSIMaxLongitudinalDistance() { return osiMaxLongitudinalDistance_; }
 	double GetOSIMaxLateralDeviation() { return osiMaxLateralDeviation_; }
+	void SetDisableOffScreen(bool disable) { disableOffScreen_ = disable; }
+	bool GetDisableOffScreen() { return disableOffScreen_; }
 	std::vector<std::string>& GetPaths() { return paths_; }
 	int AddPath(std::string path);
 	void ClearPaths() { paths_.clear(); }
@@ -698,8 +700,7 @@ private:
 	SE_SystemTime systemTime_;
 	unsigned int seed_;
 	std::mt19937 gen_;
-	bool saveImagesToRAM_;
-	int saveImagesToFile_;
+	bool disableOffScreen_;
 };
 
 /**
