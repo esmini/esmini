@@ -100,6 +100,7 @@ public:
 	int SetParameterValue(const char *name, double value);
 	int SetParameterValue(const char *name, const char *value);
 	int SetParameterValue(const char *name, bool value);
+	void SetQuitRequest(bool quit) { quit_request = quit; }
 
 	//TODO
 	//int GetNumberOfVehicleProperties(){return 4;};

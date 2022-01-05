@@ -1086,6 +1086,7 @@ struct FetchImage : public osg::Camera::DrawCallback
 	virtual void operator() (osg::RenderInfo& renderInfo) const
 	{
 		if (viewer_ != nullptr &&
+			!viewer_->GetQuitRequest() &&
 			(viewer_->GetSaveImagesToRAM() ||
 				viewer_->GetSaveImagesToFile() != 0 ||
 				viewer_->imgCallback_.func != nullptr))
@@ -1251,8 +1252,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	InitTraits(traits, winDim_.x, winDim_.y, winDim_.w, winDim_.h, aa_mode, decoration, screenNum, opt->GetOptionSet("headless"));
 
 	osg::ref_ptr<osg::GraphicsContext> gc = osg::GraphicsContext::createGraphicsContext(traits.get());
-
-	LOG("context valid: %d", gc.valid());
 
 	if (!gc.valid())
 	{
@@ -1594,7 +1593,14 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 
 Viewer::~Viewer()
 {
-	osgViewer_->setDone(true);
+	renderSemaphore.Wait();  //  wait for any ongoing rendering
+	osgViewer_->setDone(true);  // flag OSG to tear down
+
+	while (!osgViewer_->done() && osgViewer_->areThreadsRunning())
+	{
+		SE_sleep(100);  // In case viewer still not closed
+	}
+
 	for (size_t i = 0; i < entities_.size(); i++)
 	{
 		delete(entities_[i]);
@@ -3149,7 +3155,6 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	case(osgGA::GUIEventAdapter::KEY_Escape):
 	{
 		viewer_->SetQuitRequest(true);
-		viewer_->osgViewer_->setDone(true);
 	}
 	break;
 	}
@@ -3164,9 +3169,9 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		}
 	}
 
-	if (ea.getKey() == osgGA::GUIEventAdapter::KEY_Space)
+	if (ea.getKey() == osgGA::GUIEventAdapter::KEY_Space ||  // prevent OSG "view reset" action on space key
+		ea.getKey() == osgGA::GUIEventAdapter::KEY_Escape)   // take over quit control from OSGViewer
 	{
-		// prevent OSG "view reset" action on space key
 		return true;
 	}
 	else

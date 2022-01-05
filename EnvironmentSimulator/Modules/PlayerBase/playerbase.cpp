@@ -140,7 +140,15 @@ void ScenarioPlayer::Frame(double timestep_s)
 #ifdef _USE_OSG
 		if (!threads)
 		{
-			ViewerFrame();
+			if (!viewer_->GetQuitRequest())
+			{
+				ViewerFrame();
+			}
+			else
+			{
+				SetQuitRequest(true);
+				CloseViewer();
+			}
 		}
 #endif
 	}
@@ -369,14 +377,6 @@ void ScenarioPlayer::ViewerFrame()
 	mutex.Unlock();
 
 	viewer_->Frame();
-
-	if (viewer_->osgViewer_->done())
-	{
-		LOG("Quit requested from viewer - probably ESC button pressed");
-		viewerState_ = ViewerState::VIEWER_STATE_DONE;
-		quit_request = true;
-	}
-
 }
 
 int ScenarioPlayer::SaveImagesToRAM(bool state)
@@ -466,6 +466,7 @@ void ScenarioPlayer::AddCustomCamera(double x, double y, double z, double h, dou
 void ScenarioPlayer::CloseViewer()
 {
 	delete viewer_;
+	viewer_ = 0;
 	viewerState_ = ScenarioPlayer::ViewerState::VIEWER_STATE_DONE;
 }
 
@@ -650,8 +651,7 @@ int ScenarioPlayer::InitViewer()
 			obj->type_ == Object::Type::VEHICLE ? viewer::EntityModel::EntityType::VEHICLE : viewer::EntityModel::EntityType::OTHER,
 			road_sensor, obj->name_, &obj->boundingbox_, obj->scaleMode_)) != 0)
 		{
-			delete viewer_;
-			viewer_ = 0;
+			CloseViewer();
 			return -1;
 		}
 
@@ -729,11 +729,12 @@ void viewer_thread(void *args)
 		return;
 	}
 
-	while (!player->viewer_->GetQuitRequest() && !player->viewer_->osgViewer_->done())
+	while (!player->viewer_->GetQuitRequest())
 	{
 		player->ViewerFrame();
 	}
 
+	player->SetQuitRequest(true);
 	player->CloseViewer();
 }
 

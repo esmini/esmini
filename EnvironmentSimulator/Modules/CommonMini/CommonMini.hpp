@@ -387,7 +387,10 @@ public:
 	inline void Wait()
 	{
 		std::unique_lock<std::mutex> lock(mtx);
-		cv.wait(lock);  // wait on the mutex until notify is called
+		if (flag == true)
+		{
+			cv.wait(lock);  // wait on the mutex until notify is called
+		}
 	}
 
 private:
