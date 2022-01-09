@@ -133,7 +133,7 @@ public:
 	OffScreenImage *FetchCapturedImagePtr();
 	void AddCustomCamera(double x, double y, double z, double h, double p);
 #else
-	void *viewer_;
+	void* viewer_;
 #endif
 	roadmanager::OpenDrive *odr_manager;
 	std::vector<ObjectSensor *> sensor;

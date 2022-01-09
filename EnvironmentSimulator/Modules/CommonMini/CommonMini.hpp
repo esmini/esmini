@@ -447,7 +447,8 @@ public:
 	void LogVehicleData(bool isendline, double timestamp, char const* name, int id, double speed,
 		double wheel_angle, double wheel_rot, double posX, double posY, double posZ, double velX, double velY,
 		double velZ, double accX, double accY, double accZ, double distance_road, double distance_lanem, double heading,
-		double heading_rate, double heading_angle, double heading_angle_driving_direction, double pitch, double curvature, ...);
+		double heading_rate, double heading_angle, double heading_angle_driving_direction, double pitch, double curvature,
+		char const* collisions, ...);
 
 	void SetCallback(FuncPtr callback);
 
@@ -671,6 +672,8 @@ public:
 	double GetOSIMaxLateralDeviation() { return osiMaxLateralDeviation_; }
 	void SetDisableOffScreen(bool disable) { disableOffScreen_ = disable; }
 	bool GetDisableOffScreen() { return disableOffScreen_; }
+	void SetDisableCollisionDetection(bool disable) { disableCollisionDetection_ = disable; }
+	bool GetDisableCollisionDetection() { return disableCollisionDetection_; }
 	std::vector<std::string>& GetPaths() { return paths_; }
 	int AddPath(std::string path);
 	void ClearPaths() { paths_.clear(); }
@@ -701,6 +704,7 @@ private:
 	unsigned int seed_;
 	std::mt19937 gen_;
 	bool disableOffScreen_;
+	bool disableCollisionDetection_;
 };
 
 /**

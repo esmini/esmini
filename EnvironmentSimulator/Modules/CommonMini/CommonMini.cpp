@@ -41,6 +41,7 @@ extern const char* ESMINI_GIT_BRANCH;
 extern const char* ESMINI_BUILD_VERSION;
 
 static SE_SystemTime systemTime_;
+static const int max_csv_entry_length = 1024;
 
 const char* esmini_git_tag(void)
 {
@@ -693,7 +694,7 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
 }
 
 SE_Env::SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE), osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION),
-	logFilePath_(LOG_FILENAME), disableOffScreen_(false)
+	logFilePath_(LOG_FILENAME), disableOffScreen_(false), disableCollisionDetection_(false)
 {
 	seed_ = (std::random_device())();
 	gen_.seed(seed_);
@@ -888,18 +889,18 @@ CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::stri
 	data_index_ = 0;
 
 	//Standard ESMINI log header, appended with Scenario file name and vehicle count
-	static char message[1024];
-	snprintf(message, 1024, "esmini GIT REV: %s", esmini_git_rev());
+	static char message[max_csv_entry_length];
+	snprintf(message, max_csv_entry_length, "esmini GIT REV: %s", esmini_git_rev());
 	file_ << message << std::endl;
-	snprintf(message, 1024, "esmini GIT TAG: %s", esmini_git_tag());
+	snprintf(message, max_csv_entry_length, "esmini GIT TAG: %s", esmini_git_tag());
 	file_ << message << std::endl;
-	snprintf(message, 1024, "esmini GIT BRANCH: %s", esmini_git_branch());
+	snprintf(message, max_csv_entry_length, "esmini GIT BRANCH: %s", esmini_git_branch());
 	file_ << message << std::endl;
-	snprintf(message, 1024, "esmini BUILD VERSION: %s", esmini_build_version());
+	snprintf(message, max_csv_entry_length, "esmini BUILD VERSION: %s", esmini_build_version());
 	file_ << message << std::endl;
-	snprintf(message, 1024, "Scenario File Name: %s", scenario_filename.c_str());
+	snprintf(message, max_csv_entry_length, "Scenario File Name: %s", scenario_filename.c_str());
 	file_ << message << std::endl;
-	snprintf(message, 1024, "Number of Vehicles: %d", numvehicles);
+	snprintf(message, max_csv_entry_length, "Number of Vehicles: %d", numvehicles);
 	file_ << message << std::endl;
 
 	//Ego vehicle is always present, at least one set of vehicle data values should be stored
@@ -911,8 +912,8 @@ CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::stri
 		"#1 Acc_X [-] , #1 Acc_Y [-] , #1 Acc_Z [-] , #1 Distance_Travelled_Along_Road_Segment [m] , "
 		"#1 Lateral_Distance_Lanem [m] , #1 World_Heading_Angle [rad] , #1 Heading_Angle_Rate [rad/s] , "
 		"#1 Relative_Heading_Angle [rad] , #1 Relative_Heading_Angle_Drive_Direction [rad] , "
-		"#1 World_Pitch_Angle [rad] , #1 Road_Curvature [1/m] , ";
-	snprintf(message, 1024, egoHeader);
+		"#1 World_Pitch_Angle [rad] , #1 Road_Curvature [1/m] , #1 collision_ids , ";
+	snprintf(message, max_csv_entry_length, egoHeader);
 	file_ << message;
 
 	//Based on number of vehicels in the Entities vector, extend the header accordingly
@@ -923,10 +924,10 @@ CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::stri
 		"#%d Distance_Travelled_Along_Road_Segment [m] , #%d Lateral_Distance_Lanem [m] , "
 		"#%d World_Heading_Angle [rad] , #%d Heading_Angle_Rate [rad/s] , #%d Relative_Heading_Angle [rad] , "
 		"#%d Relative_Heading_Angle_Drive_Direction [rad] , #%d World_Pitch_Angle [rad] , "
-		"#%d Road_Curvature [1/m] , ";
+		"#%d Road_Curvature [1/m] , #%d collision_ids , ";
 	for (int i = 2; i <= numvehicles; i++)
 	{
-		snprintf(message, 1024, npcHeader, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+		snprintf(message, max_csv_entry_length, npcHeader, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i);
 		file_ << message;
 	}
 	file_ << std::endl;
@@ -949,24 +950,25 @@ CSV_Logger::~CSV_Logger()
 void CSV_Logger::LogVehicleData(bool isendline, double timestamp, char const* name, int id, double speed,
 	double wheel_angle, double wheel_rot, double posX, double posY, double posZ, double velX, double velY,
 	double velZ, double accX, double accY, double accZ, double distance_road, double distance_lanem, double heading,
-	double heading_rate, double heading_angle, double heading_angle_driving_direction, double pitch, double curvature, ...)
+	double heading_rate, double heading_angle, double heading_angle_driving_direction, double pitch, double curvature,
+	const char* collisions, ...)
 {
-	static char data_entry[2048];
+	static char data_entry[max_csv_entry_length];
 
 	//If this data is for Ego (position 0 in the Entities vector) print using the first format
 	//Otherwise use the second format
 	if (id == 0)
-		snprintf(data_entry, 2048,
-			"%d, %f, %s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, ",
+		snprintf(data_entry, max_csv_entry_length,
+			"%d, %f, %s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s, ",
 			data_index_, timestamp, name, id, speed, wheel_angle, wheel_rot, posX, posY, posZ, velX,
 			velY, velZ, accX, accY, accZ, distance_road, distance_lanem, heading, heading_rate,
-			heading_angle, heading_angle_driving_direction, pitch, curvature);
+			heading_angle, heading_angle_driving_direction, pitch, curvature, collisions);
 	else
-		snprintf(data_entry, 2048,
-			"%s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f",
+		snprintf(data_entry, max_csv_entry_length,
+			"%s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %s, ",
 			name, id, speed, wheel_angle, wheel_rot, posX, posY, posZ, velX, velY, velZ, accX, accY, accZ,
 			distance_road, distance_lanem, heading, heading_rate, heading_angle, heading_angle_driving_direction,
-			pitch, curvature);
+			pitch, curvature, collisions);
 
 	//Add lines horizontally until the endline is reached
 	if (isendline == false)

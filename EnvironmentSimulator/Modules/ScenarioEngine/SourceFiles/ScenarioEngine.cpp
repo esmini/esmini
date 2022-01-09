@@ -215,6 +215,12 @@ int ScenarioEngine::step(double deltaSimTime)
 		}
 	}
 
+	// Check for collisions
+	if (!SE_Env::Inst().GetDisableCollisionDetection())
+	{
+		DetectCollisions();
+	}
+
 	// Step inital actions - might be extened in time (more than one step)
 	for (size_t i = 0; i < init.private_action_.size(); i++)
 	{
@@ -1199,4 +1205,56 @@ void ScenarioEngine::ResetEvents()
 			}
 		}
 	}
+}
+
+int ScenarioEngine::DetectCollisions()
+{
+	collision_pair_.clear();
+	for (size_t i = 0; i < entities.object_.size(); i++)
+	{
+		Object* obj0 = entities.object_[i];
+		for (size_t j = i+1; j < entities.object_.size(); j++)
+		{
+			Object* obj1 = entities.object_[j];
+			if (obj0->Collision(obj1))
+			{
+				collision_pair_.push_back({ obj0, obj1 });
+				if (std::find(obj0->collisions_.begin(), obj0->collisions_.end(), obj1) == obj0->collisions_.end())
+				{
+					// was not overlapping last timestep, but are now
+					LOG("Collision between %s and %s", obj0->GetName().c_str(), obj1->GetName().c_str());
+					obj0->collisions_.push_back(obj1);
+					obj1->collisions_.push_back(obj0);
+				}
+			}
+			else
+			{
+				if (std::find(obj0->collisions_.begin(), obj0->collisions_.end(), obj1) != obj0->collisions_.end())
+				{
+					// was overlapping last frame, but not anymore
+					LOG("Collision between %s and %s dissolved", obj0->GetName().c_str(), obj1->GetName().c_str());
+					obj0->collisions_.erase(std::remove(obj0->collisions_.begin(), obj0->collisions_.end(), obj1), obj0->collisions_.end());
+					obj1->collisions_.erase(std::remove(obj1->collisions_.begin(), obj1->collisions_.end(), obj0), obj1->collisions_.end());
+				}
+			}
+		}
+	}
+
+	// Check for and clear any vanished objects from collision lists
+	for (size_t i = 0; i < entities.object_.size(); i++)
+	{
+		for (size_t j = 0; j < entities.object_[i]->collisions_.size(); j++)
+		{
+			Object* obj = entities.object_[i];
+			if (std::find(entities.object_.begin(), entities.object_.end(), obj->collisions_[j]) == entities.object_.end())
+			{
+				// object previously collided with pivot object has vanished from the set of entities, remove it from collision list
+				LOG("Unregister collision between %s and vanished entity", obj->GetName().c_str());
+				obj->collisions_.erase(obj->collisions_.begin() + j);
+				j--;
+			}
+		}
+	}
+
+	return 0;
 }

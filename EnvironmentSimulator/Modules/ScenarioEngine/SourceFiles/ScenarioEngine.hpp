@@ -35,12 +35,20 @@ namespace scenarioengine
 		void* data;
 	} paramDeclCallback = {0, 0};
 
+
 	void RegisterParameterDeclarationCallback(ParamDeclCallbackFunc func, void* data);
+
+	typedef struct
+	{
+		Object* object0;
+		Object* object1;
+	} CollisionPair;
 
 	class ScenarioEngine
 	{
 	public:
 		Entities entities;
+		std::vector<CollisionPair> collision_pair_;
 
 		ScenarioEngine(std::string oscFilename, bool disable_controllers = false);
 		ScenarioEngine(const pugi::xml_document &xml_doc, bool disable_controllers = false);
@@ -57,6 +65,7 @@ namespace scenarioengine
 		void ReplaceObjectInTrigger(Trigger *trigger, Object *obj1, Object *obj2, double timeOffset, Event* event = 0);
 		void SetupGhost(Object *object);
 		void ResetEvents();
+		int DetectCollisions();
 
 		std::string getScenarioFilename() { return scenarioReader->getScenarioFilename(); }
 		std::string getSceneGraphFilename() { return roadNetwork.sceneGraphFile.filepath; }

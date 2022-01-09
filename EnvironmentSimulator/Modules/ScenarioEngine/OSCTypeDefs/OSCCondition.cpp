@@ -896,11 +896,28 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 				if (storyBoard->entities_->object_[j] != triggering_entities_.entity_[i].object_ &&
 					storyBoard->entities_->object_[j]->type_ == type_)
 				{
-					if (triggering_entities_.entity_[i].object_->Collision(storyBoard->entities_->object_[j]))
+					if (SE_Env::Inst().GetDisableCollisionDetection())
+					{
+						if (triggering_entities_.entity_[i].object_->Collision(storyBoard->entities_->object_[j]))
+						{
+							result = true;
+						}
+					}
+					else
+					{
+						// reuse results from global collision detection
+						for (size_t k = 0; k < triggering_entities_.entity_[i].object_->collisions_.size(); k++)
+						{
+							if (triggering_entities_.entity_[i].object_->collisions_[k] == storyBoard->entities_->object_[j])
+							{
+								result = true;
+							}
+						}
+					}
+					if (result == true)
 					{
 						CollisionPair p = { triggering_entities_.entity_[i].object_, storyBoard->entities_->object_[j] };
 						collision_pair_.push_back(p);
-						result = true;
 					}
 				}
 			}

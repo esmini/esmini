@@ -145,6 +145,8 @@ namespace scenarioengine
 			double h_rate;
 		} state_old;
 
+		std::vector<Object*> collisions_;
+
 		Object(Type type);
 		~Object() {}
 		void SetEndOfRoad(bool state, double time = 0.0);

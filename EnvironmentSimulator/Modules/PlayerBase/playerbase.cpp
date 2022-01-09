@@ -818,6 +818,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
 	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
+	opt.AddOption("disable_collision_detection", "Disable global collision detection, potentially gaining performance");
 	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
@@ -947,6 +948,11 @@ int ScenarioPlayer::Init()
 	if (opt.GetOptionSet("disable_off_screen"))
 	{
 		SE_Env::Inst().SetDisableOffScreen(true);
+	}
+
+	if (opt.GetOptionSet("disable_collision_detection"))
+	{
+		SE_Env::Inst().SetDisableCollisionDetection(true);
 	}
 
 	// Create scenario engine
@@ -1131,12 +1137,20 @@ void ScenarioPlayer::UpdateCSV_Log()
 			isendline = true;
 		}
 
-		//Log the extracted data of ego vehicle and additonal scenario vehicles
+		// Log the extracted data of ego vehicle and additonal scenario vehicles
+		std::string collision_ids;
+		if (!SE_Env::Inst().GetDisableCollisionDetection())
+		{
+			for (size_t j = 0; j < obj->collisions_.size(); j++)
+			{
+				collision_ids += std::to_string(obj->collisions_[j]->GetId()) + " ";
+			}
+		}
 		CSV_Log->LogVehicleData(isendline, scenarioEngine->getSimulationTime(), name_,
 			obj->id_, obj->speed_, obj->wheel_angle_, obj->wheel_rot_,
 			pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetVelX(), pos.GetVelY(), pos.GetVelZ(), pos.GetAccX(), pos.GetAccY(), pos.GetAccZ(),
 			pos.GetS(), pos.GetT(), pos.GetH(), pos.GetHRate(), pos.GetHRelative(), pos.GetHRelativeDrivingDirection(),
-			pos.GetP(), pos.GetCurvature());
+			pos.GetP(), pos.GetCurvature(), collision_ids.c_str());
 	}
 }
 

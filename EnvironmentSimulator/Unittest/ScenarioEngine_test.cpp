@@ -481,62 +481,84 @@ TEST(JunctionTest, JunctionSelectorTest)
 TEST(ConditionTest, CollisionTest)
 {
     double dt = 0.01;
+    double timestamps[] = { 5.25, 5.26, 6.26, 6.27, 7.10, 8.79 };
 
-    double timestamps[] = { 5.23, 5.24, 6.23, 6.25, 7.09, 8.77 };
+    ASSERT_EQ(SE_Env::Inst().GetDisableCollisionDetection(), false);
 
     // Initialize the scenario and disable interactive controller
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc", true);
     se->step(0.0);
     se->prepareGroundTruth(0.0);
     ASSERT_NE(se, nullptr);
+    ASSERT_EQ(SE_Env::Inst().GetDisableCollisionDetection(), false);  // Should be on by default
 
-    while (se->getSimulationTime() < timestamps[0] && se->GetQuitFlag() != true)
+    while (se->getSimulationTime() < timestamps[0] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), false);
+    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 0);
 
-    while (se->getSimulationTime() < timestamps[1] && se->GetQuitFlag() != true)
+    while (se->getSimulationTime() < timestamps[1] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), true);
+    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities.object_[0]->collisions_[0], se->entities.object_[2]);
+    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities.object_[2]->collisions_[0], se->entities.object_[0]);
 
-    while (se->getSimulationTime() < timestamps[2] && se->GetQuitFlag() != true)
+    while (se->getSimulationTime() < timestamps[2] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), true);
+    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities.object_[0]->collisions_[0], se->entities.object_[2]);
+    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities.object_[2]->collisions_[0], se->entities.object_[0]);
 
-    while (se->getSimulationTime() < timestamps[3] && se->GetQuitFlag() != true)
+    while (se->getSimulationTime() < timestamps[3] - SMALL_NUMBER && se->GetQuitFlag() != true)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 2);
+    ASSERT_EQ(se->entities.object_[0]->collisions_[0], se->entities.object_[2]);
+    ASSERT_EQ(se->entities.object_[0]->collisions_[1], se->entities.object_[1]);
+    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities.object_[1]->collisions_[0], se->entities.object_[0]);
+    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities.object_[2]->collisions_[0], se->entities.object_[0]);
+
+    while (se->getSimulationTime() < timestamps[4] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), true);
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), true);
-
-    while (se->getSimulationTime() < timestamps[4] && se->GetQuitFlag() != true)
-    {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
-    }
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), true);
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), false);
+    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities.object_[0]->collisions_[0], se->entities.object_[1]);
+    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities.object_[1]->collisions_[0], se->entities.object_[0]);
+    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 0);
 
-    while (se->getSimulationTime() < timestamps[5] && se->GetQuitFlag() != true)
+    while (se->getSimulationTime() < timestamps[5] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
     ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), false);
+    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 0);
 
     delete se;
 }
@@ -1041,7 +1063,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestDynamicsRateDimension*";
+    //testing::GTEST_FLAG(filter) = "*Collision*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
