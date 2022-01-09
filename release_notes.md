@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2022-01-09 Version 2.19.1
+
+- Add global collision detection ([issue #206](https://github.com/esmini/esmini/issues/206))
+  - Evaluate all entities for collision detection (not only
+  those subject to CollisionCondition)
+  - Result will be logged in console and log file
+  - Collision status added to csv log (activate with --csv_logger
+  \<filename\>)
+  - Disable the feature with flag --disable_collision_detection
+
 ### 2022-01-05 Version 2.19.0
 
 - New feature: Off-screen rendering
