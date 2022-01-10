@@ -200,6 +200,18 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 	return 0;
 }
 
+int GetGhostIdx()
+{
+	for (size_t i = 0; i < scenarioEntity.size(); i++)
+	{
+		if (scenarioEntity[i].name.find("_ghost") != std::string::npos)
+		{
+			return i;
+		}
+	}
+	return -1; // No ghost
+}
+
 void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 {
 	Replay* player = (Replay*)data;
@@ -527,6 +539,7 @@ int main(int argc, char** argv)
 		}
 
 		ParseEntities(viewer, player);
+		const int ghost_id = GetGhostIdx(); 
 
 		if (opt.GetOptionSet("hide_trajectories"))
 		{
@@ -659,13 +672,16 @@ int main(int argc, char** argv)
 				{
 					for (size_t i = 0; i < scenarioEntity.size(); i++)
 					{
-						updateCorners(scenarioEntity[i]);
+						if (i != ghost_id) // Ignore ghost
+						{
+							updateCorners(scenarioEntity[i]);
+						}
 					}
 
 					bool overlap_now = false;
 					for (size_t i = 1; i < scenarioEntity.size(); i++)
 					{
-						if (scenarioEntity[i].name.find("_ghost") == std::string::npos) // Ignore ghost
+						if (i != ghost_id) // Ignore ghost
 						{
 							if (separating_axis_intersect(scenarioEntity[0], scenarioEntity[i]))
 							{
