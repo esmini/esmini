@@ -106,7 +106,16 @@ void Event::Stop()
 	StoryBoardElement::Stop();
 }
 
-bool scenarioengine::OSCManeuver::IsAnyEventActive()
+void Event::UpdateState()
+{
+	for (size_t n = 0; n < action_.size(); n++)
+	{
+		action_[n]->UpdateState();
+	}
+	StoryBoardElement::UpdateState();
+}
+
+bool OSCManeuver::IsAnyEventActive()
 {
 	for (size_t i = 0; i < event_.size(); i++)
 	{
@@ -117,3 +126,13 @@ bool scenarioengine::OSCManeuver::IsAnyEventActive()
 	}
 	return false;
 }
+
+void OSCManeuver::UpdateState()
+{
+	// Update state of sub elements - moving from transitions to stable states
+	for (size_t k = 0; k < event_.size(); k++)
+	{
+		event_[k]->UpdateState();
+	}
+}
+

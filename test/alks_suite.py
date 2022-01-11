@@ -29,11 +29,11 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.1_2', log)  is not None)
         
         # Check some scenario events
-        self.assertTrue(re.search('19.98.* SwerveAction2 standbyState -> startTransition -> runningState.*', log)  is not None)
+        self.assertTrue(re.search('19.99.* SwerveAction2 standbyState -> startTransition -> runningState.*', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n22.17., 1, LeadVehicle, 412.83.*, -7.11.*, 0.00.*, 6.25.*, .*', csv))
+        self.assertTrue(re.search('\n22.170, 1, LeadVehicle, 412.833, -7.107, 0.000, 6.255, 0.000, 0.000, 16.667', csv))
     
     def test_ALKS_Scenario_4_1_3_SideVehicle(self):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_3_SideVehicle_TEMPLATE.xosc'), COMMON_ARGS)
@@ -115,14 +115,14 @@ class TestSuite(unittest.TestCase):
         
         # Check some scenario events
         self.assertTrue(re.search('10.000.* VaryingSpeedStartCondition == true, 10.0000 >= 10.00 edge: rising', log)  is not None)
-        self.assertTrue(re.search('24.920: VaryingSpeedEvent2Start == true, element: VaryingSpeedAction state: END_TRANSITION, edge: rising', log)  is not None)
+        self.assertTrue(re.search('24.930: VaryingSpeedEvent2Start == true, element: VaryingSpeedAction state: END_TRANSITION, edge: rising', log)  is not None)
 
         # Check vehicle state
         csv = generate_csv()
         self.assertTrue(re.search('\n21.000, 0, Ego, 359.884, -8.000, 0.000, 0.000, 0.000, 0.000, 18.440', csv))
         self.assertTrue(re.search('\n21.000, 1, LeadVehicle, 428.745, -8.000, 0.000, 0.000, 0.000, 0.000, 21.593', csv))
-        self.assertTrue(re.search('\n40.000, 0, Ego, 711.993, -8.000, 0.000, 0.000, 0.000, 0.000, 16.248', csv))
-        self.assertTrue(re.search('\n40.000, 1, LeadVehicle, 754.230, -8.000, 0.000, 0.000, 0.000, 0.000, 14.124', csv))
+        self.assertTrue(re.search('\n40.000, 0, Ego, 712.038, -8.000, 0.000, 0.000, 0.000, 0.000, 16.253', csv))
+        self.assertTrue(re.search('\n40.000, 1, LeadVehicle, 754.308, -8.000, 0.000, 0.000, 0.000, 0.000, 14.124', csv))
 
     def test_ALKS_Scenario_4_3_2_FollowLeadVehicleEmergencyBrake(self):
         log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.3_2_FollowLeadVehicleEmergencyBrake_TEMPLATE.xosc'), COMMON_ARGS)
@@ -251,6 +251,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Uncomment next line to run only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_ALKS_Scenario_4_6_2_LateralDetectionRange'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_ALKS_Scenario_4_3_1_FollowLeadVehicleComfortable'])
 
     unittest.main(verbosity=2)

@@ -294,8 +294,8 @@ TEST(TrajectoryTest, EnsureContinuation)
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 21.360578, 1e-5);
-    ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), 2.58700, 1e-5);
+    ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 21.32304, 1e-5);
+    ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), 2.553967, 1e-5);
 }
 
 TEST(ExpressionTest, EnsureResult)
@@ -1063,7 +1063,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*Collision*";
+    // testing::GTEST_FLAG(filter) = "*EnsureContinuation*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

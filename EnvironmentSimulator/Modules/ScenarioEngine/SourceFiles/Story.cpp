@@ -134,3 +134,24 @@ void StoryBoard::Print()
 	}
 }
 
+void Act::UpdateState()
+{
+	// Update state of sub elements - moving from transitions to stable states
+	for (size_t k = 0; k < maneuverGroup_.size(); k++)
+	{
+		maneuverGroup_[k]->UpdateState();
+	}
+
+	StoryBoardElement::UpdateState();
+}
+
+void ManeuverGroup::UpdateState()
+{
+	// Update state of sub elements - moving from transitions to stable states
+	for (size_t k = 0; k < maneuver_.size(); k++)
+	{
+		maneuver_[k]->UpdateState();
+	}
+
+	StoryBoardElement::UpdateState();
+}

@@ -291,24 +291,6 @@ int ScenarioEngine::step(double deltaSimTime)
 			// Check whether this act is done - and update flag for all acts
 			all_done = all_done && act->state_ == Act::State::COMPLETE;
 
-			// Update state of sub elements - moving from transitions to stable states
-			for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
-			{
-				for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
-				{
-					OSCManeuver *maneuver = act->maneuverGroup_[k]->maneuver_[l];
-
-					for (size_t m = 0; m < maneuver->event_.size(); m++)
-					{
-						for (size_t n = 0; n < maneuver->event_[m]->action_.size(); n++)
-						{
-							maneuver->event_[m]->action_[n]->UpdateState();
-						}
-						maneuver->event_[m]->UpdateState();
-					}
-				}
-			}
-
 			// Maneuvers
 			if (act->IsActive())
 			{
@@ -322,7 +304,7 @@ int ScenarioEngine::step(double deltaSimTime)
 						{
 							Event *event = maneuver->event_[m];
 
-							//add event to objectEvents vector
+							// add event to objectEvents vector
 							if (event->IsTriggable() || event->IsActive())
 							{
 								for (size_t n = 0; n < event->action_.size(); n++)
@@ -341,6 +323,7 @@ int ScenarioEngine::step(double deltaSimTime)
 								}
 							}
 
+							// First evaluate which events are active
 							if (event->IsTriggable())
 							{
 								// Check event conditions
@@ -421,6 +404,12 @@ int ScenarioEngine::step(double deltaSimTime)
 									}
 								}
 							}
+						}
+
+						// Then step events
+						for (size_t m = 0; m < maneuver->event_.size(); m++)
+						{
+							Event* event = maneuver->event_[m];
 
 							// Update (step) all active actions, for all objects connected to the action
 							if (event->IsActive())
@@ -434,7 +423,8 @@ int ScenarioEngine::step(double deltaSimTime)
 										// Try one
 										OSCAction* action = event->action_[n];
 										OSCPrivateAction* pa = (OSCPrivateAction*)action;
-										if (trueTime_ <= simulationTime_ || pa->object_->IsGhost())
+										if (trueTime_ <= simulationTime_ ||
+											((action->base_type_ == OSCAction::BaseType::PRIVATE) && pa->object_->IsGhost()))
 										{
 											event->action_[n]->Step(simulationTime_, deltaSimTime);
 
@@ -444,27 +434,6 @@ int ScenarioEngine::step(double deltaSimTime)
 										{
 											active = true;
 										}
-
-										// Try two
-										/*OSCAction* action = event->action_[n];
-										OSCPrivateAction* pa = (OSCPrivateAction*)action;
-										if (pa->object_->IsGhost())
-										{
-											event->action_[n]->Step(deltaSimTime, getSimulationTime());
-
-											active = active || (event->action_[n]->IsActive());
-										}
-										else
-										{
-											event->action_[n]->Step(deltaSimTime, GetTrueTime());
-
-											active = active || (event->action_[n]->IsActive());
-										}*/
-
-										// Original
-										/*event->action_[n]->Step(deltaSimTime, getSimulationTime());
-
-										active = active || (event->action_[n]->IsActive());*/
 									}
 								}
 								if (!active)

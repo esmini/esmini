@@ -996,7 +996,7 @@ TEST(ParameterTest, SetParameterValuesBeforeInit)
 {
 	double positions[3][2] = {
 		{5.34382, 186.68216},  // TargetSpeedFactor = 1.1
-		{8.67096, 238.63957},  // TargetSpeedFactor = 1.5
+		{8.69330, 240.68001},  // TargetSpeedFactor = 1.5
 		{5.46731, 201.38162}  // TargetSpeedFactor = Default = 1.2
 	};
 	SE_ScenarioObjectState state;
@@ -2448,7 +2448,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0   // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestFetchImage*";
+	testing::GTEST_FLAG(filter) = "*SetParameterValuesBeforeInit*";
 #else
 	SE_LogToConsole(false);
 #endif

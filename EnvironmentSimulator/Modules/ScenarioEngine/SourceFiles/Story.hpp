@@ -55,6 +55,8 @@ namespace scenarioengine
 			return false;
 		}
 
+		void UpdateState();
+
 		std::vector<Actor*> actor_;
 		std::vector<OSCManeuver*> maneuver_;
 
@@ -70,6 +72,8 @@ namespace scenarioengine
 		Trigger *stop_trigger_;
 
 		Act() : start_trigger_(0), stop_trigger_(0), StoryBoardElement(StoryBoardElement::ElementType::ACT) {}
+
+		void UpdateState();
 	};
 
 	class Story

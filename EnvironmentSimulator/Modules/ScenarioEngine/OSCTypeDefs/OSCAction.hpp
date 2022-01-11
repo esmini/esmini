@@ -73,7 +73,7 @@ namespace scenarioengine
 			num_executions_(0),
 			max_num_executions_(max_num_executions) {}
 
-		void UpdateState();
+		virtual void UpdateState();
 		void SetState(State state);
 		std::string state2str(State state);
 		std::string transition2str(StoryBoardElement::Transition state);

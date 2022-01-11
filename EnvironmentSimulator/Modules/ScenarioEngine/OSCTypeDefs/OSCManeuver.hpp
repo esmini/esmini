@@ -48,6 +48,7 @@ namespace scenarioengine
 		void End();
 		void Stop();
 
+		void UpdateState();
 	};
 
 	class OSCManeuver
@@ -58,6 +59,7 @@ namespace scenarioengine
 		std::string name_;
 
 		bool IsAnyEventActive();
+		void UpdateState();
 
 		void Print()
 		{
