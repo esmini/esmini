@@ -449,6 +449,35 @@ for i in range (500):
 * Linux: libesminiLib.so
 * Mac: libesminiLib.dylib
 
+Below is a bit more flexible variant:
+- providing scenario via argument 
+- quit at press Escape or end of scenario
+- work on all supported platforms
+
+```Python
+import ctypes
+import sys
+
+if sys.platform == "linux" or sys.platform == "linux2":
+    se = ctypes.CDLL("./libesminiLib.so")
+elif sys.platform == "darwin":
+    se = ctypes.CDLL("./libesminiLib.dylib")
+elif sys.platform == "win32":
+    se = ctypes.CDLL("./esminiLib.dll")
+else:
+    print("Unsupported platform: {}".format(sys.platform))
+    quit()
+
+if (len(sys.argv) < 2):
+    print('Usage: {} <xosc file>'.format(sys.argv[0]))
+    exit(-1)
+
+se.SE_Init(sys.argv[1].encode('ascii'), 0, 1, 0, 0)
+ 
+while not se.SE_GetQuitFlag():
+    se.SE_Step()
+```
+
 #### Example get object states
 Extend previous example with:
 1. Choose lib based on platform (making the script portable)

@@ -1,17 +1,21 @@
 import ctypes
-from sys import platform
+import sys
 
-if platform == "linux" or platform == "linux2":
+if sys.platform == "linux" or sys.platform == "linux2":
     se = ctypes.CDLL("./libesminiLib.so")
-elif platform == "darwin":
+elif sys.platform == "darwin":
     se = ctypes.CDLL("./libesminiLib.dylib")
-elif platform == "win32":
+elif sys.platform == "win32":
     se = ctypes.CDLL("./esminiLib.dll")
 else:
-    print("Unsupported platform: {}".format(platform))
+    print("Unsupported platform: {}".format(sys.platform))
     quit()
-    
-se.SE_Init(b"../resources/xosc/cut-in.xosc", 0, 1, 0, 0)
+
+if (len(sys.argv) < 2):
+    print('Usage: {} <xosc file>'.format(sys.argv[0]))
+    exit(-1)
+
+se.SE_Init(sys.argv[1].encode('ascii'), 0, 1, 0, 0)
  
-for i in range (500):
+while not se.SE_GetQuitFlag():
     se.SE_Step()
