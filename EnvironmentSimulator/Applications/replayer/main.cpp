@@ -539,7 +539,7 @@ int main(int argc, char** argv)
 		}
 
 		ParseEntities(viewer, player);
-		const int ghost_id = GetGhostIdx(); 
+		const int ghost_id = GetGhostIdx();
 
 		if (opt.GetOptionSet("hide_trajectories"))
 		{
@@ -703,7 +703,7 @@ int main(int argc, char** argv)
 
 			} while (!pause &&
 				simTime < player->GetEndTime() - SMALL_NUMBER &&  // As long as time is < end
-				simTime > SMALL_NUMBER &&  // As long as time is > 0 (start)
+				simTime > player->GetStartTime() + SMALL_NUMBER &&  // As long as time is > 0 (start)
 				(deltaSimTime < 0 ? (player->GetTime() > targetSimTime) : (player->GetTime() < targetSimTime)));  // until reached target timestep
 
 
