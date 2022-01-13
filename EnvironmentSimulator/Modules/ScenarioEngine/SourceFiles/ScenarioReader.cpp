@@ -1143,39 +1143,42 @@ int ScenarioReader::parseEntities()
 					MiscObject *miscObject = parseOSCMiscObject(objectChild);
 					obj = miscObject;
 				}
-				else if (objectChildName == "ObjectController" && !disable_controllers_)
+				else if (objectChildName == "ObjectController")
 				{
-					// get the sub child under ObjectController (should only be one)
-					pugi::xml_node objectSubChild = objectChild.first_child();
-					std::string objectSubChildName(objectSubChild.name());
-					if (objectSubChildName == "CatalogReference")
+					if (!disable_controllers_)
 					{
-						Entry *entry = ResolveCatalogReference(objectSubChild);
+						// get the sub child under ObjectController (should only be one)
+						pugi::xml_node objectSubChild = objectChild.first_child();
+						std::string objectSubChildName(objectSubChild.name());
+						if (objectSubChildName == "CatalogReference")
+						{
+							Entry* entry = ResolveCatalogReference(objectSubChild);
 
-						if (entry == 0)
-						{
-							LOG("No entry found");
-						}
-						else
-						{
-							if (entry->type_ == CatalogType::CATALOG_CONTROLLER)
+							if (entry == 0)
 							{
-								ctrl = parseOSCObjectController(entry->GetNode());
+								LOG("No entry found");
 							}
 							else
 							{
-								LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
+								if (entry->type_ == CatalogType::CATALOG_CONTROLLER)
+								{
+									ctrl = parseOSCObjectController(entry->GetNode());
+								}
+								else
+								{
+									LOG("Unexpected catalog type %s", entry->GetTypeAsStr().c_str());
+								}
 							}
 						}
-					}
-					else
-					{
-						ctrl = parseOSCObjectController(objectSubChild);
-					}
-					if (ctrl)
-					{
-						// ObjectControllers are assigned automatically
-						ctrl->Assign(obj);
+						else
+						{
+							ctrl = parseOSCObjectController(objectSubChild);
+						}
+						if (ctrl)
+						{
+							// ObjectControllers are assigned automatically
+							ctrl->Assign(obj);
+						}
 					}
 				}
 				else
