@@ -45,7 +45,7 @@ static void log_callback(const char *str)
 }
 
 ScenarioPlayer::ScenarioPlayer(int &argc, char *argv[]) :
-	maxStepSize(0.1), minStepSize(0.01), argc_(argc), argv_(argv)
+	maxStepSize(0.1), minStepSize(0.01), argc_(argc), argv_(argv), state_(PlayerState::PLAYER_STATE_PLAYING)
 {
 	quit_request = false;
 	threads = false;
@@ -128,12 +128,19 @@ void ScenarioPlayer::Frame(double timestep_s)
 {
 	static bool messageShown = false;
 
-	while ( (scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime() ) && scenarioEngine->getSimulationTime() > 0 )
+	if (GetState() != PlayerState::PLAYER_STATE_PAUSE)
 	{
-		ScenarioFramePart(timestep_s);
-	}
+		while ((scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime()) && scenarioEngine->getSimulationTime() > 0)
+		{
+			ScenarioFramePart(timestep_s);
+		}
+		ScenarioFrame(timestep_s);
 
-	ScenarioFrame(timestep_s);
+		if (GetState() == PlayerState::PLAYER_STATE_STEP)
+		{
+			SetState(PlayerState::PLAYER_STATE_PAUSE);
+		}
+	}
 
 	if (viewer_)
 	{
@@ -1245,6 +1252,22 @@ const char* ScenarioPlayer::GetPropertyValue(int index,int propertyIndex)
 			if (keyEvent->key_ == 'H')
 			{
 				puts(helpText);
+			}
+			else if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Space))
+			{
+				if (player->GetState() == ScenarioPlayer::PlayerState::PLAYER_STATE_PLAYING)
+				{
+					player->SetState(ScenarioPlayer::PlayerState::PLAYER_STATE_PAUSE);
+				}
+				else if (player->GetState() == ScenarioPlayer::PlayerState::PLAYER_STATE_PAUSE ||
+					player->GetState() == ScenarioPlayer::PlayerState::PLAYER_STATE_STEP)
+				{
+					player->SetState(ScenarioPlayer::PlayerState::PLAYER_STATE_PLAYING);
+				}
+			}
+			else if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Return))
+			{
+				player->SetState(ScenarioPlayer::PlayerState::PLAYER_STATE_STEP);
 			}
 		}
 	}

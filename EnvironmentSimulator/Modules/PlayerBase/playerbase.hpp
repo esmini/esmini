@@ -60,6 +60,14 @@ public:
 		VIEWER_STATE_DONE
 	} ViewerState;
 
+	typedef enum
+	{
+		PLAYER_STATE_UNDEFINED,
+		PLAYER_STATE_PLAYING,
+		PLAYER_STATE_PAUSE,
+		PLAYER_STATE_STEP
+	} PlayerState;
+
 	typedef void (*ObjCallbackFunc)(ObjectStateStruct *, void *);
 
 	typedef struct
@@ -101,6 +109,8 @@ public:
 	int SetParameterValue(const char *name, const char *value);
 	int SetParameterValue(const char *name, bool value);
 	void SetQuitRequest(bool quit) { quit_request = quit; }
+	void SetState(PlayerState state) { state_ = state; }
+	PlayerState GetState() { return state_; }
 
 	//TODO
 	//int GetNumberOfVehicleProperties(){return 4;};
@@ -160,4 +170,5 @@ private:
 	int &argc_;
 	char **argv_;
 	std::string titleString;
+	PlayerState state_;
 };

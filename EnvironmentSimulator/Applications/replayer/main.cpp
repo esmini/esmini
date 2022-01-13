@@ -218,9 +218,9 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 
 	if (keyEvent->down_)
 	{
-		if (keyEvent->key_ == KeyType::KEY_Right)
+		if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Right))
 		{
-			if (keyEvent->modKeyMask_ & ModKeyMask::MODKEY_CTRL)
+			if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
 			{
 				player->GoToEnd();
 			}
@@ -229,7 +229,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 				// step
 
 				int steps = 1;
-				if (keyEvent->modKeyMask_ & ModKeyMask::MODKEY_SHIFT)
+				if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
 				{
 					steps = 10;
 				}
@@ -238,9 +238,9 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 				pause = true;  // step by step
 			}
 		}
-		else if (keyEvent->key_ == KeyType::KEY_Left)
+		else if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Left))
 		{
-			if (keyEvent->modKeyMask_ & ModKeyMask::MODKEY_CTRL)
+			if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
 			{
 				// rewind to beginning
 				player->GoToTime(0);
@@ -250,7 +250,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 				// step
 
 				int steps = 1;
-				if (keyEvent->modKeyMask_ & ModKeyMask::MODKEY_SHIFT)
+				if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
 				{
 					steps = 10;
 				}
@@ -259,7 +259,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 				pause = true;  // step by step
 			}
 		}
-		else if (keyEvent->key_ == KeyType::KEY_Space)
+		else if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Space))
 		{
 			pause = !pause;
 		}
@@ -267,11 +267,11 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 		{
 			puts(helpText);
 		}
-		else if (keyEvent->key_ == KeyType::KEY_Up)
+		else if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Up))
 		{
 			time_scale = MIN(100, time_scale * TIME_SCALE_FACTOR);
 		}
-		else if (keyEvent->key_ == KeyType::KEY_Down)
+		else if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Down))
 		{
 			time_scale = MAX(0.01, time_scale / TIME_SCALE_FACTOR);
 		}
@@ -703,7 +703,7 @@ int main(int argc, char** argv)
 
 			} while (!pause &&
 				simTime < player->GetEndTime() - SMALL_NUMBER &&  // As long as time is < end
-				simTime > player->GetStartTime() + SMALL_NUMBER &&  // As long as time is > 0 (start)
+				simTime > player->GetStartTime() + SMALL_NUMBER &&  // As long as time is > start time
 				(deltaSimTime < 0 ? (player->GetTime() > targetSimTime) : (player->GetTime() < targetSimTime)));  // until reached target timestep
 
 

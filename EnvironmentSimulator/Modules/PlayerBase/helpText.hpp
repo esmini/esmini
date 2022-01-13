@@ -15,6 +15,8 @@ const char* helpText =
 Key shortcuts \n\
     \n\
     H (shift h): This help text \n\
+    Space:       Toggle pause/play simulation \n\
+    Return:      Step simulation (one timestep) then pause \n\
     TAB:         Move camera to next vehicle \n\
     Shift - TAB: Move camera to previoius vehicle \n\
     o:           Toggle show/hide OpenDRIVE road feature lines \n\

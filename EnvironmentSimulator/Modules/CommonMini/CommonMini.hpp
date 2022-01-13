@@ -82,6 +82,31 @@ void SE_sleep(unsigned int msec);
 double SE_getSimTimeStep(__int64 &time_stamp, double min_time_step, double max_time_step);
 
 // Useful types
+enum class KeyType // copy key enums from OSG GUIEventAdapter
+{
+	KEY_Left = 0xFF51,        /* Left arrow */
+	KEY_Up = 0xFF52,          /* Up arrow */
+	KEY_Right = 0xFF53,       /* Right arrow */
+	KEY_Down = 0xFF54,        /* Down arrow */
+	KEY_Space = 0x20,         /* Space */
+	KEY_Return = 0xFF0D,      /* Return, enter */
+
+	// Mod key types
+	KEY_Shift_L = 0xFFE1,     /* Left shift */
+	KEY_Shift_R = 0xFFE2,     /* Right shift */
+	KEY_Control_L = 0xFFE3,   /* Left control */
+	KEY_Control_R = 0xFFE4,   /* Right control */
+};
+
+enum class ModKeyMask
+{
+	MODKEY_LEFT_SHIFT = 0x0001,
+	MODKEY_RIGHT_SHIFT = 0x0002,
+	MODKEY_LEFT_CTRL = 0x0004,
+	MODKEY_RIGHT_CTRL = 0x0008,
+	MODKEY_CTRL = (MODKEY_LEFT_CTRL | MODKEY_RIGHT_CTRL),
+	MODKEY_SHIFT = (MODKEY_LEFT_SHIFT | MODKEY_RIGHT_SHIFT),
+};
 
 enum class ControlDomains
 {

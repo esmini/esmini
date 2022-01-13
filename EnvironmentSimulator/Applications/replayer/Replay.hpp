@@ -29,31 +29,6 @@ namespace scenarioengine
 		char model_filename[REPLAY_FILENAME_SIZE];
 	} ReplayHeader;
 
-	typedef enum  // copy key enums from OSG GUIEventAdapter
-	{
-		KEY_Left = 0xFF51,        /* Left arrow */
-		KEY_Up = 0xFF52,          /* Up arrow */
-		KEY_Right = 0xFF53,       /* Right arrow */
-		KEY_Down = 0xFF54,        /* Down arrow */
-		KEY_Space = 0x20,         /* Space */
-
-		// Mod key types
-		KEY_Shift_L = 0xFFE1,     /* Left shift */
-		KEY_Shift_R = 0xFFE2,     /* Right shift */
-		KEY_Control_L = 0xFFE3,   /* Left control */
-		KEY_Control_R = 0xFFE4,   /* Right control */
-	} KeyType;
-
-	typedef enum
-	{
-		MODKEY_LEFT_SHIFT = 0x0001,
-		MODKEY_RIGHT_SHIFT = 0x0002,
-		MODKEY_LEFT_CTRL = 0x0004,
-		MODKEY_RIGHT_CTRL = 0x0008,
-		MODKEY_CTRL = (MODKEY_LEFT_CTRL | MODKEY_RIGHT_CTRL),
-		MODKEY_SHIFT = (MODKEY_LEFT_SHIFT | MODKEY_RIGHT_SHIFT),
-	} ModKeyMask;
-
 	class Replay
 	{
 	public:
