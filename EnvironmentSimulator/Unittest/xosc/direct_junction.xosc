@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test OpenDRIVE direct junction feature.  -->
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2022-01-10T10:00:00" description="Test OpenDRIVE Direct Junction" author="esmini-team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="StartSpeed" parameterType="double" value="10"/>
+        <ParameterDeclaration name="StartRoadId" parameterType="integer" value="1"/>
+        <ParameterDeclaration name="StartLaneId" parameterType="integer" value="-3"/>
+        <ParameterDeclaration name="StartS" parameterType="double" value="50.0"/>
+        <ParameterDeclaration name="StartH" parameterType="double" value="0.0"/>
+        <ParameterDeclaration name="EndRoadId" parameterType="integer" value="3"/>
+        <ParameterDeclaration name="EndLaneId" parameterType="integer" value="-1"/>
+        <ParameterDeclaration name="EndS" parameterType="double" value="50.0"/>
+        <ParameterDeclaration name="EndH" parameterType="double" value="0.0"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <RouteCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Routes"/>
+        </RouteCatalog>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/direct_junction_simple.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Car">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+            <ObjectController>
+                <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+            </ObjectController>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Car">
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AssignRouteAction>
+                                <Route name="MyRoute2" closed="false">
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="$StartRoadId" laneId="$StartLaneId" offset="0.0" s="$StartS">
+                                                <Orientation type="relative" h="$StartH"/>
+                                            </LanePosition>
+                                        </Position>
+                                    </Waypoint>
+                                    <Waypoint routeStrategy="shortest">
+                                        <Position>
+                                            <LanePosition roadId="$EndRoadId" laneId="$EndLaneId" offset="0.0" s="$EndS">
+                                                <Orientation type="relative" h="$EndH"/>
+                                            </LanePosition>
+                                        </Position>
+                                    </Waypoint>
+                                </Route>
+                            </AssignRouteAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="$StartRoadId" laneId="$StartLaneId" offset="0.0" s="$StartS">
+                                    <Orientation type="relative" h="$StartH"/>
+                                </LanePosition>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$StartSpeed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="MyStory">
+            <ParameterDeclarations/>
+            <Act name="MyAct">
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StartCondition" delay="0" conditionEdge="none">
+                    <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Car"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                            <EndOfRoadCondition duration="0"/>
+                        </EntityCondition>
+                    </ByEntityCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

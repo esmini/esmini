@@ -2443,12 +2443,77 @@ TEST(APITest, TestFetchImage)
 	SE_Close();
 }
 
+
+static void paramDeclCallbackSetRoute(void* args)
+{
+	double(*positions)[8] = static_cast<double(*)[8]>(args);
+	static int counter = 0;
+
+	SE_SetParameterInt("StartRoadId", (int)positions[counter][0]);
+	SE_SetParameterInt("StartLaneId", (int)positions[counter][1]);
+	SE_SetParameterDouble("StartRoadS", positions[counter][2]);
+	SE_SetParameterDouble("StartH", positions[counter][3]);
+	SE_SetParameterInt("EndRoadId", (int)positions[counter][4]);
+	SE_SetParameterInt("EndLaneId", (int)positions[counter][5]);
+	SE_SetParameterDouble("EndRoadS", positions[counter][6]);
+	SE_SetParameterDouble("EndH", positions[counter][7]);
+
+	counter++;
+}
+
+TEST(DirectJunctionTest, TestVariousRoutes)
+{
+	// This test case will run the same scenario multiple times
+	// each with a new route involving the direct junction
+	// if the route can't be resolved esmini and test will fail
+	// Additionally expected end positions are verified
+
+	static double positions[][8] = {
+		{1, -2, 50, 0.0, 5, -2, 50, 0.0},  // Start at road 1 lane -2, end at road 5 lane -2
+		{1, -3, 50, 0.0, 3, -1, 50, 0.0},  // Start at road 1 lane -3, end at road 3 lane -1
+		{5, -1, 40, M_PI, 1, -1, 10, M_PI},  // Start at road 1 lane -2, end at road 5 lane -2
+		{3, -1, 50, M_PI, 1, -3, 10, M_PI},  // Start at road 1 lane -3, end at road 3 lane -1
+	};
+
+	double end_pos[][2] = {
+		{250.000, -4.605},
+		{196.793, -23.858},
+		{0.000, -1.535},
+		{0.000, -7.675}
+	};
+
+	SE_ScenarioObjectState state;
+
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/direct_junction.xosc";
+
+	SE_RegisterParameterDeclarationCallback(paramDeclCallbackSetRoute, &positions);
+	SE_AddPath("../../../resources/models");
+
+	for (int i = 0; i < (int)(sizeof(positions) / sizeof(double[8])); i++)
+	{
+		ASSERT_EQ(SE_Init(scenario_file.c_str(), 1, 0, 0, 0), 0);
+		ASSERT_EQ(SE_GetNumberOfObjects(), 1);
+
+		while (SE_GetQuitFlag() != 1)
+		{
+			SE_StepDT(0.1f);
+		}
+
+		// Check position of second vehicle
+		SE_GetObjectState(0, &state);
+		EXPECT_NEAR(state.x, end_pos[i][0], 1e-3);
+		EXPECT_NEAR(state.y, end_pos[i][1], 1e-3);
+
+		SE_Close();
+	}
+}
+
 int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0   // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*SetParameterValuesBeforeInit*";
+	testing::GTEST_FLAG(filter) = "*TestVariousRoutes*";
 #else
 	SE_LogToConsole(false);
 #endif
