@@ -9,6 +9,8 @@ Run esmini demo:
 Key shortcuts
 
     H (shift h): This help text
+    Space:       Toggle pause/play simulation
+    Return:      Step simulation (one timestep) then pause
     TAB:         Move camera to next vehicle
     Shift - TAB: Move camera to previoius vehicle
     o:           Toggle show/hide OpenDRIVE road feature lines
