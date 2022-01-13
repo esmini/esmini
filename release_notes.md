@@ -1,5 +1,21 @@
 ## esmini release notes
 
+### 2022-01-13 Version 2.19.2
+
+- New esmini feature: Pause and step simulation
+  - Press space to toggle pause/play
+  - Press return to step (forward only)  
+  Note: In replayer similar feature is space for pause/play and arrow right/left to step forward and backwards.
+- Fix maneuver event order dependency
+  - When an event overwrites another it could happen that both step methods were applied. Now its first sorted out what events to run, then they are stepped.
+- Fix replayer bug when ghost involved, causing really slow progress at negative time
+- Update [Python info](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example#python-binding) and scripts
+  - A more flexible variant the basic scenario player script [esmini-player.py](https://github.com/esmini/esmini/blob/master/Hello-World_coding-example/esmini-player.py)
+    - providing scenario via argument
+    - quit at press Escape or end of scenario
+    - work on all supported platforms
+  - Add example Python launcher for esmini executable: [scripts/esmini-launcher.py](https://github.com/esmini/esmini/blob/master/scripts/esmini-launcher.py)
+
 ### 2022-01-09 Version 2.19.1
 
 - Add global collision detection ([issue #206](https://github.com/esmini/esmini/issues/206))
