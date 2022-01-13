@@ -6831,6 +6831,31 @@ std::string OpenDrive::ElementType2Str(RoadLink::ElementType type)
 	}
 }
 
+int Position::TeleportTo(Position* position)
+{
+	roadmanager::Position tmpPos;
+
+	if (position->GetRelativePosition() == this)
+	{
+		// Special case: Relation short circuit - need to make a copy before reseting
+		tmpPos.CopyRMPos(this);
+
+		position->SetRelativePosition(&tmpPos, position->GetType());
+	}
+
+	CopyRMPos(position);
+
+	// Resolve any relative positions
+	ReleaseRelation();
+
+	if (GetRoute())   // on a route
+	{
+		CalcRoutePosition();
+	}
+
+	return 0;
+}
+
 int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, double junctionSelectorAngle)
 {
 	Road *road = GetOpenDrive()->GetRoadByIdx(track_idx_);
@@ -7827,12 +7852,11 @@ void Position::GetAccTS(double& at, double& as)
 void Position::CopyRMPos(Position *from)
 {
 	// Preserve route field
-	Route *tmp = route_;
+	Route* route_tmp = route_;
 
 	*this = *from;
-	route_ = tmp;
+	route_ = route_tmp;
 }
-
 
 void Position::PrintTrackPos()
 {

@@ -96,26 +96,74 @@ void Replay::GoToEnd()
 	}
 }
 
-void Replay::GoToTime(double timestamp)
+void Replay::GoToTime(double time, bool stop_at_next_frame)
 {
-	if (timestamp > stopTime_)
+	if (!stop_at_next_frame)
 	{
-		GoToEnd();
-	}
-	else if (timestamp < GetStartTime())
-	{
-		GoToStart();
+		if (time > stopTime_)
+		{
+			GoToEnd();
+		}
+		else if (time < GetStartTime())
+		{
+			GoToStart();
+		}
+		else
+		{
+			index_ = FindIndexAtTimestamp(time, index_);
+			time_ = time;
+		}
 	}
 	else
 	{
-		index_ = FindIndexAtTimestamp(timestamp, index_);
-		time_ = timestamp;
+		int next_index = index_;
+
+		if (time > time_)
+		{
+			next_index = FindNextTimestamp();
+			if (next_index > (int)index_ && time > data_[next_index].info.timeStamp)
+			{
+				index_ = next_index;
+				time_ = data_[index_].info.timeStamp;
+			}
+			else
+			{
+				if (time > GetStopTime())
+				{
+					GoToEnd();
+				}
+				else
+				{
+					time_ = time;
+				}
+			}
+		}
+		else if (time < time_)
+		{
+			next_index = FindPreviousTimestamp();
+			if (next_index < (int)index_ && time < data_[next_index].info.timeStamp)
+			{
+				index_ = next_index;
+				time_ = data_[index_].info.timeStamp;
+			}
+			else
+			{
+				if (time < GetStartTime())
+				{
+					GoToStart();
+				}
+				else
+				{
+					time_ = time;
+				}
+			}
+		}
 	}
 }
 
-void Replay::GoToDeltaTime(double dt)
+void Replay::GoToDeltaTime(double dt, bool stop_at_next_frame)
 {
-	GoToTime(time_ + dt);
+	GoToTime(time_ + dt, stop_at_next_frame);
 }
 
 void Replay::GoToNextFrame()
@@ -141,7 +189,17 @@ void Replay::GoToPreviousFrame()
 
 int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
 {
-	size_t i = 0;
+	int i = 0;
+
+	if (timestamp > stopTime_)
+	{
+		GoToEnd();
+		return index_;
+	}
+	else if (timestamp < GetStartTime())
+	{
+		return index_;
+	}
 
 	if (timestamp < time_)
 	{
@@ -149,7 +207,7 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
 		startSearchIndex = 0;
 	}
 
-	for (i = startSearchIndex; i < data_.size(); i++)
+	for (i = startSearchIndex; i < (int)data_.size(); i++)
 	{
 		if (data_[i].info.timeStamp >= timestamp)
 		{
@@ -157,7 +215,62 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
 		}
 	}
 
-	return (int)(MIN(i, data_.size()-1));
+	return MIN(i, (int)data_.size() - 1);
+}
+
+int Replay::FindNextTimestamp(bool wrap)
+{
+	int index = index_ + 1;
+	for (; index < data_.size(); index++)
+	{
+		if (data_[index].info.timeStamp > data_[index_].info.timeStamp)
+		{
+			break;
+		}
+	}
+
+	if (index >= data_.size())
+	{
+		if (wrap)
+		{
+			return 0;
+		}
+		else
+		{
+			return index_;  // stay on current index
+		}
+	}
+
+	return index;
+}
+
+int Replay::FindPreviousTimestamp(bool wrap)
+{
+	int index = index_ - 1;
+
+	if (index < 0)
+	{
+		if (wrap)
+		{
+			index = (int)(data_.size() - 1);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	for (int i = index - 1; i >= 0; i--)
+	{
+		// go backwards until we identify the first entry with same timestamp
+		if (data_[i].info.timeStamp < data_[index].info.timeStamp)
+		{
+			break;
+		}
+		index = i;
+	}
+
+	return index;
 }
 
 ObjectStateStructDat* Replay::GetState(int id)

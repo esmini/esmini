@@ -43,8 +43,8 @@
 #define SMALL_NUMBER (1E-10)
 #define LARGE_NUMBER (1E+10)
 #define SIGN(X) ((X<0)?-1:1)
-#define MAX(x, y) (y > x ? y : x)
-#define MIN(x, y) (y < x ? y : x)
+#define MAX(x, y) ((y) > (x) ? (y) : (x))
+#define MIN(x, y) ((y) < (x) ? (y) : (x))
 #define ABS_LIMIT(x, y) (abs(x) > abs(y) ? (SIGN(x) * abs(y)) : x)  // limit abs value but keep sign
 #define ABS_FLOOR(x, y) (abs(x) < abs(y) ? (SIGN(x) * abs(y)) : x)  // limit abs value but keep sign
 #define CLAMP(x, lo, hi) MIN(hi, MAX(lo, x))

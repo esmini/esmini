@@ -1085,25 +1085,7 @@ void TeleportAction::Start(double simTime, double dt)
 		return;
 	}
 
-	roadmanager::Position tmpPos;
-
-	if (position_->GetRelativePosition() == &object_->pos_)
-	{
-		// Special case: Relative to itself - need to make a copy before reseting
-		tmpPos = object_->pos_;
-
-		position_->SetRelativePosition(&tmpPos, position_->GetType());
-	}
-
-	object_->pos_.CopyRMPos(position_);
-
-	// Resolve any relative positions
-	object_->pos_.ReleaseRelation();
-
-	if (object_->pos_.GetRoute())   // on a route
-	{
-		object_->pos_.CalcRoutePosition();
-	}
+	object_->pos_.TeleportTo(position_);
 
 	LOG("%s New position:", object_->name_.c_str());
 	object_->pos_.Print();

@@ -256,7 +256,7 @@ void ControllerRel2Abs::Step(double timeStep)
 				position_copy* cpy = positionsCopied[i];
 				cpy->object->pos_ = *cpy->pos;
 				cpy->object->speed_ = cpy->speed;
-				cpy->object->dirty_ = cpy->dirtyBits;
+				cpy->object->SetDirty(cpy->dirtyBits);
 				delete(positionsCopied[i]);
 			}
 
@@ -628,5 +628,5 @@ void ControllerRel2Abs::CopyPosition(Object* object, position_copy* obj_copy)
 	obj_copy->object = object;
 	obj_copy->pos = saved_pos;
 	obj_copy->speed = saved_speed;
-	obj_copy->dirtyBits = object->dirty_;
+	obj_copy->dirtyBits = object->GetDirtyBitMask();
 }

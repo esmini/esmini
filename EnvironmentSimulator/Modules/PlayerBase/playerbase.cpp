@@ -251,12 +251,12 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 #endif  // USE_OSI
 
 		//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
-		//    scenarioEngine->entities.object_[0]->pos_.GetTrackId(),
-		//    scenarioEngine->entities.object_[0]->pos_.GetLaneId(),
-		//    scenarioEngine->entities.object_[0]->pos_.GetS(),
-		//    scenarioEngine->entities.object_[0]->pos_.GetH(),
-		//    scenarioEngine->entities.object_[0]->pos_.GetHRoad(),
-		//    scenarioEngine->entities.object_[0]->pos_.GetHRelative());
+		//    scenarioEngine->entities_.object_[0]->pos_.GetTrackId(),
+		//    scenarioEngine->entities_.object_[0]->pos_.GetLaneId(),
+		//    scenarioEngine->entities_.object_[0]->pos_.GetS(),
+		//    scenarioEngine->entities_.object_[0]->pos_.GetH(),
+		//    scenarioEngine->entities_.object_[0]->pos_.GetHRoad(),
+		//    scenarioEngine->entities_.object_[0]->pos_.GetHRelative());
 
 		frame_counter_++;
 	}
@@ -281,10 +281,10 @@ void ScenarioPlayer::ViewerFrame()
 	// remove deleted cars
 	osg::Vec4 trail_color;
 	trail_color.set(color_blue[0], color_blue[1], color_blue[2], 1.0);
-	for (size_t i = 0; i < viewer_->entities_.size() && i < scenarioEngine->entities.object_.size(); i++)
+	for (size_t i = 0; i < viewer_->entities_.size() && i < scenarioEngine->entities_.object_.size(); i++)
 	{
-		if (scenarioEngine->entities.object_[i]->name_ != viewer_->entities_[i]->name_ ||
-			scenarioEngine->entities.object_[i]->model3d_ != viewer_->entities_[i]->filename_)
+		if (scenarioEngine->entities_.object_[i]->name_ != viewer_->entities_[i]->name_ ||
+			scenarioEngine->entities_.object_[i]->model3d_ != viewer_->entities_[i]->filename_)
 		{
 			// Object has most probably been deleted from the entity list
 			viewer_->RemoveCar(i);
@@ -293,25 +293,25 @@ void ScenarioPlayer::ViewerFrame()
 	}
 
 	// Add missing cars
-	while (viewer_->entities_.size() < scenarioEngine->entities.object_.size())
+	while (viewer_->entities_.size() < scenarioEngine->entities_.object_.size())
 	{
-		Object* obj = scenarioEngine->entities.object_[viewer_->entities_.size()];
+		Object* obj = scenarioEngine->entities_.object_[viewer_->entities_.size()];
 		viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
 			viewer::EntityModel::EntityType::VEHICLE, false,
 			obj->name_, &obj->boundingbox_, obj->scaleMode_));
 	}
 
 	// remove obsolete cars
-	while (viewer_->entities_.size() > scenarioEngine->entities.object_.size())
+	while (viewer_->entities_.size() > scenarioEngine->entities_.object_.size())
 	{
 		viewer_->RemoveCar(viewer_->entities_.size() - 1);
 	}
 
 	// Visualize entities
-	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
 	{
 		viewer::EntityModel *entity = viewer_->entities_[i];
-		Object* obj = scenarioEngine->entities.object_[i];
+		Object* obj = scenarioEngine->entities_.object_[i];
 
 		entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 		entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP(), obj->pos_.GetR());
@@ -369,7 +369,7 @@ void ScenarioPlayer::ViewerFrame()
 	static char str_buf[128];
 	if (viewer_->currentCarInFocus_ >= 0 && viewer_->currentCarInFocus_ < viewer_->entities_.size())
 	{
-		Object* obj = scenarioEngine->entities.object_[viewer_->currentCarInFocus_];
+		Object* obj = scenarioEngine->entities_.object_[viewer_->currentCarInFocus_];
 		snprintf(str_buf, sizeof(str_buf), "%.2fs entity[%d]: %s (%d) %.2fkm/h %.2fm (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)", scenarioEngine->getSimulationTime(),
 			viewer_->currentCarInFocus_, obj->name_.c_str(), obj->GetId(), 3.6 * obj->speed_, obj->odometer_,
 			obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), fabs(obj->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj->pos_.GetOffset(),
@@ -377,7 +377,7 @@ void ScenarioPlayer::ViewerFrame()
 	}
 	else
 	{
-		snprintf(str_buf, sizeof(str_buf), "No object in focus...");
+		snprintf(str_buf, sizeof(str_buf), "%.2fs No entity in focus...", scenarioEngine->getSimulationTime());
 	}
 	viewer_->SetInfoText(str_buf);
 
@@ -623,10 +623,10 @@ int ScenarioPlayer::InitViewer()
 	}
 
 	//  Create visual models
-	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
 	{
 		osg::Vec4 trail_color;
-		Object* obj = scenarioEngine->entities.object_[i];
+		Object* obj = scenarioEngine->entities_.object_[i];
 
 		// Create trajectory/trails for all entities
 		if (obj->GetId() == 0)
@@ -687,7 +687,7 @@ int ScenarioPlayer::InitViewer()
 			}
 
 			// If following a ghost vehicle, add visual representation of speed and steering sensors
-			if (scenarioEngine->entities.object_[i]->GetGhost())
+			if (scenarioEngine->entities_.object_[i]->GetGhost())
 			{
 				if (odr_manager->GetNumOfRoads() > 0)
 				{
@@ -695,18 +695,18 @@ int ScenarioPlayer::InitViewer()
 				}
 
 			}
-			else if (scenarioEngine->entities.object_[i]->IsGhost())
+			else if (scenarioEngine->entities_.object_[i]->IsGhost())
 			{
-				scenarioEngine->entities.object_[i]->SetVisibilityMask(scenarioEngine->entities.object_[i]->visibilityMask_ &= ~(Object::Visibility::SENSORS));
+				scenarioEngine->entities_.object_[i]->SetVisibilityMask(scenarioEngine->entities_.object_[i]->visibilityMask_ &= ~(Object::Visibility::SENSORS));
 			}
 		}
 	}
 
 	// Choose vehicle to look at initially (switch with 'Tab')
 	viewer_->SetVehicleInFocus(0);
-	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
 	{
-		Object* obj = scenarioEngine->entities.object_[i];
+		Object* obj = scenarioEngine->entities_.object_[i];
 
 		if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_INTERACTIVE ||
 			obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL ||
@@ -750,7 +750,7 @@ void viewer_thread(void *args)
 
 void ScenarioPlayer::AddObjectSensor(int object_index, double x, double y, double z, double h, double near, double far, double fovH, int maxObj)
 {
-	sensor.push_back(new ObjectSensor(&scenarioEngine->entities, scenarioEngine->entities.object_[object_index], x, y, z, h, near, far, fovH, maxObj));
+	sensor.push_back(new ObjectSensor(&scenarioEngine->entities_, scenarioEngine->entities_.object_[object_index], x, y, z, h, near, far, fovH, maxObj));
 
 #ifdef _USE_OSG
 	if (viewer_)
@@ -1031,7 +1031,7 @@ int ScenarioPlayer::Init()
 	if (opt.GetOptionSet("csv_logger"))
 	{
 		CSV_Log = &CSV_Logger::InstVehicleLog(scenarioEngine->getScenarioFilename(),
-			(int)scenarioEngine->entities.object_.size(), opt.GetOptionArg("csv_logger"));
+			(int)scenarioEngine->entities_.object_.size(), opt.GetOptionArg("csv_logger"));
 		LOG("Log all vehicle data in csv file");
 	}
 
@@ -1128,10 +1128,10 @@ void ScenarioPlayer::UpdateCSV_Log()
 	bool isendline = false;
 
 	//For each vehicle (entitity) stored in the ScenarioPlayer
-	for (size_t i = 0; i < scenarioEngine->entities.object_.size(); i++)
+	for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
 	{
 		//Create a pointer to the object at position i in the entities vector
-		Object* obj = scenarioEngine->entities.object_[i];
+		Object* obj = scenarioEngine->entities_.object_[i];
 
 		//Create a Position object for extracting this vehicles XYZ coordinates
 		roadmanager::Position pos = obj->pos_;
@@ -1139,7 +1139,7 @@ void ScenarioPlayer::UpdateCSV_Log()
 		//Extract the String name of the object and store in a compatable const char array
 		const char* name_ = &(*obj->name_.c_str());
 
-		if ((i + 1) == scenarioEngine->entities.object_.size())
+		if ((i + 1) == scenarioEngine->entities_.object_.size())
 		{
 			isendline = true;
 		}
@@ -1225,17 +1225,17 @@ int ScenarioPlayer::SetParameterValue(const char* name, bool value)
 //todo
 int ScenarioPlayer::GetNumberOfProperties(int index)
 {
-	return (int)scenarioEngine->entities.object_[index]->properties_.property_.size();
+	return (int)scenarioEngine->entities_.object_[index]->properties_.property_.size();
 }
 
 const char* ScenarioPlayer::GetPropertyName(int index,int propertyIndex)
 {
-	return scenarioEngine->entities.object_[index]->properties_.property_[propertyIndex].name_.c_str();
+	return scenarioEngine->entities_.object_[index]->properties_.property_[propertyIndex].name_.c_str();
 }
 
 const char* ScenarioPlayer::GetPropertyValue(int index,int propertyIndex)
 {
-	return scenarioEngine->entities.object_[index]->properties_.property_[propertyIndex].value_.c_str();
+	return scenarioEngine->entities_.object_[index]->properties_.property_[propertyIndex].value_.c_str();
 }
 
 #ifdef _USE_OSG

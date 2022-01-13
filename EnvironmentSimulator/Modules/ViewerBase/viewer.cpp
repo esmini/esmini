@@ -1943,6 +1943,7 @@ int Viewer::AddEntityModel(EntityModel* model)
 	if (entities_.size() == 1)
 	{
 		currentCarInFocus_ = 0;
+		((osgGA::KeySwitchMatrixManipulator*)osgViewer_->getCameraManipulator())->selectMatrixManipulator(0);
 		rubberbandManipulator_->setTrackNode(entities_.back()->txNode_,
 			rubberbandManipulator_->getMode() == osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_TOP ? false : true);
 		nodeTrackerManipulator_->setTrackNode(entities_.back()->txNode_);

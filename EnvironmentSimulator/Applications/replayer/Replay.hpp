@@ -42,17 +42,19 @@ namespace scenarioengine
 			Go to specific time
 			@param time timestamp (0 = beginning, -1 end)
 		*/
-		void GoToTime(double time);
-		void GoToDeltaTime(double dt);
+		void GoToTime(double time, bool stop_at_next_frame = false);
+		void GoToDeltaTime(double dt, bool stop_at_next_frame = false);
 		void GoToStart();
 		void GoToEnd();
 		void GoToNextFrame();
 		void GoToPreviousFrame();
+		int FindNextTimestamp(bool wrap = false);
+		int FindPreviousTimestamp(bool wrap = false);
 		ObjectStateStructDat * GetState(int id);
 		void SetStartTime(double time);
 		void SetStopTime(double time);
 		double GetStartTime() { return startTime_; }
-		double GetEndTime() { return stopTime_; }
+		double GetStopTime() { return stopTime_; }
 		double GetTime() { return time_; }
 		int GetIndex() { return index_; }
 		void SetRepeat(bool repeat) { repeat_ = repeat; }

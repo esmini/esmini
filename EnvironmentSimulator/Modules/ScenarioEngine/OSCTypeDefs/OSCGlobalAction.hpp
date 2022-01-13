@@ -18,7 +18,6 @@
 #include "Parameters.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
-//#include "ScenarioReader.hpp"
 #include "OSCAABBTree.hpp"
 #include <vector>
 #include "OSCUtils.hpp"
@@ -36,7 +35,8 @@ namespace scenarioengine
 		typedef enum
 		{
 			ENVIRONMENT,     // not supported yet
-			ENTITY,          // not supported yet
+			ADD_ENTITY,
+			DELETE_ENTITY,
 			PARAMETER_SET,
 			INFRASTRUCTURE,  // not supported yet
 			SWARM_TRAFFIC,
@@ -98,6 +98,85 @@ namespace scenarioengine
 			LOG("");
 		}
 
+	};
+
+	class AddEntityAction : public OSCGlobalAction
+	{
+	public:
+		Object* entity_;
+		roadmanager::Position *pos_;
+		Entities* entities_;
+
+		AddEntityAction() : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY), entity_(nullptr),
+			entities_(nullptr), pos_(0) {};
+
+		AddEntityAction(Object* entity) : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY), entity_(entity),
+			entities_(nullptr), pos_(0) {};
+
+		AddEntityAction(const AddEntityAction& action) : OSCGlobalAction(OSCGlobalAction::Type::ADD_ENTITY)
+		{
+			entity_ = action.entity_;
+			entities_ = action.entities_;
+			pos_ = action.pos_;
+		}
+
+		~AddEntityAction() { delete pos_; }
+
+		OSCGlobalAction* Copy()
+		{
+			AddEntityAction* new_action = new AddEntityAction(*this);
+			return new_action;
+		}
+
+		void Start(double simTime, double dt);
+		void Step(double simTime, double dt);
+
+		void SetEntities(Entities* entities) { entities_ = entities; }
+
+		void print()
+		{
+			LOG("");
+		}
+	};
+
+	class DeleteEntityAction : public OSCGlobalAction
+	{
+	public:
+		Object* entity_;
+		Entities* entities_;
+		ScenarioGateway* gateway_;
+
+		DeleteEntityAction() : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY), entity_(nullptr),
+			entities_(nullptr), gateway_(nullptr) {};
+
+		DeleteEntityAction(Object* entity) : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY), entity_(entity),
+			entities_(nullptr), gateway_(nullptr) {};
+
+		DeleteEntityAction(const DeleteEntityAction& action) : OSCGlobalAction(OSCGlobalAction::Type::DELETE_ENTITY)
+		{
+			entity_ = action.entity_;
+			entities_ = action.entities_;
+			gateway_ = action.gateway_;
+		}
+
+		~DeleteEntityAction() {}
+
+		OSCGlobalAction* Copy()
+		{
+			DeleteEntityAction* new_action = new DeleteEntityAction(*this);
+			return new_action;
+		}
+
+		void Start(double simTime, double dt);
+		void Step(double simTime, double dt);
+
+		void SetEntities(Entities* entities) { entities_ = entities; }
+		void SetGateway(ScenarioGateway* gateway) { gateway_ = gateway; }
+
+		void print()
+		{
+			LOG("");
+		}
 	};
 
 	class ScenarioReader;

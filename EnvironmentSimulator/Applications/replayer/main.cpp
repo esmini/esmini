@@ -587,7 +587,7 @@ int main(int argc, char** argv)
 		}
 
 
-		while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetEndTime() - SMALL_NUMBER))))
+		while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetStopTime() - SMALL_NUMBER))))
 		{
 			simTime = player->GetTime();  // potentially wrapped for repeat
 			double targetSimTime = simTime;
@@ -615,14 +615,7 @@ int main(int argc, char** argv)
 			{
 				if (!pause)
 				{
-					if (deltaSimTime < 0)
-					{
-						player->GoToPreviousFrame();
-					}
-					else
-					{
-						player->GoToNextFrame();
-					}
+					player->GoToDeltaTime(deltaSimTime, true);
 					simTime = player->GetTime();  // potentially wrapped for repeat
 				}
 
@@ -661,48 +654,55 @@ int main(int argc, char** argv)
 					if (index == viewer->currentCarInFocus_)
 					{
 						// Update overlay info text
-						snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) %.2fkm/h (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) timeScale: %.2f ",
-							simTime, viewer->currentCarInFocus_, state->info.name, state->info.id, 3.6 * state->info.speed, sc->pos.roadId, sc->pos.laneId,
+						snprintf(info_str_buf, sizeof(info_str_buf), "%.2fs entity[%d]: %s (%d) %.2fs %.2fkm/h (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f ",
+							simTime, viewer->currentCarInFocus_, state->info.name, state->info.id, state->info.timeStamp, 3.6 * state->info.speed, sc->pos.roadId, sc->pos.laneId,
 							fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset, sc->pos.s, sc->pos.x, sc->pos.y, sc->pos.h, time_scale);
 						viewer->SetInfoText(info_str_buf);
 					}
 				}
 
-				if (col_analysis)
+				if (col_analysis && scenarioEntity.size() > 1)
 				{
-					for (size_t i = 0; i < scenarioEntity.size(); i++)
+					state = player->GetState(scenarioEntity[0].id);
+					if (state && state->info.visibilityMask != 0)  // skip if Ego invisible for graphics, traffic and sensors
 					{
-						if (i != ghost_id) // Ignore ghost
+						for (size_t i = 0; i < scenarioEntity.size(); i++)
 						{
-							updateCorners(scenarioEntity[i]);
-						}
-					}
-
-					bool overlap_now = false;
-					for (size_t i = 1; i < scenarioEntity.size(); i++)
-					{
-						if (i != ghost_id) // Ignore ghost
-						{
-							if (separating_axis_intersect(scenarioEntity[0], scenarioEntity[i]))
+							if (i != ghost_id) // Ignore ghost
 							{
-								overlap_now = true;
-								if (!overlap)
+								updateCorners(scenarioEntity[i]);
+							}
+						}
+
+						bool overlap_now = false;
+						for (size_t i = 1; i < scenarioEntity.size(); i++)
+						{
+							state = player->GetState(scenarioEntity[i].id);
+
+							if (i != ghost_id &&  // Ignore ghost and
+								state && state->info.visibilityMask != 0) // and objects invisible for graphics, traffic and sensors
+							{
+								if (separating_axis_intersect(scenarioEntity[0], scenarioEntity[i]))
 								{
-									overlap = true;
-									pause = true;
-									LOG("Collision between %d and %d at time %.2f", 0, i, simTime);
+									overlap_now = true;
+									if (!overlap)
+									{
+										overlap = true;
+										pause = true;
+										LOG("Collision between %d and %d at time %.2f", 0, i, simTime);
+									}
 								}
 							}
 						}
-					}
-					if (!overlap_now)
-					{
-						overlap = false;
+						if (!overlap_now)
+						{
+							overlap = false;
+						}
 					}
 				}
 
 			} while (!pause &&
-				simTime < player->GetEndTime() - SMALL_NUMBER &&  // As long as time is < end
+				simTime < player->GetStopTime() - SMALL_NUMBER &&  // As long as time is < end
 				simTime > player->GetStartTime() + SMALL_NUMBER &&  // As long as time is > start time
 				(deltaSimTime < 0 ? (player->GetTime() > targetSimTime) : (player->GetTime() < targetSimTime)));  // until reached target timestep
 

@@ -1198,7 +1198,7 @@ int ScenarioReader::parseEntities()
 				{
 					obj->name_ = parameters.ReadAttribute(entitiesChild, "name");
 				}
-				entities_->addObject(obj);
+				entities_->addObject(obj, false);
 				objectCnt_++;
 			}
 
@@ -1745,6 +1745,49 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 				trafficSwarmAction->Setvelocity(std::stod(velocity));
 
 				action = trafficSwarmAction;
+			}
+		}
+		else if (actionChild.name() == std::string("EntityAction"))
+		{
+			for (pugi::xml_node eaChild = actionChild.first_child(); eaChild; eaChild = eaChild.next_sibling())
+			{
+				if (eaChild.name() == std::string("AddEntityAction"))
+				{
+					Object* entity;
+
+					entity = ResolveObjectReference(parameters.ReadAttribute(eaChild, "entityRef"));
+					if (entity == NULL)
+					{
+						LOG_AND_QUIT("AddEntityAction: Failed to resolve entityRef %s", parameters.ReadAttribute(eaChild, "entityRef").c_str());
+					}
+
+					AddEntityAction* addEntityAction = new AddEntityAction(entity);
+
+					addEntityAction->pos_ = parseOSCPosition(eaChild.child("Position"))->GetRMPos();
+					addEntityAction->SetEntities(entities_);
+
+					action = addEntityAction;
+				}
+				else if (eaChild.name() == std::string("DeleteEntityAction"))
+				{
+					Object* entity;
+
+					entity = ResolveObjectReference(parameters.ReadAttribute(eaChild, "entityRef"));
+					if (entity == NULL)
+					{
+						LOG_AND_QUIT("DeleteEntityAction: Failed to resolve entityRef %s", parameters.ReadAttribute(eaChild, "entityRef").c_str());
+					}
+
+					DeleteEntityAction* deleteEntityAction = new DeleteEntityAction(entity);
+					deleteEntityAction->SetEntities(entities_);
+					deleteEntityAction->SetGateway(gateway_);
+
+					action = deleteEntityAction;
+				}
+				else
+				{
+					LOG("EntityAction %s not supported yet", eaChild.name());
+				}
 			}
 		}
 		else
@@ -2619,6 +2662,7 @@ void ScenarioReader::parseInit(Init &init)
 						init.private_action_.push_back(action);
 					}
 				}
+				entities_->activateObject(entityRef);
 			}
 		}
 	}

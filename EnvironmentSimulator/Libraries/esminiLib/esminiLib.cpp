@@ -250,7 +250,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 		return -1;
 	}
 
-	Object *obj = player->scenarioEngine->entities.object_[object_id];
+	Object *obj = player->scenarioEngine->entities_.object_[object_id];
 	Object *ghost = 0;
 	if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 	{
@@ -739,9 +739,9 @@ extern "C"
 	{
 		if (player != nullptr)
 		{
-			if (id < player->scenarioEngine->entities.object_.size())
+			if (id < player->scenarioEngine->entities_.object_.size())
 			{
-				player->scenarioEngine->entities.object_[id]->pos_.SetAlignMode((roadmanager::Position::ALIGN_MODE)mode);
+				player->scenarioEngine->entities_.object_[id]->pos_.SetAlignMode((roadmanager::Position::ALIGN_MODE)mode);
 			}
 		}
 	}
@@ -750,9 +750,9 @@ extern "C"
 	{
 		if (player != nullptr)
 		{
-			if (id < player->scenarioEngine->entities.object_.size())
+			if (id < player->scenarioEngine->entities_.object_.size())
 			{
-				player->scenarioEngine->entities.object_[id]->pos_.SetAlignModeH((roadmanager::Position::ALIGN_MODE)mode);
+				player->scenarioEngine->entities_.object_[id]->pos_.SetAlignModeH((roadmanager::Position::ALIGN_MODE)mode);
 			}
 		}
 	}
@@ -761,9 +761,9 @@ extern "C"
 	{
 		if (player != nullptr)
 		{
-			if (id < player->scenarioEngine->entities.object_.size())
+			if (id < player->scenarioEngine->entities_.object_.size())
 			{
-				player->scenarioEngine->entities.object_[id]->pos_.SetAlignModeP((roadmanager::Position::ALIGN_MODE)mode);
+				player->scenarioEngine->entities_.object_[id]->pos_.SetAlignModeP((roadmanager::Position::ALIGN_MODE)mode);
 			}
 		}
 	}
@@ -772,9 +772,9 @@ extern "C"
 	{
 		if (player != nullptr)
 		{
-			if (id < player->scenarioEngine->entities.object_.size())
+			if (id < player->scenarioEngine->entities_.object_.size())
 			{
-				player->scenarioEngine->entities.object_[id]->pos_.SetAlignModeR((roadmanager::Position::ALIGN_MODE)mode);
+				player->scenarioEngine->entities_.object_[id]->pos_.SetAlignModeR((roadmanager::Position::ALIGN_MODE)mode);
 			}
 		}
 	}
@@ -783,9 +783,9 @@ extern "C"
 	{
 		if (player!= nullptr)
 		{
-			if (id < player->scenarioEngine->entities.object_.size())
+			if (id < player->scenarioEngine->entities_.object_.size())
 			{
-				player->scenarioEngine->entities.object_[id]->pos_.SetAlignModeZ((roadmanager::Position::ALIGN_MODE)mode);
+				player->scenarioEngine->entities_.object_[id]->pos_.SetAlignModeZ((roadmanager::Position::ALIGN_MODE)mode);
 			}
 		}
 	}
@@ -798,10 +798,10 @@ extern "C"
 		}
 		else
 		{
-			if (id < player->scenarioEngine->entities.object_.size())
+			if (id < player->scenarioEngine->entities_.object_.size())
 			{
 				// reuse some values
-				Object *obj = player->scenarioEngine->entities.object_[id];
+				Object *obj = player->scenarioEngine->entities_.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), obj->visibilityMask_,
 					timestamp, speed, obj->wheel_angle_, obj->wheel_rot_, x, y, z, h, p, r);
@@ -819,10 +819,10 @@ extern "C"
 		}
 		else
 		{
-			if (id < player->scenarioEngine->entities.object_.size())
+			if (id < player->scenarioEngine->entities_.object_.size())
 			{
 				// reuse some values
-				Object *obj = player->scenarioEngine->entities.object_[id];
+				Object *obj = player->scenarioEngine->entities_.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), obj->visibilityMask_,
 					timestamp, speed, obj->wheel_angle_, obj->wheel_rot_, x, y, h);
@@ -840,10 +840,10 @@ extern "C"
 		}
 		else
 		{
-			if (id < player->scenarioEngine->entities.object_.size())
+			if (id < player->scenarioEngine->entities_.object_.size())
 			{
 				// reuse some values
-				Object *obj = player->scenarioEngine->entities.object_[id];
+				Object *obj = player->scenarioEngine->entities_.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), obj->visibilityMask_,
 					timestamp, speed, obj->wheel_angle_, obj->wheel_rot_, roadId, laneId, laneOffset, s);
@@ -861,9 +861,9 @@ extern "C"
 		}
 		else
 		{
-			if (id < player->scenarioEngine->entities.object_.size())
+			if (id < player->scenarioEngine->entities_.object_.size())
 			{
-				Object *obj = player->scenarioEngine->entities.object_[id];
+				Object *obj = player->scenarioEngine->entities_.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_),
 					obj->visibilityMask_, 0.0, speed, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
@@ -885,10 +885,10 @@ extern "C"
 		}
 		else
 		{
-			if (id < player->scenarioEngine->entities.object_.size())
+			if (id < player->scenarioEngine->entities_.object_.size())
 			{
 				// reuse some values
-				Object *obj = player->scenarioEngine->entities.object_[id];
+				Object *obj = player->scenarioEngine->entities_.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 					obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_), obj->visibilityMask_,
 					0.0, obj->GetSpeed(), obj->wheel_angle_, obj->wheel_rot_, obj->pos_.GetTrackId(), t, obj->pos_.GetS());
@@ -910,10 +910,10 @@ extern "C"
 		}
 		else
 		{
-			if (id < player->scenarioEngine->entities.object_.size())
+			if (id < player->scenarioEngine->entities_.object_.size())
 			{
 				// reuse some values
-				Object *obj = player->scenarioEngine->entities.object_[id];
+				Object *obj = player->scenarioEngine->entities_.object_[id];
 				player->scenarioGateway->reportObject(id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 													  obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_),
 													  obj->visibilityMask_, 0.0, obj->GetSpeed(), obj->wheel_angle_,
@@ -936,11 +936,11 @@ extern "C"
 		}
 		else
 		{
-			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
+			if (id >= 0 && id < player->scenarioEngine->entities_.object_.size())
 			{
 				player->scenarioGateway->updateObjectVel(id, 0.0, x_vel, y_vel, z_vel);
 				// Also update accelerations directly in scenario object, in case we're in a callback
-				player->scenarioEngine->entities.object_[id]->SetVel(x_vel, y_vel, z_vel);
+				player->scenarioEngine->entities_.object_[id]->SetVel(x_vel, y_vel, z_vel);
 			}
 			else
 			{
@@ -959,11 +959,11 @@ extern "C"
 		}
 		else
 		{
-			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
+			if (id >= 0 && id < player->scenarioEngine->entities_.object_.size())
 			{
 				player->scenarioGateway->updateObjectAngularVel(id, 0.0, h_rate, p_rate, r_rate);
 				// Also update accelerations directly in scenario object, in case we're in a callback
-				player->scenarioEngine->entities.object_[id]->SetAngularVel(h_rate, p_rate, r_rate);
+				player->scenarioEngine->entities_.object_[id]->SetAngularVel(h_rate, p_rate, r_rate);
 			}
 			else
 			{
@@ -982,11 +982,11 @@ extern "C"
 		}
 		else
 		{
-			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
+			if (id >= 0 && id < player->scenarioEngine->entities_.object_.size())
 			{
 				player->scenarioGateway->updateObjectAcc(id, 0.0, x_acc, y_acc, z_acc);
 				// Also update accelerations directly in scenario object, in case we're in a callback
-				player->scenarioEngine->entities.object_[id]->SetAcc(x_acc, y_acc, z_acc);
+				player->scenarioEngine->entities_.object_[id]->SetAcc(x_acc, y_acc, z_acc);
 			}
 			else
 			{
@@ -1005,11 +1005,11 @@ extern "C"
 		}
 		else
 		{
-			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
+			if (id >= 0 && id < player->scenarioEngine->entities_.object_.size())
 			{
 				player->scenarioGateway->updateObjectAngularAcc(id, 0.0, h_acc, p_acc, r_acc);
 				// Also update accelerations directly in scenario object, in case we're in a callback
-				player->scenarioEngine->entities.object_[id]->SetAngularAcc(h_acc, p_acc, r_acc);
+				player->scenarioEngine->entities_.object_[id]->SetAngularAcc(h_acc, p_acc, r_acc);
 			}
 			else
 			{
@@ -1028,7 +1028,7 @@ extern "C"
 		}
 		else
 		{
-			if (id >= 0 && id < player->scenarioEngine->entities.object_.size())
+			if (id >= 0 && id < player->scenarioEngine->entities_.object_.size())
 			{
 				player->scenarioGateway->getObjectStatePtrByIdx(id)->state_.pos.SetLockOnLane(mode);
 			}
@@ -1066,7 +1066,7 @@ extern "C"
 	{
 		if (player != nullptr)
 		{
-			return copyOverrideActionListfromScenarioEngine(list, player->scenarioEngine->entities.GetObjectById(objectId));
+			return copyOverrideActionListfromScenarioEngine(list, player->scenarioEngine->entities_.GetObjectById(objectId));
 		}
 
 		return -1;
@@ -1077,7 +1077,7 @@ extern "C"
 		static std::string returnString;
 		if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
 		{
-			returnString = player->scenarioEngine->entities.object_[index]->GetTypeName();
+			returnString = player->scenarioEngine->entities_.object_[index]->GetTypeName();
 			return returnString.c_str();
 		}
 
@@ -1101,7 +1101,7 @@ extern "C"
 		static std::string returnString;
 		if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
 		{
-			returnString = player->scenarioEngine->entities.object_[index]->GetModelFileName();
+			returnString = player->scenarioEngine->entities_.object_[index]->GetModelFileName();
 			return returnString.c_str();
 		}
 
@@ -1318,9 +1318,9 @@ extern "C"
 		}
 
 		Object *ghost = 0;
-		if (player->scenarioEngine->entities.object_[index]->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
+		if (player->scenarioEngine->entities_.object_[index]->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 		{
-			ghost = player->scenarioEngine->entities.object_[index]->GetGhost();
+			ghost = player->scenarioEngine->entities_.object_[index]->GetGhost();
 		}
 		return ghost != 0 ? 1 : 0;
 	}
@@ -1334,13 +1334,13 @@ extern "C"
 			return -1;
 		}
 
-		if (index < player->scenarioEngine->entities.object_.size())
+		if (index < player->scenarioEngine->entities_.object_.size())
 		{
-			for (size_t i = 0; i < player->scenarioEngine->entities.object_.size(); i++) // ghost index always higher than external buddy
+			for (size_t i = 0; i < player->scenarioEngine->entities_.object_.size(); i++) // ghost index always higher than external buddy
 			{
-				if (player->scenarioEngine->entities.object_[index]->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
+				if (player->scenarioEngine->entities_.object_[index]->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 				{
-					ghost = player->scenarioEngine->entities.object_[index]->GetGhost();
+					ghost = player->scenarioEngine->entities_.object_[index]->GetGhost();
 				}
 				if (ghost)
 				{
@@ -1358,14 +1358,14 @@ extern "C"
 	{
 		if (player)
 		{
-			if (index < player->scenarioEngine->entities.object_.size())
+			if (index < player->scenarioEngine->entities_.object_.size())
 			{
-				for (size_t i = 0; i < player->scenarioEngine->entities.object_.size(); i++)  // ghost index always higher than external buddy
+				for (size_t i = 0; i < player->scenarioEngine->entities_.object_.size(); i++)  // ghost index always higher than external buddy
 				{
-					if (player->scenarioEngine->entities.object_[index]->ghost_)
+					if (player->scenarioEngine->entities_.object_[index]->ghost_)
 					{
 						scenarioengine::ObjectState obj_state;
-						player->scenarioGateway->getObjectStateById(player->scenarioEngine->entities.object_[index]->ghost_->id_, obj_state);
+						player->scenarioGateway->getObjectStateById(player->scenarioEngine->entities_.object_[index]->ghost_->id_, obj_state);
 						copyStateFromScenarioGatewayToOSI(&output, &obj_state.state_);
 					}
 				}
@@ -1402,9 +1402,9 @@ extern "C"
 			return -1;
 		}
 
-		if (object_id < 0 || object_id >= player->scenarioEngine->entities.object_.size())
+		if (object_id < 0 || object_id >= player->scenarioEngine->entities_.object_.size())
 		{
-			LOG("Invalid object_id (%d/%d)", object_id, player->scenarioEngine->entities.object_.size());
+			LOG("Invalid object_id (%d/%d)", object_id, player->scenarioEngine->entities_.object_.size());
 			return -1;
 		}
 
@@ -1418,9 +1418,9 @@ extern "C"
 		if (player)
 		{
 
-			if (object_id < 0 || object_id >= player->scenarioEngine->entities.object_.size())
+			if (object_id < 0 || object_id >= player->scenarioEngine->entities_.object_.size())
 			{
-				LOG("Invalid object_id (%d/%d)", object_id, player->scenarioEngine->entities.object_.size());
+				LOG("Invalid object_id (%d/%d)", object_id, player->scenarioEngine->entities_.object_.size());
 				return -1;
 			}
 
@@ -1479,7 +1479,7 @@ extern "C"
 			return -1;
 		}
 
-		Object *obj = player->scenarioEngine->entities.object_[object_id];
+		Object *obj = player->scenarioEngine->entities_.object_[object_id];
 
 		float adjustedLookaheadDistance = lookahead_distance;
 
@@ -1859,7 +1859,7 @@ SE_DLL_API int SE_GetNumberOfRoutePoints(int object_id)
 		return -1;
 	}
 
-	Object *obj = player->scenarioEngine->entities.object_[object_id];
+	Object *obj = player->scenarioEngine->entities_.object_[object_id];
 	if (obj->pos_.GetRoute())
 	{
 		return obj->pos_.GetRoute()->all_waypoints_.size();
@@ -1883,7 +1883,7 @@ SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *ro
 		return -1;
 	}
 
-	Object* obj = player->scenarioEngine->entities.object_[object_id];
+	Object* obj = player->scenarioEngine->entities_.object_[object_id];
 
 	if (route_index >= obj->pos_.GetRoute()->all_waypoints_.size())
 	{

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test add/delete entity actions  -->
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2022-01-18T10:00:00" description="Test Add/DeleteEntityActions" author="esmini-team"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="Speed" parameterType="double" value="70"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Car1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="Car2">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Car1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" offset="0.0" s="10"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${$Speed/3.6}/"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="MyStory">
+            <ParameterDeclarations/>
+            <Act name="MyAct">
+                <ParameterDeclarations>
+                </ParameterDeclarations>
+                <ManeuverGroup maximumExecutionCount="1" name="MGCar1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Car1"/>
+                    </Actors>
+                    <Maneuver name="ManeuversCar1">
+                        <Event name="AddCar1Event1-ExpectedToFail" priority="parallel">
+                            <Action name="AddEntityAction1">
+                                <GlobalAction>
+                                    <EntityAction>
+                                        <AddEntityAction entityRef="Car1">
+                                            <Position>
+                                                <LanePosition roadId="1" laneId="-1" offset="0.0" s="10"/>
+                                            </Position>
+                                        </AddEntityAction>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="AddCar1Event1Condition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="2" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="DeleteCar1Event1-ExpectedToSucceed" priority="parallel">
+                            <Action name="DeleteCar2Action1">
+                                <GlobalAction>
+                                    <EntityAction>
+                                        <DeleteEntityAction entityRef="Car1"/>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="DeleteCar1Event1Condition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="10" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="AddCar1Event2-ExpectedToSucceed" priority="parallel">
+                            <Action name="AddCar1Action2">
+                                <GlobalAction>
+                                    <EntityAction>
+                                        <AddEntityAction entityRef="Car1">
+                                            <Position>
+                                                <RelativeLanePosition entityRef="Car1" ds="220"/>
+                                                <!-- <LanePosition roadId="1" laneId="-1" offset="0.0" s="440"/> -->
+                                            </Position>
+                                        </AddEntityAction>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="AddCar1Event2Condition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="12" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="DeleteCar1Event2-ExpectedToSucceed" priority="parallel">
+                            <Action name="DeleteCar2Action1">
+                                <GlobalAction>
+                                    <EntityAction>
+                                        <DeleteEntityAction entityRef="Car1"/>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="DeleteCar1Event2Condition" delay="0" conditionEdge="none">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Car1"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <EndOfRoadCondition duration="0" rule="greaterOrEqual"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="MGCar2">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Car2"/>
+                    </Actors>
+                    <Maneuver name="ManeuversCar2">
+                        <Event name="AddCar2Event1-ExpectedToSucceed" priority="parallel">
+                            <Action name="AddEntityAction2">
+                                <GlobalAction>
+                                    <EntityAction>
+                                        <AddEntityAction entityRef="Car2">
+                                            <Position>
+                                                <LanePosition roadId="1" laneId="-1" offset="0.0" s="90"/>
+                                            </Position>
+                                        </AddEntityAction>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <Action name="SetSpeedActionCar2">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="${$Speed/3.6}/"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="AddCar2Event1Condition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="3" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="DeleteCar2Event1-ExpectedToSucceed" priority="parallel">
+                            <Action name="DeleteCar2Action1">
+                                <GlobalAction>
+                                    <EntityAction>
+                                        <DeleteEntityAction entityRef="Car2"/>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="DeleteCar2Event1Condition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="7" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="DeleteCar2Event2-ExpectedToFail" priority="parallel">
+                            <Action name="DeleteCar2Action1">
+                                <GlobalAction>
+                                    <EntityAction>
+                                        <DeleteEntityAction entityRef="Car2"/>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="DeleteCar2Event2Condition" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="9" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="StartCondition" delay="0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0" rule="greaterOrEqual"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="StopCondition" delay="2" conditionEdge="none">
+                    <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="DeleteCar1Event2-ExpectedToSucceed" state="completeState"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

@@ -1802,6 +1802,8 @@ namespace roadmanager
 		*/
 		ErrorCode XYZH2TrackPos(double x, double y, double z, double h, bool connectedOnly = false, int roadId = -1);
 
+		int TeleportTo(Position* pos);
+
 		int MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, double junctionSelectorAngle = -1.0);
 
 		void SetRelativePosition(Position* rel_pos, PositionType type)
@@ -2278,7 +2280,7 @@ namespace roadmanager
 		*/
 		void SetSnapLaneTypes(int laneTypeMask) { snapToLaneTypes_ = laneTypeMask; }
 
-		void CopyRMPos(Position *from);
+		void CopyRMPos(Position* from);
 
 		void PrintTrackPos();
 		void PrintLanePos();

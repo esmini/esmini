@@ -50,7 +50,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 	simulationTime_ = 0;
 	trueTime_ = 0;
 	initialized_ = false;
-	scenarioReader = new ScenarioReader(&entities, &catalogs, disable_controllers);
+	scenarioReader = new ScenarioReader(&entities_, &catalogs, disable_controllers);
 
 	std::vector<std::string> file_name_candidates;
 	// absolute path or relative to current directory
@@ -100,7 +100,7 @@ void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, bool disabl
 	simulationTime_ = 0;
 	trueTime_ = 0;
 	initialized_ = false;
-	scenarioReader = new ScenarioReader(&entities, &catalogs, disable_controllers);
+	scenarioReader = new ScenarioReader(&entities_, &catalogs, disable_controllers);
 	if (scenarioReader->loadOSCMem(xml_doc) != 0)
 	{
 		throw std::invalid_argument("Failed to load OpenSCENARIO from XML string");
@@ -118,17 +118,12 @@ ScenarioEngine::~ScenarioEngine()
 
 int ScenarioEngine::step(double deltaSimTime)
 {
-	if (entities.object_.size() == 0)
-	{
-		return -1;
-	}
-
 	if (!initialized_)
 	{
 		// Set initial values for speed and acceleration derivation
-		for (size_t i = 0; i < entities.object_.size(); i++)
+		for (size_t i = 0; i < entities_.object_.size(); i++)
 		{
-			Object* obj = entities.object_[i];
+			Object* obj = entities_.object_[i];
 
 			obj->state_old.pos_x = obj->pos_.GetX();
 			obj->state_old.pos_y = obj->pos_.GetY();
@@ -155,9 +150,9 @@ int ScenarioEngine::step(double deltaSimTime)
 	else
 	{
 		// reset update bits and indicators of applied control
-		for (size_t i = 0; i < entities.object_.size(); i++)
+		for (size_t i = 0; i < entities_.object_.size(); i++)
 		{
-			Object* obj = entities.object_[i];
+			Object* obj = entities_.object_[i];
 			ObjectState *o;
 
 			obj->ClearDirtyBits(
@@ -482,9 +477,9 @@ int ScenarioEngine::step(double deltaSimTime)
 		simulationTime_ = trueTime_;
 	}
 
-	for (size_t i = 0; i < entities.object_.size(); i++)
+	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
-		Object* obj = entities.object_[i];
+		Object* obj = entities_.object_[i];
 		// Do not move objects when speed is zero,
 		// and only ghosts allowed to execute before time == 0
 		if (!(obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
@@ -546,9 +541,9 @@ int ScenarioEngine::step(double deltaSimTime)
 	}
 
 	// Check some states
-	for (size_t i = 0; i < entities.object_.size(); i++)
+	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
-		Object* obj = entities.object_[i];
+		Object* obj = entities_.object_[i];
 
 		// Off road?
 		if (obj->pos_.IsOffRoad())
@@ -679,7 +674,7 @@ void ScenarioEngine::parseScenario()
 
 	scenarioReader->parseInit(init);
 	scenarioReader->parseStoryBoard(storyBoard);
-	storyBoard.entities_ = &entities;
+	storyBoard.entities_ = &entities_;
 
 	// Finally, now when all entities have been loaded, initialize the controllers
 	if (!disable_controllers_)
@@ -694,9 +689,9 @@ void ScenarioEngine::parseScenario()
 		}
 
 		// find out maximum headstart time for ghosts
-		for (size_t i = 0; i < entities.object_.size(); i++)
+		for (size_t i = 0; i < entities_.object_.size(); i++)
 		{
-			Object* obj = entities.object_[i];
+			Object* obj = entities_.object_[i];
 
 			if (obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST ||
 				(obj->GetAssignedControllerType() == Controller::Type::CONTROLLER_TYPE_EXTERNAL &&
@@ -773,9 +768,9 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 
 void ScenarioEngine::prepareGroundTruth(double dt)
 {
-	for (size_t i = 0; i < entities.object_.size(); i++)
+	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
-		Object *obj = entities.object_[i];
+		Object *obj = entities_.object_[i];
 		ObjectState *o;
 
 		// Fetch external states from gateway
@@ -999,7 +994,7 @@ void ScenarioEngine::SetupGhost(Object* object)
 	ghost->controller_ = 0;
 	ghost->isGhost_ = true;
 	ghost->SetHeadstartTime(object->headstart_time_);
-	entities.addObject(ghost);
+	entities_.addObject(ghost);
 	object->SetHeadstartTime(0);
 
 	int numberOfInitActions = (int)init.private_action_.size();
@@ -1149,12 +1144,12 @@ void ScenarioEngine::ResetEvents()
 int ScenarioEngine::DetectCollisions()
 {
 	collision_pair_.clear();
-	for (size_t i = 0; i < entities.object_.size(); i++)
+	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
-		Object* obj0 = entities.object_[i];
-		for (size_t j = i+1; j < entities.object_.size(); j++)
+		Object* obj0 = entities_.object_[i];
+		for (size_t j = i+1; j < entities_.object_.size(); j++)
 		{
-			Object* obj1 = entities.object_[j];
+			Object* obj1 = entities_.object_[j];
 			if (obj0->Collision(obj1))
 			{
 				collision_pair_.push_back({ obj0, obj1 });
@@ -1180,12 +1175,12 @@ int ScenarioEngine::DetectCollisions()
 	}
 
 	// Check for and clear any vanished objects from collision lists
-	for (size_t i = 0; i < entities.object_.size(); i++)
+	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
-		for (size_t j = 0; j < entities.object_[i]->collisions_.size(); j++)
+		for (size_t j = 0; j < entities_.object_[i]->collisions_.size(); j++)
 		{
-			Object* obj = entities.object_[i];
-			if (std::find(entities.object_.begin(), entities.object_.end(), obj->collisions_[j]) == entities.object_.end())
+			Object* obj = entities_.object_[i];
+			if (std::find(entities_.object_.begin(), entities_.object_.end(), obj->collisions_[j]) == entities_.object_.end())
 			{
 				// object previously collided with pivot object has vanished from the set of entities, remove it from collision list
 				LOG("Unregister collision between %s and vanished entity", obj->GetName().c_str());

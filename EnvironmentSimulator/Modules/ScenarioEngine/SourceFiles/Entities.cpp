@@ -24,7 +24,8 @@ using namespace roadmanager;
 Object::Object(Type type) : type_(type), id_(0), speed_(0), wheel_angle_(0), wheel_rot_(0), model3d_(""), ghost_trail_s_(0),
 trail_follow_index_(0), odometer_(0), end_of_road_timestamp_(0.0), off_road_timestamp_(0.0), stand_still_timestamp_(0),
 dirty_(0), reset_(0), controller_(0), headstart_time_(0), ghost_(0), ghost_Ego_(0), visibilityMask_(0xff), isGhost_(false),
-junctionSelectorStrategy_(Junction::JunctionStrategyType::RANDOM), nextJunctionSelectorAngle_(0.0), scaleMode_(EntityScaleMode::NONE)
+junctionSelectorStrategy_(Junction::JunctionStrategyType::RANDOM), nextJunctionSelectorAngle_(0.0), scaleMode_(EntityScaleMode::NONE),
+is_active_(false)
 {
 	sensor_pos_[0] = 0;
 	sensor_pos_[1] = 0;
@@ -1000,11 +1001,91 @@ int Object::Distance(double x, double y, roadmanager::CoordinateSystem cs, roadm
 	return 0;
 }
 
-int Entities::addObject(Object* obj)
+int Entities::addObject(Object* obj, bool activate)
 {
 	obj->id_ = getNewId();
-	object_.push_back(obj);
+	if (activate)
+	{
+		object_.push_back(obj);
+	}
+	else
+	{
+		object_pool_.push_back(obj);
+	}
+
+	obj->SetActive(activate);
+
 	return obj->id_;
+}
+
+int Entities::activateObject(Object* obj)
+{
+	int n_active_objs = (int)std::count(object_.begin(), object_.end(), obj);
+
+	if (n_active_objs == 0)
+	{
+		object_.push_back(obj);
+		obj->SetActive(true);
+
+		int n_objs = (int)std::count(object_pool_.begin(), object_pool_.end(), obj);
+		if (n_objs == 1)
+		{
+			object_pool_.erase(std::remove(object_pool_.begin(), object_pool_.end(), obj), object_pool_.end());
+		}
+		else if (n_objs > 1)
+		{
+			LOG("Unexpected: %d object instances in pool when activating obj %s. Duplicate names? not supported",
+				n_objs, obj->GetName().c_str());
+			return -1;
+		}
+		else
+		{
+			LOG("Unexpected finding: Object %s missing in pool empty when activating.", obj->GetName().c_str());
+		}
+	}
+	else
+	{
+		LOG("Failed to activate obj %s. Already active (%d instances in active list) or duplicate name?",
+			obj->GetName().c_str(), n_active_objs);
+		return -1;
+	}
+
+	return 0;
+}
+
+int Entities::deactivateObject(Object* obj)
+{
+	int n_active_objs = (int)std::count(object_.begin(), object_.end(), obj);
+
+	if (n_active_objs == 1)
+	{
+		object_.erase(std::remove(object_.begin(), object_.end(), obj), object_.end());
+		obj->SetActive(false);
+
+		int n_objs = (int)std::count(object_pool_.begin(), object_pool_.end(), obj);
+		if (n_objs == 0)
+		{
+			object_pool_.push_back(obj);
+		}
+		else
+		{
+			LOG("Unexpected: Object %s already in pool (%d instances) when deactivating it.",
+				obj->GetName().c_str(), n_objs);
+		}
+	}
+	else if (n_active_objs > 1)
+	{
+		LOG("Unexpected: %d object instances found when deactivating obj %s. Duplicate names? not supported",
+			n_active_objs, obj->GetName().c_str());
+		return -1;
+	}
+	else
+	{
+		LOG("Failed to deactivate obj %s. Already inactive (0 in active list).", obj->GetName().c_str());
+		return -1;
+	}
+
+	return 0;
 }
 
 void Entities::removeObject(int id)
@@ -1023,6 +1104,17 @@ void Entities::removeObject(std::string name)
 	for (size_t i = 0; i < object_.size(); i++)
 	{
 		if (object_[i]->name_ == name)
+		{
+			object_.erase(object_.begin() + i);
+		}
+	}
+}
+
+void Entities::removeObject(Object* object)
+{
+	for (size_t i = 0; i < object_.size(); i++)
+	{
+		if (object_[i] == object)
 		{
 			object_.erase(object_.begin() + i);
 		}
@@ -1068,6 +1160,14 @@ Object* Entities::GetObjectByName(std::string name)
 		}
 	}
 
+	for (size_t i = 0; i < object_pool_.size(); i++)
+	{
+		if (name == object_pool_[i]->name_)
+		{
+			return object_pool_[i];
+		}
+	}
+
 	LOG("Failed to find object %s", name.c_str());
 
 	return 0;
@@ -1080,6 +1180,14 @@ Object* Entities::GetObjectById(int id)
 		if (id == object_[i]->id_)
 		{
 			return object_[i];
+		}
+	}
+
+	for (size_t i = 0; i < object_pool_.size(); i++)
+	{
+		if (id == object_pool_[i]->id_)
+		{
+			return object_pool_[i];
 		}
 	}
 

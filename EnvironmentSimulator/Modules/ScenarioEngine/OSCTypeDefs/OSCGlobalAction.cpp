@@ -47,7 +47,59 @@ void ParameterSetAction::Start(double simTime, double dt)
 	OSCAction::Start(simTime, dt);
 }
 
-void ParameterSetAction::Step(double, double dt)
+void ParameterSetAction::Step(double, double)
+{
+    OSCAction::Stop();
+}
+
+void AddEntityAction::Start(double simTime, double dt)
+{
+    if (entity_ == nullptr)
+    {
+        LOG("AddEntityAction missing entity");
+        return;
+    }
+
+    if (entities_->activateObject(entity_) != 0)
+    {
+        LOG("AddEntityAction: Entity already active. Skipping action.");
+        return;
+    }
+
+    entity_->pos_.TeleportTo(pos_);
+
+    LOG("Added entity %s", entity_->GetName().c_str());
+
+    OSCAction::Start(simTime, dt);
+}
+
+void AddEntityAction::Step(double, double)
+{
+    OSCAction::Stop();
+}
+
+void DeleteEntityAction::Start(double simTime, double dt)
+{
+    if (entity_ == nullptr)
+    {
+        LOG("DeleteEntityAction missing entity");
+        return;
+    }
+
+    if (entities_->deactivateObject(entity_) != 0)
+    {
+        LOG("DeleteEntityAction: Entity already deactivated. Skipping action.");
+        return;
+    }
+
+    gateway_->removeObject(entity_->name_);
+
+    LOG("Deleted entity %s", entity_->GetName().c_str());
+
+    OSCAction::Start(simTime, dt);
+}
+
+void DeleteEntityAction::Step(double, double)
 {
     OSCAction::Stop();
 }

@@ -566,6 +566,10 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		Object* trigObj = triggering_entities_.entity_[i].object_;
+		if (!trigObj->IsActive())
+		{
+			continue;
+		}
 
 		if (trigObj->Distance(object_, cs_, relDistType_, freespace_, rel_dist) != 0)
 		{
@@ -621,6 +625,11 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		Object* trigObj = triggering_entities_.entity_[i].object_;
+		if (!trigObj->IsActive())
+		{
+			continue;
+		}
+
 		int retVal = 0;
 
 		if (object_ != nullptr)
@@ -703,6 +712,11 @@ bool TrigByReachPosition::CheckCondition(StoryBoard *storyBoard, double sim_time
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		Object* trigObj = triggering_entities_.entity_[i].object_;
+		if (!trigObj->IsActive())
+		{
+			continue;
+		}
+
 		Position* pos = position_->GetRMPos();
 		if (pos == nullptr)
 		{
@@ -785,6 +799,10 @@ bool TrigByDistance::CheckCondition(StoryBoard *storyBoard, double sim_time)
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		Object* trigObj = triggering_entities_.entity_[i].object_;
+		if (!trigObj->IsActive())
+		{
+			continue;
+		}
 
 		if (trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, dist_) != 0)
 		{
@@ -831,6 +849,10 @@ bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_t
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		Object* trigObj = triggering_entities_.entity_[i].object_;
+		if (!trigObj->IsActive())
+		{
+			continue;
+		}
 
 		roadmanager::CoordinateSystem cs = cs_;
 
@@ -879,6 +901,11 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
+		if (!triggering_entities_.entity_[i].object_->IsActive())
+		{
+			continue;
+		}
+
 		if (object_)
 		{
 			if (triggering_entities_.entity_[i].object_->Collision(object_))
@@ -959,6 +986,11 @@ bool TrigByTraveledDistance::CheckCondition(StoryBoard* storyBoard, double sim_t
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
+		if (!triggering_entities_.entity_[i].object_->IsActive())
+		{
+			continue;
+		}
+
 		odom_ = triggering_entities_.entity_[i].object_->odometer_;
 		result = odom_ >= value_;
 
@@ -993,6 +1025,11 @@ bool TrigByEndOfRoad::CheckCondition(StoryBoard* storyBoard, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
+		if (!triggering_entities_.entity_[i].object_->IsActive())
+		{
+			continue;
+		}
+
 		if (triggering_entities_.entity_[i].object_->IsEndOfRoad())
 		{
 			current_duration_ = sim_time - triggering_entities_.entity_[i].object_->GetEndOfRoadTimestamp();
@@ -1031,6 +1068,11 @@ bool TrigByStandStill::CheckCondition(StoryBoard* storyBoard, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
+		if (!triggering_entities_.entity_[i].object_->IsActive())
+		{
+			continue;
+		}
+
 		if (triggering_entities_.entity_[i].object_->IsStandStill())
 		{
 			current_duration_ = sim_time - triggering_entities_.entity_[i].object_->GetStandStillTimestamp();
@@ -1069,6 +1111,11 @@ bool TrigByOffRoad::CheckCondition(StoryBoard* storyBoard, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
+		if (!triggering_entities_.entity_[i].object_->IsActive())
+		{
+			continue;
+		}
+
 		if (triggering_entities_.entity_[i].object_->IsOffRoad())
 		{
 			current_duration_ = sim_time - triggering_entities_.entity_[i].object_->GetOffRoadTimestamp();
@@ -1107,6 +1154,11 @@ bool TrigByAcceleration::CheckCondition(StoryBoard* storyBoard, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
+		if (!triggering_entities_.entity_[i].object_->IsActive())
+		{
+			continue;
+		}
+
 		current_acceleration_ = sqrt(pow(triggering_entities_.entity_[i].object_->pos_.GetAccX(), 2) +
 			pow(triggering_entities_.entity_[i].object_->pos_.GetAccY(), 2));
 
@@ -1143,6 +1195,11 @@ bool TrigBySpeed::CheckCondition(StoryBoard* storyBoard, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
+		if (!triggering_entities_.entity_[i].object_->IsActive())
+		{
+			continue;
+		}
+
 		current_speed_ = triggering_entities_.entity_[i].object_->GetSpeed();
 
 		result = EvaluateRule(current_speed_, value_, rule_);
@@ -1178,6 +1235,11 @@ bool TrigByRelativeSpeed::CheckCondition(StoryBoard* storyBoard, double sim_time
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
+		if (!triggering_entities_.entity_[i].object_->IsActive())
+		{
+			continue;
+		}
+
 		if (object_)
 		{
 			current_rel_speed_ = triggering_entities_.entity_[i].object_->GetSpeed() - object_->GetSpeed();

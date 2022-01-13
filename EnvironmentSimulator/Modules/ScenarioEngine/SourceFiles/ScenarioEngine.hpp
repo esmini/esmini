@@ -47,7 +47,7 @@ namespace scenarioengine
 	class ScenarioEngine
 	{
 	public:
-		Entities entities;
+		Entities entities_;
 		std::vector<CollisionPair> collision_pair_;
 
 		ScenarioEngine(std::string oscFilename, bool disable_controllers = false);

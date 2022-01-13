@@ -277,24 +277,24 @@ TEST(TrajectoryTest, EnsureContinuation)
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 4.95, 1e-5);
-    ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), -1.535, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 4.95, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
 
     for (int i = 0; i < (int)(2.0 / dt); i++)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 14.92759, 1e-5);
-    ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), -1.18333, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 14.92759, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.18333, 1e-5);
 
     for (int i = 0; i < (int)(1.5 / dt); i++)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_NEAR(se->entities.object_[0]->pos_.GetX(), 21.32304, 1e-5);
-    ASSERT_NEAR(se->entities.object_[0]->pos_.GetY(), 2.553967, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 21.32304, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.553967, 1e-5);
 }
 
 TEST(ExpressionTest, EnsureResult)
@@ -473,14 +473,14 @@ TEST(JunctionTest, JunctionSelectorTest)
         se->prepareGroundTruth(0.0);
         ASSERT_NE(se, nullptr);
 
-        se->entities.object_[0]->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
-        se->entities.object_[0]->SetJunctionSelectorAngle(angles[i]);
+        se->entities_.object_[0]->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
+        se->entities_.object_[0]->SetJunctionSelectorAngle(angles[i]);
         while (se->getSimulationTime() < durations[i] && se->GetQuitFlag() != true)
         {
             se->step(dt);
             se->prepareGroundTruth(dt);
         }
-        ASSERT_EQ(se->entities.object_[0]->pos_.GetTrackId(), roadIds[i]);
+        ASSERT_EQ(se->entities_.object_[0]->pos_.GetTrackId(), roadIds[i]);
         delete se;
     }
 }
@@ -504,68 +504,68 @@ TEST(ConditionTest, CollisionTest)
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 0);
 
     while (se->getSimulationTime() < timestamps[1] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities.object_[0]->collisions_[0], se->entities.object_[2]);
-    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities.object_[2]->collisions_[0], se->entities.object_[0]);
+    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
+    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities_.object_[2]->collisions_[0], se->entities_.object_[0]);
 
     while (se->getSimulationTime() < timestamps[2] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities.object_[0]->collisions_[0], se->entities.object_[2]);
-    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities.object_[2]->collisions_[0], se->entities.object_[0]);
+    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
+    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities_.object_[2]->collisions_[0], se->entities_.object_[0]);
 
     while (se->getSimulationTime() < timestamps[3] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 2);
-    ASSERT_EQ(se->entities.object_[0]->collisions_[0], se->entities.object_[2]);
-    ASSERT_EQ(se->entities.object_[0]->collisions_[1], se->entities.object_[1]);
-    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities.object_[1]->collisions_[0], se->entities.object_[0]);
-    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities.object_[2]->collisions_[0], se->entities.object_[0]);
+    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 2);
+    ASSERT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
+    ASSERT_EQ(se->entities_.object_[0]->collisions_[1], se->entities_.object_[1]);
+    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities_.object_[1]->collisions_[0], se->entities_.object_[0]);
+    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities_.object_[2]->collisions_[0], se->entities_.object_[0]);
 
     while (se->getSimulationTime() < timestamps[4] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), true);
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), false);
-    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities.object_[0]->collisions_[0], se->entities.object_[1]);
-    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 1);
-    ASSERT_EQ(se->entities.object_[1]->collisions_[0], se->entities.object_[0]);
-    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[1]), true);
+    ASSERT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[2]), false);
+    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[1]);
+    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 1);
+    ASSERT_EQ(se->entities_.object_[1]->collisions_[0], se->entities_.object_[0]);
+    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 0);
 
     while (se->getSimulationTime() < timestamps[5] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
         se->step(dt);
         se->prepareGroundTruth(dt);
     }
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[1]), false);
-    ASSERT_EQ(se->entities.object_[0]->Collision(se->entities.object_[2]), false);
-    ASSERT_EQ(se->entities.object_[0]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities.object_[1]->collisions_.size(), 0);
-    ASSERT_EQ(se->entities.object_[2]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[1]), false);
+    ASSERT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[2]), false);
+    ASSERT_EQ(se->entities_.object_[0]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
+    ASSERT_EQ(se->entities_.object_[2]->collisions_.size(), 0);
 
     delete se;
 }
@@ -576,7 +576,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
 
     ScenarioEngine* se = new ScenarioEngine("../../../scripts/udp_driver/two_cars_in_open_space.xosc");
     ASSERT_NE(se, nullptr);
-    ASSERT_EQ(se->entities.object_.size(), 2);
+    ASSERT_EQ(se->entities_.object_.size(), 2);
 
     // Replace controllers
     for (int i = 0; i < 2; i++)
@@ -599,12 +599,12 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
         args.properties->property_.push_back(property);
         ControllerUDPDriver* controller = (ControllerUDPDriver*)InstantiateControllerUDPDriver(&args);
 
-        delete se->entities.object_[i]->controller_;
+        delete se->entities_.object_[i]->controller_;
         delete args.properties;
 
-        controller->Assign(se->entities.object_[i]);
+        controller->Assign(se->entities_.object_[i]);
         se->scenarioReader->controller_[i] = controller;
-        se->entities.object_[i]->controller_ = controller;
+        se->entities_.object_[i]->controller_ = controller;
     }
 
     // assign controllers
@@ -635,7 +635,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     // another step for scenarioengine to fetch and apply updated states
     se->step(dt);
 
-    EXPECT_DOUBLE_EQ(se->entities.object_[0]->pos_.GetY(), 40.0);
+    EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetY(), 40.0);
 
     delete se;
     delete udpClient;
@@ -647,7 +647,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
 
     ScenarioEngine* se = new ScenarioEngine("../../../scripts/udp_driver/two_cars_in_open_space.xosc");
     ASSERT_NE(se, nullptr);
-    ASSERT_EQ(se->entities.object_.size(), 2);
+    ASSERT_EQ(se->entities_.object_.size(), 2);
 
     // Replace controllers
     for (int i = 0; i < 2; i++)
@@ -676,12 +676,12 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
         args.properties->property_.push_back(property);
         ControllerUDPDriver* controller = (ControllerUDPDriver*)InstantiateControllerUDPDriver(&args);
 
-        delete se->entities.object_[i]->controller_;
+        delete se->entities_.object_[i]->controller_;
         delete args.properties;
 
-        controller->Assign(se->entities.object_[i]);
+        controller->Assign(se->entities_.object_[i]);
         se->scenarioReader->controller_[i] = controller;
-        se->entities.object_[i]->controller_ = controller;
+        se->entities_.object_[i]->controller_ = controller;
     }
 
     // assign controllers
@@ -717,15 +717,15 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     // In synchronous mode one message is consumed each time step
     // Expect the first message to be applied, the second has not
     // yet been processed
-    EXPECT_DOUBLE_EQ(se->entities.object_[0]->pos_.GetY(), 30.0);
+    EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetY(), 30.0);
 
     // another step for scenarioengine to fetch and apply the second message
     se->step(dt);
-    EXPECT_DOUBLE_EQ(se->entities.object_[0]->pos_.GetY(), 40.0);
+    EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetY(), 40.0);
 
     // second vehicle has not been updated (no message sent)
     se->step(dt);
-    EXPECT_DOUBLE_EQ(se->entities.object_[1]->pos_.GetY(), 6.5);
+    EXPECT_DOUBLE_EQ(se->entities_.object_[1]->pos_.GetY(), 6.5);
 
     // Create a sender for second vehicle as well
     UDPClient* udpClient2 = new UDPClient(61911, "127.0.0.1");
@@ -748,9 +748,9 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
 
     se->step(dt);
     se->step(dt);
-    EXPECT_DOUBLE_EQ(se->entities.object_[0]->pos_.GetX(), 150.0);
-    EXPECT_DOUBLE_EQ(se->entities.object_[1]->pos_.GetX(), 90.0);
-    EXPECT_DOUBLE_EQ(se->entities.object_[1]->pos_.GetY(), -10.0);
+    EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetX(), 150.0);
+    EXPECT_DOUBLE_EQ(se->entities_.object_[1]->pos_.GetX(), 90.0);
+    EXPECT_DOUBLE_EQ(se->entities_.object_[1]->pos_.GetY(), -10.0);
 
     delete se;
     delete udpClient;
@@ -762,7 +762,7 @@ TEST(RoadOrientationTest, TestElevationPitchRoll)
 
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/elevations.xosc");
     ASSERT_NE(se, nullptr);
-    ASSERT_EQ(se->entities.object_.size(), 4);
+    ASSERT_EQ(se->entities_.object_.size(), 4);
 
     // Fast forward
     while (se->getSimulationTime() < (5.0 - SMALL_NUMBER))
@@ -772,9 +772,9 @@ TEST(RoadOrientationTest, TestElevationPitchRoll)
     }
 
     // Check vehicle orientation
-    EXPECT_NEAR(se->entities.object_[0]->pos_.GetZ(), -0.568177, 1e-5);
-    EXPECT_NEAR(se->entities.object_[0]->pos_.GetP(), 0.0, 1e-5);
-    EXPECT_NEAR(se->entities.object_[0]->pos_.GetR(), 0.37917, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetZ(), -0.568177, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetP(), 0.0, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetR(), 0.37917, 1e-5);
 
     // Fast forward
     while (se->getSimulationTime() < (6.0 - SMALL_NUMBER))
@@ -783,13 +783,13 @@ TEST(RoadOrientationTest, TestElevationPitchRoll)
         se->prepareGroundTruth(dt);
     }
 
-    EXPECT_NEAR(se->entities.object_[1]->pos_.GetZ(), 0.47815, 1e-5);
-    EXPECT_NEAR(se->entities.object_[1]->pos_.GetP(), 0.0, 1e-5);
-    EXPECT_NEAR(se->entities.object_[1]->pos_.GetR(), 5.96641, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetZ(), 0.47815, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetP(), 0.0, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetR(), 5.96641, 1e-5);
 
-    EXPECT_NEAR(se->entities.object_[2]->pos_.GetZ(), 13.24676, 1e-5);
-    EXPECT_NEAR(se->entities.object_[2]->pos_.GetP(), 0.27808, 1e-5);
-    EXPECT_NEAR(se->entities.object_[2]->pos_.GetR(), 0, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetZ(), 13.24676, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetP(), 0.27808, 1e-5);
+    EXPECT_NEAR(se->entities_.object_[2]->pos_.GetR(), 0, 1e-5);
 }
 
 TEST(ActionDynamicsTest, TestDynamicsTimeDimension)

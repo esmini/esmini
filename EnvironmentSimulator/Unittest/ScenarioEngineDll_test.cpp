@@ -35,7 +35,7 @@ TEST_P(GetNumberOfObjectsTest, number_of_objects)
 	//EXPECT_EQ(n_Objects, 2);
 }
 
-INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetNumberOfObjectsTest, ::testing::Values(std::make_tuple("../../../resources/xosc/cut-in.xosc", 2), std::make_tuple("../../../resources/xosc/highway_merge.xosc", 6), std::make_tuple("../../../resources/xosc/full_e6mini.xosc", 15)));
+INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetNumberOfObjectsTest, ::testing::Values(std::make_tuple("../../../resources/xosc/cut-in.xosc", 2), std::make_tuple("../../../resources/xosc/highway_merge.xosc", 6), std::make_tuple("../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc", 14)));
 
 TEST(GetNumberOfObjectsTest, number_of_objects_no_init)
 {
@@ -51,12 +51,12 @@ TEST(GetNumberOfObjectsTest, number_of_objects_no_init)
 TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
 {
 
-	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
 
 	SE_Init(scenario_file.c_str(), 0, 0, 0, 0);
 
 	int n_Objects = SE_GetNumberOfObjects();
-	EXPECT_EQ(n_Objects, 15);
+	EXPECT_EQ(n_Objects, 14);
 
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
@@ -76,7 +76,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
 												{7, 12, 13, 14},
 												{12, 13, 14, -1}};
 
-	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
+	std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 	for (int i = 0; i < lane_bound.size(); i++)
 	{
 		SE_LaneBoundaryId lanes_id;
@@ -273,15 +273,15 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 TEST(GetOSIRoadLaneTest, lane_id)
 {
 
-	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
 
-	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
-	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
+	std::vector<int> lanes = { 0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14 };
+	std::vector<int> veh_id = { 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
 	int road_lane_size;
 	osi3::Lane osi_lane;
@@ -301,12 +301,12 @@ TEST(GetOSIRoadLaneTest, lane_id)
 TEST(GetOSIRoadLaneTest, left_lane_id)
 {
 
-	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 	SE_Init(Scenario_file, 0, 0, 0, 0);
 
 	int n_Objects = SE_GetNumberOfObjects();
-	EXPECT_EQ(n_Objects, 15);
+	EXPECT_EQ(n_Objects, 14);
 
 	SE_StepDT(0.001f);
 	SE_UpdateOSIGroundTruth();
@@ -314,8 +314,8 @@ TEST(GetOSIRoadLaneTest, left_lane_id)
 	osi3::Lane osi_lane;
 
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
-	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
+	std::vector<int> lanes = { 0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14 };
+	std::vector<int> veh_id = { 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
 	for (int i = 0; i < lanes.size(); i++)
 	{
@@ -345,7 +345,7 @@ TEST(GetOSIRoadLaneTest, left_lane_id)
 TEST(GetOSIRoadLaneTest, right_lane_id)
 {
 
-	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
@@ -355,8 +355,8 @@ TEST(GetOSIRoadLaneTest, right_lane_id)
 	osi3::Lane osi_lane;
 
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
-	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
+	std::vector<int> lanes = { 0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14 };
+	std::vector<int> veh_id = { 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
 	for (int i = 0; i < lanes.size(); i++)
 	{
@@ -387,7 +387,7 @@ TEST(GetOSIRoadLaneTest, right_lane_id)
 TEST(GetOSIRoadLaneTest, right_lane_boundary_id)
 {
 
-	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
@@ -397,8 +397,8 @@ TEST(GetOSIRoadLaneTest, right_lane_boundary_id)
 	osi3::Lane osi_lane;
 
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-	std::vector<int> lane_bound = {8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14};
-	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
+	std::vector<int> lane_bound = { 8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14 };
+	std::vector<int> veh_id = { 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
 	for (int i = 0; i < lane_bound.size() - 1; i++)
 	{
@@ -414,7 +414,7 @@ TEST(GetOSIRoadLaneTest, right_lane_boundary_id)
 TEST(GetOSIRoadLaneTest, left_lane_boundary_id)
 {
 
-	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
@@ -424,8 +424,8 @@ TEST(GetOSIRoadLaneTest, left_lane_boundary_id)
 	osi3::Lane osi_lane;
 
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-	std::vector<int> lane_bound = {8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14};
-	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
+	std::vector<int> lane_bound = { 8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14 };
+	std::vector<int> veh_id = { 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
 	for (int i = 0; i < veh_id.size(); i++)
 	{
@@ -458,14 +458,14 @@ TEST_P(GetOSIRoadLaneTest, centerline_is_driving_direction)
 	osi3::Lane osi_lane;
 
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
-	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
+	std::vector<int> lanes = { 0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14 };
+	std::vector<int> veh_id = { 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
 	for (int i = 0; i < lanes.size(); i++)
 	{
 		const char *road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
 		osi_lane.ParseFromArray(road_lane, road_lane_size);
-		if (veh_id[i] <= 7)
+		if (veh_id[i] < 7)
 		{
 			EXPECT_EQ(osi_lane.classification().centerline_is_driving_direction(), std::get<1>(GetParam()));
 		}
@@ -478,12 +478,13 @@ TEST_P(GetOSIRoadLaneTest, centerline_is_driving_direction)
 	SE_Close();
 }
 
-INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetOSIRoadLaneTest, ::testing::Values(std::make_tuple("../../../resources/xosc/full_e6mini.xosc", true, false), std::make_tuple("../../../resources/xosc/full_e6mini_reverse.xosc", true, false)));
+INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetOSIRoadLaneTest, ::testing::Values(std::make_tuple("../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc", true, false),
+	std::make_tuple("../../../EnvironmentSimulator/Unittest/xosc/full_e6mini_reverse.xosc", true, false)));
 
 TEST(GetOSIRoadLaneTest, is_host_vehicle_lane)
 {
 
-	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
@@ -493,8 +494,8 @@ TEST(GetOSIRoadLaneTest, is_host_vehicle_lane)
 	osi3::Lane osi_lane;
 
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
-	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
+	std::vector<int> lanes = { 0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14 };
+	std::vector<int> veh_id = { 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
 	for (int i = 0; i < lanes.size(); i++)
 	{
@@ -510,7 +511,7 @@ TEST(GetOSIRoadLaneTest, is_host_vehicle_lane)
 TEST(GetOSIRoadLaneTest, lane_classification)
 {
 
-	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
@@ -520,8 +521,8 @@ TEST(GetOSIRoadLaneTest, lane_classification)
 	osi3::Lane osi_lane;
 
 	// explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-	std::vector<int> lanes = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
-	std::vector<int> veh_id = {14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2, 1, 0};
+	std::vector<int> lanes = { 0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14 };
+	std::vector<int> veh_id = { 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
 	int obj_id = 0;
 
@@ -552,7 +553,7 @@ TEST(GetOSIRoadLaneTest, lane_classification)
 TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing)
 {
 
-	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
@@ -590,7 +591,7 @@ class GetOSILaneBoundaryTests : public ::testing::TestWithParam<std::tuple<int, 
 TEST_P(GetOSILaneBoundaryTests, lane_boundary_id_not_existing)
 {
 
-	std::string scenario_file = "../../../resources/xosc/full_e6mini.xosc";
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
 	const char *Scenario_file = scenario_file.c_str();
 
 	SE_Init(Scenario_file, 0, 0, 0, 0);
@@ -781,7 +782,7 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 	EXPECT_EQ(miscobj_yaw, 5.0 - 2 * M_PI);
 }
 
-TEST(SetOSITimestampTest, TestGetAndSet)
+TEST(TestGetAndSet, SetOSITimestampTest)
 {
 	osi3::GroundTruth *osi_gt;
 
@@ -824,7 +825,7 @@ TEST(SetOSITimestampTest, TestGetAndSet)
 	SE_Close();
 }
 
-TEST(ReportObjectAcc, TestGetAndSet)
+TEST(TestGetAndSet, ReportObjectAcc)
 {
 	osi3::GroundTruth *osi_gt;
 
@@ -867,7 +868,7 @@ TEST(ReportObjectAcc, TestGetAndSet)
 	SE_Close();
 }
 
-TEST(ReportObjectVel, TestGetAndSet)
+TEST(TestGetAndSet, ReportObjectVel)
 {
 	osi3::GroundTruth *osi_gt;
 
@@ -1024,7 +1025,7 @@ TEST(ParameterTest, SetParameterValuesBeforeInit)
 	}
 }
 
-TEST(OverrideActionTest, TestGetAndSet)
+TEST(TestGetAndSet, OverrideActionTest)
 {
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/override_action.xosc";
 	const char *Scenario_file = scenario_file.c_str();
@@ -1074,7 +1075,7 @@ TEST(OverrideActionTest, TestGetAndSet)
 	EXPECT_NEAR(list.steeringWheel.value, 2 * M_PI, 0.01);
 }
 
-TEST(PropertyTest, TestGetAndSet)
+TEST(TestGetAndSet, PropertyTest)
 {
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/VehiclePropertyTest.xosc";
 	const char *Scenario_file = scenario_file.c_str();
@@ -2161,7 +2162,7 @@ TEST(ExternalController, TestExternalDriver)
 	}
 }
 
-TEST(SeedTest, TestGetAndSetSeed)
+TEST(TestGetAndSet, SeedTest)
 {
 	std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
 
@@ -2513,7 +2514,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*JunctionTest*";
+	testing::GTEST_FLAG(filter) = "*centerline_is_driving_direction*";
 #else
 	SE_LogToConsole(false);
 #endif

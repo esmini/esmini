@@ -30,6 +30,7 @@ namespace scenarioengine
 
 	class Object
 	{
+	friend class Entities;
 	public:
 		typedef enum
 		{
@@ -126,10 +127,8 @@ namespace scenarioengine
 		roadmanager::Junction::JunctionStrategyType junctionSelectorStrategy_;
 		double nextJunctionSelectorAngle_;  // number between 0:2pi (circle). E.g. if 1.57 choose the leftmost road
 		Performance performance_;
-
-		int dirty_;
+		Controller* controller_; // reference to any assigned controller object
 		bool reset_;			 // indicate discreet movement, teleporting, no odometer update
-		Controller *controller_; // reference to any assigned controller object
 		bool isGhost_;
 
 		//Rel2abs Controller addition
@@ -157,6 +156,7 @@ namespace scenarioengine
 		double GetOffRoadTimestamp() { return off_road_timestamp_; }
 		void SetStandStill(bool state, double time = 0.0);
 		bool IsStandStill() { return stand_still_timestamp_ > SMALL_NUMBER; }
+		bool IsActive() { return is_active_; }
 
 		/**
 			Move current position along the road or route (if assigned)
@@ -319,6 +319,16 @@ namespace scenarioengine
 			dirty_ |= bits;
 		}
 
+		void SetDirty(int bitmask)
+		{
+			dirty_ = bitmask;
+		}
+
+		int GetDirtyBitMask()
+		{
+			return dirty_;
+		}
+
 		void ClearDirtyBits(int bits)
 		{
 			dirty_ &= ~bits;
@@ -328,6 +338,12 @@ namespace scenarioengine
 		{
 			dirty_ = 0;
 		}
+
+		private:
+			int dirty_;
+			bool is_active_;
+
+			void SetActive(bool active) { is_active_ = active; }
 	};
 
 	class Vehicle : public Object
@@ -548,11 +564,15 @@ namespace scenarioengine
 		Entities() : nextId_(0) {}
 
 		std::vector<Object*> object_;
+		std::vector<Object*> object_pool_;
 
 		// create a sumo vehicle template and a sumo controller
-		int addObject(Object* obj);
+		int addObject(Object* obj, bool activate = true);
+		int activateObject(Object* obj);
+		int deactivateObject(Object* obj);
 		void removeObject(int id);
 		void removeObject(std::string name);
+		void removeObject(Object* object);
 		int getNewId();
 		bool indexExists(int id);
 		bool nameExists(std::string name);
