@@ -2512,8 +2512,8 @@ int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
 
-#if 0   // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestVariousRoutes*";
+#if 0  // set to 1 and modify filter to run one single test
+	testing::GTEST_FLAG(filter) = "*JunctionTest*";
 #else
 	SE_LogToConsole(false);
 #endif

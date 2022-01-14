@@ -285,10 +285,9 @@ namespace roadmanager
 
 	typedef enum
 	{
-		UNKNOWN,
-		SUCCESSOR,
-		PREDECESSOR,
-		NONE
+		NONE = 0,
+		SUCCESSOR = 1,
+		PREDECESSOR = -1
 	} LinkType;
 
 
@@ -1299,16 +1298,45 @@ namespace roadmanager
 		Lane* GetDrivingLaneSideByIdx(double s, int side, int idx);
 		Lane* GetDrivingLaneById(double s, int idx);
 		int GetNumberOfDrivingLanesSide(double s, int side);  // side = -1 right, 1 left
-		ContactPointType IsDirectlyConnected(Road* road, LinkType link_type);
-		ContactPointType IsDirectlyConnected(Road* road);
-		ContactPointType IsSuccessor(Road *road);
-		ContactPointType IsPredecessor(Road* road);
 
-		/// <summary>Get width of road</summary>
-		/// <param name="s">Longitudinal position/distance along the road</param>
-		/// <param name="side">Side of the road: -1=right, 1=left, 0=both</param>
-		/// <param name="laneTypeMask">Bitmask specifying what lane types to consider - see Lane::LaneType</param>
-		/// <returns>Width (m)</returns>
+		/**
+			Check if specified road is directly connected to at specified end of current one (this)
+			@param road Road to check if connected with current one
+			@param contact_point If not null it will contain the contact point of specified road
+			@return true if connection exist, else false
+		*/
+		bool IsDirectlyConnected(Road* road, LinkType link_type, ContactPointType* contact_point = 0);
+
+		/**
+			Check if specified road is directly connected, at least in one end of current one (this)
+			@param road Road to check if connected with current one
+			@return true if connection exist, else false
+		*/
+		bool IsDirectlyConnected(Road* road);
+
+		/**
+			Check if specified road is directly connected as successor to current one (this)
+			@param road Road to check if connected with current one
+			@param contact_point If not null it will contain the contact point of the successor road
+			@return true if connection exist, else false
+		*/
+		bool IsSuccessor(Road *road, ContactPointType* contact_point = 0);
+
+		/**
+			Check if specified road is directly connected as predecessor to current one (this)
+			@param road Road to check if connected with current one
+			@param contact_point If not null it will contain the contact point of the predecessor road
+			@return true if connection exist, else false
+		*/
+		bool IsPredecessor(Road* road, ContactPointType* contact_point = 0);
+
+		/**
+			Get width of road
+			@param s Longitudinal position/distance along the road
+			@param side Side of the road: -1=right, 1=left, 0=both
+			@param laneTypeMask Bitmask specifying what lane types to consider - see Lane::LaneType
+			@return Width (m)
+		*/
 		double GetWidth(double s, int side, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY);   // side: -1=right, 1=left, 0=both
 
 	protected:
@@ -1548,14 +1576,6 @@ namespace roadmanager
 		Junction* GetJunctionByIdx(int idx);
 
 		int GetNumOfJunctions() { return (int)junction_.size(); }
-		/**
-			Check if two roads are connected directly
-			@param road1_id Id of the first road
-			@param road2_id Id of the second road
-			@param angle if connected, the angle between road 2 and road 1 is returned here
-			@return 0 if not connected, -1 if road 2 is the predecessor of road 1, +1 if road 2 is the successor of road 1
-		*/
-		int IsDirectlyConnected(int road1_id, int road2_id, double& angle);
 
 		bool IsIndirectlyConnected(int road1_id, int road2_id, int* &connecting_road_id, int* &connecting_lane_id, int lane1_id = 0, int lane2_id = 0);
 

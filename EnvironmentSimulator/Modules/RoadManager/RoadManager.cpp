@@ -342,13 +342,9 @@ static std::string LinkType2Str(LinkType type)
 	{
 		return "NONE";
 	}
-	else if (type == LinkType::UNKNOWN)
-	{
-		return "UNKNOWN";
-	}
 	else
 	{
-		return "UNDEFINED";
+		return std::string("Unknown link type: " + std::to_string(type));
 	}
 }
 
@@ -2148,24 +2144,28 @@ int Road::GetNumberOfDrivingLanesSide(double s, int side)
 	return (lane_section_[i]->GetNumberOfDrivingLanesSide(side));
 }
 
-ContactPointType Road::IsDirectlyConnected(Road* road, LinkType link_type)
+bool Road::IsDirectlyConnected(Road* road, LinkType link_type, ContactPointType* contact_point)
 {
-	if (this == road)
+	if (road == nullptr)
 	{
-		return ContactPointType::CONTACT_POINT_UNDEFINED;  // same road, consider not connected
+		return false;
 	}
 
 	RoadLink* link = GetLink(link_type);
 	if (link == nullptr)
 	{
-		return ContactPointType::CONTACT_POINT_UNDEFINED;  // lacking successor
+		return false;  // lacking successor
 	}
 
 	if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
 	{
 		if (link->GetElementId() == road->GetId())
 		{
-			return link->GetContactPointType();
+			if (contact_point != nullptr)
+			{
+				*contact_point = link->GetContactPointType();
+			}
+			return true;
 		}
 	}
 	else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
@@ -2178,34 +2178,33 @@ ContactPointType Road::IsDirectlyConnected(Road* road, LinkType link_type)
 			if (connection->GetIncomingRoad() == this &&
 				connection->GetConnectingRoad() == road)
 			{
-				return connection->GetContactPoint();
+				if (contact_point != nullptr)
+				{
+					*contact_point = connection->GetContactPoint();
+				}
+				// need to calculate contact point for non direct junctions?
+				return true;
 			}
 		}
 	}
 
-	return ContactPointType::CONTACT_POINT_UNDEFINED;
+	return false;
 }
 
-ContactPointType Road::IsSuccessor(Road* road)
+bool Road::IsSuccessor(Road* road, ContactPointType* contact_point)
 {
-	return IsDirectlyConnected(road, LinkType::SUCCESSOR);
+	return IsDirectlyConnected(road, LinkType::SUCCESSOR, contact_point) != 0;
 }
 
-ContactPointType Road::IsPredecessor(Road* road)
+bool Road::IsPredecessor(Road* road, ContactPointType* contact_point)
 {
-	return IsDirectlyConnected(road, LinkType::PREDECESSOR);
+	return IsDirectlyConnected(road, LinkType::PREDECESSOR, contact_point) != 0;
 }
 
-ContactPointType Road::IsDirectlyConnected(Road* road)
+bool Road::IsDirectlyConnected(Road* road)
 {
 	// Unspecified link, check both ends
-	ContactPointType contact_point = ContactPointType::CONTACT_POINT_UNDEFINED;
-	if ((contact_point = IsSuccessor(road)) == ContactPointType::CONTACT_POINT_UNDEFINED)
-	{
-		contact_point = IsPredecessor(road);
-	}
-
-	return contact_point;
+	return IsSuccessor(road) || IsPredecessor(road);
 }
 
 double Road::GetWidth(double s, int side, int laneTypeMask)
@@ -2301,7 +2300,6 @@ Road::RoadTypeEntry* Road::GetRoadType(int idx)
 		return 0;
 	}
 }
-
 
 RoadLink* Road::GetLink(LinkType type)
 {
@@ -3839,7 +3837,6 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, 
 		}
 	}
 
-//	LOG("RoadConnection not found!");
 	return lane_road_lane_connection;
 }
 void Junction::SetGlobalId()
@@ -3958,10 +3955,13 @@ Road* Junction::GetRoadAtOtherEndOfConnectingRoad(Road* connecting_road, Road* i
 
 bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fromRoad, int fromLaneId)
 {
+	// Register length of this road and find node in other end of the road (link)
+
 	RoadLink* nextLink = 0;
 
 	if (srcNode->link->GetElementType() == RoadLink::RoadLink::ELEMENT_TYPE_ROAD)
 	{
+		// node link is a road, find link in the other end of it
 		if (srcNode->link->GetContactPointType() == ContactPointType::CONTACT_POINT_END)
 		{
 			nextLink = checkRoad->GetLink(LinkType::PREDECESSOR);
@@ -3978,10 +3978,14 @@ bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fro
 		{
 			if (checkRoad->GetLink(LinkType::SUCCESSOR) && checkRoad->GetLink(LinkType::SUCCESSOR)->GetElementId() == junction->GetId())
 			{
+				// Node link is a direct junction, and it is the successor to the road being checked
+				// hence next link is the predecessor of that road
 				nextLink = checkRoad->GetLink(LinkType::PREDECESSOR);
 			}
 			else if (checkRoad->GetLink(LinkType::PREDECESSOR) && checkRoad->GetLink(LinkType::PREDECESSOR)->GetElementId() == junction->GetId())
 			{
+				// Node link is a direct junction, and it is the predecessor to the road being checked
+				// hence next link is the successor of that road
 				nextLink = checkRoad->GetLink(LinkType::SUCCESSOR);
 			}
 		}
@@ -3990,11 +3994,15 @@ bool RoadPath::CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fro
 			if (checkRoad->GetLink(LinkType::SUCCESSOR) &&
 				checkRoad->GetLink(LinkType::SUCCESSOR)->GetElementId() == fromRoad->GetId())
 			{
+				// Node link is a non direct junction, and it is the successor to the connecting road being checked
+				// hence next link is the predecessor of that connecting road
 				nextLink = checkRoad->GetLink(LinkType::PREDECESSOR);
 			}
 			else if (checkRoad->GetLink(LinkType::PREDECESSOR) &&
 				checkRoad->GetLink(LinkType::PREDECESSOR)->GetElementId() == fromRoad->GetId())
 			{
+				// Node link is a non direct junction, and it is the predecessor to the connecting road being checked
+				// hence next link is the successor of that connecting road
 				nextLink = checkRoad->GetLink(LinkType::SUCCESSOR);
 			}
 		}
@@ -4226,10 +4234,10 @@ int RoadPath::Calculate(double &dist, bool bothDirections, double maxDist)
 					return 0;
 				}
 
-				if (nextRoad == targetRoad)
+				if (nextRoad == targetRoad)  // target road reached
 				{
-					ContactPointType contact_point;
-					if ((contact_point = nextRoad->IsDirectlyConnected(pivotRoad)) != ContactPointType::CONTACT_POINT_UNDEFINED)
+					ContactPointType contact_point = ContactPointType::CONTACT_POINT_UNDEFINED;
+					if (nextRoad->IsSuccessor(pivotRoad, &contact_point) || nextRoad->IsPredecessor(pivotRoad, &contact_point))
 					{
 						if (contact_point == ContactPointType::CONTACT_POINT_START)
 						{
@@ -4351,161 +4359,6 @@ int OpenDrive::GetTrackIdByIdx(int idx)
 		return (road_[idx]->GetId());
 	}
 	LOG("OpenDrive::GetTrackIdByIdx: idx %d out of range [0:%d]\n", idx, (int)road_.size());
-	return 0;
-}
-
-int OpenDrive::IsDirectlyConnected(int road1_id, int road2_id, double& angle)
-{
-	Road *road1 = GetRoadById(road1_id);
-	Road *road2 = GetRoadById(road2_id);
-	RoadLink *link;
-
-	if (road1 == road2)
-	{
-		// Same road, return 1
-		return 1;
-	}
-
-	// Look from road 1, both ends, for road 2
-
-	for (int i = 0; i < 2; i++)
-	{
-		link = road1->GetLink(i == 0 ? LinkType::SUCCESSOR : LinkType::PREDECESSOR);
-		if (link)
-		{
-			if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
-			{
-				if (link->GetElementId() == road2->GetId())
-				{
-					angle = 0;
-					return i == 0 ? 1 : -1;
-				}
-			}
-			else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
-			{
-				Junction* junction = GetJunctionById(link->GetElementId());
-
-				for (int j = 0; junction != NULL && j < junction->GetNumberOfConnections(); j++)
-				{
-					Connection *connection = junction->GetConnectionByIdx(j);
-					Position test_pos1;
-					Position test_pos2;
-
-					double heading1, heading2;
-
-					// check case where road1 is incoming road
-					if (connection->GetIncomingRoad() == NULL)
-					{
-						LOG("Junction %d connection %d missing incoming road", junction->GetId(), j);
-						return -1;
-					}
-					if (connection->GetConnectingRoad() == NULL)
-					{
-						LOG("Junction %d connection %d missing connecting road", junction->GetId(), j);
-						return -1;
-					}
-
-					if (junction->GetType() == Junction::JunctionType::DIRECT)
-					{
-						if (connection->GetIncomingRoad() == road2 && connection->GetConnectingRoad() == road1)
-						{
-							// Switch place of roads, road1 being the incoming one
-							Road* tmp_road = road1;
-							road1 = road2;
-							road2 = tmp_road;
-						}
-					}
-
-					if (connection->GetIncomingRoad() == road1 && connection->GetConnectingRoad() == road2)
-					{
-						test_pos1.SetLanePos(road2->GetId(), 0, 0, 0);
-						test_pos2.SetLanePos(road2->GetId(), 0, road2->GetLength(), 0);
-
-						if (connection->GetContactPoint() == CONTACT_POINT_END)
-						{
-							heading1 = test_pos2.GetH() + M_PI;
-							heading2 = test_pos1.GetH() + M_PI;
-						}
-						else if(connection->GetContactPoint() == CONTACT_POINT_START)
-						{
-							heading1 = test_pos1.GetH();
-							heading2 = test_pos2.GetH();
-						}
-						else
-						{
-							LOG("Unexpected contact point %d", connection->GetContactPoint());
-							return 0;
-						}
-
-						angle = GetAbsAngleDifference(heading1, heading2);
-
-						return i == 0 ? 1 : -1;
-					}
-					// then check other case where road1 is outgoing from connecting road (connecting road is a road within junction)
-					else if (connection->GetConnectingRoad() == road2 &&
-						((connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START &&
-							connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR) && connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR)->GetElementId() == road1->GetId()) ||
-						 (connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END &&
-							connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR) && connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetElementId() == road1->GetId()))
-						)
-					{
-						if (connection->GetContactPoint() == CONTACT_POINT_START) // connecting road ends up connecting to road_1
-						{
-							test_pos1.SetLanePos(road2->GetId(), 0, road2->GetLength(), 0);
-							test_pos2.SetLanePos(road2->GetId(), 0, 0, 0);
-
-							if (connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR)->GetContactPointType() == CONTACT_POINT_START)  // connecting to start of road_1
-							{
-								heading1 = test_pos2.GetH();
-								heading2 = test_pos1.GetH();
-							}
-							else if (connection->GetConnectingRoad()->GetLink(LinkType::SUCCESSOR)->GetContactPointType() == CONTACT_POINT_END)  // connecting to end of road_1
-							{
-								heading1 = test_pos2.GetH() + M_PI;
-								heading2 = test_pos1.GetH() + M_PI;
-							}
-							else
-							{
-								LOG("Unexpected contact point %d", connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetContactPointType());
-								return 0;
-							}
-						}
-						else if (connection->GetContactPoint() == CONTACT_POINT_END) // connecting road start point connecting to road_1
-						{
-							test_pos1.SetLanePos(road2->GetId(), 0, 0, 0);
-							test_pos2.SetLanePos(road2->GetId(), 0, road2->GetLength(), 0);
-
-							if (connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetContactPointType() == CONTACT_POINT_START)  // connecting to start of road_1
-							{
-								heading1 = test_pos2.GetH() + M_PI;
-								heading2 = test_pos1.GetH() + M_PI;
-							}
-							else if (connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetContactPointType() == CONTACT_POINT_END)  // connecting to end of road_1
-							{
-								heading1 = test_pos2.GetH();
-								heading2 = test_pos1.GetH();
-							}
-							else
-							{
-								LOG("Unexpected contact point %d", connection->GetConnectingRoad()->GetLink(LinkType::PREDECESSOR)->GetContactPointType());
-								return 0;
-							}
-						}
-						else
-						{
-							LOG("Unexpected contact point %d", connection->GetContactPoint());
-							return 0;
-						}
-
-						angle = GetAbsAngleDifference(heading1, heading2);
-
-						return i == 0 ? 1 : -1;
-					}
-				}
-			}
-		}
-	}
-
 	return 0;
 }
 
@@ -4703,17 +4556,14 @@ int OpenDrive::CheckJunctionConnection(Junction *junction, Connection *connectio
 		{
 			if (junction->GetType() == Junction::JunctionType::DIRECT)
 			{
-				if (link[i]->GetElementType() != RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
-				{
-					LOG("Expected element type JUNCTION, found %s", ElementType2Str(link[i]->GetElementType()).c_str());
-					return -1;
-				}
-
-				if ((connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START &&
-					link[i]->GetContactPointType() == ContactPointType::CONTACT_POINT_START ||
-					connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END &&
-					link[i]->GetContactPointType() == ContactPointType::CONTACT_POINT_END) &&
-					link[i]->GetElementId() != junction->GetId())
+				if ((i == 0 && // link points to predecessor
+					 connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START &&
+					 link[i]->GetContactPointType() == ContactPointType::CONTACT_POINT_JUNCTION &&
+					 link[i]->GetElementId() != junction->GetId()) ||
+					(i == 1 && // link points to successor
+					 connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END &&
+					 link[i]->GetContactPointType() == ContactPointType::CONTACT_POINT_JUNCTION &&
+					 link[i]->GetElementId() != junction->GetId()))
 				{
 					LOG("Expected direct junction linkedRoad to connect back to junction id %d, found id %d", link[i]->GetElementId());
 					return -1;
@@ -6152,13 +6002,12 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 		}
 
 		weight = 0;
-		angle = 0;
 
 		// Add resistance to leave current road or directly connected ones
 		// actual weights are totally unscientific... up to tuning
 		if (road != current_road)
 		{
-			if (current_road && GetOpenDrive()->IsDirectlyConnected(current_road->GetId(), road->GetId(), angle))
+			if (current_road && current_road->IsDirectlyConnected(road))
 			{
 				directlyConnected = true;
 			}
@@ -10261,25 +10110,7 @@ Road* Route::GetRoadAtOtherEndOfConnectingRoad(Road* incoming_road)
 
 int Route::GetDirectionRelativeRoad()
 {
-	double angle = 0.0;
-	int direction = 0;
-	Position* pos2 = nullptr;
-
-	// Find out direction of route in relation to the current waypoint road
-	if (waypoint_idx_ < minimal_waypoints_.size() - 1)
-	{
-		// Look forward
-		pos2 = GetWaypoint(waypoint_idx_ + 1);
-		direction = Position::GetOpenDrive()->IsDirectlyConnected(GetTrackId(), pos2->GetTrackId(), angle);
-	}
-	else if (waypoint_idx_ > 0)
-	{
-		// Look backwards
-		pos2 = GetWaypoint(waypoint_idx_ - 1);
-		direction = -Position::GetOpenDrive()->IsDirectlyConnected(GetTrackId(), pos2->GetTrackId(), angle);
-	}
-
-	return direction;
+	return GetWayPointDirection(waypoint_idx_);
 }
 
 int Route::GetWayPointDirection(int index)
@@ -10298,49 +10129,59 @@ int Route::GetWayPointDirection(int index)
 
 	OpenDrive *od = minimal_waypoints_[index].GetOpenDrive();
 	Road *road = od->GetRoadById(minimal_waypoints_[index].GetTrackId());
-	int connected = 0;
-	double angle;
-
-	if (index == minimal_waypoints_.size() - 1)
+	if (road == nullptr)
 	{
-		// Find connection point to previous waypoint road
-		Road *prev_road = od->GetRoadById(minimal_waypoints_[index-1].GetTrackId());
-
-		if (prev_road == road)
-		{
-			if (minimal_waypoints_[index].GetS() > minimal_waypoints_[index - 1].GetS())
-			{
-				return 1;
-			}
-			else
-			{
-				return -1;
-			}
-		}
-
-		connected = -od->IsDirectlyConnected(road->GetId(), prev_road->GetId(), angle);
-	}
-	else
-	{
-		// Find connection point to next waypoint road
-		Road *next_road = od->GetRoadById(minimal_waypoints_[index+1].GetTrackId());
-
-		if (next_road == road)
-		{
-			if (minimal_waypoints_[index+1].GetS() > minimal_waypoints_[index].GetS())
-			{
-				return 1;
-			}
-			else
-			{
-				return -1;
-			}
-		}
-
-		connected = od->IsDirectlyConnected(road->GetId(), next_road->GetId(), angle);
+		LOG("Waypoint %d invalid road id %d!", index, minimal_waypoints_[index].GetTrackId());
+		return 0;
 	}
 
-	return connected;
+	int direction = 0;
+	Position* pos2 = nullptr;
+
+	// Looking in the direction of heading
+	direction = minimal_waypoints_[index].GetHRelative() > M_PI_2 && currentPos_.GetHRelative() < 3 * M_PI_2 / 2.0 ? -1 : 1;
+
+	if (index < minimal_waypoints_.size() - 1)
+	{
+		// Looking in the direction of heading
+		direction = currentPos_.GetHRelative() > M_PI_2 && currentPos_.GetHRelative() < 3 * M_PI_2 / 2.0 ? -1 : 1;
+
+		// Look at next waypoint
+		pos2 = GetWaypoint(index + 1);
+	}
+	else if (index > 0)
+	{
+		// Looking in the opposite direction of heading
+		direction = currentPos_.GetHRelative() > M_PI_2 && currentPos_.GetHRelative() < 3 * M_PI_2 / 2.0 ? 1 : -1;
+
+		// Look at previous waypoint
+		pos2 = GetWaypoint(index - 1);
+	}
+
+	if (direction == 1 && road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())) ||
+		direction == -1 && road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
+	{
+		// Expected case, route direction aligned with waypoint headings
+		return 1;
+	}
+	else if (road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())) &&
+		road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
+	{
+		LOG("Road %d connects to both ends of road %d using relative heading of waypoint", pos2->GetTrackId(), road->GetId());
+		return direction;
+	}
+	else if (road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
+	{
+		return 1 * direction;
+	}
+	else if (road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
+	{
+		return -1 * direction;
+	}
+
+	LOG("Unexpected case, failed to find out direction of route (from road id %d)", road->GetId());
+
+	return direction;
 }
 
 void Route::setName(std::string name)

@@ -1024,8 +1024,8 @@ TEST_F(ElevationTestFixture, TestElevation)
 //////////////////////////////////////////////////////////////////////
 
 TEST(LaneLinkTest, DefaultConstructor) {
-    LaneLink lane_link(UNKNOWN, 0);
-    EXPECT_EQ(UNKNOWN, lane_link.GetType());
+    LaneLink lane_link(NONE, 0);
+    EXPECT_EQ(NONE, lane_link.GetType());
     EXPECT_EQ(0,lane_link.GetId());
 }
 
@@ -2106,8 +2106,27 @@ TEST(EdgeCaseTest, TestSTruncation)
     EXPECT_NEAR(pos.GetY(), 0.2751, 1e-4);
 }
 
+// Uncomment to print log output to console
+//#define LOG_TO_CONSOLE
+
+#ifdef LOG_TO_CONSOLE
+static void log_callback(const char* str)
+{
+    printf("%s\n", str);
+}
+#endif
+
 int main(int argc, char **argv)
 {
+#ifdef LOG_TO_CONSOLE
+    if (!(Logger::Inst().IsCallbackSet()))
+    {
+        Logger::Inst().SetCallback(log_callback);
+    }
+#endif
+
+    //testing::GTEST_FLAG(filter) = "*TestAssignRoute*";
+
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

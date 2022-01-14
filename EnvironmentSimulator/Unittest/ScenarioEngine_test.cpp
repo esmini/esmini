@@ -14,7 +14,6 @@ using namespace roadmanager;
 using namespace scenarioengine;
 
 #define TRIG_ERR_MARGIN 0.001
-#define LOG_TO_CONSOLE 0
 
 TEST(DistanceTest, CalcDistanceVariations)
 {
@@ -450,6 +449,15 @@ TEST(ParameterTest, ParseParameterTest)
     ASSERT_EQ(params.ReadAttribute(someNode0, "attr9", false), "2.000000");
 }
 
+// Test junction selector functionality
+// Utilizing fabriksgatan 4 way intersection
+// Car will always drive on road 0, north towards the intersection
+// 4 loops:
+//   1. 270 degrees -> take right (road 1)
+//   2. -90 degrees -> take right (road 1)
+//   3. 0 degrees -> go straight (road 2)
+//   4. 90 degrees -> go left (road 3)
+
 TEST(JunctionTest, JunctionSelectorTest)
 {
     double dt = 0.01;
@@ -465,7 +473,6 @@ TEST(JunctionTest, JunctionSelectorTest)
         se->prepareGroundTruth(0.0);
         ASSERT_NE(se, nullptr);
 
-        // Turn always right
         se->entities.object_[0]->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
         se->entities.object_[0]->SetJunctionSelectorAngle(angles[i]);
         while (se->getSimulationTime() < durations[i] && se->GetQuitFlag() != true)
@@ -1047,7 +1054,10 @@ TEST(ActionDynamicsTest, TestDynamicsRateDimension)
     EXPECT_NEAR(td.Evaluate(), 50.0000, 1e-5);
 }
 
-#if LOG_TO_CONSOLE
+// Uncomment to print log output to console
+//#define LOG_TO_CONSOLE
+
+#ifdef LOG_TO_CONSOLE
 static void log_callback(const char* str)
 {
     printf("%s\n", str);
@@ -1056,14 +1066,14 @@ static void log_callback(const char* str)
 
 int main(int argc, char **argv)
 {
-#if LOG_TO_CONSOLE
+#ifdef LOG_TO_CONSOLE
     if (!(Logger::Inst().IsCallbackSet()))
     {
         Logger::Inst().SetCallback(log_callback);
     }
 #endif
 
-    // testing::GTEST_FLAG(filter) = "*EnsureContinuation*";
+    //testing::GTEST_FLAG(filter) = "*JunctionSelectorTest*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
