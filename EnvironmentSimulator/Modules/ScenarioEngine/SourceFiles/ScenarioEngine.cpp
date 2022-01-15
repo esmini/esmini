@@ -936,18 +936,16 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 			if (cond->base_type_ == OSCCondition::ConditionType::BY_ENTITY)
 			{
 				TrigByEntity* trig = (TrigByEntity*)cond;
-				/*for (size_t k = 0; k < trig->triggering_entities_.entity_.size(); k++)
-				{
-					if (trig->triggering_entities_.entity_[k].object_ == obj1)
-					{
-						trig->triggering_entities_.entity_[k].object_ = obj2;
-					}
-				}*/
+
 				if (trig->type_ == TrigByEntity::EntityConditionType::COLLISION ||
 					trig->type_ == TrigByEntity::EntityConditionType::REACH_POSITION ||
-					trig->type_ == TrigByEntity::EntityConditionType::TRAVELED_DISTANCE)
+					trig->type_ == TrigByEntity::EntityConditionType::TRAVELED_DISTANCE ||
+					trig->type_ == TrigByEntity::EntityConditionType::SPEED ||
+					trig->type_ == TrigByEntity::EntityConditionType::END_OF_ROAD ||
+					trig->type_ == TrigByEntity::EntityConditionType::OFF_ROAD ||
+					trig->type_ == TrigByEntity::EntityConditionType::STAND_STILL)
 				{
-					LOG("Handing over trigger to Ghost-------------------------------------");
+					LOG("Handing over trigger %s to ghost", cond->name_.c_str());
 
 					for (size_t k = 0; k < trig->triggering_entities_.entity_.size(); k++)
 					{
@@ -955,28 +953,10 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 						{
 							trig->triggering_entities_.entity_[k].object_ = obj2;
 						}
-						// Changes added to do action when target is triggering
-
-						// This else should be somewhere else
-						//else if (trig->triggering_entities_.entity_[k].object_ != obj1)
-						//{
-						//	TeleportAction* myNewAction = new TeleportAction;
-						//	roadmanager::Position* pos = new roadmanager::Position();
-						//	pos->SetInertiaPos(0, 0, 0);
-						//	pos->SetRelativePosition(&obj1->pos_, roadmanager::Position::PositionType::RELATIVE_OBJECT);
-						//	myNewAction->position_ = pos;
-						//	myNewAction->type_ = OSCPrivateAction::ActionType::TELEPORT;
-						//	myNewAction->object_ = obj2;
-
-						//	myNewAction->scenarioEngine_ = this;
-						//	//myNewAction->object_ = entities.object_[1];
-						//	//event->action_.push_back(myNewAction);
-						//	event->action_.insert(event->action_.begin(), myNewAction);
-						//}
-						// Stop changes
 					}
 				}
-				else {
+				else if(event != nullptr)
+				{
 					TeleportAction* myNewAction = new TeleportAction;
 					roadmanager::Position* pos = new roadmanager::Position();
 					pos->SetOrientationType(roadmanager::Position::OrientationType::ORIENTATION_RELATIVE);
@@ -988,20 +968,10 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 					myNewAction->object_ = obj2;
 					myNewAction->scenarioEngine_ = this;
 					myNewAction->name_ = "AddedGhostTeleport";
-					//myNewAction->object_ = entities.object_[1];
 
-					//event->action_.push_back(myNewAction);
 					event->action_.insert(event->action_.begin(), myNewAction);
 
-					/*LongSpeedAction* myNewSpeedAction = new LongSpeedAction;
-
-					myNewSpeedAction->type_ = OSCPrivateAction::ActionType::LONG_SPEED;
-
-					event->action_.insert(event->action_.begin(), myNewSpeedAction);*/
-
-
-					//maneuver->event_.push_back(teleportEvent);
-					LOG("Created new action-------------------------------------------");
+					LOG("Created new teleport action for ghost and %s trigger", cond->name_.c_str());
 				}
 			}
 			else if (cond->base_type_ == OSCCondition::ConditionType::BY_VALUE)
