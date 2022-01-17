@@ -2,12 +2,12 @@ COVERAGE OPEN DRIVE 1.5:
 
 
 OpenDRIVE                           YES
-|-header                            NO    
+|-header                            NO
 | |-geoReference                    NO
 | |-offset                          NO
 |-road                              YES
-| |-link                            YES    
-| | |-predecessor                   YES    
+| |-link                            YES
+| | |-predecessor                   YES
 | | |-successor                     YES
 | | |-neighbor                      NO
 | |-type                            YES
@@ -21,7 +21,7 @@ OpenDRIVE                           YES
 | | | |-paramPoly3                  YES
 | |-elevationProfile                YES
 | | |-elevation                     YES
-| |-lateralProfile                  YES       
+| |-lateralProfile                  YES
 | | |-superelevation                YES
 | | |-crossfall                     NO
 | | |-shape                         NO
@@ -54,7 +54,7 @@ OpenDRIVE                           YES
 | | | | | | |-successor             YES
 | | | | | |-roadMark                YES
 | | | | | | | -sway                 NO
-| | | | | | | -type                 YES        
+| | | | | | | -type                 YES
 | | | | | | | | -line               YES
 | | | | | | | -explicit             NO
 | | | | | | | | -line               NO
@@ -118,15 +118,18 @@ OpenDRIVE                           YES
 |-controller                        NO
 | |-control                         NO
 |-junction                          YES    
+| |-type default                    YES
+| |-type direct                     YES
+| |-type virtual                    NO
 | |-connection                      YES
-| | |-predecessor                   NO
-| | |-successor                     NO
+| | |-predecessor                   YES
+| | |-successor                     YES
 | | |-laneLink                      YES
 | |-priority                        NO
 | |-controller                      NO
 | |-surface                         NO
 | | |-CRG                           NO
-|-junctionGroup                     NO                 
+|-junctionGroup                     NO
 | |-junctionReference               NO
 |-station                           NO
 | |-platform                        NO
