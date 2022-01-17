@@ -6,6 +6,7 @@
     </header>
     <road name="" length="1.4736654010688267e+03" id="0" junction="-1">
         <link>
+            <predecessor elementType="junction" elementId="8"/>
         </link>
         <type s="0.0000000000000000e+00" type="motorway"/>
         <planView>
@@ -331,7 +332,7 @@
     </road>
     <road name="" length="2.3984274572936641e+02" id="2" junction="-1">
         <link>
-            <successor elementType="road" elementId="0" contactPoint="start" />
+            <successor elementType="junction" elementId="8"/>
         </link>
         <type s="0.0000000000000000e+00" type="motorway"/>
         <planView>
@@ -437,7 +438,6 @@
                     <lane id="2" type="sidewalk" level= "false">
                         <link>
                             <predecessor id="2"/>
-                            <successor id="2"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
@@ -449,7 +449,6 @@
                     <lane id="1" type="border" level= "false">
                         <link>
                             <predecessor id="1"/>
-                            <successor id="1"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
@@ -472,7 +471,6 @@
                     <lane id="-1" type="driving" level= "false">
                         <link>
                             <predecessor id="-1"/>
-                            <successor id="-1"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
@@ -488,7 +486,6 @@
                     <lane id="-2" type="driving" level= "false">
                         <link>
                             <predecessor id="-2"/>
-                            <successor id="-2"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="1.3000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
@@ -514,7 +511,7 @@
     <road name="" length="6.6139004569146593e+01" id="5" junction="-1">
         <link>
             <predecessor elementType="road" elementId="1" contactPoint="end" />
-            <successor elementType="road" elementId="0" contactPoint="start" />
+            <successor elementType="junction" elementId="8"/>
         </link>
         <planView>
             <geometry s="0.0000000000000000e+00" x="-5.7706057497113498e+01" y="8.9280811794847654e+00" hdg="1.4404241997005929e-01" length="6.6139004569146593e+01">
@@ -545,7 +542,6 @@
                     <lane id="-1" type="driving" level= "false">
                         <link>
                             <predecessor id="-1"/>
-                            <successor id="-3"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
                         <userData code="viStyleDef">
@@ -556,7 +552,6 @@
                     <lane id="-2" type="border" level= "false">
                         <link>
                             <predecessor id="-2"/>
-                            <successor id="-4"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
@@ -569,7 +564,6 @@
                     <lane id="-3" type="sidewalk" level= "false">
                         <link>
                             <predecessor id="-3"/>
-                            <successor id="-5"/>
                         </link>
                         <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
                         <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
@@ -645,4 +639,17 @@
         <surface>
         </surface>
     </road>
+    <junction name="" id="8" type="direct">
+        <connection id="0" incomingRoad="2" linkedRoad="0" contactPoint="start">
+            <laneLink from="2" to="2"/>        
+            <laneLink from="1" to="1"/>
+            <laneLink from="-1" to="-1"/>
+            <laneLink from="-2" to="-2"/>
+         </connection>
+        <connection id="1" incomingRoad="5" linkedRoad="0" contactPoint="start">
+            <laneLink from="-1" to="-3"/>
+            <laneLink from="-2" to="-4"/>
+            <laneLink from="-3" to="-5"/>
+        </connection>
+    </junction>
 </OpenDRIVE>
