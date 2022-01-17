@@ -1,5 +1,13 @@
 ## esmini release notes
 
+### 2022-01-17 Version 2.19.3
+
+- Support OpenDRIVE 1.7 Direct Junctions
+- Fix ghost condition handling issues ([issue #210](https://github.com/esmini/esmini/issues/210))
+  - Avoid nullptr crash for non event conditions (e.g. act condition)
+  - Hand over also SpeedCondition, EndOfRoadCondition, OffRoadCondition and
+  StandStillCondition to ghost
+
 ### 2022-01-13 Version 2.19.2
 
 - New esmini feature: Pause and step simulation
