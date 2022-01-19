@@ -57,7 +57,7 @@ typedef struct
 	float local_pos_x;	 // target position, relative vehicle (pivot position object) coordinate system
 	float local_pos_y;	 // target position, relative vehicle (pivot position object) coordinate system
 	float local_pos_z;	 // target position, relative vehicle (pivot position object) coordinate system
-	float angle;		 // heading angle to target from and relatove to vehicle (pivot position)
+	float angle;		 // heading angle to target from and relative vehicle (pivot position object) coordinate system
 	float road_heading;	 // road heading at steering target point
 	float road_pitch;	 // road pitch (inclination) at steering target point
 	float road_roll;	 // road roll (camber) at target point
