@@ -237,7 +237,9 @@ OSCTypeDefs
     OSCUserDefinedAction                     No
     OSCGlobalAction                          
         SetEnvironment                       No
-        Entity                               No
+        Entity                               Yes
+            AddEntityAction                  Yes
+            DeleteEntityAction               Yes
         ParameterSetAction                   Yes
         Infrastructure                       No
         Traffic                              

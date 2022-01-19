@@ -1,5 +1,16 @@
 ## esmini release notes
 
+### 2022-01-19 Version 2.20.0
+
+- Add support for [OpenSCENARIO EntityActions](https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.1.1_Model_Documentation/modelDocumentation/content/EntityAction.html)
+  - AddEntityAction and DeleteEntityAction supported (issue [#208](https://github.com/esmini/esmini/issues/208))
+  - See example scenario [Unittest/xosc/add_delete_entity.xosc](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc)
+- Fix some replayer issues
+  - Repeat works again
+  - Don't time-leap over empty periods states (e.g. entities temporarily deleted)
+ 
+NOTE: To support entity actions, e.g. adding entities at any time, a change of initialization behavior was necessary. Previously all entities were instantiated at start of the scenario, regardless of presence in Init section. Now the following applies: Only entities involved in the Init section, e.g. by a TeleportAction, will be instantiated from start. Other entities can be added later by the AddEntityAction. This change might affect some scenarios and use cases.
+
 ### 2022-01-17 Version 2.19.3
 
 - Support OpenDRIVE 1.7 Direct Junctions
