@@ -36,6 +36,7 @@ namespace scenarioengine
 		std::vector<ObjectStateStructDat> data_;
 
 		Replay(std::string filename);
+		Replay(const std::string& directory, const std::string& scenario);
 		~Replay();
 
 		/**
@@ -44,6 +45,8 @@ namespace scenarioengine
 		*/
 		void GoToTime(double time, bool stop_at_next_frame = false);
 		void GoToDeltaTime(double dt, bool stop_at_next_frame = false);
+		void GetReplaysFromDirectory(const std::string& dir, const std::string& sce);
+		size_t GetNumberOfScenarios();
 		void GoToStart();
 		void GoToEnd();
 		void GoToNextFrame();
@@ -61,6 +64,7 @@ namespace scenarioengine
 
 private:
 		std::ifstream file_;
+		std::vector<std::string> scenarios_;
 		double time_;
 		double startTime_;
 		double stopTime_;

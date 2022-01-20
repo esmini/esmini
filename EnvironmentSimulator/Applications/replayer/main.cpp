@@ -328,6 +328,7 @@ int main(int argc, char** argv)
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\") (toggle during simulation by press 'k') ", "mode");
 	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
 	opt.AddOption("collision", "Pauses the replay if the ego collides with another entity");
+	opt.AddOption("dir", "Directory to replays to overlay eachother, pair with \"file\" argument, where \"file\" is search string of scenario","path");
 	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("no_ghost", "Remove ghost entities");
@@ -375,9 +376,17 @@ int main(int argc, char** argv)
 	}
 
 	// Create player
+	std::string dir_path = opt.GetOptionArg("dir");
 	try
 	{
-		player = new Replay(opt.GetOptionArg("file"));
+		if (!dir_path.empty())
+		{
+			player = new Replay(dir_path, opt.GetOptionArg("file"));
+		}
+		else
+		{
+			player = new Replay(opt.GetOptionArg("file"));
+		}
 	}
 	catch (const std::exception& e)
 	{
@@ -575,6 +584,16 @@ int main(int argc, char** argv)
 
 		ParseEntities(viewer, player);
 		const int ghost_id = GetGhostIdx();
+
+		/*
+		for (size_t i = 0; i < viewer->entities_.size(); i++)
+		{
+			if (i % player->GetNumberOfScenarios() != 0)
+			{
+				viewer->entities_[i]->SetTransparency(0.5);
+			}
+		}
+		*/
 
 		if (opt.GetOptionSet("hide_trajectories"))
 		{

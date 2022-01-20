@@ -13,6 +13,7 @@
 #include "Replay.hpp"
 #include "ScenarioGateway.hpp"
 #include "CommonMini.hpp"
+#include <dirent.h>
 
 using namespace scenarioengine;
 
@@ -29,6 +30,12 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 	file_.read((char*)&header_, sizeof(header_));
 	LOG("Recording %s opened. dat version: %d odr: %s model: %s", FileNameOf(filename).c_str(), header_.version,
 		FileNameOf(header_.odr_filename).c_str(), FileNameOf(header_.model_filename).c_str());
+
+	if (header_.version != DAT_FILE_FORMAT_VERSION)
+	{
+		LOG_AND_QUIT("Version mismatch. %s is version %d while supported version is %d. Please re-create dat file.",
+			filename.c_str(), header_.version, DAT_FILE_FORMAT_VERSION);
+	}
 
 	if (header_.version != DAT_FILE_FORMAT_VERSION)
 	{
@@ -69,6 +76,154 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 		stopTime_ = data_[data_.size() - 1].info.timeStamp;
 		stopIndex_ = FindIndexAtTimestamp(stopTime_);
 	}
+}
+
+Replay::Replay(const std::string& directory, const std::string& scenario) : time_(0.0), index_(0), repeat_(false)
+{
+	GetReplaysFromDirectory(directory, scenario);
+	std::vector<std::pair<std::string, std::vector<ObjectStateStructDat>>> scenarioData;
+
+	for (size_t i = 0; i < scenarios_.size(); i++)
+	{
+		file_.open(scenarios_[i], std::ofstream::binary);
+		if (file_.fail())
+		{
+			LOG("Cannot open file: %s", scenarios_[i].c_str());
+			throw std::invalid_argument(std::string("Cannot open file: ") + scenarios_[i]);
+		}
+		file_.read((char*)&header_, sizeof(header_));
+		LOG("Recording %s opened. dat version: %d odr: %s model: %s", FileNameOf(scenarios_[i]).c_str(), header_.version,
+			FileNameOf(header_.odr_filename).c_str(), FileNameOf(header_.model_filename).c_str());
+
+		if (header_.version != DAT_FILE_FORMAT_VERSION)
+		{
+			LOG_AND_QUIT("Version mismatch. %s is version %d while supported version is %d. Please re-create dat file.",
+				scenarios_[i].c_str(), header_.version, DAT_FILE_FORMAT_VERSION);
+		}
+		while (!file_.eof())
+		{
+			ObjectStateStructDat data;
+
+			file_.read((char*)&data, sizeof(data));
+
+			if (!file_.eof())
+			{
+				data_.push_back(data);
+			}
+		}
+		// pair <scenario name, scenario data>
+		scenarioData.push_back(std::make_pair(scenarios_[i], data_));
+		data_ = {};
+		file_.close();
+	}
+
+	if (scenarioData.size() > 1)
+	{
+		// Longest scenario first
+		std::sort(scenarioData.begin(), scenarioData.end(), 
+		[](const auto& sce1, const auto& sce2) 
+		{
+			return sce1.second.size() > sce2.second.size();
+		}
+		);
+	}
+
+	LOG("Longest scenario is main scenario: %s", scenarioData.begin()->first.c_str());
+
+	// Log which scenario belongs to what ID-group (0, 100, 200 etc.)
+	for (size_t i = 0; i < scenarioData.size(); i++)
+	{
+		std::string scenario = (scenarioData.begin()+i)->first;
+		LOG("Scenarios corresponding to IDs:\n%s : %d\'s", scenario.c_str(), i * 100);
+	}
+
+	// Ensure increasing timestamps. Remove any other entries.
+	for (auto& sce : scenarioData)
+	{
+		for (size_t i = 0; i < sce.second.size() - 1; i++)
+		{
+			if (sce.second[i + 1].info.timeStamp < sce.second[i].info.timeStamp)
+			{
+				sce.second.erase(sce.second.begin() + i + 1);
+				i--;
+			}
+		}
+	}
+
+	for (auto& sce : scenarioData)
+	{
+		try
+		{
+			if (abs(sce.second[0].info.timeStamp) - abs(sce.second[7].info.timeStamp) < 0.025)
+			{
+				//rescale scenario
+			}
+		}
+		catch (...)
+		{
+			LOG_AND_QUIT("Scenario %s less than 7 samples long, aboring\n", sce.first);
+		}
+	}
+	
+	const size_t scenario_length = scenarioData.begin()->second.size();
+
+	// Iterate over samples, then scenario, states added to data_ as scenario1+sample1, scenario2+sample1, scenario1+sample2 etc.
+	for (size_t i = 0; i < scenario_length; i++)
+	{
+		int ctr = 0;
+		for (auto& sce : scenarioData)
+		{
+			if (i < sce.second.size()) 
+			{
+				sce.second[i].info.id += ctr * 100;
+				data_.push_back(sce.second[i]);
+			}
+			ctr++;
+		}
+	}
+
+	if (data_.size() > 0)
+	{
+		// Register first entry timestamp as starting time
+		time_ = data_[0].info.timeStamp;
+		startTime_ = time_;
+		startIndex_ = 0;
+
+		// Register last entry timestamp as stop time
+		stopTime_ = data_[data_.size() - 1].info.timeStamp;
+		stopIndex_ = FindIndexAtTimestamp(stopTime_);
+	}
+}
+
+// Browse through replay-folder and appends shared pointers to valid images
+void Replay::GetReplaysFromDirectory(const std::string& dir, const std::string& sce) {
+	DIR* directory = opendir(dir.c_str());
+	
+	// If no directory found, write error
+	if (directory == nullptr) {
+		LOG_AND_QUIT("No valid directory given, couldn't open %s", dir.c_str());
+	}
+	// While directory is open, check the filename
+	struct dirent* file;
+	while ((file = readdir(directory)) != nullptr) {
+		std::string filename = file->d_name;
+		
+		// Fix to check sc later
+		if (filename != "." && filename != ".." && filename.find(sce) != std::string::npos) {
+			scenarios_.emplace_back(dir+filename);
+		} 
+	}
+	closedir;
+
+	if (scenarios_.empty())
+	{
+		LOG_AND_QUIT("Couldn't read any scenarios named %s in path %s",sce.c_str(), dir.c_str());
+	}
+}
+
+size_t Replay::GetNumberOfScenarios()
+{
+	return scenarios_.size();
 }
 
 Replay::~Replay()
