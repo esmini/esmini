@@ -1890,13 +1890,16 @@ SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *ro
 		LOG("Requested waypoint index %d invalid, only %d registered", route_index, obj->pos_.GetRoute()->all_waypoints_.size());
 		return -1;
 	}
-
+	
+	roadmanager::Road* road = player->odr_manager->GetRoadById(obj->pos_.GetRoute()->all_waypoints_[route_index].GetTrackId());
+	
 	routeinfo->x = obj->pos_.GetRoute()->all_waypoints_[route_index].GetX();
 	routeinfo->y = obj->pos_.GetRoute()->all_waypoints_[route_index].GetY();
 	routeinfo->z = obj->pos_.GetRoute()->all_waypoints_[route_index].GetZ();
 	routeinfo->roadId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetTrackId();
 	routeinfo->junctionId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetJunctionId();
 	routeinfo->laneId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetLaneId();
+	routeinfo->osiLaneId = road->GetDrivingLaneById(obj->pos_.GetRoute()->all_waypoints_[route_index].GetS(), obj->pos_.GetRoute()->all_waypoints_[route_index].GetLaneId())->GetGlobalId();
 	routeinfo->laneOffset = obj->pos_.GetRoute()->all_waypoints_[route_index].GetOffset();
 	routeinfo->s = obj->pos_.GetRoute()->all_waypoints_[route_index].GetS();
 	routeinfo->t = obj->pos_.GetRoute()->all_waypoints_[route_index].GetT();

@@ -80,6 +80,7 @@ typedef struct
 	int roadId;			// Route point, road ID
 	int junctionId;		// Route point, junction ID (-1 if not in a junction)
 	int laneId;			// Route point, lane ID
+	int osiLaneId;		// Route point, osi lane ID
 	float laneOffset;	// Route point, lane offset (lateral distance from lane center)
 	float s;			// Route point, s (longitudinal distance along reference line)
 	float t;			// Route point, t (lateral distance from reference line)

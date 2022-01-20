@@ -2308,11 +2308,13 @@ TEST(APITest, TestGetRoute)
 	EXPECT_EQ(route_info.s,15);
 	EXPECT_EQ(route_info.x,15);
 	EXPECT_EQ(route_info.y,-1.5);
+	EXPECT_EQ(route_info.osiLaneId,3);
 	SE_GetRoutePoint(0,1,&route_info);
 	EXPECT_EQ(route_info.t,-4.5);
 	EXPECT_EQ(route_info.s,150);
 	EXPECT_EQ(route_info.x,150);
 	EXPECT_EQ(route_info.y,-4.5);
+	EXPECT_EQ(route_info.osiLaneId,15);
 
 	SE_Close();
 }
