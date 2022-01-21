@@ -399,7 +399,7 @@ int main(int argc, char** argv)
 				{
 					printf("   %s\n", file_name_candidates[j].c_str());
 				}
-				return -1;
+				printf("continue without road description\n");
 			}
 		}
 
