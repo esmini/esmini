@@ -42,6 +42,12 @@ set(INSTALL_DIRECTORY_CODE_EXAMPLES "${CMAKE_HOME_DIRECTORY}/code-examples-bin")
 
 set(PUGIXML_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/pugixml")
 set(EXPR_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/expr")
+if(WIN32)
+    set(DIRENT_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/dirent/win")
+else()
+    set(DIRENT_INCLUDE_DIR "")
+endif()
+
 
 include_directories( ${PUGIXML_INCLUDE_DIR} ${EXPR_INCLUDE_DIR})
 

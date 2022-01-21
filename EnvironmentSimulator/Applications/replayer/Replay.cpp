@@ -13,7 +13,7 @@
 #include "Replay.hpp"
 #include "ScenarioGateway.hpp"
 #include "CommonMini.hpp"
-#include <dirent.h>
+#include "dirent.h"
 
 using namespace scenarioengine;
 
@@ -78,7 +78,7 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 	}
 }
 
-Replay::Replay(const std::string& directory, const std::string& scenario) : time_(0.0), index_(0), repeat_(false)
+Replay::Replay(const std::string directory, const std::string scenario) : time_(0.0), index_(0), repeat_(false)
 {
 	GetReplaysFromDirectory(directory, scenario);
 	std::vector<std::pair<std::string, std::vector<ObjectStateStructDat>>> scenarioData;
@@ -120,8 +120,8 @@ Replay::Replay(const std::string& directory, const std::string& scenario) : time
 	if (scenarioData.size() > 1)
 	{
 		// Longest scenario first
-		std::sort(scenarioData.begin(), scenarioData.end(), 
-		[](const auto& sce1, const auto& sce2) 
+		std::sort(scenarioData.begin(), scenarioData.end(),
+		[](const auto& sce1, const auto& sce2)
 		{
 			return sce1.second.size() > sce2.second.size();
 		}
@@ -133,8 +133,8 @@ Replay::Replay(const std::string& directory, const std::string& scenario) : time
 	// Log which scenario belongs to what ID-group (0, 100, 200 etc.)
 	for (size_t i = 0; i < scenarioData.size(); i++)
 	{
-		std::string scenario = (scenarioData.begin()+i)->first;
-		LOG("Scenarios corresponding to IDs:\n%s : %d\'s", scenario.c_str(), i * 100);
+		std::string scenario_tmp = (scenarioData.begin()+i)->first;
+		LOG("Scenarios corresponding to IDs:\n%s : %d\'s", scenario_tmp.c_str(), i * 100);
 	}
 
 	// Ensure increasing timestamps. Remove any other entries.
@@ -161,10 +161,10 @@ Replay::Replay(const std::string& directory, const std::string& scenario) : time
 		}
 		catch (...)
 		{
-			LOG_AND_QUIT("Scenario %s less than 7 samples long, aboring\n", sce.first);
+			LOG_AND_QUIT("Scenario %s less than 7 samples long, aboring\n", sce.first.c_str());
 		}
 	}
-	
+
 	const size_t scenario_length = scenarioData.begin()->second.size();
 
 	// Iterate over samples, then scenario, states added to data_ as scenario1+sample1, scenario2+sample1, scenario1+sample2 etc.
@@ -173,7 +173,7 @@ Replay::Replay(const std::string& directory, const std::string& scenario) : time
 		int ctr = 0;
 		for (auto& sce : scenarioData)
 		{
-			if (i < sce.second.size()) 
+			if (i < sce.second.size())
 			{
 				sce.second[i].info.id += ctr * 100;
 				data_.push_back(sce.second[i]);
@@ -196,9 +196,9 @@ Replay::Replay(const std::string& directory, const std::string& scenario) : time
 }
 
 // Browse through replay-folder and appends shared pointers to valid images
-void Replay::GetReplaysFromDirectory(const std::string& dir, const std::string& sce) {
+void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sce) {
 	DIR* directory = opendir(dir.c_str());
-	
+
 	// If no directory found, write error
 	if (directory == nullptr) {
 		LOG_AND_QUIT("No valid directory given, couldn't open %s", dir.c_str());
@@ -207,13 +207,13 @@ void Replay::GetReplaysFromDirectory(const std::string& dir, const std::string& 
 	struct dirent* file;
 	while ((file = readdir(directory)) != nullptr) {
 		std::string filename = file->d_name;
-		
+
 		// Fix to check sc later
 		if (filename != "." && filename != ".." && filename.find(sce) != std::string::npos) {
 			scenarios_.emplace_back(dir+filename);
-		} 
+		}
 	}
-	closedir;
+	closedir(directory);
 
 	if (scenarios_.empty())
 	{

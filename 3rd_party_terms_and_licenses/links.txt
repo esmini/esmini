@@ -32,3 +32,6 @@ https://github.com/zserge/expr
 
 Clothoids - G1 and G2 fitting with clothoids, spline of clothoids, circle arc and biarc
 https://ebertolazzi.github.io/Clothoids/
+
+tronkko/dirent (Windows implementation of dirent.h)
+https://github.com/tronkko/dirent
