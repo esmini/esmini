@@ -463,7 +463,6 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^20.000, 1, NPC1, 60.000, -1.535, 0.000, 0.000, 0.000, 0.000, 1.000, 0.000, 0.594', csv, re.MULTILINE))
         self.assertTrue(re.search('^20.000, 2, NPC2, 30.000, 1.535, 0.000, 3.142, 0.000, 0.000, 1.000, 0.000, 0.594', csv, re.MULTILINE))
 
-
     def test_add_delete_entity(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ARGS)
 
@@ -490,12 +489,38 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^15.880, 0, Car1, 499.889, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
         self.assertTrue(re.search('^15.900, 0, Car1, 500.000, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
         
+    def test_multi_lane_changes(self):
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/multi_lane_changes.xosc'), COMMON_ARGS)
 
+        # Check some initialization steps
+        self.assertTrue(re.search('.*multi_lane_changes.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('^0.010: act_start == true, 0.0100 > 0.00 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^1.140: start_trigger1 == true, rel_dist: 0.08 < 0.10, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^3.350: start_trigger2 == true, rel_dist: 0.08 < 0.10, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^7.380: start_trigger3 timer expired at 1.01 seconds', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^15.350: start_trigger6 == true, HWT: 1.00 > 1.00, edge none', log, re.MULTILINE)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('^5.500, 0, Ego, 109.028, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.500, 1, Target1, 119.379, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.500, 2, Target2, 129.028, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.500, 3, Target3, 141.024, -6.000, 0.000, 0.000, 0.000, 0.000, 16.822', csv, re.MULTILINE))
+        self.assertTrue(re.search('^12.200, 0, Ego, 211.389, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278, 0.000, 4.752', csv, re.MULTILINE))
+        self.assertTrue(re.search('^12.200, 1, Target1, 248.157, -9.299, 0.000, 0.105, 0.000, 0.000, 22.609, 0.000, 0.717', csv, re.MULTILINE))
+        self.assertTrue(re.search('^12.200, 2, Target2, 235.035, -2.088, 0.000, 0.045, 0.000, 0.000, 20.593, 0.000, 2.755', csv, re.MULTILINE))
+        self.assertTrue(re.search('^12.200, 3, Target3, 243.827, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278, 0.000, 0.729', csv, re.MULTILINE))
+        self.assertTrue(re.search('^20.000, 0, Ego, 330.556, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278, 0.000, 5.936', csv, re.MULTILINE))
+        self.assertTrue(re.search('^20.000, 1, Target1, 374.987, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278, 0.000, 4.793', csv, re.MULTILINE))
+        self.assertTrue(re.search('^20.000, 2, Target2, 390.316, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278, 0.000, 0.156', csv, re.MULTILINE))
+        self.assertTrue(re.search('^20.000, 3, Target3, 362.993, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278, 0.000, 1.913', csv, re.MULTILINE))
 
 if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_add_delete_entity'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_multi_lane_changes'])
     
     unittest.main(verbosity=2)

@@ -197,15 +197,17 @@ namespace scenarioengine
 		};
 
 		Target* target_;
+		bool target_speed_reached_;
 
 		LongSpeedAction() : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED, ControlDomains::DOMAIN_LONG),
-			target_(0) {}
+			target_(0), target_speed_reached_(false) {}
 
 		LongSpeedAction(const LongSpeedAction& action) : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED, ControlDomains::DOMAIN_LONG)
 		{
 			name_ = action.name_;
 			target_ = action.target_;
 			transition_ = action.transition_;
+			target_speed_reached_ = action.target_speed_reached_;
 		}
 
 		OSCPrivateAction* Copy()

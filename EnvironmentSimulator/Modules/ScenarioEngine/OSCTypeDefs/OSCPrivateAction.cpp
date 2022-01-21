@@ -839,7 +839,6 @@ void LongSpeedAction::Start(double simTime, double dt)
 void LongSpeedAction::Step(double simTime, double dt)
 {
 	double new_speed = 0;
-	bool done = false;
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
@@ -851,40 +850,47 @@ void LongSpeedAction::Step(double simTime, double dt)
 
 	// Get target speed, which might be dynamic (relative other entitity)
 	transition_.SetTargetVal(ABS_LIMIT(target_->GetValue(), object_->performance_.maxSpeed));
-	if (transition_.GetTargetVal() > transition_.GetStartVal())
+
+	if (target_speed_reached_)
 	{
-		// Acceleration
-		transition_.SetMaxRate(object_->performance_.maxAcceleration);
+		new_speed = target_->GetValue();
 	}
 	else
 	{
-		// Deceleration
-		transition_.SetMaxRate(object_->performance_.maxDeceleration);
+		if (transition_.GetTargetVal() > transition_.GetStartVal())
+		{
+			// Acceleration
+			transition_.SetMaxRate(object_->performance_.maxAcceleration);
+		}
+		else
+		{
+			// Deceleration
+			transition_.SetMaxRate(object_->performance_.maxDeceleration);
+		}
+
+		// Make sure sign of rate is correct
+		if (transition_.dimension_ == DynamicsDimension::RATE)
+		{
+			transition_.SetRate(SIGN(transition_.GetTargetVal() - transition_.GetStartVal()) * abs(transition_.GetRate()));
+		}
+
+		transition_.Step(dt);
+		new_speed = transition_.Evaluate();
+
+		if (transition_.GetParamVal() > transition_.GetParamTargetVal() - SMALL_NUMBER ||
+			// Close enough?
+			abs(new_speed - transition_.GetTargetVal()) < SMALL_NUMBER ||
+			// Already passed target value (perhaps due to strange initial conditions)?
+			SIGN(target_->GetValue() - transition_.GetStartVal()) != SIGN(target_->GetValue() - object_->GetSpeed()))
+		{
+			target_speed_reached_ = true;
+			new_speed = target_->GetValue();
+		}
 	}
 
-	// Make sure sign of rate is correct
-	if (transition_.dimension_ == DynamicsDimension::RATE)
-	{
-		transition_.SetRate(SIGN(transition_.GetTargetVal() - transition_.GetStartVal()) * abs(transition_.GetRate()));
-	}
+	object_->SetSpeed(ABS_LIMIT(new_speed, object_->performance_.maxSpeed));
 
-	transition_.Step(dt);
-	new_speed = transition_.Evaluate();
-
-	if (!(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_)->continuous_ == true) &&
-		 (transition_.GetParamVal() > transition_.GetParamTargetVal() - SMALL_NUMBER ||
-		  // Close enough?
-		  abs(new_speed - transition_.GetTargetVal()) < SMALL_NUMBER ||
-		  // Already passed target value (perhaps due to strange initial conditions)?
-		  SIGN(target_->GetValue() - transition_.GetStartVal()) != SIGN(target_->GetValue() - object_->GetSpeed())))
-	{
-		done = true;
-		new_speed = ABS_LIMIT(target_->GetValue(), object_->performance_.maxSpeed);
-	}
-
-	object_->SetSpeed(new_speed);
-
-	if (done)
+	if (target_speed_reached_ && !(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_)->continuous_ == true))
 	{
 		OSCAction::End();
 	}
