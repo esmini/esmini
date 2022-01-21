@@ -3232,27 +3232,26 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 											double t_offset = atof(line.attribute("tOffset").value());
 											double s_offset_l = atof(line.attribute("sOffset").value());
 
-											// rule
+											// rule (optional)
 											LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-											if (line.attribute("rule") == 0 || !strcmp(line.attribute("rule").value(), ""))
+											if (line.attribute("rule") != 0 && strcmp(line.attribute("rule").value(), ""))
 											{
-												LOG("Lane road mark type line rule error");
-											}
-											if (!strcmp(line.attribute("rule").value(), "none"))
-											{
-												rule = LaneRoadMarkTypeLine::NONE;
-											}
-											else  if (!strcmp(line.attribute("rule").value(), "caution"))
-											{
-												rule = LaneRoadMarkTypeLine::CAUTION;
-											}
-											else  if (!strcmp(line.attribute("rule").value(), "no passing"))
-											{
-												rule = LaneRoadMarkTypeLine::NO_PASSING;
-											}
-											else
-											{
-												LOG("unknown lane road mark type line rule: %s (road id=%d)\n", line.attribute("rule").value(), r->GetId());
+												if (!strcmp(line.attribute("rule").value(), "none"))
+												{
+													rule = LaneRoadMarkTypeLine::NONE;
+												}
+												else  if (!strcmp(line.attribute("rule").value(), "caution"))
+												{
+													rule = LaneRoadMarkTypeLine::CAUTION;
+												}
+												else  if (!strcmp(line.attribute("rule").value(), "no passing"))
+												{
+													rule = LaneRoadMarkTypeLine::NO_PASSING;
+												}
+												else
+												{
+													LOG("unknown lane road mark type line rule: %s (road id=%d)\n", line.attribute("rule").value(), r->GetId());
+												}
 											}
 
 											double width = atof(line.attribute("width").value());
