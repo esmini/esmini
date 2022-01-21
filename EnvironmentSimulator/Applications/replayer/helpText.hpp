@@ -18,6 +18,7 @@ Key shortcuts \n\
     TAB:         Move camera to next vehicle \n\
     Shift - TAB: Move camera to previoius vehicle \n\
     Space:       Toggle pause / play \n\
+    g:           Toggle show / hide ghost models \n\
     o:           Toggle show / hide OpenDRIVE road feature lines \n\
     u:           Toggle show / hide OSI road lines \n\
     y:           Toggle show / hide OSI road points \n\

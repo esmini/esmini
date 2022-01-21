@@ -31,6 +31,7 @@
 using namespace scenarioengine;
 
 #define TIME_SCALE_FACTOR 1.1
+#define GHOST_CTRL_TYPE 100    // control type 100 indicates ghost
 
 static const double stepSize = 0.01;
 static const double maxStepSize = 0.1;
@@ -38,6 +39,7 @@ static const double minStepSize = 0.001;
 static bool pause = false;  // continuous play
 static double time_scale = 1.0;
 static bool no_ghost = false;
+static bool no_ghost_model = false;
 static std::vector<int> removeObjects;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
@@ -95,6 +97,24 @@ ScenarioEntity *getScenarioEntityById(int id)
 	return 0;
 }
 
+int ShowGhosts(Replay* player, bool show)
+{
+	ObjectStateStructDat* state = 0;
+
+	for (size_t j = 0; j < scenarioEntity.size(); j++)
+	{
+		ScenarioEntity* entity = &scenarioEntity[j];
+		state = player->GetState(entity->id);
+
+		if (entity->entityModel != nullptr && state->info.ctrl_type == GHOST_CTRL_TYPE)
+		{
+			entity->entityModel->txNode_->setNodeMask(show ? 0xffffffff : 0x0);
+		}
+	}
+
+	return 0;
+}
+
 int ParseEntities(viewer::Viewer* viewer, Replay* player)
 {
 	double minTrajPointDist = 1;
@@ -104,7 +124,7 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 	{
 		ObjectStateStructDat* state = &player->data_[i];
 
-		if (no_ghost && state->info.ctrl_type == 100)  // control type 100 indicates ghost
+		if (no_ghost && state->info.ctrl_type == GHOST_CTRL_TYPE)
 		{
 			continue;
 		}
@@ -149,13 +169,17 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 				}
 			}
 
+			if (state->info.ctrl_type == GHOST_CTRL_TYPE && no_ghost_model)
+			{
+				new_sc.entityModel->txNode_->setNodeMask(0x0);
+			}
+
 			new_sc.bounding_box = state->info.boundingbox;
 
 			// Add it to the list of scenario cars
 			scenarioEntity.push_back(new_sc);
 
 			sc = &scenarioEntity.back();
-
 		}
 
 		if (sc->trajPoints == 0)
@@ -275,6 +299,11 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 		{
 			time_scale = MAX(0.01, time_scale / TIME_SCALE_FACTOR);
 		}
+		else if (keyEvent->key_ == static_cast<int>('g'))
+		{
+			no_ghost_model = !no_ghost_model;
+			ShowGhosts(player, !no_ghost_model);
+		}
 	}
 }
 
@@ -302,6 +331,7 @@ int main(int argc, char** argv)
 	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("no_ghost", "Remove ghost entities");
+	opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
 	opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
 	opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
 	opt.AddOption("repeat", "loop scenario");
@@ -512,6 +542,11 @@ int main(int argc, char** argv)
 			no_ghost = true;
 		}
 
+		if (opt.GetOptionSet("no_ghost_model"))
+		{
+			no_ghost_model = true;
+		}
+
 		if (opt.GetOptionSet("remove_object"))
 		{
 			std::string ids = opt.GetOptionArg("remove_object");
@@ -711,12 +746,15 @@ int main(int argc, char** argv)
 			for (size_t j=0; j<scenarioEntity.size(); j++)
 			{
 				ScenarioEntity *c = &scenarioEntity[j];
-				c->entityModel->SetPosition(c->pos.x, c->pos.y, c->pos.z);
-				c->entityModel->SetRotation(c->pos.h, c->pos.p, c->pos.r);
-
-				if (c->entityModel->GetType() == viewer::EntityModel::EntityType::VEHICLE)
+				if (c->entityModel != nullptr)
 				{
-					((viewer::CarModel*)c->entityModel)->UpdateWheels(c->wheel_angle, c->wheel_rotation);
+					c->entityModel->SetPosition(c->pos.x, c->pos.y, c->pos.z);
+					c->entityModel->SetRotation(c->pos.h, c->pos.p, c->pos.r);
+
+					if (c->entityModel->GetType() == viewer::EntityModel::EntityType::VEHICLE)
+					{
+						((viewer::CarModel*)c->entityModel)->UpdateWheels(c->wheel_angle, c->wheel_rotation);
+					}
 				}
 			}
 

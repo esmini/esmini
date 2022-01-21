@@ -18,6 +18,8 @@ Options:
       Hide trajectories from start (toggle with key 'n')
   --no_ghost
       Remove ghost entities
+  --no_ghost_model
+      Remove only ghost model, show trajectory (toggle with key 'g')
   --quit_at_end
       Quit application when reaching end of scenario
   --remove_object <id>
@@ -50,6 +52,7 @@ Key shortcuts
     TAB:         Move camera to next vehicle
     Shift - TAB: Move camera to previoius vehicle
     Space:       Toggle pause / play
+    g:           Toggle show / hide ghost models
     o:           Toggle show / hide OpenDRIVE road feature lines
     u:           Toggle show / hide OSI road lines
     y:           Toggle show / hide OSI road points
