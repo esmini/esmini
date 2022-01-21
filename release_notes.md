@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2022-01-21 Version 2.20.1
+
+- Add replayer option to hide ghost models but still show their trajectories
+  - Launch flag: `--no_ghost_model`
+  - Toggle on key 'g'
+  - See [replayer/readme.txt](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Applications/replayer/readme.txt)
+- Add OSI lane id to route info
+- Relax replayer, run even if OpenDRIVE file missing
+- RoadmarkType rule made optional according to standard (skip scary warnings)
+- Hand over also AccelerationCondition to ghost
+  - The pattern is to hand over all non relative conditions
+  - Acceleration conditions were unintentially not handed over
+- Fix SpeedAction continuous mode bug
+
 ### 2022-01-19 Version 2.20.0
 
 - Add support for [OpenSCENARIO EntityActions](https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.1.1_Model_Documentation/modelDocumentation/content/EntityAction.html)
