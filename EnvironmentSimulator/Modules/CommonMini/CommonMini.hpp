@@ -697,8 +697,8 @@ public:
 	double GetOSIMaxLateralDeviation() { return osiMaxLateralDeviation_; }
 	void SetDisableOffScreen(bool disable) { disableOffScreen_ = disable; }
 	bool GetDisableOffScreen() { return disableOffScreen_; }
-	void SetDisableCollisionDetection(bool disable) { disableCollisionDetection_ = disable; }
-	bool GetDisableCollisionDetection() { return disableCollisionDetection_; }
+	void SetCollisionDetection(bool enable) { collisionDetection_ = enable; }
+	bool GetCollisionDetection() { return collisionDetection_; }
 	std::vector<std::string>& GetPaths() { return paths_; }
 	int AddPath(std::string path);
 	void ClearPaths() { paths_.clear(); }
@@ -729,7 +729,7 @@ private:
 	unsigned int seed_;
 	std::mt19937 gen_;
 	bool disableOffScreen_;
-	bool disableCollisionDetection_;
+	bool collisionDetection_;
 };
 
 /**

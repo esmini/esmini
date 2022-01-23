@@ -211,7 +211,7 @@ int ScenarioEngine::step(double deltaSimTime)
 	}
 
 	// Check for collisions
-	if (!SE_Env::Inst().GetDisableCollisionDetection())
+	if (SE_Env::Inst().GetCollisionDetection())
 	{
 		DetectCollisions();
 	}

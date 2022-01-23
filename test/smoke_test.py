@@ -434,6 +434,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*test-collision-detection.xosc', log)  is not None)
 
         # Check some scenario events
+        self.assertFalse(re.search('^6.260: Collision between Ego and NPC1', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^5.250: collision 0 between Ego and NPC2', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^6.260: collision 0 between Ego and NPC1', log, re.MULTILINE)  is not None)
 
@@ -446,7 +447,7 @@ class TestSuite(unittest.TestCase):
 
     def test_collision_condition2(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc'), COMMON_ARGS + \
-            '--disable_controllers --disable_collision_detection')
+            '--disable_controllers --collision')
         
         # Same as previous, but confirms explicit collision  detection in condition when global collision detection is disabled
 
@@ -454,8 +455,11 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*test-collision-detection.xosc', log)  is not None)
 
         # Check some scenario events
+        self.assertTrue(re.search('^5.250: Collision between Ego and NPC2', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^5.250: collision 0 between Ego and NPC2', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^6.260: Collision between Ego and NPC1', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^6.260: collision 0 between Ego and NPC1', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^7.090: Collision between Ego and NPC2 dissolved', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -521,6 +525,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_multi_lane_changes'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_collision_condition1'])
     
     unittest.main(verbosity=2)

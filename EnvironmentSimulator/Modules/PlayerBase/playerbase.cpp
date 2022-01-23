@@ -825,7 +825,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
 	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
-	opt.AddOption("disable_collision_detection", "Disable global collision detection, potentially gaining performance");
+	opt.AddOption("collision", "Enable global collision detection, potentially reducing performance");
 	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
@@ -957,9 +957,9 @@ int ScenarioPlayer::Init()
 		SE_Env::Inst().SetDisableOffScreen(true);
 	}
 
-	if (opt.GetOptionSet("disable_collision_detection"))
+	if (opt.GetOptionSet("collision"))
 	{
-		SE_Env::Inst().SetDisableCollisionDetection(true);
+		SE_Env::Inst().SetCollisionDetection(true);
 	}
 
 	// Create scenario engine
@@ -1146,7 +1146,7 @@ void ScenarioPlayer::UpdateCSV_Log()
 
 		// Log the extracted data of ego vehicle and additonal scenario vehicles
 		std::string collision_ids;
-		if (!SE_Env::Inst().GetDisableCollisionDetection())
+		if (SE_Env::Inst().GetCollisionDetection())
 		{
 			for (size_t j = 0; j < obj->collisions_.size(); j++)
 			{

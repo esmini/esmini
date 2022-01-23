@@ -924,7 +924,7 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 				if (storyBoard->entities_->object_[j] != triggering_entities_.entity_[i].object_ &&
 					storyBoard->entities_->object_[j]->type_ == type_)
 				{
-					if (SE_Env::Inst().GetDisableCollisionDetection())
+					if (SE_Env::Inst().GetCollisionDetection() == false)
 					{
 						if (triggering_entities_.entity_[i].object_->Collision(storyBoard->entities_->object_[j]))
 						{

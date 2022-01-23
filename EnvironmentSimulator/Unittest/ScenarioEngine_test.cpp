@@ -490,14 +490,16 @@ TEST(ConditionTest, CollisionTest)
     double dt = 0.01;
     double timestamps[] = { 5.25, 5.26, 6.26, 6.27, 7.10, 8.79 };
 
-    ASSERT_EQ(SE_Env::Inst().GetDisableCollisionDetection(), false);
+    ASSERT_EQ(SE_Env::Inst().GetCollisionDetection(), false);  // Should be disabled by default
+
+    SE_Env::Inst().SetCollisionDetection(true);
 
     // Initialize the scenario and disable interactive controller
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc", true);
     se->step(0.0);
     se->prepareGroundTruth(0.0);
     ASSERT_NE(se, nullptr);
-    ASSERT_EQ(SE_Env::Inst().GetDisableCollisionDetection(), false);  // Should be on by default
+    ASSERT_EQ(SE_Env::Inst().GetCollisionDetection(), true);  // Should be enabled by now
 
     while (se->getSimulationTime() < timestamps[0] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {

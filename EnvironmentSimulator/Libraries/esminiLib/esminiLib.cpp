@@ -674,6 +674,11 @@ extern "C"
 		logToConsole = mode;
 	}
 
+	SE_DLL_API void SE_CollisionDetection(bool mode)
+	{
+		SE_Env::Inst().SetCollisionDetection(mode);
+	}
+
 	SE_DLL_API int SE_OpenOSISocket(const char *ipaddr)
 	{
 		if (player == nullptr)
@@ -1890,9 +1895,9 @@ SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *ro
 		LOG("Requested waypoint index %d invalid, only %d registered", route_index, obj->pos_.GetRoute()->all_waypoints_.size());
 		return -1;
 	}
-	
+
 	roadmanager::Road* road = player->odr_manager->GetRoadById(obj->pos_.GetRoute()->all_waypoints_[route_index].GetTrackId());
-	
+
 	routeinfo->x = obj->pos_.GetRoute()->all_waypoints_[route_index].GetX();
 	routeinfo->y = obj->pos_.GetRoute()->all_waypoints_[route_index].GetY();
 	routeinfo->z = obj->pos_.GetRoute()->all_waypoints_[route_index].GetZ();

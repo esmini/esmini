@@ -694,7 +694,7 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
 }
 
 SE_Env::SE_Env() : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE), osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION),
-	logFilePath_(LOG_FILENAME), disableOffScreen_(false), disableCollisionDetection_(false)
+	logFilePath_(LOG_FILENAME), disableOffScreen_(false), collisionDetection_(false)
 {
 	seed_ = (std::random_device())();
 	gen_.seed(seed_);
