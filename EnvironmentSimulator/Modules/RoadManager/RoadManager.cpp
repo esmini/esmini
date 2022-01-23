@@ -3263,6 +3263,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								}
 								if (roadMark_type != LaneRoadMark::NONE_TYPE && lane_roadMarkType == 0)
 								{
+									const double double_space = 2 * 0.15;  // default space between lines equal to width of one line
+
 									if (roadMark_type == LaneRoadMark::SOLID ||
 										roadMark_type == LaneRoadMark::CURB)
 									{
@@ -3272,14 +3274,33 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, 0.15);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 									}
-									else if (roadMark_type == LaneRoadMark::BROKEN ||
-											 roadMark_type == LaneRoadMark::BROKEN_BROKEN)
+									else if (roadMark_type == LaneRoadMark::SOLID_SOLID)
+									{
+										lane_roadMarkType = new LaneRoadMarkType("stand-in", 0.15);
+										lane_roadMark->AddType(lane_roadMarkType);
+										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(0, 0, -double_space /2.0, 0, rule, 0.15);
+										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 = new LaneRoadMarkTypeLine(0, 0, double_space /2.0, 0, rule, 0.15);
+										lane_roadMarkType->AddLine(lane_roadMarkTypeLine2);
+									}
+									else if (roadMark_type == LaneRoadMark::BROKEN)
 									{
 										lane_roadMarkType = new LaneRoadMarkType("stand-in", 0.15);
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
 										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(4, 8, 0, 0, rule, 0.15);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+									}
+									else if (roadMark_type == LaneRoadMark::BROKEN_BROKEN)
+									{
+										lane_roadMarkType = new LaneRoadMarkType("stand-in", 0.15);
+										lane_roadMark->AddType(lane_roadMarkType);
+										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(4, 8, -double_space / 2.0, 0, rule, 0.15);
+										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 = new LaneRoadMarkTypeLine(4, 8, double_space / 2.0, 0, rule, 0.15);
+										lane_roadMarkType->AddLine(lane_roadMarkTypeLine2);
 									}
 									else
 									{

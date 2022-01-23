@@ -81,6 +81,7 @@ Key shortcuts
     u:           Toggle show / hide OSI road lines
     y:           Toggle show / hide OSI road points
     p:           Toggle show / hide environment 3D model
+    i:           Toggle info text showing time and speed
     , (comma):   Toggle entity view : Model / None
     ESC:         quit
 
@@ -111,6 +112,7 @@ Key shortcuts
         l: Toggle light
         w: Toggle geometry mode(shading, wireframe, dots)
         c: Save screenshot in JPEG format - in the folder where the application was started from
+        C: Toggle continuous screen capture
         h: Help
 
 Mouse control
