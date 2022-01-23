@@ -305,7 +305,12 @@ bool ConditionGroup::Evaluate(StoryBoard *storyBoard, double sim_time)
 	for (size_t i = 0; i < condition_.size(); i++)
 	{
 		// AND operator, all must be true
-		result &= condition_[i]->Evaluate(storyBoard, sim_time);
+		if (result == true || condition_[i]->delay_ > 0.0)
+		{
+			// When at least one condition in the group is false,
+			// only conditions with timer needs to be evaluated
+			result &= condition_[i]->Evaluate(storyBoard, sim_time);
+		}
 	}
 
 	return result;
@@ -573,7 +578,6 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 
 		if (trigObj->Distance(object_, cs_, relDistType_, freespace_, rel_dist) != 0)
 		{
-			LOG("Failed to measure distance. Set to large number.");
 			rel_dist = LARGE_NUMBER;
 		}
 
@@ -643,7 +647,6 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 		}
 		if (retVal != 0)
 		{
-			LOG("Failed to measure distance. Set to large number.");
 			rel_dist = LARGE_NUMBER;
 		}
 
@@ -806,7 +809,6 @@ bool TrigByDistance::CheckCondition(StoryBoard *storyBoard, double sim_time)
 
 		if (trigObj->Distance(pos->GetX(), pos->GetY(), cs_, relDistType_, freespace_, dist_) != 0)
 		{
-			LOG("Failed to measure distance. Set to large number.");
 			dist_ = LARGE_NUMBER;
 		}
 		else
@@ -858,7 +860,6 @@ bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_t
 
 		if (trigObj->Distance(object_, cs, relDistType_, freespace_, rel_dist_) != 0)
 		{
-			LOG("Failed to measure distance. Set to large number.");
 			rel_dist_ = LARGE_NUMBER;
 		}
 		else

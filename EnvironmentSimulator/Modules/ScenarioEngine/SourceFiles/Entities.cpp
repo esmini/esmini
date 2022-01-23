@@ -772,7 +772,7 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, double* latDist, dou
 	// check vertices of the other bounding box against the sides
 	// of the first bounding box.
 
-	double vertices[2][4][3];
+	double vertices[2][4][3] = { { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 } } };
 	Position pos[2][4];
 
 	for (int i = 0; i < 2; i++)  // for each of the two BBs
