@@ -27,7 +27,8 @@ public:
 
 	RoadGeom(roadmanager::OpenDrive *odr);
 	int AddRoadMarks(roadmanager::Lane* lane, osg::Group* group);
-	void AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::DrawElementsUInt> indices);
+	void AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::DrawElementsUInt> indices,
+		roadmanager::LaneRoadMark::RoadMarkColor color);
 	osg::ref_ptr<osg::Texture2D> ReadTexture(std::string filename);
 };
 
