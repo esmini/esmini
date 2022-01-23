@@ -738,8 +738,6 @@ void LatLaneOffsetAction::Step(double simTime, double dt)
 
 	offset_agnostic = transition_.Evaluate();
 
-	object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), SIGN(object_->pos_.GetLaneId()) * offset_agnostic);
-
 	if (transition_.GetParamVal() > transition_.GetParamTargetVal() - SMALL_NUMBER ||
 		// Close enough?
 		fabs(offset_agnostic - transition_.GetTargetVal()) < SMALL_NUMBER ||
@@ -747,10 +745,13 @@ void LatLaneOffsetAction::Step(double simTime, double dt)
 		transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()))
 	{
 		OSCAction::End();
+		object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), SIGN(object_->pos_.GetLaneId()) * transition_.GetTargetVal());
 		object_->pos_.SetHeadingRelativeRoadDirection(0);
 	}
 	else
 	{
+		object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), SIGN(object_->pos_.GetLaneId()) * offset_agnostic);
+
 		// Convert rate (lateral-movment/time) to lateral-movement/long-movement
 		double angle = atan(transition_.EvaluatePrim() / AVOID_ZERO(object_->GetSpeed()));
 		object_->pos_.SetHeadingRelativeRoadDirection((IsAngleForward(object_->pos_.GetHRelative()) ? 1 : -1) * SIGN(object_->pos_.GetLaneId()) * angle);
