@@ -12,6 +12,8 @@ Options:
       Continuous screen capture. Warning: Many jpeg files will be created
   --collision
       Pauses the replay if the ego collides with another entity
+  --dir <path>
+      Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
   --disable_off_screen
       Disable off-screen rendering, potentially gaining performance
   --hide_trajectories
