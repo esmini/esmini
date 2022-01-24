@@ -110,29 +110,29 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
 
 			// object on adjacent lane with a deviation more than 0.375m from its lane center,
 			// don't interprete swearving vehicles on adjecent lane as cut-in or cut-out
-			if (fabs(diff.dLaneId) == 1 && egoV > 0 && fabs(targetO) > 0.375)
+			if (fabs(diff.dLaneId) == 1 && egoV > 0)
 			{
 				// object with a deviation of more than 0.375m in direction of ego from its lane center
 				if (!driverBraking_ && ((diff.dLaneId == -1 && targetVT > 0 && targetO > 0.375) || (diff.dLaneId == 1 && targetVT < 0 && targetO < -0.375)))
 				{
 					// relative heading angles are playing no role for reference driver
-					dsFree = diff.ds - (0.5 * egoL + egoCx) - (0.5 * targetL - targetCx) - (egoV - targetV) * 0.4;  // see risk perception time = 0.4sec
+					dsFree = diff.ds - (0.5 * egoL + egoCx) - (0.5 * targetL - targetCx);
 					// check if the cut-in vehicle would be in front of ego after cut-in and within a TTC <=2sec, otherwise it can be ignored
 					TTC = dsFree / fabs(egoV - targetV);
 					if (TTC >= 0 && targetV < egoV)
 					{
 						if (TTC >= 2)
 						{
-							dsFree -= (egoV - targetV) * 0.75;
-							TTC = MIN(2 - SMALL_NUMBER, dsFree / fabs(egoV - targetV));
+							dsFree -= (egoV - targetV) * 0.4;  // see risk perception time = 0.4sec
+							TTC = dsFree / fabs(egoV - targetV);
 						}
 						if (TTC < 2)
 						{
-							// cut-in would be in the red zone in front of ego vehicle after lane change (at leaster after 0.4sec risk perception time or after 1.15sec including braking delay)
+							// cut-in would be in the red zone in front of ego vehicle after lane change (at least after 0.4sec risk perception time or after 1.15sec including braking delay)
 							// TTC (< 2sec) + offset (> 0.375)
 							// 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
 							waitTime_ = 1.15;
-							ALKS_LOG("ECE ALKS driver -> cut-in detected of '%s' (offset: %.3f, TTC: %.2f) in front of '%s' -> driver starts braking after %.2f sec "
+							ALKS_LOG("ECE ALKS driver -> cut-in detected of '%s' on adjacent lane (offset: %.3f, TTC: %.2f) in front of '%s' -> driver starts braking after %.2f sec "
 								"(braking delay + risk perception time)", entities_->object_[i]->name_.c_str(), fabs(targetO), TTC, object_->name_.c_str(), waitTime_);
 							driverBraking_ = true;
 							cutInDetected_ = true;
@@ -140,10 +140,23 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
 					}
 					if (!cutInDetected_)
 					{
-						ALKS_LOG("ECE ALKS driver -> cut-in detected of '%s' (offset: %.3f, TTC: %.2f) in front of '%s'", entities_->object_[i]->name_.c_str(),
+						ALKS_LOG("ECE ALKS driver -> cut-in detected of '%s' on adjacent lane (offset: %.3f, TTC: %.2f) in front of '%s'", entities_->object_[i]->name_.c_str(),
 							fabs(targetO), TTC, object_->name_.c_str());
 						cutInDetected_ = true;
 					}
+				}
+				else if (dtFreeCutOut_ != -LARGE_NUMBER && dtFreeCutOut_ < 0 && ((diff.dLaneId == 1 && targetVT > 0) || (diff.dLaneId == -1 && targetVT < 0)))
+				{
+					if (!driverBrakeCandidateName.empty() && candidateTTC < 2)
+					{
+						// 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
+						waitTime_ = 1.15;
+						ALKS_LOG("ECE ALKS driver -> cut-out '%s' on adjacent lane (offset: %.3f) and next vehicle in front '%s' detected (TTC: %.2f) in front of '%s' -> "
+							"start braking after %.2f sec (braking delay + risk perception time)", entities_->object_[i]->name_.c_str(),
+							lastOffset, driverBrakeCandidateName.c_str(), candidateTTC, object_->name_.c_str(), waitTime_);
+						driverBraking_ = true;
+					}
+					dtFreeCutOut_ = fabs(diff.dt) - 0.5 * (egoW + targetW);
 				}
 			}
 			// object in front on same lane
@@ -154,17 +167,17 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
 				TTC = dsFree / fabs(egoV - targetV);
 
 				// cut-out with object on same lane, but with a distance of more than 0.375m from lane center and lateral velocity into opposite direction of ego
-				if (dtFreeCutOut_ < 0 && ((targetO > 0.375 && targetVT > 0) || (targetO < -0.375 && targetVT < 0)))
+				if ((targetO > 0.375 && targetVT > 0) || (targetO < -0.375 && targetVT < 0))
 				{
 					if (dtFreeCutOut_ == -LARGE_NUMBER)
 					{
-						ALKS_LOG("ECE ALKS driver -> cut-out detected of '%s' (offset: %.3f, TTC: %.2f) in front of '%s'", entities_->object_[i]->name_.c_str(),
+						ALKS_LOG("ECE ALKS driver -> cut-out detected of '%s' on same lane (offset: %.3f, TTC: %.2f) in front of '%s'", entities_->object_[i]->name_.c_str(),
 							fabs(targetO), TTC, object_->name_.c_str());
 						if (!driverBrakeCandidateName.empty())
 						{
 							// 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
 							waitTime_ = 1.15;
-							ALKS_LOG("ECE ALKS driver -> cut-out '%s' (offset: %.3f) and next vehicle in front '%s' detected (TTC: %.2f) in front of '%s' -> "
+							ALKS_LOG("ECE ALKS driver -> cut-out '%s' on same lane (offset: %.3f) and next vehicle in front '%s' detected (TTC: %.2f) in front of '%s' -> "
 								"start braking after %.2f sec (braking delay + risk perception time)", entities_->object_[i]->name_.c_str(),
 								lastOffset, driverBrakeCandidateName.c_str(), candidateTTC, object_->name_.c_str(), waitTime_);
 							driverBraking_ = true;
@@ -182,6 +195,26 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
 						// AEB brakes harder than driver, no need to continue checking for scenario if aeb is already braking
 						aebBraking_ = true;
 						break;
+					}
+				}
+				// cut-in
+				else if (!driverBraking_ && ((targetO > 0.375 && targetVT < 0) || (targetO < -0.375 && targetVT > 0)))
+				{
+					if (TTC >= 2)
+					{
+						dsFree -= (egoV - targetV) * 0.4;
+						TTC = dsFree / fabs(egoV - targetV);
+					}
+					if (TTC < 2)
+					{
+						// cut-in would be in the red zone in front of ego vehicle after lane change (at least after 0.4sec risk perception time or after 1.15sec including braking delay)
+						// TTC (< 2sec) + offset (> 0.375)
+						// 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
+						waitTime_ = 1.15;
+						ALKS_LOG("ECE ALKS driver -> cut-in detected of '%s' on same lane (offset: %.3f, TTC: %.2f) in front of '%s' -> driver starts braking after %.2f sec "
+							"(braking delay + risk perception time)", entities_->object_[i]->name_.c_str(), fabs(targetO), TTC, object_->name_.c_str(), waitTime_);
+						driverBraking_ = true;
+						cutInDetected_ = true;
 					}
 				}
 				// deceleration
@@ -248,14 +281,14 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
 						}
 					}
 
-					// TTC between ego and object in front < 2sec
-					if (!driverBraking_ && dsFree >= 0 && TTC < 2)
+					// object in front
+					if (!driverBraking_ && dsFree >= 0)
 					{
-						// There was a cut-out vehicle in between with a deviation from its lane center larger than 0.375m (no swearving vehicle)
-						if (dtFreeCutOut_ > -LARGE_NUMBER)
+						// There was a cut-out vehicle in between with a deviation from its lane center larger than 0.375m (no swearving vehicle) and TTC < 2sec
+						if (dtFreeCutOut_ > -LARGE_NUMBER && TTC < 2 && !driverBrakeCandidateName.empty())
 						{
 							waitTime_ = 1.15;  // 0.75sec braking delay + 0.4sec risk perception time (distance a and b in plot of regulation)
-							ALKS_LOG("ECE ALKS driver -> cut-out '%s' (offset: %.3f) and next vehicle in front '%s' detected (TTC: %.2f) in front of '%s' -> "
+							ALKS_LOG("ECE ALKS driver -> cut-out '%s' on same lane (offset: %.3f) and next vehicle in front '%s' detected (TTC: %.2f) in front of '%s' -> "
 								"driver starts braking after %.2f sec (braking delay + risk perception time)", driverBrakeCandidateName.c_str(),
 								lastOffset, entities_->object_[i]->name_.c_str(), TTC, object_->name_.c_str(), waitTime_);
 							driverBraking_ = true;
