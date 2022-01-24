@@ -1130,7 +1130,7 @@ TEST_F(LaneRoadMarkTypeTest,AddLine) {
 ////////// TESTS FOR CLASS -> LaneRoadMark ///////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-class LaneRoadMarkTest :public ::testing::TestWithParam<std::tuple<double,LaneRoadMark::RoadMarkType,LaneRoadMark::RoadMarkWeight,LaneRoadMark::RoadMarkColor,LaneRoadMark::RoadMarkMaterial,LaneRoadMark::RoadMarkLaneChange,double,double>> {};
+class LaneRoadMarkTest :public ::testing::TestWithParam<std::tuple<double,LaneRoadMark::RoadMarkType,LaneRoadMark::RoadMarkWeight,RoadMarkColor,LaneRoadMark::RoadMarkMaterial,LaneRoadMark::RoadMarkLaneChange,double,double>> {};
 // inp: s_offset,type,weight,color,material,lane_change,width,height
 
 TEST_P(LaneRoadMarkTest, DefaultConstructor) {
@@ -1159,12 +1159,12 @@ TEST_P(LaneRoadMarkTest, DefaultConstructor) {
 INSTANTIATE_TEST_SUITE_P(LaneRoadMarkTests,LaneRoadMarkTest,::testing::Values(
     std::make_tuple(0,LaneRoadMark::NONE_TYPE,
         LaneRoadMark::STANDARD,
-        LaneRoadMark::STANDARD_COLOR,
+        RoadMarkColor::STANDARD_COLOR,
         LaneRoadMark::STANDARD_MATERIAL,
         LaneRoadMark::INCREASE,0.2,0),
     std::make_tuple(100,LaneRoadMark::SOLID,
         LaneRoadMark::BOLD,
-        LaneRoadMark::BLUE,
+        RoadMarkColor::BLUE,
         LaneRoadMark::STANDARD_MATERIAL,
         LaneRoadMark::DECREASE,0.2,-1)));
 
@@ -1307,7 +1307,7 @@ TEST_F(LaneTestFixture, TestLaneAddFunctions)
     LaneLink *lanelink = new LaneLink(LinkType::SUCCESSOR, 3);
     LaneWidth *lanewidth = new LaneWidth(2.0, 1.0, -2.0, -3.0, 4.0);
     LaneRoadMark *laneroadmark = new LaneRoadMark(2.0, LaneRoadMark::RoadMarkType::BROKEN, LaneRoadMark::RoadMarkWeight::STANDARD,
-    LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
+    RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
 
     lane.AddLink(lanelink);
     lane.AddLaneWidth(lanewidth);
@@ -1398,7 +1398,7 @@ TEST_F(LaneTestFixture, TestLaneGetWidth)
 TEST_F(LaneTestFixture, TestLaneGetRoadMark)
 {
     LaneRoadMark *laneroadmark = new LaneRoadMark(2.0, LaneRoadMark::RoadMarkType::BROKEN, LaneRoadMark::RoadMarkWeight::STANDARD,
-    LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
+    RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
     lane.AddLaneRoadMark(laneroadmark);
 
     ASSERT_THROW(lane.GetLaneRoadMarkByIdx(-1), std::runtime_error);
@@ -1411,7 +1411,7 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark)
     ASSERT_EQ(mylaneroadmark->GetHeight(), 2.0);
     ASSERT_EQ(mylaneroadmark->GetType(), LaneRoadMark::RoadMarkType::BROKEN);
     ASSERT_EQ(mylaneroadmark->GetWeight(), LaneRoadMark::RoadMarkWeight::STANDARD);
-    ASSERT_EQ(mylaneroadmark->GetColor(), LaneRoadMark::RoadMarkColor::RED);
+    ASSERT_EQ(mylaneroadmark->GetColor(), RoadMarkColor::RED);
     ASSERT_EQ(mylaneroadmark->GetMaterial(), LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL);
     ASSERT_EQ(mylaneroadmark->GetLaneChange(), LaneRoadMark::RoadMarkLaneChange::BOTH);
 
@@ -1421,7 +1421,7 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark)
 TEST_F(LaneTestFixture, TestLaneGetRoadMark2)
 {
     LaneRoadMark *laneroadmark = new LaneRoadMark(2.0, LaneRoadMark::RoadMarkType::BROKEN_BROKEN, LaneRoadMark::RoadMarkWeight::STANDARD,
-    LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
+    RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
     lane.AddLaneRoadMark(laneroadmark);
 
     ASSERT_THROW(lane.GetLaneRoadMarkByIdx(-1), std::runtime_error);
@@ -1437,7 +1437,7 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark2)
 TEST_F(LaneTestFixture, TestLaneGetRoadMark3)
 {
     LaneRoadMark *laneroadmark = new LaneRoadMark(2.0, LaneRoadMark::RoadMarkType::SOLID_SOLID, LaneRoadMark::RoadMarkWeight::STANDARD,
-    LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
+    RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
     lane.AddLaneRoadMark(laneroadmark);
 
     ASSERT_THROW(lane.GetLaneRoadMarkByIdx(-1), std::runtime_error);
@@ -1453,7 +1453,7 @@ TEST_F(LaneTestFixture, TestLaneGetRoadMark3)
 TEST_F(LaneTestFixture, TestLaneGetRoadMark4)
 {
     LaneRoadMark *laneroadmark = new LaneRoadMark(2.0, LaneRoadMark::RoadMarkType::BROKEN_SOLID, LaneRoadMark::RoadMarkWeight::STANDARD,
-    LaneRoadMark::RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
+    RoadMarkColor::RED,LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH, 4.0, 2.0);
     lane.AddLaneRoadMark(laneroadmark);
 
     ASSERT_THROW(lane.GetLaneRoadMarkByIdx(-1), std::runtime_error);
@@ -1496,10 +1496,10 @@ TEST_F(LaneTestFixture, TestLaneGetOSIPoints)
 TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
 {
     LaneRoadMark *laneroadmark = new LaneRoadMark(0, LaneRoadMark::RoadMarkType::BROKEN, LaneRoadMark::RoadMarkWeight::STANDARD,
-    LaneRoadMark::RoadMarkColor::STANDARD_COLOR, LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH,
+    RoadMarkColor::STANDARD_COLOR, LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH,
     1.0, 1.0);
     LaneRoadMark *laneroadmark_second = new LaneRoadMark(50, LaneRoadMark::RoadMarkType::BROKEN, LaneRoadMark::RoadMarkWeight::STANDARD,
-    LaneRoadMark::RoadMarkColor::STANDARD_COLOR, LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH,
+    RoadMarkColor::STANDARD_COLOR, LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL, LaneRoadMark::RoadMarkLaneChange::BOTH,
     2.0, 2.0);
 
     LaneRoadMarkType *laneroadmarktype = new LaneRoadMarkType("type1", 1.0);

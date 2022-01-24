@@ -977,6 +977,41 @@ int Lane::GetLaneBoundaryGlobalId()
 	}
 }
 
+RoadMarkColor LaneRoadMark::ParseColor(pugi::xml_node node)
+{
+	RoadMarkColor color = RoadMarkColor::UNDEFINED;
+
+	if (node.attribute("color") != 0 && strcmp(node.attribute("color").value(), ""))
+	{
+		if (!strcmp(node.attribute("color").value(), "standard"))
+		{
+			color = RoadMarkColor::STANDARD_COLOR;
+		}
+		else  if (!strcmp(node.attribute("color").value(), "blue"))
+		{
+			color = RoadMarkColor::BLUE;
+		}
+		else  if (!strcmp(node.attribute("color").value(), "green"))
+		{
+			color = RoadMarkColor::GREEN;
+		}
+		else  if (!strcmp(node.attribute("color").value(), "red"))
+		{
+			color = RoadMarkColor::RED;
+		}
+		else  if (!strcmp(node.attribute("color").value(), "white"))
+		{
+			color = RoadMarkColor::WHITE;
+		}
+		else  if (!strcmp(node.attribute("color").value(), "yellow"))
+		{
+			color = RoadMarkColor::YELLOW;
+		}
+	}
+
+	return color;
+}
+
 LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx)
 {
 	if (idx < (int)lane_roadMarkType_.size())
@@ -3144,37 +3179,12 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								}
 
 								// color - consider it optional with default value = STANDARD_COLOR
-								LaneRoadMark::RoadMarkColor roadMark_color = LaneRoadMark::STANDARD_COLOR;
-								if (roadMark.attribute("color") != 0 && strcmp(roadMark.attribute("color").value(), ""))
+								RoadMarkColor roadMark_color = LaneRoadMark::ParseColor(roadMark);
+								if (roadMark_color == RoadMarkColor::UNDEFINED)
 								{
-									if (!strcmp(roadMark.attribute("color").value(), "standard"))
-									{
-										roadMark_color = LaneRoadMark::STANDARD_COLOR;
-									}
-									else  if (!strcmp(roadMark.attribute("color").value(), "blue"))
-									{
-										roadMark_color = LaneRoadMark::BLUE;
-									}
-									else  if (!strcmp(roadMark.attribute("color").value(), "green"))
-									{
-										roadMark_color = LaneRoadMark::GREEN;
-									}
-									else  if (!strcmp(roadMark.attribute("color").value(), "red"))
-									{
-										roadMark_color = LaneRoadMark::RED;
-									}
-									else  if (!strcmp(roadMark.attribute("color").value(), "white"))
-									{
-										roadMark_color = LaneRoadMark::WHITE;
-									}
-									else  if (!strcmp(roadMark.attribute("color").value(), "yellow"))
-									{
-										roadMark_color = LaneRoadMark::YELLOW;
-									}
-									else
-									{
-										LOG("unknown lane road mark color: %s (road id=%d)\n", roadMark.attribute("color").value(), r->GetId());
-									}
+									LOG("unknown lane road mark color: %s (road id=%d), set to standard (white)",
+										roadMark_color, r->GetId());
+									roadMark_color = RoadMarkColor::STANDARD_COLOR;
 								}
 
 								// material
@@ -3246,6 +3256,15 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 											double t_offset = atof(line.attribute("tOffset").value());
 											double s_offset_l = atof(line.attribute("sOffset").value());
 
+											if (!line.attribute("color").empty())
+											{
+												RoadMarkColor tmp_color = LaneRoadMark::ParseColor(line);
+												if (tmp_color != RoadMarkColor::UNDEFINED)
+												{
+													roadMark_color = tmp_color;  // supersedes the setting in <RoadMark> element (available from odr v1.5)
+												}
+											}
+
 											// rule (optional)
 											LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
 											if (line.attribute("rule") != 0 && strcmp(line.attribute("rule").value(), ""))
@@ -3270,7 +3289,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 											double width = atof(line.attribute("width").value());
 
-											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(llength, space, t_offset, s_offset_l, rule, width);
+											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(llength, space, t_offset, s_offset_l, rule, width,
+												roadMark_color);
 											lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 										}
 									}
@@ -3283,7 +3303,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, roadMark_width);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine =
+											new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, roadMark_width, roadMark_color);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 									}
 									else if (roadMark_type == LaneRoadMark::SOLID_SOLID)
@@ -3291,9 +3312,11 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(0, 0, -roadMark_width, 0, rule, roadMark_width);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new
+											LaneRoadMarkTypeLine(0, 0, -roadMark_width, 0, rule, roadMark_width, roadMark_color);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 = new LaneRoadMarkTypeLine(0, 0, roadMark_width, 0, rule, roadMark_width);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 = new
+											LaneRoadMarkTypeLine(0, 0, roadMark_width, 0, rule, roadMark_width, roadMark_color);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine2);
 									}
 									else if (roadMark_type == LaneRoadMark::BROKEN)
@@ -3301,7 +3324,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(4, 8, 0, 0, rule, roadMark_width);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine =
+											new LaneRoadMarkTypeLine(4, 8, 0, 0, rule, roadMark_width, roadMark_color);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 									}
 									else if (roadMark_type == LaneRoadMark::BROKEN_BROKEN)
@@ -3309,9 +3333,11 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(4, 8, -roadMark_width, 0, rule, roadMark_width);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine =
+											new LaneRoadMarkTypeLine(4, 8, -roadMark_width, 0, rule, roadMark_width, roadMark_color);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 = new LaneRoadMarkTypeLine(4, 8, roadMark_width, 0, rule, roadMark_width);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 =
+											new LaneRoadMarkTypeLine(4, 8, roadMark_width, 0, rule, roadMark_width, roadMark_color);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine2);
 									}
 									else

@@ -66,12 +66,12 @@ osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename)
 }
 
 void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::DrawElementsUInt> indices,
-	roadmanager::LaneRoadMark::RoadMarkColor color)
+	roadmanager::RoadMarkColor color)
 {
 	osg::ref_ptr<osg::Material> materialRoadmark_ = new osg::Material;
 	osg::ref_ptr<osg::Vec4Array> color_roadmark = new osg::Vec4Array;
 
-	if (color == roadmanager::LaneRoadMark::RoadMarkColor::YELLOW)
+	if (color == roadmanager::RoadMarkColor::YELLOW)
 	{
 		color_roadmark->push_back(osg::Vec4(0.9f, 0.9f, 0.25f, 1.0f));
 	}
@@ -190,7 +190,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 						(*indices)[3] = 3;
 
 						// Finally create and add OSG geometries
-						AddRoadMarkGeom(vertices, indices, lane_roadmark->GetColor());
+						AddRoadMarkGeom(vertices, indices, lane_roadmarktypeline->GetColor());
 					}
 				}
 				else if (lane_roadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::SOLID ||
@@ -272,7 +272,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
 					}
 
 					// Finally create and add OSG geometries
-					AddRoadMarkGeom(vertices, indices, lane_roadmark->GetColor());
+					AddRoadMarkGeom(vertices, indices, lane_roadmarktypeline->GetColor());
 				}
 			}
 		}

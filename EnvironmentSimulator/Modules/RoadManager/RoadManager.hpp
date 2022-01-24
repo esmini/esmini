@@ -341,6 +341,18 @@ namespace roadmanager
 		int roadmarkline_idx_;
 	};
 
+
+	enum class RoadMarkColor
+	{
+		UNDEFINED,
+		STANDARD_COLOR, // equivalent to white
+		BLUE,
+		GREEN,
+		RED,
+		WHITE,
+		YELLOW
+	};
+
 	class LaneRoadMarkTypeLine
 	{
 	public:
@@ -351,8 +363,9 @@ namespace roadmanager
 			NONE
 		};
 
-		LaneRoadMarkTypeLine(double length, double space, double t_offset, double s_offset, RoadMarkTypeLineRule rule, double width):
-		length_(length), space_(space), t_offset_(t_offset), s_offset_(s_offset), rule_(rule), width_(width) {}
+		LaneRoadMarkTypeLine(double length, double space, double t_offset, double s_offset, RoadMarkTypeLineRule rule, double width,
+			RoadMarkColor color = RoadMarkColor::UNDEFINED) : length_(length), space_(space),
+			t_offset_(t_offset), s_offset_(s_offset), rule_(rule), width_(width), color_(color) {}
 		~LaneRoadMarkTypeLine() {};
 		double GetSOffset() { return s_offset_; }
 		double GetTOffset() { return t_offset_; }
@@ -363,6 +376,7 @@ namespace roadmanager
 		OSIPoints osi_points_;
 		void SetGlobalId();
 		int GetGlobalId() { return global_id_; }
+		RoadMarkColor GetColor() { return color_; }
 
 	private:
 		double length_;
@@ -372,6 +386,7 @@ namespace roadmanager
 		RoadMarkTypeLineRule rule_;
 		double width_;
 		int global_id_;  // Unique ID for OSI
+		RoadMarkColor color_;  // if set, supersedes setting in <RoadMark>
 	};
 
 	class LaneRoadMarkType
@@ -414,16 +429,6 @@ namespace roadmanager
 			BOLD
 		};
 
-		enum RoadMarkColor
-		{
-			STANDARD_COLOR, // equivalent to white
-			BLUE,
-			GREEN,
-			RED,
-			WHITE,
-			YELLOW
-		};
-
 		enum RoadMarkMaterial
 		{
 			STANDARD_MATERIAL // only "standard" is available for now
@@ -455,6 +460,8 @@ namespace roadmanager
 
 		int GetNumberOfRoadMarkTypes() { return (int)lane_roadMarkType_.size(); }
 		LaneRoadMarkType* GetLaneRoadMarkTypeByIdx(int idx);
+
+		static RoadMarkColor ParseColor(pugi::xml_node node);
 
 	private:
 		double s_offset_;

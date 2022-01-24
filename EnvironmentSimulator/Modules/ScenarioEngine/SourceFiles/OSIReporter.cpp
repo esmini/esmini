@@ -1196,22 +1196,22 @@ int OSIReporter::UpdateOSILaneBoundary(std::vector<ObjectState *> objectState)
 									osi3::LaneBoundary_Classification_Color classific_col;
 									switch (laneroadmark->GetColor())
 									{
-									case roadmanager::LaneRoadMark::RoadMarkColor::STANDARD_COLOR:
+									case roadmanager::RoadMarkColor::STANDARD_COLOR:
 										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_WHITE;
 										break;
-									case roadmanager::LaneRoadMark::RoadMarkColor::BLUE:
+									case roadmanager::RoadMarkColor::BLUE:
 										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_BLUE;
 										break;
-									case roadmanager::LaneRoadMark::RoadMarkColor::GREEN:
+									case roadmanager::RoadMarkColor::GREEN:
 										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_GREEN;
 										break;
-									case roadmanager::LaneRoadMark::RoadMarkColor::RED:
+									case roadmanager::RoadMarkColor::RED:
 										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_RED;
 										break;
-									case roadmanager::LaneRoadMark::RoadMarkColor::WHITE:
+									case roadmanager::RoadMarkColor::WHITE:
 										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_WHITE;
 										break;
-									case roadmanager::LaneRoadMark::RoadMarkColor::YELLOW:
+									case roadmanager::RoadMarkColor::YELLOW:
 										classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_YELLOW;
 										break;
 									default:
