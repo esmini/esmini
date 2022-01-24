@@ -585,7 +585,7 @@ int main(int argc, char** argv)
 		ParseEntities(viewer, player);
 		const int ghost_id = GetGhostIdx();
 
-		/*
+		/* TODO: Some functionality to distinguish "main replay" from variations
 		for (size_t i = 0; i < viewer->entities_.size(); i++)
 		{
 			if (i % player->GetNumberOfScenarios() != 0)

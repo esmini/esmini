@@ -150,21 +150,6 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 		}
 	}
 
-	for (auto& sce : scenarioData)
-	{
-		try
-		{
-			if (abs(sce.second[0].info.timeStamp) - abs(sce.second[7].info.timeStamp) < 0.025)
-			{
-				//rescale scenario
-			}
-		}
-		catch (...)
-		{
-			LOG_AND_QUIT("Scenario %s less than 7 samples long, aboring\n", sce.first.c_str());
-		}
-	}
-
 	const size_t scenario_length = scenarioData.begin()->second.size();
 
 	// Iterate over samples, then scenario, states added to data_ as scenario1+sample1, scenario2+sample1, scenario1+sample2 etc.
