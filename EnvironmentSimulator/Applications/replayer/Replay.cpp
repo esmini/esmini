@@ -126,15 +126,15 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 			return sce1.second.size() > sce2.second.size();
 		}
 		);
-	}
 
-	LOG("Longest scenario is main scenario: %s", scenarioData.begin()->first.c_str());
+		LOG("Longest scenario is main scenario: %s", FileNameOf(scenarioData.begin()->first.c_str()).c_str());
+	}
 
 	// Log which scenario belongs to what ID-group (0, 100, 200 etc.)
 	for (size_t i = 0; i < scenarioData.size(); i++)
 	{
 		std::string scenario_tmp = (scenarioData.begin()+i)->first;
-		LOG("Scenarios corresponding to IDs:\n%s : %d\'s", scenario_tmp.c_str(), i * 100);
+		LOG("Scenarios corresponding to IDs (%d:%d): %s", i * 100, (i+1) * 100 - 1, FileNameOf(scenario_tmp.c_str()).c_str());
 	}
 
 	// Ensure increasing timestamps. Remove any other entries.
@@ -195,7 +195,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
 
 		// Fix to check sc later
 		if (filename != "." && filename != ".." && filename.find(sce) != std::string::npos) {
-			scenarios_.emplace_back(dir+filename);
+			scenarios_.emplace_back(CombineDirectoryPathAndFilepath(dir, filename));
 		}
 	}
 	closedir(directory);

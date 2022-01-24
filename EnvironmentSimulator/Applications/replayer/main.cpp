@@ -648,26 +648,33 @@ int main(int argc, char** argv)
 
 			if (!pause)
 			{
-				// Get milliseconds since Jan 1 1970
-				now = SE_getSystemTime();
-				deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
-				lastTimeStamp = now;
-				if (deltaSimTime > maxStepSize) // limit step size
+				if (viewer->GetSaveImagesToFile())
 				{
-					deltaSimTime = maxStepSize;
+					player->GoToNextFrame();
 				}
-				else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
+				else
 				{
-					SE_sleep(minStepSize - deltaSimTime);
-					deltaSimTime = minStepSize;
+					// Get milliseconds since Jan 1 1970
+					now = SE_getSystemTime();
+					deltaSimTime = (now - lastTimeStamp) / 1000.0;  // step size in seconds
+					lastTimeStamp = now;
+					if (deltaSimTime > maxStepSize) // limit step size
+					{
+						deltaSimTime = maxStepSize;
+					}
+					else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
+					{
+						SE_sleep(minStepSize - deltaSimTime);
+						deltaSimTime = minStepSize;
+					}
+					deltaSimTime *= time_scale;
+					targetSimTime = simTime + deltaSimTime;
 				}
-				deltaSimTime *= time_scale;
-				targetSimTime = simTime + deltaSimTime;
 			}
 
 			do
 			{
-				if (!pause)
+				if (!(pause || viewer->GetSaveImagesToFile()))
 				{
 					player->GoToDeltaTime(deltaSimTime, true);
 					simTime = player->GetTime();  // potentially wrapped for repeat
