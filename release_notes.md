@@ -1,5 +1,23 @@
 ## esmini release notes
 
+### 2022-01-24 Version 2.20.2
+
+- New replayer feature: Play multiple recordings in parallel
+  - example: `replayer --window 60 60 800 400 --res_path ./resources --dir ./dat --file variant`
+  - above command will load and play all `variant*.dat` files found in `./dat` folder, simultanously
+  - Note: Intented for .dat files of same length and timesteps, e.g. using fixed timestep:  
+    `esmini --headless --fixed_timestep 0.01 --osc variant1.xosc --record variant1.dat`
+- Updated behavior: Disable global collision detection by default
+  - saving performance for huge scenarios
+  - activate with launch flag `--collision`
+- Updated roadmark support ([issue #215](https://github.com/esmini/esmini/issues/215)):
+  - solid_solid and broken_broken roadmarks
+  - yellow colored roadmarks
+  - apply <RoadMark> width (optional) and weight (if width is missing)
+- Fix LaneOffsetAction final value bug ([issue #213](https://github.com/esmini/esmini/issues/213))
+- Optimize evaluation of AND:ed conditions (conditions within same condition group)
+- Ensure all timesteps are saved with `--capture_screen` in replayer
+
 ### 2022-01-21 Version 2.20.1
 
 - Add replayer option to hide ghost models but still show their trajectories
