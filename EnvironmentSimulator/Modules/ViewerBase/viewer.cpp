@@ -44,6 +44,7 @@
 #define LOD_SCALE_DEFAULT 1.0
 #define DEFAULT_AA_MULTISAMPLES 4
 #define OSI_LINE_WIDTH 2.0f
+#define OSI_LINE_WIDTH_BOLD 4.0f
 #define TRAIL_WIDTH 2
 #define TRAIL_DOT_SIZE 10
 #define TRAIL_DOT3D_SIZE 0.2
@@ -2180,7 +2181,14 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 									osiFeatures_->addChild(osi_rm_geom);
 
 									// Draw lines from the start of the roadmark to the end of the roadmark
-									lineWidth->setWidth(OSI_LINE_WIDTH);
+									if (lane_roadmark->GetWeight() == roadmanager::LaneRoadMark::BOLD)
+									{
+										lineWidth->setWidth(OSI_LINE_WIDTH_BOLD);
+									}
+									else
+									{
+										lineWidth->setWidth(OSI_LINE_WIDTH);
+									}
 									geom->setVertexArray(osi_rm_points.get());
 									geom->setColorArray(osi_rm_color.get());
 									geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
@@ -2229,7 +2237,14 @@ bool Viewer::CreateRoadMarkLines(roadmanager::OpenDrive* od)
 								osiFeatures_->addChild(osi_rm_geom);
 
 								// Draw lines between each selected points
-								lineWidth->setWidth(OSI_LINE_WIDTH);
+								if (lane_roadmark->GetWeight() == roadmanager::LaneRoadMark::BOLD)
+								{
+									lineWidth->setWidth(OSI_LINE_WIDTH_BOLD);
+								}
+								else
+								{
+									lineWidth->setWidth(OSI_LINE_WIDTH);
+								}
 								color->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0));
 
 								geom->setVertexArray(osi_rm_points.get());

@@ -70,6 +70,8 @@ using namespace roadmanager;
 #define OSI_POINT_CALC_STEPSIZE 1 // [m]
 #define OSI_TANGENT_LINE_TOLERANCE 0.01 // [m]
 #define OSI_POINT_DIST_SCALE 0.025
+#define ROADMARK_WIDTH_STANDARD 0.15
+#define ROADMARK_WIDTH_BOLD 0.20
 
 
 static int g_Lane_id;
@@ -3135,7 +3137,9 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 									}
 									else
 									{
-										LOG("unknown lane road mark weight: %s (road id=%d)\n", roadMark.attribute("type").value(), r->GetId());
+										LOG("unknown lane road mark weight: %s (road id=%d) setting to standard\n",
+											roadMark.attribute("type").value(), r->GetId());
+										roadMark_weight = LaneRoadMark::STANDARD;
 									}
 								}
 
@@ -3208,7 +3212,17 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 										}
 									}
 								}
-								double roadMark_width = atof(roadMark.attribute("width").value());
+
+								double roadMark_width;
+								if (roadMark.attribute("width").empty())
+								{
+									roadMark_width = (roadMark_weight == LaneRoadMark::BOLD) ? ROADMARK_WIDTH_BOLD : ROADMARK_WIDTH_STANDARD;
+								}
+								else
+								{
+									roadMark_width = atof(roadMark.attribute("width").value());
+								}
+
 								double roadMark_height = atof(roadMark.attribute("height").value());
 								LaneRoadMark *lane_roadMark = new LaneRoadMark(s_offset, roadMark_type, roadMark_weight, roadMark_color,
 								roadMark_material, roadMark_laneChange, roadMark_width, roadMark_height);
@@ -3263,43 +3277,41 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								}
 								if (roadMark_type != LaneRoadMark::NONE_TYPE && lane_roadMarkType == 0)
 								{
-									const double double_space = 2 * 0.15;  // default space between lines equal to width of one line
-
 									if (roadMark_type == LaneRoadMark::SOLID ||
 										roadMark_type == LaneRoadMark::CURB)
 									{
-										lane_roadMarkType = new LaneRoadMarkType("stand-in", 0.15);
+										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, 0.15);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, roadMark_width);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 									}
 									else if (roadMark_type == LaneRoadMark::SOLID_SOLID)
 									{
-										lane_roadMarkType = new LaneRoadMarkType("stand-in", 0.15);
+										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(0, 0, -double_space /2.0, 0, rule, 0.15);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(0, 0, -roadMark_width, 0, rule, roadMark_width);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 = new LaneRoadMarkTypeLine(0, 0, double_space /2.0, 0, rule, 0.15);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 = new LaneRoadMarkTypeLine(0, 0, roadMark_width, 0, rule, roadMark_width);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine2);
 									}
 									else if (roadMark_type == LaneRoadMark::BROKEN)
 									{
-										lane_roadMarkType = new LaneRoadMarkType("stand-in", 0.15);
+										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(4, 8, 0, 0, rule, 0.15);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(4, 8, 0, 0, rule, roadMark_width);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 									}
 									else if (roadMark_type == LaneRoadMark::BROKEN_BROKEN)
 									{
-										lane_roadMarkType = new LaneRoadMarkType("stand-in", 0.15);
+										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(4, 8, -double_space / 2.0, 0, rule, 0.15);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(4, 8, -roadMark_width, 0, rule, roadMark_width);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 = new LaneRoadMarkTypeLine(4, 8, double_space / 2.0, 0, rule, 0.15);
+										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2 = new LaneRoadMarkTypeLine(4, 8, roadMark_width, 0, rule, roadMark_width);
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine2);
 									}
 									else
@@ -5771,7 +5783,6 @@ void OpenDrive::SetRoadMarkOSIPoints()
 
 										}
 									}
-
 
 									// Set all collected osi points for the current lane rpadmarkline
 									lane_roadMarkTypeLine->osi_points_.Set(osi_point);
