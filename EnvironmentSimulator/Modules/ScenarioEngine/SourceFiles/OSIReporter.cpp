@@ -538,8 +538,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 	obj_osi_internal.mobj = obj_osi_internal.gt->add_moving_object();
 
 	// Set OSI Moving Object Mutable ID
-	int mobj_size = obj_osi_internal.gt->mutable_moving_object()->size();
-	obj_osi_internal.mobj->mutable_id()->set_value(mobj_size - 1);
+	obj_osi_internal.mobj->mutable_id()->set_value(objectState->state_.info.id);
 
 	// Set OSI Moving Object Type and Classification
 	if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE))
