@@ -5984,7 +5984,7 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 	// First step is to identify closest road and OSI line segment
 
 	size_t nrOfRoads;
-	if (route_)
+	if (route_ && route_->IsInvalid())
 	{
 		// Route assigned. Iterate over all roads in the route. I.e. check all waypoints road ID.
 		nrOfRoads = route_->minimal_waypoints_.size();
@@ -6029,7 +6029,7 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 			}
 			else
 			{
-				if (route_)
+				if (route_ && !route_->IsInvalid())
 				{
 					road = GetOpenDrive()->GetRoadById(route_->minimal_waypoints_[i].GetTrackId());
 				}
@@ -6574,7 +6574,7 @@ Position::ErrorCode Position::XYZH2TrackPos(double x3, double y3, double z3, dou
 	}
 
 	// If on a route, calculate corresponding route position
-	if (route_)
+	if (route_ && !route_->IsInvalid())
 	{
 		CalcRoutePosition();
 	}
@@ -8340,7 +8340,7 @@ Position::ErrorCode Position::GetProbeInfo(double lookahead_distance, RoadProbeI
 	if (fabs(lookahead_distance) > SMALL_NUMBER)
 	{
 
-		if (target.route_)
+		if (target.route_ && !target.route_->IsInvalid())
 		{
 			retval = target.MoveRouteDS(lookahead_distance,
 				lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER);
@@ -8807,7 +8807,7 @@ double Position::GetRRelative()
 
 int Position::SetRoutePosition(Position *position)
 {
-	if(!route_)
+	if(!route_ || route_->IsInvalid())
 	{
 		return -1;
 	}
@@ -8830,7 +8830,7 @@ int Position::SetRoutePosition(Position *position)
 
 double Position::GetRouteS()
 {
-	if (!route_)
+	if (!route_ || route_->IsInvalid())
 	{
 		return 0.0;
 	}
@@ -8842,7 +8842,7 @@ Position::ErrorCode Position::MoveRouteDS(double ds, bool actualDistance)
 {
 	Position::ErrorCode retval = ErrorCode::ERROR_NO_ERROR;
 
-	if (!route_)
+	if (!route_ || route_->IsInvalid())
 	{
 		return ErrorCode::ERROR_GENERIC;
 	}
