@@ -400,8 +400,25 @@ int ScenarioEngine::step(double deltaSimTime)
 								}
 							}
 						}
+					}
+				}
+			}
+		}
 
-						// Then step events
+		for (size_t j = 0; j < story->act_.size(); j++)
+		{
+			// Then step events
+			Act* act = story->act_[j];
+
+			// Maneuvers
+			if (act->IsActive())
+			{
+				for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
+				{
+					for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
+					{
+						OSCManeuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
+
 						for (size_t m = 0; m < maneuver->event_.size(); m++)
 						{
 							Event* event = maneuver->event_[m];
