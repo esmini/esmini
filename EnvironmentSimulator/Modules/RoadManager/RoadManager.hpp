@@ -2419,6 +2419,7 @@ namespace roadmanager
 		std::string getName();
 		double GetLength() { return length_; }
 		void CheckValid();
+		bool IsInvalid() { return invalid_route_; }
 
 		// Current route position data
 		// Actual object position might differ, e.g. laneId or even trackId in junctions

@@ -7994,7 +7994,7 @@ double Position::getRelativeDistance(double targetX, double targetY, double &x, 
 
 int Position::CalcRoutePosition()
 {
-	if (route_ == 0)
+	if (route_ == 0 || route_->IsInvalid())
 	{
 		return -1;
 	}

@@ -2763,7 +2763,7 @@ void Viewer::UpdateRoadSensors(PointSensor *road_sensor, PointSensor* route_sens
 
 	roadmanager::Position route_pos(track_pos);
 	roadmanager::Route* r = pos->GetRoute();
-	if (r)
+	if (r && !r->IsInvalid())
 	{
 		route_pos.SetLanePos(r->GetTrackId(), r->GetLaneId(), r->GetTrackS(), 0.0);
 	}

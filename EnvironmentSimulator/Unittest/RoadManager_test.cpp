@@ -1776,7 +1776,9 @@ TEST(Route, TestAssignRoute)
     Route route;
     Position routepos[nrWaypoints];
     routepos[0].SetLanePos(0, 1, 10.0, 0);
+    routepos[0].SetHeadingRelative(M_PI);
     routepos[1].SetLanePos(0, 1, 7.0, 0);   // Add extra waypoint on first road - should be removed
+    routepos[0].SetHeadingRelative(M_PI);
     routepos[2].SetLanePos(8, -1, 2.0, 0);
     routepos[3].SetLanePos(8, -1, 4.0, 0);  // Add extra waypoint on same road - previous should be ignored
     routepos[4].SetLanePos(1, -1, 2.0, 0);
