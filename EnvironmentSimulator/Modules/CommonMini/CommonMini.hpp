@@ -583,7 +583,7 @@ public:
 			return duration_ - Elapsed();
 		}
 	}
-	bool Expired() { return Elapsed() > duration_; }
+	bool Expired() { return Elapsed() > duration_ - SMALL_NUMBER; }
 };
 
 
@@ -620,7 +620,7 @@ public:
 
 	bool Started() { return duration_ > SMALL_NUMBER; }
 	double Elapsed(double timestamp_s) { return timestamp_s - start_time_; }
-	double Expired(double timestamp_s) { return timestamp_s - start_time_ > duration_; }
+	double Expired(double timestamp_s) { return timestamp_s - start_time_ > duration_ - SMALL_NUMBER; }
 	double GetDuration() { return duration_; }
 };
 
