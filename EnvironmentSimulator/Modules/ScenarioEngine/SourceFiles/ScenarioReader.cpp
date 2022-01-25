@@ -1749,18 +1749,18 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 		}
 		else if (actionChild.name() == std::string("EntityAction"))
 		{
+			Object* entity;
+
+			entity = ResolveObjectReference(parameters.ReadAttribute(actionChild, "entityRef"));
+			if (entity == NULL)
+			{
+				LOG_AND_QUIT("AddEntityAction: Failed to resolve entityRef %s", parameters.ReadAttribute(actionChild, "entityRef").c_str());
+			}
+
 			for (pugi::xml_node eaChild = actionChild.first_child(); eaChild; eaChild = eaChild.next_sibling())
 			{
 				if (eaChild.name() == std::string("AddEntityAction"))
 				{
-					Object* entity;
-
-					entity = ResolveObjectReference(parameters.ReadAttribute(eaChild, "entityRef"));
-					if (entity == NULL)
-					{
-						LOG_AND_QUIT("AddEntityAction: Failed to resolve entityRef %s", parameters.ReadAttribute(eaChild, "entityRef").c_str());
-					}
-
 					AddEntityAction* addEntityAction = new AddEntityAction(entity);
 
 					addEntityAction->pos_ = parseOSCPosition(eaChild.child("Position"))->GetRMPos();
@@ -1770,14 +1770,6 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode)
 				}
 				else if (eaChild.name() == std::string("DeleteEntityAction"))
 				{
-					Object* entity;
-
-					entity = ResolveObjectReference(parameters.ReadAttribute(eaChild, "entityRef"));
-					if (entity == NULL)
-					{
-						LOG_AND_QUIT("DeleteEntityAction: Failed to resolve entityRef %s", parameters.ReadAttribute(eaChild, "entityRef").c_str());
-					}
-
 					DeleteEntityAction* deleteEntityAction = new DeleteEntityAction(entity);
 					deleteEntityAction->SetEntities(entities_);
 					deleteEntityAction->SetGateway(gateway_);

@@ -58,8 +58,8 @@
                         <Event name="AddCar1Event1-ExpectedToFail" priority="parallel">
                             <Action name="AddEntityAction1">
                                 <GlobalAction>
-                                    <EntityAction>
-                                        <AddEntityAction entityRef="Car1">
+                                    <EntityAction entityRef="Car1">
+                                        <AddEntityAction>
                                             <Position>
                                                 <LanePosition roadId="1" laneId="-1" offset="0.0" s="10"/>
                                             </Position>
@@ -80,8 +80,8 @@
                         <Event name="DeleteCar1Event1-ExpectedToSucceed" priority="parallel">
                             <Action name="DeleteCar2Action1">
                                 <GlobalAction>
-                                    <EntityAction>
-                                        <DeleteEntityAction entityRef="Car1"/>
+                                    <EntityAction entityRef="Car1">
+                                        <DeleteEntityAction/>
                                     </EntityAction>
                                 </GlobalAction>
                             </Action>
@@ -98,8 +98,8 @@
                         <Event name="AddCar1Event2-ExpectedToSucceed" priority="parallel">
                             <Action name="AddCar1Action2">
                                 <GlobalAction>
-                                    <EntityAction>
-                                        <AddEntityAction entityRef="Car1">
+                                    <EntityAction entityRef="Car1">
+                                        <AddEntityAction>
                                             <Position>
                                                 <RelativeLanePosition entityRef="Car1" ds="220"/>
                                                 <!-- <LanePosition roadId="1" laneId="-1" offset="0.0" s="440"/> -->
@@ -121,8 +121,8 @@
                         <Event name="DeleteCar1Event2-ExpectedToSucceed" priority="parallel">
                             <Action name="DeleteCar2Action1">
                                 <GlobalAction>
-                                    <EntityAction>
-                                        <DeleteEntityAction entityRef="Car1"/>
+                                    <EntityAction entityRef="Car1">
+                                        <DeleteEntityAction/>
                                     </EntityAction>
                                 </GlobalAction>
                             </Action>
@@ -151,8 +151,8 @@
                         <Event name="AddCar2Event1-ExpectedToSucceed" priority="parallel">
                             <Action name="AddEntityAction2">
                                 <GlobalAction>
-                                    <EntityAction>
-                                        <AddEntityAction entityRef="Car2">
+                                    <EntityAction entityRef="Car2">
+                                        <AddEntityAction>
                                             <Position>
                                                 <LanePosition roadId="1" laneId="-1" offset="0.0" s="90"/>
                                             </Position>
@@ -185,8 +185,8 @@
                         <Event name="DeleteCar2Event1-ExpectedToSucceed" priority="parallel">
                             <Action name="DeleteCar2Action1">
                                 <GlobalAction>
-                                    <EntityAction>
-                                        <DeleteEntityAction entityRef="Car2"/>
+                                    <EntityAction entityRef="Car2">
+                                        <DeleteEntityAction/>
                                     </EntityAction>
                                 </GlobalAction>
                             </Action>
@@ -203,8 +203,8 @@
                         <Event name="DeleteCar2Event2-ExpectedToFail" priority="parallel">
                             <Action name="DeleteCar2Action1">
                                 <GlobalAction>
-                                    <EntityAction>
-                                        <DeleteEntityAction entityRef="Car2"/>
+                                    <EntityAction entityRef="Car2">
+                                        <DeleteEntityAction/>
                                     </EntityAction>
                                 </GlobalAction>
                             </Action>
