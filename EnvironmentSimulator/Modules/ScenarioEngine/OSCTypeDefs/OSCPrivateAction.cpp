@@ -610,7 +610,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 	// Update longitudinal position
 	double ds = object_->pos_.DistanceToDS(object_->speed_ * dt);
 	roadmanager::Position::ErrorCode retval = roadmanager::Position::ErrorCode::ERROR_NO_ERROR;
-	if (internal_pos_.GetRoute() && !internal_pos_.GetRoute()->IsInvalid())
+	if (internal_pos_.GetRoute() && internal_pos_.GetRoute()->IsValid())
 	{
 		retval = internal_pos_.MoveRouteDS(ds, false);
 		object_->pos_ = internal_pos_;

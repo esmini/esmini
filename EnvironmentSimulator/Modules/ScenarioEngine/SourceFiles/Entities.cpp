@@ -97,7 +97,7 @@ int Object::MoveAlongS(double ds, bool actualDistance)
 	int retval = 0;
 
 
-	if (pos_.GetRoute() && !pos_.GetRoute()->IsInvalid())
+	if (pos_.GetRoute() && pos_.GetRoute()->IsValid())
 	{
 		retval = static_cast<int>(pos_.MoveRouteDS(ds, actualDistance));
 	}
