@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2022-01-25 Version 2.20.3
+
+- Fix wrong EntityAction interpretation
+  - entityRef an attribute of the EntityAction not its child elements
+- Change timer expire condition from > to >=
+- Evaluate complete story before stepping it ([issue #216](https://github.com/esmini/esmini/issues/216))
+- Change id of OSI objects to be concistent, use scenario entity id
+- Prevent default controller (trying to) use invalid routes
+
 ### 2022-01-24 Version 2.20.2
 
 - New replayer feature: Play multiple recordings in parallel
