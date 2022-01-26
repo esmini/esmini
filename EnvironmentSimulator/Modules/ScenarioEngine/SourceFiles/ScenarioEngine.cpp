@@ -823,7 +823,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
 		double dy = obj->pos_.GetY() - obj->state_old.pos_y;
 
-		if (dt > SMALL_NUMBER && !NEAR_ZERO(getSimulationTime()) )
+		if (dt > SMALL_NUMBER && !(!obj->IsGhost() && NEAR_ZERO(getSimulationTime())))
 		{
 			if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
 			{
