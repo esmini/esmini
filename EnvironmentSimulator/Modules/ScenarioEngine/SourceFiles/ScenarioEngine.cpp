@@ -174,22 +174,22 @@ int ScenarioEngine::step(double deltaSimTime)
 			{
 				if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
 				{
-					obj->pos_ =  o->state_.pos;
+					obj->pos_ = o->state_.pos;
 					obj->SetDirtyBits(o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL));
 				}
 				if (o->dirty_ & Object::DirtyBit::SPEED)
 				{
-					obj->speed_ =  o->state_.info.speed;
+					obj->speed_ = o->state_.info.speed;
 					obj->SetDirtyBits(Object::DirtyBit::SPEED);
 				}
 				if (o->dirty_ & Object::DirtyBit::WHEEL_ANGLE)
 				{
-					obj->wheel_angle_ =  o->state_.info.wheel_angle;
+					obj->wheel_angle_ = o->state_.info.wheel_angle;
 					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
 				}
 				if (o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
 				{
-					obj->wheel_rot_ =  o->state_.info.wheel_rot;
+					obj->wheel_rot_ = o->state_.info.wheel_rot;
 					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
 				}
 				o->clearDirtyBits();
@@ -205,7 +205,6 @@ int ScenarioEngine::step(double deltaSimTime)
 				{
 					obj->SetEndOfRoad(false);
 				}
-
 			}
 		}
 	}
@@ -219,7 +218,8 @@ int ScenarioEngine::step(double deltaSimTime)
 	// Step inital actions - might be extened in time (more than one step)
 	for (size_t i = 0; i < init.private_action_.size(); i++)
 	{
-		if (init.private_action_[i]->IsActive())
+		Object* obj = init.private_action_[i]->object_;
+		if (obj && init.private_action_[i]->IsActive())
 		{
 			//Add action to object initActions vector if it doesn't contain the action
 			if (std::find(init.private_action_[i]->object_->initActions_.begin(), init.private_action_[i]->object_->initActions_.end(), init.private_action_[i]) == init.private_action_[i]->object_->initActions_.end())
@@ -473,27 +473,6 @@ int ScenarioEngine::step(double deltaSimTime)
 		}
 	}
 
-	// This timestep calculation is due to the Ghost vehicle
-	// If both times are equal, it is a normal scenario, or no Ghost teleportation is ongoing -> Step as usual
-	// Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
-	// Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from there
-
-	if (simulationTime_ == trueTime_)
-	{
-		simulationTime_ += deltaSimTime;
-		trueTime_ = simulationTime_;
-
-	}
-	else if (simulationTime_ + deltaSimTime < trueTime_)
-	{
-		simulationTime_ += deltaSimTime;
-
-	}
-	else
-	{
-		simulationTime_ = trueTime_;
-	}
-
 	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
 		Object* obj = entities_.object_[i];
@@ -587,6 +566,27 @@ int ScenarioEngine::step(double deltaSimTime)
 		{
 			obj->SetStandStill(false);
 		}
+	}
+
+	// This timestep calculation is due to the Ghost vehicle
+	// If both times are equal, it is a normal scenario, or no Ghost teleportation is ongoing -> Step as usual
+	// Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
+	// Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from there
+
+	if (simulationTime_ == trueTime_)
+	{
+		simulationTime_ += deltaSimTime;
+		trueTime_ = simulationTime_;
+
+	}
+	else if (simulationTime_ + deltaSimTime < trueTime_)
+	{
+		simulationTime_ += deltaSimTime;
+
+	}
+	else
+	{
+		simulationTime_ = trueTime_;
 	}
 
 	if (all_done)
@@ -823,7 +823,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
 		double dy = obj->pos_.GetY() - obj->state_old.pos_y;
 
-		if (dt > SMALL_NUMBER)
+		if (dt > SMALL_NUMBER && !NEAR_ZERO(getSimulationTime()) )
 		{
 			if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
 			{

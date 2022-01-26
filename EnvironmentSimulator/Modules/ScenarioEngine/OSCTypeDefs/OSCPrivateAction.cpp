@@ -361,6 +361,15 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 		return;
 	}
 
+	// signal that an action owns control
+	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+
+	if (!object_->IsGhost() && simTime < 0.0)
+	{
+		// Only ghosts are moving up to and including time == 0
+		return;
+	}
+
 	double old_s = object_->pos_.GetTrajectoryS();
 
 	time_ += timing_scale_ * dt;
@@ -377,7 +386,6 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 			object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG)))
 	{
 		object_->pos_.MoveTrajectoryDS(object_->speed_ * dt);
-		object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 	}
 	else if (timing_domain_ == TimingDomain::TIMING_RELATIVE)
 	{
@@ -388,7 +396,6 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 			// since the movement is based on remaining length of trajectory, not speed
 			object_->SetSpeed((object_->pos_.GetTrajectoryS() - old_s) / MAX(SMALL_NUMBER, dt));
 		}
-		object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 	}
 	else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
 	{
@@ -400,7 +407,6 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 			// since the movement is based on remaining length of trajectory, not speed
 			object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
 		}
-		object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 	}
 
 	// Check end conditions:
@@ -434,7 +440,6 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 		double dy = remaningDistance * sin(object_->pos_.GetH());
 
 		object_->pos_.SetInertiaPos(object_->pos_.GetX() + dx, object_->pos_.GetY() + dy, object_->pos_.GetH());
-		object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 
 		End();
 	}
@@ -585,6 +590,15 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
 	{
 		// lateral motion controlled elsewhere
+		return;
+	}
+
+	// signal that an action owns control
+	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+
+	if (!object_->IsGhost() && simTime < 0.0)
+	{
+		// Only ghosts are moving up to and including time == 0
 		return;
 	}
 
