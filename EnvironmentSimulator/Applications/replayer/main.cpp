@@ -267,7 +267,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 			if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
 			{
 				// rewind to beginning
-				player->GoToTime(0);
+				player->GoToStart();
 			}
 			else
 			{
