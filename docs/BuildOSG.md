@@ -141,3 +141,34 @@ and
 - Copy _zlibstatic.lib_, _zlibstaticd.lib_, _jpeg.lib_ and _jpegd.lib_ from OSG 3rdparty lib folder, or other source, into the _externals/OpenSceneGraph/*/lib_ folder
 
 - Optional: For FBX support, copy FBX _libfbxsdk-md.lib_ from C:\Program Files\Autodesk\FBX\FBX SDK\2019.0\lib\vs2015\x64 (or wherever located) release and debug folders into _externals/OpenSceneGraph/*/lib_ folder. Add 'd' as in debug to the debug version of the file, i.e. libfbxsdkd-md.lib
+
+## On osgb and Unity
+[OpenSceneGraph](http://www.openscenegraph.org/) (osg) includes readers and writers for quite a few 3D file formats. It comes with a demo application, [osgconv](http://www.openscenegraph.org/index.php/documentation/user-guides/55-osgconv), a command line tool that simply takes one file as input and outputs the same content in a different format. For example:
+
+`osgconv car.osgb car.fbx`
+
+Here follows a recipe how to translate .osgb files into .fbx and import into Unity
+
+### 1. Get osgconv
+On Linux and Mac its recommended to build osg yourself. Here's a great guide:  
+https://vicrucann.github.io/tutorials/osg-linux-quick-install/
+
+For Windows there's an option to grab pre-built binaries from here:  
+https://objexx.com/OpenSceneGraph.html
+
+### 2. Convert
+1. Open a command prompt in the folder where your model.osgb is
+1. Run command: `osgconv model.osgb model.fbx -s 100,100,100`  
+   (-s ... is for scaling which typically is needed for fbx files)
+
+A folder named "out" should have been created and including the model.fbx plus any texture files
+
+### 3. Import into Unity
+1. Now, drag the resulting fbx file into a unity project, preferably an empty folder
+1. Add the model to the Scene hierarchy
+1. Select the model and int the "Inspector", select the "Materials" tab
+1. Change the "Location" to "Use External Materials (Legacy)" and click "Apply"
+1. Open the automcatically created "Materials" folder (next to the model file)
+1. Select all materials and change "Rendering Mode" to "Cutout" (good default option)
+
+That should basically be it.
