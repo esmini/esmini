@@ -164,7 +164,7 @@ https://objexx.com/OpenSceneGraph.html
 A folder named "out" should have been created and including the model.fbx plus any texture files
 
 ### 3. Import into Unity
-1. Now, drag the resulting fbx file into a unity project, preferably an empty folder
+1. Now, drag the resulting fbx file, and all textures, into a unity project, preferably an empty folder
 1. Add the model to the Scene hierarchy
 1. Select the model and int the "Inspector", select the "Materials" tab
 1. Change the "Location" to "Use External Materials (Legacy)" and click "Apply"
