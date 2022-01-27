@@ -114,7 +114,7 @@ In addition to internal API ([example](https://github.com/esmini/esmini/tree/mas
   Script that compiles OSI for Win/Linux/Mac available [here](https://github.com/esmini/esmini/blob/master/scripts/generate_osi_libs.sh). Run in bash, also on Windows, e.g. GIT bash.
 
 ### Unity support
-esmini shared library works fine also in Unity (Win, Linux, Mac). A simple example can be downloaded from [here](https://www.dropbox.com/s/sj53hz0zesxa681/esmini-player.unitypackage?dl=0). The package contains everything needed to get going:
+esmini shared library works fine also in Unity (Win, Linux, Mac). A simple example can be downloaded from [here](https://www.dropbox.com/s/sj53hz0zesxa681/esmini-player.unitypackage?dl=1). The package contains everything needed to get going:
 - esmini library C# wrapper
 - a generic scenario player script 
 - a few example scenarios (OpenSCENARIO + OpenDRIVE) including 3D models 

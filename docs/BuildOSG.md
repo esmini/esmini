@@ -158,7 +158,7 @@ https://objexx.com/OpenSceneGraph.html
 
 ### 2. Convert
 1. Open a command prompt in the folder where your model.osgb is
-1. Run command: `osgconv model.osgb model.fbx -s 100,100,100`  
+1. Run command: `osgconv model.osgb out/model.fbx -s 100,100,100`  
    (-s ... is for scaling which typically is needed for fbx files)
 
 A folder named "out" should have been created and including the model.fbx plus any texture files
