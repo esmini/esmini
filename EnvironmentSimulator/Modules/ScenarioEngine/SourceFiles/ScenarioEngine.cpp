@@ -970,20 +970,7 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 				}
 				else if(event != nullptr)
 				{
-					TeleportAction* myNewAction = new TeleportAction;
-					roadmanager::Position* pos = new roadmanager::Position();
-					pos->SetOrientationType(roadmanager::Position::OrientationType::ORIENTATION_RELATIVE);
-					pos->SetInertiaPos(0, 0, 0);
-					pos->SetRelativePosition(&obj1->pos_, roadmanager::Position::PositionType::RELATIVE_OBJECT);
-
-					myNewAction->position_ = pos;
-					myNewAction->type_ = OSCPrivateAction::ActionType::TELEPORT;
-					myNewAction->object_ = obj2;
-					myNewAction->scenarioEngine_ = this;
-					myNewAction->name_ = "AddedGhostTeleport";
-
-					event->action_.insert(event->action_.begin(), myNewAction);
-
+					CreateGhostTeleport(obj1, obj2, event);
 					LOG("Created new teleport action for ghost and %s trigger", cond->name_.c_str());
 				}
 			}
@@ -994,11 +981,32 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
 				{
 					((TrigBySimulationTime*)(trig))->value_ += timeOffset;
 				}
+				else if(event != nullptr)
+				{
+					CreateGhostTeleport(obj1, obj2, event);
+					LOG("Created new teleport action for ghost and %s trigger", cond->name_.c_str());
+				}
 			}
 		}
 	}
 }
 
+void ScenarioEngine::CreateGhostTeleport(Object* obj1, Object* obj2, Event* event)
+{
+	TeleportAction* myNewAction = new TeleportAction;
+	roadmanager::Position* pos = new roadmanager::Position();
+	pos->SetOrientationType(roadmanager::Position::OrientationType::ORIENTATION_RELATIVE);
+	pos->SetInertiaPos(0, 0, 0);
+	pos->SetRelativePosition(&obj1->pos_, roadmanager::Position::PositionType::RELATIVE_OBJECT);
+
+	myNewAction->position_ = pos;
+	myNewAction->type_ = OSCPrivateAction::ActionType::TELEPORT;
+	myNewAction->object_ = obj2;
+	myNewAction->scenarioEngine_ = this;
+	myNewAction->name_ = "AddedGhostTeleport";
+
+	event->action_.insert(event->action_.begin(), myNewAction);
+}
 void ScenarioEngine::SetupGhost(Object* object)
 {
 	// FollowGhostController special treatment:
