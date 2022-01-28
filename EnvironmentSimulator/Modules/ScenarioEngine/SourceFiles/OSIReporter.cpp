@@ -61,6 +61,7 @@ static OSIGroundTruth osiGroundTruth;
 static OSIRoadLane osiRoadLane;
 static OSIRoadLaneBoundary osiRoadLaneBoundary;
 
+
 static struct sockaddr_in recvAddr;
 
 // ScenarioGateway
@@ -1441,44 +1442,118 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 						// CLASSIFICATION TYPE
 						roadmanager::Lane::LaneType lanetype = lane->GetLaneType();
 						osi3::Lane_Classification_Type class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_UNKNOWN;
-
-						if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING ||
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_PARKING ||
-							lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIDIRECTIONAL)
+						osi3::Lane_Classification_Subtype subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_UNKNOWN;
+						if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_DRIVING)
 						{
 							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_NORMAL;
 						}
-						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_STOP ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIKING ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BORDER ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RESTRICTED ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ROADMARKS ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_TRAM ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RAIL)
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_PARKING)
 						{
 							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_PARKING;
 						}
-						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ENTRY ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_EXIT ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_OFF_RAMP ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ON_RAMP ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_MEDIAN ||
-								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SHOULDER)
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIDIRECTIONAL)
 						{
 							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_NORMAL;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_STOP)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_STOP;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BIKING)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_BIKING;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_SIDEWALK;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_BORDER)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_BORDER;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RESTRICTED)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_RESTRICTED;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ROADMARKS)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_OTHER;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_TRAM)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_OTHER;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_RAIL)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_OTHER;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ENTRY)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_ENTRY;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_EXIT)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_EXIT;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_OFF_RAMP)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_OFFRAMP;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_ON_RAMP)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_ONRAMP;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_MEDIAN)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_OTHER;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SHOULDER)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_SHOULDER;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_CURB)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_BORDER;
+						}
+						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_CONNECTING_RAMP)
+						{
+							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_CONNECTINGRAMP;
 						}
 						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL1 ||
 								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL2 ||
 								 lanetype == roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL3)
 						{
 							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_OTHER;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_OTHER;
+
 						}
 						else if (lanetype == roadmanager::Lane::LaneType::LANE_TYPE_NONE)
 						{
 							class_type = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_UNKNOWN;
+							subclass_type = osi3::Lane_Classification_Subtype::Lane_Classification_Subtype_SUBTYPE_UNKNOWN;
+
 						}
 						osi_lane->mutable_classification()->set_type(class_type);
+						osi_lane->mutable_classification()->set_subtype(subclass_type);
 
 						// CENTERLINE POINTS
 						int n_osi_points = lane->GetOSIPoints()->GetNumOfOSIPoints();

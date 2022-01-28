@@ -540,6 +540,8 @@ namespace roadmanager
 			LANE_TYPE_EXIT =          (1 << 18),
 			LANE_TYPE_OFF_RAMP =      (1 << 19),
 			LANE_TYPE_ON_RAMP =       (1 << 20),
+			LANE_TYPE_CURB =          (1 << 21),
+			LANE_TYPE_CONNECTING_RAMP=(1 << 22),
 			LANE_TYPE_ANY_DRIVING =   LANE_TYPE_DRIVING |
 			                          LANE_TYPE_ENTRY |
 			                          LANE_TYPE_EXIT |
