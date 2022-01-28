@@ -353,6 +353,8 @@ namespace roadmanager
 		YELLOW
 	};
 
+
+
 	class LaneRoadMarkTypeLine
 	{
 	public:
@@ -462,6 +464,7 @@ namespace roadmanager
 		LaneRoadMarkType* GetLaneRoadMarkTypeByIdx(int idx);
 
 		static RoadMarkColor ParseColor(pugi::xml_node node);
+		static std::string RoadMarkColor2Str(RoadMarkColor color);
 
 	private:
 		double s_offset_;

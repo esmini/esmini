@@ -1012,6 +1012,40 @@ RoadMarkColor LaneRoadMark::ParseColor(pugi::xml_node node)
 	return color;
 }
 
+std::string LaneRoadMark::RoadMarkColor2Str(RoadMarkColor color)
+{
+	if (color == RoadMarkColor::BLUE)
+	{
+		return "blue";
+	}
+	else if (color == RoadMarkColor::GREEN)
+	{
+		return "green";
+	}
+	else if (color == RoadMarkColor::RED)
+	{
+		return "red";
+	}
+	else if (color == RoadMarkColor::STANDARD_COLOR)
+	{
+		return "standard";
+	}
+	else if (color == RoadMarkColor::WHITE)
+	{
+		return "white";
+	}
+	else if (color == RoadMarkColor::YELLOW)
+	{
+		return "yellow";
+	}
+	else if (color == RoadMarkColor::UNDEFINED)
+	{
+		return "undefined";
+	}
+
+	return "Unrecognized color id: "  + std::to_string(static_cast<int>(color));
+}
+
 LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx)
 {
 	if (idx < (int)lane_roadMarkType_.size())
@@ -3183,7 +3217,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								if (roadMark_color == RoadMarkColor::UNDEFINED)
 								{
 									LOG("unknown lane road mark color: %s (road id=%d), set to standard (white)",
-										roadMark_color, r->GetId());
+										LaneRoadMark::RoadMarkColor2Str(roadMark_color).c_str(), r->GetId());
 									roadMark_color = RoadMarkColor::STANDARD_COLOR;
 								}
 
