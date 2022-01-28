@@ -3,7 +3,7 @@
 ### 2022-01-28 Version 2.20.4
 
 - Fix replayer rewind all way to start, including negative ghost headstart time
-- Fix crash on missing roadmark color attribute (issue #221)
+- Fix crash on missing roadmark color attribute ([issue #221](https://github.com/esmini/esmini/issues/221))
 - Add value conditions to cause a ghost teleport
 - Fix initial speed and acceleration spikes with ghost
 
