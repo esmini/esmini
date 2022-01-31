@@ -15,6 +15,7 @@
 #include "ControllerSloppyDriver.hpp"
 #include "ControllerInteractive.hpp"
 #include "ControllerFollowGhost.hpp"
+#include "ControllerFollowRoute.hpp"
 #ifdef _USE_SUMO
 #include "ControllerSumo.hpp"
 #endif  // _USE_SUMO
@@ -59,6 +60,7 @@ void ScenarioReader::LoadControllers()
 	RegisterController(ControllerSloppyDriver::GetTypeNameStatic(), InstantiateControllerSloppyDriver);
 	RegisterController(ControllerInteractive::GetTypeNameStatic(), InstantiateControllerInteractive);
 	RegisterController(ControllerFollowGhost::GetTypeNameStatic(), InstantiateControllerFollowGhost);
+	RegisterController(ControllerFollowRoute::GetTypeNameStatic(), InstantiateControllerFollowRoute);
 #ifdef _USE_SUMO
 	RegisterController(ControllerSumo::GetTypeNameStatic(), InstantiateControllerSumo);
 #endif

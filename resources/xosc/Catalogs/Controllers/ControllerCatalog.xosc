@@ -99,6 +99,15 @@
                 <Property name="followMode"  value="$FollowMode" />
             </Properties>
         </Controller>
+        <Controller name="followRoute">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="Placeholder" parameterType="double" value="0" /> 
+            </ParameterDeclarations>
+            <Properties>
+                <Property name="esminiController" value="FollowRouteController" />
+                <Property name="placeholder"  value="$Placeholder" />
+            </Properties>
+        </Controller>
         <Controller name="sumoController">
             <ParameterDeclarations>
                 <ParameterDeclaration name="CfgFile" parameterType="string" value="../sumo_inputs/e6mini.sumocfg" />
