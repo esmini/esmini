@@ -150,16 +150,22 @@ and
 Here follows a recipe how to translate .osgb files into .fbx and import into Unity
 
 ### 1. Get osgconv
-On Linux and Mac its recommended to build osg yourself. Here's a great guide:  
-https://vicrucann.github.io/tutorials/osg-linux-quick-install/
+On Linux and Mac its recommended to build osg yourself. Please try this script: [compile_osg_apps_linux.sh](https://github.com/esmini/esmini/blob/master/scripts/compile_osg_apps_linux_.sh). It will first fetch and install [FBX SDK](https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2020-0) and then build OSG with FBX support. Find more details and instructions in the header of the script.
 
-For Windows there's an option to grab pre-built binaries from here:  
+For more info regarding building OSG for Linux, here's a great guide:  
+https://vicrucann.github.io/tutorials/osg-linux-quick-install/   
+But please note that it does not consider FBX support.
+
+For Windows there's an option to grab pre-built binaries including FBX support from here:  
 https://objexx.com/OpenSceneGraph.html
 
 ### 2. Convert
 1. Open a command prompt in the folder where your model.osgb is
-1. Run command: `osgconv model.osgb out/model.fbx -s 100,100,100`  
-   (-s ... is for scaling which typically is needed for fbx files)
+1. Run command:  
+   `osgconv model.osgb out/model.fbx -s 100,100,100`  
+   -s ... is for scaling which typically is needed for fbx files. 
+   Potentially it also needs to be oriented according to Unity coordinate system. In that case try:  
+   `osgconv model.osgb out/model.fbx -s 100,100,100 --use-world-frame -o 120--0.5773503,-0.5773503,-0.5773503`
 
 A folder named "out" should have been created and including the model.fbx plus any texture files
 
