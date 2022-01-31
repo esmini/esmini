@@ -277,6 +277,7 @@ void OSCPrivateAction::TransitionDynamics::UpdateRate()
 void AssignRouteAction::Start(double simTime, double dt)
 {
 	object_->pos_.SetRoute(route_);
+	object_->SetDirtyBits(Object::DirtyBit::ROUTE);
 
 	OSCAction::Start(simTime, dt);
 
@@ -477,6 +478,7 @@ void AcquirePositionAction::Start(double simTime, double dt)
 	route_->AddWaypoint(target_position_);
 
 	object_->pos_.SetRoute(route_);
+	object_->SetDirtyBits(Object::DirtyBit::ROUTE);
 
 	OSCAction::Start(simTime, dt);
 
@@ -646,6 +648,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 			LOG("Warning/Info: LaneChangeAction moved away from route (track id %d -> track id %d), disabling route",
 				object_->pos_.GetTrackId(), internal_pos_.GetTrackId());
 			object_->pos_.SetRoute(nullptr);
+			object_->SetDirtyBits(Object::DirtyBit::ROUTE);
 		}
 	}
 

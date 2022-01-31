@@ -299,6 +299,7 @@ void ScenarioPlayer::ViewerFrame()
 		viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_, trail_color,
 			viewer::EntityModel::EntityType::VEHICLE, false,
 			obj->name_, &obj->boundingbox_, obj->scaleMode_));
+		viewer_->entities_.back()->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
 	}
 
 	// remove obsolete cars
@@ -325,6 +326,17 @@ void ScenarioPlayer::ViewerFrame()
 			// Trajectory has been deactivated on the entity, disable visualization
 			entity->trajectory_->Disable();
 		}
+
+		if (obj->CheckDirtyBits(Object::DirtyBit::ROUTE))
+		{
+			entity->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
+			obj->ClearDirtyBits(Object::DirtyBit::ROUTE);
+		}
+		else if (entity->routewaypoints_->group_->getNumChildren() && obj->pos_.GetRoute() == nullptr)
+		{
+			entity->routewaypoints_->SetWayPoints(nullptr);
+		}
+
 
 		if (entity->GetType() == viewer::EntityModel::EntityType::VEHICLE)
 		{
@@ -662,6 +674,8 @@ int ScenarioPlayer::InitViewer()
 			CloseViewer();
 			return -1;
 		}
+
+		viewer_->entities_.back()->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
 
 		// Connect callback for setting transparency
 		viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(viewer_->entities_.back()->txNode_, obj, viewer_->entities_.back());

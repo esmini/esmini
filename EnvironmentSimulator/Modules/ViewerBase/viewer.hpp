@@ -60,6 +60,7 @@ namespace viewer
 		NODE_MASK_INFO =             (1 << 9),
 		NODE_MASK_ROAD_SENSORS =     (1 << 10),
 		NODE_MASK_TRAJECTORY_LINES = (1 << 11),
+		NODE_MASK_ROUTE_WAYPOINTS  = (1 << 12),
 	} NodeMask;
 
 	class PolyLine
@@ -210,6 +211,19 @@ namespace viewer
 		PolyLine* pline_;
 	};
 
+	class RouteWayPoints
+	{
+	public:
+		osg::ref_ptr<osg::Group> parent_;
+		osg::ref_ptr<osg::Group> group_;
+
+		RouteWayPoints(osg::ref_ptr<osg::Group> parent, osg::Vec4 color);
+		~RouteWayPoints();
+
+		osg::ref_ptr<osg::Geode> CreateWayPointGeometry(double x, double y, double z, double h);
+		void SetWayPoints(roadmanager::Route* route);
+	};
+
 	class PointSensor
 	{
 	public:
@@ -254,8 +268,9 @@ namespace viewer
 		osg::ref_ptr<osg::BlendColor> blend_color_;
 		osg::ref_ptr<osg::StateSet> state_set_;
 
-		EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group>
-			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color, std::string name);
+		EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
+			osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node,
+			osg::ref_ptr<osg::Group> route_waypoint_parent, osg::Vec4 trail_color, std::string name);
 		~EntityModel();
 		void SetPosition(double x, double y, double z);
 		void SetRotation(double hRoad, double pRoad, double hRelative, double r);
@@ -265,6 +280,7 @@ namespace viewer
 
 
 		PolyLine* trail_;
+		RouteWayPoints* routewaypoints_;
 		osgViewer::Viewer* viewer_;
 	};
 
@@ -282,8 +298,9 @@ namespace viewer
 		static const EntityType entity_type_ = EntityType::VEHICLE;
 		virtual EntityType GetType() { return entity_type_; }
 
-		CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent, osg::ref_ptr<osg::Group>
-			trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node, osg::Vec4 trail_color, std::string name);
+		CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
+			osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group>traj_parent, osg::ref_ptr<osg::Node> dot_node,
+			osg::ref_ptr<osg::Group> route_waypoint_parent, osg::Vec4 trail_color, std::string name);
 		~CarModel();
 		osg::ref_ptr<osg::PositionAttitudeTransform>  AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName);
 		void UpdateWheels(double wheel_angle, double wheel_rotation);
@@ -354,6 +371,7 @@ namespace viewer
 		osg::ref_ptr<osg::Group> odrLines_;
 		osg::ref_ptr<osg::Group> osiFeatures_;
 		osg::ref_ptr<osg::Group> trajectoryLines_;
+		osg::ref_ptr<osg::Group> routewaypoints_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> envTx_;
 		osg::ref_ptr<osg::Node> environment_;
 		osg::ref_ptr<osgGA::RubberbandManipulator> rubberbandManipulator_;

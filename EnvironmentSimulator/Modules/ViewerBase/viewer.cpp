@@ -858,6 +858,113 @@ void Trajectory::Disable()
 	pline_->Update();
 }
 
+
+RouteWayPoints::RouteWayPoints(osg::ref_ptr<osg::Group> parent, osg::Vec4 color) : parent_(parent)
+{
+	group_ = new osg::Group;
+	group_->setNodeMask(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+
+	// Finally attach a simple material for shading properties
+	osg::ref_ptr<osg::Material> material_ = new osg::Material;
+	material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
+	material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
+	group_->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+
+	parent->addChild(group_);
+}
+
+RouteWayPoints::~RouteWayPoints()
+{
+	group_->removeChildren(0, group_->getNumChildren());
+}
+
+osg::ref_ptr<osg::Geode> RouteWayPoints::CreateWayPointGeometry(double x, double y, double z, double h)
+{
+	osg::ref_ptr<osg::Node> node = new osg::Node;
+
+	// Create geometry for route waypoint triangle
+	static const double size = 1.8;
+	static const double elev = 0.0;
+	static const double height = 0.2;
+
+	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(8);
+	osg::ref_ptr<osg::DrawElementsUInt> indices_side = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, 10);
+	osg::ref_ptr<osg::DrawElementsUInt> indices_roof = new osg::DrawElementsUInt(GL_TRIANGLE_FAN, 4);
+
+	// Calculate vertices of a rotated arrow
+	double p[2] = { 0.0, 0.0 };
+	// Bottom contour
+	(*vertices)[0].set(x, y, elev);
+	RotateVec2D(size * -0.25, size * -0.5, h, p[0], p[1]);
+	(*vertices)[1].set(x + p[0], y + p[1], elev);
+	RotateVec2D(size * 1.0, 0, h, p[0], p[1]);
+	(*vertices)[2].set(x + p[0], y + p[1], elev);
+	RotateVec2D(size * -0.25, size * 0.5, h, p[0], p[1]);
+	(*vertices)[3].set(x + p[0], y + p[1], elev);
+
+	// Top contour (copy bottom to z offset)
+	(*vertices)[4].set((*vertices)[0][0], (*vertices)[0][1], elev + height);
+	(*vertices)[5].set((*vertices)[1][0], (*vertices)[1][1], elev + height);
+	(*vertices)[6].set((*vertices)[2][0], (*vertices)[2][1], elev + height);
+	(*vertices)[7].set((*vertices)[3][0], (*vertices)[3][1], elev + height);
+
+	// Indices, zigzag between top and bottom
+	for (int i = 0; i < 4; i++)
+	{
+		(*indices_side)[i * 2] = 4 + i;
+		(*indices_side)[i * 2 + 1] = i;
+	}
+	// close to first vertices
+	(*indices_side)[8] = 4;
+	(*indices_side)[9] = 0;
+
+	// Indices of the "roof" of the arrow
+	(*indices_roof)[0] = 4;
+	(*indices_roof)[1] = 5;
+	(*indices_roof)[2] = 6;
+	(*indices_roof)[3] = 7;
+
+	// Finally create and add geometry
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	osg::ref_ptr<osg::Geometry> geom[] = { new osg::Geometry, new osg::Geometry };
+	geom[0]->setVertexArray(vertices.get());
+	geom[0]->addPrimitiveSet(indices_side.get());
+	geom[1]->setVertexArray(vertices.get());  // reuse vertex list from sides
+	geom[1]->addPrimitiveSet(indices_roof.get());
+
+	osg::ref_ptr<osg::Vec4Array> colorarray = new osg::Vec4Array;
+
+	for (int i = 0; i < 2; i++)
+	{
+		geom[i]->setDataVariance(osg::Object::STATIC);
+		geom[i]->setUseDisplayList(true);
+		osgUtil::SmoothingVisitor::smooth(*geom[i], 0.0);  // calculate normals
+		geom[i]->setDataVariance(osg::Object::STATIC);
+		geode->addDrawable(geom[i]);
+	}
+
+	return geode;
+}
+
+void RouteWayPoints::SetWayPoints(roadmanager::Route* route)
+{
+	if (route == nullptr)
+	{
+		return;
+	}
+
+	group_->removeChildren(0, group_->getNumChildren());
+
+	for (int i = 0; i < (int)route->minimal_waypoints_.size(); i++)
+	{
+		group_->addChild(CreateWayPointGeometry(
+			route->minimal_waypoints_[i].GetX(),
+			route->minimal_waypoints_[i].GetY(),
+			route->minimal_waypoints_[i].GetZ(),
+			route->minimal_waypoints_[i].GetH()));
+	}
+}
+
 osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName)
 {
 	osg::ref_ptr<osg::PositionAttitudeTransform> tx_node = 0;
@@ -892,7 +999,7 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 
 EntityModel::EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
 	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node,
-	osg::Vec4 trail_color, std::string name)
+	osg::ref_ptr<osg::Group> route_waypoint_parent, osg::Vec4 trail_color, std::string name)
 {
 	if (!group)
 	{
@@ -925,6 +1032,8 @@ EntityModel::EntityModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> gro
 	trail_ = new PolyLine(trail_parent, 0, trail_color, TRAIL_WIDTH, TRAIL_DOT3D_SIZE, true);
 	trail_->SetNodeMaskLines(NodeMask::NODE_MASK_TRAIL_LINES);
 	trail_->SetNodeMaskDots(NodeMask::NODE_MASK_TRAIL_DOTS);
+
+	routewaypoints_ = new RouteWayPoints(route_waypoint_parent, trail_color);
 }
 
 EntityModel::~EntityModel()
@@ -935,8 +1044,8 @@ EntityModel::~EntityModel()
 
 CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, osg::ref_ptr<osg::Group> parent,
 	osg::ref_ptr<osg::Group> trail_parent, osg::ref_ptr<osg::Group> traj_parent, osg::ref_ptr<osg::Node> dot_node,
-	osg::Vec4 trail_color, std::string name) :
-	EntityModel(viewer, group, parent, trail_parent, traj_parent, dot_node, trail_color, name)
+	osg::ref_ptr<osg::Group> route_waypoint_parent, osg::Vec4 trail_color, std::string name) :
+	EntityModel(viewer, group, parent, trail_parent, traj_parent, dot_node, route_waypoint_parent, trail_color, name)
 {
 	steering_sensor_ = 0;
 	road_sensor_ = 0;
@@ -1324,6 +1433,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL);
 	SetNodeMaskBits(NodeMask::NODE_MASK_INFO);
 	SetNodeMaskBits(NodeMask::NODE_MASK_TRAJECTORY_LINES);
+	SetNodeMaskBits(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
 
 	roadSensors_ = new osg::Group;
 	roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
@@ -1338,6 +1448,10 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	trajectoryLines_ = new osg::Group;
 	trajectoryLines_->setNodeMask(NodeMask::NODE_MASK_TRAJECTORY_LINES);
 	rootnode_->addChild(trajectoryLines_);
+	routewaypoints_ = new osg::Group;
+	routewaypoints_->setNodeMask(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+	rootnode_->addChild(routewaypoints_);
+
 	exe_path_ = exe_path;
 
 	// add environment
@@ -1899,11 +2013,13 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	EntityModel* emodel;
 	if (type == EntityModel::EntityType::VEHICLE)
 	{
-		emodel = new CarModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, trail_color, name);
+		emodel = new CarModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_,
+			dot_node_, routewaypoints_, trail_color, name);
 	}
 	else
 	{
-		emodel = new EntityModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_, dot_node_, trail_color, name);
+		emodel = new EntityModel(osgViewer_, group, rootnode_, trails_, trajectoryLines_,
+			dot_node_, routewaypoints_, trail_color, name);
 	}
 	emodel->filename_ = modelFilepath;
 
@@ -2399,8 +2515,6 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline)
 
 	osg::ref_ptr<osg::Group> group = new osg::Group();
 	osg::Vec4 color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0f);  // outline objects will be gray
-	osg::ref_ptr<osg::Vec4Array> color_outline = new osg::Vec4Array;
-	color_outline->push_back(color);
 
 	osg::ref_ptr<osg::Vec3Array> vertices_sides = new osg::Vec3Array(nrPoints * 2);  // one set at bottom and one at top
 	osg::ref_ptr<osg::Vec3Array> vertices_top = new osg::Vec3Array(nrPoints);  // one set at bottom and one at top
@@ -2443,8 +2557,6 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline)
 	for (int i = 0; i < nrGeoms; i++)
 	{
 		osgUtil::SmoothingVisitor::smooth(*geom[i], 0.5);
-		geom[i]->setColorArray(color_outline);
-		geom[i]->setColorBinding(osg::Geometry::BIND_OVERALL);
 		geom[i]->setDataVariance(osg::Object::STATIC);
 		geom[i]->setUseDisplayList(true);
 		geode->addDrawable(geom[i]);

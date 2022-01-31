@@ -53,6 +53,7 @@ namespace scenarioengine
 			ANGULAR_RATE = (1 << 7),
 			ACCELERATION = (1 << 8),
 			ANGULAR_ACC = (1 << 9),
+			ROUTE = (1 << 10),
 		} DirtyBit;
 
 		typedef enum
