@@ -61,7 +61,7 @@ If you need to rebuild the jpeg library. The following is tested with VS 2019 an
 Pick jpeg-9d from here: https://ijg.org/files/
 
 - Edit makefile.vc and comment out the following line: ```!include <win32.mak>```  
-  (It’s for the old Win 7.1 SDK and seems not needed for Win10/VS2017-2019)
+  (Itâ€™s for the old Win 7.1 SDK and seems not needed for Win10/VS2017-2019)
 - Open Visual Studio (v10/2019) x64 Native Tools command prompt and run:
 ```
 cd jpeg-9d
@@ -78,17 +78,17 @@ But for esmini we need to do some settings:
   - Platform Toolset: Visual Studio 2017 (v141)
   - Windows SDK version: 10.0.19041.0  
 - C/C++:
-  - Optimizations, set “Whole Program Optimization” to false
+  - Optimizations, set â€œWhole Program Optimizationâ€ to false
 - Press OK
 - Make sure selected configuration is Release / x64 (usually it starts on win32, change it)
 - Now build and find lib in Release\x64
 
 To create a debug version, open Configuration Manager:
 
-- Create a new Configuration named “debug”, with “Copy settings from” Release 
+- Create a new Configuration named â€œdebugâ€, with â€œCopy settings fromâ€ Release 
 - Go to settings -> C/C++->Code Generation 
   - set Runtime Library = Multi-threaded Debug DLL (/MDd)
-- Add a “d” to target name, like: Settings->General->Target Name = $(ProjectName)d
+- Add a â€œdâ€ to target name, like: Settings->General->Target Name = $(ProjectName)d
 - Press OK
 - Make sure selected configuration is Debug / x64 
 - Now build and find lib in Debug\x64
@@ -150,7 +150,7 @@ and
 Here follows a recipe how to translate .osgb files into .fbx and import into Unity
 
 ### 1. Get osgconv
-On Linux and Mac its recommended to build osg yourself. Please try this script: [compile_osg_apps_linux.sh](https://github.com/esmini/esmini/blob/master/scripts/compile_osg_apps_linux_.sh). It will first fetch and install [FBX SDK](https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2020-0) and then build OSG with FBX support. Find more details and instructions in the header of the script.
+On Linux and Mac its recommended to build osg yourself. Please try this script: [compile_osg_apps_linux.sh](https://github.com/esmini/esmini/blob/master/scripts/compile_osg_apps_linux.sh). It will first fetch and install [FBX SDK](https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2020-0) and then build OSG with FBX support. Find more details and instructions in the header of the script.
 
 For more info regarding building OSG for Linux, here's a great guide:  
 https://vicrucann.github.io/tutorials/osg-linux-quick-install/   
