@@ -305,6 +305,10 @@ void ScenarioPlayer::ViewerFrame()
 	// remove obsolete cars
 	while (viewer_->entities_.size() > scenarioEngine->entities_.object_.size())
 	{
+		if (viewer_->entities_.back()->trajectory_->activeRMTrajectory_)
+		{
+			viewer_->entities_.back()->trajectory_->Disable();
+		}
 		viewer_->RemoveCar(viewer_->entities_.size() - 1);
 	}
 
