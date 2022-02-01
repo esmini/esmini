@@ -1,6 +1,12 @@
 #!/bin/bash
 
 # This script will build OSG applications, including "osgviewer" and "osgconv" on linux
+#
+# Preparations:
+#   Make sure you have tiff and jpeg support. Run the following commands:
+#     sudo apt install libtiff-dev
+#     sudo apt install libjpeg-dev
+#
 # Script steps:
 #   1. Fetch FBX SDK (headers and pre-compiled libraries)
 #   2. Extract FBX files. NOTE: User input is required "yes" to license and "n" to skip readme
