@@ -48,6 +48,7 @@
 #define TRAIL_WIDTH 2
 #define TRAIL_DOT_SIZE 10
 #define TRAIL_DOT3D_SIZE 0.2
+#define WAYPOINT_HEIGHT 0.2
 #define TRAILDOT3D 1
 #define PERSP_FOV 30.0
 #define ORTHO_FOV 1.0
@@ -878,14 +879,12 @@ RouteWayPoints::~RouteWayPoints()
 	group_->removeChildren(0, group_->getNumChildren());
 }
 
-osg::ref_ptr<osg::Geode> RouteWayPoints::CreateWayPointGeometry(double x, double y, double z, double h)
+osg::ref_ptr<osg::Geode> RouteWayPoints::CreateWayPointGeometry(double x, double y, double z, double h, double scale)
 {
 	osg::ref_ptr<osg::Node> node = new osg::Node;
 
 	// Create geometry for route waypoint triangle
-	static const double size = 1.8;
-	static const double elev = 0.0;
-	static const double height = 0.2;
+	double size = 1.8 * scale;
 
 	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(8);
 	osg::ref_ptr<osg::DrawElementsUInt> indices_side = new osg::DrawElementsUInt(GL_TRIANGLE_STRIP, 10);
@@ -894,19 +893,19 @@ osg::ref_ptr<osg::Geode> RouteWayPoints::CreateWayPointGeometry(double x, double
 	// Calculate vertices of a rotated arrow
 	double p[2] = { 0.0, 0.0 };
 	// Bottom contour
-	(*vertices)[0].set(x, y, elev);
+	(*vertices)[0].set(x, y, z);
 	RotateVec2D(size * -0.25, size * -0.5, h, p[0], p[1]);
-	(*vertices)[1].set(x + p[0], y + p[1], elev);
+	(*vertices)[1].set(x + p[0], y + p[1], z);
 	RotateVec2D(size * 1.0, 0, h, p[0], p[1]);
-	(*vertices)[2].set(x + p[0], y + p[1], elev);
+	(*vertices)[2].set(x + p[0], y + p[1], z);
 	RotateVec2D(size * -0.25, size * 0.5, h, p[0], p[1]);
-	(*vertices)[3].set(x + p[0], y + p[1], elev);
+	(*vertices)[3].set(x + p[0], y + p[1], z);
 
 	// Top contour (copy bottom to z offset)
-	(*vertices)[4].set((*vertices)[0][0], (*vertices)[0][1], elev + height);
-	(*vertices)[5].set((*vertices)[1][0], (*vertices)[1][1], elev + height);
-	(*vertices)[6].set((*vertices)[2][0], (*vertices)[2][1], elev + height);
-	(*vertices)[7].set((*vertices)[3][0], (*vertices)[3][1], elev + height);
+	(*vertices)[4].set((*vertices)[0][0], (*vertices)[0][1], z + WAYPOINT_HEIGHT);
+	(*vertices)[5].set((*vertices)[1][0], (*vertices)[1][1], z + WAYPOINT_HEIGHT);
+	(*vertices)[6].set((*vertices)[2][0], (*vertices)[2][1], z + WAYPOINT_HEIGHT);
+	(*vertices)[7].set((*vertices)[3][0], (*vertices)[3][1], z + WAYPOINT_HEIGHT);
 
 	// Indices, zigzag between top and bottom
 	for (int i = 0; i < 4; i++)
@@ -955,14 +954,27 @@ void RouteWayPoints::SetWayPoints(roadmanager::Route* route)
 
 	group_->removeChildren(0, group_->getNumChildren());
 
+	// First put all waypoints on ground
+	for (int i = 0; i < (int)route->all_waypoints_.size(); i++)
+	{
+		group_->addChild(CreateWayPointGeometry(
+			route->all_waypoints_[i].GetX(),
+			route->all_waypoints_[i].GetY(),
+			route->all_waypoints_[i].GetZ(),
+			route->all_waypoints_[i].GetH(), 1.0));
+	}
+
+#if 0  // Keeping code below in case need arise to visualize minimal wp set on top
+	// Then indicate minimal set with a smaller waypoint symbol on top
 	for (int i = 0; i < (int)route->minimal_waypoints_.size(); i++)
 	{
 		group_->addChild(CreateWayPointGeometry(
 			route->minimal_waypoints_[i].GetX(),
 			route->minimal_waypoints_[i].GetY(),
-			route->minimal_waypoints_[i].GetZ(),
-			route->minimal_waypoints_[i].GetH()));
+			route->minimal_waypoints_[i].GetZ() + WAYPOINT_HEIGHT,
+			route->minimal_waypoints_[i].GetH(), 0.5));
 	}
+#endif
 }
 
 osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName)

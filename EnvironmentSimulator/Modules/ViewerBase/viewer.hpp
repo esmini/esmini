@@ -220,7 +220,7 @@ namespace viewer
 		RouteWayPoints(osg::ref_ptr<osg::Group> parent, osg::Vec4 color);
 		~RouteWayPoints();
 
-		osg::ref_ptr<osg::Geode> CreateWayPointGeometry(double x, double y, double z, double h);
+		osg::ref_ptr<osg::Geode> CreateWayPointGeometry(double x, double y, double z, double h, double scale);
 		void SetWayPoints(roadmanager::Route* route);
 	};
 
