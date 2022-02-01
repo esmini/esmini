@@ -3144,6 +3144,10 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	case(osgGA::GUIEventAdapter::RESIZE):
 		viewer_->SetInfoTextProjection(ea.getWindowWidth(), ea.getWindowHeight());
 		break;
+	case(osgGA::GUIEventAdapter::CLOSE_WINDOW):
+	case(osgGA::GUIEventAdapter::QUIT_APPLICATION):
+		viewer_->SetQuitRequest(true);
+		break;
 	}
 
 	switch (ea.getKey())
