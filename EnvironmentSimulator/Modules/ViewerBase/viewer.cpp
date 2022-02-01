@@ -3239,20 +3239,33 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		viewer_->setKeyDown(ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN);
 	}
 	break;
+	case(0xFE20): // Key_shift_Tab
+	{
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			int idx = viewer_->currentCarInFocus_ - 1;
+			if (idx < 0)
+			{
+				idx = viewer_->entities_.size() - 1;
+			}
+			viewer_->SetVehicleInFocus(idx);
+		}
+	}
+	break;
 	case(osgGA::GUIEventAdapter::KEY_Tab):
 	{
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			int idx = viewer_->currentCarInFocus_ + ((ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1);
-
+			//int idx = viewer_->currentCarInFocus_ + ((ea.getModKeyMask() & osgGA::GUIEventAdapter::KEY_Shift_L) ? -1 : 1);
+			int idx = viewer_->currentCarInFocus_ + 1;
 			if (idx >= (int)viewer_->entities_.size())
 			{
 				idx = 0;
 			}
-			else if (idx < 0)
-			{
-				idx = viewer_->entities_.size() - 1;
-			}
+			//else if (idx < 0)
+			//{
+			//	idx = viewer_->entities_.size() - 1;
+			//}
 
 			viewer_->SetVehicleInFocus(idx);
 		}
