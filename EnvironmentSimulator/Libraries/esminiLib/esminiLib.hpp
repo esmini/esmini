@@ -687,6 +687,15 @@ extern "C"
 	SE_DLL_API int SE_GetObjectGhostState(int index, SE_ScenarioObjectState *state);
 
 	/**
+	Get the unit of specified speed (in OpenDRIVE road type element).
+	All roads will be looped in search for such an element. First found will be used.
+	If speed is specified withouth the optional unit, SI unit m/s is assumed.
+	If no speed entries is found, undefined will be returned.
+	@return -1=Error, 0=Undefined, 1=km/h 2=m/s, 3=mph
+	*/
+	SE_DLL_API int SE_GetSpeedUnit();
+
+	/**
 		Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
 		@param object_id Handle to the position object from which to measure
 		@param lookahead_distance The distance, along the road, to the point

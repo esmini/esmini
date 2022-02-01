@@ -231,6 +231,14 @@ public static class ESMiniLib
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectGhostState")]
         public static extern int SE_GetObjectGhostState(int index, ref ScenarioObjectState state);
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetSpeedUnit")]
+        /// <summaryGet the unit of specified speed</summary>
+        /// All roads will be looped in search for such an element. First found will be used.
+        /// If speed is specified withouth the optional unit, SI unit m/s is assumed.
+        /// If no speed entries is found, undefined will be returned.
+        /// <returns>-1=Error, 0=Undefined, 1=km/h 2=m/s, 3=mph</returns>
+        public static extern int GetSpeedUnit();
+
         [DllImport(LIB_NAME, EntryPoint = "SE_AddObjectSensor")]
         /// <summary>Create an ideal object sensor and attach to specified vehicle</summary>
         /// <param name="object_id">Handle to the object to which the sensor should be attached</param>

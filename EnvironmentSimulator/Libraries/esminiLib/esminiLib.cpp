@@ -1359,6 +1359,17 @@ extern "C"
 		return ghost != 0 ? 0 : -1;
 	}
 
+	SE_DLL_API int SE_GetSpeedUnit()
+	{
+		roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
+		if (odr != nullptr)
+		{
+			return static_cast<int>(odr->GetSpeedUnit());
+		}
+
+		return -1;
+	}
+
 	/*SE_DLL_API int SE_GetObjectGhostStateFromOSI(const char* output, int index)
 	{
 		if (player)

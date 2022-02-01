@@ -313,6 +313,16 @@ extern "C"
 		}
 	}
 
+	RM_DLL_API int RM_GetSpeedUnit()
+	{
+		if (odrManager != nullptr)
+		{
+			return static_cast<int>(odrManager->GetSpeedUnit());
+		}
+
+		return -1;
+	}
+
 	RM_DLL_API int RM_GetIdOfRoadFromIndex(int index)
 	{
 		if (odrManager != nullptr)

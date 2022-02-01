@@ -241,6 +241,14 @@ namespace OpenDRIVE
         [DllImport(LIB_NAME, EntryPoint = "RM_GetNumberOfRoads")]
         public static extern int GetNumberOfRoads();
 
+        /// <summaryGet the unit of specified speed</summary>
+        /// All roads will be looped in search for such an element. First found will be used.
+        /// If speed is specified withouth the optional unit, SI unit m/s is assumed.
+        /// If no speed entries is found, undefined will be returned.
+        /// <returns>-1=Error, 0=Undefined, 1=km/h 2=m/s, 3=mph</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetSpeedUnit")]
+        public static extern int GetSpeedUnit();
+
         /// <summary>
         /// Get the road ID, as specified in the OpenDRIVE description, of the road with specified index. E.g. if there are 4 roads, index 3 means the last one.
         /// </summary>

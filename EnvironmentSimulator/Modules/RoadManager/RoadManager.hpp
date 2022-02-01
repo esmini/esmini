@@ -1192,6 +1192,14 @@ namespace roadmanager
 		Repeat* repeat_;
 	};
 
+	enum class SpeedUnit
+	{
+		UNDEFINED,
+		KMH,
+		MS,
+		MPH
+	};
+
 	class Road
 	{
 	public:
@@ -1212,6 +1220,7 @@ namespace roadmanager
 			double s_;
 			RoadType road_type_;
 			double speed_;  // m/s
+			SpeedUnit unit_;  // Originally specified unit
 		} RoadTypeEntry;
 
 		enum class RoadRule
@@ -1527,7 +1536,7 @@ namespace roadmanager
 	class OpenDrive
 	{
 	public:
-		OpenDrive() {};
+		OpenDrive() : speed_unit_(SpeedUnit::UNDEFINED) {};
 		OpenDrive(const char *filename);
 		~OpenDrive();
 
@@ -1613,6 +1622,13 @@ namespace roadmanager
 
 		bool LoadSignalsByCountry(const std::string& country);
 
+		void SetSpeedUnit(SpeedUnit unit) { speed_unit_ = unit; }
+		/**
+			Get first specified speed unit (in road type elements). MS is default.
+			@return 0=Undefined, 1=km/h 2=m/s, 3=mph
+		*/
+		SpeedUnit GetSpeedUnit() { return speed_unit_; }
+
 		void Print();
 
 	private:
@@ -1623,6 +1639,7 @@ namespace roadmanager
 		GeoReference geo_ref_;
 		std::string odr_filename_;
 		std::map<std::string, std::string> signals_types_;
+		SpeedUnit speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
 	};
 
 	typedef struct

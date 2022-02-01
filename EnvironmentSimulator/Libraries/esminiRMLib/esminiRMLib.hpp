@@ -226,6 +226,15 @@ extern "C"
 	RM_DLL_API int RM_GetNumberOfRoads();
 
 	/**
+	Get the unit of specified speed (in OpenDRIVE road type element).
+	All roads will be looped in search for such an element. First found will be used.
+	If speed is specified withouth the optional unit, SI unit m/s is assumed.
+	If no speed entries is found, undefined will be returned.
+	@return -1=Error, 0=Undefined, 1=km/h 2=m/s, 3=mph
+	*/
+	RM_DLL_API int RM_GetSpeedUnit();
+
+	/**
 	Get the Road ID of the road with specified index. E.g. if there are 4 roads, index 3 means the last one.
 	@param index The index of the road
 	@return The ID of the road, -1 on error
@@ -400,7 +409,7 @@ extern "C"
 	RM_DLL_API int RM_GetRoadSignValidityRecord(int road_id, int signIndex, int validityIndex, RM_RoadObjValidity* validity);
 
 	/**
-		Get the xodr road file georeference 
+		Get the xodr road file georeference
 	*/
     RM_DLL_API int RM_GetOpenDriveGeoReference(RM_GeoReference* rmGeoReference);
 

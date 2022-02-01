@@ -2551,7 +2551,7 @@ Junction *OpenDrive::GetJunctionByIdx(int idx)
 	}
 }
 
-OpenDrive::OpenDrive(const char *filename)
+OpenDrive::OpenDrive(const char *filename) : speed_unit_(SpeedUnit::UNDEFINED)
 {
 	if (!LoadOpenDriveFile(filename))
 	{
@@ -2634,6 +2634,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			delete junction_[i];
 		}
 		junction_.clear();
+
+		SetSpeedUnit(SpeedUnit::UNDEFINED);
 	}
 
 	odr_filename_ = filename;
@@ -2763,6 +2765,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			r_type->s_ = atof(type_node.attribute("s").value());
 
 			// Check for optional speed record
+			r_type->unit_ = SpeedUnit::MS;  // default
 			pugi::xml_node speed = type_node.child("speed");
 			if (speed != NULL)
 			{
@@ -2770,20 +2773,27 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				std::string unit = speed.attribute("unit").value();
 				if (unit == "km/h")
 				{
-					r_type->speed_ /= 3.6;  // Convert to m/s
+					r_type->speed_ /= 3.6;  // Convert to m/s from km/h
+					r_type->unit_ = SpeedUnit::KMH;
 				}
 				else if (unit == "mph")
 				{
-					r_type->speed_ *= 0.44704; // Convert to m/s
+					r_type->speed_ *= 0.44704; // Convert to m/s from mph
+					r_type->unit_ = SpeedUnit::MPH;
 				}
 				else if (unit == "m/s")
 				{
-					// SE unit - do nothing
+					// SI unit - do nothing
 				}
 				else
 				{
-					LOG("Unsupported speed unit: %s - assuming SE unit m/s", unit.c_str());
+					LOG("Unsupported speed unit: %s - set UNDEFINED", unit.c_str());
+					r_type->unit_ = SpeedUnit::UNDEFINED;
 				}
+			}
+			if (Position::GetOpenDrive()->GetSpeedUnit() == SpeedUnit::UNDEFINED)
+			{
+				Position::GetOpenDrive()->SetSpeedUnit(r_type->unit_);
 			}
 
 			r->AddRoadType(r_type);
@@ -4429,6 +4439,8 @@ OpenDrive::~OpenDrive()
 	{
 		delete(junction_[i]);
 	}
+
+	SetSpeedUnit(SpeedUnit::UNDEFINED);
 }
 
 int OpenDrive::GetTrackIdxById(int id)
