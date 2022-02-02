@@ -10,6 +10,8 @@
 - Update ECE ALKS reference driver controller
   - Support some corner cases, e.g. narrow lanes, high lateral velocities and large timesteps.
 - Add API to retrieve speed unit (see [esminiLib.hpp](https://github.com/esmini/esmini/blob/24bcac483148cb26136e53198306391ed88398eb/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L689))
+- Fix corner case of failed conflict detection ([issue #218](https://github.com/esmini/esmini/issues/218))
+- Remove pedestrian performance limits ([issue #224](https://github.com/esmini/esmini/issues/224))
 - Bugfix: Remove trajectory visualization of deleted entity ([issue #208](https://github.com/esmini/esmini/issues/208))
 - Bugfix: Fix malfuncting left-shift-tab on Linux. It now jump to previous entity.
 - Bugfix: Fix quit by close window event issue (Linux)
