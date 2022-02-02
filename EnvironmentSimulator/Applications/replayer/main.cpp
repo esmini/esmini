@@ -18,6 +18,8 @@
 #include <iostream>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <fstream>
+#include <map>
 
 #include "viewer.hpp"
 #include "ScenarioGateway.hpp"
@@ -46,9 +48,11 @@ double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
 static std::vector<ScenarioEntity> scenarioEntity;
 
-// Car models used for populating the road network according to scenario object model ID
-// path should be relative the OpenDRIVE file
-static const char* entityModelsFiles_[] =
+// List of 3D models populated from any found found model_ids.txt file
+static std::map<int, std::string> entityModelsFiles_;
+
+// Fallback list of 3D models where model_id is index in list
+static const char* entityModelsFilesFallbackList_[] =
 {
 	"car_white.osgb",
 	"car_blue.osgb",
@@ -62,6 +66,59 @@ static const char* entityModelsFiles_[] =
 	"cyclist.osgb",
 	"mc.osgb"
 };
+
+void ParseModelIds()
+{
+	const std::string filename = "model_ids.txt";
+
+	// find and open model_ids.txt file. Test some paths.
+	std::vector<std::string> file_name_candidates;
+
+	// just filepath as stated in .dat file
+	file_name_candidates.push_back(filename);
+
+	// Check registered paths
+	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+	{
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
+	}
+
+	size_t i;
+	for (i = 0; i < file_name_candidates.size(); i++)
+	{
+		if (FileExists(file_name_candidates[i].c_str()))
+		{
+			std::ifstream infile(file_name_candidates[i]);
+			if (infile.is_open())
+			{
+				int id;
+				std::string model3d;
+				while (infile >> id >> model3d)
+				{
+					entityModelsFiles_[id] = model3d;
+				}
+				break;
+			}
+			infile.close();
+		}
+	}
+
+	if (i == file_name_candidates.size())
+	{
+		printf("Failed to load %s file. Tried:\n", filename.c_str());
+		for (int j = 0; j < file_name_candidates.size(); j++)
+		{
+			printf("  %s\n", file_name_candidates[j].c_str());
+		}
+
+		printf("  continue with internal hard coded list: \n");
+		for (int j = 0; j < sizeof(entityModelsFilesFallbackList_)/sizeof(char*); j++)
+		{
+			entityModelsFiles_[j] = entityModelsFilesFallbackList_[j];
+			printf("    %2d: %s\n", j, entityModelsFiles_[j].c_str());
+		}
+	}
+}
 
 void log_callback(const char* str)
 {
@@ -149,13 +206,26 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 			new_sc.wheel_rotation = 0.0f;
 			new_sc.name = state->info.name;
 			new_sc.visible = true;
-			const char* filename = "";
-			if (state->info.model_id >= 0 && state->info.model_id < sizeof(entityModelsFiles_) / sizeof(char*))
+			std::string filename;
+			if (state->info.model_id >= 0 && state->info.model_id < entityModelsFiles_.size())
 			{
-				filename = entityModelsFiles_[state->info.model_id];
+				if (entityModelsFiles_.find(state->info.model_id) != entityModelsFiles_.end())
+				{
+					filename = entityModelsFiles_[state->info.model_id];
+				}
 			}
 
-			if ((new_sc.entityModel = viewer->CreateEntityModel(filename, osg::Vec4(0.5, 0.5, 0.5, 1.0),
+			if (filename.empty())
+			{
+				LOG("Failed to lookup 3d model filename for model_id %d in list:", state->info.model_id);
+				std::map<int, std::string>::iterator it;
+				for (it = entityModelsFiles_.begin(); it != entityModelsFiles_.end(); ++it)
+				{
+					LOG("  %d %s", it->first, it->second.c_str());
+				}
+			}
+
+			if ((new_sc.entityModel = viewer->CreateEntityModel(filename.c_str(), osg::Vec4(0.5, 0.5, 0.5, 1.0),
 				viewer::EntityModel::EntityType::VEHICLE, false, state->info.name, &state->info.boundingbox,
 				static_cast<EntityScaleMode>(state->info.scaleMode))) == 0)
 			{
@@ -317,6 +387,7 @@ int main(int argc, char** argv)
 	double view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
 	bool overlap = false;
 	static char info_str_buf[256];
+	std::string arg_str;
 
 	// Use logger callback for console output instead of logfile
 	Logger::Inst().SetCallback(log_callback);
@@ -333,6 +404,7 @@ int main(int argc, char** argv)
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("no_ghost", "Remove ghost entities");
 	opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
+	opt.AddOption("path", "Search path prefix for assets, e.g. model_ids.txt file (multiple occurrences supported)", "path");
 	opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
 	opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
 	opt.AddOption("repeat", "loop scenario");
@@ -364,11 +436,24 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	std::string res_path = opt.GetOptionArg("res_path");
-	if (!res_path.empty())
+	if (opt.GetOptionArg("path") != "")
 	{
-		SE_Env::Inst().AddPath(res_path);
+		int counter = 0;
+		while ((arg_str = opt.GetOptionArg("path", counter)) != "")
+		{
+			SE_Env::Inst().AddPath(arg_str);
+			LOG("Added path %s", arg_str.c_str());
+			counter++;
+		}
 	}
+
+	arg_str = opt.GetOptionArg("res_path");
+	if (!arg_str.empty())
+	{
+		SE_Env::Inst().AddPath(arg_str);
+	}
+
+	ParseModelIds();
 
 	if (opt.GetOptionSet("disable_off_screen"))
 	{
@@ -376,12 +461,12 @@ int main(int argc, char** argv)
 	}
 
 	// Create player
-	std::string dir_path = opt.GetOptionArg("dir");
+	arg_str = opt.GetOptionArg("dir");
 	try
 	{
-		if (!dir_path.empty())
+		if (!arg_str.empty())
 		{
-			player = new Replay(dir_path, opt.GetOptionArg("file"));
+			player = new Replay(arg_str, opt.GetOptionArg("file"));
 		}
 		else
 		{
@@ -453,7 +538,6 @@ int main(int argc, char** argv)
 			argv[0],
 			arguments, &opt);
 
-		std::string arg_str;
 		if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
 		{
 			if (arg_str == "orbit")
@@ -582,7 +666,12 @@ int main(int argc, char** argv)
 			} while (pos != std::string::npos);
 		}
 
-		ParseEntities(viewer, player);
+		if (ParseEntities(viewer, player) != 0)
+		{
+			delete viewer;
+			return -1;
+		}
+
 		const int ghost_id = GetGhostIdx();
 
 		/* TODO: Some functionality to distinguish "main replay" from variations

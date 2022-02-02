@@ -1,0 +1,11 @@
+0 car_white.osgb
+1 car_blue.osgb
+2 car_red.osgb
+3 car_yellow.osgb
+4 truck_yellow.osgb
+5 van_red.osgb
+6 bus_blue.osgb
+7 walkman.osgb
+8 moose_cc0.osgb
+9 cyclist.osgb
+10 mc.osgb
