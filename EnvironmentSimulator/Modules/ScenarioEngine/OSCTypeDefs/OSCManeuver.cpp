@@ -49,7 +49,7 @@ void Event::Start(double simTime, double dt)
 					for (size_t k = 0; k < obj->objectEvents_[j]->action_.size(); k++)
 					{
 						if (pa->object_->objectEvents_[j]->action_[k] != pa &&
-							pa->object_->objectEvents_[j]->action_[k]->state_ == StoryBoardElement::State::RUNNING &&
+							pa->object_->objectEvents_[j]->action_[k]->IsActive() &&
 							pa->object_->objectEvents_[j]->action_[k]->base_type_ == OSCAction::BaseType::PRIVATE)
 						{
 							OSCPrivateAction* pa2 = (OSCPrivateAction*)obj->objectEvents_[j]->action_[k];
