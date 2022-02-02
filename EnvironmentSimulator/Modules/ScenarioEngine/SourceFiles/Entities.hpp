@@ -417,9 +417,9 @@ namespace scenarioengine
 		Pedestrian() : Object(Object::Type::PEDESTRIAN), mass_(0.0)
 		{
 			category_ = static_cast<int>(Category::PEDESTRIAN);
-			performance_.maxAcceleration = 10.0;
-			performance_.maxDeceleration = 10.0;
-			performance_.maxSpeed = 10.0;
+			performance_.maxAcceleration = LARGE_NUMBER;
+			performance_.maxDeceleration = LARGE_NUMBER;
+			performance_.maxSpeed = LARGE_NUMBER;
 		}
 
 		void SetCategory(std::string category)
