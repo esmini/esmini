@@ -3186,6 +3186,13 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 			viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
 		}
 	}
+	case('R'):
+	{
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->ToggleNodeMaskBits(viewer::NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+		}
+	}
 	break;
 	case(osgGA::GUIEventAdapter::KEY_N):
 	{
@@ -3299,7 +3306,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		}
 	}
 	break;
-	case(osgGA::GUIEventAdapter::KEY_R):
+	case('r'):
 	{
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{

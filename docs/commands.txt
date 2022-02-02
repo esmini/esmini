@@ -32,6 +32,8 @@ Options:
       Run without viewer window
   --help
       Show this help message
+  --hide_route_waypoints
+      Disable route waypoint visualization (toggle with key 'R')
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
   --info_text <mode>

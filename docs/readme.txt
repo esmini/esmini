@@ -18,6 +18,7 @@ Key shortcuts
     y:           Toggle show / hide OSI road points
     p:           Toggle show / hide environment 3D model
     r:           Toggle show / hide sensor view frustums
+    R:           Toggle route waypoint visualization
     i:           Toggle info text showing time and speed
     j:           Toggle show trails after vehicles(4 modes: none / dots / lines / both)
     n:           Toggle show active trajectories

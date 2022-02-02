@@ -552,6 +552,12 @@ int ScenarioPlayer::InitViewer()
 		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
 	}
 
+	if (opt.GetOptionSet("hide_route_waypoints"))
+	{
+		LOG("Disable route waypoint visualization");
+		viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+	}
+
 	if (opt.GetOptionSet("osi_lines"))
 	{
 		viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_LINES);
@@ -850,6 +856,7 @@ int ScenarioPlayer::Init()
 	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
 	opt.AddOption("headless", "Run without viewer window");
 	opt.AddOption("help", "Show this help message");
+	opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization (toggle with key 'R')");
 	opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
 	opt.AddOption("info_text", "Show info text HUD (\"on\" (default), \"off\")", "mode");
 	opt.AddOption("logfile_path", "logfile path/filename, e.g. \"../esmini.log\" (default: log.txt)", "path");
