@@ -1,5 +1,20 @@
 ## esmini release notes
 
+### 2022-02-02 Version 2.20.5
+
+- Add route waypoint visualization
+  - disable by launch argument `--hide_route_waypoints`
+  - toggle on key 'R' (shift 'r')
+- Add replayer support for optional external model_id mapping file
+  - See default example [resources/model_ids.txt](https://github.com/esmini/esmini/blob/master/resources/model_ids.txt)
+- Update ECE ALKS reference driver controller
+  - Support some corner cases, e.g. narrow lanes, high lateral velocities and large timesteps.
+- Add API to retrieve speed unit (see [esminiLib.hpp](https://github.com/esmini/esmini/blob/24bcac483148cb26136e53198306391ed88398eb/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L689))
+- Bugfix: Remove trajectory visualization of deleted entity ([issue #208](https://github.com/esmini/esmini/issues/208))
+- Bugfix: Fix malfuncting left-shift-tab on Linux. It now jump to previous entity.
+- Bugfix: Fix quit by close window event issue (Linux)
+- Added a [guide](https://github.com/esmini/esmini/blob/master/docs/BuildOSG.md#on-osgb-and-unity) on how to bring osgb 3D models into Unity
+
 ### 2022-01-28 Version 2.20.4
 
 - Fix replayer rewind all way to start, including negative ghost headstart time
