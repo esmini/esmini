@@ -175,6 +175,8 @@ A folder named "out" should have been created and including the model.fbx plus a
 1. Select the model and int the "Inspector", select the "Materials" tab
 1. Change the "Location" to "Use External Materials (Legacy)" and click "Apply"
 1. Open the automcatically created "Materials" folder (next to the model file)
-1. Select all materials and change "Rendering Mode" to "Cutout" (good default option)
+1. Select all materials and change  
+   for standard template: "Rendering Mode" to "Cutout" (good default option)  
+   for HDRP template: "Surface type" to "Transparent" and check "alpha clipping"
 
 That should basically be it.
