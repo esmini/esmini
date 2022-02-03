@@ -7833,6 +7833,12 @@ double Position::GetDrivingDirection() const
 		h = GetAngleSum(h, M_PI);
 	}
 
+	Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+	if (road != nullptr && road->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC)
+	{
+		h = GetAngleSum(h, M_PI);
+	}
+
 	return(h);
 }
 

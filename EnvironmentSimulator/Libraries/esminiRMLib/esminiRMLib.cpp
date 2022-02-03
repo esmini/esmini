@@ -39,10 +39,10 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 
 	double adjustedLookaheadDistance = lookahead_distance;
 
-	if (!inRoadDrivingDirection)
+	if (inRoadDrivingDirection)
 	{
-		// Find out what direction to look in
-		if (fabs(position[index].GetHRelativeDrivingDirection()) > M_PI_2)
+		// Look in the driving direction of current lane
+		if (position[index].GetHRelativeDrivingDirection() > M_PI_2 && position[index].GetHRelativeDrivingDirection() < 3 * M_PI_2)
 		{
 			adjustedLookaheadDistance = -lookahead_distance;
 		}

@@ -701,7 +701,7 @@ extern "C"
 		@param lookahead_distance The distance, along the road, to the point
 		@param data Struct including all result values, see typedef for details
 		@param lookAheadMode Measurement strategy: Along 0=lane center, 1=road center (ref line) or 2=current lane offset. See roadmanager::Position::LookAheadMode enum
-		@param inRoadDrivingDirection If true always look along primary driving direction. If false, look in most straightforward direction according to object heading.
+		@param inRoadDrivingDirection If true look along lane driving direction. If false, look in closest direction according to object heading.
 		@return 0 if successful, 1 if probe reached end of road, 2 if end ouf route, -1 if some error
 	*/
 	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int lookAheadMode, bool inRoadDrivingDirection);

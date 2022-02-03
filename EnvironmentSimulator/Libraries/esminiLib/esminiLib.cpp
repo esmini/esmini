@@ -1499,10 +1499,10 @@ extern "C"
 
 		float adjustedLookaheadDistance = lookahead_distance;
 
-		if (!inRoadDrivingDirection)
+		if (inRoadDrivingDirection)
 		{
-			// Find out what direction to look in
-			if (fabs(obj->pos_.GetHRelativeDrivingDirection()) > M_PI_2)
+			// Look in the driving direction of current lane
+			if (obj->pos_.GetHRelativeDrivingDirection() > M_PI_2 && obj->pos_.GetHRelativeDrivingDirection() < 3 * M_PI_2)
 			{
 				adjustedLookaheadDistance = -lookahead_distance;
 			}
