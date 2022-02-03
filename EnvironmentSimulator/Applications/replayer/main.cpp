@@ -839,7 +839,10 @@ int main(int argc, char** argv)
 									{
 										overlap = true;
 										pause = true;
-										LOG("Collision between %d and %d at time %.2f", 0, i, simTime);
+										double rel_speed = abs((player->GetState(scenarioEntity[0].id))->info.speed - (player->GetState(scenarioEntity[i].id)->info.speed)) * 3.6;
+										double rel_angle = (scenarioEntity[0].pos.h - scenarioEntity[i].pos.h) * 180 / M_PI;
+										LOG("Collision between %d and %d at time %.2f.\n- Relative speed %.2f km/h\n- Angle %.2f degrees (ego to target)",
+										0, i, simTime, rel_speed, rel_angle);
 									}
 								}
 							}

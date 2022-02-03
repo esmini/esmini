@@ -180,7 +180,7 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 	}
 }
 
-// Browse through replay-folder and appends shared pointers to valid images
+// Browse through replay-folder and appends strings of absolute path to matching scenario
 void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sce) {
 	DIR* directory = opendir(dir.c_str());
 
@@ -193,7 +193,6 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
 	while ((file = readdir(directory)) != nullptr) {
 		std::string filename = file->d_name;
 
-		// Fix to check sc later
 		if (filename != "." && filename != ".." && filename.find(sce) != std::string::npos) {
 			scenarios_.emplace_back(CombineDirectoryPathAndFilepath(dir, filename));
 		}
