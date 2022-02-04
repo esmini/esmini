@@ -1873,6 +1873,7 @@ Road::~Road()
 	}
 }
 
+
 void Road::Print()
 {
 	LOG("Road id: %d length: %.2f\n", id_, GetLength());
@@ -2651,14 +2652,35 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 	};
 
 	pugi::xml_node header_node = node.child("header");
-	if (node != NULL)
+
+	header_.revMajor_ = std::atoi(header_node.attribute("revMajor").value());
+	header_.revMinor_ = std::atoi(header_node.attribute("revMinor").value());
+	header_.name_ = header_node.attribute("name").value();
+	header_.version_ = std::atof(header_node.attribute("version").value());
+	header_.date_ = header_node.attribute("date").value();
+	header_.north_ = std::atof(header_node.attribute("north").value());
+	header_.south_ = std::atof(header_node.attribute("south").value());
+	header_.east_ = std::atof(header_node.attribute("east").value());
+	header_.west_ = std::atof(header_node.attribute("west").value());
+	header_.vendor_ = header_node.attribute("vendor").value();
+
+	if(header_node.child("geoReference") != NULL)
 	{
-		if(header_node.child("geoReference") != NULL)
-		{
-			//Get the string to parse, geoReference tag is just a string with the data separated by spaces and each attribute start with a + character
-			std::string geo_ref_str = header_node.child_value("geoReference");
-			ParseGeoLocalization(geo_ref_str);
-		}
+		//Get the string to parse, geoReference tag is just a string with the data separated by spaces and each attribute start with a + character
+		std::string geo_ref_str = header_node.child_value("geoReference");
+		ParseGeoLocalization(geo_ref_str);
+		header_.georeference_ = geo_ref_;
+	}
+
+	// TODO: Remove GeoRef from OpenDrive class and use the header container instead.
+	
+	pugi::xml_node offset = header_node.child("offset");
+	if(offset != NULL)
+	{
+		header_.offset_.x_ = std::atof(offset.attribute("x").value());
+		header_.offset_.y_ = std::atof(offset.attribute("y").value());
+		header_.offset_.z_ = std::atof(offset.attribute("z").value());
+		header_.offset_.hdg_ = std::atof(offset.attribute("hdg").value());
 	}
 
 	for (pugi::xml_node road_node = node.child("road"); road_node; road_node = road_node.next_sibling("road"))
@@ -4825,6 +4847,61 @@ void OpenDrive::Print()
 	{
 		junction_[i]->Print();
 	}
+}
+
+void GeoReference::Save(pugi::xml_node& header)
+{
+	auto georeference = header.append_child("geoReference");
+	// TODO: Fix proper CDATA formating for this
+}
+
+void OpenDriveOffset::Save(pugi::xml_node& header)
+{
+	if(!isValid())
+		return;
+	
+	auto offset = header.append_child("offset");
+	offset.append_attribute("x").set_value(x_);
+	offset.append_attribute("y").set_value(y_);
+	offset.append_attribute("z").set_value(z_);
+	offset.append_attribute("hdg").set_value(hdg_);
+}
+
+void OpenDriveHeader::Save(pugi::xml_node& root)
+{
+	auto header = root.append_child("header");
+	header.append_attribute("revMajor").set_value(revMajor_);
+	header.append_attribute("revMinor").set_value(revMinor_);
+	if(!name_.empty())
+		header.append_attribute("name").set_value(name_.c_str());
+	if(version_)
+		header.append_attribute("version").set_value(version_);
+	if(!date_.empty())
+		header.append_attribute("date").set_value(date_.c_str());
+	if(north_)
+		header.append_attribute("north").set_value(north_);
+	if(south_)
+		header.append_attribute("south").set_value(south_);
+	if(east_)
+		header.append_attribute("east").set_value(east_);
+	if(west_)
+		header.append_attribute("west").set_value(west_);
+	if(!vendor_.empty())
+		header.append_attribute("vendor").set_value(vendor_.c_str());
+
+	georeference_.Save(header);
+	offset_.Save(header);
+}
+
+void OpenDrive::Save(std::string fileName)
+{
+    pugi::xml_document doc;
+	auto root = doc.append_child("OpenDRIVE");
+	header_.Save(root);
+	
+
+	// m_OpenDRIVE->save(doc.append_child("OpenDRIVE"));
+   doc.save_file(fileName.c_str());
 }
 
 GeoReference* OpenDrive::GetGeoReference()

@@ -1497,7 +1497,7 @@ namespace roadmanager
 		JunctionType type_;
 	};
 
-	typedef struct
+	struct GeoReference
 	{
 		double a_;
 		double axis_;
@@ -1519,7 +1519,39 @@ namespace roadmanager
 		std::string geo_id_grids_;
 		double zone_;
 		int towgs84_;
-	} GeoReference;
+
+		void Save(pugi::xml_node&);
+	};
+
+	struct OpenDriveOffset
+	{
+		OpenDriveOffset() : x_(0), y_(0), z_(0), hdg_(0) {};	
+		double x_;
+		double y_;
+		double z_;
+		double hdg_;
+
+		void Save(pugi::xml_node&);
+		bool isValid() { return x_ || y_ || z_ || hdg_; };
+	} ;
+
+	struct OpenDriveHeader
+	{
+		uint revMajor_;
+		uint revMinor_;
+		std::string name_;
+		float version_;
+		std::string date_;
+		double north_;
+		double south_;
+		double east_;
+		double west_;
+		std::string vendor_;
+		OpenDriveOffset offset_;
+		GeoReference georeference_;
+
+		void Save(pugi::xml_node&);
+	};
 
 	class OpenDrive
 	{
@@ -1612,14 +1644,19 @@ namespace roadmanager
 
 		void Print();
 
+		void Save(std::string fileName);
+
+		OpenDriveHeader GetHeader() const { return header_; };
+
 	private:
 		pugi::xml_node root_node_;
 		std::vector<Road*> road_;
 		std::vector<Junction*> junction_;
 		std::vector<Controller> controller_;
-		GeoReference geo_ref_;
+		GeoReference geo_ref_; // TODO: Remove this and use the header container instead.
 		std::string odr_filename_;
 		std::map<std::string, std::string> signals_types_;
+		OpenDriveHeader header_;
 	};
 
 	typedef struct
