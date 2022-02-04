@@ -797,7 +797,21 @@ void ParamPoly3::EvaluateDS(double ds, double *x, double *y, double *h)
 
 double ParamPoly3::EvaluateCurvatureDS(double ds)
 {
-	return poly3V_.EvaluatePrimPrim(ds) / poly3U_.EvaluatePrim(ds);
+	double up = poly3U_.EvaluatePrim(ds);
+	double upp = poly3U_.EvaluatePrimPrim(ds);
+	double vp = poly3V_.EvaluatePrim(ds);
+	double vpp = poly3V_.EvaluatePrimPrim(ds);
+	double denominator = pow(pow(up, 2) + pow(vp, 2), 1.5);
+
+	// https://en.wikipedia.org/wiki/Curvature
+	// see section "In terms of a general parametrization"
+
+	if (denominator < SMALL_NUMBER)
+	{
+		return 0;  // derivatives is 0 -> no curvature/straight line
+	}
+
+	return (up * vpp - vp * upp) / denominator;
 }
 
 void ParamPoly3::calcS2PMap(PRangeType p_range)
@@ -8263,16 +8277,17 @@ bool Position::IsAheadOf(Position target_position)
 
 int Position::GetRoadLaneInfo(RoadLaneInfo *data)
 {
-	if (fabs(GetCurvature()) > SMALL_NUMBER)
+	double curvature = GetCurvature();
+	if (fabs(curvature) > SMALL_NUMBER)
 	{
-		double radius = 1.0 / GetCurvature();
+		double radius = 1.0 / curvature;
 		radius -= GetT(); // curvature positive in left curves, lat_offset positive left of reference lane
 		data->curvature = (1.0 / radius);
 	}
 	else
 	{
 		// curvature close to zero (straight segment), radius infitite - curvature the same in all lanes
-		data->curvature = GetCurvature();
+		data->curvature = curvature;
 	}
 
 	data->pos[0] = GetX();

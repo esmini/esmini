@@ -930,13 +930,15 @@ TEST_F(ParamPoly3GeomTestFixture, TestParamPoly3ArgumentConstructor)
 
 TEST_F(ParamPoly3GeomTestFixture, TestEvaluateCurvatureDS)
 {
-    ParamPoly3 parampoly3_second = ParamPoly3(2, -1, 1, 5*M_PI, 4, 1, -2, 3, -4, 1, -2, 3, -4, ParamPoly3::PRangeType::P_RANGE_UNKNOWN);
+    ParamPoly3 parampoly3_second = ParamPoly3(0, 0, 0, 0, 1, 0, 10, 10, -10, 0, 10, -10, 10, ParamPoly3::PRangeType::P_RANGE_UNKNOWN);
 
-    ASSERT_EQ(parampoly3_second.EvaluateCurvatureDS(0), -3.0);
-    ASSERT_EQ(parampoly3_second.EvaluateCurvatureDS(10), 234.0/1142.0);
-    ASSERT_EQ(parampoly3_second.EvaluateCurvatureDS(100), 2394.0/119402.0);
-    ASSERT_EQ(parampoly3_second.EvaluateCurvatureDS(1000), 23994.0/11994002.0);
-}
+    // https://www.desmos.com/calculator/cp3fyc0oxy
+
+    EXPECT_NEAR(parampoly3_second.EvaluateCurvatureDS(0.0), -0.141421, 1e-5);
+    EXPECT_NEAR(parampoly3_second.EvaluateCurvatureDS(0.1), -0.094853, 1e-5);
+    EXPECT_NEAR(parampoly3_second.EvaluateCurvatureDS(0.5), 0.064564, 1e-5);
+    EXPECT_NEAR(parampoly3_second.EvaluateCurvatureDS(1.0), 0.100000, 1e-5);
+ }
 
 class ParamPoly3GeomTestEvaluateDsCurv: public testing::TestWithParam<std::tuple<double, double, double, double>>
 {
@@ -2127,7 +2129,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*TestAssignRoute*";
+    //testing::GTEST_FLAG(filter) = "*TestEvaluateCurvatureDS*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
