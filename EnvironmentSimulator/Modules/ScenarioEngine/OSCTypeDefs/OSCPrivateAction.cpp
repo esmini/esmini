@@ -1091,7 +1091,8 @@ void TeleportAction::Start(double simTime, double dt)
 
 	if (object_->IsGhost() && scenarioEngine_->getSimulationTime() > 0)
 	{
-		scenarioEngine_->SetSimulationTime(scenarioEngine_->getSimulationTime() - scenarioEngine_->GetHeadstartTime());
+		scenarioEngine_->SetGhostRestarted();
+		// scenarioEngine_->SetSimulationTime(scenarioEngine_->getSimulationTime() - scenarioEngine_->GetHeadstartTime());
 		object_->trail_.Reset();
 
 		if (object_->ghost_Ego_ != 0)

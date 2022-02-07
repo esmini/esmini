@@ -127,14 +127,14 @@ void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
 void ScenarioPlayer::Frame(double timestep_s)
 {
 	static bool messageShown = false;
-
+	
 	if (GetState() != PlayerState::PLAYER_STATE_PAUSE)
 	{
-		while ((scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime()) && scenarioEngine->getSimulationTime() > 0)
+		ScenarioFrame(timestep_s);
+		while ((scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime()))
 		{
 			ScenarioFramePart(timestep_s);
 		}
-		ScenarioFrame(timestep_s);
 
 		if (GetState() == PlayerState::PLAYER_STATE_STEP)
 		{

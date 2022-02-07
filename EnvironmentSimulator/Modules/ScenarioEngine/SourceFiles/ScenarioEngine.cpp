@@ -50,6 +50,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 	simulationTime_ = 0;
 	trueTime_ = 0;
 	initialized_ = false;
+	ghost_restarted_ = false;
 	scenarioReader = new ScenarioReader(&entities_, &catalogs, disable_controllers);
 
 	std::vector<std::string> file_name_candidates;
@@ -573,7 +574,14 @@ int ScenarioEngine::step(double deltaSimTime)
 	// Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
 	// Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from there
 
-	if (simulationTime_ == trueTime_)
+	if (ghost_restarted_)
+	{
+		simulationTime_ += deltaSimTime;
+		trueTime_ = simulationTime_;
+		simulationTime_ -= headstart_time_;
+		ghost_restarted_ = false;
+	}
+	else if (NEAR_NUMBERS(simulationTime_, trueTime_))
 	{
 		simulationTime_ += deltaSimTime;
 		trueTime_ = simulationTime_;
