@@ -26,6 +26,7 @@
 #       mv osg ~/
 #       export DYLD_LIBRARY_PATH="$HOME/osg/lib:$DYLD_LIBRARY_PATH"
 #       export PATH="$HOME/osg/bin:$PATH"
+#       (for permanent setting, you might need to add them to .bash_profile or .zshrc)
 #   Then try:
 #     osgviewer ~/esmini/resources/models/car_white.osgb --window 60 60 800 400
 #     (possibly you need to change the path to your esmini root folder)
