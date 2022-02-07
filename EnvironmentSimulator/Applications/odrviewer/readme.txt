@@ -14,6 +14,8 @@ Options:
       Continuous screen capture. Warning: Many .tga files will be created
   --density [density]  (default = 1.000000)
       density (cars / 100 m)
+  --enforce_generate_model
+      Generate road 3D model even if --model is specified
   --disable_log
       Prevent logfile from being created
   --disable_off_screen

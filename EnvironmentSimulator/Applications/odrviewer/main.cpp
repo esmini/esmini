@@ -347,6 +347,7 @@ int main(int argc, char** argv)
 	opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
 	opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many .tga files will be created");
 	opt.AddOption("density", "density (cars / 100 m)", "density", std::to_string(density));
+	opt.AddOption("enforce_generate_model", "Generate road 3D model even if --model is specified");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
 	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");

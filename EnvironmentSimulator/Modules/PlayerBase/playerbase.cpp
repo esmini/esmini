@@ -853,11 +853,12 @@ int ScenarioPlayer::Init()
 	opt.AddOption("camera_mode", "Initial camera mode (\"orbit\" (default), \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\") (swith with key 'k') ", "mode");
 	opt.AddOption("custom_camera", "Additional custom camera position <x,y,z,h,p,r> (multiple occurrences supported)", "position");
 	opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename");
+	opt.AddOption("collision", "Enable global collision detection, potentially reducing performance");
 	opt.AddOption("disable_controllers", "Disable controllers");
 	opt.AddOption("disable_log", "Prevent logfile from being created");
-	opt.AddOption("collision", "Enable global collision detection, potentially reducing performance");
 	opt.AddOption("disable_off_screen", "Disable off-screen rendering, potentially gaining performance");
 	opt.AddOption("disable_stdout", "Prevent messages to stdout");
+	opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");
 	opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
 	opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
 	opt.AddOption("headless", "Run without viewer window");

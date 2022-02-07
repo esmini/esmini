@@ -1505,7 +1505,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 		}
 	}
 
-	if (environment_ == 0)
+	if (environment_ == 0 || opt->GetOptionSet("enforce_generate_model"))
 	{
 		if (odrManager->GetNumOfRoads() > 0)
 		{

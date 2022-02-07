@@ -14,16 +14,18 @@ Options:
       Additional custom camera position <x,y,z,h,p,r> (multiple occurrences supported)
   --csv_logger <csv_filename>
       Log data for each vehicle in ASCII csv format
+  --collision
+      Enable global collision detection, potentially reducing performance
   --disable_controllers
       Disable controllers
   --disable_log
       Prevent logfile from being created
-  --collision
-      Enable global collision detection, potentially reducing performance
   --disable_off_screen
       Disable off-screen rendering, potentially gaining performance
   --disable_stdout
       Prevent messages to stdout
+  --enforce_generate_model
+      Generate road 3D model even if SceneGraphFile is specified
   --fixed_timestep <timestep>
       Run simulation decoupled from realtime, with specified timesteps
   --generate_no_road_objects
