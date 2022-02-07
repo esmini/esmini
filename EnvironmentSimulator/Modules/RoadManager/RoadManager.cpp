@@ -369,6 +369,12 @@ int roadmanager::CheckOverlapingOSIPoints(OSIPoints* first_set, OSIPoints* secon
 {
 	std::vector<double> distances;
 	int retvalue = 0;
+
+	if (first_set == nullptr || second_set == nullptr)
+	{
+		return -1;
+	}
+
 	distances.push_back(PointDistance2D(first_set->GetPoint(0).x,
 									first_set->GetPoint(0).y,
 									second_set->GetPoint(0).x,

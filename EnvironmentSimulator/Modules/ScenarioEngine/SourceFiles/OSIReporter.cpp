@@ -665,7 +665,6 @@ int OSIReporter::UpdateOSIIntersection()
 		double length;
 		int global_id;
 		roadmanager::OSIPoints *osipoints;
-
 	} LaneLengthStruct;
 
 	roadmanager::Junction *junction;
@@ -676,8 +675,8 @@ int OSIReporter::UpdateOSIIntersection()
 	roadmanager::Road *connecting_road;
 	roadmanager::ContactPointType contactpoint;
 	roadmanager::RoadLink *roadlink = 0;
-	LaneLengthStruct left_lane_struct;
-	LaneLengthStruct right_lane_struct;
+	LaneLengthStruct left_lane_struct = { 0, 0.0, 0, nullptr };
+	LaneLengthStruct right_lane_struct = { 0, 0.0, 0, nullptr };
 	// s values to know where on the road to check for the lanes
 	double incomming_s_value;
 	double outgoing_s_value;
