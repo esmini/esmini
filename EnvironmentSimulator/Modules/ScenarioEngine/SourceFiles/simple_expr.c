@@ -12,39 +12,37 @@
 
 // expression implementation is based on https://github.com/zserge/expr
 
-#pragma warning( disable : 4244 )  // all expressions returns float, disable precision lost warning
-
 #include "expr.h"
 
 // Custom function that returns the floor of its argument
-static float round_(struct expr_func* f, vec_expr_t* args, void* c) {
-    float a = expr_eval(&vec_nth(args, 0));
-    return roundf(a);
+static double round_(struct expr_func* f, vec_expr_t* args, void* c) {
+    double a = expr_eval(&vec_nth(args, 0));
+    return round(a);
 }
 
 // Custom function that returns the floor of its argument
-static float floor_(struct expr_func* f, vec_expr_t* args, void* c) {
-    float a = expr_eval(&vec_nth(args, 0));
-    return floorf(a);
+static double floor_(struct expr_func* f, vec_expr_t* args, void* c) {
+    double a = expr_eval(&vec_nth(args, 0));
+    return floor(a);
 }
 
 // Custom function that returns the floor of its argument
-static float ceil_(struct expr_func* f, vec_expr_t* args, void* c) {
-    float a = expr_eval(&vec_nth(args, 0));
-    return ceilf(a);
+static double ceil_(struct expr_func* f, vec_expr_t* args, void* c) {
+    double a = expr_eval(&vec_nth(args, 0));
+    return ceil(a);
 }
 
 // Custom function that returns the floor of its argument
-static float sqrt_(struct expr_func* f, vec_expr_t* args, void* c) {
-    float a = expr_eval(&vec_nth(args, 0));
-    return sqrtf(a);
+static double sqrt_(struct expr_func* f, vec_expr_t* args, void* c) {
+    double a = expr_eval(&vec_nth(args, 0));
+    return sqrt(a);
 }
 
 // Custom function that returns first argument raised to the power of the second argument
-static float pow_(struct expr_func* f, vec_expr_t* args, void* c) {
-    float a = expr_eval(&vec_nth(args, 0));
-    float b = expr_eval(&vec_nth(args, 1));
-    return powf(a, b);
+static double pow_(struct expr_func* f, vec_expr_t* args, void* c) {
+    double a = expr_eval(&vec_nth(args, 0));
+    double b = expr_eval(&vec_nth(args, 1));
+    return pow(a, b);
 }
 
 static struct expr_func user_funcs[] = {
@@ -56,7 +54,7 @@ static struct expr_func user_funcs[] = {
     {NULL, NULL, NULL, 0},
 };
 
-float eval_expr(const char* str)
+double eval_expr(const char* str)
 {
     struct expr_var_list vars = { 0 };
     struct expr* e = expr_create(str, strlen(str), &vars, user_funcs);
@@ -65,7 +63,7 @@ float eval_expr(const char* str)
         return NAN;
     }
 
-    float retval = expr_eval(e);
+    double retval = expr_eval(e);
 
     expr_destroy(e, 0);
 

@@ -12,6 +12,9 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
+// Disable warning of some struct initializations
+#pragma warning(disable:4204)
+
 /*
  * Simple expandable vector implementation
  */
@@ -100,16 +103,16 @@ static int prec[] = {0, 1, 1, 1, 2, 2, 2, 2, 3,  3,  4,  4, 5, 5,
 
 typedef vec(struct expr) vec_expr_t;
 typedef void (*exprfn_cleanup_t)(struct expr_func *f, void *context);
-typedef float (*exprfn_t)(struct expr_func *f, vec_expr_t *args, void *context);
+typedef double (*exprfn_t)(struct expr_func *f, vec_expr_t *args, void *context);
 
 struct expr {
   enum expr_type type;
   union {
     struct {
-      float value;
+      double value;
     } num;
     struct {
-      float *value;
+      double *value;
     } var;
     struct {
       vec_expr_t args;
@@ -206,8 +209,8 @@ static enum expr_type expr_op(const char *s, size_t len, int unary) {
   return OP_UNKNOWN;
 }
 
-static float expr_parse_number(const char *s, size_t len) {
-  float num = 0;
+static double expr_parse_number(const char *s, size_t len) {
+  double num = 0;
   unsigned int frac = 0;
   unsigned int digits = 0;
   for (unsigned int i = 0; i < len; i++) {
@@ -256,9 +259,9 @@ static struct expr_func *expr_func(struct expr_func *funcs, const char *s,
  * Variables
  */
 struct expr_var {
-  float value;
+  double value;
   struct expr_var *next;
-  char name[];
+  char* name;
 };
 
 struct expr_var_list {
@@ -288,7 +291,7 @@ static struct expr_var *expr_var(struct expr_var_list *vars, const char *s,
   return v;
 }
 
-static int to_int(float x) {
+static int to_int(double x) {
   if (isnan(x)) {
     return 0;
   } else if (isinf(x) != 0) {
@@ -298,8 +301,8 @@ static int to_int(float x) {
   }
 }
 
-static float expr_eval(struct expr *e) {
-  float n;
+static double expr_eval(struct expr *e) {
+  double n;
   switch (e->type) {
   case OP_UNARY_MINUS:
     return -(expr_eval(&e->param.op.args.buf[0]));
@@ -308,8 +311,8 @@ static float expr_eval(struct expr *e) {
   case OP_UNARY_BITWISE_NOT:
     return ~(to_int(expr_eval(&e->param.op.args.buf[0])));
   case OP_POWER:
-    return powf(expr_eval(&e->param.op.args.buf[0]),
-                expr_eval(&e->param.op.args.buf[1]));
+    return pow(expr_eval(&e->param.op.args.buf[0]),
+               expr_eval(&e->param.op.args.buf[1]));
   case OP_MULTIPLY:
     return expr_eval(&e->param.op.args.buf[0]) *
            expr_eval(&e->param.op.args.buf[1]);
@@ -317,8 +320,8 @@ static float expr_eval(struct expr *e) {
     return expr_eval(&e->param.op.args.buf[0]) /
            expr_eval(&e->param.op.args.buf[1]);
   case OP_REMAINDER:
-    return fmodf(expr_eval(&e->param.op.args.buf[0]),
-                 expr_eval(&e->param.op.args.buf[1]));
+    return fmod(expr_eval(&e->param.op.args.buf[0]),
+                expr_eval(&e->param.op.args.buf[1]));
   case OP_PLUS:
     return expr_eval(&e->param.op.args.buf[0]) +
            expr_eval(&e->param.op.args.buf[1]);
@@ -528,7 +531,7 @@ static int expr_bind(const char *s, size_t len, vec_expr_t *es) {
   return 0;
 }
 
-static struct expr expr_const(float value) {
+static struct expr expr_const(double value) {
   struct expr e = expr_init();
   e.type = OP_CONST;
   e.param.num.value = value;
@@ -583,11 +586,10 @@ static void expr_destroy_args(struct expr *e);
 static struct expr *expr_create(const char *s, size_t len,
                                 struct expr_var_list *vars,
                                 struct expr_func *funcs) {
-  float num;
-  struct expr_var *v;
+  double num;
+  struct expr_var *ev;
   const char *id = NULL;
   size_t idn = 0;
-
   struct expr *result = NULL;
 
   vec_expr_t es = vec_init();
@@ -662,8 +664,8 @@ static struct expr *expr_create(const char *s, size_t len,
         } else {
           goto cleanup; /* invalid function name */
         }
-      } else if ((v = expr_var(vars, id, idn)) != NULL) {
-        vec_push(&es, expr_varref(v));
+      } else if ((ev = expr_var(vars, id, idn)) != NULL) {
+        vec_push(&es, expr_varref(ev));
         paren = EXPR_PAREN_FORBIDDEN;
       }
       id = NULL;
@@ -739,10 +741,10 @@ static struct expr *expr_create(const char *s, size_t len,
             for (int j = 0; j < vec_len(&arg.args); j++) {
               char varname[4];
               snprintf(varname, sizeof(varname) - 1, "$%d", (j + 1));
-              struct expr_var *v = expr_var(vars, varname, strlen(varname));
-              struct expr ev = expr_varref(v);
+              struct expr_var *var = expr_var(vars, varname, strlen(varname));
+              struct expr evr = expr_varref(var);
               struct expr assign =
-                  expr_binary(OP_ASSIGN, ev, vec_nth(&arg.args, j));
+                  expr_binary(OP_ASSIGN, evr, vec_nth(&arg.args, j));
               *p = expr_binary(OP_COMMA, assign, expr_const(0));
               p = &vec_nth(&p->param.op.args, 1);
             }
@@ -852,8 +854,8 @@ static struct expr *expr_create(const char *s, size_t len,
   struct expr_arg a;
 cleanup:
   vec_foreach(&macros, m, i) {
-    struct expr e;
-    vec_foreach(&m.body, e, j) { expr_destroy_args(&e); }
+    struct expr e2;
+    vec_foreach(&m.body, e2, j) { expr_destroy_args(&e2); }
     vec_free(&m.body);
   }
   vec_free(&macros);

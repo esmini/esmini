@@ -427,13 +427,13 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
 					ReplaceStringInPlace(expr, "true ", "1 ");
 					ReplaceStringInPlace(expr, "false ", "0 ");
 
-					float value = eval_expr(expr.c_str());
+					double value = eval_expr(expr.c_str());
 					if (isnan(value))
 					{
 						LOG_AND_QUIT("Failed to evaluate the expression : % s\n", attr.value());
 					}
 
-					LOG("Expr %s = %s = %f", attr.value(), expr.c_str(), value);
+					LOG("Expr %s = %s = %.10lf", attr.value(), expr.c_str(), value);
 					return std::to_string(value);
 				}
 				else

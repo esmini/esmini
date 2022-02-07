@@ -21,7 +21,7 @@ extern "C" {
 * @param str Experssion
 * @return evaluated resulting value as float
 */
-float eval_expr(const char* str);
+double eval_expr(const char* str);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -299,27 +299,29 @@ TEST(TrajectoryTest, EnsureContinuation)
 
 TEST(ExpressionTest, EnsureResult)
 {
-    ASSERT_FLOAT_EQ(eval_expr("1 + 1"), 2.0f);
-    ASSERT_FLOAT_EQ(eval_expr("5 * 10 + 1"), 51.0f);
-    ASSERT_FLOAT_EQ(eval_expr("5 * (10 + 1)"), 55.0f);
-    ASSERT_FLOAT_EQ(eval_expr("15/3.5"), 15.0f / 3.5f);
-    ASSERT_FLOAT_EQ(eval_expr("15 % 6"), 3.0f);
-    ASSERT_FLOAT_EQ(eval_expr("-15 % 6"), -3.0f);
-    ASSERT_FLOAT_EQ(eval_expr("1 == 1"), 1.0f);
-    ASSERT_FLOAT_EQ(eval_expr("1 == 2"), 0.0f);
-    ASSERT_FLOAT_EQ(eval_expr("(4 == 4) && (10 == 10)"), 1.0f);
-    ASSERT_FLOAT_EQ(eval_expr("4 == 4 && 10 == 10"), 1.0f);
-    ASSERT_FLOAT_EQ(eval_expr("4 == 4 && 9 < 10"), 1.0f);
-    ASSERT_FLOAT_EQ(eval_expr("4 == 4 || 11 == 10"), 1.0f);
-    ASSERT_FLOAT_EQ(eval_expr("4 == 3 || 9 < 8"), 0.0f);
-    ASSERT_FLOAT_EQ(eval_expr("ceil(11.1) == 12"), 1.0f);
-    ASSERT_FLOAT_EQ(eval_expr("round(11.1) == 11"), 1.0f);
-    ASSERT_FLOAT_EQ(eval_expr("floor(11.9) == 11"), 1.0f);
-    ASSERT_FLOAT_EQ(eval_expr("ceil(-11.1) == -11"), 1.0f);
-    ASSERT_FLOAT_EQ(eval_expr("round(-11.1) == -11"), 1.0f);
-    ASSERT_FLOAT_EQ(eval_expr("floor(-11.9) == -12"), 1.0f);
-    ASSERT_FLOAT_EQ(eval_expr("pow(2,3)"), 8.0f);
-    ASSERT_FLOAT_EQ(eval_expr("2**3"), 8.0f);
+    ASSERT_DOUBLE_EQ(eval_expr("1 + 1"), 2.0);
+    ASSERT_DOUBLE_EQ(eval_expr("5 * 10 + 1"), 51.0);
+    ASSERT_DOUBLE_EQ(eval_expr("5 * (10 + 1)"), 55.0);
+    ASSERT_DOUBLE_EQ(eval_expr("15/3.5"), 15.0f / 3.5);
+    ASSERT_DOUBLE_EQ(eval_expr("15 % 6"), 3.0);
+    ASSERT_DOUBLE_EQ(eval_expr("-15 % 6"), -3.0);
+    ASSERT_DOUBLE_EQ(eval_expr("1 == 1"), 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("1 == 2"), 0.0);
+    ASSERT_DOUBLE_EQ(eval_expr("(4 == 4) && (10 == 10)"), 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("4 == 4 && 10 == 10"), 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("4 == 4 && 9 < 10"), 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("4 == 4 || 11 == 10"), 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("4 == 3 || 9 < 8"), 0.0);
+    ASSERT_DOUBLE_EQ(eval_expr("ceil(11.1) == 12"), 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(11.1) == 11"), 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("floor(11.9) == 11"), 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("ceil(-11.1) == -11"), 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("round(-11.1) == -11"), 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("floor(-11.9) == -12"), 1.0);
+    ASSERT_DOUBLE_EQ(eval_expr("pow(2,3)"), 8.0);
+    ASSERT_DOUBLE_EQ(eval_expr("2**3"), 8.0);
+    ASSERT_DOUBLE_EQ(eval_expr("13.88888888888889 - 1.0"), 12.88888888888889);
+    ASSERT_DOUBLE_EQ(eval_expr("13.88888888888889 - 0.0"), 13.88888888888889);
 }
 
 TEST(OptionsTest, TestOptionHandling)
@@ -1075,7 +1077,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*JunctionSelectorTest*";
+    //testing::GTEST_FLAG(filter) = "*ExpressionTest*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
