@@ -123,25 +123,8 @@ void ScenarioPlayer::SetOSIFileStatus(bool is_on, const char* filename)
 	}
 #endif // USE_OSI
 }
-
-void ScenarioPlayer::Frame(double timestep_s)
+void ScenarioPlayer::Draw()
 {
-	static bool messageShown = false;
-	
-	if (GetState() != PlayerState::PLAYER_STATE_PAUSE)
-	{
-		ScenarioFrame(timestep_s);
-		while ((scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime()))
-		{
-			ScenarioFramePart(timestep_s);
-		}
-
-		if (GetState() == PlayerState::PLAYER_STATE_STEP)
-		{
-			SetState(PlayerState::PLAYER_STATE_PAUSE);
-		}
-	}
-
 	if (viewer_)
 	{
 #ifdef _USE_OSG
@@ -159,6 +142,29 @@ void ScenarioPlayer::Frame(double timestep_s)
 		}
 #endif
 	}
+}
+
+void ScenarioPlayer::Frame(double timestep_s)
+{
+	static bool messageShown = false;
+
+	if (GetState() != PlayerState::PLAYER_STATE_PAUSE)
+	{
+		ScenarioFrame(timestep_s);
+
+		while ((scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime()))
+		{
+			//Draw();
+			ScenarioFramePart(timestep_s);
+		}
+
+		if (GetState() == PlayerState::PLAYER_STATE_STEP)
+		{
+			SetState(PlayerState::PLAYER_STATE_PAUSE);
+		}
+	}
+
+	Draw();
 
 	if (scenarioEngine->getSimulationTime() > 3600 && !messageShown)
 	{

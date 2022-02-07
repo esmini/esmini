@@ -590,7 +590,6 @@ int ScenarioEngine::step(double deltaSimTime)
 	else if (simulationTime_ + deltaSimTime < trueTime_)
 	{
 		simulationTime_ += deltaSimTime;
-
 	}
 	else
 	{

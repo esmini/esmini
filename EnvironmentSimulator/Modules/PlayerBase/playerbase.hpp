@@ -84,6 +84,7 @@ public:
 	bool IsQuitRequested() { return quit_request; }
 	void SetOSIFileStatus(bool is_on, const char *filename = 0);
 	void Frame(); // let player calculate actual time step
+	void Draw();
 	void Frame(double timestep_s);
 	void ScenarioFrame(double timestep_s);
 	void ScenarioFramePart(double timestep_s);

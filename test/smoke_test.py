@@ -262,18 +262,18 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Loading follow_ghost.xosc', log)  is not None)
         
         # Check some scenario events
-        self.assertTrue(re.search('^2.550.* SpeedEvent1 complete after 1 execution', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^2.560.* SpeedEvent1 complete after 1 execution', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^3.010: LaneChangeCondition1 == true, 3.0100 > 3.00 edge: rising', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^19.020: EventStopCondition == true, element: StopEvent state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
         
         # Check vehicle key positions
         csv = generate_csv()
         self.assertTrue(re.search('^-1.000, 1, Ego_ghost, 8.211, 59.920, -0.057, 1.567, 0.002, 0.000, 9.950', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.550, 1, Ego_ghost, 8.519, 127.114, -0.198, 1.565, 0.002, 0.000, 27.750', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.560, 1, Ego_ghost, 8.521, 127.392, -0.199, 1.565, 0.002, 0.000, 27.778', csv, re.MULTILINE))
-        self.assertTrue(re.search('^6.500, 0, Ego, 5.720, 187.571, -0.325, 1.607, 0.002, 0.000, 27.778, -0.018', csv, re.MULTILINE))
-        self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.290, 359.202, -0.643, 1.549, 0.002, 0.000, 0.100', csv, re.MULTILINE))
-        self.assertTrue(re.search('^14.570, 0, Ego, 11.139, 352.231, -0.630, 1.550, 0.002, 0.000, 0.057', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.550, 0, Ego, 8.303, 82.586, -0.099, 1.567, 0.002, 6.283, 20.380, -0.000, 5.225', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.560, 1, Ego_ghost, 8.519, 127.114, -0.198, 1.565, 0.002, 0.000, 27.750, 0.000, 0.503', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.500, 0, Ego, 5.718, 187.293, -0.324, 1.607, 0.002, 0.000, 27.778, -0.018, 3.056', csv, re.MULTILINE))
+        self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.284, 358.924, -0.643, 1.549, 0.002, 0.000, 0.100, 0.000, 3.070', csv, re.MULTILINE))
+        self.assertTrue(re.search('^14.570, 0, Ego, 11.133, 351.950, -0.629, 1.550, 0.002, 0.000, 0.052, -0.001, 2.768', csv, re.MULTILINE))
 
     def test_heading_trig(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc'), COMMON_ARGS)
@@ -576,6 +576,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_left_hand_by_heading'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_follow_ghost'])
     
     unittest.main(verbosity=2)
