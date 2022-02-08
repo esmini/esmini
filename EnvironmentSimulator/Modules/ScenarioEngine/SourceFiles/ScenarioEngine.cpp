@@ -15,6 +15,7 @@
 #include "ControllerFollowGhost.hpp"
 #include "ControllerExternal.hpp"
 #include "ControllerRel2Abs.hpp"
+#include "ControllerFollowRoute.hpp"
 
 #define WHEEL_RADIUS 0.35
 #define STAND_STILL_THRESHOLD 1e-3  // meter per second

@@ -24,6 +24,7 @@
 namespace scenarioengine
 {
 	class ScenarioPlayer;
+	class ScenarioEngine;
 
 	// base class for controllers
 	class ControllerFollowRoute: public Controller
@@ -40,9 +41,11 @@ namespace scenarioengine
 		void Step(double timeStep);
 		void Activate(ControlDomains domainMask);
 		void ReportKeyEvent(int key, bool down);
+		void SetScenarioEngine(ScenarioEngine* scenarioEngine) { scenarioEngine_ = scenarioEngine; };
 
 	private:
 		vehicle::Vehicle vehicle_;
+		ScenarioEngine* scenarioEngine_;
 	};
 
 	Controller* InstantiateControllerFollowRoute(void* args);
