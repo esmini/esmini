@@ -3714,6 +3714,13 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				{
 					connecting_road_id = atoi(connection_node.attribute("connectingRoad").value());
 				}
+				// chek if road element exist before conntinuing
+				auto checkRoadExist = std::find_if(road_.begin(),road_.end(), [=](Road* tmpr){return tmpr->GetId() == connecting_road_id;});
+				//if road dosen't exist in std::vector continue the loop
+				if (checkRoadExist==road_.end()){
+					continue;
+				};
+
 				Road* connecting_road = GetRoadById(connecting_road_id);
 
 				// Check that the connecting road is referring back to this junction
