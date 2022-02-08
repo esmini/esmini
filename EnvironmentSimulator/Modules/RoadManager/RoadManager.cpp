@@ -1027,6 +1027,11 @@ RoadMarkColor LaneRoadMark::ParseColor(pugi::xml_node node)
 		{
 			color = RoadMarkColor::YELLOW;
 		}
+		else
+		{
+			color = RoadMarkColor::UNKNOWN;
+			LOG("Unexpected and unsupported roadmark color %s", node.attribute("color").value());
+		}
 	}
 
 	return color;
@@ -2210,10 +2215,10 @@ Lane* Road::GetDrivingLaneSideByIdx(double s, int side, int idx)
 Lane* Road::GetDrivingLaneById(double s, int id)
 {
 	LaneSection *ls = GetLaneSectionByS(s);
-
-	if (ls->GetLaneById(id)->IsDriving())
+	Lane* lane = ls->GetLaneById(id);
+	if (lane && lane->IsDriving())
 	{
-		return ls->GetLaneById(id);
+		return lane;
 	}
 
 	return 0;
@@ -2709,6 +2714,9 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 	pugi::xml_node header_node = node.child("header");
 	if (node != NULL)
 	{
+		versionMajor_ = strtoi(header_node.attribute("revMajor").value());
+		versionMinor_ = strtoi(header_node.attribute("revMinor").value());
+
 		if(header_node.child("geoReference") != NULL)
 		{
 			//Get the string to parse, geoReference tag is just a string with the data separated by spaces and each attribute start with a + character
@@ -3244,9 +3252,9 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 								// color - consider it optional with default value = STANDARD_COLOR
 								RoadMarkColor roadMark_color = LaneRoadMark::ParseColor(roadMark);
-								if (roadMark_color == RoadMarkColor::UNDEFINED)
+								if (GetVersionMajor() == 1 && GetVersionMinor() > 4 && roadMark_color == RoadMarkColor::UNDEFINED)
 								{
-									LOG("unknown lane road mark color: %s (road id=%d), set to standard (white)",
+									LOG("Missing lane road mark color: %s (road id=%d), set to standard (white)",
 										LaneRoadMark::RoadMarkColor2Str(roadMark_color).c_str(), r->GetId());
 									roadMark_color = RoadMarkColor::STANDARD_COLOR;
 								}

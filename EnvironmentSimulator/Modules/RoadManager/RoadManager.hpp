@@ -350,7 +350,8 @@ namespace roadmanager
 		GREEN,
 		RED,
 		WHITE,
-		YELLOW
+		YELLOW,
+		UNKNOWN,
 	};
 
 
@@ -1538,7 +1539,7 @@ namespace roadmanager
 	class OpenDrive
 	{
 	public:
-		OpenDrive() : speed_unit_(SpeedUnit::UNDEFINED) {};
+		OpenDrive() : speed_unit_(SpeedUnit::UNDEFINED), versionMajor_(0), versionMinor_(0) {};
 		OpenDrive(const char *filename);
 		~OpenDrive();
 
@@ -1631,6 +1632,9 @@ namespace roadmanager
 		*/
 		SpeedUnit GetSpeedUnit() { return speed_unit_; }
 
+		int GetVersionMajor() { return versionMajor_; }
+		int GetVersionMinor() { return versionMinor_; }
+
 		void Print();
 
 	private:
@@ -1642,6 +1646,8 @@ namespace roadmanager
 		std::string odr_filename_;
 		std::map<std::string, std::string> signals_types_;
 		SpeedUnit speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
+		int versionMajor_;
+		int versionMinor_;
 	};
 
 	typedef struct

@@ -83,7 +83,6 @@ namespace scenarioengine
 		double *GetSimulationTimePtr() { return &simulationTime_; }
 
 		void SetTrueTime(double time) { trueTime_ = time; }
-		
 		double GetTrueTime() { return trueTime_; }
 		double* GetTrueTimePtr() { return &trueTime_;  }
 		void CreateGhostTeleport(Object* obj1, Object* obj2, Event* event);

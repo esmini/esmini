@@ -891,8 +891,18 @@ int OSIReporter::UpdateOSIIntersection()
 
 						osi3::Lane_Classification_LanePairing *laneparing = osi_lane->mutable_classification()->add_lane_pairing();
 						laneparing->mutable_antecessor_lane_id()->set_value(incomming_road->GetDrivingLaneById(incomming_s_value, junctionlanelink->from_)->GetGlobalId());
-						laneparing->mutable_successor_lane_id()->set_value(outgoing_road->GetDrivingLaneById(outgoing_s_value,
-							connecting_road->GetDrivingLaneById(connecting_outgoing_s_value, junctionlanelink->to_)->GetLink(connecting_road_link_type)->GetId())->GetGlobalId());
+
+						roadmanager::Lane* lane = connecting_road->GetDrivingLaneById(connecting_outgoing_s_value, junctionlanelink->to_);
+						if (lane != nullptr)
+						{
+							laneparing->mutable_successor_lane_id()->set_value(outgoing_road->GetDrivingLaneById(outgoing_s_value,
+								lane->GetLink(connecting_road_link_type)->GetId())->GetGlobalId());
+						}
+						else
+						{
+							LOG("Connecting road %d incoming road %d failed get lane by id %d", connecting_road->GetId(),
+								connection->GetIncomingRoad()->GetId(), junctionlanelink->to_);
+						}
 					}
 				}
 			}
