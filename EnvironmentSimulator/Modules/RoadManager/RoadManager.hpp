@@ -568,8 +568,8 @@ namespace roadmanager
 		} LaneType;
 
 		// Construct & Destruct
-		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(0), offset_from_ref_(0.0), global_id_(0), lane_boundary_(0) {}
-		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(1), offset_from_ref_(0), global_id_(0), lane_boundary_(0) {}
+		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(-1), offset_from_ref_(0.0), global_id_(0), lane_boundary_(0) {}
+		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(-1), offset_from_ref_(0), global_id_(0), lane_boundary_(0) {}
 		~Lane() {}
 
 		// Base Get Functions
@@ -603,7 +603,7 @@ namespace roadmanager
 		void SetGlobalId();
 		void SetLaneBoundary(LaneBoundaryOSI *lane_boundary);
 		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
-		void SetLevel(bool level) { level_ = level; }
+		void SetLevel(int level) { level_ = level; }
 
 		// Others
 		bool IsType(Lane::LaneType type);

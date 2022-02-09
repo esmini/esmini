@@ -4,19 +4,6 @@
 
 #define SUPPRESS_LOG
 
-class MyGeoRef : public roadmanager::GeoReference
-{
-public:
-    void save() {std::cout << "saving" << std::endl;}
-};
-
-class MyOpenDrive : public roadmanager::OpenDrive
-{
-public:
-    //bool LoadOpenDriveFile(const char *filename, bool replace = true) override;
-
-};
-
 
 int main(int argc, char* argv[])
 {
@@ -49,9 +36,6 @@ int main(int argc, char* argv[])
             }
         }
     }
-
-    auto test = MyGeoRef();
-    test.save();
 
     // std::cout << "\nGeoref tag: " << std::endl;
     // std::cout << openDrive.GetGeoReferenceAsString() << std::endl;

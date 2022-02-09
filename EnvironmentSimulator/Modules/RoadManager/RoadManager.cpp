@@ -52,6 +52,7 @@
 #include <algorithm>
 #include <map>
 #include <sstream>
+#include <assert.h>
 
 #include "RoadManager.hpp"
 #include "odrSpiral.h"
@@ -336,11 +337,14 @@ void Signal::Save(pugi::xml_node& signals)
 	signal.append_attribute("s").set_value(s_);
 	signal.append_attribute("t").set_value(t_);
 	signal.append_attribute("id").set_value(id_);
-	signal.append_attribute("name").set_value(name_.c_str());
+	if(!name_.empty()) // Name is optional
+		signal.append_attribute("name").set_value(name_.c_str());
 	if(dynamic_)
 		signal.append_attribute("dynamic").set_value("true");
 	else if(!dynamic_)
 		signal.append_attribute("dynamic").set_value("false");
+	else
+		assert(false && "Missing dynamic in road signal");
 
 	switch (orientation_)
 	{
@@ -354,22 +358,30 @@ void Signal::Save(pugi::xml_node& signals)
 		signal.append_attribute("orientation").set_value("none");
 		break;
 	default:
+		assert(false && "Default reached in road signal switch");
 		break;
 	}
 	signal.append_attribute("zOffset").set_value(z_offset_);
-	signal.append_attribute("country").set_value(country_.c_str());
+	if(!country_.empty()) // country is optional
+		signal.append_attribute("country").set_value(country_.c_str());
+	// TODO: countryRevision 
 	signal.append_attribute("type").set_value(type_);
 	//object.append_attribute("subtype").set_value() TODO:
 	signal.append_attribute("value").set_value(value_);
-	signal.append_attribute("unit").set_value(unit_.c_str());
+	if(!unit_.empty()) // unit is optional
+		signal.append_attribute("unit").set_value(unit_.c_str());
 	if(height_)
 		signal.append_attribute("height").set_value(height_);
 	if(width_)
 		signal.append_attribute("width").set_value(width_);
-	signal.append_attribute("text").set_value(text_.c_str());
-	signal.append_attribute("hOffset").set_value(h_offset_);
-	signal.append_attribute("pitch").set_value(pitch_);
-	signal.append_attribute("roll").set_value(roll_);
+	if(!text_.empty()) // text is optional
+		signal.append_attribute("text").set_value(text_.c_str());
+	if(h_offset_) // h_offset is optional
+		signal.append_attribute("hOffset").set_value(h_offset_);
+	if(pitch_) // pitch is optional
+		signal.append_attribute("pitch").set_value(pitch_);
+	if(roll_) // roll is optional
+		signal.append_attribute("roll").set_value(roll_);
 
 	for(auto validity : validity_)
 	{
@@ -1041,7 +1053,7 @@ void LaneRoadMarkTypeLine::Save(pugi::xml_node& type)
 	case RoadMarkTypeLineRule::NONE :
 		line.append_attribute("rule").set_value("none");
 		break;
-	default:
+	default: // rule is optional
 		break;
 	}
 
@@ -1067,7 +1079,7 @@ void LaneRoadMarkTypeLine::Save(pugi::xml_node& type)
 	case RoadMarkColor::YELLOW :
 		line.append_attribute("color").set_value("yellow");
 		break;
-	default:
+	default: // color is optional
 		break;
 	}
 }
@@ -1253,6 +1265,7 @@ void LaneRoadMarkType::Save(pugi::xml_node& roadMark)
 	type.append_attribute("name").set_value(name_.c_str());
 	type.append_attribute("width").set_value(width_);
 
+	assert(!lane_roadMarkTypeLine_.empty());
 	for(auto line : lane_roadMarkTypeLine_)
 	{
 		line->Save(type);
@@ -1296,6 +1309,7 @@ void LaneRoadMark::Save(pugi::xml_node& lane)
 		roadmark.append_attribute("type").set_value("curb");
 		break;
 	default:
+		assert(false && "Default in roadmark type switch reached");
 		break;
 	}
 
@@ -1307,7 +1321,7 @@ void LaneRoadMark::Save(pugi::xml_node& lane)
 	case LaneRoadMark::RoadMarkWeight::STANDARD :
 		roadmark.append_attribute("weight").set_value("standard");
 		break;
-	default:
+	default: // weight is optional
 		break;
 	}
 
@@ -1332,6 +1346,7 @@ void LaneRoadMark::Save(pugi::xml_node& lane)
 		roadmark.append_attribute("color").set_value("yellow");
 		break;
 	default:
+		roadmark.append_attribute("color").set_value("standard");
 		break;
 	}
 
@@ -1340,7 +1355,7 @@ void LaneRoadMark::Save(pugi::xml_node& lane)
 	case LaneRoadMark::RoadMarkMaterial::STANDARD_MATERIAL :
 		roadmark.append_attribute("material").set_value("standard");
 		break;
-	default:
+	default: // material is optional
 		break;
 	}
 
@@ -1360,7 +1375,7 @@ void LaneRoadMark::Save(pugi::xml_node& lane)
 	case LaneRoadMark::RoadMarkLaneChange::NONE_LANECHANGE :
 		roadmark.append_attribute("laneChange").set_value("none");
 		break;
-	default:
+	default: // lanechange is optional
 		break;
 	}
 
@@ -1450,14 +1465,14 @@ void Lane::Save(pugi::xml_node& laneSection)
 	auto lane = lcr.append_child("lane");
 	lane.append_attribute("id").set_value(id_);
 
-	if(level_)
+	if(level_ == 1)
 	{
 		lane.append_attribute("level").set_value("true");
 	}
-	else{
+	else if(level_ == 0) 
+	{
 		lane.append_attribute("level").set_value("false");
-	}
-	
+	}	
 
 	switch (type_)
 	{
@@ -1522,6 +1537,7 @@ void Lane::Save(pugi::xml_node& laneSection)
 		lane.append_attribute("type").set_value("onRamp");
 		break;
 	default:
+		assert(false && "Default reached in lane type switch");
 		break;
 	}
 
@@ -1831,6 +1847,7 @@ void LaneSection::Save(pugi::xml_node& lanes)
 			laneSection.append_attribute("singleSide").set_value("false");
 		}
 	}
+	assert(!lane_.empty());
 	for(auto lane : lane_)
 	{
 		lane->Save(laneSection);
@@ -2277,6 +2294,7 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s)
 
 RoadLink::RoadLink(LinkType type, pugi::xml_node node) : contact_point_type_(ContactPointType::CONTACT_POINT_UNDEFINED)
 {
+	
 	string element_type = node.attribute("elementType").value();
 	string contact_point_type = "";
 	type_ = type;
@@ -2311,7 +2329,15 @@ RoadLink::RoadLink(LinkType type, pugi::xml_node node) : contact_point_type_(Con
 	else if (element_type == "junction")
 	{
 		element_type_ = ELEMENT_TYPE_JUNCTION;
-		contact_point_type_ = CONTACT_POINT_JUNCTION;
+		//contact_point_type_ = CONTACT_POINT_JUNCTION;
+		if (contact_point_type == "start")
+		{
+			contact_point_type_ = CONTACT_POINT_START;
+		}
+		else if (contact_point_type == "end")
+		{
+			contact_point_type_ = CONTACT_POINT_END;
+		}
 	}
 	else if (element_type.empty())
 	{
@@ -2344,42 +2370,55 @@ void RoadLink::Save(pugi::xml_node& link)
 {
 	auto linkType = GetType();
 	pugi::xml_node type;
-	if(linkType == LinkType::PREDECESSOR)
+	
+	switch (GetType())
 	{
+	case LinkType::PREDECESSOR:
 		type = link.append_child("predecessor");
-	}
-	else if(linkType == LinkType::SUCCESSOR)
-	{
+		break;
+	case LinkType::SUCCESSOR:
 		type = link.append_child("successor");
-	}
-	else
-	{
+		break;
+	default:
+		assert (false && "The default case of LinkType switch was reached.");
 		return;
 	}
 
-	auto elementType = GetElementType();
-	if(elementType == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
+	switch (GetElementType())
 	{
+	case RoadLink::ElementType::ELEMENT_TYPE_JUNCTION:
 		type.append_attribute("elementType").set_value("junction");
-	}
-	else if(elementType == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
-	{
+		break;
+	case RoadLink::ElementType::ELEMENT_TYPE_ROAD:
 		type.append_attribute("elementType").set_value("road");
+		break;
+	default:
+		assert (false && "The default case of elementType switch was reached.");
+		break;
 	}
 
-	auto contactPointType = GetContactPointType();
-	if(contactPointType == ContactPointType::CONTACT_POINT_START)
+	switch (GetContactPointType())
 	{
+	case ContactPointType::CONTACT_POINT_START:
 		type.append_attribute("contactPoint").set_value("start");
-	}
-	else if(contactPointType == ContactPointType::CONTACT_POINT_END)
-	{
+		break;
+	case ContactPointType::CONTACT_POINT_END:
 		type.append_attribute("contactPoint").set_value("end");
+		break;
+	case ContactPointType::CONTACT_POINT_JUNCTION:
+		std::cerr << "Unsupported contact point: Junction" << std::endl;
+		break;
+	case ContactPointType::CONTACT_POINT_UNDEFINED:
+		// Suppress output atm. since a lot of tags miss this entry..
+		//std::cerr << "Unsupported contact point: Undefined" << std::endl;
+		break;
+	default:
+		assert (false && "The default case of road link contactPoint switch was reached.");
+		break;
 	}
 
+	assert(GetElementId() >= 0 && "Element ID of road link cannot be negative");
 	type.append_attribute("elementId").set_value(GetElementId());
-
-	
 }
 
 Road::~Road()
@@ -2432,19 +2471,22 @@ void Road::Print()
 void Road::Save(pugi::xml_node& root)
 {
 	auto road = root.append_child("road");
-	road.append_attribute("name").set_value(GetName().c_str());
+	if(GetName().compare("")) // name Attribute is optional
+		road.append_attribute("name").set_value(GetName().c_str());
 	road.append_attribute("length").set_value(GetLength());
 	road.append_attribute("id").set_value(GetId());
 	road.append_attribute("junction").set_value(GetJunction());
 
-	auto rule = GetRule();
-	if(rule == RoadRule::RIGHT_HAND_TRAFFIC)
+	switch (GetRule())
 	{
+	case RoadRule::RIGHT_HAND_TRAFFIC:
 		road.append_attribute("rule").set_value("RHT");
-	}
-	else if(rule == RoadRule::LEFT_HAND_TRAFFIC)
-	{
+		break;
+	case RoadRule::LEFT_HAND_TRAFFIC:
 		road.append_attribute("rule").set_value("LHT");
+		break;
+	default: // rule attribute is optional
+		break;
 	}
 	
 	if(!link_.empty())
@@ -2458,13 +2500,12 @@ void Road::Save(pugi::xml_node& root)
 
 	if(!type_.empty())
 	{
-		auto type = road.append_child("type");
 		for(auto t : type_)
 		{
+			auto type = road.append_child("type");
 			type.append_attribute("s").set_value(t->s_);
-			auto roadType = t->road_type_;
 			auto typeNode = type.append_attribute("type");
-			switch (roadType)
+			switch (t->road_type_)
 			{
 			case RoadType::ROADTYPE_BICYCLE:
 				typeNode.set_value("bicycle");
@@ -2488,10 +2529,11 @@ void Road::Save(pugi::xml_node& root)
 				typeNode.set_value("unknown");
 				break;
 			default:
+				assert(false && "default raeched in roadType switch");
 				break;
 			}
 
-			if(t->speed_)
+			if(t->speed_) // Optional speed record
 			{
 				auto speed = type.append_child("speed");
 				speed.append_attribute("max").set_value(t->speed_);
@@ -2501,6 +2543,7 @@ void Road::Save(pugi::xml_node& root)
 	}
 
 	auto planView = road.append_child("planView");
+	assert(!geometry_.empty());
 	for(auto geom : geometry_)
 	{
 		auto geometry = planView.append_child("geometry");
@@ -2534,6 +2577,7 @@ void Road::Save(pugi::xml_node& root)
 		}
 	}
 
+	assert(!lane_section_.empty());
 	for(auto laneSection : lane_section_)
 	{
 		laneSection->Save(lanes);
@@ -2699,7 +2743,7 @@ void OutlineCornerRoad::Save(pugi::xml_node& outline)
 	cornerRoad.append_attribute("t").set_value(t_);
 	cornerRoad.append_attribute("dz").set_value(dz_);
 	cornerRoad.append_attribute("height").set_value(height_);
-	if(id_)
+	if(id_) // Introduced in OpenDRIVE 1.5
 		cornerRoad.append_attribute("id").set_value(id_);
 }
 
@@ -2731,7 +2775,7 @@ void OutlineCornerLocal::Save(pugi::xml_node& outline)
 	cornerLocal.append_attribute("v").set_value(v_);
 	cornerLocal.append_attribute("z").set_value(zLocal_);
 	cornerLocal.append_attribute("height").set_value(height_);
-	if(id_)
+	if(id_) // Introduced in OpenDRIVE 1.5
 		cornerLocal.append_attribute("id").set_value(id_);
 }
 
@@ -3792,11 +3836,11 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 							
 							if(!strcmp(lane_node->attribute("level").value(), "true"))
 							{
-								lane->SetLevel(true);
+								lane->SetLevel(1);
 							}
 							else if (!strcmp(lane_node->attribute("level").value(), "false"))
 							{	
-								lane->SetLevel(false);
+								lane->SetLevel(0);
 							}
 
 							lane_section->AddLane(lane);
@@ -4336,6 +4380,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				{
 					for (pugi::xml_node outline_node = outlines_node.child("outline"); outline_node; outline_node = outline_node.next_sibling())
 					{
+						auto outlineFillType = outlines_node.attribute("fillType").value();
 						int id = atoi(outline_node.attribute("id").value());
 						bool closed = !strcmp(outline_node.attribute("closed").value(), "true") ? true : false;
 						Outline* outline = new Outline(id, Outline::FillType::FILL_TYPE_UNDEFINED, closed);
@@ -4523,10 +4568,12 @@ void RMObject::SetRepeat(Repeat* repeat)
 void RMObject::Save(pugi::xml_node& objects)
 {
 	auto object = objects.append_child("object");
-	object.append_attribute("type").set_value(type_.c_str());
+	if(!type_.empty()) // type is optional
+		object.append_attribute("type").set_value(type_.c_str());
 	//object.append_attribute("subtype").set_value() TODO:
 	//object.append_attribute("dynamic").set_value() TODO:
-	object.append_attribute("name").set_value(name_.c_str());
+	if(!name_.empty()) // name is optional
+		object.append_attribute("name").set_value(name_.c_str());
 	object.append_attribute("id").set_value(id_);
 	object.append_attribute("s").set_value(s_);
 	object.append_attribute("t").set_value(t_);
@@ -4544,6 +4591,7 @@ void RMObject::Save(pugi::xml_node& objects)
 		object.append_attribute("orientation").set_value("none");
 		break;
 	default:
+		assert(false && "Default reached in road object orientation switch");
 		break;
 	}
 	object.append_attribute("hdg").set_value(heading_);
@@ -4560,7 +4608,6 @@ void RMObject::Save(pugi::xml_node& objects)
 	{
 		GetRepeat()->Save(object);
 	}
-
 
 	for(auto outline : outlines_)
 	{
@@ -4584,6 +4631,7 @@ void ValidityRecord::Save(pugi::xml_node& object)
 
 void Outline::Save(pugi::xml_node& object)
 {
+	// Sace according to OpenDRIVE 1.5M
 	auto outlines = object.child("outlines");
 	if(outlines.empty())
 	{
@@ -4617,17 +4665,16 @@ void Outline::Save(pugi::xml_node& object)
 	case Outline::FillType::FILL_TYPE_SOIL : 
 		outline.append_attribute("fillType").set_value("soil");
 		break;
-	default:
+	default: // Will not be defined for OpenDRIVE 1.4
 		break;
 	}
-	
-	//outline.append_attribute("outer").set_value();
+	//outline.append_attribute("outer").set_value(); // TODO:
 	if(closed_)
 		outline.append_attribute("closed").set_value("true");
 	else if(!closed_)
 		outline.append_attribute("closed").set_value("false");
 
-	//outline.append_attribute("laneType").set_value();
+	//outline.append_attribute("laneType").set_value(); // TODO:
 
 	for(auto corner : corner_)
 	{
