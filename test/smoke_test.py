@@ -269,11 +269,11 @@ class TestSuite(unittest.TestCase):
         # Check vehicle key positions
         csv = generate_csv()
         self.assertTrue(re.search('^-1.000, 1, Ego_ghost, 8.211, 59.920, -0.057, 1.567, 0.002, 0.000, 9.950', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.550, 0, Ego, 8.303, 82.586, -0.099, 1.567, 0.002, 6.283, 20.380, -0.000, 5.225', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.550, 0, Ego, 8.304, 82.790, -0.100, 1.567, 0.002, 6.283, 20.436, -0.000, 5.808', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.560, 1, Ego_ghost, 8.519, 127.114, -0.198, 1.565, 0.002, 0.000, 27.750, 0.000, 0.503', csv, re.MULTILINE))
-        self.assertTrue(re.search('^6.500, 0, Ego, 5.718, 187.293, -0.324, 1.607, 0.002, 0.000, 27.778, -0.018, 3.056', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.500, 0, Ego, 5.709, 187.571, -0.325, 1.606, 0.002, 0.000, 27.778, -0.018, 3.850', csv, re.MULTILINE))
         self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.284, 358.924, -0.643, 1.549, 0.002, 0.000, 0.100, 0.000, 3.070', csv, re.MULTILINE))
-        self.assertTrue(re.search('^14.570, 0, Ego, 11.133, 351.950, -0.629, 1.550, 0.002, 0.000, 0.052, -0.001, 2.768', csv, re.MULTILINE))
+        self.assertTrue(re.search('^14.570, 0, Ego, 11.133, 351.950, -0.629, 1.550, 0.002, 0.000, 0.042, -0.001, 2.769', csv, re.MULTILINE))
 
     def test_heading_trig(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc'), COMMON_ARGS)

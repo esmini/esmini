@@ -147,16 +147,30 @@ void ScenarioPlayer::Draw()
 void ScenarioPlayer::Frame(double timestep_s)
 {
 	static bool messageShown = false;
+	double dt = timestep_s;
+	__int64 time_stamp = 0;
 
 	if (GetState() != PlayerState::PLAYER_STATE_PAUSE)
 	{
-		ScenarioFrame(timestep_s);
 
-		while ((scenarioEngine->getSimulationTime() < scenarioEngine->GetTrueTime()))
+		while (scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
 		{
-			//Draw();
-			ScenarioFramePart(timestep_s);
+			// Main simulation is paused during ghost headstart or restart
+
+			Draw();
+			ScenarioFramePart(dt);
+
+			if (GetFixedTimestep() > 0.0)
+			{
+				dt = GetFixedTimestep();
+			}
+			else
+			{
+				dt = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
+			}
 		}
+
+		ScenarioFrame(timestep_s);
 
 		if (GetState() == PlayerState::PLAYER_STATE_STEP)
 		{
@@ -195,7 +209,14 @@ void ScenarioPlayer::ScenarioFramePart(double timestep_s)
 	scenarioEngine->step(timestep_s);
 
 	scenarioEngine->prepareGroundTruth(timestep_s);
+
 	scenarioGateway->WriteStatesToFile();
+
+	if (CSV_Log)
+	{
+		UpdateCSV_Log();
+	}
+
 	mutex.Unlock();
 }
 
@@ -234,7 +255,7 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 			sensor[i]->Update();
 		}
 #ifdef _USE_OSI
-		if (scenarioEngine->getSimulationTime() == scenarioEngine->GetTrueTime())
+		if (NEAR_NUMBERS(scenarioEngine->getSimulationTime(), scenarioEngine->GetTrueTime()))
 		{
 			osiReporter->ReportSensors(sensor);
 

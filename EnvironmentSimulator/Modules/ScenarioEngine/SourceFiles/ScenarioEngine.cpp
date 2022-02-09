@@ -49,7 +49,7 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 	simulationTime_ = 0;
 	trueTime_ = 0;
 	initialized_ = false;
-	ghost_restarted_ = false;
+	ghost_mode_ = GhostMode::NORMAL;
 	scenarioReader = new ScenarioReader(&entities_, &catalogs, disable_controllers);
 
 	std::vector<std::string> file_name_candidates;
@@ -118,6 +118,21 @@ ScenarioEngine::~ScenarioEngine()
 
 int ScenarioEngine::step(double deltaSimTime)
 {
+	if (ghost_mode_ == GhostMode::RESTART)
+	{
+		trueTime_ = simulationTime_;
+		simulationTime_ -= headstart_time_;
+		ghost_mode_ = GhostMode::RESTARTING;
+	}
+	else if (ghost_mode_ == GhostMode::RESTARTING)
+	{
+		if (simulationTime_ > trueTime_ - SMALL_NUMBER)
+		{
+			ghost_mode_ = GhostMode::NORMAL;
+		}
+	}
+
+
 	if (!initialized_)
 	{
 		// Set initial values for speed and acceleration derivation
@@ -435,7 +450,7 @@ int ScenarioEngine::step(double deltaSimTime)
 										// Try one
 										OSCAction* action = event->action_[n];
 										OSCPrivateAction* pa = (OSCPrivateAction*)action;
-										if (trueTime_ <= simulationTime_ ||
+										if (ghost_mode_ != GhostMode::RESTARTING ||
 											((action->base_type_ == OSCAction::BaseType::PRIVATE) && pa->object_->IsGhost()))
 										{
 											event->action_[n]->Step(simulationTime_, deltaSimTime);
@@ -480,7 +495,7 @@ int ScenarioEngine::step(double deltaSimTime)
 		// and only ghosts allowed to execute before time == 0
 		if (!(obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
 			fabs(obj->speed_) > SMALL_NUMBER &&
-			(trueTime_ <= simulationTime_ || obj->IsGhost()))
+			(ghost_mode_ != GhostMode::RESTARTING || obj->IsGhost()))
 		{
 			defaultController(obj, deltaSimTime);
 		}
@@ -526,12 +541,9 @@ int ScenarioEngine::step(double deltaSimTime)
 	{
 		if (scenarioReader->controller_[i]->Active())
 		{
-			if (simulationTime_ >= 0)
+			if (ghost_mode_ != GhostMode::RESTARTING)
 			{
-				if (trueTime_ <= simulationTime_)
-				{
-					scenarioReader->controller_[i]->Step(deltaSimTime);
-				}
+				scenarioReader->controller_[i]->Step(deltaSimTime);
 			}
 		}
 	}
@@ -573,26 +585,11 @@ int ScenarioEngine::step(double deltaSimTime)
 	// Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
 	// Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from there
 
-	if (ghost_restarted_)
-	{
-		simulationTime_ += deltaSimTime;
-		trueTime_ = simulationTime_;
-		simulationTime_ -= headstart_time_;
-		ghost_restarted_ = false;
-	}
-	else if (NEAR_NUMBERS(simulationTime_, trueTime_))
-	{
-		simulationTime_ += deltaSimTime;
-		trueTime_ = simulationTime_;
+	simulationTime_ += deltaSimTime;
 
-	}
-	else if (simulationTime_ + deltaSimTime < trueTime_)
+	if (ghost_mode_ == GhostMode::NORMAL)
 	{
-		simulationTime_ += deltaSimTime;
-	}
-	else
-	{
-		simulationTime_ = trueTime_;
+		trueTime_ = simulationTime_;
 	}
 
 	if (all_done)
@@ -727,8 +724,7 @@ void ScenarioEngine::parseScenario()
 					if (obj->ghost_->GetHeadstartTime() > GetHeadstartTime())
 					{
 						SetHeadstartTime(obj->ghost_->GetHeadstartTime());
-						SetSimulationTime(-obj->ghost_->GetHeadstartTime());
-						SetTrueTime(0);
+						ghost_mode_ = GhostMode::RESTART;
 					}
 				}
 			}
@@ -829,7 +825,8 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
 		double dy = obj->pos_.GetY() - obj->state_old.pos_y;
 
-		if (dt > SMALL_NUMBER && !(!obj->IsGhost() && getSimulationTime() < SMALL_NUMBER))
+		if (dt > SMALL_NUMBER &&
+			(obj->IsGhost() || ghost_mode_ != GhostMode::RESTARTING)) // For non ghost vehicles, update only when no ghost restart is ongoing
 		{
 			if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
 			{

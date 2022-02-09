@@ -44,6 +44,13 @@ namespace scenarioengine
 		Object* object1;
 	} CollisionPair;
 
+	enum class GhostMode
+	{
+		NORMAL,
+		RESTART,     // the frame ghost is requested to restart
+		RESTARTING,  // ghost restart is ongoing, including the final restart timestep
+	};
+
 	class ScenarioEngine
 	{
 	public:
@@ -86,8 +93,8 @@ namespace scenarioengine
 		double GetTrueTime() { return trueTime_; }
 		double* GetTrueTimePtr() { return &trueTime_;  }
 		void CreateGhostTeleport(Object* obj1, Object* obj2, Event* event);
-		void SetGhostRestarted() {ghost_restarted_ = true;}
-		//static void TimeSetBack();
+		void SetGhostRestart() { ghost_mode_ = GhostMode::RESTART; }
+		GhostMode GetGhostMode() { return ghost_mode_; }
 
 		double trueTime_;
 		bool doOnce = true;
@@ -104,7 +111,7 @@ namespace scenarioengine
 		// Simulation parameters
 		double simulationTime_;
 		double headstart_time_;
-		bool ghost_restarted_;
+		GhostMode ghost_mode_;
 		Vehicle sumotemplate;
 		ScenarioGateway scenarioGateway;
 
