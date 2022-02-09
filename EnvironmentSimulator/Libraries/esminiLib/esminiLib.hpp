@@ -717,6 +717,16 @@ extern "C"
 	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost);
 
 	/**
+		Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle
+		@param object_id Handle to the position object from which to measure (the actual externally controlled Ego vehicle, not ghost)
+		@param time Simulation time (subtracting headstart time, i.e. time=0 gives the initial state)
+		@param data Struct including all result values, see typedef for details
+		@param speed_ghost reference to a variable returning the speed that the ghost had at this point along trail
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_GetRoadInfoGhostTrailTime(int object_id, float time, SE_RoadInfo* data, float* speed_ghost);
+
+	/**
 		Create an ideal object sensor and attach to specified vehicle
 		@param object_id Handle to the object to which the sensor should be attached
 		@param x Position x coordinate of the sensor in vehicle local coordinates

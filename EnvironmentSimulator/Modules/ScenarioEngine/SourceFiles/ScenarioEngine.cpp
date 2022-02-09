@@ -18,7 +18,6 @@
 
 #define WHEEL_RADIUS 0.35
 #define STAND_STILL_THRESHOLD 1e-3  // meter per second
-#define TRAJECTORY_SAMPLE_TIME 0.2
 
 using namespace scenarioengine;
 
@@ -919,7 +918,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 			obj->odometer_ += abs(sqrt(dx * dx + dy * dy));  // odometer always measure all movements as positive, I guess...
 		}
 
-		if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertex(-1)->time > TRAJECTORY_SAMPLE_TIME)
+		if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertex(-1)->time > GHOST_TRAIL_SAMPLE_TIME)
 		{
 			// Only add trail vertex when speed is not stable at 0
 			if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertex(-1)->speed) > SMALL_NUMBER || fabs(obj->GetSpeed()) > SMALL_NUMBER)

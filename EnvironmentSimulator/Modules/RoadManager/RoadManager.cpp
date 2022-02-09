@@ -9235,13 +9235,14 @@ int PolyLineBase::Evaluate(double s, TrajVertex& pos)
 
 int PolyLineBase::Time2S(double time, double& s)
 {
-	if (GetNumberOfVertices() < 1)
+	if (GetNumberOfVertices() < 1 || time < vertex_[0].time)
 	{
-		return -1;
+		s = 0.0;
+		return 0;
 	}
 
 	// start looking from current index
-	int i = vIndex_;
+	int i = current_index_;
 
 	for (size_t j = 0; j < GetNumberOfVertices(); j++)
 	{
@@ -9249,7 +9250,8 @@ int PolyLineBase::Time2S(double time, double& s)
 		{
 			double w = (time - vertex_[i].time) / (vertex_[i + 1].time - vertex_[i].time);
 			s = vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s);
-			vIndex_ = i;
+			current_index_ = i;
+			current_s_ = s;
 			return 0;
 		}
 
@@ -9337,6 +9339,37 @@ int PolyLineBase::FindPointAhead(double s_start, double distance, TrajVertex& po
 	return 0;
 }
 
+int PolyLineBase::FindPointAtTime(double time, TrajVertex& pos, int& index, int startAtIndex)
+{
+	double s = 0;
+	if (Time2S(time, s) != 0)
+	{
+		return -1;
+	}
+
+	index = Evaluate(s, pos, startAtIndex);
+
+	return 0;
+}
+
+int PolyLineBase::FindPointAtTimeRelative(double time, TrajVertex& pos, int& index, int startAtIndex)
+{
+	double s = 0;
+	if (vertex_.size() == 0)
+	{
+		return -1;
+	}
+
+	if (Time2S(vertex_[0].time + time, s) != 0)
+	{
+		return -1;
+	}
+
+	index = Evaluate(s, pos, startAtIndex);
+
+	return 0;
+}
+
 TrajVertex* PolyLineBase::GetVertex(int index)
 {
 	if (GetNumberOfVertices() < 1)
@@ -9357,7 +9390,8 @@ TrajVertex* PolyLineBase::GetVertex(int index)
 void PolyLineBase::Reset()
 {
 	vertex_.clear();
-	vIndex_ = 0;
+	current_index_ = 0;
+	current_s_ = 0.0;
 	length_ = 0;
 }
 
@@ -9637,7 +9671,7 @@ int NurbsShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos)
 		pline_.Time2S(p, s);
 	}
 
-	pline_.Evaluate(s, pos, pline_.vIndex_);
+	pline_.Evaluate(s, pos, pline_.current_index_);
 
 	EvaluateInternal(pos.p, pos);
 

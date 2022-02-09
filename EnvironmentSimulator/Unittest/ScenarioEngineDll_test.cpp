@@ -2087,7 +2087,6 @@ TEST(ExternalController, TestExternalDriver)
 				float ghost_speed;
 				SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed);
 				targetSpeed = ghost_speed;
-
 			}
 			else
 			{
@@ -2134,6 +2133,8 @@ TEST(ExternalController, TestExternalDriver)
 			}
 			else if (i==1)
 			{
+				SE_RoadInfo road_info2;
+				float speed2 = 0;
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
@@ -2141,6 +2142,12 @@ TEST(ExternalController, TestExternalDriver)
 					EXPECT_NEAR(objectState.y, 56.540, 1e-3);
 					EXPECT_NEAR(objectState.h, 1.016, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.261, 1e-3);
+					if (ghostMode[i] == true)
+					{
+						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
+						EXPECT_NEAR(road_info2.global_pos_x, 206.75929, 1e-5);
+						EXPECT_NEAR(road_info2.global_pos_y, 92.55646, 1e-5);
+					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
@@ -2149,6 +2156,12 @@ TEST(ExternalController, TestExternalDriver)
 					EXPECT_NEAR(objectState.y, 347.327, 1e-3);
 					EXPECT_NEAR(objectState.h, 6.059, 1e-3);
 					EXPECT_NEAR(objectState.p, 0.008, 1e-3);
+					if (ghostMode[i] == true)
+					{
+						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
+						EXPECT_NEAR(road_info2.global_pos_x, 388.71024, 1e-5);
+						EXPECT_NEAR(road_info2.global_pos_y, 290.30063, 1e-5);
+					}
 				}
 			}
 
@@ -2516,7 +2529,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0  // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*centerline_is_driving_direction*";
+	testing::GTEST_FLAG(filter) = "*TestExternalDriver*";
 #else
 	SE_LogToConsole(false);
 #endif

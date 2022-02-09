@@ -54,6 +54,8 @@
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION 0.05
 #define LOG_FILENAME "log.txt"
+#define GHOST_TRAIL_SAMPLE_TIME 0.2
+
 
 #define LOG(Format_, ...)  Logger::Inst().Log(false, false, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)
 #define LOG_TRACE(Format_, ...)  Logger::Inst().Log(false, true, __FILENAME__, __FUNCTION__, __LINE__, Format_, ##__VA_ARGS__)

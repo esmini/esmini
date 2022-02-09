@@ -313,6 +313,76 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 	return 0;
 }
 
+static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo* r_data, float* speed_ghost)
+{
+	roadmanager::RoadProbeInfo s_data;
+
+	if (player == 0)
+	{
+		return -1;
+	}
+
+	if (object_id >= player->scenarioGateway->getNumberOfObjects())
+	{
+		LOG("Object %d not available, only %d registered", object_id, player->scenarioGateway->getNumberOfObjects());
+		return -1;
+	}
+
+	Object* obj = player->scenarioEngine->entities_.object_[object_id];
+	Object* ghost = 0;
+	if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
+	{
+		ghost = obj->GetGhost();
+		if (ghost == 0)
+		{
+			LOG("Ghost object not available for object id %d", object_id);
+			return -1;
+		}
+	}
+
+	int index_out;
+
+	roadmanager::TrajVertex trailPos;
+	trailPos.h = (float)obj->pos_.GetH(); // Set default trail heading aligned with road - in case trail is less than two points (no heading)
+
+	if (ghost->trail_.FindPointAtTime(time - ghost->GetHeadstartTime(), trailPos, index_out, obj->trail_follow_index_) != 0)
+	{
+		LOG("Failed to lookup point at time %.2f (time arg = %.2f) along ghost (%d) trail",
+			player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + time, time, ghost->GetId());
+		return -1;
+	}
+
+	roadmanager::Position pos(trailPos.x, trailPos.y, 0, 0, 0, 0);
+	obj->pos_.CalcProbeTarget(&pos, &s_data);
+
+	// Copy data
+	r_data->local_pos_x = (float)s_data.relative_pos[0];
+	r_data->local_pos_y = (float)s_data.relative_pos[1];
+	r_data->local_pos_z = (float)s_data.relative_pos[2];
+	r_data->global_pos_x = (float)s_data.road_lane_info.pos[0];
+	r_data->global_pos_y = (float)s_data.road_lane_info.pos[1];
+	r_data->global_pos_z = (float)s_data.road_lane_info.pos[2];
+	r_data->angle = (float)s_data.relative_h;
+	r_data->curvature = (float)s_data.road_lane_info.curvature;
+	r_data->road_heading = (float)s_data.road_lane_info.heading;
+	r_data->trail_heading = (float)trailPos.h;
+	r_data->road_pitch = (float)s_data.road_lane_info.pitch;
+	r_data->road_roll = (float)s_data.road_lane_info.roll;
+	r_data->speed_limit = (float)s_data.road_lane_info.speed_limit;
+
+	*speed_ghost = (float)trailPos.speed;
+
+	// Update object sensor position for visualization
+	if (obj->sensor_pos_)
+	{
+		obj->sensor_pos_[0] = trailPos.x;
+		obj->sensor_pos_[1] = trailPos.y;
+		obj->sensor_pos_[2] = trailPos.z;
+	}
+
+	return 0;
+}
+
 static int InitScenario()
 {
 	// Harmonize parsing and printing of floating point numbers. I.e. 1.57e+4 == 15700.0 not 15,700.0 or 1 or 1.57
@@ -1524,6 +1594,21 @@ extern "C"
 		}
 
 		if (GetRoadInfoAlongGhostTrail(object_id, lookahead_distance, data, speed_ghost) != 0)
+		{
+			return -1;
+		}
+
+		return 0;
+	}
+
+	SE_DLL_API int SE_GetRoadInfoGhostTrailTime(int object_id, float time, SE_RoadInfo* data, float* speed_ghost)
+	{
+		if (player == nullptr || object_id >= player->scenarioGateway->getNumberOfObjects())
+		{
+			return -1;
+		}
+
+		if (GetRoadInfoAtGhostTrailTime(object_id, time, data, speed_ghost) != 0)
 		{
 			return -1;
 		}

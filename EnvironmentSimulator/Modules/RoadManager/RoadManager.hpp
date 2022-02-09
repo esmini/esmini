@@ -2553,7 +2553,7 @@ namespace roadmanager
 	{
 	public:
 
-		PolyLineBase() : length_(0), vIndex_(0), currentPos_({0, 0, 0, 0, 0, 0, 0, 0, false }), interpolateHeading_(false) {}
+		PolyLineBase() : length_(0), current_index_(0), current_s_(0.0), interpolateHeading_(false) {}
 		TrajVertex* AddVertex(TrajVertex p);
 		TrajVertex* AddVertex(double x, double y, double z, double h);
 		TrajVertex* AddVertex(double x, double y, double z);
@@ -2586,15 +2586,34 @@ namespace roadmanager
 		int Evaluate(double s, TrajVertex& pos);
 		int FindClosestPoint(double xin, double yin, TrajVertex& pos, int& index, int startAtIndex = 0);
 		int FindPointAhead(double s_start, double distance, TrajVertex& pos, int& index, int startAtIndex = 0);
+
+		/**
+		* Get ghost state at a point in time
+		* @param time Simulation time (subtracting headstart time, i.e. time=0 gives the initial state)
+		* @param pos Returns state including position, heading, speed. See TrajVertex type.
+		* @param index Returns the index of matching trajectory segment
+		* @param startAtIndex Start search for segment (e.g. index returned by previous call)
+		*/
+		int FindPointAtTime(double time, TrajVertex& pos, int& index, int startAtIndex = 0);
+
+		/**
+		* Get ghost state at a point in time
+		* @param time Time offset from first timestamp
+		* @param pos Returns state including position, heading, speed. See TrajVertex type.
+		* @param index Returns the index of matching trajectory segment
+		* @param startAtIndex Start search for segment (e.g. index returned by previous call)
+		*/
+		int FindPointAtTimeRelative(double time, TrajVertex& pos, int& index, int startAtIndex = 0);
+
 		int GetNumberOfVertices() { return (int)vertex_.size(); }
 		TrajVertex* GetVertex(int index);
 		void Reset();
 		int Time2S(double time, double& s);
 
 		std::vector<TrajVertex> vertex_;
-		TrajVertex currentPos_;
+		int current_index_;
+		double current_s_;
 		double length_;
-		int vIndex_;
 		bool interpolateHeading_;
 
 	protected:
