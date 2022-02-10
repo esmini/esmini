@@ -81,7 +81,7 @@
                         <ConditionGroup>
                            <Condition name="Maneuver1Start" delay="0" conditionEdge="none">
                               <ByValueCondition>
-                                 <SimulationTimeCondition value="2" rule="greaterThan"/>
+                                 <SimulationTimeCondition value="2" rule="greaterOrEqual"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>

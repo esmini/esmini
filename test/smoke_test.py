@@ -172,8 +172,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^7.010: LaneChange2Condition == true, 7.0100 > 7.00 edge: rising', log, re.MULTILINE))
         self.assertTrue(re.search('^11.010: BrakeCondition == true, 11.0100 > 11.00 edge: rising', log, re.MULTILINE))
         self.assertTrue(re.search('^17.010: BrakeCondition == true, 17.0100 > 17.00 edge: rising', log, re.MULTILINE))
-        self.assertTrue(re.search('^20.000: Brake2Condition == true, 20.0000 > 20.00 edge: rising', log, re.MULTILINE))
-        self.assertTrue(re.search('^33.250: ActStopCondition == true, element: TargetBrake2Event state: END_TRANSITION, edge: rising', log, re.MULTILINE))
+        self.assertTrue(re.search('^20.010: Brake2Condition == true, 20.0100 > 20.00 edge: rising', log, re.MULTILINE))
+        self.assertTrue(re.search('^33.260: ActStopCondition == true, element: TargetBrake2Event state: END_TRANSITION, edge: rising', log, re.MULTILINE))
 
         # Check vehicle key positions
         csv = generate_csv()
@@ -188,10 +188,10 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n7.710, 1, Target, 164.250, 0.034, 0.000, 5.891, 0.000, 0.000, 8.333*', csv))
         self.assertTrue(re.search('\n16.71.*, 0, Ego, 192.299, -1.535, 0.000, 0.000, 0.000, 0.000, 0.100', csv))
         self.assertTrue(re.search('\n16.71.*, 1, Target, 200.38.*, -1.53.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*', csv))
-        self.assertTrue(re.search('\n25.110, 0, Ego, 241.260, -1.535, 0.000, 0.000, 0.000, 0.000, 5.301', csv))
-        self.assertTrue(re.search('\n25.110, 1, Target, 254.502, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000', csv))
-        self.assertTrue(re.search('\n33.000, 0, Ego, 281.012, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000', csv))
-        self.assertTrue(re.search('\n33.000, 1, Target, 293.952, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000', csv))
+        self.assertTrue(re.search('\n25.210, 0, Ego, 241.946, -1.535, 0.000, 0.000, 0.000, 0.000, 5.277, 0.000, 5.813', csv))
+        self.assertTrue(re.search('\n25.210, 1, Target, 255.164, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 3.503', csv))
+        self.assertTrue(re.search('\n33.000, 0, Ego, 281.174, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 4.795', csv))
+        self.assertTrue(re.search('\n33.000, 1, Target, 294.114, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 1.691', csv))
 
     def test_swarm(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ARGS + '--seed 5')
@@ -325,17 +325,20 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^Adding clothoid\(x=0.00 y=0.00 h=0.00 curv=-0.01 curvDot=0.00 len=15.00 startTime=0.00 stopTime=0.00\)', log, re.MULTILINE)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^3.080: LaneChangeCondition2 == true, element: LaneChangeEvent1 state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^3.440: LaneChangeCondition3 == true, element: LaneChangeEvent2 state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^4.520: LaneChangeEvent3 runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^3.090: LaneChangeCondition2 == true, element: LaneChangeEvent1 state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^3.450: LaneChangeCondition3 == true, element: LaneChangeEvent2 state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^4.530: LaneChangeEvent3 runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^7.000: StopCondition timer 1.00s started', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^8.000: StopCondition == true, 7.0000 < 7.00 edge: falling', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^8.000: LaneChangeAct runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
         self.assertTrue(re.search('^1.980, 0, Car, 77.500, -1.535, 0.000, 0.000, 0.000, 0.000, 13.889', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.010, 0, Car, 77.917, -1.535, 0.000, 0.001, 0.000, 0.000, 13.889', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.200, 0, Car, 94.370, -0.163, 0.000, 0.150, 0.000, 0.000, 13.889', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.150, 0, Car, 107.473, 1.326, 0.000, 0.051, 0.000, 0.000, 13.889', csv, re.MULTILINE))
-        self.assertTrue(re.search('^4.520, 0, Car, 112.609, 1.458, 0.000, 0.000, 0.000, 0.000, 13.889', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.020, 0, Car, 78.056, -1.535, 0.000, 0.001, 0.000, 0.000, 13.889, 0.000, 4.761', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.200, 0, Car, 94.371, -0.184, 0.000, 0.150, 0.000, 0.000, 13.889, 0.000, 1.320', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.150, 0, Car, 107.473, 1.319, 0.000, 0.053, 0.000, 0.000, 13.889, 0.000, 1.320', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.520, 0, Car, 112.609, 1.458, 0.000, 0.001, 0.000, 0.000, 13.889, 0.000, 3.436', csv, re.MULTILINE))
 
     def test_action_dynamics(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test_action_dynamics.xosc'), COMMON_ARGS)
@@ -344,25 +347,26 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*test_action_dynamics.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('2.000: LaneChange1Condition == true, 2.0000 > 2.00 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('2.010: LaneChange1Condition == true, 2.0100 > 2.00 edge: none', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('16.260: LaneChange2Event complete after 1 execution', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('21.520: LaneChange3Event complete after 1 execution', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('23.000: LaneOffset1Condition == true, 23.0000 > 23.00 edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('28.950: QuitCondition == true, element: LaneOffset1Event state: END_TRANSITION, edge: rising', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('23.010: LaneOffset1Condition == true, 23.0100 > 23.00 edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('28.960: QuitCondition == true, element: LaneOffset1Event state: END_TRANSITION, edge: rising', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('^2.000, 0, Car, 30.000, 1.535, 0.000, 6.283, 0.000, 0.000, 10.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.010, 0, Car, 30.100, 1.535, 0.000, 6.202, 0.000, 0.000, 10.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^6.370, 0, Car, 65.258, -2.014, 0.000, 6.121, 0.000, 0.000, 4.960', csv, re.MULTILINE))
-        self.assertTrue(re.search('^7.010, 0, Car, 68.130, -2.535, 0.000, 0.000, 0.000, 0.000, 4.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.010, 0, Car, 30.100, 1.535, 0.000, 6.283, 0.000, 0.000, 10.000, 0.000, 0.880', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.020, 0, Car, 30.200, 1.535, 0.000, 6.202, 0.000, 0.000, 10.000, 0.000, 1.166', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.370, 0, Car, 65.258, -2.006, 0.000, 6.121, 0.000, 0.000, 4.960, 0.000, 0.656', csv, re.MULTILINE))
+        self.assertTrue(re.search('^7.010, 0, Car, 68.130, -2.527, 0.000, 6.083, 0.000, 0.000, 4.000, 0.000, 2.551', csv, re.MULTILINE))
+        self.assertTrue(re.search('^7.020, 0, Car, 68.170, -2.535, 0.000, 0.000, 0.000, 0.000, 4.000, 0.000, 2.666', csv, re.MULTILINE))
         self.assertTrue(re.search('^14.400, 0, Car, 97.690, 0.177, 0.000, 0.154, 0.000, 0.000, 4.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^16.700, 0, Car, 106.890, 1.344, 0.000, 6.283, 0.000, 0.000, 4.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^17.820, 0, Car, 111.370, 1.126, 0.000, 6.152, 0.000, 0.000, 4.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^21.410, 0, Car, 131.445, -1.524, 0.000, 6.271, 0.000, 0.000, 7.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^22.540, 0, Car, 139.355, -1.529, 0.000, 6.283, 0.000, 0.000, 7.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^24.800, 0, Car, 155.175, 0.807, 0.000, 0.246, 0.000, 0.000, 7.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^26.000, 0, Car, 163.575, 1.968, 0.000, 6.283, 0.000, 0.000, 7.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^21.410, 0, Car, 131.415, -1.524, 0.000, 6.271, 0.000, 0.000, 7.000, 0.000, 1.239', csv, re.MULTILINE))
+        self.assertTrue(re.search('^22.540, 0, Car, 139.325, -1.529, 0.000, 6.283, 0.000, 0.000, 7.000, 0.000, 4.990', csv, re.MULTILINE))
+        self.assertTrue(re.search('^24.800, 0, Car, 155.145, 0.790, 0.000, 0.247, 0.000, 0.000, 7.000, 0.000, 6.207', csv, re.MULTILINE))
+        self.assertTrue(re.search('^26.000, 0, Car, 163.545, 1.968, 0.000, 6.283, 0.000, 0.000, 7.000, 0.000, 5.074', csv, re.MULTILINE))
 
     def test_route_lane_change(self):
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/route_lane_change.xosc'), COMMON_ARGS)
@@ -576,6 +580,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_follow_ghost'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_lane_change_clothoid'])
     
     unittest.main(verbosity=2)

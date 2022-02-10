@@ -192,9 +192,10 @@
                 </StartTrigger>
                 <StopTrigger>
                     <ConditionGroup>
-                        <Condition name="StopCondition" delay="0" conditionEdge="rising">
+                        <!-- Normally check for simulationTime > value, but here test the inverted variant -->
+                        <Condition name="StopCondition" delay="1" conditionEdge="falling">
                             <ByValueCondition>
-                                <SimulationTimeCondition value="8" rule="greaterThan"/>
+                                <SimulationTimeCondition value="7" rule="lessThan"/>
                             </ByValueCondition>
                         </Condition>
                     </ConditionGroup>

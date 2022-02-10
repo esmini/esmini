@@ -53,7 +53,7 @@ bool EvaluateRule(double a, double b, Rule rule)
 {
 	if (rule == Rule::GREATER_THAN)
 	{
-		return a > b;
+		return a > b + SMALL_NUMBER;
 	}
 	else if (rule == Rule::GREATER_OR_EQUAL)
 	{
@@ -61,7 +61,7 @@ bool EvaluateRule(double a, double b, Rule rule)
 	}
 	else if (rule == Rule::LESS_THAN)
 	{
-		return a < b;
+		return a < b - SMALL_NUMBER;
 	}
 	else if (rule == Rule::LESS_OR_EQUAL)
 	{
@@ -279,7 +279,7 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 
 	evaluated_ = true;
 
-	if (delay_ > 0 && trig && last_result_ == false)
+	if (delay_ > 0 && trig && !timer_.Started())
 	{
 		timer_.Start(sim_time, delay_);
 		LOG("%s timer %.2fs started", name_.c_str(), delay_);
