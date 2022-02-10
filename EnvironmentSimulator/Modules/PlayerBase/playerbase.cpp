@@ -152,13 +152,14 @@ void ScenarioPlayer::Frame(double timestep_s)
 
 	if (GetState() != PlayerState::PLAYER_STATE_PAUSE)
 	{
+		ScenarioFrame(timestep_s, true);
 
 		while (scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
 		{
 			// Main simulation is paused during ghost headstart or restart
 
 			Draw();
-			ScenarioFramePart(dt);
+			ScenarioFrame(dt, false);
 
 			if (GetFixedTimestep() > 0.0)
 			{
@@ -170,7 +171,7 @@ void ScenarioPlayer::Frame(double timestep_s)
 			}
 		}
 
-		ScenarioFrame(timestep_s);
+		ScenarioPostFrame();
 
 		if (GetState() == PlayerState::PLAYER_STATE_STEP)
 		{
@@ -203,39 +204,24 @@ void ScenarioPlayer::Frame()
 	}
 }
 
-void ScenarioPlayer::ScenarioFramePart(double timestep_s)
-{
-	mutex.Lock();
-	scenarioEngine->step(timestep_s);
-
-	scenarioEngine->prepareGroundTruth(timestep_s);
-
-	scenarioGateway->WriteStatesToFile();
-
-	if (CSV_Log)
-	{
-		UpdateCSV_Log();
-	}
-
-	mutex.Unlock();
-}
-
-void ScenarioPlayer::ScenarioFrame(double timestep_s)
+void ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
 {
 	mutex.Lock();
 
 	if (scenarioEngine->step(timestep_s) == 0)
 	{
-
-		// Check for any callbacks to be made
-		for (size_t i = 0; i < objCallback.size(); i++)
+		if (keyframe)
 		{
-			ObjectState* os = scenarioGateway->getObjectStatePtrById(objCallback[i].id);
-			if (os)
+			// Check for any callbacks to be made
+			for (size_t i = 0; i < objCallback.size(); i++)
 			{
-				ObjectStateStruct state;
-				state = os->getStruct();
-				objCallback[i].func(&state, objCallback[i].data);
+				ObjectState* os = scenarioGateway->getObjectStatePtrById(objCallback[i].id);
+				if (os)
+				{
+					ObjectStateStruct state;
+					state = os->getStruct();
+					objCallback[i].func(&state, objCallback[i].data);
+				}
 			}
 		}
 
@@ -248,54 +234,59 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s)
 			UpdateCSV_Log();
 		}
 
-		mutex.Unlock();
-
-		for (size_t i = 0; i < sensor.size(); i++)
-		{
-			sensor[i]->Update();
-		}
-#ifdef _USE_OSI
-		if (NEAR_NUMBERS(scenarioEngine->getSimulationTime(), scenarioEngine->GetTrueTime()))
-		{
-			osiReporter->ReportSensors(sensor);
-
-			// Update OSI info
-			if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
-			{
-				if (osi_counter % osi_freq_ == 0)
-				{
-					osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-					if (osi_counter == 0)
-					{
-						// Clear the static data now when it has been reported once
-						osiReporter->ClearOSIGroundTruth();
-					}
-				}
-				// Update counter after modulo-check since first frame should always be reported
-				osi_counter++;
-			}
-		}
-#endif  // USE_OSI
-
-		//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
-		//    scenarioEngine->entities_.object_[0]->pos_.GetTrackId(),
-		//    scenarioEngine->entities_.object_[0]->pos_.GetLaneId(),
-		//    scenarioEngine->entities_.object_[0]->pos_.GetS(),
-		//    scenarioEngine->entities_.object_[0]->pos_.GetH(),
-		//    scenarioEngine->entities_.object_[0]->pos_.GetHRoad(),
-		//    scenarioEngine->entities_.object_[0]->pos_.GetHRelative());
-
-		frame_counter_++;
+		if (keyframe) frame_counter_++;
 	}
-	else
-	{
-		mutex.Unlock();
-	}
+
+	mutex.Unlock();
 
 	if (scenarioEngine->GetQuitFlag())
 	{
 		quit_request = true;
 	}
+}
+
+void ScenarioPlayer::ScenarioPostFrame()
+{
+	mutex.Lock();
+
+
+	for (size_t i = 0; i < sensor.size(); i++)
+	{
+		sensor[i]->Update();
+	}
+#ifdef _USE_OSI
+	if (NEAR_NUMBERS(scenarioEngine->getSimulationTime(), scenarioEngine->GetTrueTime()))
+	{
+		osiReporter->ReportSensors(sensor);
+
+		// Update OSI info
+		if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
+		{
+			if (osi_counter % osi_freq_ == 0)
+			{
+				osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
+				if (osi_counter == 0)
+				{
+					// Clear the static data now when it has been reported once
+					osiReporter->ClearOSIGroundTruth();
+				}
+			}
+			// Update counter after modulo-check since first frame should always be reported
+			osi_counter++;
+		}
+	}
+#endif  // USE_OSI
+
+	//LOG("%d %d %.2f h: %.5f road_h %.5f h_relative_road %.5f",
+	//    scenarioEngine->entities_.object_[0]->pos_.GetTrackId(),
+	//    scenarioEngine->entities_.object_[0]->pos_.GetLaneId(),
+	//    scenarioEngine->entities_.object_[0]->pos_.GetS(),
+	//    scenarioEngine->entities_.object_[0]->pos_.GetH(),
+	//    scenarioEngine->entities_.object_[0]->pos_.GetHRoad(),
+	//    scenarioEngine->entities_.object_[0]->pos_.GetHRelative());
+
+	mutex.Unlock();
+
 }
 
 #ifdef _USE_OSG
@@ -1096,7 +1087,7 @@ int ScenarioPlayer::Init()
 	}
 
 	// Step scenario engine - zero time - just to reach and report init state of all vehicles
-	ScenarioFrame(0.0);
+	ScenarioFrame(0.0, true);
 
 	if (opt.IsInOriginalArgs("--window") || opt.IsInOriginalArgs("--borderless-window"))
 	{
