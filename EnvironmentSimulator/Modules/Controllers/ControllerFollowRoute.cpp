@@ -44,25 +44,50 @@ void ControllerFollowRoute::Init()
 	Controller::Init();
 }
 
+
+double testtime = 0;
 void ControllerFollowRoute::Step(double timeStep)
 {
-	LOG("FollowRoute step");
+	//LOG("FollowRoute step");
 	//object_->MoveAlongS(timeStep * object_->GetSpeed());
-
-	for(Event* e : object_->getEvents()){
-		for(OSCAction* action : e->action_){
-			if(action->name_ == "Test"){
-				if(!action->IsActive()){
-					LOG("Starting lane change action");
-					action->Start(scenarioEngine_->getSimulationTime(), timeStep);
-				}
-				else{
-					action->Step(scenarioEngine_->getSimulationTime(), timeStep);
-				}
-			}
+	roadmanager::Route* test = nullptr;
+	if (object_->pos_.GetRoute() != nullptr)
+	{
+		test = object_->pos_.GetRoute();
+		if(test->GetWaypoint(-1)->GetLaneId() != object_->pos_.GetLaneId() &&
+			test->GetWaypoint(-1)->GetTrackId() == object_->pos_.GetTrackId()){
+			int laneid = test->GetWaypoint(-1)->GetLaneId(); 
+			LOG("ADD ACTION");
+			ChangeLane(laneid, 3);
 		}
 	}
-
+	testtime += timeStep;
+	if(testtime > 1){
+		LOG("Nr of actions: %d",actions_.size());
+		testtime = 0;
+	}
+	for(size_t i = 0;i < actions_.size(); i++){
+		OSCPrivateAction* action = actions_[i];
+		if(!action->IsActive()){
+			LOG("ACTION START");
+			action->Start(scenarioEngine_->getSimulationTime(),timeStep);
+		}
+		if(action->IsActive()){
+			//LOG("ACTION STEP");
+			action->Step(scenarioEngine_->getSimulationTime(),timeStep);
+			if(action->state_ != OSCAction::State::COMPLETE){
+				action->UpdateState();
+			}
+		}
+		if(action->state_ == OSCAction::State::COMPLETE){
+			LOG("ACTION COMPLETED");
+			LOG("actions before end: %d", actions_.size());
+			//action->End();
+			actions_.erase(actions_.begin()+i);
+			LOG("actions after erase: %d", actions_.size());
+		}
+	}
+	
 	Controller::Step(timeStep);
 }
 
@@ -71,23 +96,6 @@ void ControllerFollowRoute::Activate(ControlDomains domainMask)
 	LOG("FollowRoute activate");
 
 	this->mode_ = Controller::Mode::MODE_ADDITIVE;
-
-	LatLaneChangeAction* action_lanechange = new LatLaneChangeAction();
-	action_lanechange->object_ = object_;
-	action_lanechange->transition_.shape_ = OSCPrivateAction::DynamicsShape::SINUSOIDAL;
-	action_lanechange->transition_.dimension_ = OSCPrivateAction::DynamicsDimension::TIME;
-	action_lanechange->transition_.SetParamTargetVal(5);
-
-	LatLaneChangeAction::TargetAbsolute* test = new LatLaneChangeAction::TargetAbsolute;
-	test->value_ = -3;
-	action_lanechange->target_ = test;
-	action_lanechange->name_="Test";
-
-	Event* event_lanechange = new Event();
-	event_lanechange->action_.push_back(action_lanechange);
-	event_lanechange->priority_ = Event::Priority::OVERWRITE;
-	object_->addEvent(event_lanechange);
-
 	// Trigger* trigger = new Trigger(0);
 	// ConditionGroup* conGroup = new ConditionGroup();
 	// TrigBySimulationTime* condition = new TrigBySimulationTime();
@@ -114,6 +122,27 @@ void ControllerFollowRoute::Activate(ControlDomains domainMask)
 	}
 
 	Controller::Activate(domainMask);
+}
+
+void ControllerFollowRoute::ChangeLane(int lane, double time){
+	LatLaneChangeAction* action_lanechange = new LatLaneChangeAction();
+	action_lanechange->object_ = object_;
+	action_lanechange->transition_.shape_ = OSCPrivateAction::DynamicsShape::SINUSOIDAL;
+	action_lanechange->transition_.dimension_ = OSCPrivateAction::DynamicsDimension::TIME;
+	action_lanechange->transition_.SetParamTargetVal(time);
+	action_lanechange->max_num_executions_ = 1;
+
+	LatLaneChangeAction::TargetAbsolute* test = new LatLaneChangeAction::TargetAbsolute;
+	test->value_ = lane;
+	action_lanechange->target_ = test;
+	actions_.push_back(action_lanechange);
+
+	// Event* event_lanechange = new Event();
+	// event_lanechange->action_.push_back(action_lanechange);
+	// event_lanechange->priority_ = Event::Priority::OVERWRITE;
+	// event_lanechange->name_="HelperLaneChange";
+	// event_lanechange->max_num_executions_ = 1;
+	// object_->addEvent(event_lanechange);
 }
 
 void ControllerFollowRoute::ReportKeyEvent(int key, bool down)

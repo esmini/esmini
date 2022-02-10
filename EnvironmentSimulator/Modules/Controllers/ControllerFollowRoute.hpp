@@ -44,8 +44,10 @@ namespace scenarioengine
 		void SetScenarioEngine(ScenarioEngine* scenarioEngine) { scenarioEngine_ = scenarioEngine; };
 
 	private:
+		void ChangeLane(int lane,  double time);
 		vehicle::Vehicle vehicle_;
 		ScenarioEngine* scenarioEngine_;
+		std::vector<OSCPrivateAction*> actions_;
 	};
 
 	Controller* InstantiateControllerFollowRoute(void* args);
