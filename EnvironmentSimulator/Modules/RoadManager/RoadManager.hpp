@@ -742,6 +742,32 @@ namespace roadmanager
 		std::vector<ValidityRecord> validity_;
 	};
 
+	class ObjectReference : public RoadObject
+	{
+	public:
+		ObjectReference(double s, double t, int id, double zOffset, double validLength, Orientation orientation) :
+			s_(s), t_(t), id_(id), z_offset_(zOffset), valid_length_(validLength), orientation_(orientation) {}
+
+		virtual ~ObjectReference() = default;
+		
+		double GetS() const { return s_; }
+		double GetT() const { return t_; }
+		int GetId() const { return id_; }
+		double GetZOffset() const { return z_offset_; }
+		double GetValidLength() const { return valid_length_; }
+		Orientation GetOrientation() const { return orientation_; }
+
+		void Save(pugi::xml_node& objects);
+
+	private:
+		double s_;
+		double t_;
+		int id_;
+		double z_offset_;
+		double valid_length_;
+		Orientation orientation_;
+	};
+
 	class Bridge : public RoadObject
 	{
 	public:
@@ -1357,6 +1383,7 @@ namespace roadmanager
 		void AddSignal(Signal *signal);
 		void AddObject(RMObject* object);
 		void AddBridge(Bridge* bridge);
+		void AddObjectReference(ObjectReference* object_reference);
 		Elevation *GetElevation(int idx);
 		Elevation *GetSuperElevation(int idx);
 		int GetNumberOfSignals();
@@ -1365,6 +1392,8 @@ namespace roadmanager
 		RMObject* GetObject(int idx);
 		int GetNumberOfBridges() { return (int)bridge_.size(); }
 		Bridge* GetBridge(int idx);
+		int GetNumberOfObjectReference() { return (int)object_reference_.size(); }
+		ObjectReference* GetObjectReference(int idx);
 		int GetNumberOfElevations() { return (int)elevation_profile_.size(); }
 		int GetNumberOfSuperElevations() { return (int)super_elevation_profile_.size(); }
 		double GetLaneOffset(double s);
@@ -1435,6 +1464,7 @@ namespace roadmanager
 		std::vector<Signal*> signal_;
 		std::vector<RMObject*> object_;
 		std::vector<Bridge*> bridge_;
+		std::vector<ObjectReference*> object_reference_;
 	};
 
 	class LaneRoadLaneConnection
