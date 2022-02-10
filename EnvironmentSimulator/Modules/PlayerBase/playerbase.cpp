@@ -149,29 +149,35 @@ void ScenarioPlayer::Frame(double timestep_s)
 	static bool messageShown = false;
 	double dt = timestep_s;
 	__int64 time_stamp = 0;
+	int retval = 0;
 
 	if (GetState() != PlayerState::PLAYER_STATE_PAUSE)
 	{
-		ScenarioFrame(timestep_s, true);
-
-		while (scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
+		if (ScenarioFrame(timestep_s, true) == 0)
 		{
-			// Main simulation is paused during ghost headstart or restart
-
-			Draw();
-			ScenarioFrame(dt, false);
-
-			if (GetFixedTimestep() > 0.0)
+			while (retval == 0 && scenarioEngine->GetGhostMode() != GhostMode::NORMAL)
 			{
-				dt = GetFixedTimestep();
+				// Main simulation is paused during ghost headstart or restart
+
+				Draw();
+				retval = ScenarioFrame(dt, false);
+
+				if (GetFixedTimestep() > 0.0)
+				{
+					dt = GetFixedTimestep();
+				}
+				else
+				{
+					dt = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
+				}
 			}
-			else
+
+			if (retval == 0)
 			{
-				dt = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
+				ScenarioPostFrame();
 			}
 		}
 
-		ScenarioPostFrame();
 
 		if (GetState() == PlayerState::PLAYER_STATE_STEP)
 		{
@@ -204,11 +210,12 @@ void ScenarioPlayer::Frame()
 	}
 }
 
-void ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
+int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
 {
+	int retval = 0;
 	mutex.Lock();
 
-	if (scenarioEngine->step(timestep_s) == 0)
+	if ((retval = scenarioEngine->step(timestep_s)) == 0)
 	{
 		if (keyframe)
 		{
@@ -243,6 +250,8 @@ void ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
 	{
 		quit_request = true;
 	}
+
+	return retval;
 }
 
 void ScenarioPlayer::ScenarioPostFrame()

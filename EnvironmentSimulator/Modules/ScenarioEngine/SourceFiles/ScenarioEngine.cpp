@@ -124,14 +124,6 @@ int ScenarioEngine::step(double deltaSimTime)
 		simulationTime_ -= headstart_time_;
 		ghost_mode_ = GhostMode::RESTARTING;
 	}
-	else if (ghost_mode_ == GhostMode::RESTARTING)
-	{
-		if (simulationTime_ > trueTime_ - SMALL_NUMBER)
-		{
-			ghost_mode_ = GhostMode::NORMAL;
-		}
-	}
-
 
 	if (!initialized_)
 	{
@@ -488,6 +480,21 @@ int ScenarioEngine::step(double deltaSimTime)
 		}
 	}
 
+	simulationTime_ += deltaSimTime;
+
+	if (ghost_mode_ == GhostMode::RESTARTING)
+	{
+		if (simulationTime_ > trueTime_ - SMALL_NUMBER)
+		{
+			ghost_mode_ = GhostMode::NORMAL;
+		}
+	}
+
+	if (ghost_mode_ == GhostMode::NORMAL)
+	{
+		trueTime_ = simulationTime_;
+	}
+
 	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
 		Object* obj = entities_.object_[i];
@@ -495,7 +502,7 @@ int ScenarioEngine::step(double deltaSimTime)
 		// and only ghosts allowed to execute before time == 0
 		if (!(obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_BOTH) && obj->GetControllerMode() == Controller::Mode::MODE_OVERRIDE) &&
 			fabs(obj->speed_) > SMALL_NUMBER &&
-			(ghost_mode_ != GhostMode::RESTARTING || obj->IsGhost()))
+			(ghost_mode_ == GhostMode::NORMAL || obj->IsGhost()))
 		{
 			defaultController(obj, deltaSimTime);
 		}
@@ -541,7 +548,7 @@ int ScenarioEngine::step(double deltaSimTime)
 	{
 		if (scenarioReader->controller_[i]->Active())
 		{
-			if (ghost_mode_ != GhostMode::RESTARTING)
+			if (ghost_mode_ == GhostMode::NORMAL)
 			{
 				scenarioReader->controller_[i]->Step(deltaSimTime);
 			}
@@ -585,12 +592,6 @@ int ScenarioEngine::step(double deltaSimTime)
 	// Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
 	// Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from there
 
-	simulationTime_ += deltaSimTime;
-
-	if (ghost_mode_ == GhostMode::NORMAL)
-	{
-		trueTime_ = simulationTime_;
-	}
 
 	if (all_done)
 	{
@@ -825,58 +826,60 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 		double dx = obj->pos_.GetX() - obj->state_old.pos_x;
 		double dy = obj->pos_.GetY() - obj->state_old.pos_y;
 
-		if (dt > SMALL_NUMBER &&
-			(obj->IsGhost() || ghost_mode_ != GhostMode::RESTARTING)) // For non ghost vehicles, update only when no ghost restart is ongoing
+		if (dt > SMALL_NUMBER)
 		{
-			if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
+			if (obj->IsGhost() || (getSimulationTime() > SMALL_NUMBER && ghost_mode_ == GhostMode::NORMAL)) // For non ghost vehicles, update only when no ghost restart is ongoing
 			{
-				// If not already reported, calculate linear velocity
-				obj->SetVel(dx / dt, dy / dt, 0.0);
-			}
-
-			if (!obj->CheckDirtyBits(Object::DirtyBit::ACCELERATION))
-			{
-				// If not already reported, calculate linear acceleration
-				obj->SetAcc((obj->pos_.GetVelX() - obj->state_old.vel_x) / dt, (obj->pos_.GetVelY() - obj->state_old.vel_y) / dt, 0.0);
-			}
-
-			double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), obj->state_old.h) / dt;
-			if (!obj->CheckDirtyBits(Object::DirtyBit::ANGULAR_RATE))
-			{
-				// If not already reported, calculate angular velocity/rate
-				obj->SetAngularVel(heading_rate_new, 0.0, 0.0);
-			}
-
-			if (!obj->CheckDirtyBits(Object::DirtyBit::ANGULAR_ACC))
-			{
-				// If not already reported, calculate angular acceleration
-				obj->SetAngularAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt, 0.0, 0.0);
-			}
-
-			// Update wheel rotations of internal scenario objects
-			if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
-			{
-				// An improvised calculation of a steering angle based on yaw rate and enitity speed
-				double steeringAngleTarget = SIGN(obj->GetSpeed()) * M_PI * heading_rate_new / MAX(fabs(obj->GetSpeed()), SMALL_NUMBER);
-				double steeringAngleDiff = steeringAngleTarget - obj->wheel_angle_;
-				// Turn wheel gradually towards target
-				double steeringAngleStep = SIGN(steeringAngleDiff) * 0.5 * dt;
-
-				if (abs(steeringAngleStep) > abs(obj->wheel_angle_))
+				if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
 				{
-					obj->wheel_angle_ = 0.0;
+					// If not already reported, calculate linear velocity
+					obj->SetVel(dx / dt, dy / dt, 0.0);
 				}
-				else
-				{
-					obj->wheel_angle_ += steeringAngleStep;
-				}
-				obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
-			}
 
-			if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
-			{
-				obj->wheel_rot_ = fmod(obj->wheel_rot_ + obj->speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
-				obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+				if (!obj->CheckDirtyBits(Object::DirtyBit::ACCELERATION))
+				{
+					// If not already reported, calculate linear acceleration
+					obj->SetAcc((obj->pos_.GetVelX() - obj->state_old.vel_x) / dt, (obj->pos_.GetVelY() - obj->state_old.vel_y) / dt, 0.0);
+				}
+
+				double heading_rate_new = GetAngleDifference(obj->pos_.GetH(), obj->state_old.h) / dt;
+				if (!obj->CheckDirtyBits(Object::DirtyBit::ANGULAR_RATE))
+				{
+					// If not already reported, calculate angular velocity/rate
+					obj->SetAngularVel(heading_rate_new, 0.0, 0.0);
+				}
+
+				if (!obj->CheckDirtyBits(Object::DirtyBit::ANGULAR_ACC))
+				{
+					// If not already reported, calculate angular acceleration
+					obj->SetAngularAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt, 0.0, 0.0);
+				}
+
+				// Update wheel rotations of internal scenario objects
+				if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
+				{
+					// An improvised calculation of a steering angle based on yaw rate and enitity speed
+					double steeringAngleTarget = SIGN(obj->GetSpeed()) * M_PI * heading_rate_new / MAX(fabs(obj->GetSpeed()), SMALL_NUMBER);
+					double steeringAngleDiff = steeringAngleTarget - obj->wheel_angle_;
+					// Turn wheel gradually towards target
+					double steeringAngleStep = SIGN(steeringAngleDiff) * 0.5 * dt;
+
+					if (abs(steeringAngleStep) > abs(obj->wheel_angle_))
+					{
+						obj->wheel_angle_ = 0.0;
+					}
+					else
+					{
+						obj->wheel_angle_ += steeringAngleStep;
+					}
+					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
+				}
+
+				if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
+				{
+					obj->wheel_rot_ = fmod(obj->wheel_rot_ + obj->speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
+					obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+				}
 			}
 		}
 		else

@@ -87,7 +87,7 @@ public:
 	void Draw();
 	void Frame(double timestep_s);
 	void ScenarioPostFrame();
-	void ScenarioFrame(double timestep_s, bool keyframe);
+	int ScenarioFrame(double timestep_s, bool keyframe);
 	void ShowObjectSensors(bool mode);
 	void AddObjectSensor(int object_index, double pos_x, double pos_y, double pos_z, double heading,
 						 double near, double far, double fovH, int maxObj);
