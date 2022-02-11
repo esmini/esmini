@@ -1,5 +1,24 @@
 ## esmini release notes
 
+### 2022-02-11 Version 2.20.6
+
+- Fix wrong ParamPoly3 curvature calculation
+- Increase expression precision ([issue #225](https://github.com/esmini/esmini/issues/225))
+  - internal representation in double (64 bits) instead of float (32 bits)
+- Add option to enforce creation of road 3D model ([issue #227](https://github.com/esmini/esmini/issues/227))
+- Fix OSI GT reset between runs in same session ([issue #229](https://github.com/esmini/esmini/issues/229))
+- Improve RoadManager OSI robustness ([issue #212](https://github.com/esmini/esmini/issues/212))
+- Fix lookahead direction
+  - correctly consider driving direction and vehicle heading
+- Add lib API to get ghost state by time (as alternative to by distance)
+- Fix condition issues
+  - Fix timer on falling edge
+  - Add precision tolerance to < and > conditions
+- Added setting of OSI lane subtype
+- Updated [OSG apps build script](https://github.com/esmini/esmini/blob/master/scripts/compile_osg_apps.sh) to support all platforms
+- Improve ghost execution
+  - e.g. reduce spikes in velocity and acceleration at ghost restarts
+
 ### 2022-02-02 Version 2.20.5
 
 - Add route waypoint visualization
