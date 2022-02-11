@@ -777,6 +777,12 @@ int OSIReporter::UpdateOSIIntersection()
 					LOG("WARNING: Unknow connection detected, can't establish outgoing connection in OSI junction");
 					return -1;
 				}
+				if (roadlink == nullptr)
+				{
+					LOG("Failed to resolve %s link of incoming road id %d", roadmanager::OpenDrive::LinkType2Str(connecting_road_link_type).c_str(),
+						incomming_road->GetId());
+					return -1;
+				}
 				outgoing_road = opendrive->GetRoadById(roadlink->GetElementId());
 				connected_roads.insert(incomming_road->GetId());
 				connected_roads.insert(outgoing_road->GetId());
@@ -1648,22 +1654,54 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 									lane_pairing = obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->add_lane_pairing();
 								}
 
-								if (predecessorRoad && predecessor_lane_section &&
-									predecessorRoad->GetDrivingLaneById(predecessor_lane_section->GetS(), lane->GetLink(roadmanager::LinkType::PREDECESSOR)->GetId())->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
+								roadmanager::LaneLink* link = lane->GetLink(roadmanager::LinkType::PREDECESSOR);
+								if (link)
 								{
-									if ((road->GetLink(roadmanager::LinkType::PREDECESSOR) != 0))
+									roadmanager::Lane* driving_lane = predecessorRoad->GetDrivingLaneById(predecessor_lane_section->GetS(), link->GetId());
+									if (driving_lane != nullptr)
 									{
-										lane_pairing->mutable_successor_lane_id()->set_value(lane_global_id);
+										if (predecessorRoad && predecessor_lane_section &&
+											driving_lane->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
+										{
+											if ((road->GetLink(roadmanager::LinkType::PREDECESSOR) != 0))
+											{
+												lane_pairing->mutable_successor_lane_id()->set_value(lane_global_id);
+											}
+										}
+										else
+										{
+											LOG("Lane %d on road %d s %d is not a driving lane", lane->GetId(), predecessorRoad->GetId(), predecessor_lane_section->GetS());
+										}
 									}
 								}
-
-								if (successorRoad && successor_lane_section &&
-									successorRoad->GetDrivingLaneById(successor_lane_section->GetS(), lane->GetLink(roadmanager::LinkType::SUCCESSOR)->GetId())->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
+								else
 								{
-									if ((road->GetLink(roadmanager::LinkType::SUCCESSOR) != 0))
+									LOG("Failed to resolve Predecessor link of lane %d of road %d", lane->GetId(), road->GetId());
+								}
+
+								link = lane->GetLink(roadmanager::LinkType::SUCCESSOR);
+								if (link)
+								{
+									roadmanager::Lane* driving_lane = successorRoad->GetDrivingLaneById(successor_lane_section->GetS(), link->GetId());
+									if (driving_lane != nullptr)
 									{
-										lane_pairing->mutable_antecessor_lane_id()->set_value(lane_global_id);
+										if (successorRoad && successor_lane_section &&
+											driving_lane->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
+										{
+											if ((road->GetLink(roadmanager::LinkType::SUCCESSOR) != 0))
+											{
+												lane_pairing->mutable_antecessor_lane_id()->set_value(lane_global_id);
+											}
+										}
 									}
+									else
+									{
+										LOG("Lane %d on road %d s %d is not a driving lane", lane->GetId(), predecessorRoad->GetId(), predecessor_lane_section->GetS());
+									}
+								}
+								else
+								{
+									LOG("Failed to resolve Successor link of lane %d of road %d", lane->GetId(), road->GetId());
 								}
 							}
 						}
@@ -1779,35 +1817,38 @@ int OSIReporter::UpdateOSIRoadLane(std::vector<ObjectState *> objectState)
 							}
 							// look at right lane and check if it has Lines for RoadMarks
 							roadmanager::Lane *next_lane = lane_section->GetLaneById(next_lane_id);
-							std::vector<int> nextlane_line_ids = next_lane->GetLineGlobalIds();
-							if (!nextlane_line_ids.empty())
+							if (next_lane != nullptr)
 							{
-								for (int jj = 0; jj < nextlane_line_ids.size(); jj++)
+								std::vector<int> nextlane_line_ids = next_lane->GetLineGlobalIds();
+								if (!nextlane_line_ids.empty())
 								{
-									if (lane_id < 0)
+									for (int jj = 0; jj < nextlane_line_ids.size(); jj++)
 									{
-										osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-										right_lane_bound_id->set_value(nextlane_line_ids[jj]);
-									}
-									else if (lane_id > 0)
-									{
-										osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-										right_lane_bound_id->set_value(nextlane_line_ids[jj]);
+										if (lane_id < 0)
+										{
+											osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+											right_lane_bound_id->set_value(nextlane_line_ids[jj]);
+										}
+										else if (lane_id > 0)
+										{
+											osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+											right_lane_bound_id->set_value(nextlane_line_ids[jj]);
+										}
 									}
 								}
-							}
-							else // if the neightbour lane does not have Lines for RoadMakrs we take the LaneBoundary
-							{
-								int next_laneboundary_global_id = next_lane->GetLaneBoundaryGlobalId();
-								if (lane_id < 0 && next_laneboundary_global_id >= 0)
+								else // if the neightbour lane does not have Lines for RoadMakrs we take the LaneBoundary
 								{
-									osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
-									right_lane_bound_id->set_value(next_laneboundary_global_id);
-								}
-								else if (lane_id > 0 && next_laneboundary_global_id >= 0)
-								{
-									osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
-									right_lane_bound_id->set_value(next_laneboundary_global_id);
+									int next_laneboundary_global_id = next_lane->GetLaneBoundaryGlobalId();
+									if (lane_id < 0 && next_laneboundary_global_id >= 0)
+									{
+										osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
+										right_lane_bound_id->set_value(next_laneboundary_global_id);
+									}
+									else if (lane_id > 0 && next_laneboundary_global_id >= 0)
+									{
+										osi3::Identifier* right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
+										right_lane_bound_id->set_value(next_laneboundary_global_id);
+									}
 								}
 							}
 						}

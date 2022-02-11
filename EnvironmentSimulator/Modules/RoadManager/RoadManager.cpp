@@ -330,27 +330,6 @@ Signal::Type Signal::GetTypeFromString(const std::string& type)
 	return Signal::TYPE_UNKNOWN;
 }
 
-static std::string LinkType2Str(LinkType type)
-{
-	if (type == LinkType::PREDECESSOR)
-	{
-		return "PREDECESSOR";
-	}
-	else if (type == LinkType::SUCCESSOR)
-	{
-		return "SUCCESSOR";
-	}
-	else if (type == LinkType::NONE)
-	{
-		return "NONE";
-	}
-	else
-	{
-		return std::string("Unknown link type: " + std::to_string(type));
-	}
-}
-
-
 int roadmanager::GetNewGlobalLaneId()
 {
 	int returnvalue = g_Lane_id;
@@ -1285,7 +1264,7 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectin
 
 	if (road_link->GetElementId() == -1)
 	{
-		LOG("No connecting road or junction at rid %d link_type %s", GetId(), LinkType2Str(road_link->GetType()).c_str());
+		LOG("No connecting road or junction at rid %d link_type %s", GetId(), OpenDrive::LinkType2Str(road_link->GetType()).c_str());
 		return -1;
 	}
 
@@ -6962,6 +6941,26 @@ std::string OpenDrive::ElementType2Str(RoadLink::ElementType type)
 	}
 }
 
+std::string OpenDrive::LinkType2Str(LinkType type)
+{
+	if (type == LinkType::PREDECESSOR)
+	{
+		return "PREDECESSOR";
+	}
+	else if (type == LinkType::SUCCESSOR)
+	{
+		return "SUCCESSOR";
+	}
+	else if (type == LinkType::NONE)
+	{
+		return "NONE";
+	}
+	else
+	{
+		return std::string("Unknown link type: " + std::to_string(type));
+	}
+}
+
 int Position::TeleportTo(Position* position)
 {
 	roadmanager::Position tmpPos;
@@ -7003,7 +7002,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 
 	if (road_link->GetElementId() == -1)
 	{
-		LOG("No connecting road or junction at rid %d link_type %s", road->GetId(), LinkType2Str(road_link->GetType()).c_str());
+		LOG("No connecting road or junction at rid %d link_type %s", road->GetId(), OpenDrive::LinkType2Str(road_link->GetType()).c_str());
 		return -1;
 	}
 
@@ -7011,7 +7010,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 	lane_section = road->GetLaneSectionByIdx(lane_section_idx_);
 	if (lane_section == 0)
 	{
-		LOG("No lane section rid %d ls_idx %d link_type  %s", road->GetId(), lane_section_idx_, LinkType2Str(road_link->GetType()).c_str());
+		LOG("No lane section rid %d ls_idx %d link_type  %s", road->GetId(), lane_section_idx_, OpenDrive::LinkType2Str(road_link->GetType()).c_str());
 		return -1;
 	}
 
@@ -7019,7 +7018,7 @@ int Position::MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contac
 	if (lane == 0)
 	{
 		LOG("No lane rid %d lidx %d nlanes %d link_type %s lsecidx %d\n",
-			road->GetId(), lane_idx_, lane_section->GetNumberOfLanes(), LinkType2Str(road_link->GetType()).c_str(), lane_section_idx_);
+			road->GetId(), lane_idx_, lane_section->GetNumberOfLanes(), OpenDrive::LinkType2Str(road_link->GetType()).c_str(), lane_section_idx_);
 		return -1;
 	}
 

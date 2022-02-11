@@ -1613,6 +1613,7 @@ namespace roadmanager
 		int CheckJunctionConnection(Junction *junction, Connection *connection);
 		static std::string ContactPointType2Str(ContactPointType type);
 		static std::string ElementType2Str(RoadLink::ElementType type);
+		static std::string LinkType2Str(LinkType link_type);
 
 		int GetNumberOfControllers() { return (int)controller_.size(); }
 		Controller* GetControllerByIdx(int index);
