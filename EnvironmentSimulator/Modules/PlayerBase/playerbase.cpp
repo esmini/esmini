@@ -516,8 +516,11 @@ void ScenarioPlayer::AddCustomCamera(double x, double y, double z, double h, dou
 
 void ScenarioPlayer::CloseViewer()
 {
-	delete viewer_;
-	viewer_ = 0;
+	if (viewer_ != nullptr)
+	{
+		delete viewer_;
+		viewer_ = nullptr;
+	}
 	viewerState_ = ScenarioPlayer::ViewerState::VIEWER_STATE_DONE;
 }
 
@@ -539,6 +542,8 @@ int ScenarioPlayer::InitViewer()
 		viewerState_ = ViewerState::VIEWER_STATE_FAILED;
 		return -1;
 	}
+
+	viewer_->osgViewer_->setKeyEventSetsDone(0);  // Disable default Escape key event handler, take over control
 
 	if (opt.GetOptionArg("info_text") == "off")
 	{

@@ -92,6 +92,7 @@ enum class KeyType // copy key enums from OSG GUIEventAdapter
 	KEY_Down = 0xFF54,        /* Down arrow */
 	KEY_Space = 0x20,         /* Space */
 	KEY_Return = 0xFF0D,      /* Return, enter */
+	KEY_Escape = 0xFF1B,      /* Escape */
 
 	// Mod key types
 	KEY_Shift_L = 0xFFE1,     /* Left shift */

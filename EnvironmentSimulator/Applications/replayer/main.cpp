@@ -538,6 +538,12 @@ int main(int argc, char** argv)
 			argv[0],
 			arguments, &opt);
 
+		if (viewer == nullptr)
+		{
+			printf("Failed to create viewer");
+			return -1;
+		}
+
 		if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
 		{
 			if (arg_str == "orbit")

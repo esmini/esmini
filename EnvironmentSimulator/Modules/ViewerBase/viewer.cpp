@@ -3316,7 +3316,10 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	break;
 	case(osgGA::GUIEventAdapter::KEY_Escape):
 	{
-		viewer_->SetQuitRequest(true);
+		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+		{
+			viewer_->SetQuitRequest(true);
+		}
 	}
 	break;
 	}
@@ -3331,8 +3334,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 		}
 	}
 
-	if (ea.getKey() == osgGA::GUIEventAdapter::KEY_Space ||  // prevent OSG "view reset" action on space key
-		ea.getKey() == osgGA::GUIEventAdapter::KEY_Escape)   // take over quit control from OSGViewer
+	if (ea.getKey() == osgGA::GUIEventAdapter::KEY_Space)  // prevent OSG "view reset" action on space key
 	{
 		return true;
 	}
