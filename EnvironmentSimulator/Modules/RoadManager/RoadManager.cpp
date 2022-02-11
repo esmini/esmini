@@ -1442,6 +1442,18 @@ void LaneMaterial::Save(pugi::xml_node& lane)
 	}
 }
 
+void LaneSpeed::Save(pugi::xml_node& lane)
+{
+	auto laneSpeed = lane.append_child("speed");
+	laneSpeed.append_attribute("sOffset").set_value(s_offset_);
+	laneSpeed.append_attribute("max").set_value(max_);
+	laneSpeed.append_attribute("unit").set_value(unit_.c_str());
+	for(auto userData : user_data_)
+	{
+		userData->Save(laneSpeed);
+	}
+}
+
 void LaneOffset::Print()
 {
 	LOG("LaneOffset s %.2f a %.4f b %.2f c %.2f d %.2f length %.2f\n",
@@ -1614,6 +1626,11 @@ void Lane::Save(pugi::xml_node& laneSection)
 	for(auto material : lane_material_)
 	{
 		material->Save(lane);
+	}
+
+	for(auto speed : lane_speed_)
+	{
+		speed->Save(lane);
 	}
 
 	for(auto userData : user_data_)
@@ -4337,6 +4354,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								}
 							}
 
+							// Lane Material
 							for(pugi::xml_node laneMaterial = lane_node->child("material"); laneMaterial; laneMaterial = laneMaterial.next_sibling("material"))
 							{
 								double s_offset = atof(laneMaterial.attribute("sOffset").value());
@@ -4349,6 +4367,21 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 									material->AddUserData(new UserData(child));
 								}
 								lane->AddLaneMaterial(material);
+							}
+
+							// Lane Speed
+							for(pugi::xml_node laneSpeed = lane_node->child("speed"); laneSpeed; laneSpeed = laneSpeed.next_sibling("speed"))
+							{
+								double s_offset = atof(laneSpeed.attribute("sOffset").value());
+								std::string unit = laneSpeed.attribute("unit").as_string();
+								double max = atof(laneSpeed.attribute("max").value());
+								
+								LaneSpeed* speed = new LaneSpeed(s_offset, max, unit);
+								for (auto child: laneSpeed.children("userData"))
+								{
+									speed->AddUserData(new UserData(child));
+								}
+								lane->AddLaneSpeed(speed);
 							}
 						}
 					}
