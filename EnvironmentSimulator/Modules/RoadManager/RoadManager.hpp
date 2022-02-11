@@ -1214,6 +1214,7 @@ namespace roadmanager
 		FillType fillType_;
 		bool closed_;
 		std::vector<OutlineCorner*> corner_;
+		std::vector<UserData*> user_data_;
 
 		Outline(int id, FillType fillType, bool closed) :
 			id_(id), fillType_(fillType), closed_(closed) {}
@@ -1225,7 +1226,7 @@ namespace roadmanager
 		}
 
 		void AddCorner(OutlineCorner* outlineCorner) { corner_.push_back(outlineCorner); }
-
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
 	};
 
