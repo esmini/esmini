@@ -766,6 +766,7 @@ extern "C"
 	{
 		if (player != nullptr)
 		{
+			player->SetFixedTimestep(0.0);
 			player->Frame();
 			return 0;
 		}
@@ -779,6 +780,7 @@ extern "C"
 	{
 		if (player != nullptr)
 		{
+			player->SetFixedTimestep(dt);
 			player->Frame(dt);
 			return 0;
 		}

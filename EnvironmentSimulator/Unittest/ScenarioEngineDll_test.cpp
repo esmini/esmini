@@ -2138,29 +2138,29 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 188.830, 1e-3);
+					EXPECT_NEAR(objectState.x, 188.831, 1e-3);
 					EXPECT_NEAR(objectState.y, 57.282, 1e-3);
 					EXPECT_NEAR(objectState.h, 1.025, 1e-3);
 					EXPECT_NEAR(objectState.p, 6.261, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
-						EXPECT_NEAR(road_info2.global_pos_x, 206.759980, 1e-5);
-						EXPECT_NEAR(road_info2.global_pos_y, 92.55088, 1e-5);
+						EXPECT_NEAR(road_info2.global_pos_x, 206.76177, 1e-5);
+						EXPECT_NEAR(road_info2.global_pos_y, 92.55549, 1e-5);
 					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 320.397, 1e-3);
+					EXPECT_NEAR(objectState.x, 320.398, 1e-3);
 					EXPECT_NEAR(objectState.y, 347.045, 1e-3);
 					EXPECT_NEAR(objectState.h, 6.047, 1e-3);
-					EXPECT_NEAR(objectState.p, 0.0104, 1e-3);
+					EXPECT_NEAR(objectState.p, 0.010, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
-						EXPECT_NEAR(road_info2.global_pos_x, 388.71994, 1e-5);
-						EXPECT_NEAR(road_info2.global_pos_y, 290.31125, 1e-5);
+						EXPECT_NEAR(road_info2.global_pos_x, 388.72220, 1e-5);
+						EXPECT_NEAR(road_info2.global_pos_y, 290.30673, 1e-5);
 					}
 				}
 			}
@@ -2528,7 +2528,7 @@ int main(int argc, char **argv)
 {
 	testing::InitGoogleTest(&argc, argv);
 
-#if 0  // set to 1 and modify filter to run one single test
+#if 0   // set to 1 and modify filter to run one single test
 	testing::GTEST_FLAG(filter) = "*TestExternalDriver*";
 #else
 	SE_LogToConsole(false);
