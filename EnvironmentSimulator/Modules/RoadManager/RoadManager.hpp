@@ -1360,8 +1360,9 @@ namespace roadmanager
 		double GetWidth() { return width_; }
 		Orientation GetOrientation() { return orientation_; }
 		void AddOutline(Outline* outline) { outlines_.push_back(outline); }
-		void SetRepeat(Repeat* repeat);
-		Repeat* GetRepeat() { return repeat_; }
+		void SetRepeat(Repeat* repeat); // odr1.5
+		void AddRepeat(Repeat* repeat) { repeat_.push_back(repeat); } // odr1.4
+		Repeat* GetRepeat();
 		int GetNumberOfOutlines() { return (int)outlines_.size(); }
 		Outline* GetOutline(int i) { return (0 <= i && i < outlines_.size()) ? outlines_[i] : 0; }
 		void Save(pugi::xml_node&);
@@ -1380,7 +1381,7 @@ namespace roadmanager
 		double pitch_;
 		double roll_;
 		std::vector<Outline*> outlines_;
-		Repeat* repeat_;
+		std::vector<Repeat*> repeat_; // OpenDRIVE 1.4 uses multiple repeat tags.
 	};
 
 	class Road
