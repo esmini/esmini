@@ -136,6 +136,7 @@ public:
 	int GetSocket() { return sendSocket; }
 	bool IsFileOpen() { return osi_file.is_open(); }
 	void ReportSensors(std::vector<ObjectSensor*> sensor);
+	int GetCounter() { return osi_update_counter_; }
 
 	/**
 	Set explicit timestap

@@ -29,8 +29,6 @@ using namespace scenarioengine;
 #define GHOST_HEADSTART 2.5
 #define TRAIL_Z_OFFSET 0.02
 
-static int osi_counter = 0;
-
 #ifdef _USE_OSG
 void RegisterImageCallback(viewer::ImageCallbackFunc func, void* data)
 {
@@ -271,17 +269,15 @@ void ScenarioPlayer::ScenarioPostFrame()
 		// Update OSI info
 		if (osiReporter->IsFileOpen() || osiReporter->GetSocket())
 		{
-			if (osi_counter % osi_freq_ == 0)
+			if (osiReporter->GetCounter() % osi_freq_ == 0)
 			{
 				osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-				if (osi_counter == 0)
+				if (osiReporter->GetCounter() == 0)
 				{
 					// Clear the static data now when it has been reported once
 					osiReporter->ClearOSIGroundTruth();
 				}
 			}
-			// Update counter after modulo-check since first frame should always be reported
-			osi_counter++;
 		}
 	}
 #endif  // USE_OSI
