@@ -167,6 +167,11 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 		}
 	}
 
+	std::sort(data_.begin(), data_.end(), [](const ObjectStateStructDat &data1, const ObjectStateStructDat &data2)
+	{
+		return data1.info.timeStamp < data2.info.timeStamp;
+	});
+
 	if (data_.size() > 0)
 	{
 		// Register first entry timestamp as starting time
