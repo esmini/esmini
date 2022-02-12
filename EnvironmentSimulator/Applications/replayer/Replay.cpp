@@ -117,18 +117,19 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 		file_.close();
 	}
 
-	if (scenarioData.size() > 1)
-	{
-		// Longest scenario first
-		std::sort(scenarioData.begin(), scenarioData.end(),
-		[](const auto& sce1, const auto& sce2)
-		{
-			return sce1.second.size() > sce2.second.size();
-		}
-		);
+	// Unnecessary if sorting by time at later anyway.
+	//if (scenarioData.size() > 1)
+	//{
+	//	// Longest scenario first
+	//	std::sort(scenarioData.begin(), scenarioData.end(),
+	//	[](const auto& sce1, const auto& sce2)
+	//	{
+	//		return sce1.second.size() > sce2.second.size();
+	//	}
+	//	);
 
-		LOG("Longest scenario is main scenario: %s", FileNameOf(scenarioData.begin()->first.c_str()).c_str());
-	}
+	//	LOG("Longest scenario is main scenario: %s", FileNameOf(scenarioData.begin()->first.c_str()).c_str());
+	//}
 
 	// Log which scenario belongs to what ID-group (0, 100, 200 etc.)
 	for (size_t i = 0; i < scenarioData.size(); i++)
@@ -150,27 +151,42 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 		}
 	}
 
-	const size_t scenario_length = scenarioData.begin()->second.size();
+	// No need to keep this order if sorting on time below. 
+
+	//const size_t scenario_length = scenarioData.begin()->second.size();
 
 	// Iterate over samples, then scenario, states added to data_ as scenario1+sample1, scenario2+sample1, scenario1+sample2 etc.
-	for (size_t i = 0; i < scenario_length; i++)
+	//for (size_t i = 0; i < scenario_length; i++)
+	//{
+	//	int ctr = 0;
+	//	for (auto& sce : scenarioData)
+	//	{
+	//		if (i < sce.second.size())
+	//		{
+	//			sce.second[i].info.id += ctr * 100;
+	//			data_.push_back(sce.second[i]);
+	//		}
+	//		ctr++;
+	//	}
+	//}
+
+
+	for (size_t i = 0; i < scenarioData.size(); i++)
 	{
-		int ctr = 0;
-		for (auto& sce : scenarioData)
+		for (size_t j = 0; j < scenarioData[i].second.size(); j++)
 		{
-			if (i < sce.second.size())
-			{
-				sce.second[i].info.id += ctr * 100;
-				data_.push_back(sce.second[i]);
-			}
-			ctr++;
+			scenarioData[i].second[j].info.id += i * 100;
+			data_.push_back(scenarioData[i].second[j]);
 		}
 	}
 
+	// Only issue is the ID order isnt respected, so ego is not always entity[0]..
 	std::sort(data_.begin(), data_.end(), [](const ObjectStateStructDat &data1, const ObjectStateStructDat &data2)
 	{
 		return data1.info.timeStamp < data2.info.timeStamp;
 	});
+
+	std::cout << data_[0].info.id << "\n" << data_[1].info.id << "\n" << data_[2].info.id << "\n";
 
 	if (data_.size() > 0)
 	{
