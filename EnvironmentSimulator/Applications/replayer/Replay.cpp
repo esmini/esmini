@@ -55,15 +55,7 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 		}
 	}
 
-	// Ensure increasing timestamps. Remove any other entries.
-	for (int i = 0; i < data_.size() - 1; i++)
-	{
-		if (data_[i + 1].info.timeStamp < data_[i].info.timeStamp)
-		{
-			data_.erase(data_.begin() + i + 1);
-			i--;   // compensate for removed entry
-		}
-	}
+	CleanEntries(data_);
 
 	if (data_.size() > 0)
 	{
@@ -117,20 +109,6 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 		file_.close();
 	}
 
-	// Unnecessary if sorting by time at later anyway.
-	//if (scenarioData.size() > 1)
-	//{
-	//	// Longest scenario first
-	//	std::sort(scenarioData.begin(), scenarioData.end(),
-	//	[](const auto& sce1, const auto& sce2)
-	//	{
-	//		return sce1.second.size() > sce2.second.size();
-	//	}
-	//	);
-
-	//	LOG("Longest scenario is main scenario: %s", FileNameOf(scenarioData.begin()->first.c_str()).c_str());
-	//}
-
 	// Log which scenario belongs to what ID-group (0, 100, 200 etc.)
 	for (size_t i = 0; i < scenarioData.size(); i++)
 	{
@@ -141,41 +119,14 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 	// Ensure increasing timestamps. Remove any other entries.
 	for (auto& sce : scenarioData)
 	{
-		for (size_t i = 0; i < sce.second.size() - 1; i++)
-		{
-			if (sce.second[i + 1].info.timeStamp < sce.second[i].info.timeStamp)
-			{
-				sce.second.erase(sce.second.begin() + i + 1);
-				i--;
-			}
-		}
+		CleanEntries(sce.second);
 	}
-
-	// No need to keep this order if sorting on time below. 
-
-	//const size_t scenario_length = scenarioData.begin()->second.size();
-
-	// Iterate over samples, then scenario, states added to data_ as scenario1+sample1, scenario2+sample1, scenario1+sample2 etc.
-	//for (size_t i = 0; i < scenario_length; i++)
-	//{
-	//	int ctr = 0;
-	//	for (auto& sce : scenarioData)
-	//	{
-	//		if (i < sce.second.size())
-	//		{
-	//			sce.second[i].info.id += ctr * 100;
-	//			data_.push_back(sce.second[i]);
-	//		}
-	//		ctr++;
-	//	}
-	//}
-
 
 	for (size_t i = 0; i < scenarioData.size(); i++)
 	{
 		for (size_t j = 0; j < scenarioData[i].second.size(); j++)
 		{
-			scenarioData[i].second[j].info.id += i * 100;
+			scenarioData[i].second[j].info.id += static_cast<int>(i) * 100;
 			data_.push_back(scenarioData[i].second[j]);
 		}
 	}
@@ -470,4 +421,27 @@ void Replay::SetStopTime(double time)
 	}
 
 	stopIndex_ = FindIndexAtTimestamp(stopTime_);
+}
+
+void Replay::CleanEntries(std::vector<ObjectStateStructDat>& entries)
+{
+	for (size_t i = 0; i < entries.size() - 1; i++)
+	{
+		if (entries[i + 1].info.timeStamp < entries[i].info.timeStamp)
+		{
+			entries.erase(entries.begin() + i + 1);
+			i--;
+		}
+
+		for (int j = 1; (i + j < entries.size()) && NEAR_NUMBERS(entries[i + j].info.timeStamp, entries[i].info.timeStamp); j++)
+		{
+			// Keep the latest instance of entries with same timestamp
+			if (entries[i + j].info.id == entries[i].info.id)
+			{
+				entries.erase(entries.begin() + i);
+				i--;
+				break;
+			}
+		}
+	}
 }

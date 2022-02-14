@@ -62,6 +62,7 @@ namespace scenarioengine
 		double GetTime() { return time_; }
 		int GetIndex() { return index_; }
 		void SetRepeat(bool repeat) { repeat_ = repeat; }
+		void CleanEntries(std::vector<ObjectStateStructDat>& entries);
 
 private:
 		std::ifstream file_;
