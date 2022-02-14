@@ -109,6 +109,17 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 		file_.close();
 	}
 
+	if (scenarioData.size() < 2)
+	{
+		LOG_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
+	}
+
+	// Longest scenario first
+	std::sort(scenarioData.begin(), scenarioData.end(), [](const auto& sce1, const auto& sce2)
+	{
+		return sce1.second.size() > sce2.second.size();
+	});
+
 	// Log which scenario belongs to what ID-group (0, 100, 200 etc.)
 	for (size_t i = 0; i < scenarioData.size(); i++)
 	{
@@ -116,28 +127,15 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 		LOG("Scenarios corresponding to IDs (%d:%d): %s", i * 100, (i+1) * 100 - 1, FileNameOf(scenario_tmp.c_str()).c_str());
 	}
 
+
 	// Ensure increasing timestamps. Remove any other entries.
 	for (auto& sce : scenarioData)
 	{
 		CleanEntries(sce.second);
 	}
 
-	for (size_t i = 0; i < scenarioData.size(); i++)
-	{
-		for (size_t j = 0; j < scenarioData[i].second.size(); j++)
-		{
-			scenarioData[i].second[j].info.id += static_cast<int>(i) * 100;
-			data_.push_back(scenarioData[i].second[j]);
-		}
-	}
-
-	// Only issue is the ID order isnt respected, so ego is not always entity[0]..
-	std::sort(data_.begin(), data_.end(), [](const ObjectStateStructDat &data1, const ObjectStateStructDat &data2)
-	{
-		return data1.info.timeStamp < data2.info.timeStamp;
-	});
-
-	std::cout << data_[0].info.id << "\n" << data_[1].info.id << "\n" << data_[2].info.id << "\n";
+	// Build remaining data in order.
+	BuildData(scenarioData);
 
 	if (data_.size() > 0)
 	{
@@ -165,7 +163,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
 	while ((file = readdir(directory)) != nullptr) {
 		std::string filename = file->d_name;
 
-		if (filename != "." && filename != ".." && filename.find(sce) != std::string::npos) {
+		if (filename != "." && filename != ".." && filename.find(sce) != std::string::npos && filename.find(".dat") != std::string::npos) {
 			scenarios_.emplace_back(CombineDirectoryPathAndFilepath(dir, filename));
 		}
 	}
@@ -442,6 +440,38 @@ void Replay::CleanEntries(std::vector<ObjectStateStructDat>& entries)
 				i--;
 				break;
 			}
+		}
+	}
+}
+
+void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ObjectStateStructDat>>>& scenarios)
+{
+	// Populate data_ with first (longest) scenario
+	for (size_t i = 0; i < scenarios[0].second.size(); i++)
+	{
+		data_.push_back(scenarios[0].second[i]);
+	}
+
+	// Fill up other scenarios with their matching timestamps
+	for (size_t i = 1; i < scenarios.size(); ++i)
+	{
+		int idx = 0; // Keep track of where last datapoint was inserted
+
+		for (size_t j = 1; j < scenarios[i].second.size(); j++)
+		{
+			scenarios[i].second[j].info.id += static_cast<int>(i) * 100;
+
+			auto objTime = scenarios[i].second[j].info.timeStamp;
+
+			// Find last index of current timestamp
+			auto it = std::find_if(data_.begin() + idx, data_.end(), [&objTime](const ObjectStateStructDat& data)
+			{
+				return data.info.timeStamp > objTime;
+			});
+
+			idx = static_cast<int>(std::distance(data_.begin(), it));
+
+			data_.insert(data_.begin() + idx, scenarios[i].second[j]); // Insert after last timestamp index
 		}
 	}
 }

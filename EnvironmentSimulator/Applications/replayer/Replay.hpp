@@ -63,6 +63,7 @@ namespace scenarioengine
 		int GetIndex() { return index_; }
 		void SetRepeat(bool repeat) { repeat_ = repeat; }
 		void CleanEntries(std::vector<ObjectStateStructDat>& entries);
+		void BuildData(std::vector<std::pair<std::string, std::vector<ObjectStateStructDat>>>& scenarios);
 
 private:
 		std::ifstream file_;
