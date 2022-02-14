@@ -2708,19 +2708,6 @@ Signal* Road::GetSignal(int idx)
 	return signal_[idx];
 }
 
-void Road::AddObject(RMObject* object)
-{
-	/*LOG("Add object[%d]: %s", (int)object_.size(), object->GetName().c_str());*/
-	object_.push_back(object);
-}
-
-void Road::AddBridge(Bridge* bridge)
-{
-	/*LOG("Add object[%d]: %s", (int)object_.size(), object->GetName().c_str());*/
-	bridge_.push_back(bridge);
-}
-
-
 RMObject* Road::GetObject(int idx)
 {
 	if (idx < 0 || idx >= object_.size())

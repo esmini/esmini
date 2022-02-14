@@ -1355,8 +1355,8 @@ namespace roadmanager
 		void AddLaneSection(LaneSection *lane_section);
 		void AddLaneOffset(LaneOffset *lane_offset);
 		void AddSignal(Signal *signal);
-		void AddObject(RMObject* object);
-		void AddBridge(Bridge* bridge);
+		void AddObject(RMObject* object){ object_.push_back(object); }
+		void AddBridge(Bridge* bridge) { bridge_.push_back(bridge); }
 		Elevation *GetElevation(int idx);
 		Elevation *GetSuperElevation(int idx);
 		int GetNumberOfSignals();
