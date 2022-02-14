@@ -1043,7 +1043,7 @@ extern "C"
 
 	SE_DLL_API int SE_GetId(int index)
 	{
-		if (player == nullptr || index < player->scenarioGateway->getNumberOfObjects())
+		if (player == nullptr || index < 0 || index >= player->scenarioGateway->getNumberOfObjects())
 		{
 			return -1;
 		}

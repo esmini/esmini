@@ -1312,6 +1312,18 @@ TEST(OSILaneParing, multi_lanesections)
 	SE_Close();
 }
 
+TEST(ObjectIds,check_ids)
+{
+	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/init_test_objects_strange_order.xosc";
+	const char *Scenario_file = scenario_file.c_str();
+	int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
+	ASSERT_EQ(i_init, 0);
+	SE_StepDT(0.001f);
+	ASSERT_EQ(SE_GetId(0),0);
+	ASSERT_EQ(SE_GetId(1),2);
+	ASSERT_EQ(SE_GetId(2),1);
+}
+
 TEST(OSILaneParing, highway_split)
 {
 	std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/highway_split.xosc";
