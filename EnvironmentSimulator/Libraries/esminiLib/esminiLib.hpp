@@ -512,7 +512,7 @@ extern "C"
 
 	/**
 		Report object position in cartesian coordinates
-		@param id Id of the object
+		@param object_id Id of the object
 		@param timestamp Timestamp (not really used yet, OK to set 0)
 		@param x X coordinate
 		@param y Y coordinate
@@ -528,7 +528,7 @@ extern "C"
 	/**
 		Report object position in limited set of cartesian coordinates x, y and heading,
 		the remaining z, pitch and roll will be aligned to the road surface
-		@param id Id of the object
+		@param object_id Id of the object
 		@param timestamp Timestamp (not really used yet, OK to set 0)
 		@param x X coordinate
 		@param y Y coordinate
@@ -540,7 +540,7 @@ extern "C"
 
 	/**
 		Report object position in road coordinates
-		@param id Id of the object
+		@param object_id Id of the object
 		@param timestamp Timestamp (not really used yet, OK to set 0)
 		@param roadId Id of the road
 		@param laneId Id of the lane
@@ -553,7 +553,7 @@ extern "C"
 
 	/**
 		Report object longitudinal speed. Useful for an external longitudinal controller.
-		@param id Id of the object
+		@param object_id Id of the object
 		@param speed Speed in forward direction of the enitity
 		@return 0 if successful, -1 if not
 	*/
@@ -561,7 +561,7 @@ extern "C"
 
 	/**
 		Report object lateral position relative road centerline. Useful for an external lateral controller.
-		@param id Id of the object
+		@param object_id Id of the object
 		@param t Lateral position
 		@return 0 if successful, -1 if not
 	*/
@@ -569,7 +569,7 @@ extern "C"
 
 	/**
 		Report object lateral position by lane id and lane offset. Useful for an external lateral controller.
-		@param id Id of the object
+		@param object_id Id of the object
 		@param laneId Id of the lane
 		@param laneOffset Lateral offset from center of specified lane
 		@return 0 if successful, -1 if not
@@ -578,7 +578,7 @@ extern "C"
 
 	/**
 		Report object position in cartesian coordinates
-		@param id Id of the object
+		@param iobject_idd Id of the object
 		@param timestamp Timestamp (not really used yet, OK to set 0)
 		@param x_vel X component of linear velocity
 		@param y_vel Y component of linear velocity
@@ -590,7 +590,7 @@ extern "C"
 
 	/**
 		Report object position in cartesian coordinates
-		@param id Id of the object
+		@param object_id Id of the object
 		@param timestamp Timestamp (not really used yet, OK to set 0)
 		@param h_vel Heading component of angular velocity
 		@param p_vel Pitch component of angular velocity
@@ -601,7 +601,7 @@ extern "C"
 
 	/**
 		Report object position in cartesian coordinates
-		@param id Id of the object
+		@param object_id Id of the object
 		@param timestamp Timestamp (not really used yet, OK to set 0)
 		@param x_acc X component of linear acceleration
 		@param y_acc Y component of linear acceleration
@@ -612,7 +612,7 @@ extern "C"
 
 	/**
 		Report object position in cartesian coordinates
-		@param id Id of the object
+		@param object_id Id of the object
 		@param timestamp Timestamp (not really used yet, OK to set 0)
 		@param h_acc Heading component of angular acceleration
 		@param p_acc Pitch component of angular acceleration
@@ -659,46 +659,46 @@ extern "C"
 
 	/**
 		Get the type name of the specifed vehicle-, pedestrian- or misc object
-		@param object_id Id of the object. 
+		@param object_id Id of the object.
 		@return Name
 	*/
 	SE_DLL_API const char* SE_GetObjectTypeName(int object_id);
 
 	/**
 		Get the name of specified object
-		@param object_id Id of the object. 
+		@param object_id Id of the object.
 		@return Name
 	*/
 	SE_DLL_API const char *SE_GetObjectName(int object_id);
 
 	/**
 		Get the 3D model filename of the specifed object
-		@param object_id Id of the object. 
+		@param object_id Id of the object.
 		@return Name
 	*/
 	SE_DLL_API const char* SE_GetObjectModelFileName(int object_id);
 
 	/**
 		Check whether an object has a ghost (special purpose lead vehicle)
-		@param object_id Id of the object. 
+		@param object_id Id of the object.
 		@return 1 if ghost, 0 if not, -1 indicates error e.g. scenario not loaded
 	*/
 	SE_DLL_API int SE_ObjectHasGhost(int object_id);
 
 	/**
 		Get the state of specified object's ghost (special purpose lead vehicle)
-		@param object_id Id of the object. 
+		@param object_id Id of the object.
 		@param state Pointer/reference to a SE_ScenarioObjectState struct to be filled in
 		@return 0 if successful, -1 if not
 	*/
 	SE_DLL_API int SE_GetObjectGhostState(int object_id, SE_ScenarioObjectState *state);
 
 	/**
-	Get the unit of specified speed (in OpenDRIVE road type element).
-	All roads will be looped in search for such an element. First found will be used.
-	If speed is specified withouth the optional unit, SI unit m/s is assumed.
-	If no speed entries is found, undefined will be returned.
-	@return -1=Error, 0=Undefined, 1=km/h 2=m/s, 3=mph
+		Get the unit of specified speed (in OpenDRIVE road type element).
+		All roads will be looped in search for such an element. First found will be used.
+		If speed is specified withouth the optional unit, SI unit m/s is assumed.
+		If no speed entries is found, undefined will be returned.
+		@return -1=Error, 0=Undefined, 1=km/h 2=m/s, 3=mph
 	*/
 	SE_DLL_API int SE_GetSpeedUnit();
 
@@ -1051,7 +1051,6 @@ extern "C"
 	The current state of specified entity will be returned.
 	Complete or part of the state can then be overridden by calling the SE_ReportObjectPos/SE_ReportObjectRoadPos functions.
 	Registered callbacks will be cleared between SE_Init calls.
-	@param object_id Handle to the position object (entity)
 	@param fnPtr A pointer to the function to be invoked
 	@param user_data Optional pointer to a local data object that will be passed as argument in the callback. Set 0/NULL if not needed.
 	*/

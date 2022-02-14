@@ -140,7 +140,7 @@ static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectSt
 	state->objectCategory = gw_state->info.obj_category;
 }
 
-static int getObjectById(int object_id, Object** obj)
+static int getObjectById(int object_id, Object*& obj)
 {
 	if (player == nullptr)
 	{
@@ -148,8 +148,8 @@ static int getObjectById(int object_id, Object** obj)
 	}
 	else
 	{
-		*obj = player->scenarioEngine->entities_.GetObjectById(object_id);
-		if (*obj == nullptr)
+		obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+		if (obj == nullptr)
 		{
 			LOG("Invalid object_id (%d)", object_id);
 			return -1;
@@ -183,8 +183,8 @@ static int copyOverrideActionListfromScenarioEngine(SE_OverrideActionList *list,
 static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int lookAheadMode)
 {
 	roadmanager::RoadProbeInfo s_data;
-	Object* main_object;
-	if (getObjectById(object_id,&main_object) == -1)
+	Object* main_object = nullptr;
+	if (getObjectById(object_id, main_object) == -1)
 	{
 		return -1;
 	}
@@ -250,8 +250,8 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 {
 	roadmanager::RoadProbeInfo s_data;
 
-	Object* obj;
-	if (getObjectById(object_id,&obj) == -1)
+	Object* obj = nullptr;
+	if (getObjectById(object_id, obj) == -1)
 	{
 		return -1;
 	}
@@ -322,11 +322,11 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo* r
 {
 	roadmanager::RoadProbeInfo s_data;
 
-	Object* obj;
-	if (getObjectById(object_id,&obj) == -1)
+	Object* obj = nullptr;
+	if (getObjectById(object_id, obj) == -1)
 	{
 		return -1;
-	}		
+	}
 
 	Object* ghost = 0;
 	if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
@@ -868,8 +868,8 @@ extern "C"
 
 	SE_DLL_API int SE_ReportObjectPos(int object_id, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
@@ -883,8 +883,8 @@ extern "C"
 
 	SE_DLL_API int SE_ReportObjectPosXYH(int object_id, float timestamp, float x, float y, float h, float speed)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
@@ -897,8 +897,8 @@ extern "C"
 
 	SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
@@ -911,22 +911,22 @@ extern "C"
 
 	SE_DLL_API int SE_ReportObjectSpeed(int object_id, float speed)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
 		player->scenarioGateway->reportObject(object_id, obj->name_, obj->type_, obj->category_, obj->model_id_,
 			obj->GetActivatedControllerType(), obj->boundingbox_, static_cast<int>(obj->scaleMode_),
 			obj->visibilityMask_, 0.0, speed, obj->wheel_angle_, obj->wheel_rot_, &obj->pos_);
-		
+
 		return 0;
 	}
 
 	SE_DLL_API int SE_ReportObjectLateralPosition(int object_id, float t)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
@@ -940,8 +940,8 @@ extern "C"
 
 	SE_DLL_API int SE_ReportObjectLateralLanePosition(int object_id, int laneId, float laneOffset)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
@@ -955,8 +955,8 @@ extern "C"
 
 	SE_DLL_API int SE_ReportObjectVel(int object_id, float timestamp, float x_vel, float y_vel, float z_vel)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
@@ -970,8 +970,8 @@ extern "C"
 
 	SE_DLL_API int SE_ReportObjectAngularVel(int object_id, float timestamp, float h_rate, float p_rate, float r_rate)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
@@ -984,22 +984,22 @@ extern "C"
 
 	SE_DLL_API int SE_ReportObjectAcc(int object_id, float timestamp, float x_acc, float y_acc, float z_acc)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
 		player->scenarioGateway->updateObjectAcc(object_id, 0.0, x_acc, y_acc, z_acc);
 		// Also update accelerations directly in scenario object, in case we're in a callback
 		obj->SetAcc(x_acc, y_acc, z_acc);
-			
+
 		return 0;
 	}
 
 	SE_DLL_API int SE_ReportObjectAngularAcc(int object_id, float timestamp, float h_acc, float p_acc, float r_acc)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
@@ -1049,11 +1049,11 @@ extern "C"
 		}
 
 		return player->scenarioGateway->getObjectStatePtrByIdx(index)->state_.info.id;
-	}	
+	}
 
 	SE_DLL_API int SE_GetObjectState(int object_id, SE_ScenarioObjectState *state)
 	{
-		
+
 		scenarioengine::ObjectState obj_state;
 		if (player->scenarioGateway->getObjectStateById(object_id, obj_state) != -1)
 		{
@@ -1066,14 +1066,14 @@ extern "C"
 
 	SE_DLL_API int SE_GetOverrideActionStatus(int object_id, SE_OverrideActionList *list)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
-		}	
-		
+		}
+
 		return copyOverrideActionListfromScenarioEngine(list, obj);
-		
+
 
 		return -1;
 	}
@@ -1081,12 +1081,12 @@ extern "C"
 	SE_DLL_API const char* SE_GetObjectTypeName(int object_id)
 	{
 		static std::string returnString;
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return 0;
-		}	
-				
+		}
+
 		returnString = obj->GetTypeName();
 		return returnString.c_str();
 	}
@@ -1094,11 +1094,11 @@ extern "C"
 	SE_DLL_API const char *SE_GetObjectName(int object_id)
 	{
 		static std::string returnString;
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return 0;
-		}	
+		}
 		returnString = obj->name_;
 		return returnString.c_str();
 
@@ -1107,11 +1107,11 @@ extern "C"
 	SE_DLL_API const char* SE_GetObjectModelFileName(int object_id)
 	{
 		static std::string returnString;
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return 0;
-		}	
+		}
 		returnString = obj->GetModelFileName();
 		return returnString.c_str();
 	}
@@ -1320,11 +1320,11 @@ extern "C"
 
 	SE_DLL_API int SE_ObjectHasGhost(int object_id)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return 0;
-		}	
+		}
 
 
 		Object *ghost = 0;
@@ -1337,12 +1337,12 @@ extern "C"
 
 	SE_DLL_API int SE_GetObjectGhostState(int object_id, SE_ScenarioObjectState *state)
 	{
-		Object *ghost = 0;
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object *ghost = nullptr;
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
-		}	
+		}
 
 		if (obj->GetAssignedControllerType() != Controller::Type::CONTROLLER_TYPE_DEFAULT)
 		{
@@ -1354,8 +1354,8 @@ extern "C"
 			player->scenarioGateway->getObjectStateById(ghost->id_, obj_state);
 			copyStateFromScenarioGateway(state, &obj_state.state_);
 		}
-	
-		
+
+
 
 		return ghost != 0 ? 0 : -1;
 	}
@@ -1414,11 +1414,11 @@ extern "C"
 
 	SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
-		}	
+		}
 
 
 		player->AddObjectSensor(object_id, x, y, z, h, rangeNear, rangeFar, fovH, maxObj);
@@ -1428,11 +1428,11 @@ extern "C"
 
 	SE_DLL_API int SE_ViewSensorData(int object_id)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
-		}	
+		}
 
 		player->AddOSIDetection(object_id);
 		player->ShowObjectSensors(false);
@@ -1482,8 +1482,8 @@ extern "C"
 
 	SE_DLL_API int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *data, int lookAheadMode, bool inRoadDrivingDirection)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
@@ -1509,8 +1509,8 @@ extern "C"
 
 	SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
@@ -1525,8 +1525,8 @@ extern "C"
 
 	SE_DLL_API int SE_GetRoadInfoGhostTrailTime(int object_id, float time, SE_RoadInfo* data, float* speed_ghost)
 	{
-		Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
 		{
 			return -1;
 		}
@@ -1868,11 +1868,11 @@ extern "C"
 
 SE_DLL_API int SE_GetNumberOfRoutePoints(int object_id)
 {
-	Object* obj;
-		if (getObjectById(object_id,&obj) == -1)
-		{
-			return -1;
-		}
+	Object* obj = nullptr;
+	if (getObjectById(object_id, obj) == -1)
+	{
+		return -1;
+	}
 
 	if (obj->pos_.GetRoute())
 	{
@@ -1886,8 +1886,8 @@ SE_DLL_API int SE_GetNumberOfRoutePoints(int object_id)
 
 SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *routeinfo)
 {
-	Object* obj;
-	if (getObjectById(object_id,&obj) == -1)
+	Object* obj = nullptr;
+	if (getObjectById(object_id, obj) == -1)
 	{
 		return -1;
 	}
