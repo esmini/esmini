@@ -122,6 +122,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="DriveStraight" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="drive straight">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <RelativeRoadPosition entityRef="VUT" dLane="0">
+                                                <Orientation type="relative" h="0"/>
+                                            </RelativeRoadPosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="Trig on event 1" delay="0" conditionEdge="rising">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="Second clothoid" state="completeState"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>                        
                     </Maneuver>
                 </ManeuverGroup>
                 <StartTrigger>
@@ -138,9 +160,9 @@
         </Story>
         <StopTrigger>
             <ConditionGroup>
-                <Condition name="Trig on act" delay="0" conditionEdge="rising">
+                <Condition name="Trig on act" delay="3" conditionEdge="rising">
                     <ByValueCondition>
-                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="Second clothoid" state="completeState"/>
+                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="DriveStraight" state="completeState"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

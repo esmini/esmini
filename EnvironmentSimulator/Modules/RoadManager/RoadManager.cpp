@@ -8686,7 +8686,7 @@ double Position::GetH() const
 			return h_ + rel_pos_->GetH();
 		}
 	}
-	else if (type_ == PositionType::RELATIVE_LANE || type_ == PositionType::RELATIVE_ROAD)
+	else if (type_ == PositionType::RELATIVE_ROAD)
 	{
 		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
 		{
@@ -8694,6 +8694,19 @@ double Position::GetH() const
 		}
 		else
 		{
+			return h_ + GetHRoad();
+		}
+	}
+	else if (type_ == PositionType::RELATIVE_LANE)
+	{
+		if (orientation_type_ == OrientationType::ORIENTATION_ABSOLUTE)
+		{
+			return h_;
+		}
+		else
+		{
+			// Lane coordinate system not fully implemented yet. For now relate heading to the
+			// driving direction of current lane, also considering road rule (right/left hand traffic)
 			return h_ + GetHRoadInDrivingDirection();
 		}
 	}
@@ -9894,26 +9907,6 @@ void Position::ReleaseRelation()
 
 	SetRelativePosition(0, PositionType::NORMAL);
 
-	if (type == Position::PositionType::RELATIVE_LANE)
-	{
-		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
-		{
-			SetLanePos(roadId, laneId, s, offset);
-
-			hRel = GetAngleSum(hRel, GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0);
-
-			SetHeadingRelative(hRel);
-			SetPitchRelative(pRel);
-			SetRollRelative(rRel);
-		}
-		else
-		{
-			SetLanePos(roadId, laneId, s, offset);
-			SetHeading(hAbs);
-			SetPitch(pAbs);
-			SetRoll(rAbs);
-		}
-	}
 	if (type == Position::PositionType::RELATIVE_ROAD)
 	{
 		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
@@ -9921,7 +9914,25 @@ void Position::ReleaseRelation()
 			// Resolve requested position
 			SetTrackPos(roadId, s, t);
 
-			// Finally set requested heading considering lane ID and traffic rule
+			hRel = GetAngleSum(hRel, GetHRoad());
+			SetHeadingRelative(hRel);
+			SetPitchRelative(pRel);
+			SetRollRelative(rRel);
+		}
+		else
+		{
+			SetTrackPos(roadId, s, t);
+			SetHeading(hAbs);
+			SetPitch(pAbs);
+			SetRoll(rAbs);
+		}
+	}
+	else if (type == Position::PositionType::RELATIVE_LANE)
+	{
+		if (orientation_type_ == OrientationType::ORIENTATION_RELATIVE)
+		{
+			SetLanePos(roadId, laneId, s, offset);
+
 			hRel = GetAngleSum(hRel, GetDrivingDirectionRelativeRoad() < 0 ? M_PI : 0.0);
 
 			SetHeadingRelative(hRel);
@@ -9930,7 +9941,7 @@ void Position::ReleaseRelation()
 		}
 		else
 		{
-			SetTrackPos(roadId, s, t);
+			SetLanePos(roadId, laneId, s, offset);
 			SetHeading(hAbs);
 			SetPitch(pAbs);
 			SetRoll(rAbs);

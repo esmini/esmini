@@ -295,6 +295,15 @@ TEST(TrajectoryTest, EnsureContinuation)
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 21.32304, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.553967, 1e-5);
+
+    for (int i = 0; i < (int)(1.0 / dt); i++)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 26.13539, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.917931, 1e-5);
+    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 0.0, 1e-5);
 }
 
 TEST(ExpressionTest, EnsureResult)
@@ -1077,7 +1086,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*ExpressionTest*";
+    //testing::GTEST_FLAG(filter) = "*EnsureContinuation*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
