@@ -905,11 +905,11 @@ CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::stri
 
 	//Ego vehicle is always present, at least one set of vehicle data values should be stored
 	//Index and TimeStamp are included in this first set of columns
-	const char* egoHeader = "Index [-] , TimeStamp [sec] , #1 Entitity_Name [-] , "
-		"#1 Entitity_ID [-] , #1 Current_Speed [m/sec] , #1 Wheel_Angle [deg] , "
-		"#1 Wheel_Rotation [-] , #1 World_Position_X [-] , #1 World_Position_Y [-] , "
-		"#1 World_Position_Z [-] , #1 Vel_X [-] , #1 Vel_Y [-] , #1 Vel_Z [-] , "
-		"#1 Acc_X [-] , #1 Acc_Y [-] , #1 Acc_Z [-] , #1 Distance_Travelled_Along_Road_Segment [m] , "
+	const char* egoHeader = "Index [-] , TimeStamp [s] , #1 Entitity_Name [-] , "
+		"#1 Entitity_ID [-] , #1 Current_Speed [m/s] , #1 Wheel_Angle [deg] , "
+		"#1 Wheel_Rotation [-] , #1 World_Position_X [m] , #1 World_Position_Y [m] , "
+		"#1 World_Position_Z [m] , #1 Vel_X [m/s] , #1 Vel_Y [m/s] , #1 Vel_Z [m/s] , "
+		"#1 Acc_X [m/s2] , #1 Acc_Y [m/s2] , #1 Acc_Z [m/s2] , #1 Distance_Travelled_Along_Road_Segment [m] , "
 		"#1 Lateral_Distance_Lanem [m] , #1 World_Heading_Angle [rad] , #1 Heading_Angle_Rate [rad/s] , "
 		"#1 Relative_Heading_Angle [rad] , #1 Relative_Heading_Angle_Drive_Direction [rad] , "
 		"#1 World_Pitch_Angle [rad] , #1 Road_Curvature [1/m] , #1 collision_ids , ";
@@ -918,9 +918,9 @@ CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::stri
 
 	//Based on number of vehicels in the Entities vector, extend the header accordingly
 	const char* npcHeader = "#%d Entitity_Name [-] , #%d Entitity_ID [-] , "
-		"#%d Current_Speed [m/sec] , #%d Wheel_Angle [deg] , #%d Wheel_Rotation [-] , "
-		"#%d World_Position_X [-] , #%d World_Position_Y [-] , #%d World_Position_Z [-] , "
-		"#%d Vel_X[-] , #%d Vel_Y[-] , #%d Vel_Z[-] , #%d Acc_X [-] , #%d Acc_Y[-] , #%d Acc_Z [-] , "
+		"#%d Current_Speed [m/s] , #%d Wheel_Angle [deg] , #%d Wheel_Rotation [-] , "
+		"#%d World_Position_X [m] , #%d World_Position_Y [m] , #%d World_Position_Z [m] , "
+		"#%d Vel_X [m/s] , #%d Vel_Y [m/s] , #%d Vel_Z [m/s] , #%d Acc_X [m/s2] , #%d Acc_Y [m/s2] , #%d Acc_Z [m/s2] , "
 		"#%d Distance_Travelled_Along_Road_Segment [m] , #%d Lateral_Distance_Lanem [m] , "
 		"#%d World_Heading_Angle [rad] , #%d Heading_Angle_Rate [rad/s] , #%d Relative_Heading_Angle [rad] , "
 		"#%d Relative_Heading_Angle_Drive_Direction [rad] , #%d World_Pitch_Angle [rad] , "
