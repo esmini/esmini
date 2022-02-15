@@ -1,6 +1,8 @@
 #ifndef LINE_HPP
 #define LINE_HPP
 #include "Geometry.hpp"
+#include "pugixml.hpp"
+
 class Line : public Geometry {
    public:
 	Line() {}

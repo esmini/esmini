@@ -1,4 +1,9 @@
 
+#ifndef USERDATA_HPP
+#define USERDATA_HPP
+
+#include <string>
+#include "pugixml.hpp"
 class UserData {
    public:
 	UserData(std::string code, std::string value, pugi::xml_node userDataNode) : code_(code), value_(value) {
@@ -23,3 +28,4 @@ class UserData {
 	std::string value_;
 	pugi::xml_document origin_node_;
 };
+#endif

@@ -1,6 +1,12 @@
 #ifndef STRUCTSANDDEFINES_HPP
 #define STRUCTSANDDEFINES_HPP
 
+#include <memory>
+#include <string>
+#include <vector>
+#include "GeoReference.hpp"
+#include "Userdata.hpp"
+
 typedef enum { NONE = 0, SUCCESSOR = 1, PREDECESSOR = -1 } LinkType;
 
 typedef struct {
@@ -53,26 +59,25 @@ struct LaneInfo {
 typedef struct {
 	int fromLane_;
 	int toLane_;
-	std::vector<UserData*> user_data_;
+	std::vector<std::shared_ptr<UserData> user_data_;
 	void Save(pugi::xml_node& object);
-	void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+	void AddUserData(std::shared_ptr<userData>) { user_data_.push_back(userData); }
 } ValidityRecord;
 
-
 typedef struct {
-	std::vector<UserData*> user_data_;
+	std::vector<std::shared_ptr<UserData>> user_data_;
 	int signalId_;
 	std::string type_;
-	void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
 } Control;
 
 typedef struct {
-	std::vector<UserData*> user_data_;
+	std::vector<std::shared_ptr<UserData>> user_data_;
 	int id_;
 	std::string type_;
 	int sequence_;
-	void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node& junction);
 } JunctionController;
 
@@ -83,15 +88,15 @@ struct OpenDriveOffset {
 	double z_;
 	double hdg_;
 
-	std::vector<UserData*> user_data_;
-	void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+	std::vector<std::shared_ptr<UserData>> user_data_;
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&) const;
 	bool isValid() const { return x_ || y_ || z_ || hdg_; };
 };
 
 struct OpenDriveHeader {
 	void Save(pugi::xml_node&) const;
-	void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 
 	uint revMajor_;
 	uint revMinor_;
@@ -105,7 +110,7 @@ struct OpenDriveHeader {
 	std::string vendor_;
 	OpenDriveOffset offset_;
 	GeoReference georeference_;
-	std::vector<UserData*> user_data_;
+	std::vector<std::shared_ptr<UserData>> user_data_;
 };
 
 typedef struct {

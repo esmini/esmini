@@ -1,6 +1,9 @@
 #ifndef PARAMPOLY3_HPP
 #define PARAMPOLY3_HPP
+
 #include "Geometry.hpp"
+#include "pugixml.hpp"
+
 class ParamPoly3 : public Geometry {
    public:
 	enum PRangeType { P_RANGE_UNKNOWN, P_RANGE_NORMALIZED, P_RANGE_ARC_LENGTH };

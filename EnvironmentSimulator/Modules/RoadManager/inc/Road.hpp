@@ -1,6 +1,9 @@
 #ifndef ROAD_HPP
 #define ROAD_HPP
 
+#include <memory>
+#include <string>
+#include <vector>
 #include "Bridge.hpp"
 #include "Elevation.hpp"
 #include "Geometry.hpp"

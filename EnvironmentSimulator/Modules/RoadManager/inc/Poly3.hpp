@@ -2,6 +2,7 @@
 #define POLY3_HPP
 
 #include "Geometry.hpp"
+#include "pugixml.hpp"
 
 class Poly3 : public Geometry {
    public:

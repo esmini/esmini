@@ -1,6 +1,5 @@
 #ifndef POLYNOMIAL_HPP
 #define POLYNOMIAL_HPP
-#include "RoadManager.hpp"
 class Polynomial {
    public:
 	Polynomial() : a_(0), b_(0), c_(0), d_(0), p_scale_(1.0) {}

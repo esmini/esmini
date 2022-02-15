@@ -1,5 +1,5 @@
-#ifndef LANEWIDTH_HPP
-#define LANEWIDTH_HPP
+#ifndef LANEROADMARK_HPP
+#define LANEROADMARK_HPP
 
 #include <memory>
 #include <vector>

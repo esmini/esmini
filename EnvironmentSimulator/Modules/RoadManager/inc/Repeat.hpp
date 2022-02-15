@@ -1,3 +1,10 @@
+#ifndef REPEAT_HPP
+#define REPEAT_HPP
+
+#include <memory>
+#include <vector>
+#include "Userdata.hpp"
+
 class Repeat {
    public:
 	double s_;
@@ -63,9 +70,10 @@ class Repeat {
 	double GetRadiusStart() { return radiusStart_; }
 	double GetRadiusEnd() { return radiusEnd_; }
 
-	void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
 
-   private:
-	std::vector<UserData*> user_data_;
+   protected:
+	std::vector<std::shared_ptr<UserData>> user_data_;
 };
+#endif

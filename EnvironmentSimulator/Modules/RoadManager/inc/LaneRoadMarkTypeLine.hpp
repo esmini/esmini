@@ -1,6 +1,13 @@
 #ifndef LANEROADMARKTYPELINE_HPP
 #define LANEROADMARKTYPELINE_HPP
 
+#include <memory>
+#include <vector>
+#include "OSI.hpp"
+#include "StructsandDefines.hpp"
+#include "Userdata.hpp"
+#include "pugixml.hpp"
+
 class LaneRoadMarkTypeLine {
    public:
 	enum RoadMarkTypeLineRule { NO_PASSING, CAUTION, NONE };
@@ -30,7 +37,7 @@ class LaneRoadMarkTypeLine {
 	void SetGlobalId();
 	int GetGlobalId() { return global_id_; }
 	RoadMarkColor GetColor() { return color_; }
-	void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
 
    private:
@@ -42,6 +49,6 @@ class LaneRoadMarkTypeLine {
 	double width_;
 	int global_id_;		   // Unique ID for OSI
 	RoadMarkColor color_;  // if set, supersedes setting in <RoadMark>
-	std::vector<UserData*> user_data_;
+	std::vector < std::shared_ptr<UserData> user_data_;
 };
-
+#endif

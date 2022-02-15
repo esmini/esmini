@@ -1,5 +1,6 @@
 #ifndef ROADLINK_HPP
 #define ROADLINK_HPP
+
 #include <memory>
 #include <vector>
 #include "StructsandDefines.hpp"
