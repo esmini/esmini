@@ -8,6 +8,12 @@ include_directories (
 set ( SOURCES
   RoadManager.cpp
   odrSpiral.cpp
+  OpenDrive.cpp
+  Geometry.cpp
+  OSI.cpp
+  Polynomial.cpp
+  Position.cpp
+  Road.cpp
 )
 
 set ( SRC_ADDITIONAL ../../../externals/pugixml/pugixml.cpp)
@@ -17,6 +23,12 @@ SOURCE_GROUP("External Libraries" FILES ${SRC_ADDITIONAL})
 set ( INCLUDES
   RoadManager.hpp
   odrSpiral.h
+  OpenDrive.hpp
+  Geometry.hpp
+  OSI.hpp
+  Polynomial.hpp
+  Position.hpp
+  Road.hpp
 )
 
 if(MSVC)

@@ -1,6 +1,17 @@
 #ifndef ROAD_HPP
 #define ROAD_HPP
+
+#include "Bridge.hpp"
+#include "Elevation.hpp"
+#include "Geometry.hpp"
+#include "LaneOffset.hpp"
+#include "LaneSection.hpp"
+#include "ObjectReference.hpp"
+#include "RMObject.hpp"
+#include "RoadLink.hpp"
 #include "RoadManager.hpp"
+#include "Signal.hpp"
+
 class Road {
    public:
 	enum class RoadType {
@@ -13,7 +24,7 @@ class Road {
 		ROADTYPE_BICYCLE
 	};
 
-    typedef struct {
+	typedef struct {
 		double s_;
 		RoadType road_type_;
 		double speed_ = 0.0;  // m/s
@@ -21,7 +32,7 @@ class Road {
 		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 	} RoadTypeEntry;
 
-    enum class RoadRule { RIGHT_HAND_TRAFFIC, LEFT_HAND_TRAFFIC, ROAD_RULE_UNDEFINED };
+	enum class RoadRule { RIGHT_HAND_TRAFFIC, LEFT_HAND_TRAFFIC, ROAD_RULE_UNDEFINED };
 
 	Road(int id, std::string name, RoadRule rule = RoadRule::RIGHT_HAND_TRAFFIC)
 		: id_(id), name_(name), length_(0), junction_(-1), rule_(rule) {}
@@ -184,18 +195,17 @@ class Road {
 	int junction_;
 	RoadRule rule_;
 
-	std::vector<RoadTypeEntry*> type_;
-	std::vector<RoadLink*> link_;
-	std::vector<Geometry*> geometry_;
-	std::vector<Elevation*> elevation_profile_;
-	std::vector<Elevation*> super_elevation_profile_;
-	std::vector<LaneSection*> lane_section_;
-	std::vector<LaneOffset*> lane_offset_;
-	std::vector<Signal*> signal_;
-	std::vector<RMObject*> object_;
-	std::vector<Bridge*> bridge_;
-	std::vector<ObjectReference*> object_reference_;
-	std::vector<UserData*> user_data_;
+	std::vector<std::shared_ptr<RoadTypeEntry>> type_;
+	std::vector<std::shared_ptr<RoadLink>> link_;
+	std::vector<std::shared_ptr<Geometry>> geometry_;
+	std::vector<std::shared_ptr<Elevation>> elevation_profile_;
+	std::vector<std::shared_ptr<Elevation>> super_elevation_profile_;
+	std::vector<std::shared_ptr<LaneSection>> lane_section_;
+	std::vector<std::shared_ptr<LaneOffset>> lane_offset_;
+	std::vector<std::shared_ptr<Signal>> signal_;
+	std::vector<std::shared_ptr<RMObject>> object_;
+	std::vector<std::shared_ptr<Bridge>> bridge_;
+	std::vector<std::shared_ptr<ObjectReference>> object_reference_;
+	std::vector<std::shared_ptr<UserData>> user_data_;
 };
-
 #endif

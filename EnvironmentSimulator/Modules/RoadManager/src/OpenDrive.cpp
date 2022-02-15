@@ -17,13 +17,6 @@ Road* OpenDrive::GetRoadByIdx(int idx) {
 	}
 }
 
-// Geometry* OpenDrive::GetGeometryByIdx(int road_idx, int geom_idx) {
-	// if (road_idx >= 0 && road_idx < (int)road_.size()) {
-		// return road_[road_idx]->GetGeometry(geom_idx);
-	// } else {
-		// return 0;
-	// }
-// }
 
 Junction* OpenDrive::GetJunctionById(int id) {
 	for (size_t i = 0; i < junction_.size(); i++) {
@@ -1390,126 +1383,6 @@ int OpenDrive::GetTrackIdByIdx(int idx) {
 	return 0;
 }
 
-bool OpenDrive::IsIndirectlyConnected(int road1_id,
-									  int road2_id,
-									  int*& connecting_road_id,
-									  int*& connecting_lane_id,
-									  int lane1_id,
-									  int lane2_id) {
-	Road* road1 = GetRoadById(road1_id);
-	Road* road2 = GetRoadById(road2_id);
-	RoadLink* link = 0;
-
-	LinkType link_type[2] = {SUCCESSOR, PREDECESSOR};
-
-	// Try both ends
-	for (int k = 0; k < 2; k++) {
-		link = road1->GetLink(link_type[k]);
-		if (link == 0) {
-			continue;
-		}
-
-		LaneSection* lane_section = 0;
-
-		if (link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD) {
-			if (link->GetElementId() == road2->GetId()) {
-				if (lane1_id != 0 && lane2_id != 0) {
-					// Check lane connected
-					if (link_type[k] == SUCCESSOR) {
-						lane_section = road1->GetLaneSectionByIdx(road1->GetNumberOfLaneSections() - 1);
-					} else if (link_type[k] == PREDECESSOR) {
-						lane_section = road1->GetLaneSectionByIdx(0);
-					} else {
-						LOG("Error LinkType %d not suppoered\n", link_type[k]);
-						return false;
-					}
-					if (lane_section == 0) {
-						LOG("Error lane section == 0\n");
-						return false;
-					}
-					Lane* lane = lane_section->GetLaneById(lane1_id);
-					(void)lane;
-					if (!(lane_section->GetConnectingLaneId(lane1_id, link_type[k]) == lane2_id)) {
-						return false;
-					}
-					// Now, check other end lane connectivitiy
-				}
-				return true;
-			}
-		}
-		// check whether the roads are connected via a junction connecting road and specified lane
-		else if (link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION) {
-			Junction* junction = GetJunctionById(link->GetElementId());
-
-			for (int i = 0; i < junction->GetNumberOfConnections(); i++) {
-				Connection* connection = junction->GetConnectionByIdx(i);
-
-				if (connection->GetIncomingRoad()->GetId() == road1_id) {
-					Road* connecting_road = connection->GetConnectingRoad();
-					RoadLink* exit_link = 0;
-
-					// Found a connecting road - first check if this is the second road
-					if (connecting_road->GetId() == road2_id) {
-						// Check lanes
-						for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++) {
-							if (connection->GetLaneLink(j)->from_ == lane1_id
-								&& connection->GetLaneLink(j)->to_ == lane2_id) {
-								return true;
-							}
-						}
-					}
-
-					// Then check if it connects to second road
-					if (connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START) {
-						exit_link = connecting_road->GetLink(SUCCESSOR);
-					} else {
-						exit_link = connecting_road->GetLink(PREDECESSOR);
-					}
-
-					if (exit_link->GetElementId() == road2_id) {
-						// Finally check that lanes are connected through the junction
-						// Look at lane section and locate lane connecting both roads
-						// Assume connecting road has only one lane section
-						lane_section = connecting_road->GetLaneSectionByIdx(0);
-						if (lane_section == 0) {
-							LOG("Error lane section == 0\n");
-							return false;
-						}
-						for (int j = 0; j < lane_section->GetNumberOfLanes(); j++) {
-							Lane* lane = lane_section->GetLaneByIdx(j);
-							LaneLink* lane_link_predecessor = lane->GetLink(PREDECESSOR);
-							LaneLink* lane_link_successor = lane->GetLink(SUCCESSOR);
-							if (lane_link_predecessor == 0 || lane_link_successor == 0) {
-								continue;
-							}
-							if ((connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START
-								 && lane_link_predecessor->GetId() == lane1_id
-								 && lane_link_successor->GetId() == lane2_id)
-								|| (connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END
-									&& lane_link_predecessor->GetId() == lane2_id
-									&& lane_link_successor->GetId() == lane1_id)) {
-								// Found link
-								if (connecting_road_id != 0) {
-									*connecting_road_id = connection->GetConnectingRoad()->GetId();
-								}
-								if (connecting_lane_id != 0) {
-									*connecting_lane_id = lane->GetId();
-								}
-								return true;
-							}
-						}
-					}
-				}
-			}
-		} else {
-			LOG("Error: LinkElementType %d unsupported\n", link->GetElementType());
-		}
-	}
-
-	LOG("Link not found");
-
-	return false;
-}
 
 int OpenDrive::CheckConnectedRoad(Road* road,
 								  RoadLink* link,
@@ -1909,67 +1782,6 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country) {
 
 	return true;
 }
-// move to OSI class
-// bool OpenDrive::CheckLaneOSIRequirement(std::vector<double> x0,
-// 										std::vector<double> y0,
-// 										std::vector<double> x1,
-// 										std::vector<double> y1) {
-// 	double x0_tan_diff, y0_tan_diff, x1_tan_diff, y1_tan_diff;
-// 	x0_tan_diff = x0[2] - x0[0];
-// 	y0_tan_diff = y0[2] - y0[0];
-// 	x1_tan_diff = x1[2] - x1[0];
-// 	y1_tan_diff = y1[2] - y1[0];
-
-// 	// Avoiding Zero Denominator in OSI point calculations
-// 	if (x0_tan_diff == 0) {
-// 		x0_tan_diff += 0.001;
-// 	}
-
-// 	if (y0_tan_diff == 0) {
-// 		y0_tan_diff += 0.001;
-// 	}
-
-// 	if (x1_tan_diff == 0) {
-// 		x1_tan_diff += 0.001;
-// 	}
-
-// 	if (y1_tan_diff == 0) {
-// 		y1_tan_diff += 0.001;
-// 	}
-
-// 	// Creating tangent line around the point (First Point) with given tolerance
-// 	double k_0 = y0_tan_diff / x0_tan_diff;
-// 	double m_0 = y0[1] - k_0 * x0[1];
-
-// 	// Creating tangent line around the point (Second Point) with given tolerance
-// 	double k_1 = y1_tan_diff / x1_tan_diff;
-// 	double m_1 = y1[1] - k_1 * x1[1];
-
-// 	// Intersection point of the tangent lines
-// 	double intersect_tangent_x = (m_0 - m_1) / (k_1 - k_0);
-// 	double intersect_tangent_y = k_0 * intersect_tangent_x + m_0;
-
-// 	// Creating real line between the First Point and Second Point
-// 	double k = (y1[1] - y0[1]) / (x1[1] - x0[1]);
-// 	double m = y0[1] - k * x0[1];
-
-// 	// The maximum distance can be found between the real line and a tangent line: passing through
-// 	// [u_intersect, y_intersect] with slope "k" The perpendicular line to the tangent line can be formulated
-// 	// as f(Q) = intersect_tangent_y + (intersect_tangent_x / k) - Q/k Then the point on the real line which
-// 	// gives maximum distance -> f(Q) = k*Q + m
-// 	double intersect_x = (intersect_tangent_y + (intersect_tangent_x / k) - m) / (k + 1 / k);
-// 	double intersect_y = k * intersect_x + m;
-// 	double max_distance
-// 		= sqrt(pow(intersect_y - intersect_tangent_y, 2) + pow(intersect_x - intersect_tangent_x, 2));
-
-// 	// Max distance can be "nan" when the lane is perfectly straigt and hence k = 0.
-// 	// In this case, it satisfies OSI_LANE_CALC_REQUIREMENT since it is a perfect line
-// 	if (max_distance < SE_Env::Inst().GetOSIMaxLateralDeviation() || std::isnan(max_distance)) {
-// 		return true;
-// 	} else {
-// 		return false;
-// 	}
-// }
 
 static double GetMaxSegmentLen(Position* pos,
 							   double min,
@@ -1995,8 +1807,34 @@ static double GetMaxSegmentLen(Position* pos,
 
 	return max_segment_length;
 }
-// move to OSI class
-// void OpenDrive::SetLaneOSIPoints() {
+
+std::string OpenDrive::ContactPointType2Str(ContactPointType type) {
+	if (type == ContactPointType::CONTACT_POINT_START) {
+		return "PREDECESSOR";
+	} else if (type == ContactPointType::CONTACT_POINT_END) {
+		return "SUCCESSOR";
+	} else if (type == ContactPointType::CONTACT_POINT_JUNCTION) {
+		return "JUNCTION";
+	} else if (type == ContactPointType::CONTACT_POINT_UNDEFINED) {
+		return "UNDEFINED";
+	} else {
+		return "UNDEFINED";
+	}
+}
+
+std::string OpenDrive::ElementType2Str(RoadLink::ElementType type) {
+	if (type == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION) {
+		return "JUNCTION";
+	} else if (type == RoadLink::ElementType::ELEMENT_TYPE_ROAD) {
+		return "ROAD";
+	} else if (type == RoadLink::ElementType::ELEMENT_TYPE_UNKNOWN) {
+		return "UNKNOWN";
+	} else {
+		return "UNDEFINED";
+	}
+}
+
+// void OpenDrive::SetLaneBoundaryPoints() {
 // 	// Initialization
 // 	Position* pos = new roadmanager::Position();
 // 	Road* road;
@@ -2004,26 +1842,15 @@ static double GetMaxSegmentLen(Position* pos,
 // 	Lane* lane;
 // 	int number_of_lane_sections, number_of_lanes, counter;
 // 	double lsec_end;
-// 	std::vector<PointStruct> osi_point;
 // 	std::vector<double> x0, y0, x1, y1;
+// 	std::vector<PointStruct> osi_point;
 // 	double s0, s1, s1_prev;
 // 	bool osi_requirement;
 // 	double max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
-// 	int osiintersection;
 
 // 	// Looping through each road
 // 	for (int i = 0; i < road_.size(); i++) {
 // 		road = road_[i];
-
-// 		if (road->GetJunction() == -1) {
-// 			osiintersection = -1;
-// 		} else {
-// 			if (GetJunctionById(road->GetJunction())->IsOsiIntersection()) {
-// 				osiintersection = GetJunctionById(road->GetJunction())->GetGlobalId();
-// 			} else {
-// 				osiintersection = -1;
-// 			}
-// 		}
 
 // 		// Looping through each lane section
 // 		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
@@ -2047,280 +1874,139 @@ static double GetMaxSegmentLen(Position* pos,
 // 				lane = lsec->GetLaneByIdx(k);
 // 				counter = 0;
 
-// 				// Looping through sequential points along the track determined by "OSI_POINT_CALC_STEPSIZE"
-// 				while (true) {
-// 					counter++;
+// 				int n_roadmarks = lane->GetNumberOfRoadMarks();
+// 				if (n_roadmarks == 0) {
+// 					// Looping through sequential points along the track determined by
+// 					// "OSI_POINT_CALC_STEPSIZE"
+// 					while (true) {
+// 						counter++;
 
-// 					// Make sure we stay within lane section length
-// 					s1 = MIN(s1, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
+// 						// Make sure we stay within lane section length
+// 						s1 = MIN(s1, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
 
-// 					// [XO, YO] = closest position with given (-) tolerance
-// 					pos->SetLanePos(road->GetId(), lane->GetId(), MAX(0, s0 - OSI_TANGENT_LINE_TOLERANCE), 0,
-// 									j);
-// 					x0.push_back(pos->GetX());
-// 					y0.push_back(pos->GetY());
+// 						// [XO, YO] = closest position with given (-) tolerance
+// 						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(),
+// 												MAX(0, s0 - OSI_TANGENT_LINE_TOLERANCE), 0, j);
+// 						x0.push_back(pos->GetX());
+// 						y0.push_back(pos->GetY());
 
-// 					// [XO, YO] = Real position with no tolerance
-// 					pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
-// 					x0.push_back(pos->GetX());
-// 					y0.push_back(pos->GetY());
+// 						// [XO, YO] = Real position with no tolerance
+// 						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
+// 						x0.push_back(pos->GetX());
+// 						y0.push_back(pos->GetY());
 
-// 					// Add the starting point of each lane as osi point
-// 					if (counter == 1) {
-// 						PointStruct p = {s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad()};
-// 						osi_point.push_back(p);
-// 					}
+// 						// Add the starting point of each lane as osi point
+// 						if (counter == 1) {
+// 							PointStruct p = {s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad()};
+// 							osi_point.push_back(p);
+// 						}
 
-// 					// [XO, YO] = closest position with given (+) tolerance
-// 					pos->SetLanePos(road->GetId(), lane->GetId(), s0 + OSI_TANGENT_LINE_TOLERANCE, 0, j);
-// 					x0.push_back(pos->GetX());
-// 					y0.push_back(pos->GetY());
+// 						// [XO, YO] = closest position with given (+) tolerance
+// 						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0 + OSI_TANGENT_LINE_TOLERANCE,
+// 												0, j);
+// 						x0.push_back(pos->GetX());
+// 						y0.push_back(pos->GetY());
 
-// 					// [X1, Y1] = closest position with given (-) tolerance
-// 					pos->SetLanePos(road->GetId(), lane->GetId(), s1 - OSI_TANGENT_LINE_TOLERANCE, 0, j);
-// 					x1.push_back(pos->GetX());
-// 					y1.push_back(pos->GetY());
+// 						// [X1, Y1] = closest position with given (-) tolerance
+// 						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1 - OSI_TANGENT_LINE_TOLERANCE,
+// 												0, j);
+// 						x1.push_back(pos->GetX());
+// 						y1.push_back(pos->GetY());
 
-// 					// [X1, Y1] = Real position with no tolerance
-// 					pos->SetLanePos(road->GetId(), lane->GetId(), s1, 0, j);
-// 					x1.push_back(pos->GetX());
-// 					y1.push_back(pos->GetY());
+// 						// [X1, Y1] = Real position with no tolerance
+// 						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1, 0, j);
+// 						x1.push_back(pos->GetX());
+// 						y1.push_back(pos->GetY());
 
-// 					// [X1, Y1] = closest position with given (+) tolerance
-// 					pos->SetLanePos(road->GetId(), lane->GetId(), s1 + OSI_TANGENT_LINE_TOLERANCE, 0, j);
-// 					x1.push_back(pos->GetX());
-// 					y1.push_back(pos->GetY());
+// 						// [X1, Y1] = closest position with given (+) tolerance
+// 						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1 + OSI_TANGENT_LINE_TOLERANCE,
+// 												0, j);
+// 						x1.push_back(pos->GetX());
+// 						y1.push_back(pos->GetY());
 
-// 					// Check OSI Requirement between current given points
-// 					if (x1[1] - x0[1] != 0 && y1[1] - y0[1] != 0) {
-// 						osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
-// 					} else {
-// 						osi_requirement = true;
-// 					}
+// 						// Check OSI Requirement between current given points
+// 						if (x1[1] - x0[1] != 0 && y1[1] - y0[1] != 0) {
+// 							osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
+// 						} else {
+// 							osi_requirement = true;
+// 						}
 
-// 					// If requirement is satisfied -> look further points
-// 					// If requirement is not satisfied:
-// 					//    Assign last unique satisfied point as OSI point
-// 					//    Continue searching from the last satisfied point
+// 						// Make sure max segment length is longer than stepsize
+// 						max_segment_length = GetMaxSegmentLen(pos, 1.1 * OSI_POINT_CALC_STEPSIZE,
+// 															  SE_Env::Inst().GetOSIMaxLongitudinalDistance(),
+// 															  OSI_POINT_DIST_SCALE, OSI_POINT_DIST_SCALE);
 
-// 					// Make sure max segment length is longer than stepsize
-// 					max_segment_length = GetMaxSegmentLen(pos, 1.1 * OSI_POINT_CALC_STEPSIZE,
-// 														  SE_Env::Inst().GetOSIMaxLongitudinalDistance(),
-// 														  OSI_POINT_DIST_SCALE, OSI_POINT_DIST_SCALE);
-
-// 					if ((osi_requirement && s1 - s0 < max_segment_length) || s1 - s0 < 0.1) {
-// 						s1_prev = s1;
-// 						s1 = s1 + OSI_POINT_CALC_STEPSIZE;
-
-// 					} else {
-// 						if (s1 - s0 < OSI_POINT_CALC_STEPSIZE + SMALL_NUMBER) {
-// 							// Back to last point and try smaller step forward
+// 						// If requirement is satisfied -> look further points
+// 						// If requirement is not satisfied:
+// 						// Assign last satisfied point as OSI point
+// 						// Continue searching from the last satisfied point
+// 						if (osi_requirement && s1 - s0 < max_segment_length) {
 // 							s1_prev = s1;
-// 							s1 = MIN(s0 + (s1 - s0) * 0.5, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
+// 							s1 = s1 + OSI_POINT_CALC_STEPSIZE;
+
 // 						} else {
 // 							s0 = s1_prev;
 // 							s1_prev = s1;
-// 							s1 = MIN(s0 + OSI_POINT_CALC_STEPSIZE, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
+// 							s1 = s0 + OSI_POINT_CALC_STEPSIZE;
 
 // 							if (counter != 1) {
-// 								pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
+// 								pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
 // 								PointStruct p = {s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad()};
 // 								osi_point.push_back(p);
 // 							}
 // 						}
-// 					}
 
-// 					// If the end of the lane reached, assign end of the lane as final OSI point for current
-// 					// lane
-// 					if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end) {
-// 						pos->SetLanePos(road->GetId(), lane->GetId(), MAX(0, lsec_end - SMALL_NUMBER), 0, j);
-// 						PointStruct p = {lsec_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad()};
-// 						osi_point.push_back(p);
-// 						break;
-// 					}
+// 						// If the end of the lane reached, assign end of the lane as final OSI point for
+// 						// current lane
+// 						if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end) {
+// 							pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(),
+// 													MAX(0, lsec_end - SMALL_NUMBER), 0, j);
+// 							PointStruct p
+// 								= {lsec_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad()};
+// 							osi_point.push_back(p);
+// 							break;
+// 						}
 
-// 					// Clear x-y collectors for next iteration
-// 					x0.clear();
-// 					y0.clear();
-// 					x1.clear();
-// 					y1.clear();
+// 						// Clear x-y collectors for next iteration
+// 						x0.clear();
+// 						y0.clear();
+// 						x1.clear();
+// 						y1.clear();
+// 					}
+// 					// Initialization of LaneBoundary class
+// 					LaneBoundaryOSI* lb = new LaneBoundaryOSI((int)0);
+// 					// add the lane boundary class to the lane class and generating the global id
+// 					lane->SetLaneBoundary(lb);
+// 					// Fills up the osi points in the lane boundary class
+// 					lb->osi_points_.Set(osi_point);
+// 					// Clear osi collectors for next iteration
+// 					osi_point.clear();
+
+// 					// Re-assign the starting point of the next lane as the start point of the current lane
+// 					// section for OSI calculations
+// 					s0 = lsec->GetS();
+// 					s1 = s0 + OSI_POINT_CALC_STEPSIZE;
+// 					s1_prev = s0;
 // 				}
-
-// 				// Set all collected osi points for the current lane
-// 				lane->osi_points_.Set(osi_point);
-// 				lane->SetOSIIntersection(osiintersection);
-
-// 				// Clear osi collectors for next iteration
-// 				osi_point.clear();
-
-// 				// Re-assign the starting point of the next lane as the start point of the current lane
-// 				// section for OSI calculations
-// 				s0 = lsec->GetS();
-// 				s1 = s0 + OSI_POINT_CALC_STEPSIZE;
-// 				s1_prev = s0;
 // 			}
 // 		}
 // 	}
 // }
 
-void OpenDrive::SetLaneBoundaryPoints() {
-	// Initialization
-	Position* pos = new roadmanager::Position();
-	Road* road;
-	LaneSection* lsec;
-	Lane* lane;
-	int number_of_lane_sections, number_of_lanes, counter;
-	double lsec_end;
-	std::vector<double> x0, y0, x1, y1;
-	std::vector<PointStruct> osi_point;
-	double s0, s1, s1_prev;
-	bool osi_requirement;
-	double max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
+// bool OpenDrive::SetRoadOSI() {
+	// SetLaneOSIPoints();
+	// SetRoadMarkOSIPoints();
+	// SetLaneBoundaryPoints();
+	// return true;
+// }
 
-	// Looping through each road
-	for (int i = 0; i < road_.size(); i++) {
-		road = road_[i];
-
-		// Looping through each lane section
-		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
-		for (int j = 0; j < number_of_lane_sections; j++) {
-			// Get the ending position of the current lane section
-			lsec = road->GetLaneSectionByIdx(j);
-			if (j == number_of_lane_sections - 1) {
-				lsec_end = road->GetLength();
-			} else {
-				lsec_end = road->GetLaneSectionByIdx(j + 1)->GetS();
-			}
-
-			// Starting points of the each lane section for OSI calculations
-			s0 = lsec->GetS();
-			s1 = s0 + OSI_POINT_CALC_STEPSIZE;
-			s1_prev = s0;
-
-			// Looping through each lane
-			number_of_lanes = lsec->GetNumberOfLanes();
-			for (int k = 0; k < number_of_lanes; k++) {
-				lane = lsec->GetLaneByIdx(k);
-				counter = 0;
-
-				int n_roadmarks = lane->GetNumberOfRoadMarks();
-				if (n_roadmarks == 0) {
-					// Looping through sequential points along the track determined by
-					// "OSI_POINT_CALC_STEPSIZE"
-					while (true) {
-						counter++;
-
-						// Make sure we stay within lane section length
-						s1 = MIN(s1, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
-
-						// [XO, YO] = closest position with given (-) tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(),
-												MAX(0, s0 - OSI_TANGENT_LINE_TOLERANCE), 0, j);
-						x0.push_back(pos->GetX());
-						y0.push_back(pos->GetY());
-
-						// [XO, YO] = Real position with no tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
-						x0.push_back(pos->GetX());
-						y0.push_back(pos->GetY());
-
-						// Add the starting point of each lane as osi point
-						if (counter == 1) {
-							PointStruct p = {s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad()};
-							osi_point.push_back(p);
-						}
-
-						// [XO, YO] = closest position with given (+) tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0 + OSI_TANGENT_LINE_TOLERANCE,
-												0, j);
-						x0.push_back(pos->GetX());
-						y0.push_back(pos->GetY());
-
-						// [X1, Y1] = closest position with given (-) tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1 - OSI_TANGENT_LINE_TOLERANCE,
-												0, j);
-						x1.push_back(pos->GetX());
-						y1.push_back(pos->GetY());
-
-						// [X1, Y1] = Real position with no tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1, 0, j);
-						x1.push_back(pos->GetX());
-						y1.push_back(pos->GetY());
-
-						// [X1, Y1] = closest position with given (+) tolerance
-						pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s1 + OSI_TANGENT_LINE_TOLERANCE,
-												0, j);
-						x1.push_back(pos->GetX());
-						y1.push_back(pos->GetY());
-
-						// Check OSI Requirement between current given points
-						if (x1[1] - x0[1] != 0 && y1[1] - y0[1] != 0) {
-							osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
-						} else {
-							osi_requirement = true;
-						}
-
-						// Make sure max segment length is longer than stepsize
-						max_segment_length = GetMaxSegmentLen(pos, 1.1 * OSI_POINT_CALC_STEPSIZE,
-															  SE_Env::Inst().GetOSIMaxLongitudinalDistance(),
-															  OSI_POINT_DIST_SCALE, OSI_POINT_DIST_SCALE);
-
-						// If requirement is satisfied -> look further points
-						// If requirement is not satisfied:
-						// Assign last satisfied point as OSI point
-						// Continue searching from the last satisfied point
-						if (osi_requirement && s1 - s0 < max_segment_length) {
-							s1_prev = s1;
-							s1 = s1 + OSI_POINT_CALC_STEPSIZE;
-
-						} else {
-							s0 = s1_prev;
-							s1_prev = s1;
-							s1 = s0 + OSI_POINT_CALC_STEPSIZE;
-
-							if (counter != 1) {
-								pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(), s0, 0, j);
-								PointStruct p = {s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad()};
-								osi_point.push_back(p);
-							}
-						}
-
-						// If the end of the lane reached, assign end of the lane as final OSI point for
-						// current lane
-						if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end) {
-							pos->SetLaneBoundaryPos(road->GetId(), lane->GetId(),
-													MAX(0, lsec_end - SMALL_NUMBER), 0, j);
-							PointStruct p
-								= {lsec_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad()};
-							osi_point.push_back(p);
-							break;
-						}
-
-						// Clear x-y collectors for next iteration
-						x0.clear();
-						y0.clear();
-						x1.clear();
-						y1.clear();
-					}
-					// Initialization of LaneBoundary class
-					LaneBoundaryOSI* lb = new LaneBoundaryOSI((int)0);
-					// add the lane boundary class to the lane class and generating the global id
-					lane->SetLaneBoundary(lb);
-					// Fills up the osi points in the lane boundary class
-					lb->osi_points_.Set(osi_point);
-					// Clear osi collectors for next iteration
-					osi_point.clear();
-
-					// Re-assign the starting point of the next lane as the start point of the current lane
-					// section for OSI calculations
-					s0 = lsec->GetS();
-					s1 = s0 + OSI_POINT_CALC_STEPSIZE;
-					s1_prev = s0;
-				}
-			}
-		}
-	}
-}
+// Geometry* OpenDrive::GetGeometryByIdx(int road_idx, int geom_idx) {
+	// if (road_idx >= 0 && road_idx < (int)road_.size()) {
+		// return road_[road_idx]->GetGeometry(geom_idx);
+	// } else {
+		// return 0;
+	// }
+// }
 
 //  MOve to OSI class
 // void OpenDrive::SetRoadMarkOSIPoints() {
@@ -2584,36 +2270,355 @@ void OpenDrive::SetLaneBoundaryPoints() {
 // 	}
 // }
 /* inherit OpenDrive class to OSI class where you init osi stuff
-bool OpenDrive::SetRoadOSI() {
-	SetLaneOSIPoints();
-	SetRoadMarkOSIPoints();
-	SetLaneBoundaryPoints();
-	return true;
-}
-*/
 
-std::string OpenDrive::ContactPointType2Str(ContactPointType type) {
-	if (type == ContactPointType::CONTACT_POINT_START) {
-		return "PREDECESSOR";
-	} else if (type == ContactPointType::CONTACT_POINT_END) {
-		return "SUCCESSOR";
-	} else if (type == ContactPointType::CONTACT_POINT_JUNCTION) {
-		return "JUNCTION";
-	} else if (type == ContactPointType::CONTACT_POINT_UNDEFINED) {
-		return "UNDEFINED";
-	} else {
-		return "UNDEFINED";
-	}
-}
 
-std::string OpenDrive::ElementType2Str(RoadLink::ElementType type) {
-	if (type == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION) {
-		return "JUNCTION";
-	} else if (type == RoadLink::ElementType::ELEMENT_TYPE_ROAD) {
-		return "ROAD";
-	} else if (type == RoadLink::ElementType::ELEMENT_TYPE_UNKNOWN) {
-		return "UNKNOWN";
-	} else {
-		return "UNDEFINED";
-	}
-}
+// move to OSI class
+// void OpenDrive::SetLaneOSIPoints() {
+// 	// Initialization
+// 	Position* pos = new roadmanager::Position();
+// 	Road* road;
+// 	LaneSection* lsec;
+// 	Lane* lane;
+// 	int number_of_lane_sections, number_of_lanes, counter;
+// 	double lsec_end;
+// 	std::vector<PointStruct> osi_point;
+// 	std::vector<double> x0, y0, x1, y1;
+// 	double s0, s1, s1_prev;
+// 	bool osi_requirement;
+// 	double max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
+// 	int osiintersection;
+
+// 	// Looping through each road
+// 	for (int i = 0; i < road_.size(); i++) {
+// 		road = road_[i];
+
+// 		if (road->GetJunction() == -1) {
+// 			osiintersection = -1;
+// 		} else {
+// 			if (GetJunctionById(road->GetJunction())->IsOsiIntersection()) {
+// 				osiintersection = GetJunctionById(road->GetJunction())->GetGlobalId();
+// 			} else {
+// 				osiintersection = -1;
+// 			}
+// 		}
+
+// 		// Looping through each lane section
+// 		number_of_lane_sections = road_[i]->GetNumberOfLaneSections();
+// 		for (int j = 0; j < number_of_lane_sections; j++) {
+// 			// Get the ending position of the current lane section
+// 			lsec = road->GetLaneSectionByIdx(j);
+// 			if (j == number_of_lane_sections - 1) {
+// 				lsec_end = road->GetLength();
+// 			} else {
+// 				lsec_end = road->GetLaneSectionByIdx(j + 1)->GetS();
+// 			}
+
+// 			// Starting points of the each lane section for OSI calculations
+// 			s0 = lsec->GetS();
+// 			s1 = s0 + OSI_POINT_CALC_STEPSIZE;
+// 			s1_prev = s0;
+
+// 			// Looping through each lane
+// 			number_of_lanes = lsec->GetNumberOfLanes();
+// 			for (int k = 0; k < number_of_lanes; k++) {
+// 				lane = lsec->GetLaneByIdx(k);
+// 				counter = 0;
+
+// 				// Looping through sequential points along the track determined by "OSI_POINT_CALC_STEPSIZE"
+// 				while (true) {
+// 					counter++;
+
+// 					// Make sure we stay within lane section length
+// 					s1 = MIN(s1, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
+
+// 					// [XO, YO] = closest position with given (-) tolerance
+// 					pos->SetLanePos(road->GetId(), lane->GetId(), MAX(0, s0 - OSI_TANGENT_LINE_TOLERANCE), 0,
+// 									j);
+// 					x0.push_back(pos->GetX());
+// 					y0.push_back(pos->GetY());
+
+// 					// [XO, YO] = Real position with no tolerance
+// 					pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
+// 					x0.push_back(pos->GetX());
+// 					y0.push_back(pos->GetY());
+
+// 					// Add the starting point of each lane as osi point
+// 					if (counter == 1) {
+// 						PointStruct p = {s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad()};
+// 						osi_point.push_back(p);
+// 					}
+
+// 					// [XO, YO] = closest position with given (+) tolerance
+// 					pos->SetLanePos(road->GetId(), lane->GetId(), s0 + OSI_TANGENT_LINE_TOLERANCE, 0, j);
+// 					x0.push_back(pos->GetX());
+// 					y0.push_back(pos->GetY());
+
+// 					// [X1, Y1] = closest position with given (-) tolerance
+// 					pos->SetLanePos(road->GetId(), lane->GetId(), s1 - OSI_TANGENT_LINE_TOLERANCE, 0, j);
+// 					x1.push_back(pos->GetX());
+// 					y1.push_back(pos->GetY());
+
+// 					// [X1, Y1] = Real position with no tolerance
+// 					pos->SetLanePos(road->GetId(), lane->GetId(), s1, 0, j);
+// 					x1.push_back(pos->GetX());
+// 					y1.push_back(pos->GetY());
+
+// 					// [X1, Y1] = closest position with given (+) tolerance
+// 					pos->SetLanePos(road->GetId(), lane->GetId(), s1 + OSI_TANGENT_LINE_TOLERANCE, 0, j);
+// 					x1.push_back(pos->GetX());
+// 					y1.push_back(pos->GetY());
+
+// 					// Check OSI Requirement between current given points
+// 					if (x1[1] - x0[1] != 0 && y1[1] - y0[1] != 0) {
+// 						osi_requirement = CheckLaneOSIRequirement(x0, y0, x1, y1);
+// 					} else {
+// 						osi_requirement = true;
+// 					}
+
+// 					// If requirement is satisfied -> look further points
+// 					// If requirement is not satisfied:
+// 					//    Assign last unique satisfied point as OSI point
+// 					//    Continue searching from the last satisfied point
+
+// 					// Make sure max segment length is longer than stepsize
+// 					max_segment_length = GetMaxSegmentLen(pos, 1.1 * OSI_POINT_CALC_STEPSIZE,
+// 														  SE_Env::Inst().GetOSIMaxLongitudinalDistance(),
+// 														  OSI_POINT_DIST_SCALE, OSI_POINT_DIST_SCALE);
+
+// 					if ((osi_requirement && s1 - s0 < max_segment_length) || s1 - s0 < 0.1) {
+// 						s1_prev = s1;
+// 						s1 = s1 + OSI_POINT_CALC_STEPSIZE;
+
+// 					} else {
+// 						if (s1 - s0 < OSI_POINT_CALC_STEPSIZE + SMALL_NUMBER) {
+// 							// Back to last point and try smaller step forward
+// 							s1_prev = s1;
+// 							s1 = MIN(s0 + (s1 - s0) * 0.5, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
+// 						} else {
+// 							s0 = s1_prev;
+// 							s1_prev = s1;
+// 							s1 = MIN(s0 + OSI_POINT_CALC_STEPSIZE, lsec_end - OSI_TANGENT_LINE_TOLERANCE);
+
+// 							if (counter != 1) {
+// 								pos->SetLanePos(road->GetId(), lane->GetId(), s0, 0, j);
+// 								PointStruct p = {s0, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad()};
+// 								osi_point.push_back(p);
+// 							}
+// 						}
+// 					}
+
+// 					// If the end of the lane reached, assign end of the lane as final OSI point for current
+// 					// lane
+// 					if (s1 + OSI_TANGENT_LINE_TOLERANCE >= lsec_end) {
+// 						pos->SetLanePos(road->GetId(), lane->GetId(), MAX(0, lsec_end - SMALL_NUMBER), 0, j);
+// 						PointStruct p = {lsec_end, pos->GetX(), pos->GetY(), pos->GetZ(), pos->GetHRoad()};
+// 						osi_point.push_back(p);
+// 						break;
+// 					}
+
+// 					// Clear x-y collectors for next iteration
+// 					x0.clear();
+// 					y0.clear();
+// 					x1.clear();
+// 					y1.clear();
+// 				}
+
+// 				// Set all collected osi points for the current lane
+// 				lane->osi_points_.Set(osi_point);
+// 				lane->SetOSIIntersection(osiintersection);
+
+// 				// Clear osi collectors for next iteration
+// 				osi_point.clear();
+
+// 				// Re-assign the starting point of the next lane as the start point of the current lane
+// 				// section for OSI calculations
+// 				s0 = lsec->GetS();
+// 				s1 = s0 + OSI_POINT_CALC_STEPSIZE;
+// 				s1_prev = s0;
+// 			}
+// 		}
+// 	}
+// }
+
+
+// move to OSI class
+// bool OpenDrive::CheckLaneOSIRequirement(std::vector<double> x0,
+// 										std::vector<double> y0,
+// 										std::vector<double> x1,
+// 										std::vector<double> y1) {
+// 	double x0_tan_diff, y0_tan_diff, x1_tan_diff, y1_tan_diff;
+// 	x0_tan_diff = x0[2] - x0[0];
+// 	y0_tan_diff = y0[2] - y0[0];
+// 	x1_tan_diff = x1[2] - x1[0];
+// 	y1_tan_diff = y1[2] - y1[0];
+
+// 	// Avoiding Zero Denominator in OSI point calculations
+// 	if (x0_tan_diff == 0) {
+// 		x0_tan_diff += 0.001;
+// 	}
+
+// 	if (y0_tan_diff == 0) {
+// 		y0_tan_diff += 0.001;
+// 	}
+
+// 	if (x1_tan_diff == 0) {
+// 		x1_tan_diff += 0.001;
+// 	}
+
+// 	if (y1_tan_diff == 0) {
+// 		y1_tan_diff += 0.001;
+// 	}
+
+// 	// Creating tangent line around the point (First Point) with given tolerance
+// 	double k_0 = y0_tan_diff / x0_tan_diff;
+// 	double m_0 = y0[1] - k_0 * x0[1];
+
+// 	// Creating tangent line around the point (Second Point) with given tolerance
+// 	double k_1 = y1_tan_diff / x1_tan_diff;
+// 	double m_1 = y1[1] - k_1 * x1[1];
+
+// 	// Intersection point of the tangent lines
+// 	double intersect_tangent_x = (m_0 - m_1) / (k_1 - k_0);
+// 	double intersect_tangent_y = k_0 * intersect_tangent_x + m_0;
+
+// 	// Creating real line between the First Point and Second Point
+// 	double k = (y1[1] - y0[1]) / (x1[1] - x0[1]);
+// 	double m = y0[1] - k * x0[1];
+
+// 	// The maximum distance can be found between the real line and a tangent line: passing through
+// 	// [u_intersect, y_intersect] with slope "k" The perpendicular line to the tangent line can be formulated
+// 	// as f(Q) = intersect_tangent_y + (intersect_tangent_x / k) - Q/k Then the point on the real line which
+// 	// gives maximum distance -> f(Q) = k*Q + m
+// 	double intersect_x = (intersect_tangent_y + (intersect_tangent_x / k) - m) / (k + 1 / k);
+// 	double intersect_y = k * intersect_x + m;
+// 	double max_distance
+// 		= sqrt(pow(intersect_y - intersect_tangent_y, 2) + pow(intersect_x - intersect_tangent_x, 2));
+
+// 	// Max distance can be "nan" when the lane is perfectly straigt and hence k = 0.
+// 	// In this case, it satisfies OSI_LANE_CALC_REQUIREMENT since it is a perfect line
+// 	if (max_distance < SE_Env::Inst().GetOSIMaxLateralDeviation() || std::isnan(max_distance)) {
+// 		return true;
+// 	} else {
+// 		return false;
+// 	}
+// }
+
+// bool OpenDrive::IsIndirectlyConnected(int road1_id,
+// 									  int road2_id,
+// 									  int*& connecting_road_id,
+// 									  int*& connecting_lane_id,
+// 									  int lane1_id,
+// 									  int lane2_id) {
+// 	Road* road1 = GetRoadById(road1_id);
+// 	Road* road2 = GetRoadById(road2_id);
+// 	RoadLink* link = 0;
+
+// 	LinkType link_type[2] = {SUCCESSOR, PREDECESSOR};
+
+// 	// Try both ends
+// 	for (int k = 0; k < 2; k++) {
+// 		link = road1->GetLink(link_type[k]);
+// 		if (link == 0) {
+// 			continue;
+// 		}
+
+// 		LaneSection* lane_section = 0;
+
+// 		if (link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD) {
+// 			if (link->GetElementId() == road2->GetId()) {
+// 				if (lane1_id != 0 && lane2_id != 0) {
+// 					// Check lane connected
+// 					if (link_type[k] == SUCCESSOR) {
+// 						lane_section = road1->GetLaneSectionByIdx(road1->GetNumberOfLaneSections() - 1);
+// 					} else if (link_type[k] == PREDECESSOR) {
+// 						lane_section = road1->GetLaneSectionByIdx(0);
+// 					} else {
+// 						LOG("Error LinkType %d not suppoered\n", link_type[k]);
+// 						return false;
+// 					}
+// 					if (lane_section == 0) {
+// 						LOG("Error lane section == 0\n");
+// 						return false;
+// 					}
+// 					Lane* lane = lane_section->GetLaneById(lane1_id);
+// 					(void)lane;
+// 					if (!(lane_section->GetConnectingLaneId(lane1_id, link_type[k]) == lane2_id)) {
+// 						return false;
+// 					}
+// 					// Now, check other end lane connectivitiy
+// 				}
+// 				return true;
+// 			}
+// 		}
+// 		// check whether the roads are connected via a junction connecting road and specified lane
+// 		else if (link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION) {
+// 			Junction* junction = GetJunctionById(link->GetElementId());
+
+// 			for (int i = 0; i < junction->GetNumberOfConnections(); i++) {
+// 				Connection* connection = junction->GetConnectionByIdx(i);
+
+// 				if (connection->GetIncomingRoad()->GetId() == road1_id) {
+// 					Road* connecting_road = connection->GetConnectingRoad();
+// 					RoadLink* exit_link = 0;
+
+// 					// Found a connecting road - first check if this is the second road
+// 					if (connecting_road->GetId() == road2_id) {
+// 						// Check lanes
+// 						for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++) {
+// 							if (connection->GetLaneLink(j)->from_ == lane1_id
+// 								&& connection->GetLaneLink(j)->to_ == lane2_id) {
+// 								return true;
+// 							}
+// 						}
+// 					}
+
+// 					// Then check if it connects to second road
+// 					if (connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START) {
+// 						exit_link = connecting_road->GetLink(SUCCESSOR);
+// 					} else {
+// 						exit_link = connecting_road->GetLink(PREDECESSOR);
+// 					}
+
+// 					if (exit_link->GetElementId() == road2_id) {
+// 						// Finally check that lanes are connected through the junction
+// 						// Look at lane section and locate lane connecting both roads
+// 						// Assume connecting road has only one lane section
+// 						lane_section = connecting_road->GetLaneSectionByIdx(0);
+// 						if (lane_section == 0) {
+// 							LOG("Error lane section == 0\n");
+// 							return false;
+// 						}
+// 						for (int j = 0; j < lane_section->GetNumberOfLanes(); j++) {
+// 							Lane* lane = lane_section->GetLaneByIdx(j);
+// 							LaneLink* lane_link_predecessor = lane->GetLink(PREDECESSOR);
+// 							LaneLink* lane_link_successor = lane->GetLink(SUCCESSOR);
+// 							if (lane_link_predecessor == 0 || lane_link_successor == 0) {
+// 								continue;
+// 							}
+// 							if ((connection->GetContactPoint() == ContactPointType::CONTACT_POINT_START
+// 								 && lane_link_predecessor->GetId() == lane1_id
+// 								 && lane_link_successor->GetId() == lane2_id)
+// 								|| (connection->GetContactPoint() == ContactPointType::CONTACT_POINT_END
+// 									&& lane_link_predecessor->GetId() == lane2_id
+// 									&& lane_link_successor->GetId() == lane1_id)) {
+// 								// Found link
+// 								if (connecting_road_id != 0) {
+// 									*connecting_road_id = connection->GetConnectingRoad()->GetId();
+// 								}
+// 								if (connecting_lane_id != 0) {
+// 									*connecting_lane_id = lane->GetId();
+// 								}
+// 								return true;
+// 							}
+// 						}
+// 					}
+// 				}
+// 			}
+// 		} else {
+// 			LOG("Error: LinkElementType %d unsupported\n", link->GetElementType());
+// 		}
+// 	}
+
+// 	LOG("Link not found");
+
+// 	return false;

@@ -1,6 +1,9 @@
 #ifndef OSI_HPP
 #define OSI_HPP
-#include "RoadManager.hpp"
+
+#include <vector>
+#include "StructsandDefines.hpp"
+
 class OSIPoints {
    public:
 	OSIPoints() {}
