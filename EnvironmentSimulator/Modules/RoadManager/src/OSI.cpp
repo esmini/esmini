@@ -1,6 +1,6 @@
 #include "OSI.hpp"
 
-int roadmanager::CheckOverlapingOSIPoints(OSIPoints* first_set, OSIPoints* second_set, double tolerance) {
+int CheckOverlapingOSIPoints(OSIPoints* first_set, OSIPoints* second_set, double tolerance) {
 	std::vector<double> distances;
 	int retvalue = 0;
 	distances.push_back(PointDistance2D(first_set->GetPoint(0).x, first_set->GetPoint(0).y,

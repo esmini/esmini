@@ -61,9 +61,9 @@ struct LaneInfo {
 typedef struct {
 	int fromLane_;
 	int toLane_;
-	std::vector<std::shared_ptr<UserData> user_data_;
+	std::vector<std::shared_ptr<UserData>> user_data_;
 	void Save(pugi::xml_node& object);
-	void AddUserData(std::shared_ptr<userData>) { user_data_.push_back(userData); }
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 } ValidityRecord;
 
 

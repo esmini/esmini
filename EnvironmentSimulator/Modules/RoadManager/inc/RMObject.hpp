@@ -1,6 +1,7 @@
 #ifndef RMOBJECT_HPP
 #define RMOBJECT_HPP
 
+#include <cassert>
 #include <vector>
 #include "Outline.hpp"
 #include "Repeat.hpp"
@@ -38,8 +39,6 @@ class RMObject : public RoadObject {
 		  repeat_(0) {}
 
 	~RMObject() {
-		for (size_t i = 0; i < outlines_.size(); i++)
-			delete (outlines_[i]);
 		outlines_.clear();
 	}
 
@@ -59,15 +58,15 @@ class RMObject : public RoadObject {
 	void AddOutline(std::shared_ptr<Outline> outline) { outlines_.push_back(outline); }
 	void SetRepeat(std::shared_ptr<Repeat> repeat);								   // odr1.5
 	void AddRepeat(std::shared_ptr<Repeat> repeat) { repeat_.push_back(repeat); }  // odr1.4
-	Repeat* GetRepeat();
+	std::shared_ptr<Repeat> GetRepeat();
 	int GetNumberOfOutlines() { return (int)outlines_.size(); }
-	Outline* GetOutline(int i) { return (0 <= i && i < outlines_.size()) ? outlines_[i] : 0; }
+	std::shared_ptr<Outline> GetOutline(int i) { return (0 <= i && i < outlines_.size()) ? outlines_[i] : 0; }
 	void Save(pugi::xml_node&);
 
    protected:
 	std::vector<std::shared_ptr<Outline>> outlines_;
 	std::vector<std::shared_ptr<Repeat>> repeat_;  // OpenDRIVE 1.4 uses multiple repeat tags.
-   
+
    private:
 	std::string type_;
 	std::string name_;

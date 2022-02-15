@@ -2,9 +2,11 @@
 #define GEOMETRY_HPP
 
 #include <cmath>
+#include <memory>
 #include <vector>
 #include "CommonMini.hpp"
 #include "Polynomial.hpp"
+#include "Userdata.hpp"
 #include "pugixml.hpp"
 class Geometry {
    public:
@@ -35,7 +37,7 @@ class Geometry {
 	virtual void Print();
 	virtual void EvaluateDS(double ds, double* x, double* y, double* h);
 	virtual void Save(pugi::xml_node& geometry);
-	void AddUserData(std::shared_ptr userData) { user_data_.push_back(userData); }
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 
    protected:
 	double s_;

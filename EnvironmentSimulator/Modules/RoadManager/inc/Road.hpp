@@ -4,15 +4,19 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "Arc.hpp"
 #include "Bridge.hpp"
 #include "Elevation.hpp"
-#include "Geometry.hpp"
 #include "LaneOffset.hpp"
 #include "LaneSection.hpp"
+#include "Line.hpp"
 #include "ObjectReference.hpp"
+#include "ParamPoly3.hpp"
+#include "Poly3.hpp"
 #include "RMObject.hpp"
+#include "RoadLink.hpp"
 #include "Signal.hpp"
-
+#include "Spiral.hpp"
 class Road {
    public:
 	enum class RoadType {
@@ -44,7 +48,7 @@ class Road {
 	int GetId() { return id_; }
 	RoadRule GetRule() { return rule_; }
 	void SetName(std::string name) { name_ = name; }
-	Geometry* GetGeometry(int idx);
+	std::shared_ptr<Geometry> GetGeometry(int idx);
 	int GetNumberOfGeometries() { return (int)geometry_.size(); }
 
 	/**
@@ -56,7 +60,7 @@ class Road {
 	...
 	@param idx index into the vector of lane sections
 	*/
-	LaneSection* GetLaneSectionByIdx(int idx);
+	std::shared_ptr<LaneSection> GetLaneSectionByIdx(int idx);
 
 	/**
 	Retrieve the lanesection index at specified s-value
@@ -68,7 +72,7 @@ class Road {
 	Retrieve the lanesection at specified s-value
 	@param s distance along the road segment
 	*/
-	LaneSection* GetLaneSectionByS(double s, int start_at = 0) {
+	std::shared_ptr<LaneSection> GetLaneSectionByS(double s, int start_at = 0) {
 		return GetLaneSectionByIdx(GetLaneSectionIdxByS(s, start_at));
 	}
 
@@ -101,35 +105,54 @@ class Road {
 	double GetLength() const { return length_; }
 	void SetJunction(int junction) { junction_ = junction; }
 	int GetJunction() const { return junction_; }
-	void AddLink(RoadLink* link) { link_.push_back(link); }
-	void AddRoadType(RoadTypeEntry* type) { type_.push_back(type); }
+
+	void AddLink(std::shared_ptr<RoadLink> link) { link_.push_back(link); }
+
+	void AddRoadType(std::shared_ptr<RoadTypeEntry> type) { type_.push_back(type); }
+
 	int GetNumberOfRoadTypes() const { return (int)type_.size(); }
-	RoadTypeEntry* GetRoadType(int idx);
-	RoadLink* GetLink(LinkType type);
-	void AddLine(Line* line);
-	void AddArc(Arc* arc);
-	void AddSpiral(Spiral* spiral);
-	void AddPoly3(Poly3* poly3);
-	void AddParamPoly3(ParamPoly3* param_poly3);
-	void AddElevation(Elevation* elevation);
-	void AddSuperElevation(Elevation* super_elevation);
-	void AddLaneSection(LaneSection* lane_section);
-	void AddLaneOffset(LaneOffset* lane_offset);
-	void AddSignal(Signal* signal);
-	void AddObject(RMObject* object);
-	void AddBridge(Bridge* bridge);
-	void AddObjectReference(ObjectReference* object_reference);
-	void AddUserData(UserData* userData) { user_data_.push_back(userData); }
-	Elevation* GetElevation(int idx);
-	Elevation* GetSuperElevation(int idx);
+
+	std::shared_ptr<RoadTypeEntry> GetRoadType(int idx);
+
+	std::shared_ptr<RoadLink> GetLink(LinkType type);
+
+	void AddLine(std::shared_ptr<Line> line) { geometry_.push_back(line); }
+
+	void AddArc(std::shared_ptr<Arc> arc) { geometry_.push_back(arc); }
+
+	void AddSpiral(std::shared_ptr<Spiral> spiral) { geometry_.push_back(spiral); }
+
+	void AddPoly3(std::shared_ptr<Poly3> poly3) { geometry_.push_back(poly3); }
+
+	void AddParamPoly3(std::shared_ptr<ParamPoly3> param_poly3) { geometry_.push_back(param_poly3); }
+
+	void AddElevation(std::shared_ptr<Elevation> elevation);
+
+	void AddSuperElevation(std::shared_ptr<Elevation> super_elevation);
+
+	void AddLaneSection(std::shared_ptr<LaneSection> lane_section);
+
+	void AddLaneOffset(std::shared_ptr<LaneOffset> lane_offset);
+
+	void AddSignal(std::shared_ptr<Signal> signal);
+
+	void AddObject(std::shared_ptr<RMObject> object);
+
+	void AddBridge(std::shared_ptr<Bridge> bridge);
+
+	void AddObjectReference(std::shared_ptr<ObjectReference> object_reference);
+
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
+	std::shared_ptr<Elevation> GetElevation(int idx);
+	std::shared_ptr<Elevation> GetSuperElevation(int idx);
 	int GetNumberOfSignals();
-	Signal* GetSignal(int idx);
+	std::shared_ptr<Signal> GetSignal(int idx);
 	int GetNumberOfObjects() { return (int)object_.size(); }
-	RMObject* GetObject(int idx);
+	std::shared_ptr<RMObject> GetObject(int idx);
 	int GetNumberOfBridges() { return (int)bridge_.size(); }
-	Bridge* GetBridge(int idx);
+	std::shared_ptr<Bridge> GetBridge(int idx);
 	int GetNumberOfObjectReference() { return (int)object_reference_.size(); }
-	ObjectReference* GetObjectReference(int idx);
+	std::shared_ptr<ObjectReference> GetObjectReference(int idx);
 	int GetNumberOfElevations() { return (int)elevation_profile_.size(); }
 	int GetNumberOfSuperElevations() { return (int)super_elevation_profile_.size(); }
 	double GetLaneOffset(double s);
@@ -137,10 +160,10 @@ class Road {
 	int GetNumberOfLanes(double s);
 	int GetNumberOfLaneOffsets() { return (int)lane_offset_.size(); }
 	int GetNumberOfDrivingLanes(double s);
-	Lane* GetDrivingLaneByIdx(double s, int idx);
-	Lane* GetDrivingLaneSideByIdx(double s, int side, int idx);
-	Lane* GetDrivingLaneById(double s, int idx);
-	LaneOffset* GetLaneOffsetByIdx(unsigned int idx) {
+	std::shared_ptr<Lane> GetDrivingLaneByIdx(double s, int idx);
+	std::shared_ptr<Lane> GetDrivingLaneSideByIdx(double s, int side, int idx);
+	std::shared_ptr<Lane> GetDrivingLaneById(double s, int idx);
+	std::shared_ptr<LaneOffset> GetLaneOffsetByIdx(unsigned int idx) {
 		return idx > lane_offset_.size() ? nullptr : lane_offset_[idx];
 	}
 	int GetNumberOfDrivingLanesSide(double s, int side);  // side = -1 right, 1 left
@@ -151,14 +174,14 @@ class Road {
 		@param contact_point If not null it will contain the contact point of specified road
 		@return true if connection exist, else false
 	*/
-	bool IsDirectlyConnected(Road* road, LinkType link_type, ContactPointType* contact_point = 0);
+	bool IsDirectlyConnected(std::shared_ptr<Road> road, LinkType link_type, ContactPointType* contact_point = 0);
 
 	/**
 		Check if specified road is directly connected, at least in one end of current one (this)
 		@param road Road to check if connected with current one
 		@return true if connection exist, else false
 	*/
-	bool IsDirectlyConnected(Road* road);
+	bool IsDirectlyConnected(std::shared_ptr<Road> road);
 
 	/**
 		Check if specified road is directly connected as successor to current one (this)
@@ -166,7 +189,7 @@ class Road {
 		@param contact_point If not null it will contain the contact point of the successor road
 		@return true if connection exist, else false
 	*/
-	bool IsSuccessor(Road* road, ContactPointType* contact_point = 0);
+	bool IsSuccessor(std::shared_ptr<Road> road, ContactPointType* contact_point = 0);
 
 	/**
 		Check if specified road is directly connected as predecessor to current one (this)
@@ -174,7 +197,7 @@ class Road {
 		@param contact_point If not null it will contain the contact point of the predecessor road
 		@return true if connection exist, else false
 	*/
-	bool IsPredecessor(Road* road, ContactPointType* contact_point = 0);
+	bool IsPredecessor(std::shared_ptr<Road> road, ContactPointType* contact_point = 0);
 
 	/**
 		Get width of road

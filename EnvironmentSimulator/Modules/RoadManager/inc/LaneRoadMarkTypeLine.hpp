@@ -41,7 +41,7 @@ class LaneRoadMarkTypeLine {
 	void Save(pugi::xml_node&);
 
    protected:
-	std::vector < std::shared_ptr<UserData> user_data_;
+	std::vector<std::shared_ptr<UserData>> user_data_;
 
    private:
 	double length_;

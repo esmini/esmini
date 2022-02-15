@@ -1,7 +1,7 @@
 
 #include "Road.hpp"
 
-LaneSection* Road::GetLaneSectionByIdx(int idx) {
+std::shared_ptr<LaneSection> Road::GetLaneSectionByIdx(int idx) {
 	if (idx >= 0 && idx < lane_section_.size()) {
 		return lane_section_[idx];
 	} else {
@@ -14,7 +14,7 @@ int Road::GetLaneSectionIdxByS(double s, int start_at) {
 		return -1;
 	}
 
-	LaneSection* lane_section = lane_section_[start_at];
+	std::shared_ptr<LaneSection> lane_section = lane_section_[start_at];
 	size_t i = start_at;
 
 	if (s < lane_section->GetS() && start_at > 0) {
@@ -49,7 +49,7 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 	if (lane_info.lane_section_idx_ >= (int)lane_section_.size()) {
 		LOG("Error idx %d > n_lane_sections %d\n", lane_info.lane_section_idx_, (int)lane_section_.size());
 	} else {
-		LaneSection* lane_section = lane_section_[lane_info.lane_section_idx_];
+		std::shared_ptr<LaneSection> lane_section = lane_section_[lane_info.lane_section_idx_];
 
 		// check if we passed current section
 		if (s > lane_section->GetS() + lane_section->GetLength() || s < lane_section->GetS()) {
@@ -69,7 +69,7 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 			}
 
 			// If new lane is not of snapping type, try to move into a close valid lane
-			Lane* lane = lane_section->GetLaneById(lane_info.lane_id_);
+			std::shared_ptr<Lane> lane = lane_section->GetLaneById(lane_info.lane_id_);
 			if (lane == 0 || !(laneTypeMask & lane_section->GetLaneById(lane_info.lane_id_)->GetLaneType())) {
 				double offset = 0;
 				double t = 0;
@@ -95,8 +95,8 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 	return lane_info;
 }
 
-int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectingRoadId) {
-	Lane* lane;
+int Road::GetConnectingLaneId(std::shared_ptr<RoadLink> road_link, int fromLaneId, int connectingRoadId) {
+	std::shared_ptr<Lane> lane;
 
 	if (road_link->GetElementId() == -1) {
 		LOG("No connecting road or junction at rid %d link_type %s", GetId(),
@@ -151,7 +151,7 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectin
 }
 
 double Road::GetLaneWidthByS(double s, int lane_id) {
-	LaneSection* lsec;
+	std::shared_ptr<LaneSection> lsec;
 
 	if (GetNumberOfLaneSections() < 1) {
 		return 0.0;
@@ -183,7 +183,7 @@ double Road::GetSpeedByS(double s) {
 	return 0;
 }
 
-Geometry* Road::GetGeometry(int idx) {
+std::shared_ptr<Geometry> Road::GetGeometry(int idx) {
 	if (idx < 0 || idx + 1 > (int)geometry_.size()) {
 		LOG("Road::GetGeometry index %d out of range [0:%d]\n", idx, (int)geometry_.size());
 		return 0;
@@ -358,49 +358,29 @@ void Road::Save(pugi::xml_node& root) {
 	}
 }
 
-void Road::AddLine(Line* line) {
-	geometry_.push_back((Geometry*)line);
-}
-
-void Road::AddArc(Arc* arc) {
-	geometry_.push_back((Geometry*)arc);
-}
-
-void Road::AddSpiral(Spiral* spiral) {
-	geometry_.push_back((Geometry*)spiral);
-}
-
-void Road::AddPoly3(Poly3* poly3) {
-	geometry_.push_back((Geometry*)poly3);
-}
-
-void Road::AddParamPoly3(ParamPoly3* param_poly3) {
-	geometry_.push_back((Geometry*)param_poly3);
-}
-
-void Road::AddElevation(Elevation* elevation) {
+void Road::AddElevation(std::shared_ptr<Elevation> elevation) {
 	// Adjust last elevation length
 	if (elevation_profile_.size() > 0) {
-		Elevation* e_previous = elevation_profile_.back();
+		std::shared_ptr<Elevation> e_previous = elevation_profile_.back();
 		e_previous->SetLength(elevation->GetS() - e_previous->GetS());
 	}
 	elevation->SetLength(length_ - elevation->GetS());
 
-	elevation_profile_.push_back((Elevation*)elevation);
+	elevation_profile_.push_back(elevation);
 }
 
-void Road::AddSuperElevation(Elevation* super_elevation) {
+void Road::AddSuperElevation(std::shared_ptr<Elevation> super_elevation) {
 	// Adjust last super elevation length
 	if (super_elevation_profile_.size() > 0) {
-		Elevation* e_previous = super_elevation_profile_.back();
+		std::shared_ptr<Elevation> e_previous = super_elevation_profile_.back();
 		e_previous->SetLength(super_elevation->GetS() - e_previous->GetS());
 	}
 	super_elevation->SetLength(length_ - super_elevation->GetS());
 
-	super_elevation_profile_.push_back((Elevation*)super_elevation);
+	super_elevation_profile_.push_back(super_elevation);
 }
 
-Elevation* Road::GetElevation(int idx) {
+std::shared_ptr<Elevation> Road::GetElevation(int idx) {
 	if (idx < 0 || idx >= elevation_profile_.size()) {
 		return 0;
 	}
@@ -408,7 +388,7 @@ Elevation* Road::GetElevation(int idx) {
 	return elevation_profile_[idx];
 }
 
-Elevation* Road::GetSuperElevation(int idx) {
+std::shared_ptr<Elevation> Road::GetSuperElevation(int idx) {
 	if (idx < 0 || idx >= super_elevation_profile_.size()) {
 		return 0;
 	}
@@ -416,24 +396,24 @@ Elevation* Road::GetSuperElevation(int idx) {
 	return super_elevation_profile_[idx];
 }
 
-void Road::AddSignal(Signal* signal) {
+void Road::AddSignal(std::shared_ptr<Signal> signal) {
 	// Adjust signal length
 	if (signal_.size() > 0) {
-		Signal* sig_previous = signal_.back();
+		std::shared_ptr<Signal> sig_previous = signal_.back();
 		sig_previous->SetLength(signal->GetS() - sig_previous->GetS());
 	}
 	signal->SetLength(length_ - signal->GetS());
 
 	// LOG("Add signal[%d]: \"%s\" type %d subtype %d to road %d", (int)signal_.size(),
 	// signal->GetName().c_str(), 	signal->GetType(), signal->GetSubType(), GetId());
-	signal_.push_back((Signal*)signal);
+	signal_.push_back(signal);
 }
 
 int Road::GetNumberOfSignals() {
 	return (int)signal_.size();
 }
 
-Signal* Road::GetSignal(int idx) {
+std::shared_ptr<Signal> Road::GetSignal(int idx) {
 	if (idx < 0 || idx >= signal_.size()) {
 		return 0;
 	}
@@ -441,23 +421,23 @@ Signal* Road::GetSignal(int idx) {
 	return signal_[idx];
 }
 
-void Road::AddObject(RMObject* object) {
+void Road::AddObject(std::shared_ptr<RMObject> object) {
 	/*LOG("Add object[%d]: %s", (int)object_.size(), object->GetName().c_str());*/
 	object_.push_back(object);
 }
 
-void Road::AddBridge(Bridge* bridge) {
+void Road::AddBridge(std::shared_ptr<Bridge> bridge) {
 	/*LOG("Add bridge[%d]: %s", (int)bridge_.size(), bridge->GetName().c_str());*/
 	bridge_.push_back(bridge);
 }
 
-void Road::AddObjectReference(ObjectReference* object_reference) {
+void Road::AddObjectReference(std::shared_ptr<ObjectReference> object_reference) {
 	/*LOG("Add object reference[%d]: %s", (int)object_reference_.size(),
 	 * object_reference->GetName().c_str());*/
 	object_reference_.push_back(object_reference);
 }
 
-RMObject* Road::GetObject(int idx) {
+std::shared_ptr<RMObject> Road::GetObject(int idx) {
 	if (idx < 0 || idx >= object_.size()) {
 		return 0;
 	}
@@ -465,7 +445,7 @@ RMObject* Road::GetObject(int idx) {
 	return object_[idx];
 }
 
-Bridge* Road::GetBridge(int idx) {
+std::shared_ptr<Bridge> Road::GetBridge(int idx) {
 	if (idx < 0 || idx >= bridge_.size()) {
 		return 0;
 	}
@@ -473,7 +453,7 @@ Bridge* Road::GetBridge(int idx) {
 	return bridge_[idx];
 }
 
-ObjectReference* Road::GetObjectReference(int idx) {
+std::shared_ptr<ObjectReference> Road::GetObjectReference(int idx) {
 	if (idx < 0 || idx >= object_reference_.size()) {
 		return 0;
 	}
@@ -512,7 +492,7 @@ double Road::GetLaneOffsetPrim(double s) {
 }
 
 int Road::GetNumberOfLanes(double s) {
-	LaneSection* lsec = GetLaneSectionByS(s);
+	std::shared_ptr<LaneSection> lsec = GetLaneSectionByS(s);
 
 	if (lsec) {
 		return (lsec->GetNumberOfLanes());
@@ -522,7 +502,7 @@ int Road::GetNumberOfLanes(double s) {
 }
 
 int Road::GetNumberOfDrivingLanes(double s) {
-	LaneSection* lsec = GetLaneSectionByS(s);
+	std::shared_ptr<LaneSection> lsec = GetLaneSectionByS(s);
 
 	if (lsec) {
 		return (lsec->GetNumberOfDrivingLanes());
@@ -531,10 +511,10 @@ int Road::GetNumberOfDrivingLanes(double s) {
 	return 0;
 }
 
-Lane* Road::GetDrivingLaneByIdx(double s, int idx) {
+std::shared_ptr<Lane> Road::GetDrivingLaneByIdx(double s, int idx) {
 	int count = 0;
 
-	LaneSection* ls = GetLaneSectionByS(s);
+	std::shared_ptr<LaneSection> ls = GetLaneSectionByS(s);
 
 	for (int i = 0; i < ls->GetNumberOfLanes(); i++) {
 		if (ls->GetLaneByIdx(i)->IsDriving()) {
@@ -547,13 +527,13 @@ Lane* Road::GetDrivingLaneByIdx(double s, int idx) {
 	return 0;
 }
 
-Lane* Road::GetDrivingLaneSideByIdx(double s, int side, int idx) {
+std::shared_ptr<Lane> Road::GetDrivingLaneSideByIdx(double s, int side, int idx) {
 	int count = 0;
 
-	LaneSection* ls = GetLaneSectionByS(s);
+	std::shared_ptr<LaneSection> ls = GetLaneSectionByS(s);
 
 	for (int i = 0; i < ls->GetNumberOfLanes(); i++) {
-		Lane* lane = ls->GetLaneByIdx(i);
+		std::shared_ptr<Lane> lane = ls->GetLaneByIdx(i);
 		if (lane->IsDriving() && SIGN(lane->GetId()) == side) {
 			if (count++ == idx) {
 				return lane;
@@ -564,8 +544,8 @@ Lane* Road::GetDrivingLaneSideByIdx(double s, int side, int idx) {
 	return 0;
 }
 
-Lane* Road::GetDrivingLaneById(double s, int id) {
-	LaneSection* ls = GetLaneSectionByS(s);
+std::shared_ptr<Lane> Road::GetDrivingLaneById(double s, int id) {
+	std::shared_ptr<LaneSection> ls = GetLaneSectionByS(s);
 
 	if (ls->GetLaneById(id)->IsDriving()) {
 		return ls->GetLaneById(id);
@@ -586,12 +566,12 @@ int Road::GetNumberOfDrivingLanesSide(double s, int side) {
 	return (lane_section_[i]->GetNumberOfDrivingLanesSide(side));
 }
 
-bool Road::IsDirectlyConnected(Road* road, LinkType link_type, ContactPointType* contact_point) {
+bool Road::IsDirectlyConnected(std::shared_ptr<Road> road, LinkType link_type, ContactPointType* contact_point) {
 	if (road == nullptr) {
 		return false;
 	}
 
-	RoadLink* link = GetLink(link_type);
+	std::shared_ptr<RoadLink> link = GetLink(link_type);
 	if (link == nullptr) {
 		return false;  // lacking successor
 	}
@@ -621,15 +601,15 @@ bool Road::IsDirectlyConnected(Road* road, LinkType link_type, ContactPointType*
 	return false;
 }
 
-bool Road::IsSuccessor(Road* road, ContactPointType* contact_point) {
+bool Road::IsSuccessor(std::shared_ptr<Road> road, ContactPointType* contact_point) {
 	return IsDirectlyConnected(road, LinkType::SUCCESSOR, contact_point) != 0;
 }
 
-bool Road::IsPredecessor(Road* road, ContactPointType* contact_point) {
+bool Road::IsPredecessor(std::shared_ptr<Road> road, ContactPointType* contact_point) {
 	return IsDirectlyConnected(road, LinkType::PREDECESSOR, contact_point) != 0;
 }
 
-bool Road::IsDirectlyConnected(Road* road) {
+bool Road::IsDirectlyConnected(std::shared_ptr<Road> road) {
 	// Unspecified link, check both ends
 	return IsSuccessor(road) || IsPredecessor(road);
 }
@@ -647,7 +627,7 @@ double Road::GetWidth(double s, int side, int laneTypeMask) {
 	}
 
 	if (i < GetNumberOfLaneSections()) {
-		LaneSection* lsec = lane_section_[i];
+		std::shared_ptr<LaneSection> lsec = lane_section_[i];
 		// Since the lanes are sorted from left to right,
 		// side == +1 means first lane and side == -1 means last lane
 
@@ -681,20 +661,20 @@ double Road::GetWidth(double s, int side, int laneTypeMask) {
 	return offset0 + offset1;
 }
 
-void Road::AddLaneOffset(LaneOffset* lane_offset) {
+void Road::AddLaneOffset(std::shared_ptr<LaneOffset> lane_offset) {
 	// Adjust lane offset length
 	if (lane_offset_.size() > 0) {
-		LaneOffset* lo_previous = lane_offset_.back();
+		std::shared_ptr<LaneOffset> lo_previous = lane_offset_.back();
 		lo_previous->SetLength(lane_offset->GetS() - lo_previous->GetS());
 	}
 	lane_offset->SetLength(length_ - lane_offset->GetS());
 
-	lane_offset_.push_back((LaneOffset*)lane_offset);
+	lane_offset_.push_back(lane_offset);
 }
 
 double Road::GetCenterOffset(double s, int lane_id) {
 	// First find out what lane section
-	LaneSection* lane_section = GetLaneSectionByS(s);
+	std::shared_ptr<LaneSection> lane_section = GetLaneSectionByS(s);
 	if (lane_section) {
 		return lane_section->GetCenterOffset(s, lane_id);
 	}
@@ -702,7 +682,7 @@ double Road::GetCenterOffset(double s, int lane_id) {
 	return 0.0;
 }
 
-Road::RoadTypeEntry* Road::GetRoadType(int idx) {
+std::shared_ptr<RoadTypeEntry> Road::GetRoadType(int idx) {
 	if (type_.size() > 0) {
 		return type_[idx];
 	} else {
@@ -710,7 +690,7 @@ Road::RoadTypeEntry* Road::GetRoadType(int idx) {
 	}
 }
 
-RoadLink* Road::GetLink(LinkType type) {
+std::shared_ptr<RoadLink> Road::GetLink(LinkType type) {
 	for (size_t i = 0; i < link_.size(); i++) {
 		if (link_[i]->GetType() == type) {
 			return link_[i];
@@ -719,15 +699,15 @@ RoadLink* Road::GetLink(LinkType type) {
 	return 0;  // Link of requested type is missing
 }
 
-void Road::AddLaneSection(LaneSection* lane_section) {
+void Road::AddLaneSection(std::shared_ptr<LaneSection> lane_section) {
 	// Adjust last elevation section length
 	if (lane_section_.size() > 0) {
-		LaneSection* ls_previous = lane_section_.back();
+		std::shared_ptr<LaneSection> ls_previous = lane_section_.back();
 		ls_previous->SetLength(lane_section->GetS() - ls_previous->GetS());
 	}
 	lane_section->SetLength(length_ - lane_section->GetS());
 
-	lane_section_.push_back((LaneSection*)lane_section);
+	lane_section_.push_back(lane_section);
 }
 
 bool Road::GetZAndPitchByS(double s,
@@ -740,7 +720,7 @@ bool Road::GetZAndPitchByS(double s,
 		if (*index < 0 || *index >= GetNumberOfElevations()) {
 			*index = 0;
 		}
-		Elevation* elevation = GetElevation(*index);
+		std::shared_ptr<Elevation> elevation = GetElevation(*index);
 		if (elevation == NULL) {
 			LOG("Elevation error NULL, nelev: %d elev_idx: %d\n", GetNumberOfElevations(), *index);
 			return false;
@@ -784,7 +764,7 @@ bool Road::UpdateZAndRollBySAndT(double s,
 		if (*index < 0 || *index >= GetNumberOfSuperElevations()) {
 			*index = 0;
 		}
-		Elevation* super_elevation = GetSuperElevation(*index);
+		std::shared_ptr<Elevation> super_elevation = GetSuperElevation(*index);
 		if (super_elevation == NULL) {
 			LOG("Superelevation error NULL, nelev: %d elev_idx: %d\n", GetNumberOfSuperElevations(), *index);
 			return false;

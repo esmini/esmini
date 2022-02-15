@@ -2,9 +2,21 @@
 #define OUTLINE_HPP
 
 #include <vector>
+#include "CommonMini.hpp"
 #include "Userdata.hpp"
 #include "pugixml.hpp"
 
+class OutlineCorner {
+   public:
+	virtual void GetPos(double& x, double& y, double& z) = 0;
+	virtual double GetHeight() = 0;
+	virtual ~OutlineCorner() {}
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
+	virtual void Save(pugi::xml_node&){};
+
+   protected:
+	std::vector<std::shared_ptr<UserData>> user_data_;
+};
 class Outline {
    public:
 	typedef enum {
@@ -37,17 +49,7 @@ class Outline {
 	void Save(pugi::xml_node&);
 };
 
-class OutlineCorner {
-   public:
-	virtual void GetPos(double& x, double& y, double& z) = 0;
-	virtual double GetHeight() = 0;
-	virtual ~OutlineCorner() {}
-	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
-	virtual void Save(pugi::xml_node&){};
 
-   protected:
-	std::vector<std::shared_ptr<UserData>> user_data_;
-};
 
 class OutlineCornerRoad : public OutlineCorner {
    public:

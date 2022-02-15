@@ -1,6 +1,6 @@
 #include "RMObject.hpp"
 
-void RMObject::SetRepeat(Repeat* repeat) {
+void RMObject::SetRepeat(std::shared_ptr<Repeat> repeat) {
 	if (repeat_.empty())
 		repeat_.push_back(repeat);
 	else
@@ -59,4 +59,11 @@ void RMObject::Save(pugi::xml_node& objects) {
 	for (auto userData : user_data_) {
 		userData->Save(object);
 	}
+}
+
+std::shared_ptr<Repeat> RMObject::GetRepeat() {
+	if (repeat_.empty())
+		return nullptr;
+	else
+		return repeat_[0];
 }

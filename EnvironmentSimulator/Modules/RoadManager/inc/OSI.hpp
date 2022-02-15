@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "StructsandDefines.hpp"
-
+#include "CommonMini.hpp"
 class OSIPoints {
    public:
 	OSIPoints() {}

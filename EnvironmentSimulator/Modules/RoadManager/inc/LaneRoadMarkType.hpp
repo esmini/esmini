@@ -1,6 +1,7 @@
 #ifndef LANEROADMARKTYPE_HPP
 #define LANEROADMARKTYPE_HPP
 
+#include <cassert>
 #include <memory>
 #include <string>
 #include <vector>
@@ -15,14 +16,14 @@ class LaneRoadMarkType {
 	void AddLine(std::shared_ptr<LaneRoadMarkTypeLine> lane_roadMarkTypeLine);
 	std::string GetName() { return name_; }
 	double GetWidth() { return width_; }
-	LaneRoadMarkTypeLine* GetLaneRoadMarkTypeLineByIdx(int idx);
+	std::shared_ptr<LaneRoadMarkTypeLine> GetLaneRoadMarkTypeLineByIdx(int idx); //TODO
 	int GetNumberOfRoadMarkTypeLines() { return (int)lane_roadMarkTypeLine_.size(); }
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
 
    protected:
-	std::vector<std::share_ptr<LaneRoadMarkTypeLine>> lane_roadMarkTypeLine_;
-	std::vector<std::share_ptr<UserData>> user_data_;
+	std::vector<std::shared_ptr<LaneRoadMarkTypeLine>> lane_roadMarkTypeLine_;
+	std::vector<std::shared_ptr<UserData>> user_data_;
 
    private:
 	std::string name_;

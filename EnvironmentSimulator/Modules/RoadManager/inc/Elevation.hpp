@@ -1,8 +1,11 @@
 #ifndef ELEVATION_HPP
 #define ELEVATION_HPP
+
+#include <memory>
 #include <vector>
-#include "Userdata.hpp"
+#include "CommonMini.hpp"
 #include "Polynomial.hpp"
+#include "Userdata.hpp"
 
 class Elevation {
    public:
@@ -16,13 +19,13 @@ class Elevation {
 	void SetLength(double length) { length_ = length; }
 	double GetLength() { return length_; }
 	void Print();
-	void AddUserData(std::shared_ptr userData) { user_data_.push_back(userData); }
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&, const std::string);
 	Polynomial poly3_;
 
-	protected:
-	std::vector<std::shared_ptr<UserData>> user_data_; //TODO check if it can be unique ptr
-	
+   protected:
+	std::vector<std::shared_ptr<UserData>> user_data_;	// TODO check if it can be unique ptr
+
    private:
 	double s_;
 	double length_;

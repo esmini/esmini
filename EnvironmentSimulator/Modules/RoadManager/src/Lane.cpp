@@ -4,7 +4,7 @@ void Lane::SetGlobalId() {
 	global_id_ = GetNewGlobalLaneId();
 }
 
-LaneWidth* Lane::GetWidthByIndex(int index) {
+std::shared_ptr<LaneWidth> Lane::GetWidthByIndex(int index) {
 	if (lane_width_.size() <= index || lane_width_.size() == 0) {
 		throw std::runtime_error("Lane::GetWidthByIndex(int index) -> exceeds index");
 	} else if (lane_width_.size() < 0) {
@@ -14,7 +14,7 @@ LaneWidth* Lane::GetWidthByIndex(int index) {
 	}
 }
 
-LaneWidth* Lane::GetWidthByS(double s) {
+std::shared_ptr<LaneWidth> Lane::GetWidthByS(double s) {
 	if (lane_width_.size() == 0) {
 		return 0;  // No lanewidth defined
 	}
@@ -26,9 +26,9 @@ LaneWidth* Lane::GetWidthByS(double s) {
 	return lane_width_.back();
 }
 
-LaneLink* Lane::GetLink(LinkType type) {
+std::shared_ptr<LaneLink> Lane::GetLink(LinkType type) {
 	for (int i = 0; i < (int)link_.size(); i++) {
-		LaneLink* l = link_[i];
+		std::shared_ptr<LaneLink> l = link_[i];
 		if (l->GetType() == type) {
 			return l;
 		}
@@ -36,7 +36,7 @@ LaneLink* Lane::GetLink(LinkType type) {
 	return 0;  // No link of requested type exists
 }
 
-LaneRoadMark* Lane::GetLaneRoadMarkByIdx(int idx) {
+std::shared_ptr<LaneRoadMark> Lane::GetLaneRoadMarkByIdx(int idx) {
 	if (lane_roadMark_.size() <= idx || lane_roadMark_.size() == 0) {
 		throw std::runtime_error("Lane::GetLaneRoadMarkByIdx(int idx) -> exceeds index");
 	} else if (lane_roadMark_.size() < 0) {
@@ -49,7 +49,7 @@ LaneRoadMark* Lane::GetLaneRoadMarkByIdx(int idx) {
 std::vector<int> Lane::GetLineGlobalIds() {
 	std::vector<int> line_ids;
 	for (int i = 0; i < GetNumberOfRoadMarks(); i++) {
-		LaneRoadMark* laneroadmark = GetLaneRoadMarkByIdx(i);
+		std::shared_ptr<LaneRoadMark> laneroadmark = GetLaneRoadMarkByIdx(i);
 		for (int j = 0; j < laneroadmark->GetNumberOfRoadMarkTypes(); j++) {
 			LaneRoadMarkType* laneroadmarktype = laneroadmark->GetLaneRoadMarkTypeByIdx(j);
 

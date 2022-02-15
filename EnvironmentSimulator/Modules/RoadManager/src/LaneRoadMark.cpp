@@ -134,3 +134,11 @@ void LaneRoadMark::Save(pugi::xml_node& lane) {
 		userData->Save(roadmark);
 	}
 }
+
+std::shared_ptr<LaneRoadMarkType> LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx) {
+	if (idx < (int)lane_roadMarkType_.size()) {
+		return lane_roadMarkType_[idx];
+	}
+
+	return 0;
+}

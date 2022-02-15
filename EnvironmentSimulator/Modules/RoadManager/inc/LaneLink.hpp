@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include "CommonMini.hpp"
 #include "StructsandDefines.hpp"
 #include "Userdata.hpp"
 #include "pugixml.hpp"

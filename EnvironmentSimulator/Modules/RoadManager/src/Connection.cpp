@@ -1,13 +1,18 @@
 #include "Connection.hpp"
 
-Connection::Connection(Road* incoming_road, Road* connecting_road, ContactPointType contact_point) {
+Connection::Connection(std::shared_ptr<Road> incoming_road,
+					   std::shared_ptr<Road> connecting_road,
+					   ContactPointType contact_point) {
 	// Find corresponding road objects
 	incoming_road_ = incoming_road;
 	connecting_road_ = connecting_road;
 	contact_point_ = contact_point;
 }
 
-Connection::Connection(int id, Road* incoming_road, Road* connecting_road, ContactPointType contact_point) {
+Connection::Connection(int id,
+					   std::shared_ptr<Road> incoming_road,
+					   std::shared_ptr<Road> connecting_road,
+					   ContactPointType contact_point) {
 	// Find corresponding road objects
 	incoming_road_ = incoming_road;
 	connecting_road_ = connecting_road;
@@ -15,14 +20,10 @@ Connection::Connection(int id, Road* incoming_road, Road* connecting_road, Conta
 	id_ = id;
 }
 
-Connection::~Connection() {
-	for (size_t i = 0; i < lane_link_.size(); i++) {
-		delete lane_link_[i];
-	}
-}
+Connection::~Connection() {}
 
 void Connection::AddJunctionLaneLink(int from, int to) {
-	lane_link_.push_back(new JunctionLaneLink(from, to));
+	lane_link_.push_back(std::make_shared<JunctionLaneLink>(from, to));
 }
 
 int Connection::GetConnectingLaneId(int incoming_lane_id) {

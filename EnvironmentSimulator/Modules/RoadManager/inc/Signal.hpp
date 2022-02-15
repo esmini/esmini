@@ -1,11 +1,12 @@
 #ifndef SIGNAL_HPP
 #define SIGNAL_HPP
 
+#include <cassert>
+#include <limits>
 #include <map>
 #include <string>
 #include "RoadObject.hpp"
 #include "pugixml.hpp"
-
 class Signal : public RoadObject {
    public:
 	enum Type : int {

@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include "CommonMini.hpp"
 #include "LaneLink.hpp"
 #include "LaneMaterial.hpp"
 #include "LaneRoadMark.hpp"
@@ -77,10 +78,10 @@ class Lane {
 	int GetNumberOfLinks() { return (int)link_.size(); }
 	int GetNumberOfLaneWidths() { return (int)lane_width_.size(); }
 
-	LaneLink* GetLink(LinkType type);
-	LaneWidth* GetWidthByIndex(int index);
-	LaneWidth* GetWidthByS(double s);
-	LaneRoadMark* GetLaneRoadMarkByIdx(int idx);
+	std::shared_ptr<LaneLink> GetLink(LinkType type);
+	std::shared_ptr<LaneWidth> GetWidthByIndex(int index);
+	std::shared_ptr<LaneWidth> GetWidthByS(double s);
+	std::shared_ptr<LaneRoadMark> GetLaneRoadMarkByIdx(int idx);
 
 	RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
 	OSIPoints* GetOSIPoints() { return &osi_points_; }

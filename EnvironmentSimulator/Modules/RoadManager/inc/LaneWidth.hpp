@@ -1,7 +1,8 @@
 #ifndef LANEWIDTH_HPP
 #define LANEWIDTH_HPP
 
-#include <memory
+#include <memory>
+#include "CommonMini.hpp"
 #include "Polynomial.hpp"
 #include "Userdata.hpp"
 #include "pugixml.hpp"
@@ -14,7 +15,7 @@ class LaneWidth {
 
 	double GetSOffset() { return s_offset_; }
 	void Print();
-	void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
 
 	Polynomial poly3_;

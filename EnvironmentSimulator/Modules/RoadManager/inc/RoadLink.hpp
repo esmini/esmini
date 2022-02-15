@@ -1,12 +1,14 @@
 #ifndef ROADLINK_HPP
 #define ROADLINK_HPP
 
+#include <cassert>
 #include <memory>
+#include <string>
 #include <vector>
+#include "CommonMini.hpp"
 #include "StructsandDefines.hpp"
 #include "Userdata.hpp"
 #include "pugixml.hpp"
-
 class RoadLink {
    public:
 	typedef enum {
@@ -38,7 +40,7 @@ class RoadLink {
 	void Save(pugi::xml_node&);
 
    protected:
-	std::vector<std::shared_ptr<UserData>> user_data_; //TODO check if I can use unique pointers
+	std::vector<std::shared_ptr<UserData>> user_data_;	// TODO check if I can use unique pointers
 
    private:
 	LinkType type_;

@@ -1,6 +1,6 @@
 #include "LaneRoadMarkType.hpp"
 
-void LaneRoadMarkType::AddLine(LaneRoadMarkTypeLine* lane_roadMarkTypeLine) {
+void LaneRoadMarkType::AddLine(std::shared_ptr<LaneRoadMarkTypeLine> lane_roadMarkTypeLine) {
 	lane_roadMarkTypeLine->SetGlobalId();
 	lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine);
 }
@@ -23,9 +23,9 @@ void LaneRoadMarkType::Save(pugi::xml_node& roadMark) {
 	}
 }
 
-LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(int idx) {
-	if (idx < (int)lane_roadMarkType_.size()) {
-		return lane_roadMarkType_[idx];
+std::shared_ptr<LaneRoadMarkTypeLine> LaneRoadMarkType::GetLaneRoadMarkTypeLineByIdx(int idx) {
+	if (idx < (int)lane_roadMarkTypeLine_.size()) {
+		return lane_roadMarkTypeLine_[idx];
 	}
 
 	return 0;

@@ -1,5 +1,5 @@
 #include "Outline.hpp"
-
+#include "Position.hpp"
 void Outline::Save(pugi::xml_node& object) {
 	// Sace according to OpenDRIVE 1.5M
 	auto outlines = object.child("outlines");
@@ -56,7 +56,7 @@ OutlineCornerRoad::OutlineCornerRoad(int id, int roadId, double s, double t, dou
 	: id_(id), roadId_(roadId), s_(s), t_(t), dz_(dz), height_(height) {}
 
 void OutlineCornerRoad::GetPos(double& x, double& y, double& z) {
-	roadmanager::Position pos;
+	Position pos;
 	pos.SetTrackPos(roadId_, s_, t_);
 	x = pos.GetX();
 	y = pos.GetY();
@@ -103,7 +103,7 @@ OutlineCornerLocal::OutlineCornerLocal(int id,
 	  heading_(heading) {}
 
 void OutlineCornerLocal::GetPos(double& x, double& y, double& z) {
-	roadmanager::Position pref;
+	Position pref;
 	pref.SetTrackPos(roadId_, s_, t_);
 	double total_heading = GetAngleSum(pref.GetH(), heading_);
 	double u2, v2;

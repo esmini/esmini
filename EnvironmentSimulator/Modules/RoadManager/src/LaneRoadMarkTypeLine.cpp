@@ -51,10 +51,4 @@ void LaneRoadMarkTypeLine::Save(pugi::xml_node& type) {
 	}
 }
 
-LaneRoadMarkTypeLine* LaneRoadMarkType::GetLaneRoadMarkTypeLineByIdx(int idx) {
-	if (idx < (int)lane_roadMarkTypeLine_.size()) {
-		return lane_roadMarkTypeLine_[idx];
-	}
 
-	return 0;
-}

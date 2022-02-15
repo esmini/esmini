@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include "CommonMini.hpp"
 #include "Polynomial.hpp"
 #include "pugixml.hpp"
 

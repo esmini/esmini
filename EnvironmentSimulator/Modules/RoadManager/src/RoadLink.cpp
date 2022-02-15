@@ -2,8 +2,8 @@
 
 RoadLink::RoadLink(LinkType type, pugi::xml_node node)
 	: contact_point_type_(ContactPointType::CONTACT_POINT_UNDEFINED) {
-	string element_type = node.attribute("elementType").value();
-	string contact_point_type = "";
+	std::string element_type = node.attribute("elementType").value();
+	std::string contact_point_type = "";
 	type_ = type;
 	element_id_ = atoi(node.attribute("elementId").value());
 
@@ -45,8 +45,8 @@ bool RoadLink::operator==(RoadLink& rhs) {
 }
 
 void RoadLink::Print() {
-	cout << "RoadLink type: " << type_ << " id: " << element_id_ << " element type: " << element_type_
-		 << " contact point type: " << contact_point_type_ << endl;
+	std::cout << "RoadLink type: " << type_ << " id: " << element_id_ << " element type: " << element_type_
+		 << " contact point type: " << contact_point_type_ << std::endl;
 }
 
 void RoadLink::Save(pugi::xml_node& link) {

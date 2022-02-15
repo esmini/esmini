@@ -24,9 +24,3 @@ void Repeat::Save(pugi::xml_node& object) {
 }
 
 // OpenDRIVE 1.5 standard uses only 1 repeat tag.
-Repeat* RMObject::GetRepeat() {
-	if (repeat_.empty())
-		return nullptr;
-	else
-		return repeat_[0];
-}

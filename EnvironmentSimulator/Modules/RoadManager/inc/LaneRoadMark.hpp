@@ -1,11 +1,13 @@
 #ifndef LANEROADMARK_HPP
 #define LANEROADMARK_HPP
 
+#include <string.h>
+#include <cassert>
 #include <memory>
 #include <vector>
+#include "LaneRoadMarkType.hpp"
 #include "Userdata.hpp"
 #include "pugixml.hpp"
-#include "LaneRoadMarkType.hpp"
 
 class LaneRoadMark {
    public:
@@ -47,7 +49,9 @@ class LaneRoadMark {
 		  width_(width),
 		  height_(height) {}
 
-	void AddType(std::shared_ptr<LaneRoadMarkType> lane_roadMarkType) { lane_roadMarkType_.push_back(lane_roadMarkType); }
+	void AddType(std::shared_ptr<LaneRoadMarkType> lane_roadMarkType) {
+		lane_roadMarkType_.push_back(lane_roadMarkType);
+	}
 
 	double GetSOffset() { return s_offset_; }
 	double GetWidth() { return width_; }
