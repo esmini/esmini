@@ -45,5 +45,5 @@ class JunctionLaneLink {
 
    protected:
 	std::vector<std::shared_ptr<UserData>> user_data_;
-};
+};   
 #endif

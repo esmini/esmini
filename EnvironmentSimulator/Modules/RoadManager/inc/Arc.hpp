@@ -1,7 +1,9 @@
 #ifndef ARC_HPP
 #define ARC_HPP
 
+#include <cmath>
 #include "Geometry.hpp"
+#include "CommonMini.hpp"
 class Arc : public Geometry {
    public:
 	Arc() : curvature_(0.0) {}

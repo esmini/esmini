@@ -53,11 +53,13 @@ class LaneSection {
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
 
+   protected:
+	std::vector<std::shared_ptr<Lane>> lane_;
+	std::vector<std::shared_ptr<UserData>> user_data_;
+
    private:
 	double s_;
 	std::experimental::optional<bool> singleSide_;
 	double length_;
-	std::vector<std::shared_ptr<Lane>> lane_;
-	std::vector<std::shared_ptr<UserData>> user_data_;
 };
 #endif

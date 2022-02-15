@@ -11,8 +11,6 @@
 #include "LaneSection.hpp"
 #include "ObjectReference.hpp"
 #include "RMObject.hpp"
-#include "RoadLink.hpp"
-#include "RoadManager.hpp"
 #include "Signal.hpp"
 
 class Road {

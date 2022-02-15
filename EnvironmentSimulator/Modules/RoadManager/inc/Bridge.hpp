@@ -1,10 +1,10 @@
 #ifndef BRIDGE_HPP
 #define BRIDGE_HPP
 
+#include <cassert>
 #include <string>
 #include "RoadObject.hpp"
 #include "pugixml.hpp"
-
 class Bridge : public RoadObject {
    public:
 	enum Type { CONCRETE, STEEL, BRICK, WOOD, UNKNOWN };

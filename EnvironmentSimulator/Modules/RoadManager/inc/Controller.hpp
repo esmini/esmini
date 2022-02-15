@@ -4,8 +4,16 @@
 #include <memory>
 #include <vector>
 #include "Controller.hpp"
-#include "StructsandDefines.hpp"
 #include "Userdata.hpp"
+
+typedef struct {
+	std::vector<std::shared_ptr<UserData>> user_data_;
+	int signalId_;
+	std::string type_;
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
+	void Save(pugi::xml_node&);
+} Control;
+
 
 class Controller {
    public:

@@ -105,6 +105,14 @@ class Lane {
 	void Save(pugi::xml_node&);
 	OSIPoints osi_points_;
 
+   protected:
+	std::vector<std::shared_ptr<LaneLink>> link_;
+	std::vector<std::shared_ptr<LaneWidth>> lane_width_;
+	std::vector<std::shared_ptr<LaneRoadMark>> lane_roadMark_;
+	std::vector<std::shared_ptr<LaneMaterial>> lane_material_;
+	std::vector<std::shared_ptr<LaneSpeed>> lane_speed_;
+	std::vector<std::shared_ptr<UserData>> user_data_;
+
    private:
 	int id_;			   // center = 0, left > 0, right < 0
 	int global_id_;		   // Unique ID for OSI
@@ -112,13 +120,8 @@ class Lane {
 	LaneType type_;
 	int level_;	 // boolean, true = keep lane on level
 	double offset_from_ref_;
-	std::vector<std::shared_ptr<LaneLink>> link_;
-	std::vector<std::shared_ptr<LaneWidth>> lane_width_;
-	std::vector<std::shared_ptr<LaneRoadMark>> lane_roadMark_;
-	std::vector<std::shared_ptr<LaneMaterial>> lane_material_;
-	std::vector<std::shared_ptr<LaneSpeed>> lane_speed_;
+
 	LaneBoundaryOSI* lane_boundary_;
-	std::vector<std::shared_ptr<UserData>> user_data_;
 };
 
 #endif

@@ -1,8 +1,9 @@
 #ifndef SPIRAL_HPP
 #define SPIRAL_HPP
 
-#include "Geometry.hpp"
 #include "Arc.hpp"
+#include "CommonMini.hpp"
+#include "Geometry.hpp"
 #include "Line.hpp"
 
 class Spiral : public Geometry {

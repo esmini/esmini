@@ -40,6 +40,9 @@ class LaneRoadMarkTypeLine {
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
 
+   protected:
+	std::vector < std::shared_ptr<UserData> user_data_;
+
    private:
 	double length_;
 	double space_;
@@ -49,6 +52,5 @@ class LaneRoadMarkTypeLine {
 	double width_;
 	int global_id_;		   // Unique ID for OSI
 	RoadMarkColor color_;  // if set, supersedes setting in <RoadMark>
-	std::vector < std::shared_ptr<UserData> user_data_;
 };
 #endif

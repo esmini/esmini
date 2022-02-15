@@ -67,6 +67,7 @@ class RMObject : public RoadObject {
    protected:
 	std::vector<std::shared_ptr<Outline>> outlines_;
 	std::vector<std::shared_ptr<Repeat>> repeat_;  // OpenDRIVE 1.4 uses multiple repeat tags.
+   
    private:
 	std::string type_;
 	std::string name_;

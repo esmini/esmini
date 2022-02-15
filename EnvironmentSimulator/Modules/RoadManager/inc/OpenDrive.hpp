@@ -11,6 +11,38 @@
  * includes populate subclasses and give access to them Should be easy to inherit for other classes that want
  * to add top level functionality or lower class level functionality.
  */
+struct OpenDriveOffset {
+	OpenDriveOffset() : x_(0), y_(0), z_(0), hdg_(0){};
+	double x_;
+	double y_;
+	double z_;
+	double hdg_;
+
+	std::vector<std::shared_ptr<UserData>> user_data_;
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
+	void Save(pugi::xml_node&) const;
+	bool isValid() const { return x_ || y_ || z_ || hdg_; };
+};
+
+struct OpenDriveHeader {
+	void Save(pugi::xml_node&) const;
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
+
+	uint revMajor_;
+	uint revMinor_;
+	std::string name_;
+	float version_;
+	std::string date_;
+	double north_;
+	double south_;
+	double east_;
+	double west_;
+	std::string vendor_;
+	OpenDriveOffset offset_;
+	GeoReference georeference_;
+	std::vector<std::shared_ptr<UserData>> user_data_;
+};
+
 class OpenDrive {
    public:
 	OpenDrive(){};

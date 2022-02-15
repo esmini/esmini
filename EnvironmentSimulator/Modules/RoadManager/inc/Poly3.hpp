@@ -1,6 +1,7 @@
 #ifndef POLY3_HPP
 #define POLY3_HPP
 
+#include "CommonMini.hpp"
 #include "Geometry.hpp"
 #include "pugixml.hpp"
 

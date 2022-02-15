@@ -67,8 +67,8 @@ class LaneRoadMark {
 	void Save(pugi::xml_node&);
 
    protected:
-	std::vector<std::share_ptr<LaneRoadMarkType>> lane_roadMarkType_;
-	std::vector<std::share_ptr<UserData>> user_data_;
+	std::vector<std::shared_ptr<LaneRoadMarkType>> lane_roadMarkType_;
+	std::vector<std::shared_ptr<UserData>> user_data_;
 
    private:
 	double s_offset_;

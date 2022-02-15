@@ -17,7 +17,6 @@ Road* OpenDrive::GetRoadByIdx(int idx) {
 	}
 }
 
-
 Junction* OpenDrive::GetJunctionById(int id) {
 	for (size_t i = 0; i < junction_.size(); i++) {
 		if (junction_[i]->GetId() == id) {
@@ -1383,7 +1382,6 @@ int OpenDrive::GetTrackIdByIdx(int idx) {
 	return 0;
 }
 
-
 int OpenDrive::CheckConnectedRoad(Road* road,
 								  RoadLink* link,
 								  ContactPointType expected_contact_point_type,
@@ -1834,6 +1832,49 @@ std::string OpenDrive::ElementType2Str(RoadLink::ElementType type) {
 	}
 }
 
+void OpenDriveOffset::Save(pugi::xml_node& header) const {
+	if (!isValid())
+		return;
+
+	auto offset = header.append_child("offset");
+	offset.append_attribute("x").set_value(x_);
+	offset.append_attribute("y").set_value(y_);
+	offset.append_attribute("z").set_value(z_);
+	offset.append_attribute("hdg").set_value(hdg_);
+	for (auto userData : user_data_) {
+		userData->Save(offset);
+	}
+}
+
+void OpenDriveHeader::Save(pugi::xml_node& root) const {
+	auto header = root.append_child("header");
+	header.append_attribute("revMajor").set_value(revMajor_);
+	header.append_attribute("revMinor").set_value(revMinor_);
+	if (!name_.empty())
+		header.append_attribute("name").set_value(name_.c_str());
+	if (version_)
+		header.append_attribute("version").set_value(version_);
+	if (!date_.empty())
+		header.append_attribute("date").set_value(date_.c_str());
+	if (north_)
+		header.append_attribute("north").set_value(north_);
+	if (south_)
+		header.append_attribute("south").set_value(south_);
+	if (east_)
+		header.append_attribute("east").set_value(east_);
+	if (west_)
+		header.append_attribute("west").set_value(west_);
+	if (!vendor_.empty())
+		header.append_attribute("vendor").set_value(vendor_.c_str());
+
+	georeference_.Save(header);
+	offset_.Save(header);
+
+	for (auto userData : user_data_) {
+		userData->Save(header);
+	}
+}
+
 // void OpenDrive::SetLaneBoundaryPoints() {
 // 	// Initialization
 // 	Position* pos = new roadmanager::Position();
@@ -1994,18 +2035,18 @@ std::string OpenDrive::ElementType2Str(RoadLink::ElementType type) {
 // }
 
 // bool OpenDrive::SetRoadOSI() {
-	// SetLaneOSIPoints();
-	// SetRoadMarkOSIPoints();
-	// SetLaneBoundaryPoints();
-	// return true;
+// SetLaneOSIPoints();
+// SetRoadMarkOSIPoints();
+// SetLaneBoundaryPoints();
+// return true;
 // }
 
 // Geometry* OpenDrive::GetGeometryByIdx(int road_idx, int geom_idx) {
-	// if (road_idx >= 0 && road_idx < (int)road_.size()) {
-		// return road_[road_idx]->GetGeometry(geom_idx);
-	// } else {
-		// return 0;
-	// }
+// if (road_idx >= 0 && road_idx < (int)road_.size()) {
+// return road_[road_idx]->GetGeometry(geom_idx);
+// } else {
+// return 0;
+// }
 // }
 
 //  MOve to OSI class

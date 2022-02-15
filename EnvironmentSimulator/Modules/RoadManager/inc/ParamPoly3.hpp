@@ -1,6 +1,7 @@
 #ifndef PARAMPOLY3_HPP
 #define PARAMPOLY3_HPP
 
+#include "CommonMini.hpp"
 #include "Geometry.hpp"
 #include "pugixml.hpp"
 

@@ -6,9 +6,17 @@
 #include <vector>
 #include "Connection.hpp"
 #include "Road.hpp"
-#include "StructsandDefines.hpp"
 #include "Userdata.hpp"
 #include "pugixml.hpp"
+
+typedef struct {
+	std::vector<std::shared_ptr<UserData>> user_data_;
+	int id_;
+	std::string type_;
+	int sequence_;
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
+	void Save(pugi::xml_node& junction);
+} JunctionController;
 
 class Junction {
    public:

@@ -25,15 +25,10 @@
 #include "Position.hpp"
 #include "Road.hpp"
 #include "OSI.hpp"
-#define PARAMPOLY3_STEPS 100
 
 namespace roadmanager {
 int GetNewGlobalLaneId();
 int GetNewGlobalLaneBoundaryId();
-
-
-
-
 
 // Forward declarations
 class Route;

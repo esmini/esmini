@@ -1,10 +1,11 @@
 #ifndef GEOMETRY_HPP
 #define GEOMETRY_HPP
 
+#include <cmath>
 #include <vector>
+#include "CommonMini.hpp"
 #include "Polynomial.hpp"
 #include "pugixml.hpp"
-
 class Geometry {
    public:
 	typedef enum {
@@ -43,8 +44,7 @@ class Geometry {
 	double hdg_;
 	double length_;
 	GeometryType type_;
-	std::vector<std::shared_ptr<UserData>> user_data_;//TODO check if it can be unique ptr
-	
+	std::vector<std::shared_ptr<UserData>> user_data_;	// TODO check if it can be unique ptr
 };
 
 #endif

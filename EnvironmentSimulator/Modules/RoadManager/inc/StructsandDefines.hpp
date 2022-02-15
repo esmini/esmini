@@ -7,6 +7,8 @@
 #include "GeoReference.hpp"
 #include "Userdata.hpp"
 
+#define PARAMPOLY3_STEPS 100
+
 typedef enum { NONE = 0, SUCCESSOR = 1, PREDECESSOR = -1 } LinkType;
 
 typedef struct {
@@ -64,54 +66,7 @@ typedef struct {
 	void AddUserData(std::shared_ptr<userData>) { user_data_.push_back(userData); }
 } ValidityRecord;
 
-typedef struct {
-	std::vector<std::shared_ptr<UserData>> user_data_;
-	int signalId_;
-	std::string type_;
-	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
-	void Save(pugi::xml_node&);
-} Control;
 
-typedef struct {
-	std::vector<std::shared_ptr<UserData>> user_data_;
-	int id_;
-	std::string type_;
-	int sequence_;
-	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
-	void Save(pugi::xml_node& junction);
-} JunctionController;
-
-struct OpenDriveOffset {
-	OpenDriveOffset() : x_(0), y_(0), z_(0), hdg_(0){};
-	double x_;
-	double y_;
-	double z_;
-	double hdg_;
-
-	std::vector<std::shared_ptr<UserData>> user_data_;
-	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
-	void Save(pugi::xml_node&) const;
-	bool isValid() const { return x_ || y_ || z_ || hdg_; };
-};
-
-struct OpenDriveHeader {
-	void Save(pugi::xml_node&) const;
-	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
-
-	uint revMajor_;
-	uint revMinor_;
-	std::string name_;
-	float version_;
-	std::string date_;
-	double north_;
-	double south_;
-	double east_;
-	double west_;
-	std::string vendor_;
-	OpenDriveOffset offset_;
-	GeoReference georeference_;
-	std::vector<std::shared_ptr<UserData>> user_data_;
-};
 
 typedef struct {
 	double pos[3];		 // position, in global coordinate system

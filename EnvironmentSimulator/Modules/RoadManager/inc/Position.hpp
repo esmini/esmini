@@ -1,6 +1,5 @@
 #ifndef POSITION_HPP
 #define POSITION_HPP
-#include "RoadManager.hpp"
 class Position {
    public:
 	enum class PositionType { NORMAL, ROUTE, RELATIVE_OBJECT, RELATIVE_WORLD, RELATIVE_LANE, RELATIVE_ROAD };
