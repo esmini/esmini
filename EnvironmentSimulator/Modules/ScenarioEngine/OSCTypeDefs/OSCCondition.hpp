@@ -32,6 +32,14 @@ namespace scenarioengine
 	{
 	public:
 
+		enum class ConditionState
+		{
+			IDLE,
+			EVALUATED,
+			TIMER,
+			TRIGGERED
+		};
+
 		typedef enum
 		{
 			BY_ENTITY,
@@ -51,12 +59,12 @@ namespace scenarioengine
 		ConditionType base_type_;
 		std::string name_;
 		double delay_;
-		bool evaluated_;
 		bool last_result_;  // result from last evaluation
 		ConditionEdge edge_;
 		SE_SimulationTimer timer_;
+		ConditionState state_;
 
-		OSCCondition(ConditionType base_type) : base_type_(base_type), evaluated_(false),
+		OSCCondition(ConditionType base_type) : base_type_(base_type), state_(ConditionState::IDLE),
 			last_result_(false), edge_(ConditionEdge::NONE) {}
 
 		bool Evaluate(StoryBoard *storyBoard, double sim_time);
@@ -358,13 +366,13 @@ namespace scenarioengine
 			UNDEFINED_ELEMENT_TRANSITION
 		} CondElementState;
 
-		CondElementState state_;
+		CondElementState element_state_;
 		StoryBoardElement::ElementType element_type_;
 		std::string element_name_;
 
 		bool CheckCondition(StoryBoard* storyBoard, double sim_time);
 		TrigByState(CondElementState state, StoryBoardElement::ElementType element_type, std::string element_name) :
-			OSCCondition(BY_STATE), state_(state), element_type_(element_type), element_name_(element_name) {}
+			OSCCondition(BY_STATE), element_state_(state), element_type_(element_type), element_name_(element_name) {}
 		std::string CondElementState2Str(CondElementState state);
 		void Log();
 	};

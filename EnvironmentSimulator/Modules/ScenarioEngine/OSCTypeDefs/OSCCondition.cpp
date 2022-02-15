@@ -192,27 +192,30 @@ bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::Condi
 	{
 		return new_value;
 	}
-	else if (evaluated_ && edge == OSCCondition::ConditionEdge::RISING_OR_FALLING)
+	else if (state_ == ConditionState::EVALUATED)
 	{
-		return new_value != old_value;
-	}
-	else if (evaluated_ && edge == OSCCondition::ConditionEdge::FALLING)
-	{
-		if (new_value == false && old_value == true)
+		if (edge == OSCCondition::ConditionEdge::RISING_OR_FALLING)
 		{
-			return true;
+			return new_value != old_value;
 		}
-	}
-	else if (evaluated_ && edge == OSCCondition::ConditionEdge::RISING)
-	{
-		if (new_value == true && old_value == false)
+		else if (edge == OSCCondition::ConditionEdge::FALLING)
 		{
-			return true;
+			if (new_value == false && old_value == true)
+			{
+				return true;
+			}
 		}
-	}
-	else if(evaluated_)
-	{
-		LOG("Invalid edge: %d", edge);
+		else if (edge == OSCCondition::ConditionEdge::RISING)
+		{
+			if (new_value == true && old_value == false)
+			{
+				return true;
+			}
+		}
+		else
+		{
+			LOG("Invalid edge: %d", edge);
+		}
 	}
 
 	return false;
@@ -259,36 +262,41 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 	(void)storyBoard;
 	(void)sim_time;
 
-	if (timer_.Started())
+	if (state_ == ConditionState::TIMER)
 	{
 		if (timer_.Expired(sim_time))
 		{
 			LOG("%s timer expired at %.2f seconds", name_.c_str(), timer_.Elapsed(sim_time));
-			last_result_ = true;
 			timer_.Reset();
+			state_ = ConditionState::TRIGGERED;
+			return true;
 		}
 		else
 		{
-			last_result_ = false;
+			return false;
 		}
-		return last_result_;
 	}
 
 	bool result = CheckCondition(storyBoard, sim_time);
 	bool trig = CheckEdge(result, last_result_, edge_);
+	last_result_ = result;
 
-	evaluated_ = true;
+	if (state_ < ConditionState::EVALUATED)
+	{
+		state_ = ConditionState::EVALUATED;
+	}
 
-	if (delay_ > 0 && trig && !timer_.Started())
+	if (delay_ > 0 && trig && state_ < ConditionState::TIMER)
 	{
 		timer_.Start(sim_time, delay_);
+		state_ = ConditionState::TIMER;
 		LOG("%s timer %.2fs started", name_.c_str(), delay_);
-		last_result_ = false;
-		return last_result_;
+		return false;
 	}
-	else
+
+	if (trig)
 	{
-		last_result_ = result;
+		state_ = ConditionState::TRIGGERED;
 	}
 
 	return trig;
@@ -367,13 +375,13 @@ bool TrigByState::CheckCondition(StoryBoard *storyBoard, double sim_time)
 
 	if (element_type_ == StoryBoardElement::ElementType::STORY)
 	{
-		if (evaluated_ == false)
+		if (state_ < ConditionState::EVALUATED)
 		{
-			result = state_ == CondElementState::START_TRANSITION;
+			result = element_state_ == CondElementState::START_TRANSITION;
 		}
 		else
 		{
-			result = state_ == CondElementState::RUNNING;
+			result = element_state_ == CondElementState::RUNNING;
 		}
 	}
 	else
@@ -402,37 +410,37 @@ bool TrigByState::CheckCondition(StoryBoard *storyBoard, double sim_time)
 			return false;
 		}
 
-		if (state_ == CondElementState::STANDBY)
+		if (element_state_ == CondElementState::STANDBY)
 		{
 			result = element->state_ == StoryBoardElement::State::STANDBY;
 		}
-		else if (state_ == CondElementState::RUNNING)
+		else if (element_state_ == CondElementState::RUNNING)
 		{
 			result = element->state_ == StoryBoardElement::State::RUNNING;
 		}
-		else if (state_ == CondElementState::COMPLETE)
+		else if (element_state_ == CondElementState::COMPLETE)
 		{
 			result = element->state_ == StoryBoardElement::State::COMPLETE;
 		}
-		else if (state_ == CondElementState::END_TRANSITION)
+		else if (element_state_ == CondElementState::END_TRANSITION)
 		{
 			result = element->transition_ == StoryBoardElement::Transition::END_TRANSITION;
 		}
-		else if (state_ == CondElementState::SKIP_TRANSITION)
+		else if (element_state_ == CondElementState::SKIP_TRANSITION)
 		{
 			result = element->transition_ == StoryBoardElement::Transition::SKIP_TRANSITION;
 		}
-		else if (state_ == CondElementState::START_TRANSITION)
+		else if (element_state_ == CondElementState::START_TRANSITION)
 		{
 			result = element->transition_ == StoryBoardElement::Transition::START_TRANSITION;
 		}
-		else if (state_ == CondElementState::STOP_TRANSITION)
+		else if (element_state_ == CondElementState::STOP_TRANSITION)
 		{
 			result = element->transition_ == StoryBoardElement::Transition::STOP_TRANSITION;
 		}
 		else
 		{
-			LOG("Invalid state: %d", state_);
+			LOG("Invalid state: %d", element_state_);
 		}
 	}
 
@@ -442,7 +450,7 @@ bool TrigByState::CheckCondition(StoryBoard *storyBoard, double sim_time)
 void TrigByState::Log()
 {
 	LOG("%s == %s, element: %s state: %s, edge: %s", name_.c_str(), last_result_ ? "true" : "false",
-		element_name_.c_str(), CondElementState2Str(state_).c_str(), Edge2Str().c_str());
+		element_name_.c_str(), CondElementState2Str(element_state_).c_str(), Edge2Str().c_str());
 }
 
 std::string TrigByState::CondElementState2Str(CondElementState state)
@@ -518,7 +526,7 @@ bool TrigByParameter::CheckCondition(StoryBoard* storyBoard, double sim_time)
 	OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(name_);
 	if (pe == 0)
 	{
-		if (evaluated_ == false)  // print only once
+		if (state_ < ConditionState::EVALUATED)  // print only once
 		{
 			LOG("Parameter %s not found", name_.c_str());
 		}

@@ -329,7 +329,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^3.450: LaneChangeCondition3 == true, element: LaneChangeEvent2 state: COMPLETE, edge: none', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^4.530: LaneChangeEvent3 runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^7.000: StopCondition timer 1.00s started', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^8.000: StopCondition == true, 7.0000 < 7.00 edge: falling', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^8.000: StopCondition == false, 7.0000 < 7.00 edge: falling', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^8.000: LaneChangeAct runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
@@ -579,6 +579,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Run next line instead to execute only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_init_cases'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_lane_change_clothoid'])
     
     unittest.main(verbosity=2)
