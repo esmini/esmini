@@ -1089,7 +1089,7 @@ void TeleportAction::Start(double simTime, double dt)
 	OSCAction::Start(simTime, dt);
 	LOG("Starting teleport Action");
 
-	if (object_->IsGhost() && scenarioEngine_->getSimulationTime() > 0)
+	if (object_->IsGhost() && scenarioEngine_->getSimulationTime() > SMALL_NUMBER)
 	{
 		scenarioEngine_->SetGhostRestart();
 

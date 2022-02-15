@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 	while (!player->IsQuitRequested())
 	{
 		double dt;
-		if (player->GetFixedTimestep() > 0.0)
+		if (player->GetFixedTimestep() > SMALL_NUMBER)
 		{
 			dt = player->GetFixedTimestep();
 		}

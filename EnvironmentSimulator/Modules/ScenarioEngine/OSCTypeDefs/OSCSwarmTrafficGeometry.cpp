@@ -10,7 +10,6 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-#pragma once
 #include <cmath>
 #include "OSCSwarmTrafficGeometry.hpp"
 

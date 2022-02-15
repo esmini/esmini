@@ -160,7 +160,7 @@ void ScenarioPlayer::Frame(double timestep_s)
 				Draw();
 				retval = ScenarioFrame(dt, false);
 
-				if (GetFixedTimestep() > 0.0)
+				if (GetFixedTimestep() > SMALL_NUMBER)
 				{
 					dt = GetFixedTimestep();
 				}

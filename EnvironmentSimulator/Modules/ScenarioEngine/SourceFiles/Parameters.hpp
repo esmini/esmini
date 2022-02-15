@@ -34,7 +34,7 @@ namespace scenarioengine
 		void parseGlobalParameterDeclarations(pugi::xml_node osc_root_);
 		void parseParameterDeclarations(pugi::xml_node xml_node, OSCParameterDeclarations* pd);
 		std::string getParameter(OSCParameterDeclarations& parameterDeclarations, std::string name);
-		std::string getParameter(std::string name) { getParameter(parameterDeclarations_, name); }
+		std::string getParameter(std::string name) { return getParameter(parameterDeclarations_, name); }
 		OSCParameterDeclarations::ParameterStruct* getParameterEntry(std::string name);
 		int setParameter(std::string name, std::string value);
 		void addParameterDeclarations(pugi::xml_node xml_node);

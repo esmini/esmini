@@ -55,8 +55,8 @@ int main(int argc, char* argv[])
 		// Print object id, position, orientation and velocity
 		for (int j = 0; j < gt->mutable_moving_object()->size(); j++)
 		{
-			printf("  obj id %lld pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) vel (%.2f, %.2f, %.2f) acc (%.2f, %.2f, %.2f)\n",
-				gt->mutable_moving_object(j)->mutable_id()->value(),
+			printf("  obj id %u pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) vel (%.2f, %.2f, %.2f) acc (%.2f, %.2f, %.2f)\n",
+				static_cast<unsigned int>(gt->mutable_moving_object(j)->mutable_id()->value()),
 				gt->mutable_moving_object(j)->mutable_base()->mutable_position()->x(),
 				gt->mutable_moving_object(j)->mutable_base()->mutable_position()->y(),
 				gt->mutable_moving_object(j)->mutable_base()->mutable_position()->z(),

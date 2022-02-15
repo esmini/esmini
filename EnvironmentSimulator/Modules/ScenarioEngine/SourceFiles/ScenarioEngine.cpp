@@ -725,7 +725,7 @@ void ScenarioEngine::parseScenario()
 					if (obj->ghost_->GetHeadstartTime() > GetHeadstartTime())
 					{
 						SetHeadstartTime(obj->ghost_->GetHeadstartTime());
-						ghost_mode_ = GhostMode::RESTART;
+						SetGhostRestart();
 					}
 				}
 			}
