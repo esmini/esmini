@@ -89,8 +89,8 @@ int main(int argc, char* argv[])
 		{
 			SE_ScenarioObjectState state;
 
-			SE_GetObjectState(j, &state);
-			printf("time [%.2f] object[%d] pos[%.2f, %.2f] \n", state.timestamp, j, state.x, state.y);
+			SE_GetObjectState(SE_GetId(j), &state);
+			printf("time [%.2f] object[%d] id %d pos[%.2f, %.2f] \n", state.timestamp, j, SE_GetId(j), state.x, state.y);
 		}
 	}
 
@@ -118,7 +118,7 @@ int main(int argc, char* argv[])
 
 	for (int i = 0; i < 500 && !(SE_GetQuitFlag() == 1); i++)
 	{
-		SE_ReportObjectPos(0, 0.0f, 8.0f, (float)i, 0.0f, 1.57 + 0.01*i, 0.0f, 0.0f, 15.0f);
+		SE_ReportObjectPos(SE_GetId(0), 0.0f, 8.0f, (float)i, 0.0f, 1.57 + 0.01*i, 0.0f, 0.0f, 15.0f);
 		SE_Step();
 	}
 
@@ -297,14 +297,14 @@ int main(int argc, char* argv[])
 		// Get road information at a point some speed dependent distance ahead
 #if !GHOST
 		// Look ahead along the road, to establish target info for the driver model
-		SE_GetRoadInfoAtDistance(0, 5 + 0.75f * vehicleState.speed, &roadInfo, 0, true);
+		SE_GetRoadInfoAtDistance(SE_GetId(0), 5 + 0.75f * vehicleState.speed, &roadInfo, 0, true);
 
 		// Slow down when curve ahead - CURVE_WEIGHT is the tuning parameter
 		double targetSpeed = TARGET_SPEED / (1 + CURVE_WEIGHT * fabs(roadInfo.angle));
 #else
 		// ghost version
 		float ghost_speed;
-		SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed);
+		SE_GetRoadInfoAlongGhostTrail(SE_GetId(0), 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed);
 		double targetSpeed = ghost_speed;
 #endif
 
@@ -324,7 +324,7 @@ int main(int argc, char* argv[])
 		SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
 
 		// Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
-		SE_ReportObjectPosXYH(0, simTime, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+		SE_ReportObjectPosXYH(SE_GetId(0), simTime, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
 
 		// Finally, update scenario using same time step as for vehicle model
 		SE_StepDT(dt);

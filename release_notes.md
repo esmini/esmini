@@ -1,5 +1,27 @@
 ## esmini release notes
 
+### 2022-02-16 Version 2.20.7
+
+- Change lib functions to handle id instead of index
+  - **Note**: This can affect user applications making use of esminiLib object query functions. Especially for scenarios making use of Add/DeleteEntityActions.
+  - New function SE_GetId(index) to find out id of objects. Example:
+    ```c++
+    for (int i = 0; i < SE_GetNumberOfObjects(); i++)
+	{
+    	SE_ScenarioObjectState state;
+		SE_GetObjectState(SE_GetId(i), &state);
+    }
+    ```
+  - Complete API see [esminiLib/esminiLib.hpp](https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp)
+  - More examples, see [Hello-World_coding-example](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example)
+- Fix condition timer bug ([issue #237](https://github.com/esmini/esmini/issues/237))
+- Improve replayer multi-recording functionality to handle dat files with some variation in terms of timings and number of entities.
+- Fix orientation reference for RelativeRoadPosition ([issue #228](https://github.com/esmini/esmini/issues/228))
+  - Orientation relates to road s/t system, not driving direction
+  - **Note**: RelativeLanePosition still relates to driving direction, but will be changed as well when lane coordinate system has been fully implemented
+- CSV logger typo fix and added units to header ([PR #238](https://github.com/esmini/esmini/pull/238))
+- Fix issue which could cause simulation to freeze after calling SE_Step()
+
 ### 2022-02-11 Version 2.20.6
 
 - Fix wrong ParamPoly3 curvature calculation
