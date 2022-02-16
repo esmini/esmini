@@ -1,5 +1,4 @@
-#ifndef ELEVATION_HPP
-#define ELEVATION_HPP
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -30,4 +29,3 @@ class Elevation {
 	double s_;
 	double length_;
 };
-#endif

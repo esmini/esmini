@@ -1,6 +1,4 @@
-#ifndef OSI_HPP
-#define OSI_HPP
-
+#pragma once
 #include <vector>
 #include "StructsandDefines.hpp"
 #include "CommonMini.hpp"
@@ -38,5 +36,3 @@ class LaneBoundaryOSI {
    private:
 	int global_id_;	 // Unique ID for OSI
 };
-
-#endif

@@ -1,8 +1,8 @@
 #include "Lane.hpp"
 
-void Lane::SetGlobalId() {
-	global_id_ = GetNewGlobalLaneId();
-}
+//void Lane::SetGlobalId() {
+//	global_id_ = GetNewGlobalLaneId();
+//}
 
 std::shared_ptr<LaneWidth> Lane::GetWidthByIndex(int index) {
 	if (lane_width_.size() <= index || lane_width_.size() == 0) {
@@ -46,36 +46,36 @@ std::shared_ptr<LaneRoadMark> Lane::GetLaneRoadMarkByIdx(int idx) {
 	}
 }
 
-std::vector<int> Lane::GetLineGlobalIds() {
-	std::vector<int> line_ids;
-	for (int i = 0; i < GetNumberOfRoadMarks(); i++) {
-		std::shared_ptr<LaneRoadMark> laneroadmark = GetLaneRoadMarkByIdx(i);
-		for (int j = 0; j < laneroadmark->GetNumberOfRoadMarkTypes(); j++) {
-			LaneRoadMarkType* laneroadmarktype = laneroadmark->GetLaneRoadMarkTypeByIdx(j);
+// std::vector<int> Lane::GetLineGlobalIds() {
+	// std::vector<int> line_ids;
+	// for (int i = 0; i < GetNumberOfRoadMarks(); i++) {
+		// std::shared_ptr<LaneRoadMark> laneroadmark = GetLaneRoadMarkByIdx(i);
+		// for (int j = 0; j < laneroadmark->GetNumberOfRoadMarkTypes(); j++) {
+			// LaneRoadMarkType* laneroadmarktype = laneroadmark->GetLaneRoadMarkTypeByIdx(j);
+// 
+			// for (int h = 0; h < laneroadmarktype->GetNumberOfRoadMarkTypeLines(); h++) {
+				// LaneRoadMarkTypeLine* laneroadmarktypeline
+					// = laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(h);
+				// line_ids.push_back(laneroadmarktypeline->GetGlobalId());
+			// }
+		// }
+	// }
+// 
+	// return line_ids;
+// }
 
-			for (int h = 0; h < laneroadmarktype->GetNumberOfRoadMarkTypeLines(); h++) {
-				LaneRoadMarkTypeLine* laneroadmarktypeline
-					= laneroadmarktype->GetLaneRoadMarkTypeLineByIdx(h);
-				line_ids.push_back(laneroadmarktypeline->GetGlobalId());
-			}
-		}
-	}
+// int Lane::GetLaneBoundaryGlobalId() {
+// 	if (lane_boundary_) {
+// 		return lane_boundary_->GetGlobalId();
+// 	} else {
+// 		return -1;
+// 	}
+// }
 
-	return line_ids;
-}
-
-int Lane::GetLaneBoundaryGlobalId() {
-	if (lane_boundary_) {
-		return lane_boundary_->GetGlobalId();
-	} else {
-		return -1;
-	}
-}
-
-void Lane::SetLaneBoundary(LaneBoundaryOSI* lane_boundary) {
-	lane_boundary->SetGlobalId();
-	lane_boundary_ = lane_boundary;
-}
+//void Lane::SetLaneBoundary(LaneBoundaryOSI* lane_boundary) {
+//	lane_boundary->SetGlobalId();
+//	lane_boundary_ = lane_boundary;
+//}
 
 void Lane::Print() {
 	LOG("Lane: %d, type: %d, level: %d\n", id_, type_, level_);
@@ -235,90 +235,90 @@ bool Lane::IsDriving() {
 }
 
 // Offset from closest left road mark to current position
-RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s) {
-	Position* pos = new roadmanager::Position();
-	Road* road = pos->GetRoadById(track_id);
-	LaneSection* lsec;
-	Lane* lane;
-	LaneRoadMark* lane_roadMark;
-	LaneRoadMarkType* lane_roadMarkType;
-	LaneRoadMarkTypeLine* lane_roadMarkTypeLine;
-	RoadMarkInfo rm_info = {-1, -1};
-	int lsec_idx, number_of_lsec, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
-	double s_roadmark, s_roadmarkline, s_end_roadmark, s_end_roadmarkline = 0, lsec_end = 0;
-	if (road == 0) {
-		LOG("Position::Set Error: track %d not available", track_id);
-		lsec_idx = -1;
-	} else {
-		lsec_idx = road->GetLaneSectionIdxByS(s);
-	}
+// RoadMarkInfo Lane::GetRoadMarkInfoByS(int track_id, int lane_id, double s) {
+// 	Position* pos = new roadmanager::Position();
+// 	Road* road = pos->GetRoadById(track_id);
+// 	LaneSection* lsec;
+// 	Lane* lane;
+// 	LaneRoadMark* lane_roadMark;
+// 	LaneRoadMarkType* lane_roadMarkType;
+// 	LaneRoadMarkTypeLine* lane_roadMarkTypeLine;
+// 	RoadMarkInfo rm_info = {-1, -1};
+// 	int lsec_idx, number_of_lsec, number_of_roadmarks, number_of_roadmarktypes, number_of_roadmarklines;
+// 	double s_roadmark, s_roadmarkline, s_end_roadmark, s_end_roadmarkline = 0, lsec_end = 0;
+// 	if (road == 0) {
+// 		LOG("Position::Set Error: track %d not available", track_id);
+// 		lsec_idx = -1;
+// 	} else {
+// 		lsec_idx = road->GetLaneSectionIdxByS(s);
+// 	}
 
-	lsec = road->GetLaneSectionByIdx(lsec_idx);
+// 	lsec = road->GetLaneSectionByIdx(lsec_idx);
 
-	if (lsec == 0) {
-		LOG("Position::Set Error: lane section %d not available", lsec_idx);
-	} else {
-		number_of_lsec = road->GetNumberOfLaneSections();
-		if (lsec_idx == number_of_lsec - 1) {
-			lsec_end = road->GetLength();
-		} else {
-			lsec_end = road->GetLaneSectionByIdx(lsec_idx + 1)->GetS();
-		}
-	}
+// 	if (lsec == 0) {
+// 		LOG("Position::Set Error: lane section %d not available", lsec_idx);
+// 	} else {
+// 		number_of_lsec = road->GetNumberOfLaneSections();
+// 		if (lsec_idx == number_of_lsec - 1) {
+// 			lsec_end = road->GetLength();
+// 		} else {
+// 			lsec_end = road->GetLaneSectionByIdx(lsec_idx + 1)->GetS();
+// 		}
+// 	}
 
-	lane = lsec->GetLaneById(lane_id);
-	if (lane == 0) {
-		LOG("Position::Set Error: lane section %d not available", lane_id);
-	}
+// 	lane = lsec->GetLaneById(lane_id);
+// 	if (lane == 0) {
+// 		LOG("Position::Set Error: lane section %d not available", lane_id);
+// 	}
 
-	number_of_roadmarks = lane->GetNumberOfRoadMarks();
+// 	number_of_roadmarks = lane->GetNumberOfRoadMarks();
 
-	if (number_of_roadmarks > 0) {
-		for (int m = 0; m < number_of_roadmarks; m++) {
-			lane_roadMark = lane->GetLaneRoadMarkByIdx(m);
-			s_roadmark = lsec->GetS() + lane_roadMark->GetSOffset();
-			if (m == number_of_roadmarks - 1) {
-				s_end_roadmark = lsec_end;
-			} else {
-				s_end_roadmark = lane->GetLaneRoadMarkByIdx(m + 1)->GetSOffset();
-			}
+// 	if (number_of_roadmarks > 0) {
+// 		for (int m = 0; m < number_of_roadmarks; m++) {
+// 			lane_roadMark = lane->GetLaneRoadMarkByIdx(m);
+// 			s_roadmark = lsec->GetS() + lane_roadMark->GetSOffset();
+// 			if (m == number_of_roadmarks - 1) {
+// 				s_end_roadmark = lsec_end;
+// 			} else {
+// 				s_end_roadmark = lane->GetLaneRoadMarkByIdx(m + 1)->GetSOffset();
+// 			}
 
-			// Check the existence of "type" keyword under roadmark
-			number_of_roadmarktypes = lane_roadMark->GetNumberOfRoadMarkTypes();
-			if (number_of_roadmarktypes != 0) {
-				lane_roadMarkType = lane_roadMark->GetLaneRoadMarkTypeByIdx(0);
-				number_of_roadmarklines = lane_roadMarkType->GetNumberOfRoadMarkTypeLines();
+// 			// Check the existence of "type" keyword under roadmark
+// 			number_of_roadmarktypes = lane_roadMark->GetNumberOfRoadMarkTypes();
+// 			if (number_of_roadmarktypes != 0) {
+// 				lane_roadMarkType = lane_roadMark->GetLaneRoadMarkTypeByIdx(0);
+// 				number_of_roadmarklines = lane_roadMarkType->GetNumberOfRoadMarkTypeLines();
 
-				// Looping through each roadmarkline under roadmark
-				for (int n = 0; n < number_of_roadmarklines; n++) {
-					lane_roadMarkTypeLine = lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n);
-					s_roadmarkline = s_roadmark + lane_roadMarkTypeLine->GetSOffset();
-					if (lane_roadMarkTypeLine != 0) {
-						if (n == number_of_roadmarklines - 1) {
-							s_end_roadmarkline = s_end_roadmark;
-						} else {
-							s_end_roadmarkline
-								= lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n + 1)->GetSOffset();
-						}
-					}
+// 				// Looping through each roadmarkline under roadmark
+// 				for (int n = 0; n < number_of_roadmarklines; n++) {
+// 					lane_roadMarkTypeLine = lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n);
+// 					s_roadmarkline = s_roadmark + lane_roadMarkTypeLine->GetSOffset();
+// 					if (lane_roadMarkTypeLine != 0) {
+// 						if (n == number_of_roadmarklines - 1) {
+// 							s_end_roadmarkline = s_end_roadmark;
+// 						} else {
+// 							s_end_roadmarkline
+// 								= lane_roadMarkType->GetLaneRoadMarkTypeLineByIdx(n + 1)->GetSOffset();
+// 						}
+// 					}
 
-					if (s >= s_roadmarkline && s < s_end_roadmarkline) {
-						rm_info.roadmark_idx_ = m;
-						rm_info.roadmarkline_idx_ = n;
-					} else {
-						continue;
-					}
-				}
-			} else {
-				rm_info.roadmarkline_idx_ = 0;
-				if (s >= s_roadmark && s < s_end_roadmark) {
-					rm_info.roadmark_idx_ = m;
-				} else {
-					continue;
-				}
-			}
-		}
-	}
-	delete pos;
-	return rm_info;
-}
+// 					if (s >= s_roadmarkline && s < s_end_roadmarkline) {
+// 						rm_info.roadmark_idx_ = m;
+// 						rm_info.roadmarkline_idx_ = n;
+// 					} else {
+// 						continue;
+// 					}
+// 				}
+// 			} else {
+// 				rm_info.roadmarkline_idx_ = 0;
+// 				if (s >= s_roadmark && s < s_end_roadmark) {
+// 					rm_info.roadmark_idx_ = m;
+// 				} else {
+// 					continue;
+// 				}
+// 			}
+// 		}
+// 	}
+// 	delete pos;
+// 	return rm_info;
+// }

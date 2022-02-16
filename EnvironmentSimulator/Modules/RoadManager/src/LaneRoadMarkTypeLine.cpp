@@ -1,8 +1,8 @@
 #include "LaneRoadMarkTypeLine.hpp"
 
-void LaneRoadMarkTypeLine::SetGlobalId() {
-	global_id_ = GetNewGlobalLaneBoundaryId();
-}
+// void LaneRoadMarkTypeLine::SetGlobalId() {
+	// global_id_ = GetNewGlobalLaneBoundaryId();
+// }
 
 void LaneRoadMarkTypeLine::Save(pugi::xml_node& type) {
 	auto line = type.append_child("line");

@@ -1,7 +1,5 @@
 #include <iostream>
-
-#include "RoadManager.hpp"
-
+#include "OpenDrive.hpp"
 #define SUPPRESS_LOG
 
 
@@ -10,7 +8,7 @@ int main(int argc, char* argv[])
     std::string filename;
     std::cout << "Enter filename (full path) to xodr file" << std::endl;
     std::cin >> filename;
-    roadmanager::OpenDrive openDrive = roadmanager::OpenDrive(filename.c_str());
+    OpenDrive openDrive = OpenDrive(filename.c_str());
    
 
     for(auto i = 0; i < openDrive.GetNumOfRoads(); i++) {

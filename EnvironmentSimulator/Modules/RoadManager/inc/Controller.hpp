@@ -1,5 +1,4 @@
-#ifndef CONTROLLER_HPP
-#define CONTROLLER_HPP
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -13,7 +12,6 @@ typedef struct {
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
 } Control;
-
 
 class Controller {
    public:
@@ -42,4 +40,3 @@ class Controller {
 	std::string name_;
 	int sequence_;
 };
-#endif

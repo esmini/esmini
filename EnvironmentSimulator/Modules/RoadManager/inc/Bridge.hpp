@@ -1,5 +1,4 @@
-#ifndef BRIDGE_HPP
-#define BRIDGE_HPP
+#pragma once
 
 #include <cassert>
 #include <string>
@@ -29,4 +28,3 @@ class Bridge : public RoadObject {
 	Type type_;
 	int id_;
 };
-#endif

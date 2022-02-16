@@ -1,5 +1,4 @@
-#ifndef LANEMATERIAL_HPP
-#define LANEMATERIAL_HPP
+#pragma once
 
 #include <memory>
 #include <string>
@@ -23,5 +22,3 @@ class LaneMaterial {
 	double friction_;
 	double roughness_;
 };
-
-#endif

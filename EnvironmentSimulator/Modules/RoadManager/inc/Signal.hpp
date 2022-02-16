@@ -1,5 +1,4 @@
-#ifndef SIGNAL_HPP
-#define SIGNAL_HPP
+#pragma once
 
 #include <cassert>
 #include <limits>
@@ -335,5 +334,3 @@ class Signal : public RoadObject {
 	double length_;
 	static const std::map<std::string, Type> types_mapping_;
 };
-
-#endif

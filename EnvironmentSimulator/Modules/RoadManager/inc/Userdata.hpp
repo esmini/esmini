@@ -1,6 +1,4 @@
-
-#ifndef USERDATA_HPP
-#define USERDATA_HPP
+#pragma once
 
 #include <string>
 #include "pugixml.hpp"
@@ -28,4 +26,3 @@ class UserData {
 	std::string value_;
 	pugi::xml_document origin_node_;
 };
-#endif

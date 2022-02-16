@@ -1,5 +1,4 @@
-#ifndef LANEROADMARKTYPE_HPP
-#define LANEROADMARKTYPE_HPP
+#pragma once
 
 #include <cassert>
 #include <memory>
@@ -29,4 +28,3 @@ class LaneRoadMarkType {
 	std::string name_;
 	double width_;
 };
-#endif

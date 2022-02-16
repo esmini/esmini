@@ -1,10 +1,10 @@
-#ifndef SPIRAL_HPP
-#define SPIRAL_HPP
+#pragma once
 
 #include "Arc.hpp"
 #include "CommonMini.hpp"
 #include "Geometry.hpp"
 #include "Line.hpp"
+#include "odrSpiral.h"
 
 class Spiral : public Geometry {
    public:
@@ -54,5 +54,3 @@ class Spiral : public Geometry {
 	double h0_;	 // 0 if spiral starts with curvature = 0
 	double s0_;	 // 0 if spiral starts with curvature = 0
 };
-
-#endif

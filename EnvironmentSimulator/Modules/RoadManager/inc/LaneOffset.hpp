@@ -1,10 +1,10 @@
-#ifndef LANEOFFSET_HPP
-#define LANEOFFSET_HPP
+#pragma once
 
 #include <memory>
 #include <vector>
 #include "CommonMini.hpp"
 #include "Polynomial.hpp"
+#include "Userdata.hpp"
 #include "pugixml.hpp"
 
 class LaneOffset {
@@ -37,5 +37,3 @@ class LaneOffset {
 	double s_;
 	double length_;
 };
-
-#endif

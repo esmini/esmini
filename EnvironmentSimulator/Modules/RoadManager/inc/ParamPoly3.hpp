@@ -1,8 +1,8 @@
-#ifndef PARAMPOLY3_HPP
-#define PARAMPOLY3_HPP
+#pragma once
 
 #include "CommonMini.hpp"
 #include "Geometry.hpp"
+#include "StructsandDefines.hpp"
 #include "pugixml.hpp"
 
 class ParamPoly3 : public Geometry {
@@ -45,4 +45,3 @@ class ParamPoly3 : public Geometry {
 	Polynomial poly3U_;
 	Polynomial poly3V_;
 };
-#endif

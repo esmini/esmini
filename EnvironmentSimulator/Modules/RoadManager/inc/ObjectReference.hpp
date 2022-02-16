@@ -1,9 +1,8 @@
-#ifndef OBJECTREFERENCE_HPP
-#define OBJECTREFERENCE_HPP
+#pragma once
 
+#include <cassert>
 #include "RoadObject.hpp"
 #include "pugixml.hpp"
-
 class ObjectReference : public RoadObject {
    public:
 	ObjectReference(double s, double t, int id, double zOffset, double validLength, Orientation orientation)
@@ -28,4 +27,3 @@ class ObjectReference : public RoadObject {
 	double valid_length_;
 	Orientation orientation_;
 };
-#endif

@@ -1,7 +1,7 @@
 #include "LaneRoadMarkType.hpp"
 
 void LaneRoadMarkType::AddLine(std::shared_ptr<LaneRoadMarkTypeLine> lane_roadMarkTypeLine) {
-	lane_roadMarkTypeLine->SetGlobalId();
+	// lane_roadMarkTypeLine->SetGlobalId();
 	lane_roadMarkTypeLine_.push_back(lane_roadMarkTypeLine);
 }
 

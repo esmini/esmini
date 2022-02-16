@@ -1,5 +1,4 @@
-#ifndef POLYNOMIAL_HPP
-#define POLYNOMIAL_HPP
+#pragma once
 class Polynomial {
    public:
 	Polynomial() : a_(0), b_(0), c_(0), d_(0), p_scale_(1.0) {}
@@ -26,5 +25,3 @@ class Polynomial {
 	double d_;
 	double p_scale_;
 };
-
-#endif

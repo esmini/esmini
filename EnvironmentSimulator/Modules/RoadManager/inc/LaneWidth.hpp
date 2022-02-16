@@ -1,5 +1,4 @@
-#ifndef LANEWIDTH_HPP
-#define LANEWIDTH_HPP
+#pragma once
 
 #include <memory>
 #include "CommonMini.hpp"
@@ -26,4 +25,3 @@ class LaneWidth {
    private:
 	double s_offset_;
 };
-#endif

@@ -1,5 +1,4 @@
-#ifndef ARC_HPP
-#define ARC_HPP
+#pragma once
 
 #include <cmath>
 #include "Geometry.hpp"
@@ -24,4 +23,3 @@ class Arc : public Geometry {
    private:
 	double curvature_;
 };
-#endif

@@ -1,5 +1,4 @@
-#ifndef OUTLINE_HPP
-#define OUTLINE_HPP
+#pragma once
 
 #include <vector>
 #include "CommonMini.hpp"
@@ -8,7 +7,7 @@
 
 class OutlineCorner {
    public:
-	virtual void GetPos(double& x, double& y, double& z) = 0;
+	// virtual void GetPos(double& x, double& y, double& z) = 0;
 	virtual double GetHeight() = 0;
 	virtual ~OutlineCorner() {}
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
@@ -33,23 +32,17 @@ class Outline {
 	int id_;
 	FillType fillType_;
 	bool closed_;
-	std::vector<OutlineCorner*> corner_;
+	std::vector<std::shared_ptr<OutlineCorner>> corner_;
 	std::vector<std::shared_ptr<UserData>> user_data_;
 
 	Outline(int id, FillType fillType, bool closed) : id_(id), fillType_(fillType), closed_(closed) {}
 
-	~Outline() {
-		for (size_t i = 0; i < corner_.size(); i++)
-			delete (corner_[i]);
-		corner_.clear();
-	}
+	~Outline() {}
 
-	void AddCorner(OutlineCorner* outlineCorner) { corner_.push_back(outlineCorner); }
+	void AddCorner(std::shared_ptr<OutlineCorner> outlineCorner) { corner_.push_back(outlineCorner); }
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
 };
-
-
 
 class OutlineCornerRoad : public OutlineCorner {
    public:
@@ -91,5 +84,3 @@ class OutlineCornerLocal : public OutlineCorner {
 	int id_, roadId_;
 	double s_, t_, u_, v_, zLocal_, height_, heading_;
 };
-
-#endif

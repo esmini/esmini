@@ -1,6 +1,27 @@
 #include "OpenDrive.hpp"
 
-Road* OpenDrive::GetRoadById(int id) {
+std::string ReadAttribute(pugi::xml_node node, std::string attribute_name, bool required) {
+	if (!strcmp(attribute_name.c_str(), "")) {
+		if (required) {
+			LOG("Warning: Required but empty attribute");
+		}
+		return "";
+	}
+
+	pugi::xml_attribute attr;
+
+	if ((attr = node.attribute(attribute_name.c_str()))) {
+		return attr.value();
+	} else {
+		if (required) {
+			LOG("Warning: missing required attribute: %s -> %s", node.name(), attribute_name.c_str());
+		}
+	}
+
+	return "";
+}
+
+std::shared_ptr<Road> OpenDrive::GetRoadById(int id) {
 	for (size_t i = 0; i < road_.size(); i++) {
 		if (road_[i]->GetId() == id) {
 			return road_[i];
@@ -9,7 +30,7 @@ Road* OpenDrive::GetRoadById(int id) {
 	return 0;
 }
 
-Road* OpenDrive::GetRoadByIdx(int idx) {
+std::shared_ptr<Road> OpenDrive::GetRoadByIdx(int idx) {
 	if (idx >= 0 && idx < (int)road_.size()) {
 		return road_[idx];
 	} else {
@@ -17,7 +38,7 @@ Road* OpenDrive::GetRoadByIdx(int idx) {
 	}
 }
 
-Junction* OpenDrive::GetJunctionById(int id) {
+std::shared_ptr<Junction> OpenDrive::GetJunctionById(int id) {
 	for (size_t i = 0; i < junction_.size(); i++) {
 		if (junction_[i]->GetId() == id) {
 			return junction_[i];
@@ -26,7 +47,7 @@ Junction* OpenDrive::GetJunctionById(int id) {
 	return 0;
 }
 
-Junction* OpenDrive::GetJunctionByIdx(int idx) {
+std::shared_ptr<Junction> OpenDrive::GetJunctionByIdx(int idx) {
 	if (idx >= 0 && idx < (int)junction_.size()) {
 		return junction_[idx];
 	} else {
@@ -46,15 +67,15 @@ void OpenDrive::InitGlobalLaneIds() {
 	g_Laneb_id = 0;
 }*/
 
-Controller* OpenDrive::GetControllerByIdx(int index) {
+std::shared_ptr<Controller> OpenDrive::GetControllerByIdx(int index) {
 	if (index >= 0 && index < controller_.size()) {
-		return &controller_[index];
+		return std::make_shared<Controller>(controller_[index]);
 	}
 
 	return 0;
 }
 
-Controller* OpenDrive::GetControllerById(int id) {
+std::shared_ptr<Controller> OpenDrive::GetControllerById(int id) {
 	// look for this controller in global list
 	for (int i = 0; i < GetNumberOfControllers(); i++) {
 		if (id == GetControllerByIdx(i)->GetId()) {
@@ -67,16 +88,8 @@ Controller* OpenDrive::GetControllerById(int id) {
 
 bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 	if (replace) {
-		InitGlobalLaneIds();
-
-		for (size_t i = 0; i < road_.size(); i++) {
-			delete road_[i];
-		}
+		// InitGlobalLaneIds();
 		road_.clear();
-
-		for (size_t i = 0; i < junction_.size(); i++) {
-			delete junction_[i];
-		}
 		junction_.clear();
 	}
 
@@ -125,7 +138,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 				std::numeric_limits<int>::quiet_NaN()};
 
 	for (auto child : node.children("userData")) {
-		AddUserData(new UserData(child));
+		AddUserData(std::make_shared<UserData>(UserData(child)));
 	}
 
 	pugi::xml_node header_node = node.child("header");
@@ -159,7 +172,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 	}
 
 	for (auto child : header_node.children("userData")) {
-		header_.AddUserData(new UserData(child));
+		header_.AddUserData(std::make_shared<UserData>(UserData(child)));
 	}
 
 	for (pugi::xml_node road_node = node.child("road"); road_node;
@@ -177,21 +190,21 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 			}
 		}
 
-		Road* r = new Road(rid, rname, rrule);
+		std::shared_ptr<Road> r = std::make_shared<Road>(Road(rid, rname, rrule));
 		r->SetLength(roadlength);
 		r->SetJunction(junction_id);
 
 		for (auto child : road_node.children("userData")) {
-			r->AddUserData(new UserData(child));
+			r->AddUserData(std::make_shared<UserData>(UserData(child)));
 		}
 
 		for (pugi::xml_node type_node = road_node.child("type"); type_node;
 			 type_node = type_node.next_sibling("type")) {
-			Road::RoadTypeEntry* r_type = new Road::RoadTypeEntry();
+			std::shared_ptr<Road::RoadTypeEntry> r_type = std::make_shared<Road::RoadTypeEntry>();
 
 			for (auto child : type_node.children("userData")) {
-				r_type->AddUserData(new UserData(child.attribute("code").as_string(),
-												 child.attribute("value").as_string(), child));
+				r_type->AddUserData(std::make_shared<UserData>(UserData(
+					child.attribute("code").as_string(), child.attribute("value").as_string(), child)));
 			}
 
 			std::string type = type_node.attribute("type").value();
@@ -242,19 +255,19 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 		if (link != NULL) {
 			pugi::xml_node successor = link.child("successor");
 			if (successor != NULL) {
-				r->AddLink(new RoadLink(SUCCESSOR, successor));
+				r->AddLink(std::make_shared<RoadLink>(RoadLink(SUCCESSOR, successor)));
 
 				for (auto child : successor.children("userData")) {
-					r->GetLink(SUCCESSOR)->AddUserData(new UserData(child));
+					r->GetLink(SUCCESSOR)->AddUserData(std::make_shared<UserData>(UserData(child)));
 				}
 			}
 
 			pugi::xml_node predecessor = link.child("predecessor");
 			if (predecessor != NULL) {
-				r->AddLink(new RoadLink(PREDECESSOR, predecessor));
+				r->AddLink(std::make_shared<RoadLink>(RoadLink(PREDECESSOR, predecessor)));
 
 				for (auto child : predecessor.children("userData")) {
-					r->GetLink(PREDECESSOR)->AddUserData(new UserData(child));
+					r->GetLink(PREDECESSOR)->AddUserData(std::make_shared<UserData>(UserData(child)));
 				}
 			}
 
@@ -285,20 +298,21 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 				if (type != NULL) {
 					// Find out the type of geometry
 					if (!strcmp(type.name(), "line")) {
-						r->AddLine(new Line(s, x, y, hdg, glength));
+						r->AddLine(std::make_shared<Line>(Line(s, x, y, hdg, glength)));
 					} else if (!strcmp(type.name(), "arc")) {
 						double curvature = atof(type.attribute("curvature").value());
-						r->AddArc(new Arc(s, x, y, hdg, glength, curvature));
+						r->AddArc(std::make_shared<Arc>(Arc(s, x, y, hdg, glength, curvature)));
 					} else if (!strcmp(type.name(), "spiral")) {
 						double curv_start = atof(type.attribute("curvStart").value());
 						double curv_end = atof(type.attribute("curvEnd").value());
-						r->AddSpiral(new Spiral(s, x, y, hdg, glength, curv_start, curv_end));
+						r->AddSpiral(
+							std::make_shared<Spiral>(Spiral(s, x, y, hdg, glength, curv_start, curv_end)));
 					} else if (!strcmp(type.name(), "poly3")) {
 						double a = atof(type.attribute("a").value());
 						double b = atof(type.attribute("b").value());
 						double c = atof(type.attribute("c").value());
 						double d = atof(type.attribute("d").value());
-						r->AddPoly3(new Poly3(s, x, y, hdg, glength, a, b, c, d));
+						r->AddPoly3(std::make_shared<Poly3>(Poly3(s, x, y, hdg, glength, a, b, c, d)));
 					} else if (!strcmp(type.name(), "paramPoly3")) {
 						double aU = atof(type.attribute("aU").value());
 						double bU = atof(type.attribute("bU").value());
@@ -315,20 +329,21 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 							p_range = ParamPoly3::P_RANGE_ARC_LENGTH;
 						}
 
-						ParamPoly3* pp3
-							= new ParamPoly3(s, x, y, hdg, glength, aU, bU, cU, dU, aV, bV, cV, dV, p_range);
+						auto pp3 = std::make_shared<ParamPoly3>(
+							ParamPoly3(s, x, y, hdg, glength, aU, bU, cU, dU, aV, bV, cV, dV, p_range));
 						if (pp3 != NULL) {
 							r->AddParamPoly3(pp3);
 						} else {
 							LOG("ParamPoly3: Major error\n");
 						}
 					} else {
-						cout << "Unknown geometry type: " << type.name() << endl;
+						std::cout << "Unknown geometry type: " << type.name() << std::endl;
 						continue;
 					}
 
 					for (auto child : type.children("userData")) {
-						r->GetGeometry(r->GetNumberOfGeometries() - 1)->AddUserData(new UserData(child));
+						r->GetGeometry(r->GetNumberOfGeometries() - 1)
+							->AddUserData(std::make_shared<UserData>(UserData(child)));
 					}
 				}
 			}
@@ -344,10 +359,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 				double c = atof(elevation.attribute("c").value());
 				double d = atof(elevation.attribute("d").value());
 
-				Elevation* ep = new Elevation(s, a, b, c, d);
+				auto ep = std::make_shared<Elevation>(Elevation(s, a, b, c, d));
 				if (ep != NULL) {
 					for (auto child : elevation_profile.children("userData")) {
-						ep->AddUserData(new UserData(child));
+						ep->AddUserData(std::make_shared<UserData>(UserData(child)));
 					}
 					r->AddElevation(ep);
 				} else {
@@ -366,10 +381,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 				double c = atof(super_elevation.attribute("c").value());
 				double d = atof(super_elevation.attribute("d").value());
 
-				Elevation* ep = new Elevation(s, a, b, c, d);
+				auto ep = std::make_shared<Elevation>(s, a, b, c, d);
 				if (ep != NULL) {
 					for (auto child : elevation_profile.children("userData")) {
-						ep->AddUserData(new UserData(child));
+						ep->AddUserData(std::make_shared<UserData>(UserData(child)));
 					}
 					r->AddSuperElevation(ep);
 				} else {
@@ -388,18 +403,18 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 					double b = atof(child->attribute("b").value());
 					double c = atof(child->attribute("c").value());
 					double d = atof(child->attribute("d").value());
-					r->AddLaneOffset(new LaneOffset(s, a, b, c, d));
+					r->AddLaneOffset(std::make_shared<LaneOffset>(LaneOffset(s, a, b, c, d)));
 
 					for (auto userData : child->children("userData")) {
 						r->GetLaneOffsetByIdx(r->GetNumberOfLaneOffsets() - 1)
-							->AddUserData(new UserData(userData));
+							->AddUserData(std::make_shared<UserData>(UserData(userData)));
 					}
 				} else if (!strcmp(child->name(), "laneSection")) {
 					double s = atof(child->attribute("s").value());
-					LaneSection* lane_section = new LaneSection(s);
+					auto lane_section = std::make_shared<LaneSection>(LaneSection(s));
 
 					for (auto userData : child->children("userData")) {
-						lane_section->AddUserData(new UserData(userData));
+						lane_section->AddUserData(std::make_shared<UserData>(UserData(userData)));
 					}
 
 					if (child->attribute("singleSide").value() == "true") {
@@ -493,14 +508,14 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 								lane_type = Lane::LANE_TYPE_NONE;
 							}
 
-							Lane* lane = new Lane(lane_id, lane_type);
+							auto lane = std::make_shared<Lane>(Lane(lane_id, lane_type));
 							if (lane == NULL) {
 								LOG("Error: creating lane\n");
 								return false;
 							}
 
 							for (auto child : lane_node->children("userData")) {
-								lane->AddUserData(new UserData(child));
+								lane->AddUserData(std::make_shared<UserData>(UserData(child)));
 							}
 
 							if (!strcmp(lane_node->attribute("level").value(), "true")) {
@@ -516,19 +531,21 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 							if (lane_link != NULL) {
 								pugi::xml_node predecessor = lane_link.child("predecessor");
 								if (predecessor != NULL) {
-									lane->AddLink(
-										new LaneLink(PREDECESSOR, atoi(predecessor.attribute("id").value())));
+									lane->AddLink(std::make_shared<LaneLink>(
+										LaneLink(PREDECESSOR, atoi(predecessor.attribute("id").value()))));
 									for (auto child : predecessor.children("userData")) {
-										lane->GetLink(PREDECESSOR)->AddUserData(new UserData(child));
+										lane->GetLink(PREDECESSOR)
+											->AddUserData(std::make_shared<UserData>(UserData(child)));
 									}
 								}
 
 								pugi::xml_node successor = lane_link.child("successor");
 								if (successor != NULL) {
-									lane->AddLink(
-										new LaneLink(SUCCESSOR, atoi(successor.attribute("id").value())));
+									lane->AddLink(std::make_shared<LaneLink>(
+										LaneLink(SUCCESSOR, atoi(successor.attribute("id").value()))));
 									for (auto child : successor.children("userData")) {
-										lane->GetLink(SUCCESSOR)->AddUserData(new UserData(child));
+										lane->GetLink(SUCCESSOR)->AddUserData(
+											std::make_shared<UserData>(UserData(child)));
 									}
 								}
 							}
@@ -541,10 +558,11 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 								double b = atof(width.attribute("b").value());
 								double c = atof(width.attribute("c").value());
 								double d = atof(width.attribute("d").value());
-								lane->AddLaneWidth(new LaneWidth(s_offset, a, b, c, d));
+								lane->AddLaneWidth(
+									std::make_shared<LaneWidth>(LaneWidth(s_offset, a, b, c, d)));
 								for (auto child : width.children("userData")) {
 									lane->GetWidthByIndex(lane->GetNumberOfLaneWidths() - 1)
-										->AddUserData(new UserData(child));
+										->AddUserData(std::make_shared<UserData>(UserData(child)));
 								}
 							}
 
@@ -648,27 +666,27 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 								}
 
 								double roadMark_height = atof(roadMark.attribute("height").value());
-								LaneRoadMark* lane_roadMark = new LaneRoadMark(
+								auto lane_roadMark = std::make_shared<LaneRoadMark>(LaneRoadMark(
 									s_offset, roadMark_type, roadMark_weight, roadMark_color,
-									roadMark_material, roadMark_laneChange, roadMark_width, roadMark_height);
+									roadMark_material, roadMark_laneChange, roadMark_width, roadMark_height));
 
 								for (auto child : roadMark.children("userData")) {
-									lane_roadMark->AddUserData(new UserData(child));
+									lane_roadMark->AddUserData(std::make_shared<UserData>(UserData(child)));
 								}
 
 								lane->AddLaneRoadMark(lane_roadMark);
-
 								// sub_type
-								LaneRoadMarkType* lane_roadMarkType = 0;
+								std::shared_ptr<LaneRoadMarkType> lane_roadMarkType = 0;
 								for (pugi::xml_node sub_type = roadMark.child("type"); sub_type;
 									 sub_type = sub_type.next_sibling("type")) {
 									if (sub_type != NULL) {
 										std::string sub_type_name = sub_type.attribute("name").value();
 										double sub_type_width = atof(sub_type.attribute("width").value());
-										lane_roadMarkType
-											= new LaneRoadMarkType(sub_type_name, sub_type_width);
+										lane_roadMarkType = std::make_shared<LaneRoadMarkType>(
+											LaneRoadMarkType(sub_type_name, sub_type_width));
 										for (auto child : sub_type.children("userData")) {
-											lane_roadMarkType->AddUserData(new UserData(child));
+											lane_roadMarkType->AddUserData(
+												std::make_shared<UserData>(UserData(child)));
 										}
 										lane_roadMark->AddType(lane_roadMarkType);
 
@@ -710,13 +728,14 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 
 											double width = atof(line.attribute("width").value());
 
-											LaneRoadMarkTypeLine* lane_roadMarkTypeLine
-												= new LaneRoadMarkTypeLine(llength, space, t_offset,
-																		   s_offset_l, rule, width,
-																		   roadMark_color);
+											auto lane_roadMarkTypeLine
+												= std::make_shared<LaneRoadMarkTypeLine>(
+													LaneRoadMarkTypeLine(llength, space, t_offset, s_offset_l,
+																		 rule, width, roadMark_color));
 
 											for (auto child : line.children("userData")) {
-												lane_roadMarkTypeLine->AddUserData(new UserData(child));
+												lane_roadMarkTypeLine->AddUserData(
+													std::make_shared<UserData>(UserData(child)));
 											}
 											lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 										}
@@ -725,48 +744,52 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 								if (roadMark_type != LaneRoadMark::NONE_TYPE && lane_roadMarkType == 0) {
 									if (roadMark_type == LaneRoadMark::SOLID
 										|| roadMark_type == LaneRoadMark::CURB) {
-										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
+										lane_roadMarkType = std::make_shared<LaneRoadMarkType>(
+											LaneRoadMarkType("stand-in", roadMark_width));
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule
 											= LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine
-											= new LaneRoadMarkTypeLine(0, 0, 0, 0, rule, roadMark_width,
-																	   roadMark_color);
+										auto lane_roadMarkTypeLine
+											= std::make_shared<LaneRoadMarkTypeLine>(LaneRoadMarkTypeLine(
+												0, 0, 0, 0, rule, roadMark_width, roadMark_color));
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 									} else if (roadMark_type == LaneRoadMark::SOLID_SOLID) {
-										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
+										lane_roadMarkType = std::make_shared<LaneRoadMarkType>(
+											LaneRoadMarkType("stand-in", roadMark_width));
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule
 											= LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine
-											= new LaneRoadMarkTypeLine(0, 0, -roadMark_width, 0, rule,
-																	   roadMark_width, roadMark_color);
+										auto lane_roadMarkTypeLine = std::make_shared<LaneRoadMarkTypeLine>(
+											LaneRoadMarkTypeLine(0, 0, -roadMark_width, 0, rule,
+																 roadMark_width, roadMark_color));
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2
-											= new LaneRoadMarkTypeLine(0, 0, roadMark_width, 0, rule,
-																	   roadMark_width, roadMark_color);
+										auto lane_roadMarkTypeLine2 = std::make_shared<LaneRoadMarkTypeLine>(
+											LaneRoadMarkTypeLine(0, 0, roadMark_width, 0, rule,
+																 roadMark_width, roadMark_color));
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine2);
 									} else if (roadMark_type == LaneRoadMark::BROKEN) {
-										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
+										lane_roadMarkType = std::make_shared<LaneRoadMarkType>(
+											LaneRoadMarkType("stand-in", roadMark_width));
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule
 											= LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine
-											= new LaneRoadMarkTypeLine(4, 8, 0, 0, rule, roadMark_width,
-																	   roadMark_color);
+										auto lane_roadMarkTypeLine
+											= std::make_shared<LaneRoadMarkTypeLine>(LaneRoadMarkTypeLine(
+												4, 8, 0, 0, rule, roadMark_width, roadMark_color));
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 									} else if (roadMark_type == LaneRoadMark::BROKEN_BROKEN) {
-										lane_roadMarkType = new LaneRoadMarkType("stand-in", roadMark_width);
+										lane_roadMarkType = std::make_shared<LaneRoadMarkType>(
+											LaneRoadMarkType("stand-in", roadMark_width));
 										lane_roadMark->AddType(lane_roadMarkType);
 										LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule
 											= LaneRoadMarkTypeLine::NONE;
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine
-											= new LaneRoadMarkTypeLine(4, 8, -roadMark_width, 0, rule,
-																	   roadMark_width, roadMark_color);
+										auto lane_roadMarkTypeLine = std::make_shared<LaneRoadMarkTypeLine>(
+											LaneRoadMarkTypeLine(4, 8, -roadMark_width, 0, rule,
+																 roadMark_width, roadMark_color));
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
-										LaneRoadMarkTypeLine* lane_roadMarkTypeLine2
-											= new LaneRoadMarkTypeLine(4, 8, roadMark_width, 0, rule,
-																	   roadMark_width, roadMark_color);
+										auto lane_roadMarkTypeLine2 = std::make_shared<LaneRoadMarkTypeLine>(
+											LaneRoadMarkTypeLine(4, 8, roadMark_width, 0, rule,
+																 roadMark_width, roadMark_color));
 										lane_roadMarkType->AddLine(lane_roadMarkTypeLine2);
 									} else {
 										LOG("No road mark created for road %d lane %d. Type %d not "
@@ -783,10 +806,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 								std::string surface = laneMaterial.attribute("surface").as_string();
 								double friction = atof(laneMaterial.attribute("friction").value());
 								double roughness = atof(laneMaterial.attribute("roughness").value());
-								LaneMaterial* material
-									= new LaneMaterial(s_offset, surface, friction, roughness);
+								auto material = std::make_shared<LaneMaterial>(
+									LaneMaterial(s_offset, surface, friction, roughness));
 								for (auto child : laneMaterial.children("userData")) {
-									material->AddUserData(new UserData(child));
+									material->AddUserData(std::make_shared<UserData>(UserData(child)));
 								}
 								lane->AddLaneMaterial(material);
 							}
@@ -798,9 +821,9 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 								std::string unit = laneSpeed.attribute("unit").as_string();
 								double max = atof(laneSpeed.attribute("max").value());
 
-								LaneSpeed* speed = new LaneSpeed(s_offset, max, unit);
+								auto speed = std::make_shared<LaneSpeed>(LaneSpeed(s_offset, max, unit));
 								for (auto child : laneSpeed.children("userData")) {
-									speed->AddUserData(new UserData(child));
+									speed->AddUserData(std::make_shared<UserData>(UserData(child)));
 								}
 								lane->AddLaneSpeed(speed);
 							}
@@ -909,11 +932,12 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 					double pitch = atof(signal.attribute("pitch").value());
 					double roll = atof(signal.attribute("roll").value());
 
-					Signal* sig = new Signal(s, t, ids, name, dynamic, orientation, z_offset, country, type,
-											 value, unit, height, width, text, h_offset, pitch, roll);
+					auto sig = std::make_shared<Signal>(Signal(s, t, ids, name, dynamic, orientation,
+															   z_offset, country, type, value, unit, height,
+															   width, text, h_offset, pitch, roll));
 					if (sig != NULL) {
 						for (auto child : signal.children("userData")) {
-							sig->AddUserData(new UserData(child));
+							sig->AddUserData(std::make_shared<UserData>(UserData(child)));
 						}
 						r->AddSignal(sig);
 					} else {
@@ -926,7 +950,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 						validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
 						validity.toLane_ = atoi(validity_node.attribute("toLane").value());
 						for (auto child : validity_node.children("userData")) {
-							validity.AddUserData(new UserData(child));
+							validity.AddUserData(std::make_shared<UserData>(UserData(child)));
 						}
 						sig->validity_.push_back(validity);
 					}
@@ -941,8 +965,8 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 			for (pugi::xml_node object = objects.child("object"); object;
 				 object = object.next_sibling("object")) {
 				// Read any repeat element first, since its s-value overrides the one in the object element
-				Repeat* repeat = 0;
-				std::vector<Repeat*> repeats;
+				std::shared_ptr<Repeat> repeat = 0;
+				std::vector<std::shared_ptr<Repeat>> repeats;
 				for (pugi::xml_node repeat_node = object.child("repeat"); repeat_node;
 					 repeat_node = repeat_node.next_sibling("repeat")) {
 					std::string rattr;
@@ -989,8 +1013,9 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 											? 0.0
 											: std::stod(rattr);
 
-					repeat = new Repeat(rs, rlength, rdistance, rtStart, rtEnd, rheightStart, rheightEnd,
-										rzOffsetStart, rzOffsetEnd);
+					repeat = std::make_shared<Repeat>(Repeat(rs, rlength, rdistance, rtStart, rtEnd,
+															 rheightStart, rheightEnd, rzOffsetStart,
+															 rzOffsetEnd));
 
 					if (fabs(rwidthStart) > SMALL_NUMBER)
 						repeat->SetWidthStart(rwidthStart);
@@ -1006,9 +1031,9 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 					if (fabs(rradiusEnd) > SMALL_NUMBER)
 						printf("Attribute object/repeat/radiusEnd not supported yet\n");
 					for (auto child : repeat_node.children("userData")) {
-						repeat->AddUserData(new UserData(child));
+						repeat->AddUserData(std::make_shared<UserData>(UserData(child)));
 					}
-					repeats.push_back(new Repeat(*repeat));
+					repeats.push_back(repeat);
 				}
 
 				double s;
@@ -1045,10 +1070,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 				double pitch = atof(object.attribute("pitch").value());
 				double roll = atof(object.attribute("roll").value());
 
-				RMObject* obj = new RMObject(s, t, ids, name, orientation, z_offset, type, length, height,
-											 width, heading, pitch, roll);
+				auto obj = std::make_shared<RMObject>(RMObject(s, t, ids, name, orientation, z_offset, type,
+															   length, height, width, heading, pitch, roll));
 				for (auto child : object.children("userData")) {
-					obj->AddUserData(new UserData(child));
+					obj->AddUserData(std::make_shared<UserData>(UserData(child)));
 				}
 				if (repeat) {
 					for (auto rep : repeats) {
@@ -1073,15 +1098,16 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 						int id = atoi(outline_node.attribute("id").value());
 						bool closed
 							= !strcmp(outline_node.attribute("closed").value(), "true") ? true : false;
-						Outline* outline = new Outline(id, Outline::FillType::FILL_TYPE_UNDEFINED, closed);
+						auto outline = std::make_shared<Outline>(
+							Outline(id, Outline::FillType::FILL_TYPE_UNDEFINED, closed));
 
 						for (auto child : outline_node.children("userData")) {
-							outline->AddUserData(new UserData(child));
+							outline->AddUserData(std::make_shared<UserData>(UserData(child)));
 						}
 
 						for (pugi::xml_node corner_node = outline_node.first_child(); corner_node;
 							 corner_node = corner_node.next_sibling()) {
-							OutlineCorner* corner = 0;
+							std::shared_ptr<OutlineCorner> corner = 0;
 
 							if (!strcmp(corner_node.name(), "cornerRoad")) {
 								double sc = atof(corner_node.attribute("s").value());
@@ -1090,8 +1116,8 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 								double heightc = atof(corner_node.attribute("height").value());
 								int id = atoi(corner_node.attribute("id").value());
 
-								corner = (OutlineCorner*)(new OutlineCornerRoad(id, r->GetId(), sc, tc, dz,
-																				heightc));
+								corner = std::make_shared<OutlineCornerRoad>(
+									OutlineCornerRoad(id, r->GetId(), sc, tc, dz, heightc));
 							} else if (!strcmp(corner_node.name(), "cornerLocal")) {
 								double u = atof(corner_node.attribute("u").value());
 								double v = atof(corner_node.attribute("v").value());
@@ -1099,12 +1125,12 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 								double heightc = atof(corner_node.attribute("height").value());
 								int id = atoi(corner_node.attribute("id").value());
 
-								corner = (OutlineCorner*)(new OutlineCornerLocal(id, r->GetId(), obj->GetS(),
-																				 obj->GetT(), u, v, zLocal,
-																				 heightc, heading));
+								corner = std::make_shared<OutlineCornerLocal>(
+									OutlineCornerLocal(id, r->GetId(), obj->GetS(), obj->GetT(), u, v, zLocal,
+													   heightc, heading));
 							}
 							for (auto child : corner_node.children("userData")) {
-								corner->AddUserData(new UserData(child));
+								corner->AddUserData(std::make_shared<UserData>(UserData(child)));
 							}
 							outline->AddCorner(corner);
 						}
@@ -1120,7 +1146,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 					validity.toLane_ = atoi(validity_node.attribute("toLane").value());
 
 					for (auto child : validity_node.children("userData")) {
-						validity.AddUserData(new UserData(child));
+						validity.AddUserData(std::make_shared<UserData>(UserData(child)));
 					}
 
 					obj->validity_.push_back(validity);
@@ -1156,10 +1182,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 							r->GetId());
 					}
 
-					Bridge* brdg = new Bridge(s, length, name, id, type);
+					auto brdg = std::make_shared<Bridge>(Bridge(s, length, name, id, type));
 
 					for (auto child : bridge.children("userData")) {
-						brdg->AddUserData(new UserData(child));
+						brdg->AddUserData(std::make_shared<UserData>(UserData(child)));
 					}
 
 					for (pugi::xml_node validity_node = bridge.child("validity"); validity_node;
@@ -1168,7 +1194,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 						validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
 						validity.toLane_ = atoi(validity_node.attribute("toLane").value());
 						for (auto child : validity_node.children("userData")) {
-							validity.AddUserData(new UserData(child));
+							validity.AddUserData(std::make_shared<UserData>(UserData(child)));
 						}
 						brdg->validity_.push_back(validity);
 					}
@@ -1203,10 +1229,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 							object_reference.attribute("orientation").value(), r->GetId());
 					}
 
-					ObjectReference* objectRef
-						= new ObjectReference(s, t, id, zOffset, validLength, orientation);
+					auto objectRef = std::make_shared<ObjectReference>(
+						ObjectReference(s, t, id, zOffset, validLength, orientation));
 					for (auto child : object_reference.children("userData")) {
-						objectRef->AddUserData(new UserData(child));
+						objectRef->AddUserData(std::make_shared<UserData>(UserData(child)));
 					}
 					for (pugi::xml_node validity_node = object_reference.child("validity"); validity_node;
 						 validity_node = validity_node.next_sibling("validity")) {
@@ -1214,7 +1240,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 						validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
 						validity.toLane_ = atoi(validity_node.attribute("toLane").value());
 						for (auto child : validity_node.children("userData")) {
-							validity.AddUserData(new UserData(child));
+							validity.AddUserData(std::make_shared<UserData>(UserData(child)));
 						}
 						objectRef->validity_.push_back(validity);
 					}
@@ -1230,8 +1256,8 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 
 		if (r->GetNumberOfLaneSections() == 0) {
 			// Add empty center reference lane
-			LaneSection* lane_section = new LaneSection(0.0);
-			lane_section->AddLane(new Lane(0, Lane::LANE_TYPE_NONE));
+			auto lane_section = std::make_shared<LaneSection>(LaneSection(0.0));
+			lane_section->AddLane(std::make_shared<Lane>(Lane(0, Lane::LANE_TYPE_NONE)));
 			r->AddLaneSection(lane_section);
 		}
 
@@ -1245,13 +1271,13 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 		int sequence = atoi(controller_node.attribute("sequence").value());
 		Controller controller(id, name, sequence);
 		for (auto child : controller_node.children("userData")) {
-			controller.AddUserData(new UserData(child));
+			controller.AddUserData(std::make_shared<UserData>(UserData(child)));
 		}
 		for (pugi::xml_node control_node = controller_node.child("control"); control_node;
 			 control_node = control_node.next_sibling("control")) {
 			Control control;
 			for (auto child : control_node.children("userData")) {
-				control.AddUserData(new UserData(child));
+				control.AddUserData(std::make_shared<UserData>(UserData(child)));
 			}
 			control.signalId_ = atoi(control_node.attribute("signalId").value());
 			control.type_ = control_node.attribute("type").value();
@@ -1275,10 +1301,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 			junction_type = Junction::JunctionType::DEFAULT;
 		}
 
-		Junction* j = new Junction(idj, name, junction_type);
+		std::shared_ptr<Junction> j = std::make_shared<Junction>(Junction(idj, name, junction_type));
 
 		for (auto child : junction_node.children("userData")) {
-			j->AddUserData(new UserData(child));
+			j->AddUserData(std::make_shared<UserData>(UserData(child)));
 		}
 
 		for (pugi::xml_node connection_node = junction_node.child("connection"); connection_node;
@@ -1287,7 +1313,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 				int idc = atoi(connection_node.attribute("id").value());
 
 				int incoming_road_id = atoi(connection_node.attribute("incomingRoad").value());
-				Road* incoming_road = GetRoadById(incoming_road_id);
+				std::shared_ptr<Road> incoming_road = GetRoadById(incoming_road_id);
 
 				int connecting_road_id = -1;
 				if (junction_type == Junction::JunctionType::DIRECT) {
@@ -1295,7 +1321,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 				} else {
 					connecting_road_id = atoi(connection_node.attribute("connectingRoad").value());
 				}
-				Road* connecting_road = GetRoadById(connecting_road_id);
+				std::shared_ptr<Road> connecting_road = GetRoadById(connecting_road_id);
 
 				// Check that the connecting road is referring back to this junction
 				if (j->GetType() != Junction::JunctionType::DIRECT
@@ -1315,10 +1341,11 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 					LOG("Unsupported contact point: %s\n", contact_point_str.c_str());
 				}
 
-				Connection* connection = new Connection(idc, incoming_road, connecting_road, contact_point);
+				std::shared_ptr<Connection> connection = std::make_shared<Connection>(
+					Connection(idc, incoming_road, connecting_road, contact_point));
 
 				for (auto child : connection_node.children("userData")) {
-					connection->AddUserData(new UserData(child));
+					connection->AddUserData(std::make_shared<UserData>(UserData(child)));
 				}
 
 				for (pugi::xml_node lane_link_node = connection_node.child("laneLink"); lane_link_node;
@@ -1339,7 +1366,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 			controller.type_ = controller_node.attribute("type").value();
 			controller.sequence_ = atoi(controller_node.attribute("sequence").value());
 			for (auto child : controller_node.children("userData")) {
-				controller.AddUserData(new UserData(child));
+				controller.AddUserData(std::make_shared<UserData>(UserData(child)));
 			}
 			j->AddController(controller);
 		}
@@ -1349,20 +1376,13 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 
 	CheckConnections();
 
-	if (!SetRoadOSI()) {
-		LOG("Failed to create OSI points for OpenDrive road!");
-	}
+	// if (!SetRoadOSI()) {
+	// LOG("Failed to create OSI points for OpenDrive road!");
+	// }
 
 	return true;
 }
-OpenDrive::~OpenDrive() {
-	for (size_t i = 0; i < road_.size(); i++) {
-		delete (road_[i]);
-	}
-	for (size_t i = 0; i < junction_.size(); i++) {
-		delete (junction_[i]);
-	}
-}
+OpenDrive::~OpenDrive() {}
 
 int OpenDrive::GetRoadIdxById(int id) {
 	for (int i = 0; i < (int)road_.size(); i++) {
@@ -1374,18 +1394,18 @@ int OpenDrive::GetRoadIdxById(int id) {
 	return -1;
 }
 
-int OpenDrive::GetTrackIdByIdx(int idx) {
+int OpenDrive::GetRoadIdByIdx(int idx) {
 	if (idx >= 0 && idx < (int)road_.size()) {
 		return (road_[idx]->GetId());
 	}
-	LOG("OpenDrive::GetTrackIdByIdx: idx %d out of range [0:%d]\n", idx, (int)road_.size());
+	LOG("OpenDrive::GetRoadIdByIdx: idx %d out of range [0:%d]\n", idx, (int)road_.size());
 	return 0;
 }
 
-int OpenDrive::CheckConnectedRoad(Road* road,
-								  RoadLink* link,
+int OpenDrive::CheckConnectedRoad(std::shared_ptr<Road> road,
+								  std::shared_ptr<RoadLink> link,
 								  ContactPointType expected_contact_point_type,
-								  RoadLink* link2) {
+								  std::shared_ptr<RoadLink> link2) {
 	if (link2 == 0) {
 		return -1;
 	}
@@ -1404,19 +1424,20 @@ int OpenDrive::CheckConnectedRoad(Road* road,
 	return 0;
 }
 
-int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connection) {
+int OpenDrive::CheckJunctionConnection(std::shared_ptr<Junction> junction,
+									   std::shared_ptr<Connection> connection) {
 	if (junction == 0) {
 		return -1;
 	}
 
 	// Check if junction is referred to from the connected road
-	Road* road = connection->GetConnectingRoad();
+	std::shared_ptr<Road> road = connection->GetConnectingRoad();
 	if (road == 0) {
 		LOG("Error no connecting road");
 		return -1;
 	}
 
-	RoadLink* link[2];
+	std::shared_ptr<RoadLink> link[2];
 	link[0] = road->GetLink(LinkType::PREDECESSOR);
 	link[1] = road->GetLink(LinkType::SUCCESSOR);
 	for (int i = 0; i < 2; i++) {
@@ -1452,7 +1473,7 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
 				}
 
 				// Check that it does not already exist
-				Connection* new_connection = 0;
+				std::shared_ptr<Connection> new_connection = 0;
 				for (size_t k = 0; k < junction->GetNumberOfConnections(); k++) {
 					if (junction->GetConnectionByIdx((int)k)->GetIncomingRoad()
 						== connection->GetConnectingRoad()) {
@@ -1461,10 +1482,10 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
 					}
 				}
 				if (!new_connection) {
-					new_connection = new Connection(connection->GetConnectingRoad(),
-													connection->GetIncomingRoad(), new_contact_point);
+					new_connection = std::make_shared<Connection>(Connection(
+						connection->GetConnectingRoad(), connection->GetIncomingRoad(), new_contact_point));
 					for (size_t j = 0; j < connection->GetNumberOfLaneLinks(); j++) {
-						JunctionLaneLink* tmp_link = connection->GetLaneLink((int)j);
+						std::shared_ptr<JunctionLaneLink> tmp_link = connection->GetLaneLink((int)j);
 						new_connection->AddJunctionLaneLink(tmp_link->to_, tmp_link->from_);
 					}
 					junction->AddConnection(new_connection);
@@ -1478,8 +1499,8 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
 
 				if (link[i]->GetElementId() != connection->GetIncomingRoad()->GetId()) {
 					// Check connection from this outgoing road
-					Road* roadc = GetRoadById(link[i]->GetElementId());
-					RoadLink* link2[2];
+					std::shared_ptr<Road> roadc = GetRoadById(link[i]->GetElementId());
+					std::shared_ptr<RoadLink> link2[2];
 					link2[0] = roadc->GetLink(LinkType::PREDECESSOR);
 					link2[1] = roadc->GetLink(LinkType::SUCCESSOR);
 					for (int j = 0; j < 2; j++) {
@@ -1499,7 +1520,8 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
 
 								// Create counter connections on other side of connecting road
 								LinkType newLinkType = (i == 0 ? LinkType::PREDECESSOR : LinkType::SUCCESSOR);
-								RoadLink* newLink = connection->GetConnectingRoad()->GetLink(newLinkType);
+								std::shared_ptr<RoadLink> newLink
+									= connection->GetConnectingRoad()->GetLink(newLinkType);
 								if (newLink
 									&& newLink->GetElementType()
 										   == RoadLink::ElementType::ELEMENT_TYPE_ROAD) {
@@ -1509,15 +1531,14 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
 											  : ContactPointType::CONTACT_POINT_END;
 
 									// Create new connection to the connecting road from other side
-									Connection* newConnection
-										= new Connection(GetRoadById(newLink->GetElementId()),
-														 connection->GetConnectingRoad(), new_contact_point);
+									std::shared_ptr<Connection> newConnection = std::make_shared<Connection>(
+										Connection(GetRoadById(newLink->GetElementId()),
+												   connection->GetConnectingRoad(), new_contact_point));
 
 									// Add lane links - assume only one lane section in the connecting road
-									LaneSection* ls
-										= newConnection->GetConnectingRoad()->GetLaneSectionByIdx(0);
+									auto ls = newConnection->GetConnectingRoad()->GetLaneSectionByIdx(0);
 									for (int l = 0; l < ls->GetNumberOfLanes(); l++) {
-										Lane* lane = ls->GetLaneByIdx(l);
+										std::shared_ptr<Lane> lane = ls->GetLaneByIdx(l);
 										if (lane->GetLink(newLinkType)) {
 											int from_id = lane->GetId();
 											int to_id = lane->GetLink(newLinkType)->GetId();
@@ -1539,10 +1560,12 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
 	return -1;
 }
 
-int OpenDrive::CheckLink(Road* road, RoadLink* link, ContactPointType expected_contact_point_type) {
+int OpenDrive::CheckLink(std::shared_ptr<Road> road,
+						 std::shared_ptr<RoadLink> link,
+						 ContactPointType expected_contact_point_type) {
 	// does this connection exist in the other direction?
 	if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD) {
-		Road* connecting_road = GetRoadById(link->GetElementId());
+		std::shared_ptr<Road> connecting_road = GetRoadById(link->GetElementId());
 		if (connecting_road != 0) {
 			if (CheckConnectedRoad(road, link, expected_contact_point_type,
 								   connecting_road->GetLink(LinkType::PREDECESSOR))
@@ -1559,7 +1582,7 @@ int OpenDrive::CheckLink(Road* road, RoadLink* link, ContactPointType expected_c
 			}
 		}
 	} else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION) {
-		Junction* junction = GetJunctionById(link->GetElementId());
+		std::shared_ptr<Junction> junction = GetJunctionById(link->GetElementId());
 
 		// Check all outgoing connections
 		if (junction == nullptr) {
@@ -1570,7 +1593,7 @@ int OpenDrive::CheckLink(Road* road, RoadLink* link, ContactPointType expected_c
 
 		int nrConnections = junction->GetNumberOfConnections();
 		for (int i = 0; i < nrConnections; i++) {
-			Connection* connection = junction->GetConnectionByIdx((int)i);
+			std::shared_ptr<Connection> connection = junction->GetConnectionByIdx((int)i);
 
 			if (connection->GetIncomingRoad() == road) {
 				CheckJunctionConnection(junction, connection);
@@ -1583,7 +1606,7 @@ int OpenDrive::CheckLink(Road* road, RoadLink* link, ContactPointType expected_c
 
 int OpenDrive::CheckConnections() {
 	int counter = 0;
-	RoadLink* link;
+	std::shared_ptr<RoadLink> link;
 
 	for (size_t i = 0; i < road_.size(); i++) {
 		// Check for connections
@@ -1634,8 +1657,8 @@ void OpenDrive::Save(const std::string fileName) const {
 	doc.save_file(fileName.c_str());
 }
 
-GeoReference* OpenDrive::GetGeoReference() {
-	return &geo_ref_;
+std::shared_ptr<GeoReference> OpenDrive::GetGeoReference() {
+	return std::make_shared<GeoReference>(geo_ref_);
 }
 
 std::string OpenDrive::GetGeoReferenceAsString() {
@@ -1781,31 +1804,6 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country) {
 	return true;
 }
 
-static double GetMaxSegmentLen(Position* pos,
-							   double min,
-							   double max,
-							   double pitchResScale,
-							   double rollResScale) {
-	double max_segment_length;
-
-	// Consider rate of change of pitch and roll for segment length to influence
-	// the tesselation (triangulation) of road surface model
-
-	double zRoadPrimPrim = pos->GetZRoadPrimPrim();
-	double roadSuperElevationPrim = pos->GetRoadSuperElevationPrim();
-	double max_segment_length_candidate1 = pitchResScale / MAX(SMALL_NUMBER, abs(zRoadPrimPrim));
-	double max_segment_length_candidate2 = rollResScale / MAX(SMALL_NUMBER, abs(roadSuperElevationPrim));
-
-	max_segment_length = MIN(max_segment_length_candidate1, max_segment_length_candidate2);
-
-	// Adjust for slope
-	max_segment_length = max_segment_length / sqrt(pow(pos->GetZRoadPrim(), 2) + 1);
-
-	max_segment_length = MAX(min, MIN(max, max_segment_length));
-
-	return max_segment_length;
-}
-
 std::string OpenDrive::ContactPointType2Str(ContactPointType type) {
 	if (type == ContactPointType::CONTACT_POINT_START) {
 		return "PREDECESSOR";
@@ -1878,7 +1876,7 @@ void OpenDriveHeader::Save(pugi::xml_node& root) const {
 // void OpenDrive::SetLaneBoundaryPoints() {
 // 	// Initialization
 // 	Position* pos = new roadmanager::Position();
-// 	Road* road;
+// 	std::shared_ptr<Road> road;
 // 	LaneSection* lsec;
 // 	Lane* lane;
 // 	int number_of_lane_sections, number_of_lanes, counter;
@@ -2053,7 +2051,7 @@ void OpenDriveHeader::Save(pugi::xml_node& root) const {
 // void OpenDrive::SetRoadMarkOSIPoints() {
 // 	// Initialization
 // 	Position* pos = new roadmanager::Position();
-// 	Road* road;
+// 	std::shared_ptr<Road> road;
 // 	LaneSection* lsec;
 // 	Lane* lane;
 // 	LaneRoadMark* lane_roadMark;
@@ -2310,14 +2308,13 @@ void OpenDriveHeader::Save(pugi::xml_node& root) const {
 // 		}
 // 	}
 // }
-/* inherit OpenDrive class to OSI class where you init osi stuff
-
+// inherit OpenDrive class to OSI class where you init osi stuff
 
 // move to OSI class
 // void OpenDrive::SetLaneOSIPoints() {
 // 	// Initialization
 // 	Position* pos = new roadmanager::Position();
-// 	Road* road;
+// 	std::shared_ptr<Road> road;
 // 	LaneSection* lsec;
 // 	Lane* lane;
 // 	int number_of_lane_sections, number_of_lanes, counter;
@@ -2481,7 +2478,6 @@ void OpenDriveHeader::Save(pugi::xml_node& root) const {
 // 	}
 // }
 
-
 // move to OSI class
 // bool OpenDrive::CheckLaneOSIRequirement(std::vector<double> x0,
 // 										std::vector<double> y0,
@@ -2550,9 +2546,9 @@ void OpenDriveHeader::Save(pugi::xml_node& root) const {
 // 									  int*& connecting_lane_id,
 // 									  int lane1_id,
 // 									  int lane2_id) {
-// 	Road* road1 = GetRoadById(road1_id);
-// 	Road* road2 = GetRoadById(road2_id);
-// 	RoadLink* link = 0;
+// 	std::shared_ptr<Road> road1 = GetRoadById(road1_id);
+// 	std::shared_ptr<Road> road2 = GetRoadById(road2_id);
+// 	std::shared_ptr<RoadLink> link = 0;
 
 // 	LinkType link_type[2] = {SUCCESSOR, PREDECESSOR};
 
@@ -2593,14 +2589,14 @@ void OpenDriveHeader::Save(pugi::xml_node& root) const {
 // 		}
 // 		// check whether the roads are connected via a junction connecting road and specified lane
 // 		else if (link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION) {
-// 			Junction* junction = GetJunctionById(link->GetElementId());
+// 			std::shared_ptr<Junction> junction = GetJunctionById(link->GetElementId());
 
 // 			for (int i = 0; i < junction->GetNumberOfConnections(); i++) {
-// 				Connection* connection = junction->GetConnectionByIdx(i);
+// 				std::shared_ptr<Connection> connection = junction->GetConnectionByIdx(i);
 
 // 				if (connection->GetIncomingRoad()->GetId() == road1_id) {
-// 					Road* connecting_road = connection->GetConnectingRoad();
-// 					RoadLink* exit_link = 0;
+// 					std::shared_ptr<Road> connecting_road = connection->GetConnectingRoad();
+// 					std::shared_ptr<RoadLink> exit_link = 0;
 
 // 					// Found a connecting road - first check if this is the second road
 // 					if (connecting_road->GetId() == road2_id) {

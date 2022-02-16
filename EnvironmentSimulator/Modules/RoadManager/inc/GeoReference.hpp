@@ -1,5 +1,4 @@
-#ifndef GEOREFERENCE_HPP
-#define GEOREFERENCE_HPP
+#pragma once
 
 #include <memory>
 #include <string>
@@ -33,4 +32,3 @@ struct GeoReference {
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&) const;
 };
-#endif

@@ -1,5 +1,4 @@
-#ifndef REPEAT_HPP
-#define REPEAT_HPP
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -76,4 +75,3 @@ class Repeat {
    protected:
 	std::vector<std::shared_ptr<UserData>> user_data_;
 };
-#endif

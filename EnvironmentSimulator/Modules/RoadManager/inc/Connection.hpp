@@ -1,11 +1,12 @@
-#ifndef CONNECTION_HPP
-#define CONNECTION_HPP
+#pragma once
 
 #include <memory>
 #include <vector>
 #include "Road.hpp"
+#include "StructsandDefines.hpp"
 #include "Userdata.hpp"
 #include "pugixml.hpp"
+class Road;
 
 class JunctionLaneLink {
    public:
@@ -51,5 +52,3 @@ class Connection {
 	ContactPointType contact_point_;
 	int id_;
 };
-
-#endif

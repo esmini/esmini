@@ -1,5 +1,4 @@
-#ifndef POLY3_HPP
-#define POLY3_HPP
+#pragma once
 
 #include "CommonMini.hpp"
 #include "Geometry.hpp"
@@ -25,5 +24,3 @@ class Poly3 : public Geometry {
 	double umax_;
 	void EvaluateDSLocal(double ds, double& u, double& v);
 };
-
-#endif

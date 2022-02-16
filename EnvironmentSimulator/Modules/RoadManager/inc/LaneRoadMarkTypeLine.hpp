@@ -1,5 +1,4 @@
-#ifndef LANEROADMARKTYPELINE_HPP
-#define LANEROADMARKTYPELINE_HPP
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -34,8 +33,8 @@ class LaneRoadMarkTypeLine {
 	double GetWidth() { return width_; }
 	OSIPoints* GetOSIPoints() { return &osi_points_; }
 	OSIPoints osi_points_;
-	void SetGlobalId();
-	int GetGlobalId() { return global_id_; }
+	// void SetGlobalId();
+	// int GetGlobalId() { return global_id_; }
 	RoadMarkColor GetColor() { return color_; }
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
@@ -53,4 +52,3 @@ class LaneRoadMarkTypeLine {
 	int global_id_;		   // Unique ID for OSI
 	RoadMarkColor color_;  // if set, supersedes setting in <RoadMark>
 };
-#endif

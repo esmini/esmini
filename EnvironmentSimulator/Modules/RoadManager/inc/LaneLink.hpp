@@ -1,5 +1,4 @@
-#ifndef LANELINK_HPP
-#define LANELINK_HPP
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -25,4 +24,3 @@ class LaneLink {
 	LinkType type_;
 	int id_;
 };
-#endif

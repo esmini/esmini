@@ -1,19 +1,15 @@
 #include "Junction.hpp"
 
-Junction::~Junction() {
-	for (size_t i = 0; i < connection_.size(); i++) {
-		delete connection_[i];
-	}
-}
+Junction::~Junction() {}
 
 int Junction::GetNumberOfRoadConnections(int roadId, int laneId) {
 	int counter = 0;
 
 	for (int i = 0; i < GetNumberOfConnections(); i++) {
-		Connection* connection = GetConnectionByIdx(i);
+		std::shared_ptr<Connection> connection = GetConnectionByIdx(i);
 		if (connection && connection->GetIncomingRoad() && roadId == connection->GetIncomingRoad()->GetId()) {
 			for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++) {
-				JunctionLaneLink* lane_link = connection->GetLaneLink(j);
+				std::shared_ptr<JunctionLaneLink> lane_link = connection->GetLaneLink(j);
 				if (laneId == lane_link->from_) {
 					counter++;
 				}
@@ -22,17 +18,17 @@ int Junction::GetNumberOfRoadConnections(int roadId, int laneId) {
 	}
 	return counter;
 }
-
+/*
 LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, int idx, int laneTypeMask) {
 	int counter = 0;
 	LaneRoadLaneConnection lane_road_lane_connection;
 
 	for (int i = 0; i < GetNumberOfConnections(); i++) {
-		Connection* connection = GetConnectionByIdx(i);
+		std::shared_ptr<Connection> connection = GetConnectionByIdx(i);
 
 		if (connection && connection->GetIncomingRoad() && roadId == connection->GetIncomingRoad()->GetId()) {
 			for (int j = 0; j < connection->GetNumberOfLaneLinks(); j++) {
-				JunctionLaneLink* lane_link = connection->GetLaneLink(j);
+				std::shared_ptr<JunctionLaneLink> lane_link = connection->GetLaneLink(j);
 				if (laneId == lane_link->from_) {
 					if (counter == idx) {
 						lane_road_lane_connection.SetLane(laneId);
@@ -48,7 +44,7 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, 
 						}
 						if (!(connection->GetConnectingRoad()
 								  ->GetLaneSectionByIdx(laneSectionId)
-								  ->GetLaneById(lane_link->to_)
+								  ->GetLaneById(lSetGlobalIdane_link->to_)
 								  ->GetLaneType()
 							  & laneTypeMask)) {
 							LOG("OpenDrive::GetJunctionConnection target lane not driving! from %d, %d to "
@@ -65,10 +61,10 @@ LaneRoadLaneConnection Junction::GetRoadConnectionByIdx(int roadId, int laneId, 
 	}
 
 	return lane_road_lane_connection;
-}
-void Junction::SetGlobalId() {
-	global_id_ = GetNewGlobalLaneId();
-}
+}*/
+// void Junction::SetGlobalId() {
+	// global_id_ = GetNewGlobalLaneId();
+// }
 
 bool Junction::IsOsiIntersection() {
 	if (connection_[0]->GetIncomingRoad()->GetRoadType(0) != 0) {
@@ -90,7 +86,7 @@ int Junction::GetNoConnectionsFromRoadId(int incomingRoadId) {
 	int counter = 0;
 
 	for (int i = 0; i < GetNumberOfConnections(); i++) {
-		Connection* connection = GetConnectionByIdx(i);
+		std::shared_ptr<Connection> connection = GetConnectionByIdx(i);
 		if (connection && connection->GetIncomingRoad()->GetId() == incomingRoadId) {
 			counter++;
 		}
@@ -103,7 +99,7 @@ int Junction::GetConnectingRoadIdFromIncomingRoadId(int incomingRoadId, int inde
 	int counter = 0;
 
 	for (int i = 0; i < GetNumberOfConnections(); i++) {
-		Connection* connection = GetConnectionByIdx(i);
+		std::shared_ptr<Connection> connection = GetConnectionByIdx(i);
 		if (connection && connection->GetIncomingRoad()->GetId() == incomingRoadId) {
 			if (counter == index) {
 				return GetConnectionByIdx(i)->GetConnectingRoad()->GetId();
@@ -160,7 +156,8 @@ JunctionController* Junction::GetJunctionControllerByIdx(int index) {
 	return 0;
 }
 
-Road* Junction::GetRoadAtOtherEndOfConnectingRoad(Road* connecting_road, Road* incoming_road) {
+std::shared_ptr<Road> Junction::GetRoadAtOtherEndOfConnectingRoad(std::shared_ptr<Road> connecting_road,
+																  std::shared_ptr<Road> incoming_road) {
 	if (connecting_road->GetJunction() == 0) {
 		LOG("Unexpected: Road %d not a connecting road", connecting_road->GetId());
 		return 0;
@@ -169,13 +166,14 @@ Road* Junction::GetRoadAtOtherEndOfConnectingRoad(Road* connecting_road, Road* i
 	// Check both ends
 	LinkType link_type[2] = {LinkType::PREDECESSOR, LinkType::SUCCESSOR};
 	for (int i = 0; i < 2; i++) {
-		RoadLink* link = connecting_road->GetLink(link_type[i]);
+		std::shared_ptr<RoadLink> link = connecting_road->GetLink(link_type[i]);
 		if (link && link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD) {
 			if (link->GetElementId() == incoming_road->GetId()) {
 				// Get road at other end
-				RoadLink* link2 = connecting_road->GetLink(link_type[(i + 1) % 2]);
+				std::shared_ptr<RoadLink> link2 = connecting_road->GetLink(link_type[(i + 1) % 2]);
 				if (link2 && link2->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD) {
-					return Position::GetOpenDrive()->GetRoadById(link2->GetElementId());
+					return connecting_road; //TODO check this, is strange?
+					//return Position::GetOpenDrive()->GetRoadById(link2->GetElementId());
 				}
 			}
 		}
@@ -195,4 +193,3 @@ void JunctionController::Save(pugi::xml_node& junction) {
 		userData->Save(controller);
 	}
 }
-

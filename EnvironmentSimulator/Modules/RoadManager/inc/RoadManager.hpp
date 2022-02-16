@@ -10,8 +10,7 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-#ifndef ROADMANAGER_HPP
-#define ROADMANAGER_HPP
+#pragma once
 
 #include <cmath>
 #include <experimental/optional>
@@ -314,5 +313,3 @@ class RMTrajectory {
 };
 
 }  // namespace roadmanager
-
-#endif	// OPENDRIVE_HH_

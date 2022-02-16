@@ -1,5 +1,4 @@
-#ifndef STRUCTSANDDEFINES_HPP
-#define STRUCTSANDDEFINES_HPP
+#pragma once
 
 #include <memory>
 #include <string>
@@ -58,13 +57,6 @@ struct LaneInfo {
 	int lane_id_;
 };
 
-typedef struct {
-	int fromLane_;
-	int toLane_;
-	std::vector<std::shared_ptr<UserData>> user_data_;
-	void Save(pugi::xml_node& object);
-	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
-} ValidityRecord;
 
 
 
@@ -110,5 +102,3 @@ enum class RelativeDistanceType {
 	REL_DIST_CARTESIAN,
 	REL_DIST_EUCLIDIAN
 };
-
-#endif

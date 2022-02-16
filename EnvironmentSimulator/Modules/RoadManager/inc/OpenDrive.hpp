@@ -1,11 +1,21 @@
-#ifndef OPENDRIVE_HPP
-#define OPENDRIVE_HPP
+#pragma once
+#include <iostream>
 #include <memory>
+#include <sstream>
 #include <vector>
+#include "Bridge.hpp"
+#include "CommonMini.hpp"
 #include "Controller.hpp"
 #include "Junction.hpp"
+#include "Outline.hpp"
+#include "RMObject.hpp"
 #include "Road.hpp"
 #include "Userdata.hpp"
+#include "pugixml.hpp"
+#include "Signal.hpp"
+
+#define ROADMARK_WIDTH_STANDARD 0.15
+#define ROADMARK_WIDTH_BOLD 0.20
 /**
  * @brief  This class has as responsibility to read and parse opendrive files(check that is accurate). this
  * includes populate subclasses and give access to them Should be easy to inherit for other classes that want
@@ -82,7 +92,7 @@ class OpenDrive {
 		Retrieve a road segment specified by road ID
 		@param id road ID as specified in the OpenDRIVE file
 	*/
-	Road* GetRoadById(int id);
+	std::shared_ptr<Road> GetRoadById(int id);
 
 	/**
 		Retrieve a road segment specified by road vector element index
@@ -93,7 +103,7 @@ class OpenDrive {
 		...
 		@param idx index into the vector of roads
 	*/
-	Road* GetRoadByIdx(int idx);
+	std::shared_ptr<Road> GetRoadByIdx(int idx);
 	// if this is added this class will be huge becouse you will need to have getters for all subclass private
 	// variabels Geometry* GetGeometryByIdx(int road_idx, int geom_idx);
 	int GetRoadIdxById(int id);
@@ -101,13 +111,13 @@ class OpenDrive {
 	int GetNumOfRoads() { return (int)road_.size(); }
 	// Return the whole protected subtag vector instead of index and one object, if you don't want to
 	// inherit(recommend), and do multiple manipulations on multiple roads at the smae time.
-	std::vector < std::shared_ptr<Road>& getRoadVectorRef() { return road_; }
-	std::vector < std::shared_ptr<Junction>& getJunctionsVectorRef() { return junction_; }
-	std::vector < std::shared_ptr<Controller>& getControllerVectorRef() { return controller_; }
-	std::vector < std::shared_ptr<UserData>& getUserDataVectorRef() { return user_data_; }
+	std::vector<std::shared_ptr<Road>>& getRoadVectorRef() { return road_; }
+	std::vector<std::shared_ptr<Junction>>& getJunctionsVectorRef() { return junction_; }
+	std::vector<Controller> getControllerVectorRef() { return controller_; }
+	std::vector<std::shared_ptr<UserData>>& getUserDataVectorRef() { return user_data_; }
 
-	Junction* GetJunctionById(int id);
-	Junction* GetJunctionByIdx(int idx);
+	std::shared_ptr<Junction> GetJunctionById(int id);
+	std::shared_ptr<Junction> GetJunctionByIdx(int idx);
 
 	int GetNumOfJunctions() { return (int)junction_.size(); }
 
@@ -125,21 +135,23 @@ class OpenDrive {
 		@return number of added connections
 	*/
 	int CheckConnections();
-	int CheckLink(Road* road, RoadLink* link, ContactPointType expected_contact_point_type);
-	int CheckConnectedRoad(Road* road,
-						   RoadLink* link,
+	int CheckLink(std::shared_ptr<Road> road,
+				  std::shared_ptr<RoadLink> link,
+				  ContactPointType expected_contact_point_type);
+	int CheckConnectedRoad(std::shared_ptr<Road> road,
+						   std::shared_ptr<RoadLink> link,
 						   ContactPointType expected_contact_point_type,
-						   RoadLink* link2);
-	int CheckJunctionConnection(Junction* junction, Connection* connection);
+						   std::shared_ptr<RoadLink> link2);
+	int CheckJunctionConnection(std::shared_ptr<Junction> junction, std::shared_ptr<Connection> connection);
 	static std::string ContactPointType2Str(ContactPointType type);
 	static std::string ElementType2Str(RoadLink::ElementType type);
 
 	int GetNumberOfControllers() { return (int)controller_.size(); }
-	Controller* GetControllerByIdx(int index);
-	Controller* GetControllerById(int id);
+	std::shared_ptr<Controller> GetControllerByIdx(int index);
+	std::shared_ptr<Controller> GetControllerById(int id);
 	void AddController(Controller controller) { controller_.push_back(controller); }
 
-	GeoReference* GetGeoReference();
+	std::shared_ptr<GeoReference> GetGeoReference();
 	std::string GetGeoReferenceAsString();
 	void ParseGeoLocalization(const std::string& geoLocalization);
 
@@ -150,7 +162,7 @@ class OpenDrive {
 	void Save(const std::string fileName) const;
 
 	OpenDriveHeader GetHeader() const { return header_; };
-	void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	/**
 		Initialize the global ids
 	*/
@@ -162,11 +174,11 @@ class OpenDrive {
    protected:
 	// implement share pointers we have , I am guessing we are leaking memory
 	// classes that inherits opendriveparser should have a easy way to access subclasses
-	std::vector<std::shared_ptr<Road>> road_;			   // TODO check if it can be unique ptr
-	std::vector<std::shared_ptr<Junction>> junction_;	   // TODO check if it can be unique ptr
-	std::vector<std::shared_ptr<Controller>> controller_;  // TODO check if it can be unique ptr
-	std::vector<std::shared_ptr<UserData>> user_data_;	   // TODO check if it can be unique ptr
-	std::map<std::string, std::string> signals_types_;	   // TODO check if it can be unique ptr
+	std::vector<std::shared_ptr<Road>> road_;			// TODO check if it can be unique ptr
+	std::vector<std::shared_ptr<Junction>> junction_;	// TODO check if it can be unique ptr
+	std::vector<Controller> controller_;				// TODO check if it can be unique ptr
+	std::vector<std::shared_ptr<UserData>> user_data_;	// TODO check if it can be unique ptr
+	std::map<std::string, std::string> signals_types_;	// TODO check if it can be unique ptr
 	GeoReference geo_ref_;	// TODO: Remove this and use the header container instead.
 
    private:
@@ -174,4 +186,5 @@ class OpenDrive {
 	OpenDriveHeader header_;
 	std::string odr_filename_;
 };
-#endif
+
+

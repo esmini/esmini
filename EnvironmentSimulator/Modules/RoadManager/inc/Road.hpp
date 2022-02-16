@@ -1,12 +1,13 @@
-#ifndef ROAD_HPP
-#define ROAD_HPP
+#pragma once
 
 #include <memory>
 #include <string>
 #include <vector>
 #include "Arc.hpp"
 #include "Bridge.hpp"
+#include "Connection.hpp"
 #include "Elevation.hpp"
+#include "Junction.hpp"
 #include "LaneOffset.hpp"
 #include "LaneSection.hpp"
 #include "Line.hpp"
@@ -17,6 +18,7 @@
 #include "RoadLink.hpp"
 #include "Signal.hpp"
 #include "Spiral.hpp"
+#include "StructsandDefines.hpp"
 class Road {
    public:
 	enum class RoadType {
@@ -33,8 +35,8 @@ class Road {
 		double s_;
 		RoadType road_type_;
 		double speed_ = 0.0;  // m/s
-		std::vector<UserData*> user_data_;
-		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+		std::vector<std::shared_ptr<UserData>> user_data_;
+		void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	} RoadTypeEntry;
 
 	enum class RoadRule { RIGHT_HAND_TRAFFIC, LEFT_HAND_TRAFFIC, ROAD_RULE_UNDEFINED };
@@ -89,7 +91,7 @@ class Road {
 							int start_lane_link_idx,
 							int start_lane_id,
 							int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING);
-	int GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectingRoadId);
+	int GetConnectingLaneId(std::shared_ptr<RoadLink> road_link, int fromLaneId, int connectingRoadId);
 	double GetLaneWidthByS(double s, int lane_id);
 	double GetSpeedByS(double s);
 	bool GetZAndPitchByS(double s, double* z, double* z_prim, double* z_primPrim, double* pitch, int* index);
@@ -174,7 +176,9 @@ class Road {
 		@param contact_point If not null it will contain the contact point of specified road
 		@return true if connection exist, else false
 	*/
-	bool IsDirectlyConnected(std::shared_ptr<Road> road, LinkType link_type, ContactPointType* contact_point = 0);
+	bool IsDirectlyConnected(std::shared_ptr<Road> road,
+							 LinkType link_type,
+							 ContactPointType* contact_point = 0);
 
 	/**
 		Check if specified road is directly connected, at least in one end of current one (this)
@@ -232,4 +236,3 @@ class Road {
 	std::vector<std::shared_ptr<ObjectReference>> object_reference_;
 	std::vector<std::shared_ptr<UserData>> user_data_;
 };
-#endif

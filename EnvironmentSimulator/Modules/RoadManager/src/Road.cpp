@@ -95,60 +95,60 @@ LaneInfo Road::GetLaneInfoByS(double s, int start_lane_section_idx, int start_la
 	return lane_info;
 }
 
-int Road::GetConnectingLaneId(std::shared_ptr<RoadLink> road_link, int fromLaneId, int connectingRoadId) {
-	std::shared_ptr<Lane> lane;
-
-	if (road_link->GetElementId() == -1) {
-		LOG("No connecting road or junction at rid %d link_type %s", GetId(),
-			LinkType2Str(road_link->GetType()).c_str());
-		return -1;
-	}
-
-	if (road_link->GetType() == LinkType::SUCCESSOR) {
-		lane = lane_section_.back()->GetLaneById(fromLaneId);
-	} else {
-		lane = lane_section_[0]->GetLaneById(fromLaneId);
-	}
-
-	if (lane == nullptr) {
-		LOG("Failed to get connecting lane %d %d %d", GetId(), fromLaneId, connectingRoadId);
-		return 0;
-	}
-
-	if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD) {
-		if (road_link->GetElementId() != connectingRoadId) {
-			LOG("Wrong connectingRoadId %d (expected %d)", road_link->GetElementId(), connectingRoadId);
-			return 0;
-		}
-
-		LaneLink* lane_link = lane->GetLink(road_link->GetType());
-		if (lane_link != 0) {
-			return lane->GetLink(road_link->GetType())->GetId();
-		} else {
-			return 0;
-		}
-	} else if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION) {
-		Junction* junction = Position::GetOpenDrive()->GetJunctionById(road_link->GetElementId());
-
-		if (junction == 0) {
-			LOG("Error: junction %d not existing\n", road_link->GetElementType());
-			return -1;
-		}
-
-		int n_connections = junction->GetNumberOfRoadConnections(GetId(), lane->GetId());
-
-		for (int i = 0; i < n_connections; i++) {
-			LaneRoadLaneConnection lane_road_lane_connection
-				= junction->GetRoadConnectionByIdx(GetId(), lane->GetId(), i);
-
-			if (lane_road_lane_connection.GetConnectingRoadId() == connectingRoadId) {
-				return lane_road_lane_connection.GetConnectinglaneId();
-			}
-		}
-	}
-
-	return 0;
-}
+// int Road::GetConnectingLaneId(std::shared_ptr<RoadLink> road_link, int fromLaneId, int connectingRoadId) {
+// std::shared_ptr<Lane> lane;
+//
+// if (road_link->GetElementId() == -1) {
+// LOG("No connecting road or junction at rid %d link_type %s", GetId(),
+// LinkType2Str(road_link->GetType()).c_str());
+// return -1;
+// }
+//
+// if (road_link->GetType() == LinkType::SUCCESSOR) {
+// lane = lane_section_.back()->GetLaneById(fromLaneId);
+// } else {
+// lane = lane_section_[0]->GetLaneById(fromLaneId);
+// }
+//
+// if (lane == nullptr) {
+// LOG("Failed to get connecting lane %d %d %d", GetId(), fromLaneId, connectingRoadId);
+// return 0;
+// }
+//
+// if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_ROAD) {
+// if (road_link->GetElementId() != connectingRoadId) {
+// LOG("Wrong connectingRoadId %d (expected %d)", road_link->GetElementId(), connectingRoadId);
+// return 0;
+// }
+//
+// LaneLink* lane_link = lane->GetLink(road_link->GetType());
+// if (lane_link != 0) {
+// return lane->GetLink(road_link->GetType())->GetId();
+// } else {
+// return 0;
+// }
+// } else if (road_link->GetElementType() == RoadLink::ELEMENT_TYPE_JUNCTION) {
+// Junction* junction = Position::GetOpenDrive()->GetJunctionById(road_link->GetElementId());
+//
+// if (junction == 0) {
+// LOG("Error: junction %d not existing\n", road_link->GetElementType());
+// return -1;
+// }
+//
+// int n_connections = junction->GetNumberOfRoadConnections(GetId(), lane->GetId());
+//
+// for (int i = 0; i < n_connections; i++) {
+// LaneRoadLaneConnection lane_road_lane_connection
+// = junction->GetRoadConnectionByIdx(GetId(), lane->GetId(), i);
+//
+// if (lane_road_lane_connection.GetConnectingRoadId() == connectingRoadId) {
+// return lane_road_lane_connection.GetConnectinglaneId();
+// }
+// }
+// }
+//
+// return 0;
+// }
 
 double Road::GetLaneWidthByS(double s, int lane_id) {
 	std::shared_ptr<LaneSection> lsec;
@@ -192,26 +192,18 @@ std::shared_ptr<Geometry> Road::GetGeometry(int idx) {
 }
 
 Road::~Road() {
-	for (size_t i = 0; i < geometry_.size(); i++) {
-		delete (geometry_[i]);
-	}
-	for (size_t i = 0; i < elevation_profile_.size(); i++) {
-		delete (elevation_profile_[i]);
-	}
-	for (size_t i = 0; i < super_elevation_profile_.size(); i++) {
-		delete (super_elevation_profile_[i]);
-	}
-	for (size_t i = 0; i < link_.size(); i++) {
-		delete (link_[i]);
-	}
+	geometry_.clear();
+	elevation_profile_.clear();
+	super_elevation_profile_.clear();
+	link_.clear();
 }
 
 void Road::Print() {
 	LOG("Road id: %d length: %.2f\n", id_, GetLength());
-	cout << "Geometries:" << endl;
+	std::cout << "Geometries:" << std::endl;
 
 	for (size_t i = 0; i < geometry_.size(); i++) {
-		cout << "Geometry type: " << geometry_[i]->GetType() << endl;
+		std::cout << "Geometry type: " << geometry_[i]->GetType() << std::endl;
 	}
 
 	for (size_t i = 0; i < link_.size(); i++) {
@@ -566,7 +558,10 @@ int Road::GetNumberOfDrivingLanesSide(double s, int side) {
 	return (lane_section_[i]->GetNumberOfDrivingLanesSide(side));
 }
 
-bool Road::IsDirectlyConnected(std::shared_ptr<Road> road, LinkType link_type, ContactPointType* contact_point) {
+/*
+bool Road::IsDirectlyConnected(std::shared_ptr<Road> road,
+							   LinkType link_type,
+							   ContactPointType* contact_point) {
 	if (road == nullptr) {
 		return false;
 	}
@@ -599,9 +594,9 @@ bool Road::IsDirectlyConnected(std::shared_ptr<Road> road, LinkType link_type, C
 	}
 
 	return false;
-}
+}*/
 
-bool Road::IsSuccessor(std::shared_ptr<Road> road, ContactPointType* contact_point) {
+/*bool Road::IsSuccessor(std::shared_ptr<Road> road, ContactPointType* contact_point) {
 	return IsDirectlyConnected(road, LinkType::SUCCESSOR, contact_point) != 0;
 }
 
@@ -612,7 +607,7 @@ bool Road::IsPredecessor(std::shared_ptr<Road> road, ContactPointType* contact_p
 bool Road::IsDirectlyConnected(std::shared_ptr<Road> road) {
 	// Unspecified link, check both ends
 	return IsSuccessor(road) || IsPredecessor(road);
-}
+}*/
 
 double Road::GetWidth(double s, int side, int laneTypeMask) {
 	double offset0 = 0;
@@ -682,7 +677,7 @@ double Road::GetCenterOffset(double s, int lane_id) {
 	return 0.0;
 }
 
-std::shared_ptr<RoadTypeEntry> Road::GetRoadType(int idx) {
+std::shared_ptr<Road::RoadTypeEntry> Road::GetRoadType(int idx) {
 	if (type_.size() > 0) {
 		return type_[idx];
 	} else {

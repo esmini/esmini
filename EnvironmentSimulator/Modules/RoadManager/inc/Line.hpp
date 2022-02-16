@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LINE_HPP
 #define LINE_HPP
 #include "CommonMini.hpp"

@@ -1,5 +1,5 @@
 #include "Outline.hpp"
-#include "Position.hpp"
+// #include "Position.hpp"
 void Outline::Save(pugi::xml_node& object) {
 	// Sace according to OpenDRIVE 1.5M
 	auto outlines = object.child("outlines");
@@ -55,13 +55,13 @@ OutlineCornerRoad::OutlineCornerRoad(int roadId, double s, double t, double dz, 
 OutlineCornerRoad::OutlineCornerRoad(int id, int roadId, double s, double t, double dz, double height)
 	: id_(id), roadId_(roadId), s_(s), t_(t), dz_(dz), height_(height) {}
 
-void OutlineCornerRoad::GetPos(double& x, double& y, double& z) {
-	Position pos;
-	pos.SetTrackPos(roadId_, s_, t_);
-	x = pos.GetX();
-	y = pos.GetY();
-	z = pos.GetZ() + dz_;
-}
+// void OutlineCornerRoad::GetPos(double& x, double& y, double& z) {
+	// Position pos;
+	// pos.SetTrackPos(roadId_, s_, t_);
+	// x = pos.GetX();
+	// y = pos.GetY();
+	// z = pos.GetZ() + dz_;
+// }
 
 void OutlineCornerRoad::Save(pugi::xml_node& outline) {
 	auto cornerRoad = outline.append_child("cornerRoad");
@@ -102,18 +102,18 @@ OutlineCornerLocal::OutlineCornerLocal(int id,
 	  height_(height),
 	  heading_(heading) {}
 
-void OutlineCornerLocal::GetPos(double& x, double& y, double& z) {
-	Position pref;
-	pref.SetTrackPos(roadId_, s_, t_);
-	double total_heading = GetAngleSum(pref.GetH(), heading_);
-	double u2, v2;
-	RotateVec2D(u_, v_, total_heading, u2, v2);
-
-	x = pref.GetX() + u2;
-	y = pref.GetY() + v2;
-	z = pref.GetZ() + zLocal_;
-}
-
+// void OutlineCornerLocal::GetPos(double& x, double& y, double& z) {
+	// Position pref;
+	// pref.SetTrackPos(roadId_, s_, t_);
+	// double total_heading = GetAngleSum(pref.GetH(), heading_);
+	// double u2, v2;
+	// RotateVec2D(u_, v_, total_heading, u2, v2);
+// 
+	// x = pref.GetX() + u2;
+	// y = pref.GetY() + v2;
+	// z = pref.GetZ() + zLocal_;
+// }
+ 
 void OutlineCornerLocal::Save(pugi::xml_node& outline) {
 	auto cornerLocal = outline.append_child("cornerLocal");
 	cornerLocal.append_attribute("u").set_value(u_);

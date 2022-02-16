@@ -77,6 +77,6 @@ double OSIPoints::GetLength() {
 	return length;
 }
 
-void LaneBoundaryOSI::SetGlobalId() {
-	global_id_ = GetNewGlobalLaneBoundaryId();
-}
+// void LaneBoundaryOSI::SetGlobalId() {
+	// global_id_ = GetNewGlobalLaneBoundaryId();
+// }

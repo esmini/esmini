@@ -1,5 +1,4 @@
-#ifndef LANEROADLANECONNECTION_HPP
-#define LANEROADLANECONNECTION_HPP
+#pragma once
 
 #include "StructsandDefines.hpp"
 
@@ -29,5 +28,3 @@ class LaneRoadLaneConnection {
 	int connecting_road_id_;
 	int connecting_lane_id_;
 };
-
-#endif

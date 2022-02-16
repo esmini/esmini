@@ -1,5 +1,4 @@
-#ifndef LANEROADMARK_HPP
-#define LANEROADMARK_HPP
+#pragma once
 
 #include <string.h>
 #include <cassert>
@@ -63,7 +62,7 @@ class LaneRoadMark {
 	RoadMarkLaneChange GetLaneChange() { return lane_change_; }
 
 	int GetNumberOfRoadMarkTypes() { return (int)lane_roadMarkType_.size(); }
-	LaneRoadMarkType* GetLaneRoadMarkTypeByIdx(int idx);
+	std::shared_ptr<LaneRoadMarkType> GetLaneRoadMarkTypeByIdx(int idx);
 
 	static RoadMarkColor ParseColor(pugi::xml_node node);
 
@@ -84,4 +83,3 @@ class LaneRoadMark {
 	double width_;
 	double height_;
 };
-#endif

@@ -1,5 +1,4 @@
-#ifndef RMOBJECT_HPP
-#define RMOBJECT_HPP
+#pragma once
 
 #include <cassert>
 #include <vector>
@@ -38,9 +37,7 @@ class RMObject : public RoadObject {
 		  roll_(roll),
 		  repeat_(0) {}
 
-	~RMObject() {
-		outlines_.clear();
-	}
+	~RMObject() { outlines_.clear(); }
 
 	std::string GetName() { return name_; }
 	std::string GetType() { return type_; }
@@ -82,5 +79,3 @@ class RMObject : public RoadObject {
 	double pitch_;
 	double roll_;
 };
-
-#endif

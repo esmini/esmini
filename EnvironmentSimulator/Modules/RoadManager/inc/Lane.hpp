@@ -1,5 +1,4 @@
-#ifndef LANE_HPP
-#define LANE_HPP
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -83,15 +82,15 @@ class Lane {
 	std::shared_ptr<LaneWidth> GetWidthByS(double s);
 	std::shared_ptr<LaneRoadMark> GetLaneRoadMarkByIdx(int idx);
 
-	RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
+	// RoadMarkInfo GetRoadMarkInfoByS(int track_id, int lane_id, double s);
 	OSIPoints* GetOSIPoints() { return &osi_points_; }
-	std::vector<int> GetLineGlobalIds();
+	// std::vector<int> GetLineGlobalIds();
 	LaneBoundaryOSI* GetLaneBoundary() { return lane_boundary_; }
-	int GetLaneBoundaryGlobalId();
+	// int GetLaneBoundaryGlobalId();
 
 	// Set Functions
-	void SetGlobalId();
-	void SetLaneBoundary(LaneBoundaryOSI* lane_boundary);
+	// void SetGlobalId();
+	// void SetLaneBoundary(LaneBoundaryOSI* lane_boundary);
 	void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
 	void SetLevel(int level) { level_ = level; }
 
@@ -124,5 +123,3 @@ class Lane {
 
 	LaneBoundaryOSI* lane_boundary_;
 };
-
-#endif

@@ -1,7 +1,7 @@
-#ifndef ROADLINK_HPP
-#define ROADLINK_HPP
+#pragma once
 
 #include <cassert>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -48,4 +48,3 @@ class RoadLink {
 	ElementType element_type_;
 	ContactPointType contact_point_type_;
 };
-#endif

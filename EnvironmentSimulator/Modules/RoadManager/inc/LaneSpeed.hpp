@@ -1,6 +1,6 @@
-#ifndef LANESPEED_HPP
-#define LANESPEED_HPP
+#pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 #include "Userdata.hpp"
@@ -21,4 +21,3 @@ class LaneSpeed {
 	double max_;
 	std::string unit_;
 };
-#endif

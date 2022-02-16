@@ -30,7 +30,7 @@ void LaneSection::Save(pugi::xml_node& lanes) {
 	}
 }
 
-Lane* LaneSection::GetLaneByIdx(int idx) {
+std::shared_ptr<Lane> LaneSection::GetLaneByIdx(int idx) {
 	if (idx < (int)lane_.size()) {
 		return lane_[idx];
 	}
@@ -39,7 +39,7 @@ Lane* LaneSection::GetLaneByIdx(int idx) {
 }
 
 bool LaneSection::IsOSILaneById(int id) {
-	Lane* lane = GetLaneById(id);
+	std::shared_ptr<Lane> lane = GetLaneById(id);
 	if (lane == 0) {
 		return false;
 	} else {
@@ -47,7 +47,7 @@ bool LaneSection::IsOSILaneById(int id) {
 	}
 }
 
-Lane* LaneSection::GetLaneById(int id) {
+std::shared_ptr<Lane> LaneSection::GetLaneById(int id) {
 	for (size_t i = 0; i < lane_.size(); i++) {
 		if (lane_[i]->GetId() == id) {
 			return lane_[i];
@@ -74,22 +74,22 @@ int LaneSection::GetLaneIdxById(int id) {
 	return -1;
 }
 
-int LaneSection::GetLaneGlobalIdByIdx(int idx) {
-	if (idx < 0 || idx > (int)lane_.size() - 1) {
-		LOG("LaneSection::GetLaneIdByIdx Error: index %d, only %d lanes\n", idx, (int)lane_.size());
-		return 0;
-	} else {
-		return (lane_[idx]->GetGlobalId());
-	}
-}
-int LaneSection::GetLaneGlobalIdById(int id) {
-	for (size_t i = 0; i < (int)lane_.size(); i++) {
-		if (lane_[i]->GetId() == id) {
-			return lane_[i]->GetGlobalId();
-		}
-	}
-	return -1;
-}
+// int LaneSection::GetLaneGlobalIdByIdx(int idx) {
+// 	if (idx < 0 || idx > (int)lane_.size() - 1) {
+// 		LOG("LaneSection::GetLaneIdByIdx Error: index %d, only %d lanes\n", idx, (int)lane_.size());
+// 		return 0;
+// 	} else {
+// 		return (lane_[idx]->GetGlobalId());
+// 	}
+// }
+// int LaneSection::GetLaneGlobalIdById(int id) {
+// 	for (size_t i = 0; i < (int)lane_.size(); i++) {
+// 		if (lane_[i]->GetId() == id) {
+// 			return lane_[i]->GetGlobalId();
+// 		}
+// 	}
+// 	return -1;
+// }
 
 int LaneSection::GetNumberOfDrivingLanes() {
 	int counter = 0;
@@ -143,12 +143,12 @@ double LaneSection::GetWidth(double s, int lane_id) {
 	// Enforce s within range of section
 	s = CLAMP(s, s_, s_ + GetLength());
 
-	Lane* lane = GetLaneById(lane_id);
+	std::shared_ptr<Lane> lane = GetLaneById(lane_id);
 	if (lane == 0) {
 		return 0.0;
 	}
 
-	LaneWidth* lane_width = lane->GetWidthByS(s - s_);
+	std::shared_ptr<LaneWidth> lane_width = lane->GetWidthByS(s - s_);
 	if (lane_width == 0)  // No lane width registered
 	{
 		return 0.0;
@@ -194,12 +194,12 @@ double LaneSection::GetOuterOffsetHeading(double s, int lane_id) {
 		return 0.0;	 // reference lane has no width
 	}
 
-	Lane* lane = GetLaneById(lane_id);
+	std::shared_ptr<Lane> lane = GetLaneById(lane_id);
 	if (lane == 0) {
 		return 0.0;
 	}
 
-	LaneWidth* lane_width = lane->GetWidthByS(s - s_);
+	std::shared_ptr<LaneWidth> lane_width = lane->GetWidthByS(s - s_);
 	if (lane_width == 0)  // No lane width registered
 	{
 		return 0.0;
@@ -234,9 +234,9 @@ double LaneSection::GetCenterOffsetHeading(double s, int lane_id) {
 	return (inner_offset_heading + outer_offset_heading) / 2;
 }
 
-void LaneSection::AddLane(Lane* lane) {
-	lane->SetGlobalId();
-	global_lane_counter++;
+void LaneSection::AddLane(std::shared_ptr<Lane> lane) {
+	// lane->SetGlobalId();
+	// global_lane_counter++;
 
 	// Keep list sorted on lane ID, from + to -
 	if (lane_.size() > 0 && lane->GetId() > lane_.back()->GetId()) {

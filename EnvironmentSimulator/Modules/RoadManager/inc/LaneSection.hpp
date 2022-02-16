@@ -1,5 +1,5 @@
-#ifndef LANESECTION_HPP
-#define LANESECTION_HPP
+#pragma once
+
 #include <experimental/optional>
 #include <memory>
 #include <vector>
@@ -13,13 +13,13 @@ class LaneSection {
 	LaneSection(double s) : s_(s), length_(0) {}
 	void AddLane(std::shared_ptr<Lane> lane);
 	double GetS() { return s_; }
-	Lane* GetLaneByIdx(int idx);
-	Lane* GetLaneById(int id);
+	std::shared_ptr<Lane> GetLaneByIdx(int idx);
+	std::shared_ptr<Lane> GetLaneById(int id);
 	int GetLaneIdByIdx(int idx);
 	int GetLaneIdxById(int id);
 	bool IsOSILaneById(int id);
-	int GetLaneGlobalIdByIdx(int idx);
-	int GetLaneGlobalIdById(int id);
+	// int GetLaneGlobalIdByIdx(int idx);
+	// int GetLaneGlobalIdById(int id);
 	double GetOuterOffset(double s, int lane_id);
 	double GetWidth(double s, int lane_id);
 	int GetClosestLaneIdx(double s,
@@ -62,4 +62,3 @@ class LaneSection {
 	std::experimental::optional<bool> singleSide_;
 	double length_;
 };
-#endif

@@ -69,8 +69,7 @@ using namespace roadmanager;
 #define OSI_POINT_CALC_STEPSIZE 1		 // [m]
 #define OSI_TANGENT_LINE_TOLERANCE 0.01	 // [m]
 #define OSI_POINT_DIST_SCALE 0.025
-#define ROADMARK_WIDTH_STANDARD 0.15
-#define ROADMARK_WIDTH_BOLD 0.20
+
 
 static int g_Lane_id = 0;
 static int g_Laneb_id = 0;
@@ -97,37 +96,6 @@ int roadmanager::GetNewGlobalLaneBoundaryId() {
 	int returnvalue = g_Laneb_id;
 	g_Laneb_id++;
 	return returnvalue;
-}
-
-std::string ReadAttribute(pugi::xml_node node, std::string attribute_name, bool required) {
-	if (!strcmp(attribute_name.c_str(), "")) {
-		if (required) {
-			LOG("Warning: Required but empty attribute");
-		}
-		return "";
-	}
-
-	pugi::xml_attribute attr;
-
-	if ((attr = node.attribute(attribute_name.c_str()))) {
-		return attr.value();
-	} else {
-		if (required) {
-			LOG("Warning: missing required attribute: %s -> %s", node.name(), attribute_name.c_str());
-		}
-	}
-
-	return "";
-}
-
-void ValidityRecord::Save(pugi::xml_node& object) {
-	auto validity = object.append_child("validity");
-	validity.append_attribute("fromLane").set_value(fromLane_);
-	validity.append_attribute("toLane").set_value(toLane_);
-
-	for (auto userData : user_data_) {
-		userData->Save(validity);
-	}
 }
 
 bool RoadPath::CheckRoad(Road* checkRoad, RoadPath::PathNode* srcNode, Road* fromRoad, int fromLaneId) {
@@ -1261,3 +1229,29 @@ double RMTrajectory::GetStartTime() {
 double RMTrajectory::GetDuration() {
 	return shape_->GetDuration();
 }
+
+static double GetMaxSegmentLen(Position* pos,
+							   double min,
+							   double max,
+							   double pitchResScale,
+							   double rollResScale) {
+	double max_segment_length;
+
+	// Consider rate of change of pitch and roll for segment length to influence
+	// the tesselation (triangulation) of road surface model
+
+	double zRoadPrimPrim = pos->GetZRoadPrimPrim();
+	double roadSuperElevationPrim = pos->GetRoadSuperElevationPrim();
+	double max_segment_length_candidate1 = pitchResScale / MAX(SMALL_NUMBER, abs(zRoadPrimPrim));
+	double max_segment_length_candidate2 = rollResScale / MAX(SMALL_NUMBER, abs(roadSuperElevationPrim));
+
+	max_segment_length = MIN(max_segment_length_candidate1, max_segment_length_candidate2);
+
+	// Adjust for slope
+	max_segment_length = max_segment_length / sqrt(pow(pos->GetZRoadPrim(), 2) + 1);
+
+	max_segment_length = MAX(min, MIN(max, max_segment_length));
+
+	return max_segment_length;
+}
+	
