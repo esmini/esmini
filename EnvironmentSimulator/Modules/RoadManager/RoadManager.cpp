@@ -4187,10 +4187,16 @@ int RoadPath::Calculate(double &dist, bool bothDirections, double maxDist)
 	// The implementation is based on Dijkstra's algorithm
 	// https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
 
-	if (pivotRoad == 0)
+	if (pivotRoad == nullptr)
 	{
 		LOG("Invalid startpos road ID: %d", startPos_->GetTrackId());
-		return -1;
+		return -2;
+	}
+
+	if (targetRoad == nullptr)
+	{
+		LOG("Invalid targetpos road ID: %d", targetPos_->GetTrackId());
+		return -2;
 	}
 
 	for (i = 0; i < (bothDirections ? 2 : 1); i++)
@@ -9955,6 +9961,8 @@ void Position::ReleaseRelation()
 
 int Route::AddWaypoint(Position* position)
 {
+	int retval = 0;
+
 	if (minimal_waypoints_.size() > 0)
 	{
 		// Keep only one consecutive waypoint per road
@@ -9983,8 +9991,8 @@ int Route::AddWaypoint(Position* position)
 		// Check that there is a valid path from previous waypoint
 		RoadPath* path = new RoadPath(&minimal_waypoints_.back(), position);
 		double dist = 0;
-
-		if (path->Calculate(dist, false) == 0)
+		retval = path->Calculate(dist, false);
+		if (retval == 0)
 		{
 			// Path is found by tracing previous nodes
 			RoadPath::PathNode* previous = 0;
@@ -10017,7 +10025,7 @@ int Route::AddWaypoint(Position* position)
 
 			length_ += dist;
 		}
-		else
+		else if (retval < 0)
 		{
 			invalid_route_ = true;
 		}
@@ -10027,9 +10035,26 @@ int Route::AddWaypoint(Position* position)
 		// First waypoint, make it the current position
 		currentPos_ = *position;
 	}
-	all_waypoints_.push_back(*position);
-	minimal_waypoints_.push_back(*position);
-	LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f", (int)minimal_waypoints_.size() - 1, position->GetTrackId(), position->GetLaneId(), position->GetS());
+	if (retval >= -1)
+	{
+		// Add all waypoints including a valid road ID (retval == -2 indicates invalid road ID)
+		all_waypoints_.push_back(*position);
+		LOG("Route::AddWaypoint Added waypoint %d: %d, %d, %.2f", (int)all_waypoints_.size() - 1, position->GetTrackId(), position->GetLaneId(), position->GetS());
+
+		if (retval == 0)
+		{
+			// For OpenSCENARIO routes, add only waypoints to which a path has been found
+			minimal_waypoints_.push_back(*position);
+		}
+		else
+		{
+			LOG("Route::AddWaypoint Skip waypoint for scenario routes since path not found");
+		}
+	}
+	else
+	{
+		LOG("Route::AddWaypoint Failed to add waypoint %d: %d, %d, %.2f", (int)minimal_waypoints_.size() - 1, position->GetTrackId(), position->GetLaneId(), position->GetS());
+	}
 
 	return 0;
 }
