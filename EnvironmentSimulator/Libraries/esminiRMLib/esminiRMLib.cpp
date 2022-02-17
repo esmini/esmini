@@ -51,9 +51,9 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 	if (position[index].GetProbeInfo(adjustedLookaheadDistance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode) != roadmanager::Position::ErrorCode::ERROR_GENERIC)
 	{
 		// Copy data
-		r_data->road_lane_info.pos[0] = (float)s_data.road_lane_info.pos[0];
-		r_data->road_lane_info.pos[1] = (float)s_data.road_lane_info.pos[1];
-		r_data->road_lane_info.pos[2] = (float)s_data.road_lane_info.pos[2];
+		r_data->road_lane_info.pos.x = (float)s_data.road_lane_info.pos[0];
+		r_data->road_lane_info.pos.y = (float)s_data.road_lane_info.pos[1];
+		r_data->road_lane_info.pos.z = (float)s_data.road_lane_info.pos[2];
 		r_data->road_lane_info.heading = (float)s_data.road_lane_info.heading;
 		r_data->road_lane_info.pitch = (float)s_data.road_lane_info.pitch;
 		r_data->road_lane_info.roll = (float)s_data.road_lane_info.roll;
@@ -66,9 +66,9 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo *r
 		r_data->road_lane_info.laneOffset = (float)s_data.road_lane_info.laneOffset;
 		r_data->road_lane_info.s = (float)s_data.road_lane_info.s;
 		r_data->road_lane_info.t = (float)s_data.road_lane_info.t;
-		r_data->relative_pos[0] = (float)s_data.relative_pos[0];
-		r_data->relative_pos[1] = (float)s_data.relative_pos[1];
-		r_data->relative_pos[2] = (float)s_data.relative_pos[2];
+		r_data->relative_pos.x = (float)s_data.relative_pos[0];
+		r_data->relative_pos.y = (float)s_data.relative_pos[1];
+		r_data->relative_pos.z = (float)s_data.relative_pos[2];
 		r_data->relative_h = (float)s_data.relative_h;
 
 		if (position[index].GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
@@ -116,9 +116,9 @@ static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo 
 
 	position[index].GetRoadLaneInfo(adjustedLookaheadDistance, &s_data, (roadmanager::Position::LookAheadMode)lookAheadMode);
 
-	r_data->pos[0] = (float)s_data.pos[0];
-	r_data->pos[1] = (float)s_data.pos[1];
-	r_data->pos[2] = (float)s_data.pos[2];
+	r_data->pos.x = (float)s_data.pos[0];
+	r_data->pos.y = (float)s_data.pos[1];
+	r_data->pos.z = (float)s_data.pos[2];
 	r_data->heading = (float)s_data.heading;
 	r_data->pitch = (float)s_data.pitch;
 	r_data->roll = (float)s_data.roll;

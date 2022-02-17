@@ -23,6 +23,13 @@ typedef struct
 	float x;
 	float y;
 	float z;
+} RM_PositionXYZ;
+
+typedef struct
+{
+	float x;
+	float y;
+	float z;
 	float h;
 	float p;
 	float r;
@@ -36,7 +43,7 @@ typedef struct
 
 typedef struct
 {
-	float pos[3];			// position, in global coordinate system
+	RM_PositionXYZ pos;	    // position, in global coordinate system
 	float heading;			// road heading
 	float pitch;			// road pitch
 	float roll;				// road roll
@@ -54,7 +61,7 @@ typedef struct
 typedef struct
 {
 	RM_RoadLaneInfo road_lane_info; // Road info at probe location
-	float relative_pos[3];          // probe position, relative vehicle (pivot position object) coordinate system
+	RM_PositionXYZ relative_pos;    // probe position, relative vehicle (pivot position object) coordinate system
 	float relative_h;		        // heading angle to steering target from and relatove to vehicle (pivot position)
 } RM_RoadProbeInfo;
 

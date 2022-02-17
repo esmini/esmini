@@ -45,15 +45,16 @@ namespace OpenDRIVE
     [StructLayout(LayoutKind.Sequential)]
     public struct PositionXYZ
     {
-        [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 3)]
-        public float[] pos;
+        public float x;
+        public float y;
+        public float z;
     };
 
     [StructLayout(LayoutKind.Sequential)]
     public struct RoadLaneInfo
     {
         [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 3)]
-        public float[] pos;            // position, in global coordinate system
+        public PositionXYZ pos;        // position, in global coordinate system
         public float heading;          // road heading
         public float pitch;            // road pitch
         public float roll;			   // road roll
@@ -70,10 +71,9 @@ namespace OpenDRIVE
 
     public struct RoadProbeInfo
     {
-        public RoadLaneInfo laneInfo;   // Road info at probe location
-        [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 3)]
-        public float[] relativePos;       // probe position, relative vehicle (pivot position object) coordinate system
-        public float relativeHeading;   // heading angle to steering target from and relatove to vehicle (pivot position)
+        public RoadLaneInfo laneInfo;    // Road info at probe location
+        public PositionXYZ relativePos;  // probe position, relative vehicle (pivot position object) coordinate system
+        public float relativeHeading;    // heading angle to steering target from and relatove to vehicle (pivot position)
     }
 
     [StructLayout(LayoutKind.Sequential)]

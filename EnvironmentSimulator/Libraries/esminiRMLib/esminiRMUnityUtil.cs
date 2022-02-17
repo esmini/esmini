@@ -140,7 +140,7 @@ namespace OpenDRIVE
         public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo, LookAheadMode lookAheadMode = LookAheadMode.LaneCenter, int laneId = 0, bool inRoadDrivingDirection = false)
         {
             RoadManagerLibraryCS.GetLaneInfo(openDriveIndex, lookAheadDistance, ref tmpLaneInfo, (int)lookAheadMode, inRoadDrivingDirection);
-            laneInfo.position = GetUnityPosition(tmpLaneInfo.pos[0], tmpLaneInfo.pos[1], tmpLaneInfo.pos[2]);
+            laneInfo.position = GetUnityPosition(tmpLaneInfo.pos.x, tmpLaneInfo.pos.y, tmpLaneInfo.pos.z);
             laneInfo.rotation = GetUnityRotation(tmpLaneInfo.heading, tmpLaneInfo.pitch, tmpLaneInfo.roll);
             if (laneId >= 0)
                 laneInfo.curvature = tmpLaneInfo.curvature;
@@ -159,7 +159,7 @@ namespace OpenDRIVE
         public static void GetProbeInfo(int openDriveIndex, float lookAheadDistance, ref RoadProbeInfoUnityCoordinates probeInfo, int lookAheadMode, bool inRoadDrivingDirection = false)
         {
             RoadManagerLibraryCS.GetProbeInfo(openDriveIndex, lookAheadDistance, ref tmpProbeInfo, lookAheadMode, inRoadDrivingDirection);
-            probeInfo.roadLaneInfo.position = GetUnityPosition(tmpProbeInfo.laneInfo.pos[0], tmpProbeInfo.laneInfo.pos[1], tmpProbeInfo.laneInfo.pos[2]);
+            probeInfo.roadLaneInfo.position = GetUnityPosition(tmpProbeInfo.laneInfo.pos.x, tmpProbeInfo.laneInfo.pos.y, tmpProbeInfo.laneInfo.pos.z);
             probeInfo.roadLaneInfo.rotation = GetUnityRotation(tmpProbeInfo.laneInfo.heading, tmpProbeInfo.laneInfo.pitch, tmpProbeInfo.laneInfo.roll);
             probeInfo.roadLaneInfo.curvature = tmpProbeInfo.laneInfo.curvature;
             probeInfo.roadLaneInfo.speedLimit = tmpProbeInfo.laneInfo.speed_limit;
@@ -170,7 +170,7 @@ namespace OpenDRIVE
             probeInfo.roadLaneInfo.s = tmpProbeInfo.laneInfo.s;
             probeInfo.roadLaneInfo.t = tmpProbeInfo.laneInfo.t;
             probeInfo.roadLaneInfo.junctionId = tmpProbeInfo.laneInfo.junctionId;
-            probeInfo.relativePosition = GetUnityPosition(tmpProbeInfo.relativePos[0], tmpProbeInfo.relativePos[1], tmpProbeInfo.relativePos[2]);
+            probeInfo.relativePosition = GetUnityPosition(tmpProbeInfo.relativePos.x, tmpProbeInfo.relativePos.y, tmpProbeInfo.relativePos.z);
             probeInfo.relativeHeading = tmpProbeInfo.relativeHeading;
         }
 
