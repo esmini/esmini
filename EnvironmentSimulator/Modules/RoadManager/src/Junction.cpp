@@ -136,7 +136,6 @@ void Junction::Save(pugi::xml_node& root) {
 
 	for (auto connection : connection_) {
 		connection->Save(junction);
-		std::cout << "saved connection for junction " << id_ << std::endl;
 	}
 
 	for (auto controller : controller_) {

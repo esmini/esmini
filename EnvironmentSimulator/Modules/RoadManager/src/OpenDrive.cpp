@@ -1355,7 +1355,6 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 					connection->AddJunctionLaneLink(from_id, to_id);
 				}
 				j->AddConnection(connection);
-				std::cout << "added connection for junction " << j->GetId() << std::endl;
 			}
 		}
 
