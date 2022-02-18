@@ -1381,7 +1381,13 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace) {
 
 	return true;
 }
-OpenDrive::~OpenDrive() {}
+OpenDrive::~OpenDrive() {
+	road_.clear();
+	junction_.clear();
+	controller_.clear();
+	user_data_.clear();
+
+}
 
 int OpenDrive::GetRoadIdxById(int id) {
 	for (int i = 0; i < (int)road_.size(); i++) {
