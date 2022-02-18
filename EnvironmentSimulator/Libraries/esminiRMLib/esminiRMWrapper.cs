@@ -53,7 +53,6 @@ namespace OpenDRIVE
     [StructLayout(LayoutKind.Sequential)]
     public struct RoadLaneInfo
     {
-        [MarshalAsAttribute(UnmanagedType.ByValArray, SizeConst = 3)]
         public PositionXYZ pos;        // position, in global coordinate system
         public float heading;          // road heading
         public float pitch;            // road pitch
