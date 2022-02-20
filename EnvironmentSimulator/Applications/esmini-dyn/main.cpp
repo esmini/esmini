@@ -16,11 +16,13 @@
   */
 
 
-#include "osi_common.pb.h"
-#include "osi_object.pb.h"
-#include "osi_groundtruth.pb.h"
-#include "osi_sensordata.pb.h"
-#include "osi_version.pb.h"
+#if USE_OSI
+	#include "osi_common.pb.h"
+	#include "osi_object.pb.h"
+	#include "osi_groundtruth.pb.h"
+	#include "osi_sensordata.pb.h"
+	#include "osi_version.pb.h"
+#endif
 
 #include "stdio.h"
 #include "esminiLib.hpp"

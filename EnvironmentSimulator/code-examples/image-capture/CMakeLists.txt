@@ -15,7 +15,7 @@ set ( INCLUDES
 
 add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
-target_link_libraries ( 
+target_link_libraries (
 	${TARGET}
 	esminiLib
 	CommonMini
@@ -23,10 +23,4 @@ target_link_libraries (
 	${TIME_LIB}
 )
 
-if (UNIX)
-  install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY_CODE_EXAMPLES}")
-else()
-  install ( TARGETS ${TARGET} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY_CODE_EXAMPLES}")
-  install ( TARGETS ${TARGET} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY_CODE_EXAMPLES}")
-endif (UNIX)
-
+install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY_CODE_EXAMPLES}")

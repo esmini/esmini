@@ -22,6 +22,7 @@ function (add_version_file)
     )
 endfunction (add_version_file)
 
+message("Add version file")
 add_version_file()
 
 # Add a custom command that produces version.hpp, plus

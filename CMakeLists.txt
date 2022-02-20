@@ -12,7 +12,9 @@ project (EnvironmentSimulator)
 
 if(MSVC)
   set(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD 1)
+elseif (MINGW)
 endif()
+
 set(CMAKE_CXX_STANDARD 14)
 
 # Allow for folder structure
@@ -23,26 +25,23 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # An alternative to this global option is to set POSITION_INDEPENDENT_CODE on each target
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  set (LINUX true)
+else ()
+  set (LINUX false)
+endif ()
 
-if ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
+if (LINUX OR APPLE OR MINGW OR MSVC)
   set(INSTALL_DIRECTORY "${CMAKE_HOME_DIRECTORY}/bin")
-elseif (WIN32)
-  set(INSTALL_DIRECTORY "${CMAKE_HOME_DIRECTORY}/bin")
-elseif(UBUNTU32)
-  set(INSTALL_DIRECTORY "${CMAKE_HOME_DIRECTORY}/bin")
-elseif(APPLE)
-  set(INSTALL_DIRECTORY "${CMAKE_HOME_DIRECTORY}/bin")
-elseif((UNIX) AND (NOT APPLE))
-  set(INSTALL_DIRECTORY "${CMAKE_HOME_DIRECTORY}/bin")
-else()
+else ()
   message(FATAL_ERROR "Unrecognized platform therefore there isn't an installation directory. Stopping the cmake process.")
-endif()
+endif ()
 
 set(INSTALL_DIRECTORY_CODE_EXAMPLES "${CMAKE_HOME_DIRECTORY}/code-examples-bin")
 
 set(PUGIXML_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/pugixml")
 set(EXPR_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/expr")
-if(WIN32)
+if(MSVC)
     set(DIRENT_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/externals/dirent/win")
 else()
     set(DIRENT_INCLUDE_DIR "")

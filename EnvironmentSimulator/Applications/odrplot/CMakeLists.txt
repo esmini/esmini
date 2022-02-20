@@ -17,14 +17,9 @@ add_executable ( ${TARGET} ${SOURCES} ${INCLUDES} )
 
 target_link_libraries ( 
 	${TARGET}
-	CommonMini	
 	RoadManager
+	CommonMini	
 	${TIME_LIB}
 )
 
-if (UNIX)
-  install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")
-else()
-  install ( TARGETS ${TARGET} CONFIGURATIONS Release DESTINATION "${INSTALL_DIRECTORY}")
-  install ( TARGETS ${TARGET} CONFIGURATIONS Debug DESTINATION "${INSTALL_DIRECTORY}")
-endif (UNIX)
+install ( TARGETS ${TARGET} DESTINATION "${INSTALL_DIRECTORY}")

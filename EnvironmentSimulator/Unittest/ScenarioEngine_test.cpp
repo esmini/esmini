@@ -367,8 +367,9 @@ TEST(OptionsTest, TestOptionHandling)
     argv = (char**)malloc(argc * sizeof(char*));
     for (int i = 0; i < argc; i++)
     {
-        argv[i] = (char*)malloc(strlen(args[i]) + 1);
-        strncpy(argv[i], args[i], strlen(args[i]) + 1);
+        size_t len = strlen(args[i]);
+        argv[i] = (char*)malloc((len + 1) * sizeof(char*));
+        strncpy(argv[i], args[i], len + 1);
     }
 
     ASSERT_EQ(opt.ParseArgs(&argc, argv), -1);
@@ -1086,7 +1087,7 @@ int main(int argc, char **argv)
     }
 #endif
 
-    //testing::GTEST_FLAG(filter) = "*EnsureContinuation*";
+    //testing::GTEST_FLAG(filter) = "*TestOptionHandling*";
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

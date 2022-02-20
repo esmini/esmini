@@ -35,18 +35,20 @@ if ( ${FILE_STORAGE} STREQUAL "dropbox" )
         set ( OSG_PACKAGE_URL https://dl.dropboxusercontent.com/s/d0czj6b89p9jyvv/OpenSceneGraph_mac.7z?dl=0 )
         set ( OSI_PACKAGE_URL https://dl.dropboxusercontent.com/s/m62v19gp0m73dte/osi_mac.7z?dl=0 )
         set ( SUMO_PACKAGE_URL https://dl.dropboxusercontent.com/s/0x8kwztk7nmacs1/sumo_mac.7z?dl=0 )
-    elseif (UNIX)
+    elseif (LINUX)
         set ( OSG_PACKAGE_URL https://dl.dropboxusercontent.com/s/3dlev34kj94lir5/OpenSceneGraph_linux.7z?dl=0 )
         set ( OSI_PACKAGE_URL https://dl.dropboxusercontent.com/s/kwtdg0c1c8pawa1/osi_linux.7z?dl=0 )
         set ( SUMO_PACKAGE_URL https://dl.dropboxusercontent.com/s/gfwtqd3gf76f86a/sumo_linux.7z?dl=0 )
-        set ( GTEST_PACKAGE_URL https://dl.dropboxusercontent.com/s/si7jsjjsy5bpoym/googletest_linux.7z?dl=0 )    
-    elseif (WIN32)
+        set ( GTEST_PACKAGE_URL https://dl.dropboxusercontent.com/s/si7jsjjsy5bpoym/googletest_linux.7z?dl=0 )
+    elseif (MSVC)
         set ( OSG_PACKAGE_URL https://dl.dropboxusercontent.com/s/e95hnoo782p40uc/OpenSceneGraph_v10.7z?dl=0 )
         set ( OSI_PACKAGE_URL https://dl.dropboxusercontent.com/s/an58ckp2qfx5069/osi_v10.7z?dl=0 )
         set ( SUMO_PACKAGE_URL https://dl.dropboxusercontent.com/s/5jtpnnd61wonxuh/sumo_v10.7z?dl=0 )
-        set ( GTEST_PACKAGE_URL https://dl.dropboxusercontent.com/s/aaiehwzc6woqbc6/googletest_v10.7z?dl=0 )    
+        set ( GTEST_PACKAGE_URL https://dl.dropboxusercontent.com/s/aaiehwzc6woqbc6/googletest_v10.7z?dl=0 )
+    elseif (MINGW)
+        message("MinGW, enforcing slimmed esmini")
     else ()
-        message ("Unsupported Windows configuration")
+        message ("Unsupported configuration")
     endif ()
 elseif ( ${FILE_STORAGE} STREQUAL "google" )
     set ( MODELS_PACKAGE_URL https://drive.google.com/u/1/uc?id=1c3cqRzwY41gWXbg0rmugQkL5I_5L6DH_&export=download )
@@ -54,18 +56,20 @@ elseif ( ${FILE_STORAGE} STREQUAL "google" )
         set ( OSG_PACKAGE_URL https://drive.google.com/u/1/uc?id=1-1ySbmgX_Z1wXGOp-s6uouDpbmubw9zg&export=download )
         set ( OSI_PACKAGE_URL https://drive.google.com/u/1/uc?id=1UVzO8cPQaDU9KVn9v2v8Suj0uUw1dzYI&export=download )
         set ( SUMO_PACKAGE_URL https://drive.google.com/u/1/uc?id=1FAve0-MlJPv6lUZy0HvriZI7xstLAzvX&export=download )
-    elseif (UNIX)
+    elseif (LINUX)
         set ( OSG_PACKAGE_URL https://drive.google.com/u/1/uc?id=135nYmQlwrG0j8mhsXmcwsd94NYPGLOPD&export=download )
         set ( OSI_PACKAGE_URL https://drive.google.com/u/1/uc?id=1Q8O9YciIC0BPEszIKtQ2UW9KcVRZS4iB&export=download )
         set ( SUMO_PACKAGE_URL https://drive.google.com/u/1/uc?id=1m4znxNIXapP0D-l21oIm2l7L5ti-JbZH&export=download )
         set ( GTEST_PACKAGE_URL https://drive.google.com/u/1/uc?id=1Hyr9eJX2GmgpYwZhx14xOoXlZ2j-FY_p&export=download )
-    elseif (WIN32)
+    elseif (MSVC)
         set ( OSG_PACKAGE_URL https://drive.google.com/u/1/uc?id=1RTag0aUn_pJPK697j0-E72ABW10wZvOm&export=download )
         set ( OSI_PACKAGE_URL https://drive.google.com/u/1/uc?id=1pcQcVHUESOk2Wmi-zUA7uzdxxE6iwRJx&export=download )
         set ( SUMO_PACKAGE_URL https://drive.google.com/u/1/uc?id=18PhbSLyvs0IGWTAY3YBoYzpVnMFPbOuR&export=download )
         set ( GTEST_PACKAGE_URL https://drive.google.com/u/1/uc?id=1So-3gtrmEdW9RhEvVQisj1QFksHM_otU&export=download )
+    elseif (MINGW)
+        message("MinGW, enforcing slimmed esmini")
     else ()
-        message ("Unsupported Windows configuration")
+        message ("Unsupported configuration")
     endif ()
 else ()
     Message("Unknown storage type: " ${FILE_STORAGE})
@@ -74,10 +78,13 @@ endif()
 if (APPLE)
   set ( EXT_DIR_NAME "mac" )
   set ( TIME_LIB "" )
-elseif (UNIX)
+elseif (LINUX)
   set ( EXT_DIR_NAME "linux" )
   set ( TIME_LIB "" )
-elseif (WIN32)
+elseif (MINGW)
+    set ( SOCK_LIB Ws2_32.lib )
+    set ( TIME_LIB winmm )
+elseif (MSVC)
   if ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64")
     set ( EXT_DIR_NAME "v10" )
     set ( SOCK_LIB Ws2_32.lib )
@@ -192,9 +199,9 @@ if(APPLE)
     "-framework CoreServices"
   )
 
-elseif(UNIX)
+elseif(LINUX)
 
-include(CheckCXXCompilerFlag)
+  include(CheckCXXCompilerFlag)
 
   # Check for standard to use
   check_cxx_compiler_flag(-std=c++14 HAVE_FLAG_STD_CXX14)
@@ -296,7 +303,7 @@ include(CheckCXXCompilerFlag)
     optimized gtest_main debug gtest_maind
   )
 
-else() #not UNIX
+elseif(MSVC)
 
   # Get rid of historical macros preventing SUMO integration
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D NOMINMAX ")
@@ -370,7 +377,54 @@ else() #not UNIX
     optimized gtest_main.lib debug gtest_maind.lib
   )
 
-endif() #Endif UNIX
+elseif(MINGW)
+
+  include(CheckCXXCompilerFlag)
+
+  # Check for standard to use
+  check_cxx_compiler_flag(-std=c++14 HAVE_FLAG_STD_CXX14)
+  if(HAVE_FLAG_STD_CXX14)
+      SET(CXX_STD_FLAG "-std=c++14")
+  else()
+     check_cxx_compiler_flag(-std=c++1y HAVE_FLAG_STD_CXX1Y)
+     if(HAVE_FLAG_STD_CXX1Y)
+       SET(CXX_STD_FLAG "-std=c++1y")
+     else()
+       message ("Need compiler support for c++14 \(or 1y as the beta was called\)")
+     endif()
+  endif()
+
+    set (CMAKE_C_FLAGS "-std=c11 ${CMAKE_C_FLAGS}")
+
+  if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -fPIC -Wl,-strip-all")
+  elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -march=native -O0 -fPIC")
+  else()
+    SET(CMAKE_CXX_FLAGS "${CXX_STD_FLAG} -fPIC -Wl,-strip-all")
+  endif()
+
+  set ( OSG_LIBRARIES
+      opengl32.lib
+      optimized zlibstatic.lib debug zlibstaticd.lib
+      optimized jpeg.lib debug jpegd.lib
+      optimized ${OSG_VERSION}-osg.lib debug ${OSG_VERSION}-osgd.lib
+      optimized ${OSG_VERSION}-osgAnimation.lib debug ${OSG_VERSION}-osgAnimationd.lib
+      optimized ${OSG_VERSION}-osgDB.lib debug ${OSG_VERSION}-osgDBd.lib
+      optimized ${OSG_VERSION}-osgGA.lib debug ${OSG_VERSION}-osgGAd.lib
+      optimized ${OSG_VERSION}-osgViewer.lib debug ${OSG_VERSION}-osgViewerd.lib
+      optimized ${OSG_VERSION}-osgText.lib debug ${OSG_VERSION}-osgTextd.lib
+      optimized ${OSG_VERSION}-osgUtil.lib debug ${OSG_VERSION}-osgUtild.lib
+      optimized ${OSG_VERSION}-osgSim.lib debug ${OSG_VERSION}-osgSimd.lib
+      optimized ot21-OpenThreads.lib debug ot21-OpenThreadsd.lib
+      optimized osgdb_serializers_osgsim.lib debug osgdb_serializers_osgsimd.lib
+      optimized osgdb_serializers_osg.lib debug osgdb_serializers_osgd.lib
+      optimized osgdb_osg.lib debug osgdb_osgd.lib
+      optimized osgdb_fbx.lib debug osgdb_fbxd.lib
+      optimized osgdb_jpeg.lib debug osgdb_jpegd.lib
+  )
+
+endif()
 
 add_subdirectory(Modules/CommonMini)
 add_subdirectory(Modules/Controllers)
@@ -383,8 +437,8 @@ add_subdirectory(Applications/esmini)
 add_subdirectory(Applications/esmini-dyn)
 
 # Add unittest folder
-if (APPLE)
-  message ("Not available yet")
+if (APPLE OR MINGW)
+  message ("Googletest not yet supported for macOS and MinGW")
 elseif (USE_GTEST)
   add_subdirectory(Unittest)
 endif()
@@ -442,31 +496,31 @@ endfunction (download_and_extract)
 
 # download OpenSceneGraph
 set ( OSG_PACKAGE_FILENAME "osg.7z" )
-if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSG_DIR} )
+if (DEFINED OSG_DIR AND (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSG_DIR} ))
     download_and_extract( ${OSG_PACKAGE_URL} ${OSG_BASE_DIR} ${OSG_PACKAGE_FILENAME} )
 endif()
 
 # download OSI
 set ( OSI_PACKAGE_FILENAME "osi.7z" )
-if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSI_DIR} )
+if (DEFINED OSI_DIR AND (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${OSI_DIR} ))
     download_and_extract( ${OSI_PACKAGE_URL} ${OSI_BASE_DIR} ${OSI_PACKAGE_FILENAME} )
 endif()
 
 # download SUMO
 set ( SUMO_PACKAGE_FILENAME "sumo.7z" )
-if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${SUMO_DIR} )
+if (DEFINED SUMO_DIR AND (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${SUMO_DIR} ))
   download_and_extract( ${SUMO_PACKAGE_URL} ${SUMO_BASE_DIR} ${SUMO_PACKAGE_FILENAME} )
 endif()
 
 # download googletest
-if(NOT APPLE)  # not available for Mac yet
+if(NOT (APPLE OR MINGW))  # not available for Mac yet
   set ( GTEST_PACKAGE_FILENAME "googletest.7z" )
-  if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${GTEST_DIR} )
+  if (DEFINED GTEST_DIR AND (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${GTEST_DIR} ))
       download_and_extract( ${GTEST_PACKAGE_URL} ${GTEST_BASE_DIR} ${GTEST_PACKAGE_FILENAME} )
   endif()
 endif()
 
-if (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${MODELS_DIR} )
+if (DEFINED MODELS_DIR AND (FORCE_DOWNLOAD_BINARIES OR NOT EXISTS ${MODELS_DIR} ))
     download_and_extract(${MODELS_PACKAGE_URL} ${MODELS_BASE_DIR} ${MODELS_PACKAGE_FILENAME})
 endif()
 

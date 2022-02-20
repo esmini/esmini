@@ -20,13 +20,13 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <condition_variable>
+#include <cstring>
 
-#ifdef _WIN32
-	#include <sdkddkver.h>
-#else
-	#include <cstring>
+#ifndef _WIN32
 	#include <inttypes.h>
 	typedef int64_t __int64;
+#else
+	#include <sdkddkver.h>
 #endif
 
 
@@ -342,7 +342,6 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
 void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size);
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
-
 #else
 	#include <thread>
 	#include <mutex>
@@ -351,7 +350,7 @@ void SwapByteOrder(unsigned char *buf, int data_type_size, int buf_size);
 class SE_Thread
 {
 public:
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
 	SE_Thread() : thread_() {}
 #else
 	SE_Thread() {}
@@ -362,7 +361,7 @@ public:
 	void Start(void(*func_ptr)(void*), void *arg);
 
 private:
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
 	void *thread_;
 #else
 	std::thread thread_;
@@ -378,7 +377,7 @@ public:
 	void Unlock();
 
 private:
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
 	void *mutex_;
 #else
 	std::mutex mutex_;
@@ -401,29 +400,43 @@ public:
 
 	inline void Set()
 	{
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+#elif (defined __MINGW32__)
+#else
 		std::unique_lock<std::mutex> lock(mtx);
+#endif
 		flag = true;
 	}
 
 	inline void Release()
 	{
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
+		flag = false;
+#else
 		std::unique_lock<std::mutex> lock(mtx);
 		flag = false;
 		cv.notify_one();  // notify the waiting thread
+#endif
 	}
 
 	inline void Wait()
 	{
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 ||  __MINGW32__)
+#else
 		std::unique_lock<std::mutex> lock(mtx);
 		if (flag == true)
 		{
 			cv.wait(lock);  // wait on the mutex until notify is called
 		}
+#endif
 	}
 
 private:
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
+#else
 	std::mutex mtx;
 	std::condition_variable cv;
+#endif
 	bool flag;
 };
 

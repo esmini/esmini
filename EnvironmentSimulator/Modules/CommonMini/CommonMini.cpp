@@ -17,15 +17,15 @@
 #include <algorithm>
 
 // UDP network includes
-#ifdef _WIN32
-#include <winsock2.h>
-#include <Ws2tcpip.h>
+#ifndef _WIN32
+	 /* Assume that any non-Windows platform uses POSIX-style sockets instead. */
+	#include <sys/socket.h>
+	#include <arpa/inet.h>
+	#include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
+	#include <unistd.h> /* Needed for close() */
 #else
- /* Assume that any non-Windows platform uses POSIX-style sockets instead. */
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netdb.h>  /* Needed for getaddrinfo() and freeaddrinfo() */
-#include <unistd.h> /* Needed for close() */
+	#include <winsock2.h>
+	#include <Ws2tcpip.h>
 #endif
 
 #include "CommonMini.hpp"
@@ -438,7 +438,7 @@ double strtod(std::string s)
 	return atof(s.c_str());
 }
 
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
 
 	#include <windows.h>
 	#include <process.h>
@@ -905,29 +905,30 @@ CSV_Logger::CSV_Logger(std::string scenario_filename, int numvehicles, std::stri
 
 	//Ego vehicle is always present, at least one set of vehicle data values should be stored
 	//Index and TimeStamp are included in this first set of columns
-	const char* egoHeader = "Index [-] , TimeStamp [s] , #1 Entitity_Name [-] , "
+	snprintf(message, max_csv_entry_length,
+		"Index [-] , TimeStamp [s] , #1 Entitity_Name [-] , "
 		"#1 Entitity_ID [-] , #1 Current_Speed [m/s] , #1 Wheel_Angle [deg] , "
 		"#1 Wheel_Rotation [-] , #1 World_Position_X [m] , #1 World_Position_Y [m] , "
 		"#1 World_Position_Z [m] , #1 Vel_X [m/s] , #1 Vel_Y [m/s] , #1 Vel_Z [m/s] , "
 		"#1 Acc_X [m/s2] , #1 Acc_Y [m/s2] , #1 Acc_Z [m/s2] , #1 Distance_Travelled_Along_Road_Segment [m] , "
 		"#1 Lateral_Distance_Lanem [m] , #1 World_Heading_Angle [rad] , #1 Heading_Angle_Rate [rad/s] , "
 		"#1 Relative_Heading_Angle [rad] , #1 Relative_Heading_Angle_Drive_Direction [rad] , "
-		"#1 World_Pitch_Angle [rad] , #1 Road_Curvature [1/m] , #1 collision_ids , ";
-	snprintf(message, max_csv_entry_length, egoHeader);
+		"#1 World_Pitch_Angle [rad] , #1 Road_Curvature [1/m] , #1 collision_ids , ");
 	file_ << message;
 
 	//Based on number of vehicels in the Entities vector, extend the header accordingly
-	const char* npcHeader = "#%d Entitity_Name [-] , #%d Entitity_ID [-] , "
-		"#%d Current_Speed [m/s] , #%d Wheel_Angle [deg] , #%d Wheel_Rotation [-] , "
-		"#%d World_Position_X [m] , #%d World_Position_Y [m] , #%d World_Position_Z [m] , "
-		"#%d Vel_X [m/s] , #%d Vel_Y [m/s] , #%d Vel_Z [m/s] , #%d Acc_X [m/s2] , #%d Acc_Y [m/s2] , #%d Acc_Z [m/s2] , "
-		"#%d Distance_Travelled_Along_Road_Segment [m] , #%d Lateral_Distance_Lanem [m] , "
-		"#%d World_Heading_Angle [rad] , #%d Heading_Angle_Rate [rad/s] , #%d Relative_Heading_Angle [rad] , "
-		"#%d Relative_Heading_Angle_Drive_Direction [rad] , #%d World_Pitch_Angle [rad] , "
-		"#%d Road_Curvature [1/m] , #%d collision_ids , ";
 	for (int i = 2; i <= numvehicles; i++)
 	{
-		snprintf(message, max_csv_entry_length, npcHeader, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i);
+		snprintf(message, max_csv_entry_length,
+			"#%d Entitity_Name [-] , #%d Entitity_ID [-] , "
+			"#%d Current_Speed [m/s] , #%d Wheel_Angle [deg] , #%d Wheel_Rotation [-] , "
+			"#%d World_Position_X [m] , #%d World_Position_Y [m] , #%d World_Position_Z [m] , "
+			"#%d Vel_X [m/s] , #%d Vel_Y [m/s] , #%d Vel_Z [m/s] , #%d Acc_X [m/s2] , #%d Acc_Y [m/s2] , #%d Acc_Z [m/s2] , "
+			"#%d Distance_Travelled_Along_Road_Segment [m] , #%d Lateral_Distance_Lanem [m] , "
+			"#%d World_Heading_Angle [rad] , #%d Heading_Angle_Rate [rad/s] , #%d Relative_Heading_Angle [rad] , "
+			"#%d Relative_Heading_Angle_Drive_Direction [rad] , #%d World_Pitch_Angle [rad] , "
+			"#%d Road_Curvature [1/m] , #%d collision_ids , "
+			, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i, i);
 		file_ << message;
 	}
 	file_ << std::endl;
@@ -1023,7 +1024,7 @@ SE_Thread::~SE_Thread()
 
 void SE_Thread::Start(void(*func_ptr)(void*), void *arg)
 {
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
 	thread_ = (void*)_beginthread(func_ptr, 0, arg);
 #else
 	thread_ = std::thread(func_ptr, arg);
@@ -1033,7 +1034,7 @@ void SE_Thread::Start(void(*func_ptr)(void*), void *arg)
 
 void SE_Thread::Wait()
 {
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
 	WaitForSingleObject((HANDLE)thread_, 3000);  // Should never need to wait for more than 3 sec
 #else
 	if (thread_.joinable())
@@ -1045,7 +1046,7 @@ void SE_Thread::Wait()
 
 SE_Mutex::SE_Mutex()
 {
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || MINGW32)
 	mutex_ = (void*)CreateMutex(
 		NULL,              // default security attributes
 		0,             // initially not owned
@@ -1064,7 +1065,7 @@ SE_Mutex::SE_Mutex()
 
 void SE_Mutex::Lock()
 {
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
 	WaitForSingleObject(mutex_, 1000);  // Should never need to wait for more than 1 sec
 #else
 	mutex_.lock();
@@ -1073,7 +1074,7 @@ void SE_Mutex::Lock()
 
 void SE_Mutex::Unlock()
 {
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
+#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
 	ReleaseMutex(mutex_);
 #else
 	mutex_.unlock();

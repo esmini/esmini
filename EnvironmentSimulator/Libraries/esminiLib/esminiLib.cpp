@@ -17,7 +17,9 @@
 #include "playerbase.hpp"
 #include "esminiLib.hpp"
 #include "IdealSensor.hpp"
-#include "osi_sensordata.pb.h"
+#ifdef USE_OSI
+	#include "osi_sensordata.pb.h"
+#endif
 #include "vehicle.hpp"
 #include "pugixml.hpp"
 

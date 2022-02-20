@@ -116,6 +116,35 @@ All options are enabled/True as default.
 
 **Note:** Disabling an external dependency will disable corresponding functionality. So, for example, disabling OSI means that no OSI data can be created by esmini. Disabling OSG means that esmini can't visualize the scenario. However it can still run the scenario and create a .dat file, which can be played and visualized later in another esmini build in which OSG is enabled (even on another platform).
 
+## MSYS2 / MinGW-w64 support
+
+esmini slim can be compiled and executed in the MSYS2 environment. Try following steps:
+
+* Download MSYS2 from: https://www.msys2.org
+* Install with default options  
+* Start MSYS2 MinGW x64 (e.g. from start menu)
+* Update MSYS2 packages, run:
+  ```script
+  pacman -Syu --disable-download-timeout --noconfirm 
+  ```
+  (MSYS2 should close automatically)
+* Restart MSYS2
+* Finalize update and install needed packages, run:
+  ```script
+  pacman -Su --disable-download-timeout --noconfirm 
+  pacman -S --needed base-devel mingw-w64-x86_64-toolchain --disable-download-timeout --noconfirm 
+  pacman -S mingw-w64-x86_64-cmake --disable-download-timeout --noconfirm 
+  ```
+  Optional (not needed to compile or run esmini):
+  ```script
+  pacman -S git --disable-download-timeout --noconfirm 
+  ```
+* Build esmini (from MSYS2 MinGW x64 command line):
+  ```script
+  cmake -G "MSYS Makefiles" -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False ..
+  cmake --build . --config Release --target install
+  ```
+
 ## Build project
 First generate build configuration (see above)
 
