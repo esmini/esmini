@@ -579,7 +579,7 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		Object* trigObj = triggering_entities_.entity_[i].object_;
-		if (!trigObj->IsActive())
+		if (!(trigObj->IsActive() && object_->IsActive()))
 		{
 			continue;
 		}
@@ -637,7 +637,7 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		Object* trigObj = triggering_entities_.entity_[i].object_;
-		if (!trigObj->IsActive())
+		if (!(trigObj->IsActive() && object_->IsActive()))
 		{
 			continue;
 		}
@@ -859,7 +859,7 @@ bool TrigByRelativeDistance::CheckCondition(StoryBoard *storyBoard, double sim_t
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		Object* trigObj = triggering_entities_.entity_[i].object_;
-		if (!trigObj->IsActive())
+		if (!(trigObj->IsActive() && object_->IsActive()))
 		{
 			continue;
 		}
@@ -910,16 +910,17 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
-		if (!triggering_entities_.entity_[i].object_->IsActive())
+		Object* trigObj = triggering_entities_.entity_[i].object_;
+		if (!trigObj->IsActive())
 		{
 			continue;
 		}
 
-		if (object_)
+		if (object_ && object_->IsActive())
 		{
-			if (triggering_entities_.entity_[i].object_->Collision(object_))
+			if (trigObj->Collision(object_))
 			{
-				CollisionPair p = { triggering_entities_.entity_[i].object_, object_ };
+				CollisionPair p = { trigObj, object_ };
 				collision_pair_.push_back(p);
 				result = true;
 			}
@@ -929,12 +930,13 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 			// check all instances of specifed object type
 			for (size_t j = 0; j < storyBoard->entities_->object_.size(); j++)
 			{
-				if (storyBoard->entities_->object_[j] != triggering_entities_.entity_[i].object_ &&
-					storyBoard->entities_->object_[j]->type_ == type_)
+				if (storyBoard->entities_->object_[j] != trigObj &&
+					storyBoard->entities_->object_[j]->type_ == type_ &&
+					storyBoard->entities_->object_[j]->IsActive())
 				{
 					if (SE_Env::Inst().GetCollisionDetection() == false)
 					{
-						if (triggering_entities_.entity_[i].object_->Collision(storyBoard->entities_->object_[j]))
+						if (trigObj->Collision(storyBoard->entities_->object_[j]))
 						{
 							result = true;
 						}
@@ -942,9 +944,9 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 					else
 					{
 						// reuse results from global collision detection
-						for (size_t k = 0; k < triggering_entities_.entity_[i].object_->collisions_.size(); k++)
+						for (size_t k = 0; k < trigObj->collisions_.size(); k++)
 						{
-							if (triggering_entities_.entity_[i].object_->collisions_[k] == storyBoard->entities_->object_[j])
+							if (trigObj->collisions_[k] == storyBoard->entities_->object_[j])
 							{
 								result = true;
 							}
@@ -952,7 +954,7 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 					}
 					if (result == true)
 					{
-						CollisionPair p = { triggering_entities_.entity_[i].object_, storyBoard->entities_->object_[j] };
+						CollisionPair p = { trigObj, storyBoard->entities_->object_[j] };
 						collision_pair_.push_back(p);
 					}
 				}
@@ -961,7 +963,7 @@ bool TrigByCollision::CheckCondition(StoryBoard* storyBoard, double sim_time)
 
 		if (result == true)
 		{
-			triggered_by_entities_.push_back(triggering_entities_.entity_[i].object_);
+			triggered_by_entities_.push_back(trigObj);
 		}
 
 		if (EvalDone(result, triggering_entity_rule_))
