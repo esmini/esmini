@@ -61,6 +61,7 @@ namespace scenarioengine
 		ScenarioEngine(const pugi::xml_document &xml_doc, bool disable_controllers = false);
 		~ScenarioEngine();
 
+		void InitScenarioCommon(bool disable_controllers);
 		void InitScenario(std::string oscFilename, bool disable_controllers = false);
 		void InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers = false);
 

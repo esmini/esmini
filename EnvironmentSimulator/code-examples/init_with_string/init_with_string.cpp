@@ -1,0 +1,236 @@
+#include "esminiLib.hpp"
+#include "stdio.h"
+
+const char* scenario = "\
+    \
+    <?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+    <!-- Demonstrate basic maneuvers and triggers -->\
+    <!-- A white car is driving with constant speed -->\
+    <!-- A red car is overtaking -->\
+    <!-- At specific time gap the red car changes lane -->\
+    <!-- and ends up in front of the white car -->\
+    <!-- At another, larger, time gap the red car brakes -->\
+    \
+    <OpenSCENARIO>\
+       <FileHeader revMajor=\"1\"\
+                   revMinor=\"1\"\
+                   date=\"2021-04-09T10:00:00\"\
+                   description=\"Basic cut-in\"\
+                   author=\"esmini-team\"/>\
+       <ParameterDeclarations>\
+          <ParameterDeclaration name=\"HostVehicle\" parameterType=\"string\" value=\"car_white\"/>\
+          <ParameterDeclaration name=\"TargetVehicle\" parameterType=\"string\" value=\"car_red\"/>\
+          <ParameterDeclaration name=\"EgoStartS\" parameterType=\"double\" value=\"50\"/>\
+          <ParameterDeclaration name=\"HeadwayTime_LaneChange\" parameterType=\"double\" value=\"0.4\"/>\
+          <ParameterDeclaration name=\"HeadwayTime_Brake\" parameterType=\"double\" value=\"0.7\"/>\
+          <ParameterDeclaration name=\"EgoSpeed\" parameterType=\"double\" value=\"108\"/>\
+          <ParameterDeclaration name=\"TargetSpeedFactor\" parameterType=\"double\" value=\"1.2\"/>\
+       </ParameterDeclarations>\
+       <CatalogLocations>\
+          <VehicleCatalog>\
+             <Directory path=\"../xosc/Catalogs/Vehicles\"/>\
+          </VehicleCatalog>\
+       </CatalogLocations>\
+       <RoadNetwork>\
+          <LogicFile filepath=\"../xodr/e6mini.xodr\"/>\
+          <SceneGraphFile filepath=\"../models/e6mini.osgb\"/>\
+       </RoadNetwork>\
+       <Entities>\
+          <ScenarioObject name=\"Ego\">\
+            <CatalogReference catalogName=\"VehicleCatalog\" entryName=\"$HostVehicle\"/>\
+          </ScenarioObject>\
+          <ScenarioObject name=\"OverTaker\">\
+             <CatalogReference catalogName=\"VehicleCatalog\" entryName=\"$TargetVehicle\"/>\
+          </ScenarioObject>\
+       </Entities>\
+       <Storyboard>\
+          <Init>\
+             <Actions>\
+                <Private entityRef=\"Ego\">\
+                   <PrivateAction>\
+                      <TeleportAction>\
+                         <Position>\
+                            <LanePosition roadId=\"0\" laneId=\"-3\" offset=\"0\" s=\"$EgoStartS\"/>\
+                         </Position>\
+                      </TeleportAction>\
+                   </PrivateAction>\
+                   <PrivateAction>\
+                      <LongitudinalAction>\
+                         <SpeedAction>\
+                            <SpeedActionDynamics dynamicsShape=\"step\" dynamicsDimension=\"time\" value=\"0.0\"/>\
+                            <SpeedActionTarget>\
+                               <AbsoluteTargetSpeed value=\"${$EgoSpeed / 3.6}\"/>\
+                            </SpeedActionTarget>\
+                         </SpeedAction>\
+                      </LongitudinalAction>\
+                   </PrivateAction>\
+                </Private>\
+                <Private entityRef=\"OverTaker\">\
+                   <PrivateAction>\
+                      <TeleportAction>\
+                         <Position>\
+                            <LanePosition roadId=\"0\" laneId=\"-2\" offset=\"0\" s=\"25\"/>\
+                         </Position>\
+                      </TeleportAction>\
+                   </PrivateAction>\
+                </Private>\
+             </Actions>\
+          </Init>\
+          <Story name=\"CutInAndBrakeStory\">\
+             <ParameterDeclarations>\
+                <ParameterDeclaration parameterType=\"string\" name=\"owner\" value=\"OverTaker\"/>\
+             </ParameterDeclarations>\
+             <Act name=\"CutInAndBrakeAct\">\
+                <ManeuverGroup maximumExecutionCount=\"1\" name=\"CutInAndBrakeSequence\">\
+                   <Actors selectTriggeringEntities=\"false\">\
+                      <EntityRef entityRef=\"$owner\"/>\
+                   </Actors>\
+                   <Maneuver name=\"CutInManeuver\">\
+                      <Event name=\"OverTakerStartSpeedEvent\" priority=\"overwrite\">\
+                         <Action name=\"OverTakerStartSpeedAction\">\
+                            <PrivateAction>\
+                               <LongitudinalAction>\
+                                  <SpeedAction>\
+                                     <SpeedActionDynamics dynamicsShape=\"step\" value=\"0.0\" dynamicsDimension=\"time\" />\
+                                     <SpeedActionTarget>\
+                                        <RelativeTargetSpeed entityRef=\"Ego\"\
+                                                             value=\"$TargetSpeedFactor\"\
+                                                             speedTargetValueType=\"factor\"\
+                                                             continuous=\"true\"/>\
+                                     </SpeedActionTarget>\
+                                  </SpeedAction>\
+                               </LongitudinalAction>\
+                            </PrivateAction>\
+                         </Action>\
+                         <StartTrigger>\
+                            <ConditionGroup>\
+                               <Condition name=\"OverTakerStartSpeedCondition\"\
+                                          delay=\"0\"\
+                                          conditionEdge=\"none\">\
+                                  <ByValueCondition>\
+                                     <StoryboardElementStateCondition storyboardElementType=\"act\"\
+                                                                      storyboardElementRef=\"CutInAndBrakeAct\"\
+                                                                      state=\"startTransition\"/>\
+                                  </ByValueCondition>\
+                               </Condition>\
+                            </ConditionGroup>\
+                         </StartTrigger>\
+                      </Event>\
+                      <Event name=\"CutInEvent\" priority=\"overwrite\">\
+                         <Action name=\"CutInAction\">\
+                            <PrivateAction>\
+                               <LateralAction>\
+                                  <LaneChangeAction>\
+                                     <LaneChangeActionDynamics dynamicsShape=\"sinusoidal\" value=\"3\" dynamicsDimension=\"time\"/>\
+                                     <LaneChangeTarget>\
+                                        <RelativeTargetLane entityRef=\"Ego\" value=\"0\"/>\
+                                     </LaneChangeTarget>\
+                                  </LaneChangeAction>\
+                               </LateralAction>\
+                            </PrivateAction>\
+                         </Action>\
+                         <StartTrigger>\
+                            <ConditionGroup>\
+                               <Condition name=\"CutInStartCondition\" delay=\"0\" conditionEdge=\"rising\">\
+                                  <ByEntityCondition>\
+                                     <TriggeringEntities triggeringEntitiesRule=\"any\">\
+                                        <EntityRef entityRef=\"Ego\"/>\
+                                     </TriggeringEntities>\
+                                     <EntityCondition>\
+                                        <TimeHeadwayCondition entityRef=\"$owner\"\
+                                                              value=\"$HeadwayTime_LaneChange\"\
+                                                              freespace=\"false\"\
+                                                              coordinateSystem=\"road\"\
+                                                              relativeDistanceType=\"longitudinal\"\
+                                                              rule=\"greaterThan\"/>\
+                                     </EntityCondition>\
+                                  </ByEntityCondition>\
+                               </Condition>\
+                            </ConditionGroup>\
+                         </StartTrigger>\
+                      </Event>\
+                      <Event name=\"OvertakerBrakeEvent\" priority=\"parallel\">\
+                         <Action name=\"OvertakerBrakeAction\">\
+                            <PrivateAction>\
+                               <LongitudinalAction>\
+                                  <SpeedAction>\
+                                     <SpeedActionDynamics dynamicsShape=\"linear\" value=\"-4\" dynamicsDimension=\"rate\"/>\
+                                     <SpeedActionTarget>\
+                                        <AbsoluteTargetSpeed value=\"0\"/>\
+                                     </SpeedActionTarget>\
+                                  </SpeedAction>\
+                               </LongitudinalAction>\
+                            </PrivateAction>\
+                         </Action>\
+                         <StartTrigger>\
+                            <ConditionGroup>\
+                               <Condition name=\"BrakeCondition\" delay=\"0\" conditionEdge=\"rising\">\
+                                  <ByEntityCondition>\
+                                     <TriggeringEntities triggeringEntitiesRule=\"any\">\
+                                        <EntityRef entityRef=\"Ego\"/>\
+                                     </TriggeringEntities>\
+                                     <EntityCondition>\
+                                        <TimeHeadwayCondition entityRef=\"$owner\"\
+                                                              value=\"$HeadwayTime_Brake\"\
+                                                              freespace=\"false\"\
+                                                              coordinateSystem=\"entity\"\
+                                                              relativeDistanceType=\"longitudinal\"\
+                                                              rule=\"greaterThan\"/>\
+                                     </EntityCondition>\
+                                  </ByEntityCondition>\
+                               </Condition>\
+                            </ConditionGroup>\
+                         </StartTrigger>\
+                      </Event>\
+                   </Maneuver>\
+                </ManeuverGroup>\
+                <StartTrigger>\
+                   <ConditionGroup>\
+                      <Condition name=\"CutInActStart\" delay=\"0\" conditionEdge=\"none\">\
+                         <ByValueCondition>\
+                            <SimulationTimeCondition value=\"0\" rule=\"greaterThan\"/>\
+                         </ByValueCondition>\
+                      </Condition>\
+                   </ConditionGroup>\
+                </StartTrigger>\
+                <StopTrigger>\
+                    <ConditionGroup>\
+                       <Condition name=\"ActStopCondition\" delay=\"5\" conditionEdge=\"rising\">\
+                          <ByValueCondition>\
+                             <StoryboardElementStateCondition storyboardElementType=\"event\"\
+                                                              storyboardElementRef=\"OvertakerBrakeEvent\"\
+                                                              state=\"endTransition\"/>\
+                          </ByValueCondition>\
+                       </Condition>\
+                    </ConditionGroup>\
+                </StopTrigger>\
+             </Act>\
+          </Story>\
+          <StopTrigger/>\
+       </Storyboard>\
+    </OpenSCENARIO>\
+";
+
+int main(int argc, char* argv[])
+{
+	SE_AddPath("../resources/xodr");
+
+    SE_InitWithString(scenario, 1, 1, 0, 0);
+
+	while (SE_GetSimulationTime() < 20.0 && !(SE_GetQuitFlag() == 1))
+	{
+		SE_Step();
+
+		for (int k = 0; k < SE_GetNumberOfObjects(); k++)
+		{
+			SE_ScenarioObjectState state;
+
+			SE_GetObjectState(SE_GetId(k), &state);
+			printf("time [%.2f] object[%d] pos[%.2f, %.2f] \n", state.timestamp, k, state.x, state.y);
+		}
+	}
+
+	SE_Close();
+
+	return 0;
+}

@@ -40,9 +40,8 @@ ScenarioEngine::ScenarioEngine(const pugi::xml_document &xml_doc, bool disable_c
 	InitScenario(xml_doc, disable_controllers);
 }
 
-void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controllers)
+void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
 {
-	// Load and parse data
 	quit_flag = false;
 	disable_controllers_ = disable_controllers;
 	headstart_time_ = 0;
@@ -51,6 +50,11 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 	initialized_ = false;
 	ghost_mode_ = GhostMode::NORMAL;
 	scenarioReader = new ScenarioReader(&entities_, &catalogs, disable_controllers);
+}
+
+void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controllers)
+{
+	InitScenarioCommon(disable_controllers);
 
 	std::vector<std::string> file_name_candidates;
 	// absolute path or relative to current directory
@@ -94,13 +98,8 @@ void ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controll
 
 void ScenarioEngine::InitScenario(const pugi::xml_document &xml_doc, bool disable_controllers)
 {
-	quit_flag = false;
-	disable_controllers_ = disable_controllers;
-	headstart_time_ = 0;
-	simulationTime_ = 0;
-	trueTime_ = 0;
-	initialized_ = false;
-	scenarioReader = new ScenarioReader(&entities_, &catalogs, disable_controllers);
+	InitScenarioCommon(disable_controllers);
+
 	if (scenarioReader->loadOSCMem(xml_doc) != 0)
 	{
 		throw std::invalid_argument("Failed to load OpenSCENARIO from XML string");
