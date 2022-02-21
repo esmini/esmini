@@ -7,3 +7,4 @@ void UserData::Save(pugi::xml_node& parent) {
 		parent.append_copy(userData);
 	}
 }
+
