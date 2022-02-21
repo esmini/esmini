@@ -1,11 +1,12 @@
 COVERAGE OPEN DRIVE 1.5: 
-
+features in later versions indicated by OpenDRIVE version number
 
 OpenDRIVE                           YES
 |-header                            NO
 | |-geoReference                    NO
 | |-offset                          NO
 |-road                              YES
+| |-rule (RHT/LHT)                  YES
 | |-link                            YES
 | | |-predecessor                   YES
 | | |-successor                     YES
@@ -119,8 +120,8 @@ OpenDRIVE                           YES
 | |-control                         NO
 |-junction                          YES    
 | |-type default                    YES
-| |-type direct                     YES
-| |-type virtual                    NO
+| |-type direct (1.7)               YES 
+| |-type virtual (1.6)              NO
 | |-connection                      YES
 | | |-predecessor                   YES
 | | |-successor                     YES
