@@ -1,6 +1,7 @@
 .vs/
 build*/*
 /bin/
+/code-examples-bin/
 *.swp
 *~
 *.pdb
@@ -16,6 +17,7 @@ buildnr.cpp
 version.cpp
 version.txt
 log.txt
+esmini-dyn.log
 externals/OpenSceneGraph
 externals/OSI
 externals/SUMO
