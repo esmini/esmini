@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2022-02-21 Version 2.20.8
+
+- Support MSYS2 / MinGW-w64 ([issue #239](https://github.com/esmini/esmini/issues/239)). See brief info [here](https://github.com/esmini/esmini/blob/master/docs/BuildInstructions.md#msys2--mingw-w64-support).
+- Eliminate need for garbage collection in C# wrapper
+  - greatly improves esmini performance e.g. in Unitu
+- Fix freeze at time=0 when init with XML ([issue #235](https://github.com/esmini/esmini/issues/235))
+- Bugfix: Ensure deleted objects not involved in condition evaluations
+- Bugfix: Disregard waypoints with invalid road IDs
+
 ### 2022-02-16 Version 2.20.7
 
 - Change lib functions to handle id instead of index
