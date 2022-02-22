@@ -72,6 +72,8 @@ class Repeat {
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
 
+	std::vector<std::shared_ptr<UserData>> getUserDataVector() { return user_data_; }
+
    protected:
 	std::vector<std::shared_ptr<UserData>> user_data_;
 };

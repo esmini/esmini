@@ -215,6 +215,19 @@ class Road {
 					int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY);	// side: -1=right, 1=left, 0=both
 
 	void Save(pugi::xml_node&);
+	std::vector<std::shared_ptr<RoadTypeEntry>> getRoadTypeEntryVector() { return type_; }
+	std::vector<std::shared_ptr<RoadLink>> getRoadLinkVector() { return link_; }
+	std::vector<std::shared_ptr<Geometry>> getGeometryVector() { return geometry_; }
+	std::vector<std::shared_ptr<Elevation>> getElevationVector() { return elevation_profile_; }
+	std::vector<std::shared_ptr<Elevation>> getSuperElevationVector() { return super_elevation_profile_; }
+	std::vector<std::shared_ptr<LaneSection>> getLaneSectionVector() { return lane_section_; }
+	std::vector<std::shared_ptr<LaneOffset>> getLaneOffsetVector() { return lane_offset_; }
+	std::vector<std::shared_ptr<Signal>> getSignalVector() { return signal_; }
+	std::vector<std::shared_ptr<RMObject>> getRMObjectVector() { return object_; }
+	std::vector<std::shared_ptr<Bridge>> getBridgeVector() { return bridge_; }
+	std::vector<std::shared_ptr<ObjectReference>> getObjectReferenceVector() { return object_reference_; }
+	std::vector<std::shared_ptr<UserData>> getUserDataVector() { return user_data_; }
+
 
    protected:
 	int id_;

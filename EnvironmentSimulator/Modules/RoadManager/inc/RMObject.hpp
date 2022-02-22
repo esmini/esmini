@@ -60,6 +60,10 @@ class RMObject : public RoadObject {
 	std::shared_ptr<Outline> GetOutline(int i) { return (0 <= i && i < outlines_.size()) ? outlines_[i] : 0; }
 	void Save(pugi::xml_node&);
 
+	std::vector<std::shared_ptr<Outline>> getOutlineVector() { return outlines_; }
+	std::vector<std::shared_ptr<Repeat>> getRepeatVector() { return repeat_; }
+
+
    protected:
 	std::vector<std::shared_ptr<Outline>> outlines_;
 	std::vector<std::shared_ptr<Repeat>> repeat_;  // OpenDRIVE 1.4 uses multiple repeat tags.

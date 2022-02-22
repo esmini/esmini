@@ -65,6 +65,12 @@ class Junction {
 															std::shared_ptr<Road> incoming_road);
 	JunctionType GetType() { return type_; }
 
+	std::vector<std::shared_ptr<UserData>> getUserDataVector() { return user_data_; }
+	std::vector<std::shared_ptr<Connection>> getConnectionVector() { return connection_; }
+	std::vector<JunctionController> getJunctionControllerVector() { return controller_; }
+
+
+
    protected:
 	std::vector<std::shared_ptr<Connection>> connection_;
 	std::vector<JunctionController> controller_;

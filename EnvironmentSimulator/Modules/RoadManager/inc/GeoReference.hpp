@@ -28,6 +28,7 @@ struct GeoReference {
 	double zone_;
 	int towgs84_;
 	std::vector<std::shared_ptr<UserData>> user_data_;
+	std::vector<std::shared_ptr<UserData>> getUserDataVector() { return user_data_; }
 
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&) const;

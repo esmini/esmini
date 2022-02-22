@@ -16,6 +16,7 @@ class LaneWidth {
 	void Print();
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
 	void Save(pugi::xml_node&);
+	std::vector<std::shared_ptr<UserData>> getUserDataVector() { return user_data_; }
 
 	Polynomial poly3_;
 

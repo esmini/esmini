@@ -39,6 +39,7 @@ class Geometry {
 	virtual void EvaluateDS(double ds, double* x, double* y, double* h);
 	virtual void Save(pugi::xml_node& geometry);
 	void AddUserData(std::shared_ptr<UserData> userData) { user_data_.push_back(userData); }
+	std::vector<std::shared_ptr<UserData>> getUserDataVector() { return user_data_; }
 
    protected:
 	double s_;

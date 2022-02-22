@@ -14,6 +14,7 @@ class OSIPoints {
 	double GetZfromIdx(int i);
 	int GetNumOfOSIPoints();
 	double GetLength();
+	std::vector<PointStruct> getPointStructVector() { return point_; }
 
    private:
 	std::vector<PointStruct> point_;
