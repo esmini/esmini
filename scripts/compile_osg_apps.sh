@@ -10,7 +10,7 @@
 #   5. Compile OSG and copy binaries to install folder "./osg" (2nd cmake command)
 #
 # After the script is done:
-#   If desired the created osg folder can be moved, e.g to the home directory. 
+#   If desired the created osg folder can be moved, e.g to the home directory.
 #   To run the applications some paths need to be set accordingly:
 #     Windows powershell:
 #       move osg $env:userprofile
@@ -34,6 +34,8 @@
 OSG_VERSION=OpenSceneGraph-3.6.5
 osg_root_dir=$(pwd)
 thirdparty=""
+build_examples=false  # set to true in order to build all examples (takes some time)
+z_exe_win="$PROGRAMFILES/7-Zip/7z"
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
@@ -56,7 +58,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_clang_mac.pkg.tgz" -o fbx202021_fbxsdk_clang_mac.pkg.tgz
     tar xzvf fbx202021_fbxsdk_clang_mac.pkg.tgz
     sudo installer -pkg fbx202021_fbxsdk_clang_macos.pkg -target /
-    
+
     brew install libtiff
     brew install libjpeg
 
@@ -65,21 +67,33 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     fbx_lib_debug="/Applications/Autodesk/FBX SDK/2020.2.1/lib/clang/debug/libfbxsdk.a"
     fbx_xml_lib=libxml2.dylib
     fbx_zlib_lib=libz.dylib
-    
+
 elif [[ "$OSTYPE" == "msys" ]]; then
 
-    curl --user-agent  "Mozilla/5.0" -L https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2017_win.exe -o fbx202021_fbxsdk_vs2017_win.exe
-    powershell -Command "Start-Process fbx202021_fbxsdk_vs2017_win.exe -ArgumentList /S -Wait"
+    if [ ! -d 3rdParty_x64 ]; then
+        if [ ! -f 3rdParty_VS2017_v141_x64_V11_full.7z  ]; then
+            curl -L https://download.osgvisual.org/3rdParty_VS2017_v141_x64_V11_full.7z -o 3rdParty_VS2017_v141_x64_V11_full.7z
+            "$z_exe" x 3rdParty_VS2017_v141_x64_V11_full.7z
+        fi
+    fi
 
-    curl -L https://download.osgvisual.org/3rdParty_VS2017_v141_x64_V11_full.7z -o 3rdParty_VS2017_v141_x64_V11_full.7z
-    "$PROGRAMFILES/7-Zip/7z" x 3rdParty_VS2017_v141_x64_V11_full.7z
+    if [ ! -f fbx202021_fbxsdk_vs2017_win.exe ]; then
+        curl --user-agent  "Mozilla/5.0" -L https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2017_win.exe -o fbx202021_fbxsdk_vs2017_win.exe
+    fi
+
+    if [ ! -d "$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/include" ]; then
+        echo Installing FBX SDK...
+        powershell -Command "Start-Process fbx202021_fbxsdk_vs2017_win.exe -ArgumentList /S -Wait"
+    else
+        echo FBX SDK already installed
+    fi
 
     fbx_include="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/include"
     fbx_lib_release="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/libfbxsdk-md.lib"
     fbx_lib_debug="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/debug/libfbxsdk-md.lib"
     fbx_xml_lib="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/libxml2-md.lib"
     fbx_zlib_lib="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/zlib-md.lib"
-    thirdparty="../../3rdParty_x64/x64"    
+    thirdparty="../../3rdParty_x64/x64"
 fi
 
 # OSG source
@@ -97,8 +111,7 @@ mkdir build-dyn
 cd build-dyn
 
 # Compile OSG with standard settings; dynamic linking and without examples
-
-cmake -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_INSTALL_PREFIX=../../osg -DFBX_XML2_LIBRARY="$fbx_xml_lib" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib" -DACTUAL_3RDPARTY_DIR=$thirdparty ..
+cmake -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_INSTALL_PREFIX=../../osg -DFBX_XML2_LIBRARY="$fbx_xml_lib" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib" -DACTUAL_3RDPARTY_DIR=$thirdparty -DBUILD_OSG_EXAMPLES="$build_examples" ..
 
 cmake --build . -j 4 --config Release --target install
 
