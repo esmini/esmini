@@ -26,6 +26,12 @@ namespace scenarioengine
 	class ScenarioPlayer;
 	class ScenarioEngine;
 
+	typedef enum {
+		SHORTEST,
+		FASTEST,
+		MIN_INTERSECTIONS
+	} RouteStrategy;
+
 	// base class for controllers
 	class ControllerFollowRoute: public Controller
 	{
@@ -44,10 +50,16 @@ namespace scenarioengine
 		void SetScenarioEngine(ScenarioEngine* scenarioEngine) { scenarioEngine_ = scenarioEngine; };
 
 	private:
+		std::vector<roadmanager::RoadPath::PathNode*> CalculatePath(roadmanager::Position* targetWaypoint, RouteStrategy routeStrategy);
 		void ChangeLane(int lane,  double time);
+		bool TargetLaneIsInDrivingDirection(roadmanager::RoadPath::PathNode* pNode, roadmanager::Road *nextRoad, int targetLaneId);
+		roadmanager::RoadPath::PathNode* GetNextNode(roadmanager::Road* nextRoad, roadmanager::RoadPath::PathNode* srcNode);
+		// Sign function: Return 1 if positive, 0 if zero, -1 if negative
+		template <typename T> int sgn(T val) { return (T(0) < val) - (val < T(0)); }
 		vehicle::Vehicle vehicle_;
 		ScenarioEngine* scenarioEngine_;
 		std::vector<OSCPrivateAction*> actions_;
+
 	};
 
 	Controller* InstantiateControllerFollowRoute(void* args);
