@@ -1,27 +1,28 @@
 #!/bin/bash
 
-# 
-# This script will build OpenSceneGraph (OSG) libraries  
+#
+# This script will build OpenSceneGraph (OSG) libraries
 # needed for esmini to visualize the road network and scenario.
 # No system installations will be done (no admin rights required)
 #
-# The ambition is to support Windows, Linux and Mac. However the script is under
-# development and has not been tested as is on all three platforms.
+# While the ambition is to support Windows, Linux and Mac the script is under
+# development and has not been tested thoroughly on all three platforms. But
+# hopefully it can at least provide some guidance and ideas.
 #
 # Prerequisites:
 # - Git (with Bash) (https://git-scm.com/download/win)
 # - cmake (https://cmake.org/download/)
 # - compiler (Visual Studio with C++ toolkit, gcc, xcode...)
 #
-# Usage: 
+# Usage:
 # - put this script in an empty folder
-# - open bash (e.g. Git Bash) in that folder 
+# - open bash (e.g. Git Bash) in that folder
 # - review and adjust system dependent parameters in section below
 # - run the script: ./generate_osi_libs.sh
 # - wait (the build process will take approx. 15 minutes depending on...)
-# 
+#
 # The osi_*.7z will contain both headers and needed libraries. (* depends on platform)
-# 
+#
 #
 
 # -----------------------------------------------------------------------------------
@@ -40,43 +41,84 @@ if [ "$OSTYPE" == "msys" ]; then
 	# Visual Studio 2017 - default toolkit
 	# GENERATOR=("Visual Studio 15 2017 Win64")
 	# GENERATOR_ARGUMENTS="-T ${GENERATOR_TOOLSET}"
-    
+
     # Make sure 7zip is available, else download and install it
     # https://www.7-zip.org/download.html
-    APP_7ZIP="/c/Program Files/7-Zip/7z.exe"
-    
+
+    LIB_EXT="lib"
+    LIB_PREFIX=""
+    LIB_OSG_PREFIX="osg161-"
+    LIB_OT_PREFIX="ot21-"
+
+    target_dir="v10"
+    zfilename="osg_v10.7z"
+    z_exe="$PROGRAMFILES/7-Zip/7z"
+    fbx_support=false
+
+
 elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
 	# Unix Makefiles (for Ubuntu and other Linux systems)
 	GENERATOR=("Unix Makefiles")
 	GENERATOR_ARGUMENTS=""
+    LIB_EXT="a"
+    LIB_PREFIX="lib"
+    LIB_OSG_PREFIX="lib"
+    LIB_OT_PREFIX="lib"
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        target_dir="linux"
+        zfilename="osg_linux.7z"
+        z_exe=7za
+    else
+        target_dir="mac"
+        zfilename="osg_mac.7z"
+        z_exe=7z    
+    fi
 else
 	echo Unknown OSTYPE: $OSTYPE
 fi
 
-
 OSG_VERSION=OpenSceneGraph-3.6.5
-
 
 # ---------------------------------------------------------------------------------------
 # From this point no adjustments should be necessary, except fixing bugs in the script :)
 # However you might want to adjust versions of software packages being checkout and built
 
-
-osi_root_dir=$(pwd)
-
+osg_root_dir=$(pwd)
 
 echo ------------------------ Installing dependencies ------------------------------------
-cd $osi_root_dir
+cd $osg_root_dir
 
 
 if [ "$OSTYPE" == "msys" ]; then
     if [ ! -d 3rdParty_x64 ]; then
-        if [ ! -f 3rdParty_VS2017_v141_x64_V11_small.7z ]; then
-            curl "https://download.osgvisual.org/3rdParty_VS2017_v141_x64_V11_small.7z" -o 3rdParty_VS2017_v141_x64_V11_small.7z
-        fi    
-        "$APP_7ZIP" x 3rdParty_VS2017_v141_x64_V11_small.7z
+        if [ ! -f 3rdParty_VS2017_v141_x64_V11_full.7z  ]; then
+            curl -L https://download.osgvisual.org/3rdParty_VS2017_v141_x64_V11_full.7z -o 3rdParty_VS2017_v141_x64_V11_full.7z 
+            "$z_exe" x 3rdParty_VS2017_v141_x64_V11_full.7z
+        fi
     fi
-elif  [[ "$OSTYPE" == "linux-gnu"* ]]; then
+
+    if [ $fbx_support = true ]; then
+        if [ ! -f fbx202021_fbxsdk_vs2017_win.exe ]; then
+            curl --user-agent  "Mozilla/5.0" -L https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2017_win.exe -o fbx202021_fbxsdk_vs2017_win.exe
+        fi
+
+        if [ ! -d "$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/include" ]; then
+            echo Installing FBX SDK...
+            powershell -Command "Start-Process fbx202021_fbxsdk_vs2017_win.exe -ArgumentList /S -Wait"
+        else
+            echo FBX SDK already installed
+        fi
+
+        fbx_include="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/include"
+        fbx_lib_release="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/libfbxsdk-md.lib"
+        fbx_lib_debug="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/debug/libfbxsdk-md.lib"
+        fbx_xml_lib="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/libxml2-md.lib"
+        fbx_xml_lib_debug="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/debug/libxml2-md.lib"
+        fbx_zlib_lib="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/zlib-md.lib"
+        fbx_zlib_lib_debug="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/debug/zlib-md.lib"
+    fi
+
+elif  [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
     if [ ! -d zlib-1.2.11 ]; then
         if [ ! -f zlib1211.zip ]; then
@@ -88,30 +130,50 @@ elif  [[ "$OSTYPE" == "linux-gnu"* ]]; then
         mkdir build
         cd build
 
-
         if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug .. -DCMAKE_C_FLAGS="-fPIC" 
-            cmake --build . -j --target install
+            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug .. -DCMAKE_C_FLAGS="-fPIC"
+            cmake --build . --target install
             mv ../install/lib/libz.a ../install/lib/libzd.a
 
             rm CMakeCache.txt
-            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" 
+            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC"
             cmake --build . --target install
         elif [[ "$OSTYPE" == "darwin"* ]]; then
-            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" 
+            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC"
             cmake --build . --target install
-        else
-            cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -D CMAKE_INSTALL_PREFIX=../install ..
-            cmake --build . -j --config Debug --target install
-            cmake --build . -j --config Release --target install --clean-first
         fi
 
     else
         echo zlib folder already exists, continue with next step...
     fi
+
+    if [ $fbx_support = true ]; then
+        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+            if [ ! -f fbx202001_fbxsdk_linux.tar.gz ]; then
+                curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-0-1/fbx202001_fbxsdk_linux.tar.gz" -o fbx202001_fbxsdk_linux.tar.gz
+                mkdir fbxsdk
+            fi
+            tar xzvf fbx202001_fbxsdk_linux.tar.gz --directory fbxsdk
+            ./fbxsdk/fbx202001_fbxsdk_linux ./fbxsdk
+            fbx_include="../../fbxsdk/include"
+            fbx_lib_release="../../fbxsdk/lib/gcc/x64/release/libfbxsdk.a"
+            fbx_lib_debug="../../fbxsdk/lib/gcc/x64/debug/libfbxsdk.a"
+            fbx_xml_lib=libxml2.so
+            fbx_zlib_lib=libz.so            
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
+            curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_clang_mac.pkg.tgz" -o fbx202021_fbxsdk_clang_mac.pkg.tgz
+            tar xzvf fbx202021_fbxsdk_clang_mac.pkg.tgz
+            sudo installer -pkg fbx202021_fbxsdk_clang_macos.pkg -target /
+            fbx_include="/Applications/Autodesk/FBX SDK/2020.2.1/include"
+            fbx_lib_release="/Applications/Autodesk/FBX SDK/2020.2.1/lib/clang/release/libfbxsdk.a"
+            fbx_lib_debug="/Applications/Autodesk/FBX SDK/2020.2.1/lib/clang/debug/libfbxsdk.a"
+            fbx_xml_lib=libxml2.dylib
+            fbx_zlib_lib=libz.dylib            
+        fi
+    fi
 fi
 
-cd $osi_root_dir
+cd $osg_root_dir
 if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
     if [ ! -d jpeg-8d ]; then
         if [ ! -f jpegsrc.v8d.tar.gz ]; then
@@ -120,10 +182,12 @@ if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
         tar xzf jpegsrc.v8d.tar.gz
         cd jpeg-8d
         if [[ "$OSTYPE" == "darwin"* ]]; then
-            ./configure, make
+            ./configure
+            make
         else
             ./configure CFLAGS='-fPIC -g'; make -j
             mv .libs .libsd
+            mv .libsd/libjpeg.a .libsd/libjpegd.a
             make clean
             ./configure CFLAGS='-fPIC'; make -j
         fi
@@ -133,80 +197,140 @@ if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 echo ------------------------ Installing OSG ------------------------------------
-cd $osi_root_dir
+cd $osg_root_dir
 
 if [ ! -d OpenSceneGraph ]; then
-    git clone https://github.com/openscenegraph/OpenSceneGraph
+    git clone https://github.com/OpenSceneGraph/OpenSceneGraph
 fi
 
 if [ ! -d OpenSceneGraph/build ]; then
 
     cd OpenSceneGraph
-    mkdir build
-    cd build
     git checkout $OSG_VERSION
-    # Apply fix for comment format not accepted by all platforms
+
+    Apply fix for comment format not accepted by all platforms
     git checkout 63bb537132bab1f8b077838f7550e26405e5fa35 CMakeModules/FindFontconfig.cmake
 
+    Apply fix for Mac window handler
+    git checkout 3994378a20948ebc4ed10b7cd33a6cc5393e7157 src/osgViewer/GraphicsWindowCocoa.mm
+
+    Apply fix for shadow maps on Intel UHD Graphics 620/Windows systems
+    git checkout 0229db8632c03b3aaf35420d72dd8eb49fe3ad02 src/osgShadow/ShadowMap.cpp
+
+    mkdir build
+    cd build
+
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_LIBRARY_RELEASE=../../jpeg-8d/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=../../jpeg-8d -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install
+
+        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL3 -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-8d/.libs/libjpeg.a -DJPEG_LIBRARY=$osg_root_dir/jpeg-8d/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-8d -DFBX_INCLUDE_DIR=../../fbxsdk/include -DFBX_LIBRARY=../../fbxsdk/lib/gcc/x64/release/libfbxsdk.a -DFBX_LIBRARY_DEBUG=../../fbxsdk/lib/gcc/x64/debug/libfbxsdk.a -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install
 
         make -j8 install
 
+        # build debug variant
         rm CMakeCache.txt
-        
-        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_LIBRARY_RELEASE=../../jpeg-8d/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=../../jpeg-8d -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install-debug
+
+        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL3 -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-8d/.libsd/libjpegd.a -DJPEG_LIBRARY=$osg_root_dir/jpeg-8d/.libsd/libjpegd.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-8d -DFBX_INCLUDE_DIR=../../fbxsdk/include -DFBX_LIBRARY=../../fbxsdk/lib/gcc/x64/release/libfbxsdk.a -DFBX_LIBRARY_DEBUG=../../fbxsdk/lib/gcc/x64/debug/libfbxsdk.a -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install-debug
 
         make -j8 install
-    
+
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DJPEG_LIBRARY_RELEASE=../../jpeg-8d/.libs/libjpeg.a -DJPEG_INCLUDE_DIR../../jpeg-8d
+        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL3 -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-8d/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-8d -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-fPIC -DCMAKE_INSTALL_PREFIX=../install
+
+        cmake --build . -j 16 --config Release --target install
 
     elif [ "$OSTYPE" == "msys" ]; then
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DCMAKE_INSTALL_PREFIX=../install -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64
-        
+        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ../ -DDYNAMIC_OPENSCENEGRAPH=false -OPENGL_PROFILE=GL3 -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL3 -DCMAKE_INSTALL_PREFIX=../install -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DFBX_XML2_LIBRARY="$fbx_xml_lib_debug" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_debug"
+
         cmake --build . -j 8 --config Release --target install
 
+        # build debug variant
         rm CMakeCache.txt
-        
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DCMAKE_INSTALL_PREFIX=../install-debug -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64
+
+        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ../ -DDYNAMIC_OPENSCENEGRAPH=false -OPENGL_PROFILE=GL3 -DDYNAMIC_OPENTHREADS=false -DCMAKE_INSTALL_PREFIX=../install-debug -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64
 
         cmake --build . -j 8 --config Debug --target install
     else
         echo Unknown OSTYPE: $OSTYPE
     fi
 fi
-exit
+
 echo ------------------------ Pack ------------------------------------
 
+cd $osg_root_dir
+
+if [ ! -d $target_dir ]
+then
+    mkdir $target_dir
+    mkdir $target_dir/include
+    mkdir $target_dir/lib
+    mkdir $target_dir/lib/osgPlugins-3.6.5
+fi
+cp -r OpenSceneGraph/install/include $target_dir/
+
 if [ "$OSTYPE" == "msys" ]; then
-    target_dir="v10"
-    zfilename="osg_v10.7z"
-    z_exe="/c/Program Files/7-Zip/7z.exe"
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    target_dir="linux"
-    zfilename="osg_linux.7z"
-    z_exe=7z
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-    target_dir="mac"
-    zfilename="osg_mac.7z"
-    z_exe=7z
+    cp 3rdParty_x64/x64/include/zlib.h $target_dir/include
+    cp 3rdParty_x64/x64/lib/zlibstatic.lib 3rdParty_x64/x64/lib/zlibstaticd.lib $target_dir/lib
+    cp 3rdParty_x64/x64/include/jpeglib.h $target_dir/include
+    cp 3rdParty_x64/x64/lib/jpeg.lib 3rdParty_x64/x64/lib/jpegd.lib $target_dir/lib
+elif [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
+    cp zlib-1.2.11/install/include/zlib.h $target_dir/include
+    cp zlib-1.2.11/install/lib/libz.${LIB_EXT} zlib-1.2.11/install/lib/libzd.${LIB_EXT} $target_dir/lib
+    cp jpeg-8d/jpeglib.h $target_dir/include
+    cp jpeg-8d/.libs/libjpeg.${LIB_EXT} jpeg-8d/.libsd/libjpegd.${LIB_EXT} $target_dir/lib
 else
-	echo Unknown OSTYPE: $OSTYPE
+    echo Unknown OSTYPE: $OSTYPE
 fi
 
-mkdir $target_dir
-mkdir $target_dir/build
-mkdir $target_dir/include
-mkdir $target_dir/lib
-cp open-simulation-interface/install/osi-lib/include/osi3/* $target_dir/include
-cp open-simulation-interface/install/osi-lib/lib/osi3/*open_simulation_interface_pic*.* $target_dir/lib
-cp -r protobuf/protobuf-install/include/google $target_dir/include
-cp protobuf/protobuf-install/lib/libprotobuf*.* $target_dir/lib
-rm $target_dir/lib/libprotobuf-lite*
+cd $osg_root_dir/OpenSceneGraph/install/lib
+cp ${LIB_OSG_PREFIX}osg.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgAnimation.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgDB.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgGA.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgShadow.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgSim.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgText.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgUtil.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgViewer.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OT_PREFIX}OpenThreads.${LIB_EXT} $osg_root_dir/$target_dir/lib
+
+cd $osg_root_dir/OpenSceneGraph/install/lib/osgPlugins-3.6.5
+cp ${LIB_PREFIX}osgdb_jpeg.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+cp ${LIB_PREFIX}osgdb_osg.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+cp ${LIB_PREFIX}osgdb_dae.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+cp ${LIB_PREFIX}osgdb_serializers_osg.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+cp ${LIB_PREFIX}osgdb_serializers_osgsim.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+
+if [ $fbx_support = true ]; then
+    cp ${LIB_PREFIX}osgdb_fbx.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+fi
+
+if [[ ! "$OSTYPE" == "darwin"* ]]; then
+    cd $osg_root_dir/OpenSceneGraph/install-debug/lib
+    cp ${LIB_OSG_PREFIX}osgd.${LIB_EXT} $osg_root_dir/$target_dir/lib
+    cp ${LIB_OSG_PREFIX}osgAnimationd.${LIB_EXT} $osg_root_dir/$target_dir/lib
+    cp ${LIB_OSG_PREFIX}osgDBd.${LIB_EXT} $osg_root_dir/$target_dir/lib
+    cp ${LIB_OSG_PREFIX}osgGAd.${LIB_EXT} $osg_root_dir/$target_dir/lib
+    cp ${LIB_OSG_PREFIX}osgShadowd.${LIB_EXT} $osg_root_dir/$target_dir/lib
+    cp ${LIB_OSG_PREFIX}osgSimd.${LIB_EXT} $osg_root_dir/$target_dir/lib
+    cp ${LIB_OSG_PREFIX}osgTextd.${LIB_EXT} $osg_root_dir/$target_dir/lib
+    cp ${LIB_OSG_PREFIX}osgUtild.${LIB_EXT} $osg_root_dir/$target_dir/lib
+    cp ${LIB_OSG_PREFIX}osgViewerd.${LIB_EXT} $osg_root_dir/$target_dir/lib
+    cp ${LIB_OT_PREFIX}OpenThreadsd.${LIB_EXT} $osg_root_dir/$target_dir/lib
+
+    cd $osg_root_dir/OpenSceneGraph/install-debug/lib/osgPlugins-3.6.5
+    cp ${LIB_PREFIX}osgdb_jpegd.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+    cp ${LIB_PREFIX}osgdb_osgd.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+    cp ${LIB_PREFIX}osgdb_daed.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+    cp ${LIB_PREFIX}osgdb_serializers_osgd.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+    cp ${LIB_PREFIX}osgdb_serializers_osgsimd.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+    if [ $fbx_support = true ]; then
+        cp ${LIB_PREFIX}osgdb_fbxd.${LIB_EXT} $osg_root_dir/$target_dir/lib/osgPlugins-3.6.5
+    fi
+fi
+
+cd $osg_root_dir
 
 "$z_exe" a -r $zfilename -m0=LZMA -bb1 -spf $target_dir/*
 # unpack with: 7z x <filename>
 
 echo ------------------------ Done ------------------------------------
-cd $osi_root_dir
