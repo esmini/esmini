@@ -1265,7 +1265,7 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectin
 	if (road_link->GetElementId() == -1)
 	{
 		LOG("No connecting road or junction at rid %d link_type %s", GetId(), OpenDrive::LinkType2Str(road_link->GetType()).c_str());
-		return -1;
+		return 0;
 	}
 
 	if (road_link->GetType() == LinkType::SUCCESSOR)
@@ -1308,7 +1308,7 @@ int Road::GetConnectingLaneId(RoadLink* road_link, int fromLaneId, int connectin
 		if (junction == 0)
 		{
 			LOG("Error: junction %d not existing\n", road_link->GetElementType());
-			return -1;
+			return 0;
 		}
 
 		int n_connections = junction->GetNumberOfRoadConnections(GetId(), lane->GetId());
