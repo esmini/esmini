@@ -21,6 +21,7 @@
 #include <math.h>
 #include <condition_variable>
 #include <cstring>
+#include <map>
 
 #ifndef _WIN32
 	#include <inttypes.h>
@@ -146,6 +147,10 @@ struct OffScreenImage
 
 // Useful operations
 
+/**
+	Get model filename from model_id.
+*/
+std::string GetModelFilenameById(int model_id);
 
 /**
   Checks whether file with given path exists or not
@@ -735,6 +740,8 @@ public:
 	*/
 	void SetLogFilePath(std::string logFilePath);
 	std::string GetLogFilePath() { return logFilePath_; }
+	std::string GetModelFilenameById(int model_id);
+	void ClearModelFilenames() { entity_model_map.clear(); }
 
 private:
 	std::vector<std::string> paths_;
@@ -746,6 +753,7 @@ private:
 	std::mt19937 gen_;
 	bool disableOffScreen_;
 	bool collisionDetection_;
+	std::map<int, std::string> entity_model_map;
 };
 
 /**

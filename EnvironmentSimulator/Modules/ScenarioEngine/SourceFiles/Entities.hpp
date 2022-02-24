@@ -37,7 +37,8 @@ namespace scenarioengine
 			TYPE_NONE = 0,
 			VEHICLE = 1,
 			PEDESTRIAN = 2,
-			MISC_OBJECT = 3
+			MISC_OBJECT = 3,
+			N_OBJECT_TYPES = 4
 		} Type;
 
 		typedef enum
@@ -567,7 +568,6 @@ namespace scenarioengine
 		std::vector<Object*> object_;
 		std::vector<Object*> object_pool_;
 
-		// create a sumo vehicle template and a sumo controller
 		int addObject(Object* obj, bool activate = true);
 		int activateObject(Object* obj);
 		int deactivateObject(Object* obj);

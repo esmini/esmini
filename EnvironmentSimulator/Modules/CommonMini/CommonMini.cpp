@@ -43,6 +43,23 @@ extern const char* ESMINI_BUILD_VERSION;
 static SE_SystemTime systemTime_;
 static const int max_csv_entry_length = 1024;
 
+// Fallback list of 3D models where model_id is index in list
+static const char* entityModelsFilesFallbackList_[] =
+{
+	"car_white.osgb",
+	"car_blue.osgb",
+	"car_red.osgb",
+	"car_yellow.osgb",
+	"truck_yellow.osgb",
+	"van_red.osgb",
+	"bus_blue.osgb",
+	"walkman.osgb",
+	"moose_cc0.osgb",
+	"cyclist.osgb",
+	"mc.osgb"
+};
+
+
 const char* esmini_git_tag(void)
 {
 	return ESMINI_GIT_TAG;
@@ -61,6 +78,62 @@ const char* esmini_git_branch(void)
 const char* esmini_build_version(void)
 {
 	return ESMINI_BUILD_VERSION;
+}
+
+std::map<int, std::string> ParseModelIds()
+{
+	std::map<int, std::string> entity_model_map;
+
+	const std::string filename = "model_ids.txt";
+
+	// find and open model_ids.txt file. Test some paths.
+	std::vector<std::string> file_name_candidates;
+
+	file_name_candidates.push_back(filename);
+
+	// Check registered paths
+	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+	{
+		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
+	}
+
+	size_t i;
+	for (i = 0; i < file_name_candidates.size(); i++)
+	{
+		if (FileExists(file_name_candidates[i].c_str()))
+		{
+			std::ifstream infile(file_name_candidates[i]);
+			if (infile.is_open())
+			{
+				int id;
+				std::string model3d;
+				while (infile >> id >> model3d)
+				{
+					entity_model_map[id] = model3d;
+				}
+				break;
+			}
+			infile.close();
+		}
+	}
+
+	if (i == file_name_candidates.size())
+	{
+		printf("Failed to load %s file. Tried:\n", filename.c_str());
+		for (int j = 0; j < file_name_candidates.size(); j++)
+		{
+			printf("  %s\n", file_name_candidates[j].c_str());
+		}
+
+		printf("  continue with internal hard coded list: \n");
+		for (int j = 0; j < sizeof(entityModelsFilesFallbackList_) / sizeof(char*); j++)
+		{
+			entity_model_map[j] = entityModelsFilesFallbackList_[j];
+			printf("    %2d: %s\n", j, entity_model_map[j].c_str());
+		}
+	}
+
+	return entity_model_map;
 }
 
 std::string ControlDomain2Str(ControlDomains domains)
@@ -713,6 +786,29 @@ int SE_Env::AddPath(std::string path)
 	paths_.push_back(path);
 
 	return 0;
+}
+
+std::string SE_Env::GetModelFilenameById(int model_id)
+{
+	std::string name;
+	if (entity_model_map.size() == 0)
+	{
+		entity_model_map = ParseModelIds();
+	}
+
+	name = entity_model_map[model_id];
+
+	if (name.empty())
+	{
+		LOG("Failed to lookup 3d model filename for model_id %d in list:", model_id);
+		std::map<int, std::string>::iterator it;
+		for (it = entity_model_map.begin(); it != entity_model_map.end(); ++it)
+		{
+			LOG("  %d %s", it->first, it->second.c_str());
+		}
+	}
+
+	return name;
 }
 
 Logger::Logger() : callback_(0), time_(0)

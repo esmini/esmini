@@ -50,6 +50,8 @@ typedef struct
 
 static std::vector<SE_ObjCallback> objCallback;
 
+// List of 3D models populated from any found found model_ids.txt file
+static std::map<int, std::string> entity_model_map;
 
 static void log_callback(const char *str)
 {
@@ -65,6 +67,7 @@ static void resetScenario(void)
 	{
 		delete player;
 		player = nullptr;
+		SE_Env::Inst().ClearModelFilenames();
 	}
 	if (argv_)
 	{
@@ -866,6 +869,75 @@ extern "C"
 				player->scenarioEngine->entities_.object_[id]->pos_.SetAlignModeZ((roadmanager::Position::ALIGN_MODE)mode);
 			}
 		}
+	}
+
+	SE_DLL_API int SE_AddObject(const char* object_name, int object_type, int object_category, int model_id)
+	{
+		int object_id = -1;
+
+		// Add missing object
+		if (player != nullptr)
+		{
+			std::string name;
+			if (object_name == nullptr)
+			{
+				name = "obj_" + std::to_string(object_id);
+			}
+			else
+			{
+				name = object_name;
+			}
+
+			if (object_type < 1 || object_type >= scenarioengine::Object::Type::N_OBJECT_TYPES)
+			{
+				object_type = scenarioengine::Object::Type::VEHICLE;
+			}
+
+			if (object_type == scenarioengine::Object::Type::VEHICLE)
+			{
+				Vehicle* vehicle = new Vehicle();
+				object_id = player->scenarioEngine->entities_.addObject(vehicle);
+				vehicle->name_ = "swarm" + std::to_string(object_id);
+				vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
+				vehicle->model_id_ = model_id;
+				vehicle->model3d_ = SE_Env::Inst().GetModelFilenameById(model_id);
+				vehicle->category_ = object_category;
+				vehicle->controller_ = nullptr;
+			}
+			else
+			{
+				LOG("SE_AddObject: Object type %d not supported yet", object_type);
+				return -1;
+			}
+
+			scenarioengine::OSCBoundingBox bb = { {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0} };
+			if (player->scenarioGateway->reportObject(object_id, name, object_type, object_category, model_id, 0,
+				bb, static_cast<int>(EntityScaleMode::BB_TO_MODEL), 0xff, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) == 0)
+			{
+				return object_id;
+			}
+		}
+
+		return -1;
+	}
+
+	SE_DLL_API int SE_DeleteObject(int object_id)
+	{
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
+		{
+			// Object does not exist
+			return -1;
+		}
+
+		if (player != nullptr)
+		{
+			player->scenarioEngine->entities_.removeObject(object_id);
+			player->scenarioGateway->removeObject(object_id);
+			return 0;
+		}
+
+		return -1;
 	}
 
 	SE_DLL_API int SE_ReportObjectPos(int object_id, float timestamp, float x, float y, float z, float h, float p, float r, float speed)
@@ -1868,51 +1940,81 @@ extern "C"
 #endif
 	}
 
-SE_DLL_API int SE_GetNumberOfRoutePoints(int object_id)
-{
-	Object* obj = nullptr;
-	if (getObjectById(object_id, obj) == -1)
+	SE_DLL_API int SE_SetCameraMode(int mode)
 	{
+#ifdef _USE_OSG
+		if (player && player->viewer_)
+		{
+			player->viewer_->SetCameraMode(mode);
+			return 0;
+		}
+#endif
 		return -1;
 	}
 
-	if (obj->pos_.GetRoute())
+	SE_DLL_API int SE_SetCameraObjectFocus(int object_id)
 	{
-		return obj->pos_.GetRoute()->all_waypoints_.size();
+#ifdef _USE_OSG
+		if (player && player->viewer_)
+		{
+			for (size_t i = 0; i < player->scenarioEngine->entities_.object_.size(); i++)
+			{
+				if (player->scenarioEngine->entities_.object_[i]->GetId() == object_id)
+				{
+					player->viewer_->SetVehicleInFocus(i);
+				}
+			}
+			return 0;
+		}
+#endif
+		return -1;
 	}
-	else
+
+	SE_DLL_API int SE_GetNumberOfRoutePoints(int object_id)
 	{
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
+		{
+			return -1;
+		}
+
+		if (obj->pos_.GetRoute())
+		{
+			return obj->pos_.GetRoute()->all_waypoints_.size();
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *routeinfo)
+	{
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
+		{
+			return -1;
+		}
+
+		if (route_index >= obj->pos_.GetRoute()->all_waypoints_.size())
+		{
+			LOG("Requested waypoint index %d invalid, only %d registered", route_index, obj->pos_.GetRoute()->all_waypoints_.size());
+			return -1;
+		}
+
+		roadmanager::Road* road = player->odr_manager->GetRoadById(obj->pos_.GetRoute()->all_waypoints_[route_index].GetTrackId());
+
+		routeinfo->x = obj->pos_.GetRoute()->all_waypoints_[route_index].GetX();
+		routeinfo->y = obj->pos_.GetRoute()->all_waypoints_[route_index].GetY();
+		routeinfo->z = obj->pos_.GetRoute()->all_waypoints_[route_index].GetZ();
+		routeinfo->roadId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetTrackId();
+		routeinfo->junctionId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetJunctionId();
+		routeinfo->laneId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetLaneId();
+		routeinfo->osiLaneId = road->GetDrivingLaneById(obj->pos_.GetRoute()->all_waypoints_[route_index].GetS(), obj->pos_.GetRoute()->all_waypoints_[route_index].GetLaneId())->GetGlobalId();
+		routeinfo->laneOffset = obj->pos_.GetRoute()->all_waypoints_[route_index].GetOffset();
+		routeinfo->s = obj->pos_.GetRoute()->all_waypoints_[route_index].GetS();
+		routeinfo->t = obj->pos_.GetRoute()->all_waypoints_[route_index].GetT();
+
 		return 0;
 	}
-}
-
-SE_DLL_API int SE_GetRoutePoint(int object_id, int route_index, SE_RouteInfo *routeinfo)
-{
-	Object* obj = nullptr;
-	if (getObjectById(object_id, obj) == -1)
-	{
-		return -1;
-	}
-
-	if (route_index >= obj->pos_.GetRoute()->all_waypoints_.size())
-	{
-		LOG("Requested waypoint index %d invalid, only %d registered", route_index, obj->pos_.GetRoute()->all_waypoints_.size());
-		return -1;
-	}
-
-	roadmanager::Road* road = player->odr_manager->GetRoadById(obj->pos_.GetRoute()->all_waypoints_[route_index].GetTrackId());
-
-	routeinfo->x = obj->pos_.GetRoute()->all_waypoints_[route_index].GetX();
-	routeinfo->y = obj->pos_.GetRoute()->all_waypoints_[route_index].GetY();
-	routeinfo->z = obj->pos_.GetRoute()->all_waypoints_[route_index].GetZ();
-	routeinfo->roadId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetTrackId();
-	routeinfo->junctionId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetJunctionId();
-	routeinfo->laneId = obj->pos_.GetRoute()->all_waypoints_[route_index].GetLaneId();
-	routeinfo->osiLaneId = road->GetDrivingLaneById(obj->pos_.GetRoute()->all_waypoints_[route_index].GetS(), obj->pos_.GetRoute()->all_waypoints_[route_index].GetLaneId())->GetGlobalId();
-	routeinfo->laneOffset = obj->pos_.GetRoute()->all_waypoints_[route_index].GetOffset();
-	routeinfo->s = obj->pos_.GetRoute()->all_waypoints_[route_index].GetS();
-	routeinfo->t = obj->pos_.GetRoute()->all_waypoints_[route_index].GetT();
-
-	return 0;
-}
 }

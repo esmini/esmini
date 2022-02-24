@@ -177,6 +177,21 @@ public static class ESMiniLib
         [DllImport(LIB_NAME, EntryPoint = "SE_GetSimulationTime")]
         public static extern float SE_GetSimulationTime();
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_AddObject")]
+        /// <summary>Add object. Should be followed by one of the SE_Report functions to establish initial state.</summary>
+        /// <param name="object_name">Name of the object, preferably be unique</param>
+        /// <param name="object_type">Type of the object. See Entities.hpp::Object::Type. Default=1 (VEHICLE).</param>
+        /// <param name="object_category">Category of the object. Depends on type, see descendants of Entities.hpp::Object. Set to 0 if not known.</param>
+        /// <param name="model_id">Id of the 3D model to represent the object. See resources/model_ids.txt.</param>
+        /// <returns>0 on success, -1 on failure for any reason</returns>
+        public static extern int SE_AddObject(string object_name, int object_type, int object_category, int model_id);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_DeleteObject")]
+        /// <summary>Delete object</summary>
+        /// <param name="object_id">Id of the object</param>
+        /// <returns>0 on success, -1 on failure for any reason</returns>
+        public static extern int SE_DeleteObject(int object_id);
+
         #region ObjectReporter
         [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectPos")]
         public static extern int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed);

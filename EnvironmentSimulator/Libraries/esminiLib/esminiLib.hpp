@@ -511,6 +511,24 @@ extern "C"
 	SE_DLL_API void RM_SetAlignModeZ(int id, int mode);
 
 	/**
+		Add object
+		Should be followed by one of the SE_Report functions to establish initial state.
+		@param object_name Name of the object, preferably be unique
+		@param object_type Type of the object. See Entities.hpp::Object::Type. Default=1 (VEHICLE).
+		@param object_category Category of the object. Depends on type, see descendants of Entities.hpp::Object. Set to 0 if not known.
+		@param model_id Id of the 3D model to represent the object. See resources/model_ids.txt.
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_AddObject(const char* object_name, int object_type, int object_category, int model_id);
+
+	/**
+		Delete object
+		@param object_id Id of the object
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_DeleteObject(int object_id);
+
+	/**
 		Report object position in cartesian coordinates
 		@param object_id Id of the object
 		@param timestamp Timestamp (not really used yet, OK to set 0)
@@ -1092,8 +1110,22 @@ extern "C"
 	@param p P Pitch relative vehicle curerntly in focus
 	@return 0 if successful, -1 if not
 	*/
-
 	SE_DLL_API int SE_AddCustomCamera(double x, double y, double z, double h, double p);
+
+	/**
+	Select camera mode
+	@param mode Camera mode as in RubberbandManipulator::CAMERA_MODE
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetCameraMode(int mode);
+
+	/**
+	Select camera mode
+	@param object_id The object to focus on
+	@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_SetCameraObjectFocus(int object_id);
+
 	/**
 		Get the number Route points assigned for a specific vehicle
 		@param object_id The index of the vehicle

@@ -48,77 +48,6 @@ double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
 static std::vector<ScenarioEntity> scenarioEntity;
 
-// List of 3D models populated from any found found model_ids.txt file
-static std::map<int, std::string> entityModelsFiles_;
-
-// Fallback list of 3D models where model_id is index in list
-static const char* entityModelsFilesFallbackList_[] =
-{
-	"car_white.osgb",
-	"car_blue.osgb",
-	"car_red.osgb",
-	"car_yellow.osgb",
-	"truck_yellow.osgb",
-	"van_red.osgb",
-	"bus_blue.osgb",
-	"walkman.osgb",
-	"moose_cc0.osgb",
-	"cyclist.osgb",
-	"mc.osgb"
-};
-
-void ParseModelIds()
-{
-	const std::string filename = "model_ids.txt";
-
-	// find and open model_ids.txt file. Test some paths.
-	std::vector<std::string> file_name_candidates;
-
-	// just filepath as stated in .dat file
-	file_name_candidates.push_back(filename);
-
-	// Check registered paths
-	for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
-	{
-		file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
-	}
-
-	size_t i;
-	for (i = 0; i < file_name_candidates.size(); i++)
-	{
-		if (FileExists(file_name_candidates[i].c_str()))
-		{
-			std::ifstream infile(file_name_candidates[i]);
-			if (infile.is_open())
-			{
-				int id;
-				std::string model3d;
-				while (infile >> id >> model3d)
-				{
-					entityModelsFiles_[id] = model3d;
-				}
-				break;
-			}
-			infile.close();
-		}
-	}
-
-	if (i == file_name_candidates.size())
-	{
-		printf("Failed to load %s file. Tried:\n", filename.c_str());
-		for (int j = 0; j < file_name_candidates.size(); j++)
-		{
-			printf("  %s\n", file_name_candidates[j].c_str());
-		}
-
-		printf("  continue with internal hard coded list: \n");
-		for (int j = 0; j < sizeof(entityModelsFilesFallbackList_)/sizeof(char*); j++)
-		{
-			entityModelsFiles_[j] = entityModelsFilesFallbackList_[j];
-			printf("    %2d: %s\n", j, entityModelsFiles_[j].c_str());
-		}
-	}
-}
 
 void log_callback(const char* str)
 {
@@ -207,22 +136,9 @@ int ParseEntities(viewer::Viewer* viewer, Replay* player)
 			new_sc.name = state->info.name;
 			new_sc.visible = true;
 			std::string filename;
-			if (state->info.model_id >= 0 && state->info.model_id < entityModelsFiles_.size())
+			if (state->info.model_id >= 0)
 			{
-				if (entityModelsFiles_.find(state->info.model_id) != entityModelsFiles_.end())
-				{
-					filename = entityModelsFiles_[state->info.model_id];
-				}
-			}
-
-			if (filename.empty())
-			{
-				LOG("Failed to lookup 3d model filename for model_id %d in list:", state->info.model_id);
-				std::map<int, std::string>::iterator it;
-				for (it = entityModelsFiles_.begin(); it != entityModelsFiles_.end(); ++it)
-				{
-					LOG("  %d %s", it->first, it->second.c_str());
-				}
+				filename = SE_Env::Inst().GetModelFilenameById(state->info.model_id);
 			}
 
 			if ((new_sc.entityModel = viewer->CreateEntityModel(filename.c_str(), osg::Vec4(0.5, 0.5, 0.5, 1.0),
@@ -452,8 +368,6 @@ int main(int argc, char** argv)
 	{
 		SE_Env::Inst().AddPath(arg_str);
 	}
-
-	ParseModelIds();
 
 	if (opt.GetOptionSet("disable_off_screen"))
 	{

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader description="empty scenario" author="esmini-team" revMajor="1" revMinor="1" date="2022-02-24T15:00:02.297791"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="xodr/straight_500m.xodr"/>
+    </RoadNetwork>
+    <Entities/>
+    <Storyboard>
+        <Init>
+            <Actions/>
+        </Init>
+        <Story name="my_story">
+            <ParameterDeclarations/>
+            <Act name="my_act">
+                <ManeuverGroup name="my_manouver_group" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false"/>
+                </ManeuverGroup>
+                <StartTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger/>
+    </Storyboard>
+</OpenSCENARIO>
