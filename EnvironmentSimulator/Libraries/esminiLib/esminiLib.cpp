@@ -1445,6 +1445,35 @@ extern "C"
 		return -1;
 	}
 
+	SE_DLL_API int SE_GetObjectNumberOfCollisions(int object_id)
+	{
+		Object* obj = nullptr;
+
+		if (getObjectById(object_id, obj) == -1)
+		{
+			return -1;
+		}
+
+		return obj->collisions_.size();
+	}
+
+	SE_DLL_API int SE_GetObjectCollision(int object_id, int index)
+	{
+		Object* obj = nullptr;
+
+		if (getObjectById(object_id, obj) == -1)
+		{
+			return -1;
+		}
+
+		if (index < 0 || index >= obj->collisions_.size())
+		{
+			return -1;
+		}
+
+		return obj->collisions_[index]->GetId();
+	}
+
 	/*SE_DLL_API int SE_GetObjectGhostStateFromOSI(const char* output, int index)
 	{
 		if (player)

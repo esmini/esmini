@@ -712,6 +712,21 @@ extern "C"
 	SE_DLL_API int SE_GetObjectGhostState(int object_id, SE_ScenarioObjectState *state);
 
 	/**
+		Get the number of collisions the specified object currently is involved in
+		@param object_id Id of the object.
+		@return Number of objects that specified object currently is overlapping/colliding with. -1 if unsuccessful.
+	*/
+	SE_DLL_API int SE_GetObjectNumberOfCollisions(int object_id);
+
+	/**
+		Get the object involved in specified collision by object id and collision index
+		@param object_id Id of the object.
+		@param index Index of collision (one object can be involvoed in multiple simultaneous collisions)
+		@return object_id of colliding object. -1 if unsuccessful.
+	*/
+	SE_DLL_API int SE_GetObjectCollision(int object_id, int index);
+
+	/**
 		Get the unit of specified speed (in OpenDRIVE road type element).
 		All roads will be looped in search for such an element. First found will be used.
 		If speed is specified withouth the optional unit, SI unit m/s is assumed.
