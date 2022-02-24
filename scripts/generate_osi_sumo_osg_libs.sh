@@ -26,13 +26,15 @@
 # -----------------------------------------------------------------------------------
 # Review and update settings in this section according to your system and preferences
 
+BASE_DIR=`dirname $(realpath $0)`
+echo $BASE_DIR
 OSG_BUILD_DIR=OpenSceneGraph
 OSI_BUILD_DIR=OSI
 SUMO_BUILD_DIR=SUMO
 BUILD_SUB_DIR=manualBuild
-OSG_BUILD_SCRIPT=../scripts/generate_osg_libs.sh
-OSI_BUILD_SCRIPT=../scripts/generate_osi_libs.sh
-SUMO_BUILD_SCRIPT=../scripts/generate_sumo_libs.sh
+OSG_BUILD_SCRIPT=$BASE_DIR/generate_osg_libs.sh
+OSI_BUILD_SCRIPT=$BASE_DIR/generate_osi_libs.sh
+SUMO_BUILD_SCRIPT=$BASE_DIR/generate_sumo_libs.sh
 
 if [ "$OSTYPE" == "msys" ]; then
     target_dir="v10"
@@ -55,14 +57,10 @@ if [[ ! -d "$OSG_BUILD_DIR/$target_dir" ]]; then
     	mkdir "$OSG_BUILD_DIR/$BUILD_SUB_DIR"
     fi
     cd "$OSG_BUILD_DIR/$BUILD_SUB_DIR"
-    ../../$OSG_BUILD_SCRIPT
+    $OSG_BUILD_SCRIPT
     cd ..
     "$z_exe" x "$BUILD_SUB_DIR/osg_$target_dir.7z"
-    if [ "$OSTYPE" == "msys" ]; then
-        rmdir "$BUILD_SUB_DIR" /s /q
-    elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
-        rm -rf "$BUILD_SUB_DIR"
-    fi
+    rm -rf "$BUILD_SUB_DIR"
     cd ..
 fi
 if [[ ! -d "$OSI_BUILD_DIR/$target_dir" ]]; then
@@ -73,14 +71,10 @@ if [[ ! -d "$OSI_BUILD_DIR/$target_dir" ]]; then
     	mkdir "$OSI_BUILD_DIR/$BUILD_SUB_DIR"
     fi
     cd "$OSI_BUILD_DIR/$BUILD_SUB_DIR"
-    ../../$OSI_BUILD_SCRIPT
+    $OSI_BUILD_SCRIPT
     cd ..
     "$z_exe" x "$BUILD_SUB_DIR/osi_$target_dir.7z"
-    if [ "$OSTYPE" == "msys" ]; then
-        rmdir "$BUILD_SUB_DIR" /s /q
-    elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
-        rm -rf "$BUILD_SUB_DIR"
-    fi
+    rm -rf "$BUILD_SUB_DIR"
     cd ..
 fi
 if [[ ! -d "$SUMO_BUILD_DIR/$target_dir" ]]; then
@@ -91,13 +85,9 @@ if [[ ! -d "$SUMO_BUILD_DIR/$target_dir" ]]; then
     	mkdir "$SUMO_BUILD_DIR/$BUILD_SUB_DIR"
     fi
     cd "$SUMO_BUILD_DIR/$BUILD_SUB_DIR"
-    ../../$SUMO_BUILD_SCRIPT
+    $SUMO_BUILD_SCRIPT
     cd ..
     "$z_exe" x "$BUILD_SUB_DIR/sumo_$target_dir.7z"
-    if [ "$OSTYPE" == "msys" ]; then
-        rmdir "$BUILD_SUB_DIR" /s /q
-    elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
-        rm -rf "$BUILD_SUB_DIR"
-    fi
+    rm -rf "$BUILD_SUB_DIR"
     cd ..
 fi
