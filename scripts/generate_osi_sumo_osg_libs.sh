@@ -26,13 +26,14 @@
 # -----------------------------------------------------------------------------------
 # Review and update settings in this section according to your system and preferences
 
+BASE_DIR=`dirname "$0"`
 OSG_BUILD_DIR=OpenSceneGraph
 OSI_BUILD_DIR=OSI
 SUMO_BUILD_DIR=SUMO
 BUILD_SUB_DIR=manualBuild
-OSG_BUILD_SCRIPT=../scripts/generate_osg_libs.sh
-OSI_BUILD_SCRIPT=../scripts/generate_osi_libs.sh
-SUMO_BUILD_SCRIPT=../scripts/generate_sumo_libs.sh
+OSG_BUILD_SCRIPT=$BASE_DIR/generate_osg_libs.sh
+OSI_BUILD_SCRIPT=$BASE_DIR/generate_osi_libs.sh
+SUMO_BUILD_SCRIPT=$BASE_DIR/generate_sumo_libs.sh
 
 if [ "$OSTYPE" == "msys" ]; then
     target_dir="v10"
