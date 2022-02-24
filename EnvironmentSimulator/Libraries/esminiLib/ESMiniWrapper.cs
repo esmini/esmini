@@ -177,12 +177,26 @@ public static class ESMiniLib
         [DllImport(LIB_NAME, EntryPoint = "SE_GetSimulationTime")]
         public static extern float SE_GetSimulationTime();
 
+        #region ObjectReporter
         [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectPos")]
         public static extern int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r, float speed);
 
         [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectRoadPos")]
         public static extern int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s, float speed);
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectVel")]
+        public static extern int SE_ReportObjectVel(int id, float timestamp, float x_vel, float y_vel, float z_vel);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectAcc")]
+        public static extern int SE_ReportObjectAcc(int id, float timestamp, float x_acc, float y_acc, float z_acc);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectAngularVel")]
+        public static extern int SE_ReportObjectAngularVel(int id, float timestamp, float h_vel, float p_vel, float r_vel);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectAngularAcc")]
+        public static extern int SE_ReportObjectAngularAcc(int id, float timestamp, float h_acc, float p_acc, float r_acc);
+
+        #endregion
         [DllImport(LIB_NAME, EntryPoint = "SE_SetLockOnLane")]
         /// <summary>Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)</summary>
         /// <parameter name="mode">True=keep lane False=Snap to closest (default)</parameter>
@@ -306,6 +320,31 @@ public static class ESMiniLib
 
         [DllImport(LIB_NAME, EntryPoint = "SE_SetParameterBool")]
         public static extern int SE_SetParameterBool(string parameterName, bool value);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectPropertyValue")]
+        public static extern IntPtr SE_GetObjectPropertyValue(int index, string value);
+
+        #region OSI
+        [DllImport(LIB_NAME, EntryPoint = "SE_ClearOSIGroundTruth")]
+        public static extern int SE_ClearOSIGroundTruth();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_UpdateOSIDynamicGroundTruth")]
+        public static extern int SE_UpdateOSIDynamicGroundTruth(bool fetchGhost);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_UpdateOSIStaticGroundTruth")]
+        public static extern int SE_UpdateOSIStaticGroundTruth();
+
+        /// <summary>The SE_GetOSIGroundTruthRaw function returns a char array containing the OSI GroundTruth information </summary>
+        /// <returns>>osi3::GroundTruth*</returns>
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSIGroundTruthRaw")]
+        public static extern IntPtr SE_GetOSIGroundTruthRaw();
+
+        /// <summary>The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string </summary>
+        /// <param name="size">The size of serialized osi gt string</param>
+        /// <returns>>A pointer to: string size plus serazlied string of osi3::GroundTruth </returns>
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSIGroundTruth")]
+        public static extern IntPtr SE_GetOSIGroundTruth(out int size);
+        #endregion
     }
 
 }
