@@ -742,6 +742,38 @@ namespace roadmanager
 		std::vector<ValidityRecord> validity_;
 	};
 
+	class Bridge : public RoadObject
+	{
+	public:
+		enum Type {
+			CONCRETE,
+			STEEL,
+			BRICK,
+			WOOD,
+			UNKNOWN
+		} ;
+
+		Bridge(double s, double length, std::string name, int id, Type type) : 
+			s_(s), length_(length), name_(name), id_(id), type_(type) {}
+		
+		virtual ~Bridge() = default;
+
+		double GetS() const { return s_; }
+		double GetLength() const { return length_; }
+		int GetId() const { return id_; }
+		std::string GetName() const { return name_; }
+		Type GetType() const { return type_; }
+
+		void Save(pugi::xml_node& objects);
+
+	private:
+		double s_;
+		double length_;
+		std::string name_;
+		Type type_;
+		int id_;
+	};
+
 	class Signal : public RoadObject
 	{
 	public:
@@ -1323,13 +1355,16 @@ namespace roadmanager
 		void AddLaneSection(LaneSection *lane_section);
 		void AddLaneOffset(LaneOffset *lane_offset);
 		void AddSignal(Signal *signal);
-		void AddObject(RMObject* object);
+		void AddObject(RMObject* object){ object_.push_back(object); }
+		void AddBridge(Bridge* bridge) { bridge_.push_back(bridge); }
 		Elevation *GetElevation(int idx);
 		Elevation *GetSuperElevation(int idx);
 		int GetNumberOfSignals();
 		Signal* GetSignal(int idx);
 		int GetNumberOfObjects() { return (int)object_.size(); }
 		RMObject* GetObject(int idx);
+		int GetNumberOfBridges() { return (int)bridge_.size(); }
+		Bridge* GetBridge(int idx);
 		int GetNumberOfElevations() { return (int)elevation_profile_.size(); }
 		int GetNumberOfSuperElevations() { return (int)super_elevation_profile_.size(); }
 		double GetLaneOffset(double s);
@@ -1399,6 +1434,7 @@ namespace roadmanager
 		std::vector<LaneOffset*> lane_offset_;
 		std::vector<Signal*> signal_;
 		std::vector<RMObject*> object_;
+		std::vector<Bridge*> bridge_;
 	};
 
 	class LaneRoadLaneConnection

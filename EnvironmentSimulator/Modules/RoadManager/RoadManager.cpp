@@ -2590,6 +2590,11 @@ void Road::Save(pugi::xml_node& root)
 		{
 			object->Save(objects);
 		}
+
+		for(auto bridge : bridge_)
+		{
+			bridge->Save(objects);
+		}
 	}
 
 	if(!signal_.empty())
@@ -2703,12 +2708,6 @@ Signal* Road::GetSignal(int idx)
 	return signal_[idx];
 }
 
-void Road::AddObject(RMObject* object)
-{
-	/*LOG("Add object[%d]: %s", (int)object_.size(), object->GetName().c_str());*/
-	object_.push_back(object);
-}
-
 RMObject* Road::GetObject(int idx)
 {
 	if (idx < 0 || idx >= object_.size())
@@ -2717,6 +2716,16 @@ RMObject* Road::GetObject(int idx)
 	}
 
 	return object_[idx];
+}
+
+Bridge* Road::GetBridge(int idx)
+{
+	if (idx < 0 || idx >= bridge_.size())
+	{
+		return 0;
+	}
+
+	return bridge_[idx];
 }
 
 OutlineCornerRoad::OutlineCornerRoad(int roadId, double s, double t, double dz, double height):
@@ -4433,6 +4442,60 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					LOG("RMObject: Major error\n");
 				}
 			}
+
+			pugi::xml_node bridge = objects.child("bridge");
+			if(bridge != NULL)
+			{
+				for (bridge; bridge; bridge = bridge.next_sibling("bridge"))
+				{
+					double s = atof(bridge.attribute("s").value());
+					double length = atof(bridge.attribute("length").value());
+					std::string name = bridge.attribute("name").as_string();
+					int id = atoi(bridge.attribute("id").value());
+					Bridge::Type type;
+					
+					if(!strcmp(bridge.attribute("type").value(), "concrete"))
+					{
+						type = Bridge::Type::CONCRETE;
+					}
+					else if(!strcmp(bridge.attribute("type").value(), "steel"))
+					{
+						type = Bridge::Type::STEEL;
+					}
+					else if(!strcmp(bridge.attribute("type").value(), "brick"))
+					{
+						type = Bridge::Type::BRICK;
+					}
+					else if(!strcmp(bridge.attribute("type").value(), "wood"))
+					{
+						type = Bridge::Type::WOOD;
+					}
+					else
+					{
+						type = Bridge::Type::UNKNOWN;
+						LOG("unknown bridge type: %s (road ids=%d)\n", bridge.attribute("type").value(), r->GetId());
+					}
+
+					Bridge* brdg = new Bridge(s,length, name, id, type);
+
+					for (pugi::xml_node validity_node = bridge.child("validity"); validity_node; validity_node = validity_node.next_sibling("validity"))
+					{
+						ValidityRecord validity;
+						validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
+						validity.toLane_ = atoi(validity_node.attribute("toLane").value());
+						brdg->validity_.push_back(validity);
+					}
+
+					if (brdg != NULL)
+					{
+						r->AddBridge(brdg);
+					}
+					else
+					{
+						LOG("Bridge: Major error\n");
+					}
+				}
+			}
 		}
 
 		if (r->GetNumberOfLaneSections() == 0)
@@ -4624,6 +4687,39 @@ void RMObject::Save(pugi::xml_node& objects)
 	for(auto validity : validity_)
 	{
 		validity.Save(object);
+	}
+}
+
+void Bridge::Save(pugi::xml_node& objects)
+{
+	auto bridge = objects.append_child("bridge");
+	bridge.append_attribute("s").set_value(s_);
+	bridge.append_attribute("length").set_value(length_);
+	if(!name_.empty())
+		bridge.append_attribute("name").set_value(name_.c_str());
+	bridge.append_attribute("id").set_value(id_);
+	switch (type_)
+	{
+	case CONCRETE:
+		bridge.append_attribute("type").set_value("concrete");
+		break;
+	case STEEL:
+		bridge.append_attribute("type").set_value("steel");
+		break;
+	case BRICK:
+		bridge.append_attribute("type").set_value("brick");
+		break;
+	case WOOD:
+		bridge.append_attribute("type").set_value("wood");
+		break;
+	default:
+		assert(false && "Default reached in bridge switch");
+		break;
+	}
+
+	for(auto validity : validity_)
+	{
+		validity.Save(bridge);
 	}
 }
 
