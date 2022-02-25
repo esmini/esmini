@@ -208,13 +208,13 @@ if [ ! -d OpenSceneGraph/build ]; then
     cd OpenSceneGraph
     git checkout $OSG_VERSION
 
-    Apply fix for comment format not accepted by all platforms
+    # Apply fix for comment format not accepted by all platforms
     git checkout 63bb537132bab1f8b077838f7550e26405e5fa35 CMakeModules/FindFontconfig.cmake
 
-    Apply fix for Mac window handler
+    # Apply fix for Mac window handler
     git checkout 3994378a20948ebc4ed10b7cd33a6cc5393e7157 src/osgViewer/GraphicsWindowCocoa.mm
 
-    Apply fix for shadow maps on Intel UHD Graphics 620/Windows systems
+    # Apply fix for shadow maps on Intel UHD Graphics 620/Windows systems
     git checkout 0229db8632c03b3aaf35420d72dd8eb49fe3ad02 src/osgShadow/ShadowMap.cpp
 
     mkdir build
@@ -239,7 +239,7 @@ if [ ! -d OpenSceneGraph/build ]; then
         cmake --build . -j 16 --config Release --target install
 
     elif [ "$OSTYPE" == "msys" ]; then
-        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ../ -DDYNAMIC_OPENSCENEGRAPH=false -OPENGL_PROFILE=GL3 -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL3 -DCMAKE_INSTALL_PREFIX=../install -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DFBX_XML2_LIBRARY="$fbx_xml_lib_debug" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_debug"
+        cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} ../ -DDYNAMIC_OPENSCENEGRAPH=false -DOPENGL_PROFILE=GL3 -DDYNAMIC_OPENTHREADS=false -DCMAKE_INSTALL_PREFIX=../install -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DFBX_XML2_LIBRARY="$fbx_xml_lib_debug" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_debug"
 
         cmake --build . -j 8 --config Release --target install
 
