@@ -60,11 +60,7 @@ if [[ ! -d "$OSG_BUILD_DIR/$target_dir" ]]; then
     $OSG_BUILD_SCRIPT
     cd ..
     "$z_exe" x "$BUILD_SUB_DIR/osg_$target_dir.7z"
-    if [ "$OSTYPE" == "msys" ]; then
-        rmdir "$BUILD_SUB_DIR" /s /q
-    elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
-        rm -rf "$BUILD_SUB_DIR"
-    fi
+    rm -rf "$BUILD_SUB_DIR"
     cd ..
 fi
 if [[ ! -d "$OSI_BUILD_DIR/$target_dir" ]]; then
@@ -78,11 +74,7 @@ if [[ ! -d "$OSI_BUILD_DIR/$target_dir" ]]; then
     $OSI_BUILD_SCRIPT
     cd ..
     "$z_exe" x "$BUILD_SUB_DIR/osi_$target_dir.7z"
-    if [ "$OSTYPE" == "msys" ]; then
-        rmdir "$BUILD_SUB_DIR" /s /q
-    elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
-        rm -rf "$BUILD_SUB_DIR"
-    fi
+    rm -rf "$BUILD_SUB_DIR"
     cd ..
 fi
 if [[ ! -d "$SUMO_BUILD_DIR/$target_dir" ]]; then
@@ -96,10 +88,6 @@ if [[ ! -d "$SUMO_BUILD_DIR/$target_dir" ]]; then
     $SUMO_BUILD_SCRIPT
     cd ..
     "$z_exe" x "$BUILD_SUB_DIR/sumo_$target_dir.7z"
-    if [ "$OSTYPE" == "msys" ]; then
-        rmdir "$BUILD_SUB_DIR" /s /q
-    elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
-        rm -rf "$BUILD_SUB_DIR"
-    fi
+    rm -rf "$BUILD_SUB_DIR"
     cd ..
 fi
