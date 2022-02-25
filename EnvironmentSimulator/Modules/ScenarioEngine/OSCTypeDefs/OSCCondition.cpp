@@ -579,7 +579,7 @@ bool TrigByTimeHeadway::CheckCondition(StoryBoard *storyBoard, double sim_time)
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		Object* trigObj = triggering_entities_.entity_[i].object_;
-		if (!(trigObj->IsActive() && object_->IsActive()))
+		if (!trigObj->IsActive() || object_ && !object_->IsActive())
 		{
 			continue;
 		}
@@ -637,7 +637,7 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 	for (size_t i = 0; i < triggering_entities_.entity_.size(); i++)
 	{
 		Object* trigObj = triggering_entities_.entity_[i].object_;
-		if (!(trigObj->IsActive() && object_->IsActive()))
+		if (!trigObj->IsActive())
 		{
 			continue;
 		}
@@ -646,6 +646,10 @@ bool TrigByTimeToCollision::CheckCondition(StoryBoard* storyBoard, double sim_ti
 
 		if (object_ != nullptr)
 		{
+			if (!object_->IsActive())
+			{
+				continue;
+			}
 			retVal = trigObj->Distance(object_, cs_, relDistType_, freespace_, rel_dist);
 		}
 		else
