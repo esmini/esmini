@@ -30,6 +30,36 @@ namespace roadmanager
 	int GetNewGlobalLaneBoundaryId();
 
 
+	class UserData
+	{
+	public:
+		UserData(std::string code, std::string value, pugi::xml_node userDataNode) : code_(code), value_(value)
+		{
+			origin_node_ = pugi::xml_document();
+			origin_node_.append_copy(userDataNode);	
+		}
+
+		UserData(pugi::xml_node userDataNode)
+		{
+			code_ = userDataNode.attribute("code").as_string();
+			value_ = userDataNode.attribute("value").as_string();
+			origin_node_ = pugi::xml_document();
+			origin_node_.append_copy(userDataNode);	
+		}
+
+
+		std::string GetCode() const { return code_; }
+		std::string GetValue() const { return value_; }
+
+		void Save(pugi::xml_node& parent);
+
+	private:
+		std::string code_;
+		std::string value_;
+		pugi::xml_document origin_node_;
+	};
+
+
 	class Polynomial
 	{
 	public:
@@ -120,6 +150,7 @@ namespace roadmanager
 		virtual void Print();
 		virtual void EvaluateDS(double ds, double *x, double *y, double *h);
 		virtual void Save(pugi::xml_node& geometry);
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 
 	protected:
 		double s_;
@@ -128,6 +159,7 @@ namespace roadmanager
 		double hdg_;
 		double length_;
 		GeometryType type_;
+		std::vector<UserData*> user_data_;
 	};
 
 
@@ -285,13 +317,15 @@ namespace roadmanager
 		void SetLength(double length) { length_ = length; }
 		double GetLength() { return length_; }
 		void Print();
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&, const std::string);
-
 		Polynomial poly3_;
 
 	private:
 		double s_;
 		double length_;
+		std::vector<UserData*> user_data_;
+		
 	};
 
 	typedef enum
@@ -310,11 +344,13 @@ namespace roadmanager
 		LinkType GetType() { return type_; }
 		int GetId() { return id_; }
 		void Print();
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
 
 	private:
 		LinkType type_;
 		int id_;
+		std::vector<UserData*> user_data_;
 	};
 
 	class LaneWidth
@@ -327,12 +363,14 @@ namespace roadmanager
 
 		double GetSOffset() { return s_offset_; }
 		void Print();
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
 
 		Polynomial poly3_;
 
 	private:
 		double s_offset_;
+		std::vector<UserData*> user_data_;
 	};
 
 	class LaneBoundaryOSI
@@ -390,6 +428,7 @@ namespace roadmanager
 		void SetGlobalId();
 		int GetGlobalId() { return global_id_; }
 		RoadMarkColor GetColor() { return color_; }
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
 
 	private:
@@ -401,6 +440,7 @@ namespace roadmanager
 		double width_;
 		int global_id_;  // Unique ID for OSI
 		RoadMarkColor color_;  // if set, supersedes setting in <RoadMark>
+		std::vector<UserData*> user_data_;
 	};
 
 	class LaneRoadMarkType
@@ -413,12 +453,14 @@ namespace roadmanager
 		double GetWidth() { return width_; }
 		LaneRoadMarkTypeLine* GetLaneRoadMarkTypeLineByIdx(int idx);
 		int GetNumberOfRoadMarkTypeLines() { return (int)lane_roadMarkTypeLine_.size(); }
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
 
 	private:
 		std::string name_;
 		double width_;
 		std::vector<LaneRoadMarkTypeLine*> lane_roadMarkTypeLine_;
+		std::vector<UserData*> user_data_;
 	};
 
 	class LaneRoadMark
@@ -478,6 +520,7 @@ namespace roadmanager
 
 		static RoadMarkColor ParseColor(pugi::xml_node node);
 
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
 
 	private:
@@ -490,6 +533,7 @@ namespace roadmanager
 		double width_;
 		double height_;
 		std::vector<LaneRoadMarkType*> lane_roadMarkType_;
+		std::vector<UserData*> user_data_;
 	};
 
 	class LaneOffset
@@ -514,12 +558,14 @@ namespace roadmanager
 		double GetLaneOffset(double s);
 		double GetLaneOffsetPrim(double s);
 		void Print();
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
 
 	private:
 		Polynomial polynomial_;
 		double s_;
 		double length_;
+		std::vector<UserData*> user_data_;
 	};
 
 	class Lane
@@ -582,7 +628,7 @@ namespace roadmanager
 		void AddLink(LaneLink *lane_link) { link_.push_back(lane_link); }
 		void AddLaneWidth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
 		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
-
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		// Get Functions
 		int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
 		int GetNumberOfLinks() { return (int)link_.size(); }
@@ -627,6 +673,7 @@ namespace roadmanager
 		std::vector<LaneWidth*> lane_width_;
 		std::vector<LaneRoadMark*> lane_roadMark_;
 		LaneBoundaryOSI* lane_boundary_;
+		std::vector<UserData*> user_data_;
 	};
 
 	class LaneSection
@@ -668,6 +715,7 @@ namespace roadmanager
 		double GetWidthBetweenLanes(int lane_id1, int lane_id2, double s);
 		double GetOffsetBetweenLanes(int lane_id1, int lane_id2, double s);
 		void Print();
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
 
 	private:
@@ -675,6 +723,7 @@ namespace roadmanager
 		std::experimental::optional<bool> singleSide_;	
 		double length_;
 		std::vector<Lane*> lane_;
+		std::vector<UserData*> user_data_;
 	};
 
 	enum ContactPointType
@@ -707,6 +756,7 @@ namespace roadmanager
 		ContactPointType GetContactPointType() { return contact_point_type_; }
 
 		void Print();
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
 
 	private:
@@ -714,6 +764,7 @@ namespace roadmanager
 		int element_id_;
 		ElementType element_type_;
 		ContactPointType contact_point_type_;
+		std::vector<UserData*> user_data_;
 	};
 
 	struct LaneInfo
@@ -726,9 +777,12 @@ namespace roadmanager
 	{
 		int fromLane_;
 		int toLane_;
+		std::vector<UserData*> user_data_;
 		void Save(pugi::xml_node& object);
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 	} ValidityRecord;
 
+	
 	class RoadObject
 	{
 	public:
@@ -738,8 +792,9 @@ namespace roadmanager
 			NEGATIVE,
 			NONE,
 		};
-
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		std::vector<ValidityRecord> validity_;
+		std::vector<UserData*> user_data_;
 	};
 
 	class ObjectReference : public RoadObject
@@ -1105,7 +1160,11 @@ namespace roadmanager
 		virtual void GetPos(double& x, double& y, double& z) = 0;
 		virtual double GetHeight() = 0;
 		virtual ~OutlineCorner() {}
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		virtual void Save(pugi::xml_node&) {};
+
+	private:
+		std::vector<UserData*> user_data_;
 	};
 
 	class OutlineCornerRoad : public OutlineCorner
@@ -1155,6 +1214,7 @@ namespace roadmanager
 		FillType fillType_;
 		bool closed_;
 		std::vector<OutlineCorner*> corner_;
+		std::vector<UserData*> user_data_;
 
 		Outline(int id, FillType fillType, bool closed) :
 			id_(id), fillType_(fillType), closed_(closed) {}
@@ -1166,7 +1226,7 @@ namespace roadmanager
 		}
 
 		void AddCorner(OutlineCorner* outlineCorner) { corner_.push_back(outlineCorner); }
-
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
 	};
 
@@ -1226,7 +1286,11 @@ namespace roadmanager
 		double GetRadiusStart() { return radiusStart_; }
 		double GetRadiusEnd() { return radiusEnd_; }
 
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
+
+	private:
+		std::vector<UserData*> user_data_;
 
 	};
 
@@ -1302,6 +1366,8 @@ namespace roadmanager
 			double s_;
 			RoadType road_type_;
 			double speed_ = 0.0;  // m/s
+			std::vector<UserData*> user_data_;
+			void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		} RoadTypeEntry;
 
 		enum class RoadRule
@@ -1381,6 +1447,7 @@ namespace roadmanager
 		void AddLaneSection(LaneSection *lane_section);
 		void AddLaneOffset(LaneOffset *lane_offset);
 		void AddSignal(Signal *signal);
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void AddObjectReference(ObjectReference* object_reference) {object_reference_.push_back(object_reference);}
 		void AddObject(RMObject* object){ object_.push_back(object); }
 		void AddBridge(Bridge* bridge) { bridge_.push_back(bridge); }
@@ -1399,10 +1466,12 @@ namespace roadmanager
 		double GetLaneOffset(double s);
 		double GetLaneOffsetPrim(double s);
 		int GetNumberOfLanes(double s);
+		int GetNumberOfLaneOffsets() { return (int)lane_offset_.size(); }
 		int GetNumberOfDrivingLanes(double s);
 		Lane* GetDrivingLaneByIdx(double s, int idx);
 		Lane* GetDrivingLaneSideByIdx(double s, int side, int idx);
 		Lane* GetDrivingLaneById(double s, int idx);
+		LaneOffset* GetLaneOffsetByIdx(unsigned int idx) { return idx > lane_offset_.size() ? nullptr : lane_offset_[idx]; }
 		int GetNumberOfDrivingLanesSide(double s, int side);  // side = -1 right, 1 left
 
 		/**
@@ -1465,6 +1534,7 @@ namespace roadmanager
 		std::vector<RMObject*> object_;
 		std::vector<Bridge*> bridge_;
 		std::vector<ObjectReference*> object_reference_;
+		std::vector<UserData*> user_data_;
 	};
 
 	class LaneRoadLaneConnection
@@ -1495,7 +1565,11 @@ namespace roadmanager
 		int from_;
 		int to_;
 		void Print() { printf("JunctionLaneLink: from %d to %d\n", from_, to_); }
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node& connection);
+	
+	private:
+		std::vector<UserData*> user_data_;
 	};
 
 	class Connection
@@ -1512,6 +1586,7 @@ namespace roadmanager
 		ContactPointType GetContactPoint() { return contact_point_; }
 		void AddJunctionLaneLink(int from, int to);
 		void Print();
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node& junction);
 
 	private:
@@ -1520,12 +1595,15 @@ namespace roadmanager
 		ContactPointType contact_point_;
 		std::vector<JunctionLaneLink*> lane_link_;
 		int id_;
+		std::vector<UserData*> user_data_;
 	};
 
 	typedef struct
 	{
+		std::vector<UserData*> user_data_;
 		int signalId_;
 		std::string type_;
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&);
 	} Control;
 
@@ -1542,6 +1620,8 @@ namespace roadmanager
 		int GetId() { return id_; }
 		std::string GetName() { return name_; }
 		int GetSequence() { return sequence_; }
+
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node& root);
 
 	private:
@@ -1549,13 +1629,16 @@ namespace roadmanager
 		std::string name_;
 		int sequence_;
 		std::vector<Control> control_;
+		std::vector<UserData*> user_data_;
 	};
 
 	typedef struct
 	{
+		std::vector<UserData*> user_data_;
 		int id_;
 		std::string type_;
 		int sequence_;
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node& junction);
 	} JunctionController;
 
@@ -1588,6 +1671,7 @@ namespace roadmanager
 		Connection *GetConnectionByIdx(int idx) { return connection_[idx]; }
 		int GetConnectingRoadIdFromIncomingRoadId(int incomingRoadId, int index);
 		void Print();
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node& root);
 		bool IsOsiIntersection();
 		int GetGlobalId() { return global_id_; }
@@ -1606,6 +1690,7 @@ namespace roadmanager
 		int global_id_;
 		std::string name_;
 		JunctionType type_;
+		std::vector<UserData*> user_data_;
 	};
 
 	struct GeoReference
@@ -1630,8 +1715,10 @@ namespace roadmanager
 		std::string geo_id_grids_;
 		double zone_;
 		int towgs84_;
+		std::vector<UserData*> user_data_;
 
-		void Save(pugi::xml_node&) const;
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+		void Save(pugi::xml_node&) const;		
 	};
 
 	struct OpenDriveOffset
@@ -1641,13 +1728,18 @@ namespace roadmanager
 		double y_;
 		double z_;
 		double hdg_;
-
+		
+		std::vector<UserData*> user_data_;
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		void Save(pugi::xml_node&) const;
 		bool isValid() const { return x_ || y_ || z_ || hdg_; };
 	} ;
 
 	struct OpenDriveHeader
 	{
+		void Save(pugi::xml_node&) const;
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+
 		uint revMajor_;
 		uint revMinor_;
 		std::string name_;
@@ -1660,8 +1752,7 @@ namespace roadmanager
 		std::string vendor_;
 		OpenDriveOffset offset_;
 		GeoReference georeference_;
-
-		void Save(pugi::xml_node&) const;
+		std::vector<UserData*> user_data_;
 	};
 
 	class OpenDrive
@@ -1758,6 +1849,7 @@ namespace roadmanager
 		void Save(const std::string fileName) const;
 
 		OpenDriveHeader GetHeader() const { return header_; };
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 
 	private:
 		pugi::xml_node root_node_;
@@ -1768,6 +1860,7 @@ namespace roadmanager
 		std::string odr_filename_;
 		std::map<std::string, std::string> signals_types_;
 		OpenDriveHeader header_;
+		std::vector<UserData*> user_data_;
 	};
 
 	typedef struct

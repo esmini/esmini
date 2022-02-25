@@ -322,6 +322,16 @@ const std::map<std::string, Signal::Type> Signal::types_mapping_ = {
 	{"TYPE_TRAFFIC_LIGHT_GREEN_ARROW", Signal::TYPE_TRAFFIC_LIGHT_GREEN_ARROW}
 };
 
+void UserData::Save(pugi::xml_node& parent)
+{
+	for(auto userData : origin_node_)
+	{
+		userData.attribute("code").set_value(code_.c_str());
+		userData.attribute("value").set_value(value_.c_str());
+		parent.append_copy(userData);
+	}
+}
+
 Signal::Type Signal::GetTypeFromString(const std::string& type)
 {
 	if(types_mapping_.count(type) != 0)
@@ -386,6 +396,11 @@ void Signal::Save(pugi::xml_node& signals)
 	for(auto validity : validity_)
 	{
 		validity.Save(signal);
+	}
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(signal);
 	}
 	
 }
@@ -580,6 +595,11 @@ void Geometry::Save(pugi::xml_node& geometry)
 	geometry.append_attribute("y").set_value(y_);
 	geometry.append_attribute("hdg").set_value(hdg_);
 	geometry.append_attribute("length").set_value(length_);
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(geometry);
+	}
 }
 
 void Geometry::EvaluateDS(double ds, double *x, double *y, double *h)
@@ -991,6 +1011,11 @@ void Elevation::Save(pugi::xml_node& elevationProfile, const std::string name )
 	elevation.append_attribute("b").set_value(poly3_.GetB());
 	elevation.append_attribute("c").set_value(poly3_.GetC());
 	elevation.append_attribute("d").set_value(poly3_.GetD());
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(elevationProfile);
+	}
 }
 
 void LaneLink::Print()
@@ -1270,6 +1295,11 @@ void LaneRoadMarkType::Save(pugi::xml_node& roadMark)
 	{
 		line->Save(type);
 	}
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(type);
+	}
 }
 
 void LaneRoadMark::Save(pugi::xml_node& lane)
@@ -1383,7 +1413,13 @@ void LaneRoadMark::Save(pugi::xml_node& lane)
 
 	for(auto roadMarkType : lane_roadMarkType_)
 	{
-		roadMarkType->Save(roadmark);
+		if(roadMarkType->GetName().compare("stand-in")) // only used internally, don't export
+			roadMarkType->Save(roadmark);
+	}
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(roadmark);
 	}
 }
 
@@ -1407,6 +1443,12 @@ void LaneOffset::Save(pugi::xml_node& lanes)
 	offset.append_attribute("b").set_value(polynomial_.GetB());
 	offset.append_attribute("c").set_value(polynomial_.GetC());
 	offset.append_attribute("d").set_value(polynomial_.GetD());
+
+	
+	for(auto userData : user_data_)
+	{
+		userData->Save(offset);
+	}
 }
 
 double LaneOffset::GetLaneOffset(double s)
@@ -1555,7 +1597,13 @@ void Lane::Save(pugi::xml_node& laneSection)
 	{
 		roadMark->Save(lane);
 	}
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(lane);
+	}
 }
+
 
 bool Lane::IsCenter()
 {
@@ -1852,6 +1900,11 @@ void LaneSection::Save(pugi::xml_node& lanes)
 	{
 		lane->Save(laneSection);
 	}	
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(laneSection);
+	}
 }
 
 Lane* LaneSection::GetLaneByIdx(int idx)
@@ -2419,6 +2472,11 @@ void RoadLink::Save(pugi::xml_node& link)
 
 	assert(GetElementId() >= 0 && "Element ID of road link cannot be negative");
 	type.append_attribute("elementId").set_value(GetElementId());
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(type);
+	}
 }
 
 Road::~Road()
@@ -2539,6 +2597,11 @@ void Road::Save(pugi::xml_node& root)
 				speed.append_attribute("max").set_value(t->speed_);
 				speed.append_attribute("unit").set_value("m/s");
 			}
+
+			for(auto userData : t->user_data_)
+			{
+				userData->Save(type);
+			}
 		}
 	}
 
@@ -2609,6 +2672,11 @@ void Road::Save(pugi::xml_node& root)
 		{
 			signal->Save(signals);
 		}
+	}
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(road);
 	}
 }	
 
@@ -3360,6 +3428,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 	if (odr_filename_ == "")
 	{
+		std::cerr << "Empty file name" << std::endl;
 		return false;
 	}
 
@@ -3404,8 +3473,12 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		std::numeric_limits<int>::quiet_NaN()
 	};
 
-	pugi::xml_node header_node = node.child("header");
+	for (auto child : node.children("userData"))
+	{
+		AddUserData(new UserData(child));
+	}
 
+	pugi::xml_node header_node = node.child("header");
 	header_.revMajor_ = std::atoi(header_node.attribute("revMajor").value());
 	header_.revMinor_ = std::atoi(header_node.attribute("revMinor").value());
 	header_.name_ = header_node.attribute("name").value();
@@ -3436,6 +3509,12 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		header_.offset_.hdg_ = std::atof(offset.attribute("hdg").value());
 	}
 
+	for (auto child: header_node.children("userData"))
+	{
+		header_.AddUserData(new UserData(child));
+	}
+
+
 	for (pugi::xml_node road_node = node.child("road"); road_node; road_node = road_node.next_sibling("road"))
 	{
 		int rid = atoi(road_node.attribute("id").value());
@@ -3457,9 +3536,23 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		r->SetLength(roadlength);
 		r->SetJunction(junction_id);
 
+
+		for (auto child: road_node.children("userData"))
+		{
+			r->AddUserData(new UserData(child));
+		}
+
 		for (pugi::xml_node type_node = road_node.child("type"); type_node; type_node = type_node.next_sibling("type"))
 		{
 			Road::RoadTypeEntry *r_type = new Road::RoadTypeEntry();
+
+			for (auto child: type_node.children("userData"))
+			{
+				r_type->AddUserData(new UserData(
+				child.attribute("code").as_string(), 
+				child.attribute("value").as_string(),
+				child));
+			}
 
 			std::string type = type_node.attribute("type").value();
 			if (type == "unknown")
@@ -3537,12 +3630,22 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			if (successor != NULL)
 			{
 				r->AddLink(new RoadLink(SUCCESSOR, successor));
+
+				for (auto child: successor.children("userData"))
+				{
+					r->GetLink(SUCCESSOR)->AddUserData(new UserData(child));
+				}
 			}
 
 			pugi::xml_node predecessor = link.child("predecessor");
 			if (predecessor != NULL)
 			{
 				r->AddLink(new RoadLink(PREDECESSOR, predecessor));
+
+				for (auto child: predecessor.children("userData"))
+				{
+					r->GetLink(PREDECESSOR)->AddUserData(new UserData(child));
+				}
 			}
 
 			if (r->GetJunction() != -1)
@@ -3628,11 +3731,14 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					else
 					{
 						cout << "Unknown geometry type: " << type.name() << endl;
+						continue;
 					}
-				}
-				else
-				{
-					cout << "Type == NULL" << endl;
+					
+					for (auto child: type.children("userData"))
+					{
+						r->GetGeometry(r->GetNumberOfGeometries() - 1)->AddUserData(new UserData(child));
+					}
+					
 				}
 			}
 		}
@@ -3651,6 +3757,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				Elevation *ep = new Elevation(s, a, b, c, d);
 				if (ep != NULL)
 				{
+					for (auto child: elevation_profile.children("userData"))
+					{
+						ep->AddUserData(new UserData(child));
+					}
 					r->AddElevation(ep);
 				}
 				else
@@ -3674,6 +3784,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				Elevation *ep = new Elevation(s, a, b, c, d);
 				if (ep != NULL)
 				{
+					for (auto child: elevation_profile.children("userData"))
+					{
+						ep->AddUserData(new UserData(child));
+					}
 					r->AddSuperElevation(ep);
 				}
 				else
@@ -3696,11 +3810,21 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					double c = atof(child->attribute("c").value());
 					double d = atof(child->attribute("d").value());
 					r->AddLaneOffset(new LaneOffset(s, a, b, c, d));
+
+					for (auto userData: child->children("userData"))
+					{
+						r->GetLaneOffsetByIdx(r->GetNumberOfLaneOffsets() - 1)->AddUserData(new UserData(userData));
+					}							
 				}
 				else if (!strcmp(child->name(), "laneSection"))
 				{
 					double s = atof(child->attribute("s").value());
 					LaneSection *lane_section = new LaneSection(s);
+					
+					for (auto userData: child->children("userData"))
+					{
+						lane_section->AddUserData(new UserData(userData));
+					}	
 
 					if(child->attribute("singleSide").value() == "true")
 					{
@@ -3857,6 +3981,11 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								LOG("Error: creating lane\n");
 								return false;
 							}
+
+							for (auto child: lane_node->children("userData"))
+							{
+								lane->AddUserData(new UserData(child));
+							}
 							
 							if(!strcmp(lane_node->attribute("level").value(), "true"))
 							{
@@ -3877,11 +4006,19 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								if (successor != NULL)
 								{
 									lane->AddLink(new LaneLink(SUCCESSOR, atoi(successor.attribute("id").value())));
+									for (auto child: successor.children("userData"))
+									{
+										lane->GetLink(SUCCESSOR)->AddUserData(new UserData(child));
+									}
 								}
 								pugi::xml_node predecessor = lane_link.child("predecessor");
 								if (predecessor != NULL)
 								{
 									lane->AddLink(new LaneLink(PREDECESSOR, atoi(predecessor.attribute("id").value())));
+									for (auto child: predecessor.children("userData"))
+									{
+										lane->GetLink(PREDECESSOR)->AddUserData(new UserData(child));
+									}
 								}
 							}
 
@@ -3894,6 +4031,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								double c = atof(width.attribute("c").value());
 								double d = atof(width.attribute("d").value());
 								lane->AddLaneWidth(new LaneWidth(s_offset, a, b, c, d));
+								for (auto child: width.children("userData"))
+								{
+									lane->GetWidthByIndex(lane->GetNumberOfLaneWidths()-1)->AddUserData(new UserData(child));
+								}
 							}
 
 							// roadMark
@@ -3987,8 +4128,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								// material
 								LaneRoadMark::RoadMarkMaterial roadMark_material = LaneRoadMark::STANDARD_MATERIAL;
 
-								// optional laneChange
-								LaneRoadMark::RoadMarkLaneChange roadMark_laneChange = LaneRoadMark::NONE_LANECHANGE;
+								// optional laneChange. If it's missing Both should be valid
+								LaneRoadMark::RoadMarkLaneChange roadMark_laneChange = LaneRoadMark::BOTH;
 								if (!roadMark.attribute("laneChange").empty())
 								{
 									if (!strcmp(roadMark.attribute("laneChange").value(), ""))
@@ -4033,6 +4174,12 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								double roadMark_height = atof(roadMark.attribute("height").value());
 								LaneRoadMark *lane_roadMark = new LaneRoadMark(s_offset, roadMark_type, roadMark_weight, roadMark_color,
 								roadMark_material, roadMark_laneChange, roadMark_width, roadMark_height);
+								
+								for (auto child: roadMark.children("userData"))
+								{
+									lane_roadMark->AddUserData(new UserData(child));
+								}
+
 								lane->AddLaneRoadMark(lane_roadMark);
 
 								// sub_type
@@ -4044,6 +4191,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 										std::string sub_type_name = sub_type.attribute("name").value();
 										double sub_type_width = atof(sub_type.attribute("width").value());
 										lane_roadMarkType = new LaneRoadMarkType(sub_type_name, sub_type_width);
+										for (auto child: sub_type.children("userData"))
+										{
+											lane_roadMarkType->AddUserData(new UserData(child));
+										}
 										lane_roadMark->AddType(lane_roadMarkType);
 
 										for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
@@ -4088,6 +4239,11 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 											LaneRoadMarkTypeLine *lane_roadMarkTypeLine = new LaneRoadMarkTypeLine(llength, space, t_offset, s_offset_l, rule, width,
 												roadMark_color);
+											
+											for (auto child: line.children("userData"))
+											{
+												lane_roadMarkTypeLine->AddUserData(new UserData(child));
+											}
 											lane_roadMarkType->AddLine(lane_roadMarkTypeLine);
 										}
 									}
@@ -4276,6 +4432,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 						width, text, h_offset, pitch, roll);
 					if (sig != NULL)
 					{
+						for (auto child: signal.children("userData"))
+						{
+							sig->AddUserData(new UserData(child));
+						}
 						r->AddSignal(sig);
 					}
 					else
@@ -4288,6 +4448,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 						ValidityRecord validity;
 						validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
 						validity.toLane_ = atoi(validity_node.attribute("toLane").value());
+						for (auto child: validity_node.children("userData"))
+						{
+							validity.AddUserData(new UserData(child));
+						}
 						sig->validity_.push_back(validity);
 					}
 				}
@@ -4335,6 +4499,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 					if (fabs(rradiusStart) > SMALL_NUMBER) printf("Attribute object/repeat/radiusStart not supported yet\n");
 					if (fabs(rradiusEnd) > SMALL_NUMBER) printf("Attribute object/repeat/radiusEnd not supported yet\n");
+					for (auto child: repeat_node.children("userData"))
+					{
+						repeat->AddUserData(new UserData(child));
+					}
 				}
 
 				double s;
@@ -4382,7 +4550,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 				RMObject* obj = new RMObject(s, t, ids, name, orientation, z_offset, type, length, height,
 					width, heading, pitch, roll);
-
+				for (auto child: object.children("userData"))
+				{
+					obj->AddUserData(new UserData(child));
+				}
 				if (repeat)
 				{
 					obj->SetRepeat(repeat);
@@ -4408,6 +4579,11 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 						int id = atoi(outline_node.attribute("id").value());
 						bool closed = !strcmp(outline_node.attribute("closed").value(), "true") ? true : false;
 						Outline* outline = new Outline(id, Outline::FillType::FILL_TYPE_UNDEFINED, closed);
+						
+						for (auto child: outline_node.children("userData"))
+						{
+							outline->AddUserData(new UserData(child));
+						}
 
 						for (pugi::xml_node corner_node = outline_node.first_child(); corner_node; corner_node = corner_node.next_sibling())
 						{
@@ -4433,6 +4609,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 								corner = (OutlineCorner*)(new OutlineCornerLocal(id, r->GetId(), obj->GetS(), obj->GetT(), u, v, zLocal, heightc, heading));
 							}
+							for (auto child: corner_node.children("userData"))
+							{
+								corner->AddUserData(new UserData(child));
+							}
 							outline->AddCorner(corner);
 						}
 						
@@ -4445,6 +4625,12 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					ValidityRecord validity;
 					validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
 					validity.toLane_ = atoi(validity_node.attribute("toLane").value());
+					
+					for (auto child: validity_node.children("userData"))
+					{
+						validity.AddUserData(new UserData(child));
+					}
+					
 					obj->validity_.push_back(validity);
 				}
 
@@ -4493,11 +4679,20 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 					Bridge* brdg = new Bridge(s,length, name, id, type);
 
+					for (auto child: bridge.children("userData"))
+					{
+						brdg->AddUserData(new UserData(child));
+					}
+
 					for (pugi::xml_node validity_node = bridge.child("validity"); validity_node; validity_node = validity_node.next_sibling("validity"))
 					{
 						ValidityRecord validity;
 						validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
 						validity.toLane_ = atoi(validity_node.attribute("toLane").value());
+						for (auto child: validity_node.children("userData"))
+						{
+							validity.AddUserData(new UserData(child));
+						}
 						brdg->validity_.push_back(validity);
 					}
 
@@ -4542,12 +4737,19 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					}
 
 					ObjectReference* objectRef = new ObjectReference(s, t, id, zOffset, validLength, orientation);
-
+					for (auto child: object_reference.children("userData"))
+					{
+						objectRef->AddUserData(new UserData(child));
+					}
 					for (pugi::xml_node validity_node = object_reference.child("validity"); validity_node; validity_node = validity_node.next_sibling("validity"))
 					{
 						ValidityRecord validity;
 						validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
 						validity.toLane_ = atoi(validity_node.attribute("toLane").value());
+						for (auto child: validity_node.children("userData"))
+						{
+							validity.AddUserData(new UserData(child));
+						}
 						objectRef->validity_.push_back(validity);
 					}
 
@@ -4580,11 +4782,17 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		std::string name = controller_node.attribute("name").value();
 		int sequence = atoi(controller_node.attribute("sequence").value());
 		Controller controller(id, name, sequence);
-
+		for (auto child: controller_node.children("userData"))
+		{
+			controller.AddUserData(new UserData(child));
+		}
 		for (pugi::xml_node control_node = controller_node.child("control"); control_node; control_node = control_node.next_sibling("control"))
 		{
 			Control control;
-
+			for (auto child: control_node.children("userData"))
+			{
+				control.AddUserData(new UserData(child));
+			}
 			control.signalId_ = atoi(control_node.attribute("signalId").value());
 			control.type_ = control_node.attribute("type").value();
 			controller.AddControl(control);
@@ -4611,6 +4819,11 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 		}
 
 		Junction *j = new Junction(idj, name, junction_type);
+		
+		for (auto child: junction_node.children("userData"))
+		{
+			j->AddUserData(new UserData(child));
+		}
 
 		for (pugi::xml_node connection_node = junction_node.child("connection"); connection_node; connection_node = connection_node.next_sibling("connection"))
 		{
@@ -4663,6 +4876,11 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 				Connection *connection = new Connection(idc, incoming_road, connecting_road, contact_point);
 
+				for (auto child: connection_node.children("userData"))
+				{
+					connection->AddUserData(new UserData(child));
+				}
+				
 				for (pugi::xml_node lane_link_node = connection_node.child("laneLink"); lane_link_node; lane_link_node = lane_link_node.next_sibling("laneLink"))
 				{
 					int from_id = atoi(lane_link_node.attribute("from").value());
@@ -4679,6 +4897,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			controller.id_ = atoi(controller_node.attribute("id").value());
 			controller.type_ = controller_node.attribute("type").value();
 			controller.sequence_ = atoi(controller_node.attribute("sequence").value());
+			for (auto child: controller_node.children("userData"))
+			{
+				controller.AddUserData(new UserData(child));
+			}
 			j->AddController(controller);
 		}
 
@@ -4753,6 +4975,11 @@ void RMObject::Save(pugi::xml_node& objects)
 	{
 		validity.Save(object);
 	}
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(object);
+	}
 }
 
 void ObjectReference::Save(pugi::xml_node& objects)
@@ -4783,6 +5010,12 @@ void ObjectReference::Save(pugi::xml_node& objects)
 	{
 		validity.Save(objectRef);
 	}
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(objectRef);
+	}
+	
 }
 
 void Bridge::Save(pugi::xml_node& objects)
@@ -4816,6 +5049,11 @@ void Bridge::Save(pugi::xml_node& objects)
 	{
 		validity.Save(bridge);
 	}
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(bridge);
+	}
 }
 
 void ValidityRecord::Save(pugi::xml_node& object)
@@ -4823,6 +5061,11 @@ void ValidityRecord::Save(pugi::xml_node& object)
 	auto validity = object.append_child("validity");
 	validity.append_attribute("fromLane").set_value(fromLane_);
 	validity.append_attribute("toLane").set_value(toLane_);
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(validity);
+	}
 }
 
 
@@ -4979,6 +5222,11 @@ void Connection::Save(pugi::xml_node& junction)
 	{
 		laneLink->Save(connection);
 	}	
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(connection);
+	}
 }
 
 void JunctionController::Save(pugi::xml_node& junction)
@@ -4987,6 +5235,10 @@ void JunctionController::Save(pugi::xml_node& junction)
 	controller.append_attribute("id").set_value(id_);
 	controller.append_attribute("type").set_value(type_.c_str());
 	controller.append_attribute("sequence").set_value(sequence_);
+	for(auto userData : user_data_)
+	{
+		userData->Save(controller);
+	}
 }
 
 void JunctionLaneLink::Save(pugi::xml_node& connection)
@@ -5172,6 +5424,11 @@ void Junction::Save(pugi::xml_node& root)
 	for(auto controller : controller_)
 	{
 		controller.Save(junction);
+	}
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(junction);
 	}
 	
 }
@@ -6037,6 +6294,10 @@ void GeoReference::Save(pugi::xml_node& header) const
 {
 	auto georeference = header.append_child("geoReference");
 	// TODO: Fix proper CDATA formating for this
+	for(auto userData : user_data_)
+	{
+		userData->Save(georeference);
+	}
 }
 
 void OpenDriveOffset::Save(pugi::xml_node& header) const
@@ -6049,6 +6310,10 @@ void OpenDriveOffset::Save(pugi::xml_node& header) const
 	offset.append_attribute("y").set_value(y_);
 	offset.append_attribute("z").set_value(z_);
 	offset.append_attribute("hdg").set_value(hdg_);
+	for(auto userData : user_data_)
+	{
+		userData->Save(offset);
+	}
 }
 
 void OpenDriveHeader::Save(pugi::xml_node& root) const
@@ -6075,6 +6340,11 @@ void OpenDriveHeader::Save(pugi::xml_node& root) const
 
 	georeference_.Save(header);
 	offset_.Save(header);
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(header);
+	}
 }
 
 void OpenDrive::Save(const std::string fileName) const
@@ -6096,6 +6366,11 @@ void OpenDrive::Save(const std::string fileName) const
 	for(auto junction : junction_)
 	{
 		junction->Save(root);
+	}
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(root);
 	}
 
 	doc.save_file(fileName.c_str());
@@ -6404,6 +6679,10 @@ void Control::Save(pugi::xml_node& controller)
 	auto control = controller.append_child("control");
 	control.append_attribute("signalId").set_value(signalId_);
 	control.append_attribute("type").set_value(type_.c_str());
+	for(auto userData : user_data_)
+	{
+		userData->Save(control);
+	}
 }
 
 void Controller::Save(pugi::xml_node& root)
@@ -6416,6 +6695,11 @@ void Controller::Save(pugi::xml_node& root)
 	for(auto control : control_)
 	{
 		control.Save(controller);
+	}
+
+	for(auto userData : user_data_)
+	{
+		userData->Save(controller);
 	}
 }
 
