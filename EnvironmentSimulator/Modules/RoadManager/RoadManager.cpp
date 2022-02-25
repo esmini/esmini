@@ -4037,15 +4037,6 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 							pugi::xml_node lane_link = lane_node->child("link");
 							if (lane_link != NULL)
 							{
-								pugi::xml_node successor = lane_link.child("successor");
-								if (successor != NULL)
-								{
-									lane->AddLink(new LaneLink(SUCCESSOR, atoi(successor.attribute("id").value())));
-									for (auto child: successor.children("userData"))
-									{
-										lane->GetLink(SUCCESSOR)->AddUserData(new UserData(child));
-									}
-								}
 								pugi::xml_node predecessor = lane_link.child("predecessor");
 								if (predecessor != NULL)
 								{
@@ -4053,6 +4044,16 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 									for (auto child: predecessor.children("userData"))
 									{
 										lane->GetLink(PREDECESSOR)->AddUserData(new UserData(child));
+									}
+								}
+
+								pugi::xml_node successor = lane_link.child("successor");
+								if (successor != NULL)
+								{
+									lane->AddLink(new LaneLink(SUCCESSOR, atoi(successor.attribute("id").value())));
+									for (auto child: successor.children("userData"))
+									{
+										lane->GetLink(SUCCESSOR)->AddUserData(new UserData(child));
 									}
 								}
 							}
@@ -4087,8 +4088,6 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								if (!strcmp(roadMark.attribute("type").value(), "none"))
 								{
 									roadMark_type = LaneRoadMark::NONE_TYPE;
-									// None type indicates no roadmark, skip
-									continue;
 								}
 								else  if (!strcmp(roadMark.attribute("type").value(), "solid"))
 								{
@@ -4532,9 +4531,9 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			for (pugi::xml_node object = objects.child("object"); object; object = object.next_sibling("object"))
 			{
 				// Read any repeat element first, since its s-value overrides the one in the object element
-				pugi::xml_node repeat_node = object.child("repeat");
 				Repeat* repeat = 0;
-				if (repeat_node != NULL)
+				std::vector<Repeat*> repeats;
+				for(pugi::xml_node repeat_node = object.child("repeat"); repeat_node; repeat_node=repeat_node.next_sibling("repeat"))
 				{
 					std::string rattr;
 					double rs = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stod(rattr);
@@ -4555,7 +4554,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					double rradiusEnd = (rattr = ReadAttribute(repeat_node, "radiusEnd", false)) == "" ? 0.0 : std::stod(rattr);
 
 					repeat = new Repeat(rs, rlength, rdistance, rtStart, rtEnd, rheightStart, rheightEnd, rzOffsetStart, rzOffsetEnd);
-
+					
 					if (fabs(rwidthStart) > SMALL_NUMBER) repeat->SetWidthStart(rwidthStart);
 					if (fabs(rwidthEnd) > SMALL_NUMBER) repeat->SetWidthEnd(rwidthEnd);
 					if (fabs(rlengthStart) > SMALL_NUMBER) repeat->SetLengthStart(rlengthStart);
@@ -4567,12 +4566,13 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					{
 						repeat->AddUserData(new UserData(child));
 					}
+					repeats.push_back(new Repeat(*repeat));
 				}
 
 				double s;
 				if (repeat)
 				{
-					s = repeat->GetS();
+					s = repeats[0]->GetS();
 				}
 				else
 				{
@@ -4620,7 +4620,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				}
 				if (repeat)
 				{
-					obj->SetRepeat(repeat);
+					for(auto rep : repeats)
+					{
+						obj->AddRepeat(rep);
+					}
 				}
 
 				
@@ -4952,6 +4955,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					connection->AddJunctionLaneLink(from_id, to_id);
 				}
 				j->AddConnection(connection);
+				std::cout << "added connection for junction " << j->GetId() << std::endl; 
 			}
 		}
 
@@ -4981,9 +4985,22 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 	return true;
 }
 
+// OpenDRIVE 1.5 standard uses only 1 repeat tag.
 void RMObject::SetRepeat(Repeat* repeat)
 {
-	repeat_ = repeat;
+	if(repeat_.empty())
+		repeat_.push_back(repeat);
+	else
+		repeat_.at(0) = repeat; 
+}
+
+// OpenDRIVE 1.5 standard uses only 1 repeat tag.
+Repeat* RMObject::GetRepeat()
+{
+	if(repeat_.empty())
+		return nullptr;
+	else
+		return repeat_[0];
 }
 
 void RMObject::Save(pugi::xml_node& objects)
@@ -5025,9 +5042,9 @@ void RMObject::Save(pugi::xml_node& objects)
 	if(height_)
 		object.append_attribute("height").set_value(height_);
 
-	if(GetRepeat() != nullptr)
+	for(auto repeat : repeat_)
 	{
-		GetRepeat()->Save(object);
+		repeat->Save(object);
 	}
 
 	for(auto outline : outlines_)
@@ -5483,6 +5500,7 @@ void Junction::Save(pugi::xml_node& root)
 	for(auto connection : connection_)
 	{
 		connection->Save(junction);
+		std::cout << "saved connection for junction " << id_ << std::endl;
 	}
 
 	for(auto controller : controller_)
