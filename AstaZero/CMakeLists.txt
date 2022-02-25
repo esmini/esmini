@@ -15,10 +15,10 @@ add_subdirectory(${ROADMANAGER_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/build/ro
 include_directories (
   ${COMMON_MINI_INCLUDE_DIR}
   ${ROADMANAGER_INCLUDE_DIR}  
+  "${ROADMANAGER_INCLUDE_DIR}/inc"
 )
 
 add_executable(${TARGET} main.cpp)
 
 target_link_libraries(${TARGET} RoadManager CommonMini pthread)
-
 
