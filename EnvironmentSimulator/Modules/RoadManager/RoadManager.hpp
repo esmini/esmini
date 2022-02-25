@@ -536,6 +536,23 @@ namespace roadmanager
 		std::vector<UserData*> user_data_;
 	};
 
+	class LaneMaterial
+	{
+	public:
+		LaneMaterial(double sOffset, std::string surface, double friction, double roughness) : 
+			s_offset_(sOffset), friction_(friction), roughness_(roughness), surface_(surface) {};
+
+		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
+		void Save(pugi::xml_node& lane);
+
+	private:
+		double s_offset_;
+		std::string surface_;
+		double friction_;
+		double roughness_;
+		std::vector<UserData*> user_data_;
+	};
+
 	class LaneOffset
 	{
 	public:
@@ -628,6 +645,7 @@ namespace roadmanager
 		void AddLink(LaneLink *lane_link) { link_.push_back(lane_link); }
 		void AddLaneWidth(LaneWidth *lane_width) { lane_width_.push_back(lane_width); }
 		void AddLaneRoadMark(LaneRoadMark *lane_roadMark) { lane_roadMark_.push_back(lane_roadMark); }
+		void AddLaneMaterial(LaneMaterial *lane_material) { lane_material_.push_back(lane_material); }
 		void AddUserData(UserData* userData) { user_data_.push_back(userData); }
 		// Get Functions
 		int GetNumberOfRoadMarks() { return (int)lane_roadMark_.size(); }
@@ -672,6 +690,7 @@ namespace roadmanager
 		std::vector<LaneLink*> link_;
 		std::vector<LaneWidth*> lane_width_;
 		std::vector<LaneRoadMark*> lane_roadMark_;
+		std::vector<LaneMaterial*> lane_material_;
 		LaneBoundaryOSI* lane_boundary_;
 		std::vector<UserData*> user_data_;
 	};

@@ -1429,6 +1429,19 @@ void Lane::SetLaneBoundary(LaneBoundaryOSI *lane_boundary)
 	lane_boundary_ = lane_boundary;
 }
 
+void LaneMaterial::Save(pugi::xml_node& lane)
+{
+	auto laneMaterial = lane.append_child("material");
+	laneMaterial.append_attribute("sOffset").set_value(s_offset_);
+	laneMaterial.append_attribute("surface").set_value(surface_.c_str());
+	laneMaterial.append_attribute("friction").set_value(friction_);
+	laneMaterial.append_attribute("roughness").set_value(roughness_);
+	for(auto userData : user_data_)
+	{
+		userData->Save(laneMaterial);
+	}
+}
+
 void LaneOffset::Print()
 {
 	LOG("LaneOffset s %.2f a %.4f b %.2f c %.2f d %.2f length %.2f\n",
@@ -1596,6 +1609,11 @@ void Lane::Save(pugi::xml_node& laneSection)
 	for(auto roadMark : lane_roadMark_)
 	{
 		roadMark->Save(lane);
+	}
+
+	for(auto material : lane_material_)
+	{
+		material->Save(lane);
 	}
 
 	for(auto userData : user_data_)
@@ -4300,6 +4318,19 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 								}
 							}
 
+							for(pugi::xml_node laneMaterial = lane_node->child("material"); laneMaterial; laneMaterial = laneMaterial.next_sibling("material"))
+							{
+								double s_offset = atof(laneMaterial.attribute("sOffset").value());
+								std::string surface = laneMaterial.attribute("surface").as_string();
+								double friction = atof(laneMaterial.attribute("friction").value());
+								double roughness = atof(laneMaterial.attribute("roughness").value());
+								LaneMaterial* material = new LaneMaterial(s_offset, surface, friction, roughness);
+								for (auto child: laneMaterial.children("userData"))
+								{
+									material->AddUserData(new UserData(child));
+								}
+								lane->AddLaneMaterial(material);
+							}
 						}
 					}
 					// Check lane indices
