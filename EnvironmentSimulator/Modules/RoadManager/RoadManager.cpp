@@ -2583,7 +2583,7 @@ void Road::Save(pugi::xml_node& root)
 		laneSection->Save(lanes);
 	}
 
-	if(!object_.empty())
+	if(!object_.empty() || !bridge_.empty() || !object_reference_.empty())
 	{
 		auto objects = road.append_child("objects");
 		for(auto object : object_)
@@ -2594,6 +2594,11 @@ void Road::Save(pugi::xml_node& root)
 		for(auto bridge : bridge_)
 		{
 			bridge->Save(objects);
+		}
+
+		for(auto objectRef : object_reference_)
+		{
+			objectRef->Save(objects);
 		}
 	}
 
@@ -2726,6 +2731,16 @@ Bridge* Road::GetBridge(int idx)
 	}
 
 	return bridge_[idx];
+}
+
+ObjectReference* Road::GetObjectReference(int idx)
+{
+	if (idx < 0 || idx >= object_reference_.size())
+	{
+		return 0;
+	}
+
+	return object_reference_[idx];
 }
 
 OutlineCornerRoad::OutlineCornerRoad(int roadId, double s, double t, double dz, double height):
@@ -4496,6 +4511,56 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					}
 				}
 			}
+
+			pugi::xml_node object_reference = objects.child("objectReference");
+			if(object_reference != NULL)
+			{
+				for (object_reference; object_reference; object_reference = object_reference.next_sibling("objectReference"))
+				{
+					double s = atof(object_reference.attribute("s").value());
+					double t = atof(object_reference.attribute("t").value());
+					int id = atoi(object_reference.attribute("id").value());
+					double zOffset = atof(object_reference.attribute("zOffset").value());
+					double validLength = atof(object_reference.attribute("validLength").value());
+					RoadObject::Orientation orientation;
+
+					if(!strcmp(object_reference.attribute("orientation").value(), "none"))
+					{
+						orientation = RoadObject::Orientation::NONE;
+					}
+					else if(!strcmp(object_reference.attribute("orientation").value(), "+"))
+					{
+						orientation = RoadObject::Orientation::POSITIVE;
+					}
+					else if(!strcmp(object_reference.attribute("orientation").value(), "-"))
+					{
+						orientation = RoadObject::Orientation::NEGATIVE;
+					}
+					else
+					{
+						LOG("unknown road object reference orientation: %s (road ids=%d)\n", object_reference.attribute("orientation").value(), r->GetId());
+					}
+
+					ObjectReference* objectRef = new ObjectReference(s, t, id, zOffset, validLength, orientation);
+
+					for (pugi::xml_node validity_node = object_reference.child("validity"); validity_node; validity_node = validity_node.next_sibling("validity"))
+					{
+						ValidityRecord validity;
+						validity.fromLane_ = atoi(validity_node.attribute("fromLane").value());
+						validity.toLane_ = atoi(validity_node.attribute("toLane").value());
+						objectRef->validity_.push_back(validity);
+					}
+
+					if (objectRef != NULL)
+					{
+						r->AddObjectReference(objectRef);
+					}
+					else
+					{
+						LOG("ObjectReference: Major error\n");
+					}
+				}
+			}
 		}
 
 		if (r->GetNumberOfLaneSections() == 0)
@@ -4687,6 +4752,36 @@ void RMObject::Save(pugi::xml_node& objects)
 	for(auto validity : validity_)
 	{
 		validity.Save(object);
+	}
+}
+
+void ObjectReference::Save(pugi::xml_node& objects)
+{
+	auto objectRef = objects.append_child("objectReference");
+	objectRef.append_attribute("s").set_value(s_);
+	objectRef.append_attribute("t").set_value(t_);
+	objectRef.append_attribute("id").set_value(id_);
+	objectRef.append_attribute("zOffset").set_value(z_offset_);
+	objectRef.append_attribute("validLength").set_value(valid_length_);
+	switch (orientation_)
+	{
+	case RoadObject::Orientation::NEGATIVE :
+		objectRef.append_attribute("orientation").set_value("-");
+		break;
+	case RoadObject::Orientation::POSITIVE :
+		objectRef.append_attribute("orientation").set_value("+");
+		break;
+	case RoadObject::Orientation::NONE :
+		objectRef.append_attribute("orientation").set_value("none");
+		break;
+	default:
+		assert(false && "Default reached in road object reference orientation switch");
+		break;
+	}
+
+	for(auto validity : validity_)
+	{
+		validity.Save(objectRef);
 	}
 }
 
