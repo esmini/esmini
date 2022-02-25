@@ -1,4 +1,4 @@
-﻿/*
+/*
  * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
@@ -1381,9 +1381,9 @@ namespace roadmanager
 		void AddLaneSection(LaneSection *lane_section);
 		void AddLaneOffset(LaneOffset *lane_offset);
 		void AddSignal(Signal *signal);
-		void AddObject(RMObject* object);
-		void AddBridge(Bridge* bridge);
-		void AddObjectReference(ObjectReference* object_reference);
+		void AddObjectReference(ObjectReference* object_reference) {object_reference_.push_back(object_reference);}
+		void AddObject(RMObject* object){ object_.push_back(object); }
+		void AddBridge(Bridge* bridge) { bridge_.push_back(bridge); }
 		Elevation *GetElevation(int idx);
 		Elevation *GetSuperElevation(int idx);
 		int GetNumberOfSignals();

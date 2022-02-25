@@ -2713,25 +2713,6 @@ Signal* Road::GetSignal(int idx)
 	return signal_[idx];
 }
 
-void Road::AddObject(RMObject* object)
-{
-	/*LOG("Add object[%d]: %s", (int)object_.size(), object->GetName().c_str());*/
-	object_.push_back(object);
-}
-
-void Road::AddBridge(Bridge* bridge)
-{
-	/*LOG("Add bridge[%d]: %s", (int)bridge_.size(), bridge->GetName().c_str());*/
-	bridge_.push_back(bridge);
-}
-
-void Road::AddObjectReference(ObjectReference* object_reference)
-{
-	/*LOG("Add object reference[%d]: %s", (int)object_reference_.size(), object_reference->GetName().c_str());*/
-	object_reference_.push_back(object_reference);
-}
-
-
 RMObject* Road::GetObject(int idx)
 {
 	if (idx < 0 || idx >= object_.size())
@@ -4649,6 +4630,13 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				{
 					connecting_road_id = atoi(connection_node.attribute("connectingRoad").value());
 				}
+				// chek if road element exist before conntinuing
+				auto checkRoadExist = std::find_if(road_.begin(),road_.end(), [=](Road* tmpr){return tmpr->GetId() == connecting_road_id;});
+				//if road dosen't exist in std::vector continue the loop
+				if (checkRoadExist==road_.end()){
+					continue;
+				};
+
 				Road* connecting_road = GetRoadById(connecting_road_id);
 
 				// Check that the connecting road is referring back to this junction
