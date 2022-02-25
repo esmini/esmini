@@ -13,7 +13,6 @@
 #pragma once
 
 #include <cmath>
-#include <experimental/optional>
 #include <list>
 #include <map>
 #include <string>
