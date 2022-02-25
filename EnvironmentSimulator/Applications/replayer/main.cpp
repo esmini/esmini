@@ -412,10 +412,10 @@ int main(int argc, char** argv)
 				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(player->header_.odr_filename)));
 
 				// Including file path and xodr sub folder
-				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i].append("/xodr/"), FileNameOf(player->header_.odr_filename)));
+				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", FileNameOf(player->header_.odr_filename)));
 
 				// Excluding file path but add xodr sub folder
-				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i].append("/xodr/"), player->header_.odr_filename));
+				file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", player->header_.odr_filename));
 			}
 
 			size_t i;
