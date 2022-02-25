@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2022-02-25 Version 2.20.9
+
+- Expose Add/DeleteObject functions in esminiLib API 
+  - code example [ad_hoc_traffic](https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/ad_hoc_traffic)
+- Expose collision detection in esminiLib API ([issue #243](https://github.com/esmini/esmini/issues/243))
+- Add OSI related esminiLib functions to C# wrapper
+- Update outdated data struct [Python example](https://github.com/esmini/esmini/tree/master/Hello-World_coding-example#example-get-object-states) ([issue #242](https://github.com/esmini/esmini/issues/242))
+- Improve 3rd party lib [build scripts](https://github.com/esmini/esmini/tree/master/scripts) ([PR #244](https://github.com/esmini/esmini/issues/244))
+- Additional minor bugfixes and improvements
+
 ### 2022-02-21 Version 2.20.8
 
 - Support MSYS2 / MinGW-w64 ([issue #239](https://github.com/esmini/esmini/issues/239)). See brief info [here](https://github.com/esmini/esmini/blob/master/docs/BuildInstructions.md#msys2--mingw-w64-support).
