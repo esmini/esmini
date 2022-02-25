@@ -111,10 +111,10 @@ class OpenDrive {
 	int GetNumOfRoads() { return (int)road_.size(); }
 	// Return the whole protected subtag vector instead of index and one object, if you don't want to
 	// inherit(recommend), and do multiple manipulations on multiple roads at the smae time.
-	std::vector<std::shared_ptr<Road>>& getRoadVectorRef() { return road_; }
-	std::vector<std::shared_ptr<Junction>>& getJunctionsVectorRef() { return junction_; }
-	std::vector<Controller> getControllerVectorRef() { return controller_; }
-	std::vector<std::shared_ptr<UserData>>& getUserDataVectorRef() { return user_data_; }
+	std::vector<std::shared_ptr<Road>> getRoadVector() { return road_; }
+	std::vector<std::shared_ptr<Junction>> getJunctionsVector() { return junction_; }
+	std::vector<Controller> getControllerVector() { return controller_; }
+	std::vector<std::shared_ptr<UserData>> getUserDataVector() { return user_data_; }
 
 	std::shared_ptr<Junction> GetJunctionById(int id);
 	std::shared_ptr<Junction> GetJunctionByIdx(int idx);

@@ -105,6 +105,14 @@ class Lane {
 	void Save(pugi::xml_node&);
 	OSIPoints osi_points_;
 
+	std::vector<std::shared_ptr<LaneLink>> getLinkVector() { return link_; }
+	std::vector<std::shared_ptr<LaneWidth>> getLaneWidthVector() { return lane_width_; }
+	std::vector<std::shared_ptr<LaneRoadMark>> getLaneRoadMarkVector() { return lane_roadMark_; }
+	std::vector<std::shared_ptr<LaneMaterial>> getLaneMaterialVector() { return lane_material_; }
+	std::vector<std::shared_ptr<LaneSpeed>> getLaneSpeedVector() { return lane_speed_; }
+	std::vector<std::shared_ptr<UserData>> getUserDataVector() { return user_data_; }
+
+
    protected:
 	std::vector<std::shared_ptr<LaneLink>> link_;
 	std::vector<std::shared_ptr<LaneWidth>> lane_width_;
