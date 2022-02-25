@@ -1880,7 +1880,7 @@ bool RoadLink::operator==(RoadLink& rhs)
 	return
 		(
 			rhs.type_ == type_ &&
-			rhs.element_type_ == element_id_ &&
+			rhs.element_type_ == element_type_ &&
 			rhs.element_id_ == element_id_ &&
 			rhs.contact_point_type_ == contact_point_type_
 		);
