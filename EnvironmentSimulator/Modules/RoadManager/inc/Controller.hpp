@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <vector>
-#include "Controller.hpp"
 #include "Userdata.hpp"
 
 typedef struct {
