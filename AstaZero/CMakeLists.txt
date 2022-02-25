@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.5.0 FATAL_ERROR)
 
+set(CXX_STANDARD 17)
+
 set(TARGET AZtest)
 
 project(${TARGET})

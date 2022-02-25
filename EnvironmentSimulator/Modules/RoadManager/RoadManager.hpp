@@ -18,6 +18,7 @@
 #include <map>
 #include <vector>
 #include <list>
+#include <experimental/optional>
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
 
@@ -118,6 +119,7 @@ namespace roadmanager
 		virtual double EvaluateCurvatureDS(double ds) = 0;
 		virtual void Print();
 		virtual void EvaluateDS(double ds, double *x, double *y, double *h);
+		virtual void Save(pugi::xml_node& geometry);
 
 	protected:
 		double s_;
@@ -139,6 +141,8 @@ namespace roadmanager
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds) { (void)ds; return 0; }
+		void Save(pugi::xml_node&) override;
+
 
 	};
 
@@ -156,6 +160,8 @@ namespace roadmanager
 		double GetCurvature() { return curvature_; }
 		void Print();
 		void EvaluateDS(double ds, double *x, double *y, double *h);
+		void Save(pugi::xml_node&) override;
+
 
 	private:
 		double curvature_;
@@ -188,6 +194,7 @@ namespace roadmanager
 		void SetX(double x);
 		void SetY(double y);
 		void SetHdg(double h);
+		void Save(pugi::xml_node&) override;
 
 		Arc* arc_;
 		Line* line_;
@@ -216,6 +223,7 @@ namespace roadmanager
 		Polynomial GetPoly3() {return poly3_;}
 		void EvaluateDS(double ds, double *x, double *y, double *h);
 		double EvaluateCurvatureDS(double ds);
+		void Save(pugi::xml_node&) override;
 
 		Polynomial poly3_;
 
@@ -239,7 +247,7 @@ namespace roadmanager
 		ParamPoly3(
 			double s, double x, double y, double hdg, double length,
 			double aU, double bU, double cU, double dU, double aV, double bV, double cV, double dV, PRangeType p_range) :
-			Geometry(s, x, y, hdg, length, GeometryType::GEOMETRY_TYPE_PARAM_POLY3)
+			Geometry(s, x, y, hdg, length, GeometryType::GEOMETRY_TYPE_PARAM_POLY3), p_range_(p_range)
 		{
 			poly3U_.Set(aU, bU, cU, dU, p_range == PRangeType::P_RANGE_NORMALIZED ? 1.0/length : 1.0);
 			poly3V_.Set(aV, bV, cV, dV, p_range == PRangeType::P_RANGE_NORMALIZED ? 1.0/length : 1.0);
@@ -255,7 +263,9 @@ namespace roadmanager
 		void calcS2PMap(PRangeType p_range);
 		double s2p_map_[PARAMPOLY3_STEPS+1][2];
 		double S2P(double s);
+		void Save(pugi::xml_node&) override;
 
+		PRangeType p_range_;
 		Polynomial poly3U_;
 		Polynomial poly3V_;
 	};
@@ -275,6 +285,7 @@ namespace roadmanager
 		void SetLength(double length) { length_ = length; }
 		double GetLength() { return length_; }
 		void Print();
+		void Save(pugi::xml_node&, const std::string);
 
 		Polynomial poly3_;
 
@@ -299,6 +310,7 @@ namespace roadmanager
 		LinkType GetType() { return type_; }
 		int GetId() { return id_; }
 		void Print();
+		void Save(pugi::xml_node&);
 
 	private:
 		LinkType type_;
@@ -315,6 +327,7 @@ namespace roadmanager
 
 		double GetSOffset() { return s_offset_; }
 		void Print();
+		void Save(pugi::xml_node&);
 
 		Polynomial poly3_;
 
@@ -377,6 +390,7 @@ namespace roadmanager
 		void SetGlobalId();
 		int GetGlobalId() { return global_id_; }
 		RoadMarkColor GetColor() { return color_; }
+		void Save(pugi::xml_node&);
 
 	private:
 		double length_;
@@ -399,6 +413,7 @@ namespace roadmanager
 		double GetWidth() { return width_; }
 		LaneRoadMarkTypeLine* GetLaneRoadMarkTypeLineByIdx(int idx);
 		int GetNumberOfRoadMarkTypeLines() { return (int)lane_roadMarkTypeLine_.size(); }
+		void Save(pugi::xml_node&);
 
 	private:
 		std::string name_;
@@ -463,6 +478,8 @@ namespace roadmanager
 
 		static RoadMarkColor ParseColor(pugi::xml_node node);
 
+		void Save(pugi::xml_node&);
+
 	private:
 		double s_offset_;
 		RoadMarkType type_;
@@ -497,6 +514,7 @@ namespace roadmanager
 		double GetLaneOffset(double s);
 		double GetLaneOffsetPrim(double s);
 		void Print();
+		void Save(pugi::xml_node&);
 
 	private:
 		Polynomial polynomial_;
@@ -530,7 +548,7 @@ namespace roadmanager
 			LANE_TYPE_SPECIAL1 =      (1 << 11),
 			LANE_TYPE_SPECIAL2 =      (1 << 12),
 			LANE_TYPE_SPECIAL3 =      (1 << 13),
-			LANE_TYPE_ROADMARKS =     (1 << 14),
+			LANE_TYPE_ROADWORKS =     (1 << 14),
 			LANE_TYPE_TRAM =          (1 << 15),
 			LANE_TYPE_RAIL =          (1 << 16),
 			LANE_TYPE_ENTRY =         (1 << 17),
@@ -550,8 +568,8 @@ namespace roadmanager
 		} LaneType;
 
 		// Construct & Destruct
-		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(0), offset_from_ref_(0.0), global_id_(0), lane_boundary_(0) {}
-		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(1), offset_from_ref_(0), global_id_(0), lane_boundary_(0) {}
+		Lane() : id_(0), type_(LaneType::LANE_TYPE_NONE), level_(-1), offset_from_ref_(0.0), global_id_(0), lane_boundary_(0) {}
+		Lane(int id, Lane::LaneType type) : id_(id), type_(type), level_(-1), offset_from_ref_(0), global_id_(0), lane_boundary_(0) {}
 		~Lane() {}
 
 		// Base Get Functions
@@ -585,6 +603,7 @@ namespace roadmanager
 		void SetGlobalId();
 		void SetLaneBoundary(LaneBoundaryOSI *lane_boundary);
 		void SetOffsetFromRef(double offset) { offset_from_ref_ = offset; }
+		void SetLevel(int level) { level_ = level; }
 
 		// Others
 		bool IsType(Lane::LaneType type);
@@ -594,6 +613,7 @@ namespace roadmanager
 		void SetOSIIntersection(int is_osi_intersection) { osiintersection_ = is_osi_intersection;}
 		int GetOSIIntersectionId() {return osiintersection_;}
 		void Print();
+		void Save(pugi::xml_node&);
 		OSIPoints osi_points_;
 
 	private:
@@ -643,13 +663,16 @@ namespace roadmanager
 		int GetNUmberOfLanesRight();
 		int GetNUmberOfLanesLeft();
 		void SetLength(double length) { length_ = length; }
+		void SetSingleSide(bool single) { singleSide_ = single; }
 		int GetConnectingLaneId(int incoming_lane_id, LinkType link_type);
 		double GetWidthBetweenLanes(int lane_id1, int lane_id2, double s);
 		double GetOffsetBetweenLanes(int lane_id1, int lane_id2, double s);
 		void Print();
+		void Save(pugi::xml_node&);
 
 	private:
 		double s_;
+		std::experimental::optional<bool> singleSide_;	
 		double length_;
 		std::vector<Lane*> lane_;
 	};
@@ -684,6 +707,7 @@ namespace roadmanager
 		ContactPointType GetContactPointType() { return contact_point_type_; }
 
 		void Print();
+		void Save(pugi::xml_node&);
 
 	private:
 		LinkType type_;
@@ -702,6 +726,7 @@ namespace roadmanager
 	{
 		int fromLane_;
 		int toLane_;
+		void Save(pugi::xml_node& object);
 	} ValidityRecord;
 
 	class RoadObject
@@ -992,6 +1017,7 @@ namespace roadmanager
 		std::string GetUnit() { return unit_; }
 		std::string GetText() { return text_; }
 		static Type GetTypeFromString(const std::string& type);
+		void Save(pugi::xml_node& signals);
 
 	private:
 		double s_;
@@ -1021,17 +1047,20 @@ namespace roadmanager
 		virtual void GetPos(double& x, double& y, double& z) = 0;
 		virtual double GetHeight() = 0;
 		virtual ~OutlineCorner() {}
+		virtual void Save(pugi::xml_node&) {};
 	};
 
 	class OutlineCornerRoad : public OutlineCorner
 	{
 	public:
 		OutlineCornerRoad(int roadId, double s, double t, double dz, double height);
+		OutlineCornerRoad(int id, int roadId, double s, double t, double dz, double height);
 		void GetPos(double& x, double& y, double& z);
 		double GetHeight() { return height_; }
+		void Save(pugi::xml_node&) override;
 
 	private:
-		int roadId_;
+		int id_, roadId_;
 		double s_, t_, dz_, height_;
 	};
 
@@ -1039,11 +1068,13 @@ namespace roadmanager
 	{
 	public:
 		OutlineCornerLocal(int roadId, double s, double t, double u, double v, double zLocal, double height, double heading);
+		OutlineCornerLocal(int id, int roadId, double s, double t, double u, double v, double zLocal, double height, double heading);
 		void GetPos(double& x, double& y, double& z);
 		double GetHeight() { return height_; }
+		void Save(pugi::xml_node&) override;
 
 	private:
-		int roadId_;
+		int id_, roadId_;
 		double s_, t_, u_, v_, zLocal_, height_, heading_;
 	};
 
@@ -1077,6 +1108,8 @@ namespace roadmanager
 		}
 
 		void AddCorner(OutlineCorner* outlineCorner) { corner_.push_back(outlineCorner); }
+
+		void Save(pugi::xml_node&);
 	};
 
 	class Repeat
@@ -1135,6 +1168,8 @@ namespace roadmanager
 		double GetRadiusStart() { return radiusStart_; }
 		double GetRadiusEnd() { return radiusEnd_; }
 
+		void Save(pugi::xml_node&);
+
 	};
 
 	class RMObject : public RoadObject
@@ -1170,7 +1205,7 @@ namespace roadmanager
 		Repeat* GetRepeat() { return repeat_; }
 		int GetNumberOfOutlines() { return (int)outlines_.size(); }
 		Outline* GetOutline(int i) { return (0 <= i && i < outlines_.size()) ? outlines_[i] : 0; }
-
+		void Save(pugi::xml_node&);
 	private:
 		std::string type_;
 		std::string name_;
@@ -1208,7 +1243,7 @@ namespace roadmanager
 		{
 			double s_;
 			RoadType road_type_;
-			double speed_;  // m/s
+			double speed_ = 0.0;  // m/s
 		} RoadTypeEntry;
 
 		enum class RoadRule
@@ -1346,6 +1381,8 @@ namespace roadmanager
 		*/
 		double GetWidth(double s, int side, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY);   // side: -1=right, 1=left, 0=both
 
+		void Save(pugi::xml_node&);
+
 	protected:
 		int id_;
 		std::string name_;
@@ -1392,12 +1429,14 @@ namespace roadmanager
 		int from_;
 		int to_;
 		void Print() { printf("JunctionLaneLink: from %d to %d\n", from_, to_); }
+		void Save(pugi::xml_node& connection);
 	};
 
 	class Connection
 	{
 	public:
 		Connection(Road *incoming_road, Road *connecting_road, ContactPointType contact_point);
+		Connection(int id, Road *incoming_road, Road *connecting_road, ContactPointType contact_point);
 		~Connection();
 		int GetNumberOfLaneLinks() { return (int)lane_link_.size(); }
 		JunctionLaneLink *GetLaneLink(int idx) { return lane_link_[idx]; }
@@ -1407,18 +1446,21 @@ namespace roadmanager
 		ContactPointType GetContactPoint() { return contact_point_; }
 		void AddJunctionLaneLink(int from, int to);
 		void Print();
+		void Save(pugi::xml_node& junction);
 
 	private:
 		Road *incoming_road_;
 		Road *connecting_road_;
 		ContactPointType contact_point_;
 		std::vector<JunctionLaneLink*> lane_link_;
+		int id_;
 	};
 
 	typedef struct
 	{
 		int signalId_;
 		std::string type_;
+		void Save(pugi::xml_node&);
 	} Control;
 
 	class Controller
@@ -1434,6 +1476,7 @@ namespace roadmanager
 		int GetId() { return id_; }
 		std::string GetName() { return name_; }
 		int GetSequence() { return sequence_; }
+		void Save(pugi::xml_node& root);
 
 	private:
 		int id_;
@@ -1447,6 +1490,7 @@ namespace roadmanager
 		int id_;
 		std::string type_;
 		int sequence_;
+		void Save(pugi::xml_node& junction);
 	} JunctionController;
 
 	class Junction
@@ -1478,6 +1522,7 @@ namespace roadmanager
 		Connection *GetConnectionByIdx(int idx) { return connection_[idx]; }
 		int GetConnectingRoadIdFromIncomingRoadId(int incomingRoadId, int index);
 		void Print();
+		void Save(pugi::xml_node& root);
 		bool IsOsiIntersection();
 		int GetGlobalId() { return global_id_; }
 		void SetGlobalId();
@@ -1497,7 +1542,7 @@ namespace roadmanager
 		JunctionType type_;
 	};
 
-	typedef struct
+	struct GeoReference
 	{
 		double a_;
 		double axis_;
@@ -1519,7 +1564,39 @@ namespace roadmanager
 		std::string geo_id_grids_;
 		double zone_;
 		int towgs84_;
-	} GeoReference;
+
+		void Save(pugi::xml_node&) const;
+	};
+
+	struct OpenDriveOffset
+	{
+		OpenDriveOffset() : x_(0), y_(0), z_(0), hdg_(0) {};	
+		double x_;
+		double y_;
+		double z_;
+		double hdg_;
+
+		void Save(pugi::xml_node&) const;
+		bool isValid() const { return x_ || y_ || z_ || hdg_; };
+	} ;
+
+	struct OpenDriveHeader
+	{
+		uint revMajor_;
+		uint revMinor_;
+		std::string name_;
+		float version_;
+		std::string date_;
+		double north_;
+		double south_;
+		double east_;
+		double west_;
+		std::string vendor_;
+		OpenDriveOffset offset_;
+		GeoReference georeference_;
+
+		void Save(pugi::xml_node&) const;
+	};
 
 	class OpenDrive
 	{
@@ -1612,14 +1689,19 @@ namespace roadmanager
 
 		void Print();
 
+		void Save(const std::string fileName) const;
+
+		OpenDriveHeader GetHeader() const { return header_; };
+
 	private:
 		pugi::xml_node root_node_;
 		std::vector<Road*> road_;
 		std::vector<Junction*> junction_;
 		std::vector<Controller> controller_;
-		GeoReference geo_ref_;
+		GeoReference geo_ref_; // TODO: Remove this and use the header container instead.
 		std::string odr_filename_;
 		std::map<std::string, std::string> signals_types_;
+		OpenDriveHeader header_;
 	};
 
 	typedef struct
