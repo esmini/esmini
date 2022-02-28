@@ -10222,7 +10222,7 @@ Position::ErrorCode Route::MovePathDS(double ds)
 	}
 
 	// Consider route direction
-	ds *= GetDirectionRelativeRoad();
+	ds *= GetWayPointDirection(waypoint_idx_);
 
 	return SetPathS(GetPathS() + ds);
 }
@@ -10339,22 +10339,11 @@ Road* Route::GetRoadAtOtherEndOfConnectingRoad(Road* incoming_road)
 	return junction->GetRoadAtOtherEndOfConnectingRoad(connecting_road, incoming_road);
 }
 
-int Route::GetDirectionRelativeRoad()
-{
-	return GetWayPointDirection(waypoint_idx_);
-}
-
 int Route::GetWayPointDirection(int index)
 {
 	if (minimal_waypoints_.size() == 0 || index < 0 || index >= minimal_waypoints_.size())
 	{
 		LOG("Waypoint index %d out of range (%d)", index, minimal_waypoints_.size());
-		return 0;
-	}
-
-	if (minimal_waypoints_.size() == 1)
-	{
-		LOG("Only one waypoint, no direction");
 		return 0;
 	}
 
@@ -10370,44 +10359,53 @@ int Route::GetWayPointDirection(int index)
 	Position* pos2 = nullptr;
 
 	// Looking in the direction of heading
-	direction = minimal_waypoints_[index].GetHRelative() > M_PI_2 && currentPos_.GetHRelative() < 3 * M_PI_2 / 2.0 ? -1 : 1;
+	direction = minimal_waypoints_[index].GetHRelative() > M_PI_2 && minimal_waypoints_[index].GetHRelative() < 3 * M_PI_2 ? -1 : 1;
 
 	if (index < minimal_waypoints_.size() - 1)
 	{
-		// Looking in the direction of heading
-		direction = currentPos_.GetHRelative() > M_PI_2 && currentPos_.GetHRelative() < 3 * M_PI_2 / 2.0 ? -1 : 1;
-
-		// Look at next waypoint
+		// Not at last waypoint, so look at next waypoint for direction
 		pos2 = GetWaypoint(index + 1);
+		if (direction == 1 && road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())) ||
+			direction == -1 && road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
+		{
+			// Expected case, route direction aligned with waypoint headings
+			return direction;
+		}
+		else
+		{
+			LOG("Warning: Relative heading not aligned with route direction");
+			return -1 * direction;
+		}
 	}
 	else if (index > 0)
 	{
-		// Looking in the opposite direction of heading
-		direction = currentPos_.GetHRelative() > M_PI_2 && currentPos_.GetHRelative() < 3 * M_PI_2 / 2.0 ? 1 : -1;
-
-		// Look at previous waypoint
+		// At last waypoint, so look at previous waypoint
 		pos2 = GetWaypoint(index - 1);
-	}
 
-	if (direction == 1 && road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())) ||
-		direction == -1 && road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
-	{
-		// Expected case, route direction aligned with waypoint headings
-		return 1;
+		if (direction == -1 && road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())) ||
+			direction == 1 && road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
+		{
+			// Expected case, route direction aligned with waypoint headings
+			return direction;
+		}
+		else
+		{
+			LOG("Warning: Relative heading not aligned with route direction");
+			return -1 * direction;
+		}
 	}
-	else if (road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())) &&
-		road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
+	else
 	{
-		LOG("Road %d connects to both ends of road %d using relative heading of waypoint", pos2->GetTrackId(), road->GetId());
-		return direction;
-	}
-	else if (road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
-	{
-		return 1 * direction;
-	}
-	else if (road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId())))
-	{
-		return -1 * direction;
+		// At first and only (minimal) waypoint, so try to find another waypoint for direction
+		if (all_waypoints_.size() > 1 && (road->GetId() == all_waypoints_[1].GetTrackId()))
+		{
+			return direction;
+		}
+		else
+		{
+			LOG("Only one waypoint, no direction");
+			return 0;
+		}
 	}
 
 	LOG("Unexpected case, failed to find out direction of route (from road id %d)", road->GetId());

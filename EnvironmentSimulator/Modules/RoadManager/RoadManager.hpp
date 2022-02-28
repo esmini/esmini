@@ -2458,7 +2458,6 @@ namespace roadmanager
 		int GetTrackId() { return currentPos_.GetTrackId(); }
 		Position* GetWaypoint(int index = -1);  // -1 means current
 		Road* GetRoadAtOtherEndOfConnectingRoad(Road* incoming_road);
-		int GetDirectionRelativeRoad();
 		Position* GetCurrentPosition() { return &currentPos_; }
 
 		/**
