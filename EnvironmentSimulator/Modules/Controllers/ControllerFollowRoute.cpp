@@ -56,13 +56,21 @@ void ControllerFollowRoute::Step(double timeStep)
 		if (!pathCalculated)
 		{
 			// roadmanager::Position targetWaypoint(5,-1,15,0);
-			roadmanager::Position targetWaypoint = object_->pos_.GetRoute()->all_waypoints_.back();
-			targetWaypoint.Print();
-			std::vector<roadmanager::RoadPath::PathNode *> pathToGoal = CalculatePath(&targetWaypoint, RouteStrategy::SHORTEST);
-			LOG("Path to goal size: %d", pathToGoal.size());
-			for (roadmanager::RoadPath::PathNode *node : pathToGoal)
+			targetWaypoint_ = object_->pos_.GetRoute()->all_waypoints_.back();
+			targetWaypoint_.Print();
+
+			std::vector<Node *> pathToGoalS = CalculatePath(RouteStrategy::SHORTEST);
+			LOG("Path to goal (SHORTEST) size: %d", pathToGoalS.size());
+			for (Node *node : pathToGoalS)
 			{
-				LOG("%d", node->fromRoad->GetId());
+				LOG("%d", node->road->GetId());
+			}
+
+			std::vector<Node *> pathToGoalF = CalculatePath(RouteStrategy::FASTEST);
+			LOG("Path to goal (FASTEST) size: %d", pathToGoalF.size());
+			for (Node *node : pathToGoalF)
+			{
+				LOG("%d", node->road->GetId());
 			}
 			pathCalculated = true;
 		}
@@ -173,53 +181,30 @@ void ControllerFollowRoute::ReportKeyEvent(int key, bool down)
 
 // Checks if targetlane is in the same direction as the current driving direction,
 // Returns true if so, false if not
-bool ControllerFollowRoute::TargetLaneIsInDrivingDirection(roadmanager::RoadPath::PathNode *pNode, roadmanager::Road *nextRoad, int targetLaneId)
+bool ControllerFollowRoute::TargetLaneIsInDrivingDirection(Node *currentNode, roadmanager::Road *nextRoad)
 {
-	roadmanager::ContactPointType linkContactPoint = pNode->link->GetContactPointType();
+	int targetLaneId = targetWaypoint_.GetLaneId();
+	roadmanager::ContactPointType linkContactPoint = currentNode->link->GetContactPointType();
 	bool sameDirection = false;
-	if (linkContactPoint == roadmanager::ContactPointType::CONTACT_POINT_START)
+
+	if (nextRoad->IsSuccessor(currentNode->road, &linkContactPoint))
 	{
-		LOG("TargetLaneIsInDrivingDirection: CONTACT_POINT_START");
-		if (nextRoad->IsSuccessor(pNode->fromRoad, &linkContactPoint))
-		{
-			LOG("TargetLaneIsInDrivingDirection: CONTACT_POINT_START IsSuccessor");
-			sameDirection = sgn(pNode->fromLaneId) != sgn(targetLaneId);
-		}
-		else if (nextRoad->IsPredecessor(pNode->fromRoad, &linkContactPoint))
-		{
-			LOG("TargetLaneIsInDrivingDirection: CONTACT_POINT_START IsPredecessor");
-			sameDirection = sgn(pNode->fromLaneId) == sgn(targetLaneId);
-		}
+		sameDirection = SIGN(currentNode->laneId) != SIGN(targetLaneId);
 	}
-	else if (linkContactPoint == roadmanager::ContactPointType::CONTACT_POINT_END)
+	else if (nextRoad->IsPredecessor(currentNode->road, &linkContactPoint))
 	{
-		LOG("TargetLaneIsInDrivingDirection: CONTACT_POINT_END");
-		if (nextRoad->IsSuccessor(pNode->fromRoad, &linkContactPoint))
-		{
-			LOG("TargetLaneIsInDrivingDirection: CONTACT_POINT_END IsSuccessor");
-			sameDirection = sgn(pNode->fromLaneId) == sgn(targetLaneId);
-		}
-		else if (nextRoad->IsPredecessor(pNode->fromRoad, &linkContactPoint))
-		{
-			LOG("TargetLaneIsInDrivingDirection: CONTACT_POINT_END IsPredecessor");
-			sameDirection = sgn(pNode->fromLaneId) != sgn(targetLaneId);
-		}
+		sameDirection = SIGN(currentNode->laneId) == SIGN(targetLaneId);
 	}
 	else
 	{
-		LOG("Undefined contact point");
-	}
-
-	if (!sameDirection)
-	{
-		LOG("Target waypoint is in opposite direction");
+		LOG("TargetLaneIsInDrivingDirection: Link does not exist");
 	}
 
 	return sameDirection;
 }
 
 // Gets the next pathnode for the nextroad based on current srcnode
-std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::GetNextNodes(roadmanager::Road *nextRoad, roadmanager::RoadPath::PathNode *srcNode)
+std::vector<Node *> ControllerFollowRoute::GetNextNodes(roadmanager::Road *nextRoad, Node *srcNode, RouteStrategy routeStrategy)
 {
 	// Register length of this road and find node in other end of the road (link)
 
@@ -227,7 +212,6 @@ std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::GetNextNod
 
 	if (srcNode->link->GetElementType() == roadmanager::RoadLink::ELEMENT_TYPE_ROAD)
 	{
-		LOG("GetNextNode: ELEMENT_TYPE_ROAD");
 		// node link is a road, find link in the other end of it
 		if (srcNode->link->GetContactPointType() == roadmanager::ContactPointType::CONTACT_POINT_END)
 		{
@@ -240,11 +224,9 @@ std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::GetNextNod
 	}
 	else if (srcNode->link->GetElementType() == roadmanager::RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
 	{
-		LOG("GetNextNode: ELEMENT_TYPE_JUNCTION");
 		roadmanager::Junction *junction = roadmanager::Position::GetOpenDrive()->GetJunctionById(srcNode->link->GetElementId());
 		if (junction && junction->GetType() == roadmanager::Junction::JunctionType::DIRECT)
 		{
-			LOG("GetNextNode: ELEMENT_TYPE_JUNCTION DIRECT_JUNCTION");
 			if (nextRoad->GetLink(roadmanager::LinkType::SUCCESSOR) &&
 				nextRoad->GetLink(roadmanager::LinkType::SUCCESSOR)->GetElementId() == junction->GetId())
 			{
@@ -262,16 +244,15 @@ std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::GetNextNod
 		}
 		else
 		{
-			LOG("GetNextNode: ELEMENT_TYPE_JUNCTION COMMON_JUNCTION");
 			if (nextRoad->GetLink(roadmanager::LinkType::SUCCESSOR) &&
-				nextRoad->GetLink(roadmanager::LinkType::SUCCESSOR)->GetElementId() == srcNode->fromRoad->GetId())
+				nextRoad->GetLink(roadmanager::LinkType::SUCCESSOR)->GetElementId() == srcNode->road->GetId())
 			{
 				// Node link is a non direct junction, and it is the successor to the connecting road being checked
 				// hence next link is the predecessor of that connecting road
 				nextLink = nextRoad->GetLink(roadmanager::LinkType::PREDECESSOR);
 			}
 			else if (nextRoad->GetLink(roadmanager::LinkType::PREDECESSOR) &&
-					 nextRoad->GetLink(roadmanager::LinkType::PREDECESSOR)->GetElementId() == srcNode->fromRoad->GetId())
+					 nextRoad->GetLink(roadmanager::LinkType::PREDECESSOR)->GetElementId() == srcNode->road->GetId())
 			{
 				// Node link is a non direct junction, and it is the predecessor to the connecting road being checked
 				// hence next link is the successor of that connecting road
@@ -279,125 +260,215 @@ std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::GetNextNod
 			}
 		}
 	}
-	std::vector<roadmanager::RoadPath::PathNode *> nextNodes;
+
 	if (nextLink == 0)
 	{
 		// end of road
-		LOG("GetNextNode: End of road, no next link exists");
-		return nextNodes;
+		return {};
 	}
 	std::vector<int> connectingLaneIds = GetConnectingLanes(srcNode, nextRoad);
 	if (connectingLaneIds.empty())
 	{
 		// no existing lanes
-		LOG("GetNextNode: No lanes exist");
-		return nextNodes;
+		return {};
 	}
+
+	std::vector<Node *> nextNodes;
 	for (int nextLaneId : connectingLaneIds)
 	{
 		// create next node
-		roadmanager::RoadPath::PathNode *pNode = new roadmanager::RoadPath::PathNode;
-		pNode->dist = srcNode->dist + nextRoad->GetLength();
+		Node *pNode = new Node;
 		pNode->link = nextLink;
-		pNode->fromRoad = nextRoad;
-		pNode->fromLaneId = nextLaneId;
+		pNode->road = nextRoad;
+		pNode->laneId = nextLaneId;
 		pNode->previous = srcNode;
+
+		if (routeStrategy == RouteStrategy::SHORTEST)
+		{
+			pNode->weight = srcNode->weight + nextRoad->GetLength();
+		}
+		else if (routeStrategy == RouteStrategy::FASTEST)
+		{
+			double averageSpeed = CalcAverageSpeed(nextRoad);
+			pNode->weight = srcNode->weight + (nextRoad->GetLength() / averageSpeed);
+		}
+
 		nextNodes.push_back(pNode);
 	}
 
 	return nextNodes;
 }
 
-std::vector<int> ControllerFollowRoute::GetConnectingLanes(roadmanager::RoadPath::PathNode *srcNode, roadmanager::Road *nextRoad)
+std::vector<int> ControllerFollowRoute::GetConnectingLanes(Node *srcNode, roadmanager::Road *nextRoad)
 {
 
 	roadmanager::LaneSection *lanesection = nullptr;
 	if (srcNode->link->GetType() == roadmanager::LinkType::SUCCESSOR)
 	{
-		LOG("GetConnectingLanes: SUCCESSOR");
-		int nrOfLanesection = srcNode->fromRoad->GetNumberOfLaneSections();
-		lanesection = srcNode->fromRoad->GetLaneSectionByIdx(nrOfLanesection - 1);
-		LOG("GetConnectingLanes: lanesection id: %d", nrOfLanesection - 1);
+		int nrOfLanesection = srcNode->road->GetNumberOfLaneSections();
+		lanesection = srcNode->road->GetLaneSectionByIdx(nrOfLanesection - 1);
 	}
 	else
 	{
-		LOG("GetConnectingLanes: PREDCESSOR");
-		lanesection = srcNode->fromRoad->GetLaneSectionByIdx(0);
+		lanesection = srcNode->road->GetLaneSectionByIdx(0);
 	}
 
 	std::vector<int> connectingLaneIds;
 	int nrOfLanes = lanesection->GetNumberOfLanes();
-	LOG("GetConnectingLanes: NrOfLanes: %d", nrOfLanes);
-	LOG("GetConnectingLanes: currentRoad: %d currentLane: %d", srcNode->fromRoad->GetId(), srcNode->fromLaneId);
 	for (size_t i = 0; i < nrOfLanes; i++)
 	{
 		roadmanager::Lane *lane = lanesection->GetLaneByIdx(i);
 		int currentlaneId = lane->GetId();
-		LOG("GetConnectingLanes: CurrentLane: %d", currentlaneId);
-		if (lane->IsDriving() && SIGN(currentlaneId) == SIGN(srcNode->fromLaneId) && lane->GetId() != 0)
+		if (lane->IsDriving() && SIGN(currentlaneId) == SIGN(srcNode->laneId) && lane->GetId() != 0)
 		{
-			int nextLaneId = srcNode->fromRoad->GetConnectingLaneId(srcNode->link, currentlaneId, nextRoad->GetId());
-			LOG("GetConnectingLanes: nextRoad: %d nextLaneId: %d", nextRoad->GetId(), nextLaneId);
+			int nextLaneId = srcNode->road->GetConnectingLaneId(srcNode->link, currentlaneId, nextRoad->GetId());
 			if (nextLaneId != 0)
 			{
-				LOG("GetConnectingLanes: push lane id: %d", nextLaneId);
 				connectingLaneIds.push_back(nextLaneId);
 			}
 		}
 	}
-	return (connectingLaneIds);
+	return connectingLaneIds;
 }
 
-roadmanager::RoadPath::PathNode *ControllerFollowRoute::CreateTargetNode(roadmanager::RoadPath::PathNode *currentNode, roadmanager::Road *nextRoad)
+Node *ControllerFollowRoute::CreateTargetNode(Node *currentNode, roadmanager::Road *nextRoad, RouteStrategy routeStrategy)
 {
 	// Create last node (targetnode)
-	roadmanager::RoadPath::PathNode *targetNode = new roadmanager::RoadPath::PathNode;
+	Node *targetNode = new Node;
 	targetNode->previous = currentNode;
-	targetNode->dist = currentNode->dist + nextRoad->GetLength();
-	targetNode->fromRoad = nextRoad;
-	targetNode->fromLaneId = currentNode->fromRoad->GetConnectingLaneId(currentNode->link, currentNode->fromLaneId, nextRoad->GetId());
-	targetNode->link = nullptr;
+	targetNode->road = nextRoad;
+	targetNode->laneId = currentNode->road->GetConnectingLaneId(currentNode->link, currentNode->laneId, nextRoad->GetId());
+
+	double roadLength = 0;
+	if (currentNode->link->GetContactPointType() == roadmanager::ContactPointType::CONTACT_POINT_START)
+	{
+		roadLength = targetWaypoint_.GetS();
+	}
+	else if (currentNode->link->GetContactPointType() == roadmanager::ContactPointType::CONTACT_POINT_END)
+	{
+		roadLength = nextRoad->GetLength() - targetWaypoint_.GetS();
+	}
+
+	if (routeStrategy == RouteStrategy::SHORTEST)
+	{
+		targetNode->weight = currentNode->weight + roadLength;
+	}
+	else if (routeStrategy == RouteStrategy::FASTEST)
+	{
+		double averageSpeed = CalcAverageSpeed(nextRoad);
+		targetNode->weight = currentNode->weight + (roadLength / averageSpeed);
+	}
+
 	return targetNode;
 }
 
-void ControllerFollowRoute::UpdateDistanceVector(std::vector<roadmanager::RoadPath::PathNode *> nextNodes)
+void ControllerFollowRoute::UpdateDistanceVector(std::vector<Node *> nextNodes)
 {
-	LOG("UpdateDistanceVector: Size of nextNodes: %d", nextNodes.size());
-	for (roadmanager::RoadPath::PathNode *nextNode : nextNodes)
+	for (Node *nextNode : nextNodes)
 	{
 		// Check if next node is already in distance_ vector
-		LOG("UpdateDistanceVector: For each nextnode");
 		size_t i;
 		for (i = 0; i < distance_.size(); i++)
 		{
-			if (distance_[i]->fromRoad->GetId() == nextNode->fromRoad->GetId() && distance_[i]->previous->fromRoad->GetId() == nextNode->previous->fromRoad->GetId() && distance_[i]->fromLaneId == nextNode->fromLaneId && distance_[i]->previous->fromLaneId == nextNode->previous->fromLaneId)
+			bool sameRoadId = distance_[i]->road->GetId() == nextNode->road->GetId();
+			bool sameLaneId = distance_[i]->laneId == nextNode->laneId;
+			bool sameLink = distance_[i]->link == nextNode->link;
+			if (sameRoadId && sameLaneId && sameLink)
 			{
 				// Consider it, i.e. calc distance_ and potentially store it (if less than old)
-				if (nextNode->dist < distance_[i]->dist)
+				if (nextNode->weight < distance_[i]->weight)
 				{
 					// Replace current node with updated node
-					LOG("UpdateDistanceVector:Replace, dist: %f, next: %f", distance_[i]->dist, nextNode->dist);
 					distance_[i] = nextNode;
 				}
-				LOG("UpdateDistanceVector: Size of dist: %d ,idx: %d", distance_.size(), i);
 				break;
 			}
 		}
 		if (i == distance_.size())
 		{
-			LOG("UpdateDistanceVector:Add");
 			distance_.push_back(nextNode);
 			unvisited_.push(nextNode);
 		}
 	}
 }
 
+double ControllerFollowRoute::CalcAverageSpeed(roadmanager::Road *road)
+{
+	int roadTypeCount = road->GetNumberOfRoadTypes();
+	double totalSpeed = 0;
+	for (size_t i = 0; i < roadTypeCount; i++)
+	{
+		totalSpeed += road->GetRoadType(i)->speed_;
+	}
+	if(totalSpeed == 0 || roadTypeCount == 0)
+	{
+		// Default arbitrary speed is 20 m/s (72 km/h)
+		return 20;
+	}
+
+	return totalSpeed / roadTypeCount;
+}
+
+bool ControllerFollowRoute::FindGoal(roadmanager::OpenDrive *odr, RouteStrategy routeStrategy)
+{
+	while (!unvisited_.empty())
+	{
+		Node *currentNode = unvisited_.top();
+		unvisited_.pop();
+		bool nodeIsVisited = std::find(visited_.begin(), visited_.end(), currentNode) != visited_.end();
+		if (nodeIsVisited)
+		{
+			continue;
+		}
+		visited_.push_back(currentNode);
+
+		roadmanager::RoadLink *link = currentNode->link;
+		roadmanager::Road *pivotRoad = currentNode->road;
+		int pivotLaneId = currentNode->laneId;
+
+		std::vector<roadmanager::Road *> nextRoads;
+		if (link->GetElementType() == roadmanager::RoadLink::ElementType::ELEMENT_TYPE_ROAD)
+		{
+			nextRoads.push_back(odr->GetRoadById(link->GetElementId()));
+		}
+		else if (link->GetElementType() == roadmanager::RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
+		{
+			// check all junction links (connecting roads) that has pivot road as incoming road
+			roadmanager::Junction *junction = odr->GetJunctionById(link->GetElementId());
+			for (size_t j = 0; j < junction->GetNoConnectionsFromRoadId(pivotRoad->GetId()); j++)
+			{
+				int roadId = junction->GetConnectingRoadIdFromIncomingRoadId(pivotRoad->GetId(), (int)j);
+				nextRoads.push_back(odr->GetRoadById(roadId));
+			}
+		}
+
+		for (roadmanager::Road *nextRoad : nextRoads)
+		{
+			if (!nextRoad)
+			{
+				LOG("FindGoal: nextRoad is nullptr");
+				continue;
+			}
+			if (nextRoad == targetRoad_ && TargetLaneIsInDrivingDirection(currentNode, nextRoad))
+			{
+				distance_.push_back(CreateTargetNode(currentNode, nextRoad, routeStrategy));
+				return true;
+			}
+			std::vector<Node *> nextNodes = GetNextNodes(nextRoad, currentNode, routeStrategy);
+			UpdateDistanceVector(nextNodes);
+		}
+	}
+	return false;
+}
+
 // Calculate path to target and returns it as a vector of pathnodes
-std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::CalculatePath(roadmanager::Position *targetWaypoint, RouteStrategy routeStrategy)
+std::vector<Node *> ControllerFollowRoute::CalculatePath(RouteStrategy routeStrategy)
 {
 	using namespace roadmanager;
 
-	std::vector<RoadPath::PathNode *> pathToGoal;
+	visited_.clear();
+	distance_.clear();
+	clearQueue(unvisited_);
 
 	OpenDrive *odr = nullptr;
 	if (object_ != nullptr)
@@ -408,14 +479,15 @@ std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::CalculateP
 	Road *startRoad = odr->GetRoadById(object_->pos_.GetTrackId());
 	int startLaneId = object_->pos_.GetLaneId();
 	Position startPos = object_->pos_;
+
+	targetRoad_ = odr->GetRoadById(targetWaypoint_.GetTrackId());
+	int targetLaneId = targetWaypoint_.GetLaneId();
+
 	ContactPointType contactPoint = ContactPointType::CONTACT_POINT_UNDEFINED;
 	RoadLink *nextElement = nullptr;
+	bool isInForwardDirection = startPos.GetHRelative() < M_PI_2 || startPos.GetHRelative() > 3 * M_PI_2;
 
-	Road *targetRoad = odr->GetRoadById(targetWaypoint->GetTrackId());
-	int targetLaneId = targetWaypoint->GetLaneId();
-
-	// Look only in forward direction, w.r.t. entity heading
-	if (startPos.GetHRelative() < M_PI_2 || startPos.GetHRelative() > 3 * M_PI_2)
+	if (isInForwardDirection)
 	{
 		// Along road direction
 		contactPoint = ContactPointType::CONTACT_POINT_END;
@@ -430,97 +502,52 @@ std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::CalculateP
 
 	// If start and end waypoint are on the same road and same lane,
 	// no pathToGoal are needed
-	if (startRoad == targetRoad && startLaneId == targetLaneId)
+	if (startRoad == targetRoad_ && startLaneId == targetLaneId)
 	{
-		return pathToGoal;
+		return {};
 	}
 
 	if (!nextElement)
 	{
 		// No link (next road element) found
-		return pathToGoal;
+		return {};
 	}
 
-	RoadPath::PathNode *pNode = new RoadPath::PathNode;
-	pNode->link = nextElement;
-	pNode->fromRoad = startRoad;
-	pNode->fromLaneId = startLaneId;
-	pNode->previous = 0;
-	pNode->contactPoint = contactPoint;
+	Node *startNode = new Node;
+	startNode->link = nextElement;
+	startNode->road = startRoad;
+	startNode->laneId = startLaneId;
+	startNode->previous = 0;
+
+	double roadLength = 0;
 	if (contactPoint == ContactPointType::CONTACT_POINT_START)
 	{
-		pNode->dist = startPos.GetS(); // distance_ to first road link is distance_ to start of road
+		roadLength = startPos.GetS();
 	}
 	else if (contactPoint == ContactPointType::CONTACT_POINT_END)
 	{
-		pNode->dist = startRoad->GetLength() - startPos.GetS(); // distance_ to end of road
+		roadLength = startRoad->GetLength() - startPos.GetS();
 	}
 
-	unvisited_.push(pNode);
-
-	bool found = false;
-	RoadPath::PathNode *currentNode = nullptr;
-	while (!unvisited_.empty() && !found)
+	if (routeStrategy == RouteStrategy::SHORTEST)
 	{
-		currentNode = unvisited_.top();
-		unvisited_.pop();
-		if (std::find(visited_.begin(), visited_.end(), currentNode) != visited_.end())
-		{
-			LOG("ELEMENT ALREADY EXIST");
-			continue;
-		}
-		LOG("CURRENTNODE: %d", currentNode->fromRoad->GetId());
-		visited_.push_back(currentNode);
+		startNode->weight = roadLength;
+	}
+	else if (routeStrategy == RouteStrategy::FASTEST)
+	{
+		double averageSpeed = CalcAverageSpeed(startRoad);
 
-		RoadLink *link = currentNode->link;
-		Road *pivotRoad = currentNode->fromRoad;
-		int pivotLaneId = currentNode->fromLaneId;
-		Road *nextRoad = nullptr;
-
-		if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
-		{
-			LOG("CalculatePath: ELEMENT_TYPE_ROAD");
-			nextRoad = odr->GetRoadById(link->GetElementId());
-			LOG("CalculatePath: nextRoad: %d", nextRoad->GetId());
-			LOG("CalculatePath: targetRoad: %d", targetRoad->GetId());
-			if (nextRoad == targetRoad && TargetLaneIsInDrivingDirection(currentNode, nextRoad, targetLaneId))
-			{
-				found = true;
-				distance_.push_back(CreateTargetNode(currentNode, nextRoad));
-				break;
-			}
-			std::vector<RoadPath::PathNode *> nextNodes = GetNextNodes(nextRoad, currentNode);
-			UpdateDistanceVector(nextNodes);
-		}
-		else if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_JUNCTION)
-		{
-			LOG("CalculatePath: ELEMENT_TYPE_JUNCTION");
-			// check all junction links (connecting roads) that has pivot road as incoming road
-			roadmanager::Junction *junction = odr->GetJunctionById(link->GetElementId());
-			for (size_t j = 0; j < junction->GetNoConnectionsFromRoadId(pivotRoad->GetId()); j++)
-			{
-				nextRoad = odr->GetRoadById(junction->GetConnectingRoadIdFromIncomingRoadId(pivotRoad->GetId(), (int)j));
-				if (nextRoad == 0)
-				{
-					return pathToGoal;
-				}
-
-				if (nextRoad == targetRoad && TargetLaneIsInDrivingDirection(currentNode, nextRoad, targetLaneId))
-				{
-					found = true;
-					distance_.push_back(CreateTargetNode(currentNode, nextRoad));
-					break;
-				}
-				std::vector<RoadPath::PathNode *> nextNodes = GetNextNodes(nextRoad, currentNode);
-				UpdateDistanceVector(nextNodes);
-			}
-		}
+		startNode->weight = roadLength / averageSpeed;
 	}
 
+	unvisited_.push(startNode);
+
+	bool found = FindGoal(odr, routeStrategy);
+	std::vector<Node *> pathToGoal;
 	if (found)
 	{
 		LOG("Goal found");
-		RoadPath::PathNode *nodeIterator = distance_.back();
+		Node *nodeIterator = distance_.back();
 		LOG("PATH TO GOAL:");
 		while (nodeIterator != 0)
 		{
@@ -531,15 +558,14 @@ std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::CalculateP
 		for (size_t i = 0; i < distance_.size(); i++)
 		{
 			LOG("Idx: %d Road:%d Lane: %d Dist:%f Prev: %d",
-				i, distance_[i]->fromRoad->GetId(), distance_[i]->fromLaneId, distance_[i]->dist, distance_[i]->previous->fromRoad->GetId());
+				i, distance_[i]->road->GetId(), distance_[i]->laneId, distance_[i]->weight, distance_[i]->previous->road->GetId());
 		}
 		LOG("visited_ VECTOR:");
 		for (size_t i = 0; i < visited_.size(); i++)
 		{
 			LOG("Idx: %d Road:%d Dist:%f ",
-				i, visited_[i]->fromRoad->GetId(), visited_[i]->dist);
+				i, visited_[i]->road->GetId(), visited_[i]->weight);
 		}
-		
 	}
 	else
 	{
@@ -548,15 +574,14 @@ std::vector<roadmanager::RoadPath::PathNode *> ControllerFollowRoute::CalculateP
 		for (size_t i = 0; i < distance_.size(); i++)
 		{
 			LOG("Idx: %d Road:%d Lane: %d Dist:%f PrevR: %d PrevL: %d",
-				i, distance_[i]->fromRoad->GetId(), distance_[i]->fromLaneId, distance_[i]->dist, distance_[i]->previous->fromRoad->GetId(), distance_[i]->previous->fromLaneId);
+				i, distance_[i]->road->GetId(), distance_[i]->laneId, distance_[i]->weight, distance_[i]->previous->road->GetId(), distance_[i]->previous->laneId);
 		}
 		LOG("visited_ VECTOR:");
 		for (size_t i = 0; i < visited_.size(); i++)
 		{
 			LOG("Idx: %d Road:%d Dist:%f ",
-				i, visited_[i]->fromRoad->GetId(), visited_[i]->dist);
+				i, visited_[i]->road->GetId(), visited_[i]->weight);
 		}
-		
 	}
 
 	return pathToGoal;

@@ -34,14 +34,23 @@ namespace scenarioengine
 		MIN_INTERSECTIONS
 	} RouteStrategy;
 
-	struct compare
+	typedef struct Node
+	{
+		roadmanager::Road *road;
+		int laneId;
+		double weight;
+		roadmanager::RoadLink *link;
+		Node *previous;
+	} Node;
+
+	struct WeightCompare
+	{
+	public:
+		bool operator()(Node *a, Node *b) // overloading both operators
 		{
-		public:
-			bool operator()(roadmanager::RoadPath::PathNode* a, roadmanager::RoadPath::PathNode*b) // overloading both operators
-			{
-				return a->dist > b->dist;
-			}
-		};
+			return a->weight > b->weight;
+		}
+	};
 
 	// base class for controllers
 	class ControllerFollowRoute : public Controller
@@ -61,25 +70,26 @@ namespace scenarioengine
 		void SetScenarioEngine(ScenarioEngine *scenarioEngine) { scenarioEngine_ = scenarioEngine; };
 
 	private:
-		std::vector<roadmanager::RoadPath::PathNode *> CalculatePath(roadmanager::Position *targetWaypoint, RouteStrategy routeStrategy);
+		std::vector<Node *> CalculatePath(RouteStrategy routeStrategy);
 		void ChangeLane(int lane, double time);
-		roadmanager::RoadPath::PathNode *CreateTargetNode(roadmanager::RoadPath::PathNode *currentNode, roadmanager::Road *nextRoad);
-		void UpdateDistanceVector(std::vector<roadmanager::RoadPath::PathNode *> nextNodes);
-		bool TargetLaneIsInDrivingDirection(roadmanager::RoadPath::PathNode *pNode, roadmanager::Road *nextRoad, int targetLaneId);
-		std::vector<roadmanager::RoadPath::PathNode *> GetNextNodes(roadmanager::Road *nextRoad, roadmanager::RoadPath::PathNode *srcNode);
-		std::vector<int> GetConnectingLanes(roadmanager::RoadPath::PathNode *srcNode, roadmanager::Road *nextRoad);
-		// Sign function: Return 1 if positive, 0 if zero, -1 if negative
-		template <typename T>
-		int sgn(T val) { return (T(0) < val) - (val < T(0)); }
-
-		
+		Node *CreateTargetNode(Node *currentNode, roadmanager::Road *nextRoad, RouteStrategy routeStrategy);
+		void UpdateDistanceVector(std::vector<Node *> nextNodes);
+		bool TargetLaneIsInDrivingDirection(Node *pNode, roadmanager::Road *nextRoad);
+		std::vector<Node *> GetNextNodes(roadmanager::Road *nextRoad, Node *srcNode, RouteStrategy routeStrategy);
+		std::vector<int> GetConnectingLanes(Node *srcNode, roadmanager::Road *nextRoad);
+		bool FindGoal(roadmanager::OpenDrive *odr, RouteStrategy routeStrategy);
+		double CalcAverageSpeed(roadmanager::Road *road);
+		template <class Q>
+		void clearQueue(Q &q) { q = Q(); }
 
 		vehicle::Vehicle vehicle_;
-		ScenarioEngine *scenarioEngine_;  
+		ScenarioEngine *scenarioEngine_;
 		std::vector<OSCPrivateAction *> actions_;
-		std::priority_queue<roadmanager::RoadPath::PathNode*, std::vector<roadmanager::RoadPath::PathNode*>,compare> unvisited_;
-		std::vector<roadmanager::RoadPath::PathNode*> visited_;
-		std::vector<roadmanager::RoadPath::PathNode*> distance_;
+		std::priority_queue<Node *, std::vector<Node *>, WeightCompare> unvisited_;
+		std::vector<Node *> visited_;
+		std::vector<Node *> distance_;
+		roadmanager::Road *targetRoad_;
+		roadmanager::Position targetWaypoint_;
 	};
 
 	Controller *InstantiateControllerFollowRoute(void *args);
