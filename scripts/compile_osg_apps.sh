@@ -14,10 +14,10 @@
 #   To run the applications some paths need to be set accordingly:
 #     Windows powershell:
 #       move osg $env:userprofile
-#       $env:path="$env:path;$env:userprofile/osg/bin;$env:userprofile/osg/lib"
+#       $env:path="$env:path;$env:userprofile/osg/bin;$env:userprofile/osg/bin/osgPlugins-3.6.5;$env:userprofile/osg/3rdParty_bin;$env:userprofile/osg/lib"
 #     Windows cmd:
 #       move osg %userprofile%
-#       set path=%path%;%userprofile%/osg/bin;%userprofile%/osg/lib
+#       set path=%path%;%userprofile%/osg/bin;%userprofile%/osg/bin/osgPlugins-3.6.5;%userprofile%/osg/3rdParty_bin;%userprofile%/osg/lib
 #     Linux:
 #       mv osg ~/
 #       export LD_LIBRARY_PATH="$HOME/osg/lib:$LD_LIBRARY_PATH"
@@ -31,18 +31,25 @@
 #     osgviewer ~/esmini/resources/models/car_white.osgb --window 60 60 800 400
 #     (possibly you need to change the path to your esmini root folder)
 
-OSG_VERSION=OpenSceneGraph-3.6.5
+OSG_VERSION=3.6.5
 osg_root_dir=$(pwd)
 thirdparty=""
 build_examples=false  # set to true in order to build all examples (takes some time)
 z_exe_win="$PROGRAMFILES/7-Zip/7z"
+install_folder="../../osg"
+parallel_make_flag="-j 4"  # set to "" for cmake versions < 3.12
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
-    curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-0-1/fbx202001_fbxsdk_linux.tar.gz" -o fbx202001_fbxsdk_linux.tar.gz
-    [ ! -d fbxsdk ] && mkdir fbxsdk
-    tar xzvf fbx202001_fbxsdk_linux.tar.gz --directory fbxsdk
-    ./fbxsdk/fbx202001_fbxsdk_linux ./fbxsdk
+    # [ ! -d fbxsdk ] && mkdir fbxsdk
+    if [ ! -d fbxsdk ]; then
+        if [ ! -f fbx202001_fbxsdk_linux.tar.gz ];then
+            curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-0-1/fbx202001_fbxsdk_linux.tar.gz" -o fbx202001_fbxsdk_linux.tar.gz
+        fi
+        mkdir fbxsdk
+        tar xzvf fbx202001_fbxsdk_linux.tar.gz --directory fbxsdk
+        ./fbxsdk/fbx202001_fbxsdk_linux ./fbxsdk
+    fi
 
     sudo apt install libtiff-dev
     sudo apt install libjpeg-dev
@@ -73,8 +80,8 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     if [ ! -d 3rdParty_x64 ]; then
         if [ ! -f 3rdParty_VS2017_v141_x64_V11_full.7z  ]; then
             curl -L https://download.osgvisual.org/3rdParty_VS2017_v141_x64_V11_full.7z -o 3rdParty_VS2017_v141_x64_V11_full.7z
-            "$z_exe" x 3rdParty_VS2017_v141_x64_V11_full.7z
         fi
+        "$z_exe_win" x 3rdParty_VS2017_v141_x64_V11_full.7z
     fi
 
     if [ ! -f fbx202021_fbxsdk_vs2017_win.exe ]; then
@@ -99,7 +106,7 @@ fi
 # OSG source
 git clone https://github.com/OpenSceneGraph/OpenSceneGraph
 cd OpenSceneGraph
-git checkout $OSG_VERSION
+git checkout OpenSceneGraph-"$OSG_VERSION"
 
 # Apply fix for comment format not accepted by all platforms
 git checkout 63bb537132bab1f8b077838f7550e26405e5fa35 CMakeModules/FindFontconfig.cmake
@@ -111,8 +118,13 @@ mkdir build-dyn
 cd build-dyn
 
 # Compile OSG with standard settings; dynamic linking and without examples
-cmake -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_INSTALL_PREFIX=../../osg -DFBX_XML2_LIBRARY="$fbx_xml_lib" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib" -DACTUAL_3RDPARTY_DIR=$thirdparty -DBUILD_OSG_EXAMPLES="$build_examples" ..
+cmake -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_INSTALL_PREFIX="$install_folder" -DFBX_XML2_LIBRARY="$fbx_xml_lib" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib" -DACTUAL_3RDPARTY_DIR=$thirdparty -DBUILD_OSG_EXAMPLES="$build_examples" ..
 
-cmake --build . -j 4 --config Release --target install
+cmake --build . --config Release --target install $parallel_make_flag
+
+if [[ "$OSTYPE" == "msys" ]]; then
+    # Copy the 3rd party bin folder to the install folder
+    cp -r "$thirdparty/bin" "$install_folder/3rdParty_bin"
+fi
 
 cd $osg_root_dir
