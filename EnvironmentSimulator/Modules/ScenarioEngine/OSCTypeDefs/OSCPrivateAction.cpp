@@ -117,9 +117,8 @@ double OSCPrivateAction::TransitionDynamics::GetTargetParamValByPrimPrimPeak(dou
 	}
 	else if (shape_ == DynamicsShape::LINEAR)
 	{
-		// Acceleration is infinite at start and end, anything else should result in flat line
-		// Just to have something reasonable, re-use acc equation from CUBIC case
-		return sqrt(6 * abs(GetTargetVal() - GetStartVal()) / prim_prim_peak);
+		// For the linear case, the duration should be distance / rate.
+		return abs(GetTargetVal() - GetStartVal()) / prim_prim_peak;
 	}
 	else if (shape_ == DynamicsShape::SINUSOIDAL)
 	{
