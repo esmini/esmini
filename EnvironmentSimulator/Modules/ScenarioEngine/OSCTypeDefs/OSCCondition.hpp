@@ -31,6 +31,7 @@ namespace scenarioengine
 	class OSCCondition
 	{
 	public:
+		static void (*conditionCallback)(const char* name, double timestamp);
 
 		enum class ConditionState
 		{
