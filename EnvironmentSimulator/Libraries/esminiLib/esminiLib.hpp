@@ -808,6 +808,14 @@ extern "C"
 	SE_DLL_API void SE_RegisterObjectCallback(int object_id, void (*fnPtr)(SE_ScenarioObjectState *, void *), void *user_data);
 
 	/**
+	Registers a function to be called back from esmini every time a condition is triggered.
+	The name of the respective condition and the current timestamp will be returned.
+	Registered callbacks will be cleared between SE_Init calls.
+	@param fnPtr A pointer to the function to be invoked
+	*/
+	SE_DLL_API void SE_RegisterConditionCallback(void (*fnPtr)(const char* name, double timestamp));
+
+	/**
 		Get the number of road signs along specified road
 		@param road_id The road along which to look for signs
 		@return Number of road signs

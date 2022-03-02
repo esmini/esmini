@@ -16,6 +16,8 @@
 using namespace scenarioengine;
 using namespace roadmanager;
 
+void (*OSCCondition::conditionCallback)(const char* name, double timestamp) = nullptr;
+
 std::string Rule2Str(Rule rule)
 {
 	if (rule == Rule::GREATER_THAN)
@@ -269,6 +271,13 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 			LOG("%s timer expired at %.2f seconds", name_.c_str(), timer_.Elapsed(sim_time));
 			timer_.Reset();
 			state_ = ConditionState::TRIGGERED;
+
+			// Trigger the global condition callback
+			if (conditionCallback != nullptr)
+			{
+				conditionCallback(name_.c_str(), sim_time);
+			}
+
 			return true;
 		}
 		else
@@ -297,6 +306,12 @@ bool OSCCondition::Evaluate(StoryBoard *storyBoard, double sim_time)
 	if (trig)
 	{
 		state_ = ConditionState::TRIGGERED;
+
+		// Trigger the global condition callback
+		if (conditionCallback != nullptr)
+		{
+			conditionCallback(name_.c_str(), sim_time);
+		}
 	}
 
 	return trig;

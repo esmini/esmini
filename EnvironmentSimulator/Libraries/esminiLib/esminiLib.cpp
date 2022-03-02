@@ -22,6 +22,7 @@
 #endif
 #include "vehicle.hpp"
 #include "pugixml.hpp"
+#include "OSCCondition.hpp"
 
 using namespace scenarioengine;
 
@@ -80,6 +81,9 @@ static void resetScenario(void)
 		argc_ = 0;
 	}
 	args_v.clear();
+	
+	// Reset (global) condition callback
+	OSCCondition::conditionCallback = nullptr;
 }
 
 static void AddArgument(const char *str, bool split = true)
@@ -1662,6 +1666,11 @@ extern "C"
 		cb.func = fnPtr;
 		objCallback.push_back(cb);
 		player->RegisterObjCallback(object_id, objCallbackFn, user_data);
+	}
+
+	SE_DLL_API void SE_RegisterConditionCallback(void (*fnPtr)(const char* name, double timestamp))
+	{
+		OSCCondition::conditionCallback = fnPtr;
 	}
 
 	SE_DLL_API int SE_GetNumberOfRoadSigns(int road_id)
