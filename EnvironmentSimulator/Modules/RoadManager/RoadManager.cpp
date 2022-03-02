@@ -1,4 +1,4 @@
-﻿/*
+/*
  * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
  *
@@ -10016,7 +10016,15 @@ int Route::AddWaypoint(Position* position)
 				{
 					// Find out lane ID of the connecting road
 					Position connected_pos = Position(nodes[i - 1]->fromRoad->GetId(), nodes[i - 1]->fromLaneId, 0, 0);
-					all_waypoints_.push_back(*position);
+					if (connected_pos.GetLaneId() < 0)
+					{
+						connected_pos.SetHeadingRelative(0.0);
+					}
+					else
+					{
+						connected_pos.SetHeadingRelative(M_PI);
+					}
+					all_waypoints_.push_back(connected_pos);
 					minimal_waypoints_.push_back(connected_pos);
 					LOG("Route::AddWaypoint Added intermediate waypoint %d roadId %d laneId %d",
 						(int)minimal_waypoints_.size() - 1, connected_pos.GetTrackId(), nodes[i - 1]->fromLaneId);
@@ -10394,23 +10402,17 @@ int Route::GetWayPointDirection(int index)
 			return -1 * direction;
 		}
 	}
+
+	// At first and only (minimal) waypoint, so try to find another waypoint for direction
+	if (all_waypoints_.size() > 1 && (road->GetId() == all_waypoints_[1].GetTrackId()))
+	{
+		return direction;
+	}
 	else
 	{
-		// At first and only (minimal) waypoint, so try to find another waypoint for direction
-		if (all_waypoints_.size() > 1 && (road->GetId() == all_waypoints_[1].GetTrackId()))
-		{
-			return direction;
-		}
-		else
-		{
-			LOG("Only one waypoint, no direction");
-			return 0;
-		}
+		LOG("Only one waypoint, no direction");
+		return 0;
 	}
-
-	LOG("Unexpected case, failed to find out direction of route (from road id %d)", road->GetId());
-
-	return direction;
 }
 
 void Route::setName(std::string name)
