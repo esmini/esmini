@@ -88,13 +88,12 @@ public:
 	// to see if its name matches out target. If so, save the node's address.
 	virtual void apply(osg::Group& node)
 	{
-		if (node.getName() == _name)
+		if (node.getName().find(_name) != std::string::npos)
 		{
 			_node = &node;
 		}
 		else
 		{
-
 			// Keep traversing the rest of the scene graph.
 			traverse(node);
 		}
@@ -104,6 +103,35 @@ public:
 
 protected:
 	std::string _name;
+	osg::ref_ptr<osg::Group> _node;
+};
+
+class FindNamedNodes : public osg::NodeVisitor
+{
+public:
+	FindNamedNodes(const std::string& name, std::vector<osg::Node*>& nodes)
+		: osg::NodeVisitor( // Traverse all children.
+			osg::NodeVisitor::TRAVERSE_ALL_CHILDREN),
+		_name(name), _nodes(nodes) {}
+
+	// This method gets called for every node in the scene graph. Check each node
+	// to see if its name matches out target. If so, save the node's address.
+	virtual void apply(osg::Group& node)
+	{
+		if (node.getName().find(_name) != std::string::npos)
+		{
+			_nodes.push_back(&node);
+		}
+
+		// Keep traversing the rest of the scene graph.
+		traverse(node);
+	}
+
+	osg::Node* getNode() { return _node.get(); }
+
+protected:
+	std::string _name;
+	std::vector<osg::Node*>& _nodes;
 	osg::ref_ptr<osg::Group> _node;
 };
 
@@ -991,28 +1019,38 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 	osg::ref_ptr<osg::PositionAttitudeTransform> tx_node = 0;
 
 	// Find wheel node
-	FindNamedNode fnn(wheelName);
+	std::vector<osg::Node*> nodes;
+	FindNamedNodes fnn(wheelName, nodes);
 	carNode->accept(fnn);
 
-	// Assume wheel is a tranformation node
-	osg::MatrixTransform* node = dynamic_cast<osg::MatrixTransform*>(fnn.getNode());
-
-	if (node != NULL)
+	for (size_t i = 0; i < nodes.size(); i++)
 	{
-		tx_node = new osg::PositionAttitudeTransform;
-		// We found the wheel. Put it under a useful transform node
-		tx_node->addChild(node);
+		// Assume wheel is a tranformation node
+		osg::MatrixTransform* node = dynamic_cast<osg::MatrixTransform*>(nodes[i]);
+		if (node != NULL)
+		{
+			tx_node = new osg::PositionAttitudeTransform;
+			// We found the wheel. Put it under a useful transform node
+			tx_node->addChild(node);
 
-		// reset pivot point
-		osg::Vec3 pos = node->getMatrix().getTrans();
-		tx_node->setPivotPoint(pos);
-		tx_node->setPosition(pos);
+			// reset pivot point
+			osg::Vec3 pos = node->getMatrix().getTrans();
+			tx_node->setPivotPoint(pos);
+			tx_node->setPosition(pos);
 
-		osg::ref_ptr<osg::Group> parent = node->getParent(0);  // assume the wheel node only belongs to one vehicle
-		parent->removeChild(node);
-		parent->addChild(tx_node);
+			osg::ref_ptr<osg::Group> parent = node->getParent(0);  // assume the wheel node only belongs to one vehicle
+			parent->removeChild(node);
+			parent->addChild(tx_node);
 
-		wheel_.push_back(tx_node);
+			if (std::string(wheelName).find("wheel_r"))
+			{
+				rear_wheel_.push_back(tx_node);
+			}
+			else if (std::string(wheelName).find("wheel_f"))
+			{
+				front_wheel_.push_back(tx_node);
+			}
+		}
 	}
 
 	return tx_node;
@@ -1108,7 +1146,8 @@ CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, os
 
 CarModel ::~CarModel()
 {
-	wheel_.clear();
+	front_wheel_.clear();
+	rear_wheel_.clear();
 	delete trail_;
 }
 
@@ -1153,29 +1192,27 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
 	// Update wheel angles and rotation for front wheels
 	wheel_angle_ = wheel_angle;
 	wheel_rot_ = wheel_rotation;
+	osg::Quat quat;
 
-	if (wheel_.size() < 4)
+	for (size_t i = 0; i < front_wheel_.size(); i++)
 	{
-		// Wheels not available
-		return;
+		quat.makeRotate(
+			0, osg::Vec3(1, 0, 0), // Roll
+			wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
+			wheel_angle, osg::Vec3(0, 0, 1)); // Heading
+
+		front_wheel_[i]->setAttitude(quat);
 	}
 
-	osg::Quat quat;
-	quat.makeRotate(
-		0, osg::Vec3(1, 0, 0), // Roll
-		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
-		wheel_angle, osg::Vec3(0, 0, 1)); // Heading
-
-	wheel_[0]->setAttitude(quat);
-	wheel_[1]->setAttitude(quat);
-
-	// Update rotation for rear wheels
-	quat.makeRotate(
-		0, osg::Vec3(1, 0, 0), // Roll
-		wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
-		0, osg::Vec3(0, 0, 1)); // Heading
-	wheel_[2]->setAttitude(quat);
-	wheel_[3]->setAttitude(quat);
+	for (size_t i = 0; i < rear_wheel_.size(); i++)
+	{
+		// Update rotation for rear wheels
+		quat.makeRotate(
+			0, osg::Vec3(1, 0, 0), // Roll
+			wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
+			0, osg::Vec3(0, 0, 1)); // Heading
+		rear_wheel_[i]->setAttitude(quat);
+	}
 }
 
 void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta)

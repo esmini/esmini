@@ -288,7 +288,8 @@ namespace viewer
 	class CarModel : public EntityModel
 	{
 	public:
-		std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> wheel_;
+		std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> front_wheel_;
+		std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> rear_wheel_;
 		double wheel_angle_;
 		double wheel_rot_;
 		PointSensor* road_sensor_;
