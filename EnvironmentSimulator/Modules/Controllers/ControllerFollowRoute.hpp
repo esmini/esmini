@@ -75,10 +75,13 @@ namespace scenarioengine
 		Node *CreateTargetNode(Node *currentNode, roadmanager::Road *nextRoad, RouteStrategy routeStrategy);
 		void UpdateDistanceVector(std::vector<Node *> nextNodes);
 		bool TargetLaneIsInDrivingDirection(Node *pNode, roadmanager::Road *nextRoad);
-		std::vector<Node *> GetNextNodes(roadmanager::Road *nextRoad, Node *srcNode, RouteStrategy routeStrategy);
+		std::vector<Node *> GetNextNodes(roadmanager::Road *nextRoad,roadmanager::Road *targetRoad, Node *srcNode, RouteStrategy routeStrategy);
 		std::vector<int> GetConnectingLanes(Node *srcNode, roadmanager::Road *nextRoad);
 		bool FindGoal(roadmanager::OpenDrive *odr, RouteStrategy routeStrategy);
 		double CalcAverageSpeed(roadmanager::Road *road);
+		double CalcWeight(RouteStrategy routeStrategy, double roadLength,roadmanager::Road *road);
+		double CalcWeightWithPos(roadmanager::ContactPointType contactPointType, roadmanager::Position pos, roadmanager::Road *road,RouteStrategy routeStrategy);
+		bool IsTargetValid(roadmanager::OpenDrive *odr);
 		template <class Q>
 		void clearQueue(Q &q) { q = Q(); }
 
@@ -88,7 +91,6 @@ namespace scenarioengine
 		std::priority_queue<Node *, std::vector<Node *>, WeightCompare> unvisited_;
 		std::vector<Node *> visited_;
 		std::vector<Node *> distance_;
-		roadmanager::Road *targetRoad_;
 		roadmanager::Position targetWaypoint_;
 	};
 
