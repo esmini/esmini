@@ -73,6 +73,7 @@ elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
         zfilename="osg_mac.7z"
         z_exe=7z    
     fi
+    fbx_support=true
 else
 	echo Unknown OSTYPE: $OSTYPE
 fi
@@ -175,12 +176,12 @@ fi
 
 cd $osg_root_dir
 if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
-    if [ ! -d jpeg-8d ]; then
-        if [ ! -f jpegsrc.v8d.tar.gz ]; then
-            curl "http://www.ijg.org/files/jpegsrc.v8d.tar.gz" -o jpegsrc.v8d.tar.gz
+    if [ ! -d jpeg-9e ]; then
+        if [ ! -f jpegsrc.v9e.tar.gz ]; then
+            curl "http://www.ijg.org/files/jpegsrc.v9e.tar.gz" -o jpegsrc.v9e.tar.gz
         fi
-        tar xzf jpegsrc.v8d.tar.gz
-        cd jpeg-8d
+        tar xzf jpegsrc.v9e.tar.gz
+        cd jpeg-9e
         if [[ "$OSTYPE" == "darwin"* ]]; then
             ./configure
             make
@@ -222,19 +223,19 @@ if [ ! -d OpenSceneGraph/build ]; then
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
-        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL3 -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-8d/.libs/libjpeg.a -DJPEG_LIBRARY=$osg_root_dir/jpeg-8d/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-8d -DFBX_INCLUDE_DIR=../../fbxsdk/include -DFBX_LIBRARY=../../fbxsdk/lib/gcc/x64/release/libfbxsdk.a -DFBX_LIBRARY_DEBUG=../../fbxsdk/lib/gcc/x64/debug/libfbxsdk.a -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install
+        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL3 -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DJPEG_LIBRARY=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install
 
         make -j8 install
 
         # build debug variant
         rm CMakeCache.txt
 
-        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL3 -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-8d/.libsd/libjpegd.a -DJPEG_LIBRARY=$osg_root_dir/jpeg-8d/.libsd/libjpegd.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-8d -DFBX_INCLUDE_DIR=../../fbxsdk/include -DFBX_LIBRARY=../../fbxsdk/lib/gcc/x64/release/libfbxsdk.a -DFBX_LIBRARY_DEBUG=../../fbxsdk/lib/gcc/x64/debug/libfbxsdk.a -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install-debug
+        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL3 -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libsd/libjpegd.a -DJPEG_LIBRARY=$osg_root_dir/jpeg-9e/.libsd/libjpegd.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install-debug
 
         make -j8 install
 
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL3 -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-8d/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-8d -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-fPIC -DCMAKE_INSTALL_PREFIX=../install
+        cmake ../ -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DOPENGL_PROFILE=GL3 -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-fPIC -DCMAKE_INSTALL_PREFIX=../install
 
         cmake --build . -j 16 --config Release --target install
 
@@ -275,8 +276,8 @@ if [ "$OSTYPE" == "msys" ]; then
 elif [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
     cp zlib-1.2.11/install/include/zlib.h $target_dir/include
     cp zlib-1.2.11/install/lib/libz.${LIB_EXT} zlib-1.2.11/install/lib/libzd.${LIB_EXT} $target_dir/lib
-    cp jpeg-8d/jpeglib.h $target_dir/include
-    cp jpeg-8d/.libs/libjpeg.${LIB_EXT} jpeg-8d/.libsd/libjpegd.${LIB_EXT} $target_dir/lib
+    cp jpeg-9e/jpeglib.h $target_dir/include
+    cp jpeg-9e/.libs/libjpeg.${LIB_EXT} jpeg-9e/.libsd/libjpegd.${LIB_EXT} $target_dir/lib
 else
     echo Unknown OSTYPE: $OSTYPE
 fi
