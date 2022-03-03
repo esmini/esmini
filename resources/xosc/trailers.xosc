@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Demonstrate trailer vehicles -->
+<!-- simulator with no defined traffic and maneuvers. -->
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader description="Trailer demo" author="Knabe" revMajor="1" revMinor="1" date="2022-03-11T08:10:42.217875"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="DefaultSpeed" parameterType="double" value="${50/3.6}"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/multi_intersections.xodr"/>
+        <SceneGraphFile filepath="../models/multi_intersections.osgb"/>
+    </RoadNetwork>
+    <Entities>
+        <!-- First three objects use catalog vehicles with preconfigured trailers -->
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white_with_trailer"/>
+        </ScenarioObject>
+        <ScenarioObject name="Semi_truck">
+            <CatalogReference catalogName="VehicleCatalog" entryName="semi_truck"/>
+        </ScenarioObject>
+        <ScenarioObject name="Semi_truck_with_extra_trailer">
+            <CatalogReference catalogName="VehicleCatalog" entryName="semi_truck_with_extra_trailer"/>
+        </ScenarioObject>
+        
+        <!-- Explicit configuration of a 3-trailer truck. Define trailers in order last first -->
+        <!-- Then simply attach each trailer via the TrailerRef parameter -->
+        <ScenarioObject name="Truck_trailer2">
+            <CatalogReference catalogName="VehicleCatalog" entryName="truck_trailer"/>
+        </ScenarioObject>
+        <ScenarioObject name="Truck_trailer1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="truck_trailer">
+                <ParameterAssignments>
+                    <ParameterAssignment parameterRef="$TrailerRef" value="Truck_trailer2"/>
+                </ParameterAssignments>
+            </CatalogReference>
+        </ScenarioObject>
+        <ScenarioObject name="Semi_trailer">
+            <CatalogReference catalogName="VehicleCatalog" entryName="semi_trailer">
+                <ParameterAssignments>
+                    <ParameterAssignment parameterRef="$TrailerRef" value="Truck_trailer1"/>
+                </ParameterAssignments>
+            </CatalogReference>
+        </ScenarioObject>
+        <ScenarioObject name="Semi_tractor">
+            <CatalogReference catalogName="VehicleCatalog" entryName="semi_tractor">
+                <ParameterAssignments>
+                    <ParameterAssignment parameterRef="$TrailerRef" value="Semi_trailer"/>
+                </ParameterAssignments>
+            </CatalogReference>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="209" laneId="1" s="100.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AcquirePositionAction>
+                                <Position>
+                                    <LanePosition roadId="197" laneId="-1" offset="0" s="50"/>
+                                </Position>
+                            </AcquirePositionAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${$DefaultSpeed * 0.8}"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Semi_truck">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="196" laneId="1" s="30.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AcquirePositionAction>
+                                <Position>
+                                    <LanePosition roadId="209" laneId="-1" offset="0" s="50"/>
+                                </Position>
+                            </AcquirePositionAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$DefaultSpeed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Semi_truck_with_extra_trailer">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="202" laneId="2" s="100.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AcquirePositionAction>
+                                <Position>
+                                    <LanePosition roadId="209" laneId="-2" offset="0" s="20"/>
+                                </Position>
+                            </AcquirePositionAction>
+                        </RoutingAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$DefaultSpeed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Truck_trailer2">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="197" laneId="1" offset="0" s="50"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Truck_trailer1">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="197" laneId="1" offset="0" s="30"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Semi_trailer">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="197" laneId="1" offset="0" s="30"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Semi_tractor">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="197" laneId="1" offset="0" s="30"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <RoutingAction>
+                            <AcquirePositionAction>
+                                <Position>
+                                    <LanePosition roadId="202" laneId="-1" offset="0" s="50"/>
+                                </Position>
+                            </AcquirePositionAction>
+                        </RoutingAction>
+                    </PrivateAction>                    
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$DefaultSpeed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="story_act_empty">
+            <ParameterDeclarations/>
+            <Act name="act_empty">
+                <ManeuverGroup name="empty" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false"/>
+                </ManeuverGroup>
+                <StartTrigger/>
+                <StopTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="time_trigger" delay="0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="24" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

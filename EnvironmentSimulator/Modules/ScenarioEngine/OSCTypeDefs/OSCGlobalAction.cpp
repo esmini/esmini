@@ -40,6 +40,8 @@ using std::vector;
 #define MAX_CARS 1000
 #define MAX_LANES 32
 
+int SwarmTrafficAction::counter_ = 0;
+
 void ParameterSetAction::Start(double simTime, double dt)
 {
 	LOG("Set parameter %s = %s", name_.c_str(), value_.c_str());
@@ -168,7 +170,17 @@ void printTree(aabbTree::Tree &tree, char filename[]) {
 SwarmTrafficAction::SwarmTrafficAction() : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC), centralObject_(0)
 {
     spawnedV.clear();
+    counter_ = 0;
 };
+
+SwarmTrafficAction::~SwarmTrafficAction()
+{
+    for (size_t i = 0; i < vehicle_pool_.size(); i++)
+    {
+        delete vehicle_pool_[i];
+    }
+    vehicle_pool_.clear();
+}
 
 void SwarmTrafficAction::Start(double simTime, double dt)
 {
@@ -205,17 +217,32 @@ void SwarmTrafficAction::Start(double simTime, double dt)
             for (size_t j = 0; j < catalogs->catalog_[i]->entry_.size(); j++)
             {
                 Vehicle* vehicle = reader_->parseOSCVehicle(catalogs->catalog_[i]->entry_[j]->GetNode());
-                modelFilenames_.push_back(vehicle->model3d_);
-                modelIds_.push_back(vehicle->model_id_);
-                delete vehicle;
+                if (vehicle->category_ == Vehicle::Category::CAR ||
+                    vehicle->category_ == Vehicle::Category::BUS ||
+                    vehicle->category_ == Vehicle::Category::TRUCK ||
+                    vehicle->category_ == Vehicle::Category::VAN ||
+                    vehicle->category_ == Vehicle::Category::MOTORBIKE)
+                {
+                    vehicle_pool_.push_back(vehicle);
+                }
+                else
+                {
+                    delete vehicle;
+                }
             }
         }
     }
 
-    if (modelFilenames_.size() == 0)
+    if (vehicle_pool_.size() == 0)
     {
-        modelFilenames_.push_back(centralObject_->model3d_);
-        modelIds_.push_back(centralObject_->model_id_);
+        if (centralObject_->type_ == Object::Type::VEHICLE)
+        {
+            vehicle_pool_.push_back((Vehicle*)centralObject_);
+        }
+        else
+        {
+            LOG_AND_QUIT("No vehicles available to populate swarm traffic. Vehicle catalog empty?");
+        }
     }
 
     OSCAction::Start(simTime, dt);
@@ -335,18 +362,6 @@ void SwarmTrafficAction::createEllipseSegments(aabbTree::BBoxVec &vec, double SM
 
         alpha = da;
     }
-}
-
-inline Vehicle*
-createVehicle(roadmanager::Position pos, int lane, double speed, scenarioengine::Controller *controller, std::string model_filepath)
-{
-    Vehicle* vehicle = new Vehicle();
-    vehicle->pos_.SetLanePos(pos.GetTrackId(), lane, pos.GetS(), 0.0);
-    vehicle->pos_.SetHeadingRelativeRoadDirection(lane < 0 ? 0.0 : M_PI);
-    vehicle->SetSpeed(speed);
-    vehicle->controller_ = controller;
-    vehicle->model3d_ = model_filepath;
-    return vehicle;
 }
 
 inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions &sols, vector<SelectInfo> &info)
@@ -502,18 +517,26 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             reader_->AddController(acc);
 
             // Pick random model from vehicle catalog
-            std::uniform_int_distribution<int> dist(0, (int)(modelFilenames_.size() - 1));
+            std::uniform_int_distribution<int> dist(0, (int)(vehicle_pool_.size() - 1));
             int number = dist(SE_Env::Inst().GetGenerator());
-            std::string modelFilename = modelFilenames_[number];
 
-            Vehicle* vehicle = createVehicle(inf.pos, laneID, velocity_, acc, modelFilename);
+            Vehicle* vehicle = new Vehicle(*vehicle_pool_[number]);
+            vehicle->pos_.SetLanePos(inf.pos.GetTrackId(), laneID, inf.pos.GetS(), 0.0);
+            vehicle->pos_.SetHeadingRelativeRoadDirection(laneID < 0 ? 0.0 : M_PI);
+            vehicle->controller_ = acc;
+            vehicle->SetSpeed(velocity_);
+            //vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
+            vehicle->name_ = "swarm_" + std::to_string(counter_++);
+            int id = entities_->addObject(vehicle, true);
 
-            int id = entities_->addObject(vehicle);
-            vehicle->name_ = "swarm" + std::to_string(id);
-            vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
-            vehicle->model_id_ = modelIds_[number];
+            // align trailers
+            Vehicle* v = vehicle;
+            if (v)
+            {
+                v->AlignTrailers();
+            }
 
-            acc->Assign(entities_->object_.back());
+            acc->Assign(entities_->GetObjectById(id));
             acc->Activate(ControlDomains::DOMAIN_LONG);
 
             SpawnInfo sInfo = {
@@ -598,9 +621,29 @@ int SwarmTrafficAction::despawn(double simTime)
         if (deleteVehicle)
         {
             reader_->RemoveController(vehicle->controller_);
-            entities_->removeObject(vehicle->name_);
-            gateway_->removeObject(vehicle->name_);
-            delete vehicle;
+
+            if (vehicle->type_ == Object::Type::VEHICLE)
+            {
+                Vehicle* v = (Vehicle*)vehicle;
+                Vehicle* trailer = nullptr;
+                while (v)  // remove all linked trailers
+                {
+                    trailer = (Vehicle*)v->TrailerVehicle();
+
+                    gateway_->removeObject(v->name_);
+                    entities_->removeObject(v, false);
+                    v = trailer;
+
+                    vehicle = nullptr;  // indicate vehicle removed
+                }
+            }
+
+            if (vehicle)
+            {
+                gateway_->removeObject(vehicle->name_);
+                entities_->removeObject(vehicle, false);
+            }
+
             infoPtr = spawnedV.erase(infoPtr);
             increase = deleteVehicle = false;
             count++;

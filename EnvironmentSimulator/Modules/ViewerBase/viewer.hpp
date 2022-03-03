@@ -30,6 +30,7 @@
 #include "RoadManager.hpp"
 #include "CommonMini.hpp"
 #include "roadgeom.hpp"
+#include "Entities.hpp"
 #include "OSIReporter.hpp"
 
 extern double color_green[3];
@@ -256,6 +257,7 @@ namespace viewer
 		osg::ref_ptr<osg::Group> model_;
 		osg::ref_ptr<osg::LOD> lod_;
 		osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
+		osg::PositionAttitudeTransform* txShadow_;
 		osg::Quat quat_;
 		osg::ref_ptr<osg::Group> parent_;
 		osg::BoundingBox modelBB_;

@@ -191,6 +191,7 @@ namespace scenarioengine
 	    } SelectInfo;
 
 		SwarmTrafficAction();
+		~SwarmTrafficAction();
 
 		SwarmTrafficAction(const SwarmTrafficAction& action) : OSCGlobalAction(OSCGlobalAction::Type::SWARM_TRAFFIC) {
 		    spawnedV.clear();
@@ -230,8 +231,8 @@ namespace scenarioengine
 		std::vector<SpawnInfo> spawnedV;
 		roadmanager::OpenDrive* odrManager_;
 		double innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
-		std::vector<std::string> modelFilenames_;
-		std::vector<int> modelIds_;
+		std::vector<Vehicle*>vehicle_pool_;
+		static int counter_;
 
 		int despawn(double simTime);
 		void createRoadSegments(aabbTree::BBoxVec &vec);

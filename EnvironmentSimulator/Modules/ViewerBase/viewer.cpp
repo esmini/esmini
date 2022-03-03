@@ -1042,11 +1042,11 @@ osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg
 			parent->removeChild(node);
 			parent->addChild(tx_node);
 
-			if (std::string(wheelName).find("wheel_r"))
+			if (std::string(wheelName).find("wheel_r") != std::string::npos)
 			{
 				rear_wheel_.push_back(tx_node);
 			}
-			else if (std::string(wheelName).find("wheel_f"))
+			else if (std::string(wheelName).find("wheel_f") != std::string::npos)
 			{
 				front_wheel_.push_back(tx_node);
 			}
@@ -1127,19 +1127,19 @@ CarModel::CarModel(osgViewer::Viewer* viewer, osg::ref_ptr<osg::Group> group, os
 	{
 		if (!retval[0])
 		{
-			LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fl", car_node->getName().c_str());
+			LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fl", car_node->getName().c_str());
 		}
 		if (!retval[1])
 		{
-			LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fr", car_node->getName().c_str());
+			LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_fr", car_node->getName().c_str());
 		}
 		if (!retval[2])
 		{
-			LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rr", car_node->getName().c_str());
+			LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rr", car_node->getName().c_str());
 		}
 		if (!retval[3])
 		{
-			LOG("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rl", car_node->getName().c_str());
+			LOG_ONCE("Missing wheel node %s in vehicle model %s - ignoring", "wheel_rl", car_node->getName().c_str());
 		}
 	}
 }
@@ -1200,7 +1200,6 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
 			0, osg::Vec3(1, 0, 0), // Roll
 			wheel_rotation, osg::Vec3(0, 1, 0), // Pitch
 			wheel_angle, osg::Vec3(0, 0, 1)); // Heading
-
 		front_wheel_[i]->setAttitude(quat);
 	}
 
@@ -1868,7 +1867,7 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	{
 		if (entities_[i]->filename_ == modelFilepath)
 		{
-			modelgroup = dynamic_cast<osg::Group*>(entities_[i]->group_->clone(osg::CopyOp::DEEP_COPY_NODES));
+			modelgroup = dynamic_cast<osg::Group*>(entities_[i]->group_->getChild(0)->asGroup()->getChild(0)->clone(osg::CopyOp::DEEP_COPY_NODES));
 			modelBB = entities_[i]->modelBB_;
 			break;
 		}
@@ -1912,6 +1911,7 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	osg::Material* material = new osg::Material();
 	material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
 	material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0));
+	osg::ref_ptr<osg::PositionAttitudeTransform> modeltx = new osg::PositionAttitudeTransform;
 	if (modelgroup == nullptr)
 	{
 		if (modelFilepath.empty())
@@ -1949,9 +1949,8 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 				carStdDim[0], carStdDim[1], carStdDim[2])));
 		}
 		geode->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
-		modelgroup = new osg::Group;
-		modelgroup->addChild(geode);
-		modelgroup->getOrCreateStateSet()->setAttribute(material);
+		modeltx->addChild(geode);
+		modeltx->getOrCreateStateSet()->setAttribute(material);
 
 		// and extract the OSG bounding box
 		osg::ComputeBoundsVisitor cbv;
@@ -2029,7 +2028,6 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	else if (scaleMode == EntityScaleMode::MODEL_TO_BB)
 	{
 		// Scale loaded 3d model
-		osg::ref_ptr<osg::PositionAttitudeTransform> modeltx = new osg::PositionAttitudeTransform;
 		modeltx->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
 
 		double sx = boundingBox->dimensions_.length_ / (modelBB._max.x() - modelBB._min.x());
@@ -2041,11 +2039,10 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 			boundingBox->center_.y_ - sy * modelBB.center().y(),
 			boundingBox->center_.z_ - sz * modelBB.center().z()));
 		modeltx->setScale(osg::Vec3(sx, sy, sz));
-
-		// Put transform node under modelgroup
-		modeltx->addChild(modelgroup);
-		modelgroup = (osg::Group*)modeltx;
 	}
+
+	// Put transform node under modelgroup
+	modeltx->addChild(modelgroup);
 
 	// Draw only wireframe
 	osg::PolygonMode* polygonMode = new osg::PolygonMode;
@@ -2064,9 +2061,9 @@ EntityModel* Viewer::CreateEntityModel(std::string modelFilepath, osg::Vec4 trai
 	bbGroup->getOrCreateStateSet()->setAttribute(material);
 	bbGroup->setName("BoundingBox");
 
+	group->addChild(modeltx);
 	group->addChild(bbGroup);
 	group->setName(name);
-	group->addChild(modelgroup);
 
 	EntityModel* emodel;
 	if (type == EntityModel::EntityType::VEHICLE)
@@ -2131,7 +2128,7 @@ void Viewer::RemoveCar(int index)
 {
 	if (entities_[index] != nullptr)
 	{
-		entities_[index]->parent_->removeChild(entities_[index]->txNode_);
+		entities_[index]->parent_->removeChild(entities_[index]->group_);
 		delete (entities_[index]);
 	}
 	entities_.erase(entities_.begin() + index);
@@ -2200,6 +2197,7 @@ void Viewer::RemoveCar(std::string name)
 
 osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char* filename, osg::BoundingBox& bb)
 {
+	static int elev = 0;  // Avoid shadow node to flicker, put every second on slightly different Z
 	osg::ref_ptr<osg::PositionAttitudeTransform> shadow_tx = 0;
 	osg::ref_ptr<osg::Node> node;
 	osg::ref_ptr<osg::Group> group = new osg::Group;
@@ -2231,7 +2229,8 @@ osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char* filename, osg::Boun
 	if (shadow_node_)
 	{
 		shadow_tx = new osg::PositionAttitudeTransform;
-		shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.0));
+		shadow_tx->setName("shadow_tx");
+		shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.05 * elev));
 		shadow_tx->setScale(osg::Vec3d(SHADOW_SCALE * (dx / 2), SHADOW_SCALE * (dy / 2), 1.0));
 		shadow_tx->addChild(shadow_node_);
 
@@ -2239,7 +2238,7 @@ osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char* filename, osg::Boun
 		group->addChild(shadow_tx);
 	}
 
-
+	elev = (elev + 1) % 3;
 	return group;
 }
 

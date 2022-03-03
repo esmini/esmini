@@ -56,7 +56,11 @@ static const char* entityModelsFilesFallbackList_[] =
 	"walkman.osgb",
 	"moose_cc0.osgb",
 	"cyclist.osgb",
-	"mc.osgb"
+	"mc.osgb",
+	"car_trailer.osgb",
+	"semi_tractor.osgb",
+	"semi_trailer.osgb",
+	"truck_trailer.osgb",
 };
 
 

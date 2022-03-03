@@ -1002,8 +1002,14 @@ int Object::Distance(double x, double y, roadmanager::CoordinateSystem cs, roadm
 	return 0;
 }
 
-int Entities::addObject(Object* obj, bool activate)
+int Entities::addObject(Object* obj, bool activate, int call_index)
 {
+	const int max_trailers = 100;
+	if (call_index >= max_trailers)
+	{
+		LOG_AND_QUIT("Error: addObject max recursion reached (%d). Check scenario trailer config", max_trailers);
+	}
+
 	obj->id_ = getNewId();
 	if (activate)
 	{
@@ -1016,11 +1022,27 @@ int Entities::addObject(Object* obj, bool activate)
 
 	obj->SetActive(activate);
 
+	Vehicle* trailer_vehicle = (Vehicle*)obj->TrailerVehicle();
+	if (trailer_vehicle && trailer_vehicle != obj)
+	{
+		if (trailer_vehicle->name_.empty())
+		{
+			trailer_vehicle->name_ = obj->GetName() + "+";
+		}
+		addObject(trailer_vehicle, activate, call_index + 1);
+	}
+
 	return obj->id_;
 }
 
-int Entities::activateObject(Object* obj)
+int Entities::activateObject(Object* obj, int call_index)
 {
+	const int max_trailers = 100;
+	if (call_index >= max_trailers)
+	{
+		LOG_AND_QUIT("Error: activateObject max recursion reached (%d). Check scenario trailer config", max_trailers);
+	}
+
 	int n_active_objs = (int)std::count(object_.begin(), object_.end(), obj);
 
 	if (n_active_objs == 0)
@@ -1043,6 +1065,12 @@ int Entities::activateObject(Object* obj)
 		{
 			LOG("Unexpected finding: Object %s missing in pool empty when activating.", obj->GetName().c_str());
 		}
+
+		Vehicle* trailer_vehicle = (Vehicle*)obj->TrailerVehicle();
+		if (trailer_vehicle && trailer_vehicle != obj)
+		{
+			activateObject(trailer_vehicle, call_index + 1);
+		}
 	}
 	else
 	{
@@ -1054,8 +1082,14 @@ int Entities::activateObject(Object* obj)
 	return 0;
 }
 
-int Entities::deactivateObject(Object* obj)
+int Entities::deactivateObject(Object* obj, int call_index)
 {
+	const int max_trailers = 100;
+	if (call_index >= max_trailers)
+	{
+		LOG_AND_QUIT("Error: deactivateObject max recursion reached (%d). Check scenario trailer config", max_trailers);
+	}
+
 	int n_active_objs = (int)std::count(object_.begin(), object_.end(), obj);
 
 	if (n_active_objs == 1)
@@ -1073,6 +1107,12 @@ int Entities::deactivateObject(Object* obj)
 			LOG("Unexpected: Object %s already in pool (%d instances) when deactivating it.",
 				obj->GetName().c_str(), n_objs);
 		}
+
+		Vehicle* trailer_vehicle = (Vehicle*)obj->TrailerVehicle();
+		if (trailer_vehicle && trailer_vehicle != obj)
+		{
+			deactivateObject(trailer_vehicle, call_index + 1);
+		}
 	}
 	else if (n_active_objs > 1)
 	{
@@ -1089,37 +1129,55 @@ int Entities::deactivateObject(Object* obj)
 	return 0;
 }
 
-void Entities::removeObject(int id)
+void Entities::removeObject(int id, bool recursive)
 {
 	for (size_t i = 0; i < object_.size(); i++)
 	{
 		if (object_[i]->id_ == id)
 		{
-			object_.erase(object_.begin() + i);
+			removeObject(object_[i], recursive);
+			return;
 		}
 	}
 }
 
-void Entities::removeObject(std::string name)
+void Entities::removeObject(std::string name, bool recursive)
 {
 	for (size_t i = 0; i < object_.size(); i++)
 	{
 		if (object_[i]->name_ == name)
 		{
-			object_.erase(object_.begin() + i);
+			removeObject(object_[i], recursive);
+			return;
 		}
 	}
 }
 
-void Entities::removeObject(Object* object)
+void Entities::removeObject(Object* object, bool recursive)
 {
-	for (size_t i = 0; i < object_.size(); i++)
+	if (recursive)
 	{
-		if (object_[i] == object)
+		for (size_t i = 0; i < object_.size(); i++)
 		{
-			object_.erase(object_.begin() + i);
+			if (object_[i] == object)
+			{
+				if (object->type_ == Object::Type::VEHICLE)
+				{
+					Vehicle* v = (Vehicle*)object;
+					if (v->trailer_hitch_ && v->trailer_hitch_->trailer_vehicle_)
+					{
+						removeObject(v->trailer_hitch_->trailer_vehicle_, recursive);
+						break;
+					}
+				}
+			}
 		}
 	}
+
+	object_.erase(std::remove(object_.begin(), object_.end(), object), object_.end());
+	delete object;
+
+	return;
 }
 
 bool Entities::nameExists(std::string name)
@@ -1149,6 +1207,78 @@ bool Entities::indexExists(int id)
 int Entities::getNewId()
 {
 	return nextId_++;
+}
+
+Vehicle::Vehicle() : trailer_hitch_(nullptr), trailer_coupler_(nullptr), Object(Object::Type::VEHICLE)
+{
+	category_ = static_cast<int>(Category::CAR);
+	performance_.maxAcceleration = 10.0;
+	performance_.maxDeceleration = 10.0;
+	performance_.maxSpeed = 100.0;
+}
+
+Vehicle::Vehicle(const Vehicle& v) : trailer_hitch_(nullptr), trailer_coupler_(nullptr), Object(Object::Type::VEHICLE)
+{
+	*this = v;
+
+	if (v.trailer_coupler_ && v.trailer_coupler_->tow_vehicle_)
+	{
+		trailer_coupler_ = new TrailerCoupler(*v.trailer_coupler_);
+		trailer_coupler_->tow_vehicle_ = nullptr;
+	}
+
+	if (v.trailer_hitch_ && v.trailer_hitch_->trailer_vehicle_)
+	{
+		// make a unique copy of any trailer
+		trailer_hitch_ = new TrailerHitch(*v.trailer_hitch_);
+		Vehicle* trailer = new Vehicle(*((Vehicle*)(v.trailer_hitch_->trailer_vehicle_)));
+		ConnectTrailer(trailer);
+	}
+}
+
+Vehicle::~Vehicle()
+{
+	delete trailer_hitch_;
+	delete trailer_coupler_;
+}
+
+int Vehicle::ConnectTrailer(Vehicle* trailer)
+{
+	if (trailer && trailer->trailer_coupler_)
+	{
+		trailer->trailer_coupler_->tow_vehicle_ = this;
+		if (trailer_hitch_)
+		{
+			trailer_hitch_->trailer_vehicle_ = trailer;
+			return 0;
+		}
+	}
+
+	return -1;
+}
+
+void Vehicle::AlignTrailers()
+{
+	// Calculate neutral trailer position and orientation
+	Vehicle* v = this;
+	Vehicle* trailer = nullptr;
+	int counter = 0;
+	while (v && counter++ < 100)
+	{
+		trailer = (Vehicle*)v->TrailerVehicle();
+		if (trailer)
+		{
+			SE_Vector v0(v->trailer_hitch_->dx_, 0.0);
+			v0 = v0.Rotate(pos_.GetH()) + SE_Vector(v->pos_.GetX(), v->pos_.GetY());
+
+			SE_Vector v1(-trailer->trailer_coupler_->dx_, 0.0);
+			v1 = v1.Rotate(pos_.GetH()) + v0;
+
+			trailer->pos_.SetInertiaPos(v1.x(), v1.y(), pos_.GetH());
+			trailer->SetSpeed(GetSpeed());
+		}
+		v = trailer;
+	}
 }
 
 Object* Entities::GetObjectByName(std::string name)
@@ -1222,4 +1352,58 @@ std::vector<OSCPrivateAction*> Object::getPrivateActions() {
 		}
 	}
 	return actions;
+}
+
+Object* Object::TowVehicle()
+{
+	Vehicle* tow_vehicle = nullptr;
+
+	if (type_ == Object::Type::VEHICLE)
+	{
+		Vehicle* vehicle = (Vehicle*)this;
+		if (vehicle->trailer_coupler_ != nullptr)
+		{
+			if (vehicle->trailer_coupler_->tow_vehicle_)
+			{
+				if (vehicle->trailer_coupler_->tow_vehicle_->type_ == Object::Type::VEHICLE)
+				{
+					tow_vehicle = (Vehicle*)vehicle->trailer_coupler_->tow_vehicle_;
+					if (tow_vehicle != nullptr && tow_vehicle->trailer_hitch_ == nullptr)
+					{
+						LOG_ONCE("Warning: Tow vehicle %s lacks hitch", tow_vehicle->GetName().c_str());
+						tow_vehicle = nullptr;
+					}
+				}
+			}
+		}
+	}
+
+	return tow_vehicle;
+}
+
+Object* Object::TrailerVehicle()
+{
+	Vehicle* trailer_vehicle = nullptr;
+
+	if (type_ == Object::Type::VEHICLE)
+	{
+		Vehicle* vehicle = (Vehicle*)this;
+		if (vehicle->trailer_hitch_ != nullptr)
+		{
+			if (vehicle->trailer_hitch_->trailer_vehicle_)
+			{
+				if (vehicle->trailer_hitch_->trailer_vehicle_->type_ == Object::Type::VEHICLE)
+				{
+					trailer_vehicle = (Vehicle*)vehicle->trailer_hitch_->trailer_vehicle_;
+					if (trailer_vehicle != nullptr && trailer_vehicle->trailer_coupler_ == nullptr)
+					{
+						LOG_ONCE("Warning: Trailer vehicle %s lacks coupler", trailer_vehicle->GetName().c_str());
+						trailer_vehicle = nullptr;
+					}
+				}
+			}
+		}
+	}
+
+	return trailer_vehicle;
 }

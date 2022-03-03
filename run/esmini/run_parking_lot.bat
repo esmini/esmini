@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 60 60 1024 576  --osc ../../resources/xosc/parking_lot.xosc --trail_mode 3
+"../../bin/esmini" --window 60 60 1024 576  --osc ../../resources/xosc/parking_lot.xosc --trail_mode 3 --camera_mode flex-orbit

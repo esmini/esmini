@@ -2,197 +2,164 @@
 <!-- Demonstrate how LaneOffsetAction can be used for overtaking maneuvers, giving -->
 <!-- explicit control over lateral offset in relation to original position.        -->
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="0"
-               date="2017-06-09T10:00:00"
-               description="Cut-in"
-               author="SimS"/>
-   <ParameterDeclarations>
-      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
-      <ParameterDeclaration name="EgoStartS" parameterType="double" value="50"/>
-      <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
-      <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="1.0"/>
-   </ParameterDeclarations>
-   <CatalogLocations>
-      <VehicleCatalog>
-         <Directory path="../xosc/Catalogs/Vehicles"/>
-      </VehicleCatalog>
-   </CatalogLocations>
-   <RoadNetwork>
-      <LogicFile filepath="../xodr/jolengatan.xodr"/>
-      <SceneGraphFile filepath="../models/jolengatan.osgb"/>
-   </RoadNetwork>
-   <Entities>
-      <ScenarioObject name="Ego">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
-      </ScenarioObject>
-      <ScenarioObject name="OverTaker">
-         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
-      </ScenarioObject>
-   </Entities>
-   <Storyboard>
-      <Init>
-         <Actions>
-            <Private entityRef="Ego">
-               <PrivateAction>
-                  <LongitudinalAction>
-                     <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                        <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="20"/>
-                        </SpeedActionTarget>
-                     </SpeedAction>
-                  </LongitudinalAction>
-               </PrivateAction>
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="$EgoStartS"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-            </Private>
-            <Private entityRef="OverTaker">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="3.5" s="30"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-            </Private>
-         </Actions>
-      </Init>
-      <Story name="CutInAndBrakeStory">
-         <ParameterDeclarations>
-            <ParameterDeclaration parameterType="string" name="owner" value="OverTaker"/>
-         </ParameterDeclarations>
-         <Act name="CutInAndBrakeAct">
-            <ManeuverGroup maximumExecutionCount="1" name="CutInAndBrakeSequence">
-               <Actors selectTriggeringEntities="false">
-                  <EntityRef entityRef="$owner"/>
-               </Actors>
-               <Maneuver name="CutInManeuver">
-                  <Event name="OverTakerStartSpeedEvent" priority="overwrite">
-                     <Action name="OverTakerStartSpeedAction">
-                        <PrivateAction>
-                           <LongitudinalAction>
-                              <SpeedAction>
-                                 <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
-                                 <SpeedActionTarget>
-                                    <RelativeTargetSpeed entityRef="Ego"
-                                                         value="1.2"
-                                                         speedTargetValueType="factor"
-                                                         continuous="true"/>
-                                 </SpeedActionTarget>
-                              </SpeedAction>
-                           </LongitudinalAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="OverTakerStartSpeedCondition"
-                                      delay="0"
-                                      conditionEdge="none">
-                              <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="act"
-                                                                  storyboardElementRef="CutInAndBrakeAct"
-                                                                  state="startTransition"/>
-                              </ByValueCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-                  <Event name="CutInEvent" priority="overwrite">
-                     <Action name="CutInAction">
-                        <PrivateAction>
-                           <LateralAction>
-                              <LaneOffsetAction continuous="true">
-                                 <LaneOffsetActionDynamics dynamicsShape="sinusoidal" maxLateralAcc="1.0" />
-                                 <LaneOffsetTarget>
-                                    <AbsoluteTargetLaneOffset value="0"/>
-                                 </LaneOffsetTarget>
-                              </LaneOffsetAction>
-                           </LateralAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="CutInStartCondition" delay="0" conditionEdge="rising">
-                              <ByEntityCondition>
-                                 <TriggeringEntities triggeringEntitiesRule="any">
-                                    <EntityRef entityRef="Ego"/>
-                                 </TriggeringEntities>
-                                 <EntityCondition>
-                                    <TimeHeadwayCondition entityRef="$owner"
-                                                          value="$HeadwayTime_LaneChange"
-                                                          freespace="false"
-                                                          alongRoute="false"
-                                                          rule="greaterThan"/>
-                                 </EntityCondition>
-                              </ByEntityCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-               </Maneuver>
-               <Maneuver name="BrakeManeuver">
-                  <Event name="OvertakerBrakeEvent" priority="overwrite">
-                     <Action name="OvertakerBrakeAction">
-                        <PrivateAction>
-                           <LongitudinalAction>
-                              <SpeedAction>
-                                 <SpeedActionDynamics dynamicsShape="linear" value="-4" dynamicsDimension="rate"/>
-                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="0"/>
-                                 </SpeedActionTarget>
-                              </SpeedAction>
-                           </LongitudinalAction>
-                        </PrivateAction>
-                     </Action>
-                     <StartTrigger>
-                        <ConditionGroup>
-                           <Condition name="BrakeCondition" delay="0" conditionEdge="rising">
-                              <ByEntityCondition>
-                                 <TriggeringEntities triggeringEntitiesRule="any">
-                                    <EntityRef entityRef="Ego"/>
-                                 </TriggeringEntities>
-                                 <EntityCondition>
-                                    <TimeHeadwayCondition entityRef="$owner"
-                                                          value="$HeadwayTime_Brake"
-                                                          freespace="true"
-                                                          alongRoute="true"
-                                                          rule="greaterThan"/>
-                                 </EntityCondition>
-                              </ByEntityCondition>
-                           </Condition>
-                        </ConditionGroup>
-                     </StartTrigger>
-                  </Event>
-                </Maneuver>
-            </ManeuverGroup>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="CutInActStart" delay="0" conditionEdge="none">
-                     <ByValueCondition>
-                        <SimulationTimeCondition value="0" rule="greaterThan"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
-            <StopTrigger>
-                <ConditionGroup>
-                   <Condition name="ActStopCondition" delay="3" conditionEdge="rising">
-                      <ByValueCondition>
-                         <StoryboardElementStateCondition storyboardElementType="event"
-                                                          storyboardElementRef="OvertakerBrakeEvent"
-                                                          state="endTransition"/>
-                      </ByValueCondition>
-                   </Condition>
-                </ConditionGroup>            
-            </StopTrigger>
-         </Act>
-      </Story>
-   </Storyboard>
+    <FileHeader revMajor="1" revMinor="0" date="2017-06-09T10:00:00" description="Cut-in" author="SimS"/>
+    <ParameterDeclarations>
+        <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+        <ParameterDeclaration name="EgoStartS" parameterType="double" value="150"/>
+        <ParameterDeclaration name="RoadID" parameterType="double" value="1"/>
+        <ParameterDeclaration name="LaneOffset" parameterType="double" value="3.1"/>
+        <ParameterDeclaration name="Speed" parameterType="double" value="${50/3.6}"/>
+    </ParameterDeclarations>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/curves_elevation.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+        </ScenarioObject>
+        <ScenarioObject name="Truck">
+            <CatalogReference catalogName="VehicleCatalog" entryName="semi_truck"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="$RoadID" laneId="-1" offset="0" s="$EgoStartS"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="$Speed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Truck">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="$RoadID" laneId="-1" s="${$EgoStartS-30}" offset="0" t="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="CutInStory">
+            <ParameterDeclarations>
+                <ParameterDeclaration parameterType="string" name="owner" value="Truck"/>
+            </ParameterDeclarations>
+            <Act name="CutInAct">
+                <ManeuverGroup maximumExecutionCount="1" name="CutInAndBrakeSequence">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="$owner"/>
+                    </Actors>
+                    <Maneuver name="CutInManeuver">
+                        <Event name="OverTakerStartSpeedEvent" priority="overwrite">
+                            <Action name="OverTakerStartSpeedAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                            <SpeedActionTarget>
+                                                <RelativeTargetSpeed entityRef="Ego" value="1.3" speedTargetValueType="factor" continuous="true"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                        </Event>
+                        <Event name="LaneChangeEvent" priority="overwrite">
+                            <Action name="LaneChangeAction">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneOffsetAction continuous="true">
+                                            <LaneOffsetActionDynamics dynamicsShape="cubic" maxLateralAcc="3.0"/>
+                                            <LaneOffsetTarget>
+                                                <AbsoluteTargetLaneOffset value="$LaneOffset"/>
+                                            </LaneOffsetTarget>
+                                        </LaneOffsetAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="LaneChangeCondition" delay="0" conditionEdge="none">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Truck"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <TimeHeadwayCondition entityRef="Ego" value="1.0" freespace="false" alongRoute="false" rule="lessThan"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="CutInEvent" priority="overwrite">
+                            <Action name="CutInAction">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneOffsetAction continuous="true">
+                                            <LaneOffsetActionDynamics dynamicsShape="sinusoidal" maxLateralAcc="2.0"/>
+                                            <LaneOffsetTarget>
+                                                <AbsoluteTargetLaneOffset value="0.0"/>
+                                            </LaneOffsetTarget>
+                                        </LaneOffsetAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="CutInCondition" delay="0" conditionEdge="rising">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="Ego"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <TimeHeadwayCondition entityRef="$owner" value="1.2" freespace="false" alongRoute="false" rule="greaterThan"/>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="CutInActStart" delay="0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+                <StopTrigger>
+                    <ConditionGroup>
+                        <Condition name="ActStopCondition" delay="10" conditionEdge="rising">
+                            <ByValueCondition>
+                                <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="CutInEvent" state="endTransition"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StopTrigger>
+            </Act>
+        </Story>
+    </Storyboard>
 </OpenSCENARIO>

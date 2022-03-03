@@ -171,11 +171,11 @@ class TestSuite(unittest.TestCase):
         csv = generate_csv()
         self.assertTrue(re.search('\n8.00.*, 0, Ego, 138.33.*, -8.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 16.6[67].*,.*', csv))
         self.assertTrue(re.search('\n8.00.*, 1, CutInVehicle, 159.44.*, -11.50.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 11.1.*,.*', csv))
-        self.assertTrue(re.search('\n9.600, 0, Ego, 164.628, -8.000, 0.000, 0.000, 0.000, 0.000, 13.989', csv))
+        self.assertTrue(re.search('\n9.600, 0, Ego, 164.945, -8.000, 0.000, 0.000, 0.000, 0.000, 15.567, 0.000, 4.565', csv))
         self.assertTrue(re.search('\n9.600, 1, CutInVehicle, 177.222, -10.918, 0.000, 0.198, 0.000, 0.000, 11.111', csv))
-        self.assertTrue(re.search('\n10.850, 0, Ego, 178.566, -8.000, 0.000, 0.000, 0.000, 0.000, 8.671', csv))
+        self.assertTrue(re.search('\n10.850, 0, Ego, 178.981, -8.000, 0.000, 0.000, 0.000, 0.000, 8.445, 0.000, 0.482', csv))
         self.assertTrue(re.search('\n10.850, 1, CutInVehicle, 191.111, -8.022, 0.000, 0.043, 0.000, 0.000, 11.111', csv))
-        self.assertTrue(re.search('\n11.000, 0, Ego, 179.841, -8.000, 0.000, 0.000, 0.000, 0.000, 8.330', csv))
+        self.assertTrue(re.search('\n11.000, 0, Ego, 180.223, -8.000, 0.000, 0.000, 0.000, 0.000, 8.113, 0.000, 4.022', csv))
         self.assertTrue(re.search('\n11.000, 1, CutInVehicle, 192.778, -8.000, 0.000, 0.000, 0.000, 0.000, 11.111', csv))
 
     def test_ALKS_Scenario_4_5_1_CutOutFullyBlocking(self):
@@ -251,6 +251,6 @@ if __name__ == "__main__":
     # execute only if run as a script
 
     # Uncomment next line to run only one test
-    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_ALKS_Scenario_4_3_1_FollowLeadVehicleComfortable'])
+    # unittest.main(argv=['ignored', '-v', 'TestSuite.test_ALKS_Scenario_4_4_2_CutInUnavoidableCollision'])
 
     unittest.main(verbosity=2)

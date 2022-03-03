@@ -149,6 +149,10 @@ namespace scenarioengine
 		std::vector<Object*> collisions_;
 
 		Object(Type type);
+		Object(const Object& o)
+		{
+			*this = o;
+		}
 		~Object() {}
 		void SetEndOfRoad(bool state, double time = 0.0);
 		bool IsEndOfRoad() { return end_of_road_timestamp_ > SMALL_NUMBER; }
@@ -341,6 +345,9 @@ namespace scenarioengine
 			dirty_ = 0;
 		}
 
+		Object* TowVehicle();
+		Object* TrailerVehicle();
+
 		private:
 			int dirty_;
 			bool is_active_;
@@ -351,26 +358,42 @@ namespace scenarioengine
 	class Vehicle : public Object
 	{
 	public:
+
+		class TrailerHitch
+		{
+		public:
+			double dx_;
+			TrailerHitch(double dx) : dx_(dx) {}
+			TrailerHitch() : dx_(0.0), trailer_vehicle_(nullptr) {}
+			Object* trailer_vehicle_;  // reference to trailer vehicle
+		};
+
+		class TrailerCoupler
+		{
+		public:
+			double dx_;
+			TrailerCoupler(double dx, Object* tow_vehicle) : dx_(dx), tow_vehicle_(tow_vehicle) {}
+			TrailerCoupler() : dx_(0.0), tow_vehicle_(nullptr) {}
+			Object* tow_vehicle_;  // reference to tow vehicle
+		};
+
 		typedef enum
 		{
 			CAR = 0,
 			VAN = 1,
 			TRUCK = 2,
 			SEMITRAILER = 3,
-			BUS = 4,
-			MOTORBIKE = 5,
-			BICYCLE = 6,
-			TRAIN = 7,
-			TRAM = 8
+			TRAILER = 4,
+			BUS = 5,
+			MOTORBIKE = 6,
+			BICYCLE = 7,
+			TRAIN = 8,
+			TRAM = 9
 		} Category;
 
-		Vehicle() : Object(Object::Type::VEHICLE)
-		{
-			category_ = static_cast<int>(Category::CAR);
-			performance_.maxAcceleration = 10.0;
-			performance_.maxDeceleration= 10.0;
-			performance_.maxSpeed = 100.0;
-		}
+		Vehicle();
+		Vehicle(const Vehicle& v);
+		~Vehicle();
 
 		void SetCategory(std::string category)
 		{
@@ -394,6 +417,18 @@ namespace scenarioengine
 			{
 				category_ = static_cast<int>(Vehicle::Category::MOTORBIKE);
 			}
+			else if (category == "semitrailer")
+			{
+				category_ = static_cast<int>(Vehicle::Category::SEMITRAILER);
+			}
+			else if (category == "trailer")
+			{
+				category_ = static_cast<int>(Vehicle::Category::TRAILER);
+			}
+			else if (category == "van")
+			{
+				category_ = static_cast<int>(Vehicle::Category::VAN);
+			}
 			else
 			{
 				LOG("Vehicle category %s not supported yet", category.c_str());
@@ -401,6 +436,11 @@ namespace scenarioengine
 
 			return;
 		}
+		int ConnectTrailer(Vehicle* trailer);
+		void AlignTrailers();
+
+		TrailerCoupler* trailer_coupler_;  // mounting point to any tow vehicle
+		TrailerHitch* trailer_hitch_;   // mounting point to any tow vehicle
 	};
 
 	class Pedestrian : public Object
@@ -568,12 +608,12 @@ namespace scenarioengine
 		std::vector<Object*> object_;
 		std::vector<Object*> object_pool_;
 
-		int addObject(Object* obj, bool activate = true);
-		int activateObject(Object* obj);
-		int deactivateObject(Object* obj);
-		void removeObject(int id);
-		void removeObject(std::string name);
-		void removeObject(Object* object);
+		int addObject(Object* obj, bool activate, int call_index = 0);
+		int activateObject(Object* obj, int call_index = 0);
+		int deactivateObject(Object* obj, int call_index = 0);
+		void removeObject(int id, bool recursive = true);
+		void removeObject(std::string name, bool recursive = true);
+		void removeObject(Object* object, bool recursive = true);
 		int getNewId();
 		bool indexExists(int id);
 		bool nameExists(std::string name);

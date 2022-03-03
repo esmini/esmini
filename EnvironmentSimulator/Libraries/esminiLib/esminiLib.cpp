@@ -930,7 +930,7 @@ extern "C"
 			if (object_type == scenarioengine::Object::Type::VEHICLE)
 			{
 				vehicle = new Vehicle();
-				object_id = player->scenarioEngine->entities_.addObject(vehicle);
+				object_id = player->scenarioEngine->entities_.addObject(vehicle, true);
 				vehicle->name_ = "swarm" + std::to_string(object_id);
 				vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
 				vehicle->model_id_ = model_id;

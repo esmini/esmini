@@ -981,7 +981,7 @@ int ScenarioPlayer::Init()
 		LOG("Launch server to receive state of external Ego simulator");
 	}
 
-	if ((arg_str = opt.GetOptionArg("fixed_timestep")) != "")
+	for (int index = 0; (arg_str = opt.GetOptionArg("fixed_timestep", index)) != ""; index++)
 	{
 		SetFixedTimestep(atof(arg_str.c_str()));
 		LOG("Run simulation decoupled from realtime, with fixed timestep: %.2f", GetFixedTimestep());

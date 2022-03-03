@@ -1,45 +1,7 @@
 #ifndef COLLISION_HPP
 #define COLLISION_HPP
 
-class Point
-{
-public:
-    Point() : x_(0), y_(0) {}
-    Point(double x, double y) : x_(x), y_(y) {}
-
-    Point operator + (Point const& p) const {
-        Point res;
-        res.x_ = x_ + p.x_;
-        res.y_ = y_ + p.y_;
-        return res;
-    }
-
-    Point operator - (Point const& p) const {
-        Point res;
-        res.x_ = x_ - p.x_;
-        res.y_ = y_ - p.y_;
-        return res;
-    }
-
-    Point Rotate(double angle) {
-        Point res;
-        res.x_ = x_ * cos(angle) - y_ * sin(angle);
-        res.y_ = x_ * sin(angle) + y_ * cos(angle);
-        return res;
-    }
-
-    double Dot(const Point& corner) const {
-        return x_ * corner.x_ + y_ * corner.y_;
-    }
-
-    double x() const { return x_; }
-    double y() const { return y_; }
-
-private:
-    float x_;
-	float y_;
-};
-
+#include "CommonMini.hpp"
 
 typedef struct
 {
@@ -53,31 +15,31 @@ typedef struct
 	float wheel_rotation;
 	bool visible;
     OSCBoundingBox bounding_box;
-	std::vector<Point> corners;
+	std::vector<SE_Vector> corners;
 } ScenarioEntity;
 
 void updateCorners(ScenarioEntity& entity)
 {
-    Point bb_center(entity.bounding_box.center_.x_, entity.bounding_box.center_.y_);
-    Point bb_dim(entity.bounding_box.dimensions_.length_, entity.bounding_box.dimensions_.width_);
+    SE_Vector bb_center(entity.bounding_box.center_.x_, entity.bounding_box.center_.y_);
+    SE_Vector bb_dim(entity.bounding_box.dimensions_.length_, entity.bounding_box.dimensions_.width_);
 
-    Point front_right = Point(entity.pos.x, entity.pos.y) + Point(bb_center.x() + bb_dim.x() / 2.0f, bb_center.y() - bb_dim.y() / 2.0f).Rotate(entity.pos.h);
-    Point front_left = Point(entity.pos.x, entity.pos.y) + Point(bb_center.x() + bb_dim.x() / 2.0f, bb_center.y() + bb_dim.y() / 2.0f).Rotate(entity.pos.h);
-    Point rear_left = Point(entity.pos.x, entity.pos.y) + Point(bb_center.x() - bb_dim.x() / 2.0f, bb_center.y() + bb_dim.y() / 2.0f).Rotate(entity.pos.h);
-    Point rear_right = Point(entity.pos.x, entity.pos.y) + Point(bb_center.x() - bb_dim.x() / 2.0f, bb_center.y() - bb_dim.y() / 2.0f).Rotate(entity.pos.h);
+    SE_Vector front_right = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() + bb_dim.x() / 2.0f, bb_center.y() - bb_dim.y() / 2.0f).Rotate(entity.pos.h);
+    SE_Vector front_left = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() + bb_dim.x() / 2.0f, bb_center.y() + bb_dim.y() / 2.0f).Rotate(entity.pos.h);
+    SE_Vector rear_left = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() - bb_dim.x() / 2.0f, bb_center.y() + bb_dim.y() / 2.0f).Rotate(entity.pos.h);
+    SE_Vector rear_right = SE_Vector(entity.pos.x, entity.pos.y) + SE_Vector(bb_center.x() - bb_dim.x() / 2.0f, bb_center.y() - bb_dim.y() / 2.0f).Rotate(entity.pos.h);
 
     entity.corners = {front_right, front_left, rear_left, rear_right};
 }
 
-Point calculate_normalized_axis_projection(const Point& current_point, const Point& next_point)
+SE_Vector calculate_normalized_axis_projection(const SE_Vector& current_SE_Vector, const SE_Vector& next_SE_Vector)
 {
-    const Point axis(next_point - current_point);
+    const SE_Vector axis(next_SE_Vector - current_SE_Vector);
     const double magnitude = hypot(-axis.y(), axis.x());
 
-    return Point(axis.x() / magnitude, axis.y() / magnitude);
+    return SE_Vector(axis.x() / magnitude, axis.y() / magnitude);
 }
 
-void compute_projections(const std::vector<Point>& ego_corners, const std::vector<Point>& target_corners, const Point& axis_normalized, std::vector<double>& projections_a, std::vector<double>& projections_b)
+void compute_projections(const std::vector<SE_Vector>& ego_corners, const std::vector<SE_Vector>& target_corners, const SE_Vector& axis_normalized, std::vector<double>& projections_a, std::vector<double>& projections_b)
 {
     projections_a.reserve(ego_corners.size());
     projections_b.reserve(target_corners.size());
@@ -114,10 +76,10 @@ bool separating_axis_intersect(const ScenarioEntity& ego, const ScenarioEntity& 
 {
     for (size_t i = 0; i < ego.corners.size(); i++)
     {
-        Point current_point = ego.corners[i];
-        Point next_point(ego.corners[(i + 1) % ego.corners.size()].x(), ego.corners[(i + 1) % ego.corners.size()].y());
+        SE_Vector current_point = ego.corners[i];
+        SE_Vector next_point(ego.corners[(i + 1) % ego.corners.size()].x(), ego.corners[(i + 1) % ego.corners.size()].y());
 
-        Point axis_normalized = calculate_normalized_axis_projection(current_point, next_point);
+        SE_Vector axis_normalized = calculate_normalized_axis_projection(current_point, next_point);
 
         std::vector<double> projections_a;
         std::vector<double> projections_b;
@@ -132,10 +94,10 @@ bool separating_axis_intersect(const ScenarioEntity& ego, const ScenarioEntity& 
 
     for (size_t i = 0; i < target.corners.size(); i++)
     {
-        Point current_point(target.corners[i]);
-        Point next_point(target.corners[(i + 1) % target.corners.size()].x(), target.corners[(i + 1) % target.corners.size()].y());
+        SE_Vector current_point(target.corners[i]);
+        SE_Vector next_point(target.corners[(i + 1) % target.corners.size()].x(), target.corners[(i + 1) % target.corners.size()].y());
 
-        Point axis_normalized = calculate_normalized_axis_projection(current_point, next_point);
+        SE_Vector axis_normalized = calculate_normalized_axis_projection(current_point, next_point);
 
         std::vector<double> projections_a;
         std::vector<double> projections_b;

@@ -38,7 +38,7 @@ namespace scenarioengine
 }
 
 ScenarioReader::ScenarioReader(Entities* entities, Catalogs* catalogs, bool disable_controllers) :
-	objectCnt_(0), entities_(entities), catalogs_(catalogs), disable_controllers_(disable_controllers)
+	entities_(entities), catalogs_(catalogs), disable_controllers_(disable_controllers)
 {
 	parameters.Clear();
 }
@@ -562,6 +562,90 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
 		}
 	}
 
+	// Trailer related elements
+	pugi::xml_node trailer_hitch_node = vehicleNode.child("TrailerHitch");
+	if (!trailer_hitch_node.empty())
+	{
+		vehicle->trailer_hitch_ = new Vehicle::TrailerHitch();
+		vehicle->trailer_hitch_->dx_ = strtod(parameters.ReadAttribute(trailer_hitch_node, "dx"));
+	}
+
+	pugi::xml_node trailer_coupler_node = vehicleNode.child("TrailerCoupler");
+	if (!trailer_coupler_node.empty())
+	{
+		vehicle->trailer_coupler_ = new Vehicle::TrailerCoupler();
+		vehicle->trailer_coupler_->dx_ = strtod(parameters.ReadAttribute(trailer_coupler_node, "dx"));
+	}
+
+	pugi::xml_node trailer_node = vehicleNode.child("Trailer");
+	if (!trailer_node.empty())
+	{
+		Vehicle* trailer = nullptr;
+
+		for (pugi::xml_node trailer_child_node = trailer_node.first_child(); trailer_child_node && trailer == nullptr; trailer_child_node = trailer_child_node.next_sibling())
+		{
+			if (!trailer_child_node.empty())
+			{
+				std::string trailer_child_node_name(trailer_child_node.name());
+				Object* object = nullptr;
+
+				if (trailer_child_node_name == "EntityRef")
+				{
+					if (!trailer_child_node.attribute("entityRef").empty())
+					{
+						std::string obj_str = parameters.ReadAttribute(trailer_child_node, "entityRef");
+						if (!obj_str.empty())
+						{
+							object = ResolveObjectReference(obj_str);
+							if (object == nullptr)
+							{
+								LOG_AND_QUIT("Error: Trailer %s not found", parameters.ReadAttribute(trailer_node, "entityRef").c_str());
+							}
+							if (object->type_ != Object::Type::VEHICLE)
+							{
+								LOG_AND_QUIT("Error: Trailer %s is not of Vehicle type", parameters.ReadAttribute(trailer_node, "entityRef").c_str());
+							}
+							trailer = (Vehicle*)object;
+						}
+					}
+				}
+				else if (trailer_child_node_name == "CatalogReference")
+				{
+					Entry* entry = ResolveCatalogReference(trailer_child_node);
+
+					if (entry != nullptr)
+					{
+						if (entry->type_ == CatalogType::CATALOG_VEHICLE)
+						{
+							// Make a new instance from catalog entry
+							trailer = parseOSCVehicle(entry->GetNode());
+						}
+						else
+						{
+							LOG("Unexpected catalog type %s for trailer", entry->GetTypeAsStr().c_str());
+						}
+					}
+				}
+				else
+				{
+					LOG("Unexpected Trailer child element %s", trailer_child_node_name.c_str());
+				}
+
+				if (trailer != nullptr)
+				{
+					if (trailer->trailer_coupler_ == nullptr)
+					{
+						LOG_AND_QUIT("Error: Trailer vehicle %s has no coupler", vehicle->GetName().c_str());
+					}
+					else
+					{
+						vehicle->ConnectTrailer(trailer);
+					}
+				}
+			}
+		}
+	}
+
 	parameters.RestoreParameterDeclarations();
 
 	return vehicle;
@@ -1062,9 +1146,9 @@ Entry *ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 	}
 
 	Entry *entry = catalog->FindEntryByName(entry_name);
-	if (entry == 0)
+	if (!entry_name.empty() && entry == 0)
 	{
-		LOG("Failed to look up entry %s in catalog %s", entry_name.c_str(), catalog_name.c_str());
+		LOG_AND_QUIT("Failed to look up entry %s in catalog %s", entry_name.c_str(), catalog_name.c_str());
 
 		return 0;
 	}
@@ -1200,7 +1284,6 @@ int ScenarioReader::parseEntities()
 					obj->name_ = parameters.ReadAttribute(entitiesChild, "name");
 				}
 				entities_->addObject(obj, false);
-				objectCnt_++;
 			}
 
 			if (ctrl)

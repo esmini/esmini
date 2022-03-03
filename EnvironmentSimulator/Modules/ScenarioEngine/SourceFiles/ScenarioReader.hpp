@@ -150,7 +150,6 @@ namespace scenarioengine
 	private:
 		pugi::xml_document doc_;
 		pugi::xml_node osc_root_;
-		int objectCnt_;
 		std::string oscFilename_;
 		Entities *entities_;
 		Catalogs *catalogs_;

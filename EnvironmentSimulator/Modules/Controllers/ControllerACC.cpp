@@ -124,7 +124,7 @@ void ControllerACC::Step(double timeStep)
 
 			if (x_local > 0 && x_local < 1.0 + pivot_obj->boundingbox_.dimensions_.length_ +
 				0.5 * MAX(0.0, currentSpeed_ - pivot_obj->GetSpeed())
-				&& y_local < 0.2 && y_local > -1) // yield some more for right hand traffic
+				&& y_local < 0.2 && y_local > -0.5) // yield some more for right hand traffic
 			{
 				minGapLength = x_local;
 				minSpeedDiff = currentSpeed_ - pivot_obj->GetSpeed();

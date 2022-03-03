@@ -35,6 +35,7 @@ resources/xosc/acc-test.xosc \
 resources/xosc/alks-test.xosc \
 resources/xosc/swarm.xosc \
 resources/xosc/lane-change_clothoid_based_trajectory.xosc \
+resources/xosc/trailers.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -80,6 +81,10 @@ resources/models/railing.osgb \
 resources/models/railing-pole.osgb \
 resources/models/guide-post.osgb \
 resources/models/cone-100.osgb \
+resources/models/car_trailer.osgb \
+resources/models/semi_tractor.osgb \
+resources/models/semi_trailer.osgb \
+resources/models/truck_trailer.osgb \
 resources/sumo_inputs/e6mini* \
 resources/sumo_inputs/multi_intersections* \
 run/esmini/run_follow_ghost.* \
@@ -107,6 +112,7 @@ run/esmini/run_drop-bike.* \
 run/esmini/run_sumo-test.* \
 run/esmini/run_acc-test.* \
 run/esmini/run_swarm.* \
+run/esmini/run_trailers.* \
 run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \

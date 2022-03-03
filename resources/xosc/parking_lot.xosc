@@ -2,84 +2,60 @@
 <!-- Demonstrate how esmini can be used as a driving  -->
 <!-- simulator with no defined traffic and maneuvers. -->
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="0"
-               date="2017-06-09T10:00:00"
-               description="Single vehicle, interactive control and no maneuvers"
-               author="esmini-team"/>
-   <ParameterDeclarations>
-      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
-      <ParameterDeclaration name="EgoStartS" parameterType="double" value="143   "/>
-   </ParameterDeclarations>
-   <CatalogLocations>
-      <ControllerCatalog>
-         <Directory path="../xosc/Catalogs/Controllers" />
-      </ControllerCatalog>      
-   </CatalogLocations>
-   <RoadNetwork>
-      <SceneGraphFile filepath="../models/parking_lot.osgb"/>
-   </RoadNetwork>
-   <Entities>
-      <ScenarioObject name="Ego">
-         <Vehicle name="car_white" vehicleCategory="car">
-            <BoundingBox>
-               <Center x="1.4" y="0.0" z="0.9"/>
-               <Dimensions width="2.0" length="5.0" height="1.8"/>
-            </BoundingBox>
-            <Performance maxSpeed="69" maxDeceleration="30"/>
-            <Axles>
-               <FrontAxle maxSteering="30"
-                          wheelDiameter="0.8"
-                          trackWidth="1.68"
-                          positionX="2.98"
-                          positionZ="0.4"/>
-               <RearAxle maxSteering="30"
-                         wheelDiameter="0.8"
-                         trackWidth="1.68"
-                         positionX="0"
-                         positionZ="0.4"/>
-            </Axles>
-            <Properties>
-               <File filepath="../models/car_white.osgb"/>
-               <Property name="model_id" value="0"/>
-            </Properties>
-         </Vehicle>
-         <ObjectController>
-             <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
-         </ObjectController>
-      </ScenarioObject>
-   </Entities>
-   <Storyboard>
-      <Init>
-         <Actions>
-            <Private entityRef="Ego">
-               <PrivateAction>
-                  <TeleportAction>
-                     <Position>
-                        <WorldPosition x="1.8" y="-358" z="0" h="1.57" p="0" r="0"/>
-                     </Position>
-                  </TeleportAction>
-               </PrivateAction>
-               <PrivateAction>
-                   <ActivateControllerAction longitudinal="true" lateral="true" />
-               </PrivateAction>
-            </Private>
-         </Actions>
-      </Init>
-	  <Story>
-         <Act name="DummyAct">
-            <ManeuverGroup maximumExecutionCount="1" name="DummyManueverGroup">
-            </ManeuverGroup>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="StartTrigger" delay="0" conditionEdge="none">
-                     <ByValueCondition>
-                        <SimulationTimeCondition value="0" rule="greaterThan"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
-         </Act>	  
-      </Story>
-   </Storyboard>
+    <FileHeader revMajor="1" revMinor="1" date="2022-03-10T10:00:00" description="Single truck vehicle, interactive control and no maneuvers" author="esmini-team"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <SceneGraphFile filepath="../models/parking_lot.osgb"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Truck">
+            <CatalogReference catalogName="VehicleCatalog" entryName="semi_truck_with_extra_trailer"/>
+            <ObjectController>
+                <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+            </ObjectController>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Truck">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="1.8" y="-358" z="0" h="1.57" p="0" r="0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <ActivateControllerAction longitudinal="true" lateral="true"/>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="MyStory">
+            <Act name="DummyAct">
+                <ManeuverGroup maximumExecutionCount="1" name="DummyManueverGroup">
+                    <Actors selectTriggeringEntities="false"/>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="StartTrigger" delay="0" conditionEdge="none">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0" rule="greaterOrEqual"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+        </Story>
+        <StopTrigger/>
+    </Storyboard>
 </OpenSCENARIO>

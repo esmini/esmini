@@ -9,3 +9,7 @@
 8 moose_cc0.osgb
 9 cyclist.osgb
 10 mc.osgb
+11 car_trailer.osgb
+12 semi_tractor.osgb
+13 semi_trailer.osgb
+14 truck_trailer.osgb

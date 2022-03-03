@@ -1110,6 +1110,10 @@ void TeleportAction::Start(double simTime, double dt)
 	}
 
 	object_->pos_.TeleportTo(position_);
+	if (object_->type_ == Object::Type::VEHICLE)
+	{
+		((Vehicle*)object_)->AlignTrailers();
+	}
 
 	LOG("%s New position:", object_->name_.c_str());
 	object_->pos_.Print();

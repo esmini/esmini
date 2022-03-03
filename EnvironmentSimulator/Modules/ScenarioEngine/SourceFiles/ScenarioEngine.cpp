@@ -554,6 +554,28 @@ int ScenarioEngine::step(double deltaSimTime)
 		}
 	}
 
+	// Update any trailers now that tow vehicles have been updated by Default or custom controllers
+	for (size_t i = 0; i < entities_.object_.size(); i++)
+	{
+		Object* obj = entities_.object_[i];
+		Vehicle* tow_vehicle = (Vehicle*)obj->TowVehicle();
+		if (tow_vehicle != nullptr)
+		{
+			// Calculate new trailer position and orientation
+			ObjectState* o = scenarioGateway.getObjectStatePtrById(tow_vehicle->id_);
+			SE_Vector v0(tow_vehicle->trailer_hitch_->dx_, 0.0);
+
+			// Fetch updated state of tow vehicle from gateway
+			roadmanager::Position* tow_pos = &o->state_.pos;
+			v0 = v0.Rotate(tow_pos->GetH()) + SE_Vector(tow_pos->GetX(), tow_pos->GetY());
+			SE_Vector v1 = SE_Vector(obj->pos_.GetX(), obj->pos_.GetY()) - v0;
+			v1.SetLength(((Vehicle*)obj)->trailer_coupler_->dx_);
+			scenarioGateway.updateObjectWorldPosXYH(obj->GetId(), getSimulationTime(), v0.x() + v1.x(), v0.y() + v1.y(),
+				GetAngleInInterval2PI(atan2(v1.y(), v1.x()) + M_PI));
+			obj->SetSpeed(tow_vehicle->GetSpeed());
+		}
+	}
+
 	// Check some states
 	for (size_t i = 0; i < entities_.object_.size(); i++)
 	{
@@ -742,7 +764,12 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 		if (obj->GetControllerMode() == Controller::Mode::MODE_ADDITIVE ||
 			!obj->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
 		{
-			obj->MoveAlongS(steplen, true);
+			Vehicle* tow_vehicle = (Vehicle*)obj->TowVehicle();
+			if (tow_vehicle == nullptr)
+			{
+				obj->MoveAlongS(steplen, true);
+				obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
+			}
 		}
 	}
 
@@ -1028,7 +1055,7 @@ void ScenarioEngine::SetupGhost(Object* object)
 	ghost->controller_ = 0;
 	ghost->isGhost_ = true;
 	ghost->SetHeadstartTime(object->headstart_time_);
-	entities_.addObject(ghost);
+	entities_.addObject(ghost, true);
 	object->SetHeadstartTime(0);
 
 	int numberOfInitActions = (int)init.private_action_.size();

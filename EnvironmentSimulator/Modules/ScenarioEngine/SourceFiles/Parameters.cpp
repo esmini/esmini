@@ -472,8 +472,9 @@ void Parameters::parseParameterDeclarations(pugi::xml_node parameterDeclarations
 		param.name = pdChild.attribute("name").value();
 
 		// Check for catalog parameter assignements, overriding default value
+		// Start from end of parameter list, in case of duplicates we want the most recent
 		param.value._string = ReadAttribute(pdChild, "value");
-		for (size_t i = 0; i < catalog_param_assignments.size(); i++)
+		for (int i = (int)catalog_param_assignments.size() - 1; i >= 0; i--)
 		{
 			if (param.name == catalog_param_assignments[i].name)
 			{

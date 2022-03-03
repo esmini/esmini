@@ -2251,7 +2251,7 @@ TEST(SimpleVehicleTest, TestControl)
 	void* vehicleHandle = 0;
 
 	EXPECT_EQ(SE_Init(scenario_file.c_str(), 1, 0, 0, 0), 0);
-	ASSERT_EQ(SE_GetNumberOfObjects(), 1);
+	ASSERT_EQ(SE_GetNumberOfObjects(), 3);
 
 	ASSERT_EQ(SE_GetObjectState(0, &objectState), 0);
 	EXPECT_NEAR(objectState.x, 1.800, 1e-3);
@@ -2583,7 +2583,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0   // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestExternalDriver*";
+	testing::GTEST_FLAG(filter) = "*TestControl*";
 #else
 	SE_LogToConsole(false);
 #endif
