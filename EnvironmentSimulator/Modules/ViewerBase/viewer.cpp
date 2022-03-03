@@ -1527,19 +1527,19 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager, const char* modelFilename, co
 	//printf("bs radius %.2f\n", bs.radius());
 	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadLines(odrManager))
 	{
-		LOG("Viewer::Viewer Failed to create road lines!\n");
+		LOG("Viewer::Viewer Failed to create road lines!");
 	}
 
 	if (odrManager->GetNumOfRoads() > 0 && !CreateRoadMarkLines(odrManager))
 	{
-		LOG("Viewer::Viewer Failed to create road mark lines!\n");
+		LOG("Viewer::Viewer Failed to create road mark lines!");
 	}
 
 	if (!(opt && opt->GetOptionSet("generate_no_road_objects")))
 	{
 		if (odrManager->GetNumOfRoads() > 0 && CreateRoadSignsAndObjects(odrManager) != 0)
 		{
-			LOG("Viewer::Viewer Failed to create road signs and objects!\n");
+			LOG("Viewer::Viewer Failed to create road signs and objects!");
 		}
 	}
 

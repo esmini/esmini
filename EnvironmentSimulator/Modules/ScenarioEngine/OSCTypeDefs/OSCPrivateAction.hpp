@@ -224,10 +224,7 @@ namespace scenarioengine
 		void Start(double simTime, double dt);
 		void Step(double simTime, double dt);
 
-		void print()
-		{
-			LOG("");
-		}
+		void print() {}
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};
@@ -303,10 +300,7 @@ namespace scenarioengine
 		void Start(double simTime, double dt);
 		void Step(double simTime, double dt);
 
-		void print()
-		{
-			LOG("");
-		}
+		void print() {}
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 

@@ -93,10 +93,7 @@ namespace scenarioengine
 		void Start(double simTime, double dt);
 		void Step(double simTime, double dt);
 
-		void print()
-		{
-			LOG("");
-		}
+		void print() {}
 
 	};
 
@@ -133,10 +130,7 @@ namespace scenarioengine
 
 		void SetEntities(Entities* entities) { entities_ = entities; }
 
-		void print()
-		{
-			LOG("");
-		}
+		void print() {}
 	};
 
 	class DeleteEntityAction : public OSCGlobalAction
@@ -173,10 +167,7 @@ namespace scenarioengine
 		void SetEntities(Entities* entities) { entities_ = entities; }
 		void SetGateway(ScenarioGateway* gateway) { gateway_ = gateway; }
 
-		void print()
-		{
-			LOG("");
-		}
+		void print() {}
 	};
 
 	class ScenarioReader;
@@ -215,9 +206,7 @@ namespace scenarioengine
 
 		void Step(double simTime, double dt);
 
-		void print() {
-			LOG("");
-		}
+		void print() {}
 
 		void SetCentralObject(Object* centralObj) { centralObject_ = centralObj; }
 		void SetInnerRadius(double innerRadius)   { innerRadius_   = innerRadius;}

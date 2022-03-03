@@ -130,7 +130,6 @@ OSCPositionRelativeObject::OSCPositionRelativeObject(Object *object, double dx, 
 
 void OSCPositionRelativeObject::Print()
 {
-	LOG("");
 	object_->pos_.Print();
 }
 
@@ -151,7 +150,6 @@ OSCPositionRelativeWorld::OSCPositionRelativeWorld(Object* object, double dx, do
 
 void OSCPositionRelativeWorld::Print()
 {
-	LOG("");
 	object_->pos_.Print();
 }
 
@@ -179,7 +177,6 @@ OSCPositionRelativeLane::OSCPositionRelativeLane(Object *object, int dLane, doub
 
 void OSCPositionRelativeLane::Print()
 {
-	LOG("");
 	object_->pos_.Print();
 }
 
@@ -206,7 +203,6 @@ OSCPositionRelativeRoad::OSCPositionRelativeRoad(Object* object, double ds, doub
 
 void OSCPositionRelativeRoad::Print()
 {
-	LOG("");
 	object_->pos_.Print();
 }
 
