@@ -289,9 +289,9 @@ void AssignRouteAction::Start(double simTime, double dt)
 	}
 }
 
-void AssignRouteAction::Step(double, double)
+void AssignRouteAction::Step(double simTime, double dt)
 {
-	OSCAction::End();
+	OSCAction::End(simTime);
 }
 
 void AssignRouteAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
@@ -334,9 +334,9 @@ void FollowTrajectoryAction::Start(double simTime, double dt)
 	object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 }
 
-void FollowTrajectoryAction::End()
+void FollowTrajectoryAction::End(double simTime)
 {
-	OSCAction::End();
+	OSCAction::End(simTime);
 
 	if (object_->GetControllerMode() == Controller::Mode::MODE_OVERRIDE &&
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LAT))
@@ -441,7 +441,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 
 		object_->pos_.SetInertiaPos(object_->pos_.GetX() + dx, object_->pos_.GetY() + dy, object_->pos_.GetH());
 
-		End();
+		End(simTime);
 	}
 }
 
@@ -489,9 +489,9 @@ void AcquirePositionAction::Start(double simTime, double dt)
 	}
 }
 
-void AcquirePositionAction::Step(double, double)
+void AcquirePositionAction::Step(double simTime, double dt)
 {
-	OSCAction::End();
+	OSCAction::End(simTime);
 }
 
 void AcquirePositionAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
@@ -657,7 +657,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 		// Passed target value?
 		transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()))
 	{
-		OSCAction::End();
+		OSCAction::End(simTime);
 		object_->pos_.SetHeadingRelativeRoadDirection(0);
 	}
 	else
@@ -760,7 +760,7 @@ void LatLaneOffsetAction::Step(double simTime, double dt)
 		// Passed target value?
 		transition_.GetParamVal() > 0 && SIGN(offset_agnostic - transition_.GetTargetVal()) != SIGN(transition_.GetStartVal() - transition_.GetTargetVal()))
 	{
-		OSCAction::End();
+		OSCAction::End(simTime);
 		object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), SIGN(object_->pos_.GetLaneId()) * transition_.GetTargetVal());
 		object_->pos_.SetHeadingRelativeRoadDirection(0);
 	}
@@ -834,7 +834,7 @@ void LongSpeedAction::Start(double simTime, double dt)
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
 	{
 		// longitudinal motion controlled elsewhere
-		OSCAction::End();
+		OSCAction::End(simTime);
 		return;
 	}
 
@@ -861,7 +861,7 @@ void LongSpeedAction::Step(double simTime, double dt)
 		object_->IsControllerActiveOnDomains(ControlDomains::DOMAIN_LONG))
 	{
 		// longitudinal motion controlled elsewhere
-		OSCAction::End();
+		OSCAction::End(simTime);
 		return;
 	}
 
@@ -909,7 +909,7 @@ void LongSpeedAction::Step(double simTime, double dt)
 
 	if (target_speed_reached_ && !(target_->type_ == Target::TargetType::RELATIVE_SPEED && ((TargetRelative*)target_)->continuous_ == true))
 	{
-		OSCAction::End();
+		OSCAction::End(simTime);
 	}
 }
 
@@ -1032,7 +1032,7 @@ void LongDistanceAction::Step(double simTime, double)
 	if (continuous_ == false && fabs(distance_diff) < LONGITUDINAL_DISTANCE_THRESHOLD)
 	{
 		// Reached requested distance, quit action
-		OSCAction::End();
+		OSCAction::End(simTime);
 	}
 
 	if (dynamics_.none_ == true)
@@ -1117,9 +1117,9 @@ void TeleportAction::Start(double simTime, double dt)
 	object_->reset_ = true;
 }
 
-void TeleportAction::Step(double, double)
+void TeleportAction::Step(double simTime, double dt)
 {
-	OSCAction::End();
+	OSCAction::End(simTime);
 }
 
 void TeleportAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
@@ -1308,7 +1308,7 @@ void SynchronizeAction::Step(double simTime, double)
 
 	if (done)
 	{
-		OSCAction::End();
+		OSCAction::End(simTime);
 	}
 	else
 	{
@@ -1608,9 +1608,9 @@ void VisibilityAction::Start(double simTime, double dt)
 	);
 }
 
-void VisibilityAction::Step(double, double)
+void VisibilityAction::Step(double simTime, double dt)
 {
-	OSCAction::End();
+	OSCAction::End(simTime);
 }
 
 int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status)
@@ -1660,7 +1660,7 @@ void OverrideControlAction::Start(double simTime, double dt)
 
 void OverrideControlAction::Step(double simTime, double dt)
 {
-	OSCAction::End();
+	OSCAction::End(simTime);
 }
 
 double OverrideControlAction::RangeCheckAndErrorLog(Object::OverrideType type, double valueCheck, double lowerLimit, double upperLimit, bool ifRound)
