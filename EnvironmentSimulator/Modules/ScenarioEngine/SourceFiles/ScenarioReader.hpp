@@ -116,7 +116,7 @@ namespace scenarioengine
 		OSCPrivateAction *parseOSCPrivateAction(pugi::xml_node actionNode, Object *object);
 		OSCGlobalAction *parseOSCGlobalAction(pugi::xml_node actionNode);
 		void parseOSCOrientation(OSCOrientation &orientation, pugi::xml_node orientationNode);
-		OSCPosition *parseOSCPosition(pugi::xml_node positionNode);
+		OSCPosition *parseOSCPosition(pugi::xml_node positionNode, OSCPosition* base_on_pos = nullptr);
 
 		// Storyboard - Story
 		OSCCondition *parseOSCCondition(pugi::xml_node conditionNode);

@@ -44,6 +44,7 @@ namespace scenarioengine
 	private:
 		vehicle::Vehicle vehicle_;
 		double headstart_time_;
+		double elapsed_time_;
 	};
 
 	Controller* InstantiateControllerFollowGhost(void* args);

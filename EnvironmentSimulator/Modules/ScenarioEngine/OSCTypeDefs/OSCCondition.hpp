@@ -138,10 +138,7 @@ namespace scenarioengine
 
 		TrigByEntity(EntityConditionType type) : OSCCondition(OSCCondition::ConditionType::BY_ENTITY), type_(type) {}
 
-		void Print()
-		{
-			LOG("");
-		}
+		void print() {}
 	};
 
 	class TrigByTimeHeadway : public TrigByEntity

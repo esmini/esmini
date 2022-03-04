@@ -24,6 +24,7 @@
 #include "pugixml.hpp"
 #include "OSCCondition.hpp"
 #include "OSCManeuver.hpp"
+#include "ControllerExternal.hpp"
 
 using namespace scenarioengine;
 
@@ -295,7 +296,10 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 
 	roadmanager::TrajVertex trailPos;
 	trailPos.h = (float)obj->pos_.GetH(); // Set default trail heading aligned with road - in case trail is less than two points (no heading)
-	ghost->trail_.FindPointAhead(obj->trail_closest_pos_.s, lookahead_distance, trailPos, index_out, obj->trail_follow_index_);
+	if (ghost->trail_.FindPointAhead(obj->trail_closest_pos_.s, lookahead_distance, trailPos, index_out, obj->trail_follow_index_) == 0)
+	{
+		obj->trail_follow_index_ = index_out;
+	}
 
 	roadmanager::Position pos(trailPos.x, trailPos.y, 0, 0, 0, 0);
 	obj->pos_.CalcProbeTarget(&pos, &s_data);
@@ -359,6 +363,10 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo* r
 		LOG("Failed to lookup point at time %.2f (time arg = %.2f) along ghost (%d) trail",
 			player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + time, time, ghost->GetId());
 		return -1;
+	}
+	else
+	{
+		obj->trail_follow_index_ = index_out;
 	}
 
 	roadmanager::Position pos(trailPos.x, trailPos.y, 0, 0, 0, 0);
@@ -898,16 +906,21 @@ extern "C"
 				object_type = scenarioengine::Object::Type::VEHICLE;
 			}
 
+			Vehicle* vehicle = nullptr;
 			if (object_type == scenarioengine::Object::Type::VEHICLE)
 			{
-				Vehicle* vehicle = new Vehicle();
+				vehicle = new Vehicle();
 				object_id = player->scenarioEngine->entities_.addObject(vehicle);
 				vehicle->name_ = "swarm" + std::to_string(object_id);
 				vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
 				vehicle->model_id_ = model_id;
 				vehicle->model3d_ = SE_Env::Inst().GetModelFilenameById(model_id);
 				vehicle->category_ = object_category;
-				vehicle->controller_ = nullptr;
+
+				Controller::InitArgs args = { "", "", 0, 0, 0, 0 };
+				args.type = ControllerExternal::GetTypeNameStatic();
+				vehicle->controller_ = InstantiateControllerExternal(&args);
+				vehicle->controller_->Activate(ControlDomains::DOMAIN_BOTH);
 			}
 			else
 			{
@@ -916,7 +929,7 @@ extern "C"
 			}
 
 			scenarioengine::OSCBoundingBox bb = { {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0} };
-			if (player->scenarioGateway->reportObject(object_id, name, object_type, object_category, model_id, 0,
+			if (player->scenarioGateway->reportObject(object_id, name, object_type, object_category, model_id, vehicle->GetActivatedControllerType(),
 				bb, static_cast<int>(EntityScaleMode::BB_TO_MODEL), 0xff, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) == 0)
 			{
 				return object_id;

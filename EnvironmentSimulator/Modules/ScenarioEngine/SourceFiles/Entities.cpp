@@ -130,13 +130,14 @@ int Object::GetActivatedControllerType()
 	}
 	else
 	{
-		// Report 0 if not assigned or not activated on any domain
+
 		if (IsGhost())
 		{
 			return Controller::Type::GHOST_RESERVED_TYPE;
 		}
 		else
 		{
+			// Report 0 if not assigned or not activated on any domain
 			return 0;
 		}
 	}
