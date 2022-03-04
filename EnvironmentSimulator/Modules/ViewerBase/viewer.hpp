@@ -111,6 +111,7 @@ namespace viewer
 
 		void SetPoints(osg::ref_ptr<osg::Vec3Array> points);
 		void AddPoint(osg::Vec3 point);
+		void Reset();
 		void Update();
 		void Redraw();
 		void SetNodeMaskLines(int nodemask);

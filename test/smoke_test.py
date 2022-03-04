@@ -615,9 +615,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^-0.500, 1, Ego_ghost, 50.000, -11.700, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^1.010, 1, Ego_ghost, 65.100, -11.700, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.444', csv, re.MULTILINE))
         self.assertTrue(re.search('^1.020, 1, Ego_ghost, 65.300, -10.775, 0.000, 0.183, 0.000, 0.000, 10.000, 0.000, 1.166', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.000, 0, Ego, 69.965, -10.339, 0.000, 0.244, 0.000, 0.000, 10.000, 0.059, 0.880', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.000, 0, Ego, 69.963, -10.169, 0.000, 0.221, 0.000, 0.000, 10.000, 0.018, 0.880', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.000, 1, Ego_ghost, 75.100, -8.962, 0.000, 0.183, 0.000, 0.000, 10.000, 0.000, 4.033', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 0, Ego, 99.692, -8.021, 0.000, 6.271, 0.000, 0.000, 10.000, 0.016, 4.913', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 0, Ego, 99.733, -8.019, 0.000, 6.272, 0.000, 0.000, 10.000, 0.016, 4.913', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.000, 1, Ego_ghost, 105.100, -8.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 1.783', csv, re.MULTILINE))
 
 if __name__ == "__main__":
