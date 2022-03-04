@@ -27,6 +27,7 @@ namespace scenarioengine
 	class Event: public StoryBoardElement
 	{
 	public:
+		static void (*eventCallback)(const char* name, double timestamp, bool start);
 
 		typedef enum
 		{
@@ -45,7 +46,7 @@ namespace scenarioengine
 		Event() : start_trigger_(0), StoryBoardElement(StoryBoardElement::ElementType::EVENT) {}
 
 		void Start(double simTime, double dt);
-		void End();
+		void End(double simTime);
 		void Stop();
 
 		void UpdateState();

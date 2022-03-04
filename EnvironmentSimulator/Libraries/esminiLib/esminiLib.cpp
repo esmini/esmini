@@ -23,6 +23,7 @@
 #include "vehicle.hpp"
 #include "pugixml.hpp"
 #include "OSCCondition.hpp"
+#include "OSCManeuver.hpp"
 
 using namespace scenarioengine;
 
@@ -1671,6 +1672,11 @@ extern "C"
 	SE_DLL_API void SE_RegisterConditionCallback(void (*fnPtr)(const char* name, double timestamp))
 	{
 		OSCCondition::conditionCallback = fnPtr;
+	}
+
+	SE_DLL_API void SE_RegisterEventCallback(void (*fnPtr)(const char* name, double timestamp, bool start))
+	{
+		Event::eventCallback = fnPtr;
 	}
 
 	SE_DLL_API int SE_GetNumberOfRoadSigns(int road_id)

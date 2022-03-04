@@ -283,7 +283,7 @@ int ScenarioEngine::step(double deltaSimTime)
 			{
 				if (act->stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
 				{
-					act->End();
+					act->End(simulationTime_);
 				}
 			}
 
@@ -360,7 +360,7 @@ int ScenarioEngine::step(double deltaSimTime)
 														}
 													}
 
-													maneuver->event_[n]->End();
+													maneuver->event_[n]->End(simulationTime_);
 													LOG("Event %s ended, overwritten by event %s",
 														maneuver->event_[n]->name_.c_str(), event->name_.c_str());
 												}
@@ -469,7 +469,7 @@ int ScenarioEngine::step(double deltaSimTime)
 									}
 
 									// Actions done -> Set event done
-									event->End();
+									event->End(simulationTime_);
 								}
 							}
 						}

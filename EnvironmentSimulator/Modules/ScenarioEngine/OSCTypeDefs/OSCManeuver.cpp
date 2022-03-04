@@ -14,6 +14,8 @@
 
 using namespace scenarioengine;
 
+void (*Event::eventCallback)(const char* name, double timestamp, bool start) = nullptr;
+
 void Event::Start(double simTime, double dt)
 {
 	double adjustedTime = simTime;
@@ -38,7 +40,7 @@ void Event::Start(double simTime, double dt)
 							// Domains overlap, at least one domain in common. Terminate old action.
 							LOG("Stopping %s on conflicting %s domain(s)",
 								obj->initActions_[j]->name_.c_str(), ControlDomain2Str(obj->initActions_[j]->GetDomain()).c_str());
-							obj->initActions_[j]->End();
+							obj->initActions_[j]->End(simTime);
 						}
 					}
 				}
@@ -58,7 +60,7 @@ void Event::Start(double simTime, double dt)
 								// Domains overlap, at least one domain in common. Terminate old action.
 								LOG("Stopping object %s %s on conflicting %s domain(s)",
 									obj->name_.c_str(), pa2->name_.c_str(), ControlDomain2Str(pa2->GetDomain()).c_str());
-								pa2->End();
+								pa2->End(simTime);
 							}
 						}
 					}
@@ -82,19 +84,30 @@ void Event::Start(double simTime, double dt)
 		}
 	}
 
+	if (eventCallback != nullptr)
+	{
+		eventCallback(name_.c_str(), adjustedTime, true);
+	}
+
 	StoryBoardElement::Start(adjustedTime, dt);
 }
 
-void Event::End()
+void Event::End(double simTime)
 {
 	for (size_t i = 0; i < action_.size(); i++)
 	{
 		if (action_[i]->IsActive())
 		{
-			action_[i]->End();
+			action_[i]->End(simTime);
 		}
 	}
-	StoryBoardElement::End();
+
+	if (eventCallback != nullptr)
+	{
+		eventCallback(name_.c_str(), simTime, false);
+	}
+
+	StoryBoardElement::End(simTime);
 }
 
 void Event::Stop()

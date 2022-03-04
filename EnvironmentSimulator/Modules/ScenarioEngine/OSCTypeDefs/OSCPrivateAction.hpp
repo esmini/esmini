@@ -689,7 +689,7 @@ namespace scenarioengine
 
 		void Step(double simTime, double dt);
 		void Start(double simTime, double dt);
-		void End();
+		void End(double simTime);
 
 		void ReplaceObjectRefs(Object* obj1, Object* obj2);
 	};
@@ -820,7 +820,7 @@ namespace scenarioengine
 
 		void Step(double, double) {}
 
-		void End()
+		void End(double simTime)
 		{
 			if (object_->GetActivatedControllerType() != 0 && object_->controller_ != nullptr)
 			{
@@ -828,7 +828,7 @@ namespace scenarioengine
 			}
 			// Make sure heading is aligned with road driving direction
 			object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);
-			OSCAction::End();
+			OSCAction::End(simTime);
 		}
 	};
 

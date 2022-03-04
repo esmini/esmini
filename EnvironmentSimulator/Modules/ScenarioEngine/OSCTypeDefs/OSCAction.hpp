@@ -119,7 +119,7 @@ namespace scenarioengine
 			}
 		}
 
-		virtual void End()
+		virtual void End(double simTime)
 		{
 			// Allow elements to move directly from standby to complete
 			// Some actions are atomic, and don't need run time
