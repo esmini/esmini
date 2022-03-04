@@ -919,6 +919,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 			if (shapeType == "Polyline")
 			{
 				roadmanager::PolyLineShape *pline = new roadmanager::PolyLineShape();
+				OSCPosition* pos = nullptr;
 				for (pugi::xml_node vertexNode = shapeNode.first_child(); vertexNode; vertexNode = vertexNode.next_sibling())
 				{
 					pugi::xml_node posNode = vertexNode.child("Position");
@@ -927,7 +928,7 @@ roadmanager::RMTrajectory *ScenarioReader::parseTrajectory(pugi::xml_node node)
 					{
 						throw std::runtime_error("Missing Trajectory/Polyline/Vertex/Position node");
 					}
-					OSCPosition *pos = parseOSCPosition(posNode);
+					pos = parseOSCPosition(posNode, pos);
 					double time = strtod(parameters.ReadAttribute(vertexNode, "time"));
 
 					bool calculateHeading = true;
@@ -1260,7 +1261,7 @@ void ScenarioReader::parseOSCOrientation(OSCOrientation &orientation, pugi::xml_
 	}
 }
 
-OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
+OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPosition* base_on_pos)
 {
 	OSCPosition *pos_return = 0;
 
@@ -1307,7 +1308,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode)
 			LOG_AND_QUIT("Missing x or y attributes!\n");
 		}
 
-		OSCPositionWorld *pos = new OSCPositionWorld(x, y, z, h, p, r);
+		OSCPositionWorld *pos = new OSCPositionWorld(x, y, z, h, p, r, base_on_pos);
 
 		pos_return = (OSCPosition *)pos;
 	}

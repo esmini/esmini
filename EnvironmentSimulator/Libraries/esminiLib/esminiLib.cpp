@@ -291,7 +291,10 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 
 	roadmanager::TrajVertex trailPos;
 	trailPos.h = (float)obj->pos_.GetH(); // Set default trail heading aligned with road - in case trail is less than two points (no heading)
-	ghost->trail_.FindPointAhead(obj->trail_closest_pos_.s, lookahead_distance, trailPos, index_out, obj->trail_follow_index_);
+	if (ghost->trail_.FindPointAhead(obj->trail_closest_pos_.s, lookahead_distance, trailPos, index_out, obj->trail_follow_index_) == 0)
+	{
+		obj->trail_follow_index_ = index_out;
+	}
 
 	roadmanager::Position pos(trailPos.x, trailPos.y, 0, 0, 0, 0);
 	obj->pos_.CalcProbeTarget(&pos, &s_data);
@@ -355,6 +358,10 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo* r
 		LOG("Failed to lookup point at time %.2f (time arg = %.2f) along ghost (%d) trail",
 			player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + time, time, ghost->GetId());
 		return -1;
+	}
+	else
+	{
+		obj->trail_follow_index_ = index_out;
 	}
 
 	roadmanager::Position pos(trailPos.x, trailPos.y, 0, 0, 0, 0);
