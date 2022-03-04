@@ -24,9 +24,21 @@ Controller* scenarioengine::InstantiateController(void* args)
 	return new Controller((Controller:: InitArgs*)args);
 }
 
-Controller::Controller(InitArgs* args) : name_(args->name), type_name_(args->type), entities_(args->entities),
-	gateway_(args->gateway), domain_(ControlDomains::DOMAIN_NONE), mode_(Controller::Mode::MODE_OVERRIDE), object_(0)
+Controller::Controller(InitArgs* args) : domain_(ControlDomains::DOMAIN_NONE), mode_(Controller::Mode::MODE_OVERRIDE), object_(0)
 {
+	if (args)
+	{
+		name_ = args->name;
+		type_name_ = args->type;
+		entities_ = args->entities;
+		gateway_ = args->gateway;
+	}
+	else
+	{
+		LOG_AND_QUIT("Controller constructor missing args");
+	}
+
+
 	if (args->properties && args->properties->ValueExists("mode"))
 	{
 		std::string mode = args->properties->GetValueStr("mode");

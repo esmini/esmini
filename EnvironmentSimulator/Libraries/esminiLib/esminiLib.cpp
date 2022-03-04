@@ -22,6 +22,7 @@
 #endif
 #include "vehicle.hpp"
 #include "pugixml.hpp"
+#include "ControllerExternal.hpp"
 
 using namespace scenarioengine;
 
@@ -893,16 +894,21 @@ extern "C"
 				object_type = scenarioengine::Object::Type::VEHICLE;
 			}
 
+			Vehicle* vehicle = nullptr;
 			if (object_type == scenarioengine::Object::Type::VEHICLE)
 			{
-				Vehicle* vehicle = new Vehicle();
+				vehicle = new Vehicle();
 				object_id = player->scenarioEngine->entities_.addObject(vehicle);
 				vehicle->name_ = "swarm" + std::to_string(object_id);
 				vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
 				vehicle->model_id_ = model_id;
 				vehicle->model3d_ = SE_Env::Inst().GetModelFilenameById(model_id);
 				vehicle->category_ = object_category;
-				vehicle->controller_ = nullptr;
+
+				Controller::InitArgs args = { "", "", 0, 0, 0, 0 };
+				args.type = ControllerExternal::GetTypeNameStatic();
+				vehicle->controller_ = InstantiateControllerExternal(&args);
+				vehicle->controller_->Activate(ControlDomains::DOMAIN_BOTH);
 			}
 			else
 			{
@@ -911,7 +917,7 @@ extern "C"
 			}
 
 			scenarioengine::OSCBoundingBox bb = { {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0} };
-			if (player->scenarioGateway->reportObject(object_id, name, object_type, object_category, model_id, 0,
+			if (player->scenarioGateway->reportObject(object_id, name, object_type, object_category, model_id, vehicle->GetActivatedControllerType(),
 				bb, static_cast<int>(EntityScaleMode::BB_TO_MODEL), 0xff, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0) == 0)
 			{
 				return object_id;
