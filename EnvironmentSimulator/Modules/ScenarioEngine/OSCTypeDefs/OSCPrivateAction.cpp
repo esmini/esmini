@@ -373,8 +373,6 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 
 	double old_s = object_->pos_.GetTrajectoryS();
 
-	time_ += timing_scale_ * dt;
-
 	// Adjust time for any ghost headstart
 	double timeOffset = object_->IsGhost() ? object_->GetHeadstartTime() : 0.0;
 
@@ -390,6 +388,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 	}
 	else if (timing_domain_ == TimingDomain::TIMING_RELATIVE)
 	{
+		time_ += timing_scale_ * dt;
 		object_->pos_.SetTrajectoryPosByTime(time_ + timeOffset + timing_offset_);
 		if (time_ + timeOffset <= traj_->GetStartTime() + traj_->GetDuration())
 		{
@@ -400,13 +399,13 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
 	}
 	else if (timing_domain_ == TimingDomain::TIMING_ABSOLUTE)
 	{
-		double s_old = object_->pos_.GetTrajectoryS();
-		object_->pos_.SetTrajectoryPosByTime(simTime * timing_scale_ + timeOffset + timing_offset_);
+		time_ = (simTime + dt) * timing_scale_;
+		object_->pos_.SetTrajectoryPosByTime(time_ + timeOffset + timing_offset_);
 		if (time_ + timeOffset <= traj_->GetStartTime() + traj_->GetDuration())
 		{
 			// don't calculate and update actual speed when reached end of trajectory,
 			// since the movement is based on remaining length of trajectory, not speed
-			object_->SetSpeed((object_->pos_.GetTrajectoryS() - s_old) / MAX(SMALL_NUMBER, dt));
+			object_->SetSpeed((object_->pos_.GetTrajectoryS() - old_s) / MAX(SMALL_NUMBER, dt));
 		}
 	}
 
