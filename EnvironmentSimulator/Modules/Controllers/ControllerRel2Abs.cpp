@@ -409,7 +409,7 @@ void ControllerRel2Abs::Step(double timeStep)
 							}
 						}
 					}
-					lda->End();
+					lda->End(scenarioEngine_->getSimulationTime());
 					lsa->Start(scenarioEngine_->getSimulationTime(),timeStep);
 					LOG("Replacing the relative target LongDistanceAction with an absolute target LongSpeedAction and target value: %lf", currentSpeed);
 				}
@@ -518,7 +518,7 @@ void ControllerRel2Abs::Step(double timeStep)
 									}
 								}
 							}
-							sa->End();
+							sa->End(scenarioEngine_->getSimulationTime());
 							lsa->Start(scenarioEngine_->getSimulationTime(), timeStep);
 							LOG("Replacing the SynchronizeAction (with final speed) with an absolute target LongSpeedAction and target value: %lf", trgSpeed);
 						}
@@ -563,7 +563,7 @@ void ControllerRel2Abs::Step(double timeStep)
 								}
 							}
 						}
-						sa->End();
+						sa->End(scenarioEngine_->getSimulationTime());
 						lsa->Start(scenarioEngine_->getSimulationTime(), timeStep);
 						LOG("Replacing the SynchronizeAction (no final speed) with an absolute target LongSpeedAction and target value: %lf", currentSpeed);
 					}

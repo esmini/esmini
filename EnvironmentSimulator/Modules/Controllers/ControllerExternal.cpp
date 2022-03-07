@@ -30,15 +30,15 @@ Controller* scenarioengine::InstantiateControllerExternal(void* args)
 	return new ControllerExternal(initArgs);
 }
 
-ControllerExternal::ControllerExternal(InitArgs* args) : useGhost_(false), Controller(args)
+ControllerExternal::ControllerExternal(InitArgs* args) : useGhost_(false), headstart_time_(0.0), Controller(args)
 {
-	if (args->properties->ValueExists("useGhost"))
+	if (args && args->properties && args->properties->ValueExists("useGhost"))
 	{
 		useGhost_ = (args->properties->GetValueStr("useGhost") == "true" ||
 			args->properties->GetValueStr("useGhost") == "True");
 	}
 
-	if (args->properties->ValueExists("headstartTime"))
+	if (args && args->properties && args->properties->ValueExists("headstartTime"))
 	{
 		headstart_time_ = strtod(args->properties->GetValueStr("headstartTime"));
 	}

@@ -393,6 +393,16 @@ void ScenarioPlayer::ViewerFrame()
 			}
 		}
 
+		if (entity->trail_->pline_vertex_data_->size() > obj->trail_.GetNumberOfVertices())
+		{
+			// Reset the trail, probably there has been a ghost restart
+			entity->trail_->Reset();
+			for (size_t j = 0; j < obj->trail_.GetNumberOfVertices(); j++)
+			{
+				entity->trail_->AddPoint(osg::Vec3(obj->trail_.vertex_[j].x, obj->trail_.vertex_[j].y, obj->trail_.vertex_[j].z + (obj->GetId() + 1) * TRAIL_Z_OFFSET));
+			}
+		}
+
 		if (obj->trail_.GetNumberOfVertices() > entity->trail_->pline_vertex_data_->size())
 		{
 			entity->trail_->AddPoint(osg::Vec3(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET));

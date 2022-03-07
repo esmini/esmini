@@ -14,8 +14,13 @@
 
 using namespace scenarioengine;
 
-OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, double p, double r) : OSCPosition(PositionType::WORLD)
+OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, double p, double r, OSCPosition* base_on_pos) : OSCPosition(PositionType::WORLD)
 {
+	if (base_on_pos != nullptr)
+	{
+		this->position_ = *base_on_pos->GetRMPos();
+	}
+
 	if (!std::isnan(z) || !std::isnan(p) || !std::isnan(r))
 	{
 		if (std::isnan(z) || std::isnan(p) || std::isnan(r))

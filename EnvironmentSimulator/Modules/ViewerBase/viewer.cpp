@@ -288,6 +288,14 @@ void PolyLine::AddPoint(osg::Vec3 point)
 	Update();
 }
 
+void PolyLine::Reset()
+{
+	pline_vertex_data_->clear();
+	dots3D_group_->removeChildren(0, dots3D_group_->getNumChildren());
+
+	Update();
+}
+
 void PolyLine::Add3DDot(osg::Vec3 pos)
 {
 	osg::ref_ptr<osg::Geode> geode2 = dynamic_cast<osg::Geode*>(dot3D_geode_->clone(osg::CopyOp::SHALLOW_COPY));

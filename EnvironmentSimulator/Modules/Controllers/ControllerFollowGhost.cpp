@@ -24,6 +24,8 @@
 
 using namespace scenarioengine;
 
+#define FOLLOW_GHOST_BY_POSITION   // comment out to run time based following instead
+
 Controller* scenarioengine::InstantiateControllerFollowGhost(void* args)
 {
 	Controller::InitArgs* initArgs = (Controller::InitArgs*)args;
@@ -31,7 +33,7 @@ Controller* scenarioengine::InstantiateControllerFollowGhost(void* args)
 	return new ControllerFollowGhost(initArgs);
 }
 
-ControllerFollowGhost::ControllerFollowGhost(InitArgs* args) : Controller(args)
+ControllerFollowGhost::ControllerFollowGhost(InitArgs* args) : elapsed_time_(0.0), Controller(args)
 {
 	if (args->properties->ValueExists("headstartTime"))
 	{
@@ -61,6 +63,7 @@ void ControllerFollowGhost::Step(double timeStep)
 		return;
 	}
 
+#ifdef FOLLOW_GHOST_BY_POSITION
 	// Set steering target point at a distance ahead proportional to the speed
 	double probe_target_distance = MAX(7, 0.5 * object_->speed_);
 
@@ -76,19 +79,32 @@ void ControllerFollowGhost::Step(double timeStep)
 		object_->trail_closest_pos_.y = object_->pos_.GetY();
 		object_->trail_closest_pos_.z = object_->pos_.GetZ();
 	}
+#endif
 
 	// Find out a steering target along ghost vehicle trail
 	int index_out;
 	roadmanager::TrajVertex point;
 
 	// Locate a point at given distance from own vehicle along the ghost trajectory
+#ifdef FOLLOW_GHOST_BY_POSITION
 	if (object_->GetGhost()->trail_.FindPointAhead(
 		object_->trail_closest_pos_.s, probe_target_distance, point, index_out, object_->trail_follow_index_) != 0)
+#else  // follow by time
+	if (object_->GetGhost()->trail_.FindPointAtTime(elapsed_time_ - headstart_time_ + 1.7,  // look ahead 1.7 seconds
+		point, index_out, object_->trail_follow_index_) != 0)
+#endif
 	{
 		point.x = (float)object_->pos_.GetX();
 		point.y = (float)object_->pos_.GetY();
 		point.z = (float)object_->pos_.GetZ();
 		point.speed = 0;
+	}
+	else
+	{
+#ifndef FOLLOW_GHOST_BY_POSITION
+		// For time based ghost follow, register last trail index for next search
+		object_->trail_follow_index_ = index_out;
+#endif
 	}
 
 	// Update object sensor position for visualization
@@ -139,6 +155,8 @@ void ControllerFollowGhost::Step(double timeStep)
 		gateway_->updateObjectWheelAngle(object_->id_, 0.0, vehicle_.wheelAngle_);
 	}
 
+	elapsed_time_ += timeStep;
+
 	Controller::Step(timeStep);
 }
 
@@ -151,6 +169,7 @@ void ControllerFollowGhost::Activate(ControlDomains domainMask)
 		vehicle_.SetLength(object_->boundingbox_.dimensions_.length_);
 		vehicle_.speed_ = object_->GetSpeed();
 		vehicle_.SetMaxSpeed(100);  // just set a random high value
+		vehicle_.SetMaxAcc(10.0);
 
 		object_->sensor_pos_[0] = object_->pos_.GetX();
 		object_->sensor_pos_[1] = object_->pos_.GetY();
@@ -159,6 +178,8 @@ void ControllerFollowGhost::Activate(ControlDomains domainMask)
 		object_->pos_.SetAlignModeZ(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 		object_->pos_.SetAlignModeP(roadmanager::Position::ALIGN_MODE::ALIGN_HARD);
 	}
+
+	elapsed_time_ = 0.0;
 
 	Controller::Activate(domainMask);
 }

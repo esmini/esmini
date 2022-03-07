@@ -2150,29 +2150,29 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 188.831, 1e-3);
-					EXPECT_NEAR(objectState.y, 57.282, 1e-3);
-					EXPECT_NEAR(objectState.h, 1.025, 1e-3);
-					EXPECT_NEAR(objectState.p, 6.261, 1e-3);
+					EXPECT_NEAR(objectState.x, 151.170, 1e-3);
+					EXPECT_NEAR(objectState.y, 49.430, 1e-3);
+					EXPECT_NEAR(objectState.h, 0.768, 1e-3);
+					EXPECT_NEAR(objectState.p, 6.269, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
-						EXPECT_NEAR(road_info2.global_pos_x, 206.76177, 1e-5);
-						EXPECT_NEAR(road_info2.global_pos_y, 92.55549, 1e-5);
+						EXPECT_NEAR(road_info2.global_pos_x, 213.10124, 1e-5);
+						EXPECT_NEAR(road_info2.global_pos_y, 113.70322, 1e-5);
 					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 320.398, 1e-3);
-					EXPECT_NEAR(objectState.y, 347.045, 1e-3);
-					EXPECT_NEAR(objectState.h, 6.047, 1e-3);
-					EXPECT_NEAR(objectState.p, 0.010, 1e-3);
+					EXPECT_NEAR(objectState.x, 363.104, 1e-3);
+					EXPECT_NEAR(objectState.y, 290.371, 1e-3);
+					EXPECT_NEAR(objectState.h, 5.577, 1e-3);
+					EXPECT_NEAR(objectState.p, 0.025, 1e-3);
 					if (ghostMode[i] == true)
 					{
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
-						EXPECT_NEAR(road_info2.global_pos_x, 388.72220, 1e-5);
-						EXPECT_NEAR(road_info2.global_pos_y, 290.30673, 1e-5);
+						EXPECT_NEAR(road_info2.global_pos_x, 407.70743, 1e-5);
+						EXPECT_NEAR(road_info2.global_pos_y, 244.06699, 1e-5);
 					}
 				}
 			}

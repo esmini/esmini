@@ -77,7 +77,9 @@ namespace scenarioengine
 	{
 	public:
 		OSCPositionWorld() : OSCPosition(PositionType::WORLD) {}
-		OSCPositionWorld(double x, double y, double z, double h, double p, double r);
+
+		// base_on_pos: Provide position from which to base XY to road coord mapping from (optimize search)
+		OSCPositionWorld(double x, double y, double z, double h, double p, double r, OSCPosition* base_on_pos);
 
 		void Print() { position_.Print(); }
 	};

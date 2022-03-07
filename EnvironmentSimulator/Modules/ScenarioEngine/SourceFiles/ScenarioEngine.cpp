@@ -283,7 +283,7 @@ int ScenarioEngine::step(double deltaSimTime)
 			{
 				if (act->stop_trigger_->Evaluate(&storyBoard, simulationTime_) == true)
 				{
-					act->End();
+					act->End(simulationTime_);
 				}
 			}
 
@@ -360,7 +360,7 @@ int ScenarioEngine::step(double deltaSimTime)
 														}
 													}
 
-													maneuver->event_[n]->End();
+													maneuver->event_[n]->End(simulationTime_);
 													LOG("Event %s ended, overwritten by event %s",
 														maneuver->event_[n]->name_.c_str(), event->name_.c_str());
 												}
@@ -469,7 +469,7 @@ int ScenarioEngine::step(double deltaSimTime)
 									}
 
 									// Actions done -> Set event done
-									event->End();
+									event->End(simulationTime_);
 								}
 							}
 						}
@@ -917,12 +917,15 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 			obj->odometer_ += abs(sqrt(dx * dx + dy * dy));  // odometer always measure all movements as positive, I guess...
 		}
 
-		if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertex(-1)->time > GHOST_TRAIL_SAMPLE_TIME)
+		if (!(obj->IsGhost() && GetGhostMode() == GhostMode::RESTART))  // skip ghost sample during restart
 		{
-			// Only add trail vertex when speed is not stable at 0
-			if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertex(-1)->speed) > SMALL_NUMBER || fabs(obj->GetSpeed()) > SMALL_NUMBER)
+			if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertex(-1)->time > GHOST_TRAIL_SAMPLE_TIME)
 			{
-				obj->trail_.AddVertex({ 0.0, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH(), simulationTime_, obj->GetSpeed(), 0.0, false });
+				// Only add trail vertex when speed is not stable at 0
+				if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertex(-1)->speed) > SMALL_NUMBER || fabs(obj->GetSpeed()) > SMALL_NUMBER)
+				{
+					obj->trail_.AddVertex({ 0.0, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ(), obj->pos_.GetH(), simulationTime_, obj->GetSpeed(), 0.0, false });
+				}
 			}
 		}
 
