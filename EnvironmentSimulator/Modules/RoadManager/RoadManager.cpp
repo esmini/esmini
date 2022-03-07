@@ -3558,10 +3558,10 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 			for (pugi::xml_node object = objects.child("object"); object; object = object.next_sibling("object"))
 			{
 				// Read any repeat element first, since its s-value overrides the one in the object element
-				pugi::xml_node repeat_node = object.child("repeat");
-				Repeat* repeat = 0;
-				if (repeat_node != NULL)
-				{
+
+				std::vector<Repeat*> Repeats;
+				for (pugi::xml_node repeat_node = object.child("repeat"); repeat_node; repeat_node = repeat_node.next_sibling("repeat"))
+				{	
 					std::string rattr;
 					double rs = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stod(rattr);
 					double rlength = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stod(rattr);
@@ -3580,7 +3580,8 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 					double rradiusStart = (rattr = ReadAttribute(repeat_node, "radiusStart", false)) == "" ? 0.0 : std::stod(rattr);
 					double rradiusEnd = (rattr = ReadAttribute(repeat_node, "radiusEnd", false)) == "" ? 0.0 : std::stod(rattr);
 
-					repeat = new Repeat(rs, rlength, rdistance, rtStart, rtEnd, rheightStart, rheightEnd, rzOffsetStart, rzOffsetEnd);
+					Repeat* repeat = new Repeat(rs, rlength, rdistance, rtStart, rtEnd, rheightStart, rheightEnd, rzOffsetStart, rzOffsetEnd);
+					Repeats.push_back(repeat);
 
 					if (fabs(rwidthStart) > SMALL_NUMBER) repeat->SetWidthStart(rwidthStart);
 					if (fabs(rwidthEnd) > SMALL_NUMBER) repeat->SetWidthEnd(rwidthEnd);
@@ -3589,12 +3590,14 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 					if (fabs(rradiusStart) > SMALL_NUMBER) printf("Attribute object/repeat/radiusStart not supported yet\n");
 					if (fabs(rradiusEnd) > SMALL_NUMBER) printf("Attribute object/repeat/radiusEnd not supported yet\n");
+
+
 				}
 
 				double s;
-				if (repeat)
+				if (Repeats.size() > 0)
 				{
-					s = repeat->GetS();
+					s = Repeats[0]->GetS();
 				}
 				else
 				{
@@ -3637,9 +3640,13 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 				RMObject* obj = new RMObject(s, t, ids, name, orientation, z_offset, type, length, height,
 					width, heading, pitch, roll);
 
-				if (repeat)
+				if (Repeats.size() > 0)
 				{
-					obj->SetRepeat(repeat);
+					for(Repeat* rp: Repeats)
+					{
+						obj->AddRepeat(rp);
+					}
+					obj->SetRepeat(Repeats[0]);
 				}
 
 				pugi::xml_node outlines_node = object.child("outlines");
