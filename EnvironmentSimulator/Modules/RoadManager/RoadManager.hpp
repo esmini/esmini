@@ -1156,6 +1156,9 @@ namespace roadmanager
 		{
 			for (size_t i = 0; i < outlines_.size(); i++) delete(outlines_[i]);
 			outlines_.clear();
+
+			for (size_t i = 0; i < repeats_.size(); i++) delete(repeats_[i]);
+			repeats_.clear();
 		}
 
 		std::string GetName() { return name_; }
@@ -1173,9 +1176,15 @@ namespace roadmanager
 		Orientation GetOrientation() { return orientation_; }
 		void AddOutline(Outline* outline) { outlines_.push_back(outline); }
 		void SetRepeat(Repeat* repeat);
+		void AddRepeat(Repeat* repeat) {repeats_.push_back(repeat);};
 		Repeat* GetRepeat() { return repeat_; }
+
 		int GetNumberOfOutlines() { return (int)outlines_.size(); }
+		int GetNumberOfRepeats() { return (int)repeats_.size(); }
+
 		Outline* GetOutline(int i) { return (0 <= i && i < outlines_.size()) ? outlines_[i] : 0; }
+		Repeat* GetRepeatByIdx(int i) { return (0 <= i && i < repeats_.size()) ? repeats_[i] : 0; }
+
 
 	private:
 		std::string type_;
@@ -1193,6 +1202,7 @@ namespace roadmanager
 		double roll_;
 		std::vector<Outline*> outlines_;
 		Repeat* repeat_;
+		std::vector<Repeat*> repeats_;
 	};
 
 	enum class SpeedUnit
