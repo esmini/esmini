@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2022-03-07 Version 2.20.10
+
+- Add methods to [register callbacks](https://github.com/esmini/esmini/blob/4da56f080b8ccdbb41372353d435c4438e4ce394/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L816) for triggered conditions and event start/end ([PR #249](https://github.com/esmini/esmini/issues/249))
+- Add Python variant of ad_hoc_traffic example (see [here](https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/ad_hoc_traffic))
+- Set controller type for externally added objects (via SE_AddObject())
+- Fix AcquirePositionAction issues, e.g. when destination is on same road ([PR #247](https://github.com/esmini/esmini/issues/247))
+- Fix ghost trail reset issues (at ghost restart)
+- Optimize polyline trajectory parsing and ghost trail following
+- Fix error in speed calculation for absolute time trajectory
+
 ### 2022-02-25 Version 2.20.9
 
 - Expose Add/DeleteObject functions in esminiLib API 
