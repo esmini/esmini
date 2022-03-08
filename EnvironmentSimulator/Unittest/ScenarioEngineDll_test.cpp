@@ -2057,22 +2057,23 @@ static void ghostParamDeclCB(void* user_arg)
 
 TEST(ExternalController, TestExternalDriver)
 {
+	const double defaultTargetSpeed = 50.0;
+	const double curveWeight = 30.0;
+	const double throttleWeight = 0.1;
+	const float dt = 0.05f;
+	const float duration = 35.0f;
+	bool ghostMode[3] = { false, true, true };
+
 	void* vehicleHandle = 0;
 	SE_SimpleVehicleState vehicleState = { 0, 0, 0, 0, 0, 0 };
 	SE_ScenarioObjectState objectState;
 	SE_RoadInfo roadInfo;
-	double defaultTargetSpeed = 50.0;
-	double curveWeight = 30.0;
-	double throttleWeight = 0.01;
-	bool ghostMode[2] = { false, true };
-	float dt = 0.05f;
 
 	SE_AddPath("../../../resources/xodr");
 	SE_AddPath("../../../resources/xosc/Catalogs/Vehicles");
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 3; i++)
 	{
-
 		SE_RegisterParameterDeclarationCallback(ghostParamDeclCB, &ghostMode[i]);
 
 		ASSERT_EQ(SE_Init("../../../EnvironmentSimulator/code-examples/test-driver/test-driver.xosc", 0, 0, 0, 0), 0);
@@ -2089,7 +2090,7 @@ TEST(ExternalController, TestExternalDriver)
 		SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
 
 		// Run for 40 seconds or until 'Esc' button is pressed
-		while (SE_GetSimulationTime() < 40 && SE_GetQuitFlag() != 1)
+		while (SE_GetSimulationTime() < duration && SE_GetQuitFlag() != 1)
 		{
 			// Get road information at a point some speed dependent distance ahead
 			double targetSpeed;
@@ -2097,7 +2098,14 @@ TEST(ExternalController, TestExternalDriver)
 			{
 				// ghost version
 				float ghost_speed;
-				SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed);
+				if (i < 2)
+				{
+					SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed);
+				}
+				else
+				{
+					SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime() + 0.25f, &roadInfo, &ghost_speed);
+				}
 				targetSpeed = ghost_speed;
 			}
 			else
@@ -2116,7 +2124,7 @@ TEST(ExternalController, TestExternalDriver)
 			double throttle = throttleWeight * (targetSpeed - vehicleState.speed);
 
 			// Step vehicle model with driver input, but wait until time > 0
-			if (SE_GetSimulationTime() > 0)
+			if (SE_GetSimulationTime() > 0 && !SE_GetPauseFlag())
 			{
 				SE_SimpleVehicleControlAnalog(vehicleHandle, dt, throttle, steerAngle);
 			}
@@ -2129,50 +2137,84 @@ TEST(ExternalController, TestExternalDriver)
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 203.401, 1e-3);
-					EXPECT_NEAR(objectState.y, 78.381, 1e-3);
-					EXPECT_NEAR(objectState.h, 1.100, 1e-3);
-					EXPECT_NEAR(objectState.p, 6.263, 1e-3);
+					EXPECT_NEAR(objectState.x, 215.891, 1e-3);
+					EXPECT_NEAR(objectState.y, 113.789, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.362, 1e-3);
+					EXPECT_NEAR(objectState.p, 6.246, 1e-3);
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 336.029, 1e-3);
-					EXPECT_NEAR(objectState.y, 341.738, 1e-3);
-					EXPECT_NEAR(objectState.h, 5.880, 1e-3);
-					EXPECT_NEAR(objectState.p, 0.034, 1e-3);
+					EXPECT_NEAR(objectState.x, 356.204, 1e-3);
+					EXPECT_NEAR(objectState.y, 330.068, 1e-3);
+					EXPECT_NEAR(objectState.h, 5.641, 1e-3);
+					EXPECT_NEAR(objectState.p, 0.046, 1e-3);
 				}
 			}
 			else if (i==1)
 			{
-				SE_RoadInfo road_info2;
 				float speed2 = 0;
 				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 151.170, 1e-3);
-					EXPECT_NEAR(objectState.y, 49.430, 1e-3);
-					EXPECT_NEAR(objectState.h, 0.768, 1e-3);
-					EXPECT_NEAR(objectState.p, 6.269, 1e-3);
+					EXPECT_NEAR(objectState.x, 202.6710, 1e-3);
+					EXPECT_NEAR(objectState.y, 83.453, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.137, 1e-3);
+					EXPECT_NEAR(objectState.p, 6.262, 1e-3);
 					if (ghostMode[i] == true)
 					{
+						SE_RoadInfo road_info2;
 						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
-						EXPECT_NEAR(road_info2.global_pos_x, 213.10124, 1e-5);
-						EXPECT_NEAR(road_info2.global_pos_y, 113.70322, 1e-5);
+						EXPECT_NEAR(road_info2.global_pos_x, 206.761, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 92.555, 1e-3);
 					}
 				}
 				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
 				{
 					SE_GetObjectState(0, &objectState);
-					EXPECT_NEAR(objectState.x, 363.104, 1e-3);
-					EXPECT_NEAR(objectState.y, 290.371, 1e-3);
-					EXPECT_NEAR(objectState.h, 5.577, 1e-3);
+					EXPECT_NEAR(objectState.x, 383.001, 1e-3);
+					EXPECT_NEAR(objectState.y, 300.194, 1e-3);
+					EXPECT_NEAR(objectState.h, 5.259, 1e-3);
 					EXPECT_NEAR(objectState.p, 0.025, 1e-3);
 					if (ghostMode[i] == true)
 					{
-						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed2);
-						EXPECT_NEAR(road_info2.global_pos_x, 407.70743, 1e-5);
-						EXPECT_NEAR(road_info2.global_pos_y, 244.06699, 1e-5);
+						SE_RoadInfo road_info3;
+						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info3, &speed2);
+						EXPECT_NEAR(road_info3.global_pos_x, 388.722, 1e-3);
+						EXPECT_NEAR(road_info3.global_pos_y, 290.307, 1e-3);
+					}
+				}
+			}
+			else if (i == 2)
+			{
+				SE_RoadInfo road_info2;
+				float speed3 = 0;
+				if (abs(SE_GetSimulationTime() - 11.0f) < SMALL_NUMBER)
+				{
+					SE_GetObjectState(0, &objectState);
+					EXPECT_NEAR(objectState.x, 203.726, 1e-3);
+					EXPECT_NEAR(objectState.y, 85.548, 1e-3);
+					EXPECT_NEAR(objectState.h, 1.148, 1e-3);
+					EXPECT_NEAR(objectState.p, 6.262, 1e-3);
+					if (ghostMode[i] == true)
+					{
+						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
+						EXPECT_NEAR(road_info2.global_pos_x, 207.471, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 94.426, 1e-3);
+					}
+				}
+				else if (abs(SE_GetSimulationTime() - 30.0f) < SMALL_NUMBER)
+				{
+					SE_GetObjectState(0, &objectState);
+					EXPECT_NEAR(objectState.x, 383.025, 1e-3);
+					EXPECT_NEAR(objectState.y, 301.087, 1e-3);
+					EXPECT_NEAR(objectState.h, 5.257, 1e-3);
+					EXPECT_NEAR(objectState.p, 0.025, 1e-3);
+					if (ghostMode[i] == true)
+					{
+						SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime(), &road_info2, &speed3);
+						EXPECT_NEAR(road_info2.global_pos_x, 390.909, 1e-3);
+						EXPECT_NEAR(road_info2.global_pos_y, 285.810, 1e-3);
 					}
 				}
 			}

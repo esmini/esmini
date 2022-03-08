@@ -112,6 +112,7 @@ public:
 	void SetQuitRequest(bool quit) { quit_request = quit; }
 	void SetState(PlayerState state) { state_ = state; }
 	PlayerState GetState() { return state_; }
+	bool IsPaused() { return GetState() == PlayerState::PLAYER_STATE_PAUSE; }
 
 	//TODO
 	//int GetNumberOfVehicleProperties(){return 4;};

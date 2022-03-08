@@ -36,6 +36,8 @@ static char **argv_ = 0;
 static int argc_ = 0;
 static std::vector<std::string> args_v;
 static bool logToConsole = true;
+static __int64 time_stamp = 0;
+
 static struct
 {
 	int x;
@@ -86,6 +88,7 @@ static void resetScenario(void)
 
 	// Reset (global) condition callback
 	OSCCondition::conditionCallback = nullptr;
+	time_stamp = 0;
 }
 
 static void AddArgument(const char *str, bool split = true)
@@ -296,9 +299,9 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
 
 	roadmanager::TrajVertex trailPos;
 	trailPos.h = (float)obj->pos_.GetH(); // Set default trail heading aligned with road - in case trail is less than two points (no heading)
-	if (ghost->trail_.FindPointAhead(obj->trail_closest_pos_.s, lookahead_distance, trailPos, index_out, obj->trail_follow_index_) == 0)
+	if (ghost->trail_.FindPointAhead(obj->trail_closest_pos_.s, lookahead_distance, trailPos, index_out, obj->trail_follow_index_) != 0)
 	{
-		obj->trail_follow_index_ = index_out;
+		return -1;
 	}
 
 	roadmanager::Position pos(trailPos.x, trailPos.y, 0, 0, 0, 0);
@@ -823,8 +826,6 @@ extern "C"
 		{
 			return 0.0f;
 		}
-
-		static __int64 time_stamp = 0;
 
 		return (float)SE_getSimTimeStep(time_stamp, 0.001, 0.1);
 	}

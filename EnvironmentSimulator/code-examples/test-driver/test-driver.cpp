@@ -3,10 +3,7 @@
 #include <string>
 #include "esminiLib.hpp"
 
-#define TARGET_SPEED 50.0
-#define CURVE_WEIGHT 30.0
-#define THROTTLE_WEIGHT 0.01
-#define DURATION 30
+
 
 void paramDeclCB(void* user_arg)
 {
@@ -18,16 +15,20 @@ void paramDeclCB(void* user_arg)
 
 int main(int argc, char* argv[])
 {
+	const double defaultTargetSpeed = 50.0;
+	const double curveWeight = 30.0;
+	const double throttleWeight = 0.1;
+	const float duration = 35.0f;
+	bool ghostMode[3] = { false, true, true };
+
 	void* vehicleHandle = 0;
 	SE_SimpleVehicleState vehicleState = { 0, 0, 0, 0, 0, 0 };
 	SE_ScenarioObjectState objectState;
 	SE_RoadInfo roadInfo;
-	bool ghostMode[2] = { false, true };
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 3; i++)
 	{
-		float simTime = 0;
-		float dt = 0;
+		float dt = 0.0f;
 
 		SE_RegisterParameterDeclarationCallback(paramDeclCB, &ghostMode[i]);
 
@@ -49,9 +50,9 @@ int main(int argc, char* argv[])
 		SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
 
 		// Run for specified duration or until 'Esc' button is pressed
-		while (SE_GetSimulationTime() < DURATION && SE_GetQuitFlag() != 1)
+		while (SE_GetSimulationTime() < duration && SE_GetQuitFlag() != 1)
 		{
-			// Get simulation delta time since last call (first will be 0)
+			// Get simulation delta time since last call (first will be minimum timestep)
 			dt = SE_GetSimTimeStep();
 
 			// Get road information at a point some speed dependent distance ahead
@@ -60,9 +61,15 @@ int main(int argc, char* argv[])
 			{
 				// ghost version
 				float ghost_speed;
-				SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed);
+				if (i < 2)
+				{
+					SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed);
+				}
+				else
+				{
+					SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime() + 0.25f, &roadInfo, &ghost_speed);
+				}
 				targetSpeed = ghost_speed;
-
 			}
 			else
 			{
@@ -70,17 +77,17 @@ int main(int argc, char* argv[])
 				SE_GetRoadInfoAtDistance(0, 5 + 0.75f * vehicleState.speed, &roadInfo, 0, true);
 
 				// Slow down when curve ahead - CURVE_WEIGHT is the tuning parameter
-				targetSpeed = TARGET_SPEED / (1 + CURVE_WEIGHT * fabs(roadInfo.angle));
+				targetSpeed = defaultTargetSpeed / (1 + curveWeight * fabs(roadInfo.angle));
 			}
 
 			// Steer towards where the point
 			double steerAngle = roadInfo.angle;
 
 			// Accelerate or decelerate towards target speed - THROTTLE_WEIGHT tunes magnitude
-			double throttle = THROTTLE_WEIGHT * (targetSpeed - vehicleState.speed);
+			double throttle = throttleWeight * (targetSpeed - vehicleState.speed);
 
 			// Step vehicle model with driver input, but wait until time > 0
-			if (SE_GetSimulationTime() > 0)
+			if (SE_GetSimulationTime() > 0 && !SE_GetPauseFlag())
 			{
 				SE_SimpleVehicleControlAnalog(vehicleHandle, dt, throttle, steerAngle);
 			}
@@ -89,11 +96,12 @@ int main(int argc, char* argv[])
 			SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
 
 			// Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
-			SE_ReportObjectPosXYH(0, simTime, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+			SE_ReportObjectPosXYH(0, 0, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
 
 			// Finally, update scenario using same time step as for vehicle model
 			SE_StepDT(dt);
 		}
+		SE_Close();
 	}
 	return 0;
 }

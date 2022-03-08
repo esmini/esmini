@@ -3561,7 +3561,7 @@ bool OpenDrive::LoadOpenDriveFile(const char *filename, bool replace)
 
 				std::vector<Repeat*> Repeats;
 				for (pugi::xml_node repeat_node = object.child("repeat"); repeat_node; repeat_node = repeat_node.next_sibling("repeat"))
-				{	
+				{
 					std::string rattr;
 					double rs = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stod(rattr);
 					double rlength = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stod(rattr);
@@ -9260,6 +9260,7 @@ int PolyLineBase::Evaluate(double s, TrajVertex& pos)
 
 int PolyLineBase::Time2S(double time, double& s)
 {
+	int step = 1;
 	if (GetNumberOfVertices() < 1 || time < vertex_[0].time)
 	{
 		s = 0.0;
@@ -9268,6 +9269,11 @@ int PolyLineBase::Time2S(double time, double& s)
 
 	// start looking from current index
 	int i = current_index_;
+
+	if (time < vertex_[i].time)
+	{
+		step = -1;  // Search backwards
+	}
 
 	for (size_t j = 0; j < GetNumberOfVertices(); j++)
 	{
@@ -9280,10 +9286,15 @@ int PolyLineBase::Time2S(double time, double& s)
 			return 0;
 		}
 
-		if (++i >= GetNumberOfVertices() - 1)
+		i += step;
+		if (i >= GetNumberOfVertices() - 1)
 		{
 			// Reached end of buffer, continue from start
 			i = 0;
+		}
+		else if (i < 0)
+		{
+			i = GetNumberOfVertices() - 1;
 		}
 	}
 
@@ -9301,19 +9312,25 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int&
 	double sLocalMin = 0.0;
 	int iMin = startAtIndex;
 	double distMin = LARGE_NUMBER;
+	int i = 0;
+	int step = 1;
 
-	// If a teleportation is made by the Ghost, a reset of trajectory has benn made. Hence, we can't look from the usual point ad has to set startAtIndex = 0
-
+	// If a teleportation is made by the Ghost, a reset of trajectory has been made. Hence, we can't look from the usual point. Set startAtIndex = 0
 	if (startAtIndex > GetNumberOfVertices() - 1)
 	{
 		startAtIndex = 0;
-		index = 0;
+		i = 0;
+	}
+	else
+	{
+		i = startAtIndex < 0 ? 0 : startAtIndex;
 	}
 
 	// Find closest line segment
-	for (int i = startAtIndex; i < GetNumberOfVertices() - 1; i++)
+
+	while (i >= 0 && i < GetNumberOfVertices() - 1)
 	{
-		ProjectPointOnVector2D(xin, yin, vertex_[i].x, vertex_[i].y, vertex_[i+1].x, vertex_[i+1].y, tmpPos.x, tmpPos.y);
+		ProjectPointOnVector2D(xin, yin, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, tmpPos.x, tmpPos.y);
 		double distTmp = PointDistance2D(xin, yin, tmpPos.x, tmpPos.y);
 
 		bool inside = PointInBetweenVectorEndpoints(tmpPos.x, tmpPos.y, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, sLocal);
@@ -9343,6 +9360,22 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, int&
 			sLocalMin = sLocal;
 			distMin = distTmp;
 		}
+		else if (startAtIndex > 0)
+		{
+			// Look for a local minimum distance
+			// Distance is increasing
+			// After looking in forward direction, go backwards from the start index
+			if (step == 1)
+			{
+				i = startAtIndex;  // go back to start index
+				step = -1;  // and continue search in other direction
+			}
+			else
+			{
+				break;  // Now give up
+			}
+		}
+		i += step;
 	}
 
 	if (distMin < LARGE_NUMBER)

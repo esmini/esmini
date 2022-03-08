@@ -149,7 +149,7 @@ void ScenarioPlayer::Frame(double timestep_s)
 	__int64 time_stamp = 0;
 	int retval = 0;
 
-	if (GetState() != PlayerState::PLAYER_STATE_PAUSE)
+	if (!IsPaused())
 	{
 		if (ScenarioFrame(timestep_s, true) == 0)
 		{
@@ -162,7 +162,7 @@ void ScenarioPlayer::Frame(double timestep_s)
 
 				if (GetFixedTimestep() > SMALL_NUMBER)
 				{
-					dt = GetFixedTimestep();
+					dt = MAX(GetFixedTimestep(), minStepSize);
 				}
 				else
 				{
