@@ -28,6 +28,8 @@
 # -----------------------------------------------------------------------------------
 # Review and update settings in this section according to your system and preferences
 
+fbx_support=false  # users are encouraged to convert fbx to osgb format whenever possible
+
 if [ "$OSTYPE" == "msys" ]; then
 	# Visual Studio 2019 - toolkit from Visual Studio 2017
 	GENERATOR=("Visual Studio 16 2019")
@@ -53,8 +55,6 @@ if [ "$OSTYPE" == "msys" ]; then
     target_dir="v10"
     zfilename="osg_v10.7z"
     z_exe="$PROGRAMFILES/7-Zip/7z"
-    fbx_support=false
-
 
 elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
 	# Unix Makefiles (for Ubuntu and other Linux systems)
@@ -73,7 +73,6 @@ elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
         zfilename="osg_mac.7z"
         z_exe=7z    
     fi
-    fbx_support=true
 else
 	echo Unknown OSTYPE: $OSTYPE
 fi
