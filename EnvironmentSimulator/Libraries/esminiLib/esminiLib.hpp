@@ -333,6 +333,12 @@ extern "C"
 	SE_DLL_API int SE_GetQuitFlag();
 
 	/**
+		Is esmini paused (via space button)?
+		@return 0 if not, 1 if yes, -1 if some error e.g. scenario not loaded
+	*/
+	SE_DLL_API int SE_GetPauseFlag();
+
+	/**
 		Get name of currently referred and loaded OpenDRIVE file
 		@return filename as string (const, since it's allocated and handled by esmini)
 	*/

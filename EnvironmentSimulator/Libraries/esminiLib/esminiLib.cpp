@@ -606,6 +606,25 @@ extern "C"
 		return quit_flag;
 	}
 
+	SE_DLL_API int SE_GetPauseFlag()
+	{
+		int pause_flag = -1;
+
+		if (player != nullptr)
+		{
+			if (player->IsPaused())
+			{
+				pause_flag = 1;
+			}
+			else
+			{
+				pause_flag = 0;
+			}
+		}
+
+		return pause_flag;
+	}
+
 	SE_DLL_API const char *SE_GetODRFilename()
 	{
 		static std::string returnString;
