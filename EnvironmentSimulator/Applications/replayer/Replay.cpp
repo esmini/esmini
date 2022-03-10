@@ -151,19 +151,44 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 }
 
 // Browse through replay-folder and appends strings of absolute path to matching scenario
-void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sce) {
+void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sce) 
+{
 	DIR* directory = opendir(dir.c_str());
 
 	// If no directory found, write error
-	if (directory == nullptr) {
+	if (directory == nullptr) 
+	{
 		LOG_AND_QUIT("No valid directory given, couldn't open %s", dir.c_str());
 	}
+
 	// While directory is open, check the filename
 	struct dirent* file;
-	while ((file = readdir(directory)) != nullptr) {
+	while ((file = readdir(directory)) != nullptr) 
+	{
 		std::string filename = file->d_name;
+		if (file->d_type == DT_DIR && filename.find(sce) != std::string::npos)
+		{
+			DIR* nested_dir = opendir((dir + filename).c_str());
+			if (nested_dir == nullptr)
+			{
+				LOG("Couldn't open nested directory %s", (dir+filename).c_str());
+			}
 
-		if (filename != "." && filename != ".." && filename.find(sce) != std::string::npos && filename.find(".dat") != std::string::npos) {
+			struct dirent* nested_file;
+			while ((nested_file = readdir(nested_dir)) != nullptr)
+			{
+				std::string nested_filename = nested_file->d_name;
+
+				if (nested_filename != "." && nested_filename != ".." && nested_filename.find(sce) != std::string::npos && nested_filename.find(".dat") != std::string::npos) 
+				{
+					scenarios_.emplace_back(CombineDirectoryPathAndFilepath(dir+filename, nested_filename));
+				}
+			}
+			closedir(nested_dir);
+		}
+
+		if (filename != "." && filename != ".." && filename.find(sce) != std::string::npos && filename.find(".dat") != std::string::npos) 
+		{
 			scenarios_.emplace_back(CombineDirectoryPathAndFilepath(dir, filename));
 		}
 	}
