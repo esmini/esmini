@@ -140,6 +140,14 @@ public class esminiUnityExample : MonoBehaviour
             return;
         }
 
+        int n_params = ESMiniLib.SE_GetNumberOfParameters();
+        for (int i=0;i<n_params;i++)
+        {
+            int p_type;
+            string p_name = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetParameterName(i, out p_type));
+            print("Parameter[" + i + "] name: " + p_name + " type: " + p_type);
+        }
+
         // Load environment 3D model
         string sceneGraphFilename = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetSceneGraphFilename());
         Debug.Log("Loading " + Path.GetFileNameWithoutExtension(sceneGraphFilename));

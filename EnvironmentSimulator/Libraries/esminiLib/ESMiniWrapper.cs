@@ -309,6 +309,19 @@ public static class ESMiniLib
         [DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAlongGhostTrail")]
         public static extern int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, ref RoadInfo data, ref float speed_ghost);
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetNumberOfParameters")]
+        /// <summary>Get the number of parameters in the current scenario</summary>
+        /// <return>Number of parameters, -1 on error e.g. scenario not initialized</return>
+        public static extern int SE_GetNumberOfParameters();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterName")]
+        /// <summary>Get name of parameter with specifed index</summary>
+        /// <param name="index">Index of the parameter</param>
+        /// <param name="parameterType">Returns the type of the parameter</param>///
+        /// <returns>Parameter name as string. Use with: Marshal.PtrToStringAnsi(SE_GetParameterName())</returns>
+        //[return: MarshalAs(UnmanagedType.LPStr)]
+        public static extern IntPtr SE_GetParameterName(int index, out int parameterType);
+
         [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterInt")]
         public static extern int SE_GetParameterInt(string parameterName, out int value);
 
