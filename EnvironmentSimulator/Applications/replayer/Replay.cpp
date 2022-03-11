@@ -151,19 +151,19 @@ Replay::Replay(const std::string directory, const std::string scenario) : time_(
 }
 
 // Browse through replay-folder and appends strings of absolute path to matching scenario
-void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sce) 
+void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sce)
 {
 	DIR* directory = opendir(dir.c_str());
 
 	// If no directory found, write error
-	if (directory == nullptr) 
+	if (directory == nullptr)
 	{
 		LOG_AND_QUIT("No valid directory given, couldn't open %s", dir.c_str());
 	}
 
 	// While directory is open, check the filename
 	struct dirent* file;
-	while ((file = readdir(directory)) != nullptr) 
+	while ((file = readdir(directory)) != nullptr)
 	{
 		std::string filename = file->d_name;
 		if (file->d_type == DT_DIR && filename.find(sce) != std::string::npos)
@@ -179,7 +179,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
 			{
 				std::string nested_filename = nested_file->d_name;
 
-				if (nested_filename != "." && nested_filename != ".." && nested_filename.find(sce) != std::string::npos && nested_filename.find(".dat") != std::string::npos) 
+				if (nested_filename != "." && nested_filename != ".." && nested_filename.find(sce) != std::string::npos && nested_filename.find(".dat") != std::string::npos)
 				{
 					scenarios_.emplace_back(CombineDirectoryPathAndFilepath(dir+filename, nested_filename));
 				}
@@ -187,7 +187,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
 			closedir(nested_dir);
 		}
 
-		if (filename != "." && filename != ".." && filename.find(sce) != std::string::npos && filename.find(".dat") != std::string::npos) 
+		if (filename != "." && filename != ".." && filename.find(sce) != std::string::npos && filename.find(".dat") != std::string::npos)
 		{
 			scenarios_.emplace_back(CombineDirectoryPathAndFilepath(dir, filename));
 		}
@@ -471,32 +471,31 @@ void Replay::CleanEntries(std::vector<ObjectStateStructDat>& entries)
 
 void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ObjectStateStructDat>>>& scenarios)
 {
-	// Populate data_ with first (longest) scenario
-	for (size_t i = 0; i < scenarios[0].second.size(); i++)
+	// Keep track of current index of each scenario
+	std::vector<int> cur_idx;
+	for (size_t j = 0; j < scenarios.size(); j++)
 	{
-		data_.push_back(scenarios[0].second[i]);
+		cur_idx.push_back(0);
 	}
 
-	// Fill up other scenarios with their matching timestamps
-	for (size_t i = 1; i < scenarios.size(); ++i)
+	// Populate data_ based on first (longest) scenario
+	for (size_t i = 0; i < scenarios[0].second.size() - 1; i++)
 	{
-		int idx = 0; // Keep track of where last datapoint was inserted
+		// push entry from pivot scenario
+		data_.push_back(scenarios[0].second[i]);
 
-		for (size_t j = 1; j < scenarios[i].second.size(); j++)
+		// for each timestamp in first/pivot scenario, populate entries from other scenarios within the same time frame
+		for (size_t j = 1; j < scenarios.size(); j++)
 		{
-			scenarios[i].second[j].info.id += static_cast<int>(i) * 100;
-
-			auto objTime = scenarios[i].second[j].info.timeStamp;
-
-			// Find last index of current timestamp
-			auto it = std::find_if(data_.begin() + idx, data_.end(), [&objTime](const ObjectStateStructDat& data)
+			if (scenarios[j].second[cur_idx[j]].info.timeStamp < scenarios[0].second[i + 1].info.timeStamp)
 			{
-				return data.info.timeStamp > objTime;
-			});
+				// push first entry (if any) in current time frame from each scenario
+				data_.push_back(scenarios[j].second[cur_idx[j]]);
 
-			idx = static_cast<int>(std::distance(data_.begin(), it));
-
-			data_.insert(data_.begin() + idx, scenarios[i].second[j]); // Insert after last timestamp index
+				// Fast forward j:th scenario passed current time frame
+				while (++cur_idx[j] < scenarios[j].second.size() &&
+					scenarios[j].second[cur_idx[j]].info.timeStamp < scenarios[0].second[i + 1].info.timeStamp);
+			}
 		}
 	}
 }
