@@ -8,22 +8,23 @@ Run esmini demo:
 
 Key shortcuts
 
-    H (shift h): This help text
-    Space:       Toggle pause/play simulation
-    Return:      Step simulation (one timestep) then pause
-    TAB:         Move camera to next vehicle
-    Shift - TAB: Move camera to previoius vehicle
-    o:           Toggle show/hide OpenDRIVE road feature lines
-    u:           Toggle show / hide OSI road lines
-    y:           Toggle show / hide OSI road points
-    p:           Toggle show / hide environment 3D model
-    r:           Toggle show / hide sensor view frustums
-    R:           Toggle route waypoint visualization
-    i:           Toggle info text showing time and speed
-    j:           Toggle show trails after vehicles(4 modes: none / dots / lines / both)
-    n:           Toggle show active trajectories
-    , (comma):   Switch entity view : Model only / Bounding box / Model + Bounding box / None
-    ESC:         quit
+    H (shift + h): This help text
+    Space:         Toggle pause/play simulation
+    Return:        Step simulation (one timestep) then pause
+    TAB:           Move camera to next vehicle
+    Shift + TAB:   Move camera to previoius vehicle
+    Delete:        Same as above (Shift + TAB)
+    o:             Toggle show/hide OpenDRIVE road feature lines
+    u:             Toggle show / hide OSI road lines
+    y:             Toggle show / hide OSI road points
+    p:             Toggle show / hide environment 3D model
+    r:             Toggle show / hide sensor view frustums
+    R:             Toggle route waypoint visualization
+    i:             Toggle info text showing time and speed
+    j:             Toggle show trails after vehicles(4 modes: none / dots / lines / both)
+    n:             Toggle show active trajectories
+    , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None
+    ESC:           quit
 
     Arrow keys is used to drive externally controlled Ego vehicle:
         Up:    Accelerate

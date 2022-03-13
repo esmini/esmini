@@ -14,16 +14,17 @@ const char* helpText =
 "\n\
 Key shortcuts \n\
     \n\
-    H (shift h): This help text \n\
-    TAB:         Move camera to next vehicle \n\
-    Shift - TAB: Move camera to previoius vehicle \n\
-    o:           Toggle show/hide OpenDRIVE road feature lines \n\
-    u:           Toggle show / hide OSI road lines \n\
-    y:           Toggle show / hide OSI road points \n\
-    p:           Toggle show / hide environment 3D model \n\
-    i:           Toggle info text showing time and speed \n\
-    , (comma):   Toggle entity view : Model / None \n\
-    ESC:         quit \n\
+    H (shift + h): This help text \n\
+    TAB:           Move camera to next vehicle \n\
+    Shift + TAB:   Move camera to previoius vehicle \n\
+    Delete:        Same as above (Shift + TAB) \n\
+    o:             Toggle show/hide OpenDRIVE road feature lines \n\
+    u:             Toggle show / hide OSI road lines \n\
+    y:             Toggle show / hide OSI road points \n\
+    p:             Toggle show / hide environment 3D model \n\
+    i:             Toggle info text showing time and speed \n\
+    , (comma):     Toggle entity view : Model / None \n\
+    ESC:           quit \n\
     \n\
     1 - 9: Camera models acording to : \n\
         1: Custom camera model \n\

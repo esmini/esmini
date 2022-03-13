@@ -3309,11 +3309,17 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 	}
 	break;
 	case(osgGA::GUIEventAdapter::KEY_Tab):
+	case(osgGA::GUIEventAdapter::KEY_BackSpace):  // Also map backspace
 	case(0xFE20):  // Cover left_shift+Tab on Linux
 	{
 		if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
 		{
-			int idx = viewer_->currentCarInFocus_ + ((ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_LEFT_SHIFT) ? -1 : 1);
+			int step = 1;
+			if (ea.getKey() == 0xFF08 || ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_LEFT_SHIFT)
+			{
+				step = -1;
+			}
+			int idx = viewer_->currentCarInFocus_ + step;
 
 			if (idx >= (int)viewer_->entities_.size())
 			{

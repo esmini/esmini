@@ -14,19 +14,20 @@ static const char* helpText =
 "\n\
 Key shortcuts \n\
     \n\
-    H (shift h): This help text \n\
-    TAB:         Move camera to next vehicle \n\
-    Shift - TAB: Move camera to previoius vehicle \n\
-    Space:       Toggle pause / play \n\
-    g:           Toggle show / hide ghost models \n\
-    o:           Toggle show / hide OpenDRIVE road feature lines \n\
-    u:           Toggle show / hide OSI road lines \n\
-    y:           Toggle show / hide OSI road points \n\
-    p:           Toggle show / hide environment 3D model \n\
-    i:           Toggle info text showing time and speed \n\
-    n:           Toggle show active trajectories \n\
-    , (comma):   Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
-    ESC:         quit \n\
+    H (shift + h): This help text \n\
+    TAB:           Move camera to next vehicle \n\
+    Shift + TAB:   Move camera to previoius vehicle \n\
+    Delete:        Same as above (Shift + TAB) \n\
+    Space:         Toggle pause / play \n\
+    g:             Toggle show / hide ghost models \n\
+    o:             Toggle show / hide OpenDRIVE road feature lines \n\
+    u:             Toggle show / hide OSI road lines \n\
+    y:             Toggle show / hide OSI road points \n\
+    p:             Toggle show / hide environment 3D model \n\
+    i:             Toggle info text showing time and speed \n\
+    n:             Toggle show active trajectories \n\
+    , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
+    ESC:           quit \n\
     \n\
     Arrow keys \n\
         Left:          Pause and move to previous frame(+Shift to skip 10 frames) \n\

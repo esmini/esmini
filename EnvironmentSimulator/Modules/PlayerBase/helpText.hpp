@@ -14,22 +14,23 @@ const char* helpText =
 "\n\
 Key shortcuts \n\
     \n\
-    H (shift h): This help text \n\
-    Space:       Toggle pause/play simulation \n\
-    Return:      Step simulation (one timestep) then pause \n\
-    TAB:         Move camera to next vehicle \n\
-    Shift - TAB: Move camera to previoius vehicle \n\
-    o:           Toggle show/hide OpenDRIVE road feature lines \n\
-    u:           Toggle show / hide OSI road lines \n\
-    y:           Toggle show / hide OSI road points \n\
-    p:           Toggle show / hide environment 3D model \n\
-    r:           Toggle show / hide sensor view frustums \n\
-    R:           Toggle route waypoint visualization \n\
-    i:           Toggle info text showing time and speed \n\
-    j:           Toggle show trails after vehicles(4 modes: none / dots / lines / both) \n\
-    n:           Toggle show active trajectories \n\
-    , (comma):   Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
-    ESC:         quit \n\
+    H (shift + h): This help text \n\
+    Space:         Toggle pause/play simulation \n\
+    Return:        Step simulation (one timestep) then pause \n\
+    TAB:           Move camera to next vehicle \n\
+    Shift + TAB:   Move camera to previoius vehicle \n\
+    Delete:        Same as above (Shift + TAB) \n\
+    o:             Toggle show/hide OpenDRIVE road feature lines \n\
+    u:             Toggle show / hide OSI road lines \n\
+    y:             Toggle show / hide OSI road points \n\
+    p:             Toggle show / hide environment 3D model \n\
+    r:             Toggle show / hide sensor view frustums \n\
+    R:             Toggle route waypoint visualization \n\
+    i:             Toggle info text showing time and speed \n\
+    j:             Toggle show trails after vehicles(4 modes: none / dots / lines / both) \n\
+    n:             Toggle show active trajectories \n\
+    , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
+    ESC:           quit \n\
     \n\
     Arrow keys is used to drive externally controlled Ego vehicle: \n\
         Up:    Accelerate \n\
