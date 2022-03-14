@@ -1122,6 +1122,19 @@ extern "C"
 		return 0;
 	}
 
+	SE_DLL_API int SE_ReportObjectWheelStatus(int object_id, float rotation, float angle)
+	{
+		Object* obj = nullptr;
+		if (getObjectById(object_id, obj) == -1)
+		{
+			return -1;
+		}
+		player->scenarioGateway->updateObjectWheelRotation(object_id, 0, rotation);
+		player->scenarioGateway->updateObjectWheelAngle(object_id, 0, angle);
+
+		return 0;
+	}
+
 	SE_DLL_API int SE_SetLockOnLane(int id, bool mode)
 	{
 		if (player == nullptr)
@@ -1875,6 +1888,15 @@ extern "C"
 		((vehicle::Vehicle*)handleSimpleVehicle)->SetMaxAcc(maxAcceleration);
 	}
 
+	SE_DLL_API void SE_SimpleVehicleSetMaxDeceleration(void* handleSimpleVehicle, float maxDeceleration)
+	{
+		if (handleSimpleVehicle == 0)
+		{
+			return;
+		}
+		((vehicle::Vehicle*)handleSimpleVehicle)->SetMaxDec(maxDeceleration);
+	}
+
 	SE_DLL_API void SE_SimpleVehicleSetEngineBrakeFactor(void* handleSimpleVehicle, float engineBrakeFactor)
 	{
 		if (handleSimpleVehicle == 0)
@@ -1923,6 +1945,8 @@ extern "C"
 		state->h = (float)((vehicle::Vehicle *)handleSimpleVehicle)->heading_;
 		state->p = (float)((vehicle::Vehicle *)handleSimpleVehicle)->pitch_;
 		state->speed = (float)((vehicle::Vehicle *)handleSimpleVehicle)->speed_;
+		state->whee_rotation = (float)((vehicle::Vehicle*)handleSimpleVehicle)->wheelRotation_;
+		state->whee_angle = (float)((vehicle::Vehicle*)handleSimpleVehicle)->wheelAngle_;
 	}
 
 	SE_DLL_API int SE_SaveImagesToRAM (bool state)

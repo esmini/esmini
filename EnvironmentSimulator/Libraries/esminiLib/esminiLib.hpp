@@ -102,6 +102,8 @@ typedef struct
 	float h;
 	float p;
 	float speed;
+	float whee_rotation;
+	float whee_angle;
 } SE_SimpleVehicleState;
 
 typedef struct
@@ -646,6 +648,16 @@ extern "C"
 	SE_DLL_API int SE_ReportObjectAngularAcc(int object_id, float timestamp, float h_acc, float p_acc, float r_acc);
 
 	/**
+		Report object wheel status
+		@param object_id Id of the object
+		@param rotation Wheel rotation
+		@param angle Wheel steering angle
+		@return 0 if successful, -1 if not
+	*/
+	SE_DLL_API int SE_ReportObjectWheelStatus(int object_id, float rotation, float angle);
+
+
+	/**
 		Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)
 		@parameter mode True=keep lane False=Snap to closest (default)
 		@return 0 if successful, -1 if not
@@ -1044,6 +1056,12 @@ extern "C"
 		@param speed Maximum acceleration (m/s^2)
 	*/
 	SE_DLL_API void SE_SimpleVehicleSetMaxAcceleration(void* handleSimpleVehicle, float maxAcceleration);
+
+	/**
+		Set maximum vehicle deceleration.
+		@param speed Maximum deceleration (m/s^2)
+	*/
+	SE_DLL_API void SE_SimpleVehicleSetMaxDeceleration(void* handleSimpleVehicle, float maxDeceleration);
 
 	/**
 		Set engine brake factor, applied when no throttle is applied
