@@ -32,6 +32,14 @@ Controller* scenarioengine::InstantiateControllerInteractive(void* args)
 	return new ControllerInteractive(initArgs);
 }
 
+ControllerInteractive::ControllerInteractive(InitArgs* args) : steering_rate_(4.0), Controller(args)
+{
+	if (args && args->properties && args->properties->ValueExists("steeringRate"))
+	{
+		steering_rate_ = strtod(args->properties->GetValueStr("steeringRate"));
+	}
+}
+
 void ControllerInteractive::Init()
 {
 
@@ -110,6 +118,7 @@ void ControllerInteractive::Activate(ControlDomains domainMask)
 		vehicle_.speed_ = object_->GetSpeed();
 		vehicle_.SetMaxAcc(object_->GetMaxAcceleration());
 		vehicle_.SetMaxDec(object_->GetMaxDeceleration());
+		vehicle_.SetSteeringRate(steering_rate_);
 	}
 
 	steer = vehicle::STEERING_NONE;

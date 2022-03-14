@@ -2085,6 +2085,7 @@ TEST(ExternalController, TestExternalDriver)
 		// Initialize the vehicle model, fetch initial state from the scenario
 		SE_GetObjectState(0, &objectState);
 		vehicleHandle = SE_SimpleVehicleCreate(objectState.x, objectState.y, objectState.h, 4.0, 0.0);
+		SE_SimpleVehicleSteeringRate(vehicleHandle, 8.0f);
 
 		// show some road features, including road sensor
 		SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
@@ -2221,6 +2222,7 @@ TEST(ExternalController, TestExternalDriver)
 
 			// Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
 			SE_ReportObjectPosXYH(0, 0, vehicleState.x, vehicleState.y, vehicleState.h, vehicleState.speed);
+			SE_ReportObjectWheelStatus(0, vehicleState.whee_rotation, vehicleState.whee_angle);
 
 			// Finally, update scenario using same time step as for vehicle model
 			SE_StepDT(dt);
@@ -2583,7 +2585,7 @@ int main(int argc, char **argv)
 	testing::InitGoogleTest(&argc, argv);
 
 #if 0   // set to 1 and modify filter to run one single test
-	testing::GTEST_FLAG(filter) = "*TestControl*";
+	testing::GTEST_FLAG(filter) = "*TestExternalDriver*";
 #else
 	SE_LogToConsole(false);
 #endif

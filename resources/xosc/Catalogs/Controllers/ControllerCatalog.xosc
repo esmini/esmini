@@ -8,9 +8,9 @@
     <Catalog name="ControllerCatalog">
         <Controller name="sloppyDriver">
             <ParameterDeclarations>
-                <ParameterDeclaration name="Sloppiness" parameterType="double" value="0.5" /> 
-                <ParameterDeclaration name="Mode" parameterType="string" value="additive" /> 
-            </ParameterDeclarations>        
+                <ParameterDeclaration name="Sloppiness" parameterType="double" value="0.5" />
+                <ParameterDeclaration name="Mode" parameterType="string" value="additive" />
+            </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="SloppyDriverController" />
                 <Property name="sloppiness" value="$Sloppiness" />
@@ -18,16 +18,20 @@
             </Properties>
         </Controller>
         <Controller name="interactiveDriver">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="SteeringRate" parameterType="double" value="4.0" />
+            </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="InteractiveController" />
+                <Property name="steeringRate" value="$SteeringRate" />
             </Properties>
         </Controller>
         <Controller name="controllerRel2Abs">
             <ParameterDeclarations>
-                <ParameterDeclaration name="Horizon" parameterType="double" value="1.0" /> 
-                <ParameterDeclaration name="ThresholdDist" parameterType="double" value="1.5" /> 
-                <ParameterDeclaration name="ThresholdSpeed" parameterType="double" value="1.5" /> 
-            </ParameterDeclarations>  
+                <ParameterDeclaration name="Horizon" parameterType="double" value="1.0" />
+                <ParameterDeclaration name="ThresholdDist" parameterType="double" value="1.5" />
+                <ParameterDeclaration name="ThresholdSpeed" parameterType="double" value="1.5" />
+            </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="ControllerRel2Abs" />
                 <Property name="horizon" value="$Horizon" />
@@ -37,53 +41,53 @@
         </Controller>
         <Controller name="externalController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="false" /> 
-                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" /> 
-                <ParameterDeclaration name="Mode" parameterType="string" value="override" /> 
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="false" />
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" />
+                <ParameterDeclaration name="Mode" parameterType="string" value="override" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="ExternalController" />
                 <Property name="useGhost" value="$UseGhost" />
                 <Property name="headstartTime" value="$HeadStartTime" />
-                <Property name="mode" value="$Mode" />                
+                <Property name="mode" value="$Mode" />
             </Properties>
         </Controller>
         <Controller name="cspas">
             <ParameterDeclarations>
-                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" /> 
-                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" /> 
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" />
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="3" />
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="ExternalController" />            
+                <Property name="esminiController" value="ExternalController" />
                 <Property name="useGhost" value="$UseGhost" />
                 <Property name="headstartTime" value="$HeadStartTime" />
             </Properties>
-        </Controller>        
+        </Controller>
         <Controller name="cspas5s">
             <ParameterDeclarations>
-                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" /> 
-                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="5" /> 
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" />
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="5" />
             </ParameterDeclarations>
             <Properties>
-                <Property name="esminiController" value="ExternalController" />                   
+                <Property name="esminiController" value="ExternalController" />
                 <Property name="useGhost" value="$UseGhost" />
                 <Property name="headstartTime" value="$HeadStartTime" />
             </Properties>
         </Controller>
         <Controller name="cspas10s">
             <ParameterDeclarations>
-                <Property name="esminiController" value="ExternalController" />                   
-                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" /> 
-                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="10" /> 
+                <Property name="esminiController" value="ExternalController" />
+                <ParameterDeclaration name="UseGhost" parameterType="boolean" value="true" />
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="10" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="useGhost" value="$UseGhost" />
                 <Property name="headstartTime" value="$HeadStartTime" />
             </Properties>
-        </Controller>        
+        </Controller>
         <Controller name="followGhost">
             <ParameterDeclarations>
-                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="6" /> 
+                <ParameterDeclaration name="HeadStartTime" parameterType="double" value="6" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="FollowGhostController" />
@@ -92,7 +96,7 @@
         </Controller>
         <Controller name="sumoController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="CfgFile" parameterType="string" value="../sumo_inputs/e6mini.sumocfg" /> 
+                <ParameterDeclaration name="CfgFile" parameterType="string" value="../sumo_inputs/e6mini.sumocfg" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="SumoController" />
@@ -126,8 +130,8 @@
         </Controller>
         <Controller name="ECE_ALKS_RefDriverController">
             <ParameterDeclarations>
-                <ParameterDeclaration name="Logging" parameterType="bool" value="false" /> 
-            </ParameterDeclarations>            
+                <ParameterDeclaration name="Logging" parameterType="bool" value="false" />
+            </ParameterDeclarations>
             <Properties>
                 <Property name="logging" value="$Logging" />
             </Properties>
@@ -143,7 +147,7 @@
                 <!-- multiple controllers -->
                 <ParameterDeclaration name="BasePort" parameterType="integer" value="49950" />
                 <!-- execModeasynchronus blocking: true = run as separate port number [1, 65535] port number of first instance, additional instances -->
-                <!-- execMode: synchronous/asynchronous Default = asynchronous 
+                <!-- execMode: synchronous/asynchronous Default = asynchronous
                 <!-- synchronous: wait for and read only one (oldest) message each timestep. Blocking with timeout 500 ms -->
                 <!-- asynchronous: consume all received messages and ignore all but the latest. Non blocking (don't wait) -->
                 <ParameterDeclaration name="ExecMode" parameterType="string" value="asynchronous" />

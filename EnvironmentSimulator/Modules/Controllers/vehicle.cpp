@@ -115,10 +115,13 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 	{
 		// Make steering wheel speed dependent
 		double steering_scale = 1.0 / (1 + steering_scale_ * speed_ * speed_);
-		wheelAngle_ = wheelAngle_ + steering_scale * steering_rate_ * steering * dt;
+		wheelAngle_ += steering_scale * steering_rate_ * steering * dt;
 
 		// Self-aligning
-		wheelAngle_ *= (1.0 - steering_return_factor_ * dt);
+		if (steering == STEERING::STEERING_NONE)
+		{
+			wheelAngle_ *= (1.0 - steering_return_factor_ * dt);
+		}
 
 		// Limit wheel angle
 		wheelAngle_ = CLAMP(wheelAngle_, -steering_scale * STEERING_MAX_ANGLE, steering_scale * STEERING_MAX_ANGLE);

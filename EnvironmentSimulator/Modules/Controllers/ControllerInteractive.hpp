@@ -28,7 +28,7 @@ namespace scenarioengine
 	{
 	public:
 
-		ControllerInteractive(InitArgs* args) : Controller(args) {}
+		ControllerInteractive(InitArgs* args);
 
 		void Init();
 		void Step(double timeStep);
@@ -44,7 +44,7 @@ namespace scenarioengine
 		vehicle::Vehicle vehicle_;
 		vehicle::THROTTLE accelerate = vehicle::THROTTLE_NONE;
 		vehicle::STEERING steer = vehicle::STEERING_NONE;
-
+		double steering_rate_;
 	};
 
 	Controller* InstantiateControllerInteractive(void* args);

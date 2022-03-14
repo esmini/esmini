@@ -19,7 +19,11 @@
         <ScenarioObject name="Truck">
             <CatalogReference catalogName="VehicleCatalog" entryName="semi_truck_with_extra_trailer"/>
             <ObjectController>
-                <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+                <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver">
+                    <ParameterAssignments>
+                        <ParameterAssignment parameterRef="SteeringRate" value="1.0"/>
+                    </ParameterAssignments>
+                </CatalogReference>
             </ObjectController>
         </ScenarioObject>
     </Entities>

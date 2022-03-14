@@ -212,7 +212,7 @@
             <ConditionGroup>
                 <Condition name="time_trigger" delay="0" conditionEdge="none">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="24" rule="greaterThan"/>
+                        <SimulationTimeCondition value="15" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>
