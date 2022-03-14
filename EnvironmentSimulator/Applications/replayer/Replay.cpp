@@ -484,17 +484,20 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ObjectStat
 		// push entry from pivot scenario
 		data_.push_back(scenarios[0].second[i]);
 
-		// for each timestamp in first/pivot scenario, populate entries from other scenarios within the same time frame
+		// populate entries from other scenarios within the same time frame
 		for (size_t j = 1; j < scenarios.size(); j++)
 		{
-			if (scenarios[j].second[cur_idx[j]].info.timeStamp < scenarios[0].second[i + 1].info.timeStamp)
+			// pick entries until timestamp reach next frame
+			while(cur_idx[j] < scenarios[j].second.size() && scenarios[j].second[cur_idx[j]].info.timeStamp < scenarios[0].second[i + 1].info.timeStamp)
 			{
-				// push first entry (if any) in current time frame from each scenario
+				// Set scenario ID-group (0, 100, 200 etc.)
+				scenarios[j].second[cur_idx[j]].info.id += static_cast<int>(j) * 100;
+
+				// push entry
 				data_.push_back(scenarios[j].second[cur_idx[j]]);
 
 				// Fast forward j:th scenario passed current time frame
-				while (++cur_idx[j] < scenarios[j].second.size() &&
-					scenarios[j].second[cur_idx[j]].info.timeStamp < scenarios[0].second[i + 1].info.timeStamp);
+				cur_idx[j]++;
 			}
 		}
 	}
