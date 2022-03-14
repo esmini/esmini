@@ -55,7 +55,7 @@ void ControllerInteractive::Step(double timeStep)
 			speed_limit = 60 / 3.6;
 		}
 	}
-	vehicle_.SetMaxSpeed(speed_limit);
+	vehicle_.SetMaxSpeed(MIN(speed_limit, object_->GetMaxSpeed()));
 
 	if (!(IsActiveOnDomains(ControlDomains::DOMAIN_LONG)))
 	{
@@ -108,6 +108,8 @@ void ControllerInteractive::Activate(ControlDomains domainMask)
 		vehicle_.SetPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), object_->pos_.GetH());
 		vehicle_.SetLength(object_->boundingbox_.dimensions_.length_);
 		vehicle_.speed_ = object_->GetSpeed();
+		vehicle_.SetMaxAcc(object_->GetMaxAcceleration());
+		vehicle_.SetMaxDec(object_->GetMaxDeceleration());
 	}
 
 	steer = vehicle::STEERING_NONE;

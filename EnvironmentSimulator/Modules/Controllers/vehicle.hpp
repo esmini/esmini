@@ -53,6 +53,8 @@ namespace vehicle
 		double GetMaxSpeed() { return max_speed_; }
 		void SetMaxAcc(double acc) { max_acc_ = acc; }
 		double GetMaxAcc() { return max_acc_; }
+		void SetMaxDec(double dec) { max_dec_ = dec; }
+		double GetMaxDec() { return max_dec_; }
 		void SetSteeringRate(double steering_rate) { steering_rate_ = steering_rate; }
 		double GetSteeringRate() { return steering_rate_; }
 		void SetSteeringReturnFactor(double steering_return_factor) { steering_return_factor_ = steering_return_factor; }
@@ -91,6 +93,7 @@ namespace vehicle
 	private:
 		double max_speed_;
 		double max_acc_;
+		double max_dec_;
 		double steering_rate_;
 		double steering_return_factor_;
 		double steering_scale_;

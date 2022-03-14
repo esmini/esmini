@@ -22,13 +22,14 @@
 
 using namespace vehicle;
 
-#define STEERING_RATE_DEFAULT 8.0
+#define STEERING_RATE_DEFAULT 5.0
 #define STEERING_SCALE_DEFAULT 0.02
 #define STEERING_RETURN_FACTOR_DEFAULT 4.0
 #define LENGTH_DEFAULT 5.0
 #define STEERING_MAX_ANGLE (60 * M_PI / 180)
 #define MAX_SPEED_DEFAULT 70
 #define MAX_ACC_DEFAULT 20.0
+#define MAX_DEC_DEFAULT 20.0
 #define ENGINE_BRAKE_FACTOR_DEFAULT 0.001
 #define WHEEL_RADIUS 0.35
 #define TARGET_HWT 1.0
@@ -90,7 +91,7 @@ void Vehicle::DrivingControlBinary(double dt, THROTTLE throttle, STEERING steeri
 		}
 		else
 		{
-			speed_ += max_acc_ * throttle * dt;
+			speed_ += (throttle < 0 ? max_dec_ : max_acc_)  * throttle * dt;
 
 			if (oldSpeed > 0 && speed_ < 0)
 			{
@@ -141,7 +142,7 @@ void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
 		}
 		else
 		{
-			speed_ += max_acc_ * throttle * dt;
+			speed_ += (throttle < 0 ? max_dec_ : max_acc_) * throttle * dt;
 
 			if (oldSpeed > 0 && speed_ < 0)
 			{
@@ -224,6 +225,7 @@ void Vehicle::Reset()
 	steering_return_factor_ = STEERING_RETURN_FACTOR_DEFAULT;
 	steering_scale_ = STEERING_SCALE_DEFAULT;
 	max_acc_ = MAX_ACC_DEFAULT;
+	max_dec_ = MAX_DEC_DEFAULT;
 	engine_brake_factor_ = ENGINE_BRAKE_FACTOR_DEFAULT;
 	throttle_disabled_ = false;
 	steering_disabled_ = false;

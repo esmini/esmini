@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
     <FileHeader revMajor="1" revMinor="0" date="2018-11-8T17:00:00" author="Erik Gunnarsson"/>
-    
+
     <!-- Cars -->
-    
+
     <Catalog name="VehicleCatalog">
 
         <Vehicle name="car_white" vehicleCategory="car" model3d="../models/car_white.osgb">
@@ -21,7 +21,7 @@
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <TrailerHitch dx="-1.2"/>
-            <Trailer> 
+            <Trailer>
                 <EntityRef entityRef="$TrailerRef"/>
             </Trailer>
             <Properties>
@@ -30,7 +30,7 @@
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
         </Vehicle>
-        
+
        <Vehicle name="car_blue" vehicleCategory="car" model3d="../models/car_blue.osgb">
             <BoundingBox>
                 <Center x="1.3" y="0.0" z="0.75"/>
@@ -85,7 +85,7 @@
                 <Property name="model_id" value="3"/>
             </Properties>
         </Vehicle>
-        
+
         <!-- Other basic vehicle types -->
 
         <Vehicle name="truck_yellow" vehicleCategory="van" model3d="../models/truck_yellow.osgb">
@@ -104,7 +104,7 @@
                 <Property name="model_id" value="4"/>
             </Properties>
         </Vehicle>
-        
+
         <Vehicle name="van_red" vehicleCategory="van" model3d="../models/van_red.osgb">
             <BoundingBox>
                 <Center x="1.3" y="0.0" z="0.8"/>
@@ -121,7 +121,7 @@
                 <Property name="model_id" value="5"/>
             </Properties>
         </Vehicle>
-        
+
         <Vehicle name="bus_blue" vehicleCategory="bus" model3d="../models/bus_blue.osgb">
             <BoundingBox>
                 <Center x="1.3" y="0.0" z="0.8"/>
@@ -138,7 +138,7 @@
                 <Property name="model_id" value="6"/>
             </Properties>
         </Vehicle>
-        
+
         <Vehicle name="bicycle" vehicleCategory="bicycle" model3d="../models/cyclist.osgb">
             <BoundingBox>
                 <Center x="0.5" y="0" z="0.85"/>
@@ -172,9 +172,9 @@
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
         </Vehicle>
-        
+
         <!-- Trailers -->
-        
+
         <!-- Car trailer only (no towing vehicle) -->
         <Vehicle name="car_trailer" vehicleCategory="trailer" model3d="../models/car_trailer.osgb">
             <BoundingBox>
@@ -192,12 +192,12 @@
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
         </Vehicle>
-        
+
         <!-- Truck trailer only (no towing vehicle) -->
         <Vehicle name="truck_trailer" vehicleCategory="trailer" model3d="../models/truck_trailer.osgb">
             <ParameterDeclarations>
                 <ParameterDeclaration name="TrailerRef" parameterType="string" value=""/>
-                <ParameterDeclaration name="TrailerCatalogRef" parameterType="string" value=""/>                
+                <ParameterDeclaration name="TrailerCatalogRef" parameterType="string" value=""/>
             </ParameterDeclarations>
             <BoundingBox>
                 <Center x="2.5" y="0.0" z="0.75"/>
@@ -210,7 +210,7 @@
             </Axles>
             <TrailerCoupler dx="9.5"/>
             <TrailerHitch dx="-2.7"/>
-            <Trailer> 
+            <Trailer>
                 <EntityRef entityRef="$TrailerRef"/>
                 <CatalogReference catalogName="VehicleCatalog" entryName="$TrailerCatalogRef">
                     <ParameterAssignments>
@@ -225,12 +225,12 @@
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
         </Vehicle>
-        
+
         <!-- Truck semi-trailer only (no tractor or other tow vehicle) -->
         <Vehicle name="semi_trailer" vehicleCategory="trailer" model3d="../models/semi_trailer.osgb">
             <ParameterDeclarations>
                 <ParameterDeclaration name="TrailerRef" parameterType="string" value=""/>
-                <ParameterDeclaration name="TrailerCatalogRef" parameterType="string" value=""/>                      
+                <ParameterDeclaration name="TrailerCatalogRef" parameterType="string" value=""/>
             </ParameterDeclarations>
             <BoundingBox>
                 <Center x="2.5" y="0.0" z="0.75"/>
@@ -243,7 +243,7 @@
             </Axles>
             <TrailerCoupler dx="7.0"/>
             <TrailerHitch dx="-3.2"/>
-            <Trailer> 
+            <Trailer>
                 <EntityRef entityRef="$TrailerRef"/>
                 <CatalogReference catalogName="VehicleCatalog" entryName="$TrailerCatalogRef">
                     <ParameterAssignments>
@@ -258,26 +258,28 @@
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
         </Vehicle>
-        
+
         <!-- Tractor only (no trailer) -->
         <Vehicle name="semi_tractor" vehicleCategory="truck" model3d="../models/semi_tractor.osgb">
             <ParameterDeclarations>
                 <ParameterDeclaration name="TrailerRef" parameterType="string" value=""/>
-                <ParameterDeclaration name="TrailerCatalogRef" parameterType="string" value=""/>                           
+                <ParameterDeclaration name="TrailerCatalogRef" parameterType="string" value=""/>
+                <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="4.0"/>
+                <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="10.0"/>
             </ParameterDeclarations>
             <BoundingBox>
                 <Center x="1.4" y="0.0" z="0.75"/>
                 <Dimensions width="2.6" length="5.5" height="3.2"/>
             </BoundingBox>
-            <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
+            <Performance maxSpeed="${150/3.6}" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
             <Axles>
                 <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <TrailerHitch dx="1.0"/>
-            <Trailer> 
+            <Trailer>
                 <EntityRef entityRef="$TrailerRef"/>
-                <CatalogReference catalogName="VehicleCatalog" entryName="$TrailerCatalogRef"/>                
+                <CatalogReference catalogName="VehicleCatalog" entryName="$TrailerCatalogRef"/>
             </Trailer>
             <Properties>
                 <Property name="model_id" value="12"/>
@@ -285,9 +287,9 @@
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
         </Vehicle>
-        
+
         <!-- Vehicle combinations: Car or truck with one or multiple trailers -->
-        
+
         <!-- Car + trailer -->
         <Vehicle name="car_white_with_trailer" vehicleCategory="car" model3d="../models/car_white.osgb">
             <ParameterDeclarations>
@@ -304,7 +306,7 @@
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <TrailerHitch dx="-1.2"/>
-            <Trailer> 
+            <Trailer>
                 <EntityRef entityRef="$TrailerRef"/>
                 <CatalogReference catalogName="VehicleCatalog" entryName="$TrailerCatalogRef">
                     <ParameterAssignments>
@@ -319,7 +321,7 @@
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
         </Vehicle>
-        
+
         <!-- Tractor + Semi-trailer -->
         <Vehicle name="semi_truck" vehicleCategory="truck" model3d="../models/semi_tractor.osgb">
             <BoundingBox>
@@ -341,7 +343,7 @@
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
         </Vehicle>
-        
+
         <!-- Tractor + Semi-trailer + Trailer -->
         <Vehicle name="semi_truck_with_extra_trailer" vehicleCategory="truck" model3d="../models/semi_tractor.osgb">
             <BoundingBox>
@@ -368,5 +370,5 @@
             </Properties>
         </Vehicle>
     </Catalog>
-    
+
 </OpenSCENARIO>
